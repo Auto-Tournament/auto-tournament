@@ -11,6 +11,7 @@ import { api } from '../../utils/api';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from './TopNavBar';
 import { ManageRail } from '../manage/ManageRail';
+import { TournamentBar, isTournamentPage } from '../manage/TournamentBar';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
 import { ModuleNotInstalledNotice } from '../common/ModuleNotInstalledNotice';
 import { RAIL_COLUMN_MIN_WIDTH, railColumnSx } from '../../constants/adminLayout';
@@ -243,6 +244,8 @@ function AdminShell() {
                 {headerActions}
               </Box>
             )}
+            {/* The tournament's own pages: which tournament, and its tabs. */}
+            {showRail && isTournamentPage(location.pathname) && <TournamentBar />}
             <Outlet />
           </Box>
         </Box>

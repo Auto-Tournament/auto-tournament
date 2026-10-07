@@ -87,13 +87,13 @@ test.describe.serial('The shell follows the tournament game', () => {
       // Manage: no server grid under the queue, no Servers or Maps in the rail.
       await page.goto('/manage');
       await expect(page.getByTestId('manage-rail')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId('manage-rail-matches')).toBeVisible();
+      await expect(page.getByTestId('tournament-bar-matches')).toBeVisible();
       await expect(page.getByTestId('manage-rail-servers')).toHaveCount(0);
       await expect(page.getByTestId('manage-rail-maps')).toHaveCount(0);
       // A game with no pages of its own leaves the rail's game group out; a
       // result that can be argued about brings Disputes in.
       await expect(page.getByTestId('manage-rail-group-game')).toHaveCount(0);
-      await expect(page.getByTestId('manage-rail-disputes')).toBeVisible();
+      await expect(page.getByTestId('tournament-bar-disputes')).toBeVisible();
       await expect(page.getByTestId('manage-servers')).toHaveCount(0);
 
       // The page behind the hidden link still answers, so a bookmark or a
