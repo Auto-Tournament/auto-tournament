@@ -124,8 +124,10 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
     else void box.current?.requestFullscreen?.();
   };
 
+  // The video file itself: pasted in Discord (or anywhere that unfurls
+  // links) it plays as a video, no page in between.
   const share = async () => {
-    const url = shareUrl ?? window.location.href;
+    const url = shareUrl ?? new URL(src, window.location.origin).href;
     try {
       if (navigator.share) {
         await navigator.share({ title: label, url });
