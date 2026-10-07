@@ -303,6 +303,17 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 	return clips, failed, nil
 }
 
+// audioLatency is how much later CS2's sound lands in pw-record's file than
+// the picture it belongs to: measured on the recorder VM (2026-10-07) as
+// 0.12–0.17 s from AWP shots against their kills. AT_AUDIO_LATENCY_MS
+// overrides it for another machine.
+func audioLatency() float64 {
+	if v, err := strconv.Atoi(env("AT_AUDIO_LATENCY_MS", "")); err == nil {
+		return float64(v) / 1000
+	}
+	return 0.15
+}
+
 // lead is how much is played before a moment, for the view to settle.
 const lead = tickrate
 
@@ -360,9 +371,13 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	var edits [][]segment
 	for i, w := range windows {
 		piece := filepath.Join(dir, fmt.Sprintf("piece-%d.mp4", i))
+		// The first piece plays the card's entrance; the later ones (after a
+		// jump cut) keep it small at the bottom.
 		var pieceCard *cardRender
 		if i == 0 {
 			pieceCard = card
+		} else if card != nil {
+			pieceCard = card.Settled()
 		}
 		segs, err := r.recordWindow(g, look.watermark, pieceCard, name, w, filepath.Join(dir, fmt.Sprint(i)), piece)
 		if err != nil {
@@ -393,7 +408,7 @@ func (r *recorder) recordWindow(g *game, watermark bool, card *cardRender, name 
 	}
 	sources := [][]float64{mainTicks}
 	raws := []string{main}
-	if card != nil {
+	if card != nil && !card.settled {
 		// The opening plays slowed down under the caption card: a frame for each of its frames.
 		hold, up := introGame()
 		introEnd := w.from + int(math.Ceil((hold+up)*tickrate)) + 4
@@ -429,14 +444,16 @@ func (r *recorder) recordWindow(g *game, watermark bool, card *cardRender, name 
 	if err != nil {
 		return nil, fmt.Errorf("sound: %w", err)
 	}
-	audioAt := as.resumed.Sub(ac.started).Seconds() + float64(w.from-as.fromTick)/tickrate
+	// What CS2 plays reaches the recording audioLatency later: start that much
+	// further in, or every shot is heard after the kill it made.
+	audioAt := as.resumed.Sub(ac.started).Seconds() + float64(w.from-as.fromTick)/tickrate + audioLatency()
 
 	length := float64(w.to-w.from) / tickrate
 	kill := -1.0
 	if w.slowmo >= 0 {
 		kill = float64(w.slowmo-w.from) / tickrate
 	}
-	segs := editPlan(length, card != nil, kill)
+	segs := editPlan(length, card != nil && !card.settled, kill)
 	frames, err := timeline(sources, segs, w.from)
 	if err != nil {
 		return nil, err
@@ -501,7 +518,7 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 				return
 			}
 			defer f.Close()
-			for i := 0; i < int(cardSec*cardFPS); i++ {
+			for i := 0; i < card.Frames(); i++ {
 				if _, err := f.Write(card.frameAt(float64(i) / cardFPS).Pix); err != nil {
 					cardDone <- err
 					return
