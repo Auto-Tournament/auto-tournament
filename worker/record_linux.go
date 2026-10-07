@@ -807,3 +807,11 @@ func pickEncoder() string {
 	}
 	return "hevc_nvenc"
 }
+
+// joinReelFiles is `at-worker join-reel <out.mp4> <clip.mp4>...`: local clips
+// joined into a reel the way the platform's reels are, each blending into the
+// next.
+func joinReelFiles(out string, clips []string) error {
+	r := &recorder{encoder: env("AT_ENCODER", pickEncoder())}
+	return r.crossfadeFiles(clips, out)
+}
