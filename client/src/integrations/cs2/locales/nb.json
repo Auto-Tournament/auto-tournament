@@ -1856,5 +1856,13 @@
       "wallbang": "gjennom vegg",
       "headshot": "hodeskudd"
     }
+  },
+  "highlights": {
+    "title": "Høydepunkter",
+    "queued_one": "{{count}} til på vei",
+    "queued_other": "{{count}} til på vei",
+    "pending": "Venter på opptak",
+    "recording": "Tar opp …",
+    "mapN": "Kart {{n}}"
   }
 }

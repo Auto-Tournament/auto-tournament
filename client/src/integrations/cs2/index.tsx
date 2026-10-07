@@ -5,6 +5,7 @@
 
 import { vetoMapPickers } from './veto/vetoMapPickers';
 import { Cs2ProfileStats } from './profile/Cs2ProfileStats';
+import { Cs2ProfileHighlights } from './profile/Cs2ProfileHighlights';
 import { Cs2TeamProfileStats } from './profile/Cs2TeamProfileStats';
 import {
   HardDrivesIcon,
@@ -12,7 +13,7 @@ import {
   SlidersHorizontalIcon,
   KnifeIcon,
 } from '@phosphor-icons/react';
-import type { ClientGameIntegration } from '../types';
+import type { ClientGameIntegration, PlayerProfileViewProps } from '../types';
 import { links } from '../../module-sdk';
 import { MatchServerPanel } from './match/MatchServerPanel';
 import { Cs2MatchAdminView } from './match/Cs2MatchAdminView';
@@ -61,6 +62,16 @@ import { skinPaths } from './skins/paths';
 import { skinsAccountMenuItems } from './skins/useSkins';
 import { cs2Locales } from './locales';
 
+/** The profile's CS2 part: the stats, then the player's highlight clips. */
+function Cs2ProfileView(props: PlayerProfileViewProps) {
+  return (
+    <>
+      <Cs2ProfileStats {...props} />
+      <Cs2ProfileHighlights playerId={props.playerId} />
+    </>
+  );
+}
+
 export const cs2ClientIntegration: ClientGameIntegration = {
   id: 'cs2',
 
@@ -97,7 +108,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   mapPickers: vetoMapPickers,
 
   // The player profile: aim, utility, impact and the map strength radar.
-  playerProfileView: Cs2ProfileStats,
+  playerProfileView: Cs2ProfileView,
   // The team page: map strength, and the maps the team bans and picks.
   teamProfileView: Cs2TeamProfileStats,
 
