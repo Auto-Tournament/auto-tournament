@@ -183,13 +183,13 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath, name string, cap
 const lead = tickrate
 
 // How the picture is slowed while it is captured: the whole moment at
-// mainScale (~130 frames per game second), and from the last kill on, where
-// the clip slows down, again at slowScale (~500) so the slow motion has a
-// real frame for every frame it shows.
+// mainScale (~130 frames per game second), and from where the clip starts
+// slowing into the last kill, again at slowScale (~500) so the slow motion has
+// a real frame for every frame it shows.
 const (
 	mainScale     = 0.2
 	slowScale     = 0.05
-	slowBeforeSec = 0.25
+	slowBeforeSec = rampSec + 0.15
 )
 
 // capturePicture plays ticks [from, to] at scale and returns each captured
