@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 556 of them, 358 behind auth —
+Every endpoint this API serves — 557 of them, 358 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -887,6 +887,7 @@ Parties, the queue, matches and the matchmaking leaderboard (docs/design/matchma
 | `GET` | `/api/matchmaking/me` | public |
 | `POST` | `/api/matchmaking/party` | public |
 | `POST` | `/api/matchmaking/party/join` | public |
+| `PUT` | `/api/matchmaking/party/mode` | public |
 | `POST` | `/api/matchmaking/party/leave` | public |
 | `POST` | `/api/matchmaking/queue` | public |
 | `DELETE` | `/api/matchmaking/queue` | public |
