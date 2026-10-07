@@ -55,7 +55,12 @@ export class AssignConfigError extends Error {
 const U64 = /^[0-9]{1,20}$/;
 const MAP_NAME = /^(ws:[0-9]{1,20}|[A-Za-z0-9_./-]+)$/;
 const ENGINE_CVAR = /^(mp|sv|tv|bot)_[A-Za-z0-9_]+$/;
-const NEVER_SENT_CVARS = new Set(['sv_password', 'sv_cheats', 'rcon_password', 'sv_setsteamaccount']);
+const NEVER_SENT_CVARS = new Set([
+  'sv_password',
+  'sv_cheats',
+  'rcon_password',
+  'sv_setsteamaccount',
+]);
 /** printable ASCII without space, quotes, backslash or `;` (match.defs.json#/$defs/password). */
 const PASSWORD_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
 
@@ -89,7 +94,12 @@ function clampText(value: unknown, max: number): string | undefined {
 }
 
 function num(value: unknown): number | undefined {
-  const n = typeof value === 'number' ? value : typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN;
+  const n =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string' && value.trim() !== ''
+        ? Number(value)
+        : NaN;
   return Number.isFinite(n) ? n : undefined;
 }
 
@@ -126,7 +136,8 @@ function team(value: MatchTeam | undefined, fallbackName: string): AssignTeam {
     name: clampText(value?.name, 64) ?? fallbackName,
     players: roster.slice(0, 32),
   };
-  const id = value?.id !== undefined && value?.id !== null ? String(value.id).slice(0, 64) : undefined;
+  const id =
+    value?.id !== undefined && value?.id !== null ? String(value.id).slice(0, 64) : undefined;
   if (id) out.id = id;
   const tag = clampText(value?.tag, 16);
   if (tag) out.tag = tag;
@@ -140,21 +151,30 @@ function mapSides(value: unknown): MapSides {
 }
 
 /** The `rules` block from the plugin's round-limit fields and `at_*` cvars. */
-export function rulesFromMatchConfig(config: MatchConfig, defaults: AssignDefaults = {}): MatchRules {
+export function rulesFromMatchConfig(
+  config: MatchConfig,
+  defaults: AssignDefaults = {}
+): MatchRules {
   const cvars = config.cvars ?? {};
   const rules: MatchRules = {};
 
   const maxRounds = num(config.maxRounds) ?? num(cvars.mp_maxrounds);
   if (maxRounds !== undefined && maxRounds >= 1) rules.max_rounds = Math.floor(maxRounds);
 
+  // Overtime, and the damage tiebreak where the match must have a winner
+  // (tournament.types `overtimeSegments`): overtime off with 0 segments is
+  // "no overtime, no draws", and overtime capped at N segments ends in the
+  // tiebreak too. Off with no segments set allows a draw, as it always has.
+  const segments = num(config.overtimeSegments);
   if (config.overtimeMode === 'disabled') {
     rules.overtime = { enabled: false };
+    if (segments === 0) rules.tiebreak = { damage: true };
   } else if (config.overtimeMode === 'enabled') {
-    const segments = num(config.overtimeSegments);
     rules.overtime = {
       enabled: true,
       max_overtimes: segments !== undefined && segments > 0 ? Math.floor(segments) : -1,
     };
+    if (segments !== undefined && segments > 0) rules.tiebreak = { damage: true };
   }
 
   const ready: NonNullable<MatchRules['ready']> = {};
@@ -177,10 +197,12 @@ export function rulesFromMatchConfig(config: MatchConfig, defaults: AssignDefaul
   // The plugin's 0 means unlimited; Ready Up's default is the same, so leave it out.
   if (tactical !== undefined && tactical > 0) pause.tactical_per_team = Math.floor(tactical);
   const tacticalSeconds = num(cvars.at_pause_duration);
-  if (tacticalSeconds !== undefined && tacticalSeconds > 0) pause.tactical_seconds = Math.floor(tacticalSeconds);
+  if (tacticalSeconds !== undefined && tacticalSeconds > 0)
+    pause.tactical_seconds = Math.floor(tacticalSeconds);
   const bothTeams = flag(cvars.at_both_teams_unpause_required);
   if (bothTeams !== undefined) pause.unpause = bothTeams ? 'both_teams' : 'caller_team';
-  if (defaults.pauseAfterRestore !== undefined) pause.pause_after_restore = defaults.pauseAfterRestore;
+  if (defaults.pauseAfterRestore !== undefined)
+    pause.pause_after_restore = defaults.pauseAfterRestore;
   if (Object.keys(pause).length) rules.pause = pause;
 
   // The roster is enforced for tournament matches (the plugin's get5_check_auths).
@@ -190,7 +212,8 @@ export function rulesFromMatchConfig(config: MatchConfig, defaults: AssignDefaul
   const ffw = flag(cvars.at_ffw_enabled);
   if (ffw !== undefined) {
     const seconds = num(cvars.at_ffw_time);
-    forfeit.team_absent_seconds = ffw && seconds !== undefined && seconds > 0 ? Math.floor(seconds) : 0;
+    forfeit.team_absent_seconds =
+      ffw && seconds !== undefined && seconds > 0 ? Math.floor(seconds) : 0;
   }
   const gg = flag(cvars.at_gg_enabled);
   if (gg !== undefined) {
@@ -224,7 +247,8 @@ export function engineCvars(
   const out: Record<string, string | number | boolean> = {};
   for (const [key, value] of Object.entries(cvars)) {
     if (!ENGINE_CVAR.test(key) || NEVER_SENT_CVARS.has(key)) continue;
-    if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') continue;
+    if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean')
+      continue;
     out[key] = value;
     if (Object.keys(out).length >= 128) break;
   }
@@ -240,7 +264,9 @@ export function buildAssignConfig(
   password: string,
   defaults: AssignDefaults = {}
 ): AssignConfig {
-  const maplist = Array.isArray(config.maplist) ? config.maplist.filter((m) => typeof m === 'string' && m) : [];
+  const maplist = Array.isArray(config.maplist)
+    ? config.maplist.filter((m) => typeof m === 'string' && m)
+    : [];
   if (maplist.length === 0) {
     throw new AssignConfigError('The match has no maps yet (is the veto finished?)');
   }
@@ -248,7 +274,10 @@ export function buildAssignConfig(
   if (bad) throw new AssignConfigError(`Map name "${bad}" cannot be sent to Ready Up`);
 
   const requested = num(config.num_maps);
-  const numMaps = Math.min(9, Math.max(1, requested !== undefined ? Math.floor(requested) : maplist.length));
+  const numMaps = Math.min(
+    9,
+    Math.max(1, requested !== undefined ? Math.floor(requested) : maplist.length)
+  );
   if (maplist.length < numMaps) {
     throw new AssignConfigError(`The match needs ${numMaps} maps and has ${maplist.length}`);
   }
@@ -276,7 +305,9 @@ export function buildAssignConfig(
   return out;
 }
 
-function rosterOf(config: Pick<AssignConfig, 'team1' | 'team2' | 'spectators'>): Map<string, { team: 'team1' | 'team2' | 'spectator'; player: AssignPlayer }> {
+function rosterOf(
+  config: Pick<AssignConfig, 'team1' | 'team2' | 'spectators'>
+): Map<string, { team: 'team1' | 'team2' | 'spectator'; player: AssignPlayer }> {
   const out = new Map<string, { team: 'team1' | 'team2' | 'spectator'; player: AssignPlayer }>();
   for (const team of ['team1', 'team2'] as const) {
     for (const player of config[team].players) out.set(player.steamid64, { team, player });
@@ -298,7 +329,8 @@ export function diffAssignConfig(
 ): MatchUpdateOp[] {
   const ops: MatchUpdateOp[] = [];
   for (const team of ['team1', 'team2'] as const) {
-    if (from[team].name !== to[team].name) ops.push({ op: 'rename_team', team, name: to[team].name });
+    if (from[team].name !== to[team].name)
+      ops.push({ op: 'rename_team', team, name: to[team].name });
   }
   const before = rosterOf(from);
   const after = rosterOf(to);
