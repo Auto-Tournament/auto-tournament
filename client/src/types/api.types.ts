@@ -147,7 +147,11 @@ export interface PlayerDetail {
   id: string; // Steam ID
   name: string;
   avatar?: string;
+  /** The rating in `ratingGame`, the game the player has played most (ratings are per game). */
   currentElo: number;
+  ratingGame?: string | null;
+  /** Every game the player is rated in, most-played first (single-player reads). */
+  ratings?: Array<{ game: string; elo: number; matchCount: number }>;
   startingElo: number;
   matchCount: number;
   createdAt: number;

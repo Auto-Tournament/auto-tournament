@@ -17,9 +17,9 @@ export interface GameSwitchProps {
 }
 
 /**
- * The profile's tabs (draft A2): Overview, which counts every game, then one
- * tab per game the player has match data for. `selectedId` is '' for
- * Overview, else the game's id.
+ * The profile's tabs: one per game the player has match data for. There is
+ * no overview across games: what a profile shows (rating, numbers, matches)
+ * belongs to a game. `selectedId` is the game's id.
  *
  * Games come from the `games` list on `/api/players/:id/summary`, derived
  * from the match `game` column via the integrations registry, never a
@@ -30,7 +30,6 @@ export function GameSwitch({ games, extraTabs = [], selectedId, onSelect }: Game
   if (games.length === 0 && extraTabs.length === 0) return null;
 
   const tabs: Array<{ id: string; name: string; mark?: string }> = [
-    { id: '', name: t('playerPage.tabs.overview') },
     ...games.map((game) => ({ id: game.id, name: game.name, mark: gameMonogram(game.name) })),
     ...extraTabs,
   ];
@@ -46,13 +45,13 @@ export function GameSwitch({ games, extraTabs = [], selectedId, onSelect }: Game
         const selected = tab.id === selectedId;
         return (
           <Box
-            key={tab.id || 'overview'}
+            key={tab.id}
             component="button"
             type="button"
             role="tab"
             aria-selected={selected}
             onClick={() => onSelect(tab.id)}
-            data-testid={`profile-game-switch-${tab.id || 'overview'}`}
+            data-testid={`profile-game-switch-${tab.id}`}
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
