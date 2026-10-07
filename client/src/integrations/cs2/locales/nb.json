@@ -1135,8 +1135,8 @@
     "highlights": {
       "title": "Høydepunktvideoer",
       "watermark": {
-        "label": "Auto Tournament-logo i starten av videoene",
-        "description": "Vises øverst til høyre de første sekundene. Det hjelper oss om du lar den stå på."
+        "label": "Auto Tournament-logo på høydepunktvideoene",
+        "description": "Vises svakt nede til høyre. Det hjelper oss mye om du lar den stå på."
       }
     }
   },

@@ -1173,8 +1173,8 @@
     "highlights": {
       "title": "Highlight videos",
       "watermark": {
-        "label": "Auto Tournament logo at the start of each video",
-        "description": "Shown in the top right for the first few seconds. Leaving it on helps us a lot."
+        "label": "Auto Tournament logo on highlight videos",
+        "description": "Shown faintly in the lower right. Leaving it on helps us a lot."
       }
     }
   },

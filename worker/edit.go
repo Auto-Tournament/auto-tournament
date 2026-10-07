@@ -96,7 +96,8 @@ type overlay struct {
 }
 
 // videoFilter dresses the frames: the caption card in the lower left for the
-// first seconds, and the logo faintly in the top right throughout. Output [v].
+// first seconds, and the logo faintly in the lower right throughout (the
+// top right is the kill feed's). Output [v].
 func videoFilter(o overlay) string {
 	margin := o.height / 18
 	var b strings.Builder
@@ -109,7 +110,7 @@ func videoFilter(o overlay) string {
 	}
 	if o.logo >= 0 {
 		fmt.Fprintf(&b, ";[%d:v]scale=%d:-1,format=rgba,colorchannelmixer=aa=0.25[logo]"+
-			";[%s][logo]overlay=W-w-%d:%d:shortest=1", o.logo, o.width*12/100, last, margin, margin)
+			";[%s][logo]overlay=W-w-%d:H-h-%d:shortest=1", o.logo, o.width*12/100, last, margin, margin)
 	} else {
 		fmt.Fprintf(&b, ";[%s]null", last)
 	}
