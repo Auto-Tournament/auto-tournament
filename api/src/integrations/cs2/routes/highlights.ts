@@ -39,6 +39,7 @@ import {
   failTournamentReel,
   favouriteOf,
   matchReelView,
+  recordingQueue,
   playerClips,
   playerReelView,
   playerReelViews,
@@ -67,6 +68,18 @@ const idOf = (req: Request) => {
   const id = Number(req.params.id);
   return Number.isInteger(id) && id > 0 ? id : null;
 };
+
+/** A public read that answers 500 when the database fails, instead of hanging. */
+const read =
+  (what: string, handler: (req: Request, res: Response) => Promise<unknown>) =>
+  async (req: Request, res: Response) => {
+    try {
+      await handler(req, res);
+    } catch (error) {
+      log.error(`[HIGHLIGHTS] ${what} failed`, { error, path: req.path });
+      if (!res.headersSent) res.status(500).json({ success: false, error: `Could not read the ${what}` });
+    }
+  };
 
 router.post('/recorder/claim', requireAuth, async (req: Request, res: Response) => {
   try {
@@ -160,7 +173,12 @@ router.post('/recorder/match-reels/:slug/:map/fail', requireAuth, async (req: Re
 });
 
 router.get('/matches/:slug/reels', async (req: Request, res: Response) => {
-  return res.json({ success: true, reels: await matchReels(req.params.slug) });
+  try {
+    return res.json({ success: true, reels: await matchReels(req.params.slug) });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] match reels failed', { error, slug: req.params.slug });
+    return res.status(500).json({ success: false, error: 'Could not read the match reels' });
+  }
 });
 
 router.post('/recorder/fail', requireAuth, async (req: Request, res: Response) => {
@@ -210,54 +228,74 @@ router.put('/players/me/highlights/favourite', async (req: Request, res: Respons
   return res.json({ success: true, favourite: highlightId });
 });
 
-router.get('/players/:playerId/highlights', async (req: Request, res: Response) => {
-  const all = req.query.all === '1';
-  const [reels, highlights, favourite, viewer] = await Promise.all([
-    playerReelViews(req.params.playerId, all ? 200 : 12),
-    playerClips(req.params.playerId, all ? 300 : 24),
-    favouriteOf(req.params.playerId),
-    resolveViewerAccount(req),
-  ]);
-  return res.json({
-    success: true,
-    reels,
-    highlights,
-    favourite,
-    isOwn: !!viewer.playerId && viewer.playerId === req.params.playerId && !viewer.isImpersonating,
-  });
-});
+router.get(
+  '/players/:playerId/highlights',
+  read('highlights', async (req: Request, res: Response) => {
+    const all = req.query.all === '1';
+    const [reels, highlights, favourite, viewer, queue] = await Promise.all([
+      playerReelViews(req.params.playerId, all ? 200 : 12),
+      playerClips(req.params.playerId, all ? 300 : 24),
+      favouriteOf(req.params.playerId),
+      resolveViewerAccount(req),
+      recordingQueue(req.params.playerId),
+    ]);
+    return res.json({
+      success: true,
+      reels,
+      highlights,
+      favourite,
+      queue,
+      isOwn: !!viewer.playerId && viewer.playerId === req.params.playerId && !viewer.isImpersonating,
+    });
+  })
+);
 
-router.get('/tournaments/:id/highlights', async (req: Request, res: Response) => {
-  const id = idOf(req);
-  if (!id) return res.status(400).json({ success: false, error: 'A tournament id' });
-  return res.json({ success: true, ...(await tournamentHighlights(id)) });
-});
+router.get(
+  '/tournaments/:id/highlights',
+  read('tournament highlights', async (req: Request, res: Response) => {
+    const id = idOf(req);
+    if (!id) return res.status(400).json({ success: false, error: 'A tournament id' });
+    return res.json({ success: true, ...(await tournamentHighlights(id)) });
+  })
+);
 
-router.get('/watch/clip/:id', async (req: Request, res: Response) => {
-  const id = idOf(req);
-  const clip = id ? await clipView(id) : null;
-  if (!clip || !clip.video) return res.status(404).json({ success: false, error: 'No such highlight' });
-  return res.json({ success: true, clip });
-});
+router.get(
+  '/watch/clip/:id',
+  read('highlight', async (req: Request, res: Response) => {
+    const id = idOf(req);
+    const clip = id ? await clipView(id) : null;
+    if (!clip || !clip.video) return res.status(404).json({ success: false, error: 'No such highlight' });
+    return res.json({ success: true, clip });
+  })
+);
 
-router.get('/watch/reel/:slug/:map/:player', async (req: Request, res: Response) => {
-  const reel = await playerReelView(req.params.slug, Number(req.params.map), req.params.player);
-  if (!reel) return res.status(404).json({ success: false, error: 'No such reel' });
-  return res.json({ success: true, reel });
-});
+router.get(
+  '/watch/reel/:slug/:map/:player',
+  read('reel', async (req: Request, res: Response) => {
+    const reel = await playerReelView(req.params.slug, Number(req.params.map), req.params.player);
+    if (!reel) return res.status(404).json({ success: false, error: 'No such reel' });
+    return res.json({ success: true, reel });
+  })
+);
 
-router.get('/watch/match/:slug/:map', async (req: Request, res: Response) => {
-  const reel = await matchReelView(req.params.slug, Number(req.params.map));
-  if (!reel) return res.status(404).json({ success: false, error: 'No such reel' });
-  return res.json({ success: true, reel });
-});
+router.get(
+  '/watch/match/:slug/:map',
+  read('match reel', async (req: Request, res: Response) => {
+    const reel = await matchReelView(req.params.slug, Number(req.params.map));
+    if (!reel) return res.status(404).json({ success: false, error: 'No such reel' });
+    return res.json({ success: true, reel });
+  })
+);
 
-router.get('/watch/tournament/:id', async (req: Request, res: Response) => {
-  const id = idOf(req);
-  const reel = id ? await tournamentReel(id) : null;
-  if (!reel || !reel.video) return res.status(404).json({ success: false, error: 'No such reel' });
-  return res.json({ success: true, reel: { ...reel, tournamentId: id } });
-});
+router.get(
+  '/watch/tournament/:id',
+  read('tournament reel', async (req: Request, res: Response) => {
+    const id = idOf(req);
+    const reel = id ? await tournamentReel(id) : null;
+    if (!reel || !reel.video) return res.status(404).json({ success: false, error: 'No such reel' });
+    return res.json({ success: true, reel: { ...reel, tournamentId: id } });
+  })
+);
 
 router.get('/highlights/:file', (req: Request, res: Response) => {
   const clip = /^(\d+)\.mp4$/.exec(req.params.file);

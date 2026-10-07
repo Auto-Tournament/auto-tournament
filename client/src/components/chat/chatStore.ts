@@ -171,6 +171,29 @@ function receive(message: ChatMessage) {
     channels: state.channels.map((c) => (c.channel === message.channel ? { ...c, unread: c.unread + 1 } : c)),
     peek: state.open ? state.peek : message,
   });
+  playChatSound();
+}
+
+/** At most one sound this often, however fast the messages come. */
+const SOUND_GAP_MS = 2000;
+let lastSound = 0;
+
+/**
+ * A short pop for a new message the viewer is not reading. Off with the
+ * site's other notification sounds (the sound settings' mute).
+ */
+function playChatSound() {
+  const now = Date.now();
+  if (now - lastSound < SOUND_GAP_MS) return;
+  lastSound = now;
+  try {
+    if (localStorage.getItem('teamMatchSoundMuted') === 'true') return;
+    const audio = new Audio('/alerts/pop-402324.mp3');
+    audio.volume = 0.35;
+    void audio.play().catch(() => undefined);
+  } catch {
+    // No audio here (tests, a locked-down browser): stay quiet.
+  }
 }
 
 function openSocket() {

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, ButtonBase } from '@mui/material';
+import { Box, ButtonBase, Skeleton } from '@mui/material';
 import { PlayIcon, StarIcon } from '@phosphor-icons/react';
 import { mono, radii, textSize, tokens, useModuleTranslation, withAlpha } from '../../../module-sdk';
 import { clock, isBigPlay, kindLabel, type ClipMarkers } from './data';
@@ -81,9 +81,13 @@ export function HighlightCard({ to, video, markers, title, sub, badge, large, du
       {video ? (
         <VideoThumb src={video} at={thumbAt(markers)} />
       ) : (
-        <Box sx={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', color: tokens.color.muted, fontSize: textSize.sm }}>
-          {waiting}
-        </Box>
+        <>
+          <Skeleton variant="rectangular" animation="wave" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', bgcolor: tokens.color.paper3 }} />
+          <Box role="status" sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, color: tokens.color.ink2, fontSize: textSize.sm }}>
+            <RecordingDot />
+            {waiting}
+          </Box>
+        </>
       )}
       {video && (
         <Box
@@ -200,6 +204,56 @@ export function FavouriteChip() {
     >
       <StarIcon size={12} weight="fill" />
       {t('highlights.favourite')}
+    </Box>
+  );
+}
+
+/** A softly pulsing dot: something is being worked on. */
+export function RecordingDot() {
+  return (
+    <Box
+      component="span"
+      aria-hidden
+      sx={{
+        width: 8,
+        height: 8,
+        borderRadius: radii.pill,
+        bgcolor: tokens.color.accent,
+        flex: 'none',
+        animation: 'hl-pulse 1.6s ease-in-out infinite',
+        '@keyframes hl-pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.25 } },
+        '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+      }}
+    />
+  );
+}
+
+/**
+ * Where a highlight will be, while the recorder makes it: a shimmering card
+ * the size of the real one, saying it is being recorded and about when it
+ * will be there.
+ */
+export function RecordingCard({ large, label, hint }: { large?: boolean; label: string; hint?: string }) {
+  return (
+    <Box
+      role="status"
+      data-testid="cs2-highlight-recording"
+      sx={{ borderRadius: large ? '22px' : '16px', overflow: 'hidden', bgcolor: tokens.color.paper2, border: `1px solid ${tokens.color.rule}` }}
+    >
+      <Box sx={{ position: 'relative', aspectRatio: '16 / 9' }}>
+        <Skeleton variant="rectangular" animation="wave" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', bgcolor: tokens.color.paper3 }} />
+        <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, px: 2, textAlign: 'center' }}>
+          <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, fontWeight: 600, fontSize: large ? '1rem' : textSize.sm }}>
+            <RecordingDot />
+            {label}
+          </Box>
+          {hint && <Box sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>{hint}</Box>}
+        </Box>
+      </Box>
+      <Box sx={{ px: large ? 2.5 : 1.5, py: large ? 1.75 : 1.25, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <Skeleton animation="wave" width="55%" sx={{ bgcolor: tokens.color.paper3 }} />
+        <Skeleton animation="wave" width="35%" sx={{ bgcolor: tokens.color.paper3 }} />
+      </Box>
     </Box>
   );
 }

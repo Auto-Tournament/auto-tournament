@@ -2056,7 +2056,10 @@
       "players_one": "{{count}} player",
       "players_other": "{{count}} players",
       "none": "No highlights yet. They show up here as the matches' demos are recorded.",
-      "playOfTheTournament": "Play of the tournament"
-    }
+      "playOfTheTournament": "Play of the tournament",
+      "firstSoon": "The first plays show up here soon"
+    },
+    "readyIn": "ready in about {{minutes}} min",
+    "matchReelRecording": "Match reel · being recorded"
   }
 }

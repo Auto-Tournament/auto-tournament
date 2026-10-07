@@ -213,3 +213,9 @@ func planWindows(start, end, slowmo int, killTicks []int) []window {
 	}
 	return out
 }
+
+// seekLanded is whether a pause at `tick` means a seek to `target` landed:
+// on or a little past it (it plays on for a moment before the pause).
+func seekLanded(tick, target int) bool {
+	return tick >= target-tickrate && tick <= target+8*tickrate
+}
