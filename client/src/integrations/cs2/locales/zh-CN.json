@@ -1825,7 +1825,8 @@
       "won": "胜 {{score}}",
       "lost": "负 {{score}}",
       "drew": "平 {{score}}"
-    }
+    },
+    "unequipLabel": "Unequip {{name}}"
   },
   "matchRules": {
     "title": "比赛规则",

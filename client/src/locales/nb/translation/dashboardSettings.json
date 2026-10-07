@@ -321,12 +321,20 @@
         "tournament": "Turnering",
         "people": "Deltakere",
         "game": "Spill",
-        "configuration": "Konfigurasjon"
+        "configuration": "Konfigurasjon",
+        "site": "Nettsted"
       },
       "allTournaments": "Alle turneringer",
       "switcher": "Turnering",
       "newTournament": "Ny turnering",
-      "playedMatches": "Alle kamper"
+      "playedMatches": "Alle kamper",
+      "tournamentBar": "Denne turneringen",
+      "scope": {
+        "label": "Administrerer",
+        "platform": "Plattform",
+        "platformHint": "Turneringer, folk, nettstedet",
+        "gameHint": "Spillets sider og innstillinger"
+      }
     },
     "status": {
       "live": "LIVE",

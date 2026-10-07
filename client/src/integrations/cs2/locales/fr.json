@@ -1825,7 +1825,8 @@
       "won": "Gagné {{score}}",
       "lost": "Perdu {{score}}",
       "drew": "Nul {{score}}"
-    }
+    },
+    "unequipLabel": "Unequip {{name}}"
   },
   "matchRules": {
     "title": "Règles de match",

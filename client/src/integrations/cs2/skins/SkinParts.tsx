@@ -4,7 +4,7 @@ import { Box, Button, ButtonBase, Dialog, IconButton, Link, Typography } from '@
 import {
   CheckIcon,
   InfoIcon,
-  MagnifyingGlassIcon,
+  EyeIcon,
   PlayCircleIcon,
   PlusIcon,
   TrophyIcon,
@@ -98,8 +98,9 @@ export function SkinImage({ skin, height }: { skin: Pick<OwnedSkin, 'imageUrl'>;
 
 /**
  * One skin in a grid (board 1): picture, weapon, name and a rarity bar. A
- * click equips it; equipped skins carry an orange ring just outside the card
- * and a tick. The magnifier (on hover) opens the skin.
+ * click equips it, and a click on the equipped one takes it off; equipped
+ * skins carry an orange ring just outside the card and a tick. The eye
+ * opens the skin.
  */
 export function SkinCard({
   skin,
@@ -114,10 +115,11 @@ export function SkinCard({
 }) {
   const { t } = useModuleTranslation('cs2');
   return (
-    <Box sx={{ position: 'relative', display: 'flex', '&:hover .inspect, & .inspect:focus-visible': { opacity: 1 } }}>
+    <Box sx={{ position: 'relative', display: 'flex' }}>
       <ButtonBase
         onClick={() => (onEquip ? onEquip(skin) : onInspect(skin))}
-        aria-label={onEquip ? (skin.equipped ? t('skins.equippedLabel', { name: skin.name }) : t('skins.equipLabel', { name: skin.name })) : skin.name}
+        aria-label={onEquip ? (skin.equipped ? t('skins.unequipLabel', { name: skin.name }) : t('skins.equipLabel', { name: skin.name })) : skin.name}
+        aria-pressed={onEquip ? skin.equipped : undefined}
         data-testid="skin-card"
         data-equipped={skin.equipped ? 'true' : 'false'}
         sx={{
@@ -159,9 +161,10 @@ export function SkinCard({
         className="inspect"
         aria-label={t('skins.inspect', { name: skin.name })}
         onClick={() => onInspect(skin)}
-        sx={{ position: 'absolute', top: 8, left: showNew && !skin.seen ? 56 : 8, width: 32, height: 32, bgcolor: color.paper2, border: `1px solid ${color.rule}`, opacity: 0, '&:hover': { bgcolor: color.paper3 } }}
+        data-testid="skin-card-inspect"
+        sx={{ position: 'absolute', top: 8, left: showNew && !skin.seen ? 56 : 8, width: 32, height: 32, bgcolor: withAlpha(color.paper2, 0.85), border: `1px solid ${color.rule}`, '&:hover': { bgcolor: color.paper3 } }}
       >
-        <MagnifyingGlassIcon size={16} />
+        <EyeIcon size={16} />
       </IconButton>
     </Box>
   );
