@@ -6,17 +6,17 @@ import (
 	"strings"
 )
 
-// The highlight edit: the clip plays at full speed, then slows step by step
-// (about a second of video) so that it reaches slowmoSpeed as the last enemy
-// dies, holds there (about three seconds) and cuts.
+// The highlight edit: the clip plays at full speed until the last enemy dies,
+// then slows step by step to slowmoSpeed (about a second of video), holds
+// there (about three seconds) and cuts.
 const (
 	slowmoSpeed = 0.5
-	rampSec     = 0.75 // game seconds slowing down into the kill (≈1 s of video)
+	rampSec     = 0.75 // game seconds slowing down from the kill (≈1 s of video)
 	holdSec     = 1.5  // game seconds at slowmoSpeed after that (3 s of video)
 	rampSteps   = 8    // the slowing is this many constant-speed pieces
 	outputFPS   = 120
 	// tailSec is how much game after the last kill a clip shows.
-	tailSec = holdSec
+	tailSec = rampSec + holdSec
 )
 
 // segment is a piece of the recording (seconds from its start) played at one speed.
@@ -24,8 +24,8 @@ type segment struct {
 	From, To, Speed float64
 }
 
-// speedRamp cuts a recording of `length` seconds into pieces: full speed,
-// slowing so it is at slowmoSpeed at `kill` seconds in, then holding to the end.
+// speedRamp cuts a recording of `length` seconds into pieces: full speed to
+// `kill` seconds in, then slowing to slowmoSpeed and holding to the end.
 func speedRamp(length, kill float64) []segment {
 	var out []segment
 	add := func(from, to, speed float64) {
@@ -39,14 +39,13 @@ func speedRamp(length, kill float64) []segment {
 		}
 		out = append(out, segment{from, to, speed})
 	}
-	start := kill - rampSec
-	add(0, start, 1)
+	add(0, kill, 1)
 	step := rampSec / rampSteps
 	for i := 0; i < rampSteps; i++ {
 		speed := math.Round((1+(slowmoSpeed-1)*float64(i+1)/rampSteps)*1000) / 1000
-		add(start+float64(i)*step, start+float64(i+1)*step, speed)
+		add(kill+float64(i)*step, kill+float64(i+1)*step, speed)
 	}
-	add(kill, length, slowmoSpeed)
+	add(kill+rampSec, length, slowmoSpeed)
 	return out
 }
 

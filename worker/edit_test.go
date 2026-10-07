@@ -18,28 +18,22 @@ func TestAudioFilterDropsThePitch(t *testing.T) {
 	}
 }
 
-func TestSpeedRampIsSlowAsTheKillLands(t *testing.T) {
+func TestSpeedRampSlowsFromTheKill(t *testing.T) {
 	segs := speedRamp(3+tailSec, 3)
-	if segs[0].From != 0 || math.Abs(segs[0].To-(3-rampSec)) > 1e-9 || segs[0].Speed != 1 {
-		t.Fatalf("full speed until the slowing: %+v", segs[0])
-	}
-	at := func(x float64) float64 {
-		for _, s := range segs {
-			if x >= s.From && x < s.To {
-				return s.Speed
-			}
-		}
-		return -1
-	}
-	if at(3) != slowmoSpeed || at(2.999) > slowmoSpeed+0.1 {
-		t.Fatalf("at the kill %v, just before %v", at(3), at(2.999))
+	if segs[0].From != 0 || segs[0].To != 3 || segs[0].Speed != 1 {
+		t.Fatalf("full speed until the kill: %+v", segs[0])
 	}
 	last := segs[len(segs)-1]
 	if last.Speed != slowmoSpeed || math.Abs(last.To-(3+tailSec)) > 1e-9 {
 		t.Fatalf("ends held slow: %+v", last)
 	}
+	prev := 1.0
 	slowing := 0.0
 	for _, s := range segs[1 : len(segs)-1] {
+		if s.Speed > prev {
+			t.Fatalf("speeds up again: %+v", segs)
+		}
+		prev = s.Speed
 		slowing += (s.To - s.From) / s.Speed
 	}
 	held := (last.To - last.From) / last.Speed
