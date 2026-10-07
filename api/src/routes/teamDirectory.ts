@@ -29,6 +29,7 @@
  * DELETE /:teamId                           disband (owner)
  */
 
+import { RATING_ELO, getGameRatings, ratingGame, ratingJoin } from '../services/gameRatings';
 import { randomBytes } from 'node:crypto';
 import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
@@ -91,16 +92,18 @@ async function withNumbers(rows: DirectoryRow[]): Promise<DirectoryTeam[]> {
   const teams = rows.map(toDirectoryTeam);
   if (rows.length === 0) return teams;
   const ids = rows.map((r) => r.id);
-  const steamIds = [...new Set(rows.flatMap((r) => rosterIds(r.players)))];
-  const elo = new Map(
-    (steamIds.length
-      ? await db.queryAsync<{ id: string; current_elo: number }>(
-          'SELECT id, current_elo FROM players WHERE id = ANY(?::text[])',
-          [steamIds]
-        )
-      : []
-    ).map((p) => [p.id, Number(p.current_elo)])
-  );
+  // A team's rating is its players' average in the team's game.
+  const idsByGame = new Map<string, Set<string>>();
+  for (const r of rows) {
+    const game = ratingGame(r.game);
+    const set = idsByGame.get(game) ?? new Set<string>();
+    rosterIds(r.players).forEach((id) => set.add(id));
+    idsByGame.set(game, set);
+  }
+  const elo = new Map<string, number>();
+  for (const [game, set] of idsByGame) {
+    for (const [id, r] of await getGameRatings([...set], game)) elo.set(`${game}|${id}`, r.elo);
+  }
   const records = new Map(
     (
       await db.queryAsync<{ team_id: string; wins: string | number; played: string | number }>(
@@ -131,7 +134,7 @@ async function withNumbers(rows: DirectoryRow[]): Promise<DirectoryTeam[]> {
   }
   return teams.map((team, i) => {
     const rated = rosterIds(rows[i].players)
-      .map((id) => elo.get(id))
+      .map((id) => elo.get(`${ratingGame(rows[i].game)}|${id}`))
       .filter((v): v is number => v !== undefined);
     return {
       ...team,
@@ -397,8 +400,9 @@ router.get('/:teamId/profile', async (req: Request, res: Response) => {
           avatar: string | null;
           current_elo: number;
         }>(
-          'SELECT id, uid, name, avatar_url AS avatar, current_elo FROM players WHERE id = ANY(?::text[])',
-          [ids]
+          `SELECT p.id, p.uid, p.name, p.avatar_url AS avatar, ${RATING_ELO} AS current_elo
+             FROM players p ${ratingJoin('p')} WHERE p.id = ANY(?::text[])`,
+          [ratingGame(row.game), ids]
         )
       : [];
     const byId = new Map(accounts.map((a) => [a.id, a]));

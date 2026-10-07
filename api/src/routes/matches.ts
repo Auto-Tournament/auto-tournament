@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { getGameRatings } from '../services/gameRatings';
 import { matchService } from '../services/matchService';
 import { isQueuedAllocationResult, scheduler } from '../core/scheduler';
 import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
@@ -27,7 +28,6 @@ import {
 import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import { teamService } from '../services/teamService';
-import { playerService } from '../services/playerService';
 import { getMapResults } from '../services/matchMapResultService';
 import {
   resolveTournamentId,
@@ -290,8 +290,8 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
       ];
 
       if (allSteamIds.length > 0) {
-        const players = await playerService.getPlayersByIds(allSteamIds);
-        const eloMap = new Map(players.map((p) => [p.id.toLowerCase(), p.current_elo]));
+        const ratings = await getGameRatings(allSteamIds, row.game);
+        const eloMap = new Map([...ratings].map(([id, r]) => [id.toLowerCase(), r.elo]));
 
         // Add ELO to team1 players
         enrichedTeam1Players = enrichedTeam1Players.map((p) => ({
@@ -847,8 +847,8 @@ router.get('/', async (req: Request, res: Response) => {
             ];
 
             if (allSteamIds.length > 0) {
-              const players = await playerService.getPlayersByIds(allSteamIds);
-              const eloMap = new Map(players.map((p) => [p.id.toLowerCase(), p.current_elo]));
+              const ratings = await getGameRatings(allSteamIds, row.game);
+              const eloMap = new Map([...ratings].map(([id, r]) => [id.toLowerCase(), r.elo]));
 
               // Add ELO to team1 players
               enrichedTeam1Players = enrichedTeam1Players.map((p) => ({
