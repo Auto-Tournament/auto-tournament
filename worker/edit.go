@@ -8,15 +8,16 @@ import (
 
 // The highlight edit: the clip plays at full speed until the last enemy dies,
 // then slows step by step to slowmoSpeed (about a second of video), holds
-// there (about three seconds) and cuts.
+// there (about two seconds), speeds back up to full speed and cuts.
 const (
 	slowmoSpeed = 0.5
 	rampSec     = 0.75 // game seconds slowing down from the kill (≈1 s of video)
-	holdSec     = 1.5  // game seconds at slowmoSpeed after that (3 s of video)
-	rampSteps   = 8    // the slowing is this many constant-speed pieces
+	holdSec     = 1.0  // game seconds at slowmoSpeed after that (2 s of video)
+	rampUpSec   = 0.45 // game seconds speeding back up before the cut (≈0.6 s of video)
+	rampSteps   = 8    // a ramp is this many constant-speed pieces
 	outputFPS   = 120
 	// tailSec is how much game after the last kill a clip shows.
-	tailSec = rampSec + holdSec
+	tailSec = rampSec + holdSec + rampUpSec
 )
 
 // segment is a piece of the recording (seconds from its start) played at one speed.
@@ -25,7 +26,8 @@ type segment struct {
 }
 
 // speedRamp cuts a recording of `length` seconds into pieces: full speed to
-// `kill` seconds in, then slowing to slowmoSpeed and holding to the end.
+// `kill` seconds in, slowing to slowmoSpeed, holding, then back up to full
+// speed for the last rampUpSec before the end.
 func speedRamp(length, kill float64) []segment {
 	var out []segment
 	add := func(from, to, speed float64) {
@@ -39,13 +41,18 @@ func speedRamp(length, kill float64) []segment {
 		}
 		out = append(out, segment{from, to, speed})
 	}
-	add(0, kill, 1)
-	step := rampSec / rampSteps
-	for i := 0; i < rampSteps; i++ {
-		speed := math.Round((1+(slowmoSpeed-1)*float64(i+1)/rampSteps)*1000) / 1000
-		add(kill+float64(i)*step, kill+float64(i+1)*step, speed)
+	ramp := func(from, span, a, b float64) {
+		step := span / rampSteps
+		for i := 0; i < rampSteps; i++ {
+			speed := math.Round((a+(b-a)*float64(i+1)/rampSteps)*1000) / 1000
+			add(from+float64(i)*step, from+float64(i+1)*step, speed)
+		}
 	}
-	add(kill+rampSec, length, slowmoSpeed)
+	add(0, kill, 1)
+	ramp(kill, rampSec, 1, slowmoSpeed)
+	upFrom := math.Max(kill+rampSec, length-rampUpSec)
+	add(kill+rampSec, upFrom, slowmoSpeed)
+	ramp(upFrom, length-upFrom, slowmoSpeed, 1)
 	return out
 }
 
