@@ -215,6 +215,12 @@ export interface RecordJob {
   mapName: string | null;
   playerId: string;
   playerName: string;
+  /** The caption's match line: "Team A vs Team B · Tournament". */
+  match: string;
+  /** The player's avatar (absolute, or a path on this platform), for the caption. */
+  avatarUrl: string | null;
+  /** The Auto Tournament logo on each video (an admin can turn it off). */
+  watermark: boolean;
   moments: RecordMoment[];
 }
 
@@ -231,6 +237,12 @@ interface MomentRow {
   end_tick: number;
   slowmo_tick: number;
   kill_ticks: string;
+}
+
+/** "Team A vs Team B · Tournament", with what is known of it. */
+export function matchLine(team1: string | null, team2: string | null, tournament: string | null): string {
+  const teams = team1 && team2 ? `${team1} vs ${team2}` : (team1 ?? team2 ?? '');
+  return [teams, tournament ?? ''].filter(Boolean).join(' · ');
 }
 
 /**
@@ -255,17 +267,36 @@ export async function claimRecordJob(recorder: string): Promise<RecordJob | null
     [recorder.slice(0, 120), now, best.match_slug, best.map_number, best.player_id, now - STALE_SECONDS]
   );
   if (rows.length === 0) return null; // another recorder took them first
-  const extra = await db.queryOneAsync<{ map_name: string | null; name: string | null }>(
+  const extra = await db.queryOneAsync<{
+    map_name: string | null;
+    name: string | null;
+    avatar_url: string | null;
+    team1: string | null;
+    team2: string | null;
+    tournament: string | null;
+  }>(
     `SELECT (SELECT map_name FROM cs2_demo_jobs WHERE match_slug = ? AND map_number = ?) AS map_name,
-            (SELECT name FROM players WHERE id = ?) AS name`,
-    [best.match_slug, best.map_number, best.player_id]
+            (SELECT name FROM players WHERE id = ?) AS name,
+            (SELECT avatar_url FROM players WHERE id = ?) AS avatar_url,
+            t1.name AS team1, t2.name AS team2, COALESCE(tr.name, m.played_in) AS tournament
+       FROM (SELECT 1) one
+       LEFT JOIN matches m ON m.slug = ?
+       LEFT JOIN teams t1 ON t1.id = m.team1_id
+       LEFT JOIN teams t2 ON t2.id = m.team2_id
+       LEFT JOIN tournament tr ON tr.id = m.tournament_id`,
+    [best.match_slug, best.map_number, best.player_id, best.player_id, best.match_slug]
   );
+  const { settingsService } = await import('../../../services/settingsService');
+  const watermark = (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0';
   return {
     matchSlug: best.match_slug,
     mapNumber: Number(best.map_number),
     mapName: extra?.map_name ?? null,
     playerId: best.player_id,
     playerName: extra?.name ?? best.player_id,
+    avatarUrl: extra?.avatar_url ?? null,
+    match: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, extra?.tournament ?? null),
+    watermark,
     moments: rows
       .map((r) => ({
         id: Number(r.id),

@@ -1131,6 +1131,13 @@
     "vetoTurn": {
       "label": "每个禁选步骤的秒数",
       "helper": "队伍超时后，平台会为其随机禁用或选择一张地图。0 = 不限时。"
+    },
+    "highlights": {
+      "title": "Highlight videos",
+      "watermark": {
+        "label": "Auto Tournament logo at the start of each video",
+        "description": "Shown in the top right for the first few seconds. Leaving it on helps us a lot."
+      }
     }
   },
   "roster": {

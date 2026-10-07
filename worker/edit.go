@@ -8,12 +8,12 @@ import (
 
 // The highlight edit: the clip plays at full speed, then slows step by step
 // (about a second of video) so that it reaches slowmoSpeed as the last enemy
-// dies, holds there (about a second and a half) and cuts.
+// dies, holds there (about three seconds) and cuts.
 const (
-	slowmoSpeed = 0.25
-	rampSec     = 0.6   // game seconds slowing down from the kill (≈1 s of video)
-	holdSec     = 0.375 // game seconds at slowmoSpeed after that (1.5 s of video)
-	rampSteps   = 8     // the slowing is this many constant-speed pieces
+	slowmoSpeed = 0.5
+	rampSec     = 0.75 // game seconds slowing down into the kill (≈1 s of video)
+	holdSec     = 1.5  // game seconds at slowmoSpeed after that (3 s of video)
+	rampSteps   = 8    // the slowing is this many constant-speed pieces
 	outputFPS   = 120
 	// tailSec is how much game after the last kill a clip shows.
 	tailSec = holdSec
@@ -59,12 +59,6 @@ func outputSeconds(segs []segment) float64 {
 	return total
 }
 
-// drawtextEscape makes a caption safe inside drawtext's text='...'.
-func drawtextEscape(s string) string {
-	r := strings.NewReplacer(`\`, `\\`, `'`, "’", `:`, `\:`, `%`, `\%`)
-	return r.Replace(s)
-}
-
 // audioFilter plays the moment's sound [1:a] (from its start, `length`
 // seconds) piece by piece at each piece's speed, the way a record slows down:
 // the pitch drops with the speed and comes back with it. Output [a].
@@ -90,25 +84,37 @@ func audioFilter(segs []segment, length float64) string {
 	return b.String()
 }
 
-// videoFilter dresses the frames [0:v]: the caption lines in the lower left
-// for the first seconds. Output [v].
-func videoFilter(caption []string) string {
-	f := "[0:v]format=yuv420p"
-	for i, line := range caption {
-		if line == "" {
-			continue
-		}
-		size, weight := "h/34", ""
-		if i == 0 {
-			size = "h/24"
-		}
-		// Lines stack up from the bottom; the first (the player) on top.
-		fromBottom := len(caption) - 1 - i
-		f += fmt.Sprintf(",drawtext=font='Sans%s':fontsize=%s:fontcolor=white:shadowcolor=black@0.6:shadowx=2:shadowy=2:"+
-			"x=h/18:y=h-h/18-th-%d*h/26:alpha='if(lt(t,0.3),t/0.3,if(lt(t,3),1,if(lt(t,3.4),(3.4-t)/0.4,0)))':text='%s'",
-			weight, size, fromBottom, drawtextEscape(line))
+// captionSec is how long the caption (and the avatar) show at a clip's start.
+const captionSec = 3.0
+
+// overlay is what goes on top of a clip's frames ([0:v]).
+type overlay struct {
+	card   int // input holding the caption card (card.go), looped, or -1
+	logo   int // input holding the Auto Tournament logo, looped, or -1
+	width  int
+	height int
+}
+
+// videoFilter dresses the frames: the caption card in the lower left for the
+// first seconds, and the logo faintly in the top right throughout. Output [v].
+func videoFilter(o overlay) string {
+	margin := o.height / 18
+	var b strings.Builder
+	b.WriteString("[0:v]format=yuv420p[base]")
+	last := "base"
+	if o.card >= 0 {
+		fmt.Fprintf(&b, ";[%d:v]format=rgba,fade=t=in:st=0:d=0.3:alpha=1,fade=t=out:st=%g:d=0.4:alpha=1[card]"+
+			";[%s][card]overlay=%d:H-%d-h:eof_action=pass[withcard]", o.card, captionSec, last, margin, margin)
+		last = "withcard"
 	}
-	return f + "[v]"
+	if o.logo >= 0 {
+		fmt.Fprintf(&b, ";[%d:v]scale=%d:-1,format=rgba,colorchannelmixer=aa=0.25[logo]"+
+			";[%s][logo]overlay=W-w-%d:%d:shortest=1", o.logo, o.width*12/100, last, margin, margin)
+	} else {
+		fmt.Fprintf(&b, ";[%s]null", last)
+	}
+	b.WriteString(",format=yuv420p[v]")
+	return b.String()
 }
 
 // encodeArgs are the output settings every piece and the reel share, so the

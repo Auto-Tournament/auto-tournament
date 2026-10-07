@@ -1131,6 +1131,13 @@
     "vetoTurn": {
       "label": "Segundos por passo de veto",
       "helper": "Se uma equipa ficar sem tempo, a plataforma bane ou escolhe um mapa ao acaso. 0 = sem limite."
+    },
+    "highlights": {
+      "title": "Highlight videos",
+      "watermark": {
+        "label": "Auto Tournament logo at the start of each video",
+        "description": "Shown in the top right for the first few seconds. Leaving it on helps us a lot."
+      }
     }
   },
   "roster": {

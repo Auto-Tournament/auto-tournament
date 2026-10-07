@@ -7,21 +7,14 @@ import (
 )
 
 func TestAudioFilterDropsThePitch(t *testing.T) {
-	f := audioFilter([]segment{{0, 1, 1}, {1, 2, 0.25}}, 2)
-	for _, want := range []string{"atrim=duration=2.0000", "asplit=2[t0][t1]", "[t1]atrim=start=1.0000:end=2.0000,asetpts=PTS-STARTPTS,asetrate=12000,aresample=48000[a1]", "concat=n=2:v=0:a=1[a]"} {
+	f := audioFilter([]segment{{0, 1, 1}, {1, 2, 0.5}}, 2)
+	for _, want := range []string{"atrim=duration=2.0000", "asplit=2[t0][t1]", "[t1]atrim=start=1.0000:end=2.0000,asetpts=PTS-STARTPTS,asetrate=24000,aresample=48000[a1]", "concat=n=2:v=0:a=1[a]"} {
 		if !strings.Contains(f, want) {
 			t.Fatalf("%q missing from %s", want, f)
 		}
 	}
 	if strings.Contains(f, "[t0]atrim=start=0.0000:end=1.0000,asetpts=PTS-STARTPTS,asetrate") {
 		t.Fatal("full speed should not be resampled")
-	}
-}
-
-func TestVideoFilterCaption(t *testing.T) {
-	f := videoFilter([]string{"Goggles", "3K: AK-47 · Round 7"})
-	if !strings.Contains(f, `text='3K\: AK-47 · Round 7'`) || !strings.Contains(f, "text='Goggles'") {
-		t.Fatalf("captions missing: %s", f)
 	}
 }
 
@@ -38,7 +31,7 @@ func TestSpeedRampIsSlowAsTheKillLands(t *testing.T) {
 		}
 		return -1
 	}
-	if at(3) != slowmoSpeed || at(2.999) > 0.35 {
+	if at(3) != slowmoSpeed || at(2.999) > slowmoSpeed+0.1 {
 		t.Fatalf("at the kill %v, just before %v", at(3), at(2.999))
 	}
 	last := segs[len(segs)-1]
@@ -50,7 +43,22 @@ func TestSpeedRampIsSlowAsTheKillLands(t *testing.T) {
 		slowing += (s.To - s.From) / s.Speed
 	}
 	held := (last.To - last.From) / last.Speed
-	if slowing < 0.7 || slowing > 1.3 || held < 1.2 || held > 2 {
+	if slowing < 0.7 || slowing > 1.3 || held < 2.5 || held > 3.5 {
 		t.Fatalf("slowing %.2f s, held %.2f s", slowing, held)
+	}
+}
+
+func TestVideoFilterCardAndLogo(t *testing.T) {
+	f := videoFilter(overlay{card: 2, logo: 3, width: 2560, height: 1440})
+	for _, want := range []string{
+		"[2:v]format=rgba,fade=t=in", "[base][card]overlay=80:H-80-h:eof_action=pass",
+		"[3:v]scale=307:-1,format=rgba,colorchannelmixer=aa=0.25", "[withcard][logo]overlay=W-w-80:80:shortest=1",
+	} {
+		if !strings.Contains(f, want) {
+			t.Fatalf("%q missing from %s", want, f)
+		}
+	}
+	if plain := videoFilter(overlay{card: -1, logo: -1, width: 2560, height: 1440}); strings.Contains(plain, "overlay") {
+		t.Fatalf("no card, no logo: %s", plain)
 	}
 }

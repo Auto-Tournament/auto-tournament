@@ -1169,6 +1169,13 @@
     "vetoTurn": {
       "label": "Sekundy na krok veto",
       "helper": "Gdy drużynie skończy się czas, platforma banuje lub wybiera losową mapę. 0 = bez limitu."
+    },
+    "highlights": {
+      "title": "Highlight videos",
+      "watermark": {
+        "label": "Auto Tournament logo at the start of each video",
+        "description": "Shown in the top right for the first few seconds. Leaving it on helps us a lot."
+      }
     }
   },
   "roster": {

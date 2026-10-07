@@ -1131,6 +1131,13 @@
     "vetoTurn": {
       "label": "Seconds per veto step",
       "helper": "When a team runs out of time, the platform bans or picks a random map for it. 0 = no limit."
+    },
+    "highlights": {
+      "title": "Highlight videos",
+      "watermark": {
+        "label": "Auto Tournament logo at the start of each video",
+        "description": "Shown in the top right for the first few seconds. Leaving it on helps us a lot."
+      }
     }
   },
   "roster": {

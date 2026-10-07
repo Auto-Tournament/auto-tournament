@@ -1131,6 +1131,13 @@
     "vetoTurn": {
       "label": "Seconden per vetostap",
       "helper": "Als een team geen tijd meer heeft, bant of kiest het platform een willekeurige map. 0 = geen limiet."
+    },
+    "highlights": {
+      "title": "Highlight videos",
+      "watermark": {
+        "label": "Auto Tournament logo at the start of each video",
+        "description": "Shown in the top right for the first few seconds. Leaving it on helps us a lot."
+      }
     }
   },
   "roster": {

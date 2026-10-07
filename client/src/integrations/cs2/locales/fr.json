@@ -1131,6 +1131,13 @@
     "vetoTurn": {
       "label": "Secondes par étape de veto",
       "helper": "Si une équipe n’a plus de temps, la plateforme bannit ou choisit une carte au hasard. 0 = sans limite."
+    },
+    "highlights": {
+      "title": "Highlight videos",
+      "watermark": {
+        "label": "Auto Tournament logo at the start of each video",
+        "description": "Shown in the top right for the first few seconds. Leaving it on helps us a lot."
+      }
     }
   },
   "roster": {

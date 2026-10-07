@@ -1131,6 +1131,13 @@
     "vetoTurn": {
       "label": "Sekunder per veto-steg",
       "helper": "Når et lag går tom for tid, banner eller velger plattformen et tilfeldig kart for det. 0 = ingen grense."
+    },
+    "highlights": {
+      "title": "Høydepunktvideoer",
+      "watermark": {
+        "label": "Auto Tournament-logo i starten av videoene",
+        "description": "Vises øverst til høyre de første sekundene. Det hjelper oss om du lar den stå på."
+      }
     }
   },
   "roster": {

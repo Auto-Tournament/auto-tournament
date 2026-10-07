@@ -1131,6 +1131,13 @@
     "vetoTurn": {
       "label": "Sekunden pro Veto-Schritt",
       "helper": "Läuft einem Team die Zeit ab, bannt oder wählt die Plattform eine zufällige Map. 0 = kein Limit."
+    },
+    "highlights": {
+      "title": "Highlight videos",
+      "watermark": {
+        "label": "Auto Tournament logo at the start of each video",
+        "description": "Shown in the top right for the first few seconds. Leaving it on helps us a lot."
+      }
     }
   },
   "roster": {
