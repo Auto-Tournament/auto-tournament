@@ -92,6 +92,27 @@ test.describe('Highlight recorder routes', () => {
     }
   });
 
+  test('a recorder from version 4 gets a whole map, every player', { tag: ['@api'] }, async ({ request }) => {
+    await signInViaRequest(request);
+    const res = await request.post('/api/game/cs2/recorder/claim', { data: { recorder: 'spec', version: 4 } });
+    expect([200, 204]).toContain(res.status());
+    if (res.status() !== 200) return;
+    const { job } = await res.json();
+    expect(['map', 'match_reel', 'tournament_reel']).toContain(job.kind);
+    if (job.kind === 'map') {
+      expect(Array.isArray(job.players)).toBe(true);
+      const ids: number[] = [];
+      for (const p of job.players) {
+        expect(p.matchSlug).toBe(job.matchSlug);
+        expect(p.mapNumber).toBe(job.mapNumber);
+        ids.push(...p.moments.map((m: { id: number }) => m.id));
+      }
+      await request.post('/api/game/cs2/recorder/fail', { data: { ids, error: 'released by the spec' } });
+    } else {
+      await request.post(job.fail, { data: { error: 'released by the spec' } });
+    }
+  });
+
   test('the favourite needs a signed-in player and one of their own highlights', { tag: ['@api'] }, async ({ playwright, baseURL }) => {
     const anonymous = await playwright.request.newContext({ baseURL });
     const res = await anonymous.put('/api/game/cs2/players/me/highlights/favourite', { data: { highlightId: 1 } });

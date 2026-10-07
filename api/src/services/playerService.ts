@@ -597,17 +597,12 @@ class PlayerService {
     }
 
     if (input.elo !== undefined) {
-      // A rating is per game. A player rated nowhere yet gets a new seed, their
-      // rating in every game; otherwise the rating in that one game is set.
-      const rated = await getPlayerGameRatings(playerId);
-      if (rated.length === 0) {
-        updates.starting_elo = input.elo;
-      } else {
-        const current = await getGameRating(playerId, input.game);
-        const matchCount = current?.matchCount ?? 0;
-        const skill = eloToOpenSkill(input.elo, matchCount);
-        await setGameRating(playerId, input.game, { elo: input.elo, mu: skill.mu, sigma: skill.sigma, matchCount });
-      }
+      // A rating is per game: this sets the one in `game` (the default game
+      // when absent). The seed, the player's rating where they have none, stays.
+      const current = await getGameRating(playerId, input.game);
+      const matchCount = current?.matchCount ?? 0;
+      const skill = eloToOpenSkill(input.elo, matchCount);
+      await setGameRating(playerId, input.game, { elo: input.elo, mu: skill.mu, sigma: skill.sigma, matchCount });
     }
 
     if (input.isAdmin !== undefined) {

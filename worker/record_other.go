@@ -14,3 +14,5 @@ var errRecorderLinuxOnly = errors.New("the highlight recorder runs on Linux (it 
 func runRecorder(context.Context, *client, time.Duration) error { return errRecorderLinuxOnly }
 
 func recordFile([]string) error { return errRecorderLinuxOnly }
+
+func joinReelFiles(string, []string) error { return errRecorderLinuxOnly }

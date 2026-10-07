@@ -235,6 +235,14 @@
           "avatar": "/api/players/76561199000070001/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1798,
+          "ratingGame": "cs2",
+          "ratings": [
+            {
+              "elo": 1798,
+              "game": "cs2",
+              "matchCount": 1
+            }
+          ],
           "id": "76561199000070001",
           "isAdmin": false,
           "matchCount": 1,
@@ -382,6 +390,14 @@
           "avatar": "/api/players/76561199000070002/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1798,
+          "ratingGame": "cs2",
+          "ratings": [
+            {
+              "elo": 1798,
+              "game": "cs2",
+              "matchCount": 1
+            }
+          ],
           "id": "76561199000070002",
           "isAdmin": false,
           "matchCount": 1,
@@ -529,6 +545,14 @@
           "avatar": "/api/players/76561199000070003/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1798,
+          "ratingGame": "cs2",
+          "ratings": [
+            {
+              "elo": 1798,
+              "game": "cs2",
+              "matchCount": 1
+            }
+          ],
           "id": "76561199000070003",
           "isAdmin": false,
           "matchCount": 1,
@@ -676,6 +700,14 @@
           "avatar": "/api/players/76561199000070004/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1798,
+          "ratingGame": "cs2",
+          "ratings": [
+            {
+              "elo": 1798,
+              "game": "cs2",
+              "matchCount": 1
+            }
+          ],
           "id": "76561199000070004",
           "isAdmin": false,
           "matchCount": 1,
@@ -823,6 +855,14 @@
           "avatar": "/api/players/76561199000070005/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1798,
+          "ratingGame": "cs2",
+          "ratings": [
+            {
+              "elo": 1798,
+              "game": "cs2",
+              "matchCount": 1
+            }
+          ],
           "id": "76561199000070005",
           "isAdmin": false,
           "matchCount": 1,
@@ -970,6 +1010,14 @@
           "avatar": "/api/players/76561199000080001/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1284,
+          "ratingGame": "cs2",
+          "ratings": [
+            {
+              "elo": 1284,
+              "game": "cs2",
+              "matchCount": 1
+            }
+          ],
           "id": "76561199000080001",
           "isAdmin": false,
           "matchCount": 1,
@@ -1117,6 +1165,14 @@
           "avatar": "/api/players/76561199000080002/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1284,
+          "ratingGame": "cs2",
+          "ratings": [
+            {
+              "elo": 1284,
+              "game": "cs2",
+              "matchCount": 1
+            }
+          ],
           "id": "76561199000080002",
           "isAdmin": false,
           "matchCount": 1,
@@ -1264,6 +1320,14 @@
           "avatar": "/api/players/76561199000080003/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1284,
+          "ratingGame": "cs2",
+          "ratings": [
+            {
+              "elo": 1284,
+              "game": "cs2",
+              "matchCount": 1
+            }
+          ],
           "id": "76561199000080003",
           "isAdmin": false,
           "matchCount": 1,
@@ -1411,6 +1475,14 @@
           "avatar": "/api/players/76561199000080004/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1284,
+          "ratingGame": "cs2",
+          "ratings": [
+            {
+              "elo": 1284,
+              "game": "cs2",
+              "matchCount": 1
+            }
+          ],
           "id": "76561199000080004",
           "isAdmin": false,
           "matchCount": 1,
@@ -1558,6 +1630,14 @@
           "avatar": "/api/players/76561199000080005/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1284,
+          "ratingGame": "cs2",
+          "ratings": [
+            {
+              "elo": 1284,
+              "game": "cs2",
+              "matchCount": 1
+            }
+          ],
           "id": "76561199000080005",
           "isAdmin": false,
           "matchCount": 1,

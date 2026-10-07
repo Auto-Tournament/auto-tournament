@@ -54,7 +54,7 @@ import { SkinsAdminPage } from './skins/SkinsAdminPage';
 import { cs2AdminPaths } from './adminPaths';
 import { InventoryPage } from './skins/InventoryPage';
 import { NewSkinReveal } from './skins/NewSkinReveal';
-import { ProfileLoadoutTab } from './skins/ProfileLoadout';
+import { ProfileLoadout } from './skins/ProfileLoadout';
 import { MapActions } from './demos/MapActions';
 import { highlightPaths } from './highlights/data';
 import { PlayerHighlightsPage } from './highlights/PlayerHighlightsPage';
@@ -66,12 +66,13 @@ import { skinPaths } from './skins/paths';
 import { skinsAccountMenuItems } from './skins/useSkins';
 import { cs2Locales } from './locales';
 
-/** The profile's CS2 part: the stats, then the player's highlight clips. */
+/** The profile's CS2 tab: the stats, the player's highlight clips, then their loadout. */
 function Cs2ProfileView(props: PlayerProfileViewProps) {
   return (
     <>
       <Cs2ProfileStats {...props} />
       <Cs2ProfileHighlights playerId={props.playerId} />
+      <ProfileLoadout steamId={props.playerId} isOwn={!!props.isOwn} />
     </>
   );
 }
@@ -205,8 +206,6 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // skins are on, the "new skin" reveal, and the loadout on profiles.
   accountMenuItems: skinsAccountMenuItems,
   globalOverlay: NewSkinReveal,
-  // The profile's Loadout tab, while skins are on.
-  playerProfileTab: { labelKey: 'skins.loadout', Component: ProfileLoadoutTab },
 
   // Each map's match reel and analysis, once the worker made them.
   matchMapAction: MapActions,

@@ -14,12 +14,17 @@ import { ensureSignedIn, signInViaRequest, signInAsPlayer } from '../helpers/aut
  * @tag navigation
  */
 
-/** Every core admin page, by its rail item's test id, and the URL it opens. */
-const CORE_RAIL_ITEMS: [string, RegExp][] = [
+/** The tournament's own pages, by their tab in the tournament bar. */
+const TOURNAMENT_BAR_ITEMS: [string, RegExp][] = [
   ['needsYou', /\/manage$/],
   ['matches', /\/matches$/],
   ['bracket', /\/bracket$/],
   ['tournament', /\/tournament$/],
+];
+
+/** Every platform admin page, by its rail item's test id, and the URL it opens. */
+const CORE_RAIL_ITEMS: [string, RegExp][] = [
+  ['tournaments', /\/tournaments$/],
   ['teams', /\/teams$/],
   ['players', /\/players$/],
   ['modules', /\/modules$/],
@@ -69,10 +74,11 @@ test.describe.serial('Admin navigation', () => {
       await expect(rail).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('nav-manage')).toHaveAttribute('aria-current', 'page');
 
-      for (const [key, url] of [...CORE_RAIL_ITEMS, ...CS2_RAIL_ITEMS]) {
-        const item = page.getByTestId(`manage-rail-${key}`);
-        await expect(item, `rail item ${key}`).toBeVisible({ timeout: 15000 });
-        await item.click();
+      // The tournament's pages are tabs over them, not rail items.
+      for (const [key, url] of TOURNAMENT_BAR_ITEMS) {
+        const tab = page.getByTestId(`tournament-bar-${key}`);
+        await expect(tab, `tournament tab ${key}`).toBeVisible({ timeout: 15000 });
+        await tab.click();
         await expect(page).toHaveURL(url);
         if (key === 'tournament') {
           // With no tournament this opens the setup, which takes the page
@@ -86,18 +92,45 @@ test.describe.serial('Admin navigation', () => {
           await expect(rail).toBeVisible({ timeout: 15000 });
           continue;
         }
-        // Still in the same layout, with the page it opened marked.
         await expect(rail).toBeVisible();
-        await expect(page.getByTestId(`manage-rail-${key}`)).toHaveAttribute('aria-current', 'page');
-        // Every item has an icon (CS2's come from the module); the open
-        // page's is filled.
-        await expect(page.getByTestId(`manage-rail-${key}-icon`)).toHaveAttribute('data-weight', 'fill');
-        // The shell prints no title of its own: one H1, the page's, and the
-        // tab says "Page · Auto Tournament".
+        await expect(page.getByTestId(`tournament-bar-${key}`)).toHaveAttribute('aria-current', 'page');
         await expect(page.locator('h1'), `one h1 on ${key}`).toHaveCount(1);
         await expect(page).toHaveTitle(/ · Auto Tournament$/);
       }
 
+      // The rail: the platform's pages, then CS2's once it is picked in the
+      // rail's dropdown.
+      await expect(page.getByTestId('manage-rail-scope-name')).toHaveText('Platform');
+      for (const [scope, items] of [
+        ['platform', CORE_RAIL_ITEMS],
+        ['cs2', CS2_RAIL_ITEMS],
+      ] as const) {
+        if (scope === 'cs2') {
+          await page.getByTestId('manage-rail-scope').click();
+          await page.getByTestId('manage-rail-scope-cs2').click();
+          await expect(page.getByTestId('manage-rail-scope-name')).toHaveText('Counter-Strike 2');
+        }
+        for (const [key, url] of items) {
+          const item = page.getByTestId(`manage-rail-${key}`);
+          await expect(item, `rail item ${key}`).toBeVisible({ timeout: 15000 });
+          await item.click();
+          await expect(page).toHaveURL(url);
+          // Still in the same layout, with the page it opened marked.
+          await expect(rail).toBeVisible();
+          await expect(page.getByTestId(`manage-rail-${key}`)).toHaveAttribute('aria-current', 'page');
+          // Every item has an icon (CS2's come from the module); the open
+          // page's is filled.
+          await expect(page.getByTestId(`manage-rail-${key}-icon`)).toHaveAttribute('data-weight', 'fill');
+          // The shell prints no title of its own: one H1, the page's, and the
+          // tab says "Page · Auto Tournament".
+          await expect(page.locator('h1'), `one h1 on ${key}`).toHaveCount(1);
+          await expect(page).toHaveTitle(/ · Auto Tournament$/);
+        }
+      }
+
+      // Back to the platform's pages for its documentation link.
+      await page.getByTestId('manage-rail-scope').click();
+      await page.getByTestId('manage-rail-scope-platform').click();
       await expect(page.getByTestId('manage-rail-documentation-icon')).toBeVisible();
       // The sidebar's documentation link lives on in the rail.
       await expect(page.getByTestId('manage-rail-documentation')).toHaveAttribute(

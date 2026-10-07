@@ -1127,7 +1127,7 @@ export default function PlayerProfile() {
           {/* The game's own numbers (CS2: aim, utility, map strength). */}
           {/* On the game's own tab (or the only view, with no games yet). */}
           {GameProfileView && showGameStats && (selectedGameId || games.length === 0) && (
-            <GameProfileView playerId={player.id} />
+            <GameProfileView playerId={player.id} isOwn={playerSteamId === player.id} />
           )}
 
           {/* Installed modules' own sections (CS2: the skin loadout, while skins are on). */}
