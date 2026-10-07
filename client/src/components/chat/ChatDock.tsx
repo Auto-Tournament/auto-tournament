@@ -1,9 +1,9 @@
 /**
  * Chat on every page (chatStore.ts): a button in the corner with the unread
- * count and a peek at a new message, and a panel with the viewer's chats
- * (their match, their team, their party). Docked on the right on a wide
- * screen, the whole screen on a phone. Renders nothing while the viewer has no
- * chat to open.
+ * count and a peek at a new message, and a window with the viewer's chats
+ * (their match, their team, their party). A floating window in the lower
+ * right where the button was, the whole screen on a phone. Renders nothing
+ * while the viewer has no chat to open.
  *
  * In a match's chat the enemy writes in blue, an admin in gold with an ADMIN
  * mark, and the viewer in the accent colour; platform lines sit in the middle.
@@ -32,9 +32,13 @@ import {
 } from './chatStore';
 
 const { color } = tokens;
-const PANEL_WIDTH = 420;
+const PANEL_WIDTH = 400;
+/** The floating window's height, at most; less on a short screen. */
+const PANEL_HEIGHT = 620;
+/** Room around the floating window, from the screen's edges. */
+const PANEL_MARGIN = 24;
 /** On a wide screen: the chats listed on the left, the open one beside them (draft 5c). */
-const WIDE_PANEL_WIDTH = 720;
+const WIDE_PANEL_WIDTH = 680;
 const LIST_WIDTH = 220;
 const PEEK_MS = 8000;
 const MAX_BODY = 500;
@@ -233,7 +237,7 @@ function Tabs({ channels, active, vertical = false }: { channels: ChatChannel[];
   );
 }
 
-function Panel({ phone, wide }: { phone: boolean; wide: boolean }) {
+function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?: number }) {
   const { t } = useTranslation();
   const { showError, showSuccess } = useSnackbar();
   const { playerSteamId, impersonation } = useAuth();
@@ -334,17 +338,25 @@ function Panel({ phone, wide }: { phone: boolean; wide: boolean }) {
       data-testid="chat-panel"
       sx={(theme) => ({
         position: 'fixed',
-        top: 0,
-        right: 0,
-        bottom: 0,
-        width: phone ? '100vw' : wide ? WIDE_PANEL_WIDTH : PANEL_WIDTH,
         zIndex: theme.zIndex.drawer + 2,
         bgcolor: color.paper2,
-        borderLeft: phone ? 0 : `1px solid ${color.rule}`,
-        boxShadow: phone ? 'none' : `-12px 0 32px ${color.shadow}`,
         display: 'flex',
         flexDirection: 'row',
         minHeight: 0,
+        overflow: 'hidden',
+        ...(phone
+          ? { inset: 0 }
+          : {
+              // A window in the lower right, over the page, not a drawer.
+              right: PANEL_MARGIN,
+              bottom: PANEL_MARGIN + lift,
+              width: wide ? WIDE_PANEL_WIDTH : PANEL_WIDTH,
+              maxWidth: `calc(100vw - ${2 * PANEL_MARGIN}px)`,
+              height: `min(${PANEL_HEIGHT}px, calc(100vh - ${2 * PANEL_MARGIN + lift}px))`,
+              borderRadius: '18px',
+              border: `1px solid ${color.rule}`,
+              boxShadow: `0 18px 48px ${color.shadow}`,
+            }),
       })}
     >
       {wide && channels.length > 0 && (
@@ -588,7 +600,7 @@ export function ChatDock() {
     return () => clearTimeout(id);
   }, [peek]);
 
-  if (open) return <Panel phone={phone} wide={wide && !phone} />;
+  if (open) return <Panel phone={phone} wide={wide && !phone} lift={me?.queue ? 56 : 0} />;
   if (channels.length === 0) return null;
 
   const peekChannel = peek ? channels.find((c) => c.channel === peek.channel) : null;
