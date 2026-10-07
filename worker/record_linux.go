@@ -178,7 +178,6 @@ type clipLook struct {
 	watermark bool
 }
 
-
 // recordMoments plays the demo once in CS2 and records each moment into outDir.
 func (r *recorder) recordMoments(ctx context.Context, demoPath, name string, look clipLook, moments []moment, outDir string) ([]clipResult, error) {
 	if err := os.MkdirAll(demoDir(r.gameDir), 0o755); err != nil {
