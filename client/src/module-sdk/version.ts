@@ -122,6 +122,7 @@
  * component gets `TournamentTabProps` and probes like `playerProfileTab`): a
  * tab of its own on the tournament page; `tournamentResultsSection`
  * (`{ tournamentId }`): a section at the top of a finished tournament's
- * results (CS2: highlights and the tournament reel).
+ * results (CS2: highlights and the tournament reel); `links.playerProfile`
+ * and `links.tournament`.
  */
 export const CLIENT_API_VERSION = '0.2.13';

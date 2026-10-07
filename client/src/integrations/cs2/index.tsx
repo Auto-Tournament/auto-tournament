@@ -56,6 +56,10 @@ import { InventoryPage } from './skins/InventoryPage';
 import { NewSkinReveal } from './skins/NewSkinReveal';
 import { ProfileLoadoutTab } from './skins/ProfileLoadout';
 import { MapActions } from './demos/MapActions';
+import { highlightPaths } from './highlights/data';
+import { PlayerHighlightsPage } from './highlights/PlayerHighlightsPage';
+import { TournamentHighlightsTab, TournamentReelSection } from './highlights/TournamentHighlights';
+import { WatchPage } from './highlights/WatchPage';
 import { DemoAnalysisPage } from './demos/DemoAnalysisPage';
 import { demoPaths } from './demos/paths';
 import { skinPaths } from './skins/paths';
@@ -207,6 +211,10 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // Each map's match reel and analysis, once the worker made them.
   matchMapAction: MapActions,
 
+  // Highlights: the tournament's own tab, and its reel on the results.
+  tournamentTab: { path: 'highlights', labelKey: 'highlights.title', Component: TournamentHighlightsTab },
+  tournamentResultsSection: TournamentReelSection,
+
   // At URLs the platform keeps. The Steam connect page these used to include
   // is core's now: Steam is the platform's sign-in, not this game's.
   routes: [
@@ -217,6 +225,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     { path: skinPaths.inventory, scope: 'site', element: <InventoryPage /> },
     { path: skinPaths.playerInventory, scope: 'site', element: <InventoryPage /> },
     { path: demoPaths.analysis, scope: 'site', element: <DemoAnalysisPage /> },
+    { path: highlightPaths.player, scope: 'site', element: <PlayerHighlightsPage /> },
+    { path: highlightPaths.watch, scope: 'site', element: <WatchPage /> },
   ],
 
   // Labelled from this module's own strings: `cs2:nav.servers` and so on.
