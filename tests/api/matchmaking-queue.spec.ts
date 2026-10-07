@@ -181,7 +181,7 @@ function digits(n: number): string {
 }
 
 interface Me {
-  party: { id: string; leader: string; inviteCode: string; members: string[] } | null;
+  party: { id: string; leader: string; inviteCode: string; members: string[]; mode: string } | null;
   queue: { mode: string; queuedAt: number; status: string } | null;
   lobby: { id: string; status: string; accepted: number; total: number; youAccepted: boolean; team: number } | null;
   cooldownUntil: number | null;
@@ -522,6 +522,34 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
       expect(room.mapPool.map((m) => m.id)).toContain(room.map);
     } finally {
       await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5'], modePools: { '2v2': null } } });
+    }
+  });
+
+  test('the party leader picks the mode; a party moves up when it outgrows it', TAGS, async () => {
+    const [leader, friend, third] = await Promise.all([player(), player(), player()]);
+    contexts.push(leader.ctx, friend.ctx, third.ctx);
+    expect((await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '2v2', '1v1'] } })).ok()).toBe(true);
+    try {
+      const created = await leader.ctx.post('/api/matchmaking/party', { data: { mode: '5v5' } });
+      const code = ((await created.json()) as Me).party!.inviteCode;
+      const toOne = await leader.ctx.put('/api/matchmaking/party/mode', { data: { mode: '1v1' } });
+      expect(toOne.ok(), await toOne.text()).toBe(true);
+      expect(((await toOne.json()) as Me).party!.mode).toBe('1v1');
+      expect((await leader.ctx.put('/api/matchmaking/party/mode', { data: { mode: 'bogus' } })).status()).toBe(400);
+
+      // A friend joining a 1v1 party takes it to 2v2; only the leader changes the mode.
+      expect((await friend.ctx.post('/api/matchmaking/party/join', { data: { code } })).ok()).toBe(true);
+      expect((await me(friend.ctx)).party!.mode).toBe('2v2');
+      expect((await friend.ctx.put('/api/matchmaking/party/mode', { data: { mode: '5v5' } })).status()).toBe(403);
+      const tooBig = await leader.ctx.put('/api/matchmaking/party/mode', { data: { mode: '1v1' } });
+      expect(tooBig.status()).toBe(409);
+      expect((await tooBig.json()).code).toBe('party_too_big');
+
+      expect((await third.ctx.post('/api/matchmaking/party/join', { data: { code } })).ok()).toBe(true);
+      expect((await me(leader.ctx)).party!.mode).toBe('5v5');
+    } finally {
+      for (const p of [friend, third, leader]) await p.ctx.post('/api/matchmaking/party/leave', { data: {} });
+      await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5'] } });
     }
   });
 });

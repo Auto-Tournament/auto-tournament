@@ -140,7 +140,7 @@ export function useMatchmaking(): State {
 
 /** A matchmaking write: same-site JSON (every write route requires a JSON body). */
 export async function matchmakingAction<T = unknown>(
-  method: 'POST' | 'DELETE',
+  method: 'POST' | 'PUT' | 'DELETE',
   path: string,
   body: unknown = {}
 ): Promise<T> {
@@ -159,6 +159,12 @@ export async function matchmakingAction<T = unknown>(
 /** Seconds from now (server clock) until an epoch-seconds time. */
 export function secondsUntil(epoch: number, skew: number): number {
   return Math.max(0, Math.ceil(epoch - (Date.now() / 1000 + skew)));
+}
+
+/** Players per team in `mode` ('5v5' → 5); the most a party can bring to it. */
+export function teamSizeOf(mode: string): number {
+  const m = /^(\d+)v\d+$/.exec(mode);
+  return m ? Number(m[1]) : 5;
 }
 
 /** Players a match of `mode` needs ('5v5' → 10, '2v2' → 4, '1v1' → 2). */

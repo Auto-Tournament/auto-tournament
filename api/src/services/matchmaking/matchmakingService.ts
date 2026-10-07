@@ -255,8 +255,11 @@ export class MatchmakingService {
       if (await this.entryOf(party.id)) {
         throw new MatchmakingError(409, 'party_searching', 'That party is searching; ask the leader to stop first');
       }
+      // A party can grow to the biggest mode on the site; when it outgrows its
+      // mode, it moves to the smallest one it fits.
+      const modes = await this.enabledModes();
       const members = await this.members(party.id);
-      if (members.length >= TEAM_SIZE[party.mode as MatchmakingMode]) {
+      if (members.length >= Math.max(...modes.map((m) => TEAM_SIZE[m]))) {
         throw new MatchmakingError(409, 'party_full', 'That party is full');
       }
       if (current) await this.leave(playerId, current);
@@ -265,6 +268,39 @@ export class MatchmakingService {
         playerId,
         this.clock(),
       ]);
+      const size = members.length + 1;
+      if (size > TEAM_SIZE[party.mode as MatchmakingMode]) {
+        const fits = modes.filter((m) => TEAM_SIZE[m] >= size).sort((a, b) => TEAM_SIZE[a] - TEAM_SIZE[b]);
+        if (fits[0]) {
+          party.mode = fits[0];
+          await db.runAsync('UPDATE mm_parties SET mode = ? WHERE id = ?', [party.mode, party.id]);
+        }
+      }
+      await this.touchParty(party.id);
+      return party;
+    });
+  }
+
+  /** The leader picks the party's mode. Not while searching, and only a mode the party fits. */
+  setPartyMode(playerId: string, mode: unknown): Promise<PartyRow> {
+    return this.locked(async () => {
+      if (!isMode(mode)) throw new MatchmakingError(400, 'invalid_mode', 'Unknown mode');
+      if (!(await this.enabledModes()).includes(mode)) {
+        throw new MatchmakingError(409, 'mode_off', `${mode} is not available on this site`);
+      }
+      const party = (await this.partyOf(playerId)) ?? (await this.newParty(playerId, mode));
+      if (party.leader_player_id !== playerId) {
+        throw new MatchmakingError(403, 'not_leader', 'Only the party leader can pick the mode');
+      }
+      if (party.mode === mode) return party;
+      if (await this.entryOf(party.id)) {
+        throw new MatchmakingError(409, 'party_searching', 'Stop the search before changing the mode');
+      }
+      if ((await this.members(party.id)).length > TEAM_SIZE[mode]) {
+        throw new MatchmakingError(409, 'party_too_big', `A ${mode} party has at most ${TEAM_SIZE[mode]} players`);
+      }
+      party.mode = mode;
+      await db.runAsync('UPDATE mm_parties SET mode = ? WHERE id = ?', [mode, party.id]);
       await this.touchParty(party.id);
       return party;
     });
