@@ -358,16 +358,23 @@ jobs:
         if: steps.pw-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
 
-      # apt sometimes stalls on a slow mirror; without a limit that took the
-      # whole shard's 15 minutes (2026-10-07, several PRs). Three tries of
-      # three minutes each.
+      # apt sometimes stalls: on 2026-10-07 the runners' Azure Ubuntu mirror
+      # stopped answering and the step took a shard's whole 15 minutes. Use
+      # the main archive with short timeouts, and three tries of three
+      # minutes; a try that stalls leaves apt-get holding its lock, so it is
+      # killed before the next.
       - name: Install Playwright system deps
         if: steps.pw-cache.outputs.cache-hit == 'true'
         timeout-minutes: 10
         run: |
+          sudo sed -i 's#http://azure.archive.ubuntu.com#https://archive.ubuntu.com#g' /etc/apt/sources.list.d/*.sources /etc/apt/sources.list 2>/dev/null || true
+          printf 'Acquire::Retries "3";\nAcquire::http::Timeout "20";\nAcquire::https::Timeout "20";\n' | sudo tee /etc/apt/apt.conf.d/99-ci-timeouts >/dev/null
           for i in 1 2 3; do
             timeout 180 npx playwright install-deps chromium && exit 0
             echo "::warning::playwright install-deps attempt $i stalled or failed; retrying"
+            sudo pkill -9 -f 'apt-get|dpkg' || true
+            sleep 2
+            sudo dpkg --configure -a || true
           done
           exit 1
 
