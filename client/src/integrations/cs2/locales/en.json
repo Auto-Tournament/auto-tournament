@@ -1927,6 +1927,8 @@
     "mapN": "Map {{n}}",
     "reelOf": "Reel · {{map}}",
     "moments_one": "{{count}} moment",
-    "moments_other": "{{count}} moments"
+    "moments_other": "{{count}} moments",
+    "matchReel": "Match reel",
+    "close": "Close"
   }
 }

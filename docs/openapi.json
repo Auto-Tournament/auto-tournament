@@ -4699,6 +4699,30 @@
         ]
       }
     },
+    "/api/game/cs2/matches/{slug}/reels": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "GET /api/game/cs2/matches/:slug/reels",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/game/cs2/matches/{slug}/round-backups": {
       "get": {
         "tags": [
@@ -4980,6 +5004,86 @@
         "parameters": [
           {
             "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/recorder/match-reels/{slug}/{map}": {
+      "put": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "PUT /api/game/cs2/recorder/match-reels/:slug/:map",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "map",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/recorder/match-reels/{slug}/{map}/fail": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "POST /api/game/cs2/recorder/match-reels/:slug/:map/fail",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "map",
             "in": "path",
             "required": true,
             "schema": {

@@ -55,7 +55,7 @@ import { cs2AdminPaths } from './adminPaths';
 import { InventoryPage } from './skins/InventoryPage';
 import { NewSkinReveal } from './skins/NewSkinReveal';
 import { ProfileLoadoutTab } from './skins/ProfileLoadout';
-import { DemoAnalysisLink } from './demos/DemoAnalysisLink';
+import { MapActions } from './demos/MapActions';
 import { DemoAnalysisPage } from './demos/DemoAnalysisPage';
 import { demoPaths } from './demos/paths';
 import { skinPaths } from './skins/paths';
@@ -204,8 +204,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // The profile's Loadout tab, while skins are on.
   playerProfileTab: { labelKey: 'skins.loadout', Component: ProfileLoadoutTab },
 
-  // Each map's analysis, once the demo worker read its demo.
-  matchMapAction: DemoAnalysisLink,
+  // Each map's match reel and analysis, once the worker made them.
+  matchMapAction: MapActions,
 
   // At URLs the platform keeps. The Steam connect page these used to include
   // is core's now: Steam is the platform's sign-in, not this game's.

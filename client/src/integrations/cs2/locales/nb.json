@@ -1927,6 +1927,8 @@
     "mapN": "Kart {{n}}",
     "reelOf": "Høydepunkter fra {{map}}",
     "moments_one": "{{count}} øyeblikk",
-    "moments_other": "{{count}} øyeblikk"
+    "moments_other": "{{count}} øyeblikk",
+    "matchReel": "Kamp-høydepunkter",
+    "close": "Lukk"
   }
 }

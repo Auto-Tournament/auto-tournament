@@ -89,22 +89,39 @@ type recorder struct {
 	logo    string // the watermark PNG on disk
 }
 
-func (c *client) claimRecording(ctx context.Context) (*recordJob, error) {
+// claimRecording asks the platform for work: a player's moments to record
+// (recordJob), or a map's match reel to join (matchReelJob); nil, nil when
+// there is none.
+func (c *client) claimRecording(ctx context.Context) (*recordJob, *matchReelJob, error) {
 	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{"recorder": c.worker, "version": 2})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer res.Body.Close()
 	if res.StatusCode == http.StatusNoContent {
-		return nil, nil
+		return nil, nil, nil
 	}
 	if err := ok(res, "claim"); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	var body struct {
-		Job *recordJob `json:"job"`
+		Job json.RawMessage `json:"job"`
 	}
-	return body.Job, json.NewDecoder(res.Body).Decode(&body)
+	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
+		return nil, nil, err
+	}
+	var kind struct {
+		Kind string `json:"kind"`
+	}
+	if err := json.Unmarshal(body.Job, &kind); err != nil {
+		return nil, nil, err
+	}
+	if kind.Kind == "match_reel" {
+		var j matchReelJob
+		return nil, &j, json.Unmarshal(body.Job, &j)
+	}
+	var j recordJob
+	return &j, nil, json.Unmarshal(body.Job, &j)
 }
 
 // demoName is the player's name in the demo (what spec_player takes).
@@ -534,9 +551,18 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 	}
 	log.Printf("recorder: %dx%d, %s, sound from %s", r.width, r.height, r.encoder, r.sink)
 	for ctx.Err() == nil {
-		j, err := c.claimRecording(ctx)
+		j, reel, err := c.claimRecording(ctx)
 		if err != nil {
 			log.Printf("cannot reach the platform: %v", err)
+		}
+		if reel != nil {
+			started := time.Now()
+			if err := r.makeMatchReel(ctx, reel); err != nil {
+				r.failMatchReel(reel, err)
+				continue
+			}
+			log.Printf("match reel of %s map %d: %d clip(s) in %s", reel.MatchSlug, reel.MapNumber, len(reel.Clips), time.Since(started).Round(time.Second))
+			continue
 		}
 		if j == nil {
 			select {
