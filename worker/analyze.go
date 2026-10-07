@@ -278,9 +278,15 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		openFx = map[int]int{}
 	}
 
-	// Live play: from the last match start (a restart starts it again).
+	// Live play: from the last match start (a restart starts it again). A demo
+	// recorded from the server's TV often starts when the match already has
+	// (no match start in it): then from its first round outside warmup.
 	p.RegisterEventHandler(func(events.MatchStart) { reset(); live = true })
 	p.RegisterEventHandler(func(events.RoundFreezetimeEnd) {
+		if !live && !gs.IsWarmupPeriod() {
+			reset()
+			live = true
+		}
 		if live && !gs.IsWarmupPeriod() {
 			inRound = true
 			// What each side bought this round (bots too: it is the team's economy).
