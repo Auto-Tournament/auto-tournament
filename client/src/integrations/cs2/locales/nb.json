@@ -1415,7 +1415,8 @@
       "install_failed": "Ready Up install failed",
       "not_found": "Not found",
       "limit": "Too many log streams",
-      "failed": "Failed"
+      "failed": "Failed",
+      "timeout": "Fikk ikke svar fra csm"
     },
     "summary": "{{machines}} maskin(er), {{online}} tilkoblet · {{servers}} server(e)",
     "about": "Maskiner kjører CS2 Server Manager (csm). Plattformen starter, stopper og lager servere på dem selv.",
