@@ -45,6 +45,25 @@ where csm keeps it:
 
 `at-worker radars <game/csgo>` lists what it would send.
 
+## Record highlights
+
+`at-worker record` turns each player's best moments into short clips for their
+profile. It runs on a machine with CS2, Steam signed in (any account; CS2 is
+free) and ffmpeg, on Linux or Windows, on a desktop with a GPU (a steam-headless
+container counts):
+
+```sh
+AT_URL=https://your-platform AT_WORKER_TOKEN=... \
+AT_CS2_DIR="/path/to/Counter-Strike Global Offensive/game/csgo" \
+at-worker record
+```
+
+For each moment it plays the demo from the player's eyes, captures it with
+CS2's `startmovie` at `AT_CAPTURE_FPS` (240), and edits it with ffmpeg: full
+speed, then slowing into the last kill. `AT_RESOLUTION` (2560x1440) and
+`AT_ENCODER` (libx264) change the output. The full list is at the top of
+`record.go`.
+
 ## Develop
 
 ```bash

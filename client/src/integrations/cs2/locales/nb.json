@@ -1131,6 +1131,13 @@
     "vetoTurn": {
       "label": "Sekunder per veto-steg",
       "helper": "Når et lag går tom for tid, banner eller velger plattformen et tilfeldig kart for det. 0 = ingen grense."
+    },
+    "highlights": {
+      "title": "Høydepunktvideoer",
+      "watermark": {
+        "label": "Auto Tournament-logo på høydepunktvideoene",
+        "description": "Vises svakt nede til høyre. Det hjelper oss mye om du lar den stå på."
+      }
     }
   },
   "roster": {
@@ -1917,6 +1924,11 @@
     "queued_other": "{{count}} til på vei",
     "pending": "Venter på opptak",
     "recording": "Tar opp …",
-    "mapN": "Kart {{n}}"
+    "mapN": "Kart {{n}}",
+    "reelOf": "Høydepunkter fra {{map}}",
+    "moments_one": "{{count}} øyeblikk",
+    "moments_other": "{{count}} øyeblikk",
+    "matchReel": "Kamp-høydepunkter",
+    "close": "Lukk"
   }
 }

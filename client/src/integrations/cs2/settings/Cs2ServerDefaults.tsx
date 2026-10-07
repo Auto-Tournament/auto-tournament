@@ -47,6 +47,7 @@ export interface Cs2DefaultsValues {
   atAdminChatPrefix: string;
   atKnifeEnabledDefault: boolean;
   atDebugChatEnabled: boolean;
+  highlightsWatermark: boolean;
   atAutostartMode: 0 | 1 | 2;
   atMinimumReadyRequired: number;
   atAllowForceReady: boolean;
@@ -89,6 +90,7 @@ const DEFAULTS: Cs2DefaultsValues = {
   atAdminChatPrefix: '[{Red}ADMIN{Default}]',
   atKnifeEnabledDefault: true,
   atDebugChatEnabled: false,
+  highlightsWatermark: true,
   atAutostartMode: 1,
   atMinimumReadyRequired: 0,
   atAllowForceReady: true,
@@ -956,6 +958,32 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                     </Stack>
                   </AccordionDetails>
                 </Accordion>
+
+      <Divider />
+      <Box data-testid="cs2-settings-highlights">
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          {t('settings.highlights.title')}
+        </Typography>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={vals.highlightsWatermark}
+              onChange={(e) => {
+                const newValue = e.target.checked;
+                update('highlightsWatermark', newValue);
+                void save({ highlightsWatermark: newValue });
+              }}
+              size="small"
+              color="primary"
+              inputProps={{ 'data-testid': 'cs2-highlights-watermark' } as Record<string, string>}
+            />
+          }
+          label={t('settings.highlights.watermark.label')}
+        />
+        <Typography variant="caption" color="text.secondary" display="block">
+          {t('settings.highlights.watermark.description')}
+        </Typography>
+      </Box>
 
       {isDev && (
         <>

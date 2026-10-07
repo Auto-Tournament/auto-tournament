@@ -13,7 +13,8 @@
 //	AT_WORKSHOP_DIRS more directories with workshop map .vpk files, colon-separated
 //
 // `at-worker analyze <file.dem> [map]` reads one demo and prints the analysis;
-// `at-worker radars <game/csgo> [workshop dirs...]` lists the radars it would send.
+// `at-worker radars <game/csgo> [workshop dirs...]` lists the radars it would send;
+// `at-worker record` records highlight clips instead (record.go).
 package main
 
 import (
@@ -203,6 +204,13 @@ func main() {
 		return
 	}
 
+	if len(os.Args) >= 2 && os.Args[1] == "record-file" {
+		if err := recordFile(os.Args[2:]); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
 	if len(os.Args) >= 3 && os.Args[1] == "radars" {
 		radars, _ := localRadars(os.Args[2], os.Args[3:])
 		for key, r := range radars {
@@ -228,6 +236,12 @@ func main() {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	if len(os.Args) >= 2 && os.Args[1] == "record" {
+		if err := runRecorder(ctx, c, time.Duration(poll)*time.Second); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	log.Printf("analyzer v%d, platform %s", AnalyzerVersion, c.base)
 
 	// Radars for the 2D replay, from the game's own files: now, then every 6 hours.

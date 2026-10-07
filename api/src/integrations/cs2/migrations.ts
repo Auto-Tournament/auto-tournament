@@ -98,6 +98,8 @@ export const CS2_DEMO_ANALYSIS_MIGRATION_ID = '020-demo-analysis';
 export const CS2_DEMO_ANALYSIS_V2_MIGRATION_ID = '021-demo-analysis-v2';
 export const CS2_MAP_RADARS_MIGRATION_ID = '022-map-radars';
 export const CS2_HIGHLIGHTS_MIGRATION_ID = '023-highlights';
+export const CS2_HIGHLIGHT_REELS_MIGRATION_ID = '024-highlight-reels';
+export const CS2_MATCH_REELS_MIGRATION_ID = '025-match-reels';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1051,6 +1053,48 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
 
     CREATE INDEX IF NOT EXISTS cs2_highlights_player_idx ON cs2_highlights(player_id, score DESC);
     CREATE INDEX IF NOT EXISTS cs2_highlights_status_idx ON cs2_highlights(status, score DESC);
+`,
+  },
+  {
+    // A player's reel of a map: their highlights there, one after the other,
+    // made by the recorder with the clips.
+    id: CS2_HIGHLIGHT_REELS_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_highlight_reels (
+      match_slug TEXT NOT NULL,
+      map_number INTEGER NOT NULL,
+      player_id TEXT NOT NULL, -- Steam ID 64
+      moments INTEGER NOT NULL, -- how many highlights it joins
+      clip_path TEXT NOT NULL, -- under DATA_DIR/highlights
+      clip_bytes BIGINT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (match_slug, map_number, player_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_highlight_reels_player_idx ON cs2_highlight_reels(player_id, created_at DESC);
+`,
+  },
+  {
+    // A map's match reel: each player's best highlight there, one after the
+    // other. Queued once the map's highlights are all recorded.
+    id: CS2_MATCH_REELS_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_match_reels (
+      match_slug TEXT NOT NULL,
+      map_number INTEGER NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending', -- pending | recording | done | failed
+      attempts INTEGER NOT NULL DEFAULT 0,
+      recorder TEXT,
+      claimed_at INTEGER,
+      error TEXT,
+      clips INTEGER, -- how many players' highlights it joins
+      clip_path TEXT, -- under DATA_DIR/highlights
+      clip_bytes BIGINT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (match_slug, map_number)
+    );
+
+    CREATE INDEX IF NOT EXISTS cs2_match_reels_status_idx ON cs2_match_reels(status, created_at);
 `,
   },
 ];

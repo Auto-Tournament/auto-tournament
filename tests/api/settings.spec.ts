@@ -1243,6 +1243,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'at_autostart_after_minutes', field: 'atAutostartAfterMinutes' },
   // Seconds per veto step before the platform takes it (veto/timer.ts).
   { key: 'at_veto_turn_seconds', field: 'vetoTurnSeconds' },
+  // The Auto Tournament logo on highlight videos (demos/highlights.ts).
+  { key: 'highlights_watermark', field: 'highlightsWatermark' },
 ];
 
 // --- tests -------------------------------------------------------------------
@@ -1261,7 +1263,8 @@ test.describe('settings namespace', () => {
     const coreKeys = CORE_SETTINGS.map((definition) => definition.key);
     expect(coreKeys.filter((key) => cs2Keys.includes(key))).toEqual([]);
     for (const key of cs2Keys) {
-      expect(key.startsWith('at_') || key.startsWith('simulat'), key).toBe(true);
+      // Server convars (at_), the simulation, and the highlight videos.
+      expect(key.startsWith('at_') || key.startsWith('simulat') || key.startsWith('highlights_'), key).toBe(true);
     }
     expect(coreKeys.some((key) => key.startsWith('at_'))).toBe(false);
 

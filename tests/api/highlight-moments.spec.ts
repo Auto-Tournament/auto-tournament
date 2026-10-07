@@ -65,10 +65,12 @@ test.describe('Highlight moments', () => {
     expect(pickMoments({ kills, rounds: lost } as never)[0]!.title).not.toContain('clutch');
   });
 
-  test('a long run is cut to its last 10 s', { tag: ['@api'] }, () => {
-    const kills = [kill(1000, A, B1), kill(1600, A, B2), kill(2200, A, B3)];
-    const m = pickMoments({ kills, rounds } as never)[0]!;
-    expect(m.endTick - m.startTick).toBeLessThanOrEqual(640);
-    expect(m.endTick).toBe(2200 + 96);
+  test('kills far apart in one round are still one moment', { tag: ['@api'] }, () => {
+    // A 4K over 20 s (as d1Ledez's on Dust2): 11 s between two of the kills.
+    const kills = [kill(5316, A, B1), kill(6022, A, B2), kill(6612, A, B3), kill(6627, A, B4)];
+    const moments = pickMoments({ kills, rounds } as never);
+    expect(moments).toHaveLength(1);
+    expect(moments[0]).toMatchObject({ kind: '4k', killTicks: [5316, 6022, 6612, 6627], slowmoTick: 6627 });
+    expect(moments[0]!.startTick).toBe(5316 - 192);
   });
 });

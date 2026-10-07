@@ -64,7 +64,9 @@ export type Cs2SettingKey =
   | 'at_gg_min_score_diff'
   | 'at_ffw_enabled'
   | 'at_ffw_time'
-  | 'at_demo_recording_enabled';
+  | 'at_demo_recording_enabled'
+  // Highlight videos (demos/highlights.ts)
+  | 'highlights_watermark';
 
 type Cs2Setting = SettingDefinition & { key: Cs2SettingKey; schema: JSONSchema };
 
@@ -353,6 +355,11 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     message: 'at_ffw_time must be 1-999 seconds',
   }),
   binary('at_demo_recording_enabled', 'atDemoRecordingEnabled', 360),
+  // The Auto Tournament logo at the start of highlight videos (on unless "0").
+  {
+    ...flag('highlights_watermark', 'highlightsWatermark', 370),
+    normalize: normalizeFlag('Auto Tournament logo on highlight videos'),
+  },
 ];
 
 /**

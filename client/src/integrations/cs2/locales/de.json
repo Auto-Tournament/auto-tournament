@@ -1131,6 +1131,13 @@
     "vetoTurn": {
       "label": "Sekunden pro Veto-Schritt",
       "helper": "Läuft einem Team die Zeit ab, bannt oder wählt die Plattform eine zufällige Map. 0 = kein Limit."
+    },
+    "highlights": {
+      "title": "Highlight videos",
+      "watermark": {
+        "label": "Auto Tournament logo on highlight videos",
+        "description": "Shown faintly in the lower right. Leaving it on helps us a lot."
+      }
     }
   },
   "roster": {
@@ -1917,6 +1924,11 @@
     "queued_other": "{{count}} more on the way",
     "pending": "Waiting for the recorder",
     "recording": "Recording…",
-    "mapN": "Map {{n}}"
+    "mapN": "Map {{n}}",
+    "reelOf": "Reel · {{map}}",
+    "moments_one": "{{count}} moment",
+    "moments_other": "{{count}} moments",
+    "matchReel": "Match reel",
+    "close": "Close"
   }
 }
