@@ -49,3 +49,23 @@ func TestTimelineRefusesAHole(t *testing.T) {
 		t.Fatal("a second of game from three frames should fail")
 	}
 }
+
+func TestFrameTicksSmoothBursts(t *testing.T) {
+	// Frames drawn every 40 ms but reported in bursts of four.
+	t0 := time.Unix(1000, 0)
+	var times []time.Time
+	for i := 0; i < 200; i++ {
+		times = append(times, t0.Add(time.Duration(i/4*4)*40*time.Millisecond))
+	}
+	s := span{fromTick: 0, toTick: 512, resumed: t0, paused: t0.Add(8 * time.Second)}
+	ticks := frameTicks(times, s)
+	for i := 20; i < 180; i++ {
+		if ticks[i] <= ticks[i-1] {
+			t.Fatalf("tick goes back at %d: %v %v", i, ticks[i-1], ticks[i])
+		}
+		// 40 ms of wall is 2.56 ticks; smoothed steps stay near that.
+		if step := ticks[i] - ticks[i-1]; step < 1.5 || step > 3.5 {
+			t.Fatalf("step %v at %d", step, i)
+		}
+	}
+}
