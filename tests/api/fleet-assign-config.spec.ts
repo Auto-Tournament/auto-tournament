@@ -67,7 +67,10 @@ function tournamentConfig(over: Partial<MatchConfig> = {}): MatchConfig {
 
 test.describe('Fleet match.assign config', () => {
   test('a tournament match maps onto a schema-valid config', () => {
-    const config = buildAssignConfig(tournamentConfig(), 'Pw7kQ2mZ9x', { allowForceReady: true, pauseAfterRestore: true });
+    const config = buildAssignConfig(tournamentConfig(), 'Pw7kQ2mZ9x', {
+      allowForceReady: true,
+      pauseAfterRestore: true,
+    });
 
     expect(config.num_maps).toBe(3);
     expect(config.maps).toEqual([
@@ -97,14 +100,19 @@ test.describe('Fleet match.assign config', () => {
   });
 
   test('rules replace maxRounds, overtime and the at_* cvars', () => {
-    expect(rulesFromMatchConfig(tournamentConfig(), { allowForceReady: false, pauseAfterRestore: true })).toEqual({
+    expect(
+      rulesFromMatchConfig(tournamentConfig(), { allowForceReady: false, pauseAfterRestore: true })
+    ).toEqual({
       max_rounds: 24,
       overtime: { enabled: true, max_overtimes: -1 },
       ready: { min_per_team: 4, allow_force_ready: false, autoready: false },
       knife: { side_pick_seconds: 60 },
       pause: { unpause: 'both_teams', pause_after_restore: true },
       whitelist: true,
-      forfeit: { team_absent_seconds: 240, gg_vote: { enabled: true, threshold: 0.8, min_score_diff: 8 } },
+      forfeit: {
+        team_absent_seconds: 240,
+        gg_vote: { enabled: true, threshold: 0.8, min_score_diff: 8 },
+      },
       demo: { record: true, upload: false },
     });
 
@@ -131,14 +139,41 @@ test.describe('Fleet match.assign config', () => {
     expect(off.wingman).toBe(true);
     expect(off.simulation).toEqual({ timescale: 4 });
     // A server that streams demos (demo.stream.v1) uploads what it records.
-    expect(rulesFromMatchConfig(tournamentConfig(), { demoUpload: true }).demo).toEqual({ record: true, upload: true });
+    expect(rulesFromMatchConfig(tournamentConfig(), { demoUpload: true }).demo).toEqual({
+      record: true,
+      upload: true,
+    });
     expect(
-      rulesFromMatchConfig(tournamentConfig({ cvars: { at_demo_recording_enabled: 0 } }), { demoUpload: true }).demo
+      rulesFromMatchConfig(tournamentConfig({ cvars: { at_demo_recording_enabled: 0 } }), {
+        demoUpload: true,
+      }).demo
     ).toEqual({ record: false, upload: false });
     expect(rulesFromMatchConfig(tournamentConfig({ overtimeSegments: 2 })).overtime).toEqual({
       enabled: true,
       max_overtimes: 2,
     });
+  });
+
+  test('a match that must have a winner gets the damage tiebreak', () => {
+    // Overtime off, 0 segments: "no overtime, no draws". A 2-2 at max rounds
+    // 4 ended as a draw on Ready Up before, and stalled an elimination bracket.
+    expect(
+      rulesFromMatchConfig(tournamentConfig({ overtimeMode: 'disabled', overtimeSegments: 0 }))
+        .tiebreak
+    ).toEqual({
+      damage: true,
+    });
+    // Overtime capped at N segments: the tiebreak decides after the last one.
+    expect(rulesFromMatchConfig(tournamentConfig({ overtimeSegments: 2 })).tiebreak).toEqual({
+      damage: true,
+    });
+    // Unlimited overtime needs no tiebreak; overtime off without segments allows a draw.
+    expect(rulesFromMatchConfig(tournamentConfig()).tiebreak).toBeUndefined();
+    expect(
+      rulesFromMatchConfig(
+        tournamentConfig({ overtimeMode: 'disabled', overtimeSegments: undefined })
+      ).tiebreak
+    ).toBeUndefined();
   });
 
   test('a standalone match: fallback names, missing sides are knife', () => {
@@ -154,7 +189,9 @@ test.describe('Fleet match.assign config', () => {
       },
       'abcDEF2345'
     );
-    expect(config.maps).toEqual([{ number: 1, name: 'workshop/3084291314/aim_map', sides: 'knife' }]);
+    expect(config.maps).toEqual([
+      { number: 1, name: 'workshop/3084291314/aim_map', sides: 'knife' },
+    ]);
     expect(config.team1).toEqual({ name: 'Team 1', players: [] });
     expect(config.team2.players).toEqual([{ steamid64: STEAM(4), name: STEAM(4), role: 'player' }]);
     expect(config.cvars).toBeUndefined();
@@ -165,13 +202,15 @@ test.describe('Fleet match.assign config', () => {
   });
 
   test('a match that cannot be played yet is refused before it is sent', () => {
-    expect(() => buildAssignConfig(tournamentConfig({ maplist: null }), 'x')).toThrow(AssignConfigError);
+    expect(() => buildAssignConfig(tournamentConfig({ maplist: null }), 'x')).toThrow(
+      AssignConfigError
+    );
     expect(() => buildAssignConfig(tournamentConfig({ maplist: ['de_mirage'] }), 'x')).toThrow(
       /needs 3 maps and has 1/
     );
-    expect(() => buildAssignConfig(tournamentConfig({ num_maps: 1, maplist: ['de mirage'] }), 'x')).toThrow(
-      /cannot be sent/
-    );
+    expect(() =>
+      buildAssignConfig(tournamentConfig({ num_maps: 1, maplist: ['de mirage'] }), 'x')
+    ).toThrow(/cannot be sent/);
   });
 
   test('engine cvars: mp_/sv_/tv_/bot_ only, never the password or cheats', () => {
@@ -200,7 +239,8 @@ test.describe('Fleet match.assign config', () => {
     }
     expect(seen.size).toBe(50);
     // Deterministic with an injected source; bytes past the alphabet are skipped.
-    const bytes = (n: number) => new Uint8Array(Array.from({ length: n }, (_, i) => (i === 0 ? 255 : i)));
+    const bytes = (n: number) =>
+      new Uint8Array(Array.from({ length: n }, (_, i) => (i === 0 ? 255 : i)));
     expect(generateMatchPassword(bytes, 4)).toBe('BCDE');
   });
 
@@ -247,16 +287,26 @@ test.describe('Fleet match.assign config', () => {
     });
     const config = buildAssignConfig(withSub, 'pw');
     expect(config.team1.players).toContainEqual({ steamid64: STEAM(4), name: 'dave', role: 'sub' });
-    expect(config.team1.players).toContainEqual({ steamid64: STEAM(1), name: 'alice', role: 'player' });
+    expect(config.team1.players).toContainEqual({
+      steamid64: STEAM(1),
+      name: 'alice',
+      role: 'player',
+    });
     // Listed only as a substitute: still on the roster, as a sub.
     const subOnly = buildAssignConfig(
       tournamentConfig({ team2: { ...base.team2, substitutes: { [STEAM(5)]: 'erin' } } }),
       'pw'
     );
-    expect(subOnly.team2.players).toContainEqual({ steamid64: STEAM(5), name: 'erin', role: 'sub' });
+    expect(subOnly.team2.players).toContainEqual({
+      steamid64: STEAM(5),
+      name: 'erin',
+      role: 'sub',
+    });
 
     const asPlayer = buildAssignConfig(
-      tournamentConfig({ team1: { ...base.team1, players: { ...base.team1.players, [STEAM(4)]: 'dave' } } }),
+      tournamentConfig({
+        team1: { ...base.team1, players: { ...base.team1.players, [STEAM(4)]: 'dave' } },
+      }),
       'pw'
     );
     expect(diffAssignConfig(asPlayer, config)).toEqual([
