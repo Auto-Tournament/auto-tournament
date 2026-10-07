@@ -132,7 +132,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
         return;
       }
       await navigator.clipboard.writeText(url);
-      showSuccess(t('highlights.player.linkCopied'));
+      showSuccess(t('videoHighlights.player.linkCopied'));
     } catch {
       // Cancelled.
     }
@@ -221,7 +221,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
       {!playing && (
         <ButtonBase
           onClick={toggle}
-          aria-label={t('highlights.player.play')}
+          aria-label={t('videoHighlights.player.play')}
           sx={{
             position: 'absolute',
             left: '50%',
@@ -260,7 +260,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           ref={track}
           role="slider"
           tabIndex={0}
-          aria-label={t('highlights.player.seek')}
+          aria-label={t('videoHighlights.player.seek')}
           aria-valuemin={0}
           aria-valuemax={Math.round(duration)}
           aria-valuenow={Math.round(time)}
@@ -285,7 +285,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           <Box sx={{ position: 'absolute', left: 0, right: 0, height: 5, borderRadius: 999, bgcolor: 'rgba(244,237,235,0.22)' }} />
           {markers?.slowmo && (
             <Box
-              title={t('highlights.player.slowmo')}
+              title={t('videoHighlights.player.slowmo')}
               sx={{
                 position: 'absolute',
                 left: pct(markers.slowmo[0]),
@@ -307,7 +307,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
             return (
               <Box
                 key={`${k}-${i}`}
-                title={t(last ? 'highlights.player.lastKill' : 'highlights.player.kill')}
+                title={t(last ? 'videoHighlights.player.lastKill' : 'videoHighlights.player.kill')}
                 sx={{
                   position: 'absolute',
                   left: pct(k),
@@ -339,16 +339,16 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0, sm: 0.5 } }}>
-          <ButtonBase onClick={toggle} aria-label={t(playing ? 'highlights.player.pause' : 'highlights.player.play')} sx={ctl}>
+          <ButtonBase onClick={toggle} aria-label={t(playing ? 'videoHighlights.player.pause' : 'videoHighlights.player.play')} sx={ctl}>
             {playing ? <PauseIcon size={22} weight="fill" /> : <PlayIcon size={22} weight="fill" />}
           </ButtonBase>
-          <ButtonBase onClick={() => seek(time - SKIP)} aria-label={t('highlights.player.back')} sx={{ ...ctl, display: { xs: 'none', sm: 'inline-flex' } }}>
+          <ButtonBase onClick={() => seek(time - SKIP)} aria-label={t('videoHighlights.player.back')} sx={{ ...ctl, display: { xs: 'none', sm: 'inline-flex' } }}>
             <ArrowCounterClockwiseIcon size={20} />
           </ButtonBase>
-          <ButtonBase onClick={() => seek(time + SKIP)} aria-label={t('highlights.player.forward')} sx={{ ...ctl, display: { xs: 'none', sm: 'inline-flex' } }}>
+          <ButtonBase onClick={() => seek(time + SKIP)} aria-label={t('videoHighlights.player.forward')} sx={{ ...ctl, display: { xs: 'none', sm: 'inline-flex' } }}>
             <ArrowClockwiseIcon size={20} />
           </ButtonBase>
-          <ButtonBase onClick={() => setMuted((m) => !m)} aria-label={t(muted ? 'highlights.player.unmute' : 'highlights.player.mute')} sx={ctl}>
+          <ButtonBase onClick={() => setMuted((m) => !m)} aria-label={t(muted ? 'videoHighlights.player.unmute' : 'videoHighlights.player.mute')} sx={ctl}>
             {muted ? <SpeakerSlashIcon size={20} /> : <SpeakerHighIcon size={20} />}
           </ButtonBase>
           <Box component="span" sx={{ ...mono, fontSize: '0.8125rem', color: '#c4bcb9', ml: 0.75, whiteSpace: 'nowrap' }}>
@@ -357,7 +357,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           <Box sx={{ flex: 1 }} />
           <ButtonBase
             onClick={() => setSpeed((s) => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length]!)}
-            aria-label={t('highlights.player.speed', { speed })}
+            aria-label={t('videoHighlights.player.speed', { speed })}
             sx={{
               height: 32,
               px: 1.5,
@@ -371,19 +371,19 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           >
             {speed}×
           </ButtonBase>
-          <ButtonBase onClick={() => void share()} aria-label={t('highlights.player.share')} sx={ctl}>
+          <ButtonBase onClick={() => void share()} aria-label={t('videoHighlights.player.share')} sx={ctl}>
             <ShareNetworkIcon size={20} />
           </ButtonBase>
           <ButtonBase
             component="a"
             href={src}
             download={downloadName ?? ''}
-            aria-label={t('highlights.player.download')}
+            aria-label={t('videoHighlights.player.download')}
             sx={{ ...ctl, display: { xs: 'none', sm: 'inline-flex' } }}
           >
             <DownloadSimpleIcon size={20} />
           </ButtonBase>
-          <ButtonBase onClick={fullscreen} aria-label={t(full ? 'highlights.player.exitFullscreen' : 'highlights.player.fullscreen')} sx={ctl}>
+          <ButtonBase onClick={fullscreen} aria-label={t(full ? 'videoHighlights.player.exitFullscreen' : 'videoHighlights.player.fullscreen')} sx={ctl}>
             {full ? <CornersInIcon size={20} /> : <CornersOutIcon size={20} />}
           </ButtonBase>
         </Box>

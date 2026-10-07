@@ -583,7 +583,7 @@
     "alreadyMember": "You are on this team",
     "signIn": "Sign in to join"
   },
-  "highlights": {
+  "videoHighlights": {
     "title": "Highlights",
     "seeAll": "See all {{count}}",
     "favourite": "Favourite",

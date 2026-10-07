@@ -1972,24 +1972,6 @@
       "funny": "MORSOMT",
       "flair": "FLAIR"
     },
-    "player": {
-      "play": "Spill av",
-      "pause": "Pause",
-      "back": "5 sekunder tilbake",
-      "forward": "5 sekunder fram",
-      "mute": "Demp",
-      "unmute": "Slå på lyd",
-      "seek": "Spol",
-      "speed": "Hastighet {{speed}}×",
-      "share": "Del",
-      "download": "Last ned",
-      "fullscreen": "Fullskjerm",
-      "exitFullscreen": "Avslutt fullskjerm",
-      "linkCopied": "Lenke kopiert",
-      "slowmo": "Sakte film",
-      "kill": "Kill",
-      "lastKill": "Siste kill"
-    },
     "watch": {
       "missing": "Denne videoen finnes ikke (lenger).",
       "playerReel": "{{name}} · reel fra {{map}}",

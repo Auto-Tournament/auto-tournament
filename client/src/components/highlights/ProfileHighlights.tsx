@@ -36,7 +36,7 @@ function SideItem({ item, reel }: { item: HighlightVideo; reel?: boolean }) {
             component="span"
             sx={{ position: 'absolute', top: 6, left: 6, px: 0.75, py: 0.25, borderRadius: 999, bgcolor: tokens.color.accent, color: tokens.color.accentInk, fontSize: '0.625rem', fontWeight: 700 }}
           >
-            {t('highlights.reelBadge')}
+            {t('videoHighlights.reelBadge')}
           </Box>
         )}
       </Box>
@@ -74,15 +74,15 @@ function RecordingSideItem() {
 export function ProfileHighlights({ feed }: { feed: PlayerHighlightsFeed }) {
   const { t } = useTranslation();
   const queued = feed.recording?.count ?? 0;
-  const eta = feed.recording?.etaMinutes != null ? t('highlights.readyIn', { minutes: feed.recording.etaMinutes }) : undefined;
+  const eta = feed.recording?.etaMinutes != null ? t('videoHighlights.readyIn', { minutes: feed.recording.etaMinutes }) : undefined;
 
   if (feed.videos.length === 0 && !feed.reel) {
     if (queued === 0) return null;
     return (
       <Box component="section" aria-labelledby="profile-highlights" data-testid="profile-highlights" sx={{ mt: 6 }}>
-        <SectionHead id="profile-highlights" title={t('highlights.title')} />
+        <SectionHead id="profile-highlights" title={t('videoHighlights.title')} />
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.7fr) minmax(0, 1fr)' }, gap: 2, alignItems: 'start' }}>
-          <RecordingCard large label={t('highlights.beingRecorded', { count: queued })} hint={eta} />
+          <RecordingCard large label={t('videoHighlights.beingRecorded', { count: queued })} hint={eta} />
           <Box sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', gap: 1.5 }}>
             {[0, 1, 2].map((i) => (
               <RecordingSideItem key={i} />
@@ -101,7 +101,7 @@ export function ProfileHighlights({ feed }: { feed: PlayerHighlightsFeed }) {
     <Box component="section" aria-labelledby="profile-highlights" data-testid="profile-highlights" sx={{ mt: 6 }}>
       <SectionHead
         id="profile-highlights"
-        title={t('highlights.title')}
+        title={t('videoHighlights.title')}
         action={
           feed.seeAllPath ? (
             <Box
@@ -110,7 +110,7 @@ export function ProfileHighlights({ feed }: { feed: PlayerHighlightsFeed }) {
               data-testid="profile-highlights-see-all"
               sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: tokens.color.ink2, fontSize: textSize.sm, textDecoration: 'none', '&:hover': { color: tokens.color.ink } }}
             >
-              {t('highlights.seeAll', { count: feed.total })}
+              {t('videoHighlights.seeAll', { count: feed.total })}
               <CaretRightIcon size={14} />
             </Box>
           ) : undefined
@@ -141,7 +141,7 @@ export function ProfileHighlights({ feed }: { feed: PlayerHighlightsFeed }) {
           {queued > 0 && (
             <Box role="status" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: tokens.color.muted, fontSize: '0.75rem', px: 0.5 }}>
               <RecordingDot />
-              {[t('highlights.queued', { count: queued }), eta].filter(Boolean).join(' · ')}
+              {[t('videoHighlights.queued', { count: queued }), eta].filter(Boolean).join(' · ')}
             </Box>
           )}
         </Box>

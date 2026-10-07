@@ -131,8 +131,8 @@ export function HighlightCard({ to, video, markers, title, sub, badge, large, du
         <ButtonBase
           onClick={favourite.onToggle}
           aria-pressed={favourite.on}
-          aria-label={t(favourite.on ? 'highlights.unfavourite' : 'highlights.makeFavourite')}
-          title={t(favourite.on ? 'highlights.unfavourite' : 'highlights.makeFavourite')}
+          aria-label={t(favourite.on ? 'videoHighlights.unfavourite' : 'videoHighlights.makeFavourite')}
+          title={t(favourite.on ? 'videoHighlights.unfavourite' : 'videoHighlights.makeFavourite')}
           sx={{
             position: 'absolute',
             top: 6,
@@ -177,7 +177,7 @@ export function FavouriteChip() {
       }}
     >
       <StarIcon size={12} weight="fill" />
-      {t('highlights.favourite')}
+      {t('videoHighlights.favourite')}
     </Box>
   );
 }

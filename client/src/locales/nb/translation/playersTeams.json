@@ -575,7 +575,7 @@
     "alreadyMember": "Du er på dette laget",
     "signIn": "Logg inn for å bli med"
   },
-  "highlights": {
+  "videoHighlights": {
     "title": "Høydepunkter",
     "seeAll": "Se alle {{count}}",
     "favourite": "Favoritt",
