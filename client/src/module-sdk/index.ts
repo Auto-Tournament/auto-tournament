@@ -117,6 +117,22 @@ export type {
   FactGridProps,
 } from '../components/common/ui';
 export { PlayerAvatar } from '../components/player/PlayerAvatar';
+// Highlights are videos any game can have (client API 0.2.14): the player,
+// the cards, and the placeholders while one is being made.
+export { HighlightPlayer } from '../components/highlights/HighlightPlayer';
+export type { HighlightPlayerHandle, HighlightPlayerProps } from '../components/highlights/HighlightPlayer';
+export {
+  HighlightCard,
+  VideoThumb,
+  thumbAt,
+  FavouriteChip,
+  RecordingDot,
+  RecordingCard,
+} from '../components/highlights/HighlightCard';
+export type { HighlightCardProps } from '../components/highlights/HighlightCard';
+export { clock } from '../components/highlights/media';
+export type { ClipMarkers } from '../components/highlights/media';
+export type { HighlightVideo, PlayerHighlightsFeed } from '../components/highlights/feed';
 // "Page · Auto Tournament" for document.title (client API 0.2.3)
 export { pageTitle } from '../utils/pageTitle';
 export { ManageStatusTile } from '../components/manage/StatusStrip';

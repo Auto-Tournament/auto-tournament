@@ -2,8 +2,9 @@ import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, ButtonBase, Skeleton } from '@mui/material';
 import { PlayIcon, StarIcon } from '@phosphor-icons/react';
-import { mono, radii, textSize, tokens, useModuleTranslation, withAlpha } from '../../../module-sdk';
-import { clock, isBigPlay, kindLabel, type ClipMarkers } from './data';
+import { useTranslation } from 'react-i18next';
+import { mono, radii, textSize, tokens, withAlpha } from '../../theme/tokens';
+import { clock, type ClipMarkers } from './media';
 
 /**
  * A still of a video: the browser's own frame at `at` seconds (the moment
@@ -28,33 +29,6 @@ export function VideoThumb({ src, at = 1.5, alt = '' }: { src: string; at?: numb
 /** Where a clip's still is taken: as the slow motion starts, else a second and a half in. */
 export const thumbAt = (markers: ClipMarkers | null | undefined) => markers?.slowmo?.[0] ?? 1.5;
 
-/** A small badge over a still: ACE and 4K in the accent, the rest quiet. */
-export function KindBadge({ kind, clutch, label }: { kind: string; clutch: boolean; label?: string }) {
-  const { t } = useModuleTranslation('cs2');
-  const big = isBigPlay(kind);
-  return (
-    <Box
-      component="span"
-      sx={{
-        position: 'absolute',
-        top: 8,
-        left: 8,
-        px: 1,
-        py: 0.375,
-        borderRadius: radii.pill,
-        fontSize: '0.6875rem',
-        fontWeight: big ? 700 : 600,
-        letterSpacing: '0.02em',
-        bgcolor: big ? tokens.color.accent : 'rgba(16,9,8,0.8)',
-        color: big ? tokens.color.accentInk : tokens.color.ink,
-        pointerEvents: 'none',
-      }}
-    >
-      {label ?? kindLabel(t, kind, clutch)}
-    </Box>
-  );
-}
-
 export interface HighlightCardProps {
   to: string;
   video: string | null;
@@ -75,7 +49,7 @@ export interface HighlightCardProps {
 
 /** A highlight or reel: its still, a badge, a play button on hover, and two lines under it. */
 export function HighlightCard({ to, video, markers, title, sub, badge, large, duration, waiting, favourite, testId }: HighlightCardProps) {
-  const { t } = useModuleTranslation('cs2');
+  const { t } = useTranslation();
   const still = (
     <Box sx={{ position: 'relative', aspectRatio: '16 / 9', bgcolor: tokens.color.paper3, overflow: 'hidden' }}>
       {video ? (
@@ -181,7 +155,7 @@ export function HighlightCard({ to, video, markers, title, sub, badge, large, du
 
 /** "Favourite" chip over the profile's lead clip. */
 export function FavouriteChip() {
-  const { t } = useModuleTranslation('cs2');
+  const { t } = useTranslation();
   return (
     <Box
       component="span"

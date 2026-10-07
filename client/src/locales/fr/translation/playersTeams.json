@@ -574,5 +574,36 @@
     "requested": "Request sent. The owner or a captain will answer it.",
     "alreadyMember": "You are on this team",
     "signIn": "Sign in to join"
+  },
+  "highlights": {
+    "title": "Highlights",
+    "seeAll": "See all {{count}}",
+    "favourite": "Favourite",
+    "makeFavourite": "Make it your favourite",
+    "unfavourite": "No longer your favourite",
+    "beingRecorded_one": "{{count}} highlight is being recorded.",
+    "beingRecorded_other": "{{count}} highlights are being recorded.",
+    "queued_one": "{{count}} more on the way",
+    "queued_other": "{{count}} more on the way",
+    "readyIn": "ready in about {{minutes}} min",
+    "reelBadge": "REEL",
+    "player": {
+      "play": "Play",
+      "pause": "Pause",
+      "back": "Back 5 seconds",
+      "forward": "Forward 5 seconds",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "seek": "Seek",
+      "speed": "Playback speed {{speed}}×",
+      "share": "Share",
+      "download": "Download",
+      "fullscreen": "Full screen",
+      "exitFullscreen": "Leave full screen",
+      "linkCopied": "Link copied",
+      "slowmo": "Slow motion",
+      "kill": "Kill",
+      "lastKill": "Last kill"
+    }
   }
 }

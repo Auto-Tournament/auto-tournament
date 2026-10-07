@@ -5,7 +5,7 @@
 
 import { vetoMapPickers } from './veto/vetoMapPickers';
 import { Cs2ProfileStats } from './profile/Cs2ProfileStats';
-import { Cs2ProfileHighlights } from './profile/Cs2ProfileHighlights';
+import { useCs2PlayerHighlights } from './profile/useCs2PlayerHighlights';
 import { Cs2TeamProfileStats } from './profile/Cs2TeamProfileStats';
 import {
   HardDrivesIcon,
@@ -66,12 +66,14 @@ import { skinPaths } from './skins/paths';
 import { skinsAccountMenuItems } from './skins/useSkins';
 import { cs2Locales } from './locales';
 
-/** The profile's CS2 tab: the stats, the player's highlight clips, then their loadout. */
+/**
+ * The profile's CS2 tab: the stats, then the player's loadout. Highlights are
+ * core's section, from `usePlayerHighlights`.
+ */
 function Cs2ProfileView(props: PlayerProfileViewProps) {
   return (
     <>
       <Cs2ProfileStats {...props} />
-      <Cs2ProfileHighlights playerId={props.playerId} />
       <ProfileLoadout steamId={props.playerId} isOwn={!!props.isOwn} />
     </>
   );
@@ -210,7 +212,9 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // Each map's match reel and analysis, once the worker made them.
   matchMapAction: MapActions,
 
-  // Highlights: the tournament's own tab, and its reel on the results.
+  // Highlights: the player's on their profile (core's section), the
+  // tournament's own tab, and its reel on the results.
+  usePlayerHighlights: useCs2PlayerHighlights,
   tournamentTab: { path: 'highlights', labelKey: 'highlights.title', Component: TournamentHighlightsTab },
   tournamentResultsSection: TournamentReelSection,
 

@@ -6,12 +6,9 @@
 import type { TFunction } from 'i18next';
 import { getMapDisplayName } from '../maps/mapData';
 
-/** Where a clip's kills and slow motion are, in seconds of the video. */
-export interface ClipMarkers {
-  duration: number;
-  kills: number[];
-  slowmo: [number, number] | null;
-}
+import type { ClipMarkers } from '../../../module-sdk';
+
+export type { ClipMarkers };
 
 /** The match a highlight or reel is from. */
 export interface MatchRef {
@@ -165,8 +162,4 @@ export function teamsLabel(match: Pick<MatchRef, 'team1' | 'team2'>): string {
 /** The title without its trailing " · round N" (the card says the round itself). */
 export const playTitle = (title: string) => title.replace(/ · round \d+$/, '');
 
-/** m:ss */
-export function clock(seconds: number): string {
-  const s = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-}
+export { clock } from '../../../module-sdk';

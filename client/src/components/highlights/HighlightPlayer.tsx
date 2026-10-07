@@ -22,8 +22,10 @@ import {
   SpeakerHighIcon,
   SpeakerSlashIcon,
 } from '@phosphor-icons/react';
-import { mono, radii, tokens, useModuleTranslation, useSnackbar, withAlpha } from '../../../module-sdk';
-import { clock, type ClipMarkers } from './data';
+import { useTranslation } from 'react-i18next';
+import { mono, radii, tokens, withAlpha } from '../../theme/tokens';
+import { useSnackbar } from '../../contexts/SnackbarContext';
+import { clock, type ClipMarkers } from './media';
 
 const SPEEDS = [1, 0.5, 0.25] as const;
 const SKIP = 5;
@@ -70,7 +72,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
   { src, label, markers, chapterStarts = [], downloadName, shareUrl, autoPlay = false, onTime },
   ref
 ) {
-  const { t } = useModuleTranslation('cs2');
+  const { t } = useTranslation();
   const { showSuccess } = useSnackbar();
   const box = useRef<HTMLDivElement>(null);
   const video = useRef<ComponentRef<'video'>>(null);

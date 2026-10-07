@@ -1,4 +1,6 @@
 /* global AbortController */
+import { ProfileHighlights } from '../components/highlights/ProfileHighlights';
+import type { PlayerHighlightsFeed } from '../components/highlights/feed';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
@@ -226,6 +228,18 @@ function normalizeMatchForPlayerView(rawMatch: TeamMatchInfo, steamId: string): 
  * wired up to stamp it) count under CS2, matching the API's own default.
  */
 const FALLBACK_GAME_ID = 'cs2';
+
+/** One game's highlights on the profile: its hook, then core's section. */
+function GameHighlights({
+  useHighlights,
+  playerId,
+}: {
+  useHighlights: (playerId: string) => PlayerHighlightsFeed | null | undefined;
+  playerId: string;
+}) {
+  const feed = useHighlights(playerId);
+  return feed ? <ProfileHighlights feed={feed} /> : null;
+}
 
 /** How many matches the rating chart plots, and the rating change covers. */
 const RATING_CHART_WINDOW = 20;
@@ -826,6 +840,9 @@ export default function PlayerProfile() {
   const TournamentStatsView = gameIntegration.tournamentStatsView;
   const PlayerProfileView = gameIntegration.playerProfileView;
   const GameProfileView = selectedGameId ? selectedIntegration.playerProfileView : PlayerProfileView;
+  const highlightsIntegration = selectedGameId ? selectedIntegration : gameIntegration;
+  const GameHighlightsHook = highlightsIntegration.usePlayerHighlights;
+  const GameHighlightsGame = highlightsIntegration.id;
   const moduleTabs = installedIntegrations.flatMap((integration) =>
     integration.playerProfileTab ? [{ id: integration.id, ...integration.playerProfileTab }] : []
   );
@@ -1115,6 +1132,12 @@ export default function PlayerProfile() {
           {/* On the game's own tab (or the only view, with no games yet). */}
           {GameProfileView && showGameStats && (selectedGameId || games.length === 0) && (
             <GameProfileView playerId={player.id} isOwn={playerSteamId === player.id} />
+          )}
+
+          {/* The player's highlight videos from the open game: core lays them
+              out, the game says what there is. */}
+          {(selectedGameId || games.length === 0) && GameHighlightsHook && (
+            <GameHighlights key={GameHighlightsGame} useHighlights={GameHighlightsHook} playerId={player.id} />
           )}
 
           {/* Installed modules' own sections (CS2: the skin loadout, while skins are on). */}
