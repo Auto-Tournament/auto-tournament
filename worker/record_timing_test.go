@@ -24,23 +24,24 @@ func TestTimelinePrefersTheSlowCapture(t *testing.T) {
 	for tk := 100.0; tk <= 110; tk += 0.1 {
 		slow = append(slow, tk)
 	}
-	// Full speed to tick 102, then a quarter speed over ticks 102-104 (15 frames).
+	// Full speed to tick 102 (96 frames at 60 fps), then a quarter speed over
+	// ticks 102-104 (8 frames).
 	segs := []segment{{0, 102.0 / 64, 1}, {102.0 / 64, 104.0 / 64, 0.25}}
 	frames, err := timeline([][]float64{main, slow}, segs, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := len(frames); got != 191+15 {
+	if got := len(frames); got != 96+8 {
 		t.Fatalf("%d frames", got)
 	}
 	usedSlow := 0
-	for _, f := range frames[191:] {
+	for _, f := range frames[96:] {
 		if f.source == 1 {
 			usedSlow++
 		}
 	}
-	if usedSlow < 12 {
-		t.Fatalf("slow part used the slow capture for only %d of 15 frames", usedSlow)
+	if usedSlow < 6 {
+		t.Fatalf("slow part used the slow capture for only %d of 8 frames", usedSlow)
 	}
 }
 

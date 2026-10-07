@@ -115,11 +115,13 @@ func TestIntroSlowsTheOpeningUntilTheCardLeaves(t *testing.T) {
 	}
 }
 
-func TestEncodeArgsH265ByDefault(t *testing.T) {
-	args := strings.Join(encodeArgs("libx265"), " ")
-	for _, want := range []string{"-c:v libx265", "-tag:v hvc1", "-r 120", "-g 240"} {
-		if !strings.Contains(args, want) {
-			t.Fatalf("%q missing from %s", want, args)
+func TestEncodeArgsH264At1080p60(t *testing.T) {
+	for _, enc := range []string{"libx264", "h264_nvenc"} {
+		args := strings.Join(encodeArgs(enc), " ")
+		for _, want := range []string{"-c:v " + enc, "-r 60", "-g 120", "-s 1920x1080", "-pix_fmt yuv420p"} {
+			if !strings.Contains(args, want) {
+				t.Fatalf("%q missing from %s", want, args)
+			}
 		}
 	}
 	if gpu := strings.Join(encodeArgs("hevc_nvenc"), " "); !strings.Contains(gpu, "-tag:v hvc1") {
@@ -130,17 +132,20 @@ func TestEncodeArgsH265ByDefault(t *testing.T) {
 func TestCrossfadeFilter(t *testing.T) {
 	f := crossfadeFilter([]float64{10, 8, 6})
 	for _, want := range []string{
-		"[0:v][1:v]xfade=transition=fade:duration=0.4:offset=9.600[v1]",
-		"[0:a][1:a]acrossfade=d=0.4[a1]",
+		// Every clip's sound is cut or padded to its picture's length first.
+		"[1:v]setpts=PTS-STARTPTS,trim=duration=8.000[v1in]",
+		"[1:a]asetpts=PTS-STARTPTS,apad,atrim=duration=8.000[a1in]",
+		"[v0in][v1in]xfade=transition=fade:duration=0.4:offset=9.600[v1]",
+		"[a0in][a1in]acrossfade=d=0.4[a1]",
 		// The second blend starts 0.4 s before the end of the first two joined: 10 + 8 - 0.4 - 0.4.
-		"[v1][2:v]xfade=transition=fade:duration=0.4:offset=17.200[v]",
-		"[a1][2:a]acrossfade=d=0.4[a]",
+		"[v1][v2in]xfade=transition=fade:duration=0.4:offset=17.200[v]",
+		"[a1][a2in]acrossfade=d=0.4[a]",
 	} {
 		if !strings.Contains(f, want) {
 			t.Fatalf("%q missing from %s", want, f)
 		}
 	}
-	if one := crossfadeFilter([]float64{5}); one != "[0:v]null[v];[0:a]anull[a]" {
+	if one := crossfadeFilter([]float64{5}); !strings.HasSuffix(one, "[v0in]null[v];[a0in]anull[a]") {
 		t.Fatalf("one clip: %s", one)
 	}
 }
