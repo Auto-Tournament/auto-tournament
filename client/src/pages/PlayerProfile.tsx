@@ -1128,17 +1128,18 @@ export default function PlayerProfile() {
             sx={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))' }}
           />
 
+          {/* The player's highlight videos from the open game: core lays them
+              out, the game says what there is. */}
+          {(selectedGameId || games.length === 0) && GameHighlightsHook && (
+            <GameHighlights key={GameHighlightsGame} useHighlights={GameHighlightsHook} playerId={player.id} />
+          )}
+
           {/* The game's own numbers (CS2: aim, utility, map strength). */}
           {/* On the game's own tab (or the only view, with no games yet). */}
           {GameProfileView && showGameStats && (selectedGameId || games.length === 0) && (
             <GameProfileView playerId={player.id} isOwn={playerSteamId === player.id} />
           )}
 
-          {/* The player's highlight videos from the open game: core lays them
-              out, the game says what there is. */}
-          {(selectedGameId || games.length === 0) && GameHighlightsHook && (
-            <GameHighlights key={GameHighlightsGame} useHighlights={GameHighlightsHook} playerId={player.id} />
-          )}
 
           {/* Installed modules' own sections (CS2: the skin loadout, while skins are on). */}
           {profileSections.map(({ id, Section }) => (
