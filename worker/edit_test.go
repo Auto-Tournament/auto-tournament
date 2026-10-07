@@ -55,20 +55,24 @@ func TestSpeedRampClipsAtTheEnd(t *testing.T) {
 	}
 }
 
-func TestEditFilter(t *testing.T) {
-	f := editFilter([]segment{{0, 1, 1}, {1, 2, 0.5}})
-	for _, want := range []string{"split=2[s0][s1]", "trim=start=1.0000:end=2.0000,setpts=(PTS-STARTPTS)/0.5[v1]", "concat=n=2:v=1:a=0,fps=120"} {
-		if !strings.Contains(f, want) {
-			t.Fatalf("%q missing from %s", want, f)
+func TestAtempoChain(t *testing.T) {
+	for speed, want := range map[float64]string{
+		1:     "anull",
+		0.25:  "atempo=0.5,atempo=0.5000",
+		0.375: "atempo=0.5,atempo=0.7500",
+		0.875: "atempo=0.8750",
+	} {
+		if got := atempoChain(speed); got != want {
+			t.Fatalf("%v: got %q want %q", speed, got, want)
 		}
 	}
 }
 
-func TestAccountID(t *testing.T) {
-	if id, err := accountID("76561198000000001"); err != nil || id != 39734273 {
-		t.Fatalf("got %d %v", id, err)
-	}
-	if _, err := accountID("bot"); err == nil {
-		t.Fatal("a bot has no account id")
+func TestMomentFilterCaption(t *testing.T) {
+	f := momentFilter([]segment{{0, 1, 1}, {1, 2, 0.25}}, "R7 · 3K: AK-47")
+	for _, want := range []string{"[1:a]asplit=2[t0][t1]", "atempo=0.5,atempo=0.5000[a1]", "concat=n=2:v=1:a=1[cv][ca]", `3K\: AK-47`} {
+		if !strings.Contains(f, want) {
+			t.Fatalf("%q missing from %s", want, f)
+		}
 	}
 }

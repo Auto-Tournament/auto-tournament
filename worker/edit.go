@@ -67,37 +67,72 @@ func outputSeconds(segs []segment) float64 {
 	return total
 }
 
-// editFilter is the ffmpeg filter graph that plays each piece at its speed
-// and joins them, out at outputFPS: input [0:v], output [out].
-func editFilter(segs []segment) string {
+// atempoChain slows or speeds audio by `speed` with atempo filters, each in
+// atempo's 0.5..2 range (0.25 is atempo=0.5,atempo=0.5).
+func atempoChain(speed float64) string {
+	var parts []string
+	for speed < 0.5-1e-9 {
+		parts = append(parts, "atempo=0.5")
+		speed /= 0.5
+	}
+	for speed > 2+1e-9 {
+		parts = append(parts, "atempo=2")
+		speed /= 2
+	}
+	if math.Abs(speed-1) > 1e-6 {
+		parts = append(parts, fmt.Sprintf("atempo=%.4f", speed))
+	}
+	if len(parts) == 0 {
+		return "anull"
+	}
+	return strings.Join(parts, ",")
+}
+
+// drawtextEscape makes a caption safe inside drawtext's text='...'.
+func drawtextEscape(s string) string {
+	r := strings.NewReplacer(`\`, `\\`, `'`, "’", `:`, `\:`, `%`, `\%`)
+	return r.Replace(s)
+}
+
+// momentFilter plays one moment's video [0:v] and sound [1:a] piece by piece
+// at each piece's speed (the slow motion), with `caption` in the lower left
+// for its first seconds. Output [v] and [a].
+func momentFilter(segs []segment, caption string) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "[0:v]split=%d", len(segs))
+	n := len(segs)
+	fmt.Fprintf(&b, "[0:v]split=%d", n)
 	for i := range segs {
 		fmt.Fprintf(&b, "[s%d]", i)
+	}
+	fmt.Fprintf(&b, ";[1:a]asplit=%d", n)
+	for i := range segs {
+		fmt.Fprintf(&b, "[t%d]", i)
 	}
 	b.WriteString(";")
 	for i, s := range segs {
 		fmt.Fprintf(&b, "[s%d]trim=start=%.4f:end=%.4f,setpts=(PTS-STARTPTS)/%g[v%d];", i, s.From, s.To, s.Speed, i)
+		fmt.Fprintf(&b, "[t%d]atrim=start=%.4f:end=%.4f,asetpts=PTS-STARTPTS,%s[a%d];", i, s.From, s.To, atempoChain(s.Speed), i)
 	}
 	for i := range segs {
-		fmt.Fprintf(&b, "[v%d]", i)
+		fmt.Fprintf(&b, "[v%d][a%d]", i, i)
 	}
-	fmt.Fprintf(&b, "concat=n=%d:v=1:a=0,fps=%d,format=yuv420p[out]", len(segs), outputFPS)
+	fmt.Fprintf(&b, "concat=n=%d:v=1:a=1[cv][ca];", n)
+	b.WriteString("[cv]fps=" + fmt.Sprint(outputFPS) + ",format=yuv420p")
+	if caption != "" {
+		fmt.Fprintf(&b, ",drawtext=font='Sans':fontsize=h/26:fontcolor=white:box=1:boxcolor=black@0.55:boxborderw=18:x=h/20:y=h-h/20-th:enable='lt(t,2.5)':text='%s'", drawtextEscape(caption))
+	}
+	b.WriteString("[v];[ca]aresample=48000[a]")
 	return b.String()
 }
 
-// editArgs are ffmpeg's arguments to turn a numbered frame sequence captured
-// at `captureFPS` into the finished MP4. The encoder is libx264 unless
-// AT_ENCODER names another (h264_nvenc on a box where NVENC works).
-func editArgs(frames string, captureFPS int, segs []segment, encoder, out string) []string {
-	args := []string{"-y", "-hide_banner", "-loglevel", "error",
-		"-framerate", fmt.Sprint(captureFPS), "-i", frames,
-		"-filter_complex", editFilter(segs), "-map", "[out]",
-		"-c:v", encoder}
+// encodeArgs are the output settings every piece and the reel share, so the
+// pieces can be joined without re-encoding.
+func encodeArgs(encoder string) []string {
+	args := []string{"-c:v", encoder, "-r", fmt.Sprint(outputFPS)}
 	if encoder == "libx264" {
-		args = append(args, "-preset", "slow", "-crf", "18")
+		args = append(args, "-preset", "slow", "-crf", "18", "-profile:v", "high")
 	} else {
 		args = append(args, "-cq", "19", "-preset", "p6")
 	}
-	return append(args, "-movflags", "+faststart", out)
+	return append(args, "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2")
 }

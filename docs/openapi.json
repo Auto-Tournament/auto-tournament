@@ -4943,6 +4943,28 @@
         ]
       }
     },
+    "/api/game/cs2/recorder/fail": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "POST /api/game/cs2/recorder/fail",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/recorder/jobs/{id}/clip": {
       "put": {
         "tags": [
@@ -4975,12 +4997,12 @@
         ]
       }
     },
-    "/api/game/cs2/recorder/jobs/{id}/fail": {
-      "post": {
+    "/api/game/cs2/recorder/reels/{slug}/{map}/{player}": {
+      "put": {
         "tags": [
           "Highlights"
         ],
-        "summary": "POST /api/game/cs2/recorder/jobs/:id/fail",
+        "summary": "PUT /api/game/cs2/recorder/reels/:slug/:map/:player",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -4989,7 +5011,23 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "map",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "player",
             "in": "path",
             "required": true,
             "schema": {

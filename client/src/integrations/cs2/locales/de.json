@@ -1917,6 +1917,9 @@
     "queued_other": "{{count}} more on the way",
     "pending": "Waiting for the recorder",
     "recording": "Recording…",
-    "mapN": "Map {{n}}"
+    "mapN": "Map {{n}}",
+    "reelOf": "Reel · {{map}}",
+    "moments_one": "{{count}} moment",
+    "moments_other": "{{count}} moments"
   }
 }

@@ -204,6 +204,13 @@ func main() {
 		return
 	}
 
+	if len(os.Args) >= 2 && os.Args[1] == "record-file" {
+		if err := recordFile(os.Args[2:]); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
 	if len(os.Args) >= 3 && os.Args[1] == "radars" {
 		radars, _ := localRadars(os.Args[2], os.Args[3:])
 		for key, r := range radars {
