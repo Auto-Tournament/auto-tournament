@@ -605,5 +605,20 @@
       "kill": "Kill",
       "lastKill": "Last kill"
     }
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "subtitle": "Players ranked by their rating in one game.",
+    "game": "Game",
+    "loading": "Loading the leaderboard",
+    "loadError": "Could not load the leaderboard.",
+    "emptyTitle": "No rated players yet",
+    "emptyDescription": "Players appear here after their first rated match in this game.",
+    "columns": {
+      "player": "Player",
+      "rating": "Rating",
+      "matches": "Matches",
+      "winRate": "Win rate"
+    }
   }
 }

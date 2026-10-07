@@ -41,6 +41,7 @@ import { ModuleGlobalOverlays } from './components/layout/ModuleGlobalOverlays';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
 import PlayersDirectory from './pages/PlayersDirectory';
+import Leaderboard from './pages/Leaderboard';
 import TeamsDirectory from './pages/TeamsDirectory';
 import TeamManage from './pages/TeamManage';
 import TeamJoin from './pages/TeamJoin';
@@ -434,6 +435,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly={false}>
             <Browse />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={paths.leaderboards}
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <Leaderboard />
           </ProtectedRoute>
         }
       />
