@@ -161,10 +161,10 @@ func timeline(sources [][]float64, segs []segment, startTick int) ([]frameRef, e
 // A moment's kills can be far apart (a 4K over 20 s): the clip then jumps from
 // one stretch of kills to the next instead of showing the wait between them.
 const (
-	clusterGapTicks  = 4 * tickrate      // kills closer than this play as one stretch
-	firstLeadTicks   = 3 * tickrate      // run-up before the first kill
-	laterLeadTicks   = 3 * tickrate / 2  // run-up before a later stretch
-	stretchTailTicks = tickrate * 6 / 10 // after a stretch that is not the last
+	clusterGapTicks  = 4 * tickrate       // kills closer than this play as one stretch
+	firstLeadTicks   = 3 * tickrate       // run-up before the first kill
+	laterLeadTicks   = 3 * tickrate / 2   // run-up before a later stretch
+	stretchTailTicks = tickrate * 12 / 10 // after a stretch that is not the last, before the cut to the next
 )
 
 // window is one stretch of a moment's clip, in the analyzer's ticks: the last

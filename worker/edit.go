@@ -9,17 +9,16 @@ import (
 
 // The highlight edit: the clip plays at full speed until the last enemy dies,
 // then slows step by step to slowmoSpeed (about a second of video), holds
-// there (about two seconds), speeds back up the same way it slowed, plays on
-// at full speed for a moment and cuts.
+// there for about another second and cuts while still slowed: once the
+// killing is done there is nothing to speed back up for.
 const (
 	slowmoSpeed = 0.5
-	rampSec     = 0.75 // game seconds slowing down from the kill, and speeding up again (≈1 s of video each)
-	holdSec     = 1.0  // game seconds at slowmoSpeed in between (2 s of video)
-	outroSec    = 0.5  // game seconds at full speed before the cut
+	rampSec     = 0.75 // game seconds slowing down from the kill (≈1 s of video)
+	holdSec     = 0.5  // game seconds at slowmoSpeed before the cut (1 s of video)
 	rampSteps   = 8    // a ramp is this many constant-speed pieces
 	outputFPS   = 120
 	// tailSec is how much game after the last kill a clip shows.
-	tailSec = rampSec + holdSec + rampSec + outroSec
+	tailSec = rampSec + holdSec
 )
 
 // segment is a piece of the recording (seconds from its start) played at one speed.
@@ -52,8 +51,7 @@ func stepSpeed(i int) float64 {
 }
 
 // speedRamp cuts a recording of `length` seconds into pieces: full speed to
-// `kill` seconds in, slowing to slowmoSpeed, holding, back up to full speed,
-// and full speed for the last outroSec.
+// `kill` seconds in, then slowing to slowmoSpeed and slowed to the end.
 func speedRamp(length, kill float64) []segment {
 	return editPlan(length, false, kill)
 }
@@ -95,21 +93,13 @@ func editPlan(length float64, intro bool, kill float64) []segment {
 		add(start, length, 1)
 		return out
 	}
-	// The slowing steps, and the same steps in reverse to speed up again, so
-	// both take as long.
+	// Slowing down step by step from the kill, then slowed to the end.
 	step := rampSec / rampSteps
 	add(start, kill, 1)
 	for i := 0; i < rampSteps; i++ {
 		add(kill+float64(i)*step, kill+float64(i+1)*step, stepSpeed(i))
 	}
-	outro := math.Max(kill+rampSec, length-outroSec)
-	upFrom := math.Max(kill+rampSec, outro-rampSec)
-	add(kill+rampSec, upFrom, slowmoSpeed)
-	upStep := (outro - upFrom) / rampSteps
-	for i := 0; i < rampSteps; i++ {
-		add(upFrom+float64(i)*upStep, upFrom+float64(i+1)*upStep, stepSpeed(rampSteps-1-i))
-	}
-	add(outro, length, 1)
+	add(kill+rampSec, length, slowmoSpeed)
 	return out
 }
 

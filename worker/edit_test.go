@@ -19,31 +19,28 @@ func TestAudioFilterDropsThePitch(t *testing.T) {
 	}
 }
 
-func TestSpeedRampSlowsHoldsSpeedsUpAndPlaysOn(t *testing.T) {
+func TestSpeedRampSlowsAndCutsStillSlowed(t *testing.T) {
 	segs := speedRamp(3+tailSec, 3)
 	if segs[0].From != 0 || segs[0].To != 3 || segs[0].Speed != 1 {
 		t.Fatalf("full speed until the kill: %+v", segs[0])
 	}
 	last := segs[len(segs)-1]
-	if last.Speed != 1 || math.Abs(last.To-last.From-outroSec) > 1e-9 || math.Abs(last.To-(3+tailSec)) > 1e-9 {
-		t.Fatalf("ends with at least %v s at full speed: %+v", outroSec, last)
+	if last.Speed != slowmoSpeed || math.Abs(last.To-(3+tailSec)) > 1e-9 {
+		t.Fatalf("ends slowed, at the clip's end: %+v", last)
 	}
-	var slowing, held, rising float64
+	var slowing, held float64
 	for _, s := range segs[1:] {
+		if s.Speed > 1-1e-9 {
+			t.Fatalf("back at full speed after the kill: %+v", s)
+		}
 		d := (s.To - s.From) / s.Speed
-		switch {
-		case s.To <= 3+rampSec+1e-9:
-			slowing += d
-		case s.Speed == slowmoSpeed:
+		if s.Speed == slowmoSpeed {
 			held += d
-		case s.To <= 3+tailSec-outroSec+1e-9:
-			rising += d
+		} else {
+			slowing += d
 		}
 	}
-	if math.Abs(slowing-rising) > 1e-6 {
-		t.Fatalf("speeding up (%.3f s) should take as long as slowing down (%.3f s)", rising, slowing)
-	}
-	if slowing < 0.7 || slowing > 1.3 || held < 1.6 || held > 2.4 {
+	if slowing < 0.7 || slowing > 1.3 || held < 0.8 || held > 1.2 {
 		t.Fatalf("slowing %.2f s, held %.2f s", slowing, held)
 	}
 }
@@ -81,9 +78,9 @@ func TestMomentMarkers(t *testing.T) {
 	if m.Duration != want {
 		t.Fatalf("duration = %v, want %v", m.Duration, want)
 	}
-	// The slow motion ends where the outro at full speed starts.
-	if got := math.Round((m.Duration-m.Slowmo[1])*100) / 100; got != outroSec {
-		t.Fatalf("outro = %v, want %v", got, outroSec)
+	// The slow motion runs to the end of the clip.
+	if m.Slowmo[1] != m.Duration {
+		t.Fatalf("slow motion ends at %v, the clip at %v", m.Slowmo[1], m.Duration)
 	}
 }
 
