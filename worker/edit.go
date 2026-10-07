@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"image"
 	"math"
+	"os"
+	"strconv"
 	"strings"
 )
 
@@ -16,12 +18,23 @@ const (
 	rampSec     = 0.75 // game seconds slowing down from the kill (≈1 s of video)
 	holdSec     = 0.5  // game seconds at slowmoSpeed before the cut (1 s of video)
 	rampSteps   = 8    // a ramp is this many constant-speed pieces
-	outputFPS   = 60
-	// outputHeight is the height of every clip and reel (16:9).
-	outputHeight = 1080
 	// tailSec is how much game after the last kill a clip shows.
 	tailSec = rampSec + holdSec
 )
+
+// The frame rate and height (16:9) of every clip and reel: 1080p at 60 fps,
+// or what AT_OUTPUT_FPS and AT_OUTPUT_HEIGHT say (a pro showcase at 1440p120).
+var (
+	outputFPS    = float64(envPositive("AT_OUTPUT_FPS", 60))
+	outputHeight = envPositive("AT_OUTPUT_HEIGHT", 1080) &^ 1
+)
+
+func envPositive(key string, fallback int) int {
+	if v, err := strconv.Atoi(os.Getenv(key)); err == nil && v > 0 {
+		return v
+	}
+	return fallback
+}
 
 // segment is a piece of the recording (seconds from its start) played at one speed.
 type segment struct {
