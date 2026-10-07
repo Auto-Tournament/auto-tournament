@@ -612,13 +612,21 @@ func (r *recorder) record(ctx context.Context, j *recordJob) error {
 	if err != nil {
 		return err
 	}
-	if len(clips) > 1 {
+	// The player's reel: their plays on the map, without the funny ones (those
+	// are for the tournament reel).
+	var plays []clipResult
+	for _, c := range clips {
+		if c.moment.Kind != "funny" {
+			plays = append(plays, c)
+		}
+	}
+	if len(plays) > 1 {
 		reel := filepath.Join(dir, "reel.mp4")
-		if err := joinReel(clips, reel); err != nil {
+		if err := joinReel(plays, reel); err != nil {
 			return err
 		}
-		ids := make([]string, len(clips))
-		for i, c := range clips {
+		ids := make([]string, len(plays))
+		for i, c := range plays {
 			ids[i] = strconv.Itoa(c.moment.ID)
 		}
 		return r.upload(ctx, reel, fmt.Sprintf("/api/game/cs2/recorder/reels/%s/%d/%s",

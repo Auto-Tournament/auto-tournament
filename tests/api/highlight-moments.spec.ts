@@ -131,8 +131,16 @@ test.describe('Highlight moments', () => {
     const at = ids.indexOf(5);
     expect(at).toBeGreaterThan(0);
     expect(at).toBeLessThan(ids.length - 1);
-    // No player more than three times, aces aside.
+    // No player more than twice.
     const many = pickTournamentReel(Array.from({ length: 10 }, (_, i) => c(100 + i, 'same', '3k', 100 + i)));
-    expect(many).toHaveLength(3);
+    expect(many).toHaveLength(2);
+    // At least one of each kind there is, even when the rest score higher.
+    const kinds = pickTournamentReel([
+      ...Array.from({ length: 20 }, (_, i) => c(200 + i, `p${i}`, '3k', 150 + i)),
+      c(300, 'q1', 'flair', 31),
+      c(301, 'q2', 'funny', 35),
+      c(302, 'q3', '2k', 60, true),
+    ]);
+    expect(kinds).toEqual(expect.arrayContaining([300, 301, 302]));
   });
 });

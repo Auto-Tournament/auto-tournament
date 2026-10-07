@@ -455,22 +455,23 @@ export interface ReelCandidate {
 
 /** The most clips a tournament reel joins, and of one player. */
 const REEL_MAX = 16;
-const REEL_PER_PLAYER = 3;
+const REEL_PER_PLAYER = 2;
 
 /**
  * The tournament reel's plays, in the order they show (pure: tested on its
- * own). Every ace; then the best 4Ks, clutches, flair (one-taps, wallbangs,
- * through smoke) and two funny ones; filled up with the best of the rest. No
- * player more than three times, aces aside. It builds up: the smaller plays
- * first, the funny ones a third and two thirds in, the best play last.
+ * own). At least one of each kind there is: the aces, then the best 4Ks,
+ * clutches, flair (one-taps, wallbangs, through smoke) and two funny ones;
+ * filled up with the best of the rest. No player more than twice. It builds
+ * up: the smaller plays first, the funny ones a third and two thirds in, the
+ * best play last.
  */
 export function pickTournamentReel(candidates: ReelCandidate[]): number[] {
   const byScore = candidates.slice().sort((a, b) => b.score - a.score || a.id - b.id);
   const chosen: ReelCandidate[] = [];
   const perPlayer = new Map<string, number>();
-  const take = (c: ReelCandidate, capped = true) => {
+  const take = (c: ReelCandidate) => {
     if (chosen.length >= REEL_MAX || chosen.includes(c)) return;
-    if (capped && (perPlayer.get(c.playerId) ?? 0) >= REEL_PER_PLAYER) return;
+    if ((perPlayer.get(c.playerId) ?? 0) >= REEL_PER_PLAYER) return;
     chosen.push(c);
     perPlayer.set(c.playerId, (perPlayer.get(c.playerId) ?? 0) + 1);
   };
@@ -484,7 +485,7 @@ export function pickTournamentReel(candidates: ReelCandidate[]): number[] {
       if (chosen.length > before) left--;
     }
   };
-  for (const c of byScore.filter((c) => c.kind === 'ace')) take(c, false);
+  of((c) => c.kind === 'ace', REEL_MAX);
   of((c) => c.kind === '4k', 4);
   of((c) => c.clutch, 3);
   of((c) => c.kind === 'flair', 2);

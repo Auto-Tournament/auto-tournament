@@ -16,8 +16,9 @@
  * last enemy dies).
  *
  * Funny moments are picked apart from those, up to two per player: a team
- * mate killed with a grenade or fire, dying to your own grenade, and an
- * enemy killed by a flashbang, smoke or decoy hitting them.
+ * mate killed with a grenade or fire, dying to your own grenade, an enemy
+ * killed by a flashbang, smoke or decoy hitting them, and a knife kill. They
+ * go in the tournament reel, not in the player's or the match's reels.
  */
 
 import fs from 'fs';
@@ -41,6 +42,7 @@ const FUNNY_PER_PLAYER = 2;
 const FUNNY_SCORE = 35;
 const EXPLOSIVE = /^(HE Grenade|Molotov|Incendiary Grenade)$/i;
 const IMPACT = /^(Flashbang|Smoke Grenade|Decoy Grenade)$/i;
+const KNIFE = /^Knife/i;
 /** A recording that went quiet this long is handed out again. */
 const STALE_SECONDS = 30 * 60;
 const MAX_ATTEMPTS = 3;
@@ -186,6 +188,9 @@ export function funnyMoments(kills: KillRow[], roundEnd: Map<number, number>): M
     } else if (k.attacker && k.attackerSide && k.attackerSide !== k.victimSide && IMPACT.test(weapon)) {
       player = k.attacker;
       what = `${weapon} to the face`;
+    } else if (k.attacker && k.attackerSide && k.attackerSide !== k.victimSide && KNIFE.test(weapon)) {
+      player = k.attacker;
+      what = 'Knife kill';
     }
     if (!player || (count.get(player) ?? 0) >= FUNNY_PER_PLAYER) continue;
     count.set(player, (count.get(player) ?? 0) + 1);
@@ -198,7 +203,7 @@ export function funnyMoments(kills: KillRow[], roundEnd: Map<number, number>): M
       endTick: Math.min(k.tick + TAIL_TICKS, roundEnd.get(k.round) ?? k.tick + TAIL_TICKS),
       slowmoTick: k.tick,
       killTicks: [k.tick],
-      title: what.endsWith('to the face') ? `${what} · round ${k.round}` : `${what} · ${weapon} · round ${k.round}`,
+      title: what.endsWith('to the face') || what === 'Knife kill' ? `${what} · round ${k.round}` : `${what} · ${weapon} · round ${k.round}`,
     });
   }
   return out;
@@ -601,7 +606,7 @@ export async function bestClipPerPlayer(matchSlug: string, mapNumber: number): P
               LIMIT 1) AS team
        FROM (SELECT DISTINCT ON (player_id) id, player_id, title, slowmo_tick, match_slug
                FROM cs2_highlights
-              WHERE match_slug = ? AND map_number = ? AND status = 'done'
+              WHERE match_slug = ? AND map_number = ? AND status = 'done' AND kind <> 'funny'
               ORDER BY player_id, score DESC, id) b
        LEFT JOIN players p ON p.id = b.player_id
       ORDER BY b.slowmo_tick`,
