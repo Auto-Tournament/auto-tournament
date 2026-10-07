@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Box, Button, ButtonBase, IconButton, LinearProgress } from '@mui/material';
 import { CheckIcon, DotsThreeIcon, PlusIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { fontDisplay, mono, radii, textSize, tokens, useModuleTranslation, withAlpha } from '../../../../module-sdk';
@@ -9,6 +10,16 @@ import type { ServerMatch } from './useServerMatches';
 const { color } = tokens;
 
 const pending = (c: FleetHostCommand) => c.status === 'pending';
+
+/** Seconds since the epoch, updated each minute. */
+function useNow(): number {
+  const [now, setNow] = useState(() => Date.now() / 1000);
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now() / 1000), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  return now;
+}
 
 /** The pending command of `type` on this machine (the newest), if any. */
 export function runningOf(host: FleetHost, type: FleetHostCommandType): FleetHostCommand | null {
@@ -156,6 +167,7 @@ export function MachineCard({
   onRetry,
 }: MachineCardProps) {
   const { t, i18n } = useModuleTranslation('cs2');
+  const now = useNow();
   const commandLabel = useCommandLabel();
   const problemText = useProblemText();
   const inv = host.inventory;
@@ -168,6 +180,11 @@ export function MachineCard({
   const creating = host.commands.filter((c) => pending(c) && c.type === 'server.create');
   const creatingCount = creating.reduce((n, c) => n + Math.max(1, Number(c.payload.count) || 1), 0);
   const when = (s: number | null | undefined) => (s ? new Date(s * 1000).toLocaleString(i18n.language) : '—');
+  // "3 min", "4 h", "2 d": how long ago, short (the clock ticks each minute).
+  const since = (s: number) => {
+    const d = Math.max(0, Math.floor(now - s));
+    return d < 3600 ? `${Math.max(1, Math.round(d / 60))} min` : d < 86400 ? `${Math.round(d / 3600)} h` : `${Math.round(d / 86400)} d`;
+  };
   const tone =
     host.status === 'revoked' ? color.ban : host.status === 'pending' ? color.info : online ? (activeCommand(host) ? color.info : color.live) : color.muted;
   const statusText =
@@ -181,7 +198,7 @@ export function MachineCard({
           ? t('machinesPanel.hostStatus.online', { defaultValue: 'Online' })
           : [
               host.lastSeen
-                ? t('machinesPanel.offlineSince', { defaultValue: 'Offline since {{time}}', time: when(host.lastSeen) })
+                ? t('serversBoard.offlineFor', { defaultValue: 'Offline for {{time}}', time: since(host.lastSeen) })
                 : t('machinesPanel.hostStatus.offline', { defaultValue: 'Offline' }),
               waiting > 0 ? t('machinesPanel.waitingFor', { defaultValue: '{{count}} action(s) wait for it', count: waiting }) : null,
             ]
@@ -213,6 +230,7 @@ export function MachineCard({
               fontFamily: fontDisplay,
               fontSize: textSize.lg,
               fontWeight: 600,
+              whiteSpace: 'nowrap',
               borderRadius: radii.sm,
               px: 0.5,
               '&:hover': { color: color.accent },

@@ -95,15 +95,21 @@ export function useServerMatches(): Record<string, ServerMatch> {
   }, []);
 
   useEffect(() => {
-    void loadAvailability();
+    const first = setTimeout(() => void loadAvailability(), 0);
     const timer = setInterval(() => void loadAvailability(), REFRESH_MS);
-    return () => clearInterval(timer);
+    return () => {
+      clearTimeout(first);
+      clearInterval(timer);
+    };
   }, [loadAvailability]);
 
   useEffect(() => {
     const slugs = new Set(Object.values(slugByServer));
     wanted.current = slugs;
-    for (const slug of slugs) void loadMatch(slug);
+    const id = setTimeout(() => {
+      for (const slug of slugs) void loadMatch(slug);
+    }, 0);
+    return () => clearTimeout(id);
   }, [slugByServer, loadMatch]);
 
   useEffect(() => {

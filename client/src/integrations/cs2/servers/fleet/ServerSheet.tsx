@@ -97,7 +97,7 @@ export function ServerSheet({
                     : t('serversBoard.linkOffline', { defaultValue: 'Not connected' })
                   : t('serversBoard.linkNone', { defaultValue: 'Not enrolled yet' }),
               ],
-              since && [t('serversBoard.facts.since', { defaultValue: 'Running since' }), since],
+              !!since && [t('serversBoard.facts.since', { defaultValue: 'Running since' }), since],
               s.process.restarts_24h > 0 && [
                 t('serversBoard.facts.restarts', { defaultValue: 'Restarts (24 h)' }),
                 String(s.process.restarts_24h),

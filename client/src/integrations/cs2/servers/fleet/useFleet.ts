@@ -160,7 +160,6 @@ export function useFleet() {
         return false;
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- showPending/dropPending only set state
     [load, showError, t]
   );
 

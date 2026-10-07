@@ -18,7 +18,6 @@ import { links } from '../../module-sdk';
 import { MatchServerPanel } from './match/MatchServerPanel';
 import { Cs2MatchAdminView } from './match/Cs2MatchAdminView';
 import { ServerAllocationWidget } from './servers/ServerAllocationWidget';
-import { AddServerDialog, BatchAddServersDialog } from './servers/ResourceDialogs';
 import { ServersOverviewCard } from './servers/ServersOverviewCard';
 import { ServerGrid } from './servers/ServerGrid';
 import { VetoInterface } from './veto/VetoInterface';
@@ -187,10 +186,9 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // A match outside the bracket: the whole form is CS2's, core only opens it.
   standaloneMatch: CreateManualMatchModal,
 
-  resourceDialogs: {
-    add: AddServerDialog,
-    batchAdd: BatchAddServersDialog,
-  },
+  // No "add a server" dialog: CS2 servers come only through csm, made on a
+  // machine on the Servers page (setup's button opens that page).
+  resourceDialogs: {},
 
   dashboardWidgets: {
     adminHomeResources: ServersOverviewCard,

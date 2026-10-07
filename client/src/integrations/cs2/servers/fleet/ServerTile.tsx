@@ -127,8 +127,9 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
         minHeight: 92,
         borderRadius: radii.md,
         bgcolor: color.paper,
+        // Down is red only on an online machine: an offline one says so itself.
         border: `1px solid ${
-          state === 'match' ? withAlpha(color.accent, 0.55) : state === 'offline' ? withAlpha(color.ban, 0.6) : color.rule
+          state === 'match' ? withAlpha(color.accent, 0.55) : state === 'offline' && host.online ? withAlpha(color.ban, 0.6) : color.rule
         }`,
         opacity: state === 'deleting' ? 0.55 : 1,
         '&:hover': { borderColor: color.muted },
@@ -144,7 +145,11 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
           data-testid={`machine-state-${server.name}`}
           sx={{ ml: 'auto', display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.75rem', color: color.ink2, whiteSpace: 'nowrap' }}
         >
-          <StateMark state={state} />
+          {state === 'offline' && !host.online ? (
+            <Box aria-hidden sx={{ width: 8, height: 8, borderRadius: radii.pill, bgcolor: color.muted, flex: 'none' }} />
+          ) : (
+            <StateMark state={state} />
+          )}
           {label(state, match)}
         </Box>
       </Box>
