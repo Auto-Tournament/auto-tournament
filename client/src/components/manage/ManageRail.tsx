@@ -1,32 +1,25 @@
 import React from 'react';
-import { Box, MenuItem, TextField } from '@mui/material';
-import { useOptionalAdminTournament } from '../../contexts/AdminTournamentContext';
+import { Box, ButtonBase, Menu, MenuItem } from '@mui/material';
 import {
   ListBulletsIcon,
   FilmStripIcon,
   ArrowSquareOutIcon,
-  BellIcon,
   BookOpenIcon,
+  CaretUpDownIcon,
   ChartLineUpIcon,
   CodeIcon,
   GearIcon,
-  GlobeIcon,
   PuzzlePieceIcon,
-  ScalesIcon,
   StackIcon,
-  SwordIcon,
-  TreeStructureIcon,
-  TrophyIcon,
   UserIcon,
   UsersThreeIcon,
   WrenchIcon,
 } from '@phosphor-icons/react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useShellIntegrations } from '../../hooks/useShellIntegrations';
-import { useDisputesEntry } from '../../hooks/useDisputesEntry';
+import { listIntegrations } from '../../integrations/registry';
+import { gameMonogram } from '../games/GameThumb';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
-import { useManageRailCounts } from '../../contexts/ManageRailContext';
 import { moduleNavItems, navItemLabel } from '../../utils/moduleNavLabels';
 import { paths } from '../../paths';
 import { RAIL_COLUMN_MIN_WIDTH, railColumnSx } from '../../constants/adminLayout';
@@ -75,179 +68,218 @@ function isCurrent(pathname: string, to: string): boolean {
   return pathname === to || pathname.startsWith(`${to}/`);
 }
 
-/**
- * The admin menu: every admin page, grouped, beside every admin page's
- * content (`Layout`). It replaced the 2.x sidebar in 3.0, which had grown
- * into a second copy of this list.
- *
- * The game's own pages (CS2: Servers, Maps) come from the module the
- * tournament runs, through its `navItems` and labelled from its own strings
- * (see `useShellIntegrations`); core names none of them. A module with no
- * pages leaves its group out.
- */
-/**
- * Which tournament the admin pages are about (several can exist): a select
- * at the top of the rail. Matches, Bracket, Needs you and the setup all act
- * on the one picked here.
- */
-function TournamentSwitcher() {
-  const { t } = useTranslation();
-  const admin = useOptionalAdminTournament();
-  if (!admin || (admin.tournaments.length === 0 && admin.selectedId === null)) return null;
-  const { tournaments, selectedId, nextId, select } = admin;
-  const value = selectedId ?? '';
-  const isNew = selectedId !== null && selectedId === nextId && !tournaments.some((x) => x.id === selectedId);
-  return (
-    <Box sx={{ mb: 1.5, minWidth: { xs: 200, md: 0 } }}>
-      <TextField
-        select
-        size="small"
-        fullWidth
-        label={t('managePage.rail.switcher')}
-        value={value}
-        onChange={(e) => select(Number(e.target.value))}
-        inputProps={{ 'data-testid': 'tournament-switcher' }}
-        SelectProps={{ MenuProps: { PaperProps: { sx: { maxHeight: 420 } } } }}
-      >
-        {tournaments
-          .filter((x) => !x.archived || x.id === selectedId)
-          .map((x) => (
-            <MenuItem key={x.id} value={x.id}>
-              {x.name}
-            </MenuItem>
-          ))}
-        {isNew && <MenuItem value={selectedId}>{t('managePage.rail.newTournament')}</MenuItem>}
-      </TextField>
+/** What the rail is about: the platform, or one game. */
+interface RailScope {
+  id: string;
+  label: string;
+  hint: string;
+  /** The game's monogram; the platform shows the app's icon. */
+  mark: string | null;
+  groups: RailGroup[];
+}
+
+/** The platform's icon, or the game's monogram. */
+function ScopeMark({ of, size }: { of: RailScope; size: number }) {
+  return of.mark === null ? (
+    <Box
+      component="img"
+      src="/icon.svg"
+      alt=""
+      sx={{ width: size, height: size, borderRadius: '6px', flex: 'none' }}
+    />
+  ) : (
+    <Box
+      component="span"
+      aria-hidden
+      sx={{
+        width: size,
+        height: size,
+        flex: 'none',
+        borderRadius: '6px',
+        display: 'grid',
+        placeItems: 'center',
+        bgcolor: color.paper3,
+        color: color.ink,
+        fontFamily: fontMono,
+        fontSize: size * 0.38,
+        fontWeight: 600,
+      }}
+    >
+      {of.mark}
     </Box>
   );
 }
 
+/**
+ * The admin menu, beside every admin page's content (`Layout`). A dropdown at
+ * the top picks what it is about: the platform (tournaments, people, the
+ * site's own settings) or one installed game (its own pages, CS2: Servers,
+ * Maps, Skins, Match rules). The rail lists only that one's pages, and opens
+ * on whichever holds the current page.
+ *
+ * Running one tournament (needs you, matches, bracket, its setup) is not
+ * here: it is the tournament's own bar over those pages (`TournamentBar`).
+ *
+ * A game's pages come from its module's `navItems`, labelled from its own
+ * strings; core names none of them. A game with no pages is left out.
+ */
 export const ManageRail: React.FC = () => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const { shell, tournamentId } = useShellIntegrations();
-  const { show: showDisputes } = useDisputesEntry();
+  const navigate = useNavigate();
   const isDevelopment = useIsDevelopment();
-  const { needsYouCount } = useManageRailCounts();
   const scrollerRef = React.useRef<HTMLDivElement>(null);
+  const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
 
-  const groups: RailGroup[] = [
-    {
-      key: 'operate',
-      label: t('managePage.rail.groups.operate'),
-      items: [
-        {
-          key: 'needsYou',
-          label: t('managePage.rail.needsYou'),
-          to: paths.manage,
-          icon: BellIcon,
-          count: needsYouCount,
-        },
-        { key: 'matches', label: t('managePage.rail.matches'), to: paths.matches, icon: SwordIcon },
-        {
-          key: 'bracket',
-          label: t('managePage.rail.bracket'),
-          to: paths.bracket,
-          icon: TreeStructureIcon,
-        },
-        // Only where a result can be argued about at all (3.0 phase D).
-        ...(showDisputes
-          ? [
-              {
-                key: 'disputes',
-                label: t('managePage.rail.disputes'),
-                to: paths.disputes,
-                icon: ScalesIcon,
-              },
-            ]
-          : []),
-      ],
-    },
-    {
-      key: 'tournament',
-      label: t('managePage.rail.groups.tournament'),
-      items: [
-        {
-          key: 'tournaments',
-          label: t('managePage.rail.allTournaments'),
-          to: paths.tournaments,
-          icon: ListBulletsIcon,
-        },
-        {
-          key: 'playedMatches',
-          label: t('managePage.rail.playedMatches'),
-          to: paths.playedMatches,
-          icon: FilmStripIcon,
-        },
-        {
-          key: 'tournament',
-          label: t('managePage.rail.tournament'),
-          to: paths.tournament,
-          icon: TrophyIcon,
-        },
-        // What players see, once there is a tournament to show.
-        ...(tournamentId !== null
-          ? [
-              {
-                key: 'publicPage',
-                label: t('managePage.rail.publicPage'),
-                to: paths.tournamentOverview.replace(':id', String(tournamentId)),
-                icon: GlobeIcon,
-              },
-            ]
-          : []),
-      ],
-    },
-    {
-      key: 'people',
-      label: t('managePage.rail.groups.people'),
-      items: [
-        { key: 'teams', label: t('managePage.rail.teams'), to: paths.teams, icon: UsersThreeIcon },
-        { key: 'players', label: t('managePage.rail.players'), to: paths.players, icon: UserIcon },
-      ],
-    },
-    // One group per game module, named by it (CS2: Counter-Strike 2, with
-    // Servers, Maps, Skins and Match rules): a game's pages and its settings
-    // sit together, and Settings below keeps only the platform's.
-    ...shell
-      .filter((integration) => integration.navItems.length > 0)
-      .map((integration, index) => ({
-        key: index === 0 ? 'game' : `game-${integration.id}`,
-        label: t('managePage.rail.group', { ns: integration.id, defaultValue: t('managePage.rail.groups.game') }),
-        items: moduleNavItems([integration]).map((item) => ({
-          key: item.key,
-          label: navItemLabel(t, item, 'rail'),
-          to: item.path,
-          icon: item.icon,
-        })),
-      })),
-    {
-      key: 'configuration',
-      label: t('managePage.rail.groups.configuration'),
-      items: [
-        { key: 'modules', label: t('managePage.rail.modules'), to: paths.modules, icon: PuzzlePieceIcon },
-        { key: 'templates', label: t('managePage.rail.templates'), to: paths.templates, icon: StackIcon },
-        {
-          key: 'ratings',
-          label: t('managePage.rail.ratings'),
-          to: paths.eloTemplates,
-          icon: ChartLineUpIcon,
-        },
-        { key: 'settings', label: t('managePage.rail.settings'), to: paths.settings, icon: GearIcon },
-        { key: 'adminTools', label: t('managePage.rail.adminTools'), to: paths.admin, icon: WrenchIcon },
-        ...(isDevelopment
-          ? [{ key: 'devTools', label: t('managePage.rail.devTools'), to: paths.dev, icon: CodeIcon }]
-          : []),
-        {
-          key: 'documentation',
-          label: t('managePage.rail.documentation'),
-          to: DOCS_URL,
-          icon: BookOpenIcon,
-          external: true,
-        },
-      ],
-    },
-  ].filter((group) => group.items.length > 0);
+  const platform: RailScope = {
+    id: 'platform',
+    label: t('managePage.rail.scope.platform'),
+    hint: t('managePage.rail.scope.platformHint'),
+    mark: null,
+    groups: [
+      {
+        key: 'tournament',
+        label: t('managePage.rail.groups.tournament'),
+        items: [
+          {
+            key: 'tournaments',
+            label: t('managePage.rail.allTournaments'),
+            to: paths.tournaments,
+            icon: ListBulletsIcon,
+          },
+          {
+            key: 'playedMatches',
+            label: t('managePage.rail.playedMatches'),
+            to: paths.playedMatches,
+            icon: FilmStripIcon,
+          },
+        ],
+      },
+      {
+        key: 'people',
+        label: t('managePage.rail.groups.people'),
+        items: [
+          {
+            key: 'teams',
+            label: t('managePage.rail.teams'),
+            to: paths.teams,
+            icon: UsersThreeIcon,
+          },
+          {
+            key: 'players',
+            label: t('managePage.rail.players'),
+            to: paths.players,
+            icon: UserIcon,
+          },
+        ],
+      },
+      {
+        key: 'configuration',
+        label: t('managePage.rail.groups.configuration'),
+        items: [
+          {
+            key: 'templates',
+            label: t('managePage.rail.templates'),
+            to: paths.templates,
+            icon: StackIcon,
+          },
+          {
+            key: 'ratings',
+            label: t('managePage.rail.ratings'),
+            to: paths.eloTemplates,
+            icon: ChartLineUpIcon,
+          },
+          {
+            key: 'modules',
+            label: t('managePage.rail.modules'),
+            to: paths.modules,
+            icon: PuzzlePieceIcon,
+          },
+        ],
+      },
+      {
+        key: 'site',
+        label: t('managePage.rail.groups.site'),
+        items: [
+          {
+            key: 'settings',
+            label: t('managePage.rail.settings'),
+            to: paths.settings,
+            icon: GearIcon,
+          },
+          {
+            key: 'adminTools',
+            label: t('managePage.rail.adminTools'),
+            to: paths.admin,
+            icon: WrenchIcon,
+          },
+          ...(isDevelopment
+            ? [
+                {
+                  key: 'devTools',
+                  label: t('managePage.rail.devTools'),
+                  to: paths.dev,
+                  icon: CodeIcon,
+                },
+              ]
+            : []),
+          {
+            key: 'documentation',
+            label: t('managePage.rail.documentation'),
+            to: DOCS_URL,
+            icon: BookOpenIcon,
+            external: true,
+          },
+        ],
+      },
+    ],
+  };
+  // One scope per installed game with pages of its own, named by it.
+  const games: RailScope[] = listIntegrations()
+    .filter((integration) => integration.navItems.length > 0)
+    .map((integration) => {
+      const label = t('managePage.rail.group', {
+        ns: integration.id,
+        defaultValue: t('managePage.rail.groups.game'),
+      });
+      return {
+        id: integration.id,
+        label,
+        hint: t('managePage.rail.scope.gameHint'),
+        mark: gameMonogram(label),
+        groups: [
+          {
+            key: 'game',
+            label,
+            items: moduleNavItems([integration]).map((item) => ({
+              key: item.key,
+              label: navItemLabel(t, item, 'rail'),
+              to: item.path,
+              icon: item.icon,
+            })),
+          },
+        ],
+      };
+    });
+  const scopes = [platform, ...games];
+  const scopeOfPath =
+    scopes.find((scope) =>
+      scope.groups.some((group) =>
+        group.items.some((item) => !item.external && isCurrent(pathname, item.to))
+      )
+    ) ?? platform;
+  // Picked by hand until the next page opens; then the page's own scope.
+  const [picked, setPicked] = React.useState<{ id: string; at: string } | null>(null);
+  const scope = (picked?.at === pathname && scopes.find((s) => s.id === picked.id)) || scopeOfPath;
+  const groups = scope.groups.filter((group) => group.items.length > 0);
+
+  const pickScope = (next: RailScope) => {
+    setMenuAnchor(null);
+    setPicked({ id: next.id, at: pathname });
+    // Straight to the scope's first page when the current one is not in it.
+    const first = next.groups.flatMap((g) => g.items).find((item) => !item.external);
+    if (next.id !== scopeOfPath.id && first) navigate(first.to);
+  };
 
   // On a phone the rail scrolls sideways: bring the current page's item into
   // view, or "Settings" would be selected somewhere off to the right. Again
@@ -290,7 +322,83 @@ export const ManageRail: React.FC = () => {
         fontSize: textSize.sm,
       }}
     >
-      <TournamentSwitcher />
+      <ButtonBase
+        onClick={(e) => setMenuAnchor(e.currentTarget)}
+        aria-haspopup="menu"
+        aria-expanded={menuAnchor ? 'true' : undefined}
+        aria-controls={menuAnchor ? 'manage-rail-scopes' : undefined}
+        data-testid="manage-rail-scope"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.25,
+          mb: 1.5,
+          px: 1.25,
+          py: 1,
+          minWidth: { xs: 200, md: 0 },
+          flex: 'none',
+          textAlign: 'left',
+          borderRadius: radii.sm,
+          border: `1px solid ${color.rule}`,
+          '&:hover': { bgcolor: color.paper2 },
+          '&.Mui-focusVisible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
+        }}
+      >
+        <ScopeMark of={scope} size={28} />
+        <Box component="span" sx={{ display: 'grid', minWidth: 0, flex: 1 }}>
+          <Box
+            component="span"
+            sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.muted }}
+          >
+            {t('managePage.rail.scope.label')}
+          </Box>
+          <Box
+            component="span"
+            data-testid="manage-rail-scope-name"
+            sx={{
+              fontWeight: 600,
+              color: color.ink,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {scope.label}
+          </Box>
+        </Box>
+        <CaretUpDownIcon
+          aria-hidden
+          size={ICON_SIZE.sm}
+          style={{ flex: 'none', color: color.muted }}
+        />
+      </ButtonBase>
+      <Menu
+        id="manage-rail-scopes"
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={() => setMenuAnchor(null)}
+        slotProps={{ paper: { sx: { minWidth: 240, mt: 0.75, borderRadius: radii.md } } }}
+      >
+        {scopes.map((option) => (
+          <MenuItem
+            key={option.id}
+            selected={option.id === scope.id}
+            onClick={() => pickScope(option)}
+            data-testid={`manage-rail-scope-${option.id}`}
+            sx={{ gap: 1.25, py: 1 }}
+          >
+            <ScopeMark of={option} size={26} />
+            <Box sx={{ display: 'grid', minWidth: 0 }}>
+              <Box component="span" sx={{ fontWeight: 600, fontSize: textSize.sm }}>
+                {option.label}
+              </Box>
+              <Box component="span" sx={{ fontSize: textSize.xs, color: color.muted }}>
+                {option.hint}
+              </Box>
+            </Box>
+          </MenuItem>
+        ))}
+      </Menu>
       <Box
         ref={scrollerRef}
         data-testid="manage-rail-scroller"
@@ -355,7 +463,12 @@ export const ManageRail: React.FC = () => {
                 const selected = !item.external && isCurrent(pathname, item.to);
                 const Icon = item.icon;
                 const linkProps = item.external
-                  ? { component: 'a' as const, href: item.to, target: '_blank', rel: 'noopener noreferrer' }
+                  ? {
+                      component: 'a' as const,
+                      href: item.to,
+                      target: '_blank',
+                      rel: 'noopener noreferrer',
+                    }
                   : { component: RouterLink, to: item.to };
                 return (
                   <Box

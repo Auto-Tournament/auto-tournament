@@ -318,7 +318,8 @@
         "configuration": "Configurazione",
         "operate": "Operate",
         "people": "People",
-        "game": "Game"
+        "game": "Game",
+        "site": "Site"
       },
       "label": "Admin",
       "publicPage": "Public page",
@@ -326,7 +327,14 @@
       "allTournaments": "All tournaments",
       "switcher": "Tournament",
       "newTournament": "New tournament",
-      "playedMatches": "All matches"
+      "playedMatches": "All matches",
+      "tournamentBar": "This tournament",
+      "scope": {
+        "label": "Managing",
+        "platform": "Platform",
+        "platformHint": "Tournaments, people, the site",
+        "gameHint": "Its pages and settings"
+      }
     },
     "status": {
       "live": "LIVE",
