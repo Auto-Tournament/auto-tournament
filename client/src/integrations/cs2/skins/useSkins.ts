@@ -93,14 +93,19 @@ export function useMySkins() {
     return () => window.removeEventListener(CHANGED, onChange);
   }, [reload]);
 
-  /** Equips at once (the grid shows it before the server answers). */
+  /**
+   * Equips at once (the grid shows it before the server answers), or, for
+   * the skin already equipped, empties its slot: the game's default is back.
+   */
   const equip = useCallback(
     async (skin: OwnedSkin) => {
+      const off = skin.equipped;
       setInventory((list) =>
-        list.map((s) => (s.slot === skin.slot ? { ...s, equipped: s.id === skin.id } : s))
+        list.map((s) => (s.slot === skin.slot ? { ...s, equipped: !off && s.id === skin.id } : s))
       );
       try {
-        await api.post('/api/skins/me/equip', { skinId: skin.id });
+        if (off) await api.delete(`/api/skins/me/equip/${encodeURIComponent(skin.slot)}`);
+        else await api.post('/api/skins/me/equip', { skinId: skin.id });
       } finally {
         announceChange();
       }

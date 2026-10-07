@@ -1825,7 +1825,8 @@
       "won": "Won {{score}}",
       "lost": "Lost {{score}}",
       "drew": "Drew {{score}}"
-    }
+    },
+    "unequipLabel": "Unequip {{name}}"
   },
   "matchRules": {
     "title": "Match rules",

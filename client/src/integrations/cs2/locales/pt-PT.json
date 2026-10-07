@@ -1825,7 +1825,8 @@
       "won": "Vitória {{score}}",
       "lost": "Derrota {{score}}",
       "drew": "Empate {{score}}"
-    }
+    },
+    "unequipLabel": "Unequip {{name}}"
   },
   "matchRules": {
     "title": "Regras de partida",
