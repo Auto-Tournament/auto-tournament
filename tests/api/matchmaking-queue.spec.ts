@@ -217,7 +217,6 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
   test.beforeAll(async () => {
     admin = await playwrightRequest.newContext({ baseURL: BASE_URL });
     expect(await signInViaRequest(admin)).toBe(true);
-    expect((await admin.put('/api/experimental/matchmaking', { data: { enabled: true } })).ok()).toBe(true);
   });
 
   test.afterAll(async () => {
@@ -225,8 +224,7 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
       await ctx.post('/api/matchmaking/party/leave', { data: {} }).catch(() => undefined);
       await ctx.dispose();
     }
-    await admin.put('/api/matchmaking/admin/settings', { data: { openToPlayers: false } });
-    await admin.put('/api/experimental/matchmaking', { data: { enabled: false } });
+    await admin.put('/api/matchmaking/admin/settings', { data: { openToPlayers: true, modes: ['5v5', '2v2', '1v1'] } });
     await admin.dispose();
   });
 
@@ -256,9 +254,11 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     expect((await admin.put('/api/matchmaking/admin/settings', { data: { reservedServers: 0 } })).ok()).toBe(true);
   });
 
-  test('players are refused until matchmaking is open to them', TAGS, async () => {
+  test('matchmaking is open to players by default; an admin can close it', TAGS, async () => {
     const p = await player();
     contexts.push(p.ctx);
+    expect((await p.ctx.get('/api/matchmaking/me')).status()).toBe(200);
+    expect((await admin.put('/api/matchmaking/admin/settings', { data: { openToPlayers: false } })).ok()).toBe(true);
     expect((await p.ctx.get('/api/matchmaking/me')).status()).toBe(403);
     expect((await admin.put('/api/matchmaking/admin/settings', { data: { openToPlayers: true } })).ok()).toBe(true);
     expect((await p.ctx.get('/api/matchmaking/me')).status()).toBe(200);
@@ -466,16 +466,17 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
       sb.close();
     }
   });
-  test('1v1: off until an admin turns it on, then two players make a match', TAGS, async () => {
+  test('1v1: on by default, refused when an admin turns it off, then two players make a match', TAGS, async () => {
     const [a, b] = await Promise.all([player(), player()]);
     contexts.push(a.ctx, b.ctx);
-    const off = await a.ctx.post('/api/matchmaking/queue', { data: { mode: '1v1' } });
-    expect(off.status()).toBe(409);
-    expect((await off.json()).code).toBe('mode_off');
     expect((await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', 'bogus'] } })).status()).toBe(400);
-    expect((await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '1v1'] } })).ok()).toBe(true);
+    expect((await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5'] } })).ok()).toBe(true);
     try {
-      expect((await me(a.ctx)).modes).toEqual(['5v5', '1v1']);
+      const off = await a.ctx.post('/api/matchmaking/queue', { data: { mode: '1v1' } });
+      expect(off.status()).toBe(409);
+      expect((await off.json()).code).toBe('mode_off');
+      expect((await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '2v2', '1v1'] } })).ok()).toBe(true);
+      expect((await me(a.ctx)).modes).toEqual(['5v5', '2v2', '1v1']);
       for (const p of [a, b]) {
         const res = await p.ctx.post('/api/matchmaking/queue', { data: { mode: '1v1' } });
         expect(res.ok(), await res.text()).toBe(true);
@@ -489,7 +490,7 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
       expect(room.matchSlug).toMatch(/^mm-/);
       expect((await admin.get(`/api/matches/${room.matchSlug}`)).ok()).toBe(true);
     } finally {
-      await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5'] } });
+      await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '2v2', '1v1'] } });
     }
   });
   test('2v2 wingman on a pool the admin picked; the room carries the roulette pool', TAGS, async () => {
@@ -521,7 +522,7 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
       expect(room.mapPool.length).toBe(activeDuty!.maps);
       expect(room.mapPool.map((m) => m.id)).toContain(room.map);
     } finally {
-      await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5'], modePools: { '2v2': null } } });
+      await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '2v2', '1v1'], modePools: { '2v2': null } } });
     }
   });
 

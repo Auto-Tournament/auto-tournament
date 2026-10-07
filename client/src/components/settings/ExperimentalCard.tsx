@@ -1,27 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import MenuItem from '@mui/material/MenuItem';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { SettingsCardHead, SettingsRow } from './SettingsRow';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 
-interface SearchWindow {
-  start: number;
-  step: number;
-  cap: number;
-  /** null = never: the window never opens to any rating. */
-  uncappedAfterMinutes: number | null;
-}
-
-interface ExperimentalFeatureState {
+export interface ExperimentalFeatureState {
   id: string;
   enabled: boolean;
   source: 'env' | 'setting' | 'default';
@@ -32,97 +17,19 @@ interface ExperimentalFeatureState {
  * Settings → Experimental: turn work-in-progress features on or off
  * (`/api/experimental`). Each toggle saves on its own. A feature forced by
  * its environment variable shows the toggle disabled, with the variable's
- * name.
+ * name. Renders nothing while no feature is experimental; the page loads the
+ * list (`features`) so it can also hide the card around it.
  */
-export function ExperimentalCard() {
+export function ExperimentalCard({
+  features,
+  onChange,
+}: {
+  features: ExperimentalFeatureState[];
+  onChange: (features: ExperimentalFeatureState[]) => void;
+}) {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
-  const [features, setFeatures] = useState<ExperimentalFeatureState[] | null>(null);
-  const [saving, setSaving] = useState<string | null>(null);
-  // Matchmaking only: admins only until opened to players (null = not loaded).
-  const [mmOpen, setMmOpen] = useState<boolean | null>(null);
-  const [mmBoard, setMmBoard] = useState(false);
-  // The search window as typed (strings, so a field can be emptied while typing).
-  const [win, setWin] = useState<Record<keyof SearchWindow, string> | null>(null);
-  const [reserved, setReserved] = useState('0');
-  const [mmModes, setMmModes] = useState<string[]>([]);
-  const [allModes, setAllModes] = useState<string[]>([]);
-  const [pools, setPools] = useState<Array<{ id: number; name: string; maps: number }>>([]);
-  const [modePools, setModePools] = useState<Record<string, number>>({});
-  const mmEnabled = features?.find((f) => f.id === 'matchmaking')?.enabled ?? false;
-
-  useEffect(() => {
-    if (!mmEnabled) return;
-    api
-      .get<{
-        openToPlayers?: boolean;
-        leaderboardPublic?: boolean;
-        searchWindow?: SearchWindow;
-        reservedServers?: number;
-        modes?: string[];
-        allModes?: string[];
-        pools?: Array<{ id: number; name: string; maps: number }>;
-        modePools?: Record<string, number>;
-      }>(
-        '/api/matchmaking/status'
-      )
-      .then((res) => {
-        setMmOpen(res.openToPlayers === true);
-        setMmBoard(res.leaderboardPublic === true);
-        if (res.searchWindow) setWin(windowStrings(res.searchWindow));
-        setReserved(String(res.reservedServers ?? 0));
-        setMmModes(res.modes ?? []);
-        setAllModes(res.allModes ?? []);
-        setPools(res.pools ?? []);
-        setModePools(res.modePools ?? {});
-      })
-      .catch(() => setMmOpen(null));
-  }, [mmEnabled]);
-
-  const saveMm = async (patch: {
-    openToPlayers?: boolean;
-    leaderboardPublic?: boolean;
-    searchWindow?: SearchWindow;
-    reservedServers?: number;
-    modes?: string[];
-    modePools?: Record<string, number | null>;
-  }) => {
-    setSaving('matchmaking-open');
-    try {
-      const res = await api.put<{
-        openToPlayers: boolean;
-        leaderboardPublic: boolean;
-        searchWindow: SearchWindow;
-        reservedServers: number;
-        modes: string[];
-        modePools: Record<string, number>;
-      }>(
-        '/api/matchmaking/admin/settings',
-        patch
-      );
-      setMmOpen(res.openToPlayers);
-      setMmBoard(res.leaderboardPublic);
-      setWin(windowStrings(res.searchWindow));
-      setReserved(String(res.reservedServers));
-      setMmModes(res.modes);
-      setModePools(res.modePools ?? {});
-      showSuccess(t('settingsPage.experimental.saved'));
-    } catch (err) {
-      showError(apiErrorMessage(err, t('settingsPage.experimental.saveFailed')));
-    } finally {
-      setSaving(null);
-    }
-  };
-
-  useEffect(() => {
-    api
-      .get<{ features: ExperimentalFeatureState[] }>('/api/experimental')
-      .then((res) => setFeatures(res.features))
-      .catch((err) => {
-        setFeatures([]);
-        showError(apiErrorMessage(err, t('settingsPage.experimental.loadFailed')));
-      });
-  }, [showError, t]);
+  const [saving, setSaving] = React.useState<string | null>(null);
 
   const toggle = async (id: string, enabled: boolean) => {
     setSaving(id);
@@ -131,7 +38,7 @@ export function ExperimentalCard() {
         `/api/experimental/${encodeURIComponent(id)}`,
         { enabled }
       );
-      setFeatures((prev) => prev?.map((f) => (f.id === id ? res.feature : f)) ?? null);
+      onChange(features.map((f) => (f.id === id ? res.feature : f)));
       showSuccess(t('settingsPage.experimental.saved'));
     } catch (err) {
       showError(apiErrorMessage(err, t('settingsPage.experimental.saveFailed')));
@@ -140,7 +47,7 @@ export function ExperimentalCard() {
     }
   };
 
-  if (features === null) return null;
+  if (features.length === 0) return null;
 
   return (
     <Box data-testid="settings-experimental-card">
@@ -159,7 +66,6 @@ export function ExperimentalCard() {
                 t(`settingsPage.experimental.features.${feature.id}.description`)
               )
             }
-            openLabel={t(`settingsPage.experimental.features.${feature.id}.label`)}
             control={
               <Switch
                 checked={feature.enabled}
@@ -174,183 +80,9 @@ export function ExperimentalCard() {
                 }}
               />
             }
-          >
-            {feature.id === 'matchmaking' && feature.enabled && mmOpen !== null ? (
-              <Box>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={mmOpen}
-                      disabled={saving === 'matchmaking-open'}
-                      onChange={(event) => void saveMm({ openToPlayers: event.target.checked })}
-                      size="small"
-                      slotProps={{
-                        input: {
-                          'data-testid': 'settings-matchmaking-open',
-                        } as React.InputHTMLAttributes<HTMLInputElement>,
-                      }}
-                    />
-                  }
-                  label={t('settingsPage.experimental.features.matchmaking.openLabel')}
-                />
-                <Typography variant="caption" color="text.secondary" display="block">
-                  {t('settingsPage.experimental.features.matchmaking.openDescription')}
-                </Typography>
-                <FormControlLabel
-                  sx={{ mt: 1 }}
-                  control={
-                    <Switch
-                      checked={mmBoard}
-                      disabled={saving === 'matchmaking-open'}
-                      onChange={(event) => void saveMm({ leaderboardPublic: event.target.checked })}
-                      size="small"
-                      slotProps={{
-                        input: {
-                          'data-testid': 'settings-matchmaking-board',
-                        } as React.InputHTMLAttributes<HTMLInputElement>,
-                      }}
-                    />
-                  }
-                  label={t('settingsPage.experimental.features.matchmaking.boardLabel')}
-                />
-                <Typography variant="caption" color="text.secondary" display="block">
-                  {t('settingsPage.experimental.features.matchmaking.boardDescription')}
-                </Typography>
-                {win && (
-                  <Box mt={2}>
-                    <Typography variant="subtitle2">{t('settingsPage.experimental.features.matchmaking.windowTitle')}</Typography>
-                    <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                      {t('settingsPage.experimental.features.matchmaking.windowDescription')}
-                    </Typography>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ sm: 'center' }}>
-                      {(['start', 'step', 'cap', 'uncappedAfterMinutes'] as const).map((key) => (
-                        <TextField
-                          key={key}
-                          size="small"
-                          type="number"
-                          label={t(`settingsPage.experimental.features.matchmaking.window.${key}`)}
-                          value={win[key]}
-                          onChange={(e) => setWin({ ...win, [key]: e.target.value })}
-                          inputProps={{ min: key === 'uncappedAfterMinutes' ? 1 : 0, 'data-testid': `settings-mm-window-${key}` }}
-                          sx={{ maxWidth: 160 }}
-                        />
-                      ))}
-                      <Button
-                        disabled={saving === 'matchmaking-open'}
-                        onClick={() => void saveMm({ searchWindow: windowFromStrings(win) })}
-                        data-testid="settings-mm-window-save"
-                      >
-                        {t('settingsPage.experimental.features.matchmaking.windowSave')}
-                      </Button>
-                    </Stack>
-                    <Typography variant="subtitle2" mt={2}>
-                      {t('settingsPage.experimental.features.matchmaking.modesTitle')}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      {t('settingsPage.experimental.features.matchmaking.modesDescription')}
-                    </Typography>
-                    <Stack direction="row" spacing={2}>
-                      {allModes.map((m) => (
-                        <FormControlLabel
-                          key={m}
-                          label={t(`matchmaking.play.modeName.${m}`, { defaultValue: m })}
-                          control={
-                            <Checkbox
-                              size="small"
-                              checked={mmModes.includes(m)}
-                              disabled={saving === 'matchmaking-open' || (mmModes.length === 1 && mmModes.includes(m))}
-                              onChange={(e) =>
-                                void saveMm({
-                                  modes: e.target.checked ? [...mmModes, m] : mmModes.filter((x) => x !== m),
-                                })
-                              }
-                              inputProps={{ 'data-testid': `settings-mm-mode-${m}` } as React.InputHTMLAttributes<HTMLInputElement>}
-                            />
-                          }
-                        />
-                      ))}
-                    </Stack>
-                    <Typography variant="subtitle2" mt={2}>
-                      {t('settingsPage.experimental.features.matchmaking.poolsTitle')}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                      {t('settingsPage.experimental.features.matchmaking.poolsDescription')}
-                    </Typography>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                      {mmModes.map((m) => (
-                        <TextField
-                          key={m}
-                          select
-                          size="small"
-                          label={t(`matchmaking.play.modeName.${m}`, { defaultValue: m })}
-                          value={modePools[m] ? String(modePools[m]) : ''}
-                          onChange={(e) =>
-                            void saveMm({ modePools: { [m]: e.target.value ? Number(e.target.value) : null } })
-                          }
-                          SelectProps={{ displayEmpty: true }}
-                          InputLabelProps={{ shrink: true }}
-                          inputProps={{ 'data-testid': `settings-mm-pool-${m}` }}
-                          sx={{ minWidth: 200 }}
-                        >
-                          <MenuItem value="">
-                            {t(`settingsPage.experimental.features.matchmaking.poolDefault.${m}`, {
-                              defaultValue: t('settingsPage.experimental.features.matchmaking.poolDefault.5v5'),
-                            })}
-                          </MenuItem>
-                          {pools.map((p) => (
-                            <MenuItem key={p.id} value={String(p.id)}>
-                              {p.name} ({p.maps})
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      ))}
-                    </Stack>
-                    <Typography variant="subtitle2" mt={2}>
-                      {t('settingsPage.experimental.features.matchmaking.reservedTitle')}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                      {t('settingsPage.experimental.features.matchmaking.reservedDescription')}
-                    </Typography>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <TextField
-                        size="small"
-                        type="number"
-                        label={t('settingsPage.experimental.features.matchmaking.reservedLabel')}
-                        value={reserved}
-                        onChange={(e) => setReserved(e.target.value)}
-                        inputProps={{ min: 0, max: 50, 'data-testid': 'settings-mm-reserved' }}
-                        sx={{ maxWidth: 160 }}
-                      />
-                      <Button
-                        disabled={saving === 'matchmaking-open'}
-                        onClick={() => void saveMm({ reservedServers: Number(reserved) })}
-                        data-testid="settings-mm-reserved-save"
-                      >
-                        {t('settingsPage.experimental.features.matchmaking.windowSave')}
-                      </Button>
-                    </Stack>
-                  </Box>
-                )}
-              </Box>
-            ) : undefined}
-          </SettingsRow>
+          />
         ))}
       </Box>
     </Box>
   );
 }
-
-const windowStrings = (w: SearchWindow): Record<keyof SearchWindow, string> => ({
-  start: String(w.start),
-  step: String(w.step),
-  cap: String(w.cap),
-  uncappedAfterMinutes: w.uncappedAfterMinutes === null ? '' : String(w.uncappedAfterMinutes),
-});
-
-/** An empty "any rating after" field means never. The API validates the rest. */
-const windowFromStrings = (w: Record<keyof SearchWindow, string>): SearchWindow => ({
-  start: Number(w.start),
-  step: Number(w.step),
-  cap: Number(w.cap),
-  uncappedAfterMinutes: w.uncappedAfterMinutes.trim() === '' ? null : Number(w.uncappedAfterMinutes),
-});

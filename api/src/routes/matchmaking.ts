@@ -1,14 +1,12 @@
 /**
- * Matchmaking (docs/design/matchmaking.md). Experimental: every route here
- * answers 404 until the `matchmaking` feature is on. Admins only until an
- * admin opens it to players (`mm_open_to_players`).
+ * Matchmaking (docs/design/matchmaking.md). On by default for every signed-in
+ * player; an admin can close it to admins only (`mm_open_to_players` = '0').
  *
  * Phase 1: parties, the queue, accept / decline and cooldowns. Writes are
  * same-site JSON, by the signed-in player; no player ids in bodies.
  */
 import { Router, Request, Response, NextFunction } from 'express';
 import { requireAuth, requestActorId } from '../middleware/auth';
-import { requireExperimentalFeature } from '../services/experimentalFeatures';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { db } from '../config/database';
@@ -38,13 +36,12 @@ function searchWindowView(raw: string | null) {
   };
 }
 
-/** Setting: '1' lets every signed-in player use matchmaking, not just admins. */
+/** Setting: '0' limits matchmaking to admins. Unset means open to every signed-in player. */
 export const MM_OPEN_TO_PLAYERS = 'mm_open_to_players';
 
-type PlayerRequest = Request & { mmPlayerId?: string };
+const isOpenToPlayers = (raw: string | null | undefined): boolean => raw !== '0';
 
-// The flag first: while it is off, even an anonymous caller gets a 404.
-router.use(requireExperimentalFeature('matchmaking'));
+type PlayerRequest = Request & { mmPlayerId?: string };
 
 /** A signed-in player (not an API token). Admins always; others once matchmaking is open to players. */
 async function requirePlayer(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -57,7 +54,7 @@ async function requirePlayer(req: Request, res: Response, next: NextFunction): P
     res.status(403).json({ success: false, error: 'Stop impersonating to use matchmaking' });
     return;
   }
-  if (!identity.isRealAdmin && (await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS)) !== '1') {
+  if (!identity.isRealAdmin && !isOpenToPlayers(await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS))) {
     res.status(403).json({ success: false, error: 'Matchmaking is not open to players yet' });
     return;
   }
@@ -102,21 +99,19 @@ function handle(what: string, fn: (req: Request, res: Response) => Promise<unkno
  * /api/matchmaking/status:
  *   get:
  *     tags: [Matchmaking]
- *     summary: Matchmaking status (experimental)
+ *     summary: Matchmaking status
  *     description: |
- *       404 unless the experimental `matchmaking` feature is on. Admin only.
- *       Which modes exist and whether players may use it yet.
+ *       Which modes exist and whether players may use it (on unless an admin
+ *       closed it).
  *     responses:
  *       200:
- *         description: Matchmaking is on
- *       404:
- *         description: Matchmaking is off
+ *         description: Matchmaking status
  */
 router.get(
   '/status',
   requireAuth,
   handle('read the status', async (_req, res) => {
-    const open = (await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS)) === '1';
+    const open = isOpenToPlayers(await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS));
     const board = (await db.getAppSettingAsync(MM_LEADERBOARD_PUBLIC)) === '1';
     return res.json({
       success: true,
@@ -138,7 +133,7 @@ router.get(
  * /api/matchmaking/me:
  *   get:
  *     tags: [Matchmaking]
- *     summary: My party, search, match and cooldown (experimental)
+ *     summary: My party, search, match and cooldown
  *     description: |
  *       404 unless matchmaking is on. A signed-in player; admins only until
  *       matchmaking is open to players.
@@ -163,7 +158,7 @@ router.get(
  * /api/matchmaking/party:
  *   post:
  *     tags: [Matchmaking]
- *     summary: Create a party (experimental)
+ *     summary: Create a party
  *     description: Same-site JSON. Returns the caller's party (a new one with them as leader, or the one they are in) and its invite code.
  *     requestBody:
  *       content:
@@ -193,7 +188,7 @@ router.post(
  * /api/matchmaking/party/join:
  *   post:
  *     tags: [Matchmaking]
- *     summary: Join a party by invite code (experimental)
+ *     summary: Join a party by invite code
  *     description: Same-site JSON. Leaves the caller's current party first.
  *     requestBody:
  *       content:
@@ -259,7 +254,7 @@ router.put(
  * /api/matchmaking/party/leave:
  *   post:
  *     tags: [Matchmaking]
- *     summary: Leave the party (experimental)
+ *     summary: Leave the party
  *     description: Same-site JSON. The leader leaving disbands the party. Stops a search.
  *     responses:
  *       200:
@@ -282,7 +277,7 @@ router.post(
  * /api/matchmaking/queue:
  *   post:
  *     tags: [Matchmaking]
- *     summary: Start searching (experimental)
+ *     summary: Start searching
  *     description: Same-site JSON. Party leader only (a solo player gets a party of one). Refused while a party member is on cooldown.
  *     requestBody:
  *       content:
@@ -300,7 +295,7 @@ router.post(
  *         description: Cooldown, or the party is too big for the mode
  *   delete:
  *     tags: [Matchmaking]
- *     summary: Stop searching (experimental)
+ *     summary: Stop searching
  *     description: Same-site JSON. Party leader only.
  *     responses:
  *       200:
@@ -333,7 +328,7 @@ router.delete(
  * /api/matchmaking/lobbies/{id}/accept:
  *   post:
  *     tags: [Matchmaking]
- *     summary: Accept a found match (experimental)
+ *     summary: Accept a found match
  *     description: Same-site JSON. Only a player in that match, before the deadline.
  *     parameters:
  *       - in: path
@@ -363,7 +358,7 @@ router.post(
  * /api/matchmaking/lobbies/{id}/decline:
  *   post:
  *     tags: [Matchmaking]
- *     summary: Decline a found match (experimental)
+ *     summary: Decline a found match
  *     description: |
  *       Same-site JSON. The caller gets a cooldown and their party leaves the
  *       queue; every other party goes back to the front of the queue.
@@ -395,7 +390,7 @@ router.post(
  * /api/matchmaking/lobbies/{id}:
  *   get:
  *     tags: [Matchmaking]
- *     summary: The match room (experimental)
+ *     summary: The match room
  *     description: Only a player in that match. Teams with names and who accepted, the map, and the match once it exists.
  *     parameters:
  *       - in: path
@@ -421,7 +416,7 @@ router.get(
  * /api/matchmaking/matches/{slug}/result:
  *   get:
  *     tags: [Matchmaking]
- *     summary: The post-match screen (experimental)
+ *     summary: The post-match screen
  *     description: Only a player of that match. Map scores, the scoreboard, the caller's rating change, XP breakdown and level, and the commends they gave.
  *     parameters:
  *       - in: path
@@ -447,7 +442,7 @@ router.get(
  * /api/matchmaking/matches/{slug}/commends/{playerId}:
  *   put:
  *     tags: [Matchmaking]
- *     summary: Thumbs up or down for a player of the same match (experimental)
+ *     summary: Thumbs up or down for a player of the same match
  *     description: |
  *       Same-site JSON, within 24 hours of the match ending. Body `{ value: 1, tag? }`
  *       (tag: friendly, team_player, leader, good_comms) or `{ value: -1, tag }`
@@ -486,7 +481,7 @@ router.put(
  * /api/matchmaking/players/{id}/progress:
  *   get:
  *     tags: [Matchmaking]
- *     summary: A player's level, XP and commends (experimental)
+ *     summary: A player's level, XP and commends
  *     description: 404 while matchmaking is off. Level, XP into the level, thumbs up and down totals and the most given tags; never who gave them.
  *     parameters:
  *       - in: path
@@ -512,7 +507,7 @@ export const MM_LEADERBOARD_PUBLIC = 'mm_leaderboard_public';
  * /api/matchmaking/leaderboard:
  *   get:
  *     tags: [Matchmaking]
- *     summary: The matchmaking leaderboard (experimental)
+ *     summary: The matchmaking leaderboard
  *     description: |
  *       Players with at least 10 rated matches in the last 30 days, best
  *       conservative rating first (top 100). Signed-in players only, unless
@@ -544,7 +539,7 @@ router.get(
  * /api/matchmaking/players/{id}/history:
  *   get:
  *     tags: [Matchmaking]
- *     summary: A player's matchmaking matches (experimental)
+ *     summary: A player's matchmaking matches
  *     description: Newest first, with map, score, result and the rating before and after.
  *     parameters:
  *       - in: path
@@ -571,7 +566,7 @@ router.get(
  * /api/matchmaking/admin/players/{id}/xp:
  *   post:
  *     tags: [Matchmaking]
- *     summary: Add or remove XP by hand (experimental)
+ *     summary: Add or remove XP by hand
  *     description: Admin, same-site JSON. Body `{ amount, note }`; the total never goes below 0.
  *     parameters:
  *       - in: path
@@ -601,7 +596,7 @@ router.post(
  * /api/matchmaking/admin/settings:
  *   put:
  *     tags: [Matchmaking]
- *     summary: Matchmaking settings (experimental)
+ *     summary: Matchmaking settings
  *     description: Admin. `openToPlayers` lets every signed-in player use matchmaking.
  *     requestBody:
  *       content:
@@ -681,12 +676,12 @@ router.put(
     }
     if (reservedInput !== undefined) await db.setAppSettingAsync(MM_RESERVED_SERVERS, reservedInput ? String(reservedInput) : null);
     if (window !== undefined) await db.setAppSettingAsync(MM_SEARCH_WINDOW, JSON.stringify(window));
-    if (open !== undefined) await db.setAppSettingAsync(MM_OPEN_TO_PLAYERS, open ? '1' : null);
+    if (open !== undefined) await db.setAppSettingAsync(MM_OPEN_TO_PLAYERS, open ? null : '0');
     if (board !== undefined) await db.setAppSettingAsync(MM_LEADERBOARD_PUBLIC, board ? '1' : null);
     log.info(`[AUDIT] Matchmaking settings changed by ${requestActorId(req) ?? 'unknown'}`, { openToPlayers: open, leaderboardPublic: board });
     return res.json({
       success: true,
-      openToPlayers: (await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS)) === '1',
+      openToPlayers: isOpenToPlayers(await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS)),
       leaderboardPublic: (await db.getAppSettingAsync(MM_LEADERBOARD_PUBLIC)) === '1',
       searchWindow: searchWindowView(await db.getAppSettingAsync(MM_SEARCH_WINDOW)),
       reservedServers: parseReservedServers(await db.getAppSettingAsync(MM_RESERVED_SERVERS)),
@@ -701,7 +696,7 @@ router.put(
  * /api/matchmaking/admin/queue:
  *   get:
  *     tags: [Matchmaking]
- *     summary: The live queue (experimental)
+ *     summary: The live queue
  *     description: Admin. Parties searching (and how long), open lobbies, and penalties from the last 24 hours.
  *     responses:
  *       200:
@@ -720,7 +715,7 @@ router.get(
  * /api/matchmaking/admin/commends/review:
  *   get:
  *     tags: [Matchmaking]
- *     summary: Players to review for thumbs down (experimental)
+ *     summary: Players to review for thumbs down
  *     description: |
  *       Admin. Players with a thumbs down from 5 or more different voters in
  *       the last 30 days; voters in the same party in a match count as one.
@@ -742,7 +737,7 @@ router.get(
  * /api/matchmaking/admin/players/{id}/cooldown:
  *   delete:
  *     tags: [Matchmaking]
- *     summary: Clear a player's matchmaking cooldown (experimental)
+ *     summary: Clear a player's matchmaking cooldown
  *     description: Admin, same-site JSON.
  *     parameters:
  *       - in: path

@@ -7,10 +7,10 @@ import { settingsService, type CoreSettingKey } from './settingsService';
  *
  * Each feature is off by default. An admin turns it on under Settings →
  * Experimental (an `app_settings` row), or a developer sets its environment
- * variable. The variable wins over the stored setting, both ways:
- * `EXPERIMENTAL_MATCHMAKING=1` turns matchmaking on, `=0` keeps it off.
+ * variable. The variable wins over the stored setting, both ways.
  *
- * While a feature is off, none of it is reachable: its routes answer 404
+ * The list is empty right now: matchmaking graduated and is always on. The
+ * framework stays for the next feature that needs to ship dark. While a feature is off, none of it is reachable: its routes answer 404
  * (`requireExperimentalFeature`) and the client shows none of it.
  */
 
@@ -22,15 +22,9 @@ export interface ExperimentalFeature {
   env: string;
 }
 
-export const EXPERIMENTAL_FEATURES = [
-  {
-    id: 'matchmaking',
-    settingKey: 'experimental_matchmaking',
-    env: 'EXPERIMENTAL_MATCHMAKING',
-  },
-] as const satisfies ReadonlyArray<ExperimentalFeature>;
+export const EXPERIMENTAL_FEATURES: ReadonlyArray<ExperimentalFeature> = [];
 
-export type ExperimentalFeatureId = (typeof EXPERIMENTAL_FEATURES)[number]['id'];
+export type ExperimentalFeatureId = string;
 
 export interface ExperimentalFeatureState {
   id: ExperimentalFeatureId;
