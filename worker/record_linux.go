@@ -20,7 +20,7 @@ package main
 //	AT_SNIPER_RUN    Steam's SteamLinuxRuntime_sniper/run, which cs2.sh needs
 //	AT_RECORD_DIR    scratch space for raw frames (default: the system temp dir; ~6 GB a moment)
 //	AT_RESOLUTION    WIDTHxHEIGHT (default 2560x1440)
-//	AT_ENCODER       ffmpeg video encoder (default: hevc_nvenc on the GPU if it opens, else libx265; H.265 in MP4)
+//	AT_ENCODER       ffmpeg video encoder (default: h264_nvenc on the GPU if it opens, else libx264; H.264 in MP4)
 //	AT_AUDIO_TARGET  the PipeWire sink CS2 plays into (default: the default sink)
 //	AT_KEEP_SCRATCH  set to keep each moment's raw frames, sound and logs
 //
@@ -567,7 +567,8 @@ func (r *recorder) crossfadeFiles(paths []string, out string) error {
 	durations := make([]float64, len(paths))
 	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
 	for i, p := range paths {
-		b, err := exec.Command("ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", p).Output()
+		// The picture's length: the sound is cut or padded to it.
+		b, err := exec.Command("ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=duration", "-of", "csv=p=0", p).Output()
 		if err != nil {
 			return fmt.Errorf("ffprobe %s: %w", filepath.Base(p), err)
 		}
@@ -958,20 +959,20 @@ func recordFile(args []string) error {
 	return nil
 }
 
-// pickEncoder is the GPU's H.265 encoder when it opens (a second of test
-// video), else x265 on the CPU: same codec and container either way.
+// pickEncoder is the GPU's H.264 encoder when it opens (a second of test
+// video), else x264 on the CPU: same codec and container either way.
 func pickEncoder() string {
 	cmd := exec.Command("ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30", "-t", "1",
-		"-c:v", "hevc_nvenc", "-f", "null", "-")
+		"-c:v", "h264_nvenc", "-f", "null", "-")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		reason := strings.TrimSpace(string(out))
 		if i := strings.IndexByte(reason, '\n'); i > 0 {
 			reason = reason[:i]
 		}
-		log.Printf("NVENC is not available (%s): encoding H.265 on the CPU", reason)
-		return "libx265"
+		log.Printf("NVENC is not available (%s): encoding H.264 on the CPU", reason)
+		return "libx264"
 	}
-	return "hevc_nvenc"
+	return "h264_nvenc"
 }
 
 // joinReelFiles is `at-worker join-reel <out.mp4> <clip.mp4>...`: local clips

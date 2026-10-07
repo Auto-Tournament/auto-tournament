@@ -16,7 +16,9 @@ const (
 	rampSec     = 0.75 // game seconds slowing down from the kill (≈1 s of video)
 	holdSec     = 0.5  // game seconds at slowmoSpeed before the cut (1 s of video)
 	rampSteps   = 8    // a ramp is this many constant-speed pieces
-	outputFPS   = 120
+	outputFPS   = 60
+	// outputHeight is the height of every clip and reel (16:9).
+	outputHeight = 1080
 	// tailSec is how much game after the last kill a clip shows.
 	tailSec = rampSec + holdSec
 )
@@ -230,21 +232,31 @@ const reelCrossfade = 0.4
 
 // crossfadeFilter joins inputs 0..n-1, `durations` seconds long, each
 // blending into the next over reelCrossfade. Output [v] and [a].
+//
+// Each input's picture and sound are first made exactly its duration long
+// from 0: a clip's sound runs a few hundredths of a second shorter or longer
+// than its picture, and across a reel's blends those add up (1.6 s by the
+// tenth player of a pro reel), so the sound drifted off the picture.
 func crossfadeFilter(durations []float64) string {
-	if len(durations) == 1 {
-		return "[0:v]null[v];[0:a]anull[a]"
-	}
 	var b strings.Builder
+	for i, d := range durations {
+		fmt.Fprintf(&b, "[%d:v]setpts=PTS-STARTPTS,trim=duration=%.3f[v%din];", i, d, i)
+		fmt.Fprintf(&b, "[%d:a]asetpts=PTS-STARTPTS,apad,atrim=duration=%.3f[a%din];", i, d, i)
+	}
+	if len(durations) == 1 {
+		b.WriteString("[v0in]null[v];[a0in]anull[a]")
+		return b.String()
+	}
 	offset := 0.0
-	prevV, prevA := "0:v", "0:a"
+	prevV, prevA := "v0in", "a0in"
 	for i := 1; i < len(durations); i++ {
 		offset += durations[i-1] - reelCrossfade
 		v, a := fmt.Sprintf("v%d", i), fmt.Sprintf("a%d", i)
 		if i == len(durations)-1 {
 			v, a = "v", "a"
 		}
-		fmt.Fprintf(&b, "[%s][%d:v]xfade=transition=fade:duration=%g:offset=%.3f[%s];", prevV, i, reelCrossfade, offset, v)
-		fmt.Fprintf(&b, "[%s][%d:a]acrossfade=d=%g[%s];", prevA, i, reelCrossfade, a)
+		fmt.Fprintf(&b, "[%s][v%din]xfade=transition=fade:duration=%g:offset=%.3f[%s];", prevV, i, reelCrossfade, offset, v)
+		fmt.Fprintf(&b, "[%s][a%din]acrossfade=d=%g[%s];", prevA, i, reelCrossfade, a)
 		prevV, prevA = v, a
 	}
 	return strings.TrimSuffix(b.String(), ";")
@@ -253,23 +265,25 @@ func crossfadeFilter(durations []float64) string {
 // encodeArgs are the output settings every piece and the reel share, so the
 // pieces can be joined without re-encoding.
 //
-// H.265 in MP4 by default: about a third of the size of the H.264 it
-// replaced at the same look (1440p at 120 fps: ~13 Mbit/s instead of ~38).
-// It plays on Apple devices and in Chrome and Edge. Tagged `hvc1` so Safari
-// takes it. The choice follows Granum, Hansen et al., "Sustainable Web
-// Design Guidelines" (NTNU, 2023, https://hdl.handle.net/11250/3078735).
-// With a working NVENC, `AT_ENCODER=hevc_nvenc` makes the same on the GPU.
+// H.264 in MP4, 1080p at 60 fps: it plays everywhere a clip is shared,
+// Discord's player and Firefox included, which H.265 did not (a frozen
+// frame on Discord; Firefox has no H.265 at all). Captured at 120 fps and
+// 1440p, so the slow motion keeps a real frame for each frame shown; the file
+// people watch is 1080p60, about half the size of the H.265 1440p120 one.
+// H.265 stays available with AT_ENCODER=hevc_nvenc or libx265.
 func encodeArgs(encoder string) []string {
-	args := []string{"-c:v", encoder, "-r", fmt.Sprint(outputFPS), "-g", fmt.Sprint(2 * outputFPS)}
+	args := []string{"-c:v", encoder, "-r", fmt.Sprint(outputFPS), "-g", fmt.Sprint(2 * outputFPS),
+		"-s", fmt.Sprintf("%dx%d", outputHeight*16/9, outputHeight)}
 	switch encoder {
 	case "libx265":
 		args = append(args, "-preset", "fast", "-crf", "24", "-tag:v", "hvc1", "-x265-params", "log-level=error")
 	case "hevc_nvenc":
 		args = append(args, "-preset", "p6", "-tune", "hq", "-rc", "vbr", "-cq", "26", "-b:v", "0", "-tag:v", "hvc1")
 	case "libx264":
-		args = append(args, "-preset", "slow", "-crf", "18", "-profile:v", "high")
+		args = append(args, "-preset", "fast", "-crf", "21", "-profile:v", "high", "-pix_fmt", "yuv420p")
 	default: // h264_nvenc
-		args = append(args, "-cq", "19", "-preset", "p6")
+		args = append(args, "-preset", "p6", "-tune", "hq", "-rc", "vbr", "-cq", "23", "-b:v", "0",
+			"-maxrate", "16M", "-bufsize", "32M", "-profile:v", "high", "-pix_fmt", "yuv420p")
 	}
 	return append(args, "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2")
 }
