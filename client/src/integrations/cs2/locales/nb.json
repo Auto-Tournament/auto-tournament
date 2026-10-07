@@ -2004,5 +2004,71 @@
     },
     "readyIn": "klar om omtrent {{minutes}} min",
     "matchReelRecording": "Kampreel · tas opp"
+  },
+  "serversBoard": {
+    "addFirstServers": "Legg til de første serverne",
+    "addHelp": "På {{name}}. Nye servere får Ready Up og kobler seg til plattformen selv; de dukker opp under mens de lages.",
+    "autoUpdates": "Automatiske oppdateringer",
+    "close": "Lukk",
+    "createN_one": "Lag {{count}} server",
+    "createN_other": "Lag {{count}} servere",
+    "cs2UpToDate": "CS2 er oppdatert",
+    "cs2UpdateAvailable": "CS2 · oppdatering tilgjengelig",
+    "csmOnIt": "csm jobber med det",
+    "deleteLastOnly": "csm sletter bare den siste serveren på en maskin, så numrene holder seg i rekkefølge.",
+    "details": "Detaljer og aktivitet",
+    "errors": {
+      "command": "Kommandoen feilet"
+    },
+    "facts": {
+      "link": "Plattformkobling",
+      "match": "Kamp",
+      "ports": "Porter",
+      "restarts": "Omstarter (24 t)",
+      "since": "Kjørt siden",
+      "state": "Status",
+      "usage": "CPU · minne"
+    },
+    "fleetSettings": "Flåteinnstillinger",
+    "fleetSettingsAbout": "Start og stopp servere automatisk, flåtekoblingen, hva som sendes til alle servere, og failover.",
+    "health": "Serverhelse",
+    "linkNone": "Ikke registrert ennå",
+    "linkOffline": "Ikke koblet til",
+    "linkOnline": "Koblet til",
+    "machineOffline": "Maskinen er frakoblet",
+    "mapOf": "Kart {{n}} av {{count}}",
+    "matchHint": "En kamp spilles på denne serveren: å stoppe eller starte den på nytt krever en grunn, og failover kan flytte kampen først.",
+    "newServer": "Ny server {{n}}",
+    "notAnswering": "Svarer ikke",
+    "openMatch": "Åpne kampen",
+    "other": {
+      "about": "Lagt til med adresse, eller registrert på egen hånd. De fungerer fortsatt; nye servere lages på en maskin.",
+      "disabled": "Deaktivert",
+      "title": "Servere som ikke er på en maskin"
+    },
+    "restarts_one": "{{count}} omstart på 24 t",
+    "restarts_other": "{{count}} omstarter på 24 t",
+    "stoppedLine": "Starter når en kamp trenger den",
+    "summary": "Alle servere",
+    "update": "Oppdater",
+    "updateEllipsis": "Oppdater…",
+    "updatingWhat": "Oppdaterer {{what}}",
+    "versions": "Versjoner og oppdateringer",
+    "waitingForCsm": "Venter på csm",
+    "state": {
+      "free": "Ledig",
+      "match": "Kamp",
+      "starting": "Starter…",
+      "stopping": "Stopper…",
+      "restarting": "Starter på nytt…",
+      "updating": "Oppdaterer…",
+      "deleting": "Sletter…",
+      "stopped": "Stoppet",
+      "offline": "Nede",
+      "veto": "Veto",
+      "warmup": "Oppvarming",
+      "creating": "Lager…"
+    },
+    "offlineFor": "Frakoblet i {{time}}"
   }
 }

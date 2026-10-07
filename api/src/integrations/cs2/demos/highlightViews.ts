@@ -258,8 +258,15 @@ export async function playerReelViews(playerId: string, limit: number) {
   );
 }
 
-/** About how long the recorder takes per clip, for the "ready in about N min" hint. */
-export const MINUTES_PER_CLIP = 5;
+/**
+ * About how long the recorder takes, for the "ready in about N min" hint.
+ * Measured on the recorder VM (RTX 3060, 12 cores, 2026-10-07): a clip of
+ * three kills is about 70 s (its capture passes, seeks and the GPU encode),
+ * and each map costs one CS2 start and demo load, about 35 s, shared by
+ * every clip recorded from it.
+ */
+export const SECONDS_PER_CLIP = 70;
+export const SECONDS_PER_MAP = 35;
 
 /**
  * A player's clips still waiting for the recorder, and about how long until
@@ -273,11 +280,14 @@ export async function recordingQueue(playerId: string): Promise<{ count: number;
   );
   const count = Number(mine?.n ?? 0);
   if (!count) return null;
-  const ahead = await db.queryOneAsync<{ n: number | string }>(
-    "SELECT COUNT(*) AS n FROM cs2_highlights WHERE status = 'recording' OR (status = 'pending' AND score >= ?)",
+  const ahead = await db.queryOneAsync<{ n: number | string; maps: number | string }>(
+    `SELECT COUNT(*) AS n, COUNT(DISTINCT (match_slug, map_number)) AS maps FROM cs2_highlights
+      WHERE status = 'recording' OR (status = 'pending' AND score >= ?)`,
     [Number(mine?.lowest ?? 0)]
   );
-  return { count, etaMinutes: Math.max(1, Number(ahead?.n ?? count) * MINUTES_PER_CLIP) };
+  const clips = Number(ahead?.n ?? count);
+  const maps = Math.max(1, Number(ahead?.maps ?? 1));
+  return { count, etaMinutes: Math.max(1, Math.ceil((clips * SECONDS_PER_CLIP + maps * SECONDS_PER_MAP) / 60)) };
 }
 
 export async function favouriteOf(playerId: string): Promise<number | null> {

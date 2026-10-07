@@ -23,6 +23,7 @@ import {
   type HostInventoryPayload,
 } from '../protocol/host/v1';
 import { HostGateway, hostEvents } from './gateway';
+import { pushHostChanged } from './adminPush';
 import {
   commandTargets,
   indexFleetServers,
@@ -204,6 +205,8 @@ export async function sendHostCommand<T extends HostCommandType>(
   const delivered = session ? await session.flushOutbox() : false;
   const command = await registry.getHostCommand(id);
   if (!command) throw new Error('fleet: host command vanished');
+  // The Servers page shows the new command at once (it is pending now).
+  pushHostChanged(hostId);
   return { command, delivered };
 }
 

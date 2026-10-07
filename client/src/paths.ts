@@ -40,6 +40,7 @@ export const paths = {
   browse: '/browse',
   /** Every player: search, sort by rating / matches / name (public, signed in). */
   browsePlayers: '/browse/players',
+  leaderboards: '/leaderboards',
   browseTeams: '/browse/teams',
   /** Matchmaking: find a match, party, the match room. */
   play: '/play',

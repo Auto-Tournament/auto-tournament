@@ -593,6 +593,14 @@ Past results and aggregates for a team. Public.
 | `GET` | `/api/team/:teamId/history` | public |
 | `GET` | `/api/team/:teamId/stats` | public |
 
+### Leaderboard
+
+Players ranked by their rating in one game. Public.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/leaderboard` | public |
+
 ### Team directory
 
 Every team (public), and the signed-in player's own teams: list them, make one (one owned team per account).

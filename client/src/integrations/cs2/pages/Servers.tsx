@@ -1,64 +1,94 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Button, Typography, Chip, CircularProgress, IconButton, Tooltip } from '@mui/material';
-import { ArrowClockwiseIcon, GearSixIcon, PlusIcon } from '@phosphor-icons/react';
+/**
+ * Servers: the csm machines and the servers on them (Vikunja 1873, the draft
+ * website/drafts/platform/servers.html).
+ *
+ * Servers come only through csm now: a machine is linked with one command,
+ * and every server on it is created, started, stopped, restarted, updated and
+ * deleted from here. The platform talks to csm, never to a server by RCON.
+ * State is colour and a word on each tile; details and actions open in a side
+ * panel. Whatever is asked of csm shows at once and follows csm's progress
+ * over the socket. Fleet settings (scaling, the fleet link, what is pushed to
+ * servers, failover) sit behind one button.
+ */
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import ServerModal from '../servers/ServerModal';
-import BatchServerModal from '../servers/BatchServerModal';
-import { ServerRow } from '../servers/ServerRow';
-import FleetPanel from '../servers/FleetPanel';
-import MachinesPanel from '../servers/MachinesPanel';
+import { Box, Button, Menu, MenuItem, Typography } from '@mui/material';
+import { GearSixIcon, PlusIcon } from '@phosphor-icons/react';
+import {
+  api,
+  apiErrorMessage,
+  ConfirmDialog,
+  PageHead,
+  radii,
+  textSize,
+  tokens,
+  useModuleTranslation,
+  useSnackbar,
+} from '../../../module-sdk';
+import type { FleetHost } from '../cs2.types';
 import AutoScalePanel from '../servers/AutoScalePanel';
+import FleetPanel from '../servers/FleetPanel';
 import FleetPushPanel from '../servers/FleetPushPanel';
 import FailoverSettingsPanel from '../servers/FailoverSettingsPanel';
 import { OPEN_EVENT } from '../servers/openServerSection';
-import { ServerSection } from '../servers/ServerSection';
+import { countServers } from '../servers/machineState';
+import { insecureFlag } from '../servers/insecureLink';
 import { serverLimitText, useServerLimit } from '../servers/serverLimit';
-import type {
-  Server,
-  ServersResponse,
-  FleetServersResponse,
-  ServerStatusResponse,
-  ServerMatchesResponse,
-  FleetHost,
-} from '../cs2.types';
-import type { SnackbarKey } from 'notistack';
+import { useFleet } from '../servers/fleet/useFleet';
+import { useServerMatches } from '../servers/fleet/useServerMatches';
+import { MachineCard } from '../servers/fleet/MachineCard';
+import { ServerSheet } from '../servers/fleet/ServerSheet';
+import { MachineSheet } from '../servers/fleet/MachineSheet';
+import { SideSheet } from '../servers/fleet/SideSheet';
+import { FirstMachine } from '../servers/fleet/FirstMachine';
+import { OtherServers } from '../servers/fleet/OtherServers';
 import {
-  api,
-  ConfirmDialog,
-  ExternalLink,
-  useSnackbar,
-  openMatchDetails,
-  tokens,
-  withAlpha,
-  useModuleTranslation,
-  radii,
-  PageHead,
-  pageTitle,
-  FactGrid,
-  RowList,
-  type Fact,
-} from '../../../module-sdk';
+  AddMachineDialog,
+  AddServersDialog,
+  ForceDialog,
+  LinkDialog,
+  ReadyUpDialog,
+  type LinkInfo,
+} from '../servers/fleet/FleetDialogs';
+
+const { color } = tokens;
 
 const SETTINGS_SECTIONS = ['autoscale', 'fleet', 'fleet-settings', 'failover'];
 
+/** Online machines first; then the ones waiting to be linked, the offline ones, the revoked. */
+function hostRank(host: FleetHost): number {
+  if (host.status === 'enrolled') return host.online ? 0 : 2;
+  return host.status === 'pending' ? 1 : 3;
+}
+
 export default function Servers() {
-  const [servers, setServers] = useState<Server[]>([]);
-  // The csm machines (MachinesPanel loads them): their servers are shown there.
-  const [hosts, setHosts] = useState<FleetHost[]>([]);
-  const [addMachineRequest, setAddMachineRequest] = useState(0);
-  const [searchParams] = useSearchParams();
-  const openMachine = searchParams.get('machine');
-  // Scaling, fleet, push and failover sit behind the settings button; a link
-  // to one of them (#autoscale, openServerSection) opens them.
-  const [showSettings, setShowSettings] = useState(() =>
-    SETTINGS_SECTIONS.includes(window.location.hash.slice(1))
-  );
+  const { t } = useModuleTranslation('cs2');
+  const { showSnackbar, showError } = useSnackbar();
+  const fleet = useFleet();
+  const { hosts, loaded } = fleet;
+  const matches = useServerMatches();
+  const limit = useServerLimit();
+  const [params, setParams] = useSearchParams();
+
+  // A machine's panel is `?machine=<id>` (links from elsewhere open it); a server's is local.
+  const machineId = params.get('machine');
+  const openMachine = (id: string | null) =>
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (id) next.set('machine', id);
+      else next.delete('machine');
+      return next;
+    });
+  const [serverOpen, setServerOpen] = useState<{ hostId: string; name: string } | null>(null);
+
+  // Fleet settings: the button, `#autoscale` and friends, or openServerSection().
+  const [settingsOpen, setSettingsOpen] = useState(() => SETTINGS_SECTIONS.includes(window.location.hash.slice(1)));
   useEffect(() => {
     const onOpen = (e: Event) => {
-      if (SETTINGS_SECTIONS.includes((e as CustomEvent<string>).detail)) setShowSettings(true);
+      if (SETTINGS_SECTIONS.includes((e as CustomEvent<string>).detail)) setSettingsOpen(true);
     };
     const onHash = () => {
-      if (SETTINGS_SECTIONS.includes(window.location.hash.slice(1))) setShowSettings(true);
+      if (SETTINGS_SECTIONS.includes(window.location.hash.slice(1))) setSettingsOpen(true);
     };
     window.addEventListener(OPEN_EVENT, onOpen);
     window.addEventListener('hashchange', onHash);
@@ -67,1137 +97,333 @@ export default function Servers() {
       window.removeEventListener('hashchange', onHash);
     };
   }, []);
-  // Ready Up servers that enrolled but are not in the match pool (no
-  // cs2_servers row yet, e.g. a practice server). Listed by FleetPanel; counted
-  // here so the page never says "no servers" while it shows one.
-  const [unlinkedFleetCount, setUnlinkedFleetCount] = useState(0);
-  const { showError, showSnackbar, showPersistentError, closeSnackbar } = useSnackbar();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [batchModalOpen, setBatchModalOpen] = useState(false);
-  const [editingServer, setEditingServer] = useState<Server | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loadingMatchServerId, setLoadingMatchServerId] = useState<string | null>(null);
-  const [allocationLoading, setAllocationLoading] = useState(false);
-  const [allocationStatus, setAllocationStatus] = useState<{
-    availableServerCount: number;
-    requiredServerCount: number;
-    gracePeriodSeconds: number;
-    nextAllocationInSeconds: number | null;
-    servers: Array<{
-      id: string;
-      name: string;
-      online: boolean;
-      status: string | null;
-      matchSlug: string | null;
-      updatedAt: number | null;
-      inGraceWindow: boolean;
-      secondsUntilReady: number | null;
-      allocatable: boolean;
-    }>;
-  } | null>(null);
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedServerIds, setSelectedServerIds] = useState<Set<string>>(() => new Set());
-  const [retryingServerId, setRetryingServerId] = useState<string | null>(null);
-  const [retryingAll, setRetryingAll] = useState(false);
-  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
-  const [statusCheckingIds, setStatusCheckingIds] = useState<Set<string>>(() => new Set());
-  const [latestPluginVersion, setLatestPluginVersion] = useState<string | null>(null);
-  const [latestPluginReleaseUrl, setLatestPluginReleaseUrl] = useState<string | null>(null);
-  const [cs2OutdatedSnackbarKey, setCs2OutdatedSnackbarKey] = useState<SnackbarKey | null>(null);
-  const { t } = useModuleTranslation('cs2');
-  const serverLimit = useServerLimit();
 
-  const compareDottedVersions = React.useCallback((a: string, b: string): number | null => {
-    const normalize = (v: string) => {
-      const cleaned = v.trim().replace(/^v/i, '').split('-')[0]; // drop leading v + prerelease
-      const parts = cleaned.split('.').map((p) => Number(p));
-      if (parts.length === 0 || parts.some((n) => !Number.isFinite(n))) return null;
-      return parts;
-    };
-
-    const pa = normalize(a);
-    const pb = normalize(b);
-    if (!pa || !pb) return null;
-
-    const len = Math.max(pa.length, pb.length);
-    for (let i = 0; i < len; i++) {
-      const na = pa[i] ?? 0;
-      const nb = pb[i] ?? 0;
-      if (na !== nb) return na < nb ? -1 : 1;
-    }
-    return 0;
-  }, []);
-
-  // Set dynamic page title
+  const [menu, setMenu] = useState<{ host: FleetHost; anchor: HTMLElement } | null>(null);
+  const [addServersFor, setAddServersFor] = useState<FleetHost | null>(null);
+  const [readyUpFor, setReadyUpFor] = useState<FleetHost | null>(null);
+  const [deleteServer, setDeleteServer] = useState<{ host: FleetHost; server: string } | null>(null);
+  const [pending, setPending] = useState<{ action: 'revoke' | 'remove'; host: FleetHost } | null>(null);
+  const [addMachineOpen, setAddMachineOpen] = useState(false);
+  const [link, setLink] = useState<LinkInfo | null>(null);
+  const [linkInline, setLinkInline] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [licenseMax, setLicenseMax] = useState<number | null>(null);
   useEffect(() => {
-    document.title = pageTitle(t('serversPage.title'));
-  }, [t]);
-
-  const checkServerStatus = async (
-    serverId: string,
-    /**
-     * When true (default), hit the lightweight cached status endpoint so we
-     * don't spam live connectivity checks. When false, call the full
-     * `/status` route to force an up-to-date connectivity test – used for
-     * manual refreshes initiated by the admin.
-     */
-    options?: { useCached?: boolean }
-  ): Promise<{
-    status: 'online' | 'offline';
-    currentMatch: string | null;
-    queuedMatch?: string | null;
-    reachableFromApi?: boolean;
-    serverCanReachApi?: boolean;
-    pluginStatus?: string | null;
-    allocationState?: string | null;
-    allocationMatchSlug?: string | null;
-    ipBanned?: boolean;
-    cs2BuildId?: number | null;
-    cs2VersionString?: string | null;
-    cs2VersionFetchedAt?: number | null;
-    cs2RequiredVersion?: number | null;
-    cs2UpdatePhase?: string | null;
-    cs2UpdateCheckedAt?: number | null;
-  }> => {
-    try {
-      const useCached = options?.useCached !== false;
-      // Default behaviour is to use the lightweight cached status endpoint so
-      // we don't spam live connectivity checks on every automatic refresh.
-      // When the admin explicitly clicks the "Refresh" button, we call this
-      // function with `useCached: false` to force a live status check instead.
-      const endpoint = useCached
-        ? `/api/servers/${serverId}/status?cached=true`
-        : `/api/servers/${serverId}/status`;
-      const response = await api.get<ServerStatusResponse>(endpoint);
-      const isOnline = response.status === 'online';
-      return {
-        status: isOnline ? 'online' : ('offline' as const),
-        currentMatch: response.currentMatch ?? null,
-        queuedMatch: response.queuedMatch ?? null,
-        reachableFromApi: response.reachableFromApi,
-        serverCanReachApi: response.serverCanReachApi,
-        pluginStatus: response.pluginStatus ?? null,
-        allocationState: response.allocationState ?? null,
-        allocationMatchSlug: response.allocationMatchSlug ?? null,
-        ipBanned: response.ipBanned ?? false,
-        cs2BuildId: response.cs2BuildId ?? null,
-        cs2VersionString: response.cs2VersionString ?? null,
-        cs2VersionFetchedAt: response.cs2VersionFetchedAt ?? null,
-        cs2RequiredVersion: response.cs2RequiredVersion ?? null,
-        cs2UpdatePhase: response.cs2UpdatePhase ?? null,
-        cs2UpdateCheckedAt: response.cs2UpdateCheckedAt ?? null,
-      };
-    } catch {
-      return {
-        status: 'offline',
-        currentMatch: null,
-        queuedMatch: null,
-        reachableFromApi: false,
-        serverCanReachApi: false,
-        pluginStatus: null,
-        allocationState: null,
-        allocationMatchSlug: null,
-        ipBanned: false,
-        cs2BuildId: null,
-        cs2VersionString: null,
-        cs2VersionFetchedAt: null,
-        cs2RequiredVersion: null,
-        cs2UpdatePhase: null,
-        cs2UpdateCheckedAt: null,
-      };
-    }
-  };
-
-  const loadServers = useCallback(
-    async (options?: { useCached?: boolean; autoRetry?: boolean }) => {
-    setRefreshing(true);
-    try {
-      const [response, fleet] = await Promise.all([
-        api.get<ServersResponse>('/api/servers'),
-        api.get<FleetServersResponse>('/api/fleet/servers').catch(() => null),
-      ]);
-      const serverList = response.servers || [];
-      setUnlinkedFleetCount((fleet?.servers ?? []).filter((s) => !s.linkedServerId).length);
-
-      // Determine an initial status without treating "no recent events" as offline.
-      // Actual reachability is populated shortly after via `/api/servers/:id/status`.
-      const serversWithStatus = serverList.map((s: Server) => {
-        let initialStatus: string;
-        if (!s.enabled) {
-          initialStatus = 'disabled';
-        } else if (s.status === 'offline') {
-          initialStatus = 'offline';
-        } else if (!s.lastSeen) {
-          initialStatus = 'unknown'; // Never connected
-        } else {
-          initialStatus = 'online';
-        }
-        
-        return {
-          ...s,
-          status: initialStatus,
-        };
-      });
-      setServers(serversWithStatus);
-
-      // Check status for all enabled servers (including unconfigured) so we can show
-      // "API can reach server" / "server can reach API" even when MatchZy Enhanced hasn't sent events yet.
-      const enabledServersToCheck = serverList.filter((s) => s.enabled);
-
-      if (enabledServersToCheck.length === 0) {
-        setRefreshing(false);
-        return;
-      }
-
-      const checkingIds = new Set(enabledServersToCheck.map((s) => s.id));
-      setStatusCheckingIds(checkingIds);
-
-      const mergeStatusIntoServer = (
-        prev: Server[],
-        serverId: string,
-        statusInfo: {
-          status?: 'online' | 'offline';
-          currentMatch?: string | null;
-          queuedMatch?: string | null;
-          reachableFromApi?: boolean;
-          serverCanReachApi?: boolean;
-          pluginStatus?: string | null;
-          allocationState?: string | null;
-          allocationMatchSlug?: string | null;
-          ipBanned?: boolean;
-          cs2BuildId?: number | null;
-          cs2VersionString?: string | null;
-          cs2VersionFetchedAt?: number | null;
-          cs2RequiredVersion?: number | null;
-          cs2UpdatePhase?: string | null;
-          cs2UpdateCheckedAt?: number | null;
-        }
-      ) =>
-        prev.map((server) => {
-          if (server.id !== serverId || !server.enabled) return server;
-          const nextQueuedMatch =
-            statusInfo.queuedMatch !== undefined
-              ? statusInfo.queuedMatch
-              : (server as Server & { queuedMatch?: string | null }).queuedMatch ?? null;
-          return {
-            ...server,
-            status: (statusInfo.status || server.status) as Server['status'],
-            currentMatch: statusInfo.currentMatch !== undefined ? statusInfo.currentMatch : server.currentMatch ?? null,
-            queuedMatch: nextQueuedMatch,
-            reachableFromApi: statusInfo.reachableFromApi !== undefined ? statusInfo.reachableFromApi : server.reachableFromApi,
-            serverCanReachApi: statusInfo.serverCanReachApi !== undefined ? statusInfo.serverCanReachApi : server.serverCanReachApi,
-            ipBanned: statusInfo.ipBanned !== undefined ? statusInfo.ipBanned : (server.ipBanned ?? false),
-            pluginStatus: statusInfo.pluginStatus !== undefined ? statusInfo.pluginStatus : server.pluginStatus ?? null,
-            allocationState: statusInfo.allocationState !== undefined ? statusInfo.allocationState : server.allocationState ?? null,
-            allocationMatchSlug: statusInfo.allocationMatchSlug !== undefined ? statusInfo.allocationMatchSlug : server.allocationMatchSlug ?? null,
-            cs2BuildId: statusInfo.cs2BuildId !== undefined ? statusInfo.cs2BuildId : server.cs2BuildId ?? null,
-            cs2VersionString:
-              statusInfo.cs2VersionString !== undefined ? statusInfo.cs2VersionString : server.cs2VersionString ?? null,
-            cs2VersionFetchedAt:
-              statusInfo.cs2VersionFetchedAt !== undefined
-                ? statusInfo.cs2VersionFetchedAt
-                : server.cs2VersionFetchedAt ?? null,
-            cs2RequiredVersion:
-              statusInfo.cs2RequiredVersion !== undefined
-                ? statusInfo.cs2RequiredVersion
-                : server.cs2RequiredVersion ?? null,
-            cs2UpdatePhase:
-              statusInfo.cs2UpdatePhase !== undefined
-                ? statusInfo.cs2UpdatePhase
-                : server.cs2UpdatePhase ?? null,
-            cs2UpdateCheckedAt:
-              statusInfo.cs2UpdateCheckedAt !== undefined
-                ? statusInfo.cs2UpdateCheckedAt
-                : server.cs2UpdateCheckedAt ?? null,
-          };
-        });
-
-      const removeFromChecking = (id: string) => {
-        setStatusCheckingIds((prev) => {
-          const next = new Set(prev);
-          next.delete(id);
-          return next;
-        });
-      };
-
-      const statusPromises = enabledServersToCheck.map(async (server: Server) => {
-        try {
-          const {
-            status,
-            currentMatch,
-            queuedMatch,
-            reachableFromApi,
-            serverCanReachApi,
-            pluginStatus,
-            allocationState,
-            allocationMatchSlug,
-            ipBanned,
-            cs2BuildId,
-            cs2VersionString,
-            cs2VersionFetchedAt,
-          } = await checkServerStatus(server.id, { useCached: options?.useCached });
-          const statusInfo = {
-            status,
-            currentMatch,
-            queuedMatch,
-            reachableFromApi,
-            serverCanReachApi,
-            pluginStatus,
-            allocationState,
-            allocationMatchSlug,
-            ipBanned,
-            cs2BuildId,
-            cs2VersionString,
-            cs2VersionFetchedAt,
-          };
-          setServers((prev) => mergeStatusIntoServer(prev, server.id, statusInfo));
-          return { server, statusInfo };
-        } catch {
-          // Leave server state unchanged; avoid sticking in "Checking..." forever
-          return null;
-        } finally {
-          removeFromChecking(server.id);
-        }
-      });
-
-      const results = await Promise.allSettled(statusPromises);
-      
-      // Auto-retry servers that need initialization (unless explicitly disabled)
-      if (options?.autoRetry !== false) {
-        const serversNeedingRetry: Server[] = [];
-        
-        results.forEach((result) => {
-          if (result.status === 'fulfilled' && result.value) {
-            const { server, statusInfo } = result.value;
-            const needsConfig = !server.persistentConfigSent || statusInfo.serverCanReachApi === false;
-            if (needsConfig && statusInfo.reachableFromApi) {
-              serversNeedingRetry.push(server);
-            }
-          }
-        });
-
-        if (serversNeedingRetry.length > 0) {
-          // Trigger auto-retry in background without blocking
-          void (async () => {
-            for (const server of serversNeedingRetry) {
-              try {
-                await api.post(`/api/servers/${server.id}/reset-initialization`);
-                await new Promise((r) => setTimeout(r, 400));
-              } catch (e) {
-                console.warn(`Auto-retry failed for ${server.id}:`, e);
-              }
-            }
-            // Reload after auto-retry completes
-            setTimeout(() => void loadServers({ useCached: true, autoRetry: false }), 1500);
-          })();
-        }
-      }
-    } catch (err) {
-      showError(t('serversPage.errors.loadServers'));
-      console.error(err);
-      setStatusCheckingIds(() => new Set());
-    } finally {
-      setRefreshing(false);
-    }
-  },
-  [showError, t]);
-
-  const loadAllocationStatus = useCallback(async () => {
-    setAllocationLoading(true);
-    try {
-      const availability = await api.get<{
-        success: boolean;
-        availableServerCount: number;
-        requiredServerCount: number;
-        gracePeriodSeconds?: number;
-        nextAllocationInSeconds?: number | null;
-        servers?: Array<{
-          id: string;
-          name: string;
-          online: boolean;
-          status: string | null;
-          matchSlug: string | null;
-          updatedAt: number | null;
-          inGraceWindow: boolean;
-          secondsUntilReady: number | null;
-          allocatable: boolean;
-        }>;
-        simulationEnabled?: boolean;
-      }>('/api/tournament/server-availability');
-
-      if (availability.success) {
-        setAllocationStatus({
-          availableServerCount: availability.availableServerCount,
-          requiredServerCount: availability.requiredServerCount,
-          gracePeriodSeconds: availability.gracePeriodSeconds ?? 120,
-          nextAllocationInSeconds:
-            typeof availability.nextAllocationInSeconds === 'number'
-              ? availability.nextAllocationInSeconds
-              : null,
-          servers: availability.servers ?? [],
-        });
-      } else {
-        setAllocationStatus(null);
-      }
-    } catch (err) {
-      console.error('Failed to load server allocation status:', err);
-    } finally {
-      setAllocationLoading(false);
-    }
-  }, []);
-
-  const uninitializedCount = React.useMemo(
-    () => servers.filter((s) => s.enabled && !s.lastSeen).length,
-    [servers]
-  );
-
-  const handleRetryAllUninitialized = useCallback(async () => {
-    const needRetry = servers.filter((s) => s.enabled && !s.lastSeen);
-    if (needRetry.length === 0 || retryingAll) return;
-
-    setRetryingAll(true);
-    const loadingKey = showSnackbar(
-      t('serversPage.retry.retryingAll', { count: needRetry.length }),
-      'info'
-    );
-
-    try {
-      for (const server of needRetry) {
-        await api.post(`/api/servers/${server.id}/reset-initialization`);
-        await new Promise((r) => setTimeout(r, 500));
-      }
-      closeSnackbar(loadingKey);
-      showSnackbar(`✅ ${t('serversPage.retry.triggeredAll', { count: needRetry.length })}`, 'success');
-      setTimeout(() => void loadServers({ useCached: false }), 1500);
-    } catch (error) {
-      closeSnackbar(loadingKey);
-      const raw = error instanceof Error ? error.message : String(error);
-      let msg = raw;
-      try {
-        const parsed = JSON.parse(raw) as { error?: string };
-        if (typeof parsed?.error === 'string' && parsed.error.length > 0) {
-          msg = parsed.error;
-        }
-      } catch {
-        /* use raw */
-      }
-      showError(`❌ ${t('serversPage.retry.failedAll', { message: msg })}`);
-    } finally {
-      setRetryingAll(false);
-    }
-  }, [
-    servers,
-    retryingAll,
-    showSnackbar,
-    closeSnackbar,
-    showError,
-    loadServers,
-    t,
-  ]);
-
-  const allSelected =
-    servers.length > 0 && servers.every((server) => selectedServerIds.has(server.id));
-
-  // The page's own actions, beside its title (the drafts' `.head`), once
-  // there is a server; the empty state offers them itself.
-  const headActions =
-    servers.length === 0 ? null : (
-      <>
-        {!selectionMode && (
-          <>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={refreshing ? <CircularProgress size={20} /> : <ArrowClockwiseIcon size={24} />}
-              onClick={() => {
-                void loadServers({ useCached: false });
-                void loadAllocationStatus();
-              }}
-              disabled={refreshing}
-            >
-              {refreshing
-                ? t('serversPage.headerActions.refreshChecking')
-                : t('serversPage.headerActions.refresh')}
-            </Button>
-            {uninitializedCount > 0 && (
-              <Button
-                variant="outlined"
-                size="small"
-                color="warning"
-                startIcon={
-                  retryingAll ? (
-                    <CircularProgress size={20} />
-                  ) : (
-                    <ArrowClockwiseIcon size={24} />
-                  )
-                }
-                onClick={() => void handleRetryAllUninitialized()}
-                disabled={retryingAll || refreshing}
-              >
-                {retryingAll
-                  ? t('serversPage.headerActions.retryUninitializedChecking')
-                  : t('serversPage.headerActions.retryUninitialized', {
-                      count: uninitializedCount,
-                    })}
-              </Button>
-            )}
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<PlusIcon size={24} />}
-              onClick={() => setBatchModalOpen(true)}
-            >
-              {t('serversPage.headerActions.batchAdd')}
-            </Button>
-          </>
-        )}
-        {servers.length > 0 && (
-          <>
-            <Button
-              variant={selectionMode ? 'contained' : 'outlined'}
-              color={selectionMode ? 'secondary' : 'inherit'}
-              size="small"
-              onClick={() => {
-                setSelectionMode((prev) => !prev);
-                if (selectionMode) {
-                  setSelectedServerIds(() => new Set());
-                }
-              }}
-            >
-              {selectionMode
-                ? t('serversPage.headerActions.done')
-                : t('serversPage.headerActions.select')}
-            </Button>
-            {selectionMode && (
-              <>
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  size="small"
-                  disabled={servers.length === 0}
-                  onClick={() => {
-                    setSelectedServerIds((prev) => {
-                      const next = new Set(prev);
-                      if (allSelected) {
-                        next.clear();
-                      } else {
-                        servers.forEach((server) => {
-                          next.add(server.id);
-                        });
-                      }
-                      return next;
-                    });
-                  }}
-                >
-                  {allSelected
-                    ? t('serversPage.headerActions.unselectAll')
-                    : t('serversPage.headerActions.selectAll')}
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  size="small"
-                  disabled={selectedServerIds.size === 0}
-                  onClick={() => {
-                    if (selectedServerIds.size === 0) return;
-                    setBulkDeleteConfirmOpen(true);
-                  }}
-                >
-                  {t('serversPage.headerActions.deleteSelected')}
-                </Button>
-              </>
-            )}
-          </>
-        )}
-      </>
-    );
-
-  // Adding a server by address is the side door now; machines are the front one.
-  const addByAddress = (
-    <Button
-      data-testid="add-server-button"
-      variant="outlined"
-      size="small"
-      startIcon={<PlusIcon size={20} />}
-      onClick={() => handleOpenModal()}
-    >
-      {t('serversPage.headerActions.addServer')}
-    </Button>
-  );
-
-  useEffect(() => {
-    // Initial page load uses cached status to avoid hammering servers when the
-    // Always do full connectivity checks to show real server status (not cached)
-    void loadServers({ useCached: false });
-    void loadAllocationStatus();
-    
-    // Fetch latest MatchZy Enhanced version from GitHub
     api
-      .get<{ success: boolean; version?: string; releaseUrl?: string }>('/api/cs2-plugin/latest-version')
-      .then((response) => {
-        if (response.success && response.version) {
-          setLatestPluginVersion(response.version);
-          setLatestPluginReleaseUrl(response.releaseUrl ?? null);
-        }
-      })
-      .catch(() => {
-        // Silently fail - not critical
-      });
-  }, [loadServers, loadAllocationStatus]);
+      .get<{ license?: { maxServers?: number } | null }>('/api/license')
+      .then((res) => setLicenseMax(typeof res?.license?.maxServers === 'number' ? res.license.maxServers : null))
+      .catch(() => setLicenseMax(null));
+  }, []);
 
-  // 🚨 Urgent: keep an error snackbar on screen while any enabled server reports CS2 update required.
-  useEffect(() => {
-    const outdatedEnabledServers = servers.filter(
-      (s) => s.enabled && typeof s.cs2RequiredVersion === 'number'
-    );
+  const linkCommand = (code: string) => `csm link ${window.location.origin} ${code}${insecureFlag()}`;
 
-    if (outdatedEnabledServers.length > 0) {
-      if (!cs2OutdatedSnackbarKey) {
-        const key = showPersistentError(
-          <span>
-            🚨 <strong>{t('serversPage.cs2Update.title')}</strong> —{' '}
-            {t('serversPage.cs2Update.snackbarBody', { count: outdatedEnabledServers.length })}
-          </span>,
-          'cs2-update-required'
-        );
-        setCs2OutdatedSnackbarKey(key);
-      }
-    } else if (cs2OutdatedSnackbarKey) {
-      closeSnackbar(cs2OutdatedSnackbarKey);
-      setCs2OutdatedSnackbarKey(null);
-    }
-  }, [servers, cs2OutdatedSnackbarKey, showPersistentError, closeSnackbar, t]);
-
-  const handleOpenModal = (server?: Server) => {
-    setEditingServer(server || null);
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setEditingServer(null);
-  };
-
-  /**
-   * Runs after a server is created, updated or deleted.
-   *
-   * Note this deliberately does NOT close the modal: ServerModal already calls
-   * onClose() itself, synchronously, right after onSave(). This function is
-   * async and can run for several seconds — auto-configuration posts to each
-   * new server with a 400ms gap, then schedules another reload 1.5s later — so
-   * a close here lands long after the dialog is gone, and shuts whatever the
-   * user has opened in the meantime.
-   */
-  const handleSave = async (createdIds?: string[]) => {
-    await loadServers({ useCached: false });
-    if (createdIds?.length) {
-      const key = showSnackbar(t('serversPage.autoConfig.configuring'), 'info');
+  const addMachine = useCallback(
+    async (name: string, inline: boolean) => {
+      setBusy(true);
       try {
-        for (const id of createdIds) {
-          try {
-            await api.post(`/api/servers/${id}/reset-initialization`);
-          } catch (e) {
-            console.warn(`Auto-init failed for ${id}:`, e);
-          }
-          await new Promise((r) => setTimeout(r, 400));
-        }
-        closeSnackbar(key);
-        showSnackbar(`✅ ${t('serversPage.autoConfig.done')}`, 'success');
-        setTimeout(() => void loadServers({ useCached: false }), 1500);
-      } catch {
-        closeSnackbar(key);
+        const res = await api.post<{ host: FleetHost; code: string; expiresAt: number }>('/api/fleet/hosts', name ? { name } : {});
+        setAddMachineOpen(false);
+        setLinkInline(inline);
+        setLink({ hostId: res.host.id, name: res.host.name, command: linkCommand(res.code), expiresAt: res.expiresAt });
+        await fleet.load();
+      } catch (err) {
+        showError(apiErrorMessage(err, t('machinesPanel.errors.add', { defaultValue: 'Could not add the machine' })));
+      } finally {
+        setBusy(false);
       }
-    }
-  };
+    },
+    [fleet, showError, t]
+  );
 
-  const handleViewCurrentMatch = async (server: Server, event: React.MouseEvent) => {
-    event.stopPropagation();
-
-    if (!server.id) return;
-
-    setLoadingMatchServerId(server.id);
+  const newCode = async (host: FleetHost) => {
     try {
-      const response = await api.get<ServerMatchesResponse>(
-        `/api/matches?serverId=${encodeURIComponent(server.id)}`
-      );
-
-      if (response.success && Array.isArray(response.matches) && response.matches.length > 0) {
-        const activeMatches = response.matches.filter(
-          (m) => m.status === 'live' || m.status === 'loaded'
-        );
-        const matchToShow = activeMatches[0] || response.matches[0];
-        // Core's match details dialog; resolves once it is showing.
-        await openMatchDetails(matchToShow.slug);
-      } else {
-        showError(t('serversPage.errors.noMatchesForServer'));
-      }
+      const res = await api.post<{ code: string; expiresAt: number }>(`/api/fleet/hosts/${host.id}/code`);
+      setLinkInline(false);
+      setLink({ hostId: host.id, name: host.name, command: linkCommand(res.code), expiresAt: res.expiresAt });
     } catch (err) {
-      console.error('Failed to load current match for server', err);
-      showError(t('serversPage.errors.loadCurrentMatch'));
-    } finally {
-      setLoadingMatchServerId(null);
+      showError(apiErrorMessage(err, t('machinesPanel.errors.add', { defaultValue: 'Could not add the machine' })));
     }
   };
 
-  const toggleServerSelected = (serverId: string) => {
-    setSelectedServerIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(serverId)) {
-        next.delete(serverId);
-      } else {
-        next.add(serverId);
-      }
-      return next;
-    });
-  };
-
-  const handleRetryInitialization = async (serverId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    if (retryingServerId || retryingAll || statusCheckingIds.has(serverId)) return;
-
-    setRetryingServerId(serverId);
-    
-    // Show loading snackbar
-    const loadingKey = showSnackbar(t('serversPage.retry.sendingConfig'), 'info');
-    
+  const rotate = async (host: FleetHost) => {
     try {
-      await api.post(`/api/servers/${serverId}/reset-initialization`);
-      
-      // Dismiss loading snackbar and show success
-      closeSnackbar(loadingKey);
-      showSnackbar(`✅ ${t('serversPage.retry.triggered')}`, 'success');
-      
-      // Refresh server status after a short delay
-      setTimeout(() => {
-        void loadServers({ useCached: false });
-      }, 1500);
-    } catch (error) {
-      closeSnackbar(loadingKey);
-      const raw = error instanceof Error ? error.message : String(error);
-      let msg = raw;
-      try {
-        const parsed = JSON.parse(raw) as { error?: string };
-        if (typeof parsed?.error === 'string' && parsed.error.length > 0) {
-          msg = parsed.error;
-        }
-      } catch {
-        /* use raw */
-      }
-      showError(`❌ ${t('serversPage.retry.failed', { message: msg })}`);
-    } finally {
-      setRetryingServerId(null);
+      const res = await api.post<{ rotation: 'sent' | 'on_next_connect' }>(`/api/fleet/hosts/${host.id}/rotate`);
+      showSnackbar(
+        res.rotation === 'sent'
+          ? t('machinesPanel.rotateSent', { defaultValue: 'New token sent' })
+          : t('machinesPanel.rotateQueued', { defaultValue: 'The machine gets a new token when it next connects' }),
+        'success'
+      );
+      await fleet.load();
+    } catch (err) {
+      showError(apiErrorMessage(err, t('machinesPanel.errors.command', { defaultValue: 'The command failed' })));
     }
   };
 
-  // Sort servers by id: numeric suffix first (s_1, s_2, s_3), then by id string
-  const sortedServers = React.useMemo(() => {
-    const key = (id: string): [number, string] => {
-      const m = id.match(/_(\d+)$/);
-      return [m ? parseInt(m[1], 10) : Number.MAX_SAFE_INTEGER, id];
-    };
-    return [...servers].sort((a, b) => {
-      const [na, sa] = key(a.id);
-      const [nb, sb] = key(b.id);
-      return na !== nb ? na - nb : sa.localeCompare(sb);
-    });
-  }, [servers]);
-
-  // Calculate server statistics based on heartbeat tracking
-  const serverStats = React.useMemo(() => {
-    const now = Math.floor(Date.now() / 1000);
-    const HEARTBEAT_RECENT_THRESHOLD = 5 * 60; // 5 minutes
-    
-    let online = 0;
-    let offline = 0;
-    let notConfigured = 0;
-    let disabled = 0;
-    
-    servers.forEach((server) => {
-      if (!server.enabled) {
-        disabled++;
-      } else if (!server.lastSeen) {
-        notConfigured++; // Enabled but never configured - cannot be used
-      } else {
-        const heartbeatRecent = now - server.lastSeen < HEARTBEAT_RECENT_THRESHOLD;
-        const reachable = server.reachableFromApi === true;
-        const explicitlyOffline = server.status !== 'online' && server.reachableFromApi === false;
-
-        if (explicitlyOffline) {
-          offline++;
-        } else if (reachable || heartbeatRecent || server.status === 'online') {
-          online++;
-        } else {
-          // Conservatively treat as online until we have a definitive reachability failure.
-          online++;
-        }
-      }
-    });
-    
-    return { online, offline, notConfigured, disabled, total: servers.length };
-  }, [servers]);
-
-  // Detect plugin version mismatches
-  const versionInfo = React.useMemo(() => {
-    const versionCounts = new Map<string, number>();
-    
-    servers.forEach((server) => {
-      if (server.pluginVersion) {
-        const count = versionCounts.get(server.pluginVersion) || 0;
-        versionCounts.set(server.pluginVersion, count + 1);
-      }
-    });
-    
-    // Find most common version
-    let mostCommonVersion: string | null = null;
-    let maxCount = 0;
-    
-    versionCounts.forEach((count, version) => {
-      if (count > maxCount) {
-        maxCount = count;
-        mostCommonVersion = version;
-      }
-    });
-    
-    return {
-      mostCommonVersion,
-      versionCounts,
-      hasMultipleVersions: versionCounts.size > 1,
-    };
-  }, [servers]);
-
-  // Detect CS2 update-required servers
-  const cs2UpdateInfo = React.useMemo(() => {
-    const outOfDate = servers.filter((s) => s.enabled && typeof s.cs2RequiredVersion === 'number');
-    const byVersion = new Map<number, Server[]>();
-    for (const s of outOfDate) {
-      const v = s.cs2RequiredVersion as number;
-      const list = byVersion.get(v) ?? [];
-      list.push(s);
-      byVersion.set(v, list);
+  const confirmPending = async () => {
+    if (!pending) return;
+    setBusy(true);
+    try {
+      if (pending.action === 'revoke') await api.post(`/api/fleet/hosts/${pending.host.id}/revoke`);
+      else await api.delete(`/api/fleet/hosts/${pending.host.id}`);
+      if (machineId === pending.host.id) openMachine(null);
+      await fleet.load();
+    } catch (err) {
+      showError(apiErrorMessage(err, t('machinesPanel.errors.command', { defaultValue: 'The command failed' })));
+    } finally {
+      setBusy(false);
+      setPending(null);
     }
-    const versions = Array.from(byVersion.keys()).sort((a, b) => b - a);
-    return { outOfDate, byVersion, versions };
-  }, [servers]);
+  };
 
-  // The fleet at a glance (the drafts' joined stat grid): what is up, what
-  // is not, and what the allocator can hand out right now.
-  const fleetFacts: Fact[] = [
-    { key: 'online', label: t('serversPage.strip.online'), value: serverStats.online },
-    { key: 'offline', label: t('serversPage.strip.offline'), value: serverStats.offline },
-    ...(serverStats.notConfigured > 0
-      ? [{ key: 'notConfigured', label: t('serversPage.strip.notConfigured'), value: serverStats.notConfigured }]
-      : []),
-    ...(serverStats.disabled > 0
-      ? [{ key: 'disabled', label: t('serversPage.strip.disabled'), value: serverStats.disabled }]
-      : []),
-    {
-      key: 'free',
-      label: t('serversPage.strip.free'),
-      value: allocationStatus
-        ? `${allocationStatus.availableServerCount} / ${allocationStatus.servers.length}`
-        : '—',
-    },
-    {
-      key: 'waiting',
-      label: t('serversPage.strip.waiting'),
-      value: allocationStatus ? allocationStatus.requiredServerCount : '—',
-    },
-  ];
+  // The first machine's guide stays up from "Get the command" until csm
+  // connects: the code adds the (not yet linked) machine to the list.
+  const firstSetup =
+    loaded &&
+    (hosts.length === 0 ||
+      (linkInline && link !== null && hosts.length === 1 && hosts[0].id === link.hostId && !hosts[0].online));
+  const linked = link ? hosts.find((h) => h.id === link.hostId) : undefined;
+  const linkConnected = !!linked && linked.status === 'enrolled' && linked.online;
 
-  // Servers behind the latest plugin release. A build newer than the latest
-  // release is an unreleased one and needs nothing from the admin, so it is
-  // not flagged.
-  const olderPluginCount = (() => {
-    if (!latestPluginVersion) return 0;
-    return servers.filter((server) => {
-      if (!server.pluginVersion) return false;
-      const comparison = compareDottedVersions(server.pluginVersion, latestPluginVersion);
-      return typeof comparison === 'number' && comparison < 0;
-    }).length;
-  })();
+  const counts = countServers(hosts, fleet.isDeleting);
+  const total = hosts.reduce((n, h) => n + h.servers.length, 0);
+  const sheetHost = serverOpen ? hosts.find((h) => h.id === serverOpen.hostId) ?? null : null;
+  const sheetServer = sheetHost?.servers.find((s) => s.name === serverOpen?.name) ?? null;
+  const machineHost = machineId ? hosts.find((h) => h.id === machineId) ?? null : null;
 
-  /** A tinted notice box above the list, for what needs the admin across servers. */
-  const noticeSx = (color: string) => ({
-    bgcolor: withAlpha(color, 0.1),
-    border: `1px solid ${withAlpha(color, 0.45)}`,
-    borderRadius: radii.md,
-    p: 2,
-  });
-
-  const machineServerIds = new Set(
-    hosts.flatMap((h) =>
-      h.servers.map((sv) => sv.fleetServer?.id).filter((id): id is string => !!id)
-    )
-  );
-  const otherServers = servers.filter((server) => !machineServerIds.has(server.id));
-  const matchByServer: Record<string, string> = Object.fromEntries(
-    (allocationStatus?.servers ?? [])
-      .filter((sv) => sv.matchSlug)
-      .map((sv) => [sv.id, sv.matchSlug as string])
-  );
-  const settingsOpen = showSettings && !openMachine;
-  return (
+  const pill = (key: string, n: number, tone: string, label: string) => (
     <Box
-      data-testid="servers-page"
-      sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}
+      key={key}
+      data-testid={`machines-count-${key}`}
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.9,
+        px: 1.5,
+        py: 0.75,
+        borderRadius: radii.pill,
+        border: `1px solid ${color.rule}`,
+        fontSize: textSize.sm,
+        color: color.ink2,
+      }}
     >
-      {!openMachine && (
-        <PageHead
-          title={t('serversPage.title')}
-          subtitle={
-            <span data-testid="servers-limit">
-              {t('serversPage.machineCount', { count: hosts.length })}
-              {' · '}
-              {t('serversPage.fleet.total', { count: serverStats.total + unlinkedFleetCount })}
-              {serverLimit &&
-                (() => {
-                  const line = serverLimitText(serverLimit, serverStats.total + unlinkedFleetCount);
-                  return ` · ${t(line.key, line.values)}`;
-                })()}
-            </span>
-          }
-          actions={
-            <>
-              <Tooltip title={t('serversPage.settings', { defaultValue: 'Server settings' })}>
-                <IconButton
-                  aria-label={t('serversPage.settings', { defaultValue: 'Server settings' })}
-                  aria-pressed={showSettings}
-                  onClick={() => setShowSettings((v) => !v)}
-                  data-testid="servers-settings-toggle"
-                  sx={{
-                    border: `1px solid ${tokens.color.rule}`,
-                    color: showSettings ? tokens.color.accent : undefined,
-                  }}
-                >
-                  <GearSixIcon size={20} />
-                </IconButton>
-              </Tooltip>
-              <Button
-                variant="contained"
-                startIcon={<PlusIcon />}
-                onClick={() => setAddMachineRequest((n) => n + 1)}
-                data-testid="machines-add"
-              >
-                {t('machinesPanel.add', { defaultValue: 'Add machine' })}
-              </Button>
-            </>
-          }
-        />
-      )}
+      <Box aria-hidden sx={{ width: 9, height: 9, borderRadius: radii.pill, bgcolor: tone }} />
+      <Box component="b" sx={{ color: color.ink, fontVariantNumeric: 'tabular-nums' }}>
+        {n}
+      </Box>
+      {label}
+    </Box>
+  );
 
-      {/* Settings: scaling, the fleet link, what is pushed to servers, failover. */}
-      {settingsOpen && (
-        <Box data-testid="servers-settings" sx={{ display: 'flex', flexDirection: 'column' }}>
-          {/* Automatic scaling on the machines: start, stop, create, and why. */}
-          <AutoScalePanel />
-          {/* Ready Up servers enroll themselves and connect over the fleet link. */}
-          <FleetPanel />
-          {/* What the platform pushes to them: admins, settings, whitelist, practice, plugins. */}
-          <FleetPushPanel />
-          {/* Failover: automatic moves and the spare servers kept for them. */}
-          <FailoverSettingsPanel />
-        </Box>
-      )}
-
-      {/* Machines running csm as host agent (FLEET.md §18): their servers at a glance. */}
-      <MachinesPanel
-        addRequest={addMachineRequest}
-        matchByServer={matchByServer}
-        onHostsChange={setHosts}
+  return (
+    <Box data-testid="servers-page" sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <PageHead
+        title={t('serversPage.title')}
+        subtitle={
+          <span data-testid="servers-limit">
+            {t('serversPage.machineCount', { count: hosts.length })}
+            {' · '}
+            {t('serversPage.fleet.total', { count: total })}
+            {limit &&
+              (() => {
+                const line = serverLimitText(limit, total);
+                return ` · ${t(line.key, line.values)}`;
+              })()}
+          </span>
+        }
+        actions={
+          <>
+            <Button variant="outlined" startIcon={<GearSixIcon />} onClick={() => setSettingsOpen(true)} data-testid="servers-settings-toggle">
+              {t('serversBoard.fleetSettings', { defaultValue: 'Fleet settings' })}
+            </Button>
+            <Button variant="contained" startIcon={<PlusIcon />} onClick={() => setAddMachineOpen(true)} data-testid="machines-add">
+              {t('machinesPanel.add', { defaultValue: 'Add machine' })}
+            </Button>
+          </>
+        }
       />
 
-      {/* Servers no machine reports: added by address, or enrolled on their own. */}
-      {!openMachine && otherServers.length > 0 && (
-        <ServerSection
-          id="other-servers"
-          data-testid="servers-other"
-          defaultOpen
-          title={t('serversPage.other.title', { defaultValue: 'Other servers' })}
-          summary={t('serversPage.other.summary', {
-            defaultValue: '{{count}} server(s) not on a machine',
-            count: otherServers.length,
-          })}
-          about={t('serversPage.other.about', {
-            defaultValue: 'Servers added by address, not run by csm on a linked machine.',
-          })}
-          action={selectionMode ? undefined : addByAddress}
-        >
-          {headActions && (
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>{headActions}</Box>
+      {firstSetup ? (
+        <FirstMachine link={linkInline ? link : null} busy={busy} onCreate={(name) => void addMachine(name, true)} />
+      ) : (
+        <Box data-testid="machines-panel" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {hosts.length > 0 && (
+            <Box data-testid="machines-summary" sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }} aria-label={t('serversBoard.summary', { defaultValue: 'All servers' })}>
+              {pill('free', counts.free, color.live, t('machinesPanel.counts.free', { defaultValue: 'Free' }).toLowerCase())}
+              {pill('match', counts.match, color.accent, t('machinesPanel.counts.match', { defaultValue: 'In a match' }).toLowerCase())}
+              {pill('busy', counts.busy, color.info, t('machinesPanel.counts.busy', { defaultValue: 'Updating or restarting' }).toLowerCase())}
+              {pill('down', counts.down, color.muted, t('machinesPanel.counts.down', { defaultValue: 'Stopped or offline' }).toLowerCase())}
+            </Box>
           )}
-          <FactGrid
-            items={fleetFacts}
-            aria-label={t('serversPage.fleet.title')}
-            data-testid="servers-fleet-strip"
-            sx={{ mb: allocationStatus?.nextAllocationInSeconds != null ? 1 : 3 }}
-          />
-          {allocationStatus?.nextAllocationInSeconds != null && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              {t('serversPage.allocation.nextPass', {
-                seconds: allocationStatus.nextAllocationInSeconds,
+          {[...hosts]
+            .sort((a, b) => hostRank(a) - hostRank(b))
+            .map((host) => (
+              <MachineCard
+                key={host.id}
+                host={host}
+                matchByServer={matches}
+                isDeleting={fleet.isDeleting}
+                onOpenMachine={() => openMachine(host.id)}
+                onOpenServer={(name) => setServerOpen({ hostId: host.id, name })}
+                onMenu={(anchor) => setMenu({ host, anchor })}
+                onAddServers={() => setAddServersFor(host)}
+                onUpdateGame={() => void fleet.send(host, 'host.update_game', {})}
+                onUpdateReadyUp={() => setReadyUpFor(host)}
+                onNewCode={() => void newCode(host)}
+                onRetry={(c) => void fleet.send(host, c.type, c.payload)}
+              />
+            ))}
+          {licenseMax !== null && hosts.length > 0 && (
+            <Typography variant="caption" color="text.secondary" data-testid="machines-license-note">
+              {t('machinesPanel.licenseNote', {
+                defaultValue: 'Your license covers up to {{count}} servers. Every server counts, spares included.',
+                count: licenseMax,
               })}
             </Typography>
           )}
-          {!allocationStatus && allocationLoading && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: -2, mb: 3 }}>
-              {t('serversPage.allocation.loading')}
-            </Typography>
-          )}
-
-          {(cs2UpdateInfo.outOfDate.length > 0 ||
-            olderPluginCount > 0 ||
-            versionInfo.hasMultipleVersions) && (
-            <Box sx={{ display: 'grid', gap: 1.5, mb: 3 }}>
-              {cs2UpdateInfo.outOfDate.length > 0 && (
-                <Box sx={noticeSx(tokens.color.ban)} data-testid="servers-cs2-update-notice">
-                  <Typography variant="body2" fontWeight={700}>
-                    {t('serversPage.cs2Update.fleetTitle')}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('serversPage.cs2Update.fleetBody', {
-                      count: cs2UpdateInfo.outOfDate.length,
-                    })}
-                  </Typography>
-                  <Box mt={1} display="flex" gap={1} flexWrap="wrap">
-                    {cs2UpdateInfo.versions.map((v) => (
-                      <Chip
-                        key={v}
-                        size="small"
-                        label={`required_version=${v} (${cs2UpdateInfo.byVersion.get(v)?.length ?? 0})`}
-                        sx={{ color: tokens.color.ban }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              )}
-              {olderPluginCount > 0 && latestPluginVersion && (
-                <Box sx={noticeSx(tokens.color.warning)}>
-                  <Typography variant="body2" fontWeight={700}>
-                    {t('serversPage.fleet.latestRelease', { version: latestPluginVersion })}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('serversPage.fleet.olderVersion', { count: olderPluginCount })}{' '}
-                    <ExternalLink
-                      href={
-                        latestPluginReleaseUrl ??
-                        'https://github.com/Auto-Tournament/matchzy-enhanced/releases'
-                      }
-                      sx={{ color: 'inherit', textDecoration: 'underline' }}
-                    >
-                      {t('serversPage.fleet.downloadLatest')}
-                    </ExternalLink>
-                  </Typography>
-                </Box>
-              )}
-              {versionInfo.hasMultipleVersions && (
-                <Box sx={noticeSx(tokens.color.warning)}>
-                  <Typography variant="body2" fontWeight={700}>
-                    {t('serversPage.versionMismatch.title')}
-                  </Typography>
-                  <Box display="flex" gap={1} flexWrap="wrap" my={0.5}>
-                    {Array.from(versionInfo.versionCounts.entries()).map(([version, count]) => (
-                      <Chip
-                        key={version}
-                        label={t('serversPage.versionMismatch.chip', { version, count })}
-                        size="small"
-                        sx={{
-                          color:
-                            version === versionInfo.mostCommonVersion
-                              ? tokens.color.live
-                              : tokens.color.warning,
-                        }}
-                      />
-                    ))}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('serversPage.versionMismatch.recommended', {
-                      version: versionInfo.mostCommonVersion,
-                    })}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          )}
-
-          <RowList data-testid="servers-list" aria-label={t('serversPage.title')}>
-            {sortedServers
-              .filter((server) => !machineServerIds.has(server.id))
-              .map((server) => (
-                <ServerRow
-                  key={server.id}
-                  server={server}
-                  allocation={allocationStatus?.servers.find((s) => s.id === server.id)}
-                  isChecking={statusCheckingIds.has(server.id)}
-                  selectionMode={selectionMode}
-                  selected={selectedServerIds.has(server.id)}
-                  retrying={retryingServerId === server.id}
-                  retryDisabled={statusCheckingIds.has(server.id) || retryingAll}
-                  loadingMatch={loadingMatchServerId === server.id}
-                  mostCommonVersion={versionInfo.mostCommonVersion}
-                  hasMultipleVersions={versionInfo.hasMultipleVersions}
-                  onToggleSelected={() => toggleServerSelected(server.id)}
-                  onEdit={() => handleOpenModal(server)}
-                  onRetry={(event) => void handleRetryInitialization(server.id, event)}
-                  onViewMatch={(event) => void handleViewCurrentMatch(server, event)}
-                />
-              ))}
-          </RowList>
-        </ServerSection>
-      )}
-      {!openMachine && otherServers.length === 0 && (
-        <Box display="flex" justifyContent="center" gap={1} flexWrap="wrap">
-          <Button size="small" onClick={() => handleOpenModal()} data-testid="servers-add-existing">
-            {t('serversPage.empty.addExisting')}
-          </Button>
-          <Button size="small" onClick={() => setBatchModalOpen(true)}>
-            {t('serversPage.empty.batchAdd')}
-          </Button>
         </Box>
       )}
 
-      <ServerModal
-        open={modalOpen}
-        server={editingServer}
-        servers={servers}
-        onClose={handleCloseModal}
-        onSave={handleSave}
-      />
+      <OtherServers hosts={hosts} />
 
-      <BatchServerModal
-        open={batchModalOpen}
-        onClose={() => setBatchModalOpen(false)}
-        onSave={handleSave}
-        existingServers={servers}
+      <Menu anchorEl={menu?.anchor ?? null} open={menu !== null} onClose={() => setMenu(null)}>
+        <MenuItem
+          onClick={() => {
+            const h = menu?.host;
+            setMenu(null);
+            if (h) openMachine(h.id);
+          }}
+        >
+          {t('serversBoard.details', { defaultValue: 'Details and activity' })}
+        </MenuItem>
+        {menu?.host.status === 'pending' && (
+          <MenuItem
+            onClick={() => {
+              const h = menu.host;
+              setMenu(null);
+              void newCode(h);
+            }}
+          >
+            {t('machinesPanel.newCode', { defaultValue: 'New code' })}
+          </MenuItem>
+        )}
+        {menu?.host.status === 'enrolled' && (
+          <MenuItem
+            onClick={() => {
+              const h = menu.host;
+              setMenu(null);
+              void rotate(h);
+            }}
+          >
+            {t('machinesPanel.rotate', { defaultValue: 'Rotate token' })}
+          </MenuItem>
+        )}
+        {menu?.host.status === 'enrolled' && (
+          <MenuItem
+            sx={{ color: 'error.main' }}
+            data-testid={`machine-revoke-${menu.host.id}`}
+            onClick={() => {
+              const h = menu.host;
+              setMenu(null);
+              setPending({ action: 'revoke', host: h });
+            }}
+          >
+            {t('machinesPanel.revoke', { defaultValue: 'Revoke machine' })}
+          </MenuItem>
+        )}
+        {menu && menu.host.status !== 'enrolled' && (
+          <MenuItem
+            onClick={() => {
+              const h = menu.host;
+              setMenu(null);
+              setPending({ action: 'remove', host: h });
+            }}
+          >
+            {t('machinesPanel.remove', { defaultValue: 'Remove' })}
+          </MenuItem>
+        )}
+      </Menu>
+
+      <ServerSheet
+        fleet={fleet}
+        host={sheetServer ? sheetHost : null}
+        serverName={sheetServer ? serverOpen?.name ?? null : null}
+        match={sheetServer?.fleetServer ? matches[sheetServer.fleetServer.id] ?? null : null}
+        onClose={() => setServerOpen(null)}
+        onDelete={(host, server) => setDeleteServer({ host, server })}
       />
+      <MachineSheet
+        fleet={fleet}
+        host={machineHost}
+        onClose={() => openMachine(null)}
+        onAddServers={(h) => setAddServersFor(h)}
+        onUpdateReadyUp={(h) => setReadyUpFor(h)}
+      />
+      <SideSheet
+        open={settingsOpen}
+        onClose={() => {
+          setSettingsOpen(false);
+          if (SETTINGS_SECTIONS.includes(window.location.hash.slice(1))) window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }}
+        wide
+        testId="servers-settings"
+        title={t('serversBoard.fleetSettings', { defaultValue: 'Fleet settings' })}
+        subtitle={t('serversBoard.fleetSettingsAbout', {
+          defaultValue: 'Starting and stopping servers on their own, the fleet link, what goes out to every server, and failover.',
+        })}
+      >
+        <AutoScalePanel />
+        <FleetPanel />
+        <FleetPushPanel />
+        <FailoverSettingsPanel />
+      </SideSheet>
+
+      <AddServersDialog fleet={fleet} host={addServersFor} onClose={() => setAddServersFor(null)} />
+      <ReadyUpDialog fleet={fleet} host={readyUpFor} onClose={() => setReadyUpFor(null)} />
+      <ForceDialog fleet={fleet} />
+      <AddMachineDialog open={addMachineOpen} busy={busy} onClose={() => setAddMachineOpen(false)} onCreate={(name) => void addMachine(name, false)} />
+      <LinkDialog link={link && !(linkInline && firstSetup) ? link : null} connected={linkConnected} onClose={() => setLink(null)} />
 
       <ConfirmDialog
-        open={selectionMode && bulkDeleteConfirmOpen}
-        title={t('serversPage.bulkDelete.title')}
-        message={t('serversPage.bulkDelete.message', {
-          count: selectedServerIds.size,
+        open={pending !== null}
+        title={
+          pending?.action === 'remove'
+            ? t('machinesPanel.confirm.removeTitle', { defaultValue: 'Remove this machine?' })
+            : t('machinesPanel.confirm.revokeTitle', { defaultValue: 'Revoke this machine?' })
+        }
+        message={
+          pending?.action === 'remove'
+            ? t('machinesPanel.confirm.removeMessage', {
+                defaultValue: '{{name}} is forgotten. csm can link it again with a new code.',
+                name: pending.host.name,
+              })
+            : t('machinesPanel.confirm.revokeMessage', {
+                defaultValue: '{{name}} is disconnected and its token stops working. Its servers keep running and stay on the fleet link.',
+                name: pending?.host.name ?? '',
+              })
+        }
+        confirmColor="error"
+        loading={busy}
+        onConfirm={() => void confirmPending()}
+        onCancel={() => setPending(null)}
+      />
+      <ConfirmDialog
+        open={deleteServer !== null}
+        title={t('machinesPanel.confirm.deleteServerTitle', { defaultValue: 'Delete {{name}}?', name: deleteServer?.server ?? '' })}
+        message={t('machinesPanel.confirm.deleteServerMessage', {
+          defaultValue:
+            '{{name}} is stopped and its folder on {{host}} is deleted. Its Ready Up entry is removed from the fleet. Refused while it plays a match.',
+          name: deleteServer?.server ?? '',
+          host: deleteServer?.host.name ?? '',
         })}
         confirmColor="error"
-        onConfirm={async () => {
-          if (selectedServerIds.size === 0) {
-            setBulkDeleteConfirmOpen(false);
-            return;
-          }
-          try {
-            await api.post('/api/servers/bulk-delete', {
-              ids: Array.from(selectedServerIds),
-            });
-            setSelectedServerIds(() => new Set());
-            setSelectionMode(false);
-            await loadServers();
-            await loadAllocationStatus();
-          } catch (err) {
-            console.error('Failed to delete servers', err);
-            showError(t('serversPage.errors.bulkDelete'));
-          } finally {
-            setBulkDeleteConfirmOpen(false);
-          }
+        onConfirm={() => {
+          const target = deleteServer;
+          setDeleteServer(null);
+          setServerOpen(null);
+          if (target) void fleet.removeServer(target.host, target.server);
         }}
-        onCancel={() => setBulkDeleteConfirmOpen(false)}
+        onCancel={() => setDeleteServer(null)}
       />
     </Box>
   );

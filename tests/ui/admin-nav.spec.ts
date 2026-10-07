@@ -181,13 +181,10 @@ test.describe.serial('Admin navigation', () => {
       await expect(page.getByTestId('manage-rail')).toHaveCount(0);
       await expect(page.locator('a[href="/manage"]')).toHaveCount(0);
       // A player's links: Home, Browse, the site-wide Teams page (a team is
-      // not tied to a tournament), and the current tournament's Standings tab
-      // (never a hard-coded leaderboard).
+      // not tied to a tournament), and the platform's leaderboard (per game;
+      // a tournament's standings are on its page).
       await expect(page.getByTestId('nav-teams')).toHaveAttribute('href', '/browse/teams');
-      await expect(page.getByTestId('nav-leaderboards')).toHaveAttribute(
-        'href',
-        /^\/tournament\/\d+\/standings$/
-      );
+      await expect(page.getByTestId('nav-leaderboards')).toHaveAttribute('href', '/leaderboards');
 
       // Typing the address sends them to their own page, still without it.
       await page.goto('/manage');

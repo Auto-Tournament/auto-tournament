@@ -308,6 +308,15 @@ export function emitAdminCall(call: AdminCall): void {
   }
 }
 
+/**
+ * A csm machine changed (inventory, health, a command's progress or result,
+ * online or offline), to the signed-in admins: the Servers page reloads that
+ * machine instead of waiting for its next poll.
+ */
+export function emitFleetHostChanged(hostId: string): void {
+  if (io) io.to(ADMIN_ROOM).emit('fleet:host', { hostId });
+}
+
 /** Admin calls resolved, to the signed-in admins (room `admins`). */
 export function emitAdminCallResolved(payload: AdminCallResolvedEvent): void {
   if (io) {
