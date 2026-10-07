@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"image"
 	"math"
 	"strings"
 )
@@ -26,10 +27,41 @@ type segment struct {
 	From, To, Speed float64
 }
 
+// introUpSec is how long (in video seconds) a clip that opened slowed down
+// takes to get back to full speed, from when its caption card starts to leave.
+const introUpSec = 0.6
+
+// introGame is how much game the slowed opening shows: `hold` at
+// slowmoSpeed until the card leaves (cardExit), then `up` speeding back up.
+func introGame() (hold, up float64) {
+	inv := 0.0
+	for i := 0; i < rampSteps; i++ {
+		inv += 1 / upSpeed(i)
+	}
+	return cardExit * slowmoSpeed, introUpSec / inv * rampSteps
+}
+
+// upSpeed is the opening's i-th step back up to full speed (none of them
+// at slowmoSpeed itself, so the hold ends exactly as the card leaves).
+func upSpeed(i int) float64 {
+	return math.Round((slowmoSpeed+(1-slowmoSpeed)*float64(i+1)/(rampSteps+1))*1000) / 1000
+}
+
+func stepSpeed(i int) float64 {
+	return math.Round((1+(slowmoSpeed-1)*float64(i+1)/rampSteps)*1000) / 1000
+}
+
 // speedRamp cuts a recording of `length` seconds into pieces: full speed to
 // `kill` seconds in, slowing to slowmoSpeed, holding, back up to full speed,
 // and full speed for the last outroSec.
 func speedRamp(length, kill float64) []segment {
+	return editPlan(length, false, kill)
+}
+
+// editPlan is speedRamp with, when `intro`, the opening slowed down while
+// the caption card is up and back to full speed as it leaves; and with no
+// slow motion at the end when kill < 0.
+func editPlan(length float64, intro bool, kill float64) []segment {
 	var out []segment
 	add := func(from, to, speed float64) {
 		from, to = math.Max(0, from), math.Min(length, to)
@@ -42,13 +74,31 @@ func speedRamp(length, kill float64) []segment {
 		}
 		out = append(out, segment{from, to, speed})
 	}
+	start := 0.0
+	if intro {
+		hold, up := introGame()
+		// It has to be over before the slow motion at the end (or the clip's end).
+		limit := length
+		if kill >= 0 {
+			limit = kill
+		}
+		if f := math.Min(1, (limit-0.2)/(hold+up)); f > 0.25 {
+			hold, up = hold*f, up*f
+			add(0, hold, slowmoSpeed)
+			for i := 0; i < rampSteps; i++ {
+				add(hold+float64(i)*up/rampSteps, hold+float64(i+1)*up/rampSteps, upSpeed(i))
+			}
+			start = hold + up
+		}
+	}
+	if kill < 0 {
+		add(start, length, 1)
+		return out
+	}
 	// The slowing steps, and the same steps in reverse to speed up again, so
 	// both take as long.
-	stepSpeed := func(i int) float64 {
-		return math.Round((1+(slowmoSpeed-1)*float64(i+1)/rampSteps)*1000) / 1000
-	}
 	step := rampSec / rampSteps
-	add(0, kill, 1)
+	add(start, kill, 1)
 	for i := 0; i < rampSteps; i++ {
 		add(kill+float64(i)*step, kill+float64(i+1)*step, stepSpeed(i))
 	}
@@ -95,9 +145,10 @@ func momentMarkers(windows []window, segs [][]segment, killTicks []int) clipMark
 				m.Kills = append(m.Kills, round(offset+outputAt(segs[i], float64(k-w.from)/tickrate)))
 			}
 		}
+		// The slow motion after the last kill (a slowed opening is not it).
 		first, last := -1, -1
 		for j, s := range segs[i] {
-			if s.Speed < 1 {
+			if w.slowmo >= 0 && s.Speed < 1 && s.From >= float64(w.slowmo-w.from)/tickrate-1e-6 {
 				if first < 0 {
 					first = j
 				}
@@ -150,33 +201,31 @@ func audioFilter(segs []segment, length float64) string {
 	return b.String()
 }
 
-// captionSec is how long the caption (and the avatar) show at a clip's start.
-const captionSec = 3.0
-
 // overlay is what goes on top of a clip's frames ([0:v]).
 type overlay struct {
-	card   int // input holding the caption card (card.go), looped, or -1
+	card   int // input holding the caption card's frames (card.go: raw premultiplied RGBA at cardFPS), or -1
+	cardAt image.Point
 	logo   int // input holding the Auto Tournament logo, looped, or -1
 	width  int
 	height int
 }
 
-// videoFilter dresses the frames: the caption card in the lower left for the
-// first seconds, and the logo faintly in the lower right throughout (the
+// videoFilter dresses the frames: the animated caption card for the first
+// seconds, and the logo small and faint in the lower right throughout (the
 // top right is the kill feed's). Output [v].
 func videoFilter(o overlay) string {
-	margin := o.height / 18
 	var b strings.Builder
 	b.WriteString("[0:v]format=yuv420p[base]")
 	last := "base"
 	if o.card >= 0 {
-		fmt.Fprintf(&b, ";[%d:v]format=rgba,fade=t=in:st=0:d=0.3:alpha=1,fade=t=out:st=%g:d=0.4:alpha=1[card]"+
-			";[%s][card]overlay=%d:H-%d-h:eof_action=pass[withcard]", o.card, captionSec, last, margin, margin)
+		fmt.Fprintf(&b, ";[%s][%d:v]overlay=%d:%d:eof_action=pass:alpha=premultiplied[withcard]", last, o.card, o.cardAt.X, o.cardAt.Y)
 		last = "withcard"
 	}
 	if o.logo >= 0 {
-		fmt.Fprintf(&b, ";[%d:v]scale=%d:-1,format=rgba,colorchannelmixer=aa=0.25[logo]"+
-			";[%s][logo]overlay=W-w-%d:H-h-%d:shortest=1", o.logo, o.width*12/100, last, margin, margin)
+		// The drafts: 16 px tall, 18 px from the right and 16 from the bottom of 540, at 30 %.
+		size := o.height * 16 / 540 &^ 1
+		fmt.Fprintf(&b, ";[%d:v]scale=%d:%d,format=rgba,colorchannelmixer=aa=0.3[logo]"+
+			";[%s][logo]overlay=W-w-%d:H-h-%d:shortest=1", o.logo, size, size, last, o.height*18/540, o.height*16/540)
 	} else {
 		fmt.Fprintf(&b, ";[%s]null", last)
 	}

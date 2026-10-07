@@ -262,8 +262,14 @@ export interface RecordJob {
   mapName: string | null;
   playerId: string;
   playerName: string;
-  /** The caption's match line: "Team A vs Team B · Tournament". */
+  /** The caption's match line: "Team A vs Team B · Tournament" (recorders before the animated card). */
   match: string;
+  /** "Team A vs Team B", or what is known of it. */
+  teams: string;
+  /** The tournament, for the clip's corner tag; null for a match outside one. */
+  tournament: string | null;
+  /** Where in it the match was: "Semi-final", "Upper round 2"; null when it has no name. */
+  stage: string | null;
   /** The player's avatar (absolute, or a path on this platform), for the caption. */
   avatarUrl: string | null;
   /** The Auto Tournament logo on each video (an admin can turn it off). */
@@ -284,6 +290,30 @@ interface MomentRow {
   end_tick: number;
   slowmo_tick: number;
   kill_ticks: string;
+}
+
+/**
+ * A match's place in its tournament, for the clip's corner tag: the last
+ * rounds of an elimination bracket by name, the rest by number.
+ */
+export function stageLabel(
+  type: string | null,
+  bracket: string | null,
+  round: number | null,
+  lastRound: number | null
+): string | null {
+  if (round === null) return null;
+  if (bracket === 'GF' || bracket === 'GF_RESET') return 'Grand final';
+  if (type === 'double_elimination') {
+    const side = bracket === 'LB' ? 'Lower' : 'Upper';
+    return round === lastRound ? `${side} final` : `${side} round ${round}`;
+  }
+  if (type === 'single_elimination' && lastRound !== null) {
+    if (round === lastRound) return 'Final';
+    if (round === lastRound - 1) return 'Semi-final';
+    if (round === lastRound - 2) return 'Quarter-final';
+  }
+  return `Round ${round}`;
 }
 
 /** "Team A vs Team B · Tournament", with what is known of it. */
@@ -321,11 +351,18 @@ export async function claimRecordJob(recorder: string): Promise<RecordJob | null
     team1: string | null;
     team2: string | null;
     tournament: string | null;
+    type: string | null;
+    bracket: string | null;
+    round: number | null;
+    last_round: number | null;
   }>(
     `SELECT (SELECT map_name FROM cs2_demo_jobs WHERE match_slug = ? AND map_number = ?) AS map_name,
             (SELECT name FROM players WHERE id = ?) AS name,
             (SELECT avatar_url FROM players WHERE id = ?) AS avatar_url,
-            t1.name AS team1, t2.name AS team2, COALESCE(tr.name, m.played_in) AS tournament
+            t1.name AS team1, t2.name AS team2, COALESCE(tr.name, m.played_in) AS tournament,
+            tr.type, m.bracket, m.round,
+            (SELECT MAX(o.round) FROM matches o
+              WHERE o.tournament_id = m.tournament_id AND COALESCE(o.bracket, 'WB') = COALESCE(m.bracket, 'WB')) AS last_round
        FROM (SELECT 1) one
        LEFT JOIN matches m ON m.slug = ?
        LEFT JOIN teams t1 ON t1.id = m.team1_id
@@ -343,6 +380,16 @@ export async function claimRecordJob(recorder: string): Promise<RecordJob | null
     playerName: extra?.name ?? best.player_id,
     avatarUrl: extra?.avatar_url ?? null,
     match: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, extra?.tournament ?? null),
+    teams: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, null),
+    tournament: extra?.tournament ?? null,
+    stage: extra?.tournament
+      ? stageLabel(
+          extra.type,
+          extra.bracket,
+          extra.round === null ? null : Number(extra.round),
+          extra.last_round === null ? null : Number(extra.last_round)
+        )
+      : null,
     watermark,
     moments: rows
       .map((r) => ({
