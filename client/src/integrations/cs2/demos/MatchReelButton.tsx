@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
-import { FilmStripIcon, XIcon } from '@phosphor-icons/react';
+import { Link as RouterLink } from 'react-router-dom';
+import { Button } from '@mui/material';
+import { FilmStripIcon } from '@phosphor-icons/react';
 import { api, useModuleTranslation } from '../../../module-sdk';
 import type { MatchMapActionProps } from '../../types';
+import { watchMatchReelPath } from '../highlights/data';
 
 interface MatchReel {
   mapNumber: number;
@@ -13,13 +15,13 @@ interface MatchReel {
 
 /**
  * Beside a map's demo download (`matchMapAction`): "Match reel" once the
- * recorder joined each player's best highlight of the map; it plays in a
- * dialog. Nothing until then.
+ * recorder joined each player's best highlight of the map. It opens the
+ * reel's own page, a link to share, with our player and its chapters.
+ * Nothing until then.
  */
-export function MatchReelButton({ matchSlug, mapNumber }: MatchMapActionProps) {
+export function MatchReelButton({ matchSlug, mapNumber, onNavigate }: MatchMapActionProps) {
   const { t } = useModuleTranslation('cs2');
   const [reel, setReel] = useState<MatchReel | null>(null);
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -36,34 +38,16 @@ export function MatchReelButton({ matchSlug, mapNumber }: MatchMapActionProps) {
 
   if (!reel?.video) return null;
   return (
-    <>
-      <Button
-        variant="outlined"
-        startIcon={<FilmStripIcon />}
-        onClick={() => setOpen(true)}
-        data-testid={`match-reel-button-${mapNumber}`}
-        sx={{ flex: 'none', whiteSpace: 'nowrap' }}
-      >
-        {t('highlights.matchReel')}
-      </Button>
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="lg" fullWidth>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {t('highlights.matchReel')}
-          <IconButton onClick={() => setOpen(false)} aria-label={t('highlights.close')}>
-            <XIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Box
-            component="video"
-            src={reel.video}
-            controls
-            autoPlay
-            playsInline
-            sx={{ display: 'block', width: '100%', aspectRatio: '16 / 9', bgcolor: '#0b0d10', borderRadius: 1 }}
-          />
-        </DialogContent>
-      </Dialog>
-    </>
+    <Button
+      component={RouterLink}
+      to={watchMatchReelPath(matchSlug, mapNumber)}
+      onClick={onNavigate}
+      variant="outlined"
+      startIcon={<FilmStripIcon />}
+      data-testid={`match-reel-button-${mapNumber}`}
+      sx={{ flex: 'none', whiteSpace: 'nowrap' }}
+    >
+      {t('highlights.matchReel')}
+    </Button>
   );
 }

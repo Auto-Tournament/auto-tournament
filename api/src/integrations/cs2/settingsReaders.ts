@@ -391,5 +391,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     atDemoRecordingEnabled: atEnhanced.at_demo_recording_enabled,
     // The Auto Tournament logo on highlight videos: on unless turned off.
     highlightsWatermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
+    // Clips per player per map: 6 unless set.
+    highlightsPerPlayer: Number(await settingsService.getSetting('highlights_per_player')) || 6,
   };
 }

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { pickMoments } from '../../api/src/integrations/cs2/demos/highlights';
+import { parseClipIds, parseMarkers, pickMoments } from '../../api/src/integrations/cs2/demos/highlights';
+import { pickTournamentReel } from '../../api/src/integrations/cs2/demos/highlightViews';
 
 /**
  * The highlight picker (api/src/integrations/cs2/demos/highlights.ts) on
@@ -72,5 +73,74 @@ test.describe('Highlight moments', () => {
     expect(moments).toHaveLength(1);
     expect(moments[0]).toMatchObject({ kind: '4k', killTicks: [5316, 6022, 6612, 6627], slowmoTick: 6627 });
     expect(moments[0]!.startTick).toBe(5316 - 192);
+  });
+
+  test('a team kill with a grenade and dying to your own are funny', { tag: ['@api'] }, () => {
+    const moments = pickMoments({
+      kills: [
+        kill(1000, A, A2, { weapon: 'HE Grenade' }),
+        { tick: 3000, round: 1, attacker: null, victim: B1, attackerSide: null, victimSide: 'T', weapon: 'Molotov' },
+        kill(5000, A, B2, { weapon: 'Decoy Grenade' }),
+        // A plain team kill with a gun is not.
+        kill(7000, B3, B4),
+      ] as never,
+      rounds: rounds as never,
+    });
+    const funny = moments.filter((m) => m.kind === 'funny');
+    expect(funny.map((m) => [m.playerId, m.title])).toEqual([
+      [A, 'Team kill · HE Grenade · round 1'],
+      [B1, 'Own grenade · Molotov · round 1'],
+      [A, 'Decoy Grenade to the face · round 1'],
+    ]);
+    expect(funny.every((m) => m.score >= 30 && m.killTicks.length === 1)).toBe(true);
+    // Two per player at most.
+    const more = pickMoments({
+      kills: [1000, 2000, 3000].map((t) => kill(t, A, A2, { weapon: 'Molotov' })) as never,
+      rounds: rounds as never,
+    });
+    expect(more.filter((m) => m.kind === 'funny')).toHaveLength(2);
+  });
+
+  test('the recorder headers are checked', { tag: ['@api'] }, () => {
+    expect(parseMarkers('{"duration":12.345,"kills":[1,3.333],"slowmo":[3.3,9]}')).toEqual({
+      duration: 12.35,
+      kills: [1, 3.33],
+      slowmo: [3.3, 9],
+    });
+    expect(parseMarkers('{"duration":-1,"kills":[]}')).toBeNull();
+    expect(parseMarkers('not json')).toBeNull();
+    expect(parseClipIds('4,7,12')).toEqual([4, 7, 12]);
+    expect(parseClipIds('4,x')).toBeNull();
+    expect(parseClipIds(undefined)).toBeNull();
+  });
+
+  test('the tournament reel builds up to its best play', { tag: ['@api'] }, () => {
+    const c = (id: number, playerId: string, kind: string, score: number, clutch = false) => ({ id, playerId, kind, score, clutch });
+    const ids = pickTournamentReel([
+      c(1, 'p1', 'ace', 400),
+      c(2, 'p2', '4k', 200),
+      c(3, 'p2', '3k', 120, true),
+      c(4, 'p3', 'flair', 45),
+      c(5, 'p4', 'funny', 35),
+      c(6, 'p5', '2k', 40),
+      c(7, 'p5', 'flair', 31),
+    ]);
+    expect(ids).toHaveLength(7);
+    expect(ids[ids.length - 1]).toBe(1);
+    // Funny lands inside, not at an end.
+    const at = ids.indexOf(5);
+    expect(at).toBeGreaterThan(0);
+    expect(at).toBeLessThan(ids.length - 1);
+    // No player more than twice.
+    const many = pickTournamentReel(Array.from({ length: 10 }, (_, i) => c(100 + i, 'same', '3k', 100 + i)));
+    expect(many).toHaveLength(2);
+    // At least one of each kind there is, even when the rest score higher.
+    const kinds = pickTournamentReel([
+      ...Array.from({ length: 20 }, (_, i) => c(200 + i, `p${i}`, '3k', 150 + i)),
+      c(300, 'q1', 'flair', 31),
+      c(301, 'q2', 'funny', 35),
+      c(302, 'q3', '2k', 60, true),
+    ]);
+    expect(kinds).toEqual(expect.arrayContaining([300, 301, 302]));
   });
 });

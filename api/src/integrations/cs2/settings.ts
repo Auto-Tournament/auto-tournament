@@ -66,7 +66,8 @@ export type Cs2SettingKey =
   | 'at_ffw_time'
   | 'at_demo_recording_enabled'
   // Highlight videos (demos/highlights.ts)
-  | 'highlights_watermark';
+  | 'highlights_watermark'
+  | 'highlights_per_player';
 
 type Cs2Setting = SettingDefinition & { key: Cs2SettingKey; schema: JSONSchema };
 
@@ -360,6 +361,13 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     ...flag('highlights_watermark', 'highlightsWatermark', 370),
     normalize: normalizeFlag('Auto Tournament logo on highlight videos'),
   },
+  // How many clips the recorder makes of each player per map (6 unless set):
+  // each takes it about five minutes.
+  integer('highlights_per_player', 'highlightsPerPlayer', 380, {
+    min: 1,
+    max: 6,
+    message: 'highlights_per_player must be 1-6',
+  }),
 ];
 
 /**

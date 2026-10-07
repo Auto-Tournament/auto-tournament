@@ -14,6 +14,11 @@
  * The clip runs from 3 s before the first kill to 1.5 s after the last
  * (the recorder plays on past it for the slow motion, which starts as the
  * last enemy dies).
+ *
+ * Funny moments are picked apart from those, up to two per player: a team
+ * mate killed with a grenade or fire, dying to your own grenade, an enemy
+ * killed by a flashbang, smoke or decoy hitting them, and a knife kill. They
+ * go in the tournament reel, not in the player's or the match's reels.
  */
 
 import fs from 'fs';
@@ -32,6 +37,12 @@ const PER_PLAYER = 6;
 /** Below this a moment isn't worth a clip (a plain single kill scores 10). */
 const MIN_SCORE = 30;
 const MULTI_BONUS = [0, 0, 25, 60, 120, 250];
+const FUNNY_PER_PLAYER = 2;
+/** Enough to beat MIN_SCORE: a funny moment is worth a clip on its own. */
+const FUNNY_SCORE = 35;
+const EXPLOSIVE = /^(HE Grenade|Molotov|Incendiary Grenade)$/i;
+const IMPACT = /^(Flashbang|Smoke Grenade|Decoy Grenade)$/i;
+const KNIFE = /^Knife/i;
 /** A recording that went quiet this long is handed out again. */
 const STALE_SECONDS = 30 * 60;
 const MAX_ATTEMPTS = 3;
@@ -62,8 +73,11 @@ export interface Moment {
   title: string;
 }
 
-/** Pick the best moments of a map (pure: tested on its own). */
-export function pickMoments(analysis: Pick<DemoAnalysisPayload, 'kills' | 'rounds'>): Moment[] {
+/**
+ * Pick the best moments of a map (pure: tested on its own), up to
+ * `perPlayer` for each player (the `highlights_per_player` setting).
+ */
+export function pickMoments(analysis: Pick<DemoAnalysisPayload, 'kills' | 'rounds'>, perPlayer = PER_PLAYER): Moment[] {
   const kills = (analysis.kills as unknown as KillRow[])
     .filter((k) => k.attacker && k.attackerSide && k.attackerSide !== k.victimSide)
     .sort((a, b) => a.tick - b.tick);
@@ -150,10 +164,52 @@ export function pickMoments(analysis: Pick<DemoAnalysisPayload, 'kills' | 'round
   const byPlayer = new Map<string, Moment[]>();
   for (const m of moments.filter((m) => m.score >= MIN_SCORE).sort((a, b) => b.score - a.score)) {
     const list = byPlayer.get(m.playerId) ?? [];
-    if (list.length < PER_PLAYER) list.push(m);
+    if (list.length < perPlayer) list.push(m);
     byPlayer.set(m.playerId, list);
   }
-  return [...byPlayer.values()].flat();
+  return [...byPlayer.values()].flat().concat(funnyMoments(all, roundEnd));
+}
+
+/**
+ * The funny ones, up to FUNNY_PER_PLAYER each: a team kill with a grenade or
+ * fire, dying to your own (the analyzer gives no attacker then, so the clip
+ * follows the victim), and a flashbang, smoke or decoy to an enemy's head.
+ */
+export function funnyMoments(kills: KillRow[], roundEnd: Map<number, number>): Moment[] {
+  const out: Moment[] = [];
+  const count = new Map<string, number>();
+  for (const k of kills) {
+    const weapon = k.weapon ?? '';
+    let player: string | null = null;
+    let what = '';
+    if (k.attacker && k.attackerSide && k.attackerSide === k.victimSide && (EXPLOSIVE.test(weapon) || IMPACT.test(weapon))) {
+      player = k.attacker;
+      what = 'Team kill';
+    } else if (!k.attacker && EXPLOSIVE.test(weapon)) {
+      player = k.victim;
+      what = 'Own grenade';
+    } else if (k.attacker && k.attackerSide && k.attackerSide !== k.victimSide && IMPACT.test(weapon)) {
+      player = k.attacker;
+      what = `${weapon} to the face`;
+    } else if (k.attacker && k.attackerSide && k.attackerSide !== k.victimSide && KNIFE.test(weapon)) {
+      player = k.attacker;
+      what = 'Knife kill';
+    }
+    if (!player || (count.get(player) ?? 0) >= FUNNY_PER_PLAYER) continue;
+    count.set(player, (count.get(player) ?? 0) + 1);
+    out.push({
+      playerId: player,
+      kind: 'funny',
+      score: FUNNY_SCORE,
+      round: k.round,
+      startTick: Math.max(0, k.tick - LEAD_TICKS),
+      endTick: Math.min(k.tick + TAIL_TICKS, roundEnd.get(k.round) ?? k.tick + TAIL_TICKS),
+      slowmoTick: k.tick,
+      killTicks: [k.tick],
+      title: what.endsWith('to the face') || what === 'Knife kill' ? `${what} · round ${k.round}` : `${what} · ${weapon} · round ${k.round}`,
+    });
+  }
+  return out;
 }
 
 /** Replace a map's not-yet-recorded highlights with a fresh pick. */
@@ -214,8 +270,14 @@ export interface RecordJob {
   mapName: string | null;
   playerId: string;
   playerName: string;
-  /** The caption's match line: "Team A vs Team B · Tournament". */
+  /** The caption's match line: "Team A vs Team B · Tournament" (recorders before the animated card). */
   match: string;
+  /** "Team A vs Team B", or what is known of it. */
+  teams: string;
+  /** The tournament, for the clip's corner tag; null for a match outside one. */
+  tournament: string | null;
+  /** Where in it the match was: "Semi-final", "Upper round 2"; null when it has no name. */
+  stage: string | null;
   /** The player's avatar (absolute, or a path on this platform), for the caption. */
   avatarUrl: string | null;
   /** The Auto Tournament logo on each video (an admin can turn it off). */
@@ -236,6 +298,30 @@ interface MomentRow {
   end_tick: number;
   slowmo_tick: number;
   kill_ticks: string;
+}
+
+/**
+ * A match's place in its tournament, for the clip's corner tag: the last
+ * rounds of an elimination bracket by name, the rest by number.
+ */
+export function stageLabel(
+  type: string | null,
+  bracket: string | null,
+  round: number | null,
+  lastRound: number | null
+): string | null {
+  if (round === null) return null;
+  if (bracket === 'GF' || bracket === 'GF_RESET') return 'Grand final';
+  if (type === 'double_elimination') {
+    const side = bracket === 'LB' ? 'Lower' : 'Upper';
+    return round === lastRound ? `${side} final` : `${side} round ${round}`;
+  }
+  if (type === 'single_elimination' && lastRound !== null) {
+    if (round === lastRound) return 'Final';
+    if (round === lastRound - 1) return 'Semi-final';
+    if (round === lastRound - 2) return 'Quarter-final';
+  }
+  return `Round ${round}`;
 }
 
 /** "Team A vs Team B · Tournament", with what is known of it. */
@@ -273,11 +359,18 @@ export async function claimRecordJob(recorder: string): Promise<RecordJob | null
     team1: string | null;
     team2: string | null;
     tournament: string | null;
+    type: string | null;
+    bracket: string | null;
+    round: number | null;
+    last_round: number | null;
   }>(
     `SELECT (SELECT map_name FROM cs2_demo_jobs WHERE match_slug = ? AND map_number = ?) AS map_name,
             (SELECT name FROM players WHERE id = ?) AS name,
             (SELECT avatar_url FROM players WHERE id = ?) AS avatar_url,
-            t1.name AS team1, t2.name AS team2, COALESCE(tr.name, m.played_in) AS tournament
+            t1.name AS team1, t2.name AS team2, COALESCE(tr.name, m.played_in) AS tournament,
+            tr.type, m.bracket, m.round,
+            (SELECT MAX(o.round) FROM matches o
+              WHERE o.tournament_id = m.tournament_id AND COALESCE(o.bracket, 'WB') = COALESCE(m.bracket, 'WB')) AS last_round
        FROM (SELECT 1) one
        LEFT JOIN matches m ON m.slug = ?
        LEFT JOIN teams t1 ON t1.id = m.team1_id
@@ -295,6 +388,16 @@ export async function claimRecordJob(recorder: string): Promise<RecordJob | null
     playerName: extra?.name ?? best.player_id,
     avatarUrl: extra?.avatar_url ?? null,
     match: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, extra?.tournament ?? null),
+    teams: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, null),
+    tournament: extra?.tournament ?? null,
+    stage: extra?.tournament
+      ? stageLabel(
+          extra.type,
+          extra.bracket,
+          extra.round === null ? null : Number(extra.round),
+          extra.last_round === null ? null : Number(extra.last_round)
+        )
+      : null,
     watermark,
     moments: rows
       .map((r) => ({
@@ -316,8 +419,37 @@ export function clipFile(id: number): string {
   return path.join(HIGHLIGHTS_DIR, `${id}.mp4`);
 }
 
+/** Where a clip's kills and slow motion are, in seconds of the video (the player's scrubber). */
+export interface ClipMarkers {
+  duration: number;
+  kills: number[];
+  slowmo: [number, number] | null;
+}
+
+/** The recorder's `X-AT-Markers` header, checked; null when absent or wrong. */
+export function parseMarkers(raw: unknown): ClipMarkers | null {
+  if (typeof raw !== 'string' || raw.length > 4000) return null;
+  try {
+    const m = JSON.parse(raw) as Partial<ClipMarkers>;
+    const num = (n: unknown) => typeof n === 'number' && Number.isFinite(n) && n >= 0;
+    if (!num(m.duration) || !Array.isArray(m.kills) || !m.kills.every(num)) return null;
+    const slowmo =
+      Array.isArray(m.slowmo) && m.slowmo.length === 2 && m.slowmo.every(num) ? (m.slowmo as [number, number]) : null;
+    const r = (n: number) => Math.round(n * 100) / 100;
+    return { duration: r(m.duration!), kills: m.kills.slice(0, 30).map(r), slowmo: slowmo ? [r(slowmo[0]), r(slowmo[1])] : null };
+  } catch {
+    return null;
+  }
+}
+
+/** The recorder's `X-AT-Clips` header: the highlight ids a reel joins, in order. */
+export function parseClipIds(raw: unknown): number[] | null {
+  if (typeof raw !== 'string' || !/^\d+(,\d+){0,63}$/.test(raw)) return null;
+  return raw.split(',').map(Number);
+}
+
 /** Store a finished clip (an MP4 the recorder streamed up). */
-export async function saveClip(id: number, body: NodeJS.ReadableStream): Promise<number> {
+export async function saveClip(id: number, body: NodeJS.ReadableStream, markers: ClipMarkers | null = null): Promise<number> {
   await fs.promises.mkdir(HIGHLIGHTS_DIR, { recursive: true });
   const file = clipFile(id);
   const tmp = `${file}.part`;
@@ -331,8 +463,8 @@ export async function saveClip(id: number, body: NodeJS.ReadableStream): Promise
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
   await db.runAsync(
-    "UPDATE cs2_highlights SET status = 'done', clip_path = ?, clip_bytes = ?, error = NULL WHERE id = ?",
-    [path.basename(file), size, id]
+    "UPDATE cs2_highlights SET status = 'done', clip_path = ?, clip_bytes = ?, markers = ?, error = NULL WHERE id = ?",
+    [path.basename(file), size, markers ? JSON.stringify(markers) : null, id]
   );
   await queueMatchReelFor([id]);
   return size;
@@ -359,7 +491,8 @@ export async function saveReel(
   matchSlug: string,
   mapNumber: number,
   playerId: string,
-  body: NodeJS.ReadableStream
+  body: NodeJS.ReadableStream,
+  clipIds: number[] | null = null
 ): Promise<number> {
   await fs.promises.mkdir(HIGHLIGHTS_DIR, { recursive: true });
   const file = reelFile(matchSlug, mapNumber, playerId);
@@ -378,77 +511,22 @@ export async function saveReel(
     [matchSlug, mapNumber, playerId]
   );
   await db.runAsync(
-    `INSERT INTO cs2_highlight_reels (match_slug, map_number, player_id, moments, clip_path, clip_bytes)
-     VALUES (?, ?, ?, ?, ?, ?)
+    `INSERT INTO cs2_highlight_reels (match_slug, map_number, player_id, moments, clip_path, clip_bytes, clip_ids)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT (match_slug, map_number, player_id) DO UPDATE SET
        moments = EXCLUDED.moments, clip_path = EXCLUDED.clip_path, clip_bytes = EXCLUDED.clip_bytes,
-       created_at = EXTRACT(EPOCH FROM NOW())::INTEGER`,
-    [matchSlug, mapNumber, playerId, Number(moments?.n ?? 0), path.basename(file), size]
+       clip_ids = EXCLUDED.clip_ids, created_at = EXTRACT(EPOCH FROM NOW())::INTEGER`,
+    [
+      matchSlug,
+      mapNumber,
+      playerId,
+      clipIds?.length ?? Number(moments?.n ?? 0),
+      path.basename(file),
+      size,
+      clipIds ? JSON.stringify(clipIds) : null,
+    ]
   );
   return size;
-}
-
-/** A player's finished highlights, best first, for their profile. */
-export async function playerHighlights(playerId: string) {
-  const rows = await db.queryAsync<{
-    id: number;
-    match_slug: string;
-    map_number: number;
-    kind: string;
-    title: string;
-    score: number;
-    status: string;
-    created_at: number;
-    map_name: string | null;
-  }>(
-    `SELECT h.id, h.match_slug, h.map_number, h.kind, h.title, h.score, h.status, h.created_at, j.map_name
-       FROM cs2_highlights h
-       LEFT JOIN cs2_demo_jobs j ON j.match_slug = h.match_slug AND j.map_number = h.map_number
-      WHERE h.player_id = ? AND h.status IN ('done', 'pending', 'recording')
-      ORDER BY (h.status = 'done') DESC, h.score DESC, h.id DESC
-      LIMIT 24`,
-    [playerId]
-  );
-  return rows.map((r) => ({
-    id: Number(r.id),
-    matchSlug: r.match_slug,
-    mapNumber: Number(r.map_number),
-    map: r.map_name,
-    kind: r.kind,
-    title: r.title,
-    score: Number(r.score),
-    status: r.status,
-    video: r.status === 'done' ? `/api/game/cs2/highlights/${r.id}.mp4` : null,
-    createdAt: Number(r.created_at),
-  }));
-}
-
-/** A player's reels, newest first, for their profile. */
-export async function playerReels(playerId: string) {
-  const rows = await db.queryAsync<{
-    match_slug: string;
-    map_number: number;
-    moments: number;
-    clip_path: string;
-    created_at: number;
-    map_name: string | null;
-  }>(
-    `SELECT r.match_slug, r.map_number, r.moments, r.clip_path, r.created_at, j.map_name
-       FROM cs2_highlight_reels r
-       LEFT JOIN cs2_demo_jobs j ON j.match_slug = r.match_slug AND j.map_number = r.map_number
-      WHERE r.player_id = ?
-      ORDER BY r.created_at DESC
-      LIMIT 12`,
-    [playerId]
-  );
-  return rows.map((r) => ({
-    matchSlug: r.match_slug,
-    mapNumber: Number(r.map_number),
-    map: r.map_name,
-    moments: Number(r.moments),
-    video: `/api/game/cs2/highlights/${encodeURIComponent(r.clip_path)}`,
-    createdAt: Number(r.created_at),
-  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -508,6 +586,9 @@ export interface MatchReelJob {
   match: string;
   watermark: boolean;
   clips: MatchReelClip[];
+  /** Where the recorder sends the reel, and where it says it could not. */
+  upload: string;
+  fail: string;
 }
 
 /** Each player's best recorded highlight of a map, in the order they happened. */
@@ -528,7 +609,7 @@ export async function bestClipPerPlayer(matchSlug: string, mapNumber: number): P
               LIMIT 1) AS team
        FROM (SELECT DISTINCT ON (player_id) id, player_id, title, slowmo_tick, match_slug
                FROM cs2_highlights
-              WHERE match_slug = ? AND map_number = ? AND status = 'done'
+              WHERE match_slug = ? AND map_number = ? AND status = 'done' AND kind <> 'funny'
               ORDER BY player_id, score DESC, id) b
        LEFT JOIN players p ON p.id = b.player_id
       ORDER BY b.slowmo_tick`,
@@ -576,6 +657,8 @@ export async function claimMatchReel(recorder: string): Promise<MatchReelJob | n
     match: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, extra?.tournament ?? null),
     watermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
     clips,
+    upload: `/api/game/cs2/recorder/match-reels/${encodeURIComponent(row.match_slug)}/${Number(row.map_number)}`,
+    fail: `/api/game/cs2/recorder/match-reels/${encodeURIComponent(row.match_slug)}/${Number(row.map_number)}/fail`,
   };
 }
 
@@ -589,7 +672,8 @@ export async function saveMatchReel(
   matchSlug: string,
   mapNumber: number,
   clips: number,
-  body: NodeJS.ReadableStream
+  body: NodeJS.ReadableStream,
+  clipIds: number[] | null = null
 ): Promise<number> {
   await fs.promises.mkdir(HIGHLIGHTS_DIR, { recursive: true });
   const file = matchReelFile(matchSlug, mapNumber);
@@ -604,11 +688,12 @@ export async function saveMatchReel(
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
   await db.runAsync(
-    `INSERT INTO cs2_match_reels (match_slug, map_number, status, clips, clip_path, clip_bytes)
-     VALUES (?, ?, 'done', ?, ?, ?)
+    `INSERT INTO cs2_match_reels (match_slug, map_number, status, clips, clip_path, clip_bytes, clip_ids)
+     VALUES (?, ?, 'done', ?, ?, ?, ?)
      ON CONFLICT (match_slug, map_number) DO UPDATE SET status = 'done', error = NULL,
-       clips = EXCLUDED.clips, clip_path = EXCLUDED.clip_path, clip_bytes = EXCLUDED.clip_bytes`,
-    [matchSlug, mapNumber, clips, path.basename(file), size]
+       clips = EXCLUDED.clips, clip_path = EXCLUDED.clip_path, clip_bytes = EXCLUDED.clip_bytes,
+       clip_ids = EXCLUDED.clip_ids`,
+    [matchSlug, mapNumber, clipIds?.length ?? clips, path.basename(file), size, clipIds ? JSON.stringify(clipIds) : null]
   );
   return size;
 }

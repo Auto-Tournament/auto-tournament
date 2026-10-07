@@ -24,8 +24,9 @@ package main
 //	AT_AUDIO_TARGET  the PipeWire sink CS2 plays into (default: the default sink)
 //	AT_KEEP_SCRATCH  set to keep each moment's raw frames, sound and logs
 //
-// record-file only: AT_WATERMARK=0 leaves the logo out; AT_MATCH_LINE is the
-// caption's match line; AT_AVATAR an image file for the player's avatar.
+// record-file only: AT_WATERMARK=0 leaves the logo out; AT_TEAMS ("A vs B"),
+// AT_MAP and AT_TAG (the corner tag) go on the caption card; AT_AVATAR is an
+// image file for the player's avatar.
 
 import (
 	"context"
@@ -44,6 +45,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	dem "github.com/markus-wa/demoinfocs-golang/v5/pkg/demoinfocs"
@@ -68,8 +70,13 @@ type recordJob struct {
 	MapName    string `json:"mapName"`
 	PlayerID   string `json:"playerId"`
 	PlayerName string `json:"playerName"`
-	// Match is the clip's match line: "Team A vs Team B · Tournament".
+	// Match is the clip's match line: "Team A vs Team B · Tournament" (older platforms).
 	Match string `json:"match"`
+	// Teams ("Team A vs Team B"), the tournament and the stage ("Semi-final")
+	// for the caption card and its corner tag.
+	Teams      string `json:"teams"`
+	Tournament string `json:"tournament"`
+	Stage      string `json:"stage"`
 	// AvatarURL is the player's avatar: absolute, or a path on the platform.
 	AvatarURL string `json:"avatarUrl"`
 	// Watermark: the Auto Tournament logo on each video (the platform's
@@ -94,7 +101,7 @@ type recorder struct {
 // (recordJob), or a map's match reel to join (matchReelJob); nil, nil when
 // there is none.
 func (c *client) claimRecording(ctx context.Context) (*recordJob, *matchReelJob, error) {
-	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{"recorder": c.worker, "version": 2})
+	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{"recorder": c.worker, "version": 3})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -117,7 +124,8 @@ func (c *client) claimRecording(ctx context.Context) (*recordJob, *matchReelJob,
 	if err := json.Unmarshal(body.Job, &kind); err != nil {
 		return nil, nil, err
 	}
-	if kind.Kind == "match_reel" {
+	// A tournament reel is made the same way as a match reel: tag and join.
+	if kind.Kind == "match_reel" || kind.Kind == "tournament_reel" {
 		var j matchReelJob
 		return nil, &j, json.Unmarshal(body.Job, &j)
 	}
@@ -154,15 +162,18 @@ func demoName(path, steamID string) (string, error) {
 
 // clipResult is one recorded moment, edited.
 type clipResult struct {
-	moment moment
-	path   string
+	moment  moment
+	path    string
+	markers clipMarkers
 }
 
 // clipLook is what goes on every clip of a job: the caption card's player,
 // match and avatar, and whether the logo shows.
 type clipLook struct {
 	name      string
-	match     string
+	teams     string
+	mapName   string
+	tag       string      // the corner tag: "NTLAN AUTUMN CUP · SEMI-FINAL"
 	avatar    image.Image // round, or nil
 	watermark bool
 }
@@ -196,11 +207,12 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath, name string, loo
 		}
 		started := time.Now()
 		out := filepath.Join(outDir, fmt.Sprintf("moment-%d.mp4", m.ID))
-		if err := r.recordMoment(g, look, name, m, out); err != nil {
+		markers, err := r.recordMoment(g, look, name, m, out)
+		if err != nil {
 			return clips, fmt.Errorf("%s: %w", m.Title, err)
 		}
 		log.Printf("recorded %q in %s", m.Title, time.Since(started).Round(time.Second))
-		clips = append(clips, clipResult{moment: m, path: out})
+		clips = append(clips, clipResult{moment: m, path: out, markers: markers})
 	}
 	return clips, nil
 }
@@ -235,10 +247,10 @@ func (r *recorder) capturePicture(g *game, name string, from, to int, scale floa
 	return frameTicks(vc.frameTimes(), s), nil
 }
 
-func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, out string) error {
+func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, out string) (clipMarkers, error) {
 	dir, err := os.MkdirTemp(r.scratch, "moment-")
 	if err != nil {
-		return err
+		return clipMarkers{}, err
 	}
 	if env("AT_KEEP_SCRATCH", "") == "" {
 		defer os.RemoveAll(dir)
@@ -248,50 +260,72 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	if g.lastTick > 0 && end > g.lastTick-endMargin {
 		end = g.lastTick - endMargin
 	}
-	// Kept short enough to read in its few seconds: who, and which match.
-	card, err := captionCard{name: look.name, moment: look.match, avatar: look.avatar}.render(g.height)
+	// Who, which match, map and round, and what the moment is; the clip
+	// opens slowed down under it.
+	card, err := captionCard{
+		name: look.name, teams: look.teams, mapName: look.mapName, round: m.Round,
+		kind: pillLabel(m.Kind, m.Title), tag: look.tag, avatar: look.avatar,
+	}.layout(g.width, g.height)
 	if err != nil {
-		return err
-	}
-	cardPath := filepath.Join(dir, "card.png")
-	if err := os.WriteFile(cardPath, card, 0o644); err != nil {
-		return err
+		return clipMarkers{}, err
 	}
 	windows := planWindows(m.StartTick, end, m.SlowmoTick, m.KillTicks)
 	var pieces []string
+	var edits [][]segment
 	for i, w := range windows {
 		piece := filepath.Join(dir, fmt.Sprintf("piece-%d.mp4", i))
-		pieceCard := ""
+		var pieceCard *cardRender
 		if i == 0 {
-			pieceCard = cardPath
+			pieceCard = card
 		}
-		if err := r.recordWindow(g, look.watermark, pieceCard, name, w, filepath.Join(dir, fmt.Sprint(i)), piece); err != nil {
-			return err
+		segs, err := r.recordWindow(g, look.watermark, pieceCard, name, w, filepath.Join(dir, fmt.Sprint(i)), piece)
+		if err != nil {
+			return clipMarkers{}, err
 		}
 		pieces = append(pieces, piece)
+		edits = append(edits, segs)
 	}
+	kills := m.KillTicks
+	if len(kills) == 0 {
+		kills = []int{m.SlowmoTick}
+	}
+	markers := momentMarkers(windows, edits, kills)
 	if len(pieces) == 1 {
-		return os.Rename(pieces[0], out)
+		return markers, os.Rename(pieces[0], out)
 	}
-	return concatFiles(pieces, out)
+	return markers, concatFiles(pieces, out)
 }
 
 // recordWindow records one stretch of a moment into `out`: the picture slowed
 // down (and again slower around the slow motion, for the last stretch), the
 // sound at real speed, and the edit.
-func (r *recorder) recordWindow(g *game, watermark bool, card, name string, w window, prefix, out string) error {
+func (r *recorder) recordWindow(g *game, watermark bool, card *cardRender, name string, w window, prefix, out string) ([]segment, error) {
 	main := prefix + "-main.yuv"
 	mainTicks, err := r.capturePicture(g, name, w.from-lead, w.to, mainScale, main)
 	if err != nil {
-		return fmt.Errorf("picture: %w", err)
+		return nil, fmt.Errorf("picture: %w", err)
 	}
 	sources := [][]float64{mainTicks}
 	raws := []string{main}
+	if card != nil {
+		// The opening plays slowed down under the caption card: a frame for each of its frames.
+		hold, up := introGame()
+		introEnd := w.from + int(math.Ceil((hold+up)*tickrate)) + 4
+		if introEnd > w.to {
+			introEnd = w.to
+		}
+		intro := prefix + "-intro.yuv"
+		introTicks, err := r.capturePicture(g, name, w.from-lead/2, introEnd, slowScale, intro)
+		if err != nil {
+			return nil, fmt.Errorf("slowed opening: %w", err)
+		}
+		sources, raws = append(sources, introTicks), append(raws, intro)
+	}
 	if w.slowmo >= 0 {
 		slow := prefix + "-slow.yuv"
 		slowTicks, err := r.capturePicture(g, name, w.slowmo-int(slowBeforeSec*tickrate)-lead/2, w.to, slowScale, slow)
 		if err != nil {
-			return fmt.Errorf("slow motion: %w", err)
+			return nil, fmt.Errorf("slow motion: %w", err)
 		}
 		sources, raws = append(sources, slowTicks), append(raws, slow)
 	}
@@ -307,26 +341,27 @@ func (r *recorder) recordWindow(g *game, watermark bool, card, name string, w wi
 		ac.stop()
 	}
 	if err != nil {
-		return fmt.Errorf("sound: %w", err)
+		return nil, fmt.Errorf("sound: %w", err)
 	}
 	audioAt := as.resumed.Sub(ac.started).Seconds() + float64(w.from-as.fromTick)/tickrate
 
 	length := float64(w.to-w.from) / tickrate
-	segs := []segment{{0, length, 1}}
+	kill := -1.0
 	if w.slowmo >= 0 {
-		segs = speedRamp(length, float64(w.slowmo-w.from)/tickrate)
+		kill = float64(w.slowmo-w.from) / tickrate
 	}
+	segs := editPlan(length, card != nil, kill)
 	frames, err := timeline(sources, segs, w.from)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return r.encodeMoment(raws, frames, g.width, g.height, wav, audioAt, length, segs, watermark, card, out)
+	return segs, r.encodeMoment(raws, frames, g.width, g.height, wav, audioAt, length, segs, watermark, card, out)
 }
 
 // encodeMoment streams the timeline's frames into ffmpeg at outputFPS with the
 // sound, the slow motion on both, and the caption.
 func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav string, audioAt, length float64,
-	segs []segment, watermark bool, card, out string) error {
+	segs []segment, watermark bool, card *cardRender, out string) error {
 	files := make([]*os.File, len(raws))
 	for i, p := range raws {
 		f, err := os.Open(p)
@@ -341,9 +376,18 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		"-ss", fmt.Sprintf("%.4f", maxf(0, audioAt)), "-i", wav}
 	o := overlay{card: -1, logo: -1, width: w, height: h}
 	next := 2
-	if card != "" {
-		args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-t", fmt.Sprintf("%g", captionSec+0.5), "-i", card)
-		o.card, next = next, next+1
+	// The card's frames come through a named pipe, drawn as ffmpeg asks for them.
+	var cardPipe string
+	if card != nil {
+		cardPipe = out + ".card"
+		_ = os.Remove(cardPipe)
+		if err := syscall.Mkfifo(cardPipe, 0o600); err != nil {
+			return fmt.Errorf("card pipe: %w", err)
+		}
+		defer os.Remove(cardPipe)
+		args = append(args, "-f", "rawvideo", "-pix_fmt", "rgba", "-s", fmt.Sprintf("%dx%d", card.region.Dx(), card.region.Dy()),
+			"-framerate", fmt.Sprint(cardFPS), "-i", cardPipe)
+		o.card, o.cardAt, next = next, card.region.Min, next+1
 	}
 	if watermark {
 		args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-i", r.logo)
@@ -362,6 +406,26 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 	if err := cmd.Start(); err != nil {
 		return err
 	}
+	cardDone := make(chan error, 1)
+	if card != nil {
+		go func() {
+			f, err := os.OpenFile(cardPipe, os.O_WRONLY, 0)
+			if err != nil {
+				cardDone <- err
+				return
+			}
+			defer f.Close()
+			for i := 0; i < int(cardSec*cardFPS); i++ {
+				if _, err := f.Write(card.frameAt(float64(i) / cardFPS).Pix); err != nil {
+					cardDone <- err
+					return
+				}
+			}
+			cardDone <- nil
+		}()
+	} else {
+		cardDone <- nil
+	}
 	frameBytes := int64(w * h * 3 / 2)
 	buf := make([]byte, frameBytes)
 	var werr error
@@ -374,8 +438,19 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		}
 	}
 	stdin.Close()
-	if err := cmd.Wait(); err != nil {
-		return fmt.Errorf("ffmpeg: %v %s", err, strings.TrimSpace(stderr.String()))
+	waitErr := cmd.Wait()
+	if card != nil {
+		// ffmpeg gone before it opened the pipe: open its other end so the writer stops waiting.
+		if f, err := os.OpenFile(cardPipe, os.O_RDONLY|syscall.O_NONBLOCK, 0); err == nil {
+			f.Close()
+		}
+	}
+	cardErr := <-cardDone
+	if waitErr != nil {
+		return fmt.Errorf("ffmpeg: %v %s", waitErr, strings.TrimSpace(stderr.String()))
+	}
+	if cardErr != nil {
+		return fmt.Errorf("caption card: %w", cardErr)
 	}
 	if werr != nil {
 		return fmt.Errorf("feeding ffmpeg: %w", werr)
@@ -483,13 +558,15 @@ func (r *recorder) download(ctx context.Context, j *recordJob, to string) error 
 	return f.Close()
 }
 
-func (r *recorder) upload(ctx context.Context, path, route string) error {
+// upload sends a video to the platform, with the headers that describe it
+// (X-AT-Markers on a clip, X-AT-Clips on a reel).
+func (r *recorder) upload(ctx context.Context, path, route string, headers map[string]string) error {
 	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	res, err := r.do(ctx, http.MethodPut, route, "video/mp4", f)
+	res, err := r.doWith(ctx, http.MethodPut, route, "video/mp4", f, headers)
 	if err != nil {
 		return err
 	}
@@ -511,7 +588,12 @@ func (r *recorder) record(ctx context.Context, j *recordJob) error {
 	if err != nil {
 		return err
 	}
-	look := clipLook{name: j.PlayerName, match: j.Match, watermark: j.Watermark == nil || *j.Watermark}
+	look := clipLook{name: j.PlayerName, teams: j.Teams, mapName: mapDisplayName(j.MapName), tag: cornerTag(j.Tournament, j.Stage),
+		watermark: j.Watermark == nil || *j.Watermark}
+	if look.teams == "" {
+		// An older platform: its match line is "teams · tournament".
+		look.teams = strings.SplitN(j.Match, " · ", 2)[0]
+	}
 	if j.AvatarURL != "" {
 		if img, err := r.fetchAvatar(ctx, j.AvatarURL); err != nil {
 			log.Printf("no avatar for %s: %v", j.PlayerName, err)
@@ -521,20 +603,35 @@ func (r *recorder) record(ctx context.Context, j *recordJob) error {
 	}
 	clips, err := r.recordMoments(ctx, demoPath, name, look, j.Moments, dir)
 	for _, c := range clips {
-		if err := r.upload(ctx, c.path, fmt.Sprintf("/api/game/cs2/recorder/jobs/%d/clip", c.moment.ID)); err != nil {
+		markers, _ := json.Marshal(c.markers)
+		if err := r.upload(ctx, c.path, fmt.Sprintf("/api/game/cs2/recorder/jobs/%d/clip", c.moment.ID),
+			map[string]string{"X-AT-Markers": string(markers)}); err != nil {
 			return err
 		}
 	}
 	if err != nil {
 		return err
 	}
-	if len(clips) > 1 {
+	// The player's reel: their plays on the map, without the funny ones (those
+	// are for the tournament reel).
+	var plays []clipResult
+	for _, c := range clips {
+		if c.moment.Kind != "funny" {
+			plays = append(plays, c)
+		}
+	}
+	if len(plays) > 1 {
 		reel := filepath.Join(dir, "reel.mp4")
-		if err := joinReel(clips, reel); err != nil {
+		if err := joinReel(plays, reel); err != nil {
 			return err
 		}
+		ids := make([]string, len(plays))
+		for i, c := range plays {
+			ids[i] = strconv.Itoa(c.moment.ID)
+		}
 		return r.upload(ctx, reel, fmt.Sprintf("/api/game/cs2/recorder/reels/%s/%d/%s",
-			url.PathEscape(j.MatchSlug), j.MapNumber, url.PathEscape(j.PlayerID)))
+			url.PathEscape(j.MatchSlug), j.MapNumber, url.PathEscape(j.PlayerID)),
+			map[string]string{"X-AT-Clips": strings.Join(ids, ",")})
 	}
 	return nil
 }
@@ -597,7 +694,7 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 				r.failMatchReel(reel, err)
 				continue
 			}
-			log.Printf("match reel of %s map %d: %d clip(s) in %s", reel.MatchSlug, reel.MapNumber, len(reel.Clips), time.Since(started).Round(time.Second))
+			log.Printf("%s: %d clip(s) in %s", reel.label(), len(reel.Clips), time.Since(started).Round(time.Second))
 			continue
 		}
 		if j == nil {
@@ -643,7 +740,8 @@ func recordFile(args []string) error {
 	if err := os.MkdirAll(args[3], 0o755); err != nil {
 		return err
 	}
-	look := clipLook{name: name, match: env("AT_MATCH_LINE", ""), watermark: env("AT_WATERMARK", "1") != "0"}
+	look := clipLook{name: name, teams: env("AT_TEAMS", ""), mapName: env("AT_MAP", ""), tag: env("AT_TAG", ""),
+		watermark: env("AT_WATERMARK", "1") != "0"}
 	if file := env("AT_AVATAR", ""); file != "" {
 		src, err := os.ReadFile(file)
 		if err != nil {
@@ -656,6 +754,12 @@ func recordFile(args []string) error {
 	clips, err := r.recordMoments(context.Background(), args[0], name, look, moments, args[3])
 	if err != nil {
 		return err
+	}
+	for _, c := range clips {
+		b, _ := json.MarshalIndent(c.markers, "", "  ")
+		if err := os.WriteFile(strings.TrimSuffix(c.path, ".mp4")+".json", b, 0o644); err != nil {
+			return err
+		}
 	}
 	if len(clips) > 1 {
 		return joinReel(clips, filepath.Join(args[3], "reel.mp4"))

@@ -142,9 +142,12 @@ export function ReplayViewer({
   mapNumber,
   team1Ids,
   avatars = {},
+  startRound,
 }: {
   matchSlug: string;
   mapNumber: number;
+  /** Open on this round (a highlight's "2D replay of this round"). */
+  startRound?: number;
   team1Ids: Set<string>;
   /** Player id -> avatar URL; players without one get the site's generated avatar. */
   avatars?: Record<string, string | null>;
@@ -173,13 +176,14 @@ export function ReplayViewer({
       .then((r) => {
         if (cancelled) return;
         setReplay(r);
-        setTick(r.rounds[0]?.startTick ?? r.frames[0]?.[0] ?? 0);
+        const start = r.rounds.find((x) => x.number === startRound) ?? r.rounds[0];
+        setTick(start?.startTick ?? r.frames[0]?.[0] ?? 0);
       })
       .catch(() => !cancelled && setMissing(true));
     return () => {
       cancelled = true;
     };
-  }, [matchSlug, mapNumber]);
+  }, [matchSlug, mapNumber, startRound]);
 
   useEffect(() => {
     if (!replay) return;

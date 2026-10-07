@@ -30,4 +30,8 @@ export const links = {
    */
   settings: (moduleId?: string): string =>
     moduleId ? `${paths.settings}?section=${encodeURIComponent(moduleId)}` : paths.settings,
+  /** A player's public profile. Client API 0.2.13. */
+  playerProfile: (playerId: string): string => paths.playerProfile.replace(':steamId', encodeURIComponent(playerId)),
+  /** A tournament's public page. Client API 0.2.13. */
+  tournament: (tournamentId: number | string): string => paths.tournamentOverview.replace(':id', String(tournamentId)),
 } as const;

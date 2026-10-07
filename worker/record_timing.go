@@ -99,8 +99,9 @@ const maxGapTicks = 2.0
 // timeline is the clip's frames at outputFPS: the speed ramp `segs` (seconds
 // from the clip's start at startTick) says which moment of the game each
 // output frame shows. Full-speed pieces take their frames from the first
-// capture (sources[0]); slowed pieces from the last (the slowed capture) where
-// it has them. Within a capture the frames never go back.
+// capture (sources[0]); slowed pieces from a slowed capture (the others: the
+// slowed opening, the slow motion at the end) that has them. Within a capture
+// the frames never go back.
 func timeline(sources [][]float64, segs []segment, startTick int) ([]frameRef, error) {
 	type indexed struct {
 		tick  float64
@@ -135,9 +136,12 @@ func timeline(sources [][]float64, segs []segment, startTick int) ([]frameRef, e
 		for j := 0; j < n; j++ {
 			want := float64(startTick) + (seg.From+float64(j)*seg.Speed/outputFPS)*tickrate
 			si := 0
-			if seg.Speed < 1 && len(sources) > 1 {
-				if _, gap := nearest(len(sources)-1, want); gap <= maxGapTicks {
-					si = len(sources) - 1
+			if seg.Speed < 1 {
+				for cand := len(sources) - 1; cand > 0; cand-- {
+					if _, gap := nearest(cand, want); gap <= maxGapTicks {
+						si = cand
+						break
+					}
 				}
 			}
 			c, gap := nearest(si, want)

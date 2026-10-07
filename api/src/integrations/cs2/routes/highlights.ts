@@ -8,11 +8,23 @@
  *   POST /api/game/cs2/recorder/fail                  { ids, error }: it could not record them
  *   PUT  /api/game/cs2/recorder/match-reels/:slug/:map       a map's match reel (video/mp4 body; ?clips=N)
  *   POST /api/game/cs2/recorder/match-reels/:slug/:map/fail  { error }: it could not make it
+ *   PUT  /api/game/cs2/recorder/tournament-reels/:id         a tournament's reel (video/mp4 body)
+ *   POST /api/game/cs2/recorder/tournament-reels/:id/fail    { error }: it could not make it
+ *
+ * A clip's upload carries `X-AT-Markers` (JSON: where its kills and slow
+ * motion are, in seconds); a reel's carries `X-AT-Clips` (the highlight ids it
+ * joins, in order), for the player's scrubber and chapters.
  *
  * Public:
- *   GET  /api/game/cs2/players/:playerId/highlights   a player's reels and highlights
+ *   GET  /api/game/cs2/players/:playerId/highlights   a player's reels, highlights and favourite (?all=1: every one)
+ *   PUT  /api/game/cs2/players/me/highlights/favourite  { highlightId | null }: the signed-in player picks theirs
+ *   GET  /api/game/cs2/tournaments/:id/highlights     a tournament's reel, best plays and match reels
  *   GET  /api/game/cs2/matches/:slug/reels            a match's reels per map
- *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`), with range requests
+ *   GET  /api/game/cs2/watch/clip/:id                 one highlight to watch
+ *   GET  /api/game/cs2/watch/reel/:slug/:map/:player  a player's reel of a map
+ *   GET  /api/game/cs2/watch/match/:slug/:map         a map's match reel
+ *   GET  /api/game/cs2/watch/tournament/:id           a tournament's reel
+ *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`, `tournament-…`), with range requests
  */
 
 import fs from 'fs';
@@ -20,6 +32,21 @@ import path from 'path';
 import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
+import { resolveViewerAccount } from '../../../utils/viewerIdentity';
+import {
+  claimTournamentReel,
+  clipView,
+  failTournamentReel,
+  favouriteOf,
+  matchReelView,
+  playerClips,
+  playerReelView,
+  playerReelViews,
+  saveTournamentReel,
+  setFavourite,
+  tournamentHighlights,
+  tournamentReel,
+} from '../demos/highlightViews';
 import {
   claimMatchReel,
   claimRecordJob,
@@ -28,8 +55,8 @@ import {
   saveMatchReel,
   clipFile,
   failRecordJob,
-  playerHighlights,
-  playerReels,
+  parseClipIds,
+  parseMarkers,
   saveClip,
   saveReel,
 } from '../demos/highlights';
@@ -47,6 +74,12 @@ router.post('/recorder/claim', requireAuth, async (req: Request, res: Response) 
     // A match reel only joins clips already made: hand those out first.
     const reel = await claimMatchReel(recorder);
     if (reel) return res.json({ success: true, job: reel });
+    // Then a finished tournament's reel, once all of it is recorded. Older
+    // recorders (version < 3) don't know the kind: they only get player jobs.
+    if (Number(req.body?.version ?? 0) >= 3) {
+      const tournament = await claimTournamentReel(recorder);
+      if (tournament) return res.json({ success: true, job: tournament });
+    }
     const job = await claimRecordJob(recorder);
     if (!job) return res.status(204).end();
     return res.json({ success: true, job: { kind: 'player', ...job } });
@@ -62,7 +95,7 @@ router.put('/recorder/jobs/:id/clip', requireAuth, async (req: Request, res: Res
     return res.status(400).json({ success: false, error: 'A video/mp4 body for a highlight' });
   }
   try {
-    const bytes = await saveClip(id, req);
+    const bytes = await saveClip(id, req, parseMarkers(req.headers['x-at-markers']));
     return res.json({ success: true, bytes });
   } catch (error) {
     log.error('[HIGHLIGHTS] clip save failed', { error, id });
@@ -82,7 +115,7 @@ router.put(
       return res.status(400).json({ success: false, error: 'A video/mp4 body' });
     }
     try {
-      const bytes = await saveReel(req.params.slug, map, req.params.player, req);
+      const bytes = await saveReel(req.params.slug, map, req.params.player, req, parseClipIds(req.headers['x-at-clips']));
       return res.json({ success: true, bytes });
     } catch (error) {
       log.error('[HIGHLIGHTS] reel save failed', { error, slug: req.params.slug });
@@ -104,7 +137,13 @@ router.put(
       return res.status(400).json({ success: false, error: 'A video/mp4 body' });
     }
     try {
-      const bytes = await saveMatchReel(req.params.slug, map, Number.isInteger(clips) ? clips : 0, req);
+      const bytes = await saveMatchReel(
+        req.params.slug,
+        map,
+        Number.isInteger(clips) ? clips : 0,
+        req,
+        parseClipIds(req.headers['x-at-clips'])
+      );
       return res.json({ success: true, bytes });
     } catch (error) {
       log.error('[HIGHLIGHTS] match reel save failed', { error, slug: req.params.slug });
@@ -133,17 +172,96 @@ router.post('/recorder/fail', requireAuth, async (req: Request, res: Response) =
   return res.json({ success: true });
 });
 
+router.put('/recorder/tournament-reels/:id', requireAuth, async (req: Request, res: Response) => {
+  const id = idOf(req);
+  if (!id || !String(req.headers['content-type'] ?? '').startsWith('video/mp4')) {
+    return res.status(400).json({ success: false, error: 'A tournament id and a video/mp4 body' });
+  }
+  try {
+    const bytes = await saveTournamentReel(id, req, parseClipIds(req.headers['x-at-clips']));
+    return res.json({ success: true, bytes });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] tournament reel save failed', { error, id });
+    return res.status(500).json({ success: false, error: 'Could not store the tournament reel' });
+  }
+});
+
+router.post('/recorder/tournament-reels/:id/fail', requireAuth, async (req: Request, res: Response) => {
+  const id = idOf(req);
+  if (!id) return res.status(400).json({ success: false, error: 'A tournament id' });
+  await failTournamentReel(id, typeof req.body?.error === 'string' ? req.body.error : 'unknown');
+  return res.json({ success: true });
+});
+
+router.put('/players/me/highlights/favourite', async (req: Request, res: Response) => {
+  const viewer = await resolveViewerAccount(req);
+  if (!viewer.playerId) return res.status(401).json({ success: false, error: 'Sign in first' });
+  if (viewer.isImpersonating) {
+    return res.status(403).json({ success: false, error: 'Stop impersonating to pick a favourite.' });
+  }
+  const raw = req.body?.highlightId;
+  const highlightId = raw === null ? null : Number(raw);
+  if (highlightId !== null && !(Number.isInteger(highlightId) && highlightId > 0)) {
+    return res.status(400).json({ success: false, error: 'A highlight id, or null' });
+  }
+  if (!(await setFavourite(viewer.playerId, highlightId))) {
+    return res.status(404).json({ success: false, error: 'Not one of your recorded highlights' });
+  }
+  return res.json({ success: true, favourite: highlightId });
+});
+
 router.get('/players/:playerId/highlights', async (req: Request, res: Response) => {
-  const [reels, highlights] = await Promise.all([
-    playerReels(req.params.playerId),
-    playerHighlights(req.params.playerId),
+  const all = req.query.all === '1';
+  const [reels, highlights, favourite, viewer] = await Promise.all([
+    playerReelViews(req.params.playerId, all ? 200 : 12),
+    playerClips(req.params.playerId, all ? 300 : 24),
+    favouriteOf(req.params.playerId),
+    resolveViewerAccount(req),
   ]);
-  return res.json({ success: true, reels, highlights });
+  return res.json({
+    success: true,
+    reels,
+    highlights,
+    favourite,
+    isOwn: !!viewer.playerId && viewer.playerId === req.params.playerId && !viewer.isImpersonating,
+  });
+});
+
+router.get('/tournaments/:id/highlights', async (req: Request, res: Response) => {
+  const id = idOf(req);
+  if (!id) return res.status(400).json({ success: false, error: 'A tournament id' });
+  return res.json({ success: true, ...(await tournamentHighlights(id)) });
+});
+
+router.get('/watch/clip/:id', async (req: Request, res: Response) => {
+  const id = idOf(req);
+  const clip = id ? await clipView(id) : null;
+  if (!clip || !clip.video) return res.status(404).json({ success: false, error: 'No such highlight' });
+  return res.json({ success: true, clip });
+});
+
+router.get('/watch/reel/:slug/:map/:player', async (req: Request, res: Response) => {
+  const reel = await playerReelView(req.params.slug, Number(req.params.map), req.params.player);
+  if (!reel) return res.status(404).json({ success: false, error: 'No such reel' });
+  return res.json({ success: true, reel });
+});
+
+router.get('/watch/match/:slug/:map', async (req: Request, res: Response) => {
+  const reel = await matchReelView(req.params.slug, Number(req.params.map));
+  if (!reel) return res.status(404).json({ success: false, error: 'No such reel' });
+  return res.json({ success: true, reel });
+});
+
+router.get('/watch/tournament/:id', async (req: Request, res: Response) => {
+  const id = idOf(req);
+  const reel = id ? await tournamentReel(id) : null;
+  if (!reel || !reel.video) return res.status(404).json({ success: false, error: 'No such reel' });
+  return res.json({ success: true, reel: { ...reel, tournamentId: id } });
 });
 
 router.get('/highlights/:file', (req: Request, res: Response) => {
   const clip = /^(\d+)\.mp4$/.exec(req.params.file);
-  const reel = /^(?:reel|match)-[A-Za-z0-9_.-]+\.mp4$/.test(req.params.file);
+  const reel = /^(?:reel|match|tournament)-[A-Za-z0-9_.-]+\.mp4$/.test(req.params.file);
   if (!clip && !reel) return res.status(404).end();
   const file = clip ? clipFile(Number(clip[1])) : path.join(path.dirname(clipFile(0)), req.params.file);
   if (!fs.existsSync(file)) return res.status(404).end();

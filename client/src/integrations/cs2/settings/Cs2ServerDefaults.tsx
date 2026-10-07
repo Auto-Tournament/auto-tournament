@@ -48,6 +48,7 @@ export interface Cs2DefaultsValues {
   atKnifeEnabledDefault: boolean;
   atDebugChatEnabled: boolean;
   highlightsWatermark: boolean;
+  highlightsPerPlayer: number | null;
   atAutostartMode: 0 | 1 | 2;
   atMinimumReadyRequired: number;
   atAllowForceReady: boolean;
@@ -91,6 +92,7 @@ const DEFAULTS: Cs2DefaultsValues = {
   atKnifeEnabledDefault: true,
   atDebugChatEnabled: false,
   highlightsWatermark: true,
+  highlightsPerPlayer: 6,
   atAutostartMode: 1,
   atMinimumReadyRequired: 0,
   atAllowForceReady: true,
@@ -983,6 +985,20 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
         <Typography variant="caption" color="text.secondary" display="block">
           {t('settings.highlights.watermark.description')}
         </Typography>
+        <TextField
+          label={t('settings.highlights.perPlayer.label')}
+          type="number"
+          value={vals.highlightsPerPlayer ?? ''}
+          onChange={(e) => {
+            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+            update('highlightsPerPlayer', isNaN(val as number) ? null : val);
+          }}
+          onBlur={flush}
+          helperText={t('settings.highlights.perPlayer.helper')}
+          inputProps={{ min: 1, max: 6, 'data-testid': 'cs2-highlights-per-player' }}
+          size="small"
+          sx={{ mt: 2, maxWidth: 320 }}
+        />
       </Box>
 
       {isDev && (

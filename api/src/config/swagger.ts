@@ -7,6 +7,7 @@ import {
   toOpenApiPath,
   type Guard,
 } from '../utils/routeIntrospection';
+import packageJson from '../../package.json';
 import {
   COMPAT_CHECK_KINDS,
   COMPAT_CHECK_STATUSES,
@@ -115,7 +116,8 @@ const options: swaggerJsdoc.Options = {
     openapi: '3.0.0',
     info: {
       title: 'Auto Tournament API',
-      version: '1.0.0',
+      // The running release, so an integrator reading /api-docs sees which one it is.
+      version: packageJson.version,
       description:
         'Run a tournament from a bot or a script: teams, players, brackets, ' +
         'matches and results. The dashboard is a client of this API and ' +

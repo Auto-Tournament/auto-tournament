@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 548 of them, 356 behind auth —
+Every endpoint this API serves — 556 of them, 358 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -263,7 +263,15 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 | `POST` | `/api/game/cs2/recorder/match-reels/:slug/:map/fail` | admin |
 | `GET` | `/api/game/cs2/matches/:slug/reels` | public |
 | `POST` | `/api/game/cs2/recorder/fail` | admin |
+| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id` | admin |
+| `POST` | `/api/game/cs2/recorder/tournament-reels/:id/fail` | admin |
+| `PUT` | `/api/game/cs2/players/me/highlights/favourite` | public |
 | `GET` | `/api/game/cs2/players/:playerId/highlights` | public |
+| `GET` | `/api/game/cs2/tournaments/:id/highlights` | public |
+| `GET` | `/api/game/cs2/watch/clip/:id` | public |
+| `GET` | `/api/game/cs2/watch/reel/:slug/:map/:player` | public |
+| `GET` | `/api/game/cs2/watch/match/:slug/:map` | public |
+| `GET` | `/api/game/cs2/watch/tournament/:id` | public |
 | `GET` | `/api/game/cs2/highlights/:file` | public |
 
 ### Map radars

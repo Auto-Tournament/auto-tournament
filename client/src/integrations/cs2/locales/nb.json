@@ -1137,6 +1137,10 @@
       "watermark": {
         "label": "Auto Tournament-logo på høydepunktvideoene",
         "description": "Vises svakt nede til høyre. Det hjelper oss mye om du lar den stå på."
+      },
+      "perPlayer": {
+        "label": "Klipp per spiller per kart",
+        "helper": "1 til 6. Hvert klipp tar opptakeren omtrent fem minutter, så færre klipp blir ferdige raskere."
       }
     }
   },
@@ -1929,6 +1933,90 @@
     "moments_one": "{{count}} øyeblikk",
     "moments_other": "{{count}} øyeblikk",
     "matchReel": "Kamp-høydepunkter",
-    "close": "Lukk"
+    "close": "Lukk",
+    "roundN": "Runde {{n}}",
+    "seeAll": "Se alle {{count}}",
+    "reelBadge": "REEL",
+    "favourite": "Favoritt",
+    "makeFavourite": "Gjør til favoritt",
+    "unfavourite": "Ikke favoritt lenger",
+    "favouriteFailed": "Kunne ikke lagre favoritten",
+    "beingRecorded_one": "{{count}} høydepunkt tas opp.",
+    "beingRecorded_other": "{{count}} høydepunkter tas opp.",
+    "pageTitle": "Høydepunktene til {{name}}",
+    "summary": "{{clips}} klipp · {{reels}} reels · fra {{maps}} kart",
+    "loading": "Laster høydepunkter",
+    "loadFailed": "Kunne ikke laste høydepunktene.",
+    "filterLabel": "Vis",
+    "filter": {
+      "all": "Alle",
+      "reels": "Reels",
+      "multi": "Aces og 4K",
+      "clutch": "Clutcher",
+      "flair": "Flicks og wallbangs",
+      "funny": "Morsomt"
+    },
+    "sort": {
+      "best": "Sorter: best",
+      "newest": "Sorter: nyest"
+    },
+    "reelsHeading": "REELS: HVERT KARTS ØYEBLIKK, ETTER HVERANDRE",
+    "momentsHeading": "ØYEBLIKK",
+    "noneForFilter": "Ingenting her ennå.",
+    "showAll": "Vis alle {{count}}",
+    "showFewer": "Vis færre",
+    "kind": {
+      "ace": "ACE",
+      "clutch": "CLUTCH",
+      "multiClutch": "{{n}}K CLUTCH",
+      "funny": "MORSOMT",
+      "flair": "FLAIR"
+    },
+    "player": {
+      "play": "Spill av",
+      "pause": "Pause",
+      "back": "5 sekunder tilbake",
+      "forward": "5 sekunder fram",
+      "mute": "Demp",
+      "unmute": "Slå på lyd",
+      "seek": "Spol",
+      "speed": "Hastighet {{speed}}×",
+      "share": "Del",
+      "download": "Last ned",
+      "fullscreen": "Fullskjerm",
+      "exitFullscreen": "Avslutt fullskjerm",
+      "linkCopied": "Lenke kopiert",
+      "slowmo": "Sakte film",
+      "kill": "Kill",
+      "lastKill": "Siste kill"
+    },
+    "watch": {
+      "missing": "Denne videoen finnes ikke (lenger).",
+      "playerReel": "{{name}} · reel fra {{map}}",
+      "matchReel": "Kampreel · {{map}}",
+      "tournamentReel": "Turneringsreel",
+      "plays_one": "{{count}} spill",
+      "plays_other": "{{count}} spill",
+      "openMatch": "Åpne kampen",
+      "replayRound": "2D-replay av runden",
+      "analysis": "Kartanalyse",
+      "profile": "Spillerprofil",
+      "inThisReel": "I DENNE REELEN",
+      "more": "MER FRA DEM"
+    },
+    "tournament": {
+      "reel": "TURNERINGSREEL",
+      "topSoFar": "BESTE SPILL SÅ LANGT",
+      "reelTitle": "Det beste fra turneringen",
+      "reelSub": "{{plays}} spill fra {{players}} spillere.",
+      "watch": "Se",
+      "topPlays": "Beste spill",
+      "matchReels": "Kampreels",
+      "progress": "{{done}} av {{total}} spillere ferdig",
+      "players_one": "{{count}} spiller",
+      "players_other": "{{count}} spillere",
+      "none": "Ingen høydepunkter ennå. De dukker opp her etter hvert som demoene tas opp.",
+      "playOfTheTournament": "Turneringens spill"
+    }
   }
 }

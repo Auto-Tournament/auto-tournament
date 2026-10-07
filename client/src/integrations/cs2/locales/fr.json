@@ -1137,6 +1137,10 @@
       "watermark": {
         "label": "Auto Tournament logo on highlight videos",
         "description": "Shown faintly in the lower right. Leaving it on helps us a lot."
+      },
+      "perPlayer": {
+        "label": "Clips per player per map",
+        "helper": "1 to 6. Each takes the recorder about five minutes, so fewer clips are ready sooner."
       }
     }
   },
@@ -1929,6 +1933,90 @@
     "moments_one": "{{count}} moment",
     "moments_other": "{{count}} moments",
     "matchReel": "Match reel",
-    "close": "Close"
+    "close": "Close",
+    "roundN": "Round {{n}}",
+    "seeAll": "See all {{count}}",
+    "reelBadge": "REEL",
+    "favourite": "Favourite",
+    "makeFavourite": "Make it your favourite",
+    "unfavourite": "No longer your favourite",
+    "favouriteFailed": "Could not save your favourite",
+    "beingRecorded_one": "{{count}} highlight is being recorded.",
+    "beingRecorded_other": "{{count}} highlights are being recorded.",
+    "pageTitle": "{{name}}'s highlights",
+    "summary": "{{clips}} clips · {{reels}} reels · from {{maps}} maps",
+    "loading": "Loading highlights",
+    "loadFailed": "Could not load the highlights.",
+    "filterLabel": "Show",
+    "filter": {
+      "all": "All",
+      "reels": "Reels",
+      "multi": "Aces & 4Ks",
+      "clutch": "Clutches",
+      "flair": "Flicks & wallbangs",
+      "funny": "Funny"
+    },
+    "sort": {
+      "best": "Sort: best",
+      "newest": "Sort: newest"
+    },
+    "reelsHeading": "REELS: EACH MAP'S MOMENTS, ONE AFTER THE OTHER",
+    "momentsHeading": "MOMENTS",
+    "noneForFilter": "Nothing here yet.",
+    "showAll": "Show all {{count}}",
+    "showFewer": "Show fewer",
+    "kind": {
+      "ace": "ACE",
+      "clutch": "CLUTCH",
+      "multiClutch": "{{n}}K CLUTCH",
+      "funny": "FUNNY",
+      "flair": "FLAIR"
+    },
+    "player": {
+      "play": "Play",
+      "pause": "Pause",
+      "back": "Back 5 seconds",
+      "forward": "Forward 5 seconds",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "seek": "Seek",
+      "speed": "Playback speed {{speed}}×",
+      "share": "Share",
+      "download": "Download",
+      "fullscreen": "Full screen",
+      "exitFullscreen": "Leave full screen",
+      "linkCopied": "Link copied",
+      "slowmo": "Slow motion",
+      "kill": "Kill",
+      "lastKill": "Last kill"
+    },
+    "watch": {
+      "missing": "This video is not there (any more).",
+      "playerReel": "{{name}} · {{map}} reel",
+      "matchReel": "Match reel · {{map}}",
+      "tournamentReel": "Tournament reel",
+      "plays_one": "{{count}} play",
+      "plays_other": "{{count}} plays",
+      "openMatch": "Open the match",
+      "replayRound": "2D replay of this round",
+      "analysis": "Map analysis",
+      "profile": "Player profile",
+      "inThisReel": "IN THIS REEL",
+      "more": "MORE FROM THEM"
+    },
+    "tournament": {
+      "reel": "TOURNAMENT REEL",
+      "topSoFar": "TOP PLAY SO FAR",
+      "reelTitle": "The best of the tournament",
+      "reelSub": "{{plays}} plays from {{players}} players.",
+      "watch": "Watch",
+      "topPlays": "Top plays",
+      "matchReels": "Match reels",
+      "progress": "{{done}} of {{total}} players done",
+      "players_one": "{{count}} player",
+      "players_other": "{{count}} players",
+      "none": "No highlights yet. They show up here as the matches' demos are recorded.",
+      "playOfTheTournament": "Play of the tournament"
+    }
   }
 }
