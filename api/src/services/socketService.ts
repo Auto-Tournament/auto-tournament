@@ -127,7 +127,19 @@ export function initializeSocket(httpServer: HTTPServer, options: SocketOptions 
       const reply = typeof ack === 'function' ? (ack as (body: unknown) => void) : () => undefined;
       const playerId = getRealViewerSteamId(handshakeAsRequest(socket));
       if (!playerId) return reply({ ok: false });
-      void Promise.resolve(socket.join(playerRoom(playerId))).then(() => reply({ ok: true }));
+      const wasOnline = isPlayerOnline(playerId);
+      void Promise.resolve(socket.join(playerRoom(playerId))).then(() => {
+        reply({ ok: true });
+        if (!wasOnline) presenceListener?.(playerId, true);
+      });
+    });
+
+    // The last tab of a player closing: they went offline.
+    socket.on('disconnecting', () => {
+      for (const room of socket.rooms) {
+        if (!room.startsWith('player:')) continue;
+        if ((io?.sockets.adapter.rooms.get(room)?.size ?? 0) <= 1) presenceListener?.(room.slice('player:'.length), false);
+      }
     });
 
     socket.on('disconnect', () => {
@@ -280,6 +292,34 @@ export function onlinePlayerCount(): number {
     if (room.startsWith('player:') && sockets.size > 0) n += 1;
   }
   return n;
+}
+
+/** Whether the player has the site open in at least one tab. */
+export function isPlayerOnline(playerId: string): boolean {
+  return (io?.sockets.adapter.rooms.get(playerRoom(playerId))?.size ?? 0) > 0;
+}
+
+type PresenceListener = (playerId: string, online: boolean) => void;
+let presenceListener: PresenceListener | null = null;
+
+/** Hear players come online (first tab) and go offline (last tab closed). One listener (services/socialService). */
+export function onPresence(listener: PresenceListener): void {
+  presenceListener = listener;
+}
+
+/** A new notice for the bell (`notify:new`, the notice as payload). Room `player:<id>`. */
+export function emitNotification(playerId: string, notice: unknown): void {
+  if (io) io.to(playerRoom(playerId)).emit('notify:new', notice);
+}
+
+/**
+ * Tell players their friends, requests or invites changed (`social:changed`,
+ * no payload: the client reads GET /api/social/friends again). Rooms `player:<id>`.
+ */
+export function emitSocialChanged(playerIds: Iterable<string>): void {
+  if (!io) return;
+  const rooms = [...new Set(playerIds)].map(playerRoom);
+  if (rooms.length > 0) io.to(rooms).emit('social:changed');
 }
 
 /**
