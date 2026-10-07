@@ -17,7 +17,6 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useCurrentMatchStatus } from '../../hooks/useCurrentMatchStatus';
-import { useCurrentTournamentId } from '../../hooks/useTournamentList';
 import { FlagIcon, LanguageMenu, useCurrentLanguage } from '../common/LanguageSwitcher';
 import { ThemeMenu, ThemeSwatch, activeTheme } from '../common/ThemeSwitcher';
 import { DevAccountSwitcherGate } from '../dev/DevAccountSwitcherGate';
@@ -26,7 +25,7 @@ import { PlayerAvatar } from '../player/PlayerAvatar';
 import { generateAvatarDataUrl } from '../../generation/avatar';
 import { api } from '../../utils/api';
 import { fontDisplay, textSize } from '../../theme/tokens';
-import { paths, playerProfilePath, tournamentTabPath } from '../../paths';
+import { paths, playerProfilePath } from '../../paths';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
 import { useModuleAccountMenuItems } from '../../hooks/useModuleAccountMenuItems';
 import { soundNotification } from '../../utils/soundNotification';
@@ -323,7 +322,6 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
 
   const { pathname } = location;
   const { available: matchmakingAvailable } = useMatchmaking();
-  const currentTournamentId = useCurrentTournamentId();
   const moduleMenuItems = useModuleAccountMenuItems(playerSteamId ?? null);
   const playLink: SiteLink[] = matchmakingAvailable
     ? [
@@ -341,10 +339,8 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
     testId: 'nav-browse',
     current: pathname === paths.browse,
   };
-  // The current tournament's Standings tab. 3.0 hosts one tournament
-  // (`useCurrentTournamentId`); its page says so when it has none. Teams is the
-  // site-wide team list: a team is not tied to a tournament.
-  const standingsPath = tournamentTabPath(currentTournamentId, 'standings');
+  // Leaderboards is the platform's (per game); a tournament's standings are
+  // on its own page. Teams is the site-wide team list.
   const siteLinks: SiteLink[] = showAdminLinks
     ? [
         // The logo already leads to the admin home, so no separate Admin link.
@@ -374,10 +370,10 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
           current: pathname === paths.browsePlayers,
         },
         {
-          to: standingsPath,
+          to: paths.leaderboards,
           label: t('nav.leaderboards'),
           testId: 'nav-leaderboards',
-          current: pathname === standingsPath,
+          current: pathname === paths.leaderboards,
         },
       ];
 

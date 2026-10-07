@@ -605,5 +605,20 @@
       "kill": "Kill",
       "lastKill": "Siste kill"
     }
+  },
+  "leaderboard": {
+    "title": "Ledertavle",
+    "subtitle": "Spillere rangert etter ratingen sin i ett spill.",
+    "game": "Spill",
+    "loading": "Laster ledertavlen",
+    "loadError": "Kunne ikke laste ledertavlen.",
+    "emptyTitle": "Ingen rangerte spillere ennå",
+    "emptyDescription": "Spillere dukker opp her etter sin første rangerte kamp i dette spillet.",
+    "columns": {
+      "player": "Spiller",
+      "rating": "Rating",
+      "matches": "Kamper",
+      "winRate": "Seiersprosent"
+    }
   }
 }

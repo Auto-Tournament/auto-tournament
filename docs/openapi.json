@@ -583,6 +583,10 @@
       "description": "Teams API for integrators: idempotent upsert of teams by the integrator's own externalId (single and batch), and reads by externalId. Integrator token (API_TOKENS_INTEGRATOR), admin token or admin session. See docs/WEBHOOKS.md."
     },
     {
+      "name": "Leaderboard",
+      "description": "Players ranked by their rating in one game. Public."
+    },
+    {
       "name": "License",
       "description": "The Auto Tournament license key: save, remove and read its status, checked offline; and the one-time acceptance of the license terms (non-commercial or commercial use) that the admin UI waits for. Admin only, except the public badge. Nothing else is ever blocked: a missing or problematic key is a notice for admins."
     },
@@ -6059,6 +6063,30 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/leaderboard": {
+      "get": {
+        "tags": [
+          "Leaderboard"
+        ],
+        "summary": "Players ranked by their rating in one game",
+        "description": "The games with rated players (most players first), and the board for `game` (default: the first of them): rating, rated matches, wins and losses. Only players with at least one rated match in the game. Public.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "game",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The board"
+          }
+        }
       }
     },
     "/api/license": {
