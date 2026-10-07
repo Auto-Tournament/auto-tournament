@@ -26,7 +26,8 @@ import {
   type HighlightFilter,
   type TournamentHighlights,
 } from './data';
-import { HighlightCard, KindBadge, RecordingCard, thumbAt, VideoThumb } from './HighlightCard';
+import { HighlightCard, RecordingCard, thumbAt, VideoThumb } from '../../../module-sdk';
+import { KindBadge } from './KindBadge';
 import { Chip } from './PlayerHighlightsPage';
 
 /** A tournament's highlights, loaded once per tournament. */

@@ -27,8 +27,7 @@ import {
   type MatchRef,
   type PlayerHighlights,
 } from './data';
-import { HighlightPlayer, type HighlightPlayerHandle } from './HighlightPlayer';
-import { thumbAt, VideoThumb } from './HighlightCard';
+import { HighlightPlayer, thumbAt, VideoThumb, type HighlightPlayerHandle } from '../../../module-sdk';
 
 /** What one watch page shows, whatever kind of video it is. */
 interface Watchable {

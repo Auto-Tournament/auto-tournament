@@ -5,7 +5,7 @@ import { FilmStripIcon } from '@phosphor-icons/react';
 import { api, useModuleTranslation } from '../../../module-sdk';
 import type { MatchMapActionProps } from '../../types';
 import { watchMatchReelPath } from '../highlights/data';
-import { RecordingDot } from '../highlights/HighlightCard';
+import { RecordingDot } from '../../../module-sdk';
 
 interface MatchReel {
   mapNumber: number;

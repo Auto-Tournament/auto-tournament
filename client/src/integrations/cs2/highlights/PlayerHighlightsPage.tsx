@@ -25,7 +25,8 @@ import {
   type HighlightFilter,
   type PlayerHighlights,
 } from './data';
-import { HighlightCard, KindBadge } from './HighlightCard';
+import { HighlightCard } from '../../../module-sdk';
+import { KindBadge } from './KindBadge';
 
 type Filter = HighlightFilter | 'reels';
 const FILTERS: Filter[] = ['all', 'reels', 'multi', 'clutch', 'flair', 'funny'];
