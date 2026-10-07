@@ -56,6 +56,7 @@ import webhookRoutes from './webhooks';
 import integrationTeamRoutes from './integrationTeams';
 import experimentalRoutes from './experimental';
 import matchmakingRoutes from './matchmaking';
+import leaderboardRoutes from './leaderboard';
 
 export interface MountedRouter {
   /** Path prefix the router is mounted under. */
@@ -129,6 +130,12 @@ const coreRoutes: MountedRouter[] = [
     router: teamStatsRoutes,
     title: 'Team stats',
     description: 'Past results and aggregates for a team. Public.',
+  },
+  {
+    prefix: '/api/leaderboard',
+    router: leaderboardRoutes,
+    title: 'Leaderboard',
+    description: "Players ranked by their rating in one game. Public.",
   },
   {
     prefix: '/api/team-directory',
