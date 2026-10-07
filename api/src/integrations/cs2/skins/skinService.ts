@@ -321,7 +321,8 @@ export const skinService = {
 
   /**
    * Gives a player one skin, rolled like a case unless the reward pins it,
-   * and equips it if its slot is empty (never in place of one they chose).
+   * equips it if its slot is empty (never in place of one they chose), and
+   * puts it first in their profile showcase.
    */
   async grant(
     playerUid: string,
@@ -356,6 +357,7 @@ export const skinService = {
          ON CONFLICT (player_uid, slot) DO NOTHING`,
         [playerUid, slotOf(skin.weapon), row.id]
       );
+      await this.addToShowcase(playerUid, row.id, slotOf(skin.weapon));
     }
     // The reveal shows at once on any page the player has open.
     const player = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [playerUid]);
@@ -498,6 +500,30 @@ export const skinService = {
     } catch {
       return [];
     }
+  },
+
+  /**
+   * A new skin goes first in the showcase, big for a knife or gloves; the
+   * showcase keeps eight, so the last one drops off. A player who never
+   * arranged theirs starts from what the profile showed: their equipped
+   * skins, knife and gloves first.
+   */
+  async addToShowcase(playerUid: string, skinId: number, slot: string): Promise<void> {
+    const saved = await db.queryOneAsync<{ items: string }>(
+      'SELECT items FROM cs2_player_skin_showcase WHERE player_uid = ?',
+      [playerUid]
+    );
+    let items = await this.showcase(playerUid);
+    if (!saved) {
+      const equipped = (await this.inventory(playerUid)).filter((s) => s.equipped && s.id !== skinId);
+      const isBig = (s: { slot: string }) => s.slot === 'knife' || s.slot === 'gloves';
+      items = [...equipped.filter(isBig), ...equipped.filter((s) => !isBig(s))].map((s) => ({
+        skinId: s.id,
+        big: isBig(s),
+      }));
+    }
+    const next = [{ skinId, big: slot === 'knife' || slot === 'gloves' }, ...items.filter((i) => i.skinId !== skinId)];
+    await this.setShowcase(playerUid, next);
   },
 
   async setShowcase(playerUid: string, items: Array<{ skinId: number; big: boolean }>): Promise<void> {
