@@ -408,6 +408,8 @@ jobs:
           # 26 minutes and held the beta.58 release.
           if command -v jq >/dev/null && command -v curl >/dev/null; then exit 0; fi
           sudo sed -i 's#http://azure.archive.ubuntu.com#https://archive.ubuntu.com#g' /etc/apt/sources.list.d/*.sources /etc/apt/sources.list 2>/dev/null || true
+          # The runner images list their mirrors here (mirror+file:), the Azure one first.
+          if [ -f /etc/apt/apt-mirrors.txt ]; then echo 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null; fi
           printf 'Acquire::Retries "3";\nAcquire::http::Timeout "20";\nAcquire::https::Timeout "20";\n' | sudo tee /etc/apt/apt.conf.d/99-ci-timeouts >/dev/null
           timeout 300 sudo apt-get update
           timeout 300 sudo apt-get install -y jq curl
