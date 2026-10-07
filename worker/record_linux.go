@@ -394,7 +394,12 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	if len(pieces) == 1 {
 		return markers, os.Rename(pieces[0], out)
 	}
-	return markers, concatFiles(pieces, out)
+	// The jump cuts between a player's kills blend (reelCrossfade).
+	fades := make([]join, len(pieces)-1)
+	for i := range fades {
+		fades[i] = joinFade
+	}
+	return markers, r.buildReel(pieces, fades, nil, out)
 }
 
 // recordWindow records one stretch of a moment into `out`: the picture slowed
@@ -568,39 +573,18 @@ func maxf(a, b float64) float64 {
 	return b
 }
 
-// joinReel puts the clips one after the other, each blending into the next.
-func (r *recorder) joinReel(clips []clipResult, out string) error {
+// joinReel puts one player's clips one after the other, each blending into
+// the next, after the reel's intro (nil: none).
+func (r *recorder) joinReel(clips []clipResult, intro *reelIntro, out string) error {
 	paths := make([]string, len(clips))
+	joins := make([]join, 0, len(clips))
 	for i, c := range clips {
 		paths[i] = c.path
-	}
-	return r.crossfadeFiles(paths, out)
-}
-
-// crossfadeFiles joins clips into a reel, each blending into the next
-// (picture and sound, reelCrossfade). The blends mean the reel is encoded
-// again; the clips themselves are not recorded again.
-func (r *recorder) crossfadeFiles(paths []string, out string) error {
-	durations := make([]float64, len(paths))
-	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
-	for i, p := range paths {
-		// The picture's length: the sound is cut or padded to it.
-		b, err := exec.Command("ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=duration", "-of", "csv=p=0", p).Output()
-		if err != nil {
-			return fmt.Errorf("ffprobe %s: %w", filepath.Base(p), err)
+		if i > 0 {
+			joins = append(joins, joinFade)
 		}
-		if durations[i], err = strconv.ParseFloat(strings.TrimSpace(string(b)), 64); err != nil {
-			return fmt.Errorf("ffprobe %s: %w", filepath.Base(p), err)
-		}
-		args = append(args, "-i", p)
 	}
-	args = append(args, "-filter_complex", crossfadeFilter(durations), "-map", "[v]", "-map", "[a]")
-	args = append(args, encodeArgs(r.encoder)...)
-	args = append(args, "-movflags", "+faststart", out)
-	if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
-		return fmt.Errorf("ffmpeg crossfade: %v %s", err, strings.TrimSpace(string(b)))
-	}
-	return nil
+	return r.buildReel(paths, joins, intro, out)
 }
 
 // concatFiles joins MP4s of the same encoding without re-encoding.
@@ -807,7 +791,7 @@ func (r *recorder) uploadReel(ctx context.Context, dir string, j *recordJob, cli
 	}
 	sort.Slice(plays, func(a, b int) bool { return plays[a].moment.StartTick < plays[b].moment.StartTick })
 	reel := filepath.Join(dir, fmt.Sprintf("reel-%s.mp4", j.PlayerID))
-	if err := r.joinReel(plays, reel); err != nil {
+	if err := r.joinReel(plays, playerReelIntro(j, len(plays)), reel); err != nil {
 		return err
 	}
 	ids := make([]string, len(plays))
@@ -971,7 +955,7 @@ func recordFile(args []string) error {
 		}
 	}
 	if len(clips) > 1 {
-		return r.joinReel(clips, filepath.Join(args[3], "reel.mp4"))
+		return r.joinReel(clips, cliIntro("Player reel", name), filepath.Join(args[3], "reel.mp4"))
 	}
 	return nil
 }
@@ -993,9 +977,51 @@ func pickEncoder() string {
 }
 
 // joinReelFiles is `at-worker join-reel <out.mp4> <clip.mp4>...`: local clips
-// joined into a reel the way the platform's reels are, each blending into the
-// next.
+// joined into a reel the way the platform's match reels are: each clip is
+// another player (the orange wipe between them), after an intro from
+// AT_INTRO_KICKER / AT_INTRO_TITLE / AT_INTRO_META / AT_INTRO_DATE (or AT_TEAMS,
+// AT_TAG and AT_MAP; AT_INTRO=0 for none).
 func joinReelFiles(out string, clips []string) error {
 	r := &recorder{encoder: env("AT_ENCODER", pickEncoder())}
-	return r.crossfadeFiles(clips, out)
+	joins := make([]join, 0, len(clips))
+	for i := 1; i < len(clips); i++ {
+		joins = append(joins, joinWipe)
+	}
+	return r.buildReel(clips, joins, cliIntro("Match highlights", env("AT_TEAMS", "")), out)
+}
+
+// cliIntro is the intro the local commands give a reel, from the environment.
+func cliIntro(kicker, title string) *reelIntro {
+	if env("AT_INTRO", "1") == "0" {
+		return nil
+	}
+	in := &reelIntro{
+		Kicker: env("AT_INTRO_KICKER", kicker),
+		Title:  env("AT_INTRO_TITLE", title),
+		Meta:   env("AT_INTRO_META", titleCase(env("AT_TAG", ""))),
+		Map:    env("AT_MAP", ""),
+		Date:   env("AT_INTRO_DATE", time.Now().Format("2 January 2006")),
+	}
+	if strings.TrimSpace(in.Title) == "" {
+		return nil
+	}
+	return in
+}
+
+// playerReelIntro is the intro of one player's reel of a map.
+func playerReelIntro(j *recordJob, clips int) *reelIntro {
+	if j.PlayerName == "" {
+		return nil
+	}
+	meta := fmt.Sprintf("%d highlights", clips)
+	if j.Teams != "" {
+		meta = joinDot(meta, j.Teams)
+	}
+	return &reelIntro{
+		Kicker: "Player reel",
+		Title:  j.PlayerName,
+		Meta:   joinDot(meta, j.Tournament),
+		Map:    j.MapName,
+		Date:   time.Now().Format("2 January 2006"),
+	}
 }

@@ -3,8 +3,8 @@
 package main
 
 // A map's match reel: each player's best highlight there (already recorded),
-// one after the other, each blending into the next; each opens with its
-// player's caption card. No CS2 needed: the clips are downloaded and joined.
+// one after the other, the orange wipe between players, after an intro over
+// a grid of the clips; each opens with its player's caption card. No CS2 needed: the clips are downloaded and joined.
 // A tournament reel (its best plays) is made the same way.
 
 import (
@@ -38,6 +38,8 @@ type matchReelJob struct {
 	Match        string          `json:"match"`
 	Watermark    bool            `json:"watermark"`
 	Clips        []matchReelClip `json:"clips"`
+	// Intro is what the reel opens with (older platforms: none).
+	Intro *reelIntro `json:"intro"`
 	// Where the reel goes, and where to say it could not be made (the
 	// platform's routes; older platforms leave them out for match reels).
 	Upload string `json:"upload"`
@@ -84,7 +86,12 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 		tagged = append(tagged, clip)
 	}
 	reel := filepath.Join(dir, "match.mp4")
-	if err := r.crossfadeFiles(tagged, reel); err != nil {
+	// The orange wipe when the player changes, a blend between one player's clips.
+	players := make([]string, len(j.Clips))
+	for i, c := range j.Clips {
+		players[i] = c.PlayerID
+	}
+	if err := r.buildReel(tagged, joinsByPlayer(players), j.Intro, reel); err != nil {
 		return err
 	}
 	ids := make([]string, len(j.Clips))

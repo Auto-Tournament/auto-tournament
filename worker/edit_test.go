@@ -62,19 +62,21 @@ func TestVideoFilterCardAndLogo(t *testing.T) {
 
 func TestMomentMarkers(t *testing.T) {
 	// Two windows: a kill at 1 s into the first (full speed, 2 s long), then
-	// the last kill 1 s into the second, which slows down from there.
+	// the last kill 1 s into the second, which slows down from there. The
+	// second blends in over the last reelCrossfade of the first, so it starts
+	// at 2 - 0.4 = 1.6 s.
 	w1 := window{from: 0, to: 2 * tickrate, slowmo: -1}
 	w2 := window{from: 10 * tickrate, to: 10*tickrate + tickrate + int(tailSec*tickrate), slowmo: 11 * tickrate}
 	length2 := float64(w2.to-w2.from) / tickrate
 	segs := [][]segment{{{0, 2, 1}}, speedRamp(length2, 1)}
 	m := momentMarkers([]window{w1, w2}, segs, []int{tickrate, 11 * tickrate})
-	if len(m.Kills) != 2 || m.Kills[0] != 1 || m.Kills[1] != 3 {
-		t.Fatalf("kills = %v, want [1 3]", m.Kills)
+	if len(m.Kills) != 2 || m.Kills[0] != 1 || m.Kills[1] != 2.6 {
+		t.Fatalf("kills = %v, want [1 2.6]", m.Kills)
 	}
-	if m.Slowmo == nil || m.Slowmo[0] != 3 {
-		t.Fatalf("slowmo = %v, want to start at 3", m.Slowmo)
+	if m.Slowmo == nil || m.Slowmo[0] != 2.6 {
+		t.Fatalf("slowmo = %v, want to start at 2.6", m.Slowmo)
 	}
-	want := math.Round((2+outputSeconds(segs[1]))*100) / 100
+	want := math.Round((2-reelCrossfade+outputSeconds(segs[1]))*100) / 100
 	if m.Duration != want {
 		t.Fatalf("duration = %v, want %v", m.Duration, want)
 	}
@@ -129,23 +131,23 @@ func TestEncodeArgsH264At1080p60(t *testing.T) {
 	}
 }
 
-func TestCrossfadeFilter(t *testing.T) {
-	f := crossfadeFilter([]float64{10, 8, 6})
+func TestReelFilterFades(t *testing.T) {
+	f := reelFilter(reelPlan{durations: []float64{10, 8, 6}, joins: []join{joinFade, joinFade}, width: 1920, height: 1080, fps: 60})
 	for _, want := range []string{
 		// Every clip's sound is cut or padded to its picture's length first.
-		"[1:v]setpts=PTS-STARTPTS,trim=duration=8.000[v1in]",
+		"[1:v]setpts=PTS-STARTPTS,trim=duration=8.000,fps=60,settb=AVTB,setsar=1,format=yuv420p[v1in]",
 		"[1:a]asetpts=PTS-STARTPTS,apad,atrim=duration=8.000[a1in]",
-		"[v0in][v1in]xfade=transition=fade:duration=0.4:offset=9.600[v1]",
-		"[a0in][a1in]acrossfade=d=0.4[a1]",
+		"[v0in][v1in]xfade=transition=fade:duration=0.4:offset=9.600[jv1]",
+		"[a0in][a1in]acrossfade=d=0.4[ja1]",
 		// The second blend starts 0.4 s before the end of the first two joined: 10 + 8 - 0.4 - 0.4.
-		"[v1][v2in]xfade=transition=fade:duration=0.4:offset=17.200[v]",
-		"[a1][a2in]acrossfade=d=0.4[a]",
+		"[jv1][v2in]xfade=transition=fade:duration=0.4:offset=17.200[v]",
+		"[ja1][a2in]acrossfade=d=0.4[a]",
 	} {
 		if !strings.Contains(f, want) {
 			t.Fatalf("%q missing from %s", want, f)
 		}
 	}
-	if one := crossfadeFilter([]float64{5}); !strings.HasSuffix(one, "[v0in]null[v];[a0in]anull[a]") {
+	if one := reelFilter(reelPlan{durations: []float64{5}, width: 1920, height: 1080, fps: 60}); !strings.HasSuffix(one, "[v0in]null[v];[a0in]anull[a]") {
 		t.Fatalf("one clip: %s", one)
 	}
 }
