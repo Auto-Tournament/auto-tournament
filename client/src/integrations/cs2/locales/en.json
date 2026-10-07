@@ -634,6 +634,15 @@
       "left": "your license covers {{max}}, {{left}} left",
       "full": "your license covers {{max}}, all in use",
       "over": "your license covers {{max}}, {{over}} over the limit"
+    },
+    "machineCount_one": "{{count}} machine",
+    "machineCount_other": "{{count}} machines",
+    "settings": "Server settings",
+    "other": {
+      "title": "Other servers",
+      "summary_one": "{{count}} server not on a machine",
+      "summary_other": "{{count}} servers not on a machine",
+      "about": "Servers added by address, not run by csm on a linked machine."
     }
   },
   "serverModal": {
@@ -1404,10 +1413,10 @@
     "updateIdleOnly": "Only the idle servers ({{count}})",
     "errorCodes": {
       "bad_args": "csm did not accept the request",
-      "unknown_server": "No such server on this machine",
-      "busy": "The machine is busy with another job",
-      "expired": "Expired before the machine got it",
-      "stale": "Sent too long ago; not run",
+      "unknown_server": "No such server on this machine. Create it first, or wait for the list to refresh.",
+      "busy": "The machine is busy with another job. Try again when it is done.",
+      "expired": "Expired before the machine got it. Try again once the machine is online.",
+      "stale": "Sent too long ago, so csm did not run it. Try again.",
       "unsupported": "csm does not support this",
       "no_enroll_key": "No fleet key for the new server",
       "no_release": "No Ready Up release found",
@@ -1415,12 +1424,57 @@
       "install_failed": "Ready Up install failed",
       "not_found": "Not found",
       "limit": "Too many log streams",
-      "failed": "Failed"
+      "failed": "Failed",
+      "timeout": "No answer from csm"
     },
     "summary": "{{machines}} machine(s), {{online}} online · {{servers}} server(s)",
     "about": "Machines run CS2 Server Manager (csm). The platform starts, stops and creates servers on them by itself.",
     "deleteServer": "Delete server",
-    "deleting": "Deleting…"
+    "deleting": "Deleting…",
+    "ago": {
+      "seconds": "{{count}} s ago",
+      "minutes": "{{count}} min ago"
+    },
+    "working": "csm is on it",
+    "tile": {
+      "free": "Free",
+      "match": "In a match",
+      "starting": "Starting…",
+      "stopping": "Stopping…",
+      "restarting": "Restarting…",
+      "updating": "Updating…",
+      "deleting": "Deleting…",
+      "stopped": "Stopped",
+      "offline": "Offline"
+    },
+    "tryAgain": "Try again",
+    "load": "Load {{load}} · {{free}} GB RAM free",
+    "offlineSince": "Offline since {{time}}",
+    "waitingFor_one": "{{count}} action waits for it",
+    "waitingFor_other": "{{count}} actions wait for it",
+    "addServers": "Add servers",
+    "back": "All machines",
+    "more": "More for {{name}}",
+    "machine": "Machine",
+    "cpu": "CPU load",
+    "ram": "RAM",
+    "diskLabel": "Disk {{mount}}",
+    "counts": {
+      "free": "Free",
+      "match": "In a match",
+      "busy": "Updating or restarting",
+      "down": "Stopped or offline"
+    },
+    "step": {
+      "name": "Name the machine",
+      "run": "Run this on it",
+      "runHelp": "One command, shown here once you have named the machine.",
+      "appears": "It shows up here",
+      "appearsHelp": "Then add servers to it with one click."
+    },
+    "noCsm": "No csm on the machine yet?",
+    "noCsmHelp": "Install CS2 Server Manager first, then come back for step 2.",
+    "installGuide": "Install guide"
   },
   "failover": {
     "title": "Failover",
@@ -1856,5 +1910,13 @@
       "wallbang": "wallbang",
       "headshot": "headshot"
     }
+  },
+  "highlights": {
+    "title": "Highlights",
+    "queued_one": "{{count}} more on the way",
+    "queued_other": "{{count}} more on the way",
+    "pending": "Waiting for the recorder",
+    "recording": "Recording…",
+    "mapN": "Map {{n}}"
   }
 }

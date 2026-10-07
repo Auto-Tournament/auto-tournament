@@ -933,3 +933,31 @@ export async function listHostCommands(hostId: string, limit = 25): Promise<Host
   );
   return rows.map(commandFromRow);
 }
+
+/**
+ * Fail the commands csm went quiet on while its machine was online: no
+ * answer and no progress for `notStartedS` seconds after it was sent (or the
+ * machine came back), or `stalledS` seconds since its last progress. A
+ * command to an offline machine waits; it is sent when the machine connects.
+ * An answer that arrives later still replaces the timeout (applyResult).
+ */
+export async function timeOutQuietCommands(limits: { notStartedS: number; stalledS: number }): Promise<HostCommandRecord[]> {
+  const now = nowS();
+  const rows = await db.queryAsync<HostCommandRow>(
+    `UPDATE cs2_fleet_host_commands c
+        SET status = 'failed', error_code = 'timeout', answered_at = ?,
+            error_message = CASE WHEN c.progress_at IS NULL
+              THEN 'The machine is online, but csm never started the command. Check that csm is running and up to date, then try again.'
+              ELSE 'csm stopped reporting progress' || COALESCE(' at "' || c.progress_step || '"', '') || '. Check the machine, then try again.'
+            END
+       FROM cs2_fleet_hosts h
+      WHERE c.host_id = h.id AND c.status = 'pending' AND h.online = 1
+        AND (
+          (c.progress_at IS NULL AND GREATEST(c.created_at, COALESCE(h.connected_at, 0)) < ?)
+          OR (c.progress_at IS NOT NULL AND GREATEST(c.progress_at, COALESCE(h.connected_at, 0)) < ?)
+        )
+      RETURNING c.*`,
+    [now, now - limits.notStartedS, now - limits.stalledS]
+  );
+  return rows.map(commandFromRow);
+}

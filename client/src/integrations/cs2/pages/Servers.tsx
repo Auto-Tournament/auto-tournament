@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Button, Typography, Chip, CircularProgress } from '@mui/material';
-import { ArrowClockwiseIcon, HardDrivesIcon, PlusIcon } from '@phosphor-icons/react';
+import { Box, Button, Typography, Chip, CircularProgress, IconButton, Tooltip } from '@mui/material';
+import { ArrowClockwiseIcon, GearSixIcon, PlusIcon } from '@phosphor-icons/react';
+import { useSearchParams } from 'react-router-dom';
 import ServerModal from '../servers/ServerModal';
 import BatchServerModal from '../servers/BatchServerModal';
 import { ServerRow } from '../servers/ServerRow';
@@ -9,7 +10,8 @@ import MachinesPanel from '../servers/MachinesPanel';
 import AutoScalePanel from '../servers/AutoScalePanel';
 import FleetPushPanel from '../servers/FleetPushPanel';
 import FailoverSettingsPanel from '../servers/FailoverSettingsPanel';
-import { openServerSection } from '../servers/openServerSection';
+import { OPEN_EVENT } from '../servers/openServerSection';
+import { ServerSection } from '../servers/ServerSection';
 import { serverLimitText, useServerLimit } from '../servers/serverLimit';
 import type {
   Server,
@@ -17,11 +19,11 @@ import type {
   FleetServersResponse,
   ServerStatusResponse,
   ServerMatchesResponse,
+  FleetHost,
 } from '../cs2.types';
 import type { SnackbarKey } from 'notistack';
 import {
   api,
-  EmptyState,
   ConfirmDialog,
   ExternalLink,
   useSnackbar,
@@ -37,8 +39,34 @@ import {
   type Fact,
 } from '../../../module-sdk';
 
+const SETTINGS_SECTIONS = ['autoscale', 'fleet', 'fleet-settings', 'failover'];
+
 export default function Servers() {
   const [servers, setServers] = useState<Server[]>([]);
+  // The csm machines (MachinesPanel loads them): their servers are shown there.
+  const [hosts, setHosts] = useState<FleetHost[]>([]);
+  const [addMachineRequest, setAddMachineRequest] = useState(0);
+  const [searchParams] = useSearchParams();
+  const openMachine = searchParams.get('machine');
+  // Scaling, fleet, push and failover sit behind the settings button; a link
+  // to one of them (#autoscale, openServerSection) opens them.
+  const [showSettings, setShowSettings] = useState(() =>
+    SETTINGS_SECTIONS.includes(window.location.hash.slice(1))
+  );
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      if (SETTINGS_SECTIONS.includes((e as CustomEvent<string>).detail)) setShowSettings(true);
+    };
+    const onHash = () => {
+      if (SETTINGS_SECTIONS.includes(window.location.hash.slice(1))) setShowSettings(true);
+    };
+    window.addEventListener(OPEN_EVENT, onOpen);
+    window.addEventListener('hashchange', onHash);
+    return () => {
+      window.removeEventListener(OPEN_EVENT, onOpen);
+      window.removeEventListener('hashchange', onHash);
+    };
+  }, []);
   // Ready Up servers that enrolled but are not in the match pool (no
   // cs2_servers row yet, e.g. a practice server). Listed by FleetPanel; counted
   // here so the page never says "no servers" while it shows one.
@@ -581,19 +609,21 @@ export default function Servers() {
             )}
           </>
         )}
-        {!selectionMode && (
-          <Button
-            data-testid="add-server-button"
-            variant="contained"
-            size="small"
-            startIcon={<PlusIcon size={24} />}
-            onClick={() => handleOpenModal()}
-          >
-            {t('serversPage.headerActions.addServer')}
-          </Button>
-        )}
       </>
     );
+
+  // Adding a server by address is the side door now; machines are the front one.
+  const addByAddress = (
+    <Button
+      data-testid="add-server-button"
+      variant="outlined"
+      size="small"
+      startIcon={<PlusIcon size={20} />}
+      onClick={() => handleOpenModal()}
+    >
+      {t('serversPage.headerActions.addServer')}
+    </Button>
+  );
 
   useEffect(() => {
     // Initial page load uses cached status to avoid hammering servers when the
@@ -894,130 +924,205 @@ export default function Servers() {
     p: 2,
   });
 
+  const machineServerIds = new Set(
+    hosts.flatMap((h) =>
+      h.servers.map((sv) => sv.fleetServer?.id).filter((id): id is string => !!id)
+    )
+  );
+  const otherServers = servers.filter((server) => !machineServerIds.has(server.id));
+  const matchByServer: Record<string, string> = Object.fromEntries(
+    (allocationStatus?.servers ?? [])
+      .filter((sv) => sv.matchSlug)
+      .map((sv) => [sv.id, sv.matchSlug as string])
+  );
+  const settingsOpen = showSettings && !openMachine;
   return (
-    <Box data-testid="servers-page" sx={{ width: '100%', height: '100%' }}>
-      <PageHead
-        title={t('serversPage.title')}
-        subtitle={
-          <span data-testid="servers-limit">
-            {t('serversPage.fleet.total', { count: serverStats.total + unlinkedFleetCount })}
-            {serverLimit &&
-              (() => {
-                const line = serverLimitText(serverLimit, serverStats.total + unlinkedFleetCount);
-                return ` · ${t(line.key, line.values)}`;
-              })()}
-          </span>
-        }
-        actions={headActions}
+    <Box
+      data-testid="servers-page"
+      sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
+      {!openMachine && (
+        <PageHead
+          title={t('serversPage.title')}
+          subtitle={
+            <span data-testid="servers-limit">
+              {t('serversPage.machineCount', { count: hosts.length })}
+              {' · '}
+              {t('serversPage.fleet.total', { count: serverStats.total + unlinkedFleetCount })}
+              {serverLimit &&
+                (() => {
+                  const line = serverLimitText(serverLimit, serverStats.total + unlinkedFleetCount);
+                  return ` · ${t(line.key, line.values)}`;
+                })()}
+            </span>
+          }
+          actions={
+            <>
+              <Tooltip title={t('serversPage.settings', { defaultValue: 'Server settings' })}>
+                <IconButton
+                  aria-label={t('serversPage.settings', { defaultValue: 'Server settings' })}
+                  aria-pressed={showSettings}
+                  onClick={() => setShowSettings((v) => !v)}
+                  data-testid="servers-settings-toggle"
+                  sx={{
+                    border: `1px solid ${tokens.color.rule}`,
+                    color: showSettings ? tokens.color.accent : undefined,
+                  }}
+                >
+                  <GearSixIcon size={20} />
+                </IconButton>
+              </Tooltip>
+              <Button
+                variant="contained"
+                startIcon={<PlusIcon />}
+                onClick={() => setAddMachineRequest((n) => n + 1)}
+                data-testid="machines-add"
+              >
+                {t('machinesPanel.add', { defaultValue: 'Add machine' })}
+              </Button>
+            </>
+          }
+        />
+      )}
+
+      {/* Settings: scaling, the fleet link, what is pushed to servers, failover. */}
+      {settingsOpen && (
+        <Box data-testid="servers-settings" sx={{ display: 'flex', flexDirection: 'column' }}>
+          {/* Automatic scaling on the machines: start, stop, create, and why. */}
+          <AutoScalePanel />
+          {/* Ready Up servers enroll themselves and connect over the fleet link. */}
+          <FleetPanel />
+          {/* What the platform pushes to them: admins, settings, whitelist, practice, plugins. */}
+          <FleetPushPanel />
+          {/* Failover: automatic moves and the spare servers kept for them. */}
+          <FailoverSettingsPanel />
+        </Box>
+      )}
+
+      {/* Machines running csm as host agent (FLEET.md §18): their servers at a glance. */}
+      <MachinesPanel
+        addRequest={addMachineRequest}
+        matchByServer={matchByServer}
+        onHostsChange={setHosts}
       />
-      {servers.length === 0 && unlinkedFleetCount > 0 ? null : servers.length === 0 ? (
-          <Box>
-            <EmptyState
-              icon={HardDrivesIcon}
-              title={t('serversPage.empty.title')}
-              description={t('serversPage.empty.description')}
-              actionLabel={t('serversPage.empty.createServers')}
-              actionIcon={PlusIcon}
-              onAction={() => openServerSection('machines')}
-            />
-            <Box display="flex" justifyContent="center" gap={1} mt={2} flexWrap="wrap">
-              <Button size="small" onClick={() => handleOpenModal()} data-testid="servers-add-existing">
-                {t('serversPage.empty.addExisting')}
-              </Button>
-              <Button size="small" onClick={() => setBatchModalOpen(true)}>
-                {t('serversPage.empty.batchAdd')}
-              </Button>
+
+      {/* Servers no machine reports: added by address, or enrolled on their own. */}
+      {!openMachine && otherServers.length > 0 && (
+        <ServerSection
+          id="other-servers"
+          data-testid="servers-other"
+          defaultOpen
+          title={t('serversPage.other.title', { defaultValue: 'Other servers' })}
+          summary={t('serversPage.other.summary', {
+            defaultValue: '{{count}} server(s) not on a machine',
+            count: otherServers.length,
+          })}
+          about={t('serversPage.other.about', {
+            defaultValue: 'Servers added by address, not run by csm on a linked machine.',
+          })}
+          action={selectionMode ? undefined : addByAddress}
+        >
+          {headActions && (
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>{headActions}</Box>
+          )}
+          <FactGrid
+            items={fleetFacts}
+            aria-label={t('serversPage.fleet.title')}
+            data-testid="servers-fleet-strip"
+            sx={{ mb: allocationStatus?.nextAllocationInSeconds != null ? 1 : 3 }}
+          />
+          {allocationStatus?.nextAllocationInSeconds != null && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              {t('serversPage.allocation.nextPass', {
+                seconds: allocationStatus.nextAllocationInSeconds,
+              })}
+            </Typography>
+          )}
+          {!allocationStatus && allocationLoading && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: -2, mb: 3 }}>
+              {t('serversPage.allocation.loading')}
+            </Typography>
+          )}
+
+          {(cs2UpdateInfo.outOfDate.length > 0 ||
+            olderPluginCount > 0 ||
+            versionInfo.hasMultipleVersions) && (
+            <Box sx={{ display: 'grid', gap: 1.5, mb: 3 }}>
+              {cs2UpdateInfo.outOfDate.length > 0 && (
+                <Box sx={noticeSx(tokens.color.ban)} data-testid="servers-cs2-update-notice">
+                  <Typography variant="body2" fontWeight={700}>
+                    {t('serversPage.cs2Update.fleetTitle')}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('serversPage.cs2Update.fleetBody', {
+                      count: cs2UpdateInfo.outOfDate.length,
+                    })}
+                  </Typography>
+                  <Box mt={1} display="flex" gap={1} flexWrap="wrap">
+                    {cs2UpdateInfo.versions.map((v) => (
+                      <Chip
+                        key={v}
+                        size="small"
+                        label={`required_version=${v} (${cs2UpdateInfo.byVersion.get(v)?.length ?? 0})`}
+                        sx={{ color: tokens.color.ban }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+              {olderPluginCount > 0 && latestPluginVersion && (
+                <Box sx={noticeSx(tokens.color.warning)}>
+                  <Typography variant="body2" fontWeight={700}>
+                    {t('serversPage.fleet.latestRelease', { version: latestPluginVersion })}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('serversPage.fleet.olderVersion', { count: olderPluginCount })}{' '}
+                    <ExternalLink
+                      href={
+                        latestPluginReleaseUrl ??
+                        'https://github.com/Auto-Tournament/matchzy-enhanced/releases'
+                      }
+                      sx={{ color: 'inherit', textDecoration: 'underline' }}
+                    >
+                      {t('serversPage.fleet.downloadLatest')}
+                    </ExternalLink>
+                  </Typography>
+                </Box>
+              )}
+              {versionInfo.hasMultipleVersions && (
+                <Box sx={noticeSx(tokens.color.warning)}>
+                  <Typography variant="body2" fontWeight={700}>
+                    {t('serversPage.versionMismatch.title')}
+                  </Typography>
+                  <Box display="flex" gap={1} flexWrap="wrap" my={0.5}>
+                    {Array.from(versionInfo.versionCounts.entries()).map(([version, count]) => (
+                      <Chip
+                        key={version}
+                        label={t('serversPage.versionMismatch.chip', { version, count })}
+                        size="small"
+                        sx={{
+                          color:
+                            version === versionInfo.mostCommonVersion
+                              ? tokens.color.live
+                              : tokens.color.warning,
+                        }}
+                      />
+                    ))}
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('serversPage.versionMismatch.recommended', {
+                      version: versionInfo.mostCommonVersion,
+                    })}
+                  </Typography>
+                </Box>
+              )}
             </Box>
-          </Box>
-        ) : (
-          <>
-            <FactGrid
-              items={fleetFacts}
-              aria-label={t('serversPage.fleet.title')}
-              data-testid="servers-fleet-strip"
-              sx={{ mb: allocationStatus?.nextAllocationInSeconds != null ? 1 : 3 }}
-            />
-            {allocationStatus?.nextAllocationInSeconds != null && (
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                {t('serversPage.allocation.nextPass', {
-                  seconds: allocationStatus.nextAllocationInSeconds,
-                })}
-              </Typography>
-            )}
-            {!allocationStatus && allocationLoading && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: -2, mb: 3 }}>
-                {t('serversPage.allocation.loading')}
-              </Typography>
-            )}
+          )}
 
-            {(cs2UpdateInfo.outOfDate.length > 0 || olderPluginCount > 0 || versionInfo.hasMultipleVersions) && (
-              <Box sx={{ display: 'grid', gap: 1.5, mb: 3 }}>
-                {cs2UpdateInfo.outOfDate.length > 0 && (
-                  <Box sx={noticeSx(tokens.color.ban)} data-testid="servers-cs2-update-notice">
-                    <Typography variant="body2" fontWeight={700}>
-                      {t('serversPage.cs2Update.fleetTitle')}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {t('serversPage.cs2Update.fleetBody', { count: cs2UpdateInfo.outOfDate.length })}
-                    </Typography>
-                    <Box mt={1} display="flex" gap={1} flexWrap="wrap">
-                      {cs2UpdateInfo.versions.map((v) => (
-                        <Chip
-                          key={v}
-                          size="small"
-                          label={`required_version=${v} (${cs2UpdateInfo.byVersion.get(v)?.length ?? 0})`}
-                          sx={{ color: tokens.color.ban }}
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-                )}
-                {olderPluginCount > 0 && latestPluginVersion && (
-                  <Box sx={noticeSx(tokens.color.warning)}>
-                    <Typography variant="body2" fontWeight={700}>
-                      {t('serversPage.fleet.latestRelease', { version: latestPluginVersion })}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {t('serversPage.fleet.olderVersion', { count: olderPluginCount })}{' '}
-                      <ExternalLink
-                        href={latestPluginReleaseUrl ?? 'https://github.com/Auto-Tournament/matchzy-enhanced/releases'}
-                        sx={{ color: 'inherit', textDecoration: 'underline' }}
-                      >
-                        {t('serversPage.fleet.downloadLatest')}
-                      </ExternalLink>
-                    </Typography>
-                  </Box>
-                )}
-                {versionInfo.hasMultipleVersions && (
-                  <Box sx={noticeSx(tokens.color.warning)}>
-                    <Typography variant="body2" fontWeight={700}>
-                      {t('serversPage.versionMismatch.title')}
-                    </Typography>
-                    <Box display="flex" gap={1} flexWrap="wrap" my={0.5}>
-                      {Array.from(versionInfo.versionCounts.entries()).map(([version, count]) => (
-                        <Chip
-                          key={version}
-                          label={t('serversPage.versionMismatch.chip', { version, count })}
-                          size="small"
-                          sx={{
-                            color:
-                              version === versionInfo.mostCommonVersion ? tokens.color.live : tokens.color.warning,
-                          }}
-                        />
-                      ))}
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {t('serversPage.versionMismatch.recommended', {
-                        version: versionInfo.mostCommonVersion,
-                      })}
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-            )}
-
-            <RowList data-testid="servers-list" aria-label={t('serversPage.title')}>
-              {sortedServers.map((server) => (
+          <RowList data-testid="servers-list" aria-label={t('serversPage.title')}>
+            {sortedServers
+              .filter((server) => !machineServerIds.has(server.id))
+              .map((server) => (
                 <ServerRow
                   key={server.id}
                   server={server}
@@ -1036,21 +1141,19 @@ export default function Servers() {
                   onViewMatch={(event) => void handleViewCurrentMatch(server, event)}
                 />
               ))}
-            </RowList>
-          </>
-        )}
-
-      {/* Machines running csm as host agent (FLEET.md §18): create and control their servers. */}
-      <MachinesPanel />
-      {/* Automatic scaling on those machines: start, stop, create, and why. */}
-      <AutoScalePanel />
-
-      {/* Ready Up servers enroll themselves and connect over the fleet link. */}
-      <FleetPanel />
-      {/* What the platform pushes to them: admins, settings, whitelist, practice, plugins. */}
-      <FleetPushPanel />
-      {/* Failover: automatic moves and the spare servers kept for them. */}
-      <FailoverSettingsPanel />
+          </RowList>
+        </ServerSection>
+      )}
+      {!openMachine && otherServers.length === 0 && (
+        <Box display="flex" justifyContent="center" gap={1} flexWrap="wrap">
+          <Button size="small" onClick={() => handleOpenModal()} data-testid="servers-add-existing">
+            {t('serversPage.empty.addExisting')}
+          </Button>
+          <Button size="small" onClick={() => setBatchModalOpen(true)}>
+            {t('serversPage.empty.batchAdd')}
+          </Button>
+        </Box>
+      )}
 
       <ServerModal
         open={modalOpen}
