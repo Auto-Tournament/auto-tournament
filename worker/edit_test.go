@@ -18,14 +18,14 @@ func TestAudioFilterDropsThePitch(t *testing.T) {
 	}
 }
 
-func TestSpeedRampSlowsHoldsAndSpeedsUp(t *testing.T) {
+func TestSpeedRampSlowsHoldsSpeedsUpAndPlaysOn(t *testing.T) {
 	segs := speedRamp(3+tailSec, 3)
 	if segs[0].From != 0 || segs[0].To != 3 || segs[0].Speed != 1 {
 		t.Fatalf("full speed until the kill: %+v", segs[0])
 	}
 	last := segs[len(segs)-1]
-	if last.Speed != 1 || math.Abs(last.To-(3+tailSec)) > 1e-9 {
-		t.Fatalf("back at full speed at the cut: %+v", last)
+	if last.Speed != 1 || math.Abs(last.To-last.From-outroSec) > 1e-9 || math.Abs(last.To-(3+tailSec)) > 1e-9 {
+		t.Fatalf("ends with at least %v s at full speed: %+v", outroSec, last)
 	}
 	var slowing, held, rising float64
 	for _, s := range segs[1:] {
@@ -35,12 +35,15 @@ func TestSpeedRampSlowsHoldsAndSpeedsUp(t *testing.T) {
 			slowing += d
 		case s.Speed == slowmoSpeed:
 			held += d
-		default:
+		case s.To <= 3+tailSec-outroSec+1e-9:
 			rising += d
 		}
 	}
-	if slowing < 0.7 || slowing > 1.3 || held < 1.6 || held > 2.4 || rising < 0.4 || rising > 0.9 {
-		t.Fatalf("slowing %.2f s, held %.2f s, rising %.2f s", slowing, held, rising)
+	if math.Abs(slowing-rising) > 1e-6 {
+		t.Fatalf("speeding up (%.3f s) should take as long as slowing down (%.3f s)", rising, slowing)
+	}
+	if slowing < 0.7 || slowing > 1.3 || held < 1.6 || held > 2.4 {
+		t.Fatalf("slowing %.2f s, held %.2f s", slowing, held)
 	}
 }
 
