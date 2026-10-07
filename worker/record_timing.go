@@ -153,3 +153,59 @@ func timeline(sources [][]float64, segs []segment, startTick int) ([]frameRef, e
 	}
 	return out, nil
 }
+
+// A moment's kills can be far apart (a 4K over 20 s): the clip then jumps from
+// one stretch of kills to the next instead of showing the wait between them.
+const (
+	clusterGapTicks  = 4 * tickrate      // kills closer than this play as one stretch
+	firstLeadTicks   = 3 * tickrate      // run-up before the first kill
+	laterLeadTicks   = 3 * tickrate / 2  // run-up before a later stretch
+	stretchTailTicks = tickrate * 6 / 10 // after a stretch that is not the last
+)
+
+// window is one stretch of a moment's clip, in the analyzer's ticks: the last
+// one ends with the slow motion on its last kill (slowmo), the others play at
+// full speed.
+type window struct {
+	from, to int
+	slowmo   int // the last kill, for the last window; -1 otherwise
+}
+
+// planWindows splits a moment into stretches around its kills; `end` is where
+// the last one stops (after the slow motion). Without kill ticks it is one
+// stretch from `start`.
+func planWindows(start, end, slowmo int, killTicks []int) []window {
+	if len(killTicks) == 0 {
+		return []window{{from: start, to: end, slowmo: slowmo}}
+	}
+	ticks := append([]int(nil), killTicks...)
+	sort.Ints(ticks)
+	var clusters [][]int
+	for _, t := range ticks {
+		if n := len(clusters); n > 0 && t-clusters[n-1][len(clusters[n-1])-1] <= clusterGapTicks {
+			clusters[n-1] = append(clusters[n-1], t)
+		} else {
+			clusters = append(clusters, []int{t})
+		}
+	}
+	var out []window
+	for i, c := range clusters {
+		w := window{from: c[0] - laterLeadTicks, to: c[len(c)-1] + stretchTailTicks, slowmo: -1}
+		if i == 0 {
+			w.from = c[0] - firstLeadTicks
+		}
+		if i == len(clusters)-1 {
+			w.to, w.slowmo = end, slowmo
+		}
+		if w.from < 0 {
+			w.from = 0
+		}
+		// Stretches that would overlap play as one.
+		if n := len(out); n > 0 && w.from <= out[n-1].to {
+			out[n-1].to, out[n-1].slowmo = w.to, w.slowmo
+			continue
+		}
+		out = append(out, w)
+	}
+	return out
+}

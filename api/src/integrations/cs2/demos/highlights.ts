@@ -3,16 +3,17 @@
  * (./jobs.ts), and the clip the recorder (worker/, `at-worker record`) makes
  * of each.
  *
- * A moment is a run of one player's kills in one round with at most 10 s
- * between them. It scores by kill count (an ace far above a double), a
+ * A moment is one player's kills in one round, however far apart (the
+ * recorder cuts out the wait between them). It scores by kill count (an ace far above a double), a
  * clutch (the last of their side alive against two or more, and the round
  * won), and flair
  * (wallbangs, through smoke, headshots, the round's opening kill). The best
  * six per player per map are kept, if they score at all: each is a clip of
  * its own, and the recorder joins them into the player's reel of the map.
  *
- * The clip runs from 3 s before the first kill to 1.5 s after the last,
- * at most 10 s; its slow motion lands on the last kill.
+ * The clip runs from 3 s before the first kill to 1.5 s after the last
+ * (the recorder plays on past it for the slow motion, which starts as the
+ * last enemy dies).
  */
 
 import fs from 'fs';
@@ -25,10 +26,8 @@ import type { DemoAnalysisPayload } from './jobs';
 export const HIGHLIGHTS_DIR = path.join(DATA_DIR, 'highlights');
 
 const TICKRATE = 64;
-const GAP_TICKS = 10 * TICKRATE;
 const LEAD_TICKS = 3 * TICKRATE;
 const TAIL_TICKS = Math.round(1.5 * TICKRATE);
-const MAX_TICKS = 10 * TICKRATE;
 const PER_PLAYER = 6;
 /** Below this a moment isn't worth a clip (a plain single kill scores 10). */
 const MIN_SCORE = 30;
@@ -71,13 +70,13 @@ export function pickMoments(analysis: Pick<DemoAnalysisPayload, 'kills' | 'round
   const all = (analysis.kills as unknown as KillRow[]).slice().sort((a, b) => a.tick - b.tick);
   const roundEnd = new Map(analysis.rounds.map((r) => [r.number, r.endTick]));
 
-  // Runs of one player's kills in one round, gaps of at most 10 s.
+  // One player's kills in one round.
   const runs: KillRow[][] = [];
   const open = new Map<string, KillRow[]>();
   for (const k of kills) {
     const key = `${k.attacker}:${k.round}`;
     const run = open.get(key);
-    if (run && k.tick - run[run.length - 1]!.tick <= GAP_TICKS) run.push(k);
+    if (run) run.push(k);
     else {
       const fresh = [k];
       runs.push(fresh);
@@ -132,7 +131,7 @@ export function pickMoments(analysis: Pick<DemoAnalysisPayload, 'kills' | 'round
     const n = run.length;
     const kind = n >= 5 ? 'ace' : n >= 2 ? `${n}k` : clutch ? 'clutch' : 'flair';
     const end = Math.min(last + TAIL_TICKS, roundEnd.get(run[0]!.round) ?? last + TAIL_TICKS);
-    const start = Math.max(first - LEAD_TICKS, end - MAX_TICKS);
+    const start = Math.max(0, first - LEAD_TICKS);
     const weapons = [...new Set(run.map((k) => k.weapon).filter(Boolean))].slice(0, 2).join(' / ');
     return {
       playerId: player,

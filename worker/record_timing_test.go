@@ -69,3 +69,32 @@ func TestFrameTicksSmoothBursts(t *testing.T) {
 		}
 	}
 }
+
+func TestPlanWindowsJumpsBetweenKillsFarApart(t *testing.T) {
+	// d1Ledez's round-1 4K: 5316, then 6022, then 6612 and 6627.
+	w := planWindows(5124, 6627+144, 6627, []int{5316, 6022, 6612, 6627})
+	if len(w) != 3 {
+		t.Fatalf("want three stretches, got %+v", w)
+	}
+	if w[0].from != 5316-firstLeadTicks || w[0].slowmo != -1 || w[1].from != 6022-laterLeadTicks {
+		t.Fatalf("got %+v", w)
+	}
+	last := w[2]
+	if last.from != 6612-laterLeadTicks || last.to != 6627+144 || last.slowmo != 6627 {
+		t.Fatalf("last stretch %+v", last)
+	}
+}
+
+func TestPlanWindowsKeepsCloseKillsTogether(t *testing.T) {
+	w := planWindows(14699, 15100, 14999, []int{14891, 14951, 14986, 14999})
+	if len(w) != 1 || w[0].from != 14891-firstLeadTicks || w[0].to != 15100 || w[0].slowmo != 14999 {
+		t.Fatalf("got %+v", w)
+	}
+}
+
+func TestPlanWindowsWithoutKills(t *testing.T) {
+	w := planWindows(100, 900, 700, nil)
+	if len(w) != 1 || w[0].from != 100 || w[0].to != 900 || w[0].slowmo != 700 {
+		t.Fatalf("got %+v", w)
+	}
+}

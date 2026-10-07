@@ -59,6 +59,7 @@ type moment struct {
 	StartTick  int    `json:"startTick"`
 	EndTick    int    `json:"endTick"`
 	SlowmoTick int    `json:"slowmoTick"`
+	KillTicks  []int  `json:"killTicks"`
 }
 
 type recordJob struct {
@@ -242,43 +243,10 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	if env("AT_KEEP_SCRATCH", "") == "" {
 		defer os.RemoveAll(dir)
 	}
-
 	// The clip ends where the slow motion after the last kill does.
 	end := m.SlowmoTick + int(math.Ceil(tailSec*tickrate))
 	if g.lastTick > 0 && end > g.lastTick-endMargin {
 		end = g.lastTick - endMargin
-	}
-	main := filepath.Join(dir, "main.yuv")
-	mainTicks, err := r.capturePicture(g, name, m.StartTick-lead, end, mainScale, main)
-	if err != nil {
-		return fmt.Errorf("picture: %w", err)
-	}
-	slow := filepath.Join(dir, "slow.yuv")
-	slowTicks, err := r.capturePicture(g, name, m.SlowmoTick-int(slowBeforeSec*tickrate)-lead/2, end, slowScale, slow)
-	if err != nil {
-		return fmt.Errorf("slow motion: %w", err)
-	}
-
-	// The sound, at real speed.
-	wav := filepath.Join(dir, "audio.wav")
-	var ac *audioCapture
-	as, err := g.play(m.StartTick-lead, end, 1, name, func() (err error) {
-		ac, err = startAudioCapture(r.sink, wav)
-		return err
-	})
-	if ac != nil {
-		ac.stop()
-	}
-	if err != nil {
-		return fmt.Errorf("sound: %w", err)
-	}
-	audioAt := as.resumed.Sub(ac.started).Seconds() + float64(m.StartTick-as.fromTick)/tickrate
-
-	length := float64(end-m.StartTick) / tickrate
-	segs := speedRamp(length, float64(m.SlowmoTick-m.StartTick)/tickrate)
-	frames, err := timeline([][]float64{mainTicks, slowTicks}, segs, m.StartTick)
-	if err != nil {
-		return err
 	}
 	// Kept short enough to read in its few seconds: who, and which match.
 	card, err := captionCard{name: look.name, moment: look.match, avatar: look.avatar}.render(g.height)
@@ -289,7 +257,70 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	if err := os.WriteFile(cardPath, card, 0o644); err != nil {
 		return err
 	}
-	return r.encodeMoment([]string{main, slow}, frames, g.width, g.height, wav, audioAt, length, segs, look.watermark, cardPath, out)
+	windows := planWindows(m.StartTick, end, m.SlowmoTick, m.KillTicks)
+	var pieces []string
+	for i, w := range windows {
+		piece := filepath.Join(dir, fmt.Sprintf("piece-%d.mp4", i))
+		pieceCard := ""
+		if i == 0 {
+			pieceCard = cardPath
+		}
+		if err := r.recordWindow(g, look.watermark, pieceCard, name, w, filepath.Join(dir, fmt.Sprint(i)), piece); err != nil {
+			return err
+		}
+		pieces = append(pieces, piece)
+	}
+	if len(pieces) == 1 {
+		return os.Rename(pieces[0], out)
+	}
+	return concatFiles(pieces, out)
+}
+
+// recordWindow records one stretch of a moment into `out`: the picture slowed
+// down (and again slower around the slow motion, for the last stretch), the
+// sound at real speed, and the edit.
+func (r *recorder) recordWindow(g *game, watermark bool, card, name string, w window, prefix, out string) error {
+	main := prefix + "-main.yuv"
+	mainTicks, err := r.capturePicture(g, name, w.from-lead, w.to, mainScale, main)
+	if err != nil {
+		return fmt.Errorf("picture: %w", err)
+	}
+	sources := [][]float64{mainTicks}
+	raws := []string{main}
+	if w.slowmo >= 0 {
+		slow := prefix + "-slow.yuv"
+		slowTicks, err := r.capturePicture(g, name, w.slowmo-int(slowBeforeSec*tickrate)-lead/2, w.to, slowScale, slow)
+		if err != nil {
+			return fmt.Errorf("slow motion: %w", err)
+		}
+		sources, raws = append(sources, slowTicks), append(raws, slow)
+	}
+
+	// The sound, at real speed.
+	wav := prefix + "-audio.wav"
+	var ac *audioCapture
+	as, err := g.play(w.from-lead, w.to, 1, name, func() (err error) {
+		ac, err = startAudioCapture(r.sink, wav)
+		return err
+	})
+	if ac != nil {
+		ac.stop()
+	}
+	if err != nil {
+		return fmt.Errorf("sound: %w", err)
+	}
+	audioAt := as.resumed.Sub(ac.started).Seconds() + float64(w.from-as.fromTick)/tickrate
+
+	length := float64(w.to-w.from) / tickrate
+	segs := []segment{{0, length, 1}}
+	if w.slowmo >= 0 {
+		segs = speedRamp(length, float64(w.slowmo-w.from)/tickrate)
+	}
+	frames, err := timeline(sources, segs, w.from)
+	if err != nil {
+		return err
+	}
+	return r.encodeMoment(raws, frames, g.width, g.height, wav, audioAt, length, segs, watermark, card, out)
 }
 
 // encodeMoment streams the timeline's frames into ffmpeg at outputFPS with the
@@ -308,11 +339,15 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 	args := []string{"-y", "-hide_banner", "-loglevel", "error",
 		"-f", "rawvideo", "-pix_fmt", "yuv420p", "-s", fmt.Sprintf("%dx%d", w, h), "-framerate", fmt.Sprint(outputFPS), "-i", "pipe:0",
 		"-ss", fmt.Sprintf("%.4f", maxf(0, audioAt)), "-i", wav}
-	o := overlay{card: 2, logo: -1, width: w, height: h}
-	args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-t", fmt.Sprintf("%g", captionSec+0.5), "-i", card)
+	o := overlay{card: -1, logo: -1, width: w, height: h}
+	next := 2
+	if card != "" {
+		args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-t", fmt.Sprintf("%g", captionSec+0.5), "-i", card)
+		o.card, next = next, next+1
+	}
 	if watermark {
 		args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-i", r.logo)
-		o.logo = 3
+		o.logo = next
 	}
 	args = append(args, "-filter_complex", videoFilter(o)+";"+audioFilter(segs, length), "-map", "[v]", "-map", "[a]")
 	args = append(args, encodeArgs(r.encoder)...)
