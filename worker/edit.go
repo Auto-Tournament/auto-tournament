@@ -63,6 +63,59 @@ func speedRamp(length, kill float64) []segment {
 	return out
 }
 
+// outputAt is where `t` seconds of the recording land in the edited clip.
+func outputAt(segs []segment, t float64) float64 {
+	total := 0.0
+	for _, s := range segs {
+		if t <= s.From {
+			break
+		}
+		total += (math.Min(t, s.To) - s.From) / s.Speed
+	}
+	return total
+}
+
+// clipMarkers is where a clip's kills and slow motion are, in seconds of the
+// video: the site's player marks them on its scrubber.
+type clipMarkers struct {
+	Duration float64     `json:"duration"`
+	Kills    []float64   `json:"kills"`
+	Slowmo   *[2]float64 `json:"slowmo"`
+}
+
+// momentMarkers works out a moment's markers from its windows (in order) and
+// each window's edit.
+func momentMarkers(windows []window, segs [][]segment, killTicks []int) clipMarkers {
+	m := clipMarkers{Kills: []float64{}}
+	round := func(v float64) float64 { return math.Round(v*100) / 100 }
+	offset := 0.0
+	for i, w := range windows {
+		for _, k := range killTicks {
+			if k >= w.from && k <= w.to {
+				m.Kills = append(m.Kills, round(offset+outputAt(segs[i], float64(k-w.from)/tickrate)))
+			}
+		}
+		first, last := -1, -1
+		for j, s := range segs[i] {
+			if s.Speed < 1 {
+				if first < 0 {
+					first = j
+				}
+				last = j
+			}
+		}
+		if first >= 0 {
+			m.Slowmo = &[2]float64{
+				round(offset + outputAt(segs[i], segs[i][first].From)),
+				round(offset + outputAt(segs[i], segs[i][last].To)),
+			}
+		}
+		offset += outputSeconds(segs[i])
+	}
+	m.Duration = round(offset)
+	return m
+}
+
 // outputSeconds is how long the edited clip runs.
 func outputSeconds(segs []segment) float64 {
 	total := 0.0

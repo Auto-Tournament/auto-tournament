@@ -5,7 +5,7 @@ package main
 // A map's match reel: each player's best highlight there (already recorded),
 // one after the other, with a small name tag in the top left throughout so
 // it is clear whose play it is. No CS2 needed: the clips are downloaded,
-// tagged and joined.
+// tagged and joined. A tournament reel (its best plays) is made the same way.
 
 import (
 	"context"
@@ -17,6 +17,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -31,12 +32,38 @@ type matchReelClip struct {
 }
 
 type matchReelJob struct {
-	Kind      string          `json:"kind"`
-	MatchSlug string          `json:"matchSlug"`
-	MapNumber int             `json:"mapNumber"`
-	Match     string          `json:"match"`
-	Watermark bool            `json:"watermark"`
-	Clips     []matchReelClip `json:"clips"`
+	Kind         string          `json:"kind"` // match_reel | tournament_reel
+	MatchSlug    string          `json:"matchSlug"`
+	MapNumber    int             `json:"mapNumber"`
+	TournamentID int             `json:"tournamentId"`
+	Match        string          `json:"match"`
+	Watermark    bool            `json:"watermark"`
+	Clips        []matchReelClip `json:"clips"`
+	// Where the reel goes, and where to say it could not be made (the
+	// platform's routes; older platforms leave them out for match reels).
+	Upload string `json:"upload"`
+	Fail   string `json:"fail"`
+}
+
+func (j *matchReelJob) label() string {
+	if j.Kind == "tournament_reel" {
+		return fmt.Sprintf("tournament reel of %d", j.TournamentID)
+	}
+	return fmt.Sprintf("match reel of %s map %d", j.MatchSlug, j.MapNumber)
+}
+
+func (j *matchReelJob) uploadRoute(clips int) string {
+	if j.Upload != "" {
+		return j.Upload
+	}
+	return fmt.Sprintf("/api/game/cs2/recorder/match-reels/%s/%d?clips=%d", url.PathEscape(j.MatchSlug), j.MapNumber, clips)
+}
+
+func (j *matchReelJob) failRoute() string {
+	if j.Fail != "" {
+		return j.Fail
+	}
+	return fmt.Sprintf("/api/game/cs2/recorder/match-reels/%s/%d/fail", url.PathEscape(j.MatchSlug), j.MapNumber)
 }
 
 // tagScale is the name tag's size against the caption card's.
@@ -93,18 +120,20 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 	if err := concatFiles(tagged, reel); err != nil {
 		return err
 	}
-	return r.upload(ctx, reel, fmt.Sprintf("/api/game/cs2/recorder/match-reels/%s/%d?clips=%d",
-		url.PathEscape(j.MatchSlug), j.MapNumber, len(tagged)))
+	ids := make([]string, len(j.Clips))
+	for i, c := range j.Clips {
+		ids[i] = strconv.Itoa(c.HighlightID)
+	}
+	return r.upload(ctx, reel, j.uploadRoute(len(tagged)), map[string]string{"X-AT-Clips": strings.Join(ids, ",")})
 }
 
 func (r *recorder) failMatchReel(j *matchReelJob, cause error) {
-	log.Printf("match reel of %s map %d failed: %v", j.MatchSlug, j.MapNumber, cause)
+	log.Printf("%s failed: %v", j.label(), cause)
 	msg := cause.Error()
 	if len(msg) > 500 {
 		msg = msg[:500]
 	}
-	route := fmt.Sprintf("/api/game/cs2/recorder/match-reels/%s/%d/fail", url.PathEscape(j.MatchSlug), j.MapNumber)
-	if res, err := r.postJSON(context.Background(), route, map[string]any{"error": msg}); err == nil {
+	if res, err := r.postJSON(context.Background(), j.failRoute(), map[string]any{"error": msg}); err == nil {
 		res.Body.Close()
 	}
 }

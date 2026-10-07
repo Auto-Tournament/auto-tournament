@@ -100,6 +100,7 @@ export const CS2_MAP_RADARS_MIGRATION_ID = '022-map-radars';
 export const CS2_HIGHLIGHTS_MIGRATION_ID = '023-highlights';
 export const CS2_HIGHLIGHT_REELS_MIGRATION_ID = '024-highlight-reels';
 export const CS2_MATCH_REELS_MIGRATION_ID = '025-match-reels';
+export const CS2_HIGHLIGHTS_PLAYER_MIGRATION_ID = '026-highlights-player';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1095,6 +1096,40 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     );
 
     CREATE INDEX IF NOT EXISTS cs2_match_reels_status_idx ON cs2_match_reels(status, created_at);
+`,
+  },
+  {
+    // What the highlight player needs, and a tournament's own reel:
+    // - each clip's kill markers and slow motion (seconds in the video), so
+    //   the scrubber can show them;
+    // - which clips each reel joins, in order, for its chapters;
+    // - the one highlight a player picked as their favourite (their profile
+    //   leads with it);
+    // - the tournament reel: its best plays, made once it is over.
+    id: CS2_HIGHLIGHTS_PLAYER_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS markers TEXT; -- JSON { duration, kills: number[], slowmo: [from, to] | null }
+    ALTER TABLE cs2_highlight_reels ADD COLUMN IF NOT EXISTS clip_ids TEXT; -- JSON number[]: the highlights it joins, in order
+    ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS clip_ids TEXT; -- JSON number[]
+
+    CREATE TABLE IF NOT EXISTS cs2_highlight_favourites (
+      player_id TEXT PRIMARY KEY, -- Steam ID 64
+      highlight_id INTEGER NOT NULL REFERENCES cs2_highlights(id) ON DELETE CASCADE,
+      set_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS cs2_tournament_reels (
+      tournament_id INTEGER PRIMARY KEY,
+      status TEXT NOT NULL DEFAULT 'pending', -- pending | recording | done | failed
+      attempts INTEGER NOT NULL DEFAULT 0,
+      recorder TEXT,
+      claimed_at INTEGER,
+      error TEXT,
+      clip_ids TEXT, -- JSON number[]: the highlights it joins, in order
+      clip_path TEXT, -- under DATA_DIR/highlights
+      clip_bytes BIGINT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
 `,
   },
 ];

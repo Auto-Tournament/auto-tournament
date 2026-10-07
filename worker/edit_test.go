@@ -61,3 +61,27 @@ func TestVideoFilterCardAndLogo(t *testing.T) {
 		t.Fatalf("no card, no logo: %s", plain)
 	}
 }
+
+func TestMomentMarkers(t *testing.T) {
+	// Two windows: a kill at 1 s into the first (full speed, 2 s long), then
+	// the last kill 1 s into the second, which slows down from there.
+	w1 := window{from: 0, to: 2 * tickrate, slowmo: -1}
+	w2 := window{from: 10 * tickrate, to: 10*tickrate + tickrate + int(tailSec*tickrate), slowmo: 11 * tickrate}
+	length2 := float64(w2.to-w2.from) / tickrate
+	segs := [][]segment{{{0, 2, 1}}, speedRamp(length2, 1)}
+	m := momentMarkers([]window{w1, w2}, segs, []int{tickrate, 11 * tickrate})
+	if len(m.Kills) != 2 || m.Kills[0] != 1 || m.Kills[1] != 3 {
+		t.Fatalf("kills = %v, want [1 3]", m.Kills)
+	}
+	if m.Slowmo == nil || m.Slowmo[0] != 3 {
+		t.Fatalf("slowmo = %v, want to start at 3", m.Slowmo)
+	}
+	want := math.Round((2+outputSeconds(segs[1]))*100) / 100
+	if m.Duration != want {
+		t.Fatalf("duration = %v, want %v", m.Duration, want)
+	}
+	// The slow motion ends where the outro at full speed starts.
+	if got := math.Round((m.Duration-m.Slowmo[1])*100) / 100; got != outroSec {
+		t.Fatalf("outro = %v, want %v", got, outroSec)
+	}
+}

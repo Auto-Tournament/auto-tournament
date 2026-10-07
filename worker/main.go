@@ -73,6 +73,11 @@ func firstToken(raw string) string {
 }
 
 func (c *client) do(ctx context.Context, method, path, contentType string, body io.Reader) (*http.Response, error) {
+	return c.doWith(ctx, method, path, contentType, body, nil)
+}
+
+// doWith is do with extra request headers.
+func (c *client) doWith(ctx context.Context, method, path, contentType string, body io.Reader, headers map[string]string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, method, c.base+path, body)
 	if err != nil {
 		return nil, err
@@ -80,6 +85,9 @@ func (c *client) do(ctx context.Context, method, path, contentType string, body 
 	req.Header.Set("Authorization", "Bearer "+c.token)
 	if contentType != "" {
 		req.Header.Set("Content-Type", contentType)
+	}
+	for k, v := range headers {
+		req.Header.Set(k, v)
 	}
 	return c.http.Do(req)
 }

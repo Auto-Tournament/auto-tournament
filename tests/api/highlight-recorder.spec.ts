@@ -73,4 +73,42 @@ test.describe('Highlight recorder routes', () => {
     expect((await request.get('/api/game/cs2/highlights/reel-..%2F..%2Fetc.mp4')).status()).toBe(404);
     expect((await request.get('/api/game/cs2/highlights/999999999.mp4')).status()).toBe(404);
   });
+
+  test('a recorder that knows tournament reels may get one', { tag: ['@api'] }, async ({ request }) => {
+    await signInViaRequest(request);
+    const res = await request.post('/api/game/cs2/recorder/claim', { data: { recorder: 'spec', version: 3 } });
+    expect([200, 204]).toContain(res.status());
+    if (res.status() !== 200) return;
+    const { job } = await res.json();
+    expect(['player', 'match_reel', 'tournament_reel']).toContain(job.kind);
+    if (job.kind === 'player') {
+      await request.post('/api/game/cs2/recorder/fail', {
+        data: { ids: job.moments.map((m: { id: number }) => m.id), error: 'released by the spec' },
+      });
+    } else {
+      // Reels say where they go and where to give up.
+      expect(job.upload).toMatch(/^\/api\/game\/cs2\/recorder\//);
+      await request.post(job.fail, { data: { error: 'released by the spec' } });
+    }
+  });
+
+  test('the favourite needs a signed-in player and one of their own highlights', { tag: ['@api'] }, async ({ playwright, baseURL }) => {
+    const anonymous = await playwright.request.newContext({ baseURL });
+    const res = await anonymous.put('/api/game/cs2/players/me/highlights/favourite', { data: { highlightId: 1 } });
+    expect(res.status()).toBe(401);
+    await anonymous.dispose();
+  });
+
+  test('tournament highlights and the watch routes', { tag: ['@api'] }, async ({ request }) => {
+    const t = await request.get('/api/game/cs2/tournaments/999999/highlights');
+    expect(t.ok()).toBe(true);
+    expect(await t.json()).toMatchObject({ success: true, reel: null, plays: [], matches: [] });
+    expect((await request.get('/api/game/cs2/tournaments/x/highlights')).status()).toBe(400);
+    expect((await request.get('/api/game/cs2/watch/clip/999999999')).status()).toBe(404);
+    expect((await request.get('/api/game/cs2/watch/reel/no-such/0/76561190000000000')).status()).toBe(404);
+    expect((await request.get('/api/game/cs2/watch/match/no-such/0')).status()).toBe(404);
+    expect((await request.get('/api/game/cs2/watch/tournament/999999')).status()).toBe(404);
+    const player = await request.get('/api/game/cs2/players/76561190000000000/highlights?all=1');
+    expect(await player.json()).toMatchObject({ success: true, favourite: null, isOwn: false });
+  });
 });
