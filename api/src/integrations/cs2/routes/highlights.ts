@@ -49,6 +49,7 @@ import {
   tournamentReel,
 } from '../demos/highlightViews';
 import {
+  claimMapJob,
   claimMatchReel,
   claimRecordJob,
   failMatchReel,
@@ -92,6 +93,12 @@ router.post('/recorder/claim', requireAuth, async (req: Request, res: Response) 
     if (Number(req.body?.version ?? 0) >= 3) {
       const tournament = await claimTournamentReel(recorder);
       if (tournament) return res.json({ success: true, job: tournament });
+    }
+    // A recorder from version 4 records a whole map in one CS2 session.
+    if (Number(req.body?.version ?? 0) >= 4) {
+      const map = await claimMapJob(recorder);
+      if (!map) return res.status(204).end();
+      return res.json({ success: true, job: map });
     }
     const job = await claimRecordJob(recorder);
     if (!job) return res.status(204).end();
