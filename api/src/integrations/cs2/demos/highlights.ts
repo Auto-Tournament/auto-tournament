@@ -653,8 +653,30 @@ export interface MatchReelClip {
   url: string;
 }
 
+/**
+ * What a reel opens with (the recorder's intro): a kicker, the title, a line
+ * of details, the map and the date. The recorder draws it over a grid of the
+ * reel's clips.
+ */
+export interface ReelIntro {
+  kicker: string;
+  title: string;
+  meta: string;
+  /** The map's catalogue name (de_dust2); the recorder shows it as "Dust II". */
+  map: string;
+  /** "7 October 2026", or "17–18 October 2026" for a tournament. */
+  date: string;
+}
+
+/** A day as the intro shows it: "7 October 2026". */
+export function reelDate(epochSeconds: number | null | undefined): string {
+  if (!epochSeconds) return '';
+  return new Date(epochSeconds * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+}
+
 export interface MatchReelJob {
   kind: 'match_reel';
+  intro: ReelIntro;
   matchSlug: string;
   mapNumber: number;
   match: string;
@@ -714,18 +736,33 @@ export async function claimMatchReel(recorder: string): Promise<MatchReelJob | n
   );
   if (!row) return null;
   const clips = await bestClipPerPlayer(row.match_slug, Number(row.map_number));
-  const extra = await db.queryOneAsync<{ team1: string | null; team2: string | null; tournament: string | null }>(
-    `SELECT t1.name AS team1, t2.name AS team2, COALESCE(tr.name, m.played_in) AS tournament
+  const extra = await db.queryOneAsync<{
+    team1: string | null;
+    team2: string | null;
+    tournament: string | null;
+    map_name: string | null;
+    played_at: number | string | null;
+  }>(
+    `SELECT t1.name AS team1, t2.name AS team2, COALESCE(tr.name, m.played_in) AS tournament,
+            (SELECT j.map_name FROM cs2_demo_jobs j WHERE j.match_slug = m.slug AND j.map_number = ?) AS map_name,
+            (SELECT r.completed_at FROM match_map_results r WHERE r.match_slug = m.slug AND r.map_number = ?) AS played_at
        FROM matches m
        LEFT JOIN teams t1 ON t1.id = m.team1_id
        LEFT JOIN teams t2 ON t2.id = m.team2_id
        LEFT JOIN tournament tr ON tr.id = m.tournament_id
       WHERE m.slug = ?`,
-    [row.match_slug]
+    [Number(row.map_number), Number(row.map_number), row.match_slug]
   );
   const { settingsService } = await import('../../../services/settingsService');
   return {
     kind: 'match_reel',
+    intro: {
+      kicker: 'Match highlights',
+      title: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, null) || 'Match highlights',
+      meta: extra?.tournament ?? '',
+      map: extra?.map_name ?? '',
+      date: reelDate(extra?.played_at ? Number(extra.played_at) : null),
+    },
     matchSlug: row.match_slug,
     mapNumber: Number(row.map_number),
     match: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, extra?.tournament ?? null),

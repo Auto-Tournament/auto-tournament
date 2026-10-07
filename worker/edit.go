@@ -167,6 +167,10 @@ func momentMarkers(windows []window, segs [][]segment, killTicks []int) clipMark
 			}
 		}
 		offset += outputSeconds(segs[i])
+		if i < len(windows)-1 {
+			// The pieces blend into each other (reelCrossfade).
+			offset -= reelCrossfade
+		}
 	}
 	m.Duration = round(offset)
 	return m
@@ -238,42 +242,10 @@ func videoFilter(o overlay) string {
 	return b.String()
 }
 
-// reelCrossfade is how long one player's clip blends into the next in a reel
-// (picture and sound): a cut inside a clip is the next kill, a blend is the
-// next player.
+// reelCrossfade is how long one part blends into the next (picture and
+// sound): a player's kills inside a clip, and one player's clips in a row.
+// The next player comes in behind the orange wipe instead (reel.go).
 const reelCrossfade = 0.4
-
-// crossfadeFilter joins inputs 0..n-1, `durations` seconds long, each
-// blending into the next over reelCrossfade. Output [v] and [a].
-//
-// Each input's picture and sound are first made exactly its duration long
-// from 0: a clip's sound runs a few hundredths of a second shorter or longer
-// than its picture, and across a reel's blends those add up (1.6 s by the
-// tenth player of a pro reel), so the sound drifted off the picture.
-func crossfadeFilter(durations []float64) string {
-	var b strings.Builder
-	for i, d := range durations {
-		fmt.Fprintf(&b, "[%d:v]setpts=PTS-STARTPTS,trim=duration=%.3f[v%din];", i, d, i)
-		fmt.Fprintf(&b, "[%d:a]asetpts=PTS-STARTPTS,apad,atrim=duration=%.3f[a%din];", i, d, i)
-	}
-	if len(durations) == 1 {
-		b.WriteString("[v0in]null[v];[a0in]anull[a]")
-		return b.String()
-	}
-	offset := 0.0
-	prevV, prevA := "v0in", "a0in"
-	for i := 1; i < len(durations); i++ {
-		offset += durations[i-1] - reelCrossfade
-		v, a := fmt.Sprintf("v%d", i), fmt.Sprintf("a%d", i)
-		if i == len(durations)-1 {
-			v, a = "v", "a"
-		}
-		fmt.Fprintf(&b, "[%s][v%din]xfade=transition=fade:duration=%g:offset=%.3f[%s];", prevV, i, reelCrossfade, offset, v)
-		fmt.Fprintf(&b, "[%s][a%din]acrossfade=d=%g[%s];", prevA, i, reelCrossfade, a)
-		prevV, prevA = v, a
-	}
-	return strings.TrimSuffix(b.String(), ";")
-}
 
 // encodeArgs are the output settings every piece and the reel share, so the
 // pieces can be joined without re-encoding.

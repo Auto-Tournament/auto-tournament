@@ -13,7 +13,7 @@
 import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
-import { HIGHLIGHTS_DIR, matchLine, type ClipMarkers, type MatchReelClip } from './highlights';
+import { HIGHLIGHTS_DIR, matchLine, reelDate, type ClipMarkers, type MatchReelClip, type ReelIntro } from './highlights';
 
 /** A recording that went quiet this long is handed out again. */
 const STALE_SECONDS = 30 * 60;
@@ -557,6 +557,7 @@ async function queueTournamentReel(): Promise<void> {
 
 export interface TournamentReelJob {
   kind: 'tournament_reel';
+  intro: ReelIntro;
   tournamentId: number;
   match: string;
   watermark: boolean;
@@ -590,8 +591,25 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
   const byId = new Map(clips.map((c) => [c.id, c]));
   const name = clips[0]?.match.tournament ?? null;
   const { settingsService } = await import('../../../services/settingsService');
+  const span = await db.queryOneAsync<{ teams: number | string; matches: number | string; first: number | string | null; last: number | string | null }>(
+    `SELECT (SELECT COUNT(*) FROM jsonb_array_elements_text(COALESCE(NULLIF(t.team_ids, ''), '[]')::jsonb)) AS teams,
+            (SELECT COUNT(*) FROM matches m WHERE m.tournament_id = t.id AND m.status = 'completed') AS matches,
+            (SELECT MIN(r.completed_at) FROM match_map_results r JOIN matches m ON m.slug = r.match_slug WHERE m.tournament_id = t.id) AS first,
+            (SELECT MAX(r.completed_at) FROM match_map_results r JOIN matches m ON m.slug = r.match_slug WHERE m.tournament_id = t.id) AS last
+       FROM tournament t WHERE t.id = ?`,
+    [tournamentId]
+  );
+  const first = reelDate(span?.first ? Number(span.first) : null);
+  const last = reelDate(span?.last ? Number(span.last) : null);
   return {
     kind: 'tournament_reel',
+    intro: {
+      kicker: 'Tournament highlights',
+      title: name ?? 'Tournament highlights',
+      meta: [`${Number(span?.teams ?? 0)} teams`, `${Number(span?.matches ?? 0)} matches`, 'the best plays'].filter((x) => !x.startsWith('0 ')).join(' · '),
+      map: '',
+      date: first && last && first !== last ? `${first} – ${last}` : first,
+    },
     tournamentId,
     match: name ?? '',
     watermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
