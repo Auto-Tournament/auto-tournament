@@ -302,6 +302,34 @@ func (g *game) pause() error {
 	return nil
 }
 
+// seekTimeout is how long a seek may take to land before the moment fails.
+const seekTimeout = 45 * time.Second
+
+// awaitSeek waits for a demo_gototick to land: a seek plays on by itself once
+// it has, so pausing it answers with a tick near the target (analyzer ticks).
+// While it still loads, CS2 does not answer at all.
+func (g *game) awaitSeek(target int) error {
+	time.Sleep(3 * time.Second)
+	deadline := time.Now().Add(seekTimeout)
+	for {
+		g.con.drain()
+		if err := g.con.send("demo_pause"); err != nil {
+			return err
+		}
+		if v, _, err := g.con.expect(rePaused, 2*time.Second); err == nil {
+			if tick, err := strconv.Atoi(v); err == nil && seekLanded(tick-g.startTick, target) {
+				return nil
+			}
+		}
+		if time.Now().After(deadline) {
+			return fmt.Errorf("the seek to tick %d did not land in %s", target, seekTimeout)
+		}
+		// Not there yet (or still paused where it was): let it go on.
+		_ = g.con.send("demo_resume")
+		time.Sleep(time.Second)
+	}
+}
+
 // resume plays the demo on and returns the tick it resumed at; if it was
 // already playing (no answer), it pauses it and tries once more.
 func (g *game) resume() (string, time.Time, error) {
@@ -338,7 +366,11 @@ func (g *game) play(from, to int, scale float64, name string, started func() err
 		fmt.Sprintf("demo_timescale %g", scale), fmt.Sprintf("demo_gototick %d", from)); err != nil {
 		return s, err
 	}
-	time.Sleep(3 * time.Second)
+	// A seek far into the demo (round 19 straight after loading) takes CS2
+	// longer than a few seconds: wait until it has landed near `from`.
+	if err := g.awaitSeek(from); err != nil {
+		return s, err
+	}
 	// A seek drops the spectated player, and CS2 ignores spec_player while the
 	// seek still loads: ask once it has landed, again once paused, and again
 	// just after resuming (the run-up before the moment covers the switch).

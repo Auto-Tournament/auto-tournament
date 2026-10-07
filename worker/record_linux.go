@@ -83,6 +83,16 @@ type recordJob struct {
 	// setting; on when it says nothing).
 	Watermark *bool    `json:"watermark"`
 	Moments   []moment `json:"moments"`
+	// Recorded clips of this player on this map from earlier jobs (a retry
+	// records only what failed): the reel joins them in too.
+	DoneClips []doneClip `json:"doneClips"`
+}
+
+// doneClip is a clip the platform already has.
+type doneClip struct {
+	ID        int    `json:"id"`
+	StartTick int    `json:"startTick"`
+	URL       string `json:"url"`
 }
 
 type recorder struct {
@@ -178,43 +188,82 @@ type clipLook struct {
 	watermark bool
 }
 
-// recordMoments plays the demo once in CS2 and records each moment into outDir.
-func (r *recorder) recordMoments(ctx context.Context, demoPath, name string, look clipLook, moments []moment, outDir string) ([]clipResult, error) {
+// momentFailure is a moment that could not be recorded, even after a retry.
+type momentFailure struct {
+	moment moment
+	err    error
+}
+
+// recordMoments plays the demo in CS2 and records each moment into outDir.
+// A moment that fails is tried once more in a fresh CS2; if it fails again
+// it is skipped and the others are still recorded. The error is only for
+// what stops the whole job (the demo cannot be copied, CS2 never starts).
+func (r *recorder) recordMoments(ctx context.Context, demoPath, name string, look clipLook, moments []moment, outDir string) ([]clipResult, []momentFailure, error) {
 	if err := os.MkdirAll(demoDir(r.gameDir), 0o755); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	base := fmt.Sprintf("rec-%d", os.Getpid())
 	inGame := filepath.Join(demoDir(r.gameDir), base+".dem")
 	if err := copyFile(demoPath, inGame); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer os.Remove(inGame)
 
-	g, err := r.launchGame(ctx, filepath.Join(outDir, "gamescope.log"))
-	if err != nil {
-		return nil, err
+	var g *game
+	start := func() error {
+		if g != nil {
+			g.stop()
+			g = nil
+		}
+		next, err := r.launchGame(ctx, filepath.Join(outDir, "gamescope.log"))
+		if err != nil {
+			return err
+		}
+		g = next
+		return g.loadDemo("at-recorder/"+base, recorderLook)
 	}
-	defer g.stop()
-	if err := g.loadDemo("at-recorder/"+base, recorderLook); err != nil {
-		return nil, err
+	defer func() {
+		if g != nil {
+			g.stop()
+		}
+	}()
+	if err := start(); err != nil {
+		return nil, nil, err
 	}
 
 	sort.Slice(moments, func(i, j int) bool { return moments[i].StartTick < moments[j].StartTick })
 	var clips []clipResult
+	var failed []momentFailure
 	for _, m := range moments {
 		if ctx.Err() != nil {
-			return clips, ctx.Err()
+			return clips, failed, ctx.Err()
 		}
 		started := time.Now()
 		out := filepath.Join(outDir, fmt.Sprintf("moment-%d.mp4", m.ID))
-		markers, err := r.recordMoment(g, look, name, m, out)
+		var markers clipMarkers
+		var err error
+		for attempt := 1; attempt <= 2; attempt++ {
+			if attempt > 1 {
+				// CS2 can get stuck (a seek that never lands): start it afresh.
+				log.Printf("retrying %q in a fresh CS2 after: %v", m.Title, err)
+				if serr := start(); serr != nil {
+					err = fmt.Errorf("%v; restarting CS2: %w", err, serr)
+					break
+				}
+			}
+			if markers, err = r.recordMoment(g, look, name, m, out); err == nil {
+				break
+			}
+		}
 		if err != nil {
-			return clips, fmt.Errorf("%s: %w", m.Title, err)
+			log.Printf("skipping %q: %v", m.Title, err)
+			failed = append(failed, momentFailure{moment: m, err: err})
+			continue
 		}
 		log.Printf("recorded %q in %s", m.Title, time.Since(started).Round(time.Second))
 		clips = append(clips, clipResult{moment: m, path: out, markers: markers})
 	}
-	return clips, nil
+	return clips, failed, nil
 }
 
 // lead is how much is played before a moment, for the view to settle.
@@ -601,7 +650,7 @@ func (r *recorder) record(ctx context.Context, j *recordJob) error {
 			look.avatar = img
 		}
 	}
-	clips, err := r.recordMoments(ctx, demoPath, name, look, j.Moments, dir)
+	clips, failed, err := r.recordMoments(ctx, demoPath, name, look, j.Moments, dir)
 	for _, c := range clips {
 		markers, _ := json.Marshal(c.markers)
 		if err := r.upload(ctx, c.path, fmt.Sprintf("/api/game/cs2/recorder/jobs/%d/clip", c.moment.ID),
@@ -620,6 +669,18 @@ func (r *recorder) record(ctx context.Context, j *recordJob) error {
 			plays = append(plays, c)
 		}
 	}
+	// With what earlier jobs recorded, when this one is a retry.
+	if len(plays) > 0 {
+		for _, d := range j.DoneClips {
+			path := filepath.Join(dir, fmt.Sprintf("done-%d.mp4", d.ID))
+			if err := r.downloadTo(ctx, d.URL, path); err != nil {
+				log.Printf("reel without clip %d: %v", d.ID, err)
+				continue
+			}
+			plays = append(plays, clipResult{moment: moment{ID: d.ID, StartTick: d.StartTick}, path: path})
+		}
+		sort.Slice(plays, func(a, b int) bool { return plays[a].moment.StartTick < plays[b].moment.StartTick })
+	}
 	if len(plays) > 1 {
 		reel := filepath.Join(dir, "reel.mp4")
 		if err := joinReel(plays, reel); err != nil {
@@ -629,11 +690,35 @@ func (r *recorder) record(ctx context.Context, j *recordJob) error {
 		for i, c := range plays {
 			ids[i] = strconv.Itoa(c.moment.ID)
 		}
-		return r.upload(ctx, reel, fmt.Sprintf("/api/game/cs2/recorder/reels/%s/%d/%s",
+		if err := r.upload(ctx, reel, fmt.Sprintf("/api/game/cs2/recorder/reels/%s/%d/%s",
 			url.PathEscape(j.MatchSlug), j.MapNumber, url.PathEscape(j.PlayerID)),
-			map[string]string{"X-AT-Clips": strings.Join(ids, ",")})
+			map[string]string{"X-AT-Clips": strings.Join(ids, ",")}); err != nil {
+			return err
+		}
+	}
+	// The moments that failed twice go back to the platform, which tries them
+	// again later (a few times) and then gives up on them.
+	if len(failed) > 0 {
+		r.failMoments(failed)
 	}
 	return nil
+}
+
+// failMoments tells the platform these moments could not be recorded.
+func (r *recorder) failMoments(failed []momentFailure) {
+	ids := make([]int, len(failed))
+	msgs := make([]string, len(failed))
+	for i, f := range failed {
+		ids[i] = f.moment.ID
+		msgs[i] = f.moment.Title + ": " + f.err.Error()
+	}
+	msg := strings.Join(msgs, "; ")
+	if len(msg) > 500 {
+		msg = msg[:500]
+	}
+	if res, err := r.postJSON(context.Background(), "/api/game/cs2/recorder/fail", map[string]any{"ids": ids, "error": msg}); err == nil {
+		res.Body.Close()
+	}
 }
 
 func (r *recorder) failRecording(j *recordJob, cause error) {
@@ -751,9 +836,12 @@ func recordFile(args []string) error {
 			return err
 		}
 	}
-	clips, err := r.recordMoments(context.Background(), args[0], name, look, moments, args[3])
+	clips, failed, err := r.recordMoments(context.Background(), args[0], name, look, moments, args[3])
 	if err != nil {
 		return err
+	}
+	for _, f := range failed {
+		log.Printf("could not record %q: %v", f.moment.Title, f.err)
 	}
 	for _, c := range clips {
 		b, _ := json.MarshalIndent(c.markers, "", "  ")
