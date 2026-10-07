@@ -124,5 +124,8 @@
  * (`{ tournamentId }`): a section at the top of a finished tournament's
  * results (CS2: highlights and the tournament reel); `links.playerProfile`
  * and `links.tournament`.
+ *
+ * 0.2.14 (additive): `PlayerProfileViewProps.isOwn`, whether the viewer is
+ * the player.
  */
-export const CLIENT_API_VERSION = '0.2.13';
+export const CLIENT_API_VERSION = '0.2.14';
