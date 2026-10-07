@@ -1245,6 +1245,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'at_veto_turn_seconds', field: 'vetoTurnSeconds' },
   // The Auto Tournament logo on highlight videos (demos/highlights.ts).
   { key: 'highlights_watermark', field: 'highlightsWatermark' },
+  // Clips per player per map (demos/highlights.ts).
+  { key: 'highlights_per_player', field: 'highlightsPerPlayer' },
 ];
 
 // --- tests -------------------------------------------------------------------

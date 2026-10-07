@@ -73,8 +73,11 @@ export interface Moment {
   title: string;
 }
 
-/** Pick the best moments of a map (pure: tested on its own). */
-export function pickMoments(analysis: Pick<DemoAnalysisPayload, 'kills' | 'rounds'>): Moment[] {
+/**
+ * Pick the best moments of a map (pure: tested on its own), up to
+ * `perPlayer` for each player (the `highlights_per_player` setting).
+ */
+export function pickMoments(analysis: Pick<DemoAnalysisPayload, 'kills' | 'rounds'>, perPlayer = PER_PLAYER): Moment[] {
   const kills = (analysis.kills as unknown as KillRow[])
     .filter((k) => k.attacker && k.attackerSide && k.attackerSide !== k.victimSide)
     .sort((a, b) => a.tick - b.tick);
@@ -161,7 +164,7 @@ export function pickMoments(analysis: Pick<DemoAnalysisPayload, 'kills' | 'round
   const byPlayer = new Map<string, Moment[]>();
   for (const m of moments.filter((m) => m.score >= MIN_SCORE).sort((a, b) => b.score - a.score)) {
     const list = byPlayer.get(m.playerId) ?? [];
-    if (list.length < PER_PLAYER) list.push(m);
+    if (list.length < perPlayer) list.push(m);
     byPlayer.set(m.playerId, list);
   }
   return [...byPlayer.values()].flat().concat(funnyMoments(all, roundEnd));

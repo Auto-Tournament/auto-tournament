@@ -355,7 +355,9 @@ export async function completeDemoJob(job: DemoJob, analysis: DemoAnalysisPayloa
     ]
   );
   // The map's best moments, for the highlight recorder.
-  await saveMoments(job.matchSlug, job.mapNumber, pickMoments(analysis));
+  const { settingsService } = await import('../../../services/settingsService');
+  const perPlayer = Number(await settingsService.getSetting('highlights_per_player')) || undefined;
+  await saveMoments(job.matchSlug, job.mapNumber, pickMoments(analysis, perPlayer));
   log.info(
     `[DEMO-JOBS] ${job.matchSlug} map ${job.mapNumber}: analyzed (${Object.keys(analysis.players).length} players)`
   );

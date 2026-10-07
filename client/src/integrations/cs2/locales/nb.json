@@ -1137,6 +1137,10 @@
       "watermark": {
         "label": "Auto Tournament-logo på høydepunktvideoene",
         "description": "Vises svakt nede til høyre. Det hjelper oss mye om du lar den stå på."
+      },
+      "perPlayer": {
+        "label": "Klipp per spiller per kart",
+        "helper": "1 til 6. Hvert klipp tar opptakeren omtrent fem minutter, så færre klipp blir ferdige raskere."
       }
     }
   },

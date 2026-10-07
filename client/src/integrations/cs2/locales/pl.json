@@ -1175,6 +1175,10 @@
       "watermark": {
         "label": "Auto Tournament logo on highlight videos",
         "description": "Shown faintly in the lower right. Leaving it on helps us a lot."
+      },
+      "perPlayer": {
+        "label": "Clips per player per map",
+        "helper": "1 to 6. Each takes the recorder about five minutes, so fewer clips are ready sooner."
       }
     }
   },
