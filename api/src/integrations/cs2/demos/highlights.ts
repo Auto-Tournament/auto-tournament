@@ -354,6 +354,50 @@ export async function claimRecordJob(recorder: string): Promise<RecordJob | null
     [recorder.slice(0, 120), now, best.match_slug, best.map_number, best.player_id, now - STALE_SECONDS]
   );
   if (rows.length === 0) return null; // another recorder took them first
+  return jobFor(best.match_slug, Number(best.map_number), best.player_id, rows);
+}
+
+/**
+ * Hand the recorder every waiting moment of the map with the best one, all
+ * players: one CS2 session records the whole map (recorders from version 4).
+ */
+export async function claimMapJob(recorder: string): Promise<MapRecordJob | null> {
+  const now = Math.floor(Date.now() / 1000);
+  const waiting = "(status = 'pending' OR (status = 'recording' AND claimed_at < ?))";
+  const best = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
+    `SELECT match_slug, map_number FROM cs2_highlights WHERE ${waiting} ORDER BY score DESC, id LIMIT 1`,
+    [now - STALE_SECONDS]
+  );
+  if (!best) return null;
+  const rows = await db.queryAsync<MomentRow>(
+    `UPDATE cs2_highlights SET status = 'recording', recorder = ?, claimed_at = ?, attempts = attempts + 1
+      WHERE id IN (SELECT id FROM cs2_highlights
+                    WHERE match_slug = ? AND map_number = ? AND ${waiting}
+                    FOR UPDATE SKIP LOCKED)
+      RETURNING id, match_slug, map_number, player_id, kind, title, round, score, start_tick, end_tick, slowmo_tick, kill_ticks`,
+    [recorder.slice(0, 120), now, best.match_slug, best.map_number, now - STALE_SECONDS]
+  );
+  if (rows.length === 0) return null;
+  const byPlayer = new Map<string, MomentRow[]>();
+  for (const r of rows) byPlayer.set(r.player_id, [...(byPlayer.get(r.player_id) ?? []), r]);
+  const players: RecordJob[] = [];
+  for (const [playerId, own] of byPlayer) {
+    players.push(await jobFor(best.match_slug, Number(best.map_number), playerId, own));
+  }
+  return { kind: 'map', matchSlug: best.match_slug, mapNumber: Number(best.map_number), players };
+}
+
+/** A whole map's waiting moments, per player, for one CS2 session. */
+export interface MapRecordJob {
+  kind: 'map';
+  matchSlug: string;
+  mapNumber: number;
+  players: RecordJob[];
+}
+
+/** One player's job: their moments on the map and everything their clips show. */
+async function jobFor(matchSlug: string, mapNumber: number, playerId: string, rows: MomentRow[]): Promise<RecordJob> {
+  const best = { match_slug: matchSlug, map_number: mapNumber, player_id: playerId };
   const extra = await db.queryOneAsync<{
     map_name: string | null;
     name: string | null;
