@@ -634,6 +634,15 @@
       "left": "your license covers {{max}}, {{left}} left",
       "full": "your license covers {{max}}, all in use",
       "over": "your license covers {{max}}, {{over}} over the limit"
+    },
+    "machineCount_one": "{{count}} machine",
+    "machineCount_other": "{{count}} machines",
+    "settings": "Server settings",
+    "other": {
+      "title": "Other servers",
+      "summary_one": "{{count}} server not on a machine",
+      "summary_other": "{{count}} servers not on a machine",
+      "about": "Servers added by address, not run by csm on a linked machine."
     }
   },
   "serverModal": {
@@ -1421,7 +1430,51 @@
     "summary": "{{machines}} machine(s), {{online}} online · {{servers}} server(s)",
     "about": "Machines run CS2 Server Manager (csm). The platform starts, stops and creates servers on them by itself.",
     "deleteServer": "Delete server",
-    "deleting": "Deleting…"
+    "deleting": "Deleting…",
+    "ago": {
+      "seconds": "{{count}} s ago",
+      "minutes": "{{count}} min ago"
+    },
+    "working": "csm is on it",
+    "tile": {
+      "free": "Free",
+      "match": "In a match",
+      "starting": "Starting…",
+      "stopping": "Stopping…",
+      "restarting": "Restarting…",
+      "updating": "Updating…",
+      "deleting": "Deleting…",
+      "stopped": "Stopped",
+      "offline": "Offline"
+    },
+    "tryAgain": "Try again",
+    "load": "Load {{load}} · {{free}} GB RAM free",
+    "offlineSince": "Offline since {{time}}",
+    "waitingFor_one": "{{count}} action waits for it",
+    "waitingFor_other": "{{count}} actions wait for it",
+    "addServers": "Add servers",
+    "back": "All machines",
+    "more": "More for {{name}}",
+    "machine": "Machine",
+    "cpu": "CPU load",
+    "ram": "RAM",
+    "diskLabel": "Disk {{mount}}",
+    "counts": {
+      "free": "Free",
+      "match": "In a match",
+      "busy": "Updating or restarting",
+      "down": "Stopped or offline"
+    },
+    "step": {
+      "name": "Name the machine",
+      "run": "Run this on it",
+      "runHelp": "One command, shown here once you have named the machine.",
+      "appears": "It shows up here",
+      "appearsHelp": "Then add servers to it with one click."
+    },
+    "noCsm": "No csm on the machine yet?",
+    "noCsmHelp": "Install CS2 Server Manager first, then come back for step 2.",
+    "installGuide": "Install guide"
   },
   "failover": {
     "title": "Failover",
