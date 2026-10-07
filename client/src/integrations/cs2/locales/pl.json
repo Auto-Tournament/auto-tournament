@@ -1865,7 +1865,8 @@
       "won": "Wygrana {{score}}",
       "lost": "Przegrana {{score}}",
       "drew": "Remis {{score}}"
-    }
+    },
+    "unequipLabel": "Unequip {{name}}"
   },
   "matchRules": {
     "title": "Zasady meczu",

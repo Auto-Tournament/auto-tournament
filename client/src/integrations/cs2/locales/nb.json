@@ -1825,7 +1825,8 @@
       "won": "Vant {{score}}",
       "lost": "Tapte {{score}}",
       "drew": "Uavgjort {{score}}"
-    }
+    },
+    "unequipLabel": "Ta av {{name}}"
   },
   "matchRules": {
     "title": "Kampregler",

@@ -1825,7 +1825,8 @@
       "won": "Vinta {{score}}",
       "lost": "Persa {{score}}",
       "drew": "Pareggio {{score}}"
-    }
+    },
+    "unequipLabel": "Unequip {{name}}"
   },
   "matchRules": {
     "title": "Regole partita",

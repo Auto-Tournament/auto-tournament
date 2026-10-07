@@ -5,7 +5,7 @@ import { ArrowDownIcon, ArrowUpIcon, PencilSimpleIcon } from '@phosphor-icons/re
 import { InspectSkinDialog } from './SkinParts';
 import { api, useModuleTranslation, tokens, fontDisplay, radii } from '../../../module-sdk';
 import { useSkinsEnabled, useMySkins, type OwnedSkin, type ShowcaseItem } from './useSkins';
-import type { PlayerProfileSectionProps, PlayerProfileTabProps } from '../../types';
+import type { PlayerProfileSectionProps } from '../../types';
 import { rarityColor } from './rarity';
 import { playerInventoryPath, skinPaths } from './paths';
 
@@ -231,7 +231,3 @@ export function ProfileLoadoutSection({ playerId, isOwn }: PlayerProfileSectionP
   return <ProfileLoadout steamId={playerId} isOwn={isOwn} />;
 }
 
-/** The profile's Loadout tab (`playerProfileTab`). */
-export function ProfileLoadoutTab({ playerId, isOwn, probe, onAvailability }: PlayerProfileTabProps) {
-  return <ProfileLoadout steamId={playerId} isOwn={isOwn} probe={probe} onAvailability={onAvailability} />;
-}

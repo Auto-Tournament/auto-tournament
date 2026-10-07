@@ -799,6 +799,8 @@ export interface TournamentStatsViewProps {
  */
 export interface PlayerProfileViewProps {
   playerId: string;
+  /** The viewer is this player (client API 0.2.14). */
+  isOwn?: boolean;
 }
 
 /**

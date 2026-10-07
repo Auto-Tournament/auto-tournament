@@ -41,6 +41,7 @@ import (
 const (
 	netconPort    = 2121
 	frameSettleMs = 1500
+	seekPoll      = 500 * time.Millisecond
 	endMargin     = tickrate // ticks kept clear of the demo's end
 )
 
@@ -178,6 +179,9 @@ func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error
 		conn.Close()
 		return nil, fmt.Errorf("something already listens on port %d (another CS2?); stop it first", netconPort)
 	}
+	if err := awaitSteam(ctx, 3*time.Minute); err != nil {
+		return nil, err
+	}
 	w, h := strconv.Itoa(r.width), strconv.Itoa(r.height)
 	args := []string{"--backend", "headless", "-W", w, "-H", h, "-w", w, "-h", h, "-r", "120", "--"}
 	if r.sniper != "" {
@@ -309,7 +313,9 @@ const seekTimeout = 45 * time.Second
 // it has, so pausing it answers with a tick near the target (analyzer ticks).
 // While it still loads, CS2 does not answer at all.
 func (g *game) awaitSeek(target int) error {
-	time.Sleep(3 * time.Second)
+	// A seek back within the moment lands at once; one far into the demo is
+	// polled until it has.
+	time.Sleep(seekPoll)
 	deadline := time.Now().Add(seekTimeout)
 	for {
 		g.con.drain()
@@ -326,7 +332,7 @@ func (g *game) awaitSeek(target int) error {
 		}
 		// Not there yet (or still paused where it was): let it go on.
 		_ = g.con.send("demo_resume")
-		time.Sleep(time.Second)
+		time.Sleep(seekPoll)
 	}
 }
 
@@ -368,9 +374,11 @@ func (g *game) play(from, to int, scale float64, name string, started func() err
 	}
 	// A seek far into the demo (round 19 straight after loading) takes CS2
 	// longer than a few seconds: wait until it has landed near `from`.
+	seekStart := time.Now()
 	if err := g.awaitSeek(from); err != nil {
 		return s, err
 	}
+	seekTook := time.Since(seekStart)
 	// A seek drops the spectated player, and CS2 ignores spec_player while the
 	// seek still loads: ask once it has landed, again once paused, and again
 	// just after resuming (the run-up before the moment covers the switch).
@@ -384,10 +392,12 @@ func (g *game) play(from, to int, scale float64, name string, started func() err
 	if err := g.spectate(name); err != nil {
 		return s, err
 	}
-	time.Sleep(time.Duration(frameSettleMs) * time.Millisecond)
+	// The capture starts (and links up) while the view settles.
+	settle := time.Now()
 	if err := started(); err != nil {
 		return s, err
 	}
+	time.Sleep(time.Duration(frameSettleMs)*time.Millisecond - time.Since(settle))
 	v, at, err := g.resume()
 	if err != nil {
 		return s, err
@@ -397,7 +407,8 @@ func (g *game) play(from, to int, scale float64, name string, started func() err
 	s.fromTick, s.resumed = tick-g.startTick, at
 	gameSeconds := float64(to-s.fromTick) / tickrate
 	wall := gameSeconds/scale + 0.3
-	log.Printf("playing ticks %d → %d at %gx (%.1f s)", s.fromTick, to, scale, wall)
+	log.Printf("playing ticks %d → %d at %gx (%.1f s; seek %.1f s, ready %.1f s)", s.fromTick, to, scale, wall,
+		seekTook.Seconds(), time.Since(seekStart).Seconds())
 	if gameSeconds > 60 || gameSeconds < 0 {
 		return s, fmt.Errorf("resumed at tick %d, too far from %d", s.fromTick, to)
 	}

@@ -3,9 +3,9 @@
 package main
 
 // A map's match reel: each player's best highlight there (already recorded),
-// one after the other; each opens with its player's caption card. No CS2
-// needed: the clips are downloaded and joined. A tournament reel (its best
-// plays) is made the same way.
+// one after the other, each blending into the next; each opens with its
+// player's caption card. No CS2 needed: the clips are downloaded and joined.
+// A tournament reel (its best plays) is made the same way.
 
 import (
 	"context"
@@ -84,7 +84,7 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 		tagged = append(tagged, clip)
 	}
 	reel := filepath.Join(dir, "match.mp4")
-	if err := concatFiles(tagged, reel); err != nil {
+	if err := r.crossfadeFiles(tagged, reel); err != nil {
 		return err
 	}
 	ids := make([]string, len(j.Clips))

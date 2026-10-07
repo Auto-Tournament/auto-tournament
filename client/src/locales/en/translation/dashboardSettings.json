@@ -321,12 +321,20 @@
         "tournament": "Tournament",
         "people": "People",
         "game": "Game",
-        "configuration": "Configuration"
+        "configuration": "Configuration",
+        "site": "Site"
       },
       "allTournaments": "All tournaments",
       "switcher": "Tournament",
       "newTournament": "New tournament",
-      "playedMatches": "All matches"
+      "playedMatches": "All matches",
+      "tournamentBar": "This tournament",
+      "scope": {
+        "label": "Managing",
+        "platform": "Platform",
+        "platformHint": "Tournaments, people, the site",
+        "gameHint": "Its pages and settings"
+      }
     },
     "status": {
       "live": "LIVE",

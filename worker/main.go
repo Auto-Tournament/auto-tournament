@@ -212,6 +212,13 @@ func main() {
 		return
 	}
 
+	if len(os.Args) >= 4 && os.Args[1] == "join-reel" {
+		if err := joinReelFiles(os.Args[2], os.Args[3:]); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
 	if len(os.Args) >= 2 && os.Args[1] == "record-file" {
 		if err := recordFile(os.Args[2:]); err != nil {
 			log.Fatal(err)
