@@ -9,17 +9,16 @@ import (
 
 // The highlight edit: the clip plays at full speed until the last enemy dies,
 // then slows step by step to slowmoSpeed (about a second of video), holds
-// there (about two seconds), speeds back up the same way it slowed, plays on
-// at full speed for a moment and cuts.
+// there for about another second and cuts while still slowed: once the
+// killing is done there is nothing to speed back up for.
 const (
 	slowmoSpeed = 0.5
-	rampSec     = 0.75 // game seconds slowing down from the kill, and speeding up again (≈1 s of video each)
-	holdSec     = 1.0  // game seconds at slowmoSpeed in between (2 s of video)
-	outroSec    = 0.5  // game seconds at full speed before the cut
+	rampSec     = 0.75 // game seconds slowing down from the kill (≈1 s of video)
+	holdSec     = 0.5  // game seconds at slowmoSpeed before the cut (1 s of video)
 	rampSteps   = 8    // a ramp is this many constant-speed pieces
 	outputFPS   = 120
 	// tailSec is how much game after the last kill a clip shows.
-	tailSec = rampSec + holdSec + rampSec + outroSec
+	tailSec = rampSec + holdSec
 )
 
 // segment is a piece of the recording (seconds from its start) played at one speed.
@@ -52,8 +51,7 @@ func stepSpeed(i int) float64 {
 }
 
 // speedRamp cuts a recording of `length` seconds into pieces: full speed to
-// `kill` seconds in, slowing to slowmoSpeed, holding, back up to full speed,
-// and full speed for the last outroSec.
+// `kill` seconds in, then slowing to slowmoSpeed and slowed to the end.
 func speedRamp(length, kill float64) []segment {
 	return editPlan(length, false, kill)
 }
@@ -95,21 +93,13 @@ func editPlan(length float64, intro bool, kill float64) []segment {
 		add(start, length, 1)
 		return out
 	}
-	// The slowing steps, and the same steps in reverse to speed up again, so
-	// both take as long.
+	// Slowing down step by step from the kill, then slowed to the end.
 	step := rampSec / rampSteps
 	add(start, kill, 1)
 	for i := 0; i < rampSteps; i++ {
 		add(kill+float64(i)*step, kill+float64(i+1)*step, stepSpeed(i))
 	}
-	outro := math.Max(kill+rampSec, length-outroSec)
-	upFrom := math.Max(kill+rampSec, outro-rampSec)
-	add(kill+rampSec, upFrom, slowmoSpeed)
-	upStep := (outro - upFrom) / rampSteps
-	for i := 0; i < rampSteps; i++ {
-		add(upFrom+float64(i)*upStep, upFrom+float64(i+1)*upStep, stepSpeed(rampSteps-1-i))
-	}
-	add(outro, length, 1)
+	add(kill+rampSec, length, slowmoSpeed)
 	return out
 }
 
@@ -233,13 +223,52 @@ func videoFilter(o overlay) string {
 	return b.String()
 }
 
+// reelCrossfade is how long one player's clip blends into the next in a reel
+// (picture and sound): a cut inside a clip is the next kill, a blend is the
+// next player.
+const reelCrossfade = 0.4
+
+// crossfadeFilter joins inputs 0..n-1, `durations` seconds long, each
+// blending into the next over reelCrossfade. Output [v] and [a].
+func crossfadeFilter(durations []float64) string {
+	if len(durations) == 1 {
+		return "[0:v]null[v];[0:a]anull[a]"
+	}
+	var b strings.Builder
+	offset := 0.0
+	prevV, prevA := "0:v", "0:a"
+	for i := 1; i < len(durations); i++ {
+		offset += durations[i-1] - reelCrossfade
+		v, a := fmt.Sprintf("v%d", i), fmt.Sprintf("a%d", i)
+		if i == len(durations)-1 {
+			v, a = "v", "a"
+		}
+		fmt.Fprintf(&b, "[%s][%d:v]xfade=transition=fade:duration=%g:offset=%.3f[%s];", prevV, i, reelCrossfade, offset, v)
+		fmt.Fprintf(&b, "[%s][%d:a]acrossfade=d=%g[%s];", prevA, i, reelCrossfade, a)
+		prevV, prevA = v, a
+	}
+	return strings.TrimSuffix(b.String(), ";")
+}
+
 // encodeArgs are the output settings every piece and the reel share, so the
 // pieces can be joined without re-encoding.
+//
+// H.265 in MP4 by default: about a third of the size of the H.264 it
+// replaced at the same look (1440p at 120 fps: ~13 Mbit/s instead of ~38).
+// It plays on Apple devices and in Chrome and Edge. Tagged `hvc1` so Safari
+// takes it. The choice follows Granum, Hansen et al., "Sustainable Web
+// Design Guidelines" (NTNU, 2023, https://hdl.handle.net/11250/3078735).
+// With a working NVENC, `AT_ENCODER=hevc_nvenc` makes the same on the GPU.
 func encodeArgs(encoder string) []string {
-	args := []string{"-c:v", encoder, "-r", fmt.Sprint(outputFPS)}
-	if encoder == "libx264" {
+	args := []string{"-c:v", encoder, "-r", fmt.Sprint(outputFPS), "-g", fmt.Sprint(2 * outputFPS)}
+	switch encoder {
+	case "libx265":
+		args = append(args, "-preset", "fast", "-crf", "24", "-tag:v", "hvc1", "-x265-params", "log-level=error")
+	case "hevc_nvenc":
+		args = append(args, "-preset", "p6", "-tune", "hq", "-rc", "vbr", "-cq", "26", "-b:v", "0", "-tag:v", "hvc1")
+	case "libx264":
 		args = append(args, "-preset", "slow", "-crf", "18", "-profile:v", "high")
-	} else {
+	default: // h264_nvenc
 		args = append(args, "-cq", "19", "-preset", "p6")
 	}
 	return append(args, "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2")

@@ -18,6 +18,8 @@ import { HIGHLIGHTS_DIR, matchLine, type ClipMarkers, type MatchReelClip } from 
 /** A recording that went quiet this long is handed out again. */
 const STALE_SECONDS = 30 * 60;
 const MAX_ATTEMPTS = 3;
+/** How long one clip blends into the next in a reel (worker/edit.go reelCrossfade). */
+const REEL_CROSSFADE = 0.4;
 /** A tournament reel needs at least this many recorded highlights. */
 const TOURNAMENT_REEL_MIN = 3;
 
@@ -176,7 +178,9 @@ export async function chaptersOf(clipIdsJson: string | null): Promise<Chapter[]>
       round: c.round,
       at,
     };
-    at = at !== null && c.markers ? at + c.markers.duration : null;
+    // Each clip blends into the next (the recorder's reelCrossfade), so the
+    // next one starts that much before this one ends.
+    at = at !== null && c.markers ? at + c.markers.duration - REEL_CROSSFADE : null;
     return chapter;
   });
 }

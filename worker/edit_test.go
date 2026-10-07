@@ -19,31 +19,28 @@ func TestAudioFilterDropsThePitch(t *testing.T) {
 	}
 }
 
-func TestSpeedRampSlowsHoldsSpeedsUpAndPlaysOn(t *testing.T) {
+func TestSpeedRampSlowsAndCutsStillSlowed(t *testing.T) {
 	segs := speedRamp(3+tailSec, 3)
 	if segs[0].From != 0 || segs[0].To != 3 || segs[0].Speed != 1 {
 		t.Fatalf("full speed until the kill: %+v", segs[0])
 	}
 	last := segs[len(segs)-1]
-	if last.Speed != 1 || math.Abs(last.To-last.From-outroSec) > 1e-9 || math.Abs(last.To-(3+tailSec)) > 1e-9 {
-		t.Fatalf("ends with at least %v s at full speed: %+v", outroSec, last)
+	if last.Speed != slowmoSpeed || math.Abs(last.To-(3+tailSec)) > 1e-9 {
+		t.Fatalf("ends slowed, at the clip's end: %+v", last)
 	}
-	var slowing, held, rising float64
+	var slowing, held float64
 	for _, s := range segs[1:] {
+		if s.Speed > 1-1e-9 {
+			t.Fatalf("back at full speed after the kill: %+v", s)
+		}
 		d := (s.To - s.From) / s.Speed
-		switch {
-		case s.To <= 3+rampSec+1e-9:
-			slowing += d
-		case s.Speed == slowmoSpeed:
+		if s.Speed == slowmoSpeed {
 			held += d
-		case s.To <= 3+tailSec-outroSec+1e-9:
-			rising += d
+		} else {
+			slowing += d
 		}
 	}
-	if math.Abs(slowing-rising) > 1e-6 {
-		t.Fatalf("speeding up (%.3f s) should take as long as slowing down (%.3f s)", rising, slowing)
-	}
-	if slowing < 0.7 || slowing > 1.3 || held < 1.6 || held > 2.4 {
+	if slowing < 0.7 || slowing > 1.3 || held < 0.8 || held > 1.2 {
 		t.Fatalf("slowing %.2f s, held %.2f s", slowing, held)
 	}
 }
@@ -81,9 +78,9 @@ func TestMomentMarkers(t *testing.T) {
 	if m.Duration != want {
 		t.Fatalf("duration = %v, want %v", m.Duration, want)
 	}
-	// The slow motion ends where the outro at full speed starts.
-	if got := math.Round((m.Duration-m.Slowmo[1])*100) / 100; got != outroSec {
-		t.Fatalf("outro = %v, want %v", got, outroSec)
+	// The slow motion runs to the end of the clip.
+	if m.Slowmo[1] != m.Duration {
+		t.Fatalf("slow motion ends at %v, the clip at %v", m.Slowmo[1], m.Duration)
 	}
 }
 
@@ -115,5 +112,35 @@ func TestIntroSlowsTheOpeningUntilTheCardLeaves(t *testing.T) {
 	short := editPlan(4, true, 1.5)
 	if outputAt(short, 1.5) <= 0 || short[0].To >= 1.5 {
 		t.Fatalf("opening runs into the kill: %+v", short)
+	}
+}
+
+func TestEncodeArgsH265ByDefault(t *testing.T) {
+	args := strings.Join(encodeArgs("libx265"), " ")
+	for _, want := range []string{"-c:v libx265", "-tag:v hvc1", "-r 120", "-g 240"} {
+		if !strings.Contains(args, want) {
+			t.Fatalf("%q missing from %s", want, args)
+		}
+	}
+	if gpu := strings.Join(encodeArgs("hevc_nvenc"), " "); !strings.Contains(gpu, "-tag:v hvc1") {
+		t.Fatalf("hevc_nvenc not tagged hvc1: %s", gpu)
+	}
+}
+
+func TestCrossfadeFilter(t *testing.T) {
+	f := crossfadeFilter([]float64{10, 8, 6})
+	for _, want := range []string{
+		"[0:v][1:v]xfade=transition=fade:duration=0.4:offset=9.600[v1]",
+		"[0:a][1:a]acrossfade=d=0.4[a1]",
+		// The second blend starts 0.4 s before the end of the first two joined: 10 + 8 - 0.4 - 0.4.
+		"[v1][2:v]xfade=transition=fade:duration=0.4:offset=17.200[v]",
+		"[a1][2:a]acrossfade=d=0.4[a]",
+	} {
+		if !strings.Contains(f, want) {
+			t.Fatalf("%q missing from %s", want, f)
+		}
+	}
+	if one := crossfadeFilter([]float64{5}); one != "[0:v]null[v];[0:a]anull[a]" {
+		t.Fatalf("one clip: %s", one)
 	}
 }

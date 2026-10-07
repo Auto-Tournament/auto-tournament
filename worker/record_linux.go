@@ -20,7 +20,7 @@ package main
 //	AT_SNIPER_RUN    Steam's SteamLinuxRuntime_sniper/run, which cs2.sh needs
 //	AT_RECORD_DIR    scratch space for raw frames (default: the system temp dir; ~6 GB a moment)
 //	AT_RESOLUTION    WIDTHxHEIGHT (default 2560x1440)
-//	AT_ENCODER       ffmpeg video encoder (default libx264)
+//	AT_ENCODER       ffmpeg video encoder (default: hevc_nvenc on the GPU if it opens, else libx265; H.265 in MP4)
 //	AT_AUDIO_TARGET  the PipeWire sink CS2 plays into (default: the default sink)
 //	AT_KEEP_SCRATCH  set to keep each moment's raw frames, sound and logs
 //
@@ -110,8 +110,8 @@ type recorder struct {
 // claimRecording asks the platform for work: a player's moments to record
 // (recordJob), or a map's match reel to join (matchReelJob); nil, nil when
 // there is none.
-func (c *client) claimRecording(ctx context.Context) (*recordJob, *matchReelJob, error) {
-	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{"recorder": c.worker, "version": 3})
+func (c *client) claimRecording(ctx context.Context) (*mapJob, *matchReelJob, error) {
+	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{"recorder": c.worker, "version": 4})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -139,8 +139,15 @@ func (c *client) claimRecording(ctx context.Context) (*recordJob, *matchReelJob,
 		var j matchReelJob
 		return nil, &j, json.Unmarshal(body.Job, &j)
 	}
+	if kind.Kind == "map" {
+		var mj mapJob
+		return &mj, nil, json.Unmarshal(body.Job, &mj)
+	}
 	var j recordJob
-	return &j, nil, json.Unmarshal(body.Job, &j)
+	if err := json.Unmarshal(body.Job, &j); err != nil {
+		return nil, nil, err
+	}
+	return &mapJob{Kind: "map", MatchSlug: j.MatchSlug, MapNumber: j.MapNumber, Players: []recordJob{j}}, nil, nil
 }
 
 // demoName is the player's name in the demo (what spec_player takes).
@@ -173,8 +180,35 @@ func demoName(path, steamID string) (string, error) {
 // clipResult is one recorded moment, edited.
 type clipResult struct {
 	moment  moment
+	player  int // which of the job's players it is
 	path    string
 	markers clipMarkers
+}
+
+// shot is a moment to record, and whose eyes it is seen through.
+type shot struct {
+	m      moment
+	player int
+	name   string // the player's name in the demo (spec_player)
+	look   clipLook
+}
+
+// mapJob is a whole map's waiting moments, every player's, for one CS2
+// session (platforms from recorder version 4; an older platform's one-player
+// job becomes a map job of one).
+type mapJob struct {
+	Kind      string      `json:"kind"`
+	MatchSlug string      `json:"matchSlug"`
+	MapNumber int         `json:"mapNumber"`
+	Players   []recordJob `json:"players"`
+}
+
+func (mj *mapJob) moments() int {
+	n := 0
+	for _, p := range mj.Players {
+		n += len(p.Moments)
+	}
+	return n
 }
 
 // clipLook is what goes on every clip of a job: the caption card's player,
@@ -194,11 +228,12 @@ type momentFailure struct {
 	err    error
 }
 
-// recordMoments plays the demo in CS2 and records each moment into outDir.
+// recordMoments plays the demo in CS2 once and records each shot into outDir,
+// through the eyes of the player it belongs to.
 // A moment that fails is tried once more in a fresh CS2; if it fails again
 // it is skipped and the others are still recorded. The error is only for
 // what stops the whole job (the demo cannot be copied, CS2 never starts).
-func (r *recorder) recordMoments(ctx context.Context, demoPath, name string, look clipLook, moments []moment, outDir string) ([]clipResult, []momentFailure, error) {
+func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []shot, outDir string) ([]clipResult, []momentFailure, error) {
 	if err := os.MkdirAll(demoDir(r.gameDir), 0o755); err != nil {
 		return nil, nil, err
 	}
@@ -231,10 +266,12 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath, name string, loo
 		return nil, nil, err
 	}
 
-	sort.Slice(moments, func(i, j int) bool { return moments[i].StartTick < moments[j].StartTick })
+	// In demo order, whoever's they are: the seeks only go forward.
+	sort.Slice(shots, func(i, j int) bool { return shots[i].m.StartTick < shots[j].m.StartTick })
 	var clips []clipResult
 	var failed []momentFailure
-	for _, m := range moments {
+	for _, sh := range shots {
+		m, name, look := sh.m, sh.name, sh.look
 		if ctx.Err() != nil {
 			return clips, failed, ctx.Err()
 		}
@@ -261,7 +298,7 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath, name string, loo
 			continue
 		}
 		log.Printf("recorded %q in %s", m.Title, time.Since(started).Round(time.Second))
-		clips = append(clips, clipResult{moment: m, path: out, markers: markers})
+		clips = append(clips, clipResult{moment: m, player: sh.player, path: out, markers: markers})
 	}
 	return clips, failed, nil
 }
@@ -514,13 +551,38 @@ func maxf(a, b float64) float64 {
 	return b
 }
 
-// joinReel puts the clips one after the other (same encoding, no re-encode).
-func joinReel(clips []clipResult, out string) error {
+// joinReel puts the clips one after the other, each blending into the next.
+func (r *recorder) joinReel(clips []clipResult, out string) error {
 	paths := make([]string, len(clips))
 	for i, c := range clips {
 		paths[i] = c.path
 	}
-	return concatFiles(paths, out)
+	return r.crossfadeFiles(paths, out)
+}
+
+// crossfadeFiles joins clips into a reel, each blending into the next
+// (picture and sound, reelCrossfade). The blends mean the reel is encoded
+// again; the clips themselves are not recorded again.
+func (r *recorder) crossfadeFiles(paths []string, out string) error {
+	durations := make([]float64, len(paths))
+	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
+	for i, p := range paths {
+		b, err := exec.Command("ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", p).Output()
+		if err != nil {
+			return fmt.Errorf("ffprobe %s: %w", filepath.Base(p), err)
+		}
+		if durations[i], err = strconv.ParseFloat(strings.TrimSpace(string(b)), 64); err != nil {
+			return fmt.Errorf("ffprobe %s: %w", filepath.Base(p), err)
+		}
+		args = append(args, "-i", p)
+	}
+	args = append(args, "-filter_complex", crossfadeFilter(durations), "-map", "[v]", "-map", "[a]")
+	args = append(args, encodeArgs(r.encoder)...)
+	args = append(args, "-movflags", "+faststart", out)
+	if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
+		return fmt.Errorf("ffmpeg crossfade: %v %s", err, strings.TrimSpace(string(b)))
+	}
+	return nil
 }
 
 // concatFiles joins MP4s of the same encoding without re-encoding.
@@ -587,8 +649,8 @@ func copyFile(from, to string) error {
 	return out.Close()
 }
 
-func (r *recorder) download(ctx context.Context, j *recordJob, to string) error {
-	res, err := r.do(ctx, http.MethodGet, "/api/demos/"+url.PathEscape(j.MatchSlug)+"/download/"+strconv.Itoa(j.MapNumber), "", nil)
+func (r *recorder) download(ctx context.Context, matchSlug string, mapNumber int, to string) error {
+	res, err := r.do(ctx, http.MethodGet, "/api/demos/"+url.PathEscape(matchSlug)+"/download/"+strconv.Itoa(mapNumber), "", nil)
 	if err != nil {
 		return err
 	}
@@ -623,20 +685,8 @@ func (r *recorder) upload(ctx context.Context, path, route string, headers map[s
 	return ok(res, "upload "+filepath.Base(path))
 }
 
-func (r *recorder) record(ctx context.Context, j *recordJob) error {
-	dir, err := os.MkdirTemp(r.scratch, "highlights-")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(dir)
-	demoPath := filepath.Join(dir, "match.dem")
-	if err := r.download(ctx, j, demoPath); err != nil {
-		return err
-	}
-	name, err := demoName(demoPath, j.PlayerID)
-	if err != nil {
-		return err
-	}
+// lookFor is what one player's clips show: the caption card and the corner.
+func (r *recorder) lookFor(ctx context.Context, j *recordJob) clipLook {
 	look := clipLook{name: j.PlayerName, teams: j.Teams, mapName: mapDisplayName(j.MapName), tag: cornerTag(j.Tournament, j.Stage),
 		watermark: j.Watermark == nil || *j.Watermark}
 	if look.teams == "" {
@@ -650,7 +700,40 @@ func (r *recorder) record(ctx context.Context, j *recordJob) error {
 			look.avatar = img
 		}
 	}
-	clips, failed, err := r.recordMoments(ctx, demoPath, name, look, j.Moments, dir)
+	return look
+}
+
+// recordMap records a map's moments, every player's, in one CS2 session,
+// then uploads each clip and each player's reel of the map.
+func (r *recorder) recordMap(ctx context.Context, mj *mapJob) error {
+	dir, err := os.MkdirTemp(r.scratch, "highlights-")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(dir)
+	demoPath := filepath.Join(dir, "match.dem")
+	if err := r.download(ctx, mj.MatchSlug, mj.MapNumber, demoPath); err != nil {
+		return err
+	}
+	var shots []shot
+	var failed []momentFailure
+	for i := range mj.Players {
+		p := &mj.Players[i]
+		name, err := demoName(demoPath, p.PlayerID)
+		if err != nil {
+			// Not in this demo: their moments fail, the others go on.
+			for _, m := range p.Moments {
+				failed = append(failed, momentFailure{moment: m, err: err})
+			}
+			continue
+		}
+		look := r.lookFor(ctx, p)
+		for _, m := range p.Moments {
+			shots = append(shots, shot{m: m, player: i, name: name, look: look})
+		}
+	}
+	clips, more, err := r.recordMoments(ctx, demoPath, shots, dir)
+	failed = append(failed, more...)
 	for _, c := range clips {
 		markers, _ := json.Marshal(c.markers)
 		if err := r.upload(ctx, c.path, fmt.Sprintf("/api/game/cs2/recorder/jobs/%d/clip", c.moment.ID),
@@ -661,38 +744,14 @@ func (r *recorder) record(ctx context.Context, j *recordJob) error {
 	if err != nil {
 		return err
 	}
-	// The player's reel: their plays on the map, without the funny ones (those
-	// are for the tournament reel).
-	var plays []clipResult
-	for _, c := range clips {
-		if c.moment.Kind != "funny" {
-			plays = append(plays, c)
-		}
-	}
-	// With what earlier jobs recorded, when this one is a retry.
-	if len(plays) > 0 {
-		for _, d := range j.DoneClips {
-			path := filepath.Join(dir, fmt.Sprintf("done-%d.mp4", d.ID))
-			if err := r.downloadTo(ctx, d.URL, path); err != nil {
-				log.Printf("reel without clip %d: %v", d.ID, err)
-				continue
+	for i := range mj.Players {
+		var own []clipResult
+		for _, c := range clips {
+			if c.player == i {
+				own = append(own, c)
 			}
-			plays = append(plays, clipResult{moment: moment{ID: d.ID, StartTick: d.StartTick}, path: path})
 		}
-		sort.Slice(plays, func(a, b int) bool { return plays[a].moment.StartTick < plays[b].moment.StartTick })
-	}
-	if len(plays) > 1 {
-		reel := filepath.Join(dir, "reel.mp4")
-		if err := joinReel(plays, reel); err != nil {
-			return err
-		}
-		ids := make([]string, len(plays))
-		for i, c := range plays {
-			ids[i] = strconv.Itoa(c.moment.ID)
-		}
-		if err := r.upload(ctx, reel, fmt.Sprintf("/api/game/cs2/recorder/reels/%s/%d/%s",
-			url.PathEscape(j.MatchSlug), j.MapNumber, url.PathEscape(j.PlayerID)),
-			map[string]string{"X-AT-Clips": strings.Join(ids, ",")}); err != nil {
+		if err := r.uploadReel(ctx, dir, &mj.Players[i], own); err != nil {
 			return err
 		}
 	}
@@ -702,6 +761,44 @@ func (r *recorder) record(ctx context.Context, j *recordJob) error {
 		r.failMoments(failed)
 	}
 	return nil
+}
+
+// uploadReel joins one player's plays on the map (and what earlier jobs
+// recorded of them, on a retry) into their reel of the map.
+func (r *recorder) uploadReel(ctx context.Context, dir string, j *recordJob, clips []clipResult) error {
+	// Without the funny ones: those are for the tournament reel.
+	var plays []clipResult
+	for _, c := range clips {
+		if c.moment.Kind != "funny" {
+			plays = append(plays, c)
+		}
+	}
+	if len(plays) == 0 {
+		return nil
+	}
+	for _, d := range j.DoneClips {
+		path := filepath.Join(dir, fmt.Sprintf("done-%d.mp4", d.ID))
+		if err := r.downloadTo(ctx, d.URL, path); err != nil {
+			log.Printf("reel without clip %d: %v", d.ID, err)
+			continue
+		}
+		plays = append(plays, clipResult{moment: moment{ID: d.ID, StartTick: d.StartTick}, path: path})
+	}
+	if len(plays) < 2 {
+		return nil
+	}
+	sort.Slice(plays, func(a, b int) bool { return plays[a].moment.StartTick < plays[b].moment.StartTick })
+	reel := filepath.Join(dir, fmt.Sprintf("reel-%s.mp4", j.PlayerID))
+	if err := r.joinReel(plays, reel); err != nil {
+		return err
+	}
+	ids := make([]string, len(plays))
+	for i, c := range plays {
+		ids[i] = strconv.Itoa(c.moment.ID)
+	}
+	return r.upload(ctx, reel, fmt.Sprintf("/api/game/cs2/recorder/reels/%s/%d/%s",
+		url.PathEscape(j.MatchSlug), j.MapNumber, url.PathEscape(j.PlayerID)),
+		map[string]string{"X-AT-Clips": strings.Join(ids, ",")})
 }
 
 // failMoments tells the platform these moments could not be recorded.
@@ -721,15 +818,17 @@ func (r *recorder) failMoments(failed []momentFailure) {
 	}
 }
 
-func (r *recorder) failRecording(j *recordJob, cause error) {
-	log.Printf("highlights of %s on %s map %d failed: %v", j.PlayerName, j.MatchSlug, j.MapNumber, cause)
+func (r *recorder) failRecording(mj *mapJob, cause error) {
+	log.Printf("highlights of %s map %d failed: %v", mj.MatchSlug, mj.MapNumber, cause)
 	msg := cause.Error()
 	if len(msg) > 500 {
 		msg = msg[:500]
 	}
-	ids := make([]int, 0, len(j.Moments))
-	for _, m := range j.Moments {
-		ids = append(ids, m.ID)
+	ids := make([]int, 0, mj.moments())
+	for _, p := range mj.Players {
+		for _, m := range p.Moments {
+			ids = append(ids, m.ID)
+		}
 	}
 	if res, err := r.postJSON(context.Background(), "/api/game/cs2/recorder/fail", map[string]any{"ids": ids, "error": msg}); err == nil {
 		res.Body.Close()
@@ -753,7 +852,7 @@ func newRecorder(c *client) (*recorder, error) {
 	}
 	r := &recorder{client: c, gameDir: gameDir, sniper: env("AT_SNIPER_RUN", ""),
 		scratch: env("AT_RECORD_DIR", os.TempDir()), width: w, height: h,
-		encoder: env("AT_ENCODER", "libx264"), sink: defaultSink()}
+		encoder: env("AT_ENCODER", pickEncoder()), sink: defaultSink()}
 	r.logo = filepath.Join(r.scratch, "at-watermark.png")
 	if err := os.WriteFile(r.logo, watermarkPNG, 0o644); err != nil {
 		return nil, err
@@ -761,7 +860,7 @@ func newRecorder(c *client) (*recorder, error) {
 	return r, nil
 }
 
-// runRecorder is the record loop: one player's moments on one map at a time.
+// runRecorder is the record loop: one map's moments at a time, all players.
 func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 	r, err := newRecorder(c)
 	if err != nil {
@@ -790,11 +889,11 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 			continue
 		}
 		started := time.Now()
-		if err := r.record(ctx, j); err != nil {
+		if err := r.recordMap(ctx, j); err != nil {
 			r.failRecording(j, err)
 			continue
 		}
-		log.Printf("highlights of %s on %s map %d: %d moment(s) in %s", j.PlayerName, j.MatchSlug, j.MapNumber, len(j.Moments), time.Since(started).Round(time.Second))
+		log.Printf("highlights of %s map %d: %d moment(s) of %d player(s) in %s", j.MatchSlug, j.MapNumber, j.moments(), len(j.Players), time.Since(started).Round(time.Second))
 	}
 	return nil
 }
@@ -836,7 +935,11 @@ func recordFile(args []string) error {
 			return err
 		}
 	}
-	clips, failed, err := r.recordMoments(context.Background(), args[0], name, look, moments, args[3])
+	shots := make([]shot, len(moments))
+	for i, m := range moments {
+		shots[i] = shot{m: m, name: name, look: look}
+	}
+	clips, failed, err := r.recordMoments(context.Background(), args[0], shots, args[3])
 	if err != nil {
 		return err
 	}
@@ -850,7 +953,31 @@ func recordFile(args []string) error {
 		}
 	}
 	if len(clips) > 1 {
-		return joinReel(clips, filepath.Join(args[3], "reel.mp4"))
+		return r.joinReel(clips, filepath.Join(args[3], "reel.mp4"))
 	}
 	return nil
+}
+
+// pickEncoder is the GPU's H.265 encoder when it opens (a second of test
+// video), else x265 on the CPU: same codec and container either way.
+func pickEncoder() string {
+	cmd := exec.Command("ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30", "-t", "1",
+		"-c:v", "hevc_nvenc", "-f", "null", "-")
+	if out, err := cmd.CombinedOutput(); err != nil {
+		reason := strings.TrimSpace(string(out))
+		if i := strings.IndexByte(reason, '\n'); i > 0 {
+			reason = reason[:i]
+		}
+		log.Printf("NVENC is not available (%s): encoding H.265 on the CPU", reason)
+		return "libx265"
+	}
+	return "hevc_nvenc"
+}
+
+// joinReelFiles is `at-worker join-reel <out.mp4> <clip.mp4>...`: local clips
+// joined into a reel the way the platform's reels are, each blending into the
+// next.
+func joinReelFiles(out string, clips []string) error {
+	r := &recorder{encoder: env("AT_ENCODER", pickEncoder())}
+	return r.crossfadeFiles(clips, out)
 }
