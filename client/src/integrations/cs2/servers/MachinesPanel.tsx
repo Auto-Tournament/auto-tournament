@@ -1254,7 +1254,15 @@ export default function MachinesPanel({
 
   const counts = countServers(hosts, isDeleting);
   const openedHost = openId ? hosts.find((h) => h.id === openId) : undefined;
-  const firstLink = !loaded || hosts.length > 0 ? null : link;
+  // The first machine's guide stays up from "Get the command" until csm
+  // connects: creating the code adds the (not yet linked) machine to the list,
+  // which used to swap the guide, and the command in it, for the list
+  // (csm#108).
+  const firstSetup =
+    loaded &&
+    (hosts.length === 0 ||
+      (linkInline && link !== null && hosts.length === 1 && hosts[0].id === link.hostId && !hosts[0].online));
+  const firstLink = firstSetup ? link : null;
 
   const step = (n: number, active: boolean, title: string, body: ReactNode) => (
     <Box
@@ -1296,7 +1304,7 @@ export default function MachinesPanel({
         renderDetail(openedHost)
       ) : (
         <Box data-testid="machines-panel" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {hosts.length > 0 && (
+          {hosts.length > 0 && !firstSetup && (
             <Box
               data-testid="machines-summary"
               sx={{
@@ -1381,7 +1389,7 @@ export default function MachinesPanel({
           {/* Online machines first; the ones waiting to be linked, then the offline ones. */}
           {[...hosts].sort((a, b) => hostRank(a) - hostRank(b)).map(renderCard)}
 
-          {licenseMax !== null && hosts.length > 0 && (
+          {licenseMax !== null && hosts.length > 0 && !firstSetup && (
             <Typography
               variant="caption"
               color="text.secondary"
@@ -1395,7 +1403,7 @@ export default function MachinesPanel({
             </Typography>
           )}
 
-          {loaded && hosts.length === 0 && (
+          {firstSetup && (
             <Box
               data-testid="machines-empty"
               sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
@@ -1693,9 +1701,7 @@ export default function MachinesPanel({
       {/* Create server / Create several */}
       <Dialog open={createFor !== null} onClose={() => setCreateFor(null)} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {createFor?.several
-            ? t('machinesPanel.createN', { defaultValue: 'Create several…' })
-            : t('machinesPanel.createServer', { defaultValue: 'Create server' })}
+          {t('machinesPanel.addServers', { defaultValue: 'Add servers' })}
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" mb={2}>
@@ -1703,7 +1709,8 @@ export default function MachinesPanel({
               defaultValue: 'New servers get Ready Up and connect to this platform on their own.',
             })}
           </Typography>
-          {createFor?.several && (
+          {/* Always: "Add servers" made one at a time (csm#108). */}
+          {createFor && (
             <TextField
               autoFocus
               fullWidth
