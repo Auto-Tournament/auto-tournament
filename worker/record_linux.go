@@ -465,13 +465,38 @@ func maxf(a, b float64) float64 {
 	return b
 }
 
-// joinReel puts the clips one after the other (same encoding, no re-encode).
-func joinReel(clips []clipResult, out string) error {
+// joinReel puts the clips one after the other, each blending into the next.
+func (r *recorder) joinReel(clips []clipResult, out string) error {
 	paths := make([]string, len(clips))
 	for i, c := range clips {
 		paths[i] = c.path
 	}
-	return concatFiles(paths, out)
+	return r.crossfadeFiles(paths, out)
+}
+
+// crossfadeFiles joins clips into a reel, each blending into the next
+// (picture and sound, reelCrossfade). The blends mean the reel is encoded
+// again; the clips themselves are not recorded again.
+func (r *recorder) crossfadeFiles(paths []string, out string) error {
+	durations := make([]float64, len(paths))
+	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
+	for i, p := range paths {
+		b, err := exec.Command("ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", p).Output()
+		if err != nil {
+			return fmt.Errorf("ffprobe %s: %w", filepath.Base(p), err)
+		}
+		if durations[i], err = strconv.ParseFloat(strings.TrimSpace(string(b)), 64); err != nil {
+			return fmt.Errorf("ffprobe %s: %w", filepath.Base(p), err)
+		}
+		args = append(args, "-i", p)
+	}
+	args = append(args, "-filter_complex", crossfadeFilter(durations), "-map", "[v]", "-map", "[a]")
+	args = append(args, encodeArgs(r.encoder)...)
+	args = append(args, "-movflags", "+faststart", out)
+	if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
+		return fmt.Errorf("ffmpeg crossfade: %v %s", err, strings.TrimSpace(string(b)))
+	}
+	return nil
 }
 
 // concatFiles joins MP4s of the same encoding without re-encoding.
@@ -622,7 +647,7 @@ func (r *recorder) record(ctx context.Context, j *recordJob) error {
 	}
 	if len(plays) > 1 {
 		reel := filepath.Join(dir, "reel.mp4")
-		if err := joinReel(plays, reel); err != nil {
+		if err := r.joinReel(plays, reel); err != nil {
 			return err
 		}
 		ids := make([]string, len(plays))
@@ -762,7 +787,7 @@ func recordFile(args []string) error {
 		}
 	}
 	if len(clips) > 1 {
-		return joinReel(clips, filepath.Join(args[3], "reel.mp4"))
+		return r.joinReel(clips, filepath.Join(args[3], "reel.mp4"))
 	}
 	return nil
 }

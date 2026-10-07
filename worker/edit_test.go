@@ -126,3 +126,21 @@ func TestEncodeArgsH265ByDefault(t *testing.T) {
 		t.Fatalf("hevc_nvenc not tagged hvc1: %s", gpu)
 	}
 }
+
+func TestCrossfadeFilter(t *testing.T) {
+	f := crossfadeFilter([]float64{10, 8, 6})
+	for _, want := range []string{
+		"[0:v][1:v]xfade=transition=fade:duration=0.4:offset=9.600[v1]",
+		"[0:a][1:a]acrossfade=d=0.4[a1]",
+		// The second blend starts 0.4 s before the end of the first two joined: 10 + 8 - 0.4 - 0.4.
+		"[v1][2:v]xfade=transition=fade:duration=0.4:offset=17.200[v]",
+		"[a1][2:a]acrossfade=d=0.4[a]",
+	} {
+		if !strings.Contains(f, want) {
+			t.Fatalf("%q missing from %s", want, f)
+		}
+	}
+	if one := crossfadeFilter([]float64{5}); one != "[0:v]null[v];[0:a]anull[a]" {
+		t.Fatalf("one clip: %s", one)
+	}
+}

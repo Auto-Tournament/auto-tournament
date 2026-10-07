@@ -223,6 +223,33 @@ func videoFilter(o overlay) string {
 	return b.String()
 }
 
+// reelCrossfade is how long one player's clip blends into the next in a reel
+// (picture and sound): a cut inside a clip is the next kill, a blend is the
+// next player.
+const reelCrossfade = 0.4
+
+// crossfadeFilter joins inputs 0..n-1, `durations` seconds long, each
+// blending into the next over reelCrossfade. Output [v] and [a].
+func crossfadeFilter(durations []float64) string {
+	if len(durations) == 1 {
+		return "[0:v]null[v];[0:a]anull[a]"
+	}
+	var b strings.Builder
+	offset := 0.0
+	prevV, prevA := "0:v", "0:a"
+	for i := 1; i < len(durations); i++ {
+		offset += durations[i-1] - reelCrossfade
+		v, a := fmt.Sprintf("v%d", i), fmt.Sprintf("a%d", i)
+		if i == len(durations)-1 {
+			v, a = "v", "a"
+		}
+		fmt.Fprintf(&b, "[%s][%d:v]xfade=transition=fade:duration=%g:offset=%.3f[%s];", prevV, i, reelCrossfade, offset, v)
+		fmt.Fprintf(&b, "[%s][%d:a]acrossfade=d=%g[%s];", prevA, i, reelCrossfade, a)
+		prevV, prevA = v, a
+	}
+	return strings.TrimSuffix(b.String(), ";")
+}
+
 // encodeArgs are the output settings every piece and the reel share, so the
 // pieces can be joined without re-encoding.
 //
