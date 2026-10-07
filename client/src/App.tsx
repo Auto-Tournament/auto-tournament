@@ -29,7 +29,7 @@ import FindPlayer from './pages/FindPlayer';
 import PlayerProfile from './pages/PlayerProfile';
 import TournamentLeaderboard from './pages/TournamentLeaderboard';
 import TournamentOverview from './pages/TournamentOverview';
-import TournamentPage, { LegacyLeaderboardRedirect } from './pages/TournamentPage';
+import TournamentPage, { LegacyLeaderboardRedirect, TournamentModuleTab } from './pages/TournamentPage';
 import TournamentBracketTab from './pages/TournamentBracketTab';
 import TournamentMatchesTab from './pages/TournamentMatchesTab';
 import TournamentTeamsTab from './pages/TournamentTeamsTab';
@@ -390,6 +390,8 @@ function AppRoutes() {
         <Route path="rules" element={<TournamentRulesTab />} />
         <Route path="match" element={<TournamentYourMatchTab />} />
         <Route path="signup" element={<TournamentSignupTab />} />
+        {/* A module's own tab (CS2: highlights). */}
+        <Route path=":moduleTab" element={<TournamentModuleTab />} />
       </Route>
       {/* Standings' old address, still in bookmarks and older links. */}
       <Route path={paths.tournamentLeaderboard} element={<LegacyLeaderboardRedirect />} />

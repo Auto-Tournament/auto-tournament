@@ -225,6 +225,8 @@ export const COMPONENT_SLOTS = [
   'playerProfileSection',
   'playerProfileTab.Component',
   'matchMapAction',
+  'tournamentTab.Component',
+  'tournamentResultsSection',
 ] as const;
 
 export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];

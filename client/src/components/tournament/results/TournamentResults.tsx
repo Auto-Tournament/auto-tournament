@@ -22,6 +22,7 @@ import { tournamentAwards, type AwardKey } from '../../../utils/tournamentAwards
 import { getPlayerPageUrl } from '../../../utils/playerLinks';
 import { tournamentTabPath } from '../../../paths';
 import { tokens, fontDisplay, mono, radii } from '../../../theme/tokens';
+import { useInstalledIntegrations } from '../../../integrations/registry';
 
 const { color } = tokens;
 const SHOWN_PLAYERS = 10;
@@ -119,6 +120,10 @@ export function TournamentResults({
 }) {
   const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
+  // Modules' own part of the results (CS2: the tournament reel).
+  const sections = useInstalledIntegrations().flatMap((i) =>
+    i.tournamentResultsSection ? [{ id: i.id, Section: i.tournamentResultsSection }] : []
+  );
   const standings = finalStandings(teams, tournament.winner?.id);
   const awards = tournamentAwards(players);
   const hasRating = players.some((p) => typeof p.rating === 'number');
@@ -137,6 +142,9 @@ export function TournamentResults({
 
   return (
     <Box data-testid="tournament-results" sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {sections.map(({ id, Section }) => (
+        <Section key={id} tournamentId={tournament.id} />
+      ))}
       <Box
         sx={{
           display: 'grid',

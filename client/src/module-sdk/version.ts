@@ -117,5 +117,11 @@
  *
  * 0.2.12 (additive): `matchMapAction` (`MatchMapActionProps`): a control
  * beside each map's demo download (CS2: the map's analysis).
+ *
+ * 0.2.13 (additive): `tournamentTab` (`{ path, labelKey, Component }`, the
+ * component gets `TournamentTabProps` and probes like `playerProfileTab`): a
+ * tab of its own on the tournament page; `tournamentResultsSection`
+ * (`{ tournamentId }`): a section at the top of a finished tournament's
+ * results (CS2: highlights and the tournament reel).
  */
-export const CLIENT_API_VERSION = '0.2.12';
+export const CLIENT_API_VERSION = '0.2.13';

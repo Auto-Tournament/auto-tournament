@@ -15,9 +15,12 @@ const { color } = tokens;
 
 interface TournamentPageHeaderProps {
   tournament: Tournament;
-  tab: TournamentTab;
+  /** Core's tab, or a module tab's path. */
+  tab: string;
   /** The tabs this tournament shows, in order. */
   tabs: readonly TournamentTab[];
+  /** Modules' tabs after core's (CS2: Highlights): the path under the tournament and the label. */
+  moduleTabs?: ReadonlyArray<{ path: string; label: string }>;
   /** Adds the Manage link on the right of the tabs. */
   showManage: boolean;
 }
@@ -155,7 +158,7 @@ const tabLinkSx = {
  * to a strip with the name and a live mark, so the match gets the room. The
  * tabs sit under either.
  */
-export function TournamentPageHeader({ tournament, tab, tabs, showManage }: TournamentPageHeaderProps) {
+export function TournamentPageHeader({ tournament, tab, tabs, moduleTabs = [], showManage }: TournamentPageHeaderProps) {
   const { t } = useTranslation();
   const isLive = tournament.status === 'in_progress';
   // A finished tournament with a champion puts the champion on the banner.
@@ -372,6 +375,18 @@ export function TournamentPageHeader({ tournament, tab, tabs, showManage }: Tour
                 {key === 'overview' && tournament.status === 'completed'
                   ? t('overviewPage.tabs.results')
                   : t(`overviewPage.tabs.${key}`)}
+              </Box>
+            ))}
+            {moduleTabs.map(({ path, label }) => (
+              <Box
+                key={path}
+                component={RouterLink}
+                to={`${tournamentTabPath(tournament.id)}/${path}`}
+                aria-current={path === tab ? 'page' : undefined}
+                data-testid={`tournament-tab-${path}`}
+                sx={tabLinkSx}
+              >
+                {label}
               </Box>
             ))}
             {showManage && (

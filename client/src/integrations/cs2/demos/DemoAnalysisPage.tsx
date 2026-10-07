@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Box, ButtonBase, CircularProgress, Container, Typography } from '@mui/material';
 import { ArrowLeftIcon } from '@phosphor-icons/react';
 import {
@@ -114,9 +114,12 @@ function clock(ticks: number): string {
 export function DemoAnalysisPage() {
   const { matchSlug = '', mapNumber = '0' } = useParams();
   const { t } = useModuleTranslation('cs2');
+  // `?round=N`: open on that round (from a highlight).
+  const [search] = useSearchParams();
+  const startRound = Number(search.get('round')) || undefined;
   const [data, setData] = useState<AnalysisResponse | null>(null);
   const [error, setError] = useState(false);
-  const [selected, setSelected] = useState(1);
+  const [selected, setSelected] = useState(startRound ?? 1);
 
   useEffect(() => {
     let cancelled = false;
@@ -283,6 +286,7 @@ export function DemoAnalysisPage() {
           mapNumber={Number(mapNumber)}
           team1Ids={new Set(data.players.filter((p) => p.team === 'team1').map((p) => p.id))}
           avatars={Object.fromEntries(data.players.map((p) => [p.id, p.avatar ?? null]))}
+          startRound={startRound}
         />
       </Box>
 

@@ -867,6 +867,24 @@ export interface PlayerProfileSectionProps {
   isOwn: boolean;
 }
 
+/**
+ * A module's tab on the tournament page (client API 0.2.13). Core mounts it
+ * once with `probe` to learn whether it has anything for this tournament;
+ * the tab shows only then.
+ */
+export interface TournamentTabProps {
+  tournamentId: number;
+  /** setup | ready | in_progress | completed */
+  tournamentStatus: string;
+  probe?: boolean;
+  onAvailability?: (available: boolean) => void;
+}
+
+/** A section at the top of a finished tournament's results (client API 0.2.13). */
+export interface TournamentResultsSectionProps {
+  tournamentId: number;
+}
+
 /** A map's row in the match's demo list (`matchMapAction`). */
 export interface MatchMapActionProps {
   matchSlug: string;
@@ -1201,6 +1219,16 @@ export interface ClientGameIntegration {
 
   /** Beside each map's demo download (CS2: a link to the map's analysis). */
   matchMapAction?: ComponentType<MatchMapActionProps>;
+
+  /**
+   * A tab of its own on the tournament page, after core's (CS2: Highlights),
+   * at `/tournament/:id/<path>`. `labelKey` is in the module's strings.
+   * Shown only when the probe says it has something for that tournament.
+   */
+  tournamentTab?: { path: string; labelKey: string; Component: ComponentType<TournamentTabProps> };
+
+  /** At the top of a finished tournament's results (CS2: the tournament reel). */
+  tournamentResultsSection?: ComponentType<TournamentResultsSectionProps>;
 
   /** Pages the integration owns. URLs come from `paths.ts`. */
   routes: IntegrationRoute[];
