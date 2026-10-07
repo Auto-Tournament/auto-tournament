@@ -1,36 +1,51 @@
 package main
 
 import (
-	"math"
 	"testing"
 	"time"
 )
 
-func TestWindowForMapsFramesToTicks(t *testing.T) {
-	// 40 s of wall time at a quarter speed is 10 s (640 ticks) of game; 25
-	// frames a second, starting 1 s before the resume (paused frames).
+func TestFrameTicksFollowTheSpan(t *testing.T) {
 	t0 := time.Unix(1000, 0)
-	s := span{fromTick: 1000, toTick: 1640, resumed: t0.Add(time.Second), paused: t0.Add(41 * time.Second)}
-	var times []time.Time
-	for i := 0; i < 25*43; i++ {
-		times = append(times, t0.Add(time.Duration(i)*40*time.Millisecond))
-	}
-	w, err := windowFor(times, s, 1064, 1576) // the middle 8 s of game
-	if err != nil {
-		t.Fatal(err)
-	}
-	// Tick 1064 is 1 s of game (4 s of wall) after the resume: frame 125.
-	if w.first != 125 {
-		t.Fatalf("first frame %d", w.first)
-	}
-	// 25 frames per wall second at a quarter speed is 100 per game second.
-	if math.Abs(w.rate-100) > 0.5 {
-		t.Fatalf("rate %v", w.rate)
+	s := span{fromTick: 100, toTick: 164, resumed: t0, paused: t0.Add(5 * time.Second), scale: 0.2}
+	ticks := frameTicks([]time.Time{t0.Add(-time.Second), t0.Add(2500 * time.Millisecond), t0.Add(6 * time.Second)}, s)
+	if ticks[0] != -1 || ticks[2] != -1 || ticks[1] != 132 {
+		t.Fatalf("got %v", ticks)
 	}
 }
 
-func TestWindowForNeedsFrames(t *testing.T) {
-	if _, err := windowFor(nil, span{}, 0, 10); err == nil {
-		t.Fatal("no frames should fail")
+func TestTimelinePrefersTheSlowCapture(t *testing.T) {
+	// The main capture has a frame every ~0.5 tick (128/s); the slow one, around
+	// tick 100-110, a frame every 0.1 tick.
+	var main, slow []float64
+	for tk := 0.0; tk <= 200; tk += 0.5 {
+		main = append(main, tk)
+	}
+	for tk := 100.0; tk <= 110; tk += 0.1 {
+		slow = append(slow, tk)
+	}
+	// Full speed to tick 102, then a quarter speed over ticks 102-104 (15 frames).
+	segs := []segment{{0, 102.0 / 64, 1}, {102.0 / 64, 104.0 / 64, 0.25}}
+	frames, err := timeline([][]float64{main, slow}, segs, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := len(frames); got != 191+15 {
+		t.Fatalf("%d frames", got)
+	}
+	usedSlow := 0
+	for _, f := range frames[191:] {
+		if f.source == 1 {
+			usedSlow++
+		}
+	}
+	if usedSlow < 12 {
+		t.Fatalf("slow part used the slow capture for only %d of 15 frames", usedSlow)
+	}
+}
+
+func TestTimelineRefusesAHole(t *testing.T) {
+	if _, err := timeline([][]float64{{0, 1, 2}}, []segment{{0, 1, 1}}, 0); err == nil {
+		t.Fatal("a second of game from three frames should fail")
 	}
 }

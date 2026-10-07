@@ -7,14 +7,14 @@ package main
 // demo over CS2's console port (-netconport). CS2 has no frame dump of its
 // own (`startmovie` is gone), so a moment is captured live, twice:
 //
-//   - the picture at a quarter of real speed (demo_timescale 0.25): gamescope's
-//     stream gives ~25-30 frames a second whatever the settings, so that is
-//     ~100-120 frames per second of game time;
+//   - the picture slowed down (demo_timescale): gamescope's stream gives ~25-30
+//     frames a second whatever the settings, so at 0.2 that is ~130 frames
+//     per second of game, and around the slow motion at 0.05 ~500;
 //   - the sound at real speed, from the audio sink CS2 plays into.
 //
-// Which frame shows which tick comes from the console ("unpaused on tick N",
-// "paused on tick N") and each frame's arrival time: the demo plays at a
-// steady rate between the two.
+// Which frame shows which tick: the console says where the demo resumed and
+// paused ("unpaused on tick N", "paused on tick N"); the demo plays at a
+// steady rate between, so a frame's tick follows from when it arrived.
 //
 // Needs gamescope, gst-launch-1.0 (pipewiresrc), pw-link, pw-record and Steam
 // running with the bot account signed in (CS2 asks it for a ticket).
@@ -40,8 +40,8 @@ import (
 
 const (
 	netconPort    = 2121
-	videoScale    = 0.25
 	frameSettleMs = 1500
+	endMargin     = tickrate // ticks kept clear of the demo's end
 )
 
 // recorderLook is what every clip is played with: only the kill feed and the
@@ -70,6 +70,7 @@ var (
 	reUnpaused  = regexp.MustCompile(`unpaused on tick (\d+)`)
 	rePaused    = regexp.MustCompile(`(?:^|[^n])paused on tick (\d+)`)
 	reStartTick = regexp.MustCompile(`server_start_tick: (\d+)`)
+	reLastTick  = regexp.MustCompile(`playback_ticks: (\d+)`)
 	reMapLoaded = regexp.MustCompile(`OnSwitchLoopModeFinished\( (game) : success \)`)
 	reNode      = regexp.MustCompile(`stream available on node ID: (\d+)`)
 )
@@ -165,7 +166,8 @@ type game struct {
 	node      string
 	width     int
 	height    int
-	startTick int // the demo's first tick: demo_gototick counts from it
+	startTick int // the demo's first tick: the console's ticks count from it
+	lastTick  int // the demo's length in ticks (the analyzer's last tick)
 	logPath   string
 }
 
@@ -273,6 +275,9 @@ func (g *game) loadDemo(demo string, look []string) error {
 		_ = g.con.send("demo_info")
 		if v, _, err := g.con.expect(reStartTick, 3*time.Second); err == nil {
 			g.startTick, _ = strconv.Atoi(v)
+			if v, _, err := g.con.expect(reLastTick, 2*time.Second); err == nil {
+				g.lastTick, _ = strconv.Atoi(v)
+			}
 			// The demo carries the server's host_timescale (4 when its match was
 			// simulated); play it at its own speed.
 			return g.con.send("demo_pause", "host_timescale 1")
@@ -315,16 +320,22 @@ func (g *game) resume() (string, time.Time, error) {
 	return "", time.Time{}, errors.New("the demo would not resume")
 }
 
-// play plays the demo from `from` to past `to` (absolute ticks) at `scale`,
-// calling started() just before it resumes.
+// play plays the demo from analyzer tick `from` to past `to` at `scale`
+// (demo_timescale), calling started() just before it resumes. Ticks in the
+// span are the analyzer's: CS2's console counts from the demo's first tick
+// (g.startTick), its seek (demo_gototick) does not.
 func (g *game) play(from, to int, scale float64, name string, started func() error) (span, error) {
-	var s span
-	rel := from - g.startTick
-	if rel < 0 {
-		rel = 0
+	s := span{scale: scale}
+	if from < 0 {
+		from = 0
+	}
+	// At its end the demo stops by itself and says nothing: stay clear of it.
+	if g.lastTick > 0 && to > g.lastTick-endMargin {
+		to = g.lastTick - endMargin
 	}
 	// A seek plays on by itself once it lands: seek, let it land, then pause.
-	if err := g.con.send("host_timescale 1", fmt.Sprintf("demo_timescale %g", scale), fmt.Sprintf("demo_gototick %d", rel)); err != nil {
+	if err := g.con.send("host_timescale 1", "host_framerate 0", "fps_max 0",
+		fmt.Sprintf("demo_timescale %g", scale), fmt.Sprintf("demo_gototick %d", from)); err != nil {
 		return s, err
 	}
 	time.Sleep(3 * time.Second)
@@ -343,25 +354,25 @@ func (g *game) play(from, to int, scale float64, name string, started func() err
 	if err != nil {
 		return s, err
 	}
-	s.fromTick, _ = strconv.Atoi(v)
-	s.resumed = at
-	left := float64(to-s.fromTick)/tickrate/scale + 0.25
-	log.Printf("playing ticks %d → %d at %gx (%.1f s)", s.fromTick, to, scale, left)
-	if left > 120 {
+	tick, _ := strconv.Atoi(v)
+	s.fromTick, s.resumed = tick-g.startTick, at
+	gameSeconds := float64(to-s.fromTick) / tickrate
+	wall := gameSeconds/scale + 0.3
+	log.Printf("playing ticks %d → %d at %gx (%.1f s)", s.fromTick, to, scale, wall)
+	if gameSeconds > 60 || gameSeconds < 0 {
 		return s, fmt.Errorf("resumed at tick %d, too far from %d", s.fromTick, to)
 	}
-	if left > 0 {
-		time.Sleep(time.Duration(left * float64(time.Second)))
-	}
+	time.Sleep(time.Duration(wall * float64(time.Second)))
+	g.con.drain()
 	if err := g.con.send("demo_pause"); err != nil {
 		return s, err
 	}
 	v, at, err = g.con.expect(rePaused, 10*time.Second)
 	if err != nil {
-		return s, err
+		return s, fmt.Errorf("pausing after the moment: %w", err)
 	}
-	s.toTick, _ = strconv.Atoi(v)
-	s.paused = at
+	tick, _ = strconv.Atoi(v)
+	s.toTick, s.paused = tick-g.startTick, at
 	return s, nil
 }
 

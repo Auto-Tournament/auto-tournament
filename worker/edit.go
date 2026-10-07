@@ -6,16 +6,17 @@ import (
 	"strings"
 )
 
-// The highlight edit: the clip plays at full speed, slows down step by step
-// into the last kill, holds there for a moment, and speeds back up.
+// The highlight edit: the clip plays at full speed up to the last kill; from
+// the moment the enemy dies it slows, step by step, to slowmoSpeed (about a
+// second of video), holds there (about a second and a half) and cuts.
 const (
-	slowmoSpeed   = 0.25 // at the kill
-	rampInSec     = 0.6  // from full speed down to slowmoSpeed, ending on the kill
-	holdSec       = 0.5  // at slowmoSpeed after it
-	rampOutSec    = 0.4  // back to full speed
-	rampSteps     = 6    // a ramp is this many constant-speed pieces
-	outputFPS     = 120
-	tickrateTicks = 64
+	slowmoSpeed = 0.25
+	rampSec     = 0.6   // game seconds slowing down from the kill (≈1 s of video)
+	holdSec     = 0.375 // game seconds at slowmoSpeed after that (1.5 s of video)
+	rampSteps   = 8     // the slowing is this many constant-speed pieces
+	outputFPS   = 120
+	// tailSec is how much game after the last kill a clip shows.
+	tailSec = rampSec + holdSec
 )
 
 // segment is a piece of the recording (seconds from its start) played at one speed.
@@ -23,9 +24,8 @@ type segment struct {
 	From, To, Speed float64
 }
 
-// speedRamp cuts a recording of `length` seconds into pieces, with the slow
-// motion landing on `kill` seconds in. A ramp that would start before the
-// recording or end after it is clipped.
+// speedRamp cuts a recording of `length` seconds into pieces: full speed
+// to `kill` seconds in, then slowing to slowmoSpeed and holding to the end.
 func speedRamp(length, kill float64) []segment {
 	var out []segment
 	add := func(from, to, speed float64) {
@@ -39,22 +39,13 @@ func speedRamp(length, kill float64) []segment {
 		}
 		out = append(out, segment{from, to, speed})
 	}
-	lerp := func(a, b float64, i int) float64 {
-		return math.Round((a+(b-a)*float64(i)/float64(rampSteps))*1000) / 1000
-	}
-	start := kill - rampInSec
-	add(0, start, 1)
+	add(0, kill, 1)
+	step := rampSec / rampSteps
 	for i := 0; i < rampSteps; i++ {
-		step := rampInSec / rampSteps
-		add(start+float64(i)*step, start+float64(i+1)*step, lerp(1, slowmoSpeed, i+1))
+		speed := math.Round((1+(slowmoSpeed-1)*float64(i+1)/rampSteps)*1000) / 1000
+		add(kill+float64(i)*step, kill+float64(i+1)*step, speed)
 	}
-	add(kill, kill+holdSec, slowmoSpeed)
-	back := kill + holdSec
-	for i := 0; i < rampSteps; i++ {
-		step := rampOutSec / rampSteps
-		add(back+float64(i)*step, back+float64(i+1)*step, lerp(slowmoSpeed, 1, i+1))
-	}
-	add(back+rampOutSec, length, 1)
+	add(kill+rampSec, length, slowmoSpeed)
 	return out
 }
 
@@ -67,62 +58,56 @@ func outputSeconds(segs []segment) float64 {
 	return total
 }
 
-// atempoChain slows or speeds audio by `speed` with atempo filters, each in
-// atempo's 0.5..2 range (0.25 is atempo=0.5,atempo=0.5).
-func atempoChain(speed float64) string {
-	var parts []string
-	for speed < 0.5-1e-9 {
-		parts = append(parts, "atempo=0.5")
-		speed /= 0.5
-	}
-	for speed > 2+1e-9 {
-		parts = append(parts, "atempo=2")
-		speed /= 2
-	}
-	if math.Abs(speed-1) > 1e-6 {
-		parts = append(parts, fmt.Sprintf("atempo=%.4f", speed))
-	}
-	if len(parts) == 0 {
-		return "anull"
-	}
-	return strings.Join(parts, ",")
-}
-
 // drawtextEscape makes a caption safe inside drawtext's text='...'.
 func drawtextEscape(s string) string {
 	r := strings.NewReplacer(`\`, `\\`, `'`, "’", `:`, `\:`, `%`, `\%`)
 	return r.Replace(s)
 }
 
-// momentFilter plays one moment's video [0:v] and sound [1:a] piece by piece
-// at each piece's speed (the slow motion), with `caption` in the lower left
-// for its first seconds. Output [v] and [a].
-func momentFilter(segs []segment, caption string) string {
+// audioFilter plays the moment's sound [1:a] (from its start, `length`
+// seconds) piece by piece at each piece's speed, the way a record slows down:
+// the pitch drops with the speed and comes back with it. Output [a].
+func audioFilter(segs []segment, length float64) string {
 	var b strings.Builder
 	n := len(segs)
-	fmt.Fprintf(&b, "[0:v]split=%d", n)
-	for i := range segs {
-		fmt.Fprintf(&b, "[s%d]", i)
-	}
-	fmt.Fprintf(&b, ";[1:a]asplit=%d", n)
+	fmt.Fprintf(&b, "[1:a]atrim=duration=%.4f,asetpts=PTS-STARTPTS,aresample=48000,asplit=%d", length, n)
 	for i := range segs {
 		fmt.Fprintf(&b, "[t%d]", i)
 	}
 	b.WriteString(";")
 	for i, s := range segs {
-		fmt.Fprintf(&b, "[s%d]trim=start=%.4f:end=%.4f,setpts=(PTS-STARTPTS)/%g[v%d];", i, s.From, s.To, s.Speed, i)
-		fmt.Fprintf(&b, "[t%d]atrim=start=%.4f:end=%.4f,asetpts=PTS-STARTPTS,%s[a%d];", i, s.From, s.To, atempoChain(s.Speed), i)
+		fmt.Fprintf(&b, "[t%d]atrim=start=%.4f:end=%.4f,asetpts=PTS-STARTPTS", i, s.From, s.To)
+		if math.Abs(s.Speed-1) > 1e-6 {
+			fmt.Fprintf(&b, ",asetrate=%d,aresample=48000", int(math.Round(48000*s.Speed)))
+		}
+		fmt.Fprintf(&b, "[a%d];", i)
 	}
 	for i := range segs {
-		fmt.Fprintf(&b, "[v%d][a%d]", i, i)
+		fmt.Fprintf(&b, "[a%d]", i)
 	}
-	fmt.Fprintf(&b, "concat=n=%d:v=1:a=1[cv][ca];", n)
-	b.WriteString("[cv]fps=" + fmt.Sprint(outputFPS) + ",format=yuv420p")
-	if caption != "" {
-		fmt.Fprintf(&b, ",drawtext=font='Sans':fontsize=h/26:fontcolor=white:box=1:boxcolor=black@0.55:boxborderw=18:x=h/20:y=h-h/20-th:enable='lt(t,2.5)':text='%s'", drawtextEscape(caption))
-	}
-	b.WriteString("[v];[ca]aresample=48000[a]")
+	fmt.Fprintf(&b, "concat=n=%d:v=0:a=1[a]", n)
 	return b.String()
+}
+
+// videoFilter dresses the frames [0:v]: the caption lines in the lower left
+// for the first seconds. Output [v].
+func videoFilter(caption []string) string {
+	f := "[0:v]format=yuv420p"
+	for i, line := range caption {
+		if line == "" {
+			continue
+		}
+		size, weight := "h/34", ""
+		if i == 0 {
+			size = "h/24"
+		}
+		// Lines stack up from the bottom; the first (the player) on top.
+		fromBottom := len(caption) - 1 - i
+		f += fmt.Sprintf(",drawtext=font='Sans%s':fontsize=%s:fontcolor=white:shadowcolor=black@0.6:shadowx=2:shadowy=2:"+
+			"x=h/18:y=h-h/18-th-%d*h/26:alpha='if(lt(t,0.3),t/0.3,if(lt(t,3),1,if(lt(t,3.4),(3.4-t)/0.4,0)))':text='%s'",
+			weight, size, fromBottom, drawtextEscape(line))
+	}
+	return f + "[v]"
 }
 
 // encodeArgs are the output settings every piece and the reel share, so the

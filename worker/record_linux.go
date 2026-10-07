@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -57,12 +58,23 @@ type moment struct {
 }
 
 type recordJob struct {
-	MatchSlug  string   `json:"matchSlug"`
-	MapNumber  int      `json:"mapNumber"`
-	MapName    string   `json:"mapName"`
-	PlayerID   string   `json:"playerId"`
-	PlayerName string   `json:"playerName"`
-	Moments    []moment `json:"moments"`
+	MatchSlug  string `json:"matchSlug"`
+	MapNumber  int    `json:"mapNumber"`
+	MapName    string `json:"mapName"`
+	PlayerID   string `json:"playerId"`
+	PlayerName string `json:"playerName"`
+	// Match is the clip's match line: "Team A vs Team B · Tournament".
+	Match   string   `json:"match"`
+	Moments []moment `json:"moments"`
+}
+
+// captionFor is the clip's lower-left text: the player, then the match.
+func captionFor(j *recordJob) []string {
+	lines := []string{j.PlayerName}
+	if j.Match != "" {
+		lines = append(lines, j.Match)
+	}
+	return lines
 }
 
 type recorder struct {
@@ -128,8 +140,9 @@ type clipResult struct {
 }
 
 // recordMoments plays the demo once in CS2 and records each moment into
-// outDir, returning the edited clips in match order.
-func (r *recorder) recordMoments(ctx context.Context, demoPath, name string, moments []moment, outDir string) ([]clipResult, error) {
+// outDir. caption is the clip's lower-left text: the player first, then any
+// more lines (the match); each moment's title goes under the player.
+func (r *recorder) recordMoments(ctx context.Context, demoPath, name string, caption []string, moments []moment, outDir string) ([]clipResult, error) {
 	if err := os.MkdirAll(demoDir(r.gameDir), 0o755); err != nil {
 		return nil, err
 	}
@@ -157,7 +170,7 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath, name string, mom
 		}
 		started := time.Now()
 		out := filepath.Join(outDir, fmt.Sprintf("moment-%d.mp4", m.ID))
-		if err := r.recordMoment(g, name, m, out); err != nil {
+		if err := r.recordMoment(g, caption, name, m, out); err != nil {
 			return clips, fmt.Errorf("%s: %w", m.Title, err)
 		}
 		log.Printf("recorded %q in %s", m.Title, time.Since(started).Round(time.Second))
@@ -169,7 +182,34 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath, name string, mom
 // lead is how much is played before a moment, for the view to settle.
 const lead = tickrate
 
-func (r *recorder) recordMoment(g *game, name string, m moment, out string) error {
+// How the picture is slowed while it is captured: the whole moment at
+// mainScale (~130 frames per game second), and from the last kill on, where
+// the clip slows down, again at slowScale (~500) so the slow motion has a
+// real frame for every frame it shows.
+const (
+	mainScale     = 0.2
+	slowScale     = 0.05
+	slowBeforeSec = 0.25
+)
+
+// capturePicture plays ticks [from, to] at scale and returns each captured
+// frame's tick and the raw file holding them.
+func (r *recorder) capturePicture(g *game, name string, from, to int, scale float64, raw string) ([]float64, error) {
+	var vc *videoCapture
+	s, err := g.play(from, to, scale, name, func() (err error) {
+		vc, err = startVideoCapture(g.node, raw, g.width, g.height)
+		return err
+	})
+	if vc != nil {
+		vc.stop()
+	}
+	if err != nil {
+		return nil, err
+	}
+	return frameTicks(vc.frameTimes(), s), nil
+}
+
+func (r *recorder) recordMoment(g *game, caption []string, name string, m moment, out string) error {
 	dir, err := os.MkdirTemp(r.scratch, "moment-")
 	if err != nil {
 		return err
@@ -178,28 +218,26 @@ func (r *recorder) recordMoment(g *game, name string, m moment, out string) erro
 		defer os.RemoveAll(dir)
 	}
 
-	// The picture, at a quarter speed.
-	raw := filepath.Join(dir, "video.yuv")
-	var vc *videoCapture
-	vs, err := g.play(m.StartTick-lead, m.EndTick, videoScale, name, func() (err error) {
-		vc, err = startVideoCapture(g.node, raw, g.width, g.height)
-		return err
-	})
-	if vc != nil {
-		vc.stop()
+	// The clip ends where the slow motion after the last kill does.
+	end := m.SlowmoTick + int(math.Ceil(tailSec*tickrate))
+	if g.lastTick > 0 && end > g.lastTick-endMargin {
+		end = g.lastTick - endMargin
 	}
+	main := filepath.Join(dir, "main.yuv")
+	mainTicks, err := r.capturePicture(g, name, m.StartTick-lead, end, mainScale, main)
 	if err != nil {
-		return fmt.Errorf("video: %w", err)
+		return fmt.Errorf("picture: %w", err)
 	}
-	win, err := windowFor(vc.frameTimes(), vs, m.StartTick, m.EndTick)
+	slow := filepath.Join(dir, "slow.yuv")
+	slowTicks, err := r.capturePicture(g, name, m.SlowmoTick-int(slowBeforeSec*tickrate)-lead/2, end, slowScale, slow)
 	if err != nil {
-		return err
+		return fmt.Errorf("slow motion: %w", err)
 	}
 
 	// The sound, at real speed.
 	wav := filepath.Join(dir, "audio.wav")
 	var ac *audioCapture
-	as, err := g.play(m.StartTick-lead, m.EndTick, 1, name, func() (err error) {
+	as, err := g.play(m.StartTick-lead, end, 1, name, func() (err error) {
 		ac, err = startAudioCapture(r.sink, wav)
 		return err
 	})
@@ -207,32 +245,69 @@ func (r *recorder) recordMoment(g *game, name string, m moment, out string) erro
 		ac.stop()
 	}
 	if err != nil {
-		return fmt.Errorf("audio: %w", err)
+		return fmt.Errorf("sound: %w", err)
 	}
 	audioAt := as.resumed.Sub(ac.started).Seconds() + float64(m.StartTick-as.fromTick)/tickrate
 
-	length := float64(m.EndTick-m.StartTick) / tickrate
-	kill := float64(m.SlowmoTick-m.StartTick) / tickrate
-	args := momentArgs(raw, g.width, g.height, win, wav, audioAt, length, speedRamp(length, kill), m.Title, r.encoder, out)
-	if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
-		return fmt.Errorf("ffmpeg: %v %s", err, strings.TrimSpace(string(b)))
+	length := float64(end-m.StartTick) / tickrate
+	segs := speedRamp(length, float64(m.SlowmoTick-m.StartTick)/tickrate)
+	frames, err := timeline([][]float64{mainTicks, slowTicks}, segs, m.StartTick)
+	if err != nil {
+		return err
 	}
-	return nil
+	lines := append(append([]string{}, caption[:1]...), m.Title)
+	lines = append(lines, caption[1:]...)
+	return r.encodeMoment([]string{main, slow}, frames, g.width, g.height, wav, audioAt, length, segs, lines, out)
 }
 
-// momentArgs are ffmpeg's arguments for one moment: the frames of its window
-// at the rate they were captured, the sound from audioAt, the speed ramp and
-// the caption.
-func momentArgs(raw string, w, h int, win frameWindow, wav string, audioAt, length float64, segs []segment, caption, encoder, out string) []string {
-	graph := fmt.Sprintf("[0:v]trim=start_frame=%d:end_frame=%d,setpts=PTS-STARTPTS[vin];[1:a]atrim=duration=%.4f,asetpts=PTS-STARTPTS[ain];",
-		win.first, win.last+1, length)
-	graph += strings.Replace(strings.Replace(momentFilter(segs, caption), "[0:v]split", "[vin]split", 1), "[1:a]asplit", "[ain]asplit", 1)
+// encodeMoment streams the timeline's frames into ffmpeg at outputFPS with the
+// sound, the slow motion on both, and the caption.
+func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav string, audioAt, length float64,
+	segs []segment, caption []string, out string) error {
+	files := make([]*os.File, len(raws))
+	for i, p := range raws {
+		f, err := os.Open(p)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		files[i] = f
+	}
 	args := []string{"-y", "-hide_banner", "-loglevel", "error",
-		"-f", "rawvideo", "-pix_fmt", "yuv420p", "-s", fmt.Sprintf("%dx%d", w, h), "-framerate", fmt.Sprintf("%.4f", win.rate), "-i", raw,
+		"-f", "rawvideo", "-pix_fmt", "yuv420p", "-s", fmt.Sprintf("%dx%d", w, h), "-framerate", fmt.Sprint(outputFPS), "-i", "pipe:0",
 		"-ss", fmt.Sprintf("%.4f", maxf(0, audioAt)), "-i", wav,
-		"-filter_complex", graph, "-map", "[v]", "-map", "[a]"}
-	args = append(args, encodeArgs(encoder)...)
-	return append(args, "-movflags", "+faststart", out)
+		"-filter_complex", videoFilter(caption) + ";" + audioFilter(segs, length), "-map", "[v]", "-map", "[a]"}
+	args = append(args, encodeArgs(r.encoder)...)
+	args = append(args, "-movflags", "+faststart", out)
+	cmd := exec.Command("ffmpeg", args...)
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return err
+	}
+	var stderr strings.Builder
+	cmd.Stderr = &stderr
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	frameBytes := int64(w * h * 3 / 2)
+	buf := make([]byte, frameBytes)
+	var werr error
+	for _, f := range frames {
+		if _, werr = files[f.source].ReadAt(buf, int64(f.index)*frameBytes); werr != nil {
+			break
+		}
+		if _, werr = stdin.Write(buf); werr != nil {
+			break
+		}
+	}
+	stdin.Close()
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf("ffmpeg: %v %s", err, strings.TrimSpace(stderr.String()))
+	}
+	if werr != nil {
+		return fmt.Errorf("feeding ffmpeg: %w", werr)
+	}
+	return nil
 }
 
 func maxf(a, b float64) float64 {
@@ -326,7 +401,7 @@ func (r *recorder) record(ctx context.Context, j *recordJob) error {
 	if err != nil {
 		return err
 	}
-	clips, err := r.recordMoments(ctx, demoPath, name, j.Moments, dir)
+	clips, err := r.recordMoments(ctx, demoPath, name, captionFor(j), j.Moments, dir)
 	for _, c := range clips {
 		if err := r.upload(ctx, c.path, fmt.Sprintf("/api/game/cs2/recorder/jobs/%d/clip", c.moment.ID)); err != nil {
 			return err
@@ -436,7 +511,7 @@ func recordFile(args []string) error {
 	if err := os.MkdirAll(args[3], 0o755); err != nil {
 		return err
 	}
-	clips, err := r.recordMoments(context.Background(), args[0], name, moments, args[3])
+	clips, err := r.recordMoments(context.Background(), args[0], name, []string{name}, moments, args[3])
 	if err != nil {
 		return err
 	}
