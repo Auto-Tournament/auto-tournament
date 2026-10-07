@@ -634,6 +634,15 @@
       "left": "lisensen dekker {{max}}, {{left}} igjen",
       "full": "lisensen dekker {{max}}, alle er i bruk",
       "over": "lisensen dekker {{max}}, {{over}} over grensen"
+    },
+    "machineCount_one": "{{count}} maskin",
+    "machineCount_other": "{{count}} maskiner",
+    "settings": "Serverinnstillinger",
+    "other": {
+      "title": "Andre servere",
+      "summary_one": "{{count}} server som ikke er på en maskin",
+      "summary_other": "{{count}} servere som ikke er på en maskin",
+      "about": "Servere lagt til med adresse, ikke drevet av csm på en koblet maskin."
     }
   },
   "serverModal": {
@@ -1420,7 +1429,51 @@
     "summary": "{{machines}} maskin(er), {{online}} tilkoblet · {{servers}} server(e)",
     "about": "Maskiner kjører CS2 Server Manager (csm). Plattformen starter, stopper og lager servere på dem selv.",
     "deleteServer": "Slett server",
-    "deleting": "Sletter…"
+    "deleting": "Sletter…",
+    "ago": {
+      "seconds": "{{count}} s siden",
+      "minutes": "{{count}} min siden"
+    },
+    "working": "csm jobber med det",
+    "tile": {
+      "free": "Ledig",
+      "match": "I en kamp",
+      "starting": "Starter …",
+      "stopping": "Stopper …",
+      "restarting": "Starter på nytt …",
+      "updating": "Oppdaterer …",
+      "deleting": "Sletter …",
+      "stopped": "Stoppet",
+      "offline": "Frakoblet"
+    },
+    "tryAgain": "Prøv igjen",
+    "load": "Last {{load}} · {{free}} GB RAM ledig",
+    "offlineSince": "Frakoblet siden {{time}}",
+    "waitingFor_one": "{{count}} handling venter på den",
+    "waitingFor_other": "{{count}} handlinger venter på den",
+    "addServers": "Legg til servere",
+    "back": "Alle maskiner",
+    "more": "Mer for {{name}}",
+    "machine": "Maskin",
+    "cpu": "CPU-last",
+    "ram": "RAM",
+    "diskLabel": "Disk {{mount}}",
+    "counts": {
+      "free": "Ledige",
+      "match": "I en kamp",
+      "busy": "Oppdateres eller starter på nytt",
+      "down": "Stoppet eller frakoblet"
+    },
+    "step": {
+      "name": "Gi maskinen et navn",
+      "run": "Kjør dette på den",
+      "runHelp": "Én kommando, vises her når du har gitt maskinen et navn.",
+      "appears": "Den dukker opp her",
+      "appearsHelp": "Så legger du til servere med ett klikk."
+    },
+    "noCsm": "Ingen csm på maskinen ennå?",
+    "noCsmHelp": "Installer CS2 Server Manager først, og kom tilbake til steg 2.",
+    "installGuide": "Installasjonsguide"
   },
   "failover": {
     "title": "Failover",

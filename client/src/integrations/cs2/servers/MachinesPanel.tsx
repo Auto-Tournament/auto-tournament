@@ -9,7 +9,8 @@
  * server with a match in progress needs an explicit "force" with a reason.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -18,8 +19,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  ButtonBase,
   IconButton,
   LinearProgress,
+  Menu,
   MenuItem,
   Stack,
   TextField,
@@ -28,26 +31,36 @@ import {
 } from '@mui/material';
 import {
   ArrowClockwiseIcon,
-  ArrowsClockwiseIcon,
+  CaretLeftIcon,
+  CheckIcon,
   CopyIcon,
+  DotsThreeIcon,
   DownloadSimpleIcon,
   PasswordIcon,
   PlayIcon,
   PlusIcon,
-  ProhibitIcon,
   StopIcon,
   TrashIcon,
+  WarningCircleIcon,
+  XIcon,
 } from '@phosphor-icons/react';
 import {
   api,
   apiErrorMessage,
   ConfirmDialog,
+  ExternalLink,
+  fontDisplay,
   mono,
+  Panel,
+  radii,
   Row,
   RowList,
   StatusDot,
+  textSize,
+  tokens,
   useModuleTranslation,
   useSnackbar,
+  withAlpha,
 } from '../../../module-sdk';
 import type {
   FleetHost,
@@ -59,7 +72,15 @@ import type {
 import type { PluginSetValue } from './fleetPush.types';
 import PluginSetPicker, { usePluginCatalog } from './PluginSetPicker';
 import { insecureFlag, platformIsPlainHttp } from './insecureLink';
-import { ServerSection } from './ServerSection';
+import {
+  activeCommand,
+  countServers,
+  latestProblem,
+  serverState,
+  type ServerTileState,
+} from './machineState';
+
+const { color } = tokens;
 
 /** `GET /api/license` → how many servers the saved license covers (null: no license). */
 async function fetchLicenseMaxServers(): Promise<number | null> {
@@ -88,12 +109,6 @@ function when(unixSeconds: number | null | undefined, locale: string): string {
   return new Date(unixSeconds * 1000).toLocaleString(locale);
 }
 
-function hostDot(host: FleetHost): 'live' | 'free' | 'loading' | 'error' {
-  if (host.status === 'revoked') return 'error';
-  if (host.status === 'pending') return 'loading';
-  return host.online ? 'live' : 'free';
-}
-
 /** The API answers a refused disruptive action with 409 `{ code: 'match_in_progress', servers }`. */
 function matchInProgressServers(err: unknown): string[] | null {
   if (!(err instanceof Error)) return null;
@@ -116,11 +131,30 @@ function idleTargets(prompt: ForcePrompt): string[] {
     .filter((name) => (asked ? asked.includes(name) : true) && !prompt.servers.includes(name));
 }
 
+/** Overview order: online, waiting to be linked, offline, revoked. */
+function hostRank(host: FleetHost): number {
+  if (host.status === 'enrolled') return host.online ? 0 : 2;
+  return host.status === 'pending' ? 1 : 3;
+}
+
 function gb(mb: number): string {
   return (mb / 1024).toFixed(1);
 }
 
-export default function MachinesPanel() {
+export interface MachinesPanelProps {
+  /** Bumped by the page's "Add machine" button: opens the add dialog. */
+  addRequest?: number;
+  /** The match on each Ready Up server (fleet server id → match slug), for the server tiles. */
+  matchByServer?: Record<string, string>;
+  /** Every load, so the page can tell machine servers from the others. */
+  onHostsChange?: (hosts: FleetHost[]) => void;
+}
+
+export default function MachinesPanel({
+  addRequest = 0,
+  matchByServer,
+  onHostsChange,
+}: MachinesPanelProps) {
   const { t, i18n } = useModuleTranslation('cs2');
   const { showSnackbar, showError } = useSnackbar();
   const locale = i18n.language;
@@ -152,16 +186,40 @@ export default function MachinesPanel() {
   // deleting at once, until csm's inventory no longer lists them.
   const [removing, setRemoving] = useState<Set<string>>(() => new Set());
   const [busy, setBusy] = useState(false);
+  // The machine opened on its own (`?machine=<id>`), else the overview.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openId = searchParams.get('machine');
+  const openHost = (id: string) =>
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('machine', id);
+      return next;
+    });
+  const closeHost = () =>
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('machine');
+      return next;
+    });
+  const [menu, setMenu] = useState<{ host: FleetHost; anchor: HTMLElement } | null>(null);
+  // The first machine is linked from the empty page's steps, not the dialog.
+  const [linkInline, setLinkInline] = useState(false);
+
+  useEffect(() => {
+    if (addRequest > 0) setAddOpen(true);
+  }, [addRequest]);
 
   const load = useCallback(async () => {
     try {
       const res = await api.get<FleetHostsResponse>('/api/fleet/hosts');
       setHosts(res.hosts || []);
+      onHostsChange?.(res.hosts || []);
     } catch (err) {
       console.error('Failed to load machines', err);
     } finally {
       setLoaded(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the page's callback, read on each load
   }, []);
 
   const anyPending = hosts.some((h) => h.commands.some((c) => c.status === 'pending'));
@@ -221,7 +279,7 @@ export default function MachinesPanel() {
   const linkCommand = (code: string) =>
     `csm link ${window.location.origin} ${code}${insecureFlag()}`;
 
-  const addMachine = async () => {
+  const addMachine = async (inline = false) => {
     setBusy(true);
     try {
       const res = await api.post<{ host: FleetHost; code: string; expiresAt: number }>(
@@ -232,6 +290,7 @@ export default function MachinesPanel() {
       );
       setAddOpen(false);
       setAddName('');
+      setLinkInline(inline);
       setLink({
         hostId: res.host.id,
         name: res.host.name,
@@ -379,6 +438,7 @@ export default function MachinesPanel() {
   const renderServer = (host: FleetHost, s: FleetHostServer) => {
     const deleting = isDeleting(host, s.name);
     const canAct = host.online && !deleting;
+    const state = serverState(host, s, deleting);
     return (
       <Row
         key={s.name}
@@ -390,17 +450,7 @@ export default function MachinesPanel() {
         data-deleting={deleting ? 'true' : undefined}
         sx={deleting ? { opacity: 0.55 } : undefined}
       >
-        <StatusDot
-          state={
-            deleting
-              ? 'loading'
-              : s.process.running
-                ? s.matchInProgress
-                  ? 'live'
-                  : 'free'
-                : 'error'
-          }
-        />
+        <Box sx={{ width: 8, height: 8, borderRadius: radii.pill, bgcolor: tileTone[state] }} />
         <Box minWidth={0}>
           <Stack direction="row" gap={1} alignItems="center" minWidth={0}>
             <Typography fontWeight={600} noWrap>
@@ -434,16 +484,13 @@ export default function MachinesPanel() {
           </Typography>
         </Box>
         <Box minWidth={0} display={{ xs: 'none', md: 'block' }}>
-          <Chip
-            size="small"
-            label={
-              s.process.running
-                ? t('machinesPanel.process.running', { defaultValue: 'Running' })
-                : t('machinesPanel.process.stopped', { defaultValue: 'Stopped' })
-            }
-            color={s.process.running ? 'success' : 'default'}
-            variant={s.process.running ? 'filled' : 'outlined'}
-          />
+          <Typography
+            variant="body2"
+            sx={{ color: tileTone[state] }}
+            data-testid={`machine-state-${s.name}`}
+          >
+            {tileLabel(state)}
+          </Typography>
           {s.process.restarts_24h > 0 && (
             <Typography variant="caption" color="warning.main" display="block" mt={0.5}>
               {t('machinesPanel.restarts', {
@@ -547,330 +594,631 @@ export default function MachinesPanel() {
     );
   };
 
-  const renderCommand = (c: FleetHostCommand) => (
-    <Box key={c.id} py={0.75} data-testid={`machine-command-${c.id}`}>
-      <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
-        <Typography variant="body2" sx={mono}>
+  const ago = (unixSeconds: number) => {
+    const s = Math.max(0, Math.round(Date.now() / 1000 - unixSeconds));
+    if (s < 60)
+      return t('machinesPanel.ago.seconds', { defaultValue: '{{count}} s ago', count: s });
+    if (s < 3600)
+      return t('machinesPanel.ago.minutes', {
+        defaultValue: '{{count}} min ago',
+        count: Math.round(s / 60),
+      });
+    return when(unixSeconds, locale);
+  };
+
+  const problemText = (c: FleetHostCommand) =>
+    c.errorCode === 'match_in_progress'
+      ? t('machinesPanel.refusedMatch', { defaultValue: 'csm refused: a match is in progress' })
+      : c.errorCode
+        ? `${t(`machinesPanel.errorCodes.${c.errorCode}`, { defaultValue: c.errorCode })}${c.errorMessage ? `. ${c.errorMessage}` : ''}`
+        : (c.errorMessage ?? '');
+
+  /** Send a failed or refused command again, as it was. */
+  const retry = (host: FleetHost, c: FleetHostCommand) => void send(host, c.type, c.payload);
+
+  const renderCommand = (c: FleetHostCommand) => {
+    const tone = c.status === 'ok' ? color.live : c.status === 'pending' ? color.info : color.ban;
+    return (
+      <Box
+        key={c.id}
+        data-testid={`machine-command-${c.id}`}
+        sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', py: 0.75 }}
+      >
+        <Box
+          aria-hidden
+          sx={{
+            width: 22,
+            height: 22,
+            borderRadius: radii.pill,
+            bgcolor: withAlpha(tone, 0.18),
+            color: tone,
+            display: 'grid',
+            placeItems: 'center',
+            flex: 'none',
+            mt: 0.25,
+          }}
+        >
+          {c.status === 'ok' ? (
+            <CheckIcon size={12} weight="bold" />
+          ) : c.status === 'pending' ? (
+            <Box sx={{ width: 8, height: 8, borderRadius: radii.pill, bgcolor: tone }} />
+          ) : (
+            <XIcon size={12} weight="bold" />
+          )}
+        </Box>
+        <Box minWidth={0} flex={1}>
+          <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
+            <Typography variant="body2">{commandLabel(c)}</Typography>
+            {c.forcedBy && (
+              <Tooltip title={c.forceReason ?? ''}>
+                <Chip
+                  size="small"
+                  color="warning"
+                  label={t('machinesPanel.forced', { defaultValue: 'Forced' })}
+                />
+              </Tooltip>
+            )}
+          </Stack>
+          {c.status === 'pending' ? (
+            <>
+              {c.progress.pct !== null && (
+                <LinearProgress
+                  variant="determinate"
+                  value={c.progress.pct}
+                  aria-label={t('machinesPanel.progress', { defaultValue: 'Command progress' })}
+                  sx={{ my: 0.5, maxWidth: 260 }}
+                />
+              )}
+              <Typography variant="caption" color="text.secondary" display="block">
+                {c.progress.step ??
+                  (c.seq === null
+                    ? t('machinesPanel.queuedShort', { defaultValue: 'Queued' })
+                    : t('machinesPanel.working', { defaultValue: 'csm is on it' }))}
+                {' · '}
+                {ago(c.createdAt)}
+              </Typography>
+            </>
+          ) : c.status === 'ok' ? (
+            <Typography variant="caption" color="text.secondary" display="block">
+              {t('machinesPanel.status.ok', { defaultValue: 'Done' })} ·{' '}
+              {when(c.answeredAt ?? c.createdAt, locale)}
+            </Typography>
+          ) : (
+            <Typography variant="caption" color="error.main" display="block">
+              {problemText(c)}
+            </Typography>
+          )}
+        </Box>
+      </Box>
+    );
+  };
+
+  const tileTone: Record<ServerTileState, string> = {
+    free: color.live,
+    match: color.accent,
+    starting: color.info,
+    stopping: color.info,
+    restarting: color.info,
+    updating: color.info,
+    deleting: color.muted,
+    stopped: color.muted,
+    offline: color.muted,
+  };
+
+  const tileLabel = (state: ServerTileState) =>
+    t(`machinesPanel.tile.${state}`, {
+      defaultValue: {
+        free: 'Free',
+        match: 'In a match',
+        starting: 'Starting…',
+        stopping: 'Stopping…',
+        restarting: 'Restarting…',
+        updating: 'Updating…',
+        deleting: 'Deleting…',
+        stopped: 'Stopped',
+        offline: 'Offline',
+      }[state],
+    });
+
+  const renderTile = (host: FleetHost, s: FleetHostServer) => {
+    const state = serverState(host, s, isDeleting(host, s.name));
+    const tone = tileTone[state];
+    const slug = s.fleetServer ? matchByServer?.[s.fleetServer.id] : undefined;
+    return (
+      <Box
+        key={s.name}
+        data-testid={`machine-tile-${host.id}-${s.name}`}
+        data-state={state}
+        sx={{
+          p: 1.75,
+          borderRadius: radii.md,
+          bgcolor: color.paper3,
+          border: `1px solid ${color.rule}`,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0.75,
+          minWidth: 0,
+          opacity: state === 'deleting' ? 0.55 : 1,
+        }}
+      >
+        <Stack direction="row" gap={1} alignItems="center" minWidth={0}>
+          <Box
+            sx={{ width: 8, height: 8, borderRadius: radii.pill, bgcolor: tone, flex: 'none' }}
+          />
+          <Typography variant="body2" sx={mono} noWrap>
+            {s.fleetServer?.name ?? s.name}
+          </Typography>
+        </Stack>
+        <Typography
+          variant="body2"
+          sx={{ color: state === 'free' || state === 'match' ? color.ink : tone }}
+        >
+          {tileLabel(state)}
+        </Typography>
+        <Typography
+          variant="caption"
+          sx={{ ...mono, color: state === 'match' ? color.accent : color.muted }}
+          noWrap
+        >
+          {state === 'match' ? (slug ?? '') : `:${s.game_port}`}
+        </Typography>
+      </Box>
+    );
+  };
+
+  const hostTone = (host: FleetHost) =>
+    host.status === 'revoked'
+      ? color.ban
+      : host.status === 'pending'
+        ? color.info
+        : host.online
+          ? activeCommand(host)
+            ? color.info
+            : color.live
+          : color.muted;
+
+  const versionsLine = (host: FleetHost) => {
+    const inv = host.inventory;
+    const readyUp = host.servers.find((s) => s.readyup.installed)?.readyup.installed;
+    return [
+      inv
+        ? t('machinesPanel.cs2Build', {
+            defaultValue: 'CS2 {{build}}',
+            build: inv.cs2.master_build,
+          })
+        : null,
+      readyUp
+        ? t('machinesPanel.readyUp', { defaultValue: 'Ready Up {{version}}', version: readyUp })
+        : null,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  };
+
+  const commandProgress = (c: FleetHostCommand, compact: boolean) => (
+    <Stack direction="row" gap={1.25} alignItems="center" sx={{ minWidth: compact ? 0 : 240 }}>
+      <Typography variant="body2" sx={{ color: color.info, whiteSpace: 'nowrap' }} noWrap>
+        {commandLabel(c)}
+        {c.progress.step ? ` · ${c.progress.step}` : ''}
+      </Typography>
+      <LinearProgress
+        variant={c.progress.pct !== null ? 'determinate' : 'indeterminate'}
+        value={c.progress.pct ?? 0}
+        aria-label={t('machinesPanel.progress', { defaultValue: 'Command progress' })}
+        sx={{ flex: 1, minWidth: 60, height: 6, borderRadius: radii.pill }}
+      />
+      {c.progress.pct !== null && (
+        <Typography variant="caption" sx={mono}>
+          {Math.round(c.progress.pct)}%
+        </Typography>
+      )}
+    </Stack>
+  );
+
+  const problemBox = (host: FleetHost, c: FleetHostCommand, wide: boolean) => (
+    <Box
+      data-testid={`machine-problem-${host.id}`}
+      sx={{
+        gridColumn: wide ? { xs: 'auto', sm: 'span 2' } : undefined,
+        p: 1.75,
+        borderRadius: radii.md,
+        bgcolor: withAlpha(color.ban, 0.08),
+        border: `1px solid ${withAlpha(color.ban, 0.45)}`,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        minWidth: 0,
+      }}
+    >
+      <WarningCircleIcon size={20} color={color.ban} style={{ flex: 'none' }} />
+      <Box minWidth={0} flex={1}>
+        <Typography variant="body2" fontWeight={600}>
           {commandLabel(c)}
         </Typography>
-        <Chip
+        <Typography variant="caption" color="text.secondary" display="block">
+          {problemText(c)}
+        </Typography>
+      </Box>
+      {c.errorCode !== 'match_in_progress' && (
+        <Button
           size="small"
-          label={t(`machinesPanel.status.${c.status}`, { defaultValue: c.status })}
-          color={c.status === 'ok' ? 'success' : c.status === 'pending' ? 'default' : 'error'}
-          variant={c.status === 'pending' ? 'outlined' : 'filled'}
-        />
-        {c.forcedBy && (
-          <Tooltip title={c.forceReason ?? ''}>
-            <Chip
-              size="small"
-              color="warning"
-              label={t('machinesPanel.forced', { defaultValue: 'Forced' })}
-            />
-          </Tooltip>
-        )}
-        <Typography variant="caption" color="text.secondary">
-          {when(c.createdAt, locale)}
-        </Typography>
-      </Stack>
-      {c.status === 'pending' && (
-        <Box mt={0.5} maxWidth={360}>
-          <LinearProgress
-            variant={c.progress.pct !== null ? 'determinate' : 'indeterminate'}
-            value={c.progress.pct ?? 0}
-            aria-label={t('machinesPanel.progress', { defaultValue: 'Command progress' })}
-          />
-          <Typography variant="caption" color="text.secondary">
-            {c.progress.step ??
-              (c.seq === null
-                ? t('machinesPanel.queuedShort', { defaultValue: 'Queued' })
-                : t('machinesPanel.waiting', { defaultValue: 'Waiting for csm…' }))}
-          </Typography>
-        </Box>
-      )}
-      {c.status !== 'pending' && c.status !== 'ok' && (
-        <Typography variant="caption" color="error.main" display="block">
-          {c.errorCode === 'match_in_progress'
-            ? t('machinesPanel.refusedMatch', {
-                defaultValue: 'csm refused: a match is in progress',
-              })
-            : c.errorCode
-              ? `${t(`machinesPanel.errorCodes.${c.errorCode}`, { defaultValue: c.errorCode })}${c.errorMessage ? ` (${c.errorMessage})` : ''}`
-              : (c.errorMessage ?? '')}
-        </Typography>
+          variant="outlined"
+          disabled={!host.online}
+          onClick={() => retry(host, c)}
+          data-testid={`machine-retry-${host.id}`}
+        >
+          {t('machinesPanel.tryAgain', { defaultValue: 'Try again' })}
+        </Button>
       )}
     </Box>
   );
 
-  const [licenseMax, setLicenseMax] = useState<number | null>(null);
-  useEffect(() => {
-    void fetchLicenseMaxServers().then(setLicenseMax);
-  }, []);
+  const renderCard = (host: FleetHost) => {
+    const inv = host.inventory;
+    const running = activeCommand(host);
+    const problem = latestProblem(host);
+    const waiting = host.commands.filter((c) => c.status === 'pending').length;
+    return (
+      <Box
+        key={host.id}
+        component="article"
+        data-testid={`machine-${host.id}`}
+        aria-label={host.name}
+        sx={{
+          p: { xs: 2, md: 2.75 },
+          borderRadius: radii.lg,
+          bgcolor: color.paper2,
+          border: `1px solid ${color.rule}`,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          opacity: host.status === 'enrolled' && !host.online ? 0.72 : 1,
+        }}
+      >
+        <Stack direction="row" gap={1.75} alignItems="center" flexWrap="wrap">
+          <Box
+            sx={{
+              width: 10,
+              height: 10,
+              borderRadius: radii.pill,
+              bgcolor: hostTone(host),
+              boxShadow: host.online ? `0 0 0 4px ${withAlpha(hostTone(host), 0.18)}` : 'none',
+              flex: 'none',
+            }}
+          />
+          <ButtonBase
+            onClick={() => openHost(host.id)}
+            data-testid={`machine-open-${host.id}`}
+            sx={{
+              fontFamily: fontDisplay,
+              fontSize: textSize.lg,
+              fontWeight: 600,
+              borderRadius: radii.sm,
+              px: 0.5,
+              '&:hover': { color: color.accent },
+              '&:focus-visible': { outline: `2px solid ${color.focus}` },
+            }}
+          >
+            {host.name}
+          </ButtonBase>
+          <Typography variant="caption" sx={{ ...mono, color: color.muted }} noWrap>
+            {host.status === 'pending'
+              ? host.codeExpiresAt
+                ? t('machinesPanel.codeExpires', {
+                    defaultValue: 'Code valid until {{time}}',
+                    time: when(host.codeExpiresAt, locale),
+                  })
+                : t('machinesPanel.hostStatus.pending', { defaultValue: 'Waiting to be linked' })
+              : versionsLine(host)}
+          </Typography>
+          <Box flex={1} />
+          {host.status === 'enrolled' && host.online && running ? (
+            commandProgress(running, false)
+          ) : host.status === 'enrolled' && host.online && inv ? (
+            <Typography variant="caption" sx={{ ...mono, color: color.muted }}>
+              {inv.cs2.update_available
+                ? t('machinesPanel.cs2UpdateAvailable', { defaultValue: 'CS2 update available' })
+                : t('machinesPanel.load', {
+                    defaultValue: 'Load {{load}} · {{free}} GB RAM free',
+                    load: inv.resources.load1.toFixed(1),
+                    free: gb(inv.resources.ram_free_mb),
+                  })}
+            </Typography>
+          ) : host.status === 'enrolled' && !host.online ? (
+            <Typography variant="body2" color="text.secondary">
+              {host.lastSeen
+                ? t('machinesPanel.offlineSince', {
+                    defaultValue: 'Offline since {{time}}',
+                    time: when(host.lastSeen, locale),
+                  })
+                : t('machinesPanel.hostStatus.offline', { defaultValue: 'Offline' })}
+              {waiting > 0
+                ? ` · ${t('machinesPanel.waitingFor', { defaultValue: '{{count}} action(s) wait for it', count: waiting })}`
+                : ''}
+            </Typography>
+          ) : (
+            host.status === 'pending' && (
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<PasswordIcon />}
+                onClick={() => void newCode(host)}
+              >
+                {t('machinesPanel.newCode', { defaultValue: 'New code' })}
+              </Button>
+            )
+          )}
+        </Stack>
 
-  return (
-    <ServerSection
-      id="machines"
-      data-testid="machines-panel"
-      defaultOpen
-      title={t('machinesPanel.title', { defaultValue: 'Machines' })}
-      summary={t('machinesPanel.summary', {
-        defaultValue: '{{machines}} machine(s), {{online}} online · {{servers}} server(s)',
-        machines: hosts.length,
-        online: hosts.filter((h) => h.online).length,
-        servers: hosts.reduce((n, h) => n + h.servers.length, 0),
-      })}
-      about={t('machinesPanel.about', {
-        defaultValue:
-          'Machines run CS2 Server Manager (csm). The platform starts, stops and creates servers on them by itself.',
-      })}
-      action={
-        <Button
-          size="small"
-          variant="contained"
-          startIcon={<PlusIcon />}
-          onClick={() => setAddOpen(true)}
-          data-testid="machines-add"
-        >
-          {t('machinesPanel.add', { defaultValue: 'Add machine' })}
-        </Button>
-      }
-    >
-      {licenseMax !== null && (
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          mb={2}
-          data-testid="machines-license-note"
-        >
-          {t('machinesPanel.licenseNote', {
-            defaultValue:
-              'Your license covers up to {{count}} servers. Every server counts, spares included.',
-            count: licenseMax,
-          })}
+        {host.status === 'enrolled' && host.online && (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 170px), 1fr))',
+              gap: 1.25,
+            }}
+          >
+            {host.servers.map((s) => renderTile(host, s))}
+            {host.online && (
+              <ButtonBase
+                onClick={() => setCreateFor({ host, count: '1', several: false, plugins: null })}
+                data-testid={`machine-create-${host.id}`}
+                sx={{
+                  p: 1.75,
+                  minHeight: 88,
+                  borderRadius: radii.md,
+                  border: `1px dashed ${color.rule}`,
+                  color: color.ink2,
+                  gap: 1,
+                  fontSize: textSize.sm,
+                  '&:hover': { borderColor: color.ink2, color: color.ink },
+                  '&:focus-visible': { outline: `2px solid ${color.focus}` },
+                }}
+              >
+                <PlusIcon size={16} />
+                {t('machinesPanel.addServers', { defaultValue: 'Add servers' })}
+              </ButtonBase>
+            )}
+            {problem && problemBox(host, problem, true)}
+          </Box>
+        )}
+      </Box>
+    );
+  };
+
+  const bar = (label: string, value: string, pct: number) => (
+    <Box>
+      <Stack direction="row" justifyContent="space-between" mb={0.75}>
+        <Typography variant="body2" color="text.secondary">
+          {label}
         </Typography>
-      )}
-
-      {loaded && hosts.length === 0 && (
-        <Typography variant="body2" color="text.secondary" data-testid="machines-empty">
-          {t('machinesPanel.empty', { defaultValue: 'No machines yet.' })}
+        <Typography variant="body2" sx={mono}>
+          {value}
         </Typography>
-      )}
+      </Stack>
+      <Box sx={{ height: 6, borderRadius: radii.pill, bgcolor: color.paper3, overflow: 'hidden' }}>
+        <Box
+          sx={{
+            width: `${Math.min(100, Math.max(0, pct))}%`,
+            height: '100%',
+            bgcolor: pct >= 90 ? color.ban : pct >= 75 ? color.warning : color.live,
+          }}
+        />
+      </Box>
+    </Box>
+  );
 
-      <Stack gap={2}>
-        {hosts.map((host) => {
-          const inv = host.inventory;
-          const disk = inv?.resources.disk[0];
-          return (
-            <Box key={host.id} data-testid={`machine-${host.id}`}>
-              <RowList>
-                <Row
-                  columns={{
-                    xs: 'auto minmax(0, 1fr)',
-                    md: 'auto minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) auto',
-                  }}
+  const renderDetail = (host: FleetHost) => {
+    const inv = host.inventory;
+    const disk = inv?.resources.disk[0];
+    const problem = latestProblem(host);
+    const online = host.status === 'enrolled' && host.online;
+    const statusWord = t(
+      `machinesPanel.hostStatus.${host.status === 'enrolled' ? (host.online ? 'online' : 'offline') : host.status}`,
+      { defaultValue: host.status }
+    );
+    return (
+      <Box
+        data-testid={`machine-detail-${host.id}`}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+      >
+        <ButtonBase
+          onClick={closeHost}
+          sx={{
+            alignSelf: 'flex-start',
+            gap: 0.75,
+            color: color.ink2,
+            fontSize: textSize.sm,
+            borderRadius: radii.sm,
+            '&:hover': { color: color.ink },
+          }}
+          data-testid="machine-back"
+        >
+          <CaretLeftIcon size={16} />
+          {t('machinesPanel.back', { defaultValue: 'All machines' })}
+        </ButtonBase>
+
+        <Stack direction="row" gap={2} alignItems="center" flexWrap="wrap">
+          <Box
+            sx={{
+              width: 12,
+              height: 12,
+              borderRadius: radii.pill,
+              bgcolor: hostTone(host),
+              boxShadow: host.online ? `0 0 0 5px ${withAlpha(hostTone(host), 0.18)}` : 'none',
+            }}
+          />
+          <Typography
+            component="h2"
+            sx={{
+              fontFamily: fontDisplay,
+              fontSize: textSize['2xl'],
+              fontWeight: 600,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {host.name}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {[statusWord, host.os, host.csmVersion ? `csm ${host.csmVersion}` : null]
+              .filter(Boolean)
+              .join(' · ')}
+          </Typography>
+          <Box flex={1} />
+          <Stack direction="row" gap={1} flexWrap="wrap" alignItems="center">
+            {host.status === 'enrolled' && (
+              <>
+                <Button
+                  variant="outlined"
+                  startIcon={<DownloadSimpleIcon />}
+                  disabled={!online}
+                  onClick={() => void send(host, 'host.update_game', {})}
+                  data-testid={`machine-update-game-${host.id}`}
                 >
-                  <StatusDot state={hostDot(host)} />
-                  <Box minWidth={0}>
-                    <Typography fontWeight={600} noWrap>
-                      {host.name}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={mono}
-                      noWrap
-                      display="block"
-                    >
-                      {[host.hostname, host.os, host.csmVersion ? `csm ${host.csmVersion}` : null]
-                        .filter(Boolean)
-                        .join(' · ') || host.id}
-                    </Typography>
-                  </Box>
-                  <Box minWidth={0} display={{ xs: 'none', md: 'block' }}>
-                    <Chip
-                      size="small"
-                      label={t(
-                        `machinesPanel.hostStatus.${host.status === 'enrolled' ? (host.online ? 'online' : 'offline') : host.status}`,
-                        { defaultValue: host.status }
-                      )}
-                      color={
-                        host.status === 'revoked' ? 'error' : host.online ? 'success' : 'default'
-                      }
-                      variant={host.online ? 'filled' : 'outlined'}
-                    />
-                    {host.status === 'pending' && host.codeExpiresAt && (
-                      <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-                        {t('machinesPanel.codeExpires', {
-                          defaultValue: 'Code valid until {{time}}',
-                          time: when(host.codeExpiresAt, locale),
-                        })}
-                      </Typography>
-                    )}
-                    {host.status === 'enrolled' && !host.online && host.lastSeen !== null && (
-                      <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-                        {t('machinesPanel.lastSeen', {
-                          defaultValue: 'Last seen {{time}}',
-                          time: when(host.lastSeen, locale),
-                        })}
-                      </Typography>
-                    )}
-                  </Box>
-                  <Box minWidth={0} display={{ xs: 'none', md: 'block' }}>
-                    {inv ? (
-                      <>
-                        <Typography variant="body2" sx={mono} noWrap>
-                          {t('machinesPanel.resources', {
-                            defaultValue:
-                              '{{cpus}} CPU · load {{load}} · {{free}}/{{total}} GB RAM free',
-                            cpus: inv.resources.cpus,
-                            load: inv.resources.load1.toFixed(2),
-                            free: gb(inv.resources.ram_free_mb),
-                            total: gb(inv.resources.ram_mb),
-                          })}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={mono}
-                          display="block"
-                        >
-                          {disk
-                            ? t('machinesPanel.disk', {
-                                defaultValue: '{{mount}}: {{free}} GB free',
-                                mount: disk.mount,
-                                free: disk.free_gb.toFixed(0),
-                              })
-                            : ''}
-                          {' · '}
-                          {t('machinesPanel.cs2Build', {
-                            defaultValue: 'CS2 {{build}}',
-                            build: inv.cs2.master_build,
-                          })}
-                        </Typography>
-                        {inv.cs2.update_available && (
-                          <Typography variant="caption" color="warning.main" display="block">
-                            {t('machinesPanel.cs2UpdateAvailable', {
-                              defaultValue: 'CS2 update available',
-                            })}
-                          </Typography>
-                        )}
-                      </>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        —
-                      </Typography>
-                    )}
-                  </Box>
-                  <Stack
-                    direction="row"
-                    gap={0.5}
-                    justifyContent="flex-end"
-                    gridColumn={{ xs: '1 / -1', md: 'auto' }}
-                  >
-                    {host.status === 'pending' && (
-                      <Tooltip title={t('machinesPanel.newCode', { defaultValue: 'New code' })}>
-                        <IconButton
-                          size="small"
-                          onClick={() => void newCode(host)}
-                          aria-label={t('machinesPanel.newCode', { defaultValue: 'New code' })}
-                        >
-                          <PasswordIcon size={20} />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                    {host.status === 'enrolled' && (
-                      <>
-                        <Tooltip
-                          title={t('machinesPanel.rotate', { defaultValue: 'Rotate token' })}
-                        >
-                          <IconButton
-                            size="small"
-                            onClick={() => void rotate(host)}
-                            aria-label={t('machinesPanel.rotate', { defaultValue: 'Rotate token' })}
-                          >
-                            <ArrowsClockwiseIcon size={20} />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip
-                          title={t('machinesPanel.revoke', { defaultValue: 'Revoke machine' })}
-                        >
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => setPending({ action: 'revoke', host })}
-                            aria-label={t('machinesPanel.revoke', {
-                              defaultValue: 'Revoke machine',
-                            })}
-                            data-testid={`machine-revoke-${host.id}`}
-                          >
-                            <ProhibitIcon size={20} />
-                          </IconButton>
-                        </Tooltip>
-                      </>
-                    )}
-                    {host.status !== 'enrolled' && (
-                      <Tooltip title={t('machinesPanel.remove', { defaultValue: 'Remove' })}>
-                        <IconButton
-                          size="small"
-                          onClick={() => setPending({ action: 'remove', host })}
-                          aria-label={t('machinesPanel.remove', { defaultValue: 'Remove' })}
-                        >
-                          <TrashIcon size={20} />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                  </Stack>
-                </Row>
-              </RowList>
+                  {t('machinesPanel.updateGame', { defaultValue: 'Update CS2' })}
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<DownloadSimpleIcon />}
+                  disabled={!online}
+                  onClick={() => setReadyUpFor({ host, version: 'latest', bundle: 'default' })}
+                >
+                  {t('machinesPanel.updateReadyUp', { defaultValue: 'Update Ready Up…' })}
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<PlusIcon />}
+                  disabled={!online}
+                  onClick={() => setCreateFor({ host, count: '2', several: true, plugins: null })}
+                  data-testid={`machine-create-several-${host.id}`}
+                >
+                  {t('machinesPanel.addServers', { defaultValue: 'Add servers' })}
+                </Button>
+              </>
+            )}
+            <IconButton
+              aria-label={t('machinesPanel.more', {
+                defaultValue: 'More for {{name}}',
+                name: host.name,
+              })}
+              onClick={(e) => setMenu({ host, anchor: e.currentTarget })}
+              data-testid={`machine-more-${host.id}`}
+            >
+              <DotsThreeIcon size={22} weight="bold" />
+            </IconButton>
+          </Stack>
+        </Stack>
 
-              {host.status === 'enrolled' && (
-                <Stack direction="row" gap={1} flexWrap="wrap" mt={1}>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<PlusIcon />}
-                    disabled={!host.online}
-                    onClick={() =>
-                      setCreateFor({ host, count: '1', several: false, plugins: null })
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.6fr) minmax(0, 1fr)' },
+            gap: 2,
+            alignItems: 'start',
+          }}
+        >
+          <Stack gap={2} minWidth={0}>
+            {host.servers.length > 0 ? (
+              <RowList data-testid={`machine-servers-${host.id}`}>
+                {host.servers.map((s) => renderServer(host, s))}
+              </RowList>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                {host.status === 'enrolled' && inv
+                  ? t('machinesPanel.noServers', {
+                      defaultValue: 'No servers on this machine yet.',
+                    })
+                  : '—'}
+              </Typography>
+            )}
+            {problem && problemBox(host, problem, false)}
+            {host.enrolledServers.length > 0 && (
+              <Typography variant="caption" color="text.secondary">
+                {t('machinesPanel.enrolledElsewhere', {
+                  defaultValue: 'Enrolled from this machine: {{names}}',
+                  names: host.enrolledServers.map((s) => s.name).join(', '),
+                })}
+              </Typography>
+            )}
+            {host.health.length > 0 && (
+              <Box>
+                {host.health.slice(0, 3).map((h) => (
+                  <Typography
+                    key={h.id}
+                    variant="caption"
+                    color={
+                      h.event === 'recovered' || h.event === 'restarted'
+                        ? 'text.secondary'
+                        : 'warning.main'
                     }
-                    data-testid={`machine-create-${host.id}`}
+                    display="block"
                   >
-                    {t('machinesPanel.createServer', { defaultValue: 'Create server' })}
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!host.online}
-                    onClick={() => setCreateFor({ host, count: '2', several: true, plugins: null })}
+                    {when(h.receivedAt, locale)} · {h.server}:{' '}
+                    {t(`machinesPanel.healthEvent.${h.event}`, { defaultValue: h.event })}
+                    {h.detail ? ` (${h.detail})` : ''}
+                  </Typography>
+                ))}
+              </Box>
+            )}
+          </Stack>
+
+          <Stack gap={2} minWidth={0}>
+            {inv && (
+              <Panel sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+                <Typography sx={{ fontFamily: fontDisplay, fontWeight: 600 }}>
+                  {t('machinesPanel.machine', { defaultValue: 'Machine' })}
+                </Typography>
+                {bar(
+                  t('machinesPanel.cpu', { defaultValue: 'CPU load' }),
+                  `${inv.resources.load1.toFixed(2)} / ${inv.resources.cpus}`,
+                  (inv.resources.load1 / Math.max(1, inv.resources.cpus)) * 100
+                )}
+                {bar(
+                  t('machinesPanel.ram', { defaultValue: 'RAM' }),
+                  `${gb(inv.resources.ram_mb - inv.resources.ram_free_mb)} / ${gb(inv.resources.ram_mb)} GB`,
+                  ((inv.resources.ram_mb - inv.resources.ram_free_mb) /
+                    Math.max(1, inv.resources.ram_mb)) *
+                    100
+                )}
+                {disk &&
+                  bar(
+                    t('machinesPanel.diskLabel', {
+                      defaultValue: 'Disk {{mount}}',
+                      mount: disk.mount,
+                    }),
+                    `${(disk.total_gb - disk.free_gb).toFixed(0)} / ${disk.total_gb.toFixed(0)} GB`,
+                    ((disk.total_gb - disk.free_gb) / Math.max(1, disk.total_gb)) * 100
+                  )}
+                <Typography
+                  variant="caption"
+                  sx={{ ...mono, color: inv.cs2.update_available ? color.warning : color.muted }}
+                >
+                  {versionsLine(host)}
+                  {inv.cs2.update_available
+                    ? ` · ${t('machinesPanel.cs2UpdateAvailable', { defaultValue: 'CS2 update available' })}`
+                    : ''}
+                </Typography>
+                {host.autoUpdate && (
+                  <Box
+                    data-testid={`machine-auto-update-${host.id}`}
+                    sx={{ display: 'grid', gap: 0.25 }}
                   >
-                    {t('machinesPanel.createN', { defaultValue: 'Create several…' })}
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<DownloadSimpleIcon />}
-                    disabled={!host.online}
-                    onClick={() => void send(host, 'host.update_game', {})}
-                    data-testid={`machine-update-game-${host.id}`}
-                  >
-                    {t('machinesPanel.updateGame', { defaultValue: 'Update CS2' })}
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<DownloadSimpleIcon />}
-                    disabled={!host.online}
-                    onClick={() => setReadyUpFor({ host, version: 'latest', bundle: 'default' })}
-                  >
-                    {t('machinesPanel.updateReadyUp', { defaultValue: 'Update Ready Up…' })}
-                  </Button>
+                    <Typography variant="caption" color="text.secondary">
+                      CS2 · {host.autoUpdate.game}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Ready Up · {host.autoUpdate.readyUp}
+                    </Typography>
+                  </Box>
+                )}
+                {host.status === 'enrolled' && (
                   <TextField
                     select
                     size="small"
                     label={t('machinesPanel.updatesHold', { defaultValue: 'Automatic updates' })}
-                    value={inv?.cs2.updates_hold ?? 'auto'}
-                    disabled={!host.online}
+                    value={inv.cs2.updates_hold ?? 'auto'}
+                    disabled={!online}
                     onChange={(e) => void send(host, 'host.updates_hold', { mode: e.target.value })}
-                    sx={{ minWidth: 180 }}
                   >
                     <MenuItem value="auto">
                       {t('machinesPanel.hold.auto', { defaultValue: 'Automatic (wait for idle)' })}
@@ -882,72 +1230,348 @@ export default function MachinesPanel() {
                       {t('machinesPanel.hold.off', { defaultValue: 'Not held' })}
                     </MenuItem>
                   </TextField>
-                </Stack>
-              )}
-              {host.status === 'enrolled' && host.autoUpdate && (
-                <Box data-testid={`machine-auto-update-${host.id}`} sx={{ mt: 1, display: 'grid', gap: 0.25 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    <Box component="span" sx={{ color: 'text.primary', fontWeight: 600 }}>CS2</Box> · {host.autoUpdate.game}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <Box component="span" sx={{ color: 'text.primary', fontWeight: 600 }}>Ready Up</Box> · {host.autoUpdate.readyUp}
-                  </Typography>
-                </Box>
-              )}
-
-              {host.servers.length > 0 && (
-                <RowList sx={{ mt: 1 }} data-testid={`machine-servers-${host.id}`}>
-                  {host.servers.map((s) => renderServer(host, s))}
-                </RowList>
-              )}
-              {host.status === 'enrolled' && inv && host.servers.length === 0 && (
-                <Typography variant="body2" color="text.secondary" mt={1}>
-                  {t('machinesPanel.noServers', {
-                    defaultValue: 'No servers on this machine yet.',
-                  })}
+                )}
+              </Panel>
+            )}
+            {host.commands.length > 0 && (
+              <Panel sx={{ p: 2.5 }}>
+                <Typography sx={{ fontFamily: fontDisplay, fontWeight: 600, mb: 1 }}>
+                  {t('machinesPanel.activity', { defaultValue: 'Activity' })}
                 </Typography>
-              )}
-              {host.enrolledServers.length > 0 && (
-                <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-                  {t('machinesPanel.enrolledElsewhere', {
-                    defaultValue: 'Enrolled from this machine: {{names}}',
-                    names: host.enrolledServers.map((s) => s.name).join(', '),
-                  })}
-                </Typography>
-              )}
+                {host.commands.slice(0, 8).map(renderCommand)}
+              </Panel>
+            )}
+          </Stack>
+        </Box>
+      </Box>
+    );
+  };
 
-              {host.commands.length > 0 && (
-                <Box mt={1}>
-                  <Typography variant="subtitle2" fontWeight={600}>
-                    {t('machinesPanel.activity', { defaultValue: 'Recent actions' })}
-                  </Typography>
-                  {host.commands.slice(0, 5).map(renderCommand)}
-                </Box>
-              )}
-              {host.health.length > 0 && (
-                <Box mt={1}>
-                  {host.health.slice(0, 3).map((h) => (
+  const [licenseMax, setLicenseMax] = useState<number | null>(null);
+  useEffect(() => {
+    void fetchLicenseMaxServers().then(setLicenseMax);
+  }, []);
+
+  const counts = countServers(hosts, isDeleting);
+  const openedHost = openId ? hosts.find((h) => h.id === openId) : undefined;
+  const firstLink = !loaded || hosts.length > 0 ? null : link;
+
+  const step = (n: number, active: boolean, title: string, body: ReactNode) => (
+    <Box
+      sx={{
+        p: 2.75,
+        borderRadius: radii.lg,
+        bgcolor: color.paper2,
+        border: `1px solid ${active ? color.accent : color.rule}`,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1.5,
+        minWidth: 0,
+      }}
+    >
+      <Box
+        sx={{
+          width: 36,
+          height: 36,
+          borderRadius: radii.pill,
+          display: 'grid',
+          placeItems: 'center',
+          fontFamily: fontDisplay,
+          fontWeight: 700,
+          ...(active
+            ? { bgcolor: color.accent, color: color.accentInk }
+            : { border: `1px solid ${color.rule}`, color: color.ink2 }),
+        }}
+      >
+        {n}
+      </Box>
+      <Typography fontWeight={600}>{title}</Typography>
+      {body}
+    </Box>
+  );
+
+  return (
+    <>
+      {openedHost ? (
+        renderDetail(openedHost)
+      ) : (
+        <Box data-testid="machines-panel" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {hosts.length > 0 && (
+            <Box
+              data-testid="machines-summary"
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: 'repeat(2, minmax(0, 1fr))',
+                  md: 'repeat(4, minmax(0, 1fr))',
+                },
+                gap: 1.5,
+              }}
+            >
+              {(
+                [
+                  [
+                    'free',
+                    counts.free,
+                    color.live,
+                    t('machinesPanel.counts.free', { defaultValue: 'Free' }),
+                  ],
+                  [
+                    'match',
+                    counts.match,
+                    color.accent,
+                    t('machinesPanel.counts.match', { defaultValue: 'In a match' }),
+                  ],
+                  [
+                    'busy',
+                    counts.busy,
+                    color.info,
+                    t('machinesPanel.counts.busy', { defaultValue: 'Updating or restarting' }),
+                  ],
+                  [
+                    'down',
+                    counts.down,
+                    color.muted,
+                    t('machinesPanel.counts.down', { defaultValue: 'Stopped or offline' }),
+                  ],
+                ] as const
+              ).map(([key, value, tone, label]) => (
+                <Box
+                  key={key}
+                  data-testid={`machines-count-${key}`}
+                  sx={{
+                    p: 2.25,
+                    borderRadius: radii.lg,
+                    bgcolor: color.paper2,
+                    border: `1px solid ${color.rule}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.75,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: radii.pill,
+                      bgcolor: tone,
+                      flex: 'none',
+                    }}
+                  />
+                  <Box>
                     <Typography
-                      key={h.id}
-                      variant="caption"
-                      color={
-                        h.event === 'recovered' || h.event === 'restarted'
-                          ? 'text.secondary'
-                          : 'warning.main'
-                      }
-                      display="block"
+                      sx={{
+                        fontFamily: fontDisplay,
+                        fontSize: textSize.xl,
+                        fontWeight: 600,
+                        lineHeight: 1.1,
+                      }}
                     >
-                      {when(h.receivedAt, locale)} · {h.server}:{' '}
-                      {t(`machinesPanel.healthEvent.${h.event}`, { defaultValue: h.event })}
-                      {h.detail ? ` (${h.detail})` : ''}
+                      {value}
                     </Typography>
-                  ))}
+                    <Typography variant="body2" color="text.secondary">
+                      {label}
+                    </Typography>
+                  </Box>
                 </Box>
-              )}
+              ))}
             </Box>
-          );
-        })}
-      </Stack>
+          )}
+
+          {/* Online machines first; the ones waiting to be linked, then the offline ones. */}
+          {[...hosts].sort((a, b) => hostRank(a) - hostRank(b)).map(renderCard)}
+
+          {licenseMax !== null && hosts.length > 0 && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              data-testid="machines-license-note"
+            >
+              {t('machinesPanel.licenseNote', {
+                defaultValue:
+                  'Your license covers up to {{count}} servers. Every server counts, spares included.',
+                count: licenseMax,
+              })}
+            </Typography>
+          )}
+
+          {loaded && hosts.length === 0 && (
+            <Box
+              data-testid="machines-empty"
+              sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+            >
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(3, minmax(0, 1fr))' },
+                  gap: 1.5,
+                }}
+              >
+                {step(
+                  1,
+                  !firstLink,
+                  t('machinesPanel.step.name', { defaultValue: 'Name the machine' }),
+                  <Stack gap={1.25}>
+                    <TextField
+                      size="small"
+                      label={t('machinesPanel.name', { defaultValue: 'Name (optional)' })}
+                      value={addName}
+                      onChange={(e) => setAddName(e.target.value)}
+                      inputProps={{ maxLength: 100 }}
+                    />
+                    <Button
+                      variant="contained"
+                      disabled={busy}
+                      onClick={() => void addMachine(true)}
+                      data-testid="machines-create-code"
+                    >
+                      {t('machinesPanel.getCommand', { defaultValue: 'Get the command' })}
+                    </Button>
+                  </Stack>
+                )}
+                {step(
+                  2,
+                  !!firstLink,
+                  t('machinesPanel.step.run', { defaultValue: 'Run this on it' }),
+                  firstLink ? (
+                    <>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          p: 1.5,
+                          borderRadius: radii.md,
+                          bgcolor: color.paper3,
+                          ...mono,
+                          fontSize: textSize.sm,
+                          wordBreak: 'break-all',
+                        }}
+                      >
+                        <Box flex={1} data-testid="machines-link-command">
+                          {firstLink.command}
+                        </Box>
+                        <IconButton
+                          size="small"
+                          onClick={() => void copy(firstLink.command)}
+                          aria-label={t('machinesPanel.copy', { defaultValue: 'Copy' })}
+                        >
+                          <CopyIcon size={18} />
+                        </IconButton>
+                      </Box>
+                      <Typography variant="caption" color="text.secondary">
+                        {t('machinesPanel.linkHelp', {
+                          defaultValue:
+                            'Run it on the machine as the user that runs csm (not root). The code works once and until {{time}}.',
+                          time: when(firstLink.expiresAt, locale),
+                        })}
+                      </Typography>
+                    </>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      {t('machinesPanel.step.runHelp', {
+                        defaultValue: 'One command, shown here once you have named the machine.',
+                      })}
+                    </Typography>
+                  )
+                )}
+                {step(
+                  3,
+                  false,
+                  t('machinesPanel.step.appears', { defaultValue: 'It shows up here' }),
+                  <Stack direction="row" gap={1.25} alignItems="center">
+                    <StatusDot state={firstLink ? 'loading' : 'free'} />
+                    <Typography variant="body2" color="text.secondary">
+                      {firstLink
+                        ? t('machinesPanel.linkWaiting', {
+                            defaultValue: 'Waiting for the machine to connect…',
+                          })
+                        : t('machinesPanel.step.appearsHelp', {
+                            defaultValue: 'Then add servers to it with one click.',
+                          })}
+                    </Typography>
+                  </Stack>
+                )}
+              </Box>
+              <Box
+                sx={{
+                  p: 2.75,
+                  borderRadius: radii.lg,
+                  border: `1px dashed ${color.rule}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 2,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Box>
+                  <Typography fontWeight={600}>
+                    {t('machinesPanel.noCsm', { defaultValue: 'No csm on the machine yet?' })}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('machinesPanel.noCsmHelp', {
+                      defaultValue: 'Install CS2 Server Manager first, then come back for step 2.',
+                    })}
+                  </Typography>
+                </Box>
+                <ExternalLink href="https://docs.autotournament.gg/cs2/server-manager/install">
+                  {t('machinesPanel.installGuide', { defaultValue: 'Install guide' })}
+                </ExternalLink>
+              </Box>
+            </Box>
+          )}
+        </Box>
+      )}
+
+      <Menu anchorEl={menu?.anchor ?? null} open={menu !== null} onClose={() => setMenu(null)}>
+        {menu?.host.status === 'pending' && (
+          <MenuItem
+            onClick={() => {
+              const h = menu.host;
+              setMenu(null);
+              void newCode(h);
+            }}
+          >
+            {t('machinesPanel.newCode', { defaultValue: 'New code' })}
+          </MenuItem>
+        )}
+        {menu?.host.status === 'enrolled' && (
+          <MenuItem
+            onClick={() => {
+              const h = menu.host;
+              setMenu(null);
+              void rotate(h);
+            }}
+          >
+            {t('machinesPanel.rotate', { defaultValue: 'Rotate token' })}
+          </MenuItem>
+        )}
+        {menu?.host.status === 'enrolled' && (
+          <MenuItem
+            sx={{ color: 'error.main' }}
+            data-testid={`machine-revoke-${menu.host.id}`}
+            onClick={() => {
+              const h = menu.host;
+              setMenu(null);
+              setPending({ action: 'revoke', host: h });
+            }}
+          >
+            {t('machinesPanel.revoke', { defaultValue: 'Revoke machine' })}
+          </MenuItem>
+        )}
+        {menu && menu.host.status !== 'enrolled' && (
+          <MenuItem
+            onClick={() => {
+              const h = menu.host;
+              setMenu(null);
+              setPending({ action: 'remove', host: h });
+            }}
+          >
+            {t('machinesPanel.remove', { defaultValue: 'Remove' })}
+          </MenuItem>
+        )}
+      </Menu>
 
       {/* Add machine: name (optional) */}
       <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth="xs" fullWidth>
@@ -973,7 +1597,7 @@ export default function MachinesPanel() {
           <Button onClick={() => setAddOpen(false)}>{t('common.cancel')}</Button>
           <Button
             variant="contained"
-            onClick={() => void addMachine()}
+            onClick={() => void addMachine(false)}
             disabled={busy}
             data-testid="machines-create-code"
           >
@@ -983,7 +1607,12 @@ export default function MachinesPanel() {
       </Dialog>
 
       {/* The one command, shown once; turns green when csm connects */}
-      <Dialog open={link !== null} onClose={() => setLink(null)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={link !== null && !linkInline}
+        onClose={() => setLink(null)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>
           {t('machinesPanel.linkTitle', {
             defaultValue: 'Run this on {{name}}',
@@ -1294,6 +1923,6 @@ export default function MachinesPanel() {
         }}
         onCancel={() => setRemoveServer(null)}
       />
-    </ServerSection>
+    </>
   );
 }
