@@ -98,3 +98,20 @@ func TestPlanWindowsWithoutKills(t *testing.T) {
 		t.Fatalf("got %+v", w)
 	}
 }
+
+func TestSeekLanded(t *testing.T) {
+	for _, c := range []struct {
+		tick, target int
+		want         bool
+	}{
+		{5000, 5000, true},
+		{5100, 5000, true},
+		{5000 - tickrate, 5000, true},
+		{0, 5000, false}, // still at the start: the seek has not landed
+		{5000 + 20*tickrate, 5000, false},
+	} {
+		if got := seekLanded(c.tick, c.target); got != c.want {
+			t.Errorf("seekLanded(%d, %d) = %v, want %v", c.tick, c.target, got, c.want)
+		}
+	}
+}

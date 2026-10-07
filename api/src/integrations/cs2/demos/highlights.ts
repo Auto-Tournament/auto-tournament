@@ -283,6 +283,8 @@ export interface RecordJob {
   /** The Auto Tournament logo on each video (an admin can turn it off). */
   watermark: boolean;
   moments: RecordMoment[];
+  /** This player's clips of the map that earlier jobs recorded (the reel joins them in on a retry). */
+  doneClips: Array<{ id: number; startTick: number; url: string }>;
 }
 
 interface MomentRow {
@@ -380,6 +382,12 @@ export async function claimRecordJob(recorder: string): Promise<RecordJob | null
   );
   const { settingsService } = await import('../../../services/settingsService');
   const watermark = (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0';
+  const done = await db.queryAsync<{ id: number; start_tick: number }>(
+    `SELECT id, start_tick FROM cs2_highlights
+      WHERE match_slug = ? AND map_number = ? AND player_id = ? AND status = 'done' AND kind <> 'funny'
+      ORDER BY start_tick`,
+    [best.match_slug, best.map_number, best.player_id]
+  );
   return {
     matchSlug: best.match_slug,
     mapNumber: Number(best.map_number),
@@ -412,6 +420,11 @@ export async function claimRecordJob(recorder: string): Promise<RecordJob | null
         killTicks: JSON.parse(r.kill_ticks) as number[],
       }))
       .sort((a, b) => a.startTick - b.startTick),
+    doneClips: done.map((d) => ({
+      id: Number(d.id),
+      startTick: Number(d.start_tick),
+      url: `/api/game/cs2/highlights/${Number(d.id)}.mp4`,
+    })),
   };
 }
 
