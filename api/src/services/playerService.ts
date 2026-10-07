@@ -5,6 +5,7 @@
 
 import { db } from '../config/database';
 import { log } from '../utils/logger';
+import { MAIN_RATING_SQL, getGameRating, getPlayerGameRatings, setGameRating } from './gameRatings';
 import { eloToOpenSkill } from './ratingService';
 import { playerIdentity } from './playerIdentity';
 import { notifyAdminListMaybeChanged } from './adminListEvents';
@@ -30,6 +31,9 @@ export interface PlayerRecord {
   openskill_mu: number;
   openskill_sigma: number;
   match_count: number;
+  /** The rating in the game the player has played most (MAIN_RATING_SQL); null while unrated. */
+  main_elo?: number | null;
+  main_game?: string | null;
   created_at: number;
   updated_at: number;
   /**
@@ -65,6 +69,8 @@ export interface UpdatePlayerInput {
   name?: string;
   avatar?: string;
   elo?: number;
+  /** The game `elo` is for; the default game when absent. */
+  game?: string;
   isAdmin?: boolean;
   /** Raw, unvalidated. A string sets it, `null`/`""` clears it, absent leaves it. */
   discordId?: unknown;
@@ -74,7 +80,11 @@ export interface PlayerResponse {
   id: string;
   name: string;
   avatar?: string;
+  /** The rating in `ratingGame`, the game the player has played most; their seed while unrated. */
   currentElo: number;
+  ratingGame?: string | null;
+  /** Every game the player is rated in, most-played first (single-player reads only). */
+  ratings?: Array<{ game: string; elo: number; matchCount: number }>;
   startingElo: number;
   matchCount: number;
   createdAt: number;
@@ -153,7 +163,10 @@ class PlayerService {
       // Prefer a stored/custom avatar (e.g. from Steam or admin override),
       // otherwise fall back to a deterministic placeholder SVG endpoint.
       avatar: customAvatar ?? dynamicAvatar,
-      currentElo: player.current_elo,
+      // Ratings are per game: the one shown with a player, outside any game,
+      // is from the game they have played most; their seed until rated.
+      currentElo: player.main_elo != null ? Number(player.main_elo) : player.starting_elo,
+      ratingGame: player.main_game ?? null,
       startingElo: player.starting_elo,
       matchCount: player.match_count,
       createdAt: player.created_at,
@@ -203,6 +216,7 @@ class PlayerService {
     return {
       ...base,
       matchCount: visibleMatchCount,
+      ratings: await getPlayerGameRatings(player.id),
     };
   }
 
@@ -225,7 +239,7 @@ class PlayerService {
   ): Promise<R[]> {
     // A Discord account linked as a sign-in method wins over a typed-in ID.
     const players = await db.queryAsync<PlayerRecord>(
-      `SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id FROM players p`,
+      `SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id, ${MAIN_RATING_SQL} FROM players p`,
       []
     );
 
@@ -253,7 +267,7 @@ class PlayerService {
    * Get player by Steam ID
    */
   async getPlayerById(playerId: string): Promise<PlayerResponse | null> {
-    const player = await db.queryOneAsync<PlayerRecord>(`SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id FROM players p WHERE p.id = ?`, [playerId]);
+    const player = await db.queryOneAsync<PlayerRecord>(`SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id, ${MAIN_RATING_SQL} FROM players p WHERE p.id = ?`, [playerId]);
     if (!player) {
       return null;
     }
@@ -264,7 +278,7 @@ class PlayerService {
    * Get player by Steam ID with admin-only fields (Discord ID). Admin routes only.
    */
   async getPlayerByIdForAdmin(playerId: string): Promise<PlayerAdminResponse | null> {
-    const player = await db.queryOneAsync<PlayerRecord>(`SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id FROM players p WHERE p.id = ?`, [playerId]);
+    const player = await db.queryOneAsync<PlayerRecord>(`SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id, ${MAIN_RATING_SQL} FROM players p WHERE p.id = ?`, [playerId]);
     if (!player) {
       return null;
     }
@@ -583,11 +597,17 @@ class PlayerService {
     }
 
     if (input.elo !== undefined) {
-      // Update ELO and OpenSkill rating
-      const openskillRating = eloToOpenSkill(input.elo, existing.match_count);
-      updates.current_elo = input.elo;
-      updates.openskill_mu = openskillRating.mu;
-      updates.openskill_sigma = openskillRating.sigma;
+      // A rating is per game. A player rated nowhere yet gets a new seed, their
+      // rating in every game; otherwise the rating in that one game is set.
+      const rated = await getPlayerGameRatings(playerId);
+      if (rated.length === 0) {
+        updates.starting_elo = input.elo;
+      } else {
+        const current = await getGameRating(playerId, input.game);
+        const matchCount = current?.matchCount ?? 0;
+        const skill = eloToOpenSkill(input.elo, matchCount);
+        await setGameRating(playerId, input.game, { elo: input.elo, mu: skill.mu, sigma: skill.sigma, matchCount });
+      }
     }
 
     if (input.isAdmin !== undefined) {
@@ -740,7 +760,7 @@ class PlayerService {
 
     const placeholders = steamIds.map(() => '?').join(',');
     const players = await db.queryAsync<PlayerRecord>(
-      `SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id FROM players p WHERE p.id IN (${placeholders})`,
+      `SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id, ${MAIN_RATING_SQL} FROM players p WHERE p.id IN (${placeholders})`,
       steamIds
     );
 
@@ -772,7 +792,7 @@ class PlayerService {
    */
   async searchPlayers(query: string, limit: number = 50): Promise<PlayerResponse[]> {
     const players = await db.queryAsync<PlayerRecord>(
-      `SELECT * FROM players WHERE name ILIKE ? ORDER BY name LIMIT ?`,
+      `SELECT p.*, ${MAIN_RATING_SQL} FROM players p WHERE p.name ILIKE ? ORDER BY p.name LIMIT ?`,
       [`%${query}%`, limit]
     );
 
