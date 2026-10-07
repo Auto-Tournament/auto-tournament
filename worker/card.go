@@ -36,7 +36,9 @@ var (
 	cardAccent = color.NRGBA{0xff, 0x6a, 0x3d, 0xff}
 	accentInk  = color.NRGBA{0x14, 0x0e, 0x0c, 0xff}
 	avatarBack = color.NRGBA{0x2a, 0x1a, 0x14, 0xff}
-	tagInk     = color.NRGBA{0xf4, 0xed, 0xeb, 0xb3} // 70 %
+	tagInk     = color.NRGBA{0xf4, 0xed, 0xeb, 0xff}
+	tagInk2    = color.NRGBA{0xc4, 0xbc, 0xb9, 0xff}
+	tagPlate   = color.NRGBA{0x14, 0x0d, 0x0b, 0xb8} // the card's paper at 72 %
 )
 
 // captionCard is what a clip opens with (the drafts' "A smooth"): a card in
@@ -113,7 +115,7 @@ func (c captionCard) layout(w, h int) (*cardRender, error) {
 	if err != nil {
 		return nil, err
 	}
-	tagFace, err := face(geistMonoMedium, 11*k)
+	tagFace, err := face(geistMonoMedium, 13*k)
 	if err != nil {
 		return nil, err
 	}
@@ -228,12 +230,12 @@ func (c captionCard) layout(w, h int) (*cardRender, error) {
 		lines = append(lines, l)
 	}
 	if c.tag != "" {
-		lines = append(lines, []tagRun{{c.tag, tagInk}})
+		lines = append(lines, []tagRun{{c.tag, tagInk2}})
 	}
 	tagW, tagH := 0, 0
 	if len(lines) > 0 {
 		tm := tagFace.Metrics()
-		track := 0.12 * 11 * k
+		track := 0.1 * 13 * k
 		dot := px(6)
 		indent := dot + px(8)
 		lineH, lineGap := max(tm.Height.Ceil(), dot), px(4)
@@ -251,8 +253,19 @@ func (c captionCard) layout(w, h int) (*cardRender, error) {
 			tagW = max(tagW, indent+widthOf(l))
 		}
 		tagH = len(lines)*lineH + (len(lines)-1)*lineGap
-		pad := px(4) // room for the shadow
+		// A dark plate behind it, so it reads on any map (thin grey letters
+		// on bright sand did not).
+		pad := px(10)
 		r.tagImg = image.NewRGBA(image.Rect(0, 0, tagW+2*pad, tagH+2*pad))
+		{
+			w, h, rad := float64(tagW+2*pad), float64(tagH+2*pad), float64(px(10))
+			for y := 0; y < tagH+2*pad; y++ {
+				for x := 0; x < tagW+2*pad; x++ {
+					d := roundedDistance(float64(x)+0.5, float64(y)+0.5, w, h, rad)
+					over(r.tagImg, x, y, tagPlate, clamp01(0.5-d))
+				}
+			}
+		}
 		letters := image.NewRGBA(r.tagImg.Bounds())
 		for i, l := range lines {
 			top := pad + i*(lineH+lineGap)
@@ -268,8 +281,8 @@ func (c captionCard) layout(w, h int) (*cardRender, error) {
 				}
 			}
 		}
-		// A soft dark shadow under it, so it reads on a bright map.
-		shadow := softShadow(letters, px(2), 0.6)
+		// A soft dark shadow under the letters as well.
+		shadow := softShadow(letters, px(2), 0.8)
 		draw.Draw(r.tagImg, r.tagImg.Bounds(), shadow, image.Point{}, draw.Over)
 		draw.Draw(r.tagImg, r.tagImg.Bounds(), letters, image.Point{}, draw.Over)
 		tagW, tagH = tagW+2*pad, tagH+2*pad

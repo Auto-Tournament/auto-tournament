@@ -303,6 +303,17 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 	return clips, failed, nil
 }
 
+// audioLatency is how much later CS2's sound lands in pw-record's file than
+// the picture it belongs to: measured on the recorder VM (2026-10-07) as
+// 0.12–0.17 s from AWP shots against their kills. AT_AUDIO_LATENCY_MS
+// overrides it for another machine.
+func audioLatency() float64 {
+	if v, err := strconv.Atoi(env("AT_AUDIO_LATENCY_MS", "")); err == nil {
+		return float64(v) / 1000
+	}
+	return 0.15
+}
+
 // lead is how much is played before a moment, for the view to settle.
 const lead = tickrate
 
@@ -429,7 +440,9 @@ func (r *recorder) recordWindow(g *game, watermark bool, card *cardRender, name 
 	if err != nil {
 		return nil, fmt.Errorf("sound: %w", err)
 	}
-	audioAt := as.resumed.Sub(ac.started).Seconds() + float64(w.from-as.fromTick)/tickrate
+	// What CS2 plays reaches the recording audioLatency later: start that much
+	// further in, or every shot is heard after the kill it made.
+	audioAt := as.resumed.Sub(ac.started).Seconds() + float64(w.from-as.fromTick)/tickrate + audioLatency()
 
 	length := float64(w.to-w.from) / tickrate
 	kill := -1.0
