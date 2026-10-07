@@ -371,9 +371,13 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	var edits [][]segment
 	for i, w := range windows {
 		piece := filepath.Join(dir, fmt.Sprintf("piece-%d.mp4", i))
+		// The first piece plays the card's entrance; the later ones (after a
+		// jump cut) keep it small at the bottom.
 		var pieceCard *cardRender
 		if i == 0 {
 			pieceCard = card
+		} else if card != nil {
+			pieceCard = card.Settled()
 		}
 		segs, err := r.recordWindow(g, look.watermark, pieceCard, name, w, filepath.Join(dir, fmt.Sprint(i)), piece)
 		if err != nil {
@@ -404,7 +408,7 @@ func (r *recorder) recordWindow(g *game, watermark bool, card *cardRender, name 
 	}
 	sources := [][]float64{mainTicks}
 	raws := []string{main}
-	if card != nil {
+	if card != nil && !card.settled {
 		// The opening plays slowed down under the caption card: a frame for each of its frames.
 		hold, up := introGame()
 		introEnd := w.from + int(math.Ceil((hold+up)*tickrate)) + 4
@@ -449,7 +453,7 @@ func (r *recorder) recordWindow(g *game, watermark bool, card *cardRender, name 
 	if w.slowmo >= 0 {
 		kill = float64(w.slowmo-w.from) / tickrate
 	}
-	segs := editPlan(length, card != nil, kill)
+	segs := editPlan(length, card != nil && !card.settled, kill)
 	frames, err := timeline(sources, segs, w.from)
 	if err != nil {
 		return nil, err
@@ -514,7 +518,7 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 				return
 			}
 			defer f.Close()
-			for i := 0; i < int(cardSec*cardFPS); i++ {
+			for i := 0; i < card.Frames(); i++ {
 				if _, err := f.Write(card.frameAt(float64(i) / cardFPS).Pix); err != nil {
 					cardDone <- err
 					return

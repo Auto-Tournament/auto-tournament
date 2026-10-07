@@ -97,6 +97,34 @@ type cardRender struct {
 
 	scratch *image.RGBA // the card, composed for one frame
 	frame   *image.RGBA
+
+	// After its entrance the card shrinks to `small` (bottom centre, region
+	// coordinates) and stays there for the rest of the clip.
+	small image.Rectangle
+	// settled renders only that last state: the clip's later pieces (after
+	// a jump cut) keep the small card without playing the entrance again.
+	settled bool
+	full    *image.RGBA // the open card with its rounded edge, once composed
+}
+
+// cardSmall is how big the card is once it has moved to the bottom centre.
+const cardSmall = 0.6
+
+// Settled is the same card in its last state only, for a clip's later pieces.
+func (r *cardRender) Settled() *cardRender {
+	c := *r
+	c.settled = true
+	c.frame = image.NewRGBA(r.frame.Bounds())
+	return &c
+}
+
+// Frames is how many frames to stream: the whole animation, or one settled
+// frame (ffmpeg repeats the last frame to the end of the piece).
+func (r *cardRender) Frames() int {
+	if r.settled {
+		return 1
+	}
+	return int(cardSec * cardFPS)
 }
 
 // layout draws the parts for a video w×h.
@@ -301,15 +329,22 @@ func (c captionCard) layout(w, h int) (*cardRender, error) {
 	if r.tagImg != nil && tagLeft+tagW+px(2) > right {
 		right = tagLeft + tagW + px(2)
 	}
-	bottom := cardTop + ch + px(10) // it rises from, and sinks to, this far below
+	bottom := cardTop + ch + px(10) // it rises from this far below
 	if r.tagImg != nil && tagTop+tagH+px(2) > bottom {
 		bottom = tagTop + tagH + px(2)
+	}
+	// Where it ends up: smaller, centred, its bottom where the tag's is.
+	sw, sh := int(math.Round(float64(cw)*cardSmall)), int(math.Round(float64(ch)*cardSmall))
+	smallLeft, smallTop := (w-sw)/2, h-px(14)-sh
+	if smallTop+sh+px(2) > bottom {
+		bottom = smallTop + sh + px(2)
 	}
 	// Even sizes and positions for the yuv420 video.
 	left, cardTop0 := left&^1, cardTop&^1
 	r.region = image.Rect(left, cardTop0, (right+1)&^1, (bottom+1)&^1)
 	r.card = image.Rect(cardLeft-left, cardTop-cardTop0, cardLeft-left+cw, cardTop-cardTop0+ch)
 	r.tag = image.Rect(tagLeft-left, tagTop-cardTop0, tagLeft-left+tagW, tagTop-cardTop0+tagH)
+	r.small = image.Rect(smallLeft-left, smallTop-cardTop0, smallLeft-left+sw, smallTop-cardTop0+sh)
 	r.scratch = image.NewRGBA(image.Rect(0, 0, cw, ch))
 	r.frame = image.NewRGBA(image.Rect(0, 0, r.region.Dx(), r.region.Dy()))
 	return r, nil
@@ -319,63 +354,23 @@ func (c captionCard) layout(w, h int) (*cardRender, error) {
 // region's size). The same buffer is reused for every frame.
 //
 // The card opens from its middle, rising into place; its content comes in
-// and the accent line draws across. Leaving, the content goes and the card
-// folds back to its middle, sinking, the line still full.
+// and the accent line draws across. Then, as the clip speeds up, it shrinks
+// and glides to the bottom centre, where it stays to the end of the clip.
 func (r *cardRender) frameAt(t float64) *image.RGBA {
 	clear(r.frame.Pix)
-	ease := func(from, to float64) float64 { return smooth(clamp01((t - from) / (to - from))) }
-	if unfold := ease(0.10, 0.75) * (1 - ease(3.45, 3.95)); unfold > 0 {
-		s := r.scratch
-		clear(s.Pix)
-		cw, ch := s.Bounds().Dx(), s.Bounds().Dy()
-		draw.Draw(s, s.Bounds(), r.back, image.Point{}, draw.Over)
-		// The avatar fades in growing a little; out shrinking a little.
-		if a := ease(0.45, 0.95) * (1 - ease(3.2, 3.5)); a > 0 {
-			scale := 0.85 + 0.15*ease(0.45, 0.95) - 0.1*ease(3.2, 3.5)
-			ab := r.avatar.Bounds()
-			sw, sh := int(float64(ab.Dx())*scale), int(float64(ab.Dy())*scale)
-			at := r.avatarAt.Add(image.Pt((ab.Dx()-sw)/2, (ab.Dy()-sh)/2))
-			draw.ApproxBiLinear.Scale(s, image.Rect(at.X, at.Y, at.X+sw, at.Y+sh), r.avatar, ab, draw.Over,
-				&draw.Options{SrcMask: image.NewUniform(color.Alpha{uint8(255 * a)})})
-		}
-		// The text slides in from the left; out to the right.
-		if a := ease(0.65, 1.2) * (1 - ease(3.2, 3.5)); a > 0 {
-			dx := int(math.Round(-10*r.k*(1-ease(0.65, 1.2)) + 6*r.k*ease(3.2, 3.5)))
-			draw.DrawMask(s, r.text.Bounds().Add(r.textAt.Add(image.Pt(dx, 0))), r.text, image.Point{},
-				image.NewUniform(color.Alpha{uint8(255 * a)}), image.Point{}, draw.Over)
-		}
-		// The pill wipes in from the left; out to the right.
-		if r.pill != nil {
-			in, out := ease(0.9, 1.4), ease(3.2, 3.45)
-			pb := r.pill.Bounds()
-			if from, to := int(float64(pb.Dx())*out), int(float64(pb.Dx())*in); to > from {
-				part := image.Rect(from, 0, to, pb.Dy())
-				draw.Draw(s, part.Add(r.pillAt), r.pill, part.Min, draw.Over)
-			}
-		}
-		// The accent line draws across, and stays as the card folds away.
-		if p := ease(0.6, 1.55); p > 0 {
-			line := image.Rect(0, ch-r.barH, int(float64(cw)*p), ch)
-			draw.Draw(s, line, image.NewUniform(premul(cardAccent, 1)), image.Point{}, draw.Over)
-		}
-		// Open from the middle, its corners (and the line's ends) rounded.
-		dy := int(math.Round(10*r.k*(1-ease(0.10, 0.75)) + 6*r.k*ease(3.45, 3.95)))
-		mask := image.NewAlpha(image.Rect(0, 0, cw, ch))
-		half := float64(cw) / 2 * unfold
-		for y := 0; y < ch; y++ {
-			for x := int(float64(cw)/2 - half - 1); x <= int(float64(cw)/2+half+1); x++ {
-				if x < 0 || x >= cw {
-					continue
-				}
-				d := roundedDistance(float64(x)+0.5-(float64(cw)/2-half), float64(y)+0.5, 2*half, float64(ch), math.Min(r.radius, half))
-				if a := clamp01(-d + 0.5); a > 0 {
-					mask.SetAlpha(x, y, color.Alpha{uint8(255 * a)})
-				}
-			}
-		}
-		draw.DrawMask(r.frame, r.card.Add(image.Pt(0, dy)), s, image.Point{}, mask, image.Point{}, draw.Over)
+	if r.settled {
+		r.drawMoved(1)
+		return r.frame
 	}
-	// The corner slides in from the left after the card, and back out as it goes.
+	ease := func(from, to float64) float64 { return smooth(clamp01((t - from) / (to - from))) }
+	if move := ease(3.3, 3.9); move > 0 {
+		r.drawMoved(move)
+	} else if unfold := ease(0.10, 0.75); unfold > 0 {
+		r.compose(t, unfold)
+		dy := int(math.Round(10 * r.k * (1 - unfold)))
+		draw.DrawMask(r.frame, r.card.Add(image.Pt(0, dy)), r.scratch, image.Point{}, r.edgeMask(unfold), image.Point{}, draw.Over)
+	}
+	// The corner slides in from the left after the card, and back out as it moves.
 	if r.tagImg != nil {
 		if a := ease(0.85, 1.45) * (1 - ease(3.3, 3.75)); a > 0 {
 			dx := int(math.Round(-16 * r.k * (1 - ease(0.85, 1.45) + ease(3.3, 3.75))))
@@ -384,6 +379,76 @@ func (r *cardRender) frameAt(t float64) *image.RGBA {
 		}
 	}
 	return r.frame
+}
+
+// compose draws the card's content `t` seconds in onto the scratch image.
+func (r *cardRender) compose(t, unfold float64) {
+	ease := func(from, to float64) float64 { return smooth(clamp01((t - from) / (to - from))) }
+	s := r.scratch
+	clear(s.Pix)
+	cw, ch := s.Bounds().Dx(), s.Bounds().Dy()
+	draw.Draw(s, s.Bounds(), r.back, image.Point{}, draw.Over)
+	// The avatar fades in growing a little.
+	if a := ease(0.45, 0.95); a > 0 {
+		scale := 0.85 + 0.15*a
+		ab := r.avatar.Bounds()
+		sw, sh := int(float64(ab.Dx())*scale), int(float64(ab.Dy())*scale)
+		at := r.avatarAt.Add(image.Pt((ab.Dx()-sw)/2, (ab.Dy()-sh)/2))
+		draw.ApproxBiLinear.Scale(s, image.Rect(at.X, at.Y, at.X+sw, at.Y+sh), r.avatar, ab, draw.Over,
+			&draw.Options{SrcMask: image.NewUniform(color.Alpha{uint8(255 * a)})})
+	}
+	// The text slides in from the left.
+	if a := ease(0.65, 1.2); a > 0 {
+		dx := int(math.Round(-10 * r.k * (1 - a)))
+		draw.DrawMask(s, r.text.Bounds().Add(r.textAt.Add(image.Pt(dx, 0))), r.text, image.Point{},
+			image.NewUniform(color.Alpha{uint8(255 * a)}), image.Point{}, draw.Over)
+	}
+	// The pill wipes in from the left.
+	if r.pill != nil {
+		pb := r.pill.Bounds()
+		if to := int(float64(pb.Dx()) * ease(0.9, 1.4)); to > 0 {
+			part := image.Rect(0, 0, to, pb.Dy())
+			draw.Draw(s, part.Add(r.pillAt), r.pill, part.Min, draw.Over)
+		}
+	}
+	// The accent line draws across.
+	if p := ease(0.6, 1.55); p > 0 {
+		line := image.Rect(0, ch-r.barH, int(float64(cw)*p), ch)
+		draw.Draw(s, line, image.NewUniform(premul(cardAccent, 1)), image.Point{}, draw.Over)
+	}
+}
+
+// edgeMask is the card's rounded shape, opened `unfold` of the way from its middle.
+func (r *cardRender) edgeMask(unfold float64) *image.Alpha {
+	cw, ch := r.scratch.Bounds().Dx(), r.scratch.Bounds().Dy()
+	mask := image.NewAlpha(image.Rect(0, 0, cw, ch))
+	half := float64(cw) / 2 * unfold
+	for y := 0; y < ch; y++ {
+		for x := int(float64(cw)/2 - half - 1); x <= int(float64(cw)/2+half+1); x++ {
+			if x < 0 || x >= cw {
+				continue
+			}
+			d := roundedDistance(float64(x)+0.5-(float64(cw)/2-half), float64(y)+0.5, 2*half, float64(ch), math.Min(r.radius, half))
+			if a := clamp01(-d + 0.5); a > 0 {
+				mask.SetAlpha(x, y, color.Alpha{uint8(255 * a)})
+			}
+		}
+	}
+	return mask
+}
+
+// drawMoved draws the open card `move` of the way from its place to the small one.
+func (r *cardRender) drawMoved(move float64) {
+	if r.full == nil {
+		r.compose(cardSec, 1)
+		full := image.NewRGBA(r.scratch.Bounds())
+		draw.DrawMask(full, full.Bounds(), r.scratch, image.Point{}, r.edgeMask(1), image.Point{}, draw.Over)
+		r.full = full
+	}
+	lerp := func(a, b int) int { return int(math.Round(float64(a) + (float64(b)-float64(a))*move)) }
+	at := image.Rect(lerp(r.card.Min.X, r.small.Min.X), lerp(r.card.Min.Y, r.small.Min.Y),
+		lerp(r.card.Max.X, r.small.Max.X), lerp(r.card.Max.Y, r.small.Max.Y))
+	draw.CatmullRom.Scale(r.frame, at, r.full, r.full.Bounds(), draw.Over, nil)
 }
 
 // smooth is the drafts' cubic-bezier(.2,.8,.2,1): quick out of the start, a long soft landing.

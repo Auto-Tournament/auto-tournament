@@ -223,7 +223,7 @@ func videoFilter(o overlay) string {
 	b.WriteString("[0:v]format=yuv420p[base]")
 	last := "base"
 	if o.card >= 0 {
-		fmt.Fprintf(&b, ";[%s][%d:v]overlay=%d:%d:eof_action=pass:alpha=premultiplied[withcard]", last, o.card, o.cardAt.X, o.cardAt.Y)
+		fmt.Fprintf(&b, ";[%s][%d:v]overlay=%d:%d:eof_action=repeat:alpha=premultiplied[withcard]", last, o.card, o.cardAt.X, o.cardAt.Y)
 		last = "withcard"
 	}
 	if o.logo >= 0 {
