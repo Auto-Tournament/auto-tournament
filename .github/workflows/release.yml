@@ -403,8 +403,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y jq curl
+          # The runners ship both; apt only when one is missing. On
+          # 2026-10-07 the runners' Azure mirror stalled apt-get update for
+          # 26 minutes and held the beta.58 release.
+          if command -v jq >/dev/null && command -v curl >/dev/null; then exit 0; fi
+          sudo sed -i 's#http://azure.archive.ubuntu.com#https://archive.ubuntu.com#g' /etc/apt/sources.list.d/*.sources /etc/apt/sources.list 2>/dev/null || true
+          printf 'Acquire::Retries "3";\nAcquire::http::Timeout "20";\nAcquire::https::Timeout "20";\n' | sudo tee /etc/apt/apt.conf.d/99-ci-timeouts >/dev/null
+          timeout 300 sudo apt-get update
+          timeout 300 sudo apt-get install -y jq curl
 
       - name: Configure git user
         shell: bash
