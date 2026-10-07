@@ -158,7 +158,7 @@ type clipResult struct {
 }
 
 // clipLook is what goes on every clip of a job: the caption card's player,
-// match and avatar (each moment adds its own title), and whether the logo shows.
+// match and avatar, and whether the logo shows.
 type clipLook struct {
 	name      string
 	match     string
@@ -280,7 +280,8 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	if err != nil {
 		return err
 	}
-	card, err := captionCard{name: look.name, moment: m.Title, match: look.match, avatar: look.avatar}.render(g.height)
+	// Kept short enough to read in its few seconds: who, and which match.
+	card, err := captionCard{name: look.name, moment: look.match, avatar: look.avatar}.render(g.height)
 	if err != nil {
 		return err
 	}
