@@ -3,6 +3,7 @@
  * Handles shuffle tournament creation, round generation, and automatic progression
  */
 
+import { RATING_ELO, getGameRatings, ratingGame, ratingJoin } from './gameRatings';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { balanceTeams, type BalancedTeam } from './teamBalancingService';
@@ -256,7 +257,18 @@ export async function getRegisteredPlayers(tournamentId: number): Promise<Player
     return [];
   }
 
-  return await playerService.getPlayersByIds(playerIds.map((p) => p.player_id));
+  // Their ratings in the tournament's game: balancing and the standings use them.
+  const ids = playerIds.map((p) => p.player_id);
+  const tournament = await db.queryOneAsync<{ game: string | null }>('SELECT game FROM tournament WHERE id = ?', [
+    tournamentId,
+  ]);
+  const ratings = await getGameRatings(ids, tournament?.game);
+  return (await playerService.getPlayersByIds(ids)).map((p) => {
+    const r = ratings.get(p.id);
+    return r
+      ? { ...p, current_elo: r.elo, openskill_mu: r.mu, openskill_sigma: r.sigma, match_count: r.matchCount }
+      : p;
+  });
 }
 
 /**
@@ -413,7 +425,8 @@ export async function generateRoundMatches(
 
   // Balance teams
   const playerIds = players.map((p) => p.id);
-  const balanceResult = await balanceTeams(playerIds, teamSize, true); // Use tournament team size, use optimization
+  const tournamentGame = (await db.queryOneAsync<{ game: string | null }>('SELECT game FROM tournament WHERE id = ?', [tournamentId]))?.game;
+  const balanceResult = await balanceTeams(playerIds, teamSize, true, tournamentGame); // Use tournament team size, use optimization
 
   // Create temporary teams for this round
   const teams: BalancedTeam[] = balanceResult.teams;
@@ -1097,7 +1110,7 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
         p.id as player_id,
         p.name,
         p.avatar_url,
-        p.current_elo,
+        ${RATING_ELO} AS current_elo,
         p.starting_elo,
         SUM(CASE WHEN pms.won_match THEN 1 ELSE 0 END) as match_wins,
         SUM(CASE WHEN pms.won_match THEN 0 ELSE 1 END) as match_losses,
@@ -1113,10 +1126,11 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
       FROM player_match_stats pms
       JOIN matches m ON pms.match_slug = m.slug
       JOIN players p ON p.id = pms.player_id
+      ${ratingJoin('p')}
       WHERE m.tournament_id = ?
-      GROUP BY p.id, p.name, p.avatar_url, p.current_elo, p.starting_elo
+      GROUP BY p.id, p.name, p.avatar_url, pgr.current_elo, p.starting_elo
     `,
-    [row.id]
+    [ratingGame(row.game), row.id]
   );
 
   // Aggregate ELO change for this tournament only, treating the first recorded

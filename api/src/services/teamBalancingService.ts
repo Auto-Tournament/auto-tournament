@@ -3,6 +3,7 @@
  * Creates balanced teams of players based on their ELO/OpenSkill ratings
  */
 
+import { getGameRatings } from './gameRatings';
 import { ordinal } from 'openskill';
 import { eloToOpenSkill } from './ratingService';
 import { playerService, type PlayerRecord } from './playerService';
@@ -34,10 +35,21 @@ export interface TeamBalanceResult {
  * @param useOptimization - Whether to apply optimization step (default: true)
  * @returns Balanced teams
  */
+/** The players, with their rating fields set to their rating in `game`. */
+async function playersInGame(playerIds: string[], game: string | null | undefined): Promise<PlayerRecord[]> {
+  const ratings = await getGameRatings(playerIds, game);
+  return (await playerService.getPlayersByIds(playerIds)).map((p) => {
+    const r = ratings.get(p.id);
+    return r ? { ...p, current_elo: r.elo, openskill_mu: r.mu, openskill_sigma: r.sigma, match_count: r.matchCount } : p;
+  });
+}
+
 export async function balanceTeams(
   playerIds: string[],
   teamSize: number = 5,
-  useOptimization: boolean = true
+  useOptimization: boolean = true,
+  /** The tournament's game: players are balanced on their rating in it. */
+  game?: string | null
 ): Promise<TeamBalanceResult> {
   if (playerIds.length === 0) {
     throw new Error('No players provided for team balancing');
@@ -48,7 +60,7 @@ export async function balanceTeams(
   }
 
   // Fetch all players
-  const players = await playerService.getPlayersByIds(playerIds);
+  const players = await playersInGame(playerIds, game);
   if (players.length !== playerIds.length) {
     const missing = playerIds.filter((id) => !players.find((p) => p.id === id));
     throw new Error(`Some players not found: ${missing.join(', ')}`);
@@ -347,7 +359,8 @@ function calculateBalanceQuality(teams: BalancedTeam[]): TeamBalanceResult['bala
  */
 export async function balanceTeamsWithOddPlayers(
   playerIds: string[],
-  teamSize: number = 5
+  teamSize: number = 5,
+  game?: string | null
 ): Promise<{
   teams: BalancedTeam[];
   sittingOut: PlayerRecord[];
@@ -357,7 +370,7 @@ export async function balanceTeamsWithOddPlayers(
   const remaining = playerIds.length % teamSize;
 
   if (remaining === 0) {
-    const result = await balanceTeams(playerIds, teamSize);
+    const result = await balanceTeams(playerIds, teamSize, true, game);
     return {
       teams: result.teams,
       sittingOut: [],
@@ -366,7 +379,7 @@ export async function balanceTeamsWithOddPlayers(
   }
 
   // Get all players
-  const players = await playerService.getPlayersByIds(playerIds);
+  const players = await playersInGame(playerIds, game);
 
   // Sort by ELO and select players to sit out (lowest ELO players)
   const playersWithOrdinal = players.map((p) => {
@@ -382,7 +395,7 @@ export async function balanceTeamsWithOddPlayers(
   const playingIds = playersWithOrdinal.slice(remaining).map((p) => p.player.id);
 
   // Balance remaining players
-  const result = await balanceTeams(playingIds, teamSize);
+  const result = await balanceTeams(playingIds, teamSize, true, game);
 
   return {
     teams: result.teams,

@@ -1780,14 +1780,8 @@ router.post('/dev/reset-simulation-state', async (req: Request, res: Response) =
 
     // 4) Reset player ratings to their starting values and clear match counters.
     // This keeps players but forgets prior ELO changes from simulations.
-    await db.execAsync(`
-      UPDATE players
-         SET current_elo = starting_elo,
-             match_count = 0,
-             openskill_mu = 25.0,
-             openskill_sigma = 8.333,
-             updated_at = ${now}
-    `);
+    // Every game's rating goes: a player without one stands at their seed.
+    await db.execAsync('DELETE FROM player_game_ratings');
 
     // 5) Clear shuffle tournament player registrations so new simulations can
     // register a fresh pool if desired.

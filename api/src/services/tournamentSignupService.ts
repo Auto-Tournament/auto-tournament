@@ -13,6 +13,7 @@
  * `registrationClosesAt`, `maxTeams`, `checkInOpensAt` and `checkInClosesAt`.
  */
 
+import { RATING_ELO, ratingGame, ratingJoin } from './gameRatings';
 import { db } from '../config/database';
 import { emitTournamentUpdate } from './socketService';
 import { builtinGames } from './gameCatalogService';
@@ -129,7 +130,8 @@ async function teamRow(teamId: string) {
     players: string;
     owner_uid: string | null;
     logo_updated_at: number | null;
-  }>('SELECT id, name, tag, players, owner_uid, logo_updated_at FROM teams WHERE id = ?', [teamId]);
+    game: string | null;
+  }>('SELECT id, name, tag, players, owner_uid, logo_updated_at, game FROM teams WHERE id = ?', [teamId]);
   if (!team) throw new SignupError(404, 'That team does not exist.');
   return team;
 }
@@ -236,15 +238,17 @@ export const tournamentSignupService = {
       has_game: boolean | null;
       checked_in_at: number | null;
     }>(
-      `SELECT l.team_id, l.player_id, l.role, p.name, p.avatar_url, p.current_elo, p.uid,
+      `SELECT l.team_id, l.player_id, l.role, p.name, p.avatar_url,
+              CASE WHEN p.id IS NULL THEN NULL ELSE ${RATING_ELO} END AS current_elo, p.uid,
               (pg.player_uid IS NOT NULL) AS has_game, c.checked_in_at
          FROM tournament_lineups l
          LEFT JOIN players p ON p.id = l.player_id
+         ${ratingJoin('p')}
          LEFT JOIN player_games pg ON pg.player_uid = p.uid AND pg.game_id = ?
          LEFT JOIN tournament_checkins c ON c.tournament_id = l.tournament_id AND c.player_id = l.player_id
         WHERE l.tournament_id = ?
         ORDER BY l.role DESC, l.created_at`,
-      [gameId ?? -1, tournamentId]
+      [ratingGame(tournament.game), gameId ?? -1, tournamentId]
     );
     const rosterNames = new Map<string, string>();
     for (const row of rows) {
@@ -275,12 +279,13 @@ export const tournamentSignupService = {
             has_game: boolean;
             checked_in_at: number | null;
           }>(
-            `SELECT p.id, p.name, p.avatar_url, p.current_elo, p.uid, (pg.player_uid IS NOT NULL) AS has_game, c.checked_in_at
+            `SELECT p.id, p.name, p.avatar_url, ${RATING_ELO} AS current_elo, p.uid, (pg.player_uid IS NOT NULL) AS has_game, c.checked_in_at
                FROM players p
+               ${ratingJoin('p')}
                LEFT JOIN player_games pg ON pg.player_uid = p.uid AND pg.game_id = ?
                LEFT JOIN tournament_checkins c ON c.tournament_id = ? AND c.player_id = p.id
               WHERE p.id = ANY(?::text[])`,
-            [gameId ?? -1, tournamentId, steamIds]
+            [ratingGame(tournament.game), gameId ?? -1, tournamentId, steamIds]
           )
         : [];
       const byId = new Map(extra.map((p) => [p.id, p]));
@@ -339,7 +344,8 @@ export const tournamentSignupService = {
   /** Teams the account may sign up (owner or captain), with their rosters. */
   async eligibleTeams(uid: string, tournamentId?: number) {
     // The tournament's game, to say who has it on their profile (null: unknown).
-    const gameId = tournamentId ? await gameRowId((await loadTournament(tournamentId)).game).catch(() => null) : null;
+    const tournamentGame = tournamentId ? (await loadTournament(tournamentId).catch(() => null))?.game ?? null : null;
+    const gameId = tournamentId ? await gameRowId(tournamentGame).catch(() => null) : null;
     const memberships = await teamMembers.listForAccount(uid);
     const captainOf = memberships.filter((m) => m.role === 'captain').map((m) => m.teamId);
     const owned = await db.queryAsync<{ id: string }>('SELECT id FROM teams WHERE owner_uid = ?', [uid]);
@@ -351,11 +357,12 @@ export const tournamentSignupService = {
       const steamIds = roster.map((p) => (p.steamId ?? p.steamid) as string);
       const players = steamIds.length
         ? await db.queryAsync<{ id: string; name: string; avatar_url: string | null; current_elo: number; uid: string; has_game: boolean }>(
-            `SELECT p.id, p.name, p.avatar_url, p.current_elo, p.uid, (pg.player_uid IS NOT NULL) AS has_game
+            `SELECT p.id, p.name, p.avatar_url, ${RATING_ELO} AS current_elo, p.uid, (pg.player_uid IS NOT NULL) AS has_game
                FROM players p
+               ${ratingJoin('p')}
                LEFT JOIN player_games pg ON pg.player_uid = p.uid AND pg.game_id = ?
               WHERE p.id = ANY(?::text[])`,
-            [gameId ?? -1, steamIds]
+            [ratingGame(tournamentGame ?? team.game), gameId ?? -1, steamIds]
           )
         : [];
       const byId = new Map(players.map((p) => [p.id, p]));

@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { RATING_ELO, ratingGame, ratingJoin } from '../services/gameRatings';
 import { db } from '../config/database';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { integrationForMatch } from '../integrations/registry';
@@ -36,8 +37,8 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     const { teamId } = req.params;
 
     // Check if team exists and get players
-    const team = await db.queryOneAsync<{ id: string; name: string; tag: string; players: string }>(
-      'SELECT id, name, tag, players FROM teams WHERE id = ?',
+    const team = await db.queryOneAsync<{ id: string; name: string; tag: string; players: string; game: string | null }>(
+      'SELECT id, name, tag, players, game FROM teams WHERE id = ?',
       [teamId]
     );
 
@@ -90,9 +91,11 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     // response never carried, so everyone read 1500.
     const rosterIds = parsedPlayers.map((p) => p.steamId).filter((id) => id && id !== 'unknown');
     if (rosterIds.length > 0) {
+      // In the team's game: a rating is per game.
       const ratings = await db.queryAsync<{ id: string; current_elo: number; uid: string }>(
-        `SELECT id, current_elo, uid FROM players WHERE id IN (${rosterIds.map(() => '?').join(', ')})`,
-        rosterIds
+        `SELECT p.id, ${RATING_ELO} AS current_elo, p.uid FROM players p ${ratingJoin('p')}
+          WHERE p.id IN (${rosterIds.map(() => '?').join(', ')})`,
+        [ratingGame(team.game), ...rosterIds]
       );
       const eloById = new Map(ratings.map((r) => [r.id, r.current_elo]));
       // The member's role (captain or member) from `team_members`, which is
