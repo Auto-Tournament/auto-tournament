@@ -279,6 +279,14 @@ export const ManageRail: React.FC = () => {
         // plain list, as in the draft: no box around it. Each item has an
         // icon (the owner's call after the draft, which had none).
         ...railColumnSx,
+        // The whole column, the tournament picker with it, fits the window;
+        // the list under the picker scrolls in what is left.
+        [RAIL_COLUMN_MIN_WIDTH]: {
+          ...railColumnSx[RAIL_COLUMN_MIN_WIDTH],
+          display: 'flex',
+          flexDirection: 'column',
+          maxHeight: `calc(100vh - ${BELOW_NAV_STICKY_TOP} - 24px)`,
+        },
         fontSize: textSize.sm,
       }}
     >
@@ -297,7 +305,8 @@ export const ManageRail: React.FC = () => {
             overflowY: 'auto',
             // Taller than the window (a small laptop, every group open):
             // the rail scrolls on its own instead of hiding its last items.
-            maxHeight: `calc(100vh - ${BELOW_NAV_STICKY_TOP} - 24px)`,
+            flex: '1 1 auto',
+            minHeight: 0,
           },
         }}
       >
