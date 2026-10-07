@@ -161,7 +161,12 @@ router.post('/recorder/match-reels/:slug/:map/fail', requireAuth, async (req: Re
 });
 
 router.get('/matches/:slug/reels', async (req: Request, res: Response) => {
-  return res.json({ success: true, reels: await matchReels(req.params.slug) });
+  try {
+    return res.json({ success: true, reels: await matchReels(req.params.slug) });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] match reels failed', { error, slug: req.params.slug });
+    return res.status(500).json({ success: false, error: 'Could not read the match reels' });
+  }
 });
 
 router.post('/recorder/fail', requireAuth, async (req: Request, res: Response) => {
