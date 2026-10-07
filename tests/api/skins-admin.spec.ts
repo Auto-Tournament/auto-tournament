@@ -47,9 +47,28 @@ test.describe.serial('Skins admin inventory', () => {
     const inventory = await (
       await request.get(`/api/skins/admin/players/${STEAM_ID}/inventory`, { headers: getAuthHeader() })
     ).json();
+    // The slot was empty, so it went straight on.
     expect(inventory.inventory).toEqual([
-      expect.objectContaining({ id, name: 'Doppler (Sapphire)', float: 0.0123, pattern: 661, source: 'admin' }),
+      expect.objectContaining({ id, name: 'Doppler (Sapphire)', float: 0.0123, pattern: 661, source: 'admin', equipped: true }),
     ]);
+
+    // A second knife does not take the first one's place.
+    const second = await request.post(`/api/skins/admin/players/${STEAM_ID}/skins`, {
+      headers: getAuthHeader(),
+      data: { weapon: sapphire.weapon, paintKit: sapphire.paintKit },
+    });
+    expect(second.ok()).toBe(true);
+    const secondId = (await second.json()).id;
+    const both = await (
+      await request.get(`/api/skins/admin/players/${STEAM_ID}/inventory`, { headers: getAuthHeader() })
+    ).json();
+    expect(both.inventory).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id, equipped: true }),
+        expect.objectContaining({ id: secondId, equipped: false }),
+      ])
+    );
+    expect((await request.delete(`/api/skins/admin/skins/${secondId}`, { headers: getAuthHeader() })).ok()).toBe(true);
 
     expect((await request.delete(`/api/skins/admin/skins/${id}`, { headers: getAuthHeader() })).ok()).toBe(true);
     expect((await request.delete(`/api/skins/admin/skins/${id}`, { headers: getAuthHeader() })).status()).toBe(404);

@@ -319,7 +319,10 @@ export const skinService = {
     }
   },
 
-  /** Gives a player one skin, rolled like a case unless the reward pins it. */
+  /**
+   * Gives a player one skin, rolled like a case unless the reward pins it,
+   * and equips it if its slot is empty (never in place of one they chose).
+   */
   async grant(
     playerUid: string,
     skin: CatalogSkin,
@@ -347,6 +350,13 @@ export const skinService = {
         variantOf(skin.paintKitName),
       ]
     );
+    if (row?.id) {
+      await db.runAsync(
+        `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id) VALUES (?, ?, ?)
+         ON CONFLICT (player_uid, slot) DO NOTHING`,
+        [playerUid, slotOf(skin.weapon), row.id]
+      );
+    }
     // The reveal shows at once on any page the player has open.
     const player = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [playerUid]);
     if (player) emitSkinsChanged(player.id);
