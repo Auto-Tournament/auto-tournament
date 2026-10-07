@@ -8,19 +8,14 @@ Other games come later.
 
 ## The flag
 
-Matchmaking ships dark behind an experimental feature flag.
+Matchmaking shipped dark behind an experimental feature flag. It no longer
+is: it is always on, open to every signed-in player and every mode (5v5, 2v2,
+1v1) is enabled by default. An admin can still limit it to admins
+(`mm_open_to_players` = `0`) and pick the modes under Settings → Matchmaking.
 
-- Setting `experimental_matchmaking` in `app_settings`. Off by default.
-- Admins turn it on under Settings → Experimental (`PUT /api/experimental/matchmaking`).
-- `EXPERIMENTAL_MATCHMAKING=1` turns it on for development. `=0` forces it
-  off. The variable wins over the admin toggle.
-- While it is off, nothing is reachable. Every `/api/matchmaking` route
-  answers 404, even to admins. The client shows no matchmaking UI.
-- While it is on, it stays admin only until we open it to players (phase 4).
-
-Code: `api/src/services/experimentalFeatures.ts`, `api/src/routes/experimental.ts`,
-`api/src/routes/matchmaking.ts`. New experimental features add one entry to
-`EXPERIMENTAL_FEATURES` and one core setting key.
+The experimental framework (`api/src/services/experimentalFeatures.ts`,
+`api/src/routes/experimental.ts`) stays for the next feature that ships dark:
+add one entry to `EXPERIMENTAL_FEATURES` and one core setting key.
 
 ## What exists that we reuse
 

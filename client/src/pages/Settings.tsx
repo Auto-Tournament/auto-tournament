@@ -22,7 +22,8 @@ import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-d
 import { SiteNameCard } from '../components/settings/SiteNameCard';
 import { LicenseCard } from '../components/settings/LicenseCard';
 import { WebhooksCard } from '../components/settings/WebhooksCard';
-import { ExperimentalCard } from '../components/settings/ExperimentalCard';
+import { MatchmakingSettingsCard } from '../components/settings/MatchmakingSettingsCard';
+import { ExperimentalCard, type ExperimentalFeatureState } from '../components/settings/ExperimentalCard';
 import { SignInProvidersCard } from '../components/settings/SignInProvidersCard';
 import { SettingsCardHead, SettingsRow } from '../components/settings/SettingsRow';
 import { useInstalledIntegrations } from '../integrations/registry';
@@ -48,6 +49,7 @@ const SECTION_CARDS: Record<string, string> = {
   matches: 'players',
   webhooks: 'webhooks',
   license: 'license',
+  matchmaking: 'matchmaking',
   experimental: 'advanced',
   developer: 'advanced',
   advanced: 'advanced',
@@ -116,6 +118,14 @@ export default function Settings() {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isDev = useIsDevelopment();
   const { t } = useTranslation();
+  // Experimental features (none right now): the Advanced card shows only with some, or in development.
+  const [experimental, setExperimental] = useState<ExperimentalFeatureState[]>([]);
+  useEffect(() => {
+    api
+      .get<{ features: ExperimentalFeatureState[] }>('/api/experimental')
+      .then((res) => setExperimental(res.features))
+      .catch(() => setExperimental([]));
+  }, []);
 
   // `?section=` scrolls to that card; CS2's old sections open its own pages.
   // Modules other than CS2 that still have `instanceSettings` get a card
@@ -276,6 +286,9 @@ export default function Settings() {
                   }
                 />
               </SettingsCard>
+              <SettingsCard cardKey="matchmaking" highlight={highlight === 'matchmaking'}>
+                <MatchmakingSettingsCard />
+              </SettingsCard>
             </Stack>
 
             <Stack spacing={2} sx={{ minWidth: 0 }}>
@@ -285,10 +298,12 @@ export default function Settings() {
               <SettingsCard cardKey="license" highlight={highlight === 'license'}>
                 <LicenseCard />
               </SettingsCard>
+              {(isDev || experimental.length > 0) && (
               <SettingsCard cardKey="advanced" highlight={highlight === 'advanced'}>
-                <ExperimentalCard />
+                <ExperimentalCard features={experimental} onChange={setExperimental} />
                 {isDev && (
-                  <Box sx={{ mt: 3, pt: 3, borderTop: `1px solid ${color.rule}` }} data-testid="settings-developer">
+                  <Box
+                    sx={experimental.length > 0 ? { mt: 3, pt: 3, borderTop: `1px solid ${color.rule}` } : undefined} data-testid="settings-developer">
                     <Typography variant="h6" fontWeight={600} gutterBottom color="error">
                       {t('settingsPage.developer.resetApiTitle')}
                     </Typography>
@@ -309,6 +324,7 @@ export default function Settings() {
                   </Box>
                 )}
               </SettingsCard>
+              )}
             </Stack>
           </Box>
 

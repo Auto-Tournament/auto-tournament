@@ -478,7 +478,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Matchmaking (experimental): find a match, the match room. */}
+      {/* Matchmaking: find a match, the match room. */}
       <Route
         path={paths.play}
         element={

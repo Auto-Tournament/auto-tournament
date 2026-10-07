@@ -31,7 +31,7 @@ export function parseModePools(raw: unknown): Partial<Record<MatchmakingMode, nu
 }
 
 /** Modes on when the admin never chose (`mm_modes` unset). */
-export const DEFAULT_MODES: MatchmakingMode[] = ['5v5'];
+export const DEFAULT_MODES: MatchmakingMode[] = Object.keys(TEAM_SIZE) as MatchmakingMode[];
 
 /** The admin's modes (`mm_modes`, a JSON array); anything unknown is dropped, nothing left = the default. */
 export function parseEnabledModes(raw: unknown): MatchmakingMode[] {

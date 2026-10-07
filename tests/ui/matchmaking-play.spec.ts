@@ -22,7 +22,6 @@ test.describe.serial('matchmaking: Play page', () => {
   test.beforeAll(async () => {
     admin = await playwrightRequest.newContext({ baseURL: BASE_URL });
     expect(await signInViaRequest(admin)).toBe(true);
-    expect((await admin.put('/api/experimental/matchmaking', { data: { enabled: true } })).ok()).toBe(true);
     expect((await admin.put('/api/matchmaking/admin/settings', { data: { openToPlayers: true } })).ok()).toBe(true);
   });
 
@@ -31,8 +30,7 @@ test.describe.serial('matchmaking: Play page', () => {
       await ctx.post('/api/matchmaking/party/leave', { data: {} }).catch(() => undefined);
       await ctx.dispose();
     }
-    await admin.put('/api/matchmaking/admin/settings', { data: { openToPlayers: false } });
-    await admin.put('/api/experimental/matchmaking', { data: { enabled: false } });
+    await admin.put('/api/matchmaking/admin/settings', { data: { openToPlayers: true } });
     await admin.dispose();
   });
 

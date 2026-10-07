@@ -1,5 +1,5 @@
 /**
- * The matchmaking leaderboard (experimental): players with enough rated
+ * The matchmaking leaderboard: players with enough rated
  * matches in the last 30 days, best rating first.
  */
 import { useEffect, useState } from 'react';
