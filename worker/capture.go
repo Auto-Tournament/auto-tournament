@@ -200,6 +200,9 @@ func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error
 	}
 	args = append(args, "./cs2.sh", "-steam", "-insecure", "-novid", "-console",
 		"-width", w, "-height", h, "-fullscreen", "-netconport", strconv.Itoa(netconPort))
+	// AT_CS2_LAUNCH: more launch options (space-separated), for what CS2 won't
+	// change during demo playback ("+fps_max 30": "Can't change 'fps_max' right now").
+	args = append(args, strings.Fields(env("AT_CS2_LAUNCH", ""))...)
 	cmd := exec.Command("gamescope", args...)
 	cmd.Dir = r.gameDir
 	cmd.Env = append(os.Environ(), "SteamAppId=730", "SteamGameId=730")

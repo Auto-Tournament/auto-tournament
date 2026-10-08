@@ -252,7 +252,8 @@ func (r *recorder) useQuality(q *videoQuality) {
 	if q != nil && q.Height >= 360 && q.Height <= 2160 && q.FPS >= 24 && q.FPS <= 240 {
 		h := q.Height &^ 1
 		if os.Getenv("AT_RESOLUTION") == "" {
-			width, height = (h*16/9)&^1, h
+			rh := renderHeight(h)
+			width, height = (rh*16/9)&^1, rh
 		}
 		if os.Getenv("AT_OUTPUT_HEIGHT") == "" {
 			outH = h
@@ -483,7 +484,9 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 		name: look.name, teams: look.teams, team: look.team, opponent: look.opponent, mapName: look.mapName, round: m.Round,
 		kind: pillLabel(m.Kind, m.Title), tag: look.tag, avatar: look.avatar,
 	}
-	card, err := cardOf.layout(g.width, g.height)
+	// The card and kill feed are drawn at the clip's size, over the game scaled up to it.
+	ow, oh := outputSize()
+	card, err := cardOf.layout(ow, oh)
 	if err != nil {
 		cleanup()
 		return clipMarkers{}, nil, err
@@ -526,7 +529,7 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	}
 	markers := momentMarkers(windows, edits, kills)
 	markers.Reactions = cheerTimes(m.KillTicks, markers.Kills, cheerTicks(look.replay, look.playerID, m))
-	width, height := g.width, g.height
+	width, height := ow, oh
 	finish := func() error {
 		defer cleanup()
 		for _, encode := range encodes {
@@ -638,7 +641,8 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 			}
 		}
 		if len(rows) > 0 {
-			if feed, err = layoutFeed(rows, g.width, g.height, outputSeconds(segs), r.icons); err != nil {
+			ow, oh := outputSize()
+			if feed, err = layoutFeed(rows, ow, oh, outputSeconds(segs), r.icons); err != nil {
 				return nil, nil, fmt.Errorf("kill feed: %w", err)
 			}
 		}
@@ -673,7 +677,8 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 	args := []string{"-y", "-hide_banner", "-loglevel", "error",
 		"-f", "rawvideo", "-pix_fmt", "yuv420p", "-s", fmt.Sprintf("%dx%d", w, h), "-framerate", fmt.Sprint(outputFPS), "-i", "pipe:0",
 		"-ss", fmt.Sprintf("%.4f", maxf(0, audioAt)), "-i", wav}
-	o := overlay{card: -1, logo: -1, feed: -1, width: w, height: h, clean: clean != ""}
+	ow, oh := outputSize()
+	o := overlay{card: -1, logo: -1, feed: -1, width: ow, height: oh, clean: clean != ""}
 	next := 2
 	// The card's frames come through a named pipe, drawn as ffmpeg asks for them.
 	var cardPipe string

@@ -35,6 +35,23 @@ var (
 	nvencPreset = env("AT_NVENC_PRESET", "p1")
 )
 
+// outputSize is a clip's width and height (16:9 at outputHeight).
+func outputSize() (int, int) {
+	return (outputHeight * 16 / 9) &^ 1, outputHeight
+}
+
+// renderHeight is the height CS2 renders at for a clip `out` tall:
+// AT_RENDER_SCALE of it (default 1, the clip's own size), scaled up
+// afterwards. At 2/3 (720p for 1080p) the 3060 has the headroom to pace
+// frames evenly; the card and kill feed are drawn at the clip's size either way.
+func renderHeight(out int) int {
+	scale := 1.0
+	if v, err := strconv.ParseFloat(os.Getenv("AT_RENDER_SCALE"), 64); err == nil && v > 0.2 && v <= 1 {
+		scale = v
+	}
+	return int(math.Round(float64(out)*scale)) &^ 1
+}
+
 func envPositive(key string, fallback int) int {
 	if v, err := strconv.Atoi(os.Getenv(key)); err == nil && v > 0 {
 		return v
@@ -245,10 +262,14 @@ type overlay struct {
 // top right is the kill feed's). Output [v].
 func videoFilter(o overlay) string {
 	var b strings.Builder
+	// The game, captured smaller (720p for a 1080p clip: CS2 then has the
+	// headroom to pace its frames evenly), scaled up to the clip's size; the
+	// card and kill feed are drawn at that size, sharp.
+	fmt.Fprintf(&b, "[0:v]scale=%d:%d:flags=lanczos,format=yuv420p", o.width, o.height)
 	if o.clean {
-		b.WriteString("[0:v]format=yuv420p,split[base][clean]")
+		b.WriteString(",split[base][clean]")
 	} else {
-		b.WriteString("[0:v]format=yuv420p[base]")
+		b.WriteString("[base]")
 	}
 	last := "base"
 	if o.card >= 0 {
