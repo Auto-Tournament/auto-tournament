@@ -34,7 +34,6 @@ import {
   ShareNetworkIcon,
   SpeakerHighIcon,
   SpeakerSlashIcon,
-  SubtitlesIcon,
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { mono, radii, tokens, withAlpha } from '../../theme/tokens';
@@ -190,10 +189,6 @@ function tapeSpeed(
 
 const LAST_TRACK = 'at.reelMusic.last';
 const CROWD_OFF = 'at.reelCrowd.off';
-const OVERLAY_OFF = 'at.player.overlay.off';
-
-/** A video's clean twin (as recorded: no caption card, kill feed or logo), next to it. */
-export const cleanSrcOf = (src: string) => src.replace(/\.mp4(?=$|\?)/, '.clean.mp4');
 /** The viewer's overall level, kept between visits (also the admin's music samples). */
 export const PLAYER_VOLUME_KEY = 'at.player.volume';
 /** The level until the viewer sets one. */
@@ -326,30 +321,6 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
     const audio = useRef<HTMLAudioElement>(null);
     const crowdAudio = useRef<HTMLAudioElement>(null);
     const [crowdOn, setCrowdOn] = useState(() => stored(CROWD_OFF) !== '1');
-    // The caption card, kill feed and logo: drawn into the video; off plays its
-    // clean twin, from the same moment, when the recorder kept one.
-    const [hasClean, setHasClean] = useState(false);
-    const [overlayOn, setOverlayOn] = useState(() => stored(OVERLAY_OFF) !== '1');
-    const resumeAt = useRef<{ time: number; playing: boolean } | null>(null);
-    useEffect(() => {
-      setHasClean(false);
-      let current = true;
-      fetch(cleanSrcOf(src), { method: 'HEAD' })
-        .then((r) => current && setHasClean(r.ok))
-        .catch(() => undefined);
-      return () => {
-        current = false;
-      };
-    }, [src]);
-    const shown = hasClean && !overlayOn ? cleanSrcOf(src) : src;
-    const toggleOverlay = () => {
-      const v = video.current;
-      if (v) resumeAt.current = { time: v.currentTime, playing: !v.paused };
-      setOverlayOn((on) => {
-        store(OVERLAY_OFF, on ? '1' : null);
-        return !on;
-      });
-    };
     const toggleCrowd = () =>
       setCrowdOn((on) => {
         store(CROWD_OFF, on ? '1' : null);
@@ -514,7 +485,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
         <Box
           component="video"
           ref={video}
-          src={shown}
+          src={src}
           playsInline
           autoPlay={autoPlay}
           muted={muted}
@@ -526,17 +497,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           }}
           onPause={() => setPlaying(false)}
           onEnded={() => setPlaying(false)}
-          onLoadedMetadata={(e) => {
-            const v = e.currentTarget;
-            setDuration(v.duration || markers?.duration || 0);
-            // The overlay switched: the other file, from where this one was.
-            const at = resumeAt.current;
-            resumeAt.current = null;
-            if (at) {
-              v.currentTime = at.time;
-              if (at.playing) void v.play().catch(() => undefined);
-            }
-          }}
+          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || markers?.duration || 0)}
           onTimeUpdate={(e) => {
             setTime(e.currentTarget.currentTime);
             onTime?.(e.currentTarget.currentTime);
@@ -910,21 +871,6 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
             >
               {speed}×
             </ButtonBase>
-            {hasClean && (
-              <ButtonBase
-                onClick={toggleOverlay}
-                aria-label={t(
-                  overlayOn
-                    ? 'videoHighlights.player.overlayOn'
-                    : 'videoHighlights.player.overlayOff'
-                )}
-                aria-pressed={overlayOn}
-                data-testid="highlight-overlay-button"
-                sx={{ ...ctl, opacity: overlayOn ? 1 : 0.55 }}
-              >
-                <SubtitlesIcon size={20} weight={overlayOn ? 'fill' : 'regular'} />
-              </ButtonBase>
-            )}
             {crowd && (
               <ButtonBase
                 onClick={toggleCrowd}
@@ -960,7 +906,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
             >
               <ShareNetworkIcon size={20} />
             </ButtonBase>
-            {tracks.length > 0 || crowd || hasClean ? (
+            {tracks.length > 0 || crowd ? (
               <ButtonBase
                 onClick={(e) => setDownloadMenu(e.currentTarget)}
                 aria-label={t('videoHighlights.player.download')}
@@ -1048,20 +994,8 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           slotProps={{ paper: { sx: { maxWidth: 340 } } }}
           data-testid="highlight-download-menu"
         >
-          {hasClean && (
-            <ListSubheader
-              sx={{ lineHeight: '32px', fontSize: '0.75rem', bgcolor: 'background.paper' }}
-            >
-              {t(
-                overlayOn
-                  ? 'videoHighlights.player.downloadOverlay'
-                  : 'videoHighlights.player.downloadNoOverlay'
-              )}
-            </ListSubheader>
-          )}
           {downloadChoices({ crowd: !!crowd, song }).map((c) => {
             const params = [
-              hasClean && !overlayOn ? 'clean=1' : null,
               c.crowd ? 'crowd=1' : null,
               c.song ? `music=${encodeURIComponent(c.song.id)}&intro=${introEnd.toFixed(1)}` : null,
             ].filter(Boolean);
@@ -1074,7 +1008,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
                 data-testid={`highlight-download-${c.key}`}
                 onClick={() => {
                   setDownloadMenu(null);
-                  if (c.crowd || c.song) showSuccess(t('videoHighlights.player.downloadMixing'));
+                  if (params.length) showSuccess(t('videoHighlights.player.downloadMixing'));
                 }}
                 sx={{ gap: 1.5, alignItems: 'flex-start' }}
               >
@@ -1083,13 +1017,6 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
                   aria-hidden
                   sx={{ display: 'flex', gap: 0.5, pt: 0.5, flex: 'none', color: 'text.primary' }}
                 >
-                  {hasClean && (
-                    <SubtitlesIcon
-                      size={18}
-                      weight={overlayOn ? 'fill' : 'regular'}
-                      style={{ opacity: overlayOn ? 1 : 0.35 }}
-                    />
-                  )}
                   {crowd && (
                     <UsersThreeIcon
                       size={18}

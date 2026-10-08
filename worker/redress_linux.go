@@ -26,6 +26,9 @@ func (r *recorder) redress(clean, recipe, out string) error {
 	if err != nil {
 		return err
 	}
+	if err := r.overlayTools(); err != nil {
+		return err
+	}
 	// As long as the clean video, to the frame (the overlay's streams are cut there).
 	length, err := probeDuration(clean)
 	if err != nil {
@@ -179,4 +182,28 @@ func (r *recorder) runRedress(ctx context.Context, j *redressJob) {
 		done++
 	}
 	log.Printf("redressed %d of %d video(s) in %s", done, len(j.Files), time.Since(started).Round(time.Second))
+}
+
+// overlayTools makes sure a recorder made without newRecorder (join-reel) has
+// the logo and the kill feed's icons (from AT_CS2_GAME's CS2) to draw with.
+func (r *recorder) overlayTools() error {
+	dir := r.scratch
+	if dir == "" {
+		dir = env("AT_RECORD_DIR", os.TempDir())
+	}
+	if r.logo == "" {
+		r.logo = filepath.Join(dir, "at-watermark.png")
+		if err := os.WriteFile(r.logo, watermarkPNG, 0o644); err != nil {
+			return err
+		}
+	}
+	if r.icons == nil {
+		if game := env("AT_CS2_GAME", ""); game != "" {
+			hud := filepath.Join(dir, "hud")
+			if _, err := exportHud(filepath.Join(game, "csgo"), hud, map[string]bool{"weapons": true, "deathnotice": true}); err == nil {
+				r.icons = newIconSet(hud)
+			}
+		}
+	}
+	return nil
 }

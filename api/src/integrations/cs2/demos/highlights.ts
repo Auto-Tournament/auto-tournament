@@ -465,11 +465,17 @@ export async function claimMapJob(recorder: string, idle = 1): Promise<MapRecord
   for (const [playerId, own] of byPlayer) {
     players.push(await jobFor(best.match_slug, Number(best.map_number), playerId, own));
   }
+  const { settingsService } = await import('../../../services/settingsService');
   return {
     kind: 'map',
     matchSlug: best.match_slug,
     mapNumber: Number(best.map_number),
     quality: await readHighlightQuality(),
+    // Keep each clip's clean twin and overlay recipe (worker/overlay.go): reels
+    // are then made from the clean clips with their own overlay, and the clips
+    // can be dressed again. Off: roughly half the storage, reels join the
+    // dressed clips.
+    keepClean: (await settingsService.getSetting('highlights_keep_clean'))?.trim() !== '0',
     players,
   };
 }
@@ -481,6 +487,8 @@ export interface MapRecordJob {
   mapNumber: number;
   /** The size and frame rate to record at (the admin's highlight settings). */
   quality: HighlightQuality;
+  /** Upload each clip's clean twin and overlay recipe too. */
+  keepClean: boolean;
   players: RecordJob[];
 }
 
@@ -823,6 +831,8 @@ export async function saveReel(
   await fs.promises.rename(tmp, file);
   // A crowd track from an earlier make of this reel would not match it.
   await removeTwins(file);
+  // Made again after its clips were redressed (redress.ts): done.
+  await db.runAsync('DELETE FROM cs2_redress_queue WHERE file = ?', [path.basename(file)]);
   const moments = await db.queryOneAsync<{ n: number | string }>(
     "SELECT COUNT(*) AS n FROM cs2_highlights WHERE match_slug = ? AND map_number = ? AND player_id = ? AND status = 'done'",
     [matchSlug, mapNumber, playerId]

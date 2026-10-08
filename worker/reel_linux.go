@@ -49,14 +49,29 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 		plan.durations = append(plan.durations, d)
 	}
 	// Every clip with its clean twin and overlay recipe beside it (overlay.go):
-	// the reel gets them too.
-	twins := env("AT_CROWD_ONLY", "") != "1"
-	for _, p := range paths {
-		if !exists(cleanPathOf(p)) || !exists(overlayPathOf(p)) {
-			twins = false
+	// the reel is joined from the clean clips and dressed afterwards with its
+	// own overlay (the clips' cards and kill feeds, restyled for the reel).
+	var recipes []overlayRecipe
+	dressed := out
+	if env("AT_CROWD_ONLY", "") != "1" {
+		for _, p := range paths {
+			o, err := loadOverlay(overlayPathOf(p))
+			if err != nil || !exists(cleanPathOf(p)) {
+				recipes = nil
+				break
+			}
+			recipes = append(recipes, o)
 		}
 	}
-	clips := paths
+	if recipes != nil {
+		clean := make([]string, len(paths))
+		for i, p := range paths {
+			clean[i] = cleanPathOf(p)
+		}
+		paths = clean
+		out = cleanPathOf(dressed)
+		defer os.Remove(out)
+	}
 	hasIntro := false
 	introPath := ""
 	if intro != nil && strings.TrimSpace(intro.Title) != "" {
@@ -103,39 +118,21 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 	if hasIntro {
 		starts = starts[1:]
 	}
-	if twins {
-		if err := r.buildReelTwin(clips, introPath, plan, starts, sound.outro, out); err != nil {
-			return nil, fmt.Errorf("clean reel: %w", err)
+	if recipes != nil {
+		o := reelOverlay(recipes, starts, reelLength(plan), sound.outro)
+		if sound.restyle != nil {
+			sound.restyle(&o)
+		}
+		recipe := overlayPathOf(dressed)
+		if err := o.save(recipe); err != nil {
+			return nil, err
+		}
+		defer os.Remove(recipe)
+		if err := r.redress(out, recipe, dressed); err != nil {
+			return nil, fmt.Errorf("reel overlay: %w", err)
 		}
 	}
 	return starts, nil
-}
-
-// buildReelTwin joins the clips' clean twins the way the reel was joined
-// (the same intro, so the two line up to the frame) and puts their overlay
-// recipes where the clips start.
-func (r *recorder) buildReelTwin(clips []string, introPath string, plan reelPlan, starts []float64, outro bool, out string) error {
-	recipes := make([]overlayRecipe, len(clips))
-	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
-	if introPath != "" {
-		args = append(args, "-i", introPath)
-	}
-	for i, c := range clips {
-		o, err := loadOverlay(overlayPathOf(c))
-		if err != nil {
-			return err
-		}
-		recipes[i] = o
-		args = append(args, "-i", cleanPathOf(c))
-	}
-	plan.crowd, plan.crowdOnly, plan.audioOnly = nil, false, false
-	args = append(args, "-filter_complex", reelFilter(plan), "-map", "[v]", "-map", "[a]")
-	args = append(args, encodeArgs(r.encoder)...)
-	args = append(args, "-movflags", "+faststart", cleanPathOf(out))
-	if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
-		return fmt.Errorf("ffmpeg: %v %s", err, strings.TrimSpace(string(b)))
-	}
-	return reelOverlay(recipes, starts, reelLength(plan), outro).save(overlayPathOf(out))
 }
 
 func exists(p string) bool {

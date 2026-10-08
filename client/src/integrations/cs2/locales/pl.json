@@ -1222,13 +1222,16 @@
       },
       "overlay": {
         "label": "Overlays",
-        "helper_one": "{{count}} clip or reel was recorded clean as well. Redraw puts the current caption card, kill feed and names on it again from the clean recording, without CS2.",
-        "helper_other": "{{count}} clips and reels were recorded clean as well. Redraw puts the current caption card, kill feed and names on them again from the clean recordings, without CS2.",
+        "helper_one": "{{count}} clip has a clean copy. Redraw puts the current caption card, kill feed and names on it again, then makes the reels again. No CS2 needed.",
+        "helper_other": "{{count}} clips have a clean copy. Redraw puts the current caption card, kill feed and names on them again, then makes the reels again. No CS2 needed.",
         "redraw": "Redraw overlays",
         "pending_one": "{{count}} video waiting for a recorder",
         "pending_other": "{{count}} videos waiting for a recorder",
         "failed_one": "{{count}} video could not be redrawn",
-        "failed_other": "{{count}} videos could not be redrawn"
+        "failed_other": "{{count}} videos could not be redrawn",
+        "keepClean": "Keep clean copies of clips",
+        "keepCleanHelper": "Each clip is also stored as recorded, without the card or kill feed. Reels are then made from the clean clips with an overlay of their own, and overlays can be redrawn. Off uses about half the storage.",
+        "redrawFailed": "Could not queue the redraw."
       }
     }
   },

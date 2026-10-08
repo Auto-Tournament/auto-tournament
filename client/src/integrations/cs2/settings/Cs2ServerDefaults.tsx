@@ -60,6 +60,8 @@ export interface Cs2DefaultsValues {
   highlightsFps: number;
   /** '' (every track), 'off', or the picked track ids (the API's highlights_music). */
   highlightsMusic: string;
+  /** Keep each clip's clean twin (the API's highlights_keep_clean). */
+  highlightsKeepClean: boolean;
   atAutostartMode: 0 | 1 | 2;
   atMinimumReadyRequired: number;
   atAllowForceReady: boolean;
@@ -107,6 +109,7 @@ const DEFAULTS: Cs2DefaultsValues = {
   highlightsResolution: 1080,
   highlightsFps: 60,
   highlightsMusic: '',
+  highlightsKeepClean: true,
   atAutostartMode: 1,
   atMinimumReadyRequired: 0,
   atAllowForceReady: true,
@@ -1063,7 +1066,13 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
             void save({ highlightsMusic: value });
           }}
         />
-        <HighlightOverlaySetting />
+        <HighlightOverlaySetting
+          keepClean={vals.highlightsKeepClean}
+          onKeepClean={(value) => {
+            update('highlightsKeepClean', value);
+            void save({ highlightsKeepClean: value });
+          }}
+        />
       </Box>
 
       {isDev && (

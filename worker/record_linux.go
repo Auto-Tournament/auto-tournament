@@ -152,7 +152,8 @@ func (c *client) claimRecording(ctx context.Context) (*mapJob, *matchReelJob, *r
 		return nil, nil, nil, err
 	}
 	// A tournament's or a team's reel is made the same way as a match reel: join.
-	if kind.Kind == "match_reel" || kind.Kind == "tournament_reel" || kind.Kind == "team_reel" {
+	// A player's reel made again after a redress too.
+	if kind.Kind == "match_reel" || kind.Kind == "tournament_reel" || kind.Kind == "team_reel" || kind.Kind == "player_reel" {
 		var j matchReelJob
 		return nil, &j, nil, json.Unmarshal(body.Job, &j)
 	}
@@ -224,6 +225,9 @@ type mapJob struct {
 	Players   []recordJob `json:"players"`
 	// Quality is the admin's video size and frame rate (older platforms: none).
 	Quality *videoQuality `json:"quality"`
+	// KeepClean: upload each clip's clean twin and overlay recipe too
+	// (overlay.go). The reels made here use them either way.
+	KeepClean bool `json:"keepClean"`
 }
 
 // videoQuality is the height (16:9) and frame rate the platform asks for.
@@ -991,7 +995,9 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) error {
 		if err := r.upload(ctx, c.path, route, map[string]string{"X-AT-Markers": string(markers)}); err != nil {
 			return err
 		}
-		r.uploadTwins(ctx, c.path, route)
+		if mj.KeepClean {
+			r.uploadTwins(ctx, c.path, route)
+		}
 	}
 	if err != nil {
 		return err
@@ -1061,7 +1067,6 @@ func (r *recorder) uploadReel(ctx context.Context, dir string, j *recordJob, cli
 		return err
 	}
 	r.uploadCrowd(ctx, reel, route)
-	r.uploadTwins(ctx, reel, route)
 	return nil
 }
 
