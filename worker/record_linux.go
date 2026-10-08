@@ -62,7 +62,11 @@ type recordJob struct {
 	Match string `json:"match"`
 	// Teams ("Team A vs Team B"), the tournament and the stage ("Semi-final")
 	// for the caption card and its corner tag.
-	Teams      string `json:"teams"`
+	Teams string `json:"teams"`
+	// Team is the player's own and Opponent the other (newer platforms): the
+	// card shows the player's team, the corner who they played.
+	Team       string `json:"team"`
+	Opponent   string `json:"opponent"`
 	Tournament string `json:"tournament"`
 	Stage      string `json:"stage"`
 	// AvatarURL is the player's avatar: absolute, or a path on the platform.
@@ -261,6 +265,8 @@ func (mj *mapJob) moments() int {
 type clipLook struct {
 	name      string
 	teams     string
+	team      string // the player's own; "" when unknown (the card shows teams then)
+	opponent  string // who they played; "" when unknown
 	mapName   string
 	tag       string      // the corner tag: "NTLAN AUTUMN CUP · SEMI-FINAL"
 	avatar    image.Image // round, or nil
@@ -454,7 +460,7 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	// Who, which match, map and round, and what the moment is; the clip
 	// opens slowed down under it.
 	card, err := captionCard{
-		name: look.name, teams: look.teams, mapName: look.mapName, round: m.Round,
+		name: look.name, teams: look.teams, team: look.team, opponent: look.opponent, mapName: look.mapName, round: m.Round,
 		kind: pillLabel(m.Kind, m.Title), tag: look.tag, avatar: look.avatar,
 	}.layout(g.width, g.height)
 	if err != nil {
@@ -865,7 +871,8 @@ func (r *recorder) upload(ctx context.Context, path, route string, headers map[s
 
 // lookFor is what one player's clips show: the caption card and the corner.
 func (r *recorder) lookFor(ctx context.Context, j *recordJob) clipLook {
-	look := clipLook{name: j.PlayerName, teams: j.Teams, mapName: mapDisplayName(j.MapName), tag: cornerTag(j.Tournament, j.Stage),
+	look := clipLook{name: j.PlayerName, teams: j.Teams, team: j.Team, opponent: j.Opponent,
+		mapName: mapDisplayName(j.MapName), tag: cornerTag(j.Tournament, j.Stage),
 		watermark: j.Watermark == nil || *j.Watermark}
 	if look.teams == "" {
 		// An older platform: its match line is "teams · tournament".
@@ -1164,9 +1171,25 @@ func recordDemo(args []string) error {
 	if err != nil {
 		return err
 	}
-	var byPlayer map[string][]moment
-	if err := json.Unmarshal(b, &byPlayer); err != nil {
+	// Each player's moments, or {"team", "opponent", "moments"} for the card.
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
 		return fmt.Errorf("%s: %w", args[1], err)
+	}
+	type demoPlayer struct {
+		Team     string   `json:"team"`
+		Opponent string   `json:"opponent"`
+		Moments  []moment `json:"moments"`
+	}
+	byPlayer := map[string]demoPlayer{}
+	for id, v := range raw {
+		var p demoPlayer
+		if err := json.Unmarshal(v, &p.Moments); err != nil {
+			if err := json.Unmarshal(v, &p); err != nil {
+				return fmt.Errorf("%s: %s: %w", args[1], id, err)
+			}
+		}
+		byPlayer[id] = p
 	}
 	if err := os.MkdirAll(args[2], 0o755); err != nil {
 		return err
@@ -1176,14 +1199,15 @@ func recordDemo(args []string) error {
 		replay = replayOf(args[0], env("AT_MAP", ""))
 	}
 	var shots []shot
-	for player, moments := range byPlayer {
+	for player, p := range byPlayer {
 		name, err := demoName(args[0], player)
 		if err != nil {
 			return err
 		}
-		look := clipLook{name: name, teams: env("AT_TEAMS", ""), mapName: env("AT_MAP", ""), tag: env("AT_TAG", ""),
+		look := clipLook{name: name, teams: env("AT_TEAMS", ""), team: p.Team, opponent: p.Opponent,
+			mapName: env("AT_MAP", ""), tag: env("AT_TAG", ""),
 			watermark: env("AT_WATERMARK", "1") != "0", replay: replay, playerID: player}
-		for _, m := range moments {
+		for _, m := range p.Moments {
 			shots = append(shots, shot{m: m, name: name, look: look})
 		}
 	}
@@ -1230,8 +1254,8 @@ func recordFile(args []string) error {
 	if err := os.MkdirAll(args[3], 0o755); err != nil {
 		return err
 	}
-	look := clipLook{name: name, teams: env("AT_TEAMS", ""), mapName: env("AT_MAP", ""), tag: env("AT_TAG", ""),
-		watermark: env("AT_WATERMARK", "1") != "0"}
+	look := clipLook{name: name, teams: env("AT_TEAMS", ""), team: env("AT_TEAM", ""), opponent: env("AT_OPPONENT", ""),
+		mapName: env("AT_MAP", ""), tag: env("AT_TAG", ""), watermark: env("AT_WATERMARK", "1") != "0"}
 	if file := env("AT_AVATAR", ""); file != "" {
 		src, err := os.ReadFile(file)
 		if err != nil {

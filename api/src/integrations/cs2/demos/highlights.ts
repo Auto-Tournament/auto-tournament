@@ -297,6 +297,9 @@ export interface RecordJob {
   match: string;
   /** "Team A vs Team B", or what is known of it. */
   teams: string;
+  /** The player's own team and who they played, for the caption (null when unknown). */
+  team: string | null;
+  opponent: string | null;
   /** The tournament, for the clip's corner tag; null for a match outside one. */
   tournament: string | null;
   /** Where in it the match was: "Semi-final", "Upper round 2"; null when it has no name. */
@@ -482,6 +485,31 @@ export interface MapRecordJob {
 }
 
 /** One player's job: their moments on the map and everything their clips show. */
+/** Whether a team's roster (teams.players, JSON) has this SteamID64. */
+function onRoster(players: string | null | undefined, playerId: string): boolean {
+  try {
+    const list = JSON.parse(players ?? '[]') as Array<{ steamId?: string; steam_id?: string }>;
+    return list.some((p) => String(p.steamId ?? p.steam_id ?? '') === playerId);
+  } catch {
+    return false;
+  }
+}
+
+/** The player's team and the other one, by the rosters; nulls when on neither. */
+function ownTeam(
+  playerId: string,
+  m: {
+    team1: string | null;
+    team2: string | null;
+    team1_players: string | null;
+    team2_players: string | null;
+  } | null
+): { team: string | null; opponent: string | null } {
+  if (m && onRoster(m.team1_players, playerId)) return { team: m.team1, opponent: m.team2 };
+  if (m && onRoster(m.team2_players, playerId)) return { team: m.team2, opponent: m.team1 };
+  return { team: null, opponent: null };
+}
+
 async function jobFor(
   matchSlug: string,
   mapNumber: number,
@@ -495,6 +523,8 @@ async function jobFor(
     avatar_url: string | null;
     team1: string | null;
     team2: string | null;
+    team1_players: string | null;
+    team2_players: string | null;
     tournament: string | null;
     type: string | null;
     bracket: string | null;
@@ -504,8 +534,8 @@ async function jobFor(
     `SELECT (SELECT map_name FROM cs2_demo_jobs WHERE match_slug = ? AND map_number = ?) AS map_name,
             (SELECT name FROM players WHERE id = ?) AS name,
             (SELECT avatar_url FROM players WHERE id = ?) AS avatar_url,
-            t1.name AS team1, t2.name AS team2, COALESCE(tr.name, m.played_in) AS tournament,
-            tr.type, m.bracket, m.round,
+            t1.name AS team1, t2.name AS team2, t1.players AS team1_players, t2.players AS team2_players,
+            COALESCE(tr.name, m.played_in) AS tournament, tr.type, m.bracket, m.round,
             (SELECT MAX(o.round) FROM matches o
               WHERE o.tournament_id = m.tournament_id AND COALESCE(o.bracket, 'WB') = COALESCE(m.bracket, 'WB')) AS last_round
        FROM (SELECT 1) one
@@ -532,6 +562,7 @@ async function jobFor(
     avatarUrl: extra?.avatar_url ?? null,
     match: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, extra?.tournament ?? null),
     teams: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, null),
+    ...ownTeam(best.player_id, extra ?? null),
     tournament: extra?.tournament ?? null,
     stage: extra?.tournament
       ? stageLabel(
@@ -619,7 +650,10 @@ export function parseClipIds(raw: unknown): number[] | null {
 export function parseClipStarts(raw: unknown, clips: number): number[] | null {
   if (typeof raw !== 'string' || !/^\d+(\.\d+)?(,\d+(\.\d+)?){0,63}$/.test(raw)) return null;
   const starts = raw.split(',').map(Number);
-  if (starts.length !== clips || starts.some((s, i) => !(s < 36_000) || (i > 0 && s < starts[i - 1]!)))
+  if (
+    starts.length !== clips ||
+    starts.some((s, i) => !(s < 36_000) || (i > 0 && s < starts[i - 1]!))
+  )
     return null;
   return starts.map((s) => Math.round(s * 100) / 100);
 }
@@ -704,7 +738,9 @@ export async function saveCrowd(reel: string, body: NodeJS.ReadableStream): Prom
 export function crowdUrlOf(clipPath: string | null): string | null {
   if (!clipPath) return null;
   const file = crowdFileOf(path.join(HIGHLIGHTS_DIR, clipPath));
-  return fs.existsSync(file) ? `/api/game/cs2/highlights/${encodeURIComponent(path.basename(file))}` : null;
+  return fs.existsSync(file)
+    ? `/api/game/cs2/highlights/${encodeURIComponent(path.basename(file))}`
+    : null;
 }
 
 export function reelFile(matchSlug: string, mapNumber: number, playerId: string): string {

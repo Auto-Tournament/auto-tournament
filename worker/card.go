@@ -46,13 +46,15 @@ var (
 // round, and what the moment is (4K, ACE…); and the tournament in a small
 // tag in the lower left.
 type captionCard struct {
-	name    string
-	teams   string // "9z vs BETBOOM"
-	mapName string // "Dust2"
-	round   int    // 0: unknown
-	kind    string // the pill: "4K", "ACE"; "" for none
-	tag     string // "NTLAN AUTUMN CUP · SEMI-FINAL"; "" for none
-	avatar  image.Image
+	name     string
+	teams    string // "9z vs BETBOOM": under the name when team is not known
+	team     string // the player's own team, under the name
+	opponent string // who they played: first in the corner, "VS BETBOOM"
+	mapName  string // "Dust2"
+	round    int    // 0: unknown
+	kind     string // the pill: "4K", "ACE"; "" for none
+	tag      string // "NTLAN AUTUMN CUP · SEMI-FINAL"; "" for none
+	avatar   image.Image
 }
 
 // The card's timing, in seconds of the clip. The clip plays slowed down while
@@ -171,14 +173,17 @@ func (c captionCard) layout(w, h int) (*cardRender, error) {
 	}
 	ringRGBA(r.avatar, float64(av)/2, math.Max(1.5, 2*k), cardAccent)
 
-	// The text: the name, and the teams under it (the map and round are in the corner).
+	// The text: the name, and the player's team under it (or both teams, when
+	// which is theirs is not known); who they played is in the corner.
 	type run struct {
 		s   string
 		f   font.Face
 		ink color.NRGBA
 	}
 	var sub []run
-	if c.teams != "" {
+	if c.team != "" {
+		sub = append(sub, run{c.team, subFace, cardInk2})
+	} else if c.teams != "" {
 		sub = append(sub, run{c.teams, subFace, cardInk2})
 	}
 	nameW := font.MeasureString(nameFace, c.name).Ceil()
@@ -238,13 +243,16 @@ func (c captionCard) layout(w, h int) (*cardRender, error) {
 	}
 	r.barH = int(math.Max(2, math.Round(3*k)))
 
-	// The corner, lower left: the map and round, and under it a dot and the
-	// tournament.
+	// The corner, lower left: who they played, the map and round, and under it
+	// a dot and the tournament.
 	type tagRun struct {
 		s   string
 		ink color.NRGBA
 	}
 	var lines [][]tagRun
+	if c.opponent != "" {
+		lines = append(lines, []tagRun{{"VS ", tagInk}, {strings.ToUpper(c.opponent), cardInk}})
+	}
 	if c.mapName != "" || c.round > 0 {
 		var l []tagRun
 		if c.mapName != "" {
