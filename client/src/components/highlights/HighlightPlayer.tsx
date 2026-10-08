@@ -967,6 +967,10 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
                 fontWeight: 600,
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
+                // Sticky over the tracks while scrolling: as solid as the menu, so
+                // the tracks (and the header before) don't show through.
+                bgcolor: 'background.paper',
+                zIndex: 1,
               }}
             >
               {t(`videoHighlights.player.genres.${genre}`, { defaultValue: genre })}
