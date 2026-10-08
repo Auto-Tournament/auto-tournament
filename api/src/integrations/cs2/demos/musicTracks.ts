@@ -709,4 +709,15 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
     contentId: true,
     gainDb: 3.5,
   },
+  {
+    id: '573649',
+    title: 'Action Chase Sequence Drive',
+    artist: 'alex-morgan',
+    genre: 'electronic',
+    page: 'https://pixabay.com/music/electro-action-chase-sequence-drive-573649/',
+    audio: 'https://cdn.pixabay.com/download/audio/2026/07/25/audio_042a283ee5.mp3',
+    seconds: 149,
+    contentId: true,
+    gainDb: -0.6,
+  },
 ];
