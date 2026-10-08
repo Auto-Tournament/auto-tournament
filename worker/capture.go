@@ -387,8 +387,11 @@ func (g *game) playPhases(from int, phases []playPhase, name string, started fun
 		}
 	}
 	// A seek plays on by itself once it lands: seek, let it land, then pause.
+	// Resumed straight after, so a demo the last pass left paused plays on
+	// too and answers the first poll (paused, it said nothing and each seek
+	// waited out a 2 s timeout).
 	if err := g.con.send("host_timescale 1", "host_framerate 0", "fps_max 0",
-		fmt.Sprintf("demo_timescale %g", phases[0].scale), fmt.Sprintf("demo_gototick %d", from)); err != nil {
+		fmt.Sprintf("demo_timescale %g", phases[0].scale), fmt.Sprintf("demo_gototick %d", from), "demo_resume"); err != nil {
 		return nil, err
 	}
 	// A seek far into the demo (round 19 straight after loading) takes CS2
