@@ -4865,6 +4865,28 @@
         ]
       }
     },
+    "/api/game/cs2/music/from-link": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "POST /api/game/cs2/music/from-link",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/music/{id}": {
       "put": {
         "tags": [

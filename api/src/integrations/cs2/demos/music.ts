@@ -208,6 +208,41 @@ export async function addTrack(
   return toTrack(row!);
 }
 
+/**
+ * Downloads the audio file at `url` for addTrack: a direct link to the file
+ * (for Pixabay, the link behind a track's Download button; its pages refuse
+ * servers). The admin asks for it, for music they have the rights to.
+ */
+export async function fetchTrack(url: string): Promise<Buffer> {
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    throw new MusicUploadError('That is not a link.');
+  }
+  if (u.protocol !== 'https:' && u.protocol !== 'http:')
+    throw new MusicUploadError('That is not a web link.');
+  if (/(^|\.)pixabay\.com$/.test(u.hostname) && !/^cdn\./.test(u.hostname))
+    throw new MusicUploadError(
+      "Pixabay doesn't let servers read its pages: use the link behind the track's Download button (cdn.pixabay.com/…mp3), or download it and choose the file."
+    );
+  const res = await globalThis.fetch(u, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Auto Tournament)',
+      ...(/pixabay\.com$/.test(u.hostname) ? { Referer: 'https://pixabay.com/' } : {}),
+    },
+    redirect: 'follow',
+    signal: globalThis.AbortSignal.timeout(60_000),
+  });
+  if (!res.ok) throw new MusicUploadError(`The link answered ${res.status}.`);
+  const size = Number(res.headers.get('content-length') ?? 0);
+  if (size > MUSIC_MAX_BYTES) throw new MusicUploadError('That file is too large (40 MB at most).');
+  const body = Buffer.from(await res.arrayBuffer());
+  if (body.length > MUSIC_MAX_BYTES)
+    throw new MusicUploadError('That file is too large (40 MB at most).');
+  return body;
+}
+
 /** Changes a track's title, artist, genre, source or Content ID mark. */
 export async function updateTrack(
   id: string,

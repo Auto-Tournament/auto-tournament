@@ -87,6 +87,7 @@ export function HighlightMusicSetting({
   const [genre, setGenre] = useState('');
   const [source, setSource] = useState('');
   const [contentId, setContentId] = useState(false);
+  const [link, setLink] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -160,6 +161,33 @@ export function HighlightMusicSetting({
       setSource('');
       setContentId(false);
       if (fileInput.current) fileInput.current.value = '';
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Or from a link to the audio file: the server downloads it.
+  const addLink = async () => {
+    if (!link.trim()) return;
+    setError('');
+    setBusy(true);
+    try {
+      await api.post('/api/game/cs2/music/from-link', {
+        url: link.trim(),
+        title: title.trim(),
+        artist: artist.trim(),
+        genre: genre.trim().toLowerCase().replace(/\s+/g, '-'),
+        source: source.trim(),
+        contentId,
+      });
+      setLink('');
+      setTitle('');
+      setArtist('');
+      setSource('');
+      setContentId(false);
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -265,7 +293,9 @@ export function HighlightMusicSetting({
                   {[x.artist, x.genre].filter(Boolean).join(' · ')}
                 </Typography>
               </Box>
-              {x.contentId && <Chip size="small" label={t('settings.highlights.music.contentId')} />}
+              {x.contentId && (
+                <Chip size="small" label={t('settings.highlights.music.contentId')} />
+              )}
               {removing === x.id ? (
                 <>
                   <Button size="small" color="error" onClick={() => void remove(x.id)}>
@@ -332,9 +362,27 @@ export function HighlightMusicSetting({
             {file?.name ?? t('settings.highlights.music.noFile')}
           </Typography>
         </Box>
-        <Box
-          sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.25 }}
-        >
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          <TextField
+            size="small"
+            label={t('settings.highlights.music.link')}
+            placeholder="https://cdn.pixabay.com/download/audio/…mp3"
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            sx={{ flex: 1, minWidth: 220 }}
+            inputProps={{ 'data-testid': 'cs2-music-link' }}
+          />
+          <Button
+            variant="outlined"
+            size="small"
+            disabled={!link.trim() || busy}
+            onClick={() => void addLink()}
+            data-testid="cs2-music-add-link"
+          >
+            {t('settings.highlights.music.addLink')}
+          </Button>
+        </Box>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.25 }}>
           <TextField
             size="small"
             label={t('settings.highlights.music.trackTitle')}
