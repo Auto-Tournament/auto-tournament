@@ -638,7 +638,11 @@
         "upbeat": "Upbeat",
         "ambient": "Ambient",
         "pop": "Pop",
-        "house": "House"
+        "house": "House",
+        "beats": "Beats",
+        "small-emotions": "Emotional",
+        "corporate": "Corporate",
+        "orchestral": "Orchestral"
       }
     }
   },

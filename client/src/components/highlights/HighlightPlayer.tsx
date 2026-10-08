@@ -74,6 +74,10 @@ const GENRE_ORDER = [
   'upbeat',
   'ambient',
   'pop',
+  'beats',
+  'small-emotions',
+  'corporate',
+  'orchestral',
 ];
 
 /** One chapter of a reel, as the scrubber's hover card shows it. */
