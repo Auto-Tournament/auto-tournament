@@ -4,7 +4,8 @@
  * Refresh the game packs the image ships with, from the community repo.
  *
  * `api/bundled-packs/` is a committed snapshot of `Auto-Tournament/packs`:
- * the same `index.json`, `packs/`, `icons/` and `app-icons/`, byte for byte. A fresh
+ * the same `index.json`, `packs/`, `icons/` and `app-icons/` (with its SOURCES.md, and
+ * the repo's LICENSE), byte for byte. A fresh
  * install seeds itself from it on first boot (`seedBundledPacks`), so the
  * games an instance can run on day one come from data, not from a list in the
  * source — and arrive with no network at all, which an index fetched at boot
@@ -83,5 +84,11 @@ for (const entry of index.packs) {
   }
   console.log(`  ${entry.slug}`);
 }
+
+// What may be shipped with them: the packs' license, and where each app icon
+// came from (game icons are their owners' trademarks; SOURCES.md says so and
+// names each source).
+await fs.writeFile(path.join(TARGET, 'LICENSE'), await read('LICENSE'));
+await fs.writeFile(path.join(TARGET, 'app-icons', 'SOURCES.md'), await read('app-icons/SOURCES.md'));
 
 console.log(`Synced ${index.packs.length} packs into api/bundled-packs`);

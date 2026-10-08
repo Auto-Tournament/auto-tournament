@@ -90,6 +90,12 @@ jobs:
       - name: API docs are current
         run: yarn docs:api:check
 
+      # Everything the server and the web app ship must be under a license
+      # that allows it inside a PolyForm Noncommercial product (no GPL/AGPL
+      # copyleft, no unknown license): scripts/third-party-notices.mjs.
+      - name: Third-party licenses are allowed
+        run: node scripts/third-party-notices.mjs --check
+
       # examples/discord-bot is a standalone project, not a workspace, so it
       # installs on its own. Typechecking it here is what stops the example
       # rotting against the API it demonstrates — which is the whole reason it
@@ -223,6 +229,9 @@ jobs:
           cp package.json "$out/"
           cp -r api/dist api/public api/swagger-ui api/bundled-packs api/bundled-modules "$out/api/"
           cp docs/openapi.json "$out/docs/"
+          # The third-party notices the image ships, from these dependencies.
+          node scripts/third-party-notices.mjs
+          cp THIRD_PARTY_NOTICES.md "$out/"
 
       - uses: docker/setup-buildx-action@v3
 

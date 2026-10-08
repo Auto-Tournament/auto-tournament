@@ -221,6 +221,12 @@ export function LicenseCard() {
           />
         }
       />
+      <Typography variant="caption" color="text.secondary" display="block" mt={2}>
+        {t('license.thirdParty')}{' '}
+        <a href="/third-party-notices.txt" target="_blank" rel="noopener" data-testid="settings-third-party-notices">
+          {t('license.thirdPartyLink')}
+        </a>
+      </Typography>
     </Box>
   );
 }
