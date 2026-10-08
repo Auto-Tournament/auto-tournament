@@ -74,6 +74,7 @@ const GENRE_ORDER = [
   'upbeat',
   'ambient',
   'pop',
+  'dance',
   'beats',
   'small-emotions',
   'corporate',
