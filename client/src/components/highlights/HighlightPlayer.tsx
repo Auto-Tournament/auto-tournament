@@ -51,17 +51,18 @@ export interface MusicTrack {
   id: string;
   title: string;
   artist: string;
-  /** Pixabay's genre (drum-n-bass, phonk, …): the menu groups by it. */
+  /** The label the admin gave it (drum-n-bass, phonk, …): the menu groups by it. */
   genre: string;
-  page: string;
+  /** Where it came from, for credit. */
+  source?: string;
   seconds: number;
   /** Registered with YouTube Content ID: an upload with it can get a claim. */
   contentId: boolean;
-  /** Evens its loudness out with the other tracks', in dB. */
-  gainDb: number;
+  /** Evens its loudness out with the other tracks', in dB (already in the reel's mix). */
+  gainDb?: number;
 }
 
-/** The genres in the order the music menu lists them (the API's MUSIC_GENRES). */
+/** The genres the menu lists first, in this order; any other label after them. */
 const GENRE_ORDER = [
   'drum-n-bass',
   'phonk',
@@ -347,19 +348,14 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
       setMusicMenu(null);
     };
 
-    // The music follows the video at musicGain, evened out to the other
-    // tracks' loudness; the crowd track follows it at the viewer's level.
+    // The music is the reel's own mix of the track (its levels, evening out
+    // and fades already in it, as a download has them) and, like the crowd
+    // track, follows the video at the viewer's level.
     useEffect(() => {
       const v = video.current;
       const a = audio.current;
       if (!v || !a || !song) return;
-      const even = Math.pow(10, (song.gainDb || 0) / 20);
-      return follow(
-        v,
-        a,
-        () => volumeRef.current * even * musicGain(v.currentTime, v.duration || 0, introEnd),
-        true
-      );
+      return follow(v, a, () => volumeRef.current, false);
     }, [song, introEnd]);
     useEffect(() => {
       const v = video.current;
@@ -518,7 +514,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
         {song && (
           <audio
             ref={audio}
-            src={`/api/game/cs2/music/${song.id}.mp3`}
+            src={`${src}/music/${encodeURIComponent(song.id)}?intro=${introEnd.toFixed(1)}`}
             preload="auto"
             muted={muted}
             data-testid="highlight-music"
@@ -1014,7 +1010,28 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
                   setDownloadMenu(null);
                   if (params.length) showSuccess(t('videoHighlights.player.downloadMixing'));
                 }}
+                sx={{ gap: 1.5, alignItems: 'flex-start' }}
               >
+                {/* What it carries at a glance: filled is in, outlined is out. */}
+                <Box
+                  aria-hidden
+                  sx={{ display: 'flex', gap: 0.5, pt: 0.5, flex: 'none', color: 'text.primary' }}
+                >
+                  {crowd && (
+                    <UsersThreeIcon
+                      size={18}
+                      weight={c.crowd ? 'fill' : 'regular'}
+                      style={{ opacity: c.crowd ? 1 : 0.35 }}
+                    />
+                  )}
+                  {tracks.length > 0 && (
+                    <MusicNotesIcon
+                      size={18}
+                      weight={c.song ? 'fill' : 'regular'}
+                      style={{ opacity: c.song ? 1 : 0.35 }}
+                    />
+                  )}
+                </Box>
                 <ListItemText
                   primary={
                     c.song

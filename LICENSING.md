@@ -31,7 +31,7 @@ Prices, the price calculator and card checkout are on [autotournament.gg/pricing
 
 Contributions are accepted under the [Contributor License Agreement](CLA.md).
 
-The music and crowd sounds under highlight reels are not part of Auto Tournament and not under its license: they come from Pixabay under the Pixabay Content License. See [Third-party media](THIRD-PARTY-MEDIA.md) for the credits and what that license allows.
+Auto Tournament ships no music: the music under highlight reels is what each install's admin adds, and they are responsible for its license. The crowd sound comes from Pixabay. See [Third-party media](THIRD-PARTY-MEDIA.md).
 
 ## Older versions
 

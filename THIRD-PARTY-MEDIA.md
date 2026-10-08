@@ -1,32 +1,33 @@
 # Third-party media
 
-Highlight reels can play music beside them and a crowd that cheers. Neither is part of Auto Tournament's code, and neither is covered by its [license](LICENSE): they are third-party audio from [Pixabay](https://pixabay.com), used under the [Pixabay Content License](https://pixabay.com/service/license-summary/).
+## Reel music: bring your own
 
-Auto Tournament does not ship any of these files. The list of tracks is in [musicTracks.ts](api/src/integrations/cs2/demos/musicTracks.ts); each install downloads the tracks it plays from Pixabay, and the recorder downloads the crowd recording the same way.
+Auto Tournament ships no music and downloads none. Each install's admin adds the tracks reels may play (Match rules › Highlight videos), and is responsible for having the rights to use them in videos. The tracks stay on that install; Auto Tournament's license does not cover them.
 
-## What the Pixabay Content License allows
+How the platform uses an admin's tracks:
 
-As Pixabay's [Terms of Service](https://pixabay.com/service/terms/) read on 8 October 2026:
+- A reel plays its own mix of a track: cut to the reel, evened out in loudness with the other tracks, louder under the intro and faded. The player never gets the track's file; only an admin can fetch that, to listen before picking.
+- A download comes with or without the music. With it, the music is mixed under the game's sound, the same mix the player plays.
+- A track can be marked as registered with YouTube Content ID. The download menu then warns that a YouTube upload with it can get a claim (ads on the video, no strike); a download without music avoids it.
+
+## Suggested tracks (Pixabay)
+
+To help find music that fits, the admin page lists tracks we picked on [Pixabay](https://pixabay.com) ([musicSuggestions.ts](api/src/integrations/cs2/demos/musicSuggestions.ts)). These are links only. The admin opens a page, downloads the track there under the [Pixabay Content License](https://pixabay.com/service/license-summary/) and adds it like any other track.
+
+What that license says, as Pixabay's [Terms of Service](https://pixabay.com/service/terms/) read on 8 October 2026:
 
 - Content may be used for free, for personal and commercial purposes, and modified or adapted into new works.
-- Attribution is not required. Pixabay suggests "by [Contributor] via Pixabay" when you credit; this file credits every track.
+- Attribution is not required. Pixabay suggests "by [Contributor] via Pixabay"; the table below credits every suggested track that way.
 - Content may not be sold or distributed on a **Standalone** basis: as an audio file in substantially the same form as on Pixabay, including through a stock media platform.
 - Bulk, large-scale or systematic copying of Content is prohibited without Pixabay's explicit permission, and so is automated collection from the site.
-- Pixabay gives no warranty that third-party rights are cleared.
 
-## How Auto Tournament uses it
+This is a summary for convenience, not legal advice; the license itself is what applies.
 
-- A highlight video downloaded **with music** or **with the crowd** is a new work: the audio is cut, faded and mixed under the game's sound. That is the use the license allows.
-- A video downloaded **without music** contains none of this audio.
-- The player plays the selected track **beside** a reel, from the install's own copy.
+## Crowd
 
-Open questions for the commercial product (not legal advice):
+The crowd under reels is one recording, "Crowd Cheering in Stadium" by vishiv via Pixabay ([435357](https://pixabay.com/sound-effects/people-crowd-cheering-in-stadium-435357/)). Each recorder downloads it once to build reels' crowd tracks, where it is cut, gated by the game's sound and mixed into a new track; it is never offered as a file.
 
-1. **Playback beside the video.** The player fetches the track's file (`/api/game/cs2/music/<id>.mp3`) unchanged, so the file is reachable by itself. A per-reel mix, cut and faded to the reel, would keep the audio from leaving the install in its standalone form.
-2. **Downloading the catalogue.** Each install fetches every enabled track automatically. With 70+ tracks this may count as systematic copying, which needs Pixabay's permission. The options are written permission from Pixabay (Canva Germany GmbH), or having admins add tracks themselves.
-3. **YouTube Content ID.** Tracks marked "yes" below are registered with YouTube Content ID by their creators. A YouTube upload using one can get a claim, which adds ads to the video and does not cause a strike. The player says so in the download menu, and a download without music avoids it.
-
-## Music
+## Suggested tracks, credited
 
 Credited as "title by artist via Pixabay". The ID column links to the track's page.
 
@@ -106,9 +107,3 @@ Credited as "title by artist via Pixabay". The ID column links to the track's pa
 | Shound - Jazzed Up                                       | WildSpeedRecords    | [477394](https://pixabay.com/music/electronic-shound-jazzed-up-477394/)                                                      | yes        |
 | Shound - New Paths                                       | WildSpeedRecords    | [477414](https://pixabay.com/music/electronic-shound-new-paths-477414/)                                                      | no         |
 | Phonk Music - Phonk                                      | XXXDOLM             | [480283](https://pixabay.com/music/phonk-phonk-music-phonk-480283/)                                                          | yes        |
-
-## Crowd
-
-| Recording                 | Artist | Pixabay                                                                              |
-| ------------------------- | ------ | ------------------------------------------------------------------------------------ |
-| Crowd Cheering in Stadium | vishiv | [435357](https://pixabay.com/sound-effects/people-crowd-cheering-in-stadium-435357/) |

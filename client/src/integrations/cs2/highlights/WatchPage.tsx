@@ -334,10 +334,11 @@ export function WatchPage() {
   }, [w, key]);
   const rel = related?.key === key ? related : null;
 
-  // The chapter list keeps the one playing in the middle, unless the viewer
-  // scrolled it in the last few seconds.
+  // The chapter list keeps the one playing in the middle (no snapping: free
+  // scrolling), unless the viewer scrolled it in the last few seconds.
   const list = useRef<ComponentRef<'div'>>(null);
   const userScrolled = useRef(0);
+  const [centreAgain, setCentreAgain] = useState(0);
   const playing = w
     ? w.chapters.reduce((at, c, i) => (c.at !== null && c.at <= time + 0.05 ? i : at), 0)
     : 0;
@@ -352,7 +353,7 @@ export function WatchPage() {
       top: box.scrollTop + r.top - b.top - (box.clientHeight - r.height) / 2,
       behavior: 'smooth',
     });
-  }, [playing]);
+  }, [playing, centreAgain]);
 
   // A single clip: more of the player's beside it.
   useEffect(() => {
@@ -535,7 +536,6 @@ export function WatchPage() {
                 onWheel={() => (userScrolled.current = Date.now())}
                 onTouchMove={() => (userScrolled.current = Date.now())}
                 sx={{
-                  scrollSnapType: 'y proximity',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 1.25,
@@ -553,13 +553,15 @@ export function WatchPage() {
                     disabled={c.at === null}
                     onClick={() => {
                       if (c.at === null) return;
+                      // A click centres it in the list straight away, even right after a scroll.
+                      userScrolled.current = 0;
+                      setCentreAgain((n) => n + 1);
                       player.current?.seek(c.at);
                       player.current?.play();
                     }}
                     aria-current={i === current ? 'true' : undefined}
                     data-chapter={i}
                     sx={{
-                      scrollSnapAlign: 'center',
                       display: 'flex',
                       gap: 1.25,
                       alignItems: 'center',

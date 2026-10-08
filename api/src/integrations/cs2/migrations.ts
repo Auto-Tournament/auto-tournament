@@ -103,6 +103,7 @@ export const CS2_MATCH_REELS_MIGRATION_ID = '025-match-reels';
 export const CS2_HIGHLIGHTS_PLAYER_MIGRATION_ID = '026-highlights-player';
 export const CS2_REEL_STARTS_MIGRATION_ID = '027-reel-starts';
 export const CS2_TEAM_REELS_MIGRATION_ID = '028-team-reels';
+export const CS2_MUSIC_LIBRARY_MIGRATION_ID = '029-music-library';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1166,6 +1167,24 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       PRIMARY KEY (match_slug, team_id)
     );
     CREATE INDEX IF NOT EXISTS cs2_team_reels_status_idx ON cs2_team_reels(status, created_at);
+`,
+  },
+  {
+    // The install's own reel music: tracks the admin uploads (demos/music.ts).
+    id: CS2_MUSIC_LIBRARY_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_music_tracks (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      artist TEXT,
+      genre TEXT,
+      source TEXT, -- where it came from, for credit
+      content_id INTEGER NOT NULL DEFAULT 0, -- registered with YouTube Content ID
+      file TEXT NOT NULL, -- under DATA_DIR/highlights/music
+      seconds INTEGER,
+      gain_db REAL, -- evens its loudness out with the others
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
 `,
   },
 ];

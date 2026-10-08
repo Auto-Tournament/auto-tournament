@@ -1,36 +1,92 @@
 /**
- * Music under reels. The reels themselves carry only the game and the crowd;
- * the player plays a track beside them, and a download can have one mixed in
- * (withMusic), or none for YouTube and the like.
+ * Music under reels: the install's own library. Admins upload the tracks they
+ * have the rights to (bring your own music: Auto Tournament ships none and
+ * downloads none; musicSuggestions.ts lists where to find some, and
+ * THIRD-PARTY-MEDIA.md why). The reels carry only the game and the crowd.
+ *
+ * The player never gets a track's file: each reel gets its own mix of it
+ * (reelMusic), cut to the reel, evened out to the other tracks' loudness and
+ * faded, the sound a download mixes in (withSound) too.
  *
  * `highlights_music`: empty (every track), `off`, or the track ids the admin
- * picked, comma separated. Tracks download from Pixabay the first time they
- * are needed (musicTracks.ts says why) and stay in DATA_DIR/highlights/music.
+ * picked, comma separated.
  */
 
 import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { db } from '../../../config/database';
 import { settingsService } from '../../../services/settingsService';
-import { log } from '../../../utils/logger';
 import { HIGHLIGHTS_DIR } from './highlights';
-import { MUSIC_TRACKS, type MusicTrack } from './musicTracks';
 
 const MUSIC_DIR = path.join(HIGHLIGHTS_DIR, 'music');
 const MIX_DIR = path.join(HIGHLIGHTS_DIR, 'with-music');
 
-/** The same levels the player uses (HighlightPlayer's music). */
+/** The levels the music plays at under a reel. */
 export const MUSIC_GAIN = 0.11;
 export const MUSIC_INTRO_GAIN = 0.32;
 const FADE_IN = 1.5;
 const FADE_OUT = 2.5;
+/** What every track is evened out to (EBU R128 integrated): the level the reel music was tuned at. */
+export const MUSIC_TARGET_LUFS = -9.6;
+/** An upload's limits. */
+export const MUSIC_MAX_BYTES = 40 * 1024 * 1024;
+const MIN_SECONDS = 20;
 
-/** What `highlights_music` holds, read: every track, none, or the ones picked. */
-export function parseMusicSetting(value: string | null): 'all' | 'off' | string[] {
+export interface MusicTrack {
+  id: string;
+  title: string;
+  artist: string;
+  /** A free label the music menu groups by ("drum-n-bass", "phonk", …); "" for none. */
+  genre: string;
+  seconds: number;
+  /** Added to its level, in dB, so it sounds as loud as the others (measured on upload). */
+  gainDb: number;
+  /** Registered with YouTube Content ID (the admin says so): an upload with it can get a claim. */
+  contentId: boolean;
+  /** Where it came from (a page), for credit; "" when not given. */
+  source: string;
+}
+
+interface TrackRow {
+  id: number;
+  title: string;
+  artist: string | null;
+  genre: string | null;
+  seconds: number | string | null;
+  gain_db: number | string | null;
+  content_id: number | boolean | null;
+  source: string | null;
+  file: string;
+}
+
+const toTrack = (r: TrackRow): MusicTrack => ({
+  id: String(r.id),
+  title: r.title,
+  artist: r.artist ?? '',
+  genre: r.genre ?? '',
+  seconds: Number(r.seconds) || 0,
+  gainDb: Number(r.gain_db) || 0,
+  contentId: !!Number(r.content_id),
+  source: r.source ?? '',
+});
+
+/** Every track in the library, grouped by genre. */
+export async function allTracks(): Promise<MusicTrack[]> {
+  const rows = await db.queryAsync<TrackRow>(
+    'SELECT * FROM cs2_music_tracks ORDER BY genre, lower(title), id'
+  );
+  return rows.map(toTrack);
+}
+
+/** What `highlights_music` holds, read: every track, none, or the ones picked that exist. */
+export function parseMusicSetting(
+  value: string | null,
+  known: Set<string>
+): 'all' | 'off' | string[] {
   const v = (value ?? '').trim();
   if (!v || v === 'all') return 'all';
   if (v === 'off') return 'off';
-  const known = new Set(MUSIC_TRACKS.map((t) => t.id));
   const ids = v
     .split(',')
     .map((s) => s.trim())
@@ -38,66 +94,169 @@ export function parseMusicSetting(value: string | null): 'all' | 'off' | string[
   return ids.length ? ids : 'off';
 }
 
-/** The tracks reels may play, in catalogue order. */
+/** The tracks reels may play. */
 export async function enabledTracks(): Promise<MusicTrack[]> {
-  const mode = parseMusicSetting(await settingsService.getSetting('highlights_music'));
+  const all = await allTracks();
+  const mode = parseMusicSetting(
+    await settingsService.getSetting('highlights_music'),
+    new Set(all.map((t) => t.id))
+  );
   if (mode === 'off') return [];
-  if (mode === 'all') return [...MUSIC_TRACKS];
-  return MUSIC_TRACKS.filter((t) => mode.includes(t.id));
+  if (mode === 'all') return all;
+  return all.filter((t) => mode.includes(t.id));
 }
 
-export function trackById(id: string): MusicTrack | undefined {
-  return MUSIC_TRACKS.find((t) => t.id === id);
+export async function trackById(id: string): Promise<(MusicTrack & { file: string }) | undefined> {
+  if (!/^\d{1,9}$/.test(id)) return undefined;
+  const row = await db.queryOneAsync<TrackRow>('SELECT * FROM cs2_music_tracks WHERE id = ?', [
+    Number(id),
+  ]);
+  return row ? { ...toTrack(row), file: path.join(MUSIC_DIR, row.file) } : undefined;
 }
 
-const downloading = new Map<string, Promise<string>>();
-
-/** The track's MP3 on disk, downloaded from Pixabay the first time. */
-export function trackFile(track: MusicTrack): Promise<string> {
-  const file = path.join(MUSIC_DIR, `${track.id}.mp3`);
-  if (fs.existsSync(file)) return Promise.resolve(file);
-  const pending = downloading.get(track.id);
-  if (pending) return pending;
-  const job = (async () => {
-    fs.mkdirSync(MUSIC_DIR, { recursive: true });
-    const res = await globalThis.fetch(track.audio, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Auto Tournament)', Referer: 'https://pixabay.com/' },
-      signal: globalThis.AbortSignal.timeout(60_000),
-    });
-    if (!res.ok) throw new Error(`Pixabay answered ${res.status} for ${track.title}`);
-    const body = Buffer.from(await res.arrayBuffer());
-    if (body.length < 10_000)
-      throw new Error(`Pixabay sent ${body.length} bytes for ${track.title}`);
-    const tmp = `${file}.part`;
-    fs.writeFileSync(tmp, body);
-    fs.renameSync(tmp, file);
-    return file;
-  })().finally(() => downloading.delete(track.id));
-  downloading.set(track.id, job);
-  return job;
+/** A track's audio on disk. */
+export function trackFile(track: { file: string }): string {
+  return track.file;
 }
 
-/** Fetches the enabled tracks in the background, one at a time, so the first play doesn't wait. */
-export async function prefetchMusic(): Promise<void> {
-  let left = await enabledTracks();
-  // Three rounds, a minute apart: the network can be slow to come up after a boot.
-  for (let round = 0; round < 3 && left.length; round++) {
-    if (round) await new Promise((r) => setTimeout(r, 60_000));
-    const failed: typeof left = [];
-    for (const track of left) {
-      try {
-        await trackFile(track);
-      } catch (error) {
-        failed.push(track);
-        if (round === 2)
-          log.warn('[HIGHLIGHTS] Could not download a music track', {
-            track: track.id,
-            error: String(error),
-          });
+/** Loudness (EBU R128 integrated, LUFS) and length of an audio file; null when it is not audio. */
+async function measure(file: string): Promise<{ lufs: number; seconds: number } | null> {
+  try {
+    const out = await run('ffprobe', [
+      '-v',
+      'error',
+      '-show_entries',
+      'format=duration',
+      '-of',
+      'csv=p=0',
+      file,
+    ]);
+    const seconds = Number(out.trim());
+    if (!(seconds > 0)) return null;
+    const err = await runStderr('ffmpeg', [
+      '-hide_banner',
+      '-nostats',
+      '-i',
+      file,
+      '-af',
+      'ebur128',
+      '-f',
+      'null',
+      '-',
+    ]);
+    const m = [...err.matchAll(/I:\s+(-?[\d.]+) LUFS/g)].pop();
+    return { seconds, lufs: m ? Number(m[1]) : MUSIC_TARGET_LUFS };
+  } catch {
+    return null;
+  }
+}
+
+export class MusicUploadError extends Error {}
+
+/**
+ * Removes what 3.0.0-beta.59 downloaded from Pixabay by itself (`<pixabay
+ * id>.mp3` in the music folder, and its mixes): the library holds only what
+ * an admin uploads now. Uploads are `upload-…`, so nothing of theirs matches.
+ */
+export function removeDownloadedCatalogue(): number {
+  let removed = 0;
+  for (const dir of [MUSIC_DIR, MIX_DIR]) {
+    for (const f of fs.existsSync(dir) ? fs.readdirSync(dir) : []) {
+      const old = dir === MUSIC_DIR ? /^\d+\.mp3$/.test(f) : /-\d{5,}-[\d.]+\.mp4$/.test(f);
+      if (old) {
+        fs.rmSync(path.join(dir, f), { force: true });
+        removed++;
       }
     }
-    left = failed;
   }
+  return removed;
+}
+
+/** Adds an uploaded track to the library: kept as it came, measured, evened out on play. */
+export async function addTrack(
+  body: Buffer,
+  meta: { title: string; artist: string; genre: string; source: string; contentId: boolean }
+): Promise<MusicTrack> {
+  fs.mkdirSync(MUSIC_DIR, { recursive: true });
+  const name = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const file = path.join(MUSIC_DIR, name);
+  fs.writeFileSync(file, body);
+  const m = await measure(file);
+  if (!m) {
+    fs.rmSync(file, { force: true });
+    throw new MusicUploadError('That is not an audio file ffmpeg can read.');
+  }
+  if (m.seconds < MIN_SECONDS) {
+    fs.rmSync(file, { force: true });
+    throw new MusicUploadError(`A track has to be at least ${MIN_SECONDS} seconds long.`);
+  }
+  const gainDb = Math.max(-12, Math.min(12, Math.round((MUSIC_TARGET_LUFS - m.lufs) * 10) / 10));
+  const row = await db.queryOneAsync<TrackRow>(
+    `INSERT INTO cs2_music_tracks (title, artist, genre, source, content_id, file, seconds, gain_db)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+    [
+      meta.title.slice(0, 120),
+      meta.artist.slice(0, 120),
+      meta.genre.slice(0, 40),
+      meta.source.slice(0, 500),
+      meta.contentId ? 1 : 0,
+      name,
+      Math.round(m.seconds),
+      gainDb,
+    ]
+  );
+  return toTrack(row!);
+}
+
+/** Changes a track's title, artist, genre, source or Content ID mark. */
+export async function updateTrack(
+  id: string,
+  fields: Partial<{
+    title: string;
+    artist: string;
+    genre: string;
+    source: string;
+    contentId: boolean;
+  }>
+): Promise<MusicTrack | null> {
+  const t = await trackById(id);
+  if (!t) return null;
+  await db.runAsync(
+    'UPDATE cs2_music_tracks SET title = ?, artist = ?, genre = ?, source = ?, content_id = ? WHERE id = ?',
+    [
+      (fields.title ?? t.title).slice(0, 120),
+      (fields.artist ?? t.artist).slice(0, 120),
+      (fields.genre ?? t.genre).slice(0, 40),
+      (fields.source ?? t.source).slice(0, 500),
+      (fields.contentId ?? t.contentId) ? 1 : 0,
+      Number(id),
+    ]
+  );
+  return (await trackById(id)) ?? null;
+}
+
+/** Removes a track, its file and every mix made with it. */
+export async function removeTrack(id: string): Promise<boolean> {
+  const t = await trackById(id);
+  if (!t) return false;
+  await db.runAsync('DELETE FROM cs2_music_tracks WHERE id = ?', [Number(id)]);
+  fs.rmSync(t.file, { force: true });
+  for (const f of fs.existsSync(MIX_DIR) ? fs.readdirSync(MIX_DIR) : []) {
+    if (f.includes(`-m${id}-`)) fs.rmSync(path.join(MIX_DIR, f), { force: true });
+  }
+  return true;
+}
+
+function runStderr(cmd: string, args: string[]): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const p = spawn(cmd, args, { stdio: ['ignore', 'ignore', 'pipe'] });
+    let err = '';
+    p.stderr.on('data', (d) => (err += d));
+    p.on('error', reject);
+    p.on('close', (code) =>
+      code === 0 ? resolve(err) : reject(new Error(`${cmd} exited ${code}`))
+    );
+  });
 }
 
 function run(cmd: string, args: string[]): Promise<string> {
@@ -165,13 +324,13 @@ const mixing = new Map<string, Promise<string>>();
  */
 export function withSound(
   video: string,
-  opts: { track?: MusicTrack | null; crowd?: string | null; intro: number }
+  opts: { track?: (MusicTrack & { file: string }) | null; crowd?: string | null; intro: number }
 ): Promise<string> {
   const introAt = Math.max(0, Math.min(30, Math.round(opts.intro * 10) / 10));
   const parts = [
     path.basename(video, '.mp4'),
     opts.crowd ? 'crowd' : null,
-    opts.track ? `${opts.track.id}-${introAt}` : null,
+    opts.track ? `m${opts.track.id}-${introAt}` : null,
   ];
   const out = path.join(MIX_DIR, `${parts.filter(Boolean).join('-')}.mp4`);
   const newest = Math.max(
@@ -183,7 +342,7 @@ export function withSound(
   if (pending) return pending;
   const job = (async () => {
     const [music, info] = await Promise.all([
-      opts.track ? trackFile(opts.track) : null,
+      opts.track ? Promise.resolve(trackFile(opts.track)) : null,
       probe(video),
     ]);
     fs.mkdirSync(MIX_DIR, { recursive: true });
@@ -226,6 +385,54 @@ export function withSound(
       '192k',
       '-t',
       info.seconds.toFixed(3),
+      '-movflags',
+      '+faststart',
+      tmp,
+    ]);
+    fs.renameSync(tmp, out);
+    return out;
+  })().finally(() => mixing.delete(out));
+  mixing.set(out, job);
+  return job;
+}
+
+/**
+ * A reel's own mix of a track (AAC, as long as the reel): the music cut to
+ * it, evened out, louder under its intro and faded, exactly what a download
+ * mixes in. The player plays this beside the reel, never the track's file.
+ * Made once per reel, track and intro, then kept.
+ */
+export function reelMusic(
+  video: string,
+  track: MusicTrack & { file: string },
+  intro: number
+): Promise<string> {
+  const introAt = Math.max(0, Math.min(30, Math.round(intro * 10) / 10));
+  const out = path.join(MIX_DIR, `${path.basename(video, '.mp4')}-m${track.id}-${introAt}.m4a`);
+  if (fs.existsSync(out) && fs.statSync(out).mtimeMs >= fs.statSync(video).mtimeMs)
+    return Promise.resolve(out);
+  const pending = mixing.get(out);
+  if (pending) return pending;
+  const job = (async () => {
+    const info = await probe(video);
+    fs.mkdirSync(MIX_DIR, { recursive: true });
+    const tmp = `${out}.part.m4a`;
+    await run('ffmpeg', [
+      '-y',
+      '-v',
+      'error',
+      '-stream_loop',
+      '-1',
+      '-i',
+      trackFile(track),
+      '-af',
+      musicFilter(info.seconds, introAt, track.gainDb),
+      '-t',
+      info.seconds.toFixed(3),
+      '-c:a',
+      'aac',
+      '-b:a',
+      '160k',
       '-movflags',
       '+faststart',
       tmp,
