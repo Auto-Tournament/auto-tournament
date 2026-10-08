@@ -5,6 +5,14 @@ Licensed under the PolyForm Noncommercial License 1.0.0 (see LICENSE).
 
 Commercial use requires a separate license from the author. See LICENSING.md.
 
+Third-party software in the worker
+
+The worker (worker/, the at-worker binary) is built with third-party Go
+modules and the Go runtime, under their own licenses (MIT, BSD, Apache 2.0).
+Their notices are in worker/THIRD_PARTY_NOTICES.md and go with every build
+of the worker. Its fonts (worker/assets/fonts) are under the SIL Open Font
+License, files beside them.
+
 Third-party contributions
 
 The following contributions were made to this project under the MIT License
