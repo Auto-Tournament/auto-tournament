@@ -490,11 +490,17 @@ type videoCapture struct {
 
 func startVideoCapture(node, path string, width, height int) (*videoCapture, error) {
 	client := fmt.Sprintf("atrec%d", os.Getpid())
-	gst := []string{"-v", "-e", "pipewiresrc", "autoconnect=false", "client-name=" + client,
+	gst := []string{"-v", "-e", "pipewiresrc", "autoconnect=false", "client-name=" + client}
+	// AT_STREAM_FORMAT asks gamescope for the stream in that format (NV12:
+	// converted on the GPU, 1.5 bytes a pixel to copy out instead of 4).
+	if f := env("AT_STREAM_FORMAT", ""); f != "" {
+		gst = append(gst, "!", "video/x-raw,format="+f)
+	}
+	gst = append(gst,
 		"!", "identity", "name=tick", "silent=false",
 		"!", "queue", "max-size-buffers=1200", "max-size-time=0", "max-size-bytes=0",
 		"!", "videoconvert", "n-threads=8", "!", "video/x-raw,format=I420",
-		"!", "filesink", "location=" + path}
+		"!", "filesink", "location="+path)
 	name, args := "gst-launch-1.0", gst
 	if _, err := exec.LookPath("stdbuf"); err == nil {
 		name, args = "stdbuf", append([]string{"-oL", "gst-launch-1.0"}, gst...)

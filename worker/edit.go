@@ -247,6 +247,9 @@ type overlay struct {
 	height int
 	// clean: the frames also come out undressed as [clean] (the clean twin, overlay.go).
 	clean bool
+	// focus: when (seconds into the video) a caption card's entrance starts:
+	// the game behind it blurs and darkens while it is up (focusFilter).
+	focus []float64
 }
 
 // videoFilter dresses the frames: the animated caption card for the first
@@ -264,6 +267,10 @@ func videoFilter(o overlay) string {
 		b.WriteString("[base]")
 	}
 	last := "base"
+	if len(o.focus) > 0 {
+		b.WriteString(";" + focusFilter("base", "focused", o.focus, o.width))
+		last = "focused"
+	}
 	if o.card >= 0 {
 		fmt.Fprintf(&b, ";[%s][%d:v]overlay=%d:%d:eof_action=repeat:alpha=premultiplied[withcard]", last, o.card, o.cardAt.X, o.cardAt.Y)
 		last = "withcard"
@@ -323,4 +330,46 @@ func encodeArgs(encoder string) []string {
 			"-maxrate", "16M", "-bufsize", "32M", "-profile:v", "high", "-pix_fmt", "yuv420p")
 	}
 	return append(args, "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2")
+}
+
+// The card's entrance (card.go): the game behind it goes out of focus as the
+// card unfolds and comes back as it moves down. The drafts (2026-10-08):
+// 16 px of blur on a 1152 px wide frame, darkened 80 % at the edges and
+// about half in the middle.
+const (
+	focusIn      = 0.10 // the card starts to unfold
+	focusInDur   = 0.65
+	focusOut     = cardMove // it starts to move down
+	focusOutDur  = 0.60
+	focusBlurPx  = 16.0
+	focusDraftW  = 1152.0
+	focusShade   = 0.62 // the darkening, before the vignette darkens the edges more
+	focusSeconds = focusOut + focusOutDur + 0.05
+)
+
+// focusFilter blurs and darkens [in] behind each card entrance starting at
+// `at` seconds (a clip's, or each clip's in a reel) into [out]. Each window
+// is its own short branch: only its frames are blurred.
+func focusFilter(in, out string, at []float64, width int) string {
+	var b strings.Builder
+	n := len(at)
+	fmt.Fprintf(&b, "[%s]split=%d[fb0]", in, n+1)
+	for i := range at {
+		fmt.Fprintf(&b, "[fb%d]", i+1)
+	}
+	sigma := focusBlurPx * float64(width) / focusDraftW
+	last := "fb0"
+	for i, a := range at {
+		fmt.Fprintf(&b, ";[fb%d]trim=start=%.3f:end=%.3f,setpts=PTS-STARTPTS,gblur=sigma=%.1f,"+
+			"drawbox=color=0x080504@%.2f:t=fill,vignette=angle=PI/4,format=yuva420p,"+
+			"fade=t=in:st=%.2f:d=%.2f:alpha=1,fade=t=out:st=%.2f:d=%.2f:alpha=1,setpts=PTS+%.3f/TB[fz%d]",
+			i+1, a, a+focusSeconds, sigma, focusShade, focusIn, focusInDur, focusOut, focusOutDur, a, i)
+		next := fmt.Sprintf("fo%d", i)
+		if i == n-1 {
+			next = out
+		}
+		fmt.Fprintf(&b, ";[%s][fz%d]overlay=eof_action=pass,format=yuv420p[%s]", last, i, next)
+		last = next
+	}
+	return b.String()
 }

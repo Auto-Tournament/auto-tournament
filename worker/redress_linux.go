@@ -41,6 +41,11 @@ func (r *recorder) redress(clean, recipe, out string) error {
 	}
 	args := []string{"-y", "-hide_banner", "-loglevel", "error", "-i", clean}
 	ov := overlay{card: -1, feed: -1, logo: -1, width: o.Width, height: o.Height}
+	for _, p := range o.Parts {
+		if p.Card != nil && !p.Settled {
+			ov.focus = append(ov.focus, p.Start)
+		}
+	}
 	next := 1
 	type stream struct {
 		pipe  string

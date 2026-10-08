@@ -402,6 +402,16 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 			continue
 		}
 		log.Printf("captured %q in %s", m.Title, time.Since(started).Round(time.Second))
+		if env("AT_FINISH_SERIAL", "") == "1" {
+			// Nothing else on the GPU while CS2 captures: finish this one first.
+			drainOne := make(chan struct{})
+			queue <- finishing{result: clipResult{moment: m, player: sh.player, path: out, markers: markers}, finish: func() error {
+				defer close(drainOne)
+				return finish()
+			}, started: started}
+			<-drainOne
+			continue
+		}
 		queue <- finishing{
 			result:  clipResult{moment: m, player: sh.player, path: out, markers: markers},
 			finish:  finish,
@@ -679,6 +689,9 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		"-ss", fmt.Sprintf("%.4f", maxf(0, audioAt)), "-i", wav}
 	ow, oh := outputSize()
 	o := overlay{card: -1, logo: -1, feed: -1, width: ow, height: oh, clean: clean != ""}
+	if card != nil && !card.settled {
+		o.focus = []float64{0}
+	}
 	next := 2
 	// The card's frames come through a named pipe, drawn as ffmpeg asks for them.
 	var cardPipe string
