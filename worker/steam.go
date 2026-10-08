@@ -20,6 +20,31 @@ func steamLoggedOn(connectionLog string) bool {
 	return len(states) > 0 && states[len(states)-1][1] == "Logged On"
 }
 
+// reSteamOffline is Steam in offline mode with its account set: it never logs
+// on, it sets the user it runs as and stays "Logged Off".
+var reSteamOffline = regexp.MustCompile(`\] \[Logged Off, \d+, \d+\] \[U:1:\d+\] CCMInterface::SetSteamID\(`)
+
+// steamOfflineReady tells whether Steam, last started in offline mode (every
+// recorder can share one account that way: demo playback needs no session),
+// has its account set: the log's last state line is that.
+func steamOfflineReady(connectionLog string) bool {
+	states := reSteamState.FindAllStringIndex(connectionLog, -1)
+	if len(states) == 0 {
+		return false
+	}
+	last := connectionLog[states[len(states)-1][0]:]
+	return reSteamOffline.MatchString(last)
+}
+
+// steamWantsOffline is whether Steam is set to start in offline mode
+// (loginusers.vdf next to the log's folder: "WantsOfflineMode" "1").
+func steamWantsOffline(connectionLog string) bool {
+	b, err := os.ReadFile(filepath.Join(filepath.Dir(filepath.Dir(connectionLog)), "config", "loginusers.vdf"))
+	return err == nil && reWantsOffline.Match(b)
+}
+
+var reWantsOffline = regexp.MustCompile(`"WantsOfflineMode"\s+"1"`)
+
 // steamConnectionLog is where Steam writes its connection log
 // (AT_STEAM_CONNECTION_LOG overrides it).
 func steamConnectionLog() string {
@@ -30,7 +55,8 @@ func steamConnectionLog() string {
 	return filepath.Join(home, ".local", "share", "Steam", "logs", "connection_log.txt")
 }
 
-// awaitSteam waits until Steam has logged on. CS2 started before then has no
+// awaitSteam waits until Steam has logged on (or, in offline mode, set its
+// account). CS2 started before then has no
 // Steam to talk to: it shows an error dialog and quits, and the recorder only
 // notices once the map never loads, minutes later. Without the log (no Steam
 // desktop here), it does not wait.
@@ -42,7 +68,7 @@ func awaitSteam(ctx context.Context, timeout time.Duration) error {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil
 		}
-		if err == nil && steamLoggedOn(string(b)) {
+		if err == nil && (steamLoggedOn(string(b)) || (steamWantsOffline(path) && steamOfflineReady(string(b)))) {
 			return nil
 		}
 		if time.Now().After(deadline) {

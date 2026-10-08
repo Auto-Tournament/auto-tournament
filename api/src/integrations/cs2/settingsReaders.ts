@@ -398,5 +398,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     ...(await highlightQuality()),
     // Reel music: '' (every track), 'off', or the picked ids (demos/music.ts).
     highlightsMusic: (await settingsService.getSetting('highlights_music'))?.trim() ?? '',
+    // Clean twins of the clips (worker/overlay.go): kept unless turned off.
+    highlightsKeepClean: (await settingsService.getSetting('highlights_keep_clean'))?.trim() !== '0',
   };
 }

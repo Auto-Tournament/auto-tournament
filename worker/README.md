@@ -64,6 +64,24 @@ speed, then slowing into the last kill. `AT_RESOLUTION` (2560x1440) and
 `AT_ENCODER` (libx264) change the output. The full list is at the top of
 `record.go`.
 
+Steam can run in offline mode: demo playback needs no online session, so every
+recorder (one per GPU) can use the same Steam account. Sign in once, then
+switch Steam to offline mode (in `loginusers.vdf`: `"WantsOfflineMode" "1"` and
+`"SkipOfflineModeWarning" "1"`).
+
+Every clip and reel is stored three times over (`overlay.go`): dressed (the
+caption card, kill feed and logo drawn on: what people watch), clean (as
+recorded, for people's own edits and for later reels) and the overlay's
+recipe (what the card says, the kill feed's rows, when each part starts). The
+dressed video can be made again from the other two without CS2:
+
+```sh
+at-worker redress clip.clean.mp4 clip.overlay.json clip.mp4
+```
+
+The platform does the same for every video at once (Highlights settings,
+"Redraw overlays"): an idle recorder takes them in batches.
+
 ## Develop
 
 ```bash

@@ -70,7 +70,8 @@ export type Cs2SettingKey =
   | 'highlights_per_player'
   | 'highlights_resolution'
   | 'highlights_fps'
-  | 'highlights_music';
+  | 'highlights_music'
+  | 'highlights_keep_clean';
 
 type Cs2Setting = SettingDefinition & { key: Cs2SettingKey; schema: JSONSchema };
 
@@ -409,6 +410,13 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
       return { value: trimmed === 'all' ? '' : trimmed, message: 'Highlight music updated' };
     },
     applyRequest: stringRequest('highlightsMusic'),
+  },
+  // Keep each clip's clean twin and overlay recipe (on unless "0"): reels are
+  // made from the clean clips with their own overlay, and clips can be dressed
+  // again. Off saves roughly half the storage.
+  {
+    ...flag('highlights_keep_clean', 'highlightsKeepClean', 420),
+    normalize: normalizeFlag('Clean copies of highlight clips'),
   },
 ];
 

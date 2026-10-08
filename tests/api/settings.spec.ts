@@ -1250,6 +1250,7 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'highlights_resolution', field: 'highlightsResolution' },
   { key: 'highlights_fps', field: 'highlightsFps' },
   { key: 'highlights_music', field: 'highlightsMusic' },
+  { key: 'highlights_keep_clean', field: 'highlightsKeepClean' },
 ];
 
 // --- tests -------------------------------------------------------------------

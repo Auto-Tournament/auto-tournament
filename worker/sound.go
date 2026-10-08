@@ -14,6 +14,10 @@ type reelSound struct {
 	reactions [][]reaction // each part's crowd reactions, seconds into that part (reelPlan order)
 	crowdOut  string       // where the crowd track goes (buildCrowdTrack); none without it
 	outro     bool         // a reel's ending: the last frame held, then a fade out
+	// restyle changes the reel's own overlay (drawn over its clean clips,
+	// overlay.go) from the clips' cards and kill feeds: a team's or a
+	// tournament's reel can look its own.
+	restyle func(*overlayRecipe)
 }
 
 const (

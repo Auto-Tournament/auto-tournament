@@ -104,6 +104,7 @@ export const CS2_HIGHLIGHTS_PLAYER_MIGRATION_ID = '026-highlights-player';
 export const CS2_REEL_STARTS_MIGRATION_ID = '027-reel-starts';
 export const CS2_TEAM_REELS_MIGRATION_ID = '028-team-reels';
 export const CS2_MUSIC_LIBRARY_MIGRATION_ID = '029-music-library';
+export const CS2_REDRESS_MIGRATION_ID = '030-redress';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1183,6 +1184,20 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       file TEXT NOT NULL, -- under DATA_DIR/highlights/music
       seconds INTEGER,
       gain_db REAL, -- evens its loudness out with the others
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+`,
+  },
+  {
+    id: CS2_REDRESS_MIGRATION_ID,
+    up: `
+    -- Videos to dress again from their clean twin and overlay recipe (the recorder's redress).
+    CREATE TABLE IF NOT EXISTS cs2_redress_queue (
+      file TEXT PRIMARY KEY, -- under DATA_DIR/highlights: 123.mp4, reel-….mp4
+      status TEXT NOT NULL DEFAULT 'queued', -- queued | working | failed
+      attempts INTEGER NOT NULL DEFAULT 0,
+      error TEXT,
+      claimed_at INTEGER,
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 `,

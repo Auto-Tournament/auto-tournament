@@ -33,7 +33,7 @@ type matchReelClip struct {
 }
 
 type matchReelJob struct {
-	Kind         string          `json:"kind"` // match_reel | tournament_reel | team_reel
+	Kind         string          `json:"kind"` // match_reel | tournament_reel | team_reel | player_reel
 	MatchSlug    string          `json:"matchSlug"`
 	MapNumber    int             `json:"mapNumber"`
 	TournamentID int             `json:"tournamentId"`
@@ -56,6 +56,9 @@ func (j *matchReelJob) label() string {
 	}
 	if j.Kind == "team_reel" {
 		return fmt.Sprintf("team reel of %s for %s", j.MatchSlug, j.TeamID)
+	}
+	if j.Kind == "player_reel" {
+		return fmt.Sprintf("player reel of %s map %d", j.MatchSlug, j.MapNumber)
 	}
 	return fmt.Sprintf("match reel of %s map %d", j.MatchSlug, j.MapNumber)
 }
@@ -91,6 +94,7 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 		if err := r.downloadTo(ctx, c.URL, clip); err != nil {
 			return fmt.Errorf("%s: %w", c.PlayerName, err)
 		}
+		r.downloadTwins(ctx, c.URL, clip)
 		tagged = append(tagged, clip)
 	}
 	reel := filepath.Join(dir, "match.mp4")

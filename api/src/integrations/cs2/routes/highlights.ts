@@ -12,8 +12,13 @@
  *   PUT  /api/game/cs2/recorder/team-reels/:slug/:team       a team's reel of a match (video/mp4 body)
  *   POST /api/game/cs2/recorder/team-reels/:slug/:team/fail  { error }: it could not make it
  *   POST /api/game/cs2/recorder/tournament-reels/:id/fail    { error }: it could not make it
- *   PUT  …/reels/:slug/:map/:player/crowd, …/match-reels/:slug/:map/crowd,
- *        …/tournament-reels/:id/crowd                       a reel's crowd track (audio/mp4 body), after the reel
+ *   PUT  …/jobs/:id/clip/<twin>, …/reels/:slug/:map/:player/<twin>, …/match-reels/:slug/:map/<twin>,
+ *        …/team-reels/:slug/:team/<twin>, …/tournament-reels/:id/<twin>   after the video: a reel's crowd
+ *        track (`crowd`, audio/mp4), the clean twin (`clean`, video/mp4) or the overlay's recipe (`overlay`, JSON)
+ *   PUT  /api/game/cs2/recorder/redress/:file          a video dressed again from its clean twin (video/mp4 body)
+ *   POST /api/game/cs2/recorder/redress/:file/fail     { error }: it could not
+ *   GET  /api/game/cs2/redress                         admin: the redress queue ({ queued, working, failed, available })
+ *   POST /api/game/cs2/redress                         admin: { files? }: dress these (default: every video with a clean twin) again
  *
  * A clip's upload carries `X-AT-Markers` (JSON: where its kills and slow
  * motion are, in seconds); a reel's carries `X-AT-Clips` (the highlight ids it
@@ -33,7 +38,9 @@
  *   GET  /api/game/cs2/watch/related                  ?match&map | ?tournament: the players on that map and more reels
  *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`, `tournament-…`), with range requests;
  *                                                     ?crowd=1, ?music=<track>&intro=<s>: a download with its crowd track and/or that music mixed in (../demos/music.ts)
- *                                                     `<reel>.crowd.m4a`: a reel's crowd track
+ *                                                     ?clean=1: its clean twin instead (as recorded: no card, kill feed or logo)
+ *                                                     `<video>.clean.mp4`: the clean twin; `<reel>.crowd.m4a`: a reel's crowd track;
+ *                                                     `<video>.overlay.json`: the overlay's recipe
  *   GET  /api/game/cs2/highlights/:reel/music/:track  a reel's own mix of a library track (?intro=<s>), for the player
  *   GET  /api/game/cs2/music                          the tracks reels play ({ tracks }), the whole library ({ all }), and where to find more ({ suggestions })
  *   POST /api/game/cs2/music                          admin: add a track (the audio as the body; ?title&artist&genre&source&contentId)
@@ -82,11 +89,22 @@ import {
   crowdFileOf,
   matchReelFile,
   reelFile,
-  saveCrowd,
+  saveTwin,
+  TWIN_CONTENT_TYPE,
+  twinFileOf,
+  type VideoTwin,
   parseMarkers,
   saveClip,
   saveReel,
 } from '../demos/highlights';
+import {
+  claimRedress,
+  failRedress,
+  queueRedress,
+  REDRESS_FILE,
+  redressStatus,
+  saveRedressed,
+} from '../demos/redress';
 import {
   addTrack,
   allTracks,
@@ -161,8 +179,13 @@ router.post('/recorder/claim', requireAuth, async (req: Request, res: Response) 
     // other recorders are idle too) in one CS2 session.
     if (Number(req.body?.version ?? 0) >= 4) {
       const map = await claimMapJob(recorder, idle);
-      if (!map) return res.status(204).end();
-      return give(map);
+      if (map) return give(map);
+      // Nothing to record: overlays to draw again (recorder version 6).
+      if (Number(req.body?.version ?? 0) >= 6) {
+        const redress = await claimRedress();
+        if (redress) return give(redress);
+      }
+      return res.status(204).end();
     }
     const job = await claimRecordJob(recorder);
     if (!job) return res.status(204).end();
@@ -271,28 +294,43 @@ router.get('/matches/:slug/reels', async (req: Request, res: Response) => {
   }
 });
 
-/** A reel's crowd track, after the reel itself (the player plays it beside it). */
-const crowdUpload =
+/**
+ * A video's twins, after the video itself (demos/highlights.ts VideoTwin): a
+ * reel's crowd track (the player plays it beside it), the clean twin and the
+ * overlay's recipe.
+ */
+const twinUpload =
   (fileOf: (req: Request) => string | null) => async (req: Request, res: Response) => {
-    const reel = fileOf(req);
-    if (!reel) return res.status(400).json({ success: false, error: 'Which reel' });
-    if (!String(req.headers['content-type'] ?? '').startsWith('audio/mp4')) {
-      return res.status(400).json({ success: false, error: 'An audio/mp4 body' });
+    const video = fileOf(req);
+    if (!video) return res.status(400).json({ success: false, error: 'Which video' });
+    const twin = req.params.twin as VideoTwin;
+    if (!String(req.headers['content-type'] ?? '').startsWith(TWIN_CONTENT_TYPE[twin])) {
+      return res.status(400).json({ success: false, error: `A ${TWIN_CONTENT_TYPE[twin]} body` });
     }
-    if (!fs.existsSync(reel))
-      return res.status(404).json({ success: false, error: 'Upload the reel first' });
+    if (!fs.existsSync(video))
+      return res.status(404).json({ success: false, error: 'Upload the video first' });
     try {
-      return res.json({ success: true, bytes: await saveCrowd(reel, req) });
+      return res.json({ success: true, bytes: await saveTwin(video, twin, req) });
     } catch (error) {
-      log.error('[HIGHLIGHTS] crowd track save failed', { error, reel: path.basename(reel) });
-      return res.status(500).json({ success: false, error: 'Could not store the crowd track' });
+      log.error('[HIGHLIGHTS] twin save failed', { error, video: path.basename(video), twin });
+      return res.status(500).json({ success: false, error: `Could not store the ${twin} file` });
     }
   };
 
+const TWIN = ':twin(crowd|clean|overlay)';
+
 router.put(
-  '/recorder/reels/:slug/:map/:player/crowd',
+  `/recorder/jobs/:id/clip/${TWIN}`,
   requireAuth,
-  crowdUpload((req) => {
+  twinUpload((req) => {
+    const id = idOf(req);
+    return id ? clipFile(id) : null;
+  })
+);
+router.put(
+  `/recorder/reels/:slug/:map/:player/${TWIN}`,
+  requireAuth,
+  twinUpload((req) => {
     const map = Number(req.params.map);
     return Number.isInteger(map) && map >= 0 && /^\d{1,20}$/.test(req.params.player)
       ? reelFile(req.params.slug, map, req.params.player)
@@ -300,22 +338,22 @@ router.put(
   })
 );
 router.put(
-  '/recorder/match-reels/:slug/:map/crowd',
+  `/recorder/match-reels/:slug/:map/${TWIN}`,
   requireAuth,
-  crowdUpload((req) => {
+  twinUpload((req) => {
     const map = Number(req.params.map);
     return Number.isInteger(map) && map >= 0 ? matchReelFile(req.params.slug, map) : null;
   })
 );
 router.put(
-  '/recorder/team-reels/:slug/:team/crowd',
+  `/recorder/team-reels/:slug/:team/${TWIN}`,
   requireAuth,
-  crowdUpload((req) => teamReelFile(req.params.slug, req.params.team))
+  twinUpload((req) => teamReelFile(req.params.slug, req.params.team))
 );
 router.put(
-  '/recorder/tournament-reels/:id/crowd',
+  `/recorder/tournament-reels/:id/${TWIN}`,
   requireAuth,
-  crowdUpload((req) => {
+  twinUpload((req) => {
     const id = idOf(req);
     return id ? tournamentReelFile(id) : null;
   })
@@ -353,6 +391,53 @@ router.post(
     return res.json({ success: true });
   }
 );
+
+router.put('/recorder/redress/:file', requireAuth, async (req: Request, res: Response) => {
+  if (
+    !REDRESS_FILE.test(req.params.file) ||
+    !String(req.headers['content-type'] ?? '').startsWith('video/mp4')
+  ) {
+    return res.status(400).json({ success: false, error: 'A video/mp4 body for a clip or reel' });
+  }
+  try {
+    return res.json({ success: true, bytes: await saveRedressed(req.params.file, req) });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] redressed video save failed', { error, file: req.params.file });
+    return res.status(500).json({ success: false, error: 'Could not store the video' });
+  }
+});
+
+router.post('/recorder/redress/:file/fail', requireAuth, async (req: Request, res: Response) => {
+  if (!REDRESS_FILE.test(req.params.file))
+    return res.status(400).json({ success: false, error: 'A clip or reel' });
+  await failRedress(
+    req.params.file,
+    typeof req.body?.error === 'string' ? req.body.error : 'unknown'
+  );
+  return res.json({ success: true });
+});
+
+// Admin: how the redress stands, and queue it (every video with a clean twin, or `files`).
+router.get('/redress', requireAuth, async (_req: Request, res: Response) => {
+  try {
+    return res.json({ success: true, ...(await redressStatus()) });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] redress status failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not read the redress queue' });
+  }
+});
+
+router.post('/redress', requireAuth, async (req: Request, res: Response) => {
+  const files = Array.isArray(req.body?.files)
+    ? (req.body.files as unknown[]).filter((f): f is string => typeof f === 'string')
+    : undefined;
+  try {
+    return res.json({ success: true, queued: await queueRedress(files) });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] redress queue failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not queue the redress' });
+  }
+});
 
 router.post('/recorder/fail', requireAuth, async (req: Request, res: Response) => {
   const ids = Array.isArray(req.body?.ids)
@@ -506,36 +591,51 @@ router.get(
 );
 
 router.get('/highlights/:file', async (req: Request, res: Response) => {
-  const clip = /^(\d+)\.mp4$/.exec(req.params.file);
-  const reel = /^(?:reel|match|tournament|team)-[A-Za-z0-9_.-]+\.mp4$/.test(req.params.file);
-  if (/^(?:reel|match|tournament|team)-[A-Za-z0-9_.-]+\.crowd\.m4a$/.test(req.params.file)) {
-    // A reel's crowd track, played beside it.
-    const crowd = path.join(path.dirname(clipFile(0)), req.params.file);
-    if (!fs.existsSync(crowd)) return res.status(404).end();
-    res.setHeader('Cache-Control', 'public, max-age=86400');
-    return res.sendFile(crowd, { headers: { 'Content-Type': 'audio/mp4' } });
+  const twinOf =
+    /^(\d+|(?:reel|match|tournament|team)-[A-Za-z0-9_-][A-Za-z0-9_.-]*?)\.(crowd|overlay)\.(?:m4a|json)$/.exec(
+      req.params.file
+    );
+  if (twinOf) {
+    // A reel's crowd track (played beside it), or a video's overlay recipe.
+    const twin = path.join(path.dirname(clipFile(0)), req.params.file);
+    if (!fs.existsSync(twin)) return res.status(404).end();
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.sendFile(twin, {
+      headers: { 'Content-Type': TWIN_CONTENT_TYPE[twinOf[2] as VideoTwin] },
+    });
   }
-  if (!clip && !reel) return res.status(404).end();
-  const file = clip
-    ? clipFile(Number(clip[1]))
-    : path.join(path.dirname(clipFile(0)), req.params.file);
+  // A video, or its clean twin (as recorded: no caption card, kill feed or logo).
+  const named =
+    /^(\d+|(?:reel|match|tournament|team)-[A-Za-z0-9_-][A-Za-z0-9_.-]*?)(\.clean)?\.mp4$/.exec(
+      req.params.file
+    );
+  if (!named) return res.status(404).end();
+  const dressed = /^\d+$/.test(named[1]!)
+    ? clipFile(Number(named[1]))
+    : path.join(path.dirname(clipFile(0)), `${named[1]}.mp4`);
+  // ?clean=1 on a download: the same video without the overlay.
+  const file = named[2] || req.query.clean === '1' ? twinFileOf(dressed, 'clean') : dressed;
   if (!fs.existsSync(file)) return res.status(404).end();
+  const downloadName =
+    file === dressed
+      ? path.basename(dressed)
+      : path.basename(dressed).replace(/\.mp4$/, '-clean.mp4');
   const music = typeof req.query.music === 'string' ? await trackById(req.query.music) : undefined;
-  const crowd = req.query.crowd === '1' ? crowdFileOf(file) : null;
+  const crowd = req.query.crowd === '1' ? crowdFileOf(dressed) : null;
   if (req.query.music !== undefined || req.query.crowd !== undefined) {
     // A download with its crowd and/or music: mixed once (a few seconds), then kept.
     if (req.query.music !== undefined && !music)
       return res.status(404).json({ success: false, error: 'No such track' });
     if (crowd && !fs.existsSync(crowd))
       return res.status(404).json({ success: false, error: 'This video has no crowd track' });
-    if (!music && !crowd) return res.download(file, path.basename(file));
+    if (!music && !crowd) return res.download(file, downloadName);
     try {
       const mixed = await withSound(file, {
         track: music,
         crowd,
         intro: Number(req.query.intro) || 0,
       });
-      return res.download(mixed, path.basename(file), {
+      return res.download(mixed, downloadName, {
         headers: { 'Cache-Control': 'private, max-age=3600' },
       });
     } catch (error) {
@@ -547,6 +647,7 @@ router.get('/highlights/:file', async (req: Request, res: Response) => {
       return res.status(502).json({ success: false, error: 'Could not add the sound' });
     }
   }
+  if (req.query.clean === '1') return res.download(file, downloadName);
   res.setHeader('Cache-Control', 'public, max-age=86400');
   return res.sendFile(file, { headers: { 'Content-Type': 'video/mp4' } });
 });

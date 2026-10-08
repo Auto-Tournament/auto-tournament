@@ -16,7 +16,7 @@ import { log } from '../../../utils/logger';
 import { readHighlightQuality, type HighlightQuality } from './highlightQuality';
 import { chaptersOf } from './highlightViews';
 import {
-  crowdFileOf,
+  removeTwins,
   crowdUrlOf,
   HIGHLIGHTS_DIR,
   parseMarkers,
@@ -229,7 +229,7 @@ export async function saveTeamReel(
   });
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
-  await fs.promises.rm(crowdFileOf(file), { force: true });
+  await removeTwins(file);
   await db.runAsync(
     `INSERT INTO cs2_team_reels (match_slug, team_id, status, clips, clip_path, clip_bytes, clip_ids, clip_starts)
      VALUES (?, ?, 'done', ?, ?, ?, ?, ?)
