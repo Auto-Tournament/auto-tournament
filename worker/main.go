@@ -13,6 +13,9 @@
 //	AT_WORKSHOP_DIRS more directories with workshop map .vpk files, colon-separated
 //
 // `at-worker analyze <file.dem> [map]` reads one demo and prints the analysis;
+// `at-worker export-hud <game/csgo> <out> [weapons|deathnotice|ui...]` writes the
+// kill feed's icons from the game (hud.go); `at-worker hud-list <game/csgo> [prefix]`
+// lists what pak01 holds under a folder.
 // `at-worker radars <game/csgo> [workshop dirs...]` lists the radars it would send;
 // `at-worker record` records highlight clips instead (record.go).
 package main
@@ -223,6 +226,30 @@ func main() {
 		if err := recordFile(os.Args[2:]); err != nil {
 			log.Fatal(err)
 		}
+		return
+	}
+
+	if len(os.Args) >= 3 && os.Args[1] == "hud-list" {
+		prefix := "panorama/images/"
+		if len(os.Args) >= 4 {
+			prefix = os.Args[3]
+		}
+		if err := hudList(os.Args[2], prefix); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
+	if len(os.Args) >= 4 && os.Args[1] == "export-hud" {
+		groups := map[string]bool{}
+		for _, g := range os.Args[4:] {
+			groups[g] = true
+		}
+		icons, err := exportHud(os.Args[2], os.Args[3], groups)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("exported %d icons to %s", len(icons), os.Args[3])
 		return
 	}
 
