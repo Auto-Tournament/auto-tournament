@@ -29,8 +29,10 @@ const (
 var (
 	outputFPS    = float64(envPositive("AT_OUTPUT_FPS", 60))
 	outputHeight = envPositive("AT_OUTPUT_HEIGHT", 1080) &^ 1
-	// nvencPreset is NVENC's speed/quality trade (p1 fastest … p7 best; AT_NVENC_PRESET).
-	nvencPreset = env("AT_NVENC_PRESET", "p6")
+	// nvencPreset is NVENC's speed/quality trade (p1 fastest … p7 best;
+	// AT_NVENC_PRESET): the rate control holds the quality (-cq), so the
+	// fastest costs file size, not looks.
+	nvencPreset = env("AT_NVENC_PRESET", "p1")
 )
 
 func envPositive(key string, fallback int) int {

@@ -48,7 +48,7 @@ const (
 
 // frameSettleMs is how long the view gets to settle after a seek before the
 // picture counts (AT_SETTLE_MS).
-var frameSettleMs = envPositive("AT_SETTLE_MS", 1500)
+var frameSettleMs = envPositive("AT_SETTLE_MS", 700)
 
 // recorderLook is what every clip is played with: only the kill feed and the
 // crosshair on screen, no x-ray, no demo controls; the crosshair is the

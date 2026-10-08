@@ -23,10 +23,12 @@ var recordingVideo = map[string]string{
 	"setting.videocfg_texture_detail":   "1",
 	"setting.shaderquality":             "0",
 	"setting.r_texturefilteringquality": "1",
-	"setting.videocfg_fsr_detail":       "0",
-	"setting.videocfg_hdr_detail":       "-1",
-	"setting.fullscreen":                "1",
-	"setting.mat_vsync":                 "0",
+	// FSR (performance): CS2 renders smaller inside and upscales; the
+	// benchmark's fastest at 1080p, a little softer (2026-10-08).
+	"setting.videocfg_fsr_detail": "3",
+	"setting.videocfg_hdr_detail": "-1",
+	"setting.fullscreen":          "1",
+	"setting.mat_vsync":           "0",
 }
 
 var videoLine = regexp.MustCompile(`(?m)^(\s*)"([^"]+)"(\s+)"[^"]*"`)
