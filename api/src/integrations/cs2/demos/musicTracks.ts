@@ -664,4 +664,15 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
     contentId: false,
     gainDb: 0.4,
   },
+  {
+    id: '612631',
+    title: 'Minimal House',
+    artist: 'Aurec',
+    genre: 'house',
+    page: 'https://pixabay.com/music/electronic-minimal-house-612631/',
+    audio: 'https://cdn.pixabay.com/download/audio/2026/09/29/audio_fb02fe6b1e.mp3',
+    seconds: 224,
+    contentId: true,
+    gainDb: 4.2,
+  },
 ];
