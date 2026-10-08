@@ -60,6 +60,20 @@ func TestVideoFilterCardAndLogo(t *testing.T) {
 	}
 }
 
+func TestVideoFilterFeedBlursBehind(t *testing.T) {
+	f := videoFilter(overlay{card: -1, logo: -1, feed: 2, feedAt: image.Rect(2000, 100, 2500, 400), width: 2560, height: 1440})
+	for _, want := range []string{
+		"[behind]crop=500:300:2000:100,format=rgba,gblur=sigma=2.7:steps=2[blurred]",
+		"[feedmask]colorchannelmixer=aa=1.5938,alphaextract[mask]",
+		"[under][frosted]overlay=2000:100",
+		"[withblur][feed]overlay=2000:100:eof_action=repeat:alpha=premultiplied[withfeed]",
+	} {
+		if !strings.Contains(f, want) {
+			t.Fatalf("%q missing from %s", want, f)
+		}
+	}
+}
+
 func TestMomentMarkers(t *testing.T) {
 	// Two windows: a kill at 1 s into the first (full speed, 2 s long), then
 	// the last kill 1 s into the second, which slows down from there. The

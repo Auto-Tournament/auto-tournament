@@ -33,11 +33,21 @@ const (
 )
 
 var (
-	feedPlate = color.NRGBA{0x18, 0x11, 0x0e, 0xff} // paper2, solid
+	feedPlate = color.NRGBA{0x18, 0x11, 0x0e, 0xff} // paper2; its alpha is the row's (below)
 	feedEdge  = color.NRGBA{0xf4, 0xed, 0xeb, 0x14}
 	feedMine  = color.NRGBA{0xff, 0x8f, 0x66, 0xff} // the clip's player's team
 	feedOther = color.NRGBA{0xf6, 0xef, 0xec, 0xff} // the other team
 	feedPlus  = color.NRGBA{0xc4, 0xbc, 0xb9, 0xff}
+)
+
+// The plates are as see-through as CS2's death notices
+// (panorama/styles/hud/huddeathnotice.css): hud-blur-bg-color #000000a0 for
+// others' kills, #000000e7 for the player's own, over gaussian(2,2,2) of the
+// world behind (videoFilter).
+const (
+	feedPlateOtherAlpha = 0xa0
+	feedPlateOwnAlpha   = 0xe7
+	feedBlurSigma       = 2.0 // at 1080 lines
 )
 
 // feedKill is one row: what happened, and when in the clip (output seconds;
@@ -238,10 +248,13 @@ func drawFeedRow(kl feedKill, nameFace font.Face, icons *iconSet, px func(float6
 	img := image.NewRGBA(image.Rect(0, 0, width, h))
 	edge := feedEdge
 	edgeW := float64(px(1))
+	plate := feedPlate
+	plate.A = feedPlateOtherAlpha
 	if kl.Own {
 		edge, edgeW = cardAccent, math.Max(1.5, 1.5*float64(px(1)))
+		plate.A = feedPlateOwnAlpha
 	}
-	roundRect(img, float64(width), float64(h), float64(px(7)), feedPlate, edge, edgeW)
+	roundRect(img, float64(width), float64(h), float64(px(7)), plate, edge, edgeW)
 	m := nameFace.Metrics()
 	base := (h + m.Ascent.Ceil() - m.Descent.Ceil()) / 2
 	x := pad

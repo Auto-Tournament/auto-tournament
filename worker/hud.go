@@ -136,3 +136,18 @@ func hudList(csgoDir, prefix string) error {
 	}
 	return nil
 }
+
+// hudCat is `at-worker hud-cat <game/csgo> <path>`: one file out of pak01,
+// e.g. a compiled panorama stylesheet, to read the kill feed's styling.
+func hudCat(csgoDir, path string) error {
+	pak, err := OpenVPK(filepath.Join(csgoDir, "pak01_dir.vpk"))
+	if err != nil {
+		return err
+	}
+	data, err := pak.Read(path)
+	if err != nil {
+		return err
+	}
+	_, err = os.Stdout.Write(data)
+	return err
+}

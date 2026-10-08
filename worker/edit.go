@@ -214,9 +214,9 @@ func audioFilter(segs []segment, length float64) string {
 type overlay struct {
 	card   int // input holding the caption card's frames (card.go: raw premultiplied RGBA at cardFPS), or -1
 	cardAt image.Point
-	feed   int // input holding the kill feed's frames (killfeed.go, like the card's), or -1
-	feedAt image.Point
-	logo   int // input holding the Auto Tournament logo, looped, or -1
+	feed   int             // input holding the kill feed's frames (killfeed.go, like the card's), or -1
+	feedAt image.Rectangle // where the kill feed goes, the size of its frames
+	logo   int             // input holding the Auto Tournament logo, looped, or -1
 	width  int
 	height int
 }
@@ -233,7 +233,17 @@ func videoFilter(o overlay) string {
 		last = "withcard"
 	}
 	if o.feed >= 0 {
-		fmt.Fprintf(&b, ";[%s][%d:v]overlay=%d:%d:eof_action=repeat:alpha=premultiplied[withfeed]", last, o.feed, o.feedAt.X, o.feedAt.Y)
+		// Like CS2's death notices, the game blurs a little behind each row's
+		// plate: the feed's own alpha, stretched so a plate is fully covered,
+		// masks a blurred copy of the frame under it.
+		r := o.feedAt
+		fmt.Fprintf(&b, ";[%s]split[under][behind]", last)
+		fmt.Fprintf(&b, ";[%d:v]split[feed][feedmask]", o.feed)
+		fmt.Fprintf(&b, ";[behind]crop=%d:%d:%d:%d,format=rgba,gblur=sigma=%.1f:steps=2[blurred]", r.Dx(), r.Dy(), r.Min.X, r.Min.Y, feedBlurSigma*float64(o.height)/1080)
+		fmt.Fprintf(&b, ";[feedmask]colorchannelmixer=aa=%.4f,alphaextract[mask]", 255.0/feedPlateOtherAlpha)
+		b.WriteString(";[blurred][mask]alphamerge[frosted]")
+		fmt.Fprintf(&b, ";[under][frosted]overlay=%d:%d:eof_action=repeat[withblur]", r.Min.X, r.Min.Y)
+		fmt.Fprintf(&b, ";[withblur][feed]overlay=%d:%d:eof_action=repeat:alpha=premultiplied[withfeed]", r.Min.X, r.Min.Y)
 		last = "withfeed"
 	}
 	if o.logo >= 0 {
