@@ -81,7 +81,13 @@ export function getSchemaSQL(): string {
       started_at INTEGER,
       completed_at INTEGER,
       banner_updated_at INTEGER, -- set when a banner is stored in tournament_banner; it versions the banner URL
-      archived_at INTEGER -- set when a finished tournament made way for a new one; it keeps its matches and results
+      archived_at INTEGER, -- set when a finished tournament made way for a new one; it keeps its matches and results
+      -- An admin paused the bracket (services/matchHolds.ts): matches being
+      -- played finish, no new one is loaded or auto-started until resumed (or
+      -- resume_at).
+      paused_at INTEGER,
+      pause_reason TEXT,
+      resume_at INTEGER
     );
 
     -- The tournament page's banner image, kept apart so reading the tournament row
@@ -161,6 +167,13 @@ export function getSchemaSQL(): string {
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       loaded_at INTEGER,
       completed_at INTEGER,
+      -- An admin's hold (services/matchHolds.ts): not loaded, not auto-started
+      -- and no walkover clock until this time (HOLD_FOREVER: until released).
+      held_until INTEGER,
+      hold_reason TEXT,
+      -- When the auto-start countdown runs from, if not loaded_at: a hold ended
+      -- or an admin restarted the countdown.
+      countdown_from INTEGER,
       -- server_id references cs2_servers(id) ON DELETE SET NULL. That table is
       -- CS2's and does not exist yet when this runs on a fresh database, so the
       -- key is added in database.ts once CS2's migrations have created it.

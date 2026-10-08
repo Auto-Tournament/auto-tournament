@@ -29,6 +29,10 @@ export interface DbMatchRow {
   created_at?: number;
   loaded_at?: number;
   completed_at?: number;
+  /** An admin's hold (services/matchHolds.ts). */
+  held_until?: number | null;
+  hold_reason?: string | null;
+  countdown_from?: number | null;
   current_map?: string | null;
   map_number?: number | null;
   team1_name?: string | null;
@@ -61,6 +65,10 @@ export interface DbTournamentRow {
   banner_updated_at?: number | null;
   /** When a new tournament replaced it (it keeps its matches and results); null for the current one. */
   archived_at?: number | null;
+  /** An admin paused the bracket (services/matchHolds.ts). */
+  paused_at?: number | null;
+  pause_reason?: string | null;
+  resume_at?: number | null;
 }
 
 export interface DbEventRow {

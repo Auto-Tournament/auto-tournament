@@ -28,6 +28,7 @@
  */
 
 import { db } from '../../../config/database';
+import { holdOf } from '../../../services/matchHolds';
 import { log } from '../../../utils/logger';
 import { emitBracketUpdate, emitMatchUpdate, postMatchChatLine } from '../../../services/socketService';
 import { firstMapOf } from '../utils/firstMap';
@@ -396,10 +397,13 @@ export async function assignMatch(
   const password = (await joinPasswordEnabled()) ? generateMatchPassword() : '';
   try {
     served = await servedMatchConfig(match);
-    config = buildAssignConfig(served, password, {
-      ...(await assignDefaults()),
-      demoUpload: await streamsDemos(fleetServerId),
-    });
+    config = await withHold(
+      matchSlug,
+      buildAssignConfig(served, password, {
+        ...(await assignDefaults()),
+        demoUpload: await streamsDemos(fleetServerId),
+      })
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     log.warn(`[FLEET] ${matchSlug}: cannot build match.assign: ${message}`);
@@ -554,6 +558,21 @@ export async function unassignAll(
 // match.update
 // ---------------------------------------------------------------------------
 
+/**
+ * A held match, or one in a paused tournament (services/matchHolds.ts): no
+ * walkover clock on the server (Ready Up's absent-team forfeit off). When the
+ * hold ends the config goes back to the rules as set and the server's clock
+ * starts afresh (syncMatch sends the difference).
+ */
+async function withHold(matchSlug: string, config: AssignConfig): Promise<AssignConfig> {
+  const hold = await holdOf(matchSlug);
+  if (!hold?.heldUntil) return config;
+  return {
+    ...config,
+    rules: { ...config.rules, forfeit: { ...config.rules?.forfeit, team_absent_seconds: 0 } },
+  };
+}
+
 export type FleetUpdateOutcome =
   | { ok: true; ops: number; configRev: number | null }
   | { ok: false; status: 404 | 409 | 502 | 504; error: string };
@@ -612,7 +631,10 @@ export async function syncMatch(matchSlug: string): Promise<FleetUpdateOutcome> 
   if (!match) return { ok: false, status: 404, error: 'Match not found' };
   let next: AssignConfig;
   try {
-    next = buildAssignConfig(await servedMatchConfig(match), assignment.password, await assignDefaults());
+    next = await withHold(
+      matchSlug,
+      buildAssignConfig(await servedMatchConfig(match), assignment.password, await assignDefaults())
+    );
   } catch (error) {
     return { ok: false, status: 409, error: (error as Error).message };
   }

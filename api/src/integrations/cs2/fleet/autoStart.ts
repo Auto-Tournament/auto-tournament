@@ -4,11 +4,16 @@
  * ready or not, through the same `start` command an admin's force start sends.
  * Players are warned in chat 60 s and 10 s before. 0 = off (the match waits
  * for everyone to ready up, as before).
+ *
+ * A held match or a paused tournament (services/matchHolds.ts) is left alone;
+ * once it goes ahead (or an admin restarts the countdown) the N minutes run
+ * again from then (`countdown_from`).
  */
 
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { runFleetCommand, type IssuedBy } from './driver';
+import { notHeldSql } from '../../../services/matchHolds';
 
 const TICK_MS = 5_000;
 const ISSUED_BY: IssuedBy = { userId: 'platform:auto-start', name: 'Auto-start', root: false };
@@ -25,8 +30,8 @@ async function tick(): Promise<void> {
     return;
   }
   const rows = await db.queryAsync<{ slug: string; server_id: string; loaded_at: number | null }>(
-    `SELECT slug, server_id, loaded_at FROM matches
-      WHERE status = 'loaded' AND server_id IS NOT NULL AND loaded_at IS NOT NULL`
+    `SELECT slug, server_id, GREATEST(loaded_at, COALESCE(countdown_from, 0)) AS loaded_at FROM matches
+      WHERE status = 'loaded' AND server_id IS NOT NULL AND loaded_at IS NOT NULL AND ${notHeldSql()}`
   );
   const now = Math.floor(Date.now() / 1000);
   const seen = new Set<string>();

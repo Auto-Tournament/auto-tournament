@@ -7977,6 +7977,90 @@
         ]
       }
     },
+    "/api/matches/{slug}/hold": {
+      "get": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "GET /api/matches/:slug/hold",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "POST /api/matches/:slug/hold",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "DELETE /api/matches/:slug/hold",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/matches/{slug}/load": {
       "post": {
         "tags": [
@@ -8047,6 +8131,38 @@
           "Matches"
         ],
         "summary": "POST /api/matches/:slug/restart",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/matches/{slug}/restart-countdown": {
+      "post": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "POST /api/matches/:slug/restart-countdown",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -16645,6 +16761,28 @@
         }
       }
     },
+    "/api/tournament/pause": {
+      "post": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "POST /api/tournament/pause",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/tournament/reset": {
       "post": {
         "tags": [
@@ -16693,6 +16831,28 @@
             "description": "No tournament exists"
           }
         }
+      }
+    },
+    "/api/tournament/resume": {
+      "post": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "POST /api/tournament/resume",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/tournament/server-availability": {
@@ -17238,6 +17398,30 @@
           },
           {
             "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/tournament/{id}/pause": {
+      "get": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "GET /api/tournament/:id/pause",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ]
       }

@@ -46,6 +46,7 @@ import { usePlayerConnections } from '../../hooks/usePlayerConnections';
 import { useLiveStats } from '../../hooks/useLiveStats';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
 import AdminMatchControls from '../admin/AdminMatchControls';
+import { MatchHoldPanel } from '../admin/MatchHoldPanel';
 import { openChat } from '../chat/chatStore';
 import { PlayerRoster } from '../match/PlayerRoster';
 import { AddBackupPlayer } from '../admin/AddBackupPlayer';
@@ -1246,6 +1247,21 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                 </Stack>
               </AccordionDetails>
             </Accordion>
+
+            {/* Hold it instead of a walkover (the API's services/matchHolds.ts). */}
+            {(match.status === 'pending' || match.status === 'ready' || match.status === 'loaded') && (
+              <Box sx={{ mt: 2 }}>
+                <MatchHoldPanel
+                  matchSlug={match.slug}
+                  matchStatus={match.status}
+                  onSuccess={(message) => {
+                    setSuccess(message);
+                    setTimeout(() => setSuccess(''), 3000);
+                  }}
+                  onError={(message) => setError(message)}
+                />
+              </Box>
+            )}
 
             {match.serverId && (match.status === 'live' || match.status === 'loaded') && (
               <Accordion sx={{ mt: 2 }}>

@@ -5,6 +5,7 @@ import { isQueuedAllocationResult, scheduler } from '../core/scheduler';
 import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
 import { TournamentResponse } from '../types/tournament.types';
 import { requestActorId, requireAuth } from '../middleware/auth';
+import { holdMatch, holdOf, releaseMatch, restartCountdown, type Actor } from '../services/matchHolds';
 import { MATCH_CONFIG_FETCHED_BY_SERVER, requireMatchConfigAccess } from '../middleware/serverAuth';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
@@ -1253,6 +1254,83 @@ router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) =
       success: false,
       error: 'Failed to restart match',
     });
+  }
+});
+
+/** Who did it, for the match's event log. */
+function actorOf(req: Request): Actor {
+  const id = requestActorId(req) ?? 'admin';
+  return { userId: id, name: id };
+}
+
+/** minutes from a request body: a positive number up to a day, or null (until released). */
+function holdMinutes(value: unknown): number | null | false {
+  if (value === undefined || value === null) return null;
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 && n <= 24 * 60 ? n : false;
+}
+
+/**
+ * GET /api/matches/:slug/hold
+ * Whether the match is held (by an admin, or its tournament paused): { heldUntil, reason, tournamentPaused }.
+ */
+router.get('/:slug/hold', async (req: Request, res: Response) => {
+  const hold = await holdOf(req.params.slug);
+  if (!hold) return res.status(404).json({ success: false, error: 'Match not found' });
+  return res.json({ success: true, hold });
+});
+
+/**
+ * POST /api/matches/:slug/hold
+ * Hold a match (authenticated): { minutes?: number (until released without), reason?: string }.
+ * Not loaded or auto-started, and no walkover clock on its server, until then.
+ */
+router.post('/:slug/hold', requireAuth, async (req: Request, res: Response) => {
+  const body = (req.body ?? {}) as { minutes?: unknown; reason?: unknown };
+  const minutes = holdMinutes(body.minutes);
+  if (minutes === false) {
+    return res.status(400).json({ success: false, error: 'minutes: 1 to 1440, or none until released' });
+  }
+  try {
+    const hold = await holdMatch(
+      req.params.slug,
+      { minutes, reason: typeof body.reason === 'string' ? body.reason : null },
+      actorOf(req)
+    );
+    if (!hold) return res.status(404).json({ success: false, error: 'Match not found' });
+    return res.json({ success: true, hold });
+  } catch (error) {
+    log.error(`Error holding match ${req.params.slug}`, error);
+    return res.status(500).json({ success: false, error: 'Could not hold the match' });
+  }
+});
+
+/**
+ * DELETE /api/matches/:slug/hold
+ * Let a held match go ahead now (authenticated): its countdowns start afresh.
+ */
+router.delete('/:slug/hold', requireAuth, async (req: Request, res: Response) => {
+  try {
+    await releaseMatch(req.params.slug, actorOf(req));
+    return res.json({ success: true, hold: await holdOf(req.params.slug) });
+  } catch (error) {
+    log.error(`Error releasing match ${req.params.slug}`, error);
+    return res.status(500).json({ success: false, error: 'Could not release the match' });
+  }
+});
+
+/**
+ * POST /api/matches/:slug/restart-countdown
+ * Give the teams the full time again (authenticated): the auto-start
+ * countdown from now and a fresh walkover clock on the server.
+ */
+router.post('/:slug/restart-countdown', requireAuth, async (req: Request, res: Response) => {
+  try {
+    await restartCountdown(req.params.slug, actorOf(req));
+    return res.json({ success: true });
+  } catch (error) {
+    log.error(`Error restarting the countdown of ${req.params.slug}`, error);
+    return res.status(500).json({ success: false, error: 'Could not restart the countdown' });
   }
 });
 

@@ -727,6 +727,18 @@
       "winnerOf": "Sieger von {{match}}",
       "loserOf": "Verlierer von {{match}}",
       "matchNumber": "Match {{number}}"
+    },
+    "pause": {
+      "pause": "Pause bracket",
+      "reason": "Reason for pausing",
+      "forMinutes": "For {{minutes}} min",
+      "untilResumed": "Until resumed",
+      "paused": "Bracket paused: matches being played finish, no new ones start",
+      "pausedUntil": "Bracket paused until {{time}}: matches being played finish, no new ones start",
+      "resume": "Resume",
+      "pausedDone": "Bracket paused",
+      "resumedDone": "Bracket resumed",
+      "failed": "Could not change the pause"
     }
   },
   "overviewPage": {
