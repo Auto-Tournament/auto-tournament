@@ -686,4 +686,15 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
     contentId: false,
     gainDb: -0.2,
   },
+  {
+    id: '567448',
+    title: 'Upbeat Music',
+    artist: 'The_Mountain',
+    genre: 'upbeat',
+    page: 'https://pixabay.com/music/old-school-rnb-upbeat-upbeat-music-567448/',
+    audio: 'https://cdn.pixabay.com/download/audio/2026/07/14/audio_dbc82636cd.mp3',
+    seconds: 196,
+    contentId: true,
+    gainDb: -0.1,
+  },
 ];
