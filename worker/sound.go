@@ -173,18 +173,33 @@ func crowdPart(p reelPlan, i int) string {
 	return b.String()
 }
 
-// crowdTrackFilter is the reel's crowd alone, [crowd]: each clip's murmur
-// joined the way the clips are (fades, wipes), and the reactions on top.
-// The player plays it beside the reel, and a download can mix it in.
-func crowdTrackFilter(p reelPlan) string {
-	p.audioOnly, p.crowdOnly = true, true
-	f := reelFilter(p)
-	if p.crowd != nil && len(p.crowd.reacts) > 0 {
-		f += reactFilter(p.crowd.reacts) + ";[a][reacts]amix=inputs=2:duration=first:normalize=0[crowd]"
-	} else {
-		f += ";[a]anull[crowd]"
+// crowdBedFilter is one clip's murmur, [bed], `d` seconds: the crowd
+// recording (input 1) slowed through the clip's slowed opening, opened by the
+// clip's own sound (input 0, the gate's side chain). Each clip's is made on
+// its own and the reel's joins them (buildCrowdTrack): with every clip and
+// stretch of the recording in one graph, ffmpeg stalled at the first join
+// and every crowd track stopped after about 20 s (2026-10-08).
+func crowdBedFilter(d float64) string {
+	slow := math.Min(cardExit, d)
+	var b strings.Builder
+	fmt.Fprintf(&b, "[0:a]aresample=48000,aformat=channel_layouts=stereo,asetpts=PTS-STARTPTS,apad,atrim=duration=%.3f[side];", d)
+	b.WriteString("[1:a]aresample=48000,aformat=channel_layouts=stereo,asetpts=PTS-STARTPTS,asplit=2[cs][cn];")
+	fmt.Fprintf(&b, "[cs]atrim=duration=%.3f,asetrate=%d,aresample=48000,asetpts=PTS-STARTPTS[cso];",
+		slow*slowmoSpeed, int(math.Round(48000*slowmoSpeed)))
+	fmt.Fprintf(&b, "[cn]atrim=start=%.3f,asetpts=PTS-STARTPTS[cnr];", slow*slowmoSpeed)
+	fmt.Fprintf(&b, "[cso][cnr]concat=n=2:v=0:a=1,apad,atrim=duration=%.3f,volume=%g[cb];", d, crowdBedGain)
+	fmt.Fprintf(&b, "[cb][side]sidechaingate=threshold=%g:ratio=8:attack=120:release=2200:range=%g:knee=3:detection=rms[bed]",
+		crowdGateThreshold, crowdGateRange)
+	return b.String()
+}
+
+// crowdReactsFilter lays the reactions (inputs from 1 on) over the murmur
+// (input 0) into [crowd].
+func crowdReactsFilter(reacts []crowdReact) string {
+	if len(reacts) == 0 {
+		return "[0:a]anull[crowd]"
 	}
-	return f
+	return strings.TrimPrefix(reactFilter(reacts), ";") + ";[0:a][reacts]amix=inputs=2:duration=first:normalize=0[crowd]"
 }
 
 // reactFilter is the reactions' part of the final mix: each input faded and

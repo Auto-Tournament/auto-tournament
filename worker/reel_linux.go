@@ -74,8 +74,11 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 	args = append(args, "-filter_complex", filter, "-map", "[v]", "-map", "[amix]")
 	args = append(args, encodeArgs(r.encoder)...)
 	args = append(args, "-movflags", "+faststart", out)
-	if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
-		return nil, fmt.Errorf("ffmpeg reel: %v %s", err, strings.TrimSpace(string(b)))
+	// AT_CROWD_ONLY=1 (local tests): the reel is already made, only its crowd track is wanted.
+	if _, err := os.Stat(out); env("AT_CROWD_ONLY", "") != "1" || err != nil {
+		if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
+			return nil, fmt.Errorf("ffmpeg reel: %v %s", err, strings.TrimSpace(string(b)))
+		}
 	}
 	if sound.crowd != "" && sound.crowdOut != "" {
 		first := 0
@@ -96,32 +99,60 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 // buildCrowdTrack renders the reel's crowd alone (crowdTrackFilter) into out,
 // an AAC file as long as the reel: sound only, so it takes seconds.
 func buildCrowdTrack(paths []string, plan reelPlan, first int, sound reelSound, out string) error {
-	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
-	for _, p := range paths {
-		args = append(args, "-vn", "-i", p)
+	length := fmt.Sprintf("%.3f", reelLength(plan))
+	dir, err := os.MkdirTemp(filepath.Dir(out), "crowd-")
+	if err != nil {
+		return err
 	}
-	c := &partCrowd{first: first, bedIn: map[int]int{}}
-	// Each clip's murmur and each reaction its own stretch of the
-	// recording, read straight from the file: nothing is buffered.
-	for i := first; i < len(plan.durations); i++ {
-		start, length := crowdBedSpan(plan, first, i)
-		c.bedIn[i] = len(paths) + len(c.bedIn)
-		args = append(args, "-stream_loop", "-1", "-ss", fmt.Sprintf("%.3f", start), "-t", fmt.Sprintf("%.3f", length+0.2), "-i", sound.crowd)
+	defer os.RemoveAll(dir)
+	ffmpeg := func(what string, args ...string) error {
+		args = append([]string{"-y", "-hide_banner", "-loglevel", "error"}, args...)
+		if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
+			return fmt.Errorf("ffmpeg (%s): %v %s", what, err, strings.TrimSpace(string(b)))
+		}
+		return nil
 	}
-	next := len(paths) + len(c.bedIn)
-	for _, r := range crowdReactions(plan, first, sound.reactions) {
-		r.in = next
-		next++
-		c.reacts = append(c.reacts, r)
+	// Each clip's murmur on its own; silence under the intro.
+	beds := make([]string, len(plan.durations))
+	for i, d := range plan.durations {
+		beds[i] = filepath.Join(dir, fmt.Sprintf("bed-%d.wav", i))
+		dur := fmt.Sprintf("%.3f", d)
+		if i < first {
+			if err := ffmpeg("silence", "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo", "-t", dur, "-c:a", "pcm_s16le", beds[i]); err != nil {
+				return err
+			}
+			continue
+		}
+		start, span := crowdBedSpan(plan, first, i)
+		if err := ffmpeg(fmt.Sprintf("murmur %d", i), "-vn", "-i", paths[i],
+			"-stream_loop", "-1", "-ss", fmt.Sprintf("%.3f", start), "-t", fmt.Sprintf("%.3f", span+0.2), "-i", sound.crowd,
+			"-filter_complex", crowdBedFilter(d), "-map", "[bed]", "-t", dur, "-c:a", "pcm_s16le", beds[i]); err != nil {
+			return err
+		}
+	}
+	// Joined the way the clips are (fades, wipes) and the reel ends (outro).
+	joined := filepath.Join(dir, "beds.wav")
+	args := []string{}
+	for _, b := range beds {
+		args = append(args, "-i", b)
+	}
+	audio := plan
+	audio.crowd, audio.audioOnly, audio.crowdOnly = nil, true, false
+	args = append(args, "-filter_complex", reelFilter(audio), "-map", "[a]", "-t", length, "-c:a", "pcm_s16le", joined)
+	if err := ffmpeg("join", args...); err != nil {
+		return err
+	}
+	// Then the reactions over it, each its own stretch of the recording.
+	args = []string{"-i", joined}
+	var reacts []crowdReact
+	for j, r := range crowdReactions(plan, first, sound.reactions) {
+		r.in = 1 + j
+		reacts = append(reacts, r)
 		args = append(args, "-ss", fmt.Sprintf("%.3f", r.from), "-t", fmt.Sprintf("%.3f", r.length), "-i", sound.crowd)
 	}
-	plan.crowd = c
-	args = append(args, "-filter_complex", crowdTrackFilter(plan), "-map", "[crowd]",
-		"-t", fmt.Sprintf("%.3f", reelLength(plan)), "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", out)
-	if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
-		return fmt.Errorf("ffmpeg: %v %s", err, strings.TrimSpace(string(b)))
-	}
-	return nil
+	args = append(args, "-filter_complex", crowdReactsFilter(reacts), "-map", "[crowd]",
+		"-t", length, "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", out)
+	return ffmpeg("reactions", args...)
 }
 
 // buildIntro renders the intro (intro.go) over a grid of the clips into out.
