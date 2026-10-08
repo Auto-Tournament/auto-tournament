@@ -40,7 +40,7 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 	if len(joins) != len(paths)-1 {
 		return nil, fmt.Errorf("%d joins for %d clips", len(joins), len(paths))
 	}
-	plan := reelPlan{joins: joins, width: outputHeight * 16 / 9, height: outputHeight, fps: outputFPS}
+	plan := reelPlan{joins: joins, width: outputHeight * 16 / 9, height: outputHeight, fps: outputFPS, outro: sound.outro}
 	for _, p := range paths {
 		d, err := probeDuration(p)
 		if err != nil {

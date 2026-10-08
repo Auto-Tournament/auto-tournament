@@ -99,7 +99,7 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 	for i, c := range j.Clips {
 		players[i] = c.PlayerID
 	}
-	sound := reelSound{crowd: r.crowdSource(ctx), crowdOut: crowdTrackPath(reel)}
+	sound := reelSound{crowd: r.crowdSource(ctx), crowdOut: crowdTrackPath(reel), outro: true}
 	for _, c := range j.Clips {
 		var reactions []reaction
 		if c.Markers != nil {

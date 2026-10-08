@@ -123,7 +123,15 @@ type reelPlan struct {
 	// picture out.
 	crowdOnly bool
 	audioOnly bool
+	// outro: the last frame held outroHold longer, then picture and sound
+	// fade out (a reel's ending; a clip's pieces join without it).
+	outro bool
 }
+
+const (
+	outroHold = 0.8 // the last frame held this much longer
+	outroFade = 1.4 // then faded to black over this
+)
 
 // reelFilter joins the parts: [v] and [a].
 func reelFilter(p reelPlan) string {
@@ -151,20 +159,23 @@ func reelFilter(p reelPlan) string {
 		}
 		fmt.Fprintf(&b, "[%d:a]asetpts=PTS-STARTPTS,apad,atrim=duration=%.3f[a%din];", i, d, i)
 	}
+	finalV, finalA := "v", "a"
+	if p.outro {
+		finalV, finalA = "vj", "aj"
+	}
 	if len(p.durations) == 1 {
-		if p.audioOnly {
-			b.WriteString("[a0in]anull[a]")
-		} else {
-			b.WriteString("[v0in]null[v];[a0in]anull[a]")
+		if !p.audioOnly {
+			fmt.Fprintf(&b, "[v0in]null[%s];", finalV)
 		}
-		return b.String()
+		fmt.Fprintf(&b, "[a0in]anull[%s]", finalA)
+		return b.String() + outroFilter(p)
 	}
 	length := p.durations[0]
 	prevV, prevA := "v0in", "a0in"
 	for i := 1; i < len(p.durations); i++ {
 		v, a := fmt.Sprintf("jv%d", i), fmt.Sprintf("ja%d", i)
 		if i == len(p.durations)-1 {
-			v, a = "v", "a"
+			v, a = finalV, finalA
 		}
 		if p.joins[i-1] == joinWipe {
 			// Orange in from the left, a beat of orange, out to the right showing the next part.
@@ -190,7 +201,7 @@ func reelFilter(p reelPlan) string {
 		}
 		prevV, prevA = v, a
 	}
-	return strings.TrimSuffix(b.String(), ";")
+	return strings.TrimSuffix(b.String(), ";") + outroFilter(p)
 }
 
 // partStarts is when each part of the plan starts in the reel (reelFilter's joins).
@@ -223,6 +234,21 @@ func startsHeader(starts []float64) string {
 	return strings.Join(parts, ",")
 }
 
+// outroFilter is the reel's ending ([vj]/[aj] into [v]/[a]): the last frame
+// held, then a fade to black and to silence.
+func outroFilter(p reelPlan) string {
+	if !p.outro {
+		return ""
+	}
+	end := reelLength(p)
+	var b strings.Builder
+	if !p.audioOnly {
+		fmt.Fprintf(&b, ";[vj]tpad=stop_mode=clone:stop_duration=%g,fade=t=out:st=%.3f:d=%g[v]", outroHold, end-outroFade, outroFade)
+	}
+	fmt.Fprintf(&b, ";[aj]apad=pad_dur=%g,afade=t=out:st=%.3f:d=%g[a]", outroHold, end-outroFade, outroFade)
+	return b.String()
+}
+
 // reelLength is how long reelFilter's reel runs.
 func reelLength(p reelPlan) float64 {
 	total := 0.0
@@ -236,6 +262,9 @@ func reelLength(p reelPlan) float64 {
 		} else {
 			total -= reelCrossfade
 		}
+	}
+	if p.outro {
+		total += outroHold
 	}
 	return total
 }

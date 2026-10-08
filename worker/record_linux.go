@@ -756,7 +756,7 @@ func (r *recorder) joinReel(clips []clipResult, intro *reelIntro, out string) ([
 func (r *recorder) joinReelCrowd(clips []clipResult, intro *reelIntro, crowd, out string) ([]float64, error) {
 	paths := make([]string, len(clips))
 	joins := make([]join, 0, len(clips))
-	sound := reelSound{crowd: crowd, crowdOut: crowdTrackPath(out)}
+	sound := reelSound{crowd: crowd, crowdOut: crowdTrackPath(out), outro: true}
 	for i, c := range clips {
 		paths[i] = c.path
 		sound.reactions = append(sound.reactions, c.markers.Reactions)
@@ -1314,7 +1314,7 @@ func joinReelFiles(out string, clips []string) error {
 	}
 	// AT_MUSIC (a music file) and AT_CROWD (a crowd cheer) go under the reel;
 	// each clip's kills come from its markers file next to it (moment-N.json).
-	sound := reelSound{music: env("AT_MUSIC", ""), crowd: env("AT_CROWD", ""), crowdOut: crowdTrackPath(out)}
+	sound := reelSound{music: env("AT_MUSIC", ""), crowd: env("AT_CROWD", ""), crowdOut: crowdTrackPath(out), outro: true}
 	for _, c := range clips {
 		var m clipMarkers
 		if b, err := os.ReadFile(strings.TrimSuffix(c, filepath.Ext(c)) + ".json"); err == nil {

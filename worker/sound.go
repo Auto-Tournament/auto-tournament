@@ -13,6 +13,7 @@ type reelSound struct {
 	crowd     string       // a crowd cheer recording, or ""
 	reactions [][]reaction // each part's crowd reactions, seconds into that part (reelPlan order)
 	crowdOut  string       // where the crowd track goes (buildCrowdTrack); none without it
+	outro     bool         // a reel's ending: the last frame held, then a fade out
 }
 
 const (
