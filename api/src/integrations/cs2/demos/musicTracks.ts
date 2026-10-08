@@ -528,4 +528,15 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
     contentId: true,
     gainDb: -0.2,
   },
+  {
+    id: '605765',
+    title: 'July',
+    artist: 'Easy_Eva',
+    genre: 'house',
+    page: 'https://pixabay.com/music/electronic-house-july-605765/',
+    audio: 'https://cdn.pixabay.com/download/audio/2026/09/18/audio_02e0cf6130.mp3',
+    seconds: 155,
+    contentId: false,
+    gainDb: 3.9,
+  },
 ];
