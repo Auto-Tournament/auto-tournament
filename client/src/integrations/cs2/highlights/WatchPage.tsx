@@ -402,6 +402,22 @@ export function WatchPage() {
             label={w.title}
             markers={w.markers}
             chapterStarts={w.chapters.flatMap((c) => (c.at === null ? [] : [c.at]))}
+            chapterInfo={w.chapters.flatMap((c) =>
+              c.at === null
+                ? []
+                : [
+                    {
+                      title: `${c.playerName} · ${kindLabel(t, c.kind, c.clutch)}`,
+                      sub: [
+                        c.map ? mapLabel(t, c.map, 0) : null,
+                        t('highlights.roundN', { n: c.round }),
+                      ]
+                        .filter(Boolean)
+                        .join(' · '),
+                      thumb: `/api/game/cs2/highlights/${c.highlightId}.mp4`,
+                    },
+                  ]
+            )}
             downloadName={w.file}
             crowd={w.crowd}
             music={

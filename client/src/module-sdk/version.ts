@@ -135,5 +135,9 @@
  * video, mixed in only on download), the `MusicTrack` / `PlayerMusic` types
  * `PLAYER_VOLUME_KEY` / `PLAYER_VOLUME_DEFAULT` (the viewer's saved level)
  * and `MUSIC_GAIN` (the music's level under the game).
+ *
+ * 0.2.16 (additive): `HighlightPlayerProps.crowd` (a reel's crowd track, played
+ * beside it) and `chapterInfo` with the `ChapterInfo` type (what the scrubber
+ * shows when hovered).
  */
-export const CLIENT_API_VERSION = '0.2.15';
+export const CLIENT_API_VERSION = '0.2.16';

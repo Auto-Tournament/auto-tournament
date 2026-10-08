@@ -39,6 +39,7 @@ import { useTranslation } from 'react-i18next';
 import { mono, radii, tokens, withAlpha } from '../../theme/tokens';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { clock, type ClipMarkers } from './media';
+import { VideoThumb } from './HighlightCard';
 
 const SPEEDS = [1, 0.5, 0.25] as const;
 const SKIP = 5;
@@ -72,6 +73,14 @@ const GENRE_ORDER = [
   'upbeat',
   'ambient',
 ];
+
+/** One chapter of a reel, as the scrubber's hover card shows it. */
+export interface ChapterInfo {
+  title: string;
+  sub: string;
+  /** A clip to take the thumbnail from. */
+  thumb?: string;
+}
 
 /** Music beside a reel: the tracks to pick from and where its intro ends (0: none). */
 export interface PlayerMusic {
@@ -225,8 +234,10 @@ export interface HighlightPlayerProps {
   label: string;
   /** A clip's kills and slow motion, drawn on the scrubber. */
   markers?: ClipMarkers | null;
-  /** A reel's chapter starts, drawn as gaps in the song. */
+  /** A reel's chapter starts, drawn as gaps in the track. */
   chapterStarts?: number[];
+  /** What each chapter is (in chapterStarts' order), shown when the scrubber is hovered. */
+  chapterInfo?: ChapterInfo[];
   /** The file name a download is saved as. */
   downloadName?: string;
   /** The page to share (default: this one). */
@@ -261,6 +272,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
       label,
       markers,
       chapterStarts = [],
+      chapterInfo = [],
       downloadName,
       shareUrl,
       music,
@@ -402,7 +414,16 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
       }
     };
 
-    // Scrubbing: press anywhere on the song and drag.
+    // Hovering the scrubber: what is at that point (a reel's chapter, a clip's kill).
+    const [hover, setHover] = useState<{ x: number; width: number; time: number } | null>(null);
+    const hoverAt = (e: PointerEvent) => {
+      const r = track.current?.getBoundingClientRect();
+      if (!r || !duration) return;
+      const x = Math.max(0, Math.min(r.width, e.clientX - r.left));
+      setHover({ x, width: r.width, time: (x / r.width) * duration });
+    };
+
+    // Scrubbing: press anywhere on the track and drag.
     const fromPointer = (e: PointerEvent) => {
       const r = track.current?.getBoundingClientRect();
       if (!r || !duration) return;
@@ -562,7 +583,9 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
             }}
             onPointerMove={(e) => {
               if (e.currentTarget.hasPointerCapture(e.pointerId)) fromPointer(e);
+              if (e.pointerType === 'mouse') hoverAt(e);
             }}
+            onPointerLeave={() => setHover(null)}
             sx={{
               position: 'relative',
               height: 28,
@@ -610,6 +633,88 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
                 bgcolor: tokens.color.accent,
               }}
             />
+            {hover &&
+              (() => {
+                // The chapter under the pointer (a reel), or the kill near it (a clip).
+                let chapter = -1;
+                chapterStarts.forEach((s, i) => {
+                  if (s <= hover.time + 0.05) chapter = i;
+                });
+                const info = chapter >= 0 ? chapterInfo[chapter] : undefined;
+                const near = kills.findIndex((k) => Math.abs(k - hover.time) <= duration * 0.012);
+                const w = info?.thumb ? 208 : 150;
+                return (
+                  <Box
+                    role="tooltip"
+                    data-testid="highlight-scrub-hover"
+                    sx={{
+                      position: 'absolute',
+                      bottom: 30,
+                      left: Math.max(0, Math.min(hover.width - w, hover.x - w / 2)),
+                      width: w,
+                      p: 0.75,
+                      borderRadius: '12px',
+                      bgcolor: 'rgba(18,16,15,0.92)',
+                      border: '1px solid rgba(244,237,235,0.14)',
+                      color: '#f4edeb',
+                      pointerEvents: 'none',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 0.5,
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
+                    }}
+                  >
+                    {info?.thumb && (
+                      <Box
+                        sx={{
+                          position: 'relative',
+                          aspectRatio: '16 / 9',
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          bgcolor: '#000',
+                        }}
+                      >
+                        <VideoThumb src={info.thumb} at={1.5} />
+                      </Box>
+                    )}
+                    {info && (
+                      <Box
+                        sx={{
+                          fontWeight: 600,
+                          fontSize: '0.8125rem',
+                          lineHeight: 1.3,
+                          overflowWrap: 'anywhere',
+                        }}
+                      >
+                        {info.title}
+                      </Box>
+                    )}
+                    <Box
+                      sx={{
+                        fontSize: '0.75rem',
+                        color: '#c4bcb9',
+                        display: 'flex',
+                        gap: 0.75,
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <span>
+                        {info?.sub ??
+                          (near >= 0
+                            ? t(
+                                near === kills.length - 1
+                                  ? 'videoHighlights.player.lastKill'
+                                  : 'videoHighlights.player.kill'
+                              )
+                            : '')}
+                      </span>
+                      <Box component="span" sx={{ ...mono, whiteSpace: 'nowrap' }}>
+                        {clock(hover.time)}
+                      </Box>
+                    </Box>
+                  </Box>
+                );
+              })()}
             {chapterStarts
               .filter((s) => s > 0)
               .map((s) => (
