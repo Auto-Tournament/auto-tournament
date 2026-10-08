@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import {
   idleRecorderCount,
   parseClipIds,
+  parseClipStarts,
   parseMarkers,
   pickMoments,
   playersPerRecorder,
@@ -191,3 +192,11 @@ test(
     expect(idleRecorderCount('rec-c', t0 + 200_000)).toBe(1);
   }
 );
+
+test('a reel says where each of its clips starts, one per clip, in order', { tag: ['@api'] }, () => {
+  expect(parseClipStarts('4.45,14.05,22.1', 3)).toEqual([4.45, 14.05, 22.1]);
+  expect(parseClipStarts('4.45,14.05', 3)).toBeNull();
+  expect(parseClipStarts('14.05,4.45', 2)).toBeNull();
+  expect(parseClipStarts('4.45;14', 2)).toBeNull();
+  expect(parseClipStarts(undefined, 1)).toBeNull();
+});

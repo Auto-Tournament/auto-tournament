@@ -130,5 +130,10 @@
  * Highlights section on the profile; and the SDK's highlight pieces
  * (`HighlightPlayer`, `HighlightCard`, `VideoThumb`, `RecordingCard`,
  * `RecordingDot`, `FavouriteChip`, `thumbAt`, `clock`).
+ *
+ * 0.2.15 (additive): `HighlightPlayerProps.music` (a track played beside the
+ * video, mixed in only on download), the `MusicTrack` / `PlayerMusic` types
+ * `PLAYER_VOLUME_KEY` / `PLAYER_VOLUME_DEFAULT` (the viewer's saved level)
+ * and `MUSIC_GAIN` (the music's level under the game).
  */
-export const CLIENT_API_VERSION = '0.2.14';
+export const CLIENT_API_VERSION = '0.2.15';

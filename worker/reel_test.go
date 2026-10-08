@@ -105,3 +105,22 @@ func TestIntroRenders(t *testing.T) {
 		t.Fatal("no text at 2.5 s")
 	}
 }
+
+func TestPartStarts(t *testing.T) {
+	// The intro, a wipe to the first clip, a fade to the same player's next,
+	// a wipe to another player's.
+	p := reelPlan{durations: []float64{introSec, 10, 8, 6}, joins: []join{joinWipe, joinFade, joinWipe}}
+	got := partStarts(p)
+	want := []float64{0, 4.45, 14.05, 22.1}
+	for i := range want {
+		if math.Abs(got[i]-want[i]) > 1e-9 {
+			t.Fatalf("starts %v, want %v", got, want)
+		}
+	}
+	if end := got[3] + 6; math.Abs(end-reelLength(p)) > 1e-9 {
+		t.Fatalf("the last part ends at %.3f, the reel at %.3f", end, reelLength(p))
+	}
+	if h := startsHeader(got[1:]); h != "4.45,14.05,22.10" {
+		t.Fatalf("header %q", h)
+	}
+}
