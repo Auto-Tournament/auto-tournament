@@ -66,6 +66,16 @@ const sectionTitle = {
   color: tokens.color.muted,
 } as const;
 
+/** The players in the order the reel shows them; anyone not in it after, most clips first. */
+function inReelOrder(players: RelatedPlayer[], chapters: Chapter[]): RelatedPlayer[] {
+  const first = new Map<string, number>();
+  chapters.forEach((c, i) => {
+    if (!first.has(c.playerId)) first.set(c.playerId, i);
+  });
+  const at = (p: RelatedPlayer) => first.get(p.playerId) ?? Number.MAX_SAFE_INTEGER;
+  return [...players].sort((a, b) => at(a) - at(b) || b.clips - a.clips);
+}
+
 /** What one watch page shows, whatever kind of video it is. */
 interface Watchable {
   video: string;
@@ -585,7 +595,7 @@ export function WatchPage() {
                   gap: 1.25,
                 }}
               >
-                {rel.players.map((p) => {
+                {inReelOrder(rel.players, w.chapters).map((p) => {
                   const onScreen = w.chapters[current]?.playerId === p.playerId;
                   const to =
                     p.reel && w.match && w.mapNumber !== null
