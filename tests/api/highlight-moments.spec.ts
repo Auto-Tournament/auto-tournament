@@ -1,5 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { parseClipIds, parseMarkers, pickMoments } from '../../api/src/integrations/cs2/demos/highlights';
+import {
+  idleRecorderCount,
+  parseClipIds,
+  parseMarkers,
+  pickMoments,
+  playersPerRecorder,
+  recorderBusy,
+} from '../../api/src/integrations/cs2/demos/highlights';
 import { pickTournamentReel } from '../../api/src/integrations/cs2/demos/highlightViews';
 
 /**
@@ -71,7 +78,11 @@ test.describe('Highlight moments', () => {
     const kills = [kill(5316, A, B1), kill(6022, A, B2), kill(6612, A, B3), kill(6627, A, B4)];
     const moments = pickMoments({ kills, rounds } as never);
     expect(moments).toHaveLength(1);
-    expect(moments[0]).toMatchObject({ kind: '4k', killTicks: [5316, 6022, 6612, 6627], slowmoTick: 6627 });
+    expect(moments[0]).toMatchObject({
+      kind: '4k',
+      killTicks: [5316, 6022, 6612, 6627],
+      slowmoTick: 6627,
+    });
     expect(moments[0]!.startTick).toBe(5316 - 192);
   });
 
@@ -79,7 +90,15 @@ test.describe('Highlight moments', () => {
     const moments = pickMoments({
       kills: [
         kill(1000, A, A2, { weapon: 'HE Grenade' }),
-        { tick: 3000, round: 1, attacker: null, victim: B1, attackerSide: null, victimSide: 'T', weapon: 'Molotov' },
+        {
+          tick: 3000,
+          round: 1,
+          attacker: null,
+          victim: B1,
+          attackerSide: null,
+          victimSide: 'T',
+          weapon: 'Molotov',
+        },
         kill(5000, A, B2, { weapon: 'Decoy Grenade' }),
         // A plain team kill with a gun is not.
         kill(7000, B3, B4),
@@ -115,7 +134,13 @@ test.describe('Highlight moments', () => {
   });
 
   test('the tournament reel builds up to its best play', { tag: ['@api'] }, () => {
-    const c = (id: number, playerId: string, kind: string, score: number, clutch = false) => ({ id, playerId, kind, score, clutch });
+    const c = (id: number, playerId: string, kind: string, score: number, clutch = false) => ({
+      id,
+      playerId,
+      kind,
+      score,
+      clutch,
+    });
     const ids = pickTournamentReel([
       c(1, 'p1', 'ace', 400),
       c(2, 'p2', '4k', 200),
@@ -132,7 +157,9 @@ test.describe('Highlight moments', () => {
     expect(at).toBeGreaterThan(0);
     expect(at).toBeLessThan(ids.length - 1);
     // No player more than twice.
-    const many = pickTournamentReel(Array.from({ length: 10 }, (_, i) => c(100 + i, 'same', '3k', 100 + i)));
+    const many = pickTournamentReel(
+      Array.from({ length: 10 }, (_, i) => c(100 + i, 'same', '3k', 100 + i))
+    );
     expect(many).toHaveLength(2);
     // At least one of each kind there is, even when the rest score higher.
     const kinds = pickTournamentReel([
@@ -144,3 +171,23 @@ test.describe('Highlight moments', () => {
     expect(kinds).toEqual(expect.arrayContaining([300, 301, 302]));
   });
 });
+
+test(
+  'idle recorders split a map: an even share of its players each, rounded up',
+  { tag: ['@api'] },
+  () => {
+    expect(playersPerRecorder(10, 1)).toBe(10);
+    expect(playersPerRecorder(10, 3)).toBe(4);
+    expect(playersPerRecorder(10, 6)).toBe(2);
+    expect(playersPerRecorder(3, 6)).toBe(1);
+    expect(playersPerRecorder(0, 2)).toBe(1);
+    // A recorder counts as idle while it polls; one that took a job is busy until it asks again.
+    const t0 = 1_000_000;
+    expect(idleRecorderCount('rec-a', t0)).toBeGreaterThanOrEqual(1);
+    const both = idleRecorderCount('rec-b', t0 + 1000);
+    recorderBusy('rec-a');
+    expect(idleRecorderCount('rec-b', t0 + 2000)).toBe(both - 1);
+    // Silent for longer than the window: gone.
+    expect(idleRecorderCount('rec-c', t0 + 200_000)).toBe(1);
+  }
+);
