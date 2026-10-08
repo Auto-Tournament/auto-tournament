@@ -80,6 +80,7 @@ const GENRE_ORDER = [
   'corporate',
   'orchestral',
   'jazz',
+  'build-up-scenes',
 ];
 
 /** One chapter of a reel, as the scrubber's hover card shows it. */

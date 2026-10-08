@@ -46,6 +46,7 @@ export const MUSIC_GENRES = [
   'corporate',
   'orchestral',
   'jazz',
+  'build-up-scenes',
 ] as const;
 export type MusicGenre = (typeof MUSIC_GENRES)[number];
 
@@ -753,5 +754,16 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
     seconds: 96,
     contentId: true,
     gainDb: -6.5,
+  },
+  {
+    id: '256156',
+    title: 'Documentary Tension',
+    artist: 'leberch',
+    genre: 'build-up-scenes',
+    page: 'https://pixabay.com/music/build-up-scenes-documentary-tension-256156/',
+    audio: 'https://cdn.pixabay.com/download/audio/2024/10/28/audio_d2836992ac.mp3',
+    seconds: 106,
+    contentId: true,
+    gainDb: 1.8,
   },
 ];
