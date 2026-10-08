@@ -49,9 +49,10 @@ func partStarts(p reelPlan) []float64 {
 	return starts
 }
 
-// soundFilter mixes the sound under reelFilter's [a] into [amix]: the music
-// is input musicIn, the crowd crowdIn (-1 when there is none).
-func soundFilter(p reelPlan, s reelSound, musicIn, crowdIn int, hasIntro bool) string {
+// soundFilter mixes the music (input musicIn, -1 for none) under
+// reelFilter's [a] into [amix]. The crowd is already in each part's sound
+// (crowdPart).
+func soundFilter(p reelPlan, s reelSound, musicIn int, hasIntro bool) string {
 	var b strings.Builder
 	length := reelLength(p)
 	mix := []string{"[a]"}
@@ -68,53 +69,81 @@ func soundFilter(p reelPlan, s reelSound, musicIn, crowdIn int, hasIntro bool) s
 			musicIn, length, gain, musicFadeIn, math.Max(0, length-musicFadeOut), musicFadeOut)
 		mix = append(mix, "[music]")
 	}
-	if crowdIn >= 0 {
-		// The crowd follows the game: it murmurs while there is action (a
-		// gate opened by the game's own sound, slow to close) and is quiet
-		// when the game is; it reacts to the kills worth it on top.
-		starts := partStarts(p)
-		from := 0.0
-		if hasIntro && len(starts) > 1 {
-			from = starts[1]
-		}
-		span := math.Max(0.1, length-from)
-		var swells []string
-		add := func(parts [][]float64, peak, rise, hold, fall float64) {
-			for i, ks := range parts {
-				if i >= len(starts) {
-					break
-				}
-				for _, k := range ks {
-					a := starts[i] + k + crowdDelay - from
-					if a < 0 || a > span {
-						continue
-					}
-					swells = append(swells, fmt.Sprintf("%g*min(1,max(0,(t-%.3f)/%g))*min(1,max(0,(%.3f-t)/%g))",
-						peak, a, rise, a+rise+hold+fall, fall))
-				}
-			}
-		}
-		add(s.heys, heyGain, 0.2, 0.6, 1.0)
-		add(s.roars, roarGain, 0.35, 1.6, 2.2)
-		react := "0"
-		if len(swells) > 0 {
-			react = strings.Join(swells, "+")
-		}
-		mix[0] = "[agame]"
-		fmt.Fprintf(&b, ";[a]asplit=2[agame][asc]")
-		fmt.Fprintf(&b, ";[asc]atrim=start=%.3f,asetpts=PTS-STARTPTS,aformat=channel_layouts=stereo[side]", from)
-		fmt.Fprintf(&b, ";[%d:a]aresample=48000,aformat=channel_layouts=stereo,atrim=duration=%.3f,asetpts=PTS-STARTPTS,asplit=2[crowdbed][crowdreact]", crowdIn, span)
-		fmt.Fprintf(&b, ";[crowdbed]volume=%g[crowdbedv];[crowdbedv][side]sidechaingate=threshold=%g:ratio=8:attack=120:release=2200:range=%g:knee=3:detection=rms[bed]",
-			crowdBedGain, crowdGateThreshold, crowdGateRange)
-		fmt.Fprintf(&b, ";[crowdreact]volume='%s':eval=frame[react]", react)
-		fmt.Fprintf(&b, ";[bed][react]amix=inputs=2:duration=first:normalize=0,afade=t=in:d=1,afade=t=out:st=%.3f:d=2,adelay=%d:all=1[crowd]",
-			math.Max(0, span-2), int(math.Round(from*1000)))
-		mix = append(mix, "[crowd]")
-	}
 	if len(mix) == 1 {
 		b.WriteString(";[a]anull[amix]")
 		return b.String()
 	}
 	fmt.Fprintf(&b, ";%samix=inputs=%d:duration=first:normalize=0[amix]", strings.Join(mix, ""), len(mix))
+	return b.String()
+}
+
+// partCrowd is the crowd under each clip of a reel: input `input` (looped),
+// in the parts from `first` on (not under the intro), reacting to each
+// part's kills.
+type partCrowd struct {
+	input int
+	first int
+	heys  [][]float64 // per part (reelPlan order): kills for a "heeey", seconds into the part
+	roars [][]float64 // per part: kills for a roar
+}
+
+func (c *partCrowd) has(part int) bool { return c != nil && part >= c.first }
+
+// crowdSplit hands each part with a crowd its own copy of the crowd recording.
+func crowdSplit(p reelPlan) string {
+	c := p.crowd
+	if c == nil || c.first >= len(p.durations) {
+		return ""
+	}
+	n := len(p.durations) - c.first
+	var b strings.Builder
+	fmt.Fprintf(&b, "[%d:a]aresample=48000,aformat=channel_layouts=stereo,asplit=%d", c.input, n)
+	for i := c.first; i < len(p.durations); i++ {
+		fmt.Fprintf(&b, "[crowd%d]", i)
+	}
+	b.WriteString(";")
+	return b.String()
+}
+
+// crowdPart mixes the crowd into part i's sound ([a<i>raw] into [a<i>in]):
+// silent through the slowed opening, then a murmur that follows the clip's own sound (a gate the game opens, slow to
+// close), and its reactions, all within the clip, so a crossfade or the
+// wipe takes them along with the picture.
+func crowdPart(p reelPlan, i int) string {
+	c := p.crowd
+	d := p.durations[i]
+	// Each clip from its own stretch of the recording, so they do not all start alike.
+	start := math.Mod(float64(i-c.first)*7.3, 24)
+	var swells []string
+	add := func(parts [][]float64, peak, rise, hold, fall float64) {
+		if i >= len(parts) {
+			return
+		}
+		for _, k := range parts[i] {
+			a := k + crowdDelay
+			if a >= d {
+				continue
+			}
+			swells = append(swells, fmt.Sprintf("%g*min(1,max(0,(t-%.3f)/%g))*min(1,max(0,(%.3f-t)/%g))",
+				peak, a, rise, a+rise+hold+fall, fall))
+		}
+	}
+	add(c.heys, heyGain, 0.2, 0.6, 1.0)
+	add(c.roars, roarGain, 0.35, 1.6, 2.2)
+	react := "0"
+	if len(swells) > 0 {
+		react = strings.Join(swells, "+")
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "[a%draw]asplit=2[a%dgame][a%dside];", i, i, i)
+	fmt.Fprintf(&b, "[crowd%d]atrim=start=%.3f:duration=%.3f,asetpts=PTS-STARTPTS,asplit=2[cb%d][cr%d];", i, start, d, i, i)
+	fmt.Fprintf(&b, "[cb%d]volume=%g[cbv%d];[cbv%d][a%dside]sidechaingate=threshold=%g:ratio=8:attack=120:release=2200:range=%g:knee=3:detection=rms[bed%d];",
+		i, crowdBedGain, i, i, i, crowdGateThreshold, crowdGateRange, i)
+	fmt.Fprintf(&b, "[cr%d]volume='%s':eval=frame[react%d];", i, react, i)
+	// Silent through the clip's slowed opening under the caption card, in as it reaches full speed.
+	quiet := cardExit + introUpSec
+	fmt.Fprintf(&b, "[bed%d][react%d]amix=inputs=2:duration=first:normalize=0,volume='if(lt(t,%.3f),0,min(1,(t-%.3f)/0.6))':eval=frame[crowdmix%d];",
+		i, i, quiet, quiet, i)
+	fmt.Fprintf(&b, "[a%dgame][crowdmix%d]amix=inputs=2:duration=first:normalize=0[a%din];", i, i, i)
 	return b.String()
 }

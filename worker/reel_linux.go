@@ -61,20 +61,24 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 	for _, p := range paths {
 		args = append(args, "-i", p)
 	}
-	musicIn, crowdIn := -1, -1
-	if sound.music != "" {
-		musicIn = len(paths)
-		args = append(args, "-stream_loop", "-1", "-i", sound.music)
-	}
+	musicIn := -1
 	if sound.crowd != "" {
-		crowdIn = len(paths)
-		if musicIn >= 0 {
-			crowdIn++
+		first := 0
+		if intro != nil && strings.TrimSpace(intro.Title) != "" {
+			first = 1
 		}
+		plan.crowd = &partCrowd{input: len(paths), first: first, heys: sound.heys, roars: sound.roars}
 		args = append(args, "-stream_loop", "-1", "-i", sound.crowd)
 	}
+	if sound.music != "" {
+		musicIn = len(paths)
+		if plan.crowd != nil {
+			musicIn++
+		}
+		args = append(args, "-stream_loop", "-1", "-i", sound.music)
+	}
 	hasIntro := intro != nil && strings.TrimSpace(intro.Title) != ""
-	filter := reelFilter(plan) + soundFilter(plan, sound, musicIn, crowdIn, hasIntro)
+	filter := reelFilter(plan) + soundFilter(plan, sound, musicIn, hasIntro)
 	args = append(args, "-filter_complex", filter, "-map", "[v]", "-map", "[amix]")
 	args = append(args, encodeArgs(r.encoder)...)
 	args = append(args, "-movflags", "+faststart", out)

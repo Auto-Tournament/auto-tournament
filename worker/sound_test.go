@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math"
-	"strconv"
 	"strings"
 	"testing"
 )
@@ -24,25 +23,24 @@ func TestPartStartsFollowTheJoins(t *testing.T) {
 	}
 }
 
-func TestSoundFilterCrowdFollowsTheGame(t *testing.T) {
-	p := reelPlan{durations: []float64{4.4, 10, 8}, joins: []join{joinWipe, joinFade}}
-	f := soundFilter(p, reelSound{music: "m.mp3", crowd: "c.mp3", heys: [][]float64{nil, {3}, nil}, roars: [][]float64{nil, nil, {5}}}, 3, 4, true)
-	for _, want := range []string{"[a]asplit=2[agame][asc]", "sidechaingate=", "[agame][music][crowd]amix=inputs=3", "if(lt(t,"} {
+func TestCrowdIsPartOfEachClip(t *testing.T) {
+	p := reelPlan{durations: []float64{4.4, 10, 8}, joins: []join{joinWipe, joinFade}, fps: 60, width: 1920, height: 1080,
+		crowd: &partCrowd{input: 3, first: 1, heys: [][]float64{nil, {6}, nil}, roars: [][]float64{nil, nil, {5}}}}
+	f := reelFilter(p) + soundFilter(p, reelSound{music: "m.mp3"}, 4, true)
+	for _, want := range []string{
+		"[3:a]aresample=48000,aformat=channel_layouts=stereo,asplit=2[crowd1][crowd2];",
+		"[1:a]asetpts=PTS-STARTPTS,apad,atrim=duration=10.000[a1raw]",
+		"[0:a]asetpts=PTS-STARTPTS,apad,atrim=duration=4.400[a0in]", // no crowd under the intro
+		"sidechaingate=",
+		"[a1game][crowdmix1]amix=inputs=2:duration=first:normalize=0[a1in]",
+		fmt.Sprintf("(t-%.3f)/0.2", 6+crowdDelay),  // part 1's heeey, in the part's own time
+		fmt.Sprintf("(t-%.3f)/0.35", 5+crowdDelay), // part 2's roar
+		fmt.Sprintf("if(lt(t,%.3f),0", cardExit+introUpSec),
+		"[a][music]amix=inputs=2",
+	} {
 		if !strings.Contains(f, want) {
 			t.Fatalf("%q missing from %s", want, f)
 		}
-	}
-	starts := partStarts(p)
-	if !strings.Contains(f, "adelay="+strconv.Itoa(int(math.Round(starts[1]*1000)))+":all=1[crowd]") {
-		t.Fatalf("crowd does not start with the first clip: %s", f)
-	}
-	hey := fmt.Sprintf("%g*min(1,max(0,(t-%.3f)/0.2))", heyGain, 3+crowdDelay)
-	roar := fmt.Sprintf("%g*min(1,max(0,(t-%.3f)/0.35))", roarGain, starts[2]+5+crowdDelay-starts[1])
-	if !strings.Contains(f, hey) || !strings.Contains(f, roar) {
-		t.Fatalf("reactions not at the kills (%s, %s): %s", hey, roar, f)
-	}
-	if plain := soundFilter(p, reelSound{}, -1, -1, true); plain != ";[a]anull[amix]" {
-		t.Fatalf("no sound: %s", plain)
 	}
 }
 

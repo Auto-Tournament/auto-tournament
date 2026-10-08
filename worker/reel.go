@@ -114,6 +114,9 @@ type reelPlan struct {
 	width     int
 	height    int
 	fps       float64
+	// crowd, when set, goes into each part's own sound before the joins
+	// (sound.go), so it fades and wipes with its clip.
+	crowd *partCrowd
 }
 
 // reelFilter joins the parts: [v] and [a].
@@ -125,8 +128,14 @@ func reelFilter(p reelPlan) string {
 	// runs a few hundredths of a second shorter or longer than its picture,
 	// and across a reel's joins those add up (1.6 s by the tenth player of a
 	// pro reel), so the sound drifted off the picture.
+	b.WriteString(crowdSplit(p))
 	for i, d := range p.durations {
 		fmt.Fprintf(&b, "[%d:v]setpts=PTS-STARTPTS,trim=duration=%.3f,%s[v%din];", i, d, norm, i)
+		if p.crowd.has(i) {
+			fmt.Fprintf(&b, "[%d:a]asetpts=PTS-STARTPTS,apad,atrim=duration=%.3f[a%draw];", i, d, i)
+			b.WriteString(crowdPart(p, i))
+			continue
+		}
 		fmt.Fprintf(&b, "[%d:a]asetpts=PTS-STARTPTS,apad,atrim=duration=%.3f[a%din];", i, d, i)
 	}
 	if len(p.durations) == 1 {
