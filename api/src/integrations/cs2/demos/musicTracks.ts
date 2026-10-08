@@ -675,4 +675,15 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
     contentId: true,
     gainDb: 4.2,
   },
+  {
+    id: '587414',
+    title: 'Beautiful Melody',
+    artist: 'alex-morgan',
+    genre: 'house',
+    page: 'https://pixabay.com/music/house-beautiful-melody-emotional-background-music-587414/',
+    audio: 'https://cdn.pixabay.com/download/audio/2026/08/17/audio_c7aa356da4.mp3',
+    seconds: 167,
+    contentId: false,
+    gainDb: -0.2,
+  },
 ];
