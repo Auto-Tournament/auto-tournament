@@ -234,6 +234,12 @@ export interface ResourcePoolStatus {
   offlineCount: number;
   busyCount: number;
   graceWindowCount: number;
+  /**
+   * Stopped resources the integration starts by itself once matches need them
+   * (CS2: csm servers the autoscaler may start). Not available yet, but not
+   * missing either: a start with only these is not short of servers.
+   */
+  startableCount?: number;
 }
 
 /**

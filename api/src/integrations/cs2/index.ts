@@ -423,7 +423,19 @@ export const cs2Integration: GameIntegration = {
 
   async poolStatus() {
     const { cs2ServerPool } = await import('./allocation');
-    return cs2ServerPool.getPoolStatus();
+    const pool = await cs2ServerPool.getPoolStatus();
+    // csm servers stopped while idle: the autoscaler starts them for waiting matches.
+    let startableCount = 0;
+    try {
+      const { autoscaleStatus } = await import('./fleet/autoscale/scaler');
+      const scaler = await autoscaleStatus(0);
+      if (scaler.settings.enabled) {
+        startableCount = scaler.servers.filter((s) => s.state === 'stopped' || s.state === 'starting').length;
+      }
+    } catch {
+      startableCount = 0;
+    }
+    return { ...pool, startableCount };
   },
 
   /**

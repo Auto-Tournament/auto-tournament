@@ -29,9 +29,11 @@ export function ShuffleTournamentStats({ playerCount, teamSize }: ShuffleTournam
         const response = await api.get<{
           success: boolean;
           availableServerCount: number;
+          startableServerCount?: number;
         }>('/api/tournament/server-availability');
         if (!cancelled && response.success) {
-          setAvailableServerCount(response.availableServerCount);
+          // Stopped csm servers count: the platform starts them once the matches need them.
+          setAvailableServerCount(response.availableServerCount + (response.startableServerCount ?? 0));
         }
       } catch (err) {
         console.error('Error loading server availability:', err);

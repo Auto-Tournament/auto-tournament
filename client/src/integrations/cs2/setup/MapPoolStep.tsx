@@ -148,11 +148,16 @@ export function MapPoolStep({
       )}
       {onMapModeChange && (
         <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>{t('mapModeFilter.label')}</InputLabel>
+          {/* "Any type" is shown for the empty value, so the label always sits above it. */}
+          <InputLabel id="tournament-map-mode-label" shrink>
+            {t('mapModeFilter.label')}
+          </InputLabel>
           <Select
             data-testid="tournament-map-mode-select"
+            labelId="tournament-map-mode-label"
             value={mapMode ?? ''}
             label={t('mapModeFilter.label')}
+            notched
             onChange={(e) =>
               onMapModeChange((e.target.value || undefined) as MapGameMode | undefined)
             }
