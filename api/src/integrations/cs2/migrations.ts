@@ -102,6 +102,7 @@ export const CS2_HIGHLIGHT_REELS_MIGRATION_ID = '024-highlight-reels';
 export const CS2_MATCH_REELS_MIGRATION_ID = '025-match-reels';
 export const CS2_HIGHLIGHTS_PLAYER_MIGRATION_ID = '026-highlights-player';
 export const CS2_REEL_STARTS_MIGRATION_ID = '027-reel-starts';
+export const CS2_TEAM_REELS_MIGRATION_ID = '028-team-reels';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1142,6 +1143,29 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     ALTER TABLE cs2_highlight_reels ADD COLUMN IF NOT EXISTS clip_starts TEXT; -- JSON number[], one per clip_ids
     ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS clip_starts TEXT; -- JSON number[]
     ALTER TABLE cs2_tournament_reels ADD COLUMN IF NOT EXISTS clip_starts TEXT; -- JSON number[]
+`,
+  },
+  {
+    // A team's best plays of a match, for the team to share (demos/teamReels.ts).
+    id: CS2_TEAM_REELS_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_team_reels (
+      match_slug TEXT NOT NULL,
+      team_id TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending', -- pending | recording | done | failed
+      attempts INTEGER NOT NULL DEFAULT 0,
+      recorder TEXT,
+      claimed_at INTEGER,
+      error TEXT,
+      clips INTEGER,
+      clip_ids TEXT, -- JSON number[]: the highlights it joins, in order
+      clip_starts TEXT, -- JSON number[]: where each starts in it, in seconds
+      clip_path TEXT, -- under DATA_DIR/highlights
+      clip_bytes BIGINT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (match_slug, team_id)
+    );
+    CREATE INDEX IF NOT EXISTS cs2_team_reels_status_idx ON cs2_team_reels(status, created_at);
 `,
   },
 ];

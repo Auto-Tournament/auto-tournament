@@ -797,6 +797,9 @@ export async function queueMatchReelFor(highlightIds: number[]): Promise<void> {
   } catch (error) {
     log.warn('[HIGHLIGHTS] Could not queue a match reel', { error: (error as Error).message });
   }
+  // And the match's team reels, once all of it is recorded.
+  const { queueTeamReelsFor } = await import('./teamReels');
+  await queueTeamReelsFor(highlightIds);
 }
 
 export interface MatchReelClip {

@@ -33,10 +33,11 @@ type matchReelClip struct {
 }
 
 type matchReelJob struct {
-	Kind         string          `json:"kind"` // match_reel | tournament_reel
+	Kind         string          `json:"kind"` // match_reel | tournament_reel | team_reel
 	MatchSlug    string          `json:"matchSlug"`
 	MapNumber    int             `json:"mapNumber"`
 	TournamentID int             `json:"tournamentId"`
+	TeamID       string          `json:"teamId"`
 	Match        string          `json:"match"`
 	Watermark    bool            `json:"watermark"`
 	Quality      *videoQuality   `json:"quality"`
@@ -52,6 +53,9 @@ type matchReelJob struct {
 func (j *matchReelJob) label() string {
 	if j.Kind == "tournament_reel" {
 		return fmt.Sprintf("tournament reel of %d", j.TournamentID)
+	}
+	if j.Kind == "team_reel" {
+		return fmt.Sprintf("team reel of %s for %s", j.MatchSlug, j.TeamID)
 	}
 	return fmt.Sprintf("match reel of %s map %d", j.MatchSlug, j.MapNumber)
 }

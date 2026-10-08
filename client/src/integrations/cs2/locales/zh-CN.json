@@ -2012,7 +2012,8 @@
       "clips_one": "{{count}} clip",
       "clips_other": "{{count}} clips",
       "theirReel_one": "Their reel · {{count}} clip",
-      "theirReel_other": "Their reel · {{count}} clips"
+      "theirReel_other": "Their reel · {{count}} clips",
+      "teamReel": "Team highlights · {{team}}"
     },
     "tournament": {
       "reel": "TOURNAMENT REEL",
@@ -2030,7 +2031,8 @@
       "firstSoon": "The first plays show up here soon"
     },
     "readyIn": "ready in about {{minutes}} min",
-    "matchReelRecording": "Match reel · being recorded"
+    "matchReelRecording": "Match reel · being recorded",
+    "teamReelButton": "{{team}} highlights"
   },
   "serversBoard": {
     "addFirstServers": "Add the first servers",

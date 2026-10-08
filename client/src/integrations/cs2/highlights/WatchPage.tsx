@@ -22,6 +22,7 @@ import {
   teamsLabel,
   watchClipPath,
   watchMatchReelPath,
+  watchTeamReelPath,
   watchReelPath,
   type Chapter,
   type Clip,
@@ -49,6 +50,9 @@ interface RelatedPlayer {
 
 /** Another match reel to watch. */
 interface RelatedReel {
+  kind: 'match' | 'team';
+  teamId?: string;
+  team?: string | null;
   matchSlug: string;
   mapNumber: number;
   map: string | null;
@@ -241,6 +245,33 @@ export function WatchPage() {
           })
         )
         .catch(fail);
+    } else if (kind === 'team') {
+      api
+        .get<{
+          reel: {
+            video: string;
+            crowd?: string | null;
+            team: string | null;
+            chapters: Chapter[];
+            match: MatchRef;
+          };
+        }>(`/api/game/cs2/watch/team/${enc(a ?? '')}/${enc(b ?? '')}`)
+        .then(({ reel }) =>
+          done({
+            video: reel.video,
+            title: t('highlights.watch.teamReel', { team: reel.team ?? '' }),
+            sub: [teamsLabel(reel.match), reel.match.tournament].filter(Boolean).join(' · '),
+            markers: null,
+            chapters: reel.chapters,
+            match: reel.match,
+            mapNumber: null,
+            round: null,
+            playerId: null,
+            file: `${reel.team ?? 'team'}-highlights.mp4`,
+            crowd: reel.crowd ?? null,
+          })
+        )
+        .catch(fail);
     } else if (kind === 'tournament') {
       api
         .get<{ reel: { video: string; crowd?: string | null; chapters: Chapter[] } }>(
@@ -287,7 +318,9 @@ export function WatchPage() {
         ? `tournament=${encodeURIComponent(parts[1] ?? '')}`
         : w.match && w.mapNumber !== null
           ? `match=${encodeURIComponent(w.match.slug)}&map=${w.mapNumber}`
-          : null;
+          : w.match
+            ? `match=${encodeURIComponent(w.match.slug)}`
+            : null;
     if (!q) return;
     let cancelled = false;
     api
@@ -693,61 +726,79 @@ export function WatchPage() {
                   gap: 2,
                 }}
               >
-                {rel.reels.map((r) => (
-                  <Box component="li" key={`${r.matchSlug}-${r.mapNumber}`} sx={{ minWidth: 0 }}>
+                {rel.reels
+                  .filter(
+                    (r) => !(r.kind === 'team' && parts[0] === 'team' && parts[2] === r.teamId)
+                  )
+                  .map((r) => (
                     <Box
-                      component={RouterLink}
-                      to={watchMatchReelPath(r.matchSlug, r.mapNumber)}
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 1,
-                        color: tokens.color.ink,
-                        textDecoration: 'none',
-                        '&:hover .thumb': { borderColor: tokens.color.ink2 },
-                        '&:focus-visible': {
-                          outline: `2px solid ${tokens.color.accent}`,
-                          outlineOffset: 2,
-                          borderRadius: '14px',
-                        },
-                      }}
+                      component="li"
+                      key={`${r.kind}-${r.matchSlug}-${r.teamId ?? r.mapNumber}`}
+                      sx={{ minWidth: 0 }}
                     >
                       <Box
-                        className="thumb"
+                        component={RouterLink}
+                        to={
+                          r.kind === 'team'
+                            ? watchTeamReelPath(r.matchSlug, r.teamId!)
+                            : watchMatchReelPath(r.matchSlug, r.mapNumber)
+                        }
                         sx={{
-                          position: 'relative',
-                          aspectRatio: '16 / 9',
-                          maxWidth: '100%',
-                          borderRadius: '14px',
-                          overflow: 'hidden',
-                          bgcolor: tokens.color.paper3,
-                          border: `1px solid ${tokens.color.rule}`,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 1,
+                          color: tokens.color.ink,
+                          textDecoration: 'none',
+                          '&:hover .thumb': { borderColor: tokens.color.ink2 },
+                          '&:focus-visible': {
+                            outline: `2px solid ${tokens.color.accent}`,
+                            outlineOffset: 2,
+                            borderRadius: '14px',
+                          },
                         }}
                       >
-                        <VideoThumb src={r.video} at={8} />
-                      </Box>
-                      <Box
-                        sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}
-                      >
                         <Box
-                          sx={{ fontWeight: 600, fontSize: textSize.sm, overflowWrap: 'anywhere' }}
+                          className="thumb"
+                          sx={{
+                            position: 'relative',
+                            aspectRatio: '16 / 9',
+                            maxWidth: '100%',
+                            borderRadius: '14px',
+                            overflow: 'hidden',
+                            bgcolor: tokens.color.paper3,
+                            border: `1px solid ${tokens.color.rule}`,
+                          }}
                         >
-                          {t('highlights.watch.matchReel', {
-                            map: mapLabel(t, r.map, r.mapNumber),
-                          })}
+                          <VideoThumb src={r.video} at={8} />
                         </Box>
-                        <Box sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>
-                          {[
-                            r.team1 && r.team2 ? `${r.team1} vs ${r.team2}` : null,
-                            r.clips ? t('highlights.watch.plays', { count: r.clips }) : null,
-                          ]
-                            .filter(Boolean)
-                            .join(' · ')}
+                        <Box
+                          sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}
+                        >
+                          <Box
+                            sx={{
+                              fontWeight: 600,
+                              fontSize: textSize.sm,
+                              overflowWrap: 'anywhere',
+                            }}
+                          >
+                            {r.kind === 'team'
+                              ? t('highlights.watch.teamReel', { team: r.team ?? '' })
+                              : t('highlights.watch.matchReel', {
+                                  map: mapLabel(t, r.map, r.mapNumber),
+                                })}
+                          </Box>
+                          <Box sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>
+                            {[
+                              r.team1 && r.team2 ? `${r.team1} vs ${r.team2}` : null,
+                              r.clips ? t('highlights.watch.plays', { count: r.clips }) : null,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </Box>
                         </Box>
                       </Box>
                     </Box>
-                  </Box>
-                ))}
+                  ))}
               </Box>
             </Box>
           )}

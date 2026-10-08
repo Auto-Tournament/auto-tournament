@@ -97,7 +97,13 @@ export interface TournamentMatchReels {
   playersDone: number;
   playersTotal: number;
   recording: boolean;
-  reels: Array<{ mapNumber: number; map: string | null; status: string; clips: number | null; video: string | null }>;
+  reels: Array<{
+    mapNumber: number;
+    map: string | null;
+    status: string;
+    clips: number | null;
+    video: string | null;
+  }>;
 }
 
 export interface TournamentHighlights {
@@ -122,7 +128,10 @@ export const watchReelPath = (matchSlug: string, mapNumber: number, playerId: st
   `/watch/reel/${enc(matchSlug)}/${mapNumber}/${enc(playerId)}`;
 export const watchMatchReelPath = (matchSlug: string, mapNumber: number) =>
   `/watch/match/${enc(matchSlug)}/${mapNumber}`;
-export const watchTournamentReelPath = (tournamentId: number) => `/watch/tournament/${tournamentId}`;
+export const watchTournamentReelPath = (tournamentId: number) =>
+  `/watch/tournament/${tournamentId}`;
+export const watchTeamReelPath = (matchSlug: string, teamId: string) =>
+  `/watch/team/${enc(matchSlug)}/${enc(teamId)}`;
 
 // ---------------------------------------------------------------------------
 // Labels
@@ -133,7 +142,8 @@ export function kindLabel(t: TFunction, kind: string, clutch = false): string {
   if (kind === 'ace') return t('highlights.kind.ace');
   if (kind === 'funny') return t('highlights.kind.funny');
   if (kind === 'clutch' || (clutch && !/^\dk$/.test(kind))) return t('highlights.kind.clutch');
-  if (/^\dk$/.test(kind)) return clutch ? t('highlights.kind.multiClutch', { n: kind[0] }) : kind.toUpperCase();
+  if (/^\dk$/.test(kind))
+    return clutch ? t('highlights.kind.multiClutch', { n: kind[0] }) : kind.toUpperCase();
   return t('highlights.kind.flair');
 }
 

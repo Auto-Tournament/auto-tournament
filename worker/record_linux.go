@@ -122,7 +122,7 @@ func (r *recorder) look() []string {
 // (recordJob), or a map's match reel to join (matchReelJob); nil, nil when
 // there is none.
 func (c *client) claimRecording(ctx context.Context) (*mapJob, *matchReelJob, error) {
-	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{"recorder": c.worker, "version": 4})
+	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{"recorder": c.worker, "version": 5})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -145,8 +145,8 @@ func (c *client) claimRecording(ctx context.Context) (*mapJob, *matchReelJob, er
 	if err := json.Unmarshal(body.Job, &kind); err != nil {
 		return nil, nil, err
 	}
-	// A tournament reel is made the same way as a match reel: tag and join.
-	if kind.Kind == "match_reel" || kind.Kind == "tournament_reel" {
+	// A tournament's or a team's reel is made the same way as a match reel: join.
+	if kind.Kind == "match_reel" || kind.Kind == "tournament_reel" || kind.Kind == "team_reel" {
 		var j matchReelJob
 		return nil, &j, json.Unmarshal(body.Job, &j)
 	}

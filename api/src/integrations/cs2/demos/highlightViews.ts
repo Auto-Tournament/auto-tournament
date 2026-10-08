@@ -491,8 +491,12 @@ export interface RelatedPlayer {
   reel: boolean;
 }
 
-/** Another reel to watch next. */
+/** Another reel to watch next: a map's match reel, or a team's reel of a match. */
 export interface RelatedReel {
+  kind: 'match' | 'team';
+  /** A team reel's team. */
+  teamId?: string;
+  team?: string | null;
   matchSlug: string;
   mapNumber: number;
   map: string | null;
@@ -514,7 +518,7 @@ export async function watchRelated(
   tournamentId: number | null
 ): Promise<{ players: RelatedPlayer[]; reels: RelatedReel[] }> {
   let players: RelatedPlayer[] = [];
-  if (matchSlug && mapNumber !== null) {
+  if (matchSlug) {
     const rows = await db.queryAsync<{
       player_id: string;
       name: string | null;
@@ -528,10 +532,11 @@ export async function watchRelated(
                          AND r.player_id = h.player_id AND r.clip_path IS NOT NULL) AS reel
          FROM cs2_highlights h
          LEFT JOIN players p ON p.id = h.player_id
-        WHERE h.match_slug = ? AND h.map_number = ? AND h.status = 'done' AND h.kind <> 'funny'
-        GROUP BY h.player_id, h.match_slug, h.map_number, p.name, p.avatar_url
+        WHERE h.match_slug = ? AND (?::integer IS NULL OR h.map_number = ?::integer)
+          AND h.status = 'done' AND h.kind <> 'funny'
+        GROUP BY h.player_id, p.name, p.avatar_url
         ORDER BY COUNT(*) DESC, p.name`,
-      [matchSlug, mapNumber]
+      [matchSlug, mapNumber, mapNumber]
     );
     players = rows.map((r) => ({
       playerId: r.player_id,
@@ -572,17 +577,41 @@ export async function watchRelated(
       LIMIT 8`,
     [matchSlug ?? '', tournament, matchSlug ?? '', mapNumber ?? -1, matchSlug ?? '']
   );
+  // The match's team reels first: the ones a team shares.
+  const teamReels: RelatedReel[] = [];
+  if (matchSlug) {
+    const { matchTeamReels } = await import('./teamReels');
+    for (const t of await matchTeamReels(matchSlug)) {
+      if (!t.video) continue;
+      teamReels.push({
+        kind: 'team',
+        teamId: t.teamId,
+        team: t.team,
+        matchSlug,
+        mapNumber: 0,
+        map: null,
+        team1: null,
+        team2: null,
+        video: t.video,
+        clips: t.clips,
+      });
+    }
+  }
   return {
     players,
-    reels: rows.map((r) => ({
-      matchSlug: r.match_slug,
-      mapNumber: Number(r.map_number),
-      map: r.map_name,
-      team1: r.team1,
-      team2: r.team2,
-      video: fileUrl(r.clip_path),
-      clips: r.clips === null ? null : Number(r.clips),
-    })),
+    reels: [
+      ...teamReels,
+      ...rows.map((r) => ({
+        kind: 'match' as const,
+        matchSlug: r.match_slug,
+        mapNumber: Number(r.map_number),
+        map: r.map_name,
+        team1: r.team1,
+        team2: r.team2,
+        video: fileUrl(r.clip_path),
+        clips: r.clips === null ? null : Number(r.clips),
+      })),
+    ],
   };
 }
 

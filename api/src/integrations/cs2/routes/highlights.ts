@@ -9,6 +9,8 @@
  *   PUT  /api/game/cs2/recorder/match-reels/:slug/:map       a map's match reel (video/mp4 body; ?clips=N)
  *   POST /api/game/cs2/recorder/match-reels/:slug/:map/fail  { error }: it could not make it
  *   PUT  /api/game/cs2/recorder/tournament-reels/:id         a tournament's reel (video/mp4 body)
+ *   PUT  /api/game/cs2/recorder/team-reels/:slug/:team       a team's reel of a match (video/mp4 body)
+ *   POST /api/game/cs2/recorder/team-reels/:slug/:team/fail  { error }: it could not make it
  *   POST /api/game/cs2/recorder/tournament-reels/:id/fail    { error }: it could not make it
  *   PUT  …/reels/:slug/:map/:player/crowd, …/match-reels/:slug/:map/crowd,
  *        …/tournament-reels/:id/crowd                       a reel's crowd track (audio/mp4 body), after the reel
@@ -22,11 +24,12 @@
  *   GET  /api/game/cs2/players/:playerId/highlights   a player's reels, highlights and favourite (?all=1: every one)
  *   PUT  /api/game/cs2/players/me/highlights/favourite  { highlightId | null }: the signed-in player picks theirs
  *   GET  /api/game/cs2/tournaments/:id/highlights     a tournament's reel, best plays and match reels
- *   GET  /api/game/cs2/matches/:slug/reels            a match's reels per map
+ *   GET  /api/game/cs2/matches/:slug/reels            a match's reels per map, and its team reels (`teams`)
  *   GET  /api/game/cs2/watch/clip/:id                 one highlight to watch
  *   GET  /api/game/cs2/watch/reel/:slug/:map/:player  a player's reel of a map
  *   GET  /api/game/cs2/watch/match/:slug/:map         a map's match reel
  *   GET  /api/game/cs2/watch/tournament/:id           a tournament's reel
+ *   GET  /api/game/cs2/watch/team/:slug/:team         a team's reel of a match
  *   GET  /api/game/cs2/watch/related                  ?match&map | ?tournament: the players on that map and more reels
  *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`, `tournament-…`), with range requests;
  *                                                     ?crowd=1, ?music=<track>&intro=<s>: a download with its crowd track and/or that music mixed in (../demos/music.ts)
@@ -80,6 +83,14 @@ import {
   saveReel,
 } from '../demos/highlights';
 import { enabledTracks, trackById, trackFile, withSound } from '../demos/music';
+import {
+  claimTeamReel,
+  failTeamReel,
+  matchTeamReels,
+  saveTeamReel,
+  teamReelFile,
+  teamReelView,
+} from '../demos/teamReels';
 import { MUSIC_TRACKS } from '../demos/musicTracks';
 
 const router = Router();
@@ -122,6 +133,11 @@ router.post('/recorder/claim', requireAuth, async (req: Request, res: Response) 
     if (Number(req.body?.version ?? 0) >= 3) {
       const tournament = await claimTournamentReel(recorder);
       if (tournament) return give(tournament);
+    }
+    // Team reels from recorder version 5.
+    if (Number(req.body?.version ?? 0) >= 5) {
+      const team = await claimTeamReel(recorder);
+      if (team) return give(team);
     }
     // A recorder from version 4 records a map (or its share of one, when
     // other recorders are idle too) in one CS2 session.
@@ -226,7 +242,11 @@ router.post(
 
 router.get('/matches/:slug/reels', async (req: Request, res: Response) => {
   try {
-    return res.json({ success: true, reels: await matchReels(req.params.slug) });
+    const [reels, teams] = await Promise.all([
+      matchReels(req.params.slug),
+      matchTeamReels(req.params.slug),
+    ]);
+    return res.json({ success: true, reels, teams });
   } catch (error) {
     log.error('[HIGHLIGHTS] match reels failed', { error, slug: req.params.slug });
     return res.status(500).json({ success: false, error: 'Could not read the match reels' });
@@ -270,12 +290,50 @@ router.put(
   })
 );
 router.put(
+  '/recorder/team-reels/:slug/:team/crowd',
+  requireAuth,
+  crowdUpload((req) => teamReelFile(req.params.slug, req.params.team))
+);
+router.put(
   '/recorder/tournament-reels/:id/crowd',
   requireAuth,
   crowdUpload((req) => {
     const id = idOf(req);
     return id ? tournamentReelFile(id) : null;
   })
+);
+
+router.put('/recorder/team-reels/:slug/:team', requireAuth, async (req: Request, res: Response) => {
+  if (!String(req.headers['content-type'] ?? '').startsWith('video/mp4')) {
+    return res.status(400).json({ success: false, error: 'A video/mp4 body' });
+  }
+  try {
+    const ids = parseClipIds(req.headers['x-at-clips']);
+    const bytes = await saveTeamReel(
+      req.params.slug,
+      req.params.team,
+      req,
+      ids,
+      startsOf(req, ids)
+    );
+    return res.json({ success: true, bytes });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] team reel save failed', { error, slug: req.params.slug });
+    return res.status(500).json({ success: false, error: 'Could not store the team reel' });
+  }
+});
+
+router.post(
+  '/recorder/team-reels/:slug/:team/fail',
+  requireAuth,
+  async (req: Request, res: Response) => {
+    await failTeamReel(
+      req.params.slug,
+      req.params.team,
+      typeof req.body?.error === 'string' ? req.body.error : 'unknown'
+    );
+    return res.json({ success: true });
+  }
 );
 
 router.post('/recorder/fail', requireAuth, async (req: Request, res: Response) => {
@@ -405,6 +463,15 @@ router.get(
 );
 
 router.get(
+  '/watch/team/:slug/:team',
+  read('team reel', async (req: Request, res: Response) => {
+    const reel = await teamReelView(req.params.slug, req.params.team);
+    if (!reel) return res.status(404).json({ success: false, error: 'No such reel' });
+    return res.json({ success: true, reel });
+  })
+);
+
+router.get(
   '/watch/related',
   read('related reels', async (req: Request, res: Response) => {
     const match = typeof req.query.match === 'string' && req.query.match ? req.query.match : null;
@@ -422,8 +489,8 @@ router.get(
 
 router.get('/highlights/:file', async (req: Request, res: Response) => {
   const clip = /^(\d+)\.mp4$/.exec(req.params.file);
-  const reel = /^(?:reel|match|tournament)-[A-Za-z0-9_.-]+\.mp4$/.test(req.params.file);
-  if (/^(?:reel|match|tournament)-[A-Za-z0-9_.-]+\.crowd\.m4a$/.test(req.params.file)) {
+  const reel = /^(?:reel|match|tournament|team)-[A-Za-z0-9_.-]+\.mp4$/.test(req.params.file);
+  if (/^(?:reel|match|tournament|team)-[A-Za-z0-9_.-]+\.crowd\.m4a$/.test(req.params.file)) {
     // A reel's crowd track, played beside it.
     const crowd = path.join(path.dirname(clipFile(0)), req.params.file);
     if (!fs.existsSync(crowd)) return res.status(404).end();
