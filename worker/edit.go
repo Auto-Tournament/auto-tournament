@@ -27,6 +27,8 @@ const (
 var (
 	outputFPS    = float64(envPositive("AT_OUTPUT_FPS", 60))
 	outputHeight = envPositive("AT_OUTPUT_HEIGHT", 1080) &^ 1
+	// nvencPreset is NVENC's speed/quality trade (p1 fastest … p7 best; AT_NVENC_PRESET).
+	nvencPreset = env("AT_NVENC_PRESET", "p6")
 )
 
 func envPositive(key string, fallback int) int {
@@ -277,16 +279,16 @@ const reelCrossfade = 0.4
 // H.265 stays available with AT_ENCODER=hevc_nvenc or libx265.
 func encodeArgs(encoder string) []string {
 	args := []string{"-c:v", encoder, "-r", fmt.Sprint(outputFPS), "-g", fmt.Sprint(2 * outputFPS),
-		"-s", fmt.Sprintf("%dx%d", outputHeight*16/9, outputHeight)}
+		"-s", fmt.Sprintf("%dx%d", outputHeight*16/9, outputHeight), "-sws_flags", "lanczos"}
 	switch encoder {
 	case "libx265":
 		args = append(args, "-preset", "fast", "-crf", "24", "-tag:v", "hvc1", "-x265-params", "log-level=error")
 	case "hevc_nvenc":
-		args = append(args, "-preset", "p6", "-tune", "hq", "-rc", "vbr", "-cq", "26", "-b:v", "0", "-tag:v", "hvc1")
+		args = append(args, "-preset", nvencPreset, "-tune", "hq", "-rc", "vbr", "-cq", "26", "-b:v", "0", "-tag:v", "hvc1")
 	case "libx264":
 		args = append(args, "-preset", "fast", "-crf", "21", "-profile:v", "high", "-pix_fmt", "yuv420p")
 	default: // h264_nvenc
-		args = append(args, "-preset", "p6", "-tune", "hq", "-rc", "vbr", "-cq", "23", "-b:v", "0",
+		args = append(args, "-preset", nvencPreset, "-tune", "hq", "-rc", "vbr", "-cq", "23", "-b:v", "0",
 			"-maxrate", "16M", "-bufsize", "32M", "-profile:v", "high", "-pix_fmt", "yuv420p")
 	}
 	return append(args, "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2")

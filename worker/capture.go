@@ -41,11 +41,14 @@ import (
 )
 
 const (
-	netconPort    = 2121
-	frameSettleMs = 1500
-	seekPoll      = 500 * time.Millisecond
-	endMargin     = tickrate // ticks kept clear of the demo's end
+	netconPort = 2121
+	seekPoll   = 500 * time.Millisecond
+	endMargin  = tickrate // ticks kept clear of the demo's end
 )
+
+// frameSettleMs is how long the view gets to settle after a seek before the
+// picture counts (AT_SETTLE_MS).
+var frameSettleMs = envPositive("AT_SETTLE_MS", 1500)
 
 // recorderLook is what every clip is played with: only the kill feed and the
 // crosshair on screen, no x-ray, no demo controls; the crosshair is the

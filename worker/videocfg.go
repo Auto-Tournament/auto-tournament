@@ -12,7 +12,7 @@ import (
 // recordingVideo is the video config CS2 records with (AT_VIDEO=low, the
 // default): what costs the GPU most and shows least in a 1080p clip turned
 // down, since the GPU is what holds capture back (2026-10-08: 99 % at 4x
-// MSAA, high shadows and ambient occlusion). AT_VIDEO=keep leaves CS2's own.
+// MSAA, high shadows and ambient occlusion). AT_VIDEO=keep puts CS2's own back.
 var recordingVideo = map[string]string{
 	"setting.msaa_samples":              "0",
 	"setting.r_csgo_cmaa_enable":        "1", // cheap edge smoothing instead of MSAA
@@ -72,20 +72,33 @@ func sortedKeys(m map[string]string) []string {
 // into every Steam user's cs2_video.txt before CS2 starts; the first time it
 // keeps the original next to it (cs2_video.txt.at-original).
 func setRecordingVideo(width, height int) {
-	if env("AT_VIDEO", "low") == "keep" {
-		return
-	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return
 	}
 	files, _ := filepath.Glob(filepath.Join(home, ".local/share/Steam/userdata/*/730/local/cfg/cs2_video.txt"))
+	if env("AT_VIDEO", "low") == "keep" {
+		// CS2's own again, if we changed it before.
+		for _, f := range files {
+			if b, err := os.ReadFile(f + ".at-original"); err == nil {
+				_ = os.WriteFile(f, b, 0o644)
+			}
+		}
+		return
+	}
 	set := map[string]string{
 		"setting.defaultres":       fmt.Sprint(width),
 		"setting.defaultresheight": fmt.Sprint(height),
 	}
 	for k, v := range recordingVideo {
 		set[k] = v
+	}
+	// AT_VIDEO_SET: more, as key=value pairs separated by commas
+	// (setting.videocfg_fsr_detail=3 renders smaller and upscales with FSR).
+	for _, kv := range strings.Split(env("AT_VIDEO_SET", ""), ",") {
+		if k, v, ok := strings.Cut(strings.TrimSpace(kv), "="); ok && k != "" {
+			set[k] = v
+		}
 	}
 	for _, f := range files {
 		b, err := os.ReadFile(f)
