@@ -1,3 +1,4 @@
+import { BracketPauseBar } from '../components/bracket/BracketPauseBar';
 import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useRef } from 'react';
 import {
@@ -476,6 +477,11 @@ export default function Bracket() {
         <Box>
           <ChampionBanner tournament={tournament} />
         </Box>
+      )}
+
+      {/* Pause the bracket when something goes wrong (services/matchHolds.ts). */}
+      {!isFullscreen && tournament.status === 'in_progress' && tournament.id !== undefined && (
+        <BracketPauseBar tournamentId={tournament.id} />
       )}
 
       {/* What the ready matches are waiting for, in the game's words (CS2:

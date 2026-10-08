@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 600 of them, 380 behind auth —
+Every endpoint this API serves — 607 of them, 385 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -493,6 +493,10 @@ Create, load, restart and cancel matches; read match state.
 | `POST` | `/api/matches` | admin |
 | `POST` | `/api/matches/:slug/load` | admin |
 | `POST` | `/api/matches/:slug/restart` | admin |
+| `GET` | `/api/matches/:slug/hold` | public |
+| `POST` | `/api/matches/:slug/hold` | admin |
+| `DELETE` | `/api/matches/:slug/hold` | admin |
+| `POST` | `/api/matches/:slug/restart-countdown` | admin |
 | `POST` | `/api/matches/:slug/reallocate` | admin |
 | `PATCH` | `/api/matches/:slug/status` | admin |
 | `POST` | `/api/matches/:slug/winner` | admin |
@@ -521,6 +525,7 @@ The tournament itself — setup, bracket, rounds, standings.
 | `GET` | `/api/tournament/allocation-status` | public |
 | `GET` | `/api/tournament/game` | public |
 | `GET` | `/api/tournament/:id/bracket` | public |
+| `GET` | `/api/tournament/:id/pause` | public |
 | `GET` | `/api/tournament/:id/banner` | public |
 | `PUT` | `/api/tournament/banner` | admin |
 | `DELETE` | `/api/tournament/banner` | admin |
@@ -532,6 +537,8 @@ The tournament itself — setup, bracket, rounds, standings.
 | `POST` | `/api/tournament/bracket/regenerate` | admin |
 | `POST` | `/api/tournament/reset` | admin |
 | `GET` | `/api/tournament/server-availability` | admin |
+| `POST` | `/api/tournament/pause` | admin |
+| `POST` | `/api/tournament/resume` | admin |
 | `POST` | `/api/tournament/start` | admin |
 | `POST` | `/api/tournament/restart` | admin |
 | `POST` | `/api/tournament/wipe-database` | admin |

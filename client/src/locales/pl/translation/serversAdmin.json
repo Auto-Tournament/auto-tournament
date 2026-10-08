@@ -147,6 +147,23 @@
       "reallocateServer": "Mecz przeniesiony na inny serwer",
       "forceCancel": "Mecz anulowany",
       "default": "Komenda wykonana"
+    },
+    "hold": {
+      "title": "Hold instead of a walkover",
+      "description": "While held, the match is not loaded or started and nobody gets a walkover. When it goes ahead, the teams get the full time again.",
+      "reason": "Reason (shown to admins)",
+      "delay": "Delay {{minutes}} min",
+      "holdUntilReleased": "Hold until released",
+      "release": "Release now",
+      "restartCountdown": "Restart the countdown",
+      "heldUntil": "On hold until {{time}}",
+      "heldIndefinitely": "On hold until released",
+      "tournamentPaused": "The tournament is paused",
+      "heldDone": "Match on hold",
+      "delayedDone": "Match delayed {{minutes}} min",
+      "releasedDone": "Match released",
+      "restartedDone": "Countdown restarted: the teams have the full time again",
+      "failed": "Could not change the hold"
     }
   },
   "adminCalls": {

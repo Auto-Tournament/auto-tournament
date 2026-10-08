@@ -2,6 +2,7 @@
 // This ensures all modules can access env vars during initialization
 import { socialService } from './services/socialService';
 import { startTournamentNotices } from './services/tournamentNotices';
+import { startHoldTimer } from './services/matchHolds';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -621,6 +622,8 @@ process.on('uncaughtException', (err) => {
       // Friends see each other come and go; tournament check-ins reach the bell.
       socialService.start();
       startTournamentNotices();
+      // Admins' holds and bracket pauses that end by themselves (services/matchHolds.ts).
+      startHoldTimer();
       // Matchmaking's 2-second loop (services/matchmaking). Cancels lobbies a restart left open.
       matchmakingService.start().catch((error) => {
         log.warn('Failed to start matchmaking', { error });

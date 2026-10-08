@@ -39,6 +39,7 @@ import {
   withoutBusyTeams,
   type QueueEntry,
 } from './allocationQueue';
+import { holdOf, notHeldSql } from '../services/matchHolds';
 
 /** allocateSingleMatch result while a team of the match is still playing (#224). */
 const TEAM_BUSY_ERROR = 'Waiting for a team to finish its current match';
@@ -223,6 +224,7 @@ export class Scheduler {
        WHERE tournament_id = ?
        AND status = 'ready'
        AND (server_id IS NULL OR server_id = '')
+       AND ${notHeldSql()}
        ORDER BY ${QUEUE_ORDER_SQL}`,
       [tournamentId]
     );
@@ -266,6 +268,7 @@ export class Scheduler {
        AND status = 'ready'
        AND (server_id IS NULL OR server_id = '')
        AND team1_id IS NOT NULL AND team2_id IS NOT NULL AND team1_id != team2_id
+       AND ${notHeldSql()}
        ORDER BY ${QUEUE_ORDER_SQL}`,
       [tournamentId]
     );
@@ -428,6 +431,15 @@ export class Scheduler {
 
       if (match.status !== 'ready') {
         return { success: false, error: `Match is not ready (status: ${match.status})` };
+      }
+
+      // An admin's hold, or the tournament paused (services/matchHolds.ts).
+      const hold = await holdOf(matchSlug);
+      if (hold?.heldUntil) {
+        return {
+          success: false,
+          error: hold.tournamentPaused ? 'The tournament is paused' : 'The match is on hold',
+        };
       }
 
       // Hard safety checks: do not ever allocate / load matches that are not
@@ -1494,6 +1506,7 @@ export class Scheduler {
        WHERE tournament_id IS NULL
        AND status = 'ready'
        AND (server_id IS NULL OR server_id = '')
+       AND ${notHeldSql()}
        ORDER BY id`
     );
     return rows.map((row) => row.slug);

@@ -3,7 +3,8 @@ import express, { Router, Request, Response } from 'express';
 import { tournamentService } from '../services/tournamentService';
 import { scheduler } from '../core/scheduler';
 import { db } from '../config/database';
-import { requireAuth } from '../middleware/auth';
+import { requestActorId, requireAuth } from '../middleware/auth';
+import { pauseTournament, resumeTournament } from '../services/matchHolds';
 import { log } from '../utils/logger';
 import type { CreateTournamentInput, UpdateTournamentInput } from '../types/tournament.types';
 import type { DbMatchRow } from '../types/database.types';
@@ -331,6 +332,32 @@ router.get('/:id/bracket', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Error fetching the public bracket', error);
     return res.status(500).json({ success: false, error: 'Failed to fetch bracket' });
+  }
+});
+
+/**
+ * GET /api/tournament/:id/pause
+ * Whether the bracket is paused (public: the bracket shows it): { pausedAt, reason, resumeAt }.
+ */
+router.get('/:id/pause', async (req: Request, res: Response) => {
+  try {
+    const tournamentId = await readableTournamentId(req.params.id);
+    if (tournamentId === null)
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
+    const row = await db.queryOneAsync<{
+      paused_at: number | null;
+      pause_reason: string | null;
+      resume_at: number | null;
+    }>('SELECT paused_at, pause_reason, resume_at FROM tournament WHERE id = ?', [tournamentId]);
+    return res.json({
+      success: true,
+      pausedAt: row?.paused_at ?? null,
+      reason: row?.pause_reason ?? null,
+      resumeAt: row?.resume_at ?? null,
+    });
+  } catch (error) {
+    log.error('Error reading the tournament pause', { error });
+    return res.status(500).json({ success: false, error: 'Could not read the pause' });
   }
 });
 
@@ -1321,6 +1348,49 @@ router.get('/server-availability', requireAuth, async (req: Request, res: Respon
       success: false,
       error: 'Failed to check server availability',
     });
+  }
+});
+
+/**
+ * POST /api/tournament/pause
+ * Pause the bracket (authenticated): { minutes?: number (until resumed
+ * without), reason?: string }. Matches being played finish; no new match is
+ * loaded or auto-started, and the walkover clocks are off.
+ */
+router.post('/pause', requireAuth, async (req: Request, res: Response) => {
+  const body = (req.body ?? {}) as { minutes?: unknown; reason?: unknown };
+  const minutes = body.minutes === undefined || body.minutes === null ? null : Number(body.minutes);
+  if (minutes !== null && !(Number.isFinite(minutes) && minutes > 0 && minutes <= 24 * 60)) {
+    return res
+      .status(400)
+      .json({ success: false, error: 'minutes: 1 to 1440, or none until resumed' });
+  }
+  const id = requestActorId(req) ?? 'admin';
+  try {
+    await pauseTournament(
+      resolveTournamentId(req),
+      { minutes, reason: typeof body.reason === 'string' ? body.reason : null },
+      { userId: id, name: id }
+    );
+    return res.json({ success: true });
+  } catch (error) {
+    log.error('Error pausing the tournament', error);
+    return res.status(500).json({ success: false, error: 'Could not pause the tournament' });
+  }
+});
+
+/**
+ * POST /api/tournament/resume
+ * Resume a paused bracket (authenticated): waiting matches go ahead, their countdowns afresh.
+ */
+router.post('/resume', requireAuth, async (req: Request, res: Response) => {
+  const id = requestActorId(req) ?? 'admin';
+  try {
+    await resumeTournament(resolveTournamentId(req), { userId: id, name: id });
+    return res.json({ success: true });
+  } catch (error) {
+    log.error('Error resuming the tournament', error);
+    return res.status(500).json({ success: false, error: 'Could not resume the tournament' });
   }
 });
 

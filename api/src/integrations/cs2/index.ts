@@ -685,6 +685,19 @@ export const cs2Integration: GameIntegration = {
     await refreshConnectionsFromServer(slug, opts);
   },
 
+  /**
+   * Held or released (services/matchHolds.ts): a match on a Ready Up server
+   * gets its config again, with the absent-team forfeit off while held and
+   * back (counting afresh) once it goes ahead.
+   */
+  async onHoldChanged(ctx) {
+    const { getAssignment, syncMatch } = await import('./fleet/driver');
+    const assignment = await getAssignment(ctx.slug);
+    if (!assignment || assignment.endedAt !== null) return;
+    const outcome = await syncMatch(ctx.slug);
+    if (!outcome.ok) throw new Error(outcome.error);
+  },
+
   /** The MatchZy Enhanced match report: fetched over RCON from the server, or passed in. */
   async syncMatchState(slug, source) {
     const { fetchMatchReport, applyMatchReport } = await import(
