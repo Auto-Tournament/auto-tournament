@@ -631,6 +631,10 @@
       "description": "How a player joins a CS2 match: its server, status and current map."
     },
     {
+      "name": "Match page",
+      "description": "A finished match's scoreboard over its maps, and its highlight clips."
+    },
+    {
       "name": "Matches",
       "description": "Create, load, restart and cancel matches; read match state."
     },
@@ -4679,6 +4683,30 @@
         ]
       }
     },
+    "/api/game/cs2/matches/{slug}/highlights": {
+      "get": {
+        "tags": [
+          "Match page"
+        ],
+        "summary": "GET /api/game/cs2/matches/:slug/highlights",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/game/cs2/matches/{slug}/maps/{map}/analysis": {
       "get": {
         "tags": [
@@ -4827,6 +4855,30 @@
           },
           {
             "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/matches/{slug}/scoreboard": {
+      "get": {
+        "tags": [
+          "Match page"
+        ],
+        "summary": "GET /api/game/cs2/matches/:slug/scoreboard",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ]
       }

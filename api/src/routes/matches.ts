@@ -1057,9 +1057,57 @@ router.get('/:slug', async (req: Request, res: Response) => {
       });
     }
 
+    // For the public match page: both teams, the winner and each map's score.
+    const row = await db.queryOneAsync<{
+      team1_id: string | null;
+      team2_id: string | null;
+      winner_id: string | null;
+      team1_name: string | null;
+      team1_tag: string | null;
+      team2_name: string | null;
+      team2_tag: string | null;
+      played_in: string | null;
+      tournament: string | null;
+    }>(
+      `SELECT m.team1_id, m.team2_id, m.winner_id, t1.name AS team1_name, t1.tag AS team1_tag,
+              t2.name AS team2_name, t2.tag AS team2_tag, m.played_in, tr.name AS tournament
+         FROM matches m
+         LEFT JOIN teams t1 ON t1.id = m.team1_id
+         LEFT JOIN teams t2 ON t2.id = m.team2_id
+         LEFT JOIN tournament tr ON tr.id = m.tournament_id
+        WHERE m.slug = ?`,
+      [slug]
+    );
+    const maps = (await getMapResults(slug)).map((r) => ({
+      mapNumber: r.mapNumber,
+      map: r.mapName ?? null,
+      team1Score: r.team1Score,
+      team2Score: r.team2Score,
+      winner: r.winnerTeam,
+    }));
+    const teamOf = (side: 'team1' | 'team2') => {
+      const id = row?.[`${side}_id`] ?? null;
+      const configTeam = (match.config as { [k: string]: { name?: string; tag?: string } } | undefined)?.[side];
+      return id || configTeam
+        ? { id, name: row?.[`${side}_name`] ?? configTeam?.name ?? null, tag: row?.[`${side}_tag`] ?? configTeam?.tag ?? null }
+        : null;
+    };
+
     return res.json({
       success: true,
-      match,
+      match: {
+        ...match,
+        team1: teamOf('team1'),
+        team2: teamOf('team2'),
+        winner:
+          row?.winner_id && row.winner_id === row.team1_id
+            ? 'team1'
+            : row?.winner_id && row.winner_id === row.team2_id
+              ? 'team2'
+              : null,
+        maps,
+        tournament: row?.tournament ?? row?.played_in ?? null,
+      },
     });
   } catch (error) {
     console.error('Error fetching match:', error);

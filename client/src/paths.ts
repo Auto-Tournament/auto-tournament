@@ -21,6 +21,8 @@ export const paths = {
 
   // Viewer and player-facing pages
   teamMatch: '/team/:teamId',
+  /** A match's own public page: the result, its maps and what the game recorded. */
+  match: '/match/:slug',
   teamProfile: '/t/team/:teamId',
   teamManage: '/t/team/:teamId/manage',
   teamJoin: '/join/team/:code',

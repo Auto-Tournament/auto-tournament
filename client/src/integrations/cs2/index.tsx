@@ -59,6 +59,7 @@ import { highlightPaths } from './highlights/data';
 import { PlayerHighlightsPage } from './highlights/PlayerHighlightsPage';
 import { TournamentHighlightsTab, TournamentReelSection } from './highlights/TournamentHighlights';
 import { WatchPage } from './highlights/WatchPage';
+import { MatchPublicPanel } from './highlights/MatchPublicPanel';
 import { DemoAnalysisPage } from './demos/DemoAnalysisPage';
 import { demoPaths } from './demos/paths';
 import { skinPaths } from './skins/paths';
@@ -107,6 +108,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     // Failover (Ready Up servers), then round backups and "restore to round
     // N" over the fleet link or RCON.
     adminMatchView: Cs2MatchAdminView,
+    // A finished match's public page: team reels, scoreboard, highlights.
+    publicView: MatchPublicPanel,
   },
 
   preMatchView: VetoInterface,
