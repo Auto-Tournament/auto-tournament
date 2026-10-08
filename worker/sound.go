@@ -19,14 +19,13 @@ const (
 	musicIntroGain = 0.32 // under the intro, which has no game sound
 	musicFadeIn    = 1.5
 	musicFadeOut   = 2.5
-	crowdGain      = 0.22
-	crowdDelay     = 0.4 // the crowd reacts this long after the kill
-	crowdLen       = 3.0
+	crowdBedGain   = 0.04 // the crowd under every clip
+	crowdGain      = 0.22 // at the height of a cheer
+	crowdDelay     = 0.4  // the crowd reacts this long after the kill
+	crowdRise      = 0.35
+	crowdHold      = 1.2
+	crowdFall      = 1.8
 )
-
-// crowdStarts are where in the crowd recording each cheer is cut from, in
-// turn: its loudest stretches, so kills in a row do not sound the same.
-var crowdStarts = []float64{8.0, 24.0, 6.5, 9.5}
 
 // partStarts is when each part of the plan starts in the reel (reelFilter's joins).
 func partStarts(p reelPlan) []float64 {
@@ -69,29 +68,37 @@ func soundFilter(p reelPlan, s reelSound, musicIn, crowdIn int, hasIntro bool) s
 		mix = append(mix, "[music]")
 	}
 	if crowdIn >= 0 {
-		var at []float64
+		// The crowd murmurs under the clips (after the intro) and swells for
+		// the kills worth it: crowdBedGain, rising to crowdGain over
+		// crowdRise, holding crowdHold, falling back over crowdFall.
 		starts := partStarts(p)
+		from := 0.0
+		if hasIntro && len(starts) > 1 {
+			from = starts[1]
+		}
+		var swells []string
 		for i, ks := range s.kills {
 			if i >= len(starts) {
 				break
 			}
 			for _, k := range ks {
-				if t := starts[i] + k + crowdDelay; t >= 0 && t < length-0.5 {
-					at = append(at, t)
+				a := starts[i] + k + crowdDelay - from
+				if a < 0 || a > length-from {
+					continue
 				}
+				e := a + crowdRise + crowdHold + crowdFall
+				swells = append(swells, fmt.Sprintf("%g*min(1,max(0,(t-%.3f)/%g))*min(1,max(0,(%.3f-t)/%g))",
+					crowdGain-crowdBedGain, a, crowdRise, e, crowdFall))
 			}
 		}
-		if len(at) > 0 {
-			fmt.Fprintf(&b, ";[%d:a]aresample=48000,aformat=channel_layouts=stereo,asplit=%d", crowdIn, len(at))
-			for i := range at {
-				fmt.Fprintf(&b, "[cs%d]", i)
-			}
-			for i, t := range at {
-				fmt.Fprintf(&b, ";[cs%d]atrim=start=%g:duration=%g,asetpts=PTS-STARTPTS,afade=t=in:d=0.3,afade=t=out:st=1.2:d=%g,volume=%g,adelay=%d:all=1[cheer%d]",
-					i, crowdStarts[i%len(crowdStarts)], crowdLen, crowdLen-1.2, crowdGain, int(math.Round(t*1000)), i)
-				mix = append(mix, fmt.Sprintf("[cheer%d]", i))
-			}
+		gain := fmt.Sprintf("%g", crowdBedGain)
+		if len(swells) > 0 {
+			gain = fmt.Sprintf("'%g+%s':eval=frame", crowdBedGain, strings.Join(swells, "+"))
 		}
+		fmt.Fprintf(&b, ";[%d:a]aresample=48000,aformat=channel_layouts=stereo,atrim=duration=%.3f,asetpts=PTS-STARTPTS,"+
+			"volume=%s,afade=t=in:d=1,afade=t=out:st=%.3f:d=2,adelay=%d:all=1[crowd]",
+			crowdIn, math.Max(0.1, length-from), gain, math.Max(0, length-from-2), int(math.Round(from*1000)))
+		mix = append(mix, "[crowd]")
 	}
 	if len(mix) == 1 {
 		b.WriteString(";[a]anull[amix]")

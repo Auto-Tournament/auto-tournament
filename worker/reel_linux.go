@@ -70,7 +70,7 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 		if musicIn >= 0 {
 			crowdIn++
 		}
-		args = append(args, "-i", sound.crowd)
+		args = append(args, "-stream_loop", "-1", "-i", sound.crowd)
 	}
 	hasIntro := intro != nil && strings.TrimSpace(intro.Title) != ""
 	filter := reelFilter(plan) + soundFilter(plan, sound, musicIn, crowdIn, hasIntro)

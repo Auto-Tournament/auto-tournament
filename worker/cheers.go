@@ -7,8 +7,8 @@ import (
 )
 
 // The crowd cheers only for kills worth it (sound.go): the third kill of a
-// quick run, a hard shot (no-scope, through smoke, in the air, blind, a
-// headshot through a wall), a flick, or the kill that finishes an ace, a 4K or a clutch.
+// quick run, a hard shot (an AWP kill, a no-scope, through a wall or smoke,
+// in the air, while flashed), a flick, or the kill that finishes an ace, a 4K or a clutch.
 const (
 	cheerRunTicks    = 10 * tickrate // three kills within this long make a run
 	cheerGapTicks    = 5 * tickrate / 2
@@ -39,8 +39,7 @@ func cheerTicks(rp *Replay, player string, m moment) []int {
 	for i, t := range kills {
 		k, known := byTick[t]
 		cheer := i >= 2 && t-kills[i-2] <= cheerRunTicks
-		// A wallbang is everyday in pro play; through a wall onto the head is not.
-		if known && (k.NoScope || k.ThroughSmoke || k.InAir || k.AttackerBlind || (k.Penetrated && k.Headshot)) {
+		if known && (k.NoScope || k.ThroughSmoke || k.InAir || k.AttackerBlind || k.Penetrated || k.Weapon == "AWP") {
 			cheer = true
 		}
 		if known && k.Headshot && flicked(rp, index, t) {

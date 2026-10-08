@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -23,19 +24,22 @@ func TestPartStartsFollowTheJoins(t *testing.T) {
 	}
 }
 
-func TestSoundFilterCheersAtKills(t *testing.T) {
+func TestSoundFilterCrowdSwellsAtCheers(t *testing.T) {
 	p := reelPlan{durations: []float64{4.4, 10, 8}, joins: []join{joinWipe, joinFade}}
 	f := soundFilter(p, reelSound{music: "m.mp3", crowd: "c.mp3", kills: [][]float64{nil, {3}, {2, 5}}}, 3, 4, true)
-	for _, want := range []string{"[3:a]aresample=48000", "[4:a]aresample=48000,aformat=channel_layouts=stereo,asplit=3",
-		"amix=inputs=5:duration=first:normalize=0[amix]", "if(lt(t,"} {
+	for _, want := range []string{"[3:a]aresample=48000", "[4:a]aresample=48000", "amix=inputs=3:duration=first:normalize=0[amix]", "if(lt(t,"} {
 		if !strings.Contains(f, want) {
 			t.Fatalf("%q missing from %s", want, f)
 		}
 	}
-	// The first cheer: part 1's kill at 3 s, crowdDelay later.
-	at := int(math.Round((partStarts(p)[1] + 3 + crowdDelay) * 1000))
-	if !strings.Contains(f, "adelay="+strconv.Itoa(at)+":all=1[cheer0]") {
-		t.Fatalf("first cheer not at %d ms: %s", at, f)
+	// The crowd starts with the first clip, and swells crowdDelay after each cheered kill.
+	starts := partStarts(p)
+	if !strings.Contains(f, "adelay="+strconv.Itoa(int(math.Round(starts[1]*1000)))+":all=1[crowd]") {
+		t.Fatalf("crowd does not start with the first clip: %s", f)
+	}
+	at := fmt.Sprintf("(t-%.3f)", starts[1]+3+crowdDelay-starts[1])
+	if !strings.Contains(f, at) || strings.Count(f, "min(1,max(0,(t-") != 3 {
+		t.Fatalf("swells not at the cheers (%s): %s", at, f)
 	}
 	if plain := soundFilter(p, reelSound{}, -1, -1, true); plain != ";[a]anull[amix]" {
 		t.Fatalf("no sound: %s", plain)
@@ -56,7 +60,7 @@ func TestCheersOnlyForImpressiveKills(t *testing.T) {
 		k(1300, nil), // plain, second of a run
 		k(1500, nil), // third within 10 s: a run
 		k(4000, func(r *ReplayKill) { r.NoScope = true }),
-		k(4050, func(r *ReplayKill) { r.Penetrated = true }), // too close to the last cheer
+		k(4050, func(r *ReplayKill) { r.Penetrated = true }), // a wallbang, but too close to the last cheer
 		k(9000, nil), // last kill, plain kind
 	}}
 	m := moment{Kind: "3k", Title: "6 kills", KillTicks: []int{1000, 1300, 1500, 4000, 4050, 9000}}
