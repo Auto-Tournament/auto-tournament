@@ -25,6 +25,7 @@
  *   GET  /api/game/cs2/watch/reel/:slug/:map/:player  a player's reel of a map
  *   GET  /api/game/cs2/watch/match/:slug/:map         a map's match reel
  *   GET  /api/game/cs2/watch/tournament/:id           a tournament's reel
+ *   GET  /api/game/cs2/watch/related                  ?match&map | ?tournament: the players on that map and more reels
  *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`, `tournament-…`), with range requests;
  *                                                     ?music=<track>&intro=<s>: a download with that track mixed in (../demos/music.ts)
  *   GET  /api/game/cs2/music                          the tracks reels play ({ tracks }), and every one there is ({ all })
@@ -43,6 +44,7 @@ import {
   failTournamentReel,
   favouriteOf,
   matchReelView,
+  watchRelated,
   recordingQueue,
   playerClips,
   playerReelView,
@@ -346,6 +348,22 @@ router.get(
     if (!reel || !reel.video)
       return res.status(404).json({ success: false, error: 'No such reel' });
     return res.json({ success: true, reel: { ...reel, tournamentId: id } });
+  })
+);
+
+router.get(
+  '/watch/related',
+  read('related reels', async (req: Request, res: Response) => {
+    const match = typeof req.query.match === 'string' && req.query.match ? req.query.match : null;
+    const map = req.query.map === undefined ? null : Number(req.query.map);
+    const tournament = req.query.tournament === undefined ? null : Number(req.query.tournament);
+    if (map !== null && !(Number.isInteger(map) && map >= 0))
+      return res.status(400).json({ success: false, error: 'A map number' });
+    if (tournament !== null && !(Number.isInteger(tournament) && tournament > 0))
+      return res.status(400).json({ success: false, error: 'A tournament id' });
+    if (!match && tournament === null)
+      return res.status(400).json({ success: false, error: 'A match or a tournament' });
+    return res.json({ success: true, ...(await watchRelated(match, map, tournament)) });
   })
 );
 

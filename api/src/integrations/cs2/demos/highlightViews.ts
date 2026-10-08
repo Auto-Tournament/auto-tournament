@@ -14,7 +14,14 @@ import { readHighlightQuality, type HighlightQuality } from './highlightQuality'
 import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
-import { HIGHLIGHTS_DIR, matchLine, reelDate, type ClipMarkers, type MatchReelClip, type ReelIntro } from './highlights';
+import {
+  HIGHLIGHTS_DIR,
+  matchLine,
+  reelDate,
+  type ClipMarkers,
+  type MatchReelClip,
+  type ReelIntro,
+} from './highlights';
 
 /** A recording that went quiet this long is handed out again. */
 const STALE_SECONDS = 30 * 60;
@@ -295,7 +302,9 @@ export const SECONDS_PER_MAP = 35;
  * the last of them is done: everything recording or waiting with a better
  * score goes first (the recorder takes the best first).
  */
-export async function recordingQueue(playerId: string): Promise<{ count: number; etaMinutes: number } | null> {
+export async function recordingQueue(
+  playerId: string
+): Promise<{ count: number; etaMinutes: number } | null> {
   const mine = await db.queryOneAsync<{ n: number | string; lowest: number | null }>(
     "SELECT COUNT(*) AS n, MIN(score) AS lowest FROM cs2_highlights WHERE player_id = ? AND status IN ('pending', 'recording')",
     [playerId]
@@ -309,7 +318,10 @@ export async function recordingQueue(playerId: string): Promise<{ count: number;
   );
   const clips = Number(ahead?.n ?? count);
   const maps = Math.max(1, Number(ahead?.maps ?? 1));
-  return { count, etaMinutes: Math.max(1, Math.ceil((clips * SECONDS_PER_CLIP + maps * SECONDS_PER_MAP) / 60)) };
+  return {
+    count,
+    etaMinutes: Math.max(1, Math.ceil((clips * SECONDS_PER_CLIP + maps * SECONDS_PER_MAP) / 60)),
+  };
 }
 
 export async function favouriteOf(playerId: string): Promise<number | null> {
@@ -363,7 +375,8 @@ export async function tournamentReel(tournamentId: number) {
     status: row.status,
     video: done ? fileUrl(row.clip_path!) : null,
     chapters,
-    duration: last && last.at !== null && lastClip?.markers ? last.at + lastClip.markers.duration : null,
+    duration:
+      last && last.at !== null && lastClip?.markers ? last.at + lastClip.markers.duration : null,
   };
 }
 
@@ -424,7 +437,9 @@ export async function tournamentHighlights(tournamentId: number) {
     matches: matches.map((m) => {
       const own = reels.filter((r) => r.match_slug === m.slug);
       // Still recording: a player's highlights are waiting, or a map's reel is.
-      const waiting = Number(m.done) < Number(m.total) || own.some((r) => r.status === 'pending' || r.status === 'recording');
+      const waiting =
+        Number(m.done) < Number(m.total) ||
+        own.some((r) => r.status === 'pending' || r.status === 'recording');
       return {
         slug: m.slug,
         team1: m.team1,
@@ -455,8 +470,116 @@ export async function playerReelView(matchSlug: string, mapNumber: number, playe
   const reels = await playerReelViews(playerId, 200);
   const reel = reels.find((r) => r.matchSlug === matchSlug && r.mapNumber === mapNumber);
   if (!reel) return null;
-  const player = await db.queryOneAsync<{ name: string | null }>('SELECT name FROM players WHERE id = ?', [playerId]);
+  const player = await db.queryOneAsync<{ name: string | null }>(
+    'SELECT name FROM players WHERE id = ?',
+    [playerId]
+  );
   return { ...reel, playerId, playerName: player?.name ?? playerId };
+}
+
+/** Someone with highlights on a map, for the watch page's players row. */
+export interface RelatedPlayer {
+  playerId: string;
+  name: string;
+  avatarUrl: string | null;
+  clips: number;
+  /** Their own reel of the map is ready. */
+  reel: boolean;
+}
+
+/** Another reel to watch next. */
+export interface RelatedReel {
+  matchSlug: string;
+  mapNumber: number;
+  map: string | null;
+  team1: string | null;
+  team2: string | null;
+  video: string;
+  clips: number | null;
+}
+
+/**
+ * What the watch page shows under a reel: the players with highlights on its
+ * map (most clips first), and more reels: the match's other maps first, then
+ * the tournament's other match reels, newest first. `tournamentId` alone (a
+ * tournament's reel) gives only the reels.
+ */
+export async function watchRelated(
+  matchSlug: string | null,
+  mapNumber: number | null,
+  tournamentId: number | null
+): Promise<{ players: RelatedPlayer[]; reels: RelatedReel[] }> {
+  let players: RelatedPlayer[] = [];
+  if (matchSlug && mapNumber !== null) {
+    const rows = await db.queryAsync<{
+      player_id: string;
+      name: string | null;
+      avatar_url: string | null;
+      clips: number | string;
+      reel: boolean;
+    }>(
+      `SELECT h.player_id, p.name, p.avatar_url, COUNT(*) AS clips,
+              EXISTS (SELECT 1 FROM cs2_highlight_reels r
+                       WHERE r.match_slug = h.match_slug AND r.map_number = h.map_number
+                         AND r.player_id = h.player_id AND r.clip_path IS NOT NULL) AS reel
+         FROM cs2_highlights h
+         LEFT JOIN players p ON p.id = h.player_id
+        WHERE h.match_slug = ? AND h.map_number = ? AND h.status = 'done' AND h.kind <> 'funny'
+        GROUP BY h.player_id, h.match_slug, h.map_number, p.name, p.avatar_url
+        ORDER BY COUNT(*) DESC, p.name`,
+      [matchSlug, mapNumber]
+    );
+    players = rows.map((r) => ({
+      playerId: r.player_id,
+      name: r.name ?? r.player_id,
+      avatarUrl: r.avatar_url,
+      clips: Number(r.clips),
+      reel: !!r.reel,
+    }));
+  }
+  let tournament = tournamentId;
+  if (tournament === null && matchSlug) {
+    const m = await db.queryOneAsync<{ tournament_id: number | null }>(
+      'SELECT tournament_id FROM matches WHERE slug = ?',
+      [matchSlug]
+    );
+    tournament =
+      m?.tournament_id === null || m?.tournament_id === undefined ? null : Number(m.tournament_id);
+  }
+  const rows = await db.queryAsync<{
+    match_slug: string;
+    map_number: number;
+    clip_path: string;
+    clips: number | null;
+    map_name: string | null;
+    team1: string | null;
+    team2: string | null;
+  }>(
+    `SELECT r.match_slug, r.map_number, r.clip_path, r.clips, j.map_name, t1.name AS team1, t2.name AS team2
+       FROM cs2_match_reels r
+       LEFT JOIN matches m ON m.slug = r.match_slug
+       LEFT JOIN cs2_demo_jobs j ON j.match_slug = r.match_slug AND j.map_number = r.map_number
+       LEFT JOIN teams t1 ON t1.id = m.team1_id
+       LEFT JOIN teams t2 ON t2.id = m.team2_id
+      WHERE r.status = 'done' AND r.clip_path IS NOT NULL
+        AND (r.match_slug = ? OR m.tournament_id = ?::integer)
+        AND NOT (r.match_slug = ? AND r.map_number = ?)
+      ORDER BY (r.match_slug = ?) DESC, r.created_at DESC, r.map_number
+      LIMIT 8`,
+    [matchSlug ?? '', tournament, matchSlug ?? '', mapNumber ?? -1, matchSlug ?? '']
+  );
+  return {
+    players,
+    reels: rows.map((r) => ({
+      matchSlug: r.match_slug,
+      mapNumber: Number(r.map_number),
+      map: r.map_name,
+      team1: r.team1,
+      team2: r.team2,
+      video: fileUrl(r.clip_path),
+      clips: r.clips === null ? null : Number(r.clips),
+    })),
+  };
 }
 
 export async function matchReelView(matchSlug: string, mapNumber: number) {
@@ -557,7 +680,9 @@ export function pickTournamentReel(candidates: ReelCandidate[]): number[] {
   of((c) => c.kind !== 'funny', REEL_MAX);
 
   const funny = chosen.filter((c) => c.kind === 'funny');
-  const rest = chosen.filter((c) => c.kind !== 'funny').sort((a, b) => a.score - b.score || a.id - b.id);
+  const rest = chosen
+    .filter((c) => c.kind !== 'funny')
+    .sort((a, b) => a.score - b.score || a.id - b.id);
   funny.forEach((c, i) => {
     const at = Math.round(((i + 1) * rest.length) / (funny.length + 1));
     rest.splice(Math.min(at, Math.max(0, rest.length - 1)), 0, c);
@@ -620,7 +745,12 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
   const byId = new Map(clips.map((c) => [c.id, c]));
   const name = clips[0]?.match.tournament ?? null;
   const { settingsService } = await import('../../../services/settingsService');
-  const span = await db.queryOneAsync<{ teams: number | string; matches: number | string; first: number | string | null; last: number | string | null }>(
+  const span = await db.queryOneAsync<{
+    teams: number | string;
+    matches: number | string;
+    first: number | string | null;
+    last: number | string | null;
+  }>(
     `SELECT (SELECT COUNT(*) FROM jsonb_array_elements_text(COALESCE(NULLIF(t.team_ids, ''), '[]')::jsonb)) AS teams,
             (SELECT COUNT(*) FROM matches m WHERE m.tournament_id = t.id AND m.status = 'completed') AS matches,
             (SELECT MIN(r.completed_at) FROM match_map_results r JOIN matches m ON m.slug = r.match_slug WHERE m.tournament_id = t.id) AS first,
@@ -635,7 +765,13 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
     intro: {
       kicker: 'Tournament highlights',
       title: name ?? 'Tournament highlights',
-      meta: [`${Number(span?.teams ?? 0)} teams`, `${Number(span?.matches ?? 0)} matches`, 'the best plays'].filter((x) => !x.startsWith('0 ')).join(' · '),
+      meta: [
+        `${Number(span?.teams ?? 0)} teams`,
+        `${Number(span?.matches ?? 0)} matches`,
+        'the best plays',
+      ]
+        .filter((x) => !x.startsWith('0 '))
+        .join(' · '),
       map: '',
       date: first && last && first !== last ? `${first} – ${last}` : first,
     },

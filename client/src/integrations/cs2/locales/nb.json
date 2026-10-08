@@ -2006,7 +2006,13 @@
       "analysis": "Kartanalyse",
       "profile": "Spillerprofil",
       "inThisReel": "I DENNE REELEN",
-      "more": "MER FRA DEM"
+      "more": "MER FRA DEM",
+      "players": "PLAYERS",
+      "moreReels": "MORE REELS",
+      "clips_one": "{{count}} clip",
+      "clips_other": "{{count}} clips",
+      "theirReel_one": "Their reel · {{count}} clip",
+      "theirReel_other": "Their reel · {{count}} clips"
     },
     "tournament": {
       "reel": "TURNERINGSREEL",

@@ -5421,6 +5421,20 @@
         ]
       }
     },
+    "/api/game/cs2/watch/related": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "GET /api/game/cs2/watch/related",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/game/cs2/watch/tournament/{id}": {
       "get": {
         "tags": [
