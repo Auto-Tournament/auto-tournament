@@ -121,6 +121,21 @@ func crowdReactions(p reelPlan, first int, reactions [][]reaction) []crowdReact 
 	return out
 }
 
+// reactionRate is how fast a reaction plays (1: as recorded): from 0.9 for
+// the biggest to 1.1 for a small one, varied by where it falls so two alike
+// do not match. Deterministic: the same reel sounds the same when made again.
+func reactionRate(r crowdReact) float64 {
+	base := 1.04
+	switch {
+	case r.score >= reactWow:
+		base = 0.93
+	case r.score >= reactCheer:
+		base = 0.98
+	}
+	jitter := math.Mod(r.at*7.31+r.from*3.17, 1) - 0.5 // -0.5 … 0.5
+	return math.Round((base+jitter*0.1)*1000) / 1000
+}
+
 // crowdSpill is how far a reaction may run into the next clip.
 const crowdSpill = 1.0
 
@@ -212,9 +227,15 @@ func reactFilter(reacts []crowdReact) string {
 	var labels []string
 	for j, r := range reacts {
 		gain, _, fall := reactionShape(r.score)
-		fall = math.Min(fall, r.length)
-		fmt.Fprintf(&b, ";[%d:a]aresample=48000,aformat=channel_layouts=stereo,asetpts=PTS-STARTPTS,afade=t=in:d=0.25,afade=t=out:st=%.3f:d=%.3f,volume=%g,adelay=%d:all=1[react%d]",
-			r.in, math.Max(0, r.length-fall), fall, gain, int(math.Round(r.at*1000)), j)
+		// Played a little faster or slower (and so higher or lower), so the
+		// same recording does not sound the same twice: bigger reactions a
+		// touch lower, like a bigger crowd.
+		rate := reactionRate(r)
+		length := r.length / rate
+		fall = math.Min(fall, length)
+		fmt.Fprintf(&b, ";[%d:a]aresample=48000,aformat=channel_layouts=stereo,asetrate=%d,aresample=48000,asetpts=PTS-STARTPTS,"+
+			"afade=t=in:d=0.25,afade=t=out:st=%.3f:d=%.3f,volume=%g,adelay=%d:all=1[react%d]",
+			r.in, int(math.Round(48000*rate)), math.Max(0, length-fall), fall, gain, int(math.Round(r.at*1000)), j)
 		labels = append(labels, fmt.Sprintf("[react%d]", j))
 	}
 	if len(labels) == 1 {

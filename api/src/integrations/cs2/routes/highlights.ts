@@ -37,6 +37,7 @@
  *   GET  /api/game/cs2/highlights/:reel/music/:track  a reel's own mix of a library track (?intro=<s>), for the player
  *   GET  /api/game/cs2/music                          the tracks reels play ({ tracks }), the whole library ({ all }), and where to find more ({ suggestions })
  *   POST /api/game/cs2/music                          admin: add a track (the audio as the body; ?title&artist&genre&source&contentId)
+ *   POST /api/game/cs2/music/from-link                admin: { url, title, artist, genre, source, contentId }: add a track the server downloads
  *   PUT  /api/game/cs2/music/:id                      admin: { title, artist, genre, source, contentId }
  *   DELETE /api/game/cs2/music/:id                    admin: remove a track
  *   GET  /api/game/cs2/music/:id/file                 admin: the track's own file
@@ -90,6 +91,7 @@ import {
   addTrack,
   allTracks,
   enabledTracks,
+  fetchTrack,
   MUSIC_MAX_BYTES,
   MusicUploadError,
   reelMusic,
@@ -619,6 +621,34 @@ router.post(
     }
   }
 );
+
+// An admin adds a track from a link to its audio file (the server downloads it).
+router.post('/music/from-link', requireAuth, async (req: Request, res: Response) => {
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const f = trackFields(body);
+  const url = typeof body.url === 'string' ? body.url.trim() : '';
+  if (!url) return res.status(400).json({ success: false, error: 'A link' });
+  try {
+    const audio = await fetchTrack(url);
+    const name = decodeURIComponent(new URL(url).pathname.split('/').pop() ?? '').replace(
+      /\.[^.]+$/,
+      ''
+    );
+    const track = await addTrack(audio, {
+      title: f.title || name.replace(/[-_]+/g, ' ').trim() || 'Untitled',
+      artist: f.artist ?? '',
+      genre: f.genre ?? '',
+      source: f.source || url,
+      contentId: f.contentId ?? false,
+    });
+    return res.json({ success: true, track });
+  } catch (error) {
+    if (error instanceof MusicUploadError)
+      return res.status(400).json({ success: false, error: error.message });
+    log.warn('[HIGHLIGHTS] music from a link failed', { error: String(error) });
+    return res.status(502).json({ success: false, error: 'Could not download that link' });
+  }
+});
 
 router.put('/music/:id', requireAuth, async (req: Request, res: Response) => {
   const f = trackFields((req.body ?? {}) as Record<string, unknown>);

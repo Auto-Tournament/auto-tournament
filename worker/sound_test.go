@@ -111,3 +111,22 @@ func TestCrowdTrackIsTheCrowdAlone(t *testing.T) {
 		t.Fatal("a reel without a crowd plan has a crowd")
 	}
 }
+
+func TestReactionsVaryInPitch(t *testing.T) {
+	a := reactionRate(crowdReact{at: 10, from: 7, score: 5})
+	b := reactionRate(crowdReact{at: 31.4, from: 24, score: 5})
+	if a == b {
+		t.Fatalf("two whoas at the same rate: %v", a)
+	}
+	for _, r := range []crowdReact{{at: 3, score: 1}, {at: 8, score: 3}, {at: 12, score: 6}, {at: 40.2, from: 9.6, score: 1.5}} {
+		if v := reactionRate(r); v < 0.87 || v > 1.1 {
+			t.Fatalf("rate %v for %+v", v, r)
+		}
+	}
+	if reactionRate(crowdReact{at: 12, score: 6}) >= reactionRate(crowdReact{at: 12, score: 1}) {
+		t.Fatal("a whoa should sit lower than a hey")
+	}
+	if f := crowdReactsFilter([]crowdReact{{in: 1, at: 9, score: 3, length: 3}}); !strings.Contains(f, "asetrate=") {
+		t.Fatalf("no rate change: %s", f)
+	}
+}

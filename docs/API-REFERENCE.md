@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 594 of them, 374 behind auth —
+Every endpoint this API serves — 595 of them, 375 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -284,6 +284,7 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 | `GET` | `/api/game/cs2/highlights/:file/music/:track` | public |
 | `GET` | `/api/game/cs2/music` | public |
 | `POST` | `/api/game/cs2/music` | admin |
+| `POST` | `/api/game/cs2/music/from-link` | admin |
 | `PUT` | `/api/game/cs2/music/:id` | admin |
 | `DELETE` | `/api/game/cs2/music/:id` | admin |
 | `GET` | `/api/game/cs2/music/:id/file` | admin |
