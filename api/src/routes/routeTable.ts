@@ -57,6 +57,7 @@ import integrationTeamRoutes from './integrationTeams';
 import experimentalRoutes from './experimental';
 import matchmakingRoutes from './matchmaking';
 import leaderboardRoutes from './leaderboard';
+import socialRoutes from './social';
 
 export interface MountedRouter {
   /** Path prefix the router is mounted under. */
@@ -130,6 +131,12 @@ const coreRoutes: MountedRouter[] = [
     router: teamStatsRoutes,
     title: 'Team stats',
     description: 'Past results and aggregates for a team. Public.',
+  },
+  {
+    prefix: '/api/social',
+    router: socialRoutes,
+    title: 'Social',
+    description: "Friends, friend requests, finding players, and the signed-in player's notifications (the bell).",
   },
   {
     prefix: '/api/leaderboard',

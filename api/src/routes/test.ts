@@ -1,3 +1,4 @@
+import { gameRowId } from '../services/gameReadiness';
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import type { PoolClient } from 'pg';
 import { requireAuth } from '../middleware/auth';
@@ -441,6 +442,19 @@ router.post('/login-player', async (req: Request, res: Response): Promise<void> 
     await playerService.getOrCreatePlayer(steamId, name);
     await playerService.updatePlayer(steamId, { isAdmin: false });
     await setGamesPromptForTest(steamId, req.body);
+    // `games`: put these games on the player's profile (matchmaking needs its game there).
+    const games = (req.body as { games?: unknown }).games;
+    if (Array.isArray(games)) {
+      for (const game of games) {
+        if (typeof game !== 'string') continue;
+        const gameId = await gameRowId(game);
+        if (gameId === null) continue;
+        await db.runAsync(
+          `INSERT INTO player_games (player_uid, game_id) SELECT uid, ? FROM players WHERE id = ? ON CONFLICT DO NOTHING`,
+          [gameId, steamId]
+        );
+      }
+    }
     // A sign-in, like the real callbacks record (admin home's "Signed in this week").
     await playerService.recordSignIn(steamId);
 

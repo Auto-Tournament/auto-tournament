@@ -251,6 +251,102 @@ router.put(
 
 /**
  * @openapi
+ * /api/matchmaking/party/invites:
+ *   post:
+ *     tags: [Matchmaking]
+ *     summary: Invite a player to your party
+ *     description: >-
+ *       Same-site JSON. Any member may invite; a solo player gets a party of
+ *       one. The invite shows in their bell and pops up on any page they have
+ *       open. The party holds at most the biggest mode, counting open invites.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { playerId: { type: string } } }
+ *     responses:
+ *       200: { description: Invited; your matchmaking state }
+ *       404: { description: No such player }
+ *       409: { description: Already in the party, or the party is full }
+ */
+router.post(
+  '/party/invites',
+  requirePlayer,
+  sameSiteJson,
+  handle('send the invite', async (req, res) => {
+    await matchmakingService.invite(me(req), req.body?.playerId);
+    return res.json({ success: true, ...(await matchmakingService.me(me(req))) });
+  })
+);
+
+/**
+ * @openapi
+ * /api/matchmaking/party/invites/{playerId}:
+ *   delete:
+ *     tags: [Matchmaking]
+ *     summary: Take back an invite to your party
+ *     parameters:
+ *       - { in: path, name: playerId, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: Taken back }
+ */
+router.delete(
+  '/party/invites/:playerId',
+  requirePlayer,
+  sameSiteJson,
+  handle('take back the invite', async (req, res) => {
+    await matchmakingService.cancelInvite(me(req), req.params.playerId);
+    return res.json({ success: true, ...(await matchmakingService.me(me(req))) });
+  })
+);
+
+/**
+ * @openapi
+ * /api/matchmaking/invites/{partyId}/accept:
+ *   post:
+ *     tags: [Matchmaking]
+ *     summary: Join the party that invited you
+ *     description: Same-site JSON. Leaves your current party first.
+ *     parameters:
+ *       - { in: path, name: partyId, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: Joined; your matchmaking state }
+ *       404: { description: The invite is gone }
+ *       409: { description: The party is searching or full, or you are answering a match }
+ */
+router.post(
+  '/invites/:partyId/accept',
+  requirePlayer,
+  sameSiteJson,
+  handle('join the party', async (req, res) => {
+    await matchmakingService.answerInvite(me(req), req.params.partyId, true);
+    return res.json({ success: true, ...(await matchmakingService.me(me(req))) });
+  })
+);
+
+/**
+ * @openapi
+ * /api/matchmaking/invites/{partyId}/decline:
+ *   post:
+ *     tags: [Matchmaking]
+ *     summary: Decline a party invite
+ *     parameters:
+ *       - { in: path, name: partyId, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: Declined }
+ *       404: { description: The invite is gone }
+ */
+router.post(
+  '/invites/:partyId/decline',
+  requirePlayer,
+  sameSiteJson,
+  handle('decline the invite', async (req, res) => {
+    await matchmakingService.answerInvite(me(req), req.params.partyId, false);
+    return res.json({ success: true });
+  })
+);
+
+/**
+ * @openapi
  * /api/matchmaking/party/leave:
  *   post:
  *     tags: [Matchmaking]

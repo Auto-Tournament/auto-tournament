@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 558 of them, 358 behind auth —
+Every endpoint this API serves — 575 of them, 359 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -593,6 +593,26 @@ Past results and aggregates for a team. Public.
 | `GET` | `/api/team/:teamId/history` | public |
 | `GET` | `/api/team/:teamId/stats` | public |
 
+### Social
+
+Friends, friend requests, finding players, and the signed-in player's notifications (the bell).
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/social/friends` | public |
+| `POST` | `/api/social/friends/requests` | public |
+| `POST` | `/api/social/friends/requests/:playerId/accept` | public |
+| `POST` | `/api/social/friends/requests/:playerId/decline` | public |
+| `DELETE` | `/api/social/friends/requests/:playerId` | public |
+| `DELETE` | `/api/social/friends/:playerId` | public |
+| `GET` | `/api/social/relation/:playerId` | public |
+| `GET` | `/api/social/people` | public |
+| `GET` | `/api/social/settings` | public |
+| `PUT` | `/api/social/settings` | public |
+| `GET` | `/api/social/notifications` | public |
+| `POST` | `/api/social/notifications/read` | public |
+| `POST` | `/api/social/news` | admin |
+
 ### Leaderboard
 
 Players ranked by their rating in one game. Public.
@@ -896,6 +916,10 @@ Parties, the queue, matches and the matchmaking leaderboard (docs/design/matchma
 | `POST` | `/api/matchmaking/party` | public |
 | `POST` | `/api/matchmaking/party/join` | public |
 | `PUT` | `/api/matchmaking/party/mode` | public |
+| `POST` | `/api/matchmaking/party/invites` | public |
+| `DELETE` | `/api/matchmaking/party/invites/:playerId` | public |
+| `POST` | `/api/matchmaking/invites/:partyId/accept` | public |
+| `POST` | `/api/matchmaking/invites/:partyId/decline` | public |
 | `POST` | `/api/matchmaking/party/leave` | public |
 | `POST` | `/api/matchmaking/queue` | public |
 | `DELETE` | `/api/matchmaking/queue` | public |

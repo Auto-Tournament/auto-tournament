@@ -15,6 +15,8 @@ const digits = (n: number) => Array.from({ length: n }, () => Math.floor(Math.ra
 
 test('a finished standalone match is in both players\' recent matches', { tag: ['@api'] }, async ({ request }) => {
   expect(await signInViaRequest(request)).toBe(true);
+  // Creating a match needs the webhook URL; don't lean on an earlier test having set it.
+  await request.put('/api/settings', { headers: getAuthHeader(), data: { webhookUrl: BASE_URL } });
   const a = `7656119${digits(10)}`;
   const b = `7656119${digits(10)}`;
   for (const [id, name] of [

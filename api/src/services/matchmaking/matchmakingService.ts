@@ -22,7 +22,9 @@ import { rating as osRating, rate as osRate } from 'openskill';
 import { DEFAULT_SIGMA, openSkillToDisplayElo } from '../../utils/ratingMath';
 import { progressionService } from './progressionService';
 import { playerConnectionService } from '../playerConnectionService';
-import { emitMatchmakingChanged, onlinePlayerCount } from '../socketService';
+import { emitMatchmakingChanged, emitSocialChanged, onlinePlayerCount } from '../socketService';
+import { notificationService } from '../notificationService';
+import { canInvite, gameName, missingForGame } from '../gameReadiness';
 import { settingsService } from '../settingsService';
 import {
   ABANDON_WINDOW_SECONDS,
@@ -89,6 +91,9 @@ interface LobbyPlayerRow {
   declined_at: number | null;
 }
 
+/** The notice of an invite to a party (one per party per player). */
+const inviteKey = (partyId: string) => `party_invite:${partyId}`;
+
 export interface MatchmakingMe {
   party: {
     id: string;
@@ -98,7 +103,13 @@ export interface MatchmakingMe {
     members: string[];
     /** The members with their names and avatars, in `members` order. */
     people: Array<{ id: string; name: string; avatarUrl: string | null }>;
+    /** Players invited who have not answered yet. */
+    invited: Array<{ id: string; name: string; avatarUrl: string | null }>;
   } | null;
+  /** Party members (or the caller alone) not set up for the game yet: the game on their profile, or its account. Searching waits for them. */
+  notReady: Array<{ id: string; name: string; missing: 'game' | 'account' }>;
+  /** Open invites to the caller from other parties, newest first. */
+  invites: Array<{ partyId: string; from: { id: string; name: string; avatarUrl: string | null }; mode: string; size: number }>;
   queue: { mode: string; queuedAt: number; status: string } | null;
   /** Players searching right now, per mode (the Play page's "in the queue"). */
   queueCounts: Record<string, number>;
@@ -200,6 +211,12 @@ export class MatchmakingService {
     );
   }
 
+  /** The game a party plays (matchmaking is CS2 today; the column is ready for more). */
+  private async partyGame(partyId: string): Promise<string> {
+    const row = await db.queryOneAsync<{ game: string | null }>('SELECT game FROM mm_parties WHERE id = ?', [partyId]);
+    return row?.game || 'cs2';
+  }
+
   private async members(partyId: string): Promise<string[]> {
     const rows = await db.queryAsync<{ player_id: string }>(
       'SELECT player_id FROM mm_party_members WHERE party_id = ? ORDER BY joined_at, player_id',
@@ -249,6 +266,12 @@ export class MatchmakingService {
         [code.trim().toUpperCase()]
       );
       if (!party) throw new MatchmakingError(404, 'party_not_found', 'No party with that invite code');
+      return this.enter(playerId, party);
+    });
+  }
+
+  /** Put the player in this party (leaving theirs): the shared half of joining by code and by invite. */
+  private async enter(playerId: string, party: PartyRow): Promise<PartyRow> {
       const current = await this.partyOf(playerId);
       if (current?.id === party.id) return party;
       if (await this.entryOf(party.id)) {
@@ -275,9 +298,113 @@ export class MatchmakingService {
           await db.runAsync('UPDATE mm_parties SET mode = ? WHERE id = ?', [party.mode, party.id]);
         }
       }
+      // An invite to this party is answered by being in it.
+      const invited = await db.queryAsync('DELETE FROM mm_party_invites WHERE party_id = ? AND to_id = ? RETURNING to_id', [party.id, playerId]);
+      if (invited.length > 0) await notificationService.answer(playerId, inviteKey(party.id), 'joined');
       await this.touchParty(party.id);
+      emitSocialChanged([playerId]);
       return party;
+  }
+
+  /**
+   * Invite a player to the caller's party (made, with the caller as leader,
+   * when they have none). Any member may invite; the party can grow to the
+   * biggest mode on the site, counting invites still open.
+   */
+  invite(playerId: string, targetId: unknown): Promise<void> {
+    return this.locked(async () => {
+      if (typeof targetId !== 'string' || !/^\d{1,20}$/.test(targetId)) {
+        throw new MatchmakingError(400, 'invalid_player', 'That is not a player');
+      }
+      if (targetId === playerId) throw new MatchmakingError(400, 'self', 'You are already in your party');
+      const target = await db.queryOneAsync<{ id: string; name: string }>('SELECT id, name FROM players WHERE id = ?', [targetId]);
+      if (!target) throw new MatchmakingError(404, 'not_found', 'No player with that id');
+      const modes = await this.enabledModes();
+      const current = await this.partyOf(playerId);
+      const game = current ? await this.partyGame(current.id) : 'cs2';
+      const allowed = await canInvite(playerId, targetId, game);
+      if (allowed === 'nobody') throw new MatchmakingError(403, 'invites_off', `${target.name} does not take party invites`);
+      if (allowed === 'friends') throw new MatchmakingError(403, 'friends_only', `${target.name} takes party invites from friends only`);
+      if (allowed === 'no_game') {
+        throw new MatchmakingError(409, 'no_game', `${target.name} has not added ${gameName(game)} to their profile`);
+      }
+      const party = current ?? (await this.newParty(playerId, modes[0] ?? '5v5'));
+      const members = await this.members(party.id);
+      if (members.includes(targetId)) throw new MatchmakingError(409, 'already_member', 'They are already in your party');
+      const open = await db.queryAsync<{ to_id: string }>('SELECT to_id FROM mm_party_invites WHERE party_id = ?', [party.id]);
+      if (open.some((r) => r.to_id === targetId)) return;
+      if (members.length + open.length >= Math.max(...modes.map((m) => TEAM_SIZE[m]))) {
+        throw new MatchmakingError(409, 'party_full', 'Your party is full, counting the invites still open');
+      }
+      await db.runAsync('INSERT INTO mm_party_invites (party_id, to_id, from_id, created_at) VALUES (?, ?, ?, ?)', [
+        party.id,
+        targetId,
+        playerId,
+        this.clock(),
+      ]);
+      const [from] = await this.people([playerId]);
+      await notificationService.notify(
+        targetId,
+        'party_invite',
+        { partyId: party.id, from, mode: party.mode, size: members.length },
+        inviteKey(party.id)
+      );
+      await this.touchParty(party.id);
+      this.touch(targetId);
+      emitSocialChanged([targetId]);
     });
+  }
+
+  /** Take back an invite (any member of the party). */
+  cancelInvite(playerId: string, targetId: unknown): Promise<void> {
+    return this.locked(async () => {
+      const party = await this.partyOf(playerId);
+      if (!party || typeof targetId !== 'string') return;
+      await db.runAsync('DELETE FROM mm_party_invites WHERE party_id = ? AND to_id = ?', [party.id, targetId]);
+      await notificationService.withdraw(targetId, inviteKey(party.id));
+      await this.touchParty(party.id);
+      this.touch(targetId);
+      emitSocialChanged([targetId]);
+    });
+  }
+
+  /** Answer an invite: join that party (leaving your own), or decline it. */
+  answerInvite(playerId: string, partyId: unknown, accept: boolean): Promise<void> {
+    return this.locked(async () => {
+      if (typeof partyId !== 'string') throw new MatchmakingError(400, 'invalid_party', 'That is not a party');
+      const invite = await db.queryOneAsync('SELECT 1 FROM mm_party_invites WHERE party_id = ? AND to_id = ?', [partyId, playerId]);
+      if (!invite) throw new MatchmakingError(404, 'invite_gone', 'That invite is gone: the party ended or took it back');
+      if (!accept) {
+        await db.runAsync('DELETE FROM mm_party_invites WHERE party_id = ? AND to_id = ?', [partyId, playerId]);
+        await notificationService.answer(playerId, inviteKey(partyId), 'declined');
+        await this.touchParty(partyId);
+        this.touch(playerId);
+        emitSocialChanged([playerId]);
+        return;
+      }
+      const party = await db.queryOneAsync<PartyRow>('SELECT id, leader_player_id, mode, invite_code FROM mm_parties WHERE id = ?', [partyId]);
+      if (!party) throw new MatchmakingError(404, 'invite_gone', 'That party has ended');
+      await this.enter(playerId, party);
+    });
+  }
+
+  private async notReady(ids: string[], game: string): Promise<MatchmakingMe['notReady']> {
+    const missing = await missingForGame(ids, game);
+    if (missing.size === 0) return [];
+    const people = await this.people([...missing.keys()]);
+    return people.map((p) => ({ id: p.id, name: p.name, missing: missing.get(p.id)! }));
+  }
+
+  /** Open invites to the player, newest first (the Play page shows them). */
+  private async invitesTo(playerId: string): Promise<Array<{ partyId: string; from: { id: string; name: string; avatarUrl: string | null }; mode: string; size: number }>> {
+    const rows = await db.queryAsync<{ party_id: string; from_id: string; mode: string; size: number | string }>(
+      `SELECT i.party_id, i.from_id, p.mode, (SELECT COUNT(*) FROM mm_party_members m WHERE m.party_id = p.id) AS size
+         FROM mm_party_invites i JOIN mm_parties p ON p.id = i.party_id
+        WHERE i.to_id = ? ORDER BY i.created_at DESC`,
+      [playerId]
+    );
+    const people = await this.people(rows.map((r) => r.from_id));
+    return rows.map((r, i) => ({ partyId: r.party_id, from: people[i], mode: r.mode, size: Number(r.size) }));
   }
 
   /** The leader picks the party's mode. Not while searching, and only a mode the party fits. */
@@ -320,6 +447,9 @@ export class MatchmakingService {
     }
     await this.touchParty(party.id);
     if (party.leader_player_id === playerId) {
+      // Players invited to a party that ends see the invite go.
+      const invited = await db.queryAsync<{ to_id: string }>('SELECT to_id FROM mm_party_invites WHERE party_id = ?', [party.id]);
+      this.touch(...invited.map((r) => r.to_id));
       await db.runAsync('DELETE FROM mm_parties WHERE id = ?', [party.id]);
     } else {
       await db.runAsync('DELETE FROM mm_queue_entries WHERE party_id = ?', [party.id]);
@@ -354,6 +484,12 @@ export class MatchmakingService {
       const members = await this.members(party.id);
       if (members.length > TEAM_SIZE[mode]) {
         throw new MatchmakingError(409, 'party_too_big', `A ${mode} party has at most ${TEAM_SIZE[mode]} players`);
+      }
+      // Everyone must be set up for the game: it on their profile, and its account linked.
+      const missing = await missingForGame(members, await this.partyGame(party.id));
+      if (missing.size > 0) {
+        const names = (await this.people([...missing.keys()])).map((p) => p.name).join(', ');
+        throw new MatchmakingError(409, 'profile_incomplete', `Finish setting up first: ${names}`);
       }
       for (const member of members) {
         const until = await this.cooldownUntil(member);
@@ -866,8 +1002,15 @@ export class MatchmakingService {
             inviteCode: party.invite_code,
             members,
             people: await this.people(members),
+            invited: await this.people(
+              (await db.queryAsync<{ to_id: string }>('SELECT to_id FROM mm_party_invites WHERE party_id = ? ORDER BY created_at', [party.id])).map(
+                (r) => r.to_id
+              )
+            ),
           }
         : null,
+      notReady: await this.notReady(party ? members : [playerId], party ? await this.partyGame(party.id) : 'cs2'),
+      invites: await this.invitesTo(playerId),
       queueCounts: await this.queueCounts(),
       queue: entry ? { mode: entry.mode, queuedAt: Number(entry.queued_at), status: entry.status } : null,
       lobby,

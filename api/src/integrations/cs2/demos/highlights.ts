@@ -21,6 +21,7 @@
  * go in the tournament reel, not in the player's or the match's reels.
  */
 
+import { notificationService } from '../../../services/notificationService';
 import fs from 'fs';
 import path from 'path';
 import { DATA_DIR } from '../../../config/dataDir';
@@ -524,7 +525,23 @@ export async function saveClip(id: number, body: NodeJS.ReadableStream, markers:
     [path.basename(file), size, markers ? JSON.stringify(markers) : null, id]
   );
   await queueMatchReelFor([id]);
+  await noticeHighlightReady(id);
   return size;
+}
+
+/** Tell the player their clip is ready (a player's own moment; reels belong to no one player). */
+async function noticeHighlightReady(id: number): Promise<void> {
+  const row = await db.queryOneAsync<{ player_id: string; title: string; kind: string; match_slug: string }>(
+    'SELECT player_id, title, kind, match_slug FROM cs2_highlights WHERE id = ?',
+    [id]
+  );
+  if (!row || !/^\d{15,20}$/.test(row.player_id)) return;
+  await notificationService.notify(
+    row.player_id,
+    'highlight',
+    { highlightId: id, title: row.title, kind: row.kind, matchSlug: row.match_slug },
+    `highlight:${id}`
+  );
 }
 
 /** The recorder could not record these moments: try again later, up to MAX_ATTEMPTS. */

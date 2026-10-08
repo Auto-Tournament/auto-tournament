@@ -1,3 +1,4 @@
+import { PartyInviteSetting } from '../components/social/PartyInviteSetting';
 import { pageTitle } from '../utils/pageTitle';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
@@ -679,6 +680,8 @@ export default function AccountConnections() {
                   })}
                 </ListPanel>
               </Section>
+
+              {!readOnly && <PartyInviteSetting />}
 
               {!gamesFirst && gamesSection}
             </Box>

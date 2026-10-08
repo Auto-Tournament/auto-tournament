@@ -46,6 +46,10 @@ export const paths = {
   play: '/play',
   playLobby: '/play/:lobbyId',
   playLeaderboard: '/play/leaderboard',
+  /** Your friends, friend requests, and adding friends. */
+  friends: '/friends',
+  /** Every notice the bell showed, with filters. */
+  notifications: '/notifications',
   me: '/me',
   meConnections: '/me/connections',
   welcomeGames: '/welcome/games',

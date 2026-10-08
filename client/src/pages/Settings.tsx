@@ -23,6 +23,7 @@ import { SiteNameCard } from '../components/settings/SiteNameCard';
 import { LicenseCard } from '../components/settings/LicenseCard';
 import { WebhooksCard } from '../components/settings/WebhooksCard';
 import { MatchmakingSettingsCard } from '../components/settings/MatchmakingSettingsCard';
+import { NewsSettingsCard } from '../components/settings/NewsSettingsCard';
 import { ExperimentalCard, type ExperimentalFeatureState } from '../components/settings/ExperimentalCard';
 import { SignInProvidersCard } from '../components/settings/SignInProvidersCard';
 import { SettingsCardHead, SettingsRow } from '../components/settings/SettingsRow';
@@ -50,6 +51,7 @@ const SECTION_CARDS: Record<string, string> = {
   webhooks: 'webhooks',
   license: 'license',
   matchmaking: 'matchmaking',
+  news: 'news',
   experimental: 'advanced',
   developer: 'advanced',
   advanced: 'advanced',
@@ -288,6 +290,9 @@ export default function Settings() {
               </SettingsCard>
               <SettingsCard cardKey="matchmaking" highlight={highlight === 'matchmaking'}>
                 <MatchmakingSettingsCard />
+              </SettingsCard>
+              <SettingsCard cardKey="news" highlight={highlight === 'news'}>
+                <NewsSettingsCard />
               </SettingsCard>
             </Stack>
 

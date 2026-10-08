@@ -272,7 +272,9 @@ export function getSchemaSQL(): string {
       discord_id_edited_at INTEGER, -- Epoch of the last explicit edit (admin or the player) that set OR cleared discord_id; NULL = only ever filled by an import. Imports never touch a row where this is set. Internal, never in a response
       uid UUID NOT NULL DEFAULT gen_random_uuid(), -- Stable account id, never regenerated. Player-owned data (player_games, ...) keys on this rather than the Steam ID, so 3.1 can have accounts without Steam
       games_prompt_dismissed_at INTEGER, -- Epoch when the player skipped or answered the "What do you play?" dialog; NULL = show it while they have no games
-      last_sign_in_at INTEGER -- Epoch of the player's last sign-in (Steam or SSO); NULL = never since this column exists. Admin-only, never in a public response
+      last_sign_in_at INTEGER, -- Epoch of the player's last sign-in (Steam or SSO); NULL = never since this column exists. Admin-only, never in a public response
+      last_seen_at INTEGER, -- Epoch the player last closed the site (their last socket left); shown to their friends only
+      party_invites_from TEXT NOT NULL DEFAULT 'everyone' -- Who may invite them to a matchmaking party: 'everyone' | 'friends' | 'nobody'
     );
 
     CREATE INDEX IF NOT EXISTS idx_players_name ON players(name);
@@ -861,6 +863,53 @@ export function getSchemaSQL(): string {
       joined_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       PRIMARY KEY (party_id, player_id)
     );
+
+    -- Friends (services/socialService.ts). A friendship is two rows, one per
+    -- side, so "my friends" is one index lookup. A request is one row until
+    -- it is accepted (both friendship rows) or declined (deleted).
+    CREATE TABLE IF NOT EXISTS friendships (
+      player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      friend_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (player_id, friend_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS friend_requests (
+      from_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      to_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (from_id, to_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_friend_requests_to ON friend_requests(to_id);
+
+    -- An invite to a matchmaking party, until it is answered or the party ends.
+    CREATE TABLE IF NOT EXISTS mm_party_invites (
+      party_id TEXT NOT NULL REFERENCES mm_parties(id) ON DELETE CASCADE,
+      to_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      from_id TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (party_id, to_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_mm_party_invites_to ON mm_party_invites(to_id);
+
+    -- The bell (services/notificationService.ts): one row per notice per
+    -- player. kind = 'party_invite' | 'friend_request' | 'friend_accepted' |
+    -- 'skin' | 'highlight' | 'tournament' | 'news'; data = its JSON. A
+    -- dedupe_key keeps a notice from being sent twice (a sweep that reruns).
+    CREATE TABLE IF NOT EXISTS notifications (
+      id SERIAL PRIMARY KEY,
+      player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      kind TEXT NOT NULL,
+      data TEXT NOT NULL DEFAULT '{}',
+      dedupe_key TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      read_at INTEGER,
+      UNIQUE (player_id, dedupe_key)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_notifications_player ON notifications(player_id, id);
 
     -- Chat (services/chatService.ts): a match's both teams and the admins,
     -- a team, a matchmaking party. channel = 'match:<slug>', 'team:<id>',

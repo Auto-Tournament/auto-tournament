@@ -37,7 +37,7 @@ test.describe.serial('matchmaking: Play page', () => {
   test('find a match, accept it, land in the match room', TAGS, async ({ page }) => {
     test.setTimeout(90_000);
     const me = steamId();
-    expect(await signInAsPlayer(page, me, 'Browser Player')).toBe(true);
+    expect(await signInAsPlayer(page, me, 'Browser Player', { games: ['cs2'] })).toBe(true);
 
     await page.goto('/play');
     await expect(page.getByTestId('nav-play')).toBeVisible();
@@ -48,7 +48,7 @@ test.describe.serial('matchmaking: Play page', () => {
     for (let i = 0; i < 9; i++) {
       const ctx = await playwrightRequest.newContext({ baseURL: BASE_URL });
       others.push(ctx);
-      expect(await signInAsPlayerViaRequest(ctx, steamId(), `Api Player ${i}`)).toBe(true);
+      expect(await signInAsPlayerViaRequest(ctx, steamId(), `Api Player ${i}`, { games: ['cs2'] })).toBe(true);
       expect((await ctx.post('/api/matchmaking/queue', { data: { mode: '5v5' } })).ok()).toBe(true);
     }
 
@@ -77,7 +77,7 @@ test.describe.serial('matchmaking: Play page', () => {
   });
 
   test('the queue bar stops a search', TAGS, async ({ page }) => {
-    expect(await signInAsPlayer(page, steamId(), 'Stopper')).toBe(true);
+    expect(await signInAsPlayer(page, steamId(), 'Stopper', { games: ['cs2'] })).toBe(true);
     await page.goto('/play');
     await page.getByTestId('mm-find').click();
     await expect(page.getByTestId('mm-queue-bar')).toBeVisible();
