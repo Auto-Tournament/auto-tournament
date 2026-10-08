@@ -455,7 +455,7 @@ func (r *cardRender) drawMoved(move float64) {
 }
 
 // cardSettledOpacity is how opaque the small card is once it has moved down.
-const cardSettledOpacity = 0.5
+const cardSettledOpacity = 0.85
 
 // smooth is the drafts' cubic-bezier(.2,.8,.2,1): quick out of the start, a long soft landing.
 func smooth(t float64) float64 {

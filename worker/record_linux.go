@@ -109,6 +109,8 @@ type recorder struct {
 	// them the recorder draws its own kill feed and turns CS2's off; without
 	// (an export that failed), CS2's kill feed stays.
 	icons *iconSet
+	// rate is how many frames a second gamescope's stream gives (captureSpeeds).
+	rate captureRate
 }
 
 // look is what CS2 plays the demo with: with the recorder's own kill feed,
@@ -335,21 +337,11 @@ func audioLatency() float64 {
 // lead is how much is played before a moment, for the view to settle.
 const lead = tickrate
 
-// How the picture is slowed while it is captured: the whole moment at
-// mainScale (~130 frames per game second), and from the last kill on, where
-// the clip slows down, again at slowScale (~260) so the slow motion has a real
-// frame for every frame it shows.
-const (
-	mainScale     = 0.2
-	slowScale     = 0.1
-	slowBeforeSec = 0.25
-)
-
-// capturePicture plays ticks [from, to] at scale and returns each captured
-// frame's tick and the raw file holding them.
-func (r *recorder) capturePicture(g *game, name string, from, to int, scale float64, raw string) ([]float64, error) {
+// capturePicture plays from `from` through the phases and returns each
+// captured frame's tick and the raw file holding them.
+func (r *recorder) capturePicture(g *game, name string, from int, phases []playPhase, raw string) ([]float64, error) {
 	var vc *videoCapture
-	s, err := g.play(from, to, scale, name, func() (err error) {
+	spans, err := g.playPhases(from, phases, name, func() (err error) {
 		vc, err = startVideoCapture(g.node, raw, g.width, g.height)
 		return err
 	})
@@ -359,7 +351,20 @@ func (r *recorder) capturePicture(g *game, name string, from, to int, scale floa
 	if err != nil {
 		return nil, err
 	}
-	return frameTicks(vc.frameTimes(), s), nil
+	times := vc.frameTimes()
+	for _, s := range spans {
+		n := 0
+		for _, t := range times {
+			if !t.Before(s.resumed) && !t.After(s.paused) {
+				n++
+			}
+		}
+		if wall := s.paused.Sub(s.resumed).Seconds(); wall > 2 {
+			r.rate.observe(float64(n) / wall)
+			log.Printf("captured %d frames at %gx in %.1f s: %.1f a second, %.0f per game second", n, s.scale, wall, float64(n)/wall, float64(n)/wall/s.scale)
+		}
+	}
+	return spanTicks(times, spans), nil
 }
 
 func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, out string) (clipMarkers, error) {
@@ -427,35 +432,24 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 // down (and again slower around the slow motion, for the last stretch), the
 // sound at real speed, and the edit.
 func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name string, w window, prior []feedKill, prefix, out string) ([]segment, []feedKill, error) {
-	main := prefix + "-main.yuv"
-	mainTicks, err := r.capturePicture(g, name, w.from-lead, w.to, mainScale, main)
+	// The picture in one pass: slowed under the caption card's opening and for the slow motion.
+	introEnd := 0
+	if card != nil && !card.settled {
+		// The opening plays slowed down under the caption card: a frame for each of its frames.
+		hold, up := introGame()
+		introEnd = min(w.from+int(math.Ceil((hold+up)*tickrate))+4, w.to)
+	}
+	slowFrom := -1
+	if w.slowmo >= 0 {
+		slowFrom = w.slowmo - int(slowBeforeSec*tickrate)
+	}
+	main := prefix + "-picture.yuv"
+	mainTicks, err := r.capturePicture(g, name, w.from-lead, picturePhases(w, introEnd, slowFrom, speedsFor(r.rate.fps)), main)
 	if err != nil {
 		return nil, nil, fmt.Errorf("picture: %w", err)
 	}
 	sources := [][]float64{mainTicks}
 	raws := []string{main}
-	if card != nil && !card.settled {
-		// The opening plays slowed down under the caption card: a frame for each of its frames.
-		hold, up := introGame()
-		introEnd := w.from + int(math.Ceil((hold+up)*tickrate)) + 4
-		if introEnd > w.to {
-			introEnd = w.to
-		}
-		intro := prefix + "-intro.yuv"
-		introTicks, err := r.capturePicture(g, name, w.from-lead/2, introEnd, slowScale, intro)
-		if err != nil {
-			return nil, nil, fmt.Errorf("slowed opening: %w", err)
-		}
-		sources, raws = append(sources, introTicks), append(raws, intro)
-	}
-	if w.slowmo >= 0 {
-		slow := prefix + "-slow.yuv"
-		slowTicks, err := r.capturePicture(g, name, w.slowmo-int(slowBeforeSec*tickrate)-lead/2, w.to, slowScale, slow)
-		if err != nil {
-			return nil, nil, fmt.Errorf("slow motion: %w", err)
-		}
-		sources, raws = append(sources, slowTicks), append(raws, slow)
-	}
 
 	// The sound, at real speed.
 	wav := prefix + "-audio.wav"
@@ -949,6 +943,8 @@ func newRecorder(c *client) (*recorder, error) {
 	r := &recorder{client: c, gameDir: gameDir, sniper: env("AT_SNIPER_RUN", ""),
 		scratch: env("AT_RECORD_DIR", os.TempDir()), width: w, height: h,
 		encoder: env("AT_ENCODER", pickEncoder()), sink: defaultSink()}
+	// Until the first pass measures it: what gamescope streamed on the recorder VM (2026-10-08).
+	r.rate.fps = float64(envPositive("AT_CAPTURE_FPS", 30))
 	r.logo = filepath.Join(r.scratch, "at-watermark.png")
 	if err := os.WriteFile(r.logo, watermarkPNG, 0o644); err != nil {
 		return nil, err

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"math"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -114,5 +116,57 @@ func TestSeekLanded(t *testing.T) {
 		if got := seekLanded(c.tick, c.target); got != c.want {
 			t.Errorf("seekLanded(%d, %d) = %v, want %v", c.tick, c.target, got, c.want)
 		}
+	}
+}
+
+func TestPicturePhases(t *testing.T) {
+	w := window{from: 1000, to: 1400, slowmo: 1300}
+	sp := captureSpeeds{main: 0.2, slow: 0.1}
+	// Opening slowed, full speed, slow motion to the end.
+	got := picturePhases(w, 1100, 1284, sp)
+	want := []playPhase{{1000 - phaseMargin, sp.main}, {1100, sp.slow}, {1284 - phaseMargin, sp.main}, {1400, sp.slow}}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	// The slow motion starts inside the opening: one slowed stretch.
+	if got := picturePhases(w, 1300, 1284, sp); !reflect.DeepEqual(got, []playPhase{{1000 - phaseMargin, sp.main}, {1400, sp.slow}}) {
+		t.Fatalf("overlapping: %v", got)
+	}
+	// A later piece, no slow motion: one phase at full speed.
+	if got := picturePhases(window{from: 1000, to: 1400, slowmo: -1}, 0, -1, sp); !reflect.DeepEqual(got, []playPhase{{1400, sp.main}}) {
+		t.Fatalf("plain: %v", got)
+	}
+}
+
+func TestSpanTicks(t *testing.T) {
+	t0 := time.Unix(1000, 0)
+	a := span{fromTick: 0, toTick: 64, resumed: t0, paused: t0.Add(5 * time.Second), scale: 0.2}
+	b := span{fromTick: 64, toTick: 96, resumed: t0.Add(6 * time.Second), paused: t0.Add(11 * time.Second), scale: 0.1}
+	times := []time.Time{t0.Add(time.Second), t0.Add(5500 * time.Millisecond), t0.Add(8 * time.Second)}
+	got := spanTicks(times, []span{a, b})
+	if got[0] < 0 || got[0] > 64 || got[1] != -1 || got[2] < 64 || got[2] > 96 {
+		t.Fatalf("ticks %v", got)
+	}
+}
+
+func TestSpeedsFor(t *testing.T) {
+	// 34 frames a second: full speed needs outputFPS per game second, the
+	// slow motion twice that (slowmoSpeed 0.5).
+	sp := speedsFor(34)
+	if want := math.Floor(34/(outputFPS*captureHeadroom)*100) / 100; sp.main != want {
+		t.Fatalf("main %v, want %v", sp.main, want)
+	}
+	if sp.slow >= sp.main || sp.slow < sp.main/2-0.011 {
+		t.Fatalf("slow %v against main %v", sp.slow, sp.main)
+	}
+	var c captureRate
+	c.fps = 30
+	c.observe(20)
+	if c.fps != 20 {
+		t.Fatalf("a drop counts at once: %v", c.fps)
+	}
+	c.observe(40)
+	if c.fps <= 20 || c.fps >= 40 {
+		t.Fatalf("a rise counts slowly: %v", c.fps)
 	}
 }

@@ -7,9 +7,10 @@ package main
 // demo over CS2's console port (-netconport). CS2 has no frame dump of its
 // own (`startmovie` is gone), so a moment is captured live, twice:
 //
-//   - the picture slowed down (demo_timescale): gamescope's stream gives ~25-30
-//     frames a second whatever the settings, so at 0.2 that is ~130 frames
-//     per second of game, and around the slow motion at 0.05 ~500;
+//   - the picture slowed down (demo_timescale), in one pass per window that
+//     slows further for the caption card's opening and the slow motion:
+//     gamescope's stream gives ~30 frames a second whatever CS2 draws, so the
+//     speeds follow from the frames the clip needs (captureSpeeds);
 //   - the sound at real speed, from the audio sink CS2 plays into.
 //
 // Which frame shows which tick: the console says where the demo resumed and
@@ -26,6 +27,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net"
 	"os"
 	"os/exec"
@@ -359,71 +361,99 @@ func (g *game) resume() (string, time.Time, error) {
 // span are the analyzer's: CS2's console counts from the demo's first tick
 // (g.startTick), its seek (demo_gototick) does not.
 func (g *game) play(from, to int, scale float64, name string, started func() error) (span, error) {
-	s := span{scale: scale}
+	spans, err := g.playPhases(from, []playPhase{{to, scale}}, name, started)
+	if len(spans) == 0 {
+		return span{scale: scale}, err
+	}
+	return spans[0], err
+}
+
+// playPhases plays from `from` through each phase in turn without seeking
+// again: between phases the demo pauses, changes speed and resumes, which
+// costs a fraction of a second where a new pass costs a seek and a settle.
+// Each phase is a span of its own (a steady rate between resume and pause).
+func (g *game) playPhases(from int, phases []playPhase, name string, started func() error) ([]span, error) {
 	if from < 0 {
 		from = 0
 	}
 	// At its end the demo stops by itself and says nothing: stay clear of it.
-	if g.lastTick > 0 && to > g.lastTick-endMargin {
-		to = g.lastTick - endMargin
+	for i := range phases {
+		if g.lastTick > 0 && phases[i].to > g.lastTick-endMargin {
+			phases[i].to = g.lastTick - endMargin
+		}
 	}
 	// A seek plays on by itself once it lands: seek, let it land, then pause.
 	if err := g.con.send("host_timescale 1", "host_framerate 0", "fps_max 0",
-		fmt.Sprintf("demo_timescale %g", scale), fmt.Sprintf("demo_gototick %d", from)); err != nil {
-		return s, err
+		fmt.Sprintf("demo_timescale %g", phases[0].scale), fmt.Sprintf("demo_gototick %d", from)); err != nil {
+		return nil, err
 	}
 	// A seek far into the demo (round 19 straight after loading) takes CS2
 	// longer than a few seconds: wait until it has landed near `from`.
 	seekStart := time.Now()
 	if err := g.awaitSeek(from); err != nil {
-		return s, err
+		return nil, err
 	}
 	seekTook := time.Since(seekStart)
 	// A seek drops the spectated player, and CS2 ignores spec_player while the
 	// seek still loads: ask once it has landed, again once paused, and again
 	// just after resuming (the run-up before the moment covers the switch).
 	if err := g.spectate(name); err != nil {
-		return s, err
+		return nil, err
 	}
 	time.Sleep(500 * time.Millisecond)
 	if err := g.pause(); err != nil {
-		return s, err
+		return nil, err
 	}
 	if err := g.spectate(name); err != nil {
-		return s, err
+		return nil, err
 	}
 	// The capture starts (and links up) while the view settles.
 	settle := time.Now()
 	if err := started(); err != nil {
-		return s, err
+		return nil, err
 	}
 	time.Sleep(time.Duration(frameSettleMs)*time.Millisecond - time.Since(settle))
-	v, at, err := g.resume()
-	if err != nil {
-		return s, err
+	var spans []span
+	for i, ph := range phases {
+		if i > 0 {
+			if err := g.con.send(fmt.Sprintf("demo_timescale %g", ph.scale)); err != nil {
+				return spans, err
+			}
+		}
+		v, at, err := g.resume()
+		if err != nil {
+			return spans, err
+		}
+		if i == 0 {
+			_ = g.spectate(name)
+		}
+		tick, _ := strconv.Atoi(v)
+		s := span{scale: ph.scale, fromTick: tick - g.startTick, resumed: at}
+		gameSeconds := float64(ph.to-s.fromTick) / tickrate
+		wall := gameSeconds/ph.scale + 0.3
+		if i < len(phases)-1 {
+			// Pause on time rather than late: the next phase picks up wherever this one stops.
+			wall = math.Max(0, gameSeconds/ph.scale)
+		}
+		log.Printf("playing ticks %d → %d at %gx (%.1f s; seek %.1f s, ready %.1f s)", s.fromTick, ph.to, ph.scale, wall,
+			seekTook.Seconds(), time.Since(seekStart).Seconds())
+		if gameSeconds > 60 || gameSeconds < -float64(tickrate) {
+			return spans, fmt.Errorf("resumed at tick %d, too far from %d", s.fromTick, ph.to)
+		}
+		time.Sleep(time.Duration(wall * float64(time.Second)))
+		g.con.drain()
+		if err := g.con.send("demo_pause"); err != nil {
+			return spans, err
+		}
+		v, at, err = g.con.expect(rePaused, 10*time.Second)
+		if err != nil {
+			return spans, fmt.Errorf("pausing after the moment: %w", err)
+		}
+		tick, _ = strconv.Atoi(v)
+		s.toTick, s.paused = tick-g.startTick, at
+		spans = append(spans, s)
 	}
-	_ = g.spectate(name)
-	tick, _ := strconv.Atoi(v)
-	s.fromTick, s.resumed = tick-g.startTick, at
-	gameSeconds := float64(to-s.fromTick) / tickrate
-	wall := gameSeconds/scale + 0.3
-	log.Printf("playing ticks %d → %d at %gx (%.1f s; seek %.1f s, ready %.1f s)", s.fromTick, to, scale, wall,
-		seekTook.Seconds(), time.Since(seekStart).Seconds())
-	if gameSeconds > 60 || gameSeconds < 0 {
-		return s, fmt.Errorf("resumed at tick %d, too far from %d", s.fromTick, to)
-	}
-	time.Sleep(time.Duration(wall * float64(time.Second)))
-	g.con.drain()
-	if err := g.con.send("demo_pause"); err != nil {
-		return s, err
-	}
-	v, at, err = g.con.expect(rePaused, 10*time.Second)
-	if err != nil {
-		return s, fmt.Errorf("pausing after the moment: %w", err)
-	}
-	tick, _ = strconv.Atoi(v)
-	s.toTick, s.paused = tick-g.startTick, at
-	return s, nil
+	return spans, nil
 }
 
 // videoCapture records the gamescope stream as raw I420 frames to a file,
