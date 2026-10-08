@@ -966,27 +966,6 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           slotProps={{ paper: { sx: { maxHeight: 420, minWidth: 260, maxWidth: 360 } } }}
           data-testid="highlight-music-menu"
         >
-          <Box
-            sx={{ px: 2, pt: 1, pb: 1.5, display: 'flex', alignItems: 'center', gap: 1.5 }}
-            onKeyDown={(e) => e.stopPropagation()}
-          >
-            <Typography variant="caption" color="text.secondary" sx={{ flex: 'none' }}>
-              {t('videoHighlights.player.musicLevel')}
-            </Typography>
-            <Slider
-              size="small"
-              min={0}
-              max={MIX_HEADROOM}
-              step={0.05}
-              value={musicLevel}
-              onChange={(_, v) => setMusicLevel(v as number)}
-              onChangeCommitted={(_, v) => store(MUSIC_LEVEL, String(v))}
-              aria-label={t('videoHighlights.player.musicLevel')}
-              valueLabelDisplay="auto"
-              valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
-              data-testid="highlight-music-level"
-            />
-          </Box>
           <MenuItem selected={!song} onClick={() => chooseTrack(null)}>
             <ListItemIcon>{!song && <CheckIcon size={16} />}</ListItemIcon>
             <ListItemText primary={t('videoHighlights.player.noMusic')} />
@@ -1020,6 +999,40 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
               </MenuItem>
             )),
           ])}
+          <Box
+            sx={{
+              px: 2,
+              py: 1.25,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              // Always in view, under the list (the menu opens scrolled to the song playing).
+              position: 'sticky',
+              bottom: 0,
+              zIndex: 2,
+              bgcolor: 'background.paper',
+              borderTop: 1,
+              borderColor: 'divider',
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <Typography variant="caption" color="text.secondary" sx={{ flex: 'none' }}>
+              {t('videoHighlights.player.musicLevel')}
+            </Typography>
+            <Slider
+              size="small"
+              min={0}
+              max={MIX_HEADROOM}
+              step={0.05}
+              value={musicLevel}
+              onChange={(_, v) => setMusicLevel(v as number)}
+              onChangeCommitted={(_, v) => store(MUSIC_LEVEL, String(v))}
+              aria-label={t('videoHighlights.player.musicLevel')}
+              valueLabelDisplay="auto"
+              valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
+              data-testid="highlight-music-level"
+            />
+          </Box>
         </Menu>
 
         <Menu
