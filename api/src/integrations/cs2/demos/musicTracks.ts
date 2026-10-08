@@ -743,4 +743,15 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
     contentId: false,
     gainDb: 4.5,
   },
+  {
+    id: '514615',
+    title: 'Aggressive Brazilian Phonk 3',
+    artist: 'AbsoluteSound',
+    genre: 'phonk',
+    page: 'https://pixabay.com/music/phonk-aggressive-brazilian-phonk-3-514615/',
+    audio: 'https://cdn.pixabay.com/download/audio/2026/04/11/audio_3059ca30d8.mp3',
+    seconds: 96,
+    contentId: true,
+    gainDb: -6.5,
+  },
 ];
