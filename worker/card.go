@@ -60,8 +60,8 @@ type captionCard struct {
 // The card's timing, in seconds of the clip. The clip plays slowed down while
 // the card is up and speeds back up to full speed as it leaves (cardExit).
 const (
-	cardSec  = 3.0
-	cardExit = 2.2 // a second shorter than the first drafts (2026-10-08)
+	cardSec  = 2.8
+	cardExit = 2.0 // the card's 2 seconds (2026-10-08; it was 3.2)
 	// cardMove is when the card starts down to the bottom; it is there by cardMove+0.6.
 	cardMove = cardExit + 0.1
 )
