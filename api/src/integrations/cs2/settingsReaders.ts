@@ -8,6 +8,7 @@
  * read simulation mode too.
  */
 
+import { highlightQuality } from './demos/highlightQuality';
 import { settingsService } from '../../services/settingsService';
 import type { Cs2SettingKey } from './settings';
 
@@ -393,5 +394,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     highlightsWatermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
     // Clips per player per map: 6 unless set.
     highlightsPerPlayer: Number(await settingsService.getSetting('highlights_per_player')) || 6,
+    // The recorder's video size and frame rate: 1080p60 unless set.
+    ...(await highlightQuality()),
   };
 }

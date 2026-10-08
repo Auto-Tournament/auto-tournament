@@ -10,6 +10,7 @@
  * tags and joins them like a match reel).
  */
 
+import { readHighlightQuality, type HighlightQuality } from './highlightQuality';
 import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
@@ -561,6 +562,7 @@ export interface TournamentReelJob {
   tournamentId: number;
   match: string;
   watermark: boolean;
+  quality: HighlightQuality;
   clips: MatchReelClip[];
   /** Where the recorder sends the reel, and where it says it could not. */
   upload: string;
@@ -613,6 +615,7 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
     tournamentId,
     match: name ?? '',
     watermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
+    quality: await readHighlightQuality(),
     clips: ids.map((id) => {
       const c = byId.get(id)!;
       return {
