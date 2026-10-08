@@ -31,7 +31,7 @@ var (
 	// nvencPreset is NVENC's speed/quality trade (p1 fastest … p7 best;
 	// AT_NVENC_PRESET): the rate control holds the quality (-cq), so the
 	// fastest costs file size, not looks.
-	nvencPreset = env("AT_NVENC_PRESET", "p1")
+	nvencPreset = env("AT_NVENC_PRESET", "p7")
 )
 
 // outputSize is a clip's width and height (16:9 at outputHeight).
@@ -316,9 +316,16 @@ const reelCrossfade = 0.4
 // people watch is 1080p60, about half the size of the H.265 1440p120 one.
 // H.265 stays available with AT_ENCODER=hevc_nvenc or libx265.
 func encodeArgs(encoder string) []string {
-	args := []string{"-c:v", encoder, "-r", fmt.Sprint(outputFPS), "-g", fmt.Sprint(2 * outputFPS),
-		"-s", fmt.Sprintf("%dx%d", outputHeight*16/9, outputHeight), "-sws_flags", "lanczos"}
+	args := []string{"-c:v", encoder, "-r", fmt.Sprint(outputFPS), "-g", fmt.Sprint(2 * outputFPS)}
+	if encoder != "h264_vaapi" { // VAAPI's frames are scaled before they go up to the GPU (hwEncode)
+		args = append(args, "-s", fmt.Sprintf("%dx%d", outputHeight*16/9, outputHeight), "-sws_flags", "lanczos")
+	}
 	switch encoder {
+	case "h264_vaapi":
+		// AMD and Intel: quality-defined VBR with the same ceiling as NVENC.
+		rate := maxBitrate()
+		args = append(args, "-rc_mode", "QVBR", "-global_quality", env("AT_VAAPI_QUALITY", "18"), "-b:v", fmt.Sprintf("%dM", rate),
+			"-maxrate", fmt.Sprintf("%dM", rate), "-bufsize", fmt.Sprintf("%dM", 2*rate), "-profile:v", "high")
 	case "libx265":
 		args = append(args, "-preset", "fast", "-crf", "24", "-tag:v", "hvc1", "-x265-params", "log-level=error")
 	case "hevc_nvenc":
@@ -326,10 +333,46 @@ func encodeArgs(encoder string) []string {
 	case "libx264":
 		args = append(args, "-preset", "fast", "-crf", "21", "-profile:v", "high", "-pix_fmt", "yuv420p")
 	default: // h264_nvenc
-		args = append(args, "-preset", nvencPreset, "-tune", "hq", "-rc", "vbr", "-cq", "23", "-b:v", "0",
-			"-maxrate", "16M", "-bufsize", "32M", "-profile:v", "high", "-pix_fmt", "yuv420p")
+		// The ceiling grows with the pixels a second: 16 Mbit/s was set for
+		// 1080p60, and 1440p120 (3.6 times the pixels) came out blocky at it.
+		rate := maxBitrate()
+		args = append(args, "-preset", nvencPreset, "-tune", "hq", "-rc", "vbr", "-cq", "17", "-b:v", "0",
+			"-maxrate", fmt.Sprintf("%dM", rate), "-bufsize", fmt.Sprintf("%dM", 2*rate), "-profile:v", "high", "-level", "5.2", "-pix_fmt", "yuv420p")
 	}
 	return append(args, "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2")
+}
+
+// vaapiDevice is the render node VAAPI encodes on (AT_VAAPI_DEVICE).
+var vaapiDevice = env("AT_VAAPI_DEVICE", "/dev/dri/renderD128")
+
+// hwEncode fits an ffmpeg command line to its encoder. For VAAPI it opens
+// the GPU and sends each video output ([v], [clean]) through a scale to the
+// output size and up to the GPU; other encoders take the frames as they are.
+func hwEncode(args []string, encoder string) []string {
+	if encoder != "h264_vaapi" {
+		return args
+	}
+	out := []string{"-init_hw_device", "vaapi=va:" + vaapiDevice, "-filter_hw_device", "va"}
+	fc := -1
+	var up []string
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if a == "-filter_complex" && i+1 < len(args) {
+			fc = len(out) + 1
+		}
+		if a == "-map" && i+1 < len(args) && (args[i+1] == "[v]" || args[i+1] == "[clean]") {
+			label := strings.Trim(args[i+1], "[]")
+			up = append(up, fmt.Sprintf("[%s]scale=%d:%d:flags=lanczos,format=nv12,hwupload[%s_hw]", label, outputHeight*16/9, outputHeight, label))
+			out = append(out, a, "["+label+"_hw]")
+			i++
+			continue
+		}
+		out = append(out, a)
+	}
+	if fc >= 0 && len(up) > 0 {
+		out[fc] += ";" + strings.Join(up, ";")
+	}
+	return out
 }
 
 // The card's entrance (card.go): the game behind it goes out of focus as the
@@ -372,4 +415,14 @@ func focusFilter(in, out string, at []float64, width int) string {
 		last = next
 	}
 	return b.String()
+}
+
+// maxBitrate is the H.264 ceiling (Mbit/s) for the clip's size and frame
+// rate: 24 at 1080p60, scaled by the pixels a second (85 at 1440p120), at
+// most 150. Quality over size: the clips are shared and shown on big
+// screens, and the GPU's encoder is nowhere near the bottleneck.
+func maxBitrate() int {
+	w, h := outputSize()
+	scale := float64(w*h) * outputFPS / (1920 * 1080 * 60)
+	return int(math.Min(150, math.Max(24, math.Round(24*scale))))
 }

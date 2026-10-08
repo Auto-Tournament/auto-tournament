@@ -204,6 +204,10 @@ func TestWavSeconds(t *testing.T) {
 }
 
 func TestTimelineBlendsBetweenFrames(t *testing.T) {
+	// Blending is off unless asked for (AT_BLEND=1).
+	was := blendEdge
+	blendEdge = 0.12
+	defer func() { blendEdge = was }()
 	// 1.5 captured frames per frame wanted: every other output frame falls
 	// halfway between two captured ones and blends them.
 	var ticks []float64
@@ -286,5 +290,21 @@ func TestDropRepeats(t *testing.T) {
 	}
 	if ticks[2] != -1 || ticks[4] != -1 || ticks[5] != -1 || ticks[3] != 3 || ticks[6] != 6 {
 		t.Fatalf("ticks %v", ticks)
+	}
+}
+
+func TestTimelinePicksNearestByDefault(t *testing.T) {
+	var ticks []float64
+	for i := 0; i < 400; i++ {
+		ticks = append(ticks, float64(i)*tickrate/(1.5*outputFPS))
+	}
+	frames, err := timeline([][]float64{ticks}, []segment{{From: 0, To: 2, Speed: 1}}, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range frames {
+		if f.next >= 0 {
+			t.Fatalf("blended %+v", f)
+		}
 	}
 }

@@ -194,7 +194,7 @@ func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error
 	}
 	setRecordingVideo(r.width, r.height)
 	w, h := strconv.Itoa(r.width), strconv.Itoa(r.height)
-	args := []string{"--backend", "headless", "-W", w, "-H", h, "-w", w, "-h", h, "-r", "120", "--"}
+	args := []string{"--backend", "headless", "-W", w, "-H", h, "-w", w, "-h", h, "-r", strconv.Itoa(envPositive("AT_GAMESCOPE_HZ", 120)), "--"}
 	if r.sniper != "" {
 		args = append(args, r.sniper, "--")
 	}
@@ -410,14 +410,18 @@ func (g *game) playPhases(from int, phases []playPhase, name string, started fun
 	}
 	seekTook := time.Since(seekStart)
 	// A seek drops the spectated player, and CS2 ignores spec_player while the
-	// seek still loads: ask once it has landed, again once paused, and again
+	// seek still loads: ask once it has landed, again a moment later, and again
 	// just after resuming (the run-up before the moment covers the switch).
 	if err := g.spectate(name); err != nil {
 		return nil, err
 	}
 	time.Sleep(500 * time.Millisecond)
-	if err := g.pause(); err != nil {
-		return nil, err
+	// awaitSeek left it paused: pausing again got no answer and waited out
+	// pause's 2 s timeout on every pass (AT_REPAUSE=1 for the old way).
+	if env("AT_REPAUSE", "") == "1" {
+		if err := g.pause(); err != nil {
+			return nil, err
+		}
 	}
 	if err := g.spectate(name); err != nil {
 		return nil, err

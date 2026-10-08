@@ -123,7 +123,17 @@ type frameRef struct {
 
 // blendEdge is how close to a frame the wanted moment must be to show that
 // frame alone (a blend that close is no different, and costs a second read).
-const blendEdge = 0.12
+//
+// Off (0.5: always the nearest frame): with the capture's frames evenly
+// spaced (CS2 held under the stream's rate) picking is smooth, and blending
+// frames a 26th of a second apart showed as ghosting (2026-10-09).
+// AT_BLEND=1 turns it back on.
+var blendEdge = func() float64 {
+	if env("AT_BLEND", "") == "1" {
+		return 0.12
+	}
+	return 0.5
+}()
 
 // maxGapTicks is how far from the wanted moment a frame may be before the
 // clip has a hole there (5 ticks: 78 ms, a frame shown a little longer). At
@@ -286,8 +296,9 @@ type captureSpeeds struct{ main, slow float64 }
 // output frame rate): CS2 still has to draw every tick it skips past.
 const maxCaptureSpeed = 4.0
 
-// captureHeadroom is the spare frames on top of what the clip shows.
-const captureHeadroom = 1.15
+// captureHeadroom is the spare frames on top of what the clip shows
+// (AT_CAPTURE_HEADROOM, in percent, overrides it).
+var captureHeadroom = 1 + float64(envPositive("AT_CAPTURE_HEADROOM", 15))/100
 
 // speedsFor is the capture speeds for a stream of `rate` frames a second.
 func speedsFor(rate float64) captureSpeeds {

@@ -741,7 +741,7 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		args = append(append(args, encodeArgs(r.encoder)...), frameCount...)
 		args = append(args, "-movflags", "+faststart", out)
 	}
-	cmd := exec.Command("ffmpeg", args...)
+	cmd := exec.Command("ffmpeg", hwEncode(args, r.encoder)...)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return err
@@ -1416,6 +1416,12 @@ func pickEncoder() string {
 		reason := strings.TrimSpace(string(out))
 		if i := strings.IndexByte(reason, '\n'); i > 0 {
 			reason = reason[:i]
+		}
+		vaapi := exec.Command("ffmpeg", "-v", "error", "-init_hw_device", "vaapi=va:"+vaapiDevice, "-filter_hw_device", "va",
+			"-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30", "-t", "1", "-vf", "format=nv12,hwupload", "-c:v", "h264_vaapi", "-f", "null", "-")
+		if vaapi.Run() == nil {
+			log.Printf("NVENC is not available (%s): encoding H.264 with VAAPI", reason)
+			return "h264_vaapi"
 		}
 		log.Printf("NVENC is not available (%s): encoding H.264 on the CPU", reason)
 		return "libx264"
