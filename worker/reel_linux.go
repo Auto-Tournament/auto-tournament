@@ -29,6 +29,11 @@ func probeDuration(p string) (float64, error) {
 // (a crossfade or the orange wipe); with an intro, the reel opens with it over
 // a grid of the clips and wipes to the first one.
 func (r *recorder) buildReel(paths []string, joins []join, intro *reelIntro, out string) error {
+	return r.buildReelSound(paths, joins, intro, reelSound{}, out)
+}
+
+// buildReelSound is buildReel with music and the crowd under the reel's sound.
+func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro, sound reelSound, out string) error {
 	if len(joins) != len(paths)-1 {
 		return fmt.Errorf("%d joins for %d clips", len(joins), len(paths))
 	}
@@ -49,12 +54,27 @@ func (r *recorder) buildReel(paths []string, joins []join, intro *reelIntro, out
 		paths = append([]string{introPath}, paths...)
 		plan.durations = append([]float64{introSec}, plan.durations...)
 		plan.joins = append([]join{joinWipe}, plan.joins...)
+		sound.kills = append([][]float64{nil}, sound.kills...)
 	}
 	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
 	for _, p := range paths {
 		args = append(args, "-i", p)
 	}
-	args = append(args, "-filter_complex", reelFilter(plan), "-map", "[v]", "-map", "[a]")
+	musicIn, crowdIn := -1, -1
+	if sound.music != "" {
+		musicIn = len(paths)
+		args = append(args, "-stream_loop", "-1", "-i", sound.music)
+	}
+	if sound.crowd != "" {
+		crowdIn = len(paths)
+		if musicIn >= 0 {
+			crowdIn++
+		}
+		args = append(args, "-i", sound.crowd)
+	}
+	hasIntro := intro != nil && strings.TrimSpace(intro.Title) != ""
+	filter := reelFilter(plan) + soundFilter(plan, sound, musicIn, crowdIn, hasIntro)
+	args = append(args, "-filter_complex", filter, "-map", "[v]", "-map", "[amix]")
 	args = append(args, encodeArgs(r.encoder)...)
 	args = append(args, "-movflags", "+faststart", out)
 	if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {

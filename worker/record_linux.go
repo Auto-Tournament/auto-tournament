@@ -1117,7 +1117,17 @@ func joinReelFiles(out string, clips []string) error {
 	for i := 1; i < len(clips); i++ {
 		joins = append(joins, joinWipe)
 	}
-	return r.buildReel(clips, joins, cliIntro("Match highlights", env("AT_TEAMS", "")), out)
+	// AT_MUSIC (a music file) and AT_CROWD (a crowd cheer) go under the reel;
+	// each clip's kills come from its markers file next to it (moment-N.json).
+	sound := reelSound{music: env("AT_MUSIC", ""), crowd: env("AT_CROWD", "")}
+	for _, c := range clips {
+		var m clipMarkers
+		if b, err := os.ReadFile(strings.TrimSuffix(c, filepath.Ext(c)) + ".json"); err == nil {
+			_ = json.Unmarshal(b, &m)
+		}
+		sound.kills = append(sound.kills, m.Kills)
+	}
+	return r.buildReelSound(clips, joins, cliIntro("Match highlights", env("AT_TEAMS", "")), sound, out)
 }
 
 // cliIntro is the intro the local commands give a reel, from the environment.
