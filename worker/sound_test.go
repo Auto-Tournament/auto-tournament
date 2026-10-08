@@ -32,12 +32,44 @@ func TestSoundFilterCheersAtKills(t *testing.T) {
 			t.Fatalf("%q missing from %s", want, f)
 		}
 	}
-	// The first cheer: part 1's kill at 3 s, crowdLead early.
-	at := int(math.Round((partStarts(p)[1] + 3 - crowdLead) * 1000))
+	// The first cheer: part 1's kill at 3 s, crowdDelay later.
+	at := int(math.Round((partStarts(p)[1] + 3 + crowdDelay) * 1000))
 	if !strings.Contains(f, "adelay="+strconv.Itoa(at)+":all=1[cheer0]") {
 		t.Fatalf("first cheer not at %d ms: %s", at, f)
 	}
 	if plain := soundFilter(p, reelSound{}, -1, -1, true); plain != ";[a]anull[amix]" {
 		t.Fatalf("no sound: %s", plain)
+	}
+}
+
+func TestCheersOnlyForImpressiveKills(t *testing.T) {
+	me, them := "76561190000000001", "76561190000000002"
+	k := func(tick int, f func(*ReplayKill)) ReplayKill {
+		r := ReplayKill{Tick: tick, Attacker: &me, Victim: them, Weapon: "AK-47"}
+		if f != nil {
+			f(&r)
+		}
+		return r
+	}
+	rp := &Replay{Players: []ReplayPlayer{{ID: me}, {ID: them}}, Kills: []ReplayKill{
+		k(1000, nil), // plain
+		k(1300, nil), // plain, second of a run
+		k(1500, nil), // third within 10 s: a run
+		k(4000, func(r *ReplayKill) { r.NoScope = true }),
+		k(4050, func(r *ReplayKill) { r.Penetrated = true }), // too close to the last cheer
+		k(9000, nil), // last kill, plain kind
+	}}
+	m := moment{Kind: "3k", Title: "6 kills", KillTicks: []int{1000, 1300, 1500, 4000, 4050, 9000}}
+	got := cheerTicks(rp, me, m)
+	want := []int{1500, 4000}
+	if len(got) != len(want) || got[0] != want[0] || got[1] != want[1] {
+		t.Fatalf("cheers %v, want %v", got, want)
+	}
+	m.Title = "6 kills clutch"
+	if got := cheerTicks(rp, me, m); got[len(got)-1] != 9000 {
+		t.Fatalf("a clutch's last kill cheers: %v", got)
+	}
+	if ts := cheerTimes(m.KillTicks, []float64{1, 2, 3, 4, 5, 6}, []int{1500, 9000}); len(ts) != 2 || ts[0] != 3 || ts[1] != 6 {
+		t.Fatalf("cheer times %v", ts)
 	}
 }

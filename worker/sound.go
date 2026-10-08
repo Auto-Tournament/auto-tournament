@@ -7,11 +7,11 @@ import (
 )
 
 // reelSound is what goes under a reel's own sound: a music track, faint, and
-// a crowd cheering at each kill. Either can be left out.
+// a crowd cheering at the kills worth it (cheers.go). Either can be left out.
 type reelSound struct {
 	music string      // a music file (looped when the reel is longer), or ""
 	crowd string      // a crowd cheer recording, or ""
-	kills [][]float64 // each part's kills, seconds into that part (reelPlan order)
+	kills [][]float64 // each part's cheered kills, seconds into that part (reelPlan order)
 }
 
 const (
@@ -19,8 +19,8 @@ const (
 	musicIntroGain = 0.32 // under the intro, which has no game sound
 	musicFadeIn    = 1.5
 	musicFadeOut   = 2.5
-	crowdGain      = 0.3
-	crowdLead      = 0.15 // the cheer starts this much before the kill
+	crowdGain      = 0.22
+	crowdDelay     = 0.4 // the crowd reacts this long after the kill
 	crowdLen       = 3.0
 )
 
@@ -76,7 +76,7 @@ func soundFilter(p reelPlan, s reelSound, musicIn, crowdIn int, hasIntro bool) s
 				break
 			}
 			for _, k := range ks {
-				if t := starts[i] + k - crowdLead; t >= 0 && t < length-0.5 {
+				if t := starts[i] + k + crowdDelay; t >= 0 && t < length-0.5 {
 					at = append(at, t)
 				}
 			}

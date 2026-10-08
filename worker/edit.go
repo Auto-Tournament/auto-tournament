@@ -136,6 +136,8 @@ type clipMarkers struct {
 	Duration float64     `json:"duration"`
 	Kills    []float64   `json:"kills"`
 	Slowmo   *[2]float64 `json:"slowmo"`
+	// Cheers are the kills the crowd cheers for (cheers.go), among Kills.
+	Cheers []float64 `json:"cheers,omitempty"`
 }
 
 // momentMarkers works out a moment's markers from its windows (in order) and

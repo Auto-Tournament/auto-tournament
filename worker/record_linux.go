@@ -51,19 +51,6 @@ import (
 	dem "github.com/markus-wa/demoinfocs-golang/v5/pkg/demoinfocs"
 )
 
-// moment is one highlight to record: its ticks are the demo's own.
-type moment struct {
-	ID         int    `json:"id"`
-	Kind       string `json:"kind"`
-	Title      string `json:"title"`
-	Round      int    `json:"round"`
-	Score      int    `json:"score"`
-	StartTick  int    `json:"startTick"`
-	EndTick    int    `json:"endTick"`
-	SlowmoTick int    `json:"slowmoTick"`
-	KillTicks  []int  `json:"killTicks"`
-}
-
 type recordJob struct {
 	MatchSlug  string `json:"matchSlug"`
 	MapNumber  int    `json:"mapNumber"`
@@ -412,6 +399,7 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 		kills = []int{m.SlowmoTick}
 	}
 	markers := momentMarkers(windows, edits, kills)
+	markers.Cheers = cheerTimes(m.KillTicks, markers.Kills, cheerTicks(look.replay, look.playerID, m))
 	if len(pieces) == 1 {
 		return markers, os.Rename(pieces[0], out)
 	}
@@ -1125,7 +1113,7 @@ func joinReelFiles(out string, clips []string) error {
 		if b, err := os.ReadFile(strings.TrimSuffix(c, filepath.Ext(c)) + ".json"); err == nil {
 			_ = json.Unmarshal(b, &m)
 		}
-		sound.kills = append(sound.kills, m.Kills)
+		sound.kills = append(sound.kills, m.Cheers)
 	}
 	return r.buildReelSound(clips, joins, cliIntro("Match highlights", env("AT_TEAMS", "")), sound, out)
 }
@@ -1168,4 +1156,43 @@ func playerReelIntro(j *recordJob, clips int) *reelIntro {
 		Map:    j.MapName,
 		Date:   time.Now().Format("2 January 2006"),
 	}
+}
+
+// markCheers is `at-worker mark-cheers <demo> <player> <moments.json> <clip.json>...`:
+// adds the cheered kills to clips recorded before cheers existed, from the
+// demo and each clip's moment (the clips' order is the moments' order), so
+// nothing is recorded again.
+func markCheers(args []string) error {
+	if len(args) < 4 {
+		return fmt.Errorf("usage: mark-cheers <demo> <player> <moments.json> <clip.json>...")
+	}
+	var moments []moment
+	b, err := os.ReadFile(args[2])
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(b, &moments); err != nil {
+		return err
+	}
+	rp := replayOf(args[0], env("AT_MAP", ""))
+	for i, file := range args[3:] {
+		if i >= len(moments) {
+			break
+		}
+		var m clipMarkers
+		b, err := os.ReadFile(file)
+		if err != nil {
+			return err
+		}
+		if err := json.Unmarshal(b, &m); err != nil {
+			return err
+		}
+		m.Cheers = cheerTimes(moments[i].KillTicks, m.Kills, cheerTicks(rp, args[1], moments[i]))
+		out, _ := json.MarshalIndent(m, "", "  ")
+		if err := os.WriteFile(file, out, 0o644); err != nil {
+			return err
+		}
+		log.Printf("%s: kills %v, cheers %v", file, m.Kills, m.Cheers)
+	}
+	return nil
 }
