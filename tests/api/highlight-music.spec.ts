@@ -27,10 +27,15 @@ test.describe('reel music', () => {
 
   test('the music is evened out, faded and louder under the intro', { tag: ['@api'] }, () => {
     const plain = musicFilter(20, 0);
-    expect(plain).toContain('volume=0.11,');
+    expect(plain).toContain('volume=0.4,');
     expect(plain).toContain('afade=t=in:d=1.5');
     expect(plain).toContain('afade=t=out:st=17.500:d=2.5');
     expect(musicFilter(20, 3)).toContain("volume='if(lt(t,3.000),0.32,");
-    expect(musicFilter(20, 0, -3.5)).toContain('volume=-3.5dB,volume=0.11,');
+    expect(musicFilter(20, 0, -3.5)).toContain('volume=-3.5dB,volume=0.4,');
+    // The viewer's level under the game (1: the whole track); the intro keeps its own.
+    expect(musicFilter(20, 0, 0, 1)).toContain('volume=1,');
+    const loud = musicFilter(20, 3, 0, 0.8);
+    expect(loud).toContain("volume='if(lt(t,3.000),0.32,");
+    expect(loud).toContain(',0.8))');
   });
 });

@@ -22,18 +22,20 @@ import { HIGHLIGHTS_DIR } from './highlights';
 const MUSIC_DIR = path.join(HIGHLIGHTS_DIR, 'music');
 const MIX_DIR = path.join(HIGHLIGHTS_DIR, 'with-music');
 
-/** The levels the music plays at under a reel. */
-export const MUSIC_GAIN = 0.11;
+/**
+ * The music's level under the game: a share of the track at its full
+ * (evened-out) loudness. The viewer picks it (1 = the whole track); this is
+ * theirs until they do. The intro, with no game sound, keeps its own level.
+ */
+export const MUSIC_GAIN = 0.4;
 export const MUSIC_INTRO_GAIN = 0.32;
-/** How much louder than MUSIC_GAIN the player's mix is made (its level slider's top). */
-export const MIX_HEADROOM = 2;
 
-/** A viewer's music level from a request: 0 to MIX_HEADROOM, 1 when absent or wrong. */
+/** A viewer's music level from a request: 0 to 1, MUSIC_GAIN when absent or wrong. */
 export function musicLevel(value: unknown): number {
   const n = Number(value);
   return value === undefined || value === null || value === '' || !Number.isFinite(n)
-    ? 1
-    : Math.max(0, Math.min(MIX_HEADROOM, Math.round(n * 100) / 100));
+    ? MUSIC_GAIN
+    : Math.max(0, Math.min(1, Math.round(n * 100) / 100));
 }
 const FADE_IN = 1.5;
 const FADE_OUT = 2.5;
@@ -345,10 +347,15 @@ async function probe(video: string): Promise<{ seconds: number; audio: boolean }
  * louder until `intro` (the reel's intro has no game sound) and down to
  * MUSIC_GAIN as the first clip starts.
  */
-export function musicFilter(seconds: number, intro: number, gainDb = 0, level = 1): string {
-  // `level`: the viewer's music level (1 = MUSIC_GAIN under the game).
-  const g = +(MUSIC_GAIN * level).toFixed(4);
-  const gi = +(MUSIC_INTRO_GAIN * level).toFixed(4);
+export function musicFilter(
+  seconds: number,
+  intro: number,
+  gainDb = 0,
+  level = MUSIC_GAIN
+): string {
+  // `level`: the viewer's music level under the game; the intro keeps its own.
+  const g = +level.toFixed(4);
+  const gi = MUSIC_INTRO_GAIN;
   let gain = `${g}`;
   if (intro > 0) {
     const r = (n: number) => n.toFixed(3);
@@ -376,7 +383,7 @@ export function withSound(
     track?: (MusicTrack & { file: string }) | null;
     crowd?: string | null;
     intro: number;
-    /** The viewer's music level (musicLevel): 1 = MUSIC_GAIN. */
+    /** The viewer's music level under the game (musicLevel), 0 to 1. */
     level?: number;
   }
 ): Promise<string> {
@@ -385,9 +392,7 @@ export function withSound(
   const parts = [
     path.basename(video, '.mp4'),
     opts.crowd ? 'crowd' : null,
-    opts.track
-      ? `m${opts.track.id}-${introAt}${level !== 1 ? `-l${Math.round(level * 100)}` : ''}`
-      : null,
+    opts.track ? `m${opts.track.id}-${introAt}-l${Math.round(level * 100)}` : null,
   ];
   const out = path.join(MIX_DIR, `${parts.filter(Boolean).join('-')}.mp4`);
   const newest = Math.max(
@@ -465,11 +470,12 @@ export function reelMusic(
   intro: number
 ): Promise<string> {
   const introAt = Math.max(0, Math.min(30, Math.round(intro * 10) / 10));
-  // Mixed at MIX_HEADROOM times the level: the player turns it down (an
-  // audio element plays at most as loud as its file) to the viewer's level.
+  // The whole track (evened out, faded): the player sets the level each
+  // moment, the intro's and the viewer's (an audio element plays at most as
+  // loud as its file).
   const out = path.join(
     MIX_DIR,
-    `${path.basename(video, '.mp4')}-m${track.id}-${introAt}-h${MIX_HEADROOM}.m4a`
+    `${path.basename(video, '.mp4')}-m${track.id}-${introAt}-full.m4a`
   );
   if (fs.existsSync(out) && fs.statSync(out).mtimeMs >= fs.statSync(video).mtimeMs)
     return Promise.resolve(out);
@@ -488,7 +494,7 @@ export function reelMusic(
       '-i',
       trackFile(track),
       '-af',
-      musicFilter(info.seconds, introAt, track.gainDb, MIX_HEADROOM),
+      musicFilter(info.seconds, 0, track.gainDb, 1),
       '-t',
       info.seconds.toFixed(3),
       '-c:a',

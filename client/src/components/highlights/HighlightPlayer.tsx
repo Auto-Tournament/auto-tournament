@@ -104,18 +104,24 @@ export interface PlayerMusic {
   introEnd: number;
 }
 
-// The levels a download mixes the music at (the API's demos/music.ts).
-export const MUSIC_GAIN = 0.11;
+// The music's levels (the API's demos/music.ts): under the game a share of
+// the whole track (the viewer's, this until they pick one); the intro's own.
+export const MUSIC_GAIN = 0.4;
 const MUSIC_INTRO_GAIN = 0.32;
 const MUSIC_FADE_IN = 1.5;
 const MUSIC_FADE_OUT = 2.5;
 
-/** The music's volume `t` seconds into a video `length` long. */
-export function musicGain(t: number, length: number, introEnd: number): number {
-  let base = MUSIC_GAIN;
-  if (introEnd > 0 && t < introEnd) base = MUSIC_INTRO_GAIN;
-  else if (introEnd > 0 && t < introEnd + 0.8)
-    base = MUSIC_INTRO_GAIN + (MUSIC_GAIN - MUSIC_INTRO_GAIN) * ((t - introEnd) / 0.8);
+/** The music's level `t` seconds in, before fades: the intro's, then the viewer's `level`. */
+function musicLevelAt(t: number, introEnd: number, level: number): number {
+  if (introEnd > 0 && t < introEnd) return MUSIC_INTRO_GAIN;
+  if (introEnd > 0 && t < introEnd + 0.8)
+    return MUSIC_INTRO_GAIN + (level - MUSIC_INTRO_GAIN) * ((t - introEnd) / 0.8);
+  return level;
+}
+
+/** The music's volume `t` seconds into a video `length` long, at the viewer's `level` under the game. */
+export function musicGain(t: number, length: number, introEnd: number, level = MUSIC_GAIN): number {
+  const base = musicLevelAt(t, introEnd, level);
   const fadeIn = Math.min(1, Math.max(0, t / MUSIC_FADE_IN));
   const fadeOut = length > 0 ? Math.min(1, Math.max(0, (length - t) / MUSIC_FADE_OUT)) : 1;
   return base * fadeIn * fadeOut;
@@ -195,16 +201,13 @@ export const PLAYER_VOLUME_KEY = 'at.player.volume';
 /** The level until the viewer sets one. */
 export const PLAYER_VOLUME_DEFAULT = 1;
 const MUSIC_OFF = 'at.reelMusic.off';
-const MUSIC_LEVEL = 'at.reelMusic.level';
-/** The player's mix of a track is made this much louder than the reference level (the API's MIX_HEADROOM). */
-const MIX_HEADROOM = 2;
-/** The music level until the viewer sets one: a little over the reference. */
-const MUSIC_LEVEL_DEFAULT = 1.2;
+const MUSIC_LEVEL = 'at.reelMusic.level2';
+/** The viewer's music level under the game: 0 to 1 (1 = the whole track). */
 const storedMusicLevel = () => {
   const v = Number(stored(MUSIC_LEVEL));
   return stored(MUSIC_LEVEL) !== null && Number.isFinite(v)
-    ? Math.min(MIX_HEADROOM, Math.max(0, v))
-    : MUSIC_LEVEL_DEFAULT;
+    ? Math.min(1, Math.max(0, v))
+    : MUSIC_GAIN;
 };
 const stored = (key: string) => {
   try {
@@ -371,8 +374,14 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
       const v = video.current;
       const a = audio.current;
       if (!v || !a || !song) return;
-      // The mix is MIX_HEADROOM times the reference: down to the viewer's music level.
-      return follow(v, a, () => (volumeRef.current * musicLevelRef.current) / MIX_HEADROOM, false);
+      // The mix is the whole track (its fades in it): the intro at its own
+      // level, the rest at the viewer's music level.
+      return follow(
+        v,
+        a,
+        () => volumeRef.current * musicLevelAt(v.currentTime, introEnd, musicLevelRef.current),
+        false
+      );
     }, [song, introEnd]);
     useEffect(() => {
       const v = video.current;
@@ -1022,7 +1031,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
             <Slider
               size="small"
               min={0}
-              max={MIX_HEADROOM}
+              max={1}
               step={0.05}
               value={musicLevel}
               onChange={(_, v) => setMusicLevel(v as number)}

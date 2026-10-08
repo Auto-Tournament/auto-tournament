@@ -119,8 +119,7 @@ export function HighlightMusicSetting({
       );
   };
 
-  // A track about as loud as under a reel: MUSIC_GAIN of the player's volume
-  // (a little more: alone, without the game's sound).
+  // A track as loud as under a reel by default: MUSIC_GAIN of the player's volume.
   const listen = (id: string) => {
     audio.current?.pause();
     if (playing === id) {
@@ -128,7 +127,7 @@ export function HighlightMusicSetting({
       return;
     }
     const a = new Audio(`/api/game/cs2/music/${encodeURIComponent(id)}/file`);
-    a.volume = Math.min(1, savedVolume() * MUSIC_GAIN * 3);
+    a.volume = Math.min(1, savedVolume() * MUSIC_GAIN);
     a.onended = () => setPlaying(null);
     audio.current = a;
     void a.play().catch(() => setPlaying(null));
