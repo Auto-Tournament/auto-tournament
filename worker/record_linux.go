@@ -1163,6 +1163,11 @@ func joinReelFiles(out string, clips []string) error {
 	for i := 1; i < len(clips); i++ {
 		joins = append(joins, joinWipe)
 	}
+	// AT_CLIP_PLAYERS (whose each clip is, comma separated): a fade between
+	// one player's clips, the wipe when the player changes.
+	if players := strings.Split(env("AT_CLIP_PLAYERS", ""), ","); len(players) == len(clips) {
+		joins = joinsByPlayer(players)
+	}
 	// AT_MUSIC (a music file) and AT_CROWD (a crowd cheer) go under the reel;
 	// each clip's kills come from its markers file next to it (moment-N.json).
 	sound := reelSound{music: env("AT_MUSIC", ""), crowd: env("AT_CROWD", ""), crowdOut: crowdTrackPath(out)}
