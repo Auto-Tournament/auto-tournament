@@ -15,7 +15,7 @@
 // `at-worker analyze <file.dem> [map]` reads one demo and prints the analysis;
 // `at-worker export-hud <game/csgo> <out> [weapons|deathnotice|ui...]` writes the
 // kill feed's icons from the game (hud.go); `at-worker hud-list <game/csgo> [prefix]`
-// lists what pak01 holds under a folder.
+// lists what pak01 holds under a folder; `at-worker hud-cat <game/csgo> <path>` prints one file.
 // `at-worker radars <game/csgo> [workshop dirs...]` lists the radars it would send;
 // `at-worker record` records highlight clips instead (record.go).
 package main
@@ -235,6 +235,13 @@ func main() {
 			prefix = os.Args[3]
 		}
 		if err := hudList(os.Args[2], prefix); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
+	if len(os.Args) >= 4 && os.Args[1] == "hud-cat" {
+		if err := hudCat(os.Args[2], os.Args[3]); err != nil {
 			log.Fatal(err)
 		}
 		return

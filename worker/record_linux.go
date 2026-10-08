@@ -550,7 +550,7 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		defer os.Remove(feedPipe)
 		args = append(args, "-f", "rawvideo", "-pix_fmt", "rgba", "-s", fmt.Sprintf("%dx%d", feed.region.Dx(), feed.region.Dy()),
 			"-framerate", fmt.Sprint(cardFPS), "-i", feedPipe)
-		o.feed, o.feedAt, next = next, feed.region.Min, next+1
+		o.feed, o.feedAt, next = next, feed.region, next+1
 	}
 	if watermark {
 		args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-i", r.logo)

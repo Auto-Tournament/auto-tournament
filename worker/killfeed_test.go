@@ -58,7 +58,7 @@ func TestFeedRowsStayOrGo(t *testing.T) {
 		n, inRow := 0, false
 		x := img.Bounds().Dx() - 3
 		for y := 0; y < img.Bounds().Dy(); y++ {
-			on := img.RGBAAt(x, y).A > 200
+			on := img.RGBAAt(x, y).A > feedPlateOtherAlpha*3/4
 			if on && !inRow {
 				n++
 			}

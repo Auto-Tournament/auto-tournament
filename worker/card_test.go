@@ -29,16 +29,18 @@ func TestCaptionCardAnimates(t *testing.T) {
 	if a := alphaAt(r.frameAt(2), mid); a < 200 {
 		t.Fatalf("card not up at 2 s (alpha %d)", a)
 	}
-	// At the end it is small, at the bottom centre, and stays: the settled
-	// card (a clip's later pieces) is the same picture.
+	// At the end it is small, at the bottom centre, half see-through
+	// (cardSettledOpacity), and stays: the settled card (a clip's later
+	// pieces) is the same picture.
 	small := image.Pt((r.small.Min.X+r.small.Max.X)/2, (r.small.Min.Y+r.small.Max.Y)/2)
-	if a := alphaAt(r.frameAt(cardSec), small); a < 200 {
-		t.Fatalf("card not at the bottom centre at the end (alpha %d)", a)
+	end := alphaAt(r.frameAt(cardSec), small)
+	if end < 80 || end > 140 {
+		t.Fatalf("card not at the bottom centre at half opacity at the end (alpha %d)", end)
 	}
 	if r.small.Dx() >= r.card.Dx() || r.small.Max.Y <= r.card.Max.Y {
 		t.Fatalf("small card %v is not smaller and lower than %v", r.small, r.card)
 	}
-	if a := alphaAt(r.Settled().frameAt(0), small); a < 200 {
+	if a := alphaAt(r.Settled().frameAt(0), small); a != end {
 		t.Fatalf("settled card missing (alpha %d)", a)
 	}
 	if dir := os.Getenv("CARD_OUT"); dir != "" {

@@ -448,8 +448,14 @@ func (r *cardRender) drawMoved(move float64) {
 	lerp := func(a, b int) int { return int(math.Round(float64(a) + (float64(b)-float64(a))*move)) }
 	at := image.Rect(lerp(r.card.Min.X, r.small.Min.X), lerp(r.card.Min.Y, r.small.Min.Y),
 		lerp(r.card.Max.X, r.small.Max.X), lerp(r.card.Max.Y, r.small.Max.Y))
-	draw.CatmullRom.Scale(r.frame, at, r.full, r.full.Bounds(), draw.Over, nil)
+	// It fades to cardSettledOpacity on the way, so the settled card stays out of the way.
+	opacity := 1 - (1-cardSettledOpacity)*move
+	draw.CatmullRom.Scale(r.frame, at, r.full, r.full.Bounds(), draw.Over,
+		&draw.Options{SrcMask: image.NewUniform(color.Alpha{uint8(math.Round(255 * opacity))})})
 }
+
+// cardSettledOpacity is how opaque the small card is once it has moved down.
+const cardSettledOpacity = 0.5
 
 // smooth is the drafts' cubic-bezier(.2,.8,.2,1): quick out of the start, a long soft landing.
 func smooth(t float64) float64 {
