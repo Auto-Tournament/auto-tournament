@@ -28,27 +28,31 @@ func probeDuration(p string) (float64, error) {
 // buildReel joins clips into a reel: `joins` says how each goes into the next
 // (a crossfade or the orange wipe); with an intro, the reel opens with it over
 // a grid of the clips and wipes to the first one.
-func (r *recorder) buildReel(paths []string, joins []join, intro *reelIntro, out string) error {
+// buildReel joins the clips (after an intro, when there is one) into out and
+// says where each clip starts in it.
+func (r *recorder) buildReel(paths []string, joins []join, intro *reelIntro, out string) ([]float64, error) {
 	if len(joins) != len(paths)-1 {
-		return fmt.Errorf("%d joins for %d clips", len(joins), len(paths))
+		return nil, fmt.Errorf("%d joins for %d clips", len(joins), len(paths))
 	}
 	plan := reelPlan{joins: joins, width: outputHeight * 16 / 9, height: outputHeight, fps: outputFPS}
 	for _, p := range paths {
 		d, err := probeDuration(p)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		plan.durations = append(plan.durations, d)
 	}
+	hasIntro := false
 	if intro != nil && strings.TrimSpace(intro.Title) != "" {
 		introPath := strings.TrimSuffix(out, filepath.Ext(out)) + "-intro.mp4"
 		if err := r.buildIntro(paths, plan.durations, *intro, plan.width, plan.height, introPath); err != nil {
-			return fmt.Errorf("intro: %w", err)
+			return nil, fmt.Errorf("intro: %w", err)
 		}
 		defer os.Remove(introPath)
 		paths = append([]string{introPath}, paths...)
 		plan.durations = append([]float64{introSec}, plan.durations...)
 		plan.joins = append([]join{joinWipe}, plan.joins...)
+		hasIntro = true
 	}
 	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
 	for _, p := range paths {
@@ -58,9 +62,13 @@ func (r *recorder) buildReel(paths []string, joins []join, intro *reelIntro, out
 	args = append(args, encodeArgs(r.encoder)...)
 	args = append(args, "-movflags", "+faststart", out)
 	if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
-		return fmt.Errorf("ffmpeg reel: %v %s", err, strings.TrimSpace(string(b)))
+		return nil, fmt.Errorf("ffmpeg reel: %v %s", err, strings.TrimSpace(string(b)))
 	}
-	return nil
+	starts := partStarts(plan)
+	if hasIntro {
+		starts = starts[1:]
+	}
+	return starts, nil
 }
 
 // buildIntro renders the intro (intro.go) over a grid of the clips into out.

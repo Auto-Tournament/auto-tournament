@@ -10,6 +10,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 )
 
@@ -160,6 +161,36 @@ func reelFilter(p reelPlan) string {
 		prevV, prevA = v, a
 	}
 	return strings.TrimSuffix(b.String(), ";")
+}
+
+// partStarts is when each part of the plan starts in the reel (reelFilter's joins).
+func partStarts(p reelPlan) []float64 {
+	starts := make([]float64, len(p.durations))
+	length := 0.0
+	for i, d := range p.durations {
+		if i == 0 {
+			length = d
+			continue
+		}
+		if p.joins[i-1] == joinWipe {
+			length += wipeInSec*2 + wipeHoldSec - wipeInSec
+			starts[i] = length - wipeInSec
+			length += d - wipeInSec
+		} else {
+			starts[i] = length - reelCrossfade
+			length += d - reelCrossfade
+		}
+	}
+	return starts
+}
+
+// startsHeader is X-AT-Starts: where each clip starts in the reel, in seconds.
+func startsHeader(starts []float64) string {
+	parts := make([]string, len(starts))
+	for i, s := range starts {
+		parts[i] = strconv.FormatFloat(s, 'f', 2, 64)
+	}
+	return strings.Join(parts, ",")
 }
 
 // reelLength is how long reelFilter's reel runs.

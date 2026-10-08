@@ -101,6 +101,7 @@ export const CS2_HIGHLIGHTS_MIGRATION_ID = '023-highlights';
 export const CS2_HIGHLIGHT_REELS_MIGRATION_ID = '024-highlight-reels';
 export const CS2_MATCH_REELS_MIGRATION_ID = '025-match-reels';
 export const CS2_HIGHLIGHTS_PLAYER_MIGRATION_ID = '026-highlights-player';
+export const CS2_REEL_STARTS_MIGRATION_ID = '027-reel-starts';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1130,6 +1131,17 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       clip_bytes BIGINT,
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
+`,
+  },
+  {
+    // Where each clip starts in its reel, in seconds, as the recorder made it
+    // (after the intro, across wipes and fades): the chapters and the music's
+    // intro level read it instead of adding up clip lengths.
+    id: CS2_REEL_STARTS_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_highlight_reels ADD COLUMN IF NOT EXISTS clip_starts TEXT; -- JSON number[], one per clip_ids
+    ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS clip_starts TEXT; -- JSON number[]
+    ALTER TABLE cs2_tournament_reels ADD COLUMN IF NOT EXISTS clip_starts TEXT; -- JSON number[]
 `,
   },
 ];

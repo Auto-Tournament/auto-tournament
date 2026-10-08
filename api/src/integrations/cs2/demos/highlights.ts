@@ -602,6 +602,18 @@ export function parseClipIds(raw: unknown): number[] | null {
   return raw.split(',').map(Number);
 }
 
+/**
+ * The recorder's `X-AT-Starts` header: where each clip of `X-AT-Clips` starts
+ * in the reel, in seconds (after its intro, across its joins).
+ */
+export function parseClipStarts(raw: unknown, clips: number): number[] | null {
+  if (typeof raw !== 'string' || !/^\d+(\.\d+)?(,\d+(\.\d+)?){0,63}$/.test(raw)) return null;
+  const starts = raw.split(',').map(Number);
+  if (starts.length !== clips || starts.some((s, i) => !(s < 36_000) || (i > 0 && s < starts[i - 1]!)))
+    return null;
+  return starts.map((s) => Math.round(s * 100) / 100);
+}
+
 /** Store a finished clip (an MP4 the recorder streamed up). */
 export async function saveClip(
   id: number,
@@ -668,7 +680,8 @@ export async function saveReel(
   mapNumber: number,
   playerId: string,
   body: NodeJS.ReadableStream,
-  clipIds: number[] | null = null
+  clipIds: number[] | null = null,
+  clipStarts: number[] | null = null
 ): Promise<number> {
   await fs.promises.mkdir(HIGHLIGHTS_DIR, { recursive: true });
   const file = reelFile(matchSlug, mapNumber, playerId);
@@ -687,11 +700,11 @@ export async function saveReel(
     [matchSlug, mapNumber, playerId]
   );
   await db.runAsync(
-    `INSERT INTO cs2_highlight_reels (match_slug, map_number, player_id, moments, clip_path, clip_bytes, clip_ids)
-     VALUES (?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO cs2_highlight_reels (match_slug, map_number, player_id, moments, clip_path, clip_bytes, clip_ids, clip_starts)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT (match_slug, map_number, player_id) DO UPDATE SET
        moments = EXCLUDED.moments, clip_path = EXCLUDED.clip_path, clip_bytes = EXCLUDED.clip_bytes,
-       clip_ids = EXCLUDED.clip_ids, created_at = EXTRACT(EPOCH FROM NOW())::INTEGER`,
+       clip_ids = EXCLUDED.clip_ids, clip_starts = EXCLUDED.clip_starts, created_at = EXTRACT(EPOCH FROM NOW())::INTEGER`,
     [
       matchSlug,
       mapNumber,
@@ -700,6 +713,7 @@ export async function saveReel(
       path.basename(file),
       size,
       clipIds ? JSON.stringify(clipIds) : null,
+      clipStarts ? JSON.stringify(clipStarts) : null,
     ]
   );
   return size;
@@ -897,7 +911,8 @@ export async function saveMatchReel(
   mapNumber: number,
   clips: number,
   body: NodeJS.ReadableStream,
-  clipIds: number[] | null = null
+  clipIds: number[] | null = null,
+  clipStarts: number[] | null = null
 ): Promise<number> {
   await fs.promises.mkdir(HIGHLIGHTS_DIR, { recursive: true });
   const file = matchReelFile(matchSlug, mapNumber);
@@ -912,11 +927,11 @@ export async function saveMatchReel(
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
   await db.runAsync(
-    `INSERT INTO cs2_match_reels (match_slug, map_number, status, clips, clip_path, clip_bytes, clip_ids)
-     VALUES (?, ?, 'done', ?, ?, ?, ?)
+    `INSERT INTO cs2_match_reels (match_slug, map_number, status, clips, clip_path, clip_bytes, clip_ids, clip_starts)
+     VALUES (?, ?, 'done', ?, ?, ?, ?, ?)
      ON CONFLICT (match_slug, map_number) DO UPDATE SET status = 'done', error = NULL,
        clips = EXCLUDED.clips, clip_path = EXCLUDED.clip_path, clip_bytes = EXCLUDED.clip_bytes,
-       clip_ids = EXCLUDED.clip_ids`,
+       clip_ids = EXCLUDED.clip_ids, clip_starts = EXCLUDED.clip_starts`,
     [
       matchSlug,
       mapNumber,
@@ -924,6 +939,7 @@ export async function saveMatchReel(
       path.basename(file),
       size,
       clipIds ? JSON.stringify(clipIds) : null,
+      clipStarts ? JSON.stringify(clipStarts) : null,
     ]
   );
   return size;

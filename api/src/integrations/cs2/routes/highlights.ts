@@ -13,7 +13,8 @@
  *
  * A clip's upload carries `X-AT-Markers` (JSON: where its kills and slow
  * motion are, in seconds); a reel's carries `X-AT-Clips` (the highlight ids it
- * joins, in order), for the player's scrubber and chapters.
+ * joins, in order) and `X-AT-Starts` (where each starts in it, in seconds),
+ * for the player's scrubber and chapters.
  *
  * Public:
  *   GET  /api/game/cs2/players/:playerId/highlights   a player's reels, highlights and favourite (?all=1: every one)
@@ -63,6 +64,7 @@ import {
   clipFile,
   failRecordJob,
   parseClipIds,
+  parseClipStarts,
   parseMarkers,
   saveClip,
   saveReel,
@@ -76,6 +78,10 @@ const idOf = (req: Request) => {
   const id = Number(req.params.id);
   return Number.isInteger(id) && id > 0 ? id : null;
 };
+
+/** A reel upload's `X-AT-Starts`, one per clip of its `X-AT-Clips`. */
+const startsOf = (req: Request, ids: number[] | null) =>
+  ids ? parseClipStarts(req.headers['x-at-starts'], ids.length) : null;
 
 /** A public read that answers 500 when the database fails, instead of hanging. */
 const read =
@@ -149,12 +155,14 @@ router.put(
       return res.status(400).json({ success: false, error: 'A video/mp4 body' });
     }
     try {
+      const ids = parseClipIds(req.headers['x-at-clips']);
       const bytes = await saveReel(
         req.params.slug,
         map,
         req.params.player,
         req,
-        parseClipIds(req.headers['x-at-clips'])
+        ids,
+        startsOf(req, ids)
       );
       return res.json({ success: true, bytes });
     } catch (error) {
@@ -174,12 +182,14 @@ router.put('/recorder/match-reels/:slug/:map', requireAuth, async (req: Request,
     return res.status(400).json({ success: false, error: 'A video/mp4 body' });
   }
   try {
+    const ids = parseClipIds(req.headers['x-at-clips']);
     const bytes = await saveMatchReel(
       req.params.slug,
       map,
       Number.isInteger(clips) ? clips : 0,
       req,
-      parseClipIds(req.headers['x-at-clips'])
+      ids,
+      startsOf(req, ids)
     );
     return res.json({ success: true, bytes });
   } catch (error) {
@@ -228,7 +238,8 @@ router.put('/recorder/tournament-reels/:id', requireAuth, async (req: Request, r
     return res.status(400).json({ success: false, error: 'A tournament id and a video/mp4 body' });
   }
   try {
-    const bytes = await saveTournamentReel(id, req, parseClipIds(req.headers['x-at-clips']));
+    const ids = parseClipIds(req.headers['x-at-clips']);
+    const bytes = await saveTournamentReel(id, req, ids, startsOf(req, ids));
     return res.json({ success: true, bytes });
   } catch (error) {
     log.error('[HIGHLIGHTS] tournament reel save failed', { error, id });

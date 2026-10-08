@@ -162,10 +162,30 @@ export interface Chapter {
 }
 
 /** A reel's chapters, from the clips it joins in order. */
-export async function chaptersOf(clipIdsJson: string | null): Promise<Chapter[]> {
+export async function chaptersOf(
+  clipIdsJson: string | null,
+  clipStartsJson: string | null = null
+): Promise<Chapter[]> {
   const ids = parseJson<number[]>(clipIdsJson);
   if (!Array.isArray(ids)) return [];
   const clips = await clipsById(ids.map(Number).filter(Number.isInteger));
+  // Where the recorder says each clip starts (after the intro, across wipes),
+  // when it said and every clip is still there.
+  const starts = parseJson<number[]>(clipStartsJson);
+  if (Array.isArray(starts) && starts.length === ids.length && clips.length === ids.length) {
+    return clips.map((c, i) => ({
+      highlightId: c.id,
+      playerId: c.playerId,
+      playerName: c.playerName,
+      kind: c.kind,
+      clutch: c.clutch,
+      title: c.title,
+      map: c.map,
+      round: c.round,
+      at: Number(starts[i]),
+    }));
+  }
+  // Older reels: added up from the clips' lengths.
   let at: number | null = 0;
   return clips.map((c) => {
     const chapter: Chapter = {
@@ -212,6 +232,7 @@ export async function playerReelViews(playerId: string, limit: number) {
     moments: number;
     clip_path: string;
     clip_ids: string | null;
+    clip_starts: string | null;
     created_at: number;
     map_name: string | null;
     team1: string | null;
@@ -222,7 +243,7 @@ export async function playerReelViews(playerId: string, limit: number) {
     bracket: string | null;
     match_number: number | null;
   }>(
-    `SELECT r.match_slug, r.map_number, r.moments, r.clip_path, r.clip_ids, r.created_at, j.map_name,
+    `SELECT r.match_slug, r.map_number, r.moments, r.clip_path, r.clip_ids, r.clip_starts, r.created_at, j.map_name,
             t1.name AS team1, t2.name AS team2, m.tournament_id, COALESCE(tr.name, m.played_in) AS tournament,
             m.round AS match_round, m.bracket, m.match_number
        FROM cs2_highlight_reels r
@@ -243,7 +264,7 @@ export async function playerReelViews(playerId: string, limit: number) {
       map: r.map_name,
       moments: Number(r.moments),
       video: fileUrl(r.clip_path),
-      chapters: await chaptersOf(r.clip_ids),
+      chapters: await chaptersOf(r.clip_ids, r.clip_starts),
       match: {
         slug: r.match_slug,
         team1: r.team1,
@@ -324,13 +345,18 @@ export async function setFavourite(playerId: string, highlightId: number | null)
 // ---------------------------------------------------------------------------
 
 export async function tournamentReel(tournamentId: number) {
-  const row = await db.queryOneAsync<{ status: string; clip_ids: string | null; clip_path: string | null }>(
-    'SELECT status, clip_ids, clip_path FROM cs2_tournament_reels WHERE tournament_id = ?',
+  const row = await db.queryOneAsync<{
+    status: string;
+    clip_ids: string | null;
+    clip_starts: string | null;
+    clip_path: string | null;
+  }>(
+    'SELECT status, clip_ids, clip_starts, clip_path FROM cs2_tournament_reels WHERE tournament_id = ?',
     [tournamentId]
   );
   if (!row) return null;
   const done = row.status === 'done' && !!row.clip_path;
-  const chapters = done ? await chaptersOf(row.clip_ids) : [];
+  const chapters = done ? await chaptersOf(row.clip_ids, row.clip_starts) : [];
   const last = chapters[chapters.length - 1];
   const lastClip = last ? await clipView(last.highlightId) : null;
   return {
@@ -438,6 +464,7 @@ export async function matchReelView(matchSlug: string, mapNumber: number) {
     status: string;
     clip_path: string | null;
     clip_ids: string | null;
+    clip_starts: string | null;
     map_name: string | null;
     team1: string | null;
     team2: string | null;
@@ -447,7 +474,7 @@ export async function matchReelView(matchSlug: string, mapNumber: number) {
     bracket: string | null;
     match_number: number | null;
   }>(
-    `SELECT r.status, r.clip_path, r.clip_ids, j.map_name, t1.name AS team1, t2.name AS team2, m.tournament_id,
+    `SELECT r.status, r.clip_path, r.clip_ids, r.clip_starts, j.map_name, t1.name AS team1, t2.name AS team2, m.tournament_id,
             COALESCE(tr.name, m.played_in) AS tournament, m.round, m.bracket, m.match_number
        FROM cs2_match_reels r
        LEFT JOIN cs2_demo_jobs j ON j.match_slug = r.match_slug AND j.map_number = r.map_number
@@ -464,7 +491,7 @@ export async function matchReelView(matchSlug: string, mapNumber: number) {
     mapNumber,
     map: row.map_name,
     video: fileUrl(row.clip_path),
-    chapters: await chaptersOf(row.clip_ids),
+    chapters: await chaptersOf(row.clip_ids, row.clip_starts),
     match: {
       slug: matchSlug,
       team1: row.team1,
@@ -641,7 +668,8 @@ export function tournamentReelFile(tournamentId: number): string {
 export async function saveTournamentReel(
   tournamentId: number,
   body: NodeJS.ReadableStream,
-  clipIds: number[] | null
+  clipIds: number[] | null,
+  clipStarts: number[] | null = null
 ): Promise<number> {
   await fs.promises.mkdir(HIGHLIGHTS_DIR, { recursive: true });
   const file = tournamentReelFile(tournamentId);
@@ -656,11 +684,18 @@ export async function saveTournamentReel(
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
   await db.runAsync(
-    `INSERT INTO cs2_tournament_reels (tournament_id, status, clip_ids, clip_path, clip_bytes)
-     VALUES (?, 'done', ?, ?, ?)
+    `INSERT INTO cs2_tournament_reels (tournament_id, status, clip_ids, clip_starts, clip_path, clip_bytes)
+     VALUES (?, 'done', ?, ?, ?, ?)
      ON CONFLICT (tournament_id) DO UPDATE SET status = 'done', error = NULL,
-       clip_ids = EXCLUDED.clip_ids, clip_path = EXCLUDED.clip_path, clip_bytes = EXCLUDED.clip_bytes`,
-    [tournamentId, clipIds ? JSON.stringify(clipIds) : null, path.basename(file), size]
+       clip_ids = EXCLUDED.clip_ids, clip_starts = EXCLUDED.clip_starts,
+       clip_path = EXCLUDED.clip_path, clip_bytes = EXCLUDED.clip_bytes`,
+    [
+      tournamentId,
+      clipIds ? JSON.stringify(clipIds) : null,
+      clipStarts ? JSON.stringify(clipStarts) : null,
+      path.basename(file),
+      size,
+    ]
   );
   return size;
 }

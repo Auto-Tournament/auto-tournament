@@ -463,7 +463,8 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	for i := range fades {
 		fades[i] = joinFade
 	}
-	return markers, r.buildReel(pieces, fades, nil, out)
+	_, err = r.buildReel(pieces, fades, nil, out)
+	return markers, err
 }
 
 // recordWindow records one stretch of a moment into `out`: the picture slowed
@@ -694,7 +695,7 @@ func maxf(a, b float64) float64 {
 
 // joinReel puts one player's clips one after the other, each blending into
 // the next, after the reel's intro (nil: none).
-func (r *recorder) joinReel(clips []clipResult, intro *reelIntro, out string) error {
+func (r *recorder) joinReel(clips []clipResult, intro *reelIntro, out string) ([]float64, error) {
 	paths := make([]string, len(clips))
 	joins := make([]join, 0, len(clips))
 	for i, c := range clips {
@@ -918,7 +919,8 @@ func (r *recorder) uploadReel(ctx context.Context, dir string, j *recordJob, cli
 	}
 	sort.Slice(plays, func(a, b int) bool { return plays[a].moment.StartTick < plays[b].moment.StartTick })
 	reel := filepath.Join(dir, fmt.Sprintf("reel-%s.mp4", j.PlayerID))
-	if err := r.joinReel(plays, playerReelIntro(j, len(plays)), reel); err != nil {
+	starts, err := r.joinReel(plays, playerReelIntro(j, len(plays)), reel)
+	if err != nil {
 		return err
 	}
 	ids := make([]string, len(plays))
@@ -927,7 +929,7 @@ func (r *recorder) uploadReel(ctx context.Context, dir string, j *recordJob, cli
 	}
 	return r.upload(ctx, reel, fmt.Sprintf("/api/game/cs2/recorder/reels/%s/%d/%s",
 		url.PathEscape(j.MatchSlug), j.MapNumber, url.PathEscape(j.PlayerID)),
-		map[string]string{"X-AT-Clips": strings.Join(ids, ",")})
+		map[string]string{"X-AT-Clips": strings.Join(ids, ","), "X-AT-Starts": startsHeader(starts)})
 }
 
 // failMoments tells the platform these moments could not be recorded.
@@ -1121,7 +1123,8 @@ func recordFile(args []string) error {
 		}
 	}
 	if len(clips) > 1 {
-		return r.joinReel(clips, cliIntro("Player reel", name), filepath.Join(args[3], "reel.mp4"))
+		_, err := r.joinReel(clips, cliIntro("Player reel", name), filepath.Join(args[3], "reel.mp4"))
+		return err
 	}
 	return nil
 }
@@ -1153,7 +1156,8 @@ func joinReelFiles(out string, clips []string) error {
 	for i := 1; i < len(clips); i++ {
 		joins = append(joins, joinWipe)
 	}
-	return r.buildReel(clips, joins, cliIntro("Match highlights", env("AT_TEAMS", "")), out)
+	_, err := r.buildReel(clips, joins, cliIntro("Match highlights", env("AT_TEAMS", "")), out)
+	return err
 }
 
 // cliIntro is the intro the local commands give a reel, from the environment.

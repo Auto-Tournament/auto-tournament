@@ -93,14 +93,15 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 	for i, c := range j.Clips {
 		players[i] = c.PlayerID
 	}
-	if err := r.buildReel(tagged, joinsByPlayer(players), j.Intro, reel); err != nil {
+	starts, err := r.buildReel(tagged, joinsByPlayer(players), j.Intro, reel)
+	if err != nil {
 		return err
 	}
 	ids := make([]string, len(j.Clips))
 	for i, c := range j.Clips {
 		ids[i] = strconv.Itoa(c.HighlightID)
 	}
-	return r.upload(ctx, reel, j.uploadRoute(len(tagged)), map[string]string{"X-AT-Clips": strings.Join(ids, ",")})
+	return r.upload(ctx, reel, j.uploadRoute(len(tagged)), map[string]string{"X-AT-Clips": strings.Join(ids, ","), "X-AT-Starts": startsHeader(starts)})
 }
 
 func (r *recorder) failMatchReel(j *matchReelJob, cause error) {
