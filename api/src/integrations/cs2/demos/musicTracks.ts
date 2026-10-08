@@ -732,4 +732,15 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
     contentId: true,
     gainDb: 0.3,
   },
+  {
+    id: '594062',
+    title: 'Harambee - Africa Swahili Drum and Bass',
+    artist: 'vjgalaxy',
+    genre: 'drum-n-bass',
+    page: 'https://pixabay.com/music/drum-n-bass-harambee-africa-swahili-drum-and-bass-594062/',
+    audio: 'https://cdn.pixabay.com/download/audio/2026/08/29/audio_c2acf63066.mp3',
+    seconds: 184,
+    contentId: false,
+    gainDb: 4.5,
+  },
 ];
