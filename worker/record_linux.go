@@ -452,7 +452,11 @@ func (r *recorder) capturePicture(g *game, name string, from int, phases []playP
 			log.Printf("captured %d frames at %gx in %.1f s: %.1f a second, %.0f per game second", n, s.scale, wall, float64(n)/wall, float64(n)/wall/s.scale)
 		}
 	}
-	return spanTicks(times, spans), nil
+	ticks := spanTicks(times, spans)
+	if n, err := dropRepeats(raw, int64(g.width*g.height*3/2), ticks); err == nil && n > 0 {
+		log.Printf("left out %d repeated frame(s) of %d", n, len(ticks))
+	}
+	return ticks, nil
 }
 
 // recordMoment captures a moment in CS2 and returns what turns it into the

@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"regexp"
 	"sort"
+	"strconv"
 	"time"
 )
 
@@ -393,4 +395,83 @@ func blendFrames(a, b []byte, w float64) {
 	for i := range a {
 		a[i] = byte((uint32(a[i])*wa + uint32(b[i])*wb + 128) >> 8)
 	}
+}
+
+// rePTS is a gstreamer buffer's pts in identity's last-message:
+// "… (3110400 bytes, dts: none, pts: 0:00:02.019865458, duration: …".
+var rePTS = regexp.MustCompile(`pts: (\d+):(\d{2}):(\d{2})\.(\d+)`)
+
+// bufferPTS is a buffer's pts in seconds, or -1 without one.
+func bufferPTS(line string) float64 {
+	m := rePTS.FindStringSubmatch(line)
+	if m == nil {
+		return -1
+	}
+	h, _ := strconv.Atoi(m[1])
+	mi, _ := strconv.Atoi(m[2])
+	sec, _ := strconv.Atoi(m[3])
+	frac, _ := strconv.ParseFloat("0."+m[4], 64)
+	return float64(h*3600+mi*60+sec) + frac
+}
+
+// ptsTimes puts each frame at its pts on the wall clock instead of when its
+// log line arrived (which waits on the pipe and the scheduler): a line can
+// only arrive after its frame, so the smallest arrival−pts is the offset.
+// Without a pts for every frame, the arrival times as they are.
+func ptsTimes(arrived []time.Time, pts []float64) []time.Time {
+	out := append([]time.Time(nil), arrived...)
+	if len(pts) != len(arrived) || len(pts) == 0 {
+		return out
+	}
+	offset := math.Inf(1)
+	for i, p := range pts {
+		if p < 0 {
+			return out
+		}
+		if o := float64(arrived[i].UnixNano())/1e9 - p; o < offset {
+			offset = o
+		}
+	}
+	for i, p := range pts {
+		out[i] = time.Unix(0, int64((p+offset)*1e9))
+	}
+	return out
+}
+
+// dropRepeats marks a frame the stream sent again (the same picture as the
+// one before it) as no frame (-1): timed as a new moment, a repeat held the
+// picture one frame and the frames around it ran unevenly. It compares a
+// spread of samples of each raw frame with the last kept one.
+func dropRepeats(raw string, frameBytes int64, ticks []float64) (int, error) {
+	f, err := os.Open(raw)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+	const samples, sampleLen = 96, 32
+	read := func(i int, buf []byte) error {
+		step := (frameBytes * 2 / 3) / samples // the luma plane: brightness changes with any movement
+		for s := 0; s < samples; s++ {
+			if _, err := f.ReadAt(buf[s*sampleLen:(s+1)*sampleLen], int64(i)*frameBytes+int64(s)*step); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	prev := make([]byte, samples*sampleLen)
+	cur := make([]byte, samples*sampleLen)
+	dropped, have := 0, false
+	for i := range ticks {
+		if err := read(i, cur); err != nil {
+			break
+		}
+		if have && ticks[i] >= 0 && string(cur) == string(prev) {
+			ticks[i] = -1
+			dropped++
+			continue
+		}
+		prev, cur = cur, prev
+		have = true
+	}
+	return dropped, nil
 }

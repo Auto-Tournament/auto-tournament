@@ -238,3 +238,53 @@ func TestBlendFrames(t *testing.T) {
 		t.Fatalf("blend = %v", a)
 	}
 }
+
+func TestBufferPTSAndTimes(t *testing.T) {
+	line := "/GstPipeline:pipeline0/GstIdentity:tick: last-message = chain   ******* (tick:sink) (3110400 bytes, dts: none, pts: 0:00:02.019865458, duration: none, offset: -1)"
+	if got := bufferPTS(line); math.Abs(got-2.019865458) > 1e-9 {
+		t.Fatalf("pts = %v", got)
+	}
+	if bufferPTS("no pts here") != -1 {
+		t.Fatal("no pts")
+	}
+	base := time.Unix(1000, 0)
+	// Frames every 1/60 s, their lines arriving 5–40 ms late.
+	var arrived []time.Time
+	var pts []float64
+	for i, late := range []int{5, 40, 12, 30, 5} {
+		p := float64(i) / 60
+		pts = append(pts, 10+p)
+		arrived = append(arrived, base.Add(time.Duration((p+float64(late)/1000)*1e9)))
+	}
+	got := ptsTimes(arrived, pts)
+	for i := 1; i < len(got); i++ {
+		if d := got[i].Sub(got[i-1]).Seconds(); math.Abs(d-1.0/60) > 1e-6 {
+			t.Fatalf("frame %d is %.4f s after the one before", i, d)
+		}
+	}
+}
+
+func TestDropRepeats(t *testing.T) {
+	const fb = 6 * 4 * 3 / 2 * 100
+	path := filepath.Join(t.TempDir(), "raw")
+	var data []byte
+	for i, v := range []byte{1, 2, 2, 3, 3, 3, 4} {
+		_ = i
+		frame := make([]byte, fb)
+		for j := range frame {
+			frame[j] = v
+		}
+		data = append(data, frame...)
+	}
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	ticks := []float64{0, 1, 2, 3, 4, 5, 6}
+	n, err := dropRepeats(path, fb, ticks)
+	if err != nil || n != 3 {
+		t.Fatalf("dropped %d (%v), ticks %v", n, err, ticks)
+	}
+	if ticks[2] != -1 || ticks[4] != -1 || ticks[5] != -1 || ticks[3] != 3 || ticks[6] != 6 {
+		t.Fatalf("ticks %v", ticks)
+	}
+}

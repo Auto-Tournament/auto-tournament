@@ -478,7 +478,11 @@ type videoCapture struct {
 	frameBytes int64
 	mu         sync.Mutex
 	times      []time.Time
-	done       chan struct{}
+	// pts: each frame's presentation time in the stream (gstreamer's
+	// buffer pts, seconds), or -1; far steadier than when its log line
+	// reached us (frameTimes anchors them to the clock).
+	pts  []float64
+	done chan struct{}
 }
 
 func startVideoCapture(node, path string, width, height int) (*videoCapture, error) {
@@ -515,8 +519,10 @@ func startVideoCapture(node, path string, width, height int) (*videoCapture, err
 		for sc.Scan() {
 			line := sc.Text()
 			if strings.Contains(line, "GstIdentity:tick: last-message = chain") {
+				now := time.Now()
 				c.mu.Lock()
-				c.times = append(c.times, time.Now())
+				c.times = append(c.times, now)
+				c.pts = append(c.pts, bufferPTS(line))
 				c.mu.Unlock()
 			} else if !strings.Contains(line, "last-message") {
 				fmt.Fprintln(logFile, line)
@@ -547,7 +553,7 @@ func (c *videoCapture) stop() {
 // frameTimes is when each frame in the file arrived.
 func (c *videoCapture) frameTimes() []time.Time {
 	c.mu.Lock()
-	times := append([]time.Time(nil), c.times...)
+	times := ptsTimes(c.times, c.pts)
 	c.mu.Unlock()
 	if st, err := os.Stat(c.path); err == nil && c.frameBytes > 0 {
 		if n := int(st.Size() / c.frameBytes); n < len(times) {
