@@ -591,6 +591,10 @@
       "description": "The Auto Tournament license key: save, remove and read its status, checked offline; and the one-time acceptance of the license terms (non-commercial or commercial use) that the admin UI waits for. Admin only, except the public badge. Nothing else is ever blocked: a missing or problematic key is a notice for admins."
     },
     {
+      "name": "Local accounts",
+      "description": "Username + password accounts an admin creates, makes admin or not, gives a new password, or removes. Admin only."
+    },
+    {
       "name": "Local admin login",
       "description": "Username + password (+ TOTP) sign-in for local admin accounts, and TOTP enrolment."
     },
@@ -6360,6 +6364,188 @@
             "description": "enabled is not a boolean"
           }
         },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/local-accounts": {
+      "get": {
+        "tags": [
+          "Local accounts"
+        ],
+        "summary": "List local accounts (admin)",
+        "responses": {
+          "200": {
+            "description": "`accounts`: username, playerId, name, isAdmin, totpEnabled, createdAt, lastLoginAt"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Local accounts"
+        ],
+        "summary": "Create a local account (admin)",
+        "description": "Same-site JSON. The account signs in at /login/admin as the player `local-<username>`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "isAdmin": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Username or password not accepted"
+          },
+          "409": {
+            "description": "The username is taken"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/local-accounts/{username}": {
+      "put": {
+        "tags": [
+          "Local accounts"
+        ],
+        "summary": "Make a local account an admin or not (admin)",
+        "description": "Same-site JSON `{ isAdmin }`. Taking admin from the only admin is refused (409).",
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "404": {
+            "description": "No such account"
+          },
+          "409": {
+            "description": "It is the only admin"
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Local accounts"
+        ],
+        "summary": "Remove a local account's login (admin)",
+        "description": "Same-site. The player and their history stay. Your own login cannot be removed here (409).",
+        "responses": {
+          "200": {
+            "description": "Removed"
+          },
+          "404": {
+            "description": "No such account"
+          },
+          "409": {
+            "description": "It is your own login"
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/local-accounts/{username}/password": {
+      "put": {
+        "tags": [
+          "Local accounts"
+        ],
+        "summary": "Set a new password for a local account (admin)",
+        "description": "Same-site JSON `{ password }`. The account's two-step verification is removed.",
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "400": {
+            "description": "Password not accepted"
+          },
+          "404": {
+            "description": "No such account"
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "bearerAuth": []
