@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 575 of them, 359 behind auth —
+Every endpoint this API serves — 580 of them, 364 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -1037,6 +1037,18 @@ First-admin setup and reset-admin recovery with a one-time code. 404 once an adm
 | `GET` | `/api/setup/status` | public |
 | `POST` | `/api/setup/check` | public |
 | `POST` | `/api/setup/complete` | public |
+
+### Local accounts
+
+Username + password accounts an admin creates, makes admin or not, gives a new password, or removes. Admin only.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/local-accounts` | admin |
+| `POST` | `/api/local-accounts` | admin |
+| `PUT` | `/api/local-accounts/:username` | admin |
+| `PUT` | `/api/local-accounts/:username/password` | admin |
+| `DELETE` | `/api/local-accounts/:username` | admin |
 
 ### Local admin login
 
