@@ -755,16 +755,12 @@ func (r *recorder) joinReel(clips []clipResult, intro *reelIntro, out string) ([
 // for none) rendered next to the reel from each clip's reactions.
 func (r *recorder) joinReelCrowd(clips []clipResult, intro *reelIntro, crowd, out string) ([]float64, error) {
 	paths := make([]string, len(clips))
-	joins := make([]join, 0, len(clips))
 	sound := reelSound{crowd: crowd, crowdOut: crowdTrackPath(out), outro: true}
 	for i, c := range clips {
 		paths[i] = c.path
 		sound.reactions = append(sound.reactions, c.markers.Reactions)
-		if i > 0 {
-			joins = append(joins, joinFade)
-		}
 	}
-	return r.buildReelSound(paths, joins, intro, sound, out)
+	return r.buildReelSound(paths, wipes(len(paths)), intro, sound, out)
 }
 
 // concatFiles joins MP4s of the same encoding without re-encoding.
@@ -1303,15 +1299,7 @@ func pickEncoder() string {
 // AT_TAG and AT_MAP; AT_INTRO=0 for none).
 func joinReelFiles(out string, clips []string) error {
 	r := &recorder{encoder: env("AT_ENCODER", pickEncoder())}
-	joins := make([]join, 0, len(clips))
-	for i := 1; i < len(clips); i++ {
-		joins = append(joins, joinWipe)
-	}
-	// AT_CLIP_PLAYERS (whose each clip is, comma separated): a fade between
-	// one player's clips, the wipe when the player changes.
-	if players := strings.Split(env("AT_CLIP_PLAYERS", ""), ","); len(players) == len(clips) {
-		joins = joinsByPlayer(players)
-	}
+	joins := wipes(len(clips))
 	// AT_MUSIC (a music file) and AT_CROWD (a crowd cheer) go under the reel;
 	// each clip's kills come from its markers file next to it (moment-N.json).
 	sound := reelSound{music: env("AT_MUSIC", ""), crowd: env("AT_CROWD", ""), crowdOut: crowdTrackPath(out), outro: true}

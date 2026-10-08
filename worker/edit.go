@@ -16,10 +16,12 @@ import (
 const (
 	slowmoSpeed = 0.5
 	rampSec     = 0.75 // game seconds slowing down from the kill (≈1 s of video)
-	holdSec     = 0.5  // game seconds at slowmoSpeed before the cut (1 s of video)
+	holdSec     = 0.5  // game seconds held at slowmoSpeed (1 s of video)
+	afterUpSec  = 0.5  // then game seconds speeding back up to full speed
+	afterSec    = 0.8  // and game seconds at full speed before the cut
 	rampSteps   = 8    // a ramp is this many constant-speed pieces
 	// tailSec is how much game after the last kill a clip shows.
-	tailSec = rampSec + holdSec
+	tailSec = rampSec + holdSec + afterUpSec + afterSec
 )
 
 // The frame rate and height (16:9) of every clip and reel: 1080p at 60 fps,
@@ -68,7 +70,8 @@ func stepSpeed(i int) float64 {
 }
 
 // speedRamp cuts a recording of `length` seconds into pieces: full speed to
-// `kill` seconds in, then slowing to slowmoSpeed and slowed to the end.
+// `kill` seconds in, slowing to slowmoSpeed, held there, then back up to full
+// speed for the round's last moment before the cut.
 func speedRamp(length, kill float64) []segment {
 	return editPlan(length, false, kill)
 }
@@ -110,13 +113,20 @@ func editPlan(length float64, intro bool, kill float64) []segment {
 		add(start, length, 1)
 		return out
 	}
-	// Slowing down step by step from the kill, then slowed to the end.
+	// Slowing down step by step from the kill, held slowed, then back up to
+	// full speed so the game plays on a moment before the cut.
 	step := rampSec / rampSteps
 	add(start, kill, 1)
 	for i := 0; i < rampSteps; i++ {
 		add(kill+float64(i)*step, kill+float64(i+1)*step, stepSpeed(i))
 	}
-	add(kill+rampSec, length, slowmoSpeed)
+	up := kill + rampSec + holdSec
+	add(kill+rampSec, up, slowmoSpeed)
+	upStep := afterUpSec / rampSteps
+	for i := 0; i < rampSteps; i++ {
+		add(up+float64(i)*upStep, up+float64(i+1)*upStep, upSpeed(i))
+	}
+	add(up+afterUpSec, length, 1)
 	return out
 }
 

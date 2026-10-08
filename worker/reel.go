@@ -123,14 +123,16 @@ type reelPlan struct {
 	// picture out.
 	crowdOnly bool
 	audioOnly bool
-	// outro: the last frame held outroHold longer, then picture and sound
-	// fade out (a reel's ending; a clip's pieces join without it).
+	// outro: a reel's opening and ending: in from black (introFade), the last
+	// frame held outroHold longer, then picture and sound fade out (a clip's
+	// pieces join without it).
 	outro bool
 }
 
 const (
-	outroHold = 0.8 // the last frame held this much longer
+	outroHold = 0.3 // the last frame held this much longer (the game plays on before it: afterSec)
 	outroFade = 1.4 // then faded to black over this
+	introFade = 0.5 // and it opens from black over this
 )
 
 // reelFilter joins the parts: [v] and [a].
@@ -234,8 +236,9 @@ func startsHeader(starts []float64) string {
 	return strings.Join(parts, ",")
 }
 
-// outroFilter is the reel's ending ([vj]/[aj] into [v]/[a]): the last frame
-// held, then a fade to black and to silence.
+// outroFilter is the reel's opening and ending ([vj]/[aj] into [v]/[a]): in
+// from black, and at the end the last frame held, then a fade to black and
+// to silence.
 func outroFilter(p reelPlan) string {
 	if !p.outro {
 		return ""
@@ -243,9 +246,10 @@ func outroFilter(p reelPlan) string {
 	end := reelLength(p)
 	var b strings.Builder
 	if !p.audioOnly {
-		fmt.Fprintf(&b, ";[vj]tpad=stop_mode=clone:stop_duration=%g,fade=t=out:st=%.3f:d=%g[v]", outroHold, end-outroFade, outroFade)
+		fmt.Fprintf(&b, ";[vj]fade=t=in:d=%g,tpad=stop_mode=clone:stop_duration=%g,fade=t=out:st=%.3f:d=%g[v]",
+			introFade, outroHold, end-outroFade, outroFade)
 	}
-	fmt.Fprintf(&b, ";[aj]apad=pad_dur=%g,afade=t=out:st=%.3f:d=%g[a]", outroHold, end-outroFade, outroFade)
+	fmt.Fprintf(&b, ";[aj]afade=t=in:d=%g,apad=pad_dur=%g,afade=t=out:st=%.3f:d=%g[a]", introFade, outroHold, end-outroFade, outroFade)
 	return b.String()
 }
 
@@ -269,16 +273,12 @@ func reelLength(p reelPlan) float64 {
 	return total
 }
 
-// joinsByPlayer: a fade between two clips of the same player, a wipe when
-// the player changes.
-func joinsByPlayer(players []string) []join {
-	var out []join
-	for i := 1; i < len(players); i++ {
-		if players[i] != "" && players[i] == players[i-1] {
-			out = append(out, joinFade)
-		} else {
-			out = append(out, joinWipe)
-		}
+// wipes joins n moments with the orange wipe between each: every moment in a
+// reel is its own (fades are for a clip's own pieces).
+func wipes(n int) []join {
+	out := make([]join, 0, max(0, n-1))
+	for i := 1; i < n; i++ {
+		out = append(out, joinWipe)
 	}
 	return out
 }

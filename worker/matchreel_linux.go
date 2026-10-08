@@ -94,11 +94,6 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 		tagged = append(tagged, clip)
 	}
 	reel := filepath.Join(dir, "match.mp4")
-	// The orange wipe when the player changes, a blend between one player's clips.
-	players := make([]string, len(j.Clips))
-	for i, c := range j.Clips {
-		players[i] = c.PlayerID
-	}
 	sound := reelSound{crowd: r.crowdSource(ctx), crowdOut: crowdTrackPath(reel), outro: true}
 	for _, c := range j.Clips {
 		var reactions []reaction
@@ -107,7 +102,7 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 		}
 		sound.reactions = append(sound.reactions, reactions)
 	}
-	starts, err := r.buildReelSound(tagged, joinsByPlayer(players), j.Intro, sound, reel)
+	starts, err := r.buildReelSound(tagged, wipes(len(tagged)), j.Intro, sound, reel)
 	if err != nil {
 		return err
 	}

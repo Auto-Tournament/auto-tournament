@@ -19,19 +19,19 @@ func TestAudioFilterDropsThePitch(t *testing.T) {
 	}
 }
 
-func TestSpeedRampSlowsAndCutsStillSlowed(t *testing.T) {
+func TestSpeedRampSlowsHoldsAndPlaysOn(t *testing.T) {
 	segs := speedRamp(3+tailSec, 3)
 	if segs[0].From != 0 || segs[0].To != 3 || segs[0].Speed != 1 {
 		t.Fatalf("full speed until the kill: %+v", segs[0])
 	}
 	last := segs[len(segs)-1]
-	if last.Speed != slowmoSpeed || math.Abs(last.To-(3+tailSec)) > 1e-9 {
-		t.Fatalf("ends slowed, at the clip's end: %+v", last)
+	if last.Speed != 1 || math.Abs(last.To-(3+tailSec)) > 1e-9 || math.Abs(last.To-last.From-afterSec) > 1e-9 {
+		t.Fatalf("ends at full speed for afterSec, at the clip's end: %+v", last)
 	}
 	var slowing, held float64
-	for _, s := range segs[1:] {
+	for _, s := range segs[1 : len(segs)-1] {
 		if s.Speed > 1-1e-9 {
-			t.Fatalf("back at full speed after the kill: %+v", s)
+			t.Fatalf("back at full speed before the end: %+v", s)
 		}
 		d := (s.To - s.From) / s.Speed
 		if s.Speed == slowmoSpeed {
@@ -40,7 +40,7 @@ func TestSpeedRampSlowsAndCutsStillSlowed(t *testing.T) {
 			slowing += d
 		}
 	}
-	if slowing < 0.7 || slowing > 1.3 || held < 0.8 || held > 1.2 {
+	if slowing < 1.3 || slowing > 2.2 || held < 0.8 || held > 1.2 {
 		t.Fatalf("slowing %.2f s, held %.2f s", slowing, held)
 	}
 }
@@ -80,7 +80,7 @@ func TestMomentMarkers(t *testing.T) {
 	// second blends in over the last reelCrossfade of the first, so it starts
 	// at 2 - 0.4 = 1.6 s.
 	w1 := window{from: 0, to: 2 * tickrate, slowmo: -1}
-	w2 := window{from: 10 * tickrate, to: 10*tickrate + tickrate + int(tailSec*tickrate), slowmo: 11 * tickrate}
+	w2 := window{from: 10 * tickrate, to: 10*tickrate + tickrate + int(math.Ceil(tailSec*tickrate)), slowmo: 11 * tickrate}
 	length2 := float64(w2.to-w2.from) / tickrate
 	segs := [][]segment{{{0, 2, 1}}, speedRamp(length2, 1)}
 	m := momentMarkers([]window{w1, w2}, segs, []int{tickrate, 11 * tickrate})
@@ -94,8 +94,8 @@ func TestMomentMarkers(t *testing.T) {
 	if m.Duration != want {
 		t.Fatalf("duration = %v, want %v", m.Duration, want)
 	}
-	// The slow motion runs to the end of the clip.
-	if m.Slowmo[1] != m.Duration {
+	// The slow motion ends where the game plays on at full speed (afterSec) before the cut.
+	if math.Abs(m.Slowmo[1]+afterSec-m.Duration) > 0.05 { // the tail rounds up to whole ticks
 		t.Fatalf("slow motion ends at %v, the clip at %v", m.Slowmo[1], m.Duration)
 	}
 }
