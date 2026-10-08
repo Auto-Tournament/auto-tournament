@@ -117,10 +117,17 @@ type recorder struct {
 // cl_draw_only_deathnotices already hides the rest of the HUD; the crosshair
 // stays CS2's).
 func (r *recorder) look() []string {
-	if r.icons == nil {
-		return recorderLook
+	look := append([]string{}, recorderLook...)
+	if r.icons != nil {
+		look = append(look, "cl_drawhud_force_deathnotices -1")
 	}
-	return append(append([]string{}, recorderLook...), "cl_drawhud_force_deathnotices -1")
+	// AT_CS2_EXTRA: more console commands, ";"-separated (tuning on a recorder).
+	for _, c := range strings.Split(env("AT_CS2_EXTRA", ""), ";") {
+		if c = strings.TrimSpace(c); c != "" {
+			look = append(look, c)
+		}
+	}
+	return look
 }
 
 // claimRecording asks the platform for work: a player's moments to record

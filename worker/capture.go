@@ -59,6 +59,11 @@ var recorderLook = []string{
 	"spec_show_xray 0",
 	"cl_show_observer_crosshair 0",
 	"cl_trueview_show_status 0",
+	// TrueView (the player's own view, rebuilt from their commands) even for a
+	// demo from an older CS2 build: 1 turns it off then, and the first-person
+	// view rebuilt from snapshots stutters back and forth (a jump in slow
+	// motion, 2026-10-08).
+	"cl_demo_predict 2",
 	"r_show_build_info 0",
 	"hud_showtargetid 0",
 	"volume 1",
