@@ -81,6 +81,10 @@ const GENRE_ORDER = [
   'orchestral',
   'jazz',
   'build-up-scenes',
+  'dubstep',
+  'pulses',
+  'mystery',
+  'modern-classical',
 ];
 
 /** One chapter of a reel, as the scrubber's hover card shows it. */

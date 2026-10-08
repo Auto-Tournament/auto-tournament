@@ -637,7 +637,11 @@
         "orchestral": "Orchestral",
         "dance": "Dance",
         "jazz": "Jazz",
-        "build-up-scenes": "Build-up"
+        "build-up-scenes": "Build-up",
+        "dubstep": "Dubstep",
+        "pulses": "Pulses",
+        "mystery": "Mystery",
+        "modern-classical": "Modern classical"
       }
     }
   },
