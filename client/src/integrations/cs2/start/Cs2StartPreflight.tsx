@@ -59,12 +59,16 @@ export const Cs2StartPreflight: React.FC<TournamentStartPreflightProps> = ({
         const availabilityResponse = await api.get<{
           success: boolean;
           availableServerCount: number;
+          /** Stopped csm servers the platform starts once the matches need them (older APIs: missing). */
+          startableServerCount?: number;
         }>('/api/tournament/server-availability');
 
         if (cancelled) return;
 
         if (availabilityResponse.success) {
-          const available = availabilityResponse.availableServerCount;
+          // Stopped csm servers count: the platform starts them for the matches.
+          const available =
+            availabilityResponse.availableServerCount + (availabilityResponse.startableServerCount ?? 0);
 
           // If we don't have enough available servers to cover the first
           // round's concurrent matches, ask so the admin explicitly accepts

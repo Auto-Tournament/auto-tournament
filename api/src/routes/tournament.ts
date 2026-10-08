@@ -1311,6 +1311,7 @@ router.get('/server-availability', requireAuth, async (req: Request, res: Respon
       gracePeriodSeconds: status.gracePeriodSeconds,
       nextAllocationInSeconds: status.nextAllocationInSeconds,
       requiredServerCount: status.requiredServerCount,
+      startableServerCount: status.startableServerCount,
       servers: status.servers,
       simulationEnabled,
     });

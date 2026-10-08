@@ -148,6 +148,8 @@ export class Scheduler {
     gracePeriodSeconds: number;
     nextAllocationInSeconds: number | null;
     requiredServerCount: number;
+    /** Stopped servers the integration starts by itself when matches need them. */
+    startableServerCount: number;
     servers: ResourcePoolStatus['resources'];
   }> {
     const integration = await this.integrationForTournament(tournamentId);
@@ -196,6 +198,7 @@ export class Scheduler {
       gracePeriodSeconds,
       nextAllocationInSeconds,
       requiredServerCount,
+      startableServerCount: pool.startableCount ?? 0,
       servers: pool.resources,
     };
   }
