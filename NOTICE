@@ -5,6 +5,14 @@ Licensed under the PolyForm Noncommercial License 1.0.0 (see LICENSE).
 
 Commercial use requires a separate license from the author. See LICENSING.md.
 
+Third-party software in the server and the web app
+
+The server (api/) and the web app (client/) are built with third-party npm
+packages under their own licenses (MIT, ISC, BSD, Apache 2.0 and similar).
+Their notices are generated when the image is built
+(scripts/third-party-notices.mjs) and ship in it as THIRD_PARTY_NOTICES.md;
+a running instance also serves them at /third-party-notices.txt.
+
 Third-party software in the worker
 
 The worker (worker/, the at-worker binary) is built with third-party Go
