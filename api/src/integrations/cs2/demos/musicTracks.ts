@@ -51,6 +51,7 @@ export const MUSIC_GENRES = [
   'pulses',
   'mystery',
   'modern-classical',
+  'main-title',
 ] as const;
 export type MusicGenre = (typeof MUSIC_GENRES)[number];
 
@@ -846,5 +847,27 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
     seconds: 454,
     contentId: true,
     gainDb: 7.6,
+  },
+  {
+    id: '111355',
+    title: 'Winning Elevation',
+    artist: 'Hot_Dope',
+    genre: 'main-title',
+    page: 'https://pixabay.com/music/main-title-winning-elevation-111355/',
+    audio: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3',
+    seconds: 122,
+    contentId: true,
+    gainDb: -1.4,
+  },
+  {
+    id: '317774',
+    title: 'Adventure Journey',
+    artist: 'The_Mountain',
+    genre: 'main-title',
+    page: 'https://pixabay.com/music/main-title-adventure-journey-317774/',
+    audio: 'https://cdn.pixabay.com/download/audio/2025/03/23/audio_51e1fddfd9.mp3',
+    seconds: 127,
+    contentId: true,
+    gainDb: 0.0,
   },
 ];
