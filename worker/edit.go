@@ -63,6 +63,10 @@ type segment struct {
 	From, To, Speed float64
 }
 
+// introGameGain is the game's sound under the caption card's entrance: a
+// little down, so the card has the moment, and back up as the game does.
+const introGameGain = 0.5
+
 // introUpSec is how long (in video seconds) a clip that opened slowed down
 // takes to get back to full speed, from when its caption card starts to leave.
 const introUpSec = 0.6
@@ -214,7 +218,11 @@ func outputSeconds(segs []segment) float64 {
 // audioFilter plays the moment's sound [1:a] (from its start, `length`
 // seconds) piece by piece at each piece's speed, the way a record slows down:
 // the pitch drops with the speed and comes back with it. Output [a].
-func audioFilter(segs []segment, length float64) string {
+//
+// focusAt >= 0: a caption card's entrance starts there (video seconds), and
+// the game is at introGameGain under it, back to full as the game comes back
+// into focus.
+func audioFilter(segs []segment, length, focusAt float64) string {
 	var b strings.Builder
 	n := len(segs)
 	fmt.Fprintf(&b, "[1:a]atrim=duration=%.4f,asetpts=PTS-STARTPTS,aresample=48000,asplit=%d", length, n)
@@ -232,7 +240,13 @@ func audioFilter(segs []segment, length float64) string {
 	for i := range segs {
 		fmt.Fprintf(&b, "[a%d]", i)
 	}
-	fmt.Fprintf(&b, "concat=n=%d:v=0:a=1[a]", n)
+	fmt.Fprintf(&b, "concat=n=%d:v=0:a=1", n)
+	if focusAt >= 0 {
+		up, full := focusAt+focusOut, focusAt+focusOut+focusOutDur
+		fmt.Fprintf(&b, ",volume='if(lt(t,%.3f),%g,if(lt(t,%.3f),%g+%g*(t-%.3f)/%.3f,1))':eval=frame",
+			up, introGameGain, full, introGameGain, 1-introGameGain, up, focusOutDur)
+	}
+	b.WriteString("[a]")
 	return b.String()
 }
 

@@ -723,7 +723,11 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-i", r.logo)
 		o.logo = next
 	}
-	filter := videoFilter(o) + ";" + audioFilter(segs, length)
+	focusAt := -1.0
+	if len(o.focus) > 0 {
+		focusAt = o.focus[0]
+	}
+	filter := videoFilter(o) + ";" + audioFilter(segs, length, focusAt)
 	// Exactly the timeline's frames: the card's and the kill feed's streams can
 	// run a little longer, and ffmpeg's overlay then held the last frame
 	// (a dressed piece came out ~0.05 s longer than its picture and sound).

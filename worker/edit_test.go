@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"math"
 	"strings"
@@ -8,7 +9,7 @@ import (
 )
 
 func TestAudioFilterDropsThePitch(t *testing.T) {
-	f := audioFilter([]segment{{0, 1, 1}, {1, 2, 0.5}}, 2)
+	f := audioFilter([]segment{{0, 1, 1}, {1, 2, 0.5}}, 2, -1)
 	for _, want := range []string{"atrim=duration=2.0000", "asplit=2[t0][t1]", "[t1]atrim=start=1.0000:end=2.0000,asetpts=PTS-STARTPTS,asetrate=24000,aresample=48000[a1]", "concat=n=2:v=0:a=1[a]"} {
 		if !strings.Contains(f, want) {
 			t.Fatalf("%q missing from %s", want, f)
@@ -163,5 +164,16 @@ func TestReelFilterFades(t *testing.T) {
 	}
 	if one := reelFilter(reelPlan{durations: []float64{5}, width: 1920, height: 1080, fps: 60}); !strings.HasSuffix(one, "[v0in]null[v];[a0in]anull[a]") {
 		t.Fatalf("one clip: %s", one)
+	}
+}
+
+func TestAudioFilterIntroGain(t *testing.T) {
+	f := audioFilter([]segment{{0, 4, 0.5}, {4, 8, 1}}, 8, 0)
+	want := fmt.Sprintf("volume='if(lt(t,%.3f),0.5,", focusOut)
+	if !strings.Contains(f, want) || !strings.HasSuffix(f, ":eval=frame[a]") {
+		t.Fatalf("no intro gain in %s", f)
+	}
+	if strings.Contains(audioFilter([]segment{{0, 4, 1}}, 4, -1), "volume=") {
+		t.Fatal("gain without an intro")
 	}
 }
