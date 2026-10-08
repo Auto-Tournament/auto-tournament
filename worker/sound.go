@@ -12,6 +12,7 @@ type reelSound struct {
 	music     string       // a music file (looped when the reel is longer), or ""
 	crowd     string       // a crowd cheer recording, or ""
 	reactions [][]reaction // each part's crowd reactions, seconds into that part (reelPlan order)
+	crowdOut  string       // where the crowd track goes (buildCrowdTrack); none without it
 }
 
 const (
@@ -27,6 +28,11 @@ const (
 	wowGain            = 0.34 // a "whoaaa" at its height
 	crowdDelay         = 0.4  // the crowd reacts this long after the kill
 )
+
+// crowdTrackPath is where a reel's crowd track goes: next to it.
+func crowdTrackPath(reel string) string {
+	return strings.TrimSuffix(reel, ".mp4") + ".crowd.m4a"
+}
 
 // soundFilter mixes the music (input musicIn, -1 for none) under
 // reelFilter's [a] into [amix]. The crowd is already in each part's sound
@@ -157,8 +163,27 @@ func crowdPart(p reelPlan, i int) string {
 	fmt.Fprintf(&b, "[cso%d][cnr%d]concat=n=2:v=0:a=1,apad,atrim=duration=%.3f,volume=%g[cb%d];", i, i, d, crowdBedGain, i)
 	fmt.Fprintf(&b, "[cb%d][a%dside]sidechaingate=threshold=%g:ratio=8:attack=120:release=2200:range=%g:knee=3:detection=rms[bed%d];",
 		i, i, crowdGateThreshold, crowdGateRange, i)
+	if p.crowdOnly {
+		// The crowd track: the murmur alone, the game only opened it.
+		fmt.Fprintf(&b, "[a%dgame]anullsink;[bed%d]anull[a%din];", i, i, i)
+		return b.String()
+	}
 	fmt.Fprintf(&b, "[a%dgame][bed%d]amix=inputs=2:duration=first:normalize=0[a%din];", i, i, i)
 	return b.String()
+}
+
+// crowdTrackFilter is the reel's crowd alone, [crowd]: each clip's murmur
+// joined the way the clips are (fades, wipes), and the reactions on top.
+// The player plays it beside the reel, and a download can mix it in.
+func crowdTrackFilter(p reelPlan) string {
+	p.audioOnly, p.crowdOnly = true, true
+	f := reelFilter(p)
+	if p.crowd != nil && len(p.crowd.reacts) > 0 {
+		f += reactFilter(p.crowd.reacts) + ";[a][reacts]amix=inputs=2:duration=first:normalize=0[crowd]"
+	} else {
+		f += ";[a]anull[crowd]"
+	}
+	return f
 }
 
 // reactFilter is the reactions' part of the final mix: each input faded and

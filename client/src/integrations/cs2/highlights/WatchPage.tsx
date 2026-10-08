@@ -66,14 +66,20 @@ const sectionTitle = {
   color: tokens.color.muted,
 } as const;
 
-/** The players in the order the reel shows them; anyone not in it after, most clips first. */
+/** A reel's players in the order it shows them; for a single clip, everyone on the map. */
 function inReelOrder(players: RelatedPlayer[], chapters: Chapter[]): RelatedPlayer[] {
+  if (!chapters.length) return [...players].sort((a, b) => b.clips - a.clips);
+  // A reel: only its own players, in its order, with how many plays they have in it.
   const first = new Map<string, number>();
+  const count = new Map<string, number>();
   chapters.forEach((c, i) => {
     if (!first.has(c.playerId)) first.set(c.playerId, i);
+    count.set(c.playerId, (count.get(c.playerId) ?? 0) + 1);
   });
-  const at = (p: RelatedPlayer) => first.get(p.playerId) ?? Number.MAX_SAFE_INTEGER;
-  return [...players].sort((a, b) => at(a) - at(b) || b.clips - a.clips);
+  return players
+    .filter((p) => first.has(p.playerId))
+    .map((p) => ({ ...p, clips: count.get(p.playerId) ?? p.clips }))
+    .sort((a, b) => first.get(a.playerId)! - first.get(b.playerId)!);
 }
 
 /** What one watch page shows, whatever kind of video it is. */
@@ -89,6 +95,8 @@ interface Watchable {
   playerId: string | null;
   /** The file name a download is saved as. */
   file: string;
+  /** A reel's crowd track, played beside it. */
+  crowd: string | null;
 }
 
 const pill = {
@@ -169,6 +177,7 @@ export function WatchPage() {
             round: clip.round,
             playerId: clip.playerId,
             file: `${clip.playerName}-${clip.kind}-${clip.id}.mp4`,
+            crowd: null,
           })
         )
         .catch(fail);
@@ -177,6 +186,7 @@ export function WatchPage() {
         .get<{
           reel: {
             video: string;
+            crowd?: string | null;
             map: string | null;
             mapNumber: number;
             chapters: Chapter[];
@@ -199,6 +209,7 @@ export function WatchPage() {
             round: null,
             playerId: c ?? null,
             file: `${reel.playerName}-reel.mp4`,
+            crowd: reel.crowd ?? null,
           })
         )
         .catch(fail);
@@ -207,6 +218,7 @@ export function WatchPage() {
         .get<{
           reel: {
             video: string;
+            crowd?: string | null;
             map: string | null;
             mapNumber: number;
             chapters: Chapter[];
@@ -225,12 +237,13 @@ export function WatchPage() {
             round: null,
             playerId: null,
             file: 'match-reel.mp4',
+            crowd: reel.crowd ?? null,
           })
         )
         .catch(fail);
     } else if (kind === 'tournament') {
       api
-        .get<{ reel: { video: string; chapters: Chapter[] } }>(
+        .get<{ reel: { video: string; crowd?: string | null; chapters: Chapter[] } }>(
           `/api/game/cs2/watch/tournament/${enc(a ?? '')}`
         )
         .then(({ reel }) =>
@@ -245,6 +258,7 @@ export function WatchPage() {
             round: null,
             playerId: null,
             file: 'tournament-reel.mp4',
+            crowd: reel.crowd ?? null,
           })
         )
         .catch(fail);
@@ -356,6 +370,7 @@ export function WatchPage() {
             markers={w.markers}
             chapterStarts={w.chapters.flatMap((c) => (c.at === null ? [] : [c.at]))}
             downloadName={w.file}
+            crowd={w.crowd}
             music={
               w.chapters.length > 0 && tracks.length > 0
                 ? { tracks, introEnd: Math.max(0, w.chapters[0]?.at ?? 0) }

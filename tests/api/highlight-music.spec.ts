@@ -32,4 +32,10 @@ test.describe('reel music', () => {
     expect(plain).toContain('afade=t=out:st=17.500:d=2.5');
     expect(musicFilter(20, 3)).toContain("volume='if(lt(t,3.000),0.32,");
   });
+
+  test('each track is evened out to the others before the reel level', { tag: ['@api'] }, () => {
+    expect(musicFilter(20, 0, -3.5)).toContain('volume=-3.5dB,volume=0.11,');
+    expect(musicFilter(20, 0, 0)).not.toContain('dB');
+    for (const t of MUSIC_TRACKS) expect(Math.abs(t.gainDb)).toBeLessThan(12);
+  });
 });

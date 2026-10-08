@@ -15,6 +15,8 @@ import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
 import {
+  crowdFileOf,
+  crowdUrlOf,
   HIGHLIGHTS_DIR,
   matchLine,
   reelDate,
@@ -271,6 +273,7 @@ export async function playerReelViews(playerId: string, limit: number) {
       map: r.map_name,
       moments: Number(r.moments),
       video: fileUrl(r.clip_path),
+      crowd: crowdUrlOf(r.clip_path),
       chapters: await chaptersOf(r.clip_ids, r.clip_starts),
       match: {
         slug: r.match_slug,
@@ -374,6 +377,7 @@ export async function tournamentReel(tournamentId: number) {
   return {
     status: row.status,
     video: done ? fileUrl(row.clip_path!) : null,
+    crowd: done ? crowdUrlOf(row.clip_path) : null,
     chapters,
     duration:
       last && last.at !== null && lastClip?.markers ? last.at + lastClip.markers.duration : null,
@@ -614,6 +618,7 @@ export async function matchReelView(matchSlug: string, mapNumber: number) {
     mapNumber,
     map: row.map_name,
     video: fileUrl(row.clip_path),
+    crowd: crowdUrlOf(row.clip_path),
     chapters: await chaptersOf(row.clip_ids, row.clip_starts),
     match: {
       slug: matchSlug,
@@ -790,6 +795,7 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
         avatarUrl: c.avatarUrl,
         title: c.title,
         url: c.video!,
+        markers: c.markers,
       };
     }),
     upload: `/api/game/cs2/recorder/tournament-reels/${tournamentId}`,
@@ -819,6 +825,7 @@ export async function saveTournamentReel(
   });
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
+  await fs.promises.rm(crowdFileOf(file), { force: true });
   await db.runAsync(
     `INSERT INTO cs2_tournament_reels (tournament_id, status, clip_ids, clip_starts, clip_path, clip_bytes)
      VALUES (?, 'done', ?, ?, ?, ?)

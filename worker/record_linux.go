@@ -80,6 +80,8 @@ type doneClip struct {
 	ID        int    `json:"id"`
 	StartTick int    `json:"startTick"`
 	URL       string `json:"url"`
+	// Markers are its kills and the crowd's reactions, for the reel's crowd.
+	Markers *clipMarkers `json:"markers"`
 }
 
 type recorder struct {
@@ -684,15 +686,23 @@ func maxf(a, b float64) float64 {
 // joinReel puts one player's clips one after the other, each blending into
 // the next, after the reel's intro (nil: none).
 func (r *recorder) joinReel(clips []clipResult, intro *reelIntro, out string) ([]float64, error) {
+	return r.joinReelCrowd(clips, intro, "", out)
+}
+
+// joinReelCrowd is joinReel with the crowd track (crowd, a recording, or ""
+// for none) rendered next to the reel from each clip's reactions.
+func (r *recorder) joinReelCrowd(clips []clipResult, intro *reelIntro, crowd, out string) ([]float64, error) {
 	paths := make([]string, len(clips))
 	joins := make([]join, 0, len(clips))
+	sound := reelSound{crowd: crowd, crowdOut: crowdTrackPath(out)}
 	for i, c := range clips {
 		paths[i] = c.path
+		sound.reactions = append(sound.reactions, c.markers.Reactions)
 		if i > 0 {
 			joins = append(joins, joinFade)
 		}
 	}
-	return r.buildReel(paths, joins, intro, out)
+	return r.buildReelSound(paths, joins, intro, sound, out)
 }
 
 // concatFiles joins MP4s of the same encoding without re-encoding.
@@ -900,14 +910,18 @@ func (r *recorder) uploadReel(ctx context.Context, dir string, j *recordJob, cli
 			log.Printf("reel without clip %d: %v", d.ID, err)
 			continue
 		}
-		plays = append(plays, clipResult{moment: moment{ID: d.ID, StartTick: d.StartTick}, path: path})
+		done := clipResult{moment: moment{ID: d.ID, StartTick: d.StartTick}, path: path}
+		if d.Markers != nil {
+			done.markers = *d.Markers
+		}
+		plays = append(plays, done)
 	}
 	if len(plays) < 2 {
 		return nil
 	}
 	sort.Slice(plays, func(a, b int) bool { return plays[a].moment.StartTick < plays[b].moment.StartTick })
 	reel := filepath.Join(dir, fmt.Sprintf("reel-%s.mp4", j.PlayerID))
-	starts, err := r.joinReel(plays, playerReelIntro(j, len(plays)), reel)
+	starts, err := r.joinReelCrowd(plays, playerReelIntro(j, len(plays)), r.crowdSource(ctx), reel)
 	if err != nil {
 		return err
 	}
@@ -915,9 +929,14 @@ func (r *recorder) uploadReel(ctx context.Context, dir string, j *recordJob, cli
 	for i, c := range plays {
 		ids[i] = strconv.Itoa(c.moment.ID)
 	}
-	return r.upload(ctx, reel, fmt.Sprintf("/api/game/cs2/recorder/reels/%s/%d/%s",
-		url.PathEscape(j.MatchSlug), j.MapNumber, url.PathEscape(j.PlayerID)),
-		map[string]string{"X-AT-Clips": strings.Join(ids, ","), "X-AT-Starts": startsHeader(starts)})
+	route := fmt.Sprintf("/api/game/cs2/recorder/reels/%s/%d/%s",
+		url.PathEscape(j.MatchSlug), j.MapNumber, url.PathEscape(j.PlayerID))
+	if err := r.upload(ctx, reel, route,
+		map[string]string{"X-AT-Clips": strings.Join(ids, ","), "X-AT-Starts": startsHeader(starts)}); err != nil {
+		return err
+	}
+	r.uploadCrowd(ctx, reel, route)
+	return nil
 }
 
 // failMoments tells the platform these moments could not be recorded.
@@ -1146,7 +1165,7 @@ func joinReelFiles(out string, clips []string) error {
 	}
 	// AT_MUSIC (a music file) and AT_CROWD (a crowd cheer) go under the reel;
 	// each clip's kills come from its markers file next to it (moment-N.json).
-	sound := reelSound{music: env("AT_MUSIC", ""), crowd: env("AT_CROWD", "")}
+	sound := reelSound{music: env("AT_MUSIC", ""), crowd: env("AT_CROWD", ""), crowdOut: crowdTrackPath(out)}
 	for _, c := range clips {
 		var m clipMarkers
 		if b, err := os.ReadFile(strings.TrimSuffix(c, filepath.Ext(c)) + ".json"); err == nil {

@@ -28,6 +28,8 @@ type matchReelClip struct {
 	AvatarURL   *string `json:"avatarUrl"`
 	Title       string  `json:"title"`
 	URL         string  `json:"url"`
+	// Markers are its kills and the crowd's reactions, for the reel's crowd.
+	Markers *clipMarkers `json:"markers"`
 }
 
 type matchReelJob struct {
@@ -93,7 +95,15 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 	for i, c := range j.Clips {
 		players[i] = c.PlayerID
 	}
-	starts, err := r.buildReel(tagged, joinsByPlayer(players), j.Intro, reel)
+	sound := reelSound{crowd: r.crowdSource(ctx), crowdOut: crowdTrackPath(reel)}
+	for _, c := range j.Clips {
+		var reactions []reaction
+		if c.Markers != nil {
+			reactions = c.Markers.Reactions
+		}
+		sound.reactions = append(sound.reactions, reactions)
+	}
+	starts, err := r.buildReelSound(tagged, joinsByPlayer(players), j.Intro, sound, reel)
 	if err != nil {
 		return err
 	}
@@ -101,7 +111,11 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 	for i, c := range j.Clips {
 		ids[i] = strconv.Itoa(c.HighlightID)
 	}
-	return r.upload(ctx, reel, j.uploadRoute(len(tagged)), map[string]string{"X-AT-Clips": strings.Join(ids, ","), "X-AT-Starts": startsHeader(starts)})
+	if err := r.upload(ctx, reel, j.uploadRoute(len(tagged)), map[string]string{"X-AT-Clips": strings.Join(ids, ","), "X-AT-Starts": startsHeader(starts)}); err != nil {
+		return err
+	}
+	r.uploadCrowd(ctx, reel, j.uploadRoute(len(tagged)))
+	return nil
 }
 
 func (r *recorder) failMatchReel(j *matchReelJob, cause error) {

@@ -89,3 +89,23 @@ func TestCheersScaleWithHowImpressive(t *testing.T) {
 		t.Fatalf("reactions %v", rs)
 	}
 }
+
+func TestCrowdTrackIsTheCrowdAlone(t *testing.T) {
+	p := reelPlan{durations: []float64{introSec, 10, 8}, joins: []join{joinWipe, joinWipe}, width: 1920, height: 1080, fps: 60}
+	p.crowd = &partCrowd{first: 1, bedIn: map[int]int{1: 3, 2: 4}, reacts: []crowdReact{{in: 5, at: 9, score: 3, length: 3}}}
+	f := crowdTrackFilter(p)
+	for _, want := range []string{"[a1game]anullsink", "[bed1]anull[a1in]", "atrim=duration=4.400[a0in]", "[a][reacts]amix", "[crowd]"} {
+		if !strings.Contains(f, want) {
+			t.Fatalf("crowd track filter has no %q:\n%s", want, f)
+		}
+	}
+	for _, not := range []string{"[0:v]", "xfade", "[a1game][bed1]amix"} {
+		if strings.Contains(f, not) {
+			t.Fatalf("crowd track filter has %q:\n%s", not, f)
+		}
+	}
+	// The reel itself keeps only the game.
+	if strings.Contains(reelFilter(reelPlan{durations: []float64{10, 8}, joins: []join{joinWipe}, width: 1920, height: 1080, fps: 60}), "bed") {
+		t.Fatal("a reel without a crowd plan has a crowd")
+	}
+}

@@ -118,6 +118,11 @@ type reelPlan struct {
 	// crowd, when set, goes into each part's own sound before the joins
 	// (sound.go), so it fades and wipes with its clip.
 	crowd *partCrowd
+	// crowdOnly: the sound is the crowd alone (the game only opens its
+	// murmur), for the reel's separate crowd track; audioOnly leaves the
+	// picture out.
+	crowdOnly bool
+	audioOnly bool
 }
 
 // reelFilter joins the parts: [v] and [a].
@@ -131,7 +136,14 @@ func reelFilter(p reelPlan) string {
 	// and across a reel's joins those add up (1.6 s by the tenth player of a
 	// pro reel), so the sound drifted off the picture.
 	for i, d := range p.durations {
-		fmt.Fprintf(&b, "[%d:v]setpts=PTS-STARTPTS,trim=duration=%.3f,%s[v%din];", i, d, norm, i)
+		if !p.audioOnly {
+			fmt.Fprintf(&b, "[%d:v]setpts=PTS-STARTPTS,trim=duration=%.3f,%s[v%din];", i, d, norm, i)
+		}
+		if p.crowdOnly && !p.crowd.has(i) {
+			// No crowd under this part (the intro): silence its length.
+			fmt.Fprintf(&b, "anullsrc=r=48000:cl=stereo,atrim=duration=%.3f[a%din];", d, i)
+			continue
+		}
 		if p.crowd.has(i) {
 			fmt.Fprintf(&b, "[%d:a]asetpts=PTS-STARTPTS,apad,atrim=duration=%.3f[a%draw];", i, d, i)
 			b.WriteString(crowdPart(p, i))
@@ -140,7 +152,11 @@ func reelFilter(p reelPlan) string {
 		fmt.Fprintf(&b, "[%d:a]asetpts=PTS-STARTPTS,apad,atrim=duration=%.3f[a%din];", i, d, i)
 	}
 	if len(p.durations) == 1 {
-		b.WriteString("[v0in]null[v];[a0in]anull[a]")
+		if p.audioOnly {
+			b.WriteString("[a0in]anull[a]")
+		} else {
+			b.WriteString("[v0in]null[v];[a0in]anull[a]")
+		}
 		return b.String()
 	}
 	length := p.durations[0]
@@ -153,16 +169,22 @@ func reelFilter(p reelPlan) string {
 		if p.joins[i-1] == joinWipe {
 			// Orange in from the left, a beat of orange, out to the right showing the next part.
 			bar := wipeInSec*2 + wipeHoldSec
-			fmt.Fprintf(&b, "color=c=0xff6a3d:s=%dx%d:r=%g:d=%.3f,%s[wc%d];", p.width, p.height, p.fps, bar, norm, i)
+			if !p.audioOnly {
+				fmt.Fprintf(&b, "color=c=0xff6a3d:s=%dx%d:r=%g:d=%.3f,%s[wc%d];", p.width, p.height, p.fps, bar, norm, i)
+				fmt.Fprintf(&b, "[%s][wc%d]xfade=transition=wiperight:duration=%g:offset=%.3f[wv%d];", prevV, i, wipeInSec, length-wipeInSec, i)
+			}
 			fmt.Fprintf(&b, "anullsrc=r=48000:cl=stereo,atrim=duration=%.3f[ws%d];", bar, i)
-			fmt.Fprintf(&b, "[%s][wc%d]xfade=transition=wiperight:duration=%g:offset=%.3f[wv%d];", prevV, i, wipeInSec, length-wipeInSec, i)
 			fmt.Fprintf(&b, "[%s][ws%d]acrossfade=d=%g[wa%d];", prevA, i, wipeInSec, i)
 			length += bar - wipeInSec
-			fmt.Fprintf(&b, "[wv%d][v%din]xfade=transition=wiperight:duration=%g:offset=%.3f[%s];", i, i, wipeInSec, length-wipeInSec, v)
+			if !p.audioOnly {
+				fmt.Fprintf(&b, "[wv%d][v%din]xfade=transition=wiperight:duration=%g:offset=%.3f[%s];", i, i, wipeInSec, length-wipeInSec, v)
+			}
 			fmt.Fprintf(&b, "[wa%d][a%din]acrossfade=d=%g[%s];", i, i, wipeInSec, a)
 			length += p.durations[i] - wipeInSec
 		} else {
-			fmt.Fprintf(&b, "[%s][v%din]xfade=transition=fade:duration=%g:offset=%.3f[%s];", prevV, i, reelCrossfade, length-reelCrossfade, v)
+			if !p.audioOnly {
+				fmt.Fprintf(&b, "[%s][v%din]xfade=transition=fade:duration=%g:offset=%.3f[%s];", prevV, i, reelCrossfade, length-reelCrossfade, v)
+			}
 			fmt.Fprintf(&b, "[%s][a%din]acrossfade=d=%g[%s];", prevA, i, reelCrossfade, a)
 			length += p.durations[i] - reelCrossfade
 		}

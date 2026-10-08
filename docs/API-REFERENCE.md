@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 583 of them, 364 behind auth —
+Every endpoint this API serves — 586 of them, 367 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -262,6 +262,9 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 | `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map` | admin |
 | `POST` | `/api/game/cs2/recorder/match-reels/:slug/:map/fail` | admin |
 | `GET` | `/api/game/cs2/matches/:slug/reels` | public |
+| `PUT` | `/api/game/cs2/recorder/reels/:slug/:map/:player/crowd` | admin |
+| `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map/crowd` | admin |
+| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id/crowd` | admin |
 | `POST` | `/api/game/cs2/recorder/fail` | admin |
 | `PUT` | `/api/game/cs2/recorder/tournament-reels/:id` | admin |
 | `POST` | `/api/game/cs2/recorder/tournament-reels/:id/fail` | admin |

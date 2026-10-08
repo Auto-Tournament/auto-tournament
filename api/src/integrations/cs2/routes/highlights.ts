@@ -10,6 +10,8 @@
  *   POST /api/game/cs2/recorder/match-reels/:slug/:map/fail  { error }: it could not make it
  *   PUT  /api/game/cs2/recorder/tournament-reels/:id         a tournament's reel (video/mp4 body)
  *   POST /api/game/cs2/recorder/tournament-reels/:id/fail    { error }: it could not make it
+ *   PUT  …/reels/:slug/:map/:player/crowd, …/match-reels/:slug/:map/crowd,
+ *        …/tournament-reels/:id/crowd                       a reel's crowd track (audio/mp4 body), after the reel
  *
  * A clip's upload carries `X-AT-Markers` (JSON: where its kills and slow
  * motion are, in seconds); a reel's carries `X-AT-Clips` (the highlight ids it
@@ -27,7 +29,8 @@
  *   GET  /api/game/cs2/watch/tournament/:id           a tournament's reel
  *   GET  /api/game/cs2/watch/related                  ?match&map | ?tournament: the players on that map and more reels
  *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`, `tournament-…`), with range requests;
- *                                                     ?music=<track>&intro=<s>: a download with that track mixed in (../demos/music.ts)
+ *                                                     ?crowd=1, ?music=<track>&intro=<s>: a download with its crowd track and/or that music mixed in (../demos/music.ts)
+ *                                                     `<reel>.crowd.m4a`: a reel's crowd track
  *   GET  /api/game/cs2/music                          the tracks reels play ({ tracks }), and every one there is ({ all })
  *   GET  /api/game/cs2/music/:id.mp3                  one track, with range requests
  */
@@ -53,6 +56,7 @@ import {
   setFavourite,
   tournamentHighlights,
   tournamentReel,
+  tournamentReelFile,
 } from '../demos/highlightViews';
 import {
   claimMapJob,
@@ -67,11 +71,15 @@ import {
   failRecordJob,
   parseClipIds,
   parseClipStarts,
+  crowdFileOf,
+  matchReelFile,
+  reelFile,
+  saveCrowd,
   parseMarkers,
   saveClip,
   saveReel,
 } from '../demos/highlights';
-import { enabledTracks, trackById, trackFile, withMusic } from '../demos/music';
+import { enabledTracks, trackById, trackFile, withSound } from '../demos/music';
 import { MUSIC_TRACKS } from '../demos/musicTracks';
 
 const router = Router();
@@ -225,6 +233,51 @@ router.get('/matches/:slug/reels', async (req: Request, res: Response) => {
   }
 });
 
+/** A reel's crowd track, after the reel itself (the player plays it beside it). */
+const crowdUpload =
+  (fileOf: (req: Request) => string | null) => async (req: Request, res: Response) => {
+    const reel = fileOf(req);
+    if (!reel) return res.status(400).json({ success: false, error: 'Which reel' });
+    if (!String(req.headers['content-type'] ?? '').startsWith('audio/mp4')) {
+      return res.status(400).json({ success: false, error: 'An audio/mp4 body' });
+    }
+    if (!fs.existsSync(reel))
+      return res.status(404).json({ success: false, error: 'Upload the reel first' });
+    try {
+      return res.json({ success: true, bytes: await saveCrowd(reel, req) });
+    } catch (error) {
+      log.error('[HIGHLIGHTS] crowd track save failed', { error, reel: path.basename(reel) });
+      return res.status(500).json({ success: false, error: 'Could not store the crowd track' });
+    }
+  };
+
+router.put(
+  '/recorder/reels/:slug/:map/:player/crowd',
+  requireAuth,
+  crowdUpload((req) => {
+    const map = Number(req.params.map);
+    return Number.isInteger(map) && map >= 0 && /^\d{1,20}$/.test(req.params.player)
+      ? reelFile(req.params.slug, map, req.params.player)
+      : null;
+  })
+);
+router.put(
+  '/recorder/match-reels/:slug/:map/crowd',
+  requireAuth,
+  crowdUpload((req) => {
+    const map = Number(req.params.map);
+    return Number.isInteger(map) && map >= 0 ? matchReelFile(req.params.slug, map) : null;
+  })
+);
+router.put(
+  '/recorder/tournament-reels/:id/crowd',
+  requireAuth,
+  crowdUpload((req) => {
+    const id = idOf(req);
+    return id ? tournamentReelFile(id) : null;
+  })
+);
+
 router.post('/recorder/fail', requireAuth, async (req: Request, res: Response) => {
   const ids = Array.isArray(req.body?.ids)
     ? (req.body.ids as unknown[]).map(Number).filter((n) => Number.isInteger(n) && n > 0)
@@ -370,21 +423,43 @@ router.get(
 router.get('/highlights/:file', async (req: Request, res: Response) => {
   const clip = /^(\d+)\.mp4$/.exec(req.params.file);
   const reel = /^(?:reel|match|tournament)-[A-Za-z0-9_.-]+\.mp4$/.test(req.params.file);
+  if (/^(?:reel|match|tournament)-[A-Za-z0-9_.-]+\.crowd\.m4a$/.test(req.params.file)) {
+    // A reel's crowd track, played beside it.
+    const crowd = path.join(path.dirname(clipFile(0)), req.params.file);
+    if (!fs.existsSync(crowd)) return res.status(404).end();
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.sendFile(crowd, { headers: { 'Content-Type': 'audio/mp4' } });
+  }
   if (!clip && !reel) return res.status(404).end();
   const file = clip
     ? clipFile(Number(clip[1]))
     : path.join(path.dirname(clipFile(0)), req.params.file);
   if (!fs.existsSync(file)) return res.status(404).end();
   const music = typeof req.query.music === 'string' ? trackById(req.query.music) : undefined;
-  if (req.query.music !== undefined) {
-    // A download with music: mixed once (a few seconds), then kept.
-    if (!music) return res.status(404).json({ success: false, error: 'No such track' });
+  const crowd = req.query.crowd === '1' ? crowdFileOf(file) : null;
+  if (req.query.music !== undefined || req.query.crowd !== undefined) {
+    // A download with its crowd and/or music: mixed once (a few seconds), then kept.
+    if (req.query.music !== undefined && !music)
+      return res.status(404).json({ success: false, error: 'No such track' });
+    if (crowd && !fs.existsSync(crowd))
+      return res.status(404).json({ success: false, error: 'This video has no crowd track' });
+    if (!music && !crowd) return res.download(file, path.basename(file));
     try {
-      const mixed = await withMusic(file, music, Number(req.query.intro) || 0);
-      return res.download(mixed, path.basename(file), { headers: { 'Cache-Control': 'private, max-age=3600' } });
+      const mixed = await withSound(file, {
+        track: music,
+        crowd,
+        intro: Number(req.query.intro) || 0,
+      });
+      return res.download(mixed, path.basename(file), {
+        headers: { 'Cache-Control': 'private, max-age=3600' },
+      });
     } catch (error) {
-      log.error('[HIGHLIGHTS] Could not mix music into a video', { error, file: req.params.file, track: music.id });
-      return res.status(502).json({ success: false, error: 'Could not add the music' });
+      log.error('[HIGHLIGHTS] Could not mix sound into a video', {
+        error,
+        file: req.params.file,
+        track: music?.id,
+      });
+      return res.status(502).json({ success: false, error: 'Could not add the sound' });
     }
   }
   res.setHeader('Cache-Control', 'public, max-age=86400');
@@ -395,7 +470,11 @@ router.get(
   '/music',
   read('music', async (_req: Request, res: Response) => {
     const strip = ({ audio: _audio, ...t }: (typeof MUSIC_TRACKS)[number]) => t;
-    return res.json({ success: true, tracks: (await enabledTracks()).map(strip), all: MUSIC_TRACKS.map(strip) });
+    return res.json({
+      success: true,
+      tracks: (await enabledTracks()).map(strip),
+      all: MUSIC_TRACKS.map(strip),
+    });
   })
 );
 
@@ -408,7 +487,10 @@ router.get('/music/:file', async (req: Request, res: Response) => {
     res.setHeader('Cache-Control', 'public, max-age=604800');
     return res.sendFile(file, { headers: { 'Content-Type': 'audio/mpeg' } });
   } catch (error) {
-    log.warn('[HIGHLIGHTS] Could not fetch a music track', { track: track.id, error: String(error) });
+    log.warn('[HIGHLIGHTS] Could not fetch a music track', {
+      track: track.id,
+      error: String(error),
+    });
     return res.status(502).end();
   }
 });
