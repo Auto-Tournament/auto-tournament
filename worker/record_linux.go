@@ -399,7 +399,7 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 		kills = []int{m.SlowmoTick}
 	}
 	markers := momentMarkers(windows, edits, kills)
-	markers.Cheers, markers.Roars = cheerTimes(m.KillTicks, markers.Kills, cheerTicks(look.replay, look.playerID, m))
+	markers.Reactions = cheerTimes(m.KillTicks, markers.Kills, cheerTicks(look.replay, look.playerID, m))
 	if len(pieces) == 1 {
 		return markers, os.Rename(pieces[0], out)
 	}
@@ -1113,8 +1113,7 @@ func joinReelFiles(out string, clips []string) error {
 		if b, err := os.ReadFile(strings.TrimSuffix(c, filepath.Ext(c)) + ".json"); err == nil {
 			_ = json.Unmarshal(b, &m)
 		}
-		sound.heys = append(sound.heys, m.Cheers)
-		sound.roars = append(sound.roars, m.Roars)
+		sound.reactions = append(sound.reactions, m.Reactions)
 	}
 	return r.buildReelSound(clips, joins, cliIntro("Match highlights", env("AT_TEAMS", "")), sound, out)
 }
@@ -1188,12 +1187,27 @@ func markCheers(args []string) error {
 		if err := json.Unmarshal(b, &m); err != nil {
 			return err
 		}
-		m.Cheers, m.Roars = cheerTimes(moments[i].KillTicks, m.Kills, cheerTicks(rp, args[1], moments[i]))
+		if env("AT_CHEER_DEBUG", "") != "" && rp != nil {
+			for _, t := range moments[i].KillTicks {
+				found := false
+				for _, k := range rp.Kills {
+					if k.Tick == t && k.Attacker != nil && *k.Attacker == args[1] {
+						found = true
+						log.Printf("  kill %d %s hs=%v wall=%v smoke=%v air=%v vair=%v blind=%v noscope=%v seen=%.2f roundEnd=%v",
+							t, k.Weapon, k.Headshot, k.Penetrated, k.ThroughSmoke, k.InAir, k.VictimInAir, k.AttackerBlind, k.NoScope, k.SeenFor, k.RoundEnding)
+					}
+				}
+				if !found {
+					log.Printf("  kill %d: not in the replay as this player's", t)
+				}
+			}
+		}
+		m.Reactions = cheerTimes(moments[i].KillTicks, m.Kills, cheerTicks(rp, args[1], moments[i]))
 		out, _ := json.MarshalIndent(m, "", "  ")
 		if err := os.WriteFile(file, out, 0o644); err != nil {
 			return err
 		}
-		log.Printf("%s: kills %v, heys %v, roars %v", file, m.Kills, m.Cheers, m.Roars)
+		log.Printf("%s: kills %v, reactions %v", file, m.Kills, m.Reactions)
 	}
 	return nil
 }

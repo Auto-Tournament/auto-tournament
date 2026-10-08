@@ -6,28 +6,80 @@ import (
 	"strings"
 )
 
-// The crowd reacts to kills worth it (sound.go): a short "heeey" for a hard
-// shot (an AWP kill, a no-scope, through a wall or smoke, the killer or the
-// victim in the air, while flashed, a snap shot at someone in view for a split
-// second, a flick), and a roar for the kills that decide something (the one
-// that ends the round, the last of an ace, a 4K or a clutch, the third of a
-// quick run).
+// The crowd reacts to kills by how impressive they are: each kill scores
+// for what happened (impress), and the score picks the reaction
+// (sound.go): from reactHey a short "heeey", from reactCheer a cheer, from
+// reactWow a big "whoaaa".
 const (
-	cheerRunTicks    = 10 * tickrate // three kills within this long make a run
-	cheerGapTicks    = 5 * tickrate / 2
+	cheerRunTicks    = 10 * tickrate // kills this close together make a run
+	cheerGapTicks    = 5 * tickrate / 4
 	cheerFlickTicks  = 24 // how far back a flick is looked for
 	cheerFlickDegree = 90.0
 	cheerSnapSec     = 0.3 // in view for less than this: a snap shot
+
+	reactHey   = 1.0
+	reactCheer = 2.5
+	reactWow   = 4.0
 )
 
-// cheer is one reaction: at the kill's tick, a roar or a "heeey".
+// cheer is one reaction: at the kill's tick, how impressive it was.
 type cheer struct {
-	tick int
-	roar bool
+	tick  int
+	score float64
+}
+
+// impress scores one kill: what made it hard or what it decided. The parts add up.
+func impress(k ReplayKill, known bool, flick bool, runLen int, last bool, m moment) float64 {
+	score := 0.0
+	if known {
+		if k.ThroughSmoke {
+			score += 3
+		}
+		if k.NoScope {
+			score += 3
+		}
+		if k.InAir {
+			score += 2.5
+		}
+		if k.AttackerBlind {
+			score += 2
+		}
+		if k.Penetrated {
+			score += 2
+		}
+		if k.VictimInAir {
+			score += 1.5
+		}
+		if k.SeenFor >= 0 && k.SeenFor < cheerSnapSec && !k.Penetrated && !k.ThroughSmoke {
+			score += 1.5
+		}
+		if flick {
+			score += 1.5
+		}
+		if k.Weapon == "AWP" {
+			score += 1
+		}
+		if k.Headshot {
+			score += 0.5
+		}
+		if k.RoundEnding {
+			score += 2
+		}
+	}
+	switch {
+	case runLen >= 4:
+		score += 3
+	case runLen == 3:
+		score += 2
+	}
+	if last && (m.Kind == "ace" || m.Kind == "4k" || strings.Contains(strings.ToLower(m.Title), "clutch")) {
+		score += 3
+	}
+	return score
 }
 
 // cheerTicks is which of the moment's kills (m.KillTicks, the player's) the
-// crowd reacts to, and how.
+// crowd reacts to, with their scores.
 func cheerTicks(rp *Replay, player string, m moment) []cheer {
 	kills := append([]int(nil), m.KillTicks...)
 	sort.Ints(kills)
@@ -48,23 +100,18 @@ func cheerTicks(rp *Replay, player string, m moment) []cheer {
 	var out []cheer
 	for i, t := range kills {
 		k, known := byTick[t]
-		roar := i >= 2 && t-kills[i-2] <= cheerRunTicks
-		if known && k.RoundEnding {
-			roar = true
+		run := 1
+		for j := i - 1; j >= 0 && t-kills[j] <= cheerRunTicks; j-- {
+			run++
 		}
-		if i == len(kills)-1 && (m.Kind == "ace" || m.Kind == "4k" || strings.Contains(strings.ToLower(m.Title), "clutch")) {
-			roar = true
-		}
-		hey := known && (k.Weapon == "AWP" || k.NoScope || k.Penetrated || k.ThroughSmoke || k.InAir || k.VictimInAir ||
-			k.AttackerBlind || (k.SeenFor >= 0 && k.SeenFor < cheerSnapSec && !k.Penetrated && !k.ThroughSmoke) ||
-			(k.Headshot && flicked(rp, index, t)))
-		if !roar && !hey {
+		score := impress(k, known, known && k.Headshot && flicked(rp, index, t), run, i == len(kills)-1, m)
+		if score < reactHey {
 			continue
 		}
-		c := cheer{tick: t, roar: roar}
+		c := cheer{tick: t, score: score}
 		if n := len(out); n > 0 && t-out[n-1].tick < cheerGapTicks {
-			// Too close to the last reaction: keep the bigger one.
-			if roar && !out[n-1].roar {
+			// Right after the last reaction: one reaction, the bigger.
+			if score > out[n-1].score {
 				out[n-1] = c
 			}
 			continue
@@ -105,31 +152,31 @@ func flicked(rp *Replay, index, tick int) bool {
 	return false
 }
 
+// reaction is a crowd reaction in a clip: seconds in, and the kill's score.
+type reaction struct {
+	T     float64 `json:"t"`
+	Score float64 `json:"score"`
+}
+
 // cheerTimes is where the reactions are in the clip: the kill markers (in
-// kill order) of the cheered ticks, the roars apart.
-func cheerTimes(killTicks []int, killTimes []float64, cheers []cheer) (heys, roars []float64) {
+// kill order) of the cheered ticks.
+func cheerTimes(killTicks []int, killTimes []float64, cheers []cheer) []reaction {
 	ticks := append([]int(nil), killTicks...)
 	sort.Ints(ticks)
 	if len(ticks) != len(killTimes) {
-		return nil, nil
+		return nil
 	}
 	at := map[int]float64{}
 	for i, t := range ticks {
 		at[t] = killTimes[i]
 	}
-	heys, roars = []float64{}, []float64{}
+	out := []reaction{}
 	for _, c := range cheers {
-		v, ok := at[c.tick]
-		if !ok {
-			continue
-		}
-		if c.roar {
-			roars = append(roars, v)
-		} else {
-			heys = append(heys, v)
+		if v, ok := at[c.tick]; ok {
+			out = append(out, reaction{T: v, Score: c.score})
 		}
 	}
-	return heys, roars
+	return out
 }
 
 // moment is one highlight to record: its ticks are the demo's own.

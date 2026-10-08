@@ -104,7 +104,8 @@ type cardRender struct {
 	// settled renders only that last state: the clip's later pieces (after
 	// a jump cut) keep the small card without playing the entrance again.
 	settled bool
-	full    *image.RGBA // the open card with its rounded edge, once composed
+	full    *image.RGBA // the open card's name, avatar and pill, once composed
+	plate   *image.RGBA // its plate with the rounded edge, drawn see-through when settled
 }
 
 // cardSmall is how big the card is once it has moved to the bottom centre.
@@ -383,11 +384,18 @@ func (r *cardRender) frameAt(t float64) *image.RGBA {
 
 // compose draws the card's content `t` seconds in onto the scratch image.
 func (r *cardRender) compose(t, unfold float64) {
+	r.composeLayers(t, unfold, true)
+}
+
+// composeLayers is compose with or without the card's plate (r.back).
+func (r *cardRender) composeLayers(t, unfold float64, plate bool) {
 	ease := func(from, to float64) float64 { return smooth(clamp01((t - from) / (to - from))) }
 	s := r.scratch
 	clear(s.Pix)
 	cw, ch := s.Bounds().Dx(), s.Bounds().Dy()
-	draw.Draw(s, s.Bounds(), r.back, image.Point{}, draw.Over)
+	if plate {
+		draw.Draw(s, s.Bounds(), r.back, image.Point{}, draw.Over)
+	}
 	// The avatar fades in growing a little.
 	if a := ease(0.45, 0.95); a > 0 {
 		scale := 0.85 + 0.15*a
@@ -437,24 +445,30 @@ func (r *cardRender) edgeMask(unfold float64) *image.Alpha {
 	return mask
 }
 
-// drawMoved draws the open card `move` of the way from its place to the small one.
+// drawMoved draws the open card `move` of the way from its place to the
+// small one. Its plate fades to cardSettledOpacity on the way, so the
+// settled card stays out of the way; the name, avatar and pill stay solid,
+// so it still reads.
 func (r *cardRender) drawMoved(move float64) {
 	if r.full == nil {
-		r.compose(cardSec, 1)
-		full := image.NewRGBA(r.scratch.Bounds())
-		draw.DrawMask(full, full.Bounds(), r.scratch, image.Point{}, r.edgeMask(1), image.Point{}, draw.Over)
-		r.full = full
+		mask := r.edgeMask(1)
+		r.composeLayers(cardSec, 1, false)
+		front := image.NewRGBA(r.scratch.Bounds())
+		draw.DrawMask(front, front.Bounds(), r.scratch, image.Point{}, mask, image.Point{}, draw.Over)
+		plate := image.NewRGBA(r.scratch.Bounds())
+		draw.DrawMask(plate, plate.Bounds(), r.back, image.Point{}, mask, image.Point{}, draw.Over)
+		r.full, r.plate = front, plate
 	}
 	lerp := func(a, b int) int { return int(math.Round(float64(a) + (float64(b)-float64(a))*move)) }
 	at := image.Rect(lerp(r.card.Min.X, r.small.Min.X), lerp(r.card.Min.Y, r.small.Min.Y),
 		lerp(r.card.Max.X, r.small.Max.X), lerp(r.card.Max.Y, r.small.Max.Y))
-	// It fades to cardSettledOpacity on the way, so the settled card stays out of the way.
 	opacity := 1 - (1-cardSettledOpacity)*move
-	draw.CatmullRom.Scale(r.frame, at, r.full, r.full.Bounds(), draw.Over,
+	draw.CatmullRom.Scale(r.frame, at, r.plate, r.plate.Bounds(), draw.Over,
 		&draw.Options{SrcMask: image.NewUniform(color.Alpha{uint8(math.Round(255 * opacity))})})
+	draw.CatmullRom.Scale(r.frame, at, r.full, r.full.Bounds(), draw.Over, nil)
 }
 
-// cardSettledOpacity is how opaque the small card is once it has moved down.
+// cardSettledOpacity is how opaque the small card's plate is once it has moved down.
 const cardSettledOpacity = 0.5
 
 // smooth is the drafts' cubic-bezier(.2,.8,.2,1): quick out of the start, a long soft landing.

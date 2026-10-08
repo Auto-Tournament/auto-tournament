@@ -54,8 +54,7 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 		paths = append([]string{introPath}, paths...)
 		plan.durations = append([]float64{introSec}, plan.durations...)
 		plan.joins = append([]join{joinWipe}, plan.joins...)
-		sound.heys = append([][]float64{nil}, sound.heys...)
-		sound.roars = append([][]float64{nil}, sound.roars...)
+		sound.reactions = append([][]reaction{nil}, sound.reactions...)
 	}
 	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
 	for _, p := range paths {
@@ -67,13 +66,27 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 		if intro != nil && strings.TrimSpace(intro.Title) != "" {
 			first = 1
 		}
-		plan.crowd = &partCrowd{input: len(paths), first: first, heys: sound.heys, roars: sound.roars}
-		args = append(args, "-stream_loop", "-1", "-i", sound.crowd)
+		c := &partCrowd{first: first, bedIn: map[int]int{}}
+		// Each clip's murmur and each reaction its own stretch of the
+		// recording, read straight from the file: nothing is buffered.
+		for i := first; i < len(plan.durations); i++ {
+			start, length := crowdBedSpan(plan, first, i)
+			c.bedIn[i] = len(paths) + len(c.bedIn)
+			args = append(args, "-stream_loop", "-1", "-ss", fmt.Sprintf("%.3f", start), "-t", fmt.Sprintf("%.3f", length+0.2), "-i", sound.crowd)
+		}
+		next := len(paths) + len(c.bedIn)
+		for _, r := range crowdReactions(plan, first, sound.reactions) {
+			r.in = next
+			next++
+			c.reacts = append(c.reacts, r)
+			args = append(args, "-ss", fmt.Sprintf("%.3f", r.from), "-t", fmt.Sprintf("%.3f", r.length), "-i", sound.crowd)
+		}
+		plan.crowd = c
 	}
 	if sound.music != "" {
 		musicIn = len(paths)
 		if plan.crowd != nil {
-			musicIn++
+			musicIn += len(plan.crowd.bedIn) + len(plan.crowd.reacts)
 		}
 		args = append(args, "-stream_loop", "-1", "-i", sound.music)
 	}
