@@ -19,6 +19,7 @@ import {
   Menu,
   MenuItem,
   Slider,
+  Typography,
 } from '@mui/material';
 import {
   ArrowClockwiseIcon,
@@ -194,6 +195,17 @@ export const PLAYER_VOLUME_KEY = 'at.player.volume';
 /** The level until the viewer sets one. */
 export const PLAYER_VOLUME_DEFAULT = 1;
 const MUSIC_OFF = 'at.reelMusic.off';
+const MUSIC_LEVEL = 'at.reelMusic.level';
+/** The player's mix of a track is made this much louder than the reference level (the API's MIX_HEADROOM). */
+const MIX_HEADROOM = 2;
+/** The music level until the viewer sets one: a little over the reference. */
+const MUSIC_LEVEL_DEFAULT = 1.2;
+const storedMusicLevel = () => {
+  const v = Number(stored(MUSIC_LEVEL));
+  return stored(MUSIC_LEVEL) !== null && Number.isFinite(v)
+    ? Math.min(MIX_HEADROOM, Math.max(0, v))
+    : MUSIC_LEVEL_DEFAULT;
+};
 const stored = (key: string) => {
   try {
     return window.localStorage.getItem(key);
@@ -327,6 +339,10 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
         return !on;
       });
     const [song, setSong] = useState<MusicTrack | null>(null);
+    // How loud the music is against the game (1 = the reference level), kept between visits.
+    const [musicLevel, setMusicLevel] = useState(storedMusicLevel);
+    const musicLevelRef = useRef(musicLevel);
+    musicLevelRef.current = musicLevel;
     const [musicMenu, setMusicMenu] = useState<HTMLElement | null>(null);
     const [downloadMenu, setDownloadMenu] = useState<HTMLElement | null>(null);
     const tracks = music?.tracks ?? [];
@@ -355,7 +371,8 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
       const v = video.current;
       const a = audio.current;
       if (!v || !a || !song) return;
-      return follow(v, a, () => volumeRef.current, false);
+      // The mix is MIX_HEADROOM times the reference: down to the viewer's music level.
+      return follow(v, a, () => (volumeRef.current * musicLevelRef.current) / MIX_HEADROOM, false);
     }, [song, introEnd]);
     useEffect(() => {
       const v = video.current;
@@ -949,6 +966,27 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           slotProps={{ paper: { sx: { maxHeight: 420, minWidth: 260, maxWidth: 360 } } }}
           data-testid="highlight-music-menu"
         >
+          <Box
+            sx={{ px: 2, pt: 1, pb: 1.5, display: 'flex', alignItems: 'center', gap: 1.5 }}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <Typography variant="caption" color="text.secondary" sx={{ flex: 'none' }}>
+              {t('videoHighlights.player.musicLevel')}
+            </Typography>
+            <Slider
+              size="small"
+              min={0}
+              max={MIX_HEADROOM}
+              step={0.05}
+              value={musicLevel}
+              onChange={(_, v) => setMusicLevel(v as number)}
+              onChangeCommitted={(_, v) => store(MUSIC_LEVEL, String(v))}
+              aria-label={t('videoHighlights.player.musicLevel')}
+              valueLabelDisplay="auto"
+              valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
+              data-testid="highlight-music-level"
+            />
+          </Box>
           <MenuItem selected={!song} onClick={() => chooseTrack(null)}>
             <ListItemIcon>{!song && <CheckIcon size={16} />}</ListItemIcon>
             <ListItemText primary={t('videoHighlights.player.noMusic')} />
@@ -997,7 +1035,9 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           {downloadChoices({ crowd: !!crowd, song }).map((c) => {
             const params = [
               c.crowd ? 'crowd=1' : null,
-              c.song ? `music=${encodeURIComponent(c.song.id)}&intro=${introEnd.toFixed(1)}` : null,
+              c.song
+                ? `music=${encodeURIComponent(c.song.id)}&intro=${introEnd.toFixed(1)}&level=${musicLevel.toFixed(2)}`
+                : null,
             ].filter(Boolean);
             return (
               <MenuItem
