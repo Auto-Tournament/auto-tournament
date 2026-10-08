@@ -184,6 +184,7 @@ func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error
 	if err := awaitSteam(ctx, 3*time.Minute); err != nil {
 		return nil, err
 	}
+	setRecordingVideo(r.width, r.height)
 	w, h := strconv.Itoa(r.width), strconv.Itoa(r.height)
 	args := []string{"--backend", "headless", "-W", w, "-H", h, "-w", w, "-h", h, "-r", "120", "--"}
 	if r.sniper != "" {
