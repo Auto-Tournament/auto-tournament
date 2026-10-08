@@ -47,6 +47,12 @@ type ReplayKill struct {
 	NoScope       bool    `json:"noScope,omitempty"`
 	AttackerBlind bool    `json:"attackerBlind,omitempty"`
 	InAir         bool    `json:"inAir,omitempty"`
+	// For the highlights' crowd (cheers.go): the victim was in the air, how
+	// many seconds the killer had them in view (-1: not in view, through a
+	// wall or smoke), and whether the kill ended its round.
+	VictimInAir bool    `json:"victimInAir,omitempty"`
+	SeenFor     float64 `json:"seenFor,omitempty"`
+	RoundEnding bool    `json:"roundEnding,omitempty"`
 }
 
 // Replay is the 2D replay: each player's [x, y, yaw, health, side 2|3, z] every
@@ -234,6 +240,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		hitTicks  = map[string][]int{}
 		spotted   = map[[2]uint64]bool{}
 		spotTick  = map[[2]uint64]int{}
+		seenFrom  = map[[2]uint64]int{} // since when each player has had each enemy in view
 		rawShots  []rawShot
 		rawHits   []rawHit
 		grenades  []rawGrenade
@@ -273,6 +280,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		frames = map[int]map[string][6]float64{}
 		spotted = map[[2]uint64]bool{}
 		spotTick = map[[2]uint64]int{}
+		seenFrom = map[[2]uint64]int{}
 		rawShots, rawHits = nil, nil
 		grenades, effects, blinds, bomb, damage, killFlags = nil, nil, nil, nil, nil, nil
 		openFx = map[int]int{}
@@ -375,7 +383,16 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 			named(e.Assister)
 		}
 		kills = append(kills, k)
-		killFlags = append(killFlags, ReplayKill{AssistedFlash: e.AssistedFlash, NoScope: e.NoScope, AttackerBlind: e.AttackerBlind, InAir: e.Killer != nil && e.Killer.IsAirborne()})
+		flags := ReplayKill{AssistedFlash: e.AssistedFlash, NoScope: e.NoScope, AttackerBlind: e.AttackerBlind,
+			InAir: e.Killer != nil && e.Killer.IsAirborne(), VictimInAir: e.Victim.IsAirborne(), SeenFor: -1}
+		// How long the killer had the victim in view: a snap shot is a split second.
+		if e.Killer != nil {
+			key := [2]uint64{e.Killer.SteamID64, e.Victim.SteamID64}
+			if t0, ok := seenFrom[key]; ok && spotted[key] {
+				flags.SeenFor = math.Round(float64(gs.IngameTick()-t0)/p.TickRate()*100) / 100
+			}
+		}
+		killFlags = append(killFlags, flags)
 	})
 
 	p.RegisterEventHandler(func(e events.WeaponFire) {
@@ -550,6 +567,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 						s.CrosshairAngleSum += AimError(eyes(a), pitchOf(a), float64(a.ViewDirectionX()), eyes(e))
 						s.CrosshairSamples++
 						spotTick[key] = tick
+						seenFrom[key] = tick
 					}
 					spotted[key] = now
 				}
@@ -683,6 +701,20 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		if i < len(killFlags) {
 			f := killFlags[i]
 			rk.AssistedFlash, rk.NoScope, rk.AttackerBlind, rk.InAir = f.AssistedFlash, f.NoScope, f.AttackerBlind, f.InAir
+			rk.VictimInAir, rk.SeenFor = f.VictimInAir, f.SeenFor
+		}
+		// The kill that ended its round: the round's last kill, won by elimination.
+		for _, r := range rounds {
+			if k.Tick > r.StartTick && k.Tick <= r.EndTick && r.Reason != nil && (*r.Reason == reasonName(events.RoundEndReasonCTWin) || *r.Reason == reasonName(events.RoundEndReasonTerroristsWin)) {
+				last := true
+				for _, o := range kills {
+					if o.Tick > k.Tick && o.Tick <= r.EndTick {
+						last = false
+						break
+					}
+				}
+				rk.RoundEnding = last
+			}
 		}
 		replay.Kills = append(replay.Kills, rk)
 	}

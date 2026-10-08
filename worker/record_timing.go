@@ -112,8 +112,10 @@ type frameRef struct {
 }
 
 // maxGapTicks is how far from the wanted moment a frame may be before the
-// clip has a hole there (2 ticks: 31 ms).
-const maxGapTicks = 2.0
+// clip has a hole there (5 ticks: 78 ms, a frame shown a little longer). At
+// 2 a capture's short stall failed the moment, and the retry started CS2
+// over (a minute and more).
+const maxGapTicks = 5.0
 
 // timeline is the clip's frames at outputFPS: the speed ramp `segs` (seconds
 // from the clip's start at startTick) says which moment of the game each

@@ -136,11 +136,12 @@ async function probe(video: string): Promise<{ seconds: number; audio: boolean }
 }
 
 /**
- * The music's ffmpeg filter for a video `seconds` long: faded in and out,
+ * The music's ffmpeg filter for a video `seconds` long: evened out to the
+ * other tracks' loudness by `gainDb`, faded in and out,
  * louder until `intro` (the reel's intro has no game sound) and down to
  * MUSIC_GAIN as the first clip starts.
  */
-export function musicFilter(seconds: number, intro: number): string {
+export function musicFilter(seconds: number, intro: number, gainDb = 0): string {
   let gain = `${MUSIC_GAIN}`;
   if (intro > 0) {
     const r = (n: number) => n.toFixed(3);
@@ -150,42 +151,69 @@ export function musicFilter(seconds: number, intro: number): string {
   }
   return (
     `aresample=48000,aformat=channel_layouts=stereo,atrim=duration=${seconds.toFixed(3)},asetpts=PTS-STARTPTS,` +
-    `volume=${gain},afade=t=in:d=${FADE_IN},afade=t=out:st=${Math.max(0, seconds - FADE_OUT).toFixed(3)}:d=${FADE_OUT}`
+    // The track's own loudness evened out first (MusicTrack.gainDb), then the reel's level.
+    `${gainDb ? `volume=${gainDb.toFixed(1)}dB,` : ''}volume=${gain},afade=t=in:d=${FADE_IN},afade=t=out:st=${Math.max(0, seconds - FADE_OUT).toFixed(3)}:d=${FADE_OUT}`
   );
 }
 
 const mixing = new Map<string, Promise<string>>();
 
 /**
- * `video` with `track` mixed under its sound, made once and kept. The picture
- * is copied as it is; only the sound is encoded again.
+ * `video` with what was asked mixed under its own sound: its crowd track
+ * (`crowd`, a file) and/or a music `track`. Made once and kept; the picture
+ * is copied as it is and only the sound encoded again.
  */
-export function withMusic(video: string, track: MusicTrack, intro: number): Promise<string> {
-  const introAt = Math.max(0, Math.min(30, Math.round(intro * 10) / 10));
-  const out = path.join(MIX_DIR, `${path.basename(video, '.mp4')}-${track.id}-${introAt}.mp4`);
-  if (fs.existsSync(out) && fs.statSync(out).mtimeMs >= fs.statSync(video).mtimeMs)
-    return Promise.resolve(out);
+export function withSound(
+  video: string,
+  opts: { track?: MusicTrack | null; crowd?: string | null; intro: number }
+): Promise<string> {
+  const introAt = Math.max(0, Math.min(30, Math.round(opts.intro * 10) / 10));
+  const parts = [
+    path.basename(video, '.mp4'),
+    opts.crowd ? 'crowd' : null,
+    opts.track ? `${opts.track.id}-${introAt}` : null,
+  ];
+  const out = path.join(MIX_DIR, `${parts.filter(Boolean).join('-')}.mp4`);
+  const newest = Math.max(
+    fs.statSync(video).mtimeMs,
+    opts.crowd ? fs.statSync(opts.crowd).mtimeMs : 0
+  );
+  if (fs.existsSync(out) && fs.statSync(out).mtimeMs >= newest) return Promise.resolve(out);
   const pending = mixing.get(out);
   if (pending) return pending;
   const job = (async () => {
-    const [music, info] = await Promise.all([trackFile(track), probe(video)]);
+    const [music, info] = await Promise.all([
+      opts.track ? trackFile(opts.track) : null,
+      probe(video),
+    ]);
     fs.mkdirSync(MIX_DIR, { recursive: true });
     const tmp = `${out}.part.mp4`;
-    const filter = info.audio
-      ? `[1:a]${musicFilter(info.seconds, introAt)}[m];[0:a][m]amix=inputs=2:duration=first:normalize=0[a]`
-      : `[1:a]${musicFilter(info.seconds, introAt)}[a]`;
+    const args = ['-y', '-v', 'error', '-i', video];
+    const filters: string[] = [];
+    const mix: string[] = info.audio ? ['[0:a]'] : [];
+    if (opts.crowd) {
+      args.push('-i', opts.crowd);
+      filters.push(
+        `[${args.filter((a) => a === '-i').length - 1}:a]aresample=48000,aformat=channel_layouts=stereo[c]`
+      );
+      mix.push('[c]');
+    }
+    if (music && opts.track) {
+      args.push('-stream_loop', '-1', '-i', music);
+      filters.push(
+        `[${args.filter((a) => a === '-i').length - 1}:a]${musicFilter(info.seconds, introAt, opts.track.gainDb)}[m]`
+      );
+      mix.push('[m]');
+    }
+    filters.push(
+      mix.length > 1
+        ? `${mix.join('')}amix=inputs=${mix.length}:duration=first:normalize=0[a]`
+        : `${mix[0] ?? 'anullsrc'}anull[a]`
+    );
     await run('ffmpeg', [
-      '-y',
-      '-v',
-      'error',
-      '-i',
-      video,
-      '-stream_loop',
-      '-1',
-      '-i',
-      music,
+      ...args,
       '-filter_complex',
-      filter,
+      filters.join(';'),
       '-map',
       '0:v',
       '-map',

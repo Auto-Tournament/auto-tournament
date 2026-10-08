@@ -193,10 +193,27 @@ test(
   }
 );
 
-test('a reel says where each of its clips starts, one per clip, in order', { tag: ['@api'] }, () => {
-  expect(parseClipStarts('4.45,14.05,22.1', 3)).toEqual([4.45, 14.05, 22.1]);
-  expect(parseClipStarts('4.45,14.05', 3)).toBeNull();
-  expect(parseClipStarts('14.05,4.45', 2)).toBeNull();
-  expect(parseClipStarts('4.45;14', 2)).toBeNull();
-  expect(parseClipStarts(undefined, 1)).toBeNull();
+test(
+  'a reel says where each of its clips starts, one per clip, in order',
+  { tag: ['@api'] },
+  () => {
+    expect(parseClipStarts('4.45,14.05,22.1', 3)).toEqual([4.45, 14.05, 22.1]);
+    expect(parseClipStarts('4.45,14.05', 3)).toBeNull();
+    expect(parseClipStarts('14.05,4.45', 2)).toBeNull();
+    expect(parseClipStarts('4.45;14', 2)).toBeNull();
+    expect(parseClipStarts(undefined, 1)).toBeNull();
+  }
+);
+
+test('a clip keeps the kills its crowd reacts to', { tag: ['@api'] }, () => {
+  const m = parseMarkers(
+    JSON.stringify({
+      duration: 11.66,
+      kills: [4.76, 9.57],
+      slowmo: null,
+      reactions: [{ t: 9.57, score: 8.5 }, { t: 'x' }],
+    })
+  );
+  expect(m?.reactions).toEqual([{ t: 9.57, score: 8.5 }]);
+  expect(parseMarkers(JSON.stringify({ duration: 3, kills: [1] }))?.reactions).toBeUndefined();
 });

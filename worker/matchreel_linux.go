@@ -28,13 +28,16 @@ type matchReelClip struct {
 	AvatarURL   *string `json:"avatarUrl"`
 	Title       string  `json:"title"`
 	URL         string  `json:"url"`
+	// Markers are its kills and the crowd's reactions, for the reel's crowd.
+	Markers *clipMarkers `json:"markers"`
 }
 
 type matchReelJob struct {
-	Kind         string          `json:"kind"` // match_reel | tournament_reel
+	Kind         string          `json:"kind"` // match_reel | tournament_reel | team_reel
 	MatchSlug    string          `json:"matchSlug"`
 	MapNumber    int             `json:"mapNumber"`
 	TournamentID int             `json:"tournamentId"`
+	TeamID       string          `json:"teamId"`
 	Match        string          `json:"match"`
 	Watermark    bool            `json:"watermark"`
 	Quality      *videoQuality   `json:"quality"`
@@ -50,6 +53,9 @@ type matchReelJob struct {
 func (j *matchReelJob) label() string {
 	if j.Kind == "tournament_reel" {
 		return fmt.Sprintf("tournament reel of %d", j.TournamentID)
+	}
+	if j.Kind == "team_reel" {
+		return fmt.Sprintf("team reel of %s for %s", j.MatchSlug, j.TeamID)
 	}
 	return fmt.Sprintf("match reel of %s map %d", j.MatchSlug, j.MapNumber)
 }
@@ -88,12 +94,15 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 		tagged = append(tagged, clip)
 	}
 	reel := filepath.Join(dir, "match.mp4")
-	// The orange wipe when the player changes, a blend between one player's clips.
-	players := make([]string, len(j.Clips))
-	for i, c := range j.Clips {
-		players[i] = c.PlayerID
+	sound := reelSound{crowd: r.crowdSource(ctx), crowdOut: crowdTrackPath(reel), outro: true}
+	for _, c := range j.Clips {
+		var reactions []reaction
+		if c.Markers != nil {
+			reactions = c.Markers.Reactions
+		}
+		sound.reactions = append(sound.reactions, reactions)
 	}
-	starts, err := r.buildReel(tagged, joinsByPlayer(players), j.Intro, reel)
+	starts, err := r.buildReelSound(tagged, wipes(len(tagged)), j.Intro, sound, reel)
 	if err != nil {
 		return err
 	}
@@ -101,7 +110,11 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 	for i, c := range j.Clips {
 		ids[i] = strconv.Itoa(c.HighlightID)
 	}
-	return r.upload(ctx, reel, j.uploadRoute(len(tagged)), map[string]string{"X-AT-Clips": strings.Join(ids, ","), "X-AT-Starts": startsHeader(starts)})
+	if err := r.upload(ctx, reel, j.uploadRoute(len(tagged)), map[string]string{"X-AT-Clips": strings.Join(ids, ","), "X-AT-Starts": startsHeader(starts)}); err != nil {
+		return err
+	}
+	r.uploadCrowd(ctx, reel, j.uploadRoute(len(tagged)))
+	return nil
 }
 
 func (r *recorder) failMatchReel(j *matchReelJob, cause error) {

@@ -15,6 +15,8 @@ import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
 import {
+  crowdFileOf,
+  crowdUrlOf,
   HIGHLIGHTS_DIR,
   matchLine,
   reelDate,
@@ -271,6 +273,7 @@ export async function playerReelViews(playerId: string, limit: number) {
       map: r.map_name,
       moments: Number(r.moments),
       video: fileUrl(r.clip_path),
+      crowd: crowdUrlOf(r.clip_path),
       chapters: await chaptersOf(r.clip_ids, r.clip_starts),
       match: {
         slug: r.match_slug,
@@ -374,6 +377,7 @@ export async function tournamentReel(tournamentId: number) {
   return {
     status: row.status,
     video: done ? fileUrl(row.clip_path!) : null,
+    crowd: done ? crowdUrlOf(row.clip_path) : null,
     chapters,
     duration:
       last && last.at !== null && lastClip?.markers ? last.at + lastClip.markers.duration : null,
@@ -487,8 +491,12 @@ export interface RelatedPlayer {
   reel: boolean;
 }
 
-/** Another reel to watch next. */
+/** Another reel to watch next: a map's match reel, or a team's reel of a match. */
 export interface RelatedReel {
+  kind: 'match' | 'team';
+  /** A team reel's team. */
+  teamId?: string;
+  team?: string | null;
   matchSlug: string;
   mapNumber: number;
   map: string | null;
@@ -510,7 +518,7 @@ export async function watchRelated(
   tournamentId: number | null
 ): Promise<{ players: RelatedPlayer[]; reels: RelatedReel[] }> {
   let players: RelatedPlayer[] = [];
-  if (matchSlug && mapNumber !== null) {
+  if (matchSlug) {
     const rows = await db.queryAsync<{
       player_id: string;
       name: string | null;
@@ -520,14 +528,15 @@ export async function watchRelated(
     }>(
       `SELECT h.player_id, p.name, p.avatar_url, COUNT(*) AS clips,
               EXISTS (SELECT 1 FROM cs2_highlight_reels r
-                       WHERE r.match_slug = h.match_slug AND r.map_number = h.map_number
+                       WHERE r.match_slug = ? AND r.map_number = ?::integer
                          AND r.player_id = h.player_id AND r.clip_path IS NOT NULL) AS reel
          FROM cs2_highlights h
          LEFT JOIN players p ON p.id = h.player_id
-        WHERE h.match_slug = ? AND h.map_number = ? AND h.status = 'done' AND h.kind <> 'funny'
-        GROUP BY h.player_id, h.match_slug, h.map_number, p.name, p.avatar_url
+        WHERE h.match_slug = ? AND (?::integer IS NULL OR h.map_number = ?::integer)
+          AND h.status = 'done' AND h.kind <> 'funny'
+        GROUP BY h.player_id, p.name, p.avatar_url
         ORDER BY COUNT(*) DESC, p.name`,
-      [matchSlug, mapNumber]
+      [matchSlug, mapNumber, matchSlug, mapNumber, mapNumber]
     );
     players = rows.map((r) => ({
       playerId: r.player_id,
@@ -568,17 +577,41 @@ export async function watchRelated(
       LIMIT 8`,
     [matchSlug ?? '', tournament, matchSlug ?? '', mapNumber ?? -1, matchSlug ?? '']
   );
+  // The match's team reels first: the ones a team shares.
+  const teamReels: RelatedReel[] = [];
+  if (matchSlug) {
+    const { matchTeamReels } = await import('./teamReels');
+    for (const t of await matchTeamReels(matchSlug)) {
+      if (!t.video) continue;
+      teamReels.push({
+        kind: 'team',
+        teamId: t.teamId,
+        team: t.team,
+        matchSlug,
+        mapNumber: 0,
+        map: null,
+        team1: null,
+        team2: null,
+        video: t.video,
+        clips: t.clips,
+      });
+    }
+  }
   return {
     players,
-    reels: rows.map((r) => ({
-      matchSlug: r.match_slug,
-      mapNumber: Number(r.map_number),
-      map: r.map_name,
-      team1: r.team1,
-      team2: r.team2,
-      video: fileUrl(r.clip_path),
-      clips: r.clips === null ? null : Number(r.clips),
-    })),
+    reels: [
+      ...teamReels,
+      ...rows.map((r) => ({
+        kind: 'match' as const,
+        matchSlug: r.match_slug,
+        mapNumber: Number(r.map_number),
+        map: r.map_name,
+        team1: r.team1,
+        team2: r.team2,
+        video: fileUrl(r.clip_path),
+        clips: r.clips === null ? null : Number(r.clips),
+      })),
+    ],
   };
 }
 
@@ -614,6 +647,7 @@ export async function matchReelView(matchSlug: string, mapNumber: number) {
     mapNumber,
     map: row.map_name,
     video: fileUrl(row.clip_path),
+    crowd: crowdUrlOf(row.clip_path),
     chapters: await chaptersOf(row.clip_ids, row.clip_starts),
     match: {
       slug: matchSlug,
@@ -790,6 +824,7 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
         avatarUrl: c.avatarUrl,
         title: c.title,
         url: c.video!,
+        markers: c.markers,
       };
     }),
     upload: `/api/game/cs2/recorder/tournament-reels/${tournamentId}`,
@@ -819,6 +854,7 @@ export async function saveTournamentReel(
   });
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
+  await fs.promises.rm(crowdFileOf(file), { force: true });
   await db.runAsync(
     `INSERT INTO cs2_tournament_reels (tournament_id, status, clip_ids, clip_starts, clip_path, clip_bytes)
      VALUES (?, 'done', ?, ?, ?, ?)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -64,13 +65,13 @@ func TestReelWithIntroLength(t *testing.T) {
 	}
 }
 
-func TestJoinsByPlayer(t *testing.T) {
-	got := joinsByPlayer([]string{"a", "a", "b", "c", "c"})
-	want := []join{joinFade, joinWipe, joinWipe, joinFade}
-	for i := range want {
-		if got[i] != want[i] {
-			t.Fatalf("joins = %v, want %v", got, want)
-		}
+func TestWipesBetweenEveryMoment(t *testing.T) {
+	got := wipes(4)
+	if len(got) != 3 || got[0] != joinWipe || got[1] != joinWipe || got[2] != joinWipe {
+		t.Fatalf("joins = %v", got)
+	}
+	if len(wipes(1)) != 0 || len(wipes(0)) != 0 {
+		t.Fatal("one moment has no joins")
 	}
 }
 
@@ -122,5 +123,28 @@ func TestPartStarts(t *testing.T) {
 	}
 	if h := startsHeader(got[1:]); h != "4.45,14.05,22.10" {
 		t.Fatalf("header %q", h)
+	}
+}
+
+func TestReelOutroHoldsThenFades(t *testing.T) {
+	p := reelPlan{durations: []float64{10, 8}, joins: []join{joinWipe}, width: 1920, height: 1080, fps: 60, outro: true}
+	f := reelFilter(p)
+	end := 10 + 8 + wipeHoldSec + outroHold
+	for _, want := range []string{
+		"[vj]fade=t=in:d=0.5,tpad=stop_mode=clone:stop_duration=0.3,fade=t=out:st=" + strconv.FormatFloat(end-outroFade, 'f', 3, 64) + ":d=1.4[v]",
+		"[aj]afade=t=in:d=0.5,apad=pad_dur=0.3,afade=t=out:st=",
+		"[wa1][a1in]acrossfade=d=0.25[aj]",
+	} {
+		if !strings.Contains(f, want) {
+			t.Fatalf("no %q in:\n%s", want, f)
+		}
+	}
+	if math.Abs(reelLength(p)-end) > 1e-9 {
+		t.Fatalf("length %.3f, want %.3f", reelLength(p), end)
+	}
+	// A clip's pieces join without it.
+	p.outro = false
+	if strings.Contains(reelFilter(p), "tpad") {
+		t.Fatal("outro without asking")
 	}
 }

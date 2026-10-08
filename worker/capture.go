@@ -41,11 +41,14 @@ import (
 )
 
 const (
-	netconPort    = 2121
-	frameSettleMs = 1500
-	seekPoll      = 500 * time.Millisecond
-	endMargin     = tickrate // ticks kept clear of the demo's end
+	netconPort = 2121
+	seekPoll   = 500 * time.Millisecond
+	endMargin  = tickrate // ticks kept clear of the demo's end
 )
+
+// frameSettleMs is how long the view gets to settle after a seek before the
+// picture counts (AT_SETTLE_MS).
+var frameSettleMs = envPositive("AT_SETTLE_MS", 700)
 
 // recorderLook is what every clip is played with: only the kill feed and the
 // crosshair on screen, no x-ray, no demo controls; the crosshair is the
@@ -184,6 +187,7 @@ func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error
 	if err := awaitSteam(ctx, 3*time.Minute); err != nil {
 		return nil, err
 	}
+	setRecordingVideo(r.width, r.height)
 	w, h := strconv.Itoa(r.width), strconv.Itoa(r.height)
 	args := []string{"--backend", "headless", "-W", w, "-H", h, "-w", w, "-h", h, "-r", "120", "--"}
 	if r.sniper != "" {
@@ -383,8 +387,11 @@ func (g *game) playPhases(from int, phases []playPhase, name string, started fun
 		}
 	}
 	// A seek plays on by itself once it lands: seek, let it land, then pause.
+	// Resumed straight after, so a demo the last pass left paused plays on
+	// too and answers the first poll (paused, it said nothing and each seek
+	// waited out a 2 s timeout).
 	if err := g.con.send("host_timescale 1", "host_framerate 0", "fps_max 0",
-		fmt.Sprintf("demo_timescale %g", phases[0].scale), fmt.Sprintf("demo_gototick %d", from)); err != nil {
+		fmt.Sprintf("demo_timescale %g", phases[0].scale), fmt.Sprintf("demo_gototick %d", from), "demo_resume"); err != nil {
 		return nil, err
 	}
 	// A seek far into the demo (round 19 straight after loading) takes CS2

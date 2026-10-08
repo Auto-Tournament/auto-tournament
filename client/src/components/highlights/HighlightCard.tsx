@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ComponentRef, type ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, ButtonBase, Skeleton } from '@mui/material';
 import { PlayIcon, StarIcon } from '@phosphor-icons/react';
@@ -6,22 +6,69 @@ import { useTranslation } from 'react-i18next';
 import { mono, radii, textSize, tokens, withAlpha } from '../../theme/tokens';
 import { clock, type ClipMarkers } from './media';
 
+/** Stills taken so far (`src#t=at` → a small JPEG), so a thumbnail shown twice draws at once. */
+const stills = new Map<string, string>();
+
 /**
  * A still of a video: the browser's own frame at `at` seconds (the moment
- * the slow motion starts, for a clip), so no thumbnail has to be made.
+ * the slow motion starts, for a clip), so no thumbnail has to be made. The
+ * first time it shows, the frame is kept as a small image; after that (the
+ * scrubber's hover card, the same clip in another list) it is that image,
+ * with no video to load and no black first.
  */
-export function VideoThumb({ src, at = 1.5, alt = '' }: { src: string; at?: number; alt?: string }) {
+export function VideoThumb({
+  src,
+  at = 1.5,
+  alt = '',
+}: {
+  src: string;
+  at?: number;
+  alt?: string;
+}) {
+  const key = `${src}#t=${at.toFixed(2)}`;
+  const [, setTaken] = useState(0);
+  const still = stills.get(key);
+  const keep = (v: ComponentRef<'video'>) => {
+    if (stills.has(key) || v.readyState < 2 || !v.videoWidth || Math.abs(v.currentTime - at) > 0.5)
+      return;
+    try {
+      const c = document.createElement('canvas');
+      c.width = 384;
+      c.height = Math.round((384 * v.videoHeight) / v.videoWidth);
+      c.getContext('2d')?.drawImage(v, 0, 0, c.width, c.height);
+      stills.set(key, c.toDataURL('image/jpeg', 0.75));
+      setTaken((n) => n + 1);
+    } catch {
+      // Another origin's video: it stays a video.
+    }
+  };
+  const fill = {
+    position: 'absolute',
+    inset: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    display: 'block',
+    pointerEvents: 'none',
+  } as const;
+  if (still) {
+    return (
+      <Box component="img" src={still} alt={alt} aria-hidden={alt ? undefined : true} sx={fill} />
+    );
+  }
   return (
     <Box
       component="video"
-      src={`${src}#t=${at.toFixed(2)}`}
+      src={key}
       muted
       playsInline
       preload="metadata"
       aria-label={alt || undefined}
       aria-hidden={alt ? undefined : true}
       tabIndex={-1}
-      sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none' }}
+      onLoadedData={(e) => keep(e.currentTarget as ComponentRef<'video'>)}
+      onSeeked={(e) => keep(e.currentTarget as ComponentRef<'video'>)}
+      sx={fill}
     />
   );
 }
@@ -48,16 +95,57 @@ export interface HighlightCardProps {
 }
 
 /** A highlight or reel: its still, a badge, a play button on hover, and two lines under it. */
-export function HighlightCard({ to, video, markers, title, sub, badge, large, duration, waiting, favourite, testId }: HighlightCardProps) {
+export function HighlightCard({
+  to,
+  video,
+  markers,
+  title,
+  sub,
+  badge,
+  large,
+  duration,
+  waiting,
+  favourite,
+  testId,
+}: HighlightCardProps) {
   const { t } = useTranslation();
   const still = (
-    <Box sx={{ position: 'relative', aspectRatio: '16 / 9', bgcolor: tokens.color.paper3, overflow: 'hidden' }}>
+    <Box
+      sx={{
+        position: 'relative',
+        aspectRatio: '16 / 9',
+        bgcolor: tokens.color.paper3,
+        overflow: 'hidden',
+      }}
+    >
       {video ? (
         <VideoThumb src={video} at={thumbAt(markers)} />
       ) : (
         <>
-          <Skeleton variant="rectangular" animation="wave" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', bgcolor: tokens.color.paper3 }} />
-          <Box role="status" sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, color: tokens.color.ink2, fontSize: textSize.sm }}>
+          <Skeleton
+            variant="rectangular"
+            animation="wave"
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              bgcolor: tokens.color.paper3,
+            }}
+          />
+          <Box
+            role="status"
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1,
+              color: tokens.color.ink2,
+              fontSize: textSize.sm,
+            }}
+          >
             <RecordingDot />
             {waiting}
           </Box>
@@ -89,7 +177,18 @@ export function HighlightCard({ to, video, markers, title, sub, badge, large, du
       {duration ? (
         <Box
           component="span"
-          sx={{ position: 'absolute', right: 8, bottom: 8, px: 0.75, py: 0.25, borderRadius: 1, bgcolor: 'rgba(16,9,8,0.8)', ...mono, fontSize: '0.75rem', color: tokens.color.ink2 }}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            bottom: 8,
+            px: 0.75,
+            py: 0.25,
+            borderRadius: 1,
+            bgcolor: 'rgba(16,9,8,0.8)',
+            ...mono,
+            fontSize: '0.75rem',
+            color: tokens.color.ink2,
+          }}
         >
           {clock(duration)}
         </Box>
@@ -122,16 +221,37 @@ export function HighlightCard({ to, video, markers, title, sub, badge, large, du
         }}
       >
         {still}
-        <Box sx={{ px: large ? 2.5 : 1.5, py: large ? 1.75 : 1.25, display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}>
-          <Box sx={{ fontWeight: 600, fontSize: large ? '1.125rem' : textSize.sm, overflowWrap: 'anywhere' }}>{title}</Box>
-          <Box sx={{ fontSize: '0.75rem', color: tokens.color.muted, overflowWrap: 'anywhere' }}>{sub}</Box>
+        <Box
+          sx={{
+            px: large ? 2.5 : 1.5,
+            py: large ? 1.75 : 1.25,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.25,
+            minWidth: 0,
+          }}
+        >
+          <Box
+            sx={{
+              fontWeight: 600,
+              fontSize: large ? '1.125rem' : textSize.sm,
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {title}
+          </Box>
+          <Box sx={{ fontSize: '0.75rem', color: tokens.color.muted, overflowWrap: 'anywhere' }}>
+            {sub}
+          </Box>
         </Box>
       </Box>
       {favourite && (
         <ButtonBase
           onClick={favourite.onToggle}
           aria-pressed={favourite.on}
-          aria-label={t(favourite.on ? 'videoHighlights.unfavourite' : 'videoHighlights.makeFavourite')}
+          aria-label={t(
+            favourite.on ? 'videoHighlights.unfavourite' : 'videoHighlights.makeFavourite'
+          )}
           title={t(favourite.on ? 'videoHighlights.unfavourite' : 'videoHighlights.makeFavourite')}
           sx={{
             position: 'absolute',
@@ -207,24 +327,75 @@ export function RecordingDot() {
  * the size of the real one, saying it is being recorded and about when it
  * will be there.
  */
-export function RecordingCard({ large, label, hint }: { large?: boolean; label: string; hint?: string }) {
+export function RecordingCard({
+  large,
+  label,
+  hint,
+}: {
+  large?: boolean;
+  label: string;
+  hint?: string;
+}) {
   return (
     <Box
       role="status"
       data-testid="cs2-highlight-recording"
-      sx={{ borderRadius: large ? '22px' : '16px', overflow: 'hidden', bgcolor: tokens.color.paper2, border: `1px solid ${tokens.color.rule}` }}
+      sx={{
+        borderRadius: large ? '22px' : '16px',
+        overflow: 'hidden',
+        bgcolor: tokens.color.paper2,
+        border: `1px solid ${tokens.color.rule}`,
+      }}
     >
       <Box sx={{ position: 'relative', aspectRatio: '16 / 9' }}>
-        <Skeleton variant="rectangular" animation="wave" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', bgcolor: tokens.color.paper3 }} />
-        <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, px: 2, textAlign: 'center' }}>
-          <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, fontWeight: 600, fontSize: large ? '1rem' : textSize.sm }}>
+        <Skeleton
+          variant="rectangular"
+          animation="wave"
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            bgcolor: tokens.color.paper3,
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 0.75,
+            px: 2,
+            textAlign: 'center',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1,
+              fontWeight: 600,
+              fontSize: large ? '1rem' : textSize.sm,
+            }}
+          >
             <RecordingDot />
             {label}
           </Box>
           {hint && <Box sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>{hint}</Box>}
         </Box>
       </Box>
-      <Box sx={{ px: large ? 2.5 : 1.5, py: large ? 1.75 : 1.25, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Box
+        sx={{
+          px: large ? 2.5 : 1.5,
+          py: large ? 1.75 : 1.25,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0.5,
+        }}
+      >
         <Skeleton animation="wave" width="55%" sx={{ bgcolor: tokens.color.paper3 }} />
         <Skeleton animation="wave" width="35%" sx={{ bgcolor: tokens.color.paper3 }} />
       </Box>

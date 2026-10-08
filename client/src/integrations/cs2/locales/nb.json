@@ -2012,7 +2012,8 @@
       "clips_one": "{{count}} clip",
       "clips_other": "{{count}} clips",
       "theirReel_one": "Their reel · {{count}} clip",
-      "theirReel_other": "Their reel · {{count}} clips"
+      "theirReel_other": "Their reel · {{count}} clips",
+      "teamReel": "Team highlights · {{team}}"
     },
     "tournament": {
       "reel": "TURNERINGSREEL",
@@ -2030,7 +2031,8 @@
       "firstSoon": "De første spillene dukker opp her snart"
     },
     "readyIn": "klar om omtrent {{minutes}} min",
-    "matchReelRecording": "Kampreel · tas opp"
+    "matchReelRecording": "Kampreel · tas opp",
+    "teamReelButton": "{{team}} highlights"
   },
   "serversBoard": {
     "addFirstServers": "Legg til de første serverne",

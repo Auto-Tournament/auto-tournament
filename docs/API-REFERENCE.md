@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 583 of them, 364 behind auth —
+Every endpoint this API serves — 590 of them, 370 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -262,6 +262,12 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 | `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map` | admin |
 | `POST` | `/api/game/cs2/recorder/match-reels/:slug/:map/fail` | admin |
 | `GET` | `/api/game/cs2/matches/:slug/reels` | public |
+| `PUT` | `/api/game/cs2/recorder/reels/:slug/:map/:player/crowd` | admin |
+| `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map/crowd` | admin |
+| `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team/crowd` | admin |
+| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id/crowd` | admin |
+| `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team` | admin |
+| `POST` | `/api/game/cs2/recorder/team-reels/:slug/:team/fail` | admin |
 | `POST` | `/api/game/cs2/recorder/fail` | admin |
 | `PUT` | `/api/game/cs2/recorder/tournament-reels/:id` | admin |
 | `POST` | `/api/game/cs2/recorder/tournament-reels/:id/fail` | admin |
@@ -272,6 +278,7 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 | `GET` | `/api/game/cs2/watch/reel/:slug/:map/:player` | public |
 | `GET` | `/api/game/cs2/watch/match/:slug/:map` | public |
 | `GET` | `/api/game/cs2/watch/tournament/:id` | public |
+| `GET` | `/api/game/cs2/watch/team/:slug/:team` | public |
 | `GET` | `/api/game/cs2/watch/related` | public |
 | `GET` | `/api/game/cs2/highlights/:file` | public |
 | `GET` | `/api/game/cs2/music` | public |

@@ -297,6 +297,9 @@ export interface RecordJob {
   match: string;
   /** "Team A vs Team B", or what is known of it. */
   teams: string;
+  /** The player's own team and who they played, for the caption (null when unknown). */
+  team: string | null;
+  opponent: string | null;
   /** The tournament, for the clip's corner tag; null for a match outside one. */
   tournament: string | null;
   /** Where in it the match was: "Semi-final", "Upper round 2"; null when it has no name. */
@@ -307,7 +310,7 @@ export interface RecordJob {
   watermark: boolean;
   moments: RecordMoment[];
   /** This player's clips of the map that earlier jobs recorded (the reel joins them in on a retry). */
-  doneClips: Array<{ id: number; startTick: number; url: string }>;
+  doneClips: Array<{ id: number; startTick: number; url: string; markers: ClipMarkers | null }>;
 }
 
 interface MomentRow {
@@ -482,6 +485,31 @@ export interface MapRecordJob {
 }
 
 /** One player's job: their moments on the map and everything their clips show. */
+/** Whether a team's roster (teams.players, JSON) has this SteamID64. */
+function onRoster(players: string | null | undefined, playerId: string): boolean {
+  try {
+    const list = JSON.parse(players ?? '[]') as Array<{ steamId?: string; steam_id?: string }>;
+    return list.some((p) => String(p.steamId ?? p.steam_id ?? '') === playerId);
+  } catch {
+    return false;
+  }
+}
+
+/** The player's team and the other one, by the rosters; nulls when on neither. */
+function ownTeam(
+  playerId: string,
+  m: {
+    team1: string | null;
+    team2: string | null;
+    team1_players: string | null;
+    team2_players: string | null;
+  } | null
+): { team: string | null; opponent: string | null } {
+  if (m && onRoster(m.team1_players, playerId)) return { team: m.team1, opponent: m.team2 };
+  if (m && onRoster(m.team2_players, playerId)) return { team: m.team2, opponent: m.team1 };
+  return { team: null, opponent: null };
+}
+
 async function jobFor(
   matchSlug: string,
   mapNumber: number,
@@ -495,6 +523,8 @@ async function jobFor(
     avatar_url: string | null;
     team1: string | null;
     team2: string | null;
+    team1_players: string | null;
+    team2_players: string | null;
     tournament: string | null;
     type: string | null;
     bracket: string | null;
@@ -504,8 +534,8 @@ async function jobFor(
     `SELECT (SELECT map_name FROM cs2_demo_jobs WHERE match_slug = ? AND map_number = ?) AS map_name,
             (SELECT name FROM players WHERE id = ?) AS name,
             (SELECT avatar_url FROM players WHERE id = ?) AS avatar_url,
-            t1.name AS team1, t2.name AS team2, COALESCE(tr.name, m.played_in) AS tournament,
-            tr.type, m.bracket, m.round,
+            t1.name AS team1, t2.name AS team2, t1.players AS team1_players, t2.players AS team2_players,
+            COALESCE(tr.name, m.played_in) AS tournament, tr.type, m.bracket, m.round,
             (SELECT MAX(o.round) FROM matches o
               WHERE o.tournament_id = m.tournament_id AND COALESCE(o.bracket, 'WB') = COALESCE(m.bracket, 'WB')) AS last_round
        FROM (SELECT 1) one
@@ -517,8 +547,8 @@ async function jobFor(
   );
   const { settingsService } = await import('../../../services/settingsService');
   const watermark = (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0';
-  const done = await db.queryAsync<{ id: number; start_tick: number }>(
-    `SELECT id, start_tick FROM cs2_highlights
+  const done = await db.queryAsync<{ id: number; start_tick: number; markers: string | null }>(
+    `SELECT id, start_tick, markers FROM cs2_highlights
       WHERE match_slug = ? AND map_number = ? AND player_id = ? AND status = 'done' AND kind <> 'funny'
       ORDER BY start_tick`,
     [best.match_slug, best.map_number, best.player_id]
@@ -532,6 +562,7 @@ async function jobFor(
     avatarUrl: extra?.avatar_url ?? null,
     match: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, extra?.tournament ?? null),
     teams: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, null),
+    ...ownTeam(best.player_id, extra ?? null),
     tournament: extra?.tournament ?? null,
     stage: extra?.tournament
       ? stageLabel(
@@ -559,6 +590,7 @@ async function jobFor(
       id: Number(d.id),
       startTick: Number(d.start_tick),
       url: `/api/game/cs2/highlights/${Number(d.id)}.mp4`,
+      markers: parseMarkers(d.markers),
     })),
   };
 }
@@ -572,6 +604,8 @@ export interface ClipMarkers {
   duration: number;
   kills: number[];
   slowmo: [number, number] | null;
+  /** The kills the crowd reacts to (seconds in, how impressive): the reel's crowd track. */
+  reactions?: { t: number; score: number }[];
 }
 
 /** The recorder's `X-AT-Markers` header, checked; null when absent or wrong. */
@@ -586,10 +620,17 @@ export function parseMarkers(raw: unknown): ClipMarkers | null {
         ? (m.slowmo as [number, number])
         : null;
     const r = (n: number) => Math.round(n * 100) / 100;
+    const reactions = Array.isArray(m.reactions)
+      ? m.reactions
+          .filter((x) => x && num(x.t) && num(x.score))
+          .slice(0, 30)
+          .map((x) => ({ t: r(x.t), score: r(x.score) }))
+      : [];
     return {
       duration: r(m.duration!),
       kills: m.kills.slice(0, 30).map(r),
       slowmo: slowmo ? [r(slowmo[0]), r(slowmo[1])] : null,
+      ...(reactions.length ? { reactions } : {}),
     };
   } catch {
     return null;
@@ -609,7 +650,10 @@ export function parseClipIds(raw: unknown): number[] | null {
 export function parseClipStarts(raw: unknown, clips: number): number[] | null {
   if (typeof raw !== 'string' || !/^\d+(\.\d+)?(,\d+(\.\d+)?){0,63}$/.test(raw)) return null;
   const starts = raw.split(',').map(Number);
-  if (starts.length !== clips || starts.some((s, i) => !(s < 36_000) || (i > 0 && s < starts[i - 1]!)))
+  if (
+    starts.length !== clips ||
+    starts.some((s, i) => !(s < 36_000) || (i > 0 && s < starts[i - 1]!))
+  )
     return null;
   return starts.map((s) => Math.round(s * 100) / 100);
 }
@@ -669,6 +713,36 @@ export async function failRecordJob(ids: number[], error: string): Promise<void>
   await queueMatchReelFor(ids);
 }
 
+/** Where a reel's crowd track (the recorder's, uploaded after it) is kept: next to it. */
+export function crowdFileOf(reel: string): string {
+  return reel.replace(/\.mp4$/, '.crowd.m4a');
+}
+
+/** Store a reel's crowd track (an AAC file the recorder streamed up). */
+export async function saveCrowd(reel: string, body: NodeJS.ReadableStream): Promise<number> {
+  const file = crowdFileOf(reel);
+  const tmp = `${file}.part`;
+  await new Promise<void>((resolve, reject) => {
+    const out = fs.createWriteStream(tmp);
+    body.pipe(out);
+    out.on('finish', () => resolve());
+    out.on('error', reject);
+    body.on('error', reject);
+  });
+  const { size } = await fs.promises.stat(tmp);
+  await fs.promises.rename(tmp, file);
+  return size;
+}
+
+/** A reel's crowd track for the player, when the recorder made one. */
+export function crowdUrlOf(clipPath: string | null): string | null {
+  if (!clipPath) return null;
+  const file = crowdFileOf(path.join(HIGHLIGHTS_DIR, clipPath));
+  return fs.existsSync(file)
+    ? `/api/game/cs2/highlights/${encodeURIComponent(path.basename(file))}`
+    : null;
+}
+
 export function reelFile(matchSlug: string, mapNumber: number, playerId: string): string {
   const safe = `${matchSlug}-${mapNumber}-${playerId}`.replace(/[^A-Za-z0-9_.-]/g, '_');
   return path.join(HIGHLIGHTS_DIR, `reel-${safe}.mp4`);
@@ -695,6 +769,8 @@ export async function saveReel(
   });
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
+  // A crowd track from an earlier make of this reel would not match it.
+  await fs.promises.rm(crowdFileOf(file), { force: true });
   const moments = await db.queryOneAsync<{ n: number | string }>(
     "SELECT COUNT(*) AS n FROM cs2_highlights WHERE match_slug = ? AND map_number = ? AND player_id = ? AND status = 'done'",
     [matchSlug, mapNumber, playerId]
@@ -757,6 +833,9 @@ export async function queueMatchReelFor(highlightIds: number[]): Promise<void> {
   } catch (error) {
     log.warn('[HIGHLIGHTS] Could not queue a match reel', { error: (error as Error).message });
   }
+  // And the match's team reels, once all of it is recorded.
+  const { queueTeamReelsFor } = await import('./teamReels');
+  await queueTeamReelsFor(highlightIds);
 }
 
 export interface MatchReelClip {
@@ -768,6 +847,8 @@ export interface MatchReelClip {
   title: string;
   /** Where the recorder downloads it from (this platform). */
   url: string;
+  /** Its kills and the crowd's reactions, for the reel's crowd track. */
+  markers: ClipMarkers | null;
 }
 
 /**
@@ -823,13 +904,14 @@ export async function bestClipPerPlayer(
     name: string | null;
     avatar_url: string | null;
     team: string | null;
+    markers: string | null;
   }>(
-    `SELECT b.id, b.player_id, b.title, b.slowmo_tick, p.name, p.avatar_url,
+    `SELECT b.id, b.player_id, b.title, b.slowmo_tick, b.markers, p.name, p.avatar_url,
             (SELECT t.name FROM matches m JOIN teams t ON t.id IN (m.team1_id, m.team2_id)
               WHERE m.slug = b.match_slug
                 AND EXISTS (SELECT 1 FROM jsonb_array_elements(t.players::jsonb) e WHERE e->>'steamId' = b.player_id)
               LIMIT 1) AS team
-       FROM (SELECT DISTINCT ON (player_id) id, player_id, title, slowmo_tick, match_slug
+       FROM (SELECT DISTINCT ON (player_id) id, player_id, title, slowmo_tick, match_slug, markers
                FROM cs2_highlights
               WHERE match_slug = ? AND map_number = ? AND status = 'done' AND kind <> 'funny'
               ORDER BY player_id, score DESC, id) b
@@ -845,6 +927,7 @@ export async function bestClipPerPlayer(
     avatarUrl: r.avatar_url,
     title: r.title,
     url: `/api/game/cs2/highlights/${Number(r.id)}.mp4`,
+    markers: parseMarkers(r.markers),
   }));
 }
 
@@ -926,6 +1009,8 @@ export async function saveMatchReel(
   });
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
+  // A crowd track from an earlier make of this reel would not match it.
+  await fs.promises.rm(crowdFileOf(file), { force: true });
   await db.runAsync(
     `INSERT INTO cs2_match_reels (match_slug, map_number, status, clips, clip_path, clip_bytes, clip_ids, clip_starts)
      VALUES (?, ?, 'done', ?, ?, ?, ?, ?)
