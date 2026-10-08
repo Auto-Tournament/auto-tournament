@@ -836,4 +836,15 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
     contentId: true,
     gainDb: 0.3,
   },
+  {
+    id: '126122',
+    title: 'Dark Ambient',
+    artist: 'sharvarion',
+    genre: 'ambient',
+    page: 'https://pixabay.com/music/ambient-dark-ambient-126122/',
+    audio: 'https://cdn.pixabay.com/download/audio/2022/11/17/audio_56448ba832.mp3',
+    seconds: 454,
+    contentId: true,
+    gainDb: 7.6,
+  },
 ];
