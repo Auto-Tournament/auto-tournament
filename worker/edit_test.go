@@ -25,8 +25,8 @@ func TestSpeedRampSlowsHoldsAndPlaysOn(t *testing.T) {
 		t.Fatalf("full speed until the kill: %+v", segs[0])
 	}
 	last := segs[len(segs)-1]
-	if last.Speed != 1 || math.Abs(last.To-(3+tailSec)) > 1e-9 || math.Abs(last.To-last.From-afterSec) > 1e-9 {
-		t.Fatalf("ends at full speed for afterSec, at the clip's end: %+v", last)
+	if last.Speed != slowmoSpeed || math.Abs(last.To-(3+tailSec)) > 1e-9 || last.To-last.From < holdSec-1e-9 {
+		t.Fatalf("ends slowed for holdSec, at the clip's end: %+v", last)
 	}
 	var slowing, held float64
 	for _, s := range segs[1 : len(segs)-1] {
@@ -40,7 +40,7 @@ func TestSpeedRampSlowsHoldsAndPlaysOn(t *testing.T) {
 			slowing += d
 		}
 	}
-	if slowing < 1.3 || slowing > 2.2 || held < 0.8 || held > 1.2 {
+	if slowing < 0.8 || slowing > 1.3 || held != 0 {
 		t.Fatalf("slowing %.2f s, held %.2f s", slowing, held)
 	}
 }
@@ -94,8 +94,8 @@ func TestMomentMarkers(t *testing.T) {
 	if m.Duration != want {
 		t.Fatalf("duration = %v, want %v", m.Duration, want)
 	}
-	// The slow motion ends where the game plays on at full speed (afterSec) before the cut.
-	if math.Abs(m.Slowmo[1]+afterSec-m.Duration) > 0.05 { // the tail rounds up to whole ticks
+	// The slow motion runs to the cut.
+	if math.Abs(m.Slowmo[1]-m.Duration) > 0.05 { // the tail rounds up to whole ticks
 		t.Fatalf("slow motion ends at %v, the clip at %v", m.Slowmo[1], m.Duration)
 	}
 }

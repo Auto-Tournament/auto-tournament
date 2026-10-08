@@ -10,18 +10,17 @@ import (
 )
 
 // The highlight edit: the clip plays at full speed until the last enemy dies,
-// then slows step by step to slowmoSpeed (about a second of video), holds
-// there for about another second and cuts while still slowed: once the
-// killing is done there is nothing to speed back up for.
+// then slows step by step to slowmoSpeed (about a second of video) and stays
+// slowed to the cut (2.5 s of video): once the killing is done there is
+// nothing to speed back up for (speeding up again read as the clip running
+// away, 2026-10-08).
 const (
 	slowmoSpeed = 0.5
 	rampSec     = 0.75 // game seconds slowing down from the kill (≈1 s of video)
-	holdSec     = 0.5  // game seconds held at slowmoSpeed (1 s of video)
-	afterUpSec  = 0.5  // then game seconds speeding back up to full speed
-	afterSec    = 0.8  // and game seconds at full speed before the cut
+	holdSec     = 1.25 // game seconds held at slowmoSpeed to the cut (2.5 s of video)
 	rampSteps   = 8    // a ramp is this many constant-speed pieces
 	// tailSec is how much game after the last kill a clip shows.
-	tailSec = rampSec + holdSec + afterUpSec + afterSec
+	tailSec = rampSec + holdSec
 )
 
 // The frame rate and height (16:9) of every clip and reel: 1080p at 60 fps,
@@ -89,8 +88,7 @@ func stepSpeed(i int) float64 {
 }
 
 // speedRamp cuts a recording of `length` seconds into pieces: full speed to
-// `kill` seconds in, slowing to slowmoSpeed, held there, then back up to full
-// speed for the round's last moment before the cut.
+// `kill` seconds in, then slowing to slowmoSpeed and slowed to the cut.
 func speedRamp(length, kill float64) []segment {
 	return editPlan(length, false, kill)
 }
@@ -139,13 +137,7 @@ func editPlan(length float64, intro bool, kill float64) []segment {
 	for i := 0; i < rampSteps; i++ {
 		add(kill+float64(i)*step, kill+float64(i+1)*step, stepSpeed(i))
 	}
-	up := kill + rampSec + holdSec
-	add(kill+rampSec, up, slowmoSpeed)
-	upStep := afterUpSec / rampSteps
-	for i := 0; i < rampSteps; i++ {
-		add(up+float64(i)*upStep, up+float64(i+1)*upStep, upSpeed(i))
-	}
-	add(up+afterUpSec, length, 1)
+	add(kill+rampSec, length, slowmoSpeed)
 	return out
 }
 
