@@ -759,10 +759,18 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 	}
 	frameBytes := int64(w * h * 3 / 2)
 	buf := make([]byte, frameBytes)
+	other := make([]byte, frameBytes)
 	var werr error
 	for _, f := range frames {
 		if _, werr = files[f.source].ReadAt(buf, int64(f.index)*frameBytes); werr != nil {
 			break
+		}
+		if f.next >= 0 {
+			// Between two captured frames: both, by distance (record_timing.go).
+			if _, werr = files[f.source].ReadAt(other, int64(f.next)*frameBytes); werr != nil {
+				break
+			}
+			blendFrames(buf, other, f.weight)
 		}
 		if _, werr = stdin.Write(buf); werr != nil {
 			break

@@ -202,3 +202,39 @@ func TestWavSeconds(t *testing.T) {
 		t.Fatalf("got %v, %v; want 0.5 s", d, err)
 	}
 }
+
+func TestTimelineBlendsBetweenFrames(t *testing.T) {
+	// 1.5 captured frames per frame wanted: every other output frame falls
+	// halfway between two captured ones and blends them.
+	var ticks []float64
+	for i := 0; i < 400; i++ {
+		ticks = append(ticks, float64(i)*tickrate/(1.5*outputFPS))
+	}
+	frames, err := timeline([][]float64{ticks}, []segment{{From: 0, To: 2, Speed: 1}}, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	blended := 0
+	for i, f := range frames {
+		if f.next >= 0 {
+			blended++
+			if f.next != f.index+1 || f.weight <= blendEdge || f.weight >= 1-blendEdge {
+				t.Fatalf("frame %d: %+v", i, f)
+			}
+		}
+		if i > 0 && f.index < frames[i-1].index {
+			t.Fatalf("frame %d goes back: %+v after %+v", i, f, frames[i-1])
+		}
+	}
+	if blended < len(frames)/3 {
+		t.Fatalf("only %d of %d blended", blended, len(frames))
+	}
+}
+
+func TestBlendFrames(t *testing.T) {
+	a, b := []byte{0, 100, 255}, []byte{200, 100, 55}
+	blendFrames(a, b, 0.5)
+	if a[0] != 100 || a[1] != 100 || a[2] != 155 {
+		t.Fatalf("blend = %v", a)
+	}
+}

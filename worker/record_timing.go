@@ -109,7 +109,19 @@ func rollingFit(v []float64, half int) []float64 {
 // frameRef is one captured frame: which capture, which frame in it.
 type frameRef struct {
 	source, index int
+	// next and weight: the wanted moment falls between frame index and frame
+	// next (same source), weight of the way to it; next < 0 for one frame.
+	// The capture gives about 1.5 frames per frame wanted (88 a game second
+	// for 60, 173 for 120): picking the nearest stepped 1, 2, 1, 2 frames and
+	// fast camera moves stuttered (a jump, 2026-10-08). Blending the two
+	// frames either side by their distance resamples evenly.
+	next   int
+	weight float64
 }
+
+// blendEdge is how close to a frame the wanted moment must be to show that
+// frame alone (a blend that close is no different, and costs a second read).
+const blendEdge = 0.12
 
 // maxGapTicks is how far from the wanted moment a frame may be before the
 // clip has a hole there (5 ticks: 78 ms, a frame shown a little longer). At
@@ -170,7 +182,22 @@ func timeline(sources [][]float64, segs []segment, startTick int) ([]frameRef, e
 				return nil, fmt.Errorf("no frame near tick %.0f (nearest %.1f ticks away)", want, gap)
 			}
 			last[si] = c
-			out = append(out, frameRef{si, sorted[si][c].index})
+			ref := frameRef{source: si, index: sorted[si][c].index, next: -1}
+			// The frame on the other side of the wanted moment, and how far towards it.
+			frames := sorted[si]
+			a, b := c, c+1
+			if frames[c].tick > want {
+				a, b = c-1, c
+			}
+			if a >= 0 && b < len(frames) && a >= last[si]-1 {
+				if span := frames[b].tick - frames[a].tick; span > 0 && span <= maxGapTicks {
+					w := (want - frames[a].tick) / span
+					if w > blendEdge && w < 1-blendEdge {
+						ref = frameRef{source: si, index: frames[a].index, next: frames[b].index, weight: w}
+					}
+				}
+			}
+			out = append(out, ref)
 		}
 	}
 	if len(out) == 0 {
@@ -357,4 +384,13 @@ func wavSeconds(path string) (float64, error) {
 		return 0, errors.New("no fmt or data chunk")
 	}
 	return float64(data) / float64(byteRate), nil
+}
+
+// blendFrames mixes b into a (raw frames of the same size), weight w of b.
+func blendFrames(a, b []byte, w float64) {
+	wb := uint32(math.Round(w * 256))
+	wa := 256 - wb
+	for i := range a {
+		a[i] = byte((uint32(a[i])*wa + uint32(b[i])*wb + 128) >> 8)
+	}
 }
