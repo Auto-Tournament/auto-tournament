@@ -27,29 +27,40 @@ func TestReelFilterWipesBetweenPlayers(t *testing.T) {
 	}
 }
 
-func TestReelFilterIntroGrid(t *testing.T) {
-	p := reelPlan{durations: []float64{10, 8, 9}, joins: []join{joinWipe, joinFade}, intro: true, width: 1920, height: 1080, fps: 60}
-	f := reelFilter(p)
+func TestIntroFilterAndTiles(t *testing.T) {
+	tiles := introTiles([]float64{10, 8, 9})
+	// Three clips: a 2×2 grid, the first clip in two tiles at different stretches.
+	if len(tiles) != 4 || tiles[0].Clip != 0 || tiles[3].Clip != 0 || tiles[0].Start == tiles[3].Start {
+		t.Fatalf("tiles = %+v", tiles)
+	}
+	for _, tile := range tiles {
+		if tile.Start < 0 || tile.Start+introSec/introSlowdown > []float64{10, 8, 9}[tile.Clip]+1e-9 {
+			t.Fatalf("tile past its clip: %+v", tile)
+		}
+	}
+	f := introFilter(2, 2, 1920, 1080, 60)
 	for _, want := range []string{
-		// Three clips: a 2×2 grid, the first clip in two tiles.
-		"[0:v]setpts=PTS-STARTPTS,trim=duration=10.000,fps=60,settb=AVTB,setsar=1,format=yuv420p,split=3[v0in][g0_0][g0_1]",
 		"xstack=inputs=4:layout=0_0|960_0|0_540|960_540",
 		"drawbox=color=0x080504@0.75:t=fill",
 		// In slow motion, from the top of the frame (no caption card).
-		"setpts=(PTS-STARTPTS)*4,fps=60,crop=iw:ih*0.62:0:0",
-		// The intro's text (input 3) over the grid, then the wipe to the first clip.
-		"[3:v]format=rgba[introtext]",
-		"[vintro][wc1]xfade=transition=wiperight",
-		// One player's two clips blend.
-		"xfade=transition=fade:duration=0.4",
+		"[0:v]setpts=(PTS-STARTPTS)*4,fps=60,crop=iw:ih*0.62:0:0",
+		// The text (the input after the tiles) over the grid.
+		"[4:v]format=rgba[text]",
 	} {
 		if !strings.Contains(f, want) {
 			t.Fatalf("%q missing from %s", want, f)
 		}
 	}
+}
+
+func TestReelWithIntroLength(t *testing.T) {
+	p := reelPlan{durations: []float64{introSec, 10, 8, 9}, joins: []join{joinWipe, joinWipe, joinFade}, width: 1920, height: 1080, fps: 60}
 	want := introSec + 10 + 8 + 9 + 2*wipeHoldSec - reelCrossfade
 	if got := reelLength(p); math.Abs(got-want) > 1e-9 {
 		t.Fatalf("length = %v, want %v", got, want)
+	}
+	if f := reelFilter(p); !strings.Contains(f, "[v0in][wc1]xfade=transition=wiperight") {
+		t.Fatalf("no wipe from the intro: %s", f)
 	}
 }
 
