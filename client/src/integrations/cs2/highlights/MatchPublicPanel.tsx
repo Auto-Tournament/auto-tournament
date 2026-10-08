@@ -91,7 +91,7 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
         const done = (r.teams ?? []).filter((x) => x.status === 'done' && x.video);
         setTeams(done);
         // The winners' reel first.
-        const winner = match.winner ? match[match.winner]?.id : null;
+        const winner = match.winnerSide ? match[match.winnerSide]?.id : null;
         setPick((done.find((x) => x.teamId === winner) ?? done[0])?.teamId ?? null);
       })
       .catch(() => undefined);

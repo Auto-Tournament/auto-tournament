@@ -88,7 +88,7 @@ export default function MatchPage() {
 
   const side = (key: 'team1' | 'team2', right: boolean) => {
     const team = match[key];
-    const win = match.winner === key;
+    const win = match.winnerSide === key;
     const body = (
       <Stack
         direction={right ? 'row-reverse' : 'row'}
@@ -172,11 +172,11 @@ export default function MatchPage() {
             justifyContent: 'center',
           }}
         >
-          <span style={{ opacity: match.winner === 'team2' ? 0.55 : 1 }}>{score1}</span>
+          <span style={{ opacity: match.winnerSide === 'team2' ? 0.55 : 1 }}>{score1}</span>
           <Box component="span" sx={{ color: 'divider' }}>
             :
           </Box>
-          <span style={{ opacity: match.winner === 'team1' ? 0.55 : 1 }}>{score2}</span>
+          <span style={{ opacity: match.winnerSide === 'team1' ? 0.55 : 1 }}>{score2}</span>
         </Typography>
         {side('team2', true)}
       </Box>

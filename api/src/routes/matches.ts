@@ -1097,16 +1097,18 @@ router.get('/:slug', async (req: Request, res: Response) => {
       success: true,
       match: {
         ...match,
-        team1: teamOf('team1'),
-        team2: teamOf('team2'),
-        winner:
+        // Kept as they are where the match already has them (tournament matches).
+        team1: (match as { team1?: unknown }).team1 ?? teamOf('team1'),
+        team2: (match as { team2?: unknown }).team2 ?? teamOf('team2'),
+        winnerSide:
           row?.winner_id && row.winner_id === row.team1_id
             ? 'team1'
             : row?.winner_id && row.winner_id === row.team2_id
               ? 'team2'
               : null,
         maps,
-        tournament: row?.tournament ?? row?.played_in ?? null,
+        tournament:
+          (match as { tournament?: unknown }).tournament ?? row?.tournament ?? row?.played_in ?? null,
       },
     });
   } catch (error) {

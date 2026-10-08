@@ -102,7 +102,8 @@ export interface PublicMatch {
   status: string;
   team1: { id: string | null; name: string | null; tag: string | null } | null;
   team2: { id: string | null; name: string | null; tag: string | null } | null;
-  winner: 'team1' | 'team2' | null;
+  /** Which side won (null: undecided). */
+  winnerSide: 'team1' | 'team2' | null;
   maps: Array<{
     mapNumber: number;
     map: string | null;
