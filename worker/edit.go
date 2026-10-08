@@ -236,6 +236,8 @@ type overlay struct {
 	logo   int             // input holding the Auto Tournament logo, looped, or -1
 	width  int
 	height int
+	// clean: the frames also come out undressed as [clean] (the clean twin, overlay.go).
+	clean bool
 }
 
 // videoFilter dresses the frames: the animated caption card for the first
@@ -243,7 +245,11 @@ type overlay struct {
 // top right is the kill feed's). Output [v].
 func videoFilter(o overlay) string {
 	var b strings.Builder
-	b.WriteString("[0:v]format=yuv420p[base]")
+	if o.clean {
+		b.WriteString("[0:v]format=yuv420p,split[base][clean]")
+	} else {
+		b.WriteString("[0:v]format=yuv420p[base]")
+	}
 	last := "base"
 	if o.card >= 0 {
 		fmt.Fprintf(&b, ";[%s][%d:v]overlay=%d:%d:eof_action=repeat:alpha=premultiplied[withcard]", last, o.card, o.cardAt.X, o.cardAt.Y)

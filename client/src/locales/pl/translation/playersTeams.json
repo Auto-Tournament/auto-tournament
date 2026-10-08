@@ -651,7 +651,11 @@
         "mystery": "Mystery",
         "modern-classical": "Modern classical",
         "main-title": "Main title"
-      }
+      },
+      "overlayOn": "Card and kill feed on",
+      "overlayOff": "Card and kill feed off",
+      "downloadOverlay": "With card and kill feed",
+      "downloadNoOverlay": "Clean: no card or kill feed"
     }
   },
   "leaderboard": {

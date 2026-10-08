@@ -91,6 +91,7 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 		if err := r.downloadTo(ctx, c.URL, clip); err != nil {
 			return fmt.Errorf("%s: %w", c.PlayerName, err)
 		}
+		r.downloadTwins(ctx, c.URL, clip)
 		tagged = append(tagged, clip)
 	}
 	reel := filepath.Join(dir, "match.mp4")
@@ -114,6 +115,7 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 		return err
 	}
 	r.uploadCrowd(ctx, reel, j.uploadRoute(len(tagged)))
+	r.uploadTwins(ctx, reel, j.uploadRoute(len(tagged)))
 	return nil
 }
 

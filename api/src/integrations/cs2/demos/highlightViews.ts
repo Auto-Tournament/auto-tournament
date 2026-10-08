@@ -15,7 +15,7 @@ import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
 import {
-  crowdFileOf,
+  removeTwins,
   crowdUrlOf,
   HIGHLIGHTS_DIR,
   matchLine,
@@ -854,7 +854,7 @@ export async function saveTournamentReel(
   });
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
-  await fs.promises.rm(crowdFileOf(file), { force: true });
+  await removeTwins(file);
   await db.runAsync(
     `INSERT INTO cs2_tournament_reels (tournament_id, status, clip_ids, clip_starts, clip_path, clip_bytes)
      VALUES (?, 'done', ?, ?, ?, ?)

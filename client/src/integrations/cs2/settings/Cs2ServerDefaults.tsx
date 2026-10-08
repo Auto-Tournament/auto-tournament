@@ -34,6 +34,7 @@ import {
 } from '@mui/material';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import { HighlightMusicSetting } from './HighlightMusicSetting';
+import { HighlightOverlaySetting } from './HighlightOverlaySetting';
 import {
   api,
   radii,
@@ -1062,6 +1063,7 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
             void save({ highlightsMusic: value });
           }}
         />
+        <HighlightOverlaySetting />
       </Box>
 
       {isDev && (

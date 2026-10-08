@@ -126,44 +126,49 @@ func (r *recorder) look() []string {
 // claimRecording asks the platform for work: a player's moments to record
 // (recordJob), or a map's match reel to join (matchReelJob); nil, nil when
 // there is none.
-func (c *client) claimRecording(ctx context.Context) (*mapJob, *matchReelJob, error) {
-	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{"recorder": c.worker, "version": 5})
+func (c *client) claimRecording(ctx context.Context) (*mapJob, *matchReelJob, *redressJob, error) {
+	// Version 6: redress jobs (overlay.go).
+	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{"recorder": c.worker, "version": 6})
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	defer res.Body.Close()
 	if res.StatusCode == http.StatusNoContent {
-		return nil, nil, nil
+		return nil, nil, nil, nil
 	}
 	if err := ok(res, "claim"); err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	var body struct {
 		Job json.RawMessage `json:"job"`
 	}
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	var kind struct {
 		Kind string `json:"kind"`
 	}
 	if err := json.Unmarshal(body.Job, &kind); err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	// A tournament's or a team's reel is made the same way as a match reel: join.
 	if kind.Kind == "match_reel" || kind.Kind == "tournament_reel" || kind.Kind == "team_reel" {
 		var j matchReelJob
-		return nil, &j, json.Unmarshal(body.Job, &j)
+		return nil, &j, nil, json.Unmarshal(body.Job, &j)
+	}
+	if kind.Kind == "redress" {
+		var j redressJob
+		return nil, nil, &j, json.Unmarshal(body.Job, &j)
 	}
 	if kind.Kind == "map" {
 		var mj mapJob
-		return &mj, nil, json.Unmarshal(body.Job, &mj)
+		return &mj, nil, nil, json.Unmarshal(body.Job, &mj)
 	}
 	var j recordJob
 	if err := json.Unmarshal(body.Job, &j); err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	return &mapJob{Kind: "map", MatchSlug: j.MatchSlug, MapNumber: j.MapNumber, Players: []recordJob{j}}, nil, nil
+	return &mapJob{Kind: "map", MatchSlug: j.MatchSlug, MapNumber: j.MapNumber, Players: []recordJob{j}}, nil, nil, nil
 }
 
 // demoName is the player's name in the demo (what spec_player takes).
@@ -459,10 +464,11 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	}
 	// Who, which match, map and round, and what the moment is; the clip
 	// opens slowed down under it.
-	card, err := captionCard{
+	cardOf := captionCard{
 		name: look.name, teams: look.teams, team: look.team, opponent: look.opponent, mapName: look.mapName, round: m.Round,
 		kind: pillLabel(m.Kind, m.Title), tag: look.tag, avatar: look.avatar,
-	}.layout(g.width, g.height)
+	}
+	card, err := cardOf.layout(g.width, g.height)
 	if err != nil {
 		cleanup()
 		return clipMarkers{}, nil, err
@@ -473,6 +479,7 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	var pieces []string
 	var edits [][]segment
 	var encodes []func() error
+	var parts []overlayPart
 	for i, w := range windows {
 		piece := filepath.Join(dir, fmt.Sprintf("piece-%d.mp4", i))
 		// The first piece plays the card's entrance; the later ones (after a
@@ -483,15 +490,20 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 		} else if card != nil {
 			pieceCard = card.Settled()
 		}
-		segs, kept, encode, err := r.recordWindow(g, look, pieceCard, name, w, prior, filepath.Join(dir, fmt.Sprint(i)), piece)
+		cut, encode, err := r.recordWindow(g, look, pieceCard, name, w, prior, filepath.Join(dir, fmt.Sprint(i)), piece)
 		if err != nil {
 			cleanup()
 			return clipMarkers{}, nil, err
 		}
 		encodes = append(encodes, encode)
-		prior = kept
+		prior = cut.kept
 		pieces = append(pieces, piece)
-		edits = append(edits, segs)
+		edits = append(edits, cut.segs)
+		part := overlayPart{Settled: i > 0, Feed: cut.rows}
+		if card != nil {
+			part.Card = specOf(cardOf)
+		}
+		parts = append(parts, part)
 	}
 	kills := m.KillTicks
 	if len(kills) == 0 {
@@ -499,6 +511,7 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	}
 	markers := momentMarkers(windows, edits, kills)
 	markers.Reactions = cheerTimes(m.KillTicks, markers.Kills, cheerTicks(look.replay, look.playerID, m))
+	width, height := g.width, g.height
 	finish := func() error {
 		defer cleanup()
 		for _, encode := range encodes {
@@ -506,7 +519,26 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 				return err
 			}
 		}
+		// The overlay's recipe, each piece as long as it came out.
+		durations := make([]float64, len(pieces))
+		for i, p := range pieces {
+			d, err := probeDuration(p)
+			if err != nil {
+				return err
+			}
+			durations[i] = d
+		}
+		if err := clipOverlay(width, height, look.watermark, durations, parts).save(overlayPathOf(out)); err != nil {
+			return err
+		}
+		cleans := make([]string, len(pieces))
+		for i, p := range pieces {
+			cleans[i] = cleanPathOf(p)
+		}
 		if len(pieces) == 1 {
+			if err := os.Rename(cleans[0], cleanPathOf(out)); err != nil {
+				return err
+			}
 			return os.Rename(pieces[0], out)
 		}
 		// The jump cuts between a player's kills blend (reelCrossfade).
@@ -514,7 +546,10 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 		for i := range fades {
 			fades[i] = joinFade
 		}
-		_, err := r.buildReel(pieces, fades, nil, out)
+		if _, err := r.buildReel(pieces, fades, nil, out); err != nil {
+			return err
+		}
+		_, err := r.buildReel(cleans, fades, nil, cleanPathOf(out))
 		return err
 	}
 	return markers, finish, nil
@@ -525,7 +560,7 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 // sound at real speed, and the edit.
 // recordWindow captures one window's picture and sound; the encode it
 // returns (the card, the kill feed, the edit) needs no CS2 and runs later.
-func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name string, w window, prior []feedKill, prefix, out string) ([]segment, []feedKill, func() error, error) {
+func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name string, w window, prior []feedKill, prefix, out string) (*windowCut, func() error, error) {
 	// The picture in one pass: slowed under the caption card's opening and for the slow motion.
 	introEnd := 0
 	if card != nil && !card.settled {
@@ -540,7 +575,7 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 	main := prefix + "-picture.yuv"
 	mainTicks, err := r.capturePicture(g, name, w.from-lead, picturePhases(w, introEnd, slowFrom, speedsFor(r.rate.fps)), main)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("picture: %w", err)
+		return nil, nil, fmt.Errorf("picture: %w", err)
 	}
 	sources := [][]float64{mainTicks}
 	raws := []string{main}
@@ -556,7 +591,7 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 		ac.stop()
 	}
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("sound: %w", err)
+		return nil, nil, fmt.Errorf("sound: %w", err)
 	}
 	// What CS2 plays reaches the recording audioLatency later: start that much
 	// further in, or every shot is heard after the kill it made.
@@ -570,13 +605,13 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 	segs := editPlan(length, card != nil && !card.settled, kill)
 	frames, err := timeline(sources, segs, w.from)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 	// The kill feed: what carried over, then this piece's kills where the edit puts them.
 	var feed *feedRender
-	var kept []feedKill
+	var kept, rows []feedKill
 	if r.icons != nil {
-		rows := append([]feedKill{}, prior...)
+		rows = append([]feedKill{}, prior...)
 		for _, kl := range feedKillsFor(look.replay, look.playerID, w.from, w.to) {
 			kl.At = outputAt(segs, float64(kl.Tick-w.from)/tickrate)
 			rows = append(rows, kl)
@@ -589,20 +624,28 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 		}
 		if len(rows) > 0 {
 			if feed, err = layoutFeed(rows, g.width, g.height, outputSeconds(segs), r.icons); err != nil {
-				return nil, nil, nil, fmt.Errorf("kill feed: %w", err)
+				return nil, nil, fmt.Errorf("kill feed: %w", err)
 			}
 		}
 	}
 	width, height := g.width, g.height
-	return segs, kept, func() error {
-		return r.encodeMoment(raws, frames, width, height, wav, audioAt, length, segs, look.watermark, card, feed, out)
+	return &windowCut{segs: segs, kept: kept, rows: rows}, func() error {
+		return r.encodeMoment(raws, frames, width, height, wav, audioAt, length, segs, look.watermark, card, feed, out, cleanPathOf(out))
 	}, nil
+}
+
+// windowCut is a recorded window's edit: its pieces' speeds, the kill feed's
+// rows it showed (for the overlay's recipe) and the ones that carry over.
+type windowCut struct {
+	segs []segment
+	kept []feedKill
+	rows []feedKill
 }
 
 // encodeMoment streams the timeline's frames into ffmpeg at outputFPS with the
 // sound, the slow motion on both, and the caption.
 func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav string, audioAt, length float64,
-	segs []segment, watermark bool, card *cardRender, feed *feedRender, out string) error {
+	segs []segment, watermark bool, card *cardRender, feed *feedRender, out, clean string) error {
 	files := make([]*os.File, len(raws))
 	for i, p := range raws {
 		f, err := os.Open(p)
@@ -615,7 +658,7 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 	args := []string{"-y", "-hide_banner", "-loglevel", "error",
 		"-f", "rawvideo", "-pix_fmt", "yuv420p", "-s", fmt.Sprintf("%dx%d", w, h), "-framerate", fmt.Sprint(outputFPS), "-i", "pipe:0",
 		"-ss", fmt.Sprintf("%.4f", maxf(0, audioAt)), "-i", wav}
-	o := overlay{card: -1, logo: -1, feed: -1, width: w, height: h}
+	o := overlay{card: -1, logo: -1, feed: -1, width: w, height: h, clean: clean != ""}
 	next := 2
 	// The card's frames come through a named pipe, drawn as ffmpeg asks for them.
 	var cardPipe string
@@ -647,9 +690,24 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-i", r.logo)
 		o.logo = next
 	}
-	args = append(args, "-filter_complex", videoFilter(o)+";"+audioFilter(segs, length), "-map", "[v]", "-map", "[a]")
-	args = append(args, encodeArgs(r.encoder)...)
-	args = append(args, "-movflags", "+faststart", out)
+	filter := videoFilter(o) + ";" + audioFilter(segs, length)
+	// Exactly the timeline's frames: the card's and the kill feed's streams can
+	// run a little longer, and ffmpeg's overlay then held the last frame
+	// (a dressed piece came out ~0.05 s longer than its picture and sound).
+	frameCount := []string{"-frames:v", strconv.Itoa(len(frames))}
+	if clean != "" {
+		// The same frames and sound once more, undressed: one decode, two encodes.
+		filter += ";[a]asplit[ad][ac]"
+		args = append(args, "-filter_complex", filter, "-map", "[v]", "-map", "[ad]")
+		args = append(append(args, encodeArgs(r.encoder)...), frameCount...)
+		args = append(args, "-movflags", "+faststart", out, "-map", "[clean]", "-map", "[ac]")
+		args = append(append(args, encodeArgs(r.encoder)...), frameCount...)
+		args = append(args, "-movflags", "+faststart", clean)
+	} else {
+		args = append(args, "-filter_complex", filter, "-map", "[v]", "-map", "[a]")
+		args = append(append(args, encodeArgs(r.encoder)...), frameCount...)
+		args = append(args, "-movflags", "+faststart", out)
+	}
 	cmd := exec.Command("ffmpeg", args...)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -929,10 +987,11 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) error {
 	failed = append(failed, more...)
 	for _, c := range clips {
 		markers, _ := json.Marshal(c.markers)
-		if err := r.upload(ctx, c.path, fmt.Sprintf("/api/game/cs2/recorder/jobs/%d/clip", c.moment.ID),
-			map[string]string{"X-AT-Markers": string(markers)}); err != nil {
+		route := fmt.Sprintf("/api/game/cs2/recorder/jobs/%d/clip", c.moment.ID)
+		if err := r.upload(ctx, c.path, route, map[string]string{"X-AT-Markers": string(markers)}); err != nil {
 			return err
 		}
+		r.uploadTwins(ctx, c.path, route)
 	}
 	if err != nil {
 		return err
@@ -975,6 +1034,7 @@ func (r *recorder) uploadReel(ctx context.Context, dir string, j *recordJob, cli
 			log.Printf("reel without clip %d: %v", d.ID, err)
 			continue
 		}
+		r.downloadTwins(ctx, d.URL, path)
 		done := clipResult{moment: moment{ID: d.ID, StartTick: d.StartTick}, path: path}
 		if d.Markers != nil {
 			done.markers = *d.Markers
@@ -1001,6 +1061,7 @@ func (r *recorder) uploadReel(ctx context.Context, dir string, j *recordJob, cli
 		return err
 	}
 	r.uploadCrowd(ctx, reel, route)
+	r.uploadTwins(ctx, reel, route)
 	return nil
 }
 
@@ -1124,9 +1185,13 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 	}
 	log.Printf("recorder: %dx%d, %s, sound from %s", r.width, r.height, r.encoder, r.sink)
 	for ctx.Err() == nil {
-		j, reel, err := c.claimRecording(ctx)
+		j, reel, redress, err := c.claimRecording(ctx)
 		if err != nil {
 			log.Printf("cannot reach the platform: %v", err)
+		}
+		if redress != nil {
+			r.runRedress(ctx, redress)
+			continue
 		}
 		if reel != nil {
 			started := time.Now()

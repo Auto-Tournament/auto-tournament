@@ -676,6 +676,7 @@ export async function saveClip(
   });
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
+  await removeTwins(file);
   await db.runAsync(
     "UPDATE cs2_highlights SET status = 'done', clip_path = ?, clip_bytes = ?, markers = ?, error = NULL WHERE id = ?",
     [path.basename(file), size, markers ? JSON.stringify(markers) : null, id]
@@ -713,14 +714,42 @@ export async function failRecordJob(ids: number[], error: string): Promise<void>
   await queueMatchReelFor(ids);
 }
 
-/** Where a reel's crowd track (the recorder's, uploaded after it) is kept: next to it. */
-export function crowdFileOf(reel: string): string {
-  return reel.replace(/\.mp4$/, '.crowd.m4a');
+/**
+ * What the recorder keeps next to a clip or reel (worker/overlay.go): its crowd
+ * track (reels), its clean twin (as recorded: no caption card, kill feed or
+ * logo) and its overlay's recipe, from which the dressed video can be made
+ * again. Each arrives after the video itself; a new video drops the old ones.
+ */
+export type VideoTwin = 'crowd' | 'clean' | 'overlay';
+
+const TWIN_SUFFIX: Record<VideoTwin, string> = {
+  crowd: '.crowd.m4a',
+  clean: '.clean.mp4',
+  overlay: '.overlay.json',
+};
+
+export const TWIN_CONTENT_TYPE: Record<VideoTwin, string> = {
+  crowd: 'audio/mp4',
+  clean: 'video/mp4',
+  overlay: 'application/json',
+};
+
+export function twinFileOf(video: string, twin: VideoTwin): string {
+  return video.replace(/\.mp4$/, TWIN_SUFFIX[twin]);
 }
 
-/** Store a reel's crowd track (an AAC file the recorder streamed up). */
-export async function saveCrowd(reel: string, body: NodeJS.ReadableStream): Promise<number> {
-  const file = crowdFileOf(reel);
+/** Where a reel's crowd track (the recorder's, uploaded after it) is kept: next to it. */
+export function crowdFileOf(reel: string): string {
+  return twinFileOf(reel, 'crowd');
+}
+
+/** Store one of a video's twins (the recorder streams it up). */
+export async function saveTwin(
+  video: string,
+  twin: VideoTwin,
+  body: NodeJS.ReadableStream
+): Promise<number> {
+  const file = twinFileOf(video, twin);
   const tmp = `${file}.part`;
   await new Promise<void>((resolve, reject) => {
     const out = fs.createWriteStream(tmp);
@@ -730,8 +759,31 @@ export async function saveCrowd(reel: string, body: NodeJS.ReadableStream): Prom
     body.on('error', reject);
   });
   const { size } = await fs.promises.stat(tmp);
+  if (twin === 'overlay') {
+    // A recipe the redress can read, or nothing.
+    try {
+      JSON.parse(await fs.promises.readFile(tmp, 'utf8'));
+    } catch {
+      await fs.promises.rm(tmp, { force: true });
+      throw new Error('The overlay is not JSON');
+    }
+  }
   await fs.promises.rename(tmp, file);
   return size;
+}
+
+/** Store a reel's crowd track (an AAC file the recorder streamed up). */
+export async function saveCrowd(reel: string, body: NodeJS.ReadableStream): Promise<number> {
+  return saveTwin(reel, 'crowd', body);
+}
+
+/** A new video: the twins of the one it replaces no longer match it. */
+export async function removeTwins(video: string): Promise<void> {
+  await Promise.all(
+    (Object.keys(TWIN_SUFFIX) as VideoTwin[]).map((t) =>
+      fs.promises.rm(twinFileOf(video, t), { force: true })
+    )
+  );
 }
 
 /** A reel's crowd track for the player, when the recorder made one. */
@@ -770,7 +822,7 @@ export async function saveReel(
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
   // A crowd track from an earlier make of this reel would not match it.
-  await fs.promises.rm(crowdFileOf(file), { force: true });
+  await removeTwins(file);
   const moments = await db.queryOneAsync<{ n: number | string }>(
     "SELECT COUNT(*) AS n FROM cs2_highlights WHERE match_slug = ? AND map_number = ? AND player_id = ? AND status = 'done'",
     [matchSlug, mapNumber, playerId]
@@ -1010,7 +1062,7 @@ export async function saveMatchReel(
   const { size } = await fs.promises.stat(tmp);
   await fs.promises.rename(tmp, file);
   // A crowd track from an earlier make of this reel would not match it.
-  await fs.promises.rm(crowdFileOf(file), { force: true });
+  await removeTwins(file);
   await db.runAsync(
     `INSERT INTO cs2_match_reels (match_slug, map_number, status, clips, clip_path, clip_bytes, clip_ids, clip_starts)
      VALUES (?, ?, 'done', ?, ?, ?, ?, ?)

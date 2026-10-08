@@ -1181,6 +1181,16 @@
         "suggestionsHelp": "Open one, download it from Pixabay under its license, and add it here. The license lets you use it in videos; it does not let anyone pass the file on.",
         "link": "Or a link to the audio file",
         "addLink": "Add from the link"
+      },
+      "overlay": {
+        "label": "Overlays",
+        "helper_one": "{{count}} clip or reel was recorded clean as well. Redraw puts the current caption card, kill feed and names on it again from the clean recording, without CS2.",
+        "helper_other": "{{count}} clips and reels were recorded clean as well. Redraw puts the current caption card, kill feed and names on them again from the clean recordings, without CS2.",
+        "redraw": "Redraw overlays",
+        "pending_one": "{{count}} video waiting for a recorder",
+        "pending_other": "{{count}} videos waiting for a recorder",
+        "failed_one": "{{count}} video could not be redrawn",
+        "failed_other": "{{count}} videos could not be redrawn"
       }
     }
   },
