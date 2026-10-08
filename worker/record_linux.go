@@ -1000,7 +1000,11 @@ func cliIntro(kicker, title string) *reelIntro {
 		Title:  env("AT_INTRO_TITLE", title),
 		Meta:   env("AT_INTRO_META", titleCase(env("AT_TAG", ""))),
 		Map:    env("AT_MAP", ""),
-		Date:   env("AT_INTRO_DATE", time.Now().Format("2 January 2006")),
+		Date:   time.Now().Format("2 January 2006"),
+	}
+	// AT_INTRO_DATE set but blank: no date (an old demo's day is not today).
+	if d, ok := os.LookupEnv("AT_INTRO_DATE"); ok {
+		in.Date = strings.TrimSpace(d)
 	}
 	if strings.TrimSpace(in.Title) == "" {
 		return nil

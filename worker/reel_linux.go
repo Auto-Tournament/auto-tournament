@@ -33,35 +33,59 @@ func (r *recorder) buildReel(paths []string, joins []join, intro *reelIntro, out
 		return fmt.Errorf("%d joins for %d clips", len(joins), len(paths))
 	}
 	plan := reelPlan{joins: joins, width: outputHeight * 16 / 9, height: outputHeight, fps: outputFPS}
-	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
 	for _, p := range paths {
 		d, err := probeDuration(p)
 		if err != nil {
 			return err
 		}
 		plan.durations = append(plan.durations, d)
-		args = append(args, "-i", p)
 	}
-	var render *introRender
-	var pipe string
 	if intro != nil && strings.TrimSpace(intro.Title) != "" {
-		var err error
-		if render, err = intro.layout(plan.width, plan.height); err != nil {
+		introPath := strings.TrimSuffix(out, filepath.Ext(out)) + "-intro.mp4"
+		if err := r.buildIntro(paths, plan.durations, *intro, plan.width, plan.height, introPath); err != nil {
 			return fmt.Errorf("intro: %w", err)
 		}
-		plan.intro = true
-		pipe = out + ".intro"
-		_ = os.Remove(pipe)
-		if err := syscall.Mkfifo(pipe, 0o600); err != nil {
-			return fmt.Errorf("intro pipe: %w", err)
-		}
-		defer os.Remove(pipe)
-		args = append(args, "-f", "rawvideo", "-pix_fmt", "rgba", "-s", fmt.Sprintf("%dx%d", plan.width, plan.height),
-			"-framerate", fmt.Sprint(cardFPS), "-i", pipe)
+		defer os.Remove(introPath)
+		paths = append([]string{introPath}, paths...)
+		plan.durations = append([]float64{introSec}, plan.durations...)
+		plan.joins = append([]join{joinWipe}, plan.joins...)
+	}
+	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
+	for _, p := range paths {
+		args = append(args, "-i", p)
 	}
 	args = append(args, "-filter_complex", reelFilter(plan), "-map", "[v]", "-map", "[a]")
 	args = append(args, encodeArgs(r.encoder)...)
 	args = append(args, "-movflags", "+faststart", out)
+	if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
+		return fmt.Errorf("ffmpeg reel: %v %s", err, strings.TrimSpace(string(b)))
+	}
+	return nil
+}
+
+// buildIntro renders the intro (intro.go) over a grid of the clips into out.
+func (r *recorder) buildIntro(paths []string, durations []float64, intro reelIntro, width, height int, out string) error {
+	render, err := intro.layout(width, height)
+	if err != nil {
+		return err
+	}
+	cols, rows := gridSize(len(paths))
+	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
+	// Each tile its own input, seeked to its stretch: nothing is buffered.
+	for _, t := range introTiles(durations) {
+		args = append(args, "-ss", fmt.Sprintf("%.3f", t.Start), "-t", fmt.Sprintf("%.3f", introSec/introSlowdown+0.1), "-i", paths[t.Clip])
+	}
+	pipe := out + ".text"
+	_ = os.Remove(pipe)
+	if err := syscall.Mkfifo(pipe, 0o600); err != nil {
+		return fmt.Errorf("intro pipe: %w", err)
+	}
+	defer os.Remove(pipe)
+	args = append(args, "-f", "rawvideo", "-pix_fmt", "rgba", "-s", fmt.Sprintf("%dx%d", width, height),
+		"-framerate", fmt.Sprint(cardFPS), "-i", pipe)
+	args = append(args, "-filter_complex", introFilter(cols, rows, width, height, outputFPS), "-map", "[v]", "-map", "[a]")
+	args = append(args, encodeArgs(r.encoder)...)
+	args = append(args, out)
 	cmd := exec.Command("ffmpeg", args...)
 	var stderr strings.Builder
 	cmd.Stderr = &stderr
@@ -69,38 +93,32 @@ func (r *recorder) buildReel(paths []string, joins []join, intro *reelIntro, out
 		return err
 	}
 	done := make(chan error, 1)
-	if render != nil {
-		go func() {
-			f, err := os.OpenFile(pipe, os.O_WRONLY, 0)
-			if err != nil {
+	go func() {
+		f, err := os.OpenFile(pipe, os.O_WRONLY, 0)
+		if err != nil {
+			done <- err
+			return
+		}
+		defer f.Close()
+		for i := 0; i < render.Frames(); i++ {
+			if _, err := f.Write(render.frameAt(float64(i) / cardFPS).Pix); err != nil {
 				done <- err
 				return
 			}
-			defer f.Close()
-			for i := 0; i < render.Frames(); i++ {
-				if _, err := f.Write(render.frameAt(float64(i) / cardFPS).Pix); err != nil {
-					done <- err
-					return
-				}
-			}
-			done <- nil
-		}()
-	} else {
-		done <- nil
-	}
-	waitErr := cmd.Wait()
-	if render != nil {
-		// ffmpeg gone before it opened the pipe: open the other end so the writer stops waiting.
-		if f, err := os.OpenFile(pipe, os.O_RDONLY|syscall.O_NONBLOCK, 0); err == nil {
-			f.Close()
 		}
+		done <- nil
+	}()
+	waitErr := cmd.Wait()
+	// ffmpeg gone before it opened the pipe: open the other end so the writer stops waiting.
+	if f, err := os.OpenFile(pipe, os.O_RDONLY|syscall.O_NONBLOCK, 0); err == nil {
+		f.Close()
 	}
-	introErr := <-done
+	textErr := <-done
 	if waitErr != nil {
-		return fmt.Errorf("ffmpeg reel: %v %s", waitErr, strings.TrimSpace(stderr.String()))
+		return fmt.Errorf("ffmpeg: %v %s", waitErr, strings.TrimSpace(stderr.String()))
 	}
-	if introErr != nil && !strings.Contains(introErr.Error(), "broken pipe") {
-		return fmt.Errorf("intro frames: %w", introErr)
+	if textErr != nil && !strings.Contains(textErr.Error(), "broken pipe") {
+		return fmt.Errorf("intro text: %w", textErr)
 	}
 	return nil
 }
