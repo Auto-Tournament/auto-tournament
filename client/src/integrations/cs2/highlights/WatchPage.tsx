@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { Box, ButtonBase, CircularProgress, Container } from '@mui/material';
 import {
@@ -334,6 +334,26 @@ export function WatchPage() {
   }, [w, key]);
   const rel = related?.key === key ? related : null;
 
+  // The chapter list keeps the one playing in the middle, unless the viewer
+  // scrolled it in the last few seconds.
+  const list = useRef<ComponentRef<'div'>>(null);
+  const userScrolled = useRef(0);
+  const playing = w
+    ? w.chapters.reduce((at, c, i) => (c.at !== null && c.at <= time + 0.05 ? i : at), 0)
+    : 0;
+  useEffect(() => {
+    const box = list.current;
+    if (!box || Date.now() - userScrolled.current < 4000) return;
+    const item = box.querySelector(`[data-chapter="${playing}"]`);
+    if (!item) return;
+    const b = box.getBoundingClientRect();
+    const r = item.getBoundingClientRect();
+    box.scrollTo({
+      top: box.scrollTop + r.top - b.top - (box.clientHeight - r.height) / 2,
+      behavior: 'smooth',
+    });
+  }, [playing]);
+
   // A single clip: more of the player's beside it.
   useEffect(() => {
     if (!w?.playerId || w.chapters.length > 0) {
@@ -510,8 +530,12 @@ export function WatchPage() {
                   : t('highlights.watch.more')}
               </Box>
               <Box
+                ref={list}
                 data-testid="cs2-watch-list"
+                onWheel={() => (userScrolled.current = Date.now())}
+                onTouchMove={() => (userScrolled.current = Date.now())}
                 sx={{
+                  scrollSnapType: 'y proximity',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 1.25,
@@ -533,7 +557,9 @@ export function WatchPage() {
                       player.current?.play();
                     }}
                     aria-current={i === current ? 'true' : undefined}
+                    data-chapter={i}
                     sx={{
+                      scrollSnapAlign: 'center',
                       display: 'flex',
                       gap: 1.25,
                       alignItems: 'center',
