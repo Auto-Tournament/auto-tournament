@@ -27,7 +27,7 @@ import {
   type MatchRef,
   type PlayerHighlights,
 } from './data';
-import { HighlightPlayer, thumbAt, VideoThumb, type HighlightPlayerHandle } from '../../../module-sdk';
+import { HighlightPlayer, thumbAt, VideoThumb, type HighlightPlayerHandle, type MusicTrack } from '../../../module-sdk';
 
 /** What one watch page shows, whatever kind of video it is. */
 interface Watchable {
@@ -77,6 +77,19 @@ export function WatchPage() {
   const [more, setMore] = useState<Clip[]>([]);
   const [time, setTime] = useState(0);
   const player = useRef<HighlightPlayerHandle>(null);
+  const [tracks, setTracks] = useState<MusicTrack[]>([]);
+
+  // Reels play music beside them (not part of the video; a download can mix one in).
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<{ tracks: MusicTrack[] }>('/api/game/cs2/music')
+      .then((res) => !cancelled && setTracks(res.tracks))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -230,6 +243,7 @@ export function WatchPage() {
             markers={w.markers}
             chapterStarts={w.chapters.flatMap((c) => (c.at === null ? [] : [c.at]))}
             downloadName={w.file}
+            music={w.chapters.length > 0 && tracks.length > 0 ? { tracks, introEnd: Math.max(0, w.chapters[0]?.at ?? 0) } : null}
             autoPlay
             onTime={setTime}
           />

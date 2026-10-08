@@ -69,7 +69,8 @@ export type Cs2SettingKey =
   | 'highlights_watermark'
   | 'highlights_per_player'
   | 'highlights_resolution'
-  | 'highlights_fps';
+  | 'highlights_fps'
+  | 'highlights_music';
 
 type Cs2Setting = SettingDefinition & { key: Cs2SettingKey; schema: JSONSchema };
 
@@ -394,6 +395,21 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
   // unless set). Smaller and slower records faster.
   choice('highlights_resolution', 'highlightsResolution', 390, HIGHLIGHT_HEIGHTS, 'Highlight resolution'),
   choice('highlights_fps', 'highlightsFps', 400, HIGHLIGHT_FPS, 'Highlight frame rate'),
+  // The music reels play (demos/music.ts): every track unless set, `off`, or
+  // the picked track ids, comma separated.
+  {
+    key: 'highlights_music',
+    field: 'highlightsMusic',
+    order: 410,
+    schema: { type: 'string', pattern: '^(all|off|\\d+(,\\d+)*)?$' },
+    normalize(trimmed) {
+      if (!/^(all|off|\d+(,\d+)*)?$/.test(trimmed)) {
+        throw new Error('highlights_music must be all, off, or track ids separated by commas');
+      }
+      return { value: trimmed === 'all' ? '' : trimmed, message: 'Highlight music updated' };
+    },
+    applyRequest: stringRequest('highlightsMusic'),
+  },
 ];
 
 /**

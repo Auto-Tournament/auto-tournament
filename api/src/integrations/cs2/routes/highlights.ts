@@ -24,7 +24,10 @@
  *   GET  /api/game/cs2/watch/reel/:slug/:map/:player  a player's reel of a map
  *   GET  /api/game/cs2/watch/match/:slug/:map         a map's match reel
  *   GET  /api/game/cs2/watch/tournament/:id           a tournament's reel
- *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`, `tournament-…`), with range requests
+ *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`, `tournament-…`), with range requests;
+ *                                                     ?music=<track>&intro=<s>: a download with that track mixed in (../demos/music.ts)
+ *   GET  /api/game/cs2/music                          the tracks reels play ({ tracks }), and every one there is ({ all })
+ *   GET  /api/game/cs2/music/:id.mp3                  one track, with range requests
  */
 
 import fs from 'fs';
@@ -64,6 +67,8 @@ import {
   saveClip,
   saveReel,
 } from '../demos/highlights';
+import { enabledTracks, trackById, trackFile, withMusic } from '../demos/music';
+import { MUSIC_TRACKS } from '../demos/musicTracks';
 
 const router = Router();
 
@@ -333,7 +338,7 @@ router.get(
   })
 );
 
-router.get('/highlights/:file', (req: Request, res: Response) => {
+router.get('/highlights/:file', async (req: Request, res: Response) => {
   const clip = /^(\d+)\.mp4$/.exec(req.params.file);
   const reel = /^(?:reel|match|tournament)-[A-Za-z0-9_.-]+\.mp4$/.test(req.params.file);
   if (!clip && !reel) return res.status(404).end();
@@ -341,8 +346,42 @@ router.get('/highlights/:file', (req: Request, res: Response) => {
     ? clipFile(Number(clip[1]))
     : path.join(path.dirname(clipFile(0)), req.params.file);
   if (!fs.existsSync(file)) return res.status(404).end();
+  const music = typeof req.query.music === 'string' ? trackById(req.query.music) : undefined;
+  if (req.query.music !== undefined) {
+    // A download with music: mixed once (a few seconds), then kept.
+    if (!music) return res.status(404).json({ success: false, error: 'No such track' });
+    try {
+      const mixed = await withMusic(file, music, Number(req.query.intro) || 0);
+      return res.download(mixed, path.basename(file), { headers: { 'Cache-Control': 'private, max-age=3600' } });
+    } catch (error) {
+      log.error('[HIGHLIGHTS] Could not mix music into a video', { error, file: req.params.file, track: music.id });
+      return res.status(502).json({ success: false, error: 'Could not add the music' });
+    }
+  }
   res.setHeader('Cache-Control', 'public, max-age=86400');
   return res.sendFile(file, { headers: { 'Content-Type': 'video/mp4' } });
+});
+
+router.get(
+  '/music',
+  read('music', async (_req: Request, res: Response) => {
+    const strip = ({ audio: _audio, ...t }: (typeof MUSIC_TRACKS)[number]) => t;
+    return res.json({ success: true, tracks: (await enabledTracks()).map(strip), all: MUSIC_TRACKS.map(strip) });
+  })
+);
+
+router.get('/music/:file', async (req: Request, res: Response) => {
+  const id = /^(\d+)\.mp3$/.exec(req.params.file)?.[1];
+  const track = id ? trackById(id) : undefined;
+  if (!track) return res.status(404).end();
+  try {
+    const file = await trackFile(track);
+    res.setHeader('Cache-Control', 'public, max-age=604800');
+    return res.sendFile(file, { headers: { 'Content-Type': 'audio/mpeg' } });
+  } catch (error) {
+    log.warn('[HIGHLIGHTS] Could not fetch a music track', { track: track.id, error: String(error) });
+    return res.status(502).end();
+  }
 });
 
 export default router;

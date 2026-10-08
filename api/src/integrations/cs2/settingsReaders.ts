@@ -396,5 +396,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     highlightsPerPlayer: Number(await settingsService.getSetting('highlights_per_player')) || 6,
     // The recorder's video size and frame rate: 1080p60 unless set.
     ...(await highlightQuality()),
+    // Reel music: '' (every track), 'off', or the picked ids (demos/music.ts).
+    highlightsMusic: (await settingsService.getSetting('highlights_music'))?.trim() ?? '',
   };
 }

@@ -33,6 +33,7 @@ import {
   Typography,
 } from '@mui/material';
 import { CaretDownIcon } from '@phosphor-icons/react';
+import { HighlightMusicSetting } from './HighlightMusicSetting';
 import {
   api,
   radii,
@@ -56,6 +57,8 @@ export interface Cs2DefaultsValues {
   highlightsPerPlayer: number | null;
   highlightsResolution: number;
   highlightsFps: number;
+  /** '' (every track), 'off', or the picked track ids (the API's highlights_music). */
+  highlightsMusic: string;
   atAutostartMode: 0 | 1 | 2;
   atMinimumReadyRequired: number;
   atAllowForceReady: boolean;
@@ -102,6 +105,7 @@ const DEFAULTS: Cs2DefaultsValues = {
   highlightsPerPlayer: 6,
   highlightsResolution: 1080,
   highlightsFps: 60,
+  highlightsMusic: '',
   atAutostartMode: 1,
   atMinimumReadyRequired: 0,
   atAllowForceReady: true,
@@ -1051,6 +1055,13 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
         <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
           {t('settings.highlights.quality.helper')}
         </Typography>
+        <HighlightMusicSetting
+          value={vals.highlightsMusic}
+          onChange={(value) => {
+            update('highlightsMusic', value);
+            void save({ highlightsMusic: value });
+          }}
+        />
       </Box>
 
       {isDev && (

@@ -117,7 +117,8 @@ ARG CADDY_VERSION=2.7.3
 
 # Install ca-certificates for HTTPS and wget for Caddy download
 # We'll use Node.js for health checks instead of curl (saves ~2-3 MB)
-RUN apk add --no-cache ca-certificates wget && \
+# ffmpeg: highlight downloads with music mixed in (cs2/demos/music.ts)
+RUN apk add --no-cache ca-certificates wget ffmpeg && \
     ARCH="$(echo "${TARGETPLATFORM:-linux/amd64}" | cut -d'/' -f2)" && \
     if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "x86_64" ]; then \
         CADDY_ARCH="amd64"; \

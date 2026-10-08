@@ -611,7 +611,17 @@
       "linkCopied": "Link copied",
       "slowmo": "Slow motion",
       "kill": "Kill",
-      "lastKill": "Last kill"
+      "lastKill": "Last kill",
+      "musicOn": "Music: {{title}}",
+      "musicOff": "Music off",
+      "noMusic": "No music",
+      "downloadWithout": "Without music",
+      "downloadWithoutHint": "The game and the crowd only.",
+      "downloadWith": "With {{title}}",
+      "downloadMixing": "Adding the music, the download starts in a few seconds",
+      "contentIdHint": "Registered with YouTube Content ID: an upload with it can get a claim.",
+      "musicCredit": "Music by {{artist}}, from Pixabay",
+      "volume": "Volume"
     }
   },
   "leaderboard": {
