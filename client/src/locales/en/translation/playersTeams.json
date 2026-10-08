@@ -614,6 +614,7 @@
       "contentIdHint": "Registered with YouTube Content ID: an upload with it can get a claim.",
       "musicCredit": "Music by {{artist}}",
       "volume": "Volume",
+      "musicLevel": "Music level",
       "crowdOn": "Crowd on",
       "crowdOff": "Crowd off",
       "downloadCrowd": "With the crowd",

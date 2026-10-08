@@ -37,7 +37,7 @@
  *   GET  /api/game/cs2/watch/team/:slug/:team         a team's reel of a match
  *   GET  /api/game/cs2/watch/related                  ?match&map | ?tournament: the players on that map and more reels
  *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`, `tournament-…`), with range requests;
- *                                                     ?crowd=1, ?music=<track>&intro=<s>: a download with its crowd track and/or that music mixed in (../demos/music.ts)
+ *                                                     ?crowd=1, ?music=<track>&intro=<s>[&level=<0–2>]: a download with its crowd track and/or that music mixed in (../demos/music.ts)
  *                                                     ?clean=1: its clean twin instead (as recorded: no card, kill feed or logo)
  *                                                     `<video>.clean.mp4`: the clean twin; `<reel>.crowd.m4a`: a reel's crowd track;
  *                                                     `<video>.overlay.json`: the overlay's recipe
@@ -111,6 +111,7 @@ import {
   enabledTracks,
   fetchTrack,
   MUSIC_MAX_BYTES,
+  musicLevel,
   MusicUploadError,
   reelMusic,
   removeTrack,
@@ -634,6 +635,7 @@ router.get('/highlights/:file', async (req: Request, res: Response) => {
         track: music,
         crowd,
         intro: Number(req.query.intro) || 0,
+        level: musicLevel(req.query.level),
       });
       return res.download(mixed, downloadName, {
         headers: { 'Cache-Control': 'private, max-age=3600' },

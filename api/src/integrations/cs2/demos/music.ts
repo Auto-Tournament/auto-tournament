@@ -25,6 +25,16 @@ const MIX_DIR = path.join(HIGHLIGHTS_DIR, 'with-music');
 /** The levels the music plays at under a reel. */
 export const MUSIC_GAIN = 0.11;
 export const MUSIC_INTRO_GAIN = 0.32;
+/** How much louder than MUSIC_GAIN the player's mix is made (its level slider's top). */
+export const MIX_HEADROOM = 2;
+
+/** A viewer's music level from a request: 0 to MIX_HEADROOM, 1 when absent or wrong. */
+export function musicLevel(value: unknown): number {
+  const n = Number(value);
+  return value === undefined || value === null || value === '' || !Number.isFinite(n)
+    ? 1
+    : Math.max(0, Math.min(MIX_HEADROOM, Math.round(n * 100) / 100));
+}
 const FADE_IN = 1.5;
 const FADE_OUT = 2.5;
 /** What every track is evened out to (EBU R128 integrated): the level the reel music was tuned at. */
@@ -335,13 +345,16 @@ async function probe(video: string): Promise<{ seconds: number; audio: boolean }
  * louder until `intro` (the reel's intro has no game sound) and down to
  * MUSIC_GAIN as the first clip starts.
  */
-export function musicFilter(seconds: number, intro: number, gainDb = 0): string {
-  let gain = `${MUSIC_GAIN}`;
+export function musicFilter(seconds: number, intro: number, gainDb = 0, level = 1): string {
+  // `level`: the viewer's music level (1 = MUSIC_GAIN under the game).
+  const g = +(MUSIC_GAIN * level).toFixed(4);
+  const gi = +(MUSIC_INTRO_GAIN * level).toFixed(4);
+  let gain = `${g}`;
   if (intro > 0) {
     const r = (n: number) => n.toFixed(3);
     gain =
-      `'if(lt(t,${r(intro)}),${MUSIC_INTRO_GAIN},` +
-      `if(lt(t,${r(intro + 0.8)}),${MUSIC_INTRO_GAIN}+(${MUSIC_GAIN - MUSIC_INTRO_GAIN})*(t-${r(intro)})/0.8,${MUSIC_GAIN}))':eval=frame`;
+      `'if(lt(t,${r(intro)}),${gi},` +
+      `if(lt(t,${r(intro + 0.8)}),${gi}+(${+(g - gi).toFixed(4)})*(t-${r(intro)})/0.8,${g}))':eval=frame`;
   }
   return (
     `aresample=48000,aformat=channel_layouts=stereo,atrim=duration=${seconds.toFixed(3)},asetpts=PTS-STARTPTS,` +
@@ -359,13 +372,22 @@ const mixing = new Map<string, Promise<string>>();
  */
 export function withSound(
   video: string,
-  opts: { track?: (MusicTrack & { file: string }) | null; crowd?: string | null; intro: number }
+  opts: {
+    track?: (MusicTrack & { file: string }) | null;
+    crowd?: string | null;
+    intro: number;
+    /** The viewer's music level (musicLevel): 1 = MUSIC_GAIN. */
+    level?: number;
+  }
 ): Promise<string> {
   const introAt = Math.max(0, Math.min(30, Math.round(opts.intro * 10) / 10));
+  const level = musicLevel(opts.level);
   const parts = [
     path.basename(video, '.mp4'),
     opts.crowd ? 'crowd' : null,
-    opts.track ? `m${opts.track.id}-${introAt}` : null,
+    opts.track
+      ? `m${opts.track.id}-${introAt}${level !== 1 ? `-l${Math.round(level * 100)}` : ''}`
+      : null,
   ];
   const out = path.join(MIX_DIR, `${parts.filter(Boolean).join('-')}.mp4`);
   const newest = Math.max(
@@ -395,7 +417,7 @@ export function withSound(
     if (music && opts.track) {
       args.push('-stream_loop', '-1', '-i', music);
       filters.push(
-        `[${args.filter((a) => a === '-i').length - 1}:a]${musicFilter(info.seconds, introAt, opts.track.gainDb)}[m]`
+        `[${args.filter((a) => a === '-i').length - 1}:a]${musicFilter(info.seconds, introAt, opts.track.gainDb, level)}[m]`
       );
       mix.push('[m]');
     }
@@ -443,7 +465,12 @@ export function reelMusic(
   intro: number
 ): Promise<string> {
   const introAt = Math.max(0, Math.min(30, Math.round(intro * 10) / 10));
-  const out = path.join(MIX_DIR, `${path.basename(video, '.mp4')}-m${track.id}-${introAt}.m4a`);
+  // Mixed at MIX_HEADROOM times the level: the player turns it down (an
+  // audio element plays at most as loud as its file) to the viewer's level.
+  const out = path.join(
+    MIX_DIR,
+    `${path.basename(video, '.mp4')}-m${track.id}-${introAt}-h${MIX_HEADROOM}.m4a`
+  );
   if (fs.existsSync(out) && fs.statSync(out).mtimeMs >= fs.statSync(video).mtimeMs)
     return Promise.resolve(out);
   const pending = mixing.get(out);
@@ -461,7 +488,7 @@ export function reelMusic(
       '-i',
       trackFile(track),
       '-af',
-      musicFilter(info.seconds, introAt, track.gainDb),
+      musicFilter(info.seconds, introAt, track.gainDb, MIX_HEADROOM),
       '-t',
       info.seconds.toFixed(3),
       '-c:a',
