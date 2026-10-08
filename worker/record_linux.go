@@ -109,6 +109,11 @@ type recorder struct {
 	// them the recorder draws its own kill feed and turns CS2's off; without
 	// (an export that failed), CS2's kill feed stays.
 	icons *iconSet
+	// base is the size and frame rate the recorder started with (useQuality).
+	base struct {
+		width, height, outputHeight int
+		outputFPS                   float64
+	}
 	// rate is how many frames a second gamescope's stream gives (captureSpeeds).
 	rate captureRate
 }
@@ -218,6 +223,39 @@ type mapJob struct {
 	MatchSlug string      `json:"matchSlug"`
 	MapNumber int         `json:"mapNumber"`
 	Players   []recordJob `json:"players"`
+	// Quality is the admin's video size and frame rate (older platforms: none).
+	Quality *videoQuality `json:"quality"`
+}
+
+// videoQuality is the height (16:9) and frame rate the platform asks for.
+type videoQuality struct {
+	Height int `json:"height"`
+	FPS    int `json:"fps"`
+}
+
+// useQuality makes the next videos at q: CS2 captured at that size (a
+// smaller picture streams faster, so records faster) and encoded at it.
+// AT_RESOLUTION, AT_OUTPUT_HEIGHT and AT_OUTPUT_FPS, when set, win; without
+// q the recorder goes back to what it started with.
+func (r *recorder) useQuality(q *videoQuality) {
+	width, height, outH, fps := r.base.width, r.base.height, r.base.outputHeight, r.base.outputFPS
+	if q != nil && q.Height >= 360 && q.Height <= 2160 && q.FPS >= 24 && q.FPS <= 240 {
+		h := q.Height &^ 1
+		if os.Getenv("AT_RESOLUTION") == "" {
+			width, height = (h*16/9)&^1, h
+		}
+		if os.Getenv("AT_OUTPUT_HEIGHT") == "" {
+			outH = h
+		}
+		if os.Getenv("AT_OUTPUT_FPS") == "" {
+			fps = float64(q.FPS)
+		}
+	}
+	if width != r.width || height != r.height {
+		// The stream's rate depends on the picture's size: measure it again.
+		r.rate.fps = float64(envPositive("AT_CAPTURE_FPS", 30))
+	}
+	r.width, r.height, outputHeight, outputFPS = width, height, outH, fps
 }
 
 func (mj *mapJob) moments() int {
@@ -466,7 +504,7 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 	}
 	// What CS2 plays reaches the recording audioLatency later: start that much
 	// further in, or every shot is heard after the kill it made.
-	audioAt := as.resumed.Sub(ac.started).Seconds() + float64(w.from-as.fromTick)/tickrate + audioLatency()
+	audioAt := as.resumed.Sub(ac.fileStart()).Seconds() + float64(w.from-as.fromTick)/tickrate + audioLatency()
 
 	length := float64(w.to-w.from) / tickrate
 	kill := -1.0
@@ -789,6 +827,7 @@ func (r *recorder) lookFor(ctx context.Context, j *recordJob) clipLook {
 // recordMap records a map's moments, every player's, in one CS2 session,
 // then uploads each clip and each player's reel of the map.
 func (r *recorder) recordMap(ctx context.Context, mj *mapJob) error {
+	r.useQuality(mj.Quality)
 	dir, err := os.MkdirTemp(r.scratch, "highlights-")
 	if err != nil {
 		return err
@@ -945,6 +984,7 @@ func newRecorder(c *client) (*recorder, error) {
 		encoder: env("AT_ENCODER", pickEncoder()), sink: defaultSink()}
 	// Until the first pass measures it: what gamescope streamed on the recorder VM (2026-10-08).
 	r.rate.fps = float64(envPositive("AT_CAPTURE_FPS", 30))
+	r.base.width, r.base.height, r.base.outputHeight, r.base.outputFPS = w, h, outputHeight, outputFPS
 	r.logo = filepath.Join(r.scratch, "at-watermark.png")
 	if err := os.WriteFile(r.logo, watermarkPNG, 0o644); err != nil {
 		return nil, err

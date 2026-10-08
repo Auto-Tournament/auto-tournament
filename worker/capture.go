@@ -578,7 +578,9 @@ func firstPort(dir, node string) string {
 // audioCapture records what CS2 plays (the default sink's monitor) to a WAV.
 type audioCapture struct {
 	cmd     *exec.Cmd
+	path    string
 	started time.Time
+	stopped time.Time
 }
 
 func startAudioCapture(target, path string) (*audioCapture, error) {
@@ -587,15 +589,27 @@ func startAudioCapture(target, path string) (*audioCapture, error) {
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("start pw-record: %w", err)
 	}
-	a := &audioCapture{cmd: cmd, started: time.Now()}
+	a := &audioCapture{cmd: cmd, path: path, started: time.Now()}
 	// It records from when its stream links up; give it that moment.
 	time.Sleep(500 * time.Millisecond)
 	return a, nil
 }
 
 func (a *audioCapture) stop() {
+	a.stopped = time.Now()
 	_ = a.cmd.Process.Signal(os.Interrupt)
 	_ = a.cmd.Wait()
+}
+
+// fileStart is when the file's first sample was recorded. pw-record records
+// from when its stream links up, which takes a varying few hundred
+// milliseconds after it starts, so the start is reckoned back from the stop:
+// the file runs up to the moment it was stopped.
+func (a *audioCapture) fileStart() time.Time {
+	if d, err := wavSeconds(a.path); err == nil && d > 0 && !a.stopped.IsZero() {
+		return a.stopped.Add(-time.Duration(d * float64(time.Second)))
+	}
+	return a.started
 }
 
 // defaultSink is the audio sink CS2 plays into (AT_AUDIO_TARGET overrides).

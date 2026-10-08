@@ -120,7 +120,8 @@ type reelPlan struct {
 func reelFilter(p reelPlan) string {
 	var b strings.Builder
 	// xfade needs every part at one frame rate and time base.
-	norm := fmt.Sprintf("fps=%g,settb=AVTB,setsar=1,format=yuv420p", p.fps)
+	// Clips recorded at another size (the setting changed since) are scaled to the reel's.
+	norm := fmt.Sprintf("fps=%g,settb=AVTB,scale=%d:%d,setsar=1,format=yuv420p", p.fps, p.width, p.height)
 	// Each part's picture and sound exactly its length from 0: a clip's sound
 	// runs a few hundredths of a second shorter or longer than its picture,
 	// and across a reel's joins those add up (1.6 s by the tenth player of a

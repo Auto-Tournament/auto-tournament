@@ -37,6 +37,7 @@ type matchReelJob struct {
 	TournamentID int             `json:"tournamentId"`
 	Match        string          `json:"match"`
 	Watermark    bool            `json:"watermark"`
+	Quality      *videoQuality   `json:"quality"`
 	Clips        []matchReelClip `json:"clips"`
 	// Intro is what the reel opens with (older platforms: none).
 	Intro *reelIntro `json:"intro"`
@@ -68,6 +69,7 @@ func (j *matchReelJob) failRoute() string {
 }
 
 func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
+	r.useQuality(j.Quality)
 	if len(j.Clips) == 0 {
 		return fmt.Errorf("no clips")
 	}
