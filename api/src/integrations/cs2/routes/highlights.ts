@@ -34,13 +34,17 @@
  *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`, `tournament-…`), with range requests;
  *                                                     ?crowd=1, ?music=<track>&intro=<s>: a download with its crowd track and/or that music mixed in (../demos/music.ts)
  *                                                     `<reel>.crowd.m4a`: a reel's crowd track
- *   GET  /api/game/cs2/music                          the tracks reels play ({ tracks }), and every one there is ({ all })
- *   GET  /api/game/cs2/music/:id.mp3                  one track, with range requests
+ *   GET  /api/game/cs2/highlights/:reel/music/:track  a reel's own mix of a library track (?intro=<s>), for the player
+ *   GET  /api/game/cs2/music                          the tracks reels play ({ tracks }), the whole library ({ all }), and where to find more ({ suggestions })
+ *   POST /api/game/cs2/music                          admin: add a track (the audio as the body; ?title&artist&genre&source&contentId)
+ *   PUT  /api/game/cs2/music/:id                      admin: { title, artist, genre, source, contentId }
+ *   DELETE /api/game/cs2/music/:id                    admin: remove a track
+ *   GET  /api/game/cs2/music/:id/file                 admin: the track's own file
  */
 
 import fs from 'fs';
 import path from 'path';
-import { Router, type Request, type Response } from 'express';
+import express, { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
@@ -82,7 +86,19 @@ import {
   saveClip,
   saveReel,
 } from '../demos/highlights';
-import { enabledTracks, trackById, trackFile, withSound } from '../demos/music';
+import {
+  addTrack,
+  allTracks,
+  enabledTracks,
+  MUSIC_MAX_BYTES,
+  MusicUploadError,
+  reelMusic,
+  removeTrack,
+  trackById,
+  trackFile,
+  updateTrack,
+  withSound,
+} from '../demos/music';
 import {
   claimTeamReel,
   failTeamReel,
@@ -91,7 +107,7 @@ import {
   teamReelFile,
   teamReelView,
 } from '../demos/teamReels';
-import { MUSIC_TRACKS } from '../demos/musicTracks';
+import { MUSIC_SUGGESTIONS } from '../demos/musicSuggestions';
 
 const router = Router();
 
@@ -502,7 +518,7 @@ router.get('/highlights/:file', async (req: Request, res: Response) => {
     ? clipFile(Number(clip[1]))
     : path.join(path.dirname(clipFile(0)), req.params.file);
   if (!fs.existsSync(file)) return res.status(404).end();
-  const music = typeof req.query.music === 'string' ? trackById(req.query.music) : undefined;
+  const music = typeof req.query.music === 'string' ? await trackById(req.query.music) : undefined;
   const crowd = req.query.crowd === '1' ? crowdFileOf(file) : null;
   if (req.query.music !== undefined || req.query.crowd !== undefined) {
     // A download with its crowd and/or music: mixed once (a few seconds), then kept.
@@ -533,33 +549,101 @@ router.get('/highlights/:file', async (req: Request, res: Response) => {
   return res.sendFile(file, { headers: { 'Content-Type': 'video/mp4' } });
 });
 
-router.get(
-  '/music',
-  read('music', async (_req: Request, res: Response) => {
-    const strip = ({ audio: _audio, ...t }: (typeof MUSIC_TRACKS)[number]) => t;
-    return res.json({
-      success: true,
-      tracks: (await enabledTracks()).map(strip),
-      all: MUSIC_TRACKS.map(strip),
-    });
-  })
-);
-
-router.get('/music/:file', async (req: Request, res: Response) => {
-  const id = /^(\d+)\.mp3$/.exec(req.params.file)?.[1];
-  const track = id ? trackById(id) : undefined;
-  if (!track) return res.status(404).end();
+// A reel's own mix of a library track, for the player (never the track's file).
+router.get('/highlights/:file/music/:track', async (req: Request, res: Response) => {
+  if (!/^(?:reel|match|tournament|team)-[A-Za-z0-9_.-]+\.mp4$/.test(req.params.file))
+    return res.status(404).end();
+  const video = path.join(path.dirname(clipFile(0)), req.params.file);
+  const track = await trackById(req.params.track);
+  if (!track || !fs.existsSync(video)) return res.status(404).end();
   try {
-    const file = await trackFile(track);
-    res.setHeader('Cache-Control', 'public, max-age=604800');
-    return res.sendFile(file, { headers: { 'Content-Type': 'audio/mpeg' } });
+    const mix = await reelMusic(video, track, Number(req.query.intro) || 0);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.sendFile(mix, { headers: { 'Content-Type': 'audio/mp4' } });
   } catch (error) {
-    log.warn('[HIGHLIGHTS] Could not fetch a music track', {
-      track: track.id,
+    log.warn("[HIGHLIGHTS] Could not mix a reel's music", {
       error: String(error),
+      track: track.id,
     });
     return res.status(502).end();
   }
+});
+
+router.get(
+  '/music',
+  read('music', async (_req: Request, res: Response) => {
+    const [tracks, all] = await Promise.all([enabledTracks(), allTracks()]);
+    return res.json({ success: true, tracks, all, suggestions: MUSIC_SUGGESTIONS });
+  })
+);
+
+/** The library's form fields, from a query string or a JSON body. */
+const trackFields = (src: Record<string, unknown>) => {
+  const str = (k: string) => (typeof src[k] === 'string' ? (src[k] as string).trim() : undefined);
+  return {
+    title: str('title'),
+    artist: str('artist'),
+    genre: str('genre'),
+    source: str('source'),
+    contentId:
+      src.contentId === undefined
+        ? undefined
+        : src.contentId === true || src.contentId === '1' || src.contentId === 'true',
+  };
+};
+
+// An admin adds a track they have the rights to (the audio file as the body).
+router.post(
+  '/music',
+  requireAuth,
+  express.raw({ type: ['audio/*', 'application/octet-stream'], limit: MUSIC_MAX_BYTES }),
+  async (req: Request, res: Response) => {
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0)
+      return res.status(415).json({ success: false, error: 'Send the track as an audio file.' });
+    const f = trackFields(req.query as Record<string, unknown>);
+    if (!f.title) return res.status(400).json({ success: false, error: 'A title' });
+    try {
+      const track = await addTrack(req.body, {
+        title: f.title,
+        artist: f.artist ?? '',
+        genre: f.genre ?? '',
+        source: f.source ?? '',
+        contentId: f.contentId ?? false,
+      });
+      return res.json({ success: true, track });
+    } catch (error) {
+      if (error instanceof MusicUploadError)
+        return res.status(400).json({ success: false, error: error.message });
+      log.error('[HIGHLIGHTS] music upload failed', { error });
+      return res.status(500).json({ success: false, error: 'Could not add the track' });
+    }
+  }
+);
+
+router.put('/music/:id', requireAuth, async (req: Request, res: Response) => {
+  const f = trackFields((req.body ?? {}) as Record<string, unknown>);
+  const track = await updateTrack(req.params.id, {
+    ...(f.title ? { title: f.title } : {}),
+    ...(f.artist !== undefined ? { artist: f.artist } : {}),
+    ...(f.genre !== undefined ? { genre: f.genre } : {}),
+    ...(f.source !== undefined ? { source: f.source } : {}),
+    ...(f.contentId !== undefined ? { contentId: f.contentId } : {}),
+  });
+  if (!track) return res.status(404).json({ success: false, error: 'No such track' });
+  return res.json({ success: true, track });
+});
+
+router.delete('/music/:id', requireAuth, async (req: Request, res: Response) => {
+  if (!(await removeTrack(req.params.id)))
+    return res.status(404).json({ success: false, error: 'No such track' });
+  return res.json({ success: true });
+});
+
+// The track's own file, for the admin's library (listening before picking).
+router.get('/music/:id/file', requireAuth, async (req: Request, res: Response) => {
+  const track = await trackById(req.params.id);
+  if (!track || !fs.existsSync(track.file)) return res.status(404).end();
+  return res.sendFile(trackFile(track), { headers: { 'Content-Type': 'audio/mpeg' } });
 });
 
 export default router;

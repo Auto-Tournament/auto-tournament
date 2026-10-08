@@ -91,18 +91,20 @@ func TestCheersScaleWithHowImpressive(t *testing.T) {
 }
 
 func TestCrowdTrackIsTheCrowdAlone(t *testing.T) {
-	p := reelPlan{durations: []float64{introSec, 10, 8}, joins: []join{joinWipe, joinWipe}, width: 1920, height: 1080, fps: 60}
-	p.crowd = &partCrowd{first: 1, bedIn: map[int]int{1: 3, 2: 4}, reacts: []crowdReact{{in: 5, at: 9, score: 3, length: 3}}}
-	f := crowdTrackFilter(p)
-	for _, want := range []string{"[a1game]anullsink", "[bed1]anull[a1in]", "atrim=duration=4.400[a0in]", "[a][reacts]amix", "[crowd]"} {
+	f := crowdBedFilter(10)
+	for _, want := range []string{"[0:a]", "apad,atrim=duration=10.000[side]", "[1:a]", "asetrate=24000", "volume=0.07[cb]", "[cb][side]sidechaingate", "[bed]"} {
 		if !strings.Contains(f, want) {
-			t.Fatalf("crowd track filter has no %q:\n%s", want, f)
+			t.Fatalf("crowd bed filter has no %q:\n%s", want, f)
 		}
 	}
-	for _, not := range []string{"[0:v]", "xfade", "[a1game][bed1]amix"} {
-		if strings.Contains(f, not) {
-			t.Fatalf("crowd track filter has %q:\n%s", not, f)
+	r := crowdReactsFilter([]crowdReact{{in: 1, at: 9, score: 3, length: 3}, {in: 2, at: 14, score: 5, length: 4}})
+	for _, want := range []string{"[1:a]", "[2:a]", "adelay=9000", "[0:a][reacts]amix=inputs=2:duration=first", "[crowd]"} {
+		if !strings.Contains(r, want) {
+			t.Fatalf("reactions filter has no %q:\n%s", want, r)
 		}
+	}
+	if strings.HasPrefix(r, ";") || crowdReactsFilter(nil) != "[0:a]anull[crowd]" {
+		t.Fatalf("reactions filter: %q", r)
 	}
 	// The reel itself keeps only the game.
 	if strings.Contains(reelFilter(reelPlan{durations: []float64{10, 8}, joins: []join{joinWipe}, width: 1920, height: 1080, fps: 60}), "bed") {

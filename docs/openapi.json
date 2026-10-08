@@ -4479,6 +4479,38 @@
         ]
       }
     },
+    "/api/game/cs2/highlights/{file}/music/{track}": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "GET /api/game/cs2/highlights/:file/music/:track",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "track",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/game/cs2/matches/{slug}/connect": {
       "get": {
         "tags": [
@@ -4811,14 +4843,34 @@
             "description": "Success"
           }
         }
-      }
-    },
-    "/api/game/cs2/music/{file}": {
-      "get": {
+      },
+      "post": {
         "tags": [
           "Highlights"
         ],
-        "summary": "GET /api/game/cs2/music/:file",
+        "summary": "POST /api/game/cs2/music",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/music/{id}": {
+      "put": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "PUT /api/game/cs2/music/:id",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -4827,12 +4879,82 @@
         },
         "parameters": [
           {
-            "name": "file",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "DELETE /api/game/cs2/music/:id",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/music/{id}/file": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "GET /api/game/cs2/music/:id/file",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }

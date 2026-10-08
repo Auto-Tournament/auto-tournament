@@ -1205,7 +1205,7 @@ func recordDemo(args []string) error {
 			return err
 		}
 		look := clipLook{name: name, teams: env("AT_TEAMS", ""), team: p.Team, opponent: p.Opponent,
-			mapName: env("AT_MAP", ""), tag: env("AT_TAG", ""),
+			mapName: mapDisplayName(env("AT_MAP", "")), tag: env("AT_TAG", ""),
 			watermark: env("AT_WATERMARK", "1") != "0", replay: replay, playerID: player}
 		for _, m := range p.Moments {
 			shots = append(shots, shot{m: m, name: name, look: look})
@@ -1255,7 +1255,7 @@ func recordFile(args []string) error {
 		return err
 	}
 	look := clipLook{name: name, teams: env("AT_TEAMS", ""), team: env("AT_TEAM", ""), opponent: env("AT_OPPONENT", ""),
-		mapName: env("AT_MAP", ""), tag: env("AT_TAG", ""), watermark: env("AT_WATERMARK", "1") != "0"}
+		mapName: mapDisplayName(env("AT_MAP", "")), tag: env("AT_TAG", ""), watermark: env("AT_WATERMARK", "1") != "0"}
 	if file := env("AT_AVATAR", ""); file != "" {
 		src, err := os.ReadFile(file)
 		if err != nil {

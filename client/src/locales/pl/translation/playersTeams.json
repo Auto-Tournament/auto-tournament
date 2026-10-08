@@ -620,7 +620,7 @@
       "downloadWith": "With {{title}}",
       "downloadMixing": "Adding the music, the download starts in a few seconds",
       "contentIdHint": "Registered with YouTube Content ID: an upload with it can get a claim.",
-      "musicCredit": "Music by {{artist}}, from Pixabay",
+      "musicCredit": "Music by {{artist}}",
       "volume": "Volume",
       "crowdOn": "Crowd on",
       "crowdOff": "Crowd off",
