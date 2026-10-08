@@ -5,6 +5,15 @@ Licensed under the PolyForm Noncommercial License 1.0.0 (see LICENSE).
 
 Commercial use requires a separate license from the author. See LICENSING.md.
 
+Trademarks
+
+Counter-Strike, CS2 and Steam are trademarks of Valve Corporation; the CS2
+app icon in client/public/games is Valve's. The games' app icons in
+api/bundled-packs/app-icons are their owners' trademarks (sources in
+app-icons/SOURCES.md). None of these is covered by this project's license.
+They are used only to name the game, and Auto Tournament is not affiliated
+with or endorsed by Valve or any game publisher.
+
 Third-party software in the server and the web app
 
 The server (api/) and the web app (client/) are built with third-party npm

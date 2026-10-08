@@ -53,7 +53,8 @@ test.describe('App icon checks', () => {
   });
 
   test('every app icon in the bundled snapshot passes', { tag: ['@api', '@packs'] }, () => {
-    const files = fs.readdirSync(BUNDLED_ICONS);
+    // The icons only: SOURCES.md (where each came from) sits beside them.
+    const files = fs.readdirSync(BUNDLED_ICONS).filter((f) => /\.(webp|png|jpe?g)$/i.test(f));
     expect(files.length).toBeGreaterThan(0);
     for (const file of files) {
       const bytes = fs.readFileSync(path.join(BUNDLED_ICONS, file));
