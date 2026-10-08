@@ -31,6 +31,8 @@ Prices, the price calculator and card checkout are on [autotournament.gg/pricing
 
 Contributions are accepted under the [Contributor License Agreement](CLA.md).
 
+The music and crowd sounds under highlight reels are not part of Auto Tournament and not under its license: they come from Pixabay under the Pixabay Content License. See [Third-party media](THIRD-PARTY-MEDIA.md) for the credits and what that license allows.
+
 ## Older versions
 
 Versions up to and including 2.4.15 (released as "MatchZy Auto Tournament") were published under the MIT License and remain under it. Everything since the rename to Auto Tournament is under the PolyForm Noncommercial License 1.0.0.
