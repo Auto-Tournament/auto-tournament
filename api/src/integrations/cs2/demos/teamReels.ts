@@ -1,9 +1,9 @@
 /**
  * Team reels: a team's best plays of a match, for the team to share. Each of
  * its players' best TEAM_REEL_PER_PLAYER recorded highlights across the
- * match's maps, player by player (the least impressive player first, so the
- * reel builds up), joined by the recorder like a match reel: a fade between
- * one player's plays, the orange wipe between players.
+ * match's maps, in the order they happened (map by map, round by round),
+ * joined by the recorder like a match reel: a fade when the same player
+ * plays on, the orange wipe when another takes over.
  *
  * Queued once none of the match's highlights is still waiting to be
  * recorded, and again when a later map's are (a best-of-three fills in).
@@ -77,11 +77,7 @@ async function teamsOf(matchSlug: string) {
   return rows.map((r) => ({ id: r.id, name: r.name, roster: rosterOf(r.players) }));
 }
 
-/**
- * The team's plays for its reel: each player's best TEAM_REEL_PER_PLAYER,
- * in order (players from least to most impressive, a player's plays as they
- * happened).
- */
+/** The team's plays for its reel: each player's best TEAM_REEL_PER_PLAYER, as the match went. */
 export async function teamReelClips(
   matchSlug: string,
   teamId: string
@@ -101,28 +97,25 @@ export async function teamReelClips(
     if (!team.roster.has(r.player_id)) continue;
     byPlayer.set(r.player_id, [...(byPlayer.get(r.player_id) ?? []), r]);
   }
-  const players = [...byPlayer.values()]
-    .map((list) =>
+  // Each player's best, then all of them as the match went: map by map, round by round.
+  const picked = [...byPlayer.values()]
+    .flatMap((list) =>
       list.sort((a, b) => Number(b.score) - Number(a.score)).slice(0, TEAM_REEL_PER_PLAYER)
     )
-    .sort((a, b) => Number(a[0]!.score) - Number(b[0]!.score));
-  const clips = players.flatMap((list) =>
-    list
-      .sort(
-        (a, b) =>
-          Number(a.map_number) - Number(b.map_number) || Number(a.start_tick) - Number(b.start_tick)
-      )
-      .map((r) => ({
-        highlightId: Number(r.id),
-        playerId: r.player_id,
-        playerName: r.name ?? r.player_id,
-        team: team.name,
-        avatarUrl: r.avatar_url,
-        title: r.title,
-        url: `/api/game/cs2/highlights/${Number(r.id)}.mp4`,
-        markers: parseMarkers(r.markers),
-      }))
-  );
+    .sort(
+      (a, b) =>
+        Number(a.map_number) - Number(b.map_number) || Number(a.start_tick) - Number(b.start_tick)
+    );
+  const clips = picked.map((r) => ({
+    highlightId: Number(r.id),
+    playerId: r.player_id,
+    playerName: r.name ?? r.player_id,
+    team: team.name,
+    avatarUrl: r.avatar_url,
+    title: r.title,
+    url: `/api/game/cs2/highlights/${Number(r.id)}.mp4`,
+    markers: parseMarkers(r.markers),
+  }));
   return { team: team.name, opponent: teams.find((t) => t.id !== teamId)?.name ?? null, clips };
 }
 
