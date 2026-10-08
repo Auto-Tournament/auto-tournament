@@ -169,8 +169,8 @@ func TestReelFilterFades(t *testing.T) {
 
 func TestAudioFilterIntroGain(t *testing.T) {
 	f := audioFilter([]segment{{0, 4, 0.5}, {4, 8, 1}}, 8, 0)
-	want := fmt.Sprintf("volume='if(lt(t,%.3f),0.5,", focusOut)
-	if !strings.Contains(f, want) || !strings.HasSuffix(f, ":eval=frame[a]") {
+	want := fmt.Sprintf("if(lt(t,%.3f),1,", focusOut)
+	if !strings.Contains(f, want) || !strings.Contains(f, "lowpass=f=900") || !strings.HasSuffix(f, "duration=first[a]") {
 		t.Fatalf("no intro gain in %s", f)
 	}
 	if strings.Contains(audioFilter([]segment{{0, 4, 1}}, 4, -1), "volume=") {

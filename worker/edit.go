@@ -67,6 +67,10 @@ type segment struct {
 // little down, so the card has the moment, and back up as the game does.
 const introGameGain = 0.5
 
+// introMuffleHz is the low-pass the game's sound goes through under it, as
+// the picture is blurred.
+const introMuffleHz = 900
+
 // introUpSec is how long (in video seconds) a clip that opened slowed down
 // takes to get back to full speed, from when its caption card starts to leave.
 const introUpSec = 0.6
@@ -241,12 +245,17 @@ func audioFilter(segs []segment, length, focusAt float64) string {
 		fmt.Fprintf(&b, "[a%d]", i)
 	}
 	fmt.Fprintf(&b, "concat=n=%d:v=0:a=1", n)
-	if focusAt >= 0 {
-		up, full := focusAt+focusOut, focusAt+focusOut+focusOutDur
-		fmt.Fprintf(&b, ",volume='if(lt(t,%.3f),%g,if(lt(t,%.3f),%g+%g*(t-%.3f)/%.3f,1))':eval=frame",
-			up, introGameGain, full, introGameGain, 1-introGameGain, up, focusOutDur)
+	if focusAt < 0 {
+		b.WriteString("[a]")
+		return b.String()
 	}
-	b.WriteString("[a]")
+	// Muffled too while the picture is blurred: the sound through a low-pass,
+	// crossfaded back to the clear sound as the game comes into focus.
+	up := focusAt + focusOut
+	w := fmt.Sprintf("if(lt(t,%.3f),1,if(lt(t,%.3f),1-(t-%.3f)/%.3f,0))", up, up+focusOutDur, up, focusOutDur)
+	gain := fmt.Sprintf("(%g+%g*(1-%s))", introGameGain, 1-introGameGain, w)
+	fmt.Fprintf(&b, ",asplit[gd][gw];[gw]lowpass=f=%d,volume='%s*%s':eval=frame[gm];[gd]volume='%s*(1-%s)':eval=frame[gc];"+
+		"[gc][gm]amix=inputs=2:normalize=0:duration=first[a]", introMuffleHz, gain, w, gain, w)
 	return b.String()
 }
 
