@@ -86,7 +86,8 @@ RUN echo "Building backend (TypeScript compilation)..." && \
     echo "✅ Backend build complete" && \
     echo "Building frontend (Vite bundling)..." && \
     yarn build:client && \
-    echo "✅ Frontend build complete"
+    echo "✅ Frontend build complete" && \
+    node scripts/third-party-notices.mjs
 
 # -------------------------------------------------------------------
 # prebuilt: the same files, compiled on the CI runner with its cached
@@ -170,8 +171,13 @@ COPY --from=app-build /app/docs/openapi.json ./docs/openapi.json
 
 # Copy Caddy configuration
 COPY docker/Caddyfile /app/Caddyfile
-# License terms travel with the image (PolyForm Noncommercial requires it).
+# License terms travel with the image (PolyForm Noncommercial requires it),
+# with the notices of the third-party packages bundled into the server and the
+# web app (their licenses ask for them; the image has no node_modules that
+# would carry them). The web app also serves them at /third-party-notices.txt.
 COPY LICENSE NOTICE /app/
+COPY --from=app-build /app/THIRD_PARTY_NOTICES.md /app/THIRD_PARTY_NOTICES.md
+COPY --from=app-build /app/THIRD_PARTY_NOTICES.md /app/public/third-party-notices.txt
 
 LABEL org.opencontainers.image.title="Auto Tournament" \
       org.opencontainers.image.description="Self-hosted tournament platform: brackets, map veto, game servers and results run themselves." \

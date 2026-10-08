@@ -516,7 +516,9 @@
       "warning": "Da controllare",
       "invalid": "Non valida",
       "none": "Nessuna chiave"
-    }
+    },
+    "thirdParty": "This app is built with open-source packages under their own licenses.",
+    "thirdPartyLink": "Third-party notices"
   },
   "tournamentsPage": {
     "title": "Tournaments",

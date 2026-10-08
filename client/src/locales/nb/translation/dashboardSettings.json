@@ -516,7 +516,9 @@
       "warning": "Sjekk",
       "invalid": "Ugyldig",
       "none": "Ingen nøkkel"
-    }
+    },
+    "thirdParty": "Appen er bygget med pakker med åpen kildekode under egne lisenser.",
+    "thirdPartyLink": "Tredjepartsmerknader"
   },
   "tournamentsPage": {
     "title": "Turneringer",

@@ -634,6 +634,17 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
             <ListItemText primary={t('nav.language')} secondary={currentLanguage.label} />
             <Box component={CaretRightIcon} size={20} sx={{ color: 'text.secondary', ml: 1 }} />
           </MenuItem>
+          {/* The licenses of the third-party code this app is built from (they ask for it). */}
+          <MenuItem
+            component="a"
+            href="/third-party-notices.txt"
+            target="_blank"
+            rel="noopener"
+            onClick={handleAvatarMenuClose}
+            data-testid="nav-third-party-notices"
+          >
+            <ListItemText primary={t('nav.thirdPartyNotices')} slotProps={{ primary: { sx: { fontSize: '0.8125rem', color: 'text.secondary' } } }} />
+          </MenuItem>
           <Divider />
           {signedIn ? (
             <MenuItem
