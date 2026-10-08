@@ -10,6 +10,7 @@ import {
 import { createPendingHost, newMachineId } from '../helpers/fleetHost';
 import {
   configuredPublicOrigin,
+  isLocalNetworkHost,
   publicOrigin,
   publicWsOrigin,
 } from '../../api/src/utils/publicOrigin';
@@ -43,13 +44,37 @@ test.describe('public origin (no server)', () => {
     const env = { FRONTEND_BASE_URL: 'https://cs.sivert.io/' };
     expect(publicOrigin(fakeReq('http', 'cs.sivert.io'), env)).toBe('https://cs.sivert.io');
     expect(publicWsOrigin(fakeReq('http', 'cs.sivert.io'), env)).toBe('wss://cs.sivert.io');
-    expect(publicWsOrigin(fakeReq('http', '192.168.1.10:3069'), env)).toBe('wss://cs.sivert.io');
     expect(
-      publicWsOrigin(fakeReq('http', 'x'), { FRONTEND_BASE_URL: 'http://192.168.1.10:3069' })
+      publicWsOrigin(fakeReq('http', 'cs.example.com'), {
+        FRONTEND_BASE_URL: 'http://192.168.1.10:3069',
+      })
     ).toBe('ws://192.168.1.10:3069');
     expect(configuredPublicOrigin({ FRONTEND_BASE_URL: 'cs.sivert.io' })).toBe(
       'https://cs.sivert.io'
     );
+  });
+
+  test('a request on a local address keeps it, whatever FRONTEND_BASE_URL says', () => {
+    const env = { FRONTEND_BASE_URL: 'https://cs.ntlan.no' };
+    for (const host of [
+      '192.168.1.10:3069',
+      '10.0.0.5:3069',
+      '172.20.0.3:3069',
+      '100.101.102.103:3069',
+      'dockerhost.lan:3069',
+      'dockerhost:3069',
+      'box.local',
+      '[fd12:3456::1]:3069',
+      'localhost:3069',
+    ]) {
+      expect(publicWsOrigin(fakeReq('http', host), env), host).toBe(`ws://${host}`);
+      expect(publicOrigin(fakeReq('http', host), env), host).toBe(`http://${host}`);
+    }
+    // Public names and public addresses still get the configured URL.
+    for (const host of ['cs.ntlan.no', '203.0.113.7:3069', '172.32.0.1:3069', 'example.com']) {
+      expect(publicWsOrigin(fakeReq('http', host), env), host).toBe('wss://cs.ntlan.no');
+    }
+    expect(isLocalNetworkHost(undefined)).toBe(false);
   });
 
   test('a loopback or junk FRONTEND_BASE_URL is ignored (compose defaults it to localhost)', () => {

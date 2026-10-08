@@ -6,6 +6,13 @@ import type { Request } from 'express';
  * `csm link <url>` command, match config links.
  *
  * In order:
+ *  0. The request's own address, when it came in on a local one: a private
+ *     IP (10.x, 172.16-31.x, 192.168.x, 100.64/10, IPv6 ULA / link-local),
+ *     loopback, or a LAN name (`*.lan`, `*.local`, `*.home.arpa`,
+ *     `*.internal`, a name without a dot). A csm machine or game server
+ *     linked through the LAN then keeps talking over the LAN, instead of
+ *     being sent out to the public URL (through a tunnel and back) by
+ *     FRONTEND_BASE_URL. Browsers on the public URL never send such a Host.
  *  1. `FRONTEND_BASE_URL`, when it is set to something other than a loopback
  *     address. It is the admin's own statement of where the site lives, so it
  *     beats anything inferred from the request. The Docker compose file
@@ -47,8 +54,37 @@ export function requestOrigin(req: Request): string {
   return `${req.protocol}://${req.get('host')}`;
 }
 
+/** Whether a Host header names this machine on a local network rather than a public site. */
+export function isLocalNetworkHost(host: string | undefined): boolean {
+  if (!host) return false;
+  let hostname = host.trim().toLowerCase();
+  if (hostname.startsWith('[')) {
+    hostname = hostname.slice(1, hostname.indexOf(']'));
+  } else if ((hostname.match(/:/g) ?? []).length === 1) {
+    hostname = hostname.split(':')[0];
+  }
+  if (!hostname) return false;
+  if (isLoopbackHost(hostname)) return true;
+  const v4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(hostname);
+  if (v4) {
+    const [a, b] = [Number(v4[1]), Number(v4[2])];
+    return (
+      a === 10 ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      (a === 169 && b === 254) ||
+      (a === 100 && b >= 64 && b <= 127)
+    );
+  }
+  if (hostname.includes(':')) {
+    return /^f[cd][0-9a-f]{2}:/.test(hostname) || /^fe[89ab][0-9a-f]:/.test(hostname);
+  }
+  return !hostname.includes('.') || /\.(lan|local|home\.arpa|internal)$/.test(hostname);
+}
+
 /** The public origin, `http(s)://host[:port]`. */
 export function publicOrigin(req: Request, env: NodeJS.ProcessEnv = process.env): string {
+  if (isLocalNetworkHost(req.get('host'))) return requestOrigin(req);
   return configuredPublicOrigin(env) ?? requestOrigin(req);
 }
 
