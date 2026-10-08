@@ -21,13 +21,60 @@ import {
   playTitle,
   teamsLabel,
   watchClipPath,
+  watchMatchReelPath,
+  watchReelPath,
   type Chapter,
   type Clip,
   type ClipMarkers,
   type MatchRef,
   type PlayerHighlights,
 } from './data';
-import { HighlightPlayer, thumbAt, VideoThumb, type HighlightPlayerHandle, type MusicTrack } from '../../../module-sdk';
+import {
+  HighlightPlayer,
+  PlayerAvatar,
+  thumbAt,
+  VideoThumb,
+  type HighlightPlayerHandle,
+  type MusicTrack,
+} from '../../../module-sdk';
+
+/** Someone with highlights on the map (the API's watchRelated). */
+interface RelatedPlayer {
+  playerId: string;
+  name: string;
+  avatarUrl: string | null;
+  clips: number;
+  reel: boolean;
+}
+
+/** Another match reel to watch. */
+interface RelatedReel {
+  matchSlug: string;
+  mapNumber: number;
+  map: string | null;
+  team1: string | null;
+  team2: string | null;
+  video: string;
+  clips: number | null;
+}
+
+const sectionTitle = {
+  m: 0,
+  ...mono,
+  fontSize: '0.8125rem',
+  fontWeight: 500,
+  color: tokens.color.muted,
+} as const;
+
+/** The players in the order the reel shows them; anyone not in it after, most clips first. */
+function inReelOrder(players: RelatedPlayer[], chapters: Chapter[]): RelatedPlayer[] {
+  const first = new Map<string, number>();
+  chapters.forEach((c, i) => {
+    if (!first.has(c.playerId)) first.set(c.playerId, i);
+  });
+  const at = (p: RelatedPlayer) => first.get(p.playerId) ?? Number.MAX_SAFE_INTEGER;
+  return [...players].sort((a, b) => at(a) - at(b) || b.clips - a.clips);
+}
 
 /** What one watch page shows, whatever kind of video it is. */
 interface Watchable {
@@ -56,7 +103,10 @@ const pill = {
   fontSize: textSize.sm,
   whiteSpace: 'nowrap',
   '&:hover': { color: tokens.color.ink, borderColor: tokens.color.ink2 },
-  '&.Mui-focusVisible, &:focus-visible': { outline: `2px solid ${tokens.color.accent}`, outlineOffset: 2 },
+  '&.Mui-focusVisible, &:focus-visible': {
+    outline: `2px solid ${tokens.color.accent}`,
+    outlineOffset: 2,
+  },
 } as const;
 
 /**
@@ -104,7 +154,12 @@ export function WatchPage() {
           done({
             video: clip.video!,
             title: `${clip.playerName} · ${playTitle(clip.title)}`,
-            sub: [teamsLabel(clip.match), mapLabel(t, clip.map, clip.mapNumber), t('highlights.roundN', { n: clip.round }), clip.match.tournament]
+            sub: [
+              teamsLabel(clip.match),
+              mapLabel(t, clip.map, clip.mapNumber),
+              t('highlights.roundN', { n: clip.round }),
+              clip.match.tournament,
+            ]
               .filter(Boolean)
               .join(' · '),
             markers: clip.markers,
@@ -119,13 +174,23 @@ export function WatchPage() {
         .catch(fail);
     } else if (kind === 'reel') {
       api
-        .get<{ reel: { video: string; map: string | null; mapNumber: number; chapters: Chapter[]; match: MatchRef; playerName: string } }>(
-          `/api/game/cs2/watch/reel/${enc(a ?? '')}/${enc(b ?? '')}/${enc(c ?? '')}`
-        )
+        .get<{
+          reel: {
+            video: string;
+            map: string | null;
+            mapNumber: number;
+            chapters: Chapter[];
+            match: MatchRef;
+            playerName: string;
+          };
+        }>(`/api/game/cs2/watch/reel/${enc(a ?? '')}/${enc(b ?? '')}/${enc(c ?? '')}`)
         .then(({ reel }) =>
           done({
             video: reel.video,
-            title: t('highlights.watch.playerReel', { name: reel.playerName, map: mapLabel(t, reel.map, reel.mapNumber) }),
+            title: t('highlights.watch.playerReel', {
+              name: reel.playerName,
+              map: mapLabel(t, reel.map, reel.mapNumber),
+            }),
             sub: [teamsLabel(reel.match), reel.match.tournament].filter(Boolean).join(' · '),
             markers: null,
             chapters: reel.chapters,
@@ -139,9 +204,15 @@ export function WatchPage() {
         .catch(fail);
     } else if (kind === 'match') {
       api
-        .get<{ reel: { video: string; map: string | null; mapNumber: number; chapters: Chapter[]; match: MatchRef } }>(
-          `/api/game/cs2/watch/match/${enc(a ?? '')}/${enc(b ?? '')}`
-        )
+        .get<{
+          reel: {
+            video: string;
+            map: string | null;
+            mapNumber: number;
+            chapters: Chapter[];
+            match: MatchRef;
+          };
+        }>(`/api/game/cs2/watch/match/${enc(a ?? '')}/${enc(b ?? '')}`)
         .then(({ reel }) =>
           done({
             video: reel.video,
@@ -159,7 +230,9 @@ export function WatchPage() {
         .catch(fail);
     } else if (kind === 'tournament') {
       api
-        .get<{ reel: { video: string; chapters: Chapter[] } }>(`/api/game/cs2/watch/tournament/${enc(a ?? '')}`)
+        .get<{ reel: { video: string; chapters: Chapter[] } }>(
+          `/api/game/cs2/watch/tournament/${enc(a ?? '')}`
+        )
         .then(({ reel }) =>
           done({
             video: reel.video,
@@ -186,6 +259,34 @@ export function WatchPage() {
 
   const w = item?.key === key ? item.w : null;
 
+  // Under the video: the players on this map and more reels to watch.
+  const [related, setRelated] = useState<{
+    key: string;
+    players: RelatedPlayer[];
+    reels: RelatedReel[];
+  } | null>(null);
+  useEffect(() => {
+    if (!w) return;
+    const kind = parts[0];
+    const q =
+      kind === 'tournament'
+        ? `tournament=${encodeURIComponent(parts[1] ?? '')}`
+        : w.match && w.mapNumber !== null
+          ? `match=${encodeURIComponent(w.match.slug)}&map=${w.mapNumber}`
+          : null;
+    if (!q) return;
+    let cancelled = false;
+    api
+      .get<{ players: RelatedPlayer[]; reels: RelatedReel[] }>(`/api/game/cs2/watch/related?${q}`)
+      .then((res) => !cancelled && setRelated({ key, players: res.players, reels: res.reels }))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `parts` is `key` split
+  }, [w, key]);
+  const rel = related?.key === key ? related : null;
+
   // A single clip: more of the player's beside it.
   useEffect(() => {
     if (!w?.playerId || w.chapters.length > 0) {
@@ -195,7 +296,13 @@ export function WatchPage() {
     let cancelled = false;
     api
       .get<PlayerHighlights>(`/api/game/cs2/players/${encodeURIComponent(w.playerId)}/highlights`)
-      .then((res) => !cancelled && setMore(res.highlights.filter((c) => c.status === 'done' && c.video !== w.video).slice(0, 5)))
+      .then(
+        (res) =>
+          !cancelled &&
+          setMore(
+            res.highlights.filter((c) => c.status === 'done' && c.video !== w.video).slice(0, 5)
+          )
+      )
       .catch(() => undefined);
     return () => {
       cancelled = true;
@@ -222,7 +329,10 @@ export function WatchPage() {
   }
 
   // The chapter playing: the last one started.
-  const current = w.chapters.reduce((at, c, i) => (c.at !== null && c.at <= time + 0.05 ? i : at), 0);
+  const current = w.chapters.reduce(
+    (at, c, i) => (c.at !== null && c.at <= time + 0.05 ? i : at),
+    0
+  );
   const side = w.chapters.length > 0 || more.length > 0;
 
   return (
@@ -230,7 +340,10 @@ export function WatchPage() {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: 'minmax(0,1fr)', md: side ? 'minmax(0,1fr) 300px' : 'minmax(0,1fr)' },
+          gridTemplateColumns: {
+            xs: 'minmax(0,1fr)',
+            md: side ? 'minmax(0,1fr) 300px' : 'minmax(0,1fr)',
+          },
           gap: 2.5,
           alignItems: 'start',
         }}
@@ -243,20 +356,44 @@ export function WatchPage() {
             markers={w.markers}
             chapterStarts={w.chapters.flatMap((c) => (c.at === null ? [] : [c.at]))}
             downloadName={w.file}
-            music={w.chapters.length > 0 && tracks.length > 0 ? { tracks, introEnd: Math.max(0, w.chapters[0]?.at ?? 0) } : null}
+            music={
+              w.chapters.length > 0 && tracks.length > 0
+                ? { tracks, introEnd: Math.max(0, w.chapters[0]?.at ?? 0) }
+                : null
+            }
             autoPlay
             onTime={setTime}
           />
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2, flexWrap: 'wrap' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              gap: 2,
+              flexWrap: 'wrap',
+            }}
+          >
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
-              <Box component="h1" sx={{ m: 0, fontFamily: fontDisplay, fontSize: { xs: '1.25rem', md: '1.375rem' }, fontWeight: 600, overflowWrap: 'anywhere' }}>
+              <Box
+                component="h1"
+                sx={{
+                  m: 0,
+                  fontFamily: fontDisplay,
+                  fontSize: { xs: '1.25rem', md: '1.375rem' },
+                  fontWeight: 600,
+                  overflowWrap: 'anywhere',
+                }}
+              >
                 {w.title}
               </Box>
               <Box sx={{ fontSize: textSize.sm, color: tokens.color.muted }}>{w.sub}</Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               {w.match && (
-                <ButtonBase onClick={() => void openMatchDetails(w.match!.slug).catch(() => undefined)} sx={pill}>
+                <ButtonBase
+                  onClick={() => void openMatchDetails(w.match!.slug).catch(() => undefined)}
+                  sx={pill}
+                >
                   {t('highlights.watch.openMatch')}
                 </ButtonBase>
               )}
@@ -279,81 +416,328 @@ export function WatchPage() {
         </Box>
 
         {side && (
-          <Box component="aside" sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-            <Box component="h2" sx={{ m: 0, ...mono, fontSize: '0.8125rem', fontWeight: 500, color: tokens.color.muted }}>
-              {w.chapters.length > 0 ? t('highlights.watch.inThisReel') : t('highlights.watch.more')}
-            </Box>
-            {w.chapters.map((c, i) => (
-              <ButtonBase
-                key={`${c.highlightId}-${i}`}
-                disabled={c.at === null}
-                onClick={() => {
-                  if (c.at === null) return;
-                  player.current?.seek(c.at);
-                  player.current?.play();
-                }}
-                aria-current={i === current ? 'true' : undefined}
-                sx={{
-                  display: 'flex',
-                  gap: 1.25,
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  p: 1,
-                  borderRadius: '14px',
-                  border: `1px solid ${i === current ? tokens.color.accent : tokens.color.rule}`,
-                  bgcolor: tokens.color.paper2,
-                  color: tokens.color.ink,
-                  textAlign: 'left',
-                  '&:hover': { bgcolor: tokens.color.paper3 },
-                  '&.Mui-focusVisible': { outline: `2px solid ${tokens.color.accent}`, outlineOffset: 2 },
-                }}
-              >
-                <Box sx={{ position: 'relative', width: 104, flex: 'none', aspectRatio: '16 / 9', borderRadius: '8px', overflow: 'hidden', bgcolor: tokens.color.paper3 }}>
-                  <VideoThumb src={`/api/game/cs2/highlights/${c.highlightId}.mp4`} at={1.5} />
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}>
-                  <Box sx={{ fontWeight: 600, fontSize: textSize.sm, overflowWrap: 'anywhere' }}>
-                    {c.playerName} · {kindLabel(t, c.kind, c.clutch)}
-                  </Box>
-                  <Box sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>
-                    {[c.map ? mapLabel(t, c.map, 0) : null, t('highlights.roundN', { n: c.round }), c.at !== null ? clock(c.at) : null].filter(Boolean).join(' · ')}
-                  </Box>
-                </Box>
-              </ButtonBase>
-            ))}
-            {more.map((c) => (
+          // Beside the player, as tall as it and its title (the list scrolls);
+          // under it on a phone, a few rows tall.
+          <Box
+            component="aside"
+            sx={{ position: 'relative', alignSelf: { md: 'stretch' }, minHeight: { md: 240 } }}
+          >
+            <Box
+              sx={{
+                position: { md: 'absolute' },
+                inset: { md: 0 },
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1.25,
+              }}
+            >
               <Box
-                key={c.id}
-                component={RouterLink}
-                to={watchClipPath(c.id)}
+                component="h2"
                 sx={{
-                  display: 'flex',
-                  gap: 1.25,
-                  alignItems: 'center',
-                  p: 1,
-                  borderRadius: '14px',
-                  border: `1px solid ${tokens.color.rule}`,
-                  bgcolor: tokens.color.paper2,
-                  color: tokens.color.ink,
-                  textDecoration: 'none',
-                  '&:hover': { bgcolor: tokens.color.paper3 },
-                  '&:focus-visible': { outline: `2px solid ${tokens.color.accent}`, outlineOffset: 2 },
+                  m: 0,
+                  ...mono,
+                  fontSize: '0.8125rem',
+                  fontWeight: 500,
+                  color: tokens.color.muted,
                 }}
               >
-                <Box sx={{ position: 'relative', width: 104, flex: 'none', aspectRatio: '16 / 9', borderRadius: '8px', overflow: 'hidden', bgcolor: tokens.color.paper3 }}>
-                  <VideoThumb src={c.video!} at={thumbAt(c.markers)} />
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}>
-                  <Box sx={{ fontWeight: 600, fontSize: textSize.sm, overflowWrap: 'anywhere' }}>{playTitle(c.title)}</Box>
-                  <Box sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>
-                    {[mapLabel(t, c.map, c.mapNumber), t('highlights.roundN', { n: c.round })].join(' · ')}
-                  </Box>
-                </Box>
+                {w.chapters.length > 0
+                  ? t('highlights.watch.inThisReel')
+                  : t('highlights.watch.more')}
               </Box>
-            ))}
+              <Box
+                data-testid="cs2-watch-list"
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1.25,
+                  overflowY: 'auto',
+                  overscrollBehavior: 'contain',
+                  maxHeight: { xs: 420, md: 'none' },
+                  flex: { md: 1 },
+                  minHeight: 0,
+                  pr: 0.5,
+                }}
+              >
+                {w.chapters.map((c, i) => (
+                  <ButtonBase
+                    key={`${c.highlightId}-${i}`}
+                    disabled={c.at === null}
+                    onClick={() => {
+                      if (c.at === null) return;
+                      player.current?.seek(c.at);
+                      player.current?.play();
+                    }}
+                    aria-current={i === current ? 'true' : undefined}
+                    sx={{
+                      display: 'flex',
+                      gap: 1.25,
+                      alignItems: 'center',
+                      justifyContent: 'flex-start',
+                      p: 1,
+                      borderRadius: '14px',
+                      border: `1px solid ${i === current ? tokens.color.accent : tokens.color.rule}`,
+                      bgcolor: tokens.color.paper2,
+                      color: tokens.color.ink,
+                      textAlign: 'left',
+                      '&:hover': { bgcolor: tokens.color.paper3 },
+                      '&.Mui-focusVisible': {
+                        outline: `2px solid ${tokens.color.accent}`,
+                        outlineOffset: 2,
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        width: 104,
+                        flex: 'none',
+                        aspectRatio: '16 / 9',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        bgcolor: tokens.color.paper3,
+                      }}
+                    >
+                      <VideoThumb src={`/api/game/cs2/highlights/${c.highlightId}.mp4`} at={1.5} />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}>
+                      <Box
+                        sx={{ fontWeight: 600, fontSize: textSize.sm, overflowWrap: 'anywhere' }}
+                      >
+                        {c.playerName} · {kindLabel(t, c.kind, c.clutch)}
+                      </Box>
+                      <Box sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>
+                        {[
+                          c.map ? mapLabel(t, c.map, 0) : null,
+                          t('highlights.roundN', { n: c.round }),
+                          c.at !== null ? clock(c.at) : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </Box>
+                    </Box>
+                  </ButtonBase>
+                ))}
+                {more.map((c) => (
+                  <Box
+                    key={c.id}
+                    component={RouterLink}
+                    to={watchClipPath(c.id)}
+                    sx={{
+                      display: 'flex',
+                      gap: 1.25,
+                      alignItems: 'center',
+                      p: 1,
+                      borderRadius: '14px',
+                      border: `1px solid ${tokens.color.rule}`,
+                      bgcolor: tokens.color.paper2,
+                      color: tokens.color.ink,
+                      textDecoration: 'none',
+                      '&:hover': { bgcolor: tokens.color.paper3 },
+                      '&:focus-visible': {
+                        outline: `2px solid ${tokens.color.accent}`,
+                        outlineOffset: 2,
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        width: 104,
+                        flex: 'none',
+                        aspectRatio: '16 / 9',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        bgcolor: tokens.color.paper3,
+                      }}
+                    >
+                      <VideoThumb src={c.video!} at={thumbAt(c.markers)} />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}>
+                      <Box
+                        sx={{ fontWeight: 600, fontSize: textSize.sm, overflowWrap: 'anywhere' }}
+                      >
+                        {playTitle(c.title)}
+                      </Box>
+                      <Box sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>
+                        {[
+                          mapLabel(t, c.map, c.mapNumber),
+                          t('highlights.roundN', { n: c.round }),
+                        ].join(' · ')}
+                      </Box>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
           </Box>
         )}
       </Box>
+
+      {rel && (rel.players.length > 0 || rel.reels.length > 0) && (
+        <Box
+          sx={{ display: 'flex', flexDirection: 'column', gap: 4, mt: { xs: 4, md: 5 } }}
+          data-testid="cs2-watch-related"
+        >
+          {rel.players.length > 0 && (
+            <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Box component="h2" sx={sectionTitle}>
+                {t('highlights.watch.players')}
+              </Box>
+              <Box
+                component="ul"
+                sx={{
+                  listStyle: 'none',
+                  m: 0,
+                  p: 0,
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                  gap: 1.25,
+                }}
+              >
+                {inReelOrder(rel.players, w.chapters).map((p) => {
+                  const onScreen = w.chapters[current]?.playerId === p.playerId;
+                  const to =
+                    p.reel && w.match && w.mapNumber !== null
+                      ? watchReelPath(w.match.slug, w.mapNumber, p.playerId)
+                      : links.playerProfile(p.playerId);
+                  return (
+                    <Box component="li" key={p.playerId} sx={{ minWidth: 0 }}>
+                      <Box
+                        component={RouterLink}
+                        to={to}
+                        aria-current={onScreen ? 'true' : undefined}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1.25,
+                          p: 1.25,
+                          borderRadius: '14px',
+                          border: `1px solid ${onScreen ? tokens.color.accent : tokens.color.rule}`,
+                          bgcolor: tokens.color.paper2,
+                          color: tokens.color.ink,
+                          textDecoration: 'none',
+                          transition: 'border-color 200ms',
+                          '&:hover': { bgcolor: tokens.color.paper3 },
+                          '&:focus-visible': {
+                            outline: `2px solid ${tokens.color.accent}`,
+                            outlineOffset: 2,
+                          },
+                        }}
+                      >
+                        <PlayerAvatar
+                          id={p.playerId}
+                          name={p.name}
+                          avatarUrl={p.avatarUrl}
+                          size={36}
+                        />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                          <Box
+                            sx={{
+                              fontWeight: 600,
+                              fontSize: textSize.sm,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {p.name}
+                          </Box>
+                          <Box
+                            sx={{
+                              fontSize: '0.75rem',
+                              color: tokens.color.muted,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {p.reel
+                              ? t('highlights.watch.theirReel', { count: p.clips })
+                              : t('highlights.watch.clips', { count: p.clips })}
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Box>
+          )}
+          {rel.reels.length > 0 && (
+            <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Box component="h2" sx={sectionTitle}>
+                {t('highlights.watch.moreReels')}
+              </Box>
+              <Box
+                component="ul"
+                sx={{
+                  listStyle: 'none',
+                  m: 0,
+                  p: 0,
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))',
+                  gap: 2,
+                }}
+              >
+                {rel.reels.map((r) => (
+                  <Box component="li" key={`${r.matchSlug}-${r.mapNumber}`} sx={{ minWidth: 0 }}>
+                    <Box
+                      component={RouterLink}
+                      to={watchMatchReelPath(r.matchSlug, r.mapNumber)}
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1,
+                        color: tokens.color.ink,
+                        textDecoration: 'none',
+                        '&:hover .thumb': { borderColor: tokens.color.ink2 },
+                        '&:focus-visible': {
+                          outline: `2px solid ${tokens.color.accent}`,
+                          outlineOffset: 2,
+                          borderRadius: '14px',
+                        },
+                      }}
+                    >
+                      <Box
+                        className="thumb"
+                        sx={{
+                          position: 'relative',
+                          aspectRatio: '16 / 9',
+                          maxWidth: '100%',
+                          borderRadius: '14px',
+                          overflow: 'hidden',
+                          bgcolor: tokens.color.paper3,
+                          border: `1px solid ${tokens.color.rule}`,
+                        }}
+                      >
+                        <VideoThumb src={r.video} at={8} />
+                      </Box>
+                      <Box
+                        sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}
+                      >
+                        <Box
+                          sx={{ fontWeight: 600, fontSize: textSize.sm, overflowWrap: 'anywhere' }}
+                        >
+                          {t('highlights.watch.matchReel', {
+                            map: mapLabel(t, r.map, r.mapNumber),
+                          })}
+                        </Box>
+                        <Box sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>
+                          {[
+                            r.team1 && r.team2 ? `${r.team1} vs ${r.team2}` : null,
+                            r.clips ? t('highlights.watch.plays', { count: r.clips }) : null,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
+        </Box>
+      )}
     </Container>
   );
 }

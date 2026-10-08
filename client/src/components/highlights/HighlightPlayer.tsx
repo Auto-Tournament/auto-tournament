@@ -67,6 +67,16 @@ export function musicGain(t: number, length: number, introEnd: number): number {
   return base * fadeIn * fadeOut;
 }
 
+/**
+ * Slowed down, the sound drops in pitch like tape (and like the reel's own
+ * slow motion) instead of the browser keeping it at pitch.
+ */
+function tapeSpeed(el: { preservesPitch: boolean; playbackRate: number; webkitPreservesPitch?: boolean }, rate: number) {
+  el.preservesPitch = false;
+  el.webkitPreservesPitch = false;
+  el.playbackRate = rate;
+}
+
 const LAST_TRACK = 'at.reelMusic.last';
 /** The viewer's overall level, kept between visits (also the admin's music samples). */
 export const PLAYER_VOLUME_KEY = 'at.player.volume';
@@ -196,7 +206,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
       void a.play().catch(() => undefined);
     };
     const stop = () => a.pause();
-    const rate = () => (a.playbackRate = v.playbackRate);
+    const rate = () => tapeSpeed(a, v.playbackRate);
     let frame = 0;
     const tick = () => {
       a.volume = Math.min(1, volumeRef.current * musicGain(v.currentTime, v.duration || 0, introEnd));
@@ -254,7 +264,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
   }, []);
 
   useEffect(() => {
-    if (video.current) video.current.playbackRate = speed;
+    if (video.current) tapeSpeed(video.current, speed);
   }, [speed]);
 
   useEffect(() => {

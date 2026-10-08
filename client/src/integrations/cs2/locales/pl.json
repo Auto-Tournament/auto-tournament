@@ -2046,7 +2046,13 @@
       "analysis": "Map analysis",
       "profile": "Player profile",
       "inThisReel": "IN THIS REEL",
-      "more": "MORE FROM THEM"
+      "more": "MORE FROM THEM",
+      "players": "PLAYERS",
+      "moreReels": "MORE REELS",
+      "clips_one": "{{count}} clip",
+      "clips_other": "{{count}} clips",
+      "theirReel_one": "Their reel · {{count}} clip",
+      "theirReel_other": "Their reel · {{count}} clips"
     },
     "tournament": {
       "reel": "TOURNAMENT REEL",
