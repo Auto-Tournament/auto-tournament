@@ -105,6 +105,21 @@ type recorder struct {
 	encoder string
 	sink    string
 	logo    string // the watermark PNG on disk
+	// icons are the game's kill feed icons (export-hud, from this CS2): with
+	// them the recorder draws its own kill feed and turns CS2's off; without
+	// (an export that failed), CS2's kill feed stays.
+	icons *iconSet
+}
+
+// look is what CS2 plays the demo with: with the recorder's own kill feed,
+// CS2's is forced off too (cl_drawhud 0 does nothing in demo playback, and
+// cl_draw_only_deathnotices already hides the rest of the HUD; the crosshair
+// stays CS2's).
+func (r *recorder) look() []string {
+	if r.icons == nil {
+		return recorderLook
+	}
+	return append(append([]string{}, recorderLook...), "cl_drawhud_force_deathnotices -1")
 }
 
 // claimRecording asks the platform for work: a player's moments to record
@@ -220,6 +235,9 @@ type clipLook struct {
 	tag       string      // the corner tag: "NTLAN AUTUMN CUP · SEMI-FINAL"
 	avatar    image.Image // round, or nil
 	watermark bool
+	// For the kill feed: the player's Steam ID and the map's replay (its kills).
+	playerID string
+	replay   *Replay
 }
 
 // momentFailure is a moment that could not be recorded, even after a retry.
@@ -255,7 +273,7 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 			return err
 		}
 		g = next
-		return g.loadDemo("at-recorder/"+base, recorderLook)
+		return g.loadDemo("at-recorder/"+base, r.look())
 	}
 	defer func() {
 		if g != nil {
@@ -367,6 +385,8 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 		return clipMarkers{}, err
 	}
 	windows := planWindows(m.StartTick, end, m.SlowmoTick, m.KillTicks)
+	// The kill feed's rows that carry over from one piece to the next.
+	var prior []feedKill
 	var pieces []string
 	var edits [][]segment
 	for i, w := range windows {
@@ -379,10 +399,11 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 		} else if card != nil {
 			pieceCard = card.Settled()
 		}
-		segs, err := r.recordWindow(g, look.watermark, pieceCard, name, w, filepath.Join(dir, fmt.Sprint(i)), piece)
+		segs, kept, err := r.recordWindow(g, look, pieceCard, name, w, prior, filepath.Join(dir, fmt.Sprint(i)), piece)
 		if err != nil {
 			return clipMarkers{}, err
 		}
+		prior = kept
 		pieces = append(pieces, piece)
 		edits = append(edits, segs)
 	}
@@ -405,11 +426,11 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 // recordWindow records one stretch of a moment into `out`: the picture slowed
 // down (and again slower around the slow motion, for the last stretch), the
 // sound at real speed, and the edit.
-func (r *recorder) recordWindow(g *game, watermark bool, card *cardRender, name string, w window, prefix, out string) ([]segment, error) {
+func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name string, w window, prior []feedKill, prefix, out string) ([]segment, []feedKill, error) {
 	main := prefix + "-main.yuv"
 	mainTicks, err := r.capturePicture(g, name, w.from-lead, w.to, mainScale, main)
 	if err != nil {
-		return nil, fmt.Errorf("picture: %w", err)
+		return nil, nil, fmt.Errorf("picture: %w", err)
 	}
 	sources := [][]float64{mainTicks}
 	raws := []string{main}
@@ -423,7 +444,7 @@ func (r *recorder) recordWindow(g *game, watermark bool, card *cardRender, name 
 		intro := prefix + "-intro.yuv"
 		introTicks, err := r.capturePicture(g, name, w.from-lead/2, introEnd, slowScale, intro)
 		if err != nil {
-			return nil, fmt.Errorf("slowed opening: %w", err)
+			return nil, nil, fmt.Errorf("slowed opening: %w", err)
 		}
 		sources, raws = append(sources, introTicks), append(raws, intro)
 	}
@@ -431,7 +452,7 @@ func (r *recorder) recordWindow(g *game, watermark bool, card *cardRender, name 
 		slow := prefix + "-slow.yuv"
 		slowTicks, err := r.capturePicture(g, name, w.slowmo-int(slowBeforeSec*tickrate)-lead/2, w.to, slowScale, slow)
 		if err != nil {
-			return nil, fmt.Errorf("slow motion: %w", err)
+			return nil, nil, fmt.Errorf("slow motion: %w", err)
 		}
 		sources, raws = append(sources, slowTicks), append(raws, slow)
 	}
@@ -447,7 +468,7 @@ func (r *recorder) recordWindow(g *game, watermark bool, card *cardRender, name 
 		ac.stop()
 	}
 	if err != nil {
-		return nil, fmt.Errorf("sound: %w", err)
+		return nil, nil, fmt.Errorf("sound: %w", err)
 	}
 	// What CS2 plays reaches the recording audioLatency later: start that much
 	// further in, or every shot is heard after the kill it made.
@@ -461,15 +482,36 @@ func (r *recorder) recordWindow(g *game, watermark bool, card *cardRender, name 
 	segs := editPlan(length, card != nil && !card.settled, kill)
 	frames, err := timeline(sources, segs, w.from)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return segs, r.encodeMoment(raws, frames, g.width, g.height, wav, audioAt, length, segs, watermark, card, out)
+	// The kill feed: what carried over, then this piece's kills where the edit puts them.
+	var feed *feedRender
+	var kept []feedKill
+	if r.icons != nil {
+		rows := append([]feedKill{}, prior...)
+		for _, kl := range feedKillsFor(look.replay, look.playerID, w.from, w.to) {
+			kl.At = outputAt(segs, float64(kl.Tick-w.from)/tickrate)
+			rows = append(rows, kl)
+		}
+		for _, kl := range rows {
+			if kl.Own {
+				kl.At = -1
+				kept = append(kept, kl)
+			}
+		}
+		if len(rows) > 0 {
+			if feed, err = layoutFeed(rows, g.width, g.height, outputSeconds(segs), r.icons); err != nil {
+				return nil, nil, fmt.Errorf("kill feed: %w", err)
+			}
+		}
+	}
+	return segs, kept, r.encodeMoment(raws, frames, g.width, g.height, wav, audioAt, length, segs, look.watermark, card, feed, out)
 }
 
 // encodeMoment streams the timeline's frames into ffmpeg at outputFPS with the
 // sound, the slow motion on both, and the caption.
 func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav string, audioAt, length float64,
-	segs []segment, watermark bool, card *cardRender, out string) error {
+	segs []segment, watermark bool, card *cardRender, feed *feedRender, out string) error {
 	files := make([]*os.File, len(raws))
 	for i, p := range raws {
 		f, err := os.Open(p)
@@ -482,7 +524,7 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 	args := []string{"-y", "-hide_banner", "-loglevel", "error",
 		"-f", "rawvideo", "-pix_fmt", "yuv420p", "-s", fmt.Sprintf("%dx%d", w, h), "-framerate", fmt.Sprint(outputFPS), "-i", "pipe:0",
 		"-ss", fmt.Sprintf("%.4f", maxf(0, audioAt)), "-i", wav}
-	o := overlay{card: -1, logo: -1, width: w, height: h}
+	o := overlay{card: -1, logo: -1, feed: -1, width: w, height: h}
 	next := 2
 	// The card's frames come through a named pipe, drawn as ffmpeg asks for them.
 	var cardPipe string
@@ -496,6 +538,19 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		args = append(args, "-f", "rawvideo", "-pix_fmt", "rgba", "-s", fmt.Sprintf("%dx%d", card.region.Dx(), card.region.Dy()),
 			"-framerate", fmt.Sprint(cardFPS), "-i", cardPipe)
 		o.card, o.cardAt, next = next, card.region.Min, next+1
+	}
+	// The kill feed's frames, through a named pipe like the card's.
+	var feedPipe string
+	if feed != nil {
+		feedPipe = out + ".feed"
+		_ = os.Remove(feedPipe)
+		if err := syscall.Mkfifo(feedPipe, 0o600); err != nil {
+			return fmt.Errorf("kill feed pipe: %w", err)
+		}
+		defer os.Remove(feedPipe)
+		args = append(args, "-f", "rawvideo", "-pix_fmt", "rgba", "-s", fmt.Sprintf("%dx%d", feed.region.Dx(), feed.region.Dy()),
+			"-framerate", fmt.Sprint(cardFPS), "-i", feedPipe)
+		o.feed, o.feedAt, next = next, feed.region.Min, next+1
 	}
 	if watermark {
 		args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-i", r.logo)
@@ -513,6 +568,14 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 	cmd.Stderr = &stderr
 	if err := cmd.Start(); err != nil {
 		return err
+	}
+	feedDone := make(chan error, 1)
+	if feed != nil {
+		go func() {
+			feedDone <- streamFrames(feedPipe, feed.Frames(), func(i int) []byte { return feed.frameAt(float64(i) / cardFPS).Pix })
+		}()
+	} else {
+		feedDone <- nil
 	}
 	cardDone := make(chan error, 1)
 	if card != nil {
@@ -554,14 +617,38 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		}
 	}
 	cardErr := <-cardDone
+	if feed != nil {
+		if f, err := os.OpenFile(feedPipe, os.O_RDONLY|syscall.O_NONBLOCK, 0); err == nil {
+			f.Close()
+		}
+	}
+	feedErr := <-feedDone
 	if waitErr != nil {
 		return fmt.Errorf("ffmpeg: %v %s", waitErr, strings.TrimSpace(stderr.String()))
 	}
 	if cardErr != nil {
 		return fmt.Errorf("caption card: %w", cardErr)
 	}
+	if feedErr != nil && !strings.Contains(feedErr.Error(), "broken pipe") {
+		return fmt.Errorf("kill feed: %w", feedErr)
+	}
 	if werr != nil {
 		return fmt.Errorf("feeding ffmpeg: %w", werr)
+	}
+	return nil
+}
+
+// streamFrames writes n frames into a named pipe ffmpeg reads.
+func streamFrames(pipe string, n int, frame func(i int) []byte) error {
+	f, err := os.OpenFile(pipe, os.O_WRONLY, 0)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	for i := 0; i < n; i++ {
+		if _, err := f.Write(frame(i)); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -719,6 +806,7 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) error {
 	}
 	var shots []shot
 	var failed []momentFailure
+	var rp *Replay // the demo's kills, read once for every player's kill feed
 	for i := range mj.Players {
 		p := &mj.Players[i]
 		name, err := demoName(demoPath, p.PlayerID)
@@ -730,6 +818,12 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) error {
 			continue
 		}
 		look := r.lookFor(ctx, p)
+		if r.icons != nil {
+			if rp == nil {
+				rp = replayOf(demoPath, p.MapName)
+			}
+			look.replay, look.playerID = rp, p.PlayerID
+		}
 		for _, m := range p.Moments {
 			shots = append(shots, shot{m: m, player: i, name: name, look: look})
 		}
@@ -859,7 +953,32 @@ func newRecorder(c *client) (*recorder, error) {
 	if err := os.WriteFile(r.logo, watermarkPNG, 0o644); err != nil {
 		return nil, err
 	}
+	// The kill feed's icons from this CS2 (AT_KILLFEED=0: CS2's own feed).
+	if env("AT_KILLFEED", "1") != "0" {
+		hud := filepath.Join(r.scratch, "hud")
+		if _, err := exportHud(filepath.Join(gameDir, "csgo"), hud, map[string]bool{"weapons": true, "deathnotice": true}); err != nil {
+			log.Printf("CS2's kill feed stays on the clips: the icons could not be exported: %v", err)
+		} else {
+			r.icons = newIconSet(hud)
+		}
+	}
 	return r, nil
+}
+
+// replayOf reads a demo's kills (the analyzer's replay) for the kill feed;
+// nil (CS2's feed is then used for nothing: the feed is just empty) on error.
+func replayOf(demoPath, mapName string) *Replay {
+	f, err := os.Open(demoPath)
+	if err != nil {
+		return nil
+	}
+	defer f.Close()
+	_, rp, err := Analyze(f, mapName)
+	if err != nil {
+		log.Printf("no kill feed: reading the demo's kills: %v", err)
+		return nil
+	}
+	return rp
 }
 
 // runRecorder is the record loop: one map's moments at a time, all players.
@@ -935,6 +1054,17 @@ func recordFile(args []string) error {
 		}
 		if look.avatar, err = roundAvatarImage(src); err != nil {
 			return err
+		}
+	}
+	if r.icons != nil {
+		look.replay = replayOf(args[0], env("AT_MAP", ""))
+		look.playerID = args[1]
+		if look.replay != nil && strings.HasPrefix(args[1], "name:") {
+			for _, p := range look.replay.Players {
+				if p.Name == name {
+					look.playerID = p.ID
+				}
+			}
 		}
 	}
 	shots := make([]shot, len(moments))

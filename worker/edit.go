@@ -214,6 +214,8 @@ func audioFilter(segs []segment, length float64) string {
 type overlay struct {
 	card   int // input holding the caption card's frames (card.go: raw premultiplied RGBA at cardFPS), or -1
 	cardAt image.Point
+	feed   int // input holding the kill feed's frames (killfeed.go, like the card's), or -1
+	feedAt image.Point
 	logo   int // input holding the Auto Tournament logo, looped, or -1
 	width  int
 	height int
@@ -229,6 +231,10 @@ func videoFilter(o overlay) string {
 	if o.card >= 0 {
 		fmt.Fprintf(&b, ";[%s][%d:v]overlay=%d:%d:eof_action=repeat:alpha=premultiplied[withcard]", last, o.card, o.cardAt.X, o.cardAt.Y)
 		last = "withcard"
+	}
+	if o.feed >= 0 {
+		fmt.Fprintf(&b, ";[%s][%d:v]overlay=%d:%d:eof_action=repeat:alpha=premultiplied[withfeed]", last, o.feed, o.feedAt.X, o.feedAt.Y)
+		last = "withfeed"
 	}
 	if o.logo >= 0 {
 		// The drafts: 16 px tall, 18 px from the right and 16 from the bottom of 540, at 30 %.

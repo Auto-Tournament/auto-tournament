@@ -46,7 +46,7 @@ func TestSpeedRampSlowsAndCutsStillSlowed(t *testing.T) {
 }
 
 func TestVideoFilterCardAndLogo(t *testing.T) {
-	f := videoFilter(overlay{card: 2, cardAt: image.Pt(48, 938), logo: 3, width: 2560, height: 1440})
+	f := videoFilter(overlay{card: 2, cardAt: image.Pt(48, 938), logo: 3, feed: -1, width: 2560, height: 1440})
 	for _, want := range []string{
 		"[base][2:v]overlay=48:938:eof_action=repeat:alpha=premultiplied[withcard]",
 		"[3:v]scale=42:42,format=rgba,colorchannelmixer=aa=0.3", "[withcard][logo]overlay=W-w-48:H-h-42:shortest=1",
@@ -55,7 +55,7 @@ func TestVideoFilterCardAndLogo(t *testing.T) {
 			t.Fatalf("%q missing from %s", want, f)
 		}
 	}
-	if plain := videoFilter(overlay{card: -1, logo: -1, width: 2560, height: 1440}); strings.Contains(plain, "overlay") {
+	if plain := videoFilter(overlay{card: -1, logo: -1, feed: -1, width: 2560, height: 1440}); strings.Contains(plain, "overlay") {
 		t.Fatalf("no card, no logo: %s", plain)
 	}
 }
