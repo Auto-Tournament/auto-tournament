@@ -44,13 +44,13 @@ function clientIp(req: Request): string {
   return req.ip || req.socket.remoteAddress || 'unknown';
 }
 
-/** Same-site JSON only. */
+/** Same-site JSON only (a DELETE carries no body: same-site is enough). */
 function guardWrite(req: Request, res: Response, next: NextFunction): void {
   if (!isSameSiteRequest(req)) {
     res.status(403).json({ success: false, error: 'Request refused' });
     return;
   }
-  if (!req.is('application/json')) {
+  if (req.method !== 'DELETE' && !req.is('application/json')) {
     res.status(415).json({ success: false, error: 'Send this request as JSON' });
     return;
   }
