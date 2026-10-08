@@ -38,6 +38,7 @@ export const MUSIC_GENRES = [
   'funk',
   'upbeat',
   'ambient',
+  'pop',
 ] as const;
 export type MusicGenre = (typeof MUSIC_GENRES)[number];
 
@@ -503,5 +504,16 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
     seconds: 295,
     contentId: false,
     gainDb: 0.6,
+  },
+  {
+    id: '412230',
+    title: 'Escape Your Love (Upbeat Fashion Pop Dance)',
+    artist: 'FASSounds',
+    genre: 'pop',
+    page: 'https://pixabay.com/music/pop-escape-your-love-upbeat-fashion-pop-dance-412230/',
+    audio: 'https://cdn.pixabay.com/download/audio/2025/09/29/audio_77a36612dd.mp3',
+    seconds: 138,
+    contentId: true,
+    gainDb: -1.5,
   },
 ];
