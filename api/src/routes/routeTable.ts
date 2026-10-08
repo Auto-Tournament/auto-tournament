@@ -42,7 +42,7 @@ import eloTemplatesRoutes from './eloTemplates';
 import generationRoutes from './generation';
 import testRoutes from './test';
 import authRoutes from './auth';
-import { setupRouter, localAuthRouter } from './localAdmin';
+import { setupRouter, localAuthRouter, localAccountsRouter } from './localAdmin';
 import gamesRoutes from './games';
 import gamePackRoutes from './gamePacks';
 import moduleRoutes from './modules';
@@ -300,6 +300,12 @@ const coreRoutes: MountedRouter[] = [
     router: setupRouter,
     title: 'Setup',
     description: 'First-admin setup and reset-admin recovery with a one-time code. 404 once an admin exists.',
+  },
+  {
+    prefix: '/api/local-accounts',
+    router: localAccountsRouter,
+    title: 'Local accounts',
+    description: 'Username + password accounts an admin creates, makes admin or not, gives a new password, or removes. Admin only.',
   },
   {
     prefix: '/api/auth/local',

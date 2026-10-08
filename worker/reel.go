@@ -10,6 +10,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 )
 
@@ -123,7 +124,8 @@ type reelPlan struct {
 func reelFilter(p reelPlan) string {
 	var b strings.Builder
 	// xfade needs every part at one frame rate and time base.
-	norm := fmt.Sprintf("fps=%g,settb=AVTB,setsar=1,format=yuv420p", p.fps)
+	// Clips recorded at another size (the setting changed since) are scaled to the reel's.
+	norm := fmt.Sprintf("fps=%g,settb=AVTB,scale=%d:%d,setsar=1,format=yuv420p", p.fps, p.width, p.height)
 	// Each part's picture and sound exactly its length from 0: a clip's sound
 	// runs a few hundredths of a second shorter or longer than its picture,
 	// and across a reel's joins those add up (1.6 s by the tenth player of a
@@ -167,6 +169,36 @@ func reelFilter(p reelPlan) string {
 		prevV, prevA = v, a
 	}
 	return strings.TrimSuffix(b.String(), ";")
+}
+
+// partStarts is when each part of the plan starts in the reel (reelFilter's joins).
+func partStarts(p reelPlan) []float64 {
+	starts := make([]float64, len(p.durations))
+	length := 0.0
+	for i, d := range p.durations {
+		if i == 0 {
+			length = d
+			continue
+		}
+		if p.joins[i-1] == joinWipe {
+			length += wipeInSec*2 + wipeHoldSec - wipeInSec
+			starts[i] = length - wipeInSec
+			length += d - wipeInSec
+		} else {
+			starts[i] = length - reelCrossfade
+			length += d - reelCrossfade
+		}
+	}
+	return starts
+}
+
+// startsHeader is X-AT-Starts: where each clip starts in the reel, in seconds.
+func startsHeader(starts []float64) string {
+	parts := make([]string, len(starts))
+	for i, s := range starts {
+		parts[i] = strconv.FormatFloat(s, 'f', 2, 64)
+	}
+	return strings.Join(parts, ",")
 }
 
 // reelLength is how long reelFilter's reel runs.

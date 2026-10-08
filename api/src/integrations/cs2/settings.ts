@@ -67,7 +67,10 @@ export type Cs2SettingKey =
   | 'at_demo_recording_enabled'
   // Highlight videos (demos/highlights.ts)
   | 'highlights_watermark'
-  | 'highlights_per_player';
+  | 'highlights_per_player'
+  | 'highlights_resolution'
+  | 'highlights_fps'
+  | 'highlights_music';
 
 type Cs2Setting = SettingDefinition & { key: Cs2SettingKey; schema: JSONSchema };
 
@@ -111,6 +114,26 @@ function integer(
     applyRequest: numberRequest(field, expected),
   };
 }
+
+/** A number from a fixed list (a select in the settings). */
+function choice(key: Cs2SettingKey, field: string, order: number, options: readonly number[], what: string): Cs2Setting {
+  const list = options.join(', ');
+  return {
+    key,
+    field,
+    order,
+    schema: { type: 'string', enum: options.map(String) },
+    normalize(trimmed) {
+      if (!options.map(String).includes(trimmed)) throw new Error(`${key} must be one of ${list}`);
+      return { value: trimmed, message: `${what} set to ${trimmed}` };
+    },
+    applyRequest: numberRequest(field, `one of ${list}`),
+  };
+}
+
+/** Highlight video heights (16:9) and frame rates the recorder offers. */
+export const HIGHLIGHT_HEIGHTS = [720, 1080, 1440, 2160] as const;
+export const HIGHLIGHT_FPS = [30, 60, 90, 120, 180, 240] as const;
 
 function kickDelay(key: Cs2SettingKey, field: string, order: number): Cs2Setting {
   return integer(key, field, order, { min: 0, max: 600, message: `${key} must be 0-600 seconds` });
@@ -368,6 +391,25 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     max: 6,
     message: 'highlights_per_player must be 1-6',
   }),
+  // The size and frame rate the recorder captures and encodes at (1080p60
+  // unless set). Smaller and slower records faster.
+  choice('highlights_resolution', 'highlightsResolution', 390, HIGHLIGHT_HEIGHTS, 'Highlight resolution'),
+  choice('highlights_fps', 'highlightsFps', 400, HIGHLIGHT_FPS, 'Highlight frame rate'),
+  // The music reels play (demos/music.ts): every track unless set, `off`, or
+  // the picked track ids, comma separated.
+  {
+    key: 'highlights_music',
+    field: 'highlightsMusic',
+    order: 410,
+    schema: { type: 'string', pattern: '^(all|off|\\d+(,\\d+)*)?$' },
+    normalize(trimmed) {
+      if (!/^(all|off|\d+(,\d+)*)?$/.test(trimmed)) {
+        throw new Error('highlights_music must be all, off, or track ids separated by commas');
+      }
+      return { value: trimmed === 'all' ? '' : trimmed, message: 'Highlight music updated' };
+    },
+    applyRequest: stringRequest('highlightsMusic'),
+  },
 ];
 
 /**

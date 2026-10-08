@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"math"
+	"os"
 	"sort"
 	"time"
 )
@@ -24,6 +26,23 @@ type span struct {
 // so they are smoothed with a rolling straight-line fit over the frames around
 // each one, and kept rising: frames are in the order CS2 drew them. Frames
 // from before the resume or after the pause are -1.
+// spanTicks is frameTicks over a pass of several spans (playPhases): each
+// frame takes its tick from the span it arrived in.
+func spanTicks(times []time.Time, spans []span) []float64 {
+	out := make([]float64, len(times))
+	for i := range out {
+		out[i] = -1
+	}
+	for _, s := range spans {
+		for i, v := range frameTicks(times, s) {
+			if v >= 0 && out[i] < 0 {
+				out[i] = v
+			}
+		}
+	}
+	return out
+}
+
 func frameTicks(times []time.Time, s span) []float64 {
 	out := make([]float64, len(times))
 	for i := range out {
@@ -218,4 +237,122 @@ func planWindows(start, end, slowmo int, killTicks []int) []window {
 // on or a little past it (it plays on for a moment before the pause).
 func seekLanded(tick, target int) bool {
 	return tick >= target-tickrate && tick <= target+8*tickrate
+}
+
+// slowBeforeSec is how far before the last kill the slowed capture starts.
+const slowBeforeSec = 0.25
+
+// captureSpeeds is how slowed the picture is played while it is captured.
+// The capture takes what gamescope streams, about 30 frames a second
+// whatever CS2 draws, so the demo plays slower: at main the full-speed parts
+// get outputFPS frames per game second, at slow the slow motion (at
+// slowmoSpeed) gets a real frame for every frame it shows, both with
+// captureHeadroom to spare.
+type captureSpeeds struct{ main, slow float64 }
+
+// maxCaptureSpeed caps how much faster than real time the picture plays when
+// the stream gives more frames than the clip needs (a small capture, a low
+// output frame rate): CS2 still has to draw every tick it skips past.
+const maxCaptureSpeed = 4.0
+
+// captureHeadroom is the spare frames on top of what the clip shows.
+const captureHeadroom = 1.15
+
+// speedsFor is the capture speeds for a stream of `rate` frames a second.
+func speedsFor(rate float64) captureSpeeds {
+	scale := func(framesPerGameSecond float64) float64 {
+		v := rate / (framesPerGameSecond * captureHeadroom)
+		return math.Max(0.02, math.Min(maxCaptureSpeed, math.Floor(v*100)/100))
+	}
+	return captureSpeeds{main: scale(outputFPS), slow: scale(outputFPS / slowmoSpeed)}
+}
+
+// captureRate tracks the stream's frame rate from what each pass captured:
+// a drop counts at once, a rise slowly.
+type captureRate struct{ fps float64 }
+
+func (c *captureRate) observe(fps float64) {
+	if fps <= 0 {
+		return
+	}
+	if fps < c.fps {
+		c.fps = fps
+	} else {
+		c.fps = 0.7*c.fps + 0.3*fps
+	}
+}
+
+// playPhase is one stretch of a pass: played up to analyzer tick `to` at
+// `scale` (demo_timescale).
+type playPhase struct {
+	to    int
+	scale float64
+}
+
+// picturePhases is one pass over a window: at sp.main, slowed to sp.slow
+// for the opening under the caption card (introEnd > 0) and from slowFrom on
+// (>= 0) for the slow motion. The lead before the window plays at sp.main.
+func picturePhases(w window, introEnd, slowFrom int, sp captureSpeeds) []playPhase {
+	var phases []playPhase
+	add := func(to int, scale float64) {
+		if n := len(phases); n > 0 && phases[n-1].scale == scale {
+			phases[n-1].to = max(phases[n-1].to, to)
+			return
+		}
+		if n := len(phases); n > 0 && to <= phases[n-1].to {
+			return
+		}
+		phases = append(phases, playPhase{to, scale})
+	}
+	if introEnd > 0 {
+		add(w.from-phaseMargin, sp.main)
+		add(introEnd, sp.slow)
+	}
+	if slowFrom >= 0 {
+		add(slowFrom-phaseMargin, sp.main)
+		add(w.to, sp.slow)
+	} else {
+		add(w.to, sp.main)
+	}
+	return phases
+}
+
+// phaseMargin is how many ticks before a slowed stretch the speed changes:
+// a pause lands a little after it is asked for.
+const phaseMargin = 8
+
+// wavSeconds is how long a WAV file's sound runs, from its fmt and data chunks.
+func wavSeconds(path string) (float64, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return 0, err
+	}
+	if len(b) < 12 || string(b[0:4]) != "RIFF" || string(b[8:12]) != "WAVE" {
+		return 0, errors.New("not a WAV file")
+	}
+	byteRate, data := 0, -1
+	for i := 12; i+8 <= len(b); {
+		id, size := string(b[i:i+4]), int(binary.LittleEndian.Uint32(b[i+4:]))
+		body := i + 8
+		switch id {
+		case "fmt ":
+			if body+12 <= len(b) {
+				byteRate = int(binary.LittleEndian.Uint32(b[body+8:]))
+			}
+		case "data":
+			// A file cut off before its header was finished says 0 or too much: count what is there.
+			data = len(b) - body
+			if size > 0 && size < data {
+				data = size
+			}
+		}
+		if id == "data" {
+			break
+		}
+		i = body + size + size%2
+	}
+	if byteRate <= 0 || data < 0 {
+		return 0, errors.New("no fmt or data chunk")
+	}
+	return float64(data) / float64(byteRate), nil
 }

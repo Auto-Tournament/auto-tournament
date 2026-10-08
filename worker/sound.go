@@ -28,27 +28,6 @@ const (
 	crowdDelay         = 0.4  // the crowd reacts this long after the kill
 )
 
-// partStarts is when each part of the plan starts in the reel (reelFilter's joins).
-func partStarts(p reelPlan) []float64 {
-	starts := make([]float64, len(p.durations))
-	length := 0.0
-	for i, d := range p.durations {
-		if i > 0 {
-			if p.joins[i-1] == joinWipe {
-				length += wipeInSec*2 + wipeHoldSec - wipeInSec
-				starts[i] = length - wipeInSec
-				length += d - wipeInSec
-			} else {
-				starts[i] = length - reelCrossfade
-				length += d - reelCrossfade
-			}
-			continue
-		}
-		length = d
-	}
-	return starts
-}
-
 // soundFilter mixes the music (input musicIn, -1 for none) under
 // reelFilter's [a] into [amix]. The crowd is already in each part's sound
 // (crowdPart).

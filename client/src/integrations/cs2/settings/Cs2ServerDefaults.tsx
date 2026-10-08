@@ -25,6 +25,7 @@ import {
   DialogTitle,
   Divider,
   FormControlLabel,
+  MenuItem,
   Slider,
   Stack,
   Switch,
@@ -32,6 +33,7 @@ import {
   Typography,
 } from '@mui/material';
 import { CaretDownIcon } from '@phosphor-icons/react';
+import { HighlightMusicSetting } from './HighlightMusicSetting';
 import {
   api,
   radii,
@@ -39,6 +41,10 @@ import {
   useModuleTranslation,
   useSnackbar,
 } from '../../../module-sdk';
+
+/** Highlight video heights and frame rates (the API's highlights_resolution / highlights_fps). */
+const HIGHLIGHT_HEIGHTS = [720, 1080, 1440, 2160] as const;
+const HIGHLIGHT_FPS = [30, 60, 90, 120, 180, 240] as const;
 
 type Flag = 0 | 1 | null;
 
@@ -49,6 +55,10 @@ export interface Cs2DefaultsValues {
   atDebugChatEnabled: boolean;
   highlightsWatermark: boolean;
   highlightsPerPlayer: number | null;
+  highlightsResolution: number;
+  highlightsFps: number;
+  /** '' (every track), 'off', or the picked track ids (the API's highlights_music). */
+  highlightsMusic: string;
   atAutostartMode: 0 | 1 | 2;
   atMinimumReadyRequired: number;
   atAllowForceReady: boolean;
@@ -93,6 +103,9 @@ const DEFAULTS: Cs2DefaultsValues = {
   atDebugChatEnabled: false,
   highlightsWatermark: true,
   highlightsPerPlayer: 6,
+  highlightsResolution: 1080,
+  highlightsFps: 60,
+  highlightsMusic: '',
   atAutostartMode: 1,
   atMinimumReadyRequired: 0,
   atAllowForceReady: true,
@@ -998,6 +1011,56 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
           inputProps={{ min: 1, max: 6, 'data-testid': 'cs2-highlights-per-player' }}
           size="small"
           sx={{ mt: 2, maxWidth: 320 }}
+        />
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2, maxWidth: 480 }}>
+          <TextField
+            select
+            label={t('settings.highlights.resolution.label')}
+            value={vals.highlightsResolution}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              update('highlightsResolution', value);
+              void save({ highlightsResolution: value });
+            }}
+            size="small"
+            fullWidth
+            inputProps={{ 'data-testid': 'cs2-highlights-resolution' }}
+          >
+            {HIGHLIGHT_HEIGHTS.map((h) => (
+              <MenuItem key={h} value={h}>
+                {h === 2160 ? '4K (2160p)' : `${h}p`}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            select
+            label={t('settings.highlights.fps.label')}
+            value={vals.highlightsFps}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              update('highlightsFps', value);
+              void save({ highlightsFps: value });
+            }}
+            size="small"
+            fullWidth
+            inputProps={{ 'data-testid': 'cs2-highlights-fps' }}
+          >
+            {HIGHLIGHT_FPS.map((f) => (
+              <MenuItem key={f} value={f}>
+                {t('settings.highlights.fps.option', { fps: f })}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Stack>
+        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+          {t('settings.highlights.quality.helper')}
+        </Typography>
+        <HighlightMusicSetting
+          value={vals.highlightsMusic}
+          onChange={(value) => {
+            update('highlightsMusic', value);
+            void save({ highlightsMusic: value });
+          }}
         />
       </Box>
 

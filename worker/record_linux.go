@@ -96,6 +96,13 @@ type recorder struct {
 	// them the recorder draws its own kill feed and turns CS2's off; without
 	// (an export that failed), CS2's kill feed stays.
 	icons *iconSet
+	// base is the size and frame rate the recorder started with (useQuality).
+	base struct {
+		width, height, outputHeight int
+		outputFPS                   float64
+	}
+	// rate is how many frames a second gamescope's stream gives (captureSpeeds).
+	rate captureRate
 }
 
 // look is what CS2 plays the demo with: with the recorder's own kill feed,
@@ -203,6 +210,39 @@ type mapJob struct {
 	MatchSlug string      `json:"matchSlug"`
 	MapNumber int         `json:"mapNumber"`
 	Players   []recordJob `json:"players"`
+	// Quality is the admin's video size and frame rate (older platforms: none).
+	Quality *videoQuality `json:"quality"`
+}
+
+// videoQuality is the height (16:9) and frame rate the platform asks for.
+type videoQuality struct {
+	Height int `json:"height"`
+	FPS    int `json:"fps"`
+}
+
+// useQuality makes the next videos at q: CS2 captured at that size (a
+// smaller picture streams faster, so records faster) and encoded at it.
+// AT_RESOLUTION, AT_OUTPUT_HEIGHT and AT_OUTPUT_FPS, when set, win; without
+// q the recorder goes back to what it started with.
+func (r *recorder) useQuality(q *videoQuality) {
+	width, height, outH, fps := r.base.width, r.base.height, r.base.outputHeight, r.base.outputFPS
+	if q != nil && q.Height >= 360 && q.Height <= 2160 && q.FPS >= 24 && q.FPS <= 240 {
+		h := q.Height &^ 1
+		if os.Getenv("AT_RESOLUTION") == "" {
+			width, height = (h*16/9)&^1, h
+		}
+		if os.Getenv("AT_OUTPUT_HEIGHT") == "" {
+			outH = h
+		}
+		if os.Getenv("AT_OUTPUT_FPS") == "" {
+			fps = float64(q.FPS)
+		}
+	}
+	if width != r.width || height != r.height {
+		// The stream's rate depends on the picture's size: measure it again.
+		r.rate.fps = float64(envPositive("AT_CAPTURE_FPS", 30))
+	}
+	r.width, r.height, outputHeight, outputFPS = width, height, outH, fps
 }
 
 func (mj *mapJob) moments() int {
@@ -322,21 +362,11 @@ func audioLatency() float64 {
 // lead is how much is played before a moment, for the view to settle.
 const lead = tickrate
 
-// How the picture is slowed while it is captured: the whole moment at
-// mainScale (~130 frames per game second), and from the last kill on, where
-// the clip slows down, again at slowScale (~260) so the slow motion has a real
-// frame for every frame it shows.
-const (
-	mainScale     = 0.2
-	slowScale     = 0.1
-	slowBeforeSec = 0.25
-)
-
-// capturePicture plays ticks [from, to] at scale and returns each captured
-// frame's tick and the raw file holding them.
-func (r *recorder) capturePicture(g *game, name string, from, to int, scale float64, raw string) ([]float64, error) {
+// capturePicture plays from `from` through the phases and returns each
+// captured frame's tick and the raw file holding them.
+func (r *recorder) capturePicture(g *game, name string, from int, phases []playPhase, raw string) ([]float64, error) {
 	var vc *videoCapture
-	s, err := g.play(from, to, scale, name, func() (err error) {
+	spans, err := g.playPhases(from, phases, name, func() (err error) {
 		vc, err = startVideoCapture(g.node, raw, g.width, g.height)
 		return err
 	})
@@ -346,7 +376,20 @@ func (r *recorder) capturePicture(g *game, name string, from, to int, scale floa
 	if err != nil {
 		return nil, err
 	}
-	return frameTicks(vc.frameTimes(), s), nil
+	times := vc.frameTimes()
+	for _, s := range spans {
+		n := 0
+		for _, t := range times {
+			if !t.Before(s.resumed) && !t.After(s.paused) {
+				n++
+			}
+		}
+		if wall := s.paused.Sub(s.resumed).Seconds(); wall > 2 {
+			r.rate.observe(float64(n) / wall)
+			log.Printf("captured %d frames at %gx in %.1f s: %.1f a second, %.0f per game second", n, s.scale, wall, float64(n)/wall, float64(n)/wall/s.scale)
+		}
+	}
+	return spanTicks(times, spans), nil
 }
 
 func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, out string) (clipMarkers, error) {
@@ -408,42 +451,32 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	for i := range fades {
 		fades[i] = joinFade
 	}
-	return markers, r.buildReel(pieces, fades, nil, out)
+	_, err = r.buildReel(pieces, fades, nil, out)
+	return markers, err
 }
 
 // recordWindow records one stretch of a moment into `out`: the picture slowed
 // down (and again slower around the slow motion, for the last stretch), the
 // sound at real speed, and the edit.
 func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name string, w window, prior []feedKill, prefix, out string) ([]segment, []feedKill, error) {
-	main := prefix + "-main.yuv"
-	mainTicks, err := r.capturePicture(g, name, w.from-lead, w.to, mainScale, main)
+	// The picture in one pass: slowed under the caption card's opening and for the slow motion.
+	introEnd := 0
+	if card != nil && !card.settled {
+		// The opening plays slowed down under the caption card: a frame for each of its frames.
+		hold, up := introGame()
+		introEnd = min(w.from+int(math.Ceil((hold+up)*tickrate))+4, w.to)
+	}
+	slowFrom := -1
+	if w.slowmo >= 0 {
+		slowFrom = w.slowmo - int(slowBeforeSec*tickrate)
+	}
+	main := prefix + "-picture.yuv"
+	mainTicks, err := r.capturePicture(g, name, w.from-lead, picturePhases(w, introEnd, slowFrom, speedsFor(r.rate.fps)), main)
 	if err != nil {
 		return nil, nil, fmt.Errorf("picture: %w", err)
 	}
 	sources := [][]float64{mainTicks}
 	raws := []string{main}
-	if card != nil && !card.settled {
-		// The opening plays slowed down under the caption card: a frame for each of its frames.
-		hold, up := introGame()
-		introEnd := w.from + int(math.Ceil((hold+up)*tickrate)) + 4
-		if introEnd > w.to {
-			introEnd = w.to
-		}
-		intro := prefix + "-intro.yuv"
-		introTicks, err := r.capturePicture(g, name, w.from-lead/2, introEnd, slowScale, intro)
-		if err != nil {
-			return nil, nil, fmt.Errorf("slowed opening: %w", err)
-		}
-		sources, raws = append(sources, introTicks), append(raws, intro)
-	}
-	if w.slowmo >= 0 {
-		slow := prefix + "-slow.yuv"
-		slowTicks, err := r.capturePicture(g, name, w.slowmo-int(slowBeforeSec*tickrate)-lead/2, w.to, slowScale, slow)
-		if err != nil {
-			return nil, nil, fmt.Errorf("slow motion: %w", err)
-		}
-		sources, raws = append(sources, slowTicks), append(raws, slow)
-	}
 
 	// The sound, at real speed.
 	wav := prefix + "-audio.wav"
@@ -460,7 +493,7 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 	}
 	// What CS2 plays reaches the recording audioLatency later: start that much
 	// further in, or every shot is heard after the kill it made.
-	audioAt := as.resumed.Sub(ac.started).Seconds() + float64(w.from-as.fromTick)/tickrate + audioLatency()
+	audioAt := as.resumed.Sub(ac.fileStart()).Seconds() + float64(w.from-as.fromTick)/tickrate + audioLatency()
 
 	length := float64(w.to-w.from) / tickrate
 	kill := -1.0
@@ -650,7 +683,7 @@ func maxf(a, b float64) float64 {
 
 // joinReel puts one player's clips one after the other, each blending into
 // the next, after the reel's intro (nil: none).
-func (r *recorder) joinReel(clips []clipResult, intro *reelIntro, out string) error {
+func (r *recorder) joinReel(clips []clipResult, intro *reelIntro, out string) ([]float64, error) {
 	paths := make([]string, len(clips))
 	joins := make([]join, 0, len(clips))
 	for i, c := range clips {
@@ -783,6 +816,7 @@ func (r *recorder) lookFor(ctx context.Context, j *recordJob) clipLook {
 // recordMap records a map's moments, every player's, in one CS2 session,
 // then uploads each clip and each player's reel of the map.
 func (r *recorder) recordMap(ctx context.Context, mj *mapJob) error {
+	r.useQuality(mj.Quality)
 	dir, err := os.MkdirTemp(r.scratch, "highlights-")
 	if err != nil {
 		return err
@@ -873,7 +907,8 @@ func (r *recorder) uploadReel(ctx context.Context, dir string, j *recordJob, cli
 	}
 	sort.Slice(plays, func(a, b int) bool { return plays[a].moment.StartTick < plays[b].moment.StartTick })
 	reel := filepath.Join(dir, fmt.Sprintf("reel-%s.mp4", j.PlayerID))
-	if err := r.joinReel(plays, playerReelIntro(j, len(plays)), reel); err != nil {
+	starts, err := r.joinReel(plays, playerReelIntro(j, len(plays)), reel)
+	if err != nil {
 		return err
 	}
 	ids := make([]string, len(plays))
@@ -882,7 +917,7 @@ func (r *recorder) uploadReel(ctx context.Context, dir string, j *recordJob, cli
 	}
 	return r.upload(ctx, reel, fmt.Sprintf("/api/game/cs2/recorder/reels/%s/%d/%s",
 		url.PathEscape(j.MatchSlug), j.MapNumber, url.PathEscape(j.PlayerID)),
-		map[string]string{"X-AT-Clips": strings.Join(ids, ",")})
+		map[string]string{"X-AT-Clips": strings.Join(ids, ","), "X-AT-Starts": startsHeader(starts)})
 }
 
 // failMoments tells the platform these moments could not be recorded.
@@ -937,6 +972,9 @@ func newRecorder(c *client) (*recorder, error) {
 	r := &recorder{client: c, gameDir: gameDir, sniper: env("AT_SNIPER_RUN", ""),
 		scratch: env("AT_RECORD_DIR", os.TempDir()), width: w, height: h,
 		encoder: env("AT_ENCODER", pickEncoder()), sink: defaultSink()}
+	// Until the first pass measures it: what gamescope streamed on the recorder VM (2026-10-08).
+	r.rate.fps = float64(envPositive("AT_CAPTURE_FPS", 30))
+	r.base.width, r.base.height, r.base.outputHeight, r.base.outputFPS = w, h, outputHeight, outputFPS
 	r.logo = filepath.Join(r.scratch, "at-watermark.png")
 	if err := os.WriteFile(r.logo, watermarkPNG, 0o644); err != nil {
 		return nil, err
@@ -1073,7 +1111,8 @@ func recordFile(args []string) error {
 		}
 	}
 	if len(clips) > 1 {
-		return r.joinReel(clips, cliIntro("Player reel", name), filepath.Join(args[3], "reel.mp4"))
+		_, err := r.joinReel(clips, cliIntro("Player reel", name), filepath.Join(args[3], "reel.mp4"))
+		return err
 	}
 	return nil
 }
@@ -1115,7 +1154,11 @@ func joinReelFiles(out string, clips []string) error {
 		}
 		sound.reactions = append(sound.reactions, m.Reactions)
 	}
-	return r.buildReelSound(clips, joins, cliIntro("Match highlights", env("AT_TEAMS", "")), sound, out)
+	starts, err := r.buildReelSound(clips, joins, cliIntro("Match highlights", env("AT_TEAMS", "")), sound, out)
+	if err == nil {
+		fmt.Printf("starts: %s\n", startsHeader(starts))
+	}
+	return err
 }
 
 // cliIntro is the intro the local commands give a reel, from the environment.

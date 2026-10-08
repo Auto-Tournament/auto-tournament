@@ -1141,6 +1141,27 @@
       "perPlayer": {
         "label": "Klipp per spiller per kart",
         "helper": "1 til 6. Hvert klipp tar opptakeren omtrent fem minutter, så færre klipp blir ferdige raskere."
+      },
+      "resolution": {
+        "label": "Oppløsning"
+      },
+      "fps": {
+        "label": "Bildefrekvens",
+        "option": "{{fps}} fps"
+      },
+      "quality": {
+        "helper": "Mindre og færre bilder tar opp raskere: 720p i 30 fps tar omtrent halvparten så lang tid som 1440p i 120 fps. Klipp som alt er laget, beholder størrelsen sin."
+      },
+      "music": {
+        "label": "Music under reels",
+        "all": "Every track ({{count}})",
+        "pick": "Only the ones I pick",
+        "off": "No music",
+        "helper": "The player plays a track beside each reel, a different one each time, and viewers can switch it. Downloads come with or without it. Tracks are from Pixabay and download to this server the first time they play.",
+        "listen": "Listen to {{title}}",
+        "stop": "Stop {{title}}",
+        "contentId": "YouTube Content ID",
+        "volume": "Volume"
       }
     }
   },

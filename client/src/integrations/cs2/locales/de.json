@@ -1141,6 +1141,27 @@
       "perPlayer": {
         "label": "Clips per player per map",
         "helper": "1 to 6. Each takes the recorder about five minutes, so fewer clips are ready sooner."
+      },
+      "resolution": {
+        "label": "Resolution"
+      },
+      "fps": {
+        "label": "Frame rate",
+        "option": "{{fps}} fps"
+      },
+      "quality": {
+        "helper": "Smaller and fewer frames record faster: 720p at 30 fps takes about half as long as 1440p at 120 fps. Clips already made keep their size."
+      },
+      "music": {
+        "label": "Music under reels",
+        "all": "Every track ({{count}})",
+        "pick": "Only the ones I pick",
+        "off": "No music",
+        "helper": "The player plays a track beside each reel, a different one each time, and viewers can switch it. Downloads come with or without it. Tracks are from Pixabay and download to this server the first time they play.",
+        "listen": "Listen to {{title}}",
+        "stop": "Stop {{title}}",
+        "contentId": "YouTube Content ID",
+        "volume": "Volume"
       }
     }
   },

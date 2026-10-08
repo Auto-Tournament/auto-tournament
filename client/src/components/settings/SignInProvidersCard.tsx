@@ -14,6 +14,7 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { ExternalLink } from '../common/ExternalLink';
 import { ProviderLogo } from '../auth/ProviderLogo';
 import { AdminAccessSection } from './AdminAccessSection';
+import { LocalAccountsSection } from './LocalAccountsSection';
 import { SettingsCardHead, SettingsRow } from './SettingsRow';
 
 /** One provider as GET /api/sign-in-providers returns it. Never carries a secret. */
@@ -87,6 +88,7 @@ export function SignInProvidersCard({ welcome = false }: { welcome?: boolean }) 
         <ProviderSection key={provider.id} provider={provider} onSaved={setData} />
       ))}
       <AdminAccessSection />
+      <LocalAccountsSection />
       <Typography variant="caption" color="text.secondary" sx={{ pt: 1.5 }}>
         {data.secretsKeySource === 'default'
           ? t('settingsPage.signIn.keySourceDefault')

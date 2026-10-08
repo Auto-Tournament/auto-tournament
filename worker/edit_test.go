@@ -149,7 +149,7 @@ func TestReelFilterFades(t *testing.T) {
 	f := reelFilter(reelPlan{durations: []float64{10, 8, 6}, joins: []join{joinFade, joinFade}, width: 1920, height: 1080, fps: 60})
 	for _, want := range []string{
 		// Every clip's sound is cut or padded to its picture's length first.
-		"[1:v]setpts=PTS-STARTPTS,trim=duration=8.000,fps=60,settb=AVTB,setsar=1,format=yuv420p[v1in]",
+		"[1:v]setpts=PTS-STARTPTS,trim=duration=8.000,fps=60,settb=AVTB,scale=1920:1080,setsar=1,format=yuv420p[v1in]",
 		"[1:a]asetpts=PTS-STARTPTS,apad,atrim=duration=8.000[a1in]",
 		"[v0in][v1in]xfade=transition=fade:duration=0.4:offset=9.600[jv1]",
 		"[a0in][a1in]acrossfade=d=0.4[ja1]",
