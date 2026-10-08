@@ -54,7 +54,8 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 		paths = append([]string{introPath}, paths...)
 		plan.durations = append([]float64{introSec}, plan.durations...)
 		plan.joins = append([]join{joinWipe}, plan.joins...)
-		sound.kills = append([][]float64{nil}, sound.kills...)
+		sound.heys = append([][]float64{nil}, sound.heys...)
+		sound.roars = append([][]float64{nil}, sound.roars...)
 	}
 	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
 	for _, p := range paths {

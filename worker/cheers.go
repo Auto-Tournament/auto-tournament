@@ -6,18 +6,29 @@ import (
 	"strings"
 )
 
-// The crowd cheers only for kills worth it (sound.go): the third kill of a
-// quick run, a hard shot (an AWP kill, a no-scope, through a wall or smoke,
-// in the air, while flashed), a flick, or the kill that finishes an ace, a 4K or a clutch.
+// The crowd reacts to kills worth it (sound.go): a short "heeey" for a hard
+// shot (an AWP kill, a no-scope, through a wall or smoke, the killer or the
+// victim in the air, while flashed, a snap shot at someone in view for a split
+// second, a flick), and a roar for the kills that decide something (the one
+// that ends the round, the last of an ace, a 4K or a clutch, the third of a
+// quick run).
 const (
 	cheerRunTicks    = 10 * tickrate // three kills within this long make a run
 	cheerGapTicks    = 5 * tickrate / 2
 	cheerFlickTicks  = 24 // how far back a flick is looked for
 	cheerFlickDegree = 90.0
+	cheerSnapSec     = 0.3 // in view for less than this: a snap shot
 )
 
-// cheerTicks is which of the moment's kills (m.KillTicks, the player's) get a cheer.
-func cheerTicks(rp *Replay, player string, m moment) []int {
+// cheer is one reaction: at the kill's tick, a roar or a "heeey".
+type cheer struct {
+	tick int
+	roar bool
+}
+
+// cheerTicks is which of the moment's kills (m.KillTicks, the player's) the
+// crowd reacts to, and how.
+func cheerTicks(rp *Replay, player string, m moment) []cheer {
 	kills := append([]int(nil), m.KillTicks...)
 	sort.Ints(kills)
 	byTick := map[int]ReplayKill{}
@@ -34,24 +45,31 @@ func cheerTicks(rp *Replay, player string, m moment) []int {
 			}
 		}
 	}
-	var out []int
-	last := math.MinInt / 2
+	var out []cheer
 	for i, t := range kills {
 		k, known := byTick[t]
-		cheer := i >= 2 && t-kills[i-2] <= cheerRunTicks
-		if known && (k.NoScope || k.ThroughSmoke || k.InAir || k.AttackerBlind || k.Penetrated || k.Weapon == "AWP") {
-			cheer = true
-		}
-		if known && k.Headshot && flicked(rp, index, t) {
-			cheer = true
+		roar := i >= 2 && t-kills[i-2] <= cheerRunTicks
+		if known && k.RoundEnding {
+			roar = true
 		}
 		if i == len(kills)-1 && (m.Kind == "ace" || m.Kind == "4k" || strings.Contains(strings.ToLower(m.Title), "clutch")) {
-			cheer = true
+			roar = true
 		}
-		if cheer && t-last >= cheerGapTicks {
-			out = append(out, t)
-			last = t
+		hey := known && (k.Weapon == "AWP" || k.NoScope || k.Penetrated || k.ThroughSmoke || k.InAir || k.VictimInAir ||
+			k.AttackerBlind || (k.SeenFor >= 0 && k.SeenFor < cheerSnapSec && !k.Penetrated && !k.ThroughSmoke) ||
+			(k.Headshot && flicked(rp, index, t)))
+		if !roar && !hey {
+			continue
 		}
+		c := cheer{tick: t, roar: roar}
+		if n := len(out); n > 0 && t-out[n-1].tick < cheerGapTicks {
+			// Too close to the last reaction: keep the bigger one.
+			if roar && !out[n-1].roar {
+				out[n-1] = c
+			}
+			continue
+		}
+		out = append(out, c)
 	}
 	return out
 }
@@ -87,25 +105,31 @@ func flicked(rp *Replay, index, tick int) bool {
 	return false
 }
 
-// cheerTimes is where the cheered kills are in the clip: the kill markers
-// (in kill order) of the ticks that get a cheer.
-func cheerTimes(killTicks []int, killTimes []float64, cheers []int) []float64 {
+// cheerTimes is where the reactions are in the clip: the kill markers (in
+// kill order) of the cheered ticks, the roars apart.
+func cheerTimes(killTicks []int, killTimes []float64, cheers []cheer) (heys, roars []float64) {
 	ticks := append([]int(nil), killTicks...)
 	sort.Ints(ticks)
 	if len(ticks) != len(killTimes) {
-		return nil
+		return nil, nil
 	}
-	want := map[int]bool{}
-	for _, t := range cheers {
-		want[t] = true
-	}
-	out := []float64{}
+	at := map[int]float64{}
 	for i, t := range ticks {
-		if want[t] {
-			out = append(out, killTimes[i])
+		at[t] = killTimes[i]
+	}
+	heys, roars = []float64{}, []float64{}
+	for _, c := range cheers {
+		v, ok := at[c.tick]
+		if !ok {
+			continue
+		}
+		if c.roar {
+			roars = append(roars, v)
+		} else {
+			heys = append(heys, v)
 		}
 	}
-	return out
+	return heys, roars
 }
 
 // moment is one highlight to record: its ticks are the demo's own.

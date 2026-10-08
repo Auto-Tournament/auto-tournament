@@ -399,7 +399,7 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 		kills = []int{m.SlowmoTick}
 	}
 	markers := momentMarkers(windows, edits, kills)
-	markers.Cheers = cheerTimes(m.KillTicks, markers.Kills, cheerTicks(look.replay, look.playerID, m))
+	markers.Cheers, markers.Roars = cheerTimes(m.KillTicks, markers.Kills, cheerTicks(look.replay, look.playerID, m))
 	if len(pieces) == 1 {
 		return markers, os.Rename(pieces[0], out)
 	}
@@ -1113,7 +1113,8 @@ func joinReelFiles(out string, clips []string) error {
 		if b, err := os.ReadFile(strings.TrimSuffix(c, filepath.Ext(c)) + ".json"); err == nil {
 			_ = json.Unmarshal(b, &m)
 		}
-		sound.kills = append(sound.kills, m.Cheers)
+		sound.heys = append(sound.heys, m.Cheers)
+		sound.roars = append(sound.roars, m.Roars)
 	}
 	return r.buildReelSound(clips, joins, cliIntro("Match highlights", env("AT_TEAMS", "")), sound, out)
 }
@@ -1187,12 +1188,12 @@ func markCheers(args []string) error {
 		if err := json.Unmarshal(b, &m); err != nil {
 			return err
 		}
-		m.Cheers = cheerTimes(moments[i].KillTicks, m.Kills, cheerTicks(rp, args[1], moments[i]))
+		m.Cheers, m.Roars = cheerTimes(moments[i].KillTicks, m.Kills, cheerTicks(rp, args[1], moments[i]))
 		out, _ := json.MarshalIndent(m, "", "  ")
 		if err := os.WriteFile(file, out, 0o644); err != nil {
 			return err
 		}
-		log.Printf("%s: kills %v, cheers %v", file, m.Kills, m.Cheers)
+		log.Printf("%s: kills %v, heys %v, roars %v", file, m.Kills, m.Cheers, m.Roars)
 	}
 	return nil
 }

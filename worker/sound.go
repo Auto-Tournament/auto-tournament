@@ -11,20 +11,21 @@ import (
 type reelSound struct {
 	music string      // a music file (looped when the reel is longer), or ""
 	crowd string      // a crowd cheer recording, or ""
-	kills [][]float64 // each part's cheered kills, seconds into that part (reelPlan order)
+	heys  [][]float64 // each part's kills for a short "heeey", seconds into that part (reelPlan order)
+	roars [][]float64 // each part's kills for a roar
 }
 
 const (
-	musicGain      = 0.11 // under the game's sound
-	musicIntroGain = 0.32 // under the intro, which has no game sound
-	musicFadeIn    = 1.5
-	musicFadeOut   = 2.5
-	crowdBedGain   = 0.04 // the crowd under every clip
-	crowdGain      = 0.22 // at the height of a cheer
-	crowdDelay     = 0.4  // the crowd reacts this long after the kill
-	crowdRise      = 0.35
-	crowdHold      = 1.2
-	crowdFall      = 1.8
+	musicGain          = 0.11 // under the game's sound
+	musicIntroGain     = 0.32 // under the intro, which has no game sound
+	musicFadeIn        = 1.5
+	musicFadeOut       = 2.5
+	crowdBedGain       = 0.07 // the crowd murmur while there is action
+	crowdGateThreshold = 0.03 // game sound (RMS) that opens the murmur
+	crowdGateRange     = 0.02 // what is left of it when the game is quiet
+	heyGain            = 0.16 // a "heeey" at its height
+	roarGain           = 0.26 // a roar at its height
+	crowdDelay         = 0.4  // the crowd reacts this long after the kill
 )
 
 // partStarts is when each part of the plan starts in the reel (reelFilter's joins).
@@ -68,36 +69,46 @@ func soundFilter(p reelPlan, s reelSound, musicIn, crowdIn int, hasIntro bool) s
 		mix = append(mix, "[music]")
 	}
 	if crowdIn >= 0 {
-		// The crowd murmurs under the clips (after the intro) and swells for
-		// the kills worth it: crowdBedGain, rising to crowdGain over
-		// crowdRise, holding crowdHold, falling back over crowdFall.
+		// The crowd follows the game: it murmurs while there is action (a
+		// gate opened by the game's own sound, slow to close) and is quiet
+		// when the game is; it reacts to the kills worth it on top.
 		starts := partStarts(p)
 		from := 0.0
 		if hasIntro && len(starts) > 1 {
 			from = starts[1]
 		}
+		span := math.Max(0.1, length-from)
 		var swells []string
-		for i, ks := range s.kills {
-			if i >= len(starts) {
-				break
-			}
-			for _, k := range ks {
-				a := starts[i] + k + crowdDelay - from
-				if a < 0 || a > length-from {
-					continue
+		add := func(parts [][]float64, peak, rise, hold, fall float64) {
+			for i, ks := range parts {
+				if i >= len(starts) {
+					break
 				}
-				e := a + crowdRise + crowdHold + crowdFall
-				swells = append(swells, fmt.Sprintf("%g*min(1,max(0,(t-%.3f)/%g))*min(1,max(0,(%.3f-t)/%g))",
-					crowdGain-crowdBedGain, a, crowdRise, e, crowdFall))
+				for _, k := range ks {
+					a := starts[i] + k + crowdDelay - from
+					if a < 0 || a > span {
+						continue
+					}
+					swells = append(swells, fmt.Sprintf("%g*min(1,max(0,(t-%.3f)/%g))*min(1,max(0,(%.3f-t)/%g))",
+						peak, a, rise, a+rise+hold+fall, fall))
+				}
 			}
 		}
-		gain := fmt.Sprintf("%g", crowdBedGain)
+		add(s.heys, heyGain, 0.2, 0.6, 1.0)
+		add(s.roars, roarGain, 0.35, 1.6, 2.2)
+		react := "0"
 		if len(swells) > 0 {
-			gain = fmt.Sprintf("'%g+%s':eval=frame", crowdBedGain, strings.Join(swells, "+"))
+			react = strings.Join(swells, "+")
 		}
-		fmt.Fprintf(&b, ";[%d:a]aresample=48000,aformat=channel_layouts=stereo,atrim=duration=%.3f,asetpts=PTS-STARTPTS,"+
-			"volume=%s,afade=t=in:d=1,afade=t=out:st=%.3f:d=2,adelay=%d:all=1[crowd]",
-			crowdIn, math.Max(0.1, length-from), gain, math.Max(0, length-from-2), int(math.Round(from*1000)))
+		mix[0] = "[agame]"
+		fmt.Fprintf(&b, ";[a]asplit=2[agame][asc]")
+		fmt.Fprintf(&b, ";[asc]atrim=start=%.3f,asetpts=PTS-STARTPTS,aformat=channel_layouts=stereo[side]", from)
+		fmt.Fprintf(&b, ";[%d:a]aresample=48000,aformat=channel_layouts=stereo,atrim=duration=%.3f,asetpts=PTS-STARTPTS,asplit=2[crowdbed][crowdreact]", crowdIn, span)
+		fmt.Fprintf(&b, ";[crowdbed]volume=%g[crowdbedv];[crowdbedv][side]sidechaingate=threshold=%g:ratio=8:attack=120:release=2200:range=%g:knee=3:detection=rms[bed]",
+			crowdBedGain, crowdGateThreshold, crowdGateRange)
+		fmt.Fprintf(&b, ";[crowdreact]volume='%s':eval=frame[react]", react)
+		fmt.Fprintf(&b, ";[bed][react]amix=inputs=2:duration=first:normalize=0,afade=t=in:d=1,afade=t=out:st=%.3f:d=2,adelay=%d:all=1[crowd]",
+			math.Max(0, span-2), int(math.Round(from*1000)))
 		mix = append(mix, "[crowd]")
 	}
 	if len(mix) == 1 {
