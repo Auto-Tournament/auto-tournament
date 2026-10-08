@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"math"
 	"os"
 	"testing"
 )
@@ -29,13 +30,13 @@ func TestCaptionCardAnimates(t *testing.T) {
 	if a := alphaAt(r.frameAt(2), mid); a < 200 {
 		t.Fatalf("card not up at 2 s (alpha %d)", a)
 	}
-	// At the end it is small, at the bottom centre, half see-through
+	// At the end it is small, at the bottom centre, a little see-through
 	// (cardSettledOpacity), and stays: the settled card (a clip's later
 	// pieces) is the same picture.
 	small := image.Pt((r.small.Min.X+r.small.Max.X)/2, (r.small.Min.Y+r.small.Max.Y)/2)
 	end := alphaAt(r.frameAt(cardSec), small)
-	if end < 80 || end > 140 {
-		t.Fatalf("card not at the bottom centre at half opacity at the end (alpha %d)", end)
+	if full := alphaAt(r.frameAt(2), mid); math.Abs(float64(end)-float64(full)*cardSettledOpacity) > 12 {
+		t.Fatalf("card not at the bottom centre at %v opacity at the end (alpha %d, open %d)", cardSettledOpacity, end, full)
 	}
 	if r.small.Dx() >= r.card.Dx() || r.small.Max.Y <= r.card.Max.Y {
 		t.Fatalf("small card %v is not smaller and lower than %v", r.small, r.card)

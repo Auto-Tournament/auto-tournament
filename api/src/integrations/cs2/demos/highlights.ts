@@ -21,6 +21,7 @@
  * go in the tournament reel, not in the player's or the match's reels.
  */
 
+import { readHighlightQuality, type HighlightQuality } from './highlightQuality';
 import { notificationService } from '../../../services/notificationService';
 import fs from 'fs';
 import path from 'path';
@@ -465,6 +466,7 @@ export async function claimMapJob(recorder: string, idle = 1): Promise<MapRecord
     kind: 'map',
     matchSlug: best.match_slug,
     mapNumber: Number(best.map_number),
+    quality: await readHighlightQuality(),
     players,
   };
 }
@@ -474,6 +476,8 @@ export interface MapRecordJob {
   kind: 'map';
   matchSlug: string;
   mapNumber: number;
+  /** The size and frame rate to record at (the admin's highlight settings). */
+  quality: HighlightQuality;
   players: RecordJob[];
 }
 
@@ -785,6 +789,7 @@ export interface MatchReelJob {
   mapNumber: number;
   match: string;
   watermark: boolean;
+  quality: HighlightQuality;
   clips: MatchReelClip[];
   /** Where the recorder sends the reel, and where it says it could not. */
   upload: string;
@@ -874,6 +879,7 @@ export async function claimMatchReel(recorder: string): Promise<MatchReelJob | n
     mapNumber: Number(row.map_number),
     match: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, extra?.tournament ?? null),
     watermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
+    quality: await readHighlightQuality(),
     clips,
     upload: `/api/game/cs2/recorder/match-reels/${encodeURIComponent(row.match_slug)}/${Number(row.map_number)}`,
     fail: `/api/game/cs2/recorder/match-reels/${encodeURIComponent(row.match_slug)}/${Number(row.map_number)}/fail`,
