@@ -45,6 +45,7 @@ export const MUSIC_GENRES = [
   'small-emotions',
   'corporate',
   'orchestral',
+  'jazz',
 ] as const;
 export type MusicGenre = (typeof MUSIC_GENRES)[number];
 
@@ -719,5 +720,16 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
     seconds: 149,
     contentId: true,
     gainDb: -0.6,
+  },
+  {
+    id: '517090',
+    title: 'Bebop Coffee Shop',
+    artist: 'alex-morgan',
+    genre: 'jazz',
+    page: 'https://pixabay.com/music/traditional-jazz-bebop-coffee-shop-517090/',
+    audio: 'https://cdn.pixabay.com/download/audio/2026/04/18/audio_fa1ced1b14.mp3',
+    seconds: 157,
+    contentId: true,
+    gainDb: 0.3,
   },
 ];

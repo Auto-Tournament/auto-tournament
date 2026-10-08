@@ -643,7 +643,8 @@
         "small-emotions": "Emotional",
         "corporate": "Corporate",
         "orchestral": "Orchestral",
-        "dance": "Dance"
+        "dance": "Dance",
+        "jazz": "Jazz"
       }
     }
   },

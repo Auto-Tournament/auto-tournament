@@ -79,6 +79,7 @@ const GENRE_ORDER = [
   'small-emotions',
   'corporate',
   'orchestral',
+  'jazz',
 ];
 
 /** One chapter of a reel, as the scrubber's hover card shows it. */
