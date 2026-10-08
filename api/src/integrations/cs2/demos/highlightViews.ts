@@ -528,7 +528,7 @@ export async function watchRelated(
     }>(
       `SELECT h.player_id, p.name, p.avatar_url, COUNT(*) AS clips,
               EXISTS (SELECT 1 FROM cs2_highlight_reels r
-                       WHERE r.match_slug = h.match_slug AND r.map_number = h.map_number
+                       WHERE r.match_slug = ? AND r.map_number = ?::integer
                          AND r.player_id = h.player_id AND r.clip_path IS NOT NULL) AS reel
          FROM cs2_highlights h
          LEFT JOIN players p ON p.id = h.player_id
@@ -536,7 +536,7 @@ export async function watchRelated(
           AND h.status = 'done' AND h.kind <> 'funny'
         GROUP BY h.player_id, p.name, p.avatar_url
         ORDER BY COUNT(*) DESC, p.name`,
-      [matchSlug, mapNumber, mapNumber]
+      [matchSlug, mapNumber, matchSlug, mapNumber, mapNumber]
     );
     players = rows.map((r) => ({
       playerId: r.player_id,
