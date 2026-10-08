@@ -51,113 +51,110 @@ func gridSize(n int) (cols, rows int) {
 	}
 }
 
+// introTile is one tile of the intro's grid: a stretch of one clip.
+type introTile struct {
+	Clip  int     // which clip
+	Start float64 // seconds into it
+}
+
+// introTiles picks each tile's clip and stretch: clips in turn, from around
+// each clip's middle (where its kills are), a different stretch for each
+// repeat, never past the clip's end.
+func introTiles(durations []float64) []introTile {
+	cols, rows := gridSize(len(durations))
+	source := introSec / introSlowdown
+	repeats := make([]int, len(durations))
+	tiles := make([]introTile, cols*rows)
+	for t := range tiles {
+		i := t % len(durations)
+		u := repeats[i]
+		repeats[i]++
+		start := math.Max(0, math.Min(durations[i]-source, durations[i]*0.3+float64(u)*source*1.3))
+		tiles[t] = introTile{Clip: i, Start: start}
+	}
+	return tiles
+}
+
+// introFilter builds the intro on its own, a cols×rows grid: inputs 0..tiles-1 are the tiles'
+// stretches (each already seeked to its start and cut to its length, so
+// nothing waits in memory), input `tiles` the intro's text frames (full-frame
+// premultiplied RGBA at cardFPS). Output [v] and [a], introSec long.
+//
+// The intro is a pass of its own: built inside the reel's pass, ten 1440p
+// clips each feeding the grid and the reel at once made ffmpeg hold
+// seconds of frames for every one of them and run out of memory.
+func introFilter(cols, rows, width, height int, fps float64) string {
+	var b strings.Builder
+	tiles := cols * rows
+	tw, th := (width/cols)&^1, (height/rows)&^1
+	var layout []string
+	for t := 0; t < tiles; t++ {
+		// The top 62 % of the frame: the caption card and the corner tag live
+		// in the bottom and must not show behind the intro's text.
+		fmt.Fprintf(&b, "[%d:v]setpts=(PTS-STARTPTS)*%g,fps=%g,crop=iw:ih*0.62:0:0,"+
+			"scale=%d:%d:force_original_aspect_ratio=increase,crop=%d:%d,setsar=1[t%d];", t, introSlowdown, fps, tw, th, tw, th, t)
+		layout = append(layout, fmt.Sprintf("%d_%d", (t%cols)*tw, (t/cols)*th))
+	}
+	for t := 0; t < tiles; t++ {
+		fmt.Fprintf(&b, "[t%d]", t)
+	}
+	blur := math.Max(4, float64(height)/720*7)
+	fmt.Fprintf(&b, "xstack=inputs=%d:layout=%s:fill=black,scale=%d:%d,gblur=sigma=%.1f,drawbox=color=%s:t=fill,"+
+		"trim=duration=%.3f,setpts=PTS-STARTPTS,format=yuv420p[grid];", tiles, strings.Join(layout, "|"), width, height, blur, introDark, introSec)
+	fmt.Fprintf(&b, "[%d:v]format=rgba[text];[grid][text]overlay=0:0:alpha=premultiplied:eof_action=repeat,"+
+		"trim=duration=%.3f,setpts=PTS-STARTPTS,fps=%g,format=yuv420p[v];", tiles, introSec, fps)
+	fmt.Fprintf(&b, "anullsrc=r=48000:cl=stereo,atrim=duration=%.3f[a]", introSec)
+	return b.String()
+}
+
 // reelPlan is everything the reel's ffmpeg needs to know.
 type reelPlan struct {
-	durations []float64 // each clip's picture length (inputs 0..n-1)
-	joins     []join    // how clip i goes into clip i+1 (len n-1)
-	intro     bool      // input n holds the intro's frames (full-frame premultiplied RGBA at cardFPS)
+	durations []float64 // each part's picture length (inputs 0..n-1; the intro, when there is one, is input 0)
+	joins     []join    // how part i goes into part i+1 (len n-1)
 	width     int
 	height    int
 	fps       float64
 }
 
-// reelFilter builds the reel: [v] and [a].
+// reelFilter joins the parts: [v] and [a].
 func reelFilter(p reelPlan) string {
 	var b strings.Builder
-	n := len(p.durations)
 	// xfade needs every part at one frame rate and time base.
 	norm := fmt.Sprintf("fps=%g,settb=AVTB,setsar=1,format=yuv420p", p.fps)
-	cols, rows := gridSize(n)
-	tiles := cols * rows
-	// How many grid tiles each clip feeds.
-	uses := make([]int, n)
-	if p.intro {
-		for t := 0; t < tiles; t++ {
-			uses[t%n]++
-		}
-	}
-	// Each clip's picture and sound, exactly its length from 0 (see crossfadeFilter).
+	// Each part's picture and sound exactly its length from 0: a clip's sound
+	// runs a few hundredths of a second shorter or longer than its picture,
+	// and across a reel's joins those add up (1.6 s by the tenth player of a
+	// pro reel), so the sound drifted off the picture.
 	for i, d := range p.durations {
-		if uses[i] > 0 {
-			fmt.Fprintf(&b, "[%d:v]setpts=PTS-STARTPTS,trim=duration=%.3f,%s,split=%d[v%din]", i, d, norm, 1+uses[i], i)
-			for u := 0; u < uses[i]; u++ {
-				fmt.Fprintf(&b, "[g%d_%d]", i, u)
-			}
-			b.WriteString(";")
-		} else {
-			fmt.Fprintf(&b, "[%d:v]setpts=PTS-STARTPTS,trim=duration=%.3f,%s[v%din];", i, d, norm, i)
-		}
+		fmt.Fprintf(&b, "[%d:v]setpts=PTS-STARTPTS,trim=duration=%.3f,%s[v%din];", i, d, norm, i)
 		fmt.Fprintf(&b, "[%d:a]asetpts=PTS-STARTPTS,apad,atrim=duration=%.3f[a%din];", i, d, i)
 	}
-
-	type part struct {
-		v, a string
-		d    float64
-	}
-	var parts []part
-	var joins []join
-	if p.intro {
-		tw, th := (p.width/cols)&^1, (p.height/rows)&^1
-		source := introSec / introSlowdown
-		next := make([]int, n)
-		var layout []string
-		for t := 0; t < tiles; t++ {
-			i := t % n
-			u := next[i]
-			next[i]++
-			// From around the clip's middle (where its kills are), a different
-			// stretch for each repeat; never past its end.
-			start := math.Max(0, math.Min(p.durations[i]-source, p.durations[i]*0.3+float64(u)*source*1.3))
-			// The top 62 % of the frame: the caption card and the corner tag
-			// live in the bottom, and must not show behind the intro's text.
-			fmt.Fprintf(&b, "[g%d_%d]trim=start=%.3f:duration=%.3f,setpts=(PTS-STARTPTS)*%g,fps=%g,"+
-				"crop=iw:ih*0.62:0:0,scale=%d:%d:force_original_aspect_ratio=increase,crop=%d:%d,setsar=1[t%d];",
-				i, u, start, source, introSlowdown, p.fps, tw, th, tw, th, t)
-			layout = append(layout, fmt.Sprintf("%d_%d", (t%cols)*tw, (t/cols)*th))
-		}
-		for t := 0; t < tiles; t++ {
-			fmt.Fprintf(&b, "[t%d]", t)
-		}
-		blur := math.Max(4, float64(p.height)/720*7)
-		fmt.Fprintf(&b, "xstack=inputs=%d:layout=%s:fill=black,scale=%d:%d,gblur=sigma=%.1f,drawbox=color=%s:t=fill,"+
-			"trim=duration=%.3f,setpts=PTS-STARTPTS,format=yuv420p[grid];", tiles, strings.Join(layout, "|"), p.width, p.height, blur, introDark, introSec)
-		fmt.Fprintf(&b, "[%d:v]format=rgba[introtext];[grid][introtext]overlay=0:0:alpha=premultiplied:eof_action=repeat,"+
-			"trim=duration=%.3f,setpts=PTS-STARTPTS,%s[vintro];", n, introSec, norm)
-		fmt.Fprintf(&b, "anullsrc=r=48000:cl=stereo,atrim=duration=%.3f[aintro];", introSec)
-		parts = append(parts, part{"vintro", "aintro", introSec})
-		joins = append(joins, joinWipe)
-	}
-	for i, d := range p.durations {
-		parts = append(parts, part{fmt.Sprintf("v%din", i), fmt.Sprintf("a%din", i), d})
-	}
-	joins = append(joins, p.joins...)
-
-	if len(parts) == 1 {
-		fmt.Fprintf(&b, "[%s]null[v];[%s]anull[a]", parts[0].v, parts[0].a)
+	if len(p.durations) == 1 {
+		b.WriteString("[v0in]null[v];[a0in]anull[a]")
 		return b.String()
 	}
-	length := parts[0].d
-	prevV, prevA := parts[0].v, parts[0].a
-	for i := 1; i < len(parts); i++ {
+	length := p.durations[0]
+	prevV, prevA := "v0in", "a0in"
+	for i := 1; i < len(p.durations); i++ {
 		v, a := fmt.Sprintf("jv%d", i), fmt.Sprintf("ja%d", i)
-		if i == len(parts)-1 {
+		if i == len(p.durations)-1 {
 			v, a = "v", "a"
 		}
-		if joins[i-1] == joinWipe {
-			// Orange in from the left, a beat of orange, out to the right showing the next clip.
+		if p.joins[i-1] == joinWipe {
+			// Orange in from the left, a beat of orange, out to the right showing the next part.
 			bar := wipeInSec*2 + wipeHoldSec
 			fmt.Fprintf(&b, "color=c=0xff6a3d:s=%dx%d:r=%g:d=%.3f,%s[wc%d];", p.width, p.height, p.fps, bar, norm, i)
 			fmt.Fprintf(&b, "anullsrc=r=48000:cl=stereo,atrim=duration=%.3f[ws%d];", bar, i)
 			fmt.Fprintf(&b, "[%s][wc%d]xfade=transition=wiperight:duration=%g:offset=%.3f[wv%d];", prevV, i, wipeInSec, length-wipeInSec, i)
 			fmt.Fprintf(&b, "[%s][ws%d]acrossfade=d=%g[wa%d];", prevA, i, wipeInSec, i)
 			length += bar - wipeInSec
-			fmt.Fprintf(&b, "[wv%d][%s]xfade=transition=wiperight:duration=%g:offset=%.3f[%s];", i, parts[i].v, wipeInSec, length-wipeInSec, v)
-			fmt.Fprintf(&b, "[wa%d][%s]acrossfade=d=%g[%s];", i, parts[i].a, wipeInSec, a)
-			length += parts[i].d - wipeInSec
+			fmt.Fprintf(&b, "[wv%d][v%din]xfade=transition=wiperight:duration=%g:offset=%.3f[%s];", i, i, wipeInSec, length-wipeInSec, v)
+			fmt.Fprintf(&b, "[wa%d][a%din]acrossfade=d=%g[%s];", i, i, wipeInSec, a)
+			length += p.durations[i] - wipeInSec
 		} else {
-			fmt.Fprintf(&b, "[%s][%s]xfade=transition=fade:duration=%g:offset=%.3f[%s];", prevV, parts[i].v, reelCrossfade, length-reelCrossfade, v)
-			fmt.Fprintf(&b, "[%s][%s]acrossfade=d=%g[%s];", prevA, parts[i].a, reelCrossfade, a)
-			length += parts[i].d - reelCrossfade
+			fmt.Fprintf(&b, "[%s][v%din]xfade=transition=fade:duration=%g:offset=%.3f[%s];", prevV, i, reelCrossfade, length-reelCrossfade, v)
+			fmt.Fprintf(&b, "[%s][a%din]acrossfade=d=%g[%s];", prevA, i, reelCrossfade, a)
+			length += p.durations[i] - reelCrossfade
 		}
 		prevV, prevA = v, a
 	}
@@ -166,19 +163,13 @@ func reelFilter(p reelPlan) string {
 
 // reelLength is how long reelFilter's reel runs.
 func reelLength(p reelPlan) float64 {
-	ds := append([]float64{}, p.durations...)
-	js := append([]join{}, p.joins...)
-	if p.intro {
-		ds = append([]float64{introSec}, ds...)
-		js = append([]join{joinWipe}, js...)
-	}
 	total := 0.0
-	for i, d := range ds {
+	for i, d := range p.durations {
 		total += d
 		if i == 0 {
 			continue
 		}
-		if js[i-1] == joinWipe {
+		if p.joins[i-1] == joinWipe {
 			total += wipeHoldSec
 		} else {
 			total -= reelCrossfade
