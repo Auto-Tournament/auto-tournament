@@ -1064,6 +1064,63 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 	return nil
 }
 
+// recordDemo is `at-worker record-demo <demo.dem> <players.json> <outdir>`:
+// several players' moments ({"<steamid64>": [moments]}) recorded in one CS2
+// session, the way the platform's map jobs are, each clip as
+// <outdir>/moment-<id>.mp4 with its markers next to it. AT_TEAMS, AT_MAP and
+// AT_TAG go on the cards as with record-file.
+func recordDemo(args []string) error {
+	if len(args) < 3 {
+		return errors.New("usage: at-worker record-demo <demo.dem> <players.json> <outdir>")
+	}
+	r, err := newRecorder(&client{})
+	if err != nil {
+		return err
+	}
+	b, err := os.ReadFile(args[1])
+	if err != nil {
+		return err
+	}
+	var byPlayer map[string][]moment
+	if err := json.Unmarshal(b, &byPlayer); err != nil {
+		return fmt.Errorf("%s: %w", args[1], err)
+	}
+	if err := os.MkdirAll(args[2], 0o755); err != nil {
+		return err
+	}
+	var replay *Replay
+	if r.icons != nil {
+		replay = replayOf(args[0], env("AT_MAP", ""))
+	}
+	var shots []shot
+	for player, moments := range byPlayer {
+		name, err := demoName(args[0], player)
+		if err != nil {
+			return err
+		}
+		look := clipLook{name: name, teams: env("AT_TEAMS", ""), mapName: env("AT_MAP", ""), tag: env("AT_TAG", ""),
+			watermark: env("AT_WATERMARK", "1") != "0", replay: replay, playerID: player}
+		for _, m := range moments {
+			shots = append(shots, shot{m: m, name: name, look: look})
+		}
+	}
+	sort.Slice(shots, func(a, b int) bool { return shots[a].m.StartTick < shots[b].m.StartTick })
+	clips, failed, err := r.recordMoments(context.Background(), args[0], shots, args[2])
+	if err != nil {
+		return err
+	}
+	for _, f := range failed {
+		log.Printf("could not record %q: %v", f.moment.Title, f.err)
+	}
+	for _, c := range clips {
+		b, _ := json.MarshalIndent(c.markers, "", "  ")
+		if err := os.WriteFile(strings.TrimSuffix(c.path, ".mp4")+".json", b, 0o644); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // recordFile is `at-worker record-file`: a local demo, no platform.
 func recordFile(args []string) error {
 	if len(args) < 4 {

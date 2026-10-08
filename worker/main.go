@@ -229,6 +229,13 @@ func main() {
 		return
 	}
 
+	if len(os.Args) >= 2 && os.Args[1] == "record-demo" {
+		if err := recordDemo(os.Args[2:]); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
 	if len(os.Args) >= 2 && os.Args[1] == "record-file" {
 		if err := recordFile(os.Args[2:]); err != nil {
 			log.Fatal(err)
