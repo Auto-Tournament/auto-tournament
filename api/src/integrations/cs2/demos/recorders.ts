@@ -37,7 +37,7 @@ export class RecorderError extends Error {
   }
 }
 
-interface RecorderRow {
+export interface RecorderRow {
   name: string;
   version: number | null;
   gpu: string | null;
@@ -96,11 +96,14 @@ export async function clipKept(highlightId: number): Promise<void> {
 }
 
 /**
- * The benchmark job: one moment, the same for every recorder (the first clip
- * ever recorded here, so its demo is known to play), at each rate in
- * BENCHMARK_HZ. Null until something has been recorded.
+ * The benchmark job: one moment, the same for every recorder, at each rate in
+ * BENCHMARK_HZ. A recorder that carries the shipped benchmark demo
+ * (`benchDemo`) times that and needs no moment; others get the first clip ever
+ * recorded here (its demo is known to play), so for them it is null until
+ * something has been recorded.
  */
-export async function benchmarkJob(): Promise<Record<string, unknown> | null> {
+export async function benchmarkJob(benchDemo = false): Promise<Record<string, unknown> | null> {
+  const tries = BENCHMARK_HZ.map((gamescopeHz) => ({ gamescopeHz }));
   const row = await db.queryOneAsync<MomentRow>(
     `SELECT h.id, h.match_slug, h.map_number, h.player_id, h.kind, h.title, h.round, h.score,
             h.start_tick, h.end_tick, h.slowmo_tick, h.kill_ticks
@@ -110,7 +113,19 @@ export async function benchmarkJob(): Promise<Record<string, unknown> | null> {
       ORDER BY h.id LIMIT 1`,
     []
   );
-  if (!row) return null;
+  if (!row) {
+    return benchDemo
+      ? {
+          kind: 'benchmark',
+          matchSlug: '',
+          mapNumber: 0,
+          quality: await readHighlightQuality(),
+          keepClean: false,
+          players: [],
+          tries,
+        }
+      : null;
+  }
   const player = await jobFor(row.match_slug, Number(row.map_number), row.player_id, [row]);
   return {
     kind: 'benchmark',
@@ -119,8 +134,23 @@ export async function benchmarkJob(): Promise<Record<string, unknown> | null> {
     quality: await readHighlightQuality(),
     keepClean: false,
     players: [player],
-    tries: BENCHMARK_HZ.map((gamescopeHz) => ({ gamescopeHz })),
+    tries,
   };
+}
+
+/**
+ * Whether the recorder should benchmark now: an admin asked (or it is new), or
+ * it carries the shipped demo but was last timed on this install's clip, so
+ * its time does not compare with recorders timed on the demo.
+ */
+export function wantsBenchmark(me: RecorderRow, benchDemo: boolean): boolean {
+  if (Number(me.benchmark_wanted) === 1) return true;
+  if (!benchDemo || !me.benchmark) return false;
+  try {
+    return (JSON.parse(me.benchmark) as { source?: string }).source !== 'bundled';
+  } catch {
+    return true;
+  }
 }
 
 interface BenchmarkTry {
@@ -134,8 +164,11 @@ interface BenchmarkTry {
 /** A benchmark's results: keep the fastest finished try's refresh rate. */
 export async function saveBenchmark(
   name: string,
-  body: { tries?: unknown }
+  body: { tries?: unknown; source?: unknown }
 ): Promise<{ gamescopeHz: number | null }> {
+  // Which clip it timed: the demo shipped with the worker ('bundled', the same
+  // everywhere) or this install's first clip ('match'; older workers send none).
+  const source = body.source === 'bundled' ? 'bundled' : 'match';
   const tries: BenchmarkTry[] = (Array.isArray(body.tries) ? body.tries : [])
     .slice(0, 8)
     .map((t: Record<string, unknown>) => {
@@ -156,9 +189,11 @@ export async function saveBenchmark(
   await db.runAsync(
     `UPDATE cs2_recorders SET benchmark = ?, benchmark_at = ?, benchmark_wanted = 0, gamescope_hz = ?
       WHERE name = ?`,
-    [JSON.stringify({ tries, pick }), now(), pick, name.slice(0, 120)]
+    [JSON.stringify({ tries, pick, source }), now(), pick, name.slice(0, 120)]
   );
-  log.info(`[RECORDERS] ${name} benchmarked: ${pick ? `${pick} Hz` : 'no try finished'}`);
+  log.info(
+    `[RECORDERS] ${name} benchmarked (${source} clip): ${pick ? `${pick} Hz` : 'no try finished'}`
+  );
   return { gamescopeHz: pick };
 }
 
