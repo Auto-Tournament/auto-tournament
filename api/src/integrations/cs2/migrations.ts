@@ -110,9 +110,9 @@ export const CS2_TEAM_REELS_MIGRATION_ID = '028-team-reels';
 export const CS2_MUSIC_LIBRARY_MIGRATION_ID = '029-music-library';
 export const CS2_REDRESS_MIGRATION_ID = '030-redress';
 export const CS2_RECORDERS_MIGRATION_ID = '031-recorders';
+export const CS2_FLEET_KEY_AUTO_LINK_MIGRATION_ID = '032-fleet-key-auto-link';
 export const CS2_MADE_WITH_MIGRATION_ID = '034-highlight-made-with';
 export const CS2_RECORDER_KEYS_MIGRATION_ID = '035-recorder-keys';
-export const CS2_FLEET_KEY_AUTO_LINK_MIGRATION_ID = '032-fleet-key-auto-link';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1258,6 +1258,16 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
 `,
   },
   {
+    // 1 = a Ready Up server enrolled with this key is linked for matches on
+    // its first hello. `auto_linked_at` records that link, so it happens once:
+    // an admin's unlink or deleting the server afterwards sticks.
+    id: CS2_FLEET_KEY_AUTO_LINK_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_fleet_enrollment_keys ADD COLUMN IF NOT EXISTS auto_link INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE cs2_fleet_servers ADD COLUMN IF NOT EXISTS auto_linked_at INTEGER;
+`,
+  },
+  {
     // The size and frame rate each clip and match reel was made at ("1440p120"),
     // set when a recorder takes it: the admin's Clips list shows which no longer
     // match the settings, to make them again. NULL: made before this was kept.
@@ -1288,16 +1298,6 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS record_seconds REAL;
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS done_at INTEGER;
     ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS label TEXT;
-`,
-  },
-  {
-    // 1 = a Ready Up server enrolled with this key is linked for matches on
-    // its first hello. `auto_linked_at` records that link, so it happens once:
-    // an admin's unlink or deleting the server afterwards sticks.
-    id: CS2_FLEET_KEY_AUTO_LINK_MIGRATION_ID,
-    up: `
-    ALTER TABLE cs2_fleet_enrollment_keys ADD COLUMN IF NOT EXISTS auto_link INTEGER NOT NULL DEFAULT 0;
-    ALTER TABLE cs2_fleet_servers ADD COLUMN IF NOT EXISTS auto_linked_at INTEGER;
 `,
   },
 ];
