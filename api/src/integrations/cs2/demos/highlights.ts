@@ -978,6 +978,22 @@ const MATCH_REEL_MIN_PLAYERS = 2;
 export const SERIES_REEL = -1;
 
 /**
+ * Whether a series' reel can be made: more than one map, every map with
+ * recorded clips (a map none of whose clips could be recorded holds it back
+ * until they are redone), nothing still waiting, and enough players.
+ */
+export function seriesReelReady(s: {
+  maps: number;
+  recorded: number;
+  waiting: number;
+  players: number;
+}): boolean {
+  return (
+    s.maps >= 2 && s.recorded >= s.maps && s.waiting === 0 && s.players >= MATCH_REEL_MIN_PLAYERS
+  );
+}
+
+/**
  * Queue the match reel of each map these highlights belong to, once none of
  * the map's highlights is still waiting to be recorded.
  */
@@ -1005,23 +1021,31 @@ export async function queueMatchReelFor(highlightIds: number[]): Promise<void> {
         [m.match_slug, m.map_number]
       );
     }
-    // A series (more than one map): its own reel too, once every map is recorded.
+    // A series (more than one map): its own reel too, once every map is
+    // recorded. A map none of whose clips could be recorded holds it back
+    // (Redo on the Clips tab): a series reel of the other maps alone is not
+    // the match (2026-10-09: the EWC final's was made from its fourth map).
     for (const slug of new Set(maps.map((m) => m.match_slug))) {
       const series = await db.queryOneAsync<{
         maps: number | string;
+        recorded: number | string;
         waiting: number | string;
         players: number | string;
       }>(
-        `SELECT COUNT(DISTINCT map_number) AS maps,
+        `SELECT COUNT(DISTINCT map_number) FILTER (WHERE status <> 'skipped') AS maps,
+                COUNT(DISTINCT map_number) FILTER (WHERE status = 'done') AS recorded,
                 COUNT(*) FILTER (WHERE status IN ('pending', 'recording')) AS waiting,
                 COUNT(DISTINCT player_id) FILTER (WHERE status = 'done') AS players
            FROM cs2_highlights WHERE match_slug = ? AND map_number >= 0`,
         [slug]
       );
       if (
-        Number(series?.maps ?? 0) < 2 ||
-        Number(series?.waiting ?? 1) > 0 ||
-        Number(series?.players ?? 0) < MATCH_REEL_MIN_PLAYERS
+        !seriesReelReady({
+          maps: Number(series?.maps ?? 0),
+          recorded: Number(series?.recorded ?? 0),
+          waiting: Number(series?.waiting ?? 1),
+          players: Number(series?.players ?? 0),
+        })
       )
         continue;
       await db.runAsync(

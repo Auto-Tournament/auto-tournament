@@ -9,6 +9,7 @@ import {
   pickSeriesClips,
   playersPerRecorder,
   recorderBusy,
+  seriesReelReady,
 } from '../../api/src/integrations/cs2/demos/highlights';
 import { pickTournamentReel } from '../../api/src/integrations/cs2/demos/highlightViews';
 
@@ -285,4 +286,15 @@ test('a job takes its share of a map: whole players first, best first', { tag: [
   // A share of 3 from b (2), c (2), d (1): b fits, c would not, d does.
   expect(pickChunk(rows.slice(5), 2)).toEqual([6, 7, 10]);
   expect(pickChunk([], 3)).toEqual([]);
+});
+
+test('a series reel waits for every map to have recorded clips', { tag: ['@api'] }, () => {
+  const ready = { maps: 4, recorded: 4, waiting: 0, players: 10 };
+  expect(seriesReelReady(ready)).toBe(true);
+  // The EWC final, 2026-10-09: three maps' clips all failed, the fourth recorded.
+  expect(seriesReelReady({ ...ready, recorded: 1 })).toBe(false);
+  // Clips still to record, a single map, or too few players: not yet either.
+  expect(seriesReelReady({ ...ready, waiting: 3 })).toBe(false);
+  expect(seriesReelReady({ maps: 1, recorded: 1, waiting: 0, players: 10 })).toBe(false);
+  expect(seriesReelReady({ ...ready, players: 1 })).toBe(false);
 });
