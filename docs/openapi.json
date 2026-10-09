@@ -14036,11 +14036,11 @@
         "tags": [
           "System"
         ],
-        "summary": "Whether a newer Auto Tournament is out",
-        "description": "The running version against the platform's GitHub releases on the same\nchannel (a beta sees betas too). `latest` is null when GitHub could not\nbe asked. Looked up once an hour.\n",
+        "summary": "Whether a newer Auto Tournament, module or game pack is out",
+        "description": "The running version against the platform's GitHub releases on the same\nchannel (a beta sees betas too). `latest` is null when GitHub could not\nbe asked. Looked up once an hour. `modules`: each installed module or\npack with an update (`available`), or whose last update did not take\n(`problem`).\n",
         "responses": {
           "200": {
-            "description": "{ running, latest, available, releaseUrl }"
+            "description": "{ running, latest, available, releaseUrl, modules }"
           }
         },
         "security": [

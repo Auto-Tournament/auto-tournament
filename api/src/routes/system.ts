@@ -8,6 +8,7 @@ import { requireAuth, requestActorId } from '../middleware/auth';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { restartSupport, scheduleRestart } from '../utils/restart';
 import { checkPlatformUpdate } from '../services/platform/updateCheck';
+import { listModuleUpdates } from '../services/platform/moduleUpdates';
 
 const router = Router();
 
@@ -18,17 +19,20 @@ router.use(requireAuth);
  * /api/system/update:
  *   get:
  *     tags: [System]
- *     summary: Whether a newer Auto Tournament is out
+ *     summary: Whether a newer Auto Tournament, module or game pack is out
  *     description: |
  *       The running version against the platform's GitHub releases on the same
  *       channel (a beta sees betas too). `latest` is null when GitHub could not
- *       be asked. Looked up once an hour.
+ *       be asked. Looked up once an hour. `modules`: each installed module or
+ *       pack with an update (`available`), or whose last update did not take
+ *       (`problem`).
  *     responses:
  *       200:
- *         description: "{ running, latest, available, releaseUrl }"
+ *         description: "{ running, latest, available, releaseUrl, modules }"
  */
 router.get('/update', async (_req: Request, res: Response) => {
-  res.json({ success: true, ...(await checkPlatformUpdate()) });
+  const [platform, modules] = await Promise.all([checkPlatformUpdate(), listModuleUpdates()]);
+  res.json({ success: true, ...platform, modules });
 });
 
 /**
