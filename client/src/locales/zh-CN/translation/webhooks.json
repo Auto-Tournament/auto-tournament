@@ -66,6 +66,8 @@
     "working": "正常",
     "failedCount": "{{count}} 个失败",
     "allowPrivateShort": "用于你自己网络上的服务（局域网、Docker）。",
-    "sourceShort": "team IDs from token {{source}}"
+    "sourceShort": "team IDs from token {{source}}",
+    "showUrl": "Show URL",
+    "hideUrl": "Hide URL"
   }
 }

@@ -66,6 +66,8 @@
     "working": "Funktioniert",
     "failedCount": "{{count}} fehlgeschlagen",
     "allowPrivateShort": "Für Dienste im eigenen Netz (LAN, Docker).",
-    "sourceShort": "team IDs from token {{source}}"
+    "sourceShort": "team IDs from token {{source}}",
+    "showUrl": "Show URL",
+    "hideUrl": "Hide URL"
   }
 }

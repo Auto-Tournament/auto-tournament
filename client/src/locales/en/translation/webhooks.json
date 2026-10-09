@@ -1,5 +1,7 @@
 {
   "webhooksPage": {
+    "showUrl": "Show URL",
+    "hideUrl": "Hide URL",
     "title": "Webhooks",
     "description": "Send match events (ready to connect, live, map and score, finished, cancelled, reset) to another website as signed HTTP requests, e.g. an event website that shows players a \"connect now\" banner. Every delivery is signed with the endpoint's secret and retried with backoff until it gets a 2xx.",
     "allowPrivate": "Allow webhooks to private and local addresses",
