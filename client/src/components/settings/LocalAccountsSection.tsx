@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
@@ -111,78 +112,115 @@ export function LocalAccountsSection() {
           </Typography>
         )}
         {accounts && accounts.length > 0 && (
-          <Stack spacing={1} data-testid="local-accounts-list">
-            {accounts.map((a) => (
-              <Stack
+          <Box
+            data-testid="local-accounts-list"
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+          >
+            {accounts.map((a, i) => (
+              <Box
                 key={a.username}
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={1}
-                alignItems={{ xs: 'flex-start', sm: 'center' }}
                 data-testid={`local-account-${a.username}`}
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  columnGap: 2,
+                  rowGap: 1,
+                  px: 2,
+                  py: 1.5,
+                  borderTop: i > 0 ? 1 : 0,
+                  borderColor: 'divider',
+                }}
               >
-                <Stack sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={600} sx={{ overflowWrap: 'anywhere' }}>
-                    {a.username}
-                    {a.name && a.name !== a.username ? ` · ${a.name}` : ''}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                {/* Who: grows, and wraps the actions under it when the row is narrow. */}
+                <Box sx={{ flex: '1 1 220px', minWidth: 0 }}>
+                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                    <Typography variant="body2" fontWeight={600} noWrap sx={{ minWidth: 0 }}>
+                      {a.name && a.name !== a.username ? a.name : a.username}
+                    </Typography>
+                    {a.isAdmin && (
+                      <Chip
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        label={t('settingsPage.signIn.accounts.admin')}
+                      />
+                    )}
+                    {a.totpEnabled && (
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        label={t('settingsPage.signIn.accounts.twoStep')}
+                      />
+                    )}
+                  </Stack>
+                  <Typography variant="caption" color="text.secondary" component="div" noWrap>
+                    {a.name && a.name !== a.username ? `${a.username} · ` : ''}
                     {lastLogin(a)}
                   </Typography>
+                </Box>
+                <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexShrink: 0 }}>
+                  <FormControlLabel
+                    sx={{ mr: 1, whiteSpace: 'nowrap' }}
+                    control={
+                      <Switch
+                        size="small"
+                        checked={a.isAdmin}
+                        disabled={busy}
+                        onChange={(e) =>
+                          void run(
+                            () =>
+                              api.put(`/api/local-accounts/${encodeURIComponent(a.username)}`, {
+                                isAdmin: e.target.checked,
+                              }),
+                            e.target.checked
+                              ? t('settingsPage.signIn.accounts.madeAdmin', {
+                                  username: a.username,
+                                })
+                              : t('settingsPage.signIn.accounts.adminRemoved', {
+                                  username: a.username,
+                                })
+                          )
+                        }
+                        inputProps={
+                          {
+                            'aria-label': t('settingsPage.signIn.accounts.admin'),
+                            'data-testid': `local-account-admin-${a.username}`,
+                          } as Record<string, string>
+                        }
+                      />
+                    }
+                    label={t('settingsPage.signIn.accounts.admin')}
+                  />
+                  <Button
+                    size="small"
+                    disabled={busy}
+                    sx={{ whiteSpace: 'nowrap' }}
+                    onClick={() => {
+                      setResetFor(a);
+                      setNewPassword('');
+                    }}
+                  >
+                    {t('settingsPage.signIn.accounts.setPassword')}
+                  </Button>
+                  <Button
+                    size="small"
+                    color="error"
+                    disabled={busy}
+                    sx={{ whiteSpace: 'nowrap' }}
+                    onClick={() => setRemoveFor(a)}
+                  >
+                    {t('settingsPage.signIn.accounts.remove')}
+                  </Button>
                 </Stack>
-                {a.totpEnabled && (
-                  <Chip size="small" label={t('settingsPage.signIn.accounts.twoStep')} />
-                )}
-                <FormControlLabel
-                  control={
-                    <Switch
-                      size="small"
-                      checked={a.isAdmin}
-                      disabled={busy}
-                      onChange={(e) =>
-                        void run(
-                          () =>
-                            api.put(`/api/local-accounts/${encodeURIComponent(a.username)}`, {
-                              isAdmin: e.target.checked,
-                            }),
-                          e.target.checked
-                            ? t('settingsPage.signIn.accounts.madeAdmin', { username: a.username })
-                            : t('settingsPage.signIn.accounts.adminRemoved', {
-                                username: a.username,
-                              })
-                        )
-                      }
-                      inputProps={
-                        {
-                          'aria-label': t('settingsPage.signIn.accounts.admin'),
-                          'data-testid': `local-account-admin-${a.username}`,
-                        } as Record<string, string>
-                      }
-                    />
-                  }
-                  label={t('settingsPage.signIn.accounts.admin')}
-                />
-                <Button
-                  size="small"
-                  disabled={busy}
-                  onClick={() => {
-                    setResetFor(a);
-                    setNewPassword('');
-                  }}
-                >
-                  {t('settingsPage.signIn.accounts.setPassword')}
-                </Button>
-                <Button size="small" color="error" disabled={busy} onClick={() => setRemoveFor(a)}>
-                  {t('settingsPage.signIn.accounts.remove')}
-                </Button>
-              </Stack>
+              </Box>
             ))}
-          </Stack>
+          </Box>
         )}
 
-        <Typography variant="subtitle2" sx={{ pt: 1 }}>
-          {t('settingsPage.signIn.accounts.addTitle')}
-        </Typography>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+        {/* One column: each field with its own help under it. */}
+        <Stack spacing={2} sx={{ maxWidth: 480, pt: 1 }}>
+          <Typography variant="subtitle2">{t('settingsPage.signIn.accounts.addTitle')}</Typography>
           <TextField
             id="local-account-username"
             label={t('settingsPage.signIn.accounts.username')}
@@ -204,40 +242,49 @@ export function LocalAccountsSection() {
             fullWidth
             inputProps={{ 'data-testid': 'local-account-new-name' }}
           />
-        </Stack>
-        <TextField
-          id="local-account-password"
-          type="password"
-          label={t('settingsPage.signIn.accounts.password')}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          size="small"
-          fullWidth
-          autoComplete="new-password"
-          inputProps={{ 'data-testid': 'local-account-new-password' }}
-        />
-        <FormControlLabel
-          control={
-            <Switch
-              size="small"
-              checked={isAdmin}
-              onChange={(e) => setIsAdmin(e.target.checked)}
-              inputProps={{ 'data-testid': 'local-account-new-admin' } as Record<string, string>}
-            />
-          }
-          label={t('settingsPage.signIn.accounts.makeAdmin')}
-        />
-        <div>
-          <Button
-            variant="contained"
+          <TextField
+            id="local-account-password"
+            type="password"
+            label={t('settingsPage.signIn.accounts.password')}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             size="small"
-            disabled={busy || !username.trim() || !password}
-            onClick={() => void create()}
-            data-testid="local-account-create"
+            fullWidth
+            autoComplete="new-password"
+            inputProps={{ 'data-testid': 'local-account-new-password' }}
+          />
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            flexWrap="wrap"
+            useFlexGap
+            spacing={1}
           >
-            {t('settingsPage.signIn.accounts.create')}
-          </Button>
-        </div>
+            <FormControlLabel
+              control={
+                <Switch
+                  size="small"
+                  checked={isAdmin}
+                  onChange={(e) => setIsAdmin(e.target.checked)}
+                  inputProps={
+                    { 'data-testid': 'local-account-new-admin' } as Record<string, string>
+                  }
+                />
+              }
+              label={t('settingsPage.signIn.accounts.makeAdmin')}
+            />
+            <Button
+              variant="contained"
+              size="small"
+              disabled={busy || !username.trim() || !password}
+              onClick={() => void create()}
+              data-testid="local-account-create"
+            >
+              {t('settingsPage.signIn.accounts.create')}
+            </Button>
+          </Stack>
+        </Stack>
       </Stack>
 
       <Dialog open={!!resetFor} onClose={() => setResetFor(null)} fullWidth maxWidth="xs">

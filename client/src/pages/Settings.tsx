@@ -248,14 +248,9 @@ export default function Settings() {
 
       {!loading && (
         <>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))' },
-              gap: 2,
-              alignItems: 'start',
-            }}
-          >
+          {/* One column, full width, like the other admin pages: two columns of
+              cards squeezed every row (an account's name wrapped a letter a line). */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 2 }}>
             <Stack spacing={2} sx={{ minWidth: 0 }}>
               <SettingsCard cardKey="site" highlight={highlight === 'site'}>
                 <SiteNameCard />
