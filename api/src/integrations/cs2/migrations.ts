@@ -71,6 +71,9 @@
  * plugins in its last hello (`plugins_state`: installed, disabled), for the
  * plugin picker's "not installed" warning (fleet/push/pluginSets.ts). The
  * fleet default plugin set is the 'plugins_default' row of `cs2_fleet_lists`.
+ *
+ * `033-fleet-key-skins` lets a fleet key turn skins on for the servers it
+ * enrolls (fleet/link.ts).
  */
 
 import type { ModuleMigration } from '../types';
@@ -106,6 +109,7 @@ export const CS2_TEAM_REELS_MIGRATION_ID = '028-team-reels';
 export const CS2_MUSIC_LIBRARY_MIGRATION_ID = '029-music-library';
 export const CS2_REDRESS_MIGRATION_ID = '030-redress';
 export const CS2_RECORDERS_MIGRATION_ID = '031-recorders';
+export const CS2_FLEET_KEY_SKINS_MIGRATION_ID = '033-fleet-key-skins';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1248,6 +1252,14 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     -- another recorder) and the check's numbers on every clip.
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS avoid_recorder TEXT;
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS quality TEXT;
+`,
+  },
+  {
+    // 1 = a server this key enrolls starts with skins on when it is first
+    // linked (fleet/link.ts). An admin can still turn them off per server.
+    id: CS2_FLEET_KEY_SKINS_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_fleet_enrollment_keys ADD COLUMN IF NOT EXISTS skins INTEGER NOT NULL DEFAULT 0;
 `,
   },
 ];

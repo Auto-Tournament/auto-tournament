@@ -20,6 +20,9 @@
  * - `host` / `port` on the link (or `setLinkAddress` later) are an admin
  *   override: stored with `host_override = 1`, never replaced by a hello.
  *   `setLinkAddress(id, null)` goes back to the detected address.
+ * - A new row starts with skins on when the server's enrollment key says so
+ *   (`skins`) and is neither revoked nor expired; a row taken over from an
+ *   earlier link keeps what an admin set.
  * - Unlink: the row goes back to `transport = 'rcon'` and is disabled when it
  *   was created by the link (it has no RCON password to be driven with).
  */
@@ -241,10 +244,22 @@ export async function linkFleetServer(
       [fleetServerId, address, port, hostOverride, now, fleetServerId]
     );
   } else {
+    // Skins start as the server's enrollment key says (off without a live key).
     await db.runAsync(
-      `INSERT INTO cs2_servers (id, name, host, port, password, enabled, transport, fleet_server_id, status, host_override)
-       VALUES (?, ?, ?, ?, '', 1, 'fleet', ?, 'unknown', ?)`,
-      [fleetServerId, (options.name ?? fleet.name).slice(0, 100), address, port, fleetServerId, hostOverride]
+      `INSERT INTO cs2_servers (id, name, host, port, password, enabled, transport, fleet_server_id, status, host_override, skins)
+       VALUES (?, ?, ?, ?, '', 1, 'fleet', ?, 'unknown', ?,
+               COALESCE((SELECT k.skins FROM cs2_fleet_enrollment_keys k
+                         WHERE k.id = ? AND k.revoked_at IS NULL AND (k.expires_at IS NULL OR k.expires_at > ?)), 0))`,
+      [
+        fleetServerId,
+        (options.name ?? fleet.name).slice(0, 100),
+        address,
+        port,
+        fleetServerId,
+        hostOverride,
+        fleet.enrollment_key_id,
+        now,
+      ]
     );
   }
   return { ok: true, link: { cs2ServerId: fleetServerId, fleetServerId }, created: !taken };

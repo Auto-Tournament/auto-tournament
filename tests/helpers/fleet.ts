@@ -47,7 +47,7 @@ export async function createPendingServer(
 
 export async function createFleetKey(
   request: APIRequestContext,
-  data: { name: string; namePrefix?: string; maxServers?: number } = { name: 'fleet-test-key' }
+  data: { name: string; namePrefix?: string; maxServers?: number; skins?: boolean } = { name: 'fleet-test-key' }
 ): Promise<{ id: string; value: string }> {
   const res = await request.post('/api/fleet/keys', { data });
   expect(res.status(), await res.text()).toBe(201);

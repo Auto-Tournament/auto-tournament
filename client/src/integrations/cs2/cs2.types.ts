@@ -519,6 +519,8 @@ export interface FleetKey {
   enrolledServers: number;
   locked: boolean;
   revoked: boolean;
+  /** Servers it enrolls start with skins on when first used for matches. */
+  skins: boolean;
 }
 
 export interface FleetKeysResponse extends Cs2ApiResponse {

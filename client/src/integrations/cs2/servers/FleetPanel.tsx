@@ -17,11 +17,13 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   Box,
   Button,
+  Checkbox,
   Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   IconButton,
   Stack,
   TextField,
@@ -94,6 +96,7 @@ export default function FleetPanel() {
     namePrefix: '',
     maxServers: '',
     expiresInDays: '',
+    skins: false,
   });
   const [addressDialog, setAddressDialog] = useState<AddressDialog | null>(null);
   const [renameDialog, setRenameDialog] = useState<{ server: FleetServer; name: string } | null>(
@@ -186,9 +189,10 @@ export default function FleetPanel() {
       if (keyForm.namePrefix.trim()) body.namePrefix = keyForm.namePrefix.trim();
       if (keyForm.maxServers.trim()) body.maxServers = Number(keyForm.maxServers);
       if (keyForm.expiresInDays.trim()) body.expiresInDays = Number(keyForm.expiresInDays);
+      if (keyForm.skins) body.skins = true;
       const res = await api.post<{ key: FleetKey; value: string }>('/api/fleet/keys', body);
       setKeyOpen(false);
-      setKeyForm({ name: '', namePrefix: '', maxServers: '', expiresInDays: '' });
+      setKeyForm({ name: '', namePrefix: '', maxServers: '', expiresInDays: '', skins: false });
       setSecret({
         kind: 'key',
         value: res.value,
@@ -607,6 +611,9 @@ export default function FleetPanel() {
                       sx={{ ml: 1 }}
                     />
                   )}
+                  {key.skins && (
+                    <Chip size="small" label={t('fleetPanel.keySkinsChip')} sx={{ ml: 1 }} />
+                  )}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={mono}>
                   rfk_{key.id}_…
@@ -827,6 +834,25 @@ export default function FleetPanel() {
               value={keyForm.expiresInDays}
               onChange={(e) => setKeyForm({ ...keyForm, expiresInDays: e.target.value })}
               inputProps={{ min: 1 }}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={keyForm.skins}
+                  onChange={(e) => setKeyForm({ ...keyForm, skins: e.target.checked })}
+                  data-testid="fleet-key-skins"
+                />
+              }
+              label={
+                <Box>
+                  <Typography variant="body2" fontWeight={500}>
+                    {t('fleetPanel.keySkins')}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t('fleetPanel.keySkinsHelp')}
+                  </Typography>
+                </Box>
+              }
             />
           </Stack>
         </DialogContent>
