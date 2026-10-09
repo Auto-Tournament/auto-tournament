@@ -3,7 +3,8 @@
     "servers": "Serwery",
     "maps": "Mapy i pule map",
     "skins": "Skiny",
-    "matchRules": "Zasady meczu"
+    "matchRules": "Zasady meczu",
+    "highlights": "Highlights"
   },
   "layout": {
     "webhookNotConfigured": "URL webhooka nie jest skonfigurowany. Mecze i serwery nie mogą odbierać zdarzeń, dopóki nie zostanie ustawiony.",
@@ -1233,7 +1234,8 @@
         "keepClean": "Keep clean copies of clips",
         "keepCleanHelper": "Each clip is also stored as recorded, without the card or kill feed. Reels are then made from the clean clips with an overlay of their own, and overlays can be redrawn. Off uses about half the storage.",
         "redrawFailed": "Could not queue the redraw."
-      }
+      },
+      "moved": "Highlight settings, the recorders and how to add one are on their own page now:"
     }
   },
   "roster": {
@@ -2181,5 +2183,77 @@
     "player": "Player",
     "openingKills": "Opening kills",
     "highlights": "Highlights"
+  },
+  "highlightsAdmin": {
+    "title": "Highlights",
+    "subtitle": "The recorders that turn demos into highlight clips and reels: how they're doing, what they make, and how to add one.",
+    "tabs": {
+      "recorders": "Recorders",
+      "settings": "Settings",
+      "connect": "Add a recorder"
+    },
+    "loadError": "Could not load the recorders",
+    "actionError": "That didn't work",
+    "empty": "No recorder has asked for work yet",
+    "emptyHelp": "Start one with the steps under Add a recorder; it shows up here when it first asks for work.",
+    "online": "Online",
+    "offline": "Offline",
+    "paused": "Paused",
+    "oldVersion": "Version {{version}}: update it for frame checks and benchmarks",
+    "unknownGpu": "GPU unknown",
+    "lastSeen": "last seen {{time}}",
+    "pausedUntil": "No work until {{time}}: {{reason}}",
+    "stat": {
+      "perClip": "Per clip",
+      "kept": "Clips kept",
+      "rejected": "Turned down",
+      "benchmark": "Benchmark"
+    },
+    "benchmarkPending": "Runs on its next job",
+    "benchmarkPick": "{{hz}} Hz",
+    "benchmarkNone": "No smooth setting",
+    "bench": {
+      "hz": "Refresh rate",
+      "time": "Time",
+      "fps": "Capture fps",
+      "repeats": "Repeated frames"
+    },
+    "lastError": "Last error: {{error}}",
+    "runs_one": "{{count}} run",
+    "runs_other": "{{count}} runs",
+    "resume": "Resume",
+    "resumed": "Resumed",
+    "rerunBenchmark": "Run the benchmark again",
+    "benchmarkAsked": "It runs the benchmark on its next job",
+    "runsOf": "Runs of {{name}}",
+    "noRuns": "No runs yet.",
+    "ok": "OK",
+    "failed": "Failed",
+    "kind": {
+      "map": "Map highlights",
+      "match_reel": "Match reel",
+      "team_reel": "Team reel",
+      "tournament_reel": "Tournament reel",
+      "player_reel": "Player reel",
+      "redress": "Overlays redrawn",
+      "benchmark": "Benchmark"
+    },
+    "map": "map {{n}}",
+    "clips_one": "{{count}} clip",
+    "clips_other": "{{count}} clips",
+    "turnedDown_one": "{{count}} turned down",
+    "turnedDown_other": "{{count}} turned down",
+    "log": "Log",
+    "logError": "Could not load the log",
+    "emptyLog": "(empty)",
+    "close": "Close",
+    "connect": {
+      "intro": "A recorder is a PC with a GPU, CS2 and Steam that records highlight clips from this platform's demos. Add as many as you like: they share the work.",
+      "step1": "Install CS2 and sign in to Steam once, then switch Steam to offline mode. Every recorder can use the same Steam account.",
+      "step2": "Get at-worker (the auto-tournament-worker image, or the binary) on the PC. It needs ffmpeg, gamescope and PipeWire.",
+      "step3": "Point it at this platform:",
+      "step4": "Start it with at-worker record. On its first job it runs a short benchmark, then it shows up under Recorders with its numbers.",
+      "gaming": "You can game on the same PC while it records, but the GPU is shared: clips with too many repeated frames are turned down and recorded again elsewhere, and a recorder that keeps failing is paused for 15 minutes."
+    }
   }
 }

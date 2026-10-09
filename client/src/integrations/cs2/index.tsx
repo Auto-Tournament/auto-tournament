@@ -12,6 +12,7 @@ import {
   MapTrifoldIcon,
   SlidersHorizontalIcon,
   KnifeIcon,
+  FilmStripIcon,
 } from '@phosphor-icons/react';
 import type { ClientGameIntegration, PlayerProfileViewProps } from '../types';
 import { links } from '../../module-sdk';
@@ -47,6 +48,7 @@ import {
 } from './manage/cs2QueueSummary';
 import Servers from './pages/Servers';
 import Maps from './pages/Maps';
+import HighlightsAdmin from './pages/Highlights';
 import { Cs2AdminTools } from './admin/Cs2AdminTools';
 import { MatchRulesPage } from './settings/MatchRulesPage';
 import { SkinsAdminPage } from './skins/SkinsAdminPage';
@@ -226,6 +228,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     { path: links.maps(), scope: 'admin', element: <Maps /> },
     { path: cs2AdminPaths.skins, scope: 'admin', element: <SkinsAdminPage /> },
     { path: cs2AdminPaths.matchRules, scope: 'admin', element: <MatchRulesPage /> },
+    { path: cs2AdminPaths.highlights, scope: 'admin', element: <HighlightsAdmin /> },
     { path: skinPaths.inventory, scope: 'site', element: <InventoryPage /> },
     { path: skinPaths.playerInventory, scope: 'site', element: <InventoryPage /> },
     { path: demoPaths.analysis, scope: 'site', element: <DemoAnalysisPage /> },
@@ -240,5 +243,6 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     { key: 'maps', path: links.maps(), icon: MapTrifoldIcon },
     { key: 'skins', path: cs2AdminPaths.skins, icon: KnifeIcon },
     { key: 'matchRules', path: cs2AdminPaths.matchRules, icon: SlidersHorizontalIcon },
+    { key: 'highlights', path: cs2AdminPaths.highlights, icon: FilmStripIcon },
   ],
 };

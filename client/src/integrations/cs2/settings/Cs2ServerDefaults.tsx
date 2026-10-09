@@ -25,7 +25,7 @@ import {
   DialogTitle,
   Divider,
   FormControlLabel,
-  MenuItem,
+  Link,
   Slider,
   Stack,
   Switch,
@@ -33,8 +33,8 @@ import {
   Typography,
 } from '@mui/material';
 import { CaretDownIcon } from '@phosphor-icons/react';
-import { HighlightMusicSetting } from './HighlightMusicSetting';
-import { HighlightOverlaySetting } from './HighlightOverlaySetting';
+import { Link as RouterLink } from 'react-router-dom';
+import { cs2AdminPaths } from '../adminPaths';
 import {
   api,
   radii,
@@ -42,10 +42,6 @@ import {
   useModuleTranslation,
   useSnackbar,
 } from '../../../module-sdk';
-
-/** Highlight video heights and frame rates (the API's highlights_resolution / highlights_fps). */
-const HIGHLIGHT_HEIGHTS = [720, 1080, 1440, 2160] as const;
-const HIGHLIGHT_FPS = [30, 60, 90, 120, 180, 240] as const;
 
 type Flag = 0 | 1 | null;
 
@@ -224,18 +220,21 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
   }, []);
 
   /** After a save or reset: what the API stored, and the event the shell's warnings listen for. */
-  const applyResponse = useCallback((settings: Record<string, unknown> | undefined, keys: Key[]) => {
-    const stored = cs2DefaultsFrom(settings);
-    setSaved(stored);
-    // Keep anything typed while the request was out; take the stored value for what was sent.
-    setVals((prev) => {
-      const next = { ...prev } as Record<Key, unknown>;
-      for (const key of keys) next[key] = stored[key];
-      return next as unknown as Cs2DefaultsValues;
-    });
-    window.dispatchEvent(new CustomEvent('at:settingsUpdated', { detail: settings }));
-    return stored;
-  }, []);
+  const applyResponse = useCallback(
+    (settings: Record<string, unknown> | undefined, keys: Key[]) => {
+      const stored = cs2DefaultsFrom(settings);
+      setSaved(stored);
+      // Keep anything typed while the request was out; take the stored value for what was sent.
+      setVals((prev) => {
+        const next = { ...prev } as Record<Key, unknown>;
+        for (const key of keys) next[key] = stored[key];
+        return next as unknown as Cs2DefaultsValues;
+      });
+      window.dispatchEvent(new CustomEvent('at:settingsUpdated', { detail: settings }));
+      return stored;
+    },
+    []
+  );
 
   const save = useCallback(
     async (overrides: Partial<Cs2DefaultsValues> = {}) => {
@@ -323,846 +322,728 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
         {t('settings.defaultsTitle')}
       </Typography>
 
-                <Accordion sx={ACCORDION_SX}>
-                  <AccordionSummary expandIcon={<CaretDownIcon size={24} />} sx={ACCORDION_SUMMARY_SX}>
-                    <Box>
-                      <Typography variant="h6" fontWeight={600}>
-                        {t('settings.chatDefaults.title')}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {t('settings.chatDefaults.description')}
-                      </Typography>
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails sx={ACCORDION_DETAILS_SX}>
-                    <Stack spacing={2}>
-                      <TextField
-                        label={t('settings.chatDefaults.chatPrefixLabel')}
-                        value={vals.atChatPrefix}
-                        onChange={(event) => update('atChatPrefix', event.target.value)}
-                        onBlur={flush}
-                        onKeyDown={onEnter}
-                        helperText={t('settings.chatDefaults.chatPrefixHelper')}
-                        fullWidth
-                      />
-                      <TextField
-                        label={t('settings.chatDefaults.adminChatPrefixLabel')}
-                        value={vals.atAdminChatPrefix}
-                        onChange={(event) => update('atAdminChatPrefix', event.target.value)}
-                        onBlur={flush}
-                        onKeyDown={onEnter}
-                        helperText={t('settings.chatDefaults.adminChatPrefixHelper')}
-                        fullWidth
-                      />
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={vals.atKnifeEnabledDefault}
-                            onChange={(event) => update('atKnifeEnabledDefault', event.target.checked)}
-                            color="primary"
-                            size="small"
-                          />
-                        }
-                        label={t('settings.chatDefaults.knifeToggleLabel')}
-                      />
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        {t('settings.chatDefaults.knifeNote')}
-                      </Typography>
-                    </Stack>
-                  </AccordionDetails>
-                </Accordion>
+      <Accordion sx={ACCORDION_SX}>
+        <AccordionSummary expandIcon={<CaretDownIcon size={24} />} sx={ACCORDION_SUMMARY_SX}>
+          <Box>
+            <Typography variant="h6" fontWeight={600}>
+              {t('settings.chatDefaults.title')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('settings.chatDefaults.description')}
+            </Typography>
+          </Box>
+        </AccordionSummary>
+        <AccordionDetails sx={ACCORDION_DETAILS_SX}>
+          <Stack spacing={2}>
+            <TextField
+              label={t('settings.chatDefaults.chatPrefixLabel')}
+              value={vals.atChatPrefix}
+              onChange={(event) => update('atChatPrefix', event.target.value)}
+              onBlur={flush}
+              onKeyDown={onEnter}
+              helperText={t('settings.chatDefaults.chatPrefixHelper')}
+              fullWidth
+            />
+            <TextField
+              label={t('settings.chatDefaults.adminChatPrefixLabel')}
+              value={vals.atAdminChatPrefix}
+              onChange={(event) => update('atAdminChatPrefix', event.target.value)}
+              onBlur={flush}
+              onKeyDown={onEnter}
+              helperText={t('settings.chatDefaults.adminChatPrefixHelper')}
+              fullWidth
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={vals.atKnifeEnabledDefault}
+                  onChange={(event) => update('atKnifeEnabledDefault', event.target.checked)}
+                  color="primary"
+                  size="small"
+                />
+              }
+              label={t('settings.chatDefaults.knifeToggleLabel')}
+            />
+            <Typography variant="caption" color="text.secondary" display="block">
+              {t('settings.chatDefaults.knifeNote')}
+            </Typography>
+          </Stack>
+        </AccordionDetails>
+      </Accordion>
 
-                <Accordion sx={ACCORDION_SX}>
-                  <AccordionSummary
-                    expandIcon={<CaretDownIcon size={24} />}
-                    sx={ACCORDION_SUMMARY_SX}
-                    data-testid="cs2-settings-demos-summary"
-                  >
-                    <Box>
-                      <Typography variant="h6" fontWeight={600}>
-                        {t('settings.atEnhanced.demo.title')}
-                      </Typography>
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails sx={ACCORDION_DETAILS_SX}>
-                    <Stack spacing={2}>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={vals.atDemoRecordingEnabled !== 0}
-                            onChange={(e) =>
-                              update('atDemoRecordingEnabled', e.target.checked ? 1 : 0)
-                            }
-                            color="primary"
-                            size="small"
-                          />
-                        }
-                        label={t('settings.atEnhanced.demo.enabled')}
-                      />
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        {t('settings.atEnhanced.demo.description')}
-                      </Typography>
+      <Accordion sx={ACCORDION_SX}>
+        <AccordionSummary
+          expandIcon={<CaretDownIcon size={24} />}
+          sx={ACCORDION_SUMMARY_SX}
+          data-testid="cs2-settings-demos-summary"
+        >
+          <Box>
+            <Typography variant="h6" fontWeight={600}>
+              {t('settings.atEnhanced.demo.title')}
+            </Typography>
+          </Box>
+        </AccordionSummary>
+        <AccordionDetails sx={ACCORDION_DETAILS_SX}>
+          <Stack spacing={2}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={vals.atDemoRecordingEnabled !== 0}
+                  onChange={(e) => update('atDemoRecordingEnabled', e.target.checked ? 1 : 0)}
+                  color="primary"
+                  size="small"
+                />
+              }
+              label={t('settings.atEnhanced.demo.enabled')}
+            />
+            <Typography variant="caption" color="text.secondary" display="block">
+              {t('settings.atEnhanced.demo.description')}
+            </Typography>
 
-                      <Divider />
+            <Divider />
 
-                      <Typography variant="subtitle1" fontWeight={600}>
-                        {t('settings.atCore.demos.title')}
-                      </Typography>
-                      <TextField
-                        label={t('settings.atCore.hostname.formatLabel')}
-                        value={vals.atHostnameFormat}
-                        onChange={(e) => update('atHostnameFormat', e.target.value)}
-                        onBlur={flush}
-                        onKeyDown={onEnter}
-                        helperText={t('settings.atCore.hostname.formatHelper')}
-                        fullWidth
-                        size="small"
-                        inputProps={{ 'data-testid': 'at-hostname-format-input' }}
-                      />
-                      <TextField
-                        label={t('settings.atCore.demos.demoPathLabel')}
-                        value={vals.atDemoPath}
-                        onChange={(e) => update('atDemoPath', e.target.value)}
-                        onBlur={flush}
-                        onKeyDown={onEnter}
-                        helperText={t('settings.atCore.demos.demoPathHelper')}
-                        fullWidth
-                        size="small"
-                      />
-                      <TextField
-                        label={t('settings.atCore.demos.demoNameFormatLabel')}
-                        value={vals.atDemoNameFormat}
-                        onChange={(e) => update('atDemoNameFormat', e.target.value)}
-                        onBlur={flush}
-                        onKeyDown={onEnter}
-                        helperText={t('settings.atCore.demos.demoNameFormatHelper')}
-                        fullWidth
-                        size="small"
-                      />
+            <Typography variant="subtitle1" fontWeight={600}>
+              {t('settings.atCore.demos.title')}
+            </Typography>
+            <TextField
+              label={t('settings.atCore.hostname.formatLabel')}
+              value={vals.atHostnameFormat}
+              onChange={(e) => update('atHostnameFormat', e.target.value)}
+              onBlur={flush}
+              onKeyDown={onEnter}
+              helperText={t('settings.atCore.hostname.formatHelper')}
+              fullWidth
+              size="small"
+              inputProps={{ 'data-testid': 'at-hostname-format-input' }}
+            />
+            <TextField
+              label={t('settings.atCore.demos.demoPathLabel')}
+              value={vals.atDemoPath}
+              onChange={(e) => update('atDemoPath', e.target.value)}
+              onBlur={flush}
+              onKeyDown={onEnter}
+              helperText={t('settings.atCore.demos.demoPathHelper')}
+              fullWidth
+              size="small"
+            />
+            <TextField
+              label={t('settings.atCore.demos.demoNameFormatLabel')}
+              value={vals.atDemoNameFormat}
+              onChange={(e) => update('atDemoNameFormat', e.target.value)}
+              onBlur={flush}
+              onKeyDown={onEnter}
+              helperText={t('settings.atCore.demos.demoNameFormatHelper')}
+              fullWidth
+              size="small"
+            />
 
-                      <Divider />
+            <Divider />
 
-                      <Typography variant="subtitle1" fontWeight={600}>
-                        {t('settings.atCore.seriesEnd.title')}
-                      </Typography>
-                      <Stack spacing={2}>
-                        <TextField
-                          label={t('settings.atCore.seriesEnd.kickDelayNoDemoLabel')}
-                          type="number"
-                          value={vals.atSeriesEndKickDelayNoDemo}
-                          onChange={(e) => {
-                            const v = parseInt(e.target.value, 10);
-                            if (!Number.isFinite(v)) return;
-                            update('atSeriesEndKickDelayNoDemo', v);
-                          }}
-                          onBlur={flush}
-                          onKeyDown={onEnter}
-                          inputProps={{ min: 0, max: 600 }}
+            <Typography variant="subtitle1" fontWeight={600}>
+              {t('settings.atCore.seriesEnd.title')}
+            </Typography>
+            <Stack spacing={2}>
+              <TextField
+                label={t('settings.atCore.seriesEnd.kickDelayNoDemoLabel')}
+                type="number"
+                value={vals.atSeriesEndKickDelayNoDemo}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!Number.isFinite(v)) return;
+                  update('atSeriesEndKickDelayNoDemo', v);
+                }}
+                onBlur={flush}
+                onKeyDown={onEnter}
+                inputProps={{ min: 0, max: 600 }}
+                size="small"
+                fullWidth
+              />
+              <TextField
+                label={t('settings.atCore.seriesEnd.kickDelayDemoNoUploadLabel')}
+                type="number"
+                value={vals.atSeriesEndKickDelayDemoNoUpload}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!Number.isFinite(v)) return;
+                  update('atSeriesEndKickDelayDemoNoUpload', v);
+                }}
+                onBlur={flush}
+                onKeyDown={onEnter}
+                inputProps={{ min: 0, max: 600 }}
+                size="small"
+                fullWidth
+              />
+              <TextField
+                label={t('settings.atCore.seriesEnd.kickDelayDemoUploadLabel')}
+                type="number"
+                value={vals.atSeriesEndKickDelayDemoUpload}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!Number.isFinite(v)) return;
+                  update('atSeriesEndKickDelayDemoUpload', v);
+                }}
+                onBlur={flush}
+                onKeyDown={onEnter}
+                inputProps={{ min: 0, max: 600 }}
+                size="small"
+                fullWidth
+              />
+              <Typography variant="caption" color="text.secondary">
+                {t('settings.atCore.seriesEnd.kickDelayHelper')}
+              </Typography>
+              <TextField
+                label={t('settings.atCore.autostart.label')}
+                helperText={t('settings.atCore.autostart.helper')}
+                type="number"
+                value={vals.atAutostartAfterMinutes}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!Number.isFinite(v)) return;
+                  update('atAutostartAfterMinutes', v);
+                }}
+                onBlur={flush}
+                onKeyDown={onEnter}
+                inputProps={{ min: 0, max: 120 }}
+                size="small"
+                fullWidth
+                data-testid="setting-autostart-minutes"
+              />
+              <TextField
+                label={t('settings.vetoTurn.label')}
+                helperText={t('settings.vetoTurn.helper')}
+                type="number"
+                value={vals.vetoTurnSeconds}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!Number.isFinite(v)) return;
+                  update('vetoTurnSeconds', v);
+                }}
+                onBlur={flush}
+                onKeyDown={onEnter}
+                inputProps={{ min: 0, max: 600 }}
+                size="small"
+                fullWidth
+                data-testid="setting-veto-turn-seconds"
+              />
+            </Stack>
+          </Stack>
+        </AccordionDetails>
+      </Accordion>
+
+      <Alert severity="warning">{t('settings.atCore.expert.description')}</Alert>
+
+      <Accordion defaultExpanded sx={ACCORDION_SX}>
+        <AccordionSummary expandIcon={<CaretDownIcon size={24} />} sx={ACCORDION_SUMMARY_SX}>
+          <Box>
+            <Typography variant="h6" fontWeight={600}>
+              {t('settings.atCore.title')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('settings.atCore.description')}
+            </Typography>
+          </Box>
+        </AccordionSummary>
+        <AccordionDetails sx={ACCORDION_DETAILS_SX}>
+          <Stack spacing={3}>
+            {/* Ready / flow */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                {t('settings.atCore.ready.title')}
+              </Typography>
+              <Stack spacing={2}>
+                <TextField
+                  label={t('settings.atCore.ready.minimumReadyLabel')}
+                  type="number"
+                  value={vals.atMinimumReadyRequired}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    if (!Number.isFinite(v)) return;
+                    update('atMinimumReadyRequired', v);
+                  }}
+                  onBlur={flush}
+                  onKeyDown={onEnter}
+                  helperText={t('settings.atCore.ready.minimumReadyHelper')}
+                  inputProps={{ min: 0, max: 10 }}
+                  size="small"
+                  fullWidth
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={vals.atAllowForceReady}
+                      onChange={(e) => update('atAllowForceReady', e.target.checked)}
+                      color="primary"
+                      size="small"
+                    />
+                  }
+                  label={t('settings.atCore.ready.allowForceReady')}
+                />
+              </Stack>
+            </Box>
+
+            <Divider />
+
+            <Box
+              sx={{
+                bgcolor: (theme) => `${theme.palette.warning.main}14`, // 8% amber wash
+                border: 1,
+                borderColor: 'warning.main',
+                borderRadius: radii.sm,
+                p: 2,
+              }}
+            >
+              <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+                {t('settings.atCore.expert.title')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                {t('settings.atCore.expert.description')}
+              </Typography>
+
+              <Stack spacing={2}>
+                <TextField
+                  select
+                  label={t('settings.atCore.expert.autostartMode.label')}
+                  value={vals.atAutostartMode}
+                  onChange={(e) => update('atAutostartMode', Number(e.target.value) as 0 | 1 | 2)}
+                  onBlur={flush}
+                  helperText={t('settings.atCore.expert.autostartMode.helper')}
+                  size="small"
+                  fullWidth
+                >
+                  <option value={0}>{t('settings.atCore.expert.autostartMode.options.0')}</option>
+                  <option value={1}>{t('settings.atCore.expert.autostartMode.options.1')}</option>
+                  <option value={2}>{t('settings.atCore.expert.autostartMode.options.2')}</option>
+                </TextField>
+
+                <Divider />
+
+                {/* Access / server lockdown */}
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                    {t('settings.atCore.access.title')}
+                  </Typography>
+                  <Stack spacing={1}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={vals.atKickWhenNoMatchLoaded}
+                          onChange={(e) => update('atKickWhenNoMatchLoaded', e.target.checked)}
+                          color="primary"
                           size="small"
-                          fullWidth
                         />
-                        <TextField
-                          label={t(
-                            'settings.atCore.seriesEnd.kickDelayDemoNoUploadLabel'
-                          )}
-                          type="number"
-                          value={vals.atSeriesEndKickDelayDemoNoUpload}
-                          onChange={(e) => {
-                            const v = parseInt(e.target.value, 10);
-                            if (!Number.isFinite(v)) return;
-                            update('atSeriesEndKickDelayDemoNoUpload', v);
-                          }}
-                          onBlur={flush}
-                          onKeyDown={onEnter}
-                          inputProps={{ min: 0, max: 600 }}
+                      }
+                      label={t('settings.atCore.access.kickWhenNoMatchLoaded')}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={vals.atWhitelistEnabledDefault}
+                          onChange={(e) => update('atWhitelistEnabledDefault', e.target.checked)}
+                          color="primary"
                           size="small"
-                          fullWidth
                         />
-                        <TextField
-                          label={t(
-                            'settings.atCore.seriesEnd.kickDelayDemoUploadLabel'
-                          )}
-                          type="number"
-                          value={vals.atSeriesEndKickDelayDemoUpload}
-                          onChange={(e) => {
-                            const v = parseInt(e.target.value, 10);
-                            if (!Number.isFinite(v)) return;
-                            update('atSeriesEndKickDelayDemoUpload', v);
-                          }}
-                          onBlur={flush}
-                          onKeyDown={onEnter}
-                          inputProps={{ min: 0, max: 600 }}
+                      }
+                      label={t('settings.atCore.access.whitelistEnabledDefault')}
+                    />
+                  </Stack>
+                </Box>
+
+                <Divider />
+
+                {/* Admin tools */}
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                    {t('settings.atCore.adminTools.title')}
+                  </Typography>
+                  <Stack spacing={1}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={vals.atJoinPassword}
+                          onChange={(e) => update('atJoinPassword', e.target.checked)}
+                          color="primary"
                           size="small"
-                          fullWidth
                         />
-                        <Typography variant="caption" color="text.secondary">
-                          {t('settings.atCore.seriesEnd.kickDelayHelper')}
-                        </Typography>
-                        <TextField
-                          label={t('settings.atCore.autostart.label')}
-                          helperText={t('settings.atCore.autostart.helper')}
-                          type="number"
-                          value={vals.atAutostartAfterMinutes}
-                          onChange={(e) => {
-                            const v = parseInt(e.target.value, 10);
-                            if (!Number.isFinite(v)) return;
-                            update('atAutostartAfterMinutes', v);
-                          }}
-                          onBlur={flush}
-                          onKeyDown={onEnter}
-                          inputProps={{ min: 0, max: 120 }}
+                      }
+                      label={t('settings.atCore.adminTools.joinPassword')}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={vals.atPauseAfterRestore}
+                          onChange={(e) => update('atPauseAfterRestore', e.target.checked)}
+                          color="primary"
                           size="small"
-                          fullWidth
-                          data-testid="setting-autostart-minutes"
                         />
-                        <TextField
-                          label={t('settings.vetoTurn.label')}
-                          helperText={t('settings.vetoTurn.helper')}
-                          type="number"
-                          value={vals.vetoTurnSeconds}
-                          onChange={(e) => {
-                            const v = parseInt(e.target.value, 10);
-                            if (!Number.isFinite(v)) return;
-                            update('vetoTurnSeconds', v);
-                          }}
-                          onBlur={flush}
-                          onKeyDown={onEnter}
-                          inputProps={{ min: 0, max: 600 }}
+                      }
+                      label={t('settings.atCore.adminTools.pauseAfterRestore')}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={vals.atStopCommandAvailable}
+                          onChange={(e) => update('atStopCommandAvailable', e.target.checked)}
+                          color="primary"
                           size="small"
-                          fullWidth
-                          data-testid="setting-veto-turn-seconds"
                         />
-                      </Stack>
-                    </Stack>
-                  </AccordionDetails>
-                </Accordion>
-
-                <Alert severity="warning">
-                  {t('settings.atCore.expert.description')}
-                </Alert>
-
-                <Accordion defaultExpanded sx={ACCORDION_SX}>
-                  <AccordionSummary expandIcon={<CaretDownIcon size={24} />} sx={ACCORDION_SUMMARY_SX}>
-                    <Box>
-                      <Typography variant="h6" fontWeight={600}>
-                        {t('settings.atCore.title')}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {t('settings.atCore.description')}
-                      </Typography>
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails sx={ACCORDION_DETAILS_SX}>
-                    <Stack spacing={3}>
-                      {/* Ready / flow */}
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                          {t('settings.atCore.ready.title')}
-                        </Typography>
-                        <Stack spacing={2}>
-                          <TextField
-                            label={t('settings.atCore.ready.minimumReadyLabel')}
-                            type="number"
-                            value={vals.atMinimumReadyRequired}
-                            onChange={(e) => {
-                              const v = parseInt(e.target.value, 10);
-                              if (!Number.isFinite(v)) return;
-                              update('atMinimumReadyRequired', v);
-                            }}
-                            onBlur={flush}
-                            onKeyDown={onEnter}
-                            helperText={t(
-                              'settings.atCore.ready.minimumReadyHelper'
-                            )}
-                            inputProps={{ min: 0, max: 10 }}
-                            size="small"
-                            fullWidth
-                          />
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={vals.atAllowForceReady}
-                                onChange={(e) => update('atAllowForceReady', e.target.checked)}
-                                color="primary"
-                                size="small"
-                              />
-                            }
-                            label={t('settings.atCore.ready.allowForceReady')}
-                          />
-                        </Stack>
-                      </Box>
-
-                      <Divider />
-
-                      <Box
-                        sx={{
-                          bgcolor: (theme) => `${theme.palette.warning.main}14`, // 8% amber wash
-                          border: 1,
-                          borderColor: 'warning.main',
-                          borderRadius: radii.sm,
-                          p: 2,
-                        }}
-                      >
-                        <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                          {t('settings.atCore.expert.title')}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" mb={2}>
-                          {t('settings.atCore.expert.description')}
-                        </Typography>
-
-                        <Stack spacing={2}>
-                          <TextField
-                            select
-                            label={t(
-                              'settings.atCore.expert.autostartMode.label'
-                            )}
-                            value={vals.atAutostartMode}
-                            onChange={(e) =>
-                              update('atAutostartMode', Number(e.target.value) as 0 | 1 | 2)
-                            }
-                            onBlur={flush}
-                            helperText={t(
-                              'settings.atCore.expert.autostartMode.helper'
-                            )}
-                            size="small"
-                            fullWidth
-                          >
-                            <option value={0}>
-                              {t('settings.atCore.expert.autostartMode.options.0')}
-                            </option>
-                            <option value={1}>
-                              {t('settings.atCore.expert.autostartMode.options.1')}
-                            </option>
-                            <option value={2}>
-                              {t('settings.atCore.expert.autostartMode.options.2')}
-                            </option>
-                          </TextField>
-
-                          <Divider />
-
-                          {/* Access / server lockdown */}
-                          <Box>
-                            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                              {t('settings.atCore.access.title')}
-                            </Typography>
-                            <Stack spacing={1}>
-                              <FormControlLabel
-                                control={
-                                  <Switch
-                                    checked={vals.atKickWhenNoMatchLoaded}
-                                    onChange={(e) => update('atKickWhenNoMatchLoaded', e.target.checked)}
-                                    color="primary"
-                                    size="small"
-                                  />
-                                }
-                                label={t(
-                                  'settings.atCore.access.kickWhenNoMatchLoaded'
-                                )}
-                              />
-                              <FormControlLabel
-                                control={
-                                  <Switch
-                                    checked={vals.atWhitelistEnabledDefault}
-                                    onChange={(e) => update('atWhitelistEnabledDefault', e.target.checked)}
-                                    color="primary"
-                                    size="small"
-                                  />
-                                }
-                                label={t(
-                                  'settings.atCore.access.whitelistEnabledDefault'
-                                )}
-                              />
-                            </Stack>
-                          </Box>
-
-                          <Divider />
-
-                          {/* Admin tools */}
-                          <Box>
-                            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                              {t('settings.atCore.adminTools.title')}
-                            </Typography>
-                            <Stack spacing={1}>
-                              <FormControlLabel
-                                control={
-                                  <Switch
-                                    checked={vals.atJoinPassword}
-                                    onChange={(e) => update('atJoinPassword', e.target.checked)}
-                                    color="primary"
-                                    size="small"
-                                  />
-                                }
-                                label={t('settings.atCore.adminTools.joinPassword')}
-                              />
-                              <FormControlLabel
-                                control={
-                                  <Switch
-                                    checked={vals.atPauseAfterRestore}
-                                    onChange={(e) => update('atPauseAfterRestore', e.target.checked)}
-                                    color="primary"
-                                    size="small"
-                                  />
-                                }
-                                label={t(
-                                  'settings.atCore.adminTools.pauseAfterRestore'
-                                )}
-                              />
-                              <FormControlLabel
-                                control={
-                                  <Switch
-                                    checked={vals.atStopCommandAvailable}
-                                    onChange={(e) => update('atStopCommandAvailable', e.target.checked)}
-                                    color="primary"
-                                    size="small"
-                                  />
-                                }
-                                label={t(
-                                  'settings.atCore.adminTools.stopCommandAvailable'
-                                )}
-                              />
-                              <FormControlLabel
-                                control={
-                                  <Switch
-                                    checked={vals.atStopCommandNoDamage}
-                                    onChange={(e) => update('atStopCommandNoDamage', e.target.checked)}
-                                    color="primary"
-                                    size="small"
-                                    disabled={!vals.atStopCommandAvailable}
-                                  />
-                                }
-                                label={t(
-                                  'settings.atCore.adminTools.stopCommandNoDamage'
-                                )}
-                              />
-                              <FormControlLabel
-                                control={
-                                  <Switch
-                                    checked={vals.atUsePauseCommandForTacticalPause}
-                                    onChange={(e) =>
-                                      update('atUsePauseCommandForTacticalPause', e.target.checked)
-                                    }
-                                    color="primary"
-                                    size="small"
-                                  />
-                                }
-                                label={t(
-                                  'settings.atCore.adminTools.usePauseForTacticalPause'
-                                )}
-                              />
-                            </Stack>
-                          </Box>
-                        </Stack>
-                      </Box>
-                    </Stack>
-                  </AccordionDetails>
-                </Accordion>
-
-                <Accordion sx={ACCORDION_SX}>
-                  <AccordionSummary expandIcon={<CaretDownIcon size={24} />} sx={ACCORDION_SUMMARY_SX}>
-                    <Box>
-                      <Typography variant="h6" fontWeight={600}>
-                        {t('settings.atEnhanced.title')}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {t('settings.atEnhanced.description')}
-                      </Typography>
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails sx={ACCORDION_DETAILS_SX}>
-                    <Stack spacing={3}>
-                      {/* Auto-Ready System */}
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                          {t('settings.atEnhanced.autoready.title')}
-                        </Typography>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={vals.atAutoreadyEnabled === 1}
-                              onChange={(e) => update('atAutoreadyEnabled', e.target.checked ? 1 : 0)}
-                              color="primary"
-                              size="small"
-                            />
+                      }
+                      label={t('settings.atCore.adminTools.stopCommandAvailable')}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={vals.atStopCommandNoDamage}
+                          onChange={(e) => update('atStopCommandNoDamage', e.target.checked)}
+                          color="primary"
+                          size="small"
+                          disabled={!vals.atStopCommandAvailable}
+                        />
+                      }
+                      label={t('settings.atCore.adminTools.stopCommandNoDamage')}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={vals.atUsePauseCommandForTacticalPause}
+                          onChange={(e) =>
+                            update('atUsePauseCommandForTacticalPause', e.target.checked)
                           }
-                          label={t('settings.atEnhanced.autoready.label')}
+                          color="primary"
+                          size="small"
                         />
-                        <Typography variant="caption" color="text.secondary" display="block">
-                          {t('settings.atEnhanced.autoready.description')}
-                        </Typography>
-                      </Box>
+                      }
+                      label={t('settings.atCore.adminTools.usePauseForTacticalPause')}
+                    />
+                  </Stack>
+                </Box>
+              </Stack>
+            </Box>
+          </Stack>
+        </AccordionDetails>
+      </Accordion>
 
-                      <Divider />
+      <Accordion sx={ACCORDION_SX}>
+        <AccordionSummary expandIcon={<CaretDownIcon size={24} />} sx={ACCORDION_SUMMARY_SX}>
+          <Box>
+            <Typography variant="h6" fontWeight={600}>
+              {t('settings.atEnhanced.title')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('settings.atEnhanced.description')}
+            </Typography>
+          </Box>
+        </AccordionSummary>
+        <AccordionDetails sx={ACCORDION_DETAILS_SX}>
+          <Stack spacing={3}>
+            {/* Auto-Ready System */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                {t('settings.atEnhanced.autoready.title')}
+              </Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={vals.atAutoreadyEnabled === 1}
+                    onChange={(e) => update('atAutoreadyEnabled', e.target.checked ? 1 : 0)}
+                    color="primary"
+                    size="small"
+                  />
+                }
+                label={t('settings.atEnhanced.autoready.label')}
+              />
+              <Typography variant="caption" color="text.secondary" display="block">
+                {t('settings.atEnhanced.autoready.description')}
+              </Typography>
+            </Box>
 
-                      {/* Pause System */}
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                          {t('settings.atEnhanced.pause.title')}
-                        </Typography>
-                        <Stack spacing={2}>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={vals.atBothTeamsUnpauseRequired === 1}
-                                onChange={(e) =>
-                                  update('atBothTeamsUnpauseRequired', e.target.checked ? 1 : 0)
-                                }
-                                color="primary"
-                                size="small"
-                              />
-                            }
-                            label={t('settings.atEnhanced.pause.bothTeamsUnpause')}
-                          />
-                          <TextField
-                            label={t('settings.atEnhanced.pause.maxPausesLabel')}
-                            type="number"
-                            value={vals.atMaxPausesPerTeam ?? ''}
-                            onChange={(e) => {
-                              const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                              update('atMaxPausesPerTeam', isNaN(val as number) ? null : val);
-                            }}
-                            onBlur={flush}
-                            helperText={t('settings.atEnhanced.pause.maxPausesHelper')}
-                            inputProps={{ min: 0, max: 999 }}
-                            size="small"
-                            fullWidth
-                          />
-                          <TextField
-                            label={t(
-                              'settings.atEnhanced.pause.pauseDurationLabel'
-                            )}
-                            type="number"
-                            value={vals.atPauseDuration ?? ''}
-                            onChange={(e) => {
-                              const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                              update('atPauseDuration', isNaN(val as number) ? null : val);
-                            }}
-                            onBlur={flush}
-                            helperText={t(
-                              'settings.atEnhanced.pause.pauseDurationHelper'
-                            )}
-                            inputProps={{ min: 0, max: 999 }}
-                            size="small"
-                            fullWidth
-                          />
-                        </Stack>
-                      </Box>
+            <Divider />
 
-                      <Divider />
+            {/* Pause System */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                {t('settings.atEnhanced.pause.title')}
+              </Typography>
+              <Stack spacing={2}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={vals.atBothTeamsUnpauseRequired === 1}
+                      onChange={(e) =>
+                        update('atBothTeamsUnpauseRequired', e.target.checked ? 1 : 0)
+                      }
+                      color="primary"
+                      size="small"
+                    />
+                  }
+                  label={t('settings.atEnhanced.pause.bothTeamsUnpause')}
+                />
+                <TextField
+                  label={t('settings.atEnhanced.pause.maxPausesLabel')}
+                  type="number"
+                  value={vals.atMaxPausesPerTeam ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                    update('atMaxPausesPerTeam', isNaN(val as number) ? null : val);
+                  }}
+                  onBlur={flush}
+                  helperText={t('settings.atEnhanced.pause.maxPausesHelper')}
+                  inputProps={{ min: 0, max: 999 }}
+                  size="small"
+                  fullWidth
+                />
+                <TextField
+                  label={t('settings.atEnhanced.pause.pauseDurationLabel')}
+                  type="number"
+                  value={vals.atPauseDuration ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                    update('atPauseDuration', isNaN(val as number) ? null : val);
+                  }}
+                  onBlur={flush}
+                  helperText={t('settings.atEnhanced.pause.pauseDurationHelper')}
+                  inputProps={{ min: 0, max: 999 }}
+                  size="small"
+                  fullWidth
+                />
+              </Stack>
+            </Box>
 
-                      {/* Side Selection */}
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                          {t('settings.atEnhanced.sideSelection.title')}
-                        </Typography>
-                        <Stack spacing={2}>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={vals.atSideSelectionEnabled === 1}
-                                onChange={(e) =>
-                                  update('atSideSelectionEnabled', e.target.checked ? 1 : 0)
-                                }
-                                color="primary"
-                                size="small"
-                              />
-                            }
-                            label={t('settings.atEnhanced.sideSelection.enabled')}
-                          />
-                          <TextField
-                            label={t('settings.atEnhanced.sideSelection.timeLabel')}
-                            type="number"
-                            value={vals.atSideSelectionTime ?? ''}
-                            onChange={(e) => {
-                              const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                              update('atSideSelectionTime', isNaN(val as number) ? null : val);
-                            }}
-                            onBlur={flush}
-                            helperText={t('settings.atEnhanced.sideSelection.timeHelper')}
-                            inputProps={{ min: 1, max: 999 }}
-                            size="small"
-                            fullWidth
-                            disabled={vals.atSideSelectionEnabled !== 1}
-                          />
-                        </Stack>
-                      </Box>
+            <Divider />
 
-                      <Divider />
+            {/* Side Selection */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                {t('settings.atEnhanced.sideSelection.title')}
+              </Typography>
+              <Stack spacing={2}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={vals.atSideSelectionEnabled === 1}
+                      onChange={(e) => update('atSideSelectionEnabled', e.target.checked ? 1 : 0)}
+                      color="primary"
+                      size="small"
+                    />
+                  }
+                  label={t('settings.atEnhanced.sideSelection.enabled')}
+                />
+                <TextField
+                  label={t('settings.atEnhanced.sideSelection.timeLabel')}
+                  type="number"
+                  value={vals.atSideSelectionTime ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                    update('atSideSelectionTime', isNaN(val as number) ? null : val);
+                  }}
+                  onBlur={flush}
+                  helperText={t('settings.atEnhanced.sideSelection.timeHelper')}
+                  inputProps={{ min: 1, max: 999 }}
+                  size="small"
+                  fullWidth
+                  disabled={vals.atSideSelectionEnabled !== 1}
+                />
+              </Stack>
+            </Box>
 
-                      {/* .gg Command */}
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                          {t('settings.atEnhanced.gg.title')}
-                        </Typography>
-                        <Stack spacing={2}>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={vals.atGgEnabled === 1}
-                                onChange={(e) => update('atGgEnabled', e.target.checked ? 1 : 0)}
-                                color="primary"
-                                size="small"
-                              />
-                            }
-                            label={t('settings.atEnhanced.gg.enabled')}
-                          />
-                          <TextField
-                            label={t('settings.atEnhanced.gg.thresholdLabel')}
-                            type="number"
-                            value={vals.atGgThreshold ?? ''}
-                            onChange={(e) => {
-                              const val = e.target.value === '' ? null : parseFloat(e.target.value);
-                              update('atGgThreshold', isNaN(val as number) ? null : val);
-                            }}
-                            onBlur={flush}
-                            helperText={t('settings.atEnhanced.gg.thresholdHelper')}
-                            inputProps={{ min: 0, max: 1, step: 0.1 }}
-                            size="small"
-                            fullWidth
-                            disabled={vals.atGgEnabled !== 1}
-                          />
-                          <TextField
-                            label={t('settings.atEnhanced.gg.minScoreDiffLabel')}
-                            type="number"
-                            value={vals.atGgMinScoreDiff ?? ''}
-                            onChange={(e) => {
-                              const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                              update('atGgMinScoreDiff', isNaN(val as number) ? null : val);
-                            }}
-                            onBlur={flush}
-                            helperText={t('settings.atEnhanced.gg.minScoreDiffHelper')}
-                            inputProps={{ min: 0, max: 16 }}
-                            size="small"
-                            fullWidth
-                            disabled={vals.atGgEnabled !== 1}
-                          />
-                        </Stack>
-                      </Box>
+            <Divider />
 
-                      <Divider />
+            {/* .gg Command */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                {t('settings.atEnhanced.gg.title')}
+              </Typography>
+              <Stack spacing={2}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={vals.atGgEnabled === 1}
+                      onChange={(e) => update('atGgEnabled', e.target.checked ? 1 : 0)}
+                      color="primary"
+                      size="small"
+                    />
+                  }
+                  label={t('settings.atEnhanced.gg.enabled')}
+                />
+                <TextField
+                  label={t('settings.atEnhanced.gg.thresholdLabel')}
+                  type="number"
+                  value={vals.atGgThreshold ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value === '' ? null : parseFloat(e.target.value);
+                    update('atGgThreshold', isNaN(val as number) ? null : val);
+                  }}
+                  onBlur={flush}
+                  helperText={t('settings.atEnhanced.gg.thresholdHelper')}
+                  inputProps={{ min: 0, max: 1, step: 0.1 }}
+                  size="small"
+                  fullWidth
+                  disabled={vals.atGgEnabled !== 1}
+                />
+                <TextField
+                  label={t('settings.atEnhanced.gg.minScoreDiffLabel')}
+                  type="number"
+                  value={vals.atGgMinScoreDiff ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                    update('atGgMinScoreDiff', isNaN(val as number) ? null : val);
+                  }}
+                  onBlur={flush}
+                  helperText={t('settings.atEnhanced.gg.minScoreDiffHelper')}
+                  inputProps={{ min: 0, max: 16 }}
+                  size="small"
+                  fullWidth
+                  disabled={vals.atGgEnabled !== 1}
+                />
+              </Stack>
+            </Box>
 
-                      {/* FFW System */}
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                          {t('settings.atEnhanced.ffw.title')}
-                        </Typography>
-                        <Stack spacing={2}>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={vals.atFfwEnabled === 1}
-                                onChange={(e) => update('atFfwEnabled', e.target.checked ? 1 : 0)}
-                                color="primary"
-                                size="small"
-                              />
-                            }
-                            label={t('settings.atEnhanced.ffw.enabled')}
-                          />
-                          <TextField
-                            label={t('settings.atEnhanced.ffw.timeLabel')}
-                            type="number"
-                            value={vals.atFfwTime ?? ''}
-                            onChange={(e) => {
-                              const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                              update('atFfwTime', isNaN(val as number) ? null : val);
-                            }}
-                            onBlur={flush}
-                            helperText={t('settings.atEnhanced.ffw.timeHelper')}
-                            inputProps={{ min: 1, max: 999 }}
-                            size="small"
-                            fullWidth
-                            disabled={vals.atFfwEnabled !== 1}
-                          />
-                        </Stack>
-                      </Box>
-                    </Stack>
-                  </AccordionDetails>
-                </Accordion>
+            <Divider />
+
+            {/* FFW System */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                {t('settings.atEnhanced.ffw.title')}
+              </Typography>
+              <Stack spacing={2}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={vals.atFfwEnabled === 1}
+                      onChange={(e) => update('atFfwEnabled', e.target.checked ? 1 : 0)}
+                      color="primary"
+                      size="small"
+                    />
+                  }
+                  label={t('settings.atEnhanced.ffw.enabled')}
+                />
+                <TextField
+                  label={t('settings.atEnhanced.ffw.timeLabel')}
+                  type="number"
+                  value={vals.atFfwTime ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                    update('atFfwTime', isNaN(val as number) ? null : val);
+                  }}
+                  onBlur={flush}
+                  helperText={t('settings.atEnhanced.ffw.timeHelper')}
+                  inputProps={{ min: 1, max: 999 }}
+                  size="small"
+                  fullWidth
+                  disabled={vals.atFfwEnabled !== 1}
+                />
+              </Stack>
+            </Box>
+          </Stack>
+        </AccordionDetails>
+      </Accordion>
 
       <Divider />
-      <Box data-testid="cs2-settings-highlights">
+      <Box data-testid="cs2-settings-highlights-moved">
         <Typography variant="h6" fontWeight={600} gutterBottom>
           {t('settings.highlights.title')}
         </Typography>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={vals.highlightsWatermark}
-              onChange={(e) => {
-                const newValue = e.target.checked;
-                update('highlightsWatermark', newValue);
-                void save({ highlightsWatermark: newValue });
-              }}
-              size="small"
-              color="primary"
-              inputProps={{ 'data-testid': 'cs2-highlights-watermark' } as Record<string, string>}
-            />
-          }
-          label={t('settings.highlights.watermark.label')}
-        />
-        <Typography variant="caption" color="text.secondary" display="block">
-          {t('settings.highlights.watermark.description')}
+        <Typography variant="body2" color="text.secondary">
+          {t('settings.highlights.moved')}{' '}
+          <Link component={RouterLink} to={cs2AdminPaths.highlights}>
+            {t('nav.highlights')}
+          </Link>
         </Typography>
-        <TextField
-          label={t('settings.highlights.perPlayer.label')}
-          type="number"
-          value={vals.highlightsPerPlayer ?? ''}
-          onChange={(e) => {
-            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-            update('highlightsPerPlayer', isNaN(val as number) ? null : val);
-          }}
-          onBlur={flush}
-          helperText={t('settings.highlights.perPlayer.helper')}
-          inputProps={{ min: 1, max: 6, 'data-testid': 'cs2-highlights-per-player' }}
-          size="small"
-          sx={{ mt: 2, maxWidth: 320 }}
-        />
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2, maxWidth: 480 }}>
-          <TextField
-            select
-            label={t('settings.highlights.resolution.label')}
-            value={vals.highlightsResolution}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              update('highlightsResolution', value);
-              void save({ highlightsResolution: value });
-            }}
-            size="small"
-            fullWidth
-            inputProps={{ 'data-testid': 'cs2-highlights-resolution' }}
-          >
-            {HIGHLIGHT_HEIGHTS.map((h) => (
-              <MenuItem key={h} value={h}>
-                {h === 2160 ? '4K (2160p)' : `${h}p`}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            select
-            label={t('settings.highlights.fps.label')}
-            value={vals.highlightsFps}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              update('highlightsFps', value);
-              void save({ highlightsFps: value });
-            }}
-            size="small"
-            fullWidth
-            inputProps={{ 'data-testid': 'cs2-highlights-fps' }}
-          >
-            {HIGHLIGHT_FPS.map((f) => (
-              <MenuItem key={f} value={f}>
-                {t('settings.highlights.fps.option', { fps: f })}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Stack>
-        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
-          {t('settings.highlights.quality.helper')}
-        </Typography>
-        <HighlightMusicSetting
-          value={vals.highlightsMusic}
-          onChange={(value) => {
-            update('highlightsMusic', value);
-            void save({ highlightsMusic: value });
-          }}
-        />
-        <HighlightOverlaySetting
-          keepClean={vals.highlightsKeepClean}
-          onKeepClean={(value) => {
-            update('highlightsKeepClean', value);
-            void save({ highlightsKeepClean: value });
-          }}
-        />
       </Box>
 
       {isDev && (
         <>
           <Divider />
-                  <Box>
-                    <Typography variant="h6" fontWeight={600} gutterBottom>
-                      {t('settings.developer.title')}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" mb={2}>
-                      {t('settings.developer.description')}
-                    </Typography>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={vals.atDebugChatEnabled}
-                          onChange={(e) => {
-                            const newValue = e.target.checked;
-                            update('atDebugChatEnabled', newValue);
-                            void save({ atDebugChatEnabled: newValue });
-                          }}
-                          size="small"
-                          color="primary"
-                        />
-                      }
-                      label={t('settings.developer.debugChat.label')}
-                    />
-                    <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-                      {t('settings.developer.debugChat.description')}
-                    </Typography>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={vals.simulateMatches}
-                          onChange={(event) => update('simulateMatches', event.target.checked)}
-                          color="error"
-                          size="small"
-                          slotProps={{
-                            input: {
-                              'data-testid': 'settings-simulate-matches-toggle',
-                            } as React.InputHTMLAttributes<HTMLInputElement>,
-                          }}
-                        />
-                      }
-                      label={
-                        <Typography component="span" color="error.main" fontWeight={600}>
-                          {t('settings.developer.simulateToggleLabel')}
-                        </Typography>
-                      }
-                    />
-                    <Typography variant="caption" color="error.main" display="block" mt={1} fontWeight={500}>
-                      {t('settings.developer.simulateNote')}
-                    </Typography>
-                    <Box mt={3}>
-                      <Typography variant="subtitle1" fontWeight={500} gutterBottom>
-                        {t('settings.developer.timescaleTitle')}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" mb={1}>
-                        {t('settings.developer.timescaleDescription')}
-                      </Typography>
-                      <Box px={1}>
-                        <Slider
-                          value={vals.simulationTimescale}
-                          onChange={(_e, value) => {
-                            const v = Array.isArray(value) ? value[0] : value;
-                            update('simulationTimescale', typeof v === 'number' ? v : 1);
-                          }}
-                          onChangeCommitted={(_e, value) => {
-                            const v = Array.isArray(value) ? value[0] : value;
-                            void save({ simulationTimescale: typeof v === 'number' ? v : 1 });
-                          }}
-                          min={0.1}
-                          max={10}
-                          step={0.1}
-                          marks={[1, 2, 4, 6, 8, 10].map((v) => ({ value: v, label: `${v}×` }))}
-                          valueLabelDisplay="on"
-                          data-testid="settings-simulation-timescale-slider"
-                        />
-                        {vals.simulationTimescale > 2 && (
-                          <Typography
-                            variant="caption"
-                            color="warning.main"
-                            sx={{ mt: 1, display: 'block' }}
-                          >
-                            {t('settings.developer.timescaleWarning')}
-                          </Typography>
-                        )}
-                      </Box>
-                    </Box>
-                  </Box>
+          <Box>
+            <Typography variant="h6" fontWeight={600} gutterBottom>
+              {t('settings.developer.title')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mb={2}>
+              {t('settings.developer.description')}
+            </Typography>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={vals.atDebugChatEnabled}
+                  onChange={(e) => {
+                    const newValue = e.target.checked;
+                    update('atDebugChatEnabled', newValue);
+                    void save({ atDebugChatEnabled: newValue });
+                  }}
+                  size="small"
+                  color="primary"
+                />
+              }
+              label={t('settings.developer.debugChat.label')}
+            />
+            <Typography variant="caption" color="text.secondary" display="block" mb={2}>
+              {t('settings.developer.debugChat.description')}
+            </Typography>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={vals.simulateMatches}
+                  onChange={(event) => update('simulateMatches', event.target.checked)}
+                  color="error"
+                  size="small"
+                  slotProps={{
+                    input: {
+                      'data-testid': 'settings-simulate-matches-toggle',
+                    } as React.InputHTMLAttributes<HTMLInputElement>,
+                  }}
+                />
+              }
+              label={
+                <Typography component="span" color="error.main" fontWeight={600}>
+                  {t('settings.developer.simulateToggleLabel')}
+                </Typography>
+              }
+            />
+            <Typography
+              variant="caption"
+              color="error.main"
+              display="block"
+              mt={1}
+              fontWeight={500}
+            >
+              {t('settings.developer.simulateNote')}
+            </Typography>
+            <Box mt={3}>
+              <Typography variant="subtitle1" fontWeight={500} gutterBottom>
+                {t('settings.developer.timescaleTitle')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mb={1}>
+                {t('settings.developer.timescaleDescription')}
+              </Typography>
+              <Box px={1}>
+                <Slider
+                  value={vals.simulationTimescale}
+                  onChange={(_e, value) => {
+                    const v = Array.isArray(value) ? value[0] : value;
+                    update('simulationTimescale', typeof v === 'number' ? v : 1);
+                  }}
+                  onChangeCommitted={(_e, value) => {
+                    const v = Array.isArray(value) ? value[0] : value;
+                    void save({ simulationTimescale: typeof v === 'number' ? v : 1 });
+                  }}
+                  min={0.1}
+                  max={10}
+                  step={0.1}
+                  marks={[1, 2, 4, 6, 8, 10].map((v) => ({ value: v, label: `${v}×` }))}
+                  valueLabelDisplay="on"
+                  data-testid="settings-simulation-timescale-slider"
+                />
+                {vals.simulationTimescale > 2 && (
+                  <Typography
+                    variant="caption"
+                    color="warning.main"
+                    sx={{ mt: 1, display: 'block' }}
+                  >
+                    {t('settings.developer.timescaleWarning')}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+          </Box>
         </>
       )}
 

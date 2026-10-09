@@ -1,0 +1,387 @@
+/**
+ * The highlight recorders as the platform sees them: who they are, how fast
+ * and how smooth they record, and a run log of every job.
+ *
+ * - Every claim updates the recorder's row (version, GPU, platform, last seen).
+ * - Every clip comes with the recorder's frame check (worker/quality.go): the
+ *   share of moving frames that repeat the one before. At REJECT_REPEAT_PCT or
+ *   more the clip is turned down: not stored, the moment goes back in the
+ *   queue preferring another recorder (`avoid_recorder`), and fails for good
+ *   after MAX_ATTEMPTS takes. A recorder with PAUSE_AFTER rejections in a row
+ *   gets no work for PAUSE_SECONDS (say someone games on the same GPU); an
+ *   admin can resume it sooner.
+ * - A new recorder (and one an admin asks) first runs a benchmark: the same
+ *   moment at each refresh rate in BENCHMARK_HZ, timed and frame-checked. It
+ *   keeps the fastest smooth one, which comes back with every job after.
+ * - Each job's log and timings land in cs2_recorder_runs for the Recorders page.
+ */
+import { db } from '../../../config/database';
+import { log } from '../../../utils/logger';
+import { jobFor, MAX_ATTEMPTS, type MomentRow } from './highlights';
+import { readHighlightQuality } from './highlightQuality';
+
+export const REJECT_REPEAT_PCT = 4;
+export const PAUSE_AFTER = 3;
+export const PAUSE_SECONDS = 15 * 60;
+export const BENCHMARK_HZ = [240, 120];
+/** The recorder version that runs benchmarks and sends frame checks and run logs. */
+export const RECORDER_QUALITY_VERSION = 7;
+const RUNS_KEPT = 200; // per recorder
+const LOG_MAX = 200_000;
+
+const now = () => Math.floor(Date.now() / 1000);
+
+export class RecorderError extends Error {
+  constructor(
+    readonly status: number,
+    message: string
+  ) {
+    super(message);
+  }
+}
+
+export interface ClipQuality {
+  /** Moving frames that repeat the one before, in percent. */
+  repeatPct: number;
+  /** Moving frames that jump much more than their neighbours, in percent. */
+  jumpPct: number;
+  /** Frames the check looked at (still stretches are skipped). */
+  moving: number;
+}
+
+interface RecorderRow {
+  name: string;
+  version: number | null;
+  gpu: string | null;
+  platform: string | null;
+  first_seen: number;
+  last_seen: number | null;
+  paused_until: number | null;
+  pause_reason: string | null;
+  rejects_in_row: number;
+  clips_ok: number;
+  clips_rejected: number;
+  benchmark: string | null;
+  benchmark_at: number | null;
+  benchmark_wanted: number;
+  gamescope_hz: number | null;
+}
+
+const text = (v: unknown, max: number): string | null =>
+  typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : null;
+
+/** A claim: note the recorder and what it runs on. */
+export async function seenRecorder(
+  name: string,
+  info: { version?: unknown; gpu?: unknown; platform?: unknown }
+): Promise<RecorderRow> {
+  const version = Number.isInteger(Number(info.version)) ? Number(info.version) : null;
+  const row = await db.queryOneAsync<RecorderRow>(
+    `INSERT INTO cs2_recorders (name, version, gpu, platform, last_seen) VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT (name) DO UPDATE SET
+       version = EXCLUDED.version,
+       gpu = COALESCE(EXCLUDED.gpu, cs2_recorders.gpu),
+       platform = COALESCE(EXCLUDED.platform, cs2_recorders.platform),
+       last_seen = EXCLUDED.last_seen
+     RETURNING *`,
+    [name.slice(0, 120), version, text(info.gpu, 200), text(info.platform, 120), now()]
+  );
+  return row!;
+}
+
+export function isPaused(row: RecorderRow): boolean {
+  return row.paused_until != null && Number(row.paused_until) > now();
+}
+
+/** What the recorder should record with (the benchmark's pick), sent with every job. */
+export function recorderSettings(row: RecorderRow): { gamescopeHz?: number } {
+  return row.gamescope_hz ? { gamescopeHz: Number(row.gamescope_hz) } : {};
+}
+
+export function parseQuality(raw: unknown): ClipQuality | null {
+  if (typeof raw !== 'string' || !raw) return null;
+  try {
+    const q = JSON.parse(raw) as Partial<ClipQuality>;
+    const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : NaN);
+    const out = { repeatPct: n(q.repeatPct), jumpPct: n(q.jumpPct), moving: n(q.moving) };
+    return Object.values(out).some(Number.isNaN) ? null : out;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The frame check's verdict on a clip about to be stored. Turned down: the
+ * moment goes back in the queue (or fails after MAX_ATTEMPTS) and the
+ * recorder may be paused. Without a check (an older recorder) the clip is kept.
+ */
+export async function judgeClip(
+  highlightId: number,
+  quality: ClipQuality | null
+): Promise<{ rejected: boolean; recorder: string | null }> {
+  const row = await db.queryOneAsync<{ recorder: string | null; attempts: number }>(
+    'SELECT recorder, attempts FROM cs2_highlights WHERE id = ?',
+    [highlightId]
+  );
+  const recorder = row?.recorder ?? null;
+  if (!quality) return { rejected: false, recorder };
+  const rejected = quality.repeatPct >= REJECT_REPEAT_PCT;
+  if (!rejected) {
+    await db.runAsync('UPDATE cs2_highlights SET quality = ? WHERE id = ?', [
+      JSON.stringify(quality),
+      highlightId,
+    ]);
+    if (recorder) {
+      await db.runAsync(
+        'UPDATE cs2_recorders SET clips_ok = clips_ok + 1, rejects_in_row = 0 WHERE name = ?',
+        [recorder]
+      );
+    }
+    return { rejected: false, recorder };
+  }
+
+  const why = `Turned down: ${quality.repeatPct.toFixed(1)}% repeated frames${recorder ? ` (${recorder})` : ''}`;
+  await db.runAsync(
+    `UPDATE cs2_highlights SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END,
+        avoid_recorder = ?, quality = ?, error = ?
+      WHERE id = ?`,
+    [MAX_ATTEMPTS, recorder, JSON.stringify(quality), why, highlightId]
+  );
+  log.warn(`[RECORDERS] Clip ${highlightId} ${why}`);
+  if (recorder) {
+    const r = await db.queryOneAsync<{ rejects_in_row: number }>(
+      `UPDATE cs2_recorders SET clips_rejected = clips_rejected + 1, rejects_in_row = rejects_in_row + 1
+        WHERE name = ? RETURNING rejects_in_row`,
+      [recorder]
+    );
+    if (r && Number(r.rejects_in_row) >= PAUSE_AFTER) {
+      const reason = `${r.rejects_in_row} clips in a row had too many repeated frames (the GPU may be busy with something else)`;
+      await db.runAsync(
+        'UPDATE cs2_recorders SET paused_until = ?, pause_reason = ?, rejects_in_row = 0 WHERE name = ?',
+        [now() + PAUSE_SECONDS, reason, recorder]
+      );
+      log.warn(`[RECORDERS] ${recorder} paused for ${PAUSE_SECONDS / 60} minutes: ${reason}`);
+    }
+  }
+  return { rejected: true, recorder };
+}
+
+/**
+ * The benchmark job: one moment, the same for every recorder (the first clip
+ * ever recorded here, so its demo is known to play), at each rate in
+ * BENCHMARK_HZ. Null until something has been recorded.
+ */
+export async function benchmarkJob(): Promise<Record<string, unknown> | null> {
+  const row = await db.queryOneAsync<MomentRow>(
+    `SELECT h.id, h.match_slug, h.map_number, h.player_id, h.kind, h.title, h.round, h.score,
+            h.start_tick, h.end_tick, h.slowmo_tick, h.kill_ticks
+       FROM cs2_highlights h
+       JOIN match_map_results r ON r.match_slug = h.match_slug AND r.map_number = h.map_number
+      WHERE h.status = 'done' AND r.demo_file_path IS NOT NULL
+      ORDER BY h.id LIMIT 1`,
+    []
+  );
+  if (!row) return null;
+  const player = await jobFor(row.match_slug, Number(row.map_number), row.player_id, [row]);
+  return {
+    kind: 'benchmark',
+    matchSlug: row.match_slug,
+    mapNumber: Number(row.map_number),
+    quality: await readHighlightQuality(),
+    keepClean: false,
+    players: [player],
+    tries: BENCHMARK_HZ.map((gamescopeHz) => ({ gamescopeHz })),
+    maxRepeatPct: REJECT_REPEAT_PCT,
+  };
+}
+
+interface BenchmarkTry {
+  gamescopeHz: number;
+  seconds: number | null;
+  captureFps: number | null;
+  repeatPct: number | null;
+  jumpPct: number | null;
+  ok: boolean;
+  error?: string;
+}
+
+/** A benchmark's results: keep the fastest smooth try's refresh rate. */
+export async function saveBenchmark(
+  name: string,
+  body: { tries?: unknown }
+): Promise<{ gamescopeHz: number | null }> {
+  const tries: BenchmarkTry[] = (Array.isArray(body.tries) ? body.tries : [])
+    .slice(0, 8)
+    .map((t: Record<string, unknown>) => {
+      const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+      return {
+        gamescopeHz: Number(t.gamescopeHz) || 0,
+        seconds: num(t.seconds),
+        captureFps: num(t.captureFps),
+        repeatPct: num(t.repeatPct),
+        jumpPct: num(t.jumpPct),
+        ok: t.ok === true,
+        ...(typeof t.error === 'string' ? { error: t.error.slice(0, 300) } : {}),
+      };
+    })
+    .filter((t) => t.gamescopeHz > 0);
+  const smooth = tries
+    .filter(
+      (t) => t.ok && t.seconds != null && t.repeatPct != null && t.repeatPct < REJECT_REPEAT_PCT
+    )
+    .sort((a, b) => a.seconds! - b.seconds!);
+  const pick = smooth[0]?.gamescopeHz ?? null;
+  await db.runAsync(
+    `UPDATE cs2_recorders SET benchmark = ?, benchmark_at = ?, benchmark_wanted = 0, gamescope_hz = ?
+      WHERE name = ?`,
+    [JSON.stringify({ tries, pick }), now(), pick, name.slice(0, 120)]
+  );
+  log.info(`[RECORDERS] ${name} benchmarked: ${pick ? `${pick} Hz` : 'no smooth setting'}`);
+  return { gamescopeHz: pick };
+}
+
+/** A finished job's log and timings. */
+export async function saveRun(name: string, body: Record<string, unknown>): Promise<void> {
+  const kind = text(body.kind, 40) ?? 'unknown';
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  const logText = typeof body.log === 'string' ? body.log.slice(-LOG_MAX) : null;
+  await db.runAsync(
+    `INSERT INTO cs2_recorder_runs (recorder, kind, match_slug, map_number, started_at, seconds, ok, clips, rejected, error, log)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      name.slice(0, 120),
+      kind,
+      text(body.matchSlug, 120),
+      num(body.mapNumber),
+      num(body.startedAt) ?? now(),
+      num(body.seconds),
+      body.ok === true ? 1 : 0,
+      num(body.clips) ?? 0,
+      num(body.rejected) ?? 0,
+      text(body.error, 1000),
+      logText,
+    ]
+  );
+  // Keep the newest runs per recorder.
+  await db.runAsync(
+    `DELETE FROM cs2_recorder_runs WHERE recorder = ? AND id NOT IN (
+       SELECT id FROM cs2_recorder_runs WHERE recorder = ? ORDER BY id DESC LIMIT ?)`,
+    [name.slice(0, 120), name.slice(0, 120), RUNS_KEPT]
+  );
+}
+
+/** The Recorders page: every recorder with its numbers. */
+export async function listRecorders() {
+  const rows = await db.queryAsync<
+    RecorderRow & { runs: number; avg_clip_seconds: number | null; last_error: string | null }
+  >(
+    `SELECT r.*,
+            (SELECT COUNT(*)::int FROM cs2_recorder_runs x WHERE x.recorder = r.name) AS runs,
+            (SELECT SUM(x.seconds) / NULLIF(SUM(x.clips), 0) FROM cs2_recorder_runs x
+              WHERE x.recorder = r.name AND x.kind = 'map' AND x.ok = 1 AND x.clips > 0) AS avg_clip_seconds,
+            (SELECT x.error FROM cs2_recorder_runs x WHERE x.recorder = r.name AND x.ok = 0
+              ORDER BY x.id DESC LIMIT 1) AS last_error
+       FROM cs2_recorders r
+      ORDER BY r.last_seen DESC NULLS LAST`,
+    []
+  );
+  const t = now();
+  return rows.map((r) => {
+    let benchmark: unknown = null;
+    try {
+      benchmark = r.benchmark ? JSON.parse(r.benchmark) : null;
+    } catch {
+      benchmark = null;
+    }
+    const paused = isPaused(r);
+    return {
+      name: r.name,
+      version: r.version,
+      gpu: r.gpu,
+      platform: r.platform,
+      firstSeen: Number(r.first_seen),
+      lastSeen: r.last_seen ? Number(r.last_seen) : null,
+      online: !!r.last_seen && t - Number(r.last_seen) < 15 * 60,
+      paused,
+      pausedUntil: paused ? Number(r.paused_until) : null,
+      pauseReason: paused ? r.pause_reason : null,
+      clipsOk: Number(r.clips_ok),
+      clipsRejected: Number(r.clips_rejected),
+      benchmark,
+      benchmarkAt: r.benchmark_at ? Number(r.benchmark_at) : null,
+      benchmarkWanted: Number(r.benchmark_wanted) === 1,
+      gamescopeHz: r.gamescope_hz,
+      runs: Number(r.runs),
+      avgClipSeconds: r.avg_clip_seconds != null ? Number(r.avg_clip_seconds) : null,
+      lastError: r.last_error,
+    };
+  });
+}
+
+/** A recorder's recent runs, newest first (without their logs). */
+export async function listRuns(name: string, limit = 50) {
+  const rows = await db.queryAsync<{
+    id: number;
+    kind: string;
+    match_slug: string | null;
+    map_number: number | null;
+    started_at: number;
+    seconds: number | null;
+    ok: number;
+    clips: number;
+    rejected: number;
+    error: string | null;
+  }>(
+    `SELECT id, kind, match_slug, map_number, started_at, seconds, ok, clips, rejected, error
+       FROM cs2_recorder_runs WHERE recorder = ? ORDER BY id DESC LIMIT ?`,
+    [name, Math.min(Math.max(limit, 1), 200)]
+  );
+  return rows.map((r) => ({
+    id: Number(r.id),
+    kind: r.kind,
+    matchSlug: r.match_slug,
+    mapNumber: r.map_number,
+    startedAt: Number(r.started_at),
+    seconds: r.seconds != null ? Number(r.seconds) : null,
+    ok: Number(r.ok) === 1,
+    clips: Number(r.clips),
+    rejected: Number(r.rejected),
+    error: r.error,
+  }));
+}
+
+export async function runLog(id: number): Promise<string> {
+  const row = await db.queryOneAsync<{ log: string | null }>(
+    'SELECT log FROM cs2_recorder_runs WHERE id = ?',
+    [id]
+  );
+  if (!row) throw new RecorderError(404, 'No run with that id');
+  return row.log ?? '';
+}
+
+async function existing(name: string): Promise<void> {
+  const row = await db.queryOneAsync<{ name: string }>(
+    'SELECT name FROM cs2_recorders WHERE name = ?',
+    [name]
+  );
+  if (!row) throw new RecorderError(404, 'No recorder with that name');
+}
+
+export async function resumeRecorder(name: string): Promise<void> {
+  await existing(name);
+  await db.runAsync(
+    'UPDATE cs2_recorders SET paused_until = NULL, pause_reason = NULL, rejects_in_row = 0 WHERE name = ?',
+    [name]
+  );
+}
+
+export async function requestBenchmark(name: string): Promise<void> {
+  await existing(name);
+  await db.runAsync('UPDATE cs2_recorders SET benchmark_wanted = 1 WHERE name = ?', [name]);
+}
+
+export async function forgetRecorder(name: string): Promise<void> {
+  await existing(name);
+  await db.runAsync('DELETE FROM cs2_recorder_runs WHERE recorder = ?', [name]);
+  await db.runAsync('DELETE FROM cs2_recorders WHERE name = ?', [name]);
+}
