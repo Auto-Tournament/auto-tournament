@@ -68,6 +68,7 @@ import {
   buildResume,
   detectFailure,
   failoverGraceFromEnv,
+  maxBackupRound,
   pickBackup,
   pickTarget,
   type FailoverCandidate,
@@ -645,7 +646,8 @@ async function createProposal(input: {
   const mapNumber = Math.min(Math.max(1, input.state?.series?.current_map ?? 1), numMaps);
   const backup = pickBackup(
     (await roundBackupStore.list(input.slug)).filter((b) => b.storedAt >= createdAt),
-    mapNumber
+    mapNumber,
+    maxBackupRound(input.state?.rules)
   );
   const target =
     input.targetCs2ServerId !== undefined

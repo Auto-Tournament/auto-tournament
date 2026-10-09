@@ -18,6 +18,9 @@
  * - Idempotent: the same file again (a replayed event) changes nothing. A
  *   different file for the same round (the round was replayed after a
  *   restore) replaces it: the newest is kept.
+ * - A backup sent while the match is not live (warmup, knife, loading, ...)
+ *   is acknowledged and not stored: those rounds are not part of the match,
+ *   and a failover must never resume from one.
  * - A backup from a fenced (stale epoch) server is not stored: a zombie's
  *   rounds must not replace the live server's.
  * - `event.rounds_voided {from_round}` marks the backups of the rounds after
@@ -35,7 +38,8 @@ import crypto from 'crypto';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { fleetInbound, type FleetEventNotice } from './inbound';
-import type { FleetEventData, InlineBackup, Score } from './protocol/v1';
+import { isLivePhase } from './failoverPlan';
+import type { FleetEventData, InlineBackup, MatchPhase, Score } from './protocol/v1';
 
 /** The schema's limit for a whole backup file (`inlineBackup.size`). */
 export const MAX_BACKUP_BYTES = 4 * 1024 * 1024;
@@ -84,7 +88,8 @@ export type BackupIngestOutcome =
   | { kind: 'replaced'; backup: RoundBackupMeta; previousSha256: string }
   | { kind: 'duplicate'; backup: RoundBackupMeta }
   | { kind: 'partial'; received: number; parts: number }
-  | { kind: 'rejected'; reason: string };
+  | { kind: 'rejected'; reason: string }
+  | { kind: 'not_live'; phase: MatchPhase | null };
 
 export interface BackupIngestInput {
   matchSlug: string;
@@ -601,13 +606,13 @@ export function backupRetentionDays(env: NodeJS.ProcessEnv = process.env): numbe
 }
 
 /**
- * What the store does with one fleet event: `event.backup` is stored,
- * `event.rounds_voided` supersedes the later rounds. Events of a fenced
- * (stale-epoch) server are ignored. Exported for the tests.
+ * What the store does with one fleet event: `event.backup` is stored while
+ * the match is live, `event.rounds_voided` supersedes the later rounds.
+ * Events of a fenced (stale-epoch) server are ignored. Exported for the tests.
  */
 export async function handleBackupEvent(
   store: RoundBackupStore,
-  notice: Pick<FleetEventNotice, 'serverId' | 'envelope' | 'patch'>
+  notice: Pick<FleetEventNotice, 'serverId' | 'envelope' | 'patch' | 'record'>
 ): Promise<BackupIngestOutcome | number | null> {
   const env = notice.envelope;
   if (env.type !== 'event.backup' && env.type !== 'event.rounds_voided') return null;
@@ -623,6 +628,14 @@ export async function handleBackupEvent(
     return store.roundsVoided(payload.match_id, payload.map_number, data.from_round);
   }
   const backup = payload.data as FleetEventData['backup'];
+  const record = notice.record;
+  const phase = record && record.epoch === env.epoch ? (record.state?.phase ?? null) : null;
+  if (!isLivePhase(phase)) {
+    log.debug(
+      `[FLEET] ${notice.serverId}: backup of ${payload.match_id} map ${backup.map_number} round ${backup.round} not stored: match phase ${phase ?? 'unknown'}`
+    );
+    return { kind: 'not_live', phase };
+  }
   const outcome = await store.ingest({
     matchSlug: payload.match_id,
     serverId: notice.serverId,

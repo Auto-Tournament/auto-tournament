@@ -23,6 +23,8 @@ import {
   type CmdPayload,
   type Envelope,
   type InlineBackup,
+  type MatchPhase,
+  type MatchState,
 } from '../../api/src/integrations/cs2/fleet/protocol/v1';
 
 /**
@@ -41,6 +43,10 @@ const example = (file: string): Envelope =>
 
 const SLUG = 'bk-match';
 const DAY = 86400;
+/** The match's record as the inbound path hands it over, at the fixtures' epoch 2. */
+const inPhase = (phase: MatchPhase | null, epoch = 2): LiveMatchRecord =>
+  liveRecord({ epoch, state: phase === null ? null : ({ phase } as MatchState) });
+const live = inPhase('live');
 
 function backupOf(content: Buffer | string, over: Partial<InlineBackup> = {}): InlineBackup {
   const buf = Buffer.isBuffer(content) ? content : Buffer.from(content);
@@ -321,13 +327,19 @@ test.describe('Round backup store', () => {
     const frame = example('live.event.backup.json');
     const env = { ...frame, payload: { ...frame.payload, match_id: SLUG } } as Envelope;
     expect(
-      await handleBackupEvent(store, { serverId: 'zombie', envelope: env, patch: 'stale_epoch' })
+      await handleBackupEvent(store, {
+        serverId: 'zombie',
+        envelope: env,
+        patch: 'stale_epoch',
+        record: null,
+      })
     ).toBeNull();
     expect(persistence.rows).toHaveLength(0);
     const outcome = await handleBackupEvent(store, {
       serverId: 'srv',
       envelope: env,
       patch: 'applied',
+      record: live,
     });
     expect(outcome && typeof outcome === 'object' && outcome.kind).toBe('stored');
     // A replay of the same event (after a restart) stores nothing new.
@@ -335,6 +347,7 @@ test.describe('Round backup store', () => {
       serverId: 'srv',
       envelope: env,
       patch: 'duplicate',
+      record: live,
     });
     expect(replay && typeof replay === 'object' && replay.kind).toBe('duplicate');
 
@@ -355,15 +368,69 @@ test.describe('Round backup store', () => {
       },
     } as Envelope;
     expect(
-      await handleBackupEvent(store, { serverId: 'srv', envelope: voidEnv, patch: 'applied' })
+      await handleBackupEvent(store, {
+        serverId: 'srv',
+        envelope: voidEnv,
+        patch: 'applied',
+        record: live,
+      })
     ).toBe(1);
     expect((await store.get(SLUG, 1, 4))?.supersededAt).not.toBeNull();
     expect((await store.get(SLUG, 1, 1))?.supersededAt).toBeNull();
 
     const other = example('live.event.pause.json');
     expect(
-      await handleBackupEvent(store, { serverId: 'srv', envelope: other, patch: 'applied' })
+      await handleBackupEvent(store, {
+        serverId: 'srv',
+        envelope: other,
+        patch: 'applied',
+        record: live,
+      })
     ).toBeNull();
+  });
+
+  test('events: a backup sent while the match is not live is acknowledged and not stored', async () => {
+    const { store, persistence } = newStore();
+    const frame = example('live.event.backup.json');
+    const env = { ...frame, payload: { ...frame.payload, match_id: SLUG } } as Envelope;
+    for (const phase of [
+      'loading',
+      'warmup',
+      'knife',
+      'side_pick',
+      'restoring',
+      'map_end',
+      null,
+    ] as const) {
+      const outcome = await handleBackupEvent(store, {
+        serverId: 'srv',
+        envelope: env,
+        patch: 'applied',
+        record: inPhase(phase),
+      });
+      expect(outcome).toEqual({ kind: 'not_live', phase });
+    }
+    // No record yet, or the record of another epoch: the phase is unknown.
+    for (const record of [null, inPhase('live', 1)]) {
+      const outcome = await handleBackupEvent(store, {
+        serverId: 'srv',
+        envelope: env,
+        patch: 'applied',
+        record,
+      });
+      expect(outcome).toEqual({ kind: 'not_live', phase: null });
+    }
+    expect(persistence.rows).toHaveLength(0);
+    for (const phase of ['live', 'paused', 'halftime', 'overtime'] as const) {
+      const outcome = await handleBackupEvent(store, {
+        serverId: 'srv',
+        envelope: env,
+        patch: 'applied',
+        record: inPhase(phase),
+      });
+      expect(outcome && typeof outcome === 'object' && outcome.kind).toMatch(/stored|duplicate/);
+    }
+    expect(persistence.rows).toHaveLength(1);
   });
 });
 

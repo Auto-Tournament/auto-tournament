@@ -60,6 +60,8 @@ function assignSnapshot(slug: string, epoch: number): Envelope {
   payload.state.match_id = slug;
   payload.state.epoch = epoch;
   payload.state.live_rev = 0;
+  // Backups are stored only while the match is live.
+  payload.state.phase = 'live';
   const { seq: _seq, ack: _ack, ...rest } = frame;
   return { ...rest, id: ulid(), ts: Date.now(), epoch, payload };
 }

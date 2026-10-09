@@ -8,6 +8,7 @@ import {
   effectiveReserve,
   failoverGraceFromEnv,
   graceSecondsFor,
+  maxBackupRound,
   pickBackup,
   pickReserved,
   pickTarget,
@@ -105,6 +106,46 @@ test.describe('failover: what to resume with', () => {
     expect(pickBackup(list, 2)).toEqual(b(2, 20));
     expect(pickBackup(list, 3)).toBeNull();
     expect(pickBackup([b(1, 5, NOW)], 1)).toBeNull();
+  });
+
+  test('backup: never one past the rounds the match can have', () => {
+    const list = [b(1, 12), b(1, 975), b(1, 31)];
+    expect(pickBackup(list, 1)).toEqual(b(1, 975));
+    expect(pickBackup(list, 1, 30)).toEqual(b(1, 12));
+    expect(pickBackup([b(1, 975)], 1, 30)).toBeNull();
+  });
+
+  test('backup cap: regular rounds plus a generous overtime allowance', () => {
+    expect(maxBackupRound(undefined)).toBe(Infinity);
+    expect(maxBackupRound({})).toBe(Infinity);
+    expect(maxBackupRound({ max_rounds: 24, overtime: { enabled: false } })).toBe(24);
+    expect(
+      maxBackupRound({
+        max_rounds: 24,
+        overtime: { enabled: false },
+        tiebreak: { sudden_death_on_tie: true },
+      })
+    ).toBe(24 + 10 * 2 * 5);
+    // max_overtimes is not a ceiling (the valve ruleset plays unlimited overtime).
+    expect(
+      maxBackupRound({
+        max_rounds: 24,
+        overtime: { enabled: true, rounds_per_half: 3, max_overtimes: 0 },
+      })
+    ).toBe(24 + 10 * 2 * 5);
+    expect(
+      maxBackupRound({
+        max_rounds: 24,
+        overtime: { enabled: true, rounds_per_half: 3, max_overtimes: 2 },
+      })
+    ).toBe(24 + 10 * 2 * 5);
+    expect(
+      maxBackupRound({ max_rounds: 24, overtime: { enabled: true, rounds_per_half: 6 } })
+    ).toBe(24 + 10 * 2 * 6);
+    expect(maxBackupRound({ max_rounds: 24 })).toBe(24 + 10 * 2 * 5);
+    // mp_overtime_maxrounds 10 from the cvars: 10 overtimes still fit.
+    expect(24 + 10 * 10).toBeLessThanOrEqual(maxBackupRound({ max_rounds: 24 }));
+    expect(maxBackupRound({ max_rounds: 24 })).toBeLessThan(975);
   });
 
   const c = (
