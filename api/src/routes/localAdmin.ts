@@ -493,6 +493,86 @@ localAuthRouter.post('/reauth', guardWrite, async (req: Request, res: Response) 
   }
 });
 
+/**
+ * @openapi
+ * /api/auth/local/password:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Change your own password
+ *     description: |
+ *       Same-site JSON. For a signed-in account with a username and password
+ *       login: the current password (and `totp` when two-step is on), then the
+ *       new one. Two-step verification stays on. Throttled like sign-in.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               currentPassword: { type: string }
+ *               newPassword: { type: string }
+ *               totp: { type: string }
+ *     responses:
+ *       200:
+ *         description: Changed
+ *       400:
+ *         description: The new password is not accepted (`problem` says why)
+ *       401:
+ *         description: Wrong current password or code; or `totpRequired`
+ *       403:
+ *         description: Impersonating
+ *       404:
+ *         description: Not signed in, or the account has no password login
+ *       429:
+ *         description: Too many attempts
+ */
+localAuthRouter.post('/password', guardWrite, async (req: Request, res: Response) => {
+  const identity = await resolveViewerIdentity(req);
+  if (!identity.realSteamId) return res.status(404).json({ success: false, error: 'Not found' });
+  if (identity.isImpersonating) {
+    return res
+      .status(403)
+      .json({ success: false, error: 'Stop impersonating to manage your own account.' });
+  }
+  const row = await localAdminService.findByPlayerId(identity.realSteamId);
+  if (!row)
+    return res.status(404).json({ success: false, error: 'This account has no password login' });
+
+  const body = (req.body ?? {}) as { currentPassword?: unknown; newPassword?: unknown; totp?: unknown };
+  const ip = clientIp(req);
+  const target = `user:${row.username}`;
+  const wait = loginThrottle.retryAfterMs(ip, target);
+  if (wait > 0) return tooMany(res, wait);
+  try {
+    const result = await localAdminService.verifyLogin(row.username, body.currentPassword, body.totp);
+    if (!result.ok || result.playerId !== identity.realSteamId) {
+      if (!result.ok && result.reason === 'totp_required') {
+        return res.status(401).json({
+          success: false,
+          totpRequired: true,
+          error: 'Enter the code from your authenticator app',
+        });
+      }
+      loginThrottle.recordFailure(ip, target);
+      log.warn('[AUDIT] Password change refused: wrong current password', { username: row.username, ip });
+      return res.status(401).json({
+        success: false,
+        error: 'Your current password is not right',
+        totpRequired: (!result.ok && result.reason === 'totp_invalid') || undefined,
+      });
+    }
+    loginThrottle.recordSuccess(target);
+    const problem = passwordProblem(row.username, body.newPassword);
+    if (problem)
+      return res.status(400).json({ success: false, error: 'Password not accepted', problem });
+    await localAdminService.changeOwnPassword(identity.realSteamId, body.newPassword as string);
+    return res.json({ success: true });
+  } catch (error) {
+    log.error('[AUTH] Changing a password failed', error as Error);
+    return res.status(500).json({ success: false, error: 'Could not change the password' });
+  }
+});
+
 // ---------------------------------------------------------------------------
 // Local accounts (Settings -> Sign-in -> Accounts): admins create username +
 // password accounts, admin or not, set new passwords and remove them.
