@@ -4,7 +4,9 @@ ARG APP_BUILD=build
 
 # Base image with Node.js and Yarn (via corepack)
 # Using Alpine for smallest possible image size
-FROM node:20-alpine AS base
+# node from AWS ECR Public, the mirror of Docker's official images: Docker Hub
+# rate-limits and times out on CI runners (2026-10-09).
+FROM public.ecr.aws/docker/library/node:20-alpine AS base
 WORKDIR /app
 
 # Install necessary build tools for Alpine (only in build stages)
@@ -26,7 +28,7 @@ RUN corepack enable && corepack prepare yarn@1.22.19 --activate
 # byte-identical across version bumps, and COPY --from is cached on content, so
 # deps keeps hitting the layer cache. The real package.json files still reach
 # the image through `COPY . .` in the build stage.
-FROM node:20-alpine AS manifests
+FROM public.ecr.aws/docker/library/node:20-alpine AS manifests
 WORKDIR /app
 COPY package.json yarn.lock ./
 COPY api/package.json ./api/package.json
@@ -105,7 +107,7 @@ FROM ${APP_BUILD} AS app-build
 # NO node_modules needed - backend is bundled!
 # Using Alpine for smallest possible image size
 # -------------------------------------------------------------------
-FROM node:20-alpine AS release
+FROM public.ecr.aws/docker/library/node:20-alpine AS release
 WORKDIR /app
 
 # Build arguments for platform detection
