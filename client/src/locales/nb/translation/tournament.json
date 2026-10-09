@@ -1034,7 +1034,9 @@
     },
     "remind": "Påminn",
     "reminded": "Påminnelse sendt i lagchatten",
-    "done": "Ferdig"
+    "done": "Ferdig",
+    "lineupGap": "En starter forlot lagoppstillingen (utestengt eller slettet). Kampene deres venter til {{time}}: velg en reserve før det, ellers flyttes den første reserven inn. Uten reserve spiller dere med en mindre.",
+    "pickSub": "Velg reserve"
   },
   "bracketCards": {
     "upper": "Øvre bracket",

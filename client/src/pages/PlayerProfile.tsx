@@ -13,6 +13,7 @@ import {
   Container,
   Stack,
   Button,
+  Chip,
 } from '@mui/material';
 import { RankingIcon, UserFocusIcon } from '@phosphor-icons/react';
 import { api } from '../utils/api';
@@ -22,6 +23,7 @@ import { MatchInfoCard } from '../components/team/MatchInfoCard';
 import { PlayerMatchDetailsModal } from '../components/player/PlayerMatchDetailsModal';
 import { useSoundSettings } from '../hooks/useSoundSettings';
 import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
+import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { OwnDiscordIdCard } from '../components/player/OwnDiscordIdCard';
 import { OwnGamesCard } from '../components/games/OwnGamesCard';
@@ -419,6 +421,16 @@ export default function PlayerProfile() {
       setPlayer(summaryResponse.player);
       document.title = pageTitle(t('playerPage.pageTitle', { name: summaryResponse.player.name }));
 
+      // Banned or deleted: only who they are; nothing else is loaded or shown.
+      if (summaryResponse.player.restricted) {
+        setRatingHistory([]);
+        setMatchHistory([]);
+        setAssignedTeam(null);
+        setGames([]);
+        setSelectedGameId(null);
+        return;
+      }
+
       // The team for the header chip, even when the player has no current match.
       try {
         const teamResp = (await api.fetch(`/api/players/${steamId}/team`, {
@@ -765,6 +777,37 @@ export default function PlayerProfile() {
     playerSteamId &&
     steamId === playerSteamId &&
     hasPlayerRecord === false;
+
+  if (player?.restricted) {
+    return (
+      <Box minHeight="100vh" bgcolor="transparent">
+        <TopNavBar />
+        <Container maxWidth="sm">
+          <Box py={6}>
+            <Card data-testid="player-profile-restricted">
+              <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                <Stack alignItems="center" spacing={1.5}>
+                  <PlayerAvatar id={player.id} name={player.name} avatarUrl={player.avatar} size={72} />
+                  <Typography variant="h5" fontWeight={600}>
+                    {player.deleted ? t('playerPage.deletedName') : player.name}
+                  </Typography>
+                  <Chip
+                    size="small"
+                    color={player.deleted ? 'default' : 'error'}
+                    variant="outlined"
+                    label={player.deleted ? t('playerPage.deletedChip') : t('playerPage.bannedChip')}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    {player.deleted ? t('playerPage.deletedBody') : t('playerPage.bannedBody')}
+                  </Typography>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Box>
+        </Container>
+      </Box>
+    );
+  }
 
   if (error || !player) {
     return (

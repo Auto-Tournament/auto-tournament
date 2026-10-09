@@ -12,6 +12,10 @@ import {
   InputAdornment,
   Alert,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   ArrowSquareOutIcon,
@@ -19,12 +23,14 @@ import {
   MagnifyingGlassIcon,
   PencilSimpleIcon,
   PlusIcon,
+  ProhibitIcon,
+  TrashIcon,
   UserIcon,
 } from '@phosphor-icons/react';
 import { PageHead, Row, RowList } from '../components/common/ui';
 import { RowMenu } from '../components/common/RowMenu';
 import { tokens } from '../theme/tokens';
-import { api } from '../utils/api';
+import { api, apiErrorMessage } from '../utils/api';
 import PlayerModal from '../components/modals/PlayerModal';
 import { PlayerImportModal } from '../components/modals/PlayerImportModal';
 import { EmptyState } from '../components/shared/EmptyState';
@@ -52,6 +58,11 @@ export default function Players() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<string>>(() => new Set());
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+  // Ban (with a reason only admins see) and delete (final), from a row's menu.
+  const [banFor, setBanFor] = useState<PlayerDetail | null>(null);
+  const [banReason, setBanReason] = useState('');
+  const [deleteFor, setDeleteFor] = useState<PlayerDetail | null>(null);
+  const [moderating, setModerating] = useState(false);
 
   // Set dynamic page title
   useEffect(() => {
@@ -199,6 +210,21 @@ export default function Players() {
   const handleSave = async () => {
     await loadPlayers();
     handleCloseModal();
+  };
+
+  const moderate = async (work: () => Promise<unknown>, done: string, fail: string) => {
+    setModerating(true);
+    try {
+      await work();
+      showSuccess(done);
+      await loadPlayers();
+      return true;
+    } catch (err) {
+      showError(err instanceof Error && err.message ? apiErrorMessage(err, fail) : fail);
+      return false;
+    } finally {
+      setModerating(false);
+    }
   };
 
   const handleDelete = async (playerId: string) => {
@@ -401,6 +427,17 @@ export default function Players() {
                     {!player.discordId && (
                       <NoDiscordChip testId={`player-card-no-discord-${player.id}`} />
                     )}
+                    {player.banned && (
+                      <Tooltip title={player.banReason || ''}>
+                        <Chip
+                          size="small"
+                          color="error"
+                          variant="outlined"
+                          label={t('playersPage.banned')}
+                          data-testid={`player-banned-${player.id}`}
+                        />
+                      </Tooltip>
+                    )}
                   </Box>
                   <RowMenu
                     label={t('playersPage.rowActions', { name: player.name })}
@@ -430,6 +467,41 @@ export default function Players() {
                               'data-testid': `impersonate-player-${player.id}`,
                             },
                           ]),
+                      // Admins can't be banned: take admin away first.
+                      ...(player.isAdmin
+                        ? []
+                        : [
+                            player.banned
+                              ? {
+                                  key: 'unban',
+                                  label: t('playersPage.unban'),
+                                  icon: <ProhibitIcon size={20} />,
+                                  onClick: () =>
+                                    void moderate(
+                                      () => api.delete(`/api/players/${player.id}/ban`),
+                                      t('playersPage.unbanned', { name: player.name }),
+                                      t('playersPage.moderationError')
+                                    ),
+                                  'data-testid': `unban-player-${player.id}`,
+                                }
+                              : {
+                                  key: 'ban',
+                                  label: t('playersPage.ban'),
+                                  icon: <ProhibitIcon size={20} />,
+                                  onClick: () => {
+                                    setBanReason('');
+                                    setBanFor(player);
+                                  },
+                                  'data-testid': `ban-player-${player.id}`,
+                                },
+                          ]),
+                      {
+                        key: 'delete',
+                        label: t('playersPage.delete'),
+                        icon: <TrashIcon size={20} />,
+                        onClick: () => setDeleteFor(player),
+                        'data-testid': `delete-player-${player.id}`,
+                      },
                     ]}
                   />
                 </Row>
@@ -449,6 +521,73 @@ export default function Players() {
         open={importModalOpen}
         onClose={() => setImportModalOpen(false)}
         onImport={handleImportPlayers}
+      />
+
+      <Dialog open={!!banFor} onClose={() => !moderating && setBanFor(null)} fullWidth maxWidth="xs">
+        <DialogTitle>{t('playersPage.banTitle', { name: banFor?.name ?? '' })}</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            {t('playersPage.banBody')}
+          </Typography>
+          <TextField
+            label={t('playersPage.banReason')}
+            helperText={t('playersPage.banReasonHelp')}
+            value={banReason}
+            onChange={(e) => setBanReason(e.target.value)}
+            fullWidth
+            size="small"
+            multiline
+            minRows={2}
+            inputProps={{ maxLength: 500, 'data-testid': 'ban-reason' }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBanFor(null)} disabled={moderating}>
+            {t('playersPage.cancel')}
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            disabled={moderating}
+            data-testid="ban-confirm"
+            onClick={async () => {
+              const who = banFor!;
+              if (
+                await moderate(
+                  () => api.post(`/api/players/${who.id}/ban`, { reason: banReason.trim() || null }),
+                  t('playersPage.bannedDone', { name: who.name }),
+                  t('playersPage.moderationError')
+                )
+              ) {
+                setBanFor(null);
+              }
+            }}
+          >
+            {t('playersPage.ban')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteFor}
+        title={t('playersPage.deleteTitle', { name: deleteFor?.name ?? '' })}
+        message={t('playersPage.deleteBody')}
+        confirmLabel={t('playersPage.delete')}
+        confirmColor="error"
+        loading={moderating}
+        onConfirm={async () => {
+          const who = deleteFor!;
+          if (
+            await moderate(
+              () => api.delete(`/api/players/${who.id}`),
+              t('playersPage.deletedDone', { name: who.name }),
+              t('playersPage.deleteError')
+            )
+          ) {
+            setDeleteFor(null);
+          }
+        }}
+        onCancel={() => setDeleteFor(null)}
       />
 
       <ConfirmDialog

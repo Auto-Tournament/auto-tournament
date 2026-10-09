@@ -20,6 +20,11 @@
     "directoryMore": "{{count}} til. Skriv for å snevre inn listen."
   },
   "playerPage": {
+    "deletedName": "Slettet spiller",
+    "deletedChip": "Slettet",
+    "deletedBody": "Denne kontoen er slettet. Kampene deres ligger fortsatt i historikken.",
+    "bannedChip": "Utestengt",
+    "bannedBody": "Denne spilleren er utestengt.",
     "playerNotFound": "Denne spilleren finnes ikke.",
     "backToFindPlayer": "Tilbake til Finn spiller",
     "profileTitle": "Spillerprofil",
@@ -255,6 +260,21 @@
     "matchLinkCopied": "Lenken til lagets kampside er kopiert"
   },
   "playersPage": {
+    "banned": "Utestengt",
+    "ban": "Steng ute",
+    "unban": "Opphev utestengelse",
+    "delete": "Slett",
+    "cancel": "Avbryt",
+    "banTitle": "Steng ute {{name}}?",
+    "banBody": "De kan ikke logge inn, og den offentlige siden deres viser bare navnet og «Utestengt». Er de i en lagoppstilling i en pågående turnering, tas de ut av den: laget til en starter får 15 minutter på å velge en reserve før de spiller med en mann mindre. Du kan oppheve utestengelsen senere.",
+    "banReason": "Grunn (valgfritt)",
+    "banReasonHelp": "Bare admins ser dette.",
+    "bannedDone": "{{name}} er utestengt",
+    "unbanned": "{{name}} kan logge inn igjen",
+    "deleteTitle": "Slette {{name}}?",
+    "deleteBody": "Navn, bilde, e-post, innloggingsmetoder, venner og lag fjernes for godt. Kampene deres blir, vist som «Slettet spiller». Dette kan ikke angres.",
+    "deletedDone": "{{name}} er slettet",
+    "moderationError": "Kunne ikke endre spilleren",
     "headerSelect": {
       "select": "Velg",
       "done": "Ferdig",

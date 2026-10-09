@@ -1041,11 +1041,13 @@ test.describe('Discord ID: player self-service', () => {
       await admin.dispose();
     }
 
-    expect((await request.get('/api/players/me/discord-id')).status()).toBe(404);
+    // A deleted player is signed out on their next request (401); a row that
+    // is gone some other way answers 404. Either way nothing is read or written.
+    expect([401, 404]).toContain((await request.get('/api/players/me/discord-id')).status());
     const put = await request.put('/api/players/me/discord-id', {
       data: { discordId: uniqueDiscordId() },
     });
-    expect(put.status()).toBe(404);
+    expect([401, 404]).toContain(put.status());
   });
 });
 

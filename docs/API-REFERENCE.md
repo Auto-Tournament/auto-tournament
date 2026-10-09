@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 621 of them, 388 behind auth —
+Every endpoint this API serves — 623 of them, 390 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -763,6 +763,8 @@ Player records, ratings, match history and profiles.
 | `POST` | `/api/players/bulk-import` | admin |
 | `POST` | `/api/players/bulk-delete` | admin |
 | `PUT` | `/api/players/:playerId` | admin |
+| `POST` | `/api/players/:playerId/ban` | admin |
+| `DELETE` | `/api/players/:playerId/ban` | admin |
 | `DELETE` | `/api/players/:playerId` | admin |
 
 ### ELO templates

@@ -120,6 +120,20 @@ export function getSchemaSQL(): string {
 
     CREATE INDEX IF NOT EXISTS idx_tournament_lineups_player ON tournament_lineups(tournament_id, player_id);
 
+    -- A starter who left a lineup mid-tournament (banned or deleted): the
+    -- team's open matches are held until the deadline while the captain picks a
+    -- sub; then the first sub moves in, or the team plays short-handed.
+    CREATE TABLE IF NOT EXISTS tournament_lineup_gaps (
+      tournament_id INTEGER NOT NULL REFERENCES tournament(id) ON DELETE CASCADE,
+      team_id TEXT NOT NULL,
+      player_id TEXT NOT NULL,
+      deadline INTEGER NOT NULL,
+      resolved_at INTEGER,
+      resolution TEXT, -- 'picked' | 'first_sub' | 'short_handed'
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (tournament_id, team_id, player_id)
+    );
+
     -- Lineup players who said "I'm here" in the check-in window.
     CREATE TABLE IF NOT EXISTS tournament_checkins (
       tournament_id INTEGER NOT NULL REFERENCES tournament(id) ON DELETE CASCADE,
@@ -287,7 +301,11 @@ export function getSchemaSQL(): string {
       games_prompt_dismissed_at INTEGER, -- Epoch when the player skipped or answered the "What do you play?" dialog; NULL = show it while they have no games
       last_sign_in_at INTEGER, -- Epoch of the player's last sign-in (Steam or SSO); NULL = never since this column exists. Admin-only, never in a public response
       last_seen_at INTEGER, -- Epoch the player last closed the site (their last socket left); shown to their friends only
-      party_invites_from TEXT NOT NULL DEFAULT 'everyone' -- Who may invite them to a matchmaking party: 'everyone' | 'friends' | 'nobody'
+      party_invites_from TEXT NOT NULL DEFAULT 'everyone', -- Who may invite them to a matchmaking party: 'everyone' | 'friends' | 'nobody'
+      deleted_at INTEGER, -- Epoch an admin deleted the player: a tombstone named "Deleted player" that keeps their match rows; nothing else of theirs is left (services/playerModeration.ts)
+      banned_at INTEGER, -- Epoch an admin banned the player: no sign-in, public pages show only their name and "Banned"
+      ban_reason TEXT, -- Why, for admins only; never in a public response
+      banned_by TEXT -- Who banned them (players.id or a token label)
     );
 
     CREATE INDEX IF NOT EXISTS idx_players_name ON players(name);

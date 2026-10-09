@@ -31,6 +31,7 @@
       "skin": "New skin:",
       "highlight": "Your highlight is ready:",
       "tournamentStarted": "has started. Your first match is up.",
+      "lineupGap": "· a starter left your lineup. Pick a sub within {{minutes}} minutes, or you play short-handed.",
       "checkInOpen": "check-in is open. Check in before it closes.",
       "joined": "You joined the party",
       "nowFriends": "You are now friends",

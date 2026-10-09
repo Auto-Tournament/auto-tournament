@@ -47,6 +47,10 @@ export interface PlayerRecord {
    * import may fill the ID, and never leaves the service.
    */
   discord_id_edited_at?: number | null;
+  /** services/playerModeration.ts: a tombstone ("Deleted player"), or banned. */
+  deleted_at?: number | null;
+  banned_at?: number | null;
+  ban_reason?: string | null;
   /** Epoch seconds of the last sign-in; null when never recorded. Admin-only. */
   last_sign_in_at?: number | null;
 }
@@ -90,6 +94,10 @@ export interface PlayerResponse {
   createdAt: number;
   updatedAt: number;
   isAdmin?: boolean;
+  /** Deleted: a tombstone named "Deleted player"; only set when true. */
+  deleted?: true;
+  /** Banned: public pages show only the name; only set when true. */
+  banned?: true;
 }
 
 /**
@@ -105,6 +113,9 @@ export interface PlayerAdminResponse extends PlayerResponse {
   discordId: string | null;
   /** Epoch seconds of the player's last sign-in; null when never recorded. */
   lastSignInAt: number | null;
+  /** When they were banned and why (admins only). */
+  bannedAt: number | null;
+  banReason: string | null;
 }
 
 /** Thrown by explicit edits when `discordId` fails validation; routes map it to 400. */
@@ -154,7 +165,8 @@ class PlayerService {
    * Convert database row to response format
    */
   private toResponse(player: PlayerRecord): PlayerResponse {
-    const customAvatar = player.avatar_url || undefined;
+    // A banned player keeps only their name in public: the placeholder, not their picture.
+    const customAvatar = (player.banned_at == null && player.avatar_url) || undefined;
     const dynamicAvatar = `/api/players/${player.id}/avatar.svg`;
 
     return {
@@ -172,6 +184,8 @@ class PlayerService {
       createdAt: player.created_at,
       updatedAt: player.updated_at,
       isAdmin: (player as unknown as { is_admin?: number | boolean }).is_admin === 1,
+      ...(player.deleted_at != null ? { deleted: true as const } : {}),
+      ...(player.banned_at != null ? { banned: true as const } : {}),
     };
   }
 
@@ -180,6 +194,8 @@ class PlayerService {
       ...this.toResponse(player),
       discordId: player.discord_id ? player.discord_id : null,
       lastSignInAt: player.last_sign_in_at ?? null,
+      bannedAt: player.banned_at ?? null,
+      banReason: player.ban_reason ?? null,
     };
   }
 
@@ -239,7 +255,8 @@ class PlayerService {
   ): Promise<R[]> {
     // A Discord account linked as a sign-in method wins over a typed-in ID.
     const players = await db.queryAsync<PlayerRecord>(
-      `SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id, ${MAIN_RATING_SQL} FROM players p`,
+      // Deleted players are tombstones kept for match history: never listed.
+      `SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id, ${MAIN_RATING_SQL} FROM players p WHERE p.deleted_at IS NULL`,
       []
     );
 
@@ -287,6 +304,8 @@ class PlayerService {
       ...visible,
       discordId: player.discord_id ? player.discord_id : null,
       lastSignInAt: player.last_sign_in_at ?? null,
+      bannedAt: player.banned_at ?? null,
+      banReason: player.ban_reason ?? null,
     };
   }
 
@@ -303,7 +322,7 @@ class PlayerService {
       `SELECT p.*, COALESCE(a.provider_user_id, p.discord_id) AS discord_id
          FROM players p
          LEFT JOIN auth_identities a ON a.steam_id = p.id AND a.provider = 'discord'
-        WHERE p.discord_id = ? OR a.provider_user_id = ?
+        WHERE (p.discord_id = ? OR a.provider_user_id = ?) AND p.deleted_at IS NULL
         ORDER BY p.name`,
       [discordId, discordId]
     );
@@ -312,6 +331,8 @@ class PlayerService {
         ...(await this.toVisibleResponse(p)),
         discordId: p.discord_id ? p.discord_id : null,
         lastSignInAt: p.last_sign_in_at ?? null,
+        bannedAt: p.banned_at ?? null,
+        banReason: p.ban_reason ?? null,
       }))
     );
   }

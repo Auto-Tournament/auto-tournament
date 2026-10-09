@@ -31,6 +31,7 @@
       "skin": "Nytt skin:",
       "highlight": "Høydepunktet ditt er klart:",
       "tournamentStarted": "har startet. Første kamp er klar.",
+      "lineupGap": "· en starter forlot lagoppstillingen. Velg en reserve innen {{minutes}} minutter, ellers spiller dere med en mindre.",
       "checkInOpen": "innsjekking er åpen. Sjekk inn før den stenger.",
       "joined": "Du ble med i gruppa",
       "nowFriends": "Dere er nå venner",

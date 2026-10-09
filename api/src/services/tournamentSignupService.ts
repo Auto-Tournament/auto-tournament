@@ -13,6 +13,7 @@
  * `registrationClosesAt`, `maxTeams`, `checkInOpensAt` and `checkInClosesAt`.
  */
 
+import { lineupPicked, openGaps } from './playerModeration';
 import { RATING_ELO, ratingGame, ratingJoin } from './gameRatings';
 import { db } from '../config/database';
 import { emitTournamentUpdate } from './socketService';
@@ -54,6 +55,8 @@ export interface LineupPlayer {
 
 export interface Registration {
   teamId: string;
+  /** A starter left mid-tournament (banned or deleted): pick a sub before this (epoch seconds). */
+  lineupGapDeadline: number | null;
   teamName: string;
   teamTag: string | null;
   logoUrl: string | null;
@@ -167,7 +170,20 @@ function validateLineup(
   if (subs.length > MAX_SUBS) throw new SignupError(400, `At most ${MAX_SUBS} subs.`, 'sub_count');
 }
 
+/** A banned or deleted player cannot be put in a lineup. */
+async function rejectBlocked(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const blocked = await db.queryAsync<{ name: string }>(
+    'SELECT name FROM players WHERE id = ANY(?::text[]) AND (banned_at IS NOT NULL OR deleted_at IS NOT NULL)',
+    [ids]
+  );
+  if (blocked.length) {
+    throw new SignupError(400, `${blocked.map((b) => b.name).join(', ')} cannot play: banned or deleted.`, 'blocked');
+  }
+}
+
 async function writeLineup(tournamentId: number, teamId: string, starters: string[], subs: string[]) {
+  await rejectBlocked([...starters, ...subs]);
   await db.runAsync('DELETE FROM tournament_lineups WHERE tournament_id = ? AND team_id = ?', [
     tournamentId,
     teamId,
@@ -307,6 +323,16 @@ export const tournamentSignupService = {
       });
     }
 
+    const gaps = new Map(
+      (
+        await db.queryAsync<{ team_id: string; deadline: number }>(
+          `SELECT team_id, MIN(deadline) AS deadline FROM tournament_lineup_gaps
+            WHERE tournament_id = ? AND resolved_at IS NULL GROUP BY team_id`,
+          [tournamentId]
+        )
+      ).map((g) => [g.team_id, Number(g.deadline)] as const)
+    );
+
     return rows.map((row) => {
       const lineup: LineupPlayer[] = lineupRows
         .filter((l) => l.team_id === row.team_id)
@@ -333,6 +359,7 @@ export const tournamentSignupService = {
           ? `/api/team-directory/${encodeURIComponent(row.team_id)}/logo?v=${row.logo_updated_at}`
           : null,
         registeredAt: row.created_at,
+        lineupGapDeadline: gaps.get(row.team_id) ?? null,
         rating: starters.length
           ? Math.round(starters.reduce((sum, p) => sum + (p.rating ?? 0), 0) / starters.length)
           : null,
@@ -468,7 +495,9 @@ export const tournamentSignupService = {
     const tournament = await loadTournament(tournamentId);
     const win = windowOf(tournament);
     if (tournament.status === 'completed') throw new SignupError(409, 'The tournament is over.');
-    if (isPast(win.checkInClosesAt)) {
+    // A team that lost a starter (banned or deleted) may pick a sub after the lock.
+    const gap = (await openGaps(tournamentId, input.teamId)) > 0;
+    if (isPast(win.checkInClosesAt) && !gap) {
       throw new SignupError(409, 'The lineup is locked once check-in closes.', 'locked');
     }
     await requireCaptain(input.teamId, uid);
@@ -480,6 +509,7 @@ export const tournamentSignupService = {
     const team = await teamRow(input.teamId);
     validateLineup(rosterSteamIds(team.players), input.starters, input.subs, tournament.team_size ?? 5);
     await writeLineup(tournamentId, input.teamId, input.starters, input.subs);
+    if (gap) await lineupPicked(tournamentId, input.teamId);
     emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
   },
 

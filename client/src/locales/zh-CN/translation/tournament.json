@@ -1034,7 +1034,9 @@
     },
     "remind": "提醒",
     "reminded": "已在队伍聊天中发送提醒",
-    "done": "完成"
+    "done": "完成",
+    "lineupGap": "A starter left your lineup (banned or deleted). Your matches wait until {{time}}: pick a sub before then, or the first sub moves in. With no sub you play short-handed.",
+    "pickSub": "Pick a sub"
   },
   "bracketCards": {
     "upper": "胜者组",

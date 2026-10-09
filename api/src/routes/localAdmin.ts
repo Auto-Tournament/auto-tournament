@@ -30,6 +30,7 @@ import { markLocalReauth } from '../utils/localReauth';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { playerEmailService } from '../services/playerEmailService';
 import { emailService } from '../services/emailService';
+import { deletePlayer } from '../services/playerModeration';
 
 export const setupRouter = Router();
 export const localAuthRouter = Router();
@@ -854,7 +855,10 @@ localAccountsRouter.delete('/:username', guardWrite, async (req: Request, res: R
     if (removesLastAdmin({ targetIsAdmin: !!player?.isAdmin, adminCount: await playerService.countAdmins() })) {
       return res.status(409).json({ success: false, error: LAST_ADMIN });
     }
-    await localAdminService.removeAccount(row.username, requestActorId(req));
+    // Removing an account deletes the person (services/playerModeration.ts):
+    // a tombstone keeps their match rows, the username is free again.
+    const actor = requestActorId(req) ?? 'admin';
+    await deletePlayer(row.player_id, { userId: actor, name: actor });
     return res.json({ success: true });
   } catch (error) {
     log.error('[ACCOUNTS] Removing a local account failed', error as Error);

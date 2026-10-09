@@ -20,6 +20,11 @@
     "directoryMore": "{{count}} more. Type to narrow the list."
   },
   "playerPage": {
+    "deletedName": "Deleted player",
+    "deletedChip": "Deleted",
+    "deletedBody": "This account was deleted. Their matches are still in the history.",
+    "bannedChip": "Banned",
+    "bannedBody": "This player is banned.",
     "playerNotFound": "This player doesn't exist.",
     "backToFindPlayer": "Back to Find Player",
     "profileTitle": "Player profile",
@@ -255,6 +260,21 @@
     "matchLinkCopied": "Team match link copied"
   },
   "playersPage": {
+    "banned": "Banned",
+    "ban": "Ban",
+    "unban": "Lift ban",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "banTitle": "Ban {{name}}?",
+    "banBody": "They can't sign in, and their public page shows only their name and \"Banned\". If they're in a lineup of a running tournament, they leave it: a starter's team gets 15 minutes to pick a sub before playing short-handed. You can lift the ban later.",
+    "banReason": "Reason (optional)",
+    "banReasonHelp": "Only admins see this.",
+    "bannedDone": "{{name}} is banned",
+    "unbanned": "{{name}} can sign in again",
+    "deleteTitle": "Delete {{name}}?",
+    "deleteBody": "Their name, picture, email, sign-in methods, friends and teams are removed for good. Their matches stay, shown as \"Deleted player\". This can't be undone.",
+    "deletedDone": "{{name}} is deleted",
+    "moderationError": "Could not change the player",
     "headerSelect": {
       "select": "Select",
       "done": "Done Selecting",

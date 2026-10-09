@@ -12,6 +12,7 @@ import FirstSignIn from './pages/FirstSignIn';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import EmailLink from './pages/EmailLink';
+import { BlockedNotice } from './components/auth/BlockedNotice';
 import AdminHome from './pages/AdminHome';
 import Manage from './pages/Manage';
 import Teams from './pages/Teams';
@@ -632,6 +633,7 @@ export default function App() {
               {/* Renders at once. Code modules load alongside (main.tsx
                   starts them); a module's routes and slots show a pending
                   state until it arrives, and re-render when it does. */}
+              <BlockedNotice />
               <AppRoutes />
               {/* The one match details dialog a game module opens with the
                   SDK's openMatchDetails(slug). Core's, so it needs no module
