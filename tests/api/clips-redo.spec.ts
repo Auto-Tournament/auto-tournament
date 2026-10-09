@@ -135,6 +135,18 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
       });
       expect(up.status()).toBe(200);
     }
+    // Its overlay recipe (JSON) is kept next to it: the app's JSON parser
+    // must not leave it an empty file ("The overlay is not JSON").
+    const recipe = { version: 1, name: 'C0', kills: [1.5, 2.25] };
+    const overlay = await request.put(
+      `/api/game/cs2/recorder/jobs/${mine.moments[0].id}/clip/overlay`,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        data: recipe,
+      }
+    );
+    expect(overlay.status(), await overlay.text()).toBe(200);
+    expect((await overlay.json()).bytes).toBe(JSON.stringify(recipe).length);
     type Listed = {
       current: string;
       outdated: number;
