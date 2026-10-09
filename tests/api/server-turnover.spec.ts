@@ -154,6 +154,21 @@ test.describe.serial('Server turnover after series end', () => {
       // Idle 6 s after series end with the upload done: no grace window left.
       await primeIdle(request, serverId, now() - 6);
       const released = await serverEntry(request, serverId);
+      if (released.inGraceWindow) {
+        // The release runs an allocation (startup.ts), and a match an earlier
+        // spec left waiting takes the server: loading it starts a new series on
+        // the server, so this one's end no longer counts. That is the release.
+        const takenBy = async () => {
+          const res = await request.get('/api/matches', { headers: getAuthHeader() });
+          const all = (await res.json()).matches as Array<{
+            slug: string;
+            serverId: string | null;
+          }>;
+          return all.find((m) => m.serverId === serverId && m.slug !== slug)?.slug ?? null;
+        };
+        await expect.poll(takenBy, { timeout: 5_000 }).not.toBeNull();
+        return;
+      }
       expect(released.inGraceWindow).toBe(false);
       expect(released.notAllocatableReason).not.toBe('grace-window');
       expect(released.notAllocatableReason).not.toBe('demo-upload');
