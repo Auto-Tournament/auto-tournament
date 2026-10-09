@@ -1307,6 +1307,55 @@
         ]
       }
     },
+    "/api/auth/local/password": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Change your own password",
+        "description": "Same-site JSON. For a signed-in account with a username and password\nlogin: the current password (and `totp` when two-step is on), then the\nnew one. Two-step verification stays on. Throttled like sign-in.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "currentPassword": {
+                    "type": "string"
+                  },
+                  "newPassword": {
+                    "type": "string"
+                  },
+                  "totp": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Changed"
+          },
+          "400": {
+            "description": "The new password is not accepted (`problem` says why)"
+          },
+          "401": {
+            "description": "Wrong current password or code; or `totpRequired`"
+          },
+          "403": {
+            "description": "Impersonating"
+          },
+          "404": {
+            "description": "Not signed in, or the account has no password login"
+          },
+          "429": {
+            "description": "Too many attempts"
+          }
+        }
+      }
+    },
     "/api/auth/local/reauth": {
       "post": {
         "tags": [
