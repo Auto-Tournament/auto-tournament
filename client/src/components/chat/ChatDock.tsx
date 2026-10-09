@@ -7,15 +7,32 @@
  *
  * In a match's chat the enemy writes in blue, an admin in gold with an ADMIN
  * mark, and the viewer in the accent colour; platform lines sit in the middle.
+ *
+ * Off a phone the window lists the chats on the left and shows the open one
+ * beside them under its own name; the viewer's own lines sit on the right, a
+ * solid accent bubble with their picture (draft: Auto Tournament Features, chat).
  */
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Box, Button, ButtonBase, CircularProgress, IconButton, InputBase, Typography, useMediaQuery } from '@mui/material';
+import {
+  Box,
+  Button,
+  ButtonBase,
+  CircularProgress,
+  IconButton,
+  InputBase,
+  Typography,
+  useMediaQuery,
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { systemLineText } from './systemLine';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import { matchmakingAction, refreshMatchmaking, useMatchmaking } from '../matchmaking/matchmakingStore';
+import {
+  matchmakingAction,
+  refreshMatchmaking,
+  useMatchmaking,
+} from '../matchmaking/matchmakingStore';
 import { paths } from '../../paths';
 import { fontDisplay, radii, textSize, tokens } from '../../theme/tokens';
 import {
@@ -37,9 +54,9 @@ const PANEL_WIDTH = 400;
 const PANEL_HEIGHT = 620;
 /** Room around the floating window, from the screen's edges. */
 const PANEL_MARGIN = 24;
-/** On a wide screen: the chats listed on the left, the open one beside them (draft 5c). */
-const WIDE_PANEL_WIDTH = 680;
-const LIST_WIDTH = 220;
+/** Off a phone: the chats listed on the left, the open one beside them. */
+const WIDE_PANEL_WIDTH = 640;
+const LIST_WIDTH = 190;
 const PEEK_MS = 8000;
 const MAX_BODY = 500;
 
@@ -52,7 +69,17 @@ const tint = (hex: string, alpha: number) => {
 
 function ChatIcon({ size = 22 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M4 5h16v11H9l-5 4z" />
     </svg>
   );
@@ -60,7 +87,17 @@ function ChatIcon({ size = 22 }: { size?: number }) {
 
 function ShieldIcon({ size = 16 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z" />
     </svg>
   );
@@ -72,12 +109,14 @@ function clockOf(seconds: number): string {
 
 function Avatar({ message }: { message: ChatMessage }) {
   const isAdmin = message.senderKind === 'admin';
+  const picture = isAdmin ? null : message.senderAvatar;
   return (
     <Box
       aria-hidden
       sx={{
         width: 32,
         height: 32,
+        flex: 'none',
         borderRadius: '50%',
         display: 'grid',
         placeItems: 'center',
@@ -86,9 +125,16 @@ function Avatar({ message }: { message: ChatMessage }) {
         fontSize: textSize.sm,
         bgcolor: isAdmin ? tint(admin, 0.16) : color.paper3,
         color: isAdmin ? admin : color.ink,
+        backgroundImage: picture ? `url(${picture})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
       }}
     >
-      {isAdmin ? <ShieldIcon /> : (message.senderName.trim()[0] ?? '?').toUpperCase()}
+      {isAdmin ? (
+        <ShieldIcon />
+      ) : picture ? null : (
+        (message.senderName.trim()[0] ?? '?').toUpperCase()
+      )}
     </Box>
   );
 }
@@ -110,7 +156,16 @@ function MessageLine({
       <Typography
         component="div"
         data-testid="chat-system-line"
-        sx={{ alignSelf: 'center', fontSize: textSize.xs, color: color.muted, px: 1.5, py: 0.6, borderRadius: radii.pill, bgcolor: color.paper3, textAlign: 'center' }}
+        sx={{
+          alignSelf: 'center',
+          fontSize: textSize.xs,
+          color: color.muted,
+          px: 1.5,
+          py: 0.6,
+          borderRadius: radii.pill,
+          bgcolor: color.paper3,
+          textAlign: 'center',
+        }}
       >
         {systemLineText(message.body, t)}
       </Typography>
@@ -118,25 +173,40 @@ function MessageLine({
   }
   if (mine) {
     return (
-      <Box data-testid="chat-message" data-mine="true" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
-        <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
-          {t('chat.you')} · {clockOf(message.createdAt)}
-        </Typography>
+      <Box
+        data-testid="chat-message"
+        data-mine="true"
+        sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 32px', gap: 1.25 }}
+      >
         <Box
           sx={{
-            maxWidth: '85%',
-            px: 1.5,
-            py: 1.1,
-            borderRadius: '14px 4px 14px 14px',
-            bgcolor: tint(color.accent, 0.14),
-            border: `1px solid ${color.accent}`,
-            fontSize: textSize.md,
-            overflowWrap: 'anywhere',
-            whiteSpace: 'pre-wrap',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 0.5,
+            minWidth: 0,
           }}
         >
-          {message.body}
+          <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
+            {t('chat.you')} · {clockOf(message.createdAt)}
+          </Typography>
+          <Box
+            sx={{
+              maxWidth: '100%',
+              px: 1.5,
+              py: 1.1,
+              borderRadius: '14px 4px 14px 14px',
+              bgcolor: color.accent,
+              color: color.accentInk,
+              fontSize: textSize.md,
+              overflowWrap: 'anywhere',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            {message.body}
+          </Box>
         </Box>
+        <Avatar message={message} />
       </Box>
     );
   }
@@ -144,15 +214,37 @@ function MessageLine({
   const nameColor = isAdmin ? admin : isEnemy ? enemy : color.ink;
   const bubble = isAdmin ? tint(admin, 0.16) : isEnemy ? tint(enemy, 0.14) : color.paper3;
   return (
-    <Box data-testid="chat-message" data-kind={isAdmin ? 'admin' : isEnemy ? 'enemy' : 'friend'} sx={{ display: 'grid', gridTemplateColumns: '32px minmax(0, 1fr)', gap: 1.25 }}>
+    <Box
+      data-testid="chat-message"
+      data-kind={isAdmin ? 'admin' : isEnemy ? 'enemy' : 'friend'}
+      sx={{ display: 'grid', gridTemplateColumns: '32px minmax(0, 1fr)', gap: 1.25 }}
+    >
       <Avatar message={message} />
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'baseline', fontSize: textSize.sm, flexWrap: 'wrap' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            alignItems: 'baseline',
+            fontSize: textSize.sm,
+            flexWrap: 'wrap',
+          }}
+        >
           <Box component="span" sx={{ fontWeight: 600, color: nameColor }}>
             {message.senderName}
           </Box>
           {isAdmin && (
-            <Box component="span" sx={{ px: 0.9, borderRadius: radii.pill, bgcolor: tint(admin, 0.16), color: admin, fontSize: '0.6875rem', fontWeight: 600 }}>
+            <Box
+              component="span"
+              sx={{
+                px: 0.9,
+                borderRadius: radii.pill,
+                bgcolor: tint(admin, 0.16),
+                color: admin,
+                fontSize: '0.6875rem',
+                fontWeight: 600,
+              }}
+            >
               {t('chat.adminBadge')}
             </Box>
           )}
@@ -181,15 +273,33 @@ function MessageLine({
   );
 }
 
-function Tabs({ channels, active, vertical = false }: { channels: ChatChannel[]; active: string | null; vertical?: boolean }) {
+function Tabs({
+  channels,
+  active,
+  vertical = false,
+}: {
+  channels: ChatChannel[];
+  active: string | null;
+  vertical?: boolean;
+}) {
   const { t } = useTranslation();
-  const label = (c: ChatChannel) => (c.kind === 'match' ? t('chat.tabMatch') : c.kind === 'team' ? t('chat.tabTeam') : t('chat.tabParty'));
+  const label = (c: ChatChannel) =>
+    c.kind === 'match'
+      ? t('chat.tabMatch')
+      : c.kind === 'team'
+        ? t('chat.tabTeam')
+        : t('chat.tabParty');
   return (
     <Box
       role="tablist"
       aria-label={t('chat.tabsLabel')}
       aria-orientation={vertical ? 'vertical' : 'horizontal'}
-      sx={{ display: 'flex', flexDirection: vertical ? 'column' : 'row', gap: 0.75, flexWrap: vertical ? 'nowrap' : 'wrap' }}
+      sx={{
+        display: 'flex',
+        flexDirection: vertical ? 'column' : 'row',
+        gap: 0.75,
+        flexWrap: vertical ? 'nowrap' : 'wrap',
+      }}
     >
       {channels.map((c) => {
         const selected = c.channel === active;
@@ -206,7 +316,8 @@ function Tabs({ channels, active, vertical = false }: { channels: ChatChannel[];
               justifyContent: vertical ? 'space-between' : 'center',
               textAlign: 'left',
               borderRadius: vertical ? radii.md : radii.pill,
-              border: selected ? 0 : `1px solid ${color.rule}`,
+              border: selected || vertical ? 0 : `1px solid ${color.rule}`,
+              '&:hover': selected ? {} : { bgcolor: color.paper3 },
               bgcolor: selected ? color.ink : 'transparent',
               color: selected ? color.accentInk : color.ink2,
               fontWeight: selected ? 600 : 400,
@@ -218,7 +329,17 @@ function Tabs({ channels, active, vertical = false }: { channels: ChatChannel[];
             {vertical ? (
               <Box component="span" sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                 <span>{label(c)}</span>
-                <Box component="span" sx={{ fontSize: textSize.xs, color: selected ? color.accentInk : color.muted, opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <Box
+                  component="span"
+                  sx={{
+                    fontSize: textSize.xs,
+                    color: selected ? color.accentInk : color.muted,
+                    opacity: 0.8,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
                   {c.title}
                 </Box>
               </Box>
@@ -226,7 +347,20 @@ function Tabs({ channels, active, vertical = false }: { channels: ChatChannel[];
               label(c)
             )}
             {c.unread > 0 && !selected && (
-              <Box component="span" sx={{ minWidth: 18, height: 18, px: 0.5, borderRadius: radii.pill, bgcolor: color.accent, color: color.accentInk, fontSize: '0.6875rem', display: 'grid', placeItems: 'center' }}>
+              <Box
+                component="span"
+                sx={{
+                  minWidth: 18,
+                  height: 18,
+                  px: 0.5,
+                  borderRadius: radii.pill,
+                  bgcolor: color.accent,
+                  color: color.accentInk,
+                  fontSize: '0.6875rem',
+                  display: 'grid',
+                  placeItems: 'center',
+                }}
+              >
                 {c.unread}
               </Box>
             )}
@@ -284,8 +418,19 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
           ? t('chat.partyWho')
           : '';
 
+  const kindLabel =
+    channel?.kind === 'match'
+      ? t('chat.tabMatch')
+      : channel?.kind === 'team'
+        ? t('chat.tabTeam')
+        : t('chat.tabParty');
+
   const placeholder =
-    channel?.kind === 'match' ? t('chat.placeholderMatch') : channel?.kind === 'team' ? t('chat.placeholderTeam') : t('chat.placeholderParty');
+    channel?.kind === 'match'
+      ? t('chat.placeholderMatch')
+      : channel?.kind === 'team'
+        ? t('chat.placeholderTeam')
+        : t('chat.placeholderParty');
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -360,142 +505,287 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
       })}
     >
       {wide && channels.length > 0 && (
-        <Box sx={{ width: LIST_WIDTH, flex: 'none', borderRight: `1px solid ${color.rule}`, px: 1.5, pt: 9, overflowY: 'auto' }}>
+        <Box
+          sx={{
+            width: LIST_WIDTH,
+            flex: 'none',
+            borderRight: `1px solid ${color.rule}`,
+            p: 1.25,
+            overflowY: 'auto',
+          }}
+        >
           <Tabs channels={channels} active={active} vertical />
         </Box>
       )}
       <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-      <Box sx={{ px: 2.25, pt: 2, pb: 1.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderBottom: `1px solid ${color.rule}` }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-          {/* On a phone the chat is a full screen: Back, where Close would be. */}
-          {phone && (
+        <Box
+          sx={{
+            px: 2.25,
+            pt: 2,
+            pb: 1.5,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5,
+            borderBottom: `1px solid ${color.rule}`,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+            {/* On a phone the chat is a full screen: Back, where Close would be. */}
+            {phone && (
+              <IconButton
+                aria-label={t('chat.back')}
+                data-testid="chat-back"
+                onClick={closeChat}
+                sx={{ width: 36, height: 36, ml: -0.75, color: color.ink2 }}
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </IconButton>
+            )}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography
+                id="chat-title"
+                component="h2"
+                sx={{ m: 0, fontFamily: fontDisplay, fontSize: textSize.lg, fontWeight: 600 }}
+              >
+                {wide && channel ? kindLabel : t('chat.title')}
+              </Typography>
+              {wide && subtitle && (
+                <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
+                  {subtitle}
+                </Typography>
+              )}
+            </Box>
             <IconButton
-              aria-label={t('chat.back')}
-              data-testid="chat-back"
+              aria-label={t('chat.close')}
+              data-testid="chat-close"
               onClick={closeChat}
-              sx={{ width: 36, height: 36, ml: -0.75, color: color.ink2 }}
+              sx={{
+                display: phone ? 'none' : undefined,
+                width: 36,
+                height: 36,
+                borderRadius: '10px',
+                border: `1px solid ${color.rule}`,
+                color: color.ink2,
+              }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" />
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
+                <path d="M6 6l12 12M18 6L6 18" />
               </svg>
             </IconButton>
+          </Box>
+          {channels.length > 0 && !wide && <Tabs channels={channels} active={active} />}
+          {subtitle && !wide && (
+            <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>{subtitle}</Typography>
           )}
-          <Typography id="chat-title" component="h2" sx={{ m: 0, fontFamily: fontDisplay, fontSize: textSize.lg, fontWeight: 600, flex: 1 }}>
-            {t('chat.title')}
-          </Typography>
-          <IconButton
-            aria-label={t('chat.close')}
-            data-testid="chat-close"
-            onClick={closeChat}
-            sx={{ display: phone ? 'none' : undefined, width: 36, height: 36, borderRadius: '10px', border: `1px solid ${color.rule}`, color: color.ink2 }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </IconButton>
+          {channel?.kind === 'party' && !readOnly && <PartyBar />}
         </Box>
-        {channels.length > 0 && !wide && <Tabs channels={channels} active={active} />}
-        {subtitle && <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>{subtitle}</Typography>}
-        {channel?.kind === 'party' && !readOnly && <PartyBar />}
-      </Box>
 
-      <Box
-        ref={logRef}
-        role="log"
-        aria-live="polite"
-        aria-label={channel ? t('chat.logLabel', { title: channel.title }) : t('chat.title')}
-        data-testid="chat-log"
-        onScroll={onScroll}
-        sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 2.25, py: 2, display: 'flex', flexDirection: 'column', gap: 1.75 }}
-      >
-        {!channel && (
-          <Typography sx={{ color: color.muted, fontSize: textSize.md, m: 'auto', textAlign: 'center', maxWidth: 280 }}>{t('chat.none')}</Typography>
-        )}
-        {thread?.loading && thread.messages.length === 0 && <CircularProgress size={22} sx={{ m: 'auto' }} aria-label={t('chat.loading')} />}
-        {thread?.error && thread.messages.length === 0 && (
-          <Typography role="alert" sx={{ color: color.ban, fontSize: textSize.sm, m: 'auto', textAlign: 'center' }}>
-            {thread.error}
-          </Typography>
-        )}
-        {channel && thread && !thread.loading && !thread.error && thread.messages.length === 0 && (
-          <Typography sx={{ color: color.muted, fontSize: textSize.md, m: 'auto', textAlign: 'center', maxWidth: 280 }}>{t('chat.empty')}</Typography>
-        )}
-        {thread?.messages.map((m) => {
-          const mine = m.senderId !== null && m.senderId === playerSteamId && m.senderKind !== 'system';
-          const isEnemy = channel?.kind === 'match' && m.senderKind === 'player' && m.senderTeam !== null && myTeam !== null && m.senderTeam !== myTeam;
-          const teamName = channel?.kind === 'match' && isEnemy && channel.title.startsWith('vs ') ? channel.title.slice(3) : null;
-          return <MessageLine key={m.id} message={m} mine={mine} isEnemy={isEnemy} teamName={teamName} />;
-        })}
-      </Box>
-
-      {channel && (
         <Box
-          component="form"
-          onSubmit={submit}
-          sx={{ px: 1.75, pt: 1.5, pb: phone ? 'max(14px, env(safe-area-inset-bottom))' : 1.75, borderTop: `1px solid ${color.rule}`, display: 'flex', flexDirection: 'column', gap: 1.25 }}
+          ref={logRef}
+          role="log"
+          aria-live="polite"
+          aria-label={channel ? t('chat.logLabel', { title: channel.title }) : t('chat.title')}
+          data-testid="chat-log"
+          onScroll={onScroll}
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            px: 2.25,
+            py: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.75,
+          }}
         >
-          {readOnly ? (
-            <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>{t('chat.readOnlyImpersonating')}</Typography>
-          ) : (
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <InputBase
-                inputRef={inputRef}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value.slice(0, MAX_BODY))}
-                placeholder={placeholder}
-                inputProps={{ 'aria-label': placeholder, 'data-testid': 'chat-input', maxLength: MAX_BODY }}
+          {!channel && (
+            <Typography
+              sx={{
+                color: color.muted,
+                fontSize: textSize.md,
+                m: 'auto',
+                textAlign: 'center',
+                maxWidth: 280,
+              }}
+            >
+              {t('chat.none')}
+            </Typography>
+          )}
+          {thread?.loading && thread.messages.length === 0 && (
+            <CircularProgress size={22} sx={{ m: 'auto' }} aria-label={t('chat.loading')} />
+          )}
+          {thread?.error && thread.messages.length === 0 && (
+            <Typography
+              role="alert"
+              sx={{ color: color.ban, fontSize: textSize.sm, m: 'auto', textAlign: 'center' }}
+            >
+              {thread.error}
+            </Typography>
+          )}
+          {channel &&
+            thread &&
+            !thread.loading &&
+            !thread.error &&
+            thread.messages.length === 0 && (
+              <Typography
                 sx={{
-                  flex: 1,
-                  minWidth: 0,
-                  px: 1.75,
-                  py: 0.9,
-                  borderRadius: radii.md,
-                  border: `1px solid ${color.rule}`,
-                  bgcolor: color.paper,
-                  color: color.ink,
+                  color: color.muted,
                   fontSize: textSize.md,
-                  '&.Mui-focused': { borderColor: color.accent },
-                }}
-              />
-              <IconButton
-                type="submit"
-                aria-label={t('chat.send')}
-                data-testid="chat-send"
-                disabled={sending || !draft.trim()}
-                sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: radii.md,
-                  bgcolor: color.accent,
-                  color: color.accentInk,
-                  '&:hover': { bgcolor: color.accent2 },
-                  '&.Mui-disabled': { bgcolor: color.paper3, color: color.muted },
+                  m: 'auto',
+                  textAlign: 'center',
+                  maxWidth: 280,
                 }}
               >
-                {sending ? (
-                  <CircularProgress size={16} sx={{ color: 'inherit' }} />
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
-                )}
-              </IconButton>
-            </Box>
-          )}
-          {channel.kind === 'match' && myTeam && !readOnly && (
-            <Button
-              type="button"
-              onClick={call}
-              disabled={calling}
-              data-testid="chat-call-admin"
-              startIcon={<ShieldIcon size={14} />}
-              sx={{ alignSelf: 'flex-start', px: 0, py: 0.5, minWidth: 0, color: admin, fontSize: textSize.sm, fontWeight: 500, textTransform: 'none' }}
-            >
-              {t('chat.callAdmin')}
-            </Button>
-          )}
+                {t('chat.empty')}
+              </Typography>
+            )}
+          {thread?.messages.map((m) => {
+            const mine =
+              m.senderId !== null && m.senderId === playerSteamId && m.senderKind !== 'system';
+            const isEnemy =
+              channel?.kind === 'match' &&
+              m.senderKind === 'player' &&
+              m.senderTeam !== null &&
+              myTeam !== null &&
+              m.senderTeam !== myTeam;
+            const teamName =
+              channel?.kind === 'match' && isEnemy && channel.title.startsWith('vs ')
+                ? channel.title.slice(3)
+                : null;
+            return (
+              <MessageLine
+                key={m.id}
+                message={m}
+                mine={mine}
+                isEnemy={isEnemy}
+                teamName={teamName}
+              />
+            );
+          })}
         </Box>
-      )}
+
+        {channel && (
+          <Box
+            component="form"
+            onSubmit={submit}
+            sx={{
+              px: 1.75,
+              pt: 1.5,
+              pb: phone ? 'max(14px, env(safe-area-inset-bottom))' : 1.75,
+              borderTop: `1px solid ${color.rule}`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1.25,
+            }}
+          >
+            {readOnly ? (
+              <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
+                {t('chat.readOnlyImpersonating')}
+              </Typography>
+            ) : (
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <InputBase
+                  inputRef={inputRef}
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value.slice(0, MAX_BODY))}
+                  placeholder={placeholder}
+                  inputProps={{
+                    'aria-label': placeholder,
+                    'data-testid': 'chat-input',
+                    maxLength: MAX_BODY,
+                  }}
+                  sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    px: 1.75,
+                    py: 0.9,
+                    borderRadius: radii.md,
+                    border: `1px solid ${color.rule}`,
+                    bgcolor: color.paper,
+                    color: color.ink,
+                    fontSize: textSize.md,
+                    '&.Mui-focused': { borderColor: color.accent },
+                  }}
+                />
+                <IconButton
+                  type="submit"
+                  aria-label={t('chat.send')}
+                  data-testid="chat-send"
+                  disabled={sending || !draft.trim()}
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: radii.md,
+                    bgcolor: color.accent,
+                    color: color.accentInk,
+                    '&:hover': { bgcolor: color.accent2 },
+                    '&.Mui-disabled': { bgcolor: color.paper3, color: color.muted },
+                  }}
+                >
+                  {sending ? (
+                    <CircularProgress size={16} sx={{ color: 'inherit' }} />
+                  ) : (
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  )}
+                </IconButton>
+              </Box>
+            )}
+            {channel.kind === 'match' && myTeam && !readOnly && (
+              <Button
+                type="button"
+                onClick={call}
+                disabled={calling}
+                data-testid="chat-call-admin"
+                startIcon={<ShieldIcon size={14} />}
+                sx={{
+                  alignSelf: 'flex-start',
+                  px: 0,
+                  py: 0.5,
+                  minWidth: 0,
+                  color: admin,
+                  fontSize: textSize.sm,
+                  fontWeight: 500,
+                  textTransform: 'none',
+                }}
+              >
+                {t('chat.callAdmin')}
+              </Button>
+            )}
+          </Box>
+        )}
       </Box>
     </Box>
   );
@@ -521,7 +811,9 @@ function PartyBar() {
 
   const invite = async () => {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}${paths.play}?join=${party.inviteCode}`);
+      await navigator.clipboard.writeText(
+        `${window.location.origin}${paths.play}?join=${party.inviteCode}`
+      );
       showSuccess(t('chat.party.inviteCopied'));
     } catch {
       showError(t('chat.party.inviteFailed'));
@@ -530,7 +822,11 @@ function PartyBar() {
   const queue = async () => {
     setBusy(true);
     try {
-      await matchmakingAction(searching ? 'DELETE' : 'POST', '/queue', searching ? {} : { mode: party.mode });
+      await matchmakingAction(
+        searching ? 'DELETE' : 'POST',
+        '/queue',
+        searching ? {} : { mode: party.mode }
+      );
       await refreshMatchmaking();
     } catch (error) {
       showError((error as Error).message);
@@ -541,18 +837,50 @@ function PartyBar() {
 
   return (
     <Box data-testid="chat-party-bar" sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-      <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+      <Box
+        component="ul"
+        sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexWrap: 'wrap', gap: 1 }}
+      >
         {people.map((p) => (
-          <Box component="li" key={p.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, pl: 0.5, pr: 1.25, py: 0.5, borderRadius: radii.pill, bgcolor: color.paper3, fontSize: textSize.sm }}>
+          <Box
+            component="li"
+            key={p.id}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.75,
+              pl: 0.5,
+              pr: 1.25,
+              py: 0.5,
+              borderRadius: radii.pill,
+              bgcolor: color.paper3,
+              fontSize: textSize.sm,
+            }}
+          >
             <Box
               component="span"
-              sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: color.paper, display: 'grid', placeItems: 'center', fontSize: '0.6875rem', fontWeight: 600, overflow: 'hidden', backgroundImage: p.avatarUrl ? `url(${p.avatarUrl})` : undefined, backgroundSize: 'cover' }}
+              sx={{
+                width: 22,
+                height: 22,
+                borderRadius: '50%',
+                bgcolor: color.paper,
+                display: 'grid',
+                placeItems: 'center',
+                fontSize: '0.6875rem',
+                fontWeight: 600,
+                overflow: 'hidden',
+                backgroundImage: p.avatarUrl ? `url(${p.avatarUrl})` : undefined,
+                backgroundSize: 'cover',
+              }}
             >
               {p.avatarUrl ? '' : (p.name.trim()[0] ?? '?').toUpperCase()}
             </Box>
             <span>{p.name}</span>
             {p.id === party.leader && (
-              <Box component="span" sx={{ color: color.medalGold, fontSize: textSize.xs, fontWeight: 600 }}>
+              <Box
+                component="span"
+                sx={{ color: color.medalGold, fontSize: textSize.xs, fontWeight: 600 }}
+              >
                 {t('chat.party.leader')}
               </Box>
             )}
@@ -560,7 +888,18 @@ function PartyBar() {
         ))}
       </Box>
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-        <Button size="small" onClick={() => void invite()} data-testid="chat-party-invite" sx={{ borderRadius: radii.pill, bgcolor: color.paper3, color: color.ink, px: 1.75, textTransform: 'none' }}>
+        <Button
+          size="small"
+          onClick={() => void invite()}
+          data-testid="chat-party-invite"
+          sx={{
+            borderRadius: radii.pill,
+            bgcolor: color.paper3,
+            color: color.ink,
+            px: 1.75,
+            textTransform: 'none',
+          }}
+        >
           {t('chat.party.invite')}
         </Button>
         {isLeader && !inLobby && (
@@ -569,7 +908,15 @@ function PartyBar() {
             disabled={busy}
             onClick={() => void queue()}
             data-testid="chat-party-queue"
-            sx={{ borderRadius: radii.pill, bgcolor: searching ? color.paper3 : color.pick, color: searching ? color.ink : color.accentInk, px: 1.75, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: searching ? color.paper3 : color.pick } }}
+            sx={{
+              borderRadius: radii.pill,
+              bgcolor: searching ? color.paper3 : color.pick,
+              color: searching ? color.ink : color.accentInk,
+              px: 1.75,
+              textTransform: 'none',
+              fontWeight: 600,
+              '&:hover': { bgcolor: searching ? color.paper3 : color.pick },
+            }}
           >
             {searching ? t('chat.party.leaveQueue') : t('chat.party.queue')}
           </Button>
@@ -588,7 +935,6 @@ export function ChatDock() {
   const { t } = useTranslation();
   const theme = useTheme();
   const phone = useMediaQuery(theme.breakpoints.down('sm'));
-  const wide = useMediaQuery('(min-width: 1400px)');
   const { playerSteamId, isAuthenticated: isAdmin } = useAuth();
   const { channels, open, peek } = useChat({ steamId: playerSteamId ?? null, isAdmin });
   const { me } = useMatchmaking();
@@ -600,7 +946,7 @@ export function ChatDock() {
     return () => clearTimeout(id);
   }, [peek]);
 
-  if (open) return <Panel phone={phone} wide={wide && !phone} lift={me?.queue ? 56 : 0} />;
+  if (open) return <Panel phone={phone} wide={!phone} lift={me?.queue ? 56 : 0} />;
   if (channels.length === 0) return null;
 
   const peekChannel = peek ? channels.find((c) => c.channel === peek.channel) : null;
@@ -611,7 +957,12 @@ export function ChatDock() {
         ? t('chat.peekTeam')
         : t('chat.peekParty')
     : '';
-  const peekColor = peek?.senderKind === 'admin' ? admin : peekChannel?.kind === 'match' && peek?.senderTeam !== peekChannel.myTeam ? enemy : color.ink;
+  const peekColor =
+    peek?.senderKind === 'admin'
+      ? admin
+      : peekChannel?.kind === 'match' && peek?.senderTeam !== peekChannel.myTeam
+        ? enemy
+        : color.ink;
 
   return (
     <Box
@@ -654,11 +1005,30 @@ export function ChatDock() {
               <Box component="span" sx={{ fontWeight: 600, color: peekColor }}>
                 {peek.senderName}
               </Box>
-              <Box component="span" sx={{ color: color.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <Box
+                component="span"
+                sx={{
+                  color: color.muted,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
                 {peekWhere}
               </Box>
             </Box>
-            <Box component="span" sx={{ fontSize: textSize.md, color: color.ink2, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            <Box
+              component="span"
+              sx={{
+                fontSize: textSize.md,
+                color: color.ink2,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+              }}
+            >
               {peek.senderKind === 'system' ? systemLineText(peek.body, t) : peek.body}
             </Box>
           </Box>
