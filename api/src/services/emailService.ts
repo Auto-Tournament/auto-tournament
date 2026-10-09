@@ -74,6 +74,9 @@ export interface EmailMessage {
 
 export class EmailSettingsError extends Error {}
 
+/** email_settings has one row. */
+const SETTINGS_ROW = 1;
+
 const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
 
 /** A plausible email address, trimmed; null when it is not one. */
@@ -96,8 +99,8 @@ class EmailService {
 
   private async row(): Promise<EmailSettingsRow | null> {
     const rows = await db.queryAsync<EmailSettingsRow>(
-      'SELECT * FROM email_settings WHERE id = 1',
-      []
+      'SELECT * FROM email_settings WHERE id = ?',
+      [SETTINGS_ROW]
     );
     return rows[0] ?? null;
   }
@@ -168,13 +171,14 @@ class EmailService {
     await db.queryAsync(
       `INSERT INTO email_settings (id, enabled, host, port, security, username, password_enc,
          from_address, from_name, site_url, updated_at, updated_by)
-       VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (id) DO UPDATE SET enabled = EXCLUDED.enabled, host = EXCLUDED.host,
          port = EXCLUDED.port, security = EXCLUDED.security, username = EXCLUDED.username,
          password_enc = EXCLUDED.password_enc, from_address = EXCLUDED.from_address,
          from_name = EXCLUDED.from_name, site_url = EXCLUDED.site_url,
          updated_at = EXCLUDED.updated_at, updated_by = EXCLUDED.updated_by`,
       [
+        SETTINGS_ROW,
         next.enabled ? 1 : 0,
         next.host || null,
         next.port,
