@@ -45,7 +45,7 @@ export const RestartTournamentButton: React.FC<RestartTournamentButtonProps> = (
           if (onSuccess) {
             onSuccess();
           }
-          navigate('/bracket');
+          navigate('/manage/bracket');
         }, 2000);
       } else {
         setError(response.message || 'Failed to restart tournament');

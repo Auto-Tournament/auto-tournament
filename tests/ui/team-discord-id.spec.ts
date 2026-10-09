@@ -101,7 +101,7 @@ test.describe.serial('Team Discord IDs UI', () => {
         },
       ]);
 
-      await page.goto('/teams');
+      await page.goto('/manage/teams');
       await expect(page.getByTestId('teams-page')).toBeVisible();
       await openImportModal(page);
 
@@ -157,7 +157,7 @@ test.describe.serial('Team Discord IDs UI', () => {
       // A bare number: JSON.parse loses precision on snowflakes, so it is refused.
       const json = `[{"name":"${teamName}","players":[{"name":"P","steamId":"${steamId}","discordId":123456789012345678}]}]`;
 
-      await page.goto('/teams');
+      await page.goto('/manage/teams');
       await expect(page.getByTestId('teams-page')).toBeVisible();
       await openImportModal(page);
 
@@ -207,7 +207,7 @@ test.describe.serial('Team Discord IDs UI', () => {
       });
       expect(seeded.ok(), 'seeding the Discord ID should succeed').toBe(true);
 
-      await page.goto('/teams');
+      await page.goto('/manage/teams');
       const card = page.getByTestId(teamCardId(teamName));
       await expect(card).toBeVisible();
       await card.click();

@@ -158,7 +158,7 @@ export function NoticeItem({ notice, viewerId, onNavigate }: Props) {
             {t('social.notice.reportNew', { reason: t(`report.reasons.${str(d.reason) || 'other'}`) })}
           </>
         );
-        to = '/reports';
+        to = '/manage/reports';
       }
       break;
     case 'news':

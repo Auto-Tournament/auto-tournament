@@ -28,7 +28,7 @@ test.describe.serial('Player Management UI', () => {
     'should display the players page',
     { tag: ['@ui', '@players'] },
     async ({ page }) => {
-      await page.goto('/players');
+      await page.goto('/manage/players');
       await expect(page).toHaveURL(/\/players/);
       await expect(page.getByTestId('players-page')).toBeVisible();
     }
@@ -38,7 +38,7 @@ test.describe.serial('Player Management UI', () => {
     'should create a player via the UI',
     { tag: ['@ui', '@players', '@crud'] },
     async ({ page, request }) => {
-      await page.goto('/players');
+      await page.goto('/manage/players');
       await expect(page.getByTestId('players-page')).toBeVisible();
 
       await page
@@ -88,7 +88,7 @@ test.describe.serial('Player Management UI', () => {
       });
       expect(seeded, 'seed player should be created').toBeTruthy();
 
-      await page.goto('/players');
+      await page.goto('/manage/players');
 
       // NOTE: this deliberately does not assert the empty state. Admin rights
       // are held by a *player* row, so an authenticated admin session always has
@@ -111,7 +111,7 @@ test.describe.serial('Player Management UI', () => {
       });
       expect(testPlayer, 'test player should have been created').toBeTruthy();
 
-      await page.goto('/players');
+      await page.goto('/manage/players');
 
       const playerCard = page.getByTestId(`player-card-${testPlayer!.id}`);
       await expect(playerCard).toBeVisible();

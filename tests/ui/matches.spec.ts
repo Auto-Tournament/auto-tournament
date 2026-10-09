@@ -26,7 +26,7 @@ test.describe.serial('Matches UI', () => {
     'should navigate to and display the matches page',
     { tag: ['@ui', '@matches'] },
     async ({ page }) => {
-      await page.goto('/matches');
+      await page.goto('/manage/matches');
       await expect(page).toHaveURL(/\/matches/);
       await expect(page).toHaveTitle(/Matches/i);
       await expect(page.getByTestId('matches-page')).toBeVisible();
@@ -48,7 +48,7 @@ test.describe.serial('Matches UI', () => {
         expect(res.ok(), `delete manual match ${match.slug}`).toBeTruthy();
       }
 
-      await page.goto('/matches');
+      await page.goto('/manage/matches');
       await expect(page.getByTestId('matches-empty-state')).toBeVisible();
       await expect(page.getByTestId('matches-list')).toHaveCount(0);
 
@@ -62,7 +62,7 @@ test.describe.serial('Matches UI', () => {
       });
       expect(setup, 'tournament setup should succeed').toBeTruthy();
 
-      await page.goto('/matches');
+      await page.goto('/manage/matches');
       await expect(page.getByTestId('matches-list')).toBeVisible();
       await expect(page.getByTestId('matches-empty-state')).toHaveCount(0);
     }

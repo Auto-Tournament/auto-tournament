@@ -28,7 +28,7 @@ test.describe.serial('Server UI', () => {
       const server = await createTestServer(request, 'ui');
       expect(server, 'creating a server through the API').toBeTruthy();
 
-      await page.goto('/servers');
+      await page.goto('/manage/servers');
       // Nothing on the page adds a server by address.
       await expect(page.getByTestId('machines-add')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('add-server-button')).toHaveCount(0);

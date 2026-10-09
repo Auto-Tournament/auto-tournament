@@ -17,7 +17,7 @@ test.describe('Servers page sections', () => {
 
   test('settings behind the button; the fleet closed until opened, and remembered', { tag: ['@ui', '@servers'] }, async ({ page }) => {
     // Start from nothing remembered.
-    await page.goto('/servers');
+    await page.goto('/manage/servers');
     await page.evaluate(() => {
       for (const key of Object.keys(localStorage)) if (key.startsWith('servers-section-')) localStorage.removeItem(key);
     });

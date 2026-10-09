@@ -252,7 +252,7 @@ export default function Bracket() {
           description={t('bracket.empty.noBracketDescription')}
           actionLabel={t('tournament.common.createTournament')}
           actionIcon={PlusIcon}
-          onAction={() => navigate('/tournament')}
+          onAction={() => navigate('/manage/tournament')}
         />
       </Box>
     );
@@ -275,7 +275,7 @@ export default function Bracket() {
             {t('bracket.shuffleEmpty.hint')}
           </Typography>
           <Stack direction="row" spacing={2} justifyContent="center">
-            <Button variant="contained" onClick={() => navigate('/matches')}>
+            <Button variant="contained" onClick={() => navigate('/manage/matches')}>
               {t('bracket.shuffleEmpty.goToMatches')}
             </Button>
             <Button
@@ -302,7 +302,7 @@ export default function Bracket() {
           <Typography variant="body2" color="text.secondary" mb={3}>
             {t('bracket.notGenerated.description', { name: tournament.name })}
           </Typography>
-          <Button variant="contained" onClick={() => navigate('/tournament')}>
+          <Button variant="contained" onClick={() => navigate('/manage/tournament')}>
             {t('bracket.notGenerated.goToSettings')}
           </Button>
         </Panel>
@@ -573,7 +573,7 @@ export default function Bracket() {
                 <Button size="small" variant="outlined" onClick={() => setViewMode('list')}>
                   {t('bracket.shuffleNoVisual.listView')}
                 </Button>
-                <Button size="small" variant="outlined" onClick={() => navigate('/matches')}>
+                <Button size="small" variant="outlined" onClick={() => navigate('/manage/matches')}>
                   {t('bracket.shuffleNoVisual.matches')}
                 </Button>
                 <Button

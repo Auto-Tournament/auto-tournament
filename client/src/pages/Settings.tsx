@@ -63,12 +63,12 @@ const SECTION_CARDS: Record<string, string> = {
  * (Skins, Match rules); its old sections, and `links.settings('cs2')`, go there.
  */
 const MOVED_SECTIONS: Record<string, string> = {
-  cs2: '/match-rules',
-  'cs2:general': '/match-rules',
-  'cs2:servers': '/match-rules',
-  skins: '/skins',
-  'cs2:skins': '/skins',
-  'cs2:inventories': '/skins',
+  cs2: '/manage/match-rules',
+  'cs2:general': '/manage/match-rules',
+  'cs2:servers': '/manage/match-rules',
+  skins: '/manage/skins',
+  'cs2:skins': '/manage/skins',
+  'cs2:inventories': '/manage/skins',
 };
 
 /** One card on the page, found by `?section=` (`settings-<key>`). */

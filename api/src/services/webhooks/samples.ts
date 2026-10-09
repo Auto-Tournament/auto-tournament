@@ -163,7 +163,7 @@ export function sampleEnvelope(
               message: 'my game crashed',
               map_number: 1,
               server: { id: 'srv-sample', name: 'Sample server #1' },
-              match_url: 'https://tournament.example.com/matches?match=sample-match',
+              match_url: 'https://tournament.example.com/manage/matches?match=sample-match',
               called_at: (opts.createdAt ?? new Date('2026-10-01T18:00:00.000Z')).toISOString(),
             },
           }

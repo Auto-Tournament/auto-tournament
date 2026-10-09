@@ -280,14 +280,14 @@ export default function Templates() {
     const params = new URLSearchParams({
       template: template.id.toString(),
     });
-    navigate(`/tournament?${params.toString()}`);
+    navigate(`/manage/tournament?${params.toString()}`);
   };
 
   const pageHead = (
     <PageHead
       title={t('layout.pageTitle.templates')}
       actions={
-        <Button variant="contained" startIcon={<PlusIcon />} onClick={() => navigate('/tournament')}>
+        <Button variant="contained" startIcon={<PlusIcon />} onClick={() => navigate('/manage/tournament')}>
           {t('templatesPage.header.createFromTournament')}
         </Button>
       }
@@ -317,7 +317,7 @@ export default function Templates() {
           description={t('templatesPage.emptyDescription')}
           actionLabel={t('templatesPage.header.createFromTournament')}
           actionIcon={PlusIcon}
-          onAction={() => navigate('/tournament')}
+          onAction={() => navigate('/manage/tournament')}
         />
       ) : (
         <Grid container spacing={2}>

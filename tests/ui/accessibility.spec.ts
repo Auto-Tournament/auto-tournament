@@ -21,10 +21,10 @@ import { setupTournament } from '../helpers/tournamentSetup';
 /** Signed-in pages worth sweeping. */
 const PAGES = [
   '/',
-  '/servers',
-  '/teams',
-  '/players',
-  '/settings',
+  '/manage/servers',
+  '/manage/teams',
+  '/manage/players',
+  '/manage/settings',
   '/tournament/1',
   '/tournament/1/bracket',
   '/tournament/1/matches',

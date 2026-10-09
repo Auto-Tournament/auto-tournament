@@ -76,7 +76,7 @@ test.describe.serial('Modules page', () => {
     'an admin imports a pack from the page, sees the game, and removes it',
     { tag: ['@ui', '@packs'] },
     async ({ page, request }) => {
-      await page.goto('/modules');
+      await page.goto('/manage/modules');
       await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15000 });
 
       // The modules that ship with the app are listed as built in, not as
@@ -121,7 +121,7 @@ test.describe.serial('Modules page', () => {
     'a pack with a tile that would run something is refused, and the page says why',
     { tag: ['@ui', '@packs'] },
     async ({ page }) => {
-      await page.goto('/modules');
+      await page.goto('/manage/modules');
       await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15000 });
 
       await page.getByTestId('modules-file-input').setInputFiles([
@@ -146,7 +146,7 @@ test.describe.serial('Modules page', () => {
     'picking only the JSON of a pack that names a tile says which file is missing',
     { tag: ['@ui', '@packs'] },
     async ({ page }) => {
-      await page.goto('/modules');
+      await page.goto('/manage/modules');
       await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15000 });
 
       await page.getByTestId('modules-file-input').setInputFiles({
@@ -170,7 +170,7 @@ test.describe.serial('Modules page', () => {
       await request.delete('/api/packs/index-test-game');
 
       try {
-        await page.goto('/modules');
+        await page.goto('/manage/modules');
         await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15000 });
         // Both fixtures start uninstalled, so they are in the "Available"
         // accordion, collapsed unless something there needs a look.
@@ -249,7 +249,7 @@ test.describe.serial('Modules page', () => {
         await route.fulfill({ json: { updated: [], skipped: [], failed: [], restartRequired: false } });
       });
 
-      await page.goto('/modules');
+      await page.goto('/manage/modules');
       await page.getByTestId('catalog-update-all').click();
 
       for (const id of ['ua-one', 'ua-two']) {

@@ -183,8 +183,8 @@ test.describe('admin home: "Finish setting up"', () => {
 
   test('"Open settings" goes to the first unfinished item with a page of its own', TAGS, () => {
     expect(setupCardTarget([{ done: false, to: SIGN_IN_SETTINGS_PATH }, { done: false }])).toBe(SIGN_IN_SETTINGS_PATH);
-    expect(setupCardTarget([{ done: true, to: SIGN_IN_SETTINGS_PATH }, { done: false }])).toBe('/settings');
-    expect(SIGN_IN_SETTINGS_PATH).toBe('/settings?section=signin');
+    expect(setupCardTarget([{ done: true, to: SIGN_IN_SETTINGS_PATH }, { done: false }])).toBe('/manage/settings');
+    expect(SIGN_IN_SETTINGS_PATH).toBe('/manage/settings?section=signin');
   });
 });
 

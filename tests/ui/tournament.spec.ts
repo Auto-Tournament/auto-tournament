@@ -50,7 +50,7 @@ test.describe.serial('Tournament UI', () => {
     async ({ page, request }) => {
       await request.delete('/api/tournament', { headers: getAuthHeader() });
 
-      await page.goto('/tournament');
+      await page.goto('/manage/tournament');
       await expect(page).toHaveURL(/\/tournament/);
       await expect(page).toHaveTitle(/Tournament Setup/i);
 
@@ -89,7 +89,7 @@ test.describe.serial('Tournament UI', () => {
       });
       expect(tournament, 'tournament should be created').toBeTruthy();
 
-      await page.goto('/tournament');
+      await page.goto('/manage/tournament');
       await expect(page.getByTestId('tournament-name-display')).toBeVisible();
       await expect(page.getByTestId('tournament-setup-step-review')).toHaveAttribute(
         'aria-current',
@@ -104,7 +104,7 @@ test.describe.serial('Tournament UI', () => {
     async ({ page, request }) => {
       expect(await startTournament(request), 'tournament should start').toBe(true);
 
-      await page.goto('/tournament');
+      await page.goto('/manage/tournament');
 
       // Starting flips the page from the configuration view to the live one.
       await expect(page.getByTestId('tournament-status')).toBeVisible();

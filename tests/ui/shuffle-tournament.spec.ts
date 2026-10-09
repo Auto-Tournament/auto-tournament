@@ -34,7 +34,7 @@ test.describe.serial('Shuffle Tournament UI', () => {
       tag: ['@ui', '@shuffle', '@tournament'],
     },
     async ({ page }) => {
-      await page.goto('/tournament');
+      await page.goto('/manage/tournament');
       await page.waitForLoadState('networkidle');
 
       // With no tournament, /tournament opens the setup flow on its Game step.
@@ -81,12 +81,12 @@ test.describe.serial('Shuffle Tournament UI', () => {
       tag: ['@ui', '@shuffle', '@tournament'],
     },
     async ({ page }) => {
-      await page.goto('/tournament');
+      await page.goto('/manage/tournament');
       await page.waitForLoadState('networkidle');
       
       // Verify tournament page loaded
       await expect(page.getByTestId('tournament-page')).toBeVisible({ timeout: 15000 });
-      expect(page.url()).toContain('/tournament');
+      expect(page.url()).toContain('/manage/tournament');
     }
   );
 });

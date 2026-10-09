@@ -27,7 +27,7 @@ test.describe.serial('Bracket UI', () => {
     async ({ page, request }) => {
       await request.delete('/api/tournament', { headers: getAuthHeader() });
 
-      await page.goto('/bracket');
+      await page.goto('/manage/bracket');
       await expect(page).toHaveURL(/\/bracket/);
       await expect(page).toHaveTitle(/Bracket/i);
 
@@ -49,7 +49,7 @@ test.describe.serial('Bracket UI', () => {
       });
       expect(setup, 'tournament setup should succeed').toBeTruthy();
 
-      await page.goto('/bracket');
+      await page.goto('/manage/bracket');
 
       await expect(page.getByTestId('bracket-visualization')).toBeVisible();
       await expect(page.getByTestId('bracket-tournament-info')).toBeVisible();

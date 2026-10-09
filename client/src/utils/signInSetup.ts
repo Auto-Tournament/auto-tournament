@@ -4,7 +4,7 @@
  */
 
 /** Settings -> Sign-in (the Settings page opens that tab from `?section=signin`). */
-export const SIGN_IN_SETTINGS_PATH = '/settings?section=signin';
+export const SIGN_IN_SETTINGS_PATH = '/manage/settings?section=signin';
 
 export interface ProviderSummary {
   id: string;
@@ -19,5 +19,5 @@ export function isSignInSetUp(providers: ReadonlyArray<ProviderSummary>): boolea
 
 /** Where "Open settings" goes: the first unfinished item's own page, else Settings. */
 export function setupCardTarget(items: ReadonlyArray<{ done: boolean; to?: string }>): string {
-  return items.find((item) => !item.done && item.to)?.to ?? '/settings';
+  return items.find((item) => !item.done && item.to)?.to ?? '/manage/settings';
 }

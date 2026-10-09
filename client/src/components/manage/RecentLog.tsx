@@ -32,7 +32,7 @@ export const RecentLog: React.FC<RecentLogProps> = ({ events }) => {
       <SectionHead
         id="manage-recent-heading"
         title={t('managePage.recent.heading')}
-        link={{ to: '/matches', label: t('managePage.recent.viewAll') }}
+        link={{ to: '/manage/matches', label: t('managePage.recent.viewAll') }}
       />
 
       {events.length === 0 ? (

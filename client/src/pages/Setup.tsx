@@ -11,7 +11,7 @@ import { paths } from '../paths';
 type Step = 'loading' | 'closed' | 'code' | 'account' | 'totp';
 
 /** Where setup ends: Settings -> Sign-in, with the "Set up how players sign in" banner. */
-const AFTER_SETUP = '/settings?section=signin&welcome=setup';
+const AFTER_SETUP = '/manage/settings?section=signin&welcome=setup';
 
 /**
  * /setup: the first admin on a fresh install, or recovery with a reset-admin

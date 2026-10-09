@@ -24,7 +24,7 @@ test.describe.serial('Settings UI', () => {
       tag: ['@ui', '@settings'],
     },
     async ({ page }) => {
-      await page.goto('/settings');
+      await page.goto('/manage/settings');
       await expect(page).toHaveURL(/\/settings/);
       await expect(page).toHaveTitle(/Settings/i);
       await page.waitForLoadState('networkidle');
@@ -54,7 +54,7 @@ test.describe.serial('Settings UI', () => {
       tag: ['@ui', '@settings', '@configuration'],
     },
     async ({ page }) => {
-      await page.goto('/match-rules');
+      await page.goto('/manage/match-rules');
       await page.waitForLoadState('networkidle');
 
       const webhookInput = page.getByTestId('settings-webhook-url-input');
@@ -108,7 +108,7 @@ test.describe.serial('Settings UI', () => {
       // A field the tab does not touch, to prove its saves are partial.
       const before = await readSettings();
 
-      await page.goto('/match-rules');
+      await page.goto('/manage/match-rules');
       await page.getByTestId('cs2-settings-demos-summary').click({ timeout: 30000 });
       const hostname = page.getByTestId('at-hostname-format-input');
       await expect(hostname).toBeVisible({ timeout: 15000 });

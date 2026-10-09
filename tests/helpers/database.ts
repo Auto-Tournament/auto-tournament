@@ -33,7 +33,7 @@ export async function wipeDatabase(request: APIRequestContext): Promise<boolean>
 export async function wipeDatabaseViaUI(page: Page): Promise<boolean> {
   try {
     // Navigate to dev tools or settings page where wipe button exists
-    await page.goto('/settings');
+    await page.goto('/manage/settings');
     await page.waitForLoadState('networkidle');
     
     // Look for wipe/danger zone button

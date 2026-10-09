@@ -86,7 +86,7 @@ import { listRouteIntegrations } from './integrations/registry';
 import { useModuleState } from './module-loader/useModuleState';
 import { ModulePendingRoute } from './components/common/ModuleNotInstalledNotice';
 import { MatchDetailsHost } from './components/modals/MatchDetailsHost';
-import { adminRoute, matchDetailsPath, paths, playerProfilePath } from './paths';
+import { adminRoute, LEGACY_ADMIN_PATHS, matchDetailsPath, paths, playerProfilePath } from './paths';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -383,7 +383,7 @@ function AppRoutes() {
         Public team profile. Deliberately not `/team/:teamId` or `/teams/:teamId`:
         the former is the team's live match/server page (`TeamMatch`, used during
         play by players and MatchZy Enhanced flows) and must keep its URL unchanged; the
-        latter would sit under the admin-only `/teams` list. `/t/team/:teamId`
+        latter would sit under the admin-only teams list. `/t/team/:teamId`
         avoids both.
       */}
       <Route
@@ -601,6 +601,16 @@ function AppRoutes() {
           element={<Navigate to={paths.eloTemplates} replace />}
         />
         {isDevelopment && <Route path={adminRoute(paths.dev)} element={<Development />} />}
+        {/* The admin pages' old addresses (before /manage): redirect with
+            the rest of the path and the query. /tournament/:id stays the
+            public tournament page, so only bare /tournament moves. */}
+        {LEGACY_ADMIN_PATHS.flatMap((old) => [
+          <Route key={old} path={adminRoute(old)} element={<LegacyAdminRedirect />} />,
+          ...(old === '/tournament'
+            ? []
+            : [<Route key={`${old}/*`} path={`${adminRoute(old)}/*`} element={<LegacyAdminRedirect />} />]),
+        ])}
+        <Route path="admin" element={<Navigate to={paths.admin} replace />} />
         {/* Nested catch-all so removed/unknown child routes (e.g. /public) show a proper 404 within the app shell */}
         {/* A path no route matches may be a code module's that has not
             arrived yet: pending until the modules settle, then a 404. */}
@@ -611,6 +621,12 @@ function AppRoutes() {
   );
 }
 
+
+/** An admin page's old root address → the same under /manage, path rest and query kept. */
+function LegacyAdminRedirect() {
+  const location = useLocation();
+  return <Navigate to={`${paths.manage}${location.pathname}${location.search}${location.hash}`} replace />;
+}
 
 /** `/matches/:slug` → the Matches page with that match open. */
 function MatchSlugRedirect() {

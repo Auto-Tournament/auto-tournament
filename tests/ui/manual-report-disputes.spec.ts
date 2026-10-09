@@ -289,7 +289,7 @@ test.describe.serial('Disputes, from the team page to the admin queue', () => {
       expect(created.status(), `creating: ${await created.text()}`).toBe(200);
 
       await ensureSignedIn(page);
-      await page.goto('/disputes');
+      await page.goto('/manage/disputes');
       await expect(page.getByTestId('disputes-page')).toBeVisible();
       await expect(page.getByTestId('disputes-empty')).toBeVisible({ timeout: 20_000 });
       await expect(page.getByTestId('disputes-list')).toHaveCount(0);

@@ -48,8 +48,8 @@ test.describe.serial('Admin home', () => {
       // Site grid: every other admin page is reachable from here, including
       // Servers and Settings.
       await expect(page.getByTestId('admin-home-site-grid')).toBeVisible();
-      await expect(page.getByTestId('admin-home-site-link-servers')).toHaveAttribute('href', '/servers');
-      await expect(page.getByTestId('admin-home-site-link-settings')).toHaveAttribute('href', '/settings');
+      await expect(page.getByTestId('admin-home-site-link-servers')).toHaveAttribute('href', '/manage/servers');
+      await expect(page.getByTestId('admin-home-site-link-settings')).toHaveAttribute('href', '/manage/settings');
 
       // The row links to the public event page, and People counts sign-ins.
       await expect(page.getByTestId('admin-home-tournament-event-page')).toHaveAttribute(

@@ -543,7 +543,7 @@ export default function Matches() {
             description={t('matchesPage.empty.description')}
             actionLabel={t('tournament.common.createTournament')}
             actionIcon={PlusIcon}
-            onAction={() => navigate('/tournament')}
+            onAction={() => navigate('/manage/tournament')}
           />
           {StandaloneMatchDialog && (
             <Box display="flex" justifyContent="center" mt={2}>

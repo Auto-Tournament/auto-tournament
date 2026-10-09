@@ -67,7 +67,7 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
       });
       expect(created, 'tournament should be created').toBeTruthy();
 
-      await page.goto('/tournament');
+      await page.goto('/manage/tournament');
       await expect(page.getByTestId('tournament-name-display')).toBeVisible();
 
       await page.getByTestId('tournament-setup-step-format').click();
@@ -94,7 +94,7 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
     "the maps step's own check refuses an empty custom pool",
     { tag: ['@ui', '@tournament'] },
     async ({ page }) => {
-      await page.goto('/tournament');
+      await page.goto('/manage/tournament');
       await page.getByTestId('tournament-setup-step-maps').click();
 
       // A new tournament gets the pool the picker shows.
@@ -127,7 +127,7 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
       const { template } = (await created.json()) as { template: { id: number } };
 
       try {
-        await page.goto(`/tournament?template=${template.id}`);
+        await page.goto(`/manage/tournament?template=${template.id}`);
         await expect(page.getByTestId('tournament-summary-maps')).toHaveText(/7 maps/);
         await page.getByTestId('tournament-setup-step-format').click();
         await expect(page.getByTestId('tournament-max-rounds-field')).toHaveValue('12');
@@ -141,7 +141,7 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
     'a shuffle created in the wizard sends its map sequence as settings.cs2',
     { tag: ['@ui', '@tournament', '@shuffle'] },
     async ({ page, request }) => {
-      await page.goto('/tournament');
+      await page.goto('/manage/tournament');
       const next = page.getByTestId('tournament-next-button');
 
       await next.click(); // Game: CS2

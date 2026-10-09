@@ -35,7 +35,7 @@ test.describe.serial('Teams UI', () => {
     'should navigate to and display the teams page',
     { tag: ['@ui', '@teams'] },
     async ({ page }) => {
-      await page.goto('/teams');
+      await page.goto('/manage/teams');
       await expect(page).toHaveURL(/\/teams/);
       await expect(page).toHaveTitle(/Teams/i);
 
@@ -62,7 +62,7 @@ test.describe.serial('Teams UI', () => {
         await request.delete(`/api/teams/${team.id}`, { headers: getAuthHeader() });
       }
 
-      await page.goto('/teams');
+      await page.goto('/manage/teams');
       await expect(page.getByTestId('teams-page')).toBeVisible();
 
       // --- Create ---
@@ -132,7 +132,7 @@ test.describe.serial('Teams UI', () => {
         await request.delete(`/api/teams/${team.id}`, { headers: getAuthHeader() });
       }
 
-      await page.goto('/teams');
+      await page.goto('/manage/teams');
       await expect(page.getByTestId('teams-empty-state')).toBeVisible();
     }
   );
