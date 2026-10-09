@@ -20,7 +20,11 @@ package main
 //	AT_SNIPER_RUN    Steam's SteamLinuxRuntime_sniper/run, which cs2.sh needs
 //	AT_RECORD_DIR    scratch space for raw frames (default: the system temp dir; ~6 GB a moment)
 //	AT_RESOLUTION    WIDTHxHEIGHT CS2 renders at (default: the output size)
-//	AT_ENCODER       ffmpeg video encoder (default: h264_nvenc on the GPU if it opens, else libx264; H.264 in MP4)
+//	AT_ENCODER       ffmpeg video encoder (default: h264_nvenc on the GPU if it opens, else h264_vaapi, else libx264; H.264 in MP4)
+//	AT_VIDEO         CS2's video settings while it records: max (default), low or keep
+//	AT_GAMESCOPE_HZ  the capture stream's rate (default 120; a fast GPU records smoothly up to 240)
+//	AT_CAPTURE_FPS   the stream rate the first pass assumes (default 30; it follows what each pass gets)
+//	AT_FINISH_SERIAL 0 encodes a moment while the next one records (default: one after the other)
 //	AT_AUDIO_TARGET  the PipeWire sink CS2 plays into (default: the default sink)
 //	AT_KEEP_SCRATCH  set to keep each moment's raw frames, sound and logs
 //
@@ -402,8 +406,11 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 			continue
 		}
 		log.Printf("captured %q in %s", m.Title, time.Since(started).Round(time.Second))
-		if env("AT_FINISH_SERIAL", "") == "1" {
+		if env("AT_FINISH_SERIAL", "1") != "0" {
 			// Nothing else on the GPU while CS2 captures: finish this one first.
+			// Encoding the last moment while the next one recorded starved CS2
+			// (2026-10-09, 9070 XT: 236 fps down to 29-126) and every clip after
+			// the first stuttered. AT_FINISH_SERIAL=0 overlaps them again.
 			drainOne := make(chan struct{})
 			queue <- finishing{result: clipResult{moment: m, player: sh.player, path: out, markers: markers}, finish: func() error {
 				defer close(drainOne)
@@ -745,7 +752,11 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		args = append(append(args, encodeArgs(r.encoder)...), frameCount...)
 		args = append(args, "-movflags", "+faststart", out)
 	}
-	cmd := exec.Command("ffmpeg", hwEncode(args, r.encoder)...)
+	// A hung GPU encoder never returns (2026-10-09: the 9070 XT's VCN
+	// wedged and the recorder waited six hours): give up after encodeTimeout.
+	ctx, cancel := context.WithTimeout(context.Background(), encodeTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "ffmpeg", hwEncode(args, r.encoder)...)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return err
@@ -1411,17 +1422,24 @@ func recordFile(args []string) error {
 	return nil
 }
 
+// encodeTimeout is the longest one moment's encode may take.
+const encodeTimeout = 15 * time.Minute
+
 // pickEncoder is the GPU's H.264 encoder when it opens (a second of test
 // video), else x264 on the CPU: same codec and container either way.
 func pickEncoder() string {
-	cmd := exec.Command("ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30", "-t", "1",
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30", "-t", "1",
 		"-c:v", "h264_nvenc", "-f", "null", "-")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		reason := strings.TrimSpace(string(out))
 		if i := strings.IndexByte(reason, '\n'); i > 0 {
 			reason = reason[:i]
 		}
-		vaapi := exec.Command("ffmpeg", "-v", "error", "-init_hw_device", "vaapi=va:"+vaapiDevice, "-filter_hw_device", "va",
+		vctx, vcancel := context.WithTimeout(context.Background(), 20*time.Second)
+		defer vcancel()
+		vaapi := exec.CommandContext(vctx, "ffmpeg", "-v", "error", "-init_hw_device", "vaapi=va:"+vaapiDevice, "-filter_hw_device", "va",
 			"-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30", "-t", "1", "-vf", "format=nv12,hwupload", "-c:v", "h264_vaapi", "-f", "null", "-")
 		if vaapi.Run() == nil {
 			log.Printf("NVENC is not available (%s): encoding H.264 with VAAPI", reason)
