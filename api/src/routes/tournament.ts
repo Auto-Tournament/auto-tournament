@@ -1,4 +1,5 @@
 import { noticeTournamentStarted } from '../services/tournamentNotices';
+import { licenseService } from '../services/license/licenseService';
 import express, { Router, Request, Response } from 'express';
 import { tournamentService } from '../services/tournamentService';
 import { scheduler } from '../core/scheduler';
@@ -1528,9 +1529,22 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
 
     // Respond immediately so the frontend can update UI state without waiting
     // for all allocations / RCON calls to complete.
+    // A paid license with fewer servers than round one needs: say so (matches wait for a free server).
+    const licenseNote = await (async () => {
+      try {
+        const standing = await licenseService.standing();
+        const needed = Math.ceil((toStart?.teamIds.length ?? 0) / 2);
+        if (!standing.paid || standing.maxServers === null || needed <= standing.maxServers) return null;
+        return `Round one has ${needed} matches, but your license covers ${standing.maxServers} servers: the rest wait for a free server. Add servers in the console to run them all at once.`;
+      } catch {
+        return null;
+      }
+    })();
+
     return res.json({
       success: true,
       message: 'Tournament start requested. Servers will be allocated shortly.',
+      ...(licenseNote ? { licenseNote } : {}),
     });
   } catch (error) {
     log.error('Error starting tournament', error as Error);

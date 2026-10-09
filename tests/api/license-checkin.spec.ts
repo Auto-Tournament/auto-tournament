@@ -102,7 +102,15 @@ test.describe('license check-in: rules', { tag: ['@api'] }, () => {
       tournaments_live: 0,
       max_tournament_teams: 0,
       declared: 'testing',
+      product: 'platform',
+      public_url: null,
     });
+  });
+
+  test('the answer can carry the newest key and where the license stands', () => {
+    const r = parseCheckinResponse({ ok: true, token: 'ATL1.a.b', license: { status: 'past_due', valid_until: '2026-11-08', stops_on: '2026-11-22' } });
+    expect(r).toEqual({ usage: null, notice: null, token: 'ATL1.a.b', license: { status: 'past_due', validUntil: '2026-11-08', stopsOn: '2026-11-22' } });
+    expect(parseCheckinResponse({ ok: true, token: 'nope', license: { status: 'weird' } })).toEqual({ usage: null, notice: null });
   });
 
   test('the key id comes from the token; anything else is no key', () => {

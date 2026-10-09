@@ -5,6 +5,8 @@
  * (../../startup.ts).
  */
 
+import { licenseService } from '../../../../services/license/licenseService';
+import { LicenseLimitError } from '../../../../services/license/gate';
 import type { Server as HttpServer } from 'http';
 import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
@@ -78,7 +80,7 @@ export function isHostOnline(hostId: string): boolean {
 export class HostCommandError extends Error {
   constructor(
     message: string,
-    readonly status: 400 | 404 | 409,
+    readonly status: 400 | 402 | 404 | 409,
     readonly code: string,
     readonly details?: Record<string, unknown>
   ) {
@@ -129,6 +131,16 @@ export async function sendHostCommand<T extends HostCommandType>(
 
   const body: Record<string, unknown> = { ...(payload as Record<string, unknown>) };
   delete body.force;
+  // A paid license's server limit, before a machine is asked to create any.
+  if (type === 'server.create') {
+    const count = Number((body as { count?: unknown }).count ?? 1);
+    try {
+      await licenseService.assertCanCreateServers(Number.isInteger(count) && count > 0 ? count : 1);
+    } catch (error) {
+      if (error instanceof LicenseLimitError) throw new HostCommandError(error.message, 402, error.code);
+      throw error;
+    }
+  }
   // The fleet key is the platform's to add, at send time (./gateway.ts).
   if (type === 'server.create') delete body.enroll_key;
   // Installs carry the license use the admin accepted on the platform, so

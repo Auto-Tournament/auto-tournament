@@ -11,7 +11,7 @@ export interface LicenseStatus {
     product: 'platform' | 'servers';
     pack: 'S' | 'M' | 'L';
     maxServers: number;
-    kind: 'event' | 'year' | 'founder';
+    kind: 'month' | 'year' | 'founder' | 'event';
     issuedAt: string;
     /** Null: a founder license, updates for life. */
     updatesUntil: string | null;
@@ -33,6 +33,14 @@ export interface LicenseStatus {
     sent: string[];
     privacyUrl: string;
   } | null;
+  /** Where the paid license stands (api/src/services/license/gate.ts): past_due warns admins, expired stops the platform. */
+  standing?: {
+    status: 'free' | 'invalid' | 'active' | 'past_due' | 'expired';
+    paid: boolean;
+    maxServers: number | null;
+    licenseId: string | null;
+    stopsOn: string | null;
+  };
   /** An event license only: the quiet "what's this?" question on the admin home. */
   eventPrompt: {
     shouldAsk: boolean;
@@ -82,7 +90,8 @@ export interface LicenseStatusResponse {
 }
 
 /** Admin only: the saved license key's status. `status` is null until loaded, or when it could not be. */
-export function useLicenseStatus() {
+export function useLicenseStatus(options: { enabled?: boolean } = {}) {
+  const enabled = options.enabled ?? true;
   const [status, setStatus] = useState<LicenseStatus | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -98,8 +107,8 @@ export function useLicenseStatus() {
   }, []);
 
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    if (enabled) void reload();
+  }, [reload, enabled]);
 
   return { status, setStatus, loaded, reload };
 }

@@ -977,5 +977,14 @@
     "moved": "Highlight settings, the recorders and how to add one are on their own page now:",
     "saved": "Saved",
     "saveFailed": "Could not save"
+  },
+  "licenseGate": {
+    "expiredTitle": "This platform's license has expired",
+    "expiredAdmin": "The license payment is overdue, so the platform has stopped. Paying turns it back on right away. Your data is safe.",
+    "expiredPlayer": "Matches and sign-ups are paused. The organizer has been told. Check back later.",
+    "pay": "Pay in the console ↗",
+    "settings": "License settings",
+    "fix": "Fix it ↗",
+    "pastDue": "The license payment failed. The platform stops on {{date}} unless it is paid."
   }
 }

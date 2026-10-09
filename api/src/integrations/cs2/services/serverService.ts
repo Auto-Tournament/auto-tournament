@@ -1,4 +1,5 @@
 import { db } from '../../../config/database';
+import { licenseService } from '../../../services/license/licenseService';
 import {
   Server,
   CreateServerInput,
@@ -114,6 +115,9 @@ export class ServerService {
       }
       throw new Error(`Server with ID '${input.id}' already exists`);
     }
+
+    // A paid license's server limit (Commercial License Terms, section 4). Free use has none.
+    await licenseService.assertCanCreateServers(1);
 
     // Check if server with same host:port already exists
     const duplicate = await this.getServerByHostPort(input.host, input.port);

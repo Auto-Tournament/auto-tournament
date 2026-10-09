@@ -27,7 +27,7 @@ const B64URL = /^[A-Za-z0-9_-]+$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const PRODUCTS = ['servers', 'platform'] as const;
 const PACKS = ['S', 'M', 'L'] as const;
-const KINDS = ['event', 'year', 'founder'] as const;
+const KINDS = ['month', 'year', 'founder', 'event'] as const;
 
 export type LicenseProduct = (typeof PRODUCTS)[number];
 

@@ -21,6 +21,7 @@ import {
   type CheckinStore,
 } from './checkin';
 import { countServers } from './serverCount';
+import { configuredPublicOrigin } from '../../utils/publicOrigin';
 
 /** Up to this much is added to the startup delay, and ± this much to each day. */
 const JITTER_MS = 60 * 60 * 1000;
@@ -84,6 +85,9 @@ export const licenseCheckin = new LicenseCheckin({
   countServers,
   activity: readActivity,
   version: packageJson.version,
+  publicUrl: () => configuredPublicOrigin(),
+  // A renewal's key replaces the stored one quietly: same license, newer dates.
+  replaceKey: (key) => db.setAppSettingAsync('license_key', key),
 });
 
 let timer: NodeJS.Timeout | null = null;

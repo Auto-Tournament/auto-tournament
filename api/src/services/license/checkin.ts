@@ -27,7 +27,8 @@
 
 import { randomUUID } from 'crypto';
 import { log } from '../../utils/logger';
-import { decodeLicense } from './verify';
+import { decodeLicense, verifyLicense } from './verify';
+import type { ServerLicenseState } from './gate';
 
 export const DEFAULT_CHECKIN_URL = 'https://autotournament.gg/api/licenses/checkin';
 export const CHECKIN_PRIVACY_URL = 'https://autotournament.gg/privacy#license-checkin';
@@ -53,6 +54,8 @@ export const CHECKIN_FIELDS = [
   'tournaments_live',
   'max_tournament_teams',
   'declared',
+  'product',
+  'public_url',
 ] as const;
 
 export const SETTING = {
@@ -81,6 +84,9 @@ export interface CheckinBody {
   tournaments_live: number;
   max_tournament_teams: number;
   declared: Declared;
+  product: 'platform';
+  /** FRONTEND_BASE_URL's origin, when it is a real address; null otherwise. */
+  public_url: string | null;
 }
 
 /** The server's usage summary for the key, as the admin UI gets it. */
@@ -99,6 +105,10 @@ export interface CheckinResult {
   usage: CheckinUsage | null;
   /** Plain text from the server, at most NOTICE_MAX_LENGTH characters. Never HTML. */
   notice: string | null;
+  /** Where the license stands (./gate.ts); null from an older license server. */
+  license?: ServerLicenseState | null;
+  /** The license's newest key, when the server has a newer one than ours (a renewal). Not stored in the result. */
+  token?: string | null;
 }
 
 /** What the admin UI gets: when, the server's notice, and what is sent. */
@@ -227,7 +237,23 @@ export function parseCheckinResponse(value: unknown): CheckinResult | null {
       };
     }
   }
-  return { usage, notice: cleanNotice(value.notice) };
+  const license = parseLicenseState(value.license);
+  const token = cleanToken(value.token);
+  return { usage, notice: cleanNotice(value.notice), ...(license ? { license } : {}), ...(token ? { token } : {}) };
+}
+
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+const STATES = ['active', 'past_due', 'expired', 'revoked', 'replaced'] as const;
+
+/** The answer's `license`, checked; null when missing or not understood. */
+export function parseLicenseState(value: unknown): ServerLicenseState | null {
+  if (!isObject(value) || !(STATES as readonly unknown[]).includes(value.status)) return null;
+  const day = (v: unknown) => (typeof v === 'string' && DAY.test(v) ? v : null);
+  return { status: value.status as ServerLicenseState['status'], validUntil: day(value.valid_until ?? value.validUntil), stopsOn: day(value.stops_on ?? value.stopsOn) };
+}
+
+function cleanToken(value: unknown): string | null {
+  return typeof value === 'string' && value.startsWith('ATL1.') && value.length <= 4096 ? value : null;
 }
 
 /** A stored result (JSON), or empty when missing or unreadable. */
@@ -252,7 +278,8 @@ export function parseStoredResult(raw: string | null): CheckinResult {
       });
       usage = parsed?.usage ?? null;
     }
-    return { usage, notice: cleanNotice(value.notice) };
+    const license = parseLicenseState(value.license);
+    return { usage, notice: cleanNotice(value.notice), ...(license ? { license } : {}) };
   } catch {
     return { usage: null, notice: null };
   }
@@ -304,6 +331,7 @@ export function buildCheckinBody(input: {
   now: Date;
   activity: Activity;
   declared: Declared;
+  publicUrl?: string | null;
 }): CheckinBody {
   return {
     token: input.key,
@@ -316,6 +344,8 @@ export function buildCheckinBody(input: {
     tournaments_live: count(input.activity.tournamentsLive) ?? 0,
     max_tournament_teams: count(input.activity.maxTournamentTeams) ?? 0,
     declared: input.declared,
+    product: 'platform',
+    public_url: input.publicUrl ?? null,
   };
 }
 
@@ -403,6 +433,22 @@ export function promptAllowed(prompt: EventPromptState, licenseId: string, now: 
 // The check-in
 // ---------------------------------------------------------------------------
 
+/**
+ * Whether `next` is a genuine later key of the same license as `current`:
+ * same id and kind, issued later, and no earlier update window.
+ */
+export function renewalOf(current: string, next: string): boolean {
+  const a = verifyLicense(current);
+  const b = verifyLicense(next);
+  if (!b.valid || !b.license || !a.license) return false;
+  return (
+    a.license.id === b.license.id &&
+    a.license.kind === b.license.kind &&
+    b.license.issued_at > a.license.issued_at &&
+    b.license.updates_until >= a.license.updates_until
+  );
+}
+
 export interface CheckinStore {
   get(key: string): Promise<string | null>;
   set(key: string, value: string | null): Promise<void>;
@@ -415,6 +461,10 @@ export interface CheckinDeps {
   /** Counts for [sinceSeconds, untilSeconds). */
   activity(sinceSeconds: number, untilSeconds: number): Promise<Activity>;
   version: string;
+  /** Where players open the platform (FRONTEND_BASE_URL), sent with the check-in. */
+  publicUrl?: () => string | null;
+  /** Stores a renewed key the server handed back (same license, newer). */
+  replaceKey?: (key: string) => Promise<void>;
   url?: string;
   fetch?: typeof globalThis.fetch;
   now?: () => Date;
@@ -510,6 +560,7 @@ export class LicenseCheckin {
       now,
       activity,
       declared: declaredFor(declaration, keyId),
+      publicUrl: this.deps.publicUrl ? this.deps.publicUrl() : null,
     });
 
     const doFetch = this.deps.fetch ?? globalThis.fetch;
@@ -531,7 +582,12 @@ export class LicenseCheckin {
     // The key may have changed while this was on its way: keep nothing then.
     if ((await this.deps.getKey()) !== key) return 'failed';
     await this.deps.store.set(SETTING.lastAt, now.toISOString());
-    await this.deps.store.set(SETTING.result, JSON.stringify(result));
+    const { token, ...kept } = result;
+    await this.deps.store.set(SETTING.result, JSON.stringify(kept));
+    if (token && token !== key && this.deps.replaceKey && renewalOf(key, token)) {
+      await this.deps.replaceKey(token);
+      log.info('[LICENSE] Picked up the renewed license key');
+    }
     await this.deps.store.set(SETTING.countedSince, String(until));
     log.debug('[LICENSE] Checked in');
     return 'sent';

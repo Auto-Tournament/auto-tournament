@@ -82,6 +82,7 @@ import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedir
 import WelcomeGames from './pages/WelcomeGames';
 import LicenseConsent from './pages/LicenseConsent';
 import { LicenseConsentGate } from './components/license/LicenseConsentGate';
+import { LicenseGate } from './components/license/LicenseGate';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 import { listRouteIntegrations } from './integrations/registry';
 import { useModuleState } from './module-loader/useModuleState';
@@ -647,6 +648,8 @@ export default function App() {
               {/* Rendered above every route: impersonation applies app-wide,
                   including the public/player-facing pages it exists to test. */}
               <ImpersonationBanner />
+              {/* A paid license that isn't paid: a warning for admins, then the "expired" page for everyone. */}
+              <LicenseGate />
               <ModuleGlobalOverlays />
               {/* "What do you play?": redirects to /welcome/games once per
                   account, from whatever page the player lands on. The API

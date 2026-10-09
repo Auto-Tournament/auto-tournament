@@ -2,9 +2,10 @@
  * The instance's Auto Tournament license key: stored, checked offline
  * (./verify), and described for the admin UI.
  *
- * **Nothing here ever blocks, disables or degrades anything.** Free
- * non-commercial use is legitimate: no key is a quiet note for admins, and a
- * problem with a key is a warning for admins. Nothing is shown to players
+ * Free non-commercial use is legitimate and never limited: no key is a quiet
+ * note for admins. A paid key's server limit is enforced when servers are
+ * created, and an unpaid subscription stops the platform after its grace
+ * period (./gate.ts); a problem with a key is a warning for admins. Nothing is shown to players
  * unless an admin turns the public badge on, and then only for a valid key.
  *
  * The key is stored in `app_settings` (`license_key`), set only through
@@ -20,7 +21,8 @@ import { isTruthySetting } from '../../utils/settingFields';
 import packageJson from '../../../package.json';
 import { buildLineDate } from './lineDate';
 import { countServers } from './serverCount';
-import type { CheckinStatus, EventPromptAction, EventPromptStatus } from './checkin';
+import { checkCreate, standingFor, type LicenseStanding } from './gate';
+import { parseStoredResult, SETTING, type CheckinStatus, type EventPromptAction, type EventPromptStatus } from './checkin';
 import type { LicensePublicKey } from './publicKeys';
 import {
   decodeLicense,
@@ -69,6 +71,8 @@ export interface LicenseStatus {
    * without a key: then nothing is sent at all.
    */
   checkin: CheckinStatus | null;
+  /** Where the license stands: free, active, past_due (admins see a warning) or expired (the platform stops). See ./gate.ts. */
+  standing: LicenseStanding;
   /**
    * An event license only: whether to ask the admin, quietly, what the
    * activity outside the license's dates is (testing, a new event, moved
@@ -118,6 +122,7 @@ export function statusFor(key: string | null, inputs: StatusInputs): LicenseStat
     publicBadge: inputs.publicBadge,
     checkin: null,
     eventPrompt: null,
+    standing: { status: 'free', paid: false, maxServers: null, licenseId: null, stopsOn: null } as LicenseStanding,
   };
   if (!key) {
     return { status: 'none', license: null, warnings: [], verifyUrl: null, ...base };
@@ -155,6 +160,25 @@ class LicenseService {
     return (await settingsService.getSetting('license_key'))?.trim() || null;
   }
 
+  /** Where the license stands now (./gate.ts): the key, read offline, and the last check-in answer. */
+  async standing(now: Date = new Date()): Promise<LicenseStanding> {
+    const [key, stored] = await Promise.all([this.getKey(), settingsService.getSetting(SETTING.result)]);
+    return standingFor(key, parseStoredResult(stored ?? null).license ?? null, now.toISOString().slice(0, 10));
+  }
+
+  /**
+   * Checked before every new game server, however it is asked for: throws a
+   * LicenseLimitError (402) above a paid key's limit or once it has expired.
+   * Never for free use. Counting failures don't block (the limit can't be
+   * known then).
+   */
+  async assertCanCreateServers(adding = 1): Promise<void> {
+    const standing = await this.standing();
+    if (!standing.paid) return;
+    const current = await countServers();
+    checkCreate(standing, current ?? 0, adding);
+  }
+
   async isPublicBadgeEnabled(): Promise<boolean> {
     const value = await settingsService.getSetting('license_public_badge');
     return value ? isTruthySetting(value) : false;
@@ -172,14 +196,15 @@ class LicenseService {
       version: packageJson.version,
       lineDate: buildLineDate(packageJson.version),
     });
-    if (!key) return status;
+    const standing = await this.standing();
+    if (!key) return { ...status, standing };
     // Lazy: the check-in service reads the database, and tests import this file's pure half.
     const { licenseCheckin, readEventActivity } = await import('./checkinService');
     const [checkin, eventPrompt] = await Promise.all([
       licenseCheckin.status(true),
       status.status === 'invalid' ? null : licenseCheckin.eventPrompt(status.license, readEventActivity),
     ]);
-    return { ...status, checkin, eventPrompt };
+    return { ...status, checkin, eventPrompt, standing };
   }
 
   /**
@@ -195,6 +220,7 @@ class LicenseService {
   private async keyChanged(before: string | null): Promise<void> {
     const after = await this.getKey();
     if (after === before) return;
+    (await import('../../middleware/licenseExpired')).licenseStandingChanged();
     const { licenseKeyChanged } = await import('./checkinService');
     licenseKeyChanged(after !== null);
   }

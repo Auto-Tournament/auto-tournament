@@ -4,6 +4,7 @@ import { verifyLicense, LIFETIME, type LicensePayload } from '../../api/src/serv
 import { LICENSE_PUBLIC_KEYS, type LicensePublicKey } from '../../api/src/services/license/publicKeys';
 import { lineDateFor, buildLineDate } from '../../api/src/services/license/lineDate';
 import { statusFor, keyInputProblem, verifyUrlFor } from '../../api/src/services/license/licenseService';
+import { checkCreate, standingFor, LicenseLimitError } from '../../api/src/services/license/gate';
 
 /**
  * License keys (api/src/services/license): the offline check ported from the
@@ -261,5 +262,44 @@ test.describe('license keys: admin status', () => {
 
   test('the verify link escapes the id', () => {
     expect(verifyUrlFor('a/b?c')).toBe('https://autotournament.gg/verify/a%2Fb%3Fc');
+  });
+});
+
+test.describe('the paid server limit and late payment (gate)', () => {
+  const month = () => signToken(payload({ kind: 'month', max_servers: 5, updates_until: '2026-11-08' }), key);
+
+  test('free use has no limit; a paid key is enforced at its max_servers', () => {
+    const free = standingFor(null, null, '2026-10-10', publicKeys);
+    expect(free).toMatchObject({ status: 'free', paid: false });
+    expect(() => checkCreate(free, 500, 10)).not.toThrow();
+    const paid = standingFor(month(), null, '2026-10-10', publicKeys);
+    expect(paid).toMatchObject({ status: 'active', paid: true, maxServers: 5 });
+    expect(() => checkCreate(paid, 4, 1)).not.toThrow();
+    expect(() => checkCreate(paid, 5, 1)).toThrow(LicenseLimitError);
+    expect(() => checkCreate(paid, 3, 3)).toThrow(/covers 5 game servers/);
+  });
+
+  test('a key that is not genuine is never enforced', () => {
+    const forged = month().slice(0, -4) + 'AAAA';
+    expect(standingFor(forged, null, '2026-10-10', publicKeys)).toMatchObject({ status: 'invalid', paid: false });
+  });
+
+  test('a monthly key: past due after its last paid day, expired after 14 days, even offline', () => {
+    expect(standingFor(month(), null, '2026-11-09', publicKeys)).toMatchObject({ status: 'past_due', stopsOn: '2026-11-22' });
+    const expired = standingFor(month(), null, '2026-11-23', publicKeys);
+    expect(expired.status).toBe('expired');
+    expect(() => checkCreate(expired, 0, 1)).toThrow(/expired/);
+  });
+
+  test('the license server can only make it stricter', () => {
+    expect(standingFor(month(), { status: 'past_due', validUntil: '2026-11-08', stopsOn: '2026-11-22' }, '2026-10-10', publicKeys).status).toBe('past_due');
+    expect(standingFor(month(), { status: 'active', validUntil: null, stopsOn: null }, '2026-11-23', publicKeys).status).toBe('expired');
+    const yearly = signToken(payload({ kind: 'year' }), key);
+    expect(standingFor(yearly, { status: 'expired', validUntil: '2026-10-01', stopsOn: '2026-10-15' }, '2026-10-20', publicKeys).status).toBe('expired');
+    expect(standingFor(yearly, null, '2030-01-01', publicKeys).status).toBe('active');
+  });
+
+  test('monthly keys verify', () => {
+    expect(verifyLicense(month(), { publicKeys, now: '2026-10-10', lineDate: '2026-10-01' }).valid).toBe(true);
   });
 });
