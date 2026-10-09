@@ -21,6 +21,7 @@ admin actions): what exists, and the calls to use.
 | `reliable.ts`                                           | **`sendReliable`**: platform → server messages that must arrive                                                                                                                                                |
 | `commands.ts`                                           | the answers (`cmd.result`) to those messages                                                                                                                                                                   |
 | `inbound.ts`                                            | server → platform: persist-before-ack, apply, hooks (`fleetInbound`)                                                                                                                                           |
+| `busyReason.ts`                                         | why a server takes no match: parse what Ready Up reports, add `match_disabled` / `reserved`                                                                                                                    |
 | `state.ts`                                              | **the live match state store** (`liveStateStore`)                                                                                                                                                              |
 | `mergePatch.ts`                                         | RFC 7386 merge patch, diff for the drift check                                                                                                                                                                 |
 | `normalize.ts`                                          | fleet `event.*` → `NormalizedEvent[]` (pure)                                                                                                                                                                   |
@@ -177,13 +178,26 @@ server's next hello, before its replay.
 
 Hooks on `fleetInbound` (each returns its unsubscribe):
 
-| Hook                                                       | When                                                                                                                                                                                                                                                                                                                  |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `onEvent({ serverId, envelope, patch, record })`           | every `event.*`, after state + ingest. The driver's inputs: `event.backup` (backup store), `event.demo` (turnover), `event.match_restored`, `event.rounds_voided`, `event.forfeit` / `event.gg`, `event.admin_called`, `event.knife_result` / `event.side_picked` (fix `maps[n].sides` for a failover), `event.error` |
-| `onCommandResult({ serverId, envelope, result, command })` | every `cmd.result`                                                                                                                                                                                                                                                                                                    |
-| `onAvailability({ serverId, availability, reason })`       | `server.availability` (also stored on `cs2_fleet_servers.availability`)                                                                                                                                                                                                                                               |
-| `onSnapshot({ serverId, payload, outcome })`               | every `state.snapshot` (`outcome.kind`: `replaced` / `idle` / `stale_epoch`)                                                                                                                                                                                                                                          |
-| `onStattrak({ serverId, payload })`                        | `skins.stattrak`                                                                                                                                                                                                                                                                                                      |
+| Hook                                                             | When                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `onEvent({ serverId, envelope, patch, record })`                 | every `event.*`, after state + ingest. The driver's inputs: `event.backup` (backup store), `event.demo` (turnover), `event.match_restored`, `event.rounds_voided`, `event.forfeit` / `event.gg`, `event.admin_called`, `event.knife_result` / `event.side_picked` (fix `maps[n].sides` for a failover), `event.error` |
+| `onCommandResult({ serverId, envelope, result, command })`       | every `cmd.result`                                                                                                                                                                                                                                                                                                    |
+| `onAvailability({ serverId, availability, reason, busyReason })` | `server.availability` (also stored on `cs2_fleet_servers.availability`, the busy reason on `availability_reason` / `availability_detail`)                                                                                                                                                                             |
+| `onSnapshot({ serverId, payload, outcome })`                     | every `state.snapshot` (`outcome.kind`: `replaced` / `idle` / `stale_epoch`)                                                                                                                                                                                                                                          |
+| `onStattrak({ serverId, payload })`                              | `skins.stattrak`                                                                                                                                                                                                                                                                                                      |
+
+### Busy reason (`busyReason.ts`)
+
+A busy server says why with its availability: `reason` / `detail` on hello,
+`availability_reason` / `availability_detail` on `state.snapshot`, `reason` /
+`detail` on `server.availability`. Only `local_match`, `awaiting_reset`,
+`match_disabled` and `draining` are kept; free text from older Ready Up
+(`assigned`, `series_end`) is no reason. An available server keeps none.
+The platform adds two of its own: `match_disabled` when the plugin set turns
+match off (whatever the server says) and `reserved` for an idle server held
+back for failover (`heldFleetSpares`). `GET /api/fleet/servers` shows them as
+`availabilityReason` / `availabilityDetail`, the pool status as `busyReason` /
+`busyDetail`, with `notAllocatableReason: 'reserved'` for the spare.
 
 ## Failover (`failover.ts`, `failoverPlan.ts`, `failoverSettings.ts`)
 
