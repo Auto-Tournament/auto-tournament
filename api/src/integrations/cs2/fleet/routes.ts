@@ -81,13 +81,11 @@ function enrollRateLimit(req: Request, res: Response, next: NextFunction): void 
   }
   if (entry.count > ENROLL_MAX) {
     res.setHeader('Retry-After', String(Math.max(1, Math.ceil((entry.resetAt - now) / 1000))));
-    res
-      .status(429)
-      .json({
-        success: false,
-        code: 'rate_limited',
-        error: 'Too many enrollment attempts, slow down',
-      });
+    res.status(429).json({
+      success: false,
+      code: 'rate_limited',
+      error: 'Too many enrollment attempts, slow down',
+    });
     return;
   }
   next();
@@ -120,14 +118,12 @@ fleetEnrollRouter.post('/enroll', enrollRateLimit, async (req: Request, res: Res
   if (req.body?.kind === 'host') return enrollHostHandler(req, res);
   const check = validateEnrollRequest(req.body);
   if (!check.ok) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        code: 'invalid_request',
-        error: 'Invalid enrollment request',
-        details: check.errors,
-      });
+    return res.status(400).json({
+      success: false,
+      code: 'invalid_request',
+      error: 'Invalid enrollment request',
+      details: check.errors,
+    });
   }
   const body = req.body as EnrollRequest;
   try {
@@ -288,14 +284,12 @@ fleetAdminRouter.post('/servers', async (req: Request, res: Response) => {
     log.info(
       `[FLEET] pending server ${created.server.id} (${created.server.name}) created with a one-time code`
     );
-    return res
-      .status(201)
-      .json({
-        success: true,
-        server: created.server,
-        code: created.code,
-        expiresAt: created.expiresAt,
-      });
+    return res.status(201).json({
+      success: true,
+      server: created.server,
+      code: created.code,
+      expiresAt: created.expiresAt,
+    });
   } catch (error) {
     log.error(`[FLEET] creating a pending server failed: ${(error as Error).message}`);
     return res.status(500).json({ success: false, error: 'Failed to create the server' });
