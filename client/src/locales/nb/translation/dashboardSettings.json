@@ -250,7 +250,8 @@
         "cancel": "Avbryt",
         "loadError": "Kunne ikke laste kontoene",
         "saveError": "Kunne ikke lagre kontoen"
-      }
+      },
+      "oidcScopes": "På OpenID Connect-serveren må denne klienten ha scopene openid, profile og email (i Keycloak: Clients → denne klienten → Client scopes, med profile og email som Default). Uten profile og email kan folk fortsatt logge inn, men plattformen får ikke navn eller e-postadresse."
     },
     "integrations": {
       "steam": {

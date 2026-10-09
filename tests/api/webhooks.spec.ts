@@ -1,5 +1,6 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { signInViaRequest } from '../helpers/auth';
+import { configureWebhook } from '../helpers/setup';
 import {
   createEndpoint,
   deleteAllEndpoints,
@@ -198,6 +199,9 @@ test.describe.serial('Integrator webhooks', () => {
 
   test('an endpoint that keeps failing is switched off, with a notice', async ({ request }) => {
     test.setTimeout(120_000);
+    // A match going live needs the platform's webhook URL; don't count on
+    // another spec in this shard having set it.
+    expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
     await deleteAllEndpoints(request);
     await setAllowPrivate(request, true);
     await setTiming(request, { retryScale: 0.0001 });

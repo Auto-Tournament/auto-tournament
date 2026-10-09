@@ -12,6 +12,7 @@
  * https://openid.net/specs/openid-connect-discovery-1_0.html
  */
 import { Strategy as OAuth2Strategy } from 'passport-oauth2';
+import { log } from '../utils/logger';
 
 export interface OidcStrategyOptions {
   issuerUrl: string;
@@ -149,7 +150,24 @@ export function createOidcStrategy(
   const authenticate = strategy.authenticate as (this: unknown, req: unknown, options: unknown) => void;
   strategy.authenticate = function (this: { error(err: Error): void }, req: unknown, authOptions: unknown) {
     ready().then(
-      () => authenticate.call(this, req, authOptions),
+      () => {
+        // The server refused "profile email" (a Keycloak client without those
+        // client scopes answers invalid_scope): start again with "openid"
+        // alone rather than fail. The name and email are then unknown, so the
+        // admin should still add the scopes (Settings -> Sign-in says so).
+        const query = ((req as { query?: Record<string, unknown> }).query ?? {}) as Record<string, unknown>;
+        const refused = typeof query.error_description === 'string' ? query.error_description : '';
+        if (query.error === 'invalid_scope' && /\b(profile|email)\b/.test(refused)) {
+          log.warn(
+            'OpenID Connect: the server refused the profile and email scopes; signing in with openid only. Add the "profile" and "email" client scopes to this client on the server.'
+          );
+          const retry = Object.create(req as object) as { query: Record<string, unknown> };
+          retry.query = {};
+          authenticate.call(this, retry, { ...((authOptions as object) ?? {}), scope: ['openid'] });
+          return;
+        }
+        authenticate.call(this, req, authOptions);
+      },
       (error: unknown) => this.error(new Error(`OpenID Connect discovery failed: ${(error as Error).message}`))
     );
   };
