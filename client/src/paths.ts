@@ -89,7 +89,8 @@ export const paths = {
   playedMatches: '/manage/played',
   /** Admin: import a match played elsewhere from its demos. */
   importMatch: '/manage/played/import',
-  admin: '/manage/tools',
+  /** System: match recovery and the app log (was Admin tools at /admin). */
+  admin: '/manage/system',
   settings: '/manage/settings',
   maps: '/manage/maps',
   /** What this instance can run, and the packs an admin imported. */

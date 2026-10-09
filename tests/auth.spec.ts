@@ -180,7 +180,7 @@ test.describe.serial('Normal user cannot access admin', () => {
       await expect(page).toHaveURL(/\/$/, { timeout: 10000 });
       await expect(page.getByTestId('home-page')).toBeVisible({ timeout: 10000 });
 
-      await page.goto('/manage/tools');
+      await page.goto('/manage/system');
       await expect(page).toHaveURL(playerUrl, { timeout: 10000 });
 
       await page.goto('/manage/teams');

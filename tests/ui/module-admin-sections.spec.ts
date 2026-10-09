@@ -36,18 +36,17 @@ test.describe('Module sections on Admin tools and Settings', () => {
   });
 
   test(
-    'with CS2 installed, Admin tools has its RCON section after core tools',
+    'with CS2 installed, System has core tools and no RCON section (servers come from csm)',
     { tag: ['@ui', '@modules'] },
     async ({ page }) => {
-      await page.goto('/manage/tools');
+      await page.goto('/manage/system');
       await expect(page.getByTestId('admin-tools-page')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('admin-tools-recovery')).toBeVisible();
       await expect(page.getByTestId('admin-tools-logs')).toBeVisible();
 
-      // CS2 arrives at runtime; its section follows core's.
-      const section = page.getByTestId('admin-tools-module-cs2');
-      await expect(section).toBeVisible({ timeout: 30000 });
-      await expect(section.getByTestId('cs2-admin-tools')).toBeVisible();
+      // CS2 arrives at runtime and adds nothing here any more.
+      await expect(page.getByTestId('manage-rail-servers')).toBeVisible({ timeout: 30000 });
+      await expect(page.getByTestId('cs2-admin-tools')).toHaveCount(0);
     }
   );
 
@@ -105,7 +104,7 @@ test.describe('Module sections on Admin tools and Settings', () => {
     async ({ page }) => {
       await withoutCodeModules(page);
 
-      await page.goto('/manage/tools');
+      await page.goto('/manage/system');
       await expect(page.getByTestId('admin-tools-page')).toBeVisible({ timeout: 15000 });
       // Positive first, so the negatives below are about a rendered page.
       await expect(page.getByTestId('admin-tools-logs')).toBeVisible();

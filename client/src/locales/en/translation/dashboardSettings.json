@@ -78,8 +78,8 @@
         "hint": "Sign-in, API keys"
       },
       "adminTools": {
-        "label": "Admin tools",
-        "hint": "Logs and maintenance"
+        "label": "System",
+        "hint": "Match recovery and logs"
       },
       "disputes": {
         "label": "Disputes",
@@ -390,7 +390,7 @@
       "modules": "Modules",
       "templates": "Templates",
       "ratings": "Ratings",
-      "adminTools": "Admin tools",
+      "adminTools": "System",
       "devTools": "Dev tools",
       "documentation": "Documentation",
       "opensInNewTab": "(opens in a new tab)",

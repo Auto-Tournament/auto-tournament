@@ -31,7 +31,7 @@ const CORE_RAIL_ITEMS: [string, RegExp][] = [
   ['templates', /\/templates$/],
   ['ratings', /\/ratings$/],
   ['settings', /\/settings$/],
-  ['adminTools', /\/manage\/tools$/],
+  ['adminTools', /\/manage\/system$/],
 ];
 
 /**
@@ -158,7 +158,7 @@ test.describe.serial('Admin navigation', () => {
 
       // The last core item is off to the right; it can still be reached.
       await page.getByTestId('manage-rail-adminTools').click();
-      await expect(page).toHaveURL(/\/manage\/tools$/);
+      await expect(page).toHaveURL(/\/manage\/system$/);
       await expect(page.getByTestId('manage-rail-adminTools')).toBeInViewport();
 
       const overflow = await page.evaluate(
