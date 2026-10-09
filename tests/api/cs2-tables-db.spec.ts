@@ -62,7 +62,13 @@ interface ProbeResult {
   ledger: Array<{ id: string; checksum: string }>;
   schema: Cs2Schema;
   data: {
-    servers: Array<{ id: string; name: string; host: string; port: number; password: string }> | null;
+    servers: Array<{
+      id: string;
+      name: string;
+      host: string;
+      port: number;
+      password: string;
+    }> | null;
     maps: Array<{ id: string }> | null;
     legacyMaps: Array<{ id: string }> | null;
     mapPools: Array<{ id: number; name: string; map_ids: string }> | null;
@@ -99,7 +105,9 @@ async function handoverProbe(request: APIRequestContext, scenario: string): Prom
 
 test.describe('CS2 tables: definitions', () => {
   test("CS2's migrations stay in CS2's namespace", () => {
-    expect(validateModuleMigrations('cs2', CS2_MIGRATIONS, { installedModuleIds: ['cs2'] })).toBeNull();
+    expect(
+      validateModuleMigrations('cs2', CS2_MIGRATIONS, { installedModuleIds: ['cs2'] })
+    ).toBeNull();
   });
 
   test("core's schema no longer creates or references the 2.x names", () => {
@@ -112,10 +120,12 @@ test.describe('CS2 tables: definitions', () => {
   });
 
   test("the handover's index names are the ones CS2's first migration creates", () => {
-    const created = [...CS2_MIGRATIONS[0].up.matchAll(/CREATE INDEX IF NOT EXISTS (\w+) ON (\w+)/g)].map(
-      (m) => `${m[2]}.${m[1]}`
+    const created = [
+      ...CS2_MIGRATIONS[0].up.matchAll(/CREATE INDEX IF NOT EXISTS (\w+) ON (\w+)/g),
+    ].map((m) => `${m[2]}.${m[1]}`);
+    const renamed = LEGACY_CS2_TABLES.flatMap((t) =>
+      Object.values(t.indexes).map((name) => `${t.to}.${name}`)
     );
-    const renamed = LEGACY_CS2_TABLES.flatMap((t) => Object.values(t.indexes).map((name) => `${t.to}.${name}`));
     expect(renamed.sort()).toEqual(created.sort());
   });
 
@@ -140,13 +150,19 @@ test.describe.serial('CS2 tables on the database', () => {
     expect(await signInViaRequest(request)).toBe(true);
   });
 
-  test('after boot the tables have their CS2 names and the old names are gone', async ({ request }) => {
+  test('after boot the tables have their CS2 names and the old names are gone', async ({
+    request,
+  }) => {
     const v = await view(request);
     expect(v.tables).toEqual(NEW_NAMES);
     expect(v.legacyTables).toEqual(OLD_GONE);
     expect(v.state?.status).toBe('ok');
     expect(v.firstMigration?.id).toBe('001-tables');
-    expect(v.ledger).toEqual(v.declared);
+    // Every declared migration is applied with its checksum. The ledger is read
+    // by id and the declared list is in run order (034 runs before 032 and 033,
+    // migrations.ts), so compare them by id.
+    const byId = (list: { id: string }[]) => [...list].sort((a, b) => a.id.localeCompare(b.id));
+    expect(byId(v.ledger)).toEqual(byId(v.declared));
     expect(v.declared.map((m) => m.id)).toEqual(CS2_MIGRATIONS.map((m) => m.id));
     // The CS2 seed ran on them.
     expect(v.counts.cs2_maps).toBeGreaterThan(0);
@@ -174,7 +190,9 @@ test.describe.serial('CS2 tables on the database', () => {
       data: { name, mapIds: ['de_dust2', 'de_mirage'] },
     });
     expect(created.status(), await created.text()).toBe(201);
-    const { mapPool } = (await created.json()) as { mapPool: { id: number; name: string; mapIds: string[] } };
+    const { mapPool } = (await created.json()) as {
+      mapPool: { id: number; name: string; mapIds: string[] };
+    };
     expect(mapPool).toMatchObject({ name, mapIds: ['de_dust2', 'de_mirage'] });
 
     expect((await view(request)).mapPoolNames).toContain(name);
@@ -192,7 +210,10 @@ test.describe.serial('CS2 tables on the database', () => {
       code: '23503',
       constraint: 'manual_match_templates_map_pool_id_fkey',
     });
-    expect(body.matchMissingServer).toEqual({ code: '23503', constraint: 'matches_server_id_fkey' });
+    expect(body.matchMissingServer).toEqual({
+      code: '23503',
+      constraint: 'matches_server_id_fkey',
+    });
     // ON DELETE SET NULL survived too.
     expect(body.manualTemplatePoolAfterPoolDeleted).toBeNull();
   });
@@ -280,7 +301,9 @@ test.describe.serial('CS2 tables on the database', () => {
     expect(probe.schema.tables).toEqual(fresh.schema.tables);
   });
 
-  test('an older install missing a column and an index is brought up to date', async ({ request }) => {
+  test('an older install missing a column and an index is brought up to date', async ({
+    request,
+  }) => {
     const fresh = await view(request);
     const probe = await handoverProbe(request, 'old-install');
     expect(probe.first.error).toBeUndefined();
@@ -342,7 +365,11 @@ test.describe.serial('CS2 tables on the database', () => {
       expect(after.tables).toEqual(NEW_NAMES);
       expect(after.legacyTables).toEqual(OLD_GONE);
       expect(after.ledger).toEqual(before.ledger);
-      expect(after.state).toEqual({ moduleId: 'cs2', status: 'ok', applied: CS2_MIGRATIONS.map((m) => m.id) });
+      expect(after.state).toEqual({
+        moduleId: 'cs2',
+        status: 'ok',
+        applied: CS2_MIGRATIONS.map((m) => m.id),
+      });
       expect(after.schema).toEqual(before.schema);
       expect(after.mapPoolNames).toContain('Active Duty');
     });

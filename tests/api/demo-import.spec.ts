@@ -162,7 +162,10 @@ test(
     expect(match.team1.name).toBe('Alpha Spec');
 
     // The players are on the platform now, and the match is in the played list as imported.
-    expect((await request.get(`/api/players/${alpha[0]}`)).status()).toBe(200);
+    const player = await request.get(`/api/players/${alpha[0]}`);
+    expect(player.status()).toBe(200);
+    // Under the name they play under in the demo, not their Steam name.
+    expect(JSON.stringify(await player.json())).toContain(`"name":"${players[alpha[0]].name}"`);
     const played = (await (await request.get('/api/matches/played')).json()).matches as Array<{
       slug: string;
       kind: string;
