@@ -138,8 +138,11 @@ func (r *recorder) look() []string {
 // (recordJob), or a map's match reel to join (matchReelJob); nil, nil when
 // there is none.
 func (c *client) claimRecording(ctx context.Context) (*mapJob, *matchReelJob, *redressJob, error) {
-	// Version 6: redress jobs (overlay.go).
-	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{"recorder": c.worker, "version": 6})
+	// Version 6: redress jobs (overlay.go). Version 7: benchmarks, frame
+	// checks and run reports (quality.go, runlog.go).
+	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{
+		"recorder": c.worker, "version": 7, "gpu": recorderGPU(), "platform": platformName(),
+	})
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -172,7 +175,7 @@ func (c *client) claimRecording(ctx context.Context) (*mapJob, *matchReelJob, *r
 		var j redressJob
 		return nil, nil, &j, json.Unmarshal(body.Job, &j)
 	}
-	if kind.Kind == "map" {
+	if kind.Kind == "map" || kind.Kind == "benchmark" {
 		var mj mapJob
 		return &mj, nil, nil, json.Unmarshal(body.Job, &mj)
 	}
@@ -239,6 +242,17 @@ type mapJob struct {
 	// KeepClean: upload each clip's clean twin and overlay recipe too
 	// (overlay.go). The reels made here use them either way.
 	KeepClean bool `json:"keepClean"`
+	// Settings: what the recorder's benchmark picked (the platform keeps it).
+	Settings *recorderSettings `json:"settings"`
+	// A benchmark job (kind "benchmark"): the same moment at each refresh
+	// rate, timed and frame-checked, nothing uploaded.
+	Tries        []benchmarkTry `json:"tries"`
+	MaxRepeatPct float64        `json:"maxRepeatPct"`
+}
+
+// recorderSettings come with every job: the benchmark's pick.
+type recorderSettings struct {
+	GamescopeHz int `json:"gamescopeHz"`
 }
 
 // videoQuality is the height (16:9) and frame rate the platform asks for.
@@ -1004,16 +1018,17 @@ func (r *recorder) lookFor(ctx context.Context, j *recordJob) clipLook {
 
 // recordMap records a map's moments, every player's, in one CS2 session,
 // then uploads each clip and each player's reel of the map.
-func (r *recorder) recordMap(ctx context.Context, mj *mapJob) error {
+func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected int, err error) {
 	r.useQuality(mj.Quality)
+	applySettings(mj.Settings)
 	dir, err := os.MkdirTemp(r.scratch, "highlights-")
 	if err != nil {
-		return err
+		return 0, 0, err
 	}
 	defer os.RemoveAll(dir)
 	demoPath := filepath.Join(dir, "match.dem")
 	if err := r.download(ctx, mj.MatchSlug, mj.MapNumber, demoPath); err != nil {
-		return err
+		return 0, 0, err
 	}
 	var shots []shot
 	var failed []momentFailure
@@ -1039,20 +1054,40 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) error {
 			shots = append(shots, shot{m: m, player: i, name: name, look: look})
 		}
 	}
-	clips, more, err := r.recordMoments(ctx, demoPath, shots, dir)
+	recorded, more, err := r.recordMoments(ctx, demoPath, shots, dir)
 	failed = append(failed, more...)
-	for _, c := range clips {
+	// Each clip goes up with its frame check; one the platform turns down
+	// (too many repeated frames) is recorded again later, maybe elsewhere,
+	// and stays out of the reels made here.
+	var clips []clipResult
+	for _, c := range recorded {
 		markers, _ := json.Marshal(c.markers)
-		route := fmt.Sprintf("/api/game/cs2/recorder/jobs/%d/clip", c.moment.ID)
-		if err := r.upload(ctx, c.path, route, map[string]string{"X-AT-Markers": string(markers)}); err != nil {
-			return err
+		headers := map[string]string{"X-AT-Markers": string(markers)}
+		if q, qerr := frameCheck(ctx, c.path); qerr == nil {
+			qj, _ := json.Marshal(q)
+			headers["X-AT-Quality"] = string(qj)
+			log.Printf("moment %d: %.1f%% repeated, %.1f%% jumped frames", c.moment.ID, q.RepeatPct, q.JumpPct)
+		} else {
+			log.Printf("moment %d: frame check failed: %v", c.moment.ID, qerr)
 		}
+		route := fmt.Sprintf("/api/game/cs2/recorder/jobs/%d/clip", c.moment.ID)
+		turnedDown, uerr := r.uploadClip(ctx, c.path, route, headers)
+		if uerr != nil {
+			return kept, rejected, uerr
+		}
+		if turnedDown {
+			rejected++
+			log.Printf("moment %d: turned down by the platform's frame check", c.moment.ID)
+			continue
+		}
+		kept++
+		clips = append(clips, c)
 		if mj.KeepClean {
 			r.uploadTwins(ctx, c.path, route)
 		}
 	}
 	if err != nil {
-		return err
+		return kept, rejected, err
 	}
 	for i := range mj.Players {
 		var own []clipResult
@@ -1062,7 +1097,7 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) error {
 			}
 		}
 		if err := r.uploadReel(ctx, dir, &mj.Players[i], own); err != nil {
-			return err
+			return kept, rejected, err
 		}
 	}
 	// The moments that failed twice go back to the platform, which tries them
@@ -1070,7 +1105,29 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) error {
 	if len(failed) > 0 {
 		r.failMoments(failed)
 	}
-	return nil
+	return kept, rejected, nil
+}
+
+// uploadClip sends a clip and says whether the platform turned it down.
+func (r *recorder) uploadClip(ctx context.Context, path, route string, headers map[string]string) (bool, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+	res, err := r.doWith(ctx, http.MethodPut, route, "video/mp4", f, headers)
+	if err != nil {
+		return false, err
+	}
+	defer res.Body.Close()
+	if err := ok(res, "upload "+filepath.Base(path)); err != nil {
+		return false, err
+	}
+	var body struct {
+		Rejected bool `json:"rejected"`
+	}
+	_ = json.NewDecoder(res.Body).Decode(&body)
+	return body.Rejected, nil
 }
 
 // uploadReel joins one player's plays on the map (and what earlier jobs
@@ -1240,23 +1297,33 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("recorder: %dx%d, %s, sound from %s", r.width, r.height, r.encoder, r.sink)
+	// Each job's log goes to the platform with its run report (runlog.go).
+	log.SetOutput(io.MultiWriter(os.Stderr, currentJobLog))
+	log.Printf("recorder: %dx%d, %s, sound from %s, %s, %s", r.width, r.height, r.encoder, r.sink, recorderGPU(), platformName())
+	currentJobLog.take()
 	for ctx.Err() == nil {
 		j, reel, redress, err := c.claimRecording(ctx)
 		if err != nil {
 			log.Printf("cannot reach the platform: %v", err)
+			currentJobLog.take()
 		}
+		started := time.Now()
 		if redress != nil {
 			r.runRedress(ctx, redress)
+			c.reportRun(jobRun{Kind: "redress", OK: true, Clips: len(redress.Files)}, started)
 			continue
 		}
 		if reel != nil {
-			started := time.Now()
+			run := jobRun{Kind: reel.Kind, MatchSlug: reel.MatchSlug, MapNumber: intPtr(reel.MapNumber), Clips: len(reel.Clips)}
 			if err := r.makeMatchReel(ctx, reel); err != nil {
 				r.failMatchReel(reel, err)
+				run.Error = err.Error()
+				c.reportRun(run, started)
 				continue
 			}
 			log.Printf("%s: %d clip(s) in %s", reel.label(), len(reel.Clips), time.Since(started).Round(time.Second))
+			run.OK = true
+			c.reportRun(run, started)
 			continue
 		}
 		if j == nil {
@@ -1266,15 +1333,27 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 			}
 			continue
 		}
-		started := time.Now()
-		if err := r.recordMap(ctx, j); err != nil {
-			r.failRecording(j, err)
+		if j.Kind == "benchmark" {
+			r.runBenchmark(ctx, j)
 			continue
 		}
-		log.Printf("highlights of %s map %d: %d moment(s) of %d player(s) in %s", j.MatchSlug, j.MapNumber, j.moments(), len(j.Players), time.Since(started).Round(time.Second))
+		run := jobRun{Kind: "map", MatchSlug: j.MatchSlug, MapNumber: intPtr(j.MapNumber)}
+		kept, rejected, err := r.recordMap(ctx, j)
+		run.Clips, run.Rejected = kept, rejected
+		if err != nil {
+			r.failRecording(j, err)
+			run.Error = err.Error()
+			c.reportRun(run, started)
+			continue
+		}
+		log.Printf("highlights of %s map %d: %d moment(s) of %d player(s) in %s (%d kept, %d turned down)", j.MatchSlug, j.MapNumber, j.moments(), len(j.Players), time.Since(started).Round(time.Second), kept, rejected)
+		run.OK = true
+		c.reportRun(run, started)
 	}
 	return nil
 }
+
+func intPtr(n int) *int { return &n }
 
 // recordDemo is `at-worker record-demo <demo.dem> <players.json> <outdir>`:
 // several players' moments ({"<steamid64>": [moments]}) recorded in one CS2

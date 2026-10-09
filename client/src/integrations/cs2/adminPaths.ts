@@ -5,4 +5,6 @@
 export const cs2AdminPaths = {
   skins: '/skins',
   matchRules: '/match-rules',
+  /** Highlights: recorders, their runs, and what they make. */
+  highlights: '/highlights',
 } as const;

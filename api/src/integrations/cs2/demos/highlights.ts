@@ -47,7 +47,7 @@ const IMPACT = /^(Flashbang|Smoke Grenade|Decoy Grenade)$/i;
 const KNIFE = /^Knife/i;
 /** A recording that went quiet this long is handed out again. */
 const STALE_SECONDS = 30 * 60;
-const MAX_ATTEMPTS = 3;
+export const MAX_ATTEMPTS = 3;
 
 interface KillRow {
   tick: number;
@@ -313,7 +313,7 @@ export interface RecordJob {
   doneClips: Array<{ id: number; startTick: number; url: string; markers: ClipMarkers | null }>;
 }
 
-interface MomentRow {
+export interface MomentRow {
   id: number;
   match_slug: string;
   map_number: number;
@@ -436,9 +436,12 @@ export function playersPerRecorder(players: number, idle: number): number {
 export async function claimMapJob(recorder: string, idle = 1): Promise<MapRecordJob | null> {
   const now = Math.floor(Date.now() / 1000);
   const waiting = "(status = 'pending' OR (status = 'recording' AND claimed_at < ?))";
+  // A moment whose last take by this recorder failed the frame check goes to
+  // another recorder first (demos/recorders.ts).
   const best = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
-    `SELECT match_slug, map_number FROM cs2_highlights WHERE ${waiting} ORDER BY score DESC, id LIMIT 1`,
-    [now - STALE_SECONDS]
+    `SELECT match_slug, map_number FROM cs2_highlights WHERE ${waiting}
+      ORDER BY (avoid_recorder IS NOT NULL AND avoid_recorder = ?), score DESC, id LIMIT 1`,
+    [now - STALE_SECONDS, recorder.slice(0, 120)]
   );
   if (!best) return null;
   const waitingPlayers = await db.queryAsync<{ player_id: string }>(
@@ -518,7 +521,7 @@ function ownTeam(
   return { team: null, opponent: null };
 }
 
-async function jobFor(
+export async function jobFor(
   matchSlug: string,
   mapNumber: number,
   playerId: string,

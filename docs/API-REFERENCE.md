@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 630 of them, 396 behind auth —
+Every endpoint this API serves — 638 of them, 404 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -312,6 +312,14 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 | `PUT` | `/api/game/cs2/music/:id` | admin |
 | `DELETE` | `/api/game/cs2/music/:id` | admin |
 | `GET` | `/api/game/cs2/music/:id/file` | admin |
+| `POST` | `/api/game/cs2/recorder/runs` | admin |
+| `POST` | `/api/game/cs2/recorder/benchmark` | admin |
+| `GET` | `/api/game/cs2/recorders` | admin |
+| `GET` | `/api/game/cs2/recorders/:name/runs` | admin |
+| `GET` | `/api/game/cs2/recorder-runs/:id/log` | admin |
+| `POST` | `/api/game/cs2/recorders/:name/resume` | admin |
+| `POST` | `/api/game/cs2/recorders/:name/benchmark` | admin |
+| `DELETE` | `/api/game/cs2/recorders/:name` | admin |
 
 ### Map radars
 

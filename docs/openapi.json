@@ -5668,6 +5668,62 @@
         ]
       }
     },
+    "/api/game/cs2/recorder-runs/{id}/log": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "A run's log, as plain text (admin)",
+        "responses": {
+          "200": {
+            "description": "The log"
+          },
+          "404": {
+            "description": "No run with that id"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/recorder/benchmark": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "A recorder's benchmark results (recorder)",
+        "description": "`recorder` and `tries`: per refresh rate (`gamescopeHz`) the seconds\nthe moment took, the capture frame rate, the frame check's\n`repeatPct` and `jumpPct`, and `ok`. The fastest smooth try's rate is\nkept and sent with every job after (`settings.gamescopeHz`).\n",
+        "responses": {
+          "200": {
+            "description": "`gamescopeHz`: the pick, or null when no try was smooth"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/recorder/claim": {
       "post": {
         "tags": [
@@ -6080,6 +6136,28 @@
         ]
       }
     },
+    "/api/game/cs2/recorder/runs": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "A recorder's finished job, its timings and log (recorder)",
+        "description": "`recorder`, `kind` (map, match_reel, redress, benchmark, ...),\n`matchSlug`, `mapNumber`, `startedAt` (unix seconds), `seconds`, `ok`,\n`clips`, `rejected`, `error`, `log` (the job's log lines, the last\n200 kB are kept). The newest 200 runs per recorder are kept.\n",
+        "responses": {
+          "200": {
+            "description": "Stored"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/recorder/team-reels/{slug}/{team}": {
       "put": {
         "tags": [
@@ -6295,6 +6373,161 @@
           },
           {
             "name": "twin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/recorders": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "The highlight recorders (admin)",
+        "description": "Each recorder with its GPU, version, last seen, pause, benchmark\n(each try and the pick), clips kept and turned down, seconds per clip\nover its map jobs, and its last error.\n",
+        "responses": {
+          "200": {
+            "description": "`recorders`"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/recorders/{name}": {
+      "delete": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Forget a recorder and its runs (admin); it shows up again when it next asks for work",
+        "responses": {
+          "200": {
+            "description": "Forgotten"
+          },
+          "404": {
+            "description": "No recorder with that name"
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/recorders/{name}/benchmark": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Have a recorder run its benchmark again on its next claim (admin)",
+        "responses": {
+          "200": {
+            "description": "Asked"
+          },
+          "404": {
+            "description": "No recorder with that name"
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/recorders/{name}/resume": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Give a paused recorder work again (admin)",
+        "responses": {
+          "200": {
+            "description": "Resumed"
+          },
+          "404": {
+            "description": "No recorder with that name"
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/recorders/{name}/runs": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "A recorder's recent runs, newest first (admin)",
+        "responses": {
+          "200": {
+            "description": "`runs`, without their logs"
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
             "in": "path",
             "required": true,
             "schema": {
