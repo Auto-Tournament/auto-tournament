@@ -120,22 +120,6 @@ export function getSchemaSQL(): string {
 
     CREATE INDEX IF NOT EXISTS idx_tournament_lineups_player ON tournament_lineups(tournament_id, player_id);
 
-    -- Players reporting another player to the admins (services/playerReports.ts).
-    -- status: 'open' | 'dismissed' | 'actioned' (the player was banned).
-    CREATE TABLE IF NOT EXISTS player_reports (
-      id SERIAL PRIMARY KEY,
-      reported_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
-      reporter_id TEXT REFERENCES players(id) ON DELETE SET NULL,
-      reason TEXT NOT NULL, -- 'cheating' | 'toxic' | 'griefing' | 'name' | 'other'
-      details TEXT,
-      status TEXT NOT NULL DEFAULT 'open',
-      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      handled_at INTEGER,
-      handled_by TEXT
-    );
-    CREATE INDEX IF NOT EXISTS idx_player_reports_status ON player_reports(status, created_at);
-    CREATE INDEX IF NOT EXISTS idx_player_reports_reporter ON player_reports(reporter_id, created_at);
-
     -- A starter who left a lineup mid-tournament (banned or deleted): the
     -- team's open matches are held until the deadline while the captain picks a
     -- sub; then the first sub moves in, or the team plays short-handed.
@@ -323,6 +307,22 @@ export function getSchemaSQL(): string {
       ban_reason TEXT, -- Why, for admins only; never in a public response
       banned_by TEXT -- Who banned them (players.id or a token label)
     );
+
+    -- Players reporting another player to the admins (services/playerReports.ts).
+    -- status: 'open' | 'dismissed' | 'actioned' (the player was banned).
+    CREATE TABLE IF NOT EXISTS player_reports (
+      id SERIAL PRIMARY KEY,
+      reported_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      reporter_id TEXT REFERENCES players(id) ON DELETE SET NULL,
+      reason TEXT NOT NULL, -- 'cheating' | 'toxic' | 'griefing' | 'name' | 'other'
+      details TEXT,
+      status TEXT NOT NULL DEFAULT 'open',
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      handled_at INTEGER,
+      handled_by TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_player_reports_status ON player_reports(status, created_at);
+    CREATE INDEX IF NOT EXISTS idx_player_reports_reporter ON player_reports(reporter_id, created_at);
 
     CREATE INDEX IF NOT EXISTS idx_players_name ON players(name);
     CREATE INDEX IF NOT EXISTS idx_players_elo ON players(current_elo);
