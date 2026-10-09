@@ -269,7 +269,8 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
 
     // The linked server is in the pool as a fleet server.
     const server = await (await request.get(`/api/servers/${cs2ServerId}`, { headers: getAuthHeader() })).json();
-    expect(server.server ?? server).toMatchObject({ transport: 'fleet', fleetServerId: fake.serverId });
+    // Its status comes from the fleet link: connected is online (#210: it showed Down).
+    expect(server.server ?? server).toMatchObject({ transport: 'fleet', fleetServerId: fake.serverId, status: 'online' });
 
     // bob has a player record; the other rostered ids are test accounts with
     // none (M1 play-test: their stats rows failed the player FOREIGN KEY, and

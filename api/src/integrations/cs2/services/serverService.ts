@@ -22,13 +22,22 @@ export class ServerService {
     return this.withSteamToken(servers.map(this.toResponse));
   }
 
-  /** Fleet servers: whether their last hello reported a Valve game server token. */
+  /**
+   * Fleet servers: whether their last hello reported a Valve game server
+   * token, and their status from the fleet link. Nothing pings a Ready Up
+   * server over RCON, so the server row's own status never changed and the
+   * Servers page showed a connected server as Down (#210).
+   */
   private async withSteamToken(list: ServerResponse[]): Promise<ServerResponse[]> {
     const ids = list.map((s) => s.fleetServerId).filter((id): id is string => Boolean(id));
     if (!ids.length) return list;
     const rows = await db
-      .queryAsync<{ id: string; host: string | null }>('SELECT id, host FROM cs2_fleet_servers WHERE id = ANY(?::text[])', [ids])
+      .queryAsync<{ id: string; host: string | null; online: number | null; last_seen: number | null }>(
+        'SELECT id, host, online, last_seen FROM cs2_fleet_servers WHERE id = ANY(?::text[])',
+        [ids]
+      )
       .catch(() => []);
+    const link = new Map(rows.map((r) => [r.id, r] as const));
     const token = new Map(
       rows.map((r) => {
         try {
@@ -38,7 +47,20 @@ export class ServerService {
         }
       })
     );
-    return list.map((s) => (s.fleetServerId ? { ...s, steamToken: token.get(s.fleetServerId) ?? null } : s));
+    return list.map((s) => {
+      if (!s.fleetServerId) return s;
+      const fleet = link.get(s.fleetServerId);
+      return {
+        ...s,
+        steamToken: token.get(s.fleetServerId) ?? null,
+        ...(fleet
+          ? {
+              status: fleet.online === 1 ? ('online' as const) : ('offline' as const),
+              lastSeen: fleet.last_seen ?? s.lastSeen,
+            }
+          : {}),
+      };
+    });
   }
 
   /**
