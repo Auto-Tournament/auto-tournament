@@ -158,7 +158,7 @@ test.describe.serial('Admin navigation', () => {
 
       // The last core item is off to the right; it can still be reached.
       await page.getByTestId('manage-rail-adminTools').click();
-      await expect(page).toHaveURL(/\/admin$/);
+      await expect(page).toHaveURL(/\/manage\/tools$/);
       await expect(page.getByTestId('manage-rail-adminTools')).toBeInViewport();
 
       const overflow = await page.evaluate(
