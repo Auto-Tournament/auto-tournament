@@ -1,6 +1,15 @@
 import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, LinearProgress, Snackbar, Alert, Stack, Button, Chip } from '@mui/material';
+import {
+  Box,
+  Typography,
+  LinearProgress,
+  Snackbar,
+  Alert,
+  Stack,
+  Button,
+  Chip,
+} from '@mui/material';
 import { GameControllerIcon, PlusIcon } from '@phosphor-icons/react';
 import { io } from 'socket.io-client';
 import { onSocketReconnect } from '../utils/socketResync';
@@ -50,7 +59,7 @@ export default function Matches() {
   const linkedSlug = searchParams.get('match');
   const selectMatch = useCallback(
     (match: Match | null) => {
-      selectMatch(match);
+      setSelectedMatch(match);
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
@@ -75,7 +84,7 @@ export default function Matches() {
   // is the truth for a match that is simply open.
   const matchIntegration = tournamentIntegrationLoading
     ? null
-    : tournamentIntegration ?? shell[0] ?? null;
+    : (tournamentIntegration ?? shell[0] ?? null);
   const { availability: serverAllocationStatus, nextInSeconds: nextAllocationInSeconds } =
     useResourceAvailability(matchIntegration, 5000);
   // What the waiting matches are waiting for, said in the game's own words:
@@ -112,10 +121,7 @@ export default function Matches() {
             const cfgTeam1Name = (m.config?.team1 as { name?: string } | undefined)?.name;
             const cfgTeam2Name = (m.config?.team2 as { name?: string } | undefined)?.name;
             return Boolean(
-              cfgTeam1Name &&
-                cfgTeam1Name !== 'TBD' &&
-                cfgTeam2Name &&
-                cfgTeam2Name !== 'TBD'
+              cfgTeam1Name && cfgTeam1Name !== 'TBD' && cfgTeam2Name && cfgTeam2Name !== 'TBD'
             );
           }
 
@@ -247,7 +253,7 @@ export default function Matches() {
           Boolean(
             // Bracket / enriched matches with DB-backed team rows
             ((m as Match).team1 || (m as Match).config?.team1) &&
-              ((m as Match).team2 || (m as Match).config?.team2)
+            ((m as Match).team2 || (m as Match).config?.team2)
           );
 
         const upsertMatch = (list: Match[], updatedMatch: typeof match) => {
@@ -266,8 +272,7 @@ export default function Matches() {
           return [...list, applyLiveScoreOverlay(updatedMatch as Match, updatedMatch)];
         };
 
-        const removeMatch = (list: Match[]) =>
-          list.filter((m) => !matchIdOrSlugEquals(m));
+        const removeMatch = (list: Match[]) => list.filter((m) => !matchIdOrSlugEquals(m));
 
         if (match.status === 'pending' || match.status === 'ready') {
           setUpcomingMatches((prev) => upsertMatch(prev, match));
@@ -340,7 +345,9 @@ export default function Matches() {
   // A shared link opens its match once the lists have it.
   useEffect(() => {
     if (!linkedSlug || selectedMatch?.slug === linkedSlug) return;
-    const found = [...upcomingMatches, ...liveMatches, ...matchHistory].find((m) => m.slug === linkedSlug);
+    const found = [...upcomingMatches, ...liveMatches, ...matchHistory].find(
+      (m) => m.slug === linkedSlug
+    );
     if (found) setSelectedMatch(found);
   }, [linkedSlug, selectedMatch?.slug, upcomingMatches, liveMatches, matchHistory]);
 
@@ -382,9 +389,9 @@ export default function Matches() {
     return (
       <>
         <PageHead title={t('layout.pageTitle.matches')} />
-      <Box>
-        <LinearProgress />
-      </Box>
+        <Box>
+          <LinearProgress />
+        </Box>
       </>
     );
   }
@@ -519,13 +526,18 @@ export default function Matches() {
       {/* The allocation countdown, under the head */}
       {hasMatches && QueueCountdown && (
         <Box display="flex" alignItems="center" gap={2} mb={3}>
-          <QueueCountdown availability={serverAllocationStatus} nextInSeconds={nextAllocationInSeconds} />
+          <QueueCountdown
+            availability={serverAllocationStatus}
+            nextInSeconds={nextAllocationInSeconds}
+          />
         </Box>
       )}
 
       {/* Server Allocation Status Widget */}
       {/* The module asks for its own resources, and shows nothing without any. */}
-      {ServerAllocationWidget && hasMatches && <ServerAllocationWidget tournamentId={tournamentId} />}
+      {ServerAllocationWidget && hasMatches && (
+        <ServerAllocationWidget tournamentId={tournamentId} />
+      )}
 
       {/* Status Legend */}
       {hasMatches && (
@@ -563,7 +575,10 @@ export default function Matches() {
               <SectionHead
                 id="matches-live-heading"
                 title={
-                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    component="span"
+                    sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}
+                  >
                     <Box
                       component="span"
                       aria-hidden
@@ -596,7 +611,9 @@ export default function Matches() {
                       note={
                         event && event.event ? (
                           <Typography variant="body2" color="text.secondary">
-                            {t('matchesPage.latestEvent', { event: event.event.replace(/_/g, ' ') })}
+                            {t('matchesPage.latestEvent', {
+                              event: event.event.replace(/_/g, ' '),
+                            })}
                           </Typography>
                         ) : null
                       }
@@ -641,38 +658,38 @@ export default function Matches() {
                   const tournamentStartedForCard = isManualMatch
                     ? undefined
                     : tournamentStatus === 'in_progress';
-                  
+
                   // Use queue position from backend (calculated globally across all matches)
                   const queuePosition = match.queuePosition;
-                  
+
                   return (
-                      <MatchCard
-                        key={match.id}
-                        match={match}
-                        matchNumber={matchNumber}
-                        roundLabel={manualRoundLabel}
-                        variant="default"
-                        vetoCompleted={match.vetoCompleted}
-                        tournamentStarted={tournamentStartedForCard}
-                        selectable={selectionMode && isManualMatchFlag(match)}
-                        selected={selectedMatchSlugs.has(match.slug)}
-                        queuePosition={queuePosition}
-                        queueStatus={
-                          MatchQueueStatus ? (
-                            <MatchQueueStatus
-                              availability={serverAllocationStatus}
-                              queueIndex={queueIndex}
-                            />
-                          ) : null
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      matchNumber={matchNumber}
+                      roundLabel={manualRoundLabel}
+                      variant="default"
+                      vetoCompleted={match.vetoCompleted}
+                      tournamentStarted={tournamentStartedForCard}
+                      selectable={selectionMode && isManualMatchFlag(match)}
+                      selected={selectedMatchSlugs.has(match.slug)}
+                      queuePosition={queuePosition}
+                      queueStatus={
+                        MatchQueueStatus ? (
+                          <MatchQueueStatus
+                            availability={serverAllocationStatus}
+                            queueIndex={queueIndex}
+                          />
+                        ) : null
+                      }
+                      onClick={() => {
+                        if (selectionMode && isManualMatchFlag(match)) {
+                          toggleMatchSelected(match);
+                        } else {
+                          selectMatch(match);
                         }
-                        onClick={() => {
-                          if (selectionMode && isManualMatchFlag(match)) {
-                            toggleMatchSelected(match);
-                          } else {
-                            selectMatch(match);
-                          }
-                        }}
-                      />
+                      }}
+                    />
                   );
                 })}
               </RowList>
