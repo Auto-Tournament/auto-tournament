@@ -114,6 +114,53 @@ type recorder struct {
 	}
 	// rate is how many frames a second gamescope's stream gives (captureSpeeds).
 	rate captureRate
+	// live is CS2 left running between map jobs with the map's demo loaded
+	// (liveGame): the next job of the same map starts at once.
+	live *liveGame
+}
+
+// liveGame is CS2 kept running with a map's demo loaded between jobs. The
+// recorder tells the platform which map it has (claimRecording), and the
+// platform gives it more of that map's players first; it closes CS2 when the
+// map changes, a job of another kind comes, or there is no work.
+type liveGame struct {
+	g      *game
+	key    string  // the map and the capture settings CS2 was started with
+	slug   string  // the match and map, sent with each claim
+	mapNum int     //
+	demo   string  // the demo, downloaded once (r.scratch)
+	inGame string  // its copy in the game's demo folder
+	base   string  // its name there, for playdemo
+	pos    int     // the furthest tick played: an earlier moment plays the demo again
+	replay *Replay // the demo's kills, read once
+}
+
+// liveKey is what a running CS2 must match to record a map job: the map,
+// the capture size and the refresh rate it was started with.
+func (r *recorder) liveKey(slug string, mapNum int) string {
+	return fmt.Sprintf("%s/%d/%dx%d/%s", slug, mapNum, r.width, r.height, os.Getenv("AT_GAMESCOPE_HZ"))
+}
+
+// endLive closes the running CS2, if any, and drops its demo.
+func (r *recorder) endLive() {
+	if r.live == nil {
+		return
+	}
+	log.Printf("closing CS2 (%s map %d)", r.live.slug, r.live.mapNum)
+	if r.live.g != nil {
+		r.live.g.stop()
+	}
+	os.Remove(r.live.inGame)
+	os.Remove(r.live.demo)
+	r.live = nil
+}
+
+// loadedMap is the map whose demo CS2 has loaded, for the claim; nil without one.
+func (r *recorder) loadedMap() map[string]any {
+	if r.live == nil || r.live.g == nil {
+		return nil
+	}
+	return map[string]any{"matchSlug": r.live.slug, "mapNumber": r.live.mapNum}
 }
 
 // look is what CS2 plays the demo with: with the recorder's own kill feed,
@@ -137,15 +184,20 @@ func (r *recorder) look() []string {
 // claimRecording asks the platform for work: a player's moments to record
 // (recordJob), or a map's match reel to join (matchReelJob); nil, nil when
 // there is none.
-func (c *client) claimRecording(ctx context.Context) (*mapJob, *matchReelJob, *redressJob, error) {
+func (c *client) claimRecording(ctx context.Context, loaded map[string]any) (*mapJob, *matchReelJob, *redressJob, error) {
 	// Version 6: redress jobs (overlay.go). Version 7: benchmarks, frame
 	// checks and run reports (quality.go, runlog.go).
-	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{
+	ask := map[string]any{
 		"recorder": c.worker, "version": 7, "gpu": recorderGPU(), "platform": platformName(),
 		// It carries the benchmark demo (benchdemo_linux.go): its benchmark
 		// then needs nothing from the platform and compares with every other.
 		"benchDemo": hasBenchDemo(),
-	})
+	}
+	// The map CS2 has loaded (liveGame): the platform gives more of it first.
+	if loaded != nil {
+		ask["loaded"] = loaded
+	}
+	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", ask)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -325,17 +377,17 @@ type momentFailure struct {
 // A moment that fails is tried once more in a fresh CS2; if it fails again
 // it is skipped and the others are still recorded. The error is only for
 // what stops the whole job (the demo cannot be copied, CS2 never starts).
-func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []shot, outDir string) ([]clipResult, []momentFailure, error) {
+func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []shot, outDir string, keep string) (clips []clipResult, failed []momentFailure, err error) {
+	// In demo order, whoever's they are: the seeks only go forward.
+	sort.Slice(shots, func(i, j int) bool { return shots[i].m.StartTick < shots[j].m.StartTick })
+	if r.live != nil && (keep == "" || r.live.key != keep || r.live.demo != demoPath) {
+		r.endLive()
+	}
 	if err := os.MkdirAll(demoDir(r.gameDir), 0o755); err != nil {
 		return nil, nil, err
 	}
 	base := fmt.Sprintf("rec-%d", os.Getpid())
 	inGame := filepath.Join(demoDir(r.gameDir), base+".dem")
-	if err := copyFile(demoPath, inGame); err != nil {
-		return nil, nil, err
-	}
-	defer os.Remove(inGame)
-
 	var g *game
 	start := func() error {
 		if g != nil {
@@ -347,21 +399,64 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 			return err
 		}
 		g = next
+		if r.live != nil {
+			r.live.g, r.live.pos = g, 0
+		}
 		return g.loadDemo("at-recorder/"+base, r.look())
 	}
+	if r.live != nil {
+		// CS2 is up with this map's demo: go on from where it is, or play the
+		// demo again for a moment before it (no new CS2, no download).
+		g = r.live.g
+		if len(shots) > 0 && shots[0].m.StartTick < r.live.pos {
+			log.Printf("playing the demo again from the start for an earlier moment")
+			if err := g.loadDemo("at-recorder/"+base, r.look()); err != nil {
+				log.Printf("the demo did not load again (%v): starting CS2 afresh", err)
+				if err := start(); err != nil {
+					r.endLive()
+					return nil, nil, gameFault{err}
+				}
+			}
+			r.live.pos = 0
+		}
+	} else {
+		if err := copyFile(demoPath, inGame); err != nil {
+			return nil, nil, err
+		}
+		if keep != "" {
+			r.live = &liveGame{key: keep, demo: demoPath, inGame: inGame, base: base}
+		}
+		if err := start(); err != nil {
+			if r.live != nil {
+				r.endLive()
+			} else {
+				os.Remove(inGame)
+				if g != nil {
+					g.stop()
+				}
+			}
+			return nil, nil, gameFault{err}
+		}
+	}
 	defer func() {
-		if g != nil {
-			g.stop()
+		switch {
+		case r.live == nil:
+			// Nothing kept (a benchmark, a test command): close CS2 as before.
+			if g != nil {
+				g.stop()
+			}
+			os.Remove(inGame)
+		case err != nil:
+			// A job that went wrong takes its CS2 with it: the next starts clean.
+			r.endLive()
 		}
 	}()
-	if err := start(); err != nil {
-		return nil, nil, gameFault{err}
+	played := func(m moment) {
+		if r.live != nil && m.EndTick > r.live.pos {
+			r.live.pos = m.EndTick
+		}
 	}
 
-	// In demo order, whoever's they are: the seeks only go forward.
-	sort.Slice(shots, func(i, j int) bool { return shots[i].m.StartTick < shots[j].m.StartTick })
-	var clips []clipResult
-	var failed []momentFailure
 	var mu sync.Mutex
 	// Each moment is finished (encoded, joined) here while CS2 captures the
 	// next: one at a time, in order, at most one more waiting.
@@ -396,13 +491,13 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 		m, name, look := sh.m, sh.name, sh.look
 		if ctx.Err() != nil {
 			drain()
-			return clips, failed, ctx.Err()
+			err = ctx.Err()
+			return clips, failed, err
 		}
 		started := time.Now()
 		out := filepath.Join(outDir, fmt.Sprintf("moment-%d.mp4", m.ID))
 		var markers clipMarkers
 		var finish func() error
-		var err error
 		for attempt := 1; attempt <= 2; attempt++ {
 			if attempt > 1 {
 				// CS2 can get stuck (a seek that never lands): start it afresh.
@@ -411,10 +506,12 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 					// No CS2 to record the rest in: the job goes back (failRecording).
 					log.Printf("CS2 would not start again after %q: %v", m.Title, err)
 					drain()
-					return clips, failed, gameFault{serr}
+					err = gameFault{serr}
+					return clips, failed, err
 				}
 			}
 			if markers, finish, err = r.recordMoment(g, look, name, m, out); err == nil {
+				played(m)
 				break
 			}
 		}
@@ -423,6 +520,7 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 			mu.Lock()
 			failed = append(failed, momentFailure{moment: m, err: err})
 			mu.Unlock()
+			err = nil
 			continue
 		}
 		log.Printf("captured %q in %s", m.Title, time.Since(started).Round(time.Second))
@@ -1030,9 +1128,20 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 		return 0, 0, err
 	}
 	defer os.RemoveAll(dir)
-	demoPath := filepath.Join(dir, "match.dem")
-	if err := r.download(ctx, mj.MatchSlug, mj.MapNumber, demoPath); err != nil {
-		return 0, 0, err
+	// The map's demo: the one CS2 has loaded, or downloaded now (kept with
+	// CS2 for the map's next job).
+	keep := r.liveKey(mj.MatchSlug, mj.MapNumber)
+	var demoPath string
+	if r.live != nil && r.live.key == keep {
+		demoPath = r.live.demo
+		log.Printf("CS2 has %s map %d loaded: going on", mj.MatchSlug, mj.MapNumber)
+	} else {
+		r.endLive()
+		demoPath = filepath.Join(r.scratch, fmt.Sprintf("live-%d.dem", os.Getpid()))
+		if err := r.download(ctx, mj.MatchSlug, mj.MapNumber, demoPath); err != nil {
+			os.Remove(demoPath)
+			return 0, 0, err
+		}
 	}
 	var shots []shot
 	var failed []momentFailure
@@ -1049,6 +1158,9 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 		}
 		look := r.lookFor(ctx, p)
 		if r.icons != nil {
+			if rp == nil && r.live != nil && r.live.key == keep {
+				rp = r.live.replay
+			}
 			if rp == nil {
 				rp = replayOf(demoPath, p.MapName)
 			}
@@ -1058,7 +1170,16 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 			shots = append(shots, shot{m: m, player: i, name: name, look: look})
 		}
 	}
-	recorded, more, err := r.recordMoments(ctx, demoPath, shots, dir)
+	recorded, more, err := r.recordMoments(ctx, demoPath, shots, dir, keep)
+	if r.live != nil {
+		r.live.slug, r.live.mapNum = mj.MatchSlug, mj.MapNumber
+		if rp != nil {
+			r.live.replay = rp
+		}
+	} else {
+		// No CS2 kept (it failed): its demo goes too.
+		os.Remove(demoPath)
+	}
 	failed = append(failed, more...)
 	// Each clip goes up with its frame check; one the platform turns down
 	// (too many repeated frames) is recorded again later, maybe elsewhere,
@@ -1331,13 +1452,18 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 			log.Printf("desktop session is up")
 			waitingForDisplay = false
 		}
-		j, reel, redress, err := c.claimRecording(ctx)
+		j, reel, redress, err := c.claimRecording(ctx, r.loadedMap())
 		if err != nil {
 			log.Printf("cannot reach the platform: %v", err)
 			currentJobLog.take()
 		}
 		if j != nil || reel != nil || redress != nil {
 			keep.hold()
+		}
+		if r.live != nil && (j == nil || j.Kind != "map" || r.live.key != r.liveKey(j.MatchSlug, j.MapNumber)) {
+			// The map is done here (no more of its players), or other work came:
+			// close CS2 so the next map, a reel or nothing has the GPU.
+			r.endLive()
 		}
 		started := time.Now()
 		stopBeat := c.heartbeat(ctx)
@@ -1453,7 +1579,7 @@ func recordDemo(args []string) error {
 		}
 	}
 	sort.Slice(shots, func(a, b int) bool { return shots[a].m.StartTick < shots[b].m.StartTick })
-	clips, failed, err := r.recordMoments(context.Background(), args[0], shots, args[2])
+	clips, failed, err := r.recordMoments(context.Background(), args[0], shots, args[2], "")
 	if err != nil {
 		return err
 	}
@@ -1521,7 +1647,7 @@ func recordFile(args []string) error {
 	for i, m := range moments {
 		shots[i] = shot{m: m, name: name, look: look}
 	}
-	clips, failed, err := r.recordMoments(context.Background(), args[0], shots, args[3])
+	clips, failed, err := r.recordMoments(context.Background(), args[0], shots, args[3], "")
 	if err != nil {
 		return err
 	}

@@ -147,7 +147,7 @@ func (r *recorder) benchmarkTries(ctx context.Context, mj *mapJob, source *strin
 			return out, err
 		}
 		t0 := time.Now()
-		clips, failed, err := r.recordMoments(ctx, demoPath, shots, take)
+		clips, failed, err := r.recordMoments(ctx, demoPath, shots, take, "")
 		secs := time.Since(t0).Seconds()
 		switch {
 		case err != nil:

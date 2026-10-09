@@ -90,6 +90,7 @@ import {
 } from '../demos/highlightViews';
 import {
   claimMapJob,
+  loadedMapOf,
   idleRecorderCount,
   recorderBusy,
   claimMatchReel,
@@ -227,10 +228,11 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
       const team = await claimTeamReel(recorder);
       if (team) return give(team);
     }
-    // A recorder from version 4 records its share of a map (the map's
-    // waiting moments over the recorders online) in one CS2 session.
+    // A recorder from version 4 records a map's players one at a time in
+    // the CS2 session it keeps (demos/highlights.ts claimMapJob).
     if (Number(req.body?.version ?? 0) >= 4) {
-      const map = await claimMapJob(recorder);
+      // The map whose demo it has loaded, to go on with (the worker's liveGame).
+      const map = await claimMapJob(recorder, loadedMapOf(req.body?.loaded));
       if (map) return give(map);
       // Nothing to record: overlays to draw again (recorder version 6).
       if (Number(req.body?.version ?? 0) >= 6) {
