@@ -102,9 +102,10 @@ Recorders tab when it first asks for work.
 - A recorder key is good for the recorder's own calls only (claim work,
   send clips and reels, download the demos it records), never the admin API;
   revoke it on the same tab. An admin API token still works too.
-- The display matters: the command passes `WAYLAND_DISPLAY` and the runtime
-  directory; without them gamescope stops with *Failed to connect to wayland
-  socket*. Run it from the PC's desktop session.
+- The display matters: the command passes `WAYLAND_DISPLAY` and mounts
+  `/run/user` with mount propagation, so a recorder that Docker starts at boot
+  sees the session once someone signs in. Until then it waits for the
+  display instead of taking work (a job then would fail on the display).
 - NVIDIA: tick *NVIDIA graphics card* for `--gpus all` (NVIDIA Container
   Toolkit).
 - A game library outside `$HOME`, `/mnt` and `/media`: add its mount.
