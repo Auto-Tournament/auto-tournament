@@ -77,6 +77,38 @@ func (c *client) reportRun(run jobRun, started time.Time) {
 	res.Body.Close()
 }
 
+// heartbeatEvery is how often a recorder at a job tells the platform it is
+// still at it: well inside the platform's 30 minutes before a claim goes stale.
+const heartbeatEvery = 5 * time.Minute
+
+// heartbeat tells the platform every heartbeatEvery that this recorder is
+// still working on what it claimed (a map job can take hours, and its clips
+// go up only at the end), so no other recorder takes it over. Returns what
+// stops it. Best effort: an older platform answers 404, which is fine.
+func (c *client) heartbeat(ctx context.Context) func() {
+	done := make(chan struct{})
+	go func() {
+		t := time.NewTicker(heartbeatEvery)
+		defer t.Stop()
+		for {
+			select {
+			case <-done:
+				return
+			case <-ctx.Done():
+				return
+			case <-t.C:
+				hctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+				if res, err := c.postJSON(hctx, "/api/game/cs2/recorder/heartbeat", map[string]any{"recorder": c.worker}); err == nil {
+					res.Body.Close()
+				}
+				cancel()
+			}
+		}
+	}()
+	var once sync.Once
+	return func() { once.Do(func() { close(done) }) }
+}
+
 // jsonMap turns a struct into its JSON object's fields.
 func jsonMap(v any) (map[string]any, error) {
 	b, err := json.Marshal(v)

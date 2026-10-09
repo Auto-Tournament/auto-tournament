@@ -25,6 +25,10 @@ export interface AdminClip {
   status: string;
   madeWith: string | null;
   outdated: boolean;
+  /** Who recorded it (or is recording it), by the name the admin gave it. */
+  recorder: string | null;
+  recordSeconds: number | null;
+  doneAt: number | null;
 }
 
 export interface AdminReel {
@@ -75,9 +79,14 @@ export async function listClips(
     kind: string;
     status: string;
     made_with: string | null;
+    recorder: string | null;
+    record_seconds: number | null;
+    done_at: number | null;
   }>(
-    `SELECT h.id, h.match_slug, h.map_number, h.player_id, p.name, h.title, h.kind, h.status, h.made_with
+    `SELECT h.id, h.match_slug, h.map_number, h.player_id, p.name, h.title, h.kind, h.status, h.made_with,
+            COALESCE(r.label, h.recorder) AS recorder, h.record_seconds, h.done_at
        FROM cs2_highlights h LEFT JOIN players p ON p.id = h.player_id
+       LEFT JOIN cs2_recorders r ON r.name = h.recorder
       WHERE h.match_slug IN (${marks}) AND h.status <> 'skipped'
       ORDER BY h.map_number, h.round, h.id`,
     slugs
@@ -110,6 +119,9 @@ export async function listClips(
         status: c.status,
         madeWith: c.made_with,
         outdated: isOutdated(c.status, c.made_with, current),
+        recorder: c.recorder,
+        recordSeconds: c.record_seconds === null ? null : Number(c.record_seconds),
+        doneAt: c.done_at === null ? null : Number(c.done_at),
       }));
     const ownReels = reels
       .filter((r) => r.match_slug === m.slug)

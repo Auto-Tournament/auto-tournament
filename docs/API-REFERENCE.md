@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 644 of them, 407 behind auth —
+Every endpoint this API serves — 649 of them, 392 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -275,26 +275,26 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 
 | Method | Path | Auth |
 | --- | --- | --- |
-| `POST` | `/api/game/cs2/recorder/claim` | admin |
-| `PUT` | `/api/game/cs2/recorder/jobs/:id/clip` | admin |
-| `PUT` | `/api/game/cs2/recorder/reels/:slug/:map/:player` | admin |
-| `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map` | admin |
-| `POST` | `/api/game/cs2/recorder/match-reels/:slug/:map/fail` | admin |
+| `POST` | `/api/game/cs2/recorder/claim` | public |
+| `PUT` | `/api/game/cs2/recorder/jobs/:id/clip` | public |
+| `PUT` | `/api/game/cs2/recorder/reels/:slug/:map/:player` | public |
+| `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map` | public |
+| `POST` | `/api/game/cs2/recorder/match-reels/:slug/:map/fail` | public |
 | `GET` | `/api/game/cs2/matches/:slug/reels` | public |
-| `PUT` | `/api/game/cs2/recorder/jobs/:id/clip/:twin(crowd|clean|overlay)` | admin |
-| `PUT` | `/api/game/cs2/recorder/reels/:slug/:map/:player/:twin(crowd|clean|overlay)` | admin |
-| `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map/:twin(crowd|clean|overlay)` | admin |
-| `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team/:twin(crowd|clean|overlay)` | admin |
-| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id/:twin(crowd|clean|overlay)` | admin |
-| `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team` | admin |
-| `POST` | `/api/game/cs2/recorder/team-reels/:slug/:team/fail` | admin |
-| `PUT` | `/api/game/cs2/recorder/redress/:file` | admin |
-| `POST` | `/api/game/cs2/recorder/redress/:file/fail` | admin |
+| `PUT` | `/api/game/cs2/recorder/jobs/:id/clip/:twin(crowd|clean|overlay)` | public |
+| `PUT` | `/api/game/cs2/recorder/reels/:slug/:map/:player/:twin(crowd|clean|overlay)` | public |
+| `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map/:twin(crowd|clean|overlay)` | public |
+| `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team/:twin(crowd|clean|overlay)` | public |
+| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id/:twin(crowd|clean|overlay)` | public |
+| `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team` | public |
+| `POST` | `/api/game/cs2/recorder/team-reels/:slug/:team/fail` | public |
+| `PUT` | `/api/game/cs2/recorder/redress/:file` | public |
+| `POST` | `/api/game/cs2/recorder/redress/:file/fail` | public |
 | `GET` | `/api/game/cs2/redress` | admin |
 | `POST` | `/api/game/cs2/redress` | admin |
-| `POST` | `/api/game/cs2/recorder/fail` | admin |
-| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id` | admin |
-| `POST` | `/api/game/cs2/recorder/tournament-reels/:id/fail` | admin |
+| `POST` | `/api/game/cs2/recorder/fail` | public |
+| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id` | public |
+| `POST` | `/api/game/cs2/recorder/tournament-reels/:id/fail` | public |
 | `PUT` | `/api/game/cs2/players/me/highlights/favourite` | public |
 | `GET` | `/api/game/cs2/players/:playerId/highlights` | public |
 | `GET` | `/api/game/cs2/tournaments/:id/highlights` | public |
@@ -306,8 +306,9 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 | `GET` | `/api/game/cs2/watch/related` | public |
 | `GET` | `/api/game/cs2/highlights/:file` | public |
 | `GET` | `/api/game/cs2/highlights/:file/music/:track` | public |
-| `POST` | `/api/game/cs2/recorder/runs` | admin |
-| `POST` | `/api/game/cs2/recorder/benchmark` | admin |
+| `POST` | `/api/game/cs2/recorder/heartbeat` | public |
+| `POST` | `/api/game/cs2/recorder/runs` | public |
+| `POST` | `/api/game/cs2/recorder/benchmark` | public |
 | `GET` | `/api/game/cs2/recorders` | admin |
 | `GET` | `/api/game/cs2/recorders/:name/runs` | admin |
 | `GET` | `/api/game/cs2/recorder-runs/:id/log` | admin |
@@ -315,6 +316,10 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 | `POST` | `/api/game/cs2/recorders/:name/benchmark` | admin |
 | `GET` | `/api/game/cs2/clips` | admin |
 | `POST` | `/api/game/cs2/clips/redo` | admin |
+| `GET` | `/api/game/cs2/recorder-keys` | admin |
+| `POST` | `/api/game/cs2/recorder-keys` | admin |
+| `DELETE` | `/api/game/cs2/recorder-keys/:id` | admin |
+| `PUT` | `/api/game/cs2/recorders/:name` | admin |
 | `DELETE` | `/api/game/cs2/recorders/:name` | admin |
 
 ### Map radars
