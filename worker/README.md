@@ -47,27 +47,72 @@ where csm keeps it:
 
 ## Record highlights
 
-`at-worker record` turns each player's best moments into short clips for their
-profile. It runs on a machine with CS2, Steam signed in (any account; CS2 is
-free) and ffmpeg, on Linux or Windows, on a desktop with a GPU (a steam-headless
-container counts):
+`at-worker record` turns each player's best moments into clips and reels. It
+runs on a **Linux** PC with a GPU, CS2 and Steam signed in (any account; CS2 is
+free), and needs gamescope, ffmpeg and PipeWire (the recorder container below
+brings those). Windows is not supported: the capture goes through gamescope.
 
 ```sh
-AT_URL=https://your-platform AT_WORKER_TOKEN=... \
-AT_CS2_DIR="/path/to/Counter-Strike Global Offensive/game/csgo" \
+AT_URL=https://your-platform AT_WORKER_TOKEN=... AT_WORKER_NAME=lan-seat-12 \
+AT_CS2_GAME="$HOME/.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/game" \
+AT_SNIPER_RUN="$HOME/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/run" \
 at-worker record
 ```
 
-For each moment it plays the demo from the player's eyes, captures it with
-CS2's `startmovie` at `AT_CAPTURE_FPS` (240), and edits it with ffmpeg: full
-speed, then slowing into the last kill. `AT_RESOLUTION` (2560x1440) and
-`AT_ENCODER` (libx264) change the output. The full list is at the top of
-`record.go`.
+`AT_WORKER_NAME` is how the platform's Highlights page lists the recorder (its
+benchmark and history stay under that name); without it the host name is used.
+The full list of settings is at the top of `record_linux.go`.
+
+For each moment it plays the demo from the player's eyes in CS2, captures it
+through a headless gamescope, and edits it with ffmpeg (slow motion into the
+last kill, the caption card, the kill feed). The size and frame rate come from
+the platform's Highlights settings.
+
+What the platform does with it:
+
+- **Frame check.** Every clip goes up with the share of repeated frames. At 4%
+  or more the platform turns it down and has it recorded again, preferably by
+  another recorder; three in a row pause the recorder for 15 minutes.
+- **Benchmark.** On its first job the recorder records one moment at 240 and
+  120 Hz and keeps the fastest smooth rate (`AT_GAMESCOPE_HZ`, set by hand,
+  wins).
+- **Run log.** Each job's timings and log show on the Highlights page.
 
 Steam can run in offline mode: demo playback needs no online session, so every
 recorder (one per GPU) can use the same Steam account. Sign in once, then
 switch Steam to offline mode (in `loginusers.vdf`: `"WantsOfflineMode" "1"` and
 `"SkipOfflineModeWarning" "1"`).
+
+### Recorder container
+
+`sivertio/auto-tournament-recorder` (amd64) is the recorder with the userland
+it needs. It runs on a Linux PC that already has Steam and CS2, as the PC's
+own user, and uses the PC's GPU, display and sound; you can keep playing on
+the PC while it records (clips that stutter because the GPU is busy are
+turned down and recorded again elsewhere). On the 9070 XT it records as fast
+and as smoothly as without Docker.
+
+```sh
+docker run -d --name at-recorder --restart unless-stopped \
+  --user "$(id -u):$(id -g)" --group-add video --group-add render \
+  --device /dev/dri --ipc=host --net=host --shm-size 4g \
+  --security-opt seccomp=unconfined --cap-add SYS_NICE \
+  -v "$HOME:$HOME" -v "/run/user/$(id -u):/run/user/$(id -u)" -v /tmp:/tmp \
+  -e HOME="$HOME" -e XDG_RUNTIME_DIR="/run/user/$(id -u)" \
+  -e WAYLAND_DISPLAY="$WAYLAND_DISPLAY" \
+  -e DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+  -e AT_URL=https://your-platform -e AT_WORKER_TOKEN=... -e AT_WORKER_NAME="$(hostname)" \
+  -e AT_CS2_GAME="$HOME/.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/game" \
+  -e AT_SNIPER_RUN="$HOME/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/run" \
+  sivertio/auto-tournament-recorder:next
+```
+
+- The display matters: without `WAYLAND_DISPLAY` and the runtime directory
+  gamescope stops with *Failed to connect to wayland socket*.
+- NVIDIA: add `--gpus all` (NVIDIA Container Toolkit) instead of, or next to,
+  `--device /dev/dri`.
+- A game library on another disk: mount it too (`-v /mnt/games:/mnt/games`)
+  and point `AT_CS2_GAME` at it.
 
 Every clip and reel is stored three times over (`overlay.go`): dressed (the
 caption card, kill feed and logo drawn on: what people watch), clean (as
