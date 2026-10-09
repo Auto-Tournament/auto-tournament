@@ -5,11 +5,13 @@
  * /recorder/uploads/:id?offset=N for each part) and then makes the usual PUT
  * with `X-AT-Upload: <id>` and no body. The route reads the staged file in
  * place of the request (bodyOf), and the staged file is removed once read.
+ * bodyOf also gives back a JSON body the app's parser already read.
  */
 
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { Readable } from 'stream';
 import type { Request } from 'express';
 import { HIGHLIGHTS_DIR } from './highlights';
 
@@ -91,7 +93,14 @@ export async function appendPart(
  */
 export function bodyOf(req: Request): NodeJS.ReadableStream {
   const id = req.headers['x-at-upload'];
-  if (id === undefined) return req;
+  if (id === undefined) {
+    // An application/json body (a clip's overlay recipe) was already read by
+    // the app's JSON parser (index.ts): the request has nothing left to read.
+    if ((req as Request & { _body?: boolean })._body) {
+      return Readable.from([JSON.stringify(req.body)]);
+    }
+    return req;
+  }
   if (typeof id !== 'string' || !ID.test(id)) throw new UploadError('Which upload', 400);
   const file = fileOf(id);
   if (!fs.existsSync(file)) throw new UploadError('No such upload', 404);
