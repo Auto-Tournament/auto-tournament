@@ -989,12 +989,7 @@ func (r *recorder) download(ctx context.Context, matchSlug string, mapNumber int
 // upload sends a video to the platform, with the headers that describe it
 // (X-AT-Markers on a clip, X-AT-Clips on a reel).
 func (r *recorder) upload(ctx context.Context, path, route string, headers map[string]string) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	res, err := r.doWith(ctx, http.MethodPut, route, "video/mp4", f, headers)
+	res, err := r.sendFile(ctx, path, route, "video/mp4", headers)
 	if err != nil {
 		return err
 	}
@@ -1118,12 +1113,7 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 
 // uploadClip sends a clip and says whether the platform turned it down.
 func (r *recorder) uploadClip(ctx context.Context, path, route string, headers map[string]string) (bool, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return false, err
-	}
-	defer f.Close()
-	res, err := r.doWith(ctx, http.MethodPut, route, "video/mp4", f, headers)
+	res, err := r.sendFile(ctx, path, route, "video/mp4", headers)
 	if err != nil {
 		return false, err
 	}

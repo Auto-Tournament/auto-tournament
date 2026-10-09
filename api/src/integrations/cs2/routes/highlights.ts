@@ -12,6 +12,8 @@
  *   PUT  /api/game/cs2/recorder/team-reels/:slug/:team       a team's reel of a match (video/mp4 body)
  *   POST /api/game/cs2/recorder/team-reels/:slug/:team/fail  { error }: it could not make it
  *   POST /api/game/cs2/recorder/tournament-reels/:id/fail    { error }: it could not make it
+ *   POST /api/game/cs2/recorder/uploads               a file sent in parts: { id } (any PUT above then takes X-AT-Upload: <id> and no body)
+ *   PUT  /api/game/cs2/recorder/uploads/:id?offset=N  one part (under 100 MB; 409 with { bytes } when the offset is not where the upload ends)
  *   PUT  …/jobs/:id/clip/<twin>, …/reels/:slug/:map/:player/<twin>, …/match-reels/:slug/:map/<twin>,
  *        …/team-reels/:slug/:team/<twin>, …/tournament-reels/:id/<twin>   after the video: a reel's crowd
  *        track (`crowd`, audio/mp4), the clean twin (`clean`, video/mp4) or the overlay's recipe (`overlay`, JSON)
@@ -66,6 +68,7 @@ import {
   requireRecorder,
   revokeRecorderKey,
 } from '../demos/recorderKeys';
+import { appendPart, bodyOf, dropUpload, startUpload, UploadError } from '../demos/uploadParts';
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
 import {
@@ -236,6 +239,35 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
   }
 });
 
+// A file sent in parts (../demos/uploadParts.ts): Cloudflare turns down bodies over 100 MB.
+router.post('/recorder/uploads', requireRecorder, async (_req: Request, res: Response) => {
+  try {
+    return res.json({ success: true, id: await startUpload() });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] upload start failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not start the upload' });
+  }
+});
+
+router.put('/recorder/uploads/:id', requireRecorder, async (req: Request, res: Response) => {
+  const offset = Number(req.query.offset ?? 0);
+  if (!Number.isSafeInteger(offset) || offset < 0) {
+    return res.status(400).json({ success: false, error: 'An offset' });
+  }
+  try {
+    return res.json({ success: true, bytes: await appendPart(req.params.id, offset, req) });
+  } catch (error) {
+    if (error instanceof UploadError) {
+      req.resume();
+      return res
+        .status(error.status)
+        .json({ success: false, error: error.message, bytes: error.bytes });
+    }
+    log.error('[HIGHLIGHTS] upload part failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not store the part' });
+  }
+});
+
 router.put('/recorder/jobs/:id/clip', requireRecorder, async (req: Request, res: Response) => {
   const id = idOf(req);
   if (!id || !String(req.headers['content-type'] ?? '').startsWith('video/mp4')) {
@@ -247,12 +279,13 @@ router.put('/recorder/jobs/:id/clip', requireRecorder, async (req: Request, res:
     const verdict = await judgeClip(id, parseQuality(req.headers['x-at-quality']));
     if (verdict.rejected) {
       req.resume();
+      dropUpload(req);
       return res.json({ success: true, rejected: true });
     }
     const seconds = Number(req.headers['x-at-seconds']);
     const bytes = await saveClip(
       id,
-      req,
+      bodyOf(req),
       parseMarkers(req.headers['x-at-markers']),
       Number.isFinite(seconds) && seconds > 0 && seconds < 86_400
         ? Math.round(seconds * 10) / 10
@@ -282,7 +315,7 @@ router.put(
         req.params.slug,
         map,
         req.params.player,
-        req,
+        bodyOf(req),
         ids,
         startsOf(req, ids)
       );
@@ -312,7 +345,7 @@ router.put(
         req.params.slug,
         map,
         Number.isInteger(clips) ? clips : 0,
-        req,
+        bodyOf(req),
         ids,
         startsOf(req, ids)
       );
@@ -369,7 +402,7 @@ const twinUpload =
     if (!fs.existsSync(video))
       return res.status(404).json({ success: false, error: 'Upload the video first' });
     try {
-      return res.json({ success: true, bytes: await saveTwin(video, twin, req) });
+      return res.json({ success: true, bytes: await saveTwin(video, twin, bodyOf(req)) });
     } catch (error) {
       log.error('[HIGHLIGHTS] twin save failed', { error, video: path.basename(video), twin });
       return res.status(500).json({ success: false, error: `Could not store the ${twin} file` });
@@ -430,7 +463,7 @@ router.put(
       const bytes = await saveTeamReel(
         req.params.slug,
         req.params.team,
-        req,
+        bodyOf(req),
         ids,
         startsOf(req, ids)
       );
@@ -463,7 +496,7 @@ router.put('/recorder/redress/:file', requireRecorder, async (req: Request, res:
     return res.status(400).json({ success: false, error: 'A video/mp4 body for a clip or reel' });
   }
   try {
-    return res.json({ success: true, bytes: await saveRedressed(req.params.file, req) });
+    return res.json({ success: true, bytes: await saveRedressed(req.params.file, bodyOf(req)) });
   } catch (error) {
     log.error('[HIGHLIGHTS] redressed video save failed', { error, file: req.params.file });
     return res.status(500).json({ success: false, error: 'Could not store the video' });
@@ -527,7 +560,7 @@ router.put(
     }
     try {
       const ids = parseClipIds(req.headers['x-at-clips']);
-      const bytes = await saveTournamentReel(id, req, ids, startsOf(req, ids));
+      const bytes = await saveTournamentReel(id, bodyOf(req), ids, startsOf(req, ids));
       return res.json({ success: true, bytes });
     } catch (error) {
       log.error('[HIGHLIGHTS] tournament reel save failed', { error, id });

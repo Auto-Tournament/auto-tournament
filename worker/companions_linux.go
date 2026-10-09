@@ -28,12 +28,7 @@ func (r *recorder) uploadTwins(ctx context.Context, video, route string) {
 }
 
 func (r *recorder) putFile(ctx context.Context, path, route, contentType string) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	res, err := r.doWith(ctx, http.MethodPut, route, contentType, f, nil)
+	res, err := r.sendFile(ctx, path, route, contentType, nil)
 	if err != nil {
 		return err
 	}
