@@ -66,6 +66,8 @@
     "working": "Działa",
     "failedCount": "Nieudane: {{count}}",
     "allowPrivateShort": "Dla usług w twojej sieci (LAN, Docker).",
-    "sourceShort": "team IDs from token {{source}}"
+    "sourceShort": "team IDs from token {{source}}",
+    "showUrl": "Show URL",
+    "hideUrl": "Hide URL"
   }
 }

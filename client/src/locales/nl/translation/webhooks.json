@@ -66,6 +66,8 @@
     "working": "Werkt",
     "failedCount": "{{count}} mislukt",
     "allowPrivateShort": "Voor diensten op je eigen netwerk (LAN, Docker).",
-    "sourceShort": "team IDs from token {{source}}"
+    "sourceShort": "team IDs from token {{source}}",
+    "showUrl": "Show URL",
+    "hideUrl": "Hide URL"
   }
 }

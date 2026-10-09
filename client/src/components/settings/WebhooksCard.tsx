@@ -25,7 +25,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { ArrowClockwiseIcon, CopyIcon, PaperPlaneTiltIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
+import { ArrowClockwiseIcon, CopyIcon, EyeIcon, EyeSlashIcon, PaperPlaneTiltIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -114,6 +114,19 @@ function when(ms: number | null): string {
  * and the switch for private / local targets (LAN events).
  */
 /** An endpoint's host, to name it in its row when it has no description. */
+/**
+ * A webhook URL with only its host showing: the path often is the secret
+ * (a Discord webhook's token), so it stays hidden until asked for.
+ */
+function maskedUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    return `${u.protocol}//${u.host}/••••••••`;
+  } catch {
+    return '••••••••';
+  }
+}
+
 function hostOf(url: string): string {
   try {
     return new URL(url).host;
@@ -123,6 +136,9 @@ function hostOf(url: string): string {
 }
 
 export function WebhooksCard() {
+  // Endpoints whose full URL is shown (hidden by default), and the edit form's.
+  const [revealed, setRevealed] = useState<Set<string>>(new Set());
+  const [showFormUrl, setShowFormUrl] = useState(false);
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
   const [data, setData] = useState<ListResponse | null>(null);
@@ -317,10 +333,28 @@ export function WebhooksCard() {
             }
           >
             <Stack spacing={1.25}>
-              <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-                {endpoint.url}
-                {endpoint.source ? ` · ${t('webhooksPage.sourceShort', { source: endpoint.source })}` : ''}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+                <Typography variant="body2" sx={{ wordBreak: 'break-all' }} data-testid={`webhook-url-${endpoint.id}`}>
+                  {revealed.has(endpoint.id) ? endpoint.url : maskedUrl(endpoint.url)}
+                  {endpoint.source ? ` · ${t('webhooksPage.sourceShort', { source: endpoint.source })}` : ''}
+                </Typography>
+                <Tooltip title={revealed.has(endpoint.id) ? t('webhooksPage.hideUrl') : t('webhooksPage.showUrl')}>
+                  <IconButton
+                    size="small"
+                    aria-label={revealed.has(endpoint.id) ? t('webhooksPage.hideUrl') : t('webhooksPage.showUrl')}
+                    onClick={() =>
+                      setRevealed((r) => {
+                        const next = new Set(r);
+                        if (next.has(endpoint.id)) next.delete(endpoint.id);
+                        else next.add(endpoint.id);
+                        return next;
+                      })
+                    }
+                  >
+                    {revealed.has(endpoint.id) ? <EyeSlashIcon size={16} /> : <EyeIcon size={16} />}
+                  </IconButton>
+                </Tooltip>
+              </Box>
               <Typography variant="caption" color="text.secondary">
                 {t('webhooksPage.counts', {
                   succeeded: endpoint.deliveries.succeeded ?? 0,
@@ -437,6 +471,20 @@ export function WebhooksCard() {
               <TextField
                 label={t('webhooksPage.url')}
                 value={form.url}
+                type={showFormUrl ? 'text' : 'password'}
+                autoComplete="off"
+                InputProps={{
+                  endAdornment: (
+                    <IconButton
+                      size="small"
+                      aria-label={showFormUrl ? t('webhooksPage.hideUrl') : t('webhooksPage.showUrl')}
+                      onClick={() => setShowFormUrl((v) => !v)}
+                      edge="end"
+                    >
+                      {showFormUrl ? <EyeSlashIcon size={18} /> : <EyeIcon size={18} />}
+                    </IconButton>
+                  ),
+                }}
                 onChange={(e) => setForm({ ...form, url: e.target.value })}
                 placeholder={form.format === 'discord' ? 'https://discord.com/api/webhooks/…' : 'https://example.com/hooks/auto-tournament'}
                 fullWidth
