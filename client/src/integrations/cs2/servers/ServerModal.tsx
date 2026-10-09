@@ -93,6 +93,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   };
 
 
+  // A Ready Up server on the fleet link: the platform reaches it over its own
+  // connection, so it has no RCON password, and its address is what it reported.
+  const isFleet = isEditing && (server as { transport?: string } | null | undefined)?.transport === 'fleet';
+
   const handleSave = async () => {
     console.log('handleSave called', { name, host, port, password: '***' });
     console.log('Host value length:', host.length, 'Host trimmed length:', host.trim().length);
@@ -116,7 +120,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       return;
     }
 
-    if (!password.trim()) {
+    if (!isFleet && !password.trim()) {
       console.log('Validation failed: password required');
       setError(t('serverModal.errors.rconRequired'));
       return;
@@ -174,9 +178,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
         console.log('Updating existing server:', server.id);
         await api.put(`/api/servers/${server.id}`, {
           name: payload.name,
-          host: payload.host,
-          port: payload.port,
-          password: payload.password,
+          ...(isFleet ? {} : { host: payload.host, port: payload.port, password: payload.password }),
           enabled: payload.enabled,
           tournamentUse: payload.tournamentUse,
           skins: payload.skins,
@@ -345,7 +347,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                 if (error) setError(''); // Clear error when user starts typing
               }}
               placeholder={t('serverModal.hostPlaceholder')}
-              required
+              required={!isFleet}
+              disabled={isFleet}
+              helperText={isFleet ? t('serverModal.fleetAddress', { defaultValue: 'Reported by Ready Up over the fleet link.' }) : undefined}
               fullWidth
               slotProps={{
                 htmlInput: { 'data-testid': 'server-host-input' },
@@ -361,13 +365,15 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               }}
               placeholder={t('serverModal.portPlaceholder')}
               type="number"
-              required
+              required={!isFleet}
+              disabled={isFleet}
               fullWidth
               slotProps={{
                 htmlInput: { 'data-testid': 'server-port-input' },
               }}
             />
 
+            {!isFleet && (
             <TextField
               label={t('serverModal.rconPasswordLabel')}
               value={password}
@@ -397,6 +403,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                 ),
               }}
             />
+            )}
 
             <FormControlLabel
               control={<Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />}
@@ -477,15 +484,18 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               {t('serverModal.buttons.cancel')}
             </Button>
           )}
-          <Button
-            variant="outlined"
-            onClick={handleCheckConnection}
-            disabled={saving || checking}
-            startIcon={checking ? <CircularProgress size={16} /> : undefined}
-            data-testid="server-check-button"
-          >
-            {checking ? t('serverModal.testingConnectivity') : t('serverModal.testConnectivity')}
-          </Button>
+          {/* An RCON check: a fleet server has no RCON (its status comes from the fleet link). */}
+          {!isFleet && (
+            <Button
+              variant="outlined"
+              onClick={handleCheckConnection}
+              disabled={saving || checking}
+              startIcon={checking ? <CircularProgress size={16} /> : undefined}
+              data-testid="server-check-button"
+            >
+              {checking ? t('serverModal.testingConnectivity') : t('serverModal.testConnectivity')}
+            </Button>
+          )}
           <Button
             data-testid="server-save-button"
             onClick={handleSave}

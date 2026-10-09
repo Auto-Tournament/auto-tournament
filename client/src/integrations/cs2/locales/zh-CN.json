@@ -646,6 +646,7 @@
     }
   },
   "serverModal": {
+    "fleetAddress": "Reported by Ready Up over the fleet link.",
     "titleCreate": "新增服务器",
     "titleEdit": "编辑服务器",
     "serverNameLabel": "服务器名称",
