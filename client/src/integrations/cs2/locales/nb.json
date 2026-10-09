@@ -646,6 +646,7 @@
     }
   },
   "serverModal": {
+    "fleetAddress": "Rapportert av Ready Up over fleet-koblingen.",
     "titleCreate": "Legg til server",
     "titleEdit": "Rediger server",
     "serverNameLabel": "Servernavn",

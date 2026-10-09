@@ -646,6 +646,7 @@
     }
   },
   "serverModal": {
+    "fleetAddress": "Reported by Ready Up over the fleet link.",
     "titleCreate": "Adicionar servidor",
     "titleEdit": "Editar servidor",
     "serverNameLabel": "Nome do servidor",
