@@ -178,7 +178,12 @@ class TeamService {
     // Validate no duplicate Steam IDs
     this.validateNoDuplicatePlayers(input.players);
 
-    const { players: rosterPlayers, discordIds, warnings } = normalisePlayerDiscordIds(input.players);
+    const {
+      players: rosterPlayers,
+      discordIds,
+      oidcSubjects,
+      warnings,
+    } = normalisePlayerDiscordIds(input.players);
 
     // Enrich players with avatars from Steam API.
     // For dev/test teams created via the Development tools (IDs prefixed with
@@ -191,7 +196,14 @@ class TeamService {
     // Auto-create players in players table (for shuffle tournaments)
     for (const player of enrichedPlayers) {
       try {
-        await playerService.getOrCreatePlayer(player.steamId, player.name, player.avatar, player.elo);
+        await playerService.getOrCreatePlayer(
+          player.steamId,
+          player.name,
+          player.avatar,
+          player.elo
+        );
+        // Already there: a new display name only (never rating or stats).
+        await playerService.refreshImportedPlayer(player.steamId, player.name, player.avatar);
       } catch (error) {
         // Log but don't fail team creation if player creation fails
         log.warn(`Failed to create player ${player.steamId} in players table`, { error });
@@ -211,6 +223,7 @@ class TeamService {
           players: enrichedPlayers,
         });
         warnings.push(...(await playerService.applyImportedDiscordIds(discordIds)));
+        warnings.push(...(await playerService.applyImportedOidcSubjects(oidcSubjects)));
         return { team, warnings };
       }
       throw new Error(`Team with ID '${input.id}' already exists`);
@@ -238,6 +251,7 @@ class TeamService {
     const result = await this.getTeamById(input.id);
     if (!result) throw new Error('Failed to retrieve created team');
     warnings.push(...(await playerService.applyImportedDiscordIds(discordIds)));
+    warnings.push(...(await playerService.applyImportedOidcSubjects(oidcSubjects)));
     return { team: result, warnings };
   }
 
@@ -282,17 +296,19 @@ class TeamService {
       const enrichedPlayers = await this.enrichPlayersWithAvatars(normalised.players, {
         skipSteamAvatar: id.startsWith('test-team-'),
       });
-      
+
       // Auto-create players in players table (for shuffle tournaments)
       for (const player of enrichedPlayers) {
         try {
           await playerService.getOrCreatePlayer(player.steamId, player.name, player.avatar);
+          // Already there: a new display name only (never rating or stats).
+          await playerService.refreshImportedPlayer(player.steamId, player.name, player.avatar);
         } catch (error) {
           // Log but don't fail team update if player creation fails
           log.warn(`Failed to create player ${player.steamId} in players table`, { error });
         }
       }
-      
+
       updateData.players = JSON.stringify(enrichedPlayers);
       rosterSteamIds = enrichedPlayers.map((p) => p.steamId);
     }
@@ -308,6 +324,7 @@ class TeamService {
     const result = await this.getTeamById(id);
     if (!result) throw new Error('Failed to retrieve updated team');
     warnings.push(...(await playerService.applyImportedDiscordIds(normalised.discordIds)));
+    warnings.push(...(await playerService.applyImportedOidcSubjects(normalised.oidcSubjects)));
     return { team: result, warnings };
   }
 

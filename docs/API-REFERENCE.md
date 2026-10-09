@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 638 of them, 404 behind auth —
+Every endpoint this API serves — 639 of them, 405 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -778,6 +778,7 @@ Player records, ratings, match history and profiles.
 | `GET` | `/api/players` | admin |
 | `GET` | `/api/players/by-discord-id/:discordId` | admin |
 | `POST` | `/api/players` | admin |
+| `POST` | `/api/players/import` | admin |
 | `POST` | `/api/players/bulk-import` | admin |
 | `POST` | `/api/players/bulk-delete` | admin |
 | `PUT` | `/api/players/:playerId` | admin |

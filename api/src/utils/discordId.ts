@@ -116,7 +116,10 @@ export function parseDiscordIdEdit(raw: unknown): DiscordIdEdit {
   if (raw === null) return { kind: 'clear' };
 
   if (typeof raw === 'number') {
-    return { kind: 'invalid', error: `discordId must be a string, not a number. ${NUMBER_EXPLANATION}` };
+    return {
+      kind: 'invalid',
+      error: `discordId must be a string, not a number. ${NUMBER_EXPLANATION}`,
+    };
   }
 
   if (typeof raw === 'string') {
@@ -138,6 +141,13 @@ export interface ImportedDiscordId {
   steamId: string;
   name: string;
   discordId: string;
+}
+
+/** An imported player's OpenID Connect subject (an integrator's login `sub`). */
+export interface ImportedOidcSubject {
+  steamId: string;
+  name: string;
+  oidcSubject: string;
 }
 
 /**
@@ -163,12 +173,28 @@ export function normalisePlayerDiscordIds<P extends { steamId: string; name: str
 ): {
   players: P[];
   discordIds: ImportedDiscordId[];
+  /** `oidcSubject`s, split out the same way (never in the roster JSON). */
+  oidcSubjects: ImportedOidcSubject[];
   warnings: string[];
 } {
   const warnings: string[] = [];
   const discordIds: ImportedDiscordId[] = [];
+  const oidcSubjects: ImportedOidcSubject[] = [];
 
-  const stripped = players.map((player) => {
+  const stripped = players.map((input) => {
+    let player = input;
+    if (player && typeof player === 'object' && 'oidcSubject' in player) {
+      const { oidcSubject: rawSub, ...withoutSub } = player as P & { oidcSubject?: unknown };
+      player = withoutSub as unknown as P;
+      const sub = typeof rawSub === 'string' ? rawSub.trim() : '';
+      if (sub && sub.length <= 255) {
+        oidcSubjects.push({ steamId: input.steamId, name: input.name, oidcSubject: sub });
+      } else if (rawSub !== undefined && rawSub !== null && rawSub !== '') {
+        warnings.push(
+          `${describePlayer(input)}: oidcSubject must be a string of at most 255 characters; it was not stored.`
+        );
+      }
+    }
     if (!player || typeof player !== 'object' || !('discordId' in player)) {
       return player;
     }
@@ -189,5 +215,5 @@ export function normalisePlayerDiscordIds<P extends { steamId: string; name: str
     return rest as unknown as P;
   });
 
-  return { players: stripped, discordIds, warnings };
+  return { players: stripped, discordIds, oidcSubjects, warnings };
 }
