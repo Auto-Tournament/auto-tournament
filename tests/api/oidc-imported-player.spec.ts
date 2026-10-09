@@ -131,6 +131,24 @@ test(
     expect(res.status()).toBe(302);
     expect(await linkedTo(request, `kc-${stamp}-5`)).toEqual([sid(5)]);
 
+    // The name the integrator sent stays: the login's own name doesn't replace it.
+    const parent = (await (await request.get(`/api/players/${sid(5)}`, { headers })).json())
+      .player as {
+      name: string;
+    };
+    expect(parent.name).toBe('Parent');
+
+    // A later sync sets the name it sends, for an existing player too.
+    await request.post('/api/players/import', {
+      headers,
+      data: [{ steamId: sid(5), name: 'Parent G. H.' }],
+    });
+    const renamed = (await (await request.get(`/api/players/${sid(5)}`, { headers })).json())
+      .player as {
+      name: string;
+    };
+    expect(renamed.name).toBe('Parent G. H.');
+
     // Signing in again resolves through the stored link.
     expect((await oidcSignIn(`kc-${stamp}-5`, 'Parent on Keycloak')).status()).toBe(302);
     expect(await linkedTo(request, `kc-${stamp}-5`)).toEqual([sid(5)]);
