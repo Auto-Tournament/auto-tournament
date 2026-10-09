@@ -44,7 +44,7 @@ export interface LicenseStanding {
   paid: boolean;
   maxServers: number | null;
   licenseId: string | null;
-  /** YYYY-MM-DD: the day the platform stops unless sorted; null when nothing stops. */
+  /** YYYY-MM-DD: the first day the platform no longer works unless sorted; null when nothing stops. */
   stopsOn: string | null;
   /** Why it is past due or expired: not paid, the key was replaced by a new one, or the key belongs to another install. */
   reason: 'unpaid' | 'replaced' | 'in_use_elsewhere' | null;
@@ -66,8 +66,9 @@ function addDays(day: string, days: number): string {
 /** The offline rule for a subscription key: valid until its last paid day, then grace, then expired. */
 function offline(license: LicensePayload, today: string): Pick<LicenseStanding, 'status' | 'stopsOn'> {
   if (license.kind !== 'month') return { status: 'active', stopsOn: null };
-  const stopsOn = addDays(license.updates_until, GRACE_DAYS);
-  if (today > stopsOn) return { status: 'expired', stopsOn };
+  // Works through the 14th day after the last paid day; stops on the 15th.
+  const stopsOn = addDays(license.updates_until, GRACE_DAYS + 1);
+  if (today >= stopsOn) return { status: 'expired', stopsOn };
   if (today > license.updates_until) return { status: 'past_due', stopsOn };
   return { status: 'active', stopsOn: null };
 }
@@ -100,7 +101,7 @@ export function standingFor(
   if (server?.status === 'in_use_elsewhere') return { ...base, status: 'expired', stopsOn: server.stopsOn ?? today, reason: 'in_use_elsewhere' };
   if (server?.status === 'replaced') {
     const stopsOn = server.stopsOn ?? today;
-    return { ...base, status: today > stopsOn ? 'expired' : 'past_due', stopsOn, reason: 'replaced' };
+    return { ...base, status: today >= stopsOn ? 'expired' : 'past_due', stopsOn, reason: 'replaced' };
   }
 
   const local = offline(license, today);

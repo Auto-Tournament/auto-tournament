@@ -285,7 +285,8 @@ test.describe('the paid server limit and late payment (gate)', () => {
   });
 
   test('a monthly key: past due after its last paid day, expired after 14 days, even offline', () => {
-    expect(standingFor(month(), null, '2026-11-09', publicKeys)).toMatchObject({ status: 'past_due', stopsOn: '2026-11-22' });
+    expect(standingFor(month(), null, '2026-11-09', publicKeys)).toMatchObject({ status: 'past_due', stopsOn: '2026-11-23' });
+    expect(standingFor(month(), null, '2026-11-22', publicKeys).status).toBe('past_due');
     const expired = standingFor(month(), null, '2026-11-23', publicKeys);
     expect(expired.status).toBe('expired');
     expect(() => checkCreate(expired, 0, 1)).toThrow(/expired/);
@@ -321,8 +322,8 @@ test.describe('the paid server limit and late payment (gate)', () => {
 
   test('a replaced key gets its day, then stops; a key in use elsewhere stops at once', () => {
     const replaced = { status: 'replaced' as const, validUntil: null, stopsOn: '2026-10-11' };
-    expect(standingFor(month(), replaced, '2026-10-11', publicKeys)).toMatchObject({ status: 'past_due', reason: 'replaced', stopsOn: '2026-10-11' });
-    const after = standingFor(month(), replaced, '2026-10-12', publicKeys);
+    expect(standingFor(month(), replaced, '2026-10-10', publicKeys)).toMatchObject({ status: 'past_due', reason: 'replaced', stopsOn: '2026-10-11' });
+    const after = standingFor(month(), replaced, '2026-10-11', publicKeys);
     expect(after).toMatchObject({ status: 'expired', reason: 'replaced' });
     expect(() => checkCreate(after, 0, 1)).toThrow(/replaced/);
     const elsewhere = standingFor(month(), { status: 'in_use_elsewhere', validUntil: null, stopsOn: '2026-10-10' }, '2026-10-10', publicKeys);
