@@ -40,6 +40,7 @@ import {
   type SignInMethod,
 } from '../components/account/connectionsApi';
 import { ChangePasswordDialog } from '../components/account/ChangePasswordDialog';
+import { AccountEmailSection } from '../components/account/AccountEmailSection';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { apiErrorMessage } from '../utils/api';
 import { fontDisplay, tokens } from '../theme/tokens';
@@ -699,6 +700,8 @@ export default function AccountConnections() {
                   })}
                 </ListPanel>
               </Section>
+
+              {!readOnly && <AccountEmailSection />}
 
               {!readOnly && <PartyInviteSetting />}
 

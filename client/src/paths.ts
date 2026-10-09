@@ -15,6 +15,16 @@ export const paths = {
   login: '/login',
   /** Local admin sign-in (username + password). */
   adminLogin: '/login/admin',
+  /** First sign-in of an account an admin made: own password, email, two-step. */
+  firstSignIn: '/login/welcome',
+  /** Ask for a password reset link by email. */
+  forgotPassword: '/login/forgot',
+  /** Choose a new password from a reset email's link (?token=). */
+  resetPassword: '/login/reset',
+  /** A confirmation email's link (?token=). */
+  emailVerify: '/me/email/verify',
+  /** A tournament email's unsubscribe link (?token=). */
+  emailUnsubscribe: '/email/unsubscribe',
   /** First-admin setup and reset-admin recovery. */
   setup: '/setup',
   connectSteam: '/connect-steam',

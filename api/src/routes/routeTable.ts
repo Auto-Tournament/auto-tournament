@@ -43,6 +43,7 @@ import generationRoutes from './generation';
 import testRoutes from './test';
 import authRoutes from './auth';
 import { setupRouter, localAuthRouter, localAccountsRouter } from './localAdmin';
+import { emailSettingsRouter, meEmailRouter, emailLinksRouter } from './email';
 import gamesRoutes from './games';
 import gamePackRoutes from './gamePacks';
 import moduleRoutes from './modules';
@@ -232,6 +233,24 @@ const coreRoutes: MountedRouter[] = [
     title: 'System',
     description:
       'The platform process: whether it can restart itself, and a restart (so a module update that waits for one can finish). Admin only; writes must be same-site JSON.',
+  },
+  {
+    prefix: '/api/me/email',
+    router: meEmailRouter,
+    title: 'My email',
+    description: 'Your own email address (confirmed by a link) and whether you get tournament emails.',
+  },
+  {
+    prefix: '/api/email-settings',
+    router: emailSettingsRouter,
+    title: 'Email settings',
+    description: 'The SMTP server the site sends email with, and a test email. Admin only.',
+  },
+  {
+    prefix: '/api/email',
+    router: emailLinksRouter,
+    title: 'Email links',
+    description: 'What the links in emails do: confirm an address, unsubscribe from tournament emails.',
   },
   {
     prefix: '/api/me',

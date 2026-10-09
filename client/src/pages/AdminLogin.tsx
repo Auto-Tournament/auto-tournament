@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Alert, Button, Link, Stack, TextField } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthCard } from '../components/auth/AuthCard';
 import { postJson } from '../utils/postJson';
@@ -14,6 +14,7 @@ import { paths } from '../paths';
  */
 export default function AdminLogin() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [totp, setTotp] = useState('');
@@ -29,12 +30,14 @@ export default function AdminLogin() {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const { status, data } = await postJson<{ totpRequired?: boolean }>('/api/auth/local/login', {
+    const { status, data } = await postJson<{ totpRequired?: boolean; mustChangePassword?: boolean }>('/api/auth/local/login', {
       username,
       password,
       ...(needTotp ? { totp: totp.trim() } : {}),
     });
     setBusy(false);
+    // A password an admin chose: pick your own first (the password goes along, not stored).
+    if (status === 200 && data.mustChangePassword) return navigate(paths.firstSignIn, { state: { password } });
     if (status === 200) return window.location.assign(paths.root);
     if (data.totpRequired && !needTotp) {
       setNeedTotp(true);
@@ -87,9 +90,14 @@ export default function AdminLogin() {
         <Button type="submit" variant="contained" size="large" disabled={busy || !username || !password} data-testid="admin-login-submit">
           {t('localAdmin.signIn')}
         </Button>
-        <Link component={RouterLink} to={paths.login} variant="body2" sx={{ textAlign: 'center' }}>
-          {t('localAdmin.back')}
-        </Link>
+        <Stack direction="row" justifyContent="space-between" flexWrap="wrap" useFlexGap spacing={1}>
+          <Link component={RouterLink} to={paths.login} variant="body2">
+            {t('localAdmin.back')}
+          </Link>
+          <Link component={RouterLink} to={paths.forgotPassword} variant="body2" data-testid="admin-login-forgot">
+            {t('localAdmin.forgot')}
+          </Link>
+        </Stack>
       </Stack>
     </AuthCard>
   );

@@ -64,6 +64,7 @@ export interface LocalAdminRow {
   totp_secret_enc: string | null;
   totp_pending_enc: string | null;
   totp_last_step: string | number | null;
+  must_change_password?: number;
 }
 
 const now = () => Math.floor(Date.now() / 1000);
@@ -333,7 +334,7 @@ class LocalAdminService {
     const passwordHash = await hashPassword(password);
     await playerService.getOrCreatePlayer(playerId, opts.name?.trim() || username);
     await db.queryAsync(
-      'INSERT INTO local_admins (username, player_id, password_hash) VALUES (?, ?, ?)',
+      'INSERT INTO local_admins (username, player_id, password_hash, must_change_password) VALUES (?, ?, ?, 1)',
       [username, playerId, passwordHash]
     );
     if (opts.isAdmin) await playerService.updatePlayer(playerId, { isAdmin: true });
@@ -353,7 +354,7 @@ class LocalAdminService {
     if (!row) return false;
     await db.queryAsync(
       `UPDATE local_admins SET password_hash = ?, totp_secret_enc = NULL, totp_pending_enc = NULL,
-         totp_last_step = NULL, updated_at = ? WHERE id = ?`,
+         totp_last_step = NULL, must_change_password = 1, updated_at = ? WHERE id = ?`,
       [await hashPassword(password), now(), row.id]
     );
     log.warn('[AUDIT] Local account password set by an admin', { username, by: actor });
@@ -367,11 +368,10 @@ class LocalAdminService {
   async changeOwnPassword(playerId: string, password: string): Promise<boolean> {
     const row = await this.findByPlayerId(playerId);
     if (!row) return false;
-    await db.queryAsync('UPDATE local_admins SET password_hash = ?, updated_at = ? WHERE id = ?', [
-      await hashPassword(password),
-      now(),
-      row.id,
-    ]);
+    await db.queryAsync(
+      'UPDATE local_admins SET password_hash = ?, must_change_password = 0, updated_at = ? WHERE id = ?',
+      [await hashPassword(password), now(), row.id]
+    );
     log.info('[AUDIT] Local account password changed by its owner', { username: row.username });
     return true;
   }
@@ -388,9 +388,17 @@ class LocalAdminService {
     return true;
   }
 
-  async status(playerId: string): Promise<{ username: string; totpEnabled: boolean } | null> {
+  async status(
+    playerId: string
+  ): Promise<{ username: string; totpEnabled: boolean; mustChangePassword: boolean } | null> {
     const row = await this.findByPlayerId(playerId);
-    return row ? { username: row.username, totpEnabled: !!row.totp_secret_enc } : null;
+    return row
+      ? {
+          username: row.username,
+          totpEnabled: !!row.totp_secret_enc,
+          mustChangePassword: row.must_change_password === 1,
+        }
+      : null;
   }
 }
 

@@ -8,6 +8,10 @@ import { AtIcon } from './components/common/AtIcon';
 import Login from './pages/Login';
 import Setup from './pages/Setup';
 import AdminLogin from './pages/AdminLogin';
+import FirstSignIn from './pages/FirstSignIn';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import EmailLink from './pages/EmailLink';
 import AdminHome from './pages/AdminHome';
 import Manage from './pages/Manage';
 import Teams from './pages/Teams';
@@ -311,6 +315,15 @@ function AppRoutes() {
         path={paths.adminLogin}
         element={isAuthenticated ? <Navigate to={paths.root} replace /> : <AdminLogin />}
       />
+
+      {/* First sign-in of an account an admin made, password recovery by
+          email, and the links emails carry. Reachable signed in or not: each
+          page asks the API what applies. */}
+      <Route path={paths.firstSignIn} element={<FirstSignIn />} />
+      <Route path={paths.forgotPassword} element={<ForgotPassword />} />
+      <Route path={paths.resetPassword} element={<ResetPassword />} />
+      <Route path={paths.emailVerify} element={<EmailLink kind="verify" />} />
+      <Route path={paths.emailUnsubscribe} element={<EmailLink kind="unsubscribe" />} />
 
       {/* First-admin setup / reset-admin recovery. Always reachable: the API
           says whether it is open. */}
