@@ -211,7 +211,9 @@ also its record; settings are the `failover` row of `cs2_fleet_lists`.
   so a dead server gets it when it comes back; the driver's hello check then
   sends nothing more), `matches.server_id` = the new server, `assignMatch(slug,
 server, { resume })`: new epoch and password, `resume` = the latest round
-  backup of the current map that no restore voided (`pickBackup`) inline, or
+  backup of the current map that no restore voided and whose round the map
+  can reach (`pickBackup`; `maxBackupRound`: the regular rounds plus a
+  generous overtime allowance, against absurd rounds) inline, or
   `backup_ref` when it is too large for one frame; no backup yet = round 0
   (the map restarts from warmup, a decided knife kept via `sides`), plus the
   series score and earlier maps from the last state (`buildResume`). A live
@@ -243,7 +245,8 @@ per match + fleet map number + round, the file base64 in `data`),
 - `startRoundBackups()` (from `../startup.ts`) listens on
   `fleetInbound.onEvent`: `event.backup` is checked (base64, `size`,
   `sha256`) and stored; the same file again changes nothing, another file
-  for the round replaces it; a stale-epoch server's backups are ignored.
+  for the round replaces it; a stale-epoch server's backups are ignored, and
+  so are those sent while the match phase is not live (warmup, knife, ...).
   `event.rounds_voided` marks the later rounds `supersededAt`. Retention:
   `FLEET_BACKUP_RETENTION_DAYS` (default 14, 0 = forever) after the match
   ended; hourly.
