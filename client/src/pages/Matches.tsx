@@ -50,7 +50,7 @@ export default function Matches() {
   const linkedSlug = searchParams.get('match');
   const selectMatch = useCallback(
     (match: Match | null) => {
-      selectMatch(match);
+      setSelectedMatch(match);
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
