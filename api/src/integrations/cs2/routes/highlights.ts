@@ -190,7 +190,7 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
     if (isPaused(me)) return res.status(204).end();
     // Moments of a deleted match can't be recorded (demos/jobs.ts).
     await dropOrphanJobs();
-    const idle = idleRecorderCount(recorder);
+    idleRecorderCount(recorder);
     const settings = recorderSettings(me);
     const give = (job: unknown) => {
       recorderBusy(recorder);
@@ -218,10 +218,10 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
       const team = await claimTeamReel(recorder);
       if (team) return give(team);
     }
-    // A recorder from version 4 records a map (or its share of one, when
-    // other recorders are idle too) in one CS2 session.
+    // A recorder from version 4 records its share of a map (the map's
+    // waiting moments over the recorders online) in one CS2 session.
     if (Number(req.body?.version ?? 0) >= 4) {
-      const map = await claimMapJob(recorder, idle);
+      const map = await claimMapJob(recorder);
       if (map) return give(map);
       // Nothing to record: overlays to draw again (recorder version 6).
       if (Number(req.body?.version ?? 0) >= 6) {
