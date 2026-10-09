@@ -19,9 +19,7 @@ import path from 'path';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { recordMapResult, getMapResults } from '../../../services/matchMapResultService';
-import { teamService } from '../../../services/teamService';
-import { playerService } from '../../../services/playerService';
-import { steamService } from '../../../services/steamService';
+import { settingsService } from '../../../services/settingsService';
 import { DEMOS_DIR, ensureDemosDir, linkStoredDemo } from '../utils/demoFiles';
 import type { DemoAnalysisPayload, DemoJob } from './jobs';
 
@@ -249,13 +247,43 @@ async function platformTeam(name: string, roster: Record<string, string>): Promi
       .replace(/^-|-$/g, '')
       .slice(0, 40) || 'team';
   const id = `${base}-${crypto.randomBytes(3).toString('hex')}`;
-  await teamService.createTeam({
+  const players = Object.entries(roster).map(([steamId, playerName]) => ({
+    steamId,
+    name: playerName,
+  }));
+  await db.runAsync("INSERT INTO teams (id, name, players, game) VALUES (?, ?, ?, 'cs2')", [
     id,
-    name,
-    players: Object.entries(roster).map(([steamId, playerName]) => ({ steamId, name: playerName })),
-  });
+    name.slice(0, 100),
+    JSON.stringify(players),
+  ]);
   log.info(`[IMPORT] Team "${name}" created (${id})`);
   return id;
+}
+
+/** Steam names and pictures by Steam ID, when a Steam Web API key is set. */
+async function steamProfiles(
+  ids: string[]
+): Promise<Map<string, { name: string; avatar: string }>> {
+  const out = new Map<string, { name: string; avatar: string }>();
+  const key = await settingsService.getSteamApiKey().catch(() => null);
+  if (!key || ids.length === 0) return out;
+  try {
+    const res = await fetch(
+      `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${encodeURIComponent(key)}&steamids=${ids.slice(0, 100).join(',')}`,
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    const body = (await res.json()) as {
+      response?: {
+        players?: Array<{ steamid: string; personaname?: string; avatarfull?: string }>;
+      };
+    };
+    for (const p of body.response?.players ?? []) {
+      out.set(p.steamid, { name: p.personaname ?? '', avatar: p.avatarfull ?? '' });
+    }
+  } catch (error) {
+    log.warn('[IMPORT] Could not read Steam profiles', { error: (error as Error).message });
+  }
+  return out;
 }
 
 /**
@@ -274,28 +302,16 @@ async function ensurePlayers(roster: Record<string, string>): Promise<void> {
       )
     ).map((r) => [r.id, r.avatar_url] as const)
   );
-  const steam = (await steamService.isAvailable().catch(() => false)) ? steamService : null;
-  for (const id of ids) {
-    if (known.has(id) && known.get(id)) continue;
-    const profile = steam ? await steam.getPlayerInfo(id).catch(() => null) : null;
-    if (known.has(id)) {
-      if (profile?.avatarUrl) {
-        await db.runAsync('UPDATE players SET avatar_url = ? WHERE id = ? AND avatar_url IS NULL', [
-          profile.avatarUrl,
-          id,
-        ]);
-      }
-      continue;
-    }
-    await playerService
-      .createPlayer({
-        id,
-        name: profile?.name || roster[id],
-        avatar: profile?.avatarUrl || undefined,
-      })
-      .catch((error: unknown) => {
-        log.warn(`[IMPORT] Could not add player ${id}`, { error: (error as Error).message });
-      });
+  const missing = ids.filter((id) => !known.get(id));
+  if (missing.length === 0) return;
+  const steam = await steamProfiles(missing);
+  for (const id of missing) {
+    const profile = steam.get(id);
+    await db.runAsync(
+      `INSERT INTO players (id, name, avatar_url) VALUES (?, ?, ?)
+       ON CONFLICT (id) DO UPDATE SET avatar_url = COALESCE(players.avatar_url, EXCLUDED.avatar_url)`,
+      [id, (profile?.name || roster[id]).slice(0, 100), profile?.avatar || null]
+    );
   }
 }
 

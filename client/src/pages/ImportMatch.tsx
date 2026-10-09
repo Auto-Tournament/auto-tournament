@@ -75,7 +75,7 @@ export default function ImportMatch() {
     return () => clearInterval(id);
   }, [status, allDone, busy]);
 
-  const add = (list: FileList | null) => {
+  const add = (list: ArrayLike<File> | null) => {
     if (!list) return;
     const picked = Array.from(list);
     const bad = picked.find((f) => !f.name.toLowerCase().endsWith('.dem'));
