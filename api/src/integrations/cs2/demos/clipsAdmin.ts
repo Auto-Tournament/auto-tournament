@@ -29,6 +29,11 @@ export interface AdminClip {
   recorder: string | null;
   recordSeconds: number | null;
   doneAt: number | null;
+  /** The clip's video, played from GET /api/game/cs2/highlights/:file (null until recorded). */
+  video: string | null;
+  /** An admin's verdict (reviewClip): 'approved', 'redo' or 'dropped'; null until reviewed. */
+  review: string | null;
+  reviewNote: string | null;
 }
 
 export interface AdminReel {
@@ -82,12 +87,16 @@ export async function listClips(
     recorder: string | null;
     record_seconds: number | null;
     done_at: number | null;
+    clip_path: string | null;
+    review: string | null;
+    review_note: string | null;
   }>(
     `SELECT h.id, h.match_slug, h.map_number, h.player_id, p.name, h.title, h.kind, h.status, h.made_with,
-            COALESCE(r.label, h.recorder) AS recorder, h.record_seconds, h.done_at
+            COALESCE(r.label, h.recorder) AS recorder, h.record_seconds, h.done_at, h.clip_path,
+            h.review, h.review_note
        FROM cs2_highlights h LEFT JOIN players p ON p.id = h.player_id
        LEFT JOIN cs2_recorders r ON r.name = h.recorder
-      WHERE h.match_slug IN (${marks}) AND h.status <> 'skipped'
+      WHERE h.match_slug IN (${marks}) AND (h.status <> 'skipped' OR h.review = 'dropped')
       ORDER BY h.map_number, h.round, h.id`,
     slugs
   );
@@ -122,6 +131,9 @@ export async function listClips(
         recorder: c.recorder,
         recordSeconds: c.record_seconds === null ? null : Number(c.record_seconds),
         doneAt: c.done_at === null ? null : Number(c.done_at),
+        video: c.status === 'done' && c.clip_path ? c.clip_path : null,
+        review: c.review,
+        reviewNote: c.review_note,
       }));
     const ownReels = reels
       .filter((r) => r.match_slug === m.slug)
@@ -221,4 +233,61 @@ export async function redo(req: RedoRequest): Promise<{ clips: number; reels: nu
     reelCount += result.changes ?? 0;
   }
   return { clips, reels: reelCount };
+}
+
+export type ReviewVerdict = 'approved' | 'redo' | 'drop';
+
+/**
+ * An admin's verdict on a recorded clip, from the review on the Clips tab:
+ * - approved: it is fine; marked so.
+ * - redo (it stutters or looks broken): recorded again, preferably by another
+ *   recorder; the reels it is in are made again after (redo).
+ * - drop (not worth showing): not recorded again, left out of every reel
+ *   (status 'skipped'), and its map's and series' reels are made again without it.
+ * A clip recorded again is up for review again (saveClip clears the verdict).
+ */
+export async function reviewClip(
+  id: number,
+  verdict: ReviewVerdict,
+  note: string | null,
+  actor: string | null
+): Promise<{ clips: number; reels: number } | null> {
+  const row = await db.queryOneAsync<{
+    match_slug: string;
+    map_number: number;
+    recorder: string | null;
+  }>(
+    `SELECT match_slug, map_number, recorder FROM cs2_highlights WHERE id = ? AND status = 'done'`,
+    [id]
+  );
+  if (!row) return null;
+  const text = note?.trim().slice(0, 300) || null;
+  const now = Math.floor(Date.now() / 1000);
+  if (verdict === 'approved') {
+    await db.runAsync(
+      `UPDATE cs2_highlights SET review = 'approved', review_note = ?, reviewed_by = ?, reviewed_at = ? WHERE id = ?`,
+      [text, actor, now, id]
+    );
+    return { clips: 0, reels: 0 };
+  }
+  if (verdict === 'redo') {
+    await db.runAsync(
+      `UPDATE cs2_highlights SET review = 'redo', review_note = ?, reviewed_by = ?, reviewed_at = ?,
+              avoid_recorder = recorder WHERE id = ?`,
+      [text, actor, now, id]
+    );
+    return redo({ clipIds: [id] });
+  }
+  await db.runAsync(
+    `UPDATE cs2_highlights SET status = 'skipped', review = 'dropped', review_note = ?, reviewed_by = ?, reviewed_at = ?,
+            error = ? WHERE id = ?`,
+    [text, actor, now, `Dropped in review${text ? `: ${text}` : ''}`, id]
+  );
+  const reels = await redo({
+    reels: [
+      { slug: row.match_slug, mapNumber: Number(row.map_number) },
+      { slug: row.match_slug, mapNumber: SERIES_REEL },
+    ],
+  });
+  return { clips: 0, reels: reels.reels };
 }

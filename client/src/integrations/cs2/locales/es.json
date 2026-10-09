@@ -2243,7 +2243,12 @@
         "skipped": "Skipped"
       },
       "outdated_flag": "Outdated",
-      "outdated_one": "{{count}} made at other settings"
+      "outdated_one": "{{count}} made at other settings",
+      "watch": "Watch {{title}}",
+      "reviewOf": "{{n}} of {{count}}",
+      "previous": "Previous",
+      "next": "Next",
+      "close": "Close"
     },
     "add": {
       "button": "Add a recorder",
@@ -2268,6 +2273,25 @@
     "renameTitle": "Name this recorder",
     "renameLabel": "Name",
     "renameHelp": "It calls itself {{name}}. Empty: that name.",
-    "renameSave": "Save"
+    "renameSave": "Save",
+    "review": {
+      "start_one": "Review {{count}} clip",
+      "start_other": "Review {{count}} clips",
+      "note": "Note (optional)",
+      "approve": "Looks good (A)",
+      "redo": "Redo: stutters or broken (R)",
+      "drop": "Drop: not worth showing (D)",
+      "help": "Redo records the clip again, preferably on another recorder, and its reels after. Drop leaves it out of every reel for good. ← → to step through.",
+      "state": {
+        "approved": "Approved",
+        "redo": "Redo asked",
+        "dropped": "Dropped"
+      },
+      "done": {
+        "approved": "Approved",
+        "redo": "Queued to record again",
+        "drop": "Dropped; its reels are made again"
+      }
+    }
   }
 }

@@ -118,6 +118,7 @@ export const CS2_FLEET_KEY_SKINS_MIGRATION_ID = '033-fleet-key-skins';
 export const CS2_MADE_WITH_MIGRATION_ID = '034-highlight-made-with';
 export const CS2_RECORDER_KEYS_MIGRATION_ID = '035-recorder-keys';
 export const CS2_RECORDER_FAULTS_MIGRATION_ID = '036-recorder-faults';
+export const CS2_CLIP_REVIEW_MIGRATION_ID = '037-clip-review';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1324,6 +1325,18 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     id: CS2_RECORDER_FAULTS_MIGRATION_ID,
     up: `
     ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS faults_in_row INTEGER NOT NULL DEFAULT 0;
+`,
+  },
+  {
+    // An admin's review of a clip (demos/clipsAdmin.ts reviewClip): approved,
+    // redo (recorded again) or dropped (left out of every reel, not recorded
+    // again), with an optional note, who and when.
+    id: CS2_CLIP_REVIEW_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS review TEXT;
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS review_note TEXT;
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS reviewed_by TEXT;
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS reviewed_at INTEGER;
 `,
   },
 ];

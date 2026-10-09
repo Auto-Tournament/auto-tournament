@@ -2243,7 +2243,12 @@
         "skipped": "Hoppet over"
       },
       "outdated_flag": "Utdatert",
-      "outdated_one": "{{count}} laget med andre innstillinger"
+      "outdated_one": "{{count}} laget med andre innstillinger",
+      "watch": "Se {{title}}",
+      "reviewOf": "{{n}} av {{count}}",
+      "previous": "Forrige",
+      "next": "Neste",
+      "close": "Lukk"
     },
     "add": {
       "button": "Legg til en opptaker",
@@ -2268,6 +2273,25 @@
     "renameTitle": "Gi opptakeren et navn",
     "renameLabel": "Navn",
     "renameHelp": "Den kaller seg {{name}}. Tomt: det navnet.",
-    "renameSave": "Lagre"
+    "renameSave": "Lagre",
+    "review": {
+      "start_one": "Gå gjennom {{count}} klipp",
+      "start_other": "Gå gjennom {{count}} klipp",
+      "note": "Notat (valgfritt)",
+      "approve": "Ser bra ut (A)",
+      "redo": "Ta opp på nytt: hakker eller ødelagt (R)",
+      "drop": "Dropp: ikke verdt å vise (D)",
+      "help": "Ta opp på nytt tar opp klippet igjen, helst på en annen opptaker, og reelene etterpå. Dropp holder det ute av alle reeler. ← → for å bla.",
+      "state": {
+        "approved": "Godkjent",
+        "redo": "Tas opp på nytt",
+        "dropped": "Droppet"
+      },
+      "done": {
+        "approved": "Godkjent",
+        "redo": "Satt i kø for nytt opptak",
+        "drop": "Droppet; reelene lages på nytt"
+      }
+    }
   }
 }

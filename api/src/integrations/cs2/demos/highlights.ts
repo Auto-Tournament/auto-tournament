@@ -766,6 +766,7 @@ export async function saveClip(
   await removeTwins(file);
   await db.runAsync(
     `UPDATE cs2_highlights SET status = 'done', clip_path = ?, clip_bytes = ?, markers = ?, error = NULL,
+            review = NULL, review_note = NULL, reviewed_by = NULL, reviewed_at = NULL,
             record_seconds = ?, done_at = ? WHERE id = ?`,
     [
       path.basename(file),
