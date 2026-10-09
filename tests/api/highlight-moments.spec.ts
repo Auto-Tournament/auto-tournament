@@ -6,6 +6,8 @@ import {
   parseMarkers,
   pickChunk,
   speedShare,
+  benchmarkSeconds,
+  comparableSeconds,
   pickMoments,
   pickSeriesClips,
   playersPerRecorder,
@@ -301,6 +303,33 @@ test('a recorder takes its part of a map by benchmark speed', { tag: ['@api'] },
   // Always at least one, never for an empty map.
   expect(speedShare(1, 179, [65, 179, 179])).toBe(1);
   expect(speedShare(0, 65, [65])).toBe(0);
+});
+
+test('benchmark times compare only on the same clip', { tag: ['@api'] }, () => {
+  const tries = (secs: number[]) => secs.map((seconds) => ({ ok: true, seconds }));
+  expect(benchmarkSeconds(JSON.stringify({ tries: tries([141, 65]) }))).toEqual({
+    seconds: 65,
+    source: 'match',
+  });
+  expect(benchmarkSeconds(JSON.stringify({ tries: tries([30]), source: 'bundled' }))).toEqual({
+    seconds: 30,
+    source: 'bundled',
+  });
+  expect(benchmarkSeconds(null)).toEqual({ seconds: null, source: 'match' });
+  // All on this install's clip: as they are.
+  expect(
+    comparableSeconds([
+      { seconds: 65, source: 'match' },
+      { seconds: 179, source: 'match' },
+    ])
+  ).toEqual([65, 179]);
+  // One on the shipped demo: the other's time is unknown until it runs it too.
+  expect(
+    comparableSeconds([
+      { seconds: 30, source: 'bundled' },
+      { seconds: 179, source: 'match' },
+    ])
+  ).toEqual([30, null]);
 });
 
 test('a series reel waits for every map to have recorded clips', { tag: ['@api'] }, () => {

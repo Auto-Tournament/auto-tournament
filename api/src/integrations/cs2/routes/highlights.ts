@@ -139,6 +139,7 @@ import {
 
 import {
   benchmarkJob,
+  wantsBenchmark,
   forgetRecorder,
   setRecorderLabel,
   isPaused,
@@ -206,8 +207,10 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
       });
     };
     // A new recorder (or one an admin asked) measures itself first.
-    if (version >= RECORDER_QUALITY_VERSION && Number(me.benchmark_wanted) === 1) {
-      const benchmark = await benchmarkJob();
+    // One that carries the shipped benchmark demo measures itself on it once.
+    const benchDemo = req.body?.benchDemo === true;
+    if (version >= RECORDER_QUALITY_VERSION && wantsBenchmark(me, benchDemo)) {
+      const benchmark = await benchmarkJob(benchDemo);
       if (benchmark) return give(benchmark);
     }
     // A match reel only joins clips already made: hand those out first.

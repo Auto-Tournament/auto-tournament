@@ -189,6 +189,9 @@ func (c *client) claimRecording(ctx context.Context, loaded map[string]any) (*ma
 	// checks and run reports (quality.go, runlog.go).
 	ask := map[string]any{
 		"recorder": c.worker, "version": 7, "gpu": recorderGPU(), "platform": platformName(),
+		// It carries the benchmark demo (benchdemo_linux.go): its benchmark
+		// then needs nothing from the platform and compares with every other.
+		"benchDemo": hasBenchDemo(),
 	}
 	// The map CS2 has loaded (liveGame): the platform gives more of it first.
 	if loaded != nil {

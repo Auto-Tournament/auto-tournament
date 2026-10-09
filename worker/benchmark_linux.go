@@ -49,19 +49,21 @@ func recorderGPU() string {
 	return gpu
 }
 
-// runBenchmark records the platform's benchmark moment once per refresh rate
+// runBenchmark records the benchmark clip (the shipped demo's, else the
+// platform's benchmark moment) once per refresh rate
 // it asks for (only the hand-set one when AT_GAMESCOPE_HZ is pinned), timing
 // each take and checking its frames, and reports them. The platform keeps
 // the fastest smooth rate and sends it with every job after.
 func (r *recorder) runBenchmark(ctx context.Context, mj *mapJob) {
 	started := time.Now()
 	run := jobRun{Kind: "benchmark", MatchSlug: mj.MatchSlug, MapNumber: intPtr(mj.MapNumber)}
-	tries, err := r.benchmarkTries(ctx, mj)
+	source := ""
+	tries, err := r.benchmarkTries(ctx, mj, &source)
 	if err != nil {
 		run.Error = err.Error()
 		log.Printf("benchmark: %v", err)
 	}
-	res, perr := r.postJSON(ctx, "/api/game/cs2/recorder/benchmark", map[string]any{"recorder": r.worker, "tries": tries})
+	res, perr := r.postJSON(ctx, "/api/game/cs2/recorder/benchmark", map[string]any{"recorder": r.worker, "tries": tries, "source": source})
 	if perr == nil {
 		var body struct {
 			GamescopeHz *int `json:"gamescopeHz"`
@@ -88,21 +90,35 @@ func (r *recorder) runBenchmark(ctx context.Context, mj *mapJob) {
 	r.reportRun(run, started)
 }
 
-func (r *recorder) benchmarkTries(ctx context.Context, mj *mapJob) ([]benchmarkTry, error) {
+func (r *recorder) benchmarkTries(ctx context.Context, mj *mapJob, source *string) ([]benchmarkTry, error) {
 	r.useQuality(mj.Quality)
-	if len(mj.Players) == 0 || len(mj.Players[0].Moments) == 0 {
-		return nil, fmt.Errorf("the benchmark job has no moment")
-	}
 	dir, err := os.MkdirTemp(r.scratch, "benchmark-")
 	if err != nil {
 		return nil, err
 	}
 	defer os.RemoveAll(dir)
 	demoPath := filepath.Join(dir, "match.dem")
-	if err := r.download(ctx, mj.MatchSlug, mj.MapNumber, demoPath); err != nil {
-		return nil, err
+	// The shipped demo first: every recorder is timed on the same clip.
+	var p *recordJob
+	if b, job, err := bundledBenchmark(); err != nil {
+		log.Printf("benchmark: the shipped demo: %v; using the platform's moment", err)
+	} else if job != nil {
+		if err := os.WriteFile(demoPath, b, 0o644); err != nil {
+			return nil, err
+		}
+		p = job
+		*source = "bundled"
 	}
-	p := &mj.Players[0]
+	if p == nil {
+		if len(mj.Players) == 0 || len(mj.Players[0].Moments) == 0 {
+			return nil, fmt.Errorf("the benchmark job has no moment")
+		}
+		if err := r.download(ctx, mj.MatchSlug, mj.MapNumber, demoPath); err != nil {
+			return nil, err
+		}
+		p = &mj.Players[0]
+		*source = "match"
+	}
 	name, err := demoName(demoPath, p.PlayerID)
 	if err != nil {
 		return nil, err
