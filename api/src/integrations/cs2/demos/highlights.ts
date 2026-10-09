@@ -616,7 +616,7 @@ export interface ClipMarkers {
   kills: number[];
   slowmo: [number, number] | null;
   /** The kills the crowd reacts to (seconds in, how impressive): the reel's crowd track. */
-  reactions?: { t: number; score: number }[];
+  reactions?: { t: number; score: number; aww?: boolean }[];
 }
 
 /** The recorder's `X-AT-Markers` header, checked; null when absent or wrong. */
@@ -635,7 +635,7 @@ export function parseMarkers(raw: unknown): ClipMarkers | null {
       ? m.reactions
           .filter((x) => x && num(x.t) && num(x.score))
           .slice(0, 30)
-          .map((x) => ({ t: r(x.t), score: r(x.score) }))
+          .map((x) => ({ t: r(x.t), score: r(x.score), ...(x.aww === true ? { aww: true } : {}) }))
       : [];
     return {
       duration: r(m.duration!),

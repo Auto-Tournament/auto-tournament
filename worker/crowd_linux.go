@@ -40,6 +40,32 @@ func (r *recorder) crowdSource(ctx context.Context) string {
 	return file
 }
 
+// awwSourceURL is the crowd's groan when the player dies: "Crowd
+// Disappointment Reaction" by Universfield on Pixabay (pixabay.com/
+// sound-effects/people-crowd-disappointment-reaction-352718). Fetched like
+// the cheer, next to it.
+const awwSourceURL = "https://cdn.pixabay.com/audio/2025/06/02/audio_9dd11cb4aa.mp3"
+
+// awwSource is the groan recording on disk (AT_CROWD_AWW, or fetched next to
+// the crowd recording), or "" when it cannot be had: deaths then go quiet.
+func awwSource(crowd string) string {
+	if f := env("AT_CROWD_AWW", ""); f != "" {
+		return f
+	}
+	if crowd == "" {
+		return ""
+	}
+	file := filepath.Join(filepath.Dir(crowd), "crowd-aww-352718.mp3")
+	if st, err := os.Stat(file); err == nil && st.Size() > 10_000 {
+		return file
+	}
+	if err := fetchFile(context.Background(), awwSourceURL, file); err != nil {
+		log.Printf("no crowd groan: %v", err)
+		return ""
+	}
+	return file
+}
+
 func fetchFile(ctx context.Context, url, file string) error {
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
@@ -64,7 +90,7 @@ func fetchFile(ctx context.Context, url, file string) error {
 	}
 	n, err := io.Copy(f, res.Body)
 	f.Close()
-	if err != nil || n < 100_000 {
+	if err != nil || n < 10_000 {
 		os.Remove(tmp)
 		if err == nil {
 			err = fmt.Errorf("only %d bytes", n)

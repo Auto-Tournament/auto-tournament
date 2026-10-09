@@ -211,9 +211,18 @@ test('a clip keeps the kills its crowd reacts to', { tag: ['@api'] }, () => {
       duration: 11.66,
       kills: [4.76, 9.57],
       slowmo: null,
-      reactions: [{ t: 9.57, score: 8.5 }, { t: 'x' }],
+      reactions: [
+        { t: 9.57, score: 8.5 },
+        { t: 'x' },
+        { t: 11.2, score: 0, aww: true },
+        { t: 12, score: 1, aww: 'yes' },
+      ],
     })
   );
-  expect(m?.reactions).toEqual([{ t: 9.57, score: 8.5 }]);
+  expect(m?.reactions).toEqual([
+    { t: 9.57, score: 8.5 },
+    { t: 11.2, score: 0, aww: true },
+    { t: 12, score: 1 },
+  ]);
   expect(parseMarkers(JSON.stringify({ duration: 3, kills: [1] }))?.reactions).toBeUndefined();
 });
