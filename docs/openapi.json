@@ -4971,6 +4971,38 @@
         ]
       }
     },
+    "/api/fleet/servers/{id}/reset": {
+      "post": {
+        "tags": [
+          "Fleet"
+        ],
+        "summary": "POST /api/fleet/servers/:id/reset",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/fleet/servers/{id}/revoke": {
       "post": {
         "tags": [

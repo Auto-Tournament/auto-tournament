@@ -13,6 +13,7 @@
  *   POST   /api/fleet/servers/:id/code       a fresh code for a pending server
  *   POST   /api/fleet/servers/:id/revoke     revoke its tokens, close its socket (4403)
  *   POST   /api/fleet/servers/:id/rotate     rotate its token now (or on its next connect)
+ *   POST   /api/fleet/servers/:id/reset      cmd reset; settles the platform's match there (./reset.ts)
  *   POST   /api/fleet/servers/:id/link       take matches: link it to a cs2_servers row (./link.ts)
  *   DELETE /api/fleet/servers/:id/link       stop taking matches
  *   GET    /api/fleet/matches/:slug          a match on the fleet: assignment, live state, commands

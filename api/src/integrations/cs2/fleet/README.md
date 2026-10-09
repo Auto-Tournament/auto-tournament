@@ -30,6 +30,7 @@ admin actions): what exists, and the calls to use.
 | `address.ts`                                            | where players connect (pure): admin override, `hello.host.public_addr`, the csm machine's address (`host.inventory.address`), the link's peer address after the trusted proxy hops; never the hello `hostname` |
 | `assignConfig.ts`                                       | the served match config → `match.assign.config` (typed `rules`, engine `cvars`), roster diff (pure)                                                                                                            |
 | `driver.ts`                                             | **the fleet driver**: assign / unassign / update / cmd, link hooks (see below)                                                                                                                                 |
+| `reset.ts`                                              | **reset**: `cmd reset` ends whatever a server holds; the match the platform had there is settled like End match                                                                                                |
 | `backups.ts`                                            | **the round backup store** (`roundBackupStore`): `event.backup` in (checked, parts joined, newest per round), retention                                                                                        |
 | `restore.ts`                                            | **"restore to round N"**: `cmd restore_round` with the backup inline (or `css_restore` over RCON), audited; `inlineBackupFor`                                                                                  |
 | `demoStream.ts`                                         | **the demo stream receiver**: `demo.begin` / `demo.chunk` / `demo.end` in, `demo.ack` out; stored and linked like an uploaded demo                                                                             |
@@ -198,6 +199,18 @@ match off (whatever the server says) and `reserved` for an idle server held
 back for failover (`heldFleetSpares`). `GET /api/fleet/servers` shows them as
 `availabilityReason` / `availabilityDetail`, the pool status as `busyReason` /
 `busyDetail`, with `notAllocatableReason: 'reserved'` for the spare.
+
+### Reset (`reset.ts`)
+
+`POST /api/fleet/servers/:id/reset` (any admin) sends `cmd reset` (no
+`match_id`; audited like `exec`). Ready Up ends whatever it holds: the
+platform's assignment, a match loaded on the server itself, or one its
+startup recovery would restore. Only after its `ok` does the platform settle
+the loaded/live match on that server (`settleActiveMatchOn`, as End match) and
+unassign what it had there. An older Ready Up answers `unknown_command`: 409
+`unsupported`, nothing settled. Offline: 409 `offline`; a second reset while
+one runs: 409 `busy`. The answer is `{ ok, ended: assignment | local | none,
+settledMatchSlug }`.
 
 ## Failover (`failover.ts`, `failoverPlan.ts`, `failoverSettings.ts`)
 
