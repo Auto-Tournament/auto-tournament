@@ -523,6 +523,14 @@
       "description": "Rating calculation presets."
     },
     {
+      "name": "Email links",
+      "description": "What the links in emails do: confirm an address, unsubscribe from tournament emails."
+    },
+    {
+      "name": "Email settings",
+      "description": "The SMTP server the site sends email with, and a test email. Admin only."
+    },
+    {
       "name": "Events",
       "description": "MatchZy Enhanced webhooks in, and the recorded event log out."
     },
@@ -653,6 +661,10 @@
     {
       "name": "Modules",
       "description": "Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files and the public manifest of modules to load. Modules are installed from the signed catalog (/api/catalog) or on disk, never uploaded."
+    },
+    {
+      "name": "My email",
+      "description": "Your own email address (confirmed by a link) and whether you get tournament emails."
     },
     {
       "name": "Player profile",
@@ -1240,6 +1252,37 @@
         ]
       }
     },
+    "/api/auth/local/forgot": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Email a password reset link",
+        "description": "Same-site JSON. By username or by the account's confirmed email\naddress. Always answers 200, whether or not an email went out, so it\ncannot be used to find accounts. Throttled.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "If the account has a confirmed address, a link is on its way"
+          },
+          "429": {
+            "description": "Too many attempts"
+          }
+        }
+      }
+    },
     "/api/auth/local/login": {
       "post": {
         "tags": [
@@ -1269,7 +1312,7 @@
         },
         "responses": {
           "200": {
-            "description": "Signed in"
+            "description": "Signed in. `mustChangePassword`: an admin chose the password, pick your own now (/login/welcome)"
           },
           "401": {
             "description": "Wrong username, password or code; or `totpRequired`"
@@ -1291,7 +1334,7 @@
         "summary": "The signed-in local admin's username and whether TOTP is on",
         "responses": {
           "200": {
-            "description": "The account"
+            "description": "The account: `username`, `totpEnabled`, `mustChangePassword` (an admin chose the password)"
           },
           "404": {
             "description": "Not signed in with a local admin account"
@@ -1395,6 +1438,40 @@
           },
           "429": {
             "description": "Too many attempts"
+          }
+        }
+      }
+    },
+    "/api/auth/local/reset": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Set a new password with the token from a reset email",
+        "description": "Same-site JSON. Two-step verification stays on.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Changed; `username` is the account's"
+          },
+          "400": {
+            "description": "The link is wrong, used or expired, or the password is not accepted"
           }
         }
       }
@@ -2847,6 +2924,196 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/email-settings": {
+      "get": {
+        "tags": [
+          "Email"
+        ],
+        "summary": "The SMTP settings (admin)",
+        "description": "The saved password is never sent back; `passwordSet` says whether there is one.",
+        "responses": {
+          "200": {
+            "description": "`settings`"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Email"
+        ],
+        "summary": "Save the SMTP settings (admin)",
+        "description": "Same-site JSON. Fields left out keep their value; `password` \"\" clears\nthe saved password. Applies to the next email.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "host": {
+                    "type": "string"
+                  },
+                  "port": {
+                    "type": "integer",
+                    "nullable": true
+                  },
+                  "security": {
+                    "type": "string",
+                    "enum": [
+                      "tls",
+                      "starttls",
+                      "none"
+                    ]
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "fromAddress": {
+                    "type": "string"
+                  },
+                  "fromName": {
+                    "type": "string"
+                  },
+                  "siteUrl": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`settings`"
+          },
+          "400": {
+            "description": "A value is not accepted"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/email-settings/test": {
+      "post": {
+        "tags": [
+          "Email"
+        ],
+        "summary": "Send a test email with the saved settings (admin)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sent"
+          },
+          "400": {
+            "description": "Not an address, or email is not set up"
+          },
+          "502": {
+            "description": "The mail server refused it (`error` is its answer)"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/email/unsubscribe": {
+      "post": {
+        "tags": [
+          "Email"
+        ],
+        "summary": "Stop tournament emails with the token from an email's unsubscribe link",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "No more tournament emails"
+          },
+          "400": {
+            "description": "Unknown link"
+          }
+        }
+      }
+    },
+    "/api/email/verify": {
+      "post": {
+        "tags": [
+          "Email"
+        ],
+        "summary": "Confirm an email address with the token from its link",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Confirmed"
+          },
+          "400": {
+            "description": "The link is wrong, used or expired"
+          }
+        }
       }
     },
     "/api/events": {
@@ -9174,6 +9441,94 @@
           },
           "415": {
             "description": "Not a JSON request"
+          }
+        }
+      }
+    },
+    "/api/me/email": {
+      "get": {
+        "tags": [
+          "Email"
+        ],
+        "summary": "Your email address and tournament emails",
+        "responses": {
+          "200": {
+            "description": "`email` (null when none), and `canSend`: whether this site sends email"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Email"
+        ],
+        "summary": "Set your email address and send a confirmation link to it",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`email`, not confirmed until the link is opened"
+          },
+          "400": {
+            "description": "Not an email address"
+          },
+          "409": {
+            "description": "This site does not send email"
+          },
+          "429": {
+            "description": "A confirmation was just sent"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Email"
+        ],
+        "summary": "Remove your email address",
+        "responses": {
+          "200": {
+            "description": "Removed"
+          }
+        }
+      }
+    },
+    "/api/me/email/notifications": {
+      "put": {
+        "tags": [
+          "Email"
+        ],
+        "summary": "Turn tournament emails on or off",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tournaments": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`email`"
+          },
+          "404": {
+            "description": "No email address yet"
           }
         }
       }

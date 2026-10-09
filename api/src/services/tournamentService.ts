@@ -35,6 +35,7 @@ import type {
   BracketResponse,
 } from '../types/tournament.types';
 import { refreshCurrentTournamentId } from './currentTournament';
+import { playerEmailService } from './playerEmailService';
 import { bareSlug, isGrandFinalSlug, isLosersBracketSlug, shuffleTeamLike, tournamentSlugPrefix } from '../utils/matchSlug';
 
 /** Players per team from a request (2-10), or null when it names none. */
@@ -70,6 +71,17 @@ export const DEFAULT_SETTINGS: TournamentSettings = {
   seedingMethod: 'random',
   grandFinalMode: 'simple',
 };
+
+function signupIsOpen(settings: unknown): boolean {
+  return (settings as { registrationOpen?: unknown } | undefined)?.registrationOpen === true;
+}
+
+/** Sign-up has just opened: email the players who asked for it (in the background). */
+function emailSignupOpen(t: { id: number; name: string }): void {
+  void playerEmailService
+    .notifySignupOpen({ id: t.id, name: t.name })
+    .catch((error) => log.error('[EMAIL] Sign-up open emails failed', error as Error));
+}
 
 class TournamentService {
   /**
@@ -297,6 +309,7 @@ class TournamentService {
     }
 
     await refreshCurrentTournamentId();
+    if (signupIsOpen(created.settings)) emailSignupOpen(created);
     return created;
   }
 
@@ -394,6 +407,7 @@ class TournamentService {
       throw new Error('Failed to retrieve updated tournament');
     }
 
+    if (!signupIsOpen(existing.settings) && signupIsOpen(updated.settings)) emailSignupOpen(updated);
     return updated;
   }
 

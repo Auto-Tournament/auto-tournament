@@ -843,7 +843,61 @@ export function getSchemaSQL(): string {
       totp_last_step BIGINT, -- last accepted TOTP time step (no replay)
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      last_login_at INTEGER
+      last_login_at INTEGER,
+      -- 1: an admin chose this password; its owner picks their own at the
+      -- next sign-in (the first-sign-in setup, /login/welcome).
+      must_change_password INTEGER NOT NULL DEFAULT 0
+    );
+
+    -- Sending email (services/emailService.ts): one row, set on Settings ->
+    -- Email. The SMTP password is encrypted with utils/secretBox.
+    CREATE TABLE IF NOT EXISTS email_settings (
+      id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+      enabled INTEGER NOT NULL DEFAULT 0,
+      host TEXT,
+      port INTEGER,
+      security TEXT NOT NULL DEFAULT 'starttls', -- 'tls' | 'starttls' | 'none'
+      username TEXT,
+      password_enc TEXT,
+      from_address TEXT,
+      from_name TEXT,
+      site_url TEXT, -- links in emails start here; empty = FRONTEND_BASE_URL
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_by TEXT
+    );
+
+    -- A player's own email address (services/playerEmailService.ts): for
+    -- password recovery and, when they ask for it, news of tournaments.
+    -- verified_at is set once they open the link sent to it.
+    CREATE TABLE IF NOT EXISTS player_emails (
+      player_id TEXT PRIMARY KEY REFERENCES players(id) ON DELETE CASCADE,
+      email TEXT NOT NULL,
+      verified_at INTEGER,
+      notify_tournaments INTEGER NOT NULL DEFAULT 0,
+      unsubscribe_token TEXT NOT NULL UNIQUE,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS player_emails_email_idx ON player_emails (LOWER(email));
+
+    -- One-time links sent by email: only the SHA-256 of the token is stored.
+    -- purpose 'verify' (the address, 24 h) or 'reset' (a password, 1 h).
+    CREATE TABLE IF NOT EXISTS email_tokens (
+      id SERIAL PRIMARY KEY,
+      token_hash TEXT NOT NULL UNIQUE,
+      player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      purpose TEXT NOT NULL,
+      email TEXT,
+      expires_at INTEGER NOT NULL,
+      used_at INTEGER,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    -- Tournaments whose "sign-up is open" email has gone out (once each).
+    CREATE TABLE IF NOT EXISTS tournament_signup_notices (
+      tournament_id INTEGER PRIMARY KEY,
+      sent_at INTEGER NOT NULL,
+      recipients INTEGER NOT NULL DEFAULT 0
     );
 
     -- One-time setup codes: only the SHA-256 of the code is stored.

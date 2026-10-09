@@ -28,6 +28,7 @@ import { removesLastAdmin } from '../utils/adminRules';
 import { setPlayerSteamCookie } from './auth';
 import { markLocalReauth } from '../utils/localReauth';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
+import { playerEmailService } from '../services/playerEmailService';
 
 export const setupRouter = Router();
 export const localAuthRouter = Router();
@@ -250,7 +251,7 @@ localAuthRouter.get('/status', async (_req: Request, res: Response) => {
  *               totp: { type: string }
  *     responses:
  *       200:
- *         description: Signed in
+ *         description: "Signed in. `mustChangePassword`: an admin chose the password, pick your own now (/login/welcome)"
  *       401:
  *         description: Wrong username, password or code; or `totpRequired`
  *       403:
@@ -301,7 +302,9 @@ localAuthRouter.post('/login', guardWrite, async (req: Request, res: Response) =
     loginThrottle.recordSuccess(target);
     await signIn(req, res, result.playerId, username as string);
     log.info('[AUDIT] Local admin signed in', { username, ip });
-    return res.json({ success: true });
+    // A password an admin chose: the client sends them to the first-sign-in setup.
+    const status = await localAdminService.status(result.playerId);
+    return res.json({ success: true, mustChangePassword: status?.mustChangePassword === true });
   } catch (error) {
     log.error('[AUTH] Local admin login failed', error as Error);
     return res.status(500).json({ success: false, error: 'Sign-in failed' });
@@ -326,7 +329,7 @@ function sessionPlayerId(req: Request, res: Response): string | null {
  *     summary: The signed-in local admin's username and whether TOTP is on
  *     responses:
  *       200:
- *         description: The account
+ *         description: "The account: `username`, `totpEnabled`, `mustChangePassword` (an admin chose the password)"
  *       404:
  *         description: Not signed in with a local admin account
  */
@@ -570,6 +573,85 @@ localAuthRouter.post('/password', guardWrite, async (req: Request, res: Response
   } catch (error) {
     log.error('[AUTH] Changing a password failed', error as Error);
     return res.status(500).json({ success: false, error: 'Could not change the password' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/auth/local/forgot:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Email a password reset link
+ *     description: |
+ *       Same-site JSON. By username or by the account's confirmed email
+ *       address. Always answers 200, whether or not an email went out, so it
+ *       cannot be used to find accounts. Throttled.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               identifier: { type: string }
+ *     responses:
+ *       200:
+ *         description: If the account has a confirmed address, a link is on its way
+ *       429:
+ *         description: Too many attempts
+ */
+localAuthRouter.post('/forgot', guardWrite, async (req: Request, res: Response) => {
+  const ip = clientIp(req);
+  const identifier = (req.body ?? {}).identifier;
+  const target = `forgot:${String(identifier ?? '').slice(0, 254).toLowerCase()}`;
+  const wait = loginThrottle.retryAfterMs(ip, target);
+  if (wait > 0) return tooMany(res, wait);
+  // Counted as a failure every time: a few requests per address, then a pause.
+  loginThrottle.recordFailure(ip, target);
+  const origin = req.get('origin') || `${req.protocol}://${req.get('host') ?? 'localhost'}`;
+  try {
+    await playerEmailService.requestPasswordReset(identifier, origin);
+  } catch (error) {
+    log.error('[AUTH] Password reset request failed', error as Error);
+  }
+  return res.json({ success: true });
+});
+
+/**
+ * @openapi
+ * /api/auth/local/reset:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Set a new password with the token from a reset email
+ *     description: Same-site JSON. Two-step verification stays on.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token: { type: string }
+ *               password: { type: string }
+ *     responses:
+ *       200:
+ *         description: "Changed; `username` is the account's"
+ *       400:
+ *         description: The link is wrong, used or expired, or the password is not accepted
+ */
+localAuthRouter.post('/reset', guardWrite, async (req: Request, res: Response) => {
+  const body = (req.body ?? {}) as { token?: unknown; password?: unknown };
+  const problem = passwordProblem('', body.password);
+  if (problem) return res.status(400).json({ success: false, error: 'Password not accepted', problem });
+  try {
+    const username = await playerEmailService.resetPassword(body.token, body.password as string);
+    if (!username) {
+      return res
+        .status(400)
+        .json({ success: false, error: 'This link does not work any more. Ask for a new one.', code: 'badToken' });
+    }
+    return res.json({ success: true, username });
+  } catch (error) {
+    log.error('[AUTH] Password reset failed', error as Error);
+    return res.status(500).json({ success: false, error: 'Could not reset the password' });
   }
 });
 

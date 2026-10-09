@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 610 of them, 385 behind auth —
+Every endpoint this API serves — 621 of them, 388 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -852,6 +852,36 @@ The platform process: whether it can restart itself, and a restart (so a module 
 | `GET` | `/api/system/restart` | admin |
 | `POST` | `/api/system/restart` | admin |
 
+### My email
+
+Your own email address (confirmed by a link) and whether you get tournament emails.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/me/email` | public |
+| `PUT` | `/api/me/email` | public |
+| `PUT` | `/api/me/email/notifications` | public |
+| `DELETE` | `/api/me/email` | public |
+
+### Email settings
+
+The SMTP server the site sends email with, and a test email. Admin only.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/email-settings` | admin |
+| `PUT` | `/api/email-settings` | admin |
+| `POST` | `/api/email-settings/test` | admin |
+
+### Email links
+
+What the links in emails do: confirm an address, unsubscribe from tournament emails.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `POST` | `/api/email/verify` | public |
+| `POST` | `/api/email/unsubscribe` | public |
+
 ### Me
 
 The signed-in player's own data, e.g. the games they play.
@@ -1099,6 +1129,8 @@ Username + password (+ TOTP) sign-in for local admin accounts, and TOTP enrolmen
 | `POST` | `/api/auth/local/totp/confirm` | admin |
 | `POST` | `/api/auth/local/reauth` | public |
 | `POST` | `/api/auth/local/password` | public |
+| `POST` | `/api/auth/local/forgot` | public |
+| `POST` | `/api/auth/local/reset` | public |
 
 ### Auth
 

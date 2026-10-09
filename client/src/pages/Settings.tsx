@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { SiteNameCard } from '../components/settings/SiteNameCard';
 import { LicenseCard } from '../components/settings/LicenseCard';
+import { EmailSettingsCard } from '../components/settings/EmailSettingsCard';
 import { WebhooksCard } from '../components/settings/WebhooksCard';
 import { MatchmakingSettingsCard } from '../components/settings/MatchmakingSettingsCard';
 import { NewsSettingsCard } from '../components/settings/NewsSettingsCard';
@@ -272,6 +273,9 @@ export default function Settings() {
               </SettingsCard>
               <SettingsCard cardKey="signin" highlight={highlight === 'signin'}>
                 <SignInProvidersCard welcome={searchParams.get('welcome') === 'setup'} />
+              </SettingsCard>
+              <SettingsCard cardKey="email" highlight={highlight === 'email'}>
+                <EmailSettingsCard />
               </SettingsCard>
               <SettingsCard cardKey="players" highlight={highlight === 'players'}>
                 <SettingsCardHead title={t('settingsPage.players.title')} hint={t('settingsPage.players.short')} />
