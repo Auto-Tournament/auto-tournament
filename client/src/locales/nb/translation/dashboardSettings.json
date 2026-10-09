@@ -497,7 +497,10 @@
       "servers_other": "{{count}} servere",
       "updatesUntil": "oppdateringer til {{date}}",
       "updatesForLife": "oppdateringer for alltid",
-      "eventWindow": "arrangement {{from}} til {{to}}"
+      "eventWindow": "arrangement {{from}} til {{to}}",
+      "free": "Gratis nøkkel, ikke-kommersiell bruk",
+      "freeFor": "Gratis nøkkel for {{licensee}}, ikke-kommersiell bruk",
+      "noLimit": "ingen servergrense"
     },
     "badge": {
       "label": "Vis «Lisensiert» på offentlige arrangementssider",

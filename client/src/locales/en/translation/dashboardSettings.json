@@ -497,7 +497,10 @@
       "servers_other": "{{count}} servers",
       "updatesUntil": "updates until {{date}}",
       "updatesForLife": "updates for life",
-      "eventWindow": "event {{from}} to {{to}}"
+      "eventWindow": "event {{from}} to {{to}}",
+      "free": "Free key, non-commercial use",
+      "freeFor": "Free key for {{licensee}}, non-commercial use",
+      "noLimit": "no server limit"
     },
     "badge": {
       "label": "Show \"Licensed\" on public event pages",

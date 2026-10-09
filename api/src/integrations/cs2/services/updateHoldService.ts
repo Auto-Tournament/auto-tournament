@@ -200,13 +200,25 @@ export const NO_LICENSE_REVISION = 'none';
  * The hand-off for a stored key (or none), with its lease and state. Pure.
  * The revision covers all three, so csm rewrites configs when any changes.
  */
+/** Whether a key is a free key (kind 'free'): those stay with the platform. Reads the payload only; the platform checked the signature when it was saved. */
+function isFreeKey(key: string): boolean {
+  try {
+    const part = key.split('.')[1];
+    if (!part) return false;
+    return (JSON.parse(Buffer.from(part, 'base64url').toString('utf8')) as { kind?: unknown }).kind === 'free';
+  } catch {
+    return false;
+  }
+}
+
 export function licenseHandoffFor(
   key: string | null | undefined,
   lease?: string | null,
   state?: ServerLicenseHandoff['state'] | null
 ): ServerLicenseHandoff {
   const trimmed = key?.trim() || null;
-  if (!trimmed) return { key: null, revision: NO_LICENSE_REVISION };
+  // No key, or a free key (non-commercial use: nothing for csm or Ready Up to enforce).
+  if (!trimmed || isFreeKey(trimmed)) return { key: null, revision: NO_LICENSE_REVISION };
   const leaseValue = lease?.trim() || undefined;
   const material = [trimmed, leaseValue ?? '', state ? JSON.stringify(state) : ''].join('\n');
   const digest = createHash('sha256').update(material, 'utf8').digest('hex').slice(0, 16);

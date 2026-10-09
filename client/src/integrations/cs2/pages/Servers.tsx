@@ -110,8 +110,9 @@ export default function Servers() {
   const [licenseMax, setLicenseMax] = useState<number | null>(null);
   useEffect(() => {
     api
-      .get<{ license?: { maxServers?: number } | null }>('/api/license')
-      .then((res) => setLicenseMax(typeof res?.license?.maxServers === 'number' ? res.license.maxServers : null))
+      .get<{ license?: { maxServers?: number; kind?: string } | null }>('/api/license')
+      // A free key has no server limit.
+      .then((res) => setLicenseMax(res?.license?.kind !== 'free' && typeof res?.license?.maxServers === 'number' ? res.license.maxServers : null))
       .catch(() => setLicenseMax(null));
   }, []);
 

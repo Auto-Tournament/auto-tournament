@@ -11,7 +11,7 @@ export interface LicenseStatus {
     product: 'platform' | 'servers';
     pack: 'S' | 'M' | 'L';
     maxServers: number;
-    kind: 'month' | 'year' | 'founder' | 'event';
+    kind: 'month' | 'year' | 'founder' | 'event' | 'free';
     issuedAt: string;
     /** Null: a founder license, updates for life. */
     updatesUntil: string | null;
@@ -117,6 +117,9 @@ export function useLicenseStatus(options: { enabled?: boolean } = {}) {
 
 /** "Licensed to NTLAN · Platform S · 6 servers · updates until 2027-09-01". */
 export function licenseSummary(license: NonNullable<LicenseStatus['license']>, t: TFunction): string {
+  if (license.kind === 'free') {
+    return [license.licensee ? t('license.summary.freeFor', { licensee: license.licensee }) : t('license.summary.free'), t('license.summary.noLimit')].join(' · ');
+  }
   return [
     license.licensee
       ? t('license.summary.licensedTo', { licensee: license.licensee })

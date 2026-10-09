@@ -13,7 +13,7 @@ export type ServerLimit =
   | { kind: 'unlicensed' };
 
 interface LicenseResponse {
-  license?: { maxServers?: number } | null;
+  license?: { maxServers?: number; kind?: string } | null;
 }
 interface ConsentResponse {
   consent?: { consent?: { use?: string } | null } | null;
@@ -28,7 +28,8 @@ export function useServerLimit(): ServerLimit | null {
       api.get<ConsentResponse>('/api/license/consent').catch(() => null),
     ]).then(([license, consent]) => {
       if (cancelled) return;
-      const max = license?.license?.maxServers;
+      // A free key has no server limit.
+      const max = license?.license?.kind === 'free' ? undefined : license?.license?.maxServers;
       if (typeof max === 'number') setLimit({ kind: 'licensed', max });
       else if (consent?.consent?.consent?.use === 'commercial') setLimit({ kind: 'unlicensed' });
       else if (license) setLimit({ kind: 'unlimited' });

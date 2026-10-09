@@ -190,6 +190,9 @@ test.describe('license hand-off to csm (pure)', () => {
     expect(licenseHandoffFor(`${UNSIGNED_KEY}B`).revision).not.toBe(a.revision);
     // The revision must not leak the key.
     expect(a.revision).not.toContain('ATL1');
+    // A free key stays with the platform: csm and Ready Up get no key.
+    const freeKey = `ATL1.${Buffer.from(JSON.stringify({ v: 1, kid: 'tWl_YS3_AzLgqdkm', id: 'lic_free', kind: 'free' })).toString('base64url')}.${'A'.repeat(86)}`;
+    expect(licenseHandoffFor(freeKey)).toEqual({ key: null, revision: NO_LICENSE_REVISION });
   });
 });
 

@@ -88,6 +88,8 @@ export function standingFor(
   const check = verifyLicense(key, opts);
   // A lease is never the key: pasted as one, it counts as no genuine key.
   if (!check.valid || !check.license || check.license.lease) return { ...FREE, status: 'invalid' };
+  // A free key (non-commercial use): free, like no key, but the install checks in with it.
+  if (check.license.kind === 'free') return { ...FREE, licenseId: check.license.id };
   let license = check.license;
   // The current terms: a genuine lease of the same license, issued no earlier than the key.
   if (lease) {

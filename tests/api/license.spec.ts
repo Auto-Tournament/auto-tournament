@@ -279,6 +279,15 @@ test.describe('the paid server limit and late payment (gate)', () => {
     expect(() => checkCreate(paid, 3, 3)).toThrow(/covers 5 game servers/);
   });
 
+  test('a free key is free: no limit, never expires, but it has an id to check in with', () => {
+    const free = signToken(payload({ kind: 'free', product: 'platform', pack: 'S', max_servers: 1, updates_until: LIFETIME }), key);
+    expect(verifyLicense(free, { publicKeys, serverCount: 40 })).toMatchObject({ valid: true, status: 'ok' });
+    const standing = standingFor(free, { status: 'replaced', validUntil: null, stopsOn: '2026-10-11' }, '2040-01-01', publicKeys);
+    expect(standing).toMatchObject({ status: 'free', paid: false, maxServers: null });
+    expect(standing.licenseId).toBeTruthy();
+    expect(() => checkCreate(standing, 500, 10)).not.toThrow();
+  });
+
   test('a key that is not genuine is never enforced', () => {
     const forged = month().slice(0, -4) + 'AAAA';
     expect(standingFor(forged, null, '2026-10-10', publicKeys)).toMatchObject({ status: 'invalid', paid: false });

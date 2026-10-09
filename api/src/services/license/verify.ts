@@ -27,7 +27,8 @@ const B64URL = /^[A-Za-z0-9_-]+$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const PRODUCTS = ['servers', 'platform'] as const;
 const PACKS = ['S', 'M', 'L'] as const;
-const KINDS = ['month', 'year', 'founder', 'event'] as const;
+/** `free`: the optional free key for non-commercial use (no server limit, never expires, enforces nothing). */
+const KINDS = ['month', 'year', 'founder', 'event', 'free'] as const;
 
 export type LicenseProduct = (typeof PRODUCTS)[number];
 
@@ -223,7 +224,7 @@ export function verifyLicense(token: unknown, options: VerifyOptions = {}): Lice
       message: `This event license covers dates from ${license.valid_from}. Setting up and testing before then is fine.`,
     });
   }
-  if (typeof options.serverCount === 'number' && options.serverCount > license.max_servers) {
+  if (license.kind !== 'free' && typeof options.serverCount === 'number' && options.serverCount > license.max_servers) {
     warnings.push({
       code: 'too_many_servers',
       message: `${options.serverCount} servers are set up, but this license covers ${license.max_servers}. Every server counts, including spare, practice and test servers, so you need a license that covers all of them.`,
