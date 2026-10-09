@@ -124,7 +124,7 @@ export function TeamSelectionStep({
                 color="inherit"
                 size="small"
                 startIcon={<PlusIcon />}
-                onClick={onCreateTeam || (() => (window.location.href = '/teams'))}
+                onClick={onCreateTeam || (() => (window.location.href = '/manage/teams'))}
               >
                 {t('tournament.teamSelection.createTeam')}
               </Button>

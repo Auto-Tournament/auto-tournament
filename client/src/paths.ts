@@ -70,40 +70,70 @@ export const paths = {
   /** Ready Up compatibility with the latest CS2 build. Public, no sign-in. */
   compatibility: '/compatibility',
 
-  // Admin shell
+  // Admin shell: every admin page under /manage (the site root is the public
+  // site's). The pages' old root addresses redirect (LEGACY_ADMIN_PATHS).
   manage: '/manage',
-  teams: '/teams',
-  players: '/players',
+  teams: '/manage/teams',
+  players: '/manage/players',
   /** Admin: player reports. */
-  reports: '/reports',
-  servers: '/servers',
-  tournament: '/tournament',
+  reports: '/manage/reports',
+  servers: '/manage/servers',
+  tournament: '/manage/tournament',
   /** Admin: every tournament, and creating another. */
-  tournaments: '/tournaments',
-  bracket: '/bracket',
-  matches: '/matches',
+  tournaments: '/manage/tournaments',
+  bracket: '/manage/bracket',
+  matches: '/manage/matches',
   /** Results nobody agrees on (3.0 phase D, PR D8). */
-  disputes: '/disputes',
+  disputes: '/manage/disputes',
   /** Every played match, any tournament (deleted ones too), with demos. */
-  playedMatches: '/played',
+  playedMatches: '/manage/played',
   /** Admin: import a match played elsewhere from its demos. */
-  importMatch: '/played/import',
-  admin: '/admin',
-  settings: '/settings',
-  maps: '/maps',
+  importMatch: '/manage/played/import',
+  /** System: match recovery and the app log (was Admin tools at /admin). */
+  admin: '/manage/system',
+  settings: '/manage/settings',
+  maps: '/manage/maps',
   /** What this instance can run, and the packs an admin imported. */
-  modules: '/modules',
-  templates: '/templates',
+  modules: '/manage/modules',
+  templates: '/manage/templates',
   /** Rating templates (how ratings are calculated). Was `/elo-templates`. */
-  eloTemplates: '/ratings',
+  eloTemplates: '/manage/ratings',
   /** The old address of the Ratings page; redirects to `eloTemplates`. */
   eloTemplatesLegacy: '/elo-templates',
-  dev: '/dev',
+  dev: '/manage/dev',
 } as const;
 
 export type AppPath = (typeof paths)[keyof typeof paths];
 
-/** Nested route form of an admin shell path: '/servers' → 'servers'. */
+/**
+ * The admin pages' addresses before they moved under /manage (2026-10): each
+ * redirects to `/manage<old>`, with the rest of the path and the query, so
+ * bookmarks and old links keep working. Modules' admin pages moved too
+ * (CS2: servers, maps, skins, match rules, highlights).
+ */
+export const LEGACY_ADMIN_PATHS = [
+  '/teams',
+  '/players',
+  '/reports',
+  '/servers',
+  '/tournament',
+  '/tournaments',
+  '/bracket',
+  '/matches',
+  '/disputes',
+  '/played',
+  '/settings',
+  '/maps',
+  '/modules',
+  '/templates',
+  '/ratings',
+  '/dev',
+  '/skins',
+  '/match-rules',
+  '/highlights',
+] as const;
+
+/** Nested route form of an admin shell path: '/manage/servers' → 'manage/servers'. */
 export function adminRoute(path: string): string {
   return path.replace(/^\//, '');
 }

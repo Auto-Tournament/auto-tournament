@@ -3,8 +3,8 @@
  * `links`): the rail's Counter-Strike 2 group links here.
  */
 export const cs2AdminPaths = {
-  skins: '/skins',
-  matchRules: '/match-rules',
+  skins: '/manage/skins',
+  matchRules: '/manage/match-rules',
   /** Highlights: recorders, their runs, and what they make. */
-  highlights: '/highlights',
+  highlights: '/manage/highlights',
 } as const;

@@ -31,7 +31,7 @@ test.describe.serial('Maps UI', () => {
     'the page header syncs maps with maps.json and says what happened to Active Duty',
     { tag: ['@ui', '@maps'] },
     async ({ page }) => {
-      await page.goto('/maps');
+      await page.goto('/manage/maps');
       const syncResponse = page.waitForResponse(
         (resp) => resp.url().includes('/api/maps/sync') && resp.request().method() === 'POST'
       );
@@ -45,7 +45,7 @@ test.describe.serial('Maps UI', () => {
     'should normalise a typed map id to lowercase',
     { tag: ['@ui', '@maps', '@validation'] },
     async ({ page, request }) => {
-      await page.goto('/maps');
+      await page.goto('/manage/maps');
       await page.getByTestId('add-map-button').click();
 
       const modal = page.getByTestId('map-modal');
@@ -83,7 +83,7 @@ test.describe.serial('Maps UI', () => {
     'should create a map and show it in the list',
     { tag: ['@ui', '@maps', '@crud'] },
     async ({ page, request }) => {
-      await page.goto('/maps');
+      await page.goto('/manage/maps');
       await page.getByTestId('add-map-button').click();
 
       const modal = page.getByTestId('map-modal');
@@ -121,7 +121,7 @@ test.describe.serial('Maps UI', () => {
       });
       expect(created.ok(), 'seed map should be created').toBe(true);
 
-      await page.goto('/maps');
+      await page.goto('/manage/maps');
       const card = page.getByTestId(`map-card-${mapId}`);
       await expect(card).toBeVisible();
 
@@ -170,7 +170,7 @@ test.describe.serial('Maps UI', () => {
       expect(created.ok(), 'seed map should be created').toBe(true);
       expect((await created.json()).map.gameMode).toBe('wingman');
 
-      await page.goto('/maps');
+      await page.goto('/manage/maps');
       const section = page.getByTestId('maps-section-wingman');
       await expect(section.getByTestId(`map-card-${mapId}`)).toBeVisible();
       await expect(page.getByTestId(`map-card-mode-${mapId}`)).toHaveText('Wingman');
@@ -192,7 +192,7 @@ test.describe.serial('Tournament Map Pool Selection', () => {
     'should offer a map pool on the wizard map step',
     { tag: ['@ui', '@tournament', '@map-pools'] },
     async ({ page }) => {
-      await page.goto('/tournament');
+      await page.goto('/manage/tournament');
 
       const nextButton = page.getByTestId('tournament-next-button');
 

@@ -200,7 +200,7 @@ test.describe.serial('A manually reported tournament, wizard to champion', () =>
 
       // --- the wizard ------------------------------------------------------
       await ensureSignedIn(page);
-      await page.goto('/tournament');
+      await page.goto('/manage/tournament');
 
       const steps = page.getByTestId('tournament-setup-steps');
       await expect(steps).toBeVisible();

@@ -366,7 +366,7 @@ const Tournament: React.FC = () => {
       const last = reviewStepIndexFor(DEFAULT_SETUP_GAME.id);
       setActiveStep(last);
       setFurthestStep(last);
-      window.history.replaceState({}, '', '/tournament');
+      window.history.replaceState({}, '', '/manage/tournament');
     },
     []
   );
@@ -510,7 +510,7 @@ const Tournament: React.FC = () => {
   const handleDiscardDraft = () => {
     clearDraft();
     resetForm();
-    window.history.replaceState({}, '', '/tournament');
+    window.history.replaceState({}, '', '/manage/tournament');
   };
 
   const canEdit = !tournament || tournament.status === 'setup';
@@ -1225,7 +1225,7 @@ const Tournament: React.FC = () => {
           tournamentId={tournament.id}
           onRename={handleRenameTournament}
           saving={saving}
-          onViewBracket={() => navigate('/bracket')}
+          onViewBracket={() => navigate('/manage/bracket')}
           onReset={() => setShowResetConfirm(true)}
           onDelete={() => setShowDeleteConfirm(true)}
           onNewTournament={() => setShowArchiveConfirm(true)}

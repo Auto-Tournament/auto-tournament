@@ -254,7 +254,7 @@ test.describe.serial('Code modules in the browser', () => {
   test('the Modules page shows it as ok, with no upload for code', {
     tag: ['@ui', '@modules'],
   }, async ({ page, request }) => {
-    await page.goto('/modules');
+    await page.goto('/manage/modules');
     await waitForBoot(page);
     await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15_000 });
 
@@ -281,7 +281,7 @@ test.describe.serial('Code modules in the browser', () => {
   test('disabling removes its route; enabling asks for the id first and brings it back', {
     tag: ['@ui', '@modules'],
   }, async ({ page, request }) => {
-    await page.goto('/modules');
+    await page.goto('/manage/modules');
     await waitForBoot(page);
     await page.getByTestId(`code-module-${VALID}-disable`).click();
     await expect(page.getByTestId('code-modules-reload')).toBeVisible();
@@ -299,7 +299,7 @@ test.describe.serial('Code modules in the browser', () => {
     await expect(page.getByTestId(`${VALID}-page`)).toHaveCount(0);
 
     // Enable: through the warning dialog, whose confirm waits for the id.
-    await page.goto('/modules');
+    await page.goto('/manage/modules');
     await waitForBoot(page);
     await page.getByTestId(`code-module-${VALID}-enable`).click();
     const dialog = page.getByTestId('code-module-enable-dialog');
@@ -339,7 +339,7 @@ test.describe.serial('Code modules in the browser', () => {
     ).toBe(404);
 
     const requested = await recordRequests(page);
-    await page.goto('/modules');
+    await page.goto('/manage/modules');
     await waitForBoot(page);
     await expect(statusChip(page, CLIENT_INCOMPATIBLE)).toHaveAttribute('data-status', 'incompatible');
     const reason = page.getByTestId(`code-module-${CLIENT_INCOMPATIBLE}-reason`);
@@ -359,7 +359,7 @@ test.describe.serial('Code modules in the browser', () => {
     // Its server half is fine: only a browser can find this out.
     expect((await moduleRow(request, REACT19)).status).toBe('ok');
 
-    await page.goto('/modules');
+    await page.goto('/manage/modules');
     await waitForBoot(page);
     await expect(statusChip(page, REACT19)).toHaveAttribute('data-status', 'broken');
     const reason = page.getByTestId(`code-module-${REACT19}-reason`);
@@ -388,7 +388,7 @@ test.describe.serial('Code modules in the browser', () => {
     });
 
     // Same page load, so the loader's findings are still there.
-    await spaNavigate(page, '/modules');
+    await spaNavigate(page, '/manage/modules');
     await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15_000 });
     await expect(statusChip(page, RENDER_THROWS)).toHaveAttribute('data-status', 'broken');
     const reason = page.getByTestId(`code-module-${RENDER_THROWS}-reason`);
@@ -402,7 +402,7 @@ test.describe.serial('Code modules in the browser', () => {
     tag: ['@ui', '@modules'],
   }, async ({ page }) => {
     const requested = await recordRequests(page);
-    await page.goto('/modules?modules=off');
+    await page.goto('/manage/modules?modules=off');
     await waitForBoot(page);
     await expect(page.getByTestId('code-modules-safe-mode')).toBeVisible({ timeout: 15_000 });
     // The modules are still listed, so the culprit can be disabled.

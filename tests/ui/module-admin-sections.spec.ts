@@ -36,18 +36,17 @@ test.describe('Module sections on Admin tools and Settings', () => {
   });
 
   test(
-    'with CS2 installed, Admin tools has its RCON section after core tools',
+    'with CS2 installed, System has core tools and no RCON section (servers come from csm)',
     { tag: ['@ui', '@modules'] },
     async ({ page }) => {
-      await page.goto('/admin');
+      await page.goto('/manage/system');
       await expect(page.getByTestId('admin-tools-page')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('admin-tools-recovery')).toBeVisible();
       await expect(page.getByTestId('admin-tools-logs')).toBeVisible();
 
-      // CS2 arrives at runtime; its section follows core's.
-      const section = page.getByTestId('admin-tools-module-cs2');
-      await expect(section).toBeVisible({ timeout: 30000 });
-      await expect(section.getByTestId('cs2-admin-tools')).toBeVisible();
+      // CS2 adds nothing here any more (its RCON console went with the RCON servers).
+      await expect(page.getByTestId('admin-tools-module-cs2')).toHaveCount(0);
+      await expect(page.getByTestId('cs2-admin-tools')).toHaveCount(0);
     }
   );
 
@@ -55,7 +54,7 @@ test.describe('Module sections on Admin tools and Settings', () => {
     'with CS2 installed, its settings are its own pages in the rail: Skins and Match rules',
     { tag: ['@ui', '@modules', '@settings'] },
     async ({ page }) => {
-      await page.goto('/settings');
+      await page.goto('/manage/settings');
       await expect(page.getByTestId('settings-card-site')).toBeVisible({ timeout: 30000 });
 
       // Settings is the platform's only: none of CS2's fields, no second nav.
@@ -89,12 +88,12 @@ test.describe('Module sections on Admin tools and Settings', () => {
       await expect(page.getByTestId('skins-inventory-admin')).toBeVisible();
 
       // Old links to CS2's settings land on its pages.
-      await page.goto('/settings?section=cs2');
+      await page.goto('/manage/settings?section=cs2');
       await expect(page).toHaveURL(/\/match-rules$/, { timeout: 30000 });
-      await page.goto('/settings?section=cs2:skins');
+      await page.goto('/manage/settings?section=cs2:skins');
       await expect(page).toHaveURL(/\/skins$/, { timeout: 30000 });
       // A platform section scrolls to its card.
-      await page.goto('/settings?section=license');
+      await page.goto('/manage/settings?section=license');
       await expect(page.getByTestId('settings-card-license')).toBeInViewport({ timeout: 15000 });
     }
   );
@@ -105,7 +104,7 @@ test.describe('Module sections on Admin tools and Settings', () => {
     async ({ page }) => {
       await withoutCodeModules(page);
 
-      await page.goto('/admin');
+      await page.goto('/manage/system');
       await expect(page.getByTestId('admin-tools-page')).toBeVisible({ timeout: 15000 });
       // Positive first, so the negatives below are about a rendered page.
       await expect(page.getByTestId('admin-tools-logs')).toBeVisible();
@@ -114,7 +113,7 @@ test.describe('Module sections on Admin tools and Settings', () => {
       await expect(page.getByTestId('cs2-admin-tools')).toHaveCount(0);
 
       // Settings shows the platform's cards and no game links.
-      await page.goto('/settings');
+      await page.goto('/manage/settings');
       await expect(page.getByTestId('settings-version')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('settings-card-site')).toBeVisible();
       await expect(page.getByTestId('settings-game-links')).toHaveCount(0);

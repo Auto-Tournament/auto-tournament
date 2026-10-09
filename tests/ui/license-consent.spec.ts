@@ -29,13 +29,13 @@ test.describe.serial('License consent UI', () => {
   });
 
   test('an admin page waits for the terms; typing I AGREE opens it', { tag: ['@ui'] }, async ({ page }) => {
-    await page.goto('/teams');
-    await expect(page).toHaveURL(/\/welcome\/license\?next=%2Fteams/);
+    await page.goto('/manage/teams');
+    await expect(page).toHaveURL(/\/welcome\/license\?next=%2Fmanage%2Fteams/);
     await expect(page.getByTestId('license-consent-page')).toBeVisible();
     await expect(page.getByTestId('license-consent-summary')).toBeVisible();
 
     // Another admin page lands here too.
-    await page.goto('/settings');
+    await page.goto('/manage/settings');
     await expect(page).toHaveURL(/\/welcome\/license/);
 
     const accept = page.getByTestId('license-consent-accept');
@@ -52,7 +52,7 @@ test.describe.serial('License consent UI', () => {
     await expect(page.getByTestId('license-consent-page')).toHaveCount(0);
 
     // Settings > License shows what was declared.
-    await page.goto('/settings?section=license');
+    await page.goto('/manage/settings?section=license');
     await expect(page.getByTestId('settings-license-consent-use')).toHaveText('Non-commercial use');
   });
 
@@ -62,7 +62,7 @@ test.describe.serial('License consent UI', () => {
     const cleared = await page.request.delete('/api/license');
     expect([200, 204, 404]).toContain(cleared.status());
     // Accept once through the page, then change it from Settings.
-    await page.goto('/settings?section=license');
+    await page.goto('/manage/settings?section=license');
     await expect(page).toHaveURL(/\/welcome\/license/);
     await page.getByTestId('license-consent-noncommercial').check();
     await page.getByTestId('license-consent-confirm').fill('I AGREE');

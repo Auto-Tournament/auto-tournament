@@ -81,8 +81,8 @@ test.describe.serial('The shell follows the tournament game', () => {
       await expect(page.getByTestId('admin-home-servers-card')).toHaveCount(0);
 
       // Nothing on the page links to CS2's pages (the top bar included).
-      await expect(page.locator('a[href="/servers"]')).toHaveCount(0);
-      await expect(page.locator('a[href="/maps"]')).toHaveCount(0);
+      await expect(page.locator('a[href="/manage/servers"]')).toHaveCount(0);
+      await expect(page.locator('a[href="/manage/maps"]')).toHaveCount(0);
 
       // Manage: no server grid under the queue, no Servers or Maps in the rail.
       await page.goto('/manage');
@@ -98,7 +98,7 @@ test.describe.serial('The shell follows the tournament game', () => {
 
       // The page behind the hidden link still answers, so a bookmark or a
       // link someone pasted in Discord is not a 404.
-      await page.goto('/servers');
+      await page.goto('/manage/servers');
       await expect(page).toHaveURL(/\/servers$/);
     }
   );

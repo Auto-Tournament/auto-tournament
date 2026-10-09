@@ -1,6 +1,6 @@
 {
   "adminToolsPage": {
-    "description": "Logger og vedlikehold for dette nettstedet. Installerte spillmoduler legger til egne verktøy nedenfor.",
+    "description": "Kampgjenoppretting og applikasjonsloggen for dette nettstedet.",
     "recovery": {
       "title": "Kampgjenoppretting",
       "description": "Hvis API-et eller serverne ble startet på nytt under en turnering og kampstatusen ser feil ut (f.eks. kamper som står fast før de går live, eller som mangler live-resultater), kan du starte en gjenoppretting manuelt. Da spørres alle servere om gjeldende kamprapport, resultater og faser synkroniseres, og webhooks og demo-opplasting settes opp igjen der det går.",

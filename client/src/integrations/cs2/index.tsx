@@ -49,7 +49,6 @@ import {
 import Servers from './pages/Servers';
 import Maps from './pages/Maps';
 import HighlightsAdmin from './pages/Highlights';
-import { Cs2AdminTools } from './admin/Cs2AdminTools';
 import { MatchRulesPage } from './settings/MatchRulesPage';
 import { SkinsAdminPage } from './skins/SkinsAdminPage';
 import { cs2AdminPaths } from './adminPaths';
@@ -206,7 +205,6 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // Admin tools: RCON on its servers and their live event feed (core's until
   // the module split, client API 0.2.2). Its settings are its own rail pages:
   // Skins and Match rules.
-  adminToolsSection: Cs2AdminTools,
   // Virtual skins (skins/): the inventory pages, the Inventory link while
   // skins are on, the "new skin" reveal, and the loadout on profiles.
   accountMenuItems: skinsAccountMenuItems,

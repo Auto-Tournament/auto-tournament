@@ -100,7 +100,7 @@ export function TeamHeader({ team, canEdit, game, logoUrl, actions }: TeamHeader
                 variant="outlined"
                 size="small"
                 component={RouterLink}
-                to="/teams"
+                to="/manage/teams"
               >
                 {t('teamProfile.editTeam')}
               </Button>

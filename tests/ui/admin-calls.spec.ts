@@ -107,7 +107,7 @@ test.describe.serial('Admin call toast', () => {
       // Still there after a while, on another admin page, and after a reload.
       await page.waitForTimeout(6_000);
       await expect(toast).toBeVisible();
-      await page.goto('/teams', { waitUntil: 'domcontentloaded' });
+      await page.goto('/manage/teams', { waitUntil: 'domcontentloaded' });
       await expect(toastFor(page, callId)).toBeVisible({ timeout: 15_000 });
       await page.reload({ waitUntil: 'domcontentloaded' });
       await expect(toastFor(page, callId)).toBeVisible({ timeout: 15_000 });

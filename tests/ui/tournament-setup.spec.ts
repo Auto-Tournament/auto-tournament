@@ -26,7 +26,7 @@ test.describe.serial('Tournament setup flow', () => {
     'steps navigate, validate, and the summary follows the format',
     { tag: ['@ui', '@tournament'] },
     async ({ page }) => {
-      await page.goto('/tournament');
+      await page.goto('/manage/tournament');
 
       const steps = page.getByTestId('tournament-setup-steps');
       await expect(steps).toBeVisible();
@@ -156,7 +156,7 @@ test.describe.serial('Tournament setup flow', () => {
     { tag: ['@ui', '@tournament'] },
     async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 });
-      await page.goto('/tournament');
+      await page.goto('/manage/tournament');
       await expect(page.getByTestId('tournament-setup-steps')).toBeVisible();
       // The way back comes first, the steps scroll sideways after it.
       await expect(page.getByTestId('tournament-setup-back-to-manage')).toBeInViewport();

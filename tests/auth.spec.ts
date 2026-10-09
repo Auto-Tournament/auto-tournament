@@ -71,7 +71,7 @@ test.describe.serial('Authentication', () => {
       tag: ['@ui', '@auth', '@login'],
     },
     async ({ page }) => {
-      await page.goto('/teams');
+      await page.goto('/manage/teams');
 
       // Should redirect to login
       await expect(page).toHaveURL(/\/login/);
@@ -180,10 +180,10 @@ test.describe.serial('Normal user cannot access admin', () => {
       await expect(page).toHaveURL(/\/$/, { timeout: 10000 });
       await expect(page.getByTestId('home-page')).toBeVisible({ timeout: 10000 });
 
-      await page.goto('/admin');
+      await page.goto('/manage/system');
       await expect(page).toHaveURL(playerUrl, { timeout: 10000 });
 
-      await page.goto('/teams');
+      await page.goto('/manage/teams');
       await expect(page).toHaveURL(playerUrl, { timeout: 10000 });
     }
   );

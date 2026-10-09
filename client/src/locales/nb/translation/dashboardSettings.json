@@ -78,8 +78,8 @@
         "hint": "Innlogging, API-nøkler"
       },
       "adminTools": {
-        "label": "Adminverktøy",
-        "hint": "Logger og vedlikehold"
+        "label": "System",
+        "hint": "Kampgjenoppretting og logger"
       },
       "disputes": {
         "label": "Tvister",
@@ -391,7 +391,7 @@
       "modules": "Moduler",
       "templates": "Maler",
       "ratings": "Rating",
-      "adminTools": "Adminverktøy",
+      "adminTools": "System",
       "devTools": "Dev-verktøy",
       "documentation": "Dokumentasjon",
       "opensInNewTab": "(åpnes i en ny fane)",

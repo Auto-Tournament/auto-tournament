@@ -82,7 +82,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
       if (onSuccess) {
         onSuccess();
       }
-      navigate('/tournament');
+      navigate('/manage/tournament');
       return;
     }
 
@@ -138,7 +138,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
         if (onSuccess) {
           onSuccess();
         }
-        navigate('/tournament');
+        navigate('/manage/tournament');
       } else {
         setError(response.message || 'Failed to start tournament');
       }

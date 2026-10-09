@@ -1,6 +1,6 @@
 {
   "adminToolsPage": {
-    "description": "Logs and maintenance for this site. Installed game modules add their own tools below.",
+    "description": "Match recovery and the app log for this site.",
     "recovery": {
       "title": "Match Recovery",
       "description": "If the API or servers were restarted during a tournament and match state looks out of sync (e.g. matches stuck before going live or missing live scores), you can manually trigger a recovery pass. This will ask all servers for their current match report, resync scores/phases, and reconfigure webhooks and demo uploads where possible.",

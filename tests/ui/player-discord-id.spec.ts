@@ -53,7 +53,7 @@ test.describe.serial('Player Discord ID: admin editor', () => {
       const player = await createPlayer(request, { id: steamId, name: 'Discord Admin Edit' });
       expect(player, 'seed player should be created').toBeTruthy();
 
-      await page.goto('/players');
+      await page.goto('/manage/players');
       const card = page.getByTestId(`player-card-${steamId}`);
       await expect(card).toBeVisible();
       await expect(page.getByTestId(`player-card-no-discord-${steamId}`)).toBeVisible();
@@ -102,7 +102,7 @@ test.describe.serial('Player Discord ID: admin editor', () => {
       const player = await createPlayer(request, { id: steamId, name: 'Discord Stale Edit' });
       expect(player, 'seed player should be created').toBeTruthy();
 
-      await page.goto('/players');
+      await page.goto('/manage/players');
       const card = page.getByTestId(`player-card-${steamId}`);
       await expect(card).toBeVisible();
 
