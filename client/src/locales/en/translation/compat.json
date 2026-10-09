@@ -56,6 +56,7 @@
     "trigger": {
       "build_change": "New CS2 build",
       "surface_change": "Game data changed",
+      "code_change": "Ready Up change",
       "nightly": "Nightly",
       "release": "Ready Up release",
       "manual": "Manual"

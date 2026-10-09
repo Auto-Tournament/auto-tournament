@@ -729,7 +729,7 @@ export function getSchemaSQL(): string {
       readyup_version TEXT NOT NULL,
       readyup_commit TEXT NOT NULL,
       run_url TEXT NOT NULL,
-      run_trigger TEXT NOT NULL, -- build_change | surface_change | nightly | release | manual
+      run_trigger TEXT NOT NULL, -- build_change | surface_change | code_change | nightly | release | manual
       stage TEXT NOT NULL, -- static | selftest | live
       state TEXT NOT NULL, -- queued | checking | pass | warn | fail | no_verdict
       overall TEXT NOT NULL, -- pass | warn | fail | checking | no_verdict
