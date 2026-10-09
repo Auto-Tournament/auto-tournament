@@ -189,10 +189,20 @@ func buildCrowdTrack(paths []string, plan reelPlan, first int, sound reelSound, 
 	// Then the reactions over it, each its own stretch of the recording.
 	args = []string{"-i", joined}
 	var reacts []crowdReact
-	for j, r := range crowdReactions(plan, first, sound.reactions) {
-		r.in = 1 + j
+	aww := ""
+	for _, r := range crowdReactions(plan, first, sound.reactions) {
+		src := sound.crowd
+		if r.aww {
+			if aww == "" {
+				aww = awwSource(sound.crowd)
+			}
+			if src = aww; src == "" {
+				continue
+			}
+		}
+		r.in = 1 + len(reacts)
 		reacts = append(reacts, r)
-		args = append(args, "-ss", fmt.Sprintf("%.3f", r.from), "-t", fmt.Sprintf("%.3f", r.length), "-i", sound.crowd)
+		args = append(args, "-ss", fmt.Sprintf("%.3f", r.from), "-t", fmt.Sprintf("%.3f", r.length), "-i", src)
 	}
 	args = append(args, "-filter_complex", crowdReactsFilter(reacts), "-map", "[crowd]",
 		"-t", length, "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", out)

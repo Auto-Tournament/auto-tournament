@@ -85,7 +85,7 @@ func TestCheersScaleWithHowImpressive(t *testing.T) {
 		}
 	}
 	rs := cheerTimes(m.KillTicks, []float64{1, 2, 3, 4, 5, 6}, got)
-	if fmt.Sprint(rs) != "[{3 2} {4 5.5} {6 1}]" {
+	if fmt.Sprint(rs) != "[{3 2 false} {4 5.5 false} {6 1 false}]" {
 		t.Fatalf("reactions %v", rs)
 	}
 }
@@ -128,5 +128,51 @@ func TestReactionsVaryInPitch(t *testing.T) {
 	}
 	if f := crowdReactsFilter([]crowdReact{{in: 1, at: 9, score: 3, length: 3}}); !strings.Contains(f, "asetrate=") {
 		t.Fatalf("no rate change: %s", f)
+	}
+}
+
+func TestCrowdGroansWhenThePlayerDies(t *testing.T) {
+	me := "p1"
+	rp := &Replay{Kills: []ReplayKill{
+		{Tick: 1000, Attacker: &me, Victim: "x"},
+		{Tick: 2500, Victim: me},
+		{Tick: 9000, Victim: me}, // after the moment: not its death
+	}}
+	m := moment{StartTick: 500, EndTick: 3000}
+	if got := deathTick(rp, me, m); got != 2500 {
+		t.Fatalf("death %d, want 2500", got)
+	}
+	if got := deathTick(rp, "other", m); got != -1 {
+		t.Fatalf("no death: %d", got)
+	}
+	rs := withAww([]reaction{{T: 1, Score: 2}, {T: 4, Score: 3}}, 2.345)
+	if fmt.Sprint(rs) != "[{1 2 false} {2.35 0 true} {4 3 false}]" {
+		t.Fatalf("reactions %v", rs)
+	}
+	if got := withAww(nil, -1); len(got) != 0 {
+		t.Fatalf("no death, no groan: %v", got)
+	}
+	// On the reel's timeline like a cheer, with its own recording and level.
+	p := reelPlan{durations: []float64{10}}
+	out := crowdReactions(p, 0, [][]reaction{{{T: 2, Aww: true}}})
+	if len(out) != 1 || !out[0].aww || out[0].from != awwFrom || out[0].length != awwLength {
+		t.Fatalf("groan %+v", out)
+	}
+	if f := reactFilter(out); !strings.Contains(f, fmt.Sprintf("volume=%g", awwGain)) {
+		t.Fatalf("groan filter %s", f)
+	}
+}
+
+func TestTickAtFollowsTheEdit(t *testing.T) {
+	ws := []window{{from: 0, to: 640}, {from: 1000, to: 1640}}
+	segs := [][]segment{{{From: 0, To: 10, Speed: 1}}, {{From: 0, To: 10, Speed: 1}}}
+	if got := tickAt(ws, segs, 320); got != 5 {
+		t.Fatalf("first window: %v", got)
+	}
+	if got := tickAt(ws, segs, 1064); math.Abs(got-(10-reelCrossfade+1)) > 1e-9 {
+		t.Fatalf("second window: %v", got)
+	}
+	if got := tickAt(ws, segs, 800); got != -1 {
+		t.Fatalf("between windows: %v", got)
 	}
 }

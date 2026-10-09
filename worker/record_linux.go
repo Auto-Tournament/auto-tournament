@@ -560,6 +560,9 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	}
 	markers := momentMarkers(windows, edits, kills)
 	markers.Reactions = cheerTimes(m.KillTicks, markers.Kills, cheerTicks(look.replay, look.playerID, m))
+	if t := deathTick(look.replay, look.playerID, m); t >= 0 {
+		markers.Reactions = withAww(markers.Reactions, tickAt(windows, edits, t))
+	}
 	width, height := ow, oh
 	finish := func() error {
 		defer cleanup()

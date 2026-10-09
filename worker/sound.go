@@ -32,6 +32,10 @@ const (
 	roarGain           = 0.27 // a cheer at its height
 	wowGain            = 0.34 // a "whoaaa" at its height
 	crowdDelay         = 0.4  // the crowd reacts this long after the kill
+	awwGain            = 0.3  // the groan when the player dies
+	awwFrom            = 0.2  // where the groan starts in its recording
+	awwLength          = 2.5
+	awwFall            = 1.0
 )
 
 // crowdTrackPath is where a reel's crowd track goes: next to it.
@@ -89,6 +93,7 @@ type crowdReact struct {
 	at     float64
 	score  float64
 	length float64
+	aww    bool // the groan at the player's death, from the aww recording
 }
 
 // crowdLoud are where the crowd recording cheers loudest: each reaction is
@@ -116,6 +121,11 @@ func crowdReactions(p reelPlan, first int, reactions [][]reaction) []crowdReact 
 			if at >= p.durations[i] {
 				continue
 			}
+			if r.Aww {
+				length := math.Min(awwLength, p.durations[i]-at+crowdSpill)
+				out = append(out, crowdReact{at: starts[i] + at, length: length, from: awwFrom, aww: true})
+				continue
+			}
 			_, length, _ := reactionShape(r.Score)
 			length = math.Min(length, p.durations[i]-at+crowdSpill)
 			out = append(out, crowdReact{at: starts[i] + at, score: r.Score, length: length, from: crowdLoud[n%len(crowdLoud)]})
@@ -131,6 +141,8 @@ func crowdReactions(p reelPlan, first int, reactions [][]reaction) []crowdReact 
 func reactionRate(r crowdReact) float64 {
 	base := 1.04
 	switch {
+	case r.aww:
+		base = 1.0
 	case r.score >= reactWow:
 		base = 0.93
 	case r.score >= reactCheer:
@@ -231,6 +243,9 @@ func reactFilter(reacts []crowdReact) string {
 	var labels []string
 	for j, r := range reacts {
 		gain, _, fall := reactionShape(r.score)
+		if r.aww {
+			gain, fall = awwGain, awwFall
+		}
 		// Played a little faster or slower (and so higher or lower), so the
 		// same recording does not sound the same twice: bigger reactions a
 		// touch lower, like a bigger crowd.

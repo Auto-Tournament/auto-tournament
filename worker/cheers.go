@@ -156,6 +156,8 @@ func flicked(rp *Replay, index, tick int) bool {
 type reaction struct {
 	T     float64 `json:"t"`
 	Score float64 `json:"score"`
+	// Aww: not a kill but the player dying, and the crowd groans (awwSourceURL).
+	Aww bool `json:"aww,omitempty"`
 }
 
 // cheerTimes is where the reactions are in the clip: the kill markers (in
@@ -176,6 +178,32 @@ func cheerTimes(killTicks []int, killTimes []float64, cheers []cheer) []reaction
 			out = append(out, reaction{T: v, Score: c.score})
 		}
 	}
+	return out
+}
+
+// deathTick is when the player died during the moment (the replay's kill
+// with them as the victim, StartTick to EndTick), or -1.
+func deathTick(rp *Replay, player string, m moment) int {
+	if rp == nil {
+		return -1
+	}
+	for _, k := range rp.Kills {
+		if k.Victim == player && k.Tick >= m.StartTick && k.Tick <= m.EndTick {
+			return k.Tick
+		}
+	}
+	return -1
+}
+
+// withAww adds the crowd's groan at the player's death (`at` seconds into
+// the clip; none when at < 0), in time order with the cheers.
+func withAww(reactions []reaction, at float64) []reaction {
+	if at < 0 {
+		return reactions
+	}
+	out := append([]reaction{}, reactions...)
+	out = append(out, reaction{T: math.Round(at*100) / 100, Aww: true})
+	sort.SliceStable(out, func(i, j int) bool { return out[i].T < out[j].T })
 	return out
 }
 
