@@ -142,6 +142,9 @@ func (c *client) claimRecording(ctx context.Context) (*mapJob, *matchReelJob, *r
 	// checks and run reports (quality.go, runlog.go).
 	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{
 		"recorder": c.worker, "version": 7, "gpu": recorderGPU(), "platform": platformName(),
+		// It carries the benchmark demo (benchdemo_linux.go): its benchmark
+		// then needs nothing from the platform and compares with every other.
+		"benchDemo": hasBenchDemo(),
 	})
 	if err != nil {
 		return nil, nil, nil, err

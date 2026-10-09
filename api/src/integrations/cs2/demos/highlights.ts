@@ -496,15 +496,36 @@ export function pickChunk(rows: { id: number; playerId: string }[], share: numbe
   return out;
 }
 
-/** A recorder's benchmark time: its fastest finished try, in seconds. */
-function benchmarkSeconds(raw: string | null): number | null {
+/** A recorder's benchmark time (its fastest finished try, in seconds) and the clip it timed. */
+export function benchmarkSeconds(raw: string | null): { seconds: number | null; source: string } {
   try {
-    const tries = (JSON.parse(raw ?? 'null')?.tries ?? []) as { ok?: boolean; seconds?: number }[];
-    const ok = tries.filter((t) => t.ok && typeof t.seconds === 'number' && t.seconds > 0);
-    return ok.length ? Math.min(...ok.map((t) => t.seconds!)) : null;
+    const b = JSON.parse(raw ?? 'null') as {
+      tries?: { ok?: boolean; seconds?: number }[];
+      source?: string;
+    } | null;
+    const ok = (b?.tries ?? []).filter(
+      (t) => t.ok && typeof t.seconds === 'number' && t.seconds > 0
+    );
+    return {
+      seconds: ok.length ? Math.min(...ok.map((t) => t.seconds!)) : null,
+      source: b?.source ?? 'match',
+    };
   } catch {
-    return null;
+    return { seconds: null, source: 'match' };
   }
+}
+
+/**
+ * Benchmark times that can be compared (pure: tested on its own): only
+ * recorders timed on the same clip. Once one has timed the shipped demo, the
+ * others' times on this install's clip count as unknown (the online average)
+ * until they are benchmarked again.
+ */
+export function comparableSeconds(
+  b: { seconds: number | null; source: string }[]
+): (number | null)[] {
+  const bundled = b.some((x) => x.source === 'bundled' && x.seconds != null);
+  return b.map((x) => (bundled && x.source !== 'bundled' ? null : x.seconds));
 }
 
 /**
@@ -522,7 +543,8 @@ async function onlineRecorders(
                   OR EXISTS (SELECT 1 FROM cs2_highlights h WHERE h.recorder = r.name AND h.status = 'recording')))`,
     [recorder]
   );
-  const out = rows.map((r) => ({ name: r.name, seconds: benchmarkSeconds(r.benchmark) }));
+  const seconds = comparableSeconds(rows.map((r) => benchmarkSeconds(r.benchmark)));
+  const out = rows.map((r, i) => ({ name: r.name, seconds: seconds[i] }));
   if (!out.some((r) => r.name === recorder)) out.push({ name: recorder, seconds: null });
   return out;
 }
