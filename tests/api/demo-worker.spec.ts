@@ -60,4 +60,43 @@ test.describe('Demo worker routes', () => {
     });
     expect(res.status()).toBe(400);
   });
+
+  test("a deleted match's demo is never handed out", { tag: ['@api'] }, async ({ request }) => {
+    await signInViaRequest(request);
+    const { slug } = (await (
+      await request.post('/api/game/cs2/imports', { data: { maps: 1 } })
+    ).json()) as {
+      slug: string;
+    };
+    const name = Buffer.from('de_nuke');
+    const head = Buffer.concat([
+      Buffer.from('PBDEMS2\0', 'latin1'),
+      Buffer.alloc(8),
+      Buffer.from([0x01, 0x00, name.length + 2, 0x2a, name.length]),
+      name,
+    ]);
+    const demo = Buffer.concat([head, Buffer.alloc(2048 - head.length, 7)]);
+    const up = await request.put(
+      `/api/game/cs2/imports/${slug}/maps/0?offset=0&total=${demo.length}`,
+      {
+        headers: { 'Content-Type': 'application/octet-stream' },
+        data: demo,
+      }
+    );
+    expect(up.ok(), await up.text()).toBe(true);
+    expect((await request.delete(`/api/matches/${slug}`)).ok()).toBe(true);
+
+    for (let i = 0; i < 20; i++) {
+      const res = await request.post('/api/game/cs2/demo-worker/claim', {
+        data: { worker: 'spec-orphans' },
+      });
+      if (res.status() === 204) break;
+      const job = (await res.json()).job as { matchSlug: string; mapNumber: number };
+      expect(job.matchSlug).not.toBe(slug);
+      await request.post(
+        `/api/game/cs2/demo-worker/jobs/${encodeURIComponent(job.matchSlug)}/${job.mapNumber}/fail`,
+        { data: { worker: 'spec-orphans', error: 'released by the spec' } }
+      );
+    }
+  });
 });
