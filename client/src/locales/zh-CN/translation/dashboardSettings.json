@@ -210,7 +210,8 @@
         "cancel": "Cancel",
         "loadError": "Could not load the accounts",
         "saveError": "Could not save the account"
-      }
+      },
+      "oidcScopes": "On your OpenID Connect server, give this client the scopes openid, profile and email (in Keycloak: Clients → this client → Client scopes, with profile and email as Default). Without profile and email people still sign in, but the platform gets no name or email address for them."
     },
     "integrations": {
       "steam": {

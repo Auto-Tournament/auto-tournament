@@ -160,6 +160,52 @@ test.describe('OpenID Connect: strategy', () => {
   });
 });
 
+test.describe('OpenID Connect: a server that refuses profile and email', () => {
+  test('the callback starts again with openid only, once', TAGS, async () => {
+    const doc: OidcDiscovery = {
+      issuer: 'https://sso.example.com',
+      authorization_endpoint: 'https://login.example.com/auth',
+      token_endpoint: 'https://login.example.com/token',
+      userinfo_endpoint: 'https://login.example.com/userinfo',
+    };
+    const strategy = createOidcStrategy(
+      {
+        issuerUrl: 'https://sso.example.com',
+        clientID: 'at',
+        clientSecret: 's',
+        callbackURL: 'https://at.example.com/api/auth/oidc/callback',
+        store: { store: (_req: unknown, ...rest: unknown[]) => (rest.pop() as (e: null, s: string) => void)(null, 'st') },
+      },
+      () => undefined,
+      async () => doc
+    ) as {
+      authenticate(req: unknown, options: unknown): void;
+      redirect: (url: string) => void;
+      error: (err: Error) => void;
+      fail: (info: unknown) => void;
+    };
+    const outcome = (query: Record<string, string>) =>
+      new Promise<{ redirect?: string; error?: string }>((resolve) => {
+        const perRequest = Object.create(strategy) as typeof strategy;
+        perRequest.redirect = (url) => resolve({ redirect: url });
+        perRequest.error = (err) => resolve({ error: err.message });
+        perRequest.fail = () => resolve({ error: 'failed' });
+        perRequest.authenticate({ query, session: {}, headers: {}, cookies: {}, url: '/cb' }, {});
+      });
+
+    const retry = await outcome({
+      error: 'invalid_scope',
+      error_description: 'Invalid scopes: openid profile email',
+      state: 'x',
+    });
+    expect(new URL(retry.redirect!).searchParams.get('scope')).toBe('openid');
+
+    // openid itself refused: no loop, an error.
+    const refused = await outcome({ error: 'invalid_scope', error_description: 'Invalid scopes: openid', state: 'x' });
+    expect(refused.redirect).toBeUndefined();
+  });
+});
+
 test.describe.serial('OpenID Connect: configured on Settings -> Sign-in', () => {
   const json = { 'Content-Type': 'application/json' };
 

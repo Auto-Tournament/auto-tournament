@@ -315,6 +315,14 @@ function ProviderSection({
             </Stack>
           )}
 
+          {provider.hasIssuer && (
+            // What the client needs on the OpenID Connect server: without the
+            // profile and email scopes sign-in still works, but nameless.
+            <Alert severity="info" data-testid={`${idPrefix}-scopes`}>
+              {t('settingsPage.signIn.oidcScopes')}
+            </Alert>
+          )}
+
           {provider.id !== 'steam' && (
             // Set automatically: nothing to fill in here, only to paste at the provider.
             <Typography variant="body2" color="text.secondary">
