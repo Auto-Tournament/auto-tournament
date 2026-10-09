@@ -255,6 +255,14 @@ async function teamsOf(matchSlug: string): Promise<Map<string, 'team1' | 'team2'
 
 /** Apply a finished analysis: the players' numbers, the rounds and the kills. */
 export async function completeDemoJob(job: DemoJob, analysis: DemoAnalysisPayload): Promise<void> {
+  // An imported match learns its teams and score from the demo first, so
+  // the players below land on their teams.
+  const { applyImportedMap } = await import('./demoImport');
+  await applyImportedMap(job, analysis).catch((error: unknown) =>
+    log.warn(`[DEMO-JOBS] ${job.matchSlug} map ${job.mapNumber}: could not apply the import`, {
+      error: (error as Error).message,
+    })
+  );
   const teams = await teamsOf(job.matchSlug);
   // Players the match doesn't list: on the team their round-one side shares
   // with listed players.

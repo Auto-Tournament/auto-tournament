@@ -86,6 +86,8 @@ export const paths = {
   disputes: '/disputes',
   /** Every played match, any tournament (deleted ones too), with demos. */
   playedMatches: '/played',
+  /** Admin: import a match played elsewhere from its demos. */
+  importMatch: '/played/import',
   admin: '/admin',
   settings: '/settings',
   maps: '/maps',

@@ -22,6 +22,18 @@ type Analysis struct {
 	Rounds          []Round                 `json:"rounds"`
 	Kills           []Kill                  `json:"kills"`
 	Players         map[string]*PlayerStats `json:"players"`
+	// The two teams as they lined up in round one (an imported match is
+	// built from them: names, rosters and the map's score).
+	Teams []TeamInfo `json:"teams,omitempty"`
+}
+
+// TeamInfo is one team of the map: its in-game name (empty when the server
+// set none), the side it started on, the rounds it won and its players.
+type TeamInfo struct {
+	Name      string   `json:"name"`
+	StartSide string   `json:"startSide"`
+	Score     int      `json:"score"`
+	Players   []string `json:"players"`
 }
 
 // ReplayPlayer names a column of the replay frames.
@@ -255,6 +267,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		equipT    int
 		frames    = map[int]map[string][6]float64{}
 		lastFrame = -FrameStep
+		clans     = map[int]map[string]string{} // round -> side -> the team's in-game name
 	)
 	stats := func(sid string) *PlayerStats {
 		s, ok := players[sid]
@@ -276,6 +289,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		rounds, kills = nil, nil
 		players = map[string]*PlayerStats{}
 		sides = map[int]map[string]string{}
+		clans = map[int]map[string]string{}
 		shots, hitTicks = map[string][]Shot{}, map[string][]int{}
 		frames = map[int]map[string][6]float64{}
 		spotted = map[[2]uint64]bool{}
@@ -346,6 +360,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 			}
 		}
 		sides[rd.Number] = roster
+		clans[rd.Number] = map[string]string{"CT": gs.TeamCounterTerrorists().ClanName(), "T": gs.TeamTerrorists().ClanName()}
 	})
 
 	roundNow := func() int { return len(rounds) + 1 }
@@ -732,5 +747,68 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		Rounds:          rounds,
 		Kills:           kills,
 		Players:         players,
+		Teams:           teamsOf(rounds, sides, clans),
 	}, replay, nil
+}
+
+// teamsOf groups the players by the side they had in round one, then counts
+// each group's round wins by the side it had in that round (the halves and
+// overtime swap sides). A group's name is the first in-game name its side had.
+func teamsOf(rounds []Round, sides map[int]map[string]string, clans map[int]map[string]string) []TeamInfo {
+	first := sides[1]
+	if len(first) == 0 {
+		return nil
+	}
+	var out []TeamInfo
+	for _, start := range []string{"CT", "T"} {
+		t := TeamInfo{StartSide: start, Players: []string{}}
+		for sid, side := range first {
+			if side == start {
+				t.Players = append(t.Players, sid)
+			}
+		}
+		if len(t.Players) == 0 {
+			continue
+		}
+		sort.Strings(t.Players)
+		member := map[string]bool{}
+		for _, sid := range t.Players {
+			member[sid] = true
+		}
+		// The group's side in a round: the side most of its players had.
+		sideIn := func(n int) string {
+			ct, tt := 0, 0
+			for sid, side := range sides[n] {
+				if !member[sid] {
+					continue
+				}
+				if side == "CT" {
+					ct++
+				} else {
+					tt++
+				}
+			}
+			switch {
+			case ct > tt:
+				return "CT"
+			case tt > ct:
+				return "T"
+			}
+			return ""
+		}
+		for _, r := range rounds {
+			side := sideIn(r.Number)
+			if side == "" {
+				continue
+			}
+			if r.Winner != nil && *r.Winner == side {
+				t.Score++
+			}
+			if t.Name == "" {
+				t.Name = clans[r.Number][side]
+			}
+		}
+		out = append(out, t)
+	}
+	return out
 }

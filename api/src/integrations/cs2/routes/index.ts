@@ -25,6 +25,7 @@ import mapPoolRoutes from '../maps/poolRoutes';
 import matchConnectRoutes from './matchConnect';
 import playerProfileRoutes from './playerProfile';
 import demoAnalysisRoutes from './demoAnalysis';
+import demoImportRoutes from './demoImport';
 import matchPageRoutes from './matchPage';
 import radarRoutes from './radars';
 import highlightRoutes from './highlights';
@@ -136,6 +137,13 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Demo analysis',
     description:
       'The worker container reads stored demos after the match: its job queue, and each map\'s rounds, kills and 2D replay.',
+  },
+  {
+    // Admin only (requireAuth on each).
+    prefix: '/api/game/cs2',
+    router: demoImportRoutes,
+    title: 'Match import',
+    description: 'Import a match played elsewhere from its demos: teams, players and score come from the demos.',
   },
   {
     // Public: what a finished match's page shows.

@@ -139,7 +139,7 @@
       "testNeedsOn": "Turn sending on (and save the server) before testing.",
       "testSent": "Sent to {{to}}. Check the inbox and the spam folder.",
       "testFailed": "The test email could not be sent"
-      },
+    },
     "title": "Settings",
     "intro": "The platform's own settings. Each game keeps its settings with it in the menu.",
     "tabs": {
@@ -669,7 +669,8 @@
       "all": "All kinds",
       "tournament": "Tournament",
       "standalone": "Standalone",
-      "matchmaking": "Matchmaking"
+      "matchmaking": "Matchmaking",
+      "imported": "Imported"
     },
     "withDemos": "With demos",
     "none": "No matches have been played yet.",
@@ -678,6 +679,37 @@
     "deleted": "tournament deleted",
     "noDemo": "No demo",
     "demo": "Demo",
-    "map": "Map {{n}}"
+    "map": "Map {{n}}",
+    "import": "Import a match"
+  },
+  "importMatch": {
+    "title": "Import a match",
+    "subtitle": "Add a match played somewhere else from its demos. The teams, players and score are read from the demos, then the match gets stats, a 2D replay and highlights like any other.",
+    "event": "Where it was played",
+    "eventHelp": "Optional, for example the event's name.",
+    "files": "Demos",
+    "filesHelp": "One CS2 demo (.dem) per map, in the order the maps were played.",
+    "choose": "Choose demos",
+    "moveUp": "Move {{name}} up",
+    "moveDown": "Move {{name}} down",
+    "remove": "Remove {{name}}",
+    "start": "Import",
+    "uploading": "Uploading map {{n}} ({{percent}}%)",
+    "tooMany": "Up to {{max}} demos, one per map.",
+    "notDemo": "{{name}} is not a .dem file.",
+    "error": "The import stopped: {{error}}",
+    "progress": "Progress",
+    "mapN": "Map {{n}}",
+    "state": {
+      "uploading": "Uploading",
+      "waiting": "Waiting for the demo worker",
+      "running": "Reading the demo",
+      "done": "Done",
+      "failed": "The demo could not be read"
+    },
+    "teams": "{{team1}} vs {{team2}}",
+    "doneAll": "Imported. Highlights are recorded next if a highlight recorder is connected.",
+    "openMatch": "Open the match",
+    "another": "Import another"
   }
 }

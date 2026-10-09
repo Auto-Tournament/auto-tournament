@@ -930,7 +930,7 @@ router.get('/', async (req: Request, res: Response) => {
  *   get:
  *     tags:
  *       - Matches
- *     summary: Every played match (tournament, standalone, matchmaking), newest first, with its demos
+ *     summary: Every played match (tournament, standalone, matchmaking, imported), newest first, with its demos
  *     description: |
  *       Admin only. Includes the matches of deleted tournaments (their name is
  *       kept as `tournamentName`). `demos` lists the maps that have a demo; a
@@ -1021,7 +1021,14 @@ router.get('/played', requireAuth, async (req: Request, res: Response) => {
       return {
         slug: r.slug,
         game: r.game,
-        kind: r.source === 'matchmaking' ? 'matchmaking' : r.tournament_id !== null || r.tournament_name ? 'tournament' : 'standalone',
+        kind:
+          r.source === 'matchmaking'
+            ? 'matchmaking'
+            : r.source === 'import'
+              ? 'imported'
+              : r.tournament_id !== null || r.tournament_name
+                ? 'tournament'
+                : 'standalone',
         tournamentId: r.tournament_id,
         tournamentName: r.tournament_name,
         round: r.round,

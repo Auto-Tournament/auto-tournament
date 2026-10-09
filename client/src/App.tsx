@@ -24,6 +24,7 @@ import Bracket from './pages/Bracket';
 import Matches from './pages/Matches';
 import Disputes from './pages/Disputes';
 import PlayedMatches from './pages/PlayedMatches';
+import ImportMatch from './pages/ImportMatch';
 import Modules from './pages/Modules';
 import AdminTools from './pages/AdminTools';
 import Settings from './pages/Settings';
@@ -581,6 +582,7 @@ function AppRoutes() {
             answered that way than with a 404. */}
         <Route path={adminRoute(paths.disputes)} element={<Disputes />} />
         <Route path={adminRoute(paths.playedMatches)} element={<PlayedMatches />} />
+        <Route path={adminRoute(paths.importMatch)} element={<ImportMatch />} />
         <Route path={adminRoute(paths.modules)} element={<Modules />} />
         <Route path={adminRoute(paths.admin)} element={<AdminTools />} />
         <Route path={adminRoute(paths.settings)} element={<Settings />} />
