@@ -350,9 +350,15 @@ jobs:
           } >> .env
 
       # Postgres needs nothing from the image build, so pull it and let it get
-      # healthy while the rest of the setup runs.
+      # healthy while the rest of the setup runs. Sixteen shards pull at once
+      # and the registry may answer "rate exceeded": try again, a little later.
       - name: Start Postgres
-        run: $COMPOSE up -d postgres
+        run: |
+          for i in 1 2 3 4 5 6; do
+            $COMPOSE up -d postgres && exit 0
+            sleep $((i * 15))
+          done
+          exit 1
 
       - uses: actions/setup-node@v4
         with:
