@@ -639,6 +639,10 @@
       "description": "How a player joins a CS2 match: its server, status and current map."
     },
     {
+      "name": "Match import",
+      "description": "Import a match played elsewhere from its demos: teams, players and score come from the demos."
+    },
+    {
       "name": "Match page",
       "description": "A finished match's scoreboard over its maps, and its highlight clips."
     },
@@ -4835,6 +4839,145 @@
         ]
       }
     },
+    "/api/game/cs2/imports": {
+      "post": {
+        "tags": [
+          "Match import"
+        ],
+        "summary": "Start importing a match from its demos (admin)",
+        "description": "Creates the match; then upload each map's demo. `maps`: how many\ndemos (1 to 5), `event`: where it was played (optional).\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "maps": {
+                    "type": "integer"
+                  },
+                  "event": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "`slug`: the new match"
+          },
+          "400": {
+            "description": "No or too many maps"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/imports/{slug}": {
+      "get": {
+        "tags": [
+          "Match import"
+        ],
+        "summary": "An import's progress (admin)",
+        "responses": {
+          "200": {
+            "description": "The teams found so far and each map: uploaded, analysis status, score"
+          },
+          "404": {
+            "description": "No imported match with that id"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/imports/{slug}/maps/{mapNumber}": {
+      "put": {
+        "tags": [
+          "Match import"
+        ],
+        "summary": "Upload one map's demo, a piece at a time (admin)",
+        "description": "A piece of the .dem file as the body (application/octet-stream, up\nto 64 MB), in order: `offset` is where it starts, `total` the file's\nsize. `mapNumber` is 0-based, in the order the maps were played. With\nthe last piece the map's name is read from the demo and its analysis\nis queued for the worker.\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "total",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mapNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`received` bytes so far; `done` with the last piece, then `map`"
+          },
+          "400": {
+            "description": "Not a CS2 demo, or no such map number"
+          },
+          "404": {
+            "description": "No imported match with that id"
+          },
+          "409": {
+            "description": "Not the next piece (the error says which byte comes next)"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/matches/{slug}/connect": {
       "get": {
         "tags": [
@@ -8175,7 +8318,7 @@
         "tags": [
           "Matches"
         ],
-        "summary": "Every played match (tournament, standalone, matchmaking), newest first, with its demos",
+        "summary": "Every played match (tournament, standalone, matchmaking, imported), newest first, with its demos",
         "description": "Admin only. Includes the matches of deleted tournaments (their name is\nkept as `tournamentName`). `demos` lists the maps that have a demo; a\nmatch-level demo is map 0.\n",
         "security": [
           {

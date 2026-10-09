@@ -139,7 +139,7 @@
       "testNeedsOn": "Slå på sending (og lagre serveren) før du tester.",
       "testSent": "Sendt til {{to}}. Sjekk innboksen og søppelpost.",
       "testFailed": "Test-e-posten kunne ikke sendes"
-      },
+    },
     "title": "Innstillinger",
     "intro": "Plattformens egne innstillinger. Hvert spill har sine innstillinger i menyen.",
     "tabs": {
@@ -669,7 +669,8 @@
       "all": "Alle typer",
       "tournament": "Turnering",
       "standalone": "Frittstående",
-      "matchmaking": "Matchmaking"
+      "matchmaking": "Matchmaking",
+      "imported": "Importert"
     },
     "withDemos": "Med demoer",
     "none": "Ingen kamper er spilt ennå.",
@@ -678,6 +679,37 @@
     "deleted": "turneringen er slettet",
     "noDemo": "Ingen demo",
     "demo": "Demo",
-    "map": "Kart {{n}}"
+    "map": "Kart {{n}}",
+    "import": "Importer en kamp"
+  },
+  "importMatch": {
+    "title": "Importer en kamp",
+    "subtitle": "Legg til en kamp som ble spilt et annet sted, fra demoene. Lagene, spillerne og resultatet leses fra demoene, og så får kampen statistikk, 2D-replay og høydepunkter som alle andre.",
+    "event": "Hvor den ble spilt",
+    "eventHelp": "Valgfritt, for eksempel navnet på arrangementet.",
+    "files": "Demoer",
+    "filesHelp": "Én CS2-demo (.dem) per kart, i rekkefølgen kartene ble spilt.",
+    "choose": "Velg demoer",
+    "moveUp": "Flytt {{name}} opp",
+    "moveDown": "Flytt {{name}} ned",
+    "remove": "Fjern {{name}}",
+    "start": "Importer",
+    "uploading": "Laster opp kart {{n}} ({{percent}} %)",
+    "tooMany": "Opptil {{max}} demoer, én per kart.",
+    "notDemo": "{{name}} er ikke en .dem-fil.",
+    "error": "Importen stoppet: {{error}}",
+    "progress": "Fremdrift",
+    "mapN": "Kart {{n}}",
+    "state": {
+      "uploading": "Laster opp",
+      "waiting": "Venter på demo-workeren",
+      "running": "Leser demoen",
+      "done": "Ferdig",
+      "failed": "Demoen kunne ikke leses"
+    },
+    "teams": "{{team1}} mot {{team2}}",
+    "doneAll": "Importert. Høydepunktene tas opp etterpå hvis en opptaker er koblet til.",
+    "openMatch": "Åpne kampen",
+    "another": "Importer en til"
   }
 }

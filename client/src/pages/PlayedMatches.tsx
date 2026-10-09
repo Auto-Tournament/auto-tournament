@@ -15,12 +15,12 @@ import {
   Select,
   Typography,
 } from '@mui/material';
-import { DownloadSimpleIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
+import { DownloadSimpleIcon, FileArrowUpIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { PageHead, Panel, Row, RowList } from '../components/common/ui';
 import { pageTitle } from '../utils/pageTitle';
 import { api } from '../utils/api';
-import { matchDetailsPath } from '../paths';
+import { matchDetailsPath, paths } from '../paths';
 import { Link as RouterLink } from 'react-router-dom';
 import { fontMono, radii, textSize, tokens } from '../theme/tokens';
 
@@ -29,7 +29,7 @@ const { color } = tokens;
 interface PlayedMatch {
   slug: string;
   game: string | null;
-  kind: 'tournament' | 'standalone' | 'matchmaking';
+  kind: 'tournament' | 'standalone' | 'matchmaking' | 'imported';
   tournamentId: number | null;
   tournamentName: string | null;
   completedAt: number | null;
@@ -92,17 +92,28 @@ export default function PlayedMatches() {
           subtitle={t('playedMatches.subtitle')}
           sx={{ mb: 0 }}
           actions={
-            withDemo.length > 0 ? (
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               <Button
-                component="a"
-                href={archiveUrl}
-                variant="contained"
-                startIcon={<DownloadSimpleIcon />}
-                data-testid="played-download-all"
+                component={RouterLink}
+                to={paths.importMatch}
+                variant="outlined"
+                startIcon={<FileArrowUpIcon />}
+                data-testid="played-import"
               >
-                {t('playedMatches.downloadAll', { count: withDemo.length })}
+                {t('playedMatches.import')}
               </Button>
-            ) : undefined
+              {withDemo.length > 0 && (
+                <Button
+                  component="a"
+                  href={archiveUrl}
+                  variant="contained"
+                  startIcon={<DownloadSimpleIcon />}
+                  data-testid="played-download-all"
+                >
+                  {t('playedMatches.downloadAll', { count: withDemo.length })}
+                </Button>
+              )}
+            </Box>
           }
         />
 
@@ -144,7 +155,7 @@ export default function PlayedMatches() {
             }}
             sx={{ borderRadius: radii.pill, fontSize: textSize.sm }}
           >
-            {(['all', 'tournament', 'standalone', 'matchmaking'] as const).map((k) => (
+            {(['all', 'tournament', 'standalone', 'matchmaking', 'imported'] as const).map((k) => (
               <MenuItem key={k} value={k}>
                 {t(`playedMatches.kind.${k}`)}
               </MenuItem>
@@ -223,7 +234,9 @@ export default function PlayedMatches() {
                       {m.kind === 'tournament'
                         ? (m.tournamentName ?? t('playedMatches.kind.tournament')) +
                           (m.tournamentId === null ? ` · ${t('playedMatches.deleted')}` : '')
-                        : t(`playedMatches.kind.${m.kind}`)}
+                        : m.kind === 'imported' && m.tournamentName
+                          ? `${t('playedMatches.kind.imported')} · ${m.tournamentName}`
+                          : t(`playedMatches.kind.${m.kind}`)}
                     </Typography>
                   </Box>
                   <Box sx={{ fontFamily: fontMono, fontSize: textSize.sm, color: color.ink2 }}>
