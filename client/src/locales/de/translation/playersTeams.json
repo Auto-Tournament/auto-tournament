@@ -661,5 +661,14 @@
       "matches": "Matches",
       "winRate": "Win rate"
     }
+  },
+  "matchPage": {
+    "notFound": "This match does not exist.",
+    "tbd": "To be decided",
+    "winner": "Winner",
+    "scoreLabel": "{{a}} maps to {{b}}",
+    "maps": "Maps",
+    "mapN": "Map {{n}}",
+    "overtime": "overtime"
   }
 }

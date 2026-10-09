@@ -173,7 +173,32 @@
       "id": "golden-replay-a",
       "name": "Replay Alpha",
       "tag": null
-    }
+    },
+    "mapScores": [
+      {
+        "mapNumber": 0,
+        "map": "de_ancient",
+        "team1Score": 13,
+        "team2Score": 9,
+        "winner": "team1"
+      },
+      {
+        "mapNumber": 1,
+        "map": "de_anubis",
+        "team1Score": 11,
+        "team2Score": 13,
+        "winner": "team2"
+      },
+      {
+        "mapNumber": 2,
+        "map": "de_nuke",
+        "team1Score": 13,
+        "team2Score": 7,
+        "winner": "team1"
+      }
+    ],
+    "tournament": "Golden Replay Tournament",
+    "winnerSide": "team1"
   },
   "players": {
     "76561199000070001": {

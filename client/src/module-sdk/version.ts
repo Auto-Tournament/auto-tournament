@@ -139,5 +139,9 @@
  * 0.2.16 (additive): `HighlightPlayerProps.crowd` (a reel's crowd track, played
  * beside it) and `chapterInfo` with the `ChapterInfo` type (what the scrubber
  * shows when hovered).
+ *
+ * 0.2.17 (additive): `matchPanels.publicView` (the game's part of a finished
+ * match's public page: its reels, scoreboard and highlights) with the
+ * `MatchPublicPanelProps` / `PublicMatch` types.
  */
-export const CLIENT_API_VERSION = '0.2.16';
+export const CLIENT_API_VERSION = '0.2.17';

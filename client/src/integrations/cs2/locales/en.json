@@ -2131,5 +2131,14 @@
     "restarts_one": "{{count}} restart in 24 h",
     "restarts_other": "{{count}} restarts in 24 h",
     "offlineFor": "Offline for {{time}}"
+  },
+  "matchPage": {
+    "reelLead": "Their plays in the order they happened. Pick a song in the player, then share or download it.",
+    "inThisReel": "In this reel",
+    "openReel": "Open in the watch page",
+    "scoreboard": "Scoreboard",
+    "player": "Player",
+    "openingKills": "Opening kills",
+    "highlights": "Highlights"
   }
 }

@@ -96,6 +96,30 @@ export interface MatchAllocationPanelProps {
  * The panel reads what it needs by match slug. Core reports what it says
  * through its own banner: `onSuccess` / `onError` with a finished message.
  */
+/** A finished match as its public page has it (core's GET /api/matches/:slug). */
+export interface PublicMatch {
+  slug: string;
+  status: string;
+  team1: { id: string | null; name: string | null; tag: string | null } | null;
+  team2: { id: string | null; name: string | null; tag: string | null } | null;
+  /** Which side won (null: undecided). */
+  winnerSide: 'team1' | 'team2' | null;
+  mapScores: Array<{
+    mapNumber: number;
+    map: string | null;
+    team1Score: number;
+    team2Score: number;
+    winner: string | null;
+  }>;
+  completedAt?: number | null;
+  tournament?: string | null;
+}
+
+export interface MatchPublicPanelProps {
+  matchSlug: string;
+  match: PublicMatch;
+}
+
 export interface MatchAdminPanelProps {
   matchSlug: string;
   /** Re-read when the match itself moves (loaded → live …). */
@@ -1010,6 +1034,12 @@ export interface ClientGameIntegration {
      * owns "restore to round N", so core's RCON restore button is hidden.
      */
     adminMatchView?: ComponentType<MatchAdminPanelProps>;
+    /**
+     * A finished match's public page (client API 0.2.17), under the result
+     * core shows: what the game recorded of it. CS2: the team reels, the
+     * scoreboard and the highlight clips.
+     */
+    publicView?: ComponentType<MatchPublicPanelProps>;
   };
 
   /** Team page: an admin-only control this integration needs (D7: captains). */

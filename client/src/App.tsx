@@ -27,6 +27,7 @@ import TeamMatch from './pages/TeamMatch';
 import TeamProfile from './pages/TeamProfile';
 import FindPlayer from './pages/FindPlayer';
 import PlayerProfile from './pages/PlayerProfile';
+import MatchPage from './pages/MatchPage';
 import TournamentLeaderboard from './pages/TournamentLeaderboard';
 import TournamentOverview from './pages/TournamentOverview';
 import TournamentPage, { LegacyLeaderboardRedirect, TournamentModuleTab } from './pages/TournamentPage';
@@ -404,6 +405,17 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly={false}>
             <FindPlayer />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={paths.match}
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <Box minHeight="100vh" bgcolor="transparent">
+              <TopNavBar />
+              <MatchPage />
+            </Box>
           </ProtectedRoute>
         }
       />
