@@ -1263,6 +1263,21 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
 `,
   },
   {
+    // Declared before 032 and 033 on purpose. 3.0.0-beta.72 shipped it right
+    // after 031, and instances on that version applied it before 032 and 033
+    // existed; migrations are append only (moduleMigrations.ts), so 032 and 033
+    // come after it and run there on the next start. Installs that applied
+    // 031-035 in id order have nothing left to run, whichever way these sit.
+    // The size and frame rate each clip and match reel was made at ("1440p120"),
+    // set when a recorder takes it: the admin's Clips list shows which no longer
+    // match the settings, to make them again. NULL: made before this was kept.
+    id: CS2_MADE_WITH_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS made_with TEXT;
+    ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS made_with TEXT;
+`,
+  },
+  {
     // 1 = a Ready Up server enrolled with this key is linked for matches on
     // its first hello. `auto_linked_at` records that link, so it happens once:
     // an admin's unlink or deleting the server afterwards sticks.
@@ -1278,16 +1293,6 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     id: CS2_FLEET_KEY_SKINS_MIGRATION_ID,
     up: `
     ALTER TABLE cs2_fleet_enrollment_keys ADD COLUMN IF NOT EXISTS skins INTEGER NOT NULL DEFAULT 0;
-`,
-  },
-  {
-    // The size and frame rate each clip and match reel was made at ("1440p120"),
-    // set when a recorder takes it: the admin's Clips list shows which no longer
-    // match the settings, to make them again. NULL: made before this was kept.
-    id: CS2_MADE_WITH_MIGRATION_ID,
-    up: `
-    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS made_with TEXT;
-    ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS made_with TEXT;
 `,
   },
   {
