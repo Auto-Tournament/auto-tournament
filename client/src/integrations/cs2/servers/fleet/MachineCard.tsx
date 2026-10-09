@@ -239,7 +239,7 @@ export function MachineCard({
           >
             {host.name}
           </ButtonBase>
-          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.75rem', color: tone, whiteSpace: 'nowrap' }}>
+          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.75rem', color: tone === color.muted ? color.ink2 : tone, whiteSpace: 'nowrap' }}>
             <Box aria-hidden sx={{ width: 8, height: 8, borderRadius: radii.pill, bgcolor: tone, boxShadow: online ? `0 0 0 3px ${withAlpha(tone, 0.2)}` : 'none' }} />
             {statusText}
           </Box>

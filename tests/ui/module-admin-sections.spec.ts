@@ -44,8 +44,8 @@ test.describe('Module sections on Admin tools and Settings', () => {
       await expect(page.getByTestId('admin-tools-recovery')).toBeVisible();
       await expect(page.getByTestId('admin-tools-logs')).toBeVisible();
 
-      // CS2 arrives at runtime and adds nothing here any more.
-      await expect(page.getByTestId('manage-rail-servers')).toBeVisible({ timeout: 30000 });
+      // CS2 adds nothing here any more (its RCON console went with the RCON servers).
+      await expect(page.getByTestId('admin-tools-module-cs2')).toHaveCount(0);
       await expect(page.getByTestId('cs2-admin-tools')).toHaveCount(0);
     }
   );
