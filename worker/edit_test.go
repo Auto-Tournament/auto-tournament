@@ -179,7 +179,7 @@ func TestAudioFilterIntroGain(t *testing.T) {
 }
 
 func TestFocusFilterStreams(t *testing.T) {
-	f := focusFilter("base", "focused", []float64{0, 40, 80}, 2560)
+	f := focusFilter("base", "focused", []float64{0, 40, 80}, 2560, "")
 	// One effect branch, no trims: a branch starting late made the joining
 	// overlay hold every frame until it began (a reel's last card, ~30 GB).
 	if strings.Contains(f, "trim=") || strings.Count(f, "split") != 1 {
