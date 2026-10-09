@@ -45,6 +45,15 @@ export function isLocalPlayerId(id: string | null | undefined): boolean {
 
 export const STEAM_ID_RE = /^\d{17}$/;
 
+/**
+ * An account without Steam: a local admin (`local-<username>`) or one a
+ * sign-in method made on its own (`acc_<hex>`: OpenID Connect, Discord, ...).
+ * Its id is not a Steam ID, so Steam is not connected and can be.
+ */
+export function isSteamlessPlayerId(id: string | null | undefined): boolean {
+  return typeof id === 'string' && id.length > 0 && !STEAM_ID_RE.test(id);
+}
+
 interface PlayerRow {
   id: string;
   uid: string;
@@ -165,7 +174,7 @@ export async function connectSteamToLocalAccount(
   mode: 'attach' | 'merge',
   profile: { name?: string | null; avatarUrl?: string | null } = {}
 ): Promise<{ playerId: string; moved: Record<string, number> }> {
-  if (!isLocalPlayerId(localId) || !STEAM_ID_RE.test(steamId)) throw new SteamLinkError('not_local');
+  if (!isSteamlessPlayerId(localId) || !STEAM_ID_RE.test(steamId)) throw new SteamLinkError('not_local');
   return db.withClient(async (client) => {
     try {
       await client.query('BEGIN');

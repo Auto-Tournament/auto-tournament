@@ -39,7 +39,7 @@ import {
   SteamLinkError,
   STEAM_ID_RE,
   connectSteamToLocalAccount,
-  isLocalPlayerId,
+  isSteamlessPlayerId,
 } from '../services/localAccountSteamLink';
 import { isLocalReauthFresh, markLocalReauth } from '../utils/localReauth';
 
@@ -1236,12 +1236,14 @@ export async function beginSteamLink(req: Request, res: Response): Promise<boole
     });
     return false;
   }
-  if (!isLocalPlayerId(identity.realSteamId) || !(await playerService.getPlayerById(identity.realSteamId))) {
+  if (!isSteamlessPlayerId(identity.realSteamId) || !(await playerService.getPlayerById(identity.realSteamId))) {
     // Every other account already is a Steam account.
     res.status(400).json({ success: false, error: 'This account already signs in with Steam' });
     return false;
   }
-  if (!isLocalReauthFresh(req, identity.realSteamId)) {
+  // An account with a local admin login re-confirms its password first (one
+  // a sign-in method made, acc_*, has no password to confirm).
+  if ((await localAdminService.findByPlayerId(identity.realSteamId)) && !isLocalReauthFresh(req, identity.realSteamId)) {
     linkResultRedirect(req, res, 'steam', 'reauth');
     return false;
   }

@@ -38,7 +38,7 @@ import { adminAccessSettings } from '../services/adminAccessSettings';
 import {
   SteamLinkError,
   connectSteamToLocalAccount,
-  isLocalPlayerId,
+  isSteamlessPlayerId,
 } from '../services/localAccountSteamLink';
 import { isLocalReauthFresh } from '../utils/localReauth';
 import { clearPendingSteamMerge, readPendingSteamMerge, switchSessionAccount } from './auth';
@@ -255,7 +255,7 @@ async function connectionsResponse(req: Request, account: PlayerAccount, isImper
   const enabled = await enabledSignInProviders();
   const enabledIds = [...enabled.keys()];
   // A local admin account created on /setup has no Steam identity until it connects one.
-  const hasSteam = !isLocalPlayerId(account.steamId);
+  const hasSteam = !isSteamlessPlayerId(account.steamId);
   const linkedProviders = identities.map((i) => i.provider);
   if (localLogin) linkedProviders.push('local');
   const removable = (provider: string) =>
@@ -506,7 +506,7 @@ router.post('/connections/:provider/remove', async (req: Request, res: Response)
     if (!account) return;
 
     const { provider } = req.params;
-    const hasSteam = !isLocalPlayerId(account.steamId);
+    const hasSteam = !isSteamlessPlayerId(account.steamId);
     if (provider === 'steam') {
       return res.status(400).json({
         success: false,
@@ -588,7 +588,10 @@ router.post('/connections/steam/merge', async (req: Request, res: Response) => {
     if (!account) return;
     const pending = readPendingSteamMerge(req, account.steamId);
     if (!pending) return res.status(404).json({ success: false, error: 'Nothing to merge. Connect Steam again.' });
-    if (!isLocalReauthFresh(req, account.steamId)) return reauthRequired(res);
+    // Only an account with a local admin login has a password to re-confirm.
+    if ((await localAdminService.findByPlayerId(account.steamId)) && !isLocalReauthFresh(req, account.steamId)) {
+      return reauthRequired(res);
+    }
 
     try {
       const result = await connectSteamToLocalAccount(account.steamId, pending.steamId, 'merge');
