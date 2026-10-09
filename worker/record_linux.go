@@ -989,12 +989,7 @@ func (r *recorder) download(ctx context.Context, matchSlug string, mapNumber int
 // upload sends a video to the platform, with the headers that describe it
 // (X-AT-Markers on a clip, X-AT-Clips on a reel).
 func (r *recorder) upload(ctx context.Context, path, route string, headers map[string]string) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	res, err := r.doWith(ctx, http.MethodPut, route, "video/mp4", f, headers)
+	res, err := r.sendFile(ctx, path, route, "video/mp4", headers)
 	if err != nil {
 		return err
 	}
@@ -1118,12 +1113,7 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 
 // uploadClip sends a clip and says whether the platform turned it down.
 func (r *recorder) uploadClip(ctx context.Context, path, route string, headers map[string]string) (bool, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return false, err
-	}
-	defer f.Close()
-	res, err := r.doWith(ctx, http.MethodPut, route, "video/mp4", f, headers)
+	res, err := r.sendFile(ctx, path, route, "video/mp4", headers)
 	if err != nil {
 		return false, err
 	}
@@ -1312,7 +1302,26 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 	currentJobLog.take()
 	var keep awake
 	defer keep.release()
+	waitingForDisplay := false
 	for ctx.Err() == nil {
+		// No desktop session yet (the PC booted and no one has signed in, or
+		// the container started before the session): every job would fail on
+		// the display, so wait for it instead of taking work.
+		if !displayReady() {
+			if !waitingForDisplay {
+				log.Printf("waiting for the desktop session (no %s): sign in on the PC", displaySocket())
+				waitingForDisplay = true
+			}
+			select {
+			case <-ctx.Done():
+			case <-time.After(poll):
+			}
+			continue
+		}
+		if waitingForDisplay {
+			log.Printf("desktop session is up")
+			waitingForDisplay = false
+		}
 		j, reel, redress, err := c.claimRecording(ctx)
 		if err != nil {
 			log.Printf("cannot reach the platform: %v", err)
@@ -1669,4 +1678,27 @@ func markCheers(args []string) error {
 		log.Printf("%s: kills %v, reactions %v", file, m.Kills, m.Reactions)
 	}
 	return nil
+}
+
+// displaySocket is the Wayland socket gamescope connects to, or "" when the
+// environment names none (gamescope then makes its own headless display).
+func displaySocket() string {
+	name := os.Getenv("WAYLAND_DISPLAY")
+	if name == "" {
+		return ""
+	}
+	if filepath.IsAbs(name) {
+		return name
+	}
+	return filepath.Join(env("XDG_RUNTIME_DIR", fmt.Sprintf("/run/user/%d", os.Getuid())), name)
+}
+
+// displayReady: the desktop's Wayland socket is there (or none is wanted).
+func displayReady() bool {
+	sock := displaySocket()
+	if sock == "" {
+		return true
+	}
+	_, err := os.Stat(sock)
+	return err == nil
 }

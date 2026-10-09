@@ -459,48 +459,82 @@ export function playersPerRecorder(players: number, idle: number): number {
 }
 
 /**
- * Hand the recorder waiting moments of the map with the best one: all its
- * players when it is the only idle recorder, else an even share of them
- * (whole players, best moments first), so idle recorders split a map. One
- * CS2 session records the job (recorders from version 4).
+ * A job's share of a map's waiting moments (pure: tested on its own): about
+ * `waiting / recorders` of them, whole players first (best first); a player
+ * with more than the share gives their best that many, the rest wait for the
+ * next job. `rows` are the map's waiting moments, best player first and each
+ * player's best first.
  */
-export async function claimMapJob(recorder: string, idle = 1): Promise<MapRecordJob | null> {
+export function pickChunk(rows: { id: number; playerId: string }[], recorders: number): number[] {
+  const share = Math.max(1, Math.ceil(rows.length / Math.max(1, recorders)));
+  const byPlayer = new Map<string, number[]>();
+  for (const r of rows) byPlayer.set(r.playerId, [...(byPlayer.get(r.playerId) ?? []), r.id]);
+  const out: number[] = [];
+  for (const ids of byPlayer.values()) {
+    if (out.length === 0 && ids.length >= share) return ids.slice(0, share);
+    if (out.length + ids.length > share) continue;
+    out.push(...ids);
+    if (out.length === share) break;
+  }
+  return out;
+}
+
+/** Recorders that can take work now or soon: asked in the last 15 minutes, or at a job. */
+async function onlineRecorders(): Promise<number> {
+  const row = await db.queryOneAsync<{ n: number | string }>(
+    `SELECT COUNT(*) AS n FROM cs2_recorders r
+      WHERE (r.paused_until IS NULL OR r.paused_until < EXTRACT(EPOCH FROM NOW()))
+        AND (r.last_seen > EXTRACT(EPOCH FROM NOW()) - 900
+             OR EXISTS (SELECT 1 FROM cs2_highlights h WHERE h.recorder = r.name AND h.status = 'recording'))`
+  );
+  return Math.max(1, Number(row?.n ?? 1));
+}
+
+/**
+ * Hand the recorder its share of the next map's waiting moments, recorded in
+ * one CS2 session (recorders from version 4). The next map is the newest
+ * match's (a tournament's before an imported one), so players see their
+ * clips soon after their match; within it, map by map. The share is the
+ * map's waiting moments over the recorders online, so every recorder takes
+ * part of a map, a second one can join a map mid-way, and a lone recorder
+ * still records a whole map in one session.
+ */
+export async function claimMapJob(recorder: string): Promise<MapRecordJob | null> {
   const now = Math.floor(Date.now() / 1000);
   const waiting = "(status = 'pending' OR (status = 'recording' AND claimed_at < ?))";
   // A moment whose last take by this recorder failed the frame check goes to
   // another recorder first (demos/recorders.ts).
   const best = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
-    `SELECT match_slug, map_number FROM cs2_highlights WHERE ${waiting}
-      ORDER BY (avoid_recorder IS NOT NULL AND avoid_recorder = ?), score DESC, id LIMIT 1`,
+    `SELECT h.match_slug, h.map_number FROM cs2_highlights h
+       LEFT JOIN matches m ON m.slug = h.match_slug
+      WHERE ${waiting.replace(/status|claimed_at/g, (c) => `h.${c}`)}
+      ORDER BY (h.avoid_recorder IS NOT NULL AND h.avoid_recorder = ?),
+               (m.tournament_id IS NOT NULL) DESC,
+               (SELECT MAX(x.id) FROM cs2_highlights x WHERE x.match_slug = h.match_slug) DESC,
+               h.map_number, h.score DESC, h.id
+      LIMIT 1`,
     [now - STALE_SECONDS, recorder.slice(0, 120)]
   );
   if (!best) return null;
   await trimToPerPlayer(best.match_slug, Number(best.map_number));
-  const waitingPlayers = await db.queryAsync<{ player_id: string }>(
-    `SELECT player_id FROM cs2_highlights WHERE match_slug = ? AND map_number = ? AND ${waiting}
-      GROUP BY player_id ORDER BY MAX(score) DESC, player_id`,
+  const mapRows = await db.queryAsync<{ id: number; player_id: string }>(
+    `SELECT id, player_id FROM cs2_highlights WHERE match_slug = ? AND map_number = ? AND ${waiting}
+      ORDER BY MAX(score) OVER (PARTITION BY player_id) DESC, player_id, score DESC, id`,
     [best.match_slug, best.map_number, now - STALE_SECONDS]
   );
-  const take = waitingPlayers
-    .slice(0, playersPerRecorder(waitingPlayers.length, idle))
-    .map((r) => r.player_id);
-  if (take.length === 0) return null;
+  const ids = pickChunk(
+    mapRows.map((r) => ({ id: Number(r.id), playerId: r.player_id })),
+    await onlineRecorders()
+  );
+  if (ids.length === 0) return null;
   const quality = await readHighlightQuality();
   const rows = await db.queryAsync<MomentRow>(
     `UPDATE cs2_highlights SET status = 'recording', recorder = ?, made_with = ?, claimed_at = ?, attempts = attempts + 1
       WHERE id IN (SELECT id FROM cs2_highlights
-                    WHERE match_slug = ? AND map_number = ? AND player_id IN (${take.map(() => '?').join(', ')}) AND ${waiting}
+                    WHERE id IN (${ids.map(() => '?').join(', ')}) AND ${waiting}
                     FOR UPDATE SKIP LOCKED)
       RETURNING id, match_slug, map_number, player_id, kind, title, round, score, start_tick, end_tick, slowmo_tick, kill_ticks`,
-    [
-      recorder.slice(0, 120),
-      qualityLabel(quality),
-      now,
-      best.match_slug,
-      best.map_number,
-      ...take,
-      now - STALE_SECONDS,
-    ]
+    [recorder.slice(0, 120), qualityLabel(quality), now, ...ids, now - STALE_SECONDS]
   );
   if (rows.length === 0) return null;
   const byPlayer = new Map<string, MomentRow[]>();
