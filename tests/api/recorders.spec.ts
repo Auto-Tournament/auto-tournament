@@ -258,8 +258,26 @@ test('a second recorder joins a map mid-way, newest match first', TAGS, async ({
   };
   const stamp = Date.now();
   const recorders = [`spec-share-a-${stamp}`, `spec-share-b-${stamp}`];
-  // Both say hello first, so both count as online.
-  for (const r of recorders) await ask(r);
+  // Both say hello first, so both count as online, and report a benchmark so
+  // they are handed work rather than a benchmark.
+  for (const r of recorders) {
+    await ask(r);
+    await request.post('/api/game/cs2/recorder/benchmark', {
+      data: {
+        recorder: r,
+        tries: [
+          {
+            gamescopeHz: 120,
+            seconds: 60,
+            captureFps: 118,
+            repeatPct: 0.4,
+            jumpPct: 1.4,
+            ok: true,
+          },
+        ],
+      },
+    });
+  }
   const a = await claim(recorders[0]);
   // The newest match goes first.
   expect(a?.matchSlug).toBe(slug);
