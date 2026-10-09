@@ -5,6 +5,7 @@ import {
   parseClipStarts,
   parseMarkers,
   pickChunk,
+  speedShare,
   pickMoments,
   pickSeriesClips,
   playersPerRecorder,
@@ -277,15 +278,29 @@ test('a job takes its share of a map: whole players first, best first', { tag: [
     ...[8, 9].map((id) => ({ id, playerId: 'c' })),
     { id: 10, playerId: 'd' },
   ];
-  // One recorder: the whole map in one session.
-  expect(pickChunk(rows, 1)).toEqual(rows.map((r) => r.id));
-  // Two: half (5). Player a alone fills it.
-  expect(pickChunk(rows, 2)).toEqual([1, 2, 3, 4, 5]);
-  // Five: two each; a gives their best two, the rest wait.
-  expect(pickChunk(rows, 5)).toEqual([1, 2]);
+  // The whole map in one session.
+  expect(pickChunk(rows, 10)).toEqual(rows.map((r) => r.id));
+  // Half (5). Player a alone fills it.
+  expect(pickChunk(rows, 5)).toEqual([1, 2, 3, 4, 5]);
+  // Two; a gives their best two, the rest wait.
+  expect(pickChunk(rows, 2)).toEqual([1, 2]);
   // A share of 3 from b (2), c (2), d (1): b fits, c would not, d does.
-  expect(pickChunk(rows.slice(5), 2)).toEqual([6, 7, 10]);
+  expect(pickChunk(rows.slice(5), 3)).toEqual([6, 7, 10]);
   expect(pickChunk([], 3)).toEqual([]);
+});
+
+test('a recorder takes its part of a map by benchmark speed', { tag: ['@api'] }, () => {
+  // Alone: the whole map.
+  expect(speedShare(10, 65, [65])).toBe(10);
+  // 65 s and 179 s: the fast one takes about three quarters.
+  expect(speedShare(10, 65, [65, 179])).toBe(8);
+  expect(speedShare(10, 179, [65, 179])).toBe(3);
+  // No benchmarks: an even split; one missing counts as the average.
+  expect(speedShare(10, null, [null, null])).toBe(5);
+  expect(speedShare(10, null, [null, 60])).toBe(5);
+  // Always at least one, never for an empty map.
+  expect(speedShare(1, 179, [65, 179, 179])).toBe(1);
+  expect(speedShare(0, 65, [65])).toBe(0);
 });
 
 test('a series reel waits for every map to have recorded clips', { tag: ['@api'] }, () => {
