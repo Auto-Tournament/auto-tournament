@@ -28,6 +28,7 @@ import { fontDisplay, textSize } from '../../theme/tokens';
 import { paths, playerProfilePath } from '../../paths';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
 import { NotificationBell } from '../social/NotificationBell';
+import { SiteSearch } from '../search/SiteSearch';
 import { useSocial } from '../social/socialStore';
 import { useModuleAccountMenuItems } from '../../hooks/useModuleAccountMenuItems';
 import { soundNotification } from '../../utils/soundNotification';
@@ -507,6 +508,8 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
             {t('nav.linkSteam')}
           </Button>
         )}
+
+        <SiteSearch />
 
         {playerSteamId && !impersonation && <NotificationBell viewerId={playerSteamId} />}
 

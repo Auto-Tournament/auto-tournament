@@ -859,5 +859,52 @@
       "leaderQueues": "Lederen starter søket"
     },
     "back": "Tilbake"
+  },
+  "search": {
+    "open": "Søk",
+    "placeholder": "Søk etter spillere, lag, turneringer, kamper…",
+    "placeholderAdmin": "Søk etter spillere, lag, turneringer, kamper og innstillinger…",
+    "hint": "Skriv minst to bokstaver. Ctrl K (⌘ K) eller / åpner søket fra hvor som helst.",
+    "none": "Fant ingenting for «{{q}}».",
+    "versus": "{{team1}} mot {{team2}}",
+    "groups": {
+      "pages": "Sider og innstillinger",
+      "players": "Spillere",
+      "teams": "Lag",
+      "tournaments": "Turneringer",
+      "matches": "Kamper"
+    },
+    "status": {
+      "setup": "Settes opp",
+      "in_progress": "Pågår",
+      "completed": "Ferdig"
+    },
+    "pages": {
+      "manage": "Administrer",
+      "tournaments": "Turneringer",
+      "newTournament": "Turneringsoppsett",
+      "playedMatches": "Alle kamper",
+      "importMatch": "Importer en kamp",
+      "teams": "Lag",
+      "players": "Spillere",
+      "reports": "Rapporter",
+      "templates": "Maler",
+      "ratings": "Rangering",
+      "modules": "Moduler",
+      "servers": "Servere",
+      "maps": "Kart og kartsett",
+      "skins": "Skins",
+      "matchRules": "Kampregler",
+      "highlights": "Høydepunkter",
+      "adminTools": "Adminverktøy",
+      "settings": "Innstillinger",
+      "settingsSite": "Innstillinger: nettsted og e-post",
+      "settingsSignIn": "Innstillinger: innlogging",
+      "settingsPlayers": "Innstillinger: spillere og tilgang",
+      "settingsWebhooks": "Innstillinger: webhooks",
+      "settingsLicense": "Innstillinger: lisens",
+      "settingsMatchmaking": "Innstillinger: matchmaking",
+      "settingsAdvanced": "Innstillinger: avansert"
+    }
   }
 }

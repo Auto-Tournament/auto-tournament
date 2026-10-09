@@ -859,5 +859,52 @@
       "leaderQueues": "El líder inicia la búsqueda"
     },
     "back": "Atrás"
+  },
+  "search": {
+    "open": "Search",
+    "placeholder": "Search players, teams, tournaments, matches…",
+    "placeholderAdmin": "Search players, teams, tournaments, matches and settings…",
+    "hint": "Type at least two letters. Ctrl K (⌘ K) or / opens this from anywhere.",
+    "none": "Nothing found for “{{q}}”.",
+    "versus": "{{team1}} vs {{team2}}",
+    "groups": {
+      "pages": "Pages and settings",
+      "players": "Players",
+      "teams": "Teams",
+      "tournaments": "Tournaments",
+      "matches": "Matches"
+    },
+    "status": {
+      "setup": "Being set up",
+      "in_progress": "Running",
+      "completed": "Finished"
+    },
+    "pages": {
+      "manage": "Manage",
+      "tournaments": "Tournaments",
+      "newTournament": "Tournament setup",
+      "playedMatches": "All matches",
+      "importMatch": "Import a match",
+      "teams": "Teams",
+      "players": "Players",
+      "reports": "Reports",
+      "templates": "Templates",
+      "ratings": "Ratings",
+      "modules": "Modules",
+      "servers": "Servers",
+      "maps": "Maps & map pools",
+      "skins": "Skins",
+      "matchRules": "Match rules",
+      "highlights": "Highlights",
+      "adminTools": "Admin tools",
+      "settings": "Settings",
+      "settingsSite": "Settings: site and email",
+      "settingsSignIn": "Settings: sign-in providers",
+      "settingsPlayers": "Settings: players and access",
+      "settingsWebhooks": "Settings: webhooks",
+      "settingsLicense": "Settings: license",
+      "settingsMatchmaking": "Settings: matchmaking",
+      "settingsAdvanced": "Settings: advanced"
+    }
   }
 }

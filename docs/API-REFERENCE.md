@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 639 of them, 405 behind auth —
+Every endpoint this API serves — 640 of them, 405 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -674,6 +674,14 @@ Players ranked by their rating in one game. Public.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/leaderboard` | public |
+
+### Search
+
+The search box: players, teams, tournaments and played matches by name.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/search` | public |
 
 ### Team directory
 
