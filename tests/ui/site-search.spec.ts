@@ -20,7 +20,10 @@ test.describe('Site search', () => {
   test('Ctrl K opens it', { tag: ['@ui'] }, async ({ page }) => {
     await ensureSignedIn(page);
     await page.goto('/');
+    // The shortcut listens once the top bar is there.
+    await expect(page.getByTestId('site-search-open')).toBeVisible({ timeout: 15000 });
     await page.keyboard.press('Control+k');
+    await expect(page.getByTestId('site-search-input')).toBeVisible();
     await expect(page.getByTestId('site-search-input')).toBeFocused();
   });
 });

@@ -52,6 +52,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { URLSearchParams } from 'url';
 import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
