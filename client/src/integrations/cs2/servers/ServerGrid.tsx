@@ -120,6 +120,24 @@ function heldBackKey(reason: ServerAllocationInfo['notAllocatableReason']): stri
   }
 }
 
+const BUSY_REASON_KEY: Record<string, string> = {
+  local_match: 'managePage.servers.busyReason.localMatch',
+  awaiting_reset: 'managePage.servers.busyReason.awaitingReset',
+  match_disabled: 'managePage.servers.busyReason.matchDisabled',
+  draining: 'managePage.servers.busyReason.draining',
+  reserved: 'managePage.servers.busyReason.reserved',
+};
+
+/** The busy tile's line: what Ready Up says, else why the allocator holds it back. */
+function busyLine(
+  server: ServerAllocationInfo,
+  t: (key: string, opts?: Record<string, Untrusted>) => string
+): string {
+  const key = server.busyReason ? BUSY_REASON_KEY[server.busyReason] : undefined;
+  if (key) return t(key, { slug: server.busyDetail ?? server.staleMatchSlug ?? '' });
+  return t(heldBackKey(server.notAllocatableReason));
+}
+
 /** The tiles' grid (the draft's `.servers`): as many 210px columns as fit. */
 const gridSx = {
   display: 'grid',
@@ -303,12 +321,18 @@ const ServerGridView: React.FC<{
               />
             );
           }
+          const spare = server.busyReason === 'reserved';
           return (
             <Tile
               key={server.id}
               name={server.name}
-              chip={<Chip size="small" label={t('managePage.servers.busy')} />}
-              line={t(heldBackKey(server.notAllocatableReason))}
+              chip={
+                <Chip
+                  size="small"
+                  label={t(spare ? 'managePage.servers.spare' : 'managePage.servers.busy')}
+                />
+              }
+              line={busyLine(server, t)}
             />
           );
         })}

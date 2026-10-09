@@ -82,11 +82,19 @@
       "resting": "Hviler",
       "readyIn": "Klar igjen om {{count}} s",
       "busy": "Opptatt",
+      "spare": "Reserve",
       "heldBack": {
         "demoUpload": "Laster opp demoen fra forrige kamp",
         "outOfDate": "CS2 på denne serveren må oppdateres",
         "unverified": "CS2-versjonen er ikke sjekket ennå",
         "other": "Tar ikke imot kamper akkurat nå"
+      },
+      "busyReason": {
+        "localMatch": "Lokal kamp {{slug}} er fortsatt lastet",
+        "awaitingReset": "Venter på tilbakestilling etter serien",
+        "matchDisabled": "Kamp-plugin av",
+        "draining": "Tømmes",
+        "reserved": "Reserve for failover"
       }
     },
     "needsYou": {

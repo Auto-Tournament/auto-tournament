@@ -152,6 +152,7 @@ export interface ServerAllocationInfo {
   notAllocatableReason?:
     | 'offline'
     | 'busy'
+    | 'reserved'
     | 'grace-window'
     | 'demo-upload'
     | 'cs2-out-of-date'
@@ -159,7 +160,14 @@ export interface ServerAllocationInfo {
     | null;
   /** Set when a 'loaded' row was overridden as stale (past the allocator's staleness window). */
   staleMatchSlug?: string | null;
+  /** A Ready Up server: why it takes no match, and what that refers to (match id, slug, drain reason). */
+  busyReason?: BusyReason | null;
+  busyDetail?: string | null;
 }
+
+/** Why a Ready Up server takes no match (api fleet/busyReason.ts). */
+export type BusyReason =
+  'local_match' | 'awaiting_reset' | 'match_disabled' | 'draining' | 'reserved';
 
 /**
  * `/api/tournament/server-availability`: what the fleet can take right now.

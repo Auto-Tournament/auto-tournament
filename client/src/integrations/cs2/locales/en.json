@@ -82,11 +82,19 @@
       "resting": "Resting",
       "readyIn": "Ready again in {{count}}s",
       "busy": "Busy",
+      "spare": "Spare",
       "heldBack": {
         "demoUpload": "Uploading the last match's demo",
         "outOfDate": "CS2 on this server needs an update",
         "unverified": "CS2 version not checked yet",
         "other": "Not taking matches right now"
+      },
+      "busyReason": {
+        "localMatch": "Local match {{slug}} still loaded",
+        "awaitingReset": "Waiting for reset after the series",
+        "matchDisabled": "Match plugin off",
+        "draining": "Draining",
+        "reserved": "Spare for failover"
       }
     },
     "needsYou": {
