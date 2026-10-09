@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 644 of them, 407 behind auth —
+Every endpoint this API serves — 645 of them, 408 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -889,6 +889,7 @@ The platform process: whether it can restart itself, and a restart (so a module 
 
 | Method | Path | Auth |
 | --- | --- | --- |
+| `GET` | `/api/system/update` | admin |
 | `GET` | `/api/system/restart` | admin |
 | `POST` | `/api/system/restart` | admin |
 

@@ -7,10 +7,29 @@ import { Router, Request, Response } from 'express';
 import { requireAuth, requestActorId } from '../middleware/auth';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { restartSupport, scheduleRestart } from '../utils/restart';
+import { checkPlatformUpdate } from '../services/platform/updateCheck';
 
 const router = Router();
 
 router.use(requireAuth);
+
+/**
+ * @openapi
+ * /api/system/update:
+ *   get:
+ *     tags: [System]
+ *     summary: Whether a newer Auto Tournament is out
+ *     description: |
+ *       The running version against the platform's GitHub releases on the same
+ *       channel (a beta sees betas too). `latest` is null when GitHub could not
+ *       be asked. Looked up once an hour.
+ *     responses:
+ *       200:
+ *         description: "{ running, latest, available, releaseUrl }"
+ */
+router.get('/update', async (_req: Request, res: Response) => {
+  res.json({ success: true, ...(await checkPlatformUpdate()) });
+});
 
 /**
  * @openapi
@@ -49,7 +68,9 @@ router.post('/restart', (req: Request, res: Response) => {
     return;
   }
   if (!scheduleRestart(requestActorId(req))) {
-    res.status(409).json({ success: false, error: 'A restart is already under way.', code: 'restarting' });
+    res
+      .status(409)
+      .json({ success: false, error: 'A restart is already under way.', code: 'restarting' });
     return;
   }
   res.status(202).json({ success: true, message: 'Restarting.' });

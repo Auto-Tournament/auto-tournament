@@ -989,5 +989,9 @@
       "tournamentReelPerPlayer": "Clips per player in a tournament reel",
       "range": "{{min}} to {{max}}"
     }
+  },
+  "update": {
+    "available": "Auto Tournament {{latest}} is out (you run {{running}}).",
+    "notes": "What's new"
   }
 }

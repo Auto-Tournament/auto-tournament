@@ -989,5 +989,9 @@
       "tournamentReelPerPlayer": "Klipp per spiller i en turnerings-reel",
       "range": "{{min}} til {{max}}"
     }
+  },
+  "update": {
+    "available": "Auto Tournament {{latest}} er ute (du kjører {{running}}).",
+    "notes": "Hva er nytt"
   }
 }
