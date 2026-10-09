@@ -170,7 +170,9 @@ export const useTournament = () => {
     // 'in_progress' asynchronously, so this ensures the wizard view reflects
     // the latest state.
     await loadData();
-    return response.licenseNote ? { ...response, message: `${response.message} ${response.licenseNote}` } : response;
+    return response.licenseNote
+      ? { ...response, message: `${response.message} ${response.licenseNote}` }
+      : response;
   };
 
   const restartTournament = async (baseUrl: string) => {

@@ -117,7 +117,12 @@ export interface HostInventoryPayload {
     ram_free_mb: number;
     disk: Array<{ mount: string; total_gb: number; free_gb: number }>;
   };
-  cs2: { master_build: number; master_patch?: string; update_available: boolean; updates_hold: UpdatesHoldMode };
+  cs2: {
+    master_build: number;
+    master_patch?: string;
+    update_available: boolean;
+    updates_hold: UpdatesHoldMode;
+  };
   servers: HostInventoryServer[];
 }
 
@@ -247,7 +252,9 @@ export const HOST_MESSAGES: Record<string, { direction: HostDirection; reliable:
   'host.inventory': { direction: 'host_to_platform', reliable: false },
   'host.progress': { direction: 'host_to_platform', reliable: false },
   'logs.chunk': { direction: 'host_to_platform', reliable: false },
-  ...Object.fromEntries(HOST_COMMAND_TYPES.map((t) => [t, { direction: 'platform_to_host' as const, reliable: true }])),
+  ...Object.fromEntries(
+    HOST_COMMAND_TYPES.map((t) => [t, { direction: 'platform_to_host' as const, reliable: true }])
+  ),
 };
 
 export const HOST_MESSAGE_SCHEMAS: Record<string, Record<string, unknown>> = {
@@ -317,7 +324,9 @@ export interface ValidationResult {
 }
 
 function describe(errors: ErrorObject[] | null | undefined, prefix = ''): string[] {
-  return (errors ?? []).slice(0, 10).map((e) => `${prefix + e.instancePath || '/'} ${e.message ?? 'is invalid'}`);
+  return (errors ?? [])
+    .slice(0, 10)
+    .map((e) => `${prefix + e.instancePath || '/'} ${e.message ?? 'is invalid'}`);
 }
 
 let compiled: {
@@ -329,10 +338,16 @@ let compiled: {
 
 function validators() {
   if (compiled) return compiled;
-  const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false, allowUnionTypes: true });
+  const ajv = new Ajv2020({
+    allErrors: true,
+    strict: true,
+    strictRequired: false,
+    allowUnionTypes: true,
+  });
   ajv.addSchema(defs);
   const messages = new Map<string, ValidateFunction>();
-  for (const [type, schema] of Object.entries(HOST_MESSAGE_SCHEMAS)) messages.set(type, ajv.compile(schema));
+  for (const [type, schema] of Object.entries(HOST_MESSAGE_SCHEMAS))
+    messages.set(type, ajv.compile(schema));
   compiled = {
     envelope: ajv.compile(envelope),
     messages,

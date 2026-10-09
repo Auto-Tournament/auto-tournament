@@ -205,7 +205,10 @@ function isFreeKey(key: string): boolean {
   try {
     const part = key.split('.')[1];
     if (!part) return false;
-    return (JSON.parse(Buffer.from(part, 'base64url').toString('utf8')) as { kind?: unknown }).kind === 'free';
+    return (
+      (JSON.parse(Buffer.from(part, 'base64url').toString('utf8')) as { kind?: unknown }).kind ===
+      'free'
+    );
   } catch {
     return false;
   }
@@ -234,7 +237,13 @@ export function licenseHandoffFor(
 async function checkinState(): Promise<ServerLicenseHandoff['state'] | null> {
   try {
     const raw = await settingsService.getSetting('license_checkin_result');
-    const lic = raw ? (JSON.parse(raw) as { license?: { status?: unknown; stopsOn?: unknown; validUntil?: unknown } }).license : undefined;
+    const lic = raw
+      ? (
+          JSON.parse(raw) as {
+            license?: { status?: unknown; stopsOn?: unknown; validUntil?: unknown };
+          }
+        ).license
+      : undefined;
     if (!lic || typeof lic.status !== 'string') return null;
     const day = (v: unknown) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
     return { status: lic.status, stops_on: day(lic.stopsOn), valid_until: day(lic.validUntil) };

@@ -55,7 +55,14 @@ export interface LicenseStanding {
   serversElsewhere?: number;
 }
 
-const FREE: LicenseStanding = { status: 'free', paid: false, maxServers: null, licenseId: null, stopsOn: null, reason: null };
+const FREE: LicenseStanding = {
+  status: 'free',
+  paid: false,
+  maxServers: null,
+  licenseId: null,
+  stopsOn: null,
+  reason: null,
+};
 
 function addDays(day: string, days: number): string {
   const d = new Date(`${day}T00:00:00Z`);
@@ -64,7 +71,10 @@ function addDays(day: string, days: number): string {
 }
 
 /** The offline rule for a subscription key: valid until its last paid day, then grace, then expired. */
-function offline(license: LicensePayload, today: string): Pick<LicenseStanding, 'status' | 'stopsOn'> {
+function offline(
+  license: LicensePayload,
+  today: string
+): Pick<LicenseStanding, 'status' | 'stopsOn'> {
   if (license.kind !== 'month') return { status: 'active', stopsOn: null };
   // Works through the 14th day after the last paid day; stops on the 15th.
   const stopsOn = addDays(license.updates_until, GRACE_DAYS + 1);
@@ -94,16 +104,34 @@ export function standingFor(
   // The current terms: a genuine lease of the same license, issued no earlier than the key.
   if (lease) {
     const l = verifyLicense(lease, opts);
-    if (l.valid && l.license && l.license.lease === true && l.license.id === license.id && l.license.kind === license.kind && l.license.issued_at >= license.issued_at) {
+    if (
+      l.valid &&
+      l.license &&
+      l.license.lease === true &&
+      l.license.id === license.id &&
+      l.license.kind === license.kind &&
+      l.license.issued_at >= license.issued_at
+    ) {
       license = l.license;
     }
   }
   const base = { paid: true, maxServers: license.max_servers, licenseId: license.id } as const;
 
-  if (server?.status === 'in_use_elsewhere') return { ...base, status: 'expired', stopsOn: server.stopsOn ?? today, reason: 'in_use_elsewhere' };
+  if (server?.status === 'in_use_elsewhere')
+    return {
+      ...base,
+      status: 'expired',
+      stopsOn: server.stopsOn ?? today,
+      reason: 'in_use_elsewhere',
+    };
   if (server?.status === 'replaced') {
     const stopsOn = server.stopsOn ?? today;
-    return { ...base, status: today >= stopsOn ? 'expired' : 'past_due', stopsOn, reason: 'replaced' };
+    return {
+      ...base,
+      status: today >= stopsOn ? 'expired' : 'past_due',
+      stopsOn,
+      reason: 'replaced',
+    };
   }
 
   const local = offline(license, today);
@@ -152,6 +180,7 @@ export function expiredMessage(standing: Pick<LicenseStanding, 'reason'>): strin
   if (standing.reason === 'in_use_elsewhere') {
     return 'This license key is in use on another Auto Tournament install. Use "Move to another install" in the console, or paste this install\'s own key.';
   }
-  if (standing.reason === 'replaced') return 'This license key was replaced by a new one in the console. Paste the new key under Settings, then License.';
+  if (standing.reason === 'replaced')
+    return 'This license key was replaced by a new one in the console. Paste the new key under Settings, then License.';
   return 'The license has expired. Pay it in the console to create servers again.';
 }

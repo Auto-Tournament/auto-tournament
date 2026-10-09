@@ -42,7 +42,10 @@ export function useServerLimit(): ServerLimit | null {
 }
 
 /** The i18n key and values for the limit line, given the servers set up now. */
-export function serverLimitText(limit: ServerLimit, used: number): { key: string; values: Record<string, number> } {
+export function serverLimitText(
+  limit: ServerLimit,
+  used: number
+): { key: string; values: Record<string, number> } {
   if (limit.kind === 'unlimited') return { key: 'serversPage.limit.unlimited', values: {} };
   if (limit.kind === 'unlicensed') return { key: 'serversPage.limit.unlicensed', values: {} };
   const left = limit.max - used;

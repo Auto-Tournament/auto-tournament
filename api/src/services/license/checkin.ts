@@ -195,7 +195,10 @@ const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
  * when set (`off` turns it off; https, or http to localhost only), none under
  * NODE_ENV=test without it, else the real endpoint.
  */
-export function resolveCheckinUrl(env: { LICENSE_CHECKIN_URL?: string; NODE_ENV?: string }): string | null {
+export function resolveCheckinUrl(env: {
+  LICENSE_CHECKIN_URL?: string;
+  NODE_ENV?: string;
+}): string | null {
   const raw = env.LICENSE_CHECKIN_URL?.trim();
   if (!raw) return env.NODE_ENV === 'test' ? null : DEFAULT_CHECKIN_URL;
   if (OFF.has(raw.toLowerCase())) return null;
@@ -213,9 +216,14 @@ export function resolveCheckinUrl(env: { LICENSE_CHECKIN_URL?: string; NODE_ENV?
 export function cleanNotice(value: unknown): string | null {
   if (typeof value !== 'string') return null;
   // eslint-disable-next-line no-control-regex
-  const text = value.replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const text = value
+    .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!text) return null;
-  return text.length > NOTICE_MAX_LENGTH ? `${text.slice(0, NOTICE_MAX_LENGTH - 1).trimEnd()}…` : text;
+  return text.length > NOTICE_MAX_LENGTH
+    ? `${text.slice(0, NOTICE_MAX_LENGTH - 1).trimEnd()}…`
+    : text;
 }
 
 /** A 200 body, checked field by field. Null when it is not `{ ok: true, … }`. */
@@ -259,17 +267,30 @@ export function parseCheckinResponse(value: unknown): CheckinResult | null {
 }
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
-const STATES = ['active', 'past_due', 'expired', 'revoked', 'replaced', 'in_use_elsewhere'] as const;
+const STATES = [
+  'active',
+  'past_due',
+  'expired',
+  'revoked',
+  'replaced',
+  'in_use_elsewhere',
+] as const;
 
 /** The answer's `license`, checked; null when missing or not understood. */
 export function parseLicenseState(value: unknown): ServerLicenseState | null {
   if (!isObject(value) || !(STATES as readonly unknown[]).includes(value.status)) return null;
   const day = (v: unknown) => (typeof v === 'string' && DAY.test(v) ? v : null);
-  return { status: value.status as ServerLicenseState['status'], validUntil: day(value.valid_until ?? value.validUntil), stopsOn: day(value.stops_on ?? value.stopsOn) };
+  return {
+    status: value.status as ServerLicenseState['status'],
+    validUntil: day(value.valid_until ?? value.validUntil),
+    stopsOn: day(value.stops_on ?? value.stopsOn),
+  };
 }
 
 function cleanToken(value: unknown): string | null {
-  return typeof value === 'string' && value.startsWith('ATL1.') && value.length <= 4096 ? value : null;
+  return typeof value === 'string' && value.startsWith('ATL1.') && value.length <= 4096
+    ? value
+    : null;
 }
 
 /** A stored result (JSON), or empty when missing or unreadable. */
@@ -296,7 +317,12 @@ export function parseStoredResult(raw: string | null): CheckinResult {
     }
     const license = parseLicenseState(value.license);
     const elsewhere = count(value.serversElsewhere);
-    return { usage, notice: cleanNotice(value.notice), ...(license ? { license } : {}), ...(elsewhere !== null ? { serversElsewhere: elsewhere } : {}) };
+    return {
+      usage,
+      notice: cleanNotice(value.notice),
+      ...(license ? { license } : {}),
+      ...(elsewhere !== null ? { serversElsewhere: elsewhere } : {}),
+    };
   } catch {
     return { usage: null, notice: null };
   }
@@ -335,8 +361,13 @@ export function parsePromptState(raw: string | null): EventPromptState {
 }
 
 /** The declaration for this license, or `none`. */
-export function declaredFor(declaration: EventDeclaration | null, licenseId: string | null): Declared {
-  return declaration && licenseId && declaration.licenseId === licenseId ? declaration.answer : 'none';
+export function declaredFor(
+  declaration: EventDeclaration | null,
+  licenseId: string | null
+): Declared {
+  return declaration && licenseId && declaration.licenseId === licenseId
+    ? declaration.answer
+    : 'none';
 }
 
 export function buildCheckinBody(input: {
@@ -458,7 +489,12 @@ export function leaseOf(key: string, lease: string): boolean {
   const a = verifyLicense(key);
   const b = verifyLicense(lease);
   if (!a.valid || !b.valid || !b.license || !a.license) return false;
-  return b.license.lease === true && a.license.id === b.license.id && a.license.kind === b.license.kind && b.license.issued_at >= a.license.issued_at;
+  return (
+    b.license.lease === true &&
+    a.license.id === b.license.id &&
+    a.license.kind === b.license.kind &&
+    b.license.issued_at >= a.license.issued_at
+  );
 }
 
 export interface CheckinStore {
@@ -546,7 +582,11 @@ export class LicenseCheckin {
   async reserve(
     current: number,
     adding: number
-  ): Promise<{ result: 'allowed' } | { result: 'refused'; reason: string; maxServers: number | null; elsewhere: number } | { result: 'unreachable' | 'skipped' }> {
+  ): Promise<
+    | { result: 'allowed' }
+    | { result: 'refused'; reason: string; maxServers: number | null; elsewhere: number }
+    | { result: 'unreachable' | 'skipped' }
+  > {
     const url = this.url();
     if (!url) return { result: 'skipped' };
     const key = await this.deps.getKey();
@@ -576,7 +616,8 @@ export class LicenseCheckin {
       });
       if (res.status !== 200) return { result: 'unreachable' };
       const answer = (await res.json().catch(() => null)) as Record<string, unknown> | null;
-      if (!answer || answer.ok !== true || typeof answer.allowed !== 'boolean') return { result: 'unreachable' };
+      if (!answer || answer.ok !== true || typeof answer.allowed !== 'boolean')
+        return { result: 'unreachable' };
       if (answer.allowed) return { result: 'allowed' };
       return {
         result: 'refused',
@@ -610,14 +651,15 @@ export class LicenseCheckin {
 
     const until = Math.floor(now.getTime() / 1000);
     const cursor = Number((await this.deps.store.get(SETTING.countedSince)) ?? '');
-    const since = Number.isSafeInteger(cursor) && cursor > 0 && cursor <= until ? cursor : until - 24 * 60 * 60;
+    const since =
+      Number.isSafeInteger(cursor) && cursor > 0 && cursor <= until ? cursor : until - 24 * 60 * 60;
 
     const [instanceId, serverCount, activity, declaration] = await Promise.all([
       this.instanceId(),
       this.deps.countServers().catch(() => null),
-      this.deps.activity(since, until).catch(
-        (): Activity => ({ matchesPlayed: 0, tournamentsLive: 0, maxTournamentTeams: 0 })
-      ),
+      this.deps
+        .activity(since, until)
+        .catch((): Activity => ({ matchesPlayed: 0, tournamentsLive: 0, maxTournamentTeams: 0 })),
       this.deps.store.get(SETTING.declaration).then(parseDeclaration),
     ]);
 
@@ -656,7 +698,7 @@ export class LicenseCheckin {
     await this.deps.store.set(SETTING.result, JSON.stringify(kept));
     if (lease && leaseOf(key, lease) && (await this.deps.store.get(SETTING.lease)) !== lease) {
       await this.deps.store.set(SETTING.lease, lease);
-      log.info('[LICENSE] Picked up the license\'s current terms');
+      log.info("[LICENSE] Picked up the license's current terms");
     }
     await this.deps.store.set(SETTING.countedSince, String(until));
     log.debug('[LICENSE] Checked in');
@@ -686,7 +728,11 @@ export class LicenseCheckin {
   }
 
   /** Record the admin's answer to the event-license question. */
-  async answerEventPrompt(action: EventPromptAction, licenseId: string, actor: string): Promise<void> {
+  async answerEventPrompt(
+    action: EventPromptAction,
+    licenseId: string,
+    actor: string
+  ): Promise<void> {
     const now = this.now().toISOString();
     const prompt = parsePromptState(await this.deps.store.get(SETTING.prompt));
     if ((DECLARATION_ANSWERS as readonly string[]).includes(action)) {
@@ -711,7 +757,9 @@ export class LicenseCheckin {
    */
   async eventPrompt(
     license: { id: string; kind: string; validFrom: string | null; validTo: string | null } | null,
-    readActivity: (sinceSeconds: number) => Promise<{ matchFinishedAt: number[]; tournamentStartedAt: number[] }>
+    readActivity: (
+      sinceSeconds: number
+    ) => Promise<{ matchFinishedAt: number[]; tournamentStartedAt: number[] }>
   ): Promise<EventPromptStatus | null> {
     if (!license || license.kind !== 'event' || !license.validFrom || !license.validTo) return null;
     const [prompt, declaration] = await Promise.all([

@@ -21,8 +21,20 @@ import { isTruthySetting } from '../../utils/settingFields';
 import packageJson from '../../../package.json';
 import { buildLineDate } from './lineDate';
 import { countServers } from './serverCount';
-import { checkCreate, expiredMessage, LicenseLimitError, standingFor, type LicenseStanding } from './gate';
-import { parseStoredResult, SETTING, type CheckinStatus, type EventPromptAction, type EventPromptStatus } from './checkin';
+import {
+  checkCreate,
+  expiredMessage,
+  LicenseLimitError,
+  standingFor,
+  type LicenseStanding,
+} from './gate';
+import {
+  parseStoredResult,
+  SETTING,
+  type CheckinStatus,
+  type EventPromptAction,
+  type EventPromptStatus,
+} from './checkin';
 import type { LicensePublicKey } from './publicKeys';
 import {
   decodeLicense,
@@ -122,7 +134,15 @@ export function statusFor(key: string | null, inputs: StatusInputs): LicenseStat
     publicBadge: inputs.publicBadge,
     checkin: null,
     eventPrompt: null,
-    standing: { status: 'free', paid: false, maxServers: null, licenseId: null, stopsOn: null, reason: null, serversElsewhere: 0 } as LicenseStanding,
+    standing: {
+      status: 'free',
+      paid: false,
+      maxServers: null,
+      licenseId: null,
+      stopsOn: null,
+      reason: null,
+      serversElsewhere: 0,
+    } as LicenseStanding,
   };
   if (!key) {
     return { status: 'none', license: null, warnings: [], verifyUrl: null, ...base };
@@ -153,7 +173,11 @@ export function keyInputProblem(input: unknown): string | null {
   } catch {
     return 'This is not an Auto Tournament license key (it starts with ATL1.)';
   }
-  if (typeof payload === 'object' && payload !== null && (payload as { lease?: unknown }).lease === true) {
+  if (
+    typeof payload === 'object' &&
+    payload !== null &&
+    (payload as { lease?: unknown }).lease === true
+  ) {
     return 'This is a lease, not a license key. Copy the key from the console.';
   }
   return null;
@@ -166,10 +190,20 @@ class LicenseService {
 
   /** Where the license stands now (./gate.ts): the key, read offline, the lease and the last check-in answer. */
   async standing(now: Date = new Date()): Promise<LicenseStanding> {
-    const [key, stored, lease] = await Promise.all([this.getKey(), settingsService.getSetting(SETTING.result), settingsService.getSetting(SETTING.lease)]);
+    const [key, stored, lease] = await Promise.all([
+      this.getKey(),
+      settingsService.getSetting(SETTING.result),
+      settingsService.getSetting(SETTING.lease),
+    ]);
     const result = parseStoredResult(stored ?? null);
     return {
-      ...standingFor(key, result.license ?? null, now.toISOString().slice(0, 10), undefined, lease ?? null),
+      ...standingFor(
+        key,
+        result.license ?? null,
+        now.toISOString().slice(0, 10),
+        undefined,
+        lease ?? null
+      ),
       serversElsewhere: result.serversElsewhere ?? 0,
     };
   }
@@ -191,10 +225,26 @@ class LicenseService {
     const answer = await licenseCheckin.reserve(current, adding);
     if (answer.result === 'refused') {
       if (answer.reason === 'server_limit') {
-        checkCreate({ ...standing, maxServers: answer.maxServers ?? standing.maxServers, serversElsewhere: answer.elsewhere }, current, adding);
-        throw new LicenseLimitError('server_limit', 'Your license has no free servers left. Add servers to your license in the console to create more.');
+        checkCreate(
+          {
+            ...standing,
+            maxServers: answer.maxServers ?? standing.maxServers,
+            serversElsewhere: answer.elsewhere,
+          },
+          current,
+          adding
+        );
+        throw new LicenseLimitError(
+          'server_limit',
+          'Your license has no free servers left. Add servers to your license in the console to create more.'
+        );
       }
-      const reason = answer.reason === 'in_use_elsewhere' ? 'in_use_elsewhere' : answer.reason === 'replaced' ? 'replaced' : 'unpaid';
+      const reason =
+        answer.reason === 'in_use_elsewhere'
+          ? 'in_use_elsewhere'
+          : answer.reason === 'replaced'
+            ? 'replaced'
+            : 'unpaid';
       throw new LicenseLimitError('license_expired', expiredMessage({ reason }));
     }
     if (answer.result === 'unreachable' && !(await licenseCheckin.checkedInRecently())) {
@@ -228,7 +278,9 @@ class LicenseService {
     const { licenseCheckin, readEventActivity } = await import('./checkinService');
     const [checkin, eventPrompt] = await Promise.all([
       licenseCheckin.status(true),
-      status.status === 'invalid' ? null : licenseCheckin.eventPrompt(status.license, readEventActivity),
+      status.status === 'invalid'
+        ? null
+        : licenseCheckin.eventPrompt(status.license, readEventActivity),
     ]);
     return { ...status, checkin, eventPrompt, standing };
   }
@@ -237,7 +289,11 @@ class LicenseService {
    * The admin's answer to the event-license question (or closing it). An
    * answer goes out with the next check-in, which is started now.
    */
-  async answerEventPrompt(action: EventPromptAction, licenseId: string, actor: string): Promise<void> {
+  async answerEventPrompt(
+    action: EventPromptAction,
+    licenseId: string,
+    actor: string
+  ): Promise<void> {
     const { licenseCheckin } = await import('./checkinService');
     await licenseCheckin.answerEventPrompt(action, licenseId, actor);
     if (action !== 'dismissed' && action !== 'dont_ask') void licenseCheckin.run();

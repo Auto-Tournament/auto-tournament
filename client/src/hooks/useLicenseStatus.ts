@@ -116,9 +116,17 @@ export function useLicenseStatus(options: { enabled?: boolean } = {}) {
 }
 
 /** "Licensed to NTLAN · Platform S · 6 servers · updates until 2027-09-01". */
-export function licenseSummary(license: NonNullable<LicenseStatus['license']>, t: TFunction): string {
+export function licenseSummary(
+  license: NonNullable<LicenseStatus['license']>,
+  t: TFunction
+): string {
   if (license.kind === 'free') {
-    return [license.licensee ? t('license.summary.freeFor', { licensee: license.licensee }) : t('license.summary.free'), t('license.summary.noLimit')].join(' · ');
+    return [
+      license.licensee
+        ? t('license.summary.freeFor', { licensee: license.licensee })
+        : t('license.summary.free'),
+      t('license.summary.noLimit'),
+    ].join(' · ');
   }
   return [
     license.licensee

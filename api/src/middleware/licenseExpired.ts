@@ -38,8 +38,15 @@ export function licenseStandingChanged(): void {
   cached = null;
 }
 
-export async function licenseExpiredMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
-  if (!req.path.startsWith('/api/') || OPEN.some((p) => req.path === p || req.path.startsWith(`${p}/`))) {
+export async function licenseExpiredMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  if (
+    !req.path.startsWith('/api/') ||
+    OPEN.some((p) => req.path === p || req.path.startsWith(`${p}/`))
+  ) {
     next();
     return;
   }

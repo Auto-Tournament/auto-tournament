@@ -1534,7 +1534,8 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
       try {
         const standing = await licenseService.standing();
         const needed = Math.ceil((toStart?.teamIds.length ?? 0) / 2);
-        if (!standing.paid || standing.maxServers === null || needed <= standing.maxServers) return null;
+        if (!standing.paid || standing.maxServers === null || needed <= standing.maxServers)
+          return null;
         return `Round one has ${needed} matches, but your license covers ${standing.maxServers} servers: the rest wait for a free server. Add servers in the console to run them all at once.`;
       } catch {
         return null;

@@ -4,9 +4,7 @@
   "title": "host.license (platform → host)",
   "description": "The platform's Auto Tournament license for the servers it owns on this host (csm 1.22+): the key (null: none, free use), the lease (the license's current terms, signed, marked lease; the key never changes on renewal), and what the license server last said. csm writes it into those servers' Ready Up config and limits the platform's creates by it; a host's own key (csm license set) is never overwritten. Sent after welcome and whenever any of it changes. Reliable; answered by exactly one host.result (ref = this message's id).",
   "type": "object",
-  "required": [
-    "key"
-  ],
+  "required": ["key"],
   "properties": {
     "key": {
       "oneOf": [
@@ -27,19 +25,10 @@
     },
     "state": {
       "type": "object",
-      "required": [
-        "status"
-      ],
+      "required": ["status"],
       "properties": {
         "status": {
-          "enum": [
-            "active",
-            "past_due",
-            "expired",
-            "revoked",
-            "replaced",
-            "in_use_elsewhere"
-          ]
+          "enum": ["active", "past_due", "expired", "revoked", "replaced", "in_use_elsewhere"]
         },
         "stops_on": {
           "type": "string",
@@ -52,10 +41,7 @@
       }
     },
     "use": {
-      "enum": [
-        "noncommercial",
-        "commercial"
-      ]
+      "enum": ["noncommercial", "commercial"]
     },
     "expires_at": {
       "$ref": "../defs.json#/$defs/expiresAt"

@@ -336,7 +336,10 @@ export const cs2Integration: GameIntegration = {
     const { cs2ServerPool } = await import('./allocation');
     if (moveResource) {
       if (!ctx.resourceId) {
-        return { ok: false, error: 'Match has no server assigned. There is nothing to reallocate.' };
+        return {
+          ok: false,
+          error: 'Match has no server assigned. There is nothing to reallocate.',
+        };
       }
       return toResourceActionResult(
         await cs2ServerPool.moveToOtherServer(ctx.slug, ctx.resourceId, baseUrl)
@@ -344,7 +347,11 @@ export const cs2Integration: GameIntegration = {
     }
     const result = await cs2ServerPool.restartMatch(ctx.slug, baseUrl);
     return result.success
-      ? { ok: true, message: result.message, ...(ctx.resourceId ? { resourceId: ctx.resourceId } : {}) }
+      ? {
+          ok: true,
+          message: result.message,
+          ...(ctx.resourceId ? { resourceId: ctx.resourceId } : {}),
+        }
       : { ok: false, error: result.message };
   },
 
@@ -430,7 +437,9 @@ export const cs2Integration: GameIntegration = {
       const { autoscaleStatus } = await import('./fleet/autoscale/scaler');
       const scaler = await autoscaleStatus(0);
       if (scaler.settings.enabled) {
-        startableCount = scaler.servers.filter((s) => s.state === 'stopped' || s.state === 'starting').length;
+        startableCount = scaler.servers.filter(
+          (s) => s.state === 'stopped' || s.state === 'starting'
+        ).length;
       }
     } catch {
       startableCount = 0;
@@ -474,19 +483,31 @@ export const cs2Integration: GameIntegration = {
     const parseIds = (raw: string): string[] => {
       try {
         const ids: unknown = JSON.parse(raw);
-        return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string' && id.length > 0) : [];
+        return Array.isArray(ids)
+          ? ids.filter((id): id is string => typeof id === 'string' && id.length > 0)
+          : [];
       } catch {
-        return raw.split(',').map((id) => id.trim()).filter(Boolean);
+        return raw
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean);
       }
     };
     let ids: string[] = [];
     const chosen = poolId
-      ? await db.queryOneAsync<{ map_ids: string }>('SELECT map_ids FROM cs2_map_pools WHERE id = ?', [poolId])
+      ? await db.queryOneAsync<{ map_ids: string }>(
+          'SELECT map_ids FROM cs2_map_pools WHERE id = ?',
+          [poolId]
+        )
       : undefined;
     if (chosen) {
       ids = parseIds(chosen.map_ids);
     } else if (mode === '2v2') {
-      ids = (await db.queryAsync<{ id: string }>("SELECT id FROM cs2_maps WHERE game_mode = 'wingman' ORDER BY id")).map((r) => r.id);
+      ids = (
+        await db.queryAsync<{ id: string }>(
+          "SELECT id FROM cs2_maps WHERE game_mode = 'wingman' ORDER BY id"
+        )
+      ).map((r) => r.id);
     } else {
       const row = await db.queryOneAsync<{ map_ids: string }>(
         'SELECT map_ids FROM cs2_map_pools WHERE name = ? AND enabled = 1',
@@ -495,12 +516,20 @@ export const cs2Integration: GameIntegration = {
       ids = row ? parseIds(row.map_ids) : [];
     }
     if (ids.length === 0) return [];
-    const rows = await db.queryAsync<{ id: string; display_name: string; image_url: string | null }>(
+    const rows = await db.queryAsync<{
+      id: string;
+      display_name: string;
+      image_url: string | null;
+    }>(
       `SELECT id, display_name, image_url FROM cs2_maps WHERE id IN (${ids.map(() => '?').join(', ')})`,
       ids
     );
     const byId = new Map(rows.map((r) => [r.id, r]));
-    return ids.map((id) => ({ id, name: byId.get(id)?.display_name ?? id, imageUrl: byId.get(id)?.image_url ?? null }));
+    return ids.map((id) => ({
+      id,
+      name: byId.get(id)?.display_name ?? id,
+      imageUrl: byId.get(id)?.image_url ?? null,
+    }));
   },
 
   /** The enabled map pools, for the admin's pick per matchmaking mode. */
@@ -602,10 +631,16 @@ export const cs2Integration: GameIntegration = {
     const steamIds = (players: unknown): string[] => {
       if (Array.isArray(players)) {
         return players
-          .map((p) => (p && typeof p === 'object' ? ((p as { steamid?: string; steamId?: string }).steamid ?? (p as { steamId?: string }).steamId) : null))
+          .map((p) =>
+            p && typeof p === 'object'
+              ? ((p as { steamid?: string; steamId?: string }).steamid ??
+                (p as { steamId?: string }).steamId)
+              : null
+          )
           .filter((p): p is string => typeof p === 'string' && p !== '');
       }
-      if (players && typeof players === 'object') return Object.keys(players).filter((id) => /^\d+$/.test(id));
+      if (players && typeof players === 'object')
+        return Object.keys(players).filter((id) => /^\d+$/.test(id));
       return [];
     };
     return { team1: steamIds(cfg.team1?.players), team2: steamIds(cfg.team2?.players) };
@@ -671,10 +706,11 @@ export const cs2Integration: GameIntegration = {
   async connectInfo(match) {
     if (!match.server_id) return null;
     const { db } = await import('../../config/database');
-    const server = await db.queryOneAsync<{ host: string | null; port: number | null; transport: string | null }>(
-      'SELECT host, port, transport FROM cs2_servers WHERE id = ?',
-      [match.server_id]
-    );
+    const server = await db.queryOneAsync<{
+      host: string | null;
+      port: number | null;
+      transport: string | null;
+    }>('SELECT host, port, transport FROM cs2_servers WHERE id = ?', [match.server_id]);
     if (!server?.host || !server.port) return null;
     if (server.transport === 'fleet') {
       const { connectPasswordFor } = await import('./fleet/driver');
@@ -707,9 +743,8 @@ export const cs2Integration: GameIntegration = {
 
   /** The MatchZy Enhanced match report: fetched over RCON from the server, or passed in. */
   async syncMatchState(slug, source) {
-    const { fetchMatchReport, applyMatchReport } = await import(
-      './events/connectionSnapshotService'
-    );
+    const { fetchMatchReport, applyMatchReport } =
+      await import('./events/connectionSnapshotService');
     const report =
       'report' in source
         ? (source.report as MatchReport)
@@ -732,19 +767,28 @@ export const cs2Integration: GameIntegration = {
  * platform's): a hosting provider's servers, counted on the provider's
  * license. Empty when the inventories can't be read.
  */
-async function hostedElsewhere(db: { queryAsync<T>(sql: string, params?: unknown[]): Promise<T[]> }): Promise<Set<string>> {
+async function hostedElsewhere(db: {
+  queryAsync<T>(sql: string, params?: unknown[]): Promise<T[]>;
+}): Promise<Set<string>> {
   const out = new Set<string>();
   try {
     const { licenseService } = await import('../../services/license/licenseService');
     const ours = (await licenseService.standing()).licenseId;
-    const hosts = await db.queryAsync<{ inventory: string | null }>('SELECT inventory FROM cs2_fleet_hosts WHERE inventory IS NOT NULL');
+    const hosts = await db.queryAsync<{ inventory: string | null }>(
+      'SELECT inventory FROM cs2_fleet_hosts WHERE inventory IS NOT NULL'
+    );
     for (const h of hosts) {
       const inv = JSON.parse(h.inventory ?? 'null') as {
         license?: { own?: unknown; license_id?: unknown };
         servers?: { readyup?: { install_id?: unknown } }[];
       } | null;
       const lic = inv?.license;
-      if (!lic || lic.own !== true || (typeof lic.license_id === 'string' && lic.license_id === ours)) continue;
+      if (
+        !lic ||
+        lic.own !== true ||
+        (typeof lic.license_id === 'string' && lic.license_id === ours)
+      )
+        continue;
       for (const srv of inv?.servers ?? []) {
         const id = srv.readyup?.install_id;
         if (typeof id === 'string' && id) out.add(id);

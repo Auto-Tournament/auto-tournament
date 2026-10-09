@@ -47,10 +47,10 @@ export async function readActivity(since: number, until: number): Promise<Activi
       'SELECT tournament_id FROM matches WHERE completed_at >= $1 AND completed_at < $2',
       [since, until]
     ),
-    db.queryAsync<{ id: number }>('SELECT id FROM tournament WHERE started_at >= $1 AND started_at < $2', [
-      since,
-      until,
-    ]),
+    db.queryAsync<{ id: number }>(
+      'SELECT id FROM tournament WHERE started_at >= $1 AND started_at < $2',
+      [since, until]
+    ),
     db.queryAsync<{ id: number; team_ids: string | null }>('SELECT id, team_ids FROM tournament'),
   ]);
   return summarizeActivity(
@@ -69,9 +69,10 @@ export async function readEventActivity(
       'SELECT completed_at FROM matches WHERE completed_at >= $1',
       [since]
     ),
-    db.queryAsync<{ started_at: number | string }>('SELECT started_at FROM tournament WHERE started_at >= $1', [
-      since,
-    ]),
+    db.queryAsync<{ started_at: number | string }>(
+      'SELECT started_at FROM tournament WHERE started_at >= $1',
+      [since]
+    ),
   ]);
   return {
     matchFinishedAt: matches.map((row) => Number(row.completed_at)),

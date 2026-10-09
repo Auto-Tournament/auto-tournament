@@ -38,7 +38,10 @@ import PlayerProfile from './pages/PlayerProfile';
 import MatchPage from './pages/MatchPage';
 import TournamentLeaderboard from './pages/TournamentLeaderboard';
 import TournamentOverview from './pages/TournamentOverview';
-import TournamentPage, { LegacyLeaderboardRedirect, TournamentModuleTab } from './pages/TournamentPage';
+import TournamentPage, {
+  LegacyLeaderboardRedirect,
+  TournamentModuleTab,
+} from './pages/TournamentPage';
 import TournamentBracketTab from './pages/TournamentBracketTab';
 import TournamentMatchesTab from './pages/TournamentMatchesTab';
 import TournamentTeamsTab from './pages/TournamentTeamsTab';
@@ -88,7 +91,13 @@ import { listRouteIntegrations } from './integrations/registry';
 import { useModuleState } from './module-loader/useModuleState';
 import { ModulePendingRoute } from './components/common/ModuleNotInstalledNotice';
 import { MatchDetailsHost } from './components/modals/MatchDetailsHost';
-import { adminRoute, LEGACY_ADMIN_PATHS, matchDetailsPath, paths, playerProfilePath } from './paths';
+import {
+  adminRoute,
+  LEGACY_ADMIN_PATHS,
+  matchDetailsPath,
+  paths,
+  playerProfilePath,
+} from './paths';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -611,7 +620,13 @@ function AppRoutes() {
           <Route key={old} path={adminRoute(old)} element={<LegacyAdminRedirect />} />,
           ...(old === '/tournament'
             ? []
-            : [<Route key={`${old}/*`} path={`${adminRoute(old)}/*`} element={<LegacyAdminRedirect />} />]),
+            : [
+                <Route
+                  key={`${old}/*`}
+                  path={`${adminRoute(old)}/*`}
+                  element={<LegacyAdminRedirect />}
+                />,
+              ]),
         ])}
         <Route path="admin" element={<Navigate to={paths.admin} replace />} />
         {/* Nested catch-all so removed/unknown child routes (e.g. /public) show a proper 404 within the app shell */}
@@ -624,11 +639,15 @@ function AppRoutes() {
   );
 }
 
-
 /** An admin page's old root address → the same under /manage, path rest and query kept. */
 function LegacyAdminRedirect() {
   const location = useLocation();
-  return <Navigate to={`${paths.manage}${location.pathname}${location.search}${location.hash}`} replace />;
+  return (
+    <Navigate
+      to={`${paths.manage}${location.pathname}${location.search}${location.hash}`}
+      replace
+    />
+  );
 }
 
 /** `/matches/:slug` → the Matches page with that match open. */

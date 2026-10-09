@@ -112,16 +112,20 @@ export function payloadProblem(p: unknown): string | null {
   if (typeof o.customer !== 'string' || !o.customer) return 'missing customer';
   if (!(PRODUCTS as readonly unknown[]).includes(o.product)) return 'bad product';
   if (!(PACKS as readonly unknown[]).includes(o.pack)) return 'bad pack';
-  if (!Number.isSafeInteger(o.max_servers) || (o.max_servers as number) < 1) return 'bad max_servers';
+  if (!Number.isSafeInteger(o.max_servers) || (o.max_servers as number) < 1)
+    return 'bad max_servers';
   if (!(KINDS as readonly unknown[]).includes(o.kind)) return 'bad kind';
-  if (typeof o.issued_at !== 'string' || Number.isNaN(Date.parse(o.issued_at))) return 'bad issued_at';
+  if (typeof o.issued_at !== 'string' || Number.isNaN(Date.parse(o.issued_at)))
+    return 'bad issued_at';
   if (!isDate(o.updates_until)) return 'bad updates_until';
   if ((o.valid_from === undefined) !== (o.valid_to === undefined)) {
     return 'valid_from and valid_to go together';
   }
   if (
     o.valid_from !== undefined &&
-    (!isDate(o.valid_from) || !isDate(o.valid_to) || (o.valid_from as string) > (o.valid_to as string))
+    (!isDate(o.valid_from) ||
+      !isDate(o.valid_to) ||
+      (o.valid_from as string) > (o.valid_to as string))
   ) {
     return 'bad valid_from/valid_to';
   }
@@ -141,7 +145,8 @@ export function decodeLicense(token: unknown): DecodedLicense {
   const t = token.trim();
   if (t.length > MAX_TOKEN_LENGTH) throw new Error('too long');
   const parts = t.split('.');
-  if (parts.length !== 3 || parts[0] !== TOKEN_PREFIX) throw new Error(`not an ${TOKEN_PREFIX} key`);
+  if (parts.length !== 3 || parts[0] !== TOKEN_PREFIX)
+    throw new Error(`not an ${TOKEN_PREFIX} key`);
   const [, body, sig] = parts;
   if (!B64URL.test(body) || !B64URL.test(sig)) throw new Error('not base64url');
   const payload: unknown = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
@@ -168,7 +173,10 @@ export function verifyLicense(token: unknown, options: VerifyOptions = {}): Lice
     );
   }
   const { payload, signature, signed } = decoded;
-  const p = (typeof payload === 'object' && payload !== null ? payload : {}) as Record<string, unknown>;
+  const p = (typeof payload === 'object' && payload !== null ? payload : {}) as Record<
+    string,
+    unknown
+  >;
 
   if (typeof p.v === 'number' && p.v !== 1) {
     return invalid('unsupported_version', `License key version ${p.v} needs a newer release.`);
@@ -178,7 +186,10 @@ export function verifyLicense(token: unknown, options: VerifyOptions = {}): Lice
       ? publicKeys[p.kid]
       : null;
   if (!jwk) {
-    return invalid('unknown_kid', 'This license key was signed with a key this release does not know.');
+    return invalid(
+      'unknown_kid',
+      'This license key was signed with a key this release does not know.'
+    );
   }
 
   let ok = false;
@@ -224,7 +235,11 @@ export function verifyLicense(token: unknown, options: VerifyOptions = {}): Lice
       message: `This event license covers dates from ${license.valid_from}. Setting up and testing before then is fine.`,
     });
   }
-  if (license.kind !== 'free' && typeof options.serverCount === 'number' && options.serverCount > license.max_servers) {
+  if (
+    license.kind !== 'free' &&
+    typeof options.serverCount === 'number' &&
+    options.serverCount > license.max_servers
+  ) {
     warnings.push({
       code: 'too_many_servers',
       message: `${options.serverCount} servers are set up, but this license covers ${license.max_servers}. Every server counts, including spare, practice and test servers, so you need a license that covers all of them.`,

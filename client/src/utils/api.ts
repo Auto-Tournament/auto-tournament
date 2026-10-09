@@ -140,7 +140,6 @@ export const api = {
   async delete(endpoint: string) {
     return this.fetch(endpoint, { method: 'DELETE' });
   },
-
 };
 
 /**

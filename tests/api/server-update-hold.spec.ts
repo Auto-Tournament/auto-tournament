@@ -185,8 +185,10 @@ test.describe('license hand-off to csm (pure)', () => {
     const a = licenseHandoffFor(UNSIGNED_KEY);
     expect(a.key).toBe(UNSIGNED_KEY);
     expect(a.revision).toMatch(/^sha256:[0-9a-f]{16}$/);
-    expect(licenseHandoffFor(`  ${UNSIGNED_KEY}
-`)).toEqual(a);
+    expect(
+      licenseHandoffFor(`  ${UNSIGNED_KEY}
+`)
+    ).toEqual(a);
     expect(licenseHandoffFor(`${UNSIGNED_KEY}B`).revision).not.toBe(a.revision);
     // The revision must not leak the key.
     expect(a.revision).not.toContain('ATL1');
@@ -228,7 +230,9 @@ test.describe.serial('license hand-off on the update-hold poll', () => {
     expect(body.license?.revision).not.toBe(before);
   });
 
-  test('the accepted license use reaches csm, and is omitted before acceptance', async ({ request }) => {
+  test('the accepted license use reaches csm, and is omitted before acceptance', async ({
+    request,
+  }) => {
     const seed = (data: Record<string, unknown>) =>
       request.post('/api/test/license-consent', { data, headers: json });
     const record = (use: string, termsVersion: number) => ({
