@@ -20,7 +20,10 @@ async function enrolledWith(request: APIRequestContext, key: { value: string }):
 }
 
 async function link(request: APIRequestContext, id: string): Promise<void> {
-  const res = await request.post(`/api/fleet/servers/${id}/link`, { headers: getAuthHeader(), data: {} });
+  const res = await request.post(`/api/fleet/servers/${id}/link`, {
+    headers: getAuthHeader(),
+    data: {},
+  });
   expect([200, 201], await res.text()).toContain(res.status());
 }
 
@@ -45,7 +48,9 @@ test.describe.serial('fleet key: skins', () => {
     }
   });
 
-  test('the key listing says whether a key turns skins on; skins must be a boolean', async ({ request }) => {
+  test('the key listing says whether a key turns skins on; skins must be a boolean', async ({
+    request,
+  }) => {
     const on = await createFleetKey(request, { name: 'skins-on', skins: true });
     const off = await createFleetKey(request, { name: 'skins-off' });
     const res = await request.get('/api/fleet/keys', { headers: getAuthHeader() });
@@ -54,12 +59,18 @@ test.describe.serial('fleet key: skins', () => {
     expect(keys.find((k) => k.id === on.id)?.skins).toBe(true);
     expect(keys.find((k) => k.id === off.id)?.skins).toBe(false);
 
-    const bad = await request.post('/api/fleet/keys', { headers: getAuthHeader(), data: { name: 'bad', skins: 'yes' } });
+    const bad = await request.post('/api/fleet/keys', {
+      headers: getAuthHeader(),
+      data: { name: 'bad', skins: 'yes' },
+    });
     expect(bad.status()).toBe(400);
   });
 
   test('a server enrolled with a skins key starts with skins on', async ({ request }) => {
-    const id = await enrolledWith(request, await createFleetKey(request, { name: 'skins-key', skins: true }));
+    const id = await enrolledWith(
+      request,
+      await createFleetKey(request, { name: 'skins-key', skins: true })
+    );
     linked.push(id);
     await link(request, id);
     expect(await skinsOf(request, id)).toBe(true);
@@ -86,21 +97,32 @@ test.describe.serial('fleet key: skins', () => {
     const key = await createFleetKey(request, { name: 'skins-expired', skins: true });
     const id = await enrolledWith(request, key);
     linked.push(id);
-    const expire = await request.post('/api/test/fleet/expire-key', { headers: getAuthHeader(), data: { keyId: key.id } });
+    const expire = await request.post('/api/test/fleet/expire-key', {
+      headers: getAuthHeader(),
+      data: { keyId: key.id },
+    });
     expect(expire.ok(), await expire.text()).toBeTruthy();
     await link(request, id);
     expect(await skinsOf(request, id)).toBe(false);
   });
 
   test('an admin turning skins off sticks through unlink and link again', async ({ request }) => {
-    const id = await enrolledWith(request, await createFleetKey(request, { name: 'skins-relink', skins: true }));
+    const id = await enrolledWith(
+      request,
+      await createFleetKey(request, { name: 'skins-relink', skins: true })
+    );
     linked.push(id);
     await link(request, id);
     expect(await skinsOf(request, id)).toBe(true);
 
-    const off = await request.put(`/api/servers/${id}`, { headers: getAuthHeader(), data: { skins: false } });
+    const off = await request.put(`/api/servers/${id}`, {
+      headers: getAuthHeader(),
+      data: { skins: false },
+    });
     expect(off.ok(), await off.text()).toBeTruthy();
-    const unlink = await request.delete(`/api/fleet/servers/${id}/link`, { headers: getAuthHeader() });
+    const unlink = await request.delete(`/api/fleet/servers/${id}/link`, {
+      headers: getAuthHeader(),
+    });
     expect(unlink.ok(), await unlink.text()).toBeTruthy();
     await link(request, id);
     expect(await skinsOf(request, id)).toBe(false);

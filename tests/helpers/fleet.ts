@@ -47,7 +47,13 @@ export async function createPendingServer(
 
 export async function createFleetKey(
   request: APIRequestContext,
-  data: { name: string; namePrefix?: string; maxServers?: number; autoLink?: boolean; skins?: boolean } = { name: 'fleet-test-key' }
+  data: {
+    name: string;
+    namePrefix?: string;
+    maxServers?: number;
+    autoLink?: boolean;
+    skins?: boolean;
+  } = { name: 'fleet-test-key' }
 ): Promise<{ id: string; value: string }> {
   const res = await request.post('/api/fleet/keys', { data });
   expect(res.status(), await res.text()).toBe(201);
@@ -55,7 +61,11 @@ export async function createFleetKey(
   return { id: body.key.id, value: body.value };
 }
 
-export function enrollBody(credential: { code?: string; key?: string }, installId: string, extra: object = {}) {
+export function enrollBody(
+  credential: { code?: string; key?: string },
+  installId: string,
+  extra: object = {}
+) {
   return {
     ...credential,
     install_id: installId,
@@ -72,17 +82,29 @@ export async function enroll(
   installId: string,
   extra: object = {}
 ): Promise<{ status: number; body: Enrolled & { code?: string; error?: string } }> {
-  const res = await request.post('/api/fleet/enroll', { data: enrollBody(credential, installId, extra) });
+  const res = await request.post('/api/fleet/enroll', {
+    data: enrollBody(credential, installId, extra),
+  });
   return { status: res.status(), body: await res.json() };
 }
 
-export function helloPayload(serverId: string, installId: string, over: Partial<HelloPayload> = {}): HelloPayload {
+export function helloPayload(
+  serverId: string,
+  installId: string,
+  over: Partial<HelloPayload> = {}
+): HelloPayload {
   return {
     server_id: serverId,
     install_id: installId,
     tenant_id: 'default',
     protocol: { min: 1, max: 1 },
-    versions: { core: '0.4.0', plugin_api: '1.1', plugins: { match: '0.4.0', fleet: '0.4.0' }, cs2_build: 14032, cs2_patch: '1.40.3.2' },
+    versions: {
+      core: '0.4.0',
+      plugin_api: '1.1',
+      plugins: { match: '0.4.0', fleet: '0.4.0' },
+      cs2_build: 14032,
+      cs2_patch: '1.40.3.2',
+    },
     capabilities: ['match.v1', 'stats.v1'],
     host: { hostname: 'test-host', game_port: 27015, tv_port: 27020 },
     boot_id: ulid(),
@@ -95,7 +117,14 @@ export function helloPayload(serverId: string, installId: string, over: Partial<
 }
 
 export function envelope(type: string, payload: object, extra: Partial<Envelope> = {}): Envelope {
-  return { v: 1, type, id: ulid(), ts: Date.now(), payload: payload as Record<string, unknown>, ...extra };
+  return {
+    v: 1,
+    type,
+    id: ulid(),
+    ts: Date.now(),
+    payload: payload as Record<string, unknown>,
+    ...extra,
+  };
 }
 
 /** A fleet client: queues what it receives and remembers how it closed. */
@@ -141,7 +170,9 @@ export class FleetTestClient {
     await new Promise<void>((resolve, reject) => {
       ws.once('open', () => resolve());
       ws.once('error', reject);
-      ws.once('unexpected-response', (_req, res) => reject(new Error(`unexpected HTTP ${res.statusCode}`)));
+      ws.once('unexpected-response', (_req, res) =>
+        reject(new Error(`unexpected HTTP ${res.statusCode}`))
+      );
     });
     return client;
   }
@@ -162,10 +193,13 @@ export class FleetTestClient {
       if (i >= 0) return this.received.splice(i, 1)[0];
       if (this.closed) {
         const detail = this.lastError ? `; ${this.lastError}` : '';
-        throw new Error(`socket closed (${this.closed.code} ${this.closed.reason}${detail}) while waiting`);
+        throw new Error(
+          `socket closed (${this.closed.code} ${this.closed.reason}${detail}) while waiting`
+        );
       }
       const left = deadline - Date.now();
-      if (left <= 0) throw new Error(`timed out; received: ${JSON.stringify(this.received.map((m) => m.type))}`);
+      if (left <= 0)
+        throw new Error(`timed out; received: ${JSON.stringify(this.received.map((m) => m.type))}`);
       await new Promise<void>((resolve) => {
         const t = setTimeout(resolve, left);
         this.waiters.push(() => {
@@ -201,7 +235,11 @@ export class FleetTestClient {
   }
 
   /** hello → welcome. */
-  async handshake(serverId: string, installId: string, over: Partial<HelloPayload> = {}): Promise<Envelope> {
+  async handshake(
+    serverId: string,
+    installId: string,
+    over: Partial<HelloPayload> = {}
+  ): Promise<Envelope> {
     const hello = envelope('hello', helloPayload(serverId, installId, over));
     this.send(hello);
     const welcome = await this.nextOfType('welcome');
@@ -210,6 +248,7 @@ export class FleetTestClient {
   }
 
   close(): void {
-    if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) this.ws.close(1000);
+    if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)
+      this.ws.close(1000);
   }
 }
