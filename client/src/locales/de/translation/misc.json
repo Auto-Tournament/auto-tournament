@@ -992,6 +992,9 @@
   },
   "update": {
     "available": "Auto Tournament {{latest}} is out (you run {{running}}).",
-    "notes": "What's new"
+    "notes": "What's new",
+    "module": "{{name}} {{version}} is available (you run {{installed}}).",
+    "moduleProblem": "{{name}}: the update did not take. {{problem}}",
+    "openModules": "Modules"
   }
 }
