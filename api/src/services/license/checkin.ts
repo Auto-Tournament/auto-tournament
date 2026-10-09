@@ -64,6 +64,8 @@ export const SETTING = {
   result: 'license_checkin_result',
   countedSince: 'license_checkin_counted_since',
   declaration: 'license_event_declaration',
+  /** The license's current terms from the last check-in (a signed lease; ./gate.ts). */
+  lease: 'license_lease',
   prompt: 'license_event_prompt',
 } as const;
 
@@ -107,8 +109,13 @@ export interface CheckinResult {
   notice: string | null;
   /** Where the license stands (./gate.ts); null from an older license server. */
   license?: ServerLicenseState | null;
-  /** The license's newest key, when the server has a newer one than ours (a renewal). Not stored in the result. */
-  token?: string | null;
+  /**
+   * A subscription's current terms (servers, paid until), signed like a key:
+   * the key itself never changes on renewal. Stored apart (SETTING.lease).
+   */
+  lease?: string | null;
+  /** Servers in use on this license by every other install (one pool per license). */
+  serversElsewhere?: number;
 }
 
 /** What the admin UI gets: when, the server's notice, and what is sent. */
@@ -238,12 +245,19 @@ export function parseCheckinResponse(value: unknown): CheckinResult | null {
     }
   }
   const license = parseLicenseState(value.license);
-  const token = cleanToken(value.token);
-  return { usage, notice: cleanNotice(value.notice), ...(license ? { license } : {}), ...(token ? { token } : {}) };
+  const lease = cleanToken(value.lease);
+  const elsewhere = count(value.servers_elsewhere ?? value.serversElsewhere);
+  return {
+    usage,
+    notice: cleanNotice(value.notice),
+    ...(license ? { license } : {}),
+    ...(lease ? { lease } : {}),
+    ...(elsewhere !== null ? { serversElsewhere: elsewhere } : {}),
+  };
 }
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
-const STATES = ['active', 'past_due', 'expired', 'revoked', 'replaced'] as const;
+const STATES = ['active', 'past_due', 'expired', 'revoked', 'replaced', 'in_use_elsewhere'] as const;
 
 /** The answer's `license`, checked; null when missing or not understood. */
 export function parseLicenseState(value: unknown): ServerLicenseState | null {
@@ -279,7 +293,8 @@ export function parseStoredResult(raw: string | null): CheckinResult {
       usage = parsed?.usage ?? null;
     }
     const license = parseLicenseState(value.license);
-    return { usage, notice: cleanNotice(value.notice), ...(license ? { license } : {}) };
+    const elsewhere = count(value.serversElsewhere);
+    return { usage, notice: cleanNotice(value.notice), ...(license ? { license } : {}), ...(elsewhere !== null ? { serversElsewhere: elsewhere } : {}) };
   } catch {
     return { usage: null, notice: null };
   }
@@ -434,19 +449,14 @@ export function promptAllowed(prompt: EventPromptState, licenseId: string, now: 
 // ---------------------------------------------------------------------------
 
 /**
- * Whether `next` is a genuine later key of the same license as `current`:
- * same id and kind, issued later, and no earlier update window.
+ * Whether `lease` is genuine current terms for the license of `key`: signed
+ * by us, same license id and kind, issued no earlier than the key.
  */
-export function renewalOf(current: string, next: string): boolean {
-  const a = verifyLicense(current);
-  const b = verifyLicense(next);
-  if (!b.valid || !b.license || !a.license) return false;
-  return (
-    a.license.id === b.license.id &&
-    a.license.kind === b.license.kind &&
-    b.license.issued_at > a.license.issued_at &&
-    b.license.updates_until >= a.license.updates_until
-  );
+export function leaseOf(key: string, lease: string): boolean {
+  const a = verifyLicense(key);
+  const b = verifyLicense(lease);
+  if (!a.valid || !b.valid || !b.license || !a.license) return false;
+  return b.license.lease === true && a.license.id === b.license.id && a.license.kind === b.license.kind && b.license.issued_at >= a.license.issued_at;
 }
 
 export interface CheckinStore {
@@ -464,7 +474,6 @@ export interface CheckinDeps {
   /** Where players open the platform (FRONTEND_BASE_URL), sent with the check-in. */
   publicUrl?: () => string | null;
   /** Stores a renewed key the server handed back (same license, newer). */
-  replaceKey?: (key: string) => Promise<void>;
   url?: string;
   fetch?: typeof globalThis.fetch;
   now?: () => Date;
@@ -582,11 +591,11 @@ export class LicenseCheckin {
     // The key may have changed while this was on its way: keep nothing then.
     if ((await this.deps.getKey()) !== key) return 'failed';
     await this.deps.store.set(SETTING.lastAt, now.toISOString());
-    const { token, ...kept } = result;
+    const { lease, ...kept } = result;
     await this.deps.store.set(SETTING.result, JSON.stringify(kept));
-    if (token && token !== key && this.deps.replaceKey && renewalOf(key, token)) {
-      await this.deps.replaceKey(token);
-      log.info('[LICENSE] Picked up the renewed license key');
+    if (lease && leaseOf(key, lease) && (await this.deps.store.get(SETTING.lease)) !== lease) {
+      await this.deps.store.set(SETTING.lease, lease);
+      log.info('[LICENSE] Picked up the license\'s current terms');
     }
     await this.deps.store.set(SETTING.countedSince, String(until));
     log.debug('[LICENSE] Checked in');
@@ -597,6 +606,7 @@ export class LicenseCheckin {
   async clearState(): Promise<void> {
     await this.deps.store.set(SETTING.lastAt, null);
     await this.deps.store.set(SETTING.result, null);
+    await this.deps.store.set(SETTING.lease, null);
   }
 
   async status(hasKey: boolean): Promise<CheckinStatus> {

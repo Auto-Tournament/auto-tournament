@@ -295,8 +295,39 @@ test.describe('the paid server limit and late payment (gate)', () => {
     expect(standingFor(month(), { status: 'past_due', validUntil: '2026-11-08', stopsOn: '2026-11-22' }, '2026-10-10', publicKeys).status).toBe('past_due');
     expect(standingFor(month(), { status: 'active', validUntil: null, stopsOn: null }, '2026-11-23', publicKeys).status).toBe('expired');
     const yearly = signToken(payload({ kind: 'year' }), key);
-    expect(standingFor(yearly, { status: 'expired', validUntil: '2026-10-01', stopsOn: '2026-10-15' }, '2026-10-20', publicKeys).status).toBe('expired');
+    expect(standingFor(yearly, { status: 'expired', validUntil: '2027-09-01', stopsOn: '2027-09-15' }, '2027-09-20', publicKeys).status).toBe('expired');
+    // An answer about an earlier period than the key covers doesn't count.
+    expect(standingFor(yearly, { status: 'expired', validUntil: '2026-10-01', stopsOn: '2026-10-15' }, '2026-10-20', publicKeys).status).toBe('active');
     expect(standingFor(yearly, null, '2030-01-01', publicKeys).status).toBe('active');
+  });
+
+  test('the lease carries the current terms; the key itself never changes', () => {
+    const lease = signToken(payload({ kind: 'month', max_servers: 12, updates_until: '2026-12-08', issued_at: '2026-11-08T10:00:00Z', lease: true }), key);
+    const st = standingFor(month(), null, '2026-11-30', publicKeys, lease);
+    expect(st).toMatchObject({ status: 'active', maxServers: 12, reason: null });
+    // A lease is never the key, and terms without the lease mark are no lease.
+    expect(standingFor(lease, null, '2026-11-30', publicKeys)).toMatchObject({ status: 'invalid', paid: false });
+    expect(keyInputProblem(lease)).toMatch(/lease/);
+    const unmarked = signToken(payload({ kind: 'month', max_servers: 12, updates_until: '2026-12-08', issued_at: '2026-11-08T10:00:00Z' }), key);
+    expect(standingFor(month(), null, '2026-10-10', publicKeys, unmarked).maxServers).toBe(5);
+    // One pool per license: servers on other installs with this key count too.
+    expect(() => checkCreate({ ...st, serversElsewhere: 10 }, 2, 1)).toThrow(/10 of them on other installs/);
+    expect(() => checkCreate({ ...st, serversElsewhere: 9 }, 2, 1)).not.toThrow();
+    // A lease for another license, or a forged one, is ignored.
+    const other = signToken(payload({ id: 'L-other', kind: 'month', max_servers: 99, updates_until: '2026-12-08', lease: true }), key);
+    expect(standingFor(month(), null, '2026-10-10', publicKeys, other).maxServers).toBe(5);
+    expect(standingFor(month(), null, '2026-10-10', publicKeys, lease.slice(0, -4) + 'AAAA').maxServers).toBe(5);
+  });
+
+  test('a replaced key gets its day, then stops; a key in use elsewhere stops at once', () => {
+    const replaced = { status: 'replaced' as const, validUntil: null, stopsOn: '2026-10-11' };
+    expect(standingFor(month(), replaced, '2026-10-11', publicKeys)).toMatchObject({ status: 'past_due', reason: 'replaced', stopsOn: '2026-10-11' });
+    const after = standingFor(month(), replaced, '2026-10-12', publicKeys);
+    expect(after).toMatchObject({ status: 'expired', reason: 'replaced' });
+    expect(() => checkCreate(after, 0, 1)).toThrow(/replaced/);
+    const elsewhere = standingFor(month(), { status: 'in_use_elsewhere', validUntil: null, stopsOn: '2026-10-10' }, '2026-10-10', publicKeys);
+    expect(elsewhere).toMatchObject({ status: 'expired', reason: 'in_use_elsewhere' });
+    expect(() => checkCreate(elsewhere, 0, 1)).toThrow(/another Auto Tournament install/);
   });
 
   test('monthly keys verify', () => {

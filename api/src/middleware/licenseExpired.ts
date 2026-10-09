@@ -1,8 +1,9 @@
 /**
- * Once a paid monthly or yearly license has expired (unpaid past its 14 days
- * of grace, Commercial License Terms section 8), the platform stops for
- * everyone until it is paid: every API call answers 503 `license_expired`,
- * and the client shows the "license expired" page.
+ * Once a paid license has stopped (unpaid past its 14 days of grace,
+ * Commercial License Terms section 8; its key replaced by a new one a day
+ * ago; or the key belongs to another install), the platform stops for
+ * everyone until it is sorted: every API call answers 503 `license_expired`
+ * with the reason, and the client shows the "license expired" page.
  *
  * What keeps working: health, signing in, the license routes (so an admin can
  * see what's wrong and paste a renewed key), and the fleet links (machines
@@ -14,7 +15,7 @@
 
 import type { NextFunction, Request, Response } from 'express';
 import { licenseService } from '../services/license/licenseService';
-import type { LicenseStanding } from '../services/license/gate';
+import { expiredMessage, type LicenseStanding } from '../services/license/gate';
 
 const OPEN = ['/api/health', '/api/auth', '/api/license', '/api/fleet', '/api/compat'];
 const TTL_MS = 60_000;
@@ -49,7 +50,11 @@ export async function licenseExpiredMiddleware(req: Request, res: Response, next
   }
   res.status(503).json({
     error: 'license_expired',
-    message: "This platform's license has expired. The organizer has been told; it works again as soon as it is paid.",
+    message:
+      standing.reason === 'unpaid'
+        ? "This platform's license has expired. The organizer has been told; it works again as soon as it is paid."
+        : expiredMessage(standing),
+    reason: standing.reason,
     stopsOn: standing.stopsOn,
   });
 }

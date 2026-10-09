@@ -108,9 +108,10 @@ test.describe('license check-in: rules', { tag: ['@api'] }, () => {
   });
 
   test('the answer can carry the newest key and where the license stands', () => {
-    const r = parseCheckinResponse({ ok: true, token: 'ATL1.a.b', license: { status: 'past_due', valid_until: '2026-11-08', stops_on: '2026-11-22' } });
-    expect(r).toEqual({ usage: null, notice: null, token: 'ATL1.a.b', license: { status: 'past_due', validUntil: '2026-11-08', stopsOn: '2026-11-22' } });
-    expect(parseCheckinResponse({ ok: true, token: 'nope', license: { status: 'weird' } })).toEqual({ usage: null, notice: null });
+    const r = parseCheckinResponse({ ok: true, lease: 'ATL1.a.b', license: { status: 'past_due', valid_until: '2026-11-08', stops_on: '2026-11-22' } });
+    expect(r).toEqual({ usage: null, notice: null, lease: 'ATL1.a.b', license: { status: 'past_due', validUntil: '2026-11-08', stopsOn: '2026-11-22' } });
+    expect(parseCheckinResponse({ ok: true, lease: 'nope', license: { status: 'weird' } })).toEqual({ usage: null, notice: null });
+    expect(parseCheckinResponse({ ok: true, license: { status: 'in_use_elsewhere', stops_on: '2026-10-10' } })?.license?.status).toBe('in_use_elsewhere');
   });
 
   test('the key id comes from the token; anything else is no key', () => {

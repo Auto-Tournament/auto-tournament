@@ -78,7 +78,13 @@ export const api = {
     if (!response.ok) {
       const error = await response.text();
       if (response.status === 503 && error.includes('"license_expired"')) {
-        window.dispatchEvent(new CustomEvent(LICENSE_EXPIRED_EVENT));
+        let reason: string | null = null;
+        try {
+          reason = (JSON.parse(error) as { reason?: string | null }).reason ?? null;
+        } catch {
+          reason = null;
+        }
+        window.dispatchEvent(new CustomEvent(LICENSE_EXPIRED_EVENT, { detail: { reason } }));
       }
       // Proxies (Cloudflare, Caddy) answer 502/504 with an HTML page; showing
       // that raw leaves an empty or unreadable toast.

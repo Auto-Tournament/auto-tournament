@@ -985,6 +985,13 @@
     "pay": "Pay in the console ↗",
     "settings": "License settings",
     "fix": "Fix it ↗",
-    "pastDue": "The license payment failed. The platform stops on {{date}} unless it is paid."
+    "pastDue": "The license payment failed. The platform stops on {{date}} unless it is paid.",
+    "elsewhereTitle": "This license key is in use on another install",
+    "elsewhereAdmin": "One license key works on one Auto Tournament install, and another install has this one. Paste this install's own key, or use \"Move to another install\" in the console. Your data is safe.",
+    "replacedTitle": "This license key was replaced",
+    "replacedAdmin": "A new key was made for this license in the console, so the old one has stopped. Paste the new key in the license settings. Your data is safe.",
+    "openConsole": "Open the console ↗",
+    "pasteKey": "Paste the new key",
+    "replacedSoon": "A new key was made for this license in the console. Paste it in the license settings: this key stops on {{date}}."
   }
 }

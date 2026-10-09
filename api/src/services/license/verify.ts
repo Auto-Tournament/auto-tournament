@@ -47,6 +47,8 @@ export interface LicensePayload {
   /** YYYY-MM-DD, inclusive: the event window. Event licenses only. */
   valid_from?: string;
   valid_to?: string;
+  /** Only on a lease (the current terms from a check-in, ./gate.ts): never accepted as the key. */
+  lease?: true;
 }
 
 export type LicenseWarningCode =

@@ -174,6 +174,19 @@ export interface ServerLicenseHandoff {
   key: string | null;
   revision: string;
   /**
+   * The license's current terms from the platform's last check-in (a signed
+   * lease, same format as a key): the key never changes on renewal or more
+   * servers, so csm and Ready Up take their limits from this. Left out when
+   * there is none.
+   */
+  lease?: string;
+  /**
+   * Where the license stands, from the platform's last check-in: csm and
+   * Ready Up stop with the platform when it is expired, replaced past its day,
+   * or in use elsewhere. Left out when there is no answer yet.
+   */
+  state?: { status: string; stops_on: string | null; valid_until: string | null };
+  /**
    * How the admin said this instance is used (the consent from the license
    * terms step), so csm can give Ready Up its license consent with no prompt.
    * Left out until an admin has accepted.
@@ -183,12 +196,39 @@ export interface ServerLicenseHandoff {
 
 export const NO_LICENSE_REVISION = 'none';
 
-/** The hand-off for a stored key (or none). Pure. */
-export function licenseHandoffFor(key: string | null | undefined): ServerLicenseHandoff {
+/**
+ * The hand-off for a stored key (or none), with its lease and state. Pure.
+ * The revision covers all three, so csm rewrites configs when any changes.
+ */
+export function licenseHandoffFor(
+  key: string | null | undefined,
+  lease?: string | null,
+  state?: ServerLicenseHandoff['state'] | null
+): ServerLicenseHandoff {
   const trimmed = key?.trim() || null;
   if (!trimmed) return { key: null, revision: NO_LICENSE_REVISION };
-  const digest = createHash('sha256').update(trimmed, 'utf8').digest('hex').slice(0, 16);
-  return { key: trimmed, revision: `sha256:${digest}` };
+  const leaseValue = lease?.trim() || undefined;
+  const material = [trimmed, leaseValue ?? '', state ? JSON.stringify(state) : ''].join('\n');
+  const digest = createHash('sha256').update(material, 'utf8').digest('hex').slice(0, 16);
+  return {
+    key: trimmed,
+    revision: `sha256:${digest}`,
+    ...(leaseValue ? { lease: leaseValue } : {}),
+    ...(state ? { state } : {}),
+  };
+}
+
+/** The last check-in answer's license state (`license_checkin_result`, JSON), or null. */
+async function checkinState(): Promise<ServerLicenseHandoff['state'] | null> {
+  try {
+    const raw = await settingsService.getSetting('license_checkin_result');
+    const lic = raw ? (JSON.parse(raw) as { license?: { status?: unknown; stopsOn?: unknown; validUntil?: unknown } }).license : undefined;
+    if (!lic || typeof lic.status !== 'string') return null;
+    const day = (v: unknown) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
+    return { status: lic.status, stops_on: day(lic.stopsOn), valid_until: day(lic.validUntil) };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -214,7 +254,12 @@ async function consentUse(): Promise<'noncommercial' | 'commercial' | undefined>
  * new host module.
  */
 export async function getLicenseHandoff(): Promise<ServerLicenseHandoff> {
-  const handoff = licenseHandoffFor(await settingsService.getSetting('license_key'));
+  const [key, lease, state] = await Promise.all([
+    settingsService.getSetting('license_key'),
+    settingsService.getSetting('license_lease'),
+    checkinState(),
+  ]);
+  const handoff = licenseHandoffFor(key, lease, state);
   const use = await consentUse();
   if (use) handoff.use = use;
   return handoff;

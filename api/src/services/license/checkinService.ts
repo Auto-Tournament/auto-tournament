@@ -86,8 +86,6 @@ export const licenseCheckin = new LicenseCheckin({
   activity: readActivity,
   version: packageJson.version,
   publicUrl: () => configuredPublicOrigin(),
-  // A renewal's key replaces the stored one quietly: same license, newer dates.
-  replaceKey: (key) => db.setAppSettingAsync('license_key', key),
 });
 
 let timer: NodeJS.Timeout | null = null;

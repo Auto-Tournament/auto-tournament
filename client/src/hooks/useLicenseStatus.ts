@@ -40,6 +40,8 @@ export interface LicenseStatus {
     maxServers: number | null;
     licenseId: string | null;
     stopsOn: string | null;
+    /** Why it is past due or expired: unpaid, the key was replaced in the console, or the key belongs to another install. */
+    reason?: 'unpaid' | 'replaced' | 'in_use_elsewhere' | null;
   };
   /** An event license only: the quiet "what's this?" question on the admin home. */
   eventPrompt: {

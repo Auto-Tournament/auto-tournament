@@ -122,7 +122,7 @@ export function statusFor(key: string | null, inputs: StatusInputs): LicenseStat
     publicBadge: inputs.publicBadge,
     checkin: null,
     eventPrompt: null,
-    standing: { status: 'free', paid: false, maxServers: null, licenseId: null, stopsOn: null } as LicenseStanding,
+    standing: { status: 'free', paid: false, maxServers: null, licenseId: null, stopsOn: null, reason: null, serversElsewhere: 0 } as LicenseStanding,
   };
   if (!key) {
     return { status: 'none', license: null, warnings: [], verifyUrl: null, ...base };
@@ -147,10 +147,14 @@ export function statusFor(key: string | null, inputs: StatusInputs): LicenseStat
 /** Why a pasted key is refused before it is stored, or null to store it. */
 export function keyInputProblem(input: unknown): string | null {
   if (typeof input !== 'string' || !input.trim()) return 'Paste a license key';
+  let payload: unknown;
   try {
-    decodeLicense(input);
+    payload = decodeLicense(input).payload;
   } catch {
     return 'This is not an Auto Tournament license key (it starts with ATL1.)';
+  }
+  if (typeof payload === 'object' && payload !== null && (payload as { lease?: unknown }).lease === true) {
+    return 'This is a lease, not a license key. Copy the key from the console.';
   }
   return null;
 }
@@ -160,10 +164,14 @@ class LicenseService {
     return (await settingsService.getSetting('license_key'))?.trim() || null;
   }
 
-  /** Where the license stands now (./gate.ts): the key, read offline, and the last check-in answer. */
+  /** Where the license stands now (./gate.ts): the key, read offline, the lease and the last check-in answer. */
   async standing(now: Date = new Date()): Promise<LicenseStanding> {
-    const [key, stored] = await Promise.all([this.getKey(), settingsService.getSetting(SETTING.result)]);
-    return standingFor(key, parseStoredResult(stored ?? null).license ?? null, now.toISOString().slice(0, 10));
+    const [key, stored, lease] = await Promise.all([this.getKey(), settingsService.getSetting(SETTING.result), settingsService.getSetting(SETTING.lease)]);
+    const result = parseStoredResult(stored ?? null);
+    return {
+      ...standingFor(key, result.license ?? null, now.toISOString().slice(0, 10), undefined, lease ?? null),
+      serversElsewhere: result.serversElsewhere ?? 0,
+    };
   }
 
   /**
