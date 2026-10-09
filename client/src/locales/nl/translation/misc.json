@@ -135,6 +135,21 @@
       "matches_other": "{{count}} matches played",
       "confirm": "Merge accounts",
       "failed": "Could not merge the accounts"
+    },
+    "changePassword": {
+      "button": "Change password",
+      "title": "Change your password",
+      "current": "Current password",
+      "new": "New password",
+      "repeat": "New password again",
+      "totp": "Authenticator code",
+      "mismatch": "The new passwords are not the same",
+      "save": "Change password",
+      "cancel": "Cancel",
+      "done": "Password changed",
+      "failed": "Could not change the password",
+      "totpNeeded": "Enter the code from your authenticator app too.",
+      "tooLong": "The new password is too long"
     }
   },
   "home": {
