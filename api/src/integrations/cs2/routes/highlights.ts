@@ -149,6 +149,8 @@ import {
   seenRecorder,
 } from '../demos/recorders';
 
+import { dropOrphanJobs } from '../demos/jobs';
+
 const router = Router();
 
 const idOf = (req: Request) => {
@@ -184,6 +186,8 @@ router.post('/recorder/claim', requireAuth, async (req: Request, res: Response) 
     });
     // Paused after too many turned-down clips (demos/recorders.ts).
     if (isPaused(me)) return res.status(204).end();
+    // Moments of a deleted match can't be recorded (demos/jobs.ts).
+    await dropOrphanJobs();
     const idle = idleRecorderCount(recorder);
     const settings = recorderSettings(me);
     const give = (job: unknown) => {

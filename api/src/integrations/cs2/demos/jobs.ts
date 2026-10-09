@@ -86,6 +86,30 @@ export interface DemoAnalysisPayload {
 const now = () => Math.floor(Date.now() / 1000);
 const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
 
+/**
+ * Jobs of a match that was deleted can never run (its demo is gone with it):
+ * fail them for good, and skip its waiting highlights, so neither the demo
+ * worker nor a recorder keeps asking for them.
+ */
+export async function dropOrphanJobs(): Promise<void> {
+  try {
+    await db.runAsync(
+      `UPDATE cs2_demo_jobs j SET status = 'failed', error = 'The match was deleted', attempts = ?
+        WHERE j.status IN ('pending', 'running')
+          AND NOT EXISTS (SELECT 1 FROM matches m WHERE m.slug = j.match_slug)`,
+      [MAX_ATTEMPTS]
+    );
+    await db.runAsync(
+      `UPDATE cs2_highlights h SET status = 'skipped', error = 'The match was deleted'
+        WHERE h.status IN ('pending', 'recording')
+          AND NOT EXISTS (SELECT 1 FROM matches m WHERE m.slug = h.match_slug)`,
+      []
+    );
+  } catch (error) {
+    log.warn('[DEMO-JOBS] Could not drop the jobs of deleted matches', { error: (error as Error).message });
+  }
+}
+
 /** Queue (or re-queue, for a new file) the analysis of a map's demo. */
 export async function enqueueDemoJob(
   matchSlug: string,
@@ -112,6 +136,7 @@ export async function enqueueDemoJob(
  * With nothing queued, queue one stored demo that never had a job.
  */
 export async function claimDemoJob(worker: string, analyzerVersion = 0): Promise<DemoJob | null> {
+  await dropOrphanJobs();
   for (let pass = 0; pass < 3; pass += 1) {
     const row = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
       `UPDATE cs2_demo_jobs SET status = 'running', worker = ?, claimed_at = ?, attempts = attempts + 1
