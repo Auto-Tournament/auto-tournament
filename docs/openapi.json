@@ -5576,6 +5576,81 @@
         ]
       }
     },
+    "/api/game/cs2/recorder-keys": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "The recorder keys (admin); never the keys themselves",
+        "responses": {
+          "200": {
+            "description": "The keys"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Make a recorder key (admin); the key is in this answer only",
+        "description": "`name`: what it is for, e.g. lan-seat-12.",
+        "responses": {
+          "200": {
+            "description": "The key and its token"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/recorder-keys/{id}": {
+      "delete": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Revoke a recorder key (admin); a recorder using it stops getting work",
+        "responses": {
+          "200": {
+            "description": "Revoked"
+          },
+          "404": {
+            "description": "No live key with that id"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/recorder-runs/{id}/log": {
       "get": {
         "tags": [
@@ -5621,15 +5696,7 @@
           "200": {
             "description": "`gamescopeHz`: the pick, or null when no try was smooth"
           }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
+        }
       }
     },
     "/api/game/cs2/recorder/claim": {
@@ -5643,15 +5710,7 @@
           "200": {
             "description": "Success"
           }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
+        }
       }
     },
     "/api/game/cs2/recorder/fail": {
@@ -5665,15 +5724,21 @@
           "200": {
             "description": "Success"
           }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
+        }
+      }
+    },
+    "/api/game/cs2/recorder/heartbeat": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "A recorder at a job says it still is; what it claimed stays its own",
+        "description": "`recorder`: its name. Sent every few minutes during a job.",
+        "responses": {
+          "200": {
+            "description": "How many claims were renewed"
           }
-        ]
+        }
       }
     },
     "/api/game/cs2/recorder/jobs/{id}/clip": {
@@ -5696,14 +5761,6 @@
             "schema": {
               "type": "string"
             }
-          }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
           }
         ]
       }
@@ -5737,14 +5794,6 @@
               "type": "string"
             }
           }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
         ]
       }
     },
@@ -5777,14 +5826,6 @@
               "type": "string"
             }
           }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
         ]
       }
     },
@@ -5816,14 +5857,6 @@
             "schema": {
               "type": "string"
             }
-          }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
           }
         ]
       }
@@ -5865,14 +5898,6 @@
               "type": "string"
             }
           }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
         ]
       }
     },
@@ -5897,14 +5922,6 @@
               "type": "string"
             }
           }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
         ]
       }
     },
@@ -5928,14 +5945,6 @@
             "schema": {
               "type": "string"
             }
-          }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
           }
         ]
       }
@@ -5976,14 +5985,6 @@
             "schema": {
               "type": "string"
             }
-          }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
           }
         ]
       }
@@ -6033,14 +6034,6 @@
               "type": "string"
             }
           }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
         ]
       }
     },
@@ -6055,15 +6048,7 @@
           "200": {
             "description": "Stored"
           }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
+        }
       }
     },
     "/api/game/cs2/recorder/team-reels/{slug}/{team}": {
@@ -6094,14 +6079,6 @@
             "schema": {
               "type": "string"
             }
-          }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
           }
         ]
       }
@@ -6134,14 +6111,6 @@
             "schema": {
               "type": "string"
             }
-          }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
           }
         ]
       }
@@ -6183,14 +6152,6 @@
               "type": "string"
             }
           }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
         ]
       }
     },
@@ -6215,14 +6176,6 @@
               "type": "string"
             }
           }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
         ]
       }
     },
@@ -6246,14 +6199,6 @@
             "schema": {
               "type": "string"
             }
-          }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
           }
         ]
       }
@@ -6287,14 +6232,6 @@
               "type": "string"
             }
           }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
         ]
       }
     },
@@ -6321,6 +6258,39 @@
       }
     },
     "/api/game/cs2/recorders/{name}": {
+      "put": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Name a recorder (admin)",
+        "description": "`label`: what the Recorders tab and the Clips list call it; empty for its own name.",
+        "responses": {
+          "200": {
+            "description": "Named"
+          },
+          "404": {
+            "description": "No recorder by that name"
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
       "delete": {
         "tags": [
           "Highlights"

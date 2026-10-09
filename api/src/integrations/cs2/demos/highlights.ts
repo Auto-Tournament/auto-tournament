@@ -714,7 +714,8 @@ export function parseClipStarts(raw: unknown, clips: number): number[] | null {
 export async function saveClip(
   id: number,
   body: NodeJS.ReadableStream,
-  markers: ClipMarkers | null = null
+  markers: ClipMarkers | null = null,
+  recordSeconds: number | null = null
 ): Promise<number> {
   await fs.promises.mkdir(HIGHLIGHTS_DIR, { recursive: true });
   const file = clipFile(id);
@@ -730,12 +731,40 @@ export async function saveClip(
   await fs.promises.rename(tmp, file);
   await removeTwins(file);
   await db.runAsync(
-    "UPDATE cs2_highlights SET status = 'done', clip_path = ?, clip_bytes = ?, markers = ?, error = NULL WHERE id = ?",
-    [path.basename(file), size, markers ? JSON.stringify(markers) : null, id]
+    `UPDATE cs2_highlights SET status = 'done', clip_path = ?, clip_bytes = ?, markers = ?, error = NULL,
+            record_seconds = ?, done_at = ? WHERE id = ?`,
+    [
+      path.basename(file),
+      size,
+      markers ? JSON.stringify(markers) : null,
+      recordSeconds,
+      Math.floor(Date.now() / 1000),
+      id,
+    ]
   );
   await queueMatchReelFor([id]);
   await noticeHighlightReady(id);
   return size;
+}
+
+/**
+ * A recorder at a job says it still is (worker/runlog.go heartbeat): what it
+ * claimed stays its own. A map job can take hours and sends its clips only
+ * at the end, so without this its moments went stale after STALE_SECONDS
+ * and another recorder took them over.
+ */
+export async function renewClaims(recorder: string): Promise<number> {
+  const now = Math.floor(Date.now() / 1000);
+  const name = recorder.slice(0, 120);
+  const clips = await db.runAsync(
+    "UPDATE cs2_highlights SET claimed_at = ? WHERE recorder = ? AND status = 'recording'",
+    [now, name]
+  );
+  await db.runAsync(
+    "UPDATE cs2_match_reels SET claimed_at = ? WHERE recorder = ? AND status = 'recording'",
+    [now, name]
+  );
+  return clips.changes;
 }
 
 /** Tell the player their clip is ready (a player's own moment; reels belong to no one player). */
