@@ -29,6 +29,7 @@ import { setPlayerSteamCookie } from './auth';
 import { markLocalReauth } from '../utils/localReauth';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { playerEmailService } from '../services/playerEmailService';
+import { emailService } from '../services/emailService';
 
 export const setupRouter = Router();
 export const localAuthRouter = Router();
@@ -218,7 +219,7 @@ setupRouter.post('/complete', guardWrite, async (req: Request, res: Response) =>
  *     summary: Whether local admin login is on, and whether setup is open
  *     responses:
  *       200:
- *         description: "`enabled`: the login page shows the Admin login link. `setup`: no admin exists yet and /setup is open."
+ *         description: "`enabled`: the login page shows the Admin login link. `setup`: no admin exists yet and /setup is open. `emailRecovery`: the site sends email, so a forgotten password can be reset by email."
  */
 localAuthRouter.get('/status', async (_req: Request, res: Response) => {
   res.json({
@@ -226,6 +227,8 @@ localAuthRouter.get('/status', async (_req: Request, res: Response) => {
     enabled: await adminAccessSettings.isLocalAdminLoginEnabled(),
     // Only a fresh install is announced; a reset code's holder knows where to go.
     setup: (await localAdminService.setupMode()) === 'setup',
+    // Password reset by email works: the sign-in page offers "Forgot your password?".
+    emailRecovery: await emailService.isReady(),
   });
 });
 
