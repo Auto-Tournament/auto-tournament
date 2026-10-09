@@ -1,10 +1,13 @@
 /**
- * CS2's part of the Highlights page. Three tabs:
+ * CS2's part of the Highlights page. Four tabs:
  *
  * - Recorders: every recorder that asked for work, with its GPU, status
- *   (online, paused after too many turned-down clips), its benchmark, how
- *   many clips it kept and how many the frame check turned down, seconds per
- *   clip, and its recent runs with their logs (api: demos/recorders.ts).
+ *   (online, recording, paused after too many turned-down clips), its
+ *   benchmark, how many clips it kept and how many the frame check turned
+ *   down, seconds per clip, and its recent runs with their logs (api:
+ *   demos/recorders.ts). An offline one can be forgotten.
+ * - Clips: recent matches' clips and reels, what each was made at, and a Redo
+ *   for each, or for every one made at other settings (api: demos/clipsAdmin.ts).
  * - Overlays: clean copies of the clips, and redrawing their overlays.
  * - Connect: how to run a recorder against this platform.
  */
@@ -56,6 +59,7 @@ interface Recorder {
   runs: number;
   avgClipSeconds: number | null;
   lastError: string | null;
+  working: { clips: number; matchSlug: string | null; mapNumber: number; since: number } | null;
 }
 
 interface Run {
@@ -71,7 +75,7 @@ interface Run {
   error: string | null;
 }
 
-type TabKey = 'recorders' | 'overlays' | 'connect';
+type TabKey = 'recorders' | 'clips' | 'overlays' | 'connect';
 
 const when = (s: number | null) =>
   s ? new Date(s * 1000).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '—';
@@ -96,6 +100,11 @@ export default function Cs2HighlightsAdmin() {
           data-testid="highlights-tab-recorders"
         />
         <Tab
+          value="clips"
+          label={t('highlightsAdmin.tabs.clips')}
+          data-testid="highlights-tab-clips"
+        />
+        <Tab
           value="overlays"
           label={t('highlightsAdmin.tabs.overlays')}
           data-testid="highlights-tab-overlays"
@@ -107,6 +116,7 @@ export default function Cs2HighlightsAdmin() {
         />
       </Tabs>
       {tab === 'recorders' && <RecordersTab />}
+      {tab === 'clips' && <ClipsTab />}
       {tab === 'overlays' && <OverlaysTab />}
       {tab === 'connect' && <ConnectTab />}
     </Box>
@@ -195,6 +205,8 @@ function RecordersTab() {
               </Typography>
               {r.paused ? (
                 <Chip size="small" color="warning" label={t('highlightsAdmin.paused')} />
+              ) : r.working ? (
+                <Chip size="small" color="success" label={t('highlightsAdmin.recording')} />
               ) : r.online ? (
                 <Chip
                   size="small"
@@ -222,6 +234,16 @@ function RecordersTab() {
                 .filter(Boolean)
                 .join(' · ')}
             </Typography>
+            {r.working && (
+              <Typography variant="body2" data-testid={`recorder-working-${r.name}`}>
+                {t('highlightsAdmin.workingOn', {
+                  count: r.working.clips,
+                  map: r.working.mapNumber + 1,
+                  match: r.working.matchSlug ?? '—',
+                  time: when(r.working.since),
+                })}
+              </Typography>
+            )}
             {r.paused && r.pauseReason && (
               <Alert severity="warning" sx={{ py: 0 }}>
                 {t('highlightsAdmin.pausedUntil', {
@@ -324,6 +346,26 @@ function RecordersTab() {
               >
                 {t('highlightsAdmin.rerunBenchmark')}
               </Button>
+              {!r.online && (
+                <Button
+                  size="small"
+                  color="error"
+                  data-testid={`recorder-forget-${r.name}`}
+                  onClick={async () => {
+                    try {
+                      await api.delete(`/api/game/cs2/recorders/${enc}`);
+                      showSuccess(t('highlightsAdmin.forgotten'));
+                      await load();
+                    } catch (err) {
+                      showError(
+                        err instanceof Error ? err.message : t('highlightsAdmin.actionError')
+                      );
+                    }
+                  }}
+                >
+                  {t('highlightsAdmin.forget')}
+                </Button>
+              )}
             </Stack>
           </Box>
         );
@@ -518,5 +560,238 @@ function ConnectTab() {
       </Box>
       <Alert severity="info">{t('highlightsAdmin.connect.gaming')}</Alert>
     </Box>
+  );
+}
+
+interface AdminClip {
+  id: number;
+  mapNumber: number;
+  playerName: string;
+  title: string;
+  kind: string;
+  status: string;
+  madeWith: string | null;
+  outdated: boolean;
+}
+
+interface AdminReel {
+  mapNumber: number;
+  status: string;
+  clips: number | null;
+  madeWith: string | null;
+  outdated: boolean;
+}
+
+interface AdminMatch {
+  slug: string;
+  match: string;
+  clips: AdminClip[];
+  reels: AdminReel[];
+}
+
+/** "1440p120" as "1440p · 120 fps". */
+const quality = (q: string) => q.replace(/^(\d+)p(\d+)$/, '$1p · $2 fps');
+
+/**
+ * Recent matches' clips and reels, what each was made at, and a Redo for each,
+ * or for every one made at other settings than the current.
+ */
+function ClipsTab() {
+  const { t } = useModuleTranslation('cs2');
+  const { showSuccess, showError } = useSnackbar();
+  const [data, setData] = useState<{
+    current: string;
+    outdated: number;
+    matches: AdminMatch[];
+  } | null>(null);
+  const [onlyOutdated, setOnlyOutdated] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      setData(await api.get(`/api/game/cs2/clips${onlyOutdated ? '?outdated=1' : ''}`));
+    } catch (err) {
+      showError(err instanceof Error ? err.message : t('highlightsAdmin.loadError'));
+    }
+  }, [onlyOutdated, showError, t]);
+
+  useEffect(() => {
+    const first = setTimeout(() => void load(), 0);
+    const id = setInterval(() => void load(), 30_000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(id);
+    };
+  }, [load]);
+
+  const redo = async (body: object) => {
+    setBusy(true);
+    try {
+      const res = await api.post<{ clips: number; reels: number }>(
+        '/api/game/cs2/clips/redo',
+        body
+      );
+      showSuccess(t('highlightsAdmin.clips.redone', { clips: res.clips, reels: res.reels }));
+      await load();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : t('highlightsAdmin.actionError'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!data) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  const made = (m: string | null) =>
+    m
+      ? t('highlightsAdmin.clips.madeWith', { quality: quality(m) })
+      : t('highlightsAdmin.clips.madeUnknown');
+  const mapName = (n: number) =>
+    n < 0 ? t('highlightsAdmin.clips.series') : t('highlightsAdmin.clips.mapN', { n: n + 1 });
+  const row = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1,
+    flexWrap: 'wrap',
+    py: 0.75,
+    borderTop: 1,
+    borderColor: 'divider',
+  } as const;
+  return (
+    <Stack spacing={2} data-testid="clips-admin">
+      <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
+        <Typography variant="body2">
+          {t('highlightsAdmin.clips.current', { quality: quality(data.current) })}
+        </Typography>
+        {data.outdated > 0 && (
+          <Chip
+            size="small"
+            color="warning"
+            variant="outlined"
+            label={t('highlightsAdmin.clips.outdated', { count: data.outdated })}
+          />
+        )}
+        <Box sx={{ flex: 1 }} />
+        <Button
+          size="small"
+          variant={onlyOutdated ? 'contained' : 'outlined'}
+          onClick={() => setOnlyOutdated((v) => !v)}
+          data-testid="clips-only-outdated"
+        >
+          {t('highlightsAdmin.clips.onlyOutdated')}
+        </Button>
+        <Button
+          size="small"
+          variant="contained"
+          disabled={busy || data.outdated === 0}
+          onClick={() => void redo({ outdated: true })}
+          data-testid="clips-redo-outdated"
+        >
+          {t('highlightsAdmin.clips.redoOutdated')}
+        </Button>
+      </Stack>
+      {data.matches.length === 0 && (
+        <Typography variant="body2" color="text.secondary">
+          {onlyOutdated
+            ? t('highlightsAdmin.clips.emptyOutdated')
+            : t('highlightsAdmin.clips.empty')}
+        </Typography>
+      )}
+      {data.matches.map((m) => (
+        <Box
+          key={m.slug}
+          data-testid={`clips-match-${m.slug}`}
+          sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}
+        >
+          <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1, overflowWrap: 'anywhere' }}>
+            {m.match}
+          </Typography>
+          {m.reels.length > 0 && (
+            <Box sx={{ mb: 1.5 }}>
+              <Typography variant="caption" color="text.secondary">
+                {t('highlightsAdmin.clips.reels')}
+              </Typography>
+              {m.reels.map((r) => (
+                <Box key={r.mapNumber} sx={row} data-testid={`clips-reel-${m.slug}-${r.mapNumber}`}>
+                  <Typography variant="body2" fontWeight={600} sx={{ minWidth: 110 }}>
+                    {t('highlightsAdmin.clips.reelOf', { map: mapName(r.mapNumber) })}
+                  </Typography>
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={t(`highlightsAdmin.clips.status.${r.status}`)}
+                  />
+                  {r.outdated && (
+                    <Chip
+                      size="small"
+                      color="warning"
+                      label={t('highlightsAdmin.clips.outdated_flag')}
+                    />
+                  )}
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ flex: 1, minWidth: 140 }}
+                  >
+                    {made(r.madeWith)}
+                  </Typography>
+                  <Button
+                    size="small"
+                    disabled={busy || r.status === 'recording'}
+                    onClick={() => void redo({ reels: [{ slug: m.slug, mapNumber: r.mapNumber }] })}
+                  >
+                    {t('highlightsAdmin.clips.redo')}
+                  </Button>
+                </Box>
+              ))}
+            </Box>
+          )}
+          {m.clips.map((c) => (
+            <Box key={c.id} sx={row} data-testid={`clips-clip-${c.id}`}>
+              <Typography variant="body2" sx={{ minWidth: 60, color: 'text.secondary' }}>
+                {mapName(c.mapNumber)}
+              </Typography>
+              <Typography
+                variant="body2"
+                fontWeight={600}
+                sx={{ minWidth: 0, overflowWrap: 'anywhere' }}
+              >
+                {c.playerName}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ flex: 1, minWidth: 160 }}>
+                {c.title}
+              </Typography>
+              <Chip
+                size="small"
+                variant="outlined"
+                label={t(`highlightsAdmin.clips.status.${c.status}`)}
+              />
+              {c.outdated && (
+                <Chip
+                  size="small"
+                  color="warning"
+                  label={t('highlightsAdmin.clips.outdated_flag')}
+                />
+              )}
+              <Typography variant="caption" color="text.secondary" sx={{ minWidth: 150 }}>
+                {made(c.madeWith)}
+              </Typography>
+              <Button
+                size="small"
+                disabled={busy || !(c.status === 'done' || c.status === 'failed')}
+                onClick={() => void redo({ clipIds: [c.id] })}
+              >
+                {t('highlightsAdmin.clips.redo')}
+              </Button>
+            </Box>
+          ))}
+        </Box>
+      ))}
+    </Stack>
   );
 }

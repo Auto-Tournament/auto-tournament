@@ -27,6 +27,19 @@ import { api } from '../utils/api';
 import { pageTitle } from '../utils/pageTitle';
 
 const HIGHLIGHT_HEIGHTS = [720, 1080, 1440, 2160] as const;
+/** The reels' sizes (api: services/highlights/settings.ts REEL_LIMITS): field, min, max, default. */
+const REEL_LIMITS = [
+  ['highlightsFunnyPerPlayer', 0, 4, 2],
+  ['highlightsMapReelPerPlayer', 1, 3, 1],
+  ['highlightsSeriesReelMax', 2, 40, 16],
+  ['highlightsSeriesReelPerPlayer', 1, 6, 2],
+  ['highlightsTeamReelPerPlayer', 1, 6, 3],
+  ['highlightsTournamentReelMax', 4, 40, 16],
+  ['highlightsTournamentReelPerPlayer', 1, 6, 2],
+] as const;
+type ReelField = (typeof REEL_LIMITS)[number][0];
+/** The settings field without its `highlights` prefix: the label's key under highlightsPage.reels. */
+const reelKey = (field: ReelField) => field.charAt(10).toLowerCase() + field.slice(11);
 const HIGHLIGHT_FPS = [30, 60, 90, 120, 180, 240] as const;
 
 export default function HighlightsAdmin() {
@@ -73,6 +86,7 @@ interface HighlightValues {
   highlightsResolution: number;
   highlightsFps: number;
   highlightsMusic: string;
+  reels: Record<ReelField, number | null>;
 }
 
 function HighlightSettings() {
@@ -93,13 +107,26 @@ function HighlightSettings() {
             typeof s.highlightsResolution === 'number' ? s.highlightsResolution : 1080,
           highlightsFps: typeof s.highlightsFps === 'number' ? s.highlightsFps : 60,
           highlightsMusic: typeof s.highlightsMusic === 'string' ? s.highlightsMusic : '',
+          reels: Object.fromEntries(
+            REEL_LIMITS.map(([field, , , fallback]) => [
+              field,
+              typeof s[field] === 'number' ? (s[field] as number) : fallback,
+            ])
+          ) as Record<ReelField, number>,
         });
       })
       .catch((err: Error) => showError(err.message));
   }, [showError]);
 
-  const save = async (patch: Partial<HighlightValues>) => {
-    setVals((v) => (v ? { ...v, ...patch } : v));
+  const save = async (
+    patch: Partial<Omit<HighlightValues, 'reels'>> & Partial<Record<ReelField, number>>
+  ) => {
+    setVals((v) => {
+      if (!v) return v;
+      const reels = { ...v.reels };
+      for (const [field] of REEL_LIMITS) if (field in patch) reels[field] = patch[field] ?? null;
+      return { ...v, ...patch, reels };
+    });
     try {
       await api.put('/api/settings', patch);
       showSuccess(t('highlightsPage.saved'));
@@ -182,6 +209,46 @@ function HighlightSettings() {
         <Typography variant="caption" color="text.secondary" display="block">
           {t('highlightsPage.watermark.description')}
         </Typography>
+      </Box>
+      <Box data-testid="highlights-reel-sizes">
+        <Typography variant="subtitle2">{t('highlightsPage.reels.title')}</Typography>
+        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1.5 }}>
+          {t('highlightsPage.reels.description')}
+        </Typography>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'minmax(0,1fr)', sm: 'repeat(2, minmax(0,1fr))' },
+            gap: 2,
+          }}
+        >
+          {REEL_LIMITS.map(([field, min, max]) => (
+            <TextField
+              key={field}
+              label={t(`highlightsPage.reels.${reelKey(field)}`)}
+              type="number"
+              value={vals.reels[field] ?? ''}
+              onChange={(e) => {
+                const v = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                setVals((cur) =>
+                  cur
+                    ? {
+                        ...cur,
+                        reels: { ...cur.reels, [field]: Number.isNaN(v as number) ? null : v },
+                      }
+                    : cur
+                );
+              }}
+              onBlur={() => {
+                const v = vals.reels[field];
+                if (v !== null && v >= min && v <= max) void save({ [field]: v });
+              }}
+              helperText={t('highlightsPage.reels.range', { min, max })}
+              inputProps={{ min, max, 'data-testid': `highlights-${reelKey(field)}` }}
+              size="small"
+            />
+          ))}
+        </Box>
       </Box>
       <HighlightMusicSetting
         value={vals.highlightsMusic}

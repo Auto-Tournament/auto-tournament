@@ -976,6 +976,18 @@
     },
     "moved": "Highlight settings, the recorders and how to add one are on their own page now:",
     "saved": "Saved",
-    "saveFailed": "Could not save"
+    "saveFailed": "Could not save",
+    "reels": {
+      "title": "Reel sizes",
+      "description": "How many clips go into each reel. More clips make longer reels that take longer to make.",
+      "funnyPerPlayer": "Funny clips per player per map",
+      "mapReelPerPlayer": "Clips per player in a map reel",
+      "seriesReelMax": "Clips in a series reel",
+      "seriesReelPerPlayer": "Clips per player in a series reel",
+      "teamReelPerPlayer": "Clips per player in a team reel",
+      "tournamentReelMax": "Clips in a tournament reel",
+      "tournamentReelPerPlayer": "Clips per player in a tournament reel",
+      "range": "{{min}} to {{max}}"
+    }
   }
 }

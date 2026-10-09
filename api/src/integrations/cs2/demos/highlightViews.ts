@@ -10,6 +10,7 @@
  * tags and joins them like a match reel).
  */
 
+import { readReelLimits } from './highlightQuality';
 import { readHighlightQuality, type HighlightQuality } from './highlightQuality';
 import fs from 'fs';
 import path from 'path';
@@ -674,7 +675,7 @@ export interface ReelCandidate {
   score: number;
 }
 
-/** The most clips a tournament reel joins, and of one player. */
+/** The most clips a tournament reel joins, and of one player, unless the settings say otherwise. */
 const REEL_MAX = 16;
 const REEL_PER_PLAYER = 2;
 
@@ -686,13 +687,17 @@ const REEL_PER_PLAYER = 2;
  * up: the smaller plays first, the funny ones a third and two thirds in, the
  * best play last.
  */
-export function pickTournamentReel(candidates: ReelCandidate[]): number[] {
+export function pickTournamentReel(
+  candidates: ReelCandidate[],
+  max = REEL_MAX,
+  perPlayerMax = REEL_PER_PLAYER
+): number[] {
   const byScore = candidates.slice().sort((a, b) => b.score - a.score || a.id - b.id);
   const chosen: ReelCandidate[] = [];
   const perPlayer = new Map<string, number>();
   const take = (c: ReelCandidate) => {
-    if (chosen.length >= REEL_MAX || chosen.includes(c)) return;
-    if ((perPlayer.get(c.playerId) ?? 0) >= REEL_PER_PLAYER) return;
+    if (chosen.length >= max || chosen.includes(c)) return;
+    if ((perPlayer.get(c.playerId) ?? 0) >= perPlayerMax) return;
     chosen.push(c);
     perPlayer.set(c.playerId, (perPlayer.get(c.playerId) ?? 0) + 1);
   };
@@ -706,12 +711,12 @@ export function pickTournamentReel(candidates: ReelCandidate[]): number[] {
       if (chosen.length > before) left--;
     }
   };
-  of((c) => c.kind === 'ace', REEL_MAX);
+  of((c) => c.kind === 'ace', max);
   of((c) => c.kind === '4k', 4);
   of((c) => c.clutch, 3);
   of((c) => c.kind === 'flair', 2);
   of((c) => c.kind === 'funny', 2);
-  of((c) => c.kind !== 'funny', REEL_MAX);
+  of((c) => c.kind !== 'funny', max);
 
   const funny = chosen.filter((c) => c.kind === 'funny');
   const rest = chosen
@@ -775,7 +780,8 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
     [tournamentId]
   );
   const clips = rows.map(toClip);
-  const ids = pickTournamentReel(clips);
+  const limits = await readReelLimits();
+  const ids = pickTournamentReel(clips, limits.tournamentReelMax, limits.tournamentReelPerPlayer);
   const byId = new Map(clips.map((c) => [c.id, c]));
   const name = clips[0]?.match.tournament ?? null;
   const { settingsService } = await import('../../../services/settingsService');

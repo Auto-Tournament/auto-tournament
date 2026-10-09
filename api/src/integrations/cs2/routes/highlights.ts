@@ -19,6 +19,8 @@
  *   POST /api/game/cs2/recorder/redress/:file/fail     { error }: it could not
  *   GET  /api/game/cs2/redress                         admin: the redress queue ({ queued, working, failed, available })
  *   POST /api/game/cs2/redress                         admin: { files? }: dress these (default: every video with a clean twin) again
+ *   GET  /api/game/cs2/clips                           admin: recent matches' clips and match reels, what each was made at, which are outdated (?outdated=1)
+ *   POST /api/game/cs2/clips/redo                      admin: { clipIds?, reels?, outdated? }: make them again
  *
  * A clip's upload carries `X-AT-Markers` (JSON: where its kills and slow
  * motion are, in seconds); a reel's carries `X-AT-Clips` (the highlight ids it
@@ -96,7 +98,9 @@ import {
   parseMarkers,
   saveClip,
   saveReel,
+  SERIES_REEL,
 } from '../demos/highlights';
+import { listClips, redo, type RedoRequest } from '../demos/clipsAdmin';
 import {
   claimRedress,
   failRedress,
@@ -274,7 +278,7 @@ router.put(
 router.put('/recorder/match-reels/:slug/:map', requireAuth, async (req: Request, res: Response) => {
   const map = Number(req.params.map);
   const clips = Number(req.query.clips ?? 0);
-  if (!Number.isInteger(map) || map < 0) {
+  if (!Number.isInteger(map) || map < SERIES_REEL) {
     return res.status(400).json({ success: false, error: 'A match and map number' });
   }
   if (!String(req.headers['content-type'] ?? '').startsWith('video/mp4')) {
@@ -302,7 +306,7 @@ router.post(
   requireAuth,
   async (req: Request, res: Response) => {
     const map = Number(req.params.map);
-    if (!Number.isInteger(map) || map < 0)
+    if (!Number.isInteger(map) || map < SERIES_REEL)
       return res.status(400).json({ success: false, error: 'A map number' });
     await failMatchReel(
       req.params.slug,
@@ -374,7 +378,7 @@ router.put(
   requireAuth,
   twinUpload((req) => {
     const map = Number(req.params.map);
-    return Number.isInteger(map) && map >= 0 ? matchReelFile(req.params.slug, map) : null;
+    return Number.isInteger(map) && map >= SERIES_REEL ? matchReelFile(req.params.slug, map) : null;
   })
 );
 router.put(
@@ -656,7 +660,10 @@ router.get('/highlights/:file', async (req: Request, res: Response) => {
   // every game's highlights).
   if (req.query.music !== undefined || req.query.crowd !== undefined) {
     const query = new URLSearchParams(req.query as Record<string, string>).toString();
-    return res.redirect(307, `/api/highlights/videos/${encodeURIComponent(path.basename(dressed))}/download?${query}`);
+    return res.redirect(
+      307,
+      `/api/highlights/videos/${encodeURIComponent(path.basename(dressed))}/download?${query}`
+    );
   }
   if (req.query.clean === '1') return res.download(file, downloadName);
   res.setHeader('Cache-Control', 'public, max-age=86400');
@@ -765,7 +772,10 @@ router.get('/recorders', requireAuth, async (_req: Request, res: Response) => {
  */
 router.get('/recorders/:name/runs', requireAuth, async (req: Request, res: Response) => {
   try {
-    return res.json({ success: true, runs: await listRuns(req.params.name, Number(req.query.limit ?? 50)) });
+    return res.json({
+      success: true,
+      runs: await listRuns(req.params.name, Number(req.query.limit ?? 50)),
+    });
   } catch (error) {
     return recorderFail(res, error, 'list the runs');
   }
@@ -846,6 +856,54 @@ router.post('/recorders/:name/benchmark', requireAuth, async (req: Request, res:
  *       404:
  *         description: No recorder with that name
  */
+/**
+ * @openapi
+ * /api/game/cs2/clips:
+ *   get:
+ *     tags: [Highlights]
+ *     summary: Every recent match's clips and match reels, what each was made at, and which are outdated (admin)
+ *     parameters:
+ *       - in: query
+ *         name: outdated
+ *         schema: { type: boolean }
+ *         description: Only the outdated ones
+ *     responses:
+ *       200:
+ *         description: The clips
+ */
+router.get('/clips', requireAuth, async (req: Request, res: Response) => {
+  try {
+    return res.json({ success: true, ...(await listClips(req.query.outdated === '1')) });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] clips list failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not read the clips' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/clips/redo:
+ *   post:
+ *     tags: [Highlights]
+ *     summary: Make clips and match reels again (admin)
+ *     description: |
+ *       `clipIds`, `reels` ([{ slug, mapNumber }], -1 for a series reel) and/or
+ *       `outdated: true` (everything made at other settings). A redone clip's
+ *       reels are made again once it is recorded.
+ *     responses:
+ *       200:
+ *         description: How many clips and reels were queued
+ */
+router.post('/clips/redo', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const body = (req.body ?? {}) as RedoRequest;
+    return res.json({ success: true, ...(await redo(body)) });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] redo failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not queue the clips' });
+  }
+});
+
 router.delete('/recorders/:name', requireAuth, async (req: Request, res: Response) => {
   try {
     await forgetRecorder(req.params.name);

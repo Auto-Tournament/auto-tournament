@@ -2067,7 +2067,9 @@
     },
     "readyIn": "ready in about {{minutes}} min",
     "matchReelRecording": "Match reel · being recorded",
-    "teamReelButton": "{{team}} highlights"
+    "teamReelButton": "{{team}} highlights",
+    "wholeSeries": "Whole series",
+    "seriesReel": "Series reel"
   },
   "serversBoard": {
     "addFirstServers": "Add the first servers",
@@ -2151,7 +2153,8 @@
       "recorders": "Recorders",
       "settings": "Settings",
       "connect": "Add a recorder",
-      "overlays": "Overlays"
+      "overlays": "Overlays",
+      "clips": "Clips"
     },
     "loadError": "Could not load the recorders",
     "actionError": "That didn't work",
@@ -2216,6 +2219,38 @@
       "step4": "Start it with at-worker record. On its first job it runs a short benchmark, then it shows up under Recorders with its numbers.",
       "gaming": "You can game on the same PC while it records, but the GPU is shared: clips with too many repeated frames are turned down and recorded again elsewhere, and a recorder that keeps failing is paused for 15 minutes."
     },
-    "cs2Tab": "Counter-Strike 2"
+    "cs2Tab": "Counter-Strike 2",
+    "recording": "Recording",
+    "workingOn_one": "Recording {{count}} clip of map {{map}} ({{match}}) since {{time}}",
+    "workingOn_other": "Recording {{count}} clips of map {{map}} ({{match}}) since {{time}}",
+    "forget": "Forget",
+    "forgotten": "Forgotten. It shows up again if it asks for work.",
+    "clips": {
+      "tab": "Clips",
+      "current": "Clips and reels are made at {{quality}} now.",
+      "outdated_other": "{{count}} made at other settings",
+      "redoOutdated": "Make the outdated ones again",
+      "onlyOutdated": "Only outdated",
+      "empty": "No clips yet.",
+      "emptyOutdated": "Everything is made at the current settings.",
+      "redo": "Redo",
+      "redone": "Queued {{clips}} clips and {{reels}} reels",
+      "madeWith": "Made at {{quality}}",
+      "madeUnknown": "Made before this was kept",
+      "mapN": "Map {{n}}",
+      "series": "Whole series",
+      "reels": "Reels",
+      "reelOf": "{{map}} reel",
+      "status": {
+        "pending": "Waiting",
+        "recording": "Recording",
+        "done": "Done",
+        "failed": "Failed",
+        "waiting": "Waiting for its clips",
+        "skipped": "Skipped"
+      },
+      "outdated_flag": "Outdated",
+      "outdated_one": "{{count}} made at other settings"
+    }
   }
 }
