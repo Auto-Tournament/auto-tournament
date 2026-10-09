@@ -359,7 +359,7 @@ export function blockedViewerMiddleware(
         if (state.banned || state.deleted) {
           const r = req as import('express').Request & {
             user?: unknown;
-            logout?: (cb: (err?: unknown) => void) => void;
+            session?: { destroy?: (cb: (err?: unknown) => void) => void };
           };
           delete r.user;
           if (req.headers.cookie) {

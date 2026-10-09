@@ -304,6 +304,8 @@ class PlayerService {
       ...visible,
       discordId: player.discord_id ? player.discord_id : null,
       lastSignInAt: player.last_sign_in_at ?? null,
+      bannedAt: player.banned_at ?? null,
+      banReason: player.ban_reason ?? null,
     };
   }
 
