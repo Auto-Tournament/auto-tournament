@@ -1735,6 +1735,70 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 /**
+ * @openapi
+ * /api/players/import:
+ *   post:
+ *     tags: [Players]
+ *     summary: Create or update players without teams (integrators)
+ *     description: |
+ *       For a site that registers its players before teams exist (the same API
+ *       token as the teams API). Body: an array of players, or
+ *       `{ "players": [...] }`. Each player: `steamId`, `name`, and
+ *       optionally `discordId` (string) and `oidcSubject` (the `sub` of
+ *       their login on the site's OpenID Connect server).
+ *
+ *       A player who already exists keeps their rating, stats and match
+ *       history: only the display name is updated, and a Discord ID or
+ *       OpenID Connect subject they don't have yet is added (one on file is
+ *       never overwritten). Someone who later signs in with OpenID Connect
+ *       with that subject lands on this player.
+ *     responses:
+ *       200:
+ *         description: "`created`, `updated`, `errors` and `warnings` (values not stored)"
+ *       400:
+ *         description: No players, or a player without steamId or name
+ */
+router.post('/import', async (req: Request, res: Response) => {
+  const body = req.body as unknown;
+  const list = Array.isArray(body)
+    ? body
+    : body && typeof body === 'object' && Array.isArray((body as { players?: unknown }).players)
+      ? (body as { players: unknown[] }).players
+      : null;
+  if (!list || list.length === 0) {
+    return res.status(400).json({ success: false, error: 'Send an array of players' });
+  }
+  const players: CreatePlayerInput[] = [];
+  for (const raw of list) {
+    const p = (raw ?? {}) as Record<string, unknown>;
+    const steamId = typeof p.steamId === 'string' ? p.steamId.trim() : '';
+    const name = typeof p.name === 'string' ? p.name.trim() : '';
+    if (!/^\d{17}$/.test(steamId) || !name) {
+      return res.status(400).json({ success: false, error: 'Each player needs a steamId (SteamID64) and a name' });
+    }
+    players.push({
+      id: steamId,
+      name,
+      ...(p.discordId !== undefined ? { discordId: p.discordId } : {}),
+      ...(p.oidcSubject !== undefined ? { oidcSubject: p.oidcSubject } : {}),
+    } as CreatePlayerInput);
+  }
+  try {
+    const result = await playerService.bulkImportPlayers(players);
+    return res.status(result.errors.length > 0 ? 207 : 200).json({
+      success: result.errors.length === 0,
+      created: result.created,
+      updated: result.updated,
+      errors: result.errors.map((e) => ({ steamId: e.player.id, error: e.error })),
+      ...(result.warnings.length > 0 ? { warnings: result.warnings } : {}),
+    });
+  } catch (error) {
+    log.error('Error importing players', { error });
+    return res.status(500).json({ success: false, error: 'Could not import the players' });
+  }
+});
+
+/**
  * POST /api/players/bulk-import
  * Bulk import players from CSV/JSON
  */

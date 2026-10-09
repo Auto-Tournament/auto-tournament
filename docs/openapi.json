@@ -10722,6 +10722,31 @@
         }
       }
     },
+    "/api/players/import": {
+      "post": {
+        "tags": [
+          "Players"
+        ],
+        "summary": "Create or update players without teams (integrators)",
+        "description": "For a site that registers its players before teams exist (the same API\ntoken as the teams API). Body: an array of players, or\n`{ \"players\": [...] }`. Each player: `steamId`, `name`, and\noptionally `discordId` (string) and `oidcSubject` (the `sub` of\ntheir login on the site's OpenID Connect server).\n\nA player who already exists keeps their rating, stats and match\nhistory: only the display name is updated, and a Discord ID or\nOpenID Connect subject they don't have yet is added (one on file is\nnever overwritten). Someone who later signs in with OpenID Connect\nwith that subject lands on this player.\n",
+        "responses": {
+          "200": {
+            "description": "`created`, `updated`, `errors` and `warnings` (values not stored)"
+          },
+          "400": {
+            "description": "No players, or a player without steamId or name"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/players/me/discord-id": {
       "get": {
         "tags": [

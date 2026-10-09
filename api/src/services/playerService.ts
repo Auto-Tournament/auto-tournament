@@ -15,6 +15,7 @@ import {
   normalisePlayerDiscordIds,
   parseDiscordIdEdit,
   type ImportedDiscordId,
+  type ImportedOidcSubject,
 } from '../utils/discordId';
 
 function isAdminRow(row: unknown): boolean {
@@ -67,6 +68,8 @@ export interface CreatePlayerInput {
    * applies the import rule instead.
    */
   discordId?: unknown;
+  /** Imports only: an OpenID Connect login's `sub` (see applyImportedOidcSubjects). */
+  oidcSubject?: unknown;
 }
 
 export interface UpdatePlayerInput {
@@ -284,7 +287,10 @@ class PlayerService {
    * Get player by Steam ID
    */
   async getPlayerById(playerId: string): Promise<PlayerResponse | null> {
-    const player = await db.queryOneAsync<PlayerRecord>(`SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id, ${MAIN_RATING_SQL} FROM players p WHERE p.id = ?`, [playerId]);
+    const player = await db.queryOneAsync<PlayerRecord>(
+      `SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id, ${MAIN_RATING_SQL} FROM players p WHERE p.id = ?`,
+      [playerId]
+    );
     if (!player) {
       return null;
     }
@@ -295,7 +301,10 @@ class PlayerService {
    * Get player by Steam ID with admin-only fields (Discord ID). Admin routes only.
    */
   async getPlayerByIdForAdmin(playerId: string): Promise<PlayerAdminResponse | null> {
-    const player = await db.queryOneAsync<PlayerRecord>(`SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id, ${MAIN_RATING_SQL} FROM players p WHERE p.id = ?`, [playerId]);
+    const player = await db.queryOneAsync<PlayerRecord>(
+      `SELECT p.*, COALESCE((SELECT a.provider_user_id FROM auth_identities a WHERE a.steam_id = p.id AND a.provider = 'discord' ORDER BY a.created_at, a.id LIMIT 1), p.discord_id) AS discord_id, ${MAIN_RATING_SQL} FROM players p WHERE p.id = ?`,
+      [playerId]
+    );
     if (!player) {
       return null;
     }
@@ -439,6 +448,66 @@ class PlayerService {
    * player: a Discord ID must not fail an import. Returns warnings for the
    * caller to merge into its response.
    */
+  /**
+   * Imported OpenID Connect subjects (an integrator's login `sub`): stored on
+   * a player who has none. Never overwritten, and never given to a second
+   * player; both are warnings, not errors.
+   */
+  async applyImportedOidcSubjects(entries: ImportedOidcSubject[]): Promise<string[]> {
+    const warnings: string[] = [];
+    for (const entry of entries) {
+      const row = await db.queryOneAsync<{ oidc_subject: string | null }>(
+        'SELECT oidc_subject FROM players WHERE id = ?',
+        [entry.steamId]
+      );
+      if (!row || row.oidc_subject === entry.oidcSubject) continue;
+      if (row.oidc_subject) {
+        warnings.push(
+          `${describePlayer(entry)}: already has an OpenID Connect login on file; kept it.`
+        );
+        continue;
+      }
+      const other = await db.queryOneAsync<{ id: string }>(
+        'SELECT id FROM players WHERE oidc_subject = ? AND id <> ?',
+        [entry.oidcSubject, entry.steamId]
+      );
+      if (other) {
+        warnings.push(
+          `${describePlayer(entry)}: that OpenID Connect login belongs to player ${other.id}; not stored.`
+        );
+        continue;
+      }
+      await db.runAsync(
+        'UPDATE players SET oidc_subject = ?, updated_at = ? WHERE id = ? AND oidc_subject IS NULL',
+        [entry.oidcSubject, Math.floor(Date.now() / 1000), entry.steamId]
+      );
+    }
+    return warnings;
+  }
+
+  /**
+   * An import names a player who already exists: take the new display name,
+   * and a picture if they have none. Nothing else (rating, stats, history).
+   */
+  async refreshImportedPlayer(steamId: string, name: string, avatar?: string): Promise<void> {
+    const trimmed = typeof name === 'string' ? name.trim().slice(0, 100) : '';
+    if (!trimmed) return;
+    await db.runAsync(
+      `UPDATE players SET name = ?, avatar_url = COALESCE(avatar_url, ?::text), updated_at = ?
+        WHERE id = ? AND deleted_at IS NULL AND (name IS DISTINCT FROM ?::text OR (avatar_url IS NULL AND ?::text IS NOT NULL))`,
+      [trimmed, avatar ?? null, Math.floor(Date.now() / 1000), steamId, trimmed, avatar ?? null]
+    );
+  }
+
+  /** The player an OpenID Connect sign-in's subject was imported for, if any. */
+  async findByOidcSubject(subject: string): Promise<string | null> {
+    const row = await db.queryOneAsync<{ id: string }>(
+      'SELECT id FROM players WHERE oidc_subject = ? AND deleted_at IS NULL AND banned_at IS NULL',
+      [subject]
+    );
+    return row?.id ?? null;
+  }
+
   async applyImportedDiscordIds(entries: ImportedDiscordId[]): Promise<string[]> {
     const warnings: string[] = [];
     if (entries.length === 0) return warnings;
@@ -447,7 +516,9 @@ class PlayerService {
     try {
       stored = await this.getImportDiscordIdState(entries.map((e) => e.steamId));
     } catch (error) {
-      log.warn('Could not read stored Discord IDs; imported Discord IDs were not applied', { error });
+      log.warn('Could not read stored Discord IDs; imported Discord IDs were not applied', {
+        error,
+      });
       return [`Discord IDs from this import were not saved: ${(error as Error).message}`];
     }
 
@@ -492,7 +563,9 @@ class PlayerService {
           // Fill so a later entry for the same player in this import (a player
           // on two teams of one upload) is compared against what we just wrote.
           stored.set(entry.steamId, { discordId: entry.discordId, editedByHand: false });
-          log.info(`Imported Discord ID ${abbreviateId(entry.discordId)} for player ${entry.steamId}`);
+          log.info(
+            `Imported Discord ID ${abbreviateId(entry.discordId)} for player ${entry.steamId}`
+          );
         } else {
           // Someone set or cleared it between our read and this write; theirs
           // stands. Re-read so the warning matches what actually happened.
@@ -623,7 +696,12 @@ class PlayerService {
       const current = await getGameRating(playerId, input.game);
       const matchCount = current?.matchCount ?? 0;
       const skill = eloToOpenSkill(input.elo, matchCount);
-      await setGameRating(playerId, input.game, { elo: input.elo, mu: skill.mu, sigma: skill.sigma, matchCount });
+      await setGameRating(playerId, input.game, {
+        elo: input.elo,
+        mu: skill.mu,
+        sigma: skill.sigma,
+        matchCount,
+      });
     }
 
     if (input.isAdmin !== undefined) {
@@ -677,9 +755,7 @@ class PlayerService {
     // rule: pull them out here (bad ones become warnings, not errors) and apply
     // them once the rows exist. The inputs passed on carry no discordId, so
     // createPlayer's strict validation never fails a row over one.
-    const normalised = normalisePlayerDiscordIds(
-      players.map((p) => ({ ...p, steamId: p.id }))
-    );
+    const normalised = normalisePlayerDiscordIds(players.map((p) => ({ ...p, steamId: p.id })));
     const warnings = [...normalised.warnings];
     const succeeded = new Set<string>();
 
@@ -690,12 +766,9 @@ class PlayerService {
       try {
         const existing = await this.getPlayerById(steamId);
         if (existing) {
-          // Update existing player
-          await this.updatePlayer(steamId, {
-            name: playerInput.name,
-            avatar: playerInput.avatar,
-            elo: playerInput.elo,
-          });
+          // An existing player keeps their rating, stats and history: only
+          // the display name (and a picture if they have none) changes.
+          await this.refreshImportedPlayer(steamId, playerInput.name, playerInput.avatar);
           updated++;
         } else {
           // Create new player
@@ -713,6 +786,11 @@ class PlayerService {
     warnings.push(
       ...(await this.applyImportedDiscordIds(
         normalised.discordIds.filter((entry) => succeeded.has(entry.steamId))
+      ))
+    );
+    warnings.push(
+      ...(await this.applyImportedOidcSubjects(
+        normalised.oidcSubjects.filter((entry) => succeeded.has(entry.steamId))
       ))
     );
 

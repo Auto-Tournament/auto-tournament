@@ -1,4 +1,5 @@
-# The demo worker's image (worker/Dockerfile), for amd64 and arm64.
+# The demo worker's image (worker/Dockerfile), for amd64 and arm64, and the
+# highlight recorder's (worker/recorder.Dockerfile), amd64 only.
 # Pushed as :next on every change to worker/ on main, and on demand.
 name: Worker image
 
@@ -41,3 +42,32 @@ jobs:
             ghcr.io/auto-tournament/auto-tournament-worker:next
           cache-from: type=gha,scope=worker
           cache-to: type=gha,scope=worker,mode=max
+
+  recorder:
+    name: Build and push the recorder
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: worker
+          file: worker/recorder.Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            sivertio/auto-tournament-recorder:next
+            sivertio/auto-tournament-recorder:sha-${{ github.sha }}
+            ghcr.io/auto-tournament/auto-tournament-recorder:next
+          cache-from: type=gha,scope=recorder
+          cache-to: type=gha,scope=recorder,mode=max
