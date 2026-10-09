@@ -16,6 +16,7 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import fetch from 'node-fetch';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { recordMapResult, getMapResults } from '../../../services/matchMapResultService';
@@ -270,7 +271,7 @@ async function steamProfiles(
   try {
     const res = await fetch(
       `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${encodeURIComponent(key)}&steamids=${ids.slice(0, 100).join(',')}`,
-      { signal: AbortSignal.timeout(10_000) }
+      { timeout: 10_000 }
     );
     const body = (await res.json()) as {
       response?: {
