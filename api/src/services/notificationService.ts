@@ -19,7 +19,8 @@ export type NotificationKind =
   | 'skin'
   | 'highlight'
   | 'tournament'
-  | 'news';
+  | 'news'
+  | 'report';
 
 export interface NotificationView {
   id: number;

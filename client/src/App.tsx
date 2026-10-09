@@ -13,6 +13,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import EmailLink from './pages/EmailLink';
 import { BlockedNotice } from './components/auth/BlockedNotice';
+import Reports from './pages/Reports';
 import AdminHome from './pages/AdminHome';
 import Manage from './pages/Manage';
 import Teams from './pages/Teams';
@@ -568,6 +569,7 @@ function AppRoutes() {
         <Route path={adminRoute(paths.manage)} element={<Manage />} />
         <Route path={adminRoute(paths.teams)} element={<Teams />} />
         <Route path={adminRoute(paths.players)} element={<Players />} />
+        <Route path={adminRoute(paths.reports)} element={<Reports />} />
         <Route path={adminRoute(paths.tournament)} element={<Tournament />} />
         <Route path={adminRoute(paths.tournaments)} element={<Tournaments />} />
         <Route path={adminRoute(paths.bracket)} element={<Bracket />} />
