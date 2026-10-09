@@ -65,6 +65,7 @@
     "addShort": "Adicionar",
     "working": "A funcionar",
     "failedCount": "{{count}} falhados",
-    "allowPrivateShort": "Para serviços na sua própria rede (LAN, Docker)."
+    "allowPrivateShort": "Para serviços na sua própria rede (LAN, Docker).",
+    "sourceShort": "team IDs from token {{source}}"
   }
 }

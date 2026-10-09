@@ -233,10 +233,25 @@ export default function Settings() {
 
   useEffect(() => {
     if (loading || !target) return;
-    document.getElementById(`settings-${target}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const card = () => document.getElementById(`settings-${target}`);
+    card()?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // The cards above load their own data and grow after the first scroll,
+    // which can push a card far down the one column out of view: scroll to
+    // it again once they have settled, if it is not in view.
+    const again = [500, 1300].map((ms) =>
+      setTimeout(() => {
+        const box = card()?.getBoundingClientRect();
+        if (box && (box.top < 0 || box.top > window.innerHeight * 0.5)) {
+          card()?.scrollIntoView({ block: 'start' });
+        }
+      }, ms)
+    );
     setHighlight(target);
     const timer = setTimeout(() => setHighlight(''), 1600);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      again.forEach(clearTimeout);
+    };
   }, [loading, target]);
 
   return (
@@ -249,14 +264,9 @@ export default function Settings() {
 
       {!loading && (
         <>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))' },
-              gap: 2,
-              alignItems: 'start',
-            }}
-          >
+          {/* One column, full width, like the other admin pages: two columns of
+              cards squeezed every row (an account's name wrapped a letter a line). */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 2 }}>
             <Stack spacing={2} sx={{ minWidth: 0 }}>
               <SettingsCard cardKey="site" highlight={highlight === 'site'}>
                 <SiteNameCard />
