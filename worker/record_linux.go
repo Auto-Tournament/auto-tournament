@@ -817,6 +817,7 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		"-ss", fmt.Sprintf("%.4f", maxf(0, audioAt)), "-i", wav}
 	ow, oh := outputSize()
 	o := overlay{card: -1, logo: -1, feed: -1, width: ow, height: oh, clean: clean != ""}
+	o.blur = gpuBlur(r.encoder)
 	if card != nil && !card.settled {
 		o.focus = []float64{0}
 	}
@@ -877,7 +878,7 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 	// wedged and the recorder waited six hours): give up after encodeTimeout.
 	ctx, cancel := context.WithTimeout(context.Background(), encodeTimeout)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "ffmpeg", hwEncode(args, r.encoder)...)
+	cmd := exec.CommandContext(ctx, "ffmpeg", hwEncode(blurArgs(o.blur, args), r.encoder)...)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return err
