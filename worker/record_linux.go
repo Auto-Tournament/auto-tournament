@@ -353,7 +353,7 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 		}
 	}()
 	if err := start(); err != nil {
-		return nil, nil, err
+		return nil, nil, gameFault{err}
 	}
 
 	// In demo order, whoever's they are: the seeks only go forward.
@@ -406,8 +406,10 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 				// CS2 can get stuck (a seek that never lands): start it afresh.
 				log.Printf("retrying %q in a fresh CS2 after: %v", m.Title, err)
 				if serr := start(); serr != nil {
-					err = fmt.Errorf("%v; restarting CS2: %w", err, serr)
-					break
+					// No CS2 to record the rest in: the job goes back (failRecording).
+					log.Printf("CS2 would not start again after %q: %v", m.Title, err)
+					drain()
+					return clips, failed, gameFault{serr}
 				}
 			}
 			if markers, finish, err = r.recordMoment(g, look, name, m, out); err == nil {
@@ -1194,6 +1196,14 @@ func (r *recorder) failMoments(failed []momentFailure) {
 	}
 }
 
+// gameFault is a job stopped because CS2 would not start: the recorder's
+// fault, not the moments'. The platform puts them back without using an
+// attempt and pauses a recorder that keeps doing it.
+type gameFault struct{ err error }
+
+func (f gameFault) Error() string { return "CS2 would not start: " + f.err.Error() }
+func (f gameFault) Unwrap() error { return f.err }
+
 func (r *recorder) failRecording(mj *mapJob, cause error) {
 	log.Printf("highlights of %s map %d failed: %v", mj.MatchSlug, mj.MapNumber, cause)
 	msg := cause.Error()
@@ -1206,7 +1216,11 @@ func (r *recorder) failRecording(mj *mapJob, cause error) {
 			ids = append(ids, m.ID)
 		}
 	}
-	if res, err := r.postJSON(context.Background(), "/api/game/cs2/recorder/fail", map[string]any{"ids": ids, "error": msg}); err == nil {
+	body := map[string]any{"ids": ids, "error": msg}
+	if errors.As(cause, new(gameFault)) {
+		body["fault"], body["recorder"] = "recorder", r.worker
+	}
+	if res, err := r.postJSON(context.Background(), "/api/game/cs2/recorder/fail", body); err == nil {
 		res.Body.Close()
 	}
 }

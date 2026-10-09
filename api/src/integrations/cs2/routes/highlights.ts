@@ -5,7 +5,7 @@
  *   POST /api/game/cs2/recorder/claim                 a player's moments on one map not yet recorded, or 204
  *   PUT  /api/game/cs2/recorder/jobs/:id/clip         one moment's MP4 (video/mp4 body)
  *   PUT  /api/game/cs2/recorder/reels/:slug/:map/:player  the player's reel of that map (video/mp4 body)
- *   POST /api/game/cs2/recorder/fail                  { ids, error }: it could not record them
+ *   POST /api/game/cs2/recorder/fail                  { ids, error, fault? }: it could not record them (fault 'recorder': its CS2 would not start; they wait again without using an attempt)
  *   PUT  /api/game/cs2/recorder/match-reels/:slug/:map       a map's match reel (video/mp4 body; ?clips=N)
  *   POST /api/game/cs2/recorder/match-reels/:slug/:map/fail  { error }: it could not make it
  *   PUT  /api/game/cs2/recorder/tournament-reels/:id         a tournament's reel (video/mp4 body)
@@ -136,6 +136,7 @@ import {
   forgetRecorder,
   setRecorderLabel,
   isPaused,
+  recorderFault,
   judgeClip,
   listRecorders,
   listRuns,
@@ -544,7 +545,10 @@ router.post('/recorder/fail', requireRecorder, async (req: Request, res: Respons
     ? (req.body.ids as unknown[]).map(Number).filter((n) => Number.isInteger(n) && n > 0)
     : [];
   if (ids.length === 0) return res.status(400).json({ success: false, error: 'Highlight ids' });
-  await failRecordJob(ids, typeof req.body?.error === 'string' ? req.body.error : 'unknown');
+  const error = typeof req.body?.error === 'string' ? req.body.error : 'unknown';
+  // The recorder's CS2 would not start: not the moments' fault.
+  if (req.body?.fault === 'recorder') await recorderFault(recorderName(req), ids, error);
+  else await failRecordJob(ids, error);
   return res.json({ success: true });
 });
 
