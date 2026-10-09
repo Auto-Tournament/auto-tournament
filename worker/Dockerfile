@@ -1,7 +1,7 @@
 # Auto Tournament worker: reads CS2 demos after the match.
 # One static Go binary; the same code builds for Windows (see README).
 # The Go version follows go.mod's `go` line.
-FROM golang:1.26-alpine AS build
+FROM public.ecr.aws/docker/library/golang:1.26-alpine AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
