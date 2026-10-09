@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { signInViaRequest, getAuthHeader } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
+import { findMatchByTeams } from '../helpers/matches';
 import { createServer, deleteServer } from '../helpers/servers';
 
 /**
@@ -42,10 +43,9 @@ test.describe.serial('Ending a match', () => {
       expect(setup).toBeTruthy();
       const server = setup!.servers[0];
 
-      const matches = await (
-        await request.get('/api/matches', { headers: getAuthHeader() })
-      ).json();
-      const slug = matches.matches?.[0]?.slug as string;
+      // This tournament's match: earlier tests leave theirs in the list.
+      const slug = (await findMatchByTeams(request, setup!.teams[0].id, setup!.teams[1].id))
+        ?.slug as string;
       expect(slug).toBeTruthy();
 
       await request.post('/api/test/match-state', {
@@ -81,10 +81,9 @@ test.describe.serial('Ending a match', () => {
       expect(setup).toBeTruthy();
       const server = setup!.servers[0];
 
-      const matches = await (
-        await request.get('/api/matches', { headers: getAuthHeader() })
-      ).json();
-      const slug = matches.matches?.[0]?.slug as string;
+      // This tournament's match: earlier tests leave theirs in the list.
+      const slug = (await findMatchByTeams(request, setup!.teams[0].id, setup!.teams[1].id))
+        ?.slug as string;
       expect(slug).toBeTruthy();
 
       await request.post('/api/test/match-state', {
@@ -131,10 +130,9 @@ test.describe.serial('Ending a match', () => {
       const setup = await setupTournament(request, { teamCount: 2, serverCount: 1 });
       expect(setup).toBeTruthy();
 
-      const matches = await (
-        await request.get('/api/matches', { headers: getAuthHeader() })
-      ).json();
-      const slug = matches.matches?.[0]?.slug as string;
+      // This tournament's match: earlier tests leave theirs in the list.
+      const slug = (await findMatchByTeams(request, setup!.teams[0].id, setup!.teams[1].id))
+        ?.slug as string;
       expect(slug).toBeTruthy();
 
       const unreachableId = `unreachable-${Date.now()}`;

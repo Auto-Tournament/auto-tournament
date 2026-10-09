@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Prettier (.prettierrc) on the files this branch changes against main.
+# Prettier (.prettierrc) on the files this branch changes against main,
+# committed or not (new files once they are added with git add).
 #   scripts/format-changed.sh          format them
 #   scripts/format-changed.sh --check  only check (CI)
 # The whole repo is not reformatted in one go: that would conflict with every
@@ -13,7 +14,7 @@ git fetch -q origin main 2>/dev/null || true
 files=()
 while IFS= read -r f; do
   [ -f "$f" ] && files+=("$f")
-done < <(git diff --name-only --diff-filter=ACMR "$(git merge-base "$BASE" HEAD)" HEAD -- \
+done < <(git diff --name-only --diff-filter=ACMR "$(git merge-base "$BASE" HEAD)" -- \
   '*.ts' '*.tsx' '*.js' '*.mjs' '*.json' '*.css' '*.md' | grep -vE '^(docs/openapi\.json|docs/API-REFERENCE\.md)$' || true)
 if [ "${#files[@]}" -eq 0 ]; then
   echo "No changed files to format."
