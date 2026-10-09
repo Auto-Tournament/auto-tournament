@@ -1484,7 +1484,7 @@
         "summary": "Whether local admin login is on, and whether setup is open",
         "responses": {
           "200": {
-            "description": "`enabled`: the login page shows the Admin login link. `setup`: no admin exists yet and /setup is open."
+            "description": "`enabled`: the login page shows the Admin login link. `setup`: no admin exists yet and /setup is open. `emailRecovery`: the site sends email, so a forgotten password can be reset by email."
           }
         }
       }

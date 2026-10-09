@@ -26,6 +26,16 @@ export default function AdminLogin() {
     document.title = pageTitle(t('localAdmin.title'));
   }, [t]);
 
+  // "Forgot your password?" only when the site sends email; without it an
+  // admin sets a new password on Settings -> Sign-in -> Accounts.
+  const [emailRecovery, setEmailRecovery] = useState(false);
+  useEffect(() => {
+    void fetch('/api/auth/local/status', { credentials: 'same-origin' })
+      .then((r) => (r.ok ? (r.json() as Promise<{ emailRecovery?: boolean }>) : null))
+      .then((b) => setEmailRecovery(b?.emailRecovery === true))
+      .catch(() => undefined);
+  }, []);
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -94,9 +104,11 @@ export default function AdminLogin() {
           <Link component={RouterLink} to={paths.login} variant="body2">
             {t('localAdmin.back')}
           </Link>
-          <Link component={RouterLink} to={paths.forgotPassword} variant="body2" data-testid="admin-login-forgot">
-            {t('localAdmin.forgot')}
-          </Link>
+          {emailRecovery && (
+            <Link component={RouterLink} to={paths.forgotPassword} variant="body2" data-testid="admin-login-forgot">
+              {t('localAdmin.forgot')}
+            </Link>
+          )}
         </Stack>
       </Stack>
     </AuthCard>

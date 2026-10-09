@@ -22,6 +22,15 @@ export default function ForgotPassword() {
     document.title = pageTitle(t('forgotPassword.title'));
   }, [t]);
 
+  // Without email, nothing can be sent: an admin sets a new password instead.
+  const [emailRecovery, setEmailRecovery] = useState<boolean | null>(null);
+  useEffect(() => {
+    void fetch('/api/auth/local/status', { credentials: 'same-origin' })
+      .then((r) => (r.ok ? (r.json() as Promise<{ emailRecovery?: boolean }>) : null))
+      .then((b) => setEmailRecovery(b?.emailRecovery === true))
+      .catch(() => setEmailRecovery(false));
+  }, []);
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -34,7 +43,16 @@ export default function ForgotPassword() {
 
   return (
     <AuthCard title={t('forgotPassword.title')} subtitle={t('forgotPassword.subtitle')}>
-      {sent ? (
+      {emailRecovery === false ? (
+        <Stack spacing={2}>
+          <Alert severity="info" data-testid="forgot-no-email">
+            {t('forgotPassword.noEmail')}
+          </Alert>
+          <Link component={RouterLink} to={paths.adminLogin} variant="body2" sx={{ textAlign: 'center' }}>
+            {t('forgotPassword.back')}
+          </Link>
+        </Stack>
+      ) : sent ? (
         <Stack spacing={2}>
           <Alert severity="success" data-testid="forgot-sent">
             {t('forgotPassword.sent')}
