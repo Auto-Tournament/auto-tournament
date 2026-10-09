@@ -30,7 +30,7 @@ test.describe.serial('License consent UI', () => {
 
   test('an admin page waits for the terms; typing I AGREE opens it', { tag: ['@ui'] }, async ({ page }) => {
     await page.goto('/manage/teams');
-    await expect(page).toHaveURL(/\/welcome\/license\?next=%2Fteams/);
+    await expect(page).toHaveURL(/\/welcome\/license\?next=%2Fmanage%2Fteams/);
     await expect(page.getByTestId('license-consent-page')).toBeVisible();
     await expect(page.getByTestId('license-consent-summary')).toBeVisible();
 

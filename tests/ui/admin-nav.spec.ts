@@ -31,7 +31,7 @@ const CORE_RAIL_ITEMS: [string, RegExp][] = [
   ['templates', /\/templates$/],
   ['ratings', /\/ratings$/],
   ['settings', /\/settings$/],
-  ['adminTools', /\/admin$/],
+  ['adminTools', /\/manage\/tools$/],
 ];
 
 /**
