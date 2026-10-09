@@ -71,6 +71,10 @@
  * plugins in its last hello (`plugins_state`: installed, disabled), for the
  * plugin picker's "not installed" warning (fleet/push/pluginSets.ts). The
  * fleet default plugin set is the 'plugins_default' row of `cs2_fleet_lists`.
+ *
+ * `032-fleet-key-auto-link` lets a fleet key link the servers it enrolls for
+ * matches on their first hello (fleet/push/controls.ts), once per server
+ * (`cs2_fleet_servers.auto_linked_at`).
  */
 
 import type { ModuleMigration } from '../types';
@@ -106,6 +110,9 @@ export const CS2_TEAM_REELS_MIGRATION_ID = '028-team-reels';
 export const CS2_MUSIC_LIBRARY_MIGRATION_ID = '029-music-library';
 export const CS2_REDRESS_MIGRATION_ID = '030-redress';
 export const CS2_RECORDERS_MIGRATION_ID = '031-recorders';
+export const CS2_FLEET_KEY_AUTO_LINK_MIGRATION_ID = '032-fleet-key-auto-link';
+export const CS2_MADE_WITH_MIGRATION_ID = '034-highlight-made-with';
+export const CS2_RECORDER_KEYS_MIGRATION_ID = '035-recorder-keys';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1248,6 +1255,49 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     -- another recorder) and the check's numbers on every clip.
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS avoid_recorder TEXT;
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS quality TEXT;
+`,
+  },
+  {
+    // 1 = a Ready Up server enrolled with this key is linked for matches on
+    // its first hello. `auto_linked_at` records that link, so it happens once:
+    // an admin's unlink or deleting the server afterwards sticks.
+    id: CS2_FLEET_KEY_AUTO_LINK_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_fleet_enrollment_keys ADD COLUMN IF NOT EXISTS auto_link INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE cs2_fleet_servers ADD COLUMN IF NOT EXISTS auto_linked_at INTEGER;
+`,
+  },
+  {
+    // The size and frame rate each clip and match reel was made at ("1440p120"),
+    // set when a recorder takes it: the admin's Clips list shows which no longer
+    // match the settings, to make them again. NULL: made before this was kept.
+    id: CS2_MADE_WITH_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS made_with TEXT;
+    ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS made_with TEXT;
+`,
+  },
+  {
+    // Recorder keys (demos/recorderKeys.ts): what a recorder signs in with
+    // instead of an admin API token. Made on the Recorders tab, shown once,
+    // kept as a hash, and good for recorder work only.
+    id: CS2_RECORDER_KEYS_MIGRATION_ID,
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_recorder_keys (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      secret_hash TEXT NOT NULL,
+      created_by TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      last_used_at INTEGER,
+      revoked_at INTEGER
+    );
+
+    -- How long each clip took its recorder, and when it was done (the Clips
+    -- list); a name for each recorder the admin chose.
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS record_seconds REAL;
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS done_at INTEGER;
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS label TEXT;
 `,
   },
 ];

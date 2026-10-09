@@ -75,6 +75,7 @@ router.post('/server-status', requireAuth, (req: Request, res: Response): void =
  * POST /api/test/fleet/reset-enroll-rate-limit   forget the 10/min/IP enrollment counts
  * POST /api/test/fleet/age-token { serverId, days }   backdate a server's live tokens,
  *   so the next connect (or the hourly job) rotates them
+ * POST /api/test/fleet/expire-key { keyId }   make a fleet key's expiry pass
  */
 router.post('/fleet/reset-enroll-rate-limit', requireAuth, (_req: Request, res: Response): void => {
   if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
@@ -100,6 +101,23 @@ router.post('/fleet/age-token', requireAuth, async (req: Request, res: Response)
     [Math.floor(days * 86400), serverId]
   );
   res.json({ success: true, tokens: result.changes });
+});
+
+router.post('/fleet/expire-key', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    res.status(403).json({ success: false, error: 'Disabled in production' });
+    return;
+  }
+  const { keyId } = (req.body || {}) as { keyId?: string };
+  if (!keyId) {
+    res.status(400).json({ success: false, error: 'keyId is required' });
+    return;
+  }
+  const result = await db.runAsync('UPDATE cs2_fleet_enrollment_keys SET expires_at = ? WHERE id = ?', [
+    Math.floor(Date.now() / 1000) - 1,
+    keyId,
+  ]);
+  res.json({ success: true, keys: result.changes });
 });
 
 /**

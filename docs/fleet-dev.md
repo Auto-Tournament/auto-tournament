@@ -74,9 +74,10 @@ ADMIN='Authorization: Bearer dev-admin-token-0123456789abcdef'
 ### A. With a fleet key (what csm and CI use)
 
 ```bash
-# 1. Create a key. The value is shown once.
+# 1. Create a key. The value is shown once. "autoLink": true (optional) links
+#    each server it enrolls for matches on its first hello.
 curl -s -X POST $API/api/fleet/keys -H "$ADMIN" -H 'Content-Type: application/json' \
-  -d '{"name":"ready-up-ci","namePrefix":"ci-"}'
+  -d '{"name":"ready-up-ci","namePrefix":"ci-","autoLink":true}'
 # → {"success":true,"key":{...},"value":"rfk_xxxxxxxxxxxx_<43 chars>"}
 
 # 2. Enroll (no admin auth: the key is the credential).

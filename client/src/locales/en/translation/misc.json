@@ -919,7 +919,7 @@
     },
     "perPlayer": {
       "label": "Clips per player per map",
-      "helper": "1 to 6. Each takes the recorder about five minutes, so fewer clips are ready sooner."
+      "helper": "1 to 6. More clips make a match's highlights take longer to finish."
     },
     "resolution": {
       "label": "Resolution"
@@ -976,7 +976,23 @@
     },
     "moved": "Highlight settings, the recorders and how to add one are on their own page now:",
     "saved": "Saved",
-    "saveFailed": "Could not save"
+    "saveFailed": "Could not save",
+    "reels": {
+      "title": "Reel sizes",
+      "description": "How many clips go into each reel. More clips make longer reels that take longer to make.",
+      "funnyPerPlayer": "Funny clips per player per map",
+      "mapReelPerPlayer": "Clips per player in a map reel",
+      "seriesReelMax": "Clips in a series reel",
+      "seriesReelPerPlayer": "Clips per player in a series reel",
+      "teamReelPerPlayer": "Clips per player in a team reel",
+      "tournamentReelMax": "Clips in a tournament reel",
+      "tournamentReelPerPlayer": "Clips per player in a tournament reel",
+      "range": "{{min}} to {{max}}"
+    }
+  },
+  "update": {
+    "available": "Auto Tournament {{latest}} is out (you run {{running}}).",
+    "notes": "What's new"
   },
   "licenseGate": {
     "expiredTitle": "This platform's license has expired",

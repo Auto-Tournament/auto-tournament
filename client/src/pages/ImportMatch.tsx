@@ -51,6 +51,7 @@ export default function ImportMatch() {
   const { t } = useTranslation();
   const [event, setEvent] = useState('');
   const [files, setFiles] = useState<File[]>([]);
+  const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [upload, setUpload] = useState<{ n: number; percent: number } | null>(null);
@@ -77,7 +78,10 @@ export default function ImportMatch() {
 
   const add = (list: ArrayLike<File> | null) => {
     if (!list) return;
-    const picked = Array.from(list);
+    // Picked or dropped together: in name order (m1-…, m2-… or map1, map2), the order they were played as a rule.
+    const picked = Array.from(list).sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { numeric: true })
+    );
     const bad = picked.find((f) => !f.name.toLowerCase().endsWith('.dem'));
     if (bad) {
       setError(t('importMatch.notDemo', { name: bad.name }));
@@ -169,7 +173,28 @@ export default function ImportMatch() {
             size="small"
             inputProps={{ maxLength: 100, 'data-testid': 'import-event' }}
           />
-          <Box>
+          <Box
+            data-testid="import-drop"
+            onDragOver={(e) => {
+              if (busy || !e.dataTransfer.types.includes('Files')) return;
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              if (!busy) add(e.dataTransfer.files);
+            }}
+            sx={{
+              p: 2,
+              mx: -2,
+              borderRadius: 2,
+              border: '2px dashed',
+              borderColor: dragging ? 'primary.main' : 'transparent',
+              transition: 'border-color 120ms',
+            }}
+          >
             <Typography variant="subtitle2">{t('importMatch.files')}</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               {t('importMatch.filesHelp')}
@@ -235,6 +260,9 @@ export default function ImportMatch() {
             >
               {t('importMatch.choose')}
             </Button>
+            <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1.5 }}>
+              {t('importMatch.dropHint')}
+            </Typography>
           </Box>
           {upload && (
             <Box>

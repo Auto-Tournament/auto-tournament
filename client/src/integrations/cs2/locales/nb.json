@@ -1256,6 +1256,9 @@
     "keyNamePrefix": "Prefiks for servernavn (valgfritt)",
     "keyMaxServers": "Maks antall servere (valgfritt)",
     "keyExpiresInDays": "Utløper etter (dager, valgfritt)",
+    "keyAutoLinkLabel": "Koble servere automatisk",
+    "keyAutoLinkHelp": "Bruk servere som meldes inn med denne nøkkelen, til kamper så snart de kobler til. Alle med nøkkelen kan være vert for kamper.",
+    "keyAutoLink": "Auto-kobling",
     "keyCreatedTitle": "Flåtenøkkel opprettet",
     "codeCreatedTitle": "Innmeldingskode opprettet",
     "keyCreatedHelp": "Gi denne nøkkelen til csm, eller sett den som fleet_enroll_key for «{{name}}».",
@@ -2067,7 +2070,9 @@
     },
     "readyIn": "klar om omtrent {{minutes}} min",
     "matchReelRecording": "Kampreel · tas opp",
-    "teamReelButton": "{{team}} highlights"
+    "teamReelButton": "{{team}} highlights",
+    "wholeSeries": "Hele serien",
+    "seriesReel": "Serie-reel"
   },
   "serversBoard": {
     "addFirstServers": "Legg til de første serverne",
@@ -2150,13 +2155,13 @@
     "tabs": {
       "recorders": "Recorders",
       "settings": "Settings",
-      "connect": "Add a recorder",
-      "overlays": "Overlegg"
+      "overlays": "Overlegg",
+      "clips": "Klipp"
     },
     "loadError": "Could not load the recorders",
     "actionError": "That didn't work",
     "empty": "No recorder has asked for work yet",
-    "emptyHelp": "Start one with the steps under Add a recorder; it shows up here when it first asks for work.",
+    "emptyHelp": "Legg til en med knappen over; den dukker opp her når den ber om arbeid første gang.",
     "online": "Online",
     "offline": "Offline",
     "paused": "Paused",
@@ -2208,14 +2213,62 @@
     "logError": "Could not load the log",
     "emptyLog": "(empty)",
     "close": "Close",
-    "connect": {
-      "intro": "A recorder is a PC with a GPU, CS2 and Steam that records highlight clips from this platform's demos. Add as many as you like: they share the work.",
-      "step1": "Install CS2 and sign in to Steam once, then switch Steam to offline mode. Every recorder can use the same Steam account.",
-      "step2": "Get at-worker (the auto-tournament-worker image, or the binary) on the PC. It needs ffmpeg, gamescope and PipeWire.",
-      "step3": "Point it at this platform:",
-      "step4": "Start it with at-worker record. On its first job it runs a short benchmark, then it shows up under Recorders with its numbers.",
-      "gaming": "You can game on the same PC while it records, but the GPU is shared: clips with too many repeated frames are turned down and recorded again elsewhere, and a recorder that keeps failing is paused for 15 minutes."
+    "cs2Tab": "Counter-Strike 2",
+    "recording": "Tar opp",
+    "workingOn_one": "Tar opp {{count}} klipp fra kart {{map}} ({{match}}) siden {{time}}",
+    "workingOn_other": "Tar opp {{count}} klipp fra kart {{map}} ({{match}}) siden {{time}}",
+    "forget": "Glem",
+    "forgotten": "Glemt. Den dukker opp igjen hvis den ber om arbeid.",
+    "clips": {
+      "tab": "Klipp",
+      "current": "Klipp og reels lages nå i {{quality}}.",
+      "outdated_other": "{{count}} laget med andre innstillinger",
+      "redoOutdated": "Lag de utdaterte på nytt",
+      "onlyOutdated": "Bare utdaterte",
+      "empty": "Ingen klipp ennå.",
+      "emptyOutdated": "Alt er laget med dagens innstillinger.",
+      "redo": "Lag på nytt",
+      "redone": "La {{clips}} klipp og {{reels}} reels i kø",
+      "madeWith": "Laget i {{quality}}",
+      "madeUnknown": "Laget før dette ble lagret",
+      "mapN": "Kart {{n}}",
+      "series": "Hele serien",
+      "reels": "Reels",
+      "reelOf": "{{map}}-reel",
+      "status": {
+        "pending": "Venter",
+        "recording": "Tar opp",
+        "done": "Ferdig",
+        "failed": "Feilet",
+        "waiting": "Venter på klippene",
+        "skipped": "Hoppet over"
+      },
+      "outdated_flag": "Utdatert",
+      "outdated_one": "{{count}} laget med andre innstillinger"
     },
-    "cs2Tab": "Counter-Strike 2"
+    "add": {
+      "button": "Legg til en opptaker",
+      "hint": "Én kommando på en Linux-PC med Steam og CS2. Den dukker opp her når den ber om arbeid første gang.",
+      "keys": "Opptakernøkler",
+      "used": "sist brukt {{time}}",
+      "unused": "ikke brukt ennå",
+      "revoke": "Trekk tilbake",
+      "revoked": "Trukket tilbake. En opptaker med den nøkkelen får ikke mer arbeid.",
+      "title": "Legg til en opptaker",
+      "needs": "Kjør dette på en Linux-PC med Docker, Steam (innlogget) og CS2 installert, fra skrivebordsøkten. Opptakeren bruker skjermkortet og finner CS2 i Steam-bibliotekene selv.",
+      "name": "Navn på denne PC-en",
+      "nvidia": "NVIDIA-skjermkort",
+      "make": "Lag kommandoen",
+      "once": "Nøkkelen vises bare én gang. Kopier kommandoen nå; lag en ny for neste PC.",
+      "after": "Lim den inn i en terminal på PC-en. Den starter nå og hver gang Docker starter.",
+      "copy": "Kopier kommandoen",
+      "copied": "Kopiert",
+      "copyFailed": "Kunne ikke kopiere: marker kommandoen og kopier den"
+    },
+    "rename": "Gi nytt navn",
+    "renameTitle": "Gi opptakeren et navn",
+    "renameLabel": "Navn",
+    "renameHelp": "Den kaller seg {{name}}. Tomt: det navnet.",
+    "renameSave": "Lagre"
   }
 }

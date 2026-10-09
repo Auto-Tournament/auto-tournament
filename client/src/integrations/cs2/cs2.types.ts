@@ -519,6 +519,8 @@ export interface FleetKey {
   enrolledServers: number;
   locked: boolean;
   revoked: boolean;
+  /** Servers it enrolls are linked for matches on their first hello. */
+  autoLink: boolean;
 }
 
 export interface FleetKeysResponse extends Cs2ApiResponse {

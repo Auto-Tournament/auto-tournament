@@ -24,13 +24,14 @@ interface MatchReel {
  * Beside a map's demo download (`matchMapAction`): "Match reel" once the
  * recorder joined each player's best highlight of the map. It opens the
  * reel's own page, a link to share, with our player and its chapters.
- * Nothing until then. Beside the match's first map, its team reels too
- * (each team's best plays of the whole match).
+ * Nothing until then. Beside the match's first map, its team reels and the
+ * series reel too (the best plays of every map, for a match over several).
  */
 export function MatchReelButton({ matchSlug, mapNumber, onNavigate }: MatchMapActionProps) {
   const { t } = useModuleTranslation('cs2');
   const [reel, setReel] = useState<MatchReel | null>(null);
   const [teams, setTeams] = useState<TeamReel[]>([]);
+  const [series, setSeries] = useState<MatchReel | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,8 +42,12 @@ export function MatchReelButton({ matchSlug, mapNumber, onNavigate }: MatchMapAc
       .then((res) => {
         if (cancelled) return;
         setReel(res.reels.find((r) => r.mapNumber === mapNumber) ?? null);
-        const first = res.reels.length ? Math.min(...res.reels.map((r) => r.mapNumber)) : mapNumber;
+        const maps = res.reels.filter((r) => r.mapNumber >= 0);
+        const first = maps.length ? Math.min(...maps.map((r) => r.mapNumber)) : mapNumber;
         setTeams(mapNumber === first ? (res.teams ?? []).filter((t) => t.video) : []);
+        setSeries(
+          mapNumber === first ? (res.reels.find((r) => r.mapNumber < 0 && r.video) ?? null) : null
+        );
       })
       .catch(() => !cancelled && setReel(null));
     return () => {
@@ -90,9 +95,29 @@ export function MatchReelButton({ matchSlug, mapNumber, onNavigate }: MatchMapAc
       {t('highlights.teamReelButton', { team: tr.team ?? '' })}
     </Button>
   ));
-  if (!reel?.video) return teamButtons.length ? <>{teamButtons}</> : null;
+  const seriesButton = series ? (
+    <Button
+      component={RouterLink}
+      to={watchMatchReelPath(matchSlug, series.mapNumber)}
+      onClick={onNavigate}
+      variant="outlined"
+      startIcon={<FilmStripIcon />}
+      data-testid="series-reel-button"
+      sx={{ flex: 'none', whiteSpace: 'nowrap' }}
+    >
+      {t('highlights.seriesReel')}
+    </Button>
+  ) : null;
+  if (!reel?.video)
+    return teamButtons.length || seriesButton ? (
+      <>
+        {seriesButton}
+        {teamButtons}
+      </>
+    ) : null;
   return (
     <>
+      {seriesButton}
       <Button
         component={RouterLink}
         to={watchMatchReelPath(matchSlug, mapNumber)}

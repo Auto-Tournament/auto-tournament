@@ -56,6 +56,7 @@
     "trigger": {
       "build_change": "Nova build do CS2",
       "surface_change": "Dados do jogo alterados",
+      "code_change": "Alteração no Ready Up",
       "nightly": "Noturna",
       "release": "Versão do Ready Up",
       "manual": "Manual"

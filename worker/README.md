@@ -92,27 +92,25 @@ the PC while it records (clips that stutter because the GPU is busy are
 turned down and recorded again elsewhere). On the 9070 XT it records as fast
 and as smoothly as without Docker.
 
-```sh
-docker run -d --name at-recorder --restart unless-stopped \
-  --user "$(id -u):$(id -g)" --group-add video --group-add render \
-  --device /dev/dri --ipc=host --net=host --shm-size 4g \
-  --security-opt seccomp=unconfined --cap-add SYS_NICE \
-  -v "$HOME:$HOME" -v "/run/user/$(id -u):/run/user/$(id -u)" -v /tmp:/tmp \
-  -e HOME="$HOME" -e XDG_RUNTIME_DIR="/run/user/$(id -u)" \
-  -e WAYLAND_DISPLAY="$WAYLAND_DISPLAY" \
-  -e DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
-  -e AT_URL=https://your-platform -e AT_WORKER_TOKEN=... -e AT_WORKER_NAME="$(hostname)" \
-  -e AT_CS2_GAME="$HOME/.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/game" \
-  -e AT_SNIPER_RUN="$HOME/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/run" \
-  sivertio/auto-tournament-recorder:next
-```
+The platform hands out the command: **Manage → Highlights → Counter-Strike
+2 → Recorders → Add a recorder** makes a recorder key and shows one `docker
+run` to paste on the PC. It carries the platform's address and the key; the
+recorder finds CS2 and the Steam Linux Runtime in the PC's Steam libraries
+itself (`AT_CS2_GAME` / `AT_SNIPER_RUN` override that), and shows up on the
+Recorders tab when it first asks for work.
 
-- The display matters: without `WAYLAND_DISPLAY` and the runtime directory
-  gamescope stops with *Failed to connect to wayland socket*.
-- NVIDIA: add `--gpus all` (NVIDIA Container Toolkit) instead of, or next to,
-  `--device /dev/dri`.
-- A game library on another disk: mount it too (`-v /mnt/games:/mnt/games`)
-  and point `AT_CS2_GAME` at it.
+- A recorder key is good for the recorder's own calls only (claim work,
+  send clips and reels, download the demos it records), never the admin API;
+  revoke it on the same tab. An admin API token still works too.
+- The display matters: the command passes `WAYLAND_DISPLAY` and the runtime
+  directory; without them gamescope stops with *Failed to connect to wayland
+  socket*. Run it from the PC's desktop session.
+- NVIDIA: tick *NVIDIA graphics card* for `--gpus all` (NVIDIA Container
+  Toolkit).
+- A game library outside `$HOME`, `/mnt` and `/media`: add its mount.
+- While it has work the recorder keeps the PC from sleeping (the desktop's
+  power management, or a sleep lock from the user's systemd, both over the
+  session bus the command mounts). `AT_KEEP_AWAKE=0` turns that off.
 
 Every clip and reel is stored three times over (`overlay.go`): dressed (the
 caption card, kill feed and logo drawn on: what people watch), clean (as

@@ -17,7 +17,7 @@
 
 export const COMPAT_SCHEMA_VERSION = 1;
 
-export const COMPAT_TRIGGERS = ['build_change', 'surface_change', 'nightly', 'release', 'manual'] as const;
+export const COMPAT_TRIGGERS = ['build_change', 'surface_change', 'code_change', 'nightly', 'release', 'manual'] as const;
 export const COMPAT_STAGES = ['static', 'selftest', 'live'] as const;
 export const COMPAT_RUN_STATES = ['queued', 'checking', 'pass', 'warn', 'fail', 'no_verdict'] as const;
 export const COMPAT_OVERALL = ['pass', 'warn', 'fail', 'checking', 'no_verdict'] as const;

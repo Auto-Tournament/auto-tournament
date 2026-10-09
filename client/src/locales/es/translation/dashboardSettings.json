@@ -712,6 +712,7 @@
     "teams": "{{team1}} vs {{team2}}",
     "doneAll": "Imported. Highlights are recorded next if a highlight recorder is connected.",
     "openMatch": "Open the match",
-    "another": "Import another"
+    "another": "Import another",
+    "dropHint": "or drop them here. Pick several at once with Cmd or Ctrl."
   }
 }

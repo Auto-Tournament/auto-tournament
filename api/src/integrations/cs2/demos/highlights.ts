@@ -21,7 +21,12 @@
  * go in the tournament reel, not in the player's or the match's reels.
  */
 
-import { readHighlightQuality, type HighlightQuality } from './highlightQuality';
+import {
+  qualityLabel,
+  readHighlightQuality,
+  readReelLimits,
+  type HighlightQuality,
+} from './highlightQuality';
 import { notificationService } from '../../../services/notificationService';
 import fs from 'fs';
 import path from 'path';
@@ -81,7 +86,8 @@ export interface Moment {
  */
 export function pickMoments(
   analysis: Pick<DemoAnalysisPayload, 'kills' | 'rounds'>,
-  perPlayer = PER_PLAYER
+  perPlayer = PER_PLAYER,
+  funnyPerPlayer = FUNNY_PER_PLAYER
 ): Moment[] {
   const kills = (analysis.kills as unknown as KillRow[])
     .filter((k) => k.attacker && k.attackerSide && k.attackerSide !== k.victimSide)
@@ -172,7 +178,7 @@ export function pickMoments(
     if (list.length < perPlayer) list.push(m);
     byPlayer.set(m.playerId, list);
   }
-  return [...byPlayer.values()].flat().concat(funnyMoments(all, roundEnd));
+  return [...byPlayer.values()].flat().concat(funnyMoments(all, roundEnd, funnyPerPlayer));
 }
 
 /**
@@ -180,7 +186,11 @@ export function pickMoments(
  * fire, dying to your own (the analyzer gives no attacker then, so the clip
  * follows the victim), and a flashbang, smoke or decoy to an enemy's head.
  */
-export function funnyMoments(kills: KillRow[], roundEnd: Map<number, number>): Moment[] {
+export function funnyMoments(
+  kills: KillRow[],
+  roundEnd: Map<number, number>,
+  perPlayer = FUNNY_PER_PLAYER
+): Moment[] {
   const out: Moment[] = [];
   const count = new Map<string, number>();
   for (const k of kills) {
@@ -215,7 +225,7 @@ export function funnyMoments(kills: KillRow[], roundEnd: Map<number, number>): M
       player = k.attacker;
       what = 'Knife kill';
     }
-    if (!player || (count.get(player) ?? 0) >= FUNNY_PER_PLAYER) continue;
+    if (!player || (count.get(player) ?? 0) >= perPlayer) continue;
     count.set(player, (count.get(player) ?? 0) + 1);
     out.push({
       playerId: player,
@@ -366,6 +376,25 @@ export function matchLine(
  * Hand the recorder the player and map with the best moment not yet
  * recorded, with all of that player's moments there that are still waiting.
  */
+/**
+ * Lowering "clips per player per map" also applies to moments still waiting:
+ * on this map, a player's moments past that many (best first) are skipped
+ * before a recorder takes any. Funny moments keep their own count.
+ */
+async function trimToPerPlayer(matchSlug: string, mapNumber: number): Promise<void> {
+  const { settingsService } = await import('../../../services/settingsService');
+  const perPlayer = Number(await settingsService.getSetting('highlights_per_player')) || PER_PLAYER;
+  await db.runAsync(
+    `UPDATE cs2_highlights SET status = 'skipped', error = 'Past the clips per player setting'
+      WHERE id IN (SELECT id FROM (SELECT id, status,
+                                          ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY score DESC, id) AS rank
+                                     FROM cs2_highlights
+                                    WHERE match_slug = ? AND map_number = ? AND kind <> 'funny') r
+                    WHERE r.rank > ? AND r.status = 'pending')`,
+    [matchSlug, mapNumber, perPlayer]
+  );
+}
+
 export async function claimRecordJob(recorder: string): Promise<RecordJob | null> {
   const now = Math.floor(Date.now() / 1000);
   const waiting = "(status = 'pending' OR (status = 'recording' AND claimed_at < ?))";
@@ -379,14 +408,16 @@ export async function claimRecordJob(recorder: string): Promise<RecordJob | null
     [now - STALE_SECONDS]
   );
   if (!best) return null;
+  await trimToPerPlayer(best.match_slug, Number(best.map_number));
   const rows = await db.queryAsync<MomentRow>(
-    `UPDATE cs2_highlights SET status = 'recording', recorder = ?, claimed_at = ?, attempts = attempts + 1
+    `UPDATE cs2_highlights SET status = 'recording', recorder = ?, made_with = ?, claimed_at = ?, attempts = attempts + 1
       WHERE id IN (SELECT id FROM cs2_highlights
                     WHERE match_slug = ? AND map_number = ? AND player_id = ? AND ${waiting}
                     FOR UPDATE SKIP LOCKED)
       RETURNING id, match_slug, map_number, player_id, kind, title, round, score, start_tick, end_tick, slowmo_tick, kill_ticks`,
     [
       recorder.slice(0, 120),
+      qualityLabel(await readHighlightQuality()),
       now,
       best.match_slug,
       best.map_number,
@@ -444,6 +475,7 @@ export async function claimMapJob(recorder: string, idle = 1): Promise<MapRecord
     [now - STALE_SECONDS, recorder.slice(0, 120)]
   );
   if (!best) return null;
+  await trimToPerPlayer(best.match_slug, Number(best.map_number));
   const waitingPlayers = await db.queryAsync<{ player_id: string }>(
     `SELECT player_id FROM cs2_highlights WHERE match_slug = ? AND map_number = ? AND ${waiting}
       GROUP BY player_id ORDER BY MAX(score) DESC, player_id`,
@@ -453,13 +485,22 @@ export async function claimMapJob(recorder: string, idle = 1): Promise<MapRecord
     .slice(0, playersPerRecorder(waitingPlayers.length, idle))
     .map((r) => r.player_id);
   if (take.length === 0) return null;
+  const quality = await readHighlightQuality();
   const rows = await db.queryAsync<MomentRow>(
-    `UPDATE cs2_highlights SET status = 'recording', recorder = ?, claimed_at = ?, attempts = attempts + 1
+    `UPDATE cs2_highlights SET status = 'recording', recorder = ?, made_with = ?, claimed_at = ?, attempts = attempts + 1
       WHERE id IN (SELECT id FROM cs2_highlights
                     WHERE match_slug = ? AND map_number = ? AND player_id IN (${take.map(() => '?').join(', ')}) AND ${waiting}
                     FOR UPDATE SKIP LOCKED)
       RETURNING id, match_slug, map_number, player_id, kind, title, round, score, start_tick, end_tick, slowmo_tick, kill_ticks`,
-    [recorder.slice(0, 120), now, best.match_slug, best.map_number, ...take, now - STALE_SECONDS]
+    [
+      recorder.slice(0, 120),
+      qualityLabel(quality),
+      now,
+      best.match_slug,
+      best.map_number,
+      ...take,
+      now - STALE_SECONDS,
+    ]
   );
   if (rows.length === 0) return null;
   const byPlayer = new Map<string, MomentRow[]>();
@@ -473,7 +514,7 @@ export async function claimMapJob(recorder: string, idle = 1): Promise<MapRecord
     kind: 'map',
     matchSlug: best.match_slug,
     mapNumber: Number(best.map_number),
-    quality: await readHighlightQuality(),
+    quality,
     // Keep each clip's clean twin and overlay recipe (worker/overlay.go): reels
     // are then made from the clean clips with their own overlay, and the clips
     // can be dressed again. Off: roughly half the storage, reels join the
@@ -673,7 +714,8 @@ export function parseClipStarts(raw: unknown, clips: number): number[] | null {
 export async function saveClip(
   id: number,
   body: NodeJS.ReadableStream,
-  markers: ClipMarkers | null = null
+  markers: ClipMarkers | null = null,
+  recordSeconds: number | null = null
 ): Promise<number> {
   await fs.promises.mkdir(HIGHLIGHTS_DIR, { recursive: true });
   const file = clipFile(id);
@@ -689,12 +731,40 @@ export async function saveClip(
   await fs.promises.rename(tmp, file);
   await removeTwins(file);
   await db.runAsync(
-    "UPDATE cs2_highlights SET status = 'done', clip_path = ?, clip_bytes = ?, markers = ?, error = NULL WHERE id = ?",
-    [path.basename(file), size, markers ? JSON.stringify(markers) : null, id]
+    `UPDATE cs2_highlights SET status = 'done', clip_path = ?, clip_bytes = ?, markers = ?, error = NULL,
+            record_seconds = ?, done_at = ? WHERE id = ?`,
+    [
+      path.basename(file),
+      size,
+      markers ? JSON.stringify(markers) : null,
+      recordSeconds,
+      Math.floor(Date.now() / 1000),
+      id,
+    ]
   );
   await queueMatchReelFor([id]);
   await noticeHighlightReady(id);
   return size;
+}
+
+/**
+ * A recorder at a job says it still is (worker/runlog.go heartbeat): what it
+ * claimed stays its own. A map job can take hours and sends its clips only
+ * at the end, so without this its moments went stale after STALE_SECONDS
+ * and another recorder took them over.
+ */
+export async function renewClaims(recorder: string): Promise<number> {
+  const now = Math.floor(Date.now() / 1000);
+  const name = recorder.slice(0, 120);
+  const clips = await db.runAsync(
+    "UPDATE cs2_highlights SET claimed_at = ? WHERE recorder = ? AND status = 'recording'",
+    [now, name]
+  );
+  await db.runAsync(
+    "UPDATE cs2_match_reels SET claimed_at = ? WHERE recorder = ? AND status = 'recording'",
+    [now, name]
+  );
+  return clips.changes;
 }
 
 /** Tell the player their clip is ready (a player's own moment; reels belong to no one player). */
@@ -868,6 +938,12 @@ export async function saveReel(
 const MATCH_REEL_MIN_PLAYERS = 2;
 
 /**
+ * The map number of a series' own reel (cs2_match_reels): the best plays of
+ * every map of a match played over more than one, after the maps' reels.
+ */
+export const SERIES_REEL = -1;
+
+/**
  * Queue the match reel of each map these highlights belong to, once none of
  * the map's highlights is still waiting to be recorded.
  */
@@ -891,8 +967,34 @@ export async function queueMatchReelFor(highlightIds: number[]): Promise<void> {
       await db.runAsync(
         `INSERT INTO cs2_match_reels (match_slug, map_number) VALUES (?, ?)
          ON CONFLICT (match_slug, map_number) DO UPDATE SET status = 'pending', attempts = 0, error = NULL
-           WHERE cs2_match_reels.status IN ('failed')`,
+           WHERE cs2_match_reels.status IN ('failed', 'waiting')`,
         [m.match_slug, m.map_number]
+      );
+    }
+    // A series (more than one map): its own reel too, once every map is recorded.
+    for (const slug of new Set(maps.map((m) => m.match_slug))) {
+      const series = await db.queryOneAsync<{
+        maps: number | string;
+        waiting: number | string;
+        players: number | string;
+      }>(
+        `SELECT COUNT(DISTINCT map_number) AS maps,
+                COUNT(*) FILTER (WHERE status IN ('pending', 'recording')) AS waiting,
+                COUNT(DISTINCT player_id) FILTER (WHERE status = 'done') AS players
+           FROM cs2_highlights WHERE match_slug = ? AND map_number >= 0`,
+        [slug]
+      );
+      if (
+        Number(series?.maps ?? 0) < 2 ||
+        Number(series?.waiting ?? 1) > 0 ||
+        Number(series?.players ?? 0) < MATCH_REEL_MIN_PLAYERS
+      )
+        continue;
+      await db.runAsync(
+        `INSERT INTO cs2_match_reels (match_slug, map_number) VALUES (?, ?)
+         ON CONFLICT (match_slug, map_number) DO UPDATE SET status = 'pending', attempts = 0, error = NULL
+           WHERE cs2_match_reels.status IN ('failed', 'waiting')`,
+        [slug, SERIES_REEL]
       );
     }
   } catch (error) {
@@ -956,7 +1058,7 @@ export interface MatchReelJob {
   fail: string;
 }
 
-/** Each player's best recorded highlight of a map, in the order they happened. */
+/** Each player's best recorded highlights of a map (the map reel's per player), in the order they happened. */
 export async function bestClipPerPlayer(
   matchSlug: string,
   mapNumber: number
@@ -976,15 +1078,86 @@ export async function bestClipPerPlayer(
               WHERE m.slug = b.match_slug
                 AND EXISTS (SELECT 1 FROM jsonb_array_elements(t.players::jsonb) e WHERE e->>'steamId' = b.player_id)
               LIMIT 1) AS team
-       FROM (SELECT DISTINCT ON (player_id) id, player_id, title, slowmo_tick, match_slug, markers
+       FROM (SELECT id, player_id, title, slowmo_tick, match_slug, markers,
+                    ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY score DESC, id) AS rank
                FROM cs2_highlights
-              WHERE match_slug = ? AND map_number = ? AND status = 'done' AND kind <> 'funny'
-              ORDER BY player_id, score DESC, id) b
+              WHERE match_slug = ? AND map_number = ? AND status = 'done' AND kind <> 'funny') b
        LEFT JOIN players p ON p.id = b.player_id
+      WHERE b.rank <= ?
       ORDER BY b.slowmo_tick`,
-    [matchSlug, mapNumber]
+    [matchSlug, mapNumber, (await readReelLimits()).mapReelPerPlayer]
   );
   return rows.map((r) => ({
+    highlightId: Number(r.id),
+    playerId: r.player_id,
+    playerName: r.name ?? r.player_id,
+    team: r.team,
+    avatarUrl: r.avatar_url,
+    title: r.title,
+    url: `/api/game/cs2/highlights/${Number(r.id)}.mp4`,
+    markers: parseMarkers(r.markers),
+  }));
+}
+
+/**
+ * A series reel's clips (pure: tested on its own): the best plays across every
+ * map, at most `perPlayerMax` of one player and `max` in all (the settings'
+ * series reel sizes), shown in the order they were played.
+ */
+export function pickSeriesClips<
+  T extends { playerId: string; score: number; mapNumber: number; at: number },
+>(clips: T[], max = 16, perPlayerMax = 2): T[] {
+  const perPlayer = new Map<string, number>();
+  const chosen: T[] = [];
+  for (const c of clips
+    .slice()
+    .sort((a, b) => b.score - a.score || a.mapNumber - b.mapNumber || a.at - b.at)) {
+    if (chosen.length >= max) break;
+    const n = perPlayer.get(c.playerId) ?? 0;
+    if (n >= perPlayerMax) continue;
+    perPlayer.set(c.playerId, n + 1);
+    chosen.push(c);
+  }
+  return chosen.sort((a, b) => a.mapNumber - b.mapNumber || a.at - b.at);
+}
+
+/** The recorded clips a series reel picks from, and the ones it takes. */
+export async function seriesClips(matchSlug: string): Promise<MatchReelClip[]> {
+  const rows = await db.queryAsync<{
+    id: number;
+    player_id: string;
+    title: string;
+    slowmo_tick: number;
+    map_number: number;
+    score: number;
+    name: string | null;
+    avatar_url: string | null;
+    team: string | null;
+    markers: string | null;
+  }>(
+    `SELECT h.id, h.player_id, h.title, h.slowmo_tick, h.map_number, h.score, h.markers, p.name, p.avatar_url,
+            (SELECT t.name FROM matches m JOIN teams t ON t.id IN (m.team1_id, m.team2_id)
+              WHERE m.slug = h.match_slug
+                AND EXISTS (SELECT 1 FROM jsonb_array_elements(t.players::jsonb) e WHERE e->>'steamId' = h.player_id)
+              LIMIT 1) AS team
+       FROM cs2_highlights h
+       LEFT JOIN players p ON p.id = h.player_id
+      WHERE h.match_slug = ? AND h.map_number >= 0 AND h.status = 'done' AND h.kind <> 'funny'`,
+    [matchSlug]
+  );
+  const limits = await readReelLimits();
+  const picked = pickSeriesClips(
+    rows.map((r) => ({
+      ...r,
+      playerId: r.player_id,
+      score: Number(r.score),
+      mapNumber: Number(r.map_number),
+      at: Number(r.slowmo_tick),
+    })),
+    limits.seriesReelMax,
+    limits.seriesReelPerPlayer
+  );
+  return picked.map((r) => ({
     highlightId: Number(r.id),
     playerId: r.player_id,
     playerName: r.name ?? r.player_id,
@@ -1000,16 +1173,19 @@ export async function bestClipPerPlayer(
 export async function claimMatchReel(recorder: string): Promise<MatchReelJob | null> {
   const now = Math.floor(Date.now() / 1000);
   const row = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
-    `UPDATE cs2_match_reels SET status = 'recording', recorder = ?, claimed_at = ?, attempts = attempts + 1
+    `UPDATE cs2_match_reels SET status = 'recording', recorder = ?, made_with = ?, claimed_at = ?, attempts = attempts + 1
       WHERE (match_slug, map_number) = (
         SELECT match_slug, map_number FROM cs2_match_reels
          WHERE status = 'pending' OR (status = 'recording' AND claimed_at < ?)
          ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED)
       RETURNING match_slug, map_number`,
-    [recorder.slice(0, 120), now, now - STALE_SECONDS]
+    [recorder.slice(0, 120), qualityLabel(await readHighlightQuality()), now, now - STALE_SECONDS]
   );
   if (!row) return null;
-  const clips = await bestClipPerPlayer(row.match_slug, Number(row.map_number));
+  const series = Number(row.map_number) === SERIES_REEL;
+  const clips = series
+    ? await seriesClips(row.match_slug)
+    : await bestClipPerPlayer(row.match_slug, Number(row.map_number));
   const extra = await db.queryOneAsync<{
     team1: string | null;
     team2: string | null;
@@ -1019,19 +1195,19 @@ export async function claimMatchReel(recorder: string): Promise<MatchReelJob | n
   }>(
     `SELECT t1.name AS team1, t2.name AS team2, COALESCE(tr.name, m.played_in) AS tournament,
             (SELECT j.map_name FROM cs2_demo_jobs j WHERE j.match_slug = m.slug AND j.map_number = ?) AS map_name,
-            (SELECT r.completed_at FROM match_map_results r WHERE r.match_slug = m.slug AND r.map_number = ?) AS played_at
+            (SELECT MAX(r.completed_at) FROM match_map_results r WHERE r.match_slug = m.slug AND (r.map_number = ? OR ? = ${SERIES_REEL})) AS played_at
        FROM matches m
        LEFT JOIN teams t1 ON t1.id = m.team1_id
        LEFT JOIN teams t2 ON t2.id = m.team2_id
        LEFT JOIN tournament tr ON tr.id = m.tournament_id
       WHERE m.slug = ?`,
-    [Number(row.map_number), Number(row.map_number), row.match_slug]
+    [Number(row.map_number), Number(row.map_number), Number(row.map_number), row.match_slug]
   );
   const { settingsService } = await import('../../../services/settingsService');
   return {
     kind: 'match_reel',
     intro: {
-      kicker: 'Match highlights',
+      kicker: series ? 'Series highlights' : 'Match highlights',
       title: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, null) || 'Match highlights',
       meta: extra?.tournament ?? '',
       map: extra?.map_name ?? '',
