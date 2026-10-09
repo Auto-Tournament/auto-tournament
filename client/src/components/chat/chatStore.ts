@@ -27,6 +27,7 @@ export interface ChatMessage {
   senderTeam: string | null;
   body: string;
   createdAt: number;
+  senderAvatar?: string | null;
 }
 
 export interface ChatChannel {
@@ -72,7 +73,13 @@ function set(next: Partial<State>) {
 }
 
 function setThread(channel: string, patch: Partial<Thread>) {
-  const prev = state.threads[channel] ?? { messages: [], more: false, loading: false, myTeam: null, error: null };
+  const prev = state.threads[channel] ?? {
+    messages: [],
+    more: false,
+    loading: false,
+    myTeam: null,
+    error: null,
+  };
   set({ threads: { ...state.threads, [channel]: { ...prev, ...patch } } });
 }
 
@@ -82,8 +89,16 @@ export async function refreshChannels(): Promise<void> {
     const body = await api.get<{ channels: ChatChannel[] }>('/api/chat/channels');
     const channels = body.channels ?? [];
     // An admin's match chat opened from match details is not one of theirs: keep its tab.
-    const extra = state.channels.filter((c) => c.kind === 'match' && !channels.some((x) => x.channel === c.channel) && c.channel === state.active);
-    const active = state.active && [...channels, ...extra].some((c) => c.channel === state.active) ? state.active : (channels[0]?.channel ?? null);
+    const extra = state.channels.filter(
+      (c) =>
+        c.kind === 'match' &&
+        !channels.some((x) => x.channel === c.channel) &&
+        c.channel === state.active
+    );
+    const active =
+      state.active && [...channels, ...extra].some((c) => c.channel === state.active)
+        ? state.active
+        : (channels[0]?.channel ?? null);
     set({ channels: [...channels, ...extra], active });
   } catch {
     // Signed out or a blip: keep what we had.
@@ -101,7 +116,12 @@ export async function loadMessages(channel: string, older = false): Promise<void
     );
     const current = state.threads[channel]?.messages ?? [];
     const merged = older ? [...body.messages, ...current] : mergeById(current, body.messages);
-    setThread(channel, { messages: merged, more: body.messages.length >= PAGE, loading: false, myTeam: body.myTeam });
+    setThread(channel, {
+      messages: merged,
+      more: body.messages.length >= PAGE,
+      loading: false,
+      myTeam: body.myTeam,
+    });
   } catch (error) {
     setThread(channel, { loading: false, error: (error as Error).message });
   }
@@ -125,7 +145,10 @@ function errorText(error: unknown): string {
 /** Send a message; throws with the server's reason (too long, too fast, not yours). */
 export async function sendMessage(channel: string, body: string): Promise<void> {
   try {
-    const res = await api.post<{ message: ChatMessage }>(`/api/chat/${encodeURIComponent(channel)}/messages`, { body });
+    const res = await api.post<{ message: ChatMessage }>(
+      `/api/chat/${encodeURIComponent(channel)}/messages`,
+      { body }
+    );
     receive(res.message);
   } catch (error) {
     throw new Error(errorText(error));
@@ -147,7 +170,10 @@ export function markRead(channel: string): void {
   if (listed && listed.unread > 0) {
     set({ channels: state.channels.map((c) => (c.channel === channel ? { ...c, unread: 0 } : c)) });
   }
-  if (last && viewer.steamId) void api.post(`/api/chat/${encodeURIComponent(channel)}/read`, { lastId: last.id }).catch(() => undefined);
+  if (last && viewer.steamId)
+    void api
+      .post(`/api/chat/${encodeURIComponent(channel)}/read`, { lastId: last.id })
+      .catch(() => undefined);
 }
 
 function receive(message: ChatMessage) {
@@ -168,7 +194,9 @@ function receive(message: ChatMessage) {
     return;
   }
   set({
-    channels: state.channels.map((c) => (c.channel === message.channel ? { ...c, unread: c.unread + 1 } : c)),
+    channels: state.channels.map((c) =>
+      c.channel === message.channel ? { ...c, unread: c.unread + 1 } : c
+    ),
     peek: state.open ? state.peek : message,
   });
   playChatSound();
@@ -218,7 +246,12 @@ export function openChat(channel?: string, title?: string): void {
   const active = channel ?? state.active ?? state.channels[0]?.channel ?? null;
   if (channel && !state.channels.some((c) => c.channel === channel)) {
     const ref = channel.replace(/^match:/, '');
-    set({ channels: [...state.channels, { channel, kind: 'match', title: title ?? ref, myTeam: null, unread: 0 }] });
+    set({
+      channels: [
+        ...state.channels,
+        { channel, kind: 'match', title: title ?? ref, myTeam: null, unread: 0 },
+      ],
+    });
   }
   set({ open: true, active, peek: null });
   if (active) void loadMessages(active).then(() => markRead(active));
