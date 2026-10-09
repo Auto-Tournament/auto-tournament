@@ -14,3 +14,8 @@ services:
   auto-tournament:
     image: ${MAT_IMAGE:-auto-tournament:ci}
     pull_policy: never
+
+  # From ECR Public's mirror of the official image: Docker Hub's anonymous pull
+  # limit failed every shard (2026-10-09). Same image, another registry.
+  postgres:
+    image: public.ecr.aws/docker/library/postgres:16-alpine
