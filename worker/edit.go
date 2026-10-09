@@ -5,6 +5,7 @@ import (
 	"image"
 	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -430,30 +431,76 @@ const (
 )
 
 // focusFilter blurs and darkens [in] behind each card entrance starting at
-// `at` seconds (a clip's, or each clip's in a reel) into [out]. Each window
-// is its own short branch: only its frames are blurred.
+// `at` seconds (a clip's, or each clip's in a reel) into [out].
+//
+// One effect branch runs beside the game the whole way: its blur, shade and
+// vignette are on only in the windows (timeline `enable`), and the blend
+// fades it in and out by its opacity, which sendcmd steps through each
+// fade. Every frame flows straight through. (A branch per window that starts
+// at its window made the joining overlay hold every frame until that window
+// came: a reel's last card is near its end, and ffmpeg then kept a minute of
+// 1440p frames in memory, ~30 GB.)
 func focusFilter(in, out string, at []float64, width int) string {
-	var b strings.Builder
-	n := len(at)
-	fmt.Fprintf(&b, "[%s]split=%d[fb0]", in, n+1)
-	for i := range at {
-		fmt.Fprintf(&b, "[fb%d]", i+1)
+	var on []string
+	for _, a := range at {
+		on = append(on, fmt.Sprintf("between(t,%.3f,%.3f)", a+focusIn, a+focusSeconds))
 	}
+	enable := strings.Join(on, "+")
 	sigma := focusBlurPx * float64(width) / focusDraftW
-	last := "fb0"
-	for i, a := range at {
-		fmt.Fprintf(&b, ";[fb%d]trim=start=%.3f:end=%.3f,setpts=PTS-STARTPTS,gblur=sigma=%.1f,"+
-			"drawbox=color=0x080504@%.2f:t=fill,vignette=angle=PI/4,format=yuva420p,"+
-			"fade=t=in:st=%.2f:d=%.2f:alpha=1,fade=t=out:st=%.2f:d=%.2f:alpha=1,setpts=PTS+%.3f/TB[fz%d]",
-			i+1, a, a+focusSeconds, sigma, focusShade, focusIn, focusInDur, focusOut, focusOutDur, a, i)
-		next := fmt.Sprintf("fo%d", i)
-		if i == n-1 {
-			next = out
-		}
-		fmt.Fprintf(&b, ";[%s][fz%d]overlay=eof_action=pass,format=yuv420p[%s]", last, i, next)
-		last = next
-	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "[%s]sendcmd=c='%s',split[%s_keep][%s_fx]", in, focusCommands(at), out, out)
+	fmt.Fprintf(&b, ";[%s_fx]gblur=sigma=%.1f:enable='%s',drawbox=color=0x080504@%.2f:t=fill:enable='%s',vignette=angle=PI/4:enable='%s'[%s_fxd]",
+		out, sigma, enable, focusShade, enable, enable, out)
+	// normal blend: first*opacity + second*(1-opacity), so the game is the
+	// first input at opacity 1 - the effect's strength; off it passes the game.
+	fmt.Fprintf(&b, ";[%s_keep][%s_fxd]blend@focus=all_mode=normal:all_opacity=1:enable='%s'[%s]", out, out, enable, out)
 	return b.String()
+}
+
+// focusStep is how often the effect's strength is set during a fade.
+const focusStep = 1.0 / 60
+
+// focusStrength is how strong the focus effect is `r` seconds after its
+// card starts: up over focusInDur from focusIn, held, then down over
+// focusOutDur from focusOut.
+func focusStrength(r float64) float64 {
+	switch {
+	case r < focusIn || r >= focusOut+focusOutDur:
+		return 0
+	case r < focusIn+focusInDur:
+		return (r - focusIn) / focusInDur
+	case r < focusOut:
+		return 1
+	default:
+		return 1 - (r-focusOut)/focusOutDur
+	}
+}
+
+// focusCommands is the sendcmd script that fades the effect: at each step of
+// every fade, the blend's opacity is 1 - the strongest window's strength.
+func focusCommands(at []float64) string {
+	var times []float64
+	for _, a := range at {
+		for r := focusIn; r <= focusSeconds+focusStep/2; r += focusStep {
+			times = append(times, a+r)
+		}
+	}
+	sort.Float64s(times)
+	var cmds []string
+	last := -1.0
+	for _, t := range times {
+		s := 0.0
+		for _, a := range at {
+			s = math.Max(s, focusStrength(t-a))
+		}
+		op := math.Round((1-s)*1000) / 1000
+		if op == last {
+			continue
+		}
+		last = op
+		cmds = append(cmds, fmt.Sprintf("%.4f blend@focus all_opacity %.3f", t, op))
+	}
+	return strings.Join(cmds, ";")
 }
 
 // maxBitrate is the H.264 ceiling (Mbit/s) for the clip's size and frame
