@@ -16,7 +16,7 @@ import { useShellIntegrations } from '../../hooks/useShellIntegrations';
 import { ModuleNotInstalledNotice } from '../common/ModuleNotInstalledNotice';
 import { RAIL_COLUMN_MIN_WIDTH, railColumnSx } from '../../constants/adminLayout';
 import { paths } from '../../paths';
-
+import { UpdateToast } from '../system/UpdateToast';
 
 /**
  * Set for the rest of the browser session once an admin closes the Steam
@@ -73,9 +73,9 @@ function AdminShell() {
   const location = useLocation();
   const { headerActions } = usePageHeader();
   const { showPersistentError, closeSnackbar } = useSnackbar();
-  const [steamHealthSnackbarKey, setSteamHealthSnackbarKey] = React.useState<import('notistack').SnackbarKey | null>(
-    null
-  );
+  const [steamHealthSnackbarKey, setSteamHealthSnackbarKey] = React.useState<
+    import('notistack').SnackbarKey | null
+  >(null);
   // True while the shell itself closes the Steam warning (Steam recovered, or
   // the shell unmounts), so that close is not taken for the admin's dismissal.
   const closingSteamWarningRef = React.useRef(false);
@@ -232,20 +232,29 @@ function AdminShell() {
                 loading): say so once, on every admin page. */}
             {!tournamentGameLoading &&
               (tournamentIntegration?.notInstalled || tournamentIntegration?.modulePending) && (
-              <Box sx={{ mb: 3 }}>
-                <ModuleNotInstalledNotice integration={tournamentIntegration} />
-              </Box>
-            )}
+                <Box sx={{ mb: 3 }}>
+                  <ModuleNotInstalledNotice integration={tournamentIntegration} />
+                </Box>
+              )}
             {/* Deprecated (client API 0.2.3): buttons a module page on the
                 old API hands the shell. Core's pages and CS2's put theirs in
                 their own PageHead. */}
             {headerActions && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 1, mb: 3 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  flexWrap: 'wrap',
+                  gap: 1,
+                  mb: 3,
+                }}
+              >
                 {headerActions}
               </Box>
             )}
             {/* The tournament's own pages: which tournament, and its tabs. */}
             {showRail && isTournamentPage(location.pathname) && <TournamentBar />}
+            <UpdateToast />
             <Outlet />
           </Box>
         </Box>

@@ -895,6 +895,7 @@ The platform process: whether it can restart itself, and a restart (so a module 
 
 | Method | Path | Auth |
 | --- | --- | --- |
+| `GET` | `/api/system/update` | admin |
 | `GET` | `/api/system/restart` | admin |
 | `POST` | `/api/system/restart` | admin |
 

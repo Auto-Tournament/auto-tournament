@@ -13993,6 +13993,28 @@
         ]
       }
     },
+    "/api/system/update": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Whether a newer Auto Tournament is out",
+        "description": "The running version against the platform's GitHub releases on the same\nchannel (a beta sees betas too). `latest` is null when GitHub could not\nbe asked. Looked up once an hour.\n",
+        "responses": {
+          "200": {
+            "description": "{ running, latest, available, releaseUrl }"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/team-directory": {
       "get": {
         "tags": [
