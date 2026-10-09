@@ -273,15 +273,32 @@ export async function saveRun(name: string, body: Record<string, unknown>): Prom
 /** The Recorders page: every recorder with its numbers. */
 export async function listRecorders() {
   const rows = await db.queryAsync<
-    RecorderRow & { runs: number; avg_clip_seconds: number | null; last_error: string | null }
+    RecorderRow & {
+      runs: number;
+      avg_clip_seconds: number | null;
+      last_error: string | null;
+      working_clips: number | null;
+      working_match: string | null;
+      working_map: number | null;
+      working_since: number | null;
+    }
   >(
     `SELECT r.*,
             (SELECT COUNT(*)::int FROM cs2_recorder_runs x WHERE x.recorder = r.name) AS runs,
             (SELECT SUM(x.seconds) / NULLIF(SUM(x.clips), 0) FROM cs2_recorder_runs x
               WHERE x.recorder = r.name AND x.kind = 'map' AND x.ok = 1 AND x.clips > 0) AS avg_clip_seconds,
-            (SELECT x.error FROM cs2_recorder_runs x WHERE x.recorder = r.name AND x.ok = 0
-              ORDER BY x.id DESC LIMIT 1) AS last_error
+            -- Only while its latest run is the one that failed: a later good run clears it.
+            (SELECT x.error FROM cs2_recorder_runs x WHERE x.recorder = r.name
+              ORDER BY x.id DESC LIMIT 1) AS last_error,
+            -- What it is recording right now (a map job can take hours, with no
+            -- word from it until it is done).
+            w.clips AS working_clips, w.match_slug AS working_match, w.map_number AS working_map, w.since AS working_since
        FROM cs2_recorders r
+       LEFT JOIN LATERAL (SELECT COUNT(*)::int AS clips, MIN(h.match_slug) AS match_slug, MIN(h.map_number) AS map_number,
+                                 MIN(h.claimed_at) AS since
+                            FROM cs2_highlights h
+                           WHERE h.recorder = r.name AND h.status = 'recording'
+                           HAVING COUNT(*) > 0) w ON TRUE
       ORDER BY r.last_seen DESC NULLS LAST`,
     []
   );
@@ -301,7 +318,18 @@ export async function listRecorders() {
       platform: r.platform,
       firstSeen: Number(r.first_seen),
       lastSeen: r.last_seen ? Number(r.last_seen) : null,
-      online: !!r.last_seen && t - Number(r.last_seen) < 15 * 60,
+      // Busy with a job counts as online, however long since it last asked.
+      online:
+        (!!r.last_seen && t - Number(r.last_seen) < 15 * 60) || Number(r.working_clips ?? 0) > 0,
+      working:
+        Number(r.working_clips ?? 0) > 0
+          ? {
+              clips: Number(r.working_clips),
+              matchSlug: r.working_match,
+              mapNumber: Number(r.working_map),
+              since: Number(r.working_since),
+            }
+          : null,
       paused,
       pausedUntil: paused ? Number(r.paused_until) : null,
       pauseReason: paused ? r.pause_reason : null,

@@ -106,7 +106,9 @@ export async function dropOrphanJobs(): Promise<void> {
       []
     );
   } catch (error) {
-    log.warn('[DEMO-JOBS] Could not drop the jobs of deleted matches', { error: (error as Error).message });
+    log.warn('[DEMO-JOBS] Could not drop the jobs of deleted matches', {
+      error: (error as Error).message,
+    });
   }
 }
 
@@ -390,7 +392,9 @@ export async function completeDemoJob(job: DemoJob, analysis: DemoAnalysisPayloa
   // The map's best moments, for the highlight recorder.
   const { settingsService } = await import('../../../services/settingsService');
   const perPlayer = Number(await settingsService.getSetting('highlights_per_player')) || undefined;
-  await saveMoments(job.matchSlug, job.mapNumber, pickMoments(analysis, perPlayer));
+  const { readReelLimits } = await import('./highlightQuality');
+  const funny = (await readReelLimits()).funnyPerPlayer;
+  await saveMoments(job.matchSlug, job.mapNumber, pickMoments(analysis, perPlayer, funny));
   log.info(
     `[DEMO-JOBS] ${job.matchSlug} map ${job.mapNumber}: analyzed (${Object.keys(analysis.players).length} players)`
   );

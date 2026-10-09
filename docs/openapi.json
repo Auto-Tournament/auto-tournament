@@ -4645,6 +4645,59 @@
         ]
       }
     },
+    "/api/game/cs2/clips": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Every recent match's clips and match reels, what each was made at, and which are outdated (admin)",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "outdated",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Only the outdated ones"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The clips"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/clips/redo": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Make clips and match reels again (admin)",
+        "description": "`clipIds`, `reels` ([{ slug, mapNumber }], -1 for a series reel) and/or\n`outdated: true` (everything made at other settings). A redone clip's\nreels are made again once it is recorded.\n",
+        "responses": {
+          "200": {
+            "description": "How many clips and reels were queued"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/demo-worker/claim": {
       "post": {
         "tags": [

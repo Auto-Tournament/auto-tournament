@@ -2067,7 +2067,9 @@
     },
     "readyIn": "klar om omtrent {{minutes}} min",
     "matchReelRecording": "Kampreel · tas opp",
-    "teamReelButton": "{{team}} highlights"
+    "teamReelButton": "{{team}} highlights",
+    "wholeSeries": "Hele serien",
+    "seriesReel": "Serie-reel"
   },
   "serversBoard": {
     "addFirstServers": "Legg til de første serverne",
@@ -2151,7 +2153,8 @@
       "recorders": "Recorders",
       "settings": "Settings",
       "connect": "Add a recorder",
-      "overlays": "Overlegg"
+      "overlays": "Overlegg",
+      "clips": "Klipp"
     },
     "loadError": "Could not load the recorders",
     "actionError": "That didn't work",
@@ -2216,6 +2219,38 @@
       "step4": "Start it with at-worker record. On its first job it runs a short benchmark, then it shows up under Recorders with its numbers.",
       "gaming": "You can game on the same PC while it records, but the GPU is shared: clips with too many repeated frames are turned down and recorded again elsewhere, and a recorder that keeps failing is paused for 15 minutes."
     },
-    "cs2Tab": "Counter-Strike 2"
+    "cs2Tab": "Counter-Strike 2",
+    "recording": "Tar opp",
+    "workingOn_one": "Tar opp {{count}} klipp fra kart {{map}} ({{match}}) siden {{time}}",
+    "workingOn_other": "Tar opp {{count}} klipp fra kart {{map}} ({{match}}) siden {{time}}",
+    "forget": "Glem",
+    "forgotten": "Glemt. Den dukker opp igjen hvis den ber om arbeid.",
+    "clips": {
+      "tab": "Klipp",
+      "current": "Klipp og reels lages nå i {{quality}}.",
+      "outdated_other": "{{count}} laget med andre innstillinger",
+      "redoOutdated": "Lag de utdaterte på nytt",
+      "onlyOutdated": "Bare utdaterte",
+      "empty": "Ingen klipp ennå.",
+      "emptyOutdated": "Alt er laget med dagens innstillinger.",
+      "redo": "Lag på nytt",
+      "redone": "La {{clips}} klipp og {{reels}} reels i kø",
+      "madeWith": "Laget i {{quality}}",
+      "madeUnknown": "Laget før dette ble lagret",
+      "mapN": "Kart {{n}}",
+      "series": "Hele serien",
+      "reels": "Reels",
+      "reelOf": "{{map}}-reel",
+      "status": {
+        "pending": "Venter",
+        "recording": "Tar opp",
+        "done": "Ferdig",
+        "failed": "Feilet",
+        "waiting": "Venter på klippene",
+        "skipped": "Hoppet over"
+      },
+      "outdated_flag": "Utdatert",
+      "outdated_one": "{{count}} laget med andre innstillinger"
+    }
   }
 }
