@@ -239,20 +239,27 @@ test('a second recorder joins a map mid-way, newest match first', TAGS, async ({
     )
     .toBeGreaterThan(0);
   type Job = {
+    kind: string;
     matchSlug: string;
     mapNumber: number;
     players: Array<{ moments: Array<{ id: number }> }>;
   };
+  const ask = (recorder: string) =>
+    request.post('/api/game/cs2/recorder/claim', { data: { recorder, version: 7 } });
+  // A recorder is handed a benchmark or reels before map jobs: skip those.
   const claim = async (recorder: string) => {
-    const res = await request.post('/api/game/cs2/recorder/claim', {
-      data: { recorder, version: 7 },
-    });
-    return res.status() === 200 ? ((await res.json()).job as Job) : null;
+    for (let i = 0; i < 15; i++) {
+      const res = await ask(recorder);
+      if (res.status() !== 200) return null;
+      const job = (await res.json()).job as Job;
+      if (job.kind === 'map') return job;
+    }
+    return null;
   };
   const stamp = Date.now();
   const recorders = [`spec-share-a-${stamp}`, `spec-share-b-${stamp}`];
-  // Both say hello first, so both count as online (a benchmark is asked of a new one).
-  for (const r of recorders) await claim(r);
+  // Both say hello first, so both count as online.
+  for (const r of recorders) await ask(r);
   const a = await claim(recorders[0]);
   // The newest match goes first.
   expect(a?.matchSlug).toBe(slug);
