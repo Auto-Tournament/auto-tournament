@@ -4,12 +4,10 @@
  *
  * - Every claim updates the recorder's row (version, GPU, platform, last seen).
  * - Every clip comes with the recorder's frame check (worker/quality.go): the
- *   share of moving frames that repeat the one before. At REJECT_REPEAT_PCT or
- *   more the clip is turned down: not stored, the moment goes back in the
- *   queue preferring another recorder (`avoid_recorder`), and fails for good
- *   after MAX_ATTEMPTS takes. A recorder with PAUSE_AFTER rejections in a row
- *   gets no work for PAUSE_SECONDS (say someone games on the same GPU); an
- *   admin can resume it sooner.
+ *   share of moving frames that repeat the one before. It is kept with the
+ *   clip, not used to turn clips down (judgeClip). A recorder whose CS2 will
+ *   not start gets no work for PAUSE_SECONDS (recorderFault); an admin can
+ *   resume it sooner.
  * - A new recorder (and one an admin asks) first runs a benchmark: the same
  *   moment at each refresh rate in BENCHMARK_HZ, timed and frame-checked. It
  *   keeps the fastest smooth one, which comes back with every job after.
@@ -17,11 +15,14 @@
  */
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
-import { jobFor, MAX_ATTEMPTS, type MomentRow } from './highlights';
+import { jobFor, type MomentRow } from './highlights';
 import { readHighlightQuality } from './highlightQuality';
 
-export const REJECT_REPEAT_PCT = 4;
-export const PAUSE_AFTER = 3;
+/**
+ * The benchmark's bar for a smooth refresh rate: every rate records the same
+ * moment, so a higher share of repeats there is the rate's, not the scene's.
+ */
+export const SMOOTH_REPEAT_PCT = 4;
 export const PAUSE_SECONDS = 15 * 60;
 /** Jobs in a row whose CS2 would not start before the recorder is paused. */
 export const FAULT_PAUSE_AFTER = 2;
@@ -113,59 +114,34 @@ export function parseQuality(raw: unknown): ClipQuality | null {
 }
 
 /**
- * The frame check's verdict on a clip about to be stored. Turned down: the
- * moment goes back in the queue (or fails after MAX_ATTEMPTS) and the
- * recorder may be paused. Without a check (an older recorder) the clip is kept.
+ * Keep a clip's frame check with it. The check is not a verdict: it counts a
+ * frame that barely changes while its neighbours move as a repeat, and a
+ * player holding an angle does exactly that (2026-10-09, the EWC final: ten
+ * good clips turned down and recorded again). It informs the benchmark and the
+ * Clips list; every clip is kept.
  */
 export async function judgeClip(
   highlightId: number,
   quality: ClipQuality | null
 ): Promise<{ rejected: boolean; recorder: string | null }> {
-  const row = await db.queryOneAsync<{ recorder: string | null; attempts: number }>(
-    'SELECT recorder, attempts FROM cs2_highlights WHERE id = ?',
+  const row = await db.queryOneAsync<{ recorder: string | null }>(
+    'SELECT recorder FROM cs2_highlights WHERE id = ?',
     [highlightId]
   );
   const recorder = row?.recorder ?? null;
-  if (!quality) return { rejected: false, recorder };
-  const rejected = quality.repeatPct >= REJECT_REPEAT_PCT;
-  if (!rejected) {
+  if (quality) {
     await db.runAsync('UPDATE cs2_highlights SET quality = ? WHERE id = ?', [
       JSON.stringify(quality),
       highlightId,
     ]);
-    if (recorder) {
-      await db.runAsync(
-        'UPDATE cs2_recorders SET clips_ok = clips_ok + 1, rejects_in_row = 0, faults_in_row = 0 WHERE name = ?',
-        [recorder]
-      );
-    }
-    return { rejected: false, recorder };
   }
-
-  const why = `Turned down: ${quality.repeatPct.toFixed(1)}% repeated frames${recorder ? ` (${recorder})` : ''}`;
-  await db.runAsync(
-    `UPDATE cs2_highlights SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END,
-        avoid_recorder = ?, quality = ?, error = ?
-      WHERE id = ?`,
-    [MAX_ATTEMPTS, recorder, JSON.stringify(quality), why, highlightId]
-  );
-  log.warn(`[RECORDERS] Clip ${highlightId} ${why}`);
   if (recorder) {
-    const r = await db.queryOneAsync<{ rejects_in_row: number }>(
-      `UPDATE cs2_recorders SET clips_rejected = clips_rejected + 1, rejects_in_row = rejects_in_row + 1
-        WHERE name = ? RETURNING rejects_in_row`,
+    await db.runAsync(
+      'UPDATE cs2_recorders SET clips_ok = clips_ok + 1, rejects_in_row = 0, faults_in_row = 0 WHERE name = ?',
       [recorder]
     );
-    if (r && Number(r.rejects_in_row) >= PAUSE_AFTER) {
-      const reason = `${r.rejects_in_row} clips in a row had too many repeated frames (the GPU may be busy with something else)`;
-      await db.runAsync(
-        'UPDATE cs2_recorders SET paused_until = ?, pause_reason = ?, rejects_in_row = 0 WHERE name = ?',
-        [now() + PAUSE_SECONDS, reason, recorder]
-      );
-      log.warn(`[RECORDERS] ${recorder} paused for ${PAUSE_SECONDS / 60} minutes: ${reason}`);
-    }
   }
-  return { rejected: true, recorder };
+  return { rejected: false, recorder };
 }
 
 /**
@@ -193,7 +169,7 @@ export async function benchmarkJob(): Promise<Record<string, unknown> | null> {
     keepClean: false,
     players: [player],
     tries: BENCHMARK_HZ.map((gamescopeHz) => ({ gamescopeHz })),
-    maxRepeatPct: REJECT_REPEAT_PCT,
+    maxRepeatPct: SMOOTH_REPEAT_PCT,
   };
 }
 
@@ -229,7 +205,7 @@ export async function saveBenchmark(
     .filter((t) => t.gamescopeHz > 0);
   const smooth = tries
     .filter(
-      (t) => t.ok && t.seconds != null && t.repeatPct != null && t.repeatPct < REJECT_REPEAT_PCT
+      (t) => t.ok && t.seconds != null && t.repeatPct != null && t.repeatPct < SMOOTH_REPEAT_PCT
     )
     .sort((a, b) => a.seconds! - b.seconds!);
   const pick = smooth[0]?.gamescopeHz ?? null;

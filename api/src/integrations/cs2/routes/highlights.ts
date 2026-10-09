@@ -68,7 +68,7 @@ import {
   requireRecorder,
   revokeRecorderKey,
 } from '../demos/recorderKeys';
-import { appendPart, bodyOf, dropUpload, startUpload, UploadError } from '../demos/uploadParts';
+import { appendPart, bodyOf, startUpload, UploadError } from '../demos/uploadParts';
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
 import {
@@ -275,14 +275,8 @@ router.put('/recorder/jobs/:id/clip', requireRecorder, async (req: Request, res:
     return res.status(400).json({ success: false, error: 'A video/mp4 body for a highlight' });
   }
   try {
-    // The recorder's frame check (worker/quality.go): a stuttering clip is
-    // turned down and recorded again, preferably by another recorder.
-    const verdict = await judgeClip(id, parseQuality(req.headers['x-at-quality']));
-    if (verdict.rejected) {
-      req.resume();
-      dropUpload(req);
-      return res.json({ success: true, rejected: true });
-    }
+    // The recorder's frame check (worker/quality.go) is kept with the clip.
+    await judgeClip(id, parseQuality(req.headers['x-at-quality']));
     const seconds = Number(req.headers['x-at-seconds']);
     const bytes = await saveClip(
       id,

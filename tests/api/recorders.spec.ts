@@ -111,9 +111,21 @@ test(
 
     // A smooth clip is kept.
     expect(await (await upload(ids[0], 0.8)).json()).toMatchObject({ success: true, bytes: 18 });
-    // Three stuttering clips in a row are turned down, and the recorder is paused.
-    for (const id of ids.slice(1, 4)) {
-      expect(await (await upload(id, 9.5)).json()).toMatchObject({ success: true, rejected: true });
+    // A clip with many repeated frames is kept too: a player holding an angle
+    // reads as repeats (the EWC final, 2026-10-09).
+    for (const id of ids.slice(1, 3)) {
+      expect(await (await upload(id, 9.5)).json()).toMatchObject({ success: true, bytes: 18 });
+    }
+    // A recorder whose CS2 will not start, twice: paused.
+    for (let i = 0; i < 2; i++) {
+      await request.post('/api/game/cs2/recorder/fail', {
+        data: {
+          ids: [ids[0]],
+          error: 'CS2 would not start: spec',
+          fault: 'recorder',
+          recorder: name,
+        },
+      });
     }
     const listed = async () =>
       (
@@ -125,11 +137,11 @@ test(
     expect(paused).toMatchObject({
       gpu: 'Spec GPU 9000',
       platform: 'linux/amd64 · docker',
-      clipsOk: 1,
-      clipsRejected: 3,
+      clipsOk: 3,
+      clipsRejected: 0,
       paused: true,
     });
-    expect(String(paused.pauseReason)).toContain('repeated frames');
+    expect(String(paused.pauseReason)).toContain('CS2 would not start');
     expect((await claim()).status()).toBe(204);
 
     // An admin resumes it.

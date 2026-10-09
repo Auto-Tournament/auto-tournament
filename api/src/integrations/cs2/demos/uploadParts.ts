@@ -100,9 +100,3 @@ export function bodyOf(req: Request): NodeJS.ReadableStream {
   stream.on('close', () => void fs.promises.rm(file, { force: true }));
   return stream;
 }
-
-/** Drop a staged upload the route did not read (a clip turned down). */
-export function dropUpload(req: Request): void {
-  const id = req.headers['x-at-upload'];
-  if (typeof id === 'string' && ID.test(id)) void fs.promises.rm(fileOf(id), { force: true });
-}

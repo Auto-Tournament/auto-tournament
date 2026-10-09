@@ -2258,7 +2258,7 @@
       "revoke": "Revoke",
       "revoked": "Revoked. A recorder with that key gets no more work.",
       "title": "Add a recorder",
-      "needs": "Run this on a Linux PC with Docker, Steam (signed in) and CS2 installed, from its desktop session. The recorder uses its GPU and finds CS2 in its Steam libraries.",
+      "needs": "Run this on a Linux PC with Docker, Steam (signed in) and CS2 installed, from its desktop session. The recorder uses its GPU and finds CS2 in its Steam libraries. Don't game or run other GPU work on that PC while it records: the clips would stutter.",
       "name": "Name for this PC",
       "nvidia": "NVIDIA graphics card",
       "make": "Make the command",
