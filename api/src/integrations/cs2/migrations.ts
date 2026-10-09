@@ -119,6 +119,7 @@ export const CS2_MADE_WITH_MIGRATION_ID = '034-highlight-made-with';
 export const CS2_RECORDER_KEYS_MIGRATION_ID = '035-recorder-keys';
 export const CS2_RECORDER_FAULTS_MIGRATION_ID = '036-recorder-faults';
 export const CS2_CLIP_REVIEW_MIGRATION_ID = '037-clip-review';
+export const CS2_REEL_FAILOVER_MIGRATION_ID = '038-reel-failover';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1337,6 +1338,17 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS review_note TEXT;
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS reviewed_by TEXT;
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS reviewed_at INTEGER;
+`,
+  },
+  {
+    // The recorder a reel last failed on (demos/reelFailover.ts): the reel
+    // goes to another recorder next, so one that runs out of memory on a
+    // reel does not retry it while another could make it.
+    id: CS2_REEL_FAILOVER_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS avoid_recorder TEXT;
+    ALTER TABLE cs2_tournament_reels ADD COLUMN IF NOT EXISTS avoid_recorder TEXT;
+    ALTER TABLE cs2_team_reels ADD COLUMN IF NOT EXISTS avoid_recorder TEXT;
 `,
   },
 ];

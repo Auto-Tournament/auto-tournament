@@ -32,6 +32,7 @@ import fs from 'fs';
 import path from 'path';
 import { DATA_DIR } from '../../../config/dataDir';
 import { db } from '../../../config/database';
+import { reelFailoverFilter } from './reelFailover';
 import { log } from '../../../utils/logger';
 import type { DemoAnalysisPayload } from './jobs';
 
@@ -1302,14 +1303,21 @@ export async function seriesClips(matchSlug: string): Promise<MatchReelClip[]> {
 /** Hand the recorder a match reel to join, if one is waiting. */
 export async function claimMatchReel(recorder: string): Promise<MatchReelJob | null> {
   const now = Math.floor(Date.now() / 1000);
+  const failover = await reelFailoverFilter(recorder);
   const row = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
     `UPDATE cs2_match_reels SET status = 'recording', recorder = ?, made_with = ?, claimed_at = ?, attempts = attempts + 1
       WHERE (match_slug, map_number) = (
         SELECT match_slug, map_number FROM cs2_match_reels
-         WHERE status = 'pending' OR (status = 'recording' AND claimed_at < ?)
+         WHERE (status = 'pending' OR (status = 'recording' AND claimed_at < ?)) AND ${failover.sql}
          ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED)
       RETURNING match_slug, map_number`,
-    [recorder.slice(0, 120), qualityLabel(await readHighlightQuality()), now, now - STALE_SECONDS]
+    [
+      recorder.slice(0, 120),
+      qualityLabel(await readHighlightQuality()),
+      now,
+      now - STALE_SECONDS,
+      ...failover.params,
+    ]
   );
   if (!row) return null;
   const series = Number(row.map_number) === SERIES_REEL;
@@ -1407,7 +1415,8 @@ export async function failMatchReel(
   error: string
 ): Promise<void> {
   await db.runAsync(
-    `UPDATE cs2_match_reels SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?
+    `UPDATE cs2_match_reels SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?,
+            avoid_recorder = recorder
       WHERE match_slug = ? AND map_number = ? AND status = 'recording'`,
     [MAX_ATTEMPTS, error.slice(0, 500), matchSlug, mapNumber]
   );
