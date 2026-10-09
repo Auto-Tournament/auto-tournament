@@ -105,6 +105,7 @@ export const CS2_REEL_STARTS_MIGRATION_ID = '027-reel-starts';
 export const CS2_TEAM_REELS_MIGRATION_ID = '028-team-reels';
 export const CS2_MUSIC_LIBRARY_MIGRATION_ID = '029-music-library';
 export const CS2_REDRESS_MIGRATION_ID = '030-redress';
+export const CS2_RECORDERS_MIGRATION_ID = '031-recorders';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1200,6 +1201,53 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       claimed_at INTEGER,
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
+`,
+  },
+  {
+    id: CS2_RECORDERS_MIGRATION_ID,
+    up: `
+    -- Highlight recorders as the platform sees them (demos/recorders.ts): what
+    -- they run on, their benchmark, how their clips fare, and a pause.
+    CREATE TABLE IF NOT EXISTS cs2_recorders (
+      name TEXT PRIMARY KEY, -- what the recorder calls itself (AT_WORKER_NAME, else its host name)
+      version INTEGER,
+      gpu TEXT,
+      platform TEXT, -- "linux/amd64 · docker"
+      first_seen INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      last_seen INTEGER,
+      paused_until INTEGER, -- no work until then
+      pause_reason TEXT,
+      rejects_in_row INTEGER NOT NULL DEFAULT 0,
+      clips_ok INTEGER NOT NULL DEFAULT 0,
+      clips_rejected INTEGER NOT NULL DEFAULT 0,
+      benchmark TEXT, -- JSON: each try's refresh rate, seconds, frame rate and repeated frames, and the pick
+      benchmark_at INTEGER,
+      benchmark_wanted INTEGER NOT NULL DEFAULT 1, -- 1: run it on the next claim
+      gamescope_hz INTEGER -- the refresh rate the benchmark picked
+    );
+
+    -- Each job a recorder ran: what, how long, how it went and its log.
+    CREATE TABLE IF NOT EXISTS cs2_recorder_runs (
+      id SERIAL PRIMARY KEY,
+      recorder TEXT NOT NULL,
+      kind TEXT NOT NULL, -- map | match_reel | team_reel | tournament_reel | player_reel | redress | benchmark
+      match_slug TEXT,
+      map_number INTEGER,
+      started_at INTEGER NOT NULL,
+      seconds REAL,
+      ok INTEGER NOT NULL,
+      clips INTEGER NOT NULL DEFAULT 0,
+      rejected INTEGER NOT NULL DEFAULT 0,
+      error TEXT,
+      log TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS cs2_recorder_runs_recorder_idx ON cs2_recorder_runs(recorder, created_at DESC);
+
+    -- A clip the frame check turned down: who made it (the next take prefers
+    -- another recorder) and the check's numbers on every clip.
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS avoid_recorder TEXT;
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS quality TEXT;
 `,
   },
 ];

@@ -7,6 +7,8 @@
 //
 //	AT_URL           the platform, e.g. http://auto-tournament:3000
 //	AT_WORKER_TOKEN  an API token (else the first of API_TOKENS)
+//	AT_WORKER_NAME   what the platform calls this worker (default: the host
+//	                 name); a recorder keeps its benchmark and history under it
 //	AT_POLL_SECONDS  how long to wait when there is no work (default 30)
 //	AT_CS2_DIR       a CS2 install's game/csgo, read-only: the worker sends the
 //	                 platform each map's radar for the 2D replay (optional)
@@ -301,7 +303,7 @@ func main() {
 	c := &client{
 		base:   strings.TrimRight(env("AT_URL", "http://auto-tournament:3000"), "/"),
 		token:  token,
-		worker: fmt.Sprintf("%s:%d", host, os.Getpid()),
+		worker: env("AT_WORKER_NAME", host),
 		http:   &http.Client{Timeout: 10 * time.Minute},
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

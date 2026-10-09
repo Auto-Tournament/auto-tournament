@@ -130,6 +130,25 @@ import {
 } from '../demos/teamReels';
 import { MUSIC_SUGGESTIONS } from '../demos/musicSuggestions';
 
+import {
+  benchmarkJob,
+  forgetRecorder,
+  isPaused,
+  judgeClip,
+  listRecorders,
+  listRuns,
+  parseQuality,
+  RECORDER_QUALITY_VERSION,
+  RecorderError,
+  recorderSettings,
+  requestBenchmark,
+  resumeRecorder,
+  runLog,
+  saveBenchmark,
+  saveRun,
+  seenRecorder,
+} from '../demos/recorders';
+
 const router = Router();
 
 const idOf = (req: Request) => {
@@ -157,11 +176,28 @@ const read =
 router.post('/recorder/claim', requireAuth, async (req: Request, res: Response) => {
   try {
     const recorder = typeof req.body?.recorder === 'string' ? req.body.recorder : 'recorder';
+    const version = Number(req.body?.version ?? 0);
+    const me = await seenRecorder(recorder, {
+      version,
+      gpu: req.body?.gpu,
+      platform: req.body?.platform,
+    });
+    // Paused after too many turned-down clips (demos/recorders.ts).
+    if (isPaused(me)) return res.status(204).end();
     const idle = idleRecorderCount(recorder);
+    const settings = recorderSettings(me);
     const give = (job: unknown) => {
       recorderBusy(recorder);
-      return res.json({ success: true, job });
+      return res.json({
+        success: true,
+        job: job && typeof job === 'object' ? { ...(job as object), settings } : job,
+      });
     };
+    // A new recorder (or one an admin asked) measures itself first.
+    if (version >= RECORDER_QUALITY_VERSION && Number(me.benchmark_wanted) === 1) {
+      const benchmark = await benchmarkJob();
+      if (benchmark) return give(benchmark);
+    }
     // A match reel only joins clips already made: hand those out first.
     const reel = await claimMatchReel(recorder);
     if (reel) return give(reel);
@@ -203,6 +239,13 @@ router.put('/recorder/jobs/:id/clip', requireAuth, async (req: Request, res: Res
     return res.status(400).json({ success: false, error: 'A video/mp4 body for a highlight' });
   }
   try {
+    // The recorder's frame check (worker/quality.go): a stuttering clip is
+    // turned down and recorded again, preferably by another recorder.
+    const verdict = await judgeClip(id, parseQuality(req.headers['x-at-quality']));
+    if (verdict.rejected) {
+      req.resume();
+      return res.json({ success: true, rejected: true });
+    }
     const bytes = await saveClip(id, req, parseMarkers(req.headers['x-at-markers']));
     return res.json({ success: true, bytes });
   } catch (error) {
@@ -777,6 +820,189 @@ router.get('/music/:id/file', requireAuth, async (req: Request, res: Response) =
   const track = await trackById(req.params.id);
   if (!track || !fs.existsSync(track.file)) return res.status(404).end();
   return res.sendFile(trackFile(track), { headers: { 'Content-Type': 'audio/mpeg' } });
+});
+
+const recorderName = (req: Request): string =>
+  typeof req.body?.recorder === 'string' && req.body.recorder ? req.body.recorder : 'recorder';
+
+function recorderFail(res: Response, error: unknown, what: string): Response {
+  if (error instanceof RecorderError) {
+    return res.status(error.status).json({ success: false, error: error.message });
+  }
+  log.error(`[RECORDERS] ${what} failed`, { error });
+  return res.status(500).json({ success: false, error: `Could not ${what}` });
+}
+
+/**
+ * @openapi
+ * /api/game/cs2/recorder/runs:
+ *   post:
+ *     tags: [Highlights]
+ *     summary: A recorder's finished job, its timings and log (recorder)
+ *     description: |
+ *       `recorder`, `kind` (map, match_reel, redress, benchmark, ...),
+ *       `matchSlug`, `mapNumber`, `startedAt` (unix seconds), `seconds`, `ok`,
+ *       `clips`, `rejected`, `error`, `log` (the job's log lines, the last
+ *       200 kB are kept). The newest 200 runs per recorder are kept.
+ *     responses:
+ *       200:
+ *         description: Stored
+ */
+router.post('/recorder/runs', requireAuth, async (req: Request, res: Response) => {
+  try {
+    await saveRun(recorderName(req), (req.body ?? {}) as Record<string, unknown>);
+    return res.json({ success: true });
+  } catch (error) {
+    return recorderFail(res, error, 'store the run');
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/recorder/benchmark:
+ *   post:
+ *     tags: [Highlights]
+ *     summary: A recorder's benchmark results (recorder)
+ *     description: |
+ *       `recorder` and `tries`: per refresh rate (`gamescopeHz`) the seconds
+ *       the moment took, the capture frame rate, the frame check's
+ *       `repeatPct` and `jumpPct`, and `ok`. The fastest smooth try's rate is
+ *       kept and sent with every job after (`settings.gamescopeHz`).
+ *     responses:
+ *       200:
+ *         description: "`gamescopeHz`: the pick, or null when no try was smooth"
+ */
+router.post('/recorder/benchmark', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const picked = await saveBenchmark(recorderName(req), (req.body ?? {}) as { tries?: unknown });
+    return res.json({ success: true, ...picked });
+  } catch (error) {
+    return recorderFail(res, error, 'store the benchmark');
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/recorders:
+ *   get:
+ *     tags: [Highlights]
+ *     summary: The highlight recorders (admin)
+ *     description: |
+ *       Each recorder with its GPU, version, last seen, pause, benchmark
+ *       (each try and the pick), clips kept and turned down, seconds per clip
+ *       over its map jobs, and its last error.
+ *     responses:
+ *       200:
+ *         description: "`recorders`"
+ */
+router.get('/recorders', requireAuth, async (_req: Request, res: Response) => {
+  try {
+    return res.json({ success: true, recorders: await listRecorders() });
+  } catch (error) {
+    return recorderFail(res, error, 'list the recorders');
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/recorders/{name}/runs:
+ *   get:
+ *     tags: [Highlights]
+ *     summary: A recorder's recent runs, newest first (admin)
+ *     responses:
+ *       200:
+ *         description: "`runs`, without their logs"
+ */
+router.get('/recorders/:name/runs', requireAuth, async (req: Request, res: Response) => {
+  try {
+    return res.json({ success: true, runs: await listRuns(req.params.name, Number(req.query.limit ?? 50)) });
+  } catch (error) {
+    return recorderFail(res, error, 'list the runs');
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/recorder-runs/{id}/log:
+ *   get:
+ *     tags: [Highlights]
+ *     summary: A run's log, as plain text (admin)
+ *     responses:
+ *       200:
+ *         description: The log
+ *       404:
+ *         description: No run with that id
+ */
+router.get('/recorder-runs/:id/log', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const text = await runLog(Number(req.params.id));
+    return res.type('text/plain').send(text);
+  } catch (error) {
+    return recorderFail(res, error, 'read the log');
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/recorders/{name}/resume:
+ *   post:
+ *     tags: [Highlights]
+ *     summary: Give a paused recorder work again (admin)
+ *     responses:
+ *       200:
+ *         description: Resumed
+ *       404:
+ *         description: No recorder with that name
+ */
+router.post('/recorders/:name/resume', requireAuth, async (req: Request, res: Response) => {
+  try {
+    await resumeRecorder(req.params.name);
+    return res.json({ success: true });
+  } catch (error) {
+    return recorderFail(res, error, 'resume the recorder');
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/recorders/{name}/benchmark:
+ *   post:
+ *     tags: [Highlights]
+ *     summary: Have a recorder run its benchmark again on its next claim (admin)
+ *     responses:
+ *       200:
+ *         description: Asked
+ *       404:
+ *         description: No recorder with that name
+ */
+router.post('/recorders/:name/benchmark', requireAuth, async (req: Request, res: Response) => {
+  try {
+    await requestBenchmark(req.params.name);
+    return res.json({ success: true });
+  } catch (error) {
+    return recorderFail(res, error, 'ask for a benchmark');
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/recorders/{name}:
+ *   delete:
+ *     tags: [Highlights]
+ *     summary: Forget a recorder and its runs (admin); it shows up again when it next asks for work
+ *     responses:
+ *       200:
+ *         description: Forgotten
+ *       404:
+ *         description: No recorder with that name
+ */
+router.delete('/recorders/:name', requireAuth, async (req: Request, res: Response) => {
+  try {
+    await forgetRecorder(req.params.name);
+    return res.json({ success: true });
+  } catch (error) {
+    return recorderFail(res, error, 'forget the recorder');
+  }
 });
 
 export default router;
