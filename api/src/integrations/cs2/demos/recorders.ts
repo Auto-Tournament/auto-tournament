@@ -313,6 +313,7 @@ export async function listRecorders() {
     const paused = isPaused(r);
     return {
       name: r.name,
+      label: (r as RecorderRow & { label?: string | null }).label ?? null,
       version: r.version,
       gpu: r.gpu,
       platform: r.platform,
@@ -412,4 +413,13 @@ export async function forgetRecorder(name: string): Promise<void> {
   await existing(name);
   await db.runAsync('DELETE FROM cs2_recorder_runs WHERE recorder = ?', [name]);
   await db.runAsync('DELETE FROM cs2_recorders WHERE name = ?', [name]);
+}
+
+/** The name an admin gives a recorder on the Recorders tab (null: its own name). */
+export async function setRecorderLabel(name: string, label: string | null): Promise<boolean> {
+  const res = await db.runAsync('UPDATE cs2_recorders SET label = ? WHERE name = ?', [
+    label ? label.slice(0, 80) : null,
+    name,
+  ]);
+  return res.changes > 0;
 }

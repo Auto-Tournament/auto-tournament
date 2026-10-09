@@ -2291,6 +2291,30 @@
       },
       "outdated_flag": "Outdated",
       "outdated_one": "{{count}} made at other settings"
-    }
+    },
+    "add": {
+      "button": "Add a recorder",
+      "hint": "One command on a Linux PC with Steam and CS2. It shows up here when it first asks for work.",
+      "keys": "Recorder keys",
+      "used": "last used {{time}}",
+      "unused": "not used yet",
+      "revoke": "Revoke",
+      "revoked": "Revoked. A recorder with that key gets no more work.",
+      "title": "Add a recorder",
+      "needs": "Run this on a Linux PC with Docker, Steam (signed in) and CS2 installed, from its desktop session. The recorder uses its GPU and finds CS2 in its Steam libraries.",
+      "name": "Name for this PC",
+      "nvidia": "NVIDIA graphics card",
+      "make": "Make the command",
+      "once": "This key is shown once. Copy the command now; to add another PC, make a new one.",
+      "after": "Paste it in a terminal on the PC. It starts now and again whenever Docker does.",
+      "copy": "Copy command",
+      "copied": "Copied",
+      "copyFailed": "Could not copy: select the command and copy it"
+    },
+    "rename": "Rename",
+    "renameTitle": "Name this recorder",
+    "renameLabel": "Name",
+    "renameHelp": "It calls itself {{name}}. Empty: that name.",
+    "renameSave": "Save"
   }
 }

@@ -19,6 +19,9 @@
  *   POST /api/game/cs2/recorder/redress/:file/fail     { error }: it could not
  *   GET  /api/game/cs2/redress                         admin: the redress queue ({ queued, working, failed, available })
  *   POST /api/game/cs2/redress                         admin: { files? }: dress these (default: every video with a clean twin) again
+ *   GET  /api/game/cs2/recorder-keys                   admin: the recorder keys (never the keys themselves)
+ *   POST /api/game/cs2/recorder-keys                   admin: { name }: a recorder key, in this answer only
+ *   DELETE /api/game/cs2/recorder-keys/:id             admin: revoke it
  *   GET  /api/game/cs2/clips                           admin: recent matches' clips and match reels, what each was made at, which are outdated (?outdated=1)
  *   POST /api/game/cs2/clips/redo                      admin: { clipIds?, reels?, outdated? }: make them again
  *
@@ -56,7 +59,13 @@ import fs from 'fs';
 import path from 'path';
 import { URLSearchParams } from 'url';
 import { Router, type Request, type Response } from 'express';
-import { requireAuth } from '../../../middleware/auth';
+import { requestActorId, requireAuth } from '../../../middleware/auth';
+import {
+  createRecorderKey,
+  listRecorderKeys,
+  requireRecorder,
+  revokeRecorderKey,
+} from '../demos/recorderKeys';
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
 import {
@@ -98,6 +107,7 @@ import {
   parseMarkers,
   saveClip,
   saveReel,
+  renewClaims,
   SERIES_REEL,
 } from '../demos/highlights';
 import { listClips, redo, type RedoRequest } from '../demos/clipsAdmin';
@@ -121,6 +131,7 @@ import {
 import {
   benchmarkJob,
   forgetRecorder,
+  setRecorderLabel,
   isPaused,
   judgeClip,
   listRecorders,
@@ -163,7 +174,7 @@ const read =
     }
   };
 
-router.post('/recorder/claim', requireAuth, async (req: Request, res: Response) => {
+router.post('/recorder/claim', requireRecorder, async (req: Request, res: Response) => {
   try {
     const recorder = typeof req.body?.recorder === 'string' ? req.body.recorder : 'recorder';
     const version = Number(req.body?.version ?? 0);
@@ -225,7 +236,7 @@ router.post('/recorder/claim', requireAuth, async (req: Request, res: Response) 
   }
 });
 
-router.put('/recorder/jobs/:id/clip', requireAuth, async (req: Request, res: Response) => {
+router.put('/recorder/jobs/:id/clip', requireRecorder, async (req: Request, res: Response) => {
   const id = idOf(req);
   if (!id || !String(req.headers['content-type'] ?? '').startsWith('video/mp4')) {
     return res.status(400).json({ success: false, error: 'A video/mp4 body for a highlight' });
@@ -238,7 +249,15 @@ router.put('/recorder/jobs/:id/clip', requireAuth, async (req: Request, res: Res
       req.resume();
       return res.json({ success: true, rejected: true });
     }
-    const bytes = await saveClip(id, req, parseMarkers(req.headers['x-at-markers']));
+    const seconds = Number(req.headers['x-at-seconds']);
+    const bytes = await saveClip(
+      id,
+      req,
+      parseMarkers(req.headers['x-at-markers']),
+      Number.isFinite(seconds) && seconds > 0 && seconds < 86_400
+        ? Math.round(seconds * 10) / 10
+        : null
+    );
     return res.json({ success: true, bytes });
   } catch (error) {
     log.error('[HIGHLIGHTS] clip save failed', { error, id });
@@ -248,7 +267,7 @@ router.put('/recorder/jobs/:id/clip', requireAuth, async (req: Request, res: Res
 
 router.put(
   '/recorder/reels/:slug/:map/:player',
-  requireAuth,
+  requireRecorder,
   async (req: Request, res: Response) => {
     const map = Number(req.params.map);
     if (!Number.isInteger(map) || map < 0 || !/^\d{1,20}$/.test(req.params.player)) {
@@ -275,35 +294,39 @@ router.put(
   }
 );
 
-router.put('/recorder/match-reels/:slug/:map', requireAuth, async (req: Request, res: Response) => {
-  const map = Number(req.params.map);
-  const clips = Number(req.query.clips ?? 0);
-  if (!Number.isInteger(map) || map < SERIES_REEL) {
-    return res.status(400).json({ success: false, error: 'A match and map number' });
+router.put(
+  '/recorder/match-reels/:slug/:map',
+  requireRecorder,
+  async (req: Request, res: Response) => {
+    const map = Number(req.params.map);
+    const clips = Number(req.query.clips ?? 0);
+    if (!Number.isInteger(map) || map < SERIES_REEL) {
+      return res.status(400).json({ success: false, error: 'A match and map number' });
+    }
+    if (!String(req.headers['content-type'] ?? '').startsWith('video/mp4')) {
+      return res.status(400).json({ success: false, error: 'A video/mp4 body' });
+    }
+    try {
+      const ids = parseClipIds(req.headers['x-at-clips']);
+      const bytes = await saveMatchReel(
+        req.params.slug,
+        map,
+        Number.isInteger(clips) ? clips : 0,
+        req,
+        ids,
+        startsOf(req, ids)
+      );
+      return res.json({ success: true, bytes });
+    } catch (error) {
+      log.error('[HIGHLIGHTS] match reel save failed', { error, slug: req.params.slug });
+      return res.status(500).json({ success: false, error: 'Could not store the match reel' });
+    }
   }
-  if (!String(req.headers['content-type'] ?? '').startsWith('video/mp4')) {
-    return res.status(400).json({ success: false, error: 'A video/mp4 body' });
-  }
-  try {
-    const ids = parseClipIds(req.headers['x-at-clips']);
-    const bytes = await saveMatchReel(
-      req.params.slug,
-      map,
-      Number.isInteger(clips) ? clips : 0,
-      req,
-      ids,
-      startsOf(req, ids)
-    );
-    return res.json({ success: true, bytes });
-  } catch (error) {
-    log.error('[HIGHLIGHTS] match reel save failed', { error, slug: req.params.slug });
-    return res.status(500).json({ success: false, error: 'Could not store the match reel' });
-  }
-});
+);
 
 router.post(
   '/recorder/match-reels/:slug/:map/fail',
-  requireAuth,
+  requireRecorder,
   async (req: Request, res: Response) => {
     const map = Number(req.params.map);
     if (!Number.isInteger(map) || map < SERIES_REEL)
@@ -357,7 +380,7 @@ const TWIN = ':twin(crowd|clean|overlay)';
 
 router.put(
   `/recorder/jobs/:id/clip/${TWIN}`,
-  requireAuth,
+  requireRecorder,
   twinUpload((req) => {
     const id = idOf(req);
     return id ? clipFile(id) : null;
@@ -365,7 +388,7 @@ router.put(
 );
 router.put(
   `/recorder/reels/:slug/:map/:player/${TWIN}`,
-  requireAuth,
+  requireRecorder,
   twinUpload((req) => {
     const map = Number(req.params.map);
     return Number.isInteger(map) && map >= 0 && /^\d{1,20}$/.test(req.params.player)
@@ -375,7 +398,7 @@ router.put(
 );
 router.put(
   `/recorder/match-reels/:slug/:map/${TWIN}`,
-  requireAuth,
+  requireRecorder,
   twinUpload((req) => {
     const map = Number(req.params.map);
     return Number.isInteger(map) && map >= SERIES_REEL ? matchReelFile(req.params.slug, map) : null;
@@ -383,41 +406,45 @@ router.put(
 );
 router.put(
   `/recorder/team-reels/:slug/:team/${TWIN}`,
-  requireAuth,
+  requireRecorder,
   twinUpload((req) => teamReelFile(req.params.slug, req.params.team))
 );
 router.put(
   `/recorder/tournament-reels/:id/${TWIN}`,
-  requireAuth,
+  requireRecorder,
   twinUpload((req) => {
     const id = idOf(req);
     return id ? tournamentReelFile(id) : null;
   })
 );
 
-router.put('/recorder/team-reels/:slug/:team', requireAuth, async (req: Request, res: Response) => {
-  if (!String(req.headers['content-type'] ?? '').startsWith('video/mp4')) {
-    return res.status(400).json({ success: false, error: 'A video/mp4 body' });
+router.put(
+  '/recorder/team-reels/:slug/:team',
+  requireRecorder,
+  async (req: Request, res: Response) => {
+    if (!String(req.headers['content-type'] ?? '').startsWith('video/mp4')) {
+      return res.status(400).json({ success: false, error: 'A video/mp4 body' });
+    }
+    try {
+      const ids = parseClipIds(req.headers['x-at-clips']);
+      const bytes = await saveTeamReel(
+        req.params.slug,
+        req.params.team,
+        req,
+        ids,
+        startsOf(req, ids)
+      );
+      return res.json({ success: true, bytes });
+    } catch (error) {
+      log.error('[HIGHLIGHTS] team reel save failed', { error, slug: req.params.slug });
+      return res.status(500).json({ success: false, error: 'Could not store the team reel' });
+    }
   }
-  try {
-    const ids = parseClipIds(req.headers['x-at-clips']);
-    const bytes = await saveTeamReel(
-      req.params.slug,
-      req.params.team,
-      req,
-      ids,
-      startsOf(req, ids)
-    );
-    return res.json({ success: true, bytes });
-  } catch (error) {
-    log.error('[HIGHLIGHTS] team reel save failed', { error, slug: req.params.slug });
-    return res.status(500).json({ success: false, error: 'Could not store the team reel' });
-  }
-});
+);
 
 router.post(
   '/recorder/team-reels/:slug/:team/fail',
-  requireAuth,
+  requireRecorder,
   async (req: Request, res: Response) => {
     await failTeamReel(
       req.params.slug,
@@ -428,7 +455,7 @@ router.post(
   }
 );
 
-router.put('/recorder/redress/:file', requireAuth, async (req: Request, res: Response) => {
+router.put('/recorder/redress/:file', requireRecorder, async (req: Request, res: Response) => {
   if (
     !REDRESS_FILE.test(req.params.file) ||
     !String(req.headers['content-type'] ?? '').startsWith('video/mp4')
@@ -443,15 +470,19 @@ router.put('/recorder/redress/:file', requireAuth, async (req: Request, res: Res
   }
 });
 
-router.post('/recorder/redress/:file/fail', requireAuth, async (req: Request, res: Response) => {
-  if (!REDRESS_FILE.test(req.params.file))
-    return res.status(400).json({ success: false, error: 'A clip or reel' });
-  await failRedress(
-    req.params.file,
-    typeof req.body?.error === 'string' ? req.body.error : 'unknown'
-  );
-  return res.json({ success: true });
-});
+router.post(
+  '/recorder/redress/:file/fail',
+  requireRecorder,
+  async (req: Request, res: Response) => {
+    if (!REDRESS_FILE.test(req.params.file))
+      return res.status(400).json({ success: false, error: 'A clip or reel' });
+    await failRedress(
+      req.params.file,
+      typeof req.body?.error === 'string' ? req.body.error : 'unknown'
+    );
+    return res.json({ success: true });
+  }
+);
 
 // Admin: how the redress stands, and queue it (every video with a clean twin, or `files`).
 router.get('/redress', requireAuth, async (_req: Request, res: Response) => {
@@ -475,7 +506,7 @@ router.post('/redress', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-router.post('/recorder/fail', requireAuth, async (req: Request, res: Response) => {
+router.post('/recorder/fail', requireRecorder, async (req: Request, res: Response) => {
   const ids = Array.isArray(req.body?.ids)
     ? (req.body.ids as unknown[]).map(Number).filter((n) => Number.isInteger(n) && n > 0)
     : [];
@@ -484,24 +515,30 @@ router.post('/recorder/fail', requireAuth, async (req: Request, res: Response) =
   return res.json({ success: true });
 });
 
-router.put('/recorder/tournament-reels/:id', requireAuth, async (req: Request, res: Response) => {
-  const id = idOf(req);
-  if (!id || !String(req.headers['content-type'] ?? '').startsWith('video/mp4')) {
-    return res.status(400).json({ success: false, error: 'A tournament id and a video/mp4 body' });
+router.put(
+  '/recorder/tournament-reels/:id',
+  requireRecorder,
+  async (req: Request, res: Response) => {
+    const id = idOf(req);
+    if (!id || !String(req.headers['content-type'] ?? '').startsWith('video/mp4')) {
+      return res
+        .status(400)
+        .json({ success: false, error: 'A tournament id and a video/mp4 body' });
+    }
+    try {
+      const ids = parseClipIds(req.headers['x-at-clips']);
+      const bytes = await saveTournamentReel(id, req, ids, startsOf(req, ids));
+      return res.json({ success: true, bytes });
+    } catch (error) {
+      log.error('[HIGHLIGHTS] tournament reel save failed', { error, id });
+      return res.status(500).json({ success: false, error: 'Could not store the tournament reel' });
+    }
   }
-  try {
-    const ids = parseClipIds(req.headers['x-at-clips']);
-    const bytes = await saveTournamentReel(id, req, ids, startsOf(req, ids));
-    return res.json({ success: true, bytes });
-  } catch (error) {
-    log.error('[HIGHLIGHTS] tournament reel save failed', { error, id });
-    return res.status(500).json({ success: false, error: 'Could not store the tournament reel' });
-  }
-});
+);
 
 router.post(
   '/recorder/tournament-reels/:id/fail',
-  requireAuth,
+  requireRecorder,
   async (req: Request, res: Response) => {
     const id = idOf(req);
     if (!id) return res.status(400).json({ success: false, error: 'A tournament id' });
@@ -705,7 +742,29 @@ function recorderFail(res: Response, error: unknown, what: string): Response {
  *       200:
  *         description: Stored
  */
-router.post('/recorder/runs', requireAuth, async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/game/cs2/recorder/heartbeat:
+ *   post:
+ *     tags: [Highlights]
+ *     summary: A recorder at a job says it still is; what it claimed stays its own
+ *     description: "`recorder`: its name. Sent every few minutes during a job."
+ *     responses:
+ *       200:
+ *         description: How many claims were renewed
+ */
+router.post('/recorder/heartbeat', requireRecorder, async (req: Request, res: Response) => {
+  const recorder = typeof req.body?.recorder === 'string' ? req.body.recorder.trim() : '';
+  if (!recorder) return res.status(400).json({ success: false, error: 'A recorder name' });
+  try {
+    return res.json({ success: true, renewed: await renewClaims(recorder) });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] heartbeat failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not renew the claims' });
+  }
+});
+
+router.post('/recorder/runs', requireRecorder, async (req: Request, res: Response) => {
   try {
     await saveRun(recorderName(req), (req.body ?? {}) as Record<string, unknown>);
     return res.json({ success: true });
@@ -729,7 +788,7 @@ router.post('/recorder/runs', requireAuth, async (req: Request, res: Response) =
  *       200:
  *         description: "`gamescopeHz`: the pick, or null when no try was smooth"
  */
-router.post('/recorder/benchmark', requireAuth, async (req: Request, res: Response) => {
+router.post('/recorder/benchmark', requireRecorder, async (req: Request, res: Response) => {
   try {
     const picked = await saveBenchmark(recorderName(req), (req.body ?? {}) as { tries?: unknown });
     return res.json({ success: true, ...picked });
@@ -901,6 +960,97 @@ router.post('/clips/redo', requireAuth, async (req: Request, res: Response) => {
   } catch (error) {
     log.error('[HIGHLIGHTS] redo failed', { error });
     return res.status(500).json({ success: false, error: 'Could not queue the clips' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/recorder-keys:
+ *   get:
+ *     tags: [Highlights]
+ *     summary: The recorder keys (admin); never the keys themselves
+ *     responses:
+ *       200:
+ *         description: The keys
+ *   post:
+ *     tags: [Highlights]
+ *     summary: Make a recorder key (admin); the key is in this answer only
+ *     description: "`name`: what it is for, e.g. lan-seat-12."
+ *     responses:
+ *       200:
+ *         description: The key and its token
+ */
+router.get('/recorder-keys', requireAuth, async (_req: Request, res: Response) => {
+  try {
+    return res.json({ success: true, keys: await listRecorderKeys() });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] recorder keys failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not read the recorder keys' });
+  }
+});
+
+router.post('/recorder-keys', requireAuth, async (req: Request, res: Response) => {
+  const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+  if (!name || name.length > 80) {
+    return res.status(400).json({ success: false, error: 'A name, up to 80 characters' });
+  }
+  try {
+    const { key, token } = await createRecorderKey(name, requestActorId(req));
+    log.info(`[HIGHLIGHTS] recorder key ${key.id} (${key.name}) made`);
+    return res.json({ success: true, key, token });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] recorder key failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not make the recorder key' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/recorder-keys/{id}:
+ *   delete:
+ *     tags: [Highlights]
+ *     summary: Revoke a recorder key (admin); a recorder using it stops getting work
+ *     responses:
+ *       200:
+ *         description: Revoked
+ *       404:
+ *         description: No live key with that id
+ */
+router.delete('/recorder-keys/:id', requireAuth, async (req: Request, res: Response) => {
+  try {
+    if (!(await revokeRecorderKey(req.params.id)))
+      return res.status(404).json({ success: false, error: 'No such key' });
+    log.info(`[HIGHLIGHTS] recorder key ${req.params.id} revoked`);
+    return res.json({ success: true });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] revoking a recorder key failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not revoke the key' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/recorders/{name}:
+ *   put:
+ *     tags: [Highlights]
+ *     summary: Name a recorder (admin)
+ *     description: "`label`: what the Recorders tab and the Clips list call it; empty for its own name."
+ *     responses:
+ *       200:
+ *         description: Named
+ *       404:
+ *         description: No recorder by that name
+ */
+router.put('/recorders/:name', requireAuth, async (req: Request, res: Response) => {
+  const label = typeof req.body?.label === 'string' ? req.body.label.trim() : '';
+  if (label.length > 80)
+    return res.status(400).json({ success: false, error: 'Up to 80 characters' });
+  try {
+    if (!(await setRecorderLabel(req.params.name, label || null)))
+      return res.status(404).json({ success: false, error: 'No such recorder' });
+    return res.json({ success: true });
+  } catch (error) {
+    return recorderFail(res, error, 'name the recorder');
   }
 });
 
