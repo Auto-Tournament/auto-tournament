@@ -99,6 +99,57 @@ test.describe.serial('local accounts', () => {
   );
 
   test(
+    'the owner changes their own password with the current one',
+    TAGS,
+    async ({ playwright }) => {
+      const third = 'a third passphrase of their own';
+      const owner = await fresh(playwright);
+      expect(
+        (
+          await owner.post('/api/auth/local/login', { data: { username: user, password: next } })
+        ).status()
+      ).toBe(200);
+
+      const wrong = await owner.post('/api/auth/local/password', {
+        data: { currentPassword: 'not the password', newPassword: third },
+      });
+      expect(wrong.status(), await wrong.text()).toBe(401);
+      const empty = await owner.post('/api/auth/local/password', {
+        data: { currentPassword: next, newPassword: '' },
+      });
+      expect(empty.status(), await empty.text()).toBe(400);
+      const changed = await owner.post('/api/auth/local/password', {
+        data: { currentPassword: next, newPassword: third },
+      });
+      expect(changed.status(), await changed.text()).toBe(200);
+      await owner.dispose();
+
+      const anon = await fresh(playwright);
+      expect(
+        (
+          await anon.post('/api/auth/local/login', { data: { username: user, password: next } })
+        ).status()
+      ).toBe(401);
+      expect(
+        (
+          await anon.post('/api/auth/local/login', { data: { username: user, password: third } })
+        ).status()
+      ).toBe(200);
+      // Signed out: nothing to change.
+      const outsider = await fresh(playwright);
+      expect(
+        (
+          await outsider.post('/api/auth/local/password', {
+            data: { currentPassword: third, newPassword: next },
+          })
+        ).status()
+      ).toBe(404);
+      await outsider.dispose();
+      await anon.dispose();
+    }
+  );
+
+  test(
     'removing the account stops its sign-in; players and outsiders cannot manage accounts',
     TAGS,
     async ({ request, playwright }) => {

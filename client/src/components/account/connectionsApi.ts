@@ -46,6 +46,18 @@ export interface ConnectionsResponse {
   pendingMerge: { steamId: string; name: string; avatar: string | null; matches: number } | null;
 }
 
+/** Change the signed-in account's own password (its username and password login). */
+export async function changeOwnPassword(
+  currentPassword: string,
+  newPassword: string,
+  totp?: string
+): Promise<void> {
+  await api.post(
+    '/api/auth/local/password',
+    totp ? { currentPassword, newPassword, totp } : { currentPassword, newPassword }
+  );
+}
+
 export async function fetchConnections(): Promise<ConnectionsResponse> {
   return api.get<ConnectionsResponse>('/api/me/connections');
 }

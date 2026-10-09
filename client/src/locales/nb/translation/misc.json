@@ -118,6 +118,21 @@
       "localLabel": "Admininnlogging (brukernavn + passord)",
       "localDetail": "Brukernavn {{username}}"
     },
+    "changePassword": {
+      "button": "Bytt passord",
+      "title": "Bytt passordet ditt",
+      "current": "Nåværende passord",
+      "new": "Nytt passord",
+      "repeat": "Nytt passord igjen",
+      "totp": "Kode fra autentiseringsappen",
+      "mismatch": "De nye passordene er ikke like",
+      "save": "Bytt passord",
+      "cancel": "Avbryt",
+      "done": "Passordet er byttet",
+      "failed": "Kunne ikke bytte passordet",
+      "totpNeeded": "Skriv inn koden fra autentiseringsappen også.",
+      "tooLong": "Det nye passordet er for langt"
+    },
     "reauth": {
       "title": "Bekreft admin-passordet ditt",
       "body": "Skriv inn passordet for {{username}} før du endrer hvordan du logger inn.",

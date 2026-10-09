@@ -39,6 +39,7 @@ import {
   type GameAccount,
   type SignInMethod,
 } from '../components/account/connectionsApi';
+import { ChangePasswordDialog } from '../components/account/ChangePasswordDialog';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { apiErrorMessage } from '../utils/api';
 import { fontDisplay, tokens } from '../theme/tokens';
@@ -221,6 +222,7 @@ export default function AccountConnections() {
   const [totp, setTotp] = useState('');
   const [reauthError, setReauthError] = useState<string | null>(null);
   const [mergeDismissed, setMergeDismissed] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -663,6 +665,23 @@ export default function AccountConnections() {
                       );
                     }
 
+                    // The password login: its owner can change the password here.
+                    if (method.provider === 'local' && method.linked && !readOnly && data.localLogin) {
+                      end = (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => setChangingPassword(true)}
+                            data-testid="sign-in-change-password"
+                          >
+                            {t('account.changePassword.button')}
+                          </Button>
+                          {end}
+                        </Stack>
+                      );
+                    }
+
                     return (
                       <Row
                         key={method.provider}
@@ -688,6 +707,16 @@ export default function AccountConnections() {
           </Box>
         )}
       </Container>
+
+      <ChangePasswordDialog
+        open={changingPassword}
+        totpEnabled={!!data?.localLogin?.totpEnabled}
+        onClose={() => setChangingPassword(false)}
+        onDone={() => {
+          setChangingPassword(false);
+          showSuccess(t('account.changePassword.done'));
+        }}
+      />
 
       <Dialog
         open={removing !== null}

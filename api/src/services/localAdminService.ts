@@ -361,6 +361,22 @@ class LocalAdminService {
   }
 
   /**
+   * The account's owner changes their own password (they gave the current
+   * one first). Two-step verification stays as it is.
+   */
+  async changeOwnPassword(playerId: string, password: string): Promise<boolean> {
+    const row = await this.findByPlayerId(playerId);
+    if (!row) return false;
+    await db.queryAsync('UPDATE local_admins SET password_hash = ?, updated_at = ? WHERE id = ?', [
+      await hashPassword(password),
+      now(),
+      row.id,
+    ]);
+    log.info('[AUDIT] Local account password changed by its owner', { username: row.username });
+    return true;
+  }
+
+  /**
    * An admin removes a local account's login. The player (their matches,
    * stats, linked accounts) stays; only the username and password go.
    */
