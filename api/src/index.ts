@@ -1,5 +1,6 @@
 // IMPORTANT: Load environment variables FIRST, before any other imports
 // This ensures all modules can access env vars during initialization
+import { startModuleUpdateNotices } from './services/platform/moduleUpdates';
 import { socialService } from './services/socialService';
 import { startTournamentNotices } from './services/tournamentNotices';
 import { startHoldTimer } from './services/matchHolds';
@@ -62,7 +63,12 @@ import { getServiceTokens } from './utils/serviceTokens';
 import { allowUnauthenticatedEvents } from './middleware/serverAuth';
 import packageJson from '../package.json';
 import { redactDiscordIdsInPath } from './utils/discordId';
-import { configurePassportAuth, getBackendBaseUrl, passport, reloadPassportAuth } from './config/passport';
+import {
+  configurePassportAuth,
+  getBackendBaseUrl,
+  passport,
+  reloadPassportAuth,
+} from './config/passport';
 import { adminAccessSettings } from './services/adminAccessSettings';
 import { localAdminService } from './services/localAdminService';
 import { authProviderSettingsService } from './services/authProviderSettingsService';
@@ -76,7 +82,10 @@ import { reportCompatConfig } from './services/compatService';
 import { startCompatFeed, stopCompatFeed } from './services/compatFeedService';
 import { startLicenseCheckin, stopLicenseCheckin } from './services/license/checkinService';
 import { startWebhooks, stopWebhooks } from './services/webhooks';
-import { refreshCurrentTournamentId, startCurrentTournamentRefresh } from './services/currentTournament';
+import {
+  refreshCurrentTournamentId,
+  startCurrentTournamentRefresh,
+} from './services/currentTournament';
 
 const app = express();
 const httpServer = createServer(app);
@@ -98,7 +107,9 @@ app.use('/api/compat/events', express.json({ limit: COMPAT_MAX_BYTES }));
 app.use('/api/compat/events', (err: unknown, _req: Request, res: Response, next: NextFunction) => {
   const type = (err as { type?: string } | null)?.type;
   if (type === 'entity.too.large') {
-    return res.status(413).json({ success: false, error: 'payload_too_large', limitBytes: COMPAT_MAX_BYTES });
+    return res
+      .status(413)
+      .json({ success: false, error: 'payload_too_large', limitBytes: COMPAT_MAX_BYTES });
   }
   if (type === 'entity.parse.failed') {
     return res.status(400).json({ success: false, error: 'invalid_json' });
@@ -136,7 +147,9 @@ const useSecureCookies =
 let sessionCookieDomain: string | undefined;
 try {
   if (frontendBaseUrl) {
-    const u = new URL(frontendBaseUrl.startsWith('http') ? frontendBaseUrl : `https://${frontendBaseUrl}`);
+    const u = new URL(
+      frontendBaseUrl.startsWith('http') ? frontendBaseUrl : `https://${frontendBaseUrl}`
+    );
     const host = u.hostname.toLowerCase();
     // Only set an explicit cookie domain for real DNS names.
     // Setting Domain= on an IP can cause cookies to be dropped or behave unexpectedly.
@@ -148,7 +161,12 @@ try {
   // Invalid URL, skip domain
 }
 
-const sessionCookie: { sameSite: 'lax' | 'strict' | 'none'; secure: boolean; httpOnly: boolean; domain?: string } = {
+const sessionCookie: {
+  sameSite: 'lax' | 'strict' | 'none';
+  secure: boolean;
+  httpOnly: boolean;
+  domain?: string;
+} = {
   sameSite: 'lax',
   secure: useSecureCookies,
   httpOnly: true, // Prevent JavaScript access to cookie (security best practice)
@@ -252,8 +270,7 @@ app.use(
   swaggerUi.setup(getOpenApiSpec(), {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Auto Tournament API',
-  }) as // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  any
+  }) as any // eslint-disable-next-line @typescript-eslint/no-explicit-any
 );
 
 // Swagger JSON
@@ -328,7 +345,8 @@ app.get('/', (_req: Request, res: Response) => {
         note: 'Match management - webhooks auto-configured on load',
         list: 'GET /api/matches (auth required)',
         get: 'GET /api/matches/:slug (auth required)',
-        getConfig: 'GET /api/matches/:slug.json (X-Auto-Tournament-Token or admin auth required - for MatchZy Enhanced)',
+        getConfig:
+          'GET /api/matches/:slug.json (X-Auto-Tournament-Token or admin auth required - for MatchZy Enhanced)',
         create: 'POST /api/matches (auth required)',
         load: 'POST /api/matches/:slug/load (auth required, webhooks auto-configured)',
         loadNoWebhook: 'POST /api/matches/:slug/load?skipWebhook=true (skip webhook setup)',
@@ -542,7 +560,9 @@ process.on('uncaughtException', (err) => {
       );
     }
     if (envKeys.malformed > 0) {
-      log.warn(`[MODULES] MODULE_TRUSTED_KEYS: ${envKeys.malformed} entry(ies) are not base64 Ed25519 public keys and were ignored`);
+      log.warn(
+        `[MODULES] MODULE_TRUSTED_KEYS: ${envKeys.malformed} entry(ies) are not base64 Ed25519 public keys and were ignored`
+      );
     }
     // Code modules' server halves reach core through this (hostBridge.ts).
     installHostBridge();
@@ -573,6 +593,8 @@ process.on('uncaughtException', (err) => {
     // Now start the server after database is ready
     // Bind to all interfaces (IPv4 & IPv6) so both 127.0.0.1 and ::1 work with dev proxies.
     const server = httpServer.listen(Number(PORT), () => {
+      // Admins hear about module and pack updates, and ones that did not take.
+      startModuleUpdateNotices();
       log.server('='.repeat(60));
       log.server('Auto Tournament API');
       log.server('='.repeat(60));
@@ -785,9 +807,7 @@ async function reportSteamApiKeyStatus(): Promise<void> {
       );
       break;
     default:
-      log.warn(
-        `[Startup] STEAM_API_KEY could not be verified: ${health.error ?? 'unknown error'}`
-      );
+      log.warn(`[Startup] STEAM_API_KEY could not be verified: ${health.error ?? 'unknown error'}`);
   }
 }
 
@@ -816,9 +836,7 @@ function reportServiceTokens(): void {
   }
 
   const described = tokens.map((t) => `${t.label} (${t.scope}, ${t.fingerprint})`).join(', ');
-  log.success(
-    `[Startup] ${tokens.length} API token(s) active: ${described}`
-  );
+  log.success(`[Startup] ${tokens.length} API token(s) active: ${described}`);
 }
 
 /**
