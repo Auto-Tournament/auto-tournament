@@ -50,6 +50,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -58,6 +60,10 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+
+      - name: Formatted (the files this change touches)
+        if: github.event_name == 'pull_request'
+        run: FORMAT_BASE=origin/${{ github.base_ref }} yarn format:check
 
       - name: Lint
         run: yarn lint
