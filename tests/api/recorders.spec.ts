@@ -222,3 +222,46 @@ test('recorder admin routes need an admin', TAGS, async ({ playwright, baseURL }
   expect((await anon.post('/api/game/cs2/recorder/runs', { data: {} })).status()).toBe(401);
   await anon.dispose();
 });
+
+test('a second recorder joins a map mid-way, newest match first', TAGS, async ({ request }) => {
+  expect(await signInViaRequest(request)).toBe(true);
+  const slug = await matchWithMoments(request);
+  // The import's moments are saved after its analysis answers: wait for them.
+  await expect
+    .poll(
+      async () => {
+        const list = (await (await request.get('/api/game/cs2/clips')).json()) as {
+          matches: Array<{ slug: string; clips: unknown[] }>;
+        };
+        return list.matches.find((m) => m.slug === slug)?.clips.length ?? 0;
+      },
+      { timeout: 15_000 }
+    )
+    .toBeGreaterThan(0);
+  type Job = {
+    matchSlug: string;
+    mapNumber: number;
+    players: Array<{ moments: Array<{ id: number }> }>;
+  };
+  const claim = async (recorder: string) => {
+    const res = await request.post('/api/game/cs2/recorder/claim', {
+      data: { recorder, version: 7 },
+    });
+    return res.status() === 200 ? ((await res.json()).job as Job) : null;
+  };
+  const stamp = Date.now();
+  const recorders = [`spec-share-a-${stamp}`, `spec-share-b-${stamp}`];
+  // Both say hello first, so both count as online (a benchmark is asked of a new one).
+  for (const r of recorders) await claim(r);
+  const a = await claim(recorders[0]);
+  // The newest match goes first.
+  expect(a?.matchSlug).toBe(slug);
+  const idsA = a!.players.flatMap((p) => p.moments.map((m) => m.id));
+  // Five moments and at least two recorders online: A takes only part of the map.
+  expect(idsA.length).toBeLessThan(5);
+  const b = await claim(recorders[1]);
+  expect(b?.matchSlug).toBe(slug);
+  expect(b?.mapNumber).toBe(a?.mapNumber);
+  const idsB = b!.players.flatMap((p) => p.moments.map((m) => m.id));
+  expect(idsB.some((id) => idsA.includes(id))).toBe(false);
+});
