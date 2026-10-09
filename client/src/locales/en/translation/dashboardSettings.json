@@ -244,7 +244,7 @@
         "savePassword": "Save password",
         "passwordSet": "New password saved for {{username}}",
         "removeTitle": "Remove {{username}}?",
-        "removeBody": "They can no longer sign in with this username and password. Their player, matches and stats stay.",
+        "removeBody": "They can no longer sign in with this username and password, and they are no longer an admin. Their player, matches and stats stay; making the same username again gives them back.",
         "removeConfirm": "Remove",
         "removed": "{{username}} removed",
         "cancel": "Cancel",

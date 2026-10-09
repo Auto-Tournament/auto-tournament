@@ -159,6 +159,22 @@ test.describe.serial('local accounts', () => {
       expect((await request.delete(`/api/local-accounts/${user}`)).status()).toBe(200);
       expect((await request.delete(`/api/local-accounts/${user}`)).status()).toBe(404);
 
+      // The same username can be made again: it gets its old player back.
+      const again = await request.post('/api/local-accounts', {
+        data: { username: user, password, name: 'E2E Again', isAdmin: true },
+      });
+      expect(again.status(), await again.text()).toBe(201);
+      expect(((await again.json()) as { account: { isAdmin: boolean } }).account.isAdmin).toBe(
+        true
+      );
+      // Removing an admin's login takes its admin rights too.
+      expect((await request.delete(`/api/local-accounts/${user}`)).status()).toBe(200);
+      const player = await request.get(`/api/players/local-${user}`);
+      if (player.ok()) {
+        const body = (await player.json()) as { player?: { isAdmin?: boolean }; isAdmin?: boolean };
+        expect(body.player?.isAdmin ?? body.isAdmin ?? false).toBe(false);
+      }
+
       const anon = await fresh(playwright);
       expect(
         (

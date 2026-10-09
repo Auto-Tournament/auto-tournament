@@ -330,9 +330,15 @@ class LocalAdminService {
   ): Promise<{ ok: true; account: LocalAccountView } | { ok: false; reason: 'taken' }> {
     if (await this.findByUsername(username)) return { ok: false, reason: 'taken' };
     const playerId = localAdminPlayerId(username);
-    if (await playerService.getPlayerById(playerId)) return { ok: false, reason: 'taken' };
+    // A removed account keeps its player (matches, stats): creating the
+    // username again gives that player a login again, history and all.
+    const existing = await playerService.getPlayerById(playerId);
     const passwordHash = await hashPassword(password);
-    await playerService.getOrCreatePlayer(playerId, opts.name?.trim() || username);
+    if (existing) {
+      if (opts.name?.trim()) await playerService.updatePlayer(playerId, { name: opts.name.trim() });
+    } else {
+      await playerService.getOrCreatePlayer(playerId, opts.name?.trim() || username);
+    }
     await db.queryAsync(
       'INSERT INTO local_admins (username, player_id, password_hash, must_change_password) VALUES (?, ?, ?, 1)',
       [username, playerId, passwordHash]
@@ -384,6 +390,9 @@ class LocalAdminService {
     const row = await this.findByUsername(username);
     if (!row) return false;
     await db.queryAsync('DELETE FROM local_admins WHERE id = ?', [row.id]);
+    // Its admin rights go with the login: a sign-in method still connected to
+    // the player must not keep admin.
+    await playerService.updatePlayer(row.player_id, { isAdmin: false });
     log.warn('[AUDIT] Local account removed', { username, playerId: row.player_id, by: actor });
     return true;
   }

@@ -244,7 +244,7 @@
         "savePassword": "Lagre passord",
         "passwordSet": "Nytt passord lagret for {{username}}",
         "removeTitle": "Fjerne {{username}}?",
-        "removeBody": "De kan ikke lenger logge inn med dette brukernavnet og passordet. Spilleren, kampene og statistikken blir værende.",
+        "removeBody": "De kan ikke lenger logge inn med dette brukernavnet og passordet, og de er ikke lenger admin. Spilleren, kampene og statistikken blir; lager du samme brukernavn igjen, får de dem tilbake.",
         "removeConfirm": "Fjern",
         "removed": "{{username}} er fjernet",
         "cancel": "Avbryt",

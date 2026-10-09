@@ -850,6 +850,10 @@ localAccountsRouter.delete('/:username', guardWrite, async (req: Request, res: R
         .status(409)
         .json({ success: false, error: 'You cannot remove the login you are signed in with' });
     }
+    const player = await playerService.getPlayerById(row.player_id);
+    if (removesLastAdmin({ targetIsAdmin: !!player?.isAdmin, adminCount: await playerService.countAdmins() })) {
+      return res.status(409).json({ success: false, error: LAST_ADMIN });
+    }
     await localAdminService.removeAccount(row.username, requestActorId(req));
     return res.json({ success: true });
   } catch (error) {
