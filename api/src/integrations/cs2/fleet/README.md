@@ -46,6 +46,13 @@ Tables (migration `006-fleet-match` in `../migrations.ts`):
 (epoch, server, connect password, acked config per match) and `cs2_fleet_audit`
 (root `exec`). `transport = 'fleet'` is set by linking a server
 (`POST /api/fleet/servers/:id/link`, the Servers page's "Use for matches").
+Two links happen on a server's first hello instead (`push/controls.ts`,
+once each, so an admin's unlink sticks): a server csm created from an admin's
+Create server (an existing `cs2_servers` row means it was linked before), and
+a server enrolled with a fleet key created with `autoLink: true`
+(`cs2_fleet_enrollment_keys.auto_link`, migration `032-fleet-key-auto-link`;
+`cs2_fleet_servers.auto_linked_at` marks the link, so deleting the server
+sticks too). A revoked or expired key links nothing.
 The linked row's `host` / `port` are the connect address (`address.ts`,
 FLEET.md §6.1): each hello refreshes them (`syncLinkedAddress`) unless
 `cs2_servers.host_override = 1` (an admin set them: `host` / `port` on the
