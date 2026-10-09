@@ -127,13 +127,22 @@ test(
       },
     });
     // Our moments on a map, claimed (other specs' jobs are skipped).
+    const seen: string[] = [];
+    // Tournament matches go before imports, and other specs leave moments
+    // waiting: take (and keep) theirs until ours come up.
     const claimOurs = async (map: number): Promise<number[]> => {
       const ids: number[] = [];
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 300; i++) {
         const res = await ask();
-        if (res.status() !== 200) break;
+        if (res.status() !== 200) {
+          seen.push(`HTTP ${res.status()}`);
+          break;
+        }
         const job = (await res.json()).job as Job;
-        if (job.kind !== 'map' || job.matchSlug !== slug) continue;
+        if (job.kind !== 'map' || job.matchSlug !== slug) {
+          seen.push(`${job.kind} ${job.matchSlug ?? ''}`);
+          continue;
+        }
         const got = job.players.flatMap((p) => p.moments.map((m) => m.id));
         if (job.mapNumber !== map) {
           await request.post('/api/game/cs2/recorder/fail', {
@@ -163,8 +172,11 @@ test(
       if (ids.length === 0) break;
       await request.post('/api/game/cs2/recorder/fail', { data: { ids, error: 'spec: broken' } });
     }
+    const map0 = (await reels()).clips.filter((c) => c.mapNumber === 0);
+    expect(map0.length).toBeGreaterThan(0);
     expect(
-      (await reels()).clips.filter((c) => c.mapNumber === 0).every((c) => c.status === 'failed')
+      map0.every((c) => c.status === 'failed'),
+      `map 0: ${JSON.stringify(map0.map((c) => c.status))}; claims: ${seen.slice(-10).join(', ')}`
     ).toBe(true);
 
     // Map 1: recorded.
