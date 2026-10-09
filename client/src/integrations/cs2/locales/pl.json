@@ -1297,6 +1297,9 @@
     "keyNamePrefix": "Prefiks nazwy serwera (opcjonalnie)",
     "keyMaxServers": "Maks. liczba serwerów (opcjonalnie)",
     "keyExpiresInDays": "Wygasa po (dni, opcjonalnie)",
+    "keyAutoLinkLabel": "Automatycznie łącz serwery",
+    "keyAutoLinkHelp": "Używaj serwerów zarejestrowanych tym kluczem do meczów zaraz po połączeniu. Każdy, kto ma klucz, może hostować mecze.",
+    "keyAutoLink": "Autołączenie",
     "keySkins": "Włącz wirtualne skiny",
     "keySkinsHelp": "Gracze widzą swoje założone wirtualne skiny na serwerach zarejestrowanych tym kluczem. Nie na serwerach z tokenem serwera Steam.",
     "keyCreatedTitle": "Utworzono klucz floty",
@@ -2110,7 +2113,9 @@
     },
     "readyIn": "ready in about {{minutes}} min",
     "matchReelRecording": "Match reel · being recorded",
-    "teamReelButton": "{{team}} highlights"
+    "teamReelButton": "{{team}} highlights",
+    "wholeSeries": "Whole series",
+    "seriesReel": "Series reel"
   },
   "serversBoard": {
     "addFirstServers": "Add the first servers",
@@ -2193,8 +2198,8 @@
     "tabs": {
       "recorders": "Recorders",
       "settings": "Settings",
-      "connect": "Add a recorder",
-      "overlays": "Overlays"
+      "overlays": "Overlays",
+      "clips": "Clips"
     },
     "loadError": "Could not load the recorders",
     "actionError": "That didn't work",
@@ -2251,14 +2256,62 @@
     "logError": "Could not load the log",
     "emptyLog": "(empty)",
     "close": "Close",
-    "connect": {
-      "intro": "A recorder is a PC with a GPU, CS2 and Steam that records highlight clips from this platform's demos. Add as many as you like: they share the work.",
-      "step1": "Install CS2 and sign in to Steam once, then switch Steam to offline mode. Every recorder can use the same Steam account.",
-      "step2": "Get at-worker (the auto-tournament-worker image, or the binary) on the PC. It needs ffmpeg, gamescope and PipeWire.",
-      "step3": "Point it at this platform:",
-      "step4": "Start it with at-worker record. On its first job it runs a short benchmark, then it shows up under Recorders with its numbers.",
-      "gaming": "You can game on the same PC while it records, but the GPU is shared: clips with too many repeated frames are turned down and recorded again elsewhere, and a recorder that keeps failing is paused for 15 minutes."
+    "cs2Tab": "Counter-Strike 2",
+    "recording": "Recording",
+    "workingOn_one": "Recording {{count}} clip of map {{map}} ({{match}}) since {{time}}",
+    "workingOn_other": "Recording {{count}} clips of map {{map}} ({{match}}) since {{time}}",
+    "forget": "Forget",
+    "forgotten": "Forgotten. It shows up again if it asks for work.",
+    "clips": {
+      "tab": "Clips",
+      "current": "Clips and reels are made at {{quality}} now.",
+      "outdated_other": "{{count}} made at other settings",
+      "redoOutdated": "Make the outdated ones again",
+      "onlyOutdated": "Only outdated",
+      "empty": "No clips yet.",
+      "emptyOutdated": "Everything is made at the current settings.",
+      "redo": "Redo",
+      "redone": "Queued {{clips}} clips and {{reels}} reels",
+      "madeWith": "Made at {{quality}}",
+      "madeUnknown": "Made before this was kept",
+      "mapN": "Map {{n}}",
+      "series": "Whole series",
+      "reels": "Reels",
+      "reelOf": "{{map}} reel",
+      "status": {
+        "pending": "Waiting",
+        "recording": "Recording",
+        "done": "Done",
+        "failed": "Failed",
+        "waiting": "Waiting for its clips",
+        "skipped": "Skipped"
+      },
+      "outdated_flag": "Outdated",
+      "outdated_one": "{{count}} made at other settings"
     },
-    "cs2Tab": "Counter-Strike 2"
+    "add": {
+      "button": "Add a recorder",
+      "hint": "One command on a Linux PC with Steam and CS2. It shows up here when it first asks for work.",
+      "keys": "Recorder keys",
+      "used": "last used {{time}}",
+      "unused": "not used yet",
+      "revoke": "Revoke",
+      "revoked": "Revoked. A recorder with that key gets no more work.",
+      "title": "Add a recorder",
+      "needs": "Run this on a Linux PC with Docker, Steam (signed in) and CS2 installed, from its desktop session. The recorder uses its GPU and finds CS2 in its Steam libraries.",
+      "name": "Name for this PC",
+      "nvidia": "NVIDIA graphics card",
+      "make": "Make the command",
+      "once": "This key is shown once. Copy the command now; to add another PC, make a new one.",
+      "after": "Paste it in a terminal on the PC. It starts now and again whenever Docker does.",
+      "copy": "Copy command",
+      "copied": "Copied",
+      "copyFailed": "Could not copy: select the command and copy it"
+    },
+    "rename": "Rename",
+    "renameTitle": "Name this recorder",
+    "renameLabel": "Name",
+    "renameHelp": "It calls itself {{name}}. Empty: that name.",
+    "renameSave": "Save"
   }
 }

@@ -100,6 +100,7 @@ export interface FleetKeyRow {
   failed_attempts: number;
   locked_at: number | null;
   revoked_at: number | null;
+  auto_link: number;
   skins: number;
 }
 
@@ -187,14 +188,24 @@ export async function listFleetServers(): Promise<FleetServerView[]> {
     [FLEET_TENANT]
   );
   const codeBy = new Map(codes.map((c) => [c.server_id, Number(c.expires_at)]));
-  return servers.map((s) => toView(s, tokens.filter((t) => t.server_id === s.id), codeBy.get(s.id) ?? null));
+  return servers.map((s) =>
+    toView(
+      s,
+      tokens.filter((t) => t.server_id === s.id),
+      codeBy.get(s.id) ?? null
+    )
+  );
 }
 
 export async function getFleetServerView(id: string): Promise<FleetServerView | null> {
   return (await listFleetServers()).find((s) => s.id === id) ?? null;
 }
 
-function toView(s: FleetServerRow, tokens: FleetTokenRow[], codeExpiresAt: number | null): FleetServerView {
+function toView(
+  s: FleetServerRow,
+  tokens: FleetTokenRow[],
+  codeExpiresAt: number | null
+): FleetServerView {
   const now = nowS();
   const live = tokens.filter((t) => t.expires_at === null || t.expires_at > now);
   const newest = live[0] ?? null;
@@ -230,15 +241,16 @@ function toView(s: FleetServerRow, tokens: FleetTokenRow[], codeExpiresAt: numbe
         }
       : null,
     rotateRequested: s.rotate_requested_at !== null,
-    codeExpiresAt: s.status === 'pending' && codeExpiresAt && codeExpiresAt > now ? codeExpiresAt : null,
+    codeExpiresAt:
+      s.status === 'pending' && codeExpiresAt && codeExpiresAt > now ? codeExpiresAt : null,
   };
 }
 
 export async function getFleetServer(id: string): Promise<FleetServerRow | undefined> {
-  return db.queryOneAsync<FleetServerRow>('SELECT * FROM cs2_fleet_servers WHERE id = ? AND tenant_id = ?', [
-    id,
-    FLEET_TENANT,
-  ]);
+  return db.queryOneAsync<FleetServerRow>(
+    'SELECT * FROM cs2_fleet_servers WHERE id = ? AND tenant_id = ?',
+    [id, FLEET_TENANT]
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -278,13 +290,19 @@ export async function createPendingServer(input: {
 }
 
 /** A fresh code for a server that is still pending (the old one expired or was lost). */
-export async function reissueCode(serverId: string, createdBy: string | null): Promise<{ code: string; expiresAt: number } | null> {
+export async function reissueCode(
+  serverId: string,
+  createdBy: string | null
+): Promise<{ code: string; expiresAt: number } | null> {
   const server = await getFleetServer(serverId);
   if (!server || server.status !== 'pending') return null;
   const issued = issueEnrollmentCode();
   const expiresAt = nowS() + CODE_TTL_S;
   await tx(async (c) => {
-    await c.query(`DELETE FROM cs2_fleet_enrollment_codes WHERE server_id = $1 AND used_at IS NULL`, [serverId]);
+    await c.query(
+      `DELETE FROM cs2_fleet_enrollment_codes WHERE server_id = $1 AND used_at IS NULL`,
+      [serverId]
+    );
     await c.query(
       `INSERT INTO cs2_fleet_enrollment_codes (id, tenant_id, code_hash, server_id, created_by, expires_at)
        VALUES ($1, $2, $3, $4, $5, $6)`,
@@ -310,6 +328,8 @@ export interface FleetKeyView {
   enrolledServers: number;
   locked: boolean;
   revoked: boolean;
+  /** Servers it enrolls are linked for matches on their first hello. */
+  autoLink: boolean;
   /** Servers it enrolls start with skins on when first linked. */
   skins: boolean;
 }
@@ -334,6 +354,7 @@ export async function listFleetKeys(): Promise<FleetKeyView[]> {
     enrolledServers: Number(k.enrolled),
     locked: k.locked_at !== null,
     revoked: k.revoked_at !== null,
+    autoLink: k.auto_link === 1,
     skins: Number(k.skins) === 1,
   }));
 }
@@ -343,13 +364,14 @@ export async function createFleetKey(input: {
   namePrefix?: string | null;
   maxServers?: number | null;
   expiresAt?: number | null;
+  autoLink?: boolean;
   skins?: boolean;
   createdBy: string | null;
 }): Promise<{ key: FleetKeyView; value: string }> {
   const issued = issueFleetKey();
   await db.runAsync(
-    `INSERT INTO cs2_fleet_enrollment_keys (id, tenant_id, name, secret_hash, name_prefix, max_servers, expires_at, skins, created_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO cs2_fleet_enrollment_keys (id, tenant_id, name, secret_hash, name_prefix, max_servers, expires_at, auto_link, skins, created_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       issued.id,
       FLEET_TENANT,
@@ -358,6 +380,7 @@ export async function createFleetKey(input: {
       input.namePrefix ?? null,
       input.maxServers ?? null,
       input.expiresAt ?? null,
+      input.autoLink ? 1 : 0,
       input.skins ? 1 : 0,
       input.createdBy,
     ]
@@ -394,7 +417,10 @@ const invalid = (code: string, error: string, status: 401 | 403 | 409 = 401): En
 async function issueTokenFor(c: PoolClient, serverId: string): Promise<string> {
   const now = nowS();
   // A (re-)enrollment replaces every token the server had.
-  await c.query(`UPDATE cs2_fleet_tokens SET revoked_at = $1 WHERE server_id = $2 AND revoked_at IS NULL`, [now, serverId]);
+  await c.query(
+    `UPDATE cs2_fleet_tokens SET revoked_at = $1 WHERE server_id = $2 AND revoked_at IS NULL`,
+    [now, serverId]
+  );
   const issued = issueServerToken();
   await c.query(
     `INSERT INTO cs2_fleet_tokens (id, tenant_id, server_id, secret_hash, created_at) VALUES ($1, $2, $3, $4, $5)`,
@@ -405,14 +431,22 @@ async function issueTokenFor(c: PoolClient, serverId: string): Promise<string> {
 
 function describeHost(req: EnrollRequest): { host: string; versions: string | null } {
   const versions = req.versions
-    ? { ...req.versions, ...(req.cs2_build !== undefined && req.versions.cs2_build === undefined ? { cs2_build: req.cs2_build } : {}) }
+    ? {
+        ...req.versions,
+        ...(req.cs2_build !== undefined && req.versions.cs2_build === undefined
+          ? { cs2_build: req.cs2_build }
+          : {}),
+      }
     : req.cs2_build !== undefined
       ? { cs2_build: req.cs2_build }
       : null;
   return { host: JSON.stringify(req.host), versions: versions ? JSON.stringify(versions) : null };
 }
 
-async function findByInstall(c: PoolClient, installId: string): Promise<FleetServerRow | undefined> {
+async function findByInstall(
+  c: PoolClient,
+  installId: string
+): Promise<FleetServerRow | undefined> {
   const r = await c.query<FleetServerRow>(
     `SELECT * FROM cs2_fleet_servers WHERE tenant_id = $1 AND install_id = $2 FOR UPDATE`,
     [FLEET_TENANT, installId]
@@ -435,7 +469,12 @@ async function enrollWithCode(req: EnrollRequest): Promise<EnrollOutcome> {
   if (!hash) return invalid('invalid_code', 'Invalid or expired enrollment code');
   const now = nowS();
   return tx(async (c) => {
-    const found = await c.query<{ id: string; server_id: string; expires_at: number; used_at: number | null }>(
+    const found = await c.query<{
+      id: string;
+      server_id: string;
+      expires_at: number;
+      used_at: number | null;
+    }>(
       `SELECT id, server_id, expires_at, used_at FROM cs2_fleet_enrollment_codes
         WHERE code_hash = $1 AND tenant_id = $2 FOR UPDATE`,
       [hash, FLEET_TENANT]
@@ -444,7 +483,10 @@ async function enrollWithCode(req: EnrollRequest): Promise<EnrollOutcome> {
     if (!code || code.used_at !== null || Number(code.expires_at) <= now) {
       return invalid('invalid_code', 'Invalid or expired enrollment code');
     }
-    await c.query(`UPDATE cs2_fleet_enrollment_codes SET used_at = $1 WHERE id = $2`, [now, code.id]);
+    await c.query(`UPDATE cs2_fleet_enrollment_codes SET used_at = $1 WHERE id = $2`, [
+      now,
+      code.id,
+    ]);
     const { host, versions } = describeHost(req);
 
     const existing = await findByInstall(c, req.install_id);
@@ -454,7 +496,9 @@ async function enrollWithCode(req: EnrollRequest): Promise<EnrollOutcome> {
       // This install already has a record: keep it, drop the placeholder the code made.
       serverId = existing.id;
       reenrolled = true;
-      await c.query(`DELETE FROM cs2_fleet_servers WHERE id = $1 AND status = 'pending'`, [code.server_id]);
+      await c.query(`DELETE FROM cs2_fleet_servers WHERE id = $1 AND status = 'pending'`, [
+        code.server_id,
+      ]);
     } else {
       serverId = code.server_id;
       reenrolled = !!existing;
@@ -467,7 +511,9 @@ async function enrollWithCode(req: EnrollRequest): Promise<EnrollOutcome> {
       [serverId, req.install_id, host, versions, now]
     );
     const token = await issueTokenFor(c, serverId);
-    const server = (await c.query<FleetServerRow>(`SELECT * FROM cs2_fleet_servers WHERE id = $1`, [serverId])).rows[0];
+    const server = (
+      await c.query<FleetServerRow>(`SELECT * FROM cs2_fleet_servers WHERE id = $1`, [serverId])
+    ).rows[0];
     return { ok: true as const, server, token, reenrolled };
   });
 }
@@ -484,7 +530,11 @@ async function enrollWithKey(req: EnrollRequest): Promise<EnrollOutcome> {
   );
   if (!key) return invalid('invalid_key', 'Invalid fleet enrollment key');
   if (key.locked_at !== null) {
-    return invalid('key_locked', 'This fleet key is locked after repeated failures; create a new one', 403);
+    return invalid(
+      'key_locked',
+      'This fleet key is locked after repeated failures; create a new one',
+      403
+    );
   }
   if (!verifySecret(parsed, key.secret_hash)) {
     await db.runAsync(
@@ -496,8 +546,10 @@ async function enrollWithKey(req: EnrollRequest): Promise<EnrollOutcome> {
     );
     return invalid('invalid_key', 'Invalid fleet enrollment key');
   }
-  if (key.revoked_at !== null) return invalid('key_revoked', 'This fleet key has been revoked', 403);
-  if (key.expires_at !== null && key.expires_at <= now) return invalid('key_expired', 'This fleet key has expired', 403);
+  if (key.revoked_at !== null)
+    return invalid('key_revoked', 'This fleet key has been revoked', 403);
+  if (key.expires_at !== null && key.expires_at <= now)
+    return invalid('key_expired', 'This fleet key has expired', 403);
 
   return tx(async (c) => {
     const { host, versions } = describeHost(req);
@@ -524,7 +576,11 @@ async function enrollWithKey(req: EnrollRequest): Promise<EnrollOutcome> {
           [key.id]
         );
         if (Number(count.rows[0]?.n ?? 0) >= key.max_servers) {
-          return invalid('key_limit', `This fleet key's limit of ${key.max_servers} server(s) is reached`, 409);
+          return invalid(
+            'key_limit',
+            `This fleet key's limit of ${key.max_servers} server(s) is reached`,
+            409
+          );
         }
       }
       serverId = newServerId();
@@ -533,7 +589,16 @@ async function enrollWithKey(req: EnrollRequest): Promise<EnrollOutcome> {
       await c.query(
         `INSERT INTO cs2_fleet_servers (id, tenant_id, install_id, name, status, enrolled_via, enrollment_key_id, host, versions, created_by)
          VALUES ($1, $2, $3, $4, 'enrolled', 'key', $5, $6, $7, $8)`,
-        [serverId, FLEET_TENANT, req.install_id, name, key.id, host, versions, `fleet-key:${key.id}`]
+        [
+          serverId,
+          FLEET_TENANT,
+          req.install_id,
+          name,
+          key.id,
+          host,
+          versions,
+          `fleet-key:${key.id}`,
+        ]
       );
     }
     await c.query(
@@ -541,7 +606,9 @@ async function enrollWithKey(req: EnrollRequest): Promise<EnrollOutcome> {
       [now, key.id]
     );
     const token = await issueTokenFor(c, serverId);
-    const server = (await c.query<FleetServerRow>(`SELECT * FROM cs2_fleet_servers WHERE id = $1`, [serverId])).rows[0];
+    const server = (
+      await c.query<FleetServerRow>(`SELECT * FROM cs2_fleet_servers WHERE id = $1`, [serverId])
+    ).rows[0];
     return { ok: true as const, server, token, reenrolled: !!existing };
   });
 }
@@ -587,24 +654,31 @@ export async function revokeFleetServer(id: string): Promise<boolean> {
       [id, now, FLEET_TENANT]
     );
     if ((r.rowCount ?? 0) === 0) return false;
-    await c.query(`UPDATE cs2_fleet_tokens SET revoked_at = $1 WHERE server_id = $2 AND revoked_at IS NULL`, [now, id]);
-    await c.query(`DELETE FROM cs2_fleet_enrollment_codes WHERE server_id = $1 AND used_at IS NULL`, [id]);
+    await c.query(
+      `UPDATE cs2_fleet_tokens SET revoked_at = $1 WHERE server_id = $2 AND revoked_at IS NULL`,
+      [now, id]
+    );
+    await c.query(
+      `DELETE FROM cs2_fleet_enrollment_codes WHERE server_id = $1 AND used_at IS NULL`,
+      [id]
+    );
     return true;
   });
 }
 
 export async function renameFleetServer(id: string, name: string): Promise<boolean> {
-  const r = await db.runAsync('UPDATE cs2_fleet_servers SET name = ?, updated_at = ? WHERE id = ? AND tenant_id = ?', [
-    name,
-    nowS(),
-    id,
-    FLEET_TENANT,
-  ]);
+  const r = await db.runAsync(
+    'UPDATE cs2_fleet_servers SET name = ?, updated_at = ? WHERE id = ? AND tenant_id = ?',
+    [name, nowS(), id, FLEET_TENANT]
+  );
   return r.changes > 0;
 }
 
 export async function deleteFleetServer(id: string): Promise<boolean> {
-  const r = await db.runAsync('DELETE FROM cs2_fleet_servers WHERE id = ? AND tenant_id = ?', [id, FLEET_TENANT]);
+  const r = await db.runAsync('DELETE FROM cs2_fleet_servers WHERE id = ? AND tenant_id = ?', [
+    id,
+    FLEET_TENANT,
+  ]);
   return r.changes > 0;
 }
 
@@ -648,7 +722,9 @@ export async function beginRotation(
     );
     const newest = live.rows[0];
     if (!newest) return null;
-    await c.query(`UPDATE cs2_fleet_servers SET rotate_requested_at = NULL WHERE id = $1`, [serverId]);
+    await c.query(`UPDATE cs2_fleet_servers SET rotate_requested_at = NULL WHERE id = $1`, [
+      serverId,
+    ]);
     if (newest.rotated_from && newest.activated_at === null) {
       const old = live.rows.find((t) => t.id === newest.rotated_from);
       return {
@@ -659,7 +735,10 @@ export async function beginRotation(
     }
     const oldValidUntil = now + OLD_TOKEN_GRACE_S;
     const issued = issueServerToken();
-    await c.query(`UPDATE cs2_fleet_tokens SET expires_at = $1 WHERE id = $2`, [oldValidUntil, newest.id]);
+    await c.query(`UPDATE cs2_fleet_tokens SET expires_at = $1 WHERE id = $2`, [
+      oldValidUntil,
+      newest.id,
+    ]);
     // Placeholder hash until the secret is minted at send time: matches nothing.
     await c.query(
       `INSERT INTO cs2_fleet_tokens (id, tenant_id, server_id, secret_hash, created_at, rotated_from)
@@ -743,7 +822,10 @@ export async function markConnected(
 /** Record where an enrollment came from (the connect address before the first hello). */
 export async function setPeerAddr(serverId: string, peerAddr: string | null): Promise<void> {
   if (!peerAddr) return;
-  await db.runAsync('UPDATE cs2_fleet_servers SET peer_addr = ? WHERE id = ?', [peerAddr, serverId]);
+  await db.runAsync('UPDATE cs2_fleet_servers SET peer_addr = ? WHERE id = ?', [
+    peerAddr,
+    serverId,
+  ]);
 }
 
 export async function markSeen(serverId: string, health?: unknown): Promise<void> {
@@ -769,10 +851,11 @@ export interface StreamState {
 }
 
 export async function getStreamState(serverId: string): Promise<StreamState> {
-  const row = await db.queryOneAsync<Pick<FleetServerRow, 'rx_stream_id' | 'rx_seq' | 'tx_seq' | 'tx_acked'>>(
-    'SELECT rx_stream_id, rx_seq, tx_seq, tx_acked FROM cs2_fleet_servers WHERE id = ?',
-    [serverId]
-  );
+  const row = await db.queryOneAsync<
+    Pick<FleetServerRow, 'rx_stream_id' | 'rx_seq' | 'tx_seq' | 'tx_acked'>
+  >('SELECT rx_stream_id, rx_seq, tx_seq, tx_acked FROM cs2_fleet_servers WHERE id = ?', [
+    serverId,
+  ]);
   return {
     rxStreamId: row?.rx_stream_id ?? null,
     rxSeq: Number(row?.rx_seq ?? 0),
@@ -782,12 +865,19 @@ export async function getStreamState(serverId: string): Promise<StreamState> {
 }
 
 export async function setRxState(serverId: string, streamId: string, rxSeq: number): Promise<void> {
-  await db.runAsync('UPDATE cs2_fleet_servers SET rx_stream_id = ?, rx_seq = ? WHERE id = ?', [streamId, rxSeq, serverId]);
+  await db.runAsync('UPDATE cs2_fleet_servers SET rx_stream_id = ?, rx_seq = ? WHERE id = ?', [
+    streamId,
+    rxSeq,
+    serverId,
+  ]);
 }
 
 /** The server has seen platform seqs up to `seq` (from another database state): never reuse them. */
 export async function ensureTxSeqAtLeast(serverId: string, seq: number): Promise<void> {
-  await db.runAsync('UPDATE cs2_fleet_servers SET tx_seq = GREATEST(tx_seq, ?) WHERE id = ?', [seq, serverId]);
+  await db.runAsync('UPDATE cs2_fleet_servers SET tx_seq = GREATEST(tx_seq, ?) WHERE id = ?', [
+    seq,
+    serverId,
+  ]);
 }
 
 /**
@@ -797,7 +887,10 @@ export async function ensureTxSeqAtLeast(serverId: string, seq: number): Promise
  */
 export async function appendOutbox(
   serverId: string,
-  message: Omit<Envelope, 'seq' | 'ack' | 'v' | 'id' | 'ts'> & { expiresAt?: number | null; id?: string }
+  message: Omit<Envelope, 'seq' | 'ack' | 'v' | 'id' | 'ts'> & {
+    expiresAt?: number | null;
+    id?: string;
+  }
 ): Promise<Envelope> {
   return tx(async (c) => {
     const r = await c.query<{ tx_seq: number }>(
@@ -835,7 +928,13 @@ export async function pendingOutbox(serverId: string, afterSeq: number): Promise
 /** The server durably processed everything up to `ack`: drop it from the stream. */
 export async function ackOutbox(serverId: string, ack: number): Promise<void> {
   await tx(async (c) => {
-    await c.query(`DELETE FROM cs2_fleet_outbox WHERE server_id = $1 AND seq <= $2`, [serverId, ack]);
-    await c.query(`UPDATE cs2_fleet_servers SET tx_acked = GREATEST(tx_acked, $2) WHERE id = $1`, [serverId, ack]);
+    await c.query(`DELETE FROM cs2_fleet_outbox WHERE server_id = $1 AND seq <= $2`, [
+      serverId,
+      ack,
+    ]);
+    await c.query(`UPDATE cs2_fleet_servers SET tx_acked = GREATEST(tx_acked, $2) WHERE id = $1`, [
+      serverId,
+      ack,
+    ]);
   });
 }

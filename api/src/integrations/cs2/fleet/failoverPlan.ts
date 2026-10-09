@@ -5,7 +5,13 @@
  * feeds these from the live records and acts on the answers.
  */
 
-import type { InlineBackup, MatchPhase, MatchState, MapStats, ResumeBlock } from './protocol/v1/types';
+import type {
+  InlineBackup,
+  MatchPhase,
+  MatchState,
+  MapStats,
+  ResumeBlock,
+} from './protocol/v1/types';
 import type { RoundBackupMeta } from './backups';
 
 /** Why the server counts as down; `restarted` = it came back without the match; `manual` = an admin moved it. */
@@ -32,12 +38,20 @@ export function failoverGraceFromEnv(env: NodeJS.ProcessEnv = process.env): Fail
   };
 }
 
-const LIVE_PHASES: ReadonlySet<MatchPhase> = new Set<MatchPhase>(['live', 'paused', 'halftime', 'overtime']);
+const LIVE_PHASES: ReadonlySet<MatchPhase> = new Set<MatchPhase>([
+  'live',
+  'paused',
+  'halftime',
+  'overtime',
+]);
 /** Between maps or over: nothing to resume on another server. */
 const NO_FAILOVER_PHASES: ReadonlySet<MatchPhase> = new Set<MatchPhase>(['map_end', 'series_end']);
 
 /** The grace for a phase; null = no failover in this phase. `null` phase = no state yet (pre-live). */
-export function graceSecondsFor(phase: MatchPhase | null, grace: FailoverGrace = DEFAULT_FAILOVER_GRACE): number | null {
+export function graceSecondsFor(
+  phase: MatchPhase | null,
+  grace: FailoverGrace = DEFAULT_FAILOVER_GRACE
+): number | null {
   if (phase && NO_FAILOVER_PHASES.has(phase)) return null;
   return phase && LIVE_PHASES.has(phase) ? grace.liveSeconds : grace.preLiveSeconds;
 }
@@ -83,21 +97,29 @@ export function detectFailure(input: FailureInput): Failure | null {
     return {
       reason: 'exited',
       since: health.at,
-      detail: health.detail ? `csm: the server process stopped (${health.detail})` : 'csm: the server process stopped',
+      detail: health.detail
+        ? `csm: the server process stopped (${health.detail})`
+        : 'csm: the server process stopped',
     };
   }
   if (health && health.event === 'hung') {
     return {
       reason: 'hung',
       since: health.at,
-      detail: health.detail ? `csm: the server is hung (${health.detail})` : 'csm: the server is hung (/health not OK)',
+      detail: health.detail
+        ? `csm: the server is hung (${health.detail})`
+        : 'csm: the server is hung (/health not OK)',
     };
   }
   if (input.online) return null;
   const since = input.offlineSince ?? input.now;
   const down = input.now - since;
   if (down < grace) return null;
-  return { reason: 'offline', since, detail: `the fleet link has been down for ${Math.round(down)} s` };
+  return {
+    reason: 'offline',
+    since,
+    detail: `the fleet link has been down for ${Math.round(down)} s`,
+  };
 }
 
 /**
@@ -134,7 +156,12 @@ export interface FailoverCandidate {
  */
 export function pickTarget(
   candidates: readonly FailoverCandidate[],
-  failed: { cs2ServerId: string | null; fleetServerId: string | null; cs2Build: number | null; capabilities: readonly string[] },
+  failed: {
+    cs2ServerId: string | null;
+    fleetServerId: string | null;
+    cs2Build: number | null;
+    capabilities: readonly string[];
+  },
   preferred?: string | null,
   exclude: readonly string[] = []
 ): FailoverCandidate | null {
@@ -153,7 +180,12 @@ export function pickTarget(
     const hasCaps = failed.capabilities.every((cap) => c.capabilities.includes(cap));
     return (sameBuild ? 0 : 2) + (hasCaps ? 0 : 1);
   };
-  const sorted = [...usable].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name) || a.cs2ServerId.localeCompare(b.cs2ServerId));
+  const sorted = [...usable].sort(
+    (a, b) =>
+      rank(a) - rank(b) ||
+      a.name.localeCompare(b.name) ||
+      a.cs2ServerId.localeCompare(b.cs2ServerId)
+  );
   return sorted[0] ?? null;
 }
 
@@ -184,7 +216,8 @@ export function buildResume(input: ResumeInput): ResumeBlock {
   };
   if (input.round >= 1) {
     if (input.backup) resume.backup = input.backup;
-    else if (input.backupRef) resume.backup_ref = { file: input.backupRef.file, sha256: input.backupRef.sha256 };
+    else if (input.backupRef)
+      resume.backup_ref = { file: input.backupRef.file, sha256: input.backupRef.sha256 };
   }
   const series = input.state?.series;
   if (series) {
@@ -202,7 +235,8 @@ export function buildResume(input: ResumeInput): ResumeBlock {
     const sides = series.maps?.[String(input.mapNumber)]?.sides;
     if (sides === 'team1_ct' || sides === 'team2_ct') resume.sides = sides;
   }
-  if (input.backup) resume.score = { team1: input.backup.score.team1, team2: input.backup.score.team2 };
+  if (input.backup)
+    resume.score = { team1: input.backup.score.team1, team2: input.backup.score.team2 };
   // Ready Up drops the rounds from `round` on itself.
   if (input.mapStats && input.round >= 1 && series?.current_map === input.mapNumber) {
     resume.map_stats = input.mapStats;
@@ -221,7 +255,10 @@ export function effectiveReserve(configured: number | null, poolSize: number): n
 }
 
 /** Which of the idle servers are held: the last `count` by name (stable between passes). */
-export function pickReserved<T extends { id: string; name: string }>(idle: readonly T[], count: number): Set<string> {
+export function pickReserved<T extends { id: string; name: string }>(
+  idle: readonly T[],
+  count: number
+): Set<string> {
   if (count <= 0) return new Set();
   const sorted = [...idle].sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
   return new Set(sorted.slice(Math.max(0, sorted.length - count)).map((s) => s.id));

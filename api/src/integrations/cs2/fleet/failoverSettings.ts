@@ -32,23 +32,30 @@ export interface FailoverSettings {
 const nowS = () => Math.floor(Date.now() / 1000);
 
 export async function getFailoverSettings(): Promise<FailoverSettings> {
-  const row = await db.queryOneAsync<{ data: string | null; updated_by: string | null; updated_at: number | null }>(
-    `SELECT data, updated_by, updated_at FROM cs2_fleet_lists WHERE name = 'failover'`
-  );
+  const row = await db.queryOneAsync<{
+    data: string | null;
+    updated_by: string | null;
+    updated_at: number | null;
+  }>(`SELECT data, updated_by, updated_at FROM cs2_fleet_lists WHERE name = 'failover'`);
   let data: { auto?: unknown; reserve?: unknown; csm?: unknown } | null = null;
   try {
-    data = row?.data ? (JSON.parse(row.data) as { auto?: unknown; reserve?: unknown; csm?: unknown }) : null;
+    data = row?.data
+      ? (JSON.parse(row.data) as { auto?: unknown; reserve?: unknown; csm?: unknown })
+      : null;
   } catch {
     data = null;
   }
   const reserve =
-    typeof data?.reserve === 'number' && Number.isInteger(data.reserve) && data.reserve >= 0 ? data.reserve : null;
+    typeof data?.reserve === 'number' && Number.isInteger(data.reserve) && data.reserve >= 0
+      ? data.reserve
+      : null;
   return {
     auto: data?.auto !== false,
     csm: data?.csm !== false,
     reserve,
     updatedBy: row?.updated_by ?? null,
-    updatedAt: row?.updated_at === null || row?.updated_at === undefined ? null : Number(row.updated_at),
+    updatedAt:
+      row?.updated_at === null || row?.updated_at === undefined ? null : Number(row.updated_at),
   };
 }
 
@@ -84,7 +91,15 @@ export async function fleetPoolSize(): Promise<number> {
 }
 
 /** How many idle fleet servers allocation holds back now. */
-export async function reserveCount(): Promise<{ configured: number | null; effective: number; poolSize: number }> {
+export async function reserveCount(): Promise<{
+  configured: number | null;
+  effective: number;
+  poolSize: number;
+}> {
   const [settings, poolSize] = await Promise.all([getFailoverSettings(), fleetPoolSize()]);
-  return { configured: settings.reserve, effective: effectiveReserve(settings.reserve, poolSize), poolSize };
+  return {
+    configured: settings.reserve,
+    effective: effectiveReserve(settings.reserve, poolSize),
+    poolSize,
+  };
 }

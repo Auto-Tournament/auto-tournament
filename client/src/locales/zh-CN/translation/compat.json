@@ -56,6 +56,7 @@
     "trigger": {
       "build_change": "新的 CS2 版本",
       "surface_change": "游戏数据变更",
+      "code_change": "Ready Up 变更",
       "nightly": "每晚",
       "release": "Ready Up 发布",
       "manual": "手动"

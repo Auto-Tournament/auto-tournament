@@ -1,12 +1,16 @@
 /**
- * CS2's part of the Highlights page. Three tabs:
+ * CS2's part of the Highlights page. Four tabs:
  *
  * - Recorders: every recorder that asked for work, with its GPU, status
- *   (online, paused after too many turned-down clips), its benchmark, how
- *   many clips it kept and how many the frame check turned down, seconds per
- *   clip, and its recent runs with their logs (api: demos/recorders.ts).
+ *   (online, recording, paused after too many turned-down clips), its
+ *   benchmark, how many clips it kept and how many the frame check turned
+ *   down, seconds per clip, and its recent runs with their logs (api:
+ *   demos/recorders.ts). An offline one can be forgotten.
+ * - Clips: recent matches' clips and reels, what each was made at, and a Redo
+ *   for each, or for every one made at other settings (api: demos/clipsAdmin.ts).
  * - Overlays: clean copies of the clips, and redrawing their overlays.
- * - Connect: how to run a recorder against this platform.
+ * Adding a recorder is on the Recorders tab: a recorder key and the one
+ *   `docker run` that starts it (api: demos/recorderKeys.ts).
  */
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -19,9 +23,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   Stack,
+  Switch,
   Tab,
   Tabs,
+  TextField,
   Typography,
 } from '@mui/material';
 import { FilmStripIcon } from '@phosphor-icons/react';
@@ -39,6 +46,7 @@ interface BenchmarkTry {
 
 interface Recorder {
   name: string;
+  label: string | null;
   version: number | null;
   gpu: string | null;
   platform: string | null;
@@ -56,6 +64,7 @@ interface Recorder {
   runs: number;
   avgClipSeconds: number | null;
   lastError: string | null;
+  working: { clips: number; matchSlug: string | null; mapNumber: number; since: number } | null;
 }
 
 interface Run {
@@ -71,7 +80,7 @@ interface Run {
   error: string | null;
 }
 
-type TabKey = 'recorders' | 'overlays' | 'connect';
+type TabKey = 'recorders' | 'clips' | 'overlays';
 
 const when = (s: number | null) =>
   s ? new Date(s * 1000).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '—';
@@ -80,7 +89,7 @@ const duration = (s: number | null) =>
 
 /**
  * CS2's tab on core's Highlights page (`highlightsAdmin`): its recorders, the
- * overlays on its clips, and how to add a recorder. What every game's
+ * overlays on its clips and the clips themselves. What every game's
  * recorders follow (size, frame rate, music) is core's Settings tab.
  */
 export default function Cs2HighlightsAdmin() {
@@ -96,19 +105,19 @@ export default function Cs2HighlightsAdmin() {
           data-testid="highlights-tab-recorders"
         />
         <Tab
+          value="clips"
+          label={t('highlightsAdmin.tabs.clips')}
+          data-testid="highlights-tab-clips"
+        />
+        <Tab
           value="overlays"
           label={t('highlightsAdmin.tabs.overlays')}
           data-testid="highlights-tab-overlays"
         />
-        <Tab
-          value="connect"
-          label={t('highlightsAdmin.tabs.connect')}
-          data-testid="highlights-tab-connect"
-        />
       </Tabs>
       {tab === 'recorders' && <RecordersTab />}
+      {tab === 'clips' && <ClipsTab />}
       {tab === 'overlays' && <OverlaysTab />}
-      {tab === 'connect' && <ConnectTab />}
     </Box>
   );
 }
@@ -118,6 +127,7 @@ function RecordersTab() {
   const { showSuccess, showError } = useSnackbar();
   const [recorders, setRecorders] = useState<Recorder[] | null>(null);
   const [open, setOpen] = useState<string | null>(null);
+  const [renaming, setRenaming] = useState<{ name: string; label: string } | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -155,23 +165,21 @@ function RecordersTab() {
       </Box>
     );
   }
-  if (recorders.length === 0) {
-    return (
-      <Box
-        sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}
-        data-testid="recorders-empty"
-      >
-        <FilmStripIcon size={40} />
-        <Typography variant="h6" color="text.primary" sx={{ mt: 1 }}>
-          {t('highlightsAdmin.empty')}
-        </Typography>
-        <Typography variant="body2">{t('highlightsAdmin.emptyHelp')}</Typography>
-      </Box>
-    );
-  }
-
   return (
     <Stack spacing={2}>
+      <AddRecorder onKeys={() => void load()} />
+      {recorders.length === 0 && (
+        <Box
+          sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}
+          data-testid="recorders-empty"
+        >
+          <FilmStripIcon size={40} />
+          <Typography variant="h6" color="text.primary" sx={{ mt: 1 }}>
+            {t('highlightsAdmin.empty')}
+          </Typography>
+          <Typography variant="body2">{t('highlightsAdmin.emptyHelp')}</Typography>
+        </Box>
+      )}
       {recorders.map((r) => {
         const total = r.clipsOk + r.clipsRejected;
         const enc = encodeURIComponent(r.name);
@@ -191,10 +199,24 @@ function RecordersTab() {
           >
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
               <Typography variant="subtitle1" fontWeight={700} sx={{ overflowWrap: 'anywhere' }}>
-                {r.name}
+                {r.label || r.name}
               </Typography>
+              {r.label && (
+                <Typography variant="caption" color="text.secondary">
+                  {r.name}
+                </Typography>
+              )}
+              <Button
+                size="small"
+                onClick={() => setRenaming({ name: r.name, label: r.label ?? '' })}
+                data-testid={`recorder-rename-${r.name}`}
+              >
+                {t('highlightsAdmin.rename')}
+              </Button>
               {r.paused ? (
                 <Chip size="small" color="warning" label={t('highlightsAdmin.paused')} />
+              ) : r.working ? (
+                <Chip size="small" color="success" label={t('highlightsAdmin.recording')} />
               ) : r.online ? (
                 <Chip
                   size="small"
@@ -222,6 +244,16 @@ function RecordersTab() {
                 .filter(Boolean)
                 .join(' · ')}
             </Typography>
+            {r.working && (
+              <Typography variant="body2" data-testid={`recorder-working-${r.name}`}>
+                {t('highlightsAdmin.workingOn', {
+                  count: r.working.clips,
+                  map: r.working.mapNumber + 1,
+                  match: r.working.matchSlug ?? '—',
+                  time: when(r.working.since),
+                })}
+              </Typography>
+            )}
             {r.paused && r.pauseReason && (
               <Alert severity="warning" sx={{ py: 0 }}>
                 {t('highlightsAdmin.pausedUntil', {
@@ -324,11 +356,67 @@ function RecordersTab() {
               >
                 {t('highlightsAdmin.rerunBenchmark')}
               </Button>
+              {!r.online && (
+                <Button
+                  size="small"
+                  color="error"
+                  data-testid={`recorder-forget-${r.name}`}
+                  onClick={async () => {
+                    try {
+                      await api.delete(`/api/game/cs2/recorders/${enc}`);
+                      showSuccess(t('highlightsAdmin.forgotten'));
+                      await load();
+                    } catch (err) {
+                      showError(
+                        err instanceof Error ? err.message : t('highlightsAdmin.actionError')
+                      );
+                    }
+                  }}
+                >
+                  {t('highlightsAdmin.forget')}
+                </Button>
+              )}
             </Stack>
           </Box>
         );
       })}
       <RunsDialog key={open ?? ''} name={open} onClose={() => setOpen(null)} />
+      <Dialog open={!!renaming} onClose={() => setRenaming(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>{t('highlightsAdmin.renameTitle')}</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            size="small"
+            sx={{ mt: 1 }}
+            label={t('highlightsAdmin.renameLabel')}
+            helperText={renaming ? t('highlightsAdmin.renameHelp', { name: renaming.name }) : ''}
+            value={renaming?.label ?? ''}
+            onChange={(e) => setRenaming((cur) => (cur ? { ...cur, label: e.target.value } : cur))}
+            inputProps={{ maxLength: 80, 'data-testid': 'recorder-rename-input' }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRenaming(null)}>{t('highlightsAdmin.close')}</Button>
+          <Button
+            variant="contained"
+            onClick={async () => {
+              if (!renaming) return;
+              try {
+                await api.put(`/api/game/cs2/recorders/${encodeURIComponent(renaming.name)}`, {
+                  label: renaming.label.trim(),
+                });
+                setRenaming(null);
+                await load();
+              } catch (err) {
+                showError(err instanceof Error ? err.message : t('highlightsAdmin.actionError'));
+              }
+            }}
+          >
+            {t('highlightsAdmin.renameSave')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }
@@ -477,46 +565,467 @@ function OverlaysTab() {
   );
 }
 
-function ConnectTab() {
-  const { t } = useModuleTranslation('cs2');
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const env = [
-    `AT_URL=${origin}`,
-    "AT_WORKER_TOKEN=<one of API_TOKENS in the platform's .env>",
-    'AT_WORKER_NAME=<a name for this PC, e.g. lan-seat-12>',
-    'AT_CS2_GAME=<path to …/Counter-Strike Global Offensive/game>',
+interface RecorderKey {
+  id: string;
+  name: string;
+  createdAt: number;
+  lastUsedAt: number | null;
+  revoked: boolean;
+}
+
+/**
+ * What a PC runs to become a recorder: the recorder image with the PC's GPU,
+ * display, sound, Steam and CS2, and this platform's address and a recorder
+ * key. It finds CS2 in the PC's Steam libraries itself.
+ */
+export function recorderCommand(
+  origin: string,
+  token: string,
+  name: string,
+  nvidia: boolean
+): string {
+  return [
+    'docker run -d --name at-recorder --restart unless-stopped \\',
+    '  --user "$(id -u):$(id -g)" --group-add "$(getent group video | cut -d: -f3)" \\',
+    '  --group-add "$(getent group render | cut -d: -f3)" --device /dev/dri' +
+      (nvidia ? ' --gpus all' : '') +
+      ' \\',
+    '  --ipc=host --net=host --shm-size 4g --security-opt seccomp=unconfined --cap-add SYS_NICE \\',
+    '  -v "$HOME:$HOME" -v /mnt:/mnt -v /media:/media -v /tmp:/tmp \\',
+    '  -v "/run/user/$(id -u):/run/user/$(id -u)" -e HOME="$HOME" -e XDG_RUNTIME_DIR="/run/user/$(id -u)" \\',
+    '  -e WAYLAND_DISPLAY="$WAYLAND_DISPLAY" -e DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \\',
+    `  -e AT_URL=${origin} -e AT_WORKER_TOKEN=${token} -e AT_WORKER_NAME=${name} \\`,
+    '  sivertio/auto-tournament-recorder:next',
   ].join('\n');
+}
+
+/**
+ * "Add a recorder": a recorder key and the one command that starts a recorder
+ * with it, to paste on a Linux PC with Steam and CS2. The recorder shows up
+ * in the list when it first asks for work. The keys made so far, to revoke.
+ */
+function AddRecorder({ onKeys }: { onKeys: () => void }) {
+  const { t } = useModuleTranslation('cs2');
+  const { showSuccess, showError } = useSnackbar();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [nvidia, setNvidia] = useState(false);
+  const [made, setMade] = useState<{ token: string; name: string } | null>(null);
+  const [keys, setKeys] = useState<RecorderKey[]>([]);
+  const [busy, setBusy] = useState(false);
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
+  const loadKeys = useCallback(async () => {
+    try {
+      setKeys((await api.get<{ keys: RecorderKey[] }>('/api/game/cs2/recorder-keys')).keys);
+    } catch {
+      setKeys([]);
+    }
+  }, []);
+  useEffect(() => {
+    const first = setTimeout(() => void loadKeys(), 0);
+    return () => clearTimeout(first);
+  }, [loadKeys]);
+
+  const make = async () => {
+    const clean = name
+      .trim()
+      .replace(/[^A-Za-z0-9_.-]+/g, '-')
+      .slice(0, 60);
+    if (!clean) return;
+    setBusy(true);
+    try {
+      const res = await api.post<{ token: string }>('/api/game/cs2/recorder-keys', { name: clean });
+      setMade({ token: res.token, name: clean });
+      await loadKeys();
+      onKeys();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : t('highlightsAdmin.actionError'));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const revoke = async (id: string) => {
+    try {
+      await api.delete(`/api/game/cs2/recorder-keys/${encodeURIComponent(id)}`);
+      showSuccess(t('highlightsAdmin.add.revoked'));
+      await loadKeys();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : t('highlightsAdmin.actionError'));
+    }
+  };
+  const command = made ? recorderCommand(origin, made.token, made.name, nvidia) : '';
+  const close = () => {
+    setOpen(false);
+    setMade(null);
+    setName('');
+  };
+  const live = keys.filter((k) => !k.revoked);
+
   return (
-    <Box
-      sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 820 }}
-      data-testid="recorder-connect"
-    >
-      <Typography variant="body1">{t('highlightsAdmin.connect.intro')}</Typography>
-      <Box
-        component="ol"
-        sx={{ pl: 2.5, m: 0, display: 'flex', flexDirection: 'column', gap: 1.5 }}
-      >
-        <li>{t('highlightsAdmin.connect.step1')}</li>
-        <li>{t('highlightsAdmin.connect.step2')}</li>
-        <li>
-          {t('highlightsAdmin.connect.step3')}
-          <Box
-            component="pre"
-            sx={{
-              mt: 1,
-              p: 1.5,
-              bgcolor: 'action.hover',
-              borderRadius: 1,
-              overflowX: 'auto',
-              fontSize: 13,
-            }}
-          >
-            {env}
-          </Box>
-        </li>
-        <li>{t('highlightsAdmin.connect.step4')}</li>
-      </Box>
-      <Alert severity="info">{t('highlightsAdmin.connect.gaming')}</Alert>
+    <Box>
+      <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
+        <Button variant="contained" onClick={() => setOpen(true)} data-testid="recorder-add">
+          {t('highlightsAdmin.add.button')}
+        </Button>
+        <Typography variant="body2" color="text.secondary">
+          {t('highlightsAdmin.add.hint')}
+        </Typography>
+      </Stack>
+      {live.length > 0 && (
+        <Box sx={{ mt: 1.5 }} data-testid="recorder-keys">
+          <Typography variant="caption" color="text.secondary">
+            {t('highlightsAdmin.add.keys')}
+          </Typography>
+          {live.map((k) => (
+            <Stack
+              key={k.id}
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{ py: 0.5, borderTop: 1, borderColor: 'divider' }}
+            >
+              <Typography
+                variant="body2"
+                fontWeight={600}
+                sx={{ minWidth: 0, overflowWrap: 'anywhere' }}
+              >
+                {k.name}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+                {k.lastUsedAt
+                  ? t('highlightsAdmin.add.used', { time: when(k.lastUsedAt) })
+                  : t('highlightsAdmin.add.unused')}
+              </Typography>
+              <Button size="small" color="error" onClick={() => void revoke(k.id)}>
+                {t('highlightsAdmin.add.revoke')}
+              </Button>
+            </Stack>
+          ))}
+        </Box>
+      )}
+      <Dialog open={open} onClose={close} maxWidth="md" fullWidth>
+        <DialogTitle>{t('highlightsAdmin.add.title')}</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Typography variant="body2">{t('highlightsAdmin.add.needs')}</Typography>
+          {!made ? (
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={2}
+              alignItems={{ sm: 'center' }}
+            >
+              <TextField
+                autoFocus
+                size="small"
+                label={t('highlightsAdmin.add.name')}
+                placeholder="lan-seat-12"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && void make()}
+                inputProps={{ maxLength: 60, 'data-testid': 'recorder-add-name' }}
+              />
+              <FormControlLabel
+                control={<Switch checked={nvidia} onChange={(e) => setNvidia(e.target.checked)} />}
+                label={t('highlightsAdmin.add.nvidia')}
+              />
+            </Stack>
+          ) : (
+            <>
+              <Alert severity="warning">{t('highlightsAdmin.add.once')}</Alert>
+              <Box
+                component="pre"
+                data-testid="recorder-command"
+                sx={{
+                  m: 0,
+                  p: 1.5,
+                  bgcolor: 'action.hover',
+                  borderRadius: 1,
+                  overflowX: 'auto',
+                  fontSize: 12.5,
+                }}
+              >
+                {command}
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                {t('highlightsAdmin.add.after')}
+              </Typography>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          {made ? (
+            <>
+              <Button
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(command);
+                    showSuccess(t('highlightsAdmin.add.copied'));
+                  } catch {
+                    showError(t('highlightsAdmin.add.copyFailed'));
+                  }
+                }}
+                variant="contained"
+              >
+                {t('highlightsAdmin.add.copy')}
+              </Button>
+              <Button onClick={close}>{t('highlightsAdmin.close')}</Button>
+            </>
+          ) : (
+            <>
+              <Button onClick={close}>{t('highlightsAdmin.close')}</Button>
+              <Button
+                variant="contained"
+                disabled={busy || !name.trim()}
+                onClick={() => void make()}
+                data-testid="recorder-add-make"
+              >
+                {t('highlightsAdmin.add.make')}
+              </Button>
+            </>
+          )}
+        </DialogActions>
+      </Dialog>
     </Box>
+  );
+}
+
+interface AdminClip {
+  id: number;
+  mapNumber: number;
+  playerName: string;
+  title: string;
+  kind: string;
+  status: string;
+  madeWith: string | null;
+  outdated: boolean;
+  recorder: string | null;
+  recordSeconds: number | null;
+  doneAt: number | null;
+}
+
+interface AdminReel {
+  mapNumber: number;
+  status: string;
+  clips: number | null;
+  madeWith: string | null;
+  outdated: boolean;
+}
+
+interface AdminMatch {
+  slug: string;
+  match: string;
+  clips: AdminClip[];
+  reels: AdminReel[];
+}
+
+/** "1440p120" as "1440p · 120 fps". */
+const quality = (q: string) => q.replace(/^(\d+)p(\d+)$/, '$1p · $2 fps');
+
+/**
+ * Recent matches' clips and reels, what each was made at, and a Redo for each,
+ * or for every one made at other settings than the current.
+ */
+function ClipsTab() {
+  const { t } = useModuleTranslation('cs2');
+  const { showSuccess, showError } = useSnackbar();
+  const [data, setData] = useState<{
+    current: string;
+    outdated: number;
+    matches: AdminMatch[];
+  } | null>(null);
+  const [onlyOutdated, setOnlyOutdated] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      setData(await api.get(`/api/game/cs2/clips${onlyOutdated ? '?outdated=1' : ''}`));
+    } catch (err) {
+      showError(err instanceof Error ? err.message : t('highlightsAdmin.loadError'));
+    }
+  }, [onlyOutdated, showError, t]);
+
+  useEffect(() => {
+    const first = setTimeout(() => void load(), 0);
+    const id = setInterval(() => void load(), 30_000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(id);
+    };
+  }, [load]);
+
+  const redo = async (body: object) => {
+    setBusy(true);
+    try {
+      const res = await api.post<{ clips: number; reels: number }>(
+        '/api/game/cs2/clips/redo',
+        body
+      );
+      showSuccess(t('highlightsAdmin.clips.redone', { clips: res.clips, reels: res.reels }));
+      await load();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : t('highlightsAdmin.actionError'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!data) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  const made = (m: string | null) =>
+    m
+      ? t('highlightsAdmin.clips.madeWith', { quality: quality(m) })
+      : t('highlightsAdmin.clips.madeUnknown');
+  const mapName = (n: number) =>
+    n < 0 ? t('highlightsAdmin.clips.series') : t('highlightsAdmin.clips.mapN', { n: n + 1 });
+  const row = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1,
+    flexWrap: 'wrap',
+    py: 0.75,
+    borderTop: 1,
+    borderColor: 'divider',
+  } as const;
+  return (
+    <Stack spacing={2} data-testid="clips-admin">
+      <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
+        <Typography variant="body2">
+          {t('highlightsAdmin.clips.current', { quality: quality(data.current) })}
+        </Typography>
+        {data.outdated > 0 && (
+          <Chip
+            size="small"
+            color="warning"
+            variant="outlined"
+            label={t('highlightsAdmin.clips.outdated', { count: data.outdated })}
+          />
+        )}
+        <Box sx={{ flex: 1 }} />
+        <Button
+          size="small"
+          variant={onlyOutdated ? 'contained' : 'outlined'}
+          onClick={() => setOnlyOutdated((v) => !v)}
+          data-testid="clips-only-outdated"
+        >
+          {t('highlightsAdmin.clips.onlyOutdated')}
+        </Button>
+        <Button
+          size="small"
+          variant="contained"
+          disabled={busy || data.outdated === 0}
+          onClick={() => void redo({ outdated: true })}
+          data-testid="clips-redo-outdated"
+        >
+          {t('highlightsAdmin.clips.redoOutdated')}
+        </Button>
+      </Stack>
+      {data.matches.length === 0 && (
+        <Typography variant="body2" color="text.secondary">
+          {onlyOutdated
+            ? t('highlightsAdmin.clips.emptyOutdated')
+            : t('highlightsAdmin.clips.empty')}
+        </Typography>
+      )}
+      {data.matches.map((m) => (
+        <Box
+          key={m.slug}
+          data-testid={`clips-match-${m.slug}`}
+          sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}
+        >
+          <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1, overflowWrap: 'anywhere' }}>
+            {m.match}
+          </Typography>
+          {m.reels.length > 0 && (
+            <Box sx={{ mb: 1.5 }}>
+              <Typography variant="caption" color="text.secondary">
+                {t('highlightsAdmin.clips.reels')}
+              </Typography>
+              {m.reels.map((r) => (
+                <Box key={r.mapNumber} sx={row} data-testid={`clips-reel-${m.slug}-${r.mapNumber}`}>
+                  <Typography variant="body2" fontWeight={600} sx={{ minWidth: 110 }}>
+                    {t('highlightsAdmin.clips.reelOf', { map: mapName(r.mapNumber) })}
+                  </Typography>
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={t(`highlightsAdmin.clips.status.${r.status}`)}
+                  />
+                  {r.outdated && (
+                    <Chip
+                      size="small"
+                      color="warning"
+                      label={t('highlightsAdmin.clips.outdated_flag')}
+                    />
+                  )}
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ flex: 1, minWidth: 140 }}
+                  >
+                    {made(r.madeWith)}
+                  </Typography>
+                  <Button
+                    size="small"
+                    disabled={busy || r.status === 'recording'}
+                    onClick={() => void redo({ reels: [{ slug: m.slug, mapNumber: r.mapNumber }] })}
+                  >
+                    {t('highlightsAdmin.clips.redo')}
+                  </Button>
+                </Box>
+              ))}
+            </Box>
+          )}
+          {m.clips.map((c) => (
+            <Box key={c.id} sx={row} data-testid={`clips-clip-${c.id}`}>
+              <Typography variant="body2" sx={{ minWidth: 60, color: 'text.secondary' }}>
+                {mapName(c.mapNumber)}
+              </Typography>
+              <Typography
+                variant="body2"
+                fontWeight={600}
+                sx={{ minWidth: 0, overflowWrap: 'anywhere' }}
+              >
+                {c.playerName}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ flex: 1, minWidth: 160 }}>
+                {c.title}
+              </Typography>
+              <Chip
+                size="small"
+                variant="outlined"
+                label={t(`highlightsAdmin.clips.status.${c.status}`)}
+              />
+              {c.outdated && (
+                <Chip
+                  size="small"
+                  color="warning"
+                  label={t('highlightsAdmin.clips.outdated_flag')}
+                />
+              )}
+              <Typography variant="caption" color="text.secondary" sx={{ minWidth: 150 }}>
+                {made(c.madeWith)}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ minWidth: 140 }}>
+                {[c.recorder, c.recordSeconds != null ? duration(c.recordSeconds) : null]
+                  .filter(Boolean)
+                  .join(' · ') || '—'}
+              </Typography>
+              <Button
+                size="small"
+                disabled={busy || !(c.status === 'done' || c.status === 'failed')}
+                onClick={() => void redo({ clipIds: [c.id] })}
+              >
+                {t('highlightsAdmin.clips.redo')}
+              </Button>
+            </Box>
+          ))}
+        </Box>
+      ))}
+    </Stack>
   );
 }

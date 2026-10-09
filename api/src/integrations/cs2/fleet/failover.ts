@@ -187,7 +187,10 @@ function fromRow(row: ProposalRow): FailoverProposal {
 }
 
 export async function getProposal(id: string): Promise<FailoverProposal | null> {
-  const row = await db.queryOneAsync<ProposalRow>('SELECT * FROM cs2_fleet_failovers WHERE id = ?', [id]);
+  const row = await db.queryOneAsync<ProposalRow>(
+    'SELECT * FROM cs2_fleet_failovers WHERE id = ?',
+    [id]
+  );
   return row ? fromRow(row) : null;
 }
 
@@ -209,7 +212,10 @@ export async function listProposals(matchSlug: string, limit = 10): Promise<Fail
 }
 
 /** The match's last completed move, when it was recent (the players' "the match moved" note). */
-export async function recentMove(matchSlug: string, withinSeconds = 1800): Promise<FailoverProposal | null> {
+export async function recentMove(
+  matchSlug: string,
+  withinSeconds = 1800
+): Promise<FailoverProposal | null> {
   const row = await db.queryOneAsync<ProposalRow>(
     `SELECT * FROM cs2_fleet_failovers WHERE match_slug = ? AND status = 'moved' AND updated_at >= ?
       ORDER BY updated_at DESC LIMIT 1`,
@@ -218,13 +224,24 @@ export async function recentMove(matchSlug: string, withinSeconds = 1800): Promi
   return row ? fromRow(row) : null;
 }
 
-async function savedState(id: string): Promise<{ state: MatchState | null; mapStats: MapStats | null }> {
-  const row = await db.queryOneAsync<{ state: string | null }>('SELECT state FROM cs2_fleet_failovers WHERE id = ?', [id]);
-  const parsed = parseJson<{ state?: MatchState | null; mapStats?: MapStats | null }>(row?.state ?? null);
+async function savedState(
+  id: string
+): Promise<{ state: MatchState | null; mapStats: MapStats | null }> {
+  const row = await db.queryOneAsync<{ state: string | null }>(
+    'SELECT state FROM cs2_fleet_failovers WHERE id = ?',
+    [id]
+  );
+  const parsed = parseJson<{ state?: MatchState | null; mapStats?: MapStats | null }>(
+    row?.state ?? null
+  );
   return { state: parsed?.state ?? null, mapStats: parsed?.mapStats ?? null };
 }
 
-async function setStatus(id: string, status: FailoverStatus, patch: { detail?: string; lastError?: string | null } = {}): Promise<void> {
+async function setStatus(
+  id: string,
+  status: FailoverStatus,
+  patch: { detail?: string; lastError?: string | null } = {}
+): Promise<void> {
   await db.runAsync(
     `UPDATE cs2_fleet_failovers SET status = ?, detail = COALESCE(?, detail), last_error = COALESCE(?, last_error), updated_at = ? WHERE id = ?`,
     [status, patch.detail ?? null, patch.lastError ?? null, nowS(), id]
@@ -234,7 +251,11 @@ async function setStatus(id: string, status: FailoverStatus, patch: { detail?: s
 function announce(matchSlug: string, proposal: FailoverProposal | null): void {
   try {
     // A broadcast: slug and state only, never a server address or password.
-    getIO().emit('fleet:failover', { matchSlug, proposalId: proposal?.id ?? null, status: proposal?.status ?? null });
+    getIO().emit('fleet:failover', {
+      matchSlug,
+      proposalId: proposal?.id ?? null,
+      status: proposal?.status ?? null,
+    });
   } catch {
     // No socket server (tests, startup): the admin page polls too.
   }
@@ -261,7 +282,13 @@ export async function freeFleetServers(): Promise<FailoverCandidate[]> {
     (s) => s.transport === 'fleet'
   );
   if (free.length === 0) return [];
-  const rows = await db.queryAsync<{ id: string; name: string; fleet_id: string; versions: string | null; capabilities: string | null }>(
+  const rows = await db.queryAsync<{
+    id: string;
+    name: string;
+    fleet_id: string;
+    versions: string | null;
+    capabilities: string | null;
+  }>(
     `SELECT s.id, s.name, f.id AS fleet_id, f.versions, f.capabilities
        FROM cs2_servers s JOIN cs2_fleet_servers f ON f.id = s.fleet_server_id
       WHERE s.id IN (${free.map(() => '?').join(', ')})`,
@@ -278,13 +305,18 @@ export async function freeFleetServers(): Promise<FailoverCandidate[]> {
     }));
 }
 
-async function serverTraits(fleetServerId: string | null): Promise<{ cs2Build: number | null; capabilities: string[] }> {
+async function serverTraits(
+  fleetServerId: string | null
+): Promise<{ cs2Build: number | null; capabilities: string[] }> {
   if (!fleetServerId) return { cs2Build: null, capabilities: [] };
   const row = await db.queryOneAsync<{ versions: string | null; capabilities: string | null }>(
     'SELECT versions, capabilities FROM cs2_fleet_servers WHERE id = ?',
     [fleetServerId]
   );
-  return { cs2Build: parseBuild(row?.versions ?? null), capabilities: parseCaps(row?.capabilities ?? null) };
+  return {
+    cs2Build: parseBuild(row?.versions ?? null),
+    capabilities: parseCaps(row?.capabilities ?? null),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -409,15 +441,25 @@ async function runScan(options: ScanOptions): Promise<ScanResult> {
 
   // Open failovers whose match is no longer on an open assignment: kept while
   // the match is still running (a move that failed), else withdrawn.
-  const stale = await db.queryAsync<ProposalRow>(`SELECT * FROM cs2_fleet_failovers WHERE status = 'open'`);
+  const stale = await db.queryAsync<ProposalRow>(
+    `SELECT * FROM cs2_fleet_failovers WHERE status = 'open'`
+  );
   for (const row of stale) {
     if (covered.has(row.match_slug)) continue;
     const p = fromRow(row);
-    const match = await db.queryOneAsync<{ status: string }>('SELECT status FROM matches WHERE slug = ?', [p.matchSlug]);
+    const match = await db.queryOneAsync<{ status: string }>(
+      'SELECT status FROM matches WHERE slug = ?',
+      [p.matchSlug]
+    );
     const assignment = await getAssignment(p.matchSlug);
-    const reassigned = assignment !== null && assignment.endedAt === null && assignment.epoch > p.fromEpoch;
+    const reassigned =
+      assignment !== null && assignment.endedAt === null && assignment.epoch > p.fromEpoch;
     if (!match || (match.status !== 'loaded' && match.status !== 'live') || reassigned) {
-      await withdraw(result, p, reassigned ? 'The match was assigned to a server again.' : 'The match is no longer running.');
+      await withdraw(
+        result,
+        p,
+        reassigned ? 'The match was assigned to a server again.' : 'The match is no longer running.'
+      );
     }
   }
 
@@ -445,13 +487,16 @@ async function runScan(options: ScanOptions): Promise<ScanResult> {
     if (p.reason === 'restarted') continue;
     free ??= await freeFleetServers();
     if (!p.targetCs2ServerId || !free.some((c) => c.cs2ServerId === p.targetCs2ServerId)) {
-      const target = pickTarget(free, { cs2ServerId: p.fromCs2ServerId, fleetServerId: p.fromServerId, ...(await serverTraits(p.fromServerId)) });
+      const target = pickTarget(free, {
+        cs2ServerId: p.fromCs2ServerId,
+        fleetServerId: p.fromServerId,
+        ...(await serverTraits(p.fromServerId)),
+      });
       if ((target?.cs2ServerId ?? null) !== p.targetCs2ServerId) {
-        await db.runAsync('UPDATE cs2_fleet_failovers SET target_cs2_server_id = ?, updated_at = ? WHERE id = ?', [
-          target?.cs2ServerId ?? null,
-          nowS(),
-          p.id,
-        ]);
+        await db.runAsync(
+          'UPDATE cs2_fleet_failovers SET target_cs2_server_id = ?, updated_at = ? WHERE id = ?',
+          [target?.cs2ServerId ?? null, nowS(), p.id]
+        );
         announce(p.matchSlug, p);
       }
     }
@@ -464,7 +509,11 @@ const failedTargets = new Map<string, Set<string>>();
 
 async function autoAccept(proposal: FailoverProposal): Promise<AcceptOutcome> {
   const exclude = [...(failedTargets.get(proposal.id) ?? [])];
-  const outcome = await acceptFailover(proposal.id, { actor: FAILOVER_PLATFORM_ACTOR, auto: true, exclude });
+  const outcome = await acceptFailover(proposal.id, {
+    actor: FAILOVER_PLATFORM_ACTOR,
+    auto: true,
+    exclude,
+  });
   if (outcome.ok) {
     failedTargets.delete(proposal.id);
   } else if (outcome.code === 'assign_failed' && outcome.target) {
@@ -472,7 +521,9 @@ async function autoAccept(proposal: FailoverProposal): Promise<AcceptOutcome> {
     set.add(outcome.target);
     failedTargets.set(proposal.id, set);
     if (failedTargets.size > 1000) failedTargets.clear();
-    log.warn(`[FAILOVER] ${proposal.matchSlug}: auto-failover to ${outcome.target} failed: ${outcome.error}`);
+    log.warn(
+      `[FAILOVER] ${proposal.matchSlug}: auto-failover to ${outcome.target} failed: ${outcome.error}`
+    );
   } else if (outcome.code !== 'no_target') {
     log.warn(`[FAILOVER] ${proposal.matchSlug}: auto-failover not done: ${outcome.error}`);
   }
@@ -558,7 +609,14 @@ export interface AcceptRequest {
 
 export type AcceptOutcome =
   | { ok: true; proposal: FailoverProposal }
-  | { ok: false; status: number; code: string; error: string; proposal: FailoverProposal | null; target?: string };
+  | {
+      ok: false;
+      status: number;
+      code: string;
+      error: string;
+      proposal: FailoverProposal | null;
+      target?: string;
+    };
 
 function refuse(
   status: number,
@@ -570,7 +628,12 @@ function refuse(
   return { ok: false, status, code, error, proposal, ...(target ? { target } : {}) };
 }
 
-async function writeAudit(input: { actor: string | null; serverId: string | null; matchSlug: string; command: string }): Promise<string> {
+async function writeAudit(input: {
+  actor: string | null;
+  serverId: string | null;
+  matchSlug: string;
+  command: string;
+}): Promise<string> {
   const id = ulid();
   await db.runAsync(
     `INSERT INTO cs2_fleet_audit (id, actor, server_id, match_slug, command, status, created_at)
@@ -580,14 +643,16 @@ async function writeAudit(input: { actor: string | null; serverId: string | null
   return id;
 }
 
-async function settleAudit(id: string, status: string, messageId: string | null, output: string | null): Promise<void> {
-  await db.runAsync('UPDATE cs2_fleet_audit SET status = ?, message_id = ?, output = ?, answered_at = ? WHERE id = ?', [
-    status,
-    messageId,
-    output,
-    nowS(),
-    id,
-  ]);
+async function settleAudit(
+  id: string,
+  status: string,
+  messageId: string | null,
+  output: string | null
+): Promise<void> {
+  await db.runAsync(
+    'UPDATE cs2_fleet_audit SET status = ?, message_id = ?, output = ?, answered_at = ? WHERE id = ?',
+    [status, messageId, output, nowS(), id]
+  );
 }
 
 /**
@@ -599,7 +664,8 @@ async function settleAudit(id: string, status: string, messageId: string | null,
 export async function acceptFailover(id: string, req: AcceptRequest): Promise<AcceptOutcome> {
   const proposal = await getProposal(id);
   if (!proposal) return refuse(404, 'not_found', 'No such failover', null);
-  if (proposal.status !== 'open') return refuse(409, 'not_open', `The failover is ${proposal.status}`, proposal);
+  if (proposal.status !== 'open')
+    return refuse(409, 'not_open', `The failover is ${proposal.status}`, proposal);
   const slug = proposal.matchSlug;
   const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug]);
   // (DbMatchRow's status type predates 'loaded'.)
@@ -611,7 +677,12 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
   const assignment = await getAssignment(slug);
   if (assignment && assignment.endedAt === null && assignment.epoch !== proposal.fromEpoch) {
     await setStatus(id, 'withdrawn', { detail: 'The match was assigned to a server again.' });
-    return refuse(409, 'stale', 'The match has been assigned to a server again since', await getProposal(id));
+    return refuse(
+      409,
+      'stale',
+      'The match has been assigned to a server again since',
+      await getProposal(id)
+    );
   }
 
   const inPlace = proposal.reason === 'restarted';
@@ -620,7 +691,9 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
     // The server came back without the match: it takes it again.
     const connected = !!proposal.fromServerId && fleetBus().isConnected(proposal.fromServerId);
     target =
-      connected && proposal.fromCs2ServerId && (!req.targetServerId || req.targetServerId === proposal.fromCs2ServerId)
+      connected &&
+      proposal.fromCs2ServerId &&
+      (!req.targetServerId || req.targetServerId === proposal.fromCs2ServerId)
         ? {
             cs2ServerId: proposal.fromCs2ServerId,
             fleetServerId: proposal.fromServerId as string,
@@ -632,22 +705,37 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
   } else {
     target = pickTarget(
       await freeFleetServers(),
-      { cs2ServerId: proposal.fromCs2ServerId, fleetServerId: proposal.fromServerId, ...(await serverTraits(proposal.fromServerId)) },
+      {
+        cs2ServerId: proposal.fromCs2ServerId,
+        fleetServerId: proposal.fromServerId,
+        ...(await serverTraits(proposal.fromServerId)),
+      },
       req.targetServerId ?? proposal.targetCs2ServerId,
       req.exclude ?? []
     );
     if (req.targetServerId && target?.cs2ServerId !== req.targetServerId) {
       return refuse(409, 'target_unavailable', 'That server is not free for a match now', proposal);
     }
-    if (!target) return refuse(409, 'no_target', 'No Ready Up server is free to take the match', proposal);
+    if (!target)
+      return refuse(409, 'no_target', 'No Ready Up server is free to take the match', proposal);
   }
 
   const round = req.round === undefined || req.round === null ? proposal.round : Number(req.round);
-  if (!Number.isInteger(round) || round < 0 || round > 999) return refuse(400, 'bad_args', 'round must be 0-999', proposal);
+  if (!Number.isInteger(round) || round < 0 || round > 999)
+    return refuse(400, 'bad_args', 'round must be 0-999', proposal);
   let backupMeta: RoundBackupMeta | null = null;
   if (round >= 1) {
-    backupMeta = (await roundBackupStore.list(slug)).find((b) => b.mapNumber === proposal.mapNumber && b.round === round) ?? null;
-    if (!backupMeta) return refuse(404, 'no_backup', `No stored backup for map ${proposal.mapNumber} round ${round}`, proposal);
+    backupMeta =
+      (await roundBackupStore.list(slug)).find(
+        (b) => b.mapNumber === proposal.mapNumber && b.round === round
+      ) ?? null;
+    if (!backupMeta)
+      return refuse(
+        404,
+        'no_backup',
+        `No stored backup for map ${proposal.mapNumber} round ${round}`,
+        proposal
+      );
   }
   const inline = round >= 1 ? await inlineBackupFor(slug, proposal.mapNumber, round) : null;
 
@@ -671,7 +759,8 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
       id,
     ]
   );
-  if (claimed.changes === 0) return refuse(409, 'not_open', 'The failover was decided meanwhile', await getProposal(id));
+  if (claimed.changes === 0)
+    return refuse(409, 'not_open', 'The failover was decided meanwhile', await getProposal(id));
   announce(slug, await getProposal(id));
 
   const { state, mapStats } = await savedState(id);
@@ -698,14 +787,22 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
   // server holds nothing: the new assignment replaces the old one.
   if (!inPlace && assignment && assignment.endedAt === null && assignment.serverId) {
     const alive = fleetBus().isConnected(assignment.serverId);
-    await fenceEpoch(assignment.serverId, slug, assignment.epoch, proposal.reason === 'manual' && alive ? 'moved' : 'superseded').catch(
-      (error) => log.warn(`[FAILOVER] ${slug}: fencing epoch ${assignment.epoch} failed: ${(error as Error).message}`)
+    await fenceEpoch(
+      assignment.serverId,
+      slug,
+      assignment.epoch,
+      proposal.reason === 'manual' && alive ? 'moved' : 'superseded'
+    ).catch((error) =>
+      log.warn(
+        `[FAILOVER] ${slug}: fencing epoch ${assignment.epoch} failed: ${(error as Error).message}`
+      )
     );
   }
 
   const { serverAllocationTracker } = await import('../services/serverAllocationTracker');
   const previousServer = match.server_id ?? proposal.fromCs2ServerId;
-  if (previousServer && previousServer !== target.cs2ServerId) serverAllocationTracker.markIdle(previousServer);
+  if (previousServer && previousServer !== target.cs2ServerId)
+    serverAllocationTracker.markIdle(previousServer);
   serverAllocationTracker.markAllocated(target.cs2ServerId, slug);
   await db.updateAsync('matches', { server_id: target.cs2ServerId }, 'slug = ?', [slug]);
 
@@ -736,7 +833,9 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
 
   // Players: the match page (and anything on the match update channels) shows
   // the new server and password; the connect route reads both.
-  const updated = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug]);
+  const updated = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+    slug,
+  ]);
   if (updated) {
     emitMatchUpdate(updated);
     emitBracketUpdate({ action: 'server_assigned', matchSlug: slug, serverId: target.cs2ServerId });
@@ -762,8 +861,16 @@ export async function moveMatch(
   if (open) await setStatus(open.id, 'withdrawn', { detail: 'An admin moved the match.' });
 
   const assignment = await getAssignment(matchSlug);
-  const match = await db.queryOneAsync<{ status: string }>('SELECT status FROM matches WHERE slug = ?', [matchSlug]);
-  if (!match || (match.status !== 'loaded' && match.status !== 'live') || !assignment?.serverId || assignment.endedAt !== null) {
+  const match = await db.queryOneAsync<{ status: string }>(
+    'SELECT status FROM matches WHERE slug = ?',
+    [matchSlug]
+  );
+  if (
+    !match ||
+    (match.status !== 'loaded' && match.status !== 'live') ||
+    !assignment?.serverId ||
+    assignment.endedAt !== null
+  ) {
     return refuse(409, 'not_running', 'The match is not running on a Ready Up server', null);
   }
   const record = await liveStateStore.getLiveState(matchSlug);
@@ -779,7 +886,8 @@ export async function moveMatch(
     mapStats: current?.mapStats ?? null,
     targetCs2ServerId: req.targetServerId ?? null,
   });
-  if (!proposal) return refuse(409, 'not_open', 'The match is being moved', await activeProposal(matchSlug));
+  if (!proposal)
+    return refuse(409, 'not_open', 'The match is being moved', await activeProposal(matchSlug));
   const outcome = await acceptFailover(proposal.id, req);
   if (!outcome.ok && outcome.proposal?.status === 'open') {
     // Nothing moved: an admin's move is not left waiting.
@@ -795,7 +903,8 @@ export async function dismissFailover(id: string, actor: string | null): Promise
     `UPDATE cs2_fleet_failovers SET status = 'dismissed', decided_by = ?, decided_at = ?, updated_at = ? WHERE id = ? AND status = 'open'`,
     [actor, nowS(), nowS(), id]
   );
-  if (changed.changes === 0) return refuse(409, 'not_open', `The failover is ${proposal.status}`, proposal);
+  if (changed.changes === 0)
+    return refuse(409, 'not_open', `The failover is ${proposal.status}`, proposal);
   log.info(`[FAILOVER] ${proposal.matchSlug}: failover ${id} dismissed by ${actor ?? 'unknown'}`);
   const done = (await getProposal(id)) as FailoverProposal;
   announce(proposal.matchSlug, done);
@@ -819,7 +928,11 @@ async function onServerBack(fleetServerId: string, hello: HelloPayload): Promise
 
   const held = hello.state as { match_id?: unknown } | null | undefined;
   if (held && typeof held.match_id === 'string') return;
-  const rows = await db.queryAsync<{ match_slug: string; epoch: number; cs2_server_id: string | null }>(
+  const rows = await db.queryAsync<{
+    match_slug: string;
+    epoch: number;
+    cs2_server_id: string | null;
+  }>(
     `SELECT a.match_slug, a.epoch, a.cs2_server_id
        FROM cs2_fleet_assignments a JOIN matches m ON m.slug = a.match_slug
       WHERE a.server_id = ? AND a.ended_at IS NULL AND a.config IS NOT NULL AND m.status IN ('loaded', 'live')`,
@@ -829,11 +942,15 @@ async function onServerBack(fleetServerId: string, hello: HelloPayload): Promise
     const slug = row.match_slug;
     const open = await activeProposal(slug);
     if (open?.status === 'moving') continue;
-    if (open) await setStatus(open.id, 'withdrawn', { detail: 'The server came back without the match; it resumes there.' });
+    if (open)
+      await setStatus(open.id, 'withdrawn', {
+        detail: 'The server came back without the match; it resumes there.',
+      });
     const record = await liveStateStore.getLiveState(slug);
     const epoch = Number(row.epoch);
     const saved = open ? await savedState(open.id) : null;
-    const state = (record?.epoch === epoch ? record.state : null) ?? saved?.state ?? record?.state ?? null;
+    const state =
+      (record?.epoch === epoch ? record.state : null) ?? saved?.state ?? record?.state ?? null;
     const cs2ServerId = row.cs2_server_id ?? (await cs2ServerIdOf(fleetServerId));
     const proposal = await createProposal({
       slug,
@@ -841,7 +958,11 @@ async function onServerBack(fleetServerId: string, hello: HelloPayload): Promise
       fleetServerId,
       cs2ServerId,
       phase: state?.phase ?? null,
-      failure: { reason: 'restarted', since: nowS(), detail: 'the server came back without the match' },
+      failure: {
+        reason: 'restarted',
+        since: nowS(),
+        detail: 'the server came back without the match',
+      },
       state,
       mapStats: (record?.epoch === epoch ? record.mapStats : null) ?? saved?.mapStats ?? null,
       targetCs2ServerId: cs2ServerId,
@@ -857,7 +978,11 @@ async function onHostHealth(hostId: string, payload: HostHealthPayload): Promise
   if (payload.event === 'recovered' || payload.event === 'restarted') {
     healthByServer.delete(fleetServerId);
   } else {
-    healthByServer.set(fleetServerId, { event: payload.event, at: nowS(), ...(payload.detail ? { detail: payload.detail } : {}) });
+    healthByServer.set(fleetServerId, {
+      event: payload.event,
+      at: nowS(),
+      ...(payload.detail ? { detail: payload.detail } : {}),
+    });
   }
   scheduleScan();
 }
@@ -872,7 +997,9 @@ function scheduleScan(): void {
   if (!started || soon) return;
   soon = setTimeout(() => {
     soon = null;
-    void scanForFailovers().catch((error) => log.warn(`[FAILOVER] scan failed: ${(error as Error).message}`));
+    void scanForFailovers().catch((error) =>
+      log.warn(`[FAILOVER] scan failed: ${(error as Error).message}`)
+    );
   }, 500);
   soon.unref?.();
 }
@@ -898,14 +1025,18 @@ export function startFleetFailover(): void {
       setImmediate(() => {
         void onServerBack(serverId, hello)
           .catch((error) => {
-            log.warn(`[FAILOVER] ${serverId}: after-hello check failed: ${(error as Error).message}`);
+            log.warn(
+              `[FAILOVER] ${serverId}: after-hello check failed: ${(error as Error).message}`
+            );
           })
           .finally(() => scheduleScan());
       });
     });
   }
   scanTimer = setInterval(() => {
-    void scanForFailovers().catch((error) => log.warn(`[FAILOVER] scan failed: ${(error as Error).message}`));
+    void scanForFailovers().catch((error) =>
+      log.warn(`[FAILOVER] scan failed: ${(error as Error).message}`)
+    );
   }, CHECK_MS);
   scanTimer.unref?.();
 }

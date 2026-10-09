@@ -111,7 +111,11 @@ export type AssignmentCheck = 'ok' | 'not_assigned' | 'stale_epoch';
 /** What the receiver needs from the rest of the platform. */
 export interface DemoStreamPlatform {
   /** Does `serverId` hold, or did it hold, `matchSlug` (at `epoch`, when given)? */
-  checkAssignment(serverId: string, matchSlug: string, epoch: number | undefined): Promise<AssignmentCheck>;
+  checkAssignment(
+    serverId: string,
+    matchSlug: string,
+    epoch: number | undefined
+  ): Promise<AssignmentCheck>;
   /** A demo was verified and moved into place. Failures are logged, never undo the ack. */
   stored(row: DemoStreamRow): Promise<void>;
   /** A demo was refused for good (too_large): nothing will arrive for that map. */
@@ -132,8 +136,15 @@ function ack(demoId: string, offset: number, extra: Partial<DemoAckPayload> = {}
   return { demo_id: demoId, offset, ...extra };
 }
 
-function fail(demoId: string, offset: number, code: DemoAckErrorCode, message?: string): DemoAckPayload {
-  return ack(demoId, offset, { error: { code, ...(message ? { message: message.slice(0, 500) } : {}) } });
+function fail(
+  demoId: string,
+  offset: number,
+  code: DemoAckErrorCode,
+  message?: string
+): DemoAckPayload {
+  return ack(demoId, offset, {
+    error: { code, ...(message ? { message: message.slice(0, 500) } : {}) },
+  });
 }
 
 /** Standard base64 (RFC 4648 §4) with padding, strictly: Buffer.from would skip junk silently. */
@@ -194,7 +205,11 @@ export class DemoStreamReceiver {
 
   /** demos/<match>/map<N>/<file>, N as the server numbers maps (1-based). */
   static finalPathOf(row: Pick<DemoStreamRow, 'matchSlug' | 'mapNumber' | 'file'>): string {
-    return path.join(row.matchSlug, `map${toFleetMapNumber(row.mapNumber)}`, path.basename(row.file));
+    return path.join(
+      row.matchSlug,
+      `map${toFleetMapNumber(row.mapNumber)}`,
+      path.basename(row.file)
+    );
   }
 
   /** Run `fn` with the demo's lock held (messages of one demo never interleave). */
@@ -209,12 +224,21 @@ export class DemoStreamReceiver {
     return run;
   }
 
-  private async withStorage(demoId: string, offset: number, fn: () => Promise<DemoAckPayload>): Promise<DemoAckPayload> {
+  private async withStorage(
+    demoId: string,
+    offset: number,
+    fn: () => Promise<DemoAckPayload>
+  ): Promise<DemoAckPayload> {
     try {
       return await fn();
     } catch (error) {
       log.error(`[FLEET] demo ${demoId}: storage failed: ${(error as Error).message}`);
-      return fail(demoId, offset, 'storage', 'the platform could not store the demo; try again later');
+      return fail(
+        demoId,
+        offset,
+        'storage',
+        'the platform could not store the demo; try again later'
+      );
     }
   }
 
@@ -250,7 +274,11 @@ export class DemoStreamReceiver {
 
   private async refuseTooLarge(row: DemoStreamRow, bytes: number): Promise<DemoAckPayload> {
     await this.deletePart(row).catch(() => undefined);
-    await this.rows.update(row.demoId, { state: 'rejected', error: 'too_large', updatedAt: this.nowS() });
+    await this.rows.update(row.demoId, {
+      state: 'rejected',
+      error: 'too_large',
+      updatedAt: this.nowS(),
+    });
     const refused = { ...row, state: 'rejected' as const, error: 'too_large' };
     log.warn(
       `[FLEET] ${row.serverId}: demo ${row.demoId} (${row.matchSlug} map ${toFleetMapNumber(row.mapNumber)}) is over ${this.maxBytes} bytes (${bytes}); refused`
@@ -258,16 +286,27 @@ export class DemoStreamReceiver {
     await this.platform.refused(refused, 'too_large').catch((error) => {
       log.warn(`[FLEET] demo ${row.demoId}: refused hook failed: ${(error as Error).message}`);
     });
-    return fail(row.demoId, row.receivedOffset, 'too_large', `demos are limited to ${this.maxBytes} bytes`);
+    return fail(
+      row.demoId,
+      row.receivedOffset,
+      'too_large',
+      `demos are limited to ${this.maxBytes} bytes`
+    );
   }
 
   // --- demo.begin ------------------------------------------------------------
 
   begin(serverId: string, epoch: number | undefined, p: DemoBeginPayload): Promise<DemoAckPayload> {
-    return this.locked(p.demo_id, () => this.withStorage(p.demo_id, 0, () => this.beginLocked(serverId, epoch, p)));
+    return this.locked(p.demo_id, () =>
+      this.withStorage(p.demo_id, 0, () => this.beginLocked(serverId, epoch, p))
+    );
   }
 
-  private async beginLocked(serverId: string, epoch: number | undefined, p: DemoBeginPayload): Promise<DemoAckPayload> {
+  private async beginLocked(
+    serverId: string,
+    epoch: number | undefined,
+    p: DemoBeginPayload
+  ): Promise<DemoAckPayload> {
     const now = this.nowS();
     const row = await this.rows.get(p.demo_id);
 
@@ -317,7 +356,9 @@ export class DemoStreamReceiver {
     }
 
     if (row.serverId !== serverId) {
-      log.warn(`[FLEET] ${serverId}: demo.begin for ${p.demo_id}, which ${row.serverId} streams; refused`);
+      log.warn(
+        `[FLEET] ${serverId}: demo.begin for ${p.demo_id}, which ${row.serverId} streams; refused`
+      );
       return fail(p.demo_id, 0, 'not_assigned', 'another server streams this demo');
     }
 
@@ -367,12 +408,19 @@ export class DemoStreamReceiver {
   chunk(serverId: string, p: DemoChunkPayload): Promise<DemoAckPayload> {
     return this.locked(p.demo_id, async () => {
       const row = await this.rows.get(p.demo_id).catch(() => undefined);
-      if (row === undefined) return fail(p.demo_id, 0, 'storage', 'the platform could not read the demo');
-      return this.withStorage(p.demo_id, row?.receivedOffset ?? 0, () => this.chunkLocked(serverId, row, p));
+      if (row === undefined)
+        return fail(p.demo_id, 0, 'storage', 'the platform could not read the demo');
+      return this.withStorage(p.demo_id, row?.receivedOffset ?? 0, () =>
+        this.chunkLocked(serverId, row, p)
+      );
     });
   }
 
-  private async chunkLocked(serverId: string, row: DemoStreamRow | null, p: DemoChunkPayload): Promise<DemoAckPayload> {
+  private async chunkLocked(
+    serverId: string,
+    row: DemoStreamRow | null,
+    p: DemoChunkPayload
+  ): Promise<DemoAckPayload> {
     if (!row || row.serverId !== serverId) return fail(p.demo_id, 0, 'unknown_demo');
     if (row.state === 'complete') return this.completeAck(row);
     if (row.state === 'rejected') return this.refusal(row);
@@ -384,7 +432,12 @@ export class DemoStreamReceiver {
     const bytes = decodeChunkData(p.data);
     if (!bytes || bytes.length !== p.size) {
       // Not what the server meant to send; it continues from `stored`.
-      return fail(p.demo_id, stored, 'gap', `chunk at ${p.offset}: data is not ${p.size} bytes of base64`);
+      return fail(
+        p.demo_id,
+        stored,
+        'gap',
+        `chunk at ${p.offset}: data is not ${p.size} bytes of base64`
+      );
     }
     if (p.offset + p.size > this.maxBytes) return this.refuseTooLarge(row, p.offset + p.size);
 
@@ -415,12 +468,19 @@ export class DemoStreamReceiver {
   end(serverId: string, p: DemoEndPayload): Promise<DemoAckPayload> {
     return this.locked(p.demo_id, async () => {
       const row = await this.rows.get(p.demo_id).catch(() => undefined);
-      if (row === undefined) return fail(p.demo_id, 0, 'storage', 'the platform could not read the demo');
-      return this.withStorage(p.demo_id, row?.receivedOffset ?? 0, () => this.endLocked(serverId, row, p));
+      if (row === undefined)
+        return fail(p.demo_id, 0, 'storage', 'the platform could not read the demo');
+      return this.withStorage(p.demo_id, row?.receivedOffset ?? 0, () =>
+        this.endLocked(serverId, row, p)
+      );
     });
   }
 
-  private async endLocked(serverId: string, row: DemoStreamRow | null, p: DemoEndPayload): Promise<DemoAckPayload> {
+  private async endLocked(
+    serverId: string,
+    row: DemoStreamRow | null,
+    p: DemoEndPayload
+  ): Promise<DemoAckPayload> {
     if (!row || row.serverId !== serverId) return fail(p.demo_id, 0, 'unknown_demo');
     if (row.state === 'complete') {
       if (row.size === p.size && row.sha256 === p.sha256) return this.completeAck(row);
@@ -490,7 +550,9 @@ export class DemoStreamReceiver {
       `[FLEET] ${serverId}: demo ${p.demo_id} stored (${row.matchSlug} map ${toFleetMapNumber(row.mapNumber)}, ${p.size} bytes, ${finalPath})`
     );
     await this.platform.stored(done).catch((error) => {
-      log.warn(`[FLEET] demo ${p.demo_id}: linking it to the match failed: ${(error as Error).message}`);
+      log.warn(
+        `[FLEET] demo ${p.demo_id}: linking it to the match failed: ${(error as Error).message}`
+      );
     });
     return this.completeAck(done);
   }
@@ -555,10 +617,13 @@ export class DemoPacer {
   private readonly burst: number;
   private readonly minCost: number;
 
-  constructor(bytesPerMinute: number, private readonly now: () => number = () => Date.now()) {
+  constructor(
+    bytesPerMinute: number,
+    private readonly now: () => number = () => Date.now()
+  ) {
     this.perMs = bytesPerMinute / 60_000;
     this.burst = Math.max(2 * 1024 * 1024, bytesPerMinute / 30);
-    this.minCost = (bytesPerMinute / 60) / 25;
+    this.minCost = bytesPerMinute / 60 / 25;
   }
 
   /** Milliseconds to wait before `bytes` more may be acked for `serverId` (and books them). */
@@ -609,7 +674,11 @@ export function onFleetDemo(listener: (notice: FleetDemoNotice) => void): () => 
   return () => emitter.off('demo', listener);
 }
 
-function notify(row: DemoStreamRow, kind: FleetDemoNotice['kind'], error: DemoAckErrorCode | null): void {
+function notify(
+  row: DemoStreamRow,
+  kind: FleetDemoNotice['kind'],
+  error: DemoAckErrorCode | null
+): void {
   const notice: FleetDemoNotice = {
     kind,
     serverId: row.serverId,
@@ -715,7 +784,10 @@ function toDbValue(key: keyof DemoStreamRow, value: unknown): unknown {
 
 export const pgDemoStreamPersistence: DemoStreamPersistence = {
   async get(demoId) {
-    const row = await db.queryOneAsync<DbRow>('SELECT * FROM cs2_fleet_demo_streams WHERE demo_id = ?', [demoId]);
+    const row = await db.queryOneAsync<DbRow>(
+      'SELECT * FROM cs2_fleet_demo_streams WHERE demo_id = ?',
+      [demoId]
+    );
     return row ? fromDb(row) : null;
   },
   async insert(row) {
@@ -764,7 +836,9 @@ export async function checkFleetAssignment(
   matchSlug: string,
   epoch: number | undefined
 ): Promise<AssignmentCheck> {
-  const match = await db.queryOneAsync<{ id: number }>('SELECT id FROM matches WHERE slug = ?', [matchSlug]);
+  const match = await db.queryOneAsync<{ id: number }>('SELECT id FROM matches WHERE slug = ?', [
+    matchSlug,
+  ]);
   if (!match) return 'not_assigned';
   const held = new Set<number>();
   const live = await db.queryOneAsync<{ server_id: string | null; epoch: number }>(
@@ -784,10 +858,13 @@ export async function checkFleetAssignment(
 
 /** The turnover tracker's view: the upload of that map is over (stored or refused). */
 async function reportUploadEnded(row: DemoStreamRow): Promise<void> {
-  const cs2 = await db.queryOneAsync<{ id: string }>('SELECT id FROM cs2_servers WHERE fleet_server_id = ?', [
-    row.serverId,
+  const cs2 = await db.queryOneAsync<{ id: string }>(
+    'SELECT id FROM cs2_servers WHERE fleet_server_id = ?',
+    [row.serverId]
+  );
+  const match = await db.queryOneAsync<{ id: number }>('SELECT id FROM matches WHERE slug = ?', [
+    row.matchSlug,
   ]);
-  const match = await db.queryOneAsync<{ id: number }>('SELECT id FROM matches WHERE slug = ?', [row.matchSlug]);
   if (!cs2 || !match) return;
   serverTurnoverTracker.recordEvent(
     cs2.id,
@@ -825,7 +902,12 @@ export const platformDemoHooks: DemoStreamPlatform = {
         `[FLEET] demo ${row.demoId}: an earlier part of ${row.matchSlug} map ${toFleetMapNumber(row.mapNumber)} (before a failover), kept as ${row.path}; the map keeps ${later}`
       );
     } else if (row.path) {
-      const mapLinked = await linkStoredDemo(row.matchSlug, row.path, row.mapNumber, '[FLEET demo]');
+      const mapLinked = await linkStoredDemo(
+        row.matchSlug,
+        row.path,
+        row.mapNumber,
+        '[FLEET demo]'
+      );
       if (!mapLinked) {
         log.warn(
           `[FLEET] demo ${row.demoId}: ${row.matchSlug} has no result for map ${toFleetMapNumber(row.mapNumber)} yet; only the match points at it`
@@ -887,7 +969,11 @@ export function startDemoStreams(options: Partial<DemoStreamOptions> = {}): Demo
     registerInboundHandler('demo.begin', {
       priority: 'low',
       async handle(ctx, env) {
-        const answer = await r.begin(ctx.serverId, env.epoch, env.payload as unknown as DemoBeginPayload);
+        const answer = await r.begin(
+          ctx.serverId,
+          env.epoch,
+          env.payload as unknown as DemoBeginPayload
+        );
         sendAck(ctx, env, answer);
       },
     }),
@@ -909,9 +995,13 @@ export function startDemoStreams(options: Partial<DemoStreamOptions> = {}): Demo
     }),
   ];
 
-  void runExpiry().catch((error) => log.warn(`[FLEET] demo stream expiry failed: ${(error as Error).message}`));
+  void runExpiry().catch((error) =>
+    log.warn(`[FLEET] demo stream expiry failed: ${(error as Error).message}`)
+  );
   expireTimer = setInterval(() => {
-    void runExpiry().catch((error) => log.warn(`[FLEET] demo stream expiry failed: ${(error as Error).message}`));
+    void runExpiry().catch((error) =>
+      log.warn(`[FLEET] demo stream expiry failed: ${(error as Error).message}`)
+    );
   }, EXPIRE_INTERVAL_MS);
   expireTimer.unref?.();
   return receiver;

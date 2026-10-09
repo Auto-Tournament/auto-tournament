@@ -29,7 +29,12 @@
 
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
-import { chooseConnectAddress, DEFAULT_GAME_PORT, isValidConnectHost, type ConnectAddress } from './address';
+import {
+  chooseConnectAddress,
+  DEFAULT_GAME_PORT,
+  isValidConnectHost,
+  type ConnectAddress,
+} from './address';
 import type { HostInfo } from './protocol/v1';
 import { getFleetServer, type FleetServerRow } from './registry';
 
@@ -96,7 +101,12 @@ export async function listLinkAddresses(): Promise<Map<string, LinkAddress>> {
   return new Map(
     rows.map((r) => [
       r.fleet_server_id as string,
-      { cs2ServerId: r.id, host: r.host ?? '', port: Number(r.port), override: Number(r.host_override ?? 0) === 1 },
+      {
+        cs2ServerId: r.id,
+        host: r.host ?? '',
+        port: Number(r.port),
+        override: Number(r.host_override ?? 0) === 1,
+      },
     ])
   );
 }
@@ -142,7 +152,11 @@ export function machineAddressOf(
   addresses: Map<string, string>,
   fleet: { id: string; install_id?: string | null }
 ): string | null {
-  return addresses.get(fleet.id) ?? (fleet.install_id ? addresses.get(`install:${fleet.install_id}`) : undefined) ?? null;
+  return (
+    addresses.get(fleet.id) ??
+    (fleet.install_id ? addresses.get(`install:${fleet.install_id}`) : undefined) ??
+    null
+  );
 }
 
 function blank(v: unknown): boolean {
@@ -161,7 +175,8 @@ export function checkAddressOverride(value: {
   let port: number | undefined;
   if (!blank(value.port)) {
     port = Number(value.port);
-    if (!Number.isInteger(port) || port < 1 || port > 65535) return { ok: false, error: 'port must be 1-65535' };
+    if (!Number.isInteger(port) || port < 1 || port > 65535)
+      return { ok: false, error: 'port must be 1-65535' };
   }
   return { ok: true, override: { host: value.host.trim(), ...(port ? { port } : {}) } };
 }
@@ -176,8 +191,7 @@ function parseHost(raw: string | null): HostInfo | null {
 }
 
 export type LinkOutcome =
-  | { ok: true; link: FleetLink; created: boolean }
-  | { ok: false; status: 404 | 409; error: string };
+  { ok: true; link: FleetLink; created: boolean } | { ok: false; status: 404 | 409; error: string };
 
 /**
  * Link an enrolled fleet server to `serverId` (an existing cs2_servers row),
@@ -213,7 +227,11 @@ export async function linkFleetServer(
     );
     if (!row) return { ok: false, status: 404, error: `Server ${options.serverId} not found` };
     if (row.fleet_server_id && row.fleet_server_id !== fleetServerId) {
-      return { ok: false, status: 409, error: `Server ${options.serverId} is linked to another fleet server` };
+      return {
+        ok: false,
+        status: 409,
+        error: `Server ${options.serverId} is linked to another fleet server`,
+      };
     }
     // Its host / port were entered by an admin for RCON: keep them unless
     // this link sets new ones.
@@ -297,14 +315,15 @@ export async function setLinkAddress(
   if (override) {
     const fleet = await getFleetServer(fleetServerId);
     const port = override.port ?? parseHost(fleet?.host ?? null)?.game_port ?? DEFAULT_GAME_PORT;
-    await db.runAsync(`UPDATE cs2_servers SET host = ?, port = ?, host_override = 1, updated_at = ? WHERE id = ?`, [
-      override.host,
-      port,
+    await db.runAsync(
+      `UPDATE cs2_servers SET host = ?, port = ?, host_override = 1, updated_at = ? WHERE id = ?`,
+      [override.host, port, now, cs2ServerId]
+    );
+  } else {
+    await db.runAsync(`UPDATE cs2_servers SET host_override = 0, updated_at = ? WHERE id = ?`, [
       now,
       cs2ServerId,
     ]);
-  } else {
-    await db.runAsync(`UPDATE cs2_servers SET host_override = 0, updated_at = ? WHERE id = ?`, [now, cs2ServerId]);
     await syncLinkedAddress(fleetServerId);
   }
   return (await listLinkAddresses()).get(fleetServerId) ?? null;
@@ -331,7 +350,9 @@ export async function syncLinkedAddress(fleetServerId: string): Promise<ConnectA
     Math.floor(Date.now() / 1000),
     row.id,
   ]);
-  log.info(`[FLEET] ${fleetServerId}: connect address ${row.host}:${row.port} -> ${next.host}:${next.port} (${next.source})`);
+  log.info(
+    `[FLEET] ${fleetServerId}: connect address ${row.host}:${row.port} -> ${next.host}:${next.port} (${next.source})`
+  );
   return next;
 }
 

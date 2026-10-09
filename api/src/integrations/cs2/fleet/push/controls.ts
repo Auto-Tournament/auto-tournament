@@ -232,6 +232,32 @@ async function linkCreatedOnce(serverId: string): Promise<void> {
 }
 
 /**
+ * A server enrolled with a fleet key set to auto-link joins the match pool on
+ * its first hello, unless the key was revoked or expired since. Once:
+ * cs2_fleet_servers.auto_linked_at is set when the link succeeds, so an
+ * admin's unlink or deleting the server sticks.
+ */
+async function linkKeyEnrolledOnce(serverId: string): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const key = await db.queryOneAsync<{ id: string }>(
+    `SELECT k.id FROM cs2_fleet_servers s
+       JOIN cs2_fleet_enrollment_keys k ON k.id = s.enrollment_key_id
+      WHERE s.id = ? AND s.auto_linked_at IS NULL AND k.auto_link = 1
+        AND k.revoked_at IS NULL AND (k.expires_at IS NULL OR k.expires_at > ?)`,
+    [serverId, now]
+  );
+  if (!key) return;
+  const { linkFleetServer } = await import('../link');
+  const outcome = await linkFleetServer(serverId);
+  if (!outcome.ok) {
+    log.warn(`[FLEET] ${serverId}: enrolled with auto-link key ${key.id} but not linked: ${outcome.error}`);
+    return;
+  }
+  await db.runAsync('UPDATE cs2_fleet_servers SET auto_linked_at = ? WHERE id = ?', [now, serverId]);
+  log.info(`[FLEET] ${serverId}: enrolled with auto-link key ${key.id}; joined the match pool`);
+}
+
+/**
  * After a server's welcome (./index.ts):
  *
  * - a server csm created that was never given plugins gets the set its
@@ -247,6 +273,7 @@ export async function pluginsOnHello(
     Partial<Pick<HelloPayload, 'capabilities'>>
 ): Promise<'initial' | 'resync' | null> {
   await linkCreatedOnce(serverId);
+  await linkKeyEnrolledOnce(serverId);
   const prefs = await readPrefs(serverId);
   if (!prefs.plugins) {
     if (prefs.pushed.plugins) return null;

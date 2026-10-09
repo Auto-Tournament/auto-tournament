@@ -56,6 +56,7 @@
     "trigger": {
       "build_change": "Ny CS2-build",
       "surface_change": "Spilldata endret",
+      "code_change": "Endring i Ready Up",
       "nightly": "Nattlig",
       "release": "Ready Up-utgivelse",
       "manual": "Manuell"

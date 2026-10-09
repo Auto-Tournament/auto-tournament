@@ -671,7 +671,9 @@
         "pulses": "Pulses",
         "mystery": "Mystery",
         "modern-classical": "Modern classical",
-        "main-title": "Main title"
+        "main-title": "Main title",
+        "rock": "Rock",
+        "metal": "Metal"
       }
     }
   },

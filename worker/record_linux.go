@@ -219,6 +219,7 @@ type clipResult struct {
 	player  int // which of the job's players it is
 	path    string
 	markers clipMarkers
+	seconds float64 // how long recording and finishing it took (X-AT-Seconds)
 }
 
 // shot is a moment to record, and whose eyes it is seen through.
@@ -379,6 +380,7 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 				failed = append(failed, momentFailure{moment: f.result.moment, err: err})
 			} else {
 				log.Printf("recorded %q in %s", f.result.moment.Title, time.Since(f.started).Round(time.Second))
+				f.result.seconds = time.Since(f.started).Seconds()
 				clips = append(clips, f.result)
 			}
 			mu.Unlock()
@@ -560,6 +562,9 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	}
 	markers := momentMarkers(windows, edits, kills)
 	markers.Reactions = cheerTimes(m.KillTicks, markers.Kills, cheerTicks(look.replay, look.playerID, m))
+	if t := deathTick(look.replay, look.playerID, m); t >= 0 {
+		markers.Reactions = withAww(markers.Reactions, tickAt(windows, edits, t))
+	}
 	width, height := ow, oh
 	finish := func() error {
 		defer cleanup()
@@ -1063,6 +1068,9 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 	for _, c := range recorded {
 		markers, _ := json.Marshal(c.markers)
 		headers := map[string]string{"X-AT-Markers": string(markers)}
+		if c.seconds > 0 {
+			headers["X-AT-Seconds"] = strconv.FormatFloat(c.seconds, 'f', 1, 64)
+		}
 		if q, qerr := frameCheck(ctx, c.path); qerr == nil {
 			qj, _ := json.Marshal(q)
 			headers["X-AT-Quality"] = string(qj)
@@ -1235,9 +1243,10 @@ func cleanScratch(dir string, age time.Duration) {
 
 // newRecorder reads the recorder's settings from the environment.
 func newRecorder(c *client) (*recorder, error) {
-	gameDir := env("AT_CS2_GAME", "")
+	home, _ := os.UserHomeDir()
+	gameDir := env("AT_CS2_GAME", cs2GameDir(home))
 	if gameDir == "" {
-		return nil, errors.New("set AT_CS2_GAME to the CS2 install's game folder (it has cs2.sh)")
+		return nil, errors.New("CS2 was not found in the Steam libraries: set AT_CS2_GAME to its game folder (it has cs2.sh)")
 	}
 	for _, tool := range []string{"gamescope", "gst-launch-1.0", "pw-link", "pw-record", "ffmpeg"} {
 		if _, err := exec.LookPath(tool); err != nil {
@@ -1252,7 +1261,7 @@ func newRecorder(c *client) (*recorder, error) {
 			return nil, fmt.Errorf("AT_RESOLUTION: %w", err)
 		}
 	}
-	r := &recorder{client: c, gameDir: gameDir, sniper: env("AT_SNIPER_RUN", ""),
+	r := &recorder{client: c, gameDir: gameDir, sniper: env("AT_SNIPER_RUN", sniperRun(home)),
 		scratch: env("AT_RECORD_DIR", os.TempDir()), width: w, height: h,
 		encoder: env("AT_ENCODER", pickEncoder()), sink: defaultSink()}
 	// Until the first pass measures it: what gamescope streamed on the recorder VM (2026-10-08).
@@ -1301,21 +1310,30 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 	log.SetOutput(io.MultiWriter(os.Stderr, currentJobLog))
 	log.Printf("recorder: %dx%d, %s, sound from %s, %s, %s", r.width, r.height, r.encoder, r.sink, recorderGPU(), platformName())
 	currentJobLog.take()
+	var keep awake
+	defer keep.release()
 	for ctx.Err() == nil {
 		j, reel, redress, err := c.claimRecording(ctx)
 		if err != nil {
 			log.Printf("cannot reach the platform: %v", err)
 			currentJobLog.take()
 		}
+		if j != nil || reel != nil || redress != nil {
+			keep.hold()
+		}
 		started := time.Now()
+		stopBeat := c.heartbeat(ctx)
 		if redress != nil {
 			r.runRedress(ctx, redress)
+			stopBeat()
 			c.reportRun(jobRun{Kind: "redress", OK: true, Clips: len(redress.Files)}, started)
 			continue
 		}
 		if reel != nil {
 			run := jobRun{Kind: reel.Kind, MatchSlug: reel.MatchSlug, MapNumber: intPtr(reel.MapNumber), Clips: len(reel.Clips)}
-			if err := r.makeMatchReel(ctx, reel); err != nil {
+			err := r.makeMatchReel(ctx, reel)
+			stopBeat()
+			if err != nil {
 				r.failMatchReel(reel, err)
 				run.Error = err.Error()
 				c.reportRun(run, started)
@@ -1327,6 +1345,8 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 			continue
 		}
 		if j == nil {
+			stopBeat()
+			keep.release()
 			select {
 			case <-ctx.Done():
 			case <-time.After(poll):
@@ -1335,10 +1355,12 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 		}
 		if j.Kind == "benchmark" {
 			r.runBenchmark(ctx, j)
+			stopBeat()
 			continue
 		}
 		run := jobRun{Kind: "map", MatchSlug: j.MatchSlug, MapNumber: intPtr(j.MapNumber)}
 		kept, rejected, err := r.recordMap(ctx, j)
+		stopBeat()
 		run.Clips, run.Rejected = kept, rejected
 		if err != nil {
 			r.failRecording(j, err)

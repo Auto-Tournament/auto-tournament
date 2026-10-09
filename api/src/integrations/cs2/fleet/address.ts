@@ -51,7 +51,9 @@ function validPort(n: number): boolean {
 export function isValidConnectHost(host: string): boolean {
   if (!host || host.length > 253) return false;
   if (isIP(host)) return true;
-  return /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,62})(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,62}))*\.?$/.test(host);
+  return /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,62})(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,62}))*\.?$/.test(
+    host
+  );
 }
 
 /**
@@ -125,7 +127,10 @@ export function isPrivateOrLoopback(host: string): boolean {
  * Express computes `req.ip` with `trust proxy` = `hops`: the socket address,
  * then X-Forwarded-For from right to left, trusting `hops` proxies.
  */
-export function peerAddressOf(req: IncomingMessage, hops: number = TRUST_PROXY_HOPS): string | null {
+export function peerAddressOf(
+  req: IncomingMessage,
+  hops: number = TRUST_PROXY_HOPS
+): string | null {
   const socketAddr = req.socket?.remoteAddress ?? null;
   const addrs: string[] = socketAddr ? [socketAddr] : [];
   const xff = req.headers['x-forwarded-for'];
@@ -158,11 +163,13 @@ export function chooseConnectAddress(
   const machine = parseAddr(machineAddr)?.host ?? null;
   const peerIp = peerAddr ? unmapV4(peerAddr.trim()) : '';
   const peer = peerIp && isIP(peerIp) && peerIp !== '0.0.0.0' && peerIp !== '::' ? peerIp : null;
-  const gamePort = host?.game_port && validPort(host.game_port) ? host.game_port : DEFAULT_GAME_PORT;
+  const gamePort =
+    host?.game_port && validPort(host.game_port) ? host.game_port : DEFAULT_GAME_PORT;
   const port = reported?.port ?? gamePort;
   // A private address while the link comes from a public one: the server is
   // behind NAT, and players need the address the platform sees.
-  const behindNat = (addr: string) => !!peer && isPrivateOrLoopback(addr) && !isPrivateOrLoopback(peer);
+  const behindNat = (addr: string) =>
+    !!peer && isPrivateOrLoopback(addr) && !isPrivateOrLoopback(peer);
   if (reported) {
     if (behindNat(reported.host)) return { host: peer as string, port, source: 'peer' };
     return { host: reported.host, port, source: 'public_addr' };

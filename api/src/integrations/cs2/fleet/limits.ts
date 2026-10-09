@@ -52,9 +52,15 @@ export function fleetLimits(): FleetLimits {
   if (!cached) {
     cached = {
       bytesPerMinute: positive('FLEET_BYTES_PER_MINUTE', FLEET_LIMIT_DEFAULTS.bytesPerMinute),
-      demoBytesPerMinute: positive('FLEET_DEMO_BYTES_PER_MINUTE', FLEET_LIMIT_DEFAULTS.demoBytesPerMinute),
+      demoBytesPerMinute: positive(
+        'FLEET_DEMO_BYTES_PER_MINUTE',
+        FLEET_LIMIT_DEFAULTS.demoBytesPerMinute
+      ),
       demoMaxBytes: positive('FLEET_DEMO_MAX_BYTES', FLEET_LIMIT_DEFAULTS.demoMaxBytes),
-      demoStreamExpireDays: positive('FLEET_DEMO_STREAM_EXPIRE_DAYS', FLEET_LIMIT_DEFAULTS.demoStreamExpireDays),
+      demoStreamExpireDays: positive(
+        'FLEET_DEMO_STREAM_EXPIRE_DAYS',
+        FLEET_LIMIT_DEFAULTS.demoStreamExpireDays
+      ),
     };
   }
   return cached;
@@ -65,7 +71,10 @@ export function resetFleetLimitsForTests(): void {
 }
 
 /** The per-minute byte budget of a server's socket, from the capabilities in its hello. */
-export function socketBytesPerMinute(capabilities: readonly string[] | undefined, limits = fleetLimits()): number {
+export function socketBytesPerMinute(
+  capabilities: readonly string[] | undefined,
+  limits = fleetLimits()
+): number {
   if (capabilities?.includes(DEMO_STREAM_CAPABILITY)) {
     return limits.bytesPerMinute + limits.demoBytesPerMinute + DEMO_SOCKET_SLACK_BYTES;
   }

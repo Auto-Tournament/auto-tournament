@@ -54,7 +54,9 @@ export function setFleetAssignmentResolver(resolver: AssignmentResolver | null):
 }
 
 /** welcome's `server_config_rev` / `admins_rev` (./push). */
-export function setFleetWelcomeRevs(provider: ((serverId: string) => Promise<WelcomeRevs>) | null): void {
+export function setFleetWelcomeRevs(
+  provider: ((serverId: string) => Promise<WelcomeRevs>) | null
+): void {
   gateway.setWelcomeRevs(provider);
 }
 
@@ -76,7 +78,9 @@ export async function rotateServerToken(serverId: string): Promise<boolean> {
     type: 'auth.rotate',
     payload: { token_id: started.tokenId, old_valid_until: started.oldValidUntil },
   });
-  log.info(`[FLEET] ${serverId}: token rotation sent (old token valid until ${new Date(started.oldValidUntil).toISOString()})`);
+  log.info(
+    `[FLEET] ${serverId}: token rotation sent (old token valid until ${new Date(started.oldValidUntil).toISOString()})`
+  );
   return true;
 }
 
@@ -100,14 +104,18 @@ export async function revokeServer(serverId: string): Promise<boolean> {
 export async function startFleet(server?: HttpServer): Promise<void> {
   const http = server ?? (getIO().httpServer as HttpServer | undefined);
   if (!http) {
-    log.warn('[FLEET] no HTTP server to attach the fleet gateway to; Ready Up servers cannot connect');
+    log.warn(
+      '[FLEET] no HTTP server to attach the fleet gateway to; Ready Up servers cannot connect'
+    );
     return;
   }
   await registry.markAllOffline();
   gateway.attach(http);
   if (!rotationTimer) {
     rotationTimer = setInterval(() => {
-      void rotateDue().catch((error) => log.warn(`[FLEET] rotation check failed: ${(error as Error).message}`));
+      void rotateDue().catch((error) =>
+        log.warn(`[FLEET] rotation check failed: ${(error as Error).message}`)
+      );
     }, ROTATION_CHECK_MS);
     rotationTimer.unref?.();
   }

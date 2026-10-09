@@ -5,6 +5,7 @@ import {
   parseClipStarts,
   parseMarkers,
   pickMoments,
+  pickSeriesClips,
   playersPerRecorder,
   recorderBusy,
 } from '../../api/src/integrations/cs2/demos/highlights';
@@ -171,6 +172,46 @@ test.describe('Highlight moments', () => {
     ]);
     expect(kinds).toEqual(expect.arrayContaining([300, 301, 302]));
   });
+
+  test('the tournament reel follows its size settings', { tag: ['@api'] }, () => {
+    const c = (id: number, playerId: string, score: number) => ({
+      id,
+      playerId,
+      kind: '3k',
+      score,
+      clutch: false,
+    });
+    const many = Array.from({ length: 30 }, (_, i) => c(i + 1, `p${i % 10}`, 100 + i));
+    expect(pickTournamentReel(many, 8, 1)).toHaveLength(8);
+    expect(new Set(pickTournamentReel(many, 8, 1).map((id) => many[id - 1].playerId)).size).toBe(8);
+    expect(pickTournamentReel(many, 30, 3)).toHaveLength(30);
+  });
+
+  test('a series reel: the best plays of every map, in the order played', { tag: ['@api'] }, () => {
+    const c = (playerId: string, score: number, mapNumber: number, at: number) => ({
+      playerId,
+      score,
+      mapNumber,
+      at,
+    });
+    const clips = [
+      c('donk', 300, 3, 900),
+      c('donk', 250, 0, 100),
+      c('donk', 240, 1, 500),
+      c('sh1ro', 200, 1, 200),
+      c('zont1x', 180, 0, 700),
+      c('xfl0ud', 150, 2, 300),
+    ];
+    const picked = pickSeriesClips(clips, 4, 2);
+    // donk twice at most, the best four in all, map by map.
+    expect(picked.map((p) => [p.playerId, p.mapNumber])).toEqual([
+      ['donk', 0],
+      ['zont1x', 0],
+      ['sh1ro', 1],
+      ['donk', 3],
+    ]);
+    expect(pickSeriesClips(clips, 16, 1)).toHaveLength(4);
+  });
 });
 
 test(
@@ -211,9 +252,18 @@ test('a clip keeps the kills its crowd reacts to', { tag: ['@api'] }, () => {
       duration: 11.66,
       kills: [4.76, 9.57],
       slowmo: null,
-      reactions: [{ t: 9.57, score: 8.5 }, { t: 'x' }],
+      reactions: [
+        { t: 9.57, score: 8.5 },
+        { t: 'x' },
+        { t: 11.2, score: 0, aww: true },
+        { t: 12, score: 1, aww: 'yes' },
+      ],
     })
   );
-  expect(m?.reactions).toEqual([{ t: 9.57, score: 8.5 }]);
+  expect(m?.reactions).toEqual([
+    { t: 9.57, score: 8.5 },
+    { t: 11.2, score: 0, aww: true },
+    { t: 12, score: 1 },
+  ]);
   expect(parseMarkers(JSON.stringify({ duration: 3, kills: [1] }))?.reactions).toBeUndefined();
 });
