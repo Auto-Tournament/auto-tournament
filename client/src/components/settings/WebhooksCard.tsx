@@ -319,7 +319,7 @@ export function WebhooksCard() {
             <Stack spacing={1.25}>
               <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
                 {endpoint.url}
-                {endpoint.source ? ` · source: ${endpoint.source}` : ''}
+                {endpoint.source ? ` · ${t('webhooksPage.sourceShort', { source: endpoint.source })}` : ''}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {t('webhooksPage.counts', {
