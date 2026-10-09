@@ -71,7 +71,7 @@ export default function MatchPage() {
     );
   }
 
-  const maps = match.maps ?? [];
+  const maps = match.mapScores ?? [];
   const won = (side: 'team1' | 'team2') =>
     maps.filter((m) =>
       side === 'team1' ? m.team1Score > m.team2Score : m.team2Score > m.team1Score

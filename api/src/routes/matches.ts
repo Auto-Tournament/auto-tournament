@@ -1078,7 +1078,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
         WHERE m.slug = ?`,
       [slug]
     );
-    const maps = (await getMapResults(slug)).map((r) => ({
+    const mapScores = (await getMapResults(slug)).map((r) => ({
       mapNumber: r.mapNumber,
       map: r.mapName ?? null,
       team1Score: r.team1Score,
@@ -1106,7 +1106,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
             : row?.winner_id && row.winner_id === row.team2_id
               ? 'team2'
               : null,
-        maps,
+        mapScores,
         tournament:
           (match as { tournament?: unknown }).tournament ?? row?.tournament ?? row?.played_in ?? null,
       },

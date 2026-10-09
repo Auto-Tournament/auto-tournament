@@ -104,7 +104,7 @@ export interface PublicMatch {
   team2: { id: string | null; name: string | null; tag: string | null } | null;
   /** Which side won (null: undecided). */
   winnerSide: 'team1' | 'team2' | null;
-  maps: Array<{
+  mapScores: Array<{
     mapNumber: number;
     map: string | null;
     team1Score: number;
