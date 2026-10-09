@@ -87,6 +87,7 @@ import {
   saveMatchReel,
   clipFile,
   failRecordJob,
+  keepClaimed,
   parseClipIds,
   parseClipStarts,
   matchReelFile,
@@ -231,6 +232,8 @@ router.put('/recorder/jobs/:id/clip', requireAuth, async (req: Request, res: Res
     return res.status(400).json({ success: false, error: 'A video/mp4 body for a highlight' });
   }
   try {
+    // Kept or turned down, a clip means its recorder is still at the job.
+    await keepClaimed(id);
     // The recorder's frame check (worker/quality.go): a stuttering clip is
     // turned down and recorded again, preferably by another recorder.
     const verdict = await judgeClip(id, parseQuality(req.headers['x-at-quality']));

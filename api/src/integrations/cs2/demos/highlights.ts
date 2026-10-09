@@ -738,6 +738,22 @@ export async function saveClip(
   return size;
 }
 
+/**
+ * A map job can take hours (every waiting moment of a map in one CS2
+ * session), longer than STALE_SECONDS: each clip it sends renews the claim
+ * on the rest of its job, so another recorder does not take them over while
+ * this one is still at it. Only a recorder that stops sending lets them go.
+ */
+export async function keepClaimed(id: number): Promise<void> {
+  await db.runAsync(
+    `UPDATE cs2_highlights h SET claimed_at = ?
+      FROM cs2_highlights done
+     WHERE done.id = ? AND h.status = 'recording' AND h.recorder = done.recorder
+       AND h.match_slug = done.match_slug AND h.map_number = done.map_number`,
+    [Math.floor(Date.now() / 1000), id]
+  );
+}
+
 /** Tell the player their clip is ready (a player's own moment; reels belong to no one player). */
 async function noticeHighlightReady(id: number): Promise<void> {
   const row = await db.queryOneAsync<{

@@ -222,3 +222,48 @@ test('recorder admin routes need an admin', TAGS, async ({ playwright, baseURL }
   expect((await anon.post('/api/game/cs2/recorder/runs', { data: {} })).status()).toBe(401);
   await anon.dispose();
 });
+
+test('a recorder that keeps sending clips keeps its job', TAGS, async ({ request }) => {
+  expect(await signInViaRequest(request)).toBe(true);
+  const slug = await matchWithMoments(request);
+  const a = `spec-keep-a-${Date.now()}`;
+  const b = `spec-keep-b-${Date.now()}`;
+  const claim = (recorder: string) =>
+    request.post('/api/game/cs2/recorder/claim', { data: { recorder, version: 7 } });
+  type Job = { matchSlug: string; players: Array<{ moments: Array<{ id: number }> }> };
+  let job: Job | null = null;
+  for (let i = 0; i < 20 && job?.matchSlug !== slug; i++) {
+    const res = await claim(a);
+    if (res.status() !== 200) break;
+    job = (await res.json()).job as Job;
+  }
+  expect(job?.matchSlug).toBe(slug);
+  const ids = job!.players.flatMap((p) => p.moments.map((m) => m.id));
+  expect(ids.length).toBeGreaterThanOrEqual(2);
+
+  // An hour into the job (claims go stale after 30 minutes), it sends a clip.
+  const age = () =>
+    request.post('/api/test/highlights/age-claims', { data: { matchSlug: slug, minutes: 60 } });
+  expect((await age()).status()).toBe(200);
+  const up = await request.put(`/api/game/cs2/recorder/jobs/${ids[0]}/clip`, {
+    headers: { 'Content-Type': 'video/mp4' },
+    data: Buffer.from('not really a video'),
+  });
+  expect(up.status()).toBe(200);
+  // Another recorder does not take the rest of it.
+  for (let i = 0; i < 20; i++) {
+    const res = await claim(b);
+    if (res.status() !== 200) break;
+    expect(((await res.json()).job as Job).matchSlug).not.toBe(slug);
+  }
+
+  // Stale again with no clip since: now the other recorder may take it.
+  expect((await age()).status()).toBe(200);
+  let taken = false;
+  for (let i = 0; i < 20 && !taken; i++) {
+    const res = await claim(b);
+    if (res.status() !== 200) break;
+    taken = ((await res.json()).job as Job).matchSlug === slug;
+  }
+  expect(taken).toBe(true);
+});
