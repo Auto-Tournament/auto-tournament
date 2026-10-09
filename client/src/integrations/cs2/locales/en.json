@@ -2208,9 +2208,9 @@
     "emptyLog": "(empty)",
     "close": "Close",
     "connect": {
-      "intro": "A recorder is a PC with a GPU, CS2 and Steam that records highlight clips from this platform's demos. Add as many as you like: they share the work.",
+      "intro": "A recorder is a Linux PC with a GPU, CS2 and Steam that records highlight clips from this platform's demos. Add as many as you like: they share the work. Windows isn't supported yet.",
       "step1": "Install CS2 and sign in to Steam once, then switch Steam to offline mode. Every recorder can use the same Steam account.",
-      "step2": "Get at-worker (the auto-tournament-worker image, or the binary) on the PC. It needs ffmpeg, gamescope and PipeWire.",
+      "step2": "Run the recorder container, sivertio/auto-tournament-recorder, as the PC's own user (the full command is in the docs), or install the at-worker binary with ffmpeg, gamescope and PipeWire.",
       "step3": "Point it at this platform:",
       "step4": "Start it with at-worker record. On its first job it runs a short benchmark, then it shows up under Recorders with its numbers.",
       "gaming": "You can game on the same PC while it records, but the GPU is shared: clips with too many repeated frames are turned down and recorded again elsewhere, and a recorder that keeps failing is paused for 15 minutes."
