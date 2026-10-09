@@ -136,9 +136,14 @@ export function NoticeItem({ notice, viewerId, onNavigate }: Props) {
       text = (
         <>
           <Box component="b" sx={{ color: color.ink, fontWeight: 600 }}>{str(d.name)}</Box>{' '}
-          {d.event === 'started' ? t('social.notice.tournamentStarted') : t('social.notice.checkInOpen')}
+          {d.event === 'started'
+            ? t('social.notice.tournamentStarted')
+            : d.event === 'lineupGap'
+              ? t('social.notice.lineupGap', { minutes: Number(d.minutes) || 15 })
+              : t('social.notice.checkInOpen')}
         </>
       );
+      // A lineup gap: the captain picks a sub on the sign-up page.
       to = d.tournamentId ? `/tournament/${Number(d.tournamentId)}${d.event === 'started' ? '/match' : '/signup'}` : null;
       break;
     case 'news':

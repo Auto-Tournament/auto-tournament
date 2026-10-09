@@ -35,7 +35,8 @@
       "joined": "You joined the party",
       "nowFriends": "You are now friends",
       "declined": "Declined",
-      "expired": "This party has ended"
+      "expired": "This party has ended",
+      "lineupGap": "· a starter left your lineup. Pick a sub within {{minutes}} minutes, or you play short-handed."
     },
     "toast": {
       "join": "Join party",

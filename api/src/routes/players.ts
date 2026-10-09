@@ -32,7 +32,46 @@ import { getEffectiveViewerSteamId, resolveViewerIdentity } from '../utils/viewe
 import { getIntegration, integrationForMatch } from '../integrations/registry';
 import { DEFAULT_GAME } from '../integrations/types';
 
+import { banPlayer, deletePlayer, ModerationError, moderationOf, unbanPlayer } from '../services/playerModeration';
+import type { Actor } from '../services/matchHolds';
+
+function actorOf(req: Request): Actor {
+  const id = requestActorId(req) ?? 'admin';
+  return { userId: id, name: id };
+}
+
 const router = Router();
+
+/**
+ * Deleted and banned players: their public pages show only who they are.
+ * GET /:playerId and /summary answer a stub ({ id, name, avatar, deleted |
+ * banned, restricted }); their matches, rating history, team and current
+ * match answer 404 with `restricted`. Admin routes (writes, the admin list)
+ * are not affected.
+ */
+const RESTRICTED_SUBPATHS = new Set(['', 'summary', 'team', 'current-match', 'rating-history', 'matches']);
+router.param('playerId', async (req: Request, res: Response, next, playerId: string) => {
+  if (req.method !== 'GET') return next();
+  const sub = req.path.split('/').filter(Boolean).slice(1).join('/');
+  if (!RESTRICTED_SUBPATHS.has(sub)) return next();
+  try {
+    const state = await moderationOf(playerId);
+    if (!state.deleted && !state.banned) return next();
+    const player = await playerService.getPlayerById(playerId);
+    if (!player) return next();
+    const stub = {
+      id: player.id,
+      name: player.name,
+      avatar: `/api/players/${encodeURIComponent(player.id)}/avatar.svg`,
+      ...(state.deleted ? { deleted: true } : { banned: true }),
+      restricted: true,
+    };
+    if (sub === '' || sub === 'summary') return res.json({ success: true, player: stub, restricted: true });
+    return res.status(404).json({ success: false, error: 'Not shown for this player', restricted: true });
+  } catch {
+    return next();
+  }
+});
 
 // ============================================================================
 // PUBLIC ROUTES (no authentication required)
@@ -1772,7 +1811,7 @@ router.post('/bulk-delete', async (req: Request, res: Response) => {
 
     for (const id of ids) {
       // Reuse existing single-delete semantics so cascades/logging stay consistent
-      const deleted = await playerService.deletePlayer(id);
+      const deleted = await deletePlayer(String(id), actorOf(req));
       if (deleted) {
         deletedCount += 1;
       } else {
@@ -1867,8 +1906,43 @@ router.put('/:playerId', async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/players/:playerId/ban
+ * Ban a player (admin only): no sign-in, public pages show only the name and
+ * "Banned", and they leave the lineups of running tournaments. Body: { reason? }.
+ */
+router.post('/:playerId/ban', async (req: Request, res: Response) => {
+  try {
+    const reason = typeof req.body?.reason === 'string' ? req.body.reason : null;
+    await banPlayer(req.params.playerId, reason, actorOf(req));
+    return res.json({ success: true, player: await playerService.getPlayerById(req.params.playerId) });
+  } catch (error) {
+    if (error instanceof ModerationError) {
+      return res.status(error.status).json({ success: false, error: error.message });
+    }
+    log.error('Error banning player', { error, playerId: req.params.playerId });
+    return res.status(500).json({ success: false, error: 'Could not ban the player' });
+  }
+});
+
+/**
+ * DELETE /api/players/:playerId/ban
+ * Lift a ban (admin only).
+ */
+router.delete('/:playerId/ban', async (req: Request, res: Response) => {
+  try {
+    await unbanPlayer(req.params.playerId, actorOf(req));
+    return res.json({ success: true, player: await playerService.getPlayerById(req.params.playerId) });
+  } catch (error) {
+    log.error('Error unbanning player', { error, playerId: req.params.playerId });
+    return res.status(500).json({ success: false, error: 'Could not lift the ban' });
+  }
+});
+
+/**
  * DELETE /api/players/:playerId
- * Delete a player (admin only)
+ * Delete a player (admin only). A tombstone: the row stays, named "Deleted
+ * player", so match stats keep their rows; everything personal is removed
+ * and cannot be undone (services/playerModeration.ts).
  */
 router.delete('/:playerId', async (req: Request, res: Response) => {
   try {
@@ -1880,7 +1954,7 @@ router.delete('/:playerId', async (req: Request, res: Response) => {
     ) {
       return res.status(409).json({ success: false, error: LAST_ADMIN_ERROR });
     }
-    const deleted = await playerService.deletePlayer(playerId);
+    const deleted = await deletePlayer(playerId, actorOf(req));
 
     if (!deleted) {
       return res.status(404).json({

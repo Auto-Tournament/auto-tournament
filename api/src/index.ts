@@ -8,6 +8,9 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 dotenv.config({ path: path.join(process.cwd(), '.env') });
+import { blockedViewerMiddleware } from './services/playerModeration';
+import { COOKIE_NAME as PLAYER_COOKIE_NAME } from './utils/signedPlayerCookie';
+import { getRealViewerSteamId } from './utils/viewerIdentity';
 
 // Migrate any demos/logs left behind under the pre-fix (wrong) DATA_DIR
 // before any other module reads or writes under the real one at import time
@@ -173,6 +176,8 @@ const passportSession = passport.session();
 app.use(sessionMiddleware);
 app.use(passportInitialize);
 app.use(passportSession);
+// A banned or deleted player is signed out on their next request.
+app.use(blockedViewerMiddleware(PLAYER_COOKIE_NAME, getRealViewerSteamId));
 
 /** Paths the client polls on a timer; see the request logger below. */
 const POLLED_ENDPOINTS = new Set(['/api/auth/me']);

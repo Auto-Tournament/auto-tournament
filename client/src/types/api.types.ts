@@ -157,6 +157,14 @@ export interface PlayerDetail {
   createdAt: number;
   updatedAt: number;
   isAdmin?: boolean;
+  /** Banned: no sign-in; public pages show only the name. */
+  banned?: boolean;
+  /** Deleted: a tombstone named "Deleted player". */
+  deleted?: boolean;
+  /** Why they were banned. Only returned by admin endpoints. */
+  banReason?: string | null;
+  /** Public player reads of a banned or deleted player: only id, name and avatar came back. */
+  restricted?: boolean;
   /** Discord user ID (17–20 digits). Only returned by admin endpoints. */
   discordId?: string | null;
   /** Epoch seconds of the last sign-in; null when never recorded. Only returned by admin endpoints. */

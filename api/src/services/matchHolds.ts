@@ -236,6 +236,10 @@ async function allocateSoon(): Promise<void> {
 
 /** Holds and pauses whose time is up end by themselves. */
 export async function tickHolds(): Promise<void> {
+  // A lineup gap whose time is up is settled before its matches are let go.
+  await (await import('./playerModeration')).resolveDueGaps().catch((error: unknown) =>
+    log.warn('[HOLD] lineup gaps not settled', { error: String(error) })
+  );
   const t = now();
   const matches = await db.queryAsync<{ slug: string }>(
     'SELECT slug FROM matches WHERE held_until IS NOT NULL AND held_until <= ?',

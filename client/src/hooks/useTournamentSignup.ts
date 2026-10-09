@@ -25,6 +25,8 @@ export interface LineupPlayer {
 }
 
 export interface Registration {
+  /** A starter left mid-tournament: pick a sub before this (epoch seconds), else null. */
+  lineupGapDeadline?: number | null;
   teamId: string;
   teamName: string;
   teamTag: string | null;

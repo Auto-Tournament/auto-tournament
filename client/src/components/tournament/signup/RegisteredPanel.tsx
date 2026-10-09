@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Dialog, IconButton, Link, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert';
 import {
   CheckCircleIcon,
   CheckIcon,
@@ -148,6 +149,23 @@ export function RegisteredPanel({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} data-testid="signup-registered">
+      {registration.lineupGapDeadline && (
+        <Alert
+          severity="warning"
+          data-testid="signup-lineup-gap"
+          action={
+            canManage ? (
+              <Button color="inherit" size="small" component={RouterLink} to={`/tournament/${tournament.id}/signup?edit=1`}>
+                {t('signup.pickSub')}
+              </Button>
+            ) : undefined
+          }
+        >
+          {t('signup.lineupGap', {
+            time: new Date(registration.lineupGapDeadline * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          })}
+        </Alert>
+      )}
       <Box
         sx={{
           p: { xs: 2, md: '20px 24px' },

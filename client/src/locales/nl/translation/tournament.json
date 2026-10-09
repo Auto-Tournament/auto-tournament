@@ -1034,7 +1034,9 @@
     },
     "remind": "Herinneren",
     "reminded": "Herinnering in de teamchat gestuurd",
-    "done": "Klaar"
+    "done": "Klaar",
+    "lineupGap": "A starter left your lineup (banned or deleted). Your matches wait until {{time}}: pick a sub before then, or the first sub moves in. With no sub you play short-handed.",
+    "pickSub": "Pick a sub"
   },
   "bracketCards": {
     "upper": "Winnaarsbracket",

@@ -329,16 +329,11 @@ class LocalAdminService {
     actor: string | null
   ): Promise<{ ok: true; account: LocalAccountView } | { ok: false; reason: 'taken' }> {
     if (await this.findByUsername(username)) return { ok: false, reason: 'taken' };
-    const playerId = localAdminPlayerId(username);
-    // A removed account keeps its player (matches, stats): creating the
-    // username again gives that player a login again, history and all.
-    const existing = await playerService.getPlayerById(playerId);
+    // Its own id, never derived from the username: a deleted account's
+    // tombstone keeps its old id, and the name is free for someone new.
+    const playerId = `local-${crypto.randomBytes(8).toString('hex')}`;
     const passwordHash = await hashPassword(password);
-    if (existing) {
-      if (opts.name?.trim()) await playerService.updatePlayer(playerId, { name: opts.name.trim() });
-    } else {
-      await playerService.getOrCreatePlayer(playerId, opts.name?.trim() || username);
-    }
+    await playerService.getOrCreatePlayer(playerId, opts.name?.trim() || username);
     await db.queryAsync(
       'INSERT INTO local_admins (username, player_id, password_hash, must_change_password) VALUES (?, ?, ?, 1)',
       [username, playerId, passwordHash]

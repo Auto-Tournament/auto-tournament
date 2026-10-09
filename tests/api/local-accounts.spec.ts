@@ -159,21 +159,29 @@ test.describe.serial('local accounts', () => {
       expect((await request.delete(`/api/local-accounts/${user}`)).status()).toBe(200);
       expect((await request.delete(`/api/local-accounts/${user}`)).status()).toBe(404);
 
-      // The same username can be made again: it gets its old player back.
+      // The name is free again, for a new player with its own id.
       const again = await request.post('/api/local-accounts', {
         data: { username: user, password, name: 'E2E Again', isAdmin: true },
       });
       expect(again.status(), await again.text()).toBe(201);
-      expect(((await again.json()) as { account: { isAdmin: boolean } }).account.isAdmin).toBe(
-        true
-      );
-      // Removing an admin's login takes its admin rights too.
+      const { account: second } = (await again.json()) as {
+        account: { playerId: string; isAdmin: boolean };
+      };
+      expect(second.isAdmin).toBe(true);
+      expect(second.playerId).toMatch(/^local-[0-9a-f]{16}$/);
+
+      // Removing it deletes the person: a tombstone named "Deleted player",
+      // gone from the player list, no longer an admin.
       expect((await request.delete(`/api/local-accounts/${user}`)).status()).toBe(200);
-      const player = await request.get(`/api/players/local-${user}`);
-      if (player.ok()) {
-        const body = (await player.json()) as { player?: { isAdmin?: boolean }; isAdmin?: boolean };
-        expect(body.player?.isAdmin ?? body.isAdmin ?? false).toBe(false);
-      }
+      const tomb = (await (await request.get(`/api/players/${second.playerId}`)).json()) as {
+        player: { name: string; deleted?: boolean; isAdmin?: boolean };
+      };
+      expect(tomb.player).toMatchObject({ name: 'Deleted player', deleted: true });
+      expect(tomb.player.isAdmin ?? false).toBe(false);
+      const list = (await (await request.get('/api/players')).json()) as {
+        players?: { id: string }[];
+      };
+      expect((list.players ?? []).map((p) => p.id)).not.toContain(second.playerId);
 
       const anon = await fresh(playwright);
       expect(
