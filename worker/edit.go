@@ -10,18 +10,17 @@ import (
 )
 
 // The highlight edit: the clip plays at full speed until the last enemy dies,
-// then slows step by step to slowmoSpeed (about a second of video), holds
-// there for about another second and cuts while still slowed: once the
-// killing is done there is nothing to speed back up for.
+// then slows step by step to slowmoSpeed (about a second of video) and stays
+// slowed to the cut (2.5 s of video): once the killing is done there is
+// nothing to speed back up for (speeding up again read as the clip running
+// away, 2026-10-08).
 const (
 	slowmoSpeed = 0.5
 	rampSec     = 0.75 // game seconds slowing down from the kill (≈1 s of video)
-	holdSec     = 0.5  // game seconds held at slowmoSpeed (1 s of video)
-	afterUpSec  = 0.5  // then game seconds speeding back up to full speed
-	afterSec    = 0.8  // and game seconds at full speed before the cut
+	holdSec     = 1.25 // game seconds held at slowmoSpeed to the cut (2.5 s of video)
 	rampSteps   = 8    // a ramp is this many constant-speed pieces
 	// tailSec is how much game after the last kill a clip shows.
-	tailSec = rampSec + holdSec + afterUpSec + afterSec
+	tailSec = rampSec + holdSec
 )
 
 // The frame rate and height (16:9) of every clip and reel: 1080p at 60 fps,
@@ -32,8 +31,25 @@ var (
 	// nvencPreset is NVENC's speed/quality trade (p1 fastest … p7 best;
 	// AT_NVENC_PRESET): the rate control holds the quality (-cq), so the
 	// fastest costs file size, not looks.
-	nvencPreset = env("AT_NVENC_PRESET", "p1")
+	nvencPreset = env("AT_NVENC_PRESET", "p7")
 )
+
+// outputSize is a clip's width and height (16:9 at outputHeight).
+func outputSize() (int, int) {
+	return (outputHeight * 16 / 9) &^ 1, outputHeight
+}
+
+// renderHeight is the height CS2 renders at for a clip `out` tall:
+// AT_RENDER_SCALE of it (default 1, the clip's own size), scaled up
+// afterwards. At 2/3 (720p for 1080p) the 3060 has the headroom to pace
+// frames evenly; the card and kill feed are drawn at the clip's size either way.
+func renderHeight(out int) int {
+	scale := 1.0
+	if v, err := strconv.ParseFloat(os.Getenv("AT_RENDER_SCALE"), 64); err == nil && v > 0.2 && v <= 1 {
+		scale = v
+	}
+	return int(math.Round(float64(out)*scale)) &^ 1
+}
 
 func envPositive(key string, fallback int) int {
 	if v, err := strconv.Atoi(os.Getenv(key)); err == nil && v > 0 {
@@ -46,6 +62,14 @@ func envPositive(key string, fallback int) int {
 type segment struct {
 	From, To, Speed float64
 }
+
+// introGameGain is the game's sound under the caption card's entrance: a
+// little down, so the card has the moment, and back up as the game does.
+const introGameGain = 0.5
+
+// introMuffleHz is the low-pass the game's sound goes through under it, as
+// the picture is blurred.
+const introMuffleHz = 900
 
 // introUpSec is how long (in video seconds) a clip that opened slowed down
 // takes to get back to full speed, from when its caption card starts to leave.
@@ -72,8 +96,7 @@ func stepSpeed(i int) float64 {
 }
 
 // speedRamp cuts a recording of `length` seconds into pieces: full speed to
-// `kill` seconds in, slowing to slowmoSpeed, held there, then back up to full
-// speed for the round's last moment before the cut.
+// `kill` seconds in, then slowing to slowmoSpeed and slowed to the cut.
 func speedRamp(length, kill float64) []segment {
 	return editPlan(length, false, kill)
 }
@@ -122,13 +145,7 @@ func editPlan(length float64, intro bool, kill float64) []segment {
 	for i := 0; i < rampSteps; i++ {
 		add(kill+float64(i)*step, kill+float64(i+1)*step, stepSpeed(i))
 	}
-	up := kill + rampSec + holdSec
-	add(kill+rampSec, up, slowmoSpeed)
-	upStep := afterUpSec / rampSteps
-	for i := 0; i < rampSteps; i++ {
-		add(up+float64(i)*upStep, up+float64(i+1)*upStep, upSpeed(i))
-	}
-	add(up+afterUpSec, length, 1)
+	add(kill+rampSec, length, slowmoSpeed)
 	return out
 }
 
@@ -205,7 +222,11 @@ func outputSeconds(segs []segment) float64 {
 // audioFilter plays the moment's sound [1:a] (from its start, `length`
 // seconds) piece by piece at each piece's speed, the way a record slows down:
 // the pitch drops with the speed and comes back with it. Output [a].
-func audioFilter(segs []segment, length float64) string {
+//
+// focusAt >= 0: a caption card's entrance starts there (video seconds), and
+// the game is at introGameGain under it, back to full as the game comes back
+// into focus.
+func audioFilter(segs []segment, length, focusAt float64) string {
 	var b strings.Builder
 	n := len(segs)
 	fmt.Fprintf(&b, "[1:a]atrim=duration=%.4f,asetpts=PTS-STARTPTS,aresample=48000,asplit=%d", length, n)
@@ -223,7 +244,18 @@ func audioFilter(segs []segment, length float64) string {
 	for i := range segs {
 		fmt.Fprintf(&b, "[a%d]", i)
 	}
-	fmt.Fprintf(&b, "concat=n=%d:v=0:a=1[a]", n)
+	fmt.Fprintf(&b, "concat=n=%d:v=0:a=1", n)
+	if focusAt < 0 {
+		b.WriteString("[a]")
+		return b.String()
+	}
+	// Muffled too while the picture is blurred: the sound through a low-pass,
+	// crossfaded back to the clear sound as the game comes into focus.
+	up := focusAt + focusOut
+	w := fmt.Sprintf("if(lt(t,%.3f),1,if(lt(t,%.3f),1-(t-%.3f)/%.3f,0))", up, up+focusOutDur, up, focusOutDur)
+	gain := fmt.Sprintf("(%g+%g*(1-%s))", introGameGain, 1-introGameGain, w)
+	fmt.Fprintf(&b, ",asplit[gd][gw];[gw]lowpass=f=%d,volume='%s*%s':eval=frame[gm];[gd]volume='%s*(1-%s)':eval=frame[gc];"+
+		"[gc][gm]amix=inputs=2:normalize=0:duration=first[a]", introMuffleHz, gain, w, gain, w)
 	return b.String()
 }
 
@@ -238,6 +270,9 @@ type overlay struct {
 	height int
 	// clean: the frames also come out undressed as [clean] (the clean twin, overlay.go).
 	clean bool
+	// focus: when (seconds into the video) a caption card's entrance starts:
+	// the game behind it blurs and darkens while it is up (focusFilter).
+	focus []float64
 }
 
 // videoFilter dresses the frames: the animated caption card for the first
@@ -245,12 +280,20 @@ type overlay struct {
 // top right is the kill feed's). Output [v].
 func videoFilter(o overlay) string {
 	var b strings.Builder
+	// The game, captured smaller (720p for a 1080p clip: CS2 then has the
+	// headroom to pace its frames evenly), scaled up to the clip's size; the
+	// card and kill feed are drawn at that size, sharp.
+	fmt.Fprintf(&b, "[0:v]scale=%d:%d:flags=lanczos,format=yuv420p", o.width, o.height)
 	if o.clean {
-		b.WriteString("[0:v]format=yuv420p,split[base][clean]")
+		b.WriteString(",split[base][clean]")
 	} else {
-		b.WriteString("[0:v]format=yuv420p[base]")
+		b.WriteString("[base]")
 	}
 	last := "base"
+	if len(o.focus) > 0 {
+		b.WriteString(";" + focusFilter("base", "focused", o.focus, o.width))
+		last = "focused"
+	}
 	if o.card >= 0 {
 		fmt.Fprintf(&b, ";[%s][%d:v]overlay=%d:%d:eof_action=repeat:alpha=premultiplied[withcard]", last, o.card, o.cardAt.X, o.cardAt.Y)
 		last = "withcard"
@@ -296,9 +339,16 @@ const reelCrossfade = 0.4
 // people watch is 1080p60, about half the size of the H.265 1440p120 one.
 // H.265 stays available with AT_ENCODER=hevc_nvenc or libx265.
 func encodeArgs(encoder string) []string {
-	args := []string{"-c:v", encoder, "-r", fmt.Sprint(outputFPS), "-g", fmt.Sprint(2 * outputFPS),
-		"-s", fmt.Sprintf("%dx%d", outputHeight*16/9, outputHeight), "-sws_flags", "lanczos"}
+	args := []string{"-c:v", encoder, "-r", fmt.Sprint(outputFPS), "-g", fmt.Sprint(2 * outputFPS)}
+	if encoder != "h264_vaapi" { // VAAPI's frames are scaled before they go up to the GPU (hwEncode)
+		args = append(args, "-s", fmt.Sprintf("%dx%d", outputHeight*16/9, outputHeight), "-sws_flags", "lanczos")
+	}
 	switch encoder {
+	case "h264_vaapi":
+		// AMD and Intel: quality-defined VBR with the same ceiling as NVENC.
+		rate := maxBitrate()
+		args = append(args, "-rc_mode", "QVBR", "-global_quality", env("AT_VAAPI_QUALITY", "18"), "-b:v", fmt.Sprintf("%dM", rate),
+			"-maxrate", fmt.Sprintf("%dM", rate), "-bufsize", fmt.Sprintf("%dM", 2*rate), "-profile:v", "high")
 	case "libx265":
 		args = append(args, "-preset", "fast", "-crf", "24", "-tag:v", "hvc1", "-x265-params", "log-level=error")
 	case "hevc_nvenc":
@@ -306,8 +356,96 @@ func encodeArgs(encoder string) []string {
 	case "libx264":
 		args = append(args, "-preset", "fast", "-crf", "21", "-profile:v", "high", "-pix_fmt", "yuv420p")
 	default: // h264_nvenc
-		args = append(args, "-preset", nvencPreset, "-tune", "hq", "-rc", "vbr", "-cq", "23", "-b:v", "0",
-			"-maxrate", "16M", "-bufsize", "32M", "-profile:v", "high", "-pix_fmt", "yuv420p")
+		// The ceiling grows with the pixels a second: 16 Mbit/s was set for
+		// 1080p60, and 1440p120 (3.6 times the pixels) came out blocky at it.
+		rate := maxBitrate()
+		args = append(args, "-preset", nvencPreset, "-tune", "hq", "-rc", "vbr", "-cq", "17", "-b:v", "0",
+			"-maxrate", fmt.Sprintf("%dM", rate), "-bufsize", fmt.Sprintf("%dM", 2*rate), "-profile:v", "high", "-level", "5.2", "-pix_fmt", "yuv420p")
 	}
 	return append(args, "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2")
+}
+
+// vaapiDevice is the render node VAAPI encodes on (AT_VAAPI_DEVICE).
+var vaapiDevice = env("AT_VAAPI_DEVICE", "/dev/dri/renderD128")
+
+// hwEncode fits an ffmpeg command line to its encoder. For VAAPI it opens
+// the GPU and sends each video output ([v], [clean]) through a scale to the
+// output size and up to the GPU; other encoders take the frames as they are.
+func hwEncode(args []string, encoder string) []string {
+	if encoder != "h264_vaapi" {
+		return args
+	}
+	out := []string{"-init_hw_device", "vaapi=va:" + vaapiDevice, "-filter_hw_device", "va"}
+	fc := -1
+	var up []string
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if a == "-filter_complex" && i+1 < len(args) {
+			fc = len(out) + 1
+		}
+		if a == "-map" && i+1 < len(args) && (args[i+1] == "[v]" || args[i+1] == "[clean]") {
+			label := strings.Trim(args[i+1], "[]")
+			up = append(up, fmt.Sprintf("[%s]scale=%d:%d:flags=lanczos,format=nv12,hwupload[%s_hw]", label, outputHeight*16/9, outputHeight, label))
+			out = append(out, a, "["+label+"_hw]")
+			i++
+			continue
+		}
+		out = append(out, a)
+	}
+	if fc >= 0 && len(up) > 0 {
+		out[fc] += ";" + strings.Join(up, ";")
+	}
+	return out
+}
+
+// The card's entrance (card.go): the game behind it goes out of focus as the
+// card unfolds and comes back as it moves down. The drafts (2026-10-08):
+// 16 px of blur on a 1152 px wide frame, darkened 80 % at the edges and
+// about half in the middle.
+const (
+	focusIn      = 0.10 // the card starts to unfold
+	focusInDur   = 0.65
+	focusOut     = cardMove // it starts to move down
+	focusOutDur  = 0.60
+	focusBlurPx  = 16.0
+	focusDraftW  = 1152.0
+	focusShade   = 0.62 // the darkening, before the vignette darkens the edges more
+	focusSeconds = focusOut + focusOutDur + 0.05
+)
+
+// focusFilter blurs and darkens [in] behind each card entrance starting at
+// `at` seconds (a clip's, or each clip's in a reel) into [out]. Each window
+// is its own short branch: only its frames are blurred.
+func focusFilter(in, out string, at []float64, width int) string {
+	var b strings.Builder
+	n := len(at)
+	fmt.Fprintf(&b, "[%s]split=%d[fb0]", in, n+1)
+	for i := range at {
+		fmt.Fprintf(&b, "[fb%d]", i+1)
+	}
+	sigma := focusBlurPx * float64(width) / focusDraftW
+	last := "fb0"
+	for i, a := range at {
+		fmt.Fprintf(&b, ";[fb%d]trim=start=%.3f:end=%.3f,setpts=PTS-STARTPTS,gblur=sigma=%.1f,"+
+			"drawbox=color=0x080504@%.2f:t=fill,vignette=angle=PI/4,format=yuva420p,"+
+			"fade=t=in:st=%.2f:d=%.2f:alpha=1,fade=t=out:st=%.2f:d=%.2f:alpha=1,setpts=PTS+%.3f/TB[fz%d]",
+			i+1, a, a+focusSeconds, sigma, focusShade, focusIn, focusInDur, focusOut, focusOutDur, a, i)
+		next := fmt.Sprintf("fo%d", i)
+		if i == n-1 {
+			next = out
+		}
+		fmt.Fprintf(&b, ";[%s][fz%d]overlay=eof_action=pass,format=yuv420p[%s]", last, i, next)
+		last = next
+	}
+	return b.String()
+}
+
+// maxBitrate is the H.264 ceiling (Mbit/s) for the clip's size and frame
+// rate: 24 at 1080p60, scaled by the pixels a second (85 at 1440p120), at
+// most 150. Quality over size: the clips are shared and shown on big
+// screens, and the GPU's encoder is nowhere near the bottleneck.
+func maxBitrate() int {
+	w, h := outputSize()
+	scale := float64(w*h) * outputFPS / (1920 * 1080 * 60)
+	return int(math.Min(150, math.Max(24, math.Round(24*scale))))
 }

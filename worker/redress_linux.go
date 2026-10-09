@@ -41,6 +41,11 @@ func (r *recorder) redress(clean, recipe, out string) error {
 	}
 	args := []string{"-y", "-hide_banner", "-loglevel", "error", "-i", clean}
 	ov := overlay{card: -1, feed: -1, logo: -1, width: o.Width, height: o.Height}
+	for _, p := range o.Parts {
+		if p.Card != nil && !p.Settled {
+			ov.focus = append(ov.focus, p.Start)
+		}
+	}
 	next := 1
 	type stream struct {
 		pipe  string
@@ -83,7 +88,7 @@ func (r *recorder) redress(clean, recipe, out string) error {
 	args = append(args, "-filter_complex", videoFilter(ov), "-map", "[v]", "-map", "0:a?")
 	args = append(args, encodeArgs(r.encoder)...)
 	args = append(args, "-t", fmt.Sprintf("%.4f", length), "-c:a", "copy", "-movflags", "+faststart", out)
-	cmd := exec.Command("ffmpeg", args...)
+	cmd := exec.Command("ffmpeg", hwEncode(args, r.encoder)...)
 	var stderr strings.Builder
 	cmd.Stderr = &stderr
 	if err := cmd.Start(); err != nil {

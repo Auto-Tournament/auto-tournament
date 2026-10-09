@@ -202,3 +202,109 @@ func TestWavSeconds(t *testing.T) {
 		t.Fatalf("got %v, %v; want 0.5 s", d, err)
 	}
 }
+
+func TestTimelineBlendsBetweenFrames(t *testing.T) {
+	// Blending is off unless asked for (AT_BLEND=1).
+	was := blendEdge
+	blendEdge = 0.12
+	defer func() { blendEdge = was }()
+	// 1.5 captured frames per frame wanted: every other output frame falls
+	// halfway between two captured ones and blends them.
+	var ticks []float64
+	for i := 0; i < 400; i++ {
+		ticks = append(ticks, float64(i)*tickrate/(1.5*outputFPS))
+	}
+	frames, err := timeline([][]float64{ticks}, []segment{{From: 0, To: 2, Speed: 1}}, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	blended := 0
+	for i, f := range frames {
+		if f.next >= 0 {
+			blended++
+			if f.next != f.index+1 || f.weight <= blendEdge || f.weight >= 1-blendEdge {
+				t.Fatalf("frame %d: %+v", i, f)
+			}
+		}
+		if i > 0 && f.index < frames[i-1].index {
+			t.Fatalf("frame %d goes back: %+v after %+v", i, f, frames[i-1])
+		}
+	}
+	if blended < len(frames)/3 {
+		t.Fatalf("only %d of %d blended", blended, len(frames))
+	}
+}
+
+func TestBlendFrames(t *testing.T) {
+	a, b := []byte{0, 100, 255}, []byte{200, 100, 55}
+	blendFrames(a, b, 0.5)
+	if a[0] != 100 || a[1] != 100 || a[2] != 155 {
+		t.Fatalf("blend = %v", a)
+	}
+}
+
+func TestBufferPTSAndTimes(t *testing.T) {
+	line := "/GstPipeline:pipeline0/GstIdentity:tick: last-message = chain   ******* (tick:sink) (3110400 bytes, dts: none, pts: 0:00:02.019865458, duration: none, offset: -1)"
+	if got := bufferPTS(line); math.Abs(got-2.019865458) > 1e-9 {
+		t.Fatalf("pts = %v", got)
+	}
+	if bufferPTS("no pts here") != -1 {
+		t.Fatal("no pts")
+	}
+	base := time.Unix(1000, 0)
+	// Frames every 1/60 s, their lines arriving 5–40 ms late.
+	var arrived []time.Time
+	var pts []float64
+	for i, late := range []int{5, 40, 12, 30, 5} {
+		p := float64(i) / 60
+		pts = append(pts, 10+p)
+		arrived = append(arrived, base.Add(time.Duration((p+float64(late)/1000)*1e9)))
+	}
+	got := ptsTimes(arrived, pts)
+	for i := 1; i < len(got); i++ {
+		if d := got[i].Sub(got[i-1]).Seconds(); math.Abs(d-1.0/60) > 1e-6 {
+			t.Fatalf("frame %d is %.4f s after the one before", i, d)
+		}
+	}
+}
+
+func TestDropRepeats(t *testing.T) {
+	const fb = 6 * 4 * 3 / 2 * 100
+	path := filepath.Join(t.TempDir(), "raw")
+	var data []byte
+	for i, v := range []byte{1, 2, 2, 3, 3, 3, 4} {
+		_ = i
+		frame := make([]byte, fb)
+		for j := range frame {
+			frame[j] = v
+		}
+		data = append(data, frame...)
+	}
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	ticks := []float64{0, 1, 2, 3, 4, 5, 6}
+	n, err := dropRepeats(path, fb, ticks)
+	if err != nil || n != 3 {
+		t.Fatalf("dropped %d (%v), ticks %v", n, err, ticks)
+	}
+	if ticks[2] != -1 || ticks[4] != -1 || ticks[5] != -1 || ticks[3] != 3 || ticks[6] != 6 {
+		t.Fatalf("ticks %v", ticks)
+	}
+}
+
+func TestTimelinePicksNearestByDefault(t *testing.T) {
+	var ticks []float64
+	for i := 0; i < 400; i++ {
+		ticks = append(ticks, float64(i)*tickrate/(1.5*outputFPS))
+	}
+	frames, err := timeline([][]float64{ticks}, []segment{{From: 0, To: 2, Speed: 1}}, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range frames {
+		if f.next >= 0 {
+			t.Fatalf("blended %+v", f)
+		}
+	}
+}

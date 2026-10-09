@@ -130,7 +130,7 @@ type reelPlan struct {
 }
 
 const (
-	outroHold = 0.3 // the last frame held this much longer (the game plays on before it: afterSec)
+	outroHold = 0.3 // the last frame held this much longer
 	outroFade = 1.4 // then faded to black over this
 	introFade = 0.5 // and it opens from black over this
 )

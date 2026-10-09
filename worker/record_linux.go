@@ -20,7 +20,11 @@ package main
 //	AT_SNIPER_RUN    Steam's SteamLinuxRuntime_sniper/run, which cs2.sh needs
 //	AT_RECORD_DIR    scratch space for raw frames (default: the system temp dir; ~6 GB a moment)
 //	AT_RESOLUTION    WIDTHxHEIGHT CS2 renders at (default: the output size)
-//	AT_ENCODER       ffmpeg video encoder (default: h264_nvenc on the GPU if it opens, else libx264; H.264 in MP4)
+//	AT_ENCODER       ffmpeg video encoder (default: h264_nvenc on the GPU if it opens, else h264_vaapi, else libx264; H.264 in MP4)
+//	AT_VIDEO         CS2's video settings while it records: max (default), low or keep
+//	AT_GAMESCOPE_HZ  the capture stream's rate (default 120; a fast GPU records smoothly up to 240)
+//	AT_CAPTURE_FPS   the stream rate the first pass assumes (default 30; it follows what each pass gets)
+//	AT_FINISH_SERIAL 0 encodes a moment while the next one records (default: one after the other)
 //	AT_AUDIO_TARGET  the PipeWire sink CS2 plays into (default: the default sink)
 //	AT_KEEP_SCRATCH  set to keep each moment's raw frames, sound and logs
 //
@@ -252,7 +256,8 @@ func (r *recorder) useQuality(q *videoQuality) {
 	if q != nil && q.Height >= 360 && q.Height <= 2160 && q.FPS >= 24 && q.FPS <= 240 {
 		h := q.Height &^ 1
 		if os.Getenv("AT_RESOLUTION") == "" {
-			width, height = (h*16/9)&^1, h
+			rh := renderHeight(h)
+			width, height = (rh*16/9)&^1, rh
 		}
 		if os.Getenv("AT_OUTPUT_HEIGHT") == "" {
 			outH = h
@@ -401,6 +406,19 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 			continue
 		}
 		log.Printf("captured %q in %s", m.Title, time.Since(started).Round(time.Second))
+		if env("AT_FINISH_SERIAL", "1") != "0" {
+			// Nothing else on the GPU while CS2 captures: finish this one first.
+			// Encoding the last moment while the next one recorded starved CS2
+			// (2026-10-09, 9070 XT: 236 fps down to 29-126) and every clip after
+			// the first stuttered. AT_FINISH_SERIAL=0 overlaps them again.
+			drainOne := make(chan struct{})
+			queue <- finishing{result: clipResult{moment: m, player: sh.player, path: out, markers: markers}, finish: func() error {
+				defer close(drainOne)
+				return finish()
+			}, started: started}
+			<-drainOne
+			continue
+		}
 		queue <- finishing{
 			result:  clipResult{moment: m, player: sh.player, path: out, markers: markers},
 			finish:  finish,
@@ -452,7 +470,11 @@ func (r *recorder) capturePicture(g *game, name string, from int, phases []playP
 			log.Printf("captured %d frames at %gx in %.1f s: %.1f a second, %.0f per game second", n, s.scale, wall, float64(n)/wall, float64(n)/wall/s.scale)
 		}
 	}
-	return spanTicks(times, spans), nil
+	ticks := spanTicks(times, spans)
+	if n, err := dropRepeats(raw, int64(g.width*g.height*3/2), ticks); err == nil && n > 0 {
+		log.Printf("left out %d repeated frame(s) of %d", n, len(ticks))
+	}
+	return ticks, nil
 }
 
 // recordMoment captures a moment in CS2 and returns what turns it into the
@@ -479,7 +501,9 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 		name: look.name, teams: look.teams, team: look.team, opponent: look.opponent, mapName: look.mapName, round: m.Round,
 		kind: pillLabel(m.Kind, m.Title), tag: look.tag, avatar: look.avatar,
 	}
-	card, err := cardOf.layout(g.width, g.height)
+	// The card and kill feed are drawn at the clip's size, over the game scaled up to it.
+	ow, oh := outputSize()
+	card, err := cardOf.layout(ow, oh)
 	if err != nil {
 		cleanup()
 		return clipMarkers{}, nil, err
@@ -522,7 +546,7 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	}
 	markers := momentMarkers(windows, edits, kills)
 	markers.Reactions = cheerTimes(m.KillTicks, markers.Kills, cheerTicks(look.replay, look.playerID, m))
-	width, height := g.width, g.height
+	width, height := ow, oh
 	finish := func() error {
 		defer cleanup()
 		for _, encode := range encodes {
@@ -634,7 +658,8 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 			}
 		}
 		if len(rows) > 0 {
-			if feed, err = layoutFeed(rows, g.width, g.height, outputSeconds(segs), r.icons); err != nil {
+			ow, oh := outputSize()
+			if feed, err = layoutFeed(rows, ow, oh, outputSeconds(segs), r.icons); err != nil {
 				return nil, nil, fmt.Errorf("kill feed: %w", err)
 			}
 		}
@@ -669,7 +694,11 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 	args := []string{"-y", "-hide_banner", "-loglevel", "error",
 		"-f", "rawvideo", "-pix_fmt", "yuv420p", "-s", fmt.Sprintf("%dx%d", w, h), "-framerate", fmt.Sprint(outputFPS), "-i", "pipe:0",
 		"-ss", fmt.Sprintf("%.4f", maxf(0, audioAt)), "-i", wav}
-	o := overlay{card: -1, logo: -1, feed: -1, width: w, height: h, clean: clean != ""}
+	ow, oh := outputSize()
+	o := overlay{card: -1, logo: -1, feed: -1, width: ow, height: oh, clean: clean != ""}
+	if card != nil && !card.settled {
+		o.focus = []float64{0}
+	}
 	next := 2
 	// The card's frames come through a named pipe, drawn as ffmpeg asks for them.
 	var cardPipe string
@@ -701,7 +730,11 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-i", r.logo)
 		o.logo = next
 	}
-	filter := videoFilter(o) + ";" + audioFilter(segs, length)
+	focusAt := -1.0
+	if len(o.focus) > 0 {
+		focusAt = o.focus[0]
+	}
+	filter := videoFilter(o) + ";" + audioFilter(segs, length, focusAt)
 	// Exactly the timeline's frames: the card's and the kill feed's streams can
 	// run a little longer, and ffmpeg's overlay then held the last frame
 	// (a dressed piece came out ~0.05 s longer than its picture and sound).
@@ -719,7 +752,11 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		args = append(append(args, encodeArgs(r.encoder)...), frameCount...)
 		args = append(args, "-movflags", "+faststart", out)
 	}
-	cmd := exec.Command("ffmpeg", args...)
+	// A hung GPU encoder never returns (2026-10-09: the 9070 XT's VCN
+	// wedged and the recorder waited six hours): give up after encodeTimeout.
+	ctx, cancel := context.WithTimeout(context.Background(), encodeTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "ffmpeg", hwEncode(args, r.encoder)...)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return err
@@ -759,10 +796,18 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 	}
 	frameBytes := int64(w * h * 3 / 2)
 	buf := make([]byte, frameBytes)
+	other := make([]byte, frameBytes)
 	var werr error
 	for _, f := range frames {
 		if _, werr = files[f.source].ReadAt(buf, int64(f.index)*frameBytes); werr != nil {
 			break
+		}
+		if f.next >= 0 {
+			// Between two captured frames: both, by distance (record_timing.go).
+			if _, werr = files[f.source].ReadAt(other, int64(f.next)*frameBytes); werr != nil {
+				break
+			}
+			blendFrames(buf, other, f.weight)
 		}
 		if _, werr = stdin.Write(buf); werr != nil {
 			break
@@ -1377,15 +1422,28 @@ func recordFile(args []string) error {
 	return nil
 }
 
+// encodeTimeout is the longest one moment's encode may take.
+const encodeTimeout = 15 * time.Minute
+
 // pickEncoder is the GPU's H.264 encoder when it opens (a second of test
 // video), else x264 on the CPU: same codec and container either way.
 func pickEncoder() string {
-	cmd := exec.Command("ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30", "-t", "1",
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30", "-t", "1",
 		"-c:v", "h264_nvenc", "-f", "null", "-")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		reason := strings.TrimSpace(string(out))
 		if i := strings.IndexByte(reason, '\n'); i > 0 {
 			reason = reason[:i]
+		}
+		vctx, vcancel := context.WithTimeout(context.Background(), 20*time.Second)
+		defer vcancel()
+		vaapi := exec.CommandContext(vctx, "ffmpeg", "-v", "error", "-init_hw_device", "vaapi=va:"+vaapiDevice, "-filter_hw_device", "va",
+			"-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30", "-t", "1", "-vf", "format=nv12,hwupload", "-c:v", "h264_vaapi", "-f", "null", "-")
+		if vaapi.Run() == nil {
+			log.Printf("NVENC is not available (%s): encoding H.264 with VAAPI", reason)
+			return "h264_vaapi"
 		}
 		log.Printf("NVENC is not available (%s): encoding H.264 on the CPU", reason)
 		return "libx264"

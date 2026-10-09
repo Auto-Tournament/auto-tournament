@@ -60,8 +60,10 @@ type captionCard struct {
 // The card's timing, in seconds of the clip. The clip plays slowed down while
 // the card is up and speeds back up to full speed as it leaves (cardExit).
 const (
-	cardSec  = 4.0
-	cardExit = 3.2
+	cardSec  = 2.8
+	cardExit = 2.0 // the card's 2 seconds (2026-10-08; it was 3.2)
+	// cardMove is when the card starts down to the bottom; it is there by cardMove+0.6.
+	cardMove = cardExit + 0.1
 )
 
 // cardCorner is the card's corner radius in the drafts' pixels (540p).
@@ -325,8 +327,9 @@ func (c captionCard) layout(w, h int) (*cardRender, error) {
 		tagW, tagH = tagW+2*pad, tagH+2*pad
 	}
 
-	// Where it all goes: the card centred, its top 65 % down; the tag in the corner.
-	cardTop := int(math.Round(float64(h) * 352 / 540))
+	// Where it all goes: the card in the middle of the frame (the game behind
+	// it blurred and darkened while it is there: focusFilter); the tag in the corner.
+	cardTop := (h - ch) / 2
 	cardLeft := (w - cw) / 2
 	margin := px(18)
 	tagLeft, tagTop := margin-px(4), h-px(16)-tagH+px(4)
@@ -372,7 +375,7 @@ func (r *cardRender) frameAt(t float64) *image.RGBA {
 		return r.frame
 	}
 	ease := func(from, to float64) float64 { return smooth(clamp01((t - from) / (to - from))) }
-	if move := ease(3.3, 3.9); move > 0 {
+	if move := ease(cardMove, cardMove+0.6); move > 0 {
 		r.drawMoved(move)
 	} else if unfold := ease(0.10, 0.75); unfold > 0 {
 		r.compose(t, unfold)
@@ -381,8 +384,8 @@ func (r *cardRender) frameAt(t float64) *image.RGBA {
 	}
 	// The corner slides in from the left after the card, and back out as it moves.
 	if r.tagImg != nil {
-		if a := ease(0.85, 1.45) * (1 - ease(3.3, 3.75)); a > 0 {
-			dx := int(math.Round(-16 * r.k * (1 - ease(0.85, 1.45) + ease(3.3, 3.75))))
+		if a := ease(0.85, 1.45) * (1 - ease(cardMove, cardMove+0.45)); a > 0 {
+			dx := int(math.Round(-16 * r.k * (1 - ease(0.85, 1.45) + ease(cardMove, cardMove+0.45))))
 			draw.DrawMask(r.frame, r.tagImg.Bounds().Add(r.tag.Min).Add(image.Pt(dx, 0)), r.tagImg, image.Point{},
 				image.NewUniform(color.Alpha{uint8(255 * a)}), image.Point{}, draw.Over)
 		}

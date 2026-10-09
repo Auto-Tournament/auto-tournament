@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"regexp"
 	"sort"
+	"strconv"
 	"time"
 )
 
@@ -109,7 +111,29 @@ func rollingFit(v []float64, half int) []float64 {
 // frameRef is one captured frame: which capture, which frame in it.
 type frameRef struct {
 	source, index int
+	// next and weight: the wanted moment falls between frame index and frame
+	// next (same source), weight of the way to it; next < 0 for one frame.
+	// The capture gives about 1.5 frames per frame wanted (88 a game second
+	// for 60, 173 for 120): picking the nearest stepped 1, 2, 1, 2 frames and
+	// fast camera moves stuttered (a jump, 2026-10-08). Blending the two
+	// frames either side by their distance resamples evenly.
+	next   int
+	weight float64
 }
+
+// blendEdge is how close to a frame the wanted moment must be to show that
+// frame alone (a blend that close is no different, and costs a second read).
+//
+// Off (0.5: always the nearest frame): with the capture's frames evenly
+// spaced (CS2 held under the stream's rate) picking is smooth, and blending
+// frames a 26th of a second apart showed as ghosting (2026-10-09).
+// AT_BLEND=1 turns it back on.
+var blendEdge = func() float64 {
+	if env("AT_BLEND", "") == "1" {
+		return 0.12
+	}
+	return 0.5
+}()
 
 // maxGapTicks is how far from the wanted moment a frame may be before the
 // clip has a hole there (5 ticks: 78 ms, a frame shown a little longer). At
@@ -170,7 +194,22 @@ func timeline(sources [][]float64, segs []segment, startTick int) ([]frameRef, e
 				return nil, fmt.Errorf("no frame near tick %.0f (nearest %.1f ticks away)", want, gap)
 			}
 			last[si] = c
-			out = append(out, frameRef{si, sorted[si][c].index})
+			ref := frameRef{source: si, index: sorted[si][c].index, next: -1}
+			// The frame on the other side of the wanted moment, and how far towards it.
+			frames := sorted[si]
+			a, b := c, c+1
+			if frames[c].tick > want {
+				a, b = c-1, c
+			}
+			if a >= 0 && b < len(frames) && a >= last[si]-1 {
+				if span := frames[b].tick - frames[a].tick; span > 0 && span <= maxGapTicks {
+					w := (want - frames[a].tick) / span
+					if w > blendEdge && w < 1-blendEdge {
+						ref = frameRef{source: si, index: frames[a].index, next: frames[b].index, weight: w}
+					}
+				}
+			}
+			out = append(out, ref)
 		}
 	}
 	if len(out) == 0 {
@@ -257,8 +296,9 @@ type captureSpeeds struct{ main, slow float64 }
 // output frame rate): CS2 still has to draw every tick it skips past.
 const maxCaptureSpeed = 4.0
 
-// captureHeadroom is the spare frames on top of what the clip shows.
-const captureHeadroom = 1.15
+// captureHeadroom is the spare frames on top of what the clip shows
+// (AT_CAPTURE_HEADROOM, in percent, overrides it).
+var captureHeadroom = 1 + float64(envPositive("AT_CAPTURE_HEADROOM", 15))/100
 
 // speedsFor is the capture speeds for a stream of `rate` frames a second.
 func speedsFor(rate float64) captureSpeeds {
@@ -357,4 +397,92 @@ func wavSeconds(path string) (float64, error) {
 		return 0, errors.New("no fmt or data chunk")
 	}
 	return float64(data) / float64(byteRate), nil
+}
+
+// blendFrames mixes b into a (raw frames of the same size), weight w of b.
+func blendFrames(a, b []byte, w float64) {
+	wb := uint32(math.Round(w * 256))
+	wa := 256 - wb
+	for i := range a {
+		a[i] = byte((uint32(a[i])*wa + uint32(b[i])*wb + 128) >> 8)
+	}
+}
+
+// rePTS is a gstreamer buffer's pts in identity's last-message:
+// "… (3110400 bytes, dts: none, pts: 0:00:02.019865458, duration: …".
+var rePTS = regexp.MustCompile(`pts: (\d+):(\d{2}):(\d{2})\.(\d+)`)
+
+// bufferPTS is a buffer's pts in seconds, or -1 without one.
+func bufferPTS(line string) float64 {
+	m := rePTS.FindStringSubmatch(line)
+	if m == nil {
+		return -1
+	}
+	h, _ := strconv.Atoi(m[1])
+	mi, _ := strconv.Atoi(m[2])
+	sec, _ := strconv.Atoi(m[3])
+	frac, _ := strconv.ParseFloat("0."+m[4], 64)
+	return float64(h*3600+mi*60+sec) + frac
+}
+
+// ptsTimes puts each frame at its pts on the wall clock instead of when its
+// log line arrived (which waits on the pipe and the scheduler): a line can
+// only arrive after its frame, so the smallest arrival−pts is the offset.
+// Without a pts for every frame, the arrival times as they are.
+func ptsTimes(arrived []time.Time, pts []float64) []time.Time {
+	out := append([]time.Time(nil), arrived...)
+	if len(pts) != len(arrived) || len(pts) == 0 {
+		return out
+	}
+	offset := math.Inf(1)
+	for i, p := range pts {
+		if p < 0 {
+			return out
+		}
+		if o := float64(arrived[i].UnixNano())/1e9 - p; o < offset {
+			offset = o
+		}
+	}
+	for i, p := range pts {
+		out[i] = time.Unix(0, int64((p+offset)*1e9))
+	}
+	return out
+}
+
+// dropRepeats marks a frame the stream sent again (the same picture as the
+// one before it) as no frame (-1): timed as a new moment, a repeat held the
+// picture one frame and the frames around it ran unevenly. It compares a
+// spread of samples of each raw frame with the last kept one.
+func dropRepeats(raw string, frameBytes int64, ticks []float64) (int, error) {
+	f, err := os.Open(raw)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+	const samples, sampleLen = 96, 32
+	read := func(i int, buf []byte) error {
+		step := (frameBytes * 2 / 3) / samples // the luma plane: brightness changes with any movement
+		for s := 0; s < samples; s++ {
+			if _, err := f.ReadAt(buf[s*sampleLen:(s+1)*sampleLen], int64(i)*frameBytes+int64(s)*step); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	prev := make([]byte, samples*sampleLen)
+	cur := make([]byte, samples*sampleLen)
+	dropped, have := 0, false
+	for i := range ticks {
+		if err := read(i, cur); err != nil {
+			break
+		}
+		if have && ticks[i] >= 0 && string(cur) == string(prev) {
+			ticks[i] = -1
+			dropped++
+			continue
+		}
+		prev, cur = cur, prev
+		have = true
+	}
+	return dropped, nil
 }

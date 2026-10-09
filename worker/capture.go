@@ -194,12 +194,15 @@ func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error
 	}
 	setRecordingVideo(r.width, r.height)
 	w, h := strconv.Itoa(r.width), strconv.Itoa(r.height)
-	args := []string{"--backend", "headless", "-W", w, "-H", h, "-w", w, "-h", h, "-r", "120", "--"}
+	args := []string{"--backend", "headless", "-W", w, "-H", h, "-w", w, "-h", h, "-r", strconv.Itoa(envPositive("AT_GAMESCOPE_HZ", 120)), "--"}
 	if r.sniper != "" {
 		args = append(args, r.sniper, "--")
 	}
 	args = append(args, "./cs2.sh", "-steam", "-insecure", "-novid", "-console",
 		"-width", w, "-height", h, "-fullscreen", "-netconport", strconv.Itoa(netconPort))
+	// AT_CS2_LAUNCH: more launch options (space-separated), for what CS2 won't
+	// change during demo playback ("+fps_max 30": "Can't change 'fps_max' right now").
+	args = append(args, strings.Fields(env("AT_CS2_LAUNCH", ""))...)
 	cmd := exec.Command("gamescope", args...)
 	cmd.Dir = r.gameDir
 	cmd.Env = append(os.Environ(), "SteamAppId=730", "SteamGameId=730")
@@ -407,14 +410,18 @@ func (g *game) playPhases(from int, phases []playPhase, name string, started fun
 	}
 	seekTook := time.Since(seekStart)
 	// A seek drops the spectated player, and CS2 ignores spec_player while the
-	// seek still loads: ask once it has landed, again once paused, and again
+	// seek still loads: ask once it has landed, again a moment later, and again
 	// just after resuming (the run-up before the moment covers the switch).
 	if err := g.spectate(name); err != nil {
 		return nil, err
 	}
 	time.Sleep(500 * time.Millisecond)
-	if err := g.pause(); err != nil {
-		return nil, err
+	// awaitSeek left it paused: pausing again got no answer and waited out
+	// pause's 2 s timeout on every pass (AT_REPAUSE=1 for the old way).
+	if env("AT_REPAUSE", "") == "1" {
+		if err := g.pause(); err != nil {
+			return nil, err
+		}
 	}
 	if err := g.spectate(name); err != nil {
 		return nil, err
@@ -478,16 +485,26 @@ type videoCapture struct {
 	frameBytes int64
 	mu         sync.Mutex
 	times      []time.Time
-	done       chan struct{}
+	// pts: each frame's presentation time in the stream (gstreamer's
+	// buffer pts, seconds), or -1; far steadier than when its log line
+	// reached us (frameTimes anchors them to the clock).
+	pts  []float64
+	done chan struct{}
 }
 
 func startVideoCapture(node, path string, width, height int) (*videoCapture, error) {
 	client := fmt.Sprintf("atrec%d", os.Getpid())
-	gst := []string{"-v", "-e", "pipewiresrc", "autoconnect=false", "client-name=" + client,
+	gst := []string{"-v", "-e", "pipewiresrc", "autoconnect=false", "client-name=" + client}
+	// AT_STREAM_FORMAT asks gamescope for the stream in that format (NV12:
+	// converted on the GPU, 1.5 bytes a pixel to copy out instead of 4).
+	if f := env("AT_STREAM_FORMAT", ""); f != "" {
+		gst = append(gst, "!", "video/x-raw,format="+f)
+	}
+	gst = append(gst,
 		"!", "identity", "name=tick", "silent=false",
 		"!", "queue", "max-size-buffers=1200", "max-size-time=0", "max-size-bytes=0",
 		"!", "videoconvert", "n-threads=8", "!", "video/x-raw,format=I420",
-		"!", "filesink", "location=" + path}
+		"!", "filesink", "location="+path)
 	name, args := "gst-launch-1.0", gst
 	if _, err := exec.LookPath("stdbuf"); err == nil {
 		name, args = "stdbuf", append([]string{"-oL", "gst-launch-1.0"}, gst...)
@@ -515,8 +532,10 @@ func startVideoCapture(node, path string, width, height int) (*videoCapture, err
 		for sc.Scan() {
 			line := sc.Text()
 			if strings.Contains(line, "GstIdentity:tick: last-message = chain") {
+				now := time.Now()
 				c.mu.Lock()
-				c.times = append(c.times, time.Now())
+				c.times = append(c.times, now)
+				c.pts = append(c.pts, bufferPTS(line))
 				c.mu.Unlock()
 			} else if !strings.Contains(line, "last-message") {
 				fmt.Fprintln(logFile, line)
@@ -547,7 +566,7 @@ func (c *videoCapture) stop() {
 // frameTimes is when each frame in the file arrived.
 func (c *videoCapture) frameTimes() []time.Time {
 	c.mu.Lock()
-	times := append([]time.Time(nil), c.times...)
+	times := ptsTimes(c.times, c.pts)
 	c.mu.Unlock()
 	if st, err := os.Stat(c.path); err == nil && c.frameBytes > 0 {
 		if n := int(st.Size() / c.frameBytes); n < len(times) {

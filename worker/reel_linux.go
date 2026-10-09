@@ -101,7 +101,7 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 	args = append(args, "-movflags", "+faststart", out)
 	// AT_CROWD_ONLY=1 (local tests): the reel is already made, only its crowd track is wanted.
 	if _, err := os.Stat(out); env("AT_CROWD_ONLY", "") != "1" || err != nil {
-		if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
+		if b, err := exec.Command("ffmpeg", hwEncode(args, r.encoder)...).CombinedOutput(); err != nil {
 			return nil, fmt.Errorf("ffmpeg reel: %v %s", err, strings.TrimSpace(string(b)))
 		}
 	}
@@ -222,7 +222,7 @@ func (r *recorder) buildIntro(paths []string, durations []float64, intro reelInt
 	args = append(args, "-filter_complex", introFilter(cols, rows, width, height, outputFPS), "-map", "[v]", "-map", "[a]")
 	args = append(args, encodeArgs(r.encoder)...)
 	args = append(args, out)
-	cmd := exec.Command("ffmpeg", args...)
+	cmd := exec.Command("ffmpeg", hwEncode(args, r.encoder)...)
 	var stderr strings.Builder
 	cmd.Stderr = &stderr
 	if err := cmd.Start(); err != nil {
