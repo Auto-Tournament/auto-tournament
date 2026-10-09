@@ -117,8 +117,8 @@ export function standingFor(
 
 export class LicenseLimitError extends Error {
   readonly statusCode = 402;
-  readonly code: 'server_limit' | 'license_expired';
-  constructor(code: 'server_limit' | 'license_expired', message: string) {
+  readonly code: 'server_limit' | 'license_expired' | 'checkin_stale';
+  constructor(code: 'server_limit' | 'license_expired' | 'checkin_stale', message: string) {
     super(message);
     this.code = code;
     this.name = 'LicenseLimitError';

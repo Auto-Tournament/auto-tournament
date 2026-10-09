@@ -265,6 +265,30 @@ test.describe('license check-in: against a local endpoint', { tag: ['@api'] }, (
     return { instance, store, setKey: (k: string | null) => (key = k) };
   }
 
+  test('reserve: asks /reserve with the servers now and the ones to add, and reads the answer', async () => {
+    answer = { status: 200, body: JSON.stringify({ ok: true, allowed: false, max_servers: 10, servers_elsewhere: 6, reason: 'server_limit' }) };
+    const { instance } = checkin();
+    expect(await instance.reserve(3, 2)).toEqual({ result: 'refused', reason: 'server_limit', maxServers: 10, elsewhere: 6 });
+    expect(received[0].path).toBe('/api/licenses/reserve');
+    expect(received[0].body).toMatchObject({ server_count: 3, adding: 2, product: 'platform' });
+    answer = { status: 200, body: JSON.stringify({ ok: true, allowed: true, max_servers: 10, servers_elsewhere: 0 }) };
+    expect(await instance.reserve(3, 2)).toEqual({ result: 'allowed' });
+    answer = { status: 503, body: '{}' };
+    expect(await instance.reserve(3, 2)).toEqual({ result: 'unreachable' });
+    expect(await checkin({ url: 'off' }).instance.reserve(3, 2)).toEqual({ result: 'skipped' });
+  });
+
+  test('checked in recently: within 3 days of the last successful check-in', async () => {
+    let now = new Date('2026-10-01T10:00:00Z');
+    const { instance } = checkin({ now: () => now });
+    expect(await instance.checkedInRecently()).toBe(false);
+    await instance.run({ force: true });
+    now = new Date('2026-10-04T09:00:00Z');
+    expect(await instance.checkedInRecently()).toBe(true);
+    now = new Date('2026-10-04T11:00:00Z');
+    expect(await instance.checkedInRecently()).toBe(false);
+  });
+
   test('no key: no request at all', async () => {
     const { instance, store } = checkin({ key: null });
     expect(await instance.run({ force: true })).toBe('no-key');

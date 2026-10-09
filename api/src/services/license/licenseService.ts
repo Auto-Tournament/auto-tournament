@@ -21,7 +21,7 @@ import { isTruthySetting } from '../../utils/settingFields';
 import packageJson from '../../../package.json';
 import { buildLineDate } from './lineDate';
 import { countServers } from './serverCount';
-import { checkCreate, standingFor, type LicenseStanding } from './gate';
+import { checkCreate, expiredMessage, LicenseLimitError, standingFor, type LicenseStanding } from './gate';
 import { parseStoredResult, SETTING, type CheckinStatus, type EventPromptAction, type EventPromptStatus } from './checkin';
 import type { LicensePublicKey } from './publicKeys';
 import {
@@ -183,8 +183,26 @@ class LicenseService {
   async assertCanCreateServers(adding = 1): Promise<void> {
     const standing = await this.standing();
     if (!standing.paid) return;
-    const current = await countServers();
-    checkCreate(standing, current ?? 0, adding);
+    const current = (await countServers()) ?? 0;
+    // The last check-in's view first: a stopped license, or clearly over.
+    checkCreate(standing, current, adding);
+    // Then the license server, for the whole license right now.
+    const { licenseCheckin } = await import('./checkinService');
+    const answer = await licenseCheckin.reserve(current, adding);
+    if (answer.result === 'refused') {
+      if (answer.reason === 'server_limit') {
+        checkCreate({ ...standing, maxServers: answer.maxServers ?? standing.maxServers, serversElsewhere: answer.elsewhere }, current, adding);
+        throw new LicenseLimitError('server_limit', 'Your license has no free servers left. Add servers to your license in the console to create more.');
+      }
+      const reason = answer.reason === 'in_use_elsewhere' ? 'in_use_elsewhere' : answer.reason === 'replaced' ? 'replaced' : 'unpaid';
+      throw new LicenseLimitError('license_expired', expiredMessage({ reason }));
+    }
+    if (answer.result === 'unreachable' && !(await licenseCheckin.checkedInRecently())) {
+      throw new LicenseLimitError(
+        'checkin_stale',
+        "This install hasn't reached autotournament.gg for 3 days, so new servers can't be created with a paid license. Servers already set up keep working. Check the internet connection and try again."
+      );
+    }
   }
 
   async isPublicBadgeEnabled(): Promise<boolean> {

@@ -39,6 +39,8 @@ export const CHECKIN_STARTUP_DELAY_MS = 60_000;
 /** A check-in this recent is not repeated (boot right after a key change). */
 export const CHECKIN_MIN_GAP_MS = 10 * 60 * 1000;
 export const NOTICE_MAX_LENGTH = 300;
+/** Creating game servers with a paid key, when the license server can't be asked, needs a check-in this recent. */
+export const CHECKIN_FRESH_MS = 3 * 24 * 60 * 60 * 1000;
 /** How often the event-license question may be asked, per instance. */
 export const EVENT_PROMPT_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -532,6 +534,65 @@ export class LicenseCheckin {
         }
       });
     return this.running;
+  }
+
+  /**
+   * Asks the license server, right before creating game servers, whether
+   * `adding` more fit the whole license now (every install using the key
+   * shares one limit). `current` is this install's servers. 'unreachable'
+   * when it can't be asked (the caller then falls back to the last check-in,
+   * if it is recent); 'skipped' when check-ins are off (tests, CI).
+   */
+  async reserve(
+    current: number,
+    adding: number
+  ): Promise<{ result: 'allowed' } | { result: 'refused'; reason: string; maxServers: number | null; elsewhere: number } | { result: 'unreachable' | 'skipped' }> {
+    const url = this.url();
+    if (!url) return { result: 'skipped' };
+    const key = await this.deps.getKey();
+    const keyId = keyIdOf(key);
+    if (!key || !keyId) return { result: 'skipped' };
+    const body = {
+      ...buildCheckinBody({
+        key,
+        keyId,
+        instanceId: await this.instanceId(),
+        serverCount: current,
+        version: this.deps.version,
+        now: this.now(),
+        activity: { matchesPlayed: 0, tournamentsLive: 0, maxTournamentTeams: 0 },
+        declared: 'none',
+        publicUrl: this.deps.publicUrl ? this.deps.publicUrl() : null,
+      }),
+      adding,
+    };
+    try {
+      const doFetch = this.deps.fetch ?? globalThis.fetch;
+      const res = await doFetch(url.replace(/\/checkin(\/?)$/, '/reserve$1'), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify(body),
+        signal: globalThis.AbortSignal.timeout(CHECKIN_TIMEOUT_MS),
+      });
+      if (res.status !== 200) return { result: 'unreachable' };
+      const answer = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+      if (!answer || answer.ok !== true || typeof answer.allowed !== 'boolean') return { result: 'unreachable' };
+      if (answer.allowed) return { result: 'allowed' };
+      return {
+        result: 'refused',
+        reason: typeof answer.reason === 'string' ? answer.reason : 'server_limit',
+        maxServers: count(answer.max_servers),
+        elsewhere: count(answer.servers_elsewhere) ?? 0,
+      };
+    } catch {
+      return { result: 'unreachable' };
+    }
+  }
+
+  /** Whether the last successful check-in is recent enough to create servers on without asking (CHECKIN_FRESH_MS). */
+  async checkedInRecently(): Promise<boolean> {
+    const last = Date.parse((await this.deps.store.get(SETTING.lastAt)) ?? '');
+    return !Number.isNaN(last) && this.now().getTime() - last < CHECKIN_FRESH_MS;
   }
 
   private async attempt(force: boolean): Promise<CheckinOutcome> {
