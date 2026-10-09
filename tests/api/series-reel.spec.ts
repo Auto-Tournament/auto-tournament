@@ -94,6 +94,19 @@ test(
   async ({ request }) => {
     expect(await signInViaRequest(request)).toBe(true);
     const slug = await twoMapMatch(request);
+    // The import's moments are saved after its analysis answers: wait for both maps'.
+    await expect
+      .poll(
+        async () => {
+          const list = (await (await request.get('/api/game/cs2/clips')).json()) as {
+            matches: Array<{ slug: string; clips: Array<{ mapNumber: number }> }>;
+          };
+          const clips = list.matches.find((m) => m.slug === slug)?.clips ?? [];
+          return new Set(clips.map((c) => c.mapNumber)).size;
+        },
+        { timeout: 15_000 }
+      )
+      .toBe(2);
     const name = `spec-series-${Date.now()}`;
     const ask = () =>
       request.post('/api/game/cs2/recorder/claim', { data: { recorder: name, version: 7 } });
