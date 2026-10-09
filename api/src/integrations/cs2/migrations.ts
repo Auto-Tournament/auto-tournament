@@ -71,6 +71,10 @@
  * plugins in its last hello (`plugins_state`: installed, disabled), for the
  * plugin picker's "not installed" warning (fleet/push/pluginSets.ts). The
  * fleet default plugin set is the 'plugins_default' row of `cs2_fleet_lists`.
+ *
+ * `032-fleet-key-auto-link` lets a fleet key link the servers it enrolls for
+ * matches on their first hello (fleet/push/controls.ts), once per server
+ * (`cs2_fleet_servers.auto_linked_at`).
  */
 
 import type { ModuleMigration } from '../types';
@@ -106,6 +110,7 @@ export const CS2_TEAM_REELS_MIGRATION_ID = '028-team-reels';
 export const CS2_MUSIC_LIBRARY_MIGRATION_ID = '029-music-library';
 export const CS2_REDRESS_MIGRATION_ID = '030-redress';
 export const CS2_RECORDERS_MIGRATION_ID = '031-recorders';
+export const CS2_FLEET_KEY_AUTO_LINK_MIGRATION_ID = '032-fleet-key-auto-link';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1248,6 +1253,16 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     -- another recorder) and the check's numbers on every clip.
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS avoid_recorder TEXT;
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS quality TEXT;
+`,
+  },
+  {
+    // 1 = a Ready Up server enrolled with this key is linked for matches on
+    // its first hello. `auto_linked_at` records that link, so it happens once:
+    // an admin's unlink or deleting the server afterwards sticks.
+    id: CS2_FLEET_KEY_AUTO_LINK_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_fleet_enrollment_keys ADD COLUMN IF NOT EXISTS auto_link INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE cs2_fleet_servers ADD COLUMN IF NOT EXISTS auto_linked_at INTEGER;
 `,
   },
 ];
