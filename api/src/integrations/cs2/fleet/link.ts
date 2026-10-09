@@ -20,13 +20,21 @@
  * - `host` / `port` on the link (or `setLinkAddress` later) are an admin
  *   override: stored with `host_override = 1`, never replaced by a hello.
  *   `setLinkAddress(id, null)` goes back to the detected address.
+ * - A new row starts with skins on when the server's enrollment key says so
+ *   (`skins`) and is neither revoked nor expired; a row taken over from an
+ *   earlier link keeps what an admin set.
  * - Unlink: the row goes back to `transport = 'rcon'` and is disabled when it
  *   was created by the link (it has no RCON password to be driven with).
  */
 
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
-import { chooseConnectAddress, DEFAULT_GAME_PORT, isValidConnectHost, type ConnectAddress } from './address';
+import {
+  chooseConnectAddress,
+  DEFAULT_GAME_PORT,
+  isValidConnectHost,
+  type ConnectAddress,
+} from './address';
 import type { HostInfo } from './protocol/v1';
 import { getFleetServer, type FleetServerRow } from './registry';
 
@@ -93,7 +101,12 @@ export async function listLinkAddresses(): Promise<Map<string, LinkAddress>> {
   return new Map(
     rows.map((r) => [
       r.fleet_server_id as string,
-      { cs2ServerId: r.id, host: r.host ?? '', port: Number(r.port), override: Number(r.host_override ?? 0) === 1 },
+      {
+        cs2ServerId: r.id,
+        host: r.host ?? '',
+        port: Number(r.port),
+        override: Number(r.host_override ?? 0) === 1,
+      },
     ])
   );
 }
@@ -139,7 +152,11 @@ export function machineAddressOf(
   addresses: Map<string, string>,
   fleet: { id: string; install_id?: string | null }
 ): string | null {
-  return addresses.get(fleet.id) ?? (fleet.install_id ? addresses.get(`install:${fleet.install_id}`) : undefined) ?? null;
+  return (
+    addresses.get(fleet.id) ??
+    (fleet.install_id ? addresses.get(`install:${fleet.install_id}`) : undefined) ??
+    null
+  );
 }
 
 function blank(v: unknown): boolean {
@@ -158,7 +175,8 @@ export function checkAddressOverride(value: {
   let port: number | undefined;
   if (!blank(value.port)) {
     port = Number(value.port);
-    if (!Number.isInteger(port) || port < 1 || port > 65535) return { ok: false, error: 'port must be 1-65535' };
+    if (!Number.isInteger(port) || port < 1 || port > 65535)
+      return { ok: false, error: 'port must be 1-65535' };
   }
   return { ok: true, override: { host: value.host.trim(), ...(port ? { port } : {}) } };
 }
@@ -173,8 +191,7 @@ function parseHost(raw: string | null): HostInfo | null {
 }
 
 export type LinkOutcome =
-  | { ok: true; link: FleetLink; created: boolean }
-  | { ok: false; status: 404 | 409; error: string };
+  { ok: true; link: FleetLink; created: boolean } | { ok: false; status: 404 | 409; error: string };
 
 /**
  * Link an enrolled fleet server to `serverId` (an existing cs2_servers row),
@@ -210,7 +227,11 @@ export async function linkFleetServer(
     );
     if (!row) return { ok: false, status: 404, error: `Server ${options.serverId} not found` };
     if (row.fleet_server_id && row.fleet_server_id !== fleetServerId) {
-      return { ok: false, status: 409, error: `Server ${options.serverId} is linked to another fleet server` };
+      return {
+        ok: false,
+        status: 409,
+        error: `Server ${options.serverId} is linked to another fleet server`,
+      };
     }
     // Its host / port were entered by an admin for RCON: keep them unless
     // this link sets new ones.
@@ -241,10 +262,22 @@ export async function linkFleetServer(
       [fleetServerId, address, port, hostOverride, now, fleetServerId]
     );
   } else {
+    // Skins start as the server's enrollment key says (off without a live key).
     await db.runAsync(
-      `INSERT INTO cs2_servers (id, name, host, port, password, enabled, transport, fleet_server_id, status, host_override)
-       VALUES (?, ?, ?, ?, '', 1, 'fleet', ?, 'unknown', ?)`,
-      [fleetServerId, (options.name ?? fleet.name).slice(0, 100), address, port, fleetServerId, hostOverride]
+      `INSERT INTO cs2_servers (id, name, host, port, password, enabled, transport, fleet_server_id, status, host_override, skins)
+       VALUES (?, ?, ?, ?, '', 1, 'fleet', ?, 'unknown', ?,
+               COALESCE((SELECT k.skins FROM cs2_fleet_enrollment_keys k
+                         WHERE k.id = ? AND k.revoked_at IS NULL AND (k.expires_at IS NULL OR k.expires_at > ?)), 0))`,
+      [
+        fleetServerId,
+        (options.name ?? fleet.name).slice(0, 100),
+        address,
+        port,
+        fleetServerId,
+        hostOverride,
+        fleet.enrollment_key_id,
+        now,
+      ]
     );
   }
   return { ok: true, link: { cs2ServerId: fleetServerId, fleetServerId }, created: !taken };
@@ -282,14 +315,15 @@ export async function setLinkAddress(
   if (override) {
     const fleet = await getFleetServer(fleetServerId);
     const port = override.port ?? parseHost(fleet?.host ?? null)?.game_port ?? DEFAULT_GAME_PORT;
-    await db.runAsync(`UPDATE cs2_servers SET host = ?, port = ?, host_override = 1, updated_at = ? WHERE id = ?`, [
-      override.host,
-      port,
+    await db.runAsync(
+      `UPDATE cs2_servers SET host = ?, port = ?, host_override = 1, updated_at = ? WHERE id = ?`,
+      [override.host, port, now, cs2ServerId]
+    );
+  } else {
+    await db.runAsync(`UPDATE cs2_servers SET host_override = 0, updated_at = ? WHERE id = ?`, [
       now,
       cs2ServerId,
     ]);
-  } else {
-    await db.runAsync(`UPDATE cs2_servers SET host_override = 0, updated_at = ? WHERE id = ?`, [now, cs2ServerId]);
     await syncLinkedAddress(fleetServerId);
   }
   return (await listLinkAddresses()).get(fleetServerId) ?? null;
@@ -316,7 +350,9 @@ export async function syncLinkedAddress(fleetServerId: string): Promise<ConnectA
     Math.floor(Date.now() / 1000),
     row.id,
   ]);
-  log.info(`[FLEET] ${fleetServerId}: connect address ${row.host}:${row.port} -> ${next.host}:${next.port} (${next.source})`);
+  log.info(
+    `[FLEET] ${fleetServerId}: connect address ${row.host}:${row.port} -> ${next.host}:${next.port} (${next.source})`
+  );
   return next;
 }
 

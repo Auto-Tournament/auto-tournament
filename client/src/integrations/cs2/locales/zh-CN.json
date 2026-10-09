@@ -1242,6 +1242,7 @@
     "keysTitle": "服务器组密钥",
     "keysEmpty": "没有服务器组密钥。创建一个，让 csm 或容器自行注册服务器。",
     "keyLocked": "已锁定",
+    "keySkinsChip": "皮肤",
     "keyUsage_one": "已注册 {{count}} 台服务器",
     "keyUsage_other": "已注册 {{count}} 台服务器",
     "keyUsageLimited": "已注册 {{n}} / {{max}} 台服务器",
@@ -1259,6 +1260,8 @@
     "keyAutoLinkLabel": "自动关联服务器",
     "keyAutoLinkHelp": "使用此密钥注册的服务器一连接即用于比赛。任何持有此密钥的人都可以托管比赛。",
     "keyAutoLink": "自动用于比赛",
+    "keySkins": "启用虚拟皮肤",
+    "keySkinsHelp": "玩家可在使用此密钥注册的服务器上看到自己已装备的虚拟皮肤。使用 Steam 服务器令牌的服务器除外。",
     "keyCreatedTitle": "服务器组密钥已创建",
     "codeCreatedTitle": "注册代码已创建",
     "keyCreatedHelp": "把此密钥交给 csm，或将其设为“{{name}}”的 fleet_enroll_key。",
@@ -2155,7 +2158,6 @@
     "tabs": {
       "recorders": "Recorders",
       "settings": "Settings",
-      "connect": "Add a recorder",
       "overlays": "Overlays",
       "clips": "Clips"
     },
@@ -2214,14 +2216,6 @@
     "logError": "Could not load the log",
     "emptyLog": "(empty)",
     "close": "Close",
-    "connect": {
-      "intro": "A recorder is a PC with a GPU, CS2 and Steam that records highlight clips from this platform's demos. Add as many as you like: they share the work.",
-      "step1": "Install CS2 and sign in to Steam once, then switch Steam to offline mode. Every recorder can use the same Steam account.",
-      "step2": "Get at-worker (the auto-tournament-worker image, or the binary) on the PC. It needs ffmpeg, gamescope and PipeWire.",
-      "step3": "Point it at this platform:",
-      "step4": "Start it with at-worker record. On its first job it runs a short benchmark, then it shows up under Recorders with its numbers.",
-      "gaming": "You can game on the same PC while it records, but the GPU is shared: clips with too many repeated frames are turned down and recorded again elsewhere, and a recorder that keeps failing is paused for 15 minutes."
-    },
     "cs2Tab": "Counter-Strike 2",
     "recording": "Recording",
     "workingOn_one": "Recording {{count}} clip of map {{map}} ({{match}}) since {{time}}",

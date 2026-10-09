@@ -97,6 +97,7 @@ export default function FleetPanel() {
     maxServers: '',
     expiresInDays: '',
     autoLink: false,
+    skins: false,
   });
   const [addressDialog, setAddressDialog] = useState<AddressDialog | null>(null);
   const [renameDialog, setRenameDialog] = useState<{ server: FleetServer; name: string } | null>(
@@ -190,9 +191,17 @@ export default function FleetPanel() {
       if (keyForm.maxServers.trim()) body.maxServers = Number(keyForm.maxServers);
       if (keyForm.expiresInDays.trim()) body.expiresInDays = Number(keyForm.expiresInDays);
       if (keyForm.autoLink) body.autoLink = true;
+      if (keyForm.skins) body.skins = true;
       const res = await api.post<{ key: FleetKey; value: string }>('/api/fleet/keys', body);
       setKeyOpen(false);
-      setKeyForm({ name: '', namePrefix: '', maxServers: '', expiresInDays: '', autoLink: false });
+      setKeyForm({
+        name: '',
+        namePrefix: '',
+        maxServers: '',
+        expiresInDays: '',
+        autoLink: false,
+        skins: false,
+      });
       setSecret({
         kind: 'key',
         value: res.value,
@@ -284,7 +293,9 @@ export default function FleetPanel() {
       case 'public_addr':
         return t('fleetPanel.connectSource.publicAddr', { defaultValue: 'reported by the server' });
       case 'machine':
-        return t('fleetPanel.connectSource.machine', { defaultValue: 'the address of the machine it runs on' });
+        return t('fleetPanel.connectSource.machine', {
+          defaultValue: 'the address of the machine it runs on',
+        });
       case 'peer':
         return t('fleetPanel.connectSource.peer', {
           defaultValue: 'address the server connects from',
@@ -403,7 +414,8 @@ export default function FleetPanel() {
                     data-testid={`fleet-connect-guessed-${server.id}`}
                   >
                     {t('fleetPanel.connectGuessed', {
-                      defaultValue: 'Guessed from where the server connects from. Check it, or set the address players use.',
+                      defaultValue:
+                        'Guessed from where the server connects from. Check it, or set the address players use.',
                     })}
                   </Typography>
                 )}
@@ -613,6 +625,9 @@ export default function FleetPanel() {
                   )}
                   {key.autoLink && (
                     <Chip size="small" label={t('fleetPanel.keyAutoLink')} sx={{ ml: 1 }} />
+                  )}
+                  {key.skins && (
+                    <Chip size="small" label={t('fleetPanel.keySkinsChip')} sx={{ ml: 1 }} />
                   )}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={mono}>
@@ -848,6 +863,24 @@ export default function FleetPanel() {
                   <Typography variant="body2">{t('fleetPanel.keyAutoLinkLabel')}</Typography>
                   <Typography variant="caption" color="text.secondary">
                     {t('fleetPanel.keyAutoLinkHelp')}
+                  </Typography>
+                </Box>
+              }
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  size="small"
+                  checked={keyForm.skins}
+                  onChange={(e) => setKeyForm({ ...keyForm, skins: e.target.checked })}
+                  data-testid="fleet-key-skins"
+                />
+              }
+              label={
+                <Box>
+                  <Typography variant="body2">{t('fleetPanel.keySkins')}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t('fleetPanel.keySkinsHelp')}
                   </Typography>
                 </Box>
               }
