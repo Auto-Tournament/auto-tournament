@@ -100,6 +100,7 @@ export interface FleetKeyRow {
   failed_attempts: number;
   locked_at: number | null;
   revoked_at: number | null;
+  auto_link: number;
 }
 
 async function tx<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
@@ -309,6 +310,8 @@ export interface FleetKeyView {
   enrolledServers: number;
   locked: boolean;
   revoked: boolean;
+  /** Servers it enrolls are linked for matches on their first hello. */
+  autoLink: boolean;
 }
 
 export async function listFleetKeys(): Promise<FleetKeyView[]> {
@@ -331,6 +334,7 @@ export async function listFleetKeys(): Promise<FleetKeyView[]> {
     enrolledServers: Number(k.enrolled),
     locked: k.locked_at !== null,
     revoked: k.revoked_at !== null,
+    autoLink: k.auto_link === 1,
   }));
 }
 
@@ -339,12 +343,13 @@ export async function createFleetKey(input: {
   namePrefix?: string | null;
   maxServers?: number | null;
   expiresAt?: number | null;
+  autoLink?: boolean;
   createdBy: string | null;
 }): Promise<{ key: FleetKeyView; value: string }> {
   const issued = issueFleetKey();
   await db.runAsync(
-    `INSERT INTO cs2_fleet_enrollment_keys (id, tenant_id, name, secret_hash, name_prefix, max_servers, expires_at, created_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO cs2_fleet_enrollment_keys (id, tenant_id, name, secret_hash, name_prefix, max_servers, expires_at, auto_link, created_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       issued.id,
       FLEET_TENANT,
@@ -353,6 +358,7 @@ export async function createFleetKey(input: {
       input.namePrefix ?? null,
       input.maxServers ?? null,
       input.expiresAt ?? null,
+      input.autoLink ? 1 : 0,
       input.createdBy,
     ]
   );

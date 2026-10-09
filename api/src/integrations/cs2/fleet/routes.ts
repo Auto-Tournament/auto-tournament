@@ -414,11 +414,16 @@ fleetAdminRouter.post('/keys', handler('create the fleet key', async (req: Reque
   if (maxServers === null) return res.status(400).json({ success: false, error: 'maxServers must be a positive integer' });
   const expiresInDays = optionalPositiveInt(req.body?.expiresInDays);
   if (expiresInDays === null) return res.status(400).json({ success: false, error: 'expiresInDays must be a positive integer' });
+  const autoLink = req.body?.autoLink;
+  if (autoLink !== undefined && typeof autoLink !== 'boolean') {
+    return res.status(400).json({ success: false, error: 'autoLink must be true or false' });
+  }
   const created = await registry.createFleetKey({
     name,
     namePrefix: namePrefix ?? null,
     maxServers: maxServers ?? null,
     expiresAt: expiresInDays ? Math.floor(Date.now() / 1000) + expiresInDays * 86400 : null,
+    autoLink: autoLink === true,
     createdBy: requestActorId(req),
   });
   log.info(`[FLEET] fleet key ${created.key.id} (${created.key.name}) created`);
