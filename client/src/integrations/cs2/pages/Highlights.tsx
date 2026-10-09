@@ -1,11 +1,11 @@
 /**
- * Admin: Highlights (`/highlights` in the CS2 rail group). Three tabs:
+ * CS2's part of the Highlights page. Three tabs:
  *
  * - Recorders: every recorder that asked for work, with its GPU, status
  *   (online, paused after too many turned-down clips), its benchmark, how
  *   many clips it kept and how many the frame check turned down, seconds per
  *   clip, and its recent runs with their logs (api: demos/recorders.ts).
- * - Settings: what the recorders make (moved here from CS2 server defaults).
+ * - Overlays: clean copies of the clips, and redrawing their overlays.
  * - Connect: how to run a recorder against this platform.
  */
 import { useCallback, useEffect, useState } from 'react';
@@ -19,22 +19,14 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
-  MenuItem,
   Stack,
-  Switch,
   Tab,
   Tabs,
-  TextField,
   Typography,
 } from '@mui/material';
 import { FilmStripIcon } from '@phosphor-icons/react';
-import { api, PageHead, pageTitle, useModuleTranslation, useSnackbar } from '../../../module-sdk';
-import { HighlightMusicSetting } from '../settings/HighlightMusicSetting';
+import { api, useModuleTranslation, useSnackbar } from '../../../module-sdk';
 import { HighlightOverlaySetting } from '../settings/HighlightOverlaySetting';
-
-const HIGHLIGHT_HEIGHTS = [720, 1080, 1440, 2160] as const;
-const HIGHLIGHT_FPS = [30, 60, 90, 120, 180, 240] as const;
 
 interface BenchmarkTry {
   gamescopeHz: number;
@@ -79,24 +71,24 @@ interface Run {
   error: string | null;
 }
 
-type TabKey = 'recorders' | 'settings' | 'connect';
+type TabKey = 'recorders' | 'overlays' | 'connect';
 
 const when = (s: number | null) =>
   s ? new Date(s * 1000).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 const duration = (s: number | null) =>
   s == null ? '—' : s >= 90 ? `${Math.floor(s / 60)}m ${Math.round(s % 60)}s` : `${Math.round(s)}s`;
 
-export default function Highlights() {
+/**
+ * CS2's tab on core's Highlights page (`highlightsAdmin`): its recorders, the
+ * overlays on its clips, and how to add a recorder. What every game's
+ * recorders follow (size, frame rate, music) is core's Settings tab.
+ */
+export default function Cs2HighlightsAdmin() {
   const { t } = useModuleTranslation('cs2');
   const [tab, setTab] = useState<TabKey>('recorders');
 
-  useEffect(() => {
-    document.title = pageTitle(t('highlightsAdmin.title'));
-  }, [t]);
-
   return (
-    <Box data-testid="highlights-admin-page" sx={{ width: '100%', maxWidth: 1100 }}>
-      <PageHead title={t('highlightsAdmin.title')} subtitle={t('highlightsAdmin.subtitle')} />
+    <Box data-testid="cs2-highlights-admin">
       <Tabs value={tab} onChange={(_e, v: TabKey) => setTab(v)} sx={{ mb: 3 }} variant="scrollable">
         <Tab
           value="recorders"
@@ -104,9 +96,9 @@ export default function Highlights() {
           data-testid="highlights-tab-recorders"
         />
         <Tab
-          value="settings"
-          label={t('highlightsAdmin.tabs.settings')}
-          data-testid="highlights-tab-settings"
+          value="overlays"
+          label={t('highlightsAdmin.tabs.overlays')}
+          data-testid="highlights-tab-overlays"
         />
         <Tab
           value="connect"
@@ -115,7 +107,7 @@ export default function Highlights() {
         />
       </Tabs>
       {tab === 'recorders' && <RecordersTab />}
-      {tab === 'settings' && <SettingsTab />}
+      {tab === 'overlays' && <OverlaysTab />}
       {tab === 'connect' && <ConnectTab />}
     </Box>
   );
@@ -453,131 +445,33 @@ function RunsDialog({ name, onClose }: { name: string | null; onClose: () => voi
   );
 }
 
-interface HighlightValues {
-  highlightsWatermark: boolean;
-  highlightsPerPlayer: number | null;
-  highlightsResolution: number;
-  highlightsFps: number;
-  highlightsMusic: string;
-  highlightsKeepClean: boolean;
-}
-
-function SettingsTab() {
+/** Clean copies of the clips and redrawing their overlays (CS2's clips and reels). */
+function OverlaysTab() {
   const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
-  const [vals, setVals] = useState<HighlightValues | null>(null);
+  const [keepClean, setKeepClean] = useState<boolean | null>(null);
 
   useEffect(() => {
     api
       .get<{ settings?: Record<string, unknown> }>('/api/settings')
-      .then((res) => {
-        const s = res.settings ?? {};
-        setVals({
-          highlightsWatermark: s.highlightsWatermark !== false,
-          highlightsPerPlayer:
-            typeof s.highlightsPerPlayer === 'number' ? s.highlightsPerPlayer : 6,
-          highlightsResolution:
-            typeof s.highlightsResolution === 'number' ? s.highlightsResolution : 1080,
-          highlightsFps: typeof s.highlightsFps === 'number' ? s.highlightsFps : 60,
-          highlightsMusic: typeof s.highlightsMusic === 'string' ? s.highlightsMusic : '',
-          highlightsKeepClean: s.highlightsKeepClean !== false,
-        });
-      })
+      .then((res) => setKeepClean(res.settings?.highlightsKeepClean !== false))
       .catch((err: Error) => showError(err.message));
   }, [showError]);
 
-  const save = async (patch: Partial<HighlightValues>) => {
-    setVals((v) => (v ? { ...v, ...patch } : v));
-    try {
-      await api.put('/api/settings', patch);
-      showSuccess(t('settings.saved'));
-    } catch (err) {
-      showError(err instanceof Error ? err.message : t('settings.saveFailed'));
-    }
-  };
-
-  if (!vals) return <CircularProgress />;
+  if (keepClean === null) return <CircularProgress />;
   return (
-    <Box
-      data-testid="cs2-settings-highlights"
-      sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 720 }}
-    >
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ maxWidth: 480 }}>
-        <TextField
-          select
-          label={t('settings.highlights.resolution.label')}
-          value={vals.highlightsResolution}
-          onChange={(e) => void save({ highlightsResolution: Number(e.target.value) })}
-          size="small"
-          fullWidth
-          inputProps={{ 'data-testid': 'cs2-highlights-resolution' }}
-        >
-          {HIGHLIGHT_HEIGHTS.map((h) => (
-            <MenuItem key={h} value={h}>
-              {h === 2160 ? '4K (2160p)' : `${h}p`}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          label={t('settings.highlights.fps.label')}
-          value={vals.highlightsFps}
-          onChange={(e) => void save({ highlightsFps: Number(e.target.value) })}
-          size="small"
-          fullWidth
-          inputProps={{ 'data-testid': 'cs2-highlights-fps' }}
-        >
-          {HIGHLIGHT_FPS.map((f) => (
-            <MenuItem key={f} value={f}>
-              {t('settings.highlights.fps.option', { fps: f })}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Stack>
-      <Typography variant="caption" color="text.secondary">
-        {t('settings.highlights.quality.helper')}
-      </Typography>
-      <TextField
-        label={t('settings.highlights.perPlayer.label')}
-        type="number"
-        value={vals.highlightsPerPlayer ?? ''}
-        onChange={(e) => {
-          const v = e.target.value === '' ? null : parseInt(e.target.value, 10);
-          setVals((cur) =>
-            cur ? { ...cur, highlightsPerPlayer: Number.isNaN(v as number) ? null : v } : cur
-          );
-        }}
-        onBlur={() =>
-          vals.highlightsPerPlayer && void save({ highlightsPerPlayer: vals.highlightsPerPlayer })
-        }
-        helperText={t('settings.highlights.perPlayer.helper')}
-        inputProps={{ min: 1, max: 6, 'data-testid': 'cs2-highlights-per-player' }}
-        size="small"
-        sx={{ maxWidth: 320 }}
-      />
-      <Box>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={vals.highlightsWatermark}
-              onChange={(e) => void save({ highlightsWatermark: e.target.checked })}
-              size="small"
-              inputProps={{ 'data-testid': 'cs2-highlights-watermark' } as Record<string, string>}
-            />
-          }
-          label={t('settings.highlights.watermark.label')}
-        />
-        <Typography variant="caption" color="text.secondary" display="block">
-          {t('settings.highlights.watermark.description')}
-        </Typography>
-      </Box>
-      <HighlightMusicSetting
-        value={vals.highlightsMusic}
-        onChange={(value) => void save({ highlightsMusic: value })}
-      />
+    <Box sx={{ maxWidth: 720 }} data-testid="cs2-highlights-overlays">
       <HighlightOverlaySetting
-        keepClean={vals.highlightsKeepClean}
-        onKeepClean={(value) => void save({ highlightsKeepClean: value })}
+        keepClean={keepClean}
+        onKeepClean={async (value) => {
+          setKeepClean(value);
+          try {
+            await api.put('/api/settings', { highlightsKeepClean: value });
+            showSuccess(t('settings.saved'));
+          } catch (err) {
+            showError(err instanceof Error ? err.message : t('settings.saveFailed'));
+          }
+        }}
       />
     </Box>
   );

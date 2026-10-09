@@ -143,5 +143,8 @@
  * 0.2.17 (additive): `matchPanels.publicView` (the game's part of a finished
  * match's public page: its reels, scoreboard and highlights) with the
  * `MatchPublicPanelProps` / `PublicMatch` types.
+ *
+ * 0.2.18 (additive): `highlightsAdmin` (the game's tab on core's Highlights
+ * page) and `links.highlights()`.
  */
-export const CLIENT_API_VERSION = '0.2.17';
+export const CLIENT_API_VERSION = '0.2.18';

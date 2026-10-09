@@ -3,6 +3,7 @@ import { Box, ButtonBase, Menu, MenuItem } from '@mui/material';
 import {
   FlagIcon,
   ListBulletsIcon,
+  FilmSlateIcon,
   FilmStripIcon,
   ArrowSquareOutIcon,
   BookOpenIcon,
@@ -153,6 +154,12 @@ export const ManageRail: React.FC = () => {
             label: t('managePage.rail.playedMatches'),
             to: paths.playedMatches,
             icon: FilmStripIcon,
+          },
+          {
+            key: 'highlights',
+            label: t('managePage.rail.highlights'),
+            to: paths.highlights,
+            icon: FilmSlateIcon,
           },
         ],
       },

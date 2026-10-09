@@ -22,6 +22,8 @@ export const links = {
    * `path`) and links to it; core keeps the URL.
    */
   servers: (): string => paths.servers,
+  /** Core's Highlights page (client API 0.2.18): settings and music, and each game's tab. */
+  highlights: (): string => paths.highlights,
   /** The maps and map pools page, in the admin shell. CS2 mounts it. */
   maps: (): string => paths.maps,
   /**

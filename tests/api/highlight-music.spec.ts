@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { musicFilter, parseMusicSetting } from '../../api/src/integrations/cs2/demos/music';
-import { MUSIC_SUGGESTIONS } from '../../api/src/integrations/cs2/demos/musicSuggestions';
+import { musicFilter, parseMusicSetting } from '../../api/src/services/highlights/music';
+import { MUSIC_SUGGESTIONS } from '../../api/src/services/highlights/musicSuggestions';
 
 test.describe('reel music', () => {
   test(
@@ -38,4 +38,40 @@ test.describe('reel music', () => {
     expect(loud).toContain("volume='if(lt(t,3.000),0.32,");
     expect(loud).toContain(',0.8))');
   });
+});
+
+test.describe('Highlight music in core', () => {
+  test(
+    "the library is core's; the old CS2 addresses send you there",
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const list = await request.get('/api/highlights/music');
+      expect(list.status()).toBe(200);
+      const body = (await list.json()) as {
+        tracks: unknown[];
+        all: unknown[];
+        suggestions: unknown[];
+      };
+      expect(
+        Array.isArray(body.tracks) && Array.isArray(body.all) && body.suggestions.length > 0
+      ).toBe(true);
+
+      // A reel's music mix and a download with sound now come from core.
+      const mix = await request.get('/api/game/cs2/highlights/reel-x.mp4/music/1?intro=2', {
+        maxRedirects: 0,
+      });
+      expect(mix.status()).toBe(307);
+      expect(mix.headers()['location']).toBe('/api/highlights/videos/reel-x.mp4/music/1?intro=2');
+      // No such video: core answers 404.
+      expect((await request.get('/api/highlights/videos/reel-x.mp4/music/1')).status()).toBe(404);
+      expect((await request.get('/api/highlights/videos/..%2Fsecret.mp4/download')).status()).toBe(
+        404
+      );
+
+      // Adding a track is for admins.
+      expect(
+        (await request.post('/api/highlights/music?title=x', { data: Buffer.from('x') })).status()
+      ).toBe(401);
+    }
+  );
 });

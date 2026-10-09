@@ -116,21 +116,6 @@ function integer(
   };
 }
 
-/** A number from a fixed list (a select in the settings). */
-function choice(key: Cs2SettingKey, field: string, order: number, options: readonly number[], what: string): Cs2Setting {
-  const list = options.join(', ');
-  return {
-    key,
-    field,
-    order,
-    schema: { type: 'string', enum: options.map(String) },
-    normalize(trimmed) {
-      if (!options.map(String).includes(trimmed)) throw new Error(`${key} must be one of ${list}`);
-      return { value: trimmed, message: `${what} set to ${trimmed}` };
-    },
-    applyRequest: numberRequest(field, `one of ${list}`),
-  };
-}
 
 /** Highlight video heights (16:9) and frame rates the recorder offers. */
 export const HIGHLIGHT_HEIGHTS = [720, 1080, 1440, 2160] as const;
@@ -380,44 +365,7 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     message: 'at_ffw_time must be 1-999 seconds',
   }),
   binary('at_demo_recording_enabled', 'atDemoRecordingEnabled', 360),
-  // The Auto Tournament logo at the start of highlight videos (on unless "0").
-  {
-    ...flag('highlights_watermark', 'highlightsWatermark', 370),
-    normalize: normalizeFlag('Auto Tournament logo on highlight videos'),
-  },
-  // How many clips the recorder makes of each player per map (6 unless set):
-  // each takes it about five minutes.
-  integer('highlights_per_player', 'highlightsPerPlayer', 380, {
-    min: 1,
-    max: 6,
-    message: 'highlights_per_player must be 1-6',
-  }),
-  // The size and frame rate the recorder captures and encodes at (1080p60
-  // unless set). Smaller and slower records faster.
-  choice('highlights_resolution', 'highlightsResolution', 390, HIGHLIGHT_HEIGHTS, 'Highlight resolution'),
-  choice('highlights_fps', 'highlightsFps', 400, HIGHLIGHT_FPS, 'Highlight frame rate'),
-  // The music reels play (demos/music.ts): every track unless set, `off`, or
-  // the picked track ids, comma separated.
-  {
-    key: 'highlights_music',
-    field: 'highlightsMusic',
-    order: 410,
-    schema: { type: 'string', pattern: '^(all|off|\\d+(,\\d+)*)?$' },
-    normalize(trimmed) {
-      if (!/^(all|off|\d+(,\d+)*)?$/.test(trimmed)) {
-        throw new Error('highlights_music must be all, off, or track ids separated by commas');
-      }
-      return { value: trimmed === 'all' ? '' : trimmed, message: 'Highlight music updated' };
-    },
-    applyRequest: stringRequest('highlightsMusic'),
-  },
-  // Keep each clip's clean twin and overlay recipe (on unless "0"): reels are
-  // made from the clean clips with their own overlay, and clips can be dressed
-  // again. Off saves roughly half the storage.
-  {
-    ...flag('highlights_keep_clean', 'highlightsKeepClean', 420),
-    normalize: normalizeFlag('Clean copies of highlight clips'),
-  },
+  // The highlights_* settings are core's now (services/highlights/settings.ts).
 ];
 
 /**

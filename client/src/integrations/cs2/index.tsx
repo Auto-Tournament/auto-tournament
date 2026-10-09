@@ -12,7 +12,6 @@ import {
   MapTrifoldIcon,
   SlidersHorizontalIcon,
   KnifeIcon,
-  FilmStripIcon,
 } from '@phosphor-icons/react';
 import type { ClientGameIntegration, PlayerProfileViewProps } from '../types';
 import { links } from '../../module-sdk';
@@ -48,7 +47,7 @@ import {
 } from './manage/cs2QueueSummary';
 import Servers from './pages/Servers';
 import Maps from './pages/Maps';
-import HighlightsAdmin from './pages/Highlights';
+import Cs2HighlightsAdmin from './pages/Highlights';
 import { MatchRulesPage } from './settings/MatchRulesPage';
 import { SkinsAdminPage } from './skins/SkinsAdminPage';
 import { cs2AdminPaths } from './adminPaths';
@@ -217,6 +216,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // tournament's own tab, and its reel on the results.
   usePlayerHighlights: useCs2PlayerHighlights,
   tournamentTab: { path: 'highlights', labelKey: 'highlights.title', Component: TournamentHighlightsTab },
+  // Its recorders, overlays and how to add a recorder, on core's Highlights page.
+  highlightsAdmin: { labelKey: 'highlightsAdmin.cs2Tab', Component: Cs2HighlightsAdmin },
   tournamentResultsSection: TournamentReelSection,
 
   // At URLs the platform keeps. The Steam connect page these used to include
@@ -226,7 +227,6 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     { path: links.maps(), scope: 'admin', element: <Maps /> },
     { path: cs2AdminPaths.skins, scope: 'admin', element: <SkinsAdminPage /> },
     { path: cs2AdminPaths.matchRules, scope: 'admin', element: <MatchRulesPage /> },
-    { path: cs2AdminPaths.highlights, scope: 'admin', element: <HighlightsAdmin /> },
     { path: skinPaths.inventory, scope: 'site', element: <InventoryPage /> },
     { path: skinPaths.playerInventory, scope: 'site', element: <InventoryPage /> },
     { path: demoPaths.analysis, scope: 'site', element: <DemoAnalysisPage /> },
@@ -241,6 +241,5 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     { key: 'maps', path: links.maps(), icon: MapTrifoldIcon },
     { key: 'skins', path: cs2AdminPaths.skins, icon: KnifeIcon },
     { key: 'matchRules', path: cs2AdminPaths.matchRules, icon: SlidersHorizontalIcon },
-    { key: 'highlights', path: cs2AdminPaths.highlights, icon: FilmStripIcon },
   ],
 };

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 640 of them, 405 behind auth —
+Every endpoint this API serves — 642 of them, 405 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -306,12 +306,6 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 | `GET` | `/api/game/cs2/watch/related` | public |
 | `GET` | `/api/game/cs2/highlights/:file` | public |
 | `GET` | `/api/game/cs2/highlights/:file/music/:track` | public |
-| `GET` | `/api/game/cs2/music` | public |
-| `POST` | `/api/game/cs2/music` | admin |
-| `POST` | `/api/game/cs2/music/from-link` | admin |
-| `PUT` | `/api/game/cs2/music/:id` | admin |
-| `DELETE` | `/api/game/cs2/music/:id` | admin |
-| `GET` | `/api/game/cs2/music/:id/file` | admin |
 | `POST` | `/api/game/cs2/recorder/runs` | admin |
 | `POST` | `/api/game/cs2/recorder/benchmark` | admin |
 | `GET` | `/api/game/cs2/recorders` | admin |
@@ -674,6 +668,21 @@ Players ranked by their rating in one game. Public.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/leaderboard` | public |
+
+### Highlights
+
+What every game's highlights share: the music library under reels, and the mixes made from it.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/highlights/music` | public |
+| `POST` | `/api/highlights/music` | admin |
+| `POST` | `/api/highlights/music/from-link` | admin |
+| `PUT` | `/api/highlights/music/:id` | admin |
+| `DELETE` | `/api/highlights/music/:id` | admin |
+| `GET` | `/api/highlights/music/:id/file` | admin |
+| `GET` | `/api/highlights/videos/:file/music/:track` | public |
+| `GET` | `/api/highlights/videos/:file/download` | public |
 
 ### Search
 
