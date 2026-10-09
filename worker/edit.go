@@ -465,9 +465,9 @@ func focusFilter(in, out string, at []float64, width int, blur string) string {
 	blurStep := fmt.Sprintf("gblur=sigma=%.1f:enable='%s'", sigma, enable)
 	switch blur {
 	case blurVulkan:
-		blurStep = fmt.Sprintf("hwupload,gblur_vulkan=sigma=%.1f,hwdownload,format=yuv420p", sigma)
+		blurStep = "hwupload," + vulkanBlur(sigma) + ",hwdownload,format=yuv420p"
 	case blurVulkanVA:
-		blurStep = fmt.Sprintf("hwupload=derive_device=vulkan,gblur_vulkan=sigma=%.1f,hwdownload,format=yuv420p", sigma)
+		blurStep = "hwupload=derive_device=vulkan," + vulkanBlur(sigma) + ",hwdownload,format=yuv420p"
 	}
 	fmt.Fprintf(&b, ";[%s_fx]%s,drawbox=color=0x080504@%.2f:t=fill:enable='%s',vignette=angle=PI/4:enable='%s'[%s_fxd]",
 		out, blurStep, focusShade, enable, enable, out)
@@ -475,6 +475,28 @@ func focusFilter(in, out string, at []float64, width int, blur string) string {
 	// first input at opacity 1 - the effect's strength; off it passes the game.
 	fmt.Fprintf(&b, ";[%s_keep][%s_fxd]blend@focus=all_mode=normal:all_opacity=1:enable='%s'[%s]", out, out, enable, out)
 	return b.String()
+}
+
+// vulkanBlur is a gaussian blur of `sigma` on the GPU. gblur_vulkan's kernel
+// is at most 127 px (a sigma of ~21), short of 1440p's ~36: it takes passes,
+// whose sigmas add up as the root of their squares.
+func vulkanBlur(sigma float64) string {
+	// n passes of sigma/√n each, so each kernel (6 sigma) fits in 127 px.
+	n := int(math.Ceil(math.Pow(sigma*6/127, 2)))
+	if n < 1 {
+		n = 1
+	}
+	per := sigma / math.Sqrt(float64(n))
+	size := int(math.Ceil(per*6)) | 1
+	if size > 127 {
+		size = 127
+	}
+	pass := fmt.Sprintf("gblur_vulkan=sigma=%.1f:size=%d", per, size)
+	passes := make([]string, n)
+	for i := range passes {
+		passes[i] = pass
+	}
+	return strings.Join(passes, ",")
 }
 
 // Where the focus blur runs (overlay.blur).

@@ -201,3 +201,13 @@ func TestFocusFilterStreams(t *testing.T) {
 		t.Fatal("focusStrength")
 	}
 }
+
+func TestVulkanBlurPasses(t *testing.T) {
+	// 1440p's sigma (~36) is past one pass's kernel: three passes of ~21.
+	if got := vulkanBlur(35.6); strings.Count(got, "gblur_vulkan") != 3 || !strings.Contains(got, "sigma=20.6:size=125") {
+		t.Fatalf("1440p: %s", got)
+	}
+	if got := vulkanBlur(10); got != "gblur_vulkan=sigma=10.0:size=61" {
+		t.Fatalf("small: %s", got)
+	}
+}
