@@ -194,14 +194,7 @@ export default function FleetPanel() {
       if (keyForm.skins) body.skins = true;
       const res = await api.post<{ key: FleetKey; value: string }>('/api/fleet/keys', body);
       setKeyOpen(false);
-      setKeyForm({
-        name: '',
-        namePrefix: '',
-        maxServers: '',
-        expiresInDays: '',
-        autoLink: false,
-        skins: false,
-      });
+      setKeyForm({ name: '', namePrefix: '', maxServers: '', expiresInDays: '', autoLink: false, skins: false });
       setSecret({
         kind: 'key',
         value: res.value,
@@ -293,9 +286,7 @@ export default function FleetPanel() {
       case 'public_addr':
         return t('fleetPanel.connectSource.publicAddr', { defaultValue: 'reported by the server' });
       case 'machine':
-        return t('fleetPanel.connectSource.machine', {
-          defaultValue: 'the address of the machine it runs on',
-        });
+        return t('fleetPanel.connectSource.machine', { defaultValue: 'the address of the machine it runs on' });
       case 'peer':
         return t('fleetPanel.connectSource.peer', {
           defaultValue: 'address the server connects from',
@@ -414,8 +405,7 @@ export default function FleetPanel() {
                     data-testid={`fleet-connect-guessed-${server.id}`}
                   >
                     {t('fleetPanel.connectGuessed', {
-                      defaultValue:
-                        'Guessed from where the server connects from. Check it, or set the address players use.',
+                      defaultValue: 'Guessed from where the server connects from. Check it, or set the address players use.',
                     })}
                   </Typography>
                 )}

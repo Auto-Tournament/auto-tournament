@@ -20,11 +20,7 @@ import { log } from '../../../utils/logger';
 import { redactFleetSecrets } from './credentials';
 import { cs2ServerIdOf } from './link';
 import { registerInboundHandler, type InboundContext } from './inbound';
-import type {
-  Envelope,
-  ServerCs2UpdateRequiredPayload,
-  ServerSelftestPayload,
-} from './protocol/v1';
+import type { Envelope, ServerCs2UpdateRequiredPayload, ServerSelftestPayload } from './protocol/v1';
 
 async function markProcessed(ctx: InboundContext, env: Envelope): Promise<void> {
   await db.runAsync(
@@ -62,10 +58,7 @@ export function patchNumber(patch: unknown): number | null {
  * A hello reports the server's CS2 patch (`versions.cs2_patch`): once it is at
  * or past the required build, the out-of-date mark on its cs2_servers row goes.
  */
-export async function clearCs2UpdateIfCurrent(
-  fleetServerId: string,
-  versions: unknown
-): Promise<void> {
+export async function clearCs2UpdateIfCurrent(fleetServerId: string, versions: unknown): Promise<void> {
   const patch = patchNumber((versions as { cs2_patch?: unknown } | null)?.cs2_patch);
   if (patch === null) return;
   const cs2ServerId = await cs2ServerIdOf(fleetServerId);
@@ -90,13 +83,10 @@ export async function applySelftest(ctx: InboundContext, env: Envelope): Promise
     log.info(`[FLEET] ${ctx.serverId}: selftest passed (${selftest.passed}/${selftest.total})`);
   } else {
     const failures = selftest.failures.slice(0, 10).map((f) => redactFleetSecrets(f));
-    log.warn(
-      `[FLEET] ${ctx.serverId}: selftest failed (${selftest.passed}/${selftest.total} passed)`,
-      {
-        server_id: ctx.serverId,
-        failures,
-      }
-    );
+    log.warn(`[FLEET] ${ctx.serverId}: selftest failed (${selftest.passed}/${selftest.total} passed)`, {
+      server_id: ctx.serverId,
+      failures,
+    });
   }
   await markProcessed(ctx, env);
 }
@@ -106,10 +96,7 @@ let unregister: Array<() => void> = [];
 export function startServerNotices(): void {
   if (unregister.length) return;
   unregister = [
-    registerInboundHandler('server.cs2_update_required', {
-      persist: true,
-      handle: applyCs2UpdateRequired,
-    }),
+    registerInboundHandler('server.cs2_update_required', { persist: true, handle: applyCs2UpdateRequired }),
     registerInboundHandler('server.selftest', { persist: true, handle: applySelftest }),
   ];
 }

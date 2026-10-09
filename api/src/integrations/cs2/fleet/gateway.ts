@@ -151,24 +151,17 @@ class FleetSession {
     /** The upgrade's client address after trusted proxies (./address.ts); stored on hello. */
     private readonly peerAddr: string | null = null
   ) {
-    this.helloTimer = setTimeout(
-      () => this.close(FLEET_CLOSE.PROTOCOL_ERROR, 'hello timeout'),
-      timings.helloTimeoutMs
-    );
+    this.helloTimer = setTimeout(() => this.close(FLEET_CLOSE.PROTOCOL_ERROR, 'hello timeout'), timings.helloTimeoutMs);
     this.bumpDeadTimer();
     ws.on('message', (data, isBinary) => this.onFrame(data, isBinary));
     ws.on('close', () => this.onClosed());
-    ws.on('error', (error) =>
-      log.warn(`[FLEET] socket error (${this.serverId ?? 'unauthenticated'}): ${error.message}`)
-    );
+    ws.on('error', (error) => log.warn(`[FLEET] socket error (${this.serverId ?? 'unauthenticated'}): ${error.message}`));
     // Frames that arrive before the token check finishes wait in the queue.
     this.queue = auth
       .then((result) => {
         if (!result.ok) {
           const code = result.reason === 'revoked' ? FLEET_CLOSE.REVOKED : FLEET_CLOSE.BAD_TOKEN;
-          log.warn(
-            `[FLEET] rejected a connection: ${result.reason === 'revoked' ? 'revoked or expired token' : 'invalid token'}`
-          );
+          log.warn(`[FLEET] rejected a connection: ${result.reason === 'revoked' ? 'revoked or expired token' : 'invalid token'}`);
           this.close(code, result.reason === 'revoked' ? 'token revoked' : 'invalid token');
           return;
         }
@@ -190,9 +183,7 @@ class FleetSession {
   private onFrame(data: RawData, isBinary: boolean): void {
     if (this.closed) return;
     this.bumpDeadTimer();
-    const size = Array.isArray(data)
-      ? data.reduce((n, b) => n + b.length, 0)
-      : (data as Buffer).byteLength;
+    const size = Array.isArray(data) ? data.reduce((n, b) => n + b.length, 0) : (data as Buffer).byteLength;
     const limited = this.rateLimited(size);
     if (limited !== null) {
       this.close(FLEET_CLOSE.RATE_LIMITED, JSON.stringify({ retry_after_ms: limited }));
@@ -206,9 +197,7 @@ class FleetSession {
     this.queue = this.queue
       .then(() => (this.closed || !this.serverId ? undefined : this.handle(text)))
       .catch((error) => {
-        log.error(
-          `[FLEET] ${this.serverId}: handling a message failed: ${redactFleetSecrets((error as Error).message)}`
-        );
+        log.error(`[FLEET] ${this.serverId}: handling a message failed: ${redactFleetSecrets((error as Error).message)}`);
         this.close(1011, 'internal error');
       });
   }
@@ -216,10 +205,7 @@ class FleetSession {
   /** Milliseconds to wait when over the limit, else null. */
   private rateLimited(bytes: number): number | null {
     const now = Date.now();
-    this.tokens = Math.min(
-      RATE.burst,
-      this.tokens + ((now - this.tokensAt) / 1000) * RATE.perSecond
-    );
+    this.tokens = Math.min(RATE.burst, this.tokens + ((now - this.tokensAt) / 1000) * RATE.perSecond);
     this.tokensAt = now;
     if (now - this.bytesWindowStart >= 60_000) {
       this.bytesWindowStart = now;
@@ -308,8 +294,7 @@ class FleetSession {
       this.owe();
       return;
     }
-    const known =
-      isKnownMessageType(msg.type) && FLEET_MESSAGES[msg.type].direction !== 'platform_to_server';
+    const known = isKnownMessageType(msg.type) && FLEET_MESSAGES[msg.type].direction !== 'platform_to_server';
     if (!known) {
       this.sendError(msg, 'unknown_type', `unknown message type ${msg.type}`);
     } else {
@@ -384,9 +369,7 @@ class FleetSession {
         if (handler.priority === 'low') {
           // Off the main queue: bulk frames (demo chunks) never hold up
           // events and state patches.
-          this.lowChain = this.lowChain.then(() =>
-            this.closed ? undefined : this.runHandler(handler, ctx, msg)
-          );
+          this.lowChain = this.lowChain.then(() => (this.closed ? undefined : this.runHandler(handler, ctx, msg)));
           return;
         }
         await this.runHandler(handler, ctx, msg);
@@ -404,11 +387,7 @@ class FleetSession {
     return handler.validate ? handler.validate(msg.payload) : null;
   }
 
-  private async runHandler(
-    handler: InboundHandler,
-    ctx: InboundContext,
-    msg: Envelope
-  ): Promise<void> {
+  private async runHandler(handler: InboundHandler, ctx: InboundContext, msg: Envelope): Promise<void> {
     try {
       await handler.handle(ctx, msg);
     } catch (error) {
@@ -431,16 +410,11 @@ class FleetSession {
       return;
     }
     if (this.installId && hello.install_id !== this.installId) {
-      log.warn(
-        `[FLEET] ${serverId}: hello install_id does not match the enrolled one; copied credentials?`
-      );
+      log.warn(`[FLEET] ${serverId}: hello install_id does not match the enrolled one; copied credentials?`);
       this.close(FLEET_CLOSE.REVOKED, 'install_id does not match the enrollment');
       return;
     }
-    if (
-      hello.protocol.min > FLEET_PROTOCOL_SUPPORTED.max ||
-      hello.protocol.max < FLEET_PROTOCOL_SUPPORTED.min
-    ) {
+    if (hello.protocol.min > FLEET_PROTOCOL_SUPPORTED.max || hello.protocol.max < FLEET_PROTOCOL_SUPPORTED.min) {
       this.close(
         FLEET_CLOSE.UNSUPPORTED_PROTOCOL,
         `protocol ${hello.protocol.min}-${hello.protocol.max} unsupported; platform speaks ${FLEET_PROTOCOL_SUPPORTED.min}-${FLEET_PROTOCOL_SUPPORTED.max}`
@@ -510,10 +484,7 @@ class FleetSession {
     const welcome: WelcomePayload = {
       session_id: this.sessionId,
       protocol,
-      heartbeat: {
-        interval_ms: this.timings.heartbeatIntervalMs,
-        timeout_ms: this.timings.heartbeatTimeoutMs,
-      },
+      heartbeat: { interval_ms: this.timings.heartbeatIntervalMs, timeout_ms: this.timings.heartbeatTimeoutMs },
       resume: { result, platform_last_rx_seq: this.rxSeq },
       server_config_rev: revs.server_config_rev,
       admins_rev: revs.admins_rev,
@@ -530,14 +501,8 @@ class FleetSession {
     await this.flushOutbox();
     // Apply what a platform restart left stored but unapplied, before the
     // server's own replay (queued behind this) is processed.
-    await replayUnprocessed({
-      serverId,
-      sendEphemeral: (t, p, extra) => this.sendEphemeral(t, p, undefined, extra),
-    });
-    this.pingTimer = setInterval(
-      () => this.sendEphemeral('ping', { t: Date.now() }),
-      this.timings.heartbeatIntervalMs
-    );
+    await replayUnprocessed({ serverId, sendEphemeral: (t, p, extra) => this.sendEphemeral(t, p, undefined, extra) });
+    this.pingTimer = setInterval(() => this.sendEphemeral('ping', { t: Date.now() }), this.timings.heartbeatIntervalMs);
     await this.gateway.onReady(serverId, hello);
   }
 
@@ -562,12 +527,7 @@ class FleetSession {
     this.ackTimer = null;
   }
 
-  sendEphemeral(
-    type: string,
-    payload: Record<string, unknown>,
-    ref?: string,
-    extra: { epoch?: number } = {}
-  ): boolean {
+  sendEphemeral(type: string, payload: Record<string, unknown>, ref?: string, extra: { epoch?: number } = {}): boolean {
     const text = this.frame({
       v: 1,
       type,
@@ -634,11 +594,7 @@ class FleetSession {
   }
 
   private sendError(about: Envelope, code: string, message: string): void {
-    this.sendEphemeral(
-      'error',
-      { code, message: message.slice(0, 2000), type: about.type },
-      about.id
-    );
+    this.sendEphemeral('error', { code, message: message.slice(0, 2000), type: about.type }, about.id);
   }
 
   private owe(now = false): void {
@@ -660,9 +616,7 @@ class FleetSession {
   private bumpDeadTimer(): void {
     if (this.deadTimer) clearTimeout(this.deadTimer);
     this.deadTimer = setTimeout(() => {
-      log.warn(
-        `[FLEET] ${this.serverId ?? 'connection'}: no frame for ${this.timings.heartbeatTimeoutMs} ms; link dead`
-      );
+      log.warn(`[FLEET] ${this.serverId ?? 'connection'}: no frame for ${this.timings.heartbeatTimeoutMs} ms; link dead`);
       this.closed = true;
       this.ws.terminate();
     }, this.timings.heartbeatTimeoutMs);
@@ -709,8 +663,7 @@ export class FleetGateway {
   private readonly sessions = new Map<string, FleetSession>();
   private readonly connections = new Set<FleetSession>();
   private server: HttpServer | null = null;
-  private readyListeners: Array<(serverId: string, hello: HelloPayload) => Promise<void> | void> =
-    [];
+  private readyListeners: Array<(serverId: string, hello: HelloPayload) => Promise<void> | void> = [];
   private welcomeRevsProvider: ((serverId: string) => Promise<WelcomeRevs>) | null = null;
   private assignmentResolver: AssignmentResolver | null = null;
   private readonly timings: GatewayTimings;
@@ -721,11 +674,7 @@ export class FleetGateway {
       heartbeatTimeoutMs: timings.heartbeatTimeoutMs ?? HEARTBEAT.timeout_ms,
       helloTimeoutMs: timings.helloTimeoutMs ?? HELLO_TIMEOUT_MS,
     };
-    this.wss = new WebSocketServer({
-      noServer: true,
-      maxPayload: MAX_FRAME_BYTES,
-      perMessageDeflate: false,
-    });
+    this.wss = new WebSocketServer({ noServer: true, maxPayload: MAX_FRAME_BYTES, perMessageDeflate: false });
   }
 
   private readonly onUpgrade = (req: IncomingMessage, socket: Duplex, head: Buffer): void => {
@@ -797,10 +746,7 @@ export class FleetGateway {
   }
 
   /** @internal */
-  async resolveAssignment(
-    serverId: string,
-    hello: HelloPayload
-  ): Promise<WelcomePayload['assignment']> {
+  async resolveAssignment(serverId: string, hello: HelloPayload): Promise<WelcomePayload['assignment']> {
     if (!this.assignmentResolver) return null;
     try {
       return await this.assignmentResolver(serverId, hello);

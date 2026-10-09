@@ -30,11 +30,7 @@
 import { db } from '../../../config/database';
 import { holdOf } from '../../../services/matchHolds';
 import { log } from '../../../utils/logger';
-import {
-  emitBracketUpdate,
-  emitMatchUpdate,
-  postMatchChatLine,
-} from '../../../services/socketService';
+import { emitBracketUpdate, emitMatchUpdate, postMatchChatLine } from '../../../services/socketService';
 import { firstMapOf } from '../utils/firstMap';
 import { matchLiveStatsService } from '../../../services/matchLiveStatsService';
 import { recordAdminCall } from '../../../services/adminCallService';
@@ -46,12 +42,7 @@ import { tvDelayFromCvars, serverTurnoverTracker } from '../utils/serverTurnover
 import { adminCallFromEvent } from '../events/adminCalled';
 import type { AdminCalledEvent } from '../events/plugin-events.types';
 import { ulid } from './credentials';
-import {
-  AssignConfigError,
-  buildAssignConfig,
-  diffAssignConfig,
-  generateMatchPassword,
-} from './assignConfig';
+import { AssignConfigError, buildAssignConfig, diffAssignConfig, generateMatchPassword } from './assignConfig';
 import { cs2ServerIdOf, fleetServerIdOf } from './link';
 import { fleetInbound, type FleetEventNotice } from './inbound';
 import { toPlatformMapNumber } from './normalize';
@@ -181,15 +172,7 @@ async function saveAssignment(input: {
      ON CONFLICT (match_slug) DO UPDATE SET epoch = EXCLUDED.epoch, server_id = EXCLUDED.server_id,
        cs2_server_id = EXCLUDED.cs2_server_id, password = EXCLUDED.password, config = NULL,
        updated_at = EXCLUDED.updated_at, ended_at = NULL`,
-    [
-      input.matchSlug,
-      input.epoch,
-      input.serverId,
-      input.cs2ServerId,
-      input.password,
-      nowS(),
-      nowS(),
-    ]
+    [input.matchSlug, input.epoch, input.serverId, input.cs2ServerId, input.password, nowS(), nowS()]
   );
   // The server takes one match at a time: an older assignment it still had
   // open (finished, not unassigned) is over.
@@ -199,11 +182,7 @@ async function saveAssignment(input: {
   );
 }
 
-async function storeAckedConfig(
-  matchSlug: string,
-  epoch: number,
-  config: AssignConfig
-): Promise<void> {
+async function storeAckedConfig(matchSlug: string, epoch: number, config: AssignConfig): Promise<void> {
   // The password lives in its own column; the stored config never has it.
   const rest: Partial<AssignConfig> = { ...config };
   delete rest.password;
@@ -263,14 +242,7 @@ const PHASE_STATUS: Record<MatchPhase, ServerStatus> = {
 export async function fleetServerStatus(cs2ServerId: string): Promise<FleetServerStatus> {
   const fleetServerId = await fleetServerIdOf(cs2ServerId);
   if (!fleetServerId) {
-    return {
-      fleetServerId: null,
-      online: false,
-      availability: null,
-      matchSlug: null,
-      phase: null,
-      status: null,
-    };
+    return { fleetServerId: null, online: false, availability: null, matchSlug: null, phase: null, status: null };
   }
   const online = fleetBus().isConnected(fleetServerId);
   const row = await db.queryOneAsync<{ availability: string | null }>(
@@ -378,10 +350,7 @@ async function joinPasswordEnabled(): Promise<boolean> {
   }
 }
 
-async function assignDefaults(): Promise<{
-  allowForceReady?: boolean;
-  pauseAfterRestore?: boolean;
-}> {
+async function assignDefaults(): Promise<{ allowForceReady?: boolean; pauseAfterRestore?: boolean }> {
   try {
     const { cs2Settings } = await import('../settingsReaders');
     const core = await cs2Settings.getAtCoreDefaults();
@@ -415,14 +384,11 @@ export async function assignMatch(
   options: AssignOptions = {}
 ): Promise<FleetLoadResult> {
   const fleetServerId = await fleetServerIdOf(cs2ServerId);
-  if (!fleetServerId)
-    return { success: false, error: `Server ${cs2ServerId} is not a Ready Up fleet server` };
+  if (!fleetServerId) return { success: false, error: `Server ${cs2ServerId} is not a Ready Up fleet server` };
   if (!fleetBus().isConnected(fleetServerId)) {
     return { success: false, error: 'The Ready Up server is not connected', retryElsewhere: true };
   }
-  const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
-    matchSlug,
-  ]);
+  const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
   if (!match) return { success: false, error: 'Match not found' };
 
   let config: AssignConfig;
@@ -452,10 +418,7 @@ export async function assignMatch(
     // from them (NTLAN trial run 2: r1m1 resumed at round 11 of the previous
     // tournament's r1m1).
     const stale = await roundBackupStore.forget(matchSlug);
-    if (stale > 0)
-      log.info(
-        `[FLEET] ${matchSlug}: ${stale} round backup(s) from an earlier match with this slug removed`
-      );
+    if (stale > 0) log.info(`[FLEET] ${matchSlug}: ${stale} round backup(s) from an earlier match with this slug removed`);
   }
   await saveAssignment({ matchSlug, epoch, serverId: fleetServerId, cs2ServerId, password });
 
@@ -486,9 +449,7 @@ export async function assignMatch(
     // It stays in the outbox until acked: take it back, so the server does
     // not start the match on its own later while it plays somewhere else.
     await unassignEpoch(fleetServerId, matchSlug, epoch, 'cancelled').catch(() => undefined);
-    log.warn(
-      `[FLEET] ${matchSlug}: ${fleetServerId} did not answer match.assign in ${ASSIGN_TIMEOUT_MS} ms`
-    );
+    log.warn(`[FLEET] ${matchSlug}: ${fleetServerId} did not answer match.assign in ${ASSIGN_TIMEOUT_MS} ms`);
     return {
       success: false,
       error: 'The Ready Up server did not answer the assignment in time',
@@ -514,14 +475,11 @@ export async function assignMatch(
   const status = options.resume && match.status === 'live' ? 'live' : 'loaded';
   await db.updateAsync('matches', { status, loaded_at: nowS() }, 'slug = ?', [matchSlug]);
   log.matchLoaded(matchSlug, cs2ServerId, true);
-  const updated = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
-    matchSlug,
-  ]);
+  const updated = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
   if (updated) {
     emitMatchUpdate(updated);
     emitBracketUpdate({ action: 'match_loaded', matchSlug });
-    if (!options.resume)
-      void postMatchChatLine(matchSlug, 'serverReady', { map: firstMapOf(updated) });
+    if (!options.resume) void postMatchChatLine(matchSlug, 'serverReady', { map: firstMapOf(updated) });
   }
   // With rules.demo.upload the server streams each map's demo; turnover
   // holds the server until the receiver (./demoStream.ts) has it.
@@ -555,9 +513,7 @@ async function unassignEpoch(
     },
   });
   await markEnded(matchSlug, epoch);
-  log.info(
-    `[FLEET] ${matchSlug}: match.unassign epoch ${epoch} (${reason}) sent to ${fleetServerId}`
-  );
+  log.info(`[FLEET] ${matchSlug}: match.unassign epoch ${epoch} (${reason}) sent to ${fleetServerId}`);
   return sent.id;
 }
 
@@ -576,12 +532,7 @@ export async function unassignMatch(
   if (!fleetServerId) return { sent: false, answer: null };
   const assignment = await getAssignment(matchSlug);
   const record = await liveStateStore.getLiveState(matchSlug);
-  const epoch =
-    assignment?.serverId === fleetServerId
-      ? assignment.epoch
-      : record?.serverId === fleetServerId
-        ? record.epoch
-        : 0;
+  const epoch = assignment?.serverId === fleetServerId ? assignment.epoch : record?.serverId === fleetServerId ? record.epoch : 0;
   if (epoch < 1 || (assignment && assignment.epoch === epoch && assignment.endedAt !== null)) {
     return { sent: false, answer: null };
   }
@@ -599,8 +550,7 @@ export async function unassignAll(
   const fleetServerId = await fleetServerIdOf(cs2ServerId);
   if (!fleetServerId) return 0;
   const open = await openAssignmentsOf(fleetServerId);
-  for (const a of open)
-    await unassignEpoch(fleetServerId, a.matchSlug, a.epoch, reason, kickMessage);
+  for (const a of open) await unassignEpoch(fleetServerId, a.matchSlug, a.epoch, reason, kickMessage);
   return open.length;
 }
 
@@ -632,10 +582,7 @@ export type FleetUpdateOutcome =
  * config_rev the server last acked. A `conflict` moves the base to the
  * server's (inbound.ts stores it) and the update is sent once more on it.
  */
-export async function updateMatch(
-  matchSlug: string,
-  ops: MatchUpdateOp[]
-): Promise<FleetUpdateOutcome> {
+export async function updateMatch(matchSlug: string, ops: MatchUpdateOp[]): Promise<FleetUpdateOutcome> {
   if (ops.length === 0) return { ok: true, ops: 0, configRev: null };
   const assignment = await getAssignment(matchSlug);
   if (!assignment || assignment.endedAt !== null || !assignment.serverId) {
@@ -656,20 +603,13 @@ export async function updateMatch(
     });
     const answer = await awaitCommandResult(sent.id, CMD_TIMEOUT_MS);
     if (!answer || answer.status === 'pending') {
-      return {
-        ok: false,
-        status: 504,
-        error: 'The Ready Up server did not answer the update in time',
-      };
+      return { ok: false, status: 504, error: 'The Ready Up server did not answer the update in time' };
     }
-    if (answer.status === 'ok')
-      return { ok: true, ops: ops.length, configRev: answer.result?.rev ?? base + 1 };
+    if (answer.status === 'ok') return { ok: true, ops: ops.length, configRev: answer.result?.rev ?? base + 1 };
     if (answer.errorCode !== 'conflict') {
       return { ok: false, status: 502, error: refusal(answer).replace('the match', 'the update') };
     }
-    log.info(
-      `[FLEET] ${matchSlug}: match.update conflict at base ${base}; retrying on the server's config_rev`
-    );
+    log.info(`[FLEET] ${matchSlug}: match.update conflict at base ${base}; retrying on the server's config_rev`);
   }
   return { ok: false, status: 409, error: 'The match config changed on the server; try again' };
 }
@@ -687,9 +627,7 @@ export async function syncMatch(matchSlug: string): Promise<FleetUpdateOutcome> 
   if (!assignment.config) {
     return { ok: false, status: 409, error: 'The server has not accepted the match yet' };
   }
-  const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
-    matchSlug,
-  ]);
+  const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
   if (!match) return { ok: false, status: 404, error: 'Match not found' };
   let next: AssignConfig;
   try {
@@ -715,28 +653,16 @@ export async function addPlayer(
   const [assignment] = fleetServerId ? await openAssignmentsOf(fleetServerId) : [];
   if (!assignment) return { ok: false, status: 404, error: 'No match is assigned to this server' };
   const outcome = await updateMatch(assignment.matchSlug, [
-    {
-      op: 'add_player',
-      team: player.team,
-      steamid64: player.steamid64,
-      name: player.name.slice(0, 128),
-    },
+    { op: 'add_player', team: player.team, steamid64: player.steamid64, name: player.name.slice(0, 128) },
   ]);
   if (outcome.ok && assignment.config) {
     const config = JSON.parse(JSON.stringify(assignment.config)) as Omit<AssignConfig, 'password'>;
     if (player.team === 'spectator') {
       config.spectators = [...new Set([...(config.spectators ?? []), player.steamid64])];
     } else {
-      config[player.team].players.push({
-        steamid64: player.steamid64,
-        name: player.name,
-        role: 'player',
-      });
+      config[player.team].players.push({ steamid64: player.steamid64, name: player.name, role: 'player' });
     }
-    await storeAckedConfig(assignment.matchSlug, assignment.epoch, {
-      ...config,
-      password: assignment.password,
-    });
+    await storeAckedConfig(assignment.matchSlug, assignment.epoch, { ...config, password: assignment.password });
   }
   return outcome;
 }
@@ -778,13 +704,7 @@ export async function runFleetCommand(
 ): Promise<FleetCommandOutcome> {
   const fleetServerId = await fleetServerIdOf(cs2ServerId);
   if (!fleetServerId) {
-    return {
-      ok: false,
-      httpStatus: 404,
-      status: 'not_sent',
-      errorCode: null,
-      error: 'Not a Ready Up fleet server',
-    };
+    return { ok: false, httpStatus: 404, status: 'not_sent', errorCode: null, error: 'Not a Ready Up fleet server' };
   }
   let scope: { match_id: string; epoch: number } | null = null;
   if (MATCH_COMMANDS.has(name)) {
@@ -847,9 +767,7 @@ export async function runFleetCommand(
     httpStatus: ok ? 200 : answer.status === 'rejected' ? 409 : 502,
     status: answer.status,
     errorCode: answer.errorCode,
-    ...(ok
-      ? {}
-      : { error: `${answer.errorCode ?? answer.status}${message ? `: ${message}` : ''}` }),
+    ...(ok ? {} : { error: `${answer.errorCode ?? answer.status}${message ? `: ${message}` : ''}` }),
     ...(answer.result?.output !== undefined ? { output: answer.result.output } : {}),
     commandId: sent.id,
     matchSlug: scope?.match_id ?? null,
@@ -889,9 +807,7 @@ export async function execOnFleetServer(
      VALUES (?, ?, ?, ?, ?, 'pending', ?)`,
     [auditId, issuedBy.actor, fleetServerId, assignment?.matchSlug ?? null, command, nowS()]
   );
-  log.warn(
-    `[FLEET] exec on ${cs2ServerId} by ${issuedBy.actor ?? 'unknown'} (audit ${auditId}): ${command}`
-  );
+  log.warn(`[FLEET] exec on ${cs2ServerId} by ${issuedBy.actor ?? 'unknown'} (audit ${auditId}): ${command}`);
   const outcome = await runFleetCommand(cs2ServerId, 'exec', { command }, issuedBy, { auditId });
   await db.runAsync(
     `UPDATE cs2_fleet_audit SET message_id = ?, status = ?, error_code = ?, output = ?, answered_at = ? WHERE id = ?`,
@@ -914,19 +830,12 @@ export async function execOnFleetServer(
 /** Zombie unassigns already sent: `${server}:${slug}:${epoch}`. */
 const supersededSent = new Set<string>();
 
-async function supersede(
-  fleetServerId: string,
-  matchSlug: string,
-  epoch: number,
-  why: string
-): Promise<void> {
+async function supersede(fleetServerId: string, matchSlug: string, epoch: number, why: string): Promise<void> {
   const key = `${fleetServerId}:${matchSlug}:${epoch}`;
   if (supersededSent.has(key)) return;
   supersededSent.add(key);
   if (supersededSent.size > 10_000) supersededSent.clear();
-  log.warn(
-    `[FLEET] ${fleetServerId} still holds ${matchSlug} epoch ${epoch} (${why}); unassigning it (superseded)`
-  );
+  log.warn(`[FLEET] ${fleetServerId} still holds ${matchSlug} epoch ${epoch} (${why}); unassigning it (superseded)`);
   await sendReliable(fleetServerId, {
     type: 'match.unassign',
     payload: { match_id: matchSlug, epoch, reason: 'superseded', kick_message: MOVED_KICK_MESSAGE },
@@ -958,10 +867,9 @@ export async function resolveWelcomeAssignment(
   for (const assignment of await openAssignmentsOf(fleetServerId)) {
     const record = await liveStateStore.getLiveState(assignment.matchSlug);
     if (!record || record.epoch !== assignment.epoch || record.serverId !== fleetServerId) continue;
-    const match = await db.queryOneAsync<{ status: string }>(
-      'SELECT status FROM matches WHERE slug = ?',
-      [assignment.matchSlug]
-    );
+    const match = await db.queryOneAsync<{ status: string }>('SELECT status FROM matches WHERE slug = ?', [
+      assignment.matchSlug,
+    ]);
     if (match && (match.status === 'loaded' || match.status === 'live')) {
       return { match_id: assignment.matchSlug, epoch: assignment.epoch };
     }
@@ -977,12 +885,7 @@ async function checkHello(fleetServerId: string, hello: HelloPayload): Promise<v
     // record: not ours to end.
     const record = await liveStateStore.getLiveState(state.match_id);
     if (record && state.epoch < record.epoch) {
-      await supersede(
-        fleetServerId,
-        state.match_id,
-        state.epoch,
-        `hello at epoch ${state.epoch}, current ${record.epoch}`
-      );
+      await supersede(fleetServerId, state.match_id, state.epoch, `hello at epoch ${state.epoch}, current ${record.epoch}`);
     }
   } else {
     const assignment = await resolveWelcomeAssignment(fleetServerId, hello);
@@ -1003,11 +906,7 @@ function triggerAllocation(): void {
   setImmediate(() => {
     void import('../../../core/scheduler')
       .then(({ scheduler }) => scheduler.tryImmediateAllocation())
-      .catch((error) =>
-        log.debug('[FLEET] allocation after availability failed', {
-          error: (error as Error).message,
-        })
-      );
+      .catch((error) => log.debug('[FLEET] allocation after availability failed', { error: (error as Error).message }));
   });
 }
 
@@ -1019,14 +918,12 @@ async function onFleetEvent(notice: FleetEventNotice): Promise<void> {
   if (env.type === 'event.admin_called') {
     // Recorded whatever the epoch: a player asking for help is never dropped.
     const data = payload.data as FleetEventData['admin_called'];
-    const match =
-      (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug])) ?? null;
+    const match = (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug])) ?? null;
     const cs2ServerId = await cs2ServerIdOf(notice.serverId);
     const event: AdminCalledEvent = {
       event: 'admin_called',
       matchid: slug,
-      map_number:
-        typeof payload.map_number === 'number' ? toPlatformMapNumber(payload.map_number) : null,
+      map_number: typeof payload.map_number === 'number' ? toPlatformMapNumber(payload.map_number) : null,
       call_id: data.call_id,
       player: data.player,
       message: data.message,
@@ -1069,28 +966,14 @@ async function onFleetEvent(notice: FleetEventNotice): Promise<void> {
   const cs2ServerId = await cs2ServerIdOf(notice.serverId);
   if (!cs2ServerId) return;
   const now = nowS();
-  const matchId = (
-    await db.queryOneAsync<{ id: number }>('SELECT id FROM matches WHERE slug = ?', [slug])
-  )?.id;
+  const matchId = (await db.queryOneAsync<{ id: number }>('SELECT id FROM matches WHERE slug = ?', [slug]))?.id;
   if (matchId === undefined) return;
   switch (env.type) {
     case 'event.map_result':
-      serverTurnoverTracker.recordEvent(
-        cs2ServerId,
-        {
-          event: 'map_result',
-          matchid: matchId,
-          map_number: toPlatformMapNumber(payload.map_number),
-        },
-        now
-      );
+      serverTurnoverTracker.recordEvent(cs2ServerId, { event: 'map_result', matchid: matchId, map_number: toPlatformMapNumber(payload.map_number) }, now);
       break;
     case 'event.series_end':
-      serverTurnoverTracker.recordEvent(
-        cs2ServerId,
-        { event: 'series_end', matchid: matchId },
-        now
-      );
+      serverTurnoverTracker.recordEvent(cs2ServerId, { event: 'series_end', matchid: matchId }, now);
       break;
     case 'event.demo': {
       const data = payload.data as FleetEventData['demo'];
@@ -1102,18 +985,10 @@ async function onFleetEvent(notice: FleetEventNotice): Promise<void> {
       if (data.type === 'recording_started') {
         const assignment = await getAssignment(slug);
         if (assignment?.config?.rules?.demo?.upload === true) {
-          serverTurnoverTracker.recordEvent(
-            cs2ServerId,
-            { event: 'demo_recording_start', matchid: matchId, map_number: map },
-            now
-          );
+          serverTurnoverTracker.recordEvent(cs2ServerId, { event: 'demo_recording_start', matchid: matchId, map_number: map }, now);
         }
       } else if (data.type === 'upload_succeeded' || data.type === 'upload_failed') {
-        serverTurnoverTracker.recordEvent(
-          cs2ServerId,
-          { event: 'demo_upload_ended', matchid: matchId, map_number: map },
-          now
-        );
+        serverTurnoverTracker.recordEvent(cs2ServerId, { event: 'demo_upload_ended', matchid: matchId, map_number: map }, now);
       }
       break;
     }
@@ -1132,9 +1007,7 @@ export function startFleetDriver(): void {
   onFleetServerReady((serverId, hello) => checkHello(serverId, hello));
   fleetInbound.onEvent((notice) => {
     void onFleetEvent(notice).catch((error) => {
-      log.warn(
-        `[FLEET] ${notice.serverId}: driver hook for ${notice.envelope.type} failed: ${(error as Error).message}`
-      );
+      log.warn(`[FLEET] ${notice.serverId}: driver hook for ${notice.envelope.type} failed: ${(error as Error).message}`);
     });
   });
   fleetInbound.onAvailability(({ serverId, availability }) => {

@@ -57,10 +57,7 @@ export interface RecoveryFailover {
 }
 
 /** Restart requested per failover: when, and for which csm server. */
-const restarts = new Map<
-  string,
-  { at: number; hostId: string; server: string; commandId: string; failed?: boolean }
->();
+const restarts = new Map<string, { at: number; hostId: string; server: string; commandId: string; failed?: boolean }>();
 /** Create requested per failover. */
 const creates = new Map<string, { at: number; hostId: string; commandId: string }>();
 
@@ -69,12 +66,7 @@ export function resetRecoveryState(): void {
   creates.clear();
 }
 
-async function audit(
-  serverId: string | null,
-  matchSlug: string,
-  command: string,
-  messageId: string | null
-): Promise<void> {
+async function audit(serverId: string | null, matchSlug: string, command: string, messageId: string | null): Promise<void> {
   await db.runAsync(
     `INSERT INTO cs2_fleet_audit (id, actor, server_id, match_slug, command, status, message_id, created_at)
      VALUES (?, ?, ?, ?, ?, 'sent', ?, ?)`,
@@ -83,11 +75,7 @@ async function audit(
 }
 
 async function note(failoverId: string, detail: string): Promise<void> {
-  await db.runAsync('UPDATE cs2_fleet_failovers SET detail = ?, updated_at = ? WHERE id = ?', [
-    detail.slice(0, 500),
-    nowS(),
-    failoverId,
-  ]);
+  await db.runAsync('UPDATE cs2_fleet_failovers SET detail = ?, updated_at = ? WHERE id = ?', [detail.slice(0, 500), nowS(), failoverId]);
 }
 
 /** The online machine and csm server name a fleet server runs as, if any. */
@@ -128,13 +116,8 @@ export async function restartBeforeMove(f: RecoveryFailover, now = nowS()): Prom
       if (!sent.failed) {
         sent.failed = true;
         const why = answer.errorMessage ?? answer.errorCode ?? answer.status;
-        await note(
-          f.id,
-          `csm could not restart ${sent.server} (${why.slice(0, 300)}); moving the match.`
-        );
-        log.warn(
-          `[FAILOVER] ${f.matchSlug}: csm restart of ${sent.server} ${answer.status} (${why}); moving instead`
-        );
+        await note(f.id, `csm could not restart ${sent.server} (${why.slice(0, 300)}); moving the match.`);
+        log.warn(`[FAILOVER] ${f.matchSlug}: csm restart of ${sent.server} ${answer.status} (${why}); moving instead`);
       }
       return 'go';
     }
@@ -151,40 +134,16 @@ export async function restartBeforeMove(f: RecoveryFailover, now = nowS()): Prom
       where.hostId,
       'server.restart',
       { server: where.server, reason: 'auto-failover' },
-      {
-        issuedBy: RECOVERY_ACTOR,
-        force: { reason: `auto-failover for ${f.matchSlug}` },
-        meta: { failover: f.id },
-      }
+      { issuedBy: RECOVERY_ACTOR, force: { reason: `auto-failover for ${f.matchSlug}` }, meta: { failover: f.id } }
     );
-    restarts.set(f.id, {
-      at: now,
-      hostId: where.hostId,
-      server: where.server,
-      commandId: command.id,
-    });
-    await audit(
-      f.fromServerId,
-      f.matchSlug,
-      `csm server.restart ${where.server} (auto-failover ${f.id})`,
-      command.id
-    );
-    await note(
-      f.id,
-      `Restarting ${where.server} through csm; the match moves if it is not back in ${restartWaitS()} s.`
-    );
-    log.warn(
-      `[FAILOVER] ${f.matchSlug}: asked csm (${where.hostId}) to restart ${where.server} before moving the match`
-    );
+    restarts.set(f.id, { at: now, hostId: where.hostId, server: where.server, commandId: command.id });
+    await audit(f.fromServerId, f.matchSlug, `csm server.restart ${where.server} (auto-failover ${f.id})`, command.id);
+    await note(f.id, `Restarting ${where.server} through csm; the match moves if it is not back in ${restartWaitS()} s.`);
+    log.warn(`[FAILOVER] ${f.matchSlug}: asked csm (${where.hostId}) to restart ${where.server} before moving the match`);
     return 'wait';
   } catch (error) {
-    const reason =
-      error instanceof HostCommandError
-        ? `${error.code}: ${error.message}`
-        : (error as Error).message;
-    log.warn(
-      `[FAILOVER] ${f.matchSlug}: csm restart of ${where.server} not sent (${reason}); moving instead`
-    );
+    const reason = error instanceof HostCommandError ? `${error.code}: ${error.message}` : (error as Error).message;
+    log.warn(`[FAILOVER] ${f.matchSlug}: csm restart of ${where.server} not sent (${reason}); moving instead`);
     return 'go';
   }
 }
@@ -219,22 +178,12 @@ export async function createWhenNoneFree(f: RecoveryFailover, now = nowS()): Pro
         { issuedBy: RECOVERY_ACTOR, meta: { failover: f.id } }
       );
       creates.set(f.id, { at: now, hostId, commandId: command.id });
-      await audit(
-        f.fromServerId,
-        f.matchSlug,
-        `csm server.create on ${hostId} (auto-failover ${f.id})`,
-        command.id
-      );
-      await note(
-        f.id,
-        'No server was free; creating one through csm. The match moves there once it is online.'
-      );
+      await audit(f.fromServerId, f.matchSlug, `csm server.create on ${hostId} (auto-failover ${f.id})`, command.id);
+      await note(f.id, 'No server was free; creating one through csm. The match moves there once it is online.');
       log.warn(`[FAILOVER] ${f.matchSlug}: no free server; asked csm (${hostId}) to create one`);
       return true;
     } catch (error) {
-      log.warn(
-        `[FAILOVER] ${f.matchSlug}: csm server.create on ${hostId} not sent: ${(error as Error).message}`
-      );
+      log.warn(`[FAILOVER] ${f.matchSlug}: csm server.create on ${hostId} not sent: ${(error as Error).message}`);
     }
   }
   return false;

@@ -29,12 +29,7 @@ import { Router, type NextFunction, type Request, type Response } from 'express'
 import { requireAuth, requestActorId } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import { publicWsOrigin } from '../../../utils/publicOrigin';
-import {
-  validateEnrollRequest,
-  FLEET_CLOSE,
-  type EnrollRequest,
-  type EnrollResponse,
-} from './protocol/v1';
+import { validateEnrollRequest, FLEET_CLOSE, type EnrollRequest, type EnrollResponse } from './protocol/v1';
 import { FLEET_WS_PATH } from './gateway';
 import * as registry from './registry';
 import { getLatestReadyUpRelease } from '../services/pluginVersionService';
@@ -81,13 +76,7 @@ function enrollRateLimit(req: Request, res: Response, next: NextFunction): void 
   }
   if (entry.count > ENROLL_MAX) {
     res.setHeader('Retry-After', String(Math.max(1, Math.ceil((entry.resetAt - now) / 1000))));
-    res
-      .status(429)
-      .json({
-        success: false,
-        code: 'rate_limited',
-        error: 'Too many enrollment attempts, slow down',
-      });
+    res.status(429).json({ success: false, code: 'rate_limited', error: 'Too many enrollment attempts, slow down' });
     return;
   }
   next();
@@ -120,31 +109,19 @@ fleetEnrollRouter.post('/enroll', enrollRateLimit, async (req: Request, res: Res
   if (req.body?.kind === 'host') return enrollHostHandler(req, res);
   const check = validateEnrollRequest(req.body);
   if (!check.ok) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        code: 'invalid_request',
-        error: 'Invalid enrollment request',
-        details: check.errors,
-      });
+    return res.status(400).json({ success: false, code: 'invalid_request', error: 'Invalid enrollment request', details: check.errors });
   }
   const body = req.body as EnrollRequest;
   try {
     const outcome = await registry.enrollServer(body);
     if (!outcome.ok) {
-      log.warn(
-        `[FLEET] enrollment refused (${outcome.code}) for install ${body.install_id} from ${req.ip}`
-      );
-      return res
-        .status(outcome.status)
-        .json({ success: false, code: outcome.code, error: outcome.error });
+      log.warn(`[FLEET] enrollment refused (${outcome.code}) for install ${body.install_id} from ${req.ip}`);
+      return res.status(outcome.status).json({ success: false, code: outcome.code, error: outcome.error });
     }
     // Where it enrolled from: the connect address until its first hello (./address.ts).
     await registry.setPeerAddr(outcome.server.id, req.ip ? unmapV4(req.ip) : null);
     // A re-enrolled server's old tokens were revoked; drop a session still using one.
-    if (outcome.reenrolled)
-      fleetBus().disconnect(outcome.server.id, FLEET_CLOSE.REVOKED, 're-enrolled');
+    if (outcome.reenrolled) fleetBus().disconnect(outcome.server.id, FLEET_CLOSE.REVOKED, 're-enrolled');
     log.info(
       `[FLEET] ${outcome.reenrolled ? 're-enrolled' : 'enrolled'} ${outcome.server.id} (${outcome.server.name}) via ${
         body.code !== undefined ? 'code' : 'fleet key'
@@ -205,12 +182,7 @@ interface ConnectView {
  * or for an unlinked server the one a link would store now.
  */
 async function withLinks<
-  T extends {
-    id: string;
-    installId?: string | null;
-    host: { public_addr?: string; game_port: number } | null;
-    peerAddr: string | null;
-  },
+  T extends { id: string; installId?: string | null; host: { public_addr?: string; game_port: number } | null; peerAddr: string | null },
 >(
   servers: T[]
 ): Promise<Array<T & { linkedServerId: string | null; connect: ConnectView | null }>> {
@@ -278,83 +250,52 @@ fleetAdminRouter.get('/servers', async (_req: Request, res: Response) => {
 
 fleetAdminRouter.post('/servers', async (req: Request, res: Response) => {
   const name = trimmedString(req.body?.name, 100);
-  if (name === null)
-    return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
+  if (name === null) return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
   try {
-    const created = await registry.createPendingServer({
-      name: name ?? undefined,
-      createdBy: requestActorId(req),
-    });
-    log.info(
-      `[FLEET] pending server ${created.server.id} (${created.server.name}) created with a one-time code`
-    );
-    return res
-      .status(201)
-      .json({
-        success: true,
-        server: created.server,
-        code: created.code,
-        expiresAt: created.expiresAt,
-      });
+    const created = await registry.createPendingServer({ name: name ?? undefined, createdBy: requestActorId(req) });
+    log.info(`[FLEET] pending server ${created.server.id} (${created.server.name}) created with a one-time code`);
+    return res.status(201).json({ success: true, server: created.server, code: created.code, expiresAt: created.expiresAt });
   } catch (error) {
     log.error(`[FLEET] creating a pending server failed: ${(error as Error).message}`);
     return res.status(500).json({ success: false, error: 'Failed to create the server' });
   }
 });
 
-fleetAdminRouter.patch(
-  '/servers/:id',
-  handler('rename the server', async (req: Request, res: Response) => {
-    const name = trimmedString(req.body?.name, 100);
-    if (!name)
-      return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
-    const ok = await registry.renameFleetServer(req.params.id, name);
-    if (!ok) return res.status(404).json({ success: false, error: 'Fleet server not found' });
-    await renameLinkedRow(req.params.id, name);
-    return res.json({ success: true, server: await registry.getFleetServerView(req.params.id) });
-  })
-);
+fleetAdminRouter.patch('/servers/:id', handler('rename the server', async (req: Request, res: Response) => {
+  const name = trimmedString(req.body?.name, 100);
+  if (!name) return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
+  const ok = await registry.renameFleetServer(req.params.id, name);
+  if (!ok) return res.status(404).json({ success: false, error: 'Fleet server not found' });
+  await renameLinkedRow(req.params.id, name);
+  return res.json({ success: true, server: await registry.getFleetServerView(req.params.id) });
+}));
 
-fleetAdminRouter.delete(
-  '/servers/:id',
-  handler('remove the server', async (req: Request, res: Response) => {
-    fleetBus().disconnect(req.params.id, FLEET_CLOSE.REVOKED, 'removed by an admin');
-    const ok = await registry.deleteFleetServer(req.params.id);
-    if (!ok) return res.status(404).json({ success: false, error: 'Fleet server not found' });
-    log.info(`[FLEET] ${req.params.id} removed`);
-    return res.json({ success: true });
-  })
-);
+fleetAdminRouter.delete('/servers/:id', handler('remove the server', async (req: Request, res: Response) => {
+  fleetBus().disconnect(req.params.id, FLEET_CLOSE.REVOKED, 'removed by an admin');
+  const ok = await registry.deleteFleetServer(req.params.id);
+  if (!ok) return res.status(404).json({ success: false, error: 'Fleet server not found' });
+  log.info(`[FLEET] ${req.params.id} removed`);
+  return res.json({ success: true });
+}));
 
-fleetAdminRouter.post(
-  '/servers/:id/code',
-  handler('issue a code', async (req: Request, res: Response) => {
-    const issued = await registry.reissueCode(req.params.id, requestActorId(req));
-    if (!issued)
-      return res
-        .status(409)
-        .json({ success: false, error: 'Only a pending server gets a new code' });
-    return res.status(201).json({ success: true, code: issued.code, expiresAt: issued.expiresAt });
-  })
-);
+fleetAdminRouter.post('/servers/:id/code', handler('issue a code', async (req: Request, res: Response) => {
+  const issued = await registry.reissueCode(req.params.id, requestActorId(req));
+  if (!issued) return res.status(409).json({ success: false, error: 'Only a pending server gets a new code' });
+  return res.status(201).json({ success: true, code: issued.code, expiresAt: issued.expiresAt });
+}));
 
-fleetAdminRouter.post(
-  '/servers/:id/revoke',
-  handler('revoke the server', async (req: Request, res: Response) => {
-    const ok = await revokeServer(req.params.id);
-    if (!ok) return res.status(404).json({ success: false, error: 'Fleet server not found' });
-    log.info(`[FLEET] ${req.params.id} revoked by ${requestActorId(req) ?? 'unknown'}`);
-    return res.json({ success: true, server: await registry.getFleetServerView(req.params.id) });
-  })
-);
+fleetAdminRouter.post('/servers/:id/revoke', handler('revoke the server', async (req: Request, res: Response) => {
+  const ok = await revokeServer(req.params.id);
+  if (!ok) return res.status(404).json({ success: false, error: 'Fleet server not found' });
+  log.info(`[FLEET] ${req.params.id} revoked by ${requestActorId(req) ?? 'unknown'}`);
+  return res.json({ success: true, server: await registry.getFleetServerView(req.params.id) });
+}));
 
 fleetAdminRouter.post('/servers/:id/rotate', async (req: Request, res: Response) => {
   const server = await registry.getFleetServer(req.params.id);
   if (!server) return res.status(404).json({ success: false, error: 'Fleet server not found' });
   if (server.status !== 'enrolled') {
-    return res
-      .status(409)
-      .json({ success: false, error: 'Only an enrolled server has a token to rotate' });
+    return res.status(409).json({ success: false, error: 'Only an enrolled server has a token to rotate' });
   }
   try {
     if (await rotateServerToken(server.id)) {
@@ -373,176 +314,130 @@ fleetAdminRouter.post('/servers/:id/rotate', async (req: Request, res: Response)
  * existing server moved to Ready Up) or to a new one named after it. The
  * allocator then hands it matches whenever it is online and `available`.
  */
-fleetAdminRouter.post(
-  '/servers/:id/link',
-  handler('link the server', async (req: Request, res: Response) => {
-    const serverId = trimmedString(req.body?.serverId, 100);
-    if (serverId === null)
-      return res.status(400).json({ success: false, error: 'serverId must be 1-100 characters' });
-    const name = trimmedString(req.body?.name, 100);
-    if (name === null)
-      return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
-    const address = checkAddressOverride({ host: req.body?.host, port: req.body?.port });
-    if (!address.ok) return res.status(400).json({ success: false, error: address.error });
-    const outcome = await linkFleetServer(req.params.id, {
-      ...(serverId ? { serverId } : {}),
-      ...(name ? { name } : {}),
-      ...(address.override ? { address: address.override } : {}),
-    });
-    if (!outcome.ok)
-      return res.status(outcome.status).json({ success: false, error: outcome.error });
-    log.info(
-      `[FLEET] ${req.params.id} linked to server ${outcome.link.cs2ServerId}${outcome.created ? ' (new)' : ''} by ${requestActorId(req) ?? 'unknown'}`
-    );
-    return res
-      .status(outcome.created ? 201 : 200)
-      .json({ success: true, ...outcome.link, created: outcome.created });
-  })
-);
+fleetAdminRouter.post('/servers/:id/link', handler('link the server', async (req: Request, res: Response) => {
+  const serverId = trimmedString(req.body?.serverId, 100);
+  if (serverId === null) return res.status(400).json({ success: false, error: 'serverId must be 1-100 characters' });
+  const name = trimmedString(req.body?.name, 100);
+  if (name === null) return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
+  const address = checkAddressOverride({ host: req.body?.host, port: req.body?.port });
+  if (!address.ok) return res.status(400).json({ success: false, error: address.error });
+  const outcome = await linkFleetServer(req.params.id, {
+    ...(serverId ? { serverId } : {}),
+    ...(name ? { name } : {}),
+    ...(address.override ? { address: address.override } : {}),
+  });
+  if (!outcome.ok) return res.status(outcome.status).json({ success: false, error: outcome.error });
+  log.info(
+    `[FLEET] ${req.params.id} linked to server ${outcome.link.cs2ServerId}${outcome.created ? ' (new)' : ''} by ${requestActorId(req) ?? 'unknown'}`
+  );
+  return res.status(outcome.created ? 201 : 200).json({ success: true, ...outcome.link, created: outcome.created });
+}));
 
 /**
  * The connect address of a linked server. Body `{host, port?}` sets an admin
  * override (hellos no longer change it); `{host: null}` (or empty) goes back to
  * the detected address (public_addr, else the link's peer address).
  */
-fleetAdminRouter.put(
-  '/servers/:id/address',
-  handler('set the connect address', async (req: Request, res: Response) => {
-    const address = checkAddressOverride({ host: req.body?.host, port: req.body?.port });
-    if (!address.ok) return res.status(400).json({ success: false, error: address.error });
-    const stored = await setLinkAddress(req.params.id, address.override);
-    if (!stored)
-      return res.status(404).json({ success: false, error: 'Fleet server is not linked' });
-    log.info(
-      `[FLEET] ${req.params.id}: connect address ${address.override ? `set to ${stored.host}:${stored.port}` : 'back to automatic'} by ${requestActorId(req) ?? 'unknown'}`
-    );
-    return res.json({
-      success: true,
-      cs2ServerId: stored.cs2ServerId,
-      host: stored.host,
-      port: stored.port,
-      address: formatConnectAddress(stored.host, stored.port),
-      override: stored.override,
-    });
-  })
-);
+fleetAdminRouter.put('/servers/:id/address', handler('set the connect address', async (req: Request, res: Response) => {
+  const address = checkAddressOverride({ host: req.body?.host, port: req.body?.port });
+  if (!address.ok) return res.status(400).json({ success: false, error: address.error });
+  const stored = await setLinkAddress(req.params.id, address.override);
+  if (!stored) return res.status(404).json({ success: false, error: 'Fleet server is not linked' });
+  log.info(
+    `[FLEET] ${req.params.id}: connect address ${address.override ? `set to ${stored.host}:${stored.port}` : 'back to automatic'} by ${requestActorId(req) ?? 'unknown'}`
+  );
+  return res.json({
+    success: true,
+    cs2ServerId: stored.cs2ServerId,
+    host: stored.host,
+    port: stored.port,
+    address: formatConnectAddress(stored.host, stored.port),
+    override: stored.override,
+  });
+}));
 
-fleetAdminRouter.delete(
-  '/servers/:id/link',
-  handler('unlink the server', async (req: Request, res: Response) => {
-    const cs2ServerId = await unlinkFleetServer(req.params.id);
-    if (!cs2ServerId)
-      return res.status(404).json({ success: false, error: 'Fleet server is not linked' });
-    log.info(
-      `[FLEET] ${req.params.id} unlinked from server ${cs2ServerId} by ${requestActorId(req) ?? 'unknown'}`
-    );
-    return res.json({ success: true, cs2ServerId });
-  })
-);
+fleetAdminRouter.delete('/servers/:id/link', handler('unlink the server', async (req: Request, res: Response) => {
+  const cs2ServerId = await unlinkFleetServer(req.params.id);
+  if (!cs2ServerId) return res.status(404).json({ success: false, error: 'Fleet server is not linked' });
+  log.info(`[FLEET] ${req.params.id} unlinked from server ${cs2ServerId} by ${requestActorId(req) ?? 'unknown'}`);
+  return res.json({ success: true, cs2ServerId });
+}));
 
 /**
  * A match on the fleet: its assignment (epoch, server; never the password),
  * the live state record, and the platform's commands with their answers.
  */
-fleetAdminRouter.get(
-  '/matches/:slug',
-  handler('read the fleet match', async (req: Request, res: Response) => {
-    const slug = String(req.params.slug);
-    const [assignment, record, commands] = await Promise.all([
-      getAssignment(slug),
-      liveStateStore.getLiveState(slug),
-      listCommands(slug),
-    ]);
-    if (!assignment && !record)
-      return res.status(404).json({ success: false, error: 'Match was never on a fleet server' });
-    const linked = assignment?.serverId ? await cs2ServerIdOf(assignment.serverId) : null;
-    return res.json({
-      success: true,
-      assignment: assignment
-        ? {
-            matchSlug: assignment.matchSlug,
-            epoch: assignment.epoch,
-            fleetServerId: assignment.serverId,
-            serverId: assignment.cs2ServerId ?? linked,
-            endedAt: assignment.endedAt,
-            config: assignment.config,
-          }
-        : null,
-      liveState: record,
-      commands,
-    });
-  })
-);
+fleetAdminRouter.get('/matches/:slug', handler('read the fleet match', async (req: Request, res: Response) => {
+  const slug = String(req.params.slug);
+  const [assignment, record, commands] = await Promise.all([
+    getAssignment(slug),
+    liveStateStore.getLiveState(slug),
+    listCommands(slug),
+  ]);
+  if (!assignment && !record) return res.status(404).json({ success: false, error: 'Match was never on a fleet server' });
+  const linked = assignment?.serverId ? await cs2ServerIdOf(assignment.serverId) : null;
+  return res.json({
+    success: true,
+    assignment: assignment
+      ? {
+          matchSlug: assignment.matchSlug,
+          epoch: assignment.epoch,
+          fleetServerId: assignment.serverId,
+          serverId: assignment.cs2ServerId ?? linked,
+          endedAt: assignment.endedAt,
+          config: assignment.config,
+        }
+      : null,
+    liveState: record,
+    commands,
+  });
+}));
 
 /** Roster / team name changes since the assignment → `match.update` (config_rev CAS). */
-fleetAdminRouter.post(
-  '/matches/:slug/sync',
-  handler('sync the fleet match', async (req: Request, res: Response) => {
-    const outcome = await syncMatch(String(req.params.slug));
-    if (!outcome.ok)
-      return res.status(outcome.status).json({ success: false, error: outcome.error });
-    return res.json({ success: true, ops: outcome.ops, configRev: outcome.configRev });
-  })
-);
+fleetAdminRouter.post('/matches/:slug/sync', handler('sync the fleet match', async (req: Request, res: Response) => {
+  const outcome = await syncMatch(String(req.params.slug));
+  if (!outcome.ok) return res.status(outcome.status).json({ success: false, error: outcome.error });
+  return res.json({ success: true, ops: outcome.ops, configRev: outcome.configRev });
+}));
 
-fleetAdminRouter.get(
-  '/keys',
-  handler('list fleet keys', async (_req: Request, res: Response) => {
-    const keys = await registry.listFleetKeys();
-    return res.json({ success: true, count: keys.length, keys });
-  })
-);
+fleetAdminRouter.get('/keys', handler('list fleet keys', async (_req: Request, res: Response) => {
+  const keys = await registry.listFleetKeys();
+  return res.json({ success: true, count: keys.length, keys });
+}));
 
-fleetAdminRouter.post(
-  '/keys',
-  handler('create the fleet key', async (req: Request, res: Response) => {
-    const name = trimmedString(req.body?.name, 100);
-    if (!name)
-      return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
-    const namePrefix = trimmedString(req.body?.namePrefix, 40);
-    if (namePrefix === null)
-      return res.status(400).json({ success: false, error: 'namePrefix must be 1-40 characters' });
-    const maxServers = optionalPositiveInt(req.body?.maxServers);
-    if (maxServers === null)
-      return res
-        .status(400)
-        .json({ success: false, error: 'maxServers must be a positive integer' });
-    const expiresInDays = optionalPositiveInt(req.body?.expiresInDays);
-    if (expiresInDays === null)
-      return res
-        .status(400)
-        .json({ success: false, error: 'expiresInDays must be a positive integer' });
-    const autoLink = req.body?.autoLink;
-    if (autoLink !== undefined && typeof autoLink !== 'boolean') {
-      return res.status(400).json({ success: false, error: 'autoLink must be true or false' });
-    }
-    const skins = req.body?.skins;
-    if (skins !== undefined && typeof skins !== 'boolean') {
-      return res.status(400).json({ success: false, error: 'skins must be a boolean' });
-    }
-    const created = await registry.createFleetKey({
-      name,
-      namePrefix: namePrefix ?? null,
-      maxServers: maxServers ?? null,
-      expiresAt: expiresInDays ? Math.floor(Date.now() / 1000) + expiresInDays * 86400 : null,
-      autoLink: autoLink === true,
-      skins: skins === true,
-      createdBy: requestActorId(req),
-    });
-    log.info(`[FLEET] fleet key ${created.key.id} (${created.key.name}) created`);
-    return res.status(201).json({ success: true, key: created.key, value: created.value });
-  })
-);
+fleetAdminRouter.post('/keys', handler('create the fleet key', async (req: Request, res: Response) => {
+  const name = trimmedString(req.body?.name, 100);
+  if (!name) return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
+  const namePrefix = trimmedString(req.body?.namePrefix, 40);
+  if (namePrefix === null) return res.status(400).json({ success: false, error: 'namePrefix must be 1-40 characters' });
+  const maxServers = optionalPositiveInt(req.body?.maxServers);
+  if (maxServers === null) return res.status(400).json({ success: false, error: 'maxServers must be a positive integer' });
+  const expiresInDays = optionalPositiveInt(req.body?.expiresInDays);
+  if (expiresInDays === null) return res.status(400).json({ success: false, error: 'expiresInDays must be a positive integer' });
+  const autoLink = req.body?.autoLink;
+  if (autoLink !== undefined && typeof autoLink !== 'boolean') {
+    return res.status(400).json({ success: false, error: 'autoLink must be true or false' });
+  }
+  const skins = req.body?.skins;
+  if (skins !== undefined && typeof skins !== 'boolean') {
+    return res.status(400).json({ success: false, error: 'skins must be a boolean' });
+  }
+  const created = await registry.createFleetKey({
+    name,
+    namePrefix: namePrefix ?? null,
+    maxServers: maxServers ?? null,
+    expiresAt: expiresInDays ? Math.floor(Date.now() / 1000) + expiresInDays * 86400 : null,
+    autoLink: autoLink === true,
+    skins: skins === true,
+    createdBy: requestActorId(req),
+  });
+  log.info(`[FLEET] fleet key ${created.key.id} (${created.key.name}) created`);
+  return res.status(201).json({ success: true, key: created.key, value: created.value });
+}));
 
-fleetAdminRouter.delete(
-  '/keys/:id',
-  handler('revoke the fleet key', async (req: Request, res: Response) => {
-    const ok = await registry.revokeFleetKey(req.params.id);
-    if (!ok)
-      return res
-        .status(404)
-        .json({ success: false, error: 'Fleet key not found or already revoked' });
-    log.info(`[FLEET] fleet key ${req.params.id} revoked`);
-    return res.json({ success: true });
-  })
-);
+fleetAdminRouter.delete('/keys/:id', handler('revoke the fleet key', async (req: Request, res: Response) => {
+  const ok = await registry.revokeFleetKey(req.params.id);
+  if (!ok) return res.status(404).json({ success: false, error: 'Fleet key not found or already revoked' });
+  log.info(`[FLEET] fleet key ${req.params.id} revoked`);
+  return res.json({ success: true });
+}));

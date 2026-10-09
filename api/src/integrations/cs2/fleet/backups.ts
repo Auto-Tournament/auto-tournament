@@ -122,23 +122,12 @@ export interface RoundBackupPersistence {
   upsert(row: RoundBackupWrite, now: number): Promise<RoundBackupMeta>;
   list(matchSlug: string): Promise<RoundBackupMeta[]>;
   /** Stage one part (a repeat of the same part replaces it); returns how many parts of that file are staged. */
-  stagePart(
-    key: BackupPartKey,
-    part: number,
-    parts: number,
-    data: string,
-    now: number
-  ): Promise<number>;
+  stagePart(key: BackupPartKey, part: number, parts: number, data: string, now: number): Promise<number>;
   /** The staged parts of a file, by part number. */
   takeParts(key: BackupPartKey): Promise<Array<{ part: number; data: string }>>;
   dropParts(key: BackupPartKey): Promise<void>;
   /** Mark the backups of rounds > `afterRound` superseded; returns how many. */
-  markSuperseded(
-    matchSlug: string,
-    mapNumber: number,
-    afterRound: number,
-    now: number
-  ): Promise<number>;
+  markSuperseded(matchSlug: string, mapNumber: number, afterRound: number, now: number): Promise<number>;
   /** Delete every backup (and staged part) of a match; returns how many backups. */
   deleteMatch(matchSlug: string): Promise<number>;
   /**
@@ -192,20 +181,13 @@ export class RoundBackupStore {
   /** Check and store one `event.backup` payload (or part of one). */
   async ingest(input: BackupIngestInput, now = nowS()): Promise<BackupIngestOutcome> {
     const b = input.backup;
-    if (b.encoding !== 'base64')
-      return { kind: 'rejected', reason: `encoding ${String(b.encoding)}` };
+    if (b.encoding !== 'base64') return { kind: 'rejected', reason: `encoding ${String(b.encoding)}` };
     if (!Number.isInteger(b.size) || b.size < 1 || b.size > MAX_BACKUP_BYTES) {
       return { kind: 'rejected', reason: `size ${b.size} is outside 1..${MAX_BACKUP_BYTES}` };
     }
     const parts = b.parts ?? 1;
     const part = b.part ?? 1;
-    if (
-      !Number.isInteger(parts) ||
-      parts < 1 ||
-      !Number.isInteger(part) ||
-      part < 1 ||
-      part > parts
-    ) {
+    if (!Number.isInteger(parts) || parts < 1 || !Number.isInteger(part) || part < 1 || part > parts) {
       return { kind: 'rejected', reason: `part ${part} of ${parts}` };
     }
     const decoded = decodeBase64(b.data);
@@ -234,10 +216,7 @@ export class RoundBackupStore {
     }
 
     if (file.length !== b.size) {
-      return {
-        kind: 'rejected',
-        reason: `size mismatch: ${file.length} bytes, expected ${b.size}`,
-      };
+      return { kind: 'rejected', reason: `size mismatch: ${file.length} bytes, expected ${b.size}` };
     }
     const sha = sha256Hex(file);
     if (sha !== b.sha256) return { kind: 'rejected', reason: 'sha256 mismatch' };
@@ -278,12 +257,7 @@ export class RoundBackupStore {
   }
 
   /** `event.rounds_voided {from_round}`: the backups after `fromRound` are from the abandoned timeline. */
-  roundsVoided(
-    matchSlug: string,
-    mapNumber: number,
-    fromRound: number,
-    now = nowS()
-  ): Promise<number> {
+  roundsVoided(matchSlug: string, mapNumber: number, fromRound: number, now = nowS()): Promise<number> {
     return this.persistence.markSuperseded(matchSlug, mapNumber, fromRound, now);
   }
 
@@ -303,8 +277,7 @@ export class RoundBackupStore {
 
   /** Apply the retention (days; 0 or less keeps everything). Returns the backups deleted. */
   prune(retentionDays: number, now = nowS()): Promise<number> {
-    const endedBefore =
-      retentionDays > 0 ? now - Math.floor(retentionDays * 86400) : Number.NEGATIVE_INFINITY;
+    const endedBefore = retentionDays > 0 ? now - Math.floor(retentionDays * 86400) : Number.NEGATIVE_INFINITY;
     return this.persistence.prune(endedBefore, now - PART_TTL_S);
   }
 }
@@ -321,10 +294,7 @@ export function createMemoryRoundBackupPersistence(
   matchEndedAt: (slug: string) => number | null | undefined = () => null
 ): RoundBackupPersistence & { rows: StoredRoundBackup[]; partCount(): number } {
   const rows: StoredRoundBackup[] = [];
-  const parts = new Map<
-    string,
-    { part: number; parts: number; data: string; receivedAt: number }[]
-  >();
+  const parts = new Map<string, { part: number; parts: number; data: string; receivedAt: number }[]>();
   let nextId = 1;
   const partKey = (k: BackupPartKey) => `${k.matchSlug}|${k.mapNumber}|${k.round}|${k.sha256}`;
   const find = (slug: string, map: number, round: number) =>
@@ -345,12 +315,7 @@ export function createMemoryRoundBackupPersistence(
     async upsert(w, now) {
       const existing = find(w.matchSlug, w.mapNumber, w.round);
       if (existing) {
-        Object.assign(existing, {
-          ...w,
-          score: { ...w.score },
-          supersededAt: null,
-          updatedAt: now,
-        });
+        Object.assign(existing, { ...w, score: { ...w.score }, supersededAt: null, updatedAt: now });
         return toMeta(copy(existing));
       }
       const row: StoredRoundBackup = {
@@ -390,12 +355,7 @@ export function createMemoryRoundBackupPersistence(
     async markSuperseded(slug, map, afterRound, now) {
       let n = 0;
       for (const r of rows) {
-        if (
-          r.matchSlug === slug &&
-          r.mapNumber === map &&
-          r.round > afterRound &&
-          r.supersededAt === null
-        ) {
+        if (r.matchSlug === slug && r.mapNumber === map && r.round > afterRound && r.supersededAt === null) {
           r.supersededAt = now;
           n++;
         }
@@ -545,9 +505,7 @@ export function createDbRoundBackupPersistence(): RoundBackupPersistence {
       );
     },
     async deleteMatch(slug) {
-      const result = await db.runAsync('DELETE FROM cs2_match_round_backups WHERE match_slug = ?', [
-        slug,
-      ]);
+      const result = await db.runAsync('DELETE FROM cs2_match_round_backups WHERE match_slug = ?', [slug]);
       await db.runAsync('DELETE FROM cs2_match_round_backup_parts WHERE match_slug = ?', [slug]);
       return result.changes;
     },
@@ -577,9 +535,7 @@ export function createDbRoundBackupPersistence(): RoundBackupPersistence {
         );
         deleted = ended.changes + orphans.changes;
       }
-      await db.runAsync('DELETE FROM cs2_match_round_backup_parts WHERE received_at < ?', [
-        partsBefore,
-      ]);
+      await db.runAsync('DELETE FROM cs2_match_round_backup_parts WHERE received_at < ?', [partsBefore]);
       return deleted;
     },
   };
@@ -634,9 +590,7 @@ export async function handleBackupEvent(
       log.warn(`[FLEET] ${notice.serverId}: backup of ${what} dropped: ${outcome.reason}`);
       break;
     case 'partial':
-      log.debug(
-        `[FLEET] ${notice.serverId}: backup of ${what}: part ${outcome.received}/${outcome.parts}`
-      );
+      log.debug(`[FLEET] ${notice.serverId}: backup of ${what}: part ${outcome.received}/${outcome.parts}`);
       break;
     case 'stored':
     case 'replaced':
@@ -656,16 +610,14 @@ let pruneTimer: NodeJS.Timeout | null = null;
 async function pruneNow(): Promise<void> {
   const days = backupRetentionDays();
   const deleted = await roundBackupStore.prune(days);
-  if (deleted > 0)
-    log.info(`[FLEET] round backups: ${deleted} past the ${days}-day retention deleted`);
+  if (deleted > 0) log.info(`[FLEET] round backups: ${deleted} past the ${days}-day retention deleted`);
 }
 
 /** Listen for `event.backup` / `event.rounds_voided` and start the retention job. Idempotent. */
 export function startRoundBackups(): void {
   if (!unsubscribe) {
     unsubscribe = fleetInbound.onEvent((notice) => {
-      if (notice.envelope.type !== 'event.backup' && notice.envelope.type !== 'event.rounds_voided')
-        return;
+      if (notice.envelope.type !== 'event.backup' && notice.envelope.type !== 'event.rounds_voided') return;
       void handleBackupEvent(roundBackupStore, notice).catch((error) => {
         log.error(
           `[FLEET] ${notice.serverId}: storing ${notice.envelope.type} seq ${notice.envelope.seq} failed: ${(error as Error).message}`
@@ -674,13 +626,9 @@ export function startRoundBackups(): void {
     });
   }
   if (!pruneTimer) {
-    void pruneNow().catch((error) =>
-      log.warn(`[FLEET] round backup retention failed: ${(error as Error).message}`)
-    );
+    void pruneNow().catch((error) => log.warn(`[FLEET] round backup retention failed: ${(error as Error).message}`));
     pruneTimer = setInterval(() => {
-      void pruneNow().catch((error) =>
-        log.warn(`[FLEET] round backup retention failed: ${(error as Error).message}`)
-      );
+      void pruneNow().catch((error) => log.warn(`[FLEET] round backup retention failed: ${(error as Error).message}`));
     }, PRUNE_INTERVAL_MS);
     pruneTimer.unref?.();
   }

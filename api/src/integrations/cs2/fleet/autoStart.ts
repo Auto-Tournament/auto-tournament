@@ -42,20 +42,14 @@ async function tick(): Promise<void> {
     sent.set(key, state);
     const left = Number(row.loaded_at) + minutes * 60 - now;
     const say = (text: string) =>
-      runFleetCommand(row.server_id, 'say', { text, as_admin: true }, ISSUED_BY).catch(
-        () => undefined
-      );
+      runFleetCommand(row.server_id, 'say', { text, as_admin: true }, ISSUED_BY).catch(() => undefined);
     if (left <= 0 && !state.started) {
       state.started = true;
-      const outcome = await runFleetCommand(row.server_id, 'start', {}, ISSUED_BY).catch(
-        (error: unknown) => {
-          log.warn(`[AUTOSTART] ${row.slug}: start failed`, { error: String(error) });
-          return null;
-        }
-      );
-      log.info(
-        `[AUTOSTART] ${row.slug}: ${minutes} min in warmup, started (${outcome?.status ?? 'error'})`
-      );
+      const outcome = await runFleetCommand(row.server_id, 'start', {}, ISSUED_BY).catch((error: unknown) => {
+        log.warn(`[AUTOSTART] ${row.slug}: start failed`, { error: String(error) });
+        return null;
+      });
+      log.info(`[AUTOSTART] ${row.slug}: ${minutes} min in warmup, started (${outcome?.status ?? 'error'})`);
     } else if (left <= 10 && !state.warned10 && !state.started) {
       state.warned10 = true;
       void say('The match starts in 10 seconds, ready or not.');
