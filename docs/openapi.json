@@ -695,6 +695,10 @@
       "description": "A CS2 match's round backups (Ready Up servers send them inline) and \"restore to round N\" over the fleet link or RCON, audited."
     },
     {
+      "name": "Search",
+      "description": "The search box: players, teams, tournaments and played matches by name."
+    },
+    {
       "name": "Server bootstrap",
       "description": "Self-registration for a CS2 server coming online."
     },
@@ -12001,6 +12005,29 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/search": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Search players, teams, tournaments and played matches by name",
+        "description": "Public. `q` (2 to 100 characters) matches anywhere in a name, case\ninsensitive; a SteamID64 finds that player. Up to 6 of each kind, the\nclosest first. Banned and deleted players are left out, and a\ntournament still being set up is only found by an admin.\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`players`, `teams`, `tournaments`, `matches`"
+          }
+        }
       }
     },
     "/api/servers": {

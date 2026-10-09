@@ -32,6 +32,7 @@ import logsRoutes from './logs';
 import teamMatchRoutes from './teamMatch';
 import teamStatsRoutes from './teamStats';
 import teamDirectoryRoutes from './teamDirectory';
+import searchRoutes from './search';
 import settingsRoutes from './settings';
 import signInProvidersRoutes from './signInProviders';
 import templatesRoutes from './templates';
@@ -145,6 +146,12 @@ const coreRoutes: MountedRouter[] = [
     router: leaderboardRoutes,
     title: 'Leaderboard',
     description: "Players ranked by their rating in one game. Public.",
+  },
+  {
+    prefix: '/api/search',
+    router: searchRoutes,
+    title: 'Search',
+    description: 'The search box: players, teams, tournaments and played matches by name.',
   },
   {
     prefix: '/api/team-directory',
