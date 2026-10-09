@@ -349,7 +349,7 @@ export function blockedViewerMiddleware(
 ) {
   return async (
     req: import('express').Request,
-    _res: import('express').Response,
+    res: import('express').Response,
     next: import('express').NextFunction
   ) => {
     try {
@@ -362,6 +362,14 @@ export function blockedViewerMiddleware(
             session?: { destroy?: (cb: (err?: unknown) => void) => void };
           };
           delete r.user;
+          // Their browser forgets the sign-in, and the sign-in page says why
+          // (a short-lived cookie the client reads once).
+          res.clearCookie(cookieName, { path: '/' });
+          res.cookie('at_blocked', state.banned ? 'banned' : 'deleted', {
+            maxAge: 60_000,
+            sameSite: 'lax',
+            path: '/',
+          });
           if (req.headers.cookie) {
             req.headers.cookie = req.headers.cookie
               .split(';')
