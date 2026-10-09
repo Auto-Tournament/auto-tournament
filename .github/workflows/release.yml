@@ -336,6 +336,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # The base images (node:20-alpine) come from Docker Hub, whose anonymous
+      # pull limit the shared runners hit (429 on 2026-10-09, twice in a row).
+      - name: Login to Docker Hub (for the base images)
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       # Pushed by digest only, to the primary (GHCR) image: it is in the
       # repository but no tag points at it until the release job writes the
       # manifest — for all three images, not just this one (imagetools create
