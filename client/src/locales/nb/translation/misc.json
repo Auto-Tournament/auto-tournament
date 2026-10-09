@@ -919,7 +919,7 @@
     },
     "perPlayer": {
       "label": "Klipp per spiller per kart",
-      "helper": "1 til 6. Hvert klipp tar opptakeren omtrent fem minutter, så færre klipp blir ferdige raskere."
+      "helper": "1 til 6. Flere klipp gjør at høydepunktene fra en kamp tar lengre tid å lage."
     },
     "resolution": {
       "label": "Oppløsning"
@@ -976,6 +976,18 @@
     },
     "moved": "Highlight settings, the recorders and how to add one are on their own page now:",
     "saved": "Lagret",
-    "saveFailed": "Kunne ikke lagre"
+    "saveFailed": "Kunne ikke lagre",
+    "reels": {
+      "title": "Størrelse på reels",
+      "description": "Hvor mange klipp hver reel får. Flere klipp gir lengre reels som tar lengre tid å lage.",
+      "funnyPerPlayer": "Morsomme klipp per spiller per kart",
+      "mapReelPerPlayer": "Klipp per spiller i en kart-reel",
+      "seriesReelMax": "Klipp i en serie-reel",
+      "seriesReelPerPlayer": "Klipp per spiller i en serie-reel",
+      "teamReelPerPlayer": "Klipp per spiller i en lag-reel",
+      "tournamentReelMax": "Klipp i en turnerings-reel",
+      "tournamentReelPerPlayer": "Klipp per spiller i en turnerings-reel",
+      "range": "{{min}} til {{max}}"
+    }
   }
 }

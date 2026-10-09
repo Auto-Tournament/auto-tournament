@@ -1,5 +1,6 @@
 import express, { Router, Request, Response, NextFunction } from 'express';
 import { requireAuth } from '../../../middleware/auth';
+import { requireRecorder } from '../demos/recorderKeys';
 import {
   validateServerOrFleetToken,
   demoMapNumber,
@@ -26,7 +27,7 @@ ensureDemosDir();
  * Upload demo file from MatchZy Enhanced server
  * Protected by server token validation
  * Follows MatchZy Enhanced API specification for demo uploads
- * 
+ *
  * Headers expected:
  * - Auto-Tournament-FileName (required)
  * - Auto-Tournament-MatchId (required)
@@ -91,7 +92,11 @@ router.post(
         return res.status(400).json({
           success: false,
           error: 'Missing required headers',
-          required: ['Auto-Tournament-FileName', 'Auto-Tournament-MatchId', 'Auto-Tournament-MapNumber'],
+          required: [
+            'Auto-Tournament-FileName',
+            'Auto-Tournament-MatchId',
+            'Auto-Tournament-MapNumber',
+          ],
           missing: missingHeaders,
         });
       }
@@ -152,12 +157,15 @@ router.post(
           });
         }
         if (match.slug !== urlMatchSlug) {
-          log.warn('[Demo Upload] Upload URL names a different match than the demo; using the demo match id', {
-            urlMatchSlug,
-            matchId: headerMatchId,
-            resolvedMatchSlug: match.slug,
-            filename: atFilename,
-          });
+          log.warn(
+            '[Demo Upload] Upload URL names a different match than the demo; using the demo match id',
+            {
+              urlMatchSlug,
+              matchId: headerMatchId,
+              resolvedMatchSlug: match.slug,
+              filename: atFilename,
+            }
+          );
         }
       } else {
         match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
@@ -270,11 +278,11 @@ router.get(
         return;
       }
 
-      // For other statuses, require auth
-      requireAuth(req, res, next);
+      // For other statuses, an admin, or a recorder (its key) recording the match.
+      void requireRecorder(req, res, next);
     } catch {
       // On error, require auth as fallback
-      requireAuth(req, res, next);
+      void requireRecorder(req, res, next);
     }
   },
   async (req: Request, res: Response) => {
@@ -367,7 +375,7 @@ router.get(
  * Get demo upload configuration status for a match
  * Shows if demo upload is configured and expected upload URL
  * Protected by API token
- * 
+ *
  * HOW TO VERIFY DEMO UPLOAD IS ENABLED:
  * 1. Check this endpoint: GET /api/demos/:matchSlug/status
  *    - demoUploadConfigured should be true
@@ -526,12 +534,21 @@ router.get('/:matchSlug/info', requireAuth, async (req: Request, res: Response) 
  */
 router.get('/archive.tar', requireAuth, async (req: Request, res: Response) => {
   try {
-    const slugs = typeof req.query.slugs === 'string' && req.query.slugs.trim()
-      ? req.query.slugs.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 2000)
-      : null;
+    const slugs =
+      typeof req.query.slugs === 'string' && req.query.slugs.trim()
+        ? req.query.slugs
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .slice(0, 2000)
+        : null;
     const where = slugs ? 'AND m.slug = ANY(?::text[])' : '';
     const params = slugs ? [slugs] : [];
-    const rows = await db.queryAsync<{ slug: string; match_demo: string | null; map_demo: string | null }>(
+    const rows = await db.queryAsync<{
+      slug: string;
+      match_demo: string | null;
+      map_demo: string | null;
+    }>(
       `SELECT m.slug, m.demo_file_path AS match_demo, r.demo_file_path AS map_demo
          FROM matches m LEFT JOIN match_map_results r ON r.match_slug = m.slug
         WHERE m.status = 'completed' ${where}
@@ -544,16 +561,19 @@ router.get('/archive.tar', requireAuth, async (req: Request, res: Response) => {
       for (const stored of [row.map_demo, row.match_demo]) {
         if (!stored) continue;
         let filepath = path.join(DEMOS_DIR, stored);
-        if (!fs.existsSync(filepath) && !stored.includes(path.sep)) filepath = path.join(DEMOS_DIR, row.slug, stored);
+        if (!fs.existsSync(filepath) && !stored.includes(path.sep))
+          filepath = path.join(DEMOS_DIR, row.slug, stored);
         // Inside the demos folder only, once each.
         const resolved = path.resolve(filepath);
-        if (!resolved.startsWith(path.resolve(DEMOS_DIR) + path.sep) || seen.has(resolved)) continue;
+        if (!resolved.startsWith(path.resolve(DEMOS_DIR) + path.sep) || seen.has(resolved))
+          continue;
         if (!fs.existsSync(resolved)) continue;
         seen.add(resolved);
         files.push({ name: `${row.slug}/${path.basename(stored)}`, path: resolved });
       }
     }
-    if (files.length === 0) return res.status(404).json({ success: false, error: 'No demos for those matches' });
+    if (files.length === 0)
+      return res.status(404).json({ success: false, error: 'No demos for those matches' });
     const stamp = new Date().toISOString().slice(0, 10);
     res.setHeader('Content-Type', 'application/x-tar');
     res.setHeader('Content-Disposition', `attachment; filename="demos-${stamp}.tar"`);
@@ -562,7 +582,8 @@ router.get('/archive.tar', requireAuth, async (req: Request, res: Response) => {
     return;
   } catch (error) {
     log.error('Error building the demo archive', error);
-    if (!res.headersSent) res.status(500).json({ success: false, error: 'Failed to build the demo archive' });
+    if (!res.headersSent)
+      res.status(500).json({ success: false, error: 'Failed to build the demo archive' });
     else res.end();
     return;
   }

@@ -1251,6 +1251,14 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'highlights_fps', field: 'highlightsFps' },
   { key: 'highlights_music', field: 'highlightsMusic' },
   { key: 'highlights_keep_clean', field: 'highlightsKeepClean' },
+  // The reels' sizes (services/highlights/settings.ts REEL_LIMITS).
+  { key: 'highlights_funny_per_player', field: 'highlightsFunnyPerPlayer' },
+  { key: 'highlights_map_reel_per_player', field: 'highlightsMapReelPerPlayer' },
+  { key: 'highlights_series_reel_max', field: 'highlightsSeriesReelMax' },
+  { key: 'highlights_series_reel_per_player', field: 'highlightsSeriesReelPerPlayer' },
+  { key: 'highlights_team_reel_per_player', field: 'highlightsTeamReelPerPlayer' },
+  { key: 'highlights_tournament_reel_max', field: 'highlightsTournamentReelMax' },
+  { key: 'highlights_tournament_reel_per_player', field: 'highlightsTournamentReelPerPlayer' },
 ];
 
 // --- tests -------------------------------------------------------------------

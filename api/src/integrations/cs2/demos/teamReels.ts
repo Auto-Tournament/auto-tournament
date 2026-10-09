@@ -9,6 +9,7 @@
  * recorded, and again when a later map's are (a best-of-three fills in).
  */
 
+import { readReelLimits } from './highlightQuality';
 import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
@@ -25,6 +26,7 @@ import {
   type ReelIntro,
 } from './highlights';
 
+/** A team reel's clips per player unless the settings say otherwise (highlights_team_reel_per_player). */
 export const TEAM_REEL_PER_PLAYER = 3;
 /** A team needs this many players with a recorded play for a reel. */
 const TEAM_REEL_MIN_PLAYERS = 2;
@@ -92,6 +94,7 @@ export async function teamReelClips(
       WHERE h.match_slug = ? AND h.status = 'done' AND h.kind <> 'funny'`,
     [matchSlug]
   );
+  const perPlayer = (await readReelLimits()).teamReelPerPlayer;
   const byPlayer = new Map<string, ClipRow[]>();
   for (const r of rows) {
     if (!team.roster.has(r.player_id)) continue;
@@ -99,9 +102,7 @@ export async function teamReelClips(
   }
   // Each player's best, then all of them as the match went: map by map, round by round.
   const picked = [...byPlayer.values()]
-    .flatMap((list) =>
-      list.sort((a, b) => Number(b.score) - Number(a.score)).slice(0, TEAM_REEL_PER_PLAYER)
-    )
+    .flatMap((list) => list.sort((a, b) => Number(b.score) - Number(a.score)).slice(0, perPlayer))
     .sort(
       (a, b) =>
         Number(a.map_number) - Number(b.map_number) || Number(a.start_tick) - Number(b.start_tick)

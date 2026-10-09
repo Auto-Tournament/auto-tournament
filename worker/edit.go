@@ -210,6 +210,22 @@ func momentMarkers(windows []window, segs [][]segment, killTicks []int) clipMark
 	return m
 }
 
+// tickAt is where a demo tick lands in a moment's clip (its windows and
+// each window's edit), or -1 when no window holds it.
+func tickAt(windows []window, segs [][]segment, tick int) float64 {
+	offset := 0.0
+	for i, w := range windows {
+		if tick >= w.from && tick <= w.to {
+			return offset + outputAt(segs[i], float64(tick-w.from)/tickrate)
+		}
+		offset += outputSeconds(segs[i])
+		if i < len(windows)-1 {
+			offset -= reelCrossfade
+		}
+	}
+	return -1
+}
+
 // outputSeconds is how long the edited clip runs.
 func outputSeconds(segs []segment) float64 {
 	total := 0.0

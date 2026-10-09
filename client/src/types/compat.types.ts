@@ -9,7 +9,7 @@ export type CompatRunState = 'queued' | 'checking' | 'pass' | 'warn' | 'fail' | 
 export type CompatComponentStatus = 'pass' | 'warn' | 'fail' | 'pending' | 'checking';
 export type CompatCheckStatus = 'pass' | 'warn' | 'fail' | 'pending';
 export type CompatStage = 'static' | 'selftest' | 'live';
-export type CompatTrigger = 'build_change' | 'surface_change' | 'nightly' | 'release' | 'manual';
+export type CompatTrigger = 'build_change' | 'surface_change' | 'code_change' | 'nightly' | 'release' | 'manual';
 export type CompatCheckKind =
   | 'signature'
   | 'rtti'

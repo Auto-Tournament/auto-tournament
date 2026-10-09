@@ -161,7 +161,11 @@ export function inFilter(c: { kind: string; clutch: boolean }, filter: Highlight
 }
 
 export const mapLabel = (t: TFunction, map: string | null, mapNumber: number) =>
-  map ? getMapDisplayName(map) : t('highlights.mapN', { n: mapNumber + 1 });
+  mapNumber < 0
+    ? t('highlights.wholeSeries')
+    : map
+      ? getMapDisplayName(map)
+      : t('highlights.mapN', { n: mapNumber + 1 });
 
 /** "9z vs BETBOOM", or what is known of it. */
 export function teamsLabel(match: Pick<MatchRef, 'team1' | 'team2'>): string {

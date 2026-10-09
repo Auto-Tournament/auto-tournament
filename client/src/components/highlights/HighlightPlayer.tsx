@@ -68,6 +68,8 @@ const GENRE_ORDER = [
   'drum-n-bass',
   'phonk',
   'techno-trance',
+  'rock',
+  'metal',
   'house',
   'deep-house',
   'future-bass',
