@@ -131,6 +131,7 @@
                 "enum": [
                   "build_change",
                   "surface_change",
+                  "code_change",
                   "nightly",
                   "release",
                   "manual"
