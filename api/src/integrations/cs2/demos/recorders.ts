@@ -1,16 +1,15 @@
 /**
  * The highlight recorders as the platform sees them: who they are, how fast
- * and how smooth they record, and a run log of every job.
+ * and how fast they record, and a run log of every job.
  *
  * - Every claim updates the recorder's row (version, GPU, platform, last seen).
- * - Every clip comes with the recorder's frame check (worker/quality.go): the
- *   share of moving frames that repeat the one before. It is kept with the
- *   clip, not used to turn clips down (judgeClip). A recorder whose CS2 will
- *   not start gets no work for PAUSE_SECONDS (recorderFault); an admin can
- *   resume it sooner.
+ * - Every clip a recorder uploads is kept (clipKept). There is no frame check:
+ *   stutter comes from other work on the recorder's GPU, and the setup says
+ *   not to run any. A recorder whose CS2 will not start gets no work for
+ *   PAUSE_SECONDS (recorderFault); an admin can resume it sooner.
  * - A new recorder (and one an admin asks) first runs a benchmark: the same
- *   moment at each refresh rate in BENCHMARK_HZ, timed and frame-checked. It
- *   keeps the fastest smooth one, which comes back with every job after.
+ *   moment at each refresh rate in BENCHMARK_HZ, timed. It
+ *   keeps the fastest one that finished, which comes back with every job after.
  * - Each job's log and timings land in cs2_recorder_runs for the Recorders page.
  */
 import { db } from '../../../config/database';
@@ -18,16 +17,11 @@ import { log } from '../../../utils/logger';
 import { jobFor, type MomentRow } from './highlights';
 import { readHighlightQuality } from './highlightQuality';
 
-/**
- * The benchmark's bar for a smooth refresh rate: every rate records the same
- * moment, so a higher share of repeats there is the rate's, not the scene's.
- */
-export const SMOOTH_REPEAT_PCT = 4;
 export const PAUSE_SECONDS = 15 * 60;
 /** Jobs in a row whose CS2 would not start before the recorder is paused. */
 export const FAULT_PAUSE_AFTER = 2;
 export const BENCHMARK_HZ = [240, 120];
-/** The recorder version that runs benchmarks and sends frame checks and run logs. */
+/** The recorder version that runs benchmarks and sends run logs. */
 export const RECORDER_QUALITY_VERSION = 7;
 const RUNS_KEPT = 200; // per recorder
 const LOG_MAX = 200_000;
@@ -41,15 +35,6 @@ export class RecorderError extends Error {
   ) {
     super(message);
   }
-}
-
-export interface ClipQuality {
-  /** Moving frames that repeat the one before, in percent. */
-  repeatPct: number;
-  /** Moving frames that jump much more than their neighbours, in percent. */
-  jumpPct: number;
-  /** Frames the check looked at (still stretches are skipped). */
-  moving: number;
 }
 
 interface RecorderRow {
@@ -101,47 +86,13 @@ export function recorderSettings(row: RecorderRow): { gamescopeHz?: number } {
   return row.gamescope_hz ? { gamescopeHz: Number(row.gamescope_hz) } : {};
 }
 
-export function parseQuality(raw: unknown): ClipQuality | null {
-  if (typeof raw !== 'string' || !raw) return null;
-  try {
-    const q = JSON.parse(raw) as Partial<ClipQuality>;
-    const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : NaN);
-    const out = { repeatPct: n(q.repeatPct), jumpPct: n(q.jumpPct), moving: n(q.moving) };
-    return Object.values(out).some(Number.isNaN) ? null : out;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Keep a clip's frame check with it. The check is not a verdict: it counts a
- * frame that barely changes while its neighbours move as a repeat, and a
- * player holding an angle does exactly that (2026-10-09, the EWC final: ten
- * good clips turned down and recorded again). It informs the benchmark and the
- * Clips list; every clip is kept.
- */
-export async function judgeClip(
-  highlightId: number,
-  quality: ClipQuality | null
-): Promise<{ rejected: boolean; recorder: string | null }> {
-  const row = await db.queryOneAsync<{ recorder: string | null }>(
-    'SELECT recorder FROM cs2_highlights WHERE id = ?',
+/** A clip its recorder uploaded was kept: the recorder's streaks start over. */
+export async function clipKept(highlightId: number): Promise<void> {
+  await db.runAsync(
+    `UPDATE cs2_recorders SET clips_ok = clips_ok + 1, rejects_in_row = 0, faults_in_row = 0
+      WHERE name = (SELECT recorder FROM cs2_highlights WHERE id = ?)`,
     [highlightId]
   );
-  const recorder = row?.recorder ?? null;
-  if (quality) {
-    await db.runAsync('UPDATE cs2_highlights SET quality = ? WHERE id = ?', [
-      JSON.stringify(quality),
-      highlightId,
-    ]);
-  }
-  if (recorder) {
-    await db.runAsync(
-      'UPDATE cs2_recorders SET clips_ok = clips_ok + 1, rejects_in_row = 0, faults_in_row = 0 WHERE name = ?',
-      [recorder]
-    );
-  }
-  return { rejected: false, recorder };
 }
 
 /**
@@ -169,7 +120,6 @@ export async function benchmarkJob(): Promise<Record<string, unknown> | null> {
     keepClean: false,
     players: [player],
     tries: BENCHMARK_HZ.map((gamescopeHz) => ({ gamescopeHz })),
-    maxRepeatPct: SMOOTH_REPEAT_PCT,
   };
 }
 
@@ -177,13 +127,11 @@ interface BenchmarkTry {
   gamescopeHz: number;
   seconds: number | null;
   captureFps: number | null;
-  repeatPct: number | null;
-  jumpPct: number | null;
   ok: boolean;
   error?: string;
 }
 
-/** A benchmark's results: keep the fastest smooth try's refresh rate. */
+/** A benchmark's results: keep the fastest finished try's refresh rate. */
 export async function saveBenchmark(
   name: string,
   body: { tries?: unknown }
@@ -196,25 +144,21 @@ export async function saveBenchmark(
         gamescopeHz: Number(t.gamescopeHz) || 0,
         seconds: num(t.seconds),
         captureFps: num(t.captureFps),
-        repeatPct: num(t.repeatPct),
-        jumpPct: num(t.jumpPct),
         ok: t.ok === true,
         ...(typeof t.error === 'string' ? { error: t.error.slice(0, 300) } : {}),
       };
     })
     .filter((t) => t.gamescopeHz > 0);
-  const smooth = tries
-    .filter(
-      (t) => t.ok && t.seconds != null && t.repeatPct != null && t.repeatPct < SMOOTH_REPEAT_PCT
-    )
+  const fastest = tries
+    .filter((t) => t.ok && t.seconds != null)
     .sort((a, b) => a.seconds! - b.seconds!);
-  const pick = smooth[0]?.gamescopeHz ?? null;
+  const pick = fastest[0]?.gamescopeHz ?? null;
   await db.runAsync(
     `UPDATE cs2_recorders SET benchmark = ?, benchmark_at = ?, benchmark_wanted = 0, gamescope_hz = ?
       WHERE name = ?`,
     [JSON.stringify({ tries, pick }), now(), pick, name.slice(0, 120)]
   );
-  log.info(`[RECORDERS] ${name} benchmarked: ${pick ? `${pick} Hz` : 'no smooth setting'}`);
+  log.info(`[RECORDERS] ${name} benchmarked: ${pick ? `${pick} Hz` : 'no try finished'}`);
   return { gamescopeHz: pick };
 }
 
@@ -313,7 +257,6 @@ export async function listRecorders() {
       pausedUntil: paused ? Number(r.paused_until) : null,
       pauseReason: paused ? r.pause_reason : null,
       clipsOk: Number(r.clips_ok),
-      clipsRejected: Number(r.clips_rejected),
       benchmark,
       benchmarkAt: r.benchmark_at ? Number(r.benchmark_at) : null,
       benchmarkWanted: Number(r.benchmark_wanted) === 1,

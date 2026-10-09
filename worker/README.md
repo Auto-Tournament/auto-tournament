@@ -70,13 +70,13 @@ the platform's Highlights settings.
 
 What the platform does with it:
 
-- **Frame check.** Every clip goes up with the share of repeated frames, which
-  the platform keeps with it. It is not a verdict: a player holding an angle or
-  side-stepping reads as repeats too, so every clip is kept.
+- **Every clip is kept.** There is no stutter check: clips stutter when the
+  GPU is busy with something else, so don't run anything heavy on the PC
+  while it records (see below).
 - **CS2 that will not start.** The job goes back without using up its moments'
   tries; two such jobs in a row pause the recorder for 15 minutes.
 - **Benchmark.** On its first job the recorder records one moment at 240 and
-  120 Hz and keeps the fastest smooth rate (`AT_GAMESCOPE_HZ`, set by hand,
+  120 Hz and keeps the faster one (`AT_GAMESCOPE_HZ`, set by hand,
   wins).
 - **Run log.** Each job's timings and log show on the Highlights page.
 
@@ -89,9 +89,11 @@ switch Steam to offline mode (in `loginusers.vdf`: `"WantsOfflineMode" "1"` and
 
 `sivertio/auto-tournament-recorder` (amd64) is the recorder with the userland
 it needs. It runs on a Linux PC that already has Steam and CS2, as the PC's
-own user, and uses the PC's GPU, display and sound. **Don't use the GPU for
-anything else while it records** (games, video encoding, another recorder on
-the same GPU): CS2 then misses frames and the clips stutter. On the 9070 XT
+own user, and uses the PC's GPU, display and sound. **On a gaming PC, don't
+run anything heavy while it records** (a game, video encoding, another
+recorder on the same GPU): CS2 then misses frames and the clips stutter, and
+nothing checks for it. An RTX 3060 at 1440p120 is about the least that keeps
+up; anything faster has room to spare. On the 9070 XT
 it records as fast and as smoothly as without Docker.
 
 The platform hands out the command: **Manage → Highlights → Counter-Strike

@@ -502,8 +502,8 @@ async function onlineRecorders(): Promise<number> {
 export async function claimMapJob(recorder: string): Promise<MapRecordJob | null> {
   const now = Math.floor(Date.now() / 1000);
   const waiting = "(status = 'pending' OR (status = 'recording' AND claimed_at < ?))";
-  // A moment whose last take by this recorder failed the frame check goes to
-  // another recorder first (demos/recorders.ts).
+  // A moment this recorder gave back (its CS2 would not start) goes to
+  // another recorder first (demos/recorders.ts recorderFault).
   const best = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
     `SELECT h.match_slug, h.map_number FROM cs2_highlights h
        LEFT JOIN matches m ON m.slug = h.match_slug

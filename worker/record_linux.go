@@ -246,9 +246,8 @@ type mapJob struct {
 	// Settings: what the recorder's benchmark picked (the platform keeps it).
 	Settings *recorderSettings `json:"settings"`
 	// A benchmark job (kind "benchmark"): the same moment at each refresh
-	// rate, timed and frame-checked, nothing uploaded.
-	Tries        []benchmarkTry `json:"tries"`
-	MaxRepeatPct float64        `json:"maxRepeatPct"`
+	// rate, timed, nothing uploaded.
+	Tries []benchmarkTry `json:"tries"`
 }
 
 // recorderSettings come with every job: the benchmark's pick.
@@ -1067,13 +1066,6 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 		headers := map[string]string{"X-AT-Markers": string(markers)}
 		if c.seconds > 0 {
 			headers["X-AT-Seconds"] = strconv.FormatFloat(c.seconds, 'f', 1, 64)
-		}
-		if q, qerr := frameCheck(ctx, c.path); qerr == nil {
-			qj, _ := json.Marshal(q)
-			headers["X-AT-Quality"] = string(qj)
-			log.Printf("moment %d: %.1f%% repeated, %.1f%% jumped frames", c.moment.ID, q.RepeatPct, q.JumpPct)
-		} else {
-			log.Printf("moment %d: frame check failed: %v", c.moment.ID, qerr)
 		}
 		route := fmt.Sprintf("/api/game/cs2/recorder/jobs/%d/clip", c.moment.ID)
 		turnedDown, uerr := r.uploadClip(ctx, c.path, route, headers)
