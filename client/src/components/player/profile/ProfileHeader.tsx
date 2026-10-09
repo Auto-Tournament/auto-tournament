@@ -1,3 +1,4 @@
+import { ReportPlayerButton } from './ReportPlayerButton';
 import { ProfileSocialButtons } from '../../social/ProfileSocialButtons';
 import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
@@ -205,7 +206,10 @@ export function ProfileHeader({
                 {t('playerPage.profileHeader.editProfile')}
               </Button>
               ) : (
-                <ProfileSocialButtons playerId={playerId} name={name} />
+                <>
+                  <ProfileSocialButtons playerId={playerId} name={name} />
+                  <ReportPlayerButton playerId={playerId} name={name} />
+                </>
               )}
             </Box>
           }

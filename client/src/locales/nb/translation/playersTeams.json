@@ -690,5 +690,41 @@
     "maps": "Maps",
     "mapN": "Map {{n}}",
     "overtime": "overtime"
+  },
+  "report": {
+    "button": "Rapporter",
+    "title": "Rapporter {{name}}",
+    "intro": "Adminene ser dette, ikke {{name}}. De får aldri vite hvem som rapporterte dem.",
+    "reasons": {
+      "cheating": "Juks",
+      "toxic": "Giftig eller krenkende",
+      "griefing": "Sabotasje eller kasting",
+      "name": "Støtende navn eller bilde",
+      "other": "Noe annet"
+    },
+    "details": "Hva skjedde (valgfritt)",
+    "detailsRequired": "Hva skjedde",
+    "send": "Send rapport",
+    "cancel": "Avbryt",
+    "sent": "Rapporten om {{name}} er sendt til adminene",
+    "failed": "Kunne ikke sende rapporten"
+  },
+  "reportsPage": {
+    "title": "Rapporter",
+    "subtitle": "Spillere rapportert av andre spillere. Avvis en rapport, eller steng ute spilleren derfra.",
+    "open": "Åpne",
+    "all": "Alle",
+    "emptyOpen": "Ingen åpne rapporter",
+    "empty": "Ingen rapporter ennå",
+    "emptyHelp": "Spillere rapporterer noen fra profilen deres. Alle admins får et varsel.",
+    "openAbout": "{{count}} åpne om dem",
+    "by": "Rapportert av {{name}} · {{time}}",
+    "removedReporter": "en slettet spiller",
+    "dismiss": "Avvis",
+    "dismissed": "Avvist",
+    "actioned": "Utestengt",
+    "dismissedDone": "Rapporten er avvist",
+    "loadError": "Kunne ikke laste rapportene",
+    "actionError": "Kunne ikke gjøre det"
   }
 }

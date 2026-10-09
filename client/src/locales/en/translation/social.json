@@ -36,7 +36,9 @@
       "joined": "You joined the party",
       "nowFriends": "You are now friends",
       "declined": "Declined",
-      "expired": "This party has ended"
+      "expired": "This party has ended",
+      "reportNew": "was reported: {{reason}}",
+      "reportReviewed": "Thanks: your report about {{name}} was reviewed."
     },
     "toast": {
       "join": "Join party",

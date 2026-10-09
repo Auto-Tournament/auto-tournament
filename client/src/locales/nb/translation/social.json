@@ -36,7 +36,9 @@
       "joined": "Du ble med i gruppa",
       "nowFriends": "Dere er nå venner",
       "declined": "Avslått",
-      "expired": "Gruppa finnes ikke lenger"
+      "expired": "Gruppa finnes ikke lenger",
+      "reportNew": "ble rapportert: {{reason}}",
+      "reportReviewed": "Takk: rapporten din om {{name}} er gjennomgått."
     },
     "toast": {
       "join": "Bli med",

@@ -671,6 +671,10 @@
       "description": "A player's CS2 totals, everyone's totals to compare with, and their results per map."
     },
     {
+      "name": "Player reports",
+      "description": "Players report another player to the admins; admins list, dismiss, or ban from a report."
+    },
+    {
       "name": "Players",
       "description": "Player records, ratings, match history and profiles."
     },
@@ -10038,6 +10042,176 @@
             "description": "No such pack, or it has no tile"
           }
         }
+      }
+    },
+    "/api/player-reports": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Reports (admin)",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`reports`, newest first, and `open`: how many are open"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Report a player to the admins",
+        "description": "Signed-in players only, not while impersonating. `reason` is cheating,\ntoxic, griefing, name or other (`details` required for other). One\nopen report per player, 10 a day. Every admin is notified.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "playerId": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "cheating",
+                      "toxic",
+                      "griefing",
+                      "name",
+                      "other"
+                    ]
+                  },
+                  "details": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sent"
+          },
+          "400": {
+            "description": "No reason, no details for other, or yourself"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "409": {
+            "description": "You already have an open report about this player"
+          },
+          "429": {
+            "description": "Too many reports today"
+          }
+        }
+      }
+    },
+    "/api/player-reports/{id}/ban": {
+      "post": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Ban the reported player (admin); every open report about them closes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Banned"
+          },
+          "404": {
+            "description": "No open report with that id"
+          },
+          "409": {
+            "description": "The player is an admin, or deleted"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/player-reports/{id}/dismiss": {
+      "post": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Dismiss a report (admin); its reporter hears it was reviewed",
+        "responses": {
+          "200": {
+            "description": "Dismissed"
+          },
+          "404": {
+            "description": "No open report with that id"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/players": {

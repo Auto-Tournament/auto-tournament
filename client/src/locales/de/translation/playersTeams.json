@@ -690,5 +690,41 @@
     "maps": "Maps",
     "mapN": "Map {{n}}",
     "overtime": "overtime"
+  },
+  "report": {
+    "button": "Report",
+    "title": "Report {{name}}",
+    "intro": "The admins see this, not {{name}}. They never learn who reported them.",
+    "reasons": {
+      "cheating": "Cheating",
+      "toxic": "Toxic or abusive",
+      "griefing": "Griefing or throwing",
+      "name": "Offensive name or picture",
+      "other": "Something else"
+    },
+    "details": "What happened (optional)",
+    "detailsRequired": "What happened",
+    "send": "Send report",
+    "cancel": "Cancel",
+    "sent": "Report about {{name}} sent to the admins",
+    "failed": "Could not send the report"
+  },
+  "reportsPage": {
+    "title": "Reports",
+    "subtitle": "Players reported by other players. Dismiss a report, or ban the player from it.",
+    "open": "Open",
+    "all": "All",
+    "emptyOpen": "No open reports",
+    "empty": "No reports yet",
+    "emptyHelp": "Players report someone from their profile. Every admin gets a notification.",
+    "openAbout": "{{count}} open about them",
+    "by": "Reported by {{name}} · {{time}}",
+    "removedReporter": "a deleted player",
+    "dismiss": "Dismiss",
+    "dismissed": "Dismissed",
+    "actioned": "Banned",
+    "dismissedDone": "Report dismissed",
+    "loadError": "Could not load the reports",
+    "actionError": "Could not do that"
   }
 }

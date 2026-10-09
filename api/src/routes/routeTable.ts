@@ -44,6 +44,7 @@ import testRoutes from './test';
 import authRoutes from './auth';
 import { setupRouter, localAuthRouter, localAccountsRouter } from './localAdmin';
 import { emailSettingsRouter, meEmailRouter, emailLinksRouter } from './email';
+import reportRoutes from './reports';
 import gamesRoutes from './games';
 import gamePackRoutes from './gamePacks';
 import moduleRoutes from './modules';
@@ -233,6 +234,12 @@ const coreRoutes: MountedRouter[] = [
     title: 'System',
     description:
       'The platform process: whether it can restart itself, and a restart (so a module update that waits for one can finish). Admin only; writes must be same-site JSON.',
+  },
+  {
+    prefix: '/api/player-reports',
+    router: reportRoutes,
+    title: 'Player reports',
+    description: 'Players report another player to the admins; admins list, dismiss, or ban from a report.',
   },
   {
     prefix: '/api/me/email',

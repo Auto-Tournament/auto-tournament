@@ -36,7 +36,9 @@
       "nowFriends": "You are now friends",
       "declined": "Declined",
       "expired": "This party has ended",
-      "lineupGap": "· a starter left your lineup. Pick a sub within {{minutes}} minutes, or you play short-handed."
+      "lineupGap": "· a starter left your lineup. Pick a sub within {{minutes}} minutes, or you play short-handed.",
+      "reportNew": "was reported: {{reason}}",
+      "reportReviewed": "Thanks: your report about {{name}} was reviewed."
     },
     "toast": {
       "join": "Join party",

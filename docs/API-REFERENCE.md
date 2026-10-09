@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 623 of them, 390 behind auth —
+Every endpoint this API serves — 627 of them, 393 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -853,6 +853,17 @@ The platform process: whether it can restart itself, and a restart (so a module 
 | --- | --- | --- |
 | `GET` | `/api/system/restart` | admin |
 | `POST` | `/api/system/restart` | admin |
+
+### Player reports
+
+Players report another player to the admins; admins list, dismiss, or ban from a report.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `POST` | `/api/player-reports` | public |
+| `GET` | `/api/player-reports` | admin |
+| `POST` | `/api/player-reports/:id/dismiss` | admin |
+| `POST` | `/api/player-reports/:id/ban` | admin |
 
 ### My email
 

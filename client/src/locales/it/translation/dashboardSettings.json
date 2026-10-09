@@ -411,7 +411,8 @@
         "platform": "Platform",
         "platformHint": "Tournaments, people, the site",
         "gameHint": "Its pages and settings"
-      }
+      },
+      "reports": "Reports"
     },
     "status": {
       "live": "LIVE",

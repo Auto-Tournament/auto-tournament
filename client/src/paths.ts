@@ -74,6 +74,8 @@ export const paths = {
   manage: '/manage',
   teams: '/teams',
   players: '/players',
+  /** Admin: player reports. */
+  reports: '/reports',
   servers: '/servers',
   tournament: '/tournament',
   /** Admin: every tournament, and creating another. */

@@ -41,7 +41,8 @@ export interface Found extends Person {
 
 export interface Notice {
   id: number;
-  kind: 'party_invite' | 'friend_request' | 'friend_accepted' | 'skin' | 'highlight' | 'tournament' | 'news';
+  kind: 'party_invite' | 'friend_request' | 'friend_accepted' | 'skin' | 'highlight' | 'tournament' | 'news'
+    | 'report';
   data: Record<string, unknown>;
   createdAt: number;
   read: boolean;

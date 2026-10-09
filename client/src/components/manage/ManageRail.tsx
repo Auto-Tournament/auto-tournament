@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, ButtonBase, Menu, MenuItem } from '@mui/material';
 import {
+  FlagIcon,
   ListBulletsIcon,
   FilmStripIcon,
   ArrowSquareOutIcon,
@@ -170,6 +171,12 @@ export const ManageRail: React.FC = () => {
             label: t('managePage.rail.players'),
             to: paths.players,
             icon: UserIcon,
+          },
+          {
+            key: 'reports',
+            label: t('managePage.rail.reports'),
+            to: paths.reports,
+            icon: FlagIcon,
           },
         ],
       },

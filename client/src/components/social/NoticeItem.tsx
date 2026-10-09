@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { Box, Button, ButtonBase, Typography } from '@mui/material';
-import { PlayIcon, SparkleIcon, TrophyIcon } from '@phosphor-icons/react';
+import { PlayIcon, SparkleIcon, TrophyIcon, FlagIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { PlayerAvatar } from '../player/PlayerAvatar';
@@ -145,6 +145,21 @@ export function NoticeItem({ notice, viewerId, onNavigate }: Props) {
       );
       // A lineup gap: the captain picks a sub on the sign-up page.
       to = d.tournamentId ? `/tournament/${Number(d.tournamentId)}${d.event === 'started' ? '/match' : '/signup'}` : null;
+      break;
+    case 'report':
+      icon = <FlagIcon size={16} />;
+      if (d.event === 'reviewed') {
+        text = <>{t('social.notice.reportReviewed', { name: str(d.name) })}</>;
+        to = null;
+      } else {
+        text = (
+          <>
+            <Box component="b" sx={{ color: color.ink, fontWeight: 600 }}>{str(d.name)}</Box>{' '}
+            {t('social.notice.reportNew', { reason: t(`report.reasons.${str(d.reason) || 'other'}`) })}
+          </>
+        );
+        to = '/reports';
+      }
       break;
     case 'news':
       icon = <AtIcon size={18} />;
