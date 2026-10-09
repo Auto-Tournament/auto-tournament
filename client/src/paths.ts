@@ -87,6 +87,8 @@ export const paths = {
   disputes: '/manage/disputes',
   /** Every played match, any tournament (deleted ones too), with demos. */
   playedMatches: '/manage/played',
+  /** Admin: highlights (settings, music, each game's recorders). */
+  highlights: '/manage/highlights',
   /** Admin: import a match played elsewhere from its demos. */
   importMatch: '/manage/played/import',
   /** System: match recovery and the app log (was Admin tools at /admin). */

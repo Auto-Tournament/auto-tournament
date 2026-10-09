@@ -491,6 +491,11 @@ process.on('uncaughtException', (err) => {
     await db.init();
     log.success('Database initialized successfully');
 
+    // Music an earlier beta downloaded by itself, gone (bring your own now).
+    void import('./services/highlights/music')
+      .then((m) => m.removeDownloadedCatalogue())
+      .catch(() => undefined);
+
     // Which tournament is featured (services/currentTournament.ts), kept fresh.
     await refreshCurrentTournamentId();
     startCurrentTournamentRefresh();

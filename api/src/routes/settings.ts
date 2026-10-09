@@ -1,3 +1,4 @@
+import { readHighlightSettings } from '../services/highlights/settings';
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { settingsService } from '../services/settingsService';
@@ -57,6 +58,7 @@ const mapSettingsResponse = async () => {
   const allowSelfRegister = await settingsService.isSelfRegistrationAllowed();
   const siteName = await settingsService.getSiteName();
   const webhooksAllowPrivateTargets = await settingsService.areWebhookPrivateTargetsAllowed();
+  const highlights = await readHighlightSettings((key) => settingsService.getSetting(key));
 
   const integrationFields: Record<string, unknown> = {};
   for (const integration of listIntegrations()) {
@@ -72,6 +74,7 @@ const mapSettingsResponse = async () => {
     defaultPlayerElo,
     ratingsEnabled,
     allowSelfRegister,
+    ...highlights,
     webhooksAllowPrivateTargets,
     ...integrationFields,
   };

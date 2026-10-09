@@ -1268,6 +1268,14 @@ export interface ClientGameIntegration {
    */
   tournamentTab?: { path: string; labelKey: string; Component: ComponentType<TournamentTabProps> };
 
+  /**
+   * The game's tab on the Highlights page (client API 0.2.18), after core's
+   * Settings (what every game's recorders follow, and the music library).
+   * CS2: its recorders, the overlays and how to add a recorder. `labelKey` is
+   * in the module's strings.
+   */
+  highlightsAdmin?: { labelKey: string; Component: ComponentType<Record<string, never>> };
+
   /** At the top of a finished tournament's results (CS2: the tournament reel). */
   tournamentResultsSection?: ComponentType<TournamentResultsSectionProps>;
 

@@ -13,6 +13,22 @@ export function getSchemaSQL(): string {
     -- map_pools (config/cs2TableHandover.ts).
 
     -- Application settings table
+    -- Music under highlight reels: the tracks an admin uploads, for every
+    -- game's highlights (services/highlights/music.ts). Was CS2's
+    -- cs2_music_tracks (moved by the 2026-10-09 schema migration).
+    CREATE TABLE IF NOT EXISTS highlight_music_tracks (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      artist TEXT,
+      genre TEXT,
+      source TEXT, -- where it came from, for credit
+      content_id INTEGER NOT NULL DEFAULT 0, -- registered with YouTube Content ID
+      file TEXT NOT NULL, -- under DATA_DIR/highlights/music
+      seconds INTEGER,
+      gain_db REAL, -- evens its loudness out with the others
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
     CREATE TABLE IF NOT EXISTS app_settings (
       key TEXT PRIMARY KEY,
       value TEXT,

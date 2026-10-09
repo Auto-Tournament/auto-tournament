@@ -1,6 +1,6 @@
 /**
  * The music reels play: the install's own library (bring your own music; the
- * API's demos/music.ts). The admin adds tracks they have the rights to,
+ * API's services/highlights/music.ts). The admin adds tracks they have the rights to,
  * listens to them, picks which play (`highlights_music`: every track, none or
  * the picked ones) and removes them. Under it, tracks that fit reels to find
  * on Pixabay and add (the API's MUSIC_SUGGESTIONS).
@@ -20,15 +20,11 @@ import {
   Typography,
 } from '@mui/material';
 import { PauseIcon, PlayIcon, TrashIcon, UploadSimpleIcon } from '@phosphor-icons/react';
-import {
-  api,
-  ExternalLink,
-  MUSIC_GAIN,
-  PLAYER_VOLUME_DEFAULT,
-  PLAYER_VOLUME_KEY,
-  useModuleTranslation,
-  type MusicTrack,
-} from '../../../module-sdk';
+import { useTranslation } from 'react-i18next';
+import { api } from '../../utils/api';
+import { ExternalLink } from '../common/ExternalLink';
+import { MUSIC_GAIN, PLAYER_VOLUME_DEFAULT, PLAYER_VOLUME_KEY } from './HighlightPlayer';
+import type { MusicTrack } from './HighlightPlayer';
 
 interface Suggestion {
   title: string;
@@ -71,7 +67,7 @@ export function HighlightMusicSetting({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const { t } = useModuleTranslation('cs2');
+  const { t } = useTranslation();
   const [all, setAll] = useState<MusicTrack[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [playing, setPlaying] = useState<string | null>(null);
@@ -93,7 +89,7 @@ export function HighlightMusicSetting({
 
   const load = useCallback(() => {
     api
-      .get<{ all: MusicTrack[]; suggestions?: Suggestion[] }>('/api/game/cs2/music')
+      .get<{ all: MusicTrack[]; suggestions?: Suggestion[] }>('/api/highlights/music')
       .then((res) => {
         setAll(res.all);
         setSuggestions(res.suggestions ?? []);
@@ -126,7 +122,7 @@ export function HighlightMusicSetting({
       setPlaying(null);
       return;
     }
-    const a = new Audio(`/api/game/cs2/music/${encodeURIComponent(id)}/file`);
+    const a = new Audio(`/api/highlights/music/${encodeURIComponent(id)}/file`);
     a.volume = Math.min(1, savedVolume() * MUSIC_GAIN);
     a.onended = () => setPlaying(null);
     audio.current = a;
@@ -146,7 +142,7 @@ export function HighlightMusicSetting({
         source: source.trim(),
         contentId: contentId ? '1' : '0',
       });
-      const res = await fetch(`/api/game/cs2/music?${q}`, {
+      const res = await fetch(`/api/highlights/music?${q}`, {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': file.type || 'application/octet-stream' },
@@ -174,7 +170,7 @@ export function HighlightMusicSetting({
     setError('');
     setBusy(true);
     try {
-      await api.post('/api/game/cs2/music/from-link', {
+      await api.post('/api/highlights/music/from-link', {
         url: link.trim(),
         title: title.trim(),
         artist: artist.trim(),
@@ -197,7 +193,7 @@ export function HighlightMusicSetting({
 
   const remove = async (id: string) => {
     if (playing === id) audio.current?.pause();
-    await api.delete(`/api/game/cs2/music/${encodeURIComponent(id)}`).catch(() => undefined);
+    await api.delete(`/api/highlights/music/${encodeURIComponent(id)}`).catch(() => undefined);
     setRemoving(null);
     if (mode === 'pick') setPicked(new Set([...picked].filter((x) => x !== id)));
     load();
@@ -214,7 +210,7 @@ export function HighlightMusicSetting({
     >
       <TextField
         select
-        label={t('settings.highlights.music.label')}
+        label={t('highlightsPage.music.label')}
         value={mode}
         onChange={(e) => {
           const next = e.target.value as Mode;
@@ -226,12 +222,12 @@ export function HighlightMusicSetting({
         sx={{ maxWidth: 320 }}
         inputProps={{ 'data-testid': 'cs2-highlights-music-mode' }}
       >
-        <MenuItem value="all">{t('settings.highlights.music.all', { count: all.length })}</MenuItem>
-        <MenuItem value="pick">{t('settings.highlights.music.pick')}</MenuItem>
-        <MenuItem value="off">{t('settings.highlights.music.off')}</MenuItem>
+        <MenuItem value="all">{t('highlightsPage.music.all', { count: all.length })}</MenuItem>
+        <MenuItem value="pick">{t('highlightsPage.music.pick')}</MenuItem>
+        <MenuItem value="off">{t('highlightsPage.music.off')}</MenuItem>
       </TextField>
       <Typography variant="caption" color="text.secondary">
-        {t('settings.highlights.music.byo')}
+        {t('highlightsPage.music.byo')}
       </Typography>
 
       {all.length > 0 && (
@@ -273,8 +269,8 @@ export function HighlightMusicSetting({
                 onClick={() => listen(x.id)}
                 aria-label={t(
                   playing === x.id
-                    ? 'settings.highlights.music.stop'
-                    : 'settings.highlights.music.listen',
+                    ? 'highlightsPage.music.stop'
+                    : 'highlightsPage.music.listen',
                   { title: x.title }
                 )}
               >
@@ -293,22 +289,22 @@ export function HighlightMusicSetting({
                 </Typography>
               </Box>
               {x.contentId && (
-                <Chip size="small" label={t('settings.highlights.music.contentId')} />
+                <Chip size="small" label={t('highlightsPage.music.contentId')} />
               )}
               {removing === x.id ? (
                 <>
                   <Button size="small" color="error" onClick={() => void remove(x.id)}>
-                    {t('settings.highlights.music.removeConfirm')}
+                    {t('highlightsPage.music.removeConfirm')}
                   </Button>
                   <Button size="small" onClick={() => setRemoving(null)}>
-                    {t('settings.highlights.music.keep')}
+                    {t('highlightsPage.music.keep')}
                   </Button>
                 </>
               ) : (
                 <IconButton
                   size="small"
                   onClick={() => setRemoving(x.id)}
-                  aria-label={t('settings.highlights.music.remove', { title: x.title })}
+                  aria-label={t('highlightsPage.music.remove', { title: x.title })}
                 >
                   <TrashIcon size={16} />
                 </IconButton>
@@ -335,7 +331,7 @@ export function HighlightMusicSetting({
         }}
         data-testid="cs2-music-add"
       >
-        <Typography variant="subtitle2">{t('settings.highlights.music.addTitle')}</Typography>
+        <Typography variant="subtitle2">{t('highlightsPage.music.addTitle')}</Typography>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
           <Button
             component="label"
@@ -343,7 +339,7 @@ export function HighlightMusicSetting({
             size="small"
             startIcon={<UploadSimpleIcon size={16} />}
           >
-            {t('settings.highlights.music.chooseFile')}
+            {t('highlightsPage.music.chooseFile')}
             <input
               ref={fileInput}
               hidden
@@ -358,13 +354,13 @@ export function HighlightMusicSetting({
             />
           </Button>
           <Typography variant="body2" color="text.secondary" noWrap sx={{ minWidth: 0, flex: 1 }}>
-            {file?.name ?? t('settings.highlights.music.noFile')}
+            {file?.name ?? t('highlightsPage.music.noFile')}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
           <TextField
             size="small"
-            label={t('settings.highlights.music.link')}
+            label={t('highlightsPage.music.link')}
             placeholder="https://cdn.pixabay.com/download/audio/…mp3"
             value={link}
             onChange={(e) => setLink(e.target.value)}
@@ -378,32 +374,32 @@ export function HighlightMusicSetting({
             onClick={() => void addLink()}
             data-testid="cs2-music-add-link"
           >
-            {t('settings.highlights.music.addLink')}
+            {t('highlightsPage.music.addLink')}
           </Button>
         </Box>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.25 }}>
           <TextField
             size="small"
-            label={t('settings.highlights.music.trackTitle')}
+            label={t('highlightsPage.music.trackTitle')}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
           <TextField
             size="small"
-            label={t('settings.highlights.music.artist')}
+            label={t('highlightsPage.music.artist')}
             value={artist}
             onChange={(e) => setArtist(e.target.value)}
           />
           <TextField
             size="small"
-            label={t('settings.highlights.music.genre')}
+            label={t('highlightsPage.music.genre')}
             value={genre}
             onChange={(e) => setGenre(e.target.value)}
             inputProps={{ list: 'cs2-music-genres' }}
           />
           <TextField
             size="small"
-            label={t('settings.highlights.music.source')}
+            label={t('highlightsPage.music.source')}
             value={source}
             onChange={(e) => setSource(e.target.value)}
           />
@@ -421,7 +417,7 @@ export function HighlightMusicSetting({
               onChange={(e) => setContentId(e.target.checked)}
             />
           }
-          label={t('settings.highlights.music.contentIdLabel')}
+          label={t('highlightsPage.music.contentIdLabel')}
         />
         {error && <Alert severity="error">{error}</Alert>}
         <Box>
@@ -432,28 +428,28 @@ export function HighlightMusicSetting({
             disabled={!file || busy}
             data-testid="cs2-music-upload"
           >
-            {busy ? t('settings.highlights.music.adding') : t('settings.highlights.music.add')}
+            {busy ? t('highlightsPage.music.adding') : t('highlightsPage.music.add')}
           </Button>
         </Box>
         <Typography variant="caption" color="text.secondary">
-          {t('settings.highlights.music.rights')}
+          {t('highlightsPage.music.rights')}
         </Typography>
       </Box>
 
       {suggestions.length > 0 && (
         <Box component="details" sx={{ '& summary': { cursor: 'pointer' } }}>
           <Typography component="summary" variant="body2">
-            {t('settings.highlights.music.suggestions', { count: suggestions.length })}
+            {t('highlightsPage.music.suggestions', { count: suggestions.length })}
           </Typography>
           <Typography variant="caption" color="text.secondary" display="block" sx={{ my: 1 }}>
-            {t('settings.highlights.music.suggestionsHelp')}
+            {t('highlightsPage.music.suggestionsHelp')}
           </Typography>
           <Box component="ul" sx={{ m: 0, pl: 2.5, maxHeight: 280, overflowY: 'auto' }}>
             {suggestions.map((s) => (
               <Box component="li" key={s.page} sx={{ fontSize: '0.8125rem', mb: 0.5 }}>
                 <ExternalLink href={s.page}>{s.title}</ExternalLink>
                 {` · ${s.artist}`}
-                {s.contentId ? ` · ${t('settings.highlights.music.contentId')}` : ''}
+                {s.contentId ? ` · ${t('highlightsPage.music.contentId')}` : ''}
               </Box>
             ))}
           </Box>

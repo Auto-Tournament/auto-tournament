@@ -228,6 +228,7 @@ export const COMPONENT_SLOTS = [
   'matchMapAction',
   'tournamentTab.Component',
   'tournamentResultsSection',
+  'highlightsAdmin.Component',
 ] as const;
 
 export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];

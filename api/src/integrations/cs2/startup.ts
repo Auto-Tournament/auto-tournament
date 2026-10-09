@@ -66,8 +66,6 @@ export async function startCs2(): Promise<void> {
   startAutoStart();
   // A veto step a team does not take in time is taken for them (veto_turn_seconds).
   startVetoTimer();
-  // Music an earlier beta downloaded by itself, gone (demos/music.ts: bring your own now).
-  void import('./demos/music').then((m) => m.removeDownloadedCatalogue()).catch(() => undefined);
 
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on

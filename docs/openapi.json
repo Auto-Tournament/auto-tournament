@@ -5350,156 +5350,6 @@
         ]
       }
     },
-    "/api/game/cs2/music": {
-      "get": {
-        "tags": [
-          "Highlights"
-        ],
-        "summary": "GET /api/game/cs2/music",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Highlights"
-        ],
-        "summary": "POST /api/game/cs2/music",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
-    "/api/game/cs2/music/from-link": {
-      "post": {
-        "tags": [
-          "Highlights"
-        ],
-        "summary": "POST /api/game/cs2/music/from-link",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
-    "/api/game/cs2/music/{id}": {
-      "put": {
-        "tags": [
-          "Highlights"
-        ],
-        "summary": "PUT /api/game/cs2/music/:id",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "Highlights"
-        ],
-        "summary": "DELETE /api/game/cs2/music/:id",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
-    "/api/game/cs2/music/{id}/file": {
-      "get": {
-        "tags": [
-          "Highlights"
-        ],
-        "summary": "GET /api/game/cs2/music/:id/file",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
     "/api/game/cs2/players/me/highlights/favourite": {
       "put": {
         "tags": [
@@ -7363,6 +7213,220 @@
             "description": "Fleet snapshot"
           }
         }
+      }
+    },
+    "/api/highlights/music": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "The music library",
+        "description": "`tracks`: the ones reels play (the Highlights setting), `all`: every track, `suggestions`: where to find music.",
+        "responses": {
+          "200": {
+            "description": "The library"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Add a track (admin)",
+        "description": "The audio file as the body; title, artist, genre, source and contentId in the query.",
+        "responses": {
+          "200": {
+            "description": "`track`"
+          },
+          "400": {
+            "description": "No title, or not audio"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/highlights/music/from-link": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Add a track from a link to its audio file (admin)",
+        "responses": {
+          "200": {
+            "description": "`track`"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/highlights/music/{id}": {
+      "put": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Edit a track's details (admin)",
+        "responses": {
+          "200": {
+            "description": "`track`"
+          },
+          "404": {
+            "description": "No such track"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Remove a track (admin)",
+        "responses": {
+          "200": {
+            "description": "Removed"
+          },
+          "404": {
+            "description": "No such track"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/highlights/music/{id}/file": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "A track's own file, to listen to in the library (admin)",
+        "responses": {
+          "200": {
+            "description": "The audio"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/highlights/videos/{file}/download": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Download a video with its crowd and/or a music track mixed in",
+        "description": "`music` (a track id), `crowd=1`, `intro` (seconds), `level` (the music's\nlevel, 0 to 1), `clean=1` (without the overlay). Mixed once, then kept.\n",
+        "responses": {
+          "200": {
+            "description": "The video"
+          },
+          "404": {
+            "description": "No such video, track or crowd track"
+          }
+        },
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/highlights/videos/{file}/music/{track}": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "A reel's own mix of a library track, for the player",
+        "description": "Cut to the reel, evened out and faded; never the track's file. `intro` is where the reel's intro ends (seconds).",
+        "responses": {
+          "200": {
+            "description": "The mix (audio/mp4)"
+          }
+        },
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "track",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/integrations/teams": {

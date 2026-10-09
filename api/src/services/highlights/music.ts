@@ -1,5 +1,6 @@
 /**
- * Music under reels: the install's own library. Admins upload the tracks they
+ * Music under reels: the install's own library, for every game's highlights
+ * (core since 3.0: CS2 had it first). Admins upload the tracks they
  * have the rights to (bring your own music: Auto Tournament ships none and
  * downloads none; musicSuggestions.ts lists where to find some, and
  * THIRD-PARTY-MEDIA.md why). The reels carry only the game and the crowd.
@@ -15,9 +16,12 @@
 import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { db } from '../../../config/database';
-import { settingsService } from '../../../services/settingsService';
-import { HIGHLIGHTS_DIR } from './highlights';
+import { db } from '../../config/database';
+import { DATA_DIR } from '../../config/dataDir';
+import { settingsService } from '../settingsService';
+
+/** Where highlight videos are kept (every game's recorder uploads here). */
+export const HIGHLIGHTS_DIR = path.join(DATA_DIR, 'highlights');
 
 const MUSIC_DIR = path.join(HIGHLIGHTS_DIR, 'music');
 const MIX_DIR = path.join(HIGHLIGHTS_DIR, 'with-music');
@@ -86,7 +90,7 @@ const toTrack = (r: TrackRow): MusicTrack => ({
 /** Every track in the library, grouped by genre. */
 export async function allTracks(): Promise<MusicTrack[]> {
   const rows = await db.queryAsync<TrackRow>(
-    'SELECT * FROM cs2_music_tracks ORDER BY genre, lower(title), id'
+    'SELECT * FROM highlight_music_tracks ORDER BY genre, lower(title), id'
   );
   return rows.map(toTrack);
 }
@@ -120,7 +124,7 @@ export async function enabledTracks(): Promise<MusicTrack[]> {
 
 export async function trackById(id: string): Promise<(MusicTrack & { file: string }) | undefined> {
   if (!/^\d{1,9}$/.test(id)) return undefined;
-  const row = await db.queryOneAsync<TrackRow>('SELECT * FROM cs2_music_tracks WHERE id = ?', [
+  const row = await db.queryOneAsync<TrackRow>('SELECT * FROM highlight_music_tracks WHERE id = ?', [
     Number(id),
   ]);
   return row ? { ...toTrack(row), file: path.join(MUSIC_DIR, row.file) } : undefined;
@@ -204,7 +208,7 @@ export async function addTrack(
   }
   const gainDb = Math.max(-12, Math.min(12, Math.round((MUSIC_TARGET_LUFS - m.lufs) * 10) / 10));
   const row = await db.queryOneAsync<TrackRow>(
-    `INSERT INTO cs2_music_tracks (title, artist, genre, source, content_id, file, seconds, gain_db)
+    `INSERT INTO highlight_music_tracks (title, artist, genre, source, content_id, file, seconds, gain_db)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
     [
       meta.title.slice(0, 120),
@@ -269,7 +273,7 @@ export async function updateTrack(
   const t = await trackById(id);
   if (!t) return null;
   await db.runAsync(
-    'UPDATE cs2_music_tracks SET title = ?, artist = ?, genre = ?, source = ?, content_id = ? WHERE id = ?',
+    'UPDATE highlight_music_tracks SET title = ?, artist = ?, genre = ?, source = ?, content_id = ? WHERE id = ?',
     [
       (fields.title ?? t.title).slice(0, 120),
       (fields.artist ?? t.artist).slice(0, 120),
@@ -286,7 +290,7 @@ export async function updateTrack(
 export async function removeTrack(id: string): Promise<boolean> {
   const t = await trackById(id);
   if (!t) return false;
-  await db.runAsync('DELETE FROM cs2_music_tracks WHERE id = ?', [Number(id)]);
+  await db.runAsync('DELETE FROM highlight_music_tracks WHERE id = ?', [Number(id)]);
   fs.rmSync(t.file, { force: true });
   for (const f of fs.existsSync(MIX_DIR) ? fs.readdirSync(MIX_DIR) : []) {
     if (f.includes(`-m${id}-`)) fs.rmSync(path.join(MIX_DIR, f), { force: true });

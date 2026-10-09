@@ -1,3 +1,4 @@
+import { HIGHLIGHT_SETTINGS, type HighlightSettingKey } from './highlights/settings';
 import { db } from '../config/database';
 import { effectiveProviderSettings } from '../config/signInProviders';
 import { log } from '../utils/logger';
@@ -44,7 +45,9 @@ export type CoreSettingKey =
   | 'webhooks_allow_private_targets'
   // Experimental features (services/experimentalFeatures), off by default.
   // Set through /api/experimental only.
-  | 'experimental_matchmaking';
+  | 'experimental_matchmaking'
+  // What every game's highlights follow (services/highlights/settings.ts).
+  | HighlightSettingKey;
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -164,6 +167,8 @@ export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSetting
       return { value: trimmed, message: `License check-in state saved (${key})` };
     },
   })),
+  // Highlights: every game's recorders follow these.
+  ...HIGHLIGHT_SETTINGS,
 ];
 
 /**

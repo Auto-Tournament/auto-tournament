@@ -382,6 +382,27 @@ export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
       );
     },
   },
+  {
+    id: '2026-10-09-highlight-music-to-core',
+    description: "Move the reel music library from CS2's cs2_music_tracks to core's highlight_music_tracks, ids kept",
+    async up(client) {
+      // Every game's highlights share the library now. The ids stay: the
+      // highlights_music setting lists the tracks an admin picked by id. A
+      // database without CS2's table (fresh, or CS2 never installed) has
+      // nothing to move.
+      const has = await client.query<{ t: string | null }>("SELECT to_regclass('cs2_music_tracks')::text AS t");
+      if (!has.rows[0]?.t) return;
+      await client.query(
+        `INSERT INTO highlight_music_tracks (id, title, artist, genre, source, content_id, file, seconds, gain_db, created_at)
+         SELECT id, title, artist, genre, source, content_id, file, seconds, gain_db, created_at FROM cs2_music_tracks
+         ON CONFLICT (id) DO NOTHING`
+      );
+      await client.query(
+        `SELECT setval(pg_get_serial_sequence('highlight_music_tracks', 'id'),
+                GREATEST((SELECT COALESCE(MAX(id), 0) FROM highlight_music_tracks), 1))`
+      );
+    },
+  },
 ];
 
 /** A fixed key for the advisory lock, so two API processes never run one migration twice. */

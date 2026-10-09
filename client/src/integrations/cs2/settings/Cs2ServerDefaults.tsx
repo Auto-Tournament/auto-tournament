@@ -34,9 +34,9 @@ import {
 } from '@mui/material';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import { Link as RouterLink } from 'react-router-dom';
-import { cs2AdminPaths } from '../adminPaths';
 import {
   api,
+  links,
   radii,
   useIsDevelopment,
   useModuleTranslation,
@@ -944,7 +944,7 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {t('settings.highlights.moved')}{' '}
-          <Link component={RouterLink} to={cs2AdminPaths.highlights}>
+          <Link component={RouterLink} to={links.highlights()}>
             {t('nav.highlights')}
           </Link>
         </Typography>

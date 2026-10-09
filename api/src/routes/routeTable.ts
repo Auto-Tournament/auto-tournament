@@ -33,6 +33,7 @@ import teamMatchRoutes from './teamMatch';
 import teamStatsRoutes from './teamStats';
 import teamDirectoryRoutes from './teamDirectory';
 import searchRoutes from './search';
+import highlightsRoutes from './highlights';
 import settingsRoutes from './settings';
 import signInProvidersRoutes from './signInProviders';
 import templatesRoutes from './templates';
@@ -146,6 +147,12 @@ const coreRoutes: MountedRouter[] = [
     router: leaderboardRoutes,
     title: 'Leaderboard',
     description: "Players ranked by their rating in one game. Public.",
+  },
+  {
+    prefix: '/api/highlights',
+    router: highlightsRoutes,
+    title: 'Highlights',
+    description: "What every game's highlights share: the music library under reels, and the mixes made from it.",
   },
   {
     prefix: '/api/search',

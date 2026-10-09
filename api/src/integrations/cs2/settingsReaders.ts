@@ -8,7 +8,6 @@
  * read simulation mode too.
  */
 
-import { highlightQuality } from './demos/highlightQuality';
 import { settingsService } from '../../services/settingsService';
 import type { Cs2SettingKey } from './settings';
 
@@ -390,15 +389,6 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     atFfwEnabled: atEnhanced.at_ffw_enabled,
     atFfwTime: atEnhanced.at_ffw_time,
     atDemoRecordingEnabled: atEnhanced.at_demo_recording_enabled,
-    // The Auto Tournament logo on highlight videos: on unless turned off.
-    highlightsWatermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
-    // Clips per player per map: 6 unless set.
-    highlightsPerPlayer: Number(await settingsService.getSetting('highlights_per_player')) || 6,
-    // The recorder's video size and frame rate: 1080p60 unless set.
-    ...(await highlightQuality()),
-    // Reel music: '' (every track), 'off', or the picked ids (demos/music.ts).
-    highlightsMusic: (await settingsService.getSetting('highlights_music'))?.trim() ?? '',
-    // Clean twins of the clips (worker/overlay.go): kept unless turned off.
-    highlightsKeepClean: (await settingsService.getSetting('highlights_keep_clean'))?.trim() !== '0',
+    // The highlight settings are core's (services/highlights/settings.ts).
   };
 }

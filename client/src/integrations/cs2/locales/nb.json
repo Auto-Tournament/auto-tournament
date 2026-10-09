@@ -2150,7 +2150,8 @@
     "tabs": {
       "recorders": "Recorders",
       "settings": "Settings",
-      "connect": "Add a recorder"
+      "connect": "Add a recorder",
+      "overlays": "Overlegg"
     },
     "loadError": "Could not load the recorders",
     "actionError": "That didn't work",
@@ -2214,6 +2215,7 @@
       "step3": "Point it at this platform:",
       "step4": "Start it with at-worker record. On its first job it runs a short benchmark, then it shows up under Recorders with its numbers.",
       "gaming": "You can game on the same PC while it records, but the GPU is shared: clips with too many repeated frames are turned down and recorded again elsewhere, and a recorder that keeps failing is paused for 15 minutes."
-    }
+    },
+    "cs2Tab": "Counter-Strike 2"
   }
 }

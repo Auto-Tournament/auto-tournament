@@ -413,7 +413,8 @@
         "platform": "Plattform",
         "platformHint": "Turneringer, folk, nettstedet",
         "gameHint": "Spillets sider og innstillinger"
-      }
+      },
+      "highlights": "Høydepunkter"
     },
     "status": {
       "live": "LIVE",
