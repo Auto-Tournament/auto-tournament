@@ -231,8 +231,20 @@ test('a recorder that keeps sending clips keeps its job', TAGS, async ({ request
   const claim = (recorder: string) =>
     request.post('/api/game/cs2/recorder/claim', { data: { recorder, version: 7 } });
   type Job = { matchSlug: string; players: Array<{ moments: Array<{ id: number }> }> };
+  // The import's moments are saved after its analysis answers: wait for them.
+  await expect
+    .poll(
+      async () => {
+        const list = (await (await request.get('/api/game/cs2/clips')).json()) as {
+          matches: Array<{ slug: string; clips: Array<{ status: string }> }>;
+        };
+        return list.matches.find((m) => m.slug === slug)?.clips.length ?? 0;
+      },
+      { timeout: 15_000 }
+    )
+    .toBeGreaterThan(0);
   let job: Job | null = null;
-  for (let i = 0; i < 20 && job?.matchSlug !== slug; i++) {
+  for (let i = 0; i < 40 && job?.matchSlug !== slug; i++) {
     const res = await claim(a);
     if (res.status() !== 200) break;
     job = (await res.json()).job as Job;
