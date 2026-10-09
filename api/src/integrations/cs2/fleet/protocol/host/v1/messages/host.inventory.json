@@ -30,6 +30,26 @@
       "maxLength": 255,
       "description": "this machine's primary address (the one csm writes as public_addr into the fleet.cfg of servers it creates): where players connect to its servers unless a server reports its own. Absent from csm before 1.21."
     },
+    "license": {
+      "type": "object",
+      "description": "which license this host's servers run under (csm 1.22+). own: the host has its own paid key (a hosting provider), so the platform leaves its servers out of the platform's own count. cap: how many servers the host lets this platform create here.",
+      "required": [
+        "own"
+      ],
+      "properties": {
+        "own": {
+          "type": "boolean"
+        },
+        "license_id": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "cap": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
     "os": {
       "type": "string",
       "maxLength": 128

@@ -443,17 +443,24 @@ export const cs2Integration: GameIntegration = {
    * enabled server rows (the failover reserve among them: a spare is a
    * server), plus enrolled Ready Up servers that are not on an enabled row
    * yet. Only counted, never a reason to hold a match or a failover back.
+   *
+   * Servers on a csm host that runs under its own license (a hosting
+   * provider's key, host.inventory `license.own`) count toward that license,
+   * not this platform's, and are left out.
    */
   async configuredResourceCount() {
-    const { serverService } = await import('./services/serverService');
-    const enabled = (await serverService.getAllServers(true)).length;
     const { db } = await import('../../config/database');
-    const unlinked = await db.queryOneAsync<{ n: number | string }>(
-      `SELECT COUNT(*) AS n FROM cs2_fleet_servers f
+    const hosted = await hostedElsewhere(db);
+    const rows = await db.queryAsync<{ install_id: string | null; linked: number | string }>(
+      `SELECT f.install_id, 1 AS linked FROM cs2_servers s
+         LEFT JOIN cs2_fleet_servers f ON f.id = s.fleet_server_id
+        WHERE s.enabled = 1
+       UNION ALL
+       SELECT f.install_id, 0 AS linked FROM cs2_fleet_servers f
         WHERE f.status = 'enrolled'
           AND NOT EXISTS (SELECT 1 FROM cs2_servers s WHERE s.fleet_server_id = f.id AND s.enabled = 1)`
     );
-    return enabled + Number(unlinked?.n ?? 0);
+    return rows.filter((r) => !(r.install_id && hosted.has(r.install_id))).length;
   },
 
   /**
@@ -718,3 +725,33 @@ export const cs2Integration: GameIntegration = {
 
   clientSlots: ['MatchPanel', 'SetupStep', 'StatsPanel'],
 };
+
+/**
+ * Ready Up install ids on csm hosts that run under a license of their own
+ * (host.inventory `license.own` with another license id than this
+ * platform's): a hosting provider's servers, counted on the provider's
+ * license. Empty when the inventories can't be read.
+ */
+async function hostedElsewhere(db: { queryAsync<T>(sql: string, params?: unknown[]): Promise<T[]> }): Promise<Set<string>> {
+  const out = new Set<string>();
+  try {
+    const { licenseService } = await import('../../services/license/licenseService');
+    const ours = (await licenseService.standing()).licenseId;
+    const hosts = await db.queryAsync<{ inventory: string | null }>('SELECT inventory FROM cs2_fleet_hosts WHERE inventory IS NOT NULL');
+    for (const h of hosts) {
+      const inv = JSON.parse(h.inventory ?? 'null') as {
+        license?: { own?: unknown; license_id?: unknown };
+        servers?: { readyup?: { install_id?: unknown } }[];
+      } | null;
+      const lic = inv?.license;
+      if (!lic || lic.own !== true || (typeof lic.license_id === 'string' && lic.license_id === ours)) continue;
+      for (const srv of inv?.servers ?? []) {
+        const id = srv.readyup?.install_id;
+        if (typeof id === 'string' && id) out.add(id);
+      }
+    }
+  } catch {
+    // Unreadable: count everything (the stricter choice).
+  }
+  return out;
+}
