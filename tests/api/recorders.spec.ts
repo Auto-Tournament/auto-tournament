@@ -100,20 +100,27 @@ test(
     const ids = job.players.flatMap((p) => p.moments.map((m) => m.id));
     expect(ids.length).toBeGreaterThanOrEqual(3);
 
-    const upload = (id: number, repeatPct: number) =>
+    const upload = (id: number) =>
       request.put(`/api/game/cs2/recorder/jobs/${id}/clip`, {
-        headers: {
-          'Content-Type': 'video/mp4',
-          'X-AT-Quality': JSON.stringify({ repeatPct, jumpPct: 1, moving: 1500 }),
-        },
+        headers: { 'Content-Type': 'video/mp4' },
         data: Buffer.from('not really a video'),
       });
 
-    // A smooth clip is kept.
-    expect(await (await upload(ids[0], 0.8)).json()).toMatchObject({ success: true, bytes: 18 });
-    // Three stuttering clips in a row are turned down, and the recorder is paused.
-    for (const id of ids.slice(1, 4)) {
-      expect(await (await upload(id, 9.5)).json()).toMatchObject({ success: true, rejected: true });
+    // Every clip is kept: there is no frame check (a player holding an angle
+    // read as stutter, the EWC final, 2026-10-09).
+    for (const id of ids.slice(0, 3)) {
+      expect(await (await upload(id)).json()).toMatchObject({ success: true, bytes: 18 });
+    }
+    // A recorder whose CS2 will not start, twice: paused.
+    for (let i = 0; i < 2; i++) {
+      await request.post('/api/game/cs2/recorder/fail', {
+        data: {
+          ids: [ids[0]],
+          error: 'CS2 would not start: spec',
+          fault: 'recorder',
+          recorder: name,
+        },
+      });
     }
     const listed = async () =>
       (
@@ -125,11 +132,10 @@ test(
     expect(paused).toMatchObject({
       gpu: 'Spec GPU 9000',
       platform: 'linux/amd64 · docker',
-      clipsOk: 1,
-      clipsRejected: 3,
+      clipsOk: 3,
       paused: true,
     });
-    expect(String(paused.pauseReason)).toContain('repeated frames');
+    expect(String(paused.pauseReason)).toContain('CS2 would not start');
     expect((await claim()).status()).toBe(204);
 
     // An admin resumes it.
@@ -167,33 +173,28 @@ test(
     expect(logText).toContain('line two');
     expect((await listed()).avgClipSeconds).toBe(75);
 
-    // A benchmark: the fastest smooth try wins.
+    // A benchmark: the fastest try that finished wins.
     const bench = await request.post('/api/game/cs2/recorder/benchmark', {
       data: {
         recorder: name,
         tries: [
           {
             gamescopeHz: 360,
-            seconds: 70,
-            captureFps: 300,
-            repeatPct: 12.2,
-            jumpPct: 1.5,
-            ok: true,
+            seconds: null,
+            captureFps: null,
+            ok: false,
+            error: 'no frame near tick 1234',
           },
           {
             gamescopeHz: 240,
             seconds: 83,
             captureFps: 230,
-            repeatPct: 0.7,
-            jumpPct: 1.8,
             ok: true,
           },
           {
             gamescopeHz: 120,
             seconds: 96,
             captureFps: 118,
-            repeatPct: 0.4,
-            jumpPct: 1.4,
             ok: true,
           },
         ],
@@ -270,8 +271,6 @@ test('a second recorder joins a map mid-way, newest match first', TAGS, async ({
             gamescopeHz: 120,
             seconds: 60,
             captureFps: 118,
-            repeatPct: 0.4,
-            jumpPct: 1.4,
             ok: true,
           },
         ],
@@ -314,8 +313,6 @@ test(
             gamescopeHz: 120,
             seconds: 60,
             captureFps: 118,
-            repeatPct: 0.4,
-            jumpPct: 1.4,
             ok: true,
           },
         ],

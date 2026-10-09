@@ -14,33 +14,33 @@ platform works as before; these numbers stay empty.
 
 ```yaml
 # docker-compose.yml, next to the platform
-  auto-tournament-worker:
-    image: sivertio/auto-tournament-worker:next
-    restart: unless-stopped
-    env_file: ../.env            # uses the first of API_TOKENS
-    environment:
-      AT_URL: http://auto-tournament:3000
+auto-tournament-worker:
+  image: sivertio/auto-tournament-worker:next
+  restart: unless-stopped
+  env_file: ../.env # uses the first of API_TOKENS
+  environment:
+    AT_URL: http://auto-tournament:3000
 ```
 
 Or a binary: `go build -o at-worker .` (Linux), `GOOS=windows go build -o at-worker.exe .`.
 
-| Variable | Default | |
-|---|---|---|
-| `AT_URL` | `http://auto-tournament:3000` | the platform |
-| `AT_WORKER_TOKEN` | the first of `API_TOKENS` (its secret, without the `label:`) | an API token |
-| `AT_POLL_SECONDS` | `30` | wait between empty checks |
-| `AT_CS2_DIR` | | a CS2 install's `game/csgo`, read-only: the worker sends each map's radar (image and coordinates) for the 2D replay, every 6 hours |
-| `AT_WORKSHOP_DIRS` | | more directories with workshop map `.vpk` files (colon-separated), for their radars |
+| Variable           | Default                                                      |                                                                                                                                    |
+| ------------------ | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `AT_URL`           | `http://auto-tournament:3000`                                | the platform                                                                                                                       |
+| `AT_WORKER_TOKEN`  | the first of `API_TOKENS` (its secret, without the `label:`) | an API token                                                                                                                       |
+| `AT_POLL_SECONDS`  | `30`                                                         | wait between empty checks                                                                                                          |
+| `AT_CS2_DIR`       |                                                              | a CS2 install's `game/csgo`, read-only: the worker sends each map's radar (image and coordinates) for the 2D replay, every 6 hours |
+| `AT_WORKSHOP_DIRS` |                                                              | more directories with workshop map `.vpk` files (colon-separated), for their radars                                                |
 
 The radars come from the instance's own game files, so nothing of Valve's is
 shipped with Auto Tournament. Mount the install read-only, e.g. on a host
 where csm keeps it:
 
 ```yaml
-    volumes:
-      - /home/cs2servermanager/master-install/game/csgo:/cs2:ro
-    environment:
-      AT_CS2_DIR: /cs2
+volumes:
+  - /home/cs2servermanager/master-install/game/csgo:/cs2:ro
+environment:
+  AT_CS2_DIR: /cs2
 ```
 
 `at-worker radars <game/csgo>` lists what it would send.
@@ -70,11 +70,13 @@ the platform's Highlights settings.
 
 What the platform does with it:
 
-- **Frame check.** Every clip goes up with the share of repeated frames. At 4%
-  or more the platform turns it down and has it recorded again, preferably by
-  another recorder; three in a row pause the recorder for 15 minutes.
+- **Every clip is kept.** There is no stutter check: clips stutter when the
+  GPU is busy with something else, so don't run anything heavy on the PC
+  while it records (see below).
+- **CS2 that will not start.** The job goes back without using up its moments'
+  tries; two such jobs in a row pause the recorder for 15 minutes.
 - **Benchmark.** On its first job the recorder records one moment at 240 and
-  120 Hz and keeps the fastest smooth rate (`AT_GAMESCOPE_HZ`, set by hand,
+  120 Hz and keeps the faster one (`AT_GAMESCOPE_HZ`, set by hand,
   wins).
 - **Run log.** Each job's timings and log show on the Highlights page.
 
@@ -87,10 +89,12 @@ switch Steam to offline mode (in `loginusers.vdf`: `"WantsOfflineMode" "1"` and
 
 `sivertio/auto-tournament-recorder` (amd64) is the recorder with the userland
 it needs. It runs on a Linux PC that already has Steam and CS2, as the PC's
-own user, and uses the PC's GPU, display and sound; you can keep playing on
-the PC while it records (clips that stutter because the GPU is busy are
-turned down and recorded again elsewhere). On the 9070 XT it records as fast
-and as smoothly as without Docker.
+own user, and uses the PC's GPU, display and sound. **On a gaming PC, don't
+run anything heavy while it records** (a game, video encoding, another
+recorder on the same GPU): CS2 then misses frames and the clips stutter, and
+nothing checks for it. An RTX 3060 at 1440p120 is about the least that keeps
+up; anything faster has room to spare. On the 9070 XT
+it records as fast and as smoothly as without Docker.
 
 The platform hands out the command: **Manage → Highlights → Counter-Strike
 2 → Recorders → Add a recorder** makes a recorder key and shows one `docker
@@ -106,7 +110,7 @@ Recorders tab when it first asks for work.
   `/run/user` with mount propagation, so a recorder that Docker starts at boot
   sees the session once someone signs in. Until then it waits for the
   display instead of taking work (a job then would fail on the display).
-- NVIDIA: tick *NVIDIA graphics card* for `--gpus all` (NVIDIA Container
+- NVIDIA: tick _NVIDIA graphics card_ for `--gpus all` (NVIDIA Container
   Toolkit).
 - A game library outside `$HOME`, `/mnt` and `/media`: add its mount.
 - While it has work the recorder keeps the PC from sleeping (the desktop's

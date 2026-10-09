@@ -2,9 +2,9 @@
  * CS2's part of the Highlights page. Four tabs:
  *
  * - Recorders: every recorder that asked for work, with its GPU, status
- *   (online, recording, paused after too many turned-down clips), its
- *   benchmark, how many clips it kept and how many the frame check turned
- *   down, seconds per clip, and its recent runs with their logs (api:
+ *   (online, recording, paused when its CS2 would not start), its
+ *   benchmark, how many clips it kept, seconds per clip, and its recent runs
+ *   with their logs (api:
  *   demos/recorders.ts). An offline one can be forgotten.
  * - Clips: recent matches' clips and reels, what each was made at, and a Redo
  *   for each, or for every one made at other settings (api: demos/clipsAdmin.ts).
@@ -39,7 +39,6 @@ interface BenchmarkTry {
   gamescopeHz: number;
   seconds: number | null;
   captureFps: number | null;
-  repeatPct: number | null;
   ok: boolean;
   error?: string;
 }
@@ -56,7 +55,6 @@ interface Recorder {
   pausedUntil: number | null;
   pauseReason: string | null;
   clipsOk: number;
-  clipsRejected: number;
   benchmark: { tries: BenchmarkTry[]; pick: number | null } | null;
   benchmarkAt: number | null;
   benchmarkWanted: boolean;
@@ -181,7 +179,6 @@ function RecordersTab() {
         </Box>
       )}
       {recorders.map((r) => {
-        const total = r.clipsOk + r.clipsRejected;
         const enc = encodeURIComponent(r.name);
         return (
           <Box
@@ -272,14 +269,6 @@ function RecordersTab() {
               <Stat label={t('highlightsAdmin.stat.perClip')} value={duration(r.avgClipSeconds)} />
               <Stat label={t('highlightsAdmin.stat.kept')} value={String(r.clipsOk)} />
               <Stat
-                label={t('highlightsAdmin.stat.rejected')}
-                value={
-                  total
-                    ? `${r.clipsRejected} (${Math.round((100 * r.clipsRejected) / total)}%)`
-                    : '0'
-                }
-              />
-              <Stat
                 label={t('highlightsAdmin.stat.benchmark')}
                 value={
                   r.benchmarkWanted
@@ -308,7 +297,6 @@ function RecordersTab() {
                       <th>{t('highlightsAdmin.bench.hz')}</th>
                       <th>{t('highlightsAdmin.bench.time')}</th>
                       <th>{t('highlightsAdmin.bench.fps')}</th>
-                      <th>{t('highlightsAdmin.bench.repeats')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -319,7 +307,6 @@ function RecordersTab() {
                         </td>
                         <td>{b.ok ? duration(b.seconds) : (b.error ?? '—')}</td>
                         <td>{b.captureFps != null ? Math.round(b.captureFps) : '—'}</td>
-                        <td>{b.repeatPct != null ? `${b.repeatPct}%` : '—'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -488,7 +475,6 @@ function RunsDialog({ name, onClose }: { name: string | null; onClose: () => voi
                       when(run.startedAt),
                       duration(run.seconds),
                       t('highlightsAdmin.clips', { count: run.clips }),
-                      run.rejected > 0 && t('highlightsAdmin.turnedDown', { count: run.rejected }),
                     ]
                       .filter(Boolean)
                       .join(' · ')}

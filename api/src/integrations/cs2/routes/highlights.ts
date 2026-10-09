@@ -68,7 +68,7 @@ import {
   requireRecorder,
   revokeRecorderKey,
 } from '../demos/recorderKeys';
-import { appendPart, bodyOf, dropUpload, startUpload, UploadError } from '../demos/uploadParts';
+import { appendPart, bodyOf, startUpload, UploadError } from '../demos/uploadParts';
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
 import {
@@ -137,10 +137,9 @@ import {
   setRecorderLabel,
   isPaused,
   recorderFault,
-  judgeClip,
+  clipKept,
   listRecorders,
   listRuns,
-  parseQuality,
   RECORDER_QUALITY_VERSION,
   RecorderError,
   recorderSettings,
@@ -275,14 +274,7 @@ router.put('/recorder/jobs/:id/clip', requireRecorder, async (req: Request, res:
     return res.status(400).json({ success: false, error: 'A video/mp4 body for a highlight' });
   }
   try {
-    // The recorder's frame check (worker/quality.go): a stuttering clip is
-    // turned down and recorded again, preferably by another recorder.
-    const verdict = await judgeClip(id, parseQuality(req.headers['x-at-quality']));
-    if (verdict.rejected) {
-      req.resume();
-      dropUpload(req);
-      return res.json({ success: true, rejected: true });
-    }
+    await clipKept(id);
     const seconds = Number(req.headers['x-at-seconds']);
     const bytes = await saveClip(
       id,
@@ -818,12 +810,11 @@ router.post('/recorder/runs', requireRecorder, async (req: Request, res: Respons
  *     summary: A recorder's benchmark results (recorder)
  *     description: |
  *       `recorder` and `tries`: per refresh rate (`gamescopeHz`) the seconds
- *       the moment took, the capture frame rate, the frame check's
- *       `repeatPct` and `jumpPct`, and `ok`. The fastest smooth try's rate is
- *       kept and sent with every job after (`settings.gamescopeHz`).
+ *       the moment took, the capture frame rate and `ok`. The fastest finished
+ *       try's rate is kept and sent with every job after (`settings.gamescopeHz`).
  *     responses:
  *       200:
- *         description: "`gamescopeHz`: the pick, or null when no try was smooth"
+ *         description: "`gamescopeHz`: the pick, or null when no try finished"
  */
 router.post('/recorder/benchmark', requireRecorder, async (req: Request, res: Response) => {
   try {
@@ -842,7 +833,7 @@ router.post('/recorder/benchmark', requireRecorder, async (req: Request, res: Re
  *     summary: The highlight recorders (admin)
  *     description: |
  *       Each recorder with its GPU, version, last seen, pause, benchmark
- *       (each try and the pick), clips kept and turned down, seconds per clip
+ *       (each try and the pick), clips kept, seconds per clip
  *       over its map jobs, and its last error.
  *     responses:
  *       200:

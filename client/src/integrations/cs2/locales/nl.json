@@ -2175,7 +2175,6 @@
     "stat": {
       "perClip": "Per clip",
       "kept": "Clips kept",
-      "rejected": "Turned down",
       "benchmark": "Benchmark"
     },
     "benchmarkPending": "Runs on its next job",
@@ -2184,8 +2183,7 @@
     "bench": {
       "hz": "Refresh rate",
       "time": "Time",
-      "fps": "Capture fps",
-      "repeats": "Repeated frames"
+      "fps": "Capture fps"
     },
     "lastError": "Last error: {{error}}",
     "runs_one": "{{count}} run",
@@ -2210,8 +2208,6 @@
     "map": "map {{n}}",
     "clips_one": "{{count}} clip",
     "clips_other": "{{count}} clips",
-    "turnedDown_one": "{{count}} turned down",
-    "turnedDown_other": "{{count}} turned down",
     "log": "Log",
     "logError": "Could not load the log",
     "emptyLog": "(empty)",

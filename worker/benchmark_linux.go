@@ -17,8 +17,6 @@ type benchmarkTry struct {
 	GamescopeHz int      `json:"gamescopeHz"`
 	Seconds     *float64 `json:"seconds,omitempty"`
 	CaptureFps  *float64 `json:"captureFps,omitempty"`
-	RepeatPct   *float64 `json:"repeatPct,omitempty"`
-	JumpPct     *float64 `json:"jumpPct,omitempty"`
 	OK          bool     `json:"ok"`
 	Error       string   `json:"error,omitempty"`
 }
@@ -146,15 +144,10 @@ func (r *recorder) benchmarkTries(ctx context.Context, mj *mapJob) ([]benchmarkT
 			t.Seconds = &secs
 			fps := r.rate.fps
 			t.CaptureFps = &fps
-			if q, qerr := frameCheck(ctx, clips[0].path); qerr == nil {
-				t.RepeatPct, t.JumpPct = &q.RepeatPct, &q.JumpPct
-				t.OK = true
-			} else {
-				t.Error = qerr.Error()
-			}
+			t.OK = true
 		}
 		if t.OK {
-			log.Printf("benchmark %d Hz: %.0fs, %.0f fps capture, %.1f%% repeated frames", hz, secs, *t.CaptureFps, *t.RepeatPct)
+			log.Printf("benchmark %d Hz: %.0fs, %.0f fps capture", hz, secs, *t.CaptureFps)
 		} else {
 			log.Printf("benchmark %d Hz: %s", hz, t.Error)
 		}
