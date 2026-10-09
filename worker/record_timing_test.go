@@ -55,6 +55,23 @@ func TestTimelineRefusesAHole(t *testing.T) {
 	}
 }
 
+func TestTimelineHoldsAShortStall(t *testing.T) {
+	// A frame every tick, then a 12-tick stall (6 from the nearest frame, over
+	// maxGapTicks): the frame next to it is shown longer instead of the clip
+	// failing.
+	var ticks []float64
+	for k := 0; k <= 64; k++ {
+		if k > 30 && k < 43 {
+			continue
+		}
+		ticks = append(ticks, float64(k))
+	}
+	frames, err := timeline([][]float64{ticks}, []segment{{0, 1, 1}}, 0)
+	if err != nil || len(frames) == 0 {
+		t.Fatalf("a short stall failed the clip: %v", err)
+	}
+}
+
 func TestFrameTicksSmoothBursts(t *testing.T) {
 	// Frames drawn every 40 ms but reported in bursts of four.
 	t0 := time.Unix(1000, 0)
