@@ -75,7 +75,15 @@ export function configurePassportAuth(): void {
 }
 
 /** The strategies Settings -> Sign-in manages; `reloadPassportAuth` redoes them. */
-const SETTINGS_MANAGED_STRATEGIES = ['steam', 'discord', 'github', 'google', 'twitch', 'epic', 'oidc'] as const;
+const SETTINGS_MANAGED_STRATEGIES = [
+  'steam',
+  'discord',
+  'github',
+  'google',
+  'twitch',
+  'epic',
+  'oidc',
+] as const;
 
 function configureSettingsManagedStrategies(): void {
   configureSteamStrategy();
@@ -405,14 +413,16 @@ function createEpicLoginStrategy(options: OAuthStrategyOptions) {
       }),
     },
     (user, done) => {
-      log.info('EpicStrategy callback: received profile from Epic', { profile: { id: user.epicId } });
+      log.info('EpicStrategy callback: received profile from Epic', {
+        profile: { id: user.epicId },
+      });
       done(null, user);
     }
   );
 }
 
 /** Passport strategy name for the test-only fake provider of `provider`. */
-export function testOAuthStrategyName(provider: 'github' | 'google'): string {
+export function testOAuthStrategyName(provider: 'github' | 'google' | 'oidc'): string {
   return `${provider}-test`;
 }
 
@@ -460,6 +470,28 @@ function configureTestOAuthStrategies(): void {
       })
     );
   }
+
+  // And an OpenID Connect server: discovery answered here, the endpoints the
+  // same fake provider's.
+  const oidcName = testOAuthStrategyName('oidc');
+  const oidcCallback = `${base}/api/test/oauth/oidc/callback`;
+  const oidcStrategy = createOidcStrategy(
+    {
+      issuerUrl: `${self}/oidc`,
+      clientID: 'test-client-id',
+      clientSecret: 'test-client-secret',
+      callbackURL: oidcCallback,
+      store: new SignedCookieStateStore({ provider: oidcName, callbackURL: oidcCallback }),
+    },
+    (user, done) => done(null, user),
+    async () => ({
+      issuer: `${self}/oidc`,
+      authorization_endpoint: `${self}/oidc/authorize`,
+      token_endpoint: `${self}/oidc/token`,
+      userinfo_endpoint: `${self}/oidc/userinfo`,
+    })
+  );
+  passport.use(oidcName, oidcStrategy as Parameters<typeof passport.use>[1]);
 }
 
 /** Whether a Passport strategy with this name is registered. */

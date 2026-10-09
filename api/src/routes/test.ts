@@ -1653,7 +1653,7 @@ router.get(
  *   GET  /api/test/fake-oauth/:provider/userinfo
  */
 
-const FAKE_OAUTH_PROVIDERS = ['github', 'google'] as const;
+const FAKE_OAUTH_PROVIDERS = ['github', 'google', 'oidc'] as const;
 type FakeOAuthProvider = (typeof FAKE_OAUTH_PROVIDERS)[number];
 
 function parseFakeOAuthProvider(value: unknown): FakeOAuthProvider | null {

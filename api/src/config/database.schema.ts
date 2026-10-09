@@ -297,6 +297,7 @@ export function getSchemaSQL(): string {
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       discord_id TEXT, -- Discord user ID (17-20 digit string). Contact data only, admin-only, not unique (a parent may list theirs on several children)
       discord_id_edited_at INTEGER, -- Epoch of the last explicit edit (admin or the player) that set OR cleared discord_id; NULL = only ever filled by an import. Imports never touch a row where this is set. Internal, never in a response
+      oidc_subject TEXT, -- An integrator's OpenID Connect login (its sub, e.g. NTLAN's Keycloak) for this player, from a team or player import: an OpenID Connect sign-in with it lands on this player. Only ever filled by an import, never overwritten. Admin-only
       uid UUID NOT NULL DEFAULT gen_random_uuid(), -- Stable account id, never regenerated. Player-owned data (player_games, ...) keys on this rather than the Steam ID, so 3.1 can have accounts without Steam
       games_prompt_dismissed_at INTEGER, -- Epoch when the player skipped or answered the "What do you play?" dialog; NULL = show it while they have no games
       last_sign_in_at INTEGER, -- Epoch of the player's last sign-in (Steam or SSO); NULL = never since this column exists. Admin-only, never in a public response

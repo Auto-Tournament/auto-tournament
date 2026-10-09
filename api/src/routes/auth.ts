@@ -795,6 +795,34 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
         return res.redirect(302, `${baseUrl}/`);
       }
 
+      // An integrator imported this OpenID Connect login for a player
+      // (players.oidc_subject, e.g. NTLAN's Keycloak sub): link it to that
+      // player and sign in as them, instead of making a new account.
+      if (provider === 'oidc') {
+        const imported = await playerService.findByOidcSubject(providerUserId);
+        if (imported) {
+          const outcome = await authIdentityService.linkIdentityUnlessOwnedElsewhere(
+            provider,
+            providerUserId,
+            imported
+          );
+          if (outcome === 'linked') {
+            user.steamId = imported;
+            await rememberIdentityProfile(provider, providerUserId, user);
+            await grantAdminForVerifiedEmail(imported, provider, verifiedEmail);
+            await applyProviderAvatar(imported, user.avatarUrl);
+            setPlayerSteamCookie(req, res, imported);
+            log.success(`${label} login matched an imported player`, { provider, steamId: imported });
+            return res.redirect(302, `${baseUrl}/`);
+          }
+          log.warn(`${label} login matched an imported player, but it could not be linked`, {
+            provider,
+            steamId: imported,
+            outcome,
+          });
+        }
+      }
+
       // No existing link: a new account of its own (Steam is optional), when
       // registration is open or this is the very first admin. Otherwise fall
       // back to "sign in with Steam to finish" as before.
