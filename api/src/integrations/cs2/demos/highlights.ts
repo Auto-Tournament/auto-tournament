@@ -978,6 +978,22 @@ const MATCH_REEL_MIN_PLAYERS = 2;
 export const SERIES_REEL = -1;
 
 /**
+ * Whether a series' reel can be made: more than one map, every map with
+ * recorded clips (a map none of whose clips could be recorded holds it back
+ * until they are redone), nothing still waiting, and enough players.
+ */
+export function seriesReelReady(s: {
+  maps: number;
+  recorded: number;
+  waiting: number;
+  players: number;
+}): boolean {
+  return (
+    s.maps >= 2 && s.recorded >= s.maps && s.waiting === 0 && s.players >= MATCH_REEL_MIN_PLAYERS
+  );
+}
+
+/**
  * Queue the match reel of each map these highlights belong to, once none of
  * the map's highlights is still waiting to be recorded.
  */
@@ -1024,10 +1040,12 @@ export async function queueMatchReelFor(highlightIds: number[]): Promise<void> {
         [slug]
       );
       if (
-        Number(series?.maps ?? 0) < 2 ||
-        Number(series?.recorded ?? 0) < Number(series?.maps ?? 0) ||
-        Number(series?.waiting ?? 1) > 0 ||
-        Number(series?.players ?? 0) < MATCH_REEL_MIN_PLAYERS
+        !seriesReelReady({
+          maps: Number(series?.maps ?? 0),
+          recorded: Number(series?.recorded ?? 0),
+          waiting: Number(series?.waiting ?? 1),
+          players: Number(series?.players ?? 0),
+        })
       )
         continue;
       await db.runAsync(
