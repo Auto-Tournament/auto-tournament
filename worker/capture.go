@@ -259,8 +259,10 @@ func (g *game) stop() {
 		g.con.conn.Close()
 	}
 	// Steam's runtime starts CS2 in a session of its own, out of reach of
-	// gamescope's process group: make sure it is gone.
-	_ = exec.Command("pkill", "-KILL", "-f", "linuxsteamrt64/cs2 ").Run()
+	// gamescope's process group: make sure it is gone. Only this recorder's
+	// CS2 (its console port): in a container with the host's PIDs (the
+	// recorder command's --pid=host), the PC's own CS2 is in reach too.
+	_ = exec.Command("pkill", "-KILL", "-f", fmt.Sprintf("linuxsteamrt64/cs2 .*-netconport %d", netconPort)).Run()
 	if g.cmd.Process != nil {
 		_ = syscall.Kill(-g.cmd.Process.Pid, syscall.SIGTERM)
 		done := make(chan struct{})
