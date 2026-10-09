@@ -138,14 +138,6 @@ export function LocalAccountsSection() {
                     <Typography variant="body2" fontWeight={600} noWrap sx={{ minWidth: 0 }}>
                       {a.name && a.name !== a.username ? a.name : a.username}
                     </Typography>
-                    {a.isAdmin && (
-                      <Chip
-                        size="small"
-                        color="primary"
-                        variant="outlined"
-                        label={t('settingsPage.signIn.accounts.admin')}
-                      />
-                    )}
                     {a.totpEnabled && (
                       <Chip
                         size="small"
