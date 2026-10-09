@@ -1280,6 +1280,7 @@
     "keysTitle": "Klucze floty",
     "keysEmpty": "Brak kluczy floty. Utwórz klucz, aby csm lub kontenery same rejestrowały serwery.",
     "keyLocked": "Zablokowany",
+    "keySkinsChip": "Skiny",
     "keyUsage_one": "{{count}} zarejestrowany serwer",
     "keyUsage_few": "{{count}} zarejestrowane serwery",
     "keyUsage_many": "{{count}} zarejestrowanych serwerów",
@@ -1299,6 +1300,8 @@
     "keyAutoLinkLabel": "Automatycznie łącz serwery",
     "keyAutoLinkHelp": "Używaj serwerów zarejestrowanych tym kluczem do meczów zaraz po połączeniu. Każdy, kto ma klucz, może hostować mecze.",
     "keyAutoLink": "Autołączenie",
+    "keySkins": "Włącz wirtualne skiny",
+    "keySkinsHelp": "Gracze widzą swoje założone wirtualne skiny na serwerach zarejestrowanych tym kluczem. Nie na serwerach z tokenem serwera Steam.",
     "keyCreatedTitle": "Utworzono klucz floty",
     "codeCreatedTitle": "Utworzono kod rejestracji",
     "keyCreatedHelp": "Przekaż ten klucz csm lub ustaw go jako fleet_enroll_key dla „{{name}}”.",
@@ -2195,7 +2198,6 @@
     "tabs": {
       "recorders": "Recorders",
       "settings": "Settings",
-      "connect": "Add a recorder",
       "overlays": "Overlays",
       "clips": "Clips"
     },
@@ -2213,7 +2215,6 @@
     "stat": {
       "perClip": "Per clip",
       "kept": "Clips kept",
-      "rejected": "Turned down",
       "benchmark": "Benchmark"
     },
     "benchmarkPending": "Runs on its next job",
@@ -2222,8 +2223,7 @@
     "bench": {
       "hz": "Refresh rate",
       "time": "Time",
-      "fps": "Capture fps",
-      "repeats": "Repeated frames"
+      "fps": "Capture fps"
     },
     "lastError": "Last error: {{error}}",
     "runs_one": "{{count}} run",
@@ -2248,20 +2248,10 @@
     "map": "map {{n}}",
     "clips_one": "{{count}} clip",
     "clips_other": "{{count}} clips",
-    "turnedDown_one": "{{count}} turned down",
-    "turnedDown_other": "{{count}} turned down",
     "log": "Log",
     "logError": "Could not load the log",
     "emptyLog": "(empty)",
     "close": "Close",
-    "connect": {
-      "intro": "A recorder is a PC with a GPU, CS2 and Steam that records highlight clips from this platform's demos. Add as many as you like: they share the work.",
-      "step1": "Install CS2 and sign in to Steam once, then switch Steam to offline mode. Every recorder can use the same Steam account.",
-      "step2": "Get at-worker (the auto-tournament-worker image, or the binary) on the PC. It needs ffmpeg, gamescope and PipeWire.",
-      "step3": "Point it at this platform:",
-      "step4": "Start it with at-worker record. On its first job it runs a short benchmark, then it shows up under Recorders with its numbers.",
-      "gaming": "You can game on the same PC while it records, but the GPU is shared: clips with too many repeated frames are turned down and recorded again elsewhere, and a recorder that keeps failing is paused for 15 minutes."
-    },
     "cs2Tab": "Counter-Strike 2",
     "recording": "Recording",
     "workingOn_one": "Recording {{count}} clip of map {{map}} ({{match}}) since {{time}}",

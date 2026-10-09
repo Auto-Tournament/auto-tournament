@@ -246,9 +246,8 @@ type mapJob struct {
 	// Settings: what the recorder's benchmark picked (the platform keeps it).
 	Settings *recorderSettings `json:"settings"`
 	// A benchmark job (kind "benchmark"): the same moment at each refresh
-	// rate, timed and frame-checked, nothing uploaded.
-	Tries        []benchmarkTry `json:"tries"`
-	MaxRepeatPct float64        `json:"maxRepeatPct"`
+	// rate, timed, nothing uploaded.
+	Tries []benchmarkTry `json:"tries"`
 }
 
 // recorderSettings come with every job: the benchmark's pick.
@@ -353,7 +352,7 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 		}
 	}()
 	if err := start(); err != nil {
-		return nil, nil, err
+		return nil, nil, gameFault{err}
 	}
 
 	// In demo order, whoever's they are: the seeks only go forward.
@@ -406,8 +405,10 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 				// CS2 can get stuck (a seek that never lands): start it afresh.
 				log.Printf("retrying %q in a fresh CS2 after: %v", m.Title, err)
 				if serr := start(); serr != nil {
-					err = fmt.Errorf("%v; restarting CS2: %w", err, serr)
-					break
+					// No CS2 to record the rest in: the job goes back (failRecording).
+					log.Printf("CS2 would not start again after %q: %v", m.Title, err)
+					drain()
+					return clips, failed, gameFault{serr}
 				}
 			}
 			if markers, finish, err = r.recordMoment(g, look, name, m, out); err == nil {
@@ -989,12 +990,7 @@ func (r *recorder) download(ctx context.Context, matchSlug string, mapNumber int
 // upload sends a video to the platform, with the headers that describe it
 // (X-AT-Markers on a clip, X-AT-Clips on a reel).
 func (r *recorder) upload(ctx context.Context, path, route string, headers map[string]string) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	res, err := r.doWith(ctx, http.MethodPut, route, "video/mp4", f, headers)
+	res, err := r.sendFile(ctx, path, route, "video/mp4", headers)
 	if err != nil {
 		return err
 	}
@@ -1071,13 +1067,6 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 		if c.seconds > 0 {
 			headers["X-AT-Seconds"] = strconv.FormatFloat(c.seconds, 'f', 1, 64)
 		}
-		if q, qerr := frameCheck(ctx, c.path); qerr == nil {
-			qj, _ := json.Marshal(q)
-			headers["X-AT-Quality"] = string(qj)
-			log.Printf("moment %d: %.1f%% repeated, %.1f%% jumped frames", c.moment.ID, q.RepeatPct, q.JumpPct)
-		} else {
-			log.Printf("moment %d: frame check failed: %v", c.moment.ID, qerr)
-		}
 		route := fmt.Sprintf("/api/game/cs2/recorder/jobs/%d/clip", c.moment.ID)
 		turnedDown, uerr := r.uploadClip(ctx, c.path, route, headers)
 		if uerr != nil {
@@ -1118,12 +1107,7 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 
 // uploadClip sends a clip and says whether the platform turned it down.
 func (r *recorder) uploadClip(ctx context.Context, path, route string, headers map[string]string) (bool, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return false, err
-	}
-	defer f.Close()
-	res, err := r.doWith(ctx, http.MethodPut, route, "video/mp4", f, headers)
+	res, err := r.sendFile(ctx, path, route, "video/mp4", headers)
 	if err != nil {
 		return false, err
 	}
@@ -1204,6 +1188,14 @@ func (r *recorder) failMoments(failed []momentFailure) {
 	}
 }
 
+// gameFault is a job stopped because CS2 would not start: the recorder's
+// fault, not the moments'. The platform puts them back without using an
+// attempt and pauses a recorder that keeps doing it.
+type gameFault struct{ err error }
+
+func (f gameFault) Error() string { return "CS2 would not start: " + f.err.Error() }
+func (f gameFault) Unwrap() error { return f.err }
+
 func (r *recorder) failRecording(mj *mapJob, cause error) {
 	log.Printf("highlights of %s map %d failed: %v", mj.MatchSlug, mj.MapNumber, cause)
 	msg := cause.Error()
@@ -1216,7 +1208,11 @@ func (r *recorder) failRecording(mj *mapJob, cause error) {
 			ids = append(ids, m.ID)
 		}
 	}
-	if res, err := r.postJSON(context.Background(), "/api/game/cs2/recorder/fail", map[string]any{"ids": ids, "error": msg}); err == nil {
+	body := map[string]any{"ids": ids, "error": msg}
+	if errors.As(cause, new(gameFault)) {
+		body["fault"], body["recorder"] = "recorder", r.worker
+	}
+	if res, err := r.postJSON(context.Background(), "/api/game/cs2/recorder/fail", body); err == nil {
 		res.Body.Close()
 	}
 }
@@ -1312,7 +1308,26 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 	currentJobLog.take()
 	var keep awake
 	defer keep.release()
+	waitingForDisplay := false
 	for ctx.Err() == nil {
+		// No desktop session yet (the PC booted and no one has signed in, or
+		// the container started before the session): every job would fail on
+		// the display, so wait for it instead of taking work.
+		if !displayReady() {
+			if !waitingForDisplay {
+				log.Printf("waiting for the desktop session (no %s): sign in on the PC", displaySocket())
+				waitingForDisplay = true
+			}
+			select {
+			case <-ctx.Done():
+			case <-time.After(poll):
+			}
+			continue
+		}
+		if waitingForDisplay {
+			log.Printf("desktop session is up")
+			waitingForDisplay = false
+		}
 		j, reel, redress, err := c.claimRecording(ctx)
 		if err != nil {
 			log.Printf("cannot reach the platform: %v", err)
@@ -1669,4 +1684,27 @@ func markCheers(args []string) error {
 		log.Printf("%s: kills %v, reactions %v", file, m.Kills, m.Reactions)
 	}
 	return nil
+}
+
+// displaySocket is the Wayland socket gamescope connects to, or "" when the
+// environment names none (gamescope then makes its own headless display).
+func displaySocket() string {
+	name := os.Getenv("WAYLAND_DISPLAY")
+	if name == "" {
+		return ""
+	}
+	if filepath.IsAbs(name) {
+		return name
+	}
+	return filepath.Join(env("XDG_RUNTIME_DIR", fmt.Sprintf("/run/user/%d", os.Getuid())), name)
+}
+
+// displayReady: the desktop's Wayland socket is there (or none is wanted).
+func displayReady() bool {
+	sock := displaySocket()
+	if sock == "" {
+		return true
+	}
+	_, err := os.Stat(sock)
+	return err == nil
 }

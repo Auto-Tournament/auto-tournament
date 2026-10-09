@@ -50,6 +50,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -58,6 +60,10 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+
+      - name: Formatted (the files this change touches)
+        if: github.event_name == 'pull_request'
+        run: FORMAT_BASE=origin/${{ github.base_ref }} yarn format:check
 
       - name: Lint
         run: yarn lint
@@ -179,6 +185,8 @@ jobs:
     runs-on: ubuntu-latest
     # ~2 min cached, ~6.5 min on a cache miss.
     timeout-minutes: 10
+    env:
+      DOCKERHUB_USER: ${{ secrets.DOCKER_USERNAME }}
     steps:
       - uses: actions/checkout@v4
 
@@ -232,6 +240,17 @@ jobs:
           # The third-party notices the image ships, from these dependencies.
           node scripts/third-party-notices.mjs
           cp THIRD_PARTY_NOTICES.md "$out/"
+
+      # buildx's own image and node:20-alpine come from Docker Hub, whose anonymous pull limit the
+      # shared runners hit (429). Logged in when the secrets are there; a fork's
+      # pull request has none and pulls anonymously as before.
+      - name: Login to Docker Hub (for the base images)
+        if: ${{ env.DOCKERHUB_USER != '' }}
+        continue-on-error: true
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - uses: docker/setup-buildx-action@v3
 
@@ -331,9 +350,15 @@ jobs:
           } >> .env
 
       # Postgres needs nothing from the image build, so pull it and let it get
-      # healthy while the rest of the setup runs.
+      # healthy while the rest of the setup runs. Sixteen shards pull at once
+      # and the registry may answer "rate exceeded": try again, a little later.
       - name: Start Postgres
-        run: $COMPOSE up -d postgres
+        run: |
+          for i in 1 2 3 4 5 6; do
+            $COMPOSE up -d postgres && exit 0
+            sleep $((i * 15))
+          done
+          exit 1
 
       - uses: actions/setup-node@v4
         with:

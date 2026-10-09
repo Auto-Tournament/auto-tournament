@@ -1,6 +1,7 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { signInViaRequest, getAuthHeader } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
+import { findMatchByTeams } from '../helpers/matches';
 import {
   ASSUMED_TV_DELAY_SECONDS,
   DEMO_UPLOAD_TIMEOUT_SECONDS,
@@ -42,8 +43,13 @@ type AvailabilityServer = {
 
 const now = () => Math.floor(Date.now() / 1000);
 
-async function serverEntry(request: APIRequestContext, serverId: string): Promise<AvailabilityServer> {
-  const res = await request.get('/api/tournament/server-availability', { headers: getAuthHeader() });
+async function serverEntry(
+  request: APIRequestContext,
+  serverId: string
+): Promise<AvailabilityServer> {
+  const res = await request.get('/api/tournament/server-availability', {
+    headers: getAuthHeader(),
+  });
   expect(res.ok()).toBe(true);
   const body = (await res.json()) as { servers: AvailabilityServer[] };
   const entry = body.servers.find((s) => s.id === serverId);
@@ -59,7 +65,11 @@ async function primeIdle(request: APIRequestContext, serverId: string, updatedAt
   expect(res.ok()).toBe(true);
 }
 
-async function sendEvent(request: APIRequestContext, serverId: string, data: Record<string, unknown>) {
+async function sendEvent(
+  request: APIRequestContext,
+  serverId: string,
+  data: Record<string, unknown>
+) {
   const res = await request.post(`/api/events?server_id=${serverId}`, {
     headers: SERVER_HEADERS,
     data,
@@ -73,7 +83,11 @@ test.describe.serial('Server turnover after series end', () => {
     { tag: ['@api', '@allocation'] },
     async ({ request }) => {
       await signInViaRequest(request);
-      const setup = await setupTournament(request, { teamCount: 2, serverCount: 1, prefix: 'turnover' });
+      const setup = await setupTournament(request, {
+        teamCount: 2,
+        serverCount: 1,
+        prefix: 'turnover',
+      });
       expect(setup).toBeTruthy();
       const serverId = setup!.servers[0].id;
 
@@ -92,8 +106,9 @@ test.describe.serial('Server turnover after series end', () => {
       await primeIdle(request, serverId, now() - 6);
       expect((await serverEntry(request, serverId)).notAllocatableReason).toBe('grace-window');
 
-      const matches = await (await request.get('/api/matches', { headers: getAuthHeader() })).json();
-      const slug = matches.matches?.[0]?.slug as string;
+      // This tournament's match: earlier tests leave theirs in the list.
+      const slug = (await findMatchByTeams(request, setup!.teams[0].id, setup!.teams[1].id))
+        ?.slug as string;
       expect(slug).toBeTruthy();
       const state = await request.post('/api/test/match-state', {
         headers: getAuthHeader(),
@@ -101,7 +116,11 @@ test.describe.serial('Server turnover after series end', () => {
       });
       expect(state.ok()).toBe(true);
 
-      await sendEvent(request, serverId, { event: 'demo_recording_start', matchid: slug, map_number: 0 });
+      await sendEvent(request, serverId, {
+        event: 'demo_recording_start',
+        matchid: slug,
+        map_number: 0,
+      });
       await sendEvent(request, serverId, {
         event: 'map_result',
         matchid: slug,
@@ -135,6 +154,21 @@ test.describe.serial('Server turnover after series end', () => {
       // Idle 6 s after series end with the upload done: no grace window left.
       await primeIdle(request, serverId, now() - 6);
       const released = await serverEntry(request, serverId);
+      if (released.inGraceWindow) {
+        // The release runs an allocation (startup.ts), and a match an earlier
+        // spec left waiting takes the server: loading it starts a new series on
+        // the server, so this one's end no longer counts. That is the release.
+        const takenBy = async () => {
+          const res = await request.get('/api/matches', { headers: getAuthHeader() });
+          const all = (await res.json()).matches as Array<{
+            slug: string;
+            serverId: string | null;
+          }>;
+          return all.find((m) => m.serverId === serverId && m.slug !== slug)?.slug ?? null;
+        };
+        await expect.poll(takenBy, { timeout: 5_000 }).not.toBeNull();
+        return;
+      }
       expect(released.inGraceWindow).toBe(false);
       expect(released.notAllocatableReason).not.toBe('grace-window');
       expect(released.notAllocatableReason).not.toBe('demo-upload');
@@ -192,7 +226,9 @@ test.describe('Server turnover rules', () => {
   test('a lost upload event holds the server at most tv_delay + 15 s + upload timeout', () => {
     // Real match, tv_delay unknown: assume the CS2 maximum, still under 5 min.
     const cap = demoUploadGiveUpSeconds(ASSUMED_TV_DELAY_SECONDS);
-    expect(cap).toBe(ASSUMED_TV_DELAY_SECONDS + GOTV_FLUSH_EXTRA_SECONDS + DEMO_UPLOAD_TIMEOUT_SECONDS);
+    expect(cap).toBe(
+      ASSUMED_TV_DELAY_SECONDS + GOTV_FLUSH_EXTRA_SECONDS + DEMO_UPLOAD_TIMEOUT_SECONDS
+    );
     expect(cap).toBeLessThanOrEqual(5 * 60);
     const tracker = endedSeries({ upload: true });
     const before = tracker.evaluate('s1', T + 200, T + cap - 1);
@@ -221,7 +257,9 @@ test.describe('Server turnover rules', () => {
     expect(SIMULATION_MATCH_RESTART_DELAY_SECONDS).toBeGreaterThan(0);
     expect(SIMULATION_MATCH_RESTART_DELAY_SECONDS).toBeLessThanOrEqual(15);
     expect(simulationTvCvars(false)).toEqual({});
-    expect(tvDelayFromCvars({ mp_maxrounds: 24, ...simulationTvCvars(false) })).toBe(ASSUMED_TV_DELAY_SECONDS);
+    expect(tvDelayFromCvars({ mp_maxrounds: 24, ...simulationTvCvars(false) })).toBe(
+      ASSUMED_TV_DELAY_SECONDS
+    );
     expect(tvDelayFromCvars({ tv_delay: '90' })).toBe(90);
   });
 
@@ -268,7 +306,9 @@ test.describe('Server turnover rules', () => {
       scheduled[0].fn();
       expect(released).toEqual(['s1']);
       // By then the allocator's evaluate gives the server up.
-      expect(tracker.evaluate('s1', now, now + demoUploadGiveUpSeconds(0)).demoUploadPending).toBe(false);
+      expect(tracker.evaluate('s1', now, now + demoUploadGiveUpSeconds(0)).demoUploadPending).toBe(
+        false
+      );
     } finally {
       globalThis.setTimeout = realSetTimeout;
     }

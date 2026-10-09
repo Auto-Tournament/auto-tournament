@@ -100,20 +100,27 @@ test(
     const ids = job.players.flatMap((p) => p.moments.map((m) => m.id));
     expect(ids.length).toBeGreaterThanOrEqual(3);
 
-    const upload = (id: number, repeatPct: number) =>
+    const upload = (id: number) =>
       request.put(`/api/game/cs2/recorder/jobs/${id}/clip`, {
-        headers: {
-          'Content-Type': 'video/mp4',
-          'X-AT-Quality': JSON.stringify({ repeatPct, jumpPct: 1, moving: 1500 }),
-        },
+        headers: { 'Content-Type': 'video/mp4' },
         data: Buffer.from('not really a video'),
       });
 
-    // A smooth clip is kept.
-    expect(await (await upload(ids[0], 0.8)).json()).toMatchObject({ success: true, bytes: 18 });
-    // Three stuttering clips in a row are turned down, and the recorder is paused.
-    for (const id of ids.slice(1, 4)) {
-      expect(await (await upload(id, 9.5)).json()).toMatchObject({ success: true, rejected: true });
+    // Every clip is kept: there is no frame check (a player holding an angle
+    // read as stutter, the EWC final, 2026-10-09).
+    for (const id of ids.slice(0, 3)) {
+      expect(await (await upload(id)).json()).toMatchObject({ success: true, bytes: 18 });
+    }
+    // A recorder whose CS2 will not start, twice: paused.
+    for (let i = 0; i < 2; i++) {
+      await request.post('/api/game/cs2/recorder/fail', {
+        data: {
+          ids: [ids[0]],
+          error: 'CS2 would not start: spec',
+          fault: 'recorder',
+          recorder: name,
+        },
+      });
     }
     const listed = async () =>
       (
@@ -125,11 +132,10 @@ test(
     expect(paused).toMatchObject({
       gpu: 'Spec GPU 9000',
       platform: 'linux/amd64 · docker',
-      clipsOk: 1,
-      clipsRejected: 3,
+      clipsOk: 3,
       paused: true,
     });
-    expect(String(paused.pauseReason)).toContain('repeated frames');
+    expect(String(paused.pauseReason)).toContain('CS2 would not start');
     expect((await claim()).status()).toBe(204);
 
     // An admin resumes it.
@@ -167,33 +173,28 @@ test(
     expect(logText).toContain('line two');
     expect((await listed()).avgClipSeconds).toBe(75);
 
-    // A benchmark: the fastest smooth try wins.
+    // A benchmark: the fastest try that finished wins.
     const bench = await request.post('/api/game/cs2/recorder/benchmark', {
       data: {
         recorder: name,
         tries: [
           {
             gamescopeHz: 360,
-            seconds: 70,
-            captureFps: 300,
-            repeatPct: 12.2,
-            jumpPct: 1.5,
-            ok: true,
+            seconds: null,
+            captureFps: null,
+            ok: false,
+            error: 'no frame near tick 1234',
           },
           {
             gamescopeHz: 240,
             seconds: 83,
             captureFps: 230,
-            repeatPct: 0.7,
-            jumpPct: 1.8,
             ok: true,
           },
           {
             gamescopeHz: 120,
             seconds: 96,
             captureFps: 118,
-            repeatPct: 0.4,
-            jumpPct: 1.4,
             ok: true,
           },
         ],
@@ -222,3 +223,145 @@ test('recorder admin routes need an admin', TAGS, async ({ playwright, baseURL }
   expect((await anon.post('/api/game/cs2/recorder/runs', { data: {} })).status()).toBe(401);
   await anon.dispose();
 });
+
+test('a second recorder joins a map mid-way, newest match first', TAGS, async ({ request }) => {
+  expect(await signInViaRequest(request)).toBe(true);
+  const slug = await matchWithMoments(request);
+  // The import's moments are saved after its analysis answers: wait for them.
+  await expect
+    .poll(
+      async () => {
+        const list = (await (await request.get('/api/game/cs2/clips')).json()) as {
+          matches: Array<{ slug: string; clips: unknown[] }>;
+        };
+        return list.matches.find((m) => m.slug === slug)?.clips.length ?? 0;
+      },
+      { timeout: 15_000 }
+    )
+    .toBeGreaterThan(0);
+  type Job = {
+    kind: string;
+    matchSlug: string;
+    mapNumber: number;
+    players: Array<{ moments: Array<{ id: number }> }>;
+  };
+  const ask = (recorder: string) =>
+    request.post('/api/game/cs2/recorder/claim', { data: { recorder, version: 7 } });
+  // A recorder is handed a benchmark or reels before map jobs: skip those.
+  const claim = async (recorder: string) => {
+    for (let i = 0; i < 15; i++) {
+      const res = await ask(recorder);
+      if (res.status() !== 200) return null;
+      const job = (await res.json()).job as Job;
+      if (job.kind === 'map') return job;
+    }
+    return null;
+  };
+  const stamp = Date.now();
+  const recorders = [`spec-share-a-${stamp}`, `spec-share-b-${stamp}`];
+  // Both say hello first, so both count as online, and report a benchmark so
+  // they are handed work rather than a benchmark.
+  for (const r of recorders) {
+    await ask(r);
+    await request.post('/api/game/cs2/recorder/benchmark', {
+      data: {
+        recorder: r,
+        tries: [
+          {
+            gamescopeHz: 120,
+            seconds: 60,
+            captureFps: 118,
+            ok: true,
+          },
+        ],
+      },
+    });
+  }
+  const a = await claim(recorders[0]);
+  // The newest match goes first.
+  expect(a?.matchSlug).toBe(slug);
+  const idsA = a!.players.flatMap((p) => p.moments.map((m) => m.id));
+  // Five moments and at least two recorders online: A takes only part of the map.
+  expect(idsA.length).toBeLessThan(5);
+  const b = await claim(recorders[1]);
+  expect(b?.matchSlug).toBe(slug);
+  expect(b?.mapNumber).toBe(a?.mapNumber);
+  const idsB = b!.players.flatMap((p) => p.moments.map((m) => m.id));
+  expect(idsB.some((id) => idsA.includes(id))).toBe(false);
+});
+
+test(
+  'a recorder whose CS2 will not start gives its job back and is paused',
+  TAGS,
+  async ({ request }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    const slug = await matchWithMoments(request);
+    type Job = {
+      kind: string;
+      matchSlug: string;
+      players: Array<{ moments: Array<{ id: number }> }>;
+    };
+    const name = `spec-fault-${Date.now()}`;
+    const ask = () =>
+      request.post('/api/game/cs2/recorder/claim', { data: { recorder: name, version: 7 } });
+    await ask();
+    await request.post('/api/game/cs2/recorder/benchmark', {
+      data: {
+        recorder: name,
+        tries: [
+          {
+            gamescopeHz: 120,
+            seconds: 60,
+            captureFps: 118,
+            ok: true,
+          },
+        ],
+      },
+    });
+    const claimMap = async () => {
+      for (let i = 0; i < 15; i++) {
+        const res = await ask();
+        if (res.status() !== 200) return null;
+        const job = (await res.json()).job as Job;
+        if (job.kind === 'map' && job.matchSlug === slug) return job;
+      }
+      return null;
+    };
+    const statuses = async (ids: number[]) => {
+      const list = (await (await request.get('/api/game/cs2/clips')).json()) as {
+        matches: Array<{
+          slug: string;
+          clips: Array<{ id: number; status: string; recorder: string | null }>;
+        }>;
+      };
+      return list.matches.find((m) => m.slug === slug)!.clips.filter((c) => ids.includes(c.id));
+    };
+    const fault = (ids: number[]) =>
+      request.post('/api/game/cs2/recorder/fail', {
+        data: { ids, error: 'CS2 would not start: broken pipe', fault: 'recorder', recorder: name },
+      });
+
+    // Three faults would fail a moment (three attempts): it must still be waiting.
+    for (let round = 1; round <= 2; round++) {
+      const job = await claimMap();
+      expect(job, `claim ${round}`).toBeTruthy();
+      const ids = job!.players.flatMap((p) => p.moments.map((m) => m.id));
+      expect((await fault(ids)).status()).toBe(200);
+      for (const c of await statuses(ids)) {
+        expect(c).toMatchObject({ status: 'pending', recorder: null });
+      }
+    }
+    // Two in a row: paused, and given no work.
+    const me = (
+      (await (await request.get('/api/game/cs2/recorders')).json()).recorders as Array<
+        Record<string, unknown>
+      >
+    ).find((r) => r.name === name)!;
+    expect(me).toMatchObject({ paused: true });
+    expect(String(me.pauseReason)).toContain('CS2 would not start');
+    expect((await ask()).status()).toBe(204);
+    expect(
+      (await request.delete(`/api/game/cs2/recorders/${encodeURIComponent(name)}`)).status()
+    ).toBe(200);
+  }
+);

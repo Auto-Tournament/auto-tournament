@@ -5,13 +5,15 @@
  *   POST /api/game/cs2/recorder/claim                 a player's moments on one map not yet recorded, or 204
  *   PUT  /api/game/cs2/recorder/jobs/:id/clip         one moment's MP4 (video/mp4 body)
  *   PUT  /api/game/cs2/recorder/reels/:slug/:map/:player  the player's reel of that map (video/mp4 body)
- *   POST /api/game/cs2/recorder/fail                  { ids, error }: it could not record them
+ *   POST /api/game/cs2/recorder/fail                  { ids, error, fault? }: it could not record them (fault 'recorder': its CS2 would not start; they wait again without using an attempt)
  *   PUT  /api/game/cs2/recorder/match-reels/:slug/:map       a map's match reel (video/mp4 body; ?clips=N)
  *   POST /api/game/cs2/recorder/match-reels/:slug/:map/fail  { error }: it could not make it
  *   PUT  /api/game/cs2/recorder/tournament-reels/:id         a tournament's reel (video/mp4 body)
  *   PUT  /api/game/cs2/recorder/team-reels/:slug/:team       a team's reel of a match (video/mp4 body)
  *   POST /api/game/cs2/recorder/team-reels/:slug/:team/fail  { error }: it could not make it
  *   POST /api/game/cs2/recorder/tournament-reels/:id/fail    { error }: it could not make it
+ *   POST /api/game/cs2/recorder/uploads               a file sent in parts: { id } (any PUT above then takes X-AT-Upload: <id> and no body)
+ *   PUT  /api/game/cs2/recorder/uploads/:id?offset=N  one part (under 100 MB; 409 with { bytes } when the offset is not where the upload ends)
  *   PUT  …/jobs/:id/clip/<twin>, …/reels/:slug/:map/:player/<twin>, …/match-reels/:slug/:map/<twin>,
  *        …/team-reels/:slug/:team/<twin>, …/tournament-reels/:id/<twin>   after the video: a reel's crowd
  *        track (`crowd`, audio/mp4), the clean twin (`clean`, video/mp4) or the overlay's recipe (`overlay`, JSON)
@@ -66,6 +68,7 @@ import {
   requireRecorder,
   revokeRecorderKey,
 } from '../demos/recorderKeys';
+import { appendPart, bodyOf, startUpload, UploadError } from '../demos/uploadParts';
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
 import {
@@ -133,10 +136,10 @@ import {
   forgetRecorder,
   setRecorderLabel,
   isPaused,
-  judgeClip,
+  recorderFault,
+  clipKept,
   listRecorders,
   listRuns,
-  parseQuality,
   RECORDER_QUALITY_VERSION,
   RecorderError,
   recorderSettings,
@@ -187,7 +190,7 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
     if (isPaused(me)) return res.status(204).end();
     // Moments of a deleted match can't be recorded (demos/jobs.ts).
     await dropOrphanJobs();
-    const idle = idleRecorderCount(recorder);
+    idleRecorderCount(recorder);
     const settings = recorderSettings(me);
     const give = (job: unknown) => {
       recorderBusy(recorder);
@@ -215,10 +218,10 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
       const team = await claimTeamReel(recorder);
       if (team) return give(team);
     }
-    // A recorder from version 4 records a map (or its share of one, when
-    // other recorders are idle too) in one CS2 session.
+    // A recorder from version 4 records its share of a map (the map's
+    // waiting moments over the recorders online) in one CS2 session.
     if (Number(req.body?.version ?? 0) >= 4) {
-      const map = await claimMapJob(recorder, idle);
+      const map = await claimMapJob(recorder);
       if (map) return give(map);
       // Nothing to record: overlays to draw again (recorder version 6).
       if (Number(req.body?.version ?? 0) >= 6) {
@@ -236,23 +239,46 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
   }
 });
 
+// A file sent in parts (../demos/uploadParts.ts): Cloudflare turns down bodies over 100 MB.
+router.post('/recorder/uploads', requireRecorder, async (_req: Request, res: Response) => {
+  try {
+    return res.json({ success: true, id: await startUpload() });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] upload start failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not start the upload' });
+  }
+});
+
+router.put('/recorder/uploads/:id', requireRecorder, async (req: Request, res: Response) => {
+  const offset = Number(req.query.offset ?? 0);
+  if (!Number.isSafeInteger(offset) || offset < 0) {
+    return res.status(400).json({ success: false, error: 'An offset' });
+  }
+  try {
+    return res.json({ success: true, bytes: await appendPart(req.params.id, offset, req) });
+  } catch (error) {
+    if (error instanceof UploadError) {
+      req.resume();
+      return res
+        .status(error.status)
+        .json({ success: false, error: error.message, bytes: error.bytes });
+    }
+    log.error('[HIGHLIGHTS] upload part failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not store the part' });
+  }
+});
+
 router.put('/recorder/jobs/:id/clip', requireRecorder, async (req: Request, res: Response) => {
   const id = idOf(req);
   if (!id || !String(req.headers['content-type'] ?? '').startsWith('video/mp4')) {
     return res.status(400).json({ success: false, error: 'A video/mp4 body for a highlight' });
   }
   try {
-    // The recorder's frame check (worker/quality.go): a stuttering clip is
-    // turned down and recorded again, preferably by another recorder.
-    const verdict = await judgeClip(id, parseQuality(req.headers['x-at-quality']));
-    if (verdict.rejected) {
-      req.resume();
-      return res.json({ success: true, rejected: true });
-    }
+    await clipKept(id);
     const seconds = Number(req.headers['x-at-seconds']);
     const bytes = await saveClip(
       id,
-      req,
+      bodyOf(req),
       parseMarkers(req.headers['x-at-markers']),
       Number.isFinite(seconds) && seconds > 0 && seconds < 86_400
         ? Math.round(seconds * 10) / 10
@@ -282,7 +308,7 @@ router.put(
         req.params.slug,
         map,
         req.params.player,
-        req,
+        bodyOf(req),
         ids,
         startsOf(req, ids)
       );
@@ -312,7 +338,7 @@ router.put(
         req.params.slug,
         map,
         Number.isInteger(clips) ? clips : 0,
-        req,
+        bodyOf(req),
         ids,
         startsOf(req, ids)
       );
@@ -369,7 +395,7 @@ const twinUpload =
     if (!fs.existsSync(video))
       return res.status(404).json({ success: false, error: 'Upload the video first' });
     try {
-      return res.json({ success: true, bytes: await saveTwin(video, twin, req) });
+      return res.json({ success: true, bytes: await saveTwin(video, twin, bodyOf(req)) });
     } catch (error) {
       log.error('[HIGHLIGHTS] twin save failed', { error, video: path.basename(video), twin });
       return res.status(500).json({ success: false, error: `Could not store the ${twin} file` });
@@ -430,7 +456,7 @@ router.put(
       const bytes = await saveTeamReel(
         req.params.slug,
         req.params.team,
-        req,
+        bodyOf(req),
         ids,
         startsOf(req, ids)
       );
@@ -463,7 +489,7 @@ router.put('/recorder/redress/:file', requireRecorder, async (req: Request, res:
     return res.status(400).json({ success: false, error: 'A video/mp4 body for a clip or reel' });
   }
   try {
-    return res.json({ success: true, bytes: await saveRedressed(req.params.file, req) });
+    return res.json({ success: true, bytes: await saveRedressed(req.params.file, bodyOf(req)) });
   } catch (error) {
     log.error('[HIGHLIGHTS] redressed video save failed', { error, file: req.params.file });
     return res.status(500).json({ success: false, error: 'Could not store the video' });
@@ -511,7 +537,10 @@ router.post('/recorder/fail', requireRecorder, async (req: Request, res: Respons
     ? (req.body.ids as unknown[]).map(Number).filter((n) => Number.isInteger(n) && n > 0)
     : [];
   if (ids.length === 0) return res.status(400).json({ success: false, error: 'Highlight ids' });
-  await failRecordJob(ids, typeof req.body?.error === 'string' ? req.body.error : 'unknown');
+  const error = typeof req.body?.error === 'string' ? req.body.error : 'unknown';
+  // The recorder's CS2 would not start: not the moments' fault.
+  if (req.body?.fault === 'recorder') await recorderFault(recorderName(req), ids, error);
+  else await failRecordJob(ids, error);
   return res.json({ success: true });
 });
 
@@ -527,7 +556,7 @@ router.put(
     }
     try {
       const ids = parseClipIds(req.headers['x-at-clips']);
-      const bytes = await saveTournamentReel(id, req, ids, startsOf(req, ids));
+      const bytes = await saveTournamentReel(id, bodyOf(req), ids, startsOf(req, ids));
       return res.json({ success: true, bytes });
     } catch (error) {
       log.error('[HIGHLIGHTS] tournament reel save failed', { error, id });
@@ -781,12 +810,11 @@ router.post('/recorder/runs', requireRecorder, async (req: Request, res: Respons
  *     summary: A recorder's benchmark results (recorder)
  *     description: |
  *       `recorder` and `tries`: per refresh rate (`gamescopeHz`) the seconds
- *       the moment took, the capture frame rate, the frame check's
- *       `repeatPct` and `jumpPct`, and `ok`. The fastest smooth try's rate is
- *       kept and sent with every job after (`settings.gamescopeHz`).
+ *       the moment took, the capture frame rate and `ok`. The fastest finished
+ *       try's rate is kept and sent with every job after (`settings.gamescopeHz`).
  *     responses:
  *       200:
- *         description: "`gamescopeHz`: the pick, or null when no try was smooth"
+ *         description: "`gamescopeHz`: the pick, or null when no try finished"
  */
 router.post('/recorder/benchmark', requireRecorder, async (req: Request, res: Response) => {
   try {
@@ -805,7 +833,7 @@ router.post('/recorder/benchmark', requireRecorder, async (req: Request, res: Re
  *     summary: The highlight recorders (admin)
  *     description: |
  *       Each recorder with its GPU, version, last seen, pause, benchmark
- *       (each try and the pick), clips kept and turned down, seconds per clip
+ *       (each try and the pick), clips kept, seconds per clip
  *       over its map jobs, and its last error.
  *     responses:
  *       200:

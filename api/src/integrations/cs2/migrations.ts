@@ -75,6 +75,9 @@
  * `032-fleet-key-auto-link` lets a fleet key link the servers it enrolls for
  * matches on their first hello (fleet/push/controls.ts), once per server
  * (`cs2_fleet_servers.auto_linked_at`).
+ *
+ * `033-fleet-key-skins` lets a fleet key turn skins on for the servers it
+ * enrolls (fleet/link.ts).
  */
 
 import type { ModuleMigration } from '../types';
@@ -111,8 +114,10 @@ export const CS2_MUSIC_LIBRARY_MIGRATION_ID = '029-music-library';
 export const CS2_REDRESS_MIGRATION_ID = '030-redress';
 export const CS2_RECORDERS_MIGRATION_ID = '031-recorders';
 export const CS2_FLEET_KEY_AUTO_LINK_MIGRATION_ID = '032-fleet-key-auto-link';
+export const CS2_FLEET_KEY_SKINS_MIGRATION_ID = '033-fleet-key-skins';
 export const CS2_MADE_WITH_MIGRATION_ID = '034-highlight-made-with';
 export const CS2_RECORDER_KEYS_MIGRATION_ID = '035-recorder-keys';
+export const CS2_RECORDER_FAULTS_MIGRATION_ID = '036-recorder-faults';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1258,6 +1263,21 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
 `,
   },
   {
+    // Declared before 032 and 033 on purpose. 3.0.0-beta.72 shipped it right
+    // after 031, and instances on that version applied it before 032 and 033
+    // existed; migrations are append only (moduleMigrations.ts), so 032 and 033
+    // come after it and run there on the next start. Installs that applied
+    // 031-035 in id order have nothing left to run, whichever way these sit.
+    // The size and frame rate each clip and match reel was made at ("1440p120"),
+    // set when a recorder takes it: the admin's Clips list shows which no longer
+    // match the settings, to make them again. NULL: made before this was kept.
+    id: CS2_MADE_WITH_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS made_with TEXT;
+    ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS made_with TEXT;
+`,
+  },
+  {
     // 1 = a Ready Up server enrolled with this key is linked for matches on
     // its first hello. `auto_linked_at` records that link, so it happens once:
     // an admin's unlink or deleting the server afterwards sticks.
@@ -1268,13 +1288,11 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
 `,
   },
   {
-    // The size and frame rate each clip and match reel was made at ("1440p120"),
-    // set when a recorder takes it: the admin's Clips list shows which no longer
-    // match the settings, to make them again. NULL: made before this was kept.
-    id: CS2_MADE_WITH_MIGRATION_ID,
+    // 1 = a server this key enrolls starts with skins on when it is first
+    // linked (fleet/link.ts). An admin can still turn them off per server.
+    id: CS2_FLEET_KEY_SKINS_MIGRATION_ID,
     up: `
-    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS made_with TEXT;
-    ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS made_with TEXT;
+    ALTER TABLE cs2_fleet_enrollment_keys ADD COLUMN IF NOT EXISTS skins INTEGER NOT NULL DEFAULT 0;
 `,
   },
   {
@@ -1298,6 +1316,14 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS record_seconds REAL;
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS done_at INTEGER;
     ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS label TEXT;
+`,
+  },
+  {
+    // A recorder whose CS2 would not start (demos/recorders.ts recorderFault):
+    // how many jobs in a row, to pause it after a second one.
+    id: CS2_RECORDER_FAULTS_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS faults_in_row INTEGER NOT NULL DEFAULT 0;
 `,
   },
 ];
