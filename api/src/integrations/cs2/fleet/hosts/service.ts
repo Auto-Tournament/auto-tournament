@@ -41,6 +41,7 @@ import * as registry from './registry';
 import { bundleFor, pluginSetForCreate, validatePluginSet, type PluginSet } from '../push/pluginSets';
 import { autoUpdateStatus, startAutoUpdates, stopAutoUpdates } from './autoUpdate';
 import { syncLinkedAddress } from '../link';
+import { getLicenseHandoff } from '../../services/updateHoldService';
 
 /** The plugin set a server.create was stored with (meta.plugins), if any. */
 function pluginSetOfMeta(meta: Record<string, unknown> | null): PluginSet | null {
@@ -64,7 +65,55 @@ let quietTimer: NodeJS.Timeout | null = null;
 gateway.onHostReady(async (hostId) => {
   const due = await registry.hostsDueForRotation();
   if (due.includes(hostId)) await rotateHostToken(hostId);
+  await pushLicense(hostId, true);
 });
+
+// ---------------------------------------------------------------------------
+// The license, to csm (host.license)
+// ---------------------------------------------------------------------------
+
+/** How often the license is looked at for a change to pass on (renewal lease, a new key, a stopped license). */
+const LICENSE_PUSH_CHECK_MS = 60 * 1000;
+let licenseTimer: NodeJS.Timeout | null = null;
+/** The license revision each host was last sent, so an unchanged one isn't sent again. */
+const licenseSent = new Map<string, string>();
+
+/**
+ * Sends the platform's license (key, lease, state: the hold poll's hand-off)
+ * to a host that takes it (`license.push`): csm writes it into Ready Up on the
+ * servers this platform owns there, and limits this platform's creates by it.
+ * After every welcome, and whenever the revision changes.
+ */
+async function pushLicense(hostId: string, force = false): Promise<void> {
+  const host = await registry.getHostView(hostId);
+  if (!host || !host.capabilities.includes('license.push') || !isHostOnline(hostId)) return;
+  const handoff = await getLicenseHandoff();
+  if (!force && licenseSent.get(hostId) === handoff.revision) return;
+  const state = handoff.state
+    ? {
+        status: handoff.state.status,
+        ...(handoff.state.stops_on ? { stops_on: handoff.state.stops_on } : {}),
+        ...(handoff.state.valid_until ? { valid_until: handoff.state.valid_until } : {}),
+      }
+    : undefined;
+  try {
+    await sendHostCommand(
+      hostId,
+      'host.license',
+      {
+        key: handoff.key,
+        ...(handoff.lease ? { lease: handoff.lease } : {}),
+        ...(state ? { state } : {}),
+        ...(handoff.use ? { use: handoff.use } : {}),
+        revision: handoff.revision,
+      },
+      { issuedBy: null }
+    );
+    licenseSent.set(hostId, handoff.revision);
+  } catch (error) {
+    log.warn(`[FLEET-HOST] ${hostId}: could not send the license: ${(error as Error).message}`);
+  }
+}
 
 export { hostEvents, commandTargets, joinInventory };
 export type { HostFleetServerRef, HostServerView };
@@ -447,6 +496,16 @@ export async function startFleetHosts(server?: HttpServer): Promise<void> {
     }, QUIET_CHECK_MS);
     quietTimer.unref?.();
   }
+  if (!licenseTimer) {
+    licenseTimer = setInterval(() => {
+      void (async () => {
+        for (const view of await listHostViews({ commands: 0, health: 0 })) {
+          if (isHostOnline(view.id)) await pushLicense(view.id);
+        }
+      })().catch((error) => log.warn(`[FLEET-HOST] license push check failed: ${(error as Error).message}`));
+    }, LICENSE_PUSH_CHECK_MS);
+    licenseTimer.unref?.();
+  }
   if (!rotationTimer) {
     rotationTimer = setInterval(() => {
       void rotateDue().catch((error) => log.warn(`[FLEET-HOST] rotation check failed: ${(error as Error).message}`));
@@ -461,5 +520,7 @@ export function stopFleetHosts(): void {
   rotationTimer = null;
   if (quietTimer) clearInterval(quietTimer);
   quietTimer = null;
+  if (licenseTimer) clearInterval(licenseTimer);
+  licenseTimer = null;
   gateway.shutdown();
 }

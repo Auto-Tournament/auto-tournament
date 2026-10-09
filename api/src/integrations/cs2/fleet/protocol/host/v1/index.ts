@@ -34,6 +34,7 @@ import serverSetLaunchArgs from './messages/server.set_launch_args.json';
 import updateGame from './messages/host.update_game.json';
 import updatePlugins from './messages/host.update_plugins.json';
 import updatesHold from './messages/host.updates_hold.json';
+import hostLicense from './messages/host.license.json';
 import logsTail from './messages/logs.tail.json';
 import logsStop from './messages/logs.stop.json';
 import inventory from './messages/host.inventory.json';
@@ -177,6 +178,14 @@ export interface HostCommands {
     accept_license?: 'noncommercial' | 'commercial';
   };
   'host.updates_hold': Expiring & { mode: UpdatesHoldMode };
+  /** The platform's license for the servers it owns on the host (csm with the license.push capability). */
+  'host.license': Expiring & {
+    key: string | null;
+    lease?: string;
+    state?: { status: string; stops_on?: string; valid_until?: string };
+    use?: 'noncommercial' | 'commercial';
+    revision?: string;
+  };
   'logs.tail': Expiring & {
     server?: string;
     source: 'console' | 'readyup' | 'csm' | 'monitor';
@@ -200,6 +209,7 @@ export const HOST_COMMAND_TYPES: ReadonlyArray<HostCommandType> = [
   'host.update_game',
   'host.update_plugins',
   'host.updates_hold',
+  'host.license',
   'logs.tail',
   'logs.stop',
 ];
@@ -259,6 +269,7 @@ export const HOST_MESSAGE_SCHEMAS: Record<string, Record<string, unknown>> = {
   'host.update_game': updateGame,
   'host.update_plugins': updatePlugins,
   'host.updates_hold': updatesHold,
+  'host.license': hostLicense,
   'logs.tail': logsTail,
   'logs.stop': logsStop,
   'host.inventory': inventory,

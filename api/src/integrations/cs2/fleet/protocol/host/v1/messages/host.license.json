@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.license.json",
+  "title": "host.license (platform → host)",
+  "description": "The platform's Auto Tournament license for the servers it owns on this host (csm 1.22+): the key (null: none, free use), the lease (the license's current terms, signed, marked lease; the key never changes on renewal), and what the license server last said. csm writes it into those servers' Ready Up config and limits the platform's creates by it; a host's own key (csm license set) is never overwritten. Sent after welcome and whenever any of it changes. Reliable; answered by exactly one host.result (ref = this message's id).",
+  "type": "object",
+  "required": [
+    "key"
+  ],
+  "properties": {
+    "key": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^ATL1\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$",
+          "maxLength": 4096
+        }
+      ]
+    },
+    "lease": {
+      "type": "string",
+      "pattern": "^ATL1\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$",
+      "maxLength": 4096
+    },
+    "state": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "active",
+            "past_due",
+            "expired",
+            "revoked",
+            "replaced",
+            "in_use_elsewhere"
+          ]
+        },
+        "stops_on": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "valid_until": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        }
+      }
+    },
+    "use": {
+      "enum": [
+        "noncommercial",
+        "commercial"
+      ]
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
+    },
+    "revision": {
+      "type": "string",
+      "maxLength": 64,
+      "description": "the platform's name for this exact key + lease + state (the hold poll's license.revision)"
+    }
+  }
+}
