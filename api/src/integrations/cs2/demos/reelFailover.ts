@@ -27,7 +27,9 @@ export async function otherRecorderOnline(recorder: string): Promise<boolean> {
  * The SQL condition a reel claim adds (with its two parameters): skip a reel
  * that failed on this recorder while another recorder is online.
  */
-export async function reelFailoverFilter(recorder: string): Promise<{ sql: string; params: unknown[] }> {
+export async function reelFailoverFilter(
+  recorder: string
+): Promise<{ sql: string; params: unknown[] }> {
   return {
     sql: '(avoid_recorder IS NULL OR avoid_recorder <> ? OR ?)',
     params: [recorder.slice(0, 120), !(await otherRecorderOnline(recorder))],

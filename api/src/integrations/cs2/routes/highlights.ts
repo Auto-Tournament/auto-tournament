@@ -113,7 +113,13 @@ import {
   renewClaims,
   SERIES_REEL,
 } from '../demos/highlights';
-import { listClips, redo, type RedoRequest } from '../demos/clipsAdmin';
+import {
+  listClips,
+  redo,
+  reviewClip,
+  type RedoRequest,
+  type ReviewVerdict,
+} from '../demos/clipsAdmin';
 import {
   claimRedress,
   failRedress,
@@ -988,6 +994,41 @@ router.post('/clips/redo', requireAuth, async (req: Request, res: Response) => {
   } catch (error) {
     log.error('[HIGHLIGHTS] redo failed', { error });
     return res.status(500).json({ success: false, error: 'Could not queue the clips' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/clips/{id}/review:
+ *   post:
+ *     tags: [Highlights]
+ *     summary: An admin's verdict on a recorded clip
+ *     description: |
+ *       `verdict`: `approved`; `redo` (it stutters or looks broken: recorded
+ *       again, preferably by another recorder); or `drop` (not worth showing:
+ *       not recorded again, left out of every reel, its reels made again).
+ *       `note` is optional. 404 when the clip is not recorded.
+ *     responses:
+ *       200:
+ *         description: How many clips and reels were queued
+ */
+router.post('/clips/:id/review', requireAuth, async (req: Request, res: Response) => {
+  const id = idOf(req);
+  const verdict = req.body?.verdict as ReviewVerdict;
+  if (!id || !['approved', 'redo', 'drop'].includes(verdict)) {
+    return res
+      .status(400)
+      .json({ success: false, error: 'A clip and a verdict: approved, redo or drop' });
+  }
+  try {
+    const note = typeof req.body?.note === 'string' ? req.body.note : null;
+    const result = await reviewClip(id, verdict, note, requestActorId(req));
+    if (!result)
+      return res.status(404).json({ success: false, error: 'No recorded clip with that id' });
+    return res.json({ success: true, ...result });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] review failed', { error, id });
+    return res.status(500).json({ success: false, error: 'Could not save the review' });
   }
 });
 

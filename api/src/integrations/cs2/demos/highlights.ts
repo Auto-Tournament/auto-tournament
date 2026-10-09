@@ -460,14 +460,31 @@ export function playersPerRecorder(players: number, idle: number): number {
 }
 
 /**
- * A job's share of a map's waiting moments (pure: tested on its own): about
- * `waiting / recorders` of them, whole players first (best first); a player
- * with more than the share gives their best that many, the rest wait for the
- * next job. `rows` are the map's waiting moments, best player first and each
- * player's best first.
+ * How many of a map's moments a recorder takes (pure: tested on its own):
+ * its part of the map's `total` (waiting plus those other recorders are at),
+ * by speed. `seconds` is each online recorder's benchmark time (the same clip
+ * for every recorder, demos/recorders.ts benchmarkJob), `mine` this one's; a
+ * recorder without a benchmark counts as the online ones' average, and with no
+ * benchmarks at all the split is even. A recorder twice as fast takes twice as
+ * many, so both finish the map about together.
  */
-export function pickChunk(rows: { id: number; playerId: string }[], recorders: number): number[] {
-  const share = Math.max(1, Math.ceil(rows.length / Math.max(1, recorders)));
+export function speedShare(total: number, mine: number | null, seconds: (number | null)[]): number {
+  if (total <= 0) return 0;
+  const known = seconds.filter((s): s is number => s != null && s > 0);
+  const avg = known.length ? known.reduce((a, b) => a + b, 0) / known.length : 1;
+  const speed = (s: number | null) => 1 / (s != null && s > 0 ? s : avg);
+  const all = seconds.length ? seconds.reduce((sum: number, s) => sum + speed(s), 0) : speed(mine);
+  return Math.max(1, Math.ceil((total * speed(mine)) / Math.max(all, speed(mine))));
+}
+
+/**
+ * A job's `share` of a map's waiting moments (pure: tested on its own), whole
+ * players first (best first); a player with more than the share gives their
+ * best that many, the rest wait for the next job. `rows` are the map's
+ * waiting moments, best player first and each player's best first.
+ */
+export function pickChunk(rows: { id: number; playerId: string }[], share: number): number[] {
+  share = Math.max(1, Math.floor(share));
   const byPlayer = new Map<string, number[]>();
   for (const r of rows) byPlayer.set(r.playerId, [...(byPlayer.get(r.playerId) ?? []), r.id]);
   const out: number[] = [];
@@ -480,15 +497,35 @@ export function pickChunk(rows: { id: number; playerId: string }[], recorders: n
   return out;
 }
 
-/** Recorders that can take work now or soon: asked in the last 15 minutes, or at a job. */
-async function onlineRecorders(): Promise<number> {
-  const row = await db.queryOneAsync<{ n: number | string }>(
-    `SELECT COUNT(*) AS n FROM cs2_recorders r
-      WHERE (r.paused_until IS NULL OR r.paused_until < EXTRACT(EPOCH FROM NOW()))
-        AND (r.last_seen > EXTRACT(EPOCH FROM NOW()) - 900
-             OR EXISTS (SELECT 1 FROM cs2_highlights h WHERE h.recorder = r.name AND h.status = 'recording'))`
+/** A recorder's benchmark time: its fastest finished try, in seconds. */
+function benchmarkSeconds(raw: string | null): number | null {
+  try {
+    const tries = (JSON.parse(raw ?? 'null')?.tries ?? []) as { ok?: boolean; seconds?: number }[];
+    const ok = tries.filter((t) => t.ok && typeof t.seconds === 'number' && t.seconds > 0);
+    return ok.length ? Math.min(...ok.map((t) => t.seconds!)) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Recorders that can take work now or soon (asked in the last 15 minutes, or
+ * at a job), `recorder` included, each with its benchmark time.
+ */
+async function onlineRecorders(
+  recorder: string
+): Promise<{ name: string; seconds: number | null }[]> {
+  const rows = await db.queryAsync<{ name: string; benchmark: string | null }>(
+    `SELECT r.name, r.benchmark FROM cs2_recorders r
+      WHERE r.name = ?
+         OR ((r.paused_until IS NULL OR r.paused_until < EXTRACT(EPOCH FROM NOW()))
+             AND (r.last_seen > EXTRACT(EPOCH FROM NOW()) - 900
+                  OR EXISTS (SELECT 1 FROM cs2_highlights h WHERE h.recorder = r.name AND h.status = 'recording')))`,
+    [recorder]
   );
-  return Math.max(1, Number(row?.n ?? 1));
+  const out = rows.map((r) => ({ name: r.name, seconds: benchmarkSeconds(r.benchmark) }));
+  if (!out.some((r) => r.name === recorder)) out.push({ name: recorder, seconds: null });
+  return out;
 }
 
 /**
@@ -496,9 +533,9 @@ async function onlineRecorders(): Promise<number> {
  * one CS2 session (recorders from version 4). The next map is the newest
  * match's (a tournament's before an imported one), so players see their
  * clips soon after their match; within it, map by map. The share is the
- * map's waiting moments over the recorders online, so every recorder takes
- * part of a map, a second one can join a map mid-way, and a lone recorder
- * still records a whole map in one session.
+ * recorder's part of the map by benchmark speed (speedShare), so recorders
+ * finish a map about together, a second one can join a map mid-way, and a
+ * lone recorder still records a whole map in one session.
  */
 export async function claimMapJob(recorder: string): Promise<MapRecordJob | null> {
   const now = Math.floor(Date.now() / 1000);
@@ -523,9 +560,21 @@ export async function claimMapJob(recorder: string): Promise<MapRecordJob | null
       ORDER BY MAX(score) OVER (PARTITION BY player_id) DESC, player_id, score DESC, id`,
     [best.match_slug, best.map_number, now - STALE_SECONDS]
   );
+  // The map's moments other recorders are at count too: the share is of the
+  // whole map, so a fast recorder that claimed first leaves the slow one less.
+  const atOthers = await db.queryOneAsync<{ n: number | string }>(
+    `SELECT COUNT(*) AS n FROM cs2_highlights WHERE match_slug = ? AND map_number = ?
+        AND status = 'recording' AND claimed_at >= ? AND recorder IS DISTINCT FROM ?`,
+    [best.match_slug, best.map_number, now - STALE_SECONDS, recorder.slice(0, 120)]
+  );
+  const online = await onlineRecorders(recorder.slice(0, 120));
   const ids = pickChunk(
     mapRows.map((r) => ({ id: Number(r.id), playerId: r.player_id })),
-    await onlineRecorders()
+    speedShare(
+      mapRows.length + Number(atOthers?.n ?? 0),
+      online.find((r) => r.name === recorder.slice(0, 120))?.seconds ?? null,
+      online.map((r) => r.seconds)
+    )
   );
   if (ids.length === 0) return null;
   const quality = await readHighlightQuality();
@@ -767,6 +816,7 @@ export async function saveClip(
   await removeTwins(file);
   await db.runAsync(
     `UPDATE cs2_highlights SET status = 'done', clip_path = ?, clip_bytes = ?, markers = ?, error = NULL,
+            review = NULL, review_note = NULL, reviewed_by = NULL, reviewed_at = NULL,
             record_seconds = ?, done_at = ? WHERE id = ?`,
     [
       path.basename(file),
