@@ -872,8 +872,14 @@ function ClipReview({
   const { t } = useModuleTranslation('cs2');
   const clip = clips[index];
   const [note, setNote] = useState('');
+  // A new clip starts with an empty note.
+  const [noteFor, setNoteFor] = useState(clip?.id);
+  if (noteFor !== clip?.id) {
+    setNoteFor(clip?.id);
+    setNote('');
+  }
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
+    const onKey = (e: { key: string; target: unknown }) => {
       if ((e.target as HTMLElement | null)?.tagName === 'INPUT') return;
       if (e.key === 'ArrowRight' && index < clips.length - 1) onIndex(index + 1);
       if (e.key === 'ArrowLeft' && index > 0) onIndex(index - 1);
@@ -887,7 +893,6 @@ function ClipReview({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [clips.length, index, onIndex, onVerdict, clip, busy, note]);
-  useEffect(() => setNote(''), [clip?.id]);
   if (!clip?.video) return null;
   return (
     <Dialog open onClose={onClose} maxWidth="lg" fullWidth data-testid="clips-review">

@@ -255,6 +255,12 @@ test(
       });
       if (res.status() !== 200) break;
       job = (await res.json()).job as Job;
+      // A new recorder benchmarks first, on a clip another spec recorded: say it did.
+      if (job?.kind === 'benchmark') {
+        await request.post('/api/game/cs2/recorder/benchmark', {
+          data: { recorder: name, tries: [] },
+        });
+      }
     }
     expect(job?.matchSlug).toBe(slug);
     const ids = job!.players.find((p) => p.playerId === star)!.moments.map((m) => m.id);
