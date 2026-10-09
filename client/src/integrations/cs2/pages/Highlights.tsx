@@ -590,7 +590,7 @@ export function recorderCommand(
     '  --group-add "$(getent group render | cut -d: -f3)" --device /dev/dri' +
       (nvidia ? ' --gpus all' : '') +
       ' \\',
-    '  --ipc=host --net=host --shm-size 4g --security-opt seccomp=unconfined --cap-add SYS_NICE \\',
+    '  --ipc=host --net=host --pid=host --shm-size 4g --security-opt seccomp=unconfined --cap-add SYS_NICE \\',
     '  -v "$HOME:$HOME" -v /mnt:/mnt -v /media:/media -v /tmp:/tmp \\',
     '  -v /run/user:/run/user:rslave -e HOME="$HOME" -e XDG_RUNTIME_DIR="/run/user/$(id -u)" \\',
     '  -e WAYLAND_DISPLAY="$WAYLAND_DISPLAY" -e DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \\',
