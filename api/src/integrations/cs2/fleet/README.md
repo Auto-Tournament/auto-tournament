@@ -52,6 +52,10 @@ FLEET.md §6.1): each hello refreshes them (`syncLinkedAddress`) unless
 link, `PUT /api/fleet/servers/:id/address`, the server editor, or linking an
 existing RCON row). `cs2_fleet_servers.peer_addr` is the client address of the
 last hello or enrollment (migration `012-fleet-connect-address`).
+A row the link creates starts with `skins` on when the server's enrollment
+key has `skins` (migration `033-fleet-key-skins`) and is neither revoked
+nor expired; one taken over from an earlier link keeps what an admin set.
+A server with a Steam server token never gets skins, whatever the key says.
 
 ## Sending: `sendReliable(serverId, { type, payload, epoch? })`
 

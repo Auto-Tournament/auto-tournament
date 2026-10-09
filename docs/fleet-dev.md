@@ -74,9 +74,10 @@ ADMIN='Authorization: Bearer dev-admin-token-0123456789abcdef'
 ### A. With a fleet key (what csm and CI use)
 
 ```bash
-# 1. Create a key. The value is shown once.
+# 1. Create a key. The value is shown once. "skins": true (optional) turns
+#    skins on for each server it enrolls when that server is first linked.
 curl -s -X POST $API/api/fleet/keys -H "$ADMIN" -H 'Content-Type: application/json' \
-  -d '{"name":"ready-up-ci","namePrefix":"ci-"}'
+  -d '{"name":"ready-up-ci","namePrefix":"ci-","skins":true}'
 # → {"success":true,"key":{...},"value":"rfk_xxxxxxxxxxxx_<43 chars>"}
 
 # 2. Enroll (no admin auth: the key is the credential).
@@ -209,7 +210,7 @@ All `requireAuth` (admin session or `API_TOKENS` bearer):
 | POST | `/api/fleet/servers/:id/code` | new code for a pending server |
 | POST | `/api/fleet/servers/:id/revoke` | revoke tokens, close 4403, block key re-enrollment |
 | POST | `/api/fleet/servers/:id/rotate` | 200 `sent`, or 202 `on_next_connect` when offline |
-| GET / POST | `/api/fleet/keys` | list; `{name, namePrefix?, maxServers?, expiresInDays?}` → key (shown once) |
+| GET / POST | `/api/fleet/keys` | list; `{name, namePrefix?, maxServers?, expiresInDays?, skins?}` → key (shown once) |
 | DELETE | `/api/fleet/keys/:id` | revoke (servers it enrolled keep working) |
 
 ## Run the fleet tests
