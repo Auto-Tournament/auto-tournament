@@ -290,3 +290,81 @@ test('a second recorder joins a map mid-way, newest match first', TAGS, async ({
   const idsB = b!.players.flatMap((p) => p.moments.map((m) => m.id));
   expect(idsB.some((id) => idsA.includes(id))).toBe(false);
 });
+
+test(
+  'a recorder whose CS2 will not start gives its job back and is paused',
+  TAGS,
+  async ({ request }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    const slug = await matchWithMoments(request);
+    type Job = {
+      kind: string;
+      matchSlug: string;
+      players: Array<{ moments: Array<{ id: number }> }>;
+    };
+    const name = `spec-fault-${Date.now()}`;
+    const ask = () =>
+      request.post('/api/game/cs2/recorder/claim', { data: { recorder: name, version: 7 } });
+    await ask();
+    await request.post('/api/game/cs2/recorder/benchmark', {
+      data: {
+        recorder: name,
+        tries: [
+          {
+            gamescopeHz: 120,
+            seconds: 60,
+            captureFps: 118,
+            repeatPct: 0.4,
+            jumpPct: 1.4,
+            ok: true,
+          },
+        ],
+      },
+    });
+    const claimMap = async () => {
+      for (let i = 0; i < 15; i++) {
+        const res = await ask();
+        if (res.status() !== 200) return null;
+        const job = (await res.json()).job as Job;
+        if (job.kind === 'map' && job.matchSlug === slug) return job;
+      }
+      return null;
+    };
+    const statuses = async (ids: number[]) => {
+      const list = (await (await request.get('/api/game/cs2/clips')).json()) as {
+        matches: Array<{
+          slug: string;
+          clips: Array<{ id: number; status: string; recorder: string | null }>;
+        }>;
+      };
+      return list.matches.find((m) => m.slug === slug)!.clips.filter((c) => ids.includes(c.id));
+    };
+    const fault = (ids: number[]) =>
+      request.post('/api/game/cs2/recorder/fail', {
+        data: { ids, error: 'CS2 would not start: broken pipe', fault: 'recorder', recorder: name },
+      });
+
+    // Three faults would fail a moment (three attempts): it must still be waiting.
+    for (let round = 1; round <= 2; round++) {
+      const job = await claimMap();
+      expect(job, `claim ${round}`).toBeTruthy();
+      const ids = job!.players.flatMap((p) => p.moments.map((m) => m.id));
+      expect((await fault(ids)).status()).toBe(200);
+      for (const c of await statuses(ids)) {
+        expect(c).toMatchObject({ status: 'pending', recorder: null });
+      }
+    }
+    // Two in a row: paused, and given no work.
+    const me = (
+      (await (await request.get('/api/game/cs2/recorders')).json()).recorders as Array<
+        Record<string, unknown>
+      >
+    ).find((r) => r.name === name)!;
+    expect(me).toMatchObject({ paused: true });
+    expect(String(me.pauseReason)).toContain('CS2 would not start');
+    expect((await ask()).status()).toBe(204);
+    expect(
+      (await request.delete(`/api/game/cs2/recorders/${encodeURIComponent(name)}`)).status()
+    ).toBe(200);
+  }
+);

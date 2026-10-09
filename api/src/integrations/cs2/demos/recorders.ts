@@ -23,6 +23,8 @@ import { readHighlightQuality } from './highlightQuality';
 export const REJECT_REPEAT_PCT = 4;
 export const PAUSE_AFTER = 3;
 export const PAUSE_SECONDS = 15 * 60;
+/** Jobs in a row whose CS2 would not start before the recorder is paused. */
+export const FAULT_PAUSE_AFTER = 2;
 export const BENCHMARK_HZ = [240, 120];
 /** The recorder version that runs benchmarks and sends frame checks and run logs. */
 export const RECORDER_QUALITY_VERSION = 7;
@@ -133,7 +135,7 @@ export async function judgeClip(
     ]);
     if (recorder) {
       await db.runAsync(
-        'UPDATE cs2_recorders SET clips_ok = clips_ok + 1, rejects_in_row = 0 WHERE name = ?',
+        'UPDATE cs2_recorders SET clips_ok = clips_ok + 1, rejects_in_row = 0, faults_in_row = 0 WHERE name = ?',
         [recorder]
       );
     }
@@ -422,4 +424,36 @@ export async function setRecorderLabel(name: string, label: string | null): Prom
     name,
   ]);
   return res.changes > 0;
+}
+
+/**
+ * A job the recorder gave back because its CS2 would not start (or died and
+ * would not start again): the recorder's fault, not the moments'. They go back
+ * to waiting without using up an attempt, preferably for another recorder,
+ * and a recorder that does this twice in a row is paused, so a broken one
+ * stops taking (and failing) every job (2026-10-09: the EWC import's 78 clips
+ * failed in ten minutes on one desktop).
+ */
+export async function recorderFault(recorder: string, ids: number[], error: string): Promise<void> {
+  if (ids.length > 0) {
+    await db.runAsync(
+      `UPDATE cs2_highlights SET status = 'pending', attempts = GREATEST(attempts - 1, 0), error = ?,
+              claimed_at = NULL, recorder = NULL, avoid_recorder = ?
+        WHERE id IN (${ids.map(() => '?').join(', ')}) AND status = 'recording'`,
+      [error.slice(0, 500), recorder, ...ids]
+    );
+  }
+  const r = await db.queryOneAsync<{ faults_in_row: number }>(
+    `UPDATE cs2_recorders SET faults_in_row = faults_in_row + 1 WHERE name = ? RETURNING faults_in_row`,
+    [recorder]
+  );
+  log.warn(`[RECORDERS] ${recorder} gave back ${ids.length} moment(s): ${error.slice(0, 200)}`);
+  if (r && Number(r.faults_in_row) >= FAULT_PAUSE_AFTER) {
+    const reason = `CS2 would not start for ${r.faults_in_row} jobs in a row: ${error.slice(0, 200)}`;
+    await db.runAsync(
+      'UPDATE cs2_recorders SET paused_until = ?, pause_reason = ?, faults_in_row = 0 WHERE name = ?',
+      [now() + PAUSE_SECONDS, reason, recorder]
+    );
+    log.warn(`[RECORDERS] ${recorder} paused for ${PAUSE_SECONDS / 60} minutes: ${reason}`);
+  }
 }

@@ -117,6 +117,7 @@ export const CS2_FLEET_KEY_AUTO_LINK_MIGRATION_ID = '032-fleet-key-auto-link';
 export const CS2_FLEET_KEY_SKINS_MIGRATION_ID = '033-fleet-key-skins';
 export const CS2_MADE_WITH_MIGRATION_ID = '034-highlight-made-with';
 export const CS2_RECORDER_KEYS_MIGRATION_ID = '035-recorder-keys';
+export const CS2_RECORDER_FAULTS_MIGRATION_ID = '036-recorder-faults';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1310,6 +1311,14 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS record_seconds REAL;
     ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS done_at INTEGER;
     ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS label TEXT;
+`,
+  },
+  {
+    // A recorder whose CS2 would not start (demos/recorders.ts recorderFault):
+    // how many jobs in a row, to pause it after a second one.
+    id: CS2_RECORDER_FAULTS_MIGRATION_ID,
+    up: `
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS faults_in_row INTEGER NOT NULL DEFAULT 0;
 `,
   },
 ];
