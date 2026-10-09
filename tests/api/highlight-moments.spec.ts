@@ -4,6 +4,7 @@ import {
   parseClipIds,
   parseClipStarts,
   parseMarkers,
+  pickChunk,
   pickMoments,
   pickSeriesClips,
   playersPerRecorder,
@@ -266,4 +267,22 @@ test('a clip keeps the kills its crowd reacts to', { tag: ['@api'] }, () => {
     { t: 12, score: 1 },
   ]);
   expect(parseMarkers(JSON.stringify({ duration: 3, kills: [1] }))?.reactions).toBeUndefined();
+});
+
+test('a job takes its share of a map: whole players first, best first', { tag: ['@api'] }, () => {
+  const rows = [
+    ...[1, 2, 3, 4, 5].map((id) => ({ id, playerId: 'a' })),
+    ...[6, 7].map((id) => ({ id, playerId: 'b' })),
+    ...[8, 9].map((id) => ({ id, playerId: 'c' })),
+    { id: 10, playerId: 'd' },
+  ];
+  // One recorder: the whole map in one session.
+  expect(pickChunk(rows, 1)).toEqual(rows.map((r) => r.id));
+  // Two: half (5). Player a alone fills it.
+  expect(pickChunk(rows, 2)).toEqual([1, 2, 3, 4, 5]);
+  // Five: two each; a gives their best two, the rest wait.
+  expect(pickChunk(rows, 5)).toEqual([1, 2]);
+  // A share of 3 from b (2), c (2), d (1): b fits, c would not, d does.
+  expect(pickChunk(rows.slice(5), 2)).toEqual([6, 7, 10]);
+  expect(pickChunk([], 3)).toEqual([]);
 });
