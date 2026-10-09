@@ -288,30 +288,50 @@ async function steamProfiles(
 }
 
 /**
- * Players the demo names: new ones are added with their Steam name and
- * picture (the demo's name without a Steam Web API key); known ones without
- * a picture get their Steam one.
+ * Players the demo names, under the name they play under there (a pro's
+ * handle; their Steam name can be anything: the EWC 2026 final's zont1x was
+ * "198572"), with their Steam picture. A player who never signed in takes the
+ * demo's name again on every import; one who signed in keeps their own.
  */
 async function ensurePlayers(roster: Record<string, string>): Promise<void> {
   const ids = Object.keys(roster);
   if (ids.length === 0) return;
   const known = new Map(
     (
-      await db.queryAsync<{ id: string; avatar_url: string | null }>(
-        `SELECT id, avatar_url FROM players WHERE id IN (${ids.map(() => '?').join(', ')})`,
+      await db.queryAsync<{
+        id: string;
+        avatar_url: string | null;
+        last_sign_in_at: number | null;
+      }>(
+        `SELECT id, avatar_url, last_sign_in_at FROM players WHERE id IN (${ids.map(() => '?').join(', ')})`,
         ids
       )
-    ).map((r) => [r.id, r.avatar_url] as const)
+    ).map((r) => [r.id, r] as const)
   );
-  const missing = ids.filter((id) => !known.get(id));
+  for (const id of ids) {
+    const row = known.get(id);
+    const name = (roster[id] ?? '').trim();
+    if (row && row.last_sign_in_at === null && name && name !== id) {
+      await db.runAsync('UPDATE players SET name = ? WHERE id = ? AND last_sign_in_at IS NULL', [
+        name.slice(0, 100),
+        id,
+      ]);
+    }
+  }
+  const missing = ids.filter((id) => !known.get(id)?.avatar_url);
   if (missing.length === 0) return;
   const steam = await steamProfiles(missing);
   for (const id of missing) {
     const profile = steam.get(id);
+    const demoName = (roster[id] ?? '').trim();
     await db.runAsync(
       `INSERT INTO players (id, name, avatar_url) VALUES (?, ?, ?)
        ON CONFLICT (id) DO UPDATE SET avatar_url = COALESCE(players.avatar_url, EXCLUDED.avatar_url)`,
-      [id, (profile?.name || roster[id]).slice(0, 100), profile?.avatar || null]
+      [
+        id,
+        ((demoName && demoName !== id ? demoName : profile?.name) || id).slice(0, 100),
+        profile?.avatar || null,
+      ]
     );
   }
 }
