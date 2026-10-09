@@ -459,120 +459,56 @@ export function playersPerRecorder(players: number, idle: number): number {
 }
 
 /**
- * How many of a map's moments a recorder takes (pure: tested on its own):
- * its part of the map's `total` (waiting plus those other recorders are at),
- * by speed. `seconds` is each online recorder's benchmark time (the same clip
- * for every recorder, demos/recorders.ts benchmarkJob), `mine` this one's; a
- * recorder without a benchmark counts as the online ones' average, and with no
- * benchmarks at all the split is even. A recorder twice as fast takes twice as
- * many, so both finish the map about together.
+ * The next player of a map for a recorder (pure: tested on its own): the
+ * best waiting player, all of their waiting moments. `rows` are the map's
+ * waiting moments, best player first and each player's best first. One player
+ * a claim: a recorder keeps the map's demo loaded between jobs (the worker's
+ * liveGame), so a faster recorder simply asks more often, and a map never
+ * has more recorders on it than players waiting.
  */
-export function speedShare(total: number, mine: number | null, seconds: (number | null)[]): number {
-  if (total <= 0) return 0;
-  const known = seconds.filter((s): s is number => s != null && s > 0);
-  const avg = known.length ? known.reduce((a, b) => a + b, 0) / known.length : 1;
-  const speed = (s: number | null) => 1 / (s != null && s > 0 ? s : avg);
-  const all = seconds.length ? seconds.reduce((sum: number, s) => sum + speed(s), 0) : speed(mine);
-  return Math.max(1, Math.ceil((total * speed(mine)) / Math.max(all, speed(mine))));
+export function nextPlayer(rows: { id: number; playerId: string }[]): number[] {
+  const first = rows[0]?.playerId;
+  return first === undefined ? [] : rows.filter((r) => r.playerId === first).map((r) => r.id);
+}
+
+/** The map a claim says the recorder has loaded, or null. */
+export function loadedMapOf(raw: unknown): { matchSlug: string; mapNumber: number } | null {
+  const l = raw as { matchSlug?: unknown; mapNumber?: unknown } | null | undefined;
+  if (!l || typeof l.matchSlug !== 'string' || !l.matchSlug) return null;
+  const mapNumber = Number(l.mapNumber);
+  return Number.isInteger(mapNumber) && mapNumber >= 0
+    ? { matchSlug: l.matchSlug.slice(0, 200), mapNumber }
+    : null;
 }
 
 /**
- * A job's `share` of a map's waiting moments (pure: tested on its own), whole
- * players first (best first); a player with more than the share gives their
- * best that many, the rest wait for the next job. `rows` are the map's
- * waiting moments, best player first and each player's best first.
+ * Hand the recorder the next player of a map, recorded in the CS2 session it
+ * keeps (recorders from version 4). The map is the one the recorder has
+ * loaded while it has players waiting; otherwise the newest match's (a
+ * tournament's before an imported one), so players see their clips soon
+ * after their match, map by map. A recorder whose map has no one left
+ * waiting gets the next map and loads it, while the others finish theirs.
  */
-export function pickChunk(rows: { id: number; playerId: string }[], share: number): number[] {
-  share = Math.max(1, Math.floor(share));
-  const byPlayer = new Map<string, number[]>();
-  for (const r of rows) byPlayer.set(r.playerId, [...(byPlayer.get(r.playerId) ?? []), r.id]);
-  const out: number[] = [];
-  for (const ids of byPlayer.values()) {
-    if (out.length === 0 && ids.length >= share) return ids.slice(0, share);
-    if (out.length + ids.length > share) continue;
-    out.push(...ids);
-    if (out.length === share) break;
-  }
-  return out;
-}
-
-/** A recorder's benchmark time (its fastest finished try, in seconds) and the clip it timed. */
-export function benchmarkSeconds(raw: string | null): { seconds: number | null; source: string } {
-  try {
-    const b = JSON.parse(raw ?? 'null') as {
-      tries?: { ok?: boolean; seconds?: number }[];
-      source?: string;
-    } | null;
-    const ok = (b?.tries ?? []).filter(
-      (t) => t.ok && typeof t.seconds === 'number' && t.seconds > 0
-    );
-    return {
-      seconds: ok.length ? Math.min(...ok.map((t) => t.seconds!)) : null,
-      source: b?.source ?? 'match',
-    };
-  } catch {
-    return { seconds: null, source: 'match' };
-  }
-}
-
-/**
- * Benchmark times that can be compared (pure: tested on its own): only
- * recorders timed on the same clip. Once one has timed the shipped demo, the
- * others' times on this install's clip count as unknown (the online average)
- * until they are benchmarked again.
- */
-export function comparableSeconds(
-  b: { seconds: number | null; source: string }[]
-): (number | null)[] {
-  const bundled = b.some((x) => x.source === 'bundled' && x.seconds != null);
-  return b.map((x) => (bundled && x.source !== 'bundled' ? null : x.seconds));
-}
-
-/**
- * Recorders that can take work now or soon (asked in the last 15 minutes, or
- * at a job), `recorder` included, each with its benchmark time.
- */
-async function onlineRecorders(
-  recorder: string
-): Promise<{ name: string; seconds: number | null }[]> {
-  const rows = await db.queryAsync<{ name: string; benchmark: string | null }>(
-    `SELECT r.name, r.benchmark FROM cs2_recorders r
-      WHERE r.name = ?
-         OR ((r.paused_until IS NULL OR r.paused_until < EXTRACT(EPOCH FROM NOW()))
-             AND (r.last_seen > EXTRACT(EPOCH FROM NOW()) - 900
-                  OR EXISTS (SELECT 1 FROM cs2_highlights h WHERE h.recorder = r.name AND h.status = 'recording')))`,
-    [recorder]
-  );
-  const seconds = comparableSeconds(rows.map((r) => benchmarkSeconds(r.benchmark)));
-  const out = rows.map((r, i) => ({ name: r.name, seconds: seconds[i] }));
-  if (!out.some((r) => r.name === recorder)) out.push({ name: recorder, seconds: null });
-  return out;
-}
-
-/**
- * Hand the recorder its share of the next map's waiting moments, recorded in
- * one CS2 session (recorders from version 4). The next map is the newest
- * match's (a tournament's before an imported one), so players see their
- * clips soon after their match; within it, map by map. The share is the
- * recorder's part of the map by benchmark speed (speedShare), so recorders
- * finish a map about together, a second one can join a map mid-way, and a
- * lone recorder still records a whole map in one session.
- */
-export async function claimMapJob(recorder: string): Promise<MapRecordJob | null> {
+export async function claimMapJob(
+  recorder: string,
+  loaded: { matchSlug: string; mapNumber: number } | null = null
+): Promise<MapRecordJob | null> {
   const now = Math.floor(Date.now() / 1000);
   const waiting = "(status = 'pending' OR (status = 'recording' AND claimed_at < ?))";
   // A moment this recorder gave back (its CS2 would not start) goes to
   // another recorder first (demos/recorders.ts recorderFault).
+  // The map the recorder has loaded comes first while it has anyone waiting.
   const best = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
     `SELECT h.match_slug, h.map_number FROM cs2_highlights h
        LEFT JOIN matches m ON m.slug = h.match_slug
       WHERE ${waiting.replace(/status|claimed_at/g, (c) => `h.${c}`)}
       ORDER BY (h.avoid_recorder IS NOT NULL AND h.avoid_recorder = ?),
+               (h.match_slug = ? AND h.map_number = ?) DESC,
                (m.tournament_id IS NOT NULL) DESC,
                (SELECT MAX(x.id) FROM cs2_highlights x WHERE x.match_slug = h.match_slug) DESC,
                h.map_number, h.score DESC, h.id
       LIMIT 1`,
-    [now - STALE_SECONDS, recorder.slice(0, 120)]
+    [now - STALE_SECONDS, recorder.slice(0, 120), loaded?.matchSlug ?? '', loaded?.mapNumber ?? -2]
   );
   if (!best) return null;
   await trimToPerPlayer(best.match_slug, Number(best.map_number));
@@ -581,22 +517,7 @@ export async function claimMapJob(recorder: string): Promise<MapRecordJob | null
       ORDER BY MAX(score) OVER (PARTITION BY player_id) DESC, player_id, score DESC, id`,
     [best.match_slug, best.map_number, now - STALE_SECONDS]
   );
-  // The map's moments other recorders are at count too: the share is of the
-  // whole map, so a fast recorder that claimed first leaves the slow one less.
-  const atOthers = await db.queryOneAsync<{ n: number | string }>(
-    `SELECT COUNT(*) AS n FROM cs2_highlights WHERE match_slug = ? AND map_number = ?
-        AND status = 'recording' AND claimed_at >= ? AND recorder IS DISTINCT FROM ?`,
-    [best.match_slug, best.map_number, now - STALE_SECONDS, recorder.slice(0, 120)]
-  );
-  const online = await onlineRecorders(recorder.slice(0, 120));
-  const ids = pickChunk(
-    mapRows.map((r) => ({ id: Number(r.id), playerId: r.player_id })),
-    speedShare(
-      mapRows.length + Number(atOthers?.n ?? 0),
-      online.find((r) => r.name === recorder.slice(0, 120))?.seconds ?? null,
-      online.map((r) => r.seconds)
-    )
-  );
+  const ids = nextPlayer(mapRows.map((r) => ({ id: Number(r.id), playerId: r.player_id })));
   if (ids.length === 0) return null;
   const quality = await readHighlightQuality();
   const rows = await db.queryAsync<MomentRow>(
