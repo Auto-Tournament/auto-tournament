@@ -787,6 +787,142 @@ interface AdminClip {
   recorder: string | null;
   recordSeconds: number | null;
   doneAt: number | null;
+  /** Its video file, played from /api/game/cs2/highlights/:file; null until recorded. */
+  video: string | null;
+}
+
+const clipUrl = (file: string) => `/api/game/cs2/highlights/${encodeURIComponent(file)}`;
+
+/** A finished clip's picture: a frame two seconds in (the browser draws it from the video). */
+function ClipThumb({ clip, onOpen }: { clip: AdminClip; onOpen: () => void }) {
+  const { t } = useModuleTranslation('cs2');
+  if (!clip.video) {
+    return (
+      <Box
+        sx={{ width: 112, height: 63, flex: 'none', borderRadius: 1, bgcolor: 'action.hover' }}
+        aria-hidden
+      />
+    );
+  }
+  return (
+    <Box
+      component="button"
+      type="button"
+      onClick={onOpen}
+      aria-label={t('highlightsAdmin.clips.watch', { title: clip.title })}
+      data-testid={`clips-thumb-${clip.id}`}
+      sx={{
+        p: 0,
+        border: 0,
+        width: 112,
+        height: 63,
+        flex: 'none',
+        borderRadius: 1,
+        overflow: 'hidden',
+        cursor: 'pointer',
+        bgcolor: 'common.black',
+        '&:focus-visible': { outline: 2, outlineColor: 'primary.main' },
+      }}
+    >
+      <Box
+        component="video"
+        src={`${clipUrl(clip.video)}#t=2`}
+        preload="metadata"
+        muted
+        playsInline
+        sx={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          display: 'block',
+          pointerEvents: 'none',
+        }}
+      />
+    </Box>
+  );
+}
+
+/**
+ * One clip to watch, with the match's others a step away: to review a match's
+ * clips and redo a bad one.
+ */
+function ClipReview({
+  clips,
+  index,
+  onIndex,
+  onClose,
+  onRedo,
+  busy,
+}: {
+  clips: AdminClip[];
+  index: number;
+  onIndex: (i: number) => void;
+  onClose: () => void;
+  onRedo: (clip: AdminClip) => void;
+  busy: boolean;
+}) {
+  const { t } = useModuleTranslation('cs2');
+  const clip = clips[index];
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' && index < clips.length - 1) onIndex(index + 1);
+      if (e.key === 'ArrowLeft' && index > 0) onIndex(index - 1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [clips.length, index, onIndex]);
+  if (!clip?.video) return null;
+  return (
+    <Dialog open onClose={onClose} maxWidth="lg" fullWidth data-testid="clips-review">
+      <DialogTitle sx={{ pb: 1 }}>
+        {clip.playerName} · {clip.title}
+        <Typography variant="body2" color="text.secondary">
+          {[
+            t('highlightsAdmin.clips.mapN', { n: clip.mapNumber + 1 }),
+            clip.recorder,
+            clip.recordSeconds != null ? duration(clip.recordSeconds) : null,
+            clip.madeWith ? quality(clip.madeWith) : null,
+            t('highlightsAdmin.clips.reviewOf', { n: index + 1, count: clips.length }),
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </Typography>
+      </DialogTitle>
+      <DialogContent>
+        <Box
+          component="video"
+          key={clip.id}
+          src={clipUrl(clip.video)}
+          controls
+          autoPlay
+          playsInline
+          sx={{
+            width: '100%',
+            aspectRatio: '16 / 9',
+            bgcolor: 'common.black',
+            borderRadius: 1,
+            display: 'block',
+          }}
+        />
+      </DialogContent>
+      <DialogActions sx={{ justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button disabled={index === 0} onClick={() => onIndex(index - 1)}>
+            {t('highlightsAdmin.clips.previous')}
+          </Button>
+          <Button disabled={index >= clips.length - 1} onClick={() => onIndex(index + 1)}>
+            {t('highlightsAdmin.clips.next')}
+          </Button>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button color="warning" disabled={busy} onClick={() => onRedo(clip)}>
+            {t('highlightsAdmin.clips.redo')}
+          </Button>
+          <Button onClick={onClose}>{t('highlightsAdmin.clips.close')}</Button>
+        </Box>
+      </DialogActions>
+    </Dialog>
+  );
 }
 
 interface AdminReel {
@@ -821,6 +957,8 @@ function ClipsTab() {
   } | null>(null);
   const [onlyOutdated, setOnlyOutdated] = useState(false);
   const [busy, setBusy] = useState(false);
+  // The clip being watched: its match and its place among that match's recorded clips.
+  const [review, setReview] = useState<{ slug: string; index: number } | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -968,6 +1106,15 @@ function ClipsTab() {
           )}
           {m.clips.map((c) => (
             <Box key={c.id} sx={row} data-testid={`clips-clip-${c.id}`}>
+              <ClipThumb
+                clip={c}
+                onOpen={() =>
+                  setReview({
+                    slug: m.slug,
+                    index: m.clips.filter((x) => x.video).findIndex((x) => x.id === c.id),
+                  })
+                }
+              />
               <Typography variant="body2" sx={{ minWidth: 60, color: 'text.secondary' }}>
                 {mapName(c.mapNumber)}
               </Typography>
@@ -1012,6 +1159,24 @@ function ClipsTab() {
           ))}
         </Box>
       ))}
+      {review &&
+        (() => {
+          const match = data.matches.find((x) => x.slug === review.slug);
+          const watchable = match ? match.clips.filter((x) => x.video) : [];
+          return watchable.length ? (
+            <ClipReview
+              clips={watchable}
+              index={Math.min(review.index, watchable.length - 1)}
+              onIndex={(index) => setReview({ slug: review.slug, index })}
+              onClose={() => setReview(null)}
+              busy={busy}
+              onRedo={(clip) => {
+                setReview(null);
+                void redo({ clipIds: [clip.id] });
+              }}
+            />
+          ) : null;
+        })()}
     </Stack>
   );
 }

@@ -2243,7 +2243,12 @@
         "skipped": "Hoppet over"
       },
       "outdated_flag": "Utdatert",
-      "outdated_one": "{{count}} laget med andre innstillinger"
+      "outdated_one": "{{count}} laget med andre innstillinger",
+      "watch": "Se {{title}}",
+      "reviewOf": "{{n}} av {{count}}",
+      "previous": "Forrige",
+      "next": "Neste",
+      "close": "Lukk"
     },
     "add": {
       "button": "Legg til en opptaker",

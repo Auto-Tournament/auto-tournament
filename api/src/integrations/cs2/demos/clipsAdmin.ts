@@ -29,6 +29,8 @@ export interface AdminClip {
   recorder: string | null;
   recordSeconds: number | null;
   doneAt: number | null;
+  /** The clip's video, played from GET /api/game/cs2/highlights/:file (null until recorded). */
+  video: string | null;
 }
 
 export interface AdminReel {
@@ -82,9 +84,10 @@ export async function listClips(
     recorder: string | null;
     record_seconds: number | null;
     done_at: number | null;
+    clip_path: string | null;
   }>(
     `SELECT h.id, h.match_slug, h.map_number, h.player_id, p.name, h.title, h.kind, h.status, h.made_with,
-            COALESCE(r.label, h.recorder) AS recorder, h.record_seconds, h.done_at
+            COALESCE(r.label, h.recorder) AS recorder, h.record_seconds, h.done_at, h.clip_path
        FROM cs2_highlights h LEFT JOIN players p ON p.id = h.player_id
        LEFT JOIN cs2_recorders r ON r.name = h.recorder
       WHERE h.match_slug IN (${marks}) AND h.status <> 'skipped'
@@ -122,6 +125,7 @@ export async function listClips(
         recorder: c.recorder,
         recordSeconds: c.record_seconds === null ? null : Number(c.record_seconds),
         doneAt: c.done_at === null ? null : Number(c.done_at),
+        video: c.status === 'done' && c.clip_path ? c.clip_path : null,
       }));
     const ownReels = reels
       .filter((r) => r.match_slug === m.slug)

@@ -152,7 +152,13 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
       outdated: number;
       matches: Array<{
         slug: string;
-        clips: Array<{ id: number; status: string; madeWith: string | null; outdated: boolean }>;
+        clips: Array<{
+          id: number;
+          status: string;
+          madeWith: string | null;
+          outdated: boolean;
+          video: string | null;
+        }>;
       }>;
     };
     const list = async (outdated = false) =>
@@ -167,6 +173,11 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
       ['done', '1080p60', false],
       ['done', '1080p60', false],
     ]);
+    // Each recorded clip comes with its video, to watch from the list.
+    for (const c of done) {
+      expect(c.video).toBeTruthy();
+      expect((await request.get(`/api/game/cs2/highlights/${c.video}`)).status()).toBe(200);
+    }
     // The skipped ones are not listed.
     expect(ours().clips.filter((c) => c.status === 'skipped')).toEqual([]);
 

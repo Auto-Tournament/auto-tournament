@@ -2283,7 +2283,12 @@
         "skipped": "Skipped"
       },
       "outdated_flag": "Outdated",
-      "outdated_one": "{{count}} made at other settings"
+      "outdated_one": "{{count}} made at other settings",
+      "watch": "Watch {{title}}",
+      "reviewOf": "{{n}} of {{count}}",
+      "previous": "Previous",
+      "next": "Next",
+      "close": "Close"
     },
     "add": {
       "button": "Add a recorder",
