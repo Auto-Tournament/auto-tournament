@@ -67,6 +67,12 @@ var recorderLook = []string{
 	"r_show_build_info 0",
 	"hud_showtargetid 0",
 	"volume 1",
+	// The sound's own settings, not the Steam profile's: a player's low
+	// latency mix-ahead (the desktop's was 1 ms) runs dry while the PC
+	// records, and the clip's sound breaks up; a demo needs no low latency.
+	// Nothing muted when gamescope's window is not focused.
+	"snd_mixahead 0.05",
+	"snd_mute_losefocus 0",
 	"fps_max 0",
 	// A static cross with a dot, green-cyan, no outline.
 	"cl_crosshairstyle 4", "cl_crosshairdot 1", "cl_crosshair_recoil 0", "cl_crosshair_t 0",
