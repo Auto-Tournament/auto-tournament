@@ -2268,7 +2268,7 @@
       "pcNeeds": "En Linux-PC med Docker, Steam (innlogget) og CS2 installert. Lim inn dette i en terminal i skrivebordsøkten. Opptakeren bruker GPU-en og finner CS2 i Steam-bibliotekene. Ikke spill eller kjør annet GPU-arbeid på den mens den tar opp: klippene ville hakke.",
       "serverNeeds": "En Ubuntu 24.04-server med NVIDIA-GPU, uten skrivebord. Første linje (én gang, med sudo) installerer NVIDIA-driveren og Docker og slår av dvale; start på nytt om den ber om det. Den andre starter Steam og CS2 i en container og opptakeren i den.",
       "pcAfter": "Den starter nå og igjen hver gang Docker gjør det.",
-      "serverAfter": "Deretter, én gang: åpne nettgrensesnittet den skriver ut (port 8483), logg inn i Steam, sett den i frakoblet modus og installer CS2. Opptakeren tar arbeid når CS2 er der. Kjør den andre linjen igjen for å oppdatere."
+      "serverAfter": "Deretter, én gang: åpne nettgrensesnittet den skriver ut (https, port 8483), logg inn i Steam, sett den i frakoblet modus og installer CS2. Opptakeren tar arbeid når CS2 er der. Kjør den andre linjen igjen for å oppdatere."
     },
     "rename": "Gi nytt navn",
     "renameTitle": "Gi opptakeren et navn",

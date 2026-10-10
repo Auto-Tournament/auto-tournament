@@ -171,7 +171,7 @@ IP=$(hostname -I | awk '{print $1}')
 echo
 echo "Recorder \"$NAME\" is set up against $AT_URL."
 if [ ! -d "$DIR/games/GameLibrary/Steam/steamapps/common/Counter-Strike Global Offensive" ]; then
-  echo "Once only: open http://$IP:$WEB_PORT (password: USER_PASS in $DIR/.env), sign Steam in"
+  echo "Once only: open https://$IP:$WEB_PORT (a self-signed certificate; password: USER_PASS in $DIR/.env), sign Steam in"
   echo "with the recorder account, set it to offline mode and install Counter-Strike 2"
   echo "into the /mnt/games library. The recorder starts taking work when CS2 is there."
 fi

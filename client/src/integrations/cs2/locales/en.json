@@ -2268,7 +2268,7 @@
       "pcNeeds": "A Linux PC with Docker, Steam (signed in) and CS2 installed. Paste this in a terminal in its desktop session. The recorder uses its GPU and finds CS2 in its Steam libraries. Don't game or run other GPU work on it while it records: the clips would stutter.",
       "serverNeeds": "An Ubuntu 24.04 server with an NVIDIA GPU, no desktop needed. The first line (once, with sudo) installs the NVIDIA driver and Docker and turns sleep off; reboot if it says so. The second starts Steam and CS2 in a container and the recorder in it.",
       "pcAfter": "It starts now and again whenever Docker does.",
-      "serverAfter": "Then, once: open the web UI it prints (port 8483), sign Steam in, set it to offline mode and install CS2. The recorder starts taking work when CS2 is there. Run the second line again to update it."
+      "serverAfter": "Then, once: open the web UI it prints (https, port 8483), sign Steam in, set it to offline mode and install CS2. The recorder starts taking work when CS2 is there. Run the second line again to update it."
     },
     "rename": "Rename",
     "renameTitle": "Name this recorder",
