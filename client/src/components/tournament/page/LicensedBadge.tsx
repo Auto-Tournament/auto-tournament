@@ -11,7 +11,7 @@ const { color } = tokens;
 /**
  * The license line at the bottom of the public event page, always shown:
  * licensed for commercial use (a paid key) or non-profit use (a free key),
- * linking to the license's public check page, or "Unlicensed" without a
+ * linking to the license's public check page, or "No license key" without a
  * valid key (`GET /api/license/badge`). Nothing while it loads or if it
  * can't be read.
  */

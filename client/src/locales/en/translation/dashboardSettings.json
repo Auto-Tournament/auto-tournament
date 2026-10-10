@@ -518,7 +518,7 @@
       "licensed": "Licensed",
       "commercial": "Licensed · Commercial use",
       "nonCommercial": "Licensed · Non-profit use",
-      "unlicensed": "Unlicensed"
+      "unlicensed": "No license key"
     },
     "consent": {
       "title": "One last thing: the license",
