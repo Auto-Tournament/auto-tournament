@@ -142,10 +142,10 @@ var blendEdge = func() float64 {
 const maxGapTicks = 5.0
 
 // maxHoleTicks is the longest hole a clip keeps: the nearest frame is shown
-// for it (16 ticks: 250 ms, a short hitch). A capture stall at the same
+// for it (24 ticks: 375 ms, a short hitch; 16 failed the EWC final's 16.2). A capture stall at the same
 // moment of the demo comes back on every retry, so failing the clip over it
 // only lost the clip (two 4Ks of the EWC final, 5.2 ticks, 2026-10-10).
-const maxHoleTicks = 16.0
+const maxHoleTicks = 24.0
 
 // timeline is the clip's frames at outputFPS: the speed ramp `segs` (seconds
 // from the clip's start at startTick) says which moment of the game each
@@ -196,6 +196,20 @@ func timeline(sources [][]float64, segs []segment, startTick int) ([]frameRef, e
 				}
 			}
 			c, gap := nearest(si, want)
+			if gap > maxGapTicks {
+				// A hole in this capture: another capture of the same moment (a
+				// slowed one) may have frames there. CS2 can hitch at the same
+				// moment of a demo on every full-speed pass (the EWC final, tick
+				// 73551, 16 ticks on each of six tries) and play it smoothly slowed.
+				for cand := range sources {
+					if cand == si {
+						continue
+					}
+					if cc, g := nearest(cand, want); cc >= 0 && g < gap {
+						si, c, gap = cand, cc, g
+					}
+				}
+			}
 			if c < 0 || gap > maxHoleTicks {
 				return nil, fmt.Errorf("no frame near tick %.0f (nearest %.1f ticks away)", want, gap)
 			}
