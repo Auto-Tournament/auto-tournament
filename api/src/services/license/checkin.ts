@@ -215,8 +215,8 @@ export function resolveCheckinUrl(env: {
 /** The server's notice as plain text: control characters dropped, trimmed, capped. */
 export function cleanNotice(value: unknown): string | null {
   if (typeof value !== 'string') return null;
-  // eslint-disable-next-line no-control-regex
   const text = value
+    // eslint-disable-next-line no-control-regex
     .replace(/[\u0000-\u001f\u007f]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();

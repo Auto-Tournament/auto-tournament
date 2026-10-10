@@ -95,7 +95,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     | 'at_ffw_time'
     | 'at_demo_recording_enabled';
 
-
   const ALLOWED_KEYS: AppSettingKey[] = [
     'webhook_url',
     'simulate_matches',
@@ -438,7 +437,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     }
   }
 
-
   const settingsService = new LegacySettingsService();
   const resolveTournamentId = (_req: unknown) => 1;
   const mapSettingsResponse = async () => 'settings';
@@ -568,8 +566,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
             });
           }
 
-          const value =
-            simulateMatches === null ? null : simulateMatches === true ? '1' : '0';
+          const value = simulateMatches === null ? null : simulateMatches === true ? '1' : '0';
 
           const wasSimulating = await settingsService.isSimulationModeEnabled();
           await settingsService.setSetting('simulate_matches', value);
@@ -637,11 +634,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         }
 
         const value =
-          atKnifeEnabledDefault === null
-            ? null
-            : atKnifeEnabledDefault === true
-            ? '1'
-            : '0';
+          atKnifeEnabledDefault === null ? null : atKnifeEnabledDefault === true ? '1' : '0';
 
         await settingsService.setSetting('at_knife_enabled_default', value);
       }
@@ -654,8 +647,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           });
         }
 
-        const value =
-          ratingsEnabled === null ? null : ratingsEnabled === true ? '1' : '0';
+        const value = ratingsEnabled === null ? null : ratingsEnabled === true ? '1' : '0';
 
         await settingsService.setSetting('ratings_enabled', value);
       }
@@ -668,12 +660,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           });
         }
 
-        const value =
-          atDebugChatEnabled === null
-            ? null
-            : atDebugChatEnabled === true
-            ? '1'
-            : '0';
+        const value = atDebugChatEnabled === null ? null : atDebugChatEnabled === true ? '1' : '0';
 
         await settingsService.setSetting('at_debug_chat', value);
       }
@@ -686,17 +673,13 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           });
         }
 
-        const value =
-          allowSelfRegister === null ? null : allowSelfRegister === true ? '1' : '0';
+        const value = allowSelfRegister === null ? null : allowSelfRegister === true ? '1' : '0';
 
         await settingsService.setSetting('allow_self_register', value);
       }
 
       if (atMinimumReadyRequired !== undefined) {
-        if (
-          typeof atMinimumReadyRequired !== 'number' &&
-          atMinimumReadyRequired !== null
-        ) {
+        if (typeof atMinimumReadyRequired !== 'number' && atMinimumReadyRequired !== null) {
           return res.status(400).json({
             success: false,
             error: 'atMinimumReadyRequired must be a number or null',
@@ -721,7 +704,11 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         );
       }
 
-      const putBoolOrNull = async (key: Parameters<typeof settingsService.setSetting>[0], v: unknown, label: string) => {
+      const putBoolOrNull = async (
+        key: Parameters<typeof settingsService.setSetting>[0],
+        v: unknown,
+        label: string
+      ) => {
         if (v === undefined) return;
         if (typeof v !== 'boolean' && v !== null) {
           return res.status(400).json({
@@ -734,7 +721,11 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         return;
       };
 
-      const putStringOrNull = async (key: Parameters<typeof settingsService.setSetting>[0], v: unknown, label: string) => {
+      const putStringOrNull = async (
+        key: Parameters<typeof settingsService.setSetting>[0],
+        v: unknown,
+        label: string
+      ) => {
         if (v === undefined) return;
         if (typeof v !== 'string' && v !== null) {
           return res.status(400).json({
@@ -746,7 +737,11 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         return;
       };
 
-      const putNumberOrNull = async (key: Parameters<typeof settingsService.setSetting>[0], v: unknown, label: string) => {
+      const putNumberOrNull = async (
+        key: Parameters<typeof settingsService.setSetting>[0],
+        v: unknown,
+        label: string
+      ) => {
         if (v === undefined) return;
         if (typeof v !== 'number' && v !== null) {
           return res.status(400).json({
@@ -760,31 +755,59 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
 
       // MatchZy Enhanced core defaults (booleans)
       if (atAllowForceReady !== undefined) {
-        const resp = await putBoolOrNull('at_allow_force_ready', atAllowForceReady, 'atAllowForceReady');
+        const resp = await putBoolOrNull(
+          'at_allow_force_ready',
+          atAllowForceReady,
+          'atAllowForceReady'
+        );
         if (resp) return resp;
       }
       if (atKickWhenNoMatchLoaded !== undefined) {
-        const resp = await putBoolOrNull('at_kick_when_no_match_loaded', atKickWhenNoMatchLoaded, 'atKickWhenNoMatchLoaded');
+        const resp = await putBoolOrNull(
+          'at_kick_when_no_match_loaded',
+          atKickWhenNoMatchLoaded,
+          'atKickWhenNoMatchLoaded'
+        );
         if (resp) return resp;
       }
       if (atWhitelistEnabledDefault !== undefined) {
-        const resp = await putBoolOrNull('at_whitelist_enabled_default', atWhitelistEnabledDefault, 'atWhitelistEnabledDefault');
+        const resp = await putBoolOrNull(
+          'at_whitelist_enabled_default',
+          atWhitelistEnabledDefault,
+          'atWhitelistEnabledDefault'
+        );
         if (resp) return resp;
       }
       if (atPauseAfterRestore !== undefined) {
-        const resp = await putBoolOrNull('at_pause_after_restore', atPauseAfterRestore, 'atPauseAfterRestore');
+        const resp = await putBoolOrNull(
+          'at_pause_after_restore',
+          atPauseAfterRestore,
+          'atPauseAfterRestore'
+        );
         if (resp) return resp;
       }
       if (atStopCommandAvailable !== undefined) {
-        const resp = await putBoolOrNull('at_stop_command_available', atStopCommandAvailable, 'atStopCommandAvailable');
+        const resp = await putBoolOrNull(
+          'at_stop_command_available',
+          atStopCommandAvailable,
+          'atStopCommandAvailable'
+        );
         if (resp) return resp;
       }
       if (atStopCommandNoDamage !== undefined) {
-        const resp = await putBoolOrNull('at_stop_command_no_damage', atStopCommandNoDamage, 'atStopCommandNoDamage');
+        const resp = await putBoolOrNull(
+          'at_stop_command_no_damage',
+          atStopCommandNoDamage,
+          'atStopCommandNoDamage'
+        );
         if (resp) return resp;
       }
       if (atUsePauseCommandForTacticalPause !== undefined) {
-        const resp = await putBoolOrNull('at_use_pause_command_for_tactical_pause', atUsePauseCommandForTacticalPause, 'atUsePauseCommandForTacticalPause');
+        const resp = await putBoolOrNull(
+          'at_use_pause_command_for_tactical_pause',
+          atUsePauseCommandForTacticalPause,
+          'atUsePauseCommandForTacticalPause'
+        );
         if (resp) return resp;
       }
 
@@ -792,7 +815,11 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
       // Note: an empty string is preserved here rather than clearing the setting.
       // "" is how MatchZy Enhanced is told to leave the server's own hostname alone.
       if (atHostnameFormat !== undefined) {
-        const resp = await putStringOrNull('at_hostname_format', atHostnameFormat, 'atHostnameFormat');
+        const resp = await putStringOrNull(
+          'at_hostname_format',
+          atHostnameFormat,
+          'atHostnameFormat'
+        );
         if (resp) return resp;
       }
       if (atDemoPath !== undefined) {
@@ -800,21 +827,37 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         if (resp) return resp;
       }
       if (atDemoNameFormat !== undefined) {
-        const resp = await putStringOrNull('at_demo_name_format', atDemoNameFormat, 'atDemoNameFormat');
+        const resp = await putStringOrNull(
+          'at_demo_name_format',
+          atDemoNameFormat,
+          'atDemoNameFormat'
+        );
         if (resp) return resp;
       }
 
       // MatchZy Enhanced core defaults (numbers)
       if (atSeriesEndKickDelayNoDemo !== undefined) {
-        const resp = await putNumberOrNull('at_series_end_kick_delay_no_demo', atSeriesEndKickDelayNoDemo, 'atSeriesEndKickDelayNoDemo');
+        const resp = await putNumberOrNull(
+          'at_series_end_kick_delay_no_demo',
+          atSeriesEndKickDelayNoDemo,
+          'atSeriesEndKickDelayNoDemo'
+        );
         if (resp) return resp;
       }
       if (atSeriesEndKickDelayDemoNoUpload !== undefined) {
-        const resp = await putNumberOrNull('at_series_end_kick_delay_demo_no_upload', atSeriesEndKickDelayDemoNoUpload, 'atSeriesEndKickDelayDemoNoUpload');
+        const resp = await putNumberOrNull(
+          'at_series_end_kick_delay_demo_no_upload',
+          atSeriesEndKickDelayDemoNoUpload,
+          'atSeriesEndKickDelayDemoNoUpload'
+        );
         if (resp) return resp;
       }
       if (atSeriesEndKickDelayDemoUpload !== undefined) {
-        const resp = await putNumberOrNull('at_series_end_kick_delay_demo_upload', atSeriesEndKickDelayDemoUpload, 'atSeriesEndKickDelayDemoUpload');
+        const resp = await putNumberOrNull(
+          'at_series_end_kick_delay_demo_upload',
+          atSeriesEndKickDelayDemoUpload,
+          'atSeriesEndKickDelayDemoUpload'
+        );
         if (resp) return resp;
       }
 
@@ -834,8 +877,8 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           atAutoreadyEnabled === null
             ? null
             : atAutoreadyEnabled === true || atAutoreadyEnabled === 1
-            ? '1'
-            : '0';
+              ? '1'
+              : '0';
         await settingsService.setSetting('at_autoready_enabled', value);
       }
 
@@ -854,16 +897,13 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           atBothTeamsUnpauseRequired === null
             ? null
             : atBothTeamsUnpauseRequired === true || atBothTeamsUnpauseRequired === 1
-            ? '1'
-            : '0';
+              ? '1'
+              : '0';
         await settingsService.setSetting('at_both_teams_unpause_required', value);
       }
 
       if (atMaxPausesPerTeam !== undefined) {
-        if (
-          typeof atMaxPausesPerTeam !== 'number' &&
-          atMaxPausesPerTeam !== null
-        ) {
+        if (typeof atMaxPausesPerTeam !== 'number' && atMaxPausesPerTeam !== null) {
           return res.status(400).json({
             success: false,
             error: 'atMaxPausesPerTeam must be a number or null',
@@ -903,16 +943,13 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           atSideSelectionEnabled === null
             ? null
             : atSideSelectionEnabled === true || atSideSelectionEnabled === 1
-            ? '1'
-            : '0';
+              ? '1'
+              : '0';
         await settingsService.setSetting('at_side_selection_enabled', value);
       }
 
       if (atSideSelectionTime !== undefined) {
-        if (
-          typeof atSideSelectionTime !== 'number' &&
-          atSideSelectionTime !== null
-        ) {
+        if (typeof atSideSelectionTime !== 'number' && atSideSelectionTime !== null) {
           return res.status(400).json({
             success: false,
             error: 'atSideSelectionTime must be a number or null',
@@ -936,11 +973,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           });
         }
         const value =
-          atGgEnabled === null
-            ? null
-            : atGgEnabled === true || atGgEnabled === 1
-            ? '1'
-            : '0';
+          atGgEnabled === null ? null : atGgEnabled === true || atGgEnabled === 1 ? '1' : '0';
         await settingsService.setSetting('at_gg_enabled', value);
       }
 
@@ -982,11 +1015,7 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           });
         }
         const value =
-          atFfwEnabled === null
-            ? null
-            : atFfwEnabled === true || atFfwEnabled === 1
-            ? '1'
-            : '0';
+          atFfwEnabled === null ? null : atFfwEnabled === true || atFfwEnabled === 1 ? '1' : '0';
         await settingsService.setSetting('at_ffw_enabled', value);
       }
 
@@ -1018,8 +1047,8 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           atDemoRecordingEnabled === null
             ? null
             : atDemoRecordingEnabled === true || atDemoRecordingEnabled === 1
-            ? '1'
-            : '0';
+              ? '1'
+              : '0';
         await settingsService.setSetting('at_demo_recording_enabled', value);
       }
 
@@ -1233,6 +1262,7 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'license_checkin_counted_since', field: null },
   { key: 'license_event_declaration', field: null },
   { key: 'license_event_prompt', field: null },
+  { key: 'license_lease', field: null },
   // Integrator webhooks to private / loopback targets (services/webhooks/ssrf).
   { key: 'webhooks_allow_private_targets', field: 'webhooksAllowPrivateTargets' },
   // Experimental feature toggles: /api/experimental only.
@@ -1278,7 +1308,10 @@ test.describe('settings namespace', () => {
     expect(coreKeys.filter((key) => cs2Keys.includes(key))).toEqual([]);
     for (const key of cs2Keys) {
       // Server convars (at_), the simulation, and the highlight videos.
-      expect(key.startsWith('at_') || key.startsWith('simulat') || key.startsWith('highlights_'), key).toBe(true);
+      expect(
+        key.startsWith('at_') || key.startsWith('simulat') || key.startsWith('highlights_'),
+        key
+      ).toBe(true);
     }
     expect(coreKeys.some((key) => key.startsWith('at_'))).toBe(false);
 
