@@ -157,6 +157,8 @@ test.describe('License API', () => {
       'tournaments_live',
       'max_tournament_teams',
       'declared',
+      'product',
+      'public_url',
     ]);
     // Not a genuine event license: no question.
     expect(body.license.eventPrompt).toBeNull();

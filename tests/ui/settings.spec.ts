@@ -19,7 +19,8 @@ test.describe.serial('Settings UI', () => {
     await ensureSignedIn(page);
   });
 
-  test('should navigate to and display settings page',
+  test(
+    'should navigate to and display settings page',
     {
       tag: ['@ui', '@settings'],
     },
@@ -30,14 +31,17 @@ test.describe.serial('Settings UI', () => {
       await page.waitForLoadState('networkidle');
 
       // One page: the platform's cards, no second nav and nothing of CS2's.
-      for (const card of ['site', 'signin', 'players', 'webhooks', 'license', 'advanced']) {
+      for (const card of ['site', 'signin', 'players', 'webhooks', 'advanced']) {
         await expect(page.getByTestId(`settings-card-${card}`)).toBeVisible({ timeout: 15000 });
       }
       await expect(page.locator('[id^="settings-nav-"]')).toHaveCount(0);
       await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
 
       // CS2's settings are its Match rules page, linked from here.
-      await page.getByTestId('settings-game-links').getByRole('link', { name: 'Match rules' }).click();
+      await page
+        .getByTestId('settings-game-links')
+        .getByRole('link', { name: 'Match rules' })
+        .click();
       await expect(page).toHaveURL(/\/match-rules$/);
       await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('cs2-server-defaults')).toBeVisible();
@@ -49,7 +53,8 @@ test.describe.serial('Settings UI', () => {
     }
   );
 
-  test('should update and clear the webhook URL',
+  test(
+    'should update and clear the webhook URL',
     {
       tag: ['@ui', '@settings', '@configuration'],
     },
@@ -97,13 +102,17 @@ test.describe.serial('Settings UI', () => {
     }
   );
 
-  test('a CS2 server default saves on its own, and the CS2 reset clears it',
+  test(
+    'a CS2 server default saves on its own, and the CS2 reset clears it',
     {
       tag: ['@ui', '@settings', '@configuration'],
     },
     async ({ page }) => {
       const readSettings = async () =>
-        (await (await page.request.get('/api/settings')).json()).settings as Record<string, unknown>;
+        (await (await page.request.get('/api/settings')).json()).settings as Record<
+          string,
+          unknown
+        >;
 
       // A field the tab does not touch, to prove its saves are partial.
       const before = await readSettings();

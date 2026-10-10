@@ -51,7 +51,8 @@
       "devTools": "Dev-tools",
       "publicLinks": "Publieke links",
       "disputes": "Disputes",
-      "modules": "Modules"
+      "modules": "Modules",
+      "license": "License"
     },
     "steamUnavailable": {
       "title": "Steam-integratie niet beschikbaar",

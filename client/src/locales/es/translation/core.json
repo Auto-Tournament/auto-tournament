@@ -51,7 +51,8 @@
       "devTools": "Herramientas de desarrollo",
       "publicLinks": "Enlaces públicos",
       "disputes": "Disputes",
-      "modules": "Modules"
+      "modules": "Modules",
+      "license": "License"
     },
     "steamUnavailable": {
       "title": "Integración con Steam no disponible",
