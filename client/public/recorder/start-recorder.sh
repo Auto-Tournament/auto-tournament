@@ -74,9 +74,9 @@ services:
       - TZ=$ZONE
       - USER_LOCALES=en_US.UTF-8 UTF-8
       - DISPLAY=:55
-      - DISPLAY_SIZEW=$DISP_W
-      - DISPLAY_SIZEH=$DISP_H
-      - DISPLAY_REFRESH=$DISP_HZ
+      - INITIAL_DISPLAY_WIDTH=$DISP_W
+      - INITIAL_DISPLAY_HEIGHT=$DISP_H
+      - INITIAL_DISPLAY_REFRESH=$DISP_HZ
       - DISPLAY_CDEPTH=24
       - PUID=99
       - PGID=100
@@ -94,12 +94,14 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_VERSION=$DRIVER
       - COMPOSITOR_RENDER_DEVICE=$RENDER
-      - SHUI_ENCODER=auto
-      - ENCODER_RENDER_DEVICE=$RENDER
+      # NVENC takes a CUDA index, while the compositor takes a DRM node.
+      - SHUI_ENCODER=nvidia-nvenc
+      - ENCODER_RENDER_DEVICE=cuda:0
     devices: [/dev/fuse, /dev/uinput, /dev/uhid]
     device_cgroup_rules: ["c 13:* rmw"]
     ports:
       - "$WEB_PORT:8483"
+      - "$WEB_PORT:8483/udp"
     volumes:
       - ./home/:/home/steamheadless/:rw
       - ./games/:/mnt/games/:rw
