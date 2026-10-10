@@ -184,6 +184,17 @@ func (r *recorder) look() []string {
 // claimRecording asks the platform for work: a player's moments to record
 // (recordJob), or a map's match reel to join (matchReelJob); nil, nil when
 // there is none.
+// hello tells the platform the recorder is here but can't take work yet
+// (why), so it shows up in the list: a claim it answers with no job.
+func (c *client) hello(ctx context.Context, why string) {
+	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{
+		"recorder": c.worker, "version": 7, "gpu": recorderGPU(), "platform": platformName(), "notReady": why,
+	})
+	if err == nil {
+		res.Body.Close()
+	}
+}
+
 func (c *client) claimRecording(ctx context.Context, loaded map[string]any) (*mapJob, *matchReelJob, *redressJob, error) {
 	// Version 6: redress jobs (overlay.go). Version 7: benchmarks, frame
 	// checks and run reports (quality.go, runlog.go).
@@ -1388,6 +1399,10 @@ func newRecorder(c *client) (*recorder, error) {
 	// Until the first pass measures it: what gamescope streamed on the recorder VM (2026-10-08).
 	r.rate.fps = float64(envPositive("AT_CAPTURE_FPS", 30))
 	r.base.width, r.base.height, r.base.outputHeight, r.base.outputFPS = w, h, outputHeight, outputFPS
+	// A fresh machine may not have it yet (AT_RECORD_DIR in the home).
+	if err := os.MkdirAll(r.scratch, 0o755); err != nil {
+		return nil, fmt.Errorf("AT_RECORD_DIR: %w", err)
+	}
 	cleanScratch(r.scratch, 6*time.Hour)
 	r.logo = filepath.Join(r.scratch, "at-watermark.png")
 	if err := os.WriteFile(r.logo, watermarkPNG, 0o644); err != nil {
@@ -1434,6 +1449,7 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 	var keep awake
 	defer keep.release()
 	waitingForDisplay := false
+	waitingForCS2 := false
 	for ctx.Err() == nil {
 		// No desktop session yet (the PC booted and no one has signed in, or
 		// the container started before the session): every job would fail on
@@ -1452,6 +1468,24 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 		if waitingForDisplay {
 			log.Printf("desktop session is up")
 			waitingForDisplay = false
+		}
+		// CS2 not installed yet (a new machine whose Steam is still
+		// downloading it): say hello so it shows up, take no work.
+		if !exists(filepath.Join(r.gameDir, "cs2.sh")) {
+			if !waitingForCS2 {
+				log.Printf("waiting for CS2 in %s (install it in Steam)", r.gameDir)
+				waitingForCS2 = true
+			}
+			c.hello(ctx, "CS2 is not installed yet")
+			select {
+			case <-ctx.Done():
+			case <-time.After(poll):
+			}
+			continue
+		}
+		if waitingForCS2 {
+			log.Printf("CS2 is installed")
+			waitingForCS2 = false
 		}
 		j, reel, redress, err := c.claimRecording(ctx, r.loadedMap())
 		if err != nil {
