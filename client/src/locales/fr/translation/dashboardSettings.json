@@ -577,7 +577,8 @@
       "notSent": "Aucun nom, aucune adresse, aucun joueur ni détail de match.",
       "privacy": "Politique de confidentialité",
       "noticeTitle": "Un mot d’Auto Tournament",
-      "answered": "Ta réponse pour cette licence : {{answer}} ({{time}})"
+      "answered": "Ta réponse pour cette licence : {{answer}} ({{time}})",
+      "publicUrl": "Which product this is (the platform), and its public address, so the console can show where the key runs"
     },
     "eventPrompt": {
       "title": "Tu prépares quelque chose de nouveau ?",

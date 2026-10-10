@@ -578,6 +578,7 @@
       "instanceId": "En tilfeldig ID for denne installasjonen, laget én gang",
       "serverCount": "Antall spillservere",
       "version": "Plattformversjonen",
+      "publicUrl": "Hvilket produkt dette er (plattformen), og den offentlige adressen, så konsollen kan vise hvor nøkkelen brukes",
       "activity": "Tall siden forrige innsjekk: ferdigspilte kamper, turneringer med aktivitet og høyeste antall lag",
       "declared": "Svaret ditt på spørsmålet om arrangementsdatoene, hvis du har gitt et",
       "notSent": "Ingen navn, adresser, spillere eller kampdetaljer.",

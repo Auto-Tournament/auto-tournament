@@ -578,6 +578,7 @@
       "instanceId": "A random id for this installation, made once",
       "serverCount": "The number of game servers",
       "version": "The platform version",
+      "publicUrl": "Which product this is (the platform), and its public address, so the console can show where the key runs",
       "activity": "Counts since the last check-in: finished matches, tournaments with activity, and the largest team count",
       "declared": "Your answer to the event dates question, if you gave one",
       "notSent": "No names, addresses, players or match details.",

@@ -577,7 +577,8 @@
       "notSent": "Geen namen, adressen, spelers of wedstrijddetails.",
       "privacy": "Privacybeleid",
       "noticeTitle": "Een bericht van Auto Tournament",
-      "answered": "Je antwoord voor deze licentie: {{answer}} ({{time}})"
+      "answered": "Je antwoord voor deze licentie: {{answer}} ({{time}})",
+      "publicUrl": "Which product this is (the platform), and its public address, so the console can show where the key runs"
     },
     "eventPrompt": {
       "title": "Iets nieuws gepland?",

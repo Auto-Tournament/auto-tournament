@@ -268,6 +268,7 @@ const SENT_ROWS = [
   'instanceId',
   'serverCount',
   'version',
+  'publicUrl',
   'activity',
   'declared',
 ] as const;

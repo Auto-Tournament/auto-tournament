@@ -581,7 +581,8 @@
       "notSent": "Żadnych nazw, adresów, graczy ani szczegółów meczów.",
       "privacy": "Polityka prywatności",
       "noticeTitle": "Informacja od Auto Tournament",
-      "answered": "Twoja odpowiedź dla tej licencji: {{answer}} ({{time}})"
+      "answered": "Twoja odpowiedź dla tej licencji: {{answer}} ({{time}})",
+      "publicUrl": "Which product this is (the platform), and its public address, so the console can show where the key runs"
     },
     "eventPrompt": {
       "title": "Planujesz coś nowego?",

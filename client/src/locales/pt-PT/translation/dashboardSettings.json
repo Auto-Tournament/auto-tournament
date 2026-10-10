@@ -577,7 +577,8 @@
       "notSent": "Sem nomes, endereços, jogadores ou detalhes de jogos.",
       "privacy": "Política de privacidade",
       "noticeTitle": "Uma nota da Auto Tournament",
-      "answered": "A tua resposta para esta licença: {{answer}} ({{time}})"
+      "answered": "A tua resposta para esta licença: {{answer}} ({{time}})",
+      "publicUrl": "Which product this is (the platform), and its public address, so the console can show where the key runs"
     },
     "eventPrompt": {
       "title": "Estás a planear algo novo?",
