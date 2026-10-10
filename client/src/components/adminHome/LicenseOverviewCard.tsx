@@ -35,7 +35,7 @@ export function LicenseOverviewCard() {
         level={3}
         id="admin-home-license-title"
         title={t('license.title')}
-        link={{ to: `${paths.settings}?section=license`, label: t('license.open') }}
+        link={{ to: paths.license, label: t('license.open') }}
         sx={{ mb: 0 }}
       />
       {license ? (
@@ -50,7 +50,10 @@ export function LicenseOverviewCard() {
         </Box>
       ) : (
         status.status === 'none' && (
-          <Box sx={{ fontSize: textSize.sm, color: color.ink2 }} data-testid="admin-home-license-none">
+          <Box
+            sx={{ fontSize: textSize.sm, color: color.ink2 }}
+            data-testid="admin-home-license-none"
+          >
             {t('license.none')}{' '}
             <ExternalLink href={status.pricingUrl}>{t('license.pricing')}</ExternalLink>
           </Box>
@@ -58,10 +61,21 @@ export function LicenseOverviewCard() {
       )}
       {problem && (
         <Box
-          sx={{ display: 'flex', gap: 1, alignItems: 'flex-start', fontSize: textSize.sm, color: 'warning.main' }}
+          sx={{
+            display: 'flex',
+            gap: 1,
+            alignItems: 'flex-start',
+            fontSize: textSize.sm,
+            color: 'warning.main',
+          }}
           data-testid="admin-home-license-warning"
         >
-          <Box component={WarningIcon} size="1.1em" aria-hidden sx={{ flexShrink: 0, mt: '0.15em' }} />
+          <Box
+            component={WarningIcon}
+            size="1.1em"
+            aria-hidden
+            sx={{ flexShrink: 0, mt: '0.15em' }}
+          />
           <span>
             {status.status === 'invalid'
               ? t('license.invalidShort')

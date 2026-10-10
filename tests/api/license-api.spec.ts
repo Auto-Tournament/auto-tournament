@@ -25,16 +25,19 @@ interface StatusBody {
     pricingUrl: string;
     lineDate: string;
     version: string;
-    publicBadge: boolean;
     serverCount: number | null;
-    checkin: { lastAt: string | null; notice: string | null; sent: string[]; privacyUrl: string } | null;
+    checkin: {
+      lastAt: string | null;
+      notice: string | null;
+      sent: string[];
+      privacyUrl: string;
+    } | null;
     eventPrompt: unknown;
   };
 }
 
 async function reset(request: APIRequestContext) {
   await request.delete('/api/license');
-  await request.put('/api/license/public-badge', { data: { enabled: false }, headers: json });
 }
 
 test.describe('License API', () => {
@@ -44,15 +47,25 @@ test.describe('License API', () => {
     await reset(request);
   });
 
-  test('strangers get no status, but the public badge answers (null)', async ({ playwright, baseURL }) => {
+  test('strangers get no status, but the public line answers (unlicensed)', async ({
+    playwright,
+    baseURL,
+  }) => {
     const stranger = await playwright.request.newContext({ baseURL });
     try {
       expect((await stranger.get('/api/license')).status()).toBe(401);
-      expect((await stranger.put('/api/license', { data: { key: UNSIGNED_KEY }, headers: json })).status()).toBe(401);
+      expect(
+        (
+          await stranger.put('/api/license', { data: { key: UNSIGNED_KEY }, headers: json })
+        ).status()
+      ).toBe(401);
       expect((await stranger.delete('/api/license')).status()).toBe(401);
       const badge = await stranger.get('/api/license/badge');
       expect(badge.status()).toBe(200);
-      expect(await badge.json()).toEqual({ success: true, badge: null });
+      expect(await badge.json()).toEqual({
+        success: true,
+        badge: { use: 'none', verifyUrl: null },
+      });
     } finally {
       await stranger.dispose();
     }
@@ -67,13 +80,14 @@ test.describe('License API', () => {
       warnings: [],
       verifyUrl: null,
       pricingUrl: 'https://autotournament.gg/pricing',
-      publicBadge: false,
     });
     expect(body.license.lineDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(body.license.version).toBeTruthy();
   });
 
-  test('a non-key is refused; an unsigned key is saved, shown invalid, never echoed', async ({ request }) => {
+  test('a non-key is refused; an unsigned key is saved, shown invalid, never echoed', async ({
+    request,
+  }) => {
     const junk = await request.put('/api/license', { data: { key: 'hello' }, headers: json });
     expect(junk.status()).toBe(400);
     expect((await request.put('/api/license', { data: {}, headers: json })).status()).toBe(400);
@@ -96,18 +110,14 @@ test.describe('License API', () => {
     expect(removed.license.status).toBe('none');
   });
 
-  test('the public badge is off by default and never shows without a genuine key', async ({ request }) => {
-    expect((await request.put('/api/license/public-badge', { data: { enabled: 'yes' }, headers: json })).status()).toBe(
-      400
-    );
-    const on = (await (
-      await request.put('/api/license/public-badge', { data: { enabled: true }, headers: json })
-    ).json()) as StatusBody;
-    expect(on.license.publicBadge).toBe(true);
-    expect((await (await request.get('/api/license/badge')).json()).badge).toBeNull();
-
+  test('the public line always answers, and says unlicensed without a genuine key', async ({
+    request,
+  }) => {
+    const none = { use: 'none', verifyUrl: null };
+    expect((await (await request.get('/api/license/badge')).json()).badge).toEqual(none);
+    // A key that fails the signature check is no license.
     await request.put('/api/license', { data: { key: UNSIGNED_KEY }, headers: json });
-    expect((await (await request.get('/api/license/badge')).json()).badge).toBeNull();
+    expect((await (await request.get('/api/license/badge')).json()).badge).toEqual(none);
     await reset(request);
   });
 
@@ -117,12 +127,18 @@ test.describe('License API', () => {
       headers: { ...json, Origin: 'https://evil.example' },
     });
     expect(crossSite.status()).toBe(403);
-    expect((await request.delete('/api/license', { headers: { Origin: 'https://evil.example' } })).status()).toBe(403);
+    expect(
+      (
+        await request.delete('/api/license', { headers: { Origin: 'https://evil.example' } })
+      ).status()
+    ).toBe(403);
     const form = await request.put('/api/license', { form: { key: UNSIGNED_KEY } });
     expect(form.status()).toBe(415);
   });
 
-  test('check-in: nothing without a key; with one, what is sent (CI never sends it)', async ({ request }) => {
+  test('check-in: nothing without a key; with one, what is sent (CI never sends it)', async ({
+    request,
+  }) => {
     const none = (await (await request.get('/api/license')).json()) as StatusBody;
     expect(none.license.checkin).toBeNull();
     expect(none.license.eventPrompt).toBeNull();
@@ -141,6 +157,8 @@ test.describe('License API', () => {
       'tournaments_live',
       'max_tournament_teams',
       'declared',
+      'product',
+      'public_url',
     ]);
     // Not a genuine event license: no question.
     expect(body.license.eventPrompt).toBeNull();
@@ -149,13 +167,22 @@ test.describe('License API', () => {
   test('the event-license question: only known answers, only for an event license, same-site JSON', async ({
     request,
   }) => {
-    const bad = await request.post('/api/license/event-prompt', { data: { action: 'maybe' }, headers: json });
+    const bad = await request.post('/api/license/event-prompt', {
+      data: { action: 'maybe' },
+      headers: json,
+    });
     expect(bad.status()).toBe(400);
     // No key (and then a key that is not a genuine event license): nothing to answer.
-    const noKey = await request.post('/api/license/event-prompt', { data: { action: 'testing' }, headers: json });
+    const noKey = await request.post('/api/license/event-prompt', {
+      data: { action: 'testing' },
+      headers: json,
+    });
     expect(noKey.status()).toBe(409);
     await request.put('/api/license', { data: { key: UNSIGNED_KEY }, headers: json });
-    const notEvent = await request.post('/api/license/event-prompt', { data: { action: 'dont_ask' }, headers: json });
+    const notEvent = await request.post('/api/license/event-prompt', {
+      data: { action: 'dont_ask' },
+      headers: json,
+    });
     expect(notEvent.status()).toBe(409);
     const crossSite = await request.post('/api/license/event-prompt', {
       data: { action: 'testing' },

@@ -29,6 +29,7 @@ import HighlightsAdmin from './pages/HighlightsAdmin';
 import Modules from './pages/Modules';
 import AdminTools from './pages/AdminTools';
 import Settings from './pages/Settings';
+import License from './pages/License';
 import Development from './pages/Development';
 import { useIsDevelopment } from './hooks/useIsDevelopment';
 import TeamMatch from './pages/TeamMatch';
@@ -38,7 +39,10 @@ import PlayerProfile from './pages/PlayerProfile';
 import MatchPage from './pages/MatchPage';
 import TournamentLeaderboard from './pages/TournamentLeaderboard';
 import TournamentOverview from './pages/TournamentOverview';
-import TournamentPage, { LegacyLeaderboardRedirect, TournamentModuleTab } from './pages/TournamentPage';
+import TournamentPage, {
+  LegacyLeaderboardRedirect,
+  TournamentModuleTab,
+} from './pages/TournamentPage';
 import TournamentBracketTab from './pages/TournamentBracketTab';
 import TournamentMatchesTab from './pages/TournamentMatchesTab';
 import TournamentTeamsTab from './pages/TournamentTeamsTab';
@@ -82,12 +86,19 @@ import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedir
 import WelcomeGames from './pages/WelcomeGames';
 import LicenseConsent from './pages/LicenseConsent';
 import { LicenseConsentGate } from './components/license/LicenseConsentGate';
+import { LicenseGate } from './components/license/LicenseGate';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 import { listRouteIntegrations } from './integrations/registry';
 import { useModuleState } from './module-loader/useModuleState';
 import { ModulePendingRoute } from './components/common/ModuleNotInstalledNotice';
 import { MatchDetailsHost } from './components/modals/MatchDetailsHost';
-import { adminRoute, LEGACY_ADMIN_PATHS, matchDetailsPath, paths, playerProfilePath } from './paths';
+import {
+  adminRoute,
+  LEGACY_ADMIN_PATHS,
+  matchDetailsPath,
+  paths,
+  playerProfilePath,
+} from './paths';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -588,6 +599,7 @@ function AppRoutes() {
         <Route path={adminRoute(paths.modules)} element={<Modules />} />
         <Route path={adminRoute(paths.admin)} element={<AdminTools />} />
         <Route path={adminRoute(paths.settings)} element={<Settings />} />
+        <Route path={adminRoute(paths.license)} element={<License />} />
         {integrationRoutes
           .filter((route) => route.scope === 'admin')
           .map((route) => (
@@ -610,7 +622,13 @@ function AppRoutes() {
           <Route key={old} path={adminRoute(old)} element={<LegacyAdminRedirect />} />,
           ...(old === '/tournament'
             ? []
-            : [<Route key={`${old}/*`} path={`${adminRoute(old)}/*`} element={<LegacyAdminRedirect />} />]),
+            : [
+                <Route
+                  key={`${old}/*`}
+                  path={`${adminRoute(old)}/*`}
+                  element={<LegacyAdminRedirect />}
+                />,
+              ]),
         ])}
         <Route path="admin" element={<Navigate to={paths.admin} replace />} />
         {/* Nested catch-all so removed/unknown child routes (e.g. /public) show a proper 404 within the app shell */}
@@ -623,11 +641,15 @@ function AppRoutes() {
   );
 }
 
-
 /** An admin page's old root address → the same under /manage, path rest and query kept. */
 function LegacyAdminRedirect() {
   const location = useLocation();
-  return <Navigate to={`${paths.manage}${location.pathname}${location.search}${location.hash}`} replace />;
+  return (
+    <Navigate
+      to={`${paths.manage}${location.pathname}${location.search}${location.hash}`}
+      replace
+    />
+  );
 }
 
 /** `/matches/:slug` → the Matches page with that match open. */
@@ -647,6 +669,8 @@ export default function App() {
               {/* Rendered above every route: impersonation applies app-wide,
                   including the public/player-facing pages it exists to test. */}
               <ImpersonationBanner />
+              {/* A paid license that isn't paid: a warning for admins, then the "expired" page for everyone. */}
+              <LicenseGate />
               <ModuleGlobalOverlays />
               {/* "What do you play?": redirects to /welcome/games once per
                   account, from whatever page the player lands on. The API

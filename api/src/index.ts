@@ -9,6 +9,7 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 dotenv.config({ path: path.join(process.cwd(), '.env') });
+import { licenseExpiredMiddleware } from './middleware/licenseExpired';
 import { blockedViewerMiddleware } from './services/playerModeration';
 import { COOKIE_NAME as PLAYER_COOKIE_NAME } from './utils/signedPlayerCookie';
 import { getRealViewerSteamId } from './utils/viewerIdentity';
@@ -196,6 +197,8 @@ app.use(passportInitialize);
 app.use(passportSession);
 // A banned or deleted player is signed out on their next request.
 app.use(blockedViewerMiddleware(PLAYER_COOKIE_NAME, getRealViewerSteamId));
+// An unpaid license past its grace period stops the platform (middleware/licenseExpired.ts).
+app.use((req, res, next) => void licenseExpiredMiddleware(req, res, next));
 
 /** Paths the client polls on a timer; see the request logger below. */
 const POLLED_ENDPOINTS = new Set(['/api/auth/me']);

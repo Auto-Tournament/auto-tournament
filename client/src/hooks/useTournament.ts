@@ -163,12 +163,16 @@ export const useTournament = () => {
       allocated?: number;
       failed?: number;
       results?: Array<{ matchSlug: string; serverId?: string; success: boolean; error?: string }>;
+      /** A paid license with fewer servers than round one needs (api routes/tournament.ts). */
+      licenseNote?: string;
     }>('/api/tournament/start', payload);
     // Reload tournament data after starting; the backend may update status to
     // 'in_progress' asynchronously, so this ensures the wizard view reflects
     // the latest state.
     await loadData();
-    return response;
+    return response.licenseNote
+      ? { ...response, message: `${response.message} ${response.licenseNote}` }
+      : response;
   };
 
   const restartTournament = async (baseUrl: string) => {

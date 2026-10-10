@@ -392,6 +392,7 @@
       "templates": "Maler",
       "ratings": "Rating",
       "adminTools": "System",
+      "license": "Lisens",
       "devTools": "Dev-verktøy",
       "documentation": "Dokumentasjon",
       "opensInNewTab": "(åpnes i en ny fane)",
@@ -463,7 +464,9 @@
   },
   "license": {
     "title": "Lisens",
-    "description": "Lim inn Auto Tournament-lisensnøkkelen for kommersiell bruk. Den sjekkes på denne serveren, uten nett. En lisens låser eller begrenser aldri noe: er noe galt, vises det her som en merknad.",
+    "publicLine": "Spillere ser «{{line}}» nederst på arrangementssider.",
+    "pageIntro": "Lisensnøkkelen din og hvordan den står. En betalt nøkkel er for kommersiell bruk; en gratis nøkkel er for ideell bruk.",
+    "description": "Lim inn lisensnøkkelen for Auto Tournament: en betalt for kommersiell bruk, eller en gratis for ideell bruk. Den sjekkes på denne serveren, og én gang om dagen mot autotournament.gg.",
     "loading": "Laster lisensstatus",
     "loadFailed": "Kunne ikke lese lisensstatusen.",
     "none": "Ingen kommersiell lisensnøkkel. Gratis for ikke-kommersiell bruk; kommersiell bruk krever en lisens.",
@@ -497,18 +500,25 @@
       "servers_other": "{{count}} servere",
       "updatesUntil": "oppdateringer til {{date}}",
       "updatesForLife": "oppdateringer for alltid",
-      "eventWindow": "arrangement {{from}} til {{to}}"
+      "eventWindow": "arrangement {{from}} til {{to}}",
+      "free": "Gratis nøkkel, ikke-kommersiell bruk",
+      "freeFor": "Gratis nøkkel for {{licensee}}, ikke-kommersiell bruk",
+      "noLimit": "ingen servergrense"
     },
     "badge": {
-      "label": "Vis «Lisensiert» på offentlige arrangementssider",
+      "label": "Vis «Lisensiert» og type bruk på offentlige arrangementssider",
       "note": "Av som standard. Lenker til lisensens offentlige sjekkside, og vises bare mens den lagrede nøkkelen er gyldig.",
       "on": "Offentlig lisenslinje slått på",
       "off": "Offentlig lisenslinje slått av",
       "failed": "Kunne ikke endre den offentlige lisenslinjen",
-      "short": "Vises på offentlige sider."
+      "short": "Slås på av seg selv når en nøkkel er lagret. Spillere ser den nederst på arrangementssider.",
+      "needsKey": "Vises bare med en lagret lisensnøkkel, gratis eller betalt. Lagre en over først."
     },
     "public": {
-      "licensed": "Lisensiert"
+      "licensed": "Lisensiert",
+      "commercial": "Lisensiert · Kommersiell bruk",
+      "nonCommercial": "Lisensiert · Ideell bruk",
+      "unlicensed": "Ulisensiert"
     },
     "consent": {
       "title": "En siste ting: lisensen",

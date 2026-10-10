@@ -20,12 +20,14 @@ import { useIsDevelopment } from '../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { SiteNameCard } from '../components/settings/SiteNameCard';
-import { LicenseCard } from '../components/settings/LicenseCard';
 import { EmailSettingsCard } from '../components/settings/EmailSettingsCard';
 import { WebhooksCard } from '../components/settings/WebhooksCard';
 import { MatchmakingSettingsCard } from '../components/settings/MatchmakingSettingsCard';
 import { NewsSettingsCard } from '../components/settings/NewsSettingsCard';
-import { ExperimentalCard, type ExperimentalFeatureState } from '../components/settings/ExperimentalCard';
+import {
+  ExperimentalCard,
+  type ExperimentalFeatureState,
+} from '../components/settings/ExperimentalCard';
 import { SignInProvidersCard } from '../components/settings/SignInProvidersCard';
 import { SettingsCardHead, SettingsRow } from '../components/settings/SettingsRow';
 import { useInstalledIntegrations } from '../integrations/registry';
@@ -50,7 +52,6 @@ const SECTION_CARDS: Record<string, string> = {
   ratings: 'players',
   matches: 'players',
   webhooks: 'webhooks',
-  license: 'license',
   matchmaking: 'matchmaking',
   news: 'news',
   experimental: 'advanced',
@@ -63,6 +64,8 @@ const SECTION_CARDS: Record<string, string> = {
  * (Skins, Match rules); its old sections, and `links.settings('cs2')`, go there.
  */
 const MOVED_SECTIONS: Record<string, string> = {
+  // The license has its own page now.
+  license: '/manage/license',
   cs2: '/manage/match-rules',
   'cs2:general': '/manage/match-rules',
   'cs2:servers': '/manage/match-rules',
@@ -72,7 +75,15 @@ const MOVED_SECTIONS: Record<string, string> = {
 };
 
 /** One card on the page, found by `?section=` (`settings-<key>`). */
-function SettingsCard({ cardKey, children, highlight }: { cardKey: string; children: React.ReactNode; highlight: boolean }) {
+function SettingsCard({
+  cardKey,
+  children,
+  highlight,
+}: {
+  cardKey: string;
+  children: React.ReactNode;
+  highlight: boolean;
+}) {
   return (
     <Panel
       component="section"
@@ -151,7 +162,11 @@ export default function Settings() {
   const gameLinks = moduleNavItems(installed);
   const requested = searchParams.get('section') ?? '';
   const moved = MOVED_SECTIONS[requested];
-  const target = SECTION_CARDS[requested] ?? (moduleSettings.some(({ id }) => requested === id || requested.startsWith(`${id}:`)) ? requested.split(':')[0] : '');
+  const target =
+    SECTION_CARDS[requested] ??
+    (moduleSettings.some(({ id }) => requested === id || requested.startsWith(`${id}:`))
+      ? requested.split(':')[0]
+      : '');
   const [highlight, setHighlight] = useState('');
 
   useEffect(() => {
@@ -258,9 +273,7 @@ export default function Settings() {
     <Box sx={{ width: '100%', height: '100%' }}>
       <PageHead title={t('layout.pageTitle.settings')} subtitle={t('settingsPage.intro')} />
 
-      {loading && (
-        <LinearProgress />
-      )}
+      {loading && <LinearProgress />}
 
       {!loading && (
         <>
@@ -278,15 +291,25 @@ export default function Settings() {
                 <EmailSettingsCard />
               </SettingsCard>
               <SettingsCard cardKey="players" highlight={highlight === 'players'}>
-                <SettingsCardHead title={t('settingsPage.players.title')} hint={t('settingsPage.players.short')} />
+                <SettingsCardHead
+                  title={t('settingsPage.players.title')}
+                  hint={t('settingsPage.players.short')}
+                />
                 <SettingsRow
                   title={t('settingsPage.players.registration.toggleLabel')}
                   sub={t('settingsPage.players.registration.short')}
                   control={
                     <Switch
                       checked={values.allowSelfRegister}
-                      onChange={(event) => setValues((prev) => ({ ...prev, allowSelfRegister: event.target.checked }))}
-                      slotProps={{ input: { 'aria-label': t('settingsPage.players.registration.toggleLabel'), 'data-testid': 'settings-self-register' } as React.InputHTMLAttributes<HTMLInputElement> }}
+                      onChange={(event) =>
+                        setValues((prev) => ({ ...prev, allowSelfRegister: event.target.checked }))
+                      }
+                      slotProps={{
+                        input: {
+                          'aria-label': t('settingsPage.players.registration.toggleLabel'),
+                          'data-testid': 'settings-self-register',
+                        } as React.InputHTMLAttributes<HTMLInputElement>,
+                      }}
                     />
                   }
                 />
@@ -296,8 +319,15 @@ export default function Settings() {
                   control={
                     <Switch
                       checked={values.ratingsEnabled}
-                      onChange={(event) => setValues((prev) => ({ ...prev, ratingsEnabled: event.target.checked }))}
-                      slotProps={{ input: { 'aria-label': t('settingsPage.matchRating.ratings.toggleLabel'), 'data-testid': 'settings-ratings-enabled' } as React.InputHTMLAttributes<HTMLInputElement> }}
+                      onChange={(event) =>
+                        setValues((prev) => ({ ...prev, ratingsEnabled: event.target.checked }))
+                      }
+                      slotProps={{
+                        input: {
+                          'aria-label': t('settingsPage.matchRating.ratings.toggleLabel'),
+                          'data-testid': 'settings-ratings-enabled',
+                        } as React.InputHTMLAttributes<HTMLInputElement>,
+                      }}
                     />
                   }
                 />
@@ -314,35 +344,38 @@ export default function Settings() {
               <SettingsCard cardKey="webhooks" highlight={highlight === 'webhooks'}>
                 <WebhooksCard />
               </SettingsCard>
-              <SettingsCard cardKey="license" highlight={highlight === 'license'}>
-                <LicenseCard />
-              </SettingsCard>
               {(isDev || experimental.length > 0) && (
-              <SettingsCard cardKey="advanced" highlight={highlight === 'advanced'}>
-                <ExperimentalCard features={experimental} onChange={setExperimental} />
-                {isDev && (
-                  <Box
-                    sx={experimental.length > 0 ? { mt: 3, pt: 3, borderTop: `1px solid ${color.rule}` } : undefined} data-testid="settings-developer">
-                    <Typography variant="h6" fontWeight={600} gutterBottom color="error">
-                      {t('settingsPage.developer.resetApiTitle')}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" mb={2}>
-                      {t('settingsPage.developer.resetApiDescription')}
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => setResetApiDialogOpen(true)}
-                      disabled={resettingApi}
-                      data-testid="settings-reset-api-button"
+                <SettingsCard cardKey="advanced" highlight={highlight === 'advanced'}>
+                  <ExperimentalCard features={experimental} onChange={setExperimental} />
+                  {isDev && (
+                    <Box
+                      sx={
+                        experimental.length > 0
+                          ? { mt: 3, pt: 3, borderTop: `1px solid ${color.rule}` }
+                          : undefined
+                      }
+                      data-testid="settings-developer"
                     >
-                      {resettingApi
-                        ? t('settingsPage.developer.resetApiButtonLoading')
-                        : t('settingsPage.developer.resetApiButton')}
-                    </Button>
-                  </Box>
-                )}
-              </SettingsCard>
+                      <Typography variant="h6" fontWeight={600} gutterBottom color="error">
+                        {t('settingsPage.developer.resetApiTitle')}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" mb={2}>
+                        {t('settingsPage.developer.resetApiDescription')}
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => setResetApiDialogOpen(true)}
+                        disabled={resettingApi}
+                        data-testid="settings-reset-api-button"
+                      >
+                        {resettingApi
+                          ? t('settingsPage.developer.resetApiButtonLoading')
+                          : t('settingsPage.developer.resetApiButton')}
+                      </Button>
+                    </Box>
+                  )}
+                </SettingsCard>
               )}
             </Stack>
           </Box>
@@ -384,7 +417,9 @@ export default function Settings() {
               }}
             >
               <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontWeight: 600 }}>{t('settingsPage.gameLinks.title')}</Typography>
+                <Typography sx={{ fontWeight: 600 }}>
+                  {t('settingsPage.gameLinks.title')}
+                </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {t('settingsPage.gameLinks.hint')}
                 </Typography>
@@ -396,7 +431,12 @@ export default function Settings() {
                     component={RouterLink}
                     to={item.path}
                     size="small"
-                    sx={{ borderRadius: radii.pill, bgcolor: color.paper3, color: color.ink, px: 2 }}
+                    sx={{
+                      borderRadius: radii.pill,
+                      bgcolor: color.paper3,
+                      color: color.ink,
+                      px: 2,
+                    }}
                   >
                     {navItemLabel(t, item, 'rail')}
                   </Button>

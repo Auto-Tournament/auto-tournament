@@ -1,9 +1,21 @@
 import { createHash, generateKeyPairSync, sign, type KeyObject } from 'crypto';
 import { test, expect } from '@playwright/test';
-import { verifyLicense, LIFETIME, type LicensePayload } from '../../api/src/services/license/verify';
-import { LICENSE_PUBLIC_KEYS, type LicensePublicKey } from '../../api/src/services/license/publicKeys';
+import {
+  verifyLicense,
+  LIFETIME,
+  type LicensePayload,
+} from '../../api/src/services/license/verify';
+import {
+  LICENSE_PUBLIC_KEYS,
+  type LicensePublicKey,
+} from '../../api/src/services/license/publicKeys';
 import { lineDateFor, buildLineDate } from '../../api/src/services/license/lineDate';
-import { statusFor, keyInputProblem, verifyUrlFor } from '../../api/src/services/license/licenseService';
+import {
+  statusFor,
+  keyInputProblem,
+  verifyUrlFor,
+} from '../../api/src/services/license/licenseService';
+import { checkCreate, standingFor, LicenseLimitError } from '../../api/src/services/license/gate';
 
 /**
  * License keys (api/src/services/license): the offline check ported from the
@@ -26,7 +38,10 @@ interface TestKey {
 function makeKey(): TestKey {
   const { privateKey, publicKey } = generateKeyPairSync('ed25519');
   const x = publicKey.export({ format: 'jwk' }).x as string;
-  const kid = createHash('sha256').update(Buffer.from(x, 'base64url')).digest('base64url').slice(0, 16);
+  const kid = createHash('sha256')
+    .update(Buffer.from(x, 'base64url'))
+    .digest('base64url')
+    .slice(0, 16);
   return { kid, privateKey, publicJwk: { kty: 'OKP', crv: 'Ed25519', x } };
 }
 
@@ -61,9 +76,16 @@ const codes = (r: { warnings: { code: string }[] }) => r.warnings.map((w) => w.c
 test.describe('license keys: verify', () => {
   test('the embedded key table has the published key, and its kid matches it', () => {
     const jwk = LICENSE_PUBLIC_KEYS.tWl_YS3_AzLgqdkm;
-    expect(jwk).toEqual({ kty: 'OKP', crv: 'Ed25519', x: 'YQMKIdrQtVz-QFV3Tw0AWa7RivnNtjK6PiJzskg8R0g' });
+    expect(jwk).toEqual({
+      kty: 'OKP',
+      crv: 'Ed25519',
+      x: 'YQMKIdrQtVz-QFV3Tw0AWa7RivnNtjK6PiJzskg8R0g',
+    });
     for (const [kid, entry] of Object.entries(LICENSE_PUBLIC_KEYS)) {
-      const derived = createHash('sha256').update(Buffer.from(entry.x, 'base64url')).digest('base64url').slice(0, 16);
+      const derived = createHash('sha256')
+        .update(Buffer.from(entry.x, 'base64url'))
+        .digest('base64url')
+        .slice(0, 16);
       expect(derived, kid).toBe(kid);
       expect(Buffer.from(entry.x, 'base64url').length).toBe(32);
     }
@@ -82,13 +104,18 @@ test.describe('license keys: verify', () => {
   });
 
   test('surrounding whitespace is ignored', () => {
-    const r = verifyLicense(`  ${signToken(payload(), key)}\n`, { publicKeys, lineDate: '2027-01-01' });
+    const r = verifyLicense(`  ${signToken(payload(), key)}\n`, {
+      publicKeys,
+      lineDate: '2027-01-01',
+    });
     expect(r.status).toBe('ok');
   });
 
   test('a tampered payload is invalid', () => {
     const [prefix, , sig] = signToken(payload(), key).split('.');
-    const changed = Buffer.from(JSON.stringify(payload({ max_servers: 500 }))).toString('base64url');
+    const changed = Buffer.from(JSON.stringify(payload({ max_servers: 500 }))).toString(
+      'base64url'
+    );
     const r = verifyLicense(`${prefix}.${changed}.${sig}`, { publicKeys });
     expect(r).toMatchObject({ valid: false, status: 'invalid', license: null });
     expect(codes(r)).toEqual(['bad_signature']);
@@ -98,17 +125,24 @@ test.describe('license keys: verify', () => {
     const token = signToken(payload(), key);
     const sig = Buffer.from(token.split('.')[2], 'base64url');
     sig[10] ^= 0x01;
-    const r = verifyLicense(`${token.split('.').slice(0, 2).join('.')}.${sig.toString('base64url')}`, { publicKeys });
+    const r = verifyLicense(
+      `${token.split('.').slice(0, 2).join('.')}.${sig.toString('base64url')}`,
+      { publicKeys }
+    );
     expect(codes(r)).toEqual(['bad_signature']);
   });
 
   test('a key signed by an unknown kid is invalid, and so is one whose kid names another key', () => {
     const other = makeKey();
-    expect(codes(verifyLicense(signToken(payload({ kid: other.kid }), other), { publicKeys }))).toEqual(['unknown_kid']);
+    expect(
+      codes(verifyLicense(signToken(payload({ kid: other.kid }), other), { publicKeys }))
+    ).toEqual(['unknown_kid']);
     // The real table does not know the throwaway key.
     expect(codes(verifyLicense(signToken(payload(), key)))).toEqual(['unknown_kid']);
     // kid points at `key`, but `other` signed it.
-    expect(codes(verifyLicense(signToken(payload(), other), { publicKeys }))).toEqual(['bad_signature']);
+    expect(codes(verifyLicense(signToken(payload(), other), { publicKeys }))).toEqual([
+      'bad_signature',
+    ]);
   });
 
   test('garbage and other versions are invalid, never thrown', () => {
@@ -128,16 +162,18 @@ test.describe('license keys: verify', () => {
       expect(r.status, String(bad)).toBe('invalid');
     }
     const v2 = Buffer.from(JSON.stringify({ ...payload(), v: 2 })).toString('base64url');
-    expect(codes(verifyLicense(`ATL1.${v2}.${'A'.repeat(86)}`, { publicKeys }))).toEqual(['unsupported_version']);
+    expect(codes(verifyLicense(`ATL1.${v2}.${'A'.repeat(86)}`, { publicKeys }))).toEqual([
+      'unsupported_version',
+    ]);
   });
 
   test('a signed but incomplete payload is invalid', () => {
     const { customer: _customer, ...rest } = payload();
     void _customer;
     expect(codes(verifyLicense(signToken(rest, key), { publicKeys }))).toEqual(['malformed']);
-    expect(codes(verifyLicense(signToken(payload({ valid_from: '2026-10-05' }), key), { publicKeys }))).toEqual([
-      'malformed',
-    ]);
+    expect(
+      codes(verifyLicense(signToken(payload({ valid_from: '2026-10-05' }), key), { publicKeys }))
+    ).toEqual(['malformed']);
   });
 
   test('a release line newer than updates_until only warns; later patches of a covered line do not', () => {
@@ -146,34 +182,54 @@ test.describe('license keys: verify', () => {
     expect(late).toMatchObject({ valid: true, status: 'warning' });
     expect(codes(late)).toEqual(['updates_expired']);
     // Same day is covered; the line date, not today, decides.
-    expect(verifyLicense(token, { publicKeys, lineDate: '2027-09-01', now: '2030-01-01' }).status).toBe('ok');
+    expect(
+      verifyLicense(token, { publicKeys, lineDate: '2027-09-01', now: '2030-01-01' }).status
+    ).toBe('ok');
   });
 
   test('founder keys cover every release line', () => {
     const token = signToken(payload({ kind: 'founder', updates_until: LIFETIME }), key);
-    expect(verifyLicense(token, { publicKeys, lineDate: '2040-01-01', now: '2041-01-01' }).status).toBe('ok');
+    expect(
+      verifyLicense(token, { publicKeys, lineDate: '2040-01-01', now: '2041-01-01' }).status
+    ).toBe('ok');
   });
 
   test('the event window, too many servers and a Servers key on the platform only warn', () => {
     const event = signToken(
-      payload({ kind: 'event', updates_until: '2026-10-07', valid_from: '2026-10-03', valid_to: '2026-10-07' }),
+      payload({
+        kind: 'event',
+        updates_until: '2026-10-07',
+        valid_from: '2026-10-03',
+        valid_to: '2026-10-07',
+      }),
       key
     );
-    expect(codes(verifyLicense(event, { publicKeys, lineDate: '2026-09-01', now: '2026-10-01' }))).toEqual([
-      'period_not_started',
-    ]);
-    expect(verifyLicense(event, { publicKeys, lineDate: '2026-09-01', now: '2026-10-05' }).status).toBe('ok');
-    expect(codes(verifyLicense(event, { publicKeys, lineDate: '2026-09-01', now: '2026-10-08' }))).toEqual([
-      'period_ended',
-    ]);
+    expect(
+      codes(verifyLicense(event, { publicKeys, lineDate: '2026-09-01', now: '2026-10-01' }))
+    ).toEqual(['period_not_started']);
+    expect(
+      verifyLicense(event, { publicKeys, lineDate: '2026-09-01', now: '2026-10-05' }).status
+    ).toBe('ok');
+    expect(
+      codes(verifyLicense(event, { publicKeys, lineDate: '2026-09-01', now: '2026-10-08' }))
+    ).toEqual(['period_ended']);
 
     const servers = signToken(payload({ product: 'servers' }), key);
-    const r = verifyLicense(servers, { publicKeys, lineDate: '2026-09-01', serverCount: 7, product: 'platform' });
+    const r = verifyLicense(servers, {
+      publicKeys,
+      lineDate: '2026-09-01',
+      serverCount: 7,
+      product: 'platform',
+    });
     expect(r.valid).toBe(true);
     expect(codes(r)).toEqual(['too_many_servers', 'wrong_product']);
-    expect(r.warnings[1].message).toBe('This key covers CS2 Server Manager and Ready Up, not the platform.');
+    expect(r.warnings[1].message).toBe(
+      'This key covers CS2 Server Manager and Ready Up, not the platform.'
+    );
     // A Servers key checked by the Servers product is fine.
-    expect(verifyLicense(servers, { publicKeys, lineDate: '2026-09-01', product: 'servers' }).status).toBe('ok');
+    expect(
+      verifyLicense(servers, { publicKeys, lineDate: '2026-09-01', product: 'servers' }).status
+    ).toBe('ok');
   });
 });
 
@@ -187,13 +243,25 @@ test.describe('license keys: line date', () => {
   });
 
   test('a patch uses its x.y.0 release date when known, never later than the build', () => {
-    expect(lineDateFor('2.4.15', { buildDate: '2026-09-28', lineReleaseDate: '2026-05-02' })).toBe('2026-05-02');
-    expect(lineDateFor('v3.1.2', { buildDate: '2026-09-28', lineReleaseDate: '2026-08-01' })).toBe('2026-08-01');
-    expect(lineDateFor('3.0.1-beta.1', { buildDate: '2026-09-28', lineReleaseDate: '2026-09-20' })).toBe('2026-09-20');
+    expect(lineDateFor('2.4.15', { buildDate: '2026-09-28', lineReleaseDate: '2026-05-02' })).toBe(
+      '2026-05-02'
+    );
+    expect(lineDateFor('v3.1.2', { buildDate: '2026-09-28', lineReleaseDate: '2026-08-01' })).toBe(
+      '2026-08-01'
+    );
+    expect(
+      lineDateFor('3.0.1-beta.1', { buildDate: '2026-09-28', lineReleaseDate: '2026-09-20' })
+    ).toBe('2026-09-20');
     expect(lineDateFor('2.4.15', { buildDate: '2026-09-28' })).toBe('2026-09-28');
-    expect(lineDateFor('2.4.15', { buildDate: '2026-09-28', lineReleaseDate: '' })).toBe('2026-09-28');
-    expect(lineDateFor('2.4.15', { buildDate: '2026-09-28', lineReleaseDate: '2026-02-30' })).toBe('2026-09-28');
-    expect(lineDateFor('2.4.15', { buildDate: '2026-09-28', lineReleaseDate: '2027-01-01' })).toBe('2026-09-28');
+    expect(lineDateFor('2.4.15', { buildDate: '2026-09-28', lineReleaseDate: '' })).toBe(
+      '2026-09-28'
+    );
+    expect(lineDateFor('2.4.15', { buildDate: '2026-09-28', lineReleaseDate: '2026-02-30' })).toBe(
+      '2026-09-28'
+    );
+    expect(lineDateFor('2.4.15', { buildDate: '2026-09-28', lineReleaseDate: '2027-01-01' })).toBe(
+      '2026-09-28'
+    );
   });
 
   test('from source (nothing baked in) the line date is today', () => {
@@ -202,7 +270,12 @@ test.describe('license keys: line date', () => {
 });
 
 test.describe('license keys: admin status', () => {
-  const inputs = { serverCount: 6, lineDate: '2027-01-01', version: '3.0.0', publicBadge: false, publicKeys };
+  const inputs = {
+    serverCount: 6,
+    lineDate: '2027-01-01',
+    version: '3.0.0',
+    publicKeys,
+  };
 
   test('no key: status none, with the pricing link and no verify link', () => {
     const s = statusFor(null, inputs);
@@ -241,7 +314,10 @@ test.describe('license keys: admin status', () => {
   });
 
   test('servers that could not be counted are not checked', () => {
-    const s = statusFor(signToken(payload({ max_servers: 1 }), key), { ...inputs, serverCount: null });
+    const s = statusFor(signToken(payload({ max_servers: 1 }), key), {
+      ...inputs,
+      serverCount: null,
+    });
     expect(s.status).toBe('ok');
   });
 
@@ -261,5 +337,181 @@ test.describe('license keys: admin status', () => {
 
   test('the verify link escapes the id', () => {
     expect(verifyUrlFor('a/b?c')).toBe('https://autotournament.gg/verify/a%2Fb%3Fc');
+  });
+});
+
+test.describe('the paid server limit and late payment (gate)', () => {
+  const month = () =>
+    signToken(payload({ kind: 'month', max_servers: 5, updates_until: '2026-11-08' }), key);
+
+  test('free use has no limit; a paid key is enforced at its max_servers', () => {
+    const free = standingFor(null, null, '2026-10-10', publicKeys);
+    expect(free).toMatchObject({ status: 'free', paid: false });
+    expect(() => checkCreate(free, 500, 10)).not.toThrow();
+    const paid = standingFor(month(), null, '2026-10-10', publicKeys);
+    expect(paid).toMatchObject({ status: 'active', paid: true, maxServers: 5 });
+    expect(() => checkCreate(paid, 4, 1)).not.toThrow();
+    expect(() => checkCreate(paid, 5, 1)).toThrow(LicenseLimitError);
+    expect(() => checkCreate(paid, 3, 3)).toThrow(/covers 5 game servers/);
+  });
+
+  test('a free key is free: no limit, never expires, but it has an id to check in with', () => {
+    const free = signToken(
+      payload({
+        kind: 'free',
+        product: 'platform',
+        pack: 'S',
+        max_servers: 1,
+        updates_until: LIFETIME,
+      }),
+      key
+    );
+    expect(verifyLicense(free, { publicKeys, serverCount: 40 })).toMatchObject({
+      valid: true,
+      status: 'ok',
+    });
+    const standing = standingFor(
+      free,
+      { status: 'replaced', validUntil: null, stopsOn: '2026-10-11' },
+      '2040-01-01',
+      publicKeys
+    );
+    expect(standing).toMatchObject({ status: 'free', paid: false, maxServers: null });
+    expect(standing.licenseId).toBeTruthy();
+    expect(() => checkCreate(standing, 500, 10)).not.toThrow();
+  });
+
+  test('a key that is not genuine is never enforced', () => {
+    const forged = month().slice(0, -4) + 'AAAA';
+    expect(standingFor(forged, null, '2026-10-10', publicKeys)).toMatchObject({
+      status: 'invalid',
+      paid: false,
+    });
+  });
+
+  test('a monthly key: past due after its last paid day, expired after 14 days, even offline', () => {
+    expect(standingFor(month(), null, '2026-11-09', publicKeys)).toMatchObject({
+      status: 'past_due',
+      stopsOn: '2026-11-23',
+    });
+    expect(standingFor(month(), null, '2026-11-22', publicKeys).status).toBe('past_due');
+    const expired = standingFor(month(), null, '2026-11-23', publicKeys);
+    expect(expired.status).toBe('expired');
+    expect(() => checkCreate(expired, 0, 1)).toThrow(/expired/);
+  });
+
+  test('the license server can only make it stricter', () => {
+    expect(
+      standingFor(
+        month(),
+        { status: 'past_due', validUntil: '2026-11-08', stopsOn: '2026-11-22' },
+        '2026-10-10',
+        publicKeys
+      ).status
+    ).toBe('past_due');
+    expect(
+      standingFor(
+        month(),
+        { status: 'active', validUntil: null, stopsOn: null },
+        '2026-11-23',
+        publicKeys
+      ).status
+    ).toBe('expired');
+    const yearly = signToken(payload({ kind: 'year' }), key);
+    expect(
+      standingFor(
+        yearly,
+        { status: 'expired', validUntil: '2027-09-01', stopsOn: '2027-09-15' },
+        '2027-09-20',
+        publicKeys
+      ).status
+    ).toBe('expired');
+    // An answer about an earlier period than the key covers doesn't count.
+    expect(
+      standingFor(
+        yearly,
+        { status: 'expired', validUntil: '2026-10-01', stopsOn: '2026-10-15' },
+        '2026-10-20',
+        publicKeys
+      ).status
+    ).toBe('active');
+    expect(standingFor(yearly, null, '2030-01-01', publicKeys).status).toBe('active');
+  });
+
+  test('the lease carries the current terms; the key itself never changes', () => {
+    const lease = signToken(
+      payload({
+        kind: 'month',
+        max_servers: 12,
+        updates_until: '2026-12-08',
+        issued_at: '2026-11-08T10:00:00Z',
+        lease: true,
+      }),
+      key
+    );
+    const st = standingFor(month(), null, '2026-11-30', publicKeys, lease);
+    expect(st).toMatchObject({ status: 'active', maxServers: 12, reason: null });
+    // A lease is never the key, and terms without the lease mark are no lease.
+    expect(standingFor(lease, null, '2026-11-30', publicKeys)).toMatchObject({
+      status: 'invalid',
+      paid: false,
+    });
+    expect(keyInputProblem(lease)).toMatch(/lease/);
+    const unmarked = signToken(
+      payload({
+        kind: 'month',
+        max_servers: 12,
+        updates_until: '2026-12-08',
+        issued_at: '2026-11-08T10:00:00Z',
+      }),
+      key
+    );
+    expect(standingFor(month(), null, '2026-10-10', publicKeys, unmarked).maxServers).toBe(5);
+    // One pool per license: servers on other installs with this key count too.
+    expect(() => checkCreate({ ...st, serversElsewhere: 10 }, 2, 1)).toThrow(
+      /10 of them on other installs/
+    );
+    expect(() => checkCreate({ ...st, serversElsewhere: 9 }, 2, 1)).not.toThrow();
+    // A lease for another license, or a forged one, is ignored.
+    const other = signToken(
+      payload({
+        id: 'L-other',
+        kind: 'month',
+        max_servers: 99,
+        updates_until: '2026-12-08',
+        lease: true,
+      }),
+      key
+    );
+    expect(standingFor(month(), null, '2026-10-10', publicKeys, other).maxServers).toBe(5);
+    expect(
+      standingFor(month(), null, '2026-10-10', publicKeys, lease.slice(0, -4) + 'AAAA').maxServers
+    ).toBe(5);
+  });
+
+  test('a replaced key gets its day, then stops; a key in use elsewhere stops at once', () => {
+    const replaced = { status: 'replaced' as const, validUntil: null, stopsOn: '2026-10-11' };
+    expect(standingFor(month(), replaced, '2026-10-10', publicKeys)).toMatchObject({
+      status: 'past_due',
+      reason: 'replaced',
+      stopsOn: '2026-10-11',
+    });
+    const after = standingFor(month(), replaced, '2026-10-11', publicKeys);
+    expect(after).toMatchObject({ status: 'expired', reason: 'replaced' });
+    expect(() => checkCreate(after, 0, 1)).toThrow(/replaced/);
+    const elsewhere = standingFor(
+      month(),
+      { status: 'in_use_elsewhere', validUntil: null, stopsOn: '2026-10-10' },
+      '2026-10-10',
+      publicKeys
+    );
+    expect(elsewhere).toMatchObject({ status: 'expired', reason: 'in_use_elsewhere' });
+    expect(() => checkCreate(elsewhere, 0, 1)).toThrow(/another Auto Tournament install/);
+  });
+
+  test('monthly keys verify', () => {
+    expect(
+      verifyLicense(month(), { publicKeys, now: '2026-10-10', lineDate: '2026-10-01' }).valid
+    ).toBe(true);
   });
 });

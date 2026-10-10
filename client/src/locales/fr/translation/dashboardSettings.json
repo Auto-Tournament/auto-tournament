@@ -414,7 +414,8 @@
         "gameHint": "Its pages and settings"
       },
       "reports": "Reports",
-      "highlights": "Highlights"
+      "highlights": "Highlights",
+      "license": "License"
     },
     "status": {
       "live": "LIVE",
@@ -497,7 +498,10 @@
       "servers_other": "{{count}} serveurs",
       "updatesUntil": "mises à jour jusqu’au {{date}}",
       "updatesForLife": "mises à jour à vie",
-      "eventWindow": "événement du {{from}} au {{to}}"
+      "eventWindow": "événement du {{from}} au {{to}}",
+      "free": "Free key, non-commercial use",
+      "freeFor": "Free key for {{licensee}}, non-commercial use",
+      "noLimit": "no server limit"
     },
     "badge": {
       "label": "Afficher « Sous licence » sur les pages publiques d’événement",
@@ -505,10 +509,14 @@
       "on": "Ligne de licence publique activée",
       "off": "Ligne de licence publique désactivée",
       "failed": "Impossible de modifier la ligne de licence publique",
-      "short": "Affiché sur les pages publiques."
+      "short": "Affiché sur les pages publiques.",
+      "needsKey": "Shows only with a license key saved, free or paid. Save one above first."
     },
     "public": {
-      "licensed": "Sous licence"
+      "licensed": "Sous licence",
+      "commercial": "Licensed · Commercial use",
+      "nonCommercial": "Licensed · Non-profit use",
+      "unlicensed": "Unlicensed"
     },
     "consent": {
       "title": "Avant de commencer : la licence",
@@ -596,7 +604,9 @@
       "none": "Aucune clé"
     },
     "thirdParty": "This app is built with open-source packages under their own licenses.",
-    "thirdPartyLink": "Third-party notices"
+    "thirdPartyLink": "Third-party notices",
+    "publicLine": "Players see “{{line}}” at the bottom of event pages.",
+    "pageIntro": "Your license key and where it stands. A paid key is for commercial use; a free key is for non-profit use."
   },
   "tournamentsPage": {
     "title": "Tournaments",

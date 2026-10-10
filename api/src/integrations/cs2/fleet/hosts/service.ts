@@ -5,6 +5,8 @@
  * (../../startup.ts).
  */
 
+import { licenseService } from '../../../../services/license/licenseService';
+import { LicenseLimitError } from '../../../../services/license/gate';
 import type { Server as HttpServer } from 'http';
 import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
@@ -36,9 +38,15 @@ import {
   type HostServerView,
 } from './join';
 import * as registry from './registry';
-import { bundleFor, pluginSetForCreate, validatePluginSet, type PluginSet } from '../push/pluginSets';
+import {
+  bundleFor,
+  pluginSetForCreate,
+  validatePluginSet,
+  type PluginSet,
+} from '../push/pluginSets';
 import { autoUpdateStatus, startAutoUpdates, stopAutoUpdates } from './autoUpdate';
 import { syncLinkedAddress } from '../link';
+import { getLicenseHandoff } from '../../services/updateHoldService';
 
 /** The plugin set a server.create was stored with (meta.plugins), if any. */
 function pluginSetOfMeta(meta: Record<string, unknown> | null): PluginSet | null {
@@ -62,7 +70,55 @@ let quietTimer: NodeJS.Timeout | null = null;
 gateway.onHostReady(async (hostId) => {
   const due = await registry.hostsDueForRotation();
   if (due.includes(hostId)) await rotateHostToken(hostId);
+  await pushLicense(hostId, true);
 });
+
+// ---------------------------------------------------------------------------
+// The license, to csm (host.license)
+// ---------------------------------------------------------------------------
+
+/** How often the license is looked at for a change to pass on (renewal lease, a new key, a stopped license). */
+const LICENSE_PUSH_CHECK_MS = 60 * 1000;
+let licenseTimer: NodeJS.Timeout | null = null;
+/** The license revision each host was last sent, so an unchanged one isn't sent again. */
+const licenseSent = new Map<string, string>();
+
+/**
+ * Sends the platform's license (key, lease, state: the hold poll's hand-off)
+ * to a host that takes it (`license.push`): csm writes it into Ready Up on the
+ * servers this platform owns there, and limits this platform's creates by it.
+ * After every welcome, and whenever the revision changes.
+ */
+async function pushLicense(hostId: string, force = false): Promise<void> {
+  const host = await registry.getHostView(hostId);
+  if (!host || !host.capabilities.includes('license.push') || !isHostOnline(hostId)) return;
+  const handoff = await getLicenseHandoff();
+  if (!force && licenseSent.get(hostId) === handoff.revision) return;
+  const state = handoff.state
+    ? {
+        status: handoff.state.status,
+        ...(handoff.state.stops_on ? { stops_on: handoff.state.stops_on } : {}),
+        ...(handoff.state.valid_until ? { valid_until: handoff.state.valid_until } : {}),
+      }
+    : undefined;
+  try {
+    await sendHostCommand(
+      hostId,
+      'host.license',
+      {
+        key: handoff.key,
+        ...(handoff.lease ? { lease: handoff.lease } : {}),
+        ...(state ? { state } : {}),
+        ...(handoff.use ? { use: handoff.use } : {}),
+        revision: handoff.revision,
+      },
+      { issuedBy: null }
+    );
+    licenseSent.set(hostId, handoff.revision);
+  } catch (error) {
+    log.warn(`[FLEET-HOST] ${hostId}: could not send the license: ${(error as Error).message}`);
+  }
+}
 
 export { hostEvents, commandTargets, joinInventory };
 export type { HostFleetServerRef, HostServerView };
@@ -78,7 +134,7 @@ export function isHostOnline(hostId: string): boolean {
 export class HostCommandError extends Error {
   constructor(
     message: string,
-    readonly status: 400 | 404 | 409,
+    readonly status: 400 | 402 | 404 | 409,
     readonly code: string,
     readonly details?: Record<string, unknown>
   ) {
@@ -121,14 +177,31 @@ export async function sendHostCommand<T extends HostCommandType>(
   hostId: string,
   type: T,
   payload: HostCommands[T],
-  opts: { issuedBy: string | null; force?: { reason: string } | null; meta?: Record<string, unknown> } = { issuedBy: null }
+  opts: {
+    issuedBy: string | null;
+    force?: { reason: string } | null;
+    meta?: Record<string, unknown>;
+  } = { issuedBy: null }
 ): Promise<SentHostCommand> {
   const host = await registry.getHost(hostId);
-  if (!host || host.tenant_id !== FLEET_TENANT) throw new HostCommandError('Machine not found', 404, 'not_found');
-  if (host.status !== 'enrolled') throw new HostCommandError('Only an enrolled machine takes commands', 409, 'not_enrolled');
+  if (!host || host.tenant_id !== FLEET_TENANT)
+    throw new HostCommandError('Machine not found', 404, 'not_found');
+  if (host.status !== 'enrolled')
+    throw new HostCommandError('Only an enrolled machine takes commands', 409, 'not_enrolled');
 
   const body: Record<string, unknown> = { ...(payload as Record<string, unknown>) };
   delete body.force;
+  // A paid license's server limit, before a machine is asked to create any.
+  if (type === 'server.create') {
+    const count = Number((body as { count?: unknown }).count ?? 1);
+    try {
+      await licenseService.assertCanCreateServers(Number.isInteger(count) && count > 0 ? count : 1);
+    } catch (error) {
+      if (error instanceof LicenseLimitError)
+        throw new HostCommandError(error.message, 402, error.code);
+      throw error;
+    }
+  }
   // The fleet key is the platform's to add, at send time (./gateway.ts).
   if (type === 'server.create') delete body.enroll_key;
   // Installs carry the license use the admin accepted on the platform, so
@@ -143,7 +216,9 @@ export async function sendHostCommand<T extends HostCommandType>(
   if (HOST_DISRUPTIVE_TYPES.has(type)) {
     const view = await hostServers(hostId);
     const targets = commandTargets(type, body, view);
-    const busy = view.filter((s) => targets.includes(s.name) && s.matchInProgress).map((s) => s.name);
+    const busy = view
+      .filter((s) => targets.includes(s.name) && s.matchInProgress)
+      .map((s) => s.name);
     if (busy.length > 0 && !opts.force) {
       throw new HostCommandError(
         `A match is in progress on ${busy.join(', ')}; confirm with force to interrupt it`,
@@ -153,13 +228,21 @@ export async function sendHostCommand<T extends HostCommandType>(
       );
     }
     if (opts.force) {
-      force = { by: (opts.issuedBy ?? 'unknown').slice(0, 128), reason: opts.force.reason.slice(0, 500) };
+      force = {
+        by: (opts.issuedBy ?? 'unknown').slice(0, 128),
+        reason: opts.force.reason.slice(0, 500),
+      };
       body.force = force;
     }
   }
 
   const check = validateHostPayload(type, body);
-  if (!check.ok) throw new HostCommandError(`Invalid ${type}: ${check.errors.join('; ')}`, 400, 'invalid_payload');
+  if (!check.ok)
+    throw new HostCommandError(
+      `Invalid ${type}: ${check.errors.join('; ')}`,
+      400,
+      'invalid_payload'
+    );
 
   // server.create: remember which servers exist now, to find the new ones
   // for the Ready Up install that follows (csm decision 10), and the plugin
@@ -171,14 +254,15 @@ export async function sendHostCommand<T extends HostCommandType>(
   if (type === 'server.remove') {
     const inventory = (await registry.getHostView(hostId))?.inventory;
     const target = inventory?.servers.find((sv) => sv.name === body.server) as
-      | { readyup?: { server_id?: string } }
-      | undefined;
-    if (target?.readyup?.server_id) meta = { ...(meta ?? {}), fleetServerId: target.readyup.server_id };
+      { readyup?: { server_id?: string } } | undefined;
+    if (target?.readyup?.server_id)
+      meta = { ...(meta ?? {}), fleetServerId: target.readyup.server_id };
   }
   if (type === 'server.create') {
     const inventory = (await registry.getHostView(hostId))?.inventory;
     const own = meta?.plugins ? validatePluginSet(meta.plugins) : null;
-    if (own && !own.ok) throw new HostCommandError(`Invalid plugins: ${own.error}`, 400, 'invalid_plugins');
+    if (own && !own.ok)
+      throw new HostCommandError(`Invalid plugins: ${own.error}`, 400, 'invalid_plugins');
     const plugins = await pluginSetForCreate(own?.ok ? own.value : null);
     meta = { ...(meta ?? {}), serversBefore: inventory?.servers.map((s) => s.name) ?? [] };
     if (plugins) meta.plugins = plugins;
@@ -198,7 +282,9 @@ export async function sendHostCommand<T extends HostCommandType>(
     meta,
   });
   if (force) {
-    log.warn(`[FLEET-HOST] ${hostId}: ${type} forced by ${force.by} during a match (${force.reason})`);
+    log.warn(
+      `[FLEET-HOST] ${hostId}: ${type} forced by ${force.by} during a match (${force.reason})`
+    );
   }
   await registry.appendHostOutbox(hostId, { id, type, payload: body });
   const session = gateway.session(hostId);
@@ -227,22 +313,37 @@ export const NEW_SERVER_READYUP = { version: 'latest', bundle: 'default' } as co
  * self-enroll with the command's key and appear under the machine.
  */
 async function followUpCreate(hostId: string, record: registry.HostCommandRecord): Promise<void> {
-  if (record.type !== 'server.create' || record.status !== 'ok' || record.payload.enroll !== true) return;
+  if (record.type !== 'server.create' || record.status !== 'ok' || record.payload.enroll !== true)
+    return;
   if (record.meta?.followUp) return;
   const inventory = (await registry.getHostView(hostId))?.inventory;
-  const servers = newServersOf(record.output, record.meta?.serversBefore, inventory?.servers.map((s) => s.name) ?? []);
+  const servers = newServersOf(
+    record.output,
+    record.meta?.serversBefore,
+    inventory?.servers.map((s) => s.name) ?? []
+  );
   if (servers.length === 0) {
-    log.warn(`[FLEET-HOST] ${hostId}: server.create ${record.id} succeeded but named no new server; Ready Up not installed`);
+    log.warn(
+      `[FLEET-HOST] ${hostId}: server.create ${record.id} succeeded but named no new server; Ready Up not installed`
+    );
     return;
   }
   const sent = await sendHostCommand(
     hostId,
     'host.update_plugins',
-    { servers, readyup: { ...NEW_SERVER_READYUP, bundle: bundleFor(pluginSetOfMeta(record.meta)) } },
+    {
+      servers,
+      readyup: { ...NEW_SERVER_READYUP, bundle: bundleFor(pluginSetOfMeta(record.meta)) },
+    },
     { issuedBy: PLATFORM_ACTOR, meta: { followUpOf: record.id } }
   );
-  await registry.mergeHostCommandMeta(record.id, { followUp: sent.command.id, newServers: servers });
-  log.info(`[FLEET-HOST] ${hostId}: installing Ready Up on ${servers.join(', ')} (after server.create ${record.id})`);
+  await registry.mergeHostCommandMeta(record.id, {
+    followUp: sent.command.id,
+    newServers: servers,
+  });
+  log.info(
+    `[FLEET-HOST] ${hostId}: installing Ready Up on ${servers.join(', ')} (after server.create ${record.id})`
+  );
 }
 
 /**
@@ -264,15 +365,22 @@ async function cleanUpRemoved(hostId: string, record: registry.HostCommandRecord
 
 hostEvents.on('result', (hostId: string, record: registry.HostCommandRecord) => {
   void followUpCreate(hostId, record).catch((error) => {
-    log.warn(`[FLEET-HOST] ${hostId}: Ready Up install after server.create failed: ${(error as Error).message}`);
+    log.warn(
+      `[FLEET-HOST] ${hostId}: Ready Up install after server.create failed: ${(error as Error).message}`
+    );
   });
   void cleanUpRemoved(hostId, record).catch((error) => {
-    log.warn(`[FLEET-HOST] ${hostId}: removing the fleet entry after server.remove failed: ${(error as Error).message}`);
+    log.warn(
+      `[FLEET-HOST] ${hostId}: removing the fleet entry after server.remove failed: ${(error as Error).message}`
+    );
   });
 });
 
 /** The answer to command `id`: resolves once it is not pending, or null after `timeoutMs`. */
-export async function awaitHostResult(id: string, timeoutMs = 15_000): Promise<registry.HostCommandRecord | null> {
+export async function awaitHostResult(
+  id: string,
+  timeoutMs = 15_000
+): Promise<registry.HostCommandRecord | null> {
   return new Promise((resolve) => {
     let done = false;
     const finish = (record: registry.HostCommandRecord | null) => {
@@ -313,7 +421,9 @@ export async function hostServers(hostId: string): Promise<HostServerView[]> {
   const host = await registry.getHostView(hostId);
   if (!host?.inventory) return [];
   const bus = fleetBus();
-  return joinInventory(host.inventory.servers, await fleetServerIndex(), (id) => bus.isConnected(id));
+  return joinInventory(host.inventory.servers, await fleetServerIndex(), (id) =>
+    bus.isConnected(id)
+  );
 }
 
 export interface HostAdminView extends registry.FleetHostView {
@@ -326,7 +436,9 @@ export interface HostAdminView extends registry.FleetHostView {
   health: registry.HostHealthRecord[];
 }
 
-export async function listHostViews(opts: { commands?: number; health?: number } = {}): Promise<HostAdminView[]> {
+export async function listHostViews(
+  opts: { commands?: number; health?: number } = {}
+): Promise<HostAdminView[]> {
   const hosts = await registry.listHosts();
   if (hosts.length === 0) return [];
   const index = await fleetServerIndex();
@@ -338,7 +450,9 @@ export async function listHostViews(opts: { commands?: number; health?: number }
   );
   const out: HostAdminView[] = [];
   for (const host of hosts) {
-    const servers = joinInventory(host.inventory?.servers ?? [], index, (id) => bus.isConnected(id));
+    const servers = joinInventory(host.inventory?.servers ?? [], index, (id) =>
+      bus.isConnected(id)
+    );
     const listed = new Set(servers.map((s) => s.fleetServer?.id).filter(Boolean));
     const enrolledServers = keyed
       .filter((k) => k.host_id === host.id && !listed.has(k.id))
@@ -415,7 +529,10 @@ export async function startFleetHosts(server?: HttpServer): Promise<void> {
     inventoryListener = (_hostId: string, payload: HostInventoryPayload) => {
       for (const s of payload.servers) {
         const id = s.readyup.server_id;
-        if (id) void syncLinkedAddress(id).catch((error) => log.warn(`[FLEET-HOST] address sync for ${id}: ${(error as Error).message}`));
+        if (id)
+          void syncLinkedAddress(id).catch((error) =>
+            log.warn(`[FLEET-HOST] address sync for ${id}: ${(error as Error).message}`)
+          );
       }
     };
     hostEvents.on('inventory', inventoryListener);
@@ -427,17 +544,35 @@ export async function startFleetHosts(server?: HttpServer): Promise<void> {
         .timeOutQuietCommands({ notStartedS: COMMAND_NOT_STARTED_S, stalledS: COMMAND_STALLED_S })
         .then((records) => {
           for (const record of records) {
-            log.warn(`[FLEET-HOST] ${record.hostId}: ${record.type} ${record.id} timed out: ${record.errorMessage}`);
+            log.warn(
+              `[FLEET-HOST] ${record.hostId}: ${record.type} ${record.id} timed out: ${record.errorMessage}`
+            );
             hostEvents.emit('result', record.hostId, record);
           }
         })
-        .catch((error) => log.warn(`[FLEET-HOST] command timeout check failed: ${(error as Error).message}`));
+        .catch((error) =>
+          log.warn(`[FLEET-HOST] command timeout check failed: ${(error as Error).message}`)
+        );
     }, QUIET_CHECK_MS);
     quietTimer.unref?.();
   }
+  if (!licenseTimer) {
+    licenseTimer = setInterval(() => {
+      void (async () => {
+        for (const view of await listHostViews({ commands: 0, health: 0 })) {
+          if (isHostOnline(view.id)) await pushLicense(view.id);
+        }
+      })().catch((error) =>
+        log.warn(`[FLEET-HOST] license push check failed: ${(error as Error).message}`)
+      );
+    }, LICENSE_PUSH_CHECK_MS);
+    licenseTimer.unref?.();
+  }
   if (!rotationTimer) {
     rotationTimer = setInterval(() => {
-      void rotateDue().catch((error) => log.warn(`[FLEET-HOST] rotation check failed: ${(error as Error).message}`));
+      void rotateDue().catch((error) =>
+        log.warn(`[FLEET-HOST] rotation check failed: ${(error as Error).message}`)
+      );
     }, ROTATION_CHECK_MS);
     rotationTimer.unref?.();
   }
@@ -449,5 +584,7 @@ export function stopFleetHosts(): void {
   rotationTimer = null;
   if (quietTimer) clearInterval(quietTimer);
   quietTimer = null;
+  if (licenseTimer) clearInterval(licenseTimer);
+  licenseTimer = null;
   gateway.shutdown();
 }

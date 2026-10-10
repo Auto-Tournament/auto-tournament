@@ -22,6 +22,8 @@ import * as middlewareAuth from '../middleware/auth';
 import * as middlewareServerAuth from '../middleware/serverAuth';
 import * as adminCallService from '../services/adminCallService';
 import * as adminListEvents from '../services/adminListEvents';
+import * as licenseGate from '../services/license/gate';
+import * as licenseServiceModule from '../services/license/licenseService';
 import * as matchConfigFetchTracker from '../services/matchConfigFetchTracker';
 import * as matchHolds from '../services/matchHolds';
 import * as adminCallTypes from '../types/adminCall.types';
@@ -62,6 +64,8 @@ const MODULES: Record<string, object> = {
   'middleware/serverAuth': middlewareServerAuth,
   'services/adminCallService': adminCallService,
   'services/adminListEvents': adminListEvents,
+  'services/license/gate': licenseGate,
+  'services/license/licenseService': licenseServiceModule,
   'services/matchConfigFetchTracker': matchConfigFetchTracker,
   'services/matchHolds': matchHolds,
   'services/matchLiveStatsService': matchLiveStatsService,

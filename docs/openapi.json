@@ -7741,11 +7741,11 @@
         "tags": [
           "License"
         ],
-        "summary": "The public \"Licensed\" line",
-        "description": "`badge` is `{ verifyUrl }` when an admin turned the public badge on\nand the saved key is a genuine platform license; otherwise null.\nPublic. Never says anything about an instance without a license:\nfree non-commercial use needs none.\n",
+        "summary": "The public license line",
+        "description": "`badge` is `{ use, verifyUrl }`, always shown on public event pages:\n`commercial` (a paid key in good standing) or `non_commercial` (a\nfree key), with the license's public check page; `none` (no key, or\nan invalid or expired one) with a null `verifyUrl`. Public. Null only\nwhen it could not be read.\n",
         "responses": {
           "200": {
-            "description": "The badge, or null"
+            "description": "The badge"
           }
         }
       }
@@ -7875,49 +7875,6 @@
           },
           "409": {
             "description": "The saved key is not a genuine event license"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
-    "/api/license/public-badge": {
-      "put": {
-        "tags": [
-          "License"
-        ],
-        "summary": "Turn the public \"Licensed\" line on or off",
-        "description": "Body `{ \"enabled\": true }`. Off by default. When on, public event\npages show \"Licensed\", linking to the license's check page, but only\nwhile the saved key is a genuine platform license. Same-site JSON only.\n",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "enabled"
-                ],
-                "properties": {
-                  "enabled": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Saved; the new status"
-          },
-          "400": {
-            "description": "enabled is not a boolean"
           }
         },
         "security": [

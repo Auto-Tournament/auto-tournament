@@ -12,6 +12,7 @@ import {
   CodeIcon,
   GearIcon,
   PuzzlePieceIcon,
+  SealCheckIcon,
   StackIcon,
   UserIcon,
   UsersThreeIcon,
@@ -220,6 +221,12 @@ export const ManageRail: React.FC = () => {
             label: t('managePage.rail.settings'),
             to: paths.settings,
             icon: GearIcon,
+          },
+          {
+            key: 'license',
+            label: t('managePage.rail.license'),
+            to: paths.license,
+            icon: SealCheckIcon,
           },
           {
             key: 'adminTools',

@@ -23,7 +23,7 @@ export type CoreSettingKey =
   // The Auto Tournament license key (services/license). Set through
   // /api/license only; never returned by /api/settings or logged.
   | 'license_key'
-  // Show "Licensed" on public event pages. Off by default.
+  // Was the public "Licensed" toggle; the line is always shown now. Unread.
   | 'license_public_badge'
   // The admin's acceptance of the license terms, JSON (services/license/consent).
   // Set through /api/license/consent or AT_ACCEPT_LICENSE only.
@@ -40,6 +40,8 @@ export type CoreSettingKey =
   | 'license_checkin_counted_since'
   | 'license_event_declaration'
   | 'license_event_prompt'
+  // The license's current terms from the last check-in (a signed lease, services/license/gate.ts).
+  | 'license_lease'
   // Integrator webhooks may target private / loopback addresses (LAN events).
   // Off by default: services/webhooks/ssrf.ts.
   | 'webhooks_allow_private_targets'
@@ -133,6 +135,7 @@ export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSetting
     },
   },
   {
+    // No longer read: the public license line is always shown (licenseService.getPublicBadge). Kept so stored rows stay valid.
     key: 'license_public_badge',
     normalize: normalizeFlag('Public license badge'),
   },
@@ -160,6 +163,7 @@ export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSetting
       'license_checkin_counted_since',
       'license_event_declaration',
       'license_event_prompt',
+      'license_lease',
     ] as const
   ).map((key) => ({
     key,
@@ -335,7 +339,6 @@ class SettingsService {
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
-
 
   // The simulation keys are declared by CS2 (its `instanceSettings`), but the
   // core scheduler and Swiss progression read simulation mode as well, so

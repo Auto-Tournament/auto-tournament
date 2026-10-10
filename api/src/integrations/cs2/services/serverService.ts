@@ -1,4 +1,5 @@
 import { db } from '../../../config/database';
+import { licenseService } from '../../../services/license/licenseService';
 import {
   Server,
   CreateServerInput,
@@ -32,16 +33,23 @@ export class ServerService {
     const ids = list.map((s) => s.fleetServerId).filter((id): id is string => Boolean(id));
     if (!ids.length) return list;
     const rows = await db
-      .queryAsync<{ id: string; host: string | null; online: number | null; last_seen: number | null }>(
-        'SELECT id, host, online, last_seen FROM cs2_fleet_servers WHERE id = ANY(?::text[])',
-        [ids]
-      )
+      .queryAsync<{
+        id: string;
+        host: string | null;
+        online: number | null;
+        last_seen: number | null;
+      }>('SELECT id, host, online, last_seen FROM cs2_fleet_servers WHERE id = ANY(?::text[])', [
+        ids,
+      ])
       .catch(() => []);
     const link = new Map(rows.map((r) => [r.id, r] as const));
     const token = new Map(
       rows.map((r) => {
         try {
-          return [r.id, (JSON.parse(r.host ?? '{}') as { steam_token?: boolean }).steam_token ?? null] as const;
+          return [
+            r.id,
+            (JSON.parse(r.host ?? '{}') as { steam_token?: boolean }).steam_token ?? null,
+          ] as const;
         } catch {
           return [r.id, null] as const;
         }
@@ -84,8 +92,15 @@ export class ServerService {
   /**
    * Check if a server with the same host:port already exists
    */
-  private async getServerByHostPort(host: string, port: number, excludeId?: string): Promise<Server | null> {
-    const servers = await db.getAllAsync<Server>('cs2_servers', 'host = ? AND port = ?', [host, port]);
+  private async getServerByHostPort(
+    host: string,
+    port: number,
+    excludeId?: string
+  ): Promise<Server | null> {
+    const servers = await db.getAllAsync<Server>('cs2_servers', 'host = ? AND port = ?', [
+      host,
+      port,
+    ]);
 
     // If excludeId is provided, filter it out (for updates)
     if (excludeId) {
@@ -114,6 +129,9 @@ export class ServerService {
       }
       throw new Error(`Server with ID '${input.id}' already exists`);
     }
+
+    // A paid license's server limit (Commercial License Terms, section 4). Free use has none.
+    await licenseService.assertCanCreateServers(1);
 
     // Check if server with same host:port already exists
     const duplicate = await this.getServerByHostPort(input.host, input.port);
@@ -201,8 +219,7 @@ export class ServerService {
     if (input.skins !== undefined) updateData.skins = input.skins ? 1 : 0;
 
     if (input.atConfig !== undefined) {
-      const hasKeys =
-        input.atConfig && Object.keys(input.atConfig).length > 0;
+      const hasKeys = input.atConfig && Object.keys(input.atConfig).length > 0;
       updateData.at_config = hasKeys ? JSON.stringify(input.atConfig) : null;
     }
 
@@ -343,9 +360,7 @@ export class ServerService {
       cs2VersionString: server.cs2_version_string ?? null,
       cs2VersionFetchedAt: server.cs2_version_fetched_at ?? null,
       atDbOk:
-        typeof server.at_db_ok === 'number'
-          ? server.at_db_ok === 1
-          : server.at_db_ok ?? null,
+        typeof server.at_db_ok === 'number' ? server.at_db_ok === 1 : (server.at_db_ok ?? null),
       atDbType: server.at_db_type ?? null,
       atDbError: server.at_db_error ?? null,
       atDbLastOkAt: server.at_db_last_ok_at ?? null,

@@ -11,7 +11,7 @@ export interface LicenseStatus {
     product: 'platform' | 'servers';
     pack: 'S' | 'M' | 'L';
     maxServers: number;
-    kind: 'event' | 'year' | 'founder';
+    kind: 'month' | 'year' | 'founder' | 'event' | 'free';
     issuedAt: string;
     /** Null: a founder license, updates for life. */
     updatesUntil: string | null;
@@ -24,7 +24,6 @@ export interface LicenseStatus {
   serverCount: number | null;
   version: string;
   lineDate: string;
-  publicBadge: boolean;
   /** The daily check-in; null without a key (then nothing is sent). */
   checkin: {
     lastAt: string | null;
@@ -33,6 +32,16 @@ export interface LicenseStatus {
     sent: string[];
     privacyUrl: string;
   } | null;
+  /** Where the paid license stands (api/src/services/license/gate.ts): past_due warns admins, expired stops the platform. */
+  standing?: {
+    status: 'free' | 'invalid' | 'active' | 'past_due' | 'expired';
+    paid: boolean;
+    maxServers: number | null;
+    licenseId: string | null;
+    stopsOn: string | null;
+    /** Why it is past due or expired: unpaid, the key was replaced in the console, or the key belongs to another install. */
+    reason?: 'unpaid' | 'replaced' | 'in_use_elsewhere' | null;
+  };
   /** An event license only: the quiet "what's this?" question on the admin home. */
   eventPrompt: {
     shouldAsk: boolean;
@@ -82,7 +91,8 @@ export interface LicenseStatusResponse {
 }
 
 /** Admin only: the saved license key's status. `status` is null until loaded, or when it could not be. */
-export function useLicenseStatus() {
+export function useLicenseStatus(options: { enabled?: boolean } = {}) {
+  const enabled = options.enabled ?? true;
   const [status, setStatus] = useState<LicenseStatus | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -98,14 +108,25 @@ export function useLicenseStatus() {
   }, []);
 
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    if (enabled) void reload();
+  }, [reload, enabled]);
 
   return { status, setStatus, loaded, reload };
 }
 
 /** "Licensed to NTLAN · Platform S · 6 servers · updates until 2027-09-01". */
-export function licenseSummary(license: NonNullable<LicenseStatus['license']>, t: TFunction): string {
+export function licenseSummary(
+  license: NonNullable<LicenseStatus['license']>,
+  t: TFunction
+): string {
+  if (license.kind === 'free') {
+    return [
+      license.licensee
+        ? t('license.summary.freeFor', { licensee: license.licensee })
+        : t('license.summary.free'),
+      t('license.summary.noLimit'),
+    ].join(' · ');
+  }
   return [
     license.licensee
       ? t('license.summary.licensedTo', { licensee: license.licensee })

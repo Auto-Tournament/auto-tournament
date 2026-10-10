@@ -50,6 +50,9 @@ function tournamentScope(): number | null {
   return pageScope() ?? adminScope;
 }
 
+/** Fired when the API answers `license_expired` (api/src/middleware/licenseExpired.ts); components/license/LicenseGate.tsx shows the page. */
+export const LICENSE_EXPIRED_EVENT = 'at:license-expired';
+
 export const api = {
   /**
    * Make an authenticated API request
@@ -74,6 +77,15 @@ export const api = {
 
     if (!response.ok) {
       const error = await response.text();
+      if (response.status === 503 && error.includes('"license_expired"')) {
+        let reason: string | null = null;
+        try {
+          reason = (JSON.parse(error) as { reason?: string | null }).reason ?? null;
+        } catch {
+          reason = null;
+        }
+        window.dispatchEvent(new CustomEvent(LICENSE_EXPIRED_EVENT, { detail: { reason } }));
+      }
       // Proxies (Cloudflare, Caddy) answer 502/504 with an HTML page; showing
       // that raw leaves an empty or unreadable toast.
       const readable = error && !/^\s*</.test(error) ? error : '';
@@ -128,7 +140,6 @@ export const api = {
   async delete(endpoint: string) {
     return this.fetch(endpoint, { method: 'DELETE' });
   },
-
 };
 
 /**

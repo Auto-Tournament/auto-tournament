@@ -5,7 +5,6 @@ import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { Trans, useTranslation } from 'react-i18next';
@@ -27,7 +26,7 @@ import { SettingsCardHead, SettingsRow } from './SettingsRow';
 /**
  * Settings → License: the accepted terms and declared use (change it here),
  * paste the Auto Tournament license key, see what it covers, remove it, and
- * the public "Licensed" toggle (/api/license).
+ * (/api/license). Players always see the public license line (LicensedBadge).
  *
  * Nothing is ever locked or limited by it: no key is a quiet note (free for
  * non-commercial use), and a problem with a key is a notice here. The key is
@@ -45,7 +44,11 @@ export function LicenseCard() {
     return <Alert severity="warning">{t('license.loadFailed')}</Alert>;
   }
 
-  const run = async (request: () => Promise<LicenseStatusResponse>, success: string, failure: string) => {
+  const run = async (
+    request: () => Promise<LicenseStatusResponse>,
+    success: string,
+    failure: string
+  ) => {
     setBusy(true);
     try {
       const res = await request();
@@ -76,13 +79,6 @@ export function LicenseCard() {
       t('license.removeFailed')
     );
 
-  const setBadge = (enabled: boolean) =>
-    run(
-      () => api.put<LicenseStatusResponse>('/api/license/public-badge', { enabled }),
-      enabled ? t('license.badge.on') : t('license.badge.off'),
-      t('license.badge.failed')
-    );
-
   const { license, warnings } = status;
   const hasKey = status.status !== 'none';
 
@@ -105,7 +101,13 @@ export function LicenseCard() {
       </Box>
 
       <SettingsRow
-        title={license ? <span data-testid="settings-license-summary">{licenseSummary(license, t)}</span> : t('license.keyRow')}
+        title={
+          license ? (
+            <span data-testid="settings-license-summary">{licenseSummary(license, t)}</span>
+          ) : (
+            t('license.keyRow')
+          )
+        }
         sub={
           license ? (
             <>
@@ -121,11 +123,19 @@ export function LicenseCard() {
             </>
           ) : (
             <span data-testid="settings-license-none">
-              {t('license.none')} <ExternalLink href={status.pricingUrl}>{t('license.pricing')}</ExternalLink>
+              {t('license.none')}{' '}
+              <ExternalLink href={status.pricingUrl}>{t('license.pricing')}</ExternalLink>
             </span>
           )
         }
-        control={<Chip size="small" color={chip.color} label={chip.label} data-testid="settings-license-state" />}
+        control={
+          <Chip
+            size="small"
+            color={chip.color}
+            label={chip.label}
+            data-testid="settings-license-state"
+          />
+        }
         defaultOpen={status.status === 'invalid' || status.status === 'warning'}
         openLabel={hasKey ? t('license.replaceLabel') : t('license.label')}
       >
@@ -169,7 +179,9 @@ export function LicenseCard() {
               minRows={2}
               maxRows={6}
               autoComplete="off"
-              helperText={<Trans t={t} i18nKey="license.helper" components={consoleLinkComponents} />}
+              helperText={
+                <Trans t={t} i18nKey="license.helper" components={consoleLinkComponents} />
+              }
               sx={{ flex: 1 }}
               slotProps={{
                 htmlInput: { spellCheck: false, 'data-testid': 'settings-license-input' },
@@ -196,34 +208,42 @@ export function LicenseCard() {
               )}
             </Stack>
           </Stack>
-          <Typography variant="caption" color="text.secondary" display="block" data-testid="settings-license-checkin">
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            display="block"
+            data-testid="settings-license-checkin"
+          >
             {t('license.checkInNote')}
           </Typography>
           {status.checkin && <CheckinDetails status={status} />}
         </Stack>
       </SettingsRow>
 
-      <SettingsRow
-        title={t('license.badge.label')}
-        sub={t('license.badge.short')}
-        control={
-          <Switch
-            checked={status.publicBadge}
-            onChange={(event) => void setBadge(event.target.checked)}
-            disabled={busy}
-            color="primary"
-            slotProps={{
-              input: {
-                'data-testid': 'settings-license-badge',
-                'aria-label': t('license.badge.label'),
-              } as React.InputHTMLAttributes<HTMLInputElement>,
-            }}
-          />
-        }
-      />
+      {/* What players see at the bottom of event pages (LicensedBadge), always. */}
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        mt={2}
+        data-testid="settings-license-public-line"
+      >
+        {t('license.publicLine', {
+          line:
+            !license || status.status === 'invalid' || status.standing?.status === 'expired'
+              ? t('license.public.unlicensed')
+              : license.kind === 'free'
+                ? t('license.public.nonCommercial')
+                : t('license.public.commercial'),
+        })}
+      </Typography>
       <Typography variant="caption" color="text.secondary" display="block" mt={2}>
         {t('license.thirdParty')}{' '}
-        <a href="/third-party-notices.txt" target="_blank" rel="noopener" data-testid="settings-third-party-notices">
+        <a
+          href="/third-party-notices.txt"
+          target="_blank"
+          rel="noopener"
+          data-testid="settings-third-party-notices"
+        >
           {t('license.thirdPartyLink')}
         </a>
       </Typography>
@@ -231,7 +251,14 @@ export function LicenseCard() {
   );
 }
 
-const SENT_ROWS = ['keyId', 'instanceId', 'serverCount', 'version', 'activity', 'declared'] as const;
+const SENT_ROWS = [
+  'keyId',
+  'instanceId',
+  'serverCount',
+  'version',
+  'activity',
+  'declared',
+] as const;
 
 /**
  * With a key: when the last check-in went through, the notice it brought
@@ -248,8 +275,14 @@ function CheckinDetails({ status }: { status: LicenseStatus }) {
   const prompt = status.eventPrompt;
   return (
     <Stack spacing={1} data-testid="settings-license-checkin-details">
-      <Typography variant="body2" color="text.secondary" data-testid="settings-license-checkin-last">
-        {checkin.lastAt ? t('license.checkin.last', { time: when(checkin.lastAt) }) : t('license.checkin.never')}
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        data-testid="settings-license-checkin-last"
+      >
+        {checkin.lastAt
+          ? t('license.checkin.last', { time: when(checkin.lastAt) })
+          : t('license.checkin.never')}
       </Typography>
       {checkin.notice && (
         <Alert severity="info" data-testid="settings-license-checkin-notice">
@@ -260,15 +293,26 @@ function CheckinDetails({ status }: { status: LicenseStatus }) {
         </Alert>
       )}
       {prompt && prompt.declared !== 'none' && (
-        <Typography variant="body2" color="text.secondary" data-testid="settings-license-event-answer">
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          data-testid="settings-license-event-answer"
+        >
           {t('license.checkin.answered', {
             answer: t(EVENT_ANSWER_LABEL[prompt.declared]),
             time: prompt.declaredAt ? when(prompt.declaredAt) : '',
           })}
         </Typography>
       )}
-      <Box component="details" sx={{ typography: 'body2', color: 'text.secondary' }} data-testid="settings-license-checkin-sent">
-        <Box component="summary" sx={{ cursor: 'pointer', color: 'text.primary', width: 'fit-content' }}>
+      <Box
+        component="details"
+        sx={{ typography: 'body2', color: 'text.secondary' }}
+        data-testid="settings-license-checkin-sent"
+      >
+        <Box
+          component="summary"
+          sx={{ cursor: 'pointer', color: 'text.primary', width: 'fit-content' }}
+        >
           {t('license.checkin.whatIsSent')}
         </Box>
         <Box sx={{ mt: 1 }}>

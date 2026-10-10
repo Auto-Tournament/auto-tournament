@@ -94,6 +94,8 @@ export const paths = {
   /** System: match recovery and the app log (was Admin tools at /admin). */
   admin: '/manage/system',
   settings: '/manage/settings',
+  /** The license key, its standing and the public "Licensed" line. */
+  license: '/manage/license',
   maps: '/manage/maps',
   /** What this instance can run, and the packs an admin imported. */
   modules: '/manage/modules',
@@ -193,13 +195,15 @@ export function visibleTournamentTabs(
   // The header shows three lines of the description; a longer one is read in full on Rules.
   const hasRules = Boolean(
     tournament.settings?.rules?.length ||
-      tournament.settings?.rulebookUrl ||
-      (tournament.settings?.description?.length ?? 0) > 240
+    tournament.settings?.rulebookUrl ||
+    (tournament.settings?.description?.length ?? 0) > 240
   );
   // An archived tournament's matches and teams tabs would read the current
   // tournament's, so it shows its results only.
   if (tournament.archived_at) {
-    return hasRules ? ['overview', 'bracket', 'standings', 'rules'] : ['overview', 'bracket', 'standings'];
+    return hasRules
+      ? ['overview', 'bracket', 'standings', 'rules']
+      : ['overview', 'bracket', 'standings'];
   }
   // Before it starts there is nothing to follow yet (tournament drafts,
   // board 1): the page, who is in, and the rules.
@@ -209,7 +213,9 @@ export function visibleTournamentTabs(
   // Once it is over the results lead (board 9): the overview is the results
   // page, and the bracket and every match (with demos) are kept.
   if (tournament.status === 'completed') {
-    return hasRules ? ['overview', 'bracket', 'matches', 'rules'] : ['overview', 'bracket', 'matches'];
+    return hasRules
+      ? ['overview', 'bracket', 'matches', 'rules']
+      : ['overview', 'bracket', 'matches'];
   }
   const tabs: TournamentTab[] = [
     yourMatchFirst(tournament.status, viewer.hasTeam) ? 'match' : 'overview',

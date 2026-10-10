@@ -27,7 +27,8 @@
 
 import { randomUUID } from 'crypto';
 import { log } from '../../utils/logger';
-import { decodeLicense } from './verify';
+import { decodeLicense, verifyLicense } from './verify';
+import type { ServerLicenseState } from './gate';
 
 export const DEFAULT_CHECKIN_URL = 'https://autotournament.gg/api/licenses/checkin';
 export const CHECKIN_PRIVACY_URL = 'https://autotournament.gg/privacy#license-checkin';
@@ -38,6 +39,8 @@ export const CHECKIN_STARTUP_DELAY_MS = 60_000;
 /** A check-in this recent is not repeated (boot right after a key change). */
 export const CHECKIN_MIN_GAP_MS = 10 * 60 * 1000;
 export const NOTICE_MAX_LENGTH = 300;
+/** Creating game servers with a paid key, when the license server can't be asked, needs a check-in this recent. */
+export const CHECKIN_FRESH_MS = 3 * 24 * 60 * 60 * 1000;
 /** How often the event-license question may be asked, per instance. */
 export const EVENT_PROMPT_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -53,6 +56,8 @@ export const CHECKIN_FIELDS = [
   'tournaments_live',
   'max_tournament_teams',
   'declared',
+  'product',
+  'public_url',
 ] as const;
 
 export const SETTING = {
@@ -61,6 +66,8 @@ export const SETTING = {
   result: 'license_checkin_result',
   countedSince: 'license_checkin_counted_since',
   declaration: 'license_event_declaration',
+  /** The license's current terms from the last check-in (a signed lease; ./gate.ts). */
+  lease: 'license_lease',
   prompt: 'license_event_prompt',
 } as const;
 
@@ -81,6 +88,9 @@ export interface CheckinBody {
   tournaments_live: number;
   max_tournament_teams: number;
   declared: Declared;
+  product: 'platform';
+  /** FRONTEND_BASE_URL's origin, when it is a real address; null otherwise. */
+  public_url: string | null;
 }
 
 /** The server's usage summary for the key, as the admin UI gets it. */
@@ -99,6 +109,15 @@ export interface CheckinResult {
   usage: CheckinUsage | null;
   /** Plain text from the server, at most NOTICE_MAX_LENGTH characters. Never HTML. */
   notice: string | null;
+  /** Where the license stands (./gate.ts); null from an older license server. */
+  license?: ServerLicenseState | null;
+  /**
+   * A subscription's current terms (servers, paid until), signed like a key:
+   * the key itself never changes on renewal. Stored apart (SETTING.lease).
+   */
+  lease?: string | null;
+  /** Servers in use on this license by every other install (one pool per license). */
+  serversElsewhere?: number;
 }
 
 /** What the admin UI gets: when, the server's notice, and what is sent. */
@@ -176,7 +195,10 @@ const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
  * when set (`off` turns it off; https, or http to localhost only), none under
  * NODE_ENV=test without it, else the real endpoint.
  */
-export function resolveCheckinUrl(env: { LICENSE_CHECKIN_URL?: string; NODE_ENV?: string }): string | null {
+export function resolveCheckinUrl(env: {
+  LICENSE_CHECKIN_URL?: string;
+  NODE_ENV?: string;
+}): string | null {
   const raw = env.LICENSE_CHECKIN_URL?.trim();
   if (!raw) return env.NODE_ENV === 'test' ? null : DEFAULT_CHECKIN_URL;
   if (OFF.has(raw.toLowerCase())) return null;
@@ -193,10 +215,15 @@ export function resolveCheckinUrl(env: { LICENSE_CHECKIN_URL?: string; NODE_ENV?
 /** The server's notice as plain text: control characters dropped, trimmed, capped. */
 export function cleanNotice(value: unknown): string | null {
   if (typeof value !== 'string') return null;
-  // eslint-disable-next-line no-control-regex
-  const text = value.replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const text = value
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!text) return null;
-  return text.length > NOTICE_MAX_LENGTH ? `${text.slice(0, NOTICE_MAX_LENGTH - 1).trimEnd()}…` : text;
+  return text.length > NOTICE_MAX_LENGTH
+    ? `${text.slice(0, NOTICE_MAX_LENGTH - 1).trimEnd()}…`
+    : text;
 }
 
 /** A 200 body, checked field by field. Null when it is not `{ ok: true, … }`. */
@@ -227,7 +254,43 @@ export function parseCheckinResponse(value: unknown): CheckinResult | null {
       };
     }
   }
-  return { usage, notice: cleanNotice(value.notice) };
+  const license = parseLicenseState(value.license);
+  const lease = cleanToken(value.lease);
+  const elsewhere = count(value.servers_elsewhere ?? value.serversElsewhere);
+  return {
+    usage,
+    notice: cleanNotice(value.notice),
+    ...(license ? { license } : {}),
+    ...(lease ? { lease } : {}),
+    ...(elsewhere !== null ? { serversElsewhere: elsewhere } : {}),
+  };
+}
+
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+const STATES = [
+  'active',
+  'past_due',
+  'expired',
+  'revoked',
+  'replaced',
+  'in_use_elsewhere',
+] as const;
+
+/** The answer's `license`, checked; null when missing or not understood. */
+export function parseLicenseState(value: unknown): ServerLicenseState | null {
+  if (!isObject(value) || !(STATES as readonly unknown[]).includes(value.status)) return null;
+  const day = (v: unknown) => (typeof v === 'string' && DAY.test(v) ? v : null);
+  return {
+    status: value.status as ServerLicenseState['status'],
+    validUntil: day(value.valid_until ?? value.validUntil),
+    stopsOn: day(value.stops_on ?? value.stopsOn),
+  };
+}
+
+function cleanToken(value: unknown): string | null {
+  return typeof value === 'string' && value.startsWith('ATL1.') && value.length <= 4096
+    ? value
+    : null;
 }
 
 /** A stored result (JSON), or empty when missing or unreadable. */
@@ -252,7 +315,14 @@ export function parseStoredResult(raw: string | null): CheckinResult {
       });
       usage = parsed?.usage ?? null;
     }
-    return { usage, notice: cleanNotice(value.notice) };
+    const license = parseLicenseState(value.license);
+    const elsewhere = count(value.serversElsewhere);
+    return {
+      usage,
+      notice: cleanNotice(value.notice),
+      ...(license ? { license } : {}),
+      ...(elsewhere !== null ? { serversElsewhere: elsewhere } : {}),
+    };
   } catch {
     return { usage: null, notice: null };
   }
@@ -291,8 +361,13 @@ export function parsePromptState(raw: string | null): EventPromptState {
 }
 
 /** The declaration for this license, or `none`. */
-export function declaredFor(declaration: EventDeclaration | null, licenseId: string | null): Declared {
-  return declaration && licenseId && declaration.licenseId === licenseId ? declaration.answer : 'none';
+export function declaredFor(
+  declaration: EventDeclaration | null,
+  licenseId: string | null
+): Declared {
+  return declaration && licenseId && declaration.licenseId === licenseId
+    ? declaration.answer
+    : 'none';
 }
 
 export function buildCheckinBody(input: {
@@ -304,6 +379,7 @@ export function buildCheckinBody(input: {
   now: Date;
   activity: Activity;
   declared: Declared;
+  publicUrl?: string | null;
 }): CheckinBody {
   return {
     token: input.key,
@@ -316,6 +392,8 @@ export function buildCheckinBody(input: {
     tournaments_live: count(input.activity.tournamentsLive) ?? 0,
     max_tournament_teams: count(input.activity.maxTournamentTeams) ?? 0,
     declared: input.declared,
+    product: 'platform',
+    public_url: input.publicUrl ?? null,
   };
 }
 
@@ -403,6 +481,22 @@ export function promptAllowed(prompt: EventPromptState, licenseId: string, now: 
 // The check-in
 // ---------------------------------------------------------------------------
 
+/**
+ * Whether `lease` is genuine current terms for the license of `key`: signed
+ * by us, same license id and kind, issued no earlier than the key.
+ */
+export function leaseOf(key: string, lease: string): boolean {
+  const a = verifyLicense(key);
+  const b = verifyLicense(lease);
+  if (!a.valid || !b.valid || !b.license || !a.license) return false;
+  return (
+    b.license.lease === true &&
+    a.license.id === b.license.id &&
+    a.license.kind === b.license.kind &&
+    b.license.issued_at >= a.license.issued_at
+  );
+}
+
 export interface CheckinStore {
   get(key: string): Promise<string | null>;
   set(key: string, value: string | null): Promise<void>;
@@ -415,6 +509,9 @@ export interface CheckinDeps {
   /** Counts for [sinceSeconds, untilSeconds). */
   activity(sinceSeconds: number, untilSeconds: number): Promise<Activity>;
   version: string;
+  /** Where players open the platform (FRONTEND_BASE_URL), sent with the check-in. */
+  publicUrl?: () => string | null;
+  /** Stores a renewed key the server handed back (same license, newer). */
   url?: string;
   fetch?: typeof globalThis.fetch;
   now?: () => Date;
@@ -475,6 +572,70 @@ export class LicenseCheckin {
     return this.running;
   }
 
+  /**
+   * Asks the license server, right before creating game servers, whether
+   * `adding` more fit the whole license now (every install using the key
+   * shares one limit). `current` is this install's servers. 'unreachable'
+   * when it can't be asked (the caller then falls back to the last check-in,
+   * if it is recent); 'skipped' when check-ins are off (tests, CI).
+   */
+  async reserve(
+    current: number,
+    adding: number
+  ): Promise<
+    | { result: 'allowed' }
+    | { result: 'refused'; reason: string; maxServers: number | null; elsewhere: number }
+    | { result: 'unreachable' | 'skipped' }
+  > {
+    const url = this.url();
+    if (!url) return { result: 'skipped' };
+    const key = await this.deps.getKey();
+    const keyId = keyIdOf(key);
+    if (!key || !keyId) return { result: 'skipped' };
+    const body = {
+      ...buildCheckinBody({
+        key,
+        keyId,
+        instanceId: await this.instanceId(),
+        serverCount: current,
+        version: this.deps.version,
+        now: this.now(),
+        activity: { matchesPlayed: 0, tournamentsLive: 0, maxTournamentTeams: 0 },
+        declared: 'none',
+        publicUrl: this.deps.publicUrl ? this.deps.publicUrl() : null,
+      }),
+      adding,
+    };
+    try {
+      const doFetch = this.deps.fetch ?? globalThis.fetch;
+      const res = await doFetch(url.replace(/\/checkin(\/?)$/, '/reserve$1'), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify(body),
+        signal: globalThis.AbortSignal.timeout(CHECKIN_TIMEOUT_MS),
+      });
+      if (res.status !== 200) return { result: 'unreachable' };
+      const answer = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+      if (!answer || answer.ok !== true || typeof answer.allowed !== 'boolean')
+        return { result: 'unreachable' };
+      if (answer.allowed) return { result: 'allowed' };
+      return {
+        result: 'refused',
+        reason: typeof answer.reason === 'string' ? answer.reason : 'server_limit',
+        maxServers: count(answer.max_servers),
+        elsewhere: count(answer.servers_elsewhere) ?? 0,
+      };
+    } catch {
+      return { result: 'unreachable' };
+    }
+  }
+
+  /** Whether the last successful check-in is recent enough to create servers on without asking (CHECKIN_FRESH_MS). */
+  async checkedInRecently(): Promise<boolean> {
+    const last = Date.parse((await this.deps.store.get(SETTING.lastAt)) ?? '');
+    return !Number.isNaN(last) && this.now().getTime() - last < CHECKIN_FRESH_MS;
+  }
+
   private async attempt(force: boolean): Promise<CheckinOutcome> {
     const url = this.url();
     if (!url) return 'disabled';
@@ -490,14 +651,15 @@ export class LicenseCheckin {
 
     const until = Math.floor(now.getTime() / 1000);
     const cursor = Number((await this.deps.store.get(SETTING.countedSince)) ?? '');
-    const since = Number.isSafeInteger(cursor) && cursor > 0 && cursor <= until ? cursor : until - 24 * 60 * 60;
+    const since =
+      Number.isSafeInteger(cursor) && cursor > 0 && cursor <= until ? cursor : until - 24 * 60 * 60;
 
     const [instanceId, serverCount, activity, declaration] = await Promise.all([
       this.instanceId(),
       this.deps.countServers().catch(() => null),
-      this.deps.activity(since, until).catch(
-        (): Activity => ({ matchesPlayed: 0, tournamentsLive: 0, maxTournamentTeams: 0 })
-      ),
+      this.deps
+        .activity(since, until)
+        .catch((): Activity => ({ matchesPlayed: 0, tournamentsLive: 0, maxTournamentTeams: 0 })),
       this.deps.store.get(SETTING.declaration).then(parseDeclaration),
     ]);
 
@@ -510,6 +672,7 @@ export class LicenseCheckin {
       now,
       activity,
       declared: declaredFor(declaration, keyId),
+      publicUrl: this.deps.publicUrl ? this.deps.publicUrl() : null,
     });
 
     const doFetch = this.deps.fetch ?? globalThis.fetch;
@@ -531,7 +694,12 @@ export class LicenseCheckin {
     // The key may have changed while this was on its way: keep nothing then.
     if ((await this.deps.getKey()) !== key) return 'failed';
     await this.deps.store.set(SETTING.lastAt, now.toISOString());
-    await this.deps.store.set(SETTING.result, JSON.stringify(result));
+    const { lease, ...kept } = result;
+    await this.deps.store.set(SETTING.result, JSON.stringify(kept));
+    if (lease && leaseOf(key, lease) && (await this.deps.store.get(SETTING.lease)) !== lease) {
+      await this.deps.store.set(SETTING.lease, lease);
+      log.info("[LICENSE] Picked up the license's current terms");
+    }
     await this.deps.store.set(SETTING.countedSince, String(until));
     log.debug('[LICENSE] Checked in');
     return 'sent';
@@ -541,6 +709,7 @@ export class LicenseCheckin {
   async clearState(): Promise<void> {
     await this.deps.store.set(SETTING.lastAt, null);
     await this.deps.store.set(SETTING.result, null);
+    await this.deps.store.set(SETTING.lease, null);
   }
 
   async status(hasKey: boolean): Promise<CheckinStatus> {
@@ -559,7 +728,11 @@ export class LicenseCheckin {
   }
 
   /** Record the admin's answer to the event-license question. */
-  async answerEventPrompt(action: EventPromptAction, licenseId: string, actor: string): Promise<void> {
+  async answerEventPrompt(
+    action: EventPromptAction,
+    licenseId: string,
+    actor: string
+  ): Promise<void> {
     const now = this.now().toISOString();
     const prompt = parsePromptState(await this.deps.store.get(SETTING.prompt));
     if ((DECLARATION_ANSWERS as readonly string[]).includes(action)) {
@@ -584,7 +757,9 @@ export class LicenseCheckin {
    */
   async eventPrompt(
     license: { id: string; kind: string; validFrom: string | null; validTo: string | null } | null,
-    readActivity: (sinceSeconds: number) => Promise<{ matchFinishedAt: number[]; tournamentStartedAt: number[] }>
+    readActivity: (
+      sinceSeconds: number
+    ) => Promise<{ matchFinishedAt: number[]; tournamentStartedAt: number[] }>
   ): Promise<EventPromptStatus | null> {
     if (!license || license.kind !== 'event' || !license.validFrom || !license.validTo) return null;
     const [prompt, declaration] = await Promise.all([

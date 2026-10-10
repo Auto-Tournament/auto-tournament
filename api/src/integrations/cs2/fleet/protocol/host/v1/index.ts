@@ -34,6 +34,7 @@ import serverSetLaunchArgs from './messages/server.set_launch_args.json';
 import updateGame from './messages/host.update_game.json';
 import updatePlugins from './messages/host.update_plugins.json';
 import updatesHold from './messages/host.updates_hold.json';
+import hostLicense from './messages/host.license.json';
 import logsTail from './messages/logs.tail.json';
 import logsStop from './messages/logs.stop.json';
 import inventory from './messages/host.inventory.json';
@@ -116,7 +117,12 @@ export interface HostInventoryPayload {
     ram_free_mb: number;
     disk: Array<{ mount: string; total_gb: number; free_gb: number }>;
   };
-  cs2: { master_build: number; master_patch?: string; update_available: boolean; updates_hold: UpdatesHoldMode };
+  cs2: {
+    master_build: number;
+    master_patch?: string;
+    update_available: boolean;
+    updates_hold: UpdatesHoldMode;
+  };
   servers: HostInventoryServer[];
 }
 
@@ -177,6 +183,14 @@ export interface HostCommands {
     accept_license?: 'noncommercial' | 'commercial';
   };
   'host.updates_hold': Expiring & { mode: UpdatesHoldMode };
+  /** The platform's license for the servers it owns on the host (csm with the license.push capability). */
+  'host.license': Expiring & {
+    key: string | null;
+    lease?: string;
+    state?: { status: string; stops_on?: string; valid_until?: string };
+    use?: 'noncommercial' | 'commercial';
+    revision?: string;
+  };
   'logs.tail': Expiring & {
     server?: string;
     source: 'console' | 'readyup' | 'csm' | 'monitor';
@@ -200,6 +214,7 @@ export const HOST_COMMAND_TYPES: ReadonlyArray<HostCommandType> = [
   'host.update_game',
   'host.update_plugins',
   'host.updates_hold',
+  'host.license',
   'logs.tail',
   'logs.stop',
 ];
@@ -237,7 +252,9 @@ export const HOST_MESSAGES: Record<string, { direction: HostDirection; reliable:
   'host.inventory': { direction: 'host_to_platform', reliable: false },
   'host.progress': { direction: 'host_to_platform', reliable: false },
   'logs.chunk': { direction: 'host_to_platform', reliable: false },
-  ...Object.fromEntries(HOST_COMMAND_TYPES.map((t) => [t, { direction: 'platform_to_host' as const, reliable: true }])),
+  ...Object.fromEntries(
+    HOST_COMMAND_TYPES.map((t) => [t, { direction: 'platform_to_host' as const, reliable: true }])
+  ),
 };
 
 export const HOST_MESSAGE_SCHEMAS: Record<string, Record<string, unknown>> = {
@@ -259,6 +276,7 @@ export const HOST_MESSAGE_SCHEMAS: Record<string, Record<string, unknown>> = {
   'host.update_game': updateGame,
   'host.update_plugins': updatePlugins,
   'host.updates_hold': updatesHold,
+  'host.license': hostLicense,
   'logs.tail': logsTail,
   'logs.stop': logsStop,
   'host.inventory': inventory,
@@ -306,7 +324,9 @@ export interface ValidationResult {
 }
 
 function describe(errors: ErrorObject[] | null | undefined, prefix = ''): string[] {
-  return (errors ?? []).slice(0, 10).map((e) => `${prefix + e.instancePath || '/'} ${e.message ?? 'is invalid'}`);
+  return (errors ?? [])
+    .slice(0, 10)
+    .map((e) => `${prefix + e.instancePath || '/'} ${e.message ?? 'is invalid'}`);
 }
 
 let compiled: {
@@ -318,10 +338,16 @@ let compiled: {
 
 function validators() {
   if (compiled) return compiled;
-  const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false, allowUnionTypes: true });
+  const ajv = new Ajv2020({
+    allErrors: true,
+    strict: true,
+    strictRequired: false,
+    allowUnionTypes: true,
+  });
   ajv.addSchema(defs);
   const messages = new Map<string, ValidateFunction>();
-  for (const [type, schema] of Object.entries(HOST_MESSAGE_SCHEMAS)) messages.set(type, ajv.compile(schema));
+  for (const [type, schema] of Object.entries(HOST_MESSAGE_SCHEMAS))
+    messages.set(type, ajv.compile(schema));
   compiled = {
     envelope: ajv.compile(envelope),
     messages,

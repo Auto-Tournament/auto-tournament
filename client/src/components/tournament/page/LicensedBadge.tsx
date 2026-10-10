@@ -9,21 +9,24 @@ import { tokens, textSize } from '../../../theme/tokens';
 const { color } = tokens;
 
 /**
- * The optional "Licensed" line on the public event page, linking to the
- * license's public check page. Shown only when an admin turned it on and the
- * saved key is a genuine platform license (`GET /api/license/badge`); in
- * every other case, including no license at all, it renders nothing.
+ * The license line at the bottom of the public event page, always shown:
+ * licensed for commercial use (a paid key) or non-profit use (a free key),
+ * linking to the license's public check page, or "Unlicensed" without a
+ * valid key (`GET /api/license/badge`). Nothing while it loads or if it
+ * can't be read.
  */
+type Badge = { use: 'commercial' | 'non_commercial' | 'none'; verifyUrl: string | null };
+
 export function LicensedBadge() {
   const { t } = useTranslation();
-  const [verifyUrl, setVerifyUrl] = useState<string | null>(null);
+  const [badge, setBadge] = useState<Badge | null>(null);
 
   useEffect(() => {
     let active = true;
     api
-      .get<{ badge: { verifyUrl: string } | null }>('/api/license/badge')
+      .get<{ badge: Badge | null }>('/api/license/badge')
       .then((res) => {
-        if (active) setVerifyUrl(res.badge?.verifyUrl ?? null);
+        if (active) setBadge(res.badge ?? null);
       })
       .catch(() => undefined);
     return () => {
@@ -31,20 +34,34 @@ export function LicensedBadge() {
     };
   }, []);
 
-  if (!verifyUrl) return null;
+  if (!badge) return null;
+
+  const wrap = {
+    mt: 6,
+    display: 'flex',
+    justifyContent: 'center',
+    fontSize: textSize.sm,
+    color: color.muted,
+  };
+  if (badge.use === 'none' || !badge.verifyUrl) {
+    return (
+      <Box sx={wrap} data-testid="tournament-licensed-badge" data-use="none">
+        {t('license.public.unlicensed')}
+      </Box>
+    );
+  }
 
   return (
-    <Box
-      sx={{ mt: 6, display: 'flex', justifyContent: 'center', fontSize: textSize.sm, color: color.muted }}
-      data-testid="tournament-licensed-badge"
-    >
+    <Box sx={wrap} data-testid="tournament-licensed-badge" data-use={badge.use}>
       <ExternalLink
-        href={verifyUrl}
+        href={badge.verifyUrl}
         underline="hover"
         sx={{ color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
       >
         <Box component={SealCheckIcon} size="1.1em" aria-hidden />
-        {t('license.public.licensed')}
+        {badge.use === 'non_commercial'
+          ? t('license.public.nonCommercial')
+          : t('license.public.commercial')}
       </ExternalLink>
     </Box>
   );

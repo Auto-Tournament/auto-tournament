@@ -4,15 +4,7 @@
   "title": "host.inventory (host → platform, ephemeral)",
   "description": "Sent after welcome, when something changes (at most every 5 s; load, free RAM, CPU and RSS do not count as changes), every 60 s, and in answer to host.servers.list (ref = its id). The platform joins servers to Ready Up records on readyup.install_id (FLEET.md §18.3).",
   "type": "object",
-  "required": [
-    "host_id",
-    "hostname",
-    "csm_version",
-    "os",
-    "resources",
-    "cs2",
-    "servers"
-  ],
+  "required": ["host_id", "hostname", "csm_version", "os", "resources", "cs2", "servers"],
   "properties": {
     "host_id": {
       "type": "string"
@@ -30,19 +22,31 @@
       "maxLength": 255,
       "description": "this machine's primary address (the one csm writes as public_addr into the fleet.cfg of servers it creates): where players connect to its servers unless a server reports its own. Absent from csm before 1.21."
     },
+    "license": {
+      "type": "object",
+      "description": "which license this host's servers run under (csm 1.22+). own: the host has its own paid key (a hosting provider), so the platform leaves its servers out of the platform's own count. cap: how many servers the host lets this platform create here.",
+      "required": ["own"],
+      "properties": {
+        "own": {
+          "type": "boolean"
+        },
+        "license_id": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "cap": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
     "os": {
       "type": "string",
       "maxLength": 128
     },
     "resources": {
       "type": "object",
-      "required": [
-        "cpus",
-        "load1",
-        "ram_mb",
-        "ram_free_mb",
-        "disk"
-      ],
+      "required": ["cpus", "load1", "ram_mb", "ram_free_mb", "disk"],
       "properties": {
         "cpus": {
           "type": "integer",
@@ -65,11 +69,7 @@
           "maxItems": 16,
           "items": {
             "type": "object",
-            "required": [
-              "mount",
-              "total_gb",
-              "free_gb"
-            ],
+            "required": ["mount", "total_gb", "free_gb"],
             "properties": {
               "mount": {
                 "type": "string"
@@ -89,11 +89,7 @@
     },
     "cs2": {
       "type": "object",
-      "required": [
-        "master_build",
-        "update_available",
-        "updates_hold"
-      ],
+      "required": ["master_build", "update_available", "updates_hold"],
       "properties": {
         "master_build": {
           "type": "integer",
@@ -110,11 +106,7 @@
           "description": "a server's log shows the CS2 update marker the auto-update monitor acts on"
         },
         "updates_hold": {
-          "enum": [
-            "on",
-            "off",
-            "auto"
-          ]
+          "enum": ["on", "off", "auto"]
         }
       }
     },
@@ -151,10 +143,7 @@
           },
           "process": {
             "type": "object",
-            "required": [
-              "running",
-              "restarts_24h"
-            ],
+            "required": ["running", "restarts_24h"],
             "properties": {
               "running": {
                 "type": "boolean"
@@ -184,16 +173,10 @@
           },
           "readyup": {
             "type": "object",
-            "required": [
-              "installed",
-              "health"
-            ],
+            "required": ["installed", "health"],
             "properties": {
               "installed": {
-                "type": [
-                  "string",
-                  "null"
-                ],
+                "type": ["string", "null"],
                 "description": "Ready Up core version from /status; \"unknown\" when installed but not answering; null = not installed"
               },
               "install_id": {
@@ -203,12 +186,7 @@
                 "type": "string"
               },
               "health": {
-                "enum": [
-                  "ok",
-                  "failing",
-                  "no_response",
-                  "not_running"
-                ]
+                "enum": ["ok", "failing", "no_response", "not_running"]
               },
               "phase": {
                 "type": "string"
