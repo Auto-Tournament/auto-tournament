@@ -105,6 +105,8 @@ services:
       - ./games/:/mnt/games/:rw
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
       - ./clips/:/mnt/clips/:rw
+      # The web UI's login and the desktop's own state, kept across updates.
+      - ./state/:/var/lib/steam-headless/:rw
       # The recorder's user service and its settings (written below), read-only.
       - ./config/at-recorder.service:/etc/systemd/user/at-recorder.service:ro
       - ./config/at-recorder.env:/etc/at-recorder.env:ro
@@ -113,7 +115,7 @@ YML
 # The recorder's settings and user service, outside the Steam home (the
 # desktop takes that over as its own user on first start).
 CONF=$DIR/config
-mkdir -p "$CONF"
+mkdir -p "$CONF" "$DIR/state"
 if [ -z "${AT_WORKER_TOKEN:-}" ] && [ -f "$CONF/at-recorder.env" ]; then
   AT_WORKER_TOKEN=$(sed -n 's/^AT_WORKER_TOKEN=//p' "$CONF/at-recorder.env")
 fi
@@ -171,7 +173,16 @@ IP=$(hostname -I | awk '{print $1}')
 echo
 echo "Recorder \"$NAME\" is set up against $AT_URL."
 if [ ! -d "$DIR/games/GameLibrary/Steam/steamapps/common/Counter-Strike Global Offensive" ]; then
-  echo "Once only: open https://$IP:$WEB_PORT (a self-signed certificate; password: USER_PASS in $DIR/.env), sign Steam in"
+  # The web UI's first-run password, while it has not been changed.
+  BOOT=$DIR/state/auth/bootstrap-password
+  for _ in $(seq 1 40); do [ -s "$BOOT" ] || docker exec at-recorder test -s /var/lib/steam-headless/auth/bootstrap-password 2>/dev/null && break; sleep 3; done
+  PASS=$(docker exec at-recorder cat /var/lib/steam-headless/auth/bootstrap-password 2>/dev/null || true)
+  echo "Once only: open https://$IP:$WEB_PORT (a self-signed certificate) and sign in"
+  if [ -n "$PASS" ]; then
+    echo "  username: steamheadless"
+    echo "  password: $PASS   (first-run; the web UI then asks you to set your own)"
+  fi
+  echo "Sign Steam in"
   echo "with the recorder account, set it to offline mode and install Counter-Strike 2"
   echo "into the /mnt/games library. The recorder starts taking work when CS2 is there."
 fi
