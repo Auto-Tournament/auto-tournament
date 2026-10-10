@@ -971,25 +971,104 @@ const MATCH_REEL_MIN_PLAYERS = 2;
  */
 export const SERIES_REEL = -1;
 
+/** A moment a reel could use: recorded, or still waiting to be (not failed, skipped or funny). */
+export interface ReelCandidate {
+  id: number;
+  playerId: string;
+  score: number;
+  mapNumber: number;
+  at: number;
+  done: boolean;
+}
+
 /**
- * Whether a series' reel can be made: more than one map, every map with
- * recorded clips (a map none of whose clips could be recorded holds it back
- * until they are redone), nothing still waiting, and enough players.
+ * A map reel's clips among its candidates (pure: tested on its own): each
+ * player's best `perPlayer`, as bestClipPerPlayer takes them once recorded.
  */
-export function seriesReelReady(s: {
-  maps: number;
-  recorded: number;
-  waiting: number;
-  players: number;
-}): boolean {
+export function pickMapClips<T extends ReelCandidate>(c: T[], perPlayer: number): T[] {
+  const taken = new Map<string, number>();
+  return c
+    .slice()
+    .sort((a, b) => b.score - a.score || a.id - b.id)
+    .filter((x) => {
+      const n = taken.get(x.playerId) ?? 0;
+      if (n >= perPlayer) return false;
+      taken.set(x.playerId, n + 1);
+      return true;
+    });
+}
+
+/**
+ * Whether a reel can be made now (pure: tested on its own): every clip it
+ * will take is recorded, from enough players. Moments it would not take may
+ * still be waiting: a reel does not wait for them (the series reel takes the
+ * best 16 of 40, so it is made once those 16 are in).
+ */
+export function reelReady(picked: ReelCandidate[]): boolean {
   return (
-    s.maps >= 2 && s.recorded >= s.maps && s.waiting === 0 && s.players >= MATCH_REEL_MIN_PLAYERS
+    picked.length > 0 &&
+    picked.every((c) => c.done) &&
+    new Set(picked.map((c) => c.playerId)).size >= MATCH_REEL_MIN_PLAYERS
   );
 }
 
 /**
- * Queue the match reel of each map these highlights belong to, once none of
- * the map's highlights is still waiting to be recorded.
+ * Whether a series' reel can be made (pure: tested on its own): more than one
+ * map, no map whose every clip failed (that holds it back until they are
+ * redone: a series reel of the other maps alone is not the match), and its
+ * picks recorded (reelReady).
+ */
+export function seriesReelReady(
+  candidates: ReelCandidate[],
+  maps: { mapNumber: number; usable: boolean }[],
+  max: number,
+  perPlayer: number
+): boolean {
+  if (maps.length < 2 || maps.some((m) => !m.usable)) return false;
+  return reelReady(pickSeriesClips(candidates, max, perPlayer));
+}
+
+/** A match's moments a reel could use, and its maps (usable: one recorded or still waiting). */
+async function reelCandidates(
+  matchSlug: string
+): Promise<{ candidates: ReelCandidate[]; maps: { mapNumber: number; usable: boolean }[] }> {
+  const rows = await db.queryAsync<{
+    id: number;
+    player_id: string;
+    score: number;
+    map_number: number;
+    slowmo_tick: number;
+    status: string;
+    kind: string;
+  }>(
+    `SELECT id, player_id, score, map_number, slowmo_tick, status, kind FROM cs2_highlights
+      WHERE match_slug = ? AND map_number >= 0 AND status <> 'skipped'`,
+    [matchSlug]
+  );
+  const candidates: ReelCandidate[] = [];
+  const maps = new Map<number, boolean>();
+  for (const r of rows) {
+    const mapNumber = Number(r.map_number);
+    const usable = ['done', 'pending', 'recording'].includes(r.status);
+    maps.set(mapNumber, (maps.get(mapNumber) ?? false) || usable);
+    if (!usable || r.kind === 'funny') continue;
+    candidates.push({
+      id: Number(r.id),
+      playerId: r.player_id,
+      score: Number(r.score),
+      mapNumber,
+      at: Number(r.slowmo_tick),
+      done: r.status === 'done',
+    });
+  }
+  return { candidates, maps: [...maps].map(([mapNumber, usable]) => ({ mapNumber, usable })) };
+}
+
+/**
+ * Queue the reels these highlights count for, as soon as the clips each will
+ * take are recorded: a map's reel once every player's best is in, the
+ * series' once its best (seriesReelMax) are. Clips it would not take may
+ * still be waiting.
  */
 export async function queueMatchReelFor(highlightIds: number[]): Promise<void> {
   if (highlightIds.length === 0) return;
@@ -999,55 +1078,27 @@ export async function queueMatchReelFor(highlightIds: number[]): Promise<void> {
         WHERE id IN (${highlightIds.map(() => '?').join(', ')})`,
       highlightIds
     );
-    for (const m of maps) {
-      const state = await db.queryOneAsync<{ waiting: number | string; players: number | string }>(
-        `SELECT COUNT(*) FILTER (WHERE status IN ('pending', 'recording')) AS waiting,
-                COUNT(DISTINCT player_id) FILTER (WHERE status = 'done') AS players
-           FROM cs2_highlights WHERE match_slug = ? AND map_number = ?`,
-        [m.match_slug, m.map_number]
-      );
-      if (Number(state?.waiting ?? 1) > 0 || Number(state?.players ?? 0) < MATCH_REEL_MIN_PLAYERS)
-        continue;
-      await db.runAsync(
+    const limits = await readReelLimits();
+    const queue = (slug: string, mapNumber: number) =>
+      db.runAsync(
         `INSERT INTO cs2_match_reels (match_slug, map_number) VALUES (?, ?)
          ON CONFLICT (match_slug, map_number) DO UPDATE SET status = 'pending', attempts = 0, error = NULL
            WHERE cs2_match_reels.status IN ('failed', 'waiting')`,
-        [m.match_slug, m.map_number]
+        [slug, mapNumber]
       );
-    }
-    // A series (more than one map): its own reel too, once every map is
-    // recorded. A map none of whose clips could be recorded holds it back
-    // (Redo on the Clips tab): a series reel of the other maps alone is not
-    // the match (2026-10-09: the EWC final's was made from its fourth map).
     for (const slug of new Set(maps.map((m) => m.match_slug))) {
-      const series = await db.queryOneAsync<{
-        maps: number | string;
-        recorded: number | string;
-        waiting: number | string;
-        players: number | string;
-      }>(
-        `SELECT COUNT(DISTINCT map_number) FILTER (WHERE status <> 'skipped') AS maps,
-                COUNT(DISTINCT map_number) FILTER (WHERE status = 'done') AS recorded,
-                COUNT(*) FILTER (WHERE status IN ('pending', 'recording')) AS waiting,
-                COUNT(DISTINCT player_id) FILTER (WHERE status = 'done') AS players
-           FROM cs2_highlights WHERE match_slug = ? AND map_number >= 0`,
-        [slug]
-      );
-      if (
-        !seriesReelReady({
-          maps: Number(series?.maps ?? 0),
-          recorded: Number(series?.recorded ?? 0),
-          waiting: Number(series?.waiting ?? 1),
-          players: Number(series?.players ?? 0),
-        })
-      )
-        continue;
-      await db.runAsync(
-        `INSERT INTO cs2_match_reels (match_slug, map_number) VALUES (?, ?)
-         ON CONFLICT (match_slug, map_number) DO UPDATE SET status = 'pending', attempts = 0, error = NULL
-           WHERE cs2_match_reels.status IN ('failed', 'waiting')`,
-        [slug, SERIES_REEL]
-      );
+      const { candidates, maps: all } = await reelCandidates(slug);
+      for (const m of maps.filter((x) => x.match_slug === slug)) {
+        const mapNumber = Number(m.map_number);
+        const picked = pickMapClips(
+          candidates.filter((c) => c.mapNumber === mapNumber),
+          limits.mapReelPerPlayer
+        );
+        if (reelReady(picked)) await queue(slug, mapNumber);
+      }
+      // A series (more than one map): its own reel too.
+      if (seriesReelReady(candidates, all, limits.seriesReelMax, limits.seriesReelPerPlayer))
+        await queue(slug, SERIES_REEL);
     }
   } catch (error) {
     log.warn('[HIGHLIGHTS] Could not queue a match reel', { error: (error as Error).message });
