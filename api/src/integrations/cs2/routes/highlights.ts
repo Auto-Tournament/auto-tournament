@@ -196,6 +196,8 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
     });
     // Paused after too many turned-down clips (demos/recorders.ts).
     if (isPaused(me)) return res.status(204).end();
+    // Here but not ready (CS2 still installing): it shows up, no work.
+    if (typeof req.body?.notReady === 'string') return res.status(204).end();
     // Moments of a deleted match can't be recorded (demos/jobs.ts).
     await dropOrphanJobs();
     idleRecorderCount(recorder);

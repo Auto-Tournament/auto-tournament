@@ -362,3 +362,16 @@ test(
     ).toBe(200);
   }
 );
+
+test('a recorder without CS2 yet shows up and is given no work', TAGS, async ({ request }) => {
+  expect(await signInViaRequest(request)).toBe(true);
+  const name = `spec-notready-${Date.now()}`;
+  const res = await request.post('/api/game/cs2/recorder/claim', {
+    data: { recorder: name, version: 7, notReady: 'CS2 is not installed yet' },
+  });
+  expect(res.status()).toBe(204);
+  const list = (await (await request.get('/api/game/cs2/recorders')).json()) as {
+    recorders: Array<{ name: string; online: boolean }>;
+  };
+  expect(list.recorders.find((r) => r.name === name)?.online).toBe(true);
+});
