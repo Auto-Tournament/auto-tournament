@@ -59,6 +59,8 @@ export interface Cs2TournamentSettings {
   mapMode?: MapMode;
   /** False: the top three get no skin rewards (skins/skinService). Absent: on. */
   skinRewards?: boolean;
+  /** Opt-in anonymous bots up to teamSize; humans keep normal ready-up. */
+  fillTeamsWithBots?: boolean;
 }
 
 /** The map pool size a veto order is checked against when nothing else says (Active Duty). */
@@ -226,6 +228,12 @@ function validateUpdate(input: TournamentSettingsInput): TournamentSettingsValid
 export function validateCs2TournamentSettings(
   input: TournamentSettingsInput
 ): TournamentSettingsValidation {
+  const fill =
+    input.body?.fillTeamsWithBots !== undefined
+      ? input.body.fillTeamsWithBots
+      : objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).fillTeamsWithBots;
+  if (fill !== undefined && typeof fill !== 'boolean')
+    return done({ fieldErrors: ['fillTeamsWithBots must be a boolean'] });
   switch (input.mode) {
     case 'create':
       return validateCreate(input);
@@ -289,6 +297,8 @@ function applyLayer(
     if (isMapMode(layer.mapMode)) into.mapMode = layer.mapMode;
     else if (layer.mapMode === null || layer.mapMode === '') delete into.mapMode;
   }
+  if (typeof layer.fillTeamsWithBots === 'boolean')
+    into.fillTeamsWithBots = layer.fillTeamsWithBots;
   if (typeof layer.skinRewards === 'boolean') into.skinRewards = layer.skinRewards;
   if (layer.mapPoolId !== undefined) {
     const id = Number(layer.mapPoolId);
@@ -330,6 +340,9 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
       maxRounds: value?.maxRounds,
       overtimeMode: value?.overtimeMode,
       overtimeSegments: value?.overtimeSegments,
+      ...(value?.fillTeamsWithBots !== undefined
+        ? { fillTeamsWithBots: value.fillTeamsWithBots }
+        : {}),
       ...(value?.skinRewards !== undefined ? { skinRewards: value.skinRewards } : {}),
       ...(value?.mapPoolId !== undefined ? { mapPoolId: value.mapPoolId } : {}),
       ...(value?.mapMode ? { mapMode: value.mapMode } : {}),

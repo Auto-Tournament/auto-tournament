@@ -195,6 +195,7 @@ export interface MatchRules {
   demo?: { record?: boolean; upload?: boolean };
   wingman?: boolean;
   simulation?: { timescale?: number };
+  bot_fill?: { players_per_team: number };
   ruleset?: 'default' | 'valve';
   overrides?: Record<string, unknown>;
 }

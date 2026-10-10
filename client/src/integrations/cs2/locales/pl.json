@@ -2339,5 +2339,11 @@
         "drop": "Dropped; its reels are made again"
       }
     }
+  },
+  "tournament": {
+    "botFill": {
+      "label": "Fill teams with bots",
+      "help": "Bots fill empty slots up to the tournament team size and make room for joining players. Ready up and play normally. Requires a Ready Up server with bot-fill support."
+    }
   }
 }

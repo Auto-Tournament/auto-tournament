@@ -51,10 +51,10 @@ export interface MatchConfig {
   overtimeSegments?: number;
   /**
    * Server ConVars to apply for this match.
-   * 
+   *
    * Includes standard CS2 cvars (mp_maxrounds, mp_overtime_enable, etc.) and
    * MatchZy Enhanced v1.3.0 configuration variables:
-   * 
+   *
    * - at_autoready_enabled: 0 or 1
    * - at_both_teams_unpause_required: 0 or 1
    * - at_max_pauses_per_team: 0-999
@@ -67,7 +67,7 @@ export interface MatchConfig {
    * - at_ffw_enabled: 0 or 1
    * - at_ffw_time: 1-999 (seconds)
    * - at_demo_recording_enabled: 0 or 1
-   * 
+   *
    * These are automatically applied based on tournament type (see pluginConfigService).
    */
   cvars?: {
@@ -98,6 +98,8 @@ export interface MatchConfig {
    * We pass this through as `simulation_timescale` in generated configs.
    */
   simulation_timescale?: number;
+  /** Anonymous bots fill empty slots to players_per_team; requires Ready Up support. */
+  bot_fill?: boolean;
   /**
    * Optional list of Steam64 IDs that should always have in‑game admin rights
    * for this match. This is attached automatically for tournament and manual
