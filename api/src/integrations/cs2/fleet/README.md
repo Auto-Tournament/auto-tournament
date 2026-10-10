@@ -192,6 +192,13 @@ recovery waits for "Move match" on the match page). Table (migration
 `013-fleet-failover`): `cs2_fleet_failovers`, one row per failover, which is
 also its record; settings are the `failover` row of `cs2_fleet_lists`.
 
+- **Spares**: the reserve holds the last idle servers by name
+  (`pickReserved`); `pickTarget` prefers them among equally fit servers, so
+  the server shown as the spare is the one a failover moves to.
+- **Large backups**: a backup over the inline limit goes as `backup_ref` to
+  the server that wrote it; another server gets it first in `backup.part`
+  frames (`sendBackupParts`, servers with `match.backup_parts.v1`), else the
+  move is refused (`backup_too_large`).
 - **Detection** (`scanForFailovers`, every `FLEET_FAILOVER_CHECK_MS` = 10 s,
   and after hellos and `host.health`): a match with an acked, open
   assignment that is `loaded` / `live` whose server's link has been down for
