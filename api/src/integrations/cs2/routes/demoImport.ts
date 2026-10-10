@@ -12,10 +12,12 @@ import {
   storeImportedChunk,
 } from '../demos/demoImport';
 
+import { FleetError } from '../demos/recorderFleet';
+
 const router = Router();
 
 function fail(res: Response, error: unknown, fallback: string): Response {
-  if (error instanceof DemoImportError) {
+  if (error instanceof DemoImportError || error instanceof FleetError) {
     return res.status(error.status).json({ success: false, error: error.message });
   }
   log.error(`[IMPORT] ${fallback}`, error as Error);
@@ -39,6 +41,7 @@ function fail(res: Response, error: unknown, fallback: string): Response {
  *             properties:
  *               maps: { type: integer }
  *               event: { type: string }
+ *               recordingGroupId: { type: integer, nullable: true, description: Optional recorder group for this match }
  *     responses:
  *       201:
  *         description: "`slug`: the new match"

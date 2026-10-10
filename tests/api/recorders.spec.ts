@@ -25,9 +25,12 @@ function fakeDemo(map: string, size: number): Buffer {
 }
 
 /** An imported one-map match with five 3-kill moments for one player. */
-async function matchWithMoments(request: APIRequestContext): Promise<string> {
+async function matchWithMoments(
+  request: APIRequestContext,
+  recordingGroupId?: number
+): Promise<string> {
   const { slug } = (await (
-    await request.post('/api/game/cs2/imports', { data: { maps: 1 } })
+    await request.post('/api/game/cs2/imports', { data: { maps: 1, recordingGroupId } })
   ).json()) as { slug: string };
   const demo = fakeDemo('de_dust2', 2048);
   await request.put(`/api/game/cs2/imports/${slug}/maps/0?offset=0&total=${demo.length}`, {
@@ -221,6 +224,23 @@ test('recorder admin routes need an admin', TAGS, async ({ playwright, baseURL }
   const anon = await playwright.request.newContext({ baseURL });
   expect((await anon.get('/api/game/cs2/recorders')).status()).toBe(401);
   expect((await anon.post('/api/game/cs2/recorder/runs', { data: {} })).status()).toBe(401);
+  expect((await anon.get('/api/game/cs2/recorder-groups')).status()).toBe(401);
+  expect(
+    (await anon.post('/api/game/cs2/recorder-groups', { data: { name: 'Unauthorized' } })).status()
+  ).toBe(401);
+  expect(
+    (await anon.put('/api/game/cs2/recorder-groups/1', { data: { enabled: false } })).status()
+  ).toBe(401);
+  expect(
+    (
+      await anon.put('/api/game/cs2/recorders/worker/controls', { data: { enabled: false } })
+    ).status()
+  ).toBe(401);
+  expect(
+    (
+      await anon.put('/api/game/cs2/matches/match/recording-group', { data: { groupId: null } })
+    ).status()
+  ).toBe(401);
   await anon.dispose();
 });
 
@@ -375,3 +395,119 @@ test('a recorder without CS2 yet shows up and is given no work', TAGS, async ({ 
   };
   expect(list.recorders.find((r) => r.name === name)?.online).toBe(true);
 });
+
+test(
+  'recorder fleet controls drain existing work and restrict new jobs to the selected group',
+  TAGS,
+  async ({ request }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    const suffix = Date.now();
+    const ntlan = `fleet-ntlan-${suffix}`;
+    const home = `fleet-home-${suffix}`;
+    const claim = (name: string, notReady?: string) =>
+      request.post('/api/game/cs2/recorder/claim', {
+        data: { recorder: name, version: 6, notReady },
+      });
+    expect((await claim(ntlan, 'register only')).status()).toBe(204);
+    expect((await claim(home, 'register only')).status()).toBe(204);
+    const groupRes = await request.post('/api/game/cs2/recorder-groups', {
+      data: { name: `NTLAN ${suffix}` },
+    });
+    expect(groupRes.status()).toBe(200);
+    const { id } = await groupRes.json();
+    const controls = (body: object) =>
+      request.put(`/api/game/cs2/recorders/${ntlan}/controls`, { data: body });
+    expect((await controls({ groupId: id })).status()).toBe(200);
+    const slug = await matchWithMoments(request);
+    expect(
+      (
+        await request.put(`/api/game/cs2/matches/${slug}/recording-group`, {
+          data: { groupId: id },
+        })
+      ).status()
+    ).toBe(200);
+    const outside = await claim(home);
+    if (outside.status() === 200) expect((await outside.json()).job.matchSlug).not.toBe(slug);
+    const first = await claim(ntlan);
+    expect(first.status()).toBe(200);
+    const job = (await first.json()).job;
+    expect(job.matchSlug).toBe(slug);
+    expect(job.players).toHaveLength(1);
+    expect((await controls({ enabled: false })).status()).toBe(200);
+    expect((await claim(ntlan)).status()).toBe(204);
+    // Disabling only stops new claims. Already-claimed work can still upload.
+    const clip = job.players[0].moments[0].id;
+    expect(
+      (
+        await request.put(`/api/game/cs2/recorder/jobs/${clip}/clip`, {
+          headers: { 'Content-Type': 'video/mp4' },
+          data: Buffer.from('test clip'),
+        })
+      ).status()
+    ).toBe(200);
+    expect((await controls({ enabled: true })).status()).toBe(200);
+    expect(
+      (
+        await request.put(`/api/game/cs2/recorder-groups/${id}`, { data: { enabled: false } })
+      ).status()
+    ).toBe(200);
+    expect((await claim(ntlan)).status()).toBe(204);
+    const listed = (await (await request.get('/api/game/cs2/recorders')).json()).recorders.find(
+      (r: { name: string }) => r.name === ntlan
+    );
+    expect(listed).toMatchObject({ enabled: true, effectiveEnabled: false, groupId: id });
+    expect((await controls({ enabled: 'false' })).status()).toBe(400);
+    expect((await controls({ groupId: -1 })).status()).toBe(400);
+    expect(
+      (
+        await request.put(`/api/game/cs2/recorder-groups/${id}`, { data: { enabled: true } })
+      ).status()
+    ).toBe(200);
+    const next = await matchWithMoments(request);
+    expect(
+      (
+        await request.put(`/api/game/cs2/matches/${next}/recording-group`, {
+          data: { groupId: id },
+        })
+      ).status()
+    ).toBe(200);
+    const resumed = await claim(ntlan);
+    expect(resumed.status()).toBe(200);
+    expect((await resumed.json()).job.matchSlug).toBe(next);
+    expect(
+      (
+        await request.put(`/api/game/cs2/matches/${next}/recording-group`, {
+          data: { groupId: null },
+        })
+      ).status()
+    ).toBe(200);
+    expect(
+      await (await request.get(`/api/game/cs2/matches/${next}/recording-group`)).json()
+    ).toMatchObject({ groupId: null });
+  }
+);
+
+test(
+  'an import stores its recorder group before demos can queue work',
+  TAGS,
+  async ({ request }) => {
+    await signInViaRequest(request);
+    const group = await request.post('/api/game/cs2/recorder-groups', {
+      data: { name: `Import-${Date.now()}` },
+    });
+    const { id } = await group.json();
+    const created = await request.post('/api/game/cs2/imports', {
+      data: { maps: 2, recordingGroupId: id },
+    });
+    expect(created.status()).toBe(201);
+    const { slug } = await created.json();
+    expect(
+      (await (await request.get(`/api/game/cs2/matches/${slug}/recording-group`)).json()).groupId
+    ).toBe(id);
+    expect(
+      (
+        await request.post('/api/game/cs2/imports', { data: { maps: 1, recordingGroupId: -1 } })
+      ).status()
+    ).toBe(400);
+  }
+);

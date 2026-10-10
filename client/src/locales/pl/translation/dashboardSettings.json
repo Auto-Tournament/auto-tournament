@@ -732,6 +732,10 @@
     "doneAll": "Imported. Highlights are recorded next if a highlight recorder is connected.",
     "openMatch": "Open the match",
     "another": "Import another",
-    "dropHint": "or drop them here. Pick several at once with Cmd or Ctrl."
+    "dropHint": "or drop them here. Pick several at once with Cmd or Ctrl.",
+    "recordingGroup": "Recorder group",
+    "allRecorders": "All recorders",
+    "groupHelp": "Choose which group renders this match. Disabled groups wait until enabled.",
+    "groupDisabled": "Disabled"
   }
 }

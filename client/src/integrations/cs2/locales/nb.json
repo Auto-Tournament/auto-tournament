@@ -2293,6 +2293,22 @@
         "redo": "Satt i kø for nytt opptak",
         "drop": "Droppet; reelene lages på nytt"
       }
+    },
+    "fleet": {
+      "groups": "Opptakergrupper",
+      "drainHelp": "Deaktiverte opptakere fullfører gjeldende jobb og tar ikke nye jobber.",
+      "groupName": "Navn på ny gruppe",
+      "createGroup": "Opprett gruppe",
+      "enabled": "Aktivert",
+      "group": "Gruppe",
+      "ungrouped": "Ingen gruppe",
+      "disabled": "Deaktivert",
+      "draining": "Fullfører gjeldende jobb",
+      "matchGroup": "Render med gruppe",
+      "matchHelp": "Gjelder nye spillerjobber og videoer. Gjeldende jobber fortsetter.",
+      "allGroups": "Alle aktiverte opptakere",
+      "groupDisabledHelp": "Denne gruppen er deaktivert. Nye jobber for kampen venter til den aktiveres.",
+      "idle": "Ledig"
     }
   }
 }

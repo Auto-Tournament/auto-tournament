@@ -1,3 +1,5 @@
+import { recorderFleetRouter } from './recorderFleet';
+import { recorderAcceptsWork } from '../demos/recorderFleet';
 /**
  * Highlights (../demos/highlights.ts).
  *
@@ -162,6 +164,7 @@ import {
 import { dropOrphanJobs } from '../demos/jobs';
 
 const router = Router();
+router.use(recorderFleetRouter);
 
 const idOf = (req: Request) => {
   const id = Number(req.params.id);
@@ -195,7 +198,7 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
       platform: req.body?.platform,
     });
     // Paused after too many turned-down clips (demos/recorders.ts).
-    if (isPaused(me)) return res.status(204).end();
+    if (isPaused(me) || !(await recorderAcceptsWork(recorder))) return res.status(204).end();
     // Here but not ready (CS2 still installing): it shows up, no work.
     if (typeof req.body?.notReady === 'string') return res.status(204).end();
     // Moments of a deleted match can't be recorded (demos/jobs.ts).
@@ -238,7 +241,7 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
       if (map) return give(map);
       // Nothing to record: overlays to draw again (recorder version 6).
       if (Number(req.body?.version ?? 0) >= 6) {
-        const redress = await claimRedress();
+        const redress = await claimRedress(recorder);
         if (redress) return give(redress);
       }
       return res.status(204).end();
