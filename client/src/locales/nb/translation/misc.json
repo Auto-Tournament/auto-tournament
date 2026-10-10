@@ -992,6 +992,9 @@
   },
   "update": {
     "available": "Auto Tournament {{latest}} er ute (du kjører {{running}}).",
-    "notes": "Hva er nytt"
+    "notes": "Hva er nytt",
+    "module": "{{name}} {{version}} er tilgjengelig (du kjører {{installed}}).",
+    "moduleProblem": "{{name}}: oppdateringen gikk ikke gjennom. {{problem}}",
+    "openModules": "Moduler"
   }
 }

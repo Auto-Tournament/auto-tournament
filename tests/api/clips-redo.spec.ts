@@ -152,7 +152,13 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
       outdated: number;
       matches: Array<{
         slug: string;
-        clips: Array<{ id: number; status: string; madeWith: string | null; outdated: boolean }>;
+        clips: Array<{
+          id: number;
+          status: string;
+          madeWith: string | null;
+          outdated: boolean;
+          video: string | null;
+        }>;
       }>;
     };
     const list = async (outdated = false) =>
@@ -167,6 +173,11 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
       ['done', '1080p60', false],
       ['done', '1080p60', false],
     ]);
+    // Each recorded clip comes with its video, to watch from the list.
+    for (const c of done) {
+      expect(c.video).toBeTruthy();
+      expect((await request.get(`/api/game/cs2/highlights/${c.video}`)).status()).toBe(200);
+    }
     // The skipped ones are not listed.
     expect(ours().clips.filter((c) => c.status === 'skipped')).toEqual([]);
 
@@ -224,3 +235,73 @@ test('reel sizes are settings with a range', TAGS, async ({ request }) => {
     });
   }
 });
+
+test(
+  'reviewing clips: approve one, drop another (out of every reel, not recorded again)',
+  TAGS,
+  async ({ request }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    const { slug, star } = await matchWithMoments(request);
+    const name = `spec-review-${Date.now()}`;
+    type Job = {
+      kind: string;
+      matchSlug: string;
+      players: Array<{ playerId: string; moments: Array<{ id: number }> }>;
+    };
+    let job: Job | null = null;
+    for (let i = 0; i < 30 && job?.matchSlug !== slug; i++) {
+      const res = await request.post('/api/game/cs2/recorder/claim', {
+        data: { recorder: name, version: 7 },
+      });
+      if (res.status() !== 200) break;
+      job = (await res.json()).job as Job;
+      // A new recorder benchmarks first, on a clip another spec recorded: say it did.
+      if (job?.kind === 'benchmark') {
+        await request.post('/api/game/cs2/recorder/benchmark', {
+          data: { recorder: name, tries: [] },
+        });
+      }
+    }
+    expect(job?.matchSlug).toBe(slug);
+    const ids = job!.players.find((p) => p.playerId === star)!.moments.map((m) => m.id);
+    expect(ids.length).toBeGreaterThanOrEqual(2);
+    for (const id of ids.slice(0, 2)) {
+      const up = await request.put(`/api/game/cs2/recorder/jobs/${id}/clip`, {
+        headers: { 'Content-Type': 'video/mp4' },
+        data: Buffer.from('not really a video'),
+      });
+      expect(up.status()).toBe(200);
+    }
+    const review = (id: number, verdict: string, note?: string) =>
+      request.post(`/api/game/cs2/clips/${id}/review`, { data: { verdict, note } });
+    expect((await review(ids[0], 'approved')).status()).toBe(200);
+    expect((await review(ids[1], 'drop', 'wrong round')).status()).toBe(200);
+    expect((await review(ids[1], 'approved')).status()).toBe(404); // dropped: not a recorded clip any more
+    expect((await review(ids[0], 'maybe')).status()).toBe(400);
+
+    const listed = (await (await request.get('/api/game/cs2/clips')).json()) as {
+      matches: Array<{
+        slug: string;
+        clips: Array<{
+          id: number;
+          status: string;
+          review: string | null;
+          reviewNote: string | null;
+        }>;
+      }>;
+    };
+    const clips = listed.matches.find((m) => m.slug === slug)!.clips;
+    expect(clips.find((c) => c.id === ids[0])).toMatchObject({
+      status: 'done',
+      review: 'approved',
+    });
+    expect(clips.find((c) => c.id === ids[1])).toMatchObject({
+      status: 'skipped',
+      review: 'dropped',
+      reviewNote: 'wrong round',
+    });
+    expect(
+      (await request.delete(`/api/game/cs2/recorders/${encodeURIComponent(name)}`)).status()
+    ).toBe(200);
+  }
+);

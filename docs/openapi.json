@@ -4699,6 +4699,38 @@
         ]
       }
     },
+    "/api/game/cs2/clips/{id}/review": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "An admin's verdict on a recorded clip",
+        "description": "`verdict`: `approved`; `redo` (it stutters or looks broken: recorded\nagain, preferably by another recorder); or `drop` (not worth showing:\nnot recorded again, left out of every reel, its reels made again).\n`note` is optional. 404 when the clip is not recorded.\n",
+        "responses": {
+          "200": {
+            "description": "How many clips and reels were queued"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/demo-worker/claim": {
       "post": {
         "tags": [
@@ -13993,11 +14025,11 @@
         "tags": [
           "System"
         ],
-        "summary": "Whether a newer Auto Tournament is out",
-        "description": "The running version against the platform's GitHub releases on the same\nchannel (a beta sees betas too). `latest` is null when GitHub could not\nbe asked. Looked up once an hour.\n",
+        "summary": "Whether a newer Auto Tournament, module or game pack is out",
+        "description": "The running version against the platform's GitHub releases on the same\nchannel (a beta sees betas too). `latest` is null when GitHub could not\nbe asked. Looked up once an hour. `modules`: each installed module or\npack with an update (`available`), or whose last update did not take\n(`problem`).\n",
         "responses": {
           "200": {
-            "description": "{ running, latest, available, releaseUrl }"
+            "description": "{ running, latest, available, releaseUrl, modules }"
           }
         },
         "security": [

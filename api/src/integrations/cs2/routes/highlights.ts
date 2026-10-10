@@ -90,6 +90,7 @@ import {
 } from '../demos/highlightViews';
 import {
   claimMapJob,
+  loadedMapOf,
   idleRecorderCount,
   recorderBusy,
   claimMatchReel,
@@ -113,7 +114,13 @@ import {
   renewClaims,
   SERIES_REEL,
 } from '../demos/highlights';
-import { listClips, redo, type RedoRequest } from '../demos/clipsAdmin';
+import {
+  listClips,
+  redo,
+  reviewClip,
+  type RedoRequest,
+  type ReviewVerdict,
+} from '../demos/clipsAdmin';
 import {
   claimRedress,
   failRedress,
@@ -133,6 +140,7 @@ import {
 
 import {
   benchmarkJob,
+  wantsBenchmark,
   forgetRecorder,
   setRecorderLabel,
   isPaused,
@@ -200,8 +208,10 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
       });
     };
     // A new recorder (or one an admin asked) measures itself first.
-    if (version >= RECORDER_QUALITY_VERSION && Number(me.benchmark_wanted) === 1) {
-      const benchmark = await benchmarkJob();
+    // One that carries the shipped benchmark demo measures itself on it once.
+    const benchDemo = req.body?.benchDemo === true;
+    if (version >= RECORDER_QUALITY_VERSION && wantsBenchmark(me, benchDemo)) {
+      const benchmark = await benchmarkJob(benchDemo);
       if (benchmark) return give(benchmark);
     }
     // A match reel only joins clips already made: hand those out first.
@@ -218,10 +228,11 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
       const team = await claimTeamReel(recorder);
       if (team) return give(team);
     }
-    // A recorder from version 4 records its share of a map (the map's
-    // waiting moments over the recorders online) in one CS2 session.
+    // A recorder from version 4 records a map's players one at a time in
+    // the CS2 session it keeps (demos/highlights.ts claimMapJob).
     if (Number(req.body?.version ?? 0) >= 4) {
-      const map = await claimMapJob(recorder);
+      // The map whose demo it has loaded, to go on with (the worker's liveGame).
+      const map = await claimMapJob(recorder, loadedMapOf(req.body?.loaded));
       if (map) return give(map);
       // Nothing to record: overlays to draw again (recorder version 6).
       if (Number(req.body?.version ?? 0) >= 6) {
@@ -988,6 +999,41 @@ router.post('/clips/redo', requireAuth, async (req: Request, res: Response) => {
   } catch (error) {
     log.error('[HIGHLIGHTS] redo failed', { error });
     return res.status(500).json({ success: false, error: 'Could not queue the clips' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/clips/{id}/review:
+ *   post:
+ *     tags: [Highlights]
+ *     summary: An admin's verdict on a recorded clip
+ *     description: |
+ *       `verdict`: `approved`; `redo` (it stutters or looks broken: recorded
+ *       again, preferably by another recorder); or `drop` (not worth showing:
+ *       not recorded again, left out of every reel, its reels made again).
+ *       `note` is optional. 404 when the clip is not recorded.
+ *     responses:
+ *       200:
+ *         description: How many clips and reels were queued
+ */
+router.post('/clips/:id/review', requireAuth, async (req: Request, res: Response) => {
+  const id = idOf(req);
+  const verdict = req.body?.verdict as ReviewVerdict;
+  if (!id || !['approved', 'redo', 'drop'].includes(verdict)) {
+    return res
+      .status(400)
+      .json({ success: false, error: 'A clip and a verdict: approved, redo or drop' });
+  }
+  try {
+    const note = typeof req.body?.note === 'string' ? req.body.note : null;
+    const result = await reviewClip(id, verdict, note, requestActorId(req));
+    if (!result)
+      return res.status(404).json({ success: false, error: 'No recorded clip with that id' });
+    return res.json({ success: true, ...result });
+  } catch (error) {
+    log.error('[HIGHLIGHTS] review failed', { error, id });
+    return res.status(500).json({ success: false, error: 'Could not save the review' });
   }
 });
 

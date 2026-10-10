@@ -28,6 +28,8 @@ export interface ChatMessage {
   senderTeam: string | null;
   body: string;
   createdAt: number;
+  /** The sender's picture (players.avatar_url), when they have one. */
+  senderAvatar: string | null;
 }
 
 export interface ChatChannel {
@@ -72,6 +74,7 @@ interface MessageRow {
   sender_team: string | null;
   body: string;
   created_at: number;
+  sender_avatar?: string | null;
 }
 
 const toMessage = (r: MessageRow): ChatMessage => ({
@@ -83,6 +86,7 @@ const toMessage = (r: MessageRow): ChatMessage => ({
   senderTeam: r.sender_team,
   body: r.body,
   createdAt: r.created_at,
+  senderAvatar: r.sender_avatar ?? null,
 });
 
 export function parseChannel(channel: string): { kind: ChatKind; ref: string } | null {
@@ -96,7 +100,12 @@ function steamIdsOf(json: string | null | undefined): string[] {
     const list = JSON.parse(json) as unknown;
     if (Array.isArray(list)) {
       return list
-        .map((p) => (p && typeof p === 'object' ? ((p as { steamId?: string; steamid?: string }).steamId ?? (p as { steamid?: string }).steamid) : null))
+        .map((p) =>
+          p && typeof p === 'object'
+            ? ((p as { steamId?: string; steamid?: string }).steamId ??
+              (p as { steamid?: string }).steamid)
+            : null
+        )
         .filter((id): id is string => typeof id === 'string' && id !== '');
     }
     if (list && typeof list === 'object') return Object.keys(list as Record<string, unknown>);
@@ -107,7 +116,9 @@ function steamIdsOf(json: string | null | undefined): string[] {
 }
 
 /** Who is in a match, by team id: its teams' rosters and the players its config names. */
-async function matchTeams(slug: string): Promise<{ teams: Map<string, Set<string>>; since: number } | null> {
+async function matchTeams(
+  slug: string
+): Promise<{ teams: Map<string, Set<string>>; since: number } | null> {
   const row = await db.queryOneAsync<{
     created_at: number;
     game: string | null;
@@ -131,8 +142,10 @@ async function matchTeams(slug: string): Promise<{ teams: Map<string, Set<string
   try {
     const config = row.config ? (JSON.parse(row.config) as unknown) : null;
     const described = describeMatch({ game: row.game as never, config });
-    for (const p of described.team1.players) if (p.account.provider === 'steam') teams.get(k1)!.add(p.account.externalId);
-    for (const p of described.team2.players) if (p.account.provider === 'steam') teams.get(k2)!.add(p.account.externalId);
+    for (const p of described.team1.players)
+      if (p.account.provider === 'steam') teams.get(k1)!.add(p.account.externalId);
+    for (const p of described.team2.players)
+      if (p.account.provider === 'steam') teams.get(k2)!.add(p.account.externalId);
   } catch {
     // A config the game cannot describe: the team rosters stand.
   }
@@ -159,20 +172,25 @@ async function members(channel: string): Promise<Members | null> {
     const found = await matchTeams(parsed.ref);
     if (!found) return null;
     const players = new Set<string>();
-    for (const [teamId, ids] of found.teams) for (const id of ids) {
-      players.add(id);
-      teamOf.set(id, teamId);
-    }
+    for (const [teamId, ids] of found.teams)
+      for (const id of ids) {
+        players.add(id);
+        teamOf.set(id, teamId);
+      }
     return { players, teamOf, since: found.since };
   }
   if (parsed.kind === 'team') {
-    const row = await db.queryOneAsync<{ players: string | null }>('SELECT players FROM teams WHERE id = ?', [parsed.ref]);
+    const row = await db.queryOneAsync<{ players: string | null }>(
+      'SELECT players FROM teams WHERE id = ?',
+      [parsed.ref]
+    );
     if (!row) return null;
     return { players: new Set(steamIdsOf(row.players)), teamOf, since: 0 };
   }
-  const rows = await db.queryAsync<{ player_id: string }>('SELECT player_id FROM mm_party_members WHERE party_id = ?', [
-    parsed.ref,
-  ]);
+  const rows = await db.queryAsync<{ player_id: string }>(
+    'SELECT player_id FROM mm_party_members WHERE party_id = ?',
+    [parsed.ref]
+  );
   if (rows.length === 0) return null;
   return { players: new Set(rows.map((r) => r.player_id)), teamOf, since: 0 };
 }
@@ -208,7 +226,14 @@ export const chatService = {
     const id = viewer.steamId;
     if (!id) return out;
     const like = `%${id}%`;
-    const match = await db.queryOneAsync<{ slug: string; status: string; team1_id: string | null; team2_id: string | null; n1: string | null; n2: string | null }>(
+    const match = await db.queryOneAsync<{
+      slug: string;
+      status: string;
+      team1_id: string | null;
+      team2_id: string | null;
+      n1: string | null;
+      n2: string | null;
+    }>(
       `SELECT m.slug, m.status, m.team1_id, m.team2_id, t1.name AS n1, t2.name AS n2
          FROM matches m LEFT JOIN teams t1 ON t1.id = m.team1_id LEFT JOIN teams t2 ON t2.id = m.team2_id
         WHERE m.status IN ('pending', 'ready', 'loaded', 'live')
@@ -239,7 +264,13 @@ export const chatService = {
     );
     if (team) {
       const channel = `team:${team.id}`;
-      out.push({ channel, kind: 'team', title: team.name, myTeam: team.id, unread: await unreadFor(id, channel) });
+      out.push({
+        channel,
+        kind: 'team',
+        title: team.name,
+        myTeam: team.id,
+        unread: await unreadFor(id, channel),
+      });
     }
     const party = await db.queryOneAsync<{ party_id: string; n: number }>(
       `SELECT pm.party_id, (SELECT COUNT(*)::int FROM mm_party_members x WHERE x.party_id = pm.party_id) AS n
@@ -248,16 +279,27 @@ export const chatService = {
     );
     if (party && party.n > 1) {
       const channel = `party:${party.party_id}`;
-      out.push({ channel, kind: 'party', title: 'Party', myTeam: null, unread: await unreadFor(id, channel) });
+      out.push({
+        channel,
+        kind: 'party',
+        title: 'Party',
+        myTeam: null,
+        unread: await unreadFor(id, channel),
+      });
     }
     return out;
   },
 
   /** A page of a channel's messages, oldest first: the newest PAGE, or the PAGE before `before`. */
-  async messages(viewer: ChatViewer, channel: string, before?: number): Promise<{ messages: ChatMessage[]; myTeam: string | null }> {
+  async messages(
+    viewer: ChatViewer,
+    channel: string,
+    before?: number
+  ): Promise<{ messages: ChatMessage[]; myTeam: string | null }> {
     const { members: m } = await access(viewer, channel);
     const rows = await db.queryAsync<MessageRow>(
-      `SELECT * FROM chat_messages WHERE channel = ? AND created_at >= ? ${before ? 'AND id < ?' : ''} ORDER BY id DESC LIMIT ${PAGE}`,
+      `SELECT c.*, p.avatar_url AS sender_avatar FROM chat_messages c LEFT JOIN players p ON p.id = c.sender_id
+        WHERE c.channel = ? AND c.created_at >= ? ${before ? 'AND c.id < ?' : ''} ORDER BY c.id DESC LIMIT ${PAGE}`,
       before ? [channel, m.since, before] : [channel, m.since]
     );
     return {
@@ -282,8 +324,14 @@ export const chatService = {
 
     const asAdmin = viewer.isAdmin && !isMember;
     let name = viewer.name ?? null;
-    if (!name && viewer.steamId) {
-      name = (await db.queryOneAsync<{ name: string }>('SELECT name FROM players WHERE id = ?', [viewer.steamId]))?.name ?? null;
+    let avatar: string | null = null;
+    if (viewer.steamId) {
+      const me = await db.queryOneAsync<{ name: string; avatar_url: string | null }>(
+        'SELECT name, avatar_url FROM players WHERE id = ?',
+        [viewer.steamId]
+      );
+      name = name ?? me?.name ?? null;
+      avatar = me?.avatar_url ?? null;
     }
     const row = await db.queryOneAsync<MessageRow>(
       `INSERT INTO chat_messages (channel, sender_id, sender_name, sender_kind, sender_team, body)
@@ -297,7 +345,7 @@ export const chatService = {
         text,
       ]
     );
-    const message = toMessage(row as MessageRow);
+    const message = toMessage({ ...(row as MessageRow), sender_avatar: avatar });
     if (viewer.steamId) await this.markRead(viewer, channel, message.id);
     emitChatMessage(m.players, parsed.kind === 'match', message);
     return message;
@@ -321,17 +369,25 @@ export const chatService = {
    */
   async callAdmin(viewer: ChatViewer, channel: string, note: string): Promise<void> {
     const { parsed, members: m, isMember } = await access(viewer, channel);
-    if (parsed.kind !== 'match' || !isMember || !viewer.steamId) throw new ChatError(400, 'Only a player in the match can call an admin');
+    if (parsed.kind !== 'match' || !isMember || !viewer.steamId)
+      throw new ChatError(400, 'Only a player in the match can call an admin');
     const recent = await db.queryOneAsync<{ n: number }>(
       'SELECT COUNT(*)::int AS n FROM admin_calls WHERE match_slug = ? AND player_steamid = ? AND resolved_at IS NULL',
       [parsed.ref, viewer.steamId]
     );
     if ((recent?.n ?? 0) > 0) throw new ChatError(409, 'An admin has been called already');
-    const match = await db.queryOneAsync<{ id: number; game: string | null; server_id: string | null; team1_id: string | null }>(
-      'SELECT id, game, server_id, team1_id FROM matches WHERE slug = ?',
-      [parsed.ref]
-    );
-    const name = (await db.queryOneAsync<{ name: string }>('SELECT name FROM players WHERE id = ?', [viewer.steamId]))?.name ?? null;
+    const match = await db.queryOneAsync<{
+      id: number;
+      game: string | null;
+      server_id: string | null;
+      team1_id: string | null;
+    }>('SELECT id, game, server_id, team1_id FROM matches WHERE slug = ?', [parsed.ref]);
+    const name =
+      (
+        await db.queryOneAsync<{ name: string }>('SELECT name FROM players WHERE id = ?', [
+          viewer.steamId,
+        ])
+      )?.name ?? null;
     const team = m.teamOf.get(viewer.steamId) ?? null;
     const now = Math.floor(Date.now() / 1000);
     await recordAdminCall({
@@ -342,7 +398,12 @@ export const chatService = {
       matchId: match?.id ?? null,
       matchSlug: parsed.ref,
       mapNumber: null,
-      player: { steamId: viewer.steamId, name, team: team === null ? null : team === (match?.team1_id ?? 'team1') ? 'team1' : 'team2', side: null },
+      player: {
+        steamId: viewer.steamId,
+        name,
+        team: team === null ? null : team === (match?.team1_id ?? 'team1') ? 'team1' : 'team2',
+        side: null,
+      },
       message: note.replace(/\s+/g, ' ').trim(),
       calledAt: now,
     });

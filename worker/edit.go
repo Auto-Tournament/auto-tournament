@@ -1,12 +1,18 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"image"
+	"log"
 	"math"
 	"os"
+	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 )
 
 // The highlight edit: the clip plays at full speed until the last enemy dies,
@@ -289,6 +295,10 @@ type overlay struct {
 	// focus: when (seconds into the video) a caption card's entrance starts:
 	// the game behind it blurs and darkens while it is up (focusFilter).
 	focus []float64
+	// blur: where focusFilter blurs (gpuBlur): "" on the CPU, blurVulkan on
+	// the GPU with a Vulkan device of its own, blurVulkanVA derived from the
+	// encoder's VAAPI device.
+	blur string
 }
 
 // videoFilter dresses the frames: the animated caption card for the first
@@ -307,7 +317,7 @@ func videoFilter(o overlay) string {
 	}
 	last := "base"
 	if len(o.focus) > 0 {
-		b.WriteString(";" + focusFilter("base", "focused", o.focus, o.width))
+		b.WriteString(";" + focusFilter("base", "focused", o.focus, o.width, o.blur))
 		last = "focused"
 	}
 	if o.card >= 0 {
@@ -430,30 +440,160 @@ const (
 )
 
 // focusFilter blurs and darkens [in] behind each card entrance starting at
-// `at` seconds (a clip's, or each clip's in a reel) into [out]. Each window
-// is its own short branch: only its frames are blurred.
-func focusFilter(in, out string, at []float64, width int) string {
-	var b strings.Builder
-	n := len(at)
-	fmt.Fprintf(&b, "[%s]split=%d[fb0]", in, n+1)
-	for i := range at {
-		fmt.Fprintf(&b, "[fb%d]", i+1)
+// `at` seconds (a clip's, or each clip's in a reel) into [out].
+//
+// One effect branch runs beside the game the whole way: its blur, shade and
+// vignette are on only in the windows (timeline `enable`), and the blend
+// fades it in and out by its opacity, which sendcmd steps through each
+// fade. Every frame flows straight through. (A branch per window that starts
+// at its window made the joining overlay hold every frame until that window
+// came: a reel's last card is near its end, and ffmpeg then kept a minute of
+// 1440p frames in memory, ~30 GB.)
+func focusFilter(in, out string, at []float64, width int, blur string) string {
+	var on []string
+	for _, a := range at {
+		on = append(on, fmt.Sprintf("between(t,%.3f,%.3f)", a+focusIn, a+focusSeconds))
 	}
+	enable := strings.Join(on, "+")
 	sigma := focusBlurPx * float64(width) / focusDraftW
-	last := "fb0"
-	for i, a := range at {
-		fmt.Fprintf(&b, ";[fb%d]trim=start=%.3f:end=%.3f,setpts=PTS-STARTPTS,gblur=sigma=%.1f,"+
-			"drawbox=color=0x080504@%.2f:t=fill,vignette=angle=PI/4,format=yuva420p,"+
-			"fade=t=in:st=%.2f:d=%.2f:alpha=1,fade=t=out:st=%.2f:d=%.2f:alpha=1,setpts=PTS+%.3f/TB[fz%d]",
-			i+1, a, a+focusSeconds, sigma, focusShade, focusIn, focusInDur, focusOut, focusOutDur, a, i)
-		next := fmt.Sprintf("fo%d", i)
-		if i == n-1 {
-			next = out
-		}
-		fmt.Fprintf(&b, ";[%s][fz%d]overlay=eof_action=pass,format=yuv420p[%s]", last, i, next)
-		last = next
+	var b strings.Builder
+	fmt.Fprintf(&b, "[%s]sendcmd=c='%s',split[%s_keep][%s_fx]", in, focusCommands(at), out, out)
+	// The blur: on the GPU (Vulkan) for every frame, uploaded and back, which
+	// is still several times faster than the CPU's in the windows only (a
+	// 1440p frame: ~6 ms on an RTX 3060 against 28 ms on the VM's CPU); else
+	// on the CPU, in the windows only.
+	blurStep := fmt.Sprintf("gblur=sigma=%.1f:enable='%s'", sigma, enable)
+	switch blur {
+	case blurVulkan:
+		blurStep = "hwupload," + vulkanBlur(sigma) + ",hwdownload,format=yuv420p"
+	case blurVulkanVA:
+		blurStep = "hwupload=derive_device=vulkan," + vulkanBlur(sigma) + ",hwdownload,format=yuv420p"
 	}
+	fmt.Fprintf(&b, ";[%s_fx]%s,drawbox=color=0x080504@%.2f:t=fill:enable='%s',vignette=angle=PI/4:enable='%s'[%s_fxd]",
+		out, blurStep, focusShade, enable, enable, out)
+	// normal blend: first*opacity + second*(1-opacity), so the game is the
+	// first input at opacity 1 - the effect's strength; off it passes the game.
+	fmt.Fprintf(&b, ";[%s_keep][%s_fxd]blend@focus=all_mode=normal:all_opacity=1:enable='%s'[%s]", out, out, enable, out)
 	return b.String()
+}
+
+// vulkanBlur is a gaussian blur of `sigma` on the GPU. gblur_vulkan's kernel
+// is at most 127 px (a sigma of ~21), short of 1440p's ~36: it takes passes,
+// whose sigmas add up as the root of their squares.
+func vulkanBlur(sigma float64) string {
+	// n passes of sigma/√n each, so each kernel (6 sigma) fits in 127 px.
+	n := int(math.Ceil(math.Pow(sigma*6/127, 2)))
+	if n < 1 {
+		n = 1
+	}
+	per := sigma / math.Sqrt(float64(n))
+	size := int(math.Ceil(per*6)) | 1
+	if size > 127 {
+		size = 127
+	}
+	pass := fmt.Sprintf("gblur_vulkan=sigma=%.1f:size=%d", per, size)
+	passes := make([]string, n)
+	for i := range passes {
+		passes[i] = pass
+	}
+	return strings.Join(passes, ",")
+}
+
+// Where the focus blur runs (overlay.blur).
+const (
+	blurVulkan   = "vulkan"
+	blurVulkanVA = "vulkan-va"
+)
+
+// blurArgs puts the Vulkan device a GPU blur needs in front of ffmpeg's
+// arguments (blurVulkan; blurVulkanVA derives it from hwEncode's VAAPI device).
+func blurArgs(blur string, args []string) []string {
+	if blur != blurVulkan {
+		return args
+	}
+	return append([]string{"-init_hw_device", "vulkan=vk", "-filter_hw_device", "vk"}, args...)
+}
+
+var (
+	gpuBlurOnce sync.Once
+	gpuBlurMode string
+)
+
+// gpuBlur is where this recorder blurs: it tries a tiny Vulkan blur once
+// (with the encoder's VAAPI device when it encodes with VAAPI) and falls back
+// to the CPU when that fails. AT_GPU_BLUR=0 keeps the blur on the CPU.
+func gpuBlur(encoder string) string {
+	gpuBlurOnce.Do(func() {
+		if env("AT_GPU_BLUR", "1") == "0" {
+			return
+		}
+		mode := blurVulkan
+		if encoder == "h264_vaapi" {
+			mode = blurVulkanVA
+		}
+		f := focusFilter("0:v", "v", []float64{0}, 64, mode)
+		args := []string{"-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i", "color=s=64x36:r=30:d=0.5,format=yuv420p",
+			"-filter_complex", f, "-map", "[v]", "-f", "null", "-"}
+		args = blurArgs(mode, args)
+		if mode == blurVulkanVA {
+			args = append([]string{"-init_hw_device", "vaapi=va:" + vaapiDevice, "-filter_hw_device", "va"}, args...)
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		if b, err := exec.CommandContext(ctx, "ffmpeg", args...).CombinedOutput(); err != nil {
+			log.Printf("the focus blur stays on the CPU (no Vulkan blur: %v %s)", err, strings.TrimSpace(string(b)))
+			return
+		}
+		log.Printf("the focus blur runs on the GPU (Vulkan)")
+		gpuBlurMode = mode
+	})
+	return gpuBlurMode
+}
+
+// focusStep is how often the effect's strength is set during a fade.
+const focusStep = 1.0 / 60
+
+// focusStrength is how strong the focus effect is `r` seconds after its
+// card starts: up over focusInDur from focusIn, held, then down over
+// focusOutDur from focusOut.
+func focusStrength(r float64) float64 {
+	switch {
+	case r < focusIn || r >= focusOut+focusOutDur:
+		return 0
+	case r < focusIn+focusInDur:
+		return (r - focusIn) / focusInDur
+	case r < focusOut:
+		return 1
+	default:
+		return 1 - (r-focusOut)/focusOutDur
+	}
+}
+
+// focusCommands is the sendcmd script that fades the effect: at each step of
+// every fade, the blend's opacity is 1 - the strongest window's strength.
+func focusCommands(at []float64) string {
+	var times []float64
+	for _, a := range at {
+		for r := focusIn; r <= focusSeconds+focusStep/2; r += focusStep {
+			times = append(times, a+r)
+		}
+	}
+	sort.Float64s(times)
+	var cmds []string
+	last := -1.0
+	for _, t := range times {
+		s := 0.0
+		for _, a := range at {
+			s = math.Max(s, focusStrength(t-a))
+		}
+		op := math.Round((1-s)*1000) / 1000
+		if op == last {
+			continue
+		}
+		last = op
+		cmds = append(cmds, fmt.Sprintf("%.4f blend@focus all_opacity %.3f", t, op))
+	}
+	return strings.Join(cmds, ";")
 }
 
 // maxBitrate is the H.264 ceiling (Mbit/s) for the clip's size and frame

@@ -32,6 +32,7 @@ import fs from 'fs';
 import path from 'path';
 import { DATA_DIR } from '../../../config/dataDir';
 import { db } from '../../../config/database';
+import { reelFailoverFilter } from './reelFailover';
 import { log } from '../../../utils/logger';
 import type { DemoAnalysisPayload } from './jobs';
 
@@ -459,61 +460,56 @@ export function playersPerRecorder(players: number, idle: number): number {
 }
 
 /**
- * A job's share of a map's waiting moments (pure: tested on its own): about
- * `waiting / recorders` of them, whole players first (best first); a player
- * with more than the share gives their best that many, the rest wait for the
- * next job. `rows` are the map's waiting moments, best player first and each
- * player's best first.
+ * The next player of a map for a recorder (pure: tested on its own): the
+ * best waiting player, all of their waiting moments. `rows` are the map's
+ * waiting moments, best player first and each player's best first. One player
+ * a claim: a recorder keeps the map's demo loaded between jobs (the worker's
+ * liveGame), so a faster recorder simply asks more often, and a map never
+ * has more recorders on it than players waiting.
  */
-export function pickChunk(rows: { id: number; playerId: string }[], recorders: number): number[] {
-  const share = Math.max(1, Math.ceil(rows.length / Math.max(1, recorders)));
-  const byPlayer = new Map<string, number[]>();
-  for (const r of rows) byPlayer.set(r.playerId, [...(byPlayer.get(r.playerId) ?? []), r.id]);
-  const out: number[] = [];
-  for (const ids of byPlayer.values()) {
-    if (out.length === 0 && ids.length >= share) return ids.slice(0, share);
-    if (out.length + ids.length > share) continue;
-    out.push(...ids);
-    if (out.length === share) break;
-  }
-  return out;
+export function nextPlayer(rows: { id: number; playerId: string }[]): number[] {
+  const first = rows[0]?.playerId;
+  return first === undefined ? [] : rows.filter((r) => r.playerId === first).map((r) => r.id);
 }
 
-/** Recorders that can take work now or soon: asked in the last 15 minutes, or at a job. */
-async function onlineRecorders(): Promise<number> {
-  const row = await db.queryOneAsync<{ n: number | string }>(
-    `SELECT COUNT(*) AS n FROM cs2_recorders r
-      WHERE (r.paused_until IS NULL OR r.paused_until < EXTRACT(EPOCH FROM NOW()))
-        AND (r.last_seen > EXTRACT(EPOCH FROM NOW()) - 900
-             OR EXISTS (SELECT 1 FROM cs2_highlights h WHERE h.recorder = r.name AND h.status = 'recording'))`
-  );
-  return Math.max(1, Number(row?.n ?? 1));
+/** The map a claim says the recorder has loaded, or null. */
+export function loadedMapOf(raw: unknown): { matchSlug: string; mapNumber: number } | null {
+  const l = raw as { matchSlug?: unknown; mapNumber?: unknown } | null | undefined;
+  if (!l || typeof l.matchSlug !== 'string' || !l.matchSlug) return null;
+  const mapNumber = Number(l.mapNumber);
+  return Number.isInteger(mapNumber) && mapNumber >= 0
+    ? { matchSlug: l.matchSlug.slice(0, 200), mapNumber }
+    : null;
 }
 
 /**
- * Hand the recorder its share of the next map's waiting moments, recorded in
- * one CS2 session (recorders from version 4). The next map is the newest
- * match's (a tournament's before an imported one), so players see their
- * clips soon after their match; within it, map by map. The share is the
- * map's waiting moments over the recorders online, so every recorder takes
- * part of a map, a second one can join a map mid-way, and a lone recorder
- * still records a whole map in one session.
+ * Hand the recorder the next player of a map, recorded in the CS2 session it
+ * keeps (recorders from version 4). The map is the one the recorder has
+ * loaded while it has players waiting; otherwise the newest match's (a
+ * tournament's before an imported one), so players see their clips soon
+ * after their match, map by map. A recorder whose map has no one left
+ * waiting gets the next map and loads it, while the others finish theirs.
  */
-export async function claimMapJob(recorder: string): Promise<MapRecordJob | null> {
+export async function claimMapJob(
+  recorder: string,
+  loaded: { matchSlug: string; mapNumber: number } | null = null
+): Promise<MapRecordJob | null> {
   const now = Math.floor(Date.now() / 1000);
   const waiting = "(status = 'pending' OR (status = 'recording' AND claimed_at < ?))";
   // A moment this recorder gave back (its CS2 would not start) goes to
   // another recorder first (demos/recorders.ts recorderFault).
+  // The map the recorder has loaded comes first while it has anyone waiting.
   const best = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
     `SELECT h.match_slug, h.map_number FROM cs2_highlights h
        LEFT JOIN matches m ON m.slug = h.match_slug
       WHERE ${waiting.replace(/status|claimed_at/g, (c) => `h.${c}`)}
       ORDER BY (h.avoid_recorder IS NOT NULL AND h.avoid_recorder = ?),
+               (h.match_slug = ? AND h.map_number = ?) DESC,
                (m.tournament_id IS NOT NULL) DESC,
                (SELECT MAX(x.id) FROM cs2_highlights x WHERE x.match_slug = h.match_slug) DESC,
                h.map_number, h.score DESC, h.id
       LIMIT 1`,
-    [now - STALE_SECONDS, recorder.slice(0, 120)]
+    [now - STALE_SECONDS, recorder.slice(0, 120), loaded?.matchSlug ?? '', loaded?.mapNumber ?? -2]
   );
   if (!best) return null;
   await trimToPerPlayer(best.match_slug, Number(best.map_number));
@@ -522,10 +518,7 @@ export async function claimMapJob(recorder: string): Promise<MapRecordJob | null
       ORDER BY MAX(score) OVER (PARTITION BY player_id) DESC, player_id, score DESC, id`,
     [best.match_slug, best.map_number, now - STALE_SECONDS]
   );
-  const ids = pickChunk(
-    mapRows.map((r) => ({ id: Number(r.id), playerId: r.player_id })),
-    await onlineRecorders()
-  );
+  const ids = nextPlayer(mapRows.map((r) => ({ id: Number(r.id), playerId: r.player_id })));
   if (ids.length === 0) return null;
   const quality = await readHighlightQuality();
   const rows = await db.queryAsync<MomentRow>(
@@ -766,6 +759,7 @@ export async function saveClip(
   await removeTwins(file);
   await db.runAsync(
     `UPDATE cs2_highlights SET status = 'done', clip_path = ?, clip_bytes = ?, markers = ?, error = NULL,
+            review = NULL, review_note = NULL, reviewed_by = NULL, reviewed_at = NULL,
             record_seconds = ?, done_at = ? WHERE id = ?`,
     [
       path.basename(file),
@@ -977,25 +971,104 @@ const MATCH_REEL_MIN_PLAYERS = 2;
  */
 export const SERIES_REEL = -1;
 
+/** A moment a reel could use: recorded, or still waiting to be (not failed, skipped or funny). */
+export interface ReelCandidate {
+  id: number;
+  playerId: string;
+  score: number;
+  mapNumber: number;
+  at: number;
+  done: boolean;
+}
+
 /**
- * Whether a series' reel can be made: more than one map, every map with
- * recorded clips (a map none of whose clips could be recorded holds it back
- * until they are redone), nothing still waiting, and enough players.
+ * A map reel's clips among its candidates (pure: tested on its own): each
+ * player's best `perPlayer`, as bestClipPerPlayer takes them once recorded.
  */
-export function seriesReelReady(s: {
-  maps: number;
-  recorded: number;
-  waiting: number;
-  players: number;
-}): boolean {
+export function pickMapClips<T extends ReelCandidate>(c: T[], perPlayer: number): T[] {
+  const taken = new Map<string, number>();
+  return c
+    .slice()
+    .sort((a, b) => b.score - a.score || a.id - b.id)
+    .filter((x) => {
+      const n = taken.get(x.playerId) ?? 0;
+      if (n >= perPlayer) return false;
+      taken.set(x.playerId, n + 1);
+      return true;
+    });
+}
+
+/**
+ * Whether a reel can be made now (pure: tested on its own): every clip it
+ * will take is recorded, from enough players. Moments it would not take may
+ * still be waiting: a reel does not wait for them (the series reel takes the
+ * best 16 of 40, so it is made once those 16 are in).
+ */
+export function reelReady(picked: ReelCandidate[]): boolean {
   return (
-    s.maps >= 2 && s.recorded >= s.maps && s.waiting === 0 && s.players >= MATCH_REEL_MIN_PLAYERS
+    picked.length > 0 &&
+    picked.every((c) => c.done) &&
+    new Set(picked.map((c) => c.playerId)).size >= MATCH_REEL_MIN_PLAYERS
   );
 }
 
 /**
- * Queue the match reel of each map these highlights belong to, once none of
- * the map's highlights is still waiting to be recorded.
+ * Whether a series' reel can be made (pure: tested on its own): more than one
+ * map, no map whose every clip failed (that holds it back until they are
+ * redone: a series reel of the other maps alone is not the match), and its
+ * picks recorded (reelReady).
+ */
+export function seriesReelReady(
+  candidates: ReelCandidate[],
+  maps: { mapNumber: number; usable: boolean }[],
+  max: number,
+  perPlayer: number
+): boolean {
+  if (maps.length < 2 || maps.some((m) => !m.usable)) return false;
+  return reelReady(pickSeriesClips(candidates, max, perPlayer));
+}
+
+/** A match's moments a reel could use, and its maps (usable: one recorded or still waiting). */
+async function reelCandidates(
+  matchSlug: string
+): Promise<{ candidates: ReelCandidate[]; maps: { mapNumber: number; usable: boolean }[] }> {
+  const rows = await db.queryAsync<{
+    id: number;
+    player_id: string;
+    score: number;
+    map_number: number;
+    slowmo_tick: number;
+    status: string;
+    kind: string;
+  }>(
+    `SELECT id, player_id, score, map_number, slowmo_tick, status, kind FROM cs2_highlights
+      WHERE match_slug = ? AND map_number >= 0 AND status <> 'skipped'`,
+    [matchSlug]
+  );
+  const candidates: ReelCandidate[] = [];
+  const maps = new Map<number, boolean>();
+  for (const r of rows) {
+    const mapNumber = Number(r.map_number);
+    const usable = ['done', 'pending', 'recording'].includes(r.status);
+    maps.set(mapNumber, (maps.get(mapNumber) ?? false) || usable);
+    if (!usable || r.kind === 'funny') continue;
+    candidates.push({
+      id: Number(r.id),
+      playerId: r.player_id,
+      score: Number(r.score),
+      mapNumber,
+      at: Number(r.slowmo_tick),
+      done: r.status === 'done',
+    });
+  }
+  return { candidates, maps: [...maps].map(([mapNumber, usable]) => ({ mapNumber, usable })) };
+}
+
+/**
+ * Queue the reels these highlights count for, as soon as the clips each will
+ * take are recorded: a map's reel once every player's best is in, the
+ * series' once its best (seriesReelMax) are. Clips it would not take may
+ * still be waiting.
  */
 export async function queueMatchReelFor(highlightIds: number[]): Promise<void> {
   if (highlightIds.length === 0) return;
@@ -1005,55 +1078,27 @@ export async function queueMatchReelFor(highlightIds: number[]): Promise<void> {
         WHERE id IN (${highlightIds.map(() => '?').join(', ')})`,
       highlightIds
     );
-    for (const m of maps) {
-      const state = await db.queryOneAsync<{ waiting: number | string; players: number | string }>(
-        `SELECT COUNT(*) FILTER (WHERE status IN ('pending', 'recording')) AS waiting,
-                COUNT(DISTINCT player_id) FILTER (WHERE status = 'done') AS players
-           FROM cs2_highlights WHERE match_slug = ? AND map_number = ?`,
-        [m.match_slug, m.map_number]
-      );
-      if (Number(state?.waiting ?? 1) > 0 || Number(state?.players ?? 0) < MATCH_REEL_MIN_PLAYERS)
-        continue;
-      await db.runAsync(
+    const limits = await readReelLimits();
+    const queue = (slug: string, mapNumber: number) =>
+      db.runAsync(
         `INSERT INTO cs2_match_reels (match_slug, map_number) VALUES (?, ?)
          ON CONFLICT (match_slug, map_number) DO UPDATE SET status = 'pending', attempts = 0, error = NULL
            WHERE cs2_match_reels.status IN ('failed', 'waiting')`,
-        [m.match_slug, m.map_number]
+        [slug, mapNumber]
       );
-    }
-    // A series (more than one map): its own reel too, once every map is
-    // recorded. A map none of whose clips could be recorded holds it back
-    // (Redo on the Clips tab): a series reel of the other maps alone is not
-    // the match (2026-10-09: the EWC final's was made from its fourth map).
     for (const slug of new Set(maps.map((m) => m.match_slug))) {
-      const series = await db.queryOneAsync<{
-        maps: number | string;
-        recorded: number | string;
-        waiting: number | string;
-        players: number | string;
-      }>(
-        `SELECT COUNT(DISTINCT map_number) FILTER (WHERE status <> 'skipped') AS maps,
-                COUNT(DISTINCT map_number) FILTER (WHERE status = 'done') AS recorded,
-                COUNT(*) FILTER (WHERE status IN ('pending', 'recording')) AS waiting,
-                COUNT(DISTINCT player_id) FILTER (WHERE status = 'done') AS players
-           FROM cs2_highlights WHERE match_slug = ? AND map_number >= 0`,
-        [slug]
-      );
-      if (
-        !seriesReelReady({
-          maps: Number(series?.maps ?? 0),
-          recorded: Number(series?.recorded ?? 0),
-          waiting: Number(series?.waiting ?? 1),
-          players: Number(series?.players ?? 0),
-        })
-      )
-        continue;
-      await db.runAsync(
-        `INSERT INTO cs2_match_reels (match_slug, map_number) VALUES (?, ?)
-         ON CONFLICT (match_slug, map_number) DO UPDATE SET status = 'pending', attempts = 0, error = NULL
-           WHERE cs2_match_reels.status IN ('failed', 'waiting')`,
-        [slug, SERIES_REEL]
-      );
+      const { candidates, maps: all } = await reelCandidates(slug);
+      for (const m of maps.filter((x) => x.match_slug === slug)) {
+        const mapNumber = Number(m.map_number);
+        const picked = pickMapClips(
+          candidates.filter((c) => c.mapNumber === mapNumber),
+          limits.mapReelPerPlayer
+        );
+        if (reelReady(picked)) await queue(slug, mapNumber);
+      }
+      // A series (more than one map): its own reel too.
+      if (seriesReelReady(candidates, all, limits.seriesReelMax, limits.seriesReelPerPlayer))
+        await queue(slug, SERIES_REEL);
     }
   } catch (error) {
     log.warn('[HIGHLIGHTS] Could not queue a match reel', { error: (error as Error).message });
@@ -1230,14 +1275,21 @@ export async function seriesClips(matchSlug: string): Promise<MatchReelClip[]> {
 /** Hand the recorder a match reel to join, if one is waiting. */
 export async function claimMatchReel(recorder: string): Promise<MatchReelJob | null> {
   const now = Math.floor(Date.now() / 1000);
+  const failover = await reelFailoverFilter(recorder);
   const row = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
     `UPDATE cs2_match_reels SET status = 'recording', recorder = ?, made_with = ?, claimed_at = ?, attempts = attempts + 1
       WHERE (match_slug, map_number) = (
         SELECT match_slug, map_number FROM cs2_match_reels
-         WHERE status = 'pending' OR (status = 'recording' AND claimed_at < ?)
+         WHERE (status = 'pending' OR (status = 'recording' AND claimed_at < ?)) AND ${failover.sql}
          ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED)
       RETURNING match_slug, map_number`,
-    [recorder.slice(0, 120), qualityLabel(await readHighlightQuality()), now, now - STALE_SECONDS]
+    [
+      recorder.slice(0, 120),
+      qualityLabel(await readHighlightQuality()),
+      now,
+      now - STALE_SECONDS,
+      ...failover.params,
+    ]
   );
   if (!row) return null;
   const series = Number(row.map_number) === SERIES_REEL;
@@ -1335,7 +1387,8 @@ export async function failMatchReel(
   error: string
 ): Promise<void> {
   await db.runAsync(
-    `UPDATE cs2_match_reels SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?
+    `UPDATE cs2_match_reels SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?,
+            avoid_recorder = recorder
       WHERE match_slug = ? AND map_number = ? AND status = 'recording'`,
     [MAX_ATTEMPTS, error.slice(0, 500), matchSlug, mapNumber]
   );

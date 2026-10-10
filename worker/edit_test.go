@@ -177,3 +177,37 @@ func TestAudioFilterIntroGain(t *testing.T) {
 		t.Fatal("gain without an intro")
 	}
 }
+
+func TestFocusFilterStreams(t *testing.T) {
+	f := focusFilter("base", "focused", []float64{0, 40, 80}, 2560, "")
+	// One effect branch, no trims: a branch starting late made the joining
+	// overlay hold every frame until it began (a reel's last card, ~30 GB).
+	if strings.Contains(f, "trim=") || strings.Count(f, "split") != 1 {
+		t.Fatalf("not one streaming branch: %s", f)
+	}
+	for _, want := range []string{"blend@focus=", "between(t,80.100,", "[focused]"} {
+		if !strings.Contains(f, want) {
+			t.Fatalf("%q missing from %s", want, f)
+		}
+	}
+	cmds := focusCommands([]float64{40})
+	if !strings.HasPrefix(cmds, "40.1000 blend@focus all_opacity 1.000") {
+		t.Fatalf("does not start clear: %.80s", cmds)
+	}
+	if !strings.Contains(cmds, "blend@focus all_opacity 0.000") || !strings.HasSuffix(cmds, "all_opacity 1.000") {
+		t.Fatalf("no full effect, or it does not end clear: %s", cmds)
+	}
+	if math.Abs(focusStrength(focusIn+focusInDur/2)-0.5) > 1e-9 || focusStrength(focusOut-0.01) != 1 || focusStrength(focusSeconds) != 0 {
+		t.Fatal("focusStrength")
+	}
+}
+
+func TestVulkanBlurPasses(t *testing.T) {
+	// 1440p's sigma (~36) is past one pass's kernel: three passes of ~21.
+	if got := vulkanBlur(35.6); strings.Count(got, "gblur_vulkan") != 3 || !strings.Contains(got, "sigma=20.6:size=125") {
+		t.Fatalf("1440p: %s", got)
+	}
+	if got := vulkanBlur(10); got != "gblur_vulkan=sigma=10.0:size=61" {
+		t.Fatalf("small: %s", got)
+	}
+}

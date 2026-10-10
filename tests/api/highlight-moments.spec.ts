@@ -4,12 +4,15 @@ import {
   parseClipIds,
   parseClipStarts,
   parseMarkers,
-  pickChunk,
+  nextPlayer,
+  loadedMapOf,
   pickMoments,
   pickSeriesClips,
   playersPerRecorder,
   recorderBusy,
   seriesReelReady,
+  reelReady,
+  pickMapClips,
 } from '../../api/src/integrations/cs2/demos/highlights';
 import { pickTournamentReel } from '../../api/src/integrations/cs2/demos/highlightViews';
 
@@ -270,31 +273,60 @@ test('a clip keeps the kills its crowd reacts to', { tag: ['@api'] }, () => {
   expect(parseMarkers(JSON.stringify({ duration: 3, kills: [1] }))?.reactions).toBeUndefined();
 });
 
-test('a job takes its share of a map: whole players first, best first', { tag: ['@api'] }, () => {
+test('a claim is the next player of a map, all their moments', { tag: ['@api'] }, () => {
   const rows = [
-    ...[1, 2, 3, 4, 5].map((id) => ({ id, playerId: 'a' })),
-    ...[6, 7].map((id) => ({ id, playerId: 'b' })),
-    ...[8, 9].map((id) => ({ id, playerId: 'c' })),
-    { id: 10, playerId: 'd' },
+    ...[1, 2, 3].map((id) => ({ id, playerId: 'a' })),
+    ...[4, 5].map((id) => ({ id, playerId: 'b' })),
   ];
-  // One recorder: the whole map in one session.
-  expect(pickChunk(rows, 1)).toEqual(rows.map((r) => r.id));
-  // Two: half (5). Player a alone fills it.
-  expect(pickChunk(rows, 2)).toEqual([1, 2, 3, 4, 5]);
-  // Five: two each; a gives their best two, the rest wait.
-  expect(pickChunk(rows, 5)).toEqual([1, 2]);
-  // A share of 3 from b (2), c (2), d (1): b fits, c would not, d does.
-  expect(pickChunk(rows.slice(5), 2)).toEqual([6, 7, 10]);
-  expect(pickChunk([], 3)).toEqual([]);
+  expect(nextPlayer(rows)).toEqual([1, 2, 3]);
+  expect(nextPlayer(rows.slice(3))).toEqual([4, 5]);
+  expect(nextPlayer([])).toEqual([]);
 });
 
-test('a series reel waits for every map to have recorded clips', { tag: ['@api'] }, () => {
-  const ready = { maps: 4, recorded: 4, waiting: 0, players: 10 };
-  expect(seriesReelReady(ready)).toBe(true);
-  // The EWC final, 2026-10-09: three maps' clips all failed, the fourth recorded.
-  expect(seriesReelReady({ ...ready, recorded: 1 })).toBe(false);
-  // Clips still to record, a single map, or too few players: not yet either.
-  expect(seriesReelReady({ ...ready, waiting: 3 })).toBe(false);
-  expect(seriesReelReady({ maps: 1, recorded: 1, waiting: 0, players: 10 })).toBe(false);
-  expect(seriesReelReady({ ...ready, players: 1 })).toBe(false);
+test("a claim's loaded map is read safely", { tag: ['@api'] }, () => {
+  expect(loadedMapOf({ matchSlug: 'm1', mapNumber: 2 })).toEqual({ matchSlug: 'm1', mapNumber: 2 });
+  expect(loadedMapOf({ matchSlug: 'm1', mapNumber: '0' })).toEqual({
+    matchSlug: 'm1',
+    mapNumber: 0,
+  });
+  expect(loadedMapOf(null)).toBeNull();
+  expect(loadedMapOf({ matchSlug: '', mapNumber: 1 })).toBeNull();
+  expect(loadedMapOf({ matchSlug: 'm1', mapNumber: -1 })).toBeNull();
+  expect(loadedMapOf({ matchSlug: 'm1', mapNumber: 'x' })).toBeNull();
+});
+
+test('a reel is made once the clips it takes are recorded', { tag: ['@api'] }, () => {
+  // Two players a map, four maps; scores fall by id.
+  const c = (id: number, mapNumber: number, playerId: string, done: boolean) => ({
+    id,
+    playerId,
+    score: 100 - id,
+    mapNumber,
+    at: id,
+    done,
+  });
+  const maps = [0, 1, 2, 3].map((mapNumber) => ({ mapNumber, usable: true }));
+  const all = [0, 1, 2, 3].flatMap((m) => [
+    c(m * 4 + 1, m, 'a', true),
+    c(m * 4 + 2, m, 'b', true),
+    c(m * 4 + 3, m, 'a', false), // a's second-best: not in a one-per-player reel
+    c(m * 4 + 4, m, 'b', false),
+  ]);
+  // The series' best two (one a player), both recorded: ready, though more wait.
+  expect(seriesReelReady(all, maps, 2, 1)).toBe(true);
+  // A pick still waiting holds it back.
+  const waiting = all.map((x) => (x.id === 1 ? { ...x, done: false } : x));
+  expect(seriesReelReady(waiting, maps, 2, 1)).toBe(false);
+  // The EWC final, 2026-10-09: a map whose clips all failed holds it back too.
+  expect(seriesReelReady(all, [...maps.slice(1), { mapNumber: 0, usable: false }], 2, 1)).toBe(
+    false
+  );
+  // One map, or one player: no series reel.
+  expect(seriesReelReady(all, maps.slice(0, 1), 2, 1)).toBe(false);
+  expect(reelReady([c(1, 0, 'a', true)])).toBe(false);
+  // A map reel takes each player's best: their other clips may still wait.
+  const map0 = all.filter((x) => x.mapNumber === 0);
+  expect(pickMapClips(map0, 1).map((x) => x.id)).toEqual([1, 2]);
+  expect(reelReady(pickMapClips(map0, 1))).toBe(true);
+  expect(reelReady(pickMapClips(map0, 2))).toBe(false);
 });

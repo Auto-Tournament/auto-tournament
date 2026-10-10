@@ -141,6 +141,12 @@ var blendEdge = func() float64 {
 // over (a minute and more).
 const maxGapTicks = 5.0
 
+// maxHoleTicks is the longest hole a clip keeps: the nearest frame is shown
+// for it (16 ticks: 250 ms, a short hitch). A capture stall at the same
+// moment of the demo comes back on every retry, so failing the clip over it
+// only lost the clip (two 4Ks of the EWC final, 5.2 ticks, 2026-10-10).
+const maxHoleTicks = 16.0
+
 // timeline is the clip's frames at outputFPS: the speed ramp `segs` (seconds
 // from the clip's start at startTick) says which moment of the game each
 // output frame shows. Full-speed pieces take their frames from the first
@@ -190,7 +196,7 @@ func timeline(sources [][]float64, segs []segment, startTick int) ([]frameRef, e
 				}
 			}
 			c, gap := nearest(si, want)
-			if c < 0 || gap > maxGapTicks {
+			if c < 0 || gap > maxHoleTicks {
 				return nil, fmt.Errorf("no frame near tick %.0f (nearest %.1f ticks away)", want, gap)
 			}
 			last[si] = c

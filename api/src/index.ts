@@ -1,5 +1,6 @@
 // IMPORTANT: Load environment variables FIRST, before any other imports
 // This ensures all modules can access env vars during initialization
+import { startModuleUpdateNotices } from './services/platform/moduleUpdates';
 import { socialService } from './services/socialService';
 import { startTournamentNotices } from './services/tournamentNotices';
 import { startHoldTimer } from './services/matchHolds';
@@ -595,6 +596,8 @@ process.on('uncaughtException', (err) => {
     // Now start the server after database is ready
     // Bind to all interfaces (IPv4 & IPv6) so both 127.0.0.1 and ::1 work with dev proxies.
     const server = httpServer.listen(Number(PORT), () => {
+      // Admins hear about module and pack updates, and ones that did not take.
+      startModuleUpdateNotices();
       log.server('='.repeat(60));
       log.server('Auto Tournament API');
       log.server('='.repeat(60));

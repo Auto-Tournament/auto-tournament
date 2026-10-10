@@ -13,6 +13,7 @@ import { readReelLimits } from './highlightQuality';
 import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
+import { reelFailoverFilter } from './reelFailover';
 import { log } from '../../../utils/logger';
 import { readHighlightQuality, type HighlightQuality } from './highlightQuality';
 import { chaptersOf } from './highlightViews';
@@ -164,14 +165,15 @@ export function teamReelFile(matchSlug: string, teamId: string): string {
 /** Hand the recorder a team reel to join, if one is waiting. */
 export async function claimTeamReel(recorder: string): Promise<TeamReelJob | null> {
   const now = Math.floor(Date.now() / 1000);
+  const failover = await reelFailoverFilter(recorder);
   const row = await db.queryOneAsync<{ match_slug: string; team_id: string }>(
     `UPDATE cs2_team_reels SET status = 'recording', recorder = ?, claimed_at = ?, attempts = attempts + 1
       WHERE (match_slug, team_id) = (
         SELECT match_slug, team_id FROM cs2_team_reels
-         WHERE status = 'pending' OR (status = 'recording' AND claimed_at < ?)
+         WHERE (status = 'pending' OR (status = 'recording' AND claimed_at < ?)) AND ${failover.sql}
          ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED)
       RETURNING match_slug, team_id`,
-    [recorder.slice(0, 120), now, now - STALE_SECONDS]
+    [recorder.slice(0, 120), now, now - STALE_SECONDS, ...failover.params]
   );
   if (!row) return null;
   const { team, opponent, clips } = await teamReelClips(row.match_slug, row.team_id);
@@ -256,7 +258,8 @@ export async function failTeamReel(
   error: string
 ): Promise<void> {
   await db.runAsync(
-    `UPDATE cs2_team_reels SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?
+    `UPDATE cs2_team_reels SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?,
+            avoid_recorder = recorder
       WHERE match_slug = ? AND team_id = ? AND status = 'recording'`,
     [MAX_ATTEMPTS, error.slice(0, 500), matchSlug, teamId]
   );

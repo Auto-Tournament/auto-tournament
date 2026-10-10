@@ -15,6 +15,7 @@ import { readHighlightQuality, type HighlightQuality } from './highlightQuality'
 import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
+import { reelFailoverFilter } from './reelFailover';
 import {
   removeTwins,
   crowdUrlOf,
@@ -764,14 +765,15 @@ export interface TournamentReelJob {
 export async function claimTournamentReel(recorder: string): Promise<TournamentReelJob | null> {
   await queueTournamentReel();
   const now = Math.floor(Date.now() / 1000);
+  const failover = await reelFailoverFilter(recorder);
   const row = await db.queryOneAsync<{ tournament_id: number }>(
     `UPDATE cs2_tournament_reels SET status = 'recording', recorder = ?, claimed_at = ?, attempts = attempts + 1
       WHERE tournament_id = (
         SELECT tournament_id FROM cs2_tournament_reels
-         WHERE status = 'pending' OR (status = 'recording' AND claimed_at < ?)
+         WHERE (status = 'pending' OR (status = 'recording' AND claimed_at < ?)) AND ${failover.sql}
          ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED)
       RETURNING tournament_id`,
-    [recorder.slice(0, 120), now, now - STALE_SECONDS]
+    [recorder.slice(0, 120), now, now - STALE_SECONDS, ...failover.params]
   );
   if (!row) return null;
   const tournamentId = Number(row.tournament_id);
@@ -880,7 +882,8 @@ export async function saveTournamentReel(
 
 export async function failTournamentReel(tournamentId: number, error: string): Promise<void> {
   await db.runAsync(
-    `UPDATE cs2_tournament_reels SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?
+    `UPDATE cs2_tournament_reels SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?,
+            avoid_recorder = recorder
       WHERE tournament_id = ? AND status = 'recording'`,
     [MAX_ATTEMPTS, error.slice(0, 500), tournamentId]
   );
