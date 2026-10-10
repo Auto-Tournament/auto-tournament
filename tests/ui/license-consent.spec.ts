@@ -63,14 +63,11 @@ test.describe.serial('License consent UI', () => {
   );
 
   test(
-    'License page: change to commercial, accepting again',
+    'License page: the use follows the key, with no separate change step',
     { tag: ['@ui', '@settings'] },
     async ({ page }) => {
-      // No saved key (an earlier spec in the same shard may have left one), so
-      // commercial use shows the "needs a key" note below.
       const cleared = await page.request.delete('/api/license');
       expect([200, 204, 404]).toContain(cleared.status());
-      // Accept once through the page, then change it from the License page.
       await page.goto('/manage/license');
       await expect(page).toHaveURL(/\/welcome\/license/);
       await page.getByTestId('license-consent-noncommercial').check();
@@ -79,19 +76,22 @@ test.describe.serial('License consent UI', () => {
       await expect(page.getByTestId('settings-license-consent-use')).toHaveText(
         'Non-commercial use'
       );
+      // One thing to do: paste a key. No "change use" dialog.
+      await expect(page.getByTestId('settings-license-consent-change')).toHaveCount(0);
+      await expect(page.getByTestId('settings-license-input')).toBeVisible();
 
-      await page.getByTestId('settings-license-consent-change').click();
-      const dialog = page.getByRole('dialog');
-      await dialog.getByTestId('license-consent-commercial').check();
-      await expect(dialog.getByTestId('license-consent-key')).toBeVisible();
-      await expect(dialog.getByTestId('license-consent-accept')).toBeDisabled();
-      await dialog.getByTestId('license-consent-confirm').fill('I AGREE');
-      await dialog.getByTestId('license-consent-accept').click();
-
-      await expect(dialog).toHaveCount(0);
-      await expect(page.getByTestId('settings-license-consent-use')).toHaveText('Commercial use');
-      // Commercial without a key: a friendly note, nothing locked.
-      await expect(page.getByTestId('settings-license-consent-needs-key')).toBeVisible();
+      // A key that fails the signature check is no license: still non-commercial.
+      await page
+        .getByTestId('settings-license-input')
+        .fill(
+          `ATL1.${Buffer.from(JSON.stringify({ v: 1, kid: 'tWl_YS3_AzLgqdkm', id: 'lic_ui' })).toString('base64url')}.${'A'.repeat(86)}`
+        );
+      await page.getByTestId('settings-license-save').click();
+      await expect(page.getByTestId('settings-license-state')).toBeVisible();
+      await expect(page.getByTestId('settings-license-consent-use')).toHaveText(
+        'Non-commercial use'
+      );
+      await page.request.delete('/api/license');
     }
   );
 

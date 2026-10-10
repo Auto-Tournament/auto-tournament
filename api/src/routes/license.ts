@@ -107,7 +107,10 @@ router.use(requireAuth);
  *     description: |
  *       Body `{ "key": "ATL1.…" }`. Replaces any saved key. Refused (400) only
  *       when it isn't an `ATL1.` key at all; a key that fails the signature
- *       check is saved and reported as `invalid`. Same-site JSON only.
+ *       check is saved and reported as `invalid`. The declared use follows
+ *       the key: a genuine paid key records commercial use, a free or
+ *       invalid one non-commercial (when the terms were accepted). Same-site
+ *       JSON only.
  *     requestBody:
  *       required: true
  *       content:
@@ -125,7 +128,7 @@ router.use(requireAuth);
  *   delete:
  *     tags: [License]
  *     summary: Remove the license key
- *     description: Same-site only. The status afterwards is `none`.
+ *     description: Same-site only. The status afterwards is `none`, and the declared use non-commercial.
  *     responses:
  *       200:
  *         description: Removed; the new status
@@ -138,13 +141,32 @@ router.get('/', async (_req: Request, res: Response) => {
   }
 });
 
+/**
+ * The declared use follows the key, so there is one thing to do on the License
+ * page: a genuine paid key means commercial use, a free key or no key
+ * non-commercial. Recorded (with who) only when it changes, and only once the
+ * terms were accepted (the first-run consent page records the first one).
+ */
+async function useFollowsKey(
+  license: Awaited<ReturnType<typeof licenseService.getStatus>>,
+  actor: string
+): Promise<void> {
+  const consent = await licenseConsentService.getRecord();
+  if (!consent) return;
+  const genuine = license.license && license.status !== 'invalid' ? license.license : null;
+  const use = genuine && genuine.kind !== 'free' ? 'commercial' : 'noncommercial';
+  if (consent.use !== use) await licenseConsentService.record(use, actor, 'admin');
+}
+
 router.put('/', async (req: Request, res: Response) => {
   if (refuseWrite(req, res)) return;
   const key = (req.body as { key?: unknown } | undefined)?.key;
   const problem = keyInputProblem(key);
   if (problem) return res.status(400).json({ success: false, error: problem });
   try {
-    return res.json({ success: true, license: await licenseService.setKey(key as string) });
+    const license = await licenseService.setKey(key as string);
+    await useFollowsKey(license, requestActorId(req) ?? 'unknown');
+    return res.json({ success: true, license });
   } catch (error) {
     return failed(res, 'Failed to save the license key', error);
   }
@@ -153,7 +175,9 @@ router.put('/', async (req: Request, res: Response) => {
 router.delete('/', async (req: Request, res: Response) => {
   if (refuseWrite(req, res)) return;
   try {
-    return res.json({ success: true, license: await licenseService.clearKey() });
+    const license = await licenseService.clearKey();
+    await useFollowsKey(license, requestActorId(req) ?? 'unknown');
+    return res.json({ success: true, license });
   } catch (error) {
     return failed(res, 'Failed to remove the license key', error);
   }
