@@ -1351,4 +1351,21 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     ALTER TABLE cs2_team_reels ADD COLUMN IF NOT EXISTS avoid_recorder TEXT;
 `,
   },
+  {
+    id: '039-recorder-fleet-controls',
+    up: `
+    CREATE TABLE IF NOT EXISTS cs2_recorder_groups (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1))
+    );
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1));
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS group_id INTEGER REFERENCES cs2_recorder_groups(id);
+    CREATE INDEX IF NOT EXISTS cs2_recorders_group_idx ON cs2_recorders(group_id);
+    CREATE TABLE IF NOT EXISTS cs2_recording_targets (
+      match_slug TEXT PRIMARY KEY REFERENCES matches(slug) ON DELETE CASCADE,
+      group_id INTEGER NOT NULL REFERENCES cs2_recorder_groups(id)
+    );
+`,
+  },
 ];

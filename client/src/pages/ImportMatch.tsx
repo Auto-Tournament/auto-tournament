@@ -14,6 +14,7 @@ import {
   IconButton,
   LinearProgress,
   Link,
+  MenuItem,
   Stack,
   TextField,
   Typography,
@@ -50,6 +51,16 @@ interface ImportStatus {
 export default function ImportMatch() {
   const { t } = useTranslation();
   const [event, setEvent] = useState('');
+  const [groups, setGroups] = useState<Array<{ id: number; name: string; enabled: boolean }>>([]);
+  const [groupId, setGroupId] = useState<number | null>(null);
+  useEffect(() => {
+    api
+      .get<{ groups: Array<{ id: number; name: string; enabled: boolean }> }>(
+        '/api/game/cs2/recorder-groups'
+      )
+      .then((res) => setGroups(res.groups))
+      .catch((err) => setError(apiErrorMessage(err, '')));
+  }, []);
   const [files, setFiles] = useState<File[]>([]);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -107,6 +118,7 @@ export default function ImportMatch() {
     try {
       const created = await api.post<{ slug: string }>('/api/game/cs2/imports', {
         maps: files.length,
+        recordingGroupId: groupId,
         event: event.trim() || undefined,
       });
       const slug = encodeURIComponent(created.slug);
@@ -173,6 +185,24 @@ export default function ImportMatch() {
             size="small"
             inputProps={{ maxLength: 100, 'data-testid': 'import-event' }}
           />
+          <TextField
+            select
+            size="small"
+            label={t('importMatch.recordingGroup')}
+            helperText={t('importMatch.groupHelp')}
+            value={groupId ?? ''}
+            disabled={busy}
+            onChange={(e) => setGroupId(e.target.value === '' ? null : Number(e.target.value))}
+            data-testid="import-recording-group"
+          >
+            <MenuItem value="">{t('importMatch.allRecorders')}</MenuItem>
+            {groups.map((group) => (
+              <MenuItem key={group.id} value={group.id}>
+                {group.name}
+                {group.enabled ? '' : ` · ${t('importMatch.groupDisabled')}`}
+              </MenuItem>
+            ))}
+          </TextField>
           <Box
             data-testid="import-drop"
             onDragOver={(e) => {

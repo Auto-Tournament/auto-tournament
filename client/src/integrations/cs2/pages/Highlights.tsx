@@ -1,3 +1,9 @@
+import {
+  RecorderGroups,
+  RecorderControls,
+  MatchRecordingGroup,
+  type RecorderGroup,
+} from '../settings/RecorderFleetControls';
 /**
  * CS2's part of the Highlights page. Four tabs:
  *
@@ -42,6 +48,10 @@ interface BenchmarkTry {
 }
 
 interface Recorder {
+  enabled: boolean;
+  effectiveEnabled: boolean;
+  groupId: number | null;
+  groupName: string | null;
   name: string;
   label: string | null;
   version: number | null;
@@ -60,7 +70,13 @@ interface Recorder {
   runs: number;
   avgClipSeconds: number | null;
   lastError: string | null;
-  working: { clips: number; matchSlug: string | null; mapNumber: number; since: number } | null;
+  working: {
+    playerName: string | null;
+    clips: number;
+    matchSlug: string | null;
+    mapNumber: number;
+    since: number;
+  } | null;
 }
 
 interface Run {
@@ -122,13 +138,18 @@ function RecordersTab() {
   const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const [recorders, setRecorders] = useState<Recorder[] | null>(null);
+  const [groups, setGroups] = useState<RecorderGroup[]>([]);
   const [open, setOpen] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<{ name: string; label: string } | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const res = await api.get<{ recorders: Recorder[] }>('/api/game/cs2/recorders');
+      const [res, fleet] = await Promise.all([
+        api.get<{ recorders: Recorder[] }>('/api/game/cs2/recorders'),
+        api.get<{ groups: RecorderGroup[] }>('/api/game/cs2/recorder-groups'),
+      ]);
       setRecorders(res.recorders);
+      setGroups(fleet.groups);
     } catch (err) {
       showError(err instanceof Error ? err.message : t('highlightsAdmin.loadError'));
       setRecorders([]);
@@ -161,9 +182,13 @@ function RecordersTab() {
       </Box>
     );
   }
+  const sortedRecorders = [...recorders].sort(
+    (a, b) => (a.groupName ?? '').localeCompare(b.groupName ?? '') || a.name.localeCompare(b.name)
+  );
   return (
     <Stack spacing={2}>
       <AddRecorder onKeys={() => void load()} />
+      <RecorderGroups groups={groups} onChanged={load} />
       {recorders.length === 0 && (
         <Box
           sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}
@@ -176,7 +201,7 @@ function RecordersTab() {
           <Typography variant="body2">{t('highlightsAdmin.emptyHelp')}</Typography>
         </Box>
       )}
-      {recorders.map((r) => {
+      {sortedRecorders.map((r) => {
         const enc = encodeURIComponent(r.name);
         return (
           <Box
@@ -208,7 +233,15 @@ function RecordersTab() {
               >
                 {t('highlightsAdmin.rename')}
               </Button>
-              {r.paused ? (
+              {!r.effectiveEnabled ? (
+                <Chip
+                  size="small"
+                  color={r.working ? 'warning' : 'default'}
+                  label={t(
+                    r.working ? 'highlightsAdmin.fleet.draining' : 'highlightsAdmin.fleet.disabled'
+                  )}
+                />
+              ) : r.paused ? (
                 <Chip size="small" color="warning" label={t('highlightsAdmin.paused')} />
               ) : r.working ? (
                 <Chip size="small" color="success" label={t('highlightsAdmin.recording')} />
@@ -217,7 +250,7 @@ function RecordersTab() {
                   size="small"
                   color="success"
                   variant="outlined"
-                  label={t('highlightsAdmin.online')}
+                  label={t('highlightsAdmin.fleet.idle')}
                 />
               ) : (
                 <Chip size="small" variant="outlined" label={t('highlightsAdmin.offline')} />
@@ -239,6 +272,21 @@ function RecordersTab() {
                 .filter(Boolean)
                 .join(' · ')}
             </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {r.groupName ?? t('highlightsAdmin.fleet.ungrouped')}
+            </Typography>
+            <RecorderControls
+              name={r.name}
+              enabled={r.enabled}
+              groupId={r.groupId}
+              groups={groups}
+              onChanged={load}
+            />
+            {!r.effectiveEnabled && (
+              <Typography variant="caption" color="text.secondary">
+                {t('highlightsAdmin.fleet.drainHelp')}
+              </Typography>
+            )}
             {r.working && (
               <Typography variant="body2" data-testid={`recorder-working-${r.name}`}>
                 {t('highlightsAdmin.workingOn', {
@@ -247,6 +295,7 @@ function RecordersTab() {
                   match: r.working.matchSlug ?? '—',
                   time: when(r.working.since),
                 })}
+                {r.working.playerName ? ` · ${r.working.playerName}` : null}
               </Typography>
             )}
             {r.paused && r.pauseReason && (
@@ -1150,6 +1199,7 @@ function ClipsTab() {
           <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1, overflowWrap: 'anywhere' }}>
             {m.match}
           </Typography>
+          <MatchRecordingGroup slug={m.slug} />
           {m.reels.length > 0 && (
             <Box sx={{ mb: 1.5 }}>
               <Typography variant="caption" color="text.secondary">

@@ -1,3 +1,4 @@
+import { recordingTargetFilter } from './recorderFleet';
 /**
  * Redress: the clips dressed again from their clean twins and overlay recipes
  * (worker/overlay.go), without CS2: after a new caption card design, a name
@@ -96,14 +97,17 @@ export interface PlayerReelJob {
  * Work for an idle recorder, or null: a batch of clips while any is left,
  * then the reels made from them.
  */
-export async function claimRedress(): Promise<RedressJob | PlayerReelJob | null> {
+const redressMatch = `(COALESCE((SELECT h.match_slug FROM cs2_highlights h WHERE h.clip_path = cs2_redress_queue.file LIMIT 1), (SELECT r.match_slug FROM cs2_highlight_reels r WHERE r.clip_path = cs2_redress_queue.file LIMIT 1)))`;
+
+export async function claimRedress(recorder: string): Promise<RedressJob | PlayerReelJob | null> {
   const now = Math.floor(Date.now() / 1000);
   const waiting = await db.queryAsync<{ file: string; status: string; claimed_at: number | null }>(
-    `SELECT file, status, claimed_at FROM cs2_redress_queue WHERE status IN ('queued', 'working')
-      ORDER BY created_at, file`
+    `SELECT file, status, claimed_at FROM cs2_redress_queue WHERE status IN ('queued', 'working') AND ${recordingTargetFilter(redressMatch)}
+      ORDER BY created_at, file`,
+    [recorder]
   );
   const clips = waiting.filter((r) => CLIP_FILE.test(r.file));
-  if (clips.length > 0) return claimClips(now);
+  if (clips.length > 0) return claimClips(now, recorder);
   // The clips are done: the reels again, from them.
   for (const r of waiting) {
     if (r.status === 'working' && Number(r.claimed_at) >= now - STALE_SECONDS) continue;
@@ -113,12 +117,12 @@ export async function claimRedress(): Promise<RedressJob | PlayerReelJob | null>
   return null;
 }
 
-async function claimClips(now: number): Promise<RedressJob | null> {
+async function claimClips(now: number, recorder: string): Promise<RedressJob | null> {
   const rows = await db.queryAsync<{ file: string }>(
     `SELECT file FROM cs2_redress_queue
       WHERE file ~ '^[0-9]+\\.mp4$' AND (status = 'queued' OR (status = 'working' AND claimed_at < ?))
-      ORDER BY created_at, file LIMIT ?`,
-    [now - STALE_SECONDS, BATCH]
+      AND ${recordingTargetFilter(redressMatch)} ORDER BY created_at, file LIMIT ?`,
+    [now - STALE_SECONDS, recorder, BATCH]
   );
   if (rows.length === 0) return null;
   const files = rows.map((r) => r.file);

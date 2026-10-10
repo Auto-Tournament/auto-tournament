@@ -728,6 +728,10 @@
     "doneAll": "Importert. Høydepunktene tas opp etterpå hvis en opptaker er koblet til.",
     "openMatch": "Åpne kampen",
     "another": "Importer en til",
-    "dropHint": "eller slipp dem her. Velg flere samtidig med Cmd eller Ctrl."
+    "dropHint": "eller slipp dem her. Velg flere samtidig med Cmd eller Ctrl.",
+    "recordingGroup": "Opptakergruppe",
+    "allRecorders": "Alle opptakere",
+    "groupHelp": "Velg gruppen som skal rendre kampen. Deaktiverte grupper venter til de aktiveres.",
+    "groupDisabled": "Deaktivert"
   }
 }
