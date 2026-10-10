@@ -577,7 +577,8 @@
       "notSent": "不含任何名称、地址、玩家或比赛详情。",
       "privacy": "隐私政策",
       "noticeTitle": "来自 Auto Tournament 的提示",
-      "answered": "你对此许可证的回答：{{answer}}（{{time}}）"
+      "answered": "你对此许可证的回答：{{answer}}（{{time}}）",
+      "publicUrl": "Which product this is (the platform), and its public address, so the console can show where the key runs"
     },
     "eventPrompt": {
       "title": "在筹划新的活动吗？",
@@ -606,7 +607,11 @@
     "thirdParty": "This app is built with open-source packages under their own licenses.",
     "thirdPartyLink": "Third-party notices",
     "publicLine": "Players see “{{line}}” at the bottom of event pages.",
-    "pageIntro": "Your license key and where it stands. A paid key is for commercial use; a free key is for non-profit use."
+    "pageIntro": "Your license key and where it stands. A paid key is for commercial use; a free key is for non-profit use.",
+    "useFromPaidKey": "Set by the paid license key below.",
+    "useFromFreeKey": "Set by the free key below: non-profit use only.",
+    "useWithoutKey": "No key: free for non-profit use. Paste a paid key below for commercial use.",
+    "getKey": "Already have a license? Copy your key from <consoleLink>the Auto Tournament console</consoleLink>. Need one? <pricingLink>See pricing</pricingLink>."
   },
   "tournamentsPage": {
     "title": "Tournaments",

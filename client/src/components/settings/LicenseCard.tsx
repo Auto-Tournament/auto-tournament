@@ -21,6 +21,7 @@ import {
   type LicenseStatusResponse,
 } from '../../hooks/useLicenseStatus';
 import { LicenseConsentSection } from '../license/LicenseConsentSection';
+import { loadLicenseConsent } from '../../hooks/useLicenseConsent';
 import { SettingsCardHead, SettingsRow } from './SettingsRow';
 
 /**
@@ -35,7 +36,7 @@ import { SettingsCardHead, SettingsRow } from './SettingsRow';
 export function LicenseCard() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
-  const { status, setStatus, loaded, reload } = useLicenseStatus();
+  const { status, setStatus, loaded } = useLicenseStatus();
   const [key, setKey] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -53,6 +54,8 @@ export function LicenseCard() {
     try {
       const res = await request();
       setStatus(res.license);
+      // The declared use follows the key (routes/license.ts): read it again.
+      void loadLicenseConsent(true);
       showSuccess(success);
       return true;
     } catch (err) {
@@ -95,10 +98,18 @@ export function LicenseCard() {
     <Box data-testid="settings-license-card">
       <SettingsCardHead title={t('license.title')} hint={t('license.short')} />
 
-      {/* The use declared when the terms were accepted, and "Change" */}
+      {/* How this install is used: it follows the key */}
       <Box sx={{ pb: 1.5 }}>
-        <LicenseConsentSection hasKey={hasKey} onChanged={() => void reload()} />
+        <LicenseConsentSection
+          keyKind={license && status.status !== 'invalid' ? license.kind : null}
+        />
       </Box>
+
+      {!hasKey && (
+        <Typography variant="body2" sx={{ pb: 1.5 }} data-testid="settings-license-get-key">
+          <Trans t={t} i18nKey="license.getKey" components={consoleLinkComponents} />
+        </Typography>
+      )}
 
       <SettingsRow
         title={
@@ -136,7 +147,8 @@ export function LicenseCard() {
             data-testid="settings-license-state"
           />
         }
-        defaultOpen={status.status === 'invalid' || status.status === 'warning'}
+        // Open with no key yet: pasting one is the one thing to do here.
+        defaultOpen={!hasKey || status.status === 'invalid' || status.status === 'warning'}
         openLabel={hasKey ? t('license.replaceLabel') : t('license.label')}
       >
         <Stack spacing={2}>
@@ -256,6 +268,7 @@ const SENT_ROWS = [
   'instanceId',
   'serverCount',
   'version',
+  'publicUrl',
   'activity',
   'declared',
 ] as const;
