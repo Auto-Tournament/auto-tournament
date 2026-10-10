@@ -422,7 +422,9 @@ async function seed(ctx: APIRequestContext): Promise<SeedResult> {
     data: { webhookUrl: BASE_URL },
   });
   if (!settingsRes.ok()) {
-    throw new Error(`setting webhookUrl failed: ${settingsRes.status()} ${await settingsRes.text()}`);
+    throw new Error(
+      `setting webhookUrl failed: ${settingsRes.status()} ${await settingsRes.text()}`
+    );
   }
 
   // Plugin settings, under 2.4.15's names: stored as matchzy_* keys, which
@@ -469,7 +471,9 @@ async function seed(ctx: APIRequestContext): Promise<SeedResult> {
     },
   });
   if (!tournamentRes.ok()) {
-    throw new Error(`creating tournament failed: ${tournamentRes.status()} ${await tournamentRes.text()}`);
+    throw new Error(
+      `creating tournament failed: ${tournamentRes.status()} ${await tournamentRes.text()}`
+    );
   }
 
   const startRes = await ctx.post('/api/tournament/start', { data: {} });
@@ -1006,7 +1010,14 @@ const BUNDLED_MAPS = JSON.parse(
 const SYSTEM_POOL_NAMES = ['Active Duty', 'Defusal only', 'Hostage only', 'Arms Race only'];
 
 type MapRow = { id: string; created_at: number };
-type PoolRow = { id: number; name: string; map_ids: string; is_default: number; enabled: number; created_at: number };
+type PoolRow = {
+  id: number;
+  name: string;
+  map_ids: string;
+  is_default: number;
+  enabled: number;
+  created_at: number;
+};
 
 /**
  * The first boot of 3.0 runs the CS2 map sync (maps/mapSync.ts) against the
@@ -1025,32 +1036,49 @@ function assertCs2RowsSurvivedUpgrade(label: string, before: Cs2Rows, after: Cs2
       `${label}: CS2 ${what} differ.\n--- before ---\n${JSON.stringify(a, null, 2)}\n--- after ---\n${JSON.stringify(b, null, 2)}`
     );
   };
-  if (JSON.stringify(restBefore) !== JSON.stringify(restAfter)) differ('rows', restBefore, restAfter);
+  if (JSON.stringify(restBefore) !== JSON.stringify(restAfter))
+    differ('rows', restBefore, restAfter);
 
   const afterMaps = new Map((mapsAfter as MapRow[]).map((m) => [m.id, m]));
   for (const map of mapsBefore as MapRow[]) {
-    if (afterMaps.get(map.id)?.created_at !== map.created_at) differ(`map ${map.id}`, map, afterMaps.get(map.id));
+    if (afterMaps.get(map.id)?.created_at !== map.created_at)
+      differ(`map ${map.id}`, map, afterMaps.get(map.id));
   }
   const bundledIds = new Set(BUNDLED_MAPS.maps.map((m) => m.id));
   const oldIds = new Set((mapsBefore as MapRow[]).map((m) => m.id));
   const unexpected = [...afterMaps.keys()].filter((id) => !oldIds.has(id) && !bundledIds.has(id));
-  if (unexpected.length > 0) throw new Error(`${label}: maps appeared that maps.json does not list: ${unexpected.join(', ')}`);
+  if (unexpected.length > 0)
+    throw new Error(
+      `${label}: maps appeared that maps.json does not list: ${unexpected.join(', ')}`
+    );
 
   const afterPools = new Map((poolsAfter as PoolRow[]).map((p) => [p.id, p]));
   for (const pool of poolsBefore as PoolRow[]) {
     const now = afterPools.get(pool.id);
     const keep = (p?: PoolRow) =>
-      p && { id: p.id, name: p.name, is_default: p.is_default, enabled: p.enabled, created_at: p.created_at };
-    if (JSON.stringify(keep(pool)) !== JSON.stringify(keep(now))) differ(`pool ${pool.name}`, pool, now);
-    if (!SYSTEM_POOL_NAMES.includes(pool.name) && pool.map_ids !== now?.map_ids) differ(`pool ${pool.name}`, pool, now);
+      p && {
+        id: p.id,
+        name: p.name,
+        is_default: p.is_default,
+        enabled: p.enabled,
+        created_at: p.created_at,
+      };
+    if (JSON.stringify(keep(pool)) !== JSON.stringify(keep(now)))
+      differ(`pool ${pool.name}`, pool, now);
+    if (!SYSTEM_POOL_NAMES.includes(pool.name) && pool.map_ids !== now?.map_ids)
+      differ(`pool ${pool.name}`, pool, now);
   }
   const activeDuty = (poolsAfter as PoolRow[]).find((p) => p.name === 'Active Duty');
   const expected = JSON.stringify([...BUNDLED_MAPS.activeDuty].sort());
   if (activeDuty?.map_ids !== expected) {
-    throw new Error(`${label}: the unedited Active Duty pool should follow maps.json (${expected}): ${activeDuty?.map_ids}`);
+    throw new Error(
+      `${label}: the unedited Active Duty pool should follow maps.json (${expected}): ${activeDuty?.map_ids}`
+    );
   }
   assertCs2Seeded(label, before);
-  log(`${label}: the map sync added ${afterMaps.size - oldIds.size} map(s) and moved Active Duty to maps.json; nothing was deleted.`);
+  log(
+    `${label}: the map sync added ${afterMaps.size - oldIds.size} map(s) and moved Active Duty to maps.json; nothing was deleted.`
+  );
 }
 
 function assertCs2RowsSurvived(label: string, before: Cs2Rows, after: Cs2Rows) {
@@ -1081,7 +1109,9 @@ function assertCs2Seeded(label: string, before: Cs2Rows) {
     );
   }
   if (before.templates.length < 2) {
-    throw new Error(`${label}: expected the two seeded templates: ${JSON.stringify(before.templates)}`);
+    throw new Error(
+      `${label}: expected the two seeded templates: ${JSON.stringify(before.templates)}`
+    );
   }
 }
 
@@ -1121,20 +1151,29 @@ async function assertCs2Installed(ctx: APIRequestContext, label: string) {
   const res = await ctx.get('/api/modules');
   if (!res.ok()) throw new Error(`GET /api/modules failed: ${res.status()} ${await res.text()}`);
   const { modules } = (await res.json()) as {
-    modules: Array<{ id: string; source: string; status: string; enabled: boolean; reason: string | null }>;
+    modules: Array<{
+      id: string;
+      source: string;
+      status: string;
+      enabled: boolean;
+      reason: string | null;
+    }>;
   };
   const cs2 = modules.find((m) => m.id === 'cs2');
   if (!cs2 || cs2.source !== 'disk' || cs2.status !== 'ok' || !cs2.enabled) {
     throw new Error(`${label}: CS2 is not loaded from the catalog: ${JSON.stringify(cs2)}`);
   }
   const catalog = await ctx.get('/api/catalog');
-  if (!catalog.ok()) throw new Error(`GET /api/catalog failed: ${catalog.status()} ${await catalog.text()}`);
+  if (!catalog.ok())
+    throw new Error(`GET /api/catalog failed: ${catalog.status()} ${await catalog.text()}`);
   const { items } = (await catalog.json()) as {
     items: Array<{ kind: string; id: string; state: string; installed: { source: string } | null }>;
   };
   const item = items.find((i) => i.kind === 'module' && i.id === 'cs2');
   if (item?.state !== 'installed' || item.installed?.source !== 'snapshot') {
-    throw new Error(`${label}: the catalog does not list CS2 as installed from the snapshot: ${JSON.stringify(item)}`);
+    throw new Error(
+      `${label}: the catalog does not list CS2 as installed from the snapshot: ${JSON.stringify(item)}`
+    );
   }
 }
 
@@ -1157,7 +1196,11 @@ async function assertCs2TablesHandedOver(ctx: APIRequestContext, label: string) 
   }
   // Every migration CS2 declares is recorded, with the checksum of its SQL:
   // 001-tables adopted by the handover, the later ones run by CS2's runner.
-  if (JSON.stringify(view.ledger) !== JSON.stringify(view.declared)) {
+  // In id order on both sides: the ledger is read by id, and CS2 declares 034
+  // before 032 and 033 on purpose (integrations/cs2/migrations.ts).
+  const byId = (list: Array<{ id: string; checksum: string }>) =>
+    JSON.stringify([...list].sort((a, b) => a.id.localeCompare(b.id)));
+  if (byId(view.ledger) !== byId(view.declared)) {
     throw new Error(
       `${label}: CS2's ledger is ${JSON.stringify(view.ledger)}, expected ${JSON.stringify(view.declared)}.`
     );
@@ -1199,7 +1242,9 @@ function assertSameCs2Schema(label: string, expected: unknown, actual: unknown) 
       `${label}: CS2's tables differ.\n--- upgraded ---\n${JSON.stringify(expected, null, 2)}\n--- this database ---\n${JSON.stringify(actual, null, 2)}`
     );
   }
-  log(`${label}: same CS2 columns, indexes, constraints, sequences and keys as the upgraded database.`);
+  log(
+    `${label}: same CS2 columns, indexes, constraints, sequences and keys as the upgraded database.`
+  );
 }
 
 /** Set by path 1, compared against by the reboots and by path 2. */
@@ -1319,7 +1364,9 @@ function platformDatabases(postgresName: string): string[] {
 function assertDatabases(label: string, postgresName: string, expected: string[]) {
   const actual = platformDatabases(postgresName);
   if (JSON.stringify(actual) !== JSON.stringify([...expected].sort())) {
-    throw new Error(`${label}: databases are ${JSON.stringify(actual)}, expected ${JSON.stringify(expected)}.`);
+    throw new Error(
+      `${label}: databases are ${JSON.stringify(actual)}, expected ${JSON.stringify(expected)}.`
+    );
   }
 }
 
@@ -1489,7 +1536,9 @@ async function runUpgradedDatabasePath() {
     // database has CS2 data, so the new build installed CS2 from there.
     step = 'verify CS2 was installed from the offline snapshot';
     if (!containerOutput(APP_NAME).includes(CS2_AUTO_INSTALL_LOG)) {
-      throw new Error("The new build did not install CS2 for the database's CS2 data, or did not log it.");
+      throw new Error(
+        "The new build did not install CS2 for the database's CS2 data, or did not log it."
+      );
     }
     await assertCs2Installed(ctx, 'Upgrade');
     log('Upgrade: CS2 installed and enabled from the offline snapshot, and logged.');
@@ -1612,10 +1661,13 @@ async function runFreshDatabasePath() {
       step = 'install CS2 through the catalog';
       const install = await ctx.post('/api/catalog/modules/cs2/install', { data: {} });
       if (!install.ok()) {
-        throw new Error(`Installing CS2 from the catalog failed: ${install.status()} ${await install.text()}`);
+        throw new Error(
+          `Installing CS2 from the catalog failed: ${install.status()} ${await install.text()}`
+        );
       }
       const installed = (await install.json()) as { restartRequired: boolean };
-      if (installed.restartRequired) throw new Error('Installing CS2 on a fresh instance asked for a restart.');
+      if (installed.restartRequired)
+        throw new Error('Installing CS2 on a fresh instance asked for a restart.');
       await assertCs2Installed(ctx, 'Fresh database');
 
       step = 'verify CS2 created its tables on a fresh database';
@@ -1630,7 +1682,9 @@ async function runFreshDatabasePath() {
       const playerCount = (playersBody.players ?? []).length;
       // login-admin itself creates exactly one (admin) player row.
       if (playerCount > 1) {
-        throw new Error(`Expected a fresh database to have at most the admin player, got ${playerCount}.`);
+        throw new Error(
+          `Expected a fresh database to have at most the admin player, got ${playerCount}.`
+        );
       }
       const teamsRes = await ctx.get('/api/teams');
       const teamsBody = (await teamsRes.json()) as { teams?: unknown[] };
@@ -1657,7 +1711,8 @@ async function runFreshDatabasePath() {
       await loginAdmin(ctx);
       step = 'purge CS2';
       const purge = await ctx.post('/api/catalog/modules/cs2/purge', { data: { confirm: 'cs2' } });
-      if (!purge.ok()) throw new Error(`Purging CS2 failed: ${purge.status()} ${await purge.text()}`);
+      if (!purge.ok())
+        throw new Error(`Purging CS2 failed: ${purge.status()} ${await purge.text()}`);
       const cs2TablesLeft = psqlJson<number>(
         freshPg,
         "SELECT COUNT(*) FROM pg_tables WHERE schemaname = 'public' AND tablename LIKE 'cs2\\_%'",
@@ -1669,7 +1724,9 @@ async function runFreshDatabasePath() {
         DB_NAME
       );
       if (cs2TablesLeft !== 0 || cs2LedgerLeft !== 0) {
-        throw new Error(`After the purge: ${cs2TablesLeft} cs2_* table(s) and ${cs2LedgerLeft} ledger row(s) left.`);
+        throw new Error(
+          `After the purge: ${cs2TablesLeft} cs2_* table(s) and ${cs2LedgerLeft} ledger row(s) left.`
+        );
       }
       const coreTables = psqlJson<number>(
         freshPg,
@@ -1677,7 +1734,9 @@ async function runFreshDatabasePath() {
         DB_NAME
       );
       if (coreTables !== 3) throw new Error('The purge touched core tables.');
-      log('Fresh database: CS2 uninstalled, restarted and purged — its tables and the core keys into them are gone, core is intact.');
+      log(
+        'Fresh database: CS2 uninstalled, restarted and purged — its tables and the core keys into them are gone, core is intact.'
+      );
 
       log('Path 2 (fresh database) passed: migrations ran, and the app boots clean and empty.');
     } finally {
