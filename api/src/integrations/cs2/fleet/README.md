@@ -489,3 +489,12 @@ bracket needs, through csm's `server.start` / `server.stop` / `server.create`
   newest 500): start / stop / create / link, and a note when the pool is
   short and nothing more can be done. Settings default: on, 2 min lead,
   10 min cool-down, 4 servers per machine.
+
+### Mixed human and bot matches
+
+Tournament setup stores the opt-in **Fill teams with bots** switch as
+`settings.cs2.fillTeamsWithBots`. The tournament's team size becomes
+`rules.bot_fill.players_per_team` in `match.assign`. Human rosters remain unchanged and
+bots use anonymous identities. Bot fill suppresses bot-only simulation and its timescale;
+humans still complete normal ready-up and veto. This requires a Ready Up build with bot-fill
+support. MatchZy Enhanced does not implement this rule.

@@ -2294,5 +2294,11 @@
         "drop": "Droppet; reelene lages på nytt"
       }
     }
+  },
+  "tournament": {
+    "botFill": {
+      "label": "Fyll lagene med boter",
+      "help": "Boter fyller ledige plasser opp til lagstørrelsen og gir plass til spillere som kobler til. Du gjør klar og spiller som normalt. Krever Ready Up med støtte for botfyll."
+    }
   }
 }

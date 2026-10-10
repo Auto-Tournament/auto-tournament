@@ -232,7 +232,13 @@ export function rulesFromMatchConfig(
   rules.demo = { record, upload: record && defaults.demoUpload === true };
 
   if (config.wingman === true) rules.wingman = true;
-  if (config.simulation === true) {
+  if (config.bot_fill === true) {
+    const teamSize = num(config.players_per_team);
+    if (teamSize === undefined || !Number.isInteger(teamSize) || teamSize < 1 || teamSize > 32)
+      throw new AssignConfigError('Bot fill needs 1–32 players per team');
+    rules.bot_fill = { players_per_team: teamSize };
+  }
+  if (config.simulation === true && config.bot_fill !== true) {
     const timescale = num(config.simulation_timescale);
     rules.simulation = { timescale: timescale !== undefined && timescale > 0 ? timescale : 1 };
   }

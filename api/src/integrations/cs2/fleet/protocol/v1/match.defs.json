@@ -358,6 +358,21 @@
             }
           },
           "description": "Named rule overrides on top of the ruleset preset (one key per rule). Unknown keys, wrong types and out-of-range values are refused (cmd.result invalid_config). Reported in MatchState.effective_rules"
+        },
+        "bot_fill": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "players_per_team"
+          ],
+          "properties": {
+            "players_per_team": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 32
+            }
+          },
+          "description": "Anonymous bots fill each side alongside human roster players; real time and human ready-up."
         }
       },
       "description": "Typed match rules (FLEET.md §7.1). Enforced by Ready Up today: max_rounds, overtime, tiebreak, knife.side_pick_seconds, clinch_series, whitelist (always on), ready.min_per_team (reported). The rest is carried in MatchState.rules for later steps. ruleset + overrides: docs/ESPORTS-MODE.md (enforced)."

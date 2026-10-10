@@ -1,3 +1,4 @@
+import type { InputHTMLAttributes } from 'react';
 import { Box, FormControlLabel, Switch, TextField, Typography } from '@mui/material';
 import { SegmentedControl, useModuleTranslation, radii } from '../../../module-sdk';
 import type { TournamentRulesStepProps as Cs2MatchSettingsProps } from '../../types';
@@ -16,13 +17,19 @@ import {
  * (`settings.cs2`), which this step reads from and writes to the wizard's
  * settings object.
  */
-export function Cs2MatchSettings({ settings, onChange, type, disabled = false }: Cs2MatchSettingsProps) {
+export function Cs2MatchSettings({
+  settings,
+  onChange,
+  type,
+  disabled = false,
+}: Cs2MatchSettingsProps) {
   const { t } = useModuleTranslation('cs2');
   const value = cs2SettingsOf(settings);
   const overtimeOption = overtimeOptionOf(value);
   const { maxRounds, overtimeSegments } = value;
   // The test ids the wizard has always had for each kind of tournament.
-  const maxRoundsTestId = type === 'shuffle' ? 'shuffle-max-rounds-field' : 'tournament-max-rounds-field';
+  const maxRoundsTestId =
+    type === 'shuffle' ? 'shuffle-max-rounds-field' : 'tournament-max-rounds-field';
   const update = (patch: Partial<Cs2TournamentSettings>) =>
     onChange(cs2Patch({ ...value, ...patch }));
 
@@ -64,6 +71,26 @@ export function Cs2MatchSettings({ settings, onChange, type, disabled = false }:
         {t('tournament.setup.format.cs2Help')}
       </Typography>
 
+      <Box>
+        <FormControlLabel
+          label={t('tournament.botFill.label')}
+          control={
+            <Switch
+              checked={value.fillTeamsWithBots === true}
+              disabled={disabled}
+              onChange={(_e, checked) => update({ fillTeamsWithBots: checked })}
+              slotProps={{
+                input: {
+                  'data-testid': 'tournament-bot-fill',
+                } as InputHTMLAttributes<HTMLInputElement>,
+              }}
+            />
+          }
+        />
+        <Typography variant="body2" color="text.secondary">
+          {t('tournament.botFill.help')}
+        </Typography>
+      </Box>
       <TextField
         label={t('tournament.wizard.maxRoundsLabel')}
         type="number"
