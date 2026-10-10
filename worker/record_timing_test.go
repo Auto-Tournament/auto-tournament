@@ -325,3 +325,28 @@ func TestTimelinePicksNearestByDefault(t *testing.T) {
 		}
 	}
 }
+
+func TestTimelineBorrowsFromASlowedCapture(t *testing.T) {
+	// The full-speed capture misses ticks 20-60 (a 40-tick hitch, past
+	// maxHoleTicks); the slowed one has every tick: the clip takes those.
+	var full, slow []float64
+	for k := 0; k <= 64; k++ {
+		if k < 20 || k > 60 {
+			full = append(full, float64(k))
+		}
+		slow = append(slow, float64(k))
+	}
+	frames, err := timeline([][]float64{full, slow}, []segment{{0, 1, 1}}, 0)
+	if err != nil {
+		t.Fatalf("the hole was not filled from the slowed capture: %v", err)
+	}
+	borrowed := 0
+	for _, f := range frames {
+		if f.source == 1 {
+			borrowed++
+		}
+	}
+	if borrowed == 0 {
+		t.Fatal("no frame came from the slowed capture")
+	}
+}
