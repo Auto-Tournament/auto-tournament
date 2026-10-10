@@ -141,7 +141,8 @@ export function LicenseCard() {
             data-testid="settings-license-state"
           />
         }
-        defaultOpen={status.status === 'invalid' || status.status === 'warning'}
+        // Open with no key yet: pasting one is the one thing to do here.
+        defaultOpen={!hasKey || status.status === 'invalid' || status.status === 'warning'}
         openLabel={hasKey ? t('license.replaceLabel') : t('license.label')}
       >
         <Stack spacing={2}>
