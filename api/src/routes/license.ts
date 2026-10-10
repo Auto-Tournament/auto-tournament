@@ -49,15 +49,16 @@ function failed(res: Response, what: string, error: unknown) {
  * /api/license/badge:
  *   get:
  *     tags: [License]
- *     summary: The public "Licensed" line
+ *     summary: The public license line
  *     description: |
- *       `badge` is `{ verifyUrl }` when an admin turned the public badge on
- *       and the saved key is a genuine platform license; otherwise null.
- *       Public. Never says anything about an instance without a license:
- *       free non-commercial use needs none.
+ *       `badge` is `{ use, verifyUrl }`, always shown on public event pages:
+ *       `commercial` (a paid key in good standing) or `non_commercial` (a
+ *       free key), with the license's public check page; `none` (no key, or
+ *       an invalid or expired one) with a null `verifyUrl`. Public. Null only
+ *       when it could not be read.
  *     responses:
  *       200:
- *         description: The badge, or null
+ *         description: The badge
  */
 router.get('/badge', async (_req: Request, res: Response) => {
   try {
@@ -158,45 +159,11 @@ router.delete('/', async (req: Request, res: Response) => {
   }
 });
 
-/**
- * @openapi
- * /api/license/public-badge:
- *   put:
- *     tags: [License]
- *     summary: Turn the public "Licensed" line on or off
- *     description: |
- *       Body `{ "enabled": true }`. Off by default. When on, public event
- *       pages show "Licensed", linking to the license's check page, but only
- *       while the saved key is a genuine platform license. Same-site JSON only.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [enabled]
- *             properties:
- *               enabled: { type: boolean }
- *     responses:
- *       200:
- *         description: Saved; the new status
- *       400:
- *         description: enabled is not a boolean
- */
-router.put('/public-badge', async (req: Request, res: Response) => {
-  if (refuseWrite(req, res)) return;
-  const enabled = (req.body as { enabled?: unknown } | undefined)?.enabled;
-  if (typeof enabled !== 'boolean') {
-    return res.status(400).json({ success: false, error: 'enabled must be true or false' });
-  }
-  try {
-    return res.json({ success: true, license: await licenseService.setPublicBadge(enabled) });
-  } catch (error) {
-    return failed(res, 'Failed to save the public badge setting', error);
-  }
-});
-
-const EVENT_PROMPT_ACTIONS: readonly EventPromptAction[] = [...DECLARATION_ANSWERS, 'dismissed', 'dont_ask'];
+const EVENT_PROMPT_ACTIONS: readonly EventPromptAction[] = [
+  ...DECLARATION_ANSWERS,
+  'dismissed',
+  'dont_ask',
+];
 
 /**
  * @openapi
@@ -233,15 +200,23 @@ router.post('/event-prompt', async (req: Request, res: Response) => {
   if (refuseWrite(req, res)) return;
   const action = (req.body as { action?: unknown } | undefined)?.action;
   if (typeof action !== 'string' || !(EVENT_PROMPT_ACTIONS as readonly string[]).includes(action)) {
-    return res.status(400).json({ success: false, error: `action must be one of ${EVENT_PROMPT_ACTIONS.join(', ')}` });
+    return res
+      .status(400)
+      .json({ success: false, error: `action must be one of ${EVENT_PROMPT_ACTIONS.join(', ')}` });
   }
   try {
     const status = await licenseService.getStatus();
     const license = status.license;
     if (status.status === 'invalid' || !license || license.kind !== 'event') {
-      return res.status(409).json({ success: false, error: 'The saved key is not an event license' });
+      return res
+        .status(409)
+        .json({ success: false, error: 'The saved key is not an event license' });
     }
-    await licenseService.answerEventPrompt(action as EventPromptAction, license.id, requestActorId(req) ?? 'unknown');
+    await licenseService.answerEventPrompt(
+      action as EventPromptAction,
+      license.id,
+      requestActorId(req) ?? 'unknown'
+    );
     return res.json({ success: true, license: await licenseService.getStatus() });
   } catch (error) {
     return failed(res, 'Failed to save the answer', error);
@@ -331,15 +306,23 @@ router.post('/consent', async (req: Request, res: Response) => {
         'An API token cannot accept the license terms. Sign in as an admin, or set AT_ACCEPT_LICENSE.',
     });
   }
-  const body = (req.body ?? {}) as { use?: unknown; confirm?: unknown; key?: unknown; termsVersion?: unknown };
+  const body = (req.body ?? {}) as {
+    use?: unknown;
+    confirm?: unknown;
+    key?: unknown;
+    termsVersion?: unknown;
+  };
   const use = parseLicenseUse(body.use);
   if (!use) {
-    return res
-      .status(400)
-      .json({ success: false, error: 'Choose non-commercial or commercial use (use: "noncommercial" or "commercial")' });
+    return res.status(400).json({
+      success: false,
+      error: 'Choose non-commercial or commercial use (use: "noncommercial" or "commercial")',
+    });
   }
   if (!isConsentPhrase(body.confirm)) {
-    return res.status(400).json({ success: false, error: `Type ${CONSENT_PHRASE} to accept the terms` });
+    return res
+      .status(400)
+      .json({ success: false, error: `Type ${CONSENT_PHRASE} to accept the terms` });
   }
   const hasKey = typeof body.key === 'string' && body.key.trim() !== '';
   if (hasKey) {
@@ -364,7 +347,11 @@ router.post('/consent', async (req: Request, res: Response) => {
       licenseConsentService.getStatus(),
       licenseConsentService.getHistory(),
     ]);
-    return res.json({ success: true, consent: { ...consent, history }, ...(license ? { license } : {}) });
+    return res.json({
+      success: true,
+      consent: { ...consent, history },
+      ...(license ? { license } : {}),
+    });
   } catch (error) {
     return failed(res, 'Failed to save the license consent', error);
   }

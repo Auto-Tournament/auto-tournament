@@ -85,7 +85,11 @@ export const ADMIN_SEARCH_INDEX: AdminSearchEntry[] = [
     to: settings('webhooks'),
     keywords: 'webhooks discord integrations events signing secret',
   },
-  { key: 'settingsLicense', to: settings('license'), keywords: 'license commercial key polyform' },
+  {
+    key: 'settingsLicense',
+    to: paths.license,
+    keywords: 'license commercial non-profit free key polyform licensed badge',
+  },
   {
     key: 'settingsMatchmaking',
     to: settings('matchmaking'),

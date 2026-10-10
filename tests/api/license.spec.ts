@@ -274,7 +274,6 @@ test.describe('license keys: admin status', () => {
     serverCount: 6,
     lineDate: '2027-01-01',
     version: '3.0.0',
-    publicBadge: false,
     publicKeys,
   };
 

@@ -24,7 +24,6 @@ export interface LicenseStatus {
   serverCount: number | null;
   version: string;
   lineDate: string;
-  publicBadge: boolean;
   /** The daily check-in; null without a key (then nothing is sent). */
   checkin: {
     lastAt: string | null;

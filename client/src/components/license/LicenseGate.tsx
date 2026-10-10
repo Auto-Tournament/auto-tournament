@@ -46,6 +46,7 @@ export function LicenseGate() {
   const replaced = reason === 'replaced';
   const onSettings =
     window.location.pathname.startsWith('/manage/settings') ||
+    window.location.pathname.startsWith('/manage/license') ||
     window.location.pathname.startsWith('/login');
 
   if (isExpired && !onSettings) {
@@ -132,7 +133,7 @@ export function LicenseGate() {
           <Button
             color="inherit"
             size="small"
-            href={replaced ? '/manage/settings/license' : CONSOLE_URL}
+            href={replaced ? '/manage/license' : CONSOLE_URL}
             {...(replaced ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
           >
             {replaced

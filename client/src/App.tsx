@@ -29,6 +29,7 @@ import HighlightsAdmin from './pages/HighlightsAdmin';
 import Modules from './pages/Modules';
 import AdminTools from './pages/AdminTools';
 import Settings from './pages/Settings';
+import License from './pages/License';
 import Development from './pages/Development';
 import { useIsDevelopment } from './hooks/useIsDevelopment';
 import TeamMatch from './pages/TeamMatch';
@@ -598,6 +599,7 @@ function AppRoutes() {
         <Route path={adminRoute(paths.modules)} element={<Modules />} />
         <Route path={adminRoute(paths.admin)} element={<AdminTools />} />
         <Route path={adminRoute(paths.settings)} element={<Settings />} />
+        <Route path={adminRoute(paths.license)} element={<License />} />
         {integrationRoutes
           .filter((route) => route.scope === 'admin')
           .map((route) => (

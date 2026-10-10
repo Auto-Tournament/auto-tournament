@@ -902,7 +902,7 @@
       "settingsSignIn": "Settings: sign-in providers",
       "settingsPlayers": "Settings: players and access",
       "settingsWebhooks": "Settings: webhooks",
-      "settingsLicense": "Settings: license",
+      "settingsLicense": "License",
       "settingsMatchmaking": "Settings: matchmaking",
       "settingsAdvanced": "Settings: advanced"
     }

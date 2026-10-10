@@ -92,9 +92,13 @@ test.describe('Module sections on Admin tools and Settings', () => {
       await expect(page).toHaveURL(/\/match-rules$/, { timeout: 30000 });
       await page.goto('/manage/settings?section=cs2:skins');
       await expect(page).toHaveURL(/\/skins$/, { timeout: 30000 });
-      // A platform section scrolls to its card.
+      // The license moved to its own page; its old link lands there.
       await page.goto('/manage/settings?section=license');
-      await expect(page.getByTestId('settings-card-license')).toBeInViewport({ timeout: 15000 });
+      await expect(page).toHaveURL(/\/manage\/license$/, { timeout: 30000 });
+      await expect(page.getByTestId('license-page')).toBeVisible();
+      // A platform section scrolls to its card.
+      await page.goto('/manage/settings?section=webhooks');
+      await expect(page.getByTestId('settings-card-webhooks')).toBeInViewport({ timeout: 15000 });
     }
   );
 

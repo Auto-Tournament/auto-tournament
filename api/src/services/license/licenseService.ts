@@ -5,8 +5,9 @@
  * Free non-commercial use is legitimate and never limited: no key is a quiet
  * note for admins. A paid key's server limit is enforced when servers are
  * created, and an unpaid subscription stops the platform after its grace
- * period (./gate.ts); a problem with a key is a warning for admins. Nothing is shown to players
- * unless an admin turns the public badge on, and then only for a valid key.
+ * period (./gate.ts); a problem with a key is a warning for admins. Players
+ * see one line on public event pages (getPublicBadge): licensed for
+ * commercial or non-profit use, or unlicensed.
  *
  * The key is stored in `app_settings` (`license_key`), set only through
  * /api/license. It is not a secret, but it is treated as sensitive: never
@@ -17,7 +18,6 @@
  */
 
 import { settingsService } from '../settingsService';
-import { isTruthySetting } from '../../utils/settingFields';
 import packageJson from '../../../package.json';
 import { buildLineDate } from './lineDate';
 import { countServers } from './serverCount';
@@ -75,8 +75,6 @@ export interface LicenseStatus {
   /** This build's version and version line date (see ./lineDate). */
   version: string;
   lineDate: string;
-  /** The admin toggle for the public "Licensed" line. */
-  publicBadge: boolean;
   /**
    * The daily check-in (./checkin.ts): when it last went through, the
    * server's notice (a calm note, never a block) and what is sent. Null
@@ -97,7 +95,6 @@ export interface StatusInputs {
   serverCount: number | null;
   lineDate: string;
   version: string;
-  publicBadge: boolean;
   now?: string | Date;
   publicKeys?: Readonly<Record<string, LicensePublicKey>>;
 }
@@ -131,7 +128,6 @@ export function statusFor(key: string | null, inputs: StatusInputs): LicenseStat
     serverCount: inputs.serverCount,
     version: inputs.version,
     lineDate: inputs.lineDate,
-    publicBadge: inputs.publicBadge,
     checkin: null,
     eventPrompt: null,
     standing: {
@@ -255,20 +251,10 @@ class LicenseService {
     }
   }
 
-  async isPublicBadgeEnabled(): Promise<boolean> {
-    const value = await settingsService.getSetting('license_public_badge');
-    return value ? isTruthySetting(value) : false;
-  }
-
   async getStatus(): Promise<LicenseStatus> {
-    const [key, serverCount, publicBadge] = await Promise.all([
-      this.getKey(),
-      countServers(),
-      this.isPublicBadgeEnabled(),
-    ]);
+    const [key, serverCount] = await Promise.all([this.getKey(), countServers()]);
     const status = statusFor(key, {
       serverCount,
-      publicBadge,
       version: packageJson.version,
       lineDate: buildLineDate(packageJson.version),
     });
@@ -327,23 +313,32 @@ class LicenseService {
     return this.getStatus();
   }
 
-  async setPublicBadge(enabled: boolean): Promise<LicenseStatus> {
-    await settingsService.setSetting('license_public_badge', enabled ? '1' : '0');
-    return this.getStatus();
-  }
-
   /**
-   * The public "Licensed" line: only when the admin turned it on and the
-   * saved key is a genuine platform key. Warnings (an ended window, more
-   * servers than the pack) stay admin-only, so they don't hide it.
+   * The line players see on public event pages, always: a genuine platform
+   * key says licensed for commercial use (paid, not expired) or non-profit
+   * use (a free key), with a link to its public check page; anything else
+   * (no key, an invalid or expired one) says unlicensed. Warnings (an ended
+   * window, more servers than the pack) stay admin-only.
    */
-  async getPublicBadge(): Promise<{ verifyUrl: string } | null> {
-    if (!(await this.isPublicBadgeEnabled())) return null;
+  async getPublicBadge(): Promise<{
+    use: 'commercial' | 'non_commercial' | 'none';
+    verifyUrl: string | null;
+  }> {
+    const none = { use: 'none' as const, verifyUrl: null };
     const key = await this.getKey();
-    if (!key) return null;
+    if (!key) return none;
     const check = verifyLicense(key, { product: 'platform' });
-    if (!check.valid || !check.license || check.license.product !== 'platform') return null;
-    return { verifyUrl: verifyUrlFor(check.license.id) };
+    if (
+      !check.valid ||
+      !check.license ||
+      check.license.product !== 'platform' ||
+      check.license.lease
+    )
+      return none;
+    const verifyUrl = verifyUrlFor(check.license.id);
+    if (check.license.kind === 'free') return { use: 'non_commercial', verifyUrl };
+    if ((await this.standing()).status === 'expired') return none;
+    return { use: 'commercial', verifyUrl };
   }
 }
 

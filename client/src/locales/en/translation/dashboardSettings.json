@@ -392,6 +392,7 @@
       "templates": "Templates",
       "ratings": "Ratings",
       "adminTools": "System",
+      "license": "License",
       "devTools": "Dev tools",
       "documentation": "Documentation",
       "opensInNewTab": "(opens in a new tab)",
@@ -463,7 +464,9 @@
   },
   "license": {
     "title": "License",
-    "description": "Paste your Auto Tournament license key for commercial use. It is checked on this server, offline. A license never locks or limits anything: if something is off, it shows here as a notice.",
+    "publicLine": "Players see “{{line}}” at the bottom of event pages.",
+    "pageIntro": "Your license key and where it stands. A paid key is for commercial use; a free key is for non-profit use.",
+    "description": "Paste your Auto Tournament license key: a paid one for commercial use, or a free one for non-profit use. It is checked on this server, and once a day with autotournament.gg.",
     "loading": "Loading the license status",
     "loadFailed": "Could not read the license status.",
     "none": "No commercial license key. Free for non-commercial use; commercial use needs a license.",
@@ -503,15 +506,19 @@
       "noLimit": "no server limit"
     },
     "badge": {
-      "label": "Show \"Licensed\" on public event pages",
+      "label": "Show \"Licensed\" and the kind of use on public event pages",
       "note": "Off by default. Links to the license's public check page, and only shows while the saved key is valid.",
       "on": "Public license line turned on",
       "off": "Public license line turned off",
       "failed": "Could not change the public license line",
-      "short": "Shown on public pages."
+      "short": "On by itself once a key is saved. Players see it at the bottom of event pages.",
+      "needsKey": "Shows only with a license key saved, free or paid. Save one above first."
     },
     "public": {
-      "licensed": "Licensed"
+      "licensed": "Licensed",
+      "commercial": "Licensed · Commercial use",
+      "nonCommercial": "Licensed · Non-profit use",
+      "unlicensed": "Unlicensed"
     },
     "consent": {
       "title": "One last thing: the license",

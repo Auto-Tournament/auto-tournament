@@ -133,6 +133,7 @@ export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSetting
     },
   },
   {
+    // No longer read: the public license line is always shown (licenseService.getPublicBadge). Kept so stored rows stay valid.
     key: 'license_public_badge',
     normalize: normalizeFlag('Public license badge'),
   },
@@ -335,7 +336,6 @@ class SettingsService {
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
-
 
   // The simulation keys are declared by CS2 (its `instanceSettings`), but the
   // core scheduler and Swiss progression read simulation mode as well, so
