@@ -23,9 +23,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   Stack,
-  Switch,
   Tab,
   Tabs,
   TextField,
@@ -560,45 +558,53 @@ interface RecorderKey {
 }
 
 /**
- * What a PC runs to become a recorder: the recorder image with the PC's GPU,
- * display, sound, Steam and CS2, and this platform's address and a recorder
- * key. It finds CS2 in the PC's Steam libraries itself.
+ * What a gaming PC runs to become a recorder: the recorder image with the
+ * PC's GPU (NVIDIA's when it has one), display, sound, Steam and CS2, this
+ * platform's address and a recorder key. It finds CS2 in the PC's Steam
+ * libraries itself and shows up under the PC's name (rename it in the list).
  */
-export function recorderCommand(
-  origin: string,
-  token: string,
-  name: string,
-  nvidia: boolean
-): string {
+export function recorderCommand(origin: string, token: string): string {
   return [
     'docker run -d --name at-recorder --restart unless-stopped \\',
     '  --user "$(id -u):$(id -g)" --group-add "$(getent group video | cut -d: -f3)" \\',
-    '  --group-add "$(getent group render | cut -d: -f3)" --device /dev/dri' +
-      (nvidia ? ' --gpus all' : '') +
-      ' \\',
+    '  --group-add "$(getent group render | cut -d: -f3)" --device /dev/dri $(command -v nvidia-smi >/dev/null && echo --gpus all) \\',
     '  --ipc=host --net=host --pid=host --shm-size 4g --security-opt seccomp=unconfined --cap-add SYS_NICE \\',
     '  -v "$HOME:$HOME" -v /mnt:/mnt -v /media:/media -v /tmp:/tmp \\',
     '  -v /run/user:/run/user:rslave -e HOME="$HOME" -e XDG_RUNTIME_DIR="/run/user/$(id -u)" \\',
     '  -e WAYLAND_DISPLAY="$WAYLAND_DISPLAY" -e DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \\',
-    `  -e AT_URL=${origin} -e AT_WORKER_TOKEN=${token} -e AT_WORKER_NAME=${name} \\`,
+    `  -e AT_URL=${origin} -e AT_WORKER_TOKEN=${token} \\`,
     '  sivertio/auto-tournament-recorder:next',
   ].join('\n');
 }
 
 /**
- * "Add a recorder": a recorder key and the one command that starts a recorder
- * with it, to paste on a Linux PC with Steam and CS2. The recorder shows up
- * in the list when it first asks for work. The keys made so far, to revoke.
+ * What a headless server runs to become a recorder: the platform's own setup
+ * scripts (client/public/recorder). The first, with sudo, once: the NVIDIA
+ * driver, Docker and no sleep. The second starts CS2's headless Steam desktop
+ * and the recorder in it.
+ */
+export function serverCommands(origin: string, token: string): string {
+  return [
+    `curl -fsSL ${origin}/recorder/setup-host.sh | sudo bash`,
+    `curl -fsSL ${origin}/recorder/start-recorder.sh | AT_URL=${origin} AT_WORKER_TOKEN=${token} bash`,
+  ].join('\n');
+}
+
+type RecorderKind = 'pc' | 'server';
+
+/**
+ * "Add a recorder": a key made for it, and what to paste, for a gaming PC
+ * (one command, from its desktop) or a headless server (two lines). The
+ * recorder shows up in the list under its machine's name when it first asks
+ * for work. The keys made so far, to revoke.
  */
 function AddRecorder({ onKeys }: { onKeys: () => void }) {
   const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [nvidia, setNvidia] = useState(false);
-  const [made, setMade] = useState<{ token: string; name: string } | null>(null);
+  const [kind, setKind] = useState<RecorderKind>('pc');
+  const [token, setToken] = useState<string | null>(null);
   const [keys, setKeys] = useState<RecorderKey[]>([]);
-  const [busy, setBusy] = useState(false);
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
   const loadKeys = useCallback(async () => {
@@ -613,22 +619,22 @@ function AddRecorder({ onKeys }: { onKeys: () => void }) {
     return () => clearTimeout(first);
   }, [loadKeys]);
 
-  const make = async () => {
-    const clean = name
-      .trim()
-      .replace(/[^A-Za-z0-9_.-]+/g, '-')
-      .slice(0, 60);
-    if (!clean) return;
-    setBusy(true);
+  // Opening the dialog makes a key: no name to think of. It is named by when
+  // it was made, for the list of keys; the recorder goes by its machine's name.
+  const start = async () => {
+    setOpen(true);
+    setToken(null);
+    const stamp = new Date().toISOString().slice(0, 16).replace('T', '-').replace(':', '');
     try {
-      const res = await api.post<{ token: string }>('/api/game/cs2/recorder-keys', { name: clean });
-      setMade({ token: res.token, name: clean });
+      const res = await api.post<{ token: string }>('/api/game/cs2/recorder-keys', {
+        name: `key-${stamp}`,
+      });
+      setToken(res.token);
       await loadKeys();
       onKeys();
     } catch (err) {
       showError(err instanceof Error ? err.message : t('highlightsAdmin.actionError'));
-    } finally {
-      setBusy(false);
+      setOpen(false);
     }
   };
   const revoke = async (id: string) => {
@@ -640,18 +646,21 @@ function AddRecorder({ onKeys }: { onKeys: () => void }) {
       showError(err instanceof Error ? err.message : t('highlightsAdmin.actionError'));
     }
   };
-  const command = made ? recorderCommand(origin, made.token, made.name, nvidia) : '';
+  const command = token
+    ? kind === 'pc'
+      ? recorderCommand(origin, token)
+      : serverCommands(origin, token)
+    : '';
   const close = () => {
     setOpen(false);
-    setMade(null);
-    setName('');
+    setToken(null);
   };
   const live = keys.filter((k) => !k.revoked);
 
   return (
     <Box>
       <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
-        <Button variant="contained" onClick={() => setOpen(true)} data-testid="recorder-add">
+        <Button variant="contained" onClick={() => void start()} data-testid="recorder-add">
           {t('highlightsAdmin.add.button')}
         </Button>
         <Typography variant="body2" color="text.secondary">
@@ -693,31 +702,23 @@ function AddRecorder({ onKeys }: { onKeys: () => void }) {
       <Dialog open={open} onClose={close} maxWidth="md" fullWidth>
         <DialogTitle>{t('highlightsAdmin.add.title')}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography variant="body2">{t('highlightsAdmin.add.needs')}</Typography>
-          {!made ? (
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              alignItems={{ sm: 'center' }}
-            >
-              <TextField
-                autoFocus
-                size="small"
-                label={t('highlightsAdmin.add.name')}
-                placeholder="lan-seat-12"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && void make()}
-                inputProps={{ maxLength: 60, 'data-testid': 'recorder-add-name' }}
-              />
-              <FormControlLabel
-                control={<Switch checked={nvidia} onChange={(e) => setNvidia(e.target.checked)} />}
-                label={t('highlightsAdmin.add.nvidia')}
-              />
-            </Stack>
+          <Tabs value={kind} onChange={(_, v: RecorderKind) => setKind(v)}>
+            <Tab value="pc" label={t('highlightsAdmin.add.pc')} data-testid="recorder-add-pc" />
+            <Tab
+              value="server"
+              label={t('highlightsAdmin.add.server')}
+              data-testid="recorder-add-server"
+            />
+          </Tabs>
+          <Typography variant="body2">
+            {kind === 'pc'
+              ? t('highlightsAdmin.add.pcNeeds')
+              : t('highlightsAdmin.add.serverNeeds')}
+          </Typography>
+          {!token ? (
+            <CircularProgress size={24} />
           ) : (
             <>
-              <Alert severity="warning">{t('highlightsAdmin.add.once')}</Alert>
               <Box
                 component="pre"
                 data-testid="recorder-command"
@@ -733,42 +734,31 @@ function AddRecorder({ onKeys }: { onKeys: () => void }) {
                 {command}
               </Box>
               <Typography variant="body2" color="text.secondary">
-                {t('highlightsAdmin.add.after')}
+                {kind === 'pc'
+                  ? t('highlightsAdmin.add.pcAfter')
+                  : t('highlightsAdmin.add.serverAfter')}
               </Typography>
+              <Alert severity="info">{t('highlightsAdmin.add.once')}</Alert>
             </>
           )}
         </DialogContent>
         <DialogActions>
-          {made ? (
-            <>
-              <Button
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(command);
-                    showSuccess(t('highlightsAdmin.add.copied'));
-                  } catch {
-                    showError(t('highlightsAdmin.add.copyFailed'));
-                  }
-                }}
-                variant="contained"
-              >
-                {t('highlightsAdmin.add.copy')}
-              </Button>
-              <Button onClick={close}>{t('highlightsAdmin.close')}</Button>
-            </>
-          ) : (
-            <>
-              <Button onClick={close}>{t('highlightsAdmin.close')}</Button>
-              <Button
-                variant="contained"
-                disabled={busy || !name.trim()}
-                onClick={() => void make()}
-                data-testid="recorder-add-make"
-              >
-                {t('highlightsAdmin.add.make')}
-              </Button>
-            </>
-          )}
+          <Button
+            disabled={!token}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(command);
+                showSuccess(t('highlightsAdmin.add.copied'));
+              } catch {
+                showError(t('highlightsAdmin.add.copyFailed'));
+              }
+            }}
+            variant="contained"
+            data-testid="recorder-add-copy"
+          >
+            {t('highlightsAdmin.add.copy')}
+          </Button>
+          <Button onClick={close}>{t('highlightsAdmin.close')}</Button>
         </DialogActions>
       </Dialog>
     </Box>
