@@ -518,7 +518,7 @@
       "licensed": "Lisensiert",
       "commercial": "Lisensiert · Kommersiell bruk",
       "nonCommercial": "Lisensiert · Ideell bruk",
-      "unlicensed": "Ulisensiert"
+      "unlicensed": "Ingen lisensnøkkel"
     },
     "consent": {
       "title": "En siste ting: lisensen",
