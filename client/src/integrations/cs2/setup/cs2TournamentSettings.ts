@@ -48,6 +48,8 @@ export interface Cs2TournamentSettings {
   mapMode?: MapGameMode;
   /** False: the top three get no skin rewards. Absent: on. */
   skinRewards?: boolean;
+  /** Opt-in anonymous bots up to teamSize; humans keep normal ready-up. */
+  fillTeamsWithBots?: boolean;
 }
 
 export const CS2_DEFAULTS: Cs2TournamentSettings = {
@@ -90,6 +92,8 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, unknown
   } else if (source.mapPoolId === null) {
     into.mapPoolId = null;
   }
+  if (typeof source.fillTeamsWithBots === 'boolean')
+    into.fillTeamsWithBots = source.fillTeamsWithBots;
   if (typeof source.skinRewards === 'boolean') into.skinRewards = source.skinRewards;
   if (isMapMode(source.mapMode)) into.mapMode = source.mapMode;
   else if (source.mapMode === null) delete into.mapMode;
@@ -128,6 +132,7 @@ export function cs2Patch(next: Cs2TournamentSettings): Record<string, unknown> {
   };
   if (next.mapSequence) stored.mapSequence = next.mapSequence;
   if (next.mapPoolId !== undefined) stored.mapPoolId = next.mapPoolId;
+  stored.fillTeamsWithBots = next.fillTeamsWithBots === true;
   if (next.skinRewards !== undefined) stored.skinRewards = next.skinRewards;
   // null clears a type set before (the API keeps a field a patch leaves out).
   stored.mapMode = next.mapMode ?? null;
@@ -177,7 +182,8 @@ function rulesLine(cs2: Cs2TournamentSettings, ctx: TournamentSetupContext, t: T
           maxRounds: cs2.maxRounds,
           winRounds: Math.floor(cs2.maxRounds / 2) + 1,
         });
-  return `${rounds} · ${overtime}`;
+  const fill = cs2.fillTeamsWithBots === true ? ` · ${t('tournament.botFill.label')}` : '';
+  return `${rounds} · ${overtime}${fill}`;
 }
 
 const sameSet = (a: string[], b: string[]) =>
@@ -283,7 +289,8 @@ export const cs2TournamentSetup: TournamentSetupModel = {
     if (
       old.maxRounds !== next.maxRounds ||
       old.overtimeMode !== next.overtimeMode ||
-      old.overtimeSegments !== next.overtimeSegments
+      old.overtimeSegments !== next.overtimeSegments ||
+      (old.fillTeamsWithBots === true) !== (next.fillTeamsWithBots === true)
     ) {
       changes.push({
         field: 'matchRules',

@@ -2315,5 +2315,11 @@
       "groupDisabledHelp": "This group is disabled. New jobs for this match will wait until it is enabled.",
       "idle": "Idle"
     }
+  },
+  "tournament": {
+    "botFill": {
+      "label": "Fill teams with bots",
+      "help": "Bots fill empty slots up to the tournament team size and make room for joining players. Ready up and play normally. Requires a Ready Up server with bot-fill support."
+    }
   }
 }

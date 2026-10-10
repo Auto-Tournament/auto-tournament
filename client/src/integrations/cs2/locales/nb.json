@@ -2310,5 +2310,11 @@
       "groupDisabledHelp": "Denne gruppen er deaktivert. Nye jobber for kampen venter til den aktiveres.",
       "idle": "Ledig"
     }
+  },
+  "tournament": {
+    "botFill": {
+      "label": "Fyll lagene med boter",
+      "help": "Boter fyller ledige plasser opp til lagstørrelsen og gir plass til spillere som kobler til. Du gjør klar og spiller som normalt. Krever Ready Up med støtte for botfyll."
+    }
   }
 }

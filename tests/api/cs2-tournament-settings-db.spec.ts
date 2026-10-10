@@ -385,3 +385,28 @@ test.describe.serial('CS2 tournament settings on the database', () => {
     expect(removed.ok(), await removed.text()).toBe(true);
   });
 });
+
+test('bot fill is opt-in tournament state and survives unrelated edits', () => {
+  const own = cs2TournamentSettings.fromRequest(
+    { settings: { cs2: { fillTeamsWithBots: true } } },
+    undefined,
+    'tournament'
+  );
+  expect(own.fillTeamsWithBots).toBe(true);
+  expect(
+    cs2TournamentSettings.fromRequest({ name: 'Renamed' }, own, 'tournament').fillTeamsWithBots
+  ).toBe(true);
+  expect(
+    cs2TournamentSettings.fromRequest(
+      { settings: { cs2: { fillTeamsWithBots: false } } },
+      own,
+      'tournament'
+    ).fillTeamsWithBots
+  ).toBe(false);
+  expect(
+    cs2TournamentSettings.fromRequest({}, undefined, 'tournament').fillTeamsWithBots
+  ).toBeUndefined();
+  expect(cs2TournamentSettings.responseFields?.(own, 'tournament')).toMatchObject({
+    fillTeamsWithBots: true,
+  });
+});

@@ -90,6 +90,43 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
     }
   );
 
+  test('bot fill saves and can be disabled without changing round rules', async ({
+    page,
+    request,
+  }) => {
+    const teams = await createTestTeams(request, 'mixed-bots-ui');
+    expect(teams).toBeTruthy();
+    expect(
+      await createTournament(request, {
+        name: `Mixed bots UI ${Date.now()}`,
+        type: 'single_elimination',
+        format: 'bo1',
+        maps: ACTIVE_DUTY,
+        teamIds: teams!.map((team) => team.id),
+      })
+    ).toBeTruthy();
+    await page.goto('/manage/tournament');
+    await page.getByTestId('tournament-setup-step-format').click();
+    const fill = page.getByTestId('tournament-bot-fill');
+    await expect(fill).not.toBeChecked();
+    await fill.check();
+    await page.getByTestId('tournament-setup-step-review').click();
+    await page.getByTestId('tournament-save-button').click();
+    await expect
+      .poll(async () => (await tournamentOf(request))?.settings?.cs2?.fillTeamsWithBots)
+      .toBe(true);
+    await page.reload();
+    await page.getByTestId('tournament-setup-step-format').click();
+    await expect(fill).toBeChecked();
+    await fill.uncheck();
+    await page.getByTestId('tournament-setup-step-review').click();
+    await page.getByTestId('tournament-save-button').click();
+    await expect
+      .poll(async () => (await tournamentOf(request))?.settings?.cs2?.fillTeamsWithBots)
+      .toBe(false);
+    expect((await tournamentOf(request))?.settings?.cs2?.maxRounds).toBe(24);
+  });
+
   test(
     "the maps step's own check refuses an empty custom pool",
     { tag: ['@ui', '@tournament'] },

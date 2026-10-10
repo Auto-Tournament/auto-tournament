@@ -320,3 +320,25 @@ test.describe('Fleet match.assign config', () => {
     expect(diffAssignConfig(config, config)).toEqual([]);
   });
 });
+
+test('mixed bot fill retains human rosters, team size and real time', () => {
+  const cfg = tournamentConfig({
+    bot_fill: true,
+    players_per_team: 2,
+    simulation: true,
+    simulation_timescale: 4,
+  });
+  const rules = rulesFromMatchConfig(cfg);
+  expect(rules.bot_fill).toEqual({ players_per_team: 2 });
+  expect(rules.simulation).toBeUndefined();
+  const wire = buildAssignConfig(cfg, 'test-password');
+  expect(wire.team1.players?.map((p) => p.steamid64)).toContain(STEAM(1));
+  expect(validatePayload('match.assign', { match_id: 'mixed', epoch: 1, config: wire })).toEqual({
+    ok: true,
+    errors: [],
+  });
+  for (const size of [0, -1, 33, 1.5])
+    expect(() =>
+      rulesFromMatchConfig(tournamentConfig({ bot_fill: true, players_per_team: size }))
+    ).toThrow(AssignConfigError);
+});

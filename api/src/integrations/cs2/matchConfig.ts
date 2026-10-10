@@ -1,3 +1,4 @@
+import { storedCs2Settings } from './tournamentSettings';
 import { db } from '../../config/database';
 import type { DbTeamRow, DbMatchRow } from '../../types/database.types';
 import type { TournamentResponse } from '../../types/tournament.types';
@@ -49,8 +50,8 @@ function resolveMaxRounds(tournament: TournamentResponse): number {
     typeof raw === 'number'
       ? raw
       : typeof raw === 'string' && raw.trim() !== ''
-      ? Number(raw)
-      : undefined;
+        ? Number(raw)
+        : undefined;
 
   const maxRounds =
     typeof parsed === 'number' && Number.isFinite(parsed) && parsed > 0 ? parsed : 24;
@@ -160,8 +161,11 @@ export const generateMatchConfig = async (
   // that is the tournament's team size.
   const usesLineup =
     (team1 && team1Roster !== team1.players) || (team2 && team2Roster !== team2.players);
+  const fillTeamsWithBots = storedCs2Settings(tournament.settings)?.fillTeamsWithBots === true;
   const playersPerTeam =
-    usesLineup && tournament.teamSize ? tournament.teamSize : Math.max(team1Count, team2Count, 1);
+    (usesLineup || fillTeamsWithBots) && tournament.teamSize
+      ? tournament.teamSize
+      : Math.max(team1Count, team2Count, 1);
 
   // Only set maplist after veto completes - no point storing the map pool
   let maplist: string[] | null = null;
@@ -258,7 +262,8 @@ export const generateMatchConfig = async (
     ) as Array<'team1_ct' | 'team2_ct' | 'knife'>;
   }
 
-  const simulation = await getSimulationFlag();
+  const fillBots = storedCs2Settings(tournament.settings)?.fillTeamsWithBots === true;
+  const simulation = !fillBots && (await getSimulationFlag());
   const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
 
   const maxRounds = resolveMaxRounds(tournament);
@@ -267,10 +272,10 @@ export const generateMatchConfig = async (
   // 0 = everyone connected on that team must ready.
   const minPlayersToReadyRaw = await cs2Settings.getAtMinimumReadyRequired();
   const minPlayersToReady = Math.max(0, Math.min(playersPerTeam, minPlayersToReadyRaw));
-  
+
   // Generate MatchZy Enhanced v1.3.0 cvars based on tournament type
   const atEnhancedCvars = await pluginConfigService.generateAtEnhancedCvars(tournament.type);
-  
+
   const cvars: Record<string, string | number> = {
     mp_maxrounds: maxRounds,
     // Add MatchZy Enhanced cvars
@@ -330,8 +335,9 @@ export const generateMatchConfig = async (
           series_score: 0,
         }
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
+    ...(fillBots ? { bot_fill: true } : {}),
     simulation,
-    simulation_timescale: simulation ? simulationTimescale ?? 1 : undefined,
+    simulation_timescale: simulation ? (simulationTimescale ?? 1) : undefined,
   };
 
   // Attach global admin Steam IDs to the config so they always have in‑game
@@ -458,13 +464,14 @@ async function generateShuffleMatchConfig(
   // IMPORTANT: This code is ONLY allowed to set cvars["mp_maxrounds"].
   // It must not touch any other cvars (mp_overtime_*, mp_match_can_clinch, etc.).
   const maxRounds = resolveMaxRounds(tournament);
-  
-  const simulation = await getSimulationFlag();
+
+  const fillBots = storedCs2Settings(tournament.settings)?.fillTeamsWithBots === true;
+  const simulation = !fillBots && (await getSimulationFlag());
   const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
 
   // Generate MatchZy Enhanced v1.3.0 cvars based on tournament type (shuffle)
   const atEnhancedCvars = await pluginConfigService.generateAtEnhancedCvars('shuffle');
-  
+
   const cvars: Record<string, string | number> = {
     mp_maxrounds: maxRounds,
     // Add MatchZy Enhanced cvars
@@ -530,8 +537,9 @@ async function generateShuffleMatchConfig(
           series_score: 0,
         }
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
+    ...(fillBots ? { bot_fill: true } : {}),
     simulation,
-    simulation_timescale: simulation ? simulationTimescale ?? 1 : undefined,
+    simulation_timescale: simulation ? (simulationTimescale ?? 1) : undefined,
   };
 
   // Attach global admin Steam IDs to the config so they always have in‑game
@@ -604,7 +612,9 @@ export async function buildStandaloneMatchConfig(
     // fallback too: a standalone match with maxRounds 8 got mp_maxrounds 4 from the running
     // tournament, and the server played 4.
     const configMaxRounds =
-      typeof config.maxRounds === 'number' && Number.isFinite(config.maxRounds) && config.maxRounds > 0
+      typeof config.maxRounds === 'number' &&
+      Number.isFinite(config.maxRounds) &&
+      config.maxRounds > 0
         ? Math.floor(config.maxRounds)
         : null;
     if (!hasManualMaxRounds && configMaxRounds !== null) {
@@ -725,8 +735,8 @@ export async function serveStandaloneMatchConfig(slug: string): Promise<MatchCon
       typeof storedConfig.num_maps === 'number' && storedConfig.num_maps > 0
         ? storedConfig.num_maps
         : Array.isArray(storedConfig.maplist) && storedConfig.maplist.length > 0
-        ? storedConfig.maplist.length
-        : 1,
+          ? storedConfig.maplist.length
+          : 1,
     maplist: storedConfig.maplist ?? null,
     skip_veto: true,
     spectators: {
