@@ -2298,6 +2298,22 @@
         "redo": "Queued to record again",
         "drop": "Dropped; its reels are made again"
       }
+    },
+    "fleet": {
+      "groups": "Recorder groups",
+      "drainHelp": "Disabled recorders finish their current job and take no new work.",
+      "groupName": "New group name",
+      "createGroup": "Create group",
+      "enabled": "Enabled",
+      "group": "Group",
+      "ungrouped": "No group",
+      "disabled": "Disabled",
+      "draining": "Finishing current job",
+      "matchGroup": "Render with group",
+      "matchHelp": "Applies to new player jobs and reels. Current jobs continue.",
+      "allGroups": "All enabled recorders",
+      "groupDisabledHelp": "This group is disabled. New jobs for this match will wait until it is enabled.",
+      "idle": "Idle"
     }
   }
 }

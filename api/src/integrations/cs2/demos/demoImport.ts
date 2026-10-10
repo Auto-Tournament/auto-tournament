@@ -14,6 +14,7 @@
  * ever tries to give it a server; `completed_at` is set when the last map is in.
  */
 import crypto from 'crypto';
+import { requireGroup } from './recorderFleet';
 import fs from 'fs';
 import path from 'path';
 import fetch from 'node-fetch';
@@ -117,11 +118,13 @@ export function mapFromDemoHeader(head: Buffer): string | null {
 export async function createImport(input: {
   event?: unknown;
   maps?: unknown;
+  recordingGroupId?: unknown;
 }): Promise<{ slug: string }> {
   const maps = Number(input.maps);
   if (!Number.isInteger(maps) || maps < 1 || maps > IMPORT_MAX_MAPS) {
     throw new DemoImportError(400, `Upload 1 to ${IMPORT_MAX_MAPS} demos, one per map`);
   }
+  const group = await requireGroup(input.recordingGroupId ?? null);
   const event = typeof input.event === 'string' ? input.event.trim().slice(0, 100) : '';
   const slug = `import-${crypto.randomBytes(5).toString('hex')}`;
   const config: ImportConfig = {
@@ -131,11 +134,25 @@ export async function createImport(input: {
     maplist: Array.from({ length: maps }, () => null),
     imported: true,
   };
-  await db.runAsync(
-    `INSERT INTO matches (slug, tournament_id, played_in, round, match_number, config, game, source, status)
-     VALUES (?, NULL, ?, 0, 0, ?, 'cs2', ?, 'completed')`,
-    [slug, event || null, JSON.stringify(config), IMPORT_SOURCE]
-  );
+  await db.withClient(async (client) => {
+    await client.query('BEGIN');
+    try {
+      await client.query(
+        `INSERT INTO matches (slug, tournament_id, played_in, round, match_number, config, game, source, status)
+         VALUES ($1, NULL, $2, 0, 0, $3, 'cs2', $4, 'completed')`,
+        [slug, event || null, JSON.stringify(config), IMPORT_SOURCE]
+      );
+      if (group !== null)
+        await client.query(
+          'INSERT INTO cs2_recording_targets (match_slug, group_id) VALUES ($1, $2)',
+          [slug, group]
+        );
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    }
+  });
   log.info(`[IMPORT] Match ${slug} created for ${maps} demo(s)`);
   return { slug };
 }

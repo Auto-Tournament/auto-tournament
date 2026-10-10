@@ -1,3 +1,4 @@
+import { recordingTargetFilter } from './recorderFleet';
 /**
  * Team reels: a team's best plays of a match, for the team to share. Each of
  * its players' best TEAM_REEL_PER_PLAYER recorded highlights across the
@@ -165,15 +166,15 @@ export function teamReelFile(matchSlug: string, teamId: string): string {
 /** Hand the recorder a team reel to join, if one is waiting. */
 export async function claimTeamReel(recorder: string): Promise<TeamReelJob | null> {
   const now = Math.floor(Date.now() / 1000);
-  const failover = await reelFailoverFilter(recorder);
+  const failover = await reelFailoverFilter(recorder, 'cs2_team_reels.match_slug');
   const row = await db.queryOneAsync<{ match_slug: string; team_id: string }>(
     `UPDATE cs2_team_reels SET status = 'recording', recorder = ?, claimed_at = ?, attempts = attempts + 1
       WHERE (match_slug, team_id) = (
         SELECT match_slug, team_id FROM cs2_team_reels
-         WHERE (status = 'pending' OR (status = 'recording' AND claimed_at < ?)) AND ${failover.sql}
+         WHERE (status = 'pending' OR (status = 'recording' AND claimed_at < ?)) AND ${failover.sql} AND ${recordingTargetFilter('cs2_team_reels.match_slug')}
          ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED)
       RETURNING match_slug, team_id`,
-    [recorder.slice(0, 120), now, now - STALE_SECONDS, ...failover.params]
+    [recorder.slice(0, 120), now, now - STALE_SECONDS, ...failover.params, recorder]
   );
   if (!row) return null;
   const { team, opponent, clips } = await teamReelClips(row.match_slug, row.team_id);

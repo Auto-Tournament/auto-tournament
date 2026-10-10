@@ -4947,6 +4947,11 @@
                   },
                   "event": {
                     "type": "string"
+                  },
+                  "recordingGroupId": {
+                    "type": "integer",
+                    "nullable": true,
+                    "description": "Optional recorder group for this match"
                   }
                 }
               }
@@ -5324,6 +5329,79 @@
         ]
       }
     },
+    "/api/game/cs2/matches/{slug}/recording-group": {
+      "get": {
+        "tags": [
+          "Highlight recorders"
+        ],
+        "summary": "Read the recorder group selected for a match (admin)",
+        "description": "Disabling drains existing work. Group selection applies to future claims; null allows all recorders.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recorder fleet settings"
+          },
+          "400": {
+            "description": "Invalid settings"
+          },
+          "401": {
+            "description": "Admin authentication required"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Highlight recorders"
+        ],
+        "summary": "Select the recorder group for future match jobs (admin)",
+        "description": "Disabling drains existing work. Group selection applies to future claims; null allows all recorders.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupId": {
+                    "type": "integer",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recorder fleet settings"
+          },
+          "400": {
+            "description": "Invalid settings"
+          },
+          "401": {
+            "description": "Admin authentication required"
+          }
+        }
+      }
+    },
     "/api/game/cs2/matches/{slug}/reels": {
       "get": {
         "tags": [
@@ -5606,6 +5684,103 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/game/cs2/recorder-groups": {
+      "get": {
+        "tags": [
+          "Highlight recorders"
+        ],
+        "summary": "List recorder groups (admin)",
+        "description": "Disabling drains existing work. Group selection applies to future claims; null allows all recorders.",
+        "responses": {
+          "200": {
+            "description": "Recorder fleet settings"
+          },
+          "400": {
+            "description": "Invalid settings"
+          },
+          "401": {
+            "description": "Admin authentication required"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Highlight recorders"
+        ],
+        "summary": "Create a recorder group (admin)",
+        "description": "Disabling drains existing work. Group selection applies to future claims; null allows all recorders.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 80
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recorder fleet settings"
+          },
+          "400": {
+            "description": "Invalid settings"
+          },
+          "401": {
+            "description": "Admin authentication required"
+          }
+        }
+      }
+    },
+    "/api/game/cs2/recorder-groups/{id}": {
+      "put": {
+        "tags": [
+          "Highlight recorders"
+        ],
+        "summary": "Enable or drain a recorder group (admin)",
+        "description": "Disabling drains existing work. Group selection applies to future claims; null allows all recorders.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recorder fleet settings"
+          },
+          "400": {
+            "description": "Invalid settings"
+          },
+          "401": {
+            "description": "Admin authentication required"
+          }
+        }
       }
     },
     "/api/game/cs2/recorder-keys": {
@@ -6426,6 +6601,54 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/game/cs2/recorders/{name}/controls": {
+      "put": {
+        "tags": [
+          "Highlight recorders"
+        ],
+        "summary": "Change recorder availability or group (admin)",
+        "description": "Disabling drains existing work. Group selection applies to future claims; null allows all recorders.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "groupId": {
+                    "type": "integer",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recorder fleet settings"
+          },
+          "400": {
+            "description": "Invalid settings"
+          },
+          "401": {
+            "description": "Admin authentication required"
+          }
+        }
       }
     },
     "/api/game/cs2/recorders/{name}/resume": {

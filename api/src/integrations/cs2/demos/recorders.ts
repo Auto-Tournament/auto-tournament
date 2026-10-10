@@ -39,6 +39,10 @@ export class RecorderError extends Error {
 
 export interface RecorderRow {
   name: string;
+  enabled: number;
+  group_id: number | null;
+  group_name?: string | null;
+  group_enabled?: number;
   version: number | null;
   gpu: string | null;
   platform: string | null;
@@ -234,13 +238,14 @@ export async function listRecorders() {
       runs: number;
       avg_clip_seconds: number | null;
       last_error: string | null;
+      working_player: string | null;
       working_clips: number | null;
       working_match: string | null;
       working_map: number | null;
       working_since: number | null;
     }
   >(
-    `SELECT r.*,
+    `SELECT r.*, g.name AS group_name, COALESCE(g.enabled, 1) AS group_enabled,
             (SELECT COUNT(*)::int FROM cs2_recorder_runs x WHERE x.recorder = r.name) AS runs,
             (SELECT SUM(x.seconds) / NULLIF(SUM(x.clips), 0) FROM cs2_recorder_runs x
               WHERE x.recorder = r.name AND x.kind = 'map' AND x.ok = 1 AND x.clips > 0) AS avg_clip_seconds,
@@ -249,10 +254,11 @@ export async function listRecorders() {
               ORDER BY x.id DESC LIMIT 1) AS last_error,
             -- What it is recording right now (a map job can take hours, with no
             -- word from it until it is done).
-            w.clips AS working_clips, w.match_slug AS working_match, w.map_number AS working_map, w.since AS working_since
+            (SELECT p.name FROM players p WHERE p.id = w.player_id) AS working_player, w.clips AS working_clips, w.match_slug AS working_match, w.map_number AS working_map, w.since AS working_since
        FROM cs2_recorders r
+       LEFT JOIN cs2_recorder_groups g ON g.id = r.group_id
        LEFT JOIN LATERAL (SELECT COUNT(*)::int AS clips, MIN(h.match_slug) AS match_slug, MIN(h.map_number) AS map_number,
-                                 MIN(h.claimed_at) AS since
+                                 MIN(h.claimed_at) AS since, MIN(h.player_id) AS player_id
                             FROM cs2_highlights h
                            WHERE h.recorder = r.name AND h.status = 'recording'
                            HAVING COUNT(*) > 0) w ON TRUE
@@ -270,6 +276,10 @@ export async function listRecorders() {
     const paused = isPaused(r);
     return {
       name: r.name,
+      enabled: Number(r.enabled) === 1,
+      effectiveEnabled: Number(r.enabled) === 1 && Number(r.group_enabled) === 1,
+      groupId: r.group_id == null ? null : Number(r.group_id),
+      groupName: r.group_name ?? null,
       label: (r as RecorderRow & { label?: string | null }).label ?? null,
       version: r.version,
       gpu: r.gpu,
@@ -283,6 +293,7 @@ export async function listRecorders() {
         Number(r.working_clips ?? 0) > 0
           ? {
               clips: Number(r.working_clips),
+              playerName: r.working_player,
               matchSlug: r.working_match,
               mapNumber: Number(r.working_map),
               since: Number(r.working_since),

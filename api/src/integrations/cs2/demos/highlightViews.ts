@@ -1,3 +1,4 @@
+import { recordingTargetFilter } from './recorderFleet';
 /**
  * Highlights as the site shows them (./highlights.ts records them):
  *
@@ -765,15 +766,21 @@ export interface TournamentReelJob {
 export async function claimTournamentReel(recorder: string): Promise<TournamentReelJob | null> {
   await queueTournamentReel();
   const now = Math.floor(Date.now() / 1000);
-  const failover = await reelFailoverFilter(recorder);
+  const failover = await reelFailoverFilter(
+    recorder,
+    undefined,
+    'cs2_tournament_reels.tournament_id'
+  );
   const row = await db.queryOneAsync<{ tournament_id: number }>(
     `UPDATE cs2_tournament_reels SET status = 'recording', recorder = ?, claimed_at = ?, attempts = attempts + 1
       WHERE tournament_id = (
         SELECT tournament_id FROM cs2_tournament_reels
          WHERE (status = 'pending' OR (status = 'recording' AND claimed_at < ?)) AND ${failover.sql}
+           AND NOT EXISTS (SELECT 1 FROM matches target_match WHERE target_match.tournament_id = cs2_tournament_reels.tournament_id
+             AND NOT ${recordingTargetFilter('target_match.slug')})
          ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED)
       RETURNING tournament_id`,
-    [recorder.slice(0, 120), now, now - STALE_SECONDS, ...failover.params]
+    [recorder.slice(0, 120), now, now - STALE_SECONDS, ...failover.params, recorder]
   );
   if (!row) return null;
   const tournamentId = Number(row.tournament_id);
