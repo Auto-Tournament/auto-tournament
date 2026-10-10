@@ -464,6 +464,7 @@
   },
   "license": {
     "title": "Lisens",
+    "getKey": "Har du allerede en lisens? Kopier nøkkelen fra <consoleLink>Auto Tournament-konsollen</consoleLink>. Trenger du en? <pricingLink>Se priser</pricingLink>.",
     "useFromPaidKey": "Satt av den betalte lisensnøkkelen under.",
     "useFromFreeKey": "Satt av den gratis nøkkelen under: kun ideell bruk.",
     "useWithoutKey": "Ingen nøkkel: gratis for ideell bruk. Lim inn en betalt nøkkel under for kommersiell bruk.",

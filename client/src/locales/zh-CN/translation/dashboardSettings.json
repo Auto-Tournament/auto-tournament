@@ -609,7 +609,8 @@
     "pageIntro": "Your license key and where it stands. A paid key is for commercial use; a free key is for non-profit use.",
     "useFromPaidKey": "Set by the paid license key below.",
     "useFromFreeKey": "Set by the free key below: non-profit use only.",
-    "useWithoutKey": "No key: free for non-profit use. Paste a paid key below for commercial use."
+    "useWithoutKey": "No key: free for non-profit use. Paste a paid key below for commercial use.",
+    "getKey": "Already have a license? Copy your key from <consoleLink>the Auto Tournament console</consoleLink>. Need one? <pricingLink>See pricing</pricingLink>."
   },
   "tournamentsPage": {
     "title": "Tournaments",

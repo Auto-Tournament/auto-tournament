@@ -464,6 +464,7 @@
   },
   "license": {
     "title": "License",
+    "getKey": "Already have a license? Copy your key from <consoleLink>the Auto Tournament console</consoleLink>. Need one? <pricingLink>See pricing</pricingLink>.",
     "useFromPaidKey": "Set by the paid license key below.",
     "useFromFreeKey": "Set by the free key below: non-profit use only.",
     "useWithoutKey": "No key: free for non-profit use. Paste a paid key below for commercial use.",

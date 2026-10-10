@@ -105,6 +105,12 @@ export function LicenseCard() {
         />
       </Box>
 
+      {!hasKey && (
+        <Typography variant="body2" sx={{ pb: 1.5 }} data-testid="settings-license-get-key">
+          <Trans t={t} i18nKey="license.getKey" components={consoleLinkComponents} />
+        </Typography>
+      )}
+
       <SettingsRow
         title={
           license ? (
