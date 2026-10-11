@@ -310,6 +310,27 @@ func TestDropRepeats(t *testing.T) {
 	}
 }
 
+func TestDropRepeatsKeepsMovementOutsideSamples(t *testing.T) {
+	const fb = 96 * 64 * 3 / 2
+	path := filepath.Join(t.TempDir(), "raw")
+	first := make([]byte, fb)
+	second := append([]byte(nil), first...)
+	// The sample reads bytes 0..31, 64..95, etc. Movement at byte 40
+	// or in the chroma plane must still count as a different frame.
+	second[40] = 1
+	third := append([]byte(nil), second...)
+	third[fb-1] = 1
+	data := append(append(append(append([]byte{}, first...), second...), third...), third...)
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	ticks := []float64{0, 1, 2, 3}
+	n, err := dropRepeats(path, fb, ticks)
+	if err != nil || n != 1 || !reflect.DeepEqual(ticks, []float64{0, 1, 2, -1}) {
+		t.Fatalf("dropped %d (%v), ticks %v", n, err, ticks)
+	}
+}
+
 func TestTimelinePicksNearestByDefault(t *testing.T) {
 	var ticks []float64
 	for i := 0; i < 400; i++ {
