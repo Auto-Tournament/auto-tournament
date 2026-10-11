@@ -21,6 +21,9 @@ set -euo pipefail
 USER_NAME=${1:-${SUDO_USER:-}}
 [ -n "$USER_NAME" ] || { echo "Say which user runs docker: sudo bash setup-host.sh <user>"; exit 1; }
 DRIVER=${AT_NVIDIA_DRIVER:-nvidia-driver-595-open}
+# Fresh provisioning uses Ubuntu's package names and AppArmor ABI.
+. /etc/os-release
+[ "$ID" = ubuntu ] && [ "$VERSION_ID" = 24.04 ] || { echo "Fresh setup supports Ubuntu 24.04; use --adopt on an existing recorder."; exit 1; }
 export DEBIAN_FRONTEND=noninteractive
 
 echo "== NVIDIA driver ($DRIVER)"
@@ -65,9 +68,22 @@ systemctl kill -s HUP systemd-logind || true
 DIR=${AT_RECORDER_DIR:-/srv/at-recorder}
 echo "== $DIR"
 mkdir -p "$DIR/home" "$DIR/games" "$DIR/clips"
-chown -R "$USER_NAME": "$DIR"
-# The container's user (PUID 99) writes in here.
-chmod -R a+rwX "$DIR"
+chown "$USER_NAME": "$DIR"
+for data in home games clips; do
+  chown 99:100 "$DIR/$data"
+  chmod 770 "$DIR/$data"
+done
+
+echo "== Recorder-only AppArmor user namespaces"
+command -v apparmor_parser >/dev/null || { echo "Install apparmor before starting the recorder."; exit 1; }
+cat > /etc/apparmor.d/at-recorder <<'PROFILE'
+abi <abi/4.0>,
+include <tunables/global>
+profile at-recorder flags=(unconfined) {
+  userns,
+}
+PROFILE
+apparmor_parser -r /etc/apparmor.d/at-recorder
 
 echo
 if [ "${REBOOT:-0}" = 1 ] || ! nvidia-smi >/dev/null 2>&1; then

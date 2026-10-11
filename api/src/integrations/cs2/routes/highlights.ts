@@ -253,7 +253,7 @@ const read =
   };
 
 router.post('/recorder/hello', requireRecorder, async (req, res) => {
-  const { name, hostname, hostId, agentVersion } = req.body ?? {};
+  const { name, hostname, hostId, agentVersion, image, revision } = req.body ?? {};
   if (
     typeof name !== 'string' ||
     !name.trim() ||
@@ -264,7 +264,11 @@ router.post('/recorder/hello', requireRecorder, async (req, res) => {
     typeof hostId !== 'string' ||
     !/^[0-9a-f-]{36}$/.test(hostId) ||
     typeof agentVersion !== 'string' ||
-    agentVersion.length > 80
+    agentVersion.length > 80 ||
+    (image != null &&
+      (typeof image !== 'string' ||
+        !/^sivertio\/auto-tournament-recorder@sha256:[0-9a-f]{64}$/.test(image))) ||
+    (revision != null && (typeof revision !== 'string' || revision.length > 80))
   )
     return res.status(400).json({ error: 'A hostname, machine ID and agent version are required' });
   try {
@@ -274,16 +278,16 @@ router.post('/recorder/hello', requireRecorder, async (req, res) => {
     );
     if (existing) {
       await db.runAsync(
-        'UPDATE cs2_recorders SET host_name = ?, agent_version = ?, agent_seen = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE host_id = ?',
-        [hostname, agentVersion, hostId]
+        'UPDATE cs2_recorders SET host_name = ?, agent_version = ?, recorder_image = COALESCE(?, recorder_image), recorder_revision = COALESCE(?, recorder_revision), agent_seen = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE host_id = ?',
+        [hostname, agentVersion, image ?? null, revision ?? null, hostId]
       );
       return res.json({ success: true, name: existing.name });
     }
     const row = await db.queryOneAsync<{ name: string }>(
-      `INSERT INTO cs2_recorders (name, enabled, host_id, host_name, agent_version, agent_seen) VALUES (?, 0, ?, ?, ?, EXTRACT(EPOCH FROM NOW())::INTEGER)
-      ON CONFLICT (name) DO UPDATE SET host_id = EXCLUDED.host_id, host_name = EXCLUDED.host_name, agent_version = EXCLUDED.agent_version, agent_seen = EXCLUDED.agent_seen
+      `INSERT INTO cs2_recorders (name, enabled, host_id, host_name, agent_version, recorder_image, recorder_revision, agent_seen) VALUES (?, 0, ?, ?, ?, ?, ?, EXTRACT(EPOCH FROM NOW())::INTEGER)
+      ON CONFLICT (name) DO UPDATE SET host_id = EXCLUDED.host_id, host_name = EXCLUDED.host_name, agent_version = EXCLUDED.agent_version, recorder_image = COALESCE(EXCLUDED.recorder_image, cs2_recorders.recorder_image), recorder_revision = COALESCE(EXCLUDED.recorder_revision, cs2_recorders.recorder_revision), agent_seen = EXCLUDED.agent_seen
       WHERE cs2_recorders.host_id IS NULL OR cs2_recorders.host_id = EXCLUDED.host_id RETURNING name`,
-      [name, hostId, hostname, agentVersion]
+      [name, hostId, hostname, agentVersion, image ?? null, revision ?? null]
     );
     if (!row)
       return res.status(409).json({ error: 'This recorder name belongs to another installation' });

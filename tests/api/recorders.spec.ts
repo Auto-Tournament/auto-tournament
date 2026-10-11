@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { signInViaRequest } from '../helpers/auth';
 
@@ -603,5 +604,57 @@ test(
       ).status()
     ).toBe(409);
     await request.put(`/api/game/cs2/recorder-groups/${groupId}`, { data: { enabled: false } });
+  }
+);
+
+test(
+  'host agent keeps identity and enabled settings, reporting separate builds',
+  TAGS,
+  async ({ request }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    const name = `host-agent-${Date.now()}`;
+    const hostId = randomUUID();
+    const image = `sivertio/auto-tournament-recorder@sha256:${'a'.repeat(64)}`;
+    const body = {
+      name,
+      hostname: name,
+      hostId,
+      agentVersion: '0.1.0-beta.1',
+      image,
+      revision: 'runtime-build',
+    };
+    const hello = (data = body) => request.post('/api/game/cs2/recorder/hello', { data });
+    expect((await hello()).status()).toBe(200);
+    const listed = async () =>
+      (
+        (await (await request.get('/api/game/cs2/recorders')).json()).recorders as Array<
+          Record<string, unknown>
+        >
+      ).find((r) => r.name === name)!;
+    expect(await listed()).toMatchObject({
+      enabled: false,
+      hostId,
+      agentVersion: body.agentVersion,
+      recorderImage: image,
+      recorderRevision: 'runtime-build',
+    });
+    expect(
+      (
+        await request.put(`/api/game/cs2/recorders/${encodeURIComponent(name)}/controls`, {
+          data: { enabled: true },
+        })
+      ).status()
+    ).toBe(200);
+    expect(await (await hello({ ...body, hostname: 'renamed-host' })).json()).toMatchObject({
+      name,
+    });
+    expect(await listed()).toMatchObject({
+      enabled: true,
+      hostId,
+      hostname: 'renamed-host',
+      recorderImage: image,
+    });
+    expect((await hello({ ...body, hostId: randomUUID() })).status()).toBe(409);
+    expect((await hello({ ...body, image: 'untrusted/image:latest' })).status()).toBe(400);
   }
 );
