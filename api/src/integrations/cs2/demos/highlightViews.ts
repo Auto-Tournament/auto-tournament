@@ -1,3 +1,4 @@
+import { recordingWaiting, recordingFailureSql } from './recorderLeases';
 import { recordingTargetFilter } from './recorderFleet';
 /**
  * Highlights as the site shows them (./highlights.ts records them):
@@ -29,8 +30,6 @@ import {
 } from './highlights';
 
 /** A recording that went quiet this long is handed out again. */
-const STALE_SECONDS = 30 * 60;
-const MAX_ATTEMPTS = 3;
 /** How long one clip blends into the next in a reel (worker/edit.go reelCrossfade). */
 const REEL_CROSSFADE = 0.4;
 /** A tournament reel needs at least this many recorded highlights. */
@@ -772,15 +771,15 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
     'cs2_tournament_reels.tournament_id'
   );
   const row = await db.queryOneAsync<{ tournament_id: number }>(
-    `UPDATE cs2_tournament_reels SET status = 'recording', recorder = ?, claimed_at = ?, attempts = attempts + 1
+    `UPDATE cs2_tournament_reels SET status = 'recording', recorder = ?, claimed_at = ?, claim_started_at = EXTRACT(EPOCH FROM NOW())::INTEGER, retry_until = NULL, attempts = attempts + 1
       WHERE tournament_id = (
         SELECT tournament_id FROM cs2_tournament_reels
-         WHERE (status = 'pending' OR (status = 'recording' AND claimed_at < ?)) AND ${failover.sql}
+         WHERE ${recordingWaiting()} AND ${failover.sql}
            AND NOT EXISTS (SELECT 1 FROM matches target_match WHERE target_match.tournament_id = cs2_tournament_reels.tournament_id
              AND NOT ${recordingTargetFilter('target_match.slug')})
          ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED)
       RETURNING tournament_id`,
-    [recorder.slice(0, 120), now, now - STALE_SECONDS, ...failover.params, recorder]
+    [recorder.slice(0, 120), now, recorder.slice(0, 120), ...failover.params, recorder]
   );
   if (!row) return null;
   const tournamentId = Number(row.tournament_id);
@@ -889,9 +888,8 @@ export async function saveTournamentReel(
 
 export async function failTournamentReel(tournamentId: number, error: string): Promise<void> {
   await db.runAsync(
-    `UPDATE cs2_tournament_reels SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?,
-            avoid_recorder = recorder
+    `UPDATE cs2_tournament_reels SET ${recordingFailureSql}
       WHERE tournament_id = ? AND status = 'recording'`,
-    [MAX_ATTEMPTS, error.slice(0, 500), tournamentId]
+    [error.slice(0, 500), tournamentId]
   );
 }

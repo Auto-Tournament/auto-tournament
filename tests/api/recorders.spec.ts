@@ -358,14 +358,14 @@ test(
         data: { ids, error: 'CS2 would not start: broken pipe', fault: 'recorder', recorder: name },
       });
 
-    // Three faults would fail a moment (three attempts): it must still be waiting.
+    // One reserved retry remains after the first fault; a second fault hands it off.
     for (let round = 1; round <= 2; round++) {
       const job = await claimMap();
       expect(job, `claim ${round}`).toBeTruthy();
       const ids = job!.players.flatMap((p) => p.moments.map((m) => m.id));
       expect((await fault(ids)).status()).toBe(200);
       for (const c of await statuses(ids)) {
-        expect(c).toMatchObject({ status: 'pending', recorder: null });
+        expect(c).toMatchObject({ status: 'pending', recorder: name });
       }
     }
     // Two in a row: paused, and given no work.
@@ -433,18 +433,20 @@ test(
     const job = (await first.json()).job;
     expect(job.matchSlug).toBe(slug);
     expect(job.players).toHaveLength(1);
+    expect((await claim(ntlan)).status()).toBe(204); // one active attempt per host
     expect((await controls({ enabled: false })).status()).toBe(200);
     expect((await claim(ntlan)).status()).toBe(204);
     // Disabling only stops new claims. Already-claimed work can still upload.
-    const clip = job.players[0].moments[0].id;
-    expect(
-      (
-        await request.put(`/api/game/cs2/recorder/jobs/${clip}/clip`, {
-          headers: { 'Content-Type': 'video/mp4' },
-          data: Buffer.from('test clip'),
-        })
-      ).status()
-    ).toBe(200);
+    for (const moment of job.players[0].moments) {
+      expect(
+        (
+          await request.put(`/api/game/cs2/recorder/jobs/${moment.id}/clip`, {
+            headers: { 'Content-Type': 'video/mp4' },
+            data: Buffer.from('test clip'),
+          })
+        ).status()
+      ).toBe(200);
+    }
     expect((await controls({ enabled: true })).status()).toBe(200);
     expect(
       (
@@ -471,9 +473,25 @@ test(
         })
       ).status()
     ).toBe(200);
-    const resumed = await claim(ntlan);
-    expect(resumed.status()).toBe(200);
-    expect((await resumed.json()).job.matchSlug).toBe(next);
+    // Finish the drained match's map/series reels before taking the next map.
+    let resumedJob;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const resumed = await claim(ntlan);
+      expect(resumed.status()).toBe(200);
+      resumedJob = (await resumed.json()).job;
+      if (resumedJob.kind !== 'match_reel') break;
+      expect(resumedJob.matchSlug).toBe(slug);
+      expect(
+        (
+          await request.put(`/api/game/cs2/recorder/match-reels/${slug}/${resumedJob.mapNumber}`, {
+            headers: { 'Content-Type': 'video/mp4' },
+            data: Buffer.from('test reel'),
+          })
+        ).status()
+      ).toBe(200);
+    }
+    expect(resumedJob.kind).toBe('map');
+    expect(resumedJob.matchSlug).toBe(next);
     expect(
       (
         await request.put(`/api/game/cs2/matches/${next}/recording-group`, {
@@ -509,5 +527,81 @@ test(
         await request.post('/api/game/cs2/imports', { data: { maps: 1, recordingGroupId: -1 } })
       ).status()
     ).toBe(400);
+  }
+);
+
+test(
+  'expired attempt tokens cannot heartbeat or upload after a same-host retry',
+  TAGS,
+  async ({ request }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    const name = `attempt-${Date.now()}`;
+    const register = await request.post('/api/game/cs2/recorder/claim', {
+      data: { recorder: name, version: 8, notReady: 'register only' },
+    });
+    expect(register.status()).toBe(204);
+    const { id: groupId } = await (
+      await request.post('/api/game/cs2/recorder-groups', {
+        data: { name },
+      })
+    ).json();
+    await request.put(`/api/game/cs2/recorders/${name}/controls`, { data: { groupId } });
+    const slug = await matchWithMoments(request, groupId);
+    await request.post('/api/game/cs2/recorder/benchmark', {
+      data: {
+        recorder: name,
+        tries: [{ gamescopeHz: 120, seconds: 60, captureFps: 118, ok: true }],
+      },
+    });
+    const claim = () =>
+      request.post('/api/game/cs2/recorder/claim', {
+        headers: { 'X-AT-Recorder': name },
+        data: { recorder: name, version: 8 },
+      });
+    const first = await (await claim()).json();
+    expect(first.job.matchSlug).toBe(slug);
+    expect(first.claimToken).toBeTruthy();
+    expect((await claim()).status()).toBe(204);
+    const headers = { 'X-AT-Recorder': name, 'X-AT-Claim': first.claimToken };
+    expect(
+      (
+        await request.post('/api/game/cs2/recorder/heartbeat', {
+          headers,
+          data: { recorder: name },
+        })
+      ).status()
+    ).toBe(200);
+    const ids = first.job.players.flatMap((p: { moments: Array<{ id: number }> }) =>
+      p.moments.map((m) => m.id)
+    );
+    expect(
+      (
+        await request.post('/api/game/cs2/recorder/fail', {
+          headers,
+          data: { recorder: name, ids, error: 'test retry' },
+        })
+      ).status()
+    ).toBe(200);
+    expect((await request.post('/api/game/cs2/recorder/complete', { headers })).status()).toBe(200);
+    const retry = await (await claim()).json();
+    expect(retry.claimToken).toBeTruthy();
+    expect(retry.claimToken).not.toBe(first.claimToken);
+    expect(
+      (
+        await request.post('/api/game/cs2/recorder/heartbeat', {
+          headers,
+          data: { recorder: name },
+        })
+      ).status()
+    ).toBe(409);
+    expect(
+      (
+        await request.put(`/api/game/cs2/recorder/jobs/${ids[0]}/clip`, {
+          headers: { ...headers, 'Content-Type': 'video/mp4' },
+          data: Buffer.from('stale clip'),
+        })
+      ).status()
+    ).toBe(409);
+    await request.put(`/api/game/cs2/recorder-groups/${groupId}`, { data: { enabled: false } });
   }
 );

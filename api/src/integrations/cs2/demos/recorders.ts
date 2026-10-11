@@ -1,3 +1,5 @@
+import { refreshRecorderRelease } from './recorderUpdates';
+import { recordingFailureSql } from './recorderLeases';
 /**
  * The highlight recorders as the platform sees them: who they are, how fast
  * and how fast they record, and a run log of every job.
@@ -14,7 +16,7 @@
  */
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
-import { jobFor, type MomentRow } from './highlights';
+import { jobFor, queueMatchReelFor, type MomentRow } from './highlights';
 import { readHighlightQuality } from './highlightQuality';
 
 export const PAUSE_SECONDS = 15 * 60;
@@ -41,6 +43,16 @@ export interface RecorderRow {
   name: string;
   enabled: number;
   group_id: number | null;
+  update_status: string;
+  update_error: string | null;
+  updated_at: number | null;
+  host_name: string | null;
+  host_id: string | null;
+  agent_version: string | null;
+  update_agent_seen: number | null;
+  recorder_image: string | null;
+  latest_image: string | null;
+  recorder_revision: string | null;
   group_name?: string | null;
   group_enabled?: number;
   version: number | null;
@@ -233,11 +245,13 @@ export async function saveRun(name: string, body: Record<string, unknown>): Prom
 
 /** The Recorders page: every recorder with its numbers. */
 export async function listRecorders() {
+  await refreshRecorderRelease();
   const rows = await db.queryAsync<
     RecorderRow & {
       runs: number;
       avg_clip_seconds: number | null;
       last_error: string | null;
+      last_run_ok: number | null;
       working_player: string | null;
       working_clips: number | null;
       working_match: string | null;
@@ -252,6 +266,8 @@ export async function listRecorders() {
             -- Only while its latest run is the one that failed: a later good run clears it.
             (SELECT x.error FROM cs2_recorder_runs x WHERE x.recorder = r.name
               ORDER BY x.id DESC LIMIT 1) AS last_error,
+            (SELECT x.ok FROM cs2_recorder_runs x WHERE x.recorder = r.name
+              ORDER BY x.id DESC LIMIT 1) AS last_run_ok,
             -- What it is recording right now (a map job can take hours, with no
             -- word from it until it is done).
             (SELECT p.name FROM players p WHERE p.id = w.player_id) AS working_player, w.clips AS working_clips, w.match_slug AS working_match, w.map_number AS working_map, w.since AS working_since
@@ -309,7 +325,19 @@ export async function listRecorders() {
       gamescopeHz: r.gamescope_hz,
       runs: Number(r.runs),
       avgClipSeconds: r.avg_clip_seconds != null ? Number(r.avg_clip_seconds) : null,
+      hostname: r.host_name ?? r.name,
+      hostId: r.host_id,
+      agentVersion: r.agent_version,
+      updateSupported: r.update_agent_seen != null && Number(r.update_agent_seen) > now() - 300,
+      updateAvailable:
+        !!r.latest_image && !!r.recorder_image && r.latest_image !== r.recorder_image,
+      recorderImage: r.recorder_image,
+      recorderRevision: r.recorder_revision,
+      updateStatus: r.update_status,
+      updateError: r.update_error,
+      updatedAt: r.updated_at,
       lastError: r.last_error,
+      lastRunFailed: r.last_run_ok === 0,
     };
   });
 }
@@ -394,7 +422,7 @@ export async function setRecorderLabel(name: string, label: string | null): Prom
 /**
  * A job the recorder gave back because its CS2 would not start (or died and
  * would not start again): the recorder's fault, not the moments'. They go back
- * to waiting without using up an attempt, preferably for another recorder,
+ * to waiting with one retry reserved for their recorder,
  * and a recorder that does this twice in a row is paused, so a broken one
  * stops taking (and failing) every job (2026-10-09: the EWC import's 78 clips
  * failed in ten minutes on one desktop).
@@ -402,12 +430,12 @@ export async function setRecorderLabel(name: string, label: string | null): Prom
 export async function recorderFault(recorder: string, ids: number[], error: string): Promise<void> {
   if (ids.length > 0) {
     await db.runAsync(
-      `UPDATE cs2_highlights SET status = 'pending', attempts = GREATEST(attempts - 1, 0), error = ?,
-              claimed_at = NULL, recorder = NULL, avoid_recorder = ?
+      `UPDATE cs2_highlights SET ${recordingFailureSql}
         WHERE id IN (${ids.map(() => '?').join(', ')}) AND status = 'recording'`,
-      [error.slice(0, 500), recorder, ...ids]
+      [error.slice(0, 500), ...ids]
     );
   }
+  await queueMatchReelFor(ids);
   const r = await db.queryOneAsync<{ faults_in_row: number }>(
     `UPDATE cs2_recorders SET faults_in_row = faults_in_row + 1 WHERE name = ? RETURNING faults_in_row`,
     [recorder]

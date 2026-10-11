@@ -1,3 +1,4 @@
+import { refreshRecorderRelease } from './recorderUpdates';
 import { db } from '../../../config/database';
 export class FleetError extends Error {
   constructor(
@@ -60,7 +61,7 @@ export async function setRecorderControls(
 }
 export async function recorderAcceptsWork(name: string): Promise<boolean> {
   const row = await db.queryOneAsync<{ eligible: boolean }>(
-    `SELECT (r.enabled = 1 AND COALESCE(g.enabled,1) = 1) AS eligible FROM cs2_recorders r LEFT JOIN cs2_recorder_groups g ON g.id=r.group_id WHERE r.name = ?`,
+    `SELECT (r.enabled = 1 AND COALESCE(g.enabled,1) = 1 AND r.update_status NOT IN ('queued', 'updating')) AS eligible FROM cs2_recorders r LEFT JOIN cs2_recorder_groups g ON g.id=r.group_id WHERE r.name = ?`,
     [name]
   );
   return row?.eligible === true;
@@ -90,4 +91,20 @@ export async function setMatchRecordingGroup(slug: string, id: unknown) {
       `INSERT INTO cs2_recording_targets (match_slug,group_id) VALUES (?,?) ON CONFLICT (match_slug) DO UPDATE SET group_id=EXCLUDED.group_id`,
       [slug, group]
     );
+}
+
+/** Atomic queueing prevents repeat clicks from creating additional updates. */
+export async function requestRecorderUpdate(name?: string): Promise<number> {
+  await refreshRecorderRelease();
+  if (name && !(await db.queryOneAsync('SELECT name FROM cs2_recorders WHERE name = ?', [name])))
+    throw new FleetError(404, 'No such recorder');
+  const result = await db.runAsync(
+    `UPDATE cs2_recorders SET update_status = 'queued', update_target = latest_image, update_error = NULL
+    WHERE update_status NOT IN ('queued', 'updating')
+      AND update_agent_seen > EXTRACT(EPOCH FROM NOW()) - 300
+      AND recorder_image IS NOT NULL AND latest_image IS NOT NULL AND latest_image <> recorder_image
+      ${name ? 'AND name = ?' : ''}`,
+    name ? [name] : []
+  );
+  return result.changes;
 }

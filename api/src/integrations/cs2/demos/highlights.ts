@@ -1,3 +1,4 @@
+import { recordingWaiting, recordingFailureSql, renewRecordingLeases } from './recorderLeases';
 import { recordingTargetFilter } from './recorderFleet';
 /**
  * Highlights: each player's best moments of a map, picked from its analysis
@@ -53,7 +54,6 @@ const EXPLOSIVE = /^(HE Grenade|Molotov|Incendiary Grenade)$/i;
 const IMPACT = /^(Flashbang|Smoke Grenade|Decoy Grenade)$/i;
 const KNIFE = /^Knife/i;
 /** A recording that went quiet this long is handed out again. */
-const STALE_SECONDS = 30 * 60;
 export const MAX_ATTEMPTS = 3;
 
 interface KillRow {
@@ -399,7 +399,8 @@ async function trimToPerPlayer(matchSlug: string, mapNumber: number): Promise<vo
 
 export async function claimRecordJob(recorder: string): Promise<RecordJob | null> {
   const now = Math.floor(Date.now() / 1000);
-  const waiting = "(status = 'pending' OR (status = 'recording' AND claimed_at < ?))";
+  const failover = await reelFailoverFilter(recorder, 'cs2_highlights.match_slug');
+  const waiting = `${recordingWaiting()} AND ${failover.sql}`;
   const best = await db.queryOneAsync<{
     match_slug: string;
     map_number: number;
@@ -407,12 +408,12 @@ export async function claimRecordJob(recorder: string): Promise<RecordJob | null
   }>(
     `SELECT match_slug, map_number, player_id FROM cs2_highlights
       WHERE ${waiting} AND ${recordingTargetFilter('cs2_highlights.match_slug')} ORDER BY score DESC, id LIMIT 1`,
-    [now - STALE_SECONDS, recorder]
+    [recorder.slice(0, 120), ...failover.params, recorder]
   );
   if (!best) return null;
   await trimToPerPlayer(best.match_slug, Number(best.map_number));
   const rows = await db.queryAsync<MomentRow>(
-    `UPDATE cs2_highlights SET status = 'recording', recorder = ?, made_with = ?, claimed_at = ?, attempts = attempts + 1
+    `UPDATE cs2_highlights SET status = 'recording', recorder = ?, made_with = ?, claimed_at = ?, claim_started_at = EXTRACT(EPOCH FROM NOW())::INTEGER, retry_until = NULL, attempts = attempts + 1
       WHERE id IN (SELECT id FROM cs2_highlights
                     WHERE match_slug = ? AND map_number = ? AND player_id = ? AND ${waiting}
                     FOR UPDATE SKIP LOCKED)
@@ -424,7 +425,8 @@ export async function claimRecordJob(recorder: string): Promise<RecordJob | null
       best.match_slug,
       best.map_number,
       best.player_id,
-      now - STALE_SECONDS,
+      recorder.slice(0, 120),
+      ...failover.params,
     ]
   );
   if (rows.length === 0) return null; // another recorder took them first
@@ -496,14 +498,15 @@ export async function claimMapJob(
   loaded: { matchSlug: string; mapNumber: number } | null = null
 ): Promise<MapRecordJob | null> {
   const now = Math.floor(Date.now() / 1000);
-  const waiting = "(status = 'pending' OR (status = 'recording' AND claimed_at < ?))";
+  const failover = await reelFailoverFilter(recorder, 'h.match_slug');
+  const waiting = `${recordingWaiting('h')} AND ${failover.sql}`;
   // A moment this recorder gave back (its CS2 would not start) goes to
   // another recorder first (demos/recorders.ts recorderFault).
   // The map the recorder has loaded comes first while it has anyone waiting.
   const best = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
     `SELECT h.match_slug, h.map_number FROM cs2_highlights h
        LEFT JOIN matches m ON m.slug = h.match_slug
-      WHERE ${waiting.replace(/status|claimed_at/g, (c) => `h.${c}`)} AND ${recordingTargetFilter('h.match_slug')}
+      WHERE ${waiting} AND ${recordingTargetFilter('h.match_slug')}
       ORDER BY (h.avoid_recorder IS NOT NULL AND h.avoid_recorder = ?),
                (h.match_slug = ? AND h.map_number = ?) DESC,
                (m.tournament_id IS NOT NULL) DESC,
@@ -511,7 +514,8 @@ export async function claimMapJob(
                h.map_number, h.score DESC, h.id
       LIMIT 1`,
     [
-      now - STALE_SECONDS,
+      recorder.slice(0, 120),
+      ...failover.params,
       recorder,
       recorder.slice(0, 120),
       loaded?.matchSlug ?? '',
@@ -521,20 +525,27 @@ export async function claimMapJob(
   if (!best) return null;
   await trimToPerPlayer(best.match_slug, Number(best.map_number));
   const mapRows = await db.queryAsync<{ id: number; player_id: string }>(
-    `SELECT id, player_id FROM cs2_highlights WHERE match_slug = ? AND map_number = ? AND ${waiting}
+    `SELECT id, player_id FROM cs2_highlights h WHERE match_slug = ? AND map_number = ? AND ${waiting}
       ORDER BY MAX(score) OVER (PARTITION BY player_id) DESC, player_id, score DESC, id`,
-    [best.match_slug, best.map_number, now - STALE_SECONDS]
+    [best.match_slug, best.map_number, recorder.slice(0, 120), ...failover.params]
   );
   const ids = nextPlayer(mapRows.map((r) => ({ id: Number(r.id), playerId: r.player_id })));
   if (ids.length === 0) return null;
   const quality = await readHighlightQuality();
   const rows = await db.queryAsync<MomentRow>(
-    `UPDATE cs2_highlights SET status = 'recording', recorder = ?, made_with = ?, claimed_at = ?, attempts = attempts + 1
-      WHERE id IN (SELECT id FROM cs2_highlights
+    `UPDATE cs2_highlights SET status = 'recording', recorder = ?, made_with = ?, claimed_at = ?, claim_started_at = EXTRACT(EPOCH FROM NOW())::INTEGER, retry_until = NULL, attempts = attempts + 1
+      WHERE id IN (SELECT id FROM cs2_highlights h
                     WHERE id IN (${ids.map(() => '?').join(', ')}) AND ${waiting}
                     FOR UPDATE SKIP LOCKED)
       RETURNING id, match_slug, map_number, player_id, kind, title, round, score, start_tick, end_tick, slowmo_tick, kill_ticks`,
-    [recorder.slice(0, 120), qualityLabel(quality), now, ...ids, now - STALE_SECONDS]
+    [
+      recorder.slice(0, 120),
+      qualityLabel(quality),
+      now,
+      ...ids,
+      recorder.slice(0, 120),
+      ...failover.params,
+    ]
   );
   if (rows.length === 0) return null;
   const byPlayer = new Map<string, MomentRow[]>();
@@ -784,22 +795,12 @@ export async function saveClip(
 
 /**
  * A recorder at a job says it still is (worker/runlog.go heartbeat): what it
- * claimed stays its own. A map job can take hours and sends its clips only
- * at the end, so without this its moments went stale after STALE_SECONDS
- * and another recorder took them over.
+ * claimed stays its own until the job deadline. Every claimed clip or reel
+ * needs a heartbeat within the lease window; a heartbeat cannot extend the
+ * absolute deadline.
  */
 export async function renewClaims(recorder: string): Promise<number> {
-  const now = Math.floor(Date.now() / 1000);
-  const name = recorder.slice(0, 120);
-  const clips = await db.runAsync(
-    "UPDATE cs2_highlights SET claimed_at = ? WHERE recorder = ? AND status = 'recording'",
-    [now, name]
-  );
-  await db.runAsync(
-    "UPDATE cs2_match_reels SET claimed_at = ? WHERE recorder = ? AND status = 'recording'",
-    [now, name]
-  );
-  return clips.changes;
+  return renewRecordingLeases(recorder);
 }
 
 /** Tell the player their clip is ready (a player's own moment; reels belong to no one player). */
@@ -823,9 +824,9 @@ async function noticeHighlightReady(id: number): Promise<void> {
 export async function failRecordJob(ids: number[], error: string): Promise<void> {
   if (ids.length === 0) return;
   await db.runAsync(
-    `UPDATE cs2_highlights SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?
+    `UPDATE cs2_highlights SET ${recordingFailureSql}
       WHERE id IN (${ids.map(() => '?').join(', ')}) AND status = 'recording'`,
-    [MAX_ATTEMPTS, error.slice(0, 500), ...ids]
+    [error.slice(0, 500), ...ids]
   );
   await queueMatchReelFor(ids);
 }
@@ -1284,17 +1285,17 @@ export async function claimMatchReel(recorder: string): Promise<MatchReelJob | n
   const now = Math.floor(Date.now() / 1000);
   const failover = await reelFailoverFilter(recorder, 'cs2_match_reels.match_slug');
   const row = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
-    `UPDATE cs2_match_reels SET status = 'recording', recorder = ?, made_with = ?, claimed_at = ?, attempts = attempts + 1
+    `UPDATE cs2_match_reels SET status = 'recording', recorder = ?, made_with = ?, claimed_at = ?, claim_started_at = EXTRACT(EPOCH FROM NOW())::INTEGER, retry_until = NULL, attempts = attempts + 1
       WHERE (match_slug, map_number) = (
         SELECT match_slug, map_number FROM cs2_match_reels
-         WHERE (status = 'pending' OR (status = 'recording' AND claimed_at < ?)) AND ${failover.sql} AND ${recordingTargetFilter('cs2_match_reels.match_slug')}
+         WHERE ${recordingWaiting()} AND ${failover.sql} AND ${recordingTargetFilter('cs2_match_reels.match_slug')}
          ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED)
       RETURNING match_slug, map_number`,
     [
       recorder.slice(0, 120),
       qualityLabel(await readHighlightQuality()),
       now,
-      now - STALE_SECONDS,
+      recorder.slice(0, 120),
       ...failover.params,
       recorder,
     ]
@@ -1395,10 +1396,9 @@ export async function failMatchReel(
   error: string
 ): Promise<void> {
   await db.runAsync(
-    `UPDATE cs2_match_reels SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?,
-            avoid_recorder = recorder
+    `UPDATE cs2_match_reels SET ${recordingFailureSql}
       WHERE match_slug = ? AND map_number = ? AND status = 'recording'`,
-    [MAX_ATTEMPTS, error.slice(0, 500), matchSlug, mapNumber]
+    [error.slice(0, 500), matchSlug, mapNumber]
   );
 }
 

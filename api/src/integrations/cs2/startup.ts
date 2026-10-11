@@ -7,6 +7,7 @@
  * the server health monitor (which also runs the CS2 fleet/update checks).
  */
 
+import { startRecorderRecovery, stopRecorderRecovery } from './demos/recorderRecovery';
 import { startAutoStart } from './fleet/autoStart';
 import { startVetoTimer, stopVetoTimer } from './veto/timer';
 import { log } from '../../utils/logger';
@@ -54,6 +55,7 @@ function startTurnoverRetry(): void {
 }
 
 export async function startCs2(): Promise<void> {
+  startRecorderRecovery();
   // Round backups from Ready Up servers (event.backup) and the restore audit:
   // listening before the gateway takes its first message.
   startRoundBackups();
@@ -108,6 +110,7 @@ export async function startCs2(): Promise<void> {
 }
 
 export function stopCs2(): void {
+  stopRecorderRecovery();
   healthMonitoringService.stop();
   stopVetoTimer();
   stopMapAutoSync();

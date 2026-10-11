@@ -20,7 +20,9 @@ export interface RecorderGroup {
 export function RecorderGroups({
   groups,
   onChanged,
+  showToggles = true,
 }: {
+  showToggles?: boolean;
   groups: RecorderGroup[];
   onChanged: () => Promise<void>;
 }) {
@@ -46,27 +48,28 @@ export function RecorderGroups({
         {t('highlightsAdmin.fleet.drainHelp')}
       </Typography>
       <Stack direction="row" flexWrap="wrap" useFlexGap spacing={2}>
-        {groups.map((g) => (
-          <FormControlLabel
-            key={g.id}
-            label={g.name}
-            control={
-              <Switch
-                checked={g.enabled}
-                disabled={busy}
-                slotProps={{
-                  input: {
-                    'aria-label': g.name,
-                    'data-testid': `recorder-group-toggle-${g.id}`,
-                  } as InputHTMLAttributes<HTMLInputElement>,
-                }}
-                onChange={(_e, enabled) =>
-                  void change(() => api.put(`/api/game/cs2/recorder-groups/${g.id}`, { enabled }))
-                }
-              />
-            }
-          />
-        ))}
+        {showToggles &&
+          groups.map((g) => (
+            <FormControlLabel
+              key={g.id}
+              label={g.name}
+              control={
+                <Switch
+                  checked={g.enabled}
+                  disabled={busy}
+                  slotProps={{
+                    input: {
+                      'aria-label': g.name,
+                      'data-testid': `recorder-group-toggle-${g.id}`,
+                    } as InputHTMLAttributes<HTMLInputElement>,
+                  }}
+                  onChange={(_e, enabled) =>
+                    void change(() => api.put(`/api/game/cs2/recorder-groups/${g.id}`, { enabled }))
+                  }
+                />
+              }
+            />
+          ))}
       </Stack>
       <Stack
         component="form"
@@ -96,13 +99,52 @@ export function RecorderGroups({
   );
 }
 
+export function RecorderGroupToggle({
+  group,
+  onChanged,
+}: {
+  group: RecorderGroup;
+  onChanged: () => Promise<void>;
+}) {
+  const { showError } = useSnackbar();
+  const { t } = useModuleTranslation('cs2');
+  const [busy, setBusy] = useState(false);
+  return (
+    <Switch
+      checked={group.enabled}
+      disabled={busy}
+      slotProps={{
+        input: {
+          'aria-label': group.name,
+          'data-testid': `recorder-group-toggle-${group.id}`,
+        } as InputHTMLAttributes<HTMLInputElement>,
+      }}
+      onChange={async (_event, enabled) => {
+        setBusy(true);
+        try {
+          await api.put(`/api/game/cs2/recorder-groups/${group.id}`, { enabled });
+          await onChanged();
+        } catch (error) {
+          showError(error instanceof Error ? error.message : t('highlightsAdmin.actionError'));
+        } finally {
+          setBusy(false);
+        }
+      }}
+    />
+  );
+}
+
 export function RecorderControls({
   name,
   enabled,
   groupId,
   groups,
   onChanged,
+  showEnabled = true,
+  showGroup = true,
 }: {
+  showEnabled?: boolean;
+  showGroup?: boolean;
   name: string;
   enabled: boolean;
   groupId: number | null;
@@ -125,40 +167,47 @@ export function RecorderControls({
   }
   return (
     <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
-      <FormControlLabel
-        label={t('highlightsAdmin.fleet.enabled')}
-        control={
-          <Switch
-            checked={enabled}
-            disabled={busy}
-            slotProps={{
-              input: {
-                'data-testid': `recorder-toggle-${name}`,
-              } as InputHTMLAttributes<HTMLInputElement>,
-            }}
-            onChange={(_e, value) => void save({ enabled: value })}
-          />
-        }
-      />
-      <TextField
-        select
-        size="small"
-        label={t('highlightsAdmin.fleet.group')}
-        value={groupId ?? ''}
-        disabled={busy}
-        sx={{ minWidth: 180 }}
-        onChange={(e) =>
-          void save({ groupId: e.target.value === '' ? null : Number(e.target.value) })
-        }
-        SelectProps={{ inputProps: { 'data-testid': `recorder-group-${name}` } }}
-      >
-        <MenuItem value="">{t('highlightsAdmin.fleet.ungrouped')}</MenuItem>
-        {groups.map((g) => (
-          <MenuItem key={g.id} value={g.id}>
-            {g.name}
-          </MenuItem>
-        ))}
-      </TextField>
+      {showEnabled && (
+        <FormControlLabel
+          label={t('highlightsAdmin.fleet.enabled')}
+          control={
+            <Switch
+              checked={enabled}
+              disabled={
+                busy || (groupId !== null && groups.some((g) => g.id === groupId && !g.enabled))
+              }
+              slotProps={{
+                input: {
+                  'aria-label': `${name}: ${t('highlightsAdmin.fleet.enabled')}`,
+                  'data-testid': `recorder-toggle-${name}`,
+                } as InputHTMLAttributes<HTMLInputElement>,
+              }}
+              onChange={(_e, value) => void save({ enabled: value })}
+            />
+          }
+        />
+      )}
+      {showGroup && (
+        <TextField
+          select
+          size="small"
+          label={t('highlightsAdmin.fleet.group')}
+          value={groupId ?? ''}
+          disabled={busy}
+          sx={{ minWidth: 180 }}
+          onChange={(e) =>
+            void save({ groupId: e.target.value === '' ? null : Number(e.target.value) })
+          }
+          SelectProps={{ inputProps: { 'data-testid': `recorder-group-${name}` } }}
+        >
+          <MenuItem value="">{t('highlightsAdmin.fleet.ungrouped')}</MenuItem>
+          {groups.map((g) => (
+            <MenuItem key={g.id} value={g.id}>
+              {g.name}
+            </MenuItem>
+          ))}
+        </TextField>
+      )}
     </Stack>
   );
 }

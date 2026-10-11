@@ -1,5 +1,6 @@
 import {
   RecorderGroups,
+  RecorderGroupToggle,
   RecorderControls,
   MatchRecordingGroup,
   type RecorderGroup,
@@ -20,6 +21,9 @@ import {
  */
 import { useCallback, useEffect, useState } from 'react';
 import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
   Alert,
   Box,
   Button,
@@ -35,7 +39,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { FilmStripIcon } from '@phosphor-icons/react';
+import { CaretDownIcon, FilmStripIcon } from '@phosphor-icons/react';
 import { api, useModuleTranslation, useSnackbar } from '../../../module-sdk';
 import { HighlightOverlaySetting } from '../settings/HighlightOverlaySetting';
 
@@ -53,6 +57,8 @@ interface Recorder {
   groupId: number | null;
   groupName: string | null;
   name: string;
+  hostname?: string;
+  agentVersion?: string | null;
   label: string | null;
   version: number | null;
   gpu: string | null;
@@ -70,6 +76,12 @@ interface Recorder {
   runs: number;
   avgClipSeconds: number | null;
   lastError: string | null;
+  lastRunFailed: boolean;
+  updateSupported: boolean;
+  updateAvailable: boolean;
+  recorderRevision: string | null;
+  updateStatus: string;
+  updateError: string | null;
   working: {
     playerName: string | null;
     clips: number;
@@ -139,6 +151,7 @@ function RecordersTab() {
   const { showSuccess, showError } = useSnackbar();
   const [recorders, setRecorders] = useState<Recorder[] | null>(null);
   const [groups, setGroups] = useState<RecorderGroup[]>([]);
+  const [updatingAll, setUpdatingAll] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<{ name: string; label: string } | null>(null);
 
@@ -182,13 +195,54 @@ function RecordersTab() {
       </Box>
     );
   }
-  const sortedRecorders = [...recorders].sort(
-    (a, b) => (a.groupName ?? '').localeCompare(b.groupName ?? '') || a.name.localeCompare(b.name)
+  const sortedRecorders = [...recorders].sort((a, b) =>
+    (a.hostname ?? a.name).localeCompare(b.hostname ?? b.name, undefined, {
+      numeric: true,
+      sensitivity: 'base',
+    })
   );
+  const cards: { group: RecorderGroup | null; members: Recorder[] }[] = [...groups]
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))
+    .map((group) => ({ group, members: sortedRecorders.filter((r) => r.groupId === group.id) }));
+  const ungrouped = sortedRecorders.filter(
+    (r) => r.groupId === null || !groups.some((g) => g.id === r.groupId)
+  );
+  if (ungrouped.length) cards.push({ group: null, members: ungrouped });
   return (
     <Stack spacing={2}>
-      <AddRecorder onKeys={() => void load()} />
-      <RecorderGroups groups={groups} onChanged={load} />
+      <Stack
+        direction="row"
+        spacing={2}
+        alignItems="center"
+        justifyContent="space-between"
+        flexWrap="wrap"
+        useFlexGap
+      >
+        <AddRecorder onKeys={() => void load()} />
+        <Button
+          variant="outlined"
+          data-testid="recorder-update-all"
+          disabled={
+            updatingAll ||
+            recorders.some((r) => ['queued', 'updating'].includes(r.updateStatus)) ||
+            !recorders.some((r) => r.updateSupported && r.updateAvailable)
+          }
+          onClick={async () => {
+            setUpdatingAll(true);
+            try {
+              await act(
+                '/api/game/cs2/recorders/update-all',
+                t('highlightsAdmin.fleet.updateQueued')
+              );
+            } finally {
+              setUpdatingAll(false);
+            }
+          }}
+        >
+          {t('highlightsAdmin.fleet.updateAll')}
+        </Button>
+      </Stack>
+      <RecorderGroups groups={groups} onChanged={load} showToggles={false} />
       {recorders.length === 0 && (
         <Box
           sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}
@@ -201,219 +255,326 @@ function RecordersTab() {
           <Typography variant="body2">{t('highlightsAdmin.emptyHelp')}</Typography>
         </Box>
       )}
-      {sortedRecorders.map((r) => {
-        const enc = encodeURIComponent(r.name);
-        return (
-          <Box
-            key={r.name}
-            data-testid={`recorder-${r.name}`}
-            sx={{
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 2,
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1.5,
-            }}
+      {cards.map(({ group, members }) => (
+        <Box
+          key={group?.id ?? 'ungrouped'}
+          data-testid={`recorder-card-${group?.id ?? 'ungrouped'}`}
+          sx={{ border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+        >
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            sx={{ px: 2, py: 1.5, bgcolor: 'action.hover' }}
           >
-            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-              <Typography variant="subtitle1" fontWeight={700} sx={{ overflowWrap: 'anywhere' }}>
-                {r.label || r.name}
-              </Typography>
-              {r.label && (
-                <Typography variant="caption" color="text.secondary">
-                  {r.name}
-                </Typography>
-              )}
-              <Button
-                size="small"
-                onClick={() => setRenaming({ name: r.name, label: r.label ?? '' })}
-                data-testid={`recorder-rename-${r.name}`}
-              >
-                {t('highlightsAdmin.rename')}
-              </Button>
-              {!r.effectiveEnabled ? (
-                <Chip
-                  size="small"
-                  color={r.working ? 'warning' : 'default'}
-                  label={t(
-                    r.working ? 'highlightsAdmin.fleet.draining' : 'highlightsAdmin.fleet.disabled'
-                  )}
-                />
-              ) : r.paused ? (
-                <Chip size="small" color="warning" label={t('highlightsAdmin.paused')} />
-              ) : r.working ? (
-                <Chip size="small" color="success" label={t('highlightsAdmin.recording')} />
-              ) : r.online ? (
-                <Chip
-                  size="small"
-                  color="success"
-                  variant="outlined"
-                  label={t('highlightsAdmin.fleet.idle')}
-                />
-              ) : (
-                <Chip size="small" variant="outlined" label={t('highlightsAdmin.offline')} />
-              )}
-              {r.version != null && r.version < 7 && (
-                <Chip
-                  size="small"
-                  variant="outlined"
-                  label={t('highlightsAdmin.oldVersion', { version: r.version })}
-                />
-              )}
-            </Stack>
-            <Typography variant="body2" color="text.secondary">
-              {[
-                r.gpu || t('highlightsAdmin.unknownGpu'),
-                r.platform,
-                t('highlightsAdmin.lastSeen', { time: when(r.lastSeen) }),
-              ]
-                .filter(Boolean)
-                .join(' · ')}
+            <Typography variant="h6" sx={{ flex: 1 }}>
+              {group?.name ?? t('highlightsAdmin.fleet.ungrouped')}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {r.groupName ?? t('highlightsAdmin.fleet.ungrouped')}
+              {t('highlightsAdmin.fleet.connectedCount', {
+                count: members.filter((r) => r.online).length,
+                total: members.length,
+              })}
             </Typography>
-            <RecorderControls
-              name={r.name}
-              enabled={r.enabled}
-              groupId={r.groupId}
-              groups={groups}
-              onChanged={load}
-            />
-            {!r.effectiveEnabled && (
-              <Typography variant="caption" color="text.secondary">
-                {t('highlightsAdmin.fleet.drainHelp')}
-              </Typography>
-            )}
-            {r.working && (
-              <Typography variant="body2" data-testid={`recorder-working-${r.name}`}>
-                {t('highlightsAdmin.workingOn', {
-                  count: r.working.clips,
-                  map: r.working.mapNumber + 1,
-                  match: r.working.matchSlug ?? '—',
-                  time: when(r.working.since),
-                })}
-                {r.working.playerName ? ` · ${r.working.playerName}` : null}
-              </Typography>
-            )}
-            {r.paused && r.pauseReason && (
-              <Alert severity="warning" sx={{ py: 0 }}>
-                {t('highlightsAdmin.pausedUntil', {
-                  time: when(r.pausedUntil),
-                  reason: r.pauseReason,
-                })}
-              </Alert>
-            )}
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 11rem), 1fr))',
-                gap: 1.5,
-              }}
-            >
-              <Stat label={t('highlightsAdmin.stat.perClip')} value={duration(r.avgClipSeconds)} />
-              <Stat label={t('highlightsAdmin.stat.kept')} value={String(r.clipsOk)} />
-              <Stat
-                label={t('highlightsAdmin.stat.benchmark')}
-                value={
-                  r.benchmarkWanted
-                    ? t('highlightsAdmin.benchmarkPending')
-                    : r.gamescopeHz
-                      ? t('highlightsAdmin.benchmarkPick', { hz: r.gamescopeHz })
-                      : r.benchmarkAt
-                        ? t('highlightsAdmin.benchmarkNone')
-                        : '—'
-                }
-              />
-            </Box>
-            {r.benchmark && r.benchmark.tries.length > 0 && (
-              <Box sx={{ overflowX: 'auto' }}>
-                <Box
-                  component="table"
-                  sx={{
-                    borderCollapse: 'collapse',
-                    fontSize: 13,
-                    '& td, & th': { px: 1, py: 0.25, textAlign: 'left', whiteSpace: 'nowrap' },
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      <th>{t('highlightsAdmin.bench.hz')}</th>
-                      <th>{t('highlightsAdmin.bench.time')}</th>
-                      <th>{t('highlightsAdmin.bench.fps')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {r.benchmark.tries.map((b) => (
-                      <tr key={b.gamescopeHz}>
-                        <td>
-                          {b.gamescopeHz} Hz{b.gamescopeHz === r.benchmark?.pick ? ' ✓' : ''}
-                        </td>
-                        <td>{b.ok ? duration(b.seconds) : (b.error ?? '—')}</td>
-                        <td>{b.captureFps != null ? Math.round(b.captureFps) : '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Box>
-              </Box>
-            )}
-            {r.lastError && (
-              <Typography variant="caption" color="error" sx={{ overflowWrap: 'anywhere' }}>
-                {t('highlightsAdmin.lastError', { error: r.lastError })}
-              </Typography>
-            )}
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              <Button size="small" variant="outlined" onClick={() => setOpen(r.name)}>
-                {t('highlightsAdmin.runs', { count: r.runs })}
-              </Button>
-              {r.paused && (
-                <Button
-                  size="small"
-                  onClick={() =>
-                    void act(`/api/game/cs2/recorders/${enc}/resume`, t('highlightsAdmin.resumed'))
-                  }
-                >
-                  {t('highlightsAdmin.resume')}
-                </Button>
-              )}
-              <Button
-                size="small"
-                onClick={() =>
-                  void act(
-                    `/api/game/cs2/recorders/${enc}/benchmark`,
-                    t('highlightsAdmin.benchmarkAsked')
-                  )
-                }
+            <Typography variant="caption" color="text.secondary">
+              {t('highlightsAdmin.fleet.enabledCount', {
+                count: members.filter((r) => r.effectiveEnabled).length,
+                total: members.length,
+              })}
+            </Typography>
+            {group && <RecorderGroupToggle group={group} onChanged={load} />}
+          </Stack>
+          {members.map((r) => {
+            const enc = encodeURIComponent(r.name);
+            return (
+              <Box
+                key={r.name}
+                data-testid={`recorder-${r.name}`}
+                sx={{ position: 'relative', borderTop: 1, borderColor: 'divider' }}
               >
-                {t('highlightsAdmin.rerunBenchmark')}
-              </Button>
-              {!r.online && (
-                <Button
-                  size="small"
-                  color="error"
-                  data-testid={`recorder-forget-${r.name}`}
-                  onClick={async () => {
-                    try {
-                      await api.delete(`/api/game/cs2/recorders/${enc}`);
-                      showSuccess(t('highlightsAdmin.forgotten'));
-                      await load();
-                    } catch (err) {
-                      showError(
-                        err instanceof Error ? err.message : t('highlightsAdmin.actionError')
-                      );
-                    }
-                  }}
-                >
-                  {t('highlightsAdmin.forget')}
-                </Button>
-              )}
-            </Stack>
-          </Box>
-        );
-      })}
+                <Box sx={{ position: 'absolute', right: 0, top: 6, zIndex: 1 }}>
+                  <RecorderControls
+                    name={r.name}
+                    enabled={r.enabled}
+                    groupId={r.groupId}
+                    groups={groups}
+                    onChanged={load}
+                    showGroup={false}
+                  />
+                </Box>
+                <Accordion disableGutters elevation={0} sx={{ '&:before': { display: 'none' } }}>
+                  <AccordionSummary expandIcon={<CaretDownIcon />} sx={{ pr: 18 }}>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      flexWrap="wrap"
+                      useFlexGap
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight={700}
+                        color={r.lastRunFailed ? 'error.main' : 'text.primary'}
+                        sx={{ overflowWrap: 'anywhere' }}
+                      >
+                        {r.label || r.hostname || r.name}
+                      </Typography>
+                      {r.label && (
+                        <Typography variant="caption" color="text.secondary">
+                          {r.name}
+                        </Typography>
+                      )}
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        color={r.online ? 'success' : 'default'}
+                        label={t(
+                          r.online ? 'highlightsAdmin.fleet.connected' : 'highlightsAdmin.offline'
+                        )}
+                      />
+                      {!r.effectiveEnabled ? (
+                        <Chip
+                          size="small"
+                          color={r.working ? 'warning' : 'default'}
+                          label={t(
+                            r.working
+                              ? 'highlightsAdmin.fleet.draining'
+                              : 'highlightsAdmin.fleet.disabled'
+                          )}
+                        />
+                      ) : r.paused ? (
+                        <Chip size="small" color="warning" label={t('highlightsAdmin.paused')} />
+                      ) : r.working ? (
+                        <Chip size="small" color="success" label={t('highlightsAdmin.recording')} />
+                      ) : r.online ? (
+                        <Chip
+                          size="small"
+                          color="success"
+                          variant="outlined"
+                          label={t('highlightsAdmin.fleet.idle')}
+                        />
+                      ) : null}
+                      {r.version != null && r.version < 7 && (
+                        <Chip
+                          size="small"
+                          variant="outlined"
+                          label={t('highlightsAdmin.oldVersion', { version: r.version })}
+                        />
+                      )}
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    <Button
+                      size="small"
+                      onClick={() => setRenaming({ name: r.name, label: r.label ?? '' })}
+                      data-testid={`recorder-rename-${r.name}`}
+                    >
+                      {t('highlightsAdmin.rename')}
+                    </Button>
+                    <Typography variant="body2" color="text.secondary">
+                      {[
+                        r.gpu || t('highlightsAdmin.unknownGpu'),
+                        r.platform,
+                        t('highlightsAdmin.lastSeen', { time: when(r.lastSeen) }),
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {r.groupName ?? t('highlightsAdmin.fleet.ungrouped')}
+                    </Typography>
+                    <RecorderControls
+                      name={r.name}
+                      enabled={r.enabled}
+                      groupId={r.groupId}
+                      groups={groups}
+                      onChanged={load}
+                      showEnabled={false}
+                    />
+                    {!r.effectiveEnabled && (
+                      <Typography variant="caption" color="text.secondary">
+                        {t('highlightsAdmin.fleet.drainHelp')}
+                      </Typography>
+                    )}
+                    {r.working && (
+                      <Typography variant="body2" data-testid={`recorder-working-${r.name}`}>
+                        {t('highlightsAdmin.workingOn', {
+                          count: r.working.clips,
+                          map: r.working.mapNumber + 1,
+                          match: r.working.matchSlug ?? '—',
+                          time: when(r.working.since),
+                        })}
+                        {r.working.playerName ? ` · ${r.working.playerName}` : null}
+                      </Typography>
+                    )}
+                    {r.agentVersion && (
+                      <Typography variant="caption" color="text.secondary">
+                        at-recorder {r.agentVersion}
+                      </Typography>
+                    )}
+                    {r.recorderRevision && (
+                      <Typography variant="caption" color="text.secondary">
+                        {t('highlightsAdmin.fleet.build', {
+                          revision: r.recorderRevision.slice(0, 12),
+                        })}
+                      </Typography>
+                    )}
+                    {r.updateError && <Alert severity="error">{r.updateError}</Alert>}
+                    {r.paused && r.pauseReason && (
+                      <Alert severity="warning" sx={{ py: 0 }}>
+                        {t('highlightsAdmin.pausedUntil', {
+                          time: when(r.pausedUntil),
+                          reason: r.pauseReason,
+                        })}
+                      </Alert>
+                    )}
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 11rem), 1fr))',
+                        gap: 1.5,
+                      }}
+                    >
+                      <Stat
+                        label={t('highlightsAdmin.stat.perClip')}
+                        value={duration(r.avgClipSeconds)}
+                      />
+                      <Stat label={t('highlightsAdmin.stat.kept')} value={String(r.clipsOk)} />
+                      <Stat
+                        label={t('highlightsAdmin.stat.benchmark')}
+                        value={
+                          r.benchmarkWanted
+                            ? t('highlightsAdmin.benchmarkPending')
+                            : r.gamescopeHz
+                              ? t('highlightsAdmin.benchmarkPick', { hz: r.gamescopeHz })
+                              : r.benchmarkAt
+                                ? t('highlightsAdmin.benchmarkNone')
+                                : '—'
+                        }
+                      />
+                    </Box>
+                    {r.benchmark && r.benchmark.tries.length > 0 && (
+                      <Box sx={{ overflowX: 'auto' }}>
+                        <Box
+                          component="table"
+                          sx={{
+                            borderCollapse: 'collapse',
+                            fontSize: 13,
+                            '& td, & th': {
+                              px: 1,
+                              py: 0.25,
+                              textAlign: 'left',
+                              whiteSpace: 'nowrap',
+                            },
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
+                          <thead>
+                            <tr>
+                              <th>{t('highlightsAdmin.bench.hz')}</th>
+                              <th>{t('highlightsAdmin.bench.time')}</th>
+                              <th>{t('highlightsAdmin.bench.fps')}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {r.benchmark.tries.map((b) => (
+                              <tr key={b.gamescopeHz}>
+                                <td>
+                                  {b.gamescopeHz} Hz
+                                  {b.gamescopeHz === r.benchmark?.pick ? ' ✓' : ''}
+                                </td>
+                                <td>{b.ok ? duration(b.seconds) : (b.error ?? '—')}</td>
+                                <td>{b.captureFps != null ? Math.round(b.captureFps) : '—'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Box>
+                      </Box>
+                    )}
+                    {r.lastError && (
+                      <Typography variant="caption" color="error" sx={{ overflowWrap: 'anywhere' }}>
+                        {t('highlightsAdmin.lastError', { error: r.lastError })}
+                      </Typography>
+                    )}
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                      <Button size="small" variant="outlined" onClick={() => setOpen(r.name)}>
+                        {t('highlightsAdmin.runs', { count: r.runs })}
+                      </Button>
+                      <Button
+                        size="small"
+                        disabled={
+                          !r.updateSupported ||
+                          r.updateStatus === 'queued' ||
+                          r.updateStatus === 'updating'
+                        }
+                        data-testid={`recorder-update-${r.name}`}
+                        onClick={() =>
+                          void act(
+                            `/api/game/cs2/recorders/${enc}/update`,
+                            t('highlightsAdmin.fleet.updateQueued')
+                          )
+                        }
+                      >
+                        {t(
+                          r.updateStatus === 'queued' || r.updateStatus === 'updating'
+                            ? 'highlightsAdmin.fleet.updatePending'
+                            : 'highlightsAdmin.fleet.update'
+                        )}
+                      </Button>
+                      {r.paused && (
+                        <Button
+                          size="small"
+                          onClick={() =>
+                            void act(
+                              `/api/game/cs2/recorders/${enc}/resume`,
+                              t('highlightsAdmin.resumed')
+                            )
+                          }
+                        >
+                          {t('highlightsAdmin.resume')}
+                        </Button>
+                      )}
+                      <Button
+                        size="small"
+                        onClick={() =>
+                          void act(
+                            `/api/game/cs2/recorders/${enc}/benchmark`,
+                            t('highlightsAdmin.benchmarkAsked')
+                          )
+                        }
+                      >
+                        {t('highlightsAdmin.rerunBenchmark')}
+                      </Button>
+                      {!r.online && (
+                        <Button
+                          size="small"
+                          color="error"
+                          data-testid={`recorder-forget-${r.name}`}
+                          onClick={async () => {
+                            try {
+                              await api.delete(`/api/game/cs2/recorders/${enc}`);
+                              showSuccess(t('highlightsAdmin.forgotten'));
+                              await load();
+                            } catch (err) {
+                              showError(
+                                err instanceof Error
+                                  ? err.message
+                                  : t('highlightsAdmin.actionError')
+                              );
+                            }
+                          }}
+                        >
+                          {t('highlightsAdmin.forget')}
+                        </Button>
+                      )}
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+              </Box>
+            );
+          })}
+        </Box>
+      ))}
       <RunsDialog key={open ?? ''} name={open} onClose={() => setOpen(null)} />
       <Dialog open={!!renaming} onClose={() => setRenaming(null)} maxWidth="xs" fullWidth>
         <DialogTitle>{t('highlightsAdmin.renameTitle')}</DialogTitle>
@@ -1200,6 +1361,16 @@ function ClipsTab() {
             {m.match}
           </Typography>
           <MatchRecordingGroup slug={m.slug} />
+          <Button
+            size="small"
+            color="warning"
+            disabled={busy}
+            sx={{ mb: 1.5 }}
+            data-testid={`clips-redo-match-${m.slug}`}
+            onClick={() => void redo({ matchSlugs: [m.slug] })}
+          >
+            {t('highlightsAdmin.clips.redoMatch')}
+          </Button>
           {m.reels.length > 0 && (
             <Box sx={{ mb: 1.5 }}>
               <Typography variant="caption" color="text.secondary">

@@ -2248,7 +2248,8 @@
       "reviewOf": "{{n}} av {{count}}",
       "previous": "Forrige",
       "next": "Neste",
-      "close": "Lukk"
+      "close": "Lukk",
+      "redoMatch": "Gjør alle klipp på nytt"
     },
     "add": {
       "button": "Legg til en opptaker",
@@ -2308,7 +2309,15 @@
       "matchHelp": "Gjelder nye spillerjobber og videoer. Gjeldende jobber fortsetter.",
       "allGroups": "Alle aktiverte opptakere",
       "groupDisabledHelp": "Denne gruppen er deaktivert. Nye jobber for kampen venter til den aktiveres.",
-      "idle": "Ledig"
+      "idle": "Ledig",
+      "connected": "Tilkoblet",
+      "connectedCount": "{{count}}/{{total}} tilkoblet",
+      "enabledCount": "{{count}}/{{total}} aktivert",
+      "update": "Oppdater opptaker",
+      "updatePending": "Oppdatering venter",
+      "updateQueued": "Oppdatering satt i kø; pågående jobb fullføres først.",
+      "updateAll": "Oppdater alle",
+      "build": "Build {{revision}}"
     }
   },
   "tournament": {

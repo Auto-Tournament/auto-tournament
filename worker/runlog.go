@@ -85,7 +85,7 @@ const heartbeatEvery = 5 * time.Minute
 // still working on what it claimed (a map job can take hours, and its clips
 // go up only at the end), so no other recorder takes it over. Returns what
 // stops it. Best effort: an older platform answers 404, which is fine.
-func (c *client) heartbeat(ctx context.Context) func() {
+func (c *client) heartbeat(ctx context.Context, onExpired ...context.CancelFunc) func() {
 	done := make(chan struct{})
 	go func() {
 		t := time.NewTicker(heartbeatEvery)
@@ -100,6 +100,11 @@ func (c *client) heartbeat(ctx context.Context) func() {
 				hctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 				if res, err := c.postJSON(hctx, "/api/game/cs2/recorder/heartbeat", map[string]any{"recorder": c.worker}); err == nil {
 					res.Body.Close()
+					if res.StatusCode == 409 {
+						for _, stop := range onExpired {
+							stop()
+						}
+					}
 				}
 				cancel()
 			}

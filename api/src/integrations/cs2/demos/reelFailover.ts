@@ -45,7 +45,7 @@ export async function reelFailoverFilter(
     sql: `(avoid_recorder IS NULL OR avoid_recorder <> ? OR NOT EXISTS (
       SELECT 1 FROM cs2_recorders r
       LEFT JOIN cs2_recorder_groups g ON g.id = r.group_id
-      WHERE r.name <> avoid_recorder AND r.enabled = 1 AND COALESCE(g.enabled, 1) = 1
+      WHERE r.name <> avoid_recorder AND r.enabled = 1 AND r.update_status NOT IN ('queued', 'updating') AND COALESCE(g.enabled, 1) = 1
         AND (r.paused_until IS NULL OR r.paused_until < EXTRACT(EPOCH FROM NOW()))
         AND (r.last_seen > EXTRACT(EPOCH FROM NOW()) - 900 OR EXISTS (
           SELECT 1 FROM cs2_highlights busy WHERE busy.recorder = r.name AND busy.status = 'recording'))

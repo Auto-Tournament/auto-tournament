@@ -162,6 +162,7 @@ export async function listClips(
 /** What to make again: clips by id, reels by match and map, or everything outdated. */
 export interface RedoRequest {
   clipIds?: number[];
+  matchSlugs?: string[];
   reels?: { slug: string; mapNumber: number }[];
   outdated?: boolean;
 }
@@ -183,6 +184,22 @@ export async function redo(req: RedoRequest): Promise<{ clips: number; reels: nu
         r.mapNumber >= SERIES_REEL
     )
     .slice(0, 200);
+  const matchSlugs = Array.isArray(req.matchSlugs)
+    ? [
+        ...new Set(
+          req.matchSlugs.filter(
+            (slug) => typeof slug === 'string' && slug.length > 0 && slug.length <= 200
+          )
+        ),
+      ].slice(0, 100)
+    : [];
+  if (matchSlugs.length) {
+    const matches = await db.queryAsync<{ id: number }>(
+      `SELECT id FROM cs2_highlights WHERE match_slug IN (${matchSlugs.map(() => '?').join(', ')}) AND status IN ('done', 'failed')`,
+      matchSlugs
+    );
+    ids = [...new Set([...ids, ...matches.map((row) => Number(row.id))])];
+  }
   if (req.outdated) {
     const stale = await db.queryAsync<{ id: number }>(
       `SELECT id FROM cs2_highlights WHERE status = 'done' AND made_with IS DISTINCT FROM ?`,
@@ -202,7 +219,7 @@ export async function redo(req: RedoRequest): Promise<{ clips: number; reels: nu
   if (ids.length) {
     const marks = ids.map(() => '?').join(', ');
     const touched = await db.queryAsync<{ match_slug: string; map_number: number }>(
-      `UPDATE cs2_highlights SET status = 'pending', attempts = 0, error = NULL, claimed_at = NULL, recorder = NULL
+      `UPDATE cs2_highlights SET status = 'pending', attempts = 0, error = NULL, claimed_at = NULL, recorder = NULL, claim_started_at = NULL, retry_until = NULL, avoid_recorder = NULL
         WHERE id IN (${marks}) AND status IN ('done', 'failed')
         RETURNING match_slug, map_number`,
       ids
@@ -226,7 +243,7 @@ export async function redo(req: RedoRequest): Promise<{ clips: number; reels: nu
       [r.slug, r.mapNumber, r.mapNumber]
     );
     const result = await db.runAsync(
-      `UPDATE cs2_match_reels SET status = ?, attempts = 0, error = NULL
+      `UPDATE cs2_match_reels SET status = ?, attempts = 0, error = NULL, claim_started_at = NULL, retry_until = NULL, avoid_recorder = NULL
         WHERE match_slug = ? AND map_number = ? AND status IN ('done', 'failed', 'waiting', 'pending')`,
       [Number(waiting?.n ?? 0) > 0 ? 'waiting' : 'pending', r.slug, r.mapNumber]
     );

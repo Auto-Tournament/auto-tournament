@@ -13,6 +13,8 @@ COPY assets ./assets
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /at-worker .
 
 FROM josh5/steam-headless:2.44.20261004.1
+ARG VCS_REF=unknown
+LABEL org.opencontainers.image.revision=$VCS_REF
 COPY --from=build /at-worker /usr/local/bin/at-worker
 COPY LICENSE THIRD_PARTY_NOTICES.md /licenses/at-worker/
 COPY assets/fonts/OFL-Geist.txt assets/fonts/OFL-Sora.txt /licenses/at-worker/fonts/

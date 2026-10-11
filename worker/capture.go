@@ -245,6 +245,9 @@ func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error
 	}()
 	select {
 	case g.node = <-nodeCh:
+	case <-ctx.Done():
+		g.stop()
+		return nil, ctx.Err()
 	case <-time.After(90 * time.Second):
 		g.stop()
 		return nil, errors.New("gamescope never offered its video stream (see " + logPath + ")")
