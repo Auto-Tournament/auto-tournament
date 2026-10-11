@@ -49,6 +49,10 @@ if [ ! -f "$DIR/.env" ]; then
   umask 022
 fi
 
+echo "== Resolving recorder image ($IMAGE)"
+docker pull -q "$IMAGE" >/dev/null
+IMAGE=$(docker image inspect "$IMAGE" --format '{{range .RepoDigests}}{{println .}}{{end}}' | sed -n '/^sivertio\/auto-tournament-recorder@sha256:[0-9a-f]\{64\}$/p' | head -1)
+[ -n "$IMAGE" ] || { echo "No official recorder digest found."; exit 1; }
 cat > "$DIR/compose.yml" <<YML
 # Auto Tournament recorder: CS2 in a headless Steam desktop (written by start-recorder.sh).
 services:
@@ -66,7 +70,7 @@ services:
     cap_add: [NET_ADMIN, SYS_ADMIN, SYS_NICE, SYS_PTRACE, SYS_RESOURCE, DAC_READ_SEARCH]
     tmpfs: [/run, /run/lock, /tmp]
     cgroup: host
-    security_opt: [seccomp:unconfined, apparmor:unconfined]
+    security_opt: [seccomp:unconfined, apparmor:at-recorder]
     runtime: nvidia
     hostname: $NAME
     env_file: .env
@@ -133,10 +137,12 @@ AT_CS2_GAME=/mnt/games/GameLibrary/Steam/steamapps/common/Counter-Strike Global 
 AT_SNIPER_RUN=/home/steamheadless/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/run
 AT_RECORD_DIR=/mnt/clips/scratch
 AT_POLL_SECONDS=15
+AT_RECORDER_IDLE_FILE=/mnt/clips/recorder-idle
 ENV
 # The desktop's user (uid 99) reads it; the directory keeps others out.
-chmod 711 "$CONF"
-chmod 644 "$CONF/at-recorder.env"
+chown :100 "$CONF" "$CONF/at-recorder.env"
+chmod 710 "$CONF"
+chmod 640 "$CONF/at-recorder.env"
 cat > "$CONF/at-recorder.service" <<'UNIT'
 [Unit]
 Description=Auto Tournament highlight recorder (at-worker record)
