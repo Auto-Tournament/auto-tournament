@@ -337,7 +337,7 @@ const seekTimeout = 45 * time.Second
 // awaitSeek waits for a demo_gototick to land: a seek plays on by itself once
 // it has, so pausing it answers with a tick near the target (analyzer ticks).
 // While it still loads, CS2 does not answer at all.
-func (g *game) awaitSeek(target int) error {
+func (g *game) awaitSeek(target int) (int, error) {
 	// A seek back within the moment lands at once; one far into the demo is
 	// polled until it has.
 	time.Sleep(seekPoll)
@@ -345,20 +345,46 @@ func (g *game) awaitSeek(target int) error {
 	for {
 		g.con.drain()
 		if err := g.con.send("demo_pause"); err != nil {
-			return err
+			return 0, err
 		}
 		if v, _, err := g.con.expect(rePaused, 2*time.Second); err == nil {
 			if tick, err := strconv.Atoi(v); err == nil && seekLanded(tick-g.startTick, target) {
-				return nil
+				return tick - g.startTick, nil
 			}
 		}
 		if time.Now().After(deadline) {
-			return fmt.Errorf("the seek to tick %d did not land in %s", target, seekTimeout)
+			return 0, fmt.Errorf("the seek to tick %d did not land in %s", target, seekTimeout)
 		}
 		// Not there yet (or still paused where it was): let it go on.
 		_ = g.con.send("demo_resume")
 		time.Sleep(seekPoll)
 	}
+}
+
+// seekForCapture ensures the paused demo still has the clip's run-up ahead
+// of it. CS2 can land several seconds after demo_gototick; awaitSeek's broad
+// loading tolerance is not enough to guarantee the opening was captured.
+func (g *game) seekForCapture(from int, scale float64) error {
+	target := from
+	for attempt := 0; attempt < 3; attempt++ {
+		if err := g.con.send(fmt.Sprintf("demo_timescale %g", scale), fmt.Sprintf("demo_gototick %d", target), "demo_resume"); err != nil {
+			return err
+		}
+		landed, err := g.awaitSeek(target)
+		if err != nil {
+			return err
+		}
+		if landed <= from+lead/2 {
+			return nil
+		}
+		if target == 0 {
+			return fmt.Errorf("seek resumed at tick %d, past capture run-up at %d", landed, from)
+		}
+		next := max(0, target-(landed-from)-lead)
+		log.Printf("seek landed at tick %d past capture run-up %d; seeking back to %d", landed, from, next)
+		target = next
+	}
+	return fmt.Errorf("seek could not preserve capture run-up at tick %d after 3 attempts", from)
 }
 
 // resume plays the demo on and returns the tick it resumed at; if it was
@@ -409,14 +435,13 @@ func (g *game) playPhases(from int, phases []playPhase, name string, started fun
 	// Resumed straight after, so a demo the last pass left paused plays on
 	// too and answers the first poll (paused, it said nothing and each seek
 	// waited out a 2 s timeout).
-	if err := g.con.send("host_timescale 1", "host_framerate 0", "fps_max 0",
-		fmt.Sprintf("demo_timescale %g", phases[0].scale), fmt.Sprintf("demo_gototick %d", from), "demo_resume"); err != nil {
+	if err := g.con.send("host_timescale 1", "host_framerate 0", "fps_max 0"); err != nil {
 		return nil, err
 	}
 	// A seek far into the demo (round 19 straight after loading) takes CS2
 	// longer than a few seconds: wait until it has landed near `from`.
 	seekStart := time.Now()
-	if err := g.awaitSeek(from); err != nil {
+	if err := g.seekForCapture(from, phases[0].scale); err != nil {
 		return nil, err
 	}
 	seekTook := time.Since(seekStart)
