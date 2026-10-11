@@ -88,6 +88,15 @@ async function main() {
       ).length,
       0
     );
+    const exhaustedPending = await put('cs2_highlights', 3, now, now);
+    await db.runAsync("UPDATE cs2_highlights SET status = 'pending' WHERE id = ?", [
+      exhaustedPending,
+    ]);
+    assert.deepEqual(
+      await lease.recoverRecordingLeases(),
+      [exhaustedPending],
+      'exhausted legacy pending work cannot remain stuck'
+    );
     for (const table of lease.RECORDING_TABLES) await put(table, 1, now, now - 300);
     assert.equal(await lease.renewRecordingLeases('csrender5'), 4);
     assert.equal(await lease.recorderHasActiveClaim('csrender5'), true);

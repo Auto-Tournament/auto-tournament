@@ -33,9 +33,9 @@ export async function recoverRecordingLeases(): Promise<number[]> {
         error = 'Recorder lease expired or job exceeded 45 minutes',
         retry_until = CASE WHEN attempts = 1 THEN EXTRACT(EPOCH FROM NOW())::INTEGER + ${SAME_RECORDER_RETRY_SECONDS} ELSE NULL END,
         avoid_recorder = CASE WHEN attempts >= 2 THEN recorder ELSE NULL END
-       WHERE status = 'recording' AND (
+       WHERE (status = 'pending' AND attempts >= ${RECORDING_ATTEMPTS}) OR (status = 'recording' AND (
          claimed_at IS NULL OR claimed_at < EXTRACT(EPOCH FROM NOW()) - ${RECORDER_LEASE_SECONDS}
-         OR claim_started_at < EXTRACT(EPOCH FROM NOW()) - ${RECORDER_JOB_SECONDS})
+         OR claim_started_at < EXTRACT(EPOCH FROM NOW()) - ${RECORDER_JOB_SECONDS}))
        RETURNING ${table === 'cs2_highlights' ? 'id, ' : ''}status`,
       []
     );
