@@ -209,9 +209,9 @@ func (c *client) claimRecording(ctx context.Context, loaded map[string]any) (*ma
 		c.claimToken.Store(nil)
 	}
 	// Version 6: redress jobs (overlay.go). Version 7: benchmarks, frame
-	// checks and run reports (quality.go, runlog.go).
+	// checks and run reports (quality.go, runlog.go). Version 8: attempt tokens.
 	ask := map[string]any{
-		"recorder": c.worker, "version": 7, "gpu": recorderGPU(), "platform": platformName(),
+		"recorder": c.worker, "version": 8, "gpu": recorderGPU(), "platform": platformName(),
 		// It carries the benchmark demo (benchdemo_linux.go): its benchmark
 		// then needs nothing from the platform and compares with every other.
 		"benchDemo": hasBenchDemo(),
