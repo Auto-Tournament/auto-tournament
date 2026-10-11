@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -472,7 +473,8 @@ func ptsTimes(arrived []time.Time, pts []float64) []time.Time {
 // dropRepeats marks a frame the stream sent again (the same picture as the
 // one before it) as no frame (-1): timed as a new moment, a repeat held the
 // picture one frame and the frames around it ran unevenly. It compares a
-// spread of samples of each raw frame with the last kept one.
+// spread of samples with the last kept frame, then verifies the full frame:
+// scoped views can keep the samples still while movement happens elsewhere.
 func dropRepeats(raw string, frameBytes int64, ticks []float64) (int, error) {
 	f, err := os.Open(raw)
 	if err != nil {
@@ -491,17 +493,36 @@ func dropRepeats(raw string, frameBytes int64, ticks []float64) (int, error) {
 	}
 	prev := make([]byte, samples*sampleLen)
 	cur := make([]byte, samples*sampleLen)
+	var prevFrame, curFrame []byte
+	prevIndex, cachedIndex := -1, -1
 	dropped, have := 0, false
 	for i := range ticks {
 		if err := read(i, cur); err != nil {
 			break
 		}
-		if have && ticks[i] >= 0 && string(cur) == string(prev) {
-			ticks[i] = -1
-			dropped++
-			continue
+		if have && ticks[i] >= 0 && bytes.Equal(cur, prev) {
+			if prevFrame == nil {
+				prevFrame, curFrame = make([]byte, frameBytes), make([]byte, frameBytes)
+			}
+			if cachedIndex != prevIndex {
+				if _, err := f.ReadAt(prevFrame, int64(prevIndex)*frameBytes); err != nil {
+					return dropped, err
+				}
+				cachedIndex = prevIndex
+			}
+			if _, err := f.ReadAt(curFrame, int64(i)*frameBytes); err != nil {
+				return dropped, err
+			}
+			if bytes.Equal(curFrame, prevFrame) {
+				ticks[i] = -1
+				dropped++
+				continue
+			}
+			prevFrame, curFrame = curFrame, prevFrame
+			cachedIndex = i
 		}
 		prev, cur = cur, prev
+		prevIndex = i
 		have = true
 	}
 	return dropped, nil
