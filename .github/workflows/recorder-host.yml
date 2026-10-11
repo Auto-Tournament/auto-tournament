@@ -70,4 +70,4 @@ jobs:
         run: |
           args=()
           if [[ "$RELEASE_TAG" == *-beta.* ]]; then args+=(--prerelease); fi
-          gh release create "$RELEASE_TAG" dist/at-recorder-linux-amd64.tar.gz dist/checksums.txt --title "$RELEASE_TAG" --notes 'Native Linux recorder host setup, connection, identity reporting and readiness checks.' "${args[@]}"
+          gh release create "$RELEASE_TAG" dist/at-recorder-linux-amd64.tar.gz dist/checksums.txt --title "$RELEASE_TAG" --notes 'Native Linux recorder host setup, connection and persistent identity. Managed updates drain active work, verify pinned container and binary releases, and restore the previous build if startup fails. Existing installations need one adoption to install the recovery launcher.' "${args[@]}"

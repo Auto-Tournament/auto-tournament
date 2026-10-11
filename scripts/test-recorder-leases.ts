@@ -126,7 +126,7 @@ async function main() {
     }
 
     await db.runAsync(
-      `CREATE TABLE cs2_recorders (name TEXT PRIMARY KEY, enabled INTEGER DEFAULT 1, group_id INTEGER, paused_until INTEGER, last_seen INTEGER, update_status TEXT DEFAULT 'current', update_error TEXT, update_agent_seen INTEGER, recorder_image TEXT, latest_image TEXT, update_target TEXT)`
+      `CREATE TABLE cs2_recorders (name TEXT PRIMARY KEY, enabled INTEGER DEFAULT 1, group_id INTEGER, paused_until INTEGER, last_seen INTEGER, update_status TEXT DEFAULT 'current', update_error TEXT, update_agent_seen INTEGER, recorder_image TEXT, latest_image TEXT, update_target TEXT, recorder_revision TEXT, updated_at INTEGER, agent_version TEXT, latest_agent_version TEXT, latest_agent_url TEXT, latest_agent_sha TEXT, update_agent_version TEXT, update_agent_url TEXT, update_agent_sha TEXT, update_id TEXT, update_requested_at INTEGER, update_seen INTEGER, update_protocol INTEGER)`
     );
     await db.runAsync(
       'CREATE TABLE cs2_recorder_groups (id INTEGER PRIMARY KEY, enabled INTEGER DEFAULT 1)'
@@ -182,26 +182,42 @@ async function main() {
     let requests = 0;
     const oldImage = 'sivertio/auto-tournament-recorder@sha256:' + 'a'.repeat(64);
     const nextImage = 'sivertio/auto-tournament-recorder@sha256:' + 'b'.repeat(64);
-    globalThis.fetch = async () => {
+    globalThis.fetch = async (url) => {
       requests++;
       await new Promise((resolve) => setTimeout(resolve, 5));
       return {
         ok: true,
         status: 200,
-        json: async () => ({ token: 'test-registry-token' }),
+        json: async () =>
+          String(url).includes('api.github.com')
+            ? [
+                {
+                  tag_name: 'at-recorder-v0.1.0-beta.2',
+                  draft: false,
+                  assets: [
+                    {
+                      name: 'at-recorder-linux-amd64.tar.gz',
+                      digest: 'sha256:' + 'c'.repeat(64),
+                      browser_download_url:
+                        'https://github.com/Auto-Tournament/auto-tournament/releases/download/at-recorder-v0.1.0-beta.2/at-recorder-linux-amd64.tar.gz',
+                    },
+                  ],
+                },
+              ]
+            : { token: 'test-registry-token' },
         headers: { get: () => 'sha256:' + 'b'.repeat(64) },
       } as unknown as Awaited<ReturnType<typeof originalFetch>>;
     };
     try {
       await db.runAsync(
-        "UPDATE cs2_recorders SET update_status = 'current', recorder_image = ?, update_agent_seen = ?",
+        "UPDATE cs2_recorders SET update_status = 'current', recorder_image = ?, update_agent_seen = ?, update_protocol = 1, agent_version = '0.1.0-beta.1'",
         [oldImage, now]
       );
       await db.runAsync("UPDATE cs2_recorders SET update_agent_seen = 0 WHERE name = 'vm'");
       const { refreshRecorderRelease } =
         await import('../api/src/integrations/cs2/demos/recorderUpdates');
       await Promise.all(Array.from({ length: 20 }, () => refreshRecorderRelease()));
-      assert.equal(requests, 2, '20 callers share one registry token/manifest check');
+      assert.equal(requests, 3, '20 callers share one registry token/manifest check');
       const { requestRecorderUpdate } =
         await import('../api/src/integrations/cs2/demos/recorderFleet');
       assert.equal(await requestRecorderUpdate(), 2);
@@ -211,13 +227,139 @@ async function main() {
         0,
         'repeat individual request is idempotent'
       );
-      assert.equal(requests, 2, 'queueing uses cached central release metadata');
+      assert.equal(requests, 3, 'queueing uses cached central release metadata');
       const targets = await db.queryAsync<{ update_target: string }>(
         "SELECT update_target FROM cs2_recorders WHERE update_status = 'queued'"
       );
       assert.ok(
         targets.every((row) => row.update_target === nextImage),
         'queued requests pin the checked digest'
+      );
+
+      const { acknowledgeRecorderUpdate, newerRecorderAgent, expireRecorderUpdateRequests } =
+        await import('../api/src/integrations/cs2/demos/recorderUpdates');
+      const row = await db.queryOneAsync<{ update_id: string }>(
+        'SELECT update_id FROM cs2_recorders WHERE name = ?',
+        ['csrender5']
+      );
+      assert.equal(
+        await acknowledgeRecorderUpdate('csrender5', {
+          id: 'old-request',
+          status: 'current',
+          image: nextImage,
+          agentVersion: '0.1.0-beta.2',
+        }),
+        false,
+        'stale acknowledgement cannot finish another update'
+      );
+      assert.equal(
+        await acknowledgeRecorderUpdate('csrender5', { id: row!.update_id, status: 'updating' }),
+        true,
+        'worker acknowledges draining'
+      );
+      assert.equal(
+        await acknowledgeRecorderUpdate('csrender5', {
+          id: row!.update_id,
+          status: 'current',
+          image: oldImage,
+          agentVersion: '0.1.0-beta.2',
+        }),
+        false,
+        'wrong image cannot complete update'
+      );
+      assert.equal(
+        await acknowledgeRecorderUpdate('csrender5', {
+          id: row!.update_id,
+          status: 'current',
+          image: nextImage,
+          agentVersion: '0.1.0-beta.1',
+        }),
+        false,
+        'old agent version cannot complete binary update'
+      );
+      assert.equal(
+        await acknowledgeRecorderUpdate('csrender5', {
+          id: row!.update_id,
+          status: 'current',
+          image: nextImage,
+          agentVersion: '0.1.0-beta.2',
+        }),
+        true
+      );
+      assert.equal(
+        await acknowledgeRecorderUpdate('csrender5', {
+          id: row!.update_id,
+          status: 'current',
+          image: nextImage,
+          agentVersion: '0.1.0-beta.2',
+        }),
+        true,
+        'lost acknowledgement is idempotent'
+      );
+      assert.equal(
+        newerRecorderAgent('0.1.0-beta.1', '0.1.0-beta.2'),
+        false,
+        'never downgrade a canary agent'
+      );
+      await db.runAsync(
+        "UPDATE cs2_recorders SET update_status='current',recorder_image=latest_image,agent_version='0.1.0-beta.1' WHERE name='csrender5'"
+      );
+      assert.equal(
+        await requestRecorderUpdate('csrender5'),
+        1,
+        'host-only update is available without a container change'
+      );
+      const hostOnly = await db.queryOneAsync<{
+        update_target: string;
+        update_agent_version: string;
+      }>('SELECT update_target,update_agent_version FROM cs2_recorders WHERE name=?', [
+        'csrender5',
+      ]);
+      assert.equal(hostOnly!.update_target, nextImage);
+      assert.equal(hostOnly!.update_agent_version, '0.1.0-beta.2');
+      assert.equal(
+        await acknowledgeRecorderUpdate('csrender5', {
+          id: row!.update_id,
+          status: 'failed',
+        }),
+        false,
+        'the previous request cannot fail a new update'
+      );
+      await db.runAsync(
+        "UPDATE cs2_recorders SET update_requested_at=?, update_seen=NULL WHERE name='csrender5'",
+        [now - 901]
+      );
+      await db.runAsync(
+        "UPDATE cs2_recorders SET update_requested_at=?, update_seen=? WHERE name='csrender2'",
+        [now - 901, now]
+      );
+      await expireRecorderUpdateRequests();
+      const expired = await db.queryOneAsync<{ update_status: string; recorder_image: string }>(
+        "SELECT update_status,recorder_image FROM cs2_recorders WHERE name='csrender5'"
+      );
+      assert.equal(expired!.update_status, 'failed');
+      assert.equal(expired!.recorder_image, nextImage, 'expiration preserves the running image');
+      assert.equal(
+        (await db.queryOneAsync<{ update_status: string }>(
+          "SELECT update_status FROM cs2_recorders WHERE name='csrender2'"
+        ))!.update_status,
+        'queued',
+        'acknowledged requests remain gated while draining'
+      );
+      await db.runAsync(
+        "UPDATE cs2_recorders SET update_id=NULL,update_status='updating',update_target=?,update_agent_version=NULL WHERE name='vm'",
+        [nextImage]
+      );
+      assert.equal(
+        await acknowledgeRecorderUpdate('vm', { id: '', status: 'current', image: nextImage }),
+        false,
+        'protocol 1 requires the request identity'
+      );
+      await db.runAsync("UPDATE cs2_recorders SET update_protocol=0 WHERE name='vm'");
+      assert.equal(
+        await acknowledgeRecorderUpdate('vm', { id: '', status: 'current', image: nextImage }),
+        true,
+        'legacy in-progress requests can finish during upgrade'
       );
     } finally {
       globalThis.fetch = originalFetch;

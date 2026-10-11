@@ -160,8 +160,7 @@ func (a *agent) installed(ctx context.Context) (string, string, error) {
 	return "", "", errors.New("installed image has no official recorder digest")
 }
 
-// Phase 2 only reports identity and installed software. Managed updates are
-// deliberately not polled until the update lifecycle is implemented.
+// Report identity independently of managed update execution.
 func (a *agent) tick(ctx context.Context) error {
 	image, revision, err := a.installed(ctx)
 	if err != nil {
@@ -207,6 +206,15 @@ func main() {
 	for ctx.Err() == nil {
 		if err = a.tick(ctx); err != nil {
 			log.Printf("heartbeat: %v", err)
+		}
+		updateCtx, cancelUpdate := context.WithTimeout(ctx, 60*time.Minute)
+		err = a.managedUpdate(updateCtx)
+		cancelUpdate()
+		if errors.Is(err, errRestartAgent) {
+			os.Exit(85)
+		}
+		if err != nil {
+			log.Printf("managed update: %v", err)
 		}
 		if a.wait(ctx, time.Minute) != nil {
 			break

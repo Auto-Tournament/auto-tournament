@@ -1,4 +1,8 @@
-import { refreshRecorderRelease } from './recorderUpdates';
+import {
+  refreshRecorderRelease,
+  newerRecorderAgent,
+  expireRecorderUpdateRequests,
+} from './recorderUpdates';
 import { recordingFailureSql } from './recorderLeases';
 /**
  * The highlight recorders as the platform sees them: who they are, how fast
@@ -50,6 +54,8 @@ export interface RecorderRow {
   host_id: string | null;
   agent_version: string | null;
   update_agent_seen: number | null;
+  update_protocol: number | null;
+  latest_agent_version: string | null;
   recorder_image: string | null;
   latest_image: string | null;
   recorder_revision: string | null;
@@ -245,6 +251,7 @@ export async function saveRun(name: string, body: Record<string, unknown>): Prom
 
 /** The Recorders page: every recorder with its numbers. */
 export async function listRecorders() {
+  await expireRecorderUpdateRequests();
   await refreshRecorderRelease();
   const rows = await db.queryAsync<
     RecorderRow & {
@@ -328,9 +335,14 @@ export async function listRecorders() {
       hostname: r.host_name ?? r.name,
       hostId: r.host_id,
       agentVersion: r.agent_version,
-      updateSupported: r.update_agent_seen != null && Number(r.update_agent_seen) > now() - 300,
+      latestAgentVersion: r.latest_agent_version,
+      updateSupported:
+        r.update_protocol === 1 &&
+        r.update_agent_seen != null &&
+        Number(r.update_agent_seen) > now() - 300,
       updateAvailable:
-        !!r.latest_image && !!r.recorder_image && r.latest_image !== r.recorder_image,
+        (!!r.latest_image && !!r.recorder_image && r.latest_image !== r.recorder_image) ||
+        newerRecorderAgent(r.latest_agent_version, r.agent_version),
       recorderImage: r.recorder_image,
       recorderRevision: r.recorder_revision,
       updateStatus: r.update_status,

@@ -656,5 +656,37 @@ test(
     });
     expect((await hello({ ...body, hostId: randomUUID() })).status()).toBe(409);
     expect((await hello({ ...body, image: 'untrusted/image:latest' })).status()).toBe(400);
+
+    const headers = { 'X-AT-Recorder': name };
+    expect(await listed()).toMatchObject({ updateSupported: false });
+    expect(
+      (await request.get('/api/game/cs2/recorder/update?protocol=1', { headers })).status()
+    ).toBe(200);
+    expect(await listed()).toMatchObject({ updateSupported: true });
+    expect(
+      (
+        await request.post('/api/game/cs2/recorder/update', {
+          headers,
+          data: { status: 'current', image },
+        })
+      ).status()
+    ).toBe(409);
+    expect(
+      (
+        await request.post('/api/game/cs2/recorder/update', {
+          headers,
+          data: { status: 'updating', id: { invalid: true } },
+        })
+      ).status()
+    ).toBe(400);
+    expect(
+      (
+        await request.post('/api/game/cs2/recorder/update', {
+          headers,
+          data: { status: 'current', id: 'stale-request', image: 'untrusted/image:latest' },
+        })
+      ).status()
+    ).toBe(400);
+    expect(await listed()).toMatchObject({ enabled: true, hostId, recorderImage: image });
   }
 );

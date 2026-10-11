@@ -1,4 +1,5 @@
-import { refreshRecorderRelease } from './recorderUpdates';
+import { randomUUID } from 'node:crypto';
+import { refreshRecorderRelease, newerRecorderAgent } from './recorderUpdates';
 import { db } from '../../../config/database';
 export class FleetError extends Error {
   constructor(
@@ -98,13 +99,24 @@ export async function requestRecorderUpdate(name?: string): Promise<number> {
   await refreshRecorderRelease();
   if (name && !(await db.queryOneAsync('SELECT name FROM cs2_recorders WHERE name = ?', [name])))
     throw new FleetError(404, 'No such recorder');
-  const result = await db.runAsync(
-    `UPDATE cs2_recorders SET update_status = 'queued', update_target = latest_image, update_error = NULL
-    WHERE update_status NOT IN ('queued', 'updating')
-      AND update_agent_seen > EXTRACT(EPOCH FROM NOW()) - 300
-      AND recorder_image IS NOT NULL AND latest_image IS NOT NULL AND latest_image <> recorder_image
-      ${name ? 'AND name = ?' : ''}`,
+  const rows = await db.queryAsync<{
+    name: string;
+    agent_version: string | null;
+    latest_agent_version: string | null;
+  }>(
+    `SELECT name, agent_version, latest_agent_version FROM cs2_recorders ${name ? 'WHERE name = ?' : ''}`,
     name ? [name] : []
   );
-  return result.changes;
+  let changes = 0;
+  for (const row of rows) {
+    const native = newerRecorderAgent(row.latest_agent_version, row.agent_version);
+    const result = await db.runAsync(
+      `UPDATE cs2_recorders SET update_status = 'queued', update_target = COALESCE(latest_image,recorder_image), update_agent_version = CASE WHEN ? THEN latest_agent_version ELSE NULL END, update_agent_url = CASE WHEN ? THEN latest_agent_url ELSE NULL END, update_agent_sha = CASE WHEN ? THEN latest_agent_sha ELSE NULL END, update_error = NULL, update_id = ?, update_requested_at = EXTRACT(EPOCH FROM NOW())::INTEGER, update_seen = NULL
+      WHERE name = ? AND agent_version IS NOT DISTINCT FROM ? AND update_status NOT IN ('queued','updating') AND update_protocol = 1 AND update_agent_seen > EXTRACT(EPOCH FROM NOW()) - 300 AND recorder_image IS NOT NULL
+      AND ((latest_image IS NOT NULL AND latest_image <> recorder_image) OR ?)`,
+      [native, native, native, randomUUID(), row.name, row.agent_version, native]
+    );
+    changes += result.changes;
+  }
+  return changes;
 }

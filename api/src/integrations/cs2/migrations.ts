@@ -1417,4 +1417,20 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS agent_seen INTEGER;
     `,
   },
+  {
+    id: '044-recorder-update-requests',
+    up: `
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS update_id TEXT;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS update_requested_at INTEGER;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS update_seen INTEGER;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS update_protocol INTEGER;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS latest_agent_version TEXT;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS latest_agent_url TEXT;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS latest_agent_sha TEXT;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS update_agent_version TEXT;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS update_agent_url TEXT;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS update_agent_sha TEXT;
+      UPDATE cs2_recorders SET update_status='failed',update_error='Upgrade the host agent before requesting another update' WHERE update_status='queued' AND update_id IS NULL;
+    `,
+  },
 ];
