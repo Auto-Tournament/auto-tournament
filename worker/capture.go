@@ -73,6 +73,15 @@ var recorderLook = []string{
 	// Nothing muted when gamescope's window is not focused.
 	"snd_mixahead 0.05",
 	"snd_mute_losefocus 0",
+	// Keep game effects, but remove the profile's music kit and event music.
+	"snd_menumusic_volume 0",
+	"snd_roundstart_volume 0",
+	"snd_roundaction_volume 0",
+	"snd_roundend_volume 0",
+	"snd_mvp_volume 0",
+	"snd_deathcamera_volume 0",
+	"snd_mapobjective_volume 0",
+	"snd_tensecondwarning_volume 0",
 	"fps_max 0",
 	// A static cross with a dot, green-cyan, no outline.
 	"cl_crosshairstyle 4", "cl_crosshairdot 1", "cl_crosshair_recoil 0", "cl_crosshair_t 0",

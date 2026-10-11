@@ -7,6 +7,7 @@ import {
 } from '../demos/recorderLeases';
 import { db } from '../../../config/database';
 import { recorderFleetRouter } from './recorderFleet';
+import { acknowledgeRecorderUpdate } from '../demos/recorderUpdates';
 import { recorderAcceptsWork } from '../demos/recorderFleet';
 /**
  * Highlights (../demos/highlights.ts).
@@ -298,22 +299,36 @@ router.post('/recorder/hello', requireRecorder, async (req, res) => {
   }
 });
 
-/** Host-side updates use the recorder key; no Docker socket is exposed to the worker. */
+/** Protocol 1 updates carry a durable request ID; stale acknowledgements cannot finish a newer request. */
 router.get('/recorder/update', requireRecorder, async (req, res) => {
   const name = req.header('X-AT-Recorder');
   if (!name) return res.status(400).json({ error: 'Recorder name required' });
   try {
-    const row = await db.queryOneAsync<{ update_status: string; update_target: string | null }>(
-      'SELECT update_status, update_target FROM cs2_recorders WHERE name = ?',
-      [name]
-    );
+    const protocol = req.query.protocol === '1' ? 1 : 0;
     await db.runAsync(
-      'UPDATE cs2_recorders SET update_agent_seen = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE name = ?',
+      'UPDATE cs2_recorders SET update_agent_seen = EXTRACT(EPOCH FROM NOW())::INTEGER, update_protocol = ? WHERE name = ?',
+      [protocol, name]
+    );
+    const row = await db.queryOneAsync<{
+      update_status: string;
+      update_target: string | null;
+      update_id: string | null;
+      update_agent_version: string | null;
+      update_agent_url: string | null;
+      update_agent_sha: string | null;
+      busy: boolean;
+    }>(
+      `SELECT update_status, update_target, update_id, update_agent_version, update_agent_url, update_agent_sha, EXISTS (SELECT 1 FROM cs2_recorder_claims WHERE recorder = r.name) AS busy FROM cs2_recorders r WHERE name = ?`,
       [name]
     );
     return res.json({
       status: row?.update_status ?? 'current',
       image: row?.update_target ?? null,
+      id: row?.update_id ?? null,
+      busy: row?.busy ?? false,
+      agentVersion: row?.update_agent_version ?? null,
+      agentURL: row?.update_agent_url ?? null,
+      agentSHA: row?.update_agent_sha ?? null,
     });
   } catch (error) {
     log.error('[RECORDER UPDATE] poll failed', { error });
@@ -322,37 +337,37 @@ router.get('/recorder/update', requireRecorder, async (req, res) => {
 });
 router.post('/recorder/update', requireRecorder, async (req, res) => {
   const name = req.header('X-AT-Recorder');
-  const status = req.body?.status;
+  const { status, id, image, revision, agentVersion, error: updateError } = req.body ?? {};
   if (!name || !['check', 'updating', 'current', 'failed'].includes(status))
     return res.status(400).json({ error: 'Valid recorder and update status required' });
+  if (
+    image != null &&
+    (typeof image !== 'string' ||
+      !/^sivertio\/auto-tournament-recorder@sha256:[0-9a-f]{64}$/.test(image))
+  )
+    return res.status(400).json({ error: 'Official recorder image digest required' });
   try {
-    const image = req.body?.image;
-    const imagePattern = /^sivertio\/auto-tournament-recorder@sha256:[0-9a-f]{64}$/;
-    if (image != null && !imagePattern.test(image))
-      return res.status(400).json({ error: 'Official recorder image digest required' });
     if (status === 'check') {
       await db.runAsync(
         `UPDATE cs2_recorders SET recorder_image = ?, recorder_revision = ?, update_agent_seen = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE name = ?`,
-        [
-          image ?? null,
-          typeof req.body?.revision === 'string' ? req.body.revision.slice(0, 80) : null,
-          name,
-        ]
+        [image ?? null, typeof revision === 'string' ? revision.slice(0, 80) : null, name]
       );
-    } else {
-      await db.runAsync(
-        `UPDATE cs2_recorders SET update_status = ?, update_error = ?, recorder_image = COALESCE(?, recorder_image), recorder_revision = COALESCE(?, recorder_revision), updated_at = CASE WHEN ? = 'current' THEN EXTRACT(EPOCH FROM NOW())::INTEGER ELSE updated_at END
-        WHERE name = ? AND update_status IN ('queued', 'updating')`,
-        [
-          status,
-          typeof req.body?.error === 'string' ? req.body.error.slice(0, 1000) : null,
-          image ?? null,
-          typeof req.body?.revision === 'string' ? req.body.revision.slice(0, 80) : null,
-          status,
-          name,
-        ]
-      );
+      return res.json({ success: true });
     }
+    if (id != null && (typeof id !== 'string' || id.length > 80))
+      return res.status(400).json({ error: 'Update request ID required' });
+    const accepted = await acknowledgeRecorderUpdate(name, {
+      id: typeof id === 'string' ? id : '',
+      status,
+      image,
+      revision,
+      agentVersion,
+      error: updateError,
+    });
+    if (!accepted)
+      return res
+        .status(409)
+        .json({ error: 'Stale request or installed image differs from the requested build' });
     return res.json({ success: true });
   } catch (error) {
     log.error('[RECORDER UPDATE] acknowledgement failed', { error });

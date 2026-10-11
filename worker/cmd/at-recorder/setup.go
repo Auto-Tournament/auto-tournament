@@ -165,11 +165,18 @@ func (r setupRuntime) install(ctx context.Context, adopt, skipDeps bool) error {
 			return err
 		}
 	}
+	launcher := filepath.Join(r.root, "agent-launcher.sh")
+	if err = atomicFile(launcher, []byte(agentLauncher)); err != nil {
+		return err
+	}
+	if err = os.Chmod(launcher, 0755); err != nil {
+		return err
+	}
 	// Adoption inspects and registers without restarting the recorder container.
 	if err = a.tick(ctx); err != nil {
 		return fmt.Errorf("host registration failed: %w", err)
 	}
-	if err = atomicFile(filepath.Join(r.units, "at-recorder-agent.service"), []byte(serviceUnit(r.owner, r.root, dest))); err != nil {
+	if err = atomicFile(filepath.Join(r.units, "at-recorder-agent.service"), []byte(serviceUnit(r.owner, r.root, launcher))); err != nil {
 		return err
 	}
 	if err = os.Chmod(filepath.Join(r.units, "at-recorder-agent.service"), 0644); err != nil {
@@ -194,3 +201,26 @@ func fileOwner(path string) (int, int, error) {
 	v := s.Sys().(*syscall.Stat_t)
 	return int(v.Uid), int(v.Gid), nil
 }
+
+// A stable launcher can restore the previous agent even when a new binary cannot start.
+const agentLauncher = `#!/bin/sh
+cd "$AT_RECORDER_ROOT" || exit 1
+child=
+trap 'if [ -n "$child" ]; then kill -TERM "$child" 2>/dev/null; wait "$child"; fi; exit 0' TERM INT
+while :; do
+  ./at-recorder agent &
+  child=$!
+  wait "$child"
+  code=$?
+  child=
+  if [ "$code" = 85 ]; then continue; fi
+  if [ "$code" != 0 ] && [ -f .update.json ] && [ -f .previous-agent ] && [ ! -f .agent-rollback ]; then
+    cp .previous-agent .restored-agent || exit 1
+    chmod 755 .restored-agent || exit 1
+    mv .restored-agent at-recorder || exit 1
+    touch .agent-rollback || exit 1
+    continue
+  fi
+  exit "$code"
+done
+`

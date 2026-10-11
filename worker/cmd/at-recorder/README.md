@@ -3,7 +3,30 @@
 A separate Linux Go binary manages the host around the Steam recorder container.
 It is independent of CSM. The container still owns game capture; the host service
 reports identity, host-agent version and the installed recorder image/build to AT.
-This phase does not execute software updates or restart a recorder for a heartbeat.
+AT checks image and host-binary releases centrally. The agent polls only its own
+pinned update request; a heartbeat alone never restarts the recording container.
+
+## Managed updates
+
+Adopt this binary once to install the recovery launcher. AT enables Update and
+Update all only for hosts reporting managed-update protocol 1. A request stops
+new claims immediately; the agent acknowledges it and waits for the current job
+and the worker’s idle marker. A 45-minute drain deadline preserves active work.
+Unacknowledged requests expire after 15 minutes.
+
+The agent pulls the pinned official image, preserves the mounted Steam, game and
+configuration directories, and verifies NVIDIA, Steam, audio, CS2 and the worker
+service after recreation. Failed startup restores the previous pinned image.
+If rollback needs manual repair, the host remains gated and reports the error;
+it does not repeatedly restart the container.
+
+Host binaries are downloaded from the pinned official release URL, checked against
+the centrally verified archive SHA-256, and tested for the expected version before
+activation. A stable launcher restores the previous agent if a replacement cannot
+start. Binary-only updates preserve the running container. The private on-disk
+journal makes updates recoverable after a restart; lost completion acknowledgements
+are retried without reinstalling. UUID, worker credentials, groups and enabled
+settings stay unchanged.
 
 ## Existing NTLAN installation
 
@@ -61,7 +84,7 @@ cd worker
 go test ./cmd/at-recorder
 go vet ./cmd/at-recorder
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath \
-  -ldflags '-s -w -X main.version=0.1.0-beta.1' -o at-recorder ./cmd/at-recorder
+  -ldflags '-s -w -X main.version=0.1.0-beta.2' -o at-recorder ./cmd/at-recorder
 ```
 
 CI runs Linux tests. The installer synchronization test requires a repository

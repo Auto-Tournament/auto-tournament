@@ -314,7 +314,7 @@ function RecordersTab() {
                       <Typography
                         variant="subtitle1"
                         fontWeight={700}
-                        color={r.lastRunFailed ? 'error.main' : 'text.primary'}
+                        color={r.lastRunFailed || r.updateError ? 'error.main' : 'text.primary'}
                         sx={{ overflowWrap: 'anywhere' }}
                       >
                         {r.label || r.hostname || r.name}
@@ -332,6 +332,13 @@ function RecordersTab() {
                           r.online ? 'highlightsAdmin.fleet.connected' : 'highlightsAdmin.offline'
                         )}
                       />
+                      {['queued', 'updating'].includes(r.updateStatus) && (
+                        <Chip
+                          size="small"
+                          color="warning"
+                          label={t('highlightsAdmin.fleet.updatePending')}
+                        />
+                      )}
                       {!r.effectiveEnabled ? (
                         <Chip
                           size="small"
@@ -504,6 +511,7 @@ function RecordersTab() {
                         size="small"
                         disabled={
                           !r.updateSupported ||
+                          !r.updateAvailable ||
                           r.updateStatus === 'queued' ||
                           r.updateStatus === 'updating'
                         }
