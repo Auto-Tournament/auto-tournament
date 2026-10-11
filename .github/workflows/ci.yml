@@ -48,6 +48,14 @@ jobs:
     name: Lint & typecheck
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    services:
+      recorder-postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: recorder_test
+        ports: ['55481:5432']
+        options: --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -60,6 +68,12 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+
+      - name: Recorder lease and retry regressions
+        env:
+          RECORDER_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:55481/recorder_test
+        run: |
+          node --import tsx scripts/test-recorder-leases.ts
 
       - name: Formatted (the files this change touches)
         if: github.event_name == 'pull_request'

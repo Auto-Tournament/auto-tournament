@@ -94,6 +94,7 @@ type doneClip struct {
 }
 
 type recorder struct {
+	jobContext context.Context // current platform attempt; nil for local commands
 	*client
 	gameDir string
 	sniper  string
@@ -188,7 +189,7 @@ func (r *recorder) look() []string {
 // (why), so it shows up in the list: a claim it answers with no job.
 func (c *client) hello(ctx context.Context, why string) {
 	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{
-		"recorder": c.worker, "version": 7, "gpu": recorderGPU(), "platform": platformName(), "notReady": why,
+		"recorder": c.worker, "version": 8, "gpu": recorderGPU(), "platform": platformName(), "notReady": why,
 	})
 	if err == nil {
 		res.Body.Close()
@@ -196,6 +197,17 @@ func (c *client) hello(ctx context.Context, why string) {
 }
 
 func (c *client) claimRecording(ctx context.Context, loaded map[string]any) (*mapJob, *matchReelJob, *redressJob, error) {
+	if token := c.claimToken.Load(); token != nil && *token != "" {
+		res, err := c.postJSON(ctx, "/api/game/cs2/recorder/complete", map[string]any{})
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		res.Body.Close()
+		if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusConflict {
+			return nil, nil, nil, fmt.Errorf("claim completion HTTP %d", res.StatusCode)
+		}
+		c.claimToken.Store(nil)
+	}
 	// Version 6: redress jobs (overlay.go). Version 7: benchmarks, frame
 	// checks and run reports (quality.go, runlog.go).
 	ask := map[string]any{
@@ -220,11 +232,13 @@ func (c *client) claimRecording(ctx context.Context, loaded map[string]any) (*ma
 		return nil, nil, nil, err
 	}
 	var body struct {
-		Job json.RawMessage `json:"job"`
+		Job        json.RawMessage `json:"job"`
+		ClaimToken string          `json:"claimToken"`
 	}
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
 		return nil, nil, nil, err
 	}
+	c.claimToken.Store(&body.ClaimToken)
 	var kind struct {
 		Kind string `json:"kind"`
 	}
@@ -887,7 +901,7 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 	}
 	// A hung GPU encoder never returns (2026-10-09: the 9070 XT's VCN
 	// wedged and the recorder waited six hours): give up after encodeTimeout.
-	ctx, cancel := context.WithTimeout(context.Background(), encodeTimeout)
+	ctx, cancel := context.WithTimeout(r.commandContext(), encodeTimeout)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, "ffmpeg", hwEncode(blurArgs(o.blur, args), r.encoder)...)
 	stdin, err := cmd.StdinPipe()
@@ -1325,8 +1339,7 @@ func (r *recorder) failMoments(failed []momentFailure) {
 }
 
 // gameFault is a job stopped because CS2 would not start: the recorder's
-// fault, not the moments'. The platform puts them back without using an
-// attempt and pauses a recorder that keeps doing it.
+// fault, not the moments'. The platform puts them back with bounded retries and pauses a recorder that keeps doing it.
 type gameFault struct{ err error }
 
 func (f gameFault) Error() string { return "CS2 would not start: " + f.err.Error() }
@@ -1442,12 +1455,16 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 	if err != nil {
 		return err
 	}
+	defer r.endLive()
 	// Each job's log goes to the platform with its run report (runlog.go).
 	log.SetOutput(io.MultiWriter(os.Stderr, currentJobLog))
 	log.Printf("recorder: %dx%d, %s, sound from %s, %s, %s", r.width, r.height, r.encoder, r.sink, recorderGPU(), platformName())
 	currentJobLog.take()
 	var keep awake
 	defer keep.release()
+	if idleFile := os.Getenv("AT_RECORDER_IDLE_FILE"); idleFile != "" {
+		_ = os.Remove(idleFile)
+	}
 	waitingForDisplay := false
 	waitingForCS2 := false
 	for ctx.Err() == nil {
@@ -1487,6 +1504,10 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 			log.Printf("CS2 is installed")
 			waitingForCS2 = false
 		}
+		idleFile := os.Getenv("AT_RECORDER_IDLE_FILE")
+		if idleFile != "" {
+			_ = os.Remove(idleFile)
+		}
 		j, reel, redress, err := c.claimRecording(ctx, r.loadedMap())
 		if err != nil {
 			log.Printf("cannot reach the platform: %v", err)
@@ -1501,16 +1522,25 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 			r.endLive()
 		}
 		started := time.Now()
-		stopBeat := c.heartbeat(ctx)
+		jobCtx, cancelJob := context.WithTimeout(ctx, 45*time.Minute)
+		r.jobContext = jobCtx
+		stopHeartbeat := c.heartbeat(jobCtx, cancelJob)
+		stopBeat := func() {
+			stopHeartbeat()
+			if jobCtx.Err() != nil {
+				r.endLive()
+			}
+			cancelJob()
+		}
 		if redress != nil {
-			r.runRedress(ctx, redress)
+			r.runRedress(jobCtx, redress)
 			stopBeat()
 			c.reportRun(jobRun{Kind: "redress", OK: true, Clips: len(redress.Files)}, started)
 			continue
 		}
 		if reel != nil {
 			run := jobRun{Kind: reel.Kind, MatchSlug: reel.MatchSlug, MapNumber: intPtr(reel.MapNumber), Clips: len(reel.Clips)}
-			err := r.makeMatchReel(ctx, reel)
+			err := r.makeMatchReel(jobCtx, reel)
 			stopBeat()
 			if err != nil {
 				r.failMatchReel(reel, err)
@@ -1524,6 +1554,9 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 			continue
 		}
 		if j == nil {
+			if err == nil && idleFile != "" {
+				_ = os.WriteFile(idleFile, []byte("idle\n"), 0600)
+			}
 			stopBeat()
 			keep.release()
 			select {
@@ -1533,12 +1566,12 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 			continue
 		}
 		if j.Kind == "benchmark" {
-			r.runBenchmark(ctx, j)
+			r.runBenchmark(jobCtx, j)
 			stopBeat()
 			continue
 		}
 		run := jobRun{Kind: "map", MatchSlug: j.MatchSlug, MapNumber: intPtr(j.MapNumber)}
-		kept, rejected, err := r.recordMap(ctx, j)
+		kept, rejected, err := r.recordMap(jobCtx, j)
 		stopBeat()
 		run.Clips, run.Rejected = kept, rejected
 		if err != nil {
@@ -1552,6 +1585,14 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 		c.reportRun(run, started)
 	}
 	return nil
+}
+
+// All render commands inherit the platform attempt deadline and cancellation.
+func (r *recorder) commandContext() context.Context {
+	if r.jobContext != nil {
+		return r.jobContext
+	}
+	return context.Background()
 }
 
 func intPtr(n int) *int { return &n }

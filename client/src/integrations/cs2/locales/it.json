@@ -2248,7 +2248,8 @@
       "reviewOf": "{{n}} of {{count}}",
       "previous": "Previous",
       "next": "Next",
-      "close": "Close"
+      "close": "Close",
+      "redoMatch": "Redo all clips"
     },
     "add": {
       "button": "Add a recorder",
@@ -2313,7 +2314,15 @@
       "matchHelp": "Applies to new player jobs and reels. Current jobs continue.",
       "allGroups": "All enabled recorders",
       "groupDisabledHelp": "This group is disabled. New jobs for this match will wait until it is enabled.",
-      "idle": "Idle"
+      "idle": "Idle",
+      "connected": "Connected",
+      "connectedCount": "{{count}}/{{total}} connected",
+      "enabledCount": "{{count}}/{{total}} enabled",
+      "update": "Update recorder",
+      "updatePending": "Update pending",
+      "updateQueued": "Recorder update queued; current work will finish first.",
+      "updateAll": "Update all",
+      "build": "Build {{revision}}"
     }
   },
   "tournament": {

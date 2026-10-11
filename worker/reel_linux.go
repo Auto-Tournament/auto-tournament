@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -101,7 +102,7 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 	args = append(args, "-movflags", "+faststart", out)
 	// AT_CROWD_ONLY=1 (local tests): the reel is already made, only its crowd track is wanted.
 	if _, err := os.Stat(out); env("AT_CROWD_ONLY", "") != "1" || err != nil {
-		if b, err := exec.Command("ffmpeg", hwEncode(args, r.encoder)...).CombinedOutput(); err != nil {
+		if b, err := exec.CommandContext(r.commandContext(), "ffmpeg", hwEncode(args, r.encoder)...).CombinedOutput(); err != nil {
 			return nil, fmt.Errorf("ffmpeg reel: %v %s", err, strings.TrimSpace(string(b)))
 		}
 	}
@@ -110,7 +111,7 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 		if hasIntro {
 			first = 1
 		}
-		if err := buildCrowdTrack(paths, plan, first, sound, sound.crowdOut); err != nil {
+		if err := buildCrowdTrack(r.commandContext(), paths, plan, first, sound, sound.crowdOut); err != nil {
 			return nil, fmt.Errorf("crowd: %w", err)
 		}
 	}
@@ -142,7 +143,7 @@ func exists(p string) bool {
 
 // buildCrowdTrack renders the reel's crowd alone (crowdTrackFilter) into out,
 // an AAC file as long as the reel: sound only, so it takes seconds.
-func buildCrowdTrack(paths []string, plan reelPlan, first int, sound reelSound, out string) error {
+func buildCrowdTrack(ctx context.Context, paths []string, plan reelPlan, first int, sound reelSound, out string) error {
 	length := fmt.Sprintf("%.3f", reelLength(plan))
 	dir, err := os.MkdirTemp(filepath.Dir(out), "crowd-")
 	if err != nil {
@@ -151,7 +152,7 @@ func buildCrowdTrack(paths []string, plan reelPlan, first int, sound reelSound, 
 	defer os.RemoveAll(dir)
 	ffmpeg := func(what string, args ...string) error {
 		args = append([]string{"-y", "-hide_banner", "-loglevel", "error"}, args...)
-		if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
+		if b, err := exec.CommandContext(ctx, "ffmpeg", args...).CombinedOutput(); err != nil {
 			return fmt.Errorf("ffmpeg (%s): %v %s", what, err, strings.TrimSpace(string(b)))
 		}
 		return nil
@@ -232,7 +233,7 @@ func (r *recorder) buildIntro(paths []string, durations []float64, intro reelInt
 	args = append(args, "-filter_complex", introFilter(cols, rows, width, height, outputFPS), "-map", "[v]", "-map", "[a]")
 	args = append(args, encodeArgs(r.encoder)...)
 	args = append(args, out)
-	cmd := exec.Command("ffmpeg", hwEncode(args, r.encoder)...)
+	cmd := exec.CommandContext(r.commandContext(), "ffmpeg", hwEncode(args, r.encoder)...)
 	var stderr strings.Builder
 	cmd.Stderr = &stderr
 	if err := cmd.Start(); err != nil {

@@ -3,6 +3,7 @@ import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import {
   FleetError,
+  requestRecorderUpdate,
   listRecorderGroups,
   createRecorderGroup,
   setGroupEnabled,
@@ -198,4 +199,44 @@ recorderFleetRouter.put(
     await setMatchRecordingGroup(req.params.slug, req.body?.groupId);
     return { success: true };
   })
+);
+
+/**
+ * @openapi
+ * /api/game/cs2/recorders/{name}/update:
+ *   post:
+ *     tags: [Highlight recorders]
+ *     summary: Queue an official recorder image update after current work finishes (admin)
+ *     parameters:
+ *       - in: path
+ *         name: name
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Update queued for the recorder host agent
+ *       401:
+ *         description: Admin authentication required
+ */
+recorderFleetRouter.post(
+  '/recorders/:name/update',
+  requireAuth,
+  handle(async (req) => ({ success: true, queued: await requestRecorderUpdate(req.params.name) }))
+);
+/**
+ * @openapi
+ * /api/game/cs2/recorders/update-all:
+ *   post:
+ *     tags: [Highlight recorders]
+ *     summary: Queue all connected recorder hosts with an available image update (admin)
+ *     responses:
+ *       200:
+ *         description: Number of updates queued
+ *       401:
+ *         description: Admin authentication required
+ */
+recorderFleetRouter.post(
+  '/recorders/update-all',
+  requireAuth,
+  handle(async () => ({ success: true, queued: await requestRecorderUpdate() }))
 );

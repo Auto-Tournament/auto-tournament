@@ -63,6 +63,7 @@ jobs:
         with:
           context: worker
           file: worker/recorder.Dockerfile
+          build-args: VCS_REF=${{ github.sha }}
           platforms: linux/amd64
           push: true
           tags: |

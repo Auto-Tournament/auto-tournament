@@ -1,3 +1,11 @@
+import {
+  recoverRecordingLeases,
+  recorderHasActiveClaim,
+  registerRecorderClaim,
+  validRecorderClaim,
+  heartbeatRecorderClaim,
+} from '../demos/recorderLeases';
+import { db } from '../../../config/database';
 import { recorderFleetRouter } from './recorderFleet';
 import { recorderAcceptsWork } from '../demos/recorderFleet';
 /**
@@ -7,7 +15,7 @@ import { recorderAcceptsWork } from '../demos/recorderFleet';
  *   POST /api/game/cs2/recorder/claim                 a player's moments on one map not yet recorded, or 204
  *   PUT  /api/game/cs2/recorder/jobs/:id/clip         one moment's MP4 (video/mp4 body)
  *   PUT  /api/game/cs2/recorder/reels/:slug/:map/:player  the player's reel of that map (video/mp4 body)
- *   POST /api/game/cs2/recorder/fail                  { ids, error, fault? }: it could not record them (fault 'recorder': its CS2 would not start; they wait again without using an attempt)
+ *   POST /api/game/cs2/recorder/fail                  { ids, error, fault? }: it could not record them (fault 'recorder': its CS2 would not start; they retry with bounded attempts)
  *   PUT  /api/game/cs2/recorder/match-reels/:slug/:map       a map's match reel (video/mp4 body; ?clips=N)
  *   POST /api/game/cs2/recorder/match-reels/:slug/:map/fail  { error }: it could not make it
  *   PUT  /api/game/cs2/recorder/tournament-reels/:id         a tournament's reel (video/mp4 body)
@@ -27,7 +35,7 @@ import { recorderAcceptsWork } from '../demos/recorderFleet';
  *   POST /api/game/cs2/recorder-keys                   admin: { name }: a recorder key, in this answer only
  *   DELETE /api/game/cs2/recorder-keys/:id             admin: revoke it
  *   GET  /api/game/cs2/clips                           admin: recent matches' clips and match reels, what each was made at, which are outdated (?outdated=1)
- *   POST /api/game/cs2/clips/redo                      admin: { clipIds?, reels?, outdated? }: make them again
+ *   POST /api/game/cs2/clips/redo                      admin: { clipIds?, matchSlugs?, reels?, outdated? }: make them again
  *
  * A clip's upload carries `X-AT-Markers` (JSON: where its kills and slow
  * motion are, in seconds); a reel's carries `X-AT-Clips` (the highlight ids it
@@ -114,6 +122,7 @@ import {
   saveClip,
   saveReel,
   renewClaims,
+  queueMatchReelFor,
   SERIES_REEL,
 } from '../demos/highlights';
 import {
@@ -166,6 +175,61 @@ import { dropOrphanJobs } from '../demos/jobs';
 const router = Router();
 router.use(recorderFleetRouter);
 
+// Updated workers identify writes, so a late upload/failure cannot change a
+// claim another machine owns. Old recorder binaries remain compatible.
+router.use('/recorder', requireRecorder, async (req, res, next) => {
+  const recorder = req.header('X-AT-Recorder');
+  if (!recorder || !['PUT', 'POST'].includes(req.method)) return next();
+  if (typeof req.body?.recorder === 'string' && req.body.recorder.slice(0, 120) !== recorder)
+    return res.status(400).json({ error: 'Recorder header and body must agree' });
+  const claim = req.header('X-AT-Claim');
+  if (claim && !['/claim', '/update', '/runs'].includes(req.path)) {
+    try {
+      if (!(await validRecorderClaim(recorder, claim)))
+        return res.status(409).json({ error: 'Recorder claim expired or was replaced' });
+    } catch (error) {
+      log.error('[RECORDER] claim check failed', { error });
+      return res.status(500).json({ error: 'Could not check recorder claim' });
+    }
+  }
+  const clip = /^\/jobs\/(\d+)(?:\/|$)/.exec(req.path);
+  const reel = /^\/(match-reels|team-reels)\/([^/]+)\/([^/]+)/.exec(req.path);
+  const tournament = /^\/tournament-reels\/(\d+)/.exec(req.path);
+  let sql = '';
+  let params: unknown[] = [];
+  if (clip) {
+    sql = 'SELECT 1 FROM cs2_highlights WHERE id = ? AND recorder = ?';
+    params = [Number(clip[1]), recorder];
+  } else if (reel) {
+    if (reel[1] === 'match-reels' && !Number.isInteger(Number(reel[3]))) return next();
+    const table = reel[1] === 'match-reels' ? 'cs2_match_reels' : 'cs2_team_reels';
+    const column = reel[1] === 'match-reels' ? 'map_number' : 'team_id';
+    sql = `SELECT 1 FROM ${table} WHERE match_slug = ? AND ${column} = ? AND recorder = ?`;
+    params = [decodeURIComponent(reel[2]), reel[3], recorder];
+  } else if (tournament) {
+    sql = 'SELECT 1 FROM cs2_tournament_reels WHERE tournament_id = ? AND recorder = ?';
+    params = [Number(tournament[1]), recorder];
+  } else if (req.path === '/fail' && Array.isArray(req.body?.ids) && req.body.ids.length) {
+    const ids = req.body.ids.map(Number);
+    if (ids.some((id: number) => !Number.isSafeInteger(id) || id <= 0)) return next();
+    sql = `SELECT 1 FROM cs2_highlights WHERE id IN (${ids.map(() => '?').join(', ')}) AND recorder IS DISTINCT FROM ? LIMIT 1`;
+    params = [...ids, recorder];
+  }
+  if (!sql) return next();
+  try {
+    const found = await db.queryOneAsync(sql, params);
+    const belongs = req.path === '/fail' ? !found : !!found;
+    if (!belongs)
+      return res
+        .status(409)
+        .json({ success: false, error: 'This job is owned by another recorder' });
+    return next();
+  } catch (error) {
+    log.error('[HIGHLIGHTS] recorder ownership check failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not check the recorder claim' });
+  }
+});
+
 const idOf = (req: Request) => {
   const id = Number(req.params.id);
   return Number.isInteger(id) && id > 0 ? id : null;
@@ -188,7 +252,156 @@ const read =
     }
   };
 
-router.post('/recorder/claim', requireRecorder, async (req: Request, res: Response) => {
+router.post('/recorder/hello', requireRecorder, async (req, res) => {
+  const { name, hostname, hostId, agentVersion } = req.body ?? {};
+  if (
+    typeof name !== 'string' ||
+    !name.trim() ||
+    name.length > 120 ||
+    typeof hostname !== 'string' ||
+    !hostname.trim() ||
+    hostname.length > 120 ||
+    typeof hostId !== 'string' ||
+    !/^[0-9a-f-]{36}$/.test(hostId) ||
+    typeof agentVersion !== 'string' ||
+    agentVersion.length > 80
+  )
+    return res.status(400).json({ error: 'A hostname, machine ID and agent version are required' });
+  try {
+    const existing = await db.queryOneAsync<{ name: string }>(
+      'SELECT name FROM cs2_recorders WHERE host_id = ?',
+      [hostId]
+    );
+    if (existing) {
+      await db.runAsync(
+        'UPDATE cs2_recorders SET host_name = ?, agent_version = ?, agent_seen = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE host_id = ?',
+        [hostname, agentVersion, hostId]
+      );
+      return res.json({ success: true, name: existing.name });
+    }
+    const row = await db.queryOneAsync<{ name: string }>(
+      `INSERT INTO cs2_recorders (name, enabled, host_id, host_name, agent_version, agent_seen) VALUES (?, 0, ?, ?, ?, EXTRACT(EPOCH FROM NOW())::INTEGER)
+      ON CONFLICT (name) DO UPDATE SET host_id = EXCLUDED.host_id, host_name = EXCLUDED.host_name, agent_version = EXCLUDED.agent_version, agent_seen = EXCLUDED.agent_seen
+      WHERE cs2_recorders.host_id IS NULL OR cs2_recorders.host_id = EXCLUDED.host_id RETURNING name`,
+      [name, hostId, hostname, agentVersion]
+    );
+    if (!row)
+      return res.status(409).json({ error: 'This recorder name belongs to another installation' });
+    return res.json({ success: true, name: row.name });
+  } catch (error) {
+    log.error('[RECORDER] hello failed', { error });
+    return res.status(500).json({ error: 'Could not register recorder host' });
+  }
+});
+
+/** Host-side updates use the recorder key; no Docker socket is exposed to the worker. */
+router.get('/recorder/update', requireRecorder, async (req, res) => {
+  const name = req.header('X-AT-Recorder');
+  if (!name) return res.status(400).json({ error: 'Recorder name required' });
+  try {
+    const row = await db.queryOneAsync<{ update_status: string; update_target: string | null }>(
+      'SELECT update_status, update_target FROM cs2_recorders WHERE name = ?',
+      [name]
+    );
+    await db.runAsync(
+      'UPDATE cs2_recorders SET update_agent_seen = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE name = ?',
+      [name]
+    );
+    return res.json({
+      status: row?.update_status ?? 'current',
+      image: row?.update_target ?? null,
+    });
+  } catch (error) {
+    log.error('[RECORDER UPDATE] poll failed', { error });
+    return res.status(500).json({ error: 'Could not read update request' });
+  }
+});
+router.post('/recorder/update', requireRecorder, async (req, res) => {
+  const name = req.header('X-AT-Recorder');
+  const status = req.body?.status;
+  if (!name || !['check', 'updating', 'current', 'failed'].includes(status))
+    return res.status(400).json({ error: 'Valid recorder and update status required' });
+  try {
+    const image = req.body?.image;
+    const imagePattern = /^sivertio\/auto-tournament-recorder@sha256:[0-9a-f]{64}$/;
+    if (image != null && !imagePattern.test(image))
+      return res.status(400).json({ error: 'Official recorder image digest required' });
+    if (status === 'check') {
+      await db.runAsync(
+        `UPDATE cs2_recorders SET recorder_image = ?, recorder_revision = ?, update_agent_seen = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE name = ?`,
+        [
+          image ?? null,
+          typeof req.body?.revision === 'string' ? req.body.revision.slice(0, 80) : null,
+          name,
+        ]
+      );
+    } else {
+      await db.runAsync(
+        `UPDATE cs2_recorders SET update_status = ?, update_error = ?, recorder_image = COALESCE(?, recorder_image), recorder_revision = COALESCE(?, recorder_revision), updated_at = CASE WHEN ? = 'current' THEN EXTRACT(EPOCH FROM NOW())::INTEGER ELSE updated_at END
+        WHERE name = ? AND update_status IN ('queued', 'updating')`,
+        [
+          status,
+          typeof req.body?.error === 'string' ? req.body.error.slice(0, 1000) : null,
+          image ?? null,
+          typeof req.body?.revision === 'string' ? req.body.revision.slice(0, 80) : null,
+          status,
+          name,
+        ]
+      );
+    }
+    return res.json({ success: true });
+  } catch (error) {
+    log.error('[RECORDER UPDATE] acknowledgement failed', { error });
+    return res.status(500).json({ error: 'Could not save update result' });
+  }
+});
+
+router.post('/recorder/complete', requireRecorder, async (req, res) => {
+  const recorder = req.header('X-AT-Recorder'),
+    token = req.header('X-AT-Claim');
+  if (!recorder || !token) return res.status(400).json({ error: 'Recorder claim required' });
+  try {
+    await db.runAsync('DELETE FROM cs2_recorder_claims WHERE recorder = ? AND token = ?', [
+      recorder,
+      token,
+    ]);
+    return res.json({ success: true });
+  } catch (error) {
+    log.error('[RECORDER] completion failed', { error });
+    return res.status(500).json({ error: 'Could not complete claim' });
+  }
+});
+
+// Serialize claims from duplicate processes on one host, including benchmarks.
+const claimLock = async (req: Request, res: Response, next: import('express').NextFunction) => {
+  const name =
+    typeof req.body?.recorder === 'string' ? req.body.recorder.slice(0, 120) : 'recorder';
+  try {
+    await db.withClient(async (client) => {
+      const result = await client.query(
+        'SELECT pg_try_advisory_lock(hashtextextended($1, 125)) AS locked',
+        [name]
+      );
+      if (!result.rows[0].locked) {
+        res.status(204).end();
+        return;
+      }
+      try {
+        await new Promise<void>((resolve) => {
+          res.once('finish', resolve);
+          res.once('close', resolve);
+          next();
+        });
+      } finally {
+        await client.query('SELECT pg_advisory_unlock(hashtextextended($1, 125))', [name]);
+      }
+    });
+  } catch (error) {
+    log.error('[RECORDER] claim lock failed', { error });
+    if (!res.headersSent) res.status(500).json({ error: 'Could not lock recorder' });
+  }
+};
+router.post('/recorder/claim', requireRecorder, claimLock, async (req: Request, res: Response) => {
   try {
     const recorder = typeof req.body?.recorder === 'string' ? req.body.recorder : 'recorder';
     const version = Number(req.body?.version ?? 0);
@@ -197,6 +410,8 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
       gpu: req.body?.gpu,
       platform: req.body?.platform,
     });
+    await queueMatchReelFor(await recoverRecordingLeases());
+    if (await recorderHasActiveClaim(recorder)) return res.status(204).end();
     // Paused after too many turned-down clips (demos/recorders.ts).
     if (isPaused(me) || !(await recorderAcceptsWork(recorder))) return res.status(204).end();
     // Here but not ready (CS2 still installing): it shows up, no work.
@@ -205,10 +420,11 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
     await dropOrphanJobs();
     idleRecorderCount(recorder);
     const settings = recorderSettings(me);
-    const give = (job: unknown) => {
+    const give = async (job: unknown) => {
       recorderBusy(recorder);
       return res.json({
         success: true,
+        claimToken: version >= 8 ? await registerRecorderClaim(recorder) : undefined,
         job: job && typeof job === 'object' ? { ...(job as object), settings } : job,
       });
     };
@@ -217,38 +433,38 @@ router.post('/recorder/claim', requireRecorder, async (req: Request, res: Respon
     const benchDemo = req.body?.benchDemo === true;
     if (version >= RECORDER_QUALITY_VERSION && wantsBenchmark(me, benchDemo)) {
       const benchmark = await benchmarkJob(benchDemo);
-      if (benchmark) return give(benchmark);
+      if (benchmark) return await give(benchmark);
     }
     // A match reel only joins clips already made: hand those out first.
     const reel = await claimMatchReel(recorder);
-    if (reel) return give(reel);
+    if (reel) return await give(reel);
     // Then a finished tournament's reel, once all of it is recorded. Older
     // recorders (version < 3) don't know the kind: they only get player jobs.
     if (Number(req.body?.version ?? 0) >= 3) {
       const tournament = await claimTournamentReel(recorder);
-      if (tournament) return give(tournament);
+      if (tournament) return await give(tournament);
     }
     // Team reels from recorder version 5.
     if (Number(req.body?.version ?? 0) >= 5) {
       const team = await claimTeamReel(recorder);
-      if (team) return give(team);
+      if (team) return await give(team);
     }
     // A recorder from version 4 records a map's players one at a time in
     // the CS2 session it keeps (demos/highlights.ts claimMapJob).
     if (Number(req.body?.version ?? 0) >= 4) {
       // The map whose demo it has loaded, to go on with (the worker's liveGame).
       const map = await claimMapJob(recorder, loadedMapOf(req.body?.loaded));
-      if (map) return give(map);
+      if (map) return await give(map);
       // Nothing to record: overlays to draw again (recorder version 6).
       if (Number(req.body?.version ?? 0) >= 6) {
         const redress = await claimRedress(recorder);
-        if (redress) return give(redress);
+        if (redress) return await give(redress);
       }
       return res.status(204).end();
     }
     const job = await claimRecordJob(recorder);
     if (!job) return res.status(204).end();
-    return give({ kind: 'player', ...job });
+    return await give({ kind: 'player', ...job });
   } catch (error) {
     log.error('[HIGHLIGHTS] claim failed', { error });
     return res.status(500).json({ success: false, error: 'Could not hand out a highlight' });
@@ -802,6 +1018,8 @@ router.post('/recorder/heartbeat', requireRecorder, async (req: Request, res: Re
   const recorder = typeof req.body?.recorder === 'string' ? req.body.recorder.trim() : '';
   if (!recorder) return res.status(400).json({ success: false, error: 'A recorder name' });
   try {
+    const token = req.header('X-AT-Claim');
+    if (token) await heartbeatRecorderClaim(recorder, token);
     return res.json({ success: true, renewed: await renewClaims(recorder) });
   } catch (error) {
     log.error('[HIGHLIGHTS] heartbeat failed', { error });

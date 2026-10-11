@@ -5920,6 +5920,20 @@
         }
       }
     },
+    "/api/game/cs2/recorder/complete": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "POST /api/game/cs2/recorder/complete",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/game/cs2/recorder/fail": {
       "post": {
         "tags": [
@@ -5944,6 +5958,20 @@
         "responses": {
           "200": {
             "description": "How many claims were renewed"
+          }
+        }
+      }
+    },
+    "/api/game/cs2/recorder/hello": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "POST /api/game/cs2/recorder/hello",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
           }
         }
       }
@@ -6442,6 +6470,32 @@
         ]
       }
     },
+    "/api/game/cs2/recorder/update": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "GET /api/game/cs2/recorder/update",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "POST /api/game/cs2/recorder/update",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/game/cs2/recorder/uploads": {
       "post": {
         "tags": [
@@ -6500,6 +6554,22 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/game/cs2/recorders/update-all": {
+      "post": {
+        "tags": [
+          "Highlight recorders"
+        ],
+        "summary": "Queue all connected recorder hosts with an available image update (admin)",
+        "responses": {
+          "200": {
+            "description": "Number of updates queued"
+          },
+          "401": {
+            "description": "Admin authentication required"
+          }
+        }
       }
     },
     "/api/game/cs2/recorders/{name}": {
@@ -6714,6 +6784,32 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/game/cs2/recorders/{name}/update": {
+      "post": {
+        "tags": [
+          "Highlight recorders"
+        ],
+        "summary": "Queue an official recorder image update after current work finishes (admin)",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Update queued for the recorder host agent"
+          },
+          "401": {
+            "description": "Admin authentication required"
+          }
+        }
       }
     },
     "/api/game/cs2/redress": {

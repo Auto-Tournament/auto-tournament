@@ -1,3 +1,4 @@
+import { recordingWaiting, recordingFailureSql } from './recorderLeases';
 import { recordingTargetFilter } from './recorderFleet';
 /**
  * Team reels: a team's best plays of a match, for the team to share. Each of
@@ -32,8 +33,6 @@ import {
 export const TEAM_REEL_PER_PLAYER = 3;
 /** A team needs this many players with a recorded play for a reel. */
 const TEAM_REEL_MIN_PLAYERS = 2;
-const STALE_SECONDS = 30 * 60;
-const MAX_ATTEMPTS = 3;
 
 export interface TeamReelJob {
   kind: 'team_reel';
@@ -168,13 +167,13 @@ export async function claimTeamReel(recorder: string): Promise<TeamReelJob | nul
   const now = Math.floor(Date.now() / 1000);
   const failover = await reelFailoverFilter(recorder, 'cs2_team_reels.match_slug');
   const row = await db.queryOneAsync<{ match_slug: string; team_id: string }>(
-    `UPDATE cs2_team_reels SET status = 'recording', recorder = ?, claimed_at = ?, attempts = attempts + 1
+    `UPDATE cs2_team_reels SET status = 'recording', recorder = ?, claimed_at = ?, claim_started_at = EXTRACT(EPOCH FROM NOW())::INTEGER, retry_until = NULL, attempts = attempts + 1
       WHERE (match_slug, team_id) = (
         SELECT match_slug, team_id FROM cs2_team_reels
-         WHERE (status = 'pending' OR (status = 'recording' AND claimed_at < ?)) AND ${failover.sql} AND ${recordingTargetFilter('cs2_team_reels.match_slug')}
+         WHERE ${recordingWaiting()} AND ${failover.sql} AND ${recordingTargetFilter('cs2_team_reels.match_slug')}
          ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED)
       RETURNING match_slug, team_id`,
-    [recorder.slice(0, 120), now, now - STALE_SECONDS, ...failover.params, recorder]
+    [recorder.slice(0, 120), now, recorder.slice(0, 120), ...failover.params, recorder]
   );
   if (!row) return null;
   const { team, opponent, clips } = await teamReelClips(row.match_slug, row.team_id);
@@ -259,10 +258,9 @@ export async function failTeamReel(
   error: string
 ): Promise<void> {
   await db.runAsync(
-    `UPDATE cs2_team_reels SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?,
-            avoid_recorder = recorder
+    `UPDATE cs2_team_reels SET ${recordingFailureSql}
       WHERE match_slug = ? AND team_id = ? AND status = 'recording'`,
-    [MAX_ATTEMPTS, error.slice(0, 500), matchSlug, teamId]
+    [error.slice(0, 500), matchSlug, teamId]
   );
 }
 

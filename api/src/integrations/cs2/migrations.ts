@@ -1368,4 +1368,53 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
     );
 `,
   },
+  {
+    id: '040-recorder-job-leases',
+    up: `
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS claim_started_at INTEGER;
+    ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS retry_until INTEGER;
+    ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS claim_started_at INTEGER;
+    ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS retry_until INTEGER;
+    ALTER TABLE cs2_team_reels ADD COLUMN IF NOT EXISTS claim_started_at INTEGER;
+    ALTER TABLE cs2_team_reels ADD COLUMN IF NOT EXISTS retry_until INTEGER;
+    ALTER TABLE cs2_tournament_reels ADD COLUMN IF NOT EXISTS claim_started_at INTEGER;
+    ALTER TABLE cs2_tournament_reels ADD COLUMN IF NOT EXISTS retry_until INTEGER;
+    UPDATE cs2_highlights SET claim_started_at = claimed_at WHERE status = 'recording';
+    UPDATE cs2_match_reels SET claim_started_at = claimed_at WHERE status = 'recording';
+    UPDATE cs2_team_reels SET claim_started_at = claimed_at WHERE status = 'recording';
+    UPDATE cs2_tournament_reels SET claim_started_at = claimed_at WHERE status = 'recording';
+`,
+  },
+
+  {
+    id: '041-recorder-updates',
+    up: `
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS update_status TEXT NOT NULL DEFAULT 'current';
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS update_error TEXT;
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS updated_at INTEGER;
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS update_agent_seen INTEGER;
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS recorder_image TEXT;
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS latest_image TEXT;
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS update_target TEXT;
+    ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS recorder_revision TEXT;
+`,
+  },
+  {
+    id: '042-recorder-claims',
+    up: `CREATE TABLE IF NOT EXISTS cs2_recorder_claims (
+      recorder TEXT PRIMARY KEY REFERENCES cs2_recorders(name) ON DELETE CASCADE,
+      token TEXT NOT NULL UNIQUE,
+      started_at INTEGER NOT NULL,
+      heartbeat_at INTEGER NOT NULL
+    );`,
+  },
+  {
+    id: '043-recorder-host-identity',
+    up: `
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS host_id TEXT UNIQUE;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS host_name TEXT;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS agent_version TEXT;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS agent_seen INTEGER;
+    `,
+  },
 ];

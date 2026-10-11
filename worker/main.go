@@ -36,6 +36,7 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 )
@@ -47,10 +48,11 @@ type job struct {
 }
 
 type client struct {
-	base   string
-	token  string
-	worker string
-	http   *http.Client
+	claimToken atomic.Pointer[string]
+	base       string
+	token      string
+	worker     string
+	http       *http.Client
 }
 
 func env(key, fallback string) string {
@@ -88,6 +90,12 @@ func (c *client) doWith(ctx context.Context, method, path, contentType string, b
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+c.token)
+	if strings.HasPrefix(path, "/api/game/cs2/recorder/") {
+		req.Header.Set("X-AT-Recorder", c.worker)
+		if token := c.claimToken.Load(); token != nil && *token != "" {
+			req.Header.Set("X-AT-Claim", *token)
+		}
+	}
 	if contentType != "" {
 		req.Header.Set("Content-Type", contentType)
 	}
