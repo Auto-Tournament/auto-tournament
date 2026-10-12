@@ -20,6 +20,7 @@ import {
  *   `docker run` that starts it (api: demos/recorderKeys.ts).
  */
 import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Accordion,
   AccordionSummary,
@@ -133,7 +134,12 @@ const duration = (s: number | null) =>
  */
 export default function Cs2HighlightsAdmin() {
   const { t } = useModuleTranslation('cs2');
-  const [tab, setTab] = useState<TabKey>('recorders');
+  // `?section=recorders|clips|overlays` opens that tab (links from search).
+  const [params] = useSearchParams();
+  const asked = params.get('section');
+  const [tab, setTab] = useState<TabKey>(
+    asked === 'clips' || asked === 'overlays' ? asked : 'recorders'
+  );
 
   return (
     <Box data-testid="cs2-highlights-admin">

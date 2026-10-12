@@ -905,7 +905,22 @@
       "settingsWebhooks": "Settings: webhooks",
       "settingsLicense": "Settings: license",
       "settingsMatchmaking": "Settings: matchmaking",
-      "settingsAdvanced": "Settings: advanced"
+      "settingsAdvanced": "Settings: advanced",
+      "highlightsLibrary": "Highlights",
+      "leaderboards": "Leaderboards",
+      "browsePlayers": "Players",
+      "browseTeams": "Teams",
+      "browse": "Browse",
+      "play": "Play",
+      "ladder": "Ladder",
+      "compatibility": "Compatibility",
+      "me": "My profile",
+      "connections": "Connected accounts",
+      "friends": "Friends",
+      "notifications": "Notifications",
+      "highlightsRecorders": "Highlights: recorders",
+      "highlightsClips": "Highlights: clips",
+      "highlightsOverlays": "Highlights: redraw overlays"
     }
   },
   "highlightsPage": {

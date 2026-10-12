@@ -6,6 +6,7 @@
  * overlays and how to add a recorder).
  */
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   CircularProgress,
@@ -45,7 +46,9 @@ const HIGHLIGHT_FPS = [30, 60, 90, 120, 180, 240] as const;
 export default function HighlightsAdmin() {
   const { t } = useTranslation();
   const modules = useInstalledIntegrations().filter((i) => i.highlightsAdmin);
-  const [tab, setTab] = useState('settings');
+  // `?tab=<module id>` opens that game's tab (links from search and elsewhere).
+  const [params] = useSearchParams();
+  const [tab, setTab] = useState(() => params.get('tab') ?? 'settings');
 
   useEffect(() => {
     document.title = pageTitle(t('highlightsPage.title'));

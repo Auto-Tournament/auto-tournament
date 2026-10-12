@@ -12683,7 +12683,7 @@
           "Search"
         ],
         "summary": "Search players, teams, tournaments and played matches by name",
-        "description": "Public. `q` (2 to 100 characters) matches anywhere in a name, case\ninsensitive; a SteamID64 finds that player. Up to 6 of each kind, the\nclosest first. Banned and deleted players are left out, and a\ntournament still being set up is only found by an admin.\n",
+        "description": "Public. `q` (2 to 100 characters) is matched fuzzily, case and accent\ninsensitive: every word must match a word of the name, from its\nstart, inside it or with a typo; a SteamID64 finds that player. Up to\n6 of each kind, the closest first. Banned and deleted players are\nleft out, and a tournament still being set up is only found by an\nadmin.\n",
         "parameters": [
           {
             "in": "query",

@@ -905,7 +905,22 @@
       "settingsWebhooks": "Innstillinger: webhooks",
       "settingsLicense": "Lisens",
       "settingsMatchmaking": "Innstillinger: matchmaking",
-      "settingsAdvanced": "Innstillinger: avansert"
+      "settingsAdvanced": "Innstillinger: avansert",
+      "highlightsLibrary": "Høydepunkter",
+      "leaderboards": "Toppliste",
+      "browsePlayers": "Spillere",
+      "browseTeams": "Lag",
+      "browse": "Utforsk",
+      "play": "Spill",
+      "ladder": "Rangstige",
+      "compatibility": "Kompatibilitet",
+      "me": "Min profil",
+      "connections": "Tilkoblede kontoer",
+      "friends": "Venner",
+      "notifications": "Varsler",
+      "highlightsRecorders": "Høydepunkter: opptakere",
+      "highlightsClips": "Høydepunkter: klipp",
+      "highlightsOverlays": "Høydepunkter: tegn overlegg på nytt"
     }
   },
   "highlightsPage": {

@@ -1,8 +1,9 @@
 /**
  * The search box in the top bar: a button (and Ctrl/⌘ K, or "/" outside a
  * text field) that opens a dialog searching players, teams, tournaments and
- * played matches (GET /api/search) and, for admins, the admin pages and
- * settings (search/adminIndex.ts). Arrow keys move, Enter opens.
+ * played matches (GET /api/search, ranked there) and the pages and settings
+ * the viewer can open (search/searchIndex.ts), all fuzzy: a typo or a word
+ * from the middle of a name still finds it. Arrow keys move, Enter opens.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -24,7 +25,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useInstalledIntegrations } from '../../integrations/registry';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { paths, playerProfilePath } from '../../paths';
-import { searchAdminIndex } from '../../search/adminIndex';
+import { searchPages } from '../../search/searchIndex';
 
 interface SearchResults {
   players: Array<{ id: string; name: string; avatar: string | null }>;
@@ -50,9 +51,10 @@ interface Hit {
 const EMPTY: SearchResults = { players: [], teams: [], tournaments: [], matches: [] };
 
 export function SiteSearch() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const tEn = useMemo(() => i18n.getFixedT('en'), [i18n]);
   const navigate = useNavigate();
-  const { isAuthenticated: isAdmin } = useAuth();
+  const { isAuthenticated: isAdmin, isPlayerAuthenticated: isPlayer } = useAuth();
   const installed = useInstalledIntegrations();
   const modules = useMemo(() => new Set(installed.map((i) => i.id)), [installed]);
   const [open, setOpen] = useState(false);
@@ -97,15 +99,19 @@ export function SiteSearch() {
     const query = q.trim();
     if (query.length < 2) return [];
     const out: Hit[] = [];
-    if (isAdmin) {
-      for (const p of searchAdminIndex(query, (key) => t(`search.pages.${key}`), modules)) {
-        out.push({
-          key: `page-${p.key}`,
-          group: 'pages',
-          label: t(`search.pages.${p.key}`),
-          to: p.to,
-        });
-      }
+    const pages = searchPages(
+      query,
+      (key) => t(`search.pages.${key}`),
+      (key) => tEn(`search.pages.${key}`),
+      { isAdmin, isPlayer, modules }
+    );
+    for (const p of pages) {
+      out.push({
+        key: `page-${p.key}`,
+        group: 'pages',
+        label: t(`search.pages.${p.key}`),
+        to: p.to,
+      });
     }
     for (const p of results.players) {
       out.push({
@@ -144,7 +150,7 @@ export function SiteSearch() {
       });
     }
     return out;
-  }, [q, results, isAdmin, modules, t]);
+  }, [q, results, isAdmin, isPlayer, modules, t, tEn]);
 
   const close = () => {
     setOpen(false);

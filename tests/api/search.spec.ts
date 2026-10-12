@@ -43,6 +43,11 @@ test(
     };
     expect(body.players.map((p) => p.id)).toEqual([ids[0]]);
     expect(body.teams.map((t) => t.id)).toEqual([`search-${stamp}`]);
+    // A typo and a word from the middle still find them.
+    const typo = await (
+      await anon.get(`/api/search?q=${encodeURIComponent(`${word} fidner`)}`)
+    ).json();
+    expect(typo.players.map((p: { id: string }) => p.id)).toEqual([ids[0]]);
     // A SteamID64 finds that player.
     expect((await (await anon.get(`/api/search?q=${ids[0]}`)).json()).players[0]?.id).toBe(ids[0]);
     // % and _ are not wildcards.
