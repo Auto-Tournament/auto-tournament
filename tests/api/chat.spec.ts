@@ -229,6 +229,29 @@ test.describe.serial('Chat', () => {
     }
   );
 
+  test("typing reaches the channel's others, not the typist or outsiders", TAGS, async () => {
+    const channel = `team:${teamA}`;
+    const path = `/api/chat/${encodeURIComponent(channel)}/typing`;
+    const [mate, self, other] = await Promise.all([listen(a2.ctx), listen(a1.ctx), listen(b1.ctx)]);
+    const heard = { mate: [] as unknown[], self: [] as unknown[], other: [] as unknown[] };
+    mate.on('chat:typing', (e) => heard.mate.push(e));
+    self.on('chat:typing', (e) => heard.self.push(e));
+    other.on('chat:typing', (e) => heard.other.push(e));
+    try {
+      expect((await a1.ctx.post(path, { data: {} })).ok()).toBe(true);
+      await expect.poll(() => heard.mate.length).toBe(1);
+      expect(heard.mate[0]).toMatchObject({ channel, playerId: a1.id, name: expect.any(String) });
+      await new Promise((r) => setTimeout(r, 300));
+      expect(heard.self).toHaveLength(0);
+      expect(heard.other).toHaveLength(0);
+      expect((await outsider.ctx.post(path, { data: {} })).status()).toBe(403);
+    } finally {
+      mate.close();
+      self.close();
+      other.close();
+    }
+  });
+
   test('team chat stays in the team; empty, long and fast messages are refused', TAGS, async () => {
     const path = `/api/chat/${encodeURIComponent(`team:${teamA}`)}/messages`;
     expect((await a2.ctx.post(path, { data: { body: 'eco this round' } })).ok()).toBe(true);

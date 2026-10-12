@@ -861,7 +861,31 @@
       "searching": "Suche nach einem Match",
       "leaderQueues": "Der Leader startet die Suche"
     },
-    "back": "Zurück"
+    "back": "Zurück",
+    "typing": {
+      "one": "{{name}} schreibt…",
+      "two": "{{first}} und {{second}} schreiben…",
+      "many": "{{count}} Personen schreiben…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Emoji wählen",
+      "search": "Emoji suchen",
+      "none": "Keine Emoji gefunden",
+      "categories": {
+        "results": "Treffer",
+        "recent": "Zuletzt",
+        "smileys": "Smileys",
+        "gestures": "Hände",
+        "people": "Personen",
+        "animals": "Natur",
+        "food": "Essen & Trinken",
+        "activity": "Spiele & Sport",
+        "travel": "Orte",
+        "objects": "Objekte",
+        "symbols": "Symbole"
+      }
+    }
   },
   "search": {
     "open": "Search",

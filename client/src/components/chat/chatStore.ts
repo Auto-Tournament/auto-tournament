@@ -14,6 +14,7 @@
  */
 import { useEffect, useSyncExternalStore } from 'react';
 import { io, type Socket } from 'socket.io-client';
+import { addTypist, removeTypist, shouldSendTyping, SHOW_MS, type Typing } from './typing';
 import { api } from '../../utils/api';
 
 export type ChatKind = 'match' | 'team' | 'party';
@@ -55,12 +56,14 @@ interface State {
   active: string | null;
   /** The newest message from someone else that arrived while the dock was closed. */
   peek: ChatMessage | null;
+  /** Who is typing where (./typing.ts). */
+  typing: Typing;
 }
 
 const PAGE = 50;
 const LIST_MS = 60_000;
 
-let state: State = { channels: [], threads: {}, open: false, active: null, peek: null };
+let state: State = { channels: [], threads: {}, open: false, active: null, peek: null, typing: {} };
 const listeners = new Set<() => void>();
 let socket: Socket | null = null;
 let users = 0;
@@ -177,6 +180,9 @@ export function markRead(channel: string): void {
 }
 
 function receive(message: ChatMessage) {
+  if (state.typing[message.channel]) {
+    set({ typing: removeTypist(state.typing, message.channel, message.senderId) });
+  }
   const thread = state.threads[message.channel];
   if (thread) setThread(message.channel, { messages: mergeById(thread.messages, [message]) });
   const mine = message.senderId !== null && message.senderId === viewer.steamId;
@@ -240,6 +246,25 @@ function openSocket() {
     if (state.open && state.active) void loadMessages(state.active);
   });
   socket.on('chat:message', (message: ChatMessage) => receive(message));
+  socket.on('chat:typing', (who: { channel: string; playerId: string; name: string }) => {
+    if (!who?.channel || who.playerId === viewer.steamId) return;
+    set({ typing: addTypist(state.typing, who.channel, who, Date.now()) });
+    // Re-render once it has run out, so the line goes away.
+    setTimeout(() => set({ typing: { ...state.typing } }), SHOW_MS + 50);
+  });
+}
+
+let typingSentAt = 0;
+let typingChannel: string | null = null;
+
+/** The viewer typed in a channel: tell its others, at most every couple of seconds. */
+export function notifyTyping(channel: string): void {
+  if (!viewer.steamId) return;
+  const now = Date.now();
+  if (channel === typingChannel && !shouldSendTyping(typingSentAt, now)) return;
+  typingSentAt = now;
+  typingChannel = channel;
+  void api.post(`/api/chat/${encodeURIComponent(channel)}/typing`, {}).catch(() => undefined);
 }
 
 function closeSocket() {
@@ -309,7 +334,7 @@ export function useChat(who?: { steamId: string | null; isAdmin: boolean }): Sta
         timer = null;
         closeSocket();
         viewer = { steamId: null, isAdmin: false };
-        state = { channels: [], threads: {}, open: false, active: null, peek: null };
+        state = { channels: [], threads: {}, open: false, active: null, peek: null, typing: {} };
       }
     };
     // `who` itself changes every render; the ids are what matter.
