@@ -27,6 +27,7 @@
     "bannedBody": "This player is banned.",
     "playerNotFound": "This player doesn't exist.",
     "backToFindPlayer": "Back to Find Player",
+    "backToPlayers": "Back to Players",
     "profileTitle": "Player profile",
     "thisIsYou": "This is you",
     "skillRatingTooltip": "Skill Rating is based on OpenSkill. Around 1500 is a typical starting rating; higher is better.",
@@ -452,6 +453,7 @@
     "copy": "Copy team match link"
   },
   "playersDirectory": {
+    "findOnSteam": "Look them up on Steam",
     "toLeaderboards": "Rankings are on Leaderboards →",
     "matches_one": "{{count}} match",
     "matches_other": "{{count}} matches",
@@ -682,6 +684,7 @@
     }
   },
   "leaderboard": {
+    "toLadder": "Matchmaking ladder →",
     "title": "Leaderboard",
     "subtitle": "Players ranked by their rating in one game.",
     "game": "Game",

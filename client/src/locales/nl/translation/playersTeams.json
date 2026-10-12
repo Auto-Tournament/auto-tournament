@@ -22,6 +22,7 @@
   "playerPage": {
     "playerNotFound": "Deze speler bestaat niet.",
     "backToFindPlayer": "Terug naar Speler zoeken",
+    "backToPlayers": "Back to Players",
     "thisIsYou": "Dit ben jij",
     "skillRatingTooltip": "Skill Rating is gebaseerd op OpenSkill. Rond 1500 is een typische startwaarde; hoger is beter.",
     "skillRatingLabel": "Vaardigheidsrating: {{elo}}",
@@ -452,6 +453,7 @@
     "copy": "Copy team match link"
   },
   "playersDirectory": {
+    "findOnSteam": "Look them up on Steam",
     "toLeaderboards": "Rankings are on Leaderboards →",
     "matches_one": "{{count}} match",
     "matches_other": "{{count}} matches",
@@ -682,6 +684,7 @@
     }
   },
   "leaderboard": {
+    "toLadder": "Matchmaking ladder →",
     "title": "Leaderboard",
     "subtitle": "Players ranked by their rating in one game.",
     "game": "Game",

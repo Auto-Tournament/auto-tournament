@@ -30,7 +30,7 @@ const PAGES = [
   '/tournament/1/matches',
   '/tournament/1/teams',
   '/tournament/1/standings',
-  '/player',
+  '/browse/players',
 ];
 
 /**
@@ -42,44 +42,53 @@ const PAGES = [
  */
 const KNOWN_TRANSIENT_RULES = ['aria-hidden-focus'];
 
-test('every main page passes WCAG 2.1 A and AA', { tag: ['@ui', '@a11y'] }, async ({
-  page,
-  request,
-}) => {
-  test.setTimeout(300000);
+test(
+  'every main page passes WCAG 2.1 A and AA',
+  { tag: ['@ui', '@a11y'] },
+  async ({ page, request }) => {
+    test.setTimeout(300000);
 
-  await ensureSignedIn(page);
-  await signInViaRequest(request);
+    await ensureSignedIn(page);
+    await signInViaRequest(request);
 
-  // Populate the pages that are empty-state-only otherwise.
-  await setupTournament(request, {
-    type: 'single_elimination',
-    format: 'bo1',
-    maps: ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'],
-    teamCount: 2,
-    serverCount: 1,
-    prefix: 'a11y',
-  });
+    // Populate the pages that are empty-state-only otherwise.
+    await setupTournament(request, {
+      type: 'single_elimination',
+      format: 'bo1',
+      maps: [
+        'de_mirage',
+        'de_inferno',
+        'de_ancient',
+        'de_anubis',
+        'de_dust2',
+        'de_vertigo',
+        'de_nuke',
+      ],
+      teamCount: 2,
+      serverCount: 1,
+      prefix: 'a11y',
+    });
 
-  const failures: string[] = [];
+    const failures: string[] = [];
 
-  for (const path of PAGES) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    // Let the SPA settle; axe on a half-rendered page reports noise.
-    await page.waitForTimeout(2000);
+    for (const path of PAGES) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      // Let the SPA settle; axe on a half-rendered page reports noise.
+      await page.waitForTimeout(2000);
 
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-      .disableRules(KNOWN_TRANSIENT_RULES)
-      .analyze();
+      const results = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .disableRules(KNOWN_TRANSIENT_RULES)
+        .analyze();
 
-    for (const violation of results.violations) {
-      failures.push(
-        `${path} — ${violation.id} (${violation.impact}): ${violation.help} ` +
-          `[${violation.nodes.length} node(s)] e.g. ${violation.nodes[0]?.html?.slice(0, 120)}`
-      );
+      for (const violation of results.violations) {
+        failures.push(
+          `${path} — ${violation.id} (${violation.impact}): ${violation.help} ` +
+            `[${violation.nodes.length} node(s)] e.g. ${violation.nodes[0]?.html?.slice(0, 120)}`
+        );
+      }
     }
-  }
 
-  expect(failures, `accessibility violations:\n${failures.join('\n')}`).toEqual([]);
-});
+    expect(failures, `accessibility violations:\n${failures.join('\n')}`).toEqual([]);
+  }
+);

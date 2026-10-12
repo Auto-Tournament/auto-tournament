@@ -22,6 +22,7 @@
   "playerPage": {
     "playerNotFound": "Ce joueur n’existe pas.",
     "backToFindPlayer": "Retour à Trouver un joueur",
+    "backToPlayers": "Back to Players",
     "thisIsYou": "C’est vous",
     "skillRatingTooltip": "Le niveau de compétence est basé sur OpenSkill. Environ 1500 est une valeur de départ typique ; plus c’est élevé, mieux c’est.",
     "skillRatingLabel": "Niveau : {{elo}}",
@@ -452,6 +453,7 @@
     "copy": "Copy team match link"
   },
   "playersDirectory": {
+    "findOnSteam": "Look them up on Steam",
     "toLeaderboards": "Rankings are on Leaderboards →",
     "matches_one": "{{count}} match",
     "matches_other": "{{count}} matches",
@@ -682,6 +684,7 @@
     }
   },
   "leaderboard": {
+    "toLadder": "Matchmaking ladder →",
     "title": "Leaderboard",
     "subtitle": "Players ranked by their rating in one game.",
     "game": "Game",

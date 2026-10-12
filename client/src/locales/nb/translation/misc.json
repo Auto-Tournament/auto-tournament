@@ -769,6 +769,7 @@
       "draw": "Uavgjort"
     },
     "leaderboard": {
+      "toLadder": "Matchmaking-stigen →",
       "title": "Toppliste",
       "subtitle_one": "Spillere med {{count}} eller flere kamper de siste 30 dagene.",
       "subtitle_other": "Spillere med {{count}} eller flere kamper de siste 30 dagene.",

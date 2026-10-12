@@ -34,7 +34,6 @@ import Development from './pages/Development';
 import { useIsDevelopment } from './hooks/useIsDevelopment';
 import TeamMatch from './pages/TeamMatch';
 import TeamProfile from './pages/TeamProfile';
-import FindPlayer from './pages/FindPlayer';
 import PlayerProfile from './pages/PlayerProfile';
 import MatchPage from './pages/MatchPage';
 import TournamentLeaderboard from './pages/TournamentLeaderboard';
@@ -431,14 +430,8 @@ function AppRoutes() {
       </Route>
       {/* Standings' old address, still in bookmarks and older links. */}
       <Route path={paths.tournamentLeaderboard} element={<LegacyLeaderboardRedirect />} />
-      <Route
-        path={paths.findPlayer}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <FindPlayer />
-          </ProtectedRoute>
-        }
-      />
+      {/* The old Find player page: the Players directory finds anyone now. */}
+      <Route path={paths.findPlayer} element={<Navigate to={paths.browsePlayers} replace />} />
       {/* Old shared match links (`/matches/<slug>`), for anyone: the match page. */}
       <Route path="/matches/:slug" element={<MatchSlugRedirect />} />
       <Route
