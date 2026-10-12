@@ -48,6 +48,8 @@ import {
   type ScalerAction,
   type ScalerHost,
   type ScalerServer,
+  holdCreatesWhileLicenseFull,
+  LICENSE_FULL_BACKOFF_SECONDS,
 } from './plan';
 import { configuredReserve, getAutoscaleSettings, type StoredAutoscaleSettings } from './settings';
 
@@ -77,6 +79,8 @@ const idleSince = new Map<string, number>();
 const recentStarts = new Map<string, number>();
 const recentStops = new Map<string, number>();
 let lastNote: string | null = null;
+/** The license refused a create (full): no new create until then, so it isn't asked and logged every pass. */
+let licenseFullUntil = 0;
 /** Unix s of the scaler's commands per machine, for the rate limit. */
 const sentAt = new Map<string, number[]>();
 
@@ -553,10 +557,14 @@ async function execute(
     log.info(
       `[AUTOSCALE] ${action.kind}${action.kind === 'create' ? '' : ` ${action.server}`} on ${hostName ?? action.hostId}: ${reason}`
     );
+    if (action.kind === 'create') licenseFullUntil = 0;
     return { action, outcome: 'sent', commandId, error: null };
   } catch (error) {
     const refused = error instanceof HostCommandError;
     const message = (error as Error).message;
+    if (action.kind === 'create' && refused && error.status === 402) {
+      licenseFullUntil = now + LICENSE_FULL_BACKOFF_SECONDS;
+    }
     await recordEvent({
       action: action.kind,
       hostId: action.hostId,
@@ -592,7 +600,13 @@ export function runScalerPass(): Promise<PassResult | null> {
         if (kept.length > 0) sentAt.set(hostId, kept);
         else sentAt.delete(hostId);
       }
-      const { allowed, deferred } = limitActions(plan.actions, sentAt, input.now);
+      // The license is full: creates wait out the back-off (starts and stops go on).
+      const { actions, held } = holdCreatesWhileLicenseFull(
+        plan.actions,
+        input.now,
+        licenseFullUntil
+      );
+      const { allowed, deferred } = limitActions(actions, sentAt, input.now);
       const outcomes: ActionOutcome[] = [];
       for (const action of allowed) {
         sentAt.set(action.hostId, [...(sentAt.get(action.hostId) ?? []), input.now]);
@@ -603,7 +617,13 @@ export function runScalerPass(): Promise<PassResult | null> {
           ? `${deferred.length} more action(s) wait for the rate limit (next pass)`
           : null;
       const note = settings.enabled
-        ? [plan.note, limited].filter(Boolean).join('; ') || null
+        ? [
+            plan.note,
+            limited,
+            held ? 'the license has no room for another server: no new server until it does' : null,
+          ]
+            .filter(Boolean)
+            .join('; ') || null
         : null;
       if (note && note !== lastNote) {
         await recordEvent({

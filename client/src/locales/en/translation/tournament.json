@@ -892,6 +892,7 @@
     "notJoined": "Not joined",
     "waitingForPlayers": "Waiting for players",
     "inServerCount": "{{count}} of {{expected}} in the server. The match starts when everyone is ready.",
+    "inServerCountBots": "{{count}} in the server. Bots take the empty seats; the match starts when everyone here is ready.",
     "live": "Live",
     "round": "Round {{n}}",
     "vetoTitle": "Map veto in progress",

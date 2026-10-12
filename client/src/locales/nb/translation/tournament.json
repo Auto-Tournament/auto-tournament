@@ -892,6 +892,7 @@
     "notJoined": "Ikke koblet til",
     "waitingForPlayers": "Venter på spillere",
     "inServerCount": "{{count}} av {{expected}} på serveren. Kampen starter når alle er klare.",
+    "inServerCountBots": "{{count}} på serveren. Boter tar de tomme plassene; kampen starter når alle her er klare.",
     "live": "Live",
     "round": "Runde {{n}}",
     "vetoTitle": "Kartvalg pågår",

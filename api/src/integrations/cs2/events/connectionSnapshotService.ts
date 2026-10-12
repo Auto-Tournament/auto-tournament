@@ -1,6 +1,9 @@
 import { db } from '../../../config/database';
 import { rconService } from '../services/rconService';
-import { playerConnectionService, type ConnectedPlayer } from '../../../services/playerConnectionService';
+import {
+  playerConnectionService,
+  type ConnectedPlayer,
+} from '../../../services/playerConnectionService';
 import type { DbMatchRow } from '../../../types/database.types';
 import {
   matchLiveStatsService,
@@ -126,7 +129,9 @@ export async function refreshConnectionsFromServer(
 
   const refreshPromise = (async () => {
     try {
-      const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+      const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+        matchSlug,
+      ]);
       if (!match || !match.server_id) {
         return;
       }
@@ -156,6 +161,13 @@ export async function refreshConnectionsFromServer(
 }
 
 export async function fetchMatchReport(serverId: string): Promise<MatchReport | null> {
+  // A fleet server has no RCON port to reach: its plugin sends connects and
+  // disconnects over the fleet link instead (fleet/inbound.ts).
+  const server = await db.queryOneAsync<{ transport: string | null }>(
+    'SELECT transport FROM cs2_servers WHERE id = ?',
+    [serverId]
+  );
+  if (server?.transport === 'fleet') return null;
   let lastError: unknown = null;
   let lastErrorDetails: Record<string, unknown> | null = null;
   let failed = false;
@@ -367,7 +379,10 @@ async function updateLiveStatsFromReport(matchSlug: string, report: MatchReport)
   });
 }
 
-async function persistMatchMetaFromReport(matchSlug: string, matchInfo: MatchReport['match']): Promise<void> {
+async function persistMatchMetaFromReport(
+  matchSlug: string,
+  matchInfo: MatchReport['match']
+): Promise<void> {
   if (!matchInfo) return;
 
   const updates: Record<string, unknown> = {};
@@ -392,10 +407,7 @@ async function persistMatchMetaFromReport(matchSlug: string, matchInfo: MatchRep
       'SELECT status FROM matches WHERE slug = ?',
       [matchSlug]
     );
-    if (
-      existing &&
-      ['completed', 'cancelled', NEEDS_DECISION_STATUS].includes(existing.status)
-    ) {
+    if (existing && ['completed', 'cancelled', NEEDS_DECISION_STATUS].includes(existing.status)) {
       return;
     }
     await db.updateAsync('matches', updates, 'slug = ?', [matchSlug]);
@@ -480,9 +492,7 @@ function pickStat(stats: MatchReportPlayerStats, keys: string[], defaultValue = 
   return defaultValue;
 }
 
-function normalizeTeamSlot(
-  slot?: string | null
-): 'team1' | 'team2' | null {
+function normalizeTeamSlot(slot?: string | null): 'team1' | 'team2' | null {
   if (!slot) return null;
   const normalized = slot.toLowerCase();
   if (normalized === 'team1' || normalized === 'team_1') return 'team1';
@@ -628,5 +638,3 @@ async function reconcileMatchStatusFromPhase(
     });
   }
 }
-
-

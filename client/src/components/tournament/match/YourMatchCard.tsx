@@ -24,8 +24,10 @@ function phaseOf(match: TeamMatchInfo, tournamentStatus: string): Phase {
     ? Boolean(match.config?.team1 && match.config?.team2)
     : Boolean(match.team1?.id && match.team2?.id);
   if (match.status === 'completed') return 'done';
-  if (match.status === 'live' && match.liveStats && match.liveStats.status !== 'warmup') return 'live';
-  if (!isManual && tournamentStatus !== 'in_progress' && match.status === 'pending') return 'notStarted';
+  if (match.status === 'live' && match.liveStats && match.liveStats.status !== 'warmup')
+    return 'live';
+  if (!isManual && tournamentStatus !== 'in_progress' && match.status === 'pending')
+    return 'notStarted';
   if (match.status === 'pending' && !bothTeams) return 'waitingOpponent';
   const vetoOff = isVetoDisabledForMatch({
     round: match.round,
@@ -119,7 +121,9 @@ function StatusLine({
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 180 }}>
         <Typography sx={{ fontWeight: 600, fontSize: '1rem' }}>{title}</Typography>
-        {detail && <Typography sx={{ fontSize: '0.875rem', color: color.ink2 }}>{detail}</Typography>}
+        {detail && (
+          <Typography sx={{ fontSize: '0.875rem', color: color.ink2 }}>{detail}</Typography>
+        )}
       </Box>
       {action}
     </Box>
@@ -166,10 +170,23 @@ function InServerList({
             >
               {!player.avatar && player.name.slice(0, 1).toUpperCase()}
             </Box>
-            <Typography sx={{ flex: 1, minWidth: 0, color: isIn ? color.ink : color.muted, overflowWrap: 'anywhere' }}>
+            <Typography
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                color: isIn ? color.ink : color.muted,
+                overflowWrap: 'anywhere',
+              }}
+            >
               {player.name}
             </Typography>
-            <Typography sx={{ fontSize: '0.8125rem', color: isIn ? color.live : color.muted, whiteSpace: 'nowrap' }}>
+            <Typography
+              sx={{
+                fontSize: '0.8125rem',
+                color: isIn ? color.live : color.muted,
+                whiteSpace: 'nowrap',
+              }}
+            >
               {isIn ? t('yourMatch.inServer') : t('yourMatch.notJoined')}
             </Typography>
           </Box>
@@ -191,7 +208,8 @@ function InServerList({
  */
 export function YourMatchCard({ teamId }: { teamId: string }) {
   const { t } = useTranslation();
-  const { team, match, hasMatch, loading, tournamentStatus, loadTeamMatch } = useTeamMatchData(teamId);
+  const { team, match, hasMatch, loading, tournamentStatus, loadTeamMatch } =
+    useTeamMatchData(teamId);
   const getRoundLabel = useRoundLabel();
   const integration = useIntegrationFor(match);
   const PreMatchView = integration.preMatchView;
@@ -211,9 +229,19 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
 
   if (!hasMatch || !match) {
     return (
-      <Box data-testid="your-match-none" sx={{ p: 3, borderRadius: radii.lg, bgcolor: color.paper2, border: `1px solid ${color.rule}` }}>
+      <Box
+        data-testid="your-match-none"
+        sx={{
+          p: 3,
+          borderRadius: radii.lg,
+          bgcolor: color.paper2,
+          border: `1px solid ${color.rule}`,
+        }}
+      >
         <Typography sx={{ fontWeight: 600 }}>
-          {tournamentStatus === 'completed' ? t('teamPage.tournamentFinished') : t('teamPage.noMatchNow')}
+          {tournamentStatus === 'completed'
+            ? t('teamPage.tournamentFinished')
+            : t('teamPage.noMatchNow')}
         </Typography>
         <Typography sx={{ color: color.ink2, mt: 0.5, fontSize: '0.875rem' }}>
           {tournamentStatus === 'completed' ? '' : t('teamPage.noMatchNowHint')}
@@ -242,7 +270,9 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
   const theirMaps = wins[them];
   const ourRounds = live ? (match.isTeam1 ? live.team1Score : live.team2Score) : 0;
   const theirRounds = live ? (match.isTeam1 ? live.team2Score : live.team1Score) : 0;
-  const formatLabel = t('yourMatch.bestOf', { count: Number(match.matchFormat.replace('bo', '')) || 1 });
+  const formatLabel = t('yourMatch.bestOf', {
+    count: Number(match.matchFormat.replace('bo', '')) || 1,
+  });
   const roundLabel = match.round === 0 ? t('teamPage.manualMatch') : getRoundLabel(match.round);
 
   const connected = new Set((match.connectionStatus?.connectedPlayers ?? []).map((p) => p.steamId));
@@ -258,24 +288,45 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
   const team1Starts = sideCode === 'team1_ct' ? 'CT' : sideCode === 'team2_ct' ? 'T' : null;
   const half = Number(config.cvars?.mp_maxrounds ?? 24) / 2;
   const swapped = (live?.roundNumber ?? 0) > half;
-  const team1Now = team1Starts === null ? null : swapped ? (team1Starts === 'CT' ? 'T' : 'CT') : team1Starts;
-  const ourSide = team1Now === null ? null : match.isTeam1 ? team1Now : team1Now === 'CT' ? 'T' : 'CT';
+  const team1Now =
+    team1Starts === null ? null : swapped ? (team1Starts === 'CT' ? 'T' : 'CT') : team1Starts;
+  const ourSide =
+    team1Now === null ? null : match.isTeam1 ? team1Now : team1Now === 'CT' ? 'T' : 'CT';
   const theirSide = ourSide === null ? null : ourSide === 'CT' ? 'T' : 'CT';
 
-  const join = ConnectPanel && viewerIsMember ? (
-    <Box sx={{ width: '100%' }}>
-      <ConnectPanel matchSlug={match.slug} viewerCanJoin={viewerIsMember} matchStatus={match.status} />
-    </Box>
-  ) : null;
+  const join =
+    ConnectPanel && viewerIsMember ? (
+      <Box sx={{ width: '100%' }}>
+        <ConnectPanel
+          matchSlug={match.slug}
+          viewerCanJoin={viewerIsMember}
+          matchStatus={match.status}
+        />
+      </Box>
+    ) : null;
 
   const score =
     phase === 'live' ? (
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2 }} data-testid="your-match-score">
-        <Typography sx={{ fontFamily: fontDisplay, fontSize: { xs: '2.5rem', md: '3.5rem' }, fontWeight: 700, lineHeight: 1 }}>
+        <Typography
+          sx={{
+            fontFamily: fontDisplay,
+            fontSize: { xs: '2.5rem', md: '3.5rem' },
+            fontWeight: 700,
+            lineHeight: 1,
+          }}
+        >
           {ourRounds}
         </Typography>
         <Typography sx={{ fontSize: '1.5rem', color: color.muted }}>:</Typography>
-        <Typography sx={{ fontFamily: fontDisplay, fontSize: { xs: '2.5rem', md: '3.5rem' }, fontWeight: 700, lineHeight: 1 }}>
+        <Typography
+          sx={{
+            fontFamily: fontDisplay,
+            fontSize: { xs: '2.5rem', md: '3.5rem' },
+            fontWeight: 700,
+            lineHeight: 1,
+          }}
+        >
           {theirRounds}
         </Typography>
       </Box>
@@ -294,22 +345,41 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
 
   let body: ReactNode = null;
   if (phase === 'notStarted') {
-    body = <StatusLine tone={color.muted} icon={<ClockIcon size={24} />} title={t('matchInfo.waitingForTournamentTitle')} detail={t('matchInfo.waitingForTournamentBody')} />;
-  } else if (phase === 'waitingOpponent') {
-    body = <StatusLine tone={color.muted} icon={<ClockIcon size={24} />} title={t('matchInfo.waitingForOpponentTitle')} detail={t('matchInfo.waitingForOpponentBody')} />;
-  } else if (phase === 'veto') {
-    body = PreMatchView && viewerIsMember ? (
-      <PreMatchView
-        matchSlug={match.slug}
-        team1Name={match.team1?.name ?? match.config?.team1?.name}
-        team2Name={match.team2?.name ?? match.config?.team2?.name}
-        currentTeamSlug={team?.id ?? us}
-        onComplete={onVetoComplete}
-        hideMatchHeader
+    body = (
+      <StatusLine
+        tone={color.muted}
+        icon={<ClockIcon size={24} />}
+        title={t('matchInfo.waitingForTournamentTitle')}
+        detail={t('matchInfo.waitingForTournamentBody')}
       />
-    ) : (
-      <StatusLine tone={color.accent} icon={<ClockIcon size={24} />} title={t('yourMatch.vetoTitle')} />
     );
+  } else if (phase === 'waitingOpponent') {
+    body = (
+      <StatusLine
+        tone={color.muted}
+        icon={<ClockIcon size={24} />}
+        title={t('matchInfo.waitingForOpponentTitle')}
+        detail={t('matchInfo.waitingForOpponentBody')}
+      />
+    );
+  } else if (phase === 'veto') {
+    body =
+      PreMatchView && viewerIsMember ? (
+        <PreMatchView
+          matchSlug={match.slug}
+          team1Name={match.team1?.name ?? match.config?.team1?.name}
+          team2Name={match.team2?.name ?? match.config?.team2?.name}
+          currentTeamSlug={team?.id ?? us}
+          onComplete={onVetoComplete}
+          hideMatchHeader
+        />
+      ) : (
+        <StatusLine
+          tone={color.accent}
+          icon={<ClockIcon size={24} />}
+          title={t('yourMatch.vetoTitle')}
+        />
+      );
   } else if (phase === 'joining') {
     body = (
       <>
@@ -317,10 +387,20 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
           tone={color.sideT}
           icon={<UsersThreeIcon size={24} />}
           title={t('yourMatch.waitingForPlayers')}
-          detail={t('yourMatch.inServerCount', { count: inServer, expected })}
+          detail={
+            match.config?.bot_fill
+              ? t('yourMatch.inServerCountBots', { count: inServer })
+              : t('yourMatch.inServerCount', { count: inServer, expected })
+          }
         />
         {join}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'repeat(2, minmax(0,1fr))' }, gap: { xs: 2, md: 5 } }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'repeat(2, minmax(0,1fr))' },
+            gap: { xs: 2, md: 5 },
+          }}
+        >
           <InServerList players={match.config?.[us]?.players ?? []} connected={connected} />
           <InServerList players={match.config?.[them]?.players ?? []} connected={connected} />
         </Box>
@@ -337,7 +417,10 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
         />
         {join}
         {join && (
-          <Typography sx={{ fontSize: '0.8125rem', color: color.muted, mt: -1.5 }} data-testid="your-match-rejoin">
+          <Typography
+            sx={{ fontSize: '0.8125rem', color: color.muted, mt: -1.5 }}
+            data-testid="your-match-rejoin"
+          >
             {t('yourMatch.rejoin')}
           </Typography>
         )}
@@ -358,7 +441,11 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
       <StatusLine
         tone={outcome === 'won' ? color.live : outcome === 'lost' ? color.ban : color.muted}
         icon={outcome === 'won' ? <TrophyIcon size={24} /> : <ClockIcon size={24} />}
-        title={t(`yourMatch.outcome.${outcome}`, { us: ourMaps, them: theirMaps, opponent: theirName })}
+        title={t(`yourMatch.outcome.${outcome}`, {
+          us: ourMaps,
+          them: theirMaps,
+          opponent: theirName,
+        })}
         detail={t('yourMatch.finished')}
       />
     );
@@ -368,7 +455,12 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
     <Box
       data-testid="your-match"
       data-phase={phase}
-      sx={{ borderRadius: radii.lg, bgcolor: color.paper2, border: `1px solid ${color.rule}`, overflow: 'hidden' }}
+      sx={{
+        borderRadius: radii.lg,
+        bgcolor: color.paper2,
+        border: `1px solid ${color.rule}`,
+        overflow: 'hidden',
+      }}
     >
       {mapKey && (
         <Box
@@ -384,12 +476,25 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
             backgroundPosition: 'center',
           }}
         >
-          <Box sx={{ m: { xs: 1.5, md: '20px 24px' }, px: 2, py: 1.25, borderRadius: '14px', bgcolor: withAlpha(color.paper, 0.82), display: 'flex', alignItems: 'center', gap: 1.75 }}>
+          <Box
+            sx={{
+              m: { xs: 1.5, md: '20px 24px' },
+              px: 2,
+              py: 1.25,
+              borderRadius: '14px',
+              bgcolor: withAlpha(color.paper, 0.82),
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.75,
+            }}
+          >
             <Typography sx={{ fontFamily: fontDisplay, fontSize: '1.375rem', fontWeight: 700 }}>
               {getMapDisplayName(mapKey)}
             </Typography>
             {typeof mapNumber === 'number' && totalMaps ? (
-              <Typography sx={{ ...mono, fontSize: '0.75rem', color: color.ink2, textTransform: 'uppercase' }}>
+              <Typography
+                sx={{ ...mono, fontSize: '0.75rem', color: color.ink2, textTransform: 'uppercase' }}
+              >
                 {t('yourMatch.mapOf', { n: mapNumber + 1, total: totalMaps })}
               </Typography>
             ) : null}
@@ -398,15 +503,36 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
       )}
 
       <Box sx={{ p: { xs: 2.5, md: 3.5 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)', alignItems: 'center', gap: { xs: 1.5, md: 3 } }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)',
+            alignItems: 'center',
+            gap: { xs: 1.5, md: 3 },
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
             <TeamMark tag={ourTag} name={ourName} highlight />
             <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ fontFamily: fontDisplay, fontSize: { xs: '1.125rem', md: '1.625rem' }, fontWeight: 700, overflowWrap: 'anywhere' }}>
+              <Typography
+                sx={{
+                  fontFamily: fontDisplay,
+                  fontSize: { xs: '1.125rem', md: '1.625rem' },
+                  fontWeight: 700,
+                  overflowWrap: 'anywhere',
+                }}
+              >
                 {ourName}
               </Typography>
               {phase === 'live' && ourSide && (
-                <Typography data-testid="your-match-side" sx={{ ...mono, fontSize: '0.75rem', color: ourSide === 'CT' ? color.info : color.sideT }}>
+                <Typography
+                  data-testid="your-match-side"
+                  sx={{
+                    ...mono,
+                    fontSize: '0.75rem',
+                    color: ourSide === 'CT' ? color.info : color.sideT,
+                  }}
+                >
                   {t('yourMatch.sideYou', { side: ourSide })}
                 </Typography>
               )}
@@ -414,17 +540,49 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
             {score}
-            <Typography sx={{ ...mono, fontSize: '0.75rem', color: color.muted, textTransform: 'uppercase', textAlign: 'center' }}>
+            <Typography
+              sx={{
+                ...mono,
+                fontSize: '0.75rem',
+                color: color.muted,
+                textTransform: 'uppercase',
+                textAlign: 'center',
+              }}
+            >
               {scoreLine}
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end', minWidth: 0 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              justifyContent: 'flex-end',
+              minWidth: 0,
+            }}
+          >
             <Box sx={{ minWidth: 0, textAlign: 'right' }}>
-              <Typography sx={{ fontFamily: fontDisplay, fontSize: { xs: '1.125rem', md: '1.625rem' }, fontWeight: 700, textAlign: 'right', overflowWrap: 'anywhere' }}>
+              <Typography
+                sx={{
+                  fontFamily: fontDisplay,
+                  fontSize: { xs: '1.125rem', md: '1.625rem' },
+                  fontWeight: 700,
+                  textAlign: 'right',
+                  overflowWrap: 'anywhere',
+                }}
+              >
                 {theirName}
               </Typography>
               {phase === 'live' && theirSide && (
-                <Typography sx={{ ...mono, fontSize: '0.75rem', color: theirSide === 'CT' ? color.info : color.sideT }}>{theirSide}</Typography>
+                <Typography
+                  sx={{
+                    ...mono,
+                    fontSize: '0.75rem',
+                    color: theirSide === 'CT' ? color.info : color.sideT,
+                  }}
+                >
+                  {theirSide}
+                </Typography>
               )}
             </Box>
             <TeamMark tag={theirTag} name={theirName} />

@@ -101,6 +101,8 @@ export interface TeamMatchInfo {
     expected_players_total?: number;
     expected_players_team1?: number;
     expected_players_team2?: number;
+    /** Bots take the empty seats (cs2 fillTeamsWithBots): nobody else is waited for. */
+    bot_fill?: boolean;
     // Series / map configuration
     num_maps?: number;
     maplist?: string[];
@@ -207,4 +209,3 @@ export interface TeamMatchHistory {
   /** The maps the series was played on, in order (empty when unknown). */
   maps?: string[];
 }
-

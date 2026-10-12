@@ -111,6 +111,23 @@ export const RATE_WINDOW_SECONDS = 60;
 export const MAX_STARTS_PER_PASS = 8;
 export const MAX_STOPS_PER_PASS = 2;
 
+/** How long new servers wait after the license refused one (it is full). */
+export const LICENSE_FULL_BACKOFF_SECONDS = 10 * 60;
+
+/**
+ * While the license is full (`fullUntil`, unix s, from a refused create)
+ * creates wait; starts and stops go on. `held`: a create was held back.
+ */
+export function holdCreatesWhileLicenseFull<T extends { kind: string }>(
+  actions: T[],
+  now: number,
+  fullUntil: number
+): { actions: T[]; held: boolean } {
+  if (now >= fullUntil) return { actions, held: false };
+  const kept = actions.filter((a) => a.kind !== 'create');
+  return { actions: kept, held: kept.length < actions.length };
+}
+
 /**
  * The actions a pass may send: per pass at most MAX_STARTS_PER_PASS starts
  * and MAX_STOPS_PER_PASS stops, and per machine at most
