@@ -318,17 +318,19 @@ test(
       matchSlug: string;
       players: Array<{ playerId: string; moments: Array<{ id: number; trueView?: boolean }> }>;
     };
-    const claim = async (until: (job: Job) => boolean) => {
+    // A recorder finishes its job before it gets another: the redo is
+    // claimed by a second one.
+    const claim = async (until: (job: Job) => boolean, recorder = name) => {
       for (let i = 0; i < 30; i++) {
         const res = await request.post('/api/game/cs2/recorder/claim', {
-          data: { recorder: name, version: 7 },
+          data: { recorder, version: 7 },
         });
         if (res.status() !== 200) return null;
         const job = (await res.json()).job as Job;
         // A new recorder benchmarks first, on a clip another spec recorded: say it did.
         if (job?.kind === 'benchmark') {
           await request.post('/api/game/cs2/recorder/benchmark', {
-            data: { recorder: name, tries: [] },
+            data: { recorder, tries: [] },
           });
           continue;
         }
@@ -351,8 +353,9 @@ test(
     });
     expect(review.status()).toBe(200);
 
-    const again = await claim((j) =>
-      j.players.some((p) => p.moments.some((m) => m.id === moment.id))
+    const again = await claim(
+      (j) => j.players.some((p) => p.moments.some((m) => m.id === moment.id)),
+      `${name}-b`
     );
     expect(again).not.toBeNull();
     const redone = again!.players.flatMap((p) => p.moments).find((m) => m.id === moment.id)!;
