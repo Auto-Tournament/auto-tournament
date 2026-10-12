@@ -189,6 +189,12 @@ function receive(message: ChatMessage) {
   }
   const reading = state.open && state.active === message.channel;
   if (mine) return;
+  // Joins, leaves and other system lines show in the thread, quietly: no
+  // sound, no preview, no unread count (they made the chat ping all match).
+  if (message.senderKind === 'system') {
+    if (reading) markRead(message.channel);
+    return;
+  }
   if (reading) {
     markRead(message.channel);
     return;
