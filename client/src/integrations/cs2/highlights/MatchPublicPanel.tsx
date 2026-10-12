@@ -104,7 +104,7 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
       .then((r) => !cancelled && setClips(r.clips))
       .catch(() => undefined);
     void api
-      .get<{ tracks: MusicTrack[] }>('/api/game/cs2/music')
+      .get<{ tracks: MusicTrack[] }>('/api/highlights/music')
       .then((r) => !cancelled && setTracks(r.tracks))
       .catch(() => undefined);
     return () => {
