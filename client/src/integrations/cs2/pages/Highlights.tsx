@@ -107,6 +107,8 @@ interface Run {
   ok: boolean;
   clips: number;
   rejected: number;
+  /** Clips of the run that could not be recorded. */
+  failed?: number;
   error: string | null;
 }
 
@@ -697,6 +699,7 @@ function RunsDialog({ name, onClose }: { name: string | null; onClose: () => voi
                       when(run.startedAt),
                       duration(run.seconds),
                       t('highlightsAdmin.clips', { count: run.clips }),
+                      run.failed ? t('highlightsAdmin.runFailed', { count: run.failed }) : null,
                     ]
                       .filter(Boolean)
                       .join(' · ')}

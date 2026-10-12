@@ -2320,7 +2320,9 @@
       "updateQueued": "Oppdatering satt i kø; pågående jobb fullføres først.",
       "updateAll": "Oppdater alle",
       "build": "Build {{revision}}"
-    }
+    },
+    "runFailed_one": "{{count}} feilet",
+    "runFailed_other": "{{count}} feilet"
   },
   "tournament": {
     "botFill": {

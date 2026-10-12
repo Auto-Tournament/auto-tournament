@@ -225,8 +225,8 @@ export async function saveRun(name: string, body: Record<string, unknown>): Prom
   const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
   const logText = typeof body.log === 'string' ? body.log.slice(-LOG_MAX) : null;
   await db.runAsync(
-    `INSERT INTO cs2_recorder_runs (recorder, kind, match_slug, map_number, started_at, seconds, ok, clips, rejected, error, log)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO cs2_recorder_runs (recorder, kind, match_slug, map_number, started_at, seconds, ok, clips, rejected, failed, error, log)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       name.slice(0, 120),
       kind,
@@ -237,7 +237,8 @@ export async function saveRun(name: string, body: Record<string, unknown>): Prom
       body.ok === true ? 1 : 0,
       num(body.clips) ?? 0,
       num(body.rejected) ?? 0,
-      text(body.error, 1000),
+      num(body.failed) ?? 0,
+      text(body.error, 2000),
       logText,
     ]
   );
@@ -366,9 +367,10 @@ export async function listRuns(name: string, limit = 50) {
     ok: number;
     clips: number;
     rejected: number;
+    failed: number | null;
     error: string | null;
   }>(
-    `SELECT id, kind, match_slug, map_number, started_at, seconds, ok, clips, rejected, error
+    `SELECT id, kind, match_slug, map_number, started_at, seconds, ok, clips, rejected, failed, error
        FROM cs2_recorder_runs WHERE recorder = ? ORDER BY id DESC LIMIT ?`,
     [name, Math.min(Math.max(limit, 1), 200)]
   );
@@ -382,6 +384,7 @@ export async function listRuns(name: string, limit = 50) {
     ok: Number(r.ok) === 1,
     clips: Number(r.clips),
     rejected: Number(r.rejected),
+    failed: Number(r.failed ?? 0),
     error: r.error,
   }));
 }

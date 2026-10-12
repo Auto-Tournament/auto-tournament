@@ -1169,12 +1169,12 @@ func (r *recorder) lookFor(ctx context.Context, j *recordJob) clipLook {
 
 // recordMap records a map's moments, every player's, in one CS2 session,
 // then uploads each clip and each player's reel of the map.
-func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected int, err error) {
+func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected, failedN int, err error) {
 	r.useQuality(mj.Quality)
 	applySettings(mj.Settings)
 	dir, err := os.MkdirTemp(r.scratch, "highlights-")
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, 0, err
 	}
 	defer os.RemoveAll(dir)
 	// The map's demo: the one CS2 has loaded, or downloaded now (kept with
@@ -1189,7 +1189,7 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 		demoPath = filepath.Join(r.scratch, fmt.Sprintf("live-%d.dem", os.Getpid()))
 		if err := r.download(ctx, mj.MatchSlug, mj.MapNumber, demoPath); err != nil {
 			os.Remove(demoPath)
-			return 0, 0, err
+			return 0, 0, 0, err
 		}
 	}
 	var shots []shot
@@ -1243,7 +1243,7 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 		route := fmt.Sprintf("/api/game/cs2/recorder/jobs/%d/clip", c.moment.ID)
 		turnedDown, uerr := r.uploadClip(ctx, c.path, route, headers)
 		if uerr != nil {
-			return kept, rejected, uerr
+			return kept, rejected, len(failed), uerr
 		}
 		if turnedDown {
 			rejected++
@@ -1257,7 +1257,7 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 		}
 	}
 	if err != nil {
-		return kept, rejected, err
+		return kept, rejected, len(failed), err
 	}
 	for i := range mj.Players {
 		var own []clipResult
@@ -1267,7 +1267,7 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 			}
 		}
 		if err := r.uploadReel(ctx, dir, &mj.Players[i], own); err != nil {
-			return kept, rejected, err
+			return kept, rejected, len(failed), err
 		}
 	}
 	// The moments that failed twice go back to the platform, which tries them
@@ -1275,7 +1275,7 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected in
 	if len(failed) > 0 {
 		r.failMoments(failed)
 	}
-	return kept, rejected, nil
+	return kept, rejected, len(failed), nil
 }
 
 // uploadClip sends a clip and says whether the platform turned it down.
@@ -1594,17 +1594,22 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 			continue
 		}
 		run := jobRun{Kind: "map", MatchSlug: j.MatchSlug, MapNumber: intPtr(j.MapNumber)}
-		kept, rejected, err := r.recordMap(jobCtx, j)
+		kept, rejected, failedN, err := r.recordMap(jobCtx, j)
 		stopBeat()
-		run.Clips, run.Rejected = kept, rejected
+		run.Clips, run.Rejected, run.Failed = kept, rejected, failedN
 		if err != nil {
 			r.failRecording(j, err)
 			run.Error = err.Error()
 			c.reportRun(run, started)
 			continue
 		}
-		log.Printf("highlights of %s map %d: %d moment(s) of %d player(s) in %s (%d kept, %d turned down)", j.MatchSlug, j.MapNumber, j.moments(), len(j.Players), time.Since(started).Round(time.Second), kept, rejected)
-		run.OK = true
+		log.Printf("highlights of %s map %d: %d moment(s) of %d player(s) in %s (%d kept, %d turned down, %d failed)", j.MatchSlug, j.MapNumber, j.moments(), len(j.Players), time.Since(started).Round(time.Second), kept, rejected, failedN)
+		// OK only when every moment came out: a run whose clips all (or some)
+		// failed is not a success (each failure is in the log and on its clip).
+		run.OK = failedN == 0
+		if failedN > 0 {
+			run.Error = fmt.Sprintf("%d of %d moment(s) could not be recorded", failedN, j.moments())
+		}
 		c.reportRun(run, started)
 	}
 	return nil
@@ -1685,6 +1690,9 @@ func recordDemo(args []string) error {
 	for _, f := range failed {
 		log.Printf("could not record %q: %v", f.moment.Title, f.err)
 	}
+	if len(clips) == 0 {
+		return fmt.Errorf("no clip came out (%d moment(s) failed)", len(failed))
+	}
 	for _, c := range clips {
 		b, _ := json.MarshalIndent(c.markers, "", "  ")
 		if err := os.WriteFile(strings.TrimSuffix(c.path, ".mp4")+".json", b, 0o644); err != nil {
@@ -1752,6 +1760,9 @@ func recordFile(args []string) error {
 	}
 	for _, f := range failed {
 		log.Printf("could not record %q: %v", f.moment.Title, f.err)
+	}
+	if len(clips) == 0 {
+		return fmt.Errorf("no clip came out (%d moment(s) failed)", len(failed))
 	}
 	for _, c := range clips {
 		b, _ := json.MarshalIndent(c.markers, "", "  ")

@@ -1442,4 +1442,13 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS true_view INTEGER NOT NULL DEFAULT 1;
     `,
   },
+  {
+    // How many of a run's clips failed (demos/recorders.ts saveRun): a run is
+    // OK only when none did, so a zero-success or partial run is not shown as
+    // a success.
+    id: '046-recorder-run-failed',
+    up: `
+      ALTER TABLE cs2_recorder_runs ADD COLUMN IF NOT EXISTS failed INTEGER NOT NULL DEFAULT 0;
+    `,
+  },
 ];

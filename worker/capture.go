@@ -199,6 +199,19 @@ type game struct {
 
 // launchGame starts gamescope with CS2 and waits for its console and stream.
 func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error) {
+	g, err := r.launchGameOnce(ctx, logPath)
+	if err != nil {
+		// The log is in the job's folder, which goes when the job ends: its
+		// last lines go with the error (into the run report and the job log).
+		if tail := logTail(logPath, 40, 3000); tail != "" {
+			log.Printf("gamescope log, last lines:\n%s", tail)
+			err = fmt.Errorf("%w\n--- gamescope log, last lines ---\n%s", err, tail)
+		}
+	}
+	return g, err
+}
+
+func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, error) {
 	// Another CS2 on the console port would answer in this one's place.
 	if conn, err := net.DialTimeout("tcp", fmt.Sprintf("127.0.0.1:%d", netconPort), time.Second); err == nil {
 		conn.Close()
@@ -259,7 +272,7 @@ func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error
 		return nil, ctx.Err()
 	case <-time.After(90 * time.Second):
 		g.stop()
-		return nil, errors.New("gamescope never offered its video stream (see " + logPath + ")")
+		return nil, errors.New("gamescope never offered its video stream")
 	}
 	if g.con, err = dialConsole(ctx, 3*time.Minute, strings.TrimSuffix(logPath, filepath.Ext(logPath))+"-console.log"); err != nil {
 		g.stop()
