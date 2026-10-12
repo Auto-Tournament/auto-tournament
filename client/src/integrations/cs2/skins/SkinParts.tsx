@@ -217,21 +217,25 @@ export function SkinCard({
       </ButtonBase>
       {skin.equipped && (
         <Box
-          aria-hidden
+          data-testid="skin-card-sides"
           sx={{
             position: 'absolute',
             top: 8,
             right: 8,
-            width: 24,
             height: 24,
-            borderRadius: '50%',
+            px: 1,
+            borderRadius: radii.pill,
             bgcolor: color.accent,
             color: color.accentInk,
-            display: 'grid',
-            placeItems: 'center',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.5,
+            fontSize: '0.6875rem',
+            fontWeight: 700,
           }}
         >
-          <CheckIcon size={14} weight="bold" />
+          <CheckIcon size={12} weight="bold" aria-hidden />
+          {sidesLabel(skin, t)}
         </Box>
       )}
       {showNew && !skin.seen && (
@@ -272,6 +276,20 @@ export function SkinCard({
       </IconButton>
     </Box>
   );
+}
+
+/** Where a skin is on: "Both", "CT", "T", or "CT · T"; a one-side weapon names its side. */
+export function sidesLabel(
+  skin: Pick<OwnedSkin, 'equippedSides' | 'side'>,
+  t: (key: string) => string
+): string {
+  const name = (team: 2 | 3) => (team === 3 ? t('skins.side.ct') : t('skins.side.t'));
+  if (skin.side !== null) return name(skin.side);
+  if (skin.equippedSides.includes(0)) return t('skins.side.both');
+  return ([3, 2] as const)
+    .filter((s) => skin.equippedSides.includes(s))
+    .map(name)
+    .join(' · ');
 }
 
 /** A loadout slot: the equipped skin's picture, or a plus when empty. */

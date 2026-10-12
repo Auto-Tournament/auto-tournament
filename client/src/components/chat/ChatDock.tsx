@@ -41,6 +41,7 @@ import {
   closeChat,
   dismissPeek,
   loadMessages,
+  notifyTyping,
   openChat,
   selectChat,
   sendMessage,
@@ -48,6 +49,9 @@ import {
   type ChatChannel,
   type ChatMessage,
 } from './chatStore';
+import { EmojiPicker } from './EmojiPicker';
+import { insertAt } from './emojiData';
+import { typingLine, typistsNow } from './typing';
 
 const { color } = tokens;
 const PANEL_WIDTH = 400;
@@ -393,8 +397,9 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
   const { t } = useTranslation();
   const { showError, showSuccess } = useSnackbar();
   const { playerSteamId, impersonation } = useAuth();
-  const { channels, threads, active } = useChat();
+  const { channels, threads, active, typing } = useChat();
   const channel = channels.find((c) => c.channel === active) ?? null;
+  const typingNow = typingLine(typistsNow(typing, active, Date.now()), t);
   const thread = active ? threads[active] : undefined;
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
@@ -717,6 +722,15 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
               gap: 1.25,
             }}
           >
+            {typingNow && (
+              <Typography
+                aria-live="polite"
+                data-testid="chat-typing"
+                sx={{ fontSize: '0.75rem', color: color.muted, mt: -0.5, minHeight: '1em' }}
+              >
+                {typingNow}
+              </Typography>
+            )}
             {readOnly ? (
               <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
                 {t('chat.readOnlyImpersonating')}
@@ -726,7 +740,10 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
                 <InputBase
                   inputRef={inputRef}
                   value={draft}
-                  onChange={(e) => setDraft(e.target.value.slice(0, MAX_BODY))}
+                  onChange={(e) => {
+                    setDraft(e.target.value.slice(0, MAX_BODY));
+                    if (active && e.target.value.trim()) notifyTyping(active);
+                  }}
                   placeholder={placeholder}
                   inputProps={{
                     'aria-label': placeholder,
@@ -745,6 +762,22 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
                     fontSize: textSize.md,
                     '&.Mui-focused': { borderColor: color.accent },
                   }}
+                />
+                <EmojiPicker
+                  disabled={sending}
+                  onPick={(char) => {
+                    const el = inputRef.current;
+                    const next = insertAt(
+                      draft,
+                      char,
+                      el?.selectionStart ?? null,
+                      el?.selectionEnd ?? null
+                    );
+                    if (next.value.length > MAX_BODY) return;
+                    setDraft(next.value);
+                    requestAnimationFrame(() => el?.setSelectionRange(next.caret, next.caret));
+                  }}
+                  onClose={() => requestAnimationFrame(() => inputRef.current?.focus())}
                 />
                 <IconButton
                   type="submit"

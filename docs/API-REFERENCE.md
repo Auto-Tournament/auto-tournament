@@ -638,6 +638,7 @@ Your match (both teams and the admins), your team and your party.
 | `GET` | `/api/chat/channels` | public |
 | `GET` | `/api/chat/:channel/messages` | public |
 | `POST` | `/api/chat/:channel/messages` | public |
+| `POST` | `/api/chat/:channel/typing` | public |
 | `POST` | `/api/chat/:channel/call-admin` | public |
 | `POST` | `/api/chat/:channel/read` | public |
 

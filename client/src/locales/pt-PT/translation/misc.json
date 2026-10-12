@@ -863,7 +863,31 @@
       "searching": "À procura de partida",
       "leaderQueues": "O líder inicia a procura"
     },
-    "back": "Voltar"
+    "back": "Voltar",
+    "typing": {
+      "one": "{{name}} está a escrever…",
+      "two": "{{first}} e {{second}} estão a escrever…",
+      "many": "{{count}} pessoas estão a escrever…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Escolhe um emoji",
+      "search": "Procurar emoji",
+      "none": "Nenhum emoji encontrado",
+      "categories": {
+        "results": "Resultados",
+        "recent": "Recentes",
+        "smileys": "Caras",
+        "gestures": "Mãos",
+        "people": "Pessoas",
+        "animals": "Natureza",
+        "food": "Comida e bebida",
+        "activity": "Jogos e desporto",
+        "travel": "Lugares",
+        "objects": "Objetos",
+        "symbols": "Símbolos"
+      }
+    }
   },
   "search": {
     "open": "Search",

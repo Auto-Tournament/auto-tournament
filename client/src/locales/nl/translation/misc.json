@@ -863,7 +863,31 @@
       "searching": "Zoeken naar een wedstrijd",
       "leaderQueues": "De leider start het zoeken"
     },
-    "back": "Terug"
+    "back": "Terug",
+    "typing": {
+      "one": "{{name}} typt…",
+      "two": "{{first}} en {{second}} typen…",
+      "many": "{{count}} mensen typen…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Kies een emoji",
+      "search": "Emoji zoeken",
+      "none": "Geen emoji gevonden",
+      "categories": {
+        "results": "Resultaten",
+        "recent": "Recent",
+        "smileys": "Smileys",
+        "gestures": "Handen",
+        "people": "Mensen",
+        "animals": "Natuur",
+        "food": "Eten en drinken",
+        "activity": "Games en sport",
+        "travel": "Plaatsen",
+        "objects": "Voorwerpen",
+        "symbols": "Symbolen"
+      }
+    }
   },
   "search": {
     "open": "Search",
