@@ -295,13 +295,14 @@ jobs:
 
   e2e:
     name: E2E shard ${{ matrix.shard }}/${{ needs.changes.outputs.total }}
-    # Not `needs: build`: shards start alongside the image build and do their
-    # own setup (deps, browser, Postgres) meanwhile, then wait for the image
-    # artifact. Takes the setup time off the wall clock.
-    needs: changes
+    # After the image build. Starting alongside it (setup overlapping the
+    # build) deadlocked with several PRs open: the shards held every runner
+    # the account has while waiting for the image, so the build never got
+    # one until they timed out (2026-10-12).
+    needs: [changes, build]
     if: needs.changes.outputs.e2e == 'true'
     runs-on: ubuntu-latest
-    # Includes waiting for the image build; the tests themselves get 5 min below.
+    # Setup and the tests (they get 5 min below); the image is built by then.
     timeout-minutes: 15
     permissions:
       contents: read
