@@ -334,12 +334,15 @@ async function platformSkinsOn(): Promise<boolean> {
  */
 async function skinsFollowPlatform(
   serverId: string,
-  state: { installed: string[]; disabled: string[] }
+  state: { installed: string[]; disabled: string[] },
+  mayTurnOff = false
 ): Promise<boolean> {
   if (!state.installed.includes('skins')) return false;
   const on = await platformSkinsOn();
   const isOff = state.disabled.includes('skins');
   if (on === !isOff) return false;
+  // A hello only turns the plugin on; off is the admin switching skins off.
+  if (!on && !mayTurnOff) return false;
   await sendCmd(serverId, {
     name: 'plugins.set',
     args: on ? { enable: ['skins'] } : { disable: ['skins'] },
@@ -374,7 +377,11 @@ export async function syncSkinsPluginEverywhere(): Promise<void> {
         ? (JSON.parse(row.plugins_state) as { installed?: string[]; disabled?: string[] })
         : null;
       if (state && Array.isArray(state.installed) && Array.isArray(state.disabled)) {
-        await skinsFollowPlatform(row.id, { installed: state.installed, disabled: state.disabled });
+        await skinsFollowPlatform(
+          row.id,
+          { installed: state.installed, disabled: state.disabled },
+          true
+        );
       }
     } catch (error) {
       log.warn(`[FLEET] ${row.id}: skins plugin not synced`, { error: (error as Error).message });
