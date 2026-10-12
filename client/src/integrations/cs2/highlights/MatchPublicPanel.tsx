@@ -20,7 +20,7 @@ import {
   type MusicTrack,
 } from '../../../module-sdk';
 import type { MatchPublicPanelProps } from '../../types';
-import { clock, kindLabel, mapLabel, watchTeamReelPath, type Chapter } from './data';
+import { clock, kindLabel, libraryPath, mapLabel, watchTeamReelPath, type Chapter } from './data';
 import { MatchClipGrid, type MatchClip } from './MatchClipGrid';
 
 interface TeamReelRow {
@@ -145,11 +145,22 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
   const chapters = useMemo(() => (reel?.chapters ?? []).filter((c) => c.at !== null), [reel]);
   const current = chapters.reduce((at, c, i) => ((c.at ?? 0) <= time + 0.05 ? i : at), -1);
 
-  const section = (title: string, children: ReactNode, testid: string) => (
+  const section = (title: string, children: ReactNode, testid: string, action?: ReactNode) => (
     <Box component="section" sx={{ mt: 5 }} data-testid={testid}>
-      <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
-        {title}
-      </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          gap: 2,
+          mb: 2,
+        }}
+      >
+        <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
+          {title}
+        </Typography>
+        {action}
+      </Box>
       {children}
     </Box>
   );
@@ -416,7 +427,15 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
             )}
             <MatchClipGrid clips={clips} />
           </>,
-          'match-page-highlights'
+          'match-page-highlights',
+          <Box
+            component={RouterLink}
+            to={libraryPath({ match: matchSlug })}
+            sx={{ color: tokens.color.accent, fontSize: textSize.sm, textDecoration: 'none' }}
+            data-testid="match-page-library"
+          >
+            {t('library.matchHighlights')}
+          </Box>
         )}
     </Box>
   );

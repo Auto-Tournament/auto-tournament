@@ -1460,4 +1460,26 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS done_at INTEGER;
     `,
   },
+  {
+    // The highlights library (demos/library.ts): each video's views (one per
+    // viewer every 12 hours) and likes (one per signed-in player), by its
+    // watch key (`clip/185`, `match/<slug>/<map>`…).
+    id: '048-video-views-likes',
+    up: `
+      CREATE TABLE IF NOT EXISTS cs2_video_views (
+        video_key TEXT NOT NULL,
+        viewer TEXT NOT NULL, -- a player id, or 'anon:<browser id>'
+        views INTEGER NOT NULL DEFAULT 1,
+        viewed_at INTEGER NOT NULL,
+        PRIMARY KEY (video_key, viewer)
+      );
+      CREATE TABLE IF NOT EXISTS cs2_video_likes (
+        video_key TEXT NOT NULL,
+        player_id TEXT NOT NULL,
+        created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+        PRIMARY KEY (video_key, player_id)
+      );
+      CREATE INDEX IF NOT EXISTS cs2_video_likes_player_idx ON cs2_video_likes(player_id);
+    `,
+  },
 ];

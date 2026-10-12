@@ -58,6 +58,10 @@ import { recorderAcceptsWork, requestRecorderUpdate } from '../demos/recorderFle
  *   GET  /api/game/cs2/watch/match/:slug/:map         a map's match reel
  *   GET  /api/game/cs2/watch/tournament/:id           a tournament's reel
  *   GET  /api/game/cs2/watch/team/:slug/:team         a team's reel of a match
+ *   GET  /api/game/cs2/library                        every clip and reel: ?sort=new|views|likes&kind=all|clips|reels&player&team&match&tournament&page&limit
+ *   GET  /api/game/cs2/watch/stats                    ?video=<key>: its views and likes, and whether the viewer liked it
+ *   POST /api/game/cs2/watch/view                     { video, browser? }: a view (once per viewer every 12 hours)
+ *   PUT  /api/game/cs2/watch/like                     { video, liked }: a signed-in player's like
  *   GET  /api/game/cs2/watch/related                  ?match&map | ?tournament: the players on that map and more reels
  *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`, `tournament-…`), with range requests;
  *                                                     ?crowd=1, ?music=<track>&intro=<s>[&level=<0–2>]: a download with its crowd track and/or that music mixed in (../demos/music.ts)
@@ -87,6 +91,7 @@ import {
 import { appendPart, bodyOf, startUpload, UploadError } from '../demos/uploadParts';
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
+import { countView, libraryPage, setLike, videoKey, videoStats } from '../demos/library';
 import {
   claimTournamentReel,
   clipView,
@@ -1008,6 +1013,80 @@ router.get(
     const reel = await teamReelView(req.params.slug, req.params.team);
     if (!reel) return res.status(404).json({ success: false, error: 'No such reel' });
     return res.json({ success: true, reel });
+  })
+);
+
+// The highlights library (../demos/library.ts): every clip and reel, sorted and filtered.
+router.get(
+  '/library',
+  read('library', async (req: Request, res: Response) => {
+    const q = req.query;
+    const str = (v: unknown) =>
+      typeof v === 'string' && v.trim() && v.length <= 200 ? v : undefined;
+    const sort = q.sort === 'views' || q.sort === 'likes' ? q.sort : 'new';
+    const kind = q.kind === 'clips' || q.kind === 'reels' ? q.kind : 'all';
+    const page = Math.max(1, Math.min(1000, Number(q.page) || 1));
+    const limit = Math.max(1, Math.min(48, Number(q.limit) || 24));
+    const tournament = Number(q.tournament);
+    const viewer = await resolveViewerAccount(req);
+    const { items, total } = await libraryPage({
+      sort,
+      kind,
+      player: str(q.player),
+      team: str(q.team),
+      match: str(q.match),
+      tournament: Number.isInteger(tournament) && tournament > 0 ? tournament : undefined,
+      page,
+      limit,
+      viewer: viewer.playerId,
+    });
+    return res.json({ success: true, items, total, page, limit });
+  })
+);
+
+// One video's views and likes (`?video=clip/185`), and whether the viewer liked it.
+router.get(
+  '/watch/stats',
+  read('video stats', async (req: Request, res: Response) => {
+    const key = videoKey(req.query.video);
+    if (!key) return res.status(400).json({ success: false, error: 'Which video?' });
+    const viewer = await resolveViewerAccount(req);
+    return res.json({ success: true, ...(await videoStats(key, viewer.playerId)) });
+  })
+);
+
+// A view: { video, browser? } (browser: the anonymous viewer's own id).
+router.post(
+  '/watch/view',
+  read('view', async (req: Request, res: Response) => {
+    const key = videoKey(req.body?.video);
+    if (!key) return res.status(400).json({ success: false, error: 'Which video?' });
+    const viewer = await resolveViewerAccount(req);
+    const browser = req.body?.browser;
+    const who = viewer.playerId
+      ? viewer.playerId
+      : typeof browser === 'string' && /^[A-Za-z0-9-]{8,64}$/.test(browser)
+        ? `anon:${browser}`
+        : null;
+    if (!who) return res.status(400).json({ success: false, error: 'Who is watching?' });
+    const counted = await countView(key, who);
+    return res.json({ success: true, counted });
+  })
+);
+
+// A signed-in player's like: { video, liked }.
+router.put(
+  '/watch/like',
+  read('like', async (req: Request, res: Response) => {
+    const key = videoKey(req.body?.video);
+    if (!key || typeof req.body?.liked !== 'boolean')
+      return res.status(400).json({ success: false, error: '{ video, liked }' });
+    const viewer = await resolveViewerAccount(req);
+    if (!viewer.playerId) return res.status(401).json({ success: false, error: 'Sign in first' });
+    if (viewer.isImpersonating)
+      return res.status(403).json({ success: false, error: 'Stop impersonating to like videos.' });
+    await setLike(key, viewer.playerId, req.body.liked);
+    return res.json({ success: true, ...(await videoStats(key, viewer.playerId)) });
   })
 );
 

@@ -31,6 +31,7 @@ import { NotificationBell } from '../social/NotificationBell';
 import { SiteSearch } from '../search/SiteSearch';
 import { useSocial } from '../social/socialStore';
 import { useModuleAccountMenuItems } from '../../hooks/useModuleAccountMenuItems';
+import { useInstalledIntegrations } from '../../integrations/registry';
 import { soundNotification } from '../../utils/soundNotification';
 
 /** Top-bar text links: ink2 at rest, ink on hover and on the current page (the drafts' `.nav-links`). */
@@ -343,43 +344,50 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
     testId: 'nav-browse',
     current: pathname === paths.browse,
   };
+  // Modules' own pages for everyone (CS2: Highlights, every clip and reel).
+  const moduleLinks: SiteLink[] = useInstalledIntegrations().flatMap((integration) =>
+    (integration.siteNavLinks ?? []).map((link) => ({
+      to: link.path,
+      label: t(link.labelKey, { ns: integration.id }),
+      testId: `nav-${integration.id}-${link.path.replace(/^\//, '').replace(/\W+/g, '-')}`,
+      current: pathname === link.path || pathname.startsWith(`${link.path}/`),
+    }))
+  );
   // Leaderboards is the platform's (per game); a tournament's standings are
-  // on its own page. Teams is the site-wide team list.
-  const siteLinks: SiteLink[] = showAdminLinks
-    ? [
-        // The logo already leads to the admin home, so no separate Admin link.
-        { to: paths.manage, label: t('nav.manage'), testId: 'nav-manage', current: adminArea },
-        ...playLink,
-        browseLink,
-      ]
-    : [
-        {
+  // on its own page. Teams is the site-wide team list. Admins see the same
+  // site links as players, with Manage in place of Home.
+  const siteLinks: SiteLink[] = [
+    showAdminLinks
+      ? // The logo already leads to the admin home, so no separate Admin link.
+        { to: paths.manage, label: t('nav.manage'), testId: 'nav-manage', current: adminArea }
+      : {
           to: paths.root,
           label: t('nav.home'),
           testId: 'nav-home',
           current: pathname === paths.root,
         },
-        ...playLink,
-        browseLink,
-        {
-          to: paths.browseTeams,
-          label: t('nav.teams'),
-          testId: 'nav-teams',
-          current: pathname === paths.browseTeams,
-        },
-        {
-          to: paths.browsePlayers,
-          label: t('nav.players'),
-          testId: 'nav-players',
-          current: pathname === paths.browsePlayers,
-        },
-        {
-          to: paths.leaderboards,
-          label: t('nav.leaderboards'),
-          testId: 'nav-leaderboards',
-          current: pathname === paths.leaderboards,
-        },
-      ];
+    ...playLink,
+    browseLink,
+    ...moduleLinks,
+    {
+      to: paths.browseTeams,
+      label: t('nav.teams'),
+      testId: 'nav-teams',
+      current: pathname === paths.browseTeams,
+    },
+    {
+      to: paths.browsePlayers,
+      label: t('nav.players'),
+      testId: 'nav-players',
+      current: pathname === paths.browsePlayers,
+    },
+    {
+      to: paths.leaderboards,
+      label: t('nav.leaderboards'),
+      testId: 'nav-leaderboards',
+      current: pathname === paths.leaderboards,
+    },
+  ];
 
   const ctaLabel =
     playerSteamId && matchStatus !== 'none' && matchStatusLabel && ctaLabels[matchStatusLabel];
@@ -585,7 +593,10 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
             >
               <ListItemText primary={t('social.friends.title')} />
               {friendRequests > 0 && (
-                <Box component="span" sx={{ ml: 2, fontSize: '0.6875rem', fontWeight: 600, color: 'primary.main' }}>
+                <Box
+                  component="span"
+                  sx={{ ml: 2, fontSize: '0.6875rem', fontWeight: 600, color: 'primary.main' }}
+                >
                   {t('social.friends.requestCount', { count: friendRequests })}
                 </Box>
               )}
@@ -646,7 +657,10 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
             onClick={handleAvatarMenuClose}
             data-testid="nav-third-party-notices"
           >
-            <ListItemText primary={t('nav.thirdPartyNotices')} slotProps={{ primary: { sx: { fontSize: '0.8125rem', color: 'text.secondary' } } }} />
+            <ListItemText
+              primary={t('nav.thirdPartyNotices')}
+              slotProps={{ primary: { sx: { fontSize: '0.8125rem', color: 'text.secondary' } } }}
+            />
           </MenuItem>
           <Divider />
           {signedIn ? (

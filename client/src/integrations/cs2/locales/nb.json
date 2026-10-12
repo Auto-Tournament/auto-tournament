@@ -2335,5 +2335,54 @@
       "label": "Fyll lagene med boter",
       "help": "Boter fyller ledige plasser opp til lagstørrelsen og gir plass til spillere som kobler til. Du gjør klar og spiller som normalt. Krever Ready Up med støtte for botfyll."
     }
+  },
+  "library": {
+    "title": "Høydepunkter",
+    "subtitle": "Alle klipp og reels fra kampene som er spilt her.",
+    "kindLabel": "Hva som vises",
+    "sortLabel": "Rekkefølge",
+    "kind": {
+      "all": "Alle",
+      "clips": "Klipp",
+      "reels": "Reels"
+    },
+    "sort": {
+      "new": "Nyeste",
+      "views": "Mest sett",
+      "likes": "Mest likt"
+    },
+    "filter": {
+      "player": "Spiller: {{name}}",
+      "team": "Lag: {{name}}",
+      "match": "Kamp: {{name}}",
+      "tournament": "Turnering: {{name}}"
+    },
+    "views_one": "{{count}} visning",
+    "views_other": "{{count}} visninger",
+    "likes_one": "{{count}} like",
+    "likes_other": "{{count}} likes",
+    "more": "Vis flere ({{shown}} av {{total}})",
+    "empty": "Ingen høydepunkter ennå",
+    "emptyHint": "Klipp og reels dukker opp her når demoene fra en kamp er tatt opp.",
+    "emptyFiltered": "Ingenting her ennå",
+    "emptyFilteredHint": "Fjern et filter for å se flere.",
+    "failed": "Kunne ikke hente høydepunktene",
+    "failedHint": "Prøv igjen om litt.",
+    "playerReel": "{{name}} sin reel",
+    "tournamentReel": "{{name}}-reel",
+    "matchReel": "Kampreel",
+    "kindName": {
+      "player": "Spillerreel",
+      "map": "Mapreel",
+      "series": "Seriereel",
+      "team": "Lagreel",
+      "tournament": "Turneringsreel"
+    },
+    "like": "Lik",
+    "liked": "Likt",
+    "signInToLike": "Logg inn for å like videoer",
+    "nav": "Høydepunkter",
+    "teamHighlights": "Høydepunkter",
+    "matchHighlights": "Alle høydepunkter"
   }
 }

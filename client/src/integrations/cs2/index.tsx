@@ -57,6 +57,7 @@ import { ProfileLoadout } from './skins/ProfileLoadout';
 import { MapActions } from './demos/MapActions';
 import { highlightPaths } from './highlights/data';
 import { PlayerHighlightsPage } from './highlights/PlayerHighlightsPage';
+import { HighlightsLibraryPage } from './highlights/HighlightsLibraryPage';
 import { TournamentHighlightsTab, TournamentReelSection } from './highlights/TournamentHighlights';
 import { WatchPage } from './highlights/WatchPage';
 import { MatchPublicPanel } from './highlights/MatchPublicPanel';
@@ -209,13 +210,20 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   accountMenuItems: skinsAccountMenuItems,
   globalOverlay: NewSkinReveal,
 
+  // Highlights, the library of every clip and reel, in the site's navigation.
+  siteNavLinks: [{ path: highlightPaths.library, labelKey: 'library.nav' }],
+
   // Each map's match reel and analysis, once the worker made them.
   matchMapAction: MapActions,
 
   // Highlights: the player's on their profile (core's section), the
   // tournament's own tab, and its reel on the results.
   usePlayerHighlights: useCs2PlayerHighlights,
-  tournamentTab: { path: 'highlights', labelKey: 'highlights.title', Component: TournamentHighlightsTab },
+  tournamentTab: {
+    path: 'highlights',
+    labelKey: 'highlights.title',
+    Component: TournamentHighlightsTab,
+  },
   // Its recorders, overlays and how to add a recorder, on core's Highlights page.
   highlightsAdmin: { labelKey: 'highlightsAdmin.cs2Tab', Component: Cs2HighlightsAdmin },
   tournamentResultsSection: TournamentReelSection,
@@ -230,6 +238,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     { path: skinPaths.inventory, scope: 'site', element: <InventoryPage /> },
     { path: skinPaths.playerInventory, scope: 'site', element: <InventoryPage /> },
     { path: demoPaths.analysis, scope: 'site', element: <DemoAnalysisPage /> },
+    { path: highlightPaths.library, scope: 'site', element: <HighlightsLibraryPage /> },
     { path: highlightPaths.player, scope: 'site', element: <PlayerHighlightsPage /> },
     { path: highlightPaths.watch, scope: 'site', element: <WatchPage /> },
   ],

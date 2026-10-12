@@ -113,7 +113,8 @@ export type AppPath = (typeof paths)[keyof typeof paths];
  * The admin pages' addresses before they moved under /manage (2026-10): each
  * redirects to `/manage<old>`, with the rest of the path and the query, so
  * bookmarks and old links keep working. Modules' admin pages moved too
- * (CS2: servers, maps, skins, match rules, highlights).
+ * (CS2: servers, maps, skins, match rules). `/highlights` is the public
+ * highlights library now (CS2's site route), not the admin page.
  */
 export const LEGACY_ADMIN_PATHS = [
   '/teams',
@@ -134,7 +135,6 @@ export const LEGACY_ADMIN_PATHS = [
   '/dev',
   '/skins',
   '/match-rules',
-  '/highlights',
 ] as const;
 
 /** Nested route form of an admin shell path: '/manage/servers' → 'manage/servers'. */
