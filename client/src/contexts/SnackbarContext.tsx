@@ -238,6 +238,12 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
             {
               pointerEvents: 'auto !important',
             },
+          // Links and buttons in a toast's message (an update's release notes,
+          // "Open modules") are actions too; the rest of the toast stays inert.
+          'div.notistack-SnackbarContainer .MuiAlert-message a, div.notistack-SnackbarContainer .MuiAlert-message a *, div.notistack-SnackbarContainer .MuiAlert-message button, div.notistack-SnackbarContainer .MuiAlert-message button *':
+            {
+              pointerEvents: 'auto !important',
+            },
           // Above MUI's modal layer (1300), so feedback from a dialog shows.
           'div.notistack-SnackbarContainer': {
             zIndex: 1400,

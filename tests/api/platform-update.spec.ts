@@ -50,6 +50,48 @@ test('available only when the newest is newer than what runs', TAGS, async () =>
   });
 });
 
+test(
+  'a release list from before this version never shows an older one as latest',
+  TAGS,
+  async () => {
+    // GitHub (or the cache) still lists beta.80 while beta.81 runs (2026-10-12).
+    const older = [
+      { tag_name: 'v3.0.0-beta.80', html_url: 'https://example.test/b80', prerelease: true },
+    ];
+    const fetchOlder = async () => ({ ok: true, status: 200, json: async () => older });
+    resetPlatformUpdateCache();
+    expect(
+      await checkPlatformUpdate({
+        running: '3.0.0-beta.81',
+        fetchImpl: fetchOlder,
+        forceRefresh: true,
+      })
+    ).toEqual({
+      running: '3.0.0-beta.81',
+      latest: '3.0.0-beta.81',
+      available: false,
+      releaseUrl: null,
+    });
+    // beta.82 is out: newer, so available.
+    const newer = [
+      { tag_name: 'v3.0.0-beta.82', html_url: 'https://example.test/b82', prerelease: true },
+      ...older,
+    ];
+    const fetchNewer = async () => ({ ok: true, status: 200, json: async () => newer });
+    expect(
+      await checkPlatformUpdate({
+        running: '3.0.0-beta.81',
+        fetchImpl: fetchNewer,
+        forceRefresh: true,
+      })
+    ).toMatchObject({
+      latest: '3.0.0-beta.82',
+      available: true,
+      releaseUrl: 'https://example.test/b82',
+    });
+  }
+);
+
 test('the endpoint is admin-only', TAGS, async ({ request, playwright }) => {
   const anon = await playwright.request.newContext({ baseURL: test.info().project.use.baseURL });
   expect((await anon.get('/api/system/update')).status()).toBe(401);
