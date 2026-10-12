@@ -149,12 +149,18 @@ function follow(
     if (loop || !a.duration || v.currentTime < a.duration) void a.play().catch(() => undefined);
   };
   const stop = () => a.pause();
+  // While the video buffers its time stands still: the song and crowd wait
+  // with it (pulling them back to it every frame made them stutter in a loop).
+  const buffering = () => {
+    if (!v.paused) a.pause();
+  };
   const rate = () => tapeSpeed(a, v.playbackRate);
   let frame = 0;
   const tick = () => {
     a.volume = Math.max(0, Math.min(1, level()));
     if (
       !v.paused &&
+      v.readyState > 2 &&
       a.readyState > 1 &&
       Math.abs(a.currentTime - at()) > 0.25 &&
       (loop || at() < a.duration)
@@ -164,6 +170,8 @@ function follow(
   };
   frame = requestAnimationFrame(tick);
   v.addEventListener('play', start);
+  v.addEventListener('playing', start);
+  v.addEventListener('waiting', buffering);
   v.addEventListener('pause', stop);
   v.addEventListener('ended', stop);
   v.addEventListener('seeked', sync);
@@ -174,6 +182,8 @@ function follow(
   return () => {
     cancelAnimationFrame(frame);
     v.removeEventListener('play', start);
+    v.removeEventListener('playing', start);
+    v.removeEventListener('waiting', buffering);
     v.removeEventListener('pause', stop);
     v.removeEventListener('ended', stop);
     v.removeEventListener('seeked', sync);
