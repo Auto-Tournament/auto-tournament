@@ -29,6 +29,7 @@ import { Cs2TournamentReview } from './setup/Cs2TournamentReview';
 import { cs2TournamentSetup } from './setup/cs2TournamentSettings';
 import { CreateManualMatchModal } from './standalone/CreateManualMatchModal';
 import { Cs2AdminWarnings } from './global/Cs2AdminWarnings';
+import { TournamentResultsSections } from './global/TournamentResultsSections';
 import { Cs2StartConfirm } from './start/Cs2StartConfirm';
 import { Cs2StartPreflight } from './start/Cs2StartPreflight';
 import { Cs2OutdatedServersDialog, parseCs2OutdatedError } from './start/Cs2OutdatedServersDialog';
@@ -60,7 +61,7 @@ import { highlightPaths } from './highlights/data';
 import { PlayerHighlightsPage } from './highlights/PlayerHighlightsPage';
 import { HighlightsLibraryPage } from './highlights/HighlightsLibraryPage';
 import { Cs2Leaderboards } from './profile/Cs2Leaderboards';
-import { TournamentHighlightsTab, TournamentReelSection } from './highlights/TournamentHighlights';
+import { TournamentHighlightsTab } from './highlights/TournamentHighlights';
 import { WatchPage } from './highlights/WatchPage';
 import { MatchPublicPanel } from './highlights/MatchPublicPanel';
 import { DemoAnalysisPage } from './demos/DemoAnalysisPage';
@@ -233,7 +234,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   },
   // Its recorders, overlays and how to add a recorder, on core's Highlights page.
   highlightsAdmin: { labelKey: 'highlightsAdmin.cs2Tab', Component: Cs2HighlightsAdmin },
-  tournamentResultsSection: TournamentReelSection,
+  tournamentResultsSection: TournamentResultsSections,
 
   // At URLs the platform keeps. The Steam connect page these used to include
   // is core's now: Steam is the platform's sign-in, not this game's.

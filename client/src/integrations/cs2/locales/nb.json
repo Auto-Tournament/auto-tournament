@@ -1923,6 +1923,10 @@
       "pickOfRarity": "et valg blant {{rarity}}-skins",
       "rarityOdds": "Sjanse for sjeldenheten",
       "skinOdds": "Denne skinen"
+    },
+    "rewards": {
+      "title": "Premier",
+      "choosing": "velger en skin …"
     }
   },
   "matchRules": {
