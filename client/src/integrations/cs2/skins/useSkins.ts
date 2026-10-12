@@ -25,6 +25,24 @@ export interface OwnedSkin {
   equipped: boolean;
 }
 
+/** A drop waiting for the player to keep one of its options (api: skinService.openChoices). */
+export interface SkinChoice {
+  id: number;
+  source: OwnedSkin['source'];
+  sourceLabel: string | null;
+  place: number | null;
+  createdAt: number;
+  options: Array<{
+    weapon: string;
+    weaponName: string;
+    name: string;
+    rarity: Rarity;
+    image: string;
+    float: number;
+    pattern: number;
+  }>;
+}
+
 export interface ShowcaseItem {
   skinId: number;
   big: boolean;
@@ -67,6 +85,7 @@ export function useMySkins() {
   const [inventory, setInventory] = useState<OwnedSkin[]>([]);
   const [showcase, setShowcase] = useState<ShowcaseItem[]>([]);
   const [unseen, setUnseen] = useState<number[]>([]);
+  const [choices, setChoices] = useState<SkinChoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [available, setAvailable] = useState(false);
 
@@ -81,10 +100,12 @@ export function useMySkins() {
         inventory: OwnedSkin[];
         showcase: ShowcaseItem[];
         unseen: number[];
+        choices?: SkinChoice[];
       }>('/api/skins/me');
       setInventory(data.inventory ?? []);
       setShowcase(data.showcase ?? []);
       setUnseen(data.unseen ?? []);
+      setChoices(data.choices ?? []);
       setAvailable(true);
     } catch {
       setAvailable(false);
@@ -126,6 +147,13 @@ export function useMySkins() {
     }
   }, []);
 
+  /** Keep option `index` of a choice; the kept skin then shows as new. */
+  const choose = useCallback(async (choiceId: number, index: number) => {
+    await api.post<{ skinId: number }>(`/api/skins/me/choices/${choiceId}`, { index });
+    setChoices((list) => list.filter((c) => c.id !== choiceId));
+    announceChange();
+  }, []);
+
   const markSeen = useCallback(async (ids: number[]) => {
     setUnseen((list) => list.filter((id) => !ids.includes(id)));
     await api.post('/api/skins/me/seen', { ids }).catch(() => undefined);
@@ -138,7 +166,19 @@ export function useMySkins() {
     announceChange();
   }, []);
 
-  return { inventory, showcase, unseen, loading, available, reload, equip, markSeen, saveShowcase };
+  return {
+    inventory,
+    showcase,
+    unseen,
+    choices,
+    choose,
+    loading,
+    available,
+    reload,
+    equip,
+    markSeen,
+    saveShowcase,
+  };
 }
 
 /** The slots a loadout shows: knife and gloves always, then each weapon with a skin owned. */

@@ -42,6 +42,27 @@ export const RARITIES = [
 ] as const;
 export type Rarity = (typeof RARITIES)[number];
 
+/** How many options a drop offers. */
+export const CHOICE_COUNT = 3;
+
+/** One option of a choice: a catalogue skin with its wear and pattern already rolled. */
+export interface ChoiceOption extends CatalogSkin {
+  float: number;
+  pattern: number;
+}
+
+/** A drop waiting for the player to keep one option. */
+export interface SkinChoice {
+  id: number;
+  source: OwnedSkin['source'];
+  sourceLabel: string | null;
+  place: number | null;
+  createdAt: number;
+  options: Array<
+    Pick<ChoiceOption, 'weapon' | 'weaponName' | 'name' | 'rarity' | 'image' | 'float' | 'pattern'>
+  >;
+}
+
 export interface CatalogSkin {
   weapon: string;
   weaponName: string;
@@ -363,7 +384,13 @@ export const skinService = {
     playerUid: string,
     skin: CatalogSkin,
     source: { source: OwnedSkin['source']; label?: string; ref?: string; place?: number },
-    roll: { floatMin?: number; floatMax?: number; seeds?: number[] } = {}
+    roll: {
+      floatMin?: number;
+      floatMax?: number;
+      seeds?: number[];
+      float?: number;
+      pattern?: number;
+    } = {}
   ): Promise<number> {
     const row = await db.queryOneAsync<{ id: number }>(
       `INSERT INTO cs2_player_skins
@@ -377,8 +404,8 @@ export const skinService = {
         skin.name,
         skin.rarity,
         skin.image,
-        rollFloat(roll.floatMin ?? 0, roll.floatMax ?? 1),
-        rollPattern(roll.seeds),
+        roll.float ?? rollFloat(roll.floatMin ?? 0, roll.floatMax ?? 1),
+        roll.pattern ?? rollPattern(roll.seeds),
         source.source,
         source.label ?? null,
         source.ref ?? null,
@@ -449,13 +476,154 @@ export const skinService = {
         if (chance <= 0 || randomInt(0, 10000) >= chance * 100) continue;
         const uid = await uidOf(steamId);
         if (!uid) continue;
-        const skin = await this.pick(null, config.rarityWeights);
-        if (!skin) continue;
-        await this.grant(uid, skin, { source: 'matchmaking', label: mapLabel, ref: matchSlug });
+        // A choice of three, each with its own rarity roll: the player keeps one.
+        const options = await this.pickOptions(() => this.pick(null, config.rarityWeights));
+        if (!options.length) continue;
+        await this.offerChoice(uid, options, {
+          source: 'matchmaking',
+          label: mapLabel,
+          ref: matchSlug,
+        });
       }
     } catch (error) {
       log.warn('[Skins] Match drops failed', { matchSlug, error: (error as Error).message });
     }
+  },
+
+  /** Three different catalogue skins from `roll` (fewer when the catalogue cannot give three). */
+  async pickOptions(
+    roll: () => Promise<CatalogSkin | null>,
+    count = CHOICE_COUNT
+  ): Promise<CatalogSkin[]> {
+    const out: CatalogSkin[] = [];
+    for (let tries = 0; out.length < count && tries < count * 6; tries++) {
+      const skin = await roll();
+      if (skin && !out.some((o) => o.weapon === skin.weapon && o.paintKit === skin.paintKit))
+        out.push(skin);
+    }
+    return out;
+  },
+
+  /**
+   * A drop as a choice: the options are rolled now (wear and pattern, so what
+   * the player sees is what they keep) and wait in cs2_skin_choices until the
+   * player keeps one (choose). The reveal shows them on any open page.
+   */
+  async offerChoice(
+    playerUid: string,
+    options: CatalogSkin[],
+    source: { source: OwnedSkin['source']; label?: string; ref?: string; place?: number },
+    roll: { floatMin?: number; floatMax?: number; seeds?: number[] } = {}
+  ): Promise<number> {
+    const rolled: ChoiceOption[] = options.map((skin) => ({
+      ...skin,
+      float: rollFloat(roll.floatMin ?? 0, roll.floatMax ?? 1),
+      pattern: rollPattern(roll.seeds),
+    }));
+    const row = await db.queryOneAsync<{ id: number }>(
+      `INSERT INTO cs2_skin_choices (player_uid, source, source_label, source_ref, place, options, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+      [
+        playerUid,
+        source.source,
+        source.label ?? null,
+        source.ref ?? null,
+        source.place ?? null,
+        JSON.stringify(rolled),
+        Math.floor(Date.now() / 1000),
+      ]
+    );
+    const player = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [
+      playerUid,
+    ]);
+    if (player && row?.id) {
+      emitSkinsChanged(player.id);
+      await notificationService.notify(
+        player.id,
+        'skin',
+        {
+          choiceId: row.id,
+          name: rolled.map((o) => o.name).join(' · '),
+          weapon: '',
+          rarity: rolled[0]!.rarity,
+          image: rolled[0]!.image,
+          source: source.label ?? source.source,
+        },
+        `skin-choice:${row.id}`
+      );
+    }
+    return row?.id ?? 0;
+  },
+
+  /** The player's choices still waiting for a pick, oldest first. */
+  async openChoices(playerUid: string): Promise<SkinChoice[]> {
+    const rows = await db.queryAsync<{
+      id: number;
+      source: OwnedSkin['source'];
+      source_label: string | null;
+      place: number | null;
+      options: string;
+      created_at: number;
+    }>(
+      'SELECT id, source, source_label, place, options, created_at FROM cs2_skin_choices WHERE player_uid = ? AND chosen_at IS NULL ORDER BY id',
+      [playerUid]
+    );
+    return rows.map((r) => ({
+      id: r.id,
+      source: r.source,
+      sourceLabel: r.source_label,
+      place: r.place,
+      createdAt: Number(r.created_at),
+      options: (JSON.parse(r.options) as ChoiceOption[]).map((o) => ({
+        weapon: o.weapon,
+        weaponName: o.weaponName,
+        name: o.name,
+        rarity: o.rarity,
+        image: o.image,
+        float: o.float,
+        pattern: o.pattern,
+      })),
+    }));
+  },
+
+  /** Keep option `index` of a waiting choice; the others are gone. The new skin's id. */
+  async choose(playerUid: string, choiceId: number, index: number): Promise<number> {
+    const row = await db.queryOneAsync<{
+      source: OwnedSkin['source'];
+      source_label: string | null;
+      source_ref: string | null;
+      place: number | null;
+      options: string;
+    }>(
+      'SELECT source, source_label, source_ref, place, options FROM cs2_skin_choices WHERE id = ? AND player_uid = ? AND chosen_at IS NULL',
+      [choiceId, playerUid]
+    );
+    if (!row) throw new SkinError(404, 'That choice is not waiting for you.');
+    const options = JSON.parse(row.options) as ChoiceOption[];
+    const option = options[index];
+    if (!Number.isInteger(index) || !option) throw new SkinError(400, 'Pick one of the options.');
+    // Claim it first: a double click keeps one skin, not two.
+    const claimed = await db.runAsync(
+      'UPDATE cs2_skin_choices SET chosen_at = ?, chosen_index = ? WHERE id = ? AND chosen_at IS NULL',
+      [Math.floor(Date.now() / 1000), index, choiceId]
+    );
+    if (!claimed?.changes) throw new SkinError(409, 'That choice was already made.');
+    const skinId = await this.grant(
+      playerUid,
+      option,
+      {
+        source: row.source,
+        label: row.source_label ?? undefined,
+        ref: row.source_ref ?? undefined,
+        place: row.place ?? undefined,
+      },
+      { float: option.float, pattern: option.pattern }
+    );
+    await db.runAsync('UPDATE cs2_skin_choices SET chosen_skin_id = ? WHERE id = ?', [
+      skinId,
+      choiceId,
+    ]);
+    return skinId;
   },
 
   /**
@@ -492,7 +660,17 @@ export const skinService = {
             );
             skin = variants.length ? variants[randomInt(0, variants.length)] : null;
           } else {
-            skin = await this.pick(reward.rarity ?? 'rare');
+            // A rarity reward is a choice of three of that rarity: the player keeps one.
+            const options = await this.pickOptions(() => this.pick(reward.rarity ?? 'rare'));
+            if (options.length) {
+              await this.offerChoice(
+                uid,
+                options,
+                { source: 'tournament', label: tournamentName, ref, place },
+                { floatMin: reward.floatMin, floatMax: reward.floatMax, seeds: reward.seeds }
+              );
+            }
+            continue;
           }
           if (!skin) continue;
           await this.grant(

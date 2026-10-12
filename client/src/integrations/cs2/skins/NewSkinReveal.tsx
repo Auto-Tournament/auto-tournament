@@ -11,7 +11,7 @@ import {
   radii,
   withAlpha,
 } from '../../../module-sdk';
-import { announceChange, useMySkins, useSkinsEnabled } from './useSkins';
+import { announceChange, useMySkins, useSkinsEnabled, wearKey, type SkinChoice } from './useSkins';
 import { rarityColor } from './rarity';
 
 const { color } = tokens;
@@ -56,12 +56,117 @@ function SkinsLive() {
   return null;
 }
 
+/** A drop's three options: the player keeps one (api: POST /api/skins/me/choices/:id). */
+function ChoiceReveal({
+  choice,
+  choose,
+}: {
+  choice: SkinChoice;
+  choose: (choiceId: number, index: number) => Promise<void>;
+}) {
+  const { t } = useModuleTranslation('cs2');
+  const { showError } = useSnackbar();
+  const [busy, setBusy] = useState<number | null>(null);
+  const keep = (index: number) => {
+    setBusy(index);
+    choose(choice.id, index)
+      .catch((error: unknown) =>
+        showError(error instanceof Error ? error.message : t('skins.chooseFailed'))
+      )
+      .finally(() => setBusy(null));
+  };
+  return (
+    <Dialog
+      open
+      maxWidth="md"
+      fullWidth
+      data-testid="skin-choice"
+      PaperProps={{ sx: { borderRadius: radii.lg, bgcolor: color.paper, backgroundImage: 'none' } }}
+    >
+      <Box sx={{ p: { xs: 3, md: 5 }, display: 'grid', gap: 3, textAlign: 'center' }}>
+        <Box>
+          <Typography
+            sx={{ ...mono, fontSize: '0.8125rem', color: color.muted, textTransform: 'uppercase' }}
+          >
+            {choice.sourceLabel ? sourceLabel(choice.sourceLabel) : t('skins.newDrop')}
+          </Typography>
+          <Typography
+            sx={{
+              fontFamily: fontDisplay,
+              fontSize: { xs: '1.6rem', md: '2.2rem' },
+              fontWeight: 700,
+            }}
+          >
+            {t('skins.chooseTitle')}
+          </Typography>
+          <Typography sx={{ color: color.ink2 }}>{t('skins.chooseHelp')}</Typography>
+        </Box>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
+            gap: 2,
+          }}
+        >
+          {choice.options.map((o, index) => {
+            const tone = rarityColor[o.rarity];
+            return (
+              <Box
+                key={`${o.weapon}-${o.name}-${index}`}
+                component="button"
+                type="button"
+                disabled={busy !== null}
+                onClick={() => keep(index)}
+                data-testid={`skin-choice-${index}`}
+                sx={{
+                  all: 'unset',
+                  cursor: busy !== null ? 'default' : 'pointer',
+                  display: 'grid',
+                  gap: 1,
+                  p: 2,
+                  borderRadius: `${radii.md}px`,
+                  border: `2px solid ${withAlpha(tone, 0.5)}`,
+                  bgcolor: withAlpha(tone, 0.08),
+                  opacity: busy !== null && busy !== index ? 0.5 : 1,
+                  transition: 'transform 150ms, border-color 150ms',
+                  '&:hover, &:focus-visible': { borderColor: tone, transform: 'translateY(-2px)' },
+                }}
+              >
+                <Box
+                  component="img"
+                  src={o.image}
+                  alt={`${o.weaponName} ${o.name}`}
+                  sx={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'contain' }}
+                />
+                <Typography sx={{ fontWeight: 600 }}>
+                  {o.weaponName} | {o.name}
+                </Typography>
+                <Typography
+                  sx={{ ...mono, fontSize: '0.8125rem', color: tone, textTransform: 'uppercase' }}
+                >
+                  {t(`skins.rarity.${o.rarity}`, { defaultValue: o.rarity })} ·{' '}
+                  {t(`skins.wear.${wearKey(o.float)}`)}
+                </Typography>
+                <Typography sx={{ fontWeight: 600, color: tone }}>
+                  {busy === index ? t('skins.keeping') : t('skins.keepThis')}
+                </Typography>
+              </Box>
+            );
+          })}
+        </Box>
+      </Box>
+    </Dialog>
+  );
+}
+
 function Reveal() {
   const { t } = useModuleTranslation('cs2');
-  const { inventory, unseen, equip, markSeen } = useMySkins();
+  const { inventory, unseen, equip, markSeen, choices, choose } = useMySkins();
   const [equipping, setEquipping] = useState(false);
   const { showError } = useSnackbar();
   const skin = inventory.find((s) => s.id === unseen[0]) ?? null;
+  // A choice first: the kept skin then shows here as new.
+  if (choices.length > 0) return <ChoiceReveal choice={choices[0]!} choose={choose} />;
   if (!skin) return null;
   const tone = rarityColor[skin.rarity];
 

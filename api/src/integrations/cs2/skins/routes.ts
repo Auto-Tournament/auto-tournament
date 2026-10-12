@@ -100,9 +100,39 @@ router.get('/me', async (req, res) => {
       inventory,
       showcase: await skinService.showcase(uid),
       unseen: inventory.filter((s) => !s.seen).map((s) => s.id),
+      choices: await skinService.openChoices(uid),
     });
   } catch (error) {
     return fail(res, error, 'Reading the inventory');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/me/choices/{id}:
+ *   post:
+ *     tags: [Skins]
+ *     summary: Keep one option of a drop
+ *     description: A drop offers three skins; the player keeps one (`index` 0-2), the others are gone.
+ *     parameters:
+ *       - { in: path, name: id, required: true, schema: { type: integer } }
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { index: { type: integer } } }
+ *     responses:
+ *       200: { description: "{ skinId }" }
+ *       404: { description: Not a waiting choice of yours }
+ *       409: { description: Already chosen }
+ */
+router.post('/me/choices/:id', async (req, res) => {
+  try {
+    const uid = await playerOrStop(req, res);
+    if (!uid) return;
+    const skinId = await skinService.choose(uid, Number(req.params.id), Number(req.body?.index));
+    return res.json({ success: true, skinId });
+  } catch (error) {
+    return fail(res, error, 'Choosing a skin');
   }
 });
 

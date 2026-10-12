@@ -13931,6 +13931,30 @@
         }
       }
     },
+    "/api/skins/me/choices/{id}": {
+      "post": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "POST /api/skins/me/choices/:id",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/skins/me/equip": {
       "post": {
         "tags": [
