@@ -22,7 +22,9 @@ import {
   removeTwins,
   crowdUrlOf,
   HIGHLIGHTS_DIR,
+  markersOnItsOwn,
   matchLine,
+  parseMarkers,
   reelDate,
   type ClipMarkers,
   type MatchReelClip,
@@ -100,7 +102,10 @@ export interface ClipView {
   status: string;
   round: number;
   video: string | null;
+  /** Its kills and slow motion as the clip itself plays. */
   markers: ClipMarkers | null;
+  /** As its clean twin has them: where they are in a reel joined from it. */
+  reelMarkers: ClipMarkers | null;
   match: MatchRef;
   createdAt: number;
 }
@@ -130,7 +135,8 @@ function toClip(r: ClipRow): ClipView {
     status: r.status,
     round: Number(r.round),
     video: r.status === 'done' ? `/api/game/cs2/highlights/${Number(r.id)}.mp4` : null,
-    markers: parseJson<ClipMarkers>(r.markers),
+    markers: markersOnItsOwn(parseMarkers(r.markers)),
+    reelMarkers: parseMarkers(r.markers),
     match: {
       slug: r.match_slug,
       team1: r.team1,
@@ -212,7 +218,7 @@ export async function chaptersOf(
     };
     // Each clip blends into the next (the recorder's reelCrossfade), so the
     // next one starts that much before this one ends.
-    at = at !== null && c.markers ? at + c.markers.duration - REEL_CROSSFADE : null;
+    at = at !== null && c.reelMarkers ? at + c.reelMarkers.duration - REEL_CROSSFADE : null;
     return chapter;
   });
 }
@@ -382,7 +388,9 @@ export async function tournamentReel(tournamentId: number) {
     crowd: done ? crowdUrlOf(row.clip_path) : null,
     chapters,
     duration:
-      last && last.at !== null && lastClip?.markers ? last.at + lastClip.markers.duration : null,
+      last && last.at !== null && lastClip?.reelMarkers
+        ? last.at + lastClip.reelMarkers.duration
+        : null,
   };
 }
 
@@ -838,7 +846,7 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
         avatarUrl: c.avatarUrl,
         title: c.title,
         url: c.video!,
-        markers: c.markers,
+        markers: c.reelMarkers,
       };
     }),
     upload: `/api/game/cs2/recorder/tournament-reels/${tournamentId}`,

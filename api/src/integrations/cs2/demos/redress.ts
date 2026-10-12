@@ -242,7 +242,11 @@ async function reelAgain(file: string, now: number): Promise<PlayerReelJob | nul
 }
 
 /** The dressed video back: it replaces the old one; the twins stay. */
-export async function saveRedressed(file: string, body: NodeJS.ReadableStream): Promise<number> {
+export async function saveRedressed(
+  file: string,
+  body: NodeJS.ReadableStream,
+  start: number | null = null
+): Promise<number> {
   const target = path.join(HIGHLIGHTS_DIR, file);
   if (!fs.existsSync(target)) throw new Error('No such video');
   const tmp = `${target}.redress.part`;
@@ -262,6 +266,23 @@ export async function saveRedressed(file: string, body: NodeJS.ReadableStream): 
       size,
       Number(clip[1]),
     ]);
+    // Dressed to be watched on its own: it starts this far into its clean
+    // twin now (worker/standalone.go), and its markers say so.
+    if (start !== null) {
+      const [row] = await db.queryAsync<{ markers: string | null }>(
+        'SELECT markers FROM cs2_highlights WHERE id = ?',
+        [Number(clip[1])]
+      );
+      const markers = parseMarkers(row?.markers ?? null);
+      if (markers) {
+        const { start: _old, ...rest } = markers;
+        void _old;
+        await db.runAsync('UPDATE cs2_highlights SET markers = ? WHERE id = ?', [
+          JSON.stringify(start > 0 ? { ...rest, start } : rest),
+          Number(clip[1]),
+        ]);
+      }
+    }
   }
   await db.runAsync('DELETE FROM cs2_redress_queue WHERE file = ?', [file]);
   return size;

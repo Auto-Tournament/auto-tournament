@@ -16,28 +16,45 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
 )
 
 func (r *recorder) redress(clean, recipe, out string) error {
+	_, err := r.dress(clean, recipe, out, false)
+	return err
+}
+
+// redressClip dresses a clip to be watched on its own (standalone.go): no
+// caption card, from where its slowed opening ends. It returns that start.
+func (r *recorder) redressClip(clean, recipe, out string) (float64, error) {
+	return r.dress(clean, recipe, out, true)
+}
+
+func (r *recorder) dress(clean, recipe, out string, alone bool) (float64, error) {
 	o, err := loadOverlay(recipe)
 	if err != nil {
-		return err
+		return 0, err
+	}
+	start := 0.0
+	if alone {
+		start = standaloneStart(o)
+		o = withoutCards(o)
 	}
 	if err := r.overlayTools(); err != nil {
-		return err
+		return 0, err
 	}
 	// As long as the clean video, to the frame (the overlay's streams are cut there).
 	length, err := probeDuration(clean)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	o.Duration = math.Max(o.Duration, length)
 	track, err := newOverlayTrack(o, r.icons)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	args := []string{"-y", "-hide_banner", "-loglevel", "error", "-i", clean}
 	ov := overlay{card: -1, feed: -1, logo: -1, width: o.Width, height: o.Height}
@@ -66,7 +83,7 @@ func (r *recorder) redress(clean, recipe, out string) error {
 	}
 	if !track.cardBox.Empty() {
 		if ov.card, err = pipe("card", fmt.Sprintf("%dx%d", track.cardBox.Dx(), track.cardBox.Dy()), track.cardFrame); err != nil {
-			return err
+			return 0, err
 		}
 		ov.cardAt = track.cardBox.Min
 	}
@@ -75,7 +92,7 @@ func (r *recorder) redress(clean, recipe, out string) error {
 		feedTrack := *track
 		feedTrack.frame = cloneRGBA(track.frame)
 		if ov.feed, err = pipe("feed", fmt.Sprintf("%dx%d", track.feedBox.Dx(), track.feedBox.Dy()), feedTrack.feedFrame); err != nil {
-			return err
+			return 0, err
 		}
 		ov.feedAt = track.feedBox
 	}
@@ -88,12 +105,17 @@ func (r *recorder) redress(clean, recipe, out string) error {
 	}
 	args = append(args, "-filter_complex", videoFilter(ov), "-map", "[v]", "-map", "0:a?")
 	args = append(args, encodeArgs(r.encoder)...)
-	args = append(args, "-t", fmt.Sprintf("%.4f", length), "-c:a", "copy", "-movflags", "+faststart", out)
+	if start > 0 {
+		// Dressed from the start (the kill feed's frames line up with the
+		// video's), and only what comes after `start` kept.
+		args = append(args, "-ss", fmt.Sprintf("%.4f", start))
+	}
+	args = append(args, "-t", fmt.Sprintf("%.4f", length-start), "-c:a", "copy", "-movflags", "+faststart", out)
 	cmd := exec.CommandContext(r.commandContext(), "ffmpeg", hwEncode(blurArgs(ov.blur, args), r.encoder)...)
 	var stderr strings.Builder
 	cmd.Stderr = &stderr
 	if err := cmd.Start(); err != nil {
-		return err
+		return 0, err
 	}
 	done := make(chan error, len(streams))
 	frames := track.Frames()
@@ -116,9 +138,9 @@ func (r *recorder) redress(clean, recipe, out string) error {
 		}
 	}
 	if waitErr != nil {
-		return fmt.Errorf("ffmpeg: %v %s", waitErr, strings.TrimSpace(stderr.String()))
+		return 0, fmt.Errorf("ffmpeg: %v %s", waitErr, strings.TrimSpace(stderr.String()))
 	}
-	return errors.Join(errs...)
+	return start, errors.Join(errs...)
 }
 
 // redressFile is `at-worker redress <clean.mp4> <overlay.json> <out.mp4>`.
@@ -132,6 +154,9 @@ func redressFile(args []string) error {
 	}
 	return r.redress(args[0], args[1], args[2])
 }
+
+// clipFile is a clip's file name on the platform (a reel's starts with its kind).
+var clipFile = regexp.MustCompile(`^\d+\.mp4$`)
 
 // redressJob is a batch of the platform's videos to dress again.
 type redressJob struct {
@@ -165,6 +190,20 @@ func (r *recorder) runRedress(ctx context.Context, j *redressJob) {
 			r.downloadTwins(ctx, f.URL, local)
 			if !exists(cleanPathOf(local)) {
 				return errors.New("no clean twin or overlay recipe")
+			}
+			// A clip (`<id>.mp4`) is watched on its own: no card, and the
+			// platform is told where it now starts (standalone.go).
+			if clipFile.MatchString(f.File) {
+				start, err := r.redressClip(cleanPathOf(local), overlayPathOf(local), out)
+				if err != nil {
+					return err
+				}
+				res, err := r.sendFile(ctx, out, f.Upload, "video/mp4", map[string]string{"X-AT-Start": fmt.Sprintf("%.2f", start)})
+				if err != nil {
+					return err
+				}
+				defer res.Body.Close()
+				return ok(res, "upload "+f.File)
 			}
 			if err := r.redress(cleanPathOf(local), overlayPathOf(local), out); err != nil {
 				return err
