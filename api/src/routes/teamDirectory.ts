@@ -517,7 +517,7 @@ router.get('/:teamId/profile', async (req: Request, res: Response) => {
               CASE WHEN m.team1_id = ? THEN t2.name ELSE t1.name END AS opponent,
               (SELECT COUNT(*) FROM match_map_results r WHERE r.match_slug = m.slug AND r.winner_team = CASE WHEN m.team1_id = ? THEN 'team1' ELSE 'team2' END) AS won_maps,
               (SELECT COUNT(*) FROM match_map_results r WHERE r.match_slug = m.slug AND r.winner_team = CASE WHEN m.team1_id = ? THEN 'team2' ELSE 'team1' END) AS lost_maps,
-              (SELECT string_agg(COALESCE(r.map_name, '?') || ' ' ||
+              (SELECT string_agg(COALESCE(r.map_name, 'map') || ' ' ||
                         CASE WHEN m.team1_id = ? THEN r.team1_score || '-' || r.team2_score ELSE r.team2_score || '-' || r.team1_score END,
                         ', ' ORDER BY r.map_number)
                  FROM match_map_results r WHERE r.match_slug = m.slug) AS maps
