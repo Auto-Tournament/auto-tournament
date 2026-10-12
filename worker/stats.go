@@ -4,7 +4,7 @@ import "math"
 
 // AnalyzerVersion goes up when the numbers change meaning; the platform
 // re-queues older analyses.
-const AnalyzerVersion = 8
+const AnalyzerVersion = 9
 
 const (
 	// TradeTicks: the killer dies to the victim's team within five seconds.
