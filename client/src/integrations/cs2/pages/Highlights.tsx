@@ -40,7 +40,13 @@ import {
   Typography,
 } from '@mui/material';
 import { CaretDownIcon, FilmStripIcon } from '@phosphor-icons/react';
-import { api, useModuleTranslation, useSnackbar } from '../../../module-sdk';
+import {
+  api,
+  HighlightPlayer,
+  type MusicTrack,
+  useModuleTranslation,
+  useSnackbar,
+} from '../../../module-sdk';
 import { HighlightOverlaySetting } from '../settings/HighlightOverlaySetting';
 
 interface BenchmarkTry {
@@ -1080,6 +1086,17 @@ function ClipReview({
   const { t } = useModuleTranslation('cs2');
   const clip = clips[index];
   const [note, setNote] = useState('');
+  const [tracks, setTracks] = useState<MusicTrack[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    void api
+      .get<{ tracks: MusicTrack[] }>('/api/highlights/music')
+      .then((r) => !cancelled && setTracks(r.tracks))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   // A new clip starts with an empty note.
   const [noteFor, setNoteFor] = useState(clip?.id);
   if (noteFor !== clip?.id) {
@@ -1087,7 +1104,8 @@ function ClipReview({
     setNote('');
   }
   useEffect(() => {
-    const onKey = (e: { key: string; target: unknown }) => {
+    const onKey = (e: { key: string; target: unknown; defaultPrevented: boolean }) => {
+      if (e.defaultPrevented) return;
       if ((e.target as HTMLElement | null)?.tagName === 'INPUT') return;
       if (e.key === 'ArrowRight' && index < clips.length - 1) onIndex(index + 1);
       if (e.key === 'ArrowLeft' && index > 0) onIndex(index - 1);
@@ -1119,20 +1137,12 @@ function ClipReview({
         </Typography>
       </DialogTitle>
       <DialogContent>
-        <Box
-          component="video"
+        <HighlightPlayer
           key={clip.id}
           src={clipUrl(clip.video)}
-          controls
+          label={`${clip.playerName} · ${clip.title}`}
+          music={tracks.length ? { tracks, introEnd: 0 } : null}
           autoPlay
-          playsInline
-          sx={{
-            width: '100%',
-            aspectRatio: '16 / 9',
-            bgcolor: 'common.black',
-            borderRadius: 1,
-            display: 'block',
-          }}
         />
       </DialogContent>
       {onVerdict && (
