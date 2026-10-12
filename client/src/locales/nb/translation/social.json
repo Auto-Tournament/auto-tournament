@@ -148,6 +148,7 @@
     "setup": {
       "title": "Gjør ferdig oppsettet før du søker",
       "youGame": "Legg til CS2 blant spillene på profilen din.",
+      "youGameAuto": "Når du søker etter en kamp, legges spillet til i spillene dine.",
       "youAccount": "Koble til Steam-kontoen din.",
       "theyGame": "{{name}} har ikke lagt til CS2 blant spillene sine.",
       "theyAccount": "{{name}} har ikke koblet til Steam-kontoen sin.",

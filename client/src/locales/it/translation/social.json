@@ -148,6 +148,7 @@
     "setup": {
       "title": "Finish setting up before searching",
       "youGame": "Add CS2 to your games on your profile.",
+      "youGameAuto": "Finding a match adds this game to your games.",
       "youAccount": "Connect your Steam account.",
       "theyGame": "{{name}} has not added CS2 to their games.",
       "theyAccount": "{{name}} has not connected their Steam account.",
