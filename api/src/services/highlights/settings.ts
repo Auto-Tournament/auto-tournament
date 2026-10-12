@@ -99,8 +99,8 @@ export const HIGHLIGHT_SETTINGS: ReadonlyArray<SettingDefinition & { key: Highli
     order: 380,
     normalize: normalizeInteger('highlights_per_player', {
       min: 1,
-      max: 6,
-      message: 'highlights_per_player must be 1-6',
+      max: 20,
+      message: 'highlights_per_player must be 1-20',
     }),
     applyRequest: numberRequest('highlightsPerPlayer'),
   },

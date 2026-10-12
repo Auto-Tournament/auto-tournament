@@ -190,7 +190,7 @@ function HighlightSettings() {
           vals.highlightsPerPlayer && void save({ highlightsPerPlayer: vals.highlightsPerPlayer })
         }
         helperText={t('highlightsPage.perPlayer.helper')}
-        inputProps={{ min: 1, max: 6, 'data-testid': 'highlights-per-player' }}
+        inputProps={{ min: 1, max: 20, 'data-testid': 'highlights-per-player' }}
         size="small"
         sx={{ maxWidth: 320 }}
       />

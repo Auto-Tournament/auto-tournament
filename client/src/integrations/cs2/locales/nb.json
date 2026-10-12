@@ -43,10 +43,10 @@
     "servers": {
       "title": "Servere",
       "open": "Åpne",
-      "online": "online",
+      "online": "kjører",
       "inMatch": "I kamp",
       "free": "Ledig",
-      "offline": "Offline",
+      "offline": "I dvale",
       "plugin": "Plugin",
       "pluginSame": "{{version}}, alle servere matcher",
       "pluginMixed": "{{count}} plugin-versjoner i bruk",

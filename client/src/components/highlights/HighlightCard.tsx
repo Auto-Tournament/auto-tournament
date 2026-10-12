@@ -20,23 +20,29 @@ export function VideoThumb({
   src,
   at = 1.5,
   alt = '',
+  sharp = false,
 }: {
   src: string;
   at?: number;
   alt?: string;
+  /** A big still (the profile's favourite): kept at the video's own size, not a small copy. */
+  sharp?: boolean;
 }) {
   const key = `${src}#t=${at.toFixed(2)}`;
+  const kept = sharp ? `${key}@full` : key;
   const [, setTaken] = useState(0);
-  const still = stills.get(key);
+  const still = stills.get(kept);
   const keep = (v: ComponentRef<'video'>) => {
-    if (stills.has(key) || v.readyState < 2 || !v.videoWidth || Math.abs(v.currentTime - at) > 0.5)
+    if (stills.has(kept) || v.readyState < 2 || !v.videoWidth || Math.abs(v.currentTime - at) > 0.5)
       return;
     try {
       const c = document.createElement('canvas');
-      c.width = 384;
-      c.height = Math.round((384 * v.videoHeight) / v.videoWidth);
+      // As sharp as it shows (at least 384 px), never above the video's own size.
+      const shown = Math.round(v.clientWidth * (window.devicePixelRatio || 1));
+      c.width = sharp ? Math.min(v.videoWidth, 1920) : Math.min(v.videoWidth, Math.max(384, shown));
+      c.height = Math.round((c.width * v.videoHeight) / v.videoWidth);
       c.getContext('2d')?.drawImage(v, 0, 0, c.width, c.height);
-      stills.set(key, c.toDataURL('image/jpeg', 0.75));
+      stills.set(kept, c.toDataURL('image/jpeg', 0.85));
       setTaken((n) => n + 1);
     } catch {
       // Another origin's video: it stays a video.
@@ -119,7 +125,7 @@ export function HighlightCard({
       }}
     >
       {video ? (
-        <VideoThumb src={video} at={thumbAt(markers)} />
+        <VideoThumb src={video} at={thumbAt(markers)} sharp={large} />
       ) : (
         <>
           <Skeleton
