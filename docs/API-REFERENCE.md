@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 668 of them, 394 behind auth —
+Every endpoint this API serves — 671 of them, 394 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -235,6 +235,9 @@ A player's CS2 totals, everyone's totals to compare with, and their results per 
 
 | Method | Path | Auth |
 | --- | --- | --- |
+| `GET` | `/api/game/cs2/players/:playerId/role` | public |
+| `PUT` | `/api/game/cs2/players/me/role` | public |
+| `GET` | `/api/game/cs2/teams/:teamId/roles` | public |
 | `GET` | `/api/game/cs2/players/:playerId/profile` | public |
 
 ### Demo analysis

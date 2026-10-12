@@ -5560,6 +5560,20 @@
         }
       }
     },
+    "/api/game/cs2/players/me/role": {
+      "put": {
+        "tags": [
+          "Player profile"
+        ],
+        "summary": "PUT /api/game/cs2/players/me/role",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/game/cs2/players/{playerId}/highlights": {
       "get": {
         "tags": [
@@ -5590,6 +5604,30 @@
           "Player profile"
         ],
         "summary": "GET /api/game/cs2/players/:playerId/profile",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/players/{playerId}/role": {
+      "get": {
+        "tags": [
+          "Player profile"
+        ],
+        "summary": "GET /api/game/cs2/players/:playerId/role",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -6920,6 +6958,30 @@
           "Team profile"
         ],
         "summary": "GET /api/game/cs2/teams/:teamId/profile",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/teams/{teamId}/roles": {
+      "get": {
+        "tags": [
+          "Player profile"
+        ],
+        "summary": "GET /api/game/cs2/teams/:teamId/roles",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
