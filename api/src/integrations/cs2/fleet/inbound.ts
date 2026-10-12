@@ -45,7 +45,7 @@ import {
   type StatePatchPayload,
   type StateSnapshotPayload,
 } from './protocol/v1';
-import { pushSkinsOnConnect } from './push/skins';
+import { pushSkinsOnConnect, skinsTurnedOn } from './push/skins';
 import {
   liveStateStore,
   type LiveMatchRecord,
@@ -375,6 +375,10 @@ async function applyCommandResult(ctx: InboundContext, env: Envelope): Promise<v
     log.info(
       `[FLEET] ${ctx.serverId}: ${command.type}${command.name ? ` ${command.name}` : ''} -> ${result.status}${detail}`
     );
+    // The skins plugin answered a plugins.set: with skins on, it runs them now.
+    if (command.type === 'cmd' && command.name === 'plugins.set' && result.status === 'ok') {
+      void skinsTurnedOn(ctx.serverId);
+    }
     // match.update answers carry the server's config_rev (the new one, or its own on a conflict).
     if (command.type === 'match.update' && command.matchSlug && typeof result.rev === 'number') {
       await liveStateStore.setConfigRev(command.matchSlug, result.rev);
