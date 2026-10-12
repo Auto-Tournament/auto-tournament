@@ -14,6 +14,7 @@
  * GET    /admin/catalog?q=         admin: search the catalogue (for picking a reward)
  */
 
+import { db } from '../../../config/database';
 import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
@@ -36,6 +37,14 @@ function fail(res: Response, error: unknown, what: string) {
 }
 
 /** The signed-in player's account, while skins are on; otherwise the answer is already sent. */
+/** A loadout changed: a player in a match right now sees it in game at once. */
+async function loadoutChanged(uid: string): Promise<void> {
+  const row = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [uid]);
+  if (!row) return;
+  const { pushLoadoutLive } = await import('../fleet/push/skins');
+  await pushLoadoutLive(row.id);
+}
+
 async function playerOrStop(req: Request, res: Response): Promise<string | null> {
   if (!(await skinService.config()).enabled) {
     res.status(404).json({ success: false, error: 'Skins are off' });
@@ -116,6 +125,7 @@ router.post('/me/equip', async (req, res) => {
     const uid = await playerOrStop(req, res);
     if (!uid) return;
     await skinService.equip(uid, Number(req.body?.skinId));
+    void loadoutChanged(uid);
     return res.json({ success: true });
   } catch (error) {
     return fail(res, error, 'Equipping');
@@ -138,6 +148,7 @@ router.delete('/me/equip/:slot', async (req, res) => {
     const uid = await playerOrStop(req, res);
     if (!uid) return;
     await skinService.unequip(uid, req.params.slot);
+    void loadoutChanged(uid);
     return res.json({ success: true });
   } catch (error) {
     return fail(res, error, 'Unequipping');

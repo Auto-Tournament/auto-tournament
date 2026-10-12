@@ -58,7 +58,11 @@ export async function pushSkinsOnConnect(
     const target = await skinsTarget(fleetServerId);
     if (!target.ok) return;
     const items = await skinService.loadoutItems(steamid64);
-    if (!items) return;
+    if (!items) {
+      // Nothing equipped (or the last item just came off): the server drops what it had.
+      await sendReliable(fleetServerId, { type: 'skins.invalidate', payload: { steamid64 } });
+      return;
+    }
     const payload: SkinsLoadoutPayload = { steamid64, rev: Math.floor(Date.now() / 1000), items };
     await sendReliable(fleetServerId, { type: 'skins.loadout', payload });
   } catch (error) {
@@ -146,6 +150,31 @@ export async function skinsTurnedOff(fleetServerId: string): Promise<void> {
   } catch (error) {
     log.warn('[FLEET] skins: could not clear skins', {
       fleetServerId,
+      error: (error as Error).message,
+    });
+  }
+}
+
+/**
+ * A player changed their loadout on the site: if they are connected to a
+ * match right now, their server gets the new loadout at once.
+ */
+export async function pushLoadoutLive(steamid64: string): Promise<void> {
+  try {
+    const { playerConnectionService } =
+      await import('../../../../services/playerConnectionService');
+    const rows = await db.queryAsync<{ slug: string; server_id: string }>(
+      "SELECT slug, server_id FROM matches WHERE status IN ('loaded', 'live') AND server_id IS NOT NULL AND server_id <> ''"
+    );
+    for (const row of rows) {
+      const here = playerConnectionService
+        .getStatus(row.slug)
+        ?.connectedPlayers.some((p) => p.steamId === steamid64);
+      if (here) await pushSkinsOnConnect(row.server_id, row.slug, steamid64);
+    }
+  } catch (error) {
+    log.warn('[FLEET] skins: live loadout not sent', {
+      steamid64,
       error: (error as Error).message,
     });
   }
