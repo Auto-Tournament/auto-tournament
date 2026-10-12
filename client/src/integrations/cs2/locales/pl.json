@@ -1928,7 +1928,8 @@
       "lost": "Przegrana {{score}}",
       "drew": "Remis {{score}}"
     },
-    "unequipLabel": "Unequip {{name}}"
+    "unequipLabel": "Unequip {{name}}",
+    "equipFailed": "Could not equip it"
   },
   "matchRules": {
     "title": "Zasady meczu",

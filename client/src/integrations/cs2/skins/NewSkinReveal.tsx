@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Box, Button, Dialog, Typography } from '@mui/material';
 import { sourceLabel } from './SkinParts';
-import { useModuleTranslation, useSocket, tokens, fontDisplay, mono, radii, withAlpha } from '../../../module-sdk';
+import {
+  useModuleTranslation,
+  useSnackbar,
+  useSocket,
+  tokens,
+  fontDisplay,
+  mono,
+  radii,
+  withAlpha,
+} from '../../../module-sdk';
 import { announceChange, useMySkins, useSkinsEnabled } from './useSkins';
 import { rarityColor } from './rarity';
 
@@ -50,6 +59,8 @@ function SkinsLive() {
 function Reveal() {
   const { t } = useModuleTranslation('cs2');
   const { inventory, unseen, equip, markSeen } = useMySkins();
+  const [equipping, setEquipping] = useState(false);
+  const { showError } = useSnackbar();
   const skin = inventory.find((s) => s.id === unseen[0]) ?? null;
   if (!skin) return null;
   const tone = rarityColor[skin.rarity];
@@ -65,16 +76,53 @@ function Reveal() {
       data-testid="new-skin-reveal"
       PaperProps={{ sx: { borderRadius: radii.lg, bgcolor: color.paper, backgroundImage: 'none' } }}
     >
-      <Box sx={{ p: { xs: 3, md: 6 }, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3.5, textAlign: 'center' }}>
+      <Box
+        sx={{
+          p: { xs: 3, md: 6 },
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 3.5,
+          textAlign: 'center',
+        }}
+      >
         <Box>
-          <Typography sx={{ ...mono, fontSize: '0.8125rem', color: tone, textTransform: 'uppercase' }}>{t('skins.acquired')}</Typography>
-          <Typography component="h2" sx={{ fontFamily: fontDisplay, fontSize: { xs: '2rem', md: '3rem' }, fontWeight: 700, letterSpacing: '-0.02em' }}>
+          <Typography
+            sx={{ ...mono, fontSize: '0.8125rem', color: tone, textTransform: 'uppercase' }}
+          >
+            {t('skins.acquired')}
+          </Typography>
+          <Typography
+            component="h2"
+            sx={{
+              fontFamily: fontDisplay,
+              fontSize: { xs: '2rem', md: '3rem' },
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+            }}
+          >
             {skin.weaponName} · {skin.name}
           </Typography>
-          {skin.sourceLabel && <Typography sx={{ color: color.muted }}>{sourceLabel(skin.sourceLabel)}</Typography>}
+          {skin.sourceLabel && (
+            <Typography sx={{ color: color.muted }}>{sourceLabel(skin.sourceLabel)}</Typography>
+          )}
           {skin.source === 'matchmaking' && skin.sourceRef && <MatchPill slug={skin.sourceRef} />}
         </Box>
-        <Box sx={{ width: '100%', maxWidth: 640, height: { xs: 220, md: 320 }, borderRadius: '28px', bgcolor: color.paper2, border: `1px solid ${color.rule}`, borderBottom: `4px solid ${tone}`, display: 'grid', placeItems: 'center', position: 'relative', overflow: 'hidden' }}>
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: 640,
+            height: { xs: 220, md: 320 },
+            borderRadius: '28px',
+            bgcolor: color.paper2,
+            border: `1px solid ${color.rule}`,
+            borderBottom: `4px solid ${tone}`,
+            display: 'grid',
+            placeItems: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
           <Box
             aria-hidden
             sx={{
@@ -91,25 +139,42 @@ function Reveal() {
               '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
             }}
           />
-          <Box component="img" src={skin.imageUrl} alt={`${skin.weaponName} ${skin.name}`} sx={{ position: 'relative', width: '75%', height: '75%', objectFit: 'contain' }} />
+          <Box
+            component="img"
+            src={skin.imageUrl}
+            alt={`${skin.weaponName} ${skin.name}`}
+            sx={{ position: 'relative', width: '75%', height: '75%', objectFit: 'contain' }}
+          />
         </Box>
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
           <Button
             variant="contained"
             data-testid="new-skin-equip"
+            disabled={equipping}
             onClick={() => {
-              void equip(skin);
-              close();
+              setEquipping(true);
+              equip(skin)
+                .then(close)
+                .catch((error: unknown) => {
+                  showError(error instanceof Error ? error.message : t('skins.equipFailed'));
+                })
+                .finally(() => setEquipping(false));
             }}
             sx={{ borderRadius: radii.pill, px: 4, py: 1.75, fontWeight: 600 }}
           >
             {t('skins.equipNow')}
           </Button>
-          <Button variant="outlined" onClick={close} sx={{ borderRadius: radii.pill, px: 4, py: 1.75 }}>
+          <Button
+            variant="outlined"
+            onClick={close}
+            sx={{ borderRadius: radii.pill, px: 4, py: 1.75 }}
+          >
             {t('skins.keep')}
           </Button>
         </Box>
-        <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>{t('skins.notice')}</Typography>
+        <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
+          {t('skins.notice')}
+        </Typography>
       </Box>
     </Dialog>
   );
@@ -126,7 +191,9 @@ function MatchPill({ slug }: { slug: string }) {
   const [result, setResult] = useState<MatchSummary | null>(null);
   useEffect(() => {
     let cancelled = false;
-    void fetch(`/api/matchmaking/matches/${encodeURIComponent(slug)}/result`, { credentials: 'same-origin' })
+    void fetch(`/api/matchmaking/matches/${encodeURIComponent(slug)}/result`, {
+      credentials: 'same-origin',
+    })
       .then((r) => (r.ok ? (r.json() as Promise<MatchSummary>) : null))
       .then((body) => {
         if (!cancelled) setResult(body);
@@ -144,7 +211,10 @@ function MatchPill({ slug }: { slug: string }) {
   const lost = result.maps.filter((m) => ours(m) < theirs(m)).length;
   const outcome = won > lost ? 'won' : won < lost ? 'lost' : 'drew';
   const score = result.maps.map((m) => `${ours(m)} – ${theirs(m)}`).join(', ');
-  const maps = result.maps.map((m) => m.map).filter(Boolean).join(', ');
+  const maps = result.maps
+    .map((m) => m.map)
+    .filter(Boolean)
+    .join(', ');
   return (
     <Box
       data-testid="new-skin-match"

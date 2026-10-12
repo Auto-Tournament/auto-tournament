@@ -3,7 +3,8 @@ import { api, useAuth } from '../../../module-sdk';
 import type { AccountMenuItem } from '../../types';
 import { skinPaths } from './paths';
 
-export type Rarity = 'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary' | 'ancient' | 'immortal';
+export type Rarity =
+  'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary' | 'ancient' | 'immortal';
 
 export interface OwnedSkin {
   id: number;
@@ -32,7 +33,9 @@ export interface ShowcaseItem {
 /** The account menu's Inventory link, while skins are on (`accountMenuItems`). */
 export async function skinsAccountMenuItems(): Promise<AccountMenuItem[]> {
   const status = await api.get<{ enabled: boolean }>('/api/skins/status');
-  return status.enabled ? [{ key: 'inventory', path: skinPaths.inventory, labelKey: 'skins.inventory' }] : [];
+  return status.enabled
+    ? [{ key: 'inventory', path: skinPaths.inventory, labelKey: 'skins.inventory' }]
+    : [];
 }
 
 /** Whether virtual skins are on. Null while unknown. */
@@ -74,7 +77,11 @@ export function useMySkins() {
       return;
     }
     try {
-      const data = await api.get<{ inventory: OwnedSkin[]; showcase: ShowcaseItem[]; unseen: number[] }>('/api/skins/me');
+      const data = await api.get<{
+        inventory: OwnedSkin[];
+        showcase: ShowcaseItem[];
+        unseen: number[];
+      }>('/api/skins/me');
       setInventory(data.inventory ?? []);
       setShowcase(data.showcase ?? []);
       setUnseen(data.unseen ?? []);
@@ -97,21 +104,27 @@ export function useMySkins() {
    * Equips at once (the grid shows it before the server answers), or, for
    * the skin already equipped, empties its slot: the game's default is back.
    */
-  const equip = useCallback(
-    async (skin: OwnedSkin) => {
-      const off = skin.equipped;
-      setInventory((list) =>
-        list.map((s) => (s.slot === skin.slot ? { ...s, equipped: !off && s.id === skin.id } : s))
+  const equip = useCallback(async (skin: OwnedSkin) => {
+    const off = skin.equipped;
+    let before: OwnedSkin[] = [];
+    setInventory((list) => {
+      before = list;
+      return list.map((s) =>
+        s.slot === skin.slot ? { ...s, equipped: !off && s.id === skin.id } : s
       );
-      try {
-        if (off) await api.delete(`/api/skins/me/equip/${encodeURIComponent(skin.slot)}`);
-        else await api.post('/api/skins/me/equip', { skinId: skin.id });
-      } finally {
-        announceChange();
-      }
-    },
-    []
-  );
+    });
+    try {
+      if (off) await api.delete(`/api/skins/me/equip/${encodeURIComponent(skin.slot)}`);
+      else await api.post('/api/skins/me/equip', { skinId: skin.id });
+    } catch (error) {
+      // A refused equip used to vanish (the grid showed it equipped, the
+      // server never stored it): put the grid back and tell the caller.
+      setInventory(before);
+      throw error;
+    } finally {
+      announceChange();
+    }
+  }, []);
 
   const markSeen = useCallback(async (ids: number[]) => {
     setUnseen((list) => list.filter((id) => !ids.includes(id)));
@@ -119,21 +132,20 @@ export function useMySkins() {
     announceChange();
   }, []);
 
-  const saveShowcase = useCallback(
-    async (items: ShowcaseItem[]) => {
-      setShowcase(items);
-      await api.put('/api/skins/me/showcase', { items });
-      announceChange();
-    },
-    []
-  );
+  const saveShowcase = useCallback(async (items: ShowcaseItem[]) => {
+    setShowcase(items);
+    await api.put('/api/skins/me/showcase', { items });
+    announceChange();
+  }, []);
 
   return { inventory, showcase, unseen, loading, available, reload, equip, markSeen, saveShowcase };
 }
 
 /** The slots a loadout shows: knife and gloves always, then each weapon with a skin owned. */
 export function loadoutSlots(inventory: OwnedSkin[]): string[] {
-  const weapons = [...new Set(inventory.map((s) => s.slot).filter((s) => s !== 'knife' && s !== 'gloves'))];
+  const weapons = [
+    ...new Set(inventory.map((s) => s.slot).filter((s) => s !== 'knife' && s !== 'gloves')),
+  ];
   return ['knife', 'gloves', ...weapons];
 }
 

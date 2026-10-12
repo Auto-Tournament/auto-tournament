@@ -1,16 +1,52 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, ButtonBase, CircularProgress, Container, Dialog, MenuItem, Select, Typography } from '@mui/material';
+import {
+  Box,
+  ButtonBase,
+  CircularProgress,
+  Container,
+  Dialog,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material';
 import { PlayCircleIcon, QuestionIcon, TrophyIcon } from '@phosphor-icons/react';
-import { api, pageTitle, useModuleTranslation, tokens, fontDisplay, radii } from '../../../module-sdk';
+import {
+  api,
+  pageTitle,
+  useModuleTranslation,
+  useSnackbar,
+  tokens,
+  fontDisplay,
+  radii,
+} from '../../../module-sdk';
 import { InspectSkinDialog, SkinCard, SlotTile, VirtualNotice } from './SkinParts';
 import { loadoutSlots, useMySkins, useSkinsEnabled, type OwnedSkin, type Rarity } from './useSkins';
 
 const { color } = tokens;
-const RARITY_ORDER: Rarity[] = ['immortal', 'ancient', 'legendary', 'mythical', 'rare', 'uncommon', 'common'];
+const RARITY_ORDER: Rarity[] = [
+  'immortal',
+  'ancient',
+  'legendary',
+  'mythical',
+  'rare',
+  'uncommon',
+  'common',
+];
 
 type Filter = 'all' | 'rifles' | 'pistols' | 'smgs' | 'heavy' | 'knives' | 'gloves';
-const PISTOLS = ['glock', 'hkp2000', 'usp_silencer', 'p250', 'fiveseven', 'tec9', 'cz75a', 'deagle', 'revolver', 'elite'];
+const PISTOLS = [
+  'glock',
+  'hkp2000',
+  'usp_silencer',
+  'p250',
+  'fiveseven',
+  'tec9',
+  'cz75a',
+  'deagle',
+  'revolver',
+  'elite',
+];
 const SMGS = ['mac10', 'mp9', 'mp7', 'mp5sd', 'ump45', 'p90', 'bizon'];
 const HEAVY = ['nova', 'xm1014', 'sawedoff', 'mag7', 'm249', 'negev'];
 
@@ -31,6 +67,7 @@ function category(skin: OwnedSkin): Filter {
  */
 export function InventoryPage() {
   const { t } = useModuleTranslation('cs2');
+  const { showError } = useSnackbar();
   const { steamId } = useParams<{ steamId?: string }>();
   // /inventory is your own; /player/:steamId/inventory is anyone's, read only.
   const own = !steamId;
@@ -58,12 +95,17 @@ export function InventoryPage() {
     };
   }, [own, steamId]);
 
-  const inventory = useMemo(() => (own ? mine.inventory : (theirs ?? [])), [own, mine.inventory, theirs]);
+  const inventory = useMemo(
+    () => (own ? mine.inventory : (theirs ?? [])),
+    [own, mine.inventory, theirs]
+  );
   const loading = enabled === null || (own ? mine.loading : theirs === null);
   const shown = useMemo(() => {
     const list = inventory.filter((s) => filter === 'all' || category(s) === filter);
     return [...list].sort((a, b) =>
-      sort === 'newest' ? b.createdAt - a.createdAt : RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity)
+      sort === 'newest'
+        ? b.createdAt - a.createdAt
+        : RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity)
     );
   }, [inventory, filter, sort]);
   const slots = loadoutSlots(inventory);
@@ -90,7 +132,10 @@ export function InventoryPage() {
 
   return (
     <Box data-testid="inventory-page">
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, display: 'flex', flexDirection: 'column', gap: 3.5 }}>
+      <Container
+        maxWidth="lg"
+        sx={{ py: { xs: 4, md: 6 }, display: 'flex', flexDirection: 'column', gap: 3.5 }}
+      >
         {enabled === false ? (
           <Typography sx={{ color: color.ink2 }}>{t('skins.off')}</Typography>
         ) : loading ? (
@@ -99,21 +144,53 @@ export function InventoryPage() {
           </Box>
         ) : (
           <>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'flex-end',
+                justifyContent: 'space-between',
+                gap: 2,
+              }}
+            >
               <Box>
-                <Typography component="h1" sx={{ fontFamily: fontDisplay, fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.02em' }}>
+                <Typography
+                  component="h1"
+                  sx={{
+                    fontFamily: fontDisplay,
+                    fontSize: '2.5rem',
+                    fontWeight: 700,
+                    letterSpacing: '-0.02em',
+                  }}
+                >
                   {t('skins.inventory')}
                 </Typography>
-                <Typography sx={{ color: color.ink2 }}>{t('skins.count', { count: inventory.length })}</Typography>
+                <Typography sx={{ color: color.ink2 }}>
+                  {t('skins.count', { count: inventory.length })}
+                </Typography>
               </Box>
               <VirtualNotice />
             </Box>
 
-            <Box component="section" aria-labelledby="loadout-title" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Typography id="loadout-title" component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600 }}>
+            <Box
+              component="section"
+              aria-labelledby="loadout-title"
+              sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+            >
+              <Typography
+                id="loadout-title"
+                component="h2"
+                sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600 }}
+              >
                 {t('skins.equippedTitle')}
               </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(118px, 1fr))', gap: 1.25 }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(118px, 1fr))',
+                  gap: 1.25,
+                }}
+              >
                 {slots.map((slot) => {
                   const skin = inventory.find((s) => s.slot === slot && s.equipped) ?? null;
                   const label =
@@ -121,7 +198,7 @@ export function InventoryPage() {
                       ? t('skins.slot.knife')
                       : slot === 'gloves'
                         ? t('skins.slot.gloves')
-                        : inventory.find((s) => s.slot === slot)?.weaponName ?? slot;
+                        : (inventory.find((s) => s.slot === slot)?.weaponName ?? slot);
                   // An equipped slot opens its skin; an empty one shows the skins that fit it.
                   return (
                     <SlotTile
@@ -134,7 +211,15 @@ export function InventoryPage() {
                           return;
                         }
                         const owned = inventory.find((s) => s.slot === slot);
-                        setFilter(owned ? category(owned) : slot === 'knife' ? 'knives' : slot === 'gloves' ? 'gloves' : 'all');
+                        setFilter(
+                          owned
+                            ? category(owned)
+                            : slot === 'knife'
+                              ? 'knives'
+                              : slot === 'gloves'
+                                ? 'gloves'
+                                : 'all'
+                        );
                       }}
                     />
                   );
@@ -142,34 +227,92 @@ export function InventoryPage() {
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 2,
+              }}
+            >
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                {(['all', 'rifles', 'pistols', 'smgs', 'heavy', 'knives', 'gloves'] as Filter[]).map(chip)}
+                {(
+                  ['all', 'rifles', 'pistols', 'smgs', 'heavy', 'knives', 'gloves'] as Filter[]
+                ).map(chip)}
               </Box>
-              <Select size="small" value={sort} onChange={(e) => setSort(e.target.value as 'rarity' | 'newest')} sx={{ borderRadius: radii.pill, minWidth: 180 }} inputProps={{ 'aria-label': t('skins.sortLabel') }}>
+              <Select
+                size="small"
+                value={sort}
+                onChange={(e) => setSort(e.target.value as 'rarity' | 'newest')}
+                sx={{ borderRadius: radii.pill, minWidth: 180 }}
+                inputProps={{ 'aria-label': t('skins.sortLabel') }}
+              >
                 <MenuItem value="rarity">{t('skins.sort.rarity')}</MenuItem>
                 <MenuItem value="newest">{t('skins.sort.newest')}</MenuItem>
               </Select>
             </Box>
 
             {shown.length === 0 ? (
-              <Typography sx={{ color: color.ink2 }}>{inventory.length ? t('skins.noneInFilter') : own ? t('skins.emptyOwn') : t('skins.emptyTheirs')}</Typography>
+              <Typography sx={{ color: color.ink2 }}>
+                {inventory.length
+                  ? t('skins.noneInFilter')
+                  : own
+                    ? t('skins.emptyOwn')
+                    : t('skins.emptyTheirs')}
+              </Typography>
             ) : (
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 1.75 }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+                  gap: 1.75,
+                }}
+              >
                 {shown.map((skin) => (
                   <SkinCard
                     key={skin.id}
                     skin={skin}
                     showNew={own}
-                    onEquip={own ? (s) => void mine.equip(s) : undefined}
+                    onEquip={
+                      own
+                        ? (s) =>
+                            void mine
+                              .equip(s)
+                              .catch((error: unknown) =>
+                                showError(
+                                  error instanceof Error ? error.message : t('skins.equipFailed')
+                                )
+                              )
+                        : undefined
+                    }
                     onInspect={(s) => setInspect(s.id)}
                   />
                 ))}
               </Box>
             )}
 
-            <ButtonBase onClick={() => setHelpOpen(true)} sx={{ alignSelf: 'flex-start', display: 'inline-flex', gap: 1.25, fontSize: '0.875rem', color: color.ink2 }}>
-              <Box component="span" sx={{ width: 28, height: 28, borderRadius: '50%', border: `1px solid ${color.rule}`, display: 'grid', placeItems: 'center' }}>
+            <ButtonBase
+              onClick={() => setHelpOpen(true)}
+              sx={{
+                alignSelf: 'flex-start',
+                display: 'inline-flex',
+                gap: 1.25,
+                fontSize: '0.875rem',
+                color: color.ink2,
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  border: `1px solid ${color.rule}`,
+                  display: 'grid',
+                  placeItems: 'center',
+                }}
+              >
                 <QuestionIcon size={14} />
               </Box>
               {t('skins.howToGet')}
@@ -179,9 +322,18 @@ export function InventoryPage() {
       </Container>
 
       <InspectSkinDialog skinId={inspect} onClose={() => setInspect(null)} />
-      <Dialog open={helpOpen} onClose={() => setHelpOpen(false)} PaperProps={{ sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' } }}>
+      <Dialog
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        PaperProps={{
+          sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' },
+        }}
+      >
         <Box sx={{ p: 3.5, display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 440 }}>
-          <Typography component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.375rem', fontWeight: 600 }}>
+          <Typography
+            component="h2"
+            sx={{ fontFamily: fontDisplay, fontSize: '1.375rem', fontWeight: 600 }}
+          >
             {t('skins.howToGet')}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1.5 }}>

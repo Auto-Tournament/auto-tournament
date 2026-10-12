@@ -156,21 +156,52 @@ export async function skinsTurnedOff(fleetServerId: string): Promise<void> {
 }
 
 /**
- * A player changed their loadout on the site: if they are connected to a
- * match right now, their server gets the new loadout at once.
+ * Loadout changes waiting for the round to end, per server: the latest per
+ * player, sent once at round end (flushRoundLoadouts). Spamming equip and
+ * unequip mid-round costs the server one message per player per round.
+ */
+const pendingByServer = new Map<string, Map<string, string>>();
+/** Outside a live map (warmup, between maps) the change goes after this. */
+const OUTSIDE_LIVE_DELAY_MS = 3_000;
+const outsideLiveTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+/** The round ended on a fleet server: its waiting loadout changes go out. */
+export async function flushRoundLoadouts(fleetServerId: string): Promise<void> {
+  const pending = pendingByServer.get(fleetServerId);
+  if (!pending || pending.size === 0) return;
+  pendingByServer.delete(fleetServerId);
+  for (const [steamid64, slug] of pending) await pushSkinsOnConnect(fleetServerId, slug, steamid64);
+}
+
+/**
+ * A player changed their loadout on the site: if they are in a match right
+ * now, their server gets it at the end of the round (a few seconds later
+ * outside a live map), the latest change only.
  */
 export async function pushLoadoutLive(steamid64: string): Promise<void> {
   try {
     const { playerConnectionService } =
       await import('../../../../services/playerConnectionService');
-    const rows = await db.queryAsync<{ slug: string; server_id: string }>(
-      "SELECT slug, server_id FROM matches WHERE status IN ('loaded', 'live') AND server_id IS NOT NULL AND server_id <> ''"
+    const rows = await db.queryAsync<{ slug: string; server_id: string; status: string }>(
+      "SELECT slug, server_id, status FROM matches WHERE status IN ('loaded', 'live') AND server_id IS NOT NULL AND server_id <> ''"
     );
     for (const row of rows) {
       const here = playerConnectionService
         .getStatus(row.slug)
         ?.connectedPlayers.some((p) => p.steamId === steamid64);
-      if (here) await pushSkinsOnConnect(row.server_id, row.slug, steamid64);
+      if (!here) continue;
+      const pending = pendingByServer.get(row.server_id) ?? new Map<string, string>();
+      pending.set(steamid64, row.slug);
+      pendingByServer.set(row.server_id, pending);
+      if (row.status !== 'live' && !outsideLiveTimers.has(row.server_id)) {
+        outsideLiveTimers.set(
+          row.server_id,
+          setTimeout(() => {
+            outsideLiveTimers.delete(row.server_id);
+            void flushRoundLoadouts(row.server_id);
+          }, OUTSIDE_LIVE_DELAY_MS)
+        );
+      }
     }
   } catch (error) {
     log.warn('[FLEET] skins: live loadout not sent', {
