@@ -61,12 +61,13 @@ test.describe.serial('Admin navigation', () => {
       await expect(page.locator('.MuiDrawer-root')).toHaveCount(0);
       await expect(page.getByRole('button', { name: /navigation menu/i })).toHaveCount(0);
 
-      // An admin's links: Manage, Browse (the logo is the way home). No player links.
+      // An admin's links: Manage in place of Home (the logo is the way home),
+      // then the same site links players get: Browse, Teams, Players, Leaderboards.
       await expect(page.getByTestId('nav-admin')).toHaveCount(0);
       await expect(page.getByTestId('nav-manage')).toBeVisible();
       await expect(page.getByTestId('nav-browse')).toBeVisible();
       await expect(page.getByTestId('nav-home')).toHaveCount(0);
-      await expect(page.getByTestId('nav-leaderboards')).toHaveCount(0);
+      await expect(page.getByTestId('nav-leaderboards')).toBeVisible();
 
       await page.getByTestId('nav-manage').click();
       await expect(page).toHaveURL(/\/manage$/);
@@ -93,7 +94,10 @@ test.describe.serial('Admin navigation', () => {
           continue;
         }
         await expect(rail).toBeVisible();
-        await expect(page.getByTestId(`tournament-bar-${key}`)).toHaveAttribute('aria-current', 'page');
+        await expect(page.getByTestId(`tournament-bar-${key}`)).toHaveAttribute(
+          'aria-current',
+          'page'
+        );
         await expect(page.locator('h1'), `one h1 on ${key}`).toHaveCount(1);
         await expect(page).toHaveTitle(/ · Auto Tournament$/);
       }
@@ -117,10 +121,16 @@ test.describe.serial('Admin navigation', () => {
           await expect(page).toHaveURL(url);
           // Still in the same layout, with the page it opened marked.
           await expect(rail).toBeVisible();
-          await expect(page.getByTestId(`manage-rail-${key}`)).toHaveAttribute('aria-current', 'page');
+          await expect(page.getByTestId(`manage-rail-${key}`)).toHaveAttribute(
+            'aria-current',
+            'page'
+          );
           // Every item has an icon (CS2's come from the module); the open
           // page's is filled.
-          await expect(page.getByTestId(`manage-rail-${key}-icon`)).toHaveAttribute('data-weight', 'fill');
+          await expect(page.getByTestId(`manage-rail-${key}-icon`)).toHaveAttribute(
+            'data-weight',
+            'fill'
+          );
           // The shell prints no title of its own: one H1, the page's, and the
           // tab says "Page · Auto Tournament".
           await expect(page.locator('h1'), `one h1 on ${key}`).toHaveCount(1);
@@ -168,31 +178,27 @@ test.describe.serial('Admin navigation', () => {
     }
   );
 
-  test(
-    'a player sees no admin navigation',
-    { tag: ['@ui', '@navigation'] },
-    async ({ page }) => {
-      expect(await signInAsPlayer(page)).toBe(true);
+  test('a player sees no admin navigation', { tag: ['@ui', '@navigation'] }, async ({ page }) => {
+    expect(await signInAsPlayer(page)).toBe(true);
 
-      await page.goto('/');
-      await expect(page.getByTestId('nav-home')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId('nav-manage')).toHaveCount(0);
-      await expect(page.getByTestId('nav-admin')).toHaveCount(0);
-      await expect(page.getByTestId('manage-rail')).toHaveCount(0);
-      await expect(page.locator('a[href="/manage"]')).toHaveCount(0);
-      // A player's links: Home, Browse, the site-wide Teams page (a team is
-      // not tied to a tournament), and the platform's leaderboard (per game;
-      // a tournament's standings are on its page).
-      await expect(page.getByTestId('nav-teams')).toHaveAttribute('href', '/browse/teams');
-      await expect(page.getByTestId('nav-leaderboards')).toHaveAttribute('href', '/leaderboards');
+    await page.goto('/');
+    await expect(page.getByTestId('nav-home')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('nav-manage')).toHaveCount(0);
+    await expect(page.getByTestId('nav-admin')).toHaveCount(0);
+    await expect(page.getByTestId('manage-rail')).toHaveCount(0);
+    await expect(page.locator('a[href="/manage"]')).toHaveCount(0);
+    // A player's links: Home, Browse, the site-wide Teams page (a team is
+    // not tied to a tournament), and the platform's leaderboard (per game;
+    // a tournament's standings are on its page).
+    await expect(page.getByTestId('nav-teams')).toHaveAttribute('href', '/browse/teams');
+    await expect(page.getByTestId('nav-leaderboards')).toHaveAttribute('href', '/leaderboards');
 
-      // Typing the address sends them to their own page, still without it.
-      await page.goto('/manage');
-      await expect(page).toHaveURL(/\/player\//);
-      await expect(page.getByTestId('manage-rail')).toHaveCount(0);
-      await expect(page.getByTestId('nav-manage')).toHaveCount(0);
-    }
-  );
+    // Typing the address sends them to their own page, still without it.
+    await page.goto('/manage');
+    await expect(page).toHaveURL(/\/player\//);
+    await expect(page.getByTestId('manage-rail')).toHaveCount(0);
+    await expect(page.getByTestId('nav-manage')).toHaveCount(0);
+  });
 
   test(
     'a visitor who is not signed in sees no admin navigation',
