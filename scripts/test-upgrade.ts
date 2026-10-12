@@ -222,7 +222,7 @@ function startPostgres(name: string, network: string, database: string) {
     `POSTGRES_PASSWORD=${DB_PASSWORD}`,
     '-e',
     `POSTGRES_DB=${database}`,
-    'postgres:16-alpine',
+    'mirror.gcr.io/library/postgres:16-alpine',
   ]);
 }
 

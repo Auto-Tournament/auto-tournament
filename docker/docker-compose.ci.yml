@@ -15,7 +15,8 @@ services:
     image: ${MAT_IMAGE:-auto-tournament:ci}
     pull_policy: never
 
-  # From ECR Public's mirror of the official image: Docker Hub's anonymous pull
-  # limit failed every shard (2026-10-09). Same image, another registry.
+  # From Google's mirror of the official image: Docker Hub's anonymous pull
+  # limit failed every shard (2026-10-09), then ECR Public's anonymous data
+  # limit did (2026-10-12). Same image, another registry.
   postgres:
-    image: public.ecr.aws/docker/library/postgres:16-alpine
+    image: mirror.gcr.io/library/postgres:16-alpine
