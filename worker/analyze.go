@@ -266,6 +266,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		equipCT   int
 		equipT    int
 		frames    = map[int]map[string][6]float64{}
+		botNames  = map[string]string{} // replay ids of bots (bot:<name>) -> name
 		lastFrame = -FrameStep
 		clans     = map[int]map[string]string{} // round -> side -> the team's in-game name
 	)
@@ -292,6 +293,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		clans = map[int]map[string]string{}
 		shots, hitTicks = map[string][]Shot{}, map[string][]int{}
 		frames = map[int]map[string][6]float64{}
+		botNames = map[string]string{}
 		spotted = map[[2]uint64]bool{}
 		spotTick = map[[2]uint64]int{}
 		seenFrom = map[[2]uint64]int{}
@@ -603,11 +605,21 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 			lastFrame = tick
 			f := map[string][6]float64{}
 			for _, pl := range playing {
-				if !human(pl) || !pl.IsAlive() {
+				if pl == nil || !pl.IsAlive() {
 					continue
 				}
+				// Bots are on the replay too (bot-filled matches), as
+				// "bot:<name>", never in the stats.
+				key := id(pl)
+				if !human(pl) {
+					if !pl.IsBot || pl.Name == "" {
+						continue
+					}
+					key = "bot:" + pl.Name
+					botNames[key] = pl.Name
+				}
 				pos := pl.Position()
-				f[id(pl)] = [6]float64{math.Round(pos.X), math.Round(pos.Y), math.Round(float64(pl.ViewDirectionX())), float64(pl.Health()), float64(pl.Team), math.Round(pos.Z)}
+				f[key] = [6]float64{math.Round(pos.X), math.Round(pos.Y), math.Round(float64(pl.ViewDirectionX())), float64(pl.Health()), float64(pl.Team), math.Round(pos.Z)}
 			}
 			frames[tick] = f
 		}
@@ -648,9 +660,21 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		ids = append(ids, sid)
 	}
 	sort.Strings(ids)
+	botIDs := make([]string, 0, len(botNames))
+	for key := range botNames {
+		botIDs = append(botIDs, key)
+	}
+	sort.Strings(botIDs)
+	ids = append(ids, botIDs...)
 	replay := &Replay{Map: mapName, Tickrate: p.TickRate(), Step: FrameStep, Rounds: rounds}
 	for _, sid := range ids {
-		replay.Players = append(replay.Players, ReplayPlayer{ID: sid, Name: players[sid].Name})
+		var name string
+		if bot, ok := botNames[sid]; ok {
+			name = "BOT " + bot
+		} else if ps := players[sid]; ps != nil {
+			name = ps.Name
+		}
+		replay.Players = append(replay.Players, ReplayPlayer{ID: sid, Name: name})
 	}
 	ticks := make([]int, 0, len(frames))
 	for t := range frames {
