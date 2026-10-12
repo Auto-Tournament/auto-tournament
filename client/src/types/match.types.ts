@@ -83,6 +83,8 @@ export interface MatchConfig {
   expected_players_total?: number;
   expected_players_team1?: number;
   expected_players_team2?: number;
+  /** Bots take the empty seats (cs2 fillTeamsWithBots): nobody else is waited for. */
+  bot_fill?: boolean;
   team1?: MatchConfigTeam;
   team2?: MatchConfigTeam;
   cvars?: {
