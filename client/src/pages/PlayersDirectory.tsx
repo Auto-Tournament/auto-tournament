@@ -1,15 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Alert, Box, CircularProgress, Container, InputBase, MenuItem, Select, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  CircularProgress,
+  Container,
+  InputBase,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
-import { EmptyPanel, PageHead, Row, RowList } from '../components/common/ui';
+import { EmptyPanel, PageHead } from '../components/common/ui';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { api } from '../utils/api';
 import { pageTitle } from '../utils/pageTitle';
-import { playerProfilePath } from '../paths';
-import { tokens, fontMono, radii, textSize } from '../theme/tokens';
+import { paths, playerProfilePath } from '../paths';
+import { tokens, radii, textSize } from '../theme/tokens';
 
 const { color } = tokens;
 
@@ -20,21 +29,23 @@ interface DirectoryPlayer {
   currentElo?: number | null;
   matchCount?: number | null;
   createdAt?: number | null;
+  teams?: Array<{ id: string; name: string }>;
 }
 
-type SortKey = 'rating' | 'matches' | 'name' | 'newest';
+type SortKey = 'name' | 'matches' | 'newest';
 const PAGE = 50;
 
 /**
- * Every player on the site (`/browse/players`): search by name or Steam ID,
- * sort by rating, matches played, name or newest, and open a profile.
+ * Every player on the site (`/browse/players`): a directory to find someone
+ * and open their profile. Search by name, Steam ID or team; sort by name,
+ * matches played or newest. Rankings are the Leaderboards page's.
  */
 export default function PlayersDirectory() {
   const { t } = useTranslation();
   const [players, setPlayers] = useState<DirectoryPlayer[] | null>(null);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState('');
-  const [sort, setSort] = useState<SortKey>('rating');
+  const [sort, setSort] = useState<SortKey>('name');
   const [shown, setShown] = useState(PAGE);
 
   useEffect(() => {
@@ -59,10 +70,13 @@ export default function PlayersDirectory() {
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
     const list = (players ?? []).filter(
-      (p) => !q || p.name.toLowerCase().includes(q) || p.id.includes(q)
+      (p) =>
+        !q ||
+        p.name.toLowerCase().includes(q) ||
+        p.id.includes(q) ||
+        (p.teams ?? []).some((team) => team.name.toLowerCase().includes(q))
     );
     const by: Record<SortKey, (a: DirectoryPlayer, b: DirectoryPlayer) => number> = {
-      rating: (a, b) => (b.currentElo ?? 0) - (a.currentElo ?? 0),
       matches: (a, b) => (b.matchCount ?? 0) - (a.matchCount ?? 0),
       name: (a, b) => a.name.localeCompare(b.name),
       newest: (a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0),
@@ -70,15 +84,23 @@ export default function PlayersDirectory() {
     return [...list].sort((a, b) => by[sort](a, b) || a.name.localeCompare(b.name));
   }, [players, search, sort]);
 
-  const columns = 'minmax(0, 1fr) 6rem 6rem';
-
   return (
     <Box minHeight="100vh" bgcolor="transparent" data-testid="players-directory-page">
       <TopNavBar />
-      <Container maxWidth="md" sx={{ py: { xs: 3, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
         <PageHead
           title={t('playersDirectory.title')}
           subtitle={players ? t('playersDirectory.count', { count: players.length }) : undefined}
+          actions={
+            <Box
+              component={RouterLink}
+              to={paths.leaderboards}
+              sx={{ color: color.accent, fontSize: textSize.sm, textDecoration: 'none' }}
+              data-testid="players-directory-leaderboards"
+            >
+              {t('playersDirectory.toLeaderboards')}
+            </Box>
+          }
           sx={{ mb: 3 }}
         />
 
@@ -118,9 +140,8 @@ export default function PlayersDirectory() {
             data-testid="players-directory-sort"
             sx={{ minHeight: 44, borderRadius: radii.pill, minWidth: 180 }}
           >
-            <MenuItem value="rating">{t('playersDirectory.sort.rating')}</MenuItem>
-            <MenuItem value="matches">{t('playersDirectory.sort.matches')}</MenuItem>
             <MenuItem value="name">{t('playersDirectory.sort.name')}</MenuItem>
+            <MenuItem value="matches">{t('playersDirectory.sort.matches')}</MenuItem>
             <MenuItem value="newest">{t('playersDirectory.sort.newest')}</MenuItem>
           </Select>
         </Box>
@@ -139,20 +160,20 @@ export default function PlayersDirectory() {
           />
         ) : (
           <>
-            <RowList data-testid="players-directory-list">
-              <Row columns={columns} sx={{ py: 1.25 }} aria-hidden>
-                <Typography sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.muted }}>
-                  {t('playersDirectory.columns.player')}
-                </Typography>
-                <Typography sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.muted, textAlign: 'right' }}>
-                  {t('playersDirectory.columns.rating')}
-                </Typography>
-                <Typography sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.muted, textAlign: 'right' }}>
-                  {t('playersDirectory.columns.matches')}
-                </Typography>
-              </Row>
-              {rows.slice(0, shown).map((p, i) => (
-                <Row key={p.id} columns={columns} data-testid="players-directory-row">
+            <Box
+              component="ul"
+              data-testid="players-directory-list"
+              sx={{
+                listStyle: 'none',
+                p: 0,
+                m: 0,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))',
+                gap: 1.5,
+              }}
+            >
+              {rows.slice(0, shown).map((p) => (
+                <Box component="li" key={p.id} data-testid="players-directory-row">
                   <Box
                     component={RouterLink}
                     to={playerProfilePath(p.id)}
@@ -160,34 +181,42 @@ export default function PlayersDirectory() {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1.5,
+                      p: 1.5,
                       minWidth: 0,
+                      height: '100%',
+                      borderRadius: radii.md,
+                      border: `1px solid ${color.rule}`,
+                      bgcolor: color.paper2,
                       color: 'text.primary',
                       textDecoration: 'none',
-                      '&:hover .name': { textDecoration: 'underline' },
+                      transition: 'background-color 150ms',
+                      '&:hover': { bgcolor: color.paper3 },
+                      '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
                     }}
                   >
-                    {sort === 'rating' && !search && (
-                      <Typography
-                        component="span"
-                        sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.muted, width: '2.5ch', flex: 'none' }}
-                      >
-                        {i + 1}
+                    <PlayerAvatar
+                      id={p.id}
+                      name={p.name}
+                      avatarUrl={p.avatar ?? undefined}
+                      size={40}
+                    />
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography noWrap sx={{ fontWeight: 600 }}>
+                        {p.name}
                       </Typography>
-                    )}
-                    <PlayerAvatar id={p.id} name={p.name} avatarUrl={p.avatar ?? undefined} size={32} />
-                    <Typography className="name" noWrap sx={{ fontWeight: 600, minWidth: 0 }}>
-                      {p.name}
-                    </Typography>
+                      <Typography noWrap sx={{ fontSize: textSize.xs, color: color.muted }}>
+                        {[
+                          (p.teams ?? []).map((team) => team.name).join(', ') || null,
+                          t('playersDirectory.matches', { count: p.matchCount ?? 0 }),
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Typography sx={{ fontFamily: fontMono, textAlign: 'right' }}>
-                    {typeof p.currentElo === 'number' ? Math.round(p.currentElo) : '—'}
-                  </Typography>
-                  <Typography sx={{ fontFamily: fontMono, textAlign: 'right', color: color.ink2 }}>
-                    {p.matchCount ?? 0}
-                  </Typography>
-                </Row>
+                </Box>
               ))}
-            </RowList>
+            </Box>
             {rows.length > shown && (
               <Box display="flex" justifyContent="center" mt={2}>
                 <Box

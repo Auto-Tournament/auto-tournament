@@ -32,7 +32,13 @@ import { getEffectiveViewerSteamId, resolveViewerIdentity } from '../utils/viewe
 import { getIntegration, integrationForMatch } from '../integrations/registry';
 import { DEFAULT_GAME } from '../integrations/types';
 
-import { banPlayer, deletePlayer, ModerationError, moderationOf, unbanPlayer } from '../services/playerModeration';
+import {
+  banPlayer,
+  deletePlayer,
+  ModerationError,
+  moderationOf,
+  unbanPlayer,
+} from '../services/playerModeration';
 import type { Actor } from '../services/matchHolds';
 
 function actorOf(req: Request): Actor {
@@ -49,7 +55,14 @@ const router = Router();
  * match answer 404 with `restricted`. Admin routes (writes, the admin list)
  * are not affected.
  */
-const RESTRICTED_SUBPATHS = new Set(['', 'summary', 'team', 'current-match', 'rating-history', 'matches']);
+const RESTRICTED_SUBPATHS = new Set([
+  '',
+  'summary',
+  'team',
+  'current-match',
+  'rating-history',
+  'matches',
+]);
 router.param('playerId', async (req: Request, res: Response, next, playerId: string) => {
   if (req.method !== 'GET') return next();
   const sub = req.path.split('/').filter(Boolean).slice(1).join('/');
@@ -66,8 +79,11 @@ router.param('playerId', async (req: Request, res: Response, next, playerId: str
       ...(state.deleted ? { deleted: true } : { banned: true }),
       restricted: true,
     };
-    if (sub === '' || sub === 'summary') return res.json({ success: true, player: stub, restricted: true });
-    return res.status(404).json({ success: false, error: 'Not shown for this player', restricted: true });
+    if (sub === '' || sub === 'summary')
+      return res.json({ success: true, player: stub, restricted: true });
+    return res
+      .status(404)
+      .json({ success: false, error: 'Not shown for this player', restricted: true });
   } catch {
     return next();
   }
@@ -202,6 +218,16 @@ router.get('/find', async (req: Request, res: Response) => {
 router.get('/public-selection', async (_req: Request, res: Response) => {
   try {
     const players = await playerService.getAllPlayers();
+    // Each player's teams (by the teams' rosters), for the Players directory.
+    const teamsOf = new Map<string, Array<{ id: string; name: string }>>();
+    const teams = await db.queryAsync<{ id: string; name: string; players: string | null }>(
+      'SELECT id, name, players FROM teams'
+    );
+    for (const team of teams) {
+      for (const steamId of new Set((team.players ?? '').match(/\d{15,20}/g) ?? [])) {
+        teamsOf.set(steamId, [...(teamsOf.get(steamId) ?? []), { id: team.id, name: team.name }]);
+      }
+    }
 
     // Return only the fields needed for public selection/autocomplete
     const simplifiedPlayers = players.map((p) => ({
@@ -213,6 +239,7 @@ router.get('/public-selection', async (_req: Request, res: Response) => {
       matchCount: p.matchCount,
       createdAt: p.createdAt,
       isAdmin: p.isAdmin,
+      teams: teamsOf.get(p.id) ?? [],
     }));
 
     return res.json({
@@ -393,9 +420,10 @@ router.get('/:playerId/team', async (req: Request, res: Response) => {
     }
 
     // The player's role in it (captain or member), for the profile's team chip.
-    const account = await db.queryOneAsync<{ uid: string }>('SELECT uid FROM players WHERE id = ?', [
-      playerId,
-    ]);
+    const account = await db.queryOneAsync<{ uid: string }>(
+      'SELECT uid FROM players WHERE id = ?',
+      [playerId]
+    );
     const role = account ? await teamMembers.roleFor(matching.id, String(account.uid)) : null;
 
     return res.json({
@@ -653,7 +681,9 @@ router.get('/me/discord-id', async (req: Request, res: Response) => {
 
     const discordId = await playerService.getDiscordId(steamId);
     if (discordId === undefined) {
-      return res.status(404).json({ success: false, error: 'No player record for this Steam account' });
+      return res
+        .status(404)
+        .json({ success: false, error: 'No player record for this Steam account' });
     }
 
     const linked = await playerService.hasLinkedDiscord(steamId);
@@ -695,7 +725,9 @@ router.put('/me/discord-id', async (req: Request, res: Response) => {
       discordId: edit.kind === 'set' ? edit.value : null,
     });
     if (!updated) {
-      return res.status(404).json({ success: false, error: 'No player record for this Steam account' });
+      return res
+        .status(404)
+        .json({ success: false, error: 'No player record for this Steam account' });
     }
 
     const discordId = (await playerService.getDiscordId(steamId)) ?? null;
@@ -952,21 +984,15 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
 
           vetoSummary = {
             status,
-            team1Name:
-              vetoState.team1Name ||
-              match.team1_name ||
-              cfg.team1.name ||
-              'Team 1',
-            team2Name:
-              vetoState.team2Name ||
-              match.team2_name ||
-              cfg.team2.name ||
-              'Team 2',
+            team1Name: vetoState.team1Name || match.team1_name || cfg.team1.name || 'Team 1',
+            team2Name: vetoState.team2Name || match.team2_name || cfg.team2.name || 'Team 2',
             pickedMaps: sanitizedPickedMaps,
             actions: Array.isArray(vetoState.actions)
               ? vetoState.actions
                   .filter(
-                    (a): a is {
+                    (
+                      a
+                    ): a is {
                       step: number;
                       team: 'team1' | 'team2';
                       action: string;
@@ -1043,10 +1069,7 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     }));
 
     // Normalize and enrich config players with avatars from team data or players table
-    const enrichPlayers = async (
-      normalizedPlayers: NormalizedServerPlayer[],
-      teamId?: string
-    ) => {
+    const enrichPlayers = async (normalizedPlayers: NormalizedServerPlayer[], teamId?: string) => {
       if (teamId) {
         try {
           const teamData = await teamService.getTeamById(teamId);
@@ -1129,15 +1152,15 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
             ? { id: playerTeam.id, name: playerTeam.name, tag: playerTeam.tag }
             : null
           : opponent.id
-          ? { id: opponent.id, name: opponent.name, tag: opponent.tag }
-          : null,
+            ? { id: opponent.id, name: opponent.name, tag: opponent.tag }
+            : null,
         team2: !isTeam1
           ? playerTeam.id
             ? { id: playerTeam.id, name: playerTeam.name, tag: playerTeam.tag }
             : null
           : opponent.id
-          ? { id: opponent.id, name: opponent.name, tag: opponent.tag }
-          : null,
+            ? { id: opponent.id, name: opponent.name, tag: opponent.tag }
+            : null,
         opponent: opponent.id
           ? {
               id: opponent.id,
@@ -1774,7 +1797,9 @@ router.post('/import', async (req: Request, res: Response) => {
     const steamId = typeof p.steamId === 'string' ? p.steamId.trim() : '';
     const name = typeof p.name === 'string' ? p.name.trim() : '';
     if (!/^\d{17}$/.test(steamId) || !name) {
-      return res.status(400).json({ success: false, error: 'Each player needs a steamId (SteamID64) and a name' });
+      return res
+        .status(400)
+        .json({ success: false, error: 'Each player needs a steamId (SteamID64) and a name' });
     }
     players.push({
       id: steamId,
@@ -1866,7 +1891,9 @@ router.post('/bulk-delete', async (req: Request, res: Response) => {
     const adminIdsToRemove = (
       await Promise.all(unique.map((id) => playerService.getPlayerById(id)))
     ).filter((p) => p?.isAdmin).length;
-    if (bulkRemovesEveryAdmin({ adminIdsToRemove, adminCount: await playerService.countAdmins() })) {
+    if (
+      bulkRemovesEveryAdmin({ adminIdsToRemove, adminCount: await playerService.countAdmins() })
+    ) {
       return res.status(409).json({ success: false, error: LAST_ADMIN_ERROR });
     }
 
@@ -1922,7 +1949,9 @@ router.put('/:playerId', async (req: Request, res: Response) => {
     }
     const before = await playerService.getPlayerById(playerId);
     const adminChange =
-      before && input.isAdmin !== undefined && before.isAdmin !== input.isAdmin ? input.isAdmin : undefined;
+      before && input.isAdmin !== undefined && before.isAdmin !== input.isAdmin
+        ? input.isAdmin
+        : undefined;
     if (
       adminChange === false &&
       removesLastAdmin({ targetIsAdmin: true, adminCount: await playerService.countAdmins() })
@@ -1978,7 +2007,10 @@ router.post('/:playerId/ban', async (req: Request, res: Response) => {
   try {
     const reason = typeof req.body?.reason === 'string' ? req.body.reason : null;
     await banPlayer(req.params.playerId, reason, actorOf(req));
-    return res.json({ success: true, player: await playerService.getPlayerById(req.params.playerId) });
+    return res.json({
+      success: true,
+      player: await playerService.getPlayerById(req.params.playerId),
+    });
   } catch (error) {
     if (error instanceof ModerationError) {
       return res.status(error.status).json({ success: false, error: error.message });
@@ -1995,7 +2027,10 @@ router.post('/:playerId/ban', async (req: Request, res: Response) => {
 router.delete('/:playerId/ban', async (req: Request, res: Response) => {
   try {
     await unbanPlayer(req.params.playerId, actorOf(req));
-    return res.json({ success: true, player: await playerService.getPlayerById(req.params.playerId) });
+    return res.json({
+      success: true,
+      player: await playerService.getPlayerById(req.params.playerId),
+    });
   } catch (error) {
     log.error('Error unbanning player', { error, playerId: req.params.playerId });
     return res.status(500).json({ success: false, error: 'Could not lift the ban' });

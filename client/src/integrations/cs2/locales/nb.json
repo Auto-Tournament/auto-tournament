@@ -2400,5 +2400,54 @@
     "save": "Lagre",
     "seek": "Hopp til {{time}}",
     "failed": "Kunne ikke lagre kommentaren"
+  },
+  "leaderboards": {
+    "title": "Kategoriledere",
+    "categoryLabel": "Kategori",
+    "rangeLabel": "Tidsrom",
+    "category": {
+      "rating": "AT-rating",
+      "adr": "ADR",
+      "kd": "K/D",
+      "hs": "Headshots",
+      "opening": "Åpningsdueller",
+      "clutch": "Clutcher",
+      "kast": "KAST"
+    },
+    "range": {
+      "all": "All tid",
+      "days_one": "{{count}} dag",
+      "days_other": "Siste {{count}} dager"
+    },
+    "explain": {
+      "rating": "Auto Tournaments egen rating, 1,00 for en gjennomsnittlig spiller: kills, deaths, assists, skade og KAST per runde.",
+      "adr": "Gjennomsnittlig skade per runde.",
+      "kd": "Kills per death.",
+      "hs": "Andelen kills som var headshots (minst 50 kills).",
+      "opening": "Andelen åpningsdueller vunnet: rundens første kill, for eller mot (minst 10 dueller).",
+      "clutch": "Andelen 1vX-runder vunnet som sistemann (minst 5).",
+      "kast": "Andelen runder med kill, assist, overlevelse eller trade."
+    },
+    "qualify": "Spillere trenger {{maps}} maps og {{rounds}} runder for å kvalifisere; like verdier deler plass.",
+    "empty": "Ingen kvalifiserer ennå.",
+    "player": "Spiller",
+    "sample": "Over",
+    "sampleHint": "{{maps}} maps, {{rounds}} runder",
+    "sampleOf": {
+      "rating_one": "{{count}} runde",
+      "rating_other": "{{count}} runder",
+      "adr_one": "{{count}} runde",
+      "adr_other": "{{count}} runder",
+      "kd_one": "{{count}} K+D",
+      "kd_other": "{{count}} K+D",
+      "hs_one": "{{count}} kill",
+      "hs_other": "{{count}} kills",
+      "opening_one": "{{count}} duell",
+      "opening_other": "{{count}} dueller",
+      "clutch_one": "{{count}} clutch",
+      "clutch_other": "{{count}} clutcher",
+      "kast_one": "{{count}} runde",
+      "kast_other": "{{count}} runder"
+    }
   }
 }

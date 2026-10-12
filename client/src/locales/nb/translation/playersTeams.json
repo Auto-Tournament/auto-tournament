@@ -443,6 +443,9 @@
     "copy": "Kopier lenke til lagets kampside"
   },
   "playersDirectory": {
+    "toLeaderboards": "Rangeringer på Ledertavler →",
+    "matches_one": "{{count}} kamp",
+    "matches_other": "{{count}} kamper",
     "title": "Spillere",
     "count_one": "{{count}} spiller",
     "count_other": "{{count}} spillere",

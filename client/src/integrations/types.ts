@@ -1255,6 +1255,14 @@ export interface ClientGameIntegration {
    */
   siteNavLinks?: Array<{ path: string; labelKey: string }>;
 
+  /**
+   * The Leaderboards page, under the rating ranking: this game's own
+   * category rankings (client API 0.2.21; CS2: AT rating, ADR, K/D,
+   * headshots, opening duels, clutches and KAST), shown while the page is on
+   * this game. It fetches its own numbers.
+   */
+  leaderboardView?: ComponentType<Record<string, never>>;
+
   /** A section on every player's profile, below the stats (CS2: the skin loadout). */
   playerProfileSection?: ComponentType<PlayerProfileSectionProps>;
 
