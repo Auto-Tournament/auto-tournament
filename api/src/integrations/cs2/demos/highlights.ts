@@ -84,6 +84,20 @@ export interface Moment {
   title: string;
 }
 
+/** Per round, the last tick a clip of it may reach: the next round's start, else its end plus a tail. */
+export function roundStops(
+  rounds: ReadonlyArray<{ number: number; endTick: number; startTick?: number }>
+): Map<number, number> {
+  const byNumber = new Map(rounds.map((r) => [r.number, r]));
+  return new Map(
+    rounds.map((r) => {
+      const next = byNumber.get(r.number + 1)?.startTick;
+      const stop = typeof next === 'number' && next > r.endTick ? next : r.endTick + 5 * TICKRATE;
+      return [r.number, stop];
+    })
+  );
+}
+
 /**
  * Pick the best moments of a map (pure: tested on its own), up to
  * `perPlayer` for each player (the `highlights_per_player` setting).
@@ -97,7 +111,11 @@ export function pickMoments(
     .filter((k) => k.attacker && k.attackerSide && k.attackerSide !== k.victimSide)
     .sort((a, b) => a.tick - b.tick);
   const all = (analysis.kills as unknown as KillRow[]).slice().sort((a, b) => a.tick - b.tick);
-  const roundEnd = new Map(analysis.rounds.map((r) => [r.number, r.endTick]));
+  // How far a clip of a round may run: into the time after the round ends
+  // (the game keeps playing until the next round starts), so a round-ending
+  // kill still gets its tail and slow-mo. Capping at the round's end tick
+  // cut such clips off on the kill (clip 250, 2026-10-12).
+  const roundEnd = roundStops(analysis.rounds);
 
   // One player's kills in one round.
   const runs: KillRow[][] = [];
