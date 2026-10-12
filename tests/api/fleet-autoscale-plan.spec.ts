@@ -10,6 +10,8 @@ import {
   planScaling,
   scalerReserve,
   limitActions,
+  holdCreatesWhileLicenseFull,
+  LICENSE_FULL_BACKOFF_SECONDS,
   MAX_COMMANDS_PER_HOST,
   MAX_STARTS_PER_PASS,
   MAX_STOPS_PER_PASS,
@@ -555,5 +557,33 @@ test.describe('Autoscale: rate limit', () => {
     expect(limitActions(many, recent, NOW).allowed).toHaveLength(2);
     // Another machine is not held back.
     expect(limitActions([act('start', 'h2')], recent, NOW).allowed).toHaveLength(1);
+  });
+});
+
+test.describe('license full: creates wait', () => {
+  const acts = [
+    { kind: 'create', hostId: 'h1' },
+    { kind: 'start', hostId: 'h1' },
+    { kind: 'stop', hostId: 'h2' },
+  ];
+
+  test('no back-off: every action goes', () => {
+    expect(holdCreatesWhileLicenseFull(acts, 1000, 0)).toEqual({ actions: acts, held: false });
+  });
+
+  test('during the back-off a create is held, starts and stops go on', () => {
+    const until = 1000 + LICENSE_FULL_BACKOFF_SECONDS;
+    const r = holdCreatesWhileLicenseFull(acts, 1001, until);
+    expect(r.held).toBe(true);
+    expect(r.actions.map((a) => a.kind)).toEqual(['start', 'stop']);
+  });
+
+  test('nothing to hold: held is false', () => {
+    const r = holdCreatesWhileLicenseFull([{ kind: 'stop', hostId: 'h1' }], 1001, 5000);
+    expect(r).toEqual({ actions: [{ kind: 'stop', hostId: 'h1' }], held: false });
+  });
+
+  test('the back-off ends', () => {
+    expect(holdCreatesWhileLicenseFull(acts, 5000, 5000).held).toBe(false);
   });
 });
