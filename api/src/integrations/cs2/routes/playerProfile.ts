@@ -18,6 +18,8 @@ import { Router, Request, Response } from 'express';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { atRating } from '../rating';
+import { chooseRole, rolesOf, ROLES } from '../roles';
+import { resolveViewerAccount } from '../../../utils/viewerIdentity';
 
 const router = Router();
 
@@ -186,6 +188,57 @@ function detail(row: DetailRow | undefined) {
       : null,
   };
 }
+
+// A player's role: the one they chose and the demos' suggestion (../roles.ts).
+router.get('/players/:playerId/role', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.playerId;
+    if (!/^\d{15,20}$/.test(id))
+      return res.status(400).json({ success: false, error: 'Which player?' });
+    return res.json({ success: true, ...(await rolesOf([id]))[id] });
+  } catch (error) {
+    log.error('[ROLES] read failed', { error, player: req.params.playerId });
+    return res.status(500).json({ success: false, error: 'Could not read the role' });
+  }
+});
+
+// The signed-in player chooses their role ({ role: … | null }).
+router.put('/players/me/role', async (req: Request, res: Response) => {
+  try {
+    const role = req.body?.role;
+    if (role !== null && !(ROLES as readonly string[]).includes(role))
+      return res
+        .status(400)
+        .json({ success: false, error: `{ role: ${ROLES.join(' | ')} | null }` });
+    const viewer = await resolveViewerAccount(req);
+    if (!viewer.playerId) return res.status(401).json({ success: false, error: 'Sign in first' });
+    if (viewer.isImpersonating)
+      return res
+        .status(403)
+        .json({ success: false, error: 'Stop impersonating to choose a role.' });
+    await chooseRole(viewer.playerId, role);
+    return res.json({ success: true, ...(await rolesOf([viewer.playerId]))[viewer.playerId] });
+  } catch (error) {
+    log.error('[ROLES] choose failed', { error });
+    return res.status(500).json({ success: false, error: 'Could not save the role' });
+  }
+});
+
+// A team's players' roles, by its roster.
+router.get('/teams/:teamId/roles', async (req: Request, res: Response) => {
+  try {
+    const [team] = await db.queryAsync<{ players: string | null }>(
+      'SELECT players FROM teams WHERE id = ?',
+      [req.params.teamId]
+    );
+    if (!team) return res.status(404).json({ success: false, error: 'No such team' });
+    const ids = [...new Set((team.players ?? '').match(/\d{15,20}/g) ?? [])];
+    return res.json({ success: true, roles: await rolesOf(ids) });
+  } catch (error) {
+    log.error('[ROLES] team read failed', { error, team: req.params.teamId });
+    return res.status(500).json({ success: false, error: 'Could not read the roles' });
+  }
+});
 
 router.get('/players/:playerId/profile', async (req: Request, res: Response) => {
   const { playerId } = req.params;

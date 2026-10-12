@@ -2494,5 +2494,26 @@
       "kast_one": "{{count}} round",
       "kast_other": "{{count}} rounds"
     }
+  },
+  "roles": {
+    "title": "Role",
+    "yours": "Your role",
+    "none": "Not set",
+    "suggested": "Suggested from the demos: {{role}} ({{confidence}}, {{maps}} maps).",
+    "confidence": {
+      "low": "low confidence",
+      "medium": "medium confidence",
+      "high": "high confidence"
+    },
+    "why": {
+      "awper": "{{share}} of the kills with the AWP.",
+      "entry": "In {{share}} of the rounds' opening duels.",
+      "support": "{{flashes}} enemies flashed and {{utility}} utility damage a round.",
+      "rifler": "No other role stands out."
+    },
+    "noSuggestion": "Not enough analysed demos to suggest a role yet (3 maps and 30 kills).",
+    "saveFailed": "Could not save the role",
+    "team": "Roles",
+    "suggestedShort": "{{role}} (suggested, {{confidence}})"
   }
 }

@@ -67,6 +67,7 @@ import { demoPaths } from './demos/paths';
 import { skinPaths } from './skins/paths';
 import { skinsAccountMenuItems } from './skins/useSkins';
 import { cs2Locales } from './locales';
+import { PlayerRole } from './profile/PlayerRole';
 
 /**
  * The profile's CS2 tab: the stats, then the player's loadout. Highlights are
@@ -76,6 +77,7 @@ function Cs2ProfileView(props: PlayerProfileViewProps) {
   return (
     <>
       <Cs2ProfileStats {...props} />
+      <PlayerRole playerId={props.playerId} isOwn={!!props.isOwn} />
       <ProfileLoadout steamId={props.playerId} isOwn={!!props.isOwn} />
     </>
   );

@@ -2449,5 +2449,26 @@
       "kast_one": "{{count}} runde",
       "kast_other": "{{count}} runder"
     }
+  },
+  "roles": {
+    "title": "Rolle",
+    "yours": "Din rolle",
+    "none": "Ikke satt",
+    "suggested": "Foreslått ut fra demoene: {{role}} ({{confidence}}, {{maps}} maps).",
+    "confidence": {
+      "low": "lav sikkerhet",
+      "medium": "middels sikkerhet",
+      "high": "høy sikkerhet"
+    },
+    "why": {
+      "awper": "{{share}} av killsene med AWP.",
+      "entry": "Med i {{share}} av rundenes åpningsdueller.",
+      "support": "{{flashes}} fiender flashet og {{utility}} utility-skade per runde.",
+      "rifler": "Ingen annen rolle skiller seg ut."
+    },
+    "noSuggestion": "For få analyserte demoer til å foreslå en rolle ennå (3 maps og 30 kills).",
+    "saveFailed": "Kunne ikke lagre rollen",
+    "team": "Roller",
+    "suggestedShort": "{{role}} (foreslått, {{confidence}})"
   }
 }

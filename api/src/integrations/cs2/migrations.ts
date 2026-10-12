@@ -1500,4 +1500,16 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       CREATE INDEX IF NOT EXISTS cs2_video_comments_player_idx ON cs2_video_comments(player_id, created_at);
     `,
   },
+  {
+    // The role a player chose for themselves (roles.ts); suggestions from the
+    // demos are worked out when asked for and never stored over it.
+    id: '050-player-roles',
+    up: `
+      CREATE TABLE IF NOT EXISTS cs2_player_roles (
+        player_id TEXT PRIMARY KEY,
+        role TEXT NOT NULL, -- rifler | awper | igl | entry | support | lurker
+        updated_at INTEGER NOT NULL
+      );
+    `,
+  },
 ];

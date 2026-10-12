@@ -14,6 +14,7 @@ import type { TeamProfileViewProps } from '../../types';
 import { getMapDisplayName } from '../maps/mapData';
 import { MapRadar, mapStrength, type MapResult } from './MapRadar';
 import { LibraryStrip } from '../highlights/LibraryStrip';
+import { TeamRoles } from './TeamRoles';
 
 interface TeamProfileResponse {
   success: boolean;
@@ -34,6 +35,7 @@ export function Cs2TeamProfileStats({ teamId }: TeamProfileViewProps) {
   return (
     <>
       <LibraryStrip filter={{ team: teamId }} id="cs2-team-highlights" />
+      <TeamRoles teamId={teamId} />
       <TeamMapStats teamId={teamId} />
     </>
   );
