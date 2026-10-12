@@ -9,7 +9,6 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Box, ButtonBase, LinearProgress, Stack, Typography } from '@mui/material';
 import {
   api,
-  fontDisplay,
   HighlightPlayer,
   mono,
   radii,
@@ -17,20 +16,12 @@ import {
   tokens,
   useModuleTranslation,
   useSocket,
-  VideoThumb,
   type HighlightPlayerHandle,
   type MusicTrack,
 } from '../../../module-sdk';
 import type { MatchPublicPanelProps } from '../../types';
-import {
-  clock,
-  kindLabel,
-  mapLabel,
-  playTitle,
-  watchClipPath,
-  watchTeamReelPath,
-  type Chapter,
-} from './data';
+import { clock, kindLabel, mapLabel, watchTeamReelPath, type Chapter } from './data';
+import { MatchClipGrid, type MatchClip } from './MatchClipGrid';
 
 interface TeamReelRow {
   teamId: string;
@@ -57,18 +48,6 @@ interface Line {
   hsPercent: number;
   kast: number;
   entryKills: number;
-}
-
-interface MatchClip {
-  id: number;
-  playerId: string;
-  playerName: string;
-  kind: string;
-  title: string;
-  round: number;
-  mapNumber: number;
-  map: string | null;
-  video: string;
 }
 
 export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
@@ -435,68 +414,7 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
                 />
               </Box>
             )}
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))',
-                gap: 2,
-              }}
-            >
-              {clips.map((c) => (
-                <Box
-                  key={c.id}
-                  component={RouterLink}
-                  to={watchClipPath(c.id)}
-                  sx={{
-                    color: 'inherit',
-                    textDecoration: 'none',
-                    display: 'grid',
-                    gap: 0.75,
-                    minWidth: 0,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      position: 'relative',
-                      aspectRatio: '16 / 9',
-                      maxWidth: '100%',
-                      borderRadius: radii.md,
-                      overflow: 'hidden',
-                      bgcolor: 'background.surface3',
-                      border: 1,
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <VideoThumb src={c.video} at={4} />
-                    <Box
-                      component="span"
-                      sx={{
-                        position: 'absolute',
-                        left: 8,
-                        top: 8,
-                        px: 1,
-                        py: 0.25,
-                        borderRadius: radii.pill,
-                        bgcolor: tokens.color.accent,
-                        color: tokens.color.accentInk,
-                        fontFamily: fontDisplay,
-                        fontWeight: 700,
-                        fontSize: textSize.xs,
-                      }}
-                    >
-                      {kindLabel(t, c.kind)}
-                    </Box>
-                  </Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
-                    {c.playerName}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" noWrap component="div">
-                    {playTitle(c.title)} · {mapLabel(t, c.map, c.mapNumber)} ·{' '}
-                    {t('highlights.roundN', { n: c.round })}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
+            <MatchClipGrid clips={clips} />
           </>,
           'match-page-highlights'
         )}

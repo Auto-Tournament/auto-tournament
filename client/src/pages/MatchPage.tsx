@@ -89,6 +89,8 @@ export default function MatchPage() {
 
   const integration = useIntegrationFor(match ?? { game: null });
   const Panel = integration.matchPanels.publicView;
+  // The game's controls on each map (CS2: its analysis with the 2D replay, and its reel).
+  const MapAction = integration.matchMapAction;
 
   if (failed) {
     return (
@@ -327,6 +329,11 @@ export default function MatchPage() {
                     {t('matchPage.mapN', { n: m.mapNumber + 1 })}
                     {m.team1Score + m.team2Score > 24 ? ` · ${t('matchPage.overtime')}` : ''}
                   </Typography>
+                  {MapAction && (
+                    <Stack direction="row" sx={{ mt: 2, gap: 1, flexWrap: 'wrap' }}>
+                      <MapAction matchSlug={match.slug} mapNumber={m.mapNumber} />
+                    </Stack>
+                  )}
                 </Box>
               );
             })}

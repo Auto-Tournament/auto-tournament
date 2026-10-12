@@ -1903,6 +1903,7 @@
     "lurker": "Lurker"
   },
   "analysis": {
+    "highlights": "Highlights",
     "open": "Analysis",
     "analyzing": "Analyzing…",
     "title": "{{map}} analysis",
