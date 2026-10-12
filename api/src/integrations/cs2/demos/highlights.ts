@@ -852,7 +852,15 @@ async function noticeHighlightReady(id: number): Promise<void> {
   await notificationService.notify(
     row.player_id,
     'highlight',
-    { highlightId: id, title: row.title, kind: row.kind, matchSlug: row.match_slug },
+    {
+      highlightId: id,
+      title: row.title,
+      kind: row.kind,
+      matchSlug: row.match_slug,
+      // Where the notice opens (the clip's watch page) and its still.
+      url: `/watch/clip/${id}`,
+      video: `/api/game/cs2/highlights/${id}.mp4`,
+    },
     `highlight:${id}`
   );
 }

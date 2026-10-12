@@ -1,6 +1,11 @@
-import { test, expect, type APIRequestContext } from '@playwright/test';
+import {
+  test,
+  expect,
+  request as playwrightRequest,
+  type APIRequestContext,
+} from '@playwright/test';
 import { io } from 'socket.io-client';
-import { signInViaRequest } from '../helpers/auth';
+import { signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 
 /**
  * The admin's Clips list and Redo (api/src/integrations/cs2/demos/clipsAdmin.ts):
@@ -155,6 +160,9 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
     // The clip on its own starts after its caption card's opening: its
     // markers are its clean twin's (a reel's), with where it starts.
     const twin = { duration: 12, kills: [1.6, 5, 7.5], slowmo: [8, 11], start: 2.6 };
+    // The player, signed in, is told when their clip is ready.
+    const starCtx = await playwrightRequest.newContext({ baseURL: BASE_URL });
+    expect(await signInAsPlayerViaRequest(starCtx, star, 'C0')).toBe(true);
     for (const m of mine.moments) {
       const up = await request.put(`/api/game/cs2/recorder/jobs/${m.id}/clip`, {
         headers: { 'Content-Type': 'video/mp4', 'X-AT-Markers': JSON.stringify(twin) },
@@ -162,6 +170,19 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
       });
       expect(up.status()).toBe(200);
     }
+    // The notice opens the clip's own page and shows its still.
+    const notices = (await (await starCtx.get('/api/social/notifications')).json()).items as Array<{
+      kind: string;
+      data: { highlightId?: number; url?: string; video?: string };
+    }>;
+    const ready = notices.find(
+      (n) => n.kind === 'highlight' && n.data.highlightId === mine.moments[0].id
+    );
+    expect(ready?.data).toMatchObject({
+      url: `/watch/clip/${mine.moments[0].id}`,
+      video: `/api/game/cs2/highlights/${mine.moments[0].id}.mp4`,
+    });
+    await starCtx.dispose();
     expect(await told).toEqual({ matchSlug: slug });
     socket.close();
     expect(await progress()).toEqual({ done: 2, total: 2, waiting: 0 });
