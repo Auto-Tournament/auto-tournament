@@ -18,6 +18,8 @@
 import { RATING_ELO, ratingGame, ratingJoin } from './gameRatings';
 import { randomBytes } from 'node:crypto';
 import { db } from '../config/database';
+import { notificationService } from './notificationService';
+import { emitSocialChanged } from './socketService';
 import { teamService } from './teamService';
 import { teamMembers, type TeamLineup, type TeamMemberRole } from './teamMembers';
 import type { Player } from '../types/team.types';
@@ -188,6 +190,9 @@ async function accountsBySteamId(
   return new Map(rows.map((r) => [r.id, { uid: r.uid, name: r.name, avatar: r.avatar }]));
 }
 
+/** The invited player's notice for one team's invite (answered or taken back by it). */
+export const teamInviteKey = (teamId: string) => `team_invite:${teamId}`;
+
 export const teamSelfService = {
   /** Everything the owner view shows. Owner and captains only. */
   async manageView(teamId: string, uid: string) {
@@ -316,6 +321,23 @@ export const teamSelfService = {
        ON CONFLICT (team_id, account_uid) DO NOTHING`,
       [team.id, player.uid, uid]
     );
+    // The invited player hears of it (bell, with Accept / Decline there).
+    const from = await db.queryOneAsync<{ id: string; name: string; avatar: string | null }>(
+      'SELECT id, name, avatar_url AS avatar FROM players WHERE uid = ?',
+      [uid]
+    );
+    await notificationService.notify(
+      player.id,
+      'team_invite',
+      {
+        teamId: team.id,
+        teamName: team.name,
+        from: from ? { id: from.id, name: from.name, avatarUrl: from.avatar } : null,
+        url: '/browse/teams',
+      },
+      teamInviteKey(team.id)
+    );
+    emitSocialChanged([player.id]);
     return {
       uid: player.uid,
       steamId: player.id,
@@ -333,6 +355,13 @@ export const teamSelfService = {
       team.id,
       playerUid,
     ]);
+    const invited = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [
+      playerUid,
+    ]);
+    if (invited) {
+      await notificationService.withdraw(invited.id, teamInviteKey(team.id));
+      emitSocialChanged([invited.id]);
+    }
   },
 
   /** The teams that asked this player on. */
@@ -386,6 +415,12 @@ export const teamSelfService = {
       team.id,
       uid,
     ]);
+    await notificationService.answer(
+      invite.id,
+      teamInviteKey(team.id),
+      accept ? 'joinedTeam' : 'declined'
+    );
+    emitSocialChanged([invite.id]);
   },
 
   async rename(teamId: string, uid: string, name: string, tag: string): Promise<void> {
