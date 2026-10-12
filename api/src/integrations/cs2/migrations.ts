@@ -1479,7 +1479,7 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
         created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
         PRIMARY KEY (video_key, player_id)
       );
-      CREATE INDEX IF NOT EXISTS idx_cs2_video_likes_player ON cs2_video_likes(player_id);
+      CREATE INDEX IF NOT EXISTS cs2_video_likes_player_idx ON cs2_video_likes(player_id);
     `,
   },
 ];
