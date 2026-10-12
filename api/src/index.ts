@@ -3,6 +3,7 @@
 import { startModuleUpdateNotices } from './services/platform/moduleUpdates';
 import { socialService } from './services/socialService';
 import { startTournamentNotices } from './services/tournamentNotices';
+import { startAdminNoticeSweep } from './services/adminNoticeSweep';
 import { startHoldTimer } from './services/matchHolds';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -657,6 +658,7 @@ process.on('uncaughtException', (err) => {
       // Friends see each other come and go; tournament check-ins reach the bell.
       socialService.start();
       startTournamentNotices();
+      startAdminNoticeSweep();
       // Admins' holds and bracket pauses that end by themselves (services/matchHolds.ts).
       startHoldTimer();
       // Matchmaking's 2-second loop (services/matchmaking). Cancels lobbies a restart left open.

@@ -55,6 +55,7 @@ import systemRoutes from './system';
 import meRoutes from './me';
 import compatRoutes from './compat';
 import adminCallRoutes from './adminCalls';
+import adminNoticeRoutes from './adminNotices';
 import licenseRoutes from './license';
 import webhookRoutes from './webhooks';
 import integrationTeamRoutes from './integrationTeams';
@@ -140,19 +141,21 @@ const coreRoutes: MountedRouter[] = [
     prefix: '/api/social',
     router: socialRoutes,
     title: 'Social',
-    description: "Friends, friend requests, finding players, and the signed-in player's notifications (the bell).",
+    description:
+      "Friends, friend requests, finding players, and the signed-in player's notifications (the bell).",
   },
   {
     prefix: '/api/leaderboard',
     router: leaderboardRoutes,
     title: 'Leaderboard',
-    description: "Players ranked by their rating in one game. Public.",
+    description: 'Players ranked by their rating in one game. Public.',
   },
   {
     prefix: '/api/highlights',
     router: highlightsRoutes,
     title: 'Highlights',
-    description: "What every game's highlights share: the music library under reels, and the mixes made from it.",
+    description:
+      "What every game's highlights share: the music library under reels, and the mixes made from it.",
   },
   {
     prefix: '/api/search',
@@ -164,7 +167,8 @@ const coreRoutes: MountedRouter[] = [
     prefix: '/api/team-directory',
     router: teamDirectoryRoutes,
     title: 'Team directory',
-    description: "Every team (public), and the signed-in player's own teams: list them, make one (one owned team per account).",
+    description:
+      "Every team (public), and the signed-in player's own teams: list them, make one (one owned team per account).",
   },
   {
     prefix: '/api/settings',
@@ -176,7 +180,8 @@ const coreRoutes: MountedRouter[] = [
     prefix: '/api/sign-in-providers',
     router: signInProvidersRoutes,
     title: 'Sign-in providers',
-    description: 'Steam, Discord, Google, GitHub and Twitch sign-in, set up from Settings -> Sign-in. Admin only; secrets are write-only.',
+    description:
+      'Steam, Discord, Google, GitHub and Twitch sign-in, set up from Settings -> Sign-in. Admin only; secrets are write-only.',
   },
   {
     prefix: '/api/templates',
@@ -253,13 +258,15 @@ const coreRoutes: MountedRouter[] = [
     prefix: '/api/player-reports',
     router: reportRoutes,
     title: 'Player reports',
-    description: 'Players report another player to the admins; admins list, dismiss, or ban from a report.',
+    description:
+      'Players report another player to the admins; admins list, dismiss, or ban from a report.',
   },
   {
     prefix: '/api/me/email',
     router: meEmailRouter,
     title: 'My email',
-    description: 'Your own email address (confirmed by a link) and whether you get tournament emails.',
+    description:
+      'Your own email address (confirmed by a link) and whether you get tournament emails.',
   },
   {
     prefix: '/api/email-settings',
@@ -271,7 +278,8 @@ const coreRoutes: MountedRouter[] = [
     prefix: '/api/email',
     router: emailLinksRouter,
     title: 'Email links',
-    description: 'What the links in emails do: confirm an address, unsubscribe from tournament emails.',
+    description:
+      'What the links in emails do: confirm an address, unsubscribe from tournament emails.',
   },
   {
     prefix: '/api/me',
@@ -285,6 +293,13 @@ const coreRoutes: MountedRouter[] = [
     title: 'Compatibility',
     description:
       'Ready Up compatibility with the latest CS2 build: the runs its CI reports (token-guarded push), and public reads for the /compatibility page and a shields.io badge. 404 unless COMPAT_INGEST_TOKEN or COMPAT_FEED_URL is set.',
+  },
+  {
+    prefix: '/api/admin-notices',
+    router: adminNoticeRoutes,
+    title: 'Admin notices',
+    description:
+      "The admins' bell: what needs an admin (a match stuck without a server, a crashed server, a failing recorder, a new beta). One feed for every admin, each with their own seen mark; repeats count up. Admin only. Live updates go to signed-in admins as the Socket.IO events admin:notice and admin:notice:resolved.",
   },
   {
     prefix: '/api/admin-calls',
@@ -332,26 +347,28 @@ const coreRoutes: MountedRouter[] = [
     prefix: '/api/test',
     router: testRoutes,
     title: 'Test helpers',
-    description:
-      'E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.',
+    description: 'E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.',
   },
   {
     prefix: '/api/setup',
     router: setupRouter,
     title: 'Setup',
-    description: 'First-admin setup and reset-admin recovery with a one-time code. 404 once an admin exists.',
+    description:
+      'First-admin setup and reset-admin recovery with a one-time code. 404 once an admin exists.',
   },
   {
     prefix: '/api/local-accounts',
     router: localAccountsRouter,
     title: 'Local accounts',
-    description: 'Username + password accounts an admin creates, makes admin or not, gives a new password, or removes. Admin only.',
+    description:
+      'Username + password accounts an admin creates, makes admin or not, gives a new password, or removes. Admin only.',
   },
   {
     prefix: '/api/auth/local',
     router: localAuthRouter,
     title: 'Local admin login',
-    description: 'Username + password (+ TOTP) sign-in for local admin accounts, and TOTP enrolment.',
+    description:
+      'Username + password (+ TOTP) sign-in for local admin accounts, and TOTP enrolment.',
   },
   {
     prefix: '/api/auth',

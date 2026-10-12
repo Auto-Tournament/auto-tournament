@@ -386,6 +386,16 @@ export function emitFleetHostChanged(hostId: string): void {
   if (io) io.to(ADMIN_ROOM).emit('fleet:host', { hostId });
 }
 
+/** A notice for the admins' bell (services/adminNoticeService.ts), to the signed-in admins. */
+export function emitAdminNotice(notice: unknown, sound: boolean): void {
+  if (io) io.to(ADMIN_ROOM).emit('admin:notice', { notice, sound });
+}
+
+/** Admins' bell notices that are closed now (fixed themselves or dismissed). */
+export function emitAdminNoticesResolved(ids: number[]): void {
+  if (io && ids.length) io.to(ADMIN_ROOM).emit('admin:notice:resolved', { ids });
+}
+
 /** Admin calls resolved, to the signed-in admins (room `admins`). */
 export function emitAdminCallResolved(payload: AdminCallResolvedEvent): void {
   if (io) {

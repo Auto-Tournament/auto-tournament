@@ -23,6 +23,7 @@ import { SiteNameCard } from '../components/settings/SiteNameCard';
 import { EmailSettingsCard } from '../components/settings/EmailSettingsCard';
 import { WebhooksCard } from '../components/settings/WebhooksCard';
 import { MatchmakingSettingsCard } from '../components/settings/MatchmakingSettingsCard';
+import { AdminNoticesCard } from '../components/settings/AdminNoticesCard';
 import { NewsSettingsCard } from '../components/settings/NewsSettingsCard';
 import {
   ExperimentalCard,
@@ -54,6 +55,7 @@ const SECTION_CARDS: Record<string, string> = {
   webhooks: 'webhooks',
   matchmaking: 'matchmaking',
   news: 'news',
+  adminNotices: 'adminnotices',
   experimental: 'advanced',
   developer: 'advanced',
   advanced: 'advanced',
@@ -341,6 +343,9 @@ export default function Settings() {
             </Stack>
 
             <Stack spacing={2} sx={{ minWidth: 0 }}>
+              <SettingsCard cardKey="adminnotices" highlight={highlight === 'adminnotices'}>
+                <AdminNoticesCard />
+              </SettingsCard>
               <SettingsCard cardKey="webhooks" highlight={highlight === 'webhooks'}>
                 <WebhooksCard />
               </SettingsCard>

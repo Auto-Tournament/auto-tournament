@@ -2332,7 +2332,15 @@
       "updatePending": "Oppdatering venter",
       "updateQueued": "Oppdatering satt i kø; pågående jobb fullføres først.",
       "updateAll": "Oppdater alle",
-      "build": "Build {{revision}}"
+      "build": "Build {{revision}}",
+      "latest": "Oppdater alle installerer image {{image}}, agent {{agent}}",
+      "behind_one": "{{count}} opptaker er utdatert",
+      "behind_other": "{{count}} opptakere er utdatert",
+      "allCurrent": "alle er oppdatert",
+      "updateAvailable": "Oppdatering tilgjengelig",
+      "upToDate": "Oppdatert",
+      "image": "image",
+      "updatedAt": "oppdatert {{time}}"
     },
     "runFailed_one": "{{count}} feilet",
     "runFailed_other": "{{count}} feilet"

@@ -217,6 +217,14 @@ export async function saveBenchmark(
   log.info(
     `[RECORDERS] ${name} benchmarked (${source} clip): ${pick ? `${pick} Hz` : 'no try finished'}`
   );
+  const { adminNoticeService } = await import('../../../services/adminNoticeService');
+  if (pick) await adminNoticeService.resolve(`benchmark_failed:${name}`);
+  else
+    await adminNoticeService.raise(
+      'benchmark_failed',
+      { recorder: name, error: tries.find((t) => t.error)?.error ?? null },
+      `benchmark_failed:${name}`
+    );
   return { gamescopeHz: pick };
 }
 
@@ -353,6 +361,7 @@ export async function listRecorders() {
         (!!r.latest_image && !!r.recorder_image && r.latest_image !== r.recorder_image) ||
         newerRecorderAgent(r.latest_agent_version, r.agent_version),
       recorderImage: r.recorder_image,
+      latestImage: r.latest_image,
       recorderRevision: r.recorder_revision,
       updateStatus: r.update_status,
       updateError: r.update_error,

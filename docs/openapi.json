@@ -496,6 +496,10 @@
       "description": "Players calling for an admin from a game server (CS2: `.admin [message]` in Ready Up, sent as the admin_called event): list open and recently resolved calls, resolve one or all. Admin only. Live updates go to signed-in admins as the Socket.IO events admin:call and admin:call:resolved."
     },
     {
+      "name": "Admin notices",
+      "description": "The admins' bell: what needs an admin (a match stuck without a server, a crashed server, a failing recorder, a new beta). One feed for every admin, each with their own seen mark; repeats count up. Admin only. Live updates go to signed-in admins as the Socket.IO events admin:notice and admin:notice:resolved."
+    },
+    {
       "name": "Auth",
       "description": "Sign-in flows, admin identity, impersonation."
     },
@@ -969,6 +973,139 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/admin-notices": {
+      "get": {
+        "tags": [
+          "Admin notices"
+        ],
+        "summary": "Open notices (newest change first) and recently resolved ones, with this admin's unread count",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The notices"
+          }
+        }
+      }
+    },
+    "/api/admin-notices/seen": {
+      "post": {
+        "tags": [
+          "Admin notices"
+        ],
+        "summary": "This admin has seen every notice so far",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saved"
+          }
+        }
+      }
+    },
+    "/api/admin-notices/settings": {
+      "get": {
+        "tags": [
+          "Admin notices"
+        ],
+        "summary": "Per kind, off, bell, or bell with a sound",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The settings"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin notices"
+        ],
+        "summary": "Change how a kind of notice reaches the admins",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "enum": [
+                    "off",
+                    "bell",
+                    "sound"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The saved settings"
+          }
+        }
+      }
+    },
+    "/api/admin-notices/{id}/dismiss": {
+      "post": {
+        "tags": [
+          "Admin notices"
+        ],
+        "summary": "Close an open notice",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Closed"
+          },
+          "404": {
+            "description": "No open notice with that id"
+          }
+        }
       }
     },
     "/api/auth/admin-status": {
@@ -15607,6 +15744,53 @@
             }
           }
         ]
+      }
+    },
+    "/api/test/admin-notice": {
+      "post": {
+        "tags": [
+          "Test"
+        ],
+        "summary": "Raise or resolve an admins' bell notice (tests only)",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "data": {
+                    "type": "object"
+                  },
+                  "dedupeKey": {
+                    "type": "string"
+                  },
+                  "resolve": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Raised (the notice) or resolved"
+          },
+          "400": {
+            "description": "Unknown kind"
+          }
+        }
       }
     },
     "/api/test/auth-identities": {
