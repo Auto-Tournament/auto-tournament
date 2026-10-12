@@ -280,6 +280,8 @@ export async function saveMoments(
         ]
       );
     }
+    // Open match pages show them as being recorded.
+    emitHighlightsChanged(matchSlug);
   } catch (error) {
     log.warn(`[HIGHLIGHTS] Could not save the moments of ${matchSlug} map ${mapNumber}`, {
       error: (error as Error).message,
@@ -835,6 +837,12 @@ export async function failRecordJob(ids: number[], error: string): Promise<void>
     [error.slice(0, 500), ...ids]
   );
   await queueMatchReelFor(ids);
+  // Open match pages count it as no longer being recorded.
+  const slugs = await db.queryAsync<{ match_slug: string }>(
+    `SELECT DISTINCT match_slug FROM cs2_highlights WHERE id IN (${ids.map(() => '?').join(', ')})`,
+    ids
+  );
+  for (const r of slugs) emitHighlightsChanged(r.match_slug);
 }
 
 /**
