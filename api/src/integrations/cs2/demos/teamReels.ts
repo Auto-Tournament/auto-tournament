@@ -15,6 +15,7 @@ import { readReelLimits } from './highlightQuality';
 import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
+import { emitHighlightsChanged } from '../../../services/socketService';
 import { reelFailoverFilter } from './reelFailover';
 import { log } from '../../../utils/logger';
 import { readHighlightQuality, type HighlightQuality } from './highlightQuality';
@@ -249,6 +250,7 @@ export async function saveTeamReel(
       clipStarts ? JSON.stringify(clipStarts) : null,
     ]
   );
+  emitHighlightsChanged(matchSlug);
   return size;
 }
 

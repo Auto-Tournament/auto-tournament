@@ -30,6 +30,7 @@ import {
   type HighlightQuality,
 } from './highlightQuality';
 import { notificationService } from '../../../services/notificationService';
+import { emitHighlightsChanged } from '../../../services/socketService';
 import fs from 'fs';
 import path from 'path';
 import { DATA_DIR } from '../../../config/dataDir';
@@ -790,6 +791,11 @@ export async function saveClip(
   );
   await queueMatchReelFor([id]);
   await noticeHighlightReady(id);
+  const owner = await db.queryOneAsync<{ match_slug: string }>(
+    'SELECT match_slug FROM cs2_highlights WHERE id = ?',
+    [id]
+  );
+  if (owner) emitHighlightsChanged(owner.match_slug);
   return size;
 }
 
@@ -1387,6 +1393,7 @@ export async function saveMatchReel(
       clipStarts ? JSON.stringify(clipStarts) : null,
     ]
   );
+  emitHighlightsChanged(matchSlug);
   return size;
 }
 

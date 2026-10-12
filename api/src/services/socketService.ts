@@ -237,6 +237,18 @@ export function emitMatchEvent(matchSlug: string, event: MatchEventData['event']
 }
 
 /**
+ * A match's highlights changed (a clip or a reel finished, or one was
+ * dropped): its public page fetches them again. Only the slug goes out;
+ * what changed is read through the usual public routes.
+ */
+export function emitHighlightsChanged(matchSlug: string): void {
+  if (io) {
+    io.emit(`highlights:update:${matchSlug}`, { matchSlug });
+    log.debug('Emitted highlights update', { matchSlug });
+  }
+}
+
+/**
  * Emit server status update
  */
 export function emitServerStatus(serverId: string, status: 'online' | 'offline'): void {
