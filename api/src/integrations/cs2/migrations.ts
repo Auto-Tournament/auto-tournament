@@ -1512,4 +1512,25 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       );
     `,
   },
+  {
+    // A drop is a choice of three (skins/skinService.ts offerChoice): the
+    // options, rolled once (wear, pattern), until the player keeps one.
+    id: '051-skin-choices',
+    up: `
+      CREATE TABLE IF NOT EXISTS cs2_skin_choices (
+        id SERIAL PRIMARY KEY,
+        player_uid TEXT NOT NULL,
+        source TEXT NOT NULL,
+        source_label TEXT,
+        source_ref TEXT,
+        place INTEGER,
+        options TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        chosen_index INTEGER,
+        chosen_skin_id INTEGER,
+        chosen_at INTEGER
+      );
+      CREATE INDEX IF NOT EXISTS cs2_skin_choices_player_idx ON cs2_skin_choices(player_uid, chosen_at);
+    `,
+  },
 ];
