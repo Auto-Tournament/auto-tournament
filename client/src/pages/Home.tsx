@@ -11,6 +11,7 @@ import {
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
+import { PendingTeamInvites } from '../components/team/PendingTeamInvites';
 import { LiveChip } from '../components/common/ui';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
@@ -256,6 +257,7 @@ export default function Home() {
           </Box>
         ) : (
           <>
+            <PendingTeamInvites />
             {showNextMatch && match && (
               <Box
                 component="section"

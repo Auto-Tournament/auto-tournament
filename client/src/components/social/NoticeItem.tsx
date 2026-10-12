@@ -12,11 +12,12 @@ import { PlayerAvatar } from '../player/PlayerAvatar';
 import { AtIcon } from '../common/AtIcon';
 import { VideoThumb } from '../highlights/HighlightCard';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import { paths, playerProfilePath } from '../../paths';
+import { paths, playerProfilePath, teamProfilePath } from '../../paths';
 import { tokens, withAlpha } from '../../theme/tokens';
 import {
   acceptFriend,
   answerPartyInvite,
+  answerTeamInvite,
   declineFriend,
   markNoticesRead,
   type Notice,
@@ -107,6 +108,45 @@ export function NoticeItem({ notice, viewerId, onNavigate }: Props) {
               variant="outlined"
               disabled={busy}
               onClick={() => void act(() => answerPartyInvite(str(d.partyId), false))}
+            >
+              {t('social.notice.decline')}
+            </Button>
+          </>
+        );
+      }
+      break;
+    }
+    case 'team_invite': {
+      const teamId = str(d.teamId);
+      text = (
+        <>
+          {name(person)} {t('social.notice.teamInvite')}{' '}
+          <Box component="b" sx={{ color: color.ink, fontWeight: 600 }}>
+            {str(d.teamName)}
+          </Box>
+        </>
+      );
+      to = answer === 'joinedTeam' ? teamProfilePath(teamId) : paths.browseTeams;
+      if (!answer) {
+        actions = (
+          <>
+            <Button
+              size="small"
+              variant="contained"
+              disabled={busy}
+              onClick={() =>
+                void act(() =>
+                  answerTeamInvite(teamId, true).then(() => navigate(teamProfilePath(teamId)))
+                )
+              }
+            >
+              {t('social.notice.accept')}
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={busy}
+              onClick={() => void act(() => answerTeamInvite(teamId, false))}
             >
               {t('social.notice.decline')}
             </Button>
@@ -245,13 +285,15 @@ export function NoticeItem({ notice, viewerId, onNavigate }: Props) {
   const answered =
     answer === 'joined'
       ? t('social.notice.joined')
-      : answer === 'accepted'
-        ? t('social.notice.nowFriends')
-        : answer === 'declined'
-          ? t('social.notice.declined')
-          : answer === 'expired'
-            ? t('social.notice.expired')
-            : '';
+      : answer === 'joinedTeam'
+        ? t('social.notice.joinedTeam')
+        : answer === 'accepted'
+          ? t('social.notice.nowFriends')
+          : answer === 'declined'
+            ? t('social.notice.declined')
+            : answer === 'expired'
+              ? t('social.notice.expired')
+              : '';
 
   const open = () => {
     if (!notice.read) void markNoticesRead([notice.id]);
