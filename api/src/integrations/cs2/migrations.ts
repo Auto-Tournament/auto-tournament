@@ -1496,8 +1496,8 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
         deleted_at INTEGER, -- hidden, kept for moderation
         deleted_by TEXT -- the author, or the admin who removed it
       );
-      CREATE INDEX IF NOT EXISTS idx_cs2_video_comments_video ON cs2_video_comments(video_key, created_at);
-      CREATE INDEX IF NOT EXISTS idx_cs2_video_comments_player ON cs2_video_comments(player_id, created_at);
+      CREATE INDEX IF NOT EXISTS cs2_video_comments_video_idx ON cs2_video_comments(video_key, created_at);
+      CREATE INDEX IF NOT EXISTS cs2_video_comments_player_idx ON cs2_video_comments(player_id, created_at);
     `,
   },
 ];
