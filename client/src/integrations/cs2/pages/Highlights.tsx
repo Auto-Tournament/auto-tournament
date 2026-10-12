@@ -1229,6 +1229,12 @@ interface AdminReel {
   clips: number | null;
   madeWith: string | null;
   outdated: boolean;
+  /** Claim to done: joining the reel. */
+  assemblySeconds?: number | null;
+  /** Its clips' render times added up (recorder time, not elapsed). */
+  clipRenderSeconds?: number | null;
+  /** Wall clock from its first clip's claim to the reel being done. */
+  elapsedSeconds?: number | null;
 }
 
 interface AdminMatch {
@@ -1429,7 +1435,23 @@ function ClipsTab() {
                     color="text.secondary"
                     sx={{ flex: 1, minWidth: 140 }}
                   >
-                    {made(r.madeWith)}
+                    {[
+                      made(r.madeWith),
+                      r.elapsedSeconds != null &&
+                        t('highlightsAdmin.clips.reelElapsed', {
+                          time: duration(r.elapsedSeconds),
+                        }),
+                      r.assemblySeconds != null &&
+                        t('highlightsAdmin.clips.reelAssembly', {
+                          time: duration(r.assemblySeconds),
+                        }),
+                      r.clipRenderSeconds != null &&
+                        t('highlightsAdmin.clips.reelRender', {
+                          time: duration(r.clipRenderSeconds),
+                        }),
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </Typography>
                   <Button
                     size="small"

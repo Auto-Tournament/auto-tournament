@@ -1383,11 +1383,11 @@ export async function saveMatchReel(
   // A crowd track from an earlier make of this reel would not match it.
   await removeTwins(file);
   await db.runAsync(
-    `INSERT INTO cs2_match_reels (match_slug, map_number, status, clips, clip_path, clip_bytes, clip_ids, clip_starts)
-     VALUES (?, ?, 'done', ?, ?, ?, ?, ?)
+    `INSERT INTO cs2_match_reels (match_slug, map_number, status, clips, clip_path, clip_bytes, clip_ids, clip_starts, done_at)
+     VALUES (?, ?, 'done', ?, ?, ?, ?, ?, EXTRACT(EPOCH FROM NOW())::INTEGER)
      ON CONFLICT (match_slug, map_number) DO UPDATE SET status = 'done', error = NULL,
        clips = EXCLUDED.clips, clip_path = EXCLUDED.clip_path, clip_bytes = EXCLUDED.clip_bytes,
-       clip_ids = EXCLUDED.clip_ids, clip_starts = EXCLUDED.clip_starts`,
+       clip_ids = EXCLUDED.clip_ids, clip_starts = EXCLUDED.clip_starts, done_at = EXCLUDED.done_at`,
     [
       matchSlug,
       mapNumber,

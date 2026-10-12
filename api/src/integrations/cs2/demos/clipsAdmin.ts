@@ -43,6 +43,16 @@ export interface AdminReel {
   clips: number | null;
   madeWith: string | null;
   outdated: boolean;
+  /** Seconds the recorder took to join the reel (claim to upload); null before done_at existed. */
+  assemblySeconds: number | null;
+  /** The included clips' render seconds added up: recorder time, not elapsed time (they record side by side). */
+  clipRenderSeconds: number | null;
+  /**
+   * Wall-clock seconds from the first included clip's claim to the reel being
+   * done. A clip recorded again counts from its last attempt; a reel made
+   * again later from older clips counts from them, so it can be long.
+   */
+  elapsedSeconds: number | null;
 }
 
 export interface AdminMatch {
@@ -50,6 +60,29 @@ export interface AdminMatch {
   match: string;
   clips: AdminClip[];
   reels: AdminReel[];
+}
+
+/**
+ * A reel's times (pure: tested on its own): assembly (claim to done),
+ * its clips' render time added up, and the wall clock from its first clip's
+ * claim to done. Unknown parts are null (a reel made before done_at existed,
+ * or one not done).
+ */
+export function reelTimes(r: {
+  status: string;
+  claimStartedAt: number | null;
+  doneAt: number | null;
+  renderSeconds: number | null;
+  firstClipAt: number | null;
+}): Pick<AdminReel, 'assemblySeconds' | 'clipRenderSeconds' | 'elapsedSeconds'> {
+  const done = r.status === 'done' && r.doneAt !== null;
+  const span = (from: number | null) =>
+    done && from !== null && r.doneAt! >= from ? r.doneAt! - from : null;
+  return {
+    assemblySeconds: span(r.claimStartedAt),
+    clipRenderSeconds: r.renderSeconds === null ? null : Math.round(r.renderSeconds),
+    elapsedSeconds: span(r.firstClipAt),
+  };
 }
 
 /** A finished video made at something other than `current` (or at what no one kept). */
@@ -107,11 +140,24 @@ export async function listClips(
     status: string;
     clips: number | null;
     made_with: string | null;
+    claim_started_at: number | null;
+    done_at: number | null;
+    render_seconds: number | null;
+    first_clip_at: number | null;
   }>(
-    `SELECT match_slug, map_number, status, clips, made_with FROM cs2_match_reels
-      WHERE match_slug IN (${marks}) ORDER BY map_number`,
+    `SELECT r.match_slug, r.map_number, r.status, r.clips, r.made_with, r.claim_started_at, r.done_at,
+            c.render_seconds, c.first_clip_at
+       FROM cs2_match_reels r
+       LEFT JOIN LATERAL (
+         SELECT SUM(h.record_seconds) AS render_seconds, MIN(h.claim_started_at) AS first_clip_at
+           FROM cs2_highlights h
+          WHERE r.clip_ids IS NOT NULL
+            AND h.id IN (SELECT (jsonb_array_elements_text(r.clip_ids::jsonb))::int)
+       ) c ON TRUE
+      WHERE r.match_slug IN (${marks}) ORDER BY r.map_number`,
     slugs
   );
+  const n = (v: number | string | null) => (v === null ? null : Number(v));
   let outdated = 0;
   const out: AdminMatch[] = [];
   // Newest first, as the list is ordered by the latest clip.
@@ -144,6 +190,13 @@ export async function listClips(
         clips: r.clips === null ? null : Number(r.clips),
         madeWith: r.made_with,
         outdated: isOutdated(r.status, r.made_with, current),
+        ...reelTimes({
+          status: r.status,
+          claimStartedAt: n(r.claim_started_at),
+          doneAt: n(r.done_at),
+          renderSeconds: n(r.render_seconds),
+          firstClipAt: n(r.first_clip_at),
+        }),
       }));
     const stale = own.filter((c) => c.outdated).length + ownReels.filter((r) => r.outdated).length;
     outdated += stale;

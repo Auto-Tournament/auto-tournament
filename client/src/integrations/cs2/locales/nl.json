@@ -2249,7 +2249,10 @@
       "previous": "Previous",
       "next": "Next",
       "close": "Close",
-      "redoMatch": "Redo all clips"
+      "redoMatch": "Redo all clips",
+      "reelElapsed": "ready {{time}} after its first clip started",
+      "reelAssembly": "joined in {{time}}",
+      "reelRender": "its clips: {{time}} of recording added up"
     },
     "add": {
       "button": "Add a recorder",

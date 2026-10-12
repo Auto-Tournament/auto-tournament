@@ -1451,4 +1451,13 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_recorder_runs ADD COLUMN IF NOT EXISTS failed INTEGER NOT NULL DEFAULT 0;
     `,
   },
+  {
+    // When a map/series reel was finished (demos/highlights.ts saveMatchReel):
+    // with claim_started_at it gives the reel's assembly time, and with its
+    // clips' claims the wall-clock time from the first clip to the reel.
+    id: '047-match-reel-done-at',
+    up: `
+      ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS done_at INTEGER;
+    `,
+  },
 ];
