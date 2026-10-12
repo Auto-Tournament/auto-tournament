@@ -2343,6 +2343,14 @@
     "esportsMode": {
       "label": "Esports mode",
       "help": "Valve's competitive rules (Premier settings, counted technical pauses, no knife side pick) and no skins in the server. Off: normal rules, and players see their skins."
+    },
+    "mapVeto": {
+      "label": "Map veto",
+      "onHelp": "Teams ban and pick maps before each match.",
+      "offHelp": "No veto: each match draws its maps from the pool, and a knife round picks sides. One map or more is enough."
+    },
+    "wingmanPreset": {
+      "button": "Set up as wingman"
     }
   },
   "library": {

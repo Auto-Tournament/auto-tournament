@@ -52,6 +52,8 @@ export interface Cs2TournamentSettings {
   fillTeamsWithBots?: boolean;
   /** Esports mode: Valve's rules, no skins in the server. */
   esportsMode?: boolean;
+  /** The map veto (default on); off: each match draws its maps from the pool. */
+  veto?: boolean;
 }
 
 export const CS2_DEFAULTS: Cs2TournamentSettings = {
@@ -98,6 +100,7 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, unknown
     into.fillTeamsWithBots = source.fillTeamsWithBots;
   if (typeof source.skinRewards === 'boolean') into.skinRewards = source.skinRewards;
   if (typeof source.esportsMode === 'boolean') into.esportsMode = source.esportsMode;
+  if (typeof source.veto === 'boolean') into.veto = source.veto;
   if (isMapMode(source.mapMode)) into.mapMode = source.mapMode;
   else if (source.mapMode === null) delete into.mapMode;
 }
@@ -137,6 +140,7 @@ export function cs2Patch(next: Cs2TournamentSettings): Record<string, unknown> {
   if (next.mapPoolId !== undefined) stored.mapPoolId = next.mapPoolId;
   stored.fillTeamsWithBots = next.fillTeamsWithBots === true;
   stored.esportsMode = next.esportsMode === true;
+  stored.veto = next.veto !== false;
   if (next.skinRewards !== undefined) stored.skinRewards = next.skinRewards;
   // null clears a type set before (the API keeps a field a patch leaves out).
   stored.mapMode = next.mapMode ?? null;
@@ -218,7 +222,7 @@ export const cs2TournamentSetup: TournamentSetupModel = {
     if (step === 'rules') {
       return cs2.maxRounds < 1 || cs2.maxRounds > 30 ? t('tournament.toasts.maxRoundsRange') : null;
     }
-    const validation = validateMapCount(cs2.maps, ctx.type, ctx.format);
+    const validation = validateMapCount(cs2.maps, ctx.type, ctx.format, cs2.veto !== false);
     return validation.valid
       ? null
       : (validation.message ?? t('tournament.toasts.invalidMapSelection'));
@@ -251,10 +255,10 @@ export const cs2TournamentSetup: TournamentSetupModel = {
       checklist: [
         {
           key: 'maps',
-          label: requiresVeto(ctx.type, ctx.format)
+          label: requiresVeto(ctx.type, ctx.format, cs2.veto !== false)
             ? t('tournament.setup.checklist.mapsVeto')
             : t('tournament.setup.checklist.maps'),
-          met: validateMapCount(cs2.maps, ctx.type, ctx.format).valid,
+          met: validateMapCount(cs2.maps, ctx.type, ctx.format, cs2.veto !== false).valid,
         },
       ],
       review: [

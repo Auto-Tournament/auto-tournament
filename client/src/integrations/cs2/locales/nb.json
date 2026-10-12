@@ -2338,6 +2338,14 @@
     "esportsMode": {
       "label": "Esport-modus",
       "help": "Valves konkurranseregler (Premier-innstillinger, telte tekniske pauser, ingen kniv-sidevalg) og ingen skins på serveren. Av: vanlige regler, og spillerne ser skinsene sine."
+    },
+    "mapVeto": {
+      "label": "Kartveto",
+      "onHelp": "Lagene banner og velger kart før hver kamp.",
+      "offHelp": "Uten veto: hver kamp trekker kartene sine fra utvalget, og en knivrunde avgjør sidene. Ett kart eller flere holder."
+    },
+    "wingmanPreset": {
+      "button": "Sett opp som wingman"
     }
   },
   "library": {

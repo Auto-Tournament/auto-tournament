@@ -644,7 +644,11 @@ export interface ApplySeriesResultOutcome {
  *   a `series_result` row in `match_events`.
  */
 export interface MatchLifecycleApi {
-  applySeriesResult(slug: string, result: SeriesResult, meta: ResultMeta): Promise<ApplySeriesResultOutcome>;
+  applySeriesResult(
+    slug: string,
+    result: SeriesResult,
+    meta: ResultMeta
+  ): Promise<ApplySeriesResultOutcome>;
   ingest(events: NormalizedEvent[]): Promise<void>;
 }
 
@@ -827,12 +831,17 @@ export interface GameIntegration {
    * match to `onMatchReady` instead, and the integration readies it itself.
    * Omitted means `true`.
    *
-   * CS2: `false` in simulation mode for BO formats, where the automated veto
-   * runs first. Outside simulation there is no per-match gate: the players'
-   * veto is gated tournament-wide by `capabilities.veto` in
-   * `Scheduler.startTournament`.
+   * CS2: `false` for a BO match whose veto is not done yet (the veto readies
+   * it). The players' veto is also gated tournament-wide in
+   * `Scheduler.startTournament` (`capabilities.veto` and usesPreMatchPhase).
    */
   isReadyToAllocate?(ctx: MatchContext): Promise<boolean>;
+  /**
+   * Whether this tournament runs the pre-match phase at all (CS2: the map
+   * veto; `settings.cs2.veto: false` turns it off and each match plays maps
+   * drawn from the pool). Omitted means `capabilities.veto`.
+   */
+  usesPreMatchPhase?(tournament: { settings?: unknown }): boolean;
   /**
    * A match got both participants and `isReadyToAllocate` returned `false`:
    * run the integration's pre-match phase. The integration readies and
@@ -907,7 +916,10 @@ export interface GameIntegration {
     opts: { baseUrl: string; moveResource?: boolean }
   ): Promise<ResourceActionResult>;
   /** Load the match on the resource it is assigned to (the admin "load" action). */
-  load?(ctx: MatchContext, opts: { baseUrl: string; skipWebhook?: boolean }): Promise<ResourceActionResult>;
+  load?(
+    ctx: MatchContext,
+    opts: { baseUrl: string; skipWebhook?: boolean }
+  ): Promise<ResourceActionResult>;
   /**
    * Best-effort end of the match on its resource (force-cancel, or a
    * tournament restart, reset or delete: see `CancelReason`). Rejects when the
@@ -1018,7 +1030,12 @@ export interface GameIntegration {
    * else's Steam IDs (a draw has no winners), only those with a player
    * record, and the map. CS2: virtual skin drops. Must not reject.
    */
-  onMatchmakingResult?(ctx: { matchSlug: string; winners: string[]; others: string[]; map?: string }): Promise<void>;
+  onMatchmakingResult?(ctx: {
+    matchSlug: string;
+    winners: string[];
+    others: string[];
+    map?: string;
+  }): Promise<void>;
   /**
    * An elimination tournament this game owns finished: its top three, each
    * with the players who played for it (the lineup when the team signed up

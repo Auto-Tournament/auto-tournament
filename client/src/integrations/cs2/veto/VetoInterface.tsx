@@ -20,7 +20,14 @@ import { getMapData, getMapDisplayName } from '../maps/mapData';
 import { getVetoOrder } from './vetoOrders';
 import type { MapSide, VetoMapInfo, VetoState, VetoStateResponse } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
-import { onSocketReconnect, useSocket, tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
+import {
+  onSocketReconnect,
+  useSocket,
+  tokens,
+  mono,
+  withAlpha,
+  useModuleTranslation,
+} from '../../../module-sdk';
 import type { PreMatchViewProps as VetoInterfaceProps } from '../../types';
 
 const { color, radius } = tokens;
@@ -38,17 +45,24 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   const translateVetoError = useCallback(
     (backendError: string | undefined): string | undefined => {
       if (!backendError) return undefined;
-      if (backendError.includes('not your turn') || backendError.includes('Waiting for the other team'))
+      if (
+        backendError.includes('not your turn') ||
+        backendError.includes('Waiting for the other team')
+      )
         return t('vetoInterface.errors.notYourTurn');
-      if (backendError.includes('already completed')) return t('vetoInterface.errors.vetoAlreadyCompleted');
-      if (backendError.includes('Invalid map')) return t('vetoInterface.errors.invalidMapSelection');
-      if (backendError.includes('Invalid side')) return t('vetoInterface.errors.invalidSideSelection');
+      if (backendError.includes('already completed'))
+        return t('vetoInterface.errors.vetoAlreadyCompleted');
+      if (backendError.includes('Invalid map'))
+        return t('vetoInterface.errors.invalidMapSelection');
+      if (backendError.includes('Invalid side'))
+        return t('vetoInterface.errors.invalidSideSelection');
       if (backendError.includes('No map to pick')) return t('vetoInterface.errors.noMapToPickSide');
       if (backendError.includes('Match not found')) return t('vetoInterface.errors.matchNotFound');
-      if (backendError.includes('participating teams')) return t('vetoInterface.errors.unauthorized');
+      if (backendError.includes('participating teams'))
+        return t('vetoInterface.errors.unauthorized');
       return backendError;
     },
-    [t],
+    [t]
   );
 
   const [vetoState, setVetoState] = useState<VetoState | null>(null);
@@ -167,13 +181,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     const pickedMaps = Array.isArray(vetoState.pickedMaps) ? vetoState.pickedMaps : [];
 
     // Use allMaps if available (preserves original order), otherwise reconstruct
-    const originalMapOrder = Array.isArray(vetoState.allMaps) && vetoState.allMaps.length > 0
-      ? [...vetoState.allMaps] // Create a copy to ensure immutability
-      : [
-          ...availableMaps,
-          ...bannedMaps,
-          ...pickedMaps.map((p) => p.mapName),
-        ].filter((mapId, index, self) => self.indexOf(mapId) === index); // Fallback: remove duplicates
+    const originalMapOrder =
+      Array.isArray(vetoState.allMaps) && vetoState.allMaps.length > 0
+        ? [...vetoState.allMaps] // Create a copy to ensure immutability
+        : [...availableMaps, ...bannedMaps, ...pickedMaps.map((p) => p.mapName)].filter(
+            (mapId, index, self) => self.indexOf(mapId) === index
+          ); // Fallback: remove duplicates
 
     return originalMapOrder.map((mapId) => {
       const mapData = allMaps.get(mapId);
@@ -258,7 +271,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         setActionError('');
       } else {
         console.error('Side pick failed:', data.error);
-        setActionError(translateVetoError(data.error) || t('vetoInterface.errors.failedToPickSide'));
+        setActionError(
+          translateVetoError(data.error) || t('vetoInterface.errors.failedToPickSide')
+        );
       }
     } catch (err) {
       console.error('Error picking side:', err);
@@ -313,9 +328,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           <Typography variant="body1" fontWeight={600}>
             {t('vetoInterface.vetoCompleted')}
           </Typography>
-          <Typography variant="body2">
-            {t('vetoInterface.vetoCompletedSubtitle')}
-          </Typography>
+          <Typography variant="body2">{t('vetoInterface.vetoCompletedSubtitle')}</Typography>
         </Alert>
 
         <Typography variant="h6" fontWeight={600} mb={2}>
@@ -332,14 +345,16 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             const displaySide = isViewingTeam1
               ? pick.sideTeam1
               : isViewingTeam2
-              ? pick.sideTeam2
-              : pick.sideTeam1; // Fallback to team1 if unknown
+                ? pick.sideTeam2
+                : pick.sideTeam1; // Fallback to team1 if unknown
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pick.mapNumber}>
                 <VetoMapCard
                   mapName={pick.mapName}
                   displayName={
-                    mapData?.displayName || fallbackData?.displayName || getMapDisplayName(pick.mapName)
+                    mapData?.displayName ||
+                    fallbackData?.displayName ||
+                    getMapDisplayName(pick.mapName)
                   }
                   imageUrl={imageUrl}
                   state="picked"
@@ -382,8 +397,14 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
   // The action's own colour and icon: ban red (danger), pick green, side choice blue. Your turn
   // outlines the card, banner and map grid in it; waiting stays neutral.
-  const actionColor = currentAction === 'ban' ? color.ban : currentAction === 'pick' ? color.pick : color.info;
-  const ActionIcon = currentAction === 'ban' ? ProhibitIcon : currentAction === 'pick' ? CheckCircleIcon : ArrowsLeftRightIcon;
+  const actionColor =
+    currentAction === 'ban' ? color.ban : currentAction === 'pick' ? color.pick : color.info;
+  const ActionIcon =
+    currentAction === 'ban'
+      ? ProhibitIcon
+      : currentAction === 'pick'
+        ? CheckCircleIcon
+        : ArrowsLeftRightIcon;
 
   return (
     <Box data-testid="veto-interface">
@@ -400,7 +421,14 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
       {/* Match Header (left out where the page already shows who plays) */}
       {!hideMatchHeader && (
-        <Paper sx={{ mb: 3, p: { xs: 2, sm: 3 }, bgcolor: 'background.paper', borderRadius: `${radius.lg}px` }}>
+        <Paper
+          sx={{
+            mb: 3,
+            p: { xs: 2, sm: 3 },
+            bgcolor: 'background.paper',
+            borderRadius: `${radius.lg}px`,
+          }}
+        >
           <Box
             display="flex"
             alignItems="center"
@@ -412,16 +440,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               variant="h4"
               fontWeight={700}
               component={
-                vetoState.team1Id &&
-                vetoState.team1Id !== 'team1' &&
-                vetoState.team1Id !== 'team2'
+                vetoState.team1Id && vetoState.team1Id !== 'team1' && vetoState.team1Id !== 'team2'
                   ? RouterLink
                   : 'span'
               }
               to={
-                vetoState.team1Id &&
-                vetoState.team1Id !== 'team1' &&
-                vetoState.team1Id !== 'team2'
+                vetoState.team1Id && vetoState.team1Id !== 'team1' && vetoState.team1Id !== 'team2'
                   ? `/team/${vetoState.team1Id}`
                   : undefined
               }
@@ -448,16 +472,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               variant="h4"
               fontWeight={700}
               component={
-                vetoState.team2Id &&
-                vetoState.team2Id !== 'team1' &&
-                vetoState.team2Id !== 'team2'
+                vetoState.team2Id && vetoState.team2Id !== 'team1' && vetoState.team2Id !== 'team2'
                   ? RouterLink
                   : 'span'
               }
               to={
-                vetoState.team2Id &&
-                vetoState.team2Id !== 'team1' &&
-                vetoState.team2Id !== 'team2'
+                vetoState.team2Id && vetoState.team2Id !== 'team1' && vetoState.team2Id !== 'team2'
                   ? `/team/${vetoState.team2Id}`
                   : undefined
               }
@@ -482,6 +502,18 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             <Chip size="small" label={vetoState.format.toUpperCase()} />
           </Box>
         </Paper>
+      )}
+
+      {/* The turn's time, for everyone (both teams and spectators), every
+          step including the side pick: a bar that drains as the clock runs. */}
+      {vetoState.turnDeadline && (
+        <TurnBar
+          deadline={vetoState.turnDeadline}
+          seconds={typeof vetoState.turnSeconds === 'number' ? vetoState.turnSeconds : undefined}
+          mine={isMyTurn}
+          tone={actionColor}
+          label={isMyTurn ? t('vetoInterface.yourTurnClock') : t('vetoInterface.theirTurnClock')}
+        />
       )}
 
       {/* Progress Header */}
@@ -551,8 +583,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   {currentAction === 'ban'
                     ? t('vetoInterface.question.ban')
                     : currentAction === 'pick'
-                    ? t('vetoInterface.question.pick')
-                    : t('vetoInterface.question.side')}
+                      ? t('vetoInterface.question.pick')
+                      : t('vetoInterface.question.side')}
                 </Typography>
                 {currentAction !== 'side_pick' && (
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -565,13 +597,18 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                 <Typography
                   component="h2"
                   className="veto-turn-title"
-                  sx={{ fontWeight: 600, fontSize: { xs: '1.35rem', md: '1.8rem' }, lineHeight: 1.2, color: color.ink2 }}
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: { xs: '1.35rem', md: '1.8rem' },
+                    lineHeight: 1.2,
+                    color: color.ink2,
+                  }}
                 >
                   {currentAction === 'ban'
                     ? t('vetoInterface.waitingToBan', { team: currentTeamName })
                     : currentAction === 'pick'
-                    ? t('vetoInterface.waitingToPick', { team: currentTeamName })
-                    : t('vetoInterface.waitingToChooseSide', { team: currentTeamName })}
+                      ? t('vetoInterface.waitingToPick', { team: currentTeamName })
+                      : t('vetoInterface.waitingToChooseSide', { team: currentTeamName })}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                   {t('vetoInterface.pageUpdatesAutomatically')}
@@ -587,7 +624,15 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           <VetoStepStrip
             vetoState={vetoState}
             order={vetoOrder}
-            mySide={currentTeamSlug ? (currentTeamSlug === vetoState.team1Id ? 'team1' : currentTeamSlug === vetoState.team2Id ? 'team2' : null) : null}
+            mySide={
+              currentTeamSlug
+                ? currentTeamSlug === vetoState.team1Id
+                  ? 'team1'
+                  : currentTeamSlug === vetoState.team2Id
+                    ? 'team2'
+                    : null
+                : null
+            }
             teamName={(team) => (team === 'team1' ? team1Name : team2Name)}
             mapName={(m) => allMaps.get(m)?.displayName || getMapDisplayName(m)}
           />
@@ -598,7 +643,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       {currentAction === 'side_pick' &&
         (() => {
           const pickedMaps = Array.isArray(vetoState.pickedMaps) ? vetoState.pickedMaps : [];
-          const availableMaps = Array.isArray(vetoState.availableMaps) ? vetoState.availableMaps : [];
+          const availableMaps = Array.isArray(vetoState.availableMaps)
+            ? vetoState.availableMaps
+            : [];
 
           // BO1 and BO3 decider: the side pick is for the *remaining* map,
           // which is not in pickedMaps yet (the server adds it when side is submitted).
@@ -665,9 +712,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                           color="text.primary"
                           sx={{ textShadow: `0 2px 12px ${color.shadow}` }}
                         >
-                          {mapData?.displayName ||
-                            fallbackData?.displayName ||
-                            sidePickMapName}
+                          {mapData?.displayName || fallbackData?.displayName || sidePickMapName}
                         </Typography>
                         <Typography
                           variant="h6"
@@ -752,67 +797,67 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           }
         >
           <AnimatePresence mode="popLayout" initial={false}>
-          {mapsToShow
-            // Decided maps leave the grid; they are listed in one line below it.
-            .filter(
-              (map) =>
-                !vetoState.bannedMaps.includes(map.name) &&
-                !vetoState.pickedMaps.find((p) => p.mapName === map.name)
-            )
-            .map((map) => {
-            const mapState = vetoState.bannedMaps.includes(map.name)
-              ? 'banned'
-              : vetoState.pickedMaps.find((p) => p.mapName === map.name)
-              ? 'picked'
-              : 'available';
+            {mapsToShow
+              // Decided maps leave the grid; they are listed in one line below it.
+              .filter(
+                (map) =>
+                  !vetoState.bannedMaps.includes(map.name) &&
+                  !vetoState.pickedMaps.find((p) => p.mapName === map.name)
+              )
+              .map((map) => {
+                const mapState = vetoState.bannedMaps.includes(map.name)
+                  ? 'banned'
+                  : vetoState.pickedMaps.find((p) => p.mapName === map.name)
+                    ? 'picked'
+                    : 'available';
 
-            const pickedMap = vetoState.pickedMaps.find((p) => p.mapName === map.name);
-            // Show the side for the team viewing (team1 sees sideTeam1, team2 sees sideTeam2)
-            const displaySide = pickedMap
-              ? isViewingTeam1
-                ? pickedMap.sideTeam1
-                : isViewingTeam2
-                ? pickedMap.sideTeam2
-                : pickedMap.sideTeam1 // Fallback to team1 if unknown
-              : undefined;
+                const pickedMap = vetoState.pickedMaps.find((p) => p.mapName === map.name);
+                // Show the side for the team viewing (team1 sees sideTeam1, team2 sees sideTeam2)
+                const displaySide = pickedMap
+                  ? isViewingTeam1
+                    ? pickedMap.sideTeam1
+                    : isViewingTeam2
+                      ? pickedMap.sideTeam2
+                      : pickedMap.sideTeam1 // Fallback to team1 if unknown
+                  : undefined;
 
-            return (
-              <Grid
-                size={{ xs: 12, sm: 6, md: 4 }}
-                key={map.name}
-                component={motion.div}
-                layout={!reduceMotion}
-                initial={false}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={
-                  reduceMotion
-                    ? { opacity: 0, transition: { duration: 0.12 } }
-                    : {
-                        opacity: 0,
-                        scale: 0.82,
-                        rotate: currentAction === 'ban' ? -2 : 0,
-                        filter: `drop-shadow(0 0 18px ${withAlpha(actionColor, 0.7)})`,
-                        transition: { duration: 0.32, ease: [0.55, 0, 1, 0.45] },
-                      }
-                }
-                transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-              >
-                <VetoMapCard
-                  mapName={map.name}
-                  displayName={map.displayName}
-                  imageUrl={map.image}
-                  state={mapState}
-                  mapNumber={pickedMap?.mapNumber}
-                  side={displaySide}
-                  onClick={() => handleMapAction(map.name)}
-                  disabled={mapState !== 'available' || !isMyTurn}
-                  isCurrentTurn={isMyTurn && mapState === 'available'}
-                  currentAction={currentAction}
-                  isDecider={mapState === 'picked' && isDeciderMap(map.name)}
-                />
-              </Grid>
-            );
-          })}
+                return (
+                  <Grid
+                    size={{ xs: 12, sm: 6, md: 4 }}
+                    key={map.name}
+                    component={motion.div}
+                    layout={!reduceMotion}
+                    initial={false}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={
+                      reduceMotion
+                        ? { opacity: 0, transition: { duration: 0.12 } }
+                        : {
+                            opacity: 0,
+                            scale: 0.82,
+                            rotate: currentAction === 'ban' ? -2 : 0,
+                            filter: `drop-shadow(0 0 18px ${withAlpha(actionColor, 0.7)})`,
+                            transition: { duration: 0.32, ease: [0.55, 0, 1, 0.45] },
+                          }
+                    }
+                    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                  >
+                    <VetoMapCard
+                      mapName={map.name}
+                      displayName={map.displayName}
+                      imageUrl={map.image}
+                      state={mapState}
+                      mapNumber={pickedMap?.mapNumber}
+                      side={displaySide}
+                      onClick={() => handleMapAction(map.name)}
+                      disabled={mapState !== 'available' || !isMyTurn}
+                      isCurrentTurn={isMyTurn && mapState === 'available'}
+                      currentAction={currentAction}
+                      isDecider={mapState === 'picked' && isDeciderMap(map.name)}
+                    />
+                  </Grid>
+                );
+              })}
           </AnimatePresence>
         </Grid>
       )}
@@ -821,7 +866,15 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       {(vetoState.pickedMaps.length > 0 || vetoState.bannedMaps.length > 0) && (
         <Box
           data-testid="veto-decided-summary"
-          sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2.5, justifyContent: 'center', color: 'text.secondary', fontSize: '0.9rem' }}
+          sx={{
+            mt: 2,
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 2.5,
+            justifyContent: 'center',
+            color: 'text.secondary',
+            fontSize: '0.9rem',
+          }}
         >
           {vetoState.pickedMaps.map((pick) => (
             <span key={`pick-${pick.mapNumber}`}>
@@ -839,16 +892,78 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               <Box component="span" sx={{ color: color.ban, fontWeight: 600 }}>
                 {t('vetoInterface.decided.out')}
               </Box>{' '}
-              {vetoState.bannedMaps.map((m) => allMaps.get(m)?.displayName || getMapDisplayName(m)).join(', ')}
+              {vetoState.bannedMaps
+                .map((m) => allMaps.get(m)?.displayName || getMapDisplayName(m))
+                .join(', ')}
             </span>
           )}
         </Box>
       )}
-
     </Box>
   );
 };
 
+/** The turn's time as a bar that drains to empty, with the seconds left; red in the last ten. */
+function TurnBar({
+  deadline,
+  seconds,
+  mine,
+  tone,
+  label,
+}: {
+  deadline: string;
+  seconds?: number;
+  mine: boolean;
+  tone: string;
+  label: string;
+}) {
+  const end = Date.parse(deadline);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, []);
+  const leftMs = Math.max(0, end - now);
+  const total = seconds && seconds > 0 ? seconds * 1000 : Math.max(leftMs, 1);
+  const pct = Math.max(0, Math.min(100, (leftMs / total) * 100));
+  const left = Math.ceil(leftMs / 1000);
+  const urgent = left <= 10;
+  const fill = urgent ? color.ban : mine ? tone : color.ink2;
+  return (
+    <Box data-testid="veto-turn-bar" sx={{ mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          mb: 0.5,
+          fontSize: '0.875rem',
+          fontWeight: 600,
+          color: fill,
+          ...mono,
+        }}
+      >
+        <span>{label}</span>
+        <span role="timer">{`${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`}</span>
+      </Box>
+      <Box
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(pct)}
+        sx={{ height: 6, borderRadius: 999, bgcolor: color.paper2, overflow: 'hidden' }}
+      >
+        <Box
+          sx={{
+            height: '100%',
+            width: `${pct}%`,
+            bgcolor: fill,
+            transition: 'width 250ms linear, background-color 200ms',
+          }}
+        />
+      </Box>
+    </Box>
+  );
+}
 
 /** The turn's countdown: "0:24", red in the last ten seconds, "Time's up" at zero. */
 function TurnClock({ deadline, mine, tone }: { deadline: string; mine: boolean; tone: string }) {
@@ -861,7 +976,10 @@ function TurnClock({ deadline, mine, tone }: { deadline: string; mine: boolean; 
   }, []);
   const left = Math.max(0, Math.ceil((end - now) / 1000));
   const urgent = left <= 10;
-  const text = left > 0 ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : t('vetoInterface.timeUp');
+  const text =
+    left > 0
+      ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`
+      : t('vetoInterface.timeUp');
   return (
     <Box
       data-testid="veto-turn-clock"
@@ -907,20 +1025,37 @@ function VetoStepStrip({
   const { t } = useModuleTranslation('cs2');
   const actions = Array.isArray(vetoState.actions) ? vetoState.actions : [];
   const steps = Array.from({ length: vetoState.totalSteps }, (_, i) => i + 1);
-  const who = (team: string) => (mySide ? (team === mySide ? t('vetoInterface.strip.you') : t('vetoInterface.strip.them')) : teamName(team));
-  const tone = (action: string) => (action === 'ban' ? color.ban : action === 'pick' ? color.pick : color.info);
+  const who = (team: string) =>
+    mySide
+      ? team === mySide
+        ? t('vetoInterface.strip.you')
+        : t('vetoInterface.strip.them')
+      : teamName(team);
+  const tone = (action: string) =>
+    action === 'ban' ? color.ban : action === 'pick' ? color.pick : color.info;
   return (
     <Box
       component="ol"
-      aria-label={t('vetoInterface.stepOf', { current: Math.min(vetoState.currentStep, vetoState.totalSteps), total: vetoState.totalSteps })}
+      aria-label={t('vetoInterface.stepOf', {
+        current: Math.min(vetoState.currentStep, vetoState.totalSteps),
+        total: vetoState.totalSteps,
+      })}
       data-testid="veto-step-strip"
-      sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gridTemplateColumns: `repeat(${Math.max(1, vetoState.totalSteps)}, minmax(0, 1fr))`, gap: 0.75 }}
+      sx={{
+        listStyle: 'none',
+        m: 0,
+        p: 0,
+        display: 'grid',
+        gridTemplateColumns: `repeat(${Math.max(1, vetoState.totalSteps)}, minmax(0, 1fr))`,
+        gap: 0.75,
+      }}
     >
       {steps.map((step) => {
         const done = actions.find((a) => a.step === step);
         const current = !done && step === vetoState.currentStep && vetoState.status !== 'completed';
         const planned = order[step - 1];
-        const action = done?.action ?? (current ? vetoState.currentAction : planned?.action) ?? 'ban';
+        const action =
+          done?.action ?? (current ? vetoState.currentAction : planned?.action) ?? 'ban';
         const team = done?.team ?? (current ? vetoState.currentTurn : planned?.team);
         return (
           <Box
@@ -941,13 +1076,32 @@ function VetoStepStrip({
               gap: 0.25,
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, fontSize: '0.6875rem', color: done || current ? tone(action) : color.muted, fontWeight: 600, letterSpacing: '0.04em' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'baseline',
+                gap: 0.75,
+                fontSize: '0.6875rem',
+                color: done || current ? tone(action) : color.muted,
+                fontWeight: 600,
+                letterSpacing: '0.04em',
+              }}
+            >
               <span>{step}</span>
               <span data-testid={done ? 'veto-history-action' : undefined}>
-                {t(`vetoInterface.actionLabels.${action}`, { defaultValue: String(action).toUpperCase() })}
+                {t(`vetoInterface.actionLabels.${action}`, {
+                  defaultValue: String(action).toUpperCase(),
+                })}
               </span>
             </Box>
-            <Typography noWrap sx={{ fontSize: '0.8125rem', fontWeight: done ? 600 : 400, color: done ? color.ink : color.muted }}>
+            <Typography
+              noWrap
+              sx={{
+                fontSize: '0.8125rem',
+                fontWeight: done ? 600 : 400,
+                color: done ? color.ink : color.muted,
+              }}
+            >
               {done
                 ? done.action === 'side_pick'
                   ? t('vetoInterface.startingSide', { side: done.side })

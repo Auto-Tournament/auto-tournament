@@ -43,7 +43,11 @@ import type { TournamentResponse } from '../../types/tournament.types';
 import type { DbTournamentRow } from '../../types/database.types';
 import type { MatchReport } from './events/connectionSnapshotService';
 import { normalizeConfigPlayers } from '../../utils/playerTransform';
-import { cs2TournamentSettings, validateCs2TournamentSettings } from './tournamentSettings';
+import {
+  cs2TournamentSettings,
+  storedCs2Settings,
+  validateCs2TournamentSettings,
+} from './tournamentSettings';
 import { CS2_INSTANCE_SCHEMA, CS2_INSTANCE_SETTINGS } from './settings';
 import { CS2_MIGRATIONS } from './migrations';
 import type { ServerActionResult, ServerAllocationResult } from './allocation';
@@ -155,6 +159,11 @@ function toResourceActionResult(result: ServerActionResult): ResourceActionResul
   return { ...rest, ...(serverId ? { resourceId: serverId } : {}) };
 }
 
+/** The tournament runs the map veto (`settings.cs2.veto` is not false). */
+function vetoOn(settings: unknown): boolean {
+  return storedCs2Settings(settings)?.veto !== false;
+}
+
 /** The stored veto (`matches.veto_state`) is finished. */
 function vetoCompleted(raw: string | null | undefined): boolean {
   if (!raw) return false;
@@ -253,13 +262,18 @@ export const cs2Integration: GameIntegration = {
    * match (veto/routes.ts, veto/simulation.ts).
    */
   async isReadyToAllocate(ctx: MatchContext) {
-    if (!usesVeto(ctx.tournament?.format)) return true;
+    if (!usesVeto(ctx.tournament?.format) || !vetoOn(ctx.tournament?.settings)) return true;
     const { db } = await import('../../config/database');
     const row = await db.queryOneAsync<{ veto_state: string | null }>(
       'SELECT veto_state FROM matches WHERE slug = ?',
       [ctx.slug]
     );
     return vetoCompleted(row?.veto_state);
+  },
+
+  /** The map veto runs unless the tournament turned it off (`settings.cs2.veto: false`). */
+  usesPreMatchPhase(tournament) {
+    return vetoOn(tournament.settings);
   },
 
   /**

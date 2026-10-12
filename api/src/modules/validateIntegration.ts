@@ -27,6 +27,7 @@ const OPTIONAL_METHODS = [
   'validateTournamentSettings',
   'seed',
   'isReadyToAllocate',
+  'usesPreMatchPhase',
   'onMatchReady',
   'startPendingPreMatchPhases',
   'preMatchTurn',

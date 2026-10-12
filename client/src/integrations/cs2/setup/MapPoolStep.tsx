@@ -54,6 +54,8 @@ export interface MapPoolStepProps {
    */
   mapMode?: MapGameMode;
   onMapModeChange?: (mode: MapGameMode | undefined) => void;
+  /** The map veto is on (default); off: each match draws its maps from the pool. */
+  veto?: boolean;
 }
 
 export function MapPoolStep({
@@ -74,6 +76,7 @@ export function MapPoolStep({
   enableOrdering = true,
   mapMode,
   onMapModeChange,
+  veto = true,
 }: MapPoolStepProps) {
   const { t } = useModuleTranslation('cs2');
 
@@ -121,8 +124,8 @@ export function MapPoolStep({
   const isShuffle = type === 'shuffle';
 
   // Use verification rules system
-  const mapValidation = validateMapCount(maps, type || '', format);
-  const shouldShowVetoError = requiresVeto(type || '', format) && !mapValidation.valid;
+  const mapValidation = validateMapCount(maps, type || '', format, veto);
+  const shouldShowVetoError = requiresVeto(type || '', format, veto) && !mapValidation.valid;
 
   return (
     <Box>
