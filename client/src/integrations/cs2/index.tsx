@@ -53,6 +53,7 @@ import { MatchRulesPage } from './settings/MatchRulesPage';
 import { SkinsAdminPage } from './skins/SkinsAdminPage';
 import { cs2AdminPaths } from './adminPaths';
 import { InventoryPage } from './skins/InventoryPage';
+import { DropRatesPage } from './skins/DropRatesPage';
 import { ProfileLoadout } from './skins/ProfileLoadout';
 import { MapActions } from './demos/MapActions';
 import { highlightPaths } from './highlights/data';
@@ -243,6 +244,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     { path: cs2AdminPaths.matchRules, scope: 'admin', element: <MatchRulesPage /> },
     { path: skinPaths.inventory, scope: 'site', element: <InventoryPage /> },
     { path: skinPaths.playerInventory, scope: 'site', element: <InventoryPage /> },
+    { path: skinPaths.dropRates, scope: 'site', element: <DropRatesPage /> },
     { path: demoPaths.analysis, scope: 'site', element: <DemoAnalysisPage /> },
     { path: highlightPaths.library, scope: 'site', element: <HighlightsLibraryPage /> },
     { path: highlightPaths.player, scope: 'site', element: <PlayerHighlightsPage /> },
