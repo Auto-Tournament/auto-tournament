@@ -16,6 +16,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/srwiley/oksvg"
@@ -357,6 +358,17 @@ func feedKillsFor(rp *Replay, player string, from, to int) []feedKill {
 		names[p.ID] = p.Name
 		index[p.ID] = i
 	}
+	// A bot (bot-filled matches) is "bot:<name>"; a replay from before bots
+	// were on it does not list them, and the feed dropped every kill on one.
+	name := func(id string) string {
+		if n := names[id]; n != "" {
+			return n
+		}
+		if strings.HasPrefix(id, "bot:") {
+			return "BOT " + strings.TrimPrefix(id, "bot:")
+		}
+		return ""
+	}
 	mySide := sideAt(rp, index, player, from)
 	var out []feedKill
 	for _, k := range rp.Kills {
@@ -364,12 +376,12 @@ func feedKillsFor(rp *Replay, player string, from, to int) []feedKill {
 			continue
 		}
 		kl := feedKill{
-			Tick: k.Tick, Victim: names[k.Victim], Weapon: k.Weapon, Headshot: k.Headshot, Penetrated: k.Penetrated,
+			Tick: k.Tick, Victim: name(k.Victim), Weapon: k.Weapon, Headshot: k.Headshot, Penetrated: k.Penetrated,
 			Smoke: k.ThroughSmoke, NoScope: k.NoScope, Blind: k.AttackerBlind, InAir: k.InAir, FlashAssist: k.AssistedFlash,
 		}
 		kl.VictimMine = mySide != 0 && sideAt(rp, index, k.Victim, k.Tick) == mySide
 		if k.Attacker != nil && *k.Attacker != k.Victim {
-			kl.Killer = names[*k.Attacker]
+			kl.Killer = name(*k.Attacker)
 			kl.KillerMine = mySide != 0 && sideAt(rp, index, *k.Attacker, k.Tick) == mySide
 			kl.Own = *k.Attacker == player
 		}
@@ -377,7 +389,7 @@ func feedKillsFor(rp *Replay, player string, from, to int) []feedKill {
 			kl.Own = true
 		}
 		if k.Assister != nil {
-			kl.Assister = names[*k.Assister]
+			kl.Assister = name(*k.Assister)
 		}
 		if kl.Victim == "" {
 			continue
