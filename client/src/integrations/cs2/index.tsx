@@ -29,6 +29,7 @@ import { Cs2TournamentReview } from './setup/Cs2TournamentReview';
 import { cs2TournamentSetup } from './setup/cs2TournamentSettings';
 import { CreateManualMatchModal } from './standalone/CreateManualMatchModal';
 import { Cs2AdminWarnings } from './global/Cs2AdminWarnings';
+import { Cs2Overlays } from './global/Cs2Overlays';
 import { Cs2StartConfirm } from './start/Cs2StartConfirm';
 import { Cs2StartPreflight } from './start/Cs2StartPreflight';
 import { Cs2OutdatedServersDialog, parseCs2OutdatedError } from './start/Cs2OutdatedServersDialog';
@@ -52,7 +53,6 @@ import { MatchRulesPage } from './settings/MatchRulesPage';
 import { SkinsAdminPage } from './skins/SkinsAdminPage';
 import { cs2AdminPaths } from './adminPaths';
 import { InventoryPage } from './skins/InventoryPage';
-import { NewSkinReveal } from './skins/NewSkinReveal';
 import { ProfileLoadout } from './skins/ProfileLoadout';
 import { MapActions } from './demos/MapActions';
 import { highlightPaths } from './highlights/data';
@@ -211,7 +211,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   // Virtual skins (skins/): the inventory pages, the Inventory link while
   // skins are on, the "new skin" reveal, and the loadout on profiles.
   accountMenuItems: skinsAccountMenuItems,
-  globalOverlay: NewSkinReveal,
+  globalOverlay: Cs2Overlays,
 
   // Highlights, the library of every clip and reel, in the site's navigation.
   siteNavLinks: [{ path: highlightPaths.library, labelKey: 'library.nav' }],

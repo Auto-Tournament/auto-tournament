@@ -11447,6 +11447,20 @@
         }
       }
     },
+    "/api/players/me/match-now": {
+      "get": {
+        "tags": [
+          "Players"
+        ],
+        "summary": "GET /api/players/me/match-now",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/players/me/match-status": {
       "get": {
         "tags": [

@@ -849,7 +849,9 @@
       "adminCalled": "{{name}} tilkalte en admin",
       "timedOut": "tiden gikk ut",
       "remindAccount": "{{name}}: logg inn med Steam én gang så du kan spille i {{tournament}}.",
-      "remindGame": "{{name}}: legg til spillet på profilen din (Spill du spiller) før innsjekk til {{tournament}}."
+      "remindGame": "{{name}}: legg til spillet på profilen din (Spill du spiller) før innsjekk til {{tournament}}.",
+      "serverDown": "Kampserveren krasjet. Vi henter den tilbake …",
+      "serverBack": "Kampen er tilbake: kart {{map}}, runde {{round}}. Koble til på nytt."
     },
     "party": {
       "inviteCopied": "Invitasjonslenke kopiert",

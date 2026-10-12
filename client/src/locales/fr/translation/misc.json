@@ -849,7 +849,9 @@
       "adminCalled": "{{name}} a appelé un admin",
       "timedOut": "temps écoulé",
       "remindAccount": "{{name}} : connecte-toi une fois avec Steam pour jouer à {{tournament}}.",
-      "remindGame": "{{name}} : ajoute le jeu à ton profil (Tes jeux) avant le check-in de {{tournament}}."
+      "remindGame": "{{name}} : ajoute le jeu à ton profil (Tes jeux) avant le check-in de {{tournament}}.",
+      "serverDown": "The match server crashed. Bringing it back…",
+      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect."
     },
     "party": {
       "inviteCopied": "Lien d’invitation copié",

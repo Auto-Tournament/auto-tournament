@@ -2516,5 +2516,16 @@
     },
     "clipOf": "clip {{n}} of {{total}}",
     "left": "~{{time}} left"
+  },
+  "crash": {
+    "downTitle": "The match server crashed",
+    "down": "We're bringing it back. You'll get a reconnect button here as soon as the match is up again.",
+    "moving": "Moving the match to another server, restored to the last round.",
+    "wait": "This usually takes under a minute.",
+    "backTitle": "Your match is back",
+    "backInPlace": "The server is up again with your match restored. Reconnect to keep playing.",
+    "backMoved": "The match moved to another server, restored to the last round. Reconnect to keep playing.",
+    "reconnect": "Reconnect",
+    "close": "Close"
   }
 }
