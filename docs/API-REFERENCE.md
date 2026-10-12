@@ -56,6 +56,7 @@ Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory mana
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/skins/status` | public |
+| `GET` | `/api/skins/odds` | public |
 | `GET` | `/api/skins/me` | public |
 | `POST` | `/api/skins/me/choices/:id` | public |
 | `POST` | `/api/skins/me/equip` | public |

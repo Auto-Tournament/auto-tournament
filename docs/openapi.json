@@ -14044,6 +14044,20 @@
         }
       }
     },
+    "/api/skins/odds": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "GET /api/skins/odds",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/skins/players/{steamId}": {
       "get": {
         "tags": [
