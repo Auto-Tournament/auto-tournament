@@ -342,6 +342,15 @@
     }
   },
   "teamProfile": {
+    "matches": {
+      "title": "Matches",
+      "none": "No matches yet.",
+      "w": "W",
+      "l": "L",
+      "vs": "vs {{name}}",
+      "tbd": "TBD",
+      "live": "Live"
+    },
     "pageTitle": "{{name}} · Team",
     "notFound": "Team not found. Please check the URL.",
     "loadError": "Failed to load this team. Please try again.",
