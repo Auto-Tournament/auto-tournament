@@ -456,9 +456,7 @@ export const progressionService = {
    * different voters in the last 30 days. Voters who were in the same party
    * in that match count as one, so a group can't pile on.
    */
-  async reviewList(
-    min = 5
-  ): Promise<
+  async reviewList(min = 5): Promise<
     Array<{
       id: string;
       name: string;
