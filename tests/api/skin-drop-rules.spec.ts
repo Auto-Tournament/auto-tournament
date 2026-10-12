@@ -117,12 +117,12 @@ test.describe('skin drop rules', () => {
         headers: getAuthHeader(),
         data: { enabled: false },
       });
-      expect((await anon.get('/api/skins/formatOdds')).status()).toBe(404);
+      expect((await anon.get('/api/skins/odds')).status()).toBe(404);
       await request.put('/api/skins/admin/config', {
         headers: getAuthHeader(),
         data: { enabled: true },
       });
-      const res = await anon.get('/api/skins/formatOdds');
+      const res = await anon.get('/api/skins/odds');
       expect(res.ok(), await res.text()).toBe(true);
       const body = await res.json();
       expect(body).toMatchObject({
