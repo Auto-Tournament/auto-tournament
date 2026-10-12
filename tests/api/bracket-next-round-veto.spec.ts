@@ -1,8 +1,6 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
-import { executeVetoActions, getCSMajorBO1Actions } from '../helpers/veto';
-import type { Team } from '../helpers/teams';
 
 /**
  * A later round of a BO1 bracket opens its own veto and waits for it.
@@ -12,7 +10,7 @@ import type { Team } from '../helpers/teams';
  * players' page only open a veto for a `pending` match, and allocation
  * failed on "no maps yet", so the final sat there until an admin set it
  * back to `pending` by hand. Now the final stays `pending` until its veto is
- * done, and the veto finishing readies it.
+ * done, the veto timer picks it up, and the veto finishing readies it.
  *
  * Driven through series_end events (no game server needed for the semis).
  *
@@ -71,7 +69,14 @@ async function seriesEnd(request: APIRequestContext, slug: string) {
 test.describe.serial('Next-round veto', () => {
   test.beforeEach(async ({ request }) => {
     await signInViaRequest(request);
-    await request.put('/api/settings', { data: { simulateMatches: false } });
+    // Simulation off (the state that got stuck); a 1 s turn so the veto timer
+    // plays the final's veto for both teams (veto/timer.ts), as it did for the
+    // bot teams in the live test.
+    await request.put('/api/settings', { data: { simulateMatches: false, vetoTurnSeconds: 1 } });
+  });
+
+  test.afterEach(async ({ request }) => {
+    await request.put('/api/settings', { data: { vetoTurnSeconds: 0 } });
   });
 
   test(
@@ -88,7 +93,6 @@ test.describe.serial('Next-round veto', () => {
         settings: { seedingMethod: 'manual' },
       });
       expect(setup, 'tournament setup failed').toBeTruthy();
-      const teams = new Map<string, Team>(setup!.teams.map((t) => [t.id, t]));
 
       await seriesEnd(request, 'r1m1');
       await seriesEnd(request, 'r1m2');
@@ -107,15 +111,11 @@ test.describe.serial('Next-round veto', () => {
       // Both teams known, veto not done: the match waits for its veto.
       expect(final!.status, 'the final must wait for its veto').toBe('pending');
 
-      const team1 = teams.get(final!.team1!.id)!;
-      const team2 = teams.get(final!.team2!.id)!;
-      const done = await executeVetoActions(request, 'r2m1', getCSMajorBO1Actions(team1, team2));
-      expect(done, 'the final veto should go through').toBeTruthy();
-
+      // The veto timer picks the final up and takes each turn.
       await expect
         .poll(async () => (await bracketMatch(request, 'r2m1'))?.status, {
-          message: 'the finished veto readies the final',
-          timeout: 20_000,
+          message: 'the veto timer finishes the veto and that readies the final',
+          timeout: 45_000,
         })
         .toMatch(/^(ready|loaded|live)$/);
     }
