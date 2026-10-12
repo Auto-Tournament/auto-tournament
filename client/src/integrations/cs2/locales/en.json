@@ -2384,5 +2384,21 @@
     "nav": "Highlights",
     "teamHighlights": "Highlights",
     "matchHighlights": "All highlights"
+  },
+  "comments": {
+    "title_one": "{{count}} comment",
+    "title_other": "{{count}} comments",
+    "titlePlain": "Comments",
+    "placeholder": "Add a comment. Times like 0:23 jump to that moment.",
+    "post": "Comment",
+    "signIn": "Sign in to comment.",
+    "none": "No comments yet.",
+    "edited": "edited",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "seek": "Jump to {{time}}",
+    "failed": "Could not save the comment"
   }
 }

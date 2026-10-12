@@ -15,6 +15,7 @@ import {
   useModuleTranslation,
 } from '../../../module-sdk';
 import { analysisPath } from '../demos/paths';
+import { Comments } from './Comments';
 import {
   clock,
   kindLabel,
@@ -769,6 +770,18 @@ export function WatchPage() {
             </Box>
           </Box>
         )}
+      </Box>
+
+      <Box sx={{ mt: 5, maxWidth: 820 }}>
+        <Comments
+          video={key}
+          duration={w.markers?.duration ?? null}
+          onSeek={(at) => {
+            player.current?.seek(at);
+            player.current?.play();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
       </Box>
 
       {rel && (rel.players.length > 0 || rel.reels.length > 0) && (

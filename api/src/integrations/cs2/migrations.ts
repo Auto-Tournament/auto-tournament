@@ -1482,4 +1482,22 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       CREATE INDEX IF NOT EXISTS cs2_video_likes_player_idx ON cs2_video_likes(player_id);
     `,
   },
+  {
+    // Comments on a video's watch page (demos/comments.ts), by its library key.
+    id: '049-video-comments',
+    up: `
+      CREATE TABLE IF NOT EXISTS cs2_video_comments (
+        id SERIAL PRIMARY KEY,
+        video_key TEXT NOT NULL,
+        player_id TEXT NOT NULL,
+        body TEXT NOT NULL,
+        created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+        edited_at INTEGER,
+        deleted_at INTEGER, -- hidden, kept for moderation
+        deleted_by TEXT -- the author, or the admin who removed it
+      );
+      CREATE INDEX IF NOT EXISTS cs2_video_comments_video_idx ON cs2_video_comments(video_key, created_at);
+      CREATE INDEX IF NOT EXISTS cs2_video_comments_player_idx ON cs2_video_comments(player_id, created_at);
+    `,
+  },
 ];
