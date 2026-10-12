@@ -382,7 +382,11 @@ export function WatchPage() {
 
   if (failed === key) {
     return (
-      <Container maxWidth="lg" sx={{ py: 6, color: tokens.color.muted }}>
+      <Container
+        maxWidth="lg"
+        sx={{ py: 6, color: tokens.color.muted }}
+        data-testid="cs2-watch-missing"
+      >
         {t('highlights.watch.missing')}
       </Container>
     );
