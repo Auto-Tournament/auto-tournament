@@ -80,7 +80,9 @@ async function fakeCatalog(
   request: APIRequestContext,
   options: { goodVersions?: string[]; feed?: 'ok' | 'hang' | 'down'; resetCache?: boolean } = {}
 ): Promise<Ids> {
-  const response = await request.post('/api/test/catalog', { data: { fake: true, run: RUN, ...options } });
+  const response = await request.post('/api/test/catalog', {
+    data: { fake: true, run: RUN, ...options },
+  });
   expect(response.status(), `fake catalog: ${await response.text()}`).toBe(200);
   return ((await response.json()) as { ids: Ids }).ids;
 }
@@ -91,12 +93,21 @@ async function catalog(request: APIRequestContext): Promise<Listing> {
   return response.json();
 }
 
-async function item(request: APIRequestContext, kind: Item['kind'], id: string): Promise<Item | undefined> {
+async function item(
+  request: APIRequestContext,
+  kind: Item['kind'],
+  id: string
+): Promise<Item | undefined> {
   return (await catalog(request)).items.find((row) => row.kind === kind && row.id === id);
 }
 
 /** A same-site JSON write, the way the admin's browser sends one. */
-function write(request: APIRequestContext, method: 'post' | 'delete', url: string, data: unknown = {}): Promise<APIResponse> {
+function write(
+  request: APIRequestContext,
+  method: 'post' | 'delete',
+  url: string,
+  data: unknown = {}
+): Promise<APIResponse> {
   return request[method](url, { data, headers: { 'Content-Type': 'application/json' } });
 }
 
@@ -117,7 +128,10 @@ test.describe.serial('Game catalog', () => {
     await signInViaRequest(request);
     await request.post('/api/test/catalog', { data: { fake: false } });
     await request.delete('/api/test/modules/fixtures');
-    await request.delete('/api/catalog/packs/index-test-game', { headers: { 'Content-Type': 'application/json' }, data: {} });
+    await request.delete('/api/catalog/packs/index-test-game', {
+      headers: { 'Content-Type': 'application/json' },
+      data: {},
+    });
   });
 
   test('lists packs and modules together, from the feed and the snapshot', async ({ request }) => {
@@ -125,14 +139,24 @@ test.describe.serial('Game catalog', () => {
     const listing = await catalog(request);
     expect(listing.feed.from).toBe('remote');
     expect(listing.feed.stale).toBe(false);
-    expect(listing.platform).toEqual({ serverApi: '0.1.0', clientApi: '0.2.18' });
+    expect(listing.platform).toEqual({ serverApi: '0.1.0', clientApi: '0.2.19' });
 
     const good = listing.items.find((row) => row.id === ids.good);
-    expect(good).toMatchObject({ kind: 'module', state: 'available', installed: null, available: { version: '1.0.0', from: 'remote' } });
+    expect(good).toMatchObject({
+      kind: 'module',
+      state: 'available',
+      installed: null,
+      available: { version: '1.0.0', from: 'remote' },
+    });
 
     // The feed's pack and the image's snapshot packs are in the same list.
-    expect(listing.items.find((row) => row.kind === 'pack' && row.id === 'index-test-game')?.available?.from).toBe('remote');
-    expect(listing.items.some((row) => row.kind === 'pack' && row.available?.from === 'snapshot')).toBe(true);
+    expect(
+      listing.items.find((row) => row.kind === 'pack' && row.id === 'index-test-game')?.available
+        ?.from
+    ).toBe('remote');
+    expect(
+      listing.items.some((row) => row.kind === 'pack' && row.available?.from === 'snapshot')
+    ).toBe(true);
 
     // Incompatible before anything is downloaded, with the ranges in the reason.
     const incompatible = listing.items.find((row) => row.id === ids.incompatible);
@@ -143,11 +167,17 @@ test.describe.serial('Game catalog', () => {
     expect(listing.items.some((row) => row.id === `fixture-cat-elsewhere-${RUN}`)).toBe(false);
   });
 
-  test('is admin-only, and writes must be same-site JSON', async ({ request, playwright, baseURL }) => {
+  test('is admin-only, and writes must be same-site JSON', async ({
+    request,
+    playwright,
+    baseURL,
+  }) => {
     const stranger = await playwright.request.newContext({ baseURL });
     try {
       expect((await stranger.get('/api/catalog')).status()).toBe(401);
-      expect((await stranger.post(`/api/catalog/modules/${ids.good}/install`, { data: {} })).status()).toBe(401);
+      expect(
+        (await stranger.post(`/api/catalog/modules/${ids.good}/install`, { data: {} })).status()
+      ).toBe(401);
     } finally {
       await stranger.dispose();
     }
@@ -164,29 +194,53 @@ test.describe.serial('Game catalog', () => {
   });
 
   test('refuses a tampered archive before unpacking it', async ({ request }) => {
-    await refused(await write(request, 'post', `/api/catalog/modules/${ids.tampered}/install`), 400, /changed after signing/);
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.tampered}/install`),
+      400,
+      /changed after signing/
+    );
     expect((await item(request, 'module', ids.tampered))?.installed).toBeNull();
   });
 
   test('refuses a release signed by a key the platform does not trust', async ({ request }) => {
-    await refused(await write(request, 'post', `/api/catalog/modules/${ids.badsig}/install`), 400, /does not trust/);
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.badsig}/install`),
+      400,
+      /does not trust/
+    );
     expect((await item(request, 'module', ids.badsig))?.installed).toBeNull();
   });
 
   test('refuses a signed archive with a traversal entry or a symlink', async ({ request }) => {
-    await refused(await write(request, 'post', `/api/catalog/modules/${ids.traversal}/install`), 400, /climbs out/);
-    await refused(await write(request, 'post', `/api/catalog/modules/${ids.symlink}/install`), 400, /symlink/);
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.traversal}/install`),
+      400,
+      /climbs out/
+    );
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.symlink}/install`),
+      400,
+      /symlink/
+    );
     for (const id of [ids.traversal, ids.symlink]) {
       expect((await item(request, 'module', id))?.installed).toBeNull();
     }
   });
 
   test('refuses a module.json that disagrees with what was signed', async ({ request }) => {
-    await refused(await write(request, 'post', `/api/catalog/modules/${ids.wrongversion}/install`), 400, /2\.0\.0.*1\.0\.0 was signed/);
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.wrongversion}/install`),
+      400,
+      /2\.0\.0.*1\.0\.0 was signed/
+    );
   });
 
   test('refuses an incompatible release before downloading it', async ({ request }) => {
-    await refused(await write(request, 'post', `/api/catalog/modules/${ids.incompatible}/install`), 409, /server API \^9\.0\.0/);
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.incompatible}/install`),
+      409,
+      /server API \^9\.0\.0/
+    );
   });
 
   test('rolls back a module whose migration fails on load', async ({ request }) => {
@@ -196,7 +250,9 @@ test.describe.serial('Game catalog', () => {
     expect(row?.installed).toBeNull();
     expect(row?.state).toBe('available');
     const migrations = await request.get(`/api/test/modules/${ids.migfail}/migrations`);
-    expect(((await migrations.json()) as { probeTableExists: boolean }).probeTableExists).toBe(false);
+    expect(((await migrations.json()) as { probeTableExists: boolean }).probeTableExists).toBe(
+      false
+    );
   });
 
   test('installs from the offline snapshot when the download times out', async ({ request }) => {
@@ -213,22 +269,43 @@ test.describe.serial('Game catalog', () => {
     expect(response.status(), text).toBe(200);
     const body = JSON.parse(text) as { restartRequired: boolean; item: Item };
     expect(body.restartRequired).toBe(false);
-    expect(body.item).toMatchObject({ state: 'installed', installed: { version: '1.0.0', source: 'catalog', enabled: true } });
+    expect(body.item).toMatchObject({
+      state: 'installed',
+      installed: { version: '1.0.0', source: 'catalog', enabled: true },
+    });
     // Which key vouched for it: this process's throwaway test key, by id and name.
     expect(body.item.installed?.keyId).toMatch(/^[0-9a-f]{16}$/);
     expect(body.item.installed?.keyLabel).toBe('test');
     // Recorded as the highest version this instance has run.
-    expect(((await (await request.get(`/api/test/modules/${ids.good}/max-version`)).json()) as { version: string }).version).toBe('1.0.0');
+    expect(
+      (
+        (await (await request.get(`/api/test/modules/${ids.good}/max-version`)).json()) as {
+          version: string;
+        }
+      ).version
+    ).toBe('1.0.0');
 
     // Loaded: the loader lists it as ok, and the public manifest serves its client.
-    const modules = (await (await request.get('/api/modules')).json()) as { modules: Array<{ id: string; status: string }> };
+    const modules = (await (await request.get('/api/modules')).json()) as {
+      modules: Array<{ id: string; status: string }>;
+    };
     expect(modules.modules.find((m) => m.id === ids.good)?.status).toBe('ok');
-    const manifest = (await (await request.get('/api/modules/public')).json()) as { modules: Array<{ id: string }> };
+    const manifest = (await (await request.get('/api/modules/public')).json()) as {
+      modules: Array<{ id: string }>;
+    };
     expect(manifest.modules.some((m) => m.id === ids.good)).toBe(true);
 
     // Installing it again is not an update.
-    await refused(await write(request, 'post', `/api/catalog/modules/${ids.good}/install`), 409, /already installed/);
-    await refused(await write(request, 'post', `/api/catalog/modules/${ids.good}/update`), 409, /already the newest/);
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.good}/install`),
+      409,
+      /already installed/
+    );
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.good}/update`),
+      409,
+      /already the newest/
+    );
   });
 
   test('an update of a loaded module waits for a restart', async ({ request }) => {
@@ -246,12 +323,22 @@ test.describe.serial('Game catalog', () => {
     // The running version's client keeps being served until then.
     const client = await request.get(`/api/modules/${ids.good}/client/index.js`);
     expect(client.status()).toBe(200);
-    expect(((await (await request.get(`/api/test/modules/${ids.good}/max-version`)).json()) as { version: string }).version).toBe('1.1.0');
+    expect(
+      (
+        (await (await request.get(`/api/test/modules/${ids.good}/max-version`)).json()) as {
+          version: string;
+        }
+      ).version
+    ).toBe('1.1.0');
 
     // A second update before the restart would pull the running version's
     // files out from under it: refused until then.
     await fakeCatalog(request, { goodVersions: ['1.0.0', '1.1.0', '1.2.0'] });
-    await refused(await write(request, 'post', `/api/catalog/modules/${ids.good}/update`), 409, /Restart Auto Tournament first/);
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.good}/update`),
+      409,
+      /Restart Auto Tournament first/
+    );
     expect(client.status()).toBe(200);
     expect((await request.get(`/api/modules/${ids.good}/client/index.js`)).status()).toBe(200);
   });
@@ -268,29 +355,47 @@ test.describe.serial('Game catalog', () => {
     expect(row?.installed).toBeNull();
     expect(row?.restartRequired).toBe(true);
     // Installed again before the restart: refused, the old code still runs.
-    await refused(await write(request, 'post', `/api/catalog/modules/${ids.good}/install`), 409, /Restart Auto Tournament first/);
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.good}/install`),
+      409,
+      /Restart Auto Tournament first/
+    );
 
-    await refused(await write(request, 'post', `/api/catalog/modules/${ids.good}/purge`, {}), 400, /to confirm/);
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.good}/purge`, {}),
+      400,
+      /to confirm/
+    );
     await refused(
       await write(request, 'post', `/api/catalog/modules/${ids.good}/purge`, { confirm: ids.good }),
       409,
       /still loaded/
     );
     // One never loaded can be purged.
-    const purged = await write(request, 'post', `/api/catalog/modules/${ids.migfail}/purge`, { confirm: ids.migfail });
+    const purged = await write(request, 'post', `/api/catalog/modules/${ids.migfail}/purge`, {
+      confirm: ids.migfail,
+    });
     expect(purged.status(), await purged.text()).toBe(200);
   });
 
   test('refuses a version older than one this instance already ran', async ({ request }) => {
     // As if 2.0.0 had been installed and uninstalled: the highest version is
     // kept, and the feed's 1.0.0 is a downgrade. Refused before downloading.
-    const setMax = await request.post(`/api/test/modules/${ids.tampered}/max-version`, { data: { version: '2.0.0' } });
+    const setMax = await request.post(`/api/test/modules/${ids.tampered}/max-version`, {
+      data: { version: '2.0.0' },
+    });
     expect(setMax.ok()).toBe(true);
-    await refused(await write(request, 'post', `/api/catalog/modules/${ids.tampered}/install`), 409, /older than 2\.0\.0.*downgrade is refused/);
+    await refused(
+      await write(request, 'post', `/api/catalog/modules/${ids.tampered}/install`),
+      409,
+      /older than 2\.0\.0.*downgrade is refused/
+    );
     expect((await item(request, 'module', ids.tampered))?.installed).toBeNull();
   });
 
-  test('a release URL that redirects anywhere but an asset host is refused', async ({ request }) => {
+  test('a release URL that redirects anywhere but an asset host is refused', async ({
+    request,
+  }) => {
     await refused(
       await write(request, 'post', `/api/catalog/modules/${ids.redirect}/install`),
       502,
@@ -299,11 +404,18 @@ test.describe.serial('Game catalog', () => {
     expect((await item(request, 'module', ids.redirect))?.installed).toBeNull();
   });
 
-  test('an update keeps a disabled module disabled (one allowed redirect on the way)', async ({ request }) => {
+  test('an update keeps a disabled module disabled (one allowed redirect on the way)', async ({
+    request,
+  }) => {
     // Put 1.0.0 on disk by hand: a module an operator placed, switched off.
-    const written = await request.post('/api/test/modules/fixture', { data: { id: ids.hop, kind: 'valid' } });
+    const written = await request.post('/api/test/modules/fixture', {
+      data: { id: ids.hop, kind: 'valid' },
+    });
     expect(written.status(), await written.text()).toBe(200);
-    expect((await item(request, 'module', ids.hop))).toMatchObject({ state: 'disabled', installed: { version: '1.0.0', enabled: false } });
+    expect(await item(request, 'module', ids.hop)).toMatchObject({
+      state: 'disabled',
+      installed: { version: '1.0.0', enabled: false },
+    });
 
     // The catalog's 1.1.0 is served through one redirect to an allowed origin.
     const updated = await write(request, 'post', `/api/catalog/modules/${ids.hop}/update`);
@@ -312,8 +424,13 @@ test.describe.serial('Game catalog', () => {
     const body = JSON.parse(text) as { restartRequired: boolean; message: string; item: Item };
     expect(body.restartRequired).toBe(false);
     expect(body.message).toMatch(/stays disabled/);
-    expect(body.item).toMatchObject({ state: 'disabled', installed: { version: '1.1.0', source: 'catalog', enabled: false } });
-    const modules = (await (await request.get('/api/modules')).json()) as { modules: Array<{ id: string; status: string }> };
+    expect(body.item).toMatchObject({
+      state: 'disabled',
+      installed: { version: '1.1.0', source: 'catalog', enabled: false },
+    });
+    const modules = (await (await request.get('/api/modules')).json()) as {
+      modules: Array<{ id: string; status: string }>;
+    };
     expect(modules.modules.find((m) => m.id === ids.hop)?.status).toBe('disabled');
 
     // Switching it on loads it now.
@@ -322,12 +439,18 @@ test.describe.serial('Game catalog', () => {
     expect((await item(request, 'module', ids.hop))?.state).toBe('installed');
   });
 
-  test('a module whose database has migrations it does not know is refused, and says so', async ({ request }) => {
+  test('a module whose database has migrations it does not know is refused, and says so', async ({
+    request,
+  }) => {
     const id = `fixture-ledger-${RUN}`;
-    const written = await request.post('/api/test/modules/fixture', { data: { id, kind: 'migrates' } });
+    const written = await request.post('/api/test/modules/fixture', {
+      data: { id, kind: 'migrates' },
+    });
     expect(written.status(), await written.text()).toBe(200);
     // A newer version of it ran this one here.
-    const ledger = await request.post(`/api/test/modules/${id}/ledger`, { data: { migrationId: '999-from-a-newer-version' } });
+    const ledger = await request.post(`/api/test/modules/${id}/ledger`, {
+      data: { migrationId: '999-from-a-newer-version' },
+    });
     expect(ledger.ok(), await ledger.text()).toBe(true);
 
     const enabled = await write(request, 'post', `/api/catalog/modules/${id}/enable`);
@@ -335,13 +458,19 @@ test.describe.serial('Game catalog', () => {
     const row = await item(request, 'module', id);
     expect(row?.state).toBe('broken');
     expect(row?.reason).toMatch(/does not know \(999-from-a-newer-version\).*newer version/);
-    const migrations = (await (await request.get(`/api/test/modules/${id}/migrations`)).json()) as { probeTableExists: boolean };
+    const migrations = (await (await request.get(`/api/test/modules/${id}/migrations`)).json()) as {
+      probeTableExists: boolean;
+    };
     expect(migrations.probeTableExists).toBe(false);
   });
 
-  test('an install interrupted between its two renames is put back at boot', async ({ request }) => {
+  test('an install interrupted between its two renames is put back at boot', async ({
+    request,
+  }) => {
     const id = `fixture-swap-${RUN}`;
-    const written = await request.post('/api/test/modules/fixture', { data: { id, kind: 'valid' } });
+    const written = await request.post('/api/test/modules/fixture', {
+      data: { id, kind: 'valid' },
+    });
     expect(written.status(), await written.text()).toBe(200);
     // Switched off, but switched: the instance counts it as installed.
     expect((await write(request, 'post', `/api/modules/${id}/disable`)).status()).toBe(200);
@@ -354,7 +483,9 @@ test.describe.serial('Game catalog', () => {
     expect((await item(request, 'module', id))?.installed).toMatchObject({ version: '1.0.0' });
   });
 
-  test('boot updates snapshot-installed modules from a newer snapshot, within their major version', async ({ request }) => {
+  test('boot updates snapshot-installed modules from a newer snapshot, within their major version', async ({
+    request,
+  }) => {
     // What the older image left: 1.0.0 of each, not loaded. The snapshot
     // (written by the fake catalog) has 1.1.0, a badly signed 1.1.0, or only 2.0.0.
     const seed = async (id: string, data: { enabled?: boolean; manual?: boolean } = {}) => {
@@ -385,27 +516,43 @@ test.describe.serial('Game catalog', () => {
 
     const rows = new Map((await catalog(request)).items.map((row) => [row.id, row]));
     // Updated, and loaded by the scan that follows.
-    expect(rows.get(ids.autoup)).toMatchObject({ installed: { version: '1.1.0', source: 'snapshot', enabled: true }, notice: null });
+    expect(rows.get(ids.autoup)).toMatchObject({
+      installed: { version: '1.1.0', source: 'snapshot', enabled: true },
+      notice: null,
+    });
     expect(states[ids.autoup]).toMatchObject({ status: 'ok', version: '1.1.0' });
     // Updated, and still off.
-    expect(rows.get(ids.autooff)).toMatchObject({ state: 'disabled', installed: { version: '1.1.0', enabled: false } });
+    expect(rows.get(ids.autooff)).toMatchObject({
+      state: 'disabled',
+      installed: { version: '1.1.0', enabled: false },
+    });
     expect(states[ids.autooff]).toMatchObject({ status: 'disabled' });
     // An operator's folder is theirs: untouched.
-    expect(rows.get(ids.automanual)).toMatchObject({ installed: { version: '1.0.0', source: 'manual' }, notice: null });
+    expect(rows.get(ids.automanual)).toMatchObject({
+      installed: { version: '1.0.0', source: 'manual' },
+      notice: null,
+    });
     // A bad signature: still 1.0.0, running, and the Modules page says why.
-    expect(rows.get(ids.autobadsig)).toMatchObject({ installed: { version: '1.0.0', source: 'snapshot' } });
+    expect(rows.get(ids.autobadsig)).toMatchObject({
+      installed: { version: '1.0.0', source: 'snapshot' },
+    });
     expect(rows.get(ids.autobadsig)?.notice).toMatch(/automatic update .* failed.*does not trust/);
     expect(states[ids.autobadsig]).toMatchObject({ status: 'ok', version: '1.0.0' });
     // A new major waits for the admin, who is told.
-    expect(rows.get(ids.automajor)).toMatchObject({ state: 'update-available', installed: { version: '1.0.0' } });
-    expect(rows.get(ids.automajor)?.notice).toMatch(/2\.0\.0 is available.*not installed automatically/);
+    expect(rows.get(ids.automajor)).toMatchObject({
+      state: 'update-available',
+      installed: { version: '1.0.0' },
+    });
+    expect(rows.get(ids.automajor)?.notice).toMatch(
+      /2\.0\.0 is available.*not installed automatically/
+    );
   });
 
   test('installs a pack from the feed, and removes it', async ({ request }) => {
     await request.delete('/api/packs/index-test-game');
     const response = await write(request, 'post', '/api/catalog/packs/index-test-game/install');
     expect(response.status(), await response.text()).toBe(200);
-    expect((await item(request, 'pack', 'index-test-game'))).toMatchObject({
+    expect(await item(request, 'pack', 'index-test-game')).toMatchObject({
       state: 'installed',
       installed: { version: '2.0.0', source: 'index' },
     });
@@ -418,11 +565,18 @@ test.describe.serial('Game catalog', () => {
     expect((await item(request, 'pack', 'index-test-game'))?.state).toBe('available');
   });
 
-  test('a feed that is down is served from its cache; one that hangs times out', async ({ request }) => {
+  test('a feed that is down is served from its cache; one that hangs times out', async ({
+    request,
+  }) => {
     await fakeCatalog(request, { feed: 'down' });
     let listing = await catalog(request);
     // A code, not a sentence: the client translates it. And when the copy is from.
-    expect(listing.feed).toMatchObject({ from: 'cache', stale: true, error: 'http_503', refreshing: false });
+    expect(listing.feed).toMatchObject({
+      from: 'cache',
+      stale: true,
+      error: 'http_503',
+      refreshing: false,
+    });
     expect(Date.parse(listing.feed.fetchedAt ?? '')).not.toBeNaN();
     expect(listing.items.some((row) => row.id === ids.tampered)).toBe(true);
 
@@ -431,9 +585,17 @@ test.describe.serial('Game catalog', () => {
     listing = await catalog(request);
     // The page waits about two seconds, not the fetch's two tries.
     expect(Date.now() - started).toBeLessThan(3500);
-    expect(listing.feed).toMatchObject({ from: 'none', stale: true, error: 'timeout', fetchedAt: null, refreshing: true });
+    expect(listing.feed).toMatchObject({
+      from: 'none',
+      stale: true,
+      error: 'timeout',
+      fetchedAt: null,
+      refreshing: true,
+    });
     // Still offered: the offline snapshot's module and packs.
     expect(listing.items.find((row) => row.id === ids.offline)).toBeTruthy();
-    expect(listing.items.some((row) => row.kind === 'pack' && row.available?.from === 'snapshot')).toBe(true);
+    expect(
+      listing.items.some((row) => row.kind === 'pack' && row.available?.from === 'snapshot')
+    ).toBe(true);
   });
 });

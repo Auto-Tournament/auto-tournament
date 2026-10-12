@@ -144,276 +144,352 @@ test.describe.serial('Code modules in the browser', () => {
     await request.delete('/api/test/modules/fixtures');
   });
 
-  test('with no code module enabled, no shim and no loader chunk is requested', {
-    tag: ['@ui', '@modules'],
-  }, async ({ page, request }) => {
-    // CS2 is a code module on every instance that runs it (CI installs it
-    // from the catalog), so the manifest is answered here as an instance with
-    // no code module enabled answers it.
-    await page.route('**/api/modules/public', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, modules: [] }) })
-    );
+  test(
+    'with no code module enabled, no shim and no loader chunk is requested',
+    {
+      tag: ['@ui', '@modules'],
+    },
+    async ({ page, request }) => {
+      // CS2 is a code module on every instance that runs it (CI installs it
+      // from the catalog), so the manifest is answered here as an instance with
+      // no code module enabled answers it.
+      await page.route('**/api/modules/public', (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, modules: [] }),
+        })
+      );
 
-    // The JavaScript index.html itself loads; anything else would be lazy.
-    const html = await (await request.get('/')).text();
-    const entryScripts = [
-      ...html.matchAll(/<(?:script[^>]*\bsrc|link[^>]*\bhref)="([^"]+\.js)"/g),
-    ].map((m) => m[1]);
-    expect(entryScripts.length, 'index.html should load an entry script').toBeGreaterThan(0);
+      // The JavaScript index.html itself loads; anything else would be lazy.
+      const html = await (await request.get('/')).text();
+      const entryScripts = [
+        ...html.matchAll(/<(?:script[^>]*\bsrc|link[^>]*\bhref)="([^"]+\.js)"/g),
+      ].map((m) => m[1]);
+      expect(entryScripts.length, 'index.html should load an entry script').toBeGreaterThan(0);
 
-    const requested = await recordRequests(page);
-    const listed = page.waitForResponse(
-      (res) => new URL(res.url()).pathname === '/api/modules/public'
-    );
-    await page.goto('/');
-    // The boot asked the public manifest, and it listed nothing, so the
-    // absence below is the loader deciding, not the loader never running.
-    const manifest = await listed;
-    expect(manifest.status()).toBe(200);
-    expect((await manifest.json()).modules).toEqual([]);
-    await waitForBoot(page);
-    await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 15_000 });
+      const requested = await recordRequests(page);
+      const listed = page.waitForResponse(
+        (res) => new URL(res.url()).pathname === '/api/modules/public'
+      );
+      await page.goto('/');
+      // The boot asked the public manifest, and it listed nothing, so the
+      // absence below is the loader deciding, not the loader never running.
+      const manifest = await listed;
+      expect(manifest.status()).toBe(200);
+      expect((await manifest.json()).modules).toEqual([]);
+      await waitForBoot(page);
+      await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 15_000 });
 
-    expect(requested.filter((p) => SHIM_PATH.test(p)), 'shim requests').toEqual([]);
-    expect(requested.filter((p) => LOADER_CHUNK.test(p)), 'loader chunk requests').toEqual([]);
-    expect(requested.filter((p) => MODULE_CODE.test(p)), 'module code requests').toEqual([]);
-    const scripts = requested.filter((p) => p.startsWith('/assets/') && p.endsWith('.js'));
-    expect(
-      scripts.filter((p) => !entryScripts.includes(p)),
-      'no JavaScript beyond what index.html loads'
-    ).toEqual([]);
-  });
-
-  test('the module is listed from disk, and its client entry is served as JavaScript', {
-    tag: ['@ui', '@modules'],
-  }, async ({ request }) => {
-    await installEnabled(request, VALID, 'valid');
-
-    const row = await moduleRow(request, VALID);
-    expect(row).toMatchObject({ source: 'disk', enabled: true, status: 'ok', reason: null });
-    expect(row.client?.entry.startsWith(`/api/modules/${VALID}/`)).toBe(true);
-
-    const entry = await request.get(row.client!.entry);
-    expect(entry.status()).toBe(200);
-    expect(entry.headers()['content-type']).toMatch(/^text\/javascript/);
-    const source = await entry.text();
-    // Bare imports for the import map, not a bundled React.
-    expect(source).toMatch(/from 'react';/);
-    expect(source).not.toContain('__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED');
-
-    const missing = await request.get(`/api/modules/${VALID}/client/missing.js`);
-    expect(missing.status()).toBe(404);
-    expect(missing.headers()['content-type']).toMatch(/application\/json/);
-    expect(await missing.text()).not.toMatch(/<html/i);
-  });
-
-  test('its route renders in the admin shell on the host React, theme, router and language', {
-    tag: ['@ui', '@modules'],
-  }, async ({ page }) => {
-    const requested = await recordRequests(page);
-    await page.addInitScript((themeId) => {
-      window.localStorage.setItem('at-theme', themeId);
-      window.localStorage.setItem('i18nextLng', 'nb');
-    }, HOST_THEME);
-    await page.goto(`/${VALID}`);
-    await waitForBoot(page);
-
-    const root = page.locator('main').getByTestId(`${VALID}-page`);
-    await expect(root).toBeVisible({ timeout: 15_000 });
-
-    // The host's router: its current path.
-    await expect(page.getByTestId(`${VALID}-path`)).toHaveText(`/${VALID}`);
-    // The host's i18next: its language and its resources.
-    await expect(page.getByTestId(`${VALID}-language`)).toHaveText('nb');
-    await expect(page.getByTestId(`${VALID}-translated`)).toHaveText('Kodemodul');
-    // The host's MUI theme, as a value and as the style of a module's button.
-    await expect(page.getByTestId(`${VALID}-primary`)).toHaveText(HOST_PRIMARY);
-    const counter = page.getByTestId(`${VALID}-clicks`);
-    await expect(counter).toHaveCSS('background-color', HOST_PRIMARY_RGB);
-
-    // One React: a hook's state update re-renders the module.
-    await expect(counter).toHaveText('Clicked 0');
-    await counter.click();
-    await expect(counter).toHaveText('Clicked 1');
-    await counter.click();
-    await expect(counter).toHaveText('Clicked 2');
-
-    // Navigating from inside the module moves the host.
-    await page.getByTestId(`${VALID}-navigate`).click();
-    await expect(page).toHaveURL(new RegExp(`/${VALID}/next$`));
-    await expect(page.getByTestId(`${VALID}-path`)).toHaveText(`/${VALID}/next`);
-    await expect(page.locator('main').getByTestId(`${VALID}-page`)).toBeVisible();
-
-    // The positive control for the "nothing requested" checks: this is what
-    // loading a module looks like on the wire.
-    expect(requested).toContain(`/api/modules/${VALID}/client/index.js`);
-    expect(requested.some((p) => LOADER_CHUNK.test(p)), 'the loader chunk was requested').toBe(true);
-    expect(requested.some((p) => SHIM_PATH.test(p)), 'the shims were requested').toBe(true);
-  });
-
-  test('the Modules page shows it as ok, with no upload for code', {
-    tag: ['@ui', '@modules'],
-  }, async ({ page, request }) => {
-    await page.goto('/manage/modules');
-    await waitForBoot(page);
-    await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15_000 });
-
-    const card = page.getByTestId(`code-module-${VALID}`);
-    await expect(card).toBeVisible();
-    await expect(statusChip(page, VALID)).toHaveAttribute('data-status', 'ok');
-    // Listed once, as a code module, not a second time as built in.
-    await expect(page.getByTestId(`module-${VALID}`)).toHaveCount(0);
-
-    // Code is installed on disk, never uploaded: nothing on the card takes a
-    // file, and the page's only file picker (game packs) takes no JavaScript.
-    await expect(card.locator('input[type="file"]')).toHaveCount(0);
-    await expect(page.getByTestId('modules-file-input')).toHaveCount(1);
-    for (const picker of await page.locator('input[type="file"]').all()) {
-      const accept = (await picker.getAttribute('accept')) ?? '';
-      expect(accept, 'a file picker on the Modules page').not.toBe('');
-      expect(accept, 'a file picker on the Modules page').not.toMatch(/javascript|\.m?js\b/i);
+      expect(
+        requested.filter((p) => SHIM_PATH.test(p)),
+        'shim requests'
+      ).toEqual([]);
+      expect(
+        requested.filter((p) => LOADER_CHUNK.test(p)),
+        'loader chunk requests'
+      ).toEqual([]);
+      expect(
+        requested.filter((p) => MODULE_CODE.test(p)),
+        'module code requests'
+      ).toEqual([]);
+      const scripts = requested.filter((p) => p.startsWith('/assets/') && p.endsWith('.js'));
+      expect(
+        scripts.filter((p) => !entryScripts.includes(p)),
+        'no JavaScript beyond what index.html loads'
+      ).toEqual([]);
     }
-    // And no API takes one.
-    const upload = await request.post('/api/modules', { data: { id: VALID } });
-    expect(upload.status(), 'POST /api/modules').toBeGreaterThanOrEqual(400);
-  });
+  );
 
-  test('disabling removes its route; enabling asks for the id first and brings it back', {
-    tag: ['@ui', '@modules'],
-  }, async ({ page, request }) => {
-    await page.goto('/manage/modules');
-    await waitForBoot(page);
-    await page.getByTestId(`code-module-${VALID}-disable`).click();
-    await expect(page.getByTestId('code-modules-reload')).toBeVisible();
+  test(
+    'the module is listed from disk, and its client entry is served as JavaScript',
+    {
+      tag: ['@ui', '@modules'],
+    },
+    async ({ request }) => {
+      await installEnabled(request, VALID, 'valid');
 
-    // The server keeps its code until it restarts; no browser loads it.
-    expect(await moduleRow(request, VALID)).toMatchObject({ enabled: false, client: null });
+      const row = await moduleRow(request, VALID);
+      expect(row).toMatchObject({ source: 'disk', enabled: true, status: 'ok', reason: null });
+      expect(row.client?.entry.startsWith(`/api/modules/${VALID}/`)).toBe(true);
 
-    await page.reload();
-    await waitForBoot(page);
-    await expect(statusChip(page, VALID)).toHaveAttribute('data-status', 'disabled');
+      const entry = await request.get(row.client!.entry);
+      expect(entry.status()).toBe(200);
+      expect(entry.headers()['content-type']).toMatch(/^text\/javascript/);
+      const source = await entry.text();
+      // Bare imports for the import map, not a bundled React.
+      expect(source).toMatch(/from 'react';/);
+      expect(source).not.toContain('__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED');
 
-    await page.goto(`/${VALID}`);
-    await waitForBoot(page);
-    await expect(page.getByRole('heading', { name: '404' })).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId(`${VALID}-page`)).toHaveCount(0);
+      const missing = await request.get(`/api/modules/${VALID}/client/missing.js`);
+      expect(missing.status()).toBe(404);
+      expect(missing.headers()['content-type']).toMatch(/application\/json/);
+      expect(await missing.text()).not.toMatch(/<html/i);
+    }
+  );
 
-    // Enable: through the warning dialog, whose confirm waits for the id.
-    await page.goto('/manage/modules');
-    await waitForBoot(page);
-    await page.getByTestId(`code-module-${VALID}-enable`).click();
-    const dialog = page.getByTestId('code-module-enable-dialog');
-    await expect(dialog).toBeVisible();
-    const confirm = page.getByTestId('code-module-enable-confirm');
-    const typed = page.getByTestId('code-module-enable-confirm-id');
-    await expect(confirm).toBeDisabled();
-    await typed.fill(VALID.slice(0, -1));
-    await expect(confirm).toBeDisabled();
-    await typed.fill(VALID);
-    await expect(confirm).toBeEnabled();
-    await confirm.click();
-    await expect(dialog).toHaveCount(0);
-    await expect(page.getByTestId('code-modules-reload')).toBeVisible();
+  test(
+    'its route renders in the admin shell on the host React, theme, router and language',
+    {
+      tag: ['@ui', '@modules'],
+    },
+    async ({ page }) => {
+      const requested = await recordRequests(page);
+      await page.addInitScript((themeId) => {
+        window.localStorage.setItem('at-theme', themeId);
+        window.localStorage.setItem('i18nextLng', 'nb');
+      }, HOST_THEME);
+      await page.goto(`/${VALID}`);
+      await waitForBoot(page);
 
-    // Still loaded on the server, so it is served again at once; no rescan.
-    expect(await moduleRow(request, VALID)).toMatchObject({ enabled: true, status: 'ok' });
+      const root = page.locator('main').getByTestId(`${VALID}-page`);
+      await expect(root).toBeVisible({ timeout: 15_000 });
 
-    await page.reload();
-    await waitForBoot(page);
-    await expect(statusChip(page, VALID)).toHaveAttribute('data-status', 'ok');
-    await page.goto(`/${VALID}`);
-    await waitForBoot(page);
-    await expect(page.locator('main').getByTestId(`${VALID}-page`)).toBeVisible({ timeout: 15_000 });
-  });
+      // The host's router: its current path.
+      await expect(page.getByTestId(`${VALID}-path`)).toHaveText(`/${VALID}`);
+      // The host's i18next: its language and its resources.
+      await expect(page.getByTestId(`${VALID}-language`)).toHaveText('nb');
+      await expect(page.getByTestId(`${VALID}-translated`)).toHaveText('Kodemodul');
+      // The host's MUI theme, as a value and as the style of a module's button.
+      await expect(page.getByTestId(`${VALID}-primary`)).toHaveText(HOST_PRIMARY);
+      const counter = page.getByTestId(`${VALID}-clicks`);
+      await expect(counter).toHaveCSS('background-color', HOST_PRIMARY_RGB);
 
-  test('a module built for another client API is incompatible and its code never fetched', {
-    tag: ['@ui', '@modules'],
-  }, async ({ page, request }) => {
-    await installEnabled(request, CLIENT_INCOMPATIBLE, 'client-incompatible');
+      // One React: a hook's state update re-renders the module.
+      await expect(counter).toHaveText('Clicked 0');
+      await counter.click();
+      await expect(counter).toHaveText('Clicked 1');
+      await counter.click();
+      await expect(counter).toHaveText('Clicked 2');
 
-    // The server refuses it before loading anything, so nothing is served.
-    const row = await moduleRow(request, CLIENT_INCOMPATIBLE);
-    expect(row).toMatchObject({ enabled: true, status: 'incompatible', clientApi: '^0.3.0', client: null });
-    expect(
-      (await request.get(`/api/modules/${CLIENT_INCOMPATIBLE}/client/index.js`)).status()
-    ).toBe(404);
+      // Navigating from inside the module moves the host.
+      await page.getByTestId(`${VALID}-navigate`).click();
+      await expect(page).toHaveURL(new RegExp(`/${VALID}/next$`));
+      await expect(page.getByTestId(`${VALID}-path`)).toHaveText(`/${VALID}/next`);
+      await expect(page.locator('main').getByTestId(`${VALID}-page`)).toBeVisible();
 
-    const requested = await recordRequests(page);
-    await page.goto('/manage/modules');
-    await waitForBoot(page);
-    await expect(statusChip(page, CLIENT_INCOMPATIBLE)).toHaveAttribute('data-status', 'incompatible');
-    const reason = page.getByTestId(`code-module-${CLIENT_INCOMPATIBLE}-reason`);
-    await expect(reason).toContainText('^0.3.0');
-    await expect(reason).toContainText('0.2.18');
+      // The positive control for the "nothing requested" checks: this is what
+      // loading a module looks like on the wire.
+      expect(requested).toContain(`/api/modules/${VALID}/client/index.js`);
+      expect(
+        requested.some((p) => LOADER_CHUNK.test(p)),
+        'the loader chunk was requested'
+      ).toBe(true);
+      expect(
+        requested.some((p) => SHIM_PATH.test(p)),
+        'the shims were requested'
+      ).toBe(true);
+    }
+  );
 
-    expect(
-      requested.filter((p) => p.startsWith(`/api/modules/${CLIENT_INCOMPATIBLE}/`)),
-      'requests for its code'
-    ).toEqual([]);
-  });
+  test(
+    'the Modules page shows it as ok, with no upload for code',
+    {
+      tag: ['@ui', '@modules'],
+    },
+    async ({ page, request }) => {
+      await page.goto('/manage/modules');
+      await waitForBoot(page);
+      await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15_000 });
 
-  test('a module that needs React 19 is broken, and the rest of the app keeps working', {
-    tag: ['@ui', '@modules'],
-  }, async ({ page, request }) => {
-    await installEnabled(request, REACT19, 'client-react19');
-    // Its server half is fine: only a browser can find this out.
-    expect((await moduleRow(request, REACT19)).status).toBe('ok');
+      const card = page.getByTestId(`code-module-${VALID}`);
+      await expect(card).toBeVisible();
+      await expect(statusChip(page, VALID)).toHaveAttribute('data-status', 'ok');
+      // Listed once, as a code module, not a second time as built in.
+      await expect(page.getByTestId(`module-${VALID}`)).toHaveCount(0);
 
-    await page.goto('/manage/modules');
-    await waitForBoot(page);
-    await expect(statusChip(page, REACT19)).toHaveAttribute('data-status', 'broken');
-    const reason = page.getByTestId(`code-module-${REACT19}-reason`);
-    await expect(reason).toContainText(/does not provide an export named '?use'?/);
+      // Code is installed on disk, never uploaded: nothing on the card takes a
+      // file, and the page's only file picker (game packs) takes no JavaScript.
+      await expect(card.locator('input[type="file"]')).toHaveCount(0);
+      await expect(page.getByTestId('modules-file-input')).toHaveCount(1);
+      for (const picker of await page.locator('input[type="file"]').all()) {
+        const accept = (await picker.getAttribute('accept')) ?? '';
+        expect(accept, 'a file picker on the Modules page').not.toBe('');
+        expect(accept, 'a file picker on the Modules page').not.toMatch(/javascript|\.m?js\b/i);
+      }
+      // And no API takes one.
+      const upload = await request.post('/api/modules', { data: { id: VALID } });
+      expect(upload.status(), 'POST /api/modules').toBeGreaterThanOrEqual(400);
+    }
+  );
 
-    // The other module loaded in the same boot, and still works.
-    await expect(statusChip(page, VALID)).toHaveAttribute('data-status', 'ok');
-    await page.goto(`/${VALID}`);
-    await waitForBoot(page);
-    const counter = page.getByTestId(`${VALID}-clicks`);
-    await expect(counter).toBeVisible({ timeout: 15_000 });
-    await counter.click();
-    await expect(counter).toHaveText('Clicked 1');
-  });
+  test(
+    'disabling removes its route; enabling asks for the id first and brings it back',
+    {
+      tag: ['@ui', '@modules'],
+    },
+    async ({ page, request }) => {
+      await page.goto('/manage/modules');
+      await waitForBoot(page);
+      await page.getByTestId(`code-module-${VALID}-disable`).click();
+      await expect(page.getByTestId('code-modules-reload')).toBeVisible();
 
-  test('a route that throws shows the slot failure, the shell stays up, and the page says why', {
-    tag: ['@ui', '@modules'],
-  }, async ({ page, request }) => {
-    await installEnabled(request, RENDER_THROWS, 'client-render-throws');
-    expect((await moduleRow(request, RENDER_THROWS)).status).toBe('ok');
+      // The server keeps its code until it restarts; no browser loads it.
+      expect(await moduleRow(request, VALID)).toMatchObject({ enabled: false, client: null });
 
-    await page.goto(`/${RENDER_THROWS}`);
-    await waitForBoot(page);
-    await expect(page.locator('main').getByTestId(`module-slot-failed-${RENDER_THROWS}`)).toBeVisible({
-      timeout: 15_000,
-    });
+      await page.reload();
+      await waitForBoot(page);
+      await expect(statusChip(page, VALID)).toHaveAttribute('data-status', 'disabled');
 
-    // Same page load, so the loader's findings are still there.
-    await spaNavigate(page, '/manage/modules');
-    await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15_000 });
-    await expect(statusChip(page, RENDER_THROWS)).toHaveAttribute('data-status', 'broken');
-    const reason = page.getByTestId(`code-module-${RENDER_THROWS}-reason`);
-    await expect(reason).toContainText('failed while rendering');
-    await expect(reason).toContainText('exploded while rendering');
-    // Only that module.
-    await expect(statusChip(page, VALID)).toHaveAttribute('data-status', 'ok');
-  });
+      await page.goto(`/${VALID}`);
+      await waitForBoot(page);
+      await expect(page.getByRole('heading', { name: '404' })).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByTestId(`${VALID}-page`)).toHaveCount(0);
 
-  test('?modules=off loads no module code and says so', {
-    tag: ['@ui', '@modules'],
-  }, async ({ page }) => {
-    const requested = await recordRequests(page);
-    await page.goto('/manage/modules?modules=off');
-    await waitForBoot(page);
-    await expect(page.getByTestId('code-modules-safe-mode')).toBeVisible({ timeout: 15_000 });
-    // The modules are still listed, so the culprit can be disabled.
-    await expect(page.getByTestId(`code-module-${VALID}`)).toBeVisible();
+      // Enable: through the warning dialog, whose confirm waits for the id.
+      await page.goto('/manage/modules');
+      await waitForBoot(page);
+      await page.getByTestId(`code-module-${VALID}-enable`).click();
+      const dialog = page.getByTestId('code-module-enable-dialog');
+      await expect(dialog).toBeVisible();
+      const confirm = page.getByTestId('code-module-enable-confirm');
+      const typed = page.getByTestId('code-module-enable-confirm-id');
+      await expect(confirm).toBeDisabled();
+      await typed.fill(VALID.slice(0, -1));
+      await expect(confirm).toBeDisabled();
+      await typed.fill(VALID);
+      await expect(confirm).toBeEnabled();
+      await confirm.click();
+      await expect(dialog).toHaveCount(0);
+      await expect(page.getByTestId('code-modules-reload')).toBeVisible();
 
-    await page.goto(`/${VALID}?modules=off`);
-    await waitForBoot(page);
-    await expect(page.getByRole('heading', { name: '404' })).toBeVisible({ timeout: 15_000 });
+      // Still loaded on the server, so it is served again at once; no rescan.
+      expect(await moduleRow(request, VALID)).toMatchObject({ enabled: true, status: 'ok' });
 
-    expect(requested.filter((p) => MODULE_CODE.test(p)), 'module code requests').toEqual([]);
-    expect(requested.filter((p) => SHIM_PATH.test(p)), 'shim requests').toEqual([]);
-    expect(requested.filter((p) => LOADER_CHUNK.test(p)), 'loader chunk requests').toEqual([]);
-  });
+      await page.reload();
+      await waitForBoot(page);
+      await expect(statusChip(page, VALID)).toHaveAttribute('data-status', 'ok');
+      await page.goto(`/${VALID}`);
+      await waitForBoot(page);
+      await expect(page.locator('main').getByTestId(`${VALID}-page`)).toBeVisible({
+        timeout: 15_000,
+      });
+    }
+  );
+
+  test(
+    'a module built for another client API is incompatible and its code never fetched',
+    {
+      tag: ['@ui', '@modules'],
+    },
+    async ({ page, request }) => {
+      await installEnabled(request, CLIENT_INCOMPATIBLE, 'client-incompatible');
+
+      // The server refuses it before loading anything, so nothing is served.
+      const row = await moduleRow(request, CLIENT_INCOMPATIBLE);
+      expect(row).toMatchObject({
+        enabled: true,
+        status: 'incompatible',
+        clientApi: '^0.3.0',
+        client: null,
+      });
+      expect(
+        (await request.get(`/api/modules/${CLIENT_INCOMPATIBLE}/client/index.js`)).status()
+      ).toBe(404);
+
+      const requested = await recordRequests(page);
+      await page.goto('/manage/modules');
+      await waitForBoot(page);
+      await expect(statusChip(page, CLIENT_INCOMPATIBLE)).toHaveAttribute(
+        'data-status',
+        'incompatible'
+      );
+      const reason = page.getByTestId(`code-module-${CLIENT_INCOMPATIBLE}-reason`);
+      await expect(reason).toContainText('^0.3.0');
+      await expect(reason).toContainText('0.2.19');
+
+      expect(
+        requested.filter((p) => p.startsWith(`/api/modules/${CLIENT_INCOMPATIBLE}/`)),
+        'requests for its code'
+      ).toEqual([]);
+    }
+  );
+
+  test(
+    'a module that needs React 19 is broken, and the rest of the app keeps working',
+    {
+      tag: ['@ui', '@modules'],
+    },
+    async ({ page, request }) => {
+      await installEnabled(request, REACT19, 'client-react19');
+      // Its server half is fine: only a browser can find this out.
+      expect((await moduleRow(request, REACT19)).status).toBe('ok');
+
+      await page.goto('/manage/modules');
+      await waitForBoot(page);
+      await expect(statusChip(page, REACT19)).toHaveAttribute('data-status', 'broken');
+      const reason = page.getByTestId(`code-module-${REACT19}-reason`);
+      await expect(reason).toContainText(/does not provide an export named '?use'?/);
+
+      // The other module loaded in the same boot, and still works.
+      await expect(statusChip(page, VALID)).toHaveAttribute('data-status', 'ok');
+      await page.goto(`/${VALID}`);
+      await waitForBoot(page);
+      const counter = page.getByTestId(`${VALID}-clicks`);
+      await expect(counter).toBeVisible({ timeout: 15_000 });
+      await counter.click();
+      await expect(counter).toHaveText('Clicked 1');
+    }
+  );
+
+  test(
+    'a route that throws shows the slot failure, the shell stays up, and the page says why',
+    {
+      tag: ['@ui', '@modules'],
+    },
+    async ({ page, request }) => {
+      await installEnabled(request, RENDER_THROWS, 'client-render-throws');
+      expect((await moduleRow(request, RENDER_THROWS)).status).toBe('ok');
+
+      await page.goto(`/${RENDER_THROWS}`);
+      await waitForBoot(page);
+      await expect(
+        page.locator('main').getByTestId(`module-slot-failed-${RENDER_THROWS}`)
+      ).toBeVisible({
+        timeout: 15_000,
+      });
+
+      // Same page load, so the loader's findings are still there.
+      await spaNavigate(page, '/manage/modules');
+      await expect(page.getByTestId('modules-page')).toBeVisible({ timeout: 15_000 });
+      await expect(statusChip(page, RENDER_THROWS)).toHaveAttribute('data-status', 'broken');
+      const reason = page.getByTestId(`code-module-${RENDER_THROWS}-reason`);
+      await expect(reason).toContainText('failed while rendering');
+      await expect(reason).toContainText('exploded while rendering');
+      // Only that module.
+      await expect(statusChip(page, VALID)).toHaveAttribute('data-status', 'ok');
+    }
+  );
+
+  test(
+    '?modules=off loads no module code and says so',
+    {
+      tag: ['@ui', '@modules'],
+    },
+    async ({ page }) => {
+      const requested = await recordRequests(page);
+      await page.goto('/manage/modules?modules=off');
+      await waitForBoot(page);
+      await expect(page.getByTestId('code-modules-safe-mode')).toBeVisible({ timeout: 15_000 });
+      // The modules are still listed, so the culprit can be disabled.
+      await expect(page.getByTestId(`code-module-${VALID}`)).toBeVisible();
+
+      await page.goto(`/${VALID}?modules=off`);
+      await waitForBoot(page);
+      await expect(page.getByRole('heading', { name: '404' })).toBeVisible({ timeout: 15_000 });
+
+      expect(
+        requested.filter((p) => MODULE_CODE.test(p)),
+        'module code requests'
+      ).toEqual([]);
+      expect(
+        requested.filter((p) => SHIM_PATH.test(p)),
+        'shim requests'
+      ).toEqual([]);
+      expect(
+        requested.filter((p) => LOADER_CHUNK.test(p)),
+        'loader chunk requests'
+      ).toEqual([]);
+    }
+  );
 });

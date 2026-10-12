@@ -6,7 +6,6 @@ import {
   fontDisplay,
   links,
   mono,
-  openMatchDetails,
   pageTitle,
   radii,
   textSize,
@@ -473,12 +472,9 @@ export function WatchPage() {
             </Box>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               {w.match && (
-                <ButtonBase
-                  onClick={() => void openMatchDetails(w.match!.slug).catch(() => undefined)}
-                  sx={pill}
-                >
+                <Box component={RouterLink} to={links.match(w.match.slug)} sx={pill}>
                   {t('highlights.watch.openMatch')}
-                </ButtonBase>
+                </Box>
               )}
               {w.match && w.mapNumber !== null && (
                 <Box

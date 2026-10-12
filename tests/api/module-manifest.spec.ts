@@ -41,39 +41,43 @@ function manifest(overrides: Record<string, unknown> = {}) {
 test.describe('module.json', () => {
   test('the platform publishes its API versions', { tag: ['@api', '@modules'] }, () => {
     expect(SERVER_API_VERSION).toBe('0.1.0');
-    expect(CLIENT_API_VERSION).toBe('0.2.18');
+    expect(CLIENT_API_VERSION).toBe('0.2.19');
   });
 
-  test('module ids are lowercase words joined by hyphens, and never a path', {
-    tag: ['@api', '@modules'],
-  }, () => {
-    for (const id of ['cs2', 'manual-report', 'a', 'fixture-valid-abc123']) {
-      expect(isValidModuleId(id), id).toBe(true);
+  test(
+    'module ids are lowercase words joined by hyphens, and never a path',
+    {
+      tag: ['@api', '@modules'],
+    },
+    () => {
+      for (const id of ['cs2', 'manual-report', 'a', 'fixture-valid-abc123']) {
+        expect(isValidModuleId(id), id).toBe(true);
+      }
+      for (const id of [
+        '',
+        '..',
+        '.',
+        'a..b',
+        '../x',
+        'a/b',
+        'a\\b',
+        'A',
+        'Cs2',
+        '-a',
+        'a-',
+        'a--b',
+        'a_b',
+        'a.b',
+        'a b',
+        'a%2fb',
+        'x'.repeat(65),
+        null,
+        42,
+      ]) {
+        expect(isValidModuleId(id), String(id)).toBe(false);
+      }
     }
-    for (const id of [
-      '',
-      '..',
-      '.',
-      'a..b',
-      '../x',
-      'a/b',
-      'a\\b',
-      'A',
-      'Cs2',
-      '-a',
-      'a-',
-      'a--b',
-      'a_b',
-      'a.b',
-      'a b',
-      'a%2fb',
-      'x'.repeat(65),
-      null,
-      42,
-    ]) {
-      expect(isValidModuleId(id), String(id)).toBe(false);
-    }
-  });
+  );
 
   test('entry paths stay inside the module folder', { tag: ['@api', '@modules'] }, () => {
     for (const entry of ['server/index.js', 'client/index.js', 'index.mjs', 'a/b/c.cjs']) {
@@ -167,7 +171,11 @@ test.describe('GameIntegration shape check', () => {
       ['no id', { ...base, id: undefined }, "'id'"],
       ['no displayName', { ...base, displayName: '' }, "'displayName'"],
       ['no capabilities', { ...base, capabilities: undefined }, "'capabilities'"],
-      ['capability not boolean', { ...base, capabilities: { ...fakeIntegration.capabilities, veto: 'yes' } }, 'capabilities.veto'],
+      [
+        'capability not boolean',
+        { ...base, capabilities: { ...fakeIntegration.capabilities, veto: 'yes' } },
+        'capabilities.veto',
+      ],
       ['no allocate', { ...base, allocate: undefined }, "'allocate'"],
       ['start not a function', { ...base, start: true }, "'start'"],
       ['clientSlots not an array', { ...base, clientSlots: 'MatchPanel' }, "'clientSlots'"],
@@ -179,10 +187,16 @@ test.describe('GameIntegration shape check', () => {
     }
   });
 
-  test('the default export is found in ESM and CommonJS builds', { tag: ['@api', '@modules'] }, () => {
-    expect(integrationFromNamespace({ default: fakeIntegration })).toBe(fakeIntegration);
-    // `module.exports = { default: integration }`, imported from ESM.
-    expect(integrationFromNamespace({ default: { default: fakeIntegration } })).toBe(fakeIntegration);
-    expect(integrationFromNamespace(undefined)).toBeUndefined();
-  });
+  test(
+    'the default export is found in ESM and CommonJS builds',
+    { tag: ['@api', '@modules'] },
+    () => {
+      expect(integrationFromNamespace({ default: fakeIntegration })).toBe(fakeIntegration);
+      // `module.exports = { default: integration }`, imported from ESM.
+      expect(integrationFromNamespace({ default: { default: fakeIntegration } })).toBe(
+        fakeIntegration
+      );
+      expect(integrationFromNamespace(undefined)).toBeUndefined();
+    }
+  );
 });

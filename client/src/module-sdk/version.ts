@@ -146,5 +146,8 @@
  *
  * 0.2.18 (additive): `highlightsAdmin` (the game's tab on core's Highlights
  * page) and `links.highlights()`.
+ *
+ * 0.2.19 (additive): `links.match(slug)`, a match's own page (where a match
+ * opens everywhere, instead of the match details dialog).
  */
-export const CLIENT_API_VERSION = '0.2.18';
+export const CLIENT_API_VERSION = '0.2.19';

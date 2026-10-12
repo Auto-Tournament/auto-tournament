@@ -1039,6 +1039,7 @@
     "pickSub": "Velg reserve"
   },
   "bracketCards": {
+    "open": "Åpne {{a}} mot {{b}}",
     "upper": "Øvre bracket",
     "lower": "Nedre bracket",
     "grandFinal": "Storfinale",

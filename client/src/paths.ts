@@ -142,6 +142,11 @@ export function adminRoute(path: string): string {
   return path.replace(/^\//, '');
 }
 
+/** `/match/:slug`: a match's own page, the one link to a match everywhere. */
+export function matchPagePath(slug: string): string {
+  return `/match/${encodeURIComponent(slug)}`;
+}
+
 /** The admin Matches page with one match open (a link an admin can share). */
 export function matchDetailsPath(slug: string): string {
   return `${paths.matches}?match=${encodeURIComponent(slug)}`;

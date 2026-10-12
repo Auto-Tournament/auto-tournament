@@ -1,4 +1,4 @@
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Box, Button, Stack } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import BracketsViewerVisualization from '../components/visualizations/BracketsViewerVisualization';
@@ -8,7 +8,7 @@ import { BracketResults } from '../components/tournament/results/BracketResults'
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
 import { TabEmpty, TabError, TabLoading } from '../components/tournament/page/TabState';
 import { usePublicBracket } from '../hooks/usePublicBracket';
-import { tournamentTabPath } from '../paths';
+import { matchPagePath, tournamentTabPath } from '../paths';
 import { CardBracket } from '../components/tournament/page/CardBracket';
 
 /**
@@ -19,6 +19,7 @@ import { CardBracket } from '../components/tournament/page/CardBracket';
  */
 export default function TournamentBracketTab() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { tournament } = useTournamentPage();
   const bracket = usePublicBracket(tournament.id);
 
@@ -73,15 +74,21 @@ export default function TournamentBracketTab() {
       )}
       {tournament.type === 'swiss' ? (
         <SwissView
+          onMatchClick={(m) => m.slug && navigate(matchPagePath(m.slug))}
           matches={bracket.matches}
           teams={bracket.tournament?.teams ?? tournament.teams ?? []}
           standings={bracket.swissStandings}
           totalRounds={bracket.totalRounds}
         />
       ) : tournament.type === 'single_elimination' || tournament.type === 'double_elimination' ? (
-        <CardBracket matches={bracket.matches} tournamentType={tournament.type} format={tournament.format} />
+        <CardBracket
+          matches={bracket.matches}
+          tournamentType={tournament.type}
+          format={tournament.format}
+        />
       ) : (
         <BracketsViewerVisualization
+          onMatchClick={(m) => m.slug && navigate(matchPagePath(m.slug))}
           matches={bracket.matches}
           tournamentType={tournament.type}
           rankingTeamIds={bracket.roundRobinStandings.map((standing) => standing.teamId)}

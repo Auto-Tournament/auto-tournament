@@ -7,13 +7,27 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
-import { Alert, Box, Chip, CircularProgress, Container, Stack, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Stack,
+  Typography,
+} from '@mui/material';
+import { GearSixIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { api } from '../utils/api';
 import { useIntegrationFor } from '../integrations/registry';
 import type { PublicMatch } from '../integrations/types';
 import { fontDisplay, mono, radii, tokens } from '../theme/tokens';
+import { useSocket } from '../hooks/useSocket';
+import { useAuth } from '../contexts/AuthContext';
+import { openMatchDetails } from '../components/modals/matchDetailsOpener';
+import { getStatusLabel } from '../utils/matchUtils';
 
 type MatchResponse = PublicMatch & {
   game?: string | null;
@@ -38,16 +52,36 @@ export default function MatchPage() {
   // The answer for the slug it was asked for (a new slug shows loading again).
   const [loaded, setLoaded] = useState<{ slug: string; match: MatchResponse | null } | null>(null);
 
+  // A live match moves on (maps, scores, the result): the server says so and
+  // the page reads it again.
+  const socket = useSocket();
+  const [version, setVersion] = useState(0);
+  useEffect(() => {
+    const event = `match:update:${slug}`;
+    const changed = () => setVersion((v) => v + 1);
+    socket.on(event, changed);
+    return () => {
+      socket.off(event, changed);
+    };
+  }, [socket, slug]);
+
   useEffect(() => {
     let cancelled = false;
     api
       .get<{ match: MatchResponse }>(`/api/matches/${encodeURIComponent(slug)}`)
       .then((res) => !cancelled && setLoaded({ slug, match: res.match }))
-      .catch(() => !cancelled && setLoaded({ slug, match: null }));
+      .catch(
+        () =>
+          !cancelled &&
+          setLoaded((prev) => (prev?.slug === slug && prev.match ? prev : { slug, match: null }))
+      );
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [slug, version]);
+
+  // Admins run the match from here too: the match dialog has its controls.
+  const { isAuthenticated: isAdmin } = useAuth();
 
   const current = loaded?.slug === slug ? loaded : null;
   const match = current?.match ?? null;
@@ -188,10 +222,33 @@ export default function MatchPage() {
         useFlexGap
         sx={{ mt: 2 }}
       >
+        {match.status !== 'completed' && (
+          <Chip
+            size="small"
+            label={getStatusLabel(match.status)}
+            data-testid="match-page-status"
+            sx={
+              match.status === 'live'
+                ? { bgcolor: tokens.color.live, color: tokens.color.accentInk, fontWeight: 700 }
+                : undefined
+            }
+          />
+        )}
         {match.tournament && <Chip size="small" label={match.tournament} />}
         {date && <Chip size="small" label={date} sx={{ ...mono }} />}
         {maps.length > 0 && (
           <Chip size="small" label={maps.map((m) => mapName(m.map, m.mapNumber, t)).join(' · ')} />
+        )}
+        {isAdmin && (
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<GearSixIcon />}
+            onClick={() => void openMatchDetails(match.slug).catch(() => undefined)}
+            data-testid="match-page-manage"
+          >
+            {t('matchPage.manage')}
+          </Button>
         )}
       </Stack>
 

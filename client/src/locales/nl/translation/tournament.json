@@ -1039,6 +1039,7 @@
     "pickSub": "Pick a sub"
   },
   "bracketCards": {
+    "open": "Open {{a}} vs {{b}}",
     "upper": "Winnaarsbracket",
     "lower": "Verliezersbracket",
     "grandFinal": "Grote finale",
