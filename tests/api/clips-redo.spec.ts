@@ -130,6 +130,19 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
     expect(recorder.online).toBe(true);
     expect(recorder.working).toMatchObject({ matchSlug: slug, mapNumber: 0 });
 
+    // The match page counts the clips still being recorded.
+    type Progress = { done: number; total: number; waiting: number };
+    const progress = async () =>
+      (
+        (await (await request.get(`/api/game/cs2/matches/${slug}/highlights`)).json()) as {
+          progress: Progress;
+        }
+      ).progress;
+    const before = await progress();
+    expect(before.total).toBe(2);
+    expect(before.done).toBe(0);
+    expect(before.waiting).toBe(2);
+
     // The match page is told over the socket when a clip arrives.
     const socket = io(BASE_URL, { transports: ['polling'], forceNew: true });
     await new Promise<void>((resolve, reject) => {
@@ -148,6 +161,7 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
     }
     expect(await told).toEqual({ matchSlug: slug });
     socket.close();
+    expect(await progress()).toEqual({ done: 2, total: 2, waiting: 0 });
     // Its overlay recipe (JSON) is kept next to it: the app's JSON parser
     // must not leave it an empty file ("The overlay is not JSON").
     const recipe = { version: 1, name: 'C0', kills: [1.5, 2.25] };

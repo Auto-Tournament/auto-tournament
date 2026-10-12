@@ -2144,6 +2144,8 @@
     "offlineFor": "Frakoblet i {{time}}"
   },
   "matchPage": {
+    "recordingClips": "Tar opp klipp",
+    "clipsDone": "{{done}} / {{total}} klipp",
     "reelLead": "Their plays in the order they happened. Pick a song in the player, then share or download it.",
     "inThisReel": "In this reel",
     "openReel": "Open in the watch page",

@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, ButtonBase, Stack, Typography } from '@mui/material';
+import { Box, ButtonBase, LinearProgress, Stack, Typography } from '@mui/material';
 import {
   api,
   fontDisplay,
@@ -79,6 +79,10 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
   const [tracks, setTracks] = useState<MusicTrack[]>([]);
   const [board, setBoard] = useState<{ team1: Line[]; team2: Line[] } | null>(null);
   const [clips, setClips] = useState<MatchClip[]>([]);
+  // How many of the match's clips are made, while recorders are still on it.
+  const [progress, setProgress] = useState<{ done: number; total: number; waiting: number } | null>(
+    null
+  );
   const [time, setTime] = useState(0);
   const player = useRef<HighlightPlayerHandle>(null);
   const enc = encodeURIComponent;
@@ -125,8 +129,15 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
       .then((r) => !cancelled && setBoard({ team1: r.team1, team2: r.team2 }))
       .catch(() => undefined);
     void api
-      .get<{ clips: MatchClip[] }>(`/api/game/cs2/matches/${enc(matchSlug)}/highlights`)
-      .then((r) => !cancelled && setClips(r.clips))
+      .get<{
+        clips: MatchClip[];
+        progress?: { done: number; total: number; waiting: number };
+      }>(`/api/game/cs2/matches/${enc(matchSlug)}/highlights`)
+      .then((r) => {
+        if (cancelled) return;
+        setClips(r.clips);
+        setProgress(r.progress ?? null);
+      })
       .catch(() => undefined);
     void api
       .get<{ tracks: MusicTrack[] }>('/api/highlights/music')
@@ -165,6 +176,7 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
   );
 
   const teamName = (side: 'team1' | 'team2') => match[side]?.name ?? '';
+  const recording = (progress?.waiting ?? 0) > 0;
 
   return (
     <Box>
@@ -401,71 +413,91 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
           'match-page-scoreboard'
         )}
 
-      {clips.length > 0 &&
+      {(clips.length > 0 || recording) &&
         section(
           t('matchPage.highlights'),
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))',
-              gap: 2,
-            }}
-          >
-            {clips.map((c) => (
-              <Box
-                key={c.id}
-                component={RouterLink}
-                to={watchClipPath(c.id)}
-                sx={{
-                  color: 'inherit',
-                  textDecoration: 'none',
-                  display: 'grid',
-                  gap: 0.75,
-                  minWidth: 0,
-                }}
-              >
+          <>
+            {recording && progress && (
+              <Box sx={{ mb: 2.5, maxWidth: 520 }} data-testid="match-page-clip-progress">
+                <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.75 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('matchPage.recordingClips')}
+                  </Typography>
+                  <Typography variant="body2" sx={{ ...mono, fontVariantNumeric: 'tabular-nums' }}>
+                    {t('matchPage.clipsDone', { done: progress.done, total: progress.total })}
+                  </Typography>
+                </Stack>
+                <LinearProgress
+                  variant="determinate"
+                  value={progress.total ? (progress.done / progress.total) * 100 : 0}
+                  aria-label={t('matchPage.recordingClips')}
+                  sx={{ height: 6, borderRadius: radii.pill }}
+                />
+              </Box>
+            )}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))',
+                gap: 2,
+              }}
+            >
+              {clips.map((c) => (
                 <Box
+                  key={c.id}
+                  component={RouterLink}
+                  to={watchClipPath(c.id)}
                   sx={{
-                    position: 'relative',
-                    aspectRatio: '16 / 9',
-                    maxWidth: '100%',
-                    borderRadius: radii.md,
-                    overflow: 'hidden',
-                    bgcolor: 'background.surface3',
-                    border: 1,
-                    borderColor: 'divider',
+                    color: 'inherit',
+                    textDecoration: 'none',
+                    display: 'grid',
+                    gap: 0.75,
+                    minWidth: 0,
                   }}
                 >
-                  <VideoThumb src={c.video} at={4} />
                   <Box
-                    component="span"
                     sx={{
-                      position: 'absolute',
-                      left: 8,
-                      top: 8,
-                      px: 1,
-                      py: 0.25,
-                      borderRadius: radii.pill,
-                      bgcolor: tokens.color.accent,
-                      color: tokens.color.accentInk,
-                      fontFamily: fontDisplay,
-                      fontWeight: 700,
-                      fontSize: textSize.xs,
+                      position: 'relative',
+                      aspectRatio: '16 / 9',
+                      maxWidth: '100%',
+                      borderRadius: radii.md,
+                      overflow: 'hidden',
+                      bgcolor: 'background.surface3',
+                      border: 1,
+                      borderColor: 'divider',
                     }}
                   >
-                    {kindLabel(t, c.kind)}
+                    <VideoThumb src={c.video} at={4} />
+                    <Box
+                      component="span"
+                      sx={{
+                        position: 'absolute',
+                        left: 8,
+                        top: 8,
+                        px: 1,
+                        py: 0.25,
+                        borderRadius: radii.pill,
+                        bgcolor: tokens.color.accent,
+                        color: tokens.color.accentInk,
+                        fontFamily: fontDisplay,
+                        fontWeight: 700,
+                        fontSize: textSize.xs,
+                      }}
+                    >
+                      {kindLabel(t, c.kind)}
+                    </Box>
                   </Box>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
+                    {c.playerName}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" noWrap component="div">
+                    {playTitle(c.title)} · {mapLabel(t, c.map, c.mapNumber)} ·{' '}
+                    {t('highlights.roundN', { n: c.round })}
+                  </Typography>
                 </Box>
-                <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
-                  {c.playerName}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" noWrap component="div">
-                  {playTitle(c.title)} · {mapLabel(t, c.map, c.mapNumber)} ·{' '}
-                  {t('highlights.roundN', { n: c.round })}
-                </Typography>
-              </Box>
-            ))}
-          </Box>,
+              ))}
+            </Box>
+          </>,
           'match-page-highlights'
         )}
     </Box>
