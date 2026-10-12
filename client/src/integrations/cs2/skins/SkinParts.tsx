@@ -21,6 +21,7 @@ import {
 } from '../../../module-sdk';
 import { wearKey, type OwnedSkin } from './useSkins';
 import { rarityColor } from './rarity';
+import { formatOdds } from './odds';
 import { playerInventoryPath } from './paths';
 import { getMapDisplayName } from '../maps/mapData';
 
@@ -376,6 +377,8 @@ export function SlotTile({
 interface InspectData {
   skin: OwnedSkin;
   owner: { steamId: string; name: string; avatar: string | null };
+  /** Percent of drop options that are this rarity, and this exact skin. */
+  odds?: { rarity: number; skin: number; skins: number } | null;
 }
 
 /**
@@ -491,6 +494,12 @@ export function InspectSkinDialog({
               {[
                 [t('skins.float'), skin.float.toFixed(4)],
                 [t('skins.pattern'), String(skin.pattern)],
+                ...(data.odds
+                  ? [
+                      [t('skins.drops.rarityOdds'), formatOdds(data.odds.rarity)],
+                      [t('skins.drops.skinOdds'), formatOdds(data.odds.skin)],
+                    ]
+                  : []),
               ].map(([label, value]) => (
                 <Box
                   key={label}
@@ -511,7 +520,7 @@ export function InspectSkinDialog({
                 bgcolor: color.paper3,
               }}
             >
-              {skin.source === 'tournament' ? (
+              {skin.source === 'tournament' && skin.place ? (
                 <TrophyIcon size={22} color={color.medalGold} aria-hidden />
               ) : (
                 <PlayCircleIcon size={22} color={color.accent} aria-hidden />
@@ -520,12 +529,16 @@ export function InspectSkinDialog({
                 <Typography
                   sx={{
                     fontWeight: 600,
-                    color: skin.source === 'tournament' ? color.medalGold : color.ink,
+                    color: skin.source === 'tournament' && skin.place ? color.medalGold : color.ink,
                   }}
                 >
                   {skin.source === 'tournament'
-                    ? t('skins.place', { n: skin.place ?? 1 })
-                    : t('skins.wonMatchmaking')}
+                    ? skin.place
+                      ? t('skins.place', { n: skin.place })
+                      : t('skins.tournamentMatch')
+                    : skin.source === 'level'
+                      ? t('skins.levelUp')
+                      : t('skins.wonMatchmaking')}
                 </Typography>
                 <Typography sx={{ fontSize: '0.8125rem', color: color.ink2 }}>
                   {[skin.sourceLabel ? sourceLabel(skin.sourceLabel) : null, date]

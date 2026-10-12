@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link as RouterLink, useParams } from 'react-router-dom';
+import { skinPaths } from './paths';
 import {
   Box,
   ButtonBase,
@@ -169,7 +170,19 @@ export function InventoryPage() {
                   {t('skins.inventory')}
                 </Typography>
                 <Typography sx={{ color: color.ink2 }}>
-                  {t('skins.count', { count: inventory.length })}
+                  {t('skins.count', { count: inventory.length })} ·{' '}
+                  <Box
+                    component={RouterLink}
+                    to={skinPaths.dropRates}
+                    data-testid="inventory-drop-rates"
+                    sx={{
+                      color: color.accent,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' },
+                    }}
+                  >
+                    {t('skins.drops.link')}
+                  </Box>
                 </Typography>
               </Box>
               <VirtualNotice />

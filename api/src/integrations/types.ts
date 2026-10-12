@@ -1027,16 +1027,26 @@ export interface GameIntegration {
   // --- results -------------------------------------------------------------
 
   /**
-   * A matchmaking match this game owns finished: the winners' and everyone
-   * else's Steam IDs (a draw has no winners), only those with a player
-   * record, and the map. CS2: virtual skin drops. Must not reject.
+   * A matchmaking or tournament match this game owns finished: the winners'
+   * and everyone else's Steam IDs (a draw has no winners), only those with a
+   * player record, and the map. CS2: virtual skin drops. Must not reject.
    */
   onMatchmakingResult?(ctx: {
     matchSlug: string;
     winners: string[];
     others: string[];
     map?: string;
+    /** Where the match came from (server API 0.1.1; older platforms: matchmaking only). */
+    source?: 'matchmaking' | 'tournament';
+    /** Players per side on the rosters (server API 0.1.1). */
+    teamSize?: number;
   }): Promise<void>;
+  /**
+   * A player reached a new matchmaking level (one call per level gained), in
+   * a match this game owns. CS2: a skin drop to pick from. Must not reject.
+   * Server API 0.1.1.
+   */
+  onLevelUp?(ctx: { playerId: string; level: number; matchSlug: string }): Promise<void>;
   /**
    * An elimination tournament this game owns finished: its top three, each
    * with the players who played for it (the lineup when the team signed up

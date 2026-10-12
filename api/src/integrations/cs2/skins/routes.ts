@@ -3,6 +3,7 @@
  * and the admin settings. Every player route answers 404 while skins are off.
  *
  * GET    /status                   public: on or off
+ * GET    /odds                     public: drop odds per rarity and per skin, and when drops happen
  * GET    /me                       signed in: your inventory, showcase and new skins
  * POST   /me/equip                 equip a skin ({ skinId, team?: 0 both | 2 T | 3 CT })
  * DELETE /me/equip/:slot           empty a slot (?team= one side)
@@ -76,6 +77,26 @@ router.get('/status', async (_req, res) => {
     return res.json({ success: true, enabled: (await skinService.config()).enabled });
   } catch (error) {
     return fail(res, error, 'Reading the skins status');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/odds:
+ *   get:
+ *     tags: [Skins]
+ *     summary: Drop odds per rarity and per skin, and when drops happen (public)
+ *     responses:
+ *       200: { description: The odds }
+ *       404: { description: Skins are off }
+ */
+router.get('/odds', async (_req, res) => {
+  try {
+    const odds = await skinService.odds();
+    if (!odds.enabled) return res.status(404).json({ success: false, error: 'Skins are off' });
+    return res.json({ success: true, ...odds });
+  } catch (error) {
+    return fail(res, error, 'Reading the drop odds');
   }
 });
 
@@ -284,7 +305,14 @@ router.get('/skin/:id', async (req, res) => {
   try {
     if (!(await skinService.config()).enabled)
       return res.status(404).json({ success: false, error: 'Skins are off' });
-    return res.json({ success: true, ...(await skinService.one(Number(req.params.id))) });
+    const skin = await skinService.one(Number(req.params.id));
+    // The odds a drop option is this rarity, and this exact skin.
+    const rarity = (await skinService.odds()).rarities.find((r) => r.rarity === skin.skin.rarity);
+    return res.json({
+      success: true,
+      ...skin,
+      odds: rarity ? { rarity: rarity.chance, skin: rarity.perSkin, skins: rarity.skins } : null,
+    });
   } catch (error) {
     return fail(res, error, 'Reading a skin');
   }

@@ -21,6 +21,8 @@
     },
     "notice": {
       "partyInvite": "inviterte deg til gruppa si",
+      "teamInvite": "inviterte deg til",
+      "joinedTeam": "Du ble med på laget",
       "partyDetail": "{{mode}} · {{size}} i gruppa",
       "join": "Bli med",
       "decline": "Avslå",
