@@ -823,6 +823,7 @@ Player records, ratings, match history and profiles.
 | `GET` | `/api/players/public-selection` | public |
 | `GET` | `/api/players/selection` | admin |
 | `GET` | `/api/players/:playerId/team` | public |
+| `GET` | `/api/players/me/match-now` | public |
 | `GET` | `/api/players/me/match-status` | public |
 | `GET` | `/api/players/me/discord-id` | public |
 | `PUT` | `/api/players/me/discord-id` | public |

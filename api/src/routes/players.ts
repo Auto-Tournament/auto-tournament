@@ -447,6 +447,76 @@ router.get('/:playerId/team', async (req: Request, res: Response) => {
 });
 
 /**
+ * Where the signed-in player's match lives, for `/match/now`: a tournament
+ * match on its tournament's "Your match" tab, a matchmaking match in its room,
+ * a match made by hand on the team's page. With no match coming up, a
+ * tournament they are still in (its tab says what is next), else nothing.
+ */
+export async function matchNowPath(steamId: string): Promise<string | null> {
+  const like = `%${steamId}%`;
+  const match = await db.queryOneAsync<{
+    slug: string;
+    source: string | null;
+    round: number;
+    tournament_id: number | null;
+    team1_id: string | null;
+    team2_id: string | null;
+    in_team2: boolean;
+  }>(
+    `SELECT m.slug, m.source, m.round, m.tournament_id, m.team1_id, m.team2_id,
+            (t2.players LIKE ? ESCAPE '\\') AS in_team2
+       FROM matches m
+       LEFT JOIN teams t1 ON m.team1_id = t1.id
+       LEFT JOIN teams t2 ON m.team2_id = t2.id
+      WHERE m.status IN ('pending', 'ready', 'loaded', 'live')
+        AND ((t1.players LIKE ? ESCAPE '\\') OR (t2.players LIKE ? ESCAPE '\\') OR (m.config LIKE ? ESCAPE '\\'))
+      ORDER BY CASE WHEN m.status IN ('loaded', 'live') THEN 0 ELSE 1 END, m.round ASC, m.match_number ASC
+      LIMIT 1`,
+    [like, like, like, like]
+  );
+  if (match) {
+    if (match.source === 'matchmaking') {
+      const lobby = await db.queryOneAsync<{ id: string }>(
+        'SELECT id FROM mm_lobbies WHERE match_slug = ?',
+        [match.slug]
+      );
+      return lobby ? `/play/${lobby.id}` : '/play';
+    }
+    if (match.round > 0 && match.tournament_id != null)
+      return `/tournament/${match.tournament_id}/match`;
+    const team = match.in_team2 ? match.team2_id : match.team1_id;
+    return team ? `/team/${encodeURIComponent(team)}` : null;
+  }
+  // Between matches of a tournament still running: its tab shows the result and what comes next.
+  const running = await db.queryOneAsync<{ id: number }>(
+    `SELECT DISTINCT t.id FROM tournament t
+       JOIN matches m ON m.tournament_id = t.id
+       LEFT JOIN teams t1 ON m.team1_id = t1.id
+       LEFT JOIN teams t2 ON m.team2_id = t2.id
+      WHERE t.status = 'in_progress' AND m.round > 0
+        AND ((t1.players LIKE ? ESCAPE '\\') OR (t2.players LIKE ? ESCAPE '\\'))
+      ORDER BY t.id DESC LIMIT 1`,
+    [like, like]
+  );
+  return running ? `/tournament/${running.id}/match` : null;
+}
+
+/**
+ * GET /api/players/me/match-now
+ * Where `/match/now` sends the signed-in player: `{ path }`, null with no match.
+ */
+router.get('/me/match-now', async (req: Request, res: Response) => {
+  try {
+    const steamId = await getEffectiveViewerSteamId(req);
+    if (!steamId) return res.status(401).json({ success: false, error: 'Sign in first' });
+    return res.json({ success: true, path: await matchNowPath(steamId) });
+  } catch (error) {
+    log.error("Failed to find the player's match for /me/match-now", error as Error);
+    return res.status(500).json({ success: false, error: 'Failed to find your match' });
+  }
+});
+
+/**
  * GET /api/players/me/match-status
  * Lightweight status for the navbar CTA: "YOUR TURN IN VETO", "Match ready", etc.
  * Requires player_steam_id cookie (Steam sign-in). Returns status, matchSlug, and a label key.

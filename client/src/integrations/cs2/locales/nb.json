@@ -2549,5 +2549,16 @@
     },
     "clipOf": "klipp {{n}} av {{total}}",
     "left": "~{{time}} igjen"
+  },
+  "crash": {
+    "downTitle": "Kampserveren krasjet",
+    "down": "Vi henter den tilbake. Du får en knapp for å koble til igjen her så snart kampen er oppe.",
+    "moving": "Flytter kampen til en annen server, med siste runde gjenopprettet.",
+    "wait": "Dette tar vanligvis under ett minutt.",
+    "backTitle": "Kampen din er tilbake",
+    "backInPlace": "Serveren er oppe igjen med kampen gjenopprettet. Koble til igjen for å spille videre.",
+    "backMoved": "Kampen er flyttet til en annen server, med siste runde gjenopprettet. Koble til igjen for å spille videre.",
+    "reconnect": "Koble til igjen",
+    "close": "Lukk"
   }
 }
