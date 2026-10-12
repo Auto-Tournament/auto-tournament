@@ -10,7 +10,15 @@ import {
   TrophyIcon,
   XIcon,
 } from '@phosphor-icons/react';
-import { api, useModuleTranslation, tokens, fontDisplay, mono, radii, withAlpha } from '../../../module-sdk';
+import {
+  api,
+  useModuleTranslation,
+  tokens,
+  fontDisplay,
+  mono,
+  radii,
+  withAlpha,
+} from '../../../module-sdk';
 import { wearKey, type OwnedSkin } from './useSkins';
 import { rarityColor } from './rarity';
 import { playerInventoryPath } from './paths';
@@ -60,13 +68,34 @@ function WhatThisMeans() {
         type="button"
         onClick={() => setOpen(true)}
         data-testid="skins-notice-more"
-        sx={{ all: 'unset', cursor: 'pointer', color: color.accent, fontWeight: 600, whiteSpace: 'nowrap', '&:focus-visible': { outline: `2px solid ${color.focus}` } }}
+        sx={{
+          all: 'unset',
+          cursor: 'pointer',
+          color: color.accent,
+          fontWeight: 600,
+          whiteSpace: 'nowrap',
+          '&:focus-visible': { outline: `2px solid ${color.focus}` },
+        }}
       >
         {t('skins.whatThisMeans')}
       </Box>
-      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none', maxWidth: 460 } }}>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: radii.lg,
+            bgcolor: color.paper2,
+            backgroundImage: 'none',
+            maxWidth: 460,
+          },
+        }}
+      >
         <Box sx={{ p: 3.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Typography component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.375rem', fontWeight: 600 }}>
+          <Typography
+            component="h2"
+            sx={{ fontFamily: fontDisplay, fontSize: '1.375rem', fontWeight: 600 }}
+          >
             {t('skins.whatThisMeans')}
           </Typography>
           {(['platformOnly', 'noValue', 'notInGame', 'servers'] as const).map((key) => (
@@ -74,7 +103,10 @@ function WhatThisMeans() {
               {t(`skins.meaning.${key}`)}
             </Typography>
           ))}
-          <Button onClick={() => setOpen(false)} sx={{ alignSelf: 'flex-end', borderRadius: radii.pill }}>
+          <Button
+            onClick={() => setOpen(false)}
+            sx={{ alignSelf: 'flex-end', borderRadius: radii.pill }}
+          >
             {t('skins.close')}
           </Button>
         </Box>
@@ -91,7 +123,15 @@ export function SkinImage({ skin, height }: { skin: Pick<OwnedSkin, 'imageUrl'>;
       src={skin.imageUrl}
       alt=""
       loading="lazy"
-      sx={{ width: '100%', height, objectFit: 'contain', bgcolor: color.paper3, p: 1.25, boxSizing: 'border-box', display: 'block' }}
+      sx={{
+        width: '100%',
+        height,
+        objectFit: 'contain',
+        bgcolor: color.paper3,
+        p: 1.25,
+        boxSizing: 'border-box',
+        display: 'block',
+      }}
     />
   );
 }
@@ -118,7 +158,13 @@ export function SkinCard({
     <Box sx={{ position: 'relative', display: 'flex' }}>
       <ButtonBase
         onClick={() => (onEquip ? onEquip(skin) : onInspect(skin))}
-        aria-label={onEquip ? (skin.equipped ? t('skins.unequipLabel', { name: skin.name }) : t('skins.equipLabel', { name: skin.name })) : skin.name}
+        aria-label={
+          onEquip
+            ? skin.equipped
+              ? t('skins.unequipLabel', { name: skin.name })
+              : t('skins.equipLabel', { name: skin.name })
+            : skin.name
+        }
         aria-pressed={onEquip ? skin.equipped : undefined}
         data-testid="skin-card"
         data-equipped={skin.equipped ? 'true' : 'false'}
@@ -139,21 +185,73 @@ export function SkinCard({
         }}
       >
         <SkinImage skin={skin} height={96} />
-        <Typography sx={{ fontSize: '0.75rem', color: color.muted, px: 1.5, pt: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <Typography
+          sx={{
+            fontSize: '0.75rem',
+            color: color.muted,
+            px: 1.5,
+            pt: 1.25,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
           {skin.weaponName}
         </Typography>
-        <Typography sx={{ fontWeight: 600, fontSize: '0.875rem', px: 1.5, pt: 0.25, pb: 1.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <Typography
+          sx={{
+            fontWeight: 600,
+            fontSize: '0.875rem',
+            px: 1.5,
+            pt: 0.25,
+            pb: 1.5,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
           {skin.name}
         </Typography>
         <Box sx={{ mt: 'auto', height: 3, bgcolor: rarityColor[skin.rarity] }} />
       </ButtonBase>
       {skin.equipped && (
-        <Box aria-hidden sx={{ position: 'absolute', top: 8, right: 8, width: 24, height: 24, borderRadius: '50%', bgcolor: color.accent, color: color.accentInk, display: 'grid', placeItems: 'center' }}>
-          <CheckIcon size={14} weight="bold" />
+        <Box
+          data-testid="skin-card-sides"
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            height: 24,
+            px: 1,
+            borderRadius: radii.pill,
+            bgcolor: color.accent,
+            color: color.accentInk,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.5,
+            fontSize: '0.6875rem',
+            fontWeight: 700,
+          }}
+        >
+          <CheckIcon size={12} weight="bold" aria-hidden />
+          {sidesLabel(skin, t)}
         </Box>
       )}
       {showNew && !skin.seen && (
-        <Box sx={{ position: 'absolute', top: 10, left: 10, px: 1, py: '2px', borderRadius: radii.pill, bgcolor: color.accent, color: color.accentInk, fontSize: '0.6875rem', fontWeight: 700 }}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 10,
+            left: 10,
+            px: 1,
+            py: '2px',
+            borderRadius: radii.pill,
+            bgcolor: color.accent,
+            color: color.accentInk,
+            fontSize: '0.6875rem',
+            fontWeight: 700,
+          }}
+        >
           {t('skins.new')}
         </Box>
       )}
@@ -162,7 +260,16 @@ export function SkinCard({
         aria-label={t('skins.inspect', { name: skin.name })}
         onClick={() => onInspect(skin)}
         data-testid="skin-card-inspect"
-        sx={{ position: 'absolute', top: 8, left: showNew && !skin.seen ? 56 : 8, width: 32, height: 32, bgcolor: withAlpha(color.paper2, 0.85), border: `1px solid ${color.rule}`, '&:hover': { bgcolor: color.paper3 } }}
+        sx={{
+          position: 'absolute',
+          top: 8,
+          left: showNew && !skin.seen ? 56 : 8,
+          width: 32,
+          height: 32,
+          bgcolor: withAlpha(color.paper2, 0.85),
+          border: `1px solid ${color.rule}`,
+          '&:hover': { bgcolor: color.paper3 },
+        }}
       >
         <EyeIcon size={16} />
       </IconButton>
@@ -170,15 +277,39 @@ export function SkinCard({
   );
 }
 
+/** Where a skin is on: "Both", "CT", "T", or "CT · T"; a one-side weapon names its side. */
+export function sidesLabel(
+  skin: Pick<OwnedSkin, 'equippedSides' | 'side'>,
+  t: (key: string) => string
+): string {
+  const name = (team: 2 | 3) => (team === 3 ? t('skins.side.ct') : t('skins.side.t'));
+  if (skin.side !== null) return name(skin.side);
+  if (skin.equippedSides.includes(0)) return t('skins.side.both');
+  return ([3, 2] as const)
+    .filter((s) => skin.equippedSides.includes(s))
+    .map(name)
+    .join(' · ');
+}
+
 /** A loadout slot: the equipped skin's picture, or a plus when empty. */
-export function SlotTile({ label, skin, onClick }: { label: string; skin: OwnedSkin | null; onClick?: () => void }) {
+export function SlotTile({
+  label,
+  skin,
+  onClick,
+}: {
+  label: string;
+  skin: OwnedSkin | null;
+  onClick?: () => void;
+}) {
   return (
     <Box
       data-testid="loadout-slot"
       component={onClick ? 'button' : 'div'}
       type={onClick ? 'button' : undefined}
       onClick={onClick}
-      aria-label={onClick ? (skin ? `${label}: ${skin.weaponName} ${skin.name}` : label) : undefined}
+      aria-label={
+        onClick ? (skin ? `${label}: ${skin.weaponName} ${skin.name}` : label) : undefined
+      }
       sx={{
         ...(onClick
           ? {
@@ -198,13 +329,44 @@ export function SlotTile({ label, skin, onClick }: { label: string; skin: OwnedS
       }}
     >
       {skin ? (
-        <Box component="img" src={skin.imageUrl} alt="" sx={{ width: '100%', height: 64, objectFit: 'contain', bgcolor: color.paper3, p: 0.75, boxSizing: 'border-box' }} />
+        <Box
+          component="img"
+          src={skin.imageUrl}
+          alt=""
+          sx={{
+            width: '100%',
+            height: 64,
+            objectFit: 'contain',
+            bgcolor: color.paper3,
+            p: 0.75,
+            boxSizing: 'border-box',
+          }}
+        />
       ) : (
-        <Box sx={{ height: 64, display: 'grid', placeItems: 'center', bgcolor: color.paper3, color: color.muted }} aria-hidden>
+        <Box
+          sx={{
+            height: 64,
+            display: 'grid',
+            placeItems: 'center',
+            bgcolor: color.paper3,
+            color: color.muted,
+          }}
+          aria-hidden
+        >
           <PlusIcon size={20} />
         </Box>
       )}
-      <Typography sx={{ fontSize: '0.75rem', color: color.muted, px: 1.25, py: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <Typography
+        sx={{
+          fontSize: '0.75rem',
+          color: color.muted,
+          px: 1.25,
+          py: 1,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
         {label}
       </Typography>
     </Box>
@@ -220,7 +382,13 @@ interface InspectData {
  * One skin up close (board 2): the picture, wear next to the weapon, float
  * and pattern, where it was won, and who owns it.
  */
-export function InspectSkinDialog({ skinId, onClose }: { skinId: number | null; onClose: () => void }) {
+export function InspectSkinDialog({
+  skinId,
+  onClose,
+}: {
+  skinId: number | null;
+  onClose: () => void;
+}) {
   const { t, i18n } = useModuleTranslation('cs2');
   const [data, setData] = useState<InspectData | null>(null);
 
@@ -237,21 +405,77 @@ export function InspectSkinDialog({ skinId, onClose }: { skinId: number | null; 
   }, [skinId]);
 
   const skin = data?.skin && data.skin.id === skinId ? data.skin : null;
-  const date = skin ? new Intl.DateTimeFormat(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' }).format(skin.createdAt * 1000) : '';
+  const date = skin
+    ? new Intl.DateTimeFormat(i18n.language, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+      }).format(skin.createdAt * 1000)
+    : '';
 
   return (
-    <Dialog open={skinId !== null} onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none', overflow: 'hidden' } }}>
+    <Dialog
+      open={skinId !== null}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: radii.lg,
+          bgcolor: color.paper2,
+          backgroundImage: 'none',
+          overflow: 'hidden',
+        },
+      }}
+    >
       {skin && data && (
-        <Box data-testid="skin-inspect" sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'minmax(0,1.2fr) minmax(0,1fr)' } }}>
-          <Box sx={{ bgcolor: color.paper3, display: 'grid', placeItems: 'center', p: 5, borderBottom: `4px solid ${rarityColor[skin.rarity]}` }}>
-            <Box component="img" src={skin.imageUrl} alt={`${skin.weaponName} ${skin.name}`} sx={{ width: '100%', maxHeight: 280, objectFit: 'contain' }} />
+        <Box
+          data-testid="skin-inspect"
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'minmax(0,1.2fr) minmax(0,1fr)' },
+          }}
+        >
+          <Box
+            sx={{
+              bgcolor: color.paper3,
+              display: 'grid',
+              placeItems: 'center',
+              p: 5,
+              borderBottom: `4px solid ${rarityColor[skin.rarity]}`,
+            }}
+          >
+            <Box
+              component="img"
+              src={skin.imageUrl}
+              alt={`${skin.weaponName} ${skin.name}`}
+              sx={{ width: '100%', maxHeight: 280, objectFit: 'contain' }}
+            />
           </Box>
           <Box sx={{ p: 3.5, display: 'flex', flexDirection: 'column', gap: 2.25 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <Box component="span" sx={{ px: 1.25, py: 0.5, borderRadius: radii.pill, bgcolor: withAlpha(rarityColor[skin.rarity], 0.14), color: rarityColor[skin.rarity], ...mono, fontSize: '0.75rem', textTransform: 'uppercase' }}>
+            <Box
+              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  px: 1.25,
+                  py: 0.5,
+                  borderRadius: radii.pill,
+                  bgcolor: withAlpha(rarityColor[skin.rarity], 0.14),
+                  color: rarityColor[skin.rarity],
+                  ...mono,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                }}
+              >
                 {t(`skins.rarity.${skin.rarity}`)}
               </Box>
-              <IconButton aria-label={t('common.close')} onClick={onClose} sx={{ border: `1px solid ${color.rule}` }}>
+              <IconButton
+                aria-label={t('common.close')}
+                onClick={onClose}
+                sx={{ border: `1px solid ${color.rule}` }}
+              >
                 <XIcon size={16} />
               </IconButton>
             </Box>
@@ -259,39 +483,85 @@ export function InspectSkinDialog({ skinId, onClose }: { skinId: number | null; 
               <Typography sx={{ color: color.muted }}>
                 {skin.weaponName} · {t(`skins.wear.${wearKey(skin.float)}`)}
               </Typography>
-              <Typography sx={{ fontFamily: fontDisplay, fontSize: '2rem', fontWeight: 700 }}>{skin.name}</Typography>
+              <Typography sx={{ fontFamily: fontDisplay, fontSize: '2rem', fontWeight: 700 }}>
+                {skin.name}
+              </Typography>
             </Box>
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 1 }}>
               {[
                 [t('skins.float'), skin.float.toFixed(4)],
                 [t('skins.pattern'), String(skin.pattern)],
               ].map(([label, value]) => (
-                <Box key={label} sx={{ p: '10px 12px', borderRadius: '12px', bgcolor: color.paper3 }}>
+                <Box
+                  key={label}
+                  sx={{ p: '10px 12px', borderRadius: '12px', bgcolor: color.paper3 }}
+                >
                   <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>{label}</Typography>
                   <Typography sx={{ ...mono, fontWeight: 500 }}>{value}</Typography>
                 </Box>
               ))}
             </Box>
-            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', p: 1.75, borderRadius: '14px', bgcolor: color.paper3 }}>
-              {skin.source === 'tournament' ? <TrophyIcon size={22} color={color.medalGold} aria-hidden /> : <PlayCircleIcon size={22} color={color.accent} aria-hidden />}
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1.5,
+                alignItems: 'center',
+                p: 1.75,
+                borderRadius: '14px',
+                bgcolor: color.paper3,
+              }}
+            >
+              {skin.source === 'tournament' ? (
+                <TrophyIcon size={22} color={color.medalGold} aria-hidden />
+              ) : (
+                <PlayCircleIcon size={22} color={color.accent} aria-hidden />
+              )}
               <Box>
-                <Typography sx={{ fontWeight: 600, color: skin.source === 'tournament' ? color.medalGold : color.ink }}>
-                  {skin.source === 'tournament' ? t('skins.place', { n: skin.place ?? 1 }) : t('skins.wonMatchmaking')}
+                <Typography
+                  sx={{
+                    fontWeight: 600,
+                    color: skin.source === 'tournament' ? color.medalGold : color.ink,
+                  }}
+                >
+                  {skin.source === 'tournament'
+                    ? t('skins.place', { n: skin.place ?? 1 })
+                    : t('skins.wonMatchmaking')}
                 </Typography>
                 <Typography sx={{ fontSize: '0.8125rem', color: color.ink2 }}>
-                  {[skin.sourceLabel ? sourceLabel(skin.sourceLabel) : null, date].filter(Boolean).join(' · ')}
+                  {[skin.sourceLabel ? sourceLabel(skin.sourceLabel) : null, date]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </Typography>
               </Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-              <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: color.paper3, backgroundImage: data.owner.avatar ? `url("${data.owner.avatar}")` : 'none', backgroundSize: 'cover', display: 'grid', placeItems: 'center', fontWeight: 600 }}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  bgcolor: color.paper3,
+                  backgroundImage: data.owner.avatar ? `url("${data.owner.avatar}")` : 'none',
+                  backgroundSize: 'cover',
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontWeight: 600,
+                }}
+              >
                 {!data.owner.avatar && data.owner.name.slice(0, 1)}
               </Box>
               <Box sx={{ flex: 1 }}>
                 <Typography>{data.owner.name}</Typography>
-                <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>{skin.equipped ? t('skins.equipped') : t('skins.inInventory')}</Typography>
+                <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
+                  {skin.equipped ? t('skins.equipped') : t('skins.inInventory')}
+                </Typography>
               </Box>
-              <Link component={RouterLink} to={playerInventoryPath(data.owner.steamId)} onClick={onClose} sx={{ fontSize: '0.875rem', color: color.ink2 }}>
+              <Link
+                component={RouterLink}
+                to={playerInventoryPath(data.owner.steamId)}
+                onClick={onClose}
+                sx={{ fontSize: '0.875rem', color: color.ink2 }}
+              >
                 {t('skins.theirInventory', { name: data.owner.name })}
               </Link>
             </Box>

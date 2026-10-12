@@ -1721,7 +1721,7 @@
     "ttdLine": "Tid til skade {{ms}} ms"
   },
   "skins": {
-    "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi, kan ikke byttes eller selges, og vises ikke i Counter-Strike 2.",
+    "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi og kan ikke byttes eller selges. Du ser dem i spillet på denne sidens servere.",
     "equipLabel": "Ta i bruk {{name}}",
     "equippedLabel": "{{name}}, i bruk",
     "new": "NY",
@@ -1784,7 +1784,7 @@
     "arrange": "Ordne",
     "showInventory": "Vis inventar",
     "arrangeTitle": "Ordne utrustningen",
-    "arrangeHint": "Velg opptil {{max}} skins, rekkefølgen, og hvilke som vises stort.",
+    "arrangeHint": "Velg opptil {{max}} skins å vise på profilen, rekkefølgen og hvilke som er store.",
     "big": "Stor",
     "moveUp": "Flytt opp",
     "moveDown": "Flytt ned",
@@ -1895,7 +1895,17 @@
     "keepThis": "Behold denne",
     "keeping": "Beholder…",
     "chooseFailed": "Kunne ikke beholde den",
-    "newDrop": "Nytt drop"
+    "newDrop": "Nytt drop",
+    "side": {
+      "ct": "CT",
+      "t": "T",
+      "both": "Begge",
+      "equipFor": "Utstyr for",
+      "defaults": "Standard-skins"
+    },
+    "favourites": "Favoritter",
+    "favouritesTitle": "Velg favorittene dine",
+    "pickFavourites": "Favoritter"
   },
   "matchRules": {
     "title": "Kampregler",

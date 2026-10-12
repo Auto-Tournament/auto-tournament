@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api, useAuth } from '../../../module-sdk';
 import type { AccountMenuItem } from '../../types';
 import { skinPaths } from './paths';
+import { applyStep, equipStep, type LoadoutTeam } from './loadoutSides';
 
 export type Rarity =
   'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary' | 'ancient' | 'immortal';
@@ -23,6 +24,10 @@ export interface OwnedSkin {
   createdAt: number;
   seen: boolean;
   equipped: boolean;
+  /** Where it is equipped: 0 both sides, 2 T, 3 CT. */
+  equippedSides: LoadoutTeam[];
+  /** The one side that buys this weapon (2 T, 3 CT), or null when both do. */
+  side: 2 | 3 | null;
 }
 
 /** A drop waiting for the player to keep one of its options (api: skinService.openChoices). */
@@ -122,21 +127,27 @@ export function useMySkins() {
   }, [reload]);
 
   /**
-   * Equips at once (the grid shows it before the server answers), or, for
-   * the skin already equipped, empties its slot: the game's default is back.
+   * Equips for a side (0 both, 2 T, 3 CT) at once (the grid shows it before
+   * the server answers), or, for a skin already on that side, takes it off
+   * that side: the game's default is back there.
    */
-  const equip = useCallback(async (skin: OwnedSkin) => {
-    const off = skin.equipped;
+  const equip = useCallback(async (skin: OwnedSkin, wanted: LoadoutTeam = 0) => {
+    const step = equipStep(skin, wanted);
+    const off = (team: LoadoutTeam) =>
+      api.delete(`/api/skins/me/equip/${encodeURIComponent(skin.slot)}?team=${team}`);
     let before: OwnedSkin[] = [];
     setInventory((list) => {
       before = list;
-      return list.map((s) =>
-        s.slot === skin.slot ? { ...s, equipped: !off && s.id === skin.id } : s
-      );
+      return applyStep(list, skin, step);
     });
     try {
-      if (off) await api.delete(`/api/skins/me/equip/${encodeURIComponent(skin.slot)}`);
-      else await api.post('/api/skins/me/equip', { skinId: skin.id });
+      if (step.kind === 'unequip') await off(step.team);
+      else if (step.kind === 'equip')
+        await api.post('/api/skins/me/equip', { skinId: skin.id, team: step.team });
+      else {
+        await off(0);
+        await api.post('/api/skins/me/equip', { skinId: skin.id, team: step.keep });
+      }
     } catch (error) {
       // A refused equip used to vanish (the grid showed it equipped, the
       // server never stored it): put the grid back and tell the caller.

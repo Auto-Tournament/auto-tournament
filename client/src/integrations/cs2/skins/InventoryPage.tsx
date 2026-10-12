@@ -22,6 +22,7 @@ import {
 } from '../../../module-sdk';
 import { InspectSkinDialog, SkinCard, SlotTile, VirtualNotice } from './SkinParts';
 import { loadoutSlots, useMySkins, useSkinsEnabled, type OwnedSkin, type Rarity } from './useSkins';
+import { equippedFor, type LoadoutTeam } from './loadoutSides';
 
 const { color } = tokens;
 const RARITY_ORDER: Rarity[] = [
@@ -78,6 +79,8 @@ export function InventoryPage() {
   const [sort, setSort] = useState<'rarity' | 'newest'>('rarity');
   const [inspect, setInspect] = useState<number | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
+  // Which side a click equips for: both, CT or T (one-side weapons go to their side).
+  const [side, setSide] = useState<LoadoutTeam>(0);
 
   useEffect(() => {
     document.title = pageTitle(t('skins.inventory'));
@@ -184,47 +187,77 @@ export function InventoryPage() {
               >
                 {t('skins.equippedTitle')}
               </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(118px, 1fr))',
-                  gap: 1.25,
-                }}
-              >
-                {slots.map((slot) => {
-                  const skin = inventory.find((s) => s.slot === slot && s.equipped) ?? null;
-                  const label =
-                    slot === 'knife'
-                      ? t('skins.slot.knife')
-                      : slot === 'gloves'
-                        ? t('skins.slot.gloves')
-                        : (inventory.find((s) => s.slot === slot)?.weaponName ?? slot);
-                  // An equipped slot opens its skin; an empty one shows the skins that fit it.
-                  return (
-                    <SlotTile
-                      key={slot}
-                      label={label}
-                      skin={skin}
-                      onClick={() => {
-                        if (skin) {
-                          setInspect(skin.id);
-                          return;
-                        }
-                        const owned = inventory.find((s) => s.slot === slot);
-                        setFilter(
-                          owned
-                            ? category(owned)
-                            : slot === 'knife'
-                              ? 'knives'
-                              : slot === 'gloves'
-                                ? 'gloves'
-                                : 'all'
-                        );
+              {([3, 2] as const).map((team) => {
+                const on = equippedFor(inventory, team);
+                // This side's slots: knife, gloves, and the weapons it buys that have a skin.
+                const sideSlots = slots.filter(
+                  (slot) =>
+                    inventory.some(
+                      (s) => s.slot === slot && (s.side === null || s.side === team)
+                    ) ||
+                    slot === 'knife' ||
+                    slot === 'gloves'
+                );
+                return (
+                  <Box
+                    key={team}
+                    sx={{ display: 'grid', gap: 1 }}
+                    data-testid={`loadout-side-${team === 3 ? 'ct' : 't'}`}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: '0.8125rem',
+                        fontWeight: 600,
+                        color: team === 3 ? color.sideCt : color.sideT,
                       }}
-                    />
-                  );
-                })}
-              </Box>
+                    >
+                      {team === 3 ? t('skins.side.ct') : t('skins.side.t')}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(118px, 1fr))',
+                        gap: 1.25,
+                      }}
+                    >
+                      {sideSlots.map((slot) => {
+                        const skin = on.get(slot) ?? null;
+                        const label =
+                          slot === 'knife'
+                            ? t('skins.slot.knife')
+                            : slot === 'gloves'
+                              ? t('skins.slot.gloves')
+                              : (inventory.find((s) => s.slot === slot)?.weaponName ?? slot);
+                        // An equipped slot opens its skin; an empty one shows the skins that fit it.
+                        return (
+                          <SlotTile
+                            key={slot}
+                            label={label}
+                            skin={skin}
+                            onClick={() => {
+                              if (skin) {
+                                setInspect(skin.id);
+                                return;
+                              }
+                              if (own) setSide(team);
+                              const owned = inventory.find((s) => s.slot === slot);
+                              setFilter(
+                                owned
+                                  ? category(owned)
+                                  : slot === 'knife'
+                                    ? 'knives'
+                                    : slot === 'gloves'
+                                      ? 'gloves'
+                                      : 'all'
+                              );
+                            }}
+                          />
+                        );
+                      })}
+                    </Box>
+                  </Box>
+                );
+              })}
             </Box>
 
             <Box
@@ -241,6 +274,51 @@ export function InventoryPage() {
                   ['all', 'rifles', 'pistols', 'smgs', 'heavy', 'knives', 'gloves'] as Filter[]
                 ).map(chip)}
               </Box>
+              {own && (
+                <Box
+                  role="group"
+                  aria-label={t('skins.side.equipFor')}
+                  data-testid="equip-side"
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    p: 0.5,
+                    borderRadius: radii.pill,
+                    border: `1px solid ${color.rule}`,
+                  }}
+                >
+                  <Typography
+                    component="span"
+                    sx={{ fontSize: '0.8125rem', color: color.muted, px: 1 }}
+                  >
+                    {t('skins.side.equipFor')}
+                  </Typography>
+                  {([0, 3, 2] as const).map((team) => (
+                    <ButtonBase
+                      key={team}
+                      onClick={() => setSide(team)}
+                      aria-pressed={side === team}
+                      data-testid={`equip-side-${team === 0 ? 'both' : team === 3 ? 'ct' : 't'}`}
+                      sx={{
+                        px: 1.5,
+                        py: 0.75,
+                        borderRadius: radii.pill,
+                        fontSize: '0.8125rem',
+                        fontWeight: side === team ? 600 : 400,
+                        bgcolor: side === team ? color.ink : 'transparent',
+                        color: side === team ? color.accentInk : color.ink2,
+                      }}
+                    >
+                      {team === 0
+                        ? t('skins.side.both')
+                        : team === 3
+                          ? t('skins.side.ct')
+                          : t('skins.side.t')}
+                    </ButtonBase>
+                  ))}
+                </Box>
+              )}
               <Select
                 size="small"
                 value={sort}
@@ -278,7 +356,7 @@ export function InventoryPage() {
                       own
                         ? (s) =>
                             void mine
-                              .equip(s)
+                              .equip(s, side)
                               .catch((error: unknown) =>
                                 showError(
                                   error instanceof Error ? error.message : t('skins.equipFailed')

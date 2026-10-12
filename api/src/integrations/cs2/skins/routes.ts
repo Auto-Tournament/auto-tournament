@@ -4,8 +4,8 @@
  *
  * GET    /status                   public: on or off
  * GET    /me                       signed in: your inventory, showcase and new skins
- * POST   /me/equip                 equip a skin ({ skinId })
- * DELETE /me/equip/:slot           empty a slot
+ * POST   /me/equip                 equip a skin ({ skinId, team?: 0 both | 2 T | 3 CT })
+ * DELETE /me/equip/:slot           empty a slot (?team= one side)
  * POST   /me/seen                  the "new skin" reveal was shown ({ ids })
  * PUT    /me/showcase              the profile showcase ({ items: [{ skinId, big }] })
  * GET    /players/:steamId         public: a player's skins
@@ -145,7 +145,7 @@ router.post('/me/choices/:id', async (req, res) => {
  *     requestBody:
  *       content:
  *         application/json:
- *           schema: { type: object, properties: { skinId: { type: integer } } }
+ *           schema: { type: object, properties: { skinId: { type: integer }, team: { type: integer, enum: [0, 2, 3], description: '0 both sides (default), 2 T, 3 CT' } } }
  *     responses:
  *       200: { description: Equipped }
  *       404: { description: Not in your inventory, or skins are off }
@@ -154,7 +154,8 @@ router.post('/me/equip', async (req, res) => {
   try {
     const uid = await playerOrStop(req, res);
     if (!uid) return;
-    await skinService.equip(uid, Number(req.body?.skinId));
+    const team = Number(req.body?.team ?? 0);
+    await skinService.equip(uid, Number(req.body?.skinId), team);
     void loadoutChanged(uid);
     return res.json({ success: true });
   } catch (error) {
@@ -170,6 +171,7 @@ router.post('/me/equip', async (req, res) => {
  *     summary: Empty a loadout slot
  *     parameters:
  *       - { in: path, name: slot, required: true, schema: { type: string } }
+ *       - { in: query, name: team, schema: { type: integer, enum: [0, 2, 3] }, description: 'One side only (default: every side)' }
  *     responses:
  *       200: { description: Emptied }
  */
@@ -177,7 +179,8 @@ router.delete('/me/equip/:slot', async (req, res) => {
   try {
     const uid = await playerOrStop(req, res);
     if (!uid) return;
-    await skinService.unequip(uid, req.params.slot);
+    const team = req.query.team === undefined ? undefined : Number(req.query.team);
+    await skinService.unequip(uid, req.params.slot, team);
     void loadoutChanged(uid);
     return res.json({ success: true });
   } catch (error) {
