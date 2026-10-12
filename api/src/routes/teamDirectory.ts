@@ -500,11 +500,52 @@ router.get('/:teamId/profile', async (req: Request, res: Response) => {
       [row.id, row.id, row.id, row.id]
     );
 
+    // The team's last matches, each opening its own page.
+    const recent = await db.queryAsync<{
+      slug: string;
+      status: string;
+      winner_id: string | null;
+      completed_at: number | null;
+      opponent_id: string | null;
+      opponent: string | null;
+      won_maps: number | string | null;
+      lost_maps: number | string | null;
+      maps: string | null;
+    }>(
+      `SELECT m.slug, m.status, m.winner_id, m.completed_at,
+              CASE WHEN m.team1_id = ? THEN m.team2_id ELSE m.team1_id END AS opponent_id,
+              CASE WHEN m.team1_id = ? THEN t2.name ELSE t1.name END AS opponent,
+              (SELECT COUNT(*) FROM match_map_results r WHERE r.match_slug = m.slug AND r.winner_team = CASE WHEN m.team1_id = ? THEN 'team1' ELSE 'team2' END) AS won_maps,
+              (SELECT COUNT(*) FROM match_map_results r WHERE r.match_slug = m.slug AND r.winner_team = CASE WHEN m.team1_id = ? THEN 'team2' ELSE 'team1' END) AS lost_maps,
+              (SELECT string_agg(COALESCE(r.map_name, 'map') || ' ' ||
+                        CASE WHEN m.team1_id = ? THEN r.team1_score || '-' || r.team2_score ELSE r.team2_score || '-' || r.team1_score END,
+                        ', ' ORDER BY r.map_number)
+                 FROM match_map_results r WHERE r.match_slug = m.slug) AS maps
+         FROM matches m
+         LEFT JOIN teams t1 ON t1.id = m.team1_id
+         LEFT JOIN teams t2 ON t2.id = m.team2_id
+        WHERE (m.team1_id = ? OR m.team2_id = ?) AND m.status IN ('completed', 'live')
+        ORDER BY (m.status = 'live') DESC, m.completed_at DESC NULLS LAST
+        LIMIT 10`,
+      [row.id, row.id, row.id, row.id, row.id, row.id, row.id]
+    );
+
     return res.json({
       success: true,
       team: toDirectoryTeam(row),
       members,
       rating,
+      recentMatches: recent.map((m) => ({
+        slug: m.slug,
+        live: m.status === 'live',
+        result:
+          m.status !== 'completed' || !m.winner_id ? null : m.winner_id === row.id ? 'w' : 'l',
+        opponentId: m.opponent_id,
+        opponent: m.opponent,
+        score: [Number(m.won_maps ?? 0), Number(m.lost_maps ?? 0)],
+        maps: m.maps,
+        completedAt: m.completed_at === null ? null : Number(m.completed_at),
+      })),
       record: {
         wins,
         losses: results.length - wins,

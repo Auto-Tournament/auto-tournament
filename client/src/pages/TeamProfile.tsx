@@ -4,6 +4,7 @@ import { Alert, Box, Button, CircularProgress, Container, Typography } from '@mu
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { LiveChip, Panel, SectionHead } from '../components/common/ui';
+import { TeamRecentMatches, type TeamRecentMatch } from '../components/team/TeamRecentMatches';
 import { TeamHeader } from '../components/team/profile/TeamHeader';
 import { RosterList, type RosterPlayer } from '../components/team/profile/RosterList';
 import { TeamTournaments } from '../components/team/profile/TeamTournaments';
@@ -37,6 +38,7 @@ export default function TeamProfile() {
   // The team's logo, and the viewer's place on it: the owner and captains
   // get Manage, a member gets Leave.
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [recentMatches, setRecentMatches] = useState<TeamRecentMatch[]>([]);
   const [numbers, setNumbers] = useState<TeamProfileNumbers | null>(null);
   const [members, setMembers] = useState<RosterPlayer[] | null>(null);
   const [teamGame, setTeamGame] = useState<string | null>(null);
@@ -56,6 +58,7 @@ export default function TeamProfile() {
         {
           success: boolean;
           team: { logoUrl: string | null; game: string | null };
+          recentMatches?: TeamRecentMatch[];
           members: Array<{
             steamId: string;
             name: string;
@@ -74,6 +77,7 @@ export default function TeamProfile() {
       .then((res) => {
         if (cancelled) return;
         setLogoUrl(res.team?.logoUrl ?? null);
+        setRecentMatches(res.recentMatches ?? []);
         setTeamGame(res.team?.game ?? null);
         setNumbers({
           rating: res.rating,
@@ -264,6 +268,11 @@ export default function TeamProfile() {
 
             {/* Each game's own numbers for the team (CS2: map strength). */}
             {teamId && gameViews.map((View, i) => <View key={i} teamId={teamId} />)}
+
+            <Box component="section" aria-labelledby="team-matches">
+              <SectionHead id="team-matches" title={t('teamProfile.matches.title')} />
+              <TeamRecentMatches matches={recentMatches} />
+            </Box>
 
             <Box component="section" aria-labelledby="team-tournaments">
               <SectionHead id="team-tournaments" title={t('teamProfile.tournaments.title')} />

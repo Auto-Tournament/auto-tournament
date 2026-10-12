@@ -120,6 +120,15 @@
     "fetchError": "Klarte ikke å hente kampdetaljer"
   },
   "teamProfile": {
+    "matches": {
+      "title": "Kamper",
+      "none": "Ingen kamper ennå.",
+      "w": "S",
+      "l": "T",
+      "vs": "mot {{name}}",
+      "tbd": "ukjent",
+      "live": "Live"
+    },
     "pageTitle": "{{name}} · Lag",
     "notFound": "Fant ikke laget. Kontroller URL-en.",
     "loadError": "Klarte ikke å laste dette laget. Prøv igjen.",

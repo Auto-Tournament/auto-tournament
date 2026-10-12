@@ -205,6 +205,8 @@ test.describe('Team page numbers', () => {
       expect(profile.rating).toBe(profile.members[0].rating);
       expect(profile.record).toEqual({ wins: 0, losses: 0, last10: [] });
       expect(profile.rounds).toEqual({ won: 0, lost: 0 });
+      // No matches played yet: an empty list of them (each would open its match page).
+      expect(profile.recentMatches).toEqual([]);
 
       const cs2 = await (await anon.get(`/api/game/cs2/teams/${team.id}/profile`)).json();
       expect(cs2).toMatchObject({

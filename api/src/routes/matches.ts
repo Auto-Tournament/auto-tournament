@@ -1,3 +1,4 @@
+import { logoUrl } from '../services/teamSelfService';
 import { Router, Request, Response } from 'express';
 import { getGameRatings } from '../services/gameRatings';
 import { matchService } from '../services/matchService';
@@ -5,7 +6,13 @@ import { isQueuedAllocationResult, scheduler } from '../core/scheduler';
 import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
 import { TournamentResponse } from '../types/tournament.types';
 import { requestActorId, requireAuth } from '../middleware/auth';
-import { holdMatch, holdOf, releaseMatch, restartCountdown, type Actor } from '../services/matchHolds';
+import {
+  holdMatch,
+  holdOf,
+  releaseMatch,
+  restartCountdown,
+  type Actor,
+} from '../services/matchHolds';
 import { MATCH_CONFIG_FETCHED_BY_SERVER, requireMatchConfigAccess } from '../middleware/serverAuth';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
@@ -162,9 +169,7 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
           `SELECT id, avatar_url FROM players WHERE id IN (${placeholders})`,
           allSteamIds
         );
-        const avatarMap = new Map(
-          rows.map((r) => [r.id.toLowerCase(), r.avatar_url ?? undefined])
-        );
+        const avatarMap = new Map(rows.map((r) => [r.id.toLowerCase(), r.avatar_url ?? undefined]));
         enrichedTeam1Players = normalizedTeam1Players.map((p) => ({
           ...p,
           avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
@@ -252,7 +257,8 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
 
   if (Array.isArray(vetoState?.pickedMaps) && vetoState.pickedMaps.length > 0) {
     const orderedPickedMaps = [...vetoState.pickedMaps].sort(
-      (a: { mapNumber?: number }, b: { mapNumber?: number }) => (a.mapNumber || 0) - (b.mapNumber || 0)
+      (a: { mapNumber?: number }, b: { mapNumber?: number }) =>
+        (a.mapNumber || 0) - (b.mapNumber || 0)
     );
     const pickedMapNames = orderedPickedMaps
       .map((m: { mapName?: string | null }) => m.mapName)
@@ -280,10 +286,7 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
   });
 
   // For shuffle tournaments, enrich players with ELO
-  if (
-    isShuffleTournament &&
-    (enrichedTeam1Players.length > 0 || enrichedTeam2Players.length > 0)
-  ) {
+  if (isShuffleTournament && (enrichedTeam1Players.length > 0 || enrichedTeam2Players.length > 0)) {
     try {
       const allSteamIds = [
         ...enrichedTeam1Players.map((p) => p.steamid),
@@ -559,10 +562,9 @@ router.post('/bulk-delete', requireAuth, async (req: Request, res: Response) => 
 
     for (const slug of slugs) {
       try {
-        const match = await db.queryOneAsync<DbMatchRow>(
-          'SELECT * FROM matches WHERE slug = ?',
-          [slug]
-        );
+        const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+          slug,
+        ]);
         if (!match) {
           skipped.push({ slug, reason: 'not_found' });
           continue;
@@ -827,7 +829,8 @@ router.get('/', async (req: Request, res: Response) => {
         // full game has been played (especially for BO1/manual matches).
         if (
           row.status === 'completed' &&
-          (!Number.isFinite(match.team1Score as number) || !Number.isFinite(match.team2Score as number) ||
+          (!Number.isFinite(match.team1Score as number) ||
+            !Number.isFinite(match.team2Score as number) ||
             ((match.team1Score as number) === 0 && (match.team2Score as number) === 0)) &&
           mapResults.length > 0
         ) {
@@ -1005,7 +1008,9 @@ router.get('/played', requireAuth, async (req: Request, res: Response) => {
       const played = mapsOf.get(r.slug) ?? [];
       const team1Maps = played.filter((m) => m.winner_team === 'team1').length;
       const team2Maps = played.filter((m) => m.winner_team === 'team2').length;
-      const demos = played.filter((m) => m.demo_file_path).map((m) => ({ mapNumber: m.map_number, map: m.map_name }));
+      const demos = played
+        .filter((m) => m.demo_file_path)
+        .map((m) => ({ mapNumber: m.map_number, map: m.map_name }));
       if (demos.length === 0 && r.demo_file_path) demos.push({ mapNumber: 0, map: null });
       const winner = r.winner_id
         ? r.winner_id === r.team1_id
@@ -1037,7 +1042,12 @@ router.get('/played', requireAuth, async (req: Request, res: Response) => {
         team1: r.team1_name ?? configName(r.config, 'team1') ?? 'Team 1',
         team2: r.team2_name ?? configName(r.config, 'team2') ?? 'Team 2',
         winner,
-        maps: played.map((m) => ({ mapNumber: m.map_number, map: m.map_name, team1: m.team1_score, team2: m.team2_score })),
+        maps: played.map((m) => ({
+          mapNumber: m.map_number,
+          map: m.map_name,
+          team1: m.team1_score,
+          team2: m.team2_score,
+        })),
         demos,
       };
     });
@@ -1075,9 +1085,12 @@ router.get('/:slug', async (req: Request, res: Response) => {
       team2_tag: string | null;
       played_in: string | null;
       tournament: string | null;
+      team1_logo: number | null;
+      team2_logo: number | null;
     }>(
       `SELECT m.team1_id, m.team2_id, m.winner_id, t1.name AS team1_name, t1.tag AS team1_tag,
-              t2.name AS team2_name, t2.tag AS team2_tag, m.played_in, tr.name AS tournament
+              t2.name AS team2_name, t2.tag AS team2_tag, m.played_in, tr.name AS tournament,
+              t1.logo_updated_at AS team1_logo, t2.logo_updated_at AS team2_logo
          FROM matches m
          LEFT JOIN teams t1 ON t1.id = m.team1_id
          LEFT JOIN teams t2 ON t2.id = m.team2_id
@@ -1094,9 +1107,15 @@ router.get('/:slug', async (req: Request, res: Response) => {
     }));
     const teamOf = (side: 'team1' | 'team2') => {
       const id = row?.[`${side}_id`] ?? null;
-      const configTeam = (match.config as { [k: string]: { name?: string; tag?: string } } | undefined)?.[side];
+      const configTeam = (
+        match.config as { [k: string]: { name?: string; tag?: string } } | undefined
+      )?.[side];
       return id || configTeam
-        ? { id, name: row?.[`${side}_name`] ?? configTeam?.name ?? null, tag: row?.[`${side}_tag`] ?? configTeam?.tag ?? null }
+        ? {
+            id,
+            name: row?.[`${side}_name`] ?? configTeam?.name ?? null,
+            tag: row?.[`${side}_tag`] ?? configTeam?.tag ?? null,
+          }
         : null;
     };
 
@@ -1114,8 +1133,14 @@ router.get('/:slug', async (req: Request, res: Response) => {
               ? 'team2'
               : null,
         mapScores,
+        // The teams' logos (the team page's), when they have one.
+        team1LogoUrl: row?.team1_id ? logoUrl(row.team1_id, row.team1_logo) : null,
+        team2LogoUrl: row?.team2_id ? logoUrl(row.team2_id, row.team2_logo) : null,
         tournament:
-          (match as { tournament?: unknown }).tournament ?? row?.tournament ?? row?.played_in ?? null,
+          (match as { tournament?: unknown }).tournament ??
+          row?.tournament ??
+          row?.played_in ??
+          null,
       },
     });
   } catch (error) {
@@ -1165,10 +1190,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
       // the UI doesn't block on potentially slow RCON / connectivity checks.
       setImmediate(async () => {
         try {
-          const allocation = await scheduler.allocateSingleMatch(
-            match.slug,
-            webhookBaseUrl
-          );
+          const allocation = await scheduler.allocateSingleMatch(match.slug, webhookBaseUrl);
           if (!allocation.success) {
             if (isQueuedAllocationResult(allocation.error)) {
               // No server free yet (the only one may still be uploading the
@@ -1186,10 +1208,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
             }
           }
         } catch (allocError) {
-          log.warn(
-            `Auto-allocation threw for manual match ${match.slug}`,
-            allocError as Error
-          );
+          log.warn(`Auto-allocation threw for manual match ${match.slug}`, allocError as Error);
         }
       });
     }
@@ -1204,8 +1223,8 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
     const statusCode = message.includes('already exists')
       ? 409
       : message.includes('not found')
-      ? 404
-      : 400;
+        ? 404
+        : 400;
 
     console.error('Error creating match:', error);
     return res.status(statusCode).json({
@@ -1346,7 +1365,9 @@ router.post('/:slug/hold', requireAuth, async (req: Request, res: Response) => {
   const body = (req.body ?? {}) as { minutes?: unknown; reason?: unknown };
   const minutes = holdMinutes(body.minutes);
   if (minutes === false) {
-    return res.status(400).json({ success: false, error: 'minutes: 1 to 1440, or none until released' });
+    return res
+      .status(400)
+      .json({ success: false, error: 'minutes: 1 to 1440, or none until released' });
   }
   try {
     const hold = await holdMatch(
@@ -1541,12 +1562,11 @@ router.post('/:slug/winner', requireAuth, async (req: Request, res: Response) =>
 router.post('/:slug/force-cancel', requireAuth, async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    
+
     // Get the match
-    const match = await db.queryOneAsync<DbMatchRow>(
-      'SELECT * FROM matches WHERE slug = ?',
-      [slug]
-    );
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+      slug,
+    ]);
 
     if (!match) {
       return res.status(404).json({

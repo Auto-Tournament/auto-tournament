@@ -77,13 +77,16 @@ function initials(team: Pick<DirectoryTeam, 'name' | 'tag'>): string {
     .toUpperCase();
 }
 
+/** The team's logo, or its tag/initials on a tile when it has none (or it fails to load). */
 function TeamTile({
   team,
   size = 52,
 }: {
-  team: Pick<DirectoryTeam, 'name' | 'tag'>;
+  team: Pick<DirectoryTeam, 'name' | 'tag'> & { logoUrl?: string | null };
   size?: number;
 }) {
+  const [broken, setBroken] = useState(false);
+  const logo = team.logoUrl && !broken ? team.logoUrl : null;
   return (
     <Box
       aria-hidden
@@ -95,12 +98,24 @@ function TeamTile({
         bgcolor: color.paper3,
         display: 'grid',
         placeItems: 'center',
+        overflow: 'hidden',
         fontWeight: 700,
         fontSize: size > 60 ? textSize.xl : textSize.sm,
         color: color.ink2,
       }}
     >
-      {initials(team)}
+      {logo ? (
+        <Box
+          component="img"
+          src={logo}
+          alt=""
+          onError={() => setBroken(true)}
+          sx={{ width: '100%', height: '100%', objectFit: 'contain', p: '12%' }}
+          data-testid="team-logo"
+        />
+      ) : (
+        initials(team)
+      )}
     </Box>
   );
 }

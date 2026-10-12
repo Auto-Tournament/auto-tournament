@@ -31,6 +31,8 @@ import { getStatusLabel } from '../utils/matchUtils';
 
 type MatchResponse = PublicMatch & {
   game?: string | null;
+  team1LogoUrl?: string | null;
+  team2LogoUrl?: string | null;
   team1SeriesScore?: number;
   team2SeriesScore?: number;
 };
@@ -150,9 +152,19 @@ export default function MatchPage() {
             color: win ? tokens.color.accent : 'text.secondary',
             fontFamily: fontDisplay,
             fontWeight: 700,
+            overflow: 'hidden',
           }}
         >
-          {crest(team?.name, team?.tag)}
+          {match[`${key}LogoUrl`] ? (
+            <Box
+              component="img"
+              src={match[`${key}LogoUrl`]!}
+              alt=""
+              sx={{ width: '100%', height: '100%', objectFit: 'contain', p: '10%' }}
+            />
+          ) : (
+            crest(team?.name, team?.tag)
+          )}
         </Box>
         <Box sx={{ minWidth: 0 }}>
           <Typography
