@@ -170,7 +170,12 @@ export function NoticeItem({ notice, viewerId, onNavigate }: Props) {
       icon = <PlayIcon size={16} weight="fill" />;
       text = (
         <>
-          {t('social.notice.highlight')}{' '}
+          {d.role === 'victim' || d.role === 'assist' || d.role === 'killer'
+            ? t(
+                `social.notice.${({ victim: 'highlightVictim', assist: 'highlightAssist', killer: 'highlightKiller' } as const)[d.role]}`,
+                { name: str(d.byName) || t('social.notice.someone', { defaultValue: 'Someone' }) }
+              )
+            : t('social.notice.highlight')}{' '}
           <Box component="b" sx={{ color: color.ink, fontWeight: 600 }}>
             {str(d.title)}
           </Box>
