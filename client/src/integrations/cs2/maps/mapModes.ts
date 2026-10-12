@@ -15,6 +15,22 @@ export const MAP_MODES: readonly MapGameMode[] = [
   'other',
 ];
 
+/**
+ * Maps CS2 also plays as wingman (their wingman layout: one bomb site, a
+ * smaller playable area) while their own type stays defusal. A map can only
+ * have one type (`cs2_maps.game_mode`), so a wingman tournament takes these
+ * as well as maps typed wingman. Sivert checks the list against CS2's
+ * current wingman pool (2026-10-12).
+ */
+export const WINGMAN_LAYOUTS: ReadonlySet<string> = new Set([
+  'de_inferno',
+  'de_nuke',
+  'de_overpass',
+  'de_vertigo',
+  'de_palacio',
+  'de_rooftop',
+]);
+
 export function isMapMode(value: unknown): value is MapGameMode {
   return typeof value === 'string' && (MAP_MODES as readonly string[]).includes(value);
 }
@@ -92,6 +108,7 @@ export function fitsMapMode(
   mode: MapGameMode | undefined
 ): boolean {
   if (!mode) return true;
+  if (mode === 'wingman' && WINGMAN_LAYOUTS.has(id)) return true;
   const own = mapModeOf(map, id);
   return own === null || own === mode;
 }
