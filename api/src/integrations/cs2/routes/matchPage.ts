@@ -5,7 +5,7 @@
  *
  * Public:
  *   GET /api/game/cs2/matches/:slug/scoreboard   each team's players over the whole match (and per map)
- *   GET /api/game/cs2/matches/:slug/highlights   the match's finished clips, in match order
+ *   GET /api/game/cs2/matches/:slug/highlights   the match's finished clips, in match order, and how many are still being recorded
  */
 
 import { Router, type Request, type Response } from 'express';
@@ -127,8 +127,23 @@ router.get('/matches/:slug/highlights', async (req: Request, res: Response) => {
         ORDER BY h.map_number, h.start_tick`,
       [req.params.slug]
     );
+    // How far the recorders are: the match's chosen moments (not the ones
+    // past the clips-per-player setting) and how many of them are clips yet.
+    const [count] = await db.queryAsync<{ total: number; done: number; waiting: number }>(
+      `SELECT COUNT(*)::int AS total,
+              COUNT(*) FILTER (WHERE status = 'done')::int AS done,
+              COUNT(*) FILTER (WHERE status IN ('pending', 'recording'))::int AS waiting
+         FROM cs2_highlights
+        WHERE match_slug = ? AND map_number >= 0 AND status <> 'skipped' AND kind <> 'funny'`,
+      [req.params.slug]
+    );
     return res.json({
       success: true,
+      progress: {
+        done: Number(count?.done ?? 0),
+        total: Number(count?.total ?? 0),
+        waiting: Number(count?.waiting ?? 0),
+      },
       clips: rows.map((r) => ({
         id: Number(r.id),
         playerId: r.player_id,
