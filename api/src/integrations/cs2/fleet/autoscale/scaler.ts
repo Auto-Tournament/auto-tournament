@@ -329,6 +329,7 @@ export interface GatheredInputs {
 }
 
 export async function gatherInputs(settings: StoredAutoscaleSettings): Promise<GatheredInputs> {
+  await serverAllocationTracker.releaseFinished();
   const now = nowS();
   const bus = fleetBus();
   const [demand, reserveConfigured, targets] = await Promise.all([

@@ -223,7 +223,9 @@ server, { resume })`: new epoch and password, `resume` = the latest round
 - **Reserve** (`failoverSettings.ts`): idle fleet servers normal allocation
   leaves alone (`getAvailableServers()` without `includeFleetReserve`):
   the admin's number, else 1 once two linked servers are online; never the
-  whole pool. Reserve servers count toward the license like any server.
+  whole pool, never the last free server, and only while a match is live
+  (with nothing live there is nothing to fail over). Reserve servers count
+  toward the license like any server.
 - Routes (`../routes/failover.ts`): `GET /api/game/cs2/matches/:slug/failover`,
   `POST …/failover/:id/accept`, `…/:id/dismiss`, `…/failover/move` (move a
   fleet match now: another pick, or back), `GET|PUT /api/fleet/failover/settings`.

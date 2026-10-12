@@ -10,6 +10,7 @@
 import { startRecorderRecovery, stopRecorderRecovery } from './demos/recorderRecovery';
 import { startAutoStart } from './fleet/autoStart';
 import { startVetoTimer, stopVetoTimer } from './veto/timer';
+import { startWaitingSweep, stopWaitingSweep } from './waitingSweep';
 import { log } from '../../utils/logger';
 import { settingsService } from '../../services/settingsService';
 import { serverService } from './services/serverService';
@@ -69,6 +70,8 @@ export async function startCs2(): Promise<void> {
   startAutoStart();
   // A veto step a team does not take in time is taken for them (veto_turn_seconds).
   startVetoTimer();
+  // Ready matches still without a server get another try every 15 s.
+  startWaitingSweep();
 
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
@@ -117,6 +120,7 @@ export function stopCs2(): void {
   stopRecorderRecovery();
   healthMonitoringService.stop();
   stopVetoTimer();
+  stopWaitingSweep();
   stopMapAutoSync();
   stopFleet();
   stopTurnoverRetry?.();

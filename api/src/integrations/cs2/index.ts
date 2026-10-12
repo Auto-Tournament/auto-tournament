@@ -155,6 +155,16 @@ function toResourceActionResult(result: ServerActionResult): ResourceActionResul
   return { ...rest, ...(serverId ? { resourceId: serverId } : {}) };
 }
 
+/** The stored veto (`matches.veto_state`) is finished. */
+function vetoCompleted(raw: string | null | undefined): boolean {
+  if (!raw) return false;
+  try {
+    return (JSON.parse(raw) as { status?: string } | null)?.status === 'completed';
+  } catch {
+    return false;
+  }
+}
+
 /** Series formats that run a map veto (case-sensitive, as the veto has always checked). */
 function usesVeto(format: string | undefined): boolean {
   return format === 'bo1' || format === 'bo3' || format === 'bo5';
@@ -236,22 +246,48 @@ export const cs2Integration: GameIntegration = {
    * Hold a newly ready BO match for the automated veto in simulation mode.
    * The same check `makeMatchReady` made inline before the veto moved here.
    */
+  /**
+   * A BO1/3/5 match is ready only once its veto is done: before that it has no
+   * maps, and loading it fails ("no maps yet"). Both teams are known now, so
+   * the veto opens (onMatchReady); finishing it readies and allocates the
+   * match (veto/routes.ts, veto/simulation.ts).
+   */
   async isReadyToAllocate(ctx: MatchContext) {
-    const { settingsService } = await import('../../services/settingsService');
-    if (!(await settingsService.isSimulationModeEnabled())) return true;
-    return !usesVeto(ctx.tournament?.format);
+    if (!usesVeto(ctx.tournament?.format)) return true;
+    const { db } = await import('../../config/database');
+    const row = await db.queryOneAsync<{ veto_state: string | null }>(
+      'SELECT veto_state FROM matches WHERE slug = ?',
+      [ctx.slug]
+    );
+    return vetoCompleted(row?.veto_state);
   },
 
-  /** Simulation mode: run the automated veto; it allocates the match when done. */
+  /**
+   * The veto opens: the match stays `pending` so the players' veto page and
+   * the turn timer (veto/timer.ts) pick it up; in simulation mode the
+   * automated veto runs it at once.
+   */
   async onMatchReady(ctx: MatchContext) {
-    const [{ log }, { autoCompleteVetoForMatch }] = await Promise.all([
+    const [{ log }, { db }, { settingsService }, { emitBracketUpdate }] = await Promise.all([
       import('../../utils/logger'),
-      import('./veto/simulation'),
+      import('../../config/database'),
+      import('../../services/settingsService'),
+      import('../../services/socketService'),
     ]);
-    log.info(
-      `[VETO-SIM] Simulation mode active – auto-completing veto for newly ready match ${ctx.slug}`
+    await db.runAsync(
+      "UPDATE matches SET status = 'pending' WHERE slug = ? AND (server_id IS NULL OR server_id = '') AND status IN ('pending', 'ready')",
+      [ctx.slug]
     );
-    await autoCompleteVetoForMatch(ctx.slug);
+    emitBracketUpdate({ action: 'match_ready', matchSlug: ctx.slug });
+    if (await settingsService.isSimulationModeEnabled()) {
+      const { autoCompleteVetoForMatch } = await import('./veto/simulation');
+      log.info(
+        `[VETO-SIM] Simulation mode active – auto-completing veto for newly ready match ${ctx.slug}`
+      );
+      await autoCompleteVetoForMatch(ctx.slug);
+      return;
+    }
+    log.info(`[VETO] Both teams known for ${ctx.slug}: the veto is open`);
   },
 
   /** The map pool, the shuffle map sequence and max rounds, and the custom veto order. */
