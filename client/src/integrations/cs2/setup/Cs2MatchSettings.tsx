@@ -91,6 +91,26 @@ export function Cs2MatchSettings({
           {t('tournament.botFill.help')}
         </Typography>
       </Box>
+      <Box>
+        <FormControlLabel
+          label={t('tournament.esportsMode.label')}
+          control={
+            <Switch
+              checked={value.esportsMode === true}
+              disabled={disabled}
+              onChange={(_e, checked) => update({ esportsMode: checked })}
+              slotProps={{
+                input: {
+                  'data-testid': 'tournament-esports-mode',
+                } as InputHTMLAttributes<HTMLInputElement>,
+              }}
+            />
+          }
+        />
+        <Typography variant="body2" color="text.secondary">
+          {t('tournament.esportsMode.help')}
+        </Typography>
+      </Box>
       <TextField
         label={t('tournament.wizard.maxRoundsLabel')}
         type="number"

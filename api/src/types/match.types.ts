@@ -100,6 +100,8 @@ export interface MatchConfig {
   simulation_timescale?: number;
   /** Anonymous bots fill empty slots to players_per_team; requires Ready Up support. */
   bot_fill?: boolean;
+  /** Esports mode: Ready Up's `valve` ruleset (no skins, Valve rules). */
+  esports?: boolean;
   /**
    * Optional list of Steam64 IDs that should always have in‑game admin rights
    * for this match. This is attached automatically for tournament and manual

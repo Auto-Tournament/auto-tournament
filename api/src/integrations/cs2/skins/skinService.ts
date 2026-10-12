@@ -1,11 +1,10 @@
 /**
- * Virtual skins: an inventory per player, earned by winning matchmaking games
- * and placing in tournaments, shown on the platform only.
- *
- * Skins never reach a game server. Valve bans the server token of a community
- * server that lets players use items they do not own, so the inventory, the
- * equipped loadout and the profile showcase live here and nowhere else. The
- * notice that says so is fixed text in the client and cannot be edited.
+ * Skins: an inventory per player, earned by winning matchmaking games and
+ * placing in tournaments, shown on the platform and played in the servers:
+ * the equipped loadout goes to Ready Up's skins plugin when a player
+ * connects (../fleet/push/skins.ts), on every server while skins are on here.
+ * A tournament in esports mode plays without them (Ready Up's `valve`
+ * ruleset).
  *
  * Everything is off until an admin turns it on (`skins_config.enabled`).
  *
@@ -32,7 +31,15 @@ export const SKINS_JSON_URL =
 const CONFIG_KEY = 'skins_config';
 const CATALOG_TTL_MS = 60 * 60 * 1000;
 
-export const RARITIES = ['common', 'uncommon', 'rare', 'mythical', 'legendary', 'ancient', 'immortal'] as const;
+export const RARITIES = [
+  'common',
+  'uncommon',
+  'rare',
+  'mythical',
+  'legendary',
+  'ancient',
+  'immortal',
+] as const;
 export type Rarity = (typeof RARITIES)[number];
 
 export interface CatalogSkin {
@@ -58,7 +65,12 @@ export function variantOf(paintKitName: string | undefined): string | null {
   // Not "emerald" anywhere: specialist_emerald_web is a glove, an_emerald a plain finish.
   const name = (paintKitName ?? '').toLowerCase();
   const gem = /^am_(ruby|sapphire|blackpearl|emerald)_marbleized/.exec(name);
-  if (gem) return { ruby: 'Ruby', sapphire: 'Sapphire', blackpearl: 'Black Pearl', emerald: 'Emerald' }[gem[1]] ?? null;
+  if (gem)
+    return (
+      { ruby: 'Ruby', sapphire: 'Sapphire', blackpearl: 'Black Pearl', emerald: 'Emerald' }[
+        gem[1]
+      ] ?? null
+    );
   const phase = /^am_(?:gamma_)?doppler_phase(\d)/.exec(name);
   return phase ? `Phase ${phase[1]}` : null;
 }
@@ -96,7 +108,15 @@ export const DEFAULT_CONFIG: SkinsConfig = {
   matchmakingDrops: true,
   dropChance: 20,
   playDropChance: 5,
-  rarityWeights: { common: 40, uncommon: 25, rare: 18, mythical: 10, legendary: 5, ancient: 2, immortal: 0 },
+  rarityWeights: {
+    common: 40,
+    uncommon: 25,
+    rare: 18,
+    mythical: 10,
+    legendary: 5,
+    ancient: 2,
+    immortal: 0,
+  },
   tournamentRewards: true,
   rewards: [
     { place: 1, mode: 'random', rarity: 'legendary' },
@@ -176,7 +196,9 @@ export function rollPattern(seeds?: number[]): number {
 
 /** A rarity drawn by weight; null when every weight is zero. */
 export function rollRarity(weights: Record<Rarity, number>): Rarity | null {
-  const entries = RARITIES.map((r) => [r, Math.max(0, weights[r] ?? 0)] as const).filter(([, w]) => w > 0);
+  const entries = RARITIES.map((r) => [r, Math.max(0, weights[r] ?? 0)] as const).filter(
+    ([, w]) => w > 0
+  );
   const total = entries.reduce((sum, [, w]) => sum + w, 0);
   if (total <= 0) return null;
   let pick = randomInt(0, Math.round(total * 1000)) / 1000;
@@ -215,7 +237,8 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
   const weights = { ...DEFAULT_CONFIG.rarityWeights };
   for (const r of RARITIES) {
     const value = raw.rarityWeights?.[r];
-    if (typeof value === 'number' && Number.isFinite(value)) weights[r] = Math.max(0, Math.min(1000, value));
+    if (typeof value === 'number' && Number.isFinite(value))
+      weights[r] = Math.max(0, Math.min(1000, value));
   }
   const rewards = (Array.isArray(raw.rewards) ? raw.rewards : DEFAULT_CONFIG.rewards)
     .filter((r): r is TournamentReward => Boolean(r) && [1, 2, 3].includes(Number(r.place)))
@@ -227,7 +250,9 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
       name: typeof r.name === 'string' ? r.name : undefined,
       floatMin: typeof r.floatMin === 'number' ? Math.max(0, Math.min(1, r.floatMin)) : undefined,
       floatMax: typeof r.floatMax === 'number' ? Math.max(0, Math.min(1, r.floatMax)) : undefined,
-      seeds: Array.isArray(r.seeds) ? r.seeds.filter((s) => Number.isInteger(s) && s >= 0 && s <= 1000).slice(0, 100) : [],
+      seeds: Array.isArray(r.seeds)
+        ? r.seeds.filter((s) => Number.isInteger(s) && s >= 0 && s <= 1000).slice(0, 100)
+        : [],
     })) as TournamentReward[];
   return {
     enabled: raw.enabled === true,
@@ -254,7 +279,9 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
 function withPriceRarity(skins: CatalogSkin[], prices: Record<string, number>): CatalogSkin[] {
   if (Object.keys(prices).length === 0) return skins;
   const keyOf = (s: CatalogSkin) => priceKey(s.weaponName, s.name, variantOf(s.paintKitName));
-  const special = skins.filter((s) => slotOf(s.weapon) === 'knife' || slotOf(s.weapon) === 'gloves');
+  const special = skins.filter(
+    (s) => slotOf(s.weapon) === 'knife' || slotOf(s.weapon) === 'gloves'
+  );
   const bands = RARITIES.indexOf('ancient') + 1;
   const index = rarityIndexByPrice(prices, special.map(keyOf), bands);
   return skins.map((s) => {
@@ -263,12 +290,13 @@ function withPriceRarity(skins: CatalogSkin[], prices: Record<string, number>): 
     const key = keyOf(s);
     const band = index.get(key);
     return band === undefined ? s : { ...s, rarity: RARITIES[band], price: priceFor(prices, key) };
-
   });
 }
 
 async function uidOf(steamId: string): Promise<string | null> {
-  const row = await db.queryOneAsync<{ uid: string }>('SELECT uid FROM players WHERE id = ?', [steamId]);
+  const row = await db.queryOneAsync<{ uid: string }>('SELECT uid FROM players WHERE id = ?', [
+    steamId,
+  ]);
   return row?.uid ?? null;
 }
 
@@ -299,7 +327,9 @@ export const skinService = {
       try {
         const response = await fetch(SKINS_JSON_URL, {
           // node-fetch 2 declares its own AbortSignal type; Node's has the same shape.
-          signal: controller.signal as unknown as NonNullable<Parameters<typeof fetch>[1]>['signal'],
+          signal: controller.signal as unknown as NonNullable<
+            Parameters<typeof fetch>[1]
+          >['signal'],
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         body = (await response.json()) as { skins?: CatalogSkin[] };
@@ -308,7 +338,11 @@ export const skinService = {
       }
       const skins = withPriceRarity(
         (body.skins ?? []).filter(
-          (s) => s && typeof s.weapon === 'string' && RARITIES.includes(s.rarity) && typeof s.image === 'string'
+          (s) =>
+            s &&
+            typeof s.weapon === 'string' &&
+            RARITIES.includes(s.rarity) &&
+            typeof s.image === 'string'
         ),
         await knifeAndGlovePrices()
       );
@@ -361,14 +395,23 @@ export const skinService = {
       await this.addToShowcase(playerUid, row.id, slotOf(skin.weapon));
     }
     // The reveal shows at once on any page the player has open.
-    const player = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [playerUid]);
+    const player = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [
+      playerUid,
+    ]);
     if (player) {
       emitSkinsChanged(player.id);
       if (row?.id) {
         await notificationService.notify(
           player.id,
           'skin',
-          { skinId: row.id, name: skin.name, weapon: skin.weaponName, rarity: skin.rarity, image: skin.image, source: source.label ?? source.source },
+          {
+            skinId: row.id,
+            name: skin.name,
+            weapon: skin.weaponName,
+            rarity: skin.rarity,
+            image: skin.image,
+            source: source.label ?? source.source,
+          },
           `skin:${row.id}`
         );
       }
@@ -429,7 +472,10 @@ export const skinService = {
       const config = await this.config();
       if (!config.enabled || !config.tournamentRewards || rewardsOff) return;
       const ref = `tournament:${tournamentId}:${tournamentName}`;
-      const already = await db.queryOneAsync('SELECT id FROM cs2_player_skins WHERE source_ref = ? LIMIT 1', [ref]);
+      const already = await db.queryOneAsync(
+        'SELECT id FROM cs2_player_skins WHERE source_ref = ? LIMIT 1',
+        [ref]
+      );
       if (already) return;
       const catalog = await this.catalog();
       for (const { place, steamIds } of placements) {
@@ -441,7 +487,9 @@ export const skinService = {
           let skin: CatalogSkin | null = null;
           if (reward.mode === 'skin' && reward.weapon && reward.name) {
             // One name can be several paint kits (Doppler's phases): one at random, like a case.
-            const variants = catalog.filter((s) => s.weapon === reward.weapon && s.name === reward.name);
+            const variants = catalog.filter(
+              (s) => s.weapon === reward.weapon && s.name === reward.name
+            );
             skin = variants.length ? variants[randomInt(0, variants.length)] : null;
           } else {
             skin = await this.pick(reward.rarity ?? 'rare');
@@ -456,7 +504,10 @@ export const skinService = {
         }
       }
     } catch (error) {
-      log.warn('[Skins] Tournament rewards failed', { tournamentId, error: (error as Error).message });
+      log.warn('[Skins] Tournament rewards failed', {
+        tournamentId,
+        error: (error as Error).message,
+      });
     }
   },
 
@@ -475,10 +526,10 @@ export const skinService = {
 
   /** Equips a skin in its slot, replacing what was there. */
   async equip(playerUid: string, skinId: number): Promise<void> {
-    const skin = await db.queryOneAsync<SkinRow>('SELECT * FROM cs2_player_skins WHERE id = ? AND player_uid = ?', [
-      skinId,
-      playerUid,
-    ]);
+    const skin = await db.queryOneAsync<SkinRow>(
+      'SELECT * FROM cs2_player_skins WHERE id = ? AND player_uid = ?',
+      [skinId, playerUid]
+    );
     if (!skin) throw new SkinError(404, 'That skin is not in your inventory.');
     await db.runAsync(
       `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id) VALUES (?, ?, ?)
@@ -488,15 +539,18 @@ export const skinService = {
   },
 
   async unequip(playerUid: string, slot: string): Promise<void> {
-    await db.runAsync('DELETE FROM cs2_player_loadout WHERE player_uid = ? AND slot = ?', [playerUid, slot]);
+    await db.runAsync('DELETE FROM cs2_player_loadout WHERE player_uid = ? AND slot = ?', [
+      playerUid,
+      slot,
+    ]);
   },
 
   async markSeen(playerUid: string, ids: number[]): Promise<void> {
     if (!ids.length) return;
-    await db.runAsync('UPDATE cs2_player_skins SET seen = TRUE WHERE player_uid = ? AND id = ANY(?::int[])', [
-      playerUid,
-      ids,
-    ]);
+    await db.runAsync(
+      'UPDATE cs2_player_skins SET seen = TRUE WHERE player_uid = ? AND id = ANY(?::int[])',
+      [playerUid, ids]
+    );
   },
 
   /** The profile showcase: up to eight equipped skins in the owner's order, some big. */
@@ -526,18 +580,26 @@ export const skinService = {
     );
     let items = await this.showcase(playerUid);
     if (!saved) {
-      const equipped = (await this.inventory(playerUid)).filter((s) => s.equipped && s.id !== skinId);
+      const equipped = (await this.inventory(playerUid)).filter(
+        (s) => s.equipped && s.id !== skinId
+      );
       const isBig = (s: { slot: string }) => s.slot === 'knife' || s.slot === 'gloves';
       items = [...equipped.filter(isBig), ...equipped.filter((s) => !isBig(s))].map((s) => ({
         skinId: s.id,
         big: isBig(s),
       }));
     }
-    const next = [{ skinId, big: slot === 'knife' || slot === 'gloves' }, ...items.filter((i) => i.skinId !== skinId)];
+    const next = [
+      { skinId, big: slot === 'knife' || slot === 'gloves' },
+      ...items.filter((i) => i.skinId !== skinId),
+    ];
     await this.setShowcase(playerUid, next);
   },
 
-  async setShowcase(playerUid: string, items: Array<{ skinId: number; big: boolean }>): Promise<void> {
+  async setShowcase(
+    playerUid: string,
+    items: Array<{ skinId: number; big: boolean }>
+  ): Promise<void> {
     const owned = new Set((await this.inventory(playerUid)).map((s) => s.id));
     const clean = items
       .filter((i) => owned.has(Number(i.skinId)))
@@ -572,13 +634,20 @@ export const skinService = {
     if (!(await this.config()).enabled) return null;
     const uid = await uidOf(steamId);
     if (!uid) return null;
-    const rows = await db.queryAsync<{ weapon: string; paint_kit: number; float_value: number; pattern: number; slot: string }>(
+    const rows = await db.queryAsync<{
+      weapon: string;
+      paint_kit: number;
+      float_value: number;
+      pattern: number;
+      slot: string;
+    }>(
       `SELECT s.weapon, s.paint_kit, s.float_value, s.pattern, l.slot
          FROM cs2_player_loadout l JOIN cs2_player_skins s ON s.id = l.skin_id
         WHERE l.player_uid = ?`,
       [uid]
     );
-    const paints: Array<{ team: 0; defindex: number; paint: number; wear: number; seed: number }> = [];
+    const paints: Array<{ team: 0; defindex: number; paint: number; wear: number; seed: number }> =
+      [];
     let knife: Array<{ team: 0; defindex: number }> | undefined;
     let gloves: Array<{ team: 0; defindex: number }> | undefined;
     for (const row of rows) {
@@ -601,7 +670,12 @@ export const skinService = {
   /** Admin: the numbers at the top of the Skins page. */
   async adminStats() {
     const weekAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 3600;
-    const counts = await db.queryOneAsync<{ given: number; week: number; owners: number; players: number }>(
+    const counts = await db.queryOneAsync<{
+      given: number;
+      week: number;
+      owners: number;
+      players: number;
+    }>(
       `SELECT (SELECT COUNT(*)::int FROM cs2_player_skins) AS given,
               (SELECT COUNT(*)::int FROM cs2_player_skins WHERE created_at > ?) AS week,
               (SELECT COUNT(DISTINCT player_uid)::int FROM cs2_player_skins) AS owners,
@@ -609,7 +683,13 @@ export const skinService = {
       [weekAgo]
     );
     // The rarest skin anyone owns: highest rarity, the newest of those.
-    const rarest = await db.queryOneAsync<{ weapon_name: string; name: string; rarity: Rarity; image: string; owner: string | null }>(
+    const rarest = await db.queryOneAsync<{
+      weapon_name: string;
+      name: string;
+      rarity: Rarity;
+      image: string;
+      owner: string | null;
+    }>(
       `SELECT s.weapon_name, s.name, s.rarity, s.image, p.name AS owner
          FROM cs2_player_skins s
          LEFT JOIN players p ON p.uid = s.player_uid
@@ -677,12 +757,19 @@ export const skinService = {
   ): Promise<number> {
     const uid = await uidOf(steamId);
     if (!uid) throw new SkinError(404, 'No such player.');
-    const skin = (await this.catalog()).find((s) => s.weapon === input.weapon && s.paintKit === input.paintKit);
+    const skin = (await this.catalog()).find(
+      (s) => s.weapon === input.weapon && s.paintKit === input.paintKit
+    );
     if (!skin) throw new SkinError(400, 'That skin is not in the catalogue.');
     const float =
-      typeof input.float === 'number' && Number.isFinite(input.float) ? Math.max(0, Math.min(1, input.float)) : null;
+      typeof input.float === 'number' && Number.isFinite(input.float)
+        ? Math.max(0, Math.min(1, input.float))
+        : null;
     const pattern =
-      typeof input.pattern === 'number' && Number.isInteger(input.pattern) && input.pattern >= 0 && input.pattern <= 1000
+      typeof input.pattern === 'number' &&
+      Number.isInteger(input.pattern) &&
+      input.pattern >= 0 &&
+      input.pattern <= 1000
         ? input.pattern
         : null;
     return this.grant(
@@ -695,20 +782,27 @@ export const skinService = {
 
   /** Admin: take a skin away (it leaves the loadout and the showcase with it). */
   async adminRemove(skinId: number): Promise<void> {
-    const row = await db.queryOneAsync<{ id: number }>('SELECT id FROM cs2_player_skins WHERE id = ?', [skinId]);
+    const row = await db.queryOneAsync<{ id: number }>(
+      'SELECT id FROM cs2_player_skins WHERE id = ?',
+      [skinId]
+    );
     if (!row) throw new SkinError(404, 'No such skin.');
     await db.runAsync('DELETE FROM cs2_player_skins WHERE id = ?', [skinId]);
   },
 
   /** One skin with its owner, for the inspect dialog. */
   async one(skinId: number) {
-    const row = await db.queryOneAsync<SkinRow & { owner_id: string; owner_name: string; owner_avatar: string | null }>(
+    const row = await db.queryOneAsync<
+      SkinRow & { owner_id: string; owner_name: string; owner_avatar: string | null }
+    >(
       `SELECT s.*, p.id AS owner_id, p.name AS owner_name, p.avatar_url AS owner_avatar
          FROM cs2_player_skins s JOIN players p ON p.uid = s.player_uid WHERE s.id = ?`,
       [skinId]
     );
     if (!row) throw new SkinError(404, 'No such skin.');
-    const equipped = await db.queryOneAsync('SELECT 1 FROM cs2_player_loadout WHERE skin_id = ?', [skinId]);
+    const equipped = await db.queryOneAsync('SELECT 1 FROM cs2_player_loadout WHERE skin_id = ?', [
+      skinId,
+    ]);
     return {
       skin: toRow(row, new Set(equipped ? [skinId] : [])),
       owner: { steamId: row.owner_id, name: row.owner_name, avatar: row.owner_avatar },

@@ -185,7 +185,7 @@ async function sendPluginsSet(
   issuedBy: IssuedBy,
   fleetCmds: boolean
 ): Promise<{ id: string; seq: number; delivered: boolean }> {
-  const value = pluginsSetFor(stored, fleetCmds);
+  const value = pluginsSetFor(stored, fleetCmds, await platformSkinsOn());
   const args: Record<string, unknown> = {};
   if (value.enable.length > 0) args.enable = value.enable;
   if (value.disable.length > 0) args.disable = value.disable;
@@ -216,7 +216,8 @@ async function linkCreatedOnce(serverId: string): Promise<void> {
       WHERE s.id = ? AND c.type = 'server.create'`,
     [serverId]
   );
-  if (!cmd || cmd.issued_by === 'autoscale' || (cmd.issued_by ?? '').startsWith('platform:')) return;
+  if (!cmd || cmd.issued_by === 'autoscale' || (cmd.issued_by ?? '').startsWith('platform:'))
+    return;
   const created = await createdPluginSet(serverId);
   if (!created.created) return;
   if (created.set && !created.set.plugins.includes('match')) return;
@@ -250,10 +251,15 @@ async function linkKeyEnrolledOnce(serverId: string): Promise<void> {
   const { linkFleetServer } = await import('../link');
   const outcome = await linkFleetServer(serverId);
   if (!outcome.ok) {
-    log.warn(`[FLEET] ${serverId}: enrolled with auto-link key ${key.id} but not linked: ${outcome.error}`);
+    log.warn(
+      `[FLEET] ${serverId}: enrolled with auto-link key ${key.id} but not linked: ${outcome.error}`
+    );
     return;
   }
-  await db.runAsync('UPDATE cs2_fleet_servers SET auto_linked_at = ? WHERE id = ?', [now, serverId]);
+  await db.runAsync('UPDATE cs2_fleet_servers SET auto_linked_at = ? WHERE id = ?', [
+    now,
+    serverId,
+  ]);
   log.info(`[FLEET] ${serverId}: enrolled with auto-link key ${key.id}; joined the match pool`);
 }
 
@@ -278,7 +284,10 @@ export async function pluginsOnHello(
   if (!prefs.plugins) {
     if (prefs.pushed.plugins) return null;
     const created = await createdPluginSet(serverId);
-    if (!created.set) return null;
+    if (!created.set) {
+      const state = pluginsStateOf(hello);
+      return state && (await skinsFollowPlatform(serverId, state)) ? 'resync' : null;
+    }
     await setPlugins(serverId, pluginSetCommand(created.set), PLATFORM_ISSUER, 'platform');
     log.info(
       `[FLEET] ${serverId}: plugin set ${created.set.preset} (${created.set.plugins.join(', ')}) sent after its first hello`
@@ -287,13 +296,16 @@ export async function pluginsOnHello(
   }
   const state = pluginsStateOf(hello);
   if (!state) return null;
+  // No set of ours yet: the skins plugin still follows the platform.
+  if (!prefs.plugins) return (await skinsFollowPlatform(serverId, state)) ? 'resync' : null;
   const last = prefs.pushed.plugins;
   if (last?.seq !== undefined && last.seq > hello.stream.last_rx_seq) return null;
   // This hello's capabilities: the stored ones may still be the previous Ready Up's.
   const fleetCmds = Array.isArray(hello.capabilities)
     ? hello.capabilities.includes(FLEET_CMDS_CAPABILITY)
     : await runsFleetCmds(serverId);
-  if (!pluginsStateDiffers(pluginsSetFor(prefs.plugins, fleetCmds), state)) return null;
+  if (!pluginsStateDiffers(pluginsSetFor(prefs.plugins, fleetCmds, await platformSkinsOn()), state))
+    return null;
   await sendPluginsSet(serverId, prefs.plugins, PLATFORM_ISSUER, fleetCmds);
   log.info(`[FLEET] ${serverId}: its plugins differ from its plugin set; plugins.set sent again`);
   // A practice server that now runs without match (e.g. after a Ready Up
@@ -307,4 +319,65 @@ export async function pluginsOnHello(
     });
   }
   return 'resync';
+}
+
+/** The platform's skins are on (Skins settings). */
+async function platformSkinsOn(): Promise<boolean> {
+  const { skinService } = await import('../../skins/skinService');
+  return (await skinService.config()).enabled === true;
+}
+
+/**
+ * The skins plugin follows the platform on a server we never gave a plugin
+ * set: on while the platform's skins are on (and the server has it
+ * installed), off when they are off. True when a plugins.set went out.
+ */
+async function skinsFollowPlatform(
+  serverId: string,
+  state: { installed: string[]; disabled: string[] }
+): Promise<boolean> {
+  if (!state.installed.includes('skins')) return false;
+  const on = await platformSkinsOn();
+  const isOff = state.disabled.includes('skins');
+  if (on === !isOff) return false;
+  await sendCmd(serverId, {
+    name: 'plugins.set',
+    args: on ? { enable: ['skins'] } : { disable: ['skins'] },
+    issued_by: PLATFORM_ISSUER,
+    expires_at: 0,
+  });
+  log.info(
+    `[FLEET] ${serverId}: skins plugin turned ${on ? 'on' : 'off'} (the platform's skins are ${on ? 'on' : 'off'})`
+  );
+  return true;
+}
+
+/**
+ * The platform's skins were switched on or off: every connected server's
+ * skins plugin follows now (its stored set, or just the skins plugin).
+ */
+export async function syncSkinsPluginEverywhere(): Promise<void> {
+  const { fleetBus } = await import('../service');
+  const bus = fleetBus();
+  const rows = await db.queryAsync<{ id: string; plugins_state: string | null }>(
+    'SELECT id, plugins_state FROM cs2_fleet_servers'
+  );
+  for (const row of rows) {
+    if (!bus.isConnected(row.id)) continue;
+    try {
+      const prefs = await readPrefs(row.id);
+      if (prefs.plugins) {
+        await sendPluginsSet(row.id, prefs.plugins, PLATFORM_ISSUER, await runsFleetCmds(row.id));
+        continue;
+      }
+      const state = row.plugins_state
+        ? (JSON.parse(row.plugins_state) as { installed?: string[]; disabled?: string[] })
+        : null;
+      if (state && Array.isArray(state.installed) && Array.isArray(state.disabled)) {
+        await skinsFollowPlatform(row.id, { installed: state.installed, disabled: state.disabled });
+      }
+    } catch (error) {
+      log.warn(`[FLEET] ${row.id}: skins plugin not synced`, { error: (error as Error).message });
+    }
+  }
 }
