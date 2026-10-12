@@ -33,13 +33,13 @@ type Round struct {
 
 // Kill is one death, with who traded it.
 type Kill struct {
-	Tick         int         `json:"tick"`
-	Round        int         `json:"round"`
-	Attacker     *string     `json:"attacker"`
-	Victim       string      `json:"victim"`
+	Tick     int     `json:"tick"`
+	Round    int     `json:"round"`
+	Attacker *string `json:"attacker"`
+	Victim   string  `json:"victim"`
 	// VictimBot: a bot died (bot-filled matches). Victim is then "bot:<name>"
 	// and the kill counts for the human who made it, never as a death.
-	VictimBot bool `json:"victimBot,omitempty"`
+	VictimBot    bool        `json:"victimBot,omitempty"`
 	Assister     *string     `json:"assister"`
 	Weapon       string      `json:"weapon"`
 	Headshot     bool        `json:"headshot"`
