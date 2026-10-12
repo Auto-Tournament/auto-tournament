@@ -861,7 +861,31 @@
       "searching": "Szukanie meczu",
       "leaderQueues": "Lider rozpoczyna wyszukiwanie"
     },
-    "back": "Wstecz"
+    "back": "Wstecz",
+    "typing": {
+      "one": "{{name}} pisze…",
+      "two": "{{first}} i {{second}} piszą…",
+      "many": "{{count}} osób pisze…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Wybierz emoji",
+      "search": "Szukaj emoji",
+      "none": "Nie znaleziono emoji",
+      "categories": {
+        "results": "Wyniki",
+        "recent": "Ostatnie",
+        "smileys": "Buźki",
+        "gestures": "Dłonie",
+        "people": "Ludzie",
+        "animals": "Natura",
+        "food": "Jedzenie i picie",
+        "activity": "Gry i sport",
+        "travel": "Miejsca",
+        "objects": "Przedmioty",
+        "symbols": "Symbole"
+      }
+    }
   },
   "search": {
     "open": "Search",
