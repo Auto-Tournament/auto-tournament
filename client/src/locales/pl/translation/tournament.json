@@ -1041,6 +1041,7 @@
     "pickSub": "Pick a sub"
   },
   "bracketCards": {
+    "open": "Open {{a}} vs {{b}}",
     "upper": "Drabinka górna",
     "lower": "Drabinka dolna",
     "grandFinal": "Wielki finał",

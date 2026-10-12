@@ -92,13 +92,7 @@ import { listRouteIntegrations } from './integrations/registry';
 import { useModuleState } from './module-loader/useModuleState';
 import { ModulePendingRoute } from './components/common/ModuleNotInstalledNotice';
 import { MatchDetailsHost } from './components/modals/MatchDetailsHost';
-import {
-  adminRoute,
-  LEGACY_ADMIN_PATHS,
-  matchDetailsPath,
-  paths,
-  playerProfilePath,
-} from './paths';
+import { adminRoute, LEGACY_ADMIN_PATHS, matchPagePath, paths, playerProfilePath } from './paths';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -436,6 +430,8 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      {/* Old shared match links (`/matches/<slug>`), for anyone: the match page. */}
+      <Route path="/matches/:slug" element={<MatchSlugRedirect />} />
       <Route
         path={paths.match}
         element={
@@ -652,10 +648,10 @@ function LegacyAdminRedirect() {
   );
 }
 
-/** `/matches/:slug` → the Matches page with that match open. */
+/** `/matches/:slug` (old shared links) → the match's own page. */
 function MatchSlugRedirect() {
   const { slug = '' } = useParams();
-  return <Navigate to={matchDetailsPath(slug)} replace />;
+  return <Navigate to={matchPagePath(slug)} replace />;
 }
 
 export default function App() {

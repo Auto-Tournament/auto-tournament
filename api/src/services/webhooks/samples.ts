@@ -25,7 +25,10 @@ function player(n: number, name: string) {
 }
 
 /** The sample match in the state `type` describes. */
-export function sampleMatch(type: WebhookEventType, externalIds: { team1?: string; team2?: string; source?: string } = {}): WebhookMatch {
+export function sampleMatch(
+  type: WebhookEventType,
+  externalIds: { team1?: string; team2?: string; source?: string } = {}
+): WebhookMatch {
   const source = externalIds.source ?? 'ntlan';
   const t1 = externalIds.team1 ?? 'team-4711';
   const t2 = externalIds.team2 ?? 'team-4712';
@@ -83,14 +86,25 @@ export function sampleMatch(type: WebhookEventType, externalIds: { team1?: strin
     case 'match.finished':
       maps = [
         { number: 1, name: 'de_mirage', team1: 13, team2: 9, status: 'finished', winner: 'team1' },
-        { number: 2, name: 'de_inferno', team1: 11, team2: 13, status: 'finished', winner: 'team2' },
+        {
+          number: 2,
+          name: 'de_inferno',
+          team1: 11,
+          team2: 13,
+          status: 'finished',
+          winner: 'team2',
+        },
         { number: 3, name: 'de_nuke', team1: 13, team2: 6, status: 'finished', winner: 'team1' },
       ];
       series = { team1: 2, team2: 1 };
       break;
   }
-  const current = maps.find((m) => m.status === 'live') ?? [...maps].reverse().find((m) => m.status === 'finished') ?? null;
-  const connectable = (status[type] === 'loaded' || status[type] === 'live') && type !== 'admin.call_resolved';
+  const current =
+    maps.find((m) => m.status === 'live') ??
+    [...maps].reverse().find((m) => m.status === 'finished') ??
+    null;
+  const connectable =
+    (status[type] === 'loaded' || status[type] === 'live') && type !== 'admin.call_resolved';
 
   return {
     id: 42,
@@ -108,7 +122,13 @@ export function sampleMatch(type: WebhookEventType, externalIds: { team1?: strin
       external_ids: { [source]: t1 },
       name: 'Ninjas in Sample',
       tag: 'NiS',
-      players: [player(1, 'alpha'), player(2, 'bravo'), player(3, 'charlie'), player(4, 'delta'), player(5, 'echo')],
+      players: [
+        player(1, 'alpha'),
+        player(2, 'bravo'),
+        player(3, 'charlie'),
+        player(4, 'delta'),
+        player(5, 'echo'),
+      ],
     },
     team2: {
       id: 'sample-pirates',
@@ -116,16 +136,27 @@ export function sampleMatch(type: WebhookEventType, externalIds: { team1?: strin
       external_ids: { [source]: t2 },
       name: 'Sample Pirates',
       tag: 'SPR',
-      players: [player(6, 'foxtrot'), player(7, 'golf'), player(8, 'hotel'), player(9, 'india'), player(10, 'juliett')],
+      players: [
+        player(6, 'foxtrot'),
+        player(7, 'golf'),
+        player(8, 'hotel'),
+        player(9, 'india'),
+        player(10, 'juliett'),
+      ],
     },
     score: {
       series,
-      map: current ? { number: current.number, name: current.name, team1: current.team1, team2: current.team2 } : null,
+      map: current
+        ? { number: current.number, name: current.name, team1: current.team1, team2: current.team2 }
+        : null,
     },
     maps,
     winner: type === 'match.finished' ? { side: 'team1', team_id: 'sample-ninjas' } : null,
     connect: connectable
-      ? { ...SAMPLE_CONNECT, ...connectLinks(SAMPLE_CONNECT.host, SAMPLE_CONNECT.port, SAMPLE_CONNECT.password) }
+      ? {
+          ...SAMPLE_CONNECT,
+          ...connectLinks(SAMPLE_CONNECT.host, SAMPLE_CONNECT.port, SAMPLE_CONNECT.password),
+        }
       : null,
   };
 }
@@ -159,16 +190,23 @@ export function sampleEnvelope(
         ? {
             admin_call: {
               id: 'call_sample000000',
-              player: { steam_id64: '76561198000000001', name: 'Sample Player', team: 'team1' as const, team_name: match.team1?.name ?? null },
+              player: {
+                steam_id64: '76561198000000001',
+                name: 'Sample Player',
+                team: 'team1' as const,
+                team_name: match.team1?.name ?? null,
+              },
               message: 'my game crashed',
               map_number: 1,
               server: { id: 'srv-sample', name: 'Sample server #1' },
-              match_url: 'https://tournament.example.com/manage/matches?match=sample-match',
+              match_url: 'https://tournament.example.com/match/sample-match',
               called_at: (opts.createdAt ?? new Date('2026-10-01T18:00:00.000Z')).toISOString(),
             },
           }
         : {}),
-      ...(type === 'admin.call_resolved' ? { resolved_by: 'Sample Admin', resolution_note: 'restarted the round' } : {}),
+      ...(type === 'admin.call_resolved'
+        ? { resolved_by: 'Sample Admin', resolution_note: 'restarted the round' }
+        : {}),
       sequence: 1,
     },
   };

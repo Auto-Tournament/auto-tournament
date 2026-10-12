@@ -33,7 +33,11 @@ export const links = {
   settings: (moduleId?: string): string =>
     moduleId ? `${paths.settings}?section=${encodeURIComponent(moduleId)}` : paths.settings,
   /** A player's public profile. Client API 0.2.13. */
-  playerProfile: (playerId: string): string => paths.playerProfile.replace(':steamId', encodeURIComponent(playerId)),
+  playerProfile: (playerId: string): string =>
+    paths.playerProfile.replace(':steamId', encodeURIComponent(playerId)),
+  /** A match's own page: its result, maps, scoreboard and highlights. Client API 0.2.19. */
+  match: (slug: string): string => paths.match.replace(':slug', encodeURIComponent(slug)),
   /** A tournament's public page. Client API 0.2.13. */
-  tournament: (tournamentId: number | string): string => paths.tournamentOverview.replace(':id', String(tournamentId)),
+  tournament: (tournamentId: number | string): string =>
+    paths.tournamentOverview.replace(':id', String(tournamentId)),
 } as const;

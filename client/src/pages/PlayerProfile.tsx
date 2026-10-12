@@ -2,7 +2,7 @@
 import { ProfileHighlights } from '../components/highlights/ProfileHighlights';
 import type { PlayerHighlightsFeed } from '../components/highlights/feed';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -20,7 +20,6 @@ import { api } from '../utils/api';
 import { onSocketReconnect } from '../utils/socketResync';
 import { io, Socket } from 'socket.io-client';
 import { MatchInfoCard } from '../components/team/MatchInfoCard';
-import { PlayerMatchDetailsModal } from '../components/player/PlayerMatchDetailsModal';
 import { useSoundSettings } from '../hooks/useSoundSettings';
 import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
@@ -48,7 +47,7 @@ import type {
   Player as TeamPlayer,
 } from '../types';
 import { textSize, tokens } from '../theme/tokens';
-import { paths } from '../paths';
+import { matchPagePath, paths } from '../paths';
 import { pageTitle } from '../utils/pageTitle';
 import { useInstalledIntegrations, useIntegration } from '../integrations/registry';
 
@@ -181,15 +180,15 @@ function normalizeMatchForPlayerView(rawMatch: TeamMatchInfo, steamId: string): 
       result.winner === 'team1'
         ? 'team2'
         : result.winner === 'team2'
-        ? 'team1'
-        : result.winner ?? null;
+          ? 'team1'
+          : (result.winner ?? null);
 
     const swappedWinnerTeam: MatchMapResult['winnerTeam'] =
       result.winnerTeam === 'team1'
         ? 'team2'
         : result.winnerTeam === 'team2'
-        ? 'team1'
-        : result.winnerTeam ?? null;
+          ? 'team1'
+          : (result.winnerTeam ?? null);
 
     return {
       ...result,
@@ -261,6 +260,7 @@ const RATING_CHART_WINDOW = 20;
  * sees it, and nobody sees a countdown or an empty "no match" card.
  */
 export default function PlayerProfile() {
+  const navigate = useNavigate();
   type AssignedTeam = {
     id: string;
     name: string;
@@ -290,7 +290,6 @@ export default function PlayerProfile() {
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
   const [assignedTeam, setAssignedTeam] = useState<AssignedTeam | null>(null);
   const [currentTournamentStatus, setCurrentTournamentStatus] = useState<string>('setup');
-  const [selectedMatch, setSelectedMatch] = useState<MatchHistoryEntry | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const { playerSteamId, hasPlayerRecord, impersonation } = useAuth();
   const { t } = useTranslation();
@@ -341,243 +340,249 @@ export default function PlayerProfile() {
 
   const loadPlayerData = React.useCallback(
     async ({ silent = false }: { silent?: boolean } = {}) => {
-    if (!steamId) return;
+      if (!steamId) return;
 
-    if (!silent) {
-      setLoading(true);
-      setError('');
-    }
-
-    try {
-      // Cancel any in-flight refresh so socket bursts don't race and apply stale data.
-      if (loadAbortControllerRef.current) {
-        loadAbortControllerRef.current.abort();
-      }
-      const controller = new AbortController();
-      loadAbortControllerRef.current = controller;
-
-      type PlayerSummaryResponse = {
-        success: boolean;
-        player: PlayerDetail;
-        ratingHistory: Array<{
-          match_slug: string | null;
-          match_label?: string | null;
-          tournament_name?: string | null;
-          game?: string | null;
-          elo_before: number;
-          elo_after: number;
-          elo_change: number;
-          base_elo_after?: number | null;
-          stat_adjustment?: number | null;
-          template_id?: string | null;
-          match_result: 'win' | 'loss';
-          created_at: number;
-        }>;
-        matches: Array<{
-          slug: string;
-          round: number;
-          match_number: number;
-          status: string;
-          completed_at: number;
-          tournamentId?: number;
-          team1_id?: string;
-          team2_id?: string;
-          winner_id?: string | null;
-          game?: string | null;
-          team1_name?: string | null;
-          team1_tag?: string | null;
-          team2_name?: string | null;
-          team2_tag?: string | null;
-          team: 'team1' | 'team2';
-          won_match: boolean;
-          adr?: number;
-          total_damage?: number;
-          kills?: number;
-          deaths?: number;
-          assists?: number;
-          headshots?: number;
-          has_demo?: boolean;
-        }>;
-        games?: Array<{ id: string; name: string }>;
-      };
-
-      // Load aggregated player summary (details + history + matches)
-      const summaryResponse = (await api.fetch(`/api/players/${steamId}/summary`, {
-        method: 'GET',
-        signal: controller.signal,
-      })) as PlayerSummaryResponse;
-
-      if (!summaryResponse.success || !summaryResponse.player) {
-        setError(t('playerPage.playerNotFound'));
-        setPlayer(null);
-        setRatingHistory([]);
-        setMatchHistory([]);
-        setAssignedTeam(null);
-        setGames([]);
-        setSelectedGameId(null);
-        return;
+      if (!silent) {
+        setLoading(true);
+        setError('');
       }
 
-      setPlayer(summaryResponse.player);
-      document.title = pageTitle(t('playerPage.pageTitle', { name: summaryResponse.player.name }));
-
-      // Banned or deleted: only who they are; nothing else is loaded or shown.
-      if (summaryResponse.player.restricted) {
-        setRatingHistory([]);
-        setMatchHistory([]);
-        setAssignedTeam(null);
-        setGames([]);
-        setSelectedGameId(null);
-        return;
-      }
-
-      // The team for the header chip, even when the player has no current match.
       try {
-        const teamResp = (await api.fetch(`/api/players/${steamId}/team`, {
-          method: 'GET',
-          signal: controller.signal,
-        })) as {
+        // Cancel any in-flight refresh so socket bursts don't race and apply stale data.
+        if (loadAbortControllerRef.current) {
+          loadAbortControllerRef.current.abort();
+        }
+        const controller = new AbortController();
+        loadAbortControllerRef.current = controller;
+
+        type PlayerSummaryResponse = {
           success: boolean;
-          team: AssignedTeam | null;
-        };
-        setAssignedTeam(teamResp?.success ? teamResp.team ?? null : null);
-      } catch {
-        // Best-effort: don't fail the page if team lookup fails
-        setAssignedTeam(null);
-      }
-
-      setRatingHistory(
-        (summaryResponse.ratingHistory || []).map((entry, index) => ({
-          key: entry.match_slug ?? `archived-${index}`,
-          matchSlug: entry.match_slug,
-          matchLabel: entry.match_label ?? null,
-          tournamentName: entry.tournament_name ?? null,
-          game: entry.game ?? null,
-          eloBefore: entry.elo_before,
-          eloAfter: entry.elo_after,
-          eloChange: entry.elo_change,
-          baseEloAfter: entry.base_elo_after ?? null,
-          statAdjustment: entry.stat_adjustment ?? null,
-          templateId: entry.template_id ?? null,
-          matchResult: entry.match_result,
-          createdAt: entry.created_at,
-        }))
-      );
-
-      setMatchHistory(
-        (summaryResponse.matches || []).map((m) => ({
-          slug: m.slug,
-          round: m.round,
-          matchNumber: m.match_number,
-          status: m.status,
-          completedAt: m.completed_at,
-          tournamentId: m.tournamentId,
-          team1Id: m.team1_id,
-          team2Id: m.team2_id,
-          winnerId: m.winner_id,
-          game: m.game,
-          team1Name: m.team1_name,
-          team1Tag: m.team1_tag,
-          team2Name: m.team2_name,
-          team2Tag: m.team2_tag,
-          team: m.team,
-          wonMatch: m.won_match,
-          adr: m.adr,
-          totalDamage: m.total_damage,
-          kills: m.kills,
-          deaths: m.deaths,
-          assists: m.assists,
-          headshots: m.headshots,
-          hasDemo: m.has_demo === true,
-        }))
-      );
-
-      const loadedGames = summaryResponse.games || [];
-      setGames(loadedGames);
-      // A game tab is always open: the one already open if the player still
-      // has it, else the game they have played most.
-      const played = new Map<string, number>();
-      for (const m of summaryResponse.matches || []) {
-        const game = m.game || FALLBACK_GAME_ID;
-        played.set(game, (played.get(game) ?? 0) + 1);
-      }
-      const mostPlayed =
-        [...loadedGames].sort((a, b) => (played.get(b.id) ?? 0) - (played.get(a.id) ?? 0))[0]?.id ?? null;
-      setSelectedGameId((prev) => (prev && loadedGames.some((g) => g.id === prev) ? prev : mostPlayed));
-
-      // The current or upcoming match (veto, connect): only the player's own
-      // view shows it, so only that view asks.
-      if (playerSteamId !== steamId) {
-        setCurrentMatch(null);
-        setCurrentTeam(null);
-        return;
-      }
-      try {
-        const currentMatchResponse = (await api.fetch(`/api/players/${steamId}/current-match`, {
-          method: 'GET',
-          signal: controller.signal,
-        })) as {
-          success: boolean;
-          player: { id: string; name: string; avatar?: string };
-          hasMatch: boolean;
-          tournamentStatus?: string;
-          match?: TeamMatchInfo;
+          player: PlayerDetail;
+          ratingHistory: Array<{
+            match_slug: string | null;
+            match_label?: string | null;
+            tournament_name?: string | null;
+            game?: string | null;
+            elo_before: number;
+            elo_after: number;
+            elo_change: number;
+            base_elo_after?: number | null;
+            stat_adjustment?: number | null;
+            template_id?: string | null;
+            match_result: 'win' | 'loss';
+            created_at: number;
+          }>;
+          matches: Array<{
+            slug: string;
+            round: number;
+            match_number: number;
+            status: string;
+            completed_at: number;
+            tournamentId?: number;
+            team1_id?: string;
+            team2_id?: string;
+            winner_id?: string | null;
+            game?: string | null;
+            team1_name?: string | null;
+            team1_tag?: string | null;
+            team2_name?: string | null;
+            team2_tag?: string | null;
+            team: 'team1' | 'team2';
+            won_match: boolean;
+            adr?: number;
+            total_damage?: number;
+            kills?: number;
+            deaths?: number;
+            assists?: number;
+            headshots?: number;
+            has_demo?: boolean;
+          }>;
+          games?: Array<{ id: string; name: string }>;
         };
 
-        if (
-          currentMatchResponse.success &&
-          currentMatchResponse.hasMatch &&
-          currentMatchResponse.match
-        ) {
-          // Normalize match data so that, from the player's perspective on this page,
-          // their own team is always treated as "team1" / left side in scoreboards and
-          // performance tables.
-          const normalizedMatch: TeamMatchInfo = normalizeMatchForPlayerView(
-            currentMatchResponse.match,
-            steamId
-          );
+        // Load aggregated player summary (details + history + matches)
+        const summaryResponse = (await api.fetch(`/api/players/${steamId}/summary`, {
+          method: 'GET',
+          signal: controller.signal,
+        })) as PlayerSummaryResponse;
 
-          setCurrentMatch(normalizedMatch);
-          setCurrentTournamentStatus(currentMatchResponse.tournamentStatus || 'setup');
+        if (!summaryResponse.success || !summaryResponse.player) {
+          setError(t('playerPage.playerNotFound'));
+          setPlayer(null);
+          setRatingHistory([]);
+          setMatchHistory([]);
+          setAssignedTeam(null);
+          setGames([]);
+          setSelectedGameId(null);
+          return;
+        }
 
-          const yourTeam = normalizedMatch.team1 || null;
-          const configPlayers =
-            normalizedMatch.config?.team1?.players?.map(
-              (p): TeamPlayer => ({ steamId: p.steamid, name: p.name })
-            ) || [];
+        setPlayer(summaryResponse.player);
+        document.title = pageTitle(
+          t('playerPage.pageTitle', { name: summaryResponse.player.name })
+        );
 
-          setCurrentTeam(
-            yourTeam
-              ? {
-                  id: yourTeam.id,
-                  name: yourTeam.name,
-                  tag: yourTeam.tag,
-                  players: configPlayers,
-                }
-              : null
-          );
-        } else {
+        // Banned or deleted: only who they are; nothing else is loaded or shown.
+        if (summaryResponse.player.restricted) {
+          setRatingHistory([]);
+          setMatchHistory([]);
+          setAssignedTeam(null);
+          setGames([]);
+          setSelectedGameId(null);
+          return;
+        }
+
+        // The team for the header chip, even when the player has no current match.
+        try {
+          const teamResp = (await api.fetch(`/api/players/${steamId}/team`, {
+            method: 'GET',
+            signal: controller.signal,
+          })) as {
+            success: boolean;
+            team: AssignedTeam | null;
+          };
+          setAssignedTeam(teamResp?.success ? (teamResp.team ?? null) : null);
+        } catch {
+          // Best-effort: don't fail the page if team lookup fails
+          setAssignedTeam(null);
+        }
+
+        setRatingHistory(
+          (summaryResponse.ratingHistory || []).map((entry, index) => ({
+            key: entry.match_slug ?? `archived-${index}`,
+            matchSlug: entry.match_slug,
+            matchLabel: entry.match_label ?? null,
+            tournamentName: entry.tournament_name ?? null,
+            game: entry.game ?? null,
+            eloBefore: entry.elo_before,
+            eloAfter: entry.elo_after,
+            eloChange: entry.elo_change,
+            baseEloAfter: entry.base_elo_after ?? null,
+            statAdjustment: entry.stat_adjustment ?? null,
+            templateId: entry.template_id ?? null,
+            matchResult: entry.match_result,
+            createdAt: entry.created_at,
+          }))
+        );
+
+        setMatchHistory(
+          (summaryResponse.matches || []).map((m) => ({
+            slug: m.slug,
+            round: m.round,
+            matchNumber: m.match_number,
+            status: m.status,
+            completedAt: m.completed_at,
+            tournamentId: m.tournamentId,
+            team1Id: m.team1_id,
+            team2Id: m.team2_id,
+            winnerId: m.winner_id,
+            game: m.game,
+            team1Name: m.team1_name,
+            team1Tag: m.team1_tag,
+            team2Name: m.team2_name,
+            team2Tag: m.team2_tag,
+            team: m.team,
+            wonMatch: m.won_match,
+            adr: m.adr,
+            totalDamage: m.total_damage,
+            kills: m.kills,
+            deaths: m.deaths,
+            assists: m.assists,
+            headshots: m.headshots,
+            hasDemo: m.has_demo === true,
+          }))
+        );
+
+        const loadedGames = summaryResponse.games || [];
+        setGames(loadedGames);
+        // A game tab is always open: the one already open if the player still
+        // has it, else the game they have played most.
+        const played = new Map<string, number>();
+        for (const m of summaryResponse.matches || []) {
+          const game = m.game || FALLBACK_GAME_ID;
+          played.set(game, (played.get(game) ?? 0) + 1);
+        }
+        const mostPlayed =
+          [...loadedGames].sort((a, b) => (played.get(b.id) ?? 0) - (played.get(a.id) ?? 0))[0]
+            ?.id ?? null;
+        setSelectedGameId((prev) =>
+          prev && loadedGames.some((g) => g.id === prev) ? prev : mostPlayed
+        );
+
+        // The current or upcoming match (veto, connect): only the player's own
+        // view shows it, so only that view asks.
+        if (playerSteamId !== steamId) {
+          setCurrentMatch(null);
+          setCurrentTeam(null);
+          return;
+        }
+        try {
+          const currentMatchResponse = (await api.fetch(`/api/players/${steamId}/current-match`, {
+            method: 'GET',
+            signal: controller.signal,
+          })) as {
+            success: boolean;
+            player: { id: string; name: string; avatar?: string };
+            hasMatch: boolean;
+            tournamentStatus?: string;
+            match?: TeamMatchInfo;
+          };
+
+          if (
+            currentMatchResponse.success &&
+            currentMatchResponse.hasMatch &&
+            currentMatchResponse.match
+          ) {
+            // Normalize match data so that, from the player's perspective on this page,
+            // their own team is always treated as "team1" / left side in scoreboards and
+            // performance tables.
+            const normalizedMatch: TeamMatchInfo = normalizeMatchForPlayerView(
+              currentMatchResponse.match,
+              steamId
+            );
+
+            setCurrentMatch(normalizedMatch);
+            setCurrentTournamentStatus(currentMatchResponse.tournamentStatus || 'setup');
+
+            const yourTeam = normalizedMatch.team1 || null;
+            const configPlayers =
+              normalizedMatch.config?.team1?.players?.map((p): TeamPlayer => ({
+                steamId: p.steamid,
+                name: p.name,
+              })) || [];
+
+            setCurrentTeam(
+              yourTeam
+                ? {
+                    id: yourTeam.id,
+                    name: yourTeam.name,
+                    tag: yourTeam.tag,
+                    players: configPlayers,
+                  }
+                : null
+            );
+          } else {
+            setCurrentMatch(null);
+            setCurrentTeam(null);
+          }
+        } catch {
+          // Current match info is optional
           setCurrentMatch(null);
           setCurrentTeam(null);
         }
-      } catch {
-        // Current match info is optional
-        setCurrentMatch(null);
-        setCurrentTeam(null);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          // Swallow aborts: a newer refresh has been scheduled.
+          return;
+        }
+        setError(t('playerPage.loadFailed'));
+        console.error(err);
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
       }
-    } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        // Swallow aborts: a newer refresh has been scheduled.
-        return;
-      }
-      setError(t('playerPage.loadFailed'));
-      console.error(err);
-    } finally {
-      if (!silent) {
-        setLoading(false);
-      }
-    }
-  },
+    },
     [steamId, playerSteamId, t]
   );
 
@@ -651,7 +656,10 @@ export default function PlayerProfile() {
     // React to high‑level tournament / bracket events (e.g. server_assigned,
     // match_loaded) by refreshing the player data. This keeps the page in sync
     // even if the match (or its server) is created after the player page is opened.
-    const handleBracketOrTournamentUpdate = (event?: { action?: string | null; status?: string | null }) => {
+    const handleBracketOrTournamentUpdate = (event?: {
+      action?: string | null;
+      status?: string | null;
+    }) => {
       if (!event || !event.action) {
         // If we ever emit status-only updates without an action, treat them as refresh-worthy.
         if (event && typeof event.status === 'string' && event.status.trim() !== '') {
@@ -758,13 +766,7 @@ export default function PlayerProfile() {
       <Box minHeight="100vh" bgcolor="transparent">
         <TopNavBar />
         <Container maxWidth="lg">
-          <Box
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            minHeight="400px"
-            py={6}
-          >
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px" py={6}>
             <CircularProgress />
           </Box>
         </Container>
@@ -773,10 +775,7 @@ export default function PlayerProfile() {
   }
 
   const isOwnUnregistered =
-    steamId &&
-    playerSteamId &&
-    steamId === playerSteamId &&
-    hasPlayerRecord === false;
+    steamId && playerSteamId && steamId === playerSteamId && hasPlayerRecord === false;
 
   if (player?.restricted) {
     return (
@@ -787,7 +786,12 @@ export default function PlayerProfile() {
             <Card data-testid="player-profile-restricted">
               <CardContent sx={{ textAlign: 'center', py: 4 }}>
                 <Stack alignItems="center" spacing={1.5}>
-                  <PlayerAvatar id={player.id} name={player.name} avatarUrl={player.avatar} size={72} />
+                  <PlayerAvatar
+                    id={player.id}
+                    name={player.name}
+                    avatarUrl={player.avatar}
+                    size={72}
+                  />
                   <Typography variant="h5" fontWeight={600}>
                     {player.deleted ? t('playerPage.deletedName') : player.name}
                   </Typography>
@@ -795,7 +799,9 @@ export default function PlayerProfile() {
                     size="small"
                     color={player.deleted ? 'default' : 'error'}
                     variant="outlined"
-                    label={player.deleted ? t('playerPage.deletedChip') : t('playerPage.bannedChip')}
+                    label={
+                      player.deleted ? t('playerPage.deletedChip') : t('playerPage.bannedChip')
+                    }
                   />
                   <Typography variant="body2" color="text.secondary">
                     {player.deleted ? t('playerPage.deletedBody') : t('playerPage.bannedBody')}
@@ -890,16 +896,21 @@ export default function PlayerProfile() {
   // played: someone with no matches has no part in those totals.
   const TournamentStatsView = gameIntegration.tournamentStatsView;
   const PlayerProfileView = gameIntegration.playerProfileView;
-  const GameProfileView = selectedGameId ? selectedIntegration.playerProfileView : PlayerProfileView;
+  const GameProfileView = selectedGameId
+    ? selectedIntegration.playerProfileView
+    : PlayerProfileView;
   const highlightsIntegration = selectedGameId ? selectedIntegration : gameIntegration;
   const GameHighlightsHook = highlightsIntegration.usePlayerHighlights;
   const GameHighlightsGame = highlightsIntegration.id;
   const moduleTabs = installedIntegrations.flatMap((integration) =>
     integration.playerProfileTab ? [{ id: integration.id, ...integration.playerProfileTab }] : []
   );
-  const activeModuleTab = moduleTabs.find((tab) => tab.id === moduleTabId && tabAvailable[tab.id]) ?? null;
+  const activeModuleTab =
+    moduleTabs.find((tab) => tab.id === moduleTabId && tabAvailable[tab.id]) ?? null;
   const profileSections = installedIntegrations.flatMap((integration) =>
-    integration.playerProfileSection ? [{ id: integration.id, Section: integration.playerProfileSection }] : []
+    integration.playerProfileSection
+      ? [{ id: integration.id, Section: integration.playerProfileSection }]
+      : []
   );
   const hasAnyMatches = uniqueMatchHistory.length > 0;
 
@@ -938,7 +949,8 @@ export default function PlayerProfile() {
   // Ratings are per game: the open game's rating, its history and its change.
   const gameRatingHistory = ratingHistory.filter((entry) => inSelectedGame(entry.game));
   const selectedRating = selectedGameId
-    ? (player.ratings?.find((r) => r.game === selectedGameId.toLowerCase())?.elo ?? player.startingElo)
+    ? (player.ratings?.find((r) => r.game === selectedGameId.toLowerCase())?.elo ??
+      player.startingElo)
     : player.currentElo;
   const sortedRatingHistoryAsc = [...gameRatingHistory].sort((a, b) => a.createdAt - b.createdAt);
   // The headline change is this month's (draft A2: "+86 this month"): from
@@ -1073,7 +1085,10 @@ export default function PlayerProfile() {
             eloAfter: ratingHistoryBaseline(player.startingElo),
             createdAt: Math.min(...gameRatingHistory.map((e) => e.createdAt)) - 1,
           },
-          ...gameRatingHistory.map((entry) => ({ eloAfter: entry.eloAfter, createdAt: entry.createdAt })),
+          ...gameRatingHistory.map((entry) => ({
+            eloAfter: entry.eloAfter,
+            createdAt: entry.createdAt,
+          })),
         ]
       : [];
 
@@ -1173,90 +1188,98 @@ export default function PlayerProfile() {
           {activeModuleTab ? (
             <activeModuleTab.Component playerId={player.id} isOwn={playerSteamId === player.id} />
           ) : (
-          <>
-
-          {/* auto-fit: the tiles there are fill the row, with no empty cells
+            <>
+              {/* auto-fit: the tiles there are fill the row, with no empty cells
               after them when a game measures fewer than six things. */}
-          <FactGrid
-            items={profileStats}
-            aria-label={t('playerPage.stats.label')}
-            data-testid="profile-stats-grid"
-            sx={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))' }}
-          />
+              <FactGrid
+                items={profileStats}
+                aria-label={t('playerPage.stats.label')}
+                data-testid="profile-stats-grid"
+                sx={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))' }}
+              />
 
-          {/* The player's highlight videos from the open game: core lays them
+              {/* The player's highlight videos from the open game: core lays them
               out, the game says what there is. */}
-          {(selectedGameId || games.length === 0) && GameHighlightsHook && (
-            <GameHighlights key={GameHighlightsGame} useHighlights={GameHighlightsHook} playerId={player.id} />
-          )}
+              {(selectedGameId || games.length === 0) && GameHighlightsHook && (
+                <GameHighlights
+                  key={GameHighlightsGame}
+                  useHighlights={GameHighlightsHook}
+                  playerId={player.id}
+                />
+              )}
 
-          {/* The game's own numbers (CS2: aim, utility, map strength). */}
-          {/* On the game's own tab (or the only view, with no games yet). */}
-          {GameProfileView && showGameStats && (selectedGameId || games.length === 0) && (
-            <GameProfileView playerId={player.id} isOwn={playerSteamId === player.id} />
-          )}
+              {/* The game's own numbers (CS2: aim, utility, map strength). */}
+              {/* On the game's own tab (or the only view, with no games yet). */}
+              {GameProfileView && showGameStats && (selectedGameId || games.length === 0) && (
+                <GameProfileView playerId={player.id} isOwn={playerSteamId === player.id} />
+              )}
 
+              {/* Installed modules' own sections (CS2: the skin loadout, while skins are on). */}
+              {profileSections.map(({ id, Section }) => (
+                <Section key={id} playerId={player.id} isOwn={playerSteamId === player.id} />
+              ))}
 
-          {/* Installed modules' own sections (CS2: the skin loadout, while skins are on). */}
-          {profileSections.map(({ id, Section }) => (
-            <Section key={id} playerId={player.id} isOwn={playerSteamId === player.id} />
-          ))}
-
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.4fr) minmax(0, 1fr)' },
-              gap: 4,
-              mt: 6,
-              alignItems: 'start',
-            }}
-          >
-            <Box component="section" aria-labelledby="profile-rating">
-              <SectionHead
-                id="profile-rating"
-                title={t('playerPage.ratingChart.sectionTitle')}
-                action={
-                  <Typography component="span" sx={{ color: tokens.color.muted, fontSize: textSize.sm }}>
-                    {t('playerPage.ratingChart.window', { count: RATING_CHART_WINDOW })}
-                  </Typography>
-                }
-              />
-              <Panel sx={{ p: 3 }}>
-                <RatingChart history={ratingChartHistory} limit={RATING_CHART_WINDOW} />
-              </Panel>
-            </Box>
-
-            <Box component="section" aria-labelledby="profile-recent">
-              <SectionHead
-                id="profile-recent"
-                title={t('playerPage.recentMatches.title')}
-                link={
-                  latestTournamentId
-                    ? {
-                        to: paths.tournamentLeaderboard.replace(':id', String(latestTournamentId)),
-                        label: t('playerPage.recentMatches.leaderboard'),
-                        'data-testid': 'profile-tournament-leaderboard',
-                      }
-                    : undefined
-                }
-              />
-              <RecentMatches
-                matches={recentMatchEntries}
-                showStatsNote={showGameStats && gameFilteredMatches.length > 0}
-                onSelect={(slug) => {
-                  const match = uniqueMatchHistory.find((m) => m.slug === slug);
-                  if (match) setSelectedMatch(match);
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: 'minmax(0, 1fr)',
+                    md: 'minmax(0, 1.4fr) minmax(0, 1fr)',
+                  },
+                  gap: 4,
+                  mt: 6,
+                  alignItems: 'start',
                 }}
-              />
-            </Box>
-          </Box>
+              >
+                <Box component="section" aria-labelledby="profile-rating">
+                  <SectionHead
+                    id="profile-rating"
+                    title={t('playerPage.ratingChart.sectionTitle')}
+                    action={
+                      <Typography
+                        component="span"
+                        sx={{ color: tokens.color.muted, fontSize: textSize.sm }}
+                      >
+                        {t('playerPage.ratingChart.window', { count: RATING_CHART_WINDOW })}
+                      </Typography>
+                    }
+                  />
+                  <Panel sx={{ p: 3 }}>
+                    <RatingChart history={ratingChartHistory} limit={RATING_CHART_WINDOW} />
+                  </Panel>
+                </Box>
 
-          {TournamentStatsView && gameTournamentId !== null && hasAnyMatches && (
-            <Box sx={{ mt: 6 }}>
-              <TournamentStatsView tournamentId={gameTournamentId} />
-            </Box>
-          )}
-          </>
+                <Box component="section" aria-labelledby="profile-recent">
+                  <SectionHead
+                    id="profile-recent"
+                    title={t('playerPage.recentMatches.title')}
+                    link={
+                      latestTournamentId
+                        ? {
+                            to: paths.tournamentLeaderboard.replace(
+                              ':id',
+                              String(latestTournamentId)
+                            ),
+                            label: t('playerPage.recentMatches.leaderboard'),
+                            'data-testid': 'profile-tournament-leaderboard',
+                          }
+                        : undefined
+                    }
+                  />
+                  <RecentMatches
+                    matches={recentMatchEntries}
+                    showStatsNote={showGameStats && gameFilteredMatches.length > 0}
+                    onSelect={(slug) => navigate(matchPagePath(slug))}
+                  />
+                </Box>
+              </Box>
+
+              {TournamentStatsView && gameTournamentId !== null && hasAnyMatches && (
+                <Box sx={{ mt: 6 }}>
+                  <TournamentStatsView tournamentId={gameTournamentId} />
+                </Box>
+              )}
+            </>
           )}
 
           {/* Self-service contact details: only on the viewer's own profile, and not
@@ -1267,16 +1290,6 @@ export default function PlayerProfile() {
               <OwnGamesCard />
               <OwnDiscordIdCard steamId={steamId} />
             </Stack>
-          )}
-
-          {selectedMatch && (
-            <PlayerMatchDetailsModal
-              open={!!selectedMatch}
-              matchSlug={selectedMatch.slug}
-              round={selectedMatch.round}
-              matchNumber={selectedMatch.matchNumber}
-              onClose={() => setSelectedMatch(null)}
-            />
           )}
         </Box>
       </Container>

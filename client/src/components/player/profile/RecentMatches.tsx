@@ -43,8 +43,7 @@ export interface RecentMatchesProps {
 /**
  * The profile's match list (the draft's `ul.row-list.panel`): W/L tile,
  * opponent, where it was played and the rating after it, kills/deaths, and
- * the demo when there is one. Assists, headshots and damage are in the match
- * details a click on the row opens.
+ * the demo when there is one. A click on a row opens the match's own page.
  */
 export function RecentMatches({
   matches,
@@ -57,7 +56,11 @@ export function RecentMatches({
   if (matches.length === 0) {
     return (
       <Panel sx={{ px: 3, py: 2 }}>
-        <Typography variant="body2" color="text.secondary" data-testid="profile-recent-matches-empty">
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          data-testid="profile-recent-matches-empty"
+        >
           {t('playerPage.noMatchesYet')}
         </Typography>
       </Panel>
@@ -78,14 +81,19 @@ export function RecentMatches({
               key={match.key}
               columns="2.2rem minmax(0, 1fr) auto auto"
               onClick={openable ? () => onSelect(slug) : undefined}
-              data-testid={openable ? `profile-recent-match-${slug}` : 'profile-recent-match-archived'}
+              data-testid={
+                openable ? `profile-recent-match-${slug}` : 'profile-recent-match-archived'
+              }
               sx={{
                 py: 1.5,
                 fontSize: textSize.sm,
                 cursor: openable ? 'pointer' : 'default',
                 '&:hover': openable ? { bgcolor: 'action.hover' } : undefined,
                 // The panel's rounded corners, for the hover fill.
-                '&:first-of-type': { borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' },
+                '&:first-of-type': {
+                  borderTopLeftRadius: 'inherit',
+                  borderTopRightRadius: 'inherit',
+                },
                 '&:last-of-type': {
                   borderBottomLeftRadius: 'inherit',
                   borderBottomRightRadius: 'inherit',

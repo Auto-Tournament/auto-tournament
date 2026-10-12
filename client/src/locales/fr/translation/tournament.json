@@ -1039,6 +1039,7 @@
     "pickSub": "Pick a sub"
   },
   "bracketCards": {
+    "open": "Open {{a}} vs {{b}}",
     "upper": "Tableau supérieur",
     "lower": "Tableau inférieur",
     "grandFinal": "Grande finale",

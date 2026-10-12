@@ -693,6 +693,7 @@
     }
   },
   "matchPage": {
+    "manage": "Manage",
     "notFound": "This match does not exist.",
     "tbd": "To be decided",
     "winner": "Winner",

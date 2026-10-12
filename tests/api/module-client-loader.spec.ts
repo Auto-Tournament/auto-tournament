@@ -16,10 +16,7 @@ import {
   type LoadableModule,
   type ModuleListEntry,
 } from '../../client/src/module-loader/manifest';
-import {
-  SHARED_SPECIFIERS,
-  SHARED_SUBSETS,
-} from '../../client/src/module-loader/sharedSpecifiers';
+import { SHARED_SPECIFIERS, SHARED_SUBSETS } from '../../client/src/module-loader/sharedSpecifiers';
 import { exportNames, shimSource, type Resolver } from '../../client/vite-plugins/moduleShims';
 import {
   MISSING_MODULE_ID,
@@ -72,7 +69,13 @@ const Component = () => null;
 function moduleDef(overrides: Record<string, unknown> = {}) {
   return {
     id: 'fixture',
-    capabilities: { servers: false, veto: false, liveEvents: false, demos: false, playerStats: false },
+    capabilities: {
+      servers: false,
+      veto: false,
+      liveEvents: false,
+      demos: false,
+      playerStats: false,
+    },
     matchPanels: { reportView: Component },
     tournamentSetupSteps: {},
     resourceDialogs: {},
@@ -138,13 +141,13 @@ function deps(overrides: Partial<LoadDeps> = {}): LoadDeps {
 // ---------------------------------------------------------------------------
 
 test.describe('Client API range', () => {
-  test('the platform publishes 0.2.18, which a module built for ^0.2.0 loads on and one built for ^0.1.0 does not', () => {
+  test('the platform publishes 0.2.19, which a module built for ^0.2.0 loads on and one built for ^0.1.0 does not', () => {
     // 0.2.0 reshaped slots to take ids (item 8b): a break, so the minor moved; 0.2.1 only added SDK exports.
     // 0.2.2 added two optional slots, 0.2.3 to 0.2.5 SDK exports, 0.2.6 one optional slot
     // (`rosterMemberStatus`), 0.2.7 the `ExternalLink` SDK export, 0.2.8 the optional Phosphor nav item
-    // icon and `ICON_SIZE`, 0.2.9 the optional `matchPanels.adminMatchView` slot, 0.2.10 the skin slots, 0.2.11 the profile tab, 0.2.12 the map action, 0.2.13 the tournament tab and results section, 0.2.14 isOwn on the profile view, 0.2.15 reel music on the player, 0.2.16 the crowd track and chapter hover, 0.2.17 the public match view, 0.2.18 the Highlights page tab: patches, which ^0.2.0
+    // icon and `ICON_SIZE`, 0.2.9 the optional `matchPanels.adminMatchView` slot, 0.2.10 the skin slots, 0.2.11 the profile tab, 0.2.12 the map action, 0.2.13 the tournament tab and results section, 0.2.14 isOwn on the profile view, 0.2.15 reel music on the player, 0.2.16 the crowd track and chapter hover, 0.2.17 the public match view, 0.2.18 the Highlights page tab, 0.2.19 links.match: patches, which ^0.2.0
     // still matches.
-    expect(CLIENT_API_VERSION).toBe('0.2.18');
+    expect(CLIENT_API_VERSION).toBe('0.2.19');
     expect(checkClientApi('^0.2.0', CLIENT_API_VERSION)).toBeNull();
     expect(checkClientApi('^0.1.0', CLIENT_API_VERSION)?.code).toBe('outOfRange');
     // Re-exported from the SDK barrel, where a module reads it.
@@ -183,15 +186,60 @@ test.describe('Client API range', () => {
       validRange: (r: string) => string | null;
     };
     const ranges = [
-      '^0.1.0', '^0.1', '^0', '^0.0.3', '^1.2.3', '^1', '^1.x', '~0.1.0', '~0.1', '~1', '~>1.2',
-      '0.1.x', '0.x', '1.2.*', '*', 'x', '', '0.1.0', '=0.1.0', 'v0.1.0', '>=0.1.0', '>0.1.0',
-      '<0.2.0', '<=0.1.0', '>=0.1.0 <0.2.0', '>= 0.1.0 < 0.2.0', '>0.1', '<=0.1', '<0.1',
-      '0.0.1 - 0.2.0', '0.1 - 0.2', '0.1.0 - 1', '^0.2.0 || ^0.1.0', '^2.0.0 || >=0.1.5',
-      '^1.0.0-beta.1', '>=0.1.0-rc.1 <0.1.0',
+      '^0.1.0',
+      '^0.1',
+      '^0',
+      '^0.0.3',
+      '^1.2.3',
+      '^1',
+      '^1.x',
+      '~0.1.0',
+      '~0.1',
+      '~1',
+      '~>1.2',
+      '0.1.x',
+      '0.x',
+      '1.2.*',
+      '*',
+      'x',
+      '',
+      '0.1.0',
+      '=0.1.0',
+      'v0.1.0',
+      '>=0.1.0',
+      '>0.1.0',
+      '<0.2.0',
+      '<=0.1.0',
+      '>=0.1.0 <0.2.0',
+      '>= 0.1.0 < 0.2.0',
+      '>0.1',
+      '<=0.1',
+      '<0.1',
+      '0.0.1 - 0.2.0',
+      '0.1 - 0.2',
+      '0.1.0 - 1',
+      '^0.2.0 || ^0.1.0',
+      '^2.0.0 || >=0.1.5',
+      '^1.0.0-beta.1',
+      '>=0.1.0-rc.1 <0.1.0',
     ];
     const versions = [
-      '0.0.3', '0.0.4', '0.1.0', '0.1.5', '0.2.0', '0.9.9', '1.0.0', '1.2.3', '1.2.4', '1.3.0',
-      '1.9.0', '2.0.0', '0.1.0-rc.1', '0.1.0-rc.2', '1.0.0-beta.2', '1.0.0-alpha',
+      '0.0.3',
+      '0.0.4',
+      '0.1.0',
+      '0.1.5',
+      '0.2.0',
+      '0.9.9',
+      '1.0.0',
+      '1.2.3',
+      '1.2.4',
+      '1.3.0',
+      '1.9.0',
+      '2.0.0',
+      '0.1.0-rc.1',
+      '0.1.0-rc.2',
+      '1.0.0-beta.2',
+      '1.0.0-alpha',
     ];
     for (const range of ranges) {
       expect(isValidRange(range), `valid ${range}`).toBe(semver.validRange(range) !== null);
@@ -239,10 +287,7 @@ test.describe('Module list', () => {
         { nope: true },
       ],
     });
-    expect(modules).toEqual([
-      listed({ id: 'good' }),
-      listed({ id: 'no-range', clientApi: null }),
-    ]);
+    expect(modules).toEqual([listed({ id: 'good' }), listed({ id: 'no-range', clientApi: null })]);
   });
 
   test('a manifest is a claim: the loader still refuses a bad entry or range it lists', async () => {
@@ -254,12 +299,15 @@ test.describe('Module list', () => {
         listed({ id: 'no-range', clientApi: null }),
       ],
     });
-    const results = await loadCodeModules(manifest!, deps({
-      importModule: async (url) => {
-        imported.push(url);
-        return { default: moduleDef() };
-      },
-    }));
+    const results = await loadCodeModules(
+      manifest!,
+      deps({
+        importModule: async (url) => {
+          imported.push(url);
+          return { default: moduleDef() };
+        },
+      })
+    );
     expect(results.map((r) => (r.ok ? 'ok' : r.failure.code))).toEqual([
       'badEntry',
       'outOfRange',
@@ -284,7 +332,9 @@ test.describe('Module list', () => {
   test("code is only loaded from the module's own route under /api/modules", () => {
     expect(entryProblem('fixture', '/api/modules/fixture/client/index.js')).toBeNull();
     expect(entryProblem('fixture', '/api/modules/fixture/1.0.0/client/index.js')).toBeNull();
-    expect(entryProblem('fixture', '/api/modules/fixture/client/index.js?v=1.0.0-beta.1')).toBeNull();
+    expect(
+      entryProblem('fixture', '/api/modules/fixture/client/index.js?v=1.0.0-beta.1')
+    ).toBeNull();
     for (const entry of [
       // The SPA falls back on these with 200 and index.html.
       '/modules/fixture/client/index.js',
@@ -446,15 +496,30 @@ test.describe('Module export validation', () => {
 
   const refusals: Array<[string, unknown, string, string]> = [
     ['no default export', {}, 'badExport', 'default export is not an object'],
-    ['a default that is a function', { default: Component }, 'badExport', 'default export is not an object'],
-    ['no capabilities', { default: moduleDef({ capabilities: undefined }) }, 'badExport', 'capabilities is missing'],
+    [
+      'a default that is a function',
+      { default: Component },
+      'badExport',
+      'default export is not an object',
+    ],
+    [
+      'no capabilities',
+      { default: moduleDef({ capabilities: undefined }) },
+      'badExport',
+      'capabilities is missing',
+    ],
     [
       'a capability that is not a boolean',
       { default: moduleDef({ capabilities: { servers: 'yes' } }) },
       'badExport',
       'capabilities.servers is not a boolean',
     ],
-    ['a missing slot group', { default: moduleDef({ dashboardWidgets: undefined }) }, 'badExport', 'dashboardWidgets is not an object'],
+    [
+      'a missing slot group',
+      { default: moduleDef({ dashboardWidgets: undefined }) },
+      'badExport',
+      'dashboardWidgets is not an object',
+    ],
     [
       'a slot that is not a component',
       { default: moduleDef({ matchPanels: { teamView: 'Connect' } }) },
@@ -483,7 +548,9 @@ test.describe('Module export validation', () => {
       'a route with an unknown scope',
       {
         default: moduleDef({
-          routes: [{ path: 'x', scope: 'public', element: { $$typeof: Symbol.for('react.element') } }],
+          routes: [
+            { path: 'x', scope: 'public', element: { $$typeof: Symbol.for('react.element') } },
+          ],
         }),
       },
       'badExport',
@@ -560,15 +627,18 @@ test.describe('Loading code modules', () => {
   test('a good module loads, after the shared packages are provided once', async () => {
     let shared = 0;
     const imported: string[] = [];
-    const results = await loadCodeModules([listed(), listed({ id: 'second' })], deps({
-      prepareShared: async () => {
-        shared += 1;
-      },
-      importModule: async (url) => {
-        imported.push(url);
-        return { default: moduleDef({ id: url.split('/')[3] }) };
-      },
-    }));
+    const results = await loadCodeModules(
+      [listed(), listed({ id: 'second' })],
+      deps({
+        prepareShared: async () => {
+          shared += 1;
+        },
+        importModule: async (url) => {
+          imported.push(url);
+          return { default: moduleDef({ id: url.split('/')[3] }) };
+        },
+      })
+    );
     expect(results.map((r) => [r.id, r.ok])).toEqual([
       ['fixture', true],
       ['second', true],
@@ -583,15 +653,18 @@ test.describe('Loading code modules', () => {
   test('out of range is refused before any code is fetched, and nothing is shared', async () => {
     let imported = 0;
     let shared = 0;
-    const [result] = await loadCodeModules([listed({ clientApi: '^0.3.0' })], deps({
-      importModule: async () => {
-        imported += 1;
-        return {};
-      },
-      prepareShared: async () => {
-        shared += 1;
-      },
-    }));
+    const [result] = await loadCodeModules(
+      [listed({ clientApi: '^0.3.0' })],
+      deps({
+        importModule: async () => {
+          imported += 1;
+          return {};
+        },
+        prepareShared: async () => {
+          shared += 1;
+        },
+      })
+    );
     expect(imported).toBe(0);
     expect(shared).toBe(0);
     expect(result).toMatchObject({
@@ -599,29 +672,38 @@ test.describe('Loading code modules', () => {
       failure: {
         stage: 'contract',
         code: 'outOfRange',
-        message: 'built for client API ^0.3.0; this platform provides 0.2.18',
+        message: 'built for client API ^0.3.0; this platform provides 0.2.19',
       },
     });
   });
 
   test('a 404 says the code is missing', async () => {
-    const [result] = await loadCodeModules([listed()], deps({
-      importModule: async () => {
-        throw new TypeError('Failed to fetch dynamically imported module');
-      },
-      fetchImpl: async () => new globalThis.Response('{"error":"Not found"}', { status: 404 }),
-    }));
+    const [result] = await loadCodeModules(
+      [listed()],
+      deps({
+        importModule: async () => {
+          throw new TypeError('Failed to fetch dynamically imported module');
+        },
+        fetchImpl: async () => new globalThis.Response('{"error":"Not found"}', { status: 404 }),
+      })
+    );
     expect(result).toMatchObject({ ok: false, failure: { stage: 'import', code: 'notFound' } });
   });
 
   test('HTML served where the code should be says so, not "failed to fetch"', async () => {
-    const [result] = await loadCodeModules([listed()], deps({
-      importModule: async () => {
-        throw new TypeError('Failed to fetch dynamically imported module');
-      },
-      fetchImpl: async () =>
-        new globalThis.Response('<!doctype html>', { status: 200, headers: { 'Content-Type': 'text/html' } }),
-    }));
+    const [result] = await loadCodeModules(
+      [listed()],
+      deps({
+        importModule: async () => {
+          throw new TypeError('Failed to fetch dynamically imported module');
+        },
+        fetchImpl: async () =>
+          new globalThis.Response('<!doctype html>', {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' },
+          }),
+      })
+    );
     expect(result).toMatchObject({
       ok: false,
       failure: { code: 'notJavaScript', params: { contentType: 'text/html' } },
@@ -629,27 +711,42 @@ test.describe('Loading code modules', () => {
   });
 
   test('another HTTP error carries its status', async () => {
-    const [result] = await loadCodeModules([listed()], deps({
-      importModule: async () => {
-        throw new TypeError('Failed to fetch dynamically imported module');
-      },
-      fetchImpl: async () => new globalThis.Response('', { status: 503 }),
-    }));
-    expect(result).toMatchObject({ ok: false, failure: { code: 'httpError', params: { status: 503 } } });
+    const [result] = await loadCodeModules(
+      [listed()],
+      deps({
+        importModule: async () => {
+          throw new TypeError('Failed to fetch dynamically imported module');
+        },
+        fetchImpl: async () => new globalThis.Response('', { status: 503 }),
+      })
+    );
+    expect(result).toMatchObject({
+      ok: false,
+      failure: { code: 'httpError', params: { status: 503 } },
+    });
   });
 
   test("a throw at import time, or a link error, keeps the module's own message", async () => {
-    const [thrown, link] = await loadCodeModules([listed(), listed({ id: 'skew' })], deps({
-      importModule: async (url) => {
-        if (url.includes('/skew/')) {
-          throw new SyntaxError("The requested module 'react' does not provide an export named 'use'");
-        }
-        throw new Error('module exploded');
-      },
-    }));
+    const [thrown, link] = await loadCodeModules(
+      [listed(), listed({ id: 'skew' })],
+      deps({
+        importModule: async (url) => {
+          if (url.includes('/skew/')) {
+            throw new SyntaxError(
+              "The requested module 'react' does not provide an export named 'use'"
+            );
+          }
+          throw new Error('module exploded');
+        },
+      })
+    );
     expect(thrown).toMatchObject({
       ok: false,
-      failure: { stage: 'import', code: 'importFailed', params: { error: 'Error: module exploded' } },
+      failure: {
+        stage: 'import',
+        code: 'importFailed',
+        params: { error: 'Error: module exploded' },
+      },
     });
     expect(link).toMatchObject({ ok: false, failure: { code: 'importFailed' } });
     if (!link.ok) expect(link.failure.message).toContain("does not provide an export named 'use'");
@@ -657,22 +754,30 @@ test.describe('Loading code modules', () => {
 
   test('a module that never answers times out instead of holding the app', async () => {
     const started = Date.now();
-    const [hung, fine] = await loadCodeModules([listed({ id: 'hung' }), listed()], deps({
-      timeoutMs: 100,
-      importModule: (url) =>
-        url.includes('/hung/') ? new Promise(() => undefined) : Promise.resolve({ default: moduleDef() }),
-    }));
+    const [hung, fine] = await loadCodeModules(
+      [listed({ id: 'hung' }), listed()],
+      deps({
+        timeoutMs: 100,
+        importModule: (url) =>
+          url.includes('/hung/')
+            ? new Promise(() => undefined)
+            : Promise.resolve({ default: moduleDef() }),
+      })
+    );
     expect(Date.now() - started).toBeLessThan(2_000);
     expect(hung).toMatchObject({ ok: false, failure: { stage: 'import', code: 'timeout' } });
     expect(fine.ok).toBe(true);
   });
 
   test('a failure to share the packages breaks every module that got that far, and says why', async () => {
-    const results = await loadCodeModules([listed(), listed({ id: 'old', clientApi: '^9.0.0' })], deps({
-      prepareShared: async () => {
-        throw new Error('chunk failed');
-      },
-    }));
+    const results = await loadCodeModules(
+      [listed(), listed({ id: 'old', clientApi: '^9.0.0' })],
+      deps({
+        prepareShared: async () => {
+          throw new Error('chunk failed');
+        },
+      })
+    );
     expect(results[0]).toMatchObject({ ok: false, failure: { code: 'sharedFailed' } });
     // Refused on its range first: that is still the reason it gives.
     expect(results[1]).toMatchObject({ ok: false, failure: { code: 'outOfRange' } });
@@ -689,7 +794,8 @@ test.describe('Loading code modules', () => {
       ],
       deps({
         importModule: async (url) => {
-          if (url.includes('/missing/')) throw new TypeError('Failed to fetch dynamically imported module');
+          if (url.includes('/missing/'))
+            throw new TypeError('Failed to fetch dynamically imported module');
           if (url.includes('/wrong-shape/')) return { default: { id: 'wrong-shape' } };
           return { default: moduleDef() };
         },
@@ -718,7 +824,8 @@ test.describe('Shared-package shims', () => {
       return null;
     }
   };
-  const fromClient = (specifier: string) => createRequire(join(CLIENT, 'index.html')).resolve(specifier);
+  const fromClient = (specifier: string) =>
+    createRequire(join(CLIENT, 'index.html')).resolve(specifier);
 
   test('every shared specifier has a loader in the registry', () => {
     const registry = readFileSync(join(CLIENT, 'src/module-loader/sharedRegistry.ts'), 'utf8');
@@ -748,7 +855,10 @@ test.describe('Shared-package shims', () => {
   });
 
   test('the router is shared as a subset, and the SDK by its source, types left out', async () => {
-    const router = await exportNames(join(CLIENT, SHARED_SUBSETS['react-router-dom']!), nodeResolve);
+    const router = await exportNames(
+      join(CLIENT, SHARED_SUBSETS['react-router-dom']!),
+      nodeResolve
+    );
     expect(router.has('useNavigate')).toBe(true);
     expect(router.has('Link')).toBe(true);
     expect(router.has('createBrowserRouter')).toBe(false);
@@ -756,17 +866,31 @@ test.describe('Shared-package shims', () => {
 
     const sdk = await exportNames(join(CLIENT, 'src/module-sdk/index.ts'), nodeResolve);
     for (const name of [
-      'CLIENT_API_VERSION', 'api', 'useAuth', 'ConfirmDialog', 'tokens',
+      'CLIENT_API_VERSION',
+      'api',
+      'useAuth',
+      'ConfirmDialog',
+      'tokens',
       // 0.1.1
-      'links', 'openMatchDetails', 'useSocket', 'SegmentedControl',
+      'links',
+      'openMatchDetails',
+      'useSocket',
+      'SegmentedControl',
       // 0.2.1
-      'PageHead', 'SectionHead', 'Panel', 'RowList', 'Row', 'FactGrid', 'radii',
+      'PageHead',
+      'SectionHead',
+      'Panel',
+      'RowList',
+      'Row',
+      'FactGrid',
+      'radii',
       // 0.2.3
       'pageTitle',
       // 0.2.4
       'useIsDevelopment',
       // 0.2.5
-      'LiveChip', 'textSize',
+      'LiveChip',
+      'textSize',
     ]) {
       expect(sdk.has(name), name).toBe(true);
     }
@@ -786,7 +910,10 @@ test.describe('Shared-package shims', () => {
         join(dir, 'good.mjs'),
         "import React, { useState } from './react.mjs'; export default { same: React, answer: useState() };"
       );
-      writeFileSync(join(dir, 'skew.mjs'), "import { use } from './react.mjs'; export default use;");
+      writeFileSync(
+        join(dir, 'skew.mjs'),
+        "import { use } from './react.mjs'; export default use;"
+      );
 
       const good = await import(pathToFileURL(join(dir, 'good.mjs')).href);
       expect(good.default.same).toBe(host);

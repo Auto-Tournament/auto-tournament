@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { PageHead, Panel, Row, RowList } from '../components/common/ui';
 import { pageTitle } from '../utils/pageTitle';
 import { api } from '../utils/api';
-import { matchDetailsPath, paths } from '../paths';
+import { matchPagePath, paths } from '../paths';
 import { Link as RouterLink } from 'react-router-dom';
 import { fontMono, radii, textSize, tokens } from '../theme/tokens';
 
@@ -205,7 +205,7 @@ export default function PlayedMatches() {
                   <Box sx={{ minWidth: 0 }}>
                     <Box
                       component={RouterLink}
-                      to={matchDetailsPath(m.slug)}
+                      to={matchPagePath(m.slug)}
                       sx={{
                         fontWeight: 600,
                         color: color.ink,

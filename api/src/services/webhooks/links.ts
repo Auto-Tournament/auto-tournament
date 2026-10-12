@@ -13,7 +13,7 @@ export async function platformOrigin(): Promise<string | null> {
   }
 }
 
-/** A match on the admin pages. */
+/** A match's own page (admins manage it from there too). */
 export function matchPageUrl(origin: string | null, slug: string): string | null {
-  return origin ? `${origin}/manage/matches?match=${encodeURIComponent(slug)}` : null;
+  return origin ? `${origin}/match/${encodeURIComponent(slug)}` : null;
 }
