@@ -25,6 +25,8 @@ type updateJournal struct {
 	Request       updateRequest
 	PreviousImage string
 	Compose       []byte
+	OverrideName  string
+	Override      []byte
 	Phase         string
 	Error         string
 	Deadline      int64
@@ -71,6 +73,49 @@ func pinnedCompose(original []byte, image string) ([]byte, error) {
 }
 func (a *agent) writeCompose(b []byte) error {
 	return writeConfig(filepath.Join(a.root, "compose.yml"), b)
+}
+func (a *agent) captureOverride(j *updateJournal) error {
+	for _, name := range []string{"compose.override.yml", "compose.override.yaml"} {
+		b, err := os.ReadFile(filepath.Join(a.root, name))
+		if os.IsNotExist(err) {
+			continue
+		}
+		if err != nil {
+			return err
+		}
+		if j.OverrideName != "" {
+			return errors.New("multiple Compose override files need manual consolidation")
+		}
+		if regexp.MustCompile(`(?m)^[ \t]+image:`).Match(b) {
+			if _, err := pinnedCompose(b, j.Request.Image); err != nil {
+				return fmt.Errorf("unsupported recorder override: %w", err)
+			}
+		}
+		j.OverrideName, j.Override = name, b
+	}
+	return nil
+}
+func (a *agent) writeRuntimeConfig(j *updateJournal, image string) error {
+	compose, err := pinnedCompose(j.Compose, image)
+	if err != nil {
+		return err
+	}
+	if j.OverrideName != "" {
+		if j.OverrideName != "compose.override.yml" && j.OverrideName != "compose.override.yaml" {
+			return errors.New("invalid persisted override filename")
+		}
+		override := j.Override
+		if regexp.MustCompile(`(?m)^[ \t]+image:`).Match(override) {
+			override, err = pinnedCompose(override, image)
+			if err != nil {
+				return err
+			}
+		}
+		if err = writeConfig(filepath.Join(a.root, j.OverrideName), override); err != nil {
+			return err
+		}
+	}
+	return a.writeCompose(compose)
 }
 func (a *agent) recreate(ctx context.Context) error {
 	_, err := a.run(ctx, "compose", "up", "-d", "--force-recreate", "at-recorder")
@@ -166,8 +211,23 @@ func (a *agent) managedUpdate(ctx context.Context) error {
 			return err
 		}
 		j = updateJournal{Request: req, PreviousImage: previous, Compose: compose, Phase: "draining", Deadline: time.Now().Add(45 * time.Minute).Unix()}
+		if err = a.captureOverride(&j); err != nil {
+			return err
+		}
 		if err = a.saveUpdate(&j); err != nil {
 			return err
+		}
+	}
+	// Older journals did not capture the image pin in legacy overrides. Recover
+	// their current settings before retrying installation or rollback.
+	if j.OverrideName == "" && j.Phase != "complete" && j.Phase != "failed" {
+		if err = a.captureOverride(&j); err != nil {
+			return err
+		}
+		if j.OverrideName != "" {
+			if err = a.saveUpdate(&j); err != nil {
+				return err
+			}
 		}
 	}
 	if _, markerErr := os.Stat(filepath.Join(a.root, ".agent-rollback")); markerErr == nil && j.Request.ID != "" && (j.Phase == "complete" || j.Phase == "applying") {
@@ -275,11 +335,7 @@ func (a *agent) managedUpdate(ctx context.Context) error {
 		}
 	}
 	if j.Phase == "applying" {
-		compose, err := pinnedCompose(j.Compose, j.Request.Image)
-		if err != nil {
-			return err
-		}
-		if err = a.writeCompose(compose); err != nil {
+		if err = a.writeRuntimeConfig(&j, j.Request.Image); err != nil {
 			return err
 		}
 		if j.Request.Image != j.PreviousImage {
@@ -300,7 +356,7 @@ func (a *agent) managedUpdate(ctx context.Context) error {
 		}
 	}
 	if j.Phase == "rollback" {
-		if err = a.writeCompose(j.Compose); err != nil {
+		if err = a.writeRuntimeConfig(&j, j.PreviousImage); err != nil {
 			return err
 		}
 		installed, _, inspectErr := a.installed(ctx)

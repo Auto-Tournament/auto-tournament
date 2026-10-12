@@ -12,11 +12,17 @@ Adopt this binary once to install the recovery launcher. AT enables Update and
 Update all only for hosts reporting managed-update protocol 1. A request stops
 new claims immediately; the agent acknowledges it and waits for the current job
 and the worker’s idle marker. A 45-minute drain deadline preserves active work.
+Legacy installations must configure `AT_RECORDER_IDLE_FILE=/mnt/clips/recorder-idle`
+in the worker environment first. Disable the recorder, let its claim finish,
+and restart only the idle worker service after adding the setting. If the file
+is bind-mounted, preserve its inode when editing; a replaced host file does not
+change an already-mounted container file. The host never bypasses the idle check.
 Unacknowledged requests expire after 15 minutes.
 
 The agent pulls the pinned official image, preserves the mounted Steam, game and
-configuration directories, and verifies NVIDIA, Steam, audio, CS2 and the worker
-service after recreation. Failed startup restores the previous pinned image.
+configuration directories and hardware overrides, and verifies NVIDIA, Steam, audio, CS2 and the worker
+service after recreation. Image pins in the default Compose override are captured and updated too.
+Failed startup restores the previous pinned image in both files.
 If rollback needs manual repair, the host remains gated and reports the error;
 it does not repeatedly restart the container.
 
@@ -84,7 +90,7 @@ cd worker
 go test ./cmd/at-recorder
 go vet ./cmd/at-recorder
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath \
-  -ldflags '-s -w -X main.version=0.1.0-beta.2' -o at-recorder ./cmd/at-recorder
+  -ldflags '-s -w -X main.version=0.1.0-beta.3' -o at-recorder ./cmd/at-recorder
 ```
 
 CI runs Linux tests. The installer synchronization test requires a repository
