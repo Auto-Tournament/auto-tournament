@@ -475,9 +475,7 @@ export class MatchmakingService {
   }
 
   /** Open invites to the player, newest first (the Play page shows them). */
-  private async invitesTo(
-    playerId: string
-  ): Promise<
+  private async invitesTo(playerId: string): Promise<
     Array<{
       partyId: string;
       from: { id: string; name: string; avatarUrl: string | null };
