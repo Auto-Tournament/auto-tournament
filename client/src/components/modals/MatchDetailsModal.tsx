@@ -64,12 +64,10 @@ import { isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import { normalizeConfigPlayers } from '../../utils/playerUtils';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { useTranslation } from 'react-i18next';
-import {
-  deriveCurrentMapScore,
-  deriveSeriesScore,
-} from '../../utils/matchScoreDisplay';
+import { deriveCurrentMapScore, deriveSeriesScore } from '../../utils/matchScoreDisplay';
 import { tokens, withAlpha, radii } from '../../theme/tokens';
 import { useIntegrationFor } from '../../integrations/registry';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -99,6 +97,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
   onDeleted,
 }) => {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
   // A series is a run of maps for a game this instance picks maps for, and a
   // run of games otherwise. The module that owns the match says which, and a
   // match with no maps has no map list to be "to be determined via veto"
@@ -145,7 +144,8 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
   // surface approximate team ELOs for admins to sanity-check balance.
   useEffect(() => {
     if (!match) return;
-    if (!isShuffleMatch(match)) return;
+    // The player list is admin-only: players opening a match never ask for it.
+    if (!isShuffleMatch(match) || !isAuthenticated) return;
     if (playerEloIndex) return;
 
     let cancelled = false;
@@ -174,7 +174,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [match, playerEloIndex]);
+  }, [match, isAuthenticated, playerEloIndex]);
 
   // Calculate derived series wins before early return (React hooks rule).
   // For completed matches, use the persisted series score. While a series is
@@ -293,8 +293,8 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
     configMaps.length > 0
       ? configMaps
       : Array.isArray(match.maps) && match.maps.length > 0
-      ? match.maps
-      : mapResultsFallback;
+        ? match.maps
+        : mapResultsFallback;
   const currentMapScore = deriveCurrentMapScore(match, liveStats ?? null, {
     mapNumber: activeMapNumber,
   });
@@ -338,7 +338,8 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
 
   const seriesWinsTeam1 = derivedSeriesWins.team1;
   const seriesWinsTeam2 = derivedSeriesWins.team2;
-  const showSeriesScoreRow = match.status === 'completed' || (!isManualMatch && match.status !== 'completed');
+  const showSeriesScoreRow =
+    match.status === 'completed' || (!isManualMatch && match.status !== 'completed');
   const showMapRoundsRow = match.status !== 'completed';
 
   // Approximate average ELO per team (shuffle matches only), using current
@@ -460,8 +461,8 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
     team1TotalDamage > team2TotalDamage
       ? 'team1'
       : team2TotalDamage > team1TotalDamage
-      ? 'team2'
-      : null;
+        ? 'team2'
+        : null;
 
   const usesDamageTiebreak =
     match.status === 'completed' &&
@@ -488,24 +489,24 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
   let tiebreakReason: string | null = null;
   if (usesDamageTiebreak) {
     if (overtimeMode === 'disabled' && overtimeSegments === 0) {
-      tiebreakReason =
-        t('matchDetailsModal.tiebreak.regulationOnly');
+      tiebreakReason = t('matchDetailsModal.tiebreak.regulationOnly');
     } else if (overtimeMode && typeof overtimeSegments === 'number' && overtimeSegments > 0) {
-      tiebreakReason =
-        t('matchDetailsModal.tiebreak.segmentsExhausted');
+      tiebreakReason = t('matchDetailsModal.tiebreak.segmentsExhausted');
     } else if (cvarOvertimeEnabled === false) {
-      tiebreakReason =
-        t('matchDetailsModal.tiebreak.overtimeDisabled');
+      tiebreakReason = t('matchDetailsModal.tiebreak.overtimeDisabled');
     } else {
-      tiebreakReason =
-        t('matchDetailsModal.tiebreak.tiedByDamage');
+      tiebreakReason = t('matchDetailsModal.tiebreak.tiedByDamage');
     }
   }
 
   const team1Name =
-    match.team1?.name || (match.config?.team1 as { name?: string } | undefined)?.name || t('matchDetailsModal.team1');
+    match.team1?.name ||
+    (match.config?.team1 as { name?: string } | undefined)?.name ||
+    t('matchDetailsModal.team1');
   const team2Name =
-    match.team2?.name || (match.config?.team2 as { name?: string } | undefined)?.name || t('matchDetailsModal.team2');
+    match.team2?.name ||
+    (match.config?.team2 as { name?: string } | undefined)?.name ||
+    t('matchDetailsModal.team2');
 
   return (
     <>
@@ -612,10 +613,10 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   match.status === 'completed'
                     ? 'success'
                     : match.status === 'live'
-                    ? 'error'
-                    : match.status === 'loaded'
-                    ? 'info'
-                    : 'warning'
+                      ? 'error'
+                      : match.status === 'loaded'
+                        ? 'info'
+                        : 'warning'
                 }
                 icon={false}
               >
@@ -664,12 +665,20 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                 </Typography>
                 <Box display="flex" gap={1} flexWrap="wrap" mt={1}>
                   {match.team1 && (
-                    <Button variant="contained" size="small" onClick={() => setWinnerToSet('team1')}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => setWinnerToSet('team1')}
+                    >
                       {t('matchDetailsModal.decision.setWinner', { team: team1Name })}
                     </Button>
                   )}
                   {match.team2 && (
-                    <Button variant="contained" size="small" onClick={() => setWinnerToSet('team2')}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => setWinnerToSet('team2')}
+                    >
                       {t('matchDetailsModal.decision.setWinner', { team: team2Name })}
                     </Button>
                   )}
@@ -769,7 +778,13 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   )}
                   {showMapRoundsRow && (
                     <>
-                      <Box display="flex" alignItems="center" justifyContent="center" gap={2} mt={1}>
+                      <Box
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        gap={2}
+                        mt={1}
+                      >
                         <Typography
                           variant="h4"
                           fontWeight={700}
@@ -799,10 +814,13 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   )}
                   {measuresPlayers &&
                     (normalizedTeam1Players.length > 0 || normalizedTeam2Players.length > 0) && (
-                    <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-                      {t('matchDetailsModal.totalDamage', { team1: team1TotalDamage, team2: team2TotalDamage })}
-                    </Typography>
-                  )}
+                      <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+                        {t('matchDetailsModal.totalDamage', {
+                          team1: team1TotalDamage,
+                          team2: team2TotalDamage,
+                        })}
+                      </Typography>
+                    )}
                   {showMapRoundsRow && currentMapLabel && (
                     <Typography variant="caption" color="text.secondary" display="block">
                       {totalMapCount
@@ -932,189 +950,189 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
             {/* Player Leaderboards */}
             {measuresPlayers &&
               (normalizedTeam1Players.length > 0 || normalizedTeam2Players.length > 0) && (
-              <>
-                <Divider />
-                <Box>
-                  <Box display="flex" alignItems="center" gap={1} mb={2}>
-                    <Box component={UsersThreeIcon} sx={{ color: 'primary.main' }} />
-                    <Typography variant="subtitle1" fontWeight={600}>
-                      {t('matchDetailsModal.playerLeaderboards')}
-                    </Typography>
-                  </Box>
-                  <Grid container spacing={2}>
-                    {/* Team 1 Players */}
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Card variant="outlined">
-                        <CardContent>
-                          <Typography variant="subtitle2" fontWeight={600} mb={2} color="primary">
-                            {match.team1?.name ||
-                              (match.config?.team1 as { name?: string } | undefined)?.name ||
-                              t('matchDetailsModal.team1')}
-                          </Typography>
-                          {normalizedTeam1Players.length > 0 ? (
-                            <Stack spacing={1}>
-                              {normalizedTeam1Players
-                                .sort((a, b) => b.kills - a.kills)
-                                .map((player, idx) => (
-                                  <Box
-                                    key={player.steamId}
-                                    sx={{
-                                      p: 1.5,
-                                      bgcolor: idx === 0 ? 'action.selected' : 'action.hover',
-                                      borderRadius: radii.sm,
-                                    }}
-                                  >
-                                    <Box
-                                      display="flex"
-                                      justifyContent="space-between"
-                                      alignItems="center"
-                                    >
-                                      <Box display="flex" alignItems="center" gap={1.25}>
-                                        <PlayerAvatar
-                                          id={player.steamId}
-                                          name={player.name}
-                                          avatarUrl={player.avatar}
-                                          size={28}
-                                        />
-                                        <Typography
-                                          variant="body2"
-                                          fontWeight={600}
-                                          component="a"
-                                          href={getPlayerPageUrl(player.steamId)}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          sx={{
-                                            color: 'primary.main',
-                                            textDecoration: 'none',
-                                            cursor: 'pointer',
-                                            '&:hover': {
-                                              textDecoration: 'underline',
-                                            },
-                                          }}
-                                        >
-                                          {player.name}
-                                        </Typography>
-                                      </Box>
-                                      <Typography
-                                        variant="body2"
-                                        fontWeight={600}
-                                        color={idx === 0 ? 'primary' : 'text.primary'}
-                                      >
-                                        {player.kills}/{player.deaths}/{player.assists}
-                                      </Typography>
-                                    </Box>
-                                    <Box display="flex" justifyContent="space-between" mt={0.5}>
-                                      <Typography variant="caption" color="text.secondary">
-                                        KDA:{' '}
-                                        {(
-                                          (player.kills + player.assists) /
-                                          Math.max(1, player.deaths)
-                                        ).toFixed(2)}
-                                      </Typography>
-                                      <Typography variant="caption" color="text.secondary">
-                                        HS: {player.headshots} | DMG: {player.damage}
-                                      </Typography>
-                                    </Box>
-                                  </Box>
-                                ))}
-                            </Stack>
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">
-                              {t('matchDetailsModal.noPlayerData')}
+                <>
+                  <Divider />
+                  <Box>
+                    <Box display="flex" alignItems="center" gap={1} mb={2}>
+                      <Box component={UsersThreeIcon} sx={{ color: 'primary.main' }} />
+                      <Typography variant="subtitle1" fontWeight={600}>
+                        {t('matchDetailsModal.playerLeaderboards')}
+                      </Typography>
+                    </Box>
+                    <Grid container spacing={2}>
+                      {/* Team 1 Players */}
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Card variant="outlined">
+                          <CardContent>
+                            <Typography variant="subtitle2" fontWeight={600} mb={2} color="primary">
+                              {match.team1?.name ||
+                                (match.config?.team1 as { name?: string } | undefined)?.name ||
+                                t('matchDetailsModal.team1')}
                             </Typography>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </Grid>
-
-                    {/* Team 2 Players */}
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Card variant="outlined">
-                        <CardContent>
-                          <Typography variant="subtitle2" fontWeight={600} mb={2} color="primary">
-                            {match.team2?.name ||
-                              (match.config?.team2 as { name?: string } | undefined)?.name ||
-                              t('matchDetailsModal.team2')}
-                          </Typography>
-                          {normalizedTeam2Players.length > 0 ? (
-                            <Stack spacing={1}>
-                              {normalizedTeam2Players
-                                .sort((a, b) => b.kills - a.kills)
-                                .map((player, idx) => (
-                                  <Box
-                                    key={player.steamId}
-                                    sx={{
-                                      p: 1.5,
-                                      bgcolor: idx === 0 ? 'action.selected' : 'action.hover',
-                                      borderRadius: radii.sm,
-                                    }}
-                                  >
+                            {normalizedTeam1Players.length > 0 ? (
+                              <Stack spacing={1}>
+                                {normalizedTeam1Players
+                                  .sort((a, b) => b.kills - a.kills)
+                                  .map((player, idx) => (
                                     <Box
-                                      display="flex"
-                                      justifyContent="space-between"
-                                      alignItems="center"
+                                      key={player.steamId}
+                                      sx={{
+                                        p: 1.5,
+                                        bgcolor: idx === 0 ? 'action.selected' : 'action.hover',
+                                        borderRadius: radii.sm,
+                                      }}
                                     >
-                                      <Box display="flex" alignItems="center" gap={1.25}>
+                                      <Box
+                                        display="flex"
+                                        justifyContent="space-between"
+                                        alignItems="center"
+                                      >
+                                        <Box display="flex" alignItems="center" gap={1.25}>
                                           <PlayerAvatar
                                             id={player.steamId}
                                             name={player.name}
                                             avatarUrl={player.avatar}
                                             size={28}
                                           />
+                                          <Typography
+                                            variant="body2"
+                                            fontWeight={600}
+                                            component="a"
+                                            href={getPlayerPageUrl(player.steamId)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            sx={{
+                                              color: 'primary.main',
+                                              textDecoration: 'none',
+                                              cursor: 'pointer',
+                                              '&:hover': {
+                                                textDecoration: 'underline',
+                                              },
+                                            }}
+                                          >
+                                            {player.name}
+                                          </Typography>
+                                        </Box>
                                         <Typography
                                           variant="body2"
                                           fontWeight={600}
-                                          component="a"
-                                          href={getPlayerPageUrl(player.steamId)}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          sx={{
-                                            color: 'primary.main',
-                                            textDecoration: 'none',
-                                            cursor: 'pointer',
-                                            '&:hover': {
-                                              textDecoration: 'underline',
-                                            },
-                                          }}
+                                          color={idx === 0 ? 'primary' : 'text.primary'}
                                         >
-                                          {player.name}
+                                          {player.kills}/{player.deaths}/{player.assists}
                                         </Typography>
                                       </Box>
-                                      <Typography
-                                        variant="body2"
-                                        fontWeight={600}
-                                        color={idx === 0 ? 'primary' : 'text.primary'}
-                                      >
-                                        {player.kills}/{player.deaths}/{player.assists}
-                                      </Typography>
+                                      <Box display="flex" justifyContent="space-between" mt={0.5}>
+                                        <Typography variant="caption" color="text.secondary">
+                                          KDA:{' '}
+                                          {(
+                                            (player.kills + player.assists) /
+                                            Math.max(1, player.deaths)
+                                          ).toFixed(2)}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                          HS: {player.headshots} | DMG: {player.damage}
+                                        </Typography>
+                                      </Box>
                                     </Box>
-                                    <Box display="flex" justifyContent="space-between" mt={0.5}>
-                                      <Typography variant="caption" color="text.secondary">
-                                        KDA:{' '}
-                                        {(
-                                          (player.kills + player.assists) /
-                                          Math.max(1, player.deaths)
-                                        ).toFixed(2)}
-                                      </Typography>
-                                      <Typography variant="caption" color="text.secondary">
-                                        HS: {player.headshots} | DMG: {player.damage}
-                                      </Typography>
-                                    </Box>
-                                  </Box>
-                                ))}
-                            </Stack>
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">
-                              {t('matchDetailsModal.noPlayerData')}
+                                  ))}
+                              </Stack>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                {t('matchDetailsModal.noPlayerData')}
+                              </Typography>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </Grid>
+
+                      {/* Team 2 Players */}
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Card variant="outlined">
+                          <CardContent>
+                            <Typography variant="subtitle2" fontWeight={600} mb={2} color="primary">
+                              {match.team2?.name ||
+                                (match.config?.team2 as { name?: string } | undefined)?.name ||
+                                t('matchDetailsModal.team2')}
                             </Typography>
-                          )}
-                        </CardContent>
-                      </Card>
+                            {normalizedTeam2Players.length > 0 ? (
+                              <Stack spacing={1}>
+                                {normalizedTeam2Players
+                                  .sort((a, b) => b.kills - a.kills)
+                                  .map((player, idx) => (
+                                    <Box
+                                      key={player.steamId}
+                                      sx={{
+                                        p: 1.5,
+                                        bgcolor: idx === 0 ? 'action.selected' : 'action.hover',
+                                        borderRadius: radii.sm,
+                                      }}
+                                    >
+                                      <Box
+                                        display="flex"
+                                        justifyContent="space-between"
+                                        alignItems="center"
+                                      >
+                                        <Box display="flex" alignItems="center" gap={1.25}>
+                                          <PlayerAvatar
+                                            id={player.steamId}
+                                            name={player.name}
+                                            avatarUrl={player.avatar}
+                                            size={28}
+                                          />
+                                          <Typography
+                                            variant="body2"
+                                            fontWeight={600}
+                                            component="a"
+                                            href={getPlayerPageUrl(player.steamId)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            sx={{
+                                              color: 'primary.main',
+                                              textDecoration: 'none',
+                                              cursor: 'pointer',
+                                              '&:hover': {
+                                                textDecoration: 'underline',
+                                              },
+                                            }}
+                                          >
+                                            {player.name}
+                                          </Typography>
+                                        </Box>
+                                        <Typography
+                                          variant="body2"
+                                          fontWeight={600}
+                                          color={idx === 0 ? 'primary' : 'text.primary'}
+                                        >
+                                          {player.kills}/{player.deaths}/{player.assists}
+                                        </Typography>
+                                      </Box>
+                                      <Box display="flex" justifyContent="space-between" mt={0.5}>
+                                        <Typography variant="caption" color="text.secondary">
+                                          KDA:{' '}
+                                          {(
+                                            (player.kills + player.assists) /
+                                            Math.max(1, player.deaths)
+                                          ).toFixed(2)}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                          HS: {player.headshots} | DMG: {player.damage}
+                                        </Typography>
+                                      </Box>
+                                    </Box>
+                                  ))}
+                              </Stack>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                {t('matchDetailsModal.noPlayerData')}
+                              </Typography>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </Grid>
                     </Grid>
-                  </Grid>
-                </Box>
-              </>
-            )}
+                  </Box>
+                </>
+              )}
 
             {/* Current Map Display */}
             {match.currentMap && (match.status === 'live' || match.status === 'loaded') && (
@@ -1152,8 +1170,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                           sx={{
                             position: 'absolute',
                             inset: 0,
-                            background:
-                              `linear-gradient(to top, ${withAlpha(tokens.color.paper, 0.85)} 0%, transparent 100%)`,
+                            background: `linear-gradient(to top, ${withAlpha(tokens.color.paper, 0.85)} 0%, transparent 100%)`,
                           }}
                         />
                       </FadeInImage>
@@ -1174,48 +1191,48 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
             )}
 
             {playsOnMaps && (
-            <Accordion defaultExpanded>
-              <AccordionSummary expandIcon={<CaretDownIcon />}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <Box component={MapTrifoldIcon} sx={{ color: 'primary.main' }} />
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    {t('matchDetailsModal.maps')}
-                  </Typography>
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails>
-                {mapsToShow.length > 0 ? (
-                  <Box>
-                    <MapChipList
-                      maps={mapsToShow}
-                      activeMapIndex={activeMapNumber}
-                      activeMapLabel={currentMapLabel}
-                      mapResults={match.mapResults || []}
-                      team1Name={team1Name}
-                      team2Name={team2Name}
-                    />
-                    {recordsDemos &&
-                      match.mapResults &&
-                      match.mapResults.some((mr) => mr.demoFilePath) && (
-                      <Box mt={3}>
-                        <MapDemoDownloads
-                          maps={mapsToShow}
-                          mapResults={match.mapResults}
-                          matchSlug={match.slug}
-                          onNavigate={onClose}
-                        />
-                      </Box>
-                    )}
+              <Accordion defaultExpanded>
+                <AccordionSummary expandIcon={<CaretDownIcon />}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Box component={MapTrifoldIcon} sx={{ color: 'primary.main' }} />
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      {t('matchDetailsModal.maps')}
+                    </Typography>
                   </Box>
-                ) : (
-                  <Typography variant="body2" color="text.secondary" fontStyle="italic">
-                    {gameCapabilities.veto
-                      ? t('matchDetailsModal.mapsViaVeto')
-                      : t('matchDetailsModal.mapsNotPicked')}
-                  </Typography>
-                )}
-              </AccordionDetails>
-            </Accordion>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {mapsToShow.length > 0 ? (
+                    <Box>
+                      <MapChipList
+                        maps={mapsToShow}
+                        activeMapIndex={activeMapNumber}
+                        activeMapLabel={currentMapLabel}
+                        mapResults={match.mapResults || []}
+                        team1Name={team1Name}
+                        team2Name={team2Name}
+                      />
+                      {recordsDemos &&
+                        match.mapResults &&
+                        match.mapResults.some((mr) => mr.demoFilePath) && (
+                          <Box mt={3}>
+                            <MapDemoDownloads
+                              maps={mapsToShow}
+                              mapResults={match.mapResults}
+                              matchSlug={match.slug}
+                              onNavigate={onClose}
+                            />
+                          </Box>
+                        )}
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary" fontStyle="italic">
+                      {gameCapabilities.veto
+                        ? t('matchDetailsModal.mapsViaVeto')
+                        : t('matchDetailsModal.mapsNotPicked')}
+                    </Typography>
+                  )}
+                </AccordionDetails>
+              </Accordion>
             )}
 
             <Accordion defaultExpanded sx={{ mt: 2 }}>
@@ -1231,7 +1248,8 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                 <Stack spacing={1}>
                   {match.createdAt && (
                     <Typography variant="body2" color="text.secondary">
-                      <strong>{t('matchDetailsModal.created')}</strong> {formatDate(match.createdAt)}
+                      <strong>{t('matchDetailsModal.created')}</strong>{' '}
+                      {formatDate(match.createdAt)}
                     </Typography>
                   )}
                   {match.loadedAt && (
@@ -1241,7 +1259,8 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   )}
                   {match.completedAt && (
                     <Typography variant="body2" color="text.secondary">
-                      <strong>{t('matchDetailsModal.completed')}</strong> {formatDate(match.completedAt)}
+                      <strong>{t('matchDetailsModal.completed')}</strong>{' '}
+                      {formatDate(match.completedAt)}
                     </Typography>
                   )}
                 </Stack>
@@ -1249,7 +1268,9 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
             </Accordion>
 
             {/* Hold it instead of a walkover (the API's services/matchHolds.ts). */}
-            {(match.status === 'pending' || match.status === 'ready' || match.status === 'loaded') && (
+            {(match.status === 'pending' ||
+              match.status === 'ready' ||
+              match.status === 'loaded') && (
               <Box sx={{ mt: 2 }}>
                 <MatchHoldPanel
                   matchSlug={match.slug}

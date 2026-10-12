@@ -82,31 +82,24 @@ export function MatchInfoCard({
   // map goes live, which made the next map's warmup show the previous map's
   // score. The current map has no score until it starts.
   const inMapWarmup = liveStats?.status === 'warmup';
-  const mapRoundsTeam1 = inMapWarmup ? 0 : liveStats?.team1Score ?? 0;
-  const mapRoundsTeam2 = inMapWarmup ? 0 : liveStats?.team2Score ?? 0;
+  const mapRoundsTeam1 = inMapWarmup ? 0 : (liveStats?.team1Score ?? 0);
+  const mapRoundsTeam2 = inMapWarmup ? 0 : (liveStats?.team2Score ?? 0);
   const mapNumber = liveStats?.mapNumber ?? match.mapNumber ?? null;
 
   // Calculate overtime if match is live and in overtime
   const maxRounds = match.config?.maxRounds;
   const cvars = (match.config?.cvars || {}) as Record<string, string | number>;
   const overtimeRoundsPerSegment =
-    typeof cvars['mp_overtime_maxrounds'] === 'number'
-      ? Number(cvars['mp_overtime_maxrounds'])
-      : 6; // Default MR3 = 6 rounds per OT segment
-  
+    typeof cvars['mp_overtime_maxrounds'] === 'number' ? Number(cvars['mp_overtime_maxrounds']) : 6; // Default MR3 = 6 rounds per OT segment
+
   const overtimeNumber =
     liveStats?.status === 'live' &&
     typeof mapRoundsTeam1 === 'number' &&
     typeof mapRoundsTeam2 === 'number' &&
     maxRounds
-      ? calculateOvertimeNumber(
-          mapRoundsTeam1,
-          mapRoundsTeam2,
-          maxRounds,
-          overtimeRoundsPerSegment
-        )
+      ? calculateOvertimeNumber(mapRoundsTeam1, mapRoundsTeam2, maxRounds, overtimeRoundsPerSegment)
       : null;
-  
+
   const liveStatusDisplay = liveStats
     ? {
         ...LIVE_STATUS_DISPLAY[liveStats.status],
@@ -116,7 +109,7 @@ export function MatchInfoCard({
             : t(`matchInfo.liveStatus.${liveStats.status}`, { defaultValue: liveStats.status }),
       }
     : null;
-  
+
   const totalConnected = connectionStatus?.totalConnected ?? 0;
   const expectedPlayersTotal =
     match.config?.expected_players_total ||
@@ -160,7 +153,8 @@ export function MatchInfoCard({
   // For shuffle matches, lazily load player ratings so we can surface
   // approximate team ELOs in the match info card for admins.
   useEffect(() => {
-    if (!isShuffleMatch) return;
+    // The player list is admin-only: a player's own pages never ask for it.
+    if (!isShuffleMatch || !isAuthenticated) return;
     if (playerEloIndex) return;
 
     let cancelled = false;
@@ -189,7 +183,7 @@ export function MatchInfoCard({
     return () => {
       cancelled = true;
     };
-  }, [isShuffleMatch, playerEloIndex]);
+  }, [isShuffleMatch, isAuthenticated, playerEloIndex]);
 
   const deriveSeriesWins = useMemo(() => {
     if (match.mapResults && match.mapResults.length > 0) {
@@ -307,7 +301,8 @@ export function MatchInfoCard({
     !vetoFlowDisabled && !vetoCompleted && match.veto?.status !== 'completed';
   // For manual matches with veto enabled, also allow status 'ready' (they may start as ready
   // if created before the fix, or if status hasn't updated yet)
-  const isVetoEligibleStatus = match.status === 'pending' || (isManualMatch && match.status === 'ready');
+  const isVetoEligibleStatus =
+    match.status === 'pending' || (isManualMatch && match.status === 'ready');
   if (
     viewerIsTeamMember &&
     (isManualMatch || tournamentStatus === 'in_progress') &&
@@ -333,9 +328,7 @@ export function MatchInfoCard({
               matchSlug={match.slug}
               team1Name={match.team1?.name ?? match.config?.team1?.name}
               team2Name={match.team2?.name ?? match.config?.team2?.name}
-              currentTeamSlug={
-                team?.id ?? (match.isTeam1 ? 'team1' : 'team2')
-              }
+              currentTeamSlug={team?.id ?? (match.isTeam1 ? 'team1' : 'team2')}
               onComplete={onVetoComplete}
             />
           )}
@@ -379,8 +372,16 @@ export function MatchInfoCard({
             {!viewerIsTeamMember ? (
               // Someone outside the match (design draft "Match C"): the score first, no join controls.
               <SpectatorScoreboard
-                team1Name={match.team1?.name ?? match.config?.team1?.name ?? t('matchInfo.team1', { defaultValue: 'Team 1' })}
-                team2Name={match.team2?.name ?? match.config?.team2?.name ?? t('matchInfo.team2', { defaultValue: 'Team 2' })}
+                team1Name={
+                  match.team1?.name ??
+                  match.config?.team1?.name ??
+                  t('matchInfo.team1', { defaultValue: 'Team 1' })
+                }
+                team2Name={
+                  match.team2?.name ??
+                  match.config?.team2?.name ??
+                  t('matchInfo.team2', { defaultValue: 'Team 2' })
+                }
                 team1Rounds={mapRoundsTeam1}
                 team2Rounds={mapRoundsTeam2}
                 team1Maps={liveStats?.team1SeriesScore ?? deriveSeriesWins.team1}
@@ -392,28 +393,34 @@ export function MatchInfoCard({
                 liveStatus={liveStatusDisplay}
               />
             ) : (
-            <MatchScoreboard
-              leftName={team?.name}
-              rightName={match.opponent?.name}
-              leftMapRounds={mapRoundsTeam1}
-              rightMapRounds={mapRoundsTeam2}
-              leftSeriesWins={deriveSeriesWins.team1}
-              rightSeriesWins={deriveSeriesWins.team2}
-              leftTeamElo={
-                isShuffleMatch && team1AverageElo !== null ? Math.round(team1AverageElo) : undefined
-              }
-              rightTeamElo={
-                isShuffleMatch && team2AverageElo !== null ? Math.round(team2AverageElo) : undefined
-              }
-              liveStatusDisplay={liveStatusDisplay}
-              // For BO1, completed, shuffle, or manual matches, showing both "Series score (Maps won)"
-              // and "Current map score (Rounds)" can look duplicated or misleading. Hide the series row
-              // and keep the per-map rounds instead.
-              hideSeriesWins={
-                hideMapRounds ? false : isShuffleMatch || isCompletedMatch || matchFormat === 'bo1' || isManualMatch
-              }
-              hideMapRounds={hideMapRounds}
-            />
+              <MatchScoreboard
+                leftName={team?.name}
+                rightName={match.opponent?.name}
+                leftMapRounds={mapRoundsTeam1}
+                rightMapRounds={mapRoundsTeam2}
+                leftSeriesWins={deriveSeriesWins.team1}
+                rightSeriesWins={deriveSeriesWins.team2}
+                leftTeamElo={
+                  isShuffleMatch && team1AverageElo !== null
+                    ? Math.round(team1AverageElo)
+                    : undefined
+                }
+                rightTeamElo={
+                  isShuffleMatch && team2AverageElo !== null
+                    ? Math.round(team2AverageElo)
+                    : undefined
+                }
+                liveStatusDisplay={liveStatusDisplay}
+                // For BO1, completed, shuffle, or manual matches, showing both "Series score (Maps won)"
+                // and "Current map score (Rounds)" can look duplicated or misleading. Hide the series row
+                // and keep the per-map rounds instead.
+                hideSeriesWins={
+                  hideMapRounds
+                    ? false
+                    : isShuffleMatch || isCompletedMatch || matchFormat === 'bo1' || isManualMatch
+                }
+                hideMapRounds={hideMapRounds}
+              />
             )}
 
             {liveStats?.status === 'postgame' && match.status !== 'completed' && (
@@ -433,10 +440,7 @@ export function MatchInfoCard({
             )}
 
             {match.status !== 'live' && viewerIsTeamMember && (
-              <Alert
-                severity={playersReady ? 'success' : 'info'}
-                icon={<UsersIcon size={20} />}
-              >
+              <Alert severity={playersReady ? 'success' : 'info'} icon={<UsersIcon size={20} />}>
                 {playersReady
                   ? t('matchInfo.allPlayersConnected')
                   : t('matchInfo.waitingForPlayers', {
