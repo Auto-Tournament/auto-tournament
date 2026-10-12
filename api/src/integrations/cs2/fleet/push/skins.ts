@@ -161,8 +161,12 @@ export async function skinsTurnedOff(fleetServerId: string): Promise<void> {
  * unequip mid-round costs the server one message per player per round.
  */
 const pendingByServer = new Map<string, Map<string, string>>();
-/** Outside a live map (warmup, between maps) the change goes after this. */
-const OUTSIDE_LIVE_DELAY_MS = 3_000;
+/**
+ * Outside a live map (warmup, between maps) the change goes after this:
+ * long enough to fold a burst of clicks into one message, short enough that
+ * trying skins on in warmup feels live.
+ */
+const OUTSIDE_LIVE_DELAY_MS = 500;
 const outsideLiveTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 /** The round ended on a fleet server: its waiting loadout changes go out. */

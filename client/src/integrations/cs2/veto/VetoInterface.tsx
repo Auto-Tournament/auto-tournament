@@ -134,7 +134,21 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
   useEffect(() => {
     const onVetoUpdate = (updatedVeto: VetoState) => {
-      setVetoState(updatedVeto);
+      // The pushed state has no turn clock (and is not redacted for this
+      // viewer): show it at once, keeping the clock, then read the full state
+      // so the new turn's deadline appears (the countdown vanished after the
+      // first step, 2026-10-12).
+      setVetoState((prev) =>
+        prev?.turnDeadline && !updatedVeto.turnDeadline
+          ? { ...updatedVeto, turnDeadline: undefined, turnSeconds: prev.turnSeconds }
+          : updatedVeto
+      );
+      void fetch(`/api/veto/${matchSlug}`)
+        .then((response) => response.json())
+        .then((data: { success?: boolean; veto?: VetoState }) => {
+          if (data.success && data.veto) setVetoState(data.veto);
+        })
+        .catch(() => undefined);
       // The board moved on, so a refused action from before is no longer news.
       setActionError('');
       if (updatedVeto.status === 'completed') {
