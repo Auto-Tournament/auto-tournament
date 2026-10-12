@@ -252,7 +252,13 @@ export async function redo(req: RedoRequest): Promise<{ clips: number; reels: nu
   return { clips, reels: reelCount };
 }
 
-export type ReviewVerdict = 'approved' | 'redo' | 'drop';
+/**
+ * approved; redo (stutters or looks broken: recorded again, elsewhere);
+ * weapon (the weapon and hands are missing for a stretch: CS2's TrueView
+ * rebuild dropped them, the same on every machine, so it is recorded again
+ * without TrueView); drop (left out, not recorded again).
+ */
+export type ReviewVerdict = 'approved' | 'redo' | 'weapon' | 'drop';
 
 /**
  * An admin's verdict on a recorded clip, from the review on the Clips tab:
@@ -286,6 +292,14 @@ export async function reviewClip(
       [text, actor, now, id]
     );
     return { clips: 0, reels: 0 };
+  }
+  if (verdict === 'weapon') {
+    await db.runAsync(
+      `UPDATE cs2_highlights SET review = 'redo', review_note = ?, reviewed_by = ?, reviewed_at = ?,
+              true_view = 0 WHERE id = ?`,
+      [text ?? 'Weapon missing: recorded again without TrueView', actor, now, id]
+    );
+    return redo({ clipIds: [id] });
   }
   if (verdict === 'redo') {
     await db.runAsync(

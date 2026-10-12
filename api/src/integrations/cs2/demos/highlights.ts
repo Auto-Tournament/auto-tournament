@@ -296,6 +296,8 @@ export interface RecordMoment {
   endTick: number;
   slowmoTick: number;
   killTicks: number[];
+  /** false: record without TrueView (the review's "weapon missing" redo). */
+  trueView?: boolean;
 }
 
 /** One player's moments on one map: the recorder plays the demo once for them. */
@@ -338,6 +340,8 @@ export interface MomentRow {
   end_tick: number;
   slowmo_tick: number;
   kill_ticks: string;
+  /** 0: record without TrueView (an admin's "weapon missing"); 1 or absent: with. */
+  true_view?: number;
 }
 
 /**
@@ -417,7 +421,7 @@ export async function claimRecordJob(recorder: string): Promise<RecordJob | null
       WHERE id IN (SELECT id FROM cs2_highlights
                     WHERE match_slug = ? AND map_number = ? AND player_id = ? AND ${waiting}
                     FOR UPDATE SKIP LOCKED)
-      RETURNING id, match_slug, map_number, player_id, kind, title, round, score, start_tick, end_tick, slowmo_tick, kill_ticks`,
+      RETURNING id, match_slug, map_number, player_id, kind, title, round, score, start_tick, end_tick, slowmo_tick, kill_ticks, true_view`,
     [
       recorder.slice(0, 120),
       qualityLabel(await readHighlightQuality()),
@@ -537,7 +541,7 @@ export async function claimMapJob(
       WHERE id IN (SELECT id FROM cs2_highlights h
                     WHERE id IN (${ids.map(() => '?').join(', ')}) AND ${waiting}
                     FOR UPDATE SKIP LOCKED)
-      RETURNING id, match_slug, map_number, player_id, kind, title, round, score, start_tick, end_tick, slowmo_tick, kill_ticks`,
+      RETURNING id, match_slug, map_number, player_id, kind, title, round, score, start_tick, end_tick, slowmo_tick, kill_ticks, true_view`,
     [
       recorder.slice(0, 120),
       qualityLabel(quality),
@@ -681,6 +685,7 @@ export async function jobFor(
         endTick: Number(r.end_tick),
         slowmoTick: Number(r.slowmo_tick),
         killTicks: JSON.parse(r.kill_ticks) as number[],
+        ...(Number(r.true_view ?? 1) === 0 ? { trueView: false } : {}),
       }))
       .sort((a, b) => a.startTick - b.startTick),
     doneClips: done.map((d) => ({

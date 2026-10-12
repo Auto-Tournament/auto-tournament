@@ -1252,7 +1252,8 @@ router.post('/clips/redo', requireAuth, async (req: Request, res: Response) => {
  *     summary: An admin's verdict on a recorded clip
  *     description: |
  *       `verdict`: `approved`; `redo` (it stutters or looks broken: recorded
- *       again, preferably by another recorder); or `drop` (not worth showing:
+ *       again, preferably by another recorder); `weapon` (the weapon and hands
+ *       are missing for a stretch: recorded again without TrueView); or `drop` (not worth showing:
  *       not recorded again, left out of every reel, its reels made again).
  *       `note` is optional. 404 when the clip is not recorded.
  *     responses:
@@ -1262,10 +1263,10 @@ router.post('/clips/redo', requireAuth, async (req: Request, res: Response) => {
 router.post('/clips/:id/review', requireAuth, async (req: Request, res: Response) => {
   const id = idOf(req);
   const verdict = req.body?.verdict as ReviewVerdict;
-  if (!id || !['approved', 'redo', 'drop'].includes(verdict)) {
+  if (!id || !['approved', 'redo', 'weapon', 'drop'].includes(verdict)) {
     return res
       .status(400)
-      .json({ success: false, error: 'A clip and a verdict: approved, redo or drop' });
+      .json({ success: false, error: 'A clip and a verdict: approved, redo, weapon or drop' });
   }
   try {
     const note = typeof req.body?.note === 'string' ? req.body.note : null;

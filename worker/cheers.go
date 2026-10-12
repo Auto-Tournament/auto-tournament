@@ -218,4 +218,7 @@ type moment struct {
 	EndTick    int    `json:"endTick"`
 	SlowmoTick int    `json:"slowmoTick"`
 	KillTicks  []int  `json:"killTicks"`
+	// TrueView false: an admin found the weapon and hands missing (CS2's
+	// TrueView rebuild dropped them, the same on every try): recorded without.
+	TrueView *bool `json:"trueView,omitempty"`
 }

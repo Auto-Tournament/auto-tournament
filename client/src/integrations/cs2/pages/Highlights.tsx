@@ -1008,7 +1008,7 @@ interface AdminClip {
   reviewNote: string | null;
 }
 
-type Verdict = 'approved' | 'redo' | 'drop';
+type Verdict = 'approved' | 'redo' | 'weapon' | 'drop';
 
 const clipUrl = (file: string) => `/api/game/cs2/highlights/${encodeURIComponent(file)}`;
 
@@ -1113,6 +1113,7 @@ function ClipReview({
         const k = e.key.toLowerCase();
         if (k === 'a') onVerdict(clip, 'approved', note);
         if (k === 'r') onVerdict(clip, 'redo', note);
+        if (k === 'w') onVerdict(clip, 'weapon', note);
         if (k === 'd') onVerdict(clip, 'drop', note);
       }
     };
@@ -1172,6 +1173,15 @@ function ClipReview({
               data-testid="review-redo"
             >
               {t('highlightsAdmin.review.redo')}
+            </Button>
+            <Button
+              variant="outlined"
+              color="warning"
+              disabled={busy}
+              onClick={() => onVerdict(clip, 'weapon', note)}
+              data-testid="review-weapon"
+            >
+              {t('highlightsAdmin.review.weapon')}
             </Button>
             <Button
               variant="outlined"

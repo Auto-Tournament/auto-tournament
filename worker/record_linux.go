@@ -182,6 +182,18 @@ func (r *recorder) look() []string {
 	return look
 }
 
+// lookPredict is the session's TrueView setting: the last cl_demo_predict
+// of the look (AT_CS2_EXTRA can change the recorder's own).
+func (r *recorder) lookPredict() string {
+	setting := "cl_demo_predict 2"
+	for _, c := range r.look() {
+		if strings.HasPrefix(c, "cl_demo_predict ") {
+			setting = c
+		}
+	}
+	return setting
+}
+
 // claimRecording asks the platform for work: a player's moments to record
 // (recordJob), or a map's match reel to join (matchReelJob); nil, nil when
 // there is none.
@@ -624,6 +636,17 @@ func (r *recorder) capturePicture(g *game, name string, from int, phases []playP
 // clip at out (finish: encoding and joining its pieces, no CS2 needed), so
 // the next moment can be captured while this one is finished.
 func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, out string) (clipMarkers, func() error, error) {
+	// A moment whose weapon went missing with TrueView (an admin's "weapon
+	// missing") is recorded without it; the session's own setting (the look,
+	// AT_CS2_EXTRA included) comes back for the next moment. Each pass seeks,
+	// and a seek restarts the prediction with the new setting.
+	if m.TrueView != nil && !*m.TrueView {
+		log.Printf("recording %q without TrueView (weapon missing in review)", m.Title)
+		if err := g.con.send("cl_demo_predict 0"); err != nil {
+			return clipMarkers{}, nil, err
+		}
+		defer func() { _ = g.con.send(r.lookPredict()) }()
+	}
 	dir, err := os.MkdirTemp(r.scratch, "moment-")
 	if err != nil {
 		return clipMarkers{}, nil, err
