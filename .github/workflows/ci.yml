@@ -439,25 +439,28 @@ jobs:
           RUN_ATTEMPT: ${{ github.run_attempt }}
         run: |
           # Every shard polls this with the repository's Actions token, which
-          # has an hourly API budget shared by every running workflow: poll
-          # every 20 s, and treat an error (a rate limit) as "not yet", never
-          # as the build's result (2026-10-12: ten PRs' shards ran it out and
-          # failed on the error text).
-          for i in $(seq 1 90); do
+          # has an hourly API budget (1,000) shared by every running workflow:
+          # one call every 45 s (the build's own result every fourth), and an
+          # error (a rate limit) means "not yet", never the build's result
+          # (2026-10-12: ten PRs' shards ran it out and failed on the error).
+          for i in $(seq 1 40); do
             count="$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/artifacts?name=e2e-image" --jq '.total_count' 2>/dev/null || echo 0)"
             if [[ "$count" =~ ^[0-9]+$ ]] && [ "$count" -gt 0 ]; then
               echo "Image artifact available (poll ${i})."
               exit 0
             fi
-            conclusion="$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/attempts/${RUN_ATTEMPT}/jobs" \
-              --jq '.jobs[] | select(.name == "Build E2E image") | .conclusion' 2>/dev/null || true)"
+            conclusion=''
+            if [ $((i % 4)) -eq 0 ]; then
+              conclusion="$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/attempts/${RUN_ATTEMPT}/jobs" \
+                --jq '.jobs[] | select(.name == "Build E2E image") | .conclusion' 2>/dev/null || true)"
+            fi
             case "$conclusion" in
               failure|cancelled|timed_out|skipped|action_required)
                 echo "Build E2E image finished with '${conclusion}'." >&2
                 exit 1
                 ;;
             esac
-            sleep 20
+            sleep 45
           done
           echo "Timed out waiting for the image artifact." >&2
           exit 1
