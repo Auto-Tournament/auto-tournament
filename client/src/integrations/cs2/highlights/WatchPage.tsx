@@ -145,7 +145,7 @@ export function WatchPage() {
   useEffect(() => {
     let cancelled = false;
     api
-      .get<{ tracks: MusicTrack[] }>('/api/game/cs2/music')
+      .get<{ tracks: MusicTrack[] }>('/api/highlights/music')
       .then((res) => !cancelled && setTracks(res.tracks))
       .catch(() => undefined);
     return () => {
