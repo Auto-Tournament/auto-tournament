@@ -4,7 +4,7 @@ import "math"
 
 // AnalyzerVersion goes up when the numbers change meaning; the platform
 // re-queues older analyses.
-const AnalyzerVersion = 7
+const AnalyzerVersion = 8
 
 const (
 	// TradeTicks: the killer dies to the victim's team within five seconds.
@@ -33,10 +33,13 @@ type Round struct {
 
 // Kill is one death, with who traded it.
 type Kill struct {
-	Tick         int         `json:"tick"`
-	Round        int         `json:"round"`
-	Attacker     *string     `json:"attacker"`
-	Victim       string      `json:"victim"`
+	Tick     int     `json:"tick"`
+	Round    int     `json:"round"`
+	Attacker *string `json:"attacker"`
+	Victim   string  `json:"victim"`
+	// VictimBot: a bot died (bot-filled matches). Victim is then "bot:<name>"
+	// and the kill counts for the human who made it, never as a death.
+	VictimBot    bool        `json:"victimBot,omitempty"`
 	Assister     *string     `json:"assister"`
 	Weapon       string      `json:"weapon"`
 	Headshot     bool        `json:"headshot"`
@@ -147,13 +150,15 @@ func sameSide(a, b *string) bool { return a != nil && b != nil && *a == *b }
 func CountKills(kills []Kill, stats func(id string) *PlayerStats) {
 	perRound := map[int]map[string]int{}
 	for _, k := range kills {
-		v := stats(k.Victim)
-		v.Deaths++
-		if k.Opening && k.Attacker != nil {
-			v.OpeningDeaths++
-		}
-		if k.Traded {
-			v.TradedDeaths++
+		if !k.VictimBot {
+			v := stats(k.Victim)
+			v.Deaths++
+			if k.Opening && k.Attacker != nil {
+				v.OpeningDeaths++
+			}
+			if k.Traded {
+				v.TradedDeaths++
+			}
 		}
 		if k.Assister != nil && (k.Attacker == nil || *k.Assister != *k.Attacker) {
 			stats(*k.Assister).Assists++

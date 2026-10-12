@@ -334,7 +334,9 @@ export function ReplayViewer({
       }
       return null;
     };
-    const name = (id: string | null) => replay.players.find((p) => p.id === id)?.name ?? '—';
+    const name = (id: string | null) =>
+      replay.players.find((p) => p.id === id)?.name ??
+      (id?.startsWith('bot:') ? `BOT ${id.slice(4)}` : '—');
     return [
       ...replay.kills.map((k) => ({
         tick: k.tick,
@@ -657,7 +659,9 @@ export function ReplayViewer({
       {nameOf(id)}
     </Box>
   );
-  const nameOf = (id: string | null) => replay.players.find((p) => p.id === id)?.name ?? '—';
+  const nameOf = (id: string | null) =>
+    replay.players.find((p) => p.id === id)?.name ??
+    (id?.startsWith('bot:') ? `BOT ${id.slice(4)}` : '—');
   const alive = (team1: boolean) => state.filter((s) => s && team1Ids.has(s.id) === team1);
 
   return (

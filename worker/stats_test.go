@@ -90,3 +90,33 @@ func TestAimError(t *testing.T) {
 		}
 	}
 }
+
+// Bot-filled matches: a human's kill on a bot counts for the human (a kill, a
+// multi-kill for highlights), and the bot gets no stats line.
+func TestBotVictims(t *testing.T) {
+	bot := func(tick int, name string) Kill {
+		k := kill(tick, a1, "bot:"+name, "CT", "T")
+		k.VictimBot = true
+		return k
+	}
+	kills := []Kill{bot(1000, "Zane"), bot(1200, "Ivan"), kill(1400, a1, b1, "CT", "T")}
+	MarkOpeningsAndTrades(kills)
+	players := map[string]*PlayerStats{}
+	CountKills(kills, func(id string) *PlayerStats {
+		if players[id] == nil {
+			players[id] = &PlayerStats{}
+		}
+		return players[id]
+	})
+	if players[a1].Kills != 3 || players[a1].MultiKills != [5]int{0, 0, 1, 0, 0} {
+		t.Errorf("a1: %+v", players[a1])
+	}
+	for id := range players {
+		if len(id) > 4 && id[:4] == "bot:" {
+			t.Errorf("a bot got a stats line: %s", id)
+		}
+	}
+	if players[b1].Deaths != 1 {
+		t.Errorf("b1 deaths: %d", players[b1].Deaths)
+	}
+}
