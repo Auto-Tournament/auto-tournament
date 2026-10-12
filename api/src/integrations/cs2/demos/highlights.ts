@@ -860,29 +860,86 @@ export async function renewClaims(recorder: string): Promise<number> {
   return renewRecordingLeases(recorder);
 }
 
-/** Tell the player their clip is ready (a player's own moment; reels belong to no one player). */
+/**
+ * Tell the player their clip is ready (a player's own moment; reels belong to
+ * no one player), and the players it shows with them: on a killfeed line of
+ * the clip's player inside the clip (killed by them, assisted them, killed
+ * them). Someone elsewhere on the map at the time is not in it.
+ */
 async function noticeHighlightReady(id: number): Promise<void> {
   const row = await db.queryOneAsync<{
     player_id: string;
     title: string;
     kind: string;
     match_slug: string;
-  }>('SELECT player_id, title, kind, match_slug FROM cs2_highlights WHERE id = ?', [id]);
-  if (!row || !/^\d{15,20}$/.test(row.player_id)) return;
-  await notificationService.notify(
-    row.player_id,
-    'highlight',
-    {
-      highlightId: id,
-      title: row.title,
-      kind: row.kind,
-      matchSlug: row.match_slug,
-      // Where the notice opens (the clip's watch page) and its still.
-      url: `/watch/clip/${id}`,
-      video: `/api/game/cs2/highlights/${id}.mp4`,
-    },
-    `highlight:${id}`
+    map_number: number;
+    start_tick: number;
+    end_tick: number;
+  }>(
+    'SELECT player_id, title, kind, match_slug, map_number, start_tick, end_tick FROM cs2_highlights WHERE id = ?',
+    [id]
   );
+  if (!row || !/^\d{15,20}$/.test(row.player_id)) return;
+  const data = {
+    highlightId: id,
+    title: row.title,
+    kind: row.kind,
+    matchSlug: row.match_slug,
+    // Where the notice opens (the clip's watch page) and its still.
+    url: `/watch/clip/${id}`,
+    video: `/api/game/cs2/highlights/${id}.mp4`,
+  };
+  await notificationService.notify(row.player_id, 'highlight', data, `highlight:${id}`);
+
+  const featured = await clipFeatures(row);
+  if (featured.size === 0) return;
+  const owner = await db.queryOneAsync<{ name: string | null }>(
+    'SELECT name FROM players WHERE id = ?',
+    [row.player_id]
+  );
+  for (const [playerId, role] of featured) {
+    await notificationService.notify(
+      playerId,
+      'highlight',
+      { ...data, role, by: row.player_id, byName: owner?.name ?? null },
+      `highlight:${id}`
+    );
+  }
+}
+
+/** Who else a clip shows, and how: the other names on its player's killfeed lines inside it. */
+async function clipFeatures(row: {
+  player_id: string;
+  match_slug: string;
+  map_number: number;
+  start_tick: number;
+  end_tick: number;
+}): Promise<Map<string, 'victim' | 'assist' | 'killer'>> {
+  const out = new Map<string, 'victim' | 'assist' | 'killer'>();
+  const job = await db.queryOneAsync<{ kills: string | null }>(
+    'SELECT kills FROM cs2_demo_jobs WHERE match_slug = ? AND map_number = ?',
+    [row.match_slug, row.map_number]
+  );
+  let kills: Array<KillRow & { assister?: string | null }> = [];
+  try {
+    kills = job?.kills ? JSON.parse(job.kills) : [];
+  } catch {
+    return out;
+  }
+  const add = (who: string | null | undefined, role: 'victim' | 'assist' | 'killer') => {
+    if (!who || who === row.player_id || !/^\d{15,20}$/.test(who) || out.has(who)) return;
+    out.set(who, role);
+  };
+  for (const k of kills) {
+    if (k.tick < row.start_tick || k.tick > row.end_tick) continue;
+    if (k.attacker === row.player_id) {
+      add(k.victim, 'victim');
+      add(k.assister, 'assist');
+    } else if (k.victim === row.player_id) {
+      add(k.attacker, 'killer');
+    }
+  }
+  return out;
 }
 
 /** The recorder could not record these moments: try again later, up to MAX_ATTEMPTS. */
