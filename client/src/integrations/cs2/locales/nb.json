@@ -2384,5 +2384,21 @@
     "nav": "Høydepunkter",
     "teamHighlights": "Høydepunkter",
     "matchHighlights": "Alle høydepunkter"
+  },
+  "comments": {
+    "title_one": "{{count}} kommentar",
+    "title_other": "{{count}} kommentarer",
+    "titlePlain": "Kommentarer",
+    "placeholder": "Skriv en kommentar. Tider som 0:23 hopper dit i videoen.",
+    "post": "Kommenter",
+    "signIn": "Logg inn for å kommentere.",
+    "none": "Ingen kommentarer ennå.",
+    "edited": "redigert",
+    "edit": "Rediger",
+    "delete": "Slett",
+    "cancel": "Avbryt",
+    "save": "Lagre",
+    "seek": "Hopp til {{time}}",
+    "failed": "Kunne ikke lagre kommentaren"
   }
 }

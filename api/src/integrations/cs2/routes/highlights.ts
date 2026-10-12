@@ -62,6 +62,10 @@ import { recorderAcceptsWork, requestRecorderUpdate } from '../demos/recorderFle
  *   GET  /api/game/cs2/watch/stats                    ?video=<key>: its views and likes, and whether the viewer liked it
  *   POST /api/game/cs2/watch/view                     { video, browser? }: a view (once per viewer every 12 hours)
  *   PUT  /api/game/cs2/watch/like                     { video, liked }: a signed-in player's like
+ *   GET  /api/game/cs2/watch/comments                 ?video=<key>: its comments, oldest first
+ *   POST /api/game/cs2/watch/comments                 { video, body }: a signed-in player comments (rate limited)
+ *   PUT  /api/game/cs2/watch/comments/:id             { body }: its author edits it
+ *   DELETE /api/game/cs2/watch/comments/:id           its author or an admin removes it
  *   GET  /api/game/cs2/watch/related                  ?match&map | ?tournament: the players on that map and more reels
  *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`, `tournament-…`), with range requests;
  *                                                     ?crowd=1, ?music=<track>&intro=<s>[&level=<0–2>]: a download with its crowd track and/or that music mixed in (../demos/music.ts)
@@ -81,7 +85,7 @@ import fs from 'fs';
 import path from 'path';
 import { URLSearchParams } from 'url';
 import { Router, type Request, type Response } from 'express';
-import { requestActorId, requireAuth } from '../../../middleware/auth';
+import { checkAdminAccess, requestActorId, requireAuth } from '../../../middleware/auth';
 import {
   createRecorderKey,
   listRecorderKeys,
@@ -92,6 +96,16 @@ import { appendPart, bodyOf, startUpload, UploadError } from '../demos/uploadPar
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
 import { countView, libraryPage, setLike, videoKey, videoStats } from '../demos/library';
+import {
+  addComment,
+  cleanBody,
+  COMMENT_MAX,
+  commentById,
+  deleteComment,
+  editComment,
+  listComments,
+  postLimit,
+} from '../demos/comments';
 import {
   claimTournamentReel,
   clipView,
@@ -1087,6 +1101,76 @@ router.put(
       return res.status(403).json({ success: false, error: 'Stop impersonating to like videos.' });
     await setLike(key, viewer.playerId, req.body.liked);
     return res.json({ success: true, ...(await videoStats(key, viewer.playerId)) });
+  })
+);
+
+// Comments on a video (../demos/comments.ts).
+router.get(
+  '/watch/comments',
+  read('comments', async (req: Request, res: Response) => {
+    const key = videoKey(req.query.video);
+    if (!key) return res.status(400).json({ success: false, error: 'Which video?' });
+    return res.json({ success: true, comments: await listComments(key) });
+  })
+);
+
+router.post(
+  '/watch/comments',
+  read('comment', async (req: Request, res: Response) => {
+    const key = videoKey(req.body?.video);
+    const body = cleanBody(req.body?.body);
+    if (!key || !body)
+      return res
+        .status(400)
+        .json({ success: false, error: `{ video, body } (at most ${COMMENT_MAX} characters)` });
+    const viewer = await resolveViewerAccount(req);
+    if (!viewer.playerId) return res.status(401).json({ success: false, error: 'Sign in first' });
+    if (viewer.isImpersonating)
+      return res.status(403).json({ success: false, error: 'Stop impersonating to comment.' });
+    const limit = await postLimit(viewer.playerId);
+    if (limit)
+      return res.status(429).json({
+        success: false,
+        error: limit === 'slow' ? 'Wait a few seconds' : 'Too many comments this hour',
+      });
+    return res.json({ success: true, comment: await addComment(key, viewer.playerId, body) });
+  })
+);
+
+router.put(
+  '/watch/comments/:id',
+  read('comment', async (req: Request, res: Response) => {
+    const id = Number(req.params.id);
+    const body = cleanBody(req.body?.body);
+    if (!Number.isInteger(id) || !body)
+      return res.status(400).json({ success: false, error: '{ body }' });
+    const viewer = await resolveViewerAccount(req);
+    const comment = await commentById(id);
+    if (!comment) return res.status(404).json({ success: false, error: 'No such comment' });
+    if (!viewer.playerId || viewer.isImpersonating || comment.playerId !== viewer.playerId)
+      return res.status(403).json({ success: false, error: 'Only its author can edit it' });
+    return res.json({ success: true, comment: await editComment(id, body) });
+  })
+);
+
+router.delete(
+  '/watch/comments/:id',
+  read('comment', async (req: Request, res: Response) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id))
+      return res.status(400).json({ success: false, error: 'Which comment?' });
+    const comment = await commentById(id);
+    if (!comment) return res.status(404).json({ success: false, error: 'No such comment' });
+    const viewer = await resolveViewerAccount(req);
+    const own =
+      !!viewer.playerId && !viewer.isImpersonating && comment.playerId === viewer.playerId;
+    const admin = !own && (await checkAdminAccess(req)).ok;
+    if (!own && !admin)
+      return res
+        .status(403)
+        .json({ success: false, error: 'Only its author or an admin can delete it' });
+    await deleteComment(id, own ? viewer.playerId! : `admin:${requestActorId(req) ?? 'admin'}`);
+    return res.json({ success: true });
   })
 );
 
