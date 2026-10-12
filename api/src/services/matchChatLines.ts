@@ -24,9 +24,14 @@ export type MatchChatKey =
   | 'seriesWon'
   | 'adminCalled'
   | 'remindAccount'
-  | 'remindGame';
+  | 'remindGame'
+  | 'serverDown'
+  | 'serverBack';
 
-export function chatLineBody(key: MatchChatKey, params: Record<string, string | number | boolean | string[]> = {}): string {
+export function chatLineBody(
+  key: MatchChatKey,
+  params: Record<string, string | number | boolean | string[]> = {}
+): string {
   return `i18n:${JSON.stringify({ key, params })}`;
 }
 

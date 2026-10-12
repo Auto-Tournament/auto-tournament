@@ -295,7 +295,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
           : t('nav.matchStatus.matchReady')}{' '}
         <Link
           component={RouterLink}
-          to={playerProfilePath(playerSteamId)}
+          to={paths.matchNow}
           onClick={() => closeSnackbar(readyToastKey)}
           sx={{ color: 'inherit', fontWeight: 600, textDecorationColor: 'currentColor' }}
           data-testid="match-ready-toast-link"
@@ -500,10 +500,11 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
         {ctaLabel ? (
           <Button
             component={RouterLink}
-            to={playerProfilePath(playerSteamId as string)}
+            to={paths.matchNow}
             variant="contained"
             color="primary"
             size="small"
+            data-testid="nav-match-cta"
             startIcon={<GameControllerIcon />}
             sx={{ display: { xs: 'none', sm: 'inline-flex' }, px: 2, whiteSpace: 'nowrap' }}
           >

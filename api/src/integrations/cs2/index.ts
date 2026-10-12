@@ -696,10 +696,37 @@ export const cs2Integration: GameIntegration = {
     return { team1: steamIds(cfg.team1?.players), team2: steamIds(cfg.team2?.players) };
   },
 
-  /** A finished matchmaking game can drop a virtual skin for each player, likelier for winners (skins/skinService). */
-  async onMatchmakingResult({ matchSlug, winners, others, map }) {
+  /**
+   * A finished matchmaking or tournament game can drop a virtual skin for each
+   * player, likelier for winners (skins/skinService). Not in a tournament that
+   * plays in esports mode or turned its skin rewards off.
+   */
+  async onMatchmakingResult({ matchSlug, winners, others, map, source, teamSize }) {
     const { skinService } = await import('./skins/skinService');
-    await skinService.rollMatchDrops(matchSlug, winners, others, map);
+    if (source === 'tournament') {
+      const { db } = await import('../../config/database');
+      const row = await db.queryOneAsync<{ settings: string | null }>(
+        'SELECT t.settings FROM matches m JOIN tournament t ON t.id = m.tournament_id WHERE m.slug = ?',
+        [matchSlug]
+      );
+      let settings: Record<string, unknown> = {};
+      try {
+        settings = row?.settings ? (JSON.parse(row.settings) as Record<string, unknown>) : {};
+      } catch {
+        settings = {};
+      }
+      const own = storedCs2Settings(settings) as
+        { esportsMode?: boolean; skinRewards?: boolean } | undefined;
+      if (own?.esportsMode === true || own?.skinRewards === false || settings.skinRewards === false)
+        return;
+    }
+    await skinService.rollMatchDrops(matchSlug, winners, others, map, { source, teamSize });
+  },
+
+  /** Every new matchmaking level is a skin drop to pick from (skins/skinService). */
+  async onLevelUp({ playerId, level }) {
+    const { skinService } = await import('./skins/skinService');
+    await skinService.levelUpDrop(playerId, level);
   },
 
   /** The top three of a finished tournament get its skin rewards, unless the tournament turned them off. */

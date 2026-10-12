@@ -80,6 +80,7 @@ function ScopedLayout() {
 }
 import { AdminCallsHost } from './components/admin/AdminCallsHost';
 import NotFound from './pages/NotFound';
+import MatchNow from './pages/MatchNow';
 import { theme } from './theme';
 import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedirect';
 import WelcomeGames from './pages/WelcomeGames';
@@ -540,6 +541,16 @@ function AppRoutes() {
         element={
           <RequireSignedIn>
             <AccountConnections />
+          </RequireSignedIn>
+        }
+      />
+
+      {/* "My match": wherever the signed-in player's match lives. */}
+      <Route
+        path={paths.matchNow}
+        element={
+          <RequireSignedIn>
+            <MatchNow />
           </RequireSignedIn>
         }
       />

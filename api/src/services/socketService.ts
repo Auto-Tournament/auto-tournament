@@ -416,6 +416,16 @@ export function emitChatMessage(
   if (rooms.length > 0) io.to(rooms).emit('chat:message', message);
 }
 
+/** Someone is typing in a chat channel, to its other players (not the admins' room). */
+export function emitChatTyping(
+  playerIds: Iterable<string>,
+  typing: { channel: string; playerId: string; name: string }
+): void {
+  if (!io) return;
+  const rooms = [...new Set(playerIds)].map(playerRoom);
+  if (rooms.length > 0) io.to(rooms).emit('chat:typing', typing);
+}
+
 /**
  * A platform line in a match's chat (veto steps, the server being ready),
  * for a game module: it reaches core through this bridged module.

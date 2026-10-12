@@ -143,5 +143,12 @@
       "license_problem": "The license needs attention: {{problem}}",
       "demos_failing": "{{count}} demo analyses failed in the last hour"
     }
+  },
+  "matchNow": {
+    "title": "Kampen din",
+    "none": "Ingen kamp akkurat nå",
+    "noneBody": "Du har ingen kamp på vei. Finn en i Spill, eller bli med i en turnering.",
+    "play": "Spill",
+    "home": "Hjem"
   }
 }

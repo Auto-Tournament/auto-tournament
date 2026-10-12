@@ -22,7 +22,8 @@ async function viewerOf(req: Request): Promise<ChatViewer | null> {
 }
 
 function fail(res: Response, error: unknown, what: string) {
-  if (error instanceof ChatError) return res.status(error.status).json({ success: false, error: error.message });
+  if (error instanceof ChatError)
+    return res.status(error.status).json({ success: false, error: error.message });
   log.error(`[Chat] ${what} failed`, { error });
   return res.status(500).json({ success: false, error: `${what} failed` });
 }
@@ -79,7 +80,11 @@ router.get('/:channel/messages', async (req: Request, res: Response) => {
     const before = Number(req.query.before);
     return res.json({
       success: true,
-      ...(await chatService.messages(viewer, req.params.channel, Number.isInteger(before) && before > 0 ? before : undefined)),
+      ...(await chatService.messages(
+        viewer,
+        req.params.channel,
+        Number.isInteger(before) && before > 0 ? before : undefined
+      )),
     });
   } catch (error) {
     return fail(res, error, 'Reading the chat');
@@ -89,13 +94,41 @@ router.get('/:channel/messages', async (req: Request, res: Response) => {
 router.post('/:channel/messages', async (req: Request, res: Response) => {
   try {
     const account = await resolveViewerAccount(req);
-    if (account.isImpersonating) return res.status(403).json({ success: false, error: 'Stop impersonating to write in chat.' });
+    if (account.isImpersonating)
+      return res
+        .status(403)
+        .json({ success: false, error: 'Stop impersonating to write in chat.' });
     const viewer = await viewerOf(req);
     if (!viewer) return res.status(401).json({ success: false, error: 'Sign in first' });
     const body = typeof req.body?.body === 'string' ? req.body.body : '';
-    return res.json({ success: true, message: await chatService.send(viewer, req.params.channel, body) });
+    return res.json({
+      success: true,
+      message: await chatService.send(viewer, req.params.channel, body),
+    });
   } catch (error) {
     return fail(res, error, 'Sending the message');
+  }
+});
+
+/**
+ * @openapi
+ * /api/chat/{channel}/typing:
+ *   post:
+ *     tags: [Chat]
+ *     summary: Say you are typing (the channel's other players see it for a few seconds)
+ *     responses:
+ *       200: { description: Sent }
+ */
+router.post('/:channel/typing', async (req: Request, res: Response) => {
+  try {
+    const account = await resolveViewerAccount(req);
+    if (account.isImpersonating) return res.json({ success: true });
+    const viewer = await viewerOf(req);
+    if (!viewer) return res.status(401).json({ success: false, error: 'Sign in first' });
+    await chatService.typing(viewer, req.params.channel);
+    return res.json({ success: true });
+  } catch (error) {
+    return fail(res, error, 'Typing');
   }
 });
 
@@ -116,10 +149,17 @@ router.post('/:channel/messages', async (req: Request, res: Response) => {
 router.post('/:channel/call-admin', async (req: Request, res: Response) => {
   try {
     const account = await resolveViewerAccount(req);
-    if (account.isImpersonating) return res.status(403).json({ success: false, error: 'Stop impersonating to call an admin.' });
+    if (account.isImpersonating)
+      return res
+        .status(403)
+        .json({ success: false, error: 'Stop impersonating to call an admin.' });
     const viewer = await viewerOf(req);
     if (!viewer) return res.status(401).json({ success: false, error: 'Sign in first' });
-    await chatService.callAdmin(viewer, req.params.channel, typeof req.body?.message === 'string' ? req.body.message : '');
+    await chatService.callAdmin(
+      viewer,
+      req.params.channel,
+      typeof req.body?.message === 'string' ? req.body.message : ''
+    );
     return res.json({ success: true });
   } catch (error) {
     return fail(res, error, 'Calling an admin');

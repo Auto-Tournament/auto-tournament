@@ -19,17 +19,33 @@ const { color } = tokens;
 export type NoticeFilter = 'all' | 'you' | 'tournaments' | 'drops';
 
 export function matchesFilter(n: Notice, filter: NoticeFilter): boolean {
-  if (filter === 'you') return n.kind === 'party_invite' || n.kind === 'friend_request' || n.kind === 'friend_accepted';
+  if (filter === 'you')
+    return (
+      n.kind === 'party_invite' ||
+      n.kind === 'team_invite' ||
+      n.kind === 'friend_request' ||
+      n.kind === 'friend_accepted'
+    );
   if (filter === 'tournaments') return n.kind === 'tournament';
   if (filter === 'drops') return n.kind === 'skin' || n.kind === 'highlight';
   return true;
 }
 
-export function NoticeFilters({ value, onChange }: { value: NoticeFilter; onChange: (f: NoticeFilter) => void }) {
+export function NoticeFilters({
+  value,
+  onChange,
+}: {
+  value: NoticeFilter;
+  onChange: (f: NoticeFilter) => void;
+}) {
   const { t } = useTranslation();
   const filters: NoticeFilter[] = ['all', 'you', 'tournaments', 'drops'];
   return (
-    <Box role="group" aria-label={t('social.bell.show')} sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+    <Box
+      role="group"
+      aria-label={t('social.bell.show')}
+      sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}
+    >
       {filters.map((f) => (
         <ButtonBase
           key={f}
@@ -67,18 +83,38 @@ export function NotificationBell({ viewerId }: { viewerId: string }) {
       <IconButton
         onClick={(e) => setAnchor(e.currentTarget)}
         size="small"
-        aria-label={social.unread ? t('social.bell.labelUnread', { count: social.unread }) : t('social.bell.label')}
+        aria-label={
+          social.unread
+            ? t('social.bell.labelUnread', { count: social.unread })
+            : t('social.bell.label')
+        }
         aria-haspopup="dialog"
         aria-expanded={anchor ? 'true' : undefined}
         data-testid="nav-bell"
-        sx={{ width: 36, height: 36, border: 1, borderColor: 'divider', color: anchor ? color.ink : color.ink2 }}
+        sx={{
+          width: 36,
+          height: 36,
+          border: 1,
+          borderColor: 'divider',
+          color: anchor ? color.ink : color.ink2,
+        }}
       >
         <Badge
           badgeContent={social.unread}
           max={99}
           color="primary"
           overlap="circular"
-          sx={{ '& .MuiBadge-badge': { fontWeight: 700, fontSize: '0.6875rem', minWidth: 18, height: 18, top: -4, right: -4, border: `2px solid ${color.paper2}` } }}
+          sx={{
+            '& .MuiBadge-badge': {
+              fontWeight: 700,
+              fontSize: '0.6875rem',
+              minWidth: 18,
+              height: 18,
+              top: -4,
+              right: -4,
+              border: `2px solid ${color.paper2}`,
+            },
+          }}
         >
           <BellIcon size={18} />
         </Badge>
@@ -93,33 +129,73 @@ export function NotificationBell({ viewerId }: { viewerId: string }) {
           paper: {
             role: 'dialog',
             'aria-label': t('social.bell.title'),
-            sx: { mt: 1.5, width: 400, maxWidth: 'calc(100vw - 32px)', borderRadius: '18px', border: 1, borderColor: 'divider', overflow: 'hidden' },
+            sx: {
+              mt: 1.5,
+              width: 400,
+              maxWidth: 'calc(100vw - 32px)',
+              borderRadius: '18px',
+              border: 1,
+              borderColor: 'divider',
+              overflow: 'hidden',
+            },
           } as object,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 1.75, pt: 1.75, pb: 1 }}>
-          <Typography sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: '1rem' }}>{t('social.bell.title')}</Typography>
-          <Button size="small" onClick={() => void markNoticesRead()} disabled={social.unread === 0} sx={{ color: color.ink2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 1.75,
+            pt: 1.75,
+            pb: 1,
+          }}
+        >
+          <Typography sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: '1rem' }}>
+            {t('social.bell.title')}
+          </Typography>
+          <Button
+            size="small"
+            onClick={() => void markNoticesRead()}
+            disabled={social.unread === 0}
+            sx={{ color: color.ink2 }}
+          >
             {t('social.bell.markAllRead')}
           </Button>
         </Box>
         <Box sx={{ px: 1.75, pb: 1.25 }}>
           <NoticeFilters value={filter} onChange={setFilter} />
         </Box>
-        <Box sx={{ maxHeight: 460, overflowY: 'auto', borderTop: 1, borderColor: 'divider' }} data-testid="bell-list">
+        <Box
+          sx={{ maxHeight: 460, overflowY: 'auto', borderTop: 1, borderColor: 'divider' }}
+          data-testid="bell-list"
+        >
           {shown.length === 0 ? (
-            <Typography sx={{ p: 3, textAlign: 'center', color: color.muted, fontSize: '0.8125rem' }}>
+            <Typography
+              sx={{ p: 3, textAlign: 'center', color: color.muted, fontSize: '0.8125rem' }}
+            >
               {social.ready ? t('social.bell.empty') : t('social.bell.loading')}
             </Typography>
           ) : (
-            shown.map((n) => <NoticeItem key={n.id} notice={n} viewerId={viewerId} onNavigate={close} />)
+            shown.map((n) => (
+              <NoticeItem key={n.id} notice={n} viewerId={viewerId} onNavigate={close} />
+            ))
           )}
         </Box>
         <ButtonBase
           component={RouterLink}
           to={paths.notifications}
           onClick={close}
-          sx={{ display: 'block', width: '100%', py: 1.375, textAlign: 'center', borderTop: 1, borderColor: 'divider', fontSize: '0.8125rem', color: color.ink2 }}
+          sx={{
+            display: 'block',
+            width: '100%',
+            py: 1.375,
+            textAlign: 'center',
+            borderTop: 1,
+            borderColor: 'divider',
+            fontSize: '0.8125rem',
+            color: color.ink2,
+          }}
         >
           {t('social.bell.seeAll')}
         </ButtonBase>

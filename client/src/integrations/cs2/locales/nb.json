@@ -1721,7 +1721,7 @@
     "ttdLine": "Tid til skade {{ms}} ms"
   },
   "skins": {
-    "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi, kan ikke byttes eller selges, og vises ikke i Counter-Strike 2.",
+    "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi og kan ikke byttes eller selges. Du ser dem i spillet på denne sidens servere.",
     "equipLabel": "Ta i bruk {{name}}",
     "equippedLabel": "{{name}}, i bruk",
     "new": "NY",
@@ -1784,7 +1784,7 @@
     "arrange": "Ordne",
     "showInventory": "Vis inventar",
     "arrangeTitle": "Ordne utrustningen",
-    "arrangeHint": "Velg opptil {{max}} skins, rekkefølgen, og hvilke som vises stort.",
+    "arrangeHint": "Velg opptil {{max}} skins å vise på profilen, rekkefølgen og hvilke som er store.",
     "big": "Stor",
     "moveUp": "Flytt opp",
     "moveDown": "Flytt ned",
@@ -1872,7 +1872,11 @@
       "edge": "Mellom {{a}} og {{b}}",
       "podiumHint": "Klikk et trinn for å endre hva det gir.",
       "rewardTitle": "Premie for {{place}}",
-      "done": "Ferdig"
+      "done": "Ferdig",
+      "fiveVsFive": "Disse gjelder 5v5. Mindre moduser gir sjeldnere:",
+      "fairRules": "Bare spillere som spilte hele kampen kan få noe: ingenting for en kamp noen forlot eller som sluttet tidlig, og samme motstandere igjen samme døgn gir mye sjeldnere. Plasseringspremier i turneringer går bare til spillere som spilte i turneringen.",
+      "tournamentMatchDrops": "Turneringskamper gir også drops (ikke i esport-modus)",
+      "levelUpDrops": "Et drop for hvert nye nivå"
     },
     "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)",
     "whatThisMeans": "Hva dette betyr",
@@ -1895,7 +1899,41 @@
     "keepThis": "Behold denne",
     "keeping": "Beholder…",
     "chooseFailed": "Kunne ikke beholde den",
-    "newDrop": "Nytt drop"
+    "newDrop": "Nytt drop",
+    "side": {
+      "ct": "CT",
+      "t": "T",
+      "both": "Begge",
+      "equipFor": "Utstyr for",
+      "defaults": "Standard-skins"
+    },
+    "favourites": "Favoritter",
+    "favouritesTitle": "Velg favorittene dine",
+    "pickFavourites": "Favoritter",
+    "tournamentMatch": "Fra en turneringskamp",
+    "levelUp": "Nådde et nytt nivå",
+    "drops": {
+      "title": "Slik fungerer skin-drops",
+      "intro": "Et drop viser deg {{count}} skins, og du beholder én. Her ser du når du kan få et drop, og hvor sannsynlig hver skin er.",
+      "link": "Drop-sjanser",
+      "whenTitle": "Når du kan få et drop",
+      "whenMatchmaking": "Etter en matchmaking-kamp du spilte ferdig",
+      "whenTournament": "Etter en turneringskamp du spilte i",
+      "whenLevel": "Hver gang du når et nytt nivå",
+      "whenPlacement": "For topp tre i en turnering",
+      "chanceTitle": "Sjanse for drop etter en kamp",
+      "mode": "Modus",
+      "fair": "Ingenting dropper fra en kamp noen forlot eller som sluttet tidlig. Samme motstandere igjen samme døgn gir mye sjeldnere drop.",
+      "rarityTitle": "Sjanse per sjeldenhet",
+      "skins_one": "{{count}} skin",
+      "skins_other": "{{count}} skins",
+      "perSkin": "{{odds}} for én bestemt skin",
+      "rarityNote": "Hver av de {{count}} skinsene i et drop trekker sjeldenhet for seg; innen en sjeldenhet er alle skins like sannsynlige. Kniver og hansker rangeres etter pris.",
+      "placementTitle": "Turneringsplasseringer",
+      "pickOfRarity": "et valg blant {{rarity}}-skins",
+      "rarityOdds": "Sjanse for sjeldenheten",
+      "skinOdds": "Denne skinen"
+    }
   },
   "matchRules": {
     "title": "Kampregler",
@@ -2519,5 +2557,16 @@
     },
     "clipOf": "klipp {{n}} av {{total}}",
     "left": "~{{time}} igjen"
+  },
+  "crash": {
+    "downTitle": "Kampserveren krasjet",
+    "down": "Vi henter den tilbake. Du får en knapp for å koble til igjen her så snart kampen er oppe.",
+    "moving": "Flytter kampen til en annen server, med siste runde gjenopprettet.",
+    "wait": "Dette tar vanligvis under ett minutt.",
+    "backTitle": "Kampen din er tilbake",
+    "backInPlace": "Serveren er oppe igjen med kampen gjenopprettet. Koble til igjen for å spille videre.",
+    "backMoved": "Kampen er flyttet til en annen server, med siste runde gjenopprettet. Koble til igjen for å spille videre.",
+    "reconnect": "Koble til igjen",
+    "close": "Lukk"
   }
 }

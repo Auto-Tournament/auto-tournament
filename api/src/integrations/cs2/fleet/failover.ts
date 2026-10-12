@@ -46,7 +46,12 @@
 
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
-import { emitBracketUpdate, emitMatchUpdate, getIO } from '../../../services/socketService';
+import {
+  emitBracketUpdate,
+  emitMatchUpdate,
+  getIO,
+  postMatchChatLine,
+} from '../../../services/socketService';
 import type { DbMatchRow } from '../../../types/database.types';
 import { ulid } from './credentials';
 import { roundBackupStore, type RoundBackupMeta } from './backups';
@@ -610,6 +615,8 @@ async function createProposal(input: {
       `failover:${input.slug}`
     )
   );
+  // The players hear it in the match chat too (a popup shows on their pages).
+  void postMatchChatLine(input.slug, 'serverDown');
   return proposal;
 }
 
@@ -863,6 +870,7 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
   }
   const done = (await getProposal(id)) as FailoverProposal;
   announce(slug, done);
+  void postMatchChatLine(slug, 'serverBack', { map: proposal.mapNumber, round });
   return { ok: true, proposal: done };
 }
 

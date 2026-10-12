@@ -12,7 +12,7 @@
 
 import { db } from '../config/database';
 import { describeMatch } from '../utils/matchIntegration';
-import { emitChatMessage } from './socketService';
+import { emitChatMessage, emitChatTyping } from './socketService';
 import { recordAdminCall } from './adminCallService';
 import { chatLineBody } from './matchChatLines';
 
@@ -349,6 +349,24 @@ export const chatService = {
     if (viewer.steamId) await this.markRead(viewer, channel, message.id);
     emitChatMessage(m.players, parsed.kind === 'match', message);
     return message;
+  },
+
+  /**
+   * The viewer is typing in a channel: the others in it see "X is typing…"
+   * for a few seconds (the client says so again while it goes on).
+   */
+  async typing(viewer: ChatViewer, channel: string): Promise<void> {
+    if (!viewer.steamId) return;
+    const { members: m } = await access(viewer, channel);
+    const me = await db.queryOneAsync<{ name: string }>('SELECT name FROM players WHERE id = ?', [
+      viewer.steamId,
+    ]);
+    const others = [...m.players].filter((id) => id !== viewer.steamId);
+    emitChatTyping(others, {
+      channel,
+      playerId: viewer.steamId,
+      name: viewer.name ?? me?.name ?? '',
+    });
   },
 
   /** A line from the platform (veto picks, the server being ready) in a match's chat. */

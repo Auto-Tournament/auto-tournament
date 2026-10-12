@@ -111,13 +111,65 @@ export interface TournamentReward {
   seeds?: number[];
 }
 
+export type SmallMode = '2v2' | '1v1';
+
+/** A finished matchmaking game counts for drops from this many rounds on (no walkover or early end). */
+export const MIN_DROP_ROUNDS = 4;
+
+/**
+ * One player's drop chance (0–100) for a finished matchmaking game: the
+ * mode's win or play chance, much less for every earlier game against the
+ * same opponents in the last day (no farming one friend).
+ */
+export function matchDropChance(
+  config: Pick<SkinsConfig, 'dropChance' | 'playDropChance' | 'modeChances'>,
+  mode: string | null,
+  won: boolean,
+  repeats: number
+): number {
+  const small = mode === '2v2' || mode === '1v1' ? config.modeChances[mode] : null;
+  const base = small
+    ? won
+      ? small.win
+      : small.play
+    : won
+      ? config.dropChance
+      : config.playDropChance;
+  return base / Math.pow(1 + Math.max(0, repeats), 2);
+}
+
+/**
+ * Whether a finished game can drop for one player: nobody abandoned it, it
+ * went MIN_DROP_ROUNDS rounds, and the player played in it.
+ */
+export function dropEligible(game: {
+  abandoned: boolean;
+  maxRounds: number;
+  playerRounds: number;
+}): boolean {
+  return !game.abandoned && game.maxRounds >= MIN_DROP_ROUNDS && game.playerRounds > 0;
+}
+
+/** The mode a game's team size plays like (a tournament has no lobby to say). */
+export function modeForTeamSize(size: number | undefined): string | null {
+  if (size === 1) return '1v1';
+  if (size === 2) return '2v2';
+  return size ? '5v5' : null;
+}
+
 export interface SkinsConfig {
   enabled: boolean;
   matchmakingDrops: boolean;
-  /** Chance of a skin for each winning player, 0–100. */
+  /** Chance of a skin for each winning player, 0–100 (5v5; 2v2 and 1v1 in modeChances). */
   dropChance: number;
   /** Chance of a skin for each other player (losers, and everyone in a draw), 0–100. */
   playDropChance: number;
+  /** The smaller modes drop less: a 1v1 is over in minutes. */
+  modeChances: Record<SmallMode, { win: number; play: number }>;
+  /** Tournament matches drop too (with the same chances), unless the tournament turns skins off. */
+  tournamentMatchDrops: boolean;
+  /** Every new matchmaking level is a drop to pick from. */
+  levelUpDrops: boolean;
   /** Relative weight per rarity for random drops. */
   rarityWeights: Record<Rarity, number>;
   tournamentRewards: boolean;
@@ -129,6 +181,9 @@ export const DEFAULT_CONFIG: SkinsConfig = {
   matchmakingDrops: true,
   dropChance: 20,
   playDropChance: 5,
+  modeChances: { '2v2': { win: 10, play: 3 }, '1v1': { win: 5, play: 1 } },
+  tournamentMatchDrops: true,
+  levelUpDrops: true,
   rarityWeights: {
     common: 40,
     uncommon: 25,
@@ -165,7 +220,7 @@ export interface OwnedSkin {
   slot: string;
   float: number;
   pattern: number;
-  source: 'matchmaking' | 'tournament' | 'admin';
+  source: 'matchmaking' | 'tournament' | 'admin' | 'level';
   sourceLabel: string | null;
   sourceRef: string | null;
   place: number | null;
@@ -174,6 +229,10 @@ export interface OwnedSkin {
   createdAt: number;
   seen: boolean;
   equipped: boolean;
+  /** Where it is equipped: 0 both sides, 2 T, 3 CT (empty when it is not). */
+  equippedSides: LoadoutTeam[];
+  /** The one side that uses this weapon, or null when both do. */
+  side: 2 | 3 | null;
 }
 
 interface SkinRow {
@@ -193,6 +252,45 @@ interface SkinRow {
   variant: string | null;
   created_at: number;
   seen: boolean;
+}
+
+/** A loadout side: 0 both, 2 T, 3 CT (CS2's team numbers). */
+export type LoadoutTeam = 0 | 2 | 3;
+
+const T_ONLY = new Set([
+  'weapon_ak47',
+  'weapon_galilar',
+  'weapon_glock',
+  'weapon_tec9',
+  'weapon_sg556',
+  'weapon_g3sg1',
+  'weapon_mac10',
+  'weapon_sawedoff',
+]);
+const CT_ONLY = new Set([
+  'weapon_m4a1',
+  'weapon_m4a1_silencer',
+  'weapon_famas',
+  'weapon_usp_silencer',
+  'weapon_hkp2000',
+  'weapon_fiveseven',
+  'weapon_aug',
+  'weapon_scar20',
+  'weapon_mp9',
+  'weapon_mag7',
+]);
+
+/** The one side that buys a weapon (2 T, 3 CT), or null when both do (knives and gloves too). */
+export function sideOf(weapon: string): 2 | 3 | null {
+  if (T_ONLY.has(weapon)) return 2;
+  if (CT_ONLY.has(weapon)) return 3;
+  return null;
+}
+
+/** The side a skin is equipped for: a one-side weapon is always "both" (its side is the only one). */
+export function equipTeam(weapon: string, wanted: unknown): LoadoutTeam {
+  if (sideOf(weapon) !== null) return 0;
+  return wanted === 2 || wanted === 3 ? wanted : 0;
 }
 
 /** The loadout slot a weapon fills: every knife shares one, every glove one. */
@@ -216,6 +314,34 @@ export function rollPattern(seeds?: number[]): number {
 }
 
 /** A rarity drawn by weight; null when every weight is zero. */
+export interface RarityOdds {
+  rarity: Rarity;
+  /** Percent of drop options that come out this rarity. */
+  chance: number;
+  /** How many skins share it. */
+  skins: number;
+  /** Percent of drop options that are one exact skin of this rarity. */
+  perSkin: number;
+}
+
+/**
+ * The odds a drop option has, from the rarity weights and how many skins
+ * each rarity has: a rarity with no skins never comes up, so the others
+ * share its weight; within a rarity every skin is as likely.
+ */
+export function dropOdds(
+  weights: Record<Rarity, number>,
+  counts: Partial<Record<Rarity, number>>
+): RarityOdds[] {
+  const live = RARITIES.filter((r) => (counts[r] ?? 0) > 0 && Math.max(0, weights[r] ?? 0) > 0);
+  const total = live.reduce((sum, r) => sum + weights[r], 0);
+  return RARITIES.map((rarity) => {
+    const skins = counts[rarity] ?? 0;
+    const chance = total > 0 && live.includes(rarity) ? (weights[rarity] / total) * 100 : 0;
+    return { rarity, chance, skins, perSkin: skins > 0 ? chance / skins : 0 };
+  });
+}
+
 export function rollRarity(weights: Record<Rarity, number>): Rarity | null {
   const entries = RARITIES.map((r) => [r, Math.max(0, weights[r] ?? 0)] as const).filter(
     ([, w]) => w > 0
@@ -232,7 +358,13 @@ export function rollRarity(weights: Record<Rarity, number>): Rarity | null {
 
 let catalogCache: { at: number; skins: CatalogSkin[] } | null = null;
 
-function toRow(row: SkinRow, equipped: Set<number>): OwnedSkin {
+function toRow(row: SkinRow, equipped: Map<number, LoadoutTeam[]> | Set<number>): OwnedSkin {
+  const sides =
+    equipped instanceof Map
+      ? (equipped.get(row.id) ?? [])
+      : equipped.has(row.id)
+        ? [0 as const]
+        : [];
   return {
     id: row.id,
     weapon: row.weapon,
@@ -250,7 +382,9 @@ function toRow(row: SkinRow, equipped: Set<number>): OwnedSkin {
     variant: row.variant ?? null,
     createdAt: row.created_at,
     seen: Boolean(row.seen),
-    equipped: equipped.has(row.id),
+    equipped: sides.length > 0,
+    equippedSides: sides,
+    side: sideOf(row.weapon),
   };
 }
 
@@ -286,6 +420,21 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
       typeof raw.playDropChance === 'number' && Number.isFinite(raw.playDropChance)
         ? Math.max(0, Math.min(100, raw.playDropChance))
         : DEFAULT_CONFIG.playDropChance,
+    modeChances: (['2v2', '1v1'] as const).reduce(
+      (out, mode) => {
+        const given = raw.modeChances?.[mode];
+        const pct = (v: unknown, fallback: number) =>
+          typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : fallback;
+        out[mode] = {
+          win: pct(given?.win, DEFAULT_CONFIG.modeChances[mode].win),
+          play: pct(given?.play, DEFAULT_CONFIG.modeChances[mode].play),
+        };
+        return out;
+      },
+      {} as SkinsConfig['modeChances']
+    ),
+    tournamentMatchDrops: raw.tournamentMatchDrops !== false,
+    levelUpDrops: raw.levelUpDrops !== false,
     rarityWeights: weights,
     tournamentRewards: raw.tournamentRewards !== false,
     rewards,
@@ -319,6 +468,55 @@ async function uidOf(steamId: string): Promise<string | null> {
     steamId,
   ]);
   return row?.uid ?? null;
+}
+
+export interface LoadoutRow {
+  weapon: string;
+  paint_kit: number;
+  float_value: number;
+  pattern: number;
+  slot: string;
+  team: number;
+}
+
+export interface LoadoutPayload {
+  paints: Array<{ team: LoadoutTeam; defindex: number; paint: number; wear: number; seed: number }>;
+  knife?: Array<{ team: LoadoutTeam; defindex: number }>;
+  gloves?: Array<{ team: LoadoutTeam; defindex: number }>;
+}
+
+/**
+ * Equipped rows as Ready Up's `skins.loadout` items: a paint per row with its
+ * side, and the knife and gloves named per side so the plugin swaps them in.
+ * Null with nothing it can paint.
+ */
+export function loadoutPayload(rows: LoadoutRow[]): LoadoutPayload | null {
+  // One row per side: the plugin uses a side's own (2 T, 3 CT) over "both" (0).
+  const paints: Array<{
+    team: LoadoutTeam;
+    defindex: number;
+    paint: number;
+    wear: number;
+    seed: number;
+  }> = [];
+  const knife: Array<{ team: LoadoutTeam; defindex: number }> = [];
+  const gloves: Array<{ team: LoadoutTeam; defindex: number }> = [];
+  for (const row of rows) {
+    const defindex = WEAPON_DEFINDEX[row.weapon];
+    if (!defindex || !row.paint_kit) continue;
+    const team = ([0, 2, 3].includes(Number(row.team)) ? Number(row.team) : 0) as LoadoutTeam;
+    paints.push({
+      team,
+      defindex,
+      paint: row.paint_kit,
+      wear: Math.max(0, Math.min(1, Number(row.float_value))),
+      seed: Math.max(0, Math.min(1000, row.pattern)),
+    });
+    if (row.slot === 'knife') knife.push({ team, defindex });
+    if (row.slot === 'gloves') gloves.push({ team, defindex });
+  }
+  if (!paints.length) return null;
+  return { paints, ...(knife.length ? { knife } : {}), ...(gloves.length ? { gloves } : {}) };
 }
 
 export const skinService = {
@@ -414,12 +612,13 @@ export const skinService = {
       ]
     );
     if (row?.id) {
+      // A first skin for a slot goes on, for both sides; the showcase is the player's own pick.
       await db.runAsync(
-        `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id) VALUES (?, ?, ?)
-         ON CONFLICT (player_uid, slot) DO NOTHING`,
-        [playerUid, slotOf(skin.weapon), row.id]
+        `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id, team)
+         SELECT ?, ?, ?, 0 WHERE NOT EXISTS (
+           SELECT 1 FROM cs2_player_loadout WHERE player_uid = ? AND slot = ?)`,
+        [playerUid, slotOf(skin.weapon), row.id, playerUid, slotOf(skin.weapon)]
       );
-      await this.addToShowcase(playerUid, row.id, slotOf(skin.weapon));
     }
     // The reveal shows at once on any page the player has open.
     const player = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [
@@ -455,32 +654,87 @@ export const skinService = {
   },
 
   /**
-   * A finished matchmaking game: each winner gets a skin with the winners'
-   * chance, everyone else with the chance for playing. Never throws; a failed
-   * drop only logs.
+   * A finished matchmaking or tournament game: each player who played it may
+   * get a drop to pick from, with the mode's chance (winners likelier), less
+   * for a repeat against the same opponents within a day. A game someone
+   * abandoned, or one over before MIN_DROP_ROUNDS rounds (walkover, early
+   * end), drops nothing. Never throws; a failed drop only logs.
    */
   async rollMatchDrops(
     matchSlug: string,
     winnerSteamIds: string[],
     otherSteamIds: string[],
-    mapLabel?: string
+    mapLabel?: string,
+    game: { source?: 'matchmaking' | 'tournament'; teamSize?: number } = {}
   ): Promise<void> {
     try {
       const config = await this.config();
-      if (!config.enabled || !config.matchmakingDrops) return;
+      const source = game.source ?? 'matchmaking';
+      if (!config.enabled) return;
+      if (source === 'matchmaking' ? !config.matchmakingDrops : !config.tournamentMatchDrops)
+        return;
+      const lobby = await db.queryOneAsync<{ id: string; mode: string }>(
+        'SELECT id, mode FROM mm_lobbies WHERE match_slug = ?',
+        [matchSlug]
+      );
+      const abandoned = lobby
+        ? Boolean(
+            await db.queryOneAsync(
+              "SELECT 1 FROM mm_penalties WHERE lobby_id = ? AND kind = 'abandon' LIMIT 1",
+              [lobby.id]
+            )
+          )
+        : false;
+      // Who played, and how long the game went (the stats rows are written first).
+      const rounds = new Map(
+        (
+          await db.queryAsync<{ player_id: string; rounds_played: number | null }>(
+            'SELECT player_id, rounds_played FROM player_match_stats WHERE match_slug = ?',
+            [matchSlug]
+          )
+        ).map((r) => [r.player_id, Number(r.rounds_played ?? 0)])
+      );
+      const maxRounds = Math.max(0, ...rounds.values());
+      if (abandoned || maxRounds < MIN_DROP_ROUNDS) return;
+      const dayAgo = Math.floor(Date.now() / 1000) - 86400;
       const players = [
-        ...winnerSteamIds.map((steamId) => ({ steamId, chance: config.dropChance })),
-        ...otherSteamIds.map((steamId) => ({ steamId, chance: config.playDropChance })),
+        ...winnerSteamIds.map((steamId) => ({ steamId, won: true, opponents: otherSteamIds })),
+        ...otherSteamIds.map((steamId) => ({
+          steamId,
+          won: false,
+          opponents: winnerSteamIds.length ? winnerSteamIds : otherSteamIds,
+        })),
       ];
-      for (const { steamId, chance } of players) {
-        if (chance <= 0 || randomInt(0, 10000) >= chance * 100) continue;
+      for (const { steamId, won, opponents } of players) {
         const uid = await uidOf(steamId);
         if (!uid) continue;
+        if (!dropEligible({ abandoned, maxRounds, playerRounds: rounds.get(steamId) ?? 0 }))
+          continue;
+        const others = opponents.filter((id) => id !== steamId);
+        const repeats = others.length
+          ? Number(
+              (
+                await db.queryOneAsync<{ n: number }>(
+                  `SELECT COUNT(DISTINCT s.match_slug)::int AS n
+                     FROM player_match_stats s
+                     JOIN player_match_stats o ON o.match_slug = s.match_slug AND o.team <> s.team
+                     JOIN matches m ON m.slug = s.match_slug
+                    WHERE s.player_id = ? AND s.match_slug <> ? AND s.created_at > ?
+                      AND (m.source = 'matchmaking' OR (m.source IS NULL AND m.round > 0))
+                      AND o.player_id IN (${others.map(() => '?').join(', ')})`,
+                  [steamId, matchSlug, dayAgo, ...others]
+                )
+              )?.n ?? 0
+            )
+          : 0;
+        const mode = lobby?.mode ?? modeForTeamSize(game.teamSize);
+        const chance = matchDropChance(config, mode, won, repeats);
+        if (chance <= 0 || randomInt(0, 10000) >= chance * 100) continue;
         // A choice of three, each with its own rarity roll: the player keeps one.
         const options = await this.pickOptions(() => this.pick(null, config.rarityWeights));
         if (!options.length) continue;
         await this.offerChoice(uid, options, {
-          source: 'matchmaking',
+          source,
           label: mapLabel,
           ref: matchSlug,
         });
@@ -488,6 +742,58 @@ export const skinService = {
     } catch (error) {
       log.warn('[Skins] Match drops failed', { matchSlug, error: (error as Error).message });
     }
+  },
+
+  /**
+   * A new matchmaking level: a drop to pick from, once per level (the
+   * choice's `source_ref` is `level:<n>`). Never throws.
+   */
+  async levelUpDrop(steamId: string, level: number): Promise<void> {
+    try {
+      const config = await this.config();
+      if (!config.enabled || !config.levelUpDrops || level < 2) return;
+      const uid = await uidOf(steamId);
+      if (!uid) return;
+      const ref = `level:${level}`;
+      const already = await db.queryOneAsync(
+        'SELECT 1 FROM cs2_skin_choices WHERE player_uid = ? AND source_ref = ? LIMIT 1',
+        [uid, ref]
+      );
+      if (already) return;
+      const options = await this.pickOptions(() => this.pick(null, config.rarityWeights));
+      if (!options.length) return;
+      await this.offerChoice(uid, options, { source: 'level', label: `Level ${level}`, ref });
+    } catch (error) {
+      log.warn('[Skins] Level-up drop failed', { steamId, level, error: (error as Error).message });
+    }
+  },
+
+  /** What players may see of the drops: the odds per rarity and per skin, and when drops happen. */
+  async odds() {
+    const config = await this.config();
+    const counts: Partial<Record<Rarity, number>> = {};
+    for (const skin of await this.catalog()) counts[skin.rarity] = (counts[skin.rarity] ?? 0) + 1;
+    return {
+      enabled: config.enabled,
+      optionsPerDrop: CHOICE_COUNT,
+      rarities: dropOdds(config.rarityWeights, counts),
+      matchmakingDrops: config.matchmakingDrops,
+      tournamentMatchDrops: config.tournamentMatchDrops,
+      levelUpDrops: config.levelUpDrops,
+      chances: {
+        '5v5': { win: config.dropChance, play: config.playDropChance },
+        ...config.modeChances,
+      },
+      tournamentRewards: config.tournamentRewards
+        ? config.rewards.map((r) => ({
+            place: r.place,
+            mode: r.mode,
+            rarity: r.rarity ?? null,
+            weapon: r.weapon ?? null,
+            name: r.name ?? null,
+          }))
+        : [],
+    };
   },
 
   /** Three different catalogue skins from `roll` (fewer when the catalogue cannot give three). */
@@ -628,7 +934,8 @@ export const skinService = {
 
   /**
    * A finished tournament: every player of the teams placed 1st, 2nd and 3rd
-   * gets that place's reward. Runs once per tournament (`source_ref`).
+   * who played in it gets that place's reward. Runs once per tournament
+   * (`source_ref`).
    */
   async awardTournament(
     tournamentId: number,
@@ -645,11 +952,28 @@ export const skinService = {
         [ref]
       );
       if (already) return;
+      // Only the people who played: a roster's placeholder players and bots never join a
+      // server, so they have no rounds in the tournament's matches.
+      const rostered = placements.flatMap((p) => p.steamIds);
+      const played = new Set(
+        rostered.length
+          ? (
+              await db.queryAsync<{ player_id: string }>(
+                `SELECT DISTINCT s.player_id FROM player_match_stats s
+                   JOIN matches m ON m.slug = s.match_slug
+                  WHERE m.tournament_id = ? AND COALESCE(s.rounds_played, 0) > 0
+                    AND s.player_id IN (${rostered.map(() => '?').join(', ')})`,
+                [tournamentId, ...rostered]
+              )
+            ).map((r) => r.player_id)
+          : []
+      );
       const catalog = await this.catalog();
       for (const { place, steamIds } of placements) {
         const reward = config.rewards.find((r) => r.place === place);
         if (!reward) continue;
         for (const steamId of steamIds) {
+          if (!played.has(steamId)) continue;
           const uid = await uidOf(steamId);
           if (!uid) continue;
           let skin: CatalogSkin | null = null;
@@ -694,29 +1018,52 @@ export const skinService = {
       'SELECT * FROM cs2_player_skins WHERE player_uid = ? ORDER BY created_at DESC, id DESC',
       [playerUid]
     );
-    const equipped = await db.queryAsync<{ skin_id: number }>(
-      'SELECT skin_id FROM cs2_player_loadout WHERE player_uid = ?',
+    const equipped = await db.queryAsync<{ skin_id: number; team: number }>(
+      'SELECT skin_id, team FROM cs2_player_loadout WHERE player_uid = ?',
       [playerUid]
     );
-    const set = new Set(equipped.map((e) => e.skin_id));
-    return rows.map((row) => toRow(row, set));
+    const sides = new Map<number, LoadoutTeam[]>();
+    for (const e of equipped) {
+      sides.set(e.skin_id, [...(sides.get(e.skin_id) ?? []), Number(e.team) as LoadoutTeam]);
+    }
+    return rows.map((row) => toRow(row, sides));
   },
 
-  /** Equips a skin in its slot, replacing what was there. */
-  async equip(playerUid: string, skinId: number): Promise<void> {
+  /**
+   * Equips a skin in its slot for a side (0 both, 2 T, 3 CT), replacing what
+   * that side had. "Both" also clears the slot's one-side picks. A weapon
+   * only one side buys is always equipped for both.
+   */
+  async equip(playerUid: string, skinId: number, team: unknown = 0): Promise<void> {
     const skin = await db.queryOneAsync<SkinRow>(
       'SELECT * FROM cs2_player_skins WHERE id = ? AND player_uid = ?',
       [skinId, playerUid]
     );
     if (!skin) throw new SkinError(404, 'That skin is not in your inventory.');
+    const slot = slotOf(skin.weapon);
+    const side = equipTeam(skin.weapon, team);
+    if (side === 0) {
+      await db.runAsync(
+        'DELETE FROM cs2_player_loadout WHERE player_uid = ? AND slot = ? AND team <> 0',
+        [playerUid, slot]
+      );
+    }
     await db.runAsync(
-      `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id) VALUES (?, ?, ?)
-       ON CONFLICT (player_uid, slot) DO UPDATE SET skin_id = EXCLUDED.skin_id`,
-      [playerUid, slotOf(skin.weapon), skinId]
+      `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id, team) VALUES (?, ?, ?, ?)
+       ON CONFLICT (player_uid, slot, team) DO UPDATE SET skin_id = EXCLUDED.skin_id`,
+      [playerUid, slot, skinId, side]
     );
   },
 
-  async unequip(playerUid: string, slot: string): Promise<void> {
+  /** Empties a slot: one side's pick (2, 3), or every side's (no team). */
+  async unequip(playerUid: string, slot: string, team?: unknown): Promise<void> {
+    if (team === 0 || team === 2 || team === 3) {
+      await db.runAsync(
+        'DELETE FROM cs2_player_loadout WHERE player_uid = ? AND slot = ? AND team = ?',
+        [playerUid, slot, team]
+      );
+      return;
+    }
     await db.runAsync('DELETE FROM cs2_player_loadout WHERE player_uid = ? AND slot = ?', [
       playerUid,
       slot,
@@ -805,9 +1152,15 @@ export const skinService = {
    * are off, or with nothing equipped.
    */
   async loadoutItems(steamId: string): Promise<{
-    paints: Array<{ team: 0; defindex: number; paint: number; wear: number; seed: number }>;
-    knife?: Array<{ team: 0; defindex: number }>;
-    gloves?: Array<{ team: 0; defindex: number }>;
+    paints: Array<{
+      team: LoadoutTeam;
+      defindex: number;
+      paint: number;
+      wear: number;
+      seed: number;
+    }>;
+    knife?: Array<{ team: LoadoutTeam; defindex: number }>;
+    gloves?: Array<{ team: LoadoutTeam; defindex: number }>;
   } | null> {
     if (!(await this.config()).enabled) return null;
     const uid = await uidOf(steamId);
@@ -818,31 +1171,14 @@ export const skinService = {
       float_value: number;
       pattern: number;
       slot: string;
+      team: number;
     }>(
-      `SELECT s.weapon, s.paint_kit, s.float_value, s.pattern, l.slot
+      `SELECT s.weapon, s.paint_kit, s.float_value, s.pattern, l.slot, l.team
          FROM cs2_player_loadout l JOIN cs2_player_skins s ON s.id = l.skin_id
         WHERE l.player_uid = ?`,
       [uid]
     );
-    const paints: Array<{ team: 0; defindex: number; paint: number; wear: number; seed: number }> =
-      [];
-    let knife: Array<{ team: 0; defindex: number }> | undefined;
-    let gloves: Array<{ team: 0; defindex: number }> | undefined;
-    for (const row of rows) {
-      const defindex = WEAPON_DEFINDEX[row.weapon];
-      if (!defindex || !row.paint_kit) continue;
-      paints.push({
-        team: 0,
-        defindex,
-        paint: row.paint_kit,
-        wear: Math.max(0, Math.min(1, Number(row.float_value))),
-        seed: Math.max(0, Math.min(1000, row.pattern)),
-      });
-      if (row.slot === 'knife') knife = [{ team: 0, defindex }];
-      if (row.slot === 'gloves') gloves = [{ team: 0, defindex }];
-    }
-    if (!paints.length) return null;
-    return { paints, ...(knife ? { knife } : {}), ...(gloves ? { gloves } : {}) };
+    return loadoutPayload(rows);
   },
 
   /** Admin: the numbers at the top of the Skins page. */

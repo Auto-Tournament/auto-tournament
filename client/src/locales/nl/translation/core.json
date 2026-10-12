@@ -143,5 +143,12 @@
       "license_problem": "The license needs attention: {{problem}}",
       "demos_failing": "{{count}} demo analyses failed in the last hour"
     }
+  },
+  "matchNow": {
+    "title": "Your match",
+    "none": "No match right now",
+    "noneBody": "You have no match coming up. Find one in Play, or join a tournament.",
+    "play": "Play",
+    "home": "Home"
   }
 }
