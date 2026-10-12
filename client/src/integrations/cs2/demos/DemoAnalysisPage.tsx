@@ -160,8 +160,12 @@ export function DemoAnalysisPage() {
   }, [mapName, t]);
 
   const players = useMemo(() => new Map((data?.players ?? []).map((p) => [p.id, p])), [data]);
+  // A bot that died in a bot-filled match is "bot:<name>" (worker/analyze.go).
   const nameOf = (id: string | null) =>
-    id ? (players.get(id)?.name ?? `…${id.slice(-4)}`) : t('analysis.world');
+    id
+      ? (players.get(id)?.name ??
+        (id.startsWith('bot:') ? `BOT ${id.slice(4)}` : `…${id.slice(-4)}`))
+      : t('analysis.world');
 
   // Which side each team played each round: the side its players were on in
   // that round's kills; a round without them keeps the last known, switched

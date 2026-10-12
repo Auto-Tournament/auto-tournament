@@ -366,14 +366,25 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 	roundNow := func() int { return len(rounds) + 1 }
 
 	p.RegisterEventHandler(func(e events.Kill) {
-		if !live || gs.IsWarmupPeriod() || !human(e.Victim) {
+		if !live || gs.IsWarmupPeriod() || e.Victim == nil {
 			return
 		}
-		named(e.Victim)
+		// A bot's death counts only as a human's kill (bot-filled matches):
+		// without it, the humans' frags on bots made no highlights at all.
+		victimBot := !human(e.Victim)
+		if victimBot && !human(e.Killer) {
+			return
+		}
+		victim := "bot:" + e.Victim.Name
+		if !victimBot {
+			named(e.Victim)
+			victim = id(e.Victim)
+		}
 		k := Kill{
 			Tick:         gs.IngameTick(),
 			Round:        roundNow(),
-			Victim:       id(e.Victim),
+			Victim:       victim,
+			VictimBot:    victimBot,
 			Headshot:     e.IsHeadshot,
 			Penetrated:   e.PenetratedObjects > 0,
 			ThroughSmoke: e.ThroughSmoke,
