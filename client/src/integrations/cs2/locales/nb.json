@@ -1872,7 +1872,12 @@
       "edge": "Mellom {{a}} og {{b}}",
       "podiumHint": "Klikk et trinn for å endre hva det gir.",
       "rewardTitle": "Premie for {{place}}",
-      "done": "Ferdig"
+      "done": "Ferdig",
+      "fiveVsFive": "Disse gjelder 5v5. Mindre moduser gir sjeldnere:",
+      "weeklyCapBefore": "Høyst",
+      "weeklyCapAfter": "drops per spiller i uka (0 = ingen grense).",
+      "weeklyCapLabel": "Drops per spiller i uka",
+      "fairRules": "Bare spillere som spilte hele kampen kan få noe: ingenting for en kamp noen forlot eller som sluttet tidlig, og samme motstandere igjen samme døgn gir mye sjeldnere. Turneringspremier går bare til spillere som spilte i turneringen."
     },
     "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)",
     "whatThisMeans": "Hva dette betyr",

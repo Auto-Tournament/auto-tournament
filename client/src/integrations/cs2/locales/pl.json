@@ -1912,7 +1912,12 @@
       "edge": "Między {{a}} a {{b}}",
       "podiumHint": "Kliknij stopień, aby zmienić, co daje.",
       "rewardTitle": "Nagroda za {{place}}",
-      "done": "Gotowe"
+      "done": "Gotowe",
+      "fiveVsFive": "These are for 5v5. Smaller modes drop less:",
+      "weeklyCapBefore": "At most",
+      "weeklyCapAfter": "drops per player a week (0 = no cap).",
+      "weeklyCapLabel": "Drops per player a week",
+      "fairRules": "Only players who played the whole game get a chance: nothing for an abandoned game or one that ended early, and a repeat against the same opponents within a day drops much less. Tournament rewards go only to players who played in the tournament."
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "Co to znaczy",

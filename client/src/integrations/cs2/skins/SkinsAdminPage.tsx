@@ -1,4 +1,13 @@
-import { useEffect, useRef, useState, type ChangeEvent, type InputHTMLAttributes, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type InputHTMLAttributes,
+  type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react';
 import {
   Autocomplete,
   Box,
@@ -20,12 +29,31 @@ import {
   Typography,
 } from '@mui/material';
 import { LockSimpleIcon } from '@phosphor-icons/react';
-import { api, useSnackbar, useModuleTranslation, tokens, radii, fontDisplay, mono, withAlpha, PageHead, pageTitle } from '../../../module-sdk';
+import {
+  api,
+  useSnackbar,
+  useModuleTranslation,
+  tokens,
+  radii,
+  fontDisplay,
+  mono,
+  withAlpha,
+  PageHead,
+  pageTitle,
+} from '../../../module-sdk';
 import { rarityColor } from './rarity';
 import { SkinsInventoryAdmin } from './SkinsInventoryAdmin';
 
 const { color } = tokens;
-const RARITIES = ['common', 'uncommon', 'rare', 'mythical', 'legendary', 'ancient', 'immortal'] as const;
+const RARITIES = [
+  'common',
+  'uncommon',
+  'rare',
+  'mythical',
+  'legendary',
+  'ancient',
+  'immortal',
+] as const;
 type Rarity = (typeof RARITIES)[number];
 
 interface Reward {
@@ -44,6 +72,8 @@ interface Config {
   matchmakingDrops: boolean;
   dropChance: number;
   playDropChance: number;
+  modeChances: Record<'2v2' | '1v1', { win: number; play: number }>;
+  weeklyCap: number;
   rarityWeights: Record<Rarity, number>;
   tournamentRewards: boolean;
   rewards: Reward[];
@@ -81,12 +111,17 @@ function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward)
     };
   }, [query, reward.mode]);
 
-  const picked = reward.weapon && reward.name ? options.find((o) => o.weapon === reward.weapon && o.name === reward.name) : undefined;
+  const picked =
+    reward.weapon && reward.name
+      ? options.find((o) => o.weapon === reward.weapon && o.name === reward.name)
+      : undefined;
 
   return (
     <Stack spacing={1.5} data-testid={`skins-reward-${reward.place}`}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-        <Typography sx={{ width: 36, fontWeight: 700, color: PLACE_COLOR[reward.place - 1] }}>{t(`skins.admin.place${reward.place}`)}</Typography>
+        <Typography sx={{ width: 36, fontWeight: 700, color: PLACE_COLOR[reward.place - 1] }}>
+          {t(`skins.admin.place${reward.place}`)}
+        </Typography>
         <ToggleButtonGroup
           exclusive
           size="small"
@@ -97,10 +132,25 @@ function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward)
           <ToggleButton value="skin">{t('skins.admin.pickSkin')}</ToggleButton>
         </ToggleButtonGroup>
         {reward.mode === 'random' ? (
-          <Select size="small" value={reward.rarity ?? 'rare'} onChange={(e) => onChange({ ...reward, rarity: e.target.value as Rarity })} sx={{ minWidth: 180 }}>
+          <Select
+            size="small"
+            value={reward.rarity ?? 'rare'}
+            onChange={(e) => onChange({ ...reward, rarity: e.target.value as Rarity })}
+            sx={{ minWidth: 180 }}
+          >
             {RARITIES.map((r) => (
               <MenuItem key={r} value={r}>
-                <Box component="span" sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: rarityColor[r], display: 'inline-block', mr: 1 }} />
+                <Box
+                  component="span"
+                  sx={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    bgcolor: rarityColor[r],
+                    display: 'inline-block',
+                    mr: 1,
+                  }}
+                />
                 {t('skins.admin.anyRarity', { rarity: t(`skins.rarity.${r}`) })}
               </MenuItem>
             ))}
@@ -110,17 +160,40 @@ function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward)
             size="small"
             sx={{ minWidth: 280, flex: 1 }}
             options={options}
-            value={picked ?? (reward.weapon && reward.name ? ({ weapon: reward.weapon, name: reward.name, weaponName: reward.weapon, rarity: 'rare', image: '' } as CatalogSkin) : null)}
+            value={
+              picked ??
+              (reward.weapon && reward.name
+                ? ({
+                    weapon: reward.weapon,
+                    name: reward.name,
+                    weaponName: reward.weapon,
+                    rarity: 'rare',
+                    image: '',
+                  } as CatalogSkin)
+                : null)
+            }
             getOptionLabel={(o) => `${o.weaponName} · ${o.name}`}
             isOptionEqualToValue={(a, b) => a.weapon === b.weapon && a.name === b.name}
             onInputChange={(_, value) => setQuery(value)}
-            onChange={(_, value) => onChange({ ...reward, weapon: value?.weapon, name: value?.name })}
+            onChange={(_, value) =>
+              onChange({ ...reward, weapon: value?.weapon, name: value?.name })
+            }
             renderInput={(params) => <TextField {...params} label={t('skins.admin.skin')} />}
           />
         )}
       </Box>
       {reward.mode === 'skin' && (
-        <Box sx={{ ml: { md: 6 }, p: 2, borderRadius: '14px', bgcolor: color.paper3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box
+          sx={{
+            ml: { md: 6 },
+            p: 2,
+            borderRadius: '14px',
+            bgcolor: color.paper3,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+          }}
+        >
           <Typography variant="body2" color="text.secondary">
             {t('skins.admin.variantsNote')}
           </Typography>
@@ -128,24 +201,61 @@ function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward)
             <Typography variant="body2" sx={{ minWidth: 80 }}>
               {t('skins.float')}
             </Typography>
-            <TextField size="small" type="number" label={t('skins.admin.lowest')} value={reward.floatMin ?? 0} onChange={(e) => onChange({ ...reward, floatMin: Number(e.target.value) })} inputProps={{ min: 0, max: 1, step: 0.01 }} sx={{ width: 120 }} />
-            <TextField size="small" type="number" label={t('skins.admin.highest')} value={reward.floatMax ?? 1} onChange={(e) => onChange({ ...reward, floatMax: Number(e.target.value) })} inputProps={{ min: 0, max: 1, step: 0.01 }} sx={{ width: 120 }} />
+            <TextField
+              size="small"
+              type="number"
+              label={t('skins.admin.lowest')}
+              value={reward.floatMin ?? 0}
+              onChange={(e) => onChange({ ...reward, floatMin: Number(e.target.value) })}
+              inputProps={{ min: 0, max: 1, step: 0.01 }}
+              sx={{ width: 120 }}
+            />
+            <TextField
+              size="small"
+              type="number"
+              label={t('skins.admin.highest')}
+              value={reward.floatMax ?? 1}
+              onChange={(e) => onChange({ ...reward, floatMax: Number(e.target.value) })}
+              inputProps={{ min: 0, max: 1, step: 0.01 }}
+              sx={{ width: 120 }}
+            />
           </Box>
           <Box>
             <Typography variant="body2">{t('skins.pattern')}</Typography>
             <Typography variant="caption" color="text.secondary">
               {t('skins.admin.seedsHint')}
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, alignItems: 'center', mt: 1, p: 1, borderRadius: '12px', border: `1px solid ${color.rule}`, bgcolor: color.paper2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 0.75,
+                alignItems: 'center',
+                mt: 1,
+                p: 1,
+                borderRadius: '12px',
+                border: `1px solid ${color.rule}`,
+                bgcolor: color.paper2,
+              }}
+            >
               {(reward.seeds ?? []).map((seed) => (
-                <Chip key={seed} size="small" label={seed} onDelete={() => onChange({ ...reward, seeds: (reward.seeds ?? []).filter((s) => s !== seed) })} />
+                <Chip
+                  key={seed}
+                  size="small"
+                  label={seed}
+                  onDelete={() =>
+                    onChange({ ...reward, seeds: (reward.seeds ?? []).filter((s) => s !== seed) })
+                  }
+                />
               ))}
               <Box
                 component="input"
                 value={seedInput}
                 placeholder={t('skins.admin.addSeed')}
                 aria-label={t('skins.admin.addSeed')}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setSeedInput(e.target.value.replace(/[^0-9]/g, ''))}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setSeedInput(e.target.value.replace(/[^0-9]/g, ''))
+                }
                 onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
                   if (e.key !== 'Enter' && e.key !== ',') return;
                   e.preventDefault();
@@ -155,7 +265,16 @@ function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward)
                   }
                   setSeedInput('');
                 }}
-                sx={{ flex: 1, minWidth: 120, border: 'none', outline: 'none', bgcolor: 'transparent', color: color.ink, font: 'inherit', p: 0.75 }}
+                sx={{
+                  flex: 1,
+                  minWidth: 120,
+                  border: 'none',
+                  outline: 'none',
+                  bgcolor: 'transparent',
+                  color: color.ink,
+                  font: 'inherit',
+                  p: 0.75,
+                }}
               />
             </Box>
           </Box>
@@ -170,7 +289,13 @@ interface Stats {
   givenThisWeek: number;
   playersWithSkins: number;
   players: number;
-  rarest: { weaponName: string; name: string; rarity: Rarity; imageUrl: string; owner: string | null } | null;
+  rarest: {
+    weaponName: string;
+    name: string;
+    rarity: Rarity;
+    imageUrl: string;
+    owner: string | null;
+  } | null;
 }
 
 /** Weights as whole percentages summing to 100 (largest remainder), in rarity order. */
@@ -190,14 +315,21 @@ function toPercents(weights: Record<Rarity, number>): number[] {
   return floors;
 }
 
-const fromPercents = (shares: number[]) => Object.fromEntries(RARITIES.map((r, i) => [r, shares[i]])) as Record<Rarity, number>;
+const fromPercents = (shares: number[]) =>
+  Object.fromEntries(RARITIES.map((r, i) => [r, shares[i]])) as Record<Rarity, number>;
 
 /**
  * Which rarity drops, as one bar: each rarity's share is its width, and the
  * edge between two rarities drags (or moves with the arrow keys) to trade
  * share between them. Stored as percentages.
  */
-function RarityBar({ weights, onChange }: { weights: Record<Rarity, number>; onChange: (w: Record<Rarity, number>) => void }) {
+function RarityBar({
+  weights,
+  onChange,
+}: {
+  weights: Record<Rarity, number>;
+  onChange: (w: Record<Rarity, number>) => void;
+}) {
   const { t } = useModuleTranslation('cs2');
   const ref = useRef<HTMLDivElement>(null);
   const shares = toPercents(weights);
@@ -232,10 +364,31 @@ function RarityBar({ weights, onChange }: { weights: Record<Rarity, number>; onC
 
   return (
     <Box>
-      <Box ref={ref} sx={{ position: 'relative', height: 26, display: 'flex', alignItems: 'center' }} data-testid="skins-rarity-bar">
-        <Box sx={{ display: 'flex', width: '100%', height: 18, borderRadius: radii.pill, overflow: 'hidden' }} aria-hidden>
+      <Box
+        ref={ref}
+        sx={{ position: 'relative', height: 26, display: 'flex', alignItems: 'center' }}
+        data-testid="skins-rarity-bar"
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            width: '100%',
+            height: 18,
+            borderRadius: radii.pill,
+            overflow: 'hidden',
+          }}
+          aria-hidden
+        >
           {RARITIES.map((r, i) => (
-            <Box key={r} title={`${t(`skins.rarity.${r}`)} ${shares[i]}%`} sx={{ width: `${shares[i]}%`, bgcolor: rarityColor[r], transition: 'width 60ms linear' }} />
+            <Box
+              key={r}
+              title={`${t(`skins.rarity.${r}`)} ${shares[i]}%`}
+              sx={{
+                width: `${shares[i]}%`,
+                bgcolor: rarityColor[r],
+                transition: 'width 60ms linear',
+              }}
+            />
           ))}
         </Box>
         {RARITIES.slice(0, -1).map((r, i) => (
@@ -243,7 +396,10 @@ function RarityBar({ weights, onChange }: { weights: Record<Rarity, number>; onC
             key={r}
             role="slider"
             tabIndex={0}
-            aria-label={t('skins.admin.edge', { a: t(`skins.rarity.${r}`), b: t(`skins.rarity.${RARITIES[i + 1]}`) })}
+            aria-label={t('skins.admin.edge', {
+              a: t(`skins.rarity.${r}`),
+              b: t(`skins.rarity.${RARITIES[i + 1]}`),
+            })}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={starts[i + 1]}
@@ -252,7 +408,8 @@ function RarityBar({ weights, onChange }: { weights: Record<Rarity, number>; onC
             onKeyDown={(e: KeyboardEvent<HTMLElement>) => {
               const step = e.shiftKey ? 5 : 1;
               if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') moveEdge(i, starts[i + 1] - step);
-              else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') moveEdge(i, starts[i + 1] + step);
+              else if (e.key === 'ArrowRight' || e.key === 'ArrowUp')
+                moveEdge(i, starts[i + 1] + step);
               else return;
               e.preventDefault();
             }}
@@ -268,17 +425,41 @@ function RarityBar({ weights, onChange }: { weights: Record<Rarity, number>; onC
               display: 'grid',
               placeItems: 'center',
               outline: 'none',
-              '&::after': { content: '""', width: 3, height: 26, borderRadius: 2, bgcolor: color.paper, opacity: 0.85 },
+              '&::after': {
+                content: '""',
+                width: 3,
+                height: 26,
+                borderRadius: 2,
+                bgcolor: color.paper,
+                opacity: 0.85,
+              },
               '&:hover::after, &:focus-visible::after': { bgcolor: color.ink, opacity: 1 },
-              '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 1, borderRadius: '4px' },
+              '&:focus-visible': {
+                outline: `2px solid ${color.focus}`,
+                outlineOffset: 1,
+                borderRadius: '4px',
+              },
             }}
           />
         ))}
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '8px 14px', mt: 1.25 }}>
         {RARITIES.map((r, i) => (
-          <Box key={r} component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '0.8125rem', color: color.ink2 }}>
-            <Box component="span" sx={{ width: 10, height: 10, borderRadius: '3px', bgcolor: rarityColor[r] }} />
+          <Box
+            key={r}
+            component="span"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.75,
+              fontSize: '0.8125rem',
+              color: color.ink2,
+            }}
+          >
+            <Box
+              component="span"
+              sx={{ width: 10, height: 10, borderRadius: '3px', bgcolor: rarityColor[r] }}
+            />
             {t(`skins.rarity.${r}`)}
             <Box component="span" sx={{ fontFamily: mono, color: color.muted }}>
               {shares[i]}%
@@ -291,16 +472,39 @@ function RarityBar({ weights, onChange }: { weights: Record<Rarity, number>; onC
 }
 
 /** A big percentage that types in place (drop chance on a win, or on a loss). */
-function ChanceTile({ label, value, tone, onChange, testId }: { label: string; value: number; tone: string; onChange: (n: number) => void; testId?: string }) {
+function ChanceTile({
+  label,
+  value,
+  tone,
+  onChange,
+  testId,
+}: {
+  label: string;
+  value: number;
+  tone: string;
+  onChange: (n: number) => void;
+  testId?: string;
+}) {
   const { t } = useModuleTranslation('cs2');
   return (
-    <Box sx={{ borderRadius: '16px', bgcolor: withAlpha(tone, 0.14), p: 2, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+    <Box
+      sx={{
+        borderRadius: '16px',
+        bgcolor: withAlpha(tone, 0.14),
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.25,
+      }}
+    >
       <Typography sx={{ fontSize: '0.8125rem', color: tone }}>{label}</Typography>
       <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
         <InputBase
           type="number"
           value={value}
-          onChange={(e) => onChange(Math.max(0, Math.min(100, Math.round(Number(e.target.value) || 0))))}
+          onChange={(e) =>
+            onChange(Math.max(0, Math.min(100, Math.round(Number(e.target.value) || 0))))
+          }
           inputProps={{ min: 0, max: 100, 'aria-label': label, 'data-testid': testId }}
           sx={{
             fontFamily: fontDisplay,
@@ -308,40 +512,158 @@ function ChanceTile({ label, value, tone, onChange, testId }: { label: string; v
             fontWeight: 700,
             width: `${String(value).length}ch`,
             '& input': { p: 0, textAlign: 'right', MozAppearance: 'textfield' },
-            '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': { WebkitAppearance: 'none', m: 0 },
+            '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+              WebkitAppearance: 'none',
+              m: 0,
+            },
           }}
         />
-        <Typography sx={{ fontFamily: fontDisplay, fontSize: '1.875rem', fontWeight: 700 }}>%</Typography>
+        <Typography sx={{ fontFamily: fontDisplay, fontSize: '1.875rem', fontWeight: 700 }}>
+          %
+        </Typography>
       </Box>
-      <Typography sx={{ fontSize: '0.8125rem', color: color.ink2 }}>{t('skins.admin.chance')}</Typography>
+      <Typography sx={{ fontSize: '0.8125rem', color: color.ink2 }}>
+        {t('skins.admin.chance')}
+      </Typography>
     </Box>
+  );
+}
+
+/** A small number box (a percent or a count) inside a sentence. */
+function SmallNumber({
+  value,
+  max,
+  label,
+  onChange,
+  testId,
+}: {
+  value: number;
+  max: number;
+  label: string;
+  onChange: (n: number) => void;
+  testId?: string;
+}) {
+  return (
+    <InputBase
+      type="number"
+      value={value}
+      onChange={(e) =>
+        onChange(Math.max(0, Math.min(max, Math.round(Number(e.target.value) || 0))))
+      }
+      inputProps={{ min: 0, max, 'aria-label': label, 'data-testid': testId }}
+      sx={{
+        width: '4.5ch',
+        mx: 0.5,
+        px: 0.75,
+        borderRadius: '8px',
+        border: `1px solid ${color.rule}`,
+        bgcolor: color.paper,
+        fontWeight: 600,
+        '& input': { p: '2px 0', textAlign: 'right', MozAppearance: 'textfield' },
+        '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+          WebkitAppearance: 'none',
+          m: 0,
+        },
+      }}
+    />
   );
 }
 
 /** A card on the Skins page: a title with its own switch. */
-function SkinsCard({ id, title, checked, onToggle, children }: { id: string; title: string; checked: boolean; onToggle: (on: boolean) => void; children: ReactNode }) {
+function SkinsCard({
+  id,
+  title,
+  checked,
+  onToggle,
+  children,
+}: {
+  id: string;
+  title: string;
+  checked: boolean;
+  onToggle: (on: boolean) => void;
+  children: ReactNode;
+}) {
   return (
     <Box
       component="section"
       aria-labelledby={id}
-      sx={{ bgcolor: color.paper2, border: `1px solid ${color.rule}`, borderRadius: radii.lg, p: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 2.25, minWidth: 0 }}
+      sx={{
+        bgcolor: color.paper2,
+        border: `1px solid ${color.rule}`,
+        borderRadius: radii.lg,
+        p: { xs: 2, md: 3 },
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2.25,
+        minWidth: 0,
+      }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-        <Typography id={id} component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.1875rem', fontWeight: 600 }}>
+        <Typography
+          id={id}
+          component="h2"
+          sx={{ fontFamily: fontDisplay, fontSize: '1.1875rem', fontWeight: 600 }}
+        >
           {title}
         </Typography>
-        <Switch checked={checked} onChange={(e) => onToggle(e.target.checked)} slotProps={{ input: { 'aria-label': title } as InputHTMLAttributes<HTMLInputElement> }} />
+        <Switch
+          checked={checked}
+          onChange={(e) => onToggle(e.target.checked)}
+          slotProps={{ input: { 'aria-label': title } as InputHTMLAttributes<HTMLInputElement> }}
+        />
       </Box>
-      <Box sx={{ opacity: checked ? 1 : 0.5, transition: 'opacity 150ms', display: 'flex', flexDirection: 'column', gap: 2.25 }}>{children}</Box>
+      <Box
+        sx={{
+          opacity: checked ? 1 : 0.5,
+          transition: 'opacity 150ms',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2.25,
+        }}
+      >
+        {children}
+      </Box>
     </Box>
   );
 }
 
-function Stat({ label, value, sub, tone, small }: { label: string; value: ReactNode; sub: ReactNode; tone?: string; small?: boolean }) {
+function Stat({
+  label,
+  value,
+  sub,
+  tone,
+  small,
+}: {
+  label: string;
+  value: ReactNode;
+  sub: ReactNode;
+  tone?: string;
+  small?: boolean;
+}) {
   return (
-    <Box sx={{ bgcolor: color.paper2, border: `1px solid ${color.rule}`, borderRadius: radii.lg, p: 2.75, display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
+    <Box
+      sx={{
+        bgcolor: color.paper2,
+        border: `1px solid ${color.rule}`,
+        borderRadius: radii.lg,
+        p: 2.75,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.5,
+        minWidth: 0,
+      }}
+    >
       <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>{label}</Typography>
-      <Typography sx={{ fontFamily: fontDisplay, fontSize: small ? '1.375rem' : '2rem', fontWeight: 700, color: tone ?? color.ink, lineHeight: 1.25, overflowWrap: 'anywhere' }}>
+      <Typography
+        sx={{
+          fontFamily: fontDisplay,
+          fontSize: small ? '1.375rem' : '2rem',
+          fontWeight: 700,
+          color: tone ?? color.ink,
+          lineHeight: 1.25,
+          overflowWrap: 'anywhere',
+        }}
+      >
         {value}
       </Typography>
       <Typography noWrap sx={{ fontSize: '0.8125rem', color: color.ink2 }}>
@@ -413,13 +735,23 @@ export function SkinsAdminPage() {
     dirty.current = true;
     setConfig((c) => (c ? { ...c, ...patch } : c));
   };
-  const rewardFor = (place: 1 | 2 | 3): Reward => config.rewards.find((r) => r.place === place) ?? { place, mode: 'random', rarity: 'rare' };
+  const rewardFor = (place: 1 | 2 | 3): Reward =>
+    config.rewards.find((r) => r.place === place) ?? { place, mode: 'random', rarity: 'rare' };
   const setReward = (reward: Reward) =>
-    set({ rewards: [...config.rewards.filter((r) => r.place !== reward.place), reward].sort((a, b) => a.place - b.place) });
+    set({
+      rewards: [...config.rewards.filter((r) => r.place !== reward.place), reward].sort(
+        (a, b) => a.place - b.place
+      ),
+    });
   const rewardLabel = (reward: Reward) =>
     reward.mode === 'skin'
       ? { text: reward.name ? reward.name : t('skins.admin.pickSkin'), tone: color.ink }
-      : { text: t('skins.admin.anyRarity', { rarity: t(`skins.rarity.${reward.rarity ?? 'rare'}`) }), tone: rarityColor[reward.rarity ?? 'rare'] };
+      : {
+          text: t('skins.admin.anyRarity', {
+            rarity: t(`skins.rarity.${reward.rarity ?? 'rare'}`),
+          }),
+          tone: rarityColor[reward.rarity ?? 'rare'],
+        };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} data-testid="skins-settings">
@@ -450,38 +782,159 @@ export function SkinsAdminPage() {
             <Switch
               checked={config.enabled}
               onChange={(e) => set({ enabled: e.target.checked })}
-              slotProps={{ input: { 'aria-label': t('skins.admin.title'), 'data-testid': 'skins-enabled' } as InputHTMLAttributes<HTMLInputElement> }}
+              slotProps={{
+                input: {
+                  'aria-label': t('skins.admin.title'),
+                  'data-testid': 'skins-enabled',
+                } as InputHTMLAttributes<HTMLInputElement>,
+              }}
             />
           </Box>
         }
       />
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(3, minmax(0, 1fr))' }, gap: 1.75 }} data-testid="skins-stats">
-        <Stat label={t('skins.admin.stats.given')} value={stats?.given ?? '…'} sub={t('skins.admin.stats.thisWeek', { count: stats?.givenThisWeek ?? 0 })} />
-        <Stat label={t('skins.admin.stats.owners')} value={stats?.playersWithSkins ?? '…'} sub={t('skins.admin.stats.ofPlayers', { count: stats?.players ?? 0 })} />
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(3, minmax(0, 1fr))' },
+          gap: 1.75,
+        }}
+        data-testid="skins-stats"
+      >
+        <Stat
+          label={t('skins.admin.stats.given')}
+          value={stats?.given ?? '…'}
+          sub={t('skins.admin.stats.thisWeek', { count: stats?.givenThisWeek ?? 0 })}
+        />
+        <Stat
+          label={t('skins.admin.stats.owners')}
+          value={stats?.playersWithSkins ?? '…'}
+          sub={t('skins.admin.stats.ofPlayers', { count: stats?.players ?? 0 })}
+        />
         <Stat
           small
           label={t('skins.admin.stats.rarest')}
-          value={stats?.rarest ? `${stats.rarest.weaponName} | ${stats.rarest.name}` : t('skins.admin.stats.noneYet')}
+          value={
+            stats?.rarest
+              ? `${stats.rarest.weaponName} | ${stats.rarest.name}`
+              : t('skins.admin.stats.noneYet')
+          }
           tone={stats?.rarest ? rarityColor[stats.rarest.rarity] : color.muted}
           sub={stats?.rarest?.owner ?? ''}
         />
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.15fr) minmax(0, 1fr)' }, gap: 1.75, opacity: config.enabled ? 1 : 0.55, transition: 'opacity 150ms' }}>
-        <SkinsCard id="skins-drops" title={t('skins.admin.matchmaking')} checked={config.matchmakingDrops} onToggle={(on) => set({ matchmakingDrops: on })}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.15fr) minmax(0, 1fr)' },
+          gap: 1.75,
+          opacity: config.enabled ? 1 : 0.55,
+          transition: 'opacity 150ms',
+        }}
+      >
+        <SkinsCard
+          id="skins-drops"
+          title={t('skins.admin.matchmaking')}
+          checked={config.matchmakingDrops}
+          onToggle={(on) => set({ matchmakingDrops: on })}
+        >
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.5 }}>
-            <ChanceTile label={t('skins.admin.win')} value={config.dropChance} tone={color.pick} onChange={(n) => set({ dropChance: n })} testId="skins-drop-chance" />
-            <ChanceTile label={t('skins.admin.lose')} value={config.playDropChance} tone={color.muted} onChange={(n) => set({ playDropChance: n })} testId="skins-play-drop-chance" />
+            <ChanceTile
+              label={t('skins.admin.win')}
+              value={config.dropChance}
+              tone={color.pick}
+              onChange={(n) => set({ dropChance: n })}
+              testId="skins-drop-chance"
+            />
+            <ChanceTile
+              label={t('skins.admin.lose')}
+              value={config.playDropChance}
+              tone={color.muted}
+              onChange={(n) => set({ playDropChance: n })}
+              testId="skins-play-drop-chance"
+            />
+          </Box>
+          <Typography sx={{ fontSize: '0.75rem', color: color.muted, mt: -0.5 }}>
+            {t('skins.admin.fiveVsFive')}
+          </Typography>
+          <Box
+            sx={{ display: 'grid', gap: 0.75, fontSize: '0.875rem', color: color.ink2 }}
+            data-testid="skins-mode-chances"
+          >
+            {(['2v2', '1v1'] as const).map((mode) => (
+              <Box
+                key={mode}
+                sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}
+              >
+                <Box component="span" sx={{ fontWeight: 600, minWidth: '3.5ch', mr: 1 }}>
+                  {mode}
+                </Box>
+                {t('skins.admin.win')}
+                <SmallNumber
+                  value={config.modeChances[mode].win}
+                  max={100}
+                  label={`${mode} ${t('skins.admin.win')}`}
+                  onChange={(n) =>
+                    set({
+                      modeChances: {
+                        ...config.modeChances,
+                        [mode]: { ...config.modeChances[mode], win: n },
+                      },
+                    })
+                  }
+                  testId={`skins-mode-${mode}-win`}
+                />
+                % · {t('skins.admin.lose')}
+                <SmallNumber
+                  value={config.modeChances[mode].play}
+                  max={100}
+                  label={`${mode} ${t('skins.admin.lose')}`}
+                  onChange={(n) =>
+                    set({
+                      modeChances: {
+                        ...config.modeChances,
+                        [mode]: { ...config.modeChances[mode], play: n },
+                      },
+                    })
+                  }
+                  testId={`skins-mode-${mode}-play`}
+                />
+                %
+              </Box>
+            ))}
+            <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
+              {t('skins.admin.weeklyCapBefore')}
+              <SmallNumber
+                value={config.weeklyCap}
+                max={100}
+                label={t('skins.admin.weeklyCapLabel')}
+                onChange={(n) => set({ weeklyCap: n })}
+                testId="skins-weekly-cap"
+              />
+              {t('skins.admin.weeklyCapAfter')}
+            </Box>
+            <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>
+              {t('skins.admin.fairRules')}
+            </Typography>
           </Box>
           <Box>
-            <Typography sx={{ fontSize: '0.8125rem', color: color.muted, mb: 1 }}>{t('skins.admin.whatDrops')}</Typography>
+            <Typography sx={{ fontSize: '0.8125rem', color: color.muted, mb: 1 }}>
+              {t('skins.admin.whatDrops')}
+            </Typography>
             <RarityBar weights={config.rarityWeights} onChange={(w) => set({ rarityWeights: w })} />
           </Box>
-          <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>{t('skins.admin.knivesByPrice')}</Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>
+            {t('skins.admin.knivesByPrice')}
+          </Typography>
         </SkinsCard>
 
-        <SkinsCard id="skins-rewards" title={t('skins.admin.tournaments')} checked={config.tournamentRewards} onToggle={(on) => set({ tournamentRewards: on })}>
+        <SkinsCard
+          id="skins-rewards"
+          title={t('skins.admin.tournaments')}
+          checked={config.tournamentRewards}
+          onToggle={(on) => set({ tournamentRewards: on })}
+        >
           <Box sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-end', minHeight: 200 }}>
             {PODIUM.map(({ place, height, tone }) => {
               const label = rewardLabel(rewardFor(place));
@@ -503,7 +956,17 @@ export function SkinsAdminPage() {
                     '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
                   }}
                 >
-                  <Typography sx={{ fontSize: '0.8125rem', color: label.tone, textAlign: 'center', width: '100%', overflowWrap: 'anywhere' }}>{label.text}</Typography>
+                  <Typography
+                    sx={{
+                      fontSize: '0.8125rem',
+                      color: label.tone,
+                      textAlign: 'center',
+                      width: '100%',
+                      overflowWrap: 'anywhere',
+                    }}
+                  >
+                    {label.text}
+                  </Typography>
                   <Box
                     className="step"
                     sx={{
@@ -527,8 +990,12 @@ export function SkinsAdminPage() {
               );
             })}
           </Box>
-          <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>{t('skins.admin.podiumHint')}</Typography>
-          <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>{t('skins.admin.tournamentHint')}</Typography>
+          <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
+            {t('skins.admin.podiumHint')}
+          </Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>
+            {t('skins.admin.tournamentHint')}
+          </Typography>
         </SkinsCard>
       </Box>
 
@@ -544,17 +1011,25 @@ export function SkinsAdminPage() {
         onClose={() => setEditing(null)}
         fullWidth
         maxWidth="sm"
-        PaperProps={{ sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' } }}
+        PaperProps={{
+          sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' },
+        }}
         data-testid="skins-reward-dialog"
       >
         {editing !== null && (
           <>
-            <DialogTitle sx={{ fontFamily: fontDisplay }}>{t('skins.admin.rewardTitle', { place: t(`skins.admin.place${editing}`) })}</DialogTitle>
+            <DialogTitle sx={{ fontFamily: fontDisplay }}>
+              {t('skins.admin.rewardTitle', { place: t(`skins.admin.place${editing}`) })}
+            </DialogTitle>
             <DialogContent>
               <RewardRow reward={rewardFor(editing)} onChange={setReward} />
             </DialogContent>
             <DialogActions>
-              <Button variant="contained" onClick={() => setEditing(null)} sx={{ borderRadius: radii.pill }}>
+              <Button
+                variant="contained"
+                onClick={() => setEditing(null)}
+                sx={{ borderRadius: radii.pill }}
+              >
                 {t('skins.admin.done')}
               </Button>
             </DialogActions>
