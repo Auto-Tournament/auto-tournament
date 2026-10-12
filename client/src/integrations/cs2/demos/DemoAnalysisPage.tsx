@@ -17,6 +17,8 @@ import {
 } from '../../../module-sdk';
 import { getMapDisplayName } from '../maps/mapData';
 import { ReplayViewer } from './ReplayViewer';
+import { MatchReelButton } from './MatchReelButton';
+import { MatchClipGrid, type MatchClip } from '../highlights/MatchClipGrid';
 
 const { color } = tokens;
 
@@ -120,6 +122,22 @@ export function DemoAnalysisPage() {
   const [data, setData] = useState<AnalysisResponse | null>(null);
   const [error, setError] = useState(false);
   const [selected, setSelected] = useState(startRound ?? 1);
+  // This map's highlight clips (the match's, filtered).
+  const [clips, setClips] = useState<MatchClip[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<{ clips: MatchClip[] }>(
+        `/api/game/cs2/matches/${encodeURIComponent(matchSlug)}/highlights`
+      )
+      .then((res) => {
+        if (!cancelled) setClips(res.clips.filter((c) => c.mapNumber === Number(mapNumber)));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [matchSlug, mapNumber]);
 
   useEffect(() => {
     let cancelled = false;
@@ -289,6 +307,27 @@ export function DemoAnalysisPage() {
           startRound={startRound}
         />
       </Box>
+
+      {/* The map's highlight clips, and its match reel. */}
+      {clips.length > 0 && (
+        <Box component="section" aria-labelledby="analysis-highlights" sx={{ mb: 5 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 2,
+              flexWrap: 'wrap',
+            }}
+          >
+            <SectionHead id="analysis-highlights" title={t('analysis.highlights')} />
+            <MatchReelButton matchSlug={matchSlug} mapNumber={Number(mapNumber)} />
+          </Box>
+          <Box data-testid="demo-analysis-highlights">
+            <MatchClipGrid clips={clips} />
+          </Box>
+        </Box>
+      )}
 
       {/* The rounds: who won each, and each side's buy. */}
       <Box component="section" aria-labelledby="analysis-rounds">
