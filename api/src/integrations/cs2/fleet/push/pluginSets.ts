@@ -191,10 +191,29 @@ export async function runsFleetCmds(fleetServerId: string): Promise<boolean> {
   }
 }
 
-/** A plugins.set for a server: older Ready Up refuses to disable match, so match stays on there. */
-export function pluginsSetFor(value: StoredPlugins, fleetCmds: boolean): StoredPlugins {
-  if (fleetCmds || !value.disable.includes('match')) return value;
-  return { ...value, disable: value.disable.filter((n) => n !== 'match') };
+/**
+ * A plugins.set for a server: older Ready Up refuses to disable match, so
+ * match stays on there; with the platform's skins on, the skins plugin is on
+ * whatever the set says (skins follow the platform; a tournament in esports
+ * mode turns them off per match, rules.ruleset 'valve').
+ */
+export function pluginsSetFor(
+  value: StoredPlugins,
+  fleetCmds: boolean,
+  skinsOn = false
+): StoredPlugins {
+  let out = value;
+  if (!fleetCmds && out.disable.includes('match')) {
+    out = { ...out, disable: out.disable.filter((n) => n !== 'match') };
+  }
+  if (skinsOn && !out.enable.includes('skins')) {
+    out = {
+      ...out,
+      enable: [...out.enable, 'skins'],
+      disable: out.disable.filter((n) => n !== 'skins'),
+    };
+  }
+  return out;
 }
 
 /** The server's stored plugin set turns match off: it is not for matches (a practice server). */

@@ -61,6 +61,11 @@ export interface Cs2TournamentSettings {
   skinRewards?: boolean;
   /** Opt-in anonymous bots up to teamSize; humans keep normal ready-up. */
   fillTeamsWithBots?: boolean;
+  /**
+   * Esports mode: Ready Up's `valve` ruleset (docs/ESPORTS-MODE.md): Valve's
+   * competitive rules, no skins in the server. Off: normal rules, skins on.
+   */
+  esportsMode?: boolean;
 }
 
 /** The map pool size a veto order is checked against when nothing else says (Active Duty). */
@@ -234,6 +239,9 @@ export function validateCs2TournamentSettings(
       : objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).fillTeamsWithBots;
   if (fill !== undefined && typeof fill !== 'boolean')
     return done({ fieldErrors: ['fillTeamsWithBots must be a boolean'] });
+  const esports = objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).esportsMode;
+  if (esports !== undefined && typeof esports !== 'boolean')
+    return done({ fieldErrors: ['esportsMode must be a boolean'] });
   switch (input.mode) {
     case 'create':
       return validateCreate(input);
@@ -300,6 +308,7 @@ function applyLayer(
   if (typeof layer.fillTeamsWithBots === 'boolean')
     into.fillTeamsWithBots = layer.fillTeamsWithBots;
   if (typeof layer.skinRewards === 'boolean') into.skinRewards = layer.skinRewards;
+  if (typeof layer.esportsMode === 'boolean') into.esportsMode = layer.esportsMode;
   if (layer.mapPoolId !== undefined) {
     const id = Number(layer.mapPoolId);
     if (layer.mapPoolId !== null && Number.isInteger(id) && id > 0) into.mapPoolId = id;
@@ -344,6 +353,7 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
         ? { fillTeamsWithBots: value.fillTeamsWithBots }
         : {}),
       ...(value?.skinRewards !== undefined ? { skinRewards: value.skinRewards } : {}),
+      ...(value?.esportsMode !== undefined ? { esportsMode: value.esportsMode } : {}),
       ...(value?.mapPoolId !== undefined ? { mapPoolId: value.mapPoolId } : {}),
       ...(value?.mapMode ? { mapMode: value.mapMode } : {}),
     };

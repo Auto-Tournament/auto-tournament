@@ -232,6 +232,8 @@ export function rulesFromMatchConfig(
   rules.demo = { record, upload: record && defaults.demoUpload === true };
 
   if (config.wingman === true) rules.wingman = true;
+  // Esports mode (the tournament's setting): Valve's rules, skins plugin inert.
+  if (config.esports === true) rules.ruleset = 'valve';
   if (config.bot_fill === true) {
     const teamSize = num(config.players_per_team);
     if (teamSize === undefined || !Number.isInteger(teamSize) || teamSize < 1 || teamSize > 32)

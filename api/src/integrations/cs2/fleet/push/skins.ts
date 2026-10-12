@@ -4,13 +4,13 @@
  * a loadout only reaches the server in warmup, between maps and around the
  * match, so nobody's weapons change mid-round.
  *
- * Only to a server that
- * - has the skins plugin (`skins.v1` in its hello capabilities),
- * - runs without a Valve game server token (`hello.host.steam_token`): Valve
- *   bans the token, and the account behind it, of a server that hands out
- *   items players do not own; the plugin stays inert there too,
- * - an admin turned skins on for (`cs2_servers.skins`),
- * and only while skins are on for the platform (`skins_config.enabled`).
+ * Every server follows the platform: while skins are on there
+ * (`skins_config.enabled`) each server's skins plugin is on
+ * (./controls.ts syncSkinsPluginEverywhere) and gets the players' loadouts.
+ * Only to a server that has the plugin running (`skins.v1` in its hello
+ * capabilities) and no Steam server token (`hello.host.steam_token`; the
+ * plugin itself stays inert with one). A tournament in esports mode plays
+ * Ready Up's `valve` ruleset, where the plugin is inert for that match.
  */
 
 import { db } from '../../../../config/database';
@@ -24,15 +24,14 @@ import type { SkinsLoadoutPayload } from '../protocol/v1';
 const OPEN_PHASES = new Set(['loading', 'warmup', 'map_end', 'series_end', 'restoring']);
 
 /** Whether this fleet server takes skins, and why not when it does not. */
-export async function skinsTarget(fleetServerId: string): Promise<{ ok: true } | { ok: false; reason: string }> {
-  const row = await db.queryOneAsync<{ capabilities: string | null; host: string | null; skins: number | null }>(
-    `SELECT f.capabilities, f.host, s.skins
-       FROM cs2_fleet_servers f LEFT JOIN cs2_servers s ON s.fleet_server_id = f.id
-      WHERE f.id = ?`,
+export async function skinsTarget(
+  fleetServerId: string
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const row = await db.queryOneAsync<{ capabilities: string | null; host: string | null }>(
+    `SELECT f.capabilities, f.host FROM cs2_fleet_servers f WHERE f.id = ?`,
     [fleetServerId]
   );
   if (!row) return { ok: false, reason: 'unknown server' };
-  if (row.skins !== 1) return { ok: false, reason: 'skins off for this server' };
   const caps = (() => {
     try {
       return JSON.parse(row.capabilities ?? '[]') as string[];
@@ -48,12 +47,17 @@ export async function skinsTarget(fleetServerId: string): Promise<{ ok: true } |
       return {};
     }
   })();
-  if (host.steam_token === true) return { ok: false, reason: 'the server uses a Steam server token' };
+  if (host.steam_token === true)
+    return { ok: false, reason: 'the server uses a Steam server token' };
   return { ok: true };
 }
 
 /** A player connected to a match on a fleet server: send their loadout if the map is not being played. */
-export async function pushSkinsOnConnect(fleetServerId: string, matchSlug: string, steamid64: string): Promise<void> {
+export async function pushSkinsOnConnect(
+  fleetServerId: string,
+  matchSlug: string,
+  steamid64: string
+): Promise<void> {
   try {
     const target = await skinsTarget(fleetServerId);
     if (!target.ok) return;
@@ -67,6 +71,10 @@ export async function pushSkinsOnConnect(fleetServerId: string, matchSlug: strin
     const payload: SkinsLoadoutPayload = { steamid64, rev: Math.floor(Date.now() / 1000), items };
     await sendReliable(fleetServerId, { type: 'skins.loadout', payload });
   } catch (error) {
-    log.warn('[FLEET] skins: loadout not sent', { fleetServerId, matchSlug, error: (error as Error).message });
+    log.warn('[FLEET] skins: loadout not sent', {
+      fleetServerId,
+      matchSlug,
+      error: (error as Error).message,
+    });
   }
 }

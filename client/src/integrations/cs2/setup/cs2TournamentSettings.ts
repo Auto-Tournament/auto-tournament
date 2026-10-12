@@ -50,6 +50,8 @@ export interface Cs2TournamentSettings {
   skinRewards?: boolean;
   /** Opt-in anonymous bots up to teamSize; humans keep normal ready-up. */
   fillTeamsWithBots?: boolean;
+  /** Esports mode: Valve's rules, no skins in the server. */
+  esportsMode?: boolean;
 }
 
 export const CS2_DEFAULTS: Cs2TournamentSettings = {
@@ -95,6 +97,7 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, unknown
   if (typeof source.fillTeamsWithBots === 'boolean')
     into.fillTeamsWithBots = source.fillTeamsWithBots;
   if (typeof source.skinRewards === 'boolean') into.skinRewards = source.skinRewards;
+  if (typeof source.esportsMode === 'boolean') into.esportsMode = source.esportsMode;
   if (isMapMode(source.mapMode)) into.mapMode = source.mapMode;
   else if (source.mapMode === null) delete into.mapMode;
 }
@@ -133,6 +136,7 @@ export function cs2Patch(next: Cs2TournamentSettings): Record<string, unknown> {
   if (next.mapSequence) stored.mapSequence = next.mapSequence;
   if (next.mapPoolId !== undefined) stored.mapPoolId = next.mapPoolId;
   stored.fillTeamsWithBots = next.fillTeamsWithBots === true;
+  stored.esportsMode = next.esportsMode === true;
   if (next.skinRewards !== undefined) stored.skinRewards = next.skinRewards;
   // null clears a type set before (the API keeps a field a patch leaves out).
   stored.mapMode = next.mapMode ?? null;
@@ -182,7 +186,9 @@ function rulesLine(cs2: Cs2TournamentSettings, ctx: TournamentSetupContext, t: T
           maxRounds: cs2.maxRounds,
           winRounds: Math.floor(cs2.maxRounds / 2) + 1,
         });
-  const fill = cs2.fillTeamsWithBots === true ? ` · ${t('tournament.botFill.label')}` : '';
+  const fill =
+    (cs2.fillTeamsWithBots === true ? ` · ${t('tournament.botFill.label')}` : '') +
+    (cs2.esportsMode === true ? ` · ${t('tournament.esportsMode.label')}` : '');
   return `${rounds} · ${overtime}${fill}`;
 }
 
@@ -290,7 +296,8 @@ export const cs2TournamentSetup: TournamentSetupModel = {
       old.maxRounds !== next.maxRounds ||
       old.overtimeMode !== next.overtimeMode ||
       old.overtimeSegments !== next.overtimeSegments ||
-      (old.fillTeamsWithBots === true) !== (next.fillTeamsWithBots === true)
+      (old.fillTeamsWithBots === true) !== (next.fillTeamsWithBots === true) ||
+      (old.esportsMode === true) !== (next.esportsMode === true)
     ) {
       changes.push({
         field: 'matchRules',

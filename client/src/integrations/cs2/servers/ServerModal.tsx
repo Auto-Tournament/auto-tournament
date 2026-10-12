@@ -16,7 +16,13 @@ import {
   Alert,
 } from '@mui/material';
 import { EyeIcon, EyeSlashIcon, XIcon } from '@phosphor-icons/react';
-import { api, apiErrorMessage, useSnackbar, ConfirmDialog, useModuleTranslation } from '../../../module-sdk';
+import {
+  api,
+  apiErrorMessage,
+  useSnackbar,
+  ConfirmDialog,
+  useModuleTranslation,
+} from '../../../module-sdk';
 import type { Server } from '../cs2.types';
 
 /**
@@ -92,15 +98,15 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     if (error) setError(''); // Clear error when user starts typing
   };
 
-
   // A Ready Up server on the fleet link: the platform reaches it over its own
   // connection, so it has no RCON password, and its address is what it reported.
-  const isFleet = isEditing && (server as { transport?: string } | null | undefined)?.transport === 'fleet';
+  const isFleet =
+    isEditing && (server as { transport?: string } | null | undefined)?.transport === 'fleet';
 
   const handleSave = async () => {
     console.log('handleSave called', { name, host, port, password: '***' });
     console.log('Host value length:', host.length, 'Host trimmed length:', host.trim().length);
-    
+
     if (!name.trim()) {
       console.log('Validation failed: name required');
       setError(t('serverModal.errors.nameRequired'));
@@ -132,15 +138,16 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
     try {
       const trimmedHost = host.trim();
-      
+
       // Check for existing server with same IP:port (excluding current server when editing)
       const existingServerByHostPort = servers.find(
-        (s) => s.host === trimmedHost && s.port === portNum && s.id !== (isEditing ? server?.id : '')
+        (s) =>
+          s.host === trimmedHost && s.port === portNum && s.id !== (isEditing ? server?.id : '')
       );
 
       // If found, use its ID to update it; otherwise generate new ID
-      const serverId = isEditing 
-        ? server.id 
+      const serverId = isEditing
+        ? server.id
         : existingServerByHostPort?.id || slugifyServerName(name);
 
       if (!serverId) {
@@ -152,7 +159,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
       // When creating, check if the generated ID conflicts with a different server (not by IP:port)
       if (!isEditing && !existingServerByHostPort) {
-        const idConflict = servers.find((s) => s.id === serverId && (s.host !== trimmedHost || s.port !== portNum));
+        const idConflict = servers.find(
+          (s) => s.id === serverId && (s.host !== trimmedHost || s.port !== portNum)
+        );
         if (idConflict) {
           console.log('Validation failed: duplicate server ID', serverId);
           setError(t('serverModal.errors.duplicateId', { id: serverId }));
@@ -178,7 +187,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
         console.log('Updating existing server:', server.id);
         await api.put(`/api/servers/${server.id}`, {
           name: payload.name,
-          ...(isFleet ? {} : { host: payload.host, port: payload.port, password: payload.password }),
+          ...(isFleet
+            ? {}
+            : { host: payload.host, port: payload.port, password: payload.password }),
           enabled: payload.enabled,
           tournamentUse: payload.tournamentUse,
           skins: payload.skins,
@@ -349,7 +360,13 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               placeholder={t('serverModal.hostPlaceholder')}
               required={!isFleet}
               disabled={isFleet}
-              helperText={isFleet ? t('serverModal.fleetAddress', { defaultValue: 'Reported by Ready Up over the fleet link.' }) : undefined}
+              helperText={
+                isFleet
+                  ? t('serverModal.fleetAddress', {
+                      defaultValue: 'Reported by Ready Up over the fleet link.',
+                    })
+                  : undefined
+              }
               fullWidth
               slotProps={{
                 htmlInput: { 'data-testid': 'server-host-input' },
@@ -374,35 +391,35 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             />
 
             {!isFleet && (
-            <TextField
-              label={t('serverModal.rconPasswordLabel')}
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (error) setError(''); // Clear error when user starts typing
-              }}
-              placeholder={t('serverModal.rconPasswordPlaceholder')}
-              type={showPassword ? 'text' : 'password'}
-              required
-              fullWidth
-              helperText={t('serverModal.rconPasswordHelper')}
-              slotProps={{
-                htmlInput: { 'data-testid': 'server-password-input' },
-              }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
-                      {showPassword ? <EyeSlashIcon size={24} /> : <EyeIcon size={24} />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
+              <TextField
+                label={t('serverModal.rconPasswordLabel')}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) setError(''); // Clear error when user starts typing
+                }}
+                placeholder={t('serverModal.rconPasswordPlaceholder')}
+                type={showPassword ? 'text' : 'password'}
+                required
+                fullWidth
+                helperText={t('serverModal.rconPasswordHelper')}
+                slotProps={{
+                  htmlInput: { 'data-testid': 'server-password-input' },
+                }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <EyeSlashIcon size={24} /> : <EyeIcon size={24} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
             )}
 
             <FormControlLabel
@@ -440,26 +457,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               }
             />
 
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={skins}
-                  onChange={(e) => setSkins(e.target.checked)}
-                  inputProps={{ 'aria-label': t('serverModal.skinsLabel') }}
-                  data-testid="server-skins"
-                />
-              }
-              label={
-                <Box>
-                  <Typography variant="body2" fontWeight={500}>
-                    {t('serverModal.skinsLabel')}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {t('serverModal.skinsHelper')}
-                  </Typography>
-                </Box>
-              }
-            />
             {skins && server?.steamToken === true && (
               <Alert severity="warning" data-testid="server-skins-token-warning">
                 {t('serverModal.skinsTokenWarning')}
@@ -507,8 +504,8 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             {saving
               ? t('serverModal.buttons.saving')
               : isEditing
-              ? t('serverModal.buttons.saveChanges')
-              : t('serverModal.buttons.addServer')}
+                ? t('serverModal.buttons.saveChanges')
+                : t('serverModal.buttons.addServer')}
           </Button>
         </DialogActions>
       </Dialog>

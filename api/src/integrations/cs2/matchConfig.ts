@@ -336,6 +336,7 @@ export const generateMatchConfig = async (
         }
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
     ...(fillBots ? { bot_fill: true } : {}),
+    ...(storedCs2Settings(tournament.settings)?.esportsMode === true ? { esports: true } : {}),
     simulation,
     simulation_timescale: simulation ? (simulationTimescale ?? 1) : undefined,
   };
@@ -538,6 +539,7 @@ async function generateShuffleMatchConfig(
         }
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
     ...(fillBots ? { bot_fill: true } : {}),
+    ...(storedCs2Settings(tournament.settings)?.esportsMode === true ? { esports: true } : {}),
     simulation,
     simulation_timescale: simulation ? (simulationTimescale ?? 1) : undefined,
   };

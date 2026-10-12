@@ -2334,6 +2334,10 @@
     "botFill": {
       "label": "Fill teams with bots",
       "help": "Bots fill empty slots up to the tournament team size and make room for joining players. Ready up and play normally. Requires a Ready Up server with bot-fill support."
+    },
+    "esportsMode": {
+      "label": "Esports mode",
+      "help": "Valve's competitive rules (Premier settings, counted technical pauses, no knife side pick) and no skins in the server. Off: normal rules, and players see their skins."
     }
   },
   "library": {

@@ -2334,6 +2334,10 @@
     "botFill": {
       "label": "Fyll lagene med boter",
       "help": "Boter fyller ledige plasser opp til lagstørrelsen og gir plass til spillere som kobler til. Du gjør klar og spiller som normalt. Krever Ready Up med støtte for botfyll."
+    },
+    "esportsMode": {
+      "label": "Esport-modus",
+      "help": "Valves konkurranseregler (Premier-innstillinger, telte tekniske pauser, ingen kniv-sidevalg) og ingen skins på serveren. Av: vanlige regler, og spillerne ser skinsene sine."
     }
   },
   "library": {
