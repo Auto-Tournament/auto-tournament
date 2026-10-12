@@ -33,7 +33,8 @@ import {
   refreshMatchmaking,
   useMatchmaking,
 } from '../matchmaking/matchmakingStore';
-import { paths } from '../../paths';
+import { paths, playerProfilePath } from '../../paths';
+import { Link as RouterLink } from 'react-router-dom';
 import { fontDisplay, radii, textSize, tokens } from '../../theme/tokens';
 import {
   callAdmin,
@@ -230,9 +231,26 @@ function MessageLine({
             flexWrap: 'wrap',
           }}
         >
-          <Box component="span" sx={{ fontWeight: 600, color: nameColor }}>
-            {message.senderName}
-          </Box>
+          {message.senderId && message.senderKind === 'player' ? (
+            // A player's name opens their profile.
+            <Box
+              component={RouterLink}
+              to={playerProfilePath(message.senderId)}
+              data-testid="chat-sender-link"
+              sx={{
+                fontWeight: 600,
+                color: nameColor,
+                textDecoration: 'none',
+                '&:hover, &:focus-visible': { textDecoration: 'underline' },
+              }}
+            >
+              {message.senderName}
+            </Box>
+          ) : (
+            <Box component="span" sx={{ fontWeight: 600, color: nameColor }}>
+              {message.senderName}
+            </Box>
+          )}
           {isAdmin && (
             <Box
               component="span"
