@@ -18,6 +18,15 @@ import { ExternalLink } from '../common/ExternalLink';
 import { paths } from '../../paths';
 
 const SEEN = 'at.update.seen';
+/** The platform update's toast: one at a time, whatever version it is about. */
+export const PLATFORM_UPDATE_KEY = 'platform-update';
+
+/**
+ * What this page has shown, by toast key: a re-mount (another layout, a
+ * second check) does not add the same toast again, and a newer version
+ * replaces the older one's toast instead of joining it.
+ */
+const shown = new Map<string, string>();
 
 const seen = (key = SEEN) => {
   try {
@@ -46,7 +55,7 @@ interface ModuleUpdate {
 
 export function UpdateToast() {
   const { t } = useTranslation();
-  const { showSnackbar } = useSnackbar();
+  const { showSnackbar, closeSnackbar } = useSnackbar();
 
   useEffect(() => {
     let cancelled = false;
@@ -65,7 +74,10 @@ export function UpdateToast() {
           const version = m.available ?? m.installed ?? '';
           const key = `at.update.module.${m.kind}.${m.id}`;
           const mark = `${failed ? 'problem' : 'update'}:${version}`;
-          if (seen(key) === mark) continue;
+          const toastKey = `module-update-${m.kind}-${m.id}`;
+          if (seen(key) === mark || shown.get(toastKey) === mark) continue;
+          if (shown.has(toastKey)) closeSnackbar(toastKey);
+          shown.set(toastKey, mark);
           showSnackbar(
             <Box data-testid="module-update-toast">
               {failed
@@ -86,12 +98,17 @@ export function UpdateToast() {
             failed ? 'warning' : 'info',
             {
               persist: true,
-              key: `module-update-${m.kind}-${m.id}`,
+              key: toastKey,
               onClose: () => remember(key, mark),
             }
           );
         }
         if (cancelled || !u.available || !u.latest || seen() === u.latest) return;
+        if (shown.get(PLATFORM_UPDATE_KEY) === u.latest) return;
+        // A newer version than the toast already up: it replaces it.
+        if (shown.has(PLATFORM_UPDATE_KEY)) closeSnackbar(PLATFORM_UPDATE_KEY);
+        shown.set(PLATFORM_UPDATE_KEY, u.latest);
+        const latest = u.latest;
         showSnackbar(
           <Box data-testid="update-toast">
             {t('update.available', { latest: u.latest, running: u.running })}{' '}
@@ -104,14 +121,8 @@ export function UpdateToast() {
           'info',
           {
             persist: true,
-            key: `update-${u.latest}`,
-            onClose: () => {
-              try {
-                window.localStorage.setItem(SEEN, u.latest ?? '');
-              } catch {
-                // Storage blocked: it is shown again next visit.
-              }
-            },
+            key: PLATFORM_UPDATE_KEY,
+            onClose: () => remember(SEEN, latest),
           }
         );
       })
@@ -119,7 +130,7 @@ export function UpdateToast() {
     return () => {
       cancelled = true;
     };
-  }, [showSnackbar, t]);
+  }, [showSnackbar, closeSnackbar, t]);
 
   return null;
 }

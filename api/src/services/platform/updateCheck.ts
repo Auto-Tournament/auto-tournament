@@ -91,12 +91,18 @@ export async function checkPlatformUpdate(options?: {
   }
 }
 
-function result(running: string, latest: { version: string; url: string } | null): PlatformUpdate {
+export function result(
+  running: string,
+  latest: { version: string; url: string } | null
+): PlatformUpdate {
   const r = clean(running);
+  // A release list from before this version came out (cached, or GitHub not
+  // caught up) names an older one: the newest known is then what runs.
+  const behind = !!(latest && r && semver.lt(latest.version, r));
   return {
     running,
-    latest: latest?.version ?? null,
+    latest: behind ? r : (latest?.version ?? null),
     available: !!(latest && r && semver.gt(latest.version, r)),
-    releaseUrl: latest?.url || null,
+    releaseUrl: behind ? null : latest?.url || null,
   };
 }
