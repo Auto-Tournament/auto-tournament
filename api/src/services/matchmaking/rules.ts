@@ -239,8 +239,8 @@ function compatible(a: QueuedParty, b: QueuedParty): boolean {
  */
 /**
  * Few searching: fewer players in the mode's queue than two matches need. Then
- * ratings do not hold anyone back, a match now beats a close one later (Sivert
- * and Emil waited five minutes in an empty 1v1 queue, 2026-10-12). With more
+ * ratings do not hold anyone back, a match now beats a close one later (two players far apart waited five minutes in an
+ * empty 1v1 queue, 2026-10-12). With more
  * searching, the rating window applies as before.
  */
 export function fewSearching(queue: QueuedParty[], teamSize: number): boolean {
