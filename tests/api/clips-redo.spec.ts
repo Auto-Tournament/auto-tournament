@@ -305,3 +305,60 @@ test(
     ).toBe(200);
   }
 );
+
+test(
+  'a clip reviewed as "weapon missing" is recorded again without TrueView',
+  TAGS,
+  async ({ request }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    const { slug, star } = await matchWithMoments(request);
+    const name = `spec-weapon-${Date.now()}`;
+    type Job = {
+      kind: string;
+      matchSlug: string;
+      players: Array<{ playerId: string; moments: Array<{ id: number; trueView?: boolean }> }>;
+    };
+    // A recorder finishes its job before it gets another: the redo is
+    // claimed by a second one.
+    const claim = async (until: (job: Job) => boolean, recorder = name) => {
+      for (let i = 0; i < 30; i++) {
+        const res = await request.post('/api/game/cs2/recorder/claim', {
+          data: { recorder, version: 7 },
+        });
+        if (res.status() !== 200) return null;
+        const job = (await res.json()).job as Job;
+        // A new recorder benchmarks first, on a clip another spec recorded: say it did.
+        if (job?.kind === 'benchmark') {
+          await request.post('/api/game/cs2/recorder/benchmark', {
+            data: { recorder, tries: [] },
+          });
+          continue;
+        }
+        if (job && until(job)) return job;
+      }
+      return null;
+    };
+    const first = await claim((j) => j.matchSlug === slug);
+    expect(first).not.toBeNull();
+    const moment = first!.players.find((p) => p.playerId === star)!.moments[0];
+    expect(moment.trueView).toBeUndefined(); // recorded with TrueView, as every clip is
+    const up = await request.put(`/api/game/cs2/recorder/jobs/${moment.id}/clip`, {
+      headers: { 'Content-Type': 'video/mp4' },
+      data: Buffer.from('not really a video'),
+    });
+    expect(up.status()).toBe(200);
+
+    const review = await request.post(`/api/game/cs2/clips/${moment.id}/review`, {
+      data: { verdict: 'weapon' },
+    });
+    expect(review.status()).toBe(200);
+
+    const again = await claim(
+      (j) => j.players.some((p) => p.moments.some((m) => m.id === moment.id)),
+      `${name}-b`
+    );
+    expect(again).not.toBeNull();
+    const redone = again!.players.flatMap((p) => p.moments).find((m) => m.id === moment.id)!;
+    expect(redone.trueView).toBe(false);
+  }
+);

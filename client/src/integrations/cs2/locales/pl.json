@@ -2337,8 +2337,10 @@
       "done": {
         "approved": "Approved",
         "redo": "Queued to record again",
-        "drop": "Dropped; its reels are made again"
-      }
+        "drop": "Dropped; its reels are made again",
+        "weapon": "Queued to record again without TrueView"
+      },
+      "weapon": "Redo: weapon missing (W)"
     },
     "fleet": {
       "groups": "Recorder groups",

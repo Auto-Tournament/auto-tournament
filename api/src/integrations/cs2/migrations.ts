@@ -1433,4 +1433,13 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       UPDATE cs2_recorders SET update_status='failed',update_error='Upgrade the host agent before requesting another update' WHERE update_status='queued' AND update_id IS NULL;
     `,
   },
+  {
+    // A clip an admin marked "weapon missing" in review (demos/clipsAdmin.ts
+    // reviewClip): CS2's TrueView rebuild can drop the viewmodel for a stretch
+    // of a demo, the same on every try, so its redo records without TrueView.
+    id: '045-clip-true-view',
+    up: `
+      ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS true_view INTEGER NOT NULL DEFAULT 1;
+    `,
+  },
 ];

@@ -2283,7 +2283,7 @@
       "approve": "Looks good (A)",
       "redo": "Redo: stutters or broken (R)",
       "drop": "Drop: not worth showing (D)",
-      "help": "Redo records the clip again, preferably on another recorder, and its reels after. Drop leaves it out of every reel for good. ← → to step through.",
+      "help": "Redo records the clip again, preferably on another recorder, and its reels after. Weapon missing records it again without TrueView (CS2 sometimes drops the weapon and hands while rebuilding the player’s view). Drop leaves it out of every reel for good. ← → to step through.",
       "state": {
         "approved": "Approved",
         "redo": "Redo asked",
@@ -2292,8 +2292,10 @@
       "done": {
         "approved": "Approved",
         "redo": "Queued to record again",
-        "drop": "Dropped; its reels are made again"
-      }
+        "drop": "Dropped; its reels are made again",
+        "weapon": "Queued to record again without TrueView"
+      },
+      "weapon": "Redo: weapon missing (W)"
     },
     "fleet": {
       "groups": "Recorder groups",

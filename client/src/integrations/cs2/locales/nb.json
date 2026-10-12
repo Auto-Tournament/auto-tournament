@@ -2283,7 +2283,7 @@
       "approve": "Ser bra ut (A)",
       "redo": "Ta opp på nytt: hakker eller ødelagt (R)",
       "drop": "Dropp: ikke verdt å vise (D)",
-      "help": "Ta opp på nytt tar opp klippet igjen, helst på en annen opptaker, og reelene etterpå. Dropp holder det ute av alle reeler. ← → for å bla.",
+      "help": "Ta opp på nytt tar opp klippet igjen, helst på en annen opptaker, og reelene etterpå. Våpen mangler tar det opp igjen uten TrueView (CS2 mister av og til våpenet og hendene når spillerens syn bygges opp igjen). Dropp holder det ute av alle reeler. ← → for å bla.",
       "state": {
         "approved": "Godkjent",
         "redo": "Tas opp på nytt",
@@ -2292,8 +2292,10 @@
       "done": {
         "approved": "Godkjent",
         "redo": "Satt i kø for nytt opptak",
-        "drop": "Droppet; reelene lages på nytt"
-      }
+        "drop": "Droppet; reelene lages på nytt",
+        "weapon": "Lagt i kø for nytt opptak uten TrueView"
+      },
+      "weapon": "Ta opp igjen: våpen mangler (W)"
     },
     "fleet": {
       "groups": "Opptakergrupper",

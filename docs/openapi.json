@@ -4705,7 +4705,7 @@
           "Highlights"
         ],
         "summary": "An admin's verdict on a recorded clip",
-        "description": "`verdict`: `approved`; `redo` (it stutters or looks broken: recorded\nagain, preferably by another recorder); or `drop` (not worth showing:\nnot recorded again, left out of every reel, its reels made again).\n`note` is optional. 404 when the clip is not recorded.\n",
+        "description": "`verdict`: `approved`; `redo` (it stutters or looks broken: recorded\nagain, preferably by another recorder); `weapon` (the weapon and hands\nare missing for a stretch: recorded again without TrueView); or `drop` (not worth showing:\nnot recorded again, left out of every reel, its reels made again).\n`note` is optional. 404 when the clip is not recorded.\n",
         "responses": {
           "200": {
             "description": "How many clips and reels were queued"
