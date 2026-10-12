@@ -100,8 +100,8 @@ func TestRecorderLink(t *testing.T) {
 
 func TestLinkURL(t *testing.T) {
 	for in, want := range map[string]string{
-		"https://cs.sivert.io":  "wss://cs.sivert.io/api/game/cs2/recorder/link",
-		"http://10.0.0.5:3069/": "ws://10.0.0.5:3069/api/game/cs2/recorder/link",
+		"https://at.example.com": "wss://at.example.com/api/game/cs2/recorder/link",
+		"http://10.0.0.5:3069/":  "ws://10.0.0.5:3069/api/game/cs2/recorder/link",
 	} {
 		if got := linkURL(in); got != want {
 			t.Errorf("%s: %s, want %s", in, got, want)

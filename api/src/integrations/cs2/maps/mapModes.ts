@@ -22,6 +22,22 @@ export const MAP_MODES = [
 ] as const;
 export type MapMode = (typeof MAP_MODES)[number];
 
+/**
+ * Maps CS2 also plays as wingman (their wingman layout: one bomb site, a
+ * smaller playable area) while their own type stays defusal. A map can only
+ * have one type (`cs2_maps.game_mode`), so a wingman tournament takes these
+ * as well as maps typed wingman. Check the list against CS2's
+ * current wingman pool (2026-10-12).
+ */
+export const WINGMAN_LAYOUTS: ReadonlySet<string> = new Set([
+  'de_inferno',
+  'de_nuke',
+  'de_overpass',
+  'de_vertigo',
+  'de_palacio',
+  'de_rooftop',
+]);
+
 export function isMapMode(value: unknown): value is MapMode {
   return typeof value === 'string' && (MAP_MODES as readonly string[]).includes(value);
 }
@@ -111,6 +127,7 @@ export function mapsOfOtherModes(
   const out: Array<{ id: string; mode: MapMode }> = [];
   for (const id of mapIds) {
     const known = knownModes.get(id);
+    if (mode === 'wingman' && WINGMAN_LAYOUTS.has(id)) continue;
     if (known && known !== mode) out.push({ id, mode: known });
   }
   return out;
