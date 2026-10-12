@@ -324,7 +324,8 @@ export default function Play() {
   // The leader picks the party's mode (saved, so everyone in it sees it); a
   // party can't pick a mode it's too big for, and members only watch.
   const partySize = party?.members.length ?? 1;
-  const modeOpen = (m: string) => m === mode || (isLeader && !searching && partySize <= teamSizeOf(m));
+  const modeOpen = (m: string) =>
+    m === mode || (isLeader && !searching && partySize <= teamSizeOf(m));
   const pickMode = (m: string) => {
     if (m === mode || busy) return;
     if (party) void run(() => matchmakingAction('PUT', '/party/mode', { mode: m }));
@@ -479,8 +480,19 @@ export default function Play() {
                       );
                     })}
                   </Box>
-                  <Typography sx={{ fontSize: textSize.md, color: color.ink2 }}>
-                    {t('matchmaking.play.seats', { count: inQueue, total: need })}
+                  <Typography
+                    sx={{ fontSize: textSize.md, color: color.ink2 }}
+                    data-testid="mm-search-status"
+                  >
+                    {/* What the search is doing (services/matchmaking/rules.ts
+                        fewSearching): with fewer than two matches' worth
+                        searching, anyone is matched; otherwise by rating. */}
+                    {t(
+                      (counts[queueMode] ?? inQueue) < need * 2
+                        ? 'matchmaking.play.searchAnyone'
+                        : 'matchmaking.play.searchRating',
+                      { count: counts[queueMode] ?? inQueue, total: need }
+                    )}
                     {typeof me?.waitSeconds?.[queueMode] === 'number' && (
                       <Box
                         component="span"
@@ -512,9 +524,19 @@ export default function Play() {
                     <Panel
                       key={inv.partyId}
                       data-testid="mm-incoming-invite"
-                      sx={{ p: 1.75, display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', borderColor: color.accent }}
+                      sx={{
+                        p: 1.75,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        flexWrap: 'wrap',
+                        borderColor: color.accent,
+                      }}
                     >
-                      <Avatar src={inv.from.avatarUrl ?? undefined} sx={{ width: 36, height: 36, bgcolor: color.rule }}>
+                      <Avatar
+                        src={inv.from.avatarUrl ?? undefined}
+                        sx={{ width: 36, height: 36, bgcolor: color.rule }}
+                      >
                         {inv.from.name.trim()[0]?.toUpperCase()}
                       </Avatar>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -525,10 +547,20 @@ export default function Play() {
                           {t('social.notice.partyDetail', { mode: inv.mode, size: inv.size })}
                         </Typography>
                       </Box>
-                      <Button size="small" variant="contained" disabled={busy} onClick={() => void run(() => answerPartyInvite(inv.partyId, true))}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        disabled={busy}
+                        onClick={() => void run(() => answerPartyInvite(inv.partyId, true))}
+                      >
                         {t('social.notice.join')}
                       </Button>
-                      <Button size="small" variant="outlined" disabled={busy} onClick={() => void run(() => answerPartyInvite(inv.partyId, false))}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        disabled={busy}
+                        onClick={() => void run(() => answerPartyInvite(inv.partyId, false))}
+                      >
                         {t('social.notice.decline')}
                       </Button>
                     </Panel>
@@ -579,7 +611,16 @@ export default function Play() {
                             fontSize: textSize.sm,
                           }}
                         >
-                          <Avatar src={p.avatarUrl ?? undefined} sx={{ width: 28, height: 28, fontSize: textSize.xs, bgcolor: color.rule, opacity: 0.6 }}>
+                          <Avatar
+                            src={p.avatarUrl ?? undefined}
+                            sx={{
+                              width: 28,
+                              height: 28,
+                              fontSize: textSize.xs,
+                              bgcolor: color.rule,
+                              opacity: 0.6,
+                            }}
+                          >
                             {p.name.trim()[0]?.toUpperCase()}
                           </Avatar>
                           {t('social.invite.chip', { name: p.name })}
@@ -621,10 +662,15 @@ export default function Play() {
                         invited={invited.map((p) => p.id)}
                         inviteLink={party ? inviteLink : null}
                         busy={busy}
-                        onMakeLink={() => void run(() => matchmakingAction('POST', '/party', { mode }))}
+                        onMakeLink={() =>
+                          void run(() => matchmakingAction('POST', '/party', { mode }))
+                        }
                         onJoinCode={(c) => {
                           setInviteAnchor(null);
-                          void run(() => matchmakingAction('POST', '/party/join', { code: c }), t('matchmaking.party.joined'));
+                          void run(
+                            () => matchmakingAction('POST', '/party/join', { code: c }),
+                            t('matchmaking.party.joined')
+                          );
                         }}
                       />
                     </Box>
@@ -771,17 +817,43 @@ export default function Play() {
                   </Box>
 
                   {notReady.length > 0 && (
-                    <Panel data-testid="mm-not-ready" sx={{ p: 2, borderColor: color.warning, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                      <Typography sx={{ fontWeight: 600, fontSize: textSize.sm }}>{t('social.setup.title')}</Typography>
+                    <Panel
+                      data-testid="mm-not-ready"
+                      sx={{
+                        p: 2,
+                        borderColor: color.warning,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.75,
+                      }}
+                    >
+                      <Typography sx={{ fontWeight: 600, fontSize: textSize.sm }}>
+                        {t('social.setup.title')}
+                      </Typography>
                       {notReady.map((p) => (
                         <Typography key={p.id} sx={{ fontSize: textSize.sm, color: color.ink2 }}>
                           {p.id === playerSteamId
-                            ? t(p.missing === 'game' ? 'social.setup.youGame' : 'social.setup.youAccount')
-                            : t(p.missing === 'game' ? 'social.setup.theyGame' : 'social.setup.theyAccount', { name: p.name })}
+                            ? t(
+                                p.missing === 'game'
+                                  ? 'social.setup.youGame'
+                                  : 'social.setup.youAccount'
+                              )
+                            : t(
+                                p.missing === 'game'
+                                  ? 'social.setup.theyGame'
+                                  : 'social.setup.theyAccount',
+                                { name: p.name }
+                              )}
                         </Typography>
                       ))}
                       {notReady.some((p) => p.id === playerSteamId) && (
-                        <Button component={RouterLink} to={paths.meConnections} size="small" variant="outlined" sx={{ alignSelf: 'flex-start', mt: 0.5 }}>
+                        <Button
+                          component={RouterLink}
+                          to={paths.meConnections}
+                          size="small"
+                          variant="outlined"
+                          sx={{ alignSelf: 'flex-start', mt: 0.5 }}
+                        >
                           {t('social.setup.fix')}
                         </Button>
                       )}
@@ -795,7 +867,11 @@ export default function Play() {
                   <Button
                     variant="contained"
                     disabled={
-                      busy || !isLeader || cooldown > 0 || notReady.length > 0 || me?.lobby?.status === 'accepting'
+                      busy ||
+                      !isLeader ||
+                      cooldown > 0 ||
+                      notReady.length > 0 ||
+                      me?.lobby?.status === 'accepting'
                     }
                     onClick={() => void run(() => matchmakingAction('POST', '/queue', { mode }))}
                     data-testid="mm-find"
@@ -830,7 +906,10 @@ export default function Play() {
             {playerSteamId && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 <YouColumn playerId={playerSteamId} rating={me?.rating ?? null} />
-                <FriendsCard members={party?.members ?? [playerSteamId]} invited={invited.map((p) => p.id)} />
+                <FriendsCard
+                  members={party?.members ?? [playerSteamId]}
+                  invited={invited.map((p) => p.id)}
+                />
               </Box>
             )}
             {isAdmin && (

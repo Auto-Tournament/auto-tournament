@@ -24,7 +24,8 @@ class MatchService {
   async createMatch(
     input: CreateMatchInput,
     baseUrl: string,
-    defaultsTournamentId: number
+    /** The tournament whose rules fill gaps (round limit); null: none (matchmaking). */
+    defaultsTournamentId: number | null
   ): Promise<MatchResponse> {
     // Check if slug already exists
     const existing = await db.getOneAsync<Match>('matches', 'slug = ?', [input.slug]);
@@ -39,14 +40,17 @@ class MatchService {
 
     // Manual matches borrow the primary tournament's rules (e.g. the round
     // limit) for anything the admin left out.
-    const tournament = await db
-      .queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
-        defaultsTournamentId,
-      ])
-      .catch((error: unknown) => {
-        log.warn('Failed to read round-limit defaults for manual match', error as Error);
-        return null;
-      });
+    const tournament =
+      defaultsTournamentId === null
+        ? null
+        : await db
+            .queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+              defaultsTournamentId,
+            ])
+            .catch((error: unknown) => {
+              log.warn('Failed to read round-limit defaults for manual match', error as Error);
+              return null;
+            });
 
     // The integration builds the stored config from the admin's settings
     // (for CS2: simulation, round limit, default MatchZy Enhanced cvars and
@@ -159,7 +163,10 @@ class MatchService {
   /**
    * Update match status
    */
-  async updateMatchStatus(slug: string, status: 'pending' | 'loaded' | 'live' | 'completed'): Promise<void> {
+  async updateMatchStatus(
+    slug: string,
+    status: 'pending' | 'loaded' | 'live' | 'completed'
+  ): Promise<void> {
     const match = await db.getOneAsync<Match>('matches', 'slug = ?', [slug]);
     if (!match) {
       throw new Error(`Match '${slug}' not found`);

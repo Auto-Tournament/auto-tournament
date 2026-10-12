@@ -637,7 +637,9 @@
         "5v5": "Active Duty",
         "2v2": "Wingman maps",
         "1v1": "Active Duty"
-      }
+      },
+      "searchAnyone": "Few players searching: you'll be matched with anyone available ({{count}} searching, {{total}} needed)",
+      "searchRating": "Finding a close match for your rating · {{count}} searching"
     },
     "queue": {
       "searching": "Searching {{mode}}",
