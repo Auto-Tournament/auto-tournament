@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import {
+  roundStops,
   idleRecorderCount,
   parseClipIds,
   parseClipStarts,
@@ -65,6 +66,31 @@ test.describe('Highlight moments', () => {
     expect(moments[0]!.startTick).toBe(1000 - 192);
     expect(moments[0]!.endTick).toBe(1200 + 96);
   });
+
+  test(
+    'a round-ending kill keeps its tail: the clip runs into the time after the round',
+    { tag: ['@api'] },
+    () => {
+      // The third kill ends the round at its tick; the next round starts 7 s later.
+      const ending = [
+        { number: 1, startTick: 0, endTick: 1200, winner: 'CT', reason: 't_killed' },
+        { number: 2, startTick: 1200 + 7 * 64, endTick: 9000, winner: 'T', reason: 'ct_killed' },
+      ];
+      const run = [1000, 1100, 1200].map((tick, i) => ({
+        tick,
+        round: 1,
+        attacker: 'p1',
+        attackerSide: 'CT',
+        victim: `v${i}`,
+        victimSide: 'T',
+        weapon: 'AK-47',
+        headshot: true,
+      }));
+      const moments = pickMoments({ kills: run, rounds: ending } as never);
+      expect(moments[0]!.endTick).toBe(1200 + 96);
+      expect(roundStops(ending).get(1)).toBe(1200 + 7 * 64);
+    }
+  );
 
   test('the last of a side alive winning against two scores as a clutch', { tag: ['@api'] }, () => {
     const kills = [kill(500, B1, A2), kill(2000, A, B1), kill(2400, A, B2)];
