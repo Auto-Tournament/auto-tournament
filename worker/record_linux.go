@@ -1210,6 +1210,9 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected, f
 	for i := range mj.Players {
 		p := &mj.Players[i]
 		name, err := demoName(demoPath, p.PlayerID)
+		if err == nil {
+			rememberAccount(name, p.PlayerID)
+		}
 		if err != nil {
 			// Not in this demo: their moments fail, the others go on.
 			for _, m := range p.Moments {

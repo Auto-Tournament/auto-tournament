@@ -337,8 +337,27 @@ func (g *game) loadDemo(demo string, look []string) error {
 	return errors.New("the demo never reported its first tick")
 }
 
-// spectate follows the player by their name in the demo.
+// followAccounts maps a player's demo name to their Steam account id, so the
+// camera can follow them by account: a name with characters the console
+// mangles never matched, and the camera sat under the map for the whole clip
+// (2026-10-12, every clip of one player).
+var followAccounts sync.Map // name -> uint32 account id
+
+// rememberAccount notes the account behind a demo name (steamID is a SteamID64).
+func rememberAccount(name, steamID string) {
+	if id, err := strconv.ParseUint(steamID, 10, 64); err == nil && id > 76561197960265728 {
+		followAccounts.Store(name, uint32(id-76561197960265728))
+	}
+}
+
+// spectate follows the player: by account id when it is known, and by their
+// name in the demo as well (whichever the game takes).
 func (g *game) spectate(name string) error {
+	if v, ok := followAccounts.Load(name); ok {
+		if err := g.con.send(fmt.Sprintf("spec_player_by_accountid %d", v.(uint32))); err != nil {
+			return err
+		}
+	}
 	return g.con.send(fmt.Sprintf("spec_player \"%s\"", strings.ReplaceAll(name, `"`, "")))
 }
 
