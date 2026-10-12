@@ -676,6 +676,17 @@
       "confirm": "Arkiver og start ny",
       "delete": "Slett den og start ny",
       "deleteHint": "Eller slett den: da forsvinner resultatene, kampene og statistikken."
+    },
+    "end": {
+      "button": "Avslutt turnering",
+      "tooltip": "Stopper turneringen nå uten resultat: kamper på servere avsluttes, resten avlyses. Ingen vinner og ingen premier. Den kan arkiveres etterpå.",
+      "title": "Avslutte denne turneringen?",
+      "body": "Alle kamper som pågår avsluttes på serveren sin og resten avlyses. Ingen vinner og ingen premier deles ut. Dette kan ikke angres.",
+      "typeName": "Skriv «{{name}}» for å bekrefte",
+      "confirm": "Avslutt turnering",
+      "done_one": "Turneringen er avsluttet, {{count}} kamp avlyst",
+      "done_other": "Turneringen er avsluttet, {{count}} kamper avlyst",
+      "failed": "Kunne ikke avslutte turneringen"
     }
   },
   "bracket": {

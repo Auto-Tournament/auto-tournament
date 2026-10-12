@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 671 of them, 394 behind auth —
+Every endpoint this API serves — 672 of them, 395 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -597,6 +597,7 @@ The tournament itself — setup, bracket, rounds, standings.
 | `POST` | `/api/tournament/pause` | admin |
 | `POST` | `/api/tournament/resume` | admin |
 | `POST` | `/api/tournament/start` | admin |
+| `POST` | `/api/tournament/cancel` | admin |
 | `POST` | `/api/tournament/restart` | admin |
 | `POST` | `/api/tournament/wipe-database` | admin |
 | `POST` | `/api/tournament/wipe-table/:table` | admin |

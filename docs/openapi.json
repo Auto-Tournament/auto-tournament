@@ -18520,6 +18520,48 @@
         }
       }
     },
+    "/api/tournament/cancel": {
+      "post": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "End a running tournament without a result",
+        "description": "Ends the matches on their servers, cancels every match not finished\nand marks the tournament `cancelled` (no winner, no placement\nrewards). It can be archived afterwards. `confirm` must be the\ntournament's name.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "confirm": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ ended, cancelled }"
+          },
+          "400": {
+            "description": "The name does not match"
+          },
+          "409": {
+            "description": "Not running"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/tournament/current-id": {
       "get": {
         "tags": [

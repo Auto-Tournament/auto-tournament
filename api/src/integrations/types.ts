@@ -253,6 +253,7 @@ export type CancelReason =
   | 'tournament-restart'
   | 'tournament-reset'
   | 'tournament-delete'
+  | 'tournament-cancel'
   | 'simulation-reset';
 
 /**
