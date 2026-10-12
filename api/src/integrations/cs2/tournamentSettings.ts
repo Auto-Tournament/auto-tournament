@@ -66,6 +66,11 @@ export interface Cs2TournamentSettings {
    * competitive rules, no skins in the server. Off: normal rules, skins on.
    */
   esportsMode?: boolean;
+  /**
+   * The map veto (default on). Off: no veto, each match plays maps drawn
+   * from the pool (matchConfig.ts), and the pool needs only one map.
+   */
+  veto?: boolean;
 }
 
 /** The map pool size a veto order is checked against when nothing else says (Active Duty). */
@@ -309,6 +314,7 @@ function applyLayer(
     into.fillTeamsWithBots = layer.fillTeamsWithBots;
   if (typeof layer.skinRewards === 'boolean') into.skinRewards = layer.skinRewards;
   if (typeof layer.esportsMode === 'boolean') into.esportsMode = layer.esportsMode;
+  if (typeof layer.veto === 'boolean') into.veto = layer.veto;
   if (layer.mapPoolId !== undefined) {
     const id = Number(layer.mapPoolId);
     if (layer.mapPoolId !== null && Number.isInteger(id) && id > 0) into.mapPoolId = id;
@@ -354,6 +360,7 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
         : {}),
       ...(value?.skinRewards !== undefined ? { skinRewards: value.skinRewards } : {}),
       ...(value?.esportsMode !== undefined ? { esportsMode: value.esportsMode } : {}),
+      ...(value?.veto !== undefined ? { veto: value.veto } : {}),
       ...(value?.mapPoolId !== undefined ? { mapPoolId: value.mapPoolId } : {}),
       ...(value?.mapMode ? { mapMode: value.mapMode } : {}),
     };

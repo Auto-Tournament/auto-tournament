@@ -755,6 +755,7 @@ export class Scheduler {
     const integration = await this.integrationForTournament(tournamentId);
     const requiresVeto =
       integration.capabilities.veto &&
+      (integration.usesPreMatchPhase?.(tournament) ?? true) &&
       tournament.type !== 'shuffle' &&
       ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
 

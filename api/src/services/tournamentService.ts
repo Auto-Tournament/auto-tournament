@@ -4,10 +4,7 @@ import { log } from '../utils/logger';
 import { getBracketGenerator } from './bracketGenerators';
 import { validateTeamCount, calculateTotalRounds } from '../utils/tournamentHelpers';
 import { moduleTournamentFields, normalizeTournamentSettings } from '../utils/tournamentRow';
-import {
-  moduleSettingsChangeBracket,
-  withModuleSettings,
-} from '../utils/moduleTournamentSettings';
+import { moduleSettingsChangeBracket, withModuleSettings } from '../utils/moduleTournamentSettings';
 import {
   buildMatchConfigFor,
   describeMatch,
@@ -36,13 +33,20 @@ import type {
 } from '../types/tournament.types';
 import { refreshCurrentTournamentId } from './currentTournament';
 import { playerEmailService } from './playerEmailService';
-import { bareSlug, isGrandFinalSlug, isLosersBracketSlug, shuffleTeamLike, tournamentSlugPrefix } from '../utils/matchSlug';
+import {
+  bareSlug,
+  isGrandFinalSlug,
+  isLosersBracketSlug,
+  shuffleTeamLike,
+  tournamentSlugPrefix,
+} from '../utils/matchSlug';
 
 /** Players per team from a request (2-10), or null when it names none. */
 function validTeamSize(value: unknown): number | null {
   if (value === undefined || value === null) return null;
   const n = Number(value);
-  if (!Number.isInteger(n) || n < 1 || n > 10) throw new Error('Players per team must be a whole number from 1 to 10.');
+  if (!Number.isInteger(n) || n < 1 || n > 10)
+    throw new Error('Players per team must be a whole number from 1 to 10.');
   return n;
 }
 
@@ -170,9 +174,10 @@ class TournamentService {
       if (!teamId) return null;
       const known = teamById.get(teamId);
       if (known) return known;
-      const row = await db.queryOneAsync<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
-        teamId,
-      ]);
+      const row = await db.queryOneAsync<DbTeamRow>(
+        'SELECT id, name, tag FROM teams WHERE id = ?',
+        [teamId]
+      );
       return row ? { id: row.id, name: row.name, tag: row.tag || undefined } : null;
     };
 
@@ -231,7 +236,8 @@ class TournamentService {
 
     // Shuffle tournaments don't use teams, skip validation. With sign-up open
     // the teams sign themselves up later; the count is checked at start.
-    const signupOpen = (settings as { registrationOpen?: unknown } | undefined)?.registrationOpen === true;
+    const signupOpen =
+      (settings as { registrationOpen?: unknown } | undefined)?.registrationOpen === true;
     if (type !== 'shuffle' && !signupOpen && !emptyDraft) {
       // Validate team count based on tournament type
       validateTeamCount(type, teamIds.length);
@@ -331,7 +337,8 @@ class TournamentService {
     // themselves up: then it is checked at start)
     const signupOpen =
       ((settings as { registrationOpen?: unknown } | undefined)?.registrationOpen ??
-        (existing.settings as { registrationOpen?: unknown } | undefined)?.registrationOpen) === true;
+        (existing.settings as { registrationOpen?: unknown } | undefined)?.registrationOpen) ===
+      true;
     if ((type || teamIds) && !signupOpen) {
       validateTeamCount(type || existing.type, (teamIds || existing.teamIds).length);
     }
@@ -382,7 +389,9 @@ class TournamentService {
         if (signupOpen) {
           // Teams are still signing up: a count the format cannot draw yet
           // (3 of 4) stands, with no bracket until it can (as a sign-up does).
-          await db.runAsync("DELETE FROM matches WHERE tournament_id = ? AND status = 'pending'", [tournamentId]);
+          await db.runAsync("DELETE FROM matches WHERE tournament_id = ? AND status = 'pending'", [
+            tournamentId,
+          ]);
         } else {
           log.error('Failed to regenerate bracket after update', err);
           // Revert changes to teams if bracket generation fails
@@ -407,7 +416,8 @@ class TournamentService {
       throw new Error('Failed to retrieve updated tournament');
     }
 
-    if (!signupIsOpen(existing.settings) && signupIsOpen(updated.settings)) emailSignupOpen(updated);
+    if (!signupIsOpen(existing.settings) && signupIsOpen(updated.settings))
+      emailSignupOpen(updated);
     return updated;
   }
 
@@ -420,13 +430,19 @@ class TournamentService {
    * played matches stay; without it (scripts, tests, wipes) everything goes,
    * as it always did.
    */
-  async deleteTournament(tournamentId: number, options: { keepPlayed?: boolean } = {}): Promise<void> {
+  async deleteTournament(
+    tournamentId: number,
+    options: { keepPlayed?: boolean } = {}
+  ): Promise<void> {
     // Its matches' live stats go with it; other tournaments' stay.
-    const slugs = await db.queryAsync<{ slug: string }>('SELECT slug FROM matches WHERE tournament_id = ?', [
+    const slugs = await db.queryAsync<{ slug: string }>(
+      'SELECT slug FROM matches WHERE tournament_id = ?',
+      [tournamentId]
+    );
+    // First, clear server_id from all matches to clean up references
+    await db.runAsync('UPDATE matches SET server_id = NULL WHERE tournament_id = ?', [
       tournamentId,
     ]);
-    // First, clear server_id from all matches to clean up references
-    await db.runAsync('UPDATE matches SET server_id = NULL WHERE tournament_id = ?', [tournamentId]);
     log.debug('Cleared server references from matches');
 
     // Matches that were played stay, with their stats, ratings and demos
@@ -488,7 +504,9 @@ class TournamentService {
 
       // Every match belongs to the tournament's game.
       const game = tournament.game || DEFAULT_GAME;
-      const preMatchPhase = integrationForMatch({ game }).capabilities.veto;
+      const integration = integrationForMatch({ game });
+      const preMatchPhase =
+        integration.capabilities.veto && (integration.usesPreMatchPhase?.(tournament) ?? true);
 
       // The generator returns neutral slots. Each slot's game config comes
       // from the match's integration, built before the rows are inserted (the
@@ -595,9 +613,7 @@ class TournamentService {
         }
 
         if (Object.keys(updates).length > 0) {
-          await db.updateAsync('matches', updates as Record<string, unknown>, 'id = ?', [
-            dbId,
-          ]);
+          await db.updateAsync('matches', updates as Record<string, unknown>, 'id = ?', [dbId]);
         }
       }
 
@@ -671,9 +687,10 @@ class TournamentService {
 
     // This tournament's live stats go, so its new bracket does not inherit
     // stale scores; other tournaments' stay.
-    const resetSlugs = await db.queryAsync<{ slug: string }>('SELECT slug FROM matches WHERE tournament_id = ?', [
-      tournamentId,
-    ]);
+    const resetSlugs = await db.queryAsync<{ slug: string }>(
+      'SELECT slug FROM matches WHERE tournament_id = ?',
+      [tournamentId]
+    );
     for (const { slug } of resetSlugs) matchLiveStatsService.clear(slug);
 
     // Delete all matches (this also clears all veto states stored in matches)
@@ -860,7 +877,9 @@ class TournamentService {
   ): Promise<void> {
     // Link winners‑bracket matches (both single and double elimination)
     if (tournamentType === 'single_elimination' || tournamentType === 'double_elimination') {
-      const winnersMatches = matches.filter((m) => !isLosersBracketSlug(m.slug) && !isGrandFinalSlug(m.slug));
+      const winnersMatches = matches.filter(
+        (m) => !isLosersBracketSlug(m.slug) && !isGrandFinalSlug(m.slug)
+      );
       if (winnersMatches.length > 0) {
         const maxRound = Math.max(...winnersMatches.map((m) => m.round));
 

@@ -88,6 +88,7 @@ async function openVetoMatches(): Promise<DbMatchRow[]> {
       WHERE t.status = 'in_progress'
         AND t.type <> 'shuffle'
         AND LOWER(t.format) IN ('bo1', 'bo3', 'bo5')
+        AND COALESCE(t.settings::jsonb #>> '{cs2,veto}', 'true') <> 'false'
         AND m.team1_id IS NOT NULL
         AND m.team2_id IS NOT NULL
         AND (m.server_id IS NULL OR m.server_id = '')

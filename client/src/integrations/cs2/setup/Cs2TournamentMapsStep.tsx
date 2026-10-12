@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type InputHTMLAttributes } from 'react';
+import { Box, Button, FormControlLabel, Switch, Typography } from '@mui/material';
+import { useModuleTranslation } from '../../../module-sdk';
 import type { TournamentContentStepProps } from '../../types';
 import { MapPoolStep } from './MapPoolStep';
 import SaveMapPoolModal from '../maps/SaveMapPoolModal';
@@ -22,6 +24,7 @@ export function Cs2TournamentMapsStep({
   format,
   disabled = false,
 }: TournamentContentStepProps) {
+  const { t } = useModuleTranslation('cs2');
   const { mapPools, availableMaps, loading, reloadPools } = useCs2MapData();
   const [saveOpen, setSaveOpen] = useState(false);
   const cs2 = cs2SettingsOf(settings);
@@ -49,8 +52,56 @@ export function Cs2TournamentMapsStep({
     if (pool) setMaps(pool.mapIds, pool.id);
   };
 
+  // Wingman, set up in one go: CS2's wingman maps, no veto (each match draws
+  // its map), wingman's 16 rounds. Wingman is 2v2: the match fills or plays
+  // two a side whatever the team size says.
+  const wingmanPreset = () => {
+    const maps = availableMaps.filter((m) => fitsMapMode(m, m.id, 'wingman')).map((m) => m.id);
+    onChange(
+      cs2Patch({
+        ...withMaps(cs2, maps, type, null),
+        mapMode: 'wingman',
+        veto: false,
+        maxRounds: 16,
+      })
+    );
+  };
+
+  const vetoFormat = type !== 'shuffle' && ['bo1', 'bo3', 'bo5'].includes(format);
+
   return (
     <>
+      {vetoFormat && (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', mb: 2 }}>
+          <FormControlLabel
+            label={t('tournament.mapVeto.label')}
+            control={
+              <Switch
+                checked={cs2.veto !== false}
+                disabled={disabled}
+                onChange={(_e, checked) => onChange(cs2Patch({ ...cs2, veto: checked }))}
+                slotProps={{
+                  input: {
+                    'data-testid': 'tournament-map-veto',
+                  } as InputHTMLAttributes<HTMLInputElement>,
+                }}
+              />
+            }
+          />
+          <Button
+            variant="outlined"
+            size="small"
+            disabled={disabled}
+            onClick={wingmanPreset}
+            data-testid="tournament-wingman-preset"
+          >
+            {t('tournament.wingmanPreset.button')}
+          </Button>
+          <Typography variant="body2" color="text.secondary" sx={{ flexBasis: '100%' }}>
+            {cs2.veto === false ? t('tournament.mapVeto.offHelp') : t('tournament.mapVeto.onHelp')}
+          </Typography>
+        </Box>
+      )}
       <MapPoolStep
         format={format}
         type={type}
@@ -72,6 +123,7 @@ export function Cs2TournamentMapsStep({
         }
         onSaveMapPool={() => setSaveOpen(true)}
         mapMode={cs2.mapMode}
+        veto={cs2.veto !== false}
         onMapModeChange={(mode) => {
           // Maps of another type leave; so does the pool, when it had any.
           const kept = cs2.maps.filter((id) =>

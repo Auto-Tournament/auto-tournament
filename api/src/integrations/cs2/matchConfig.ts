@@ -162,8 +162,12 @@ export const generateMatchConfig = async (
   const usesLineup =
     (team1 && team1Roster !== team1.players) || (team2 && team2Roster !== team2.players);
   const fillTeamsWithBots = storedCs2Settings(tournament.settings)?.fillTeamsWithBots === true;
-  const playersPerTeam =
-    (usesLineup || fillTeamsWithBots) && tournament.teamSize
+  // Wingman is 2v2 whatever the team size says (a bot-filled wingman match
+  // fills to two a side).
+  const wingman = storedCs2Settings(tournament.settings)?.mapMode === 'wingman';
+  const playersPerTeam = wingman
+    ? 2
+    : (usesLineup || fillTeamsWithBots) && tournament.teamSize
       ? tournament.teamSize
       : Math.max(team1Count, team2Count, 1);
 
@@ -245,6 +249,14 @@ export const generateMatchConfig = async (
         // fall back to tournament defaults
       }
     }
+  }
+
+  // 2d) No veto (settings.cs2.veto false): the match plays maps drawn from
+  //     the pool, the same ones on every read (seeded by the slug), and a
+  //     knife round picks the sides.
+  if (!maplist && storedCs2Settings(tournament.settings)?.veto === false) {
+    const pool = storedCs2Settings(tournament.settings)?.maps ?? [];
+    if (pool.length > 0) maplist = drawMaps(pool, numMaps, slug ?? String(existingMatch?.id ?? ''));
   }
 
   // 3) Use per_map_sides for map_sides - MatchZy Enhanced expects map_sides array to correspond
@@ -771,4 +783,25 @@ export async function serveStandaloneMatchConfig(slug: string): Promise<MatchCon
             players: {},
           },
   };
+}
+
+/**
+ * `count` maps from `pool` for a match without a veto: a shuffle seeded by
+ * `seed` (the match slug), so every read of the config draws the same maps.
+ * A pool smaller than the series repeats maps.
+ */
+export function drawMaps(pool: readonly string[], count: number, seed: string): string[] {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619) >>> 0;
+  const next = () => {
+    h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0;
+    h = Math.imul(h ^ (h >>> 13), 3266489909) >>> 0;
+    return (h ^= h >>> 16) / 4294967296;
+  };
+  const order = [...pool];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(next() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return Array.from({ length: count }, (_, i) => order[i % order.length]);
 }
