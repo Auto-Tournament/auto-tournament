@@ -244,7 +244,8 @@ export function MachineCard({
             {statusText}
           </Box>
           {(host.hostname || host.csmVersion) && (
-            <Box component="span" sx={{ ...mono, color: color.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: { xs: 'none', sm: 'inline' } }}>
+            // ink2, not muted: muted on the card's surface is under 4.5:1 (axe, 2026-10-12).
+            <Box component="span" sx={{ ...mono, color: color.ink2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: { xs: 'none', sm: 'inline' } }}>
               {[host.hostname, host.csmVersion ? `csm ${host.csmVersion}` : null].filter(Boolean).join(' · ')}
             </Box>
           )}
