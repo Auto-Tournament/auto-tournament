@@ -34,6 +34,24 @@ journal makes updates recoverable after a restart; lost completion acknowledgeme
 are retried without reinstalling. UUID, worker credentials, groups and enabled
 settings stay unchanged.
 
+## On the host
+
+```sh
+/srv/at-recorder/at-recorder update --check   # is a newer recorder or host agent out?
+/srv/at-recorder/at-recorder update           # update, as the platform's Update button
+/srv/at-recorder/at-recorder logs -f          # the host agent's and the worker's logs
+/srv/at-recorder/at-recorder restart          # restart the worker while it is idle
+```
+
+`update` asks AT for this host's update, the same request as Update on the
+Recorders page: the pinned release, the current job finishes first, and a new
+build that does not start is rolled back. It follows the update until it is
+done (`--no-wait` returns at once). The host agent must have been seen with
+managed updates in the last five minutes. `logs` hides recorder keys and
+anything set as a token, key, password or secret. `restart` refuses while the
+recorder is at a job; `--force` restarts anyway after you type yes (`--yes`
+skips the question), and that job's clips go back to the platform.
+
 ## Existing NTLAN installation
 
 Copy the Linux amd64 binary to the host, then:

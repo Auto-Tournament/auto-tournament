@@ -7,8 +7,12 @@ import {
 } from '../demos/recorderLeases';
 import { db } from '../../../config/database';
 import { recorderFleetRouter } from './recorderFleet';
-import { acknowledgeRecorderUpdate } from '../demos/recorderUpdates';
-import { recorderAcceptsWork } from '../demos/recorderFleet';
+import {
+  acknowledgeRecorderUpdate,
+  newerRecorderAgent,
+  refreshRecorderRelease,
+} from '../demos/recorderUpdates';
+import { recorderAcceptsWork, requestRecorderUpdate } from '../demos/recorderFleet';
 /**
  * Highlights (../demos/highlights.ts).
  *
@@ -372,6 +376,76 @@ router.post('/recorder/update', requireRecorder, async (req, res) => {
   } catch (error) {
     log.error('[RECORDER UPDATE] acknowledgement failed', { error });
     return res.status(500).json({ error: 'Could not save update result' });
+  }
+});
+
+/**
+ * What a host's own `at-recorder update --check` asks: whether a newer
+ * recorder image or host agent is out for it, and whether the platform can
+ * update it (a host agent with managed updates seen in the last 5 minutes).
+ */
+router.get('/recorder/update/available', requireRecorder, async (req, res) => {
+  const name = req.header('X-AT-Recorder');
+  if (!name) return res.status(400).json({ error: 'Recorder name required' });
+  try {
+    await refreshRecorderRelease();
+    const row = await db.queryOneAsync<{
+      recorder_image: string | null;
+      latest_image: string | null;
+      agent_version: string | null;
+      latest_agent_version: string | null;
+      update_status: string | null;
+      update_error: string | null;
+      managed: boolean;
+    }>(
+      `SELECT recorder_image, latest_image, agent_version, latest_agent_version, update_status, update_error,
+              (update_protocol = 1 AND update_agent_seen > EXTRACT(EPOCH FROM NOW()) - 300) AS managed
+         FROM cs2_recorders WHERE name = ?`,
+      [name]
+    );
+    if (!row) return res.status(404).json({ error: 'No such recorder' });
+    return res.json({
+      success: true,
+      managed: row.managed === true,
+      status: row.update_status ?? 'current',
+      error: row.update_error,
+      image: {
+        installed: row.recorder_image,
+        latest: row.latest_image,
+        newer: !!(
+          row.latest_image &&
+          row.recorder_image &&
+          row.latest_image !== row.recorder_image
+        ),
+      },
+      agent: {
+        installed: row.agent_version,
+        latest: row.latest_agent_version,
+        newer: newerRecorderAgent(row.latest_agent_version, row.agent_version),
+      },
+    });
+  } catch (error) {
+    log.error('[RECORDER UPDATE] availability failed', { error });
+    return res.status(500).json({ error: 'Could not check for updates' });
+  }
+});
+
+/**
+ * A host's own `at-recorder update`: the same request as the platform's
+ * Update button (pinned release, drained before it runs, rolled back when it
+ * fails). `queued` is 0 when nothing is newer, it is already queued or the
+ * host agent cannot take managed updates.
+ */
+router.post('/recorder/update/request', requireRecorder, async (req, res) => {
+  const name = req.header('X-AT-Recorder');
+  if (!name) return res.status(400).json({ error: 'Recorder name required' });
+  try {
+    return res.json({ success: true, queued: await requestRecorderUpdate(name) });
+  } catch (error) {
+    const status = (error as { status?: number }).status;
+    if (status === 404) return res.status(404).json({ error: 'No such recorder' });
+    log.error('[RECORDER UPDATE] self request failed', { error });
+    return res.status(500).json({ error: 'Could not request the update' });
   }
 });
 
