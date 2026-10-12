@@ -2249,7 +2249,10 @@
       "previous": "Forrige",
       "next": "Neste",
       "close": "Lukk",
-      "redoMatch": "Gjør alle klipp på nytt"
+      "redoMatch": "Gjør alle klipp på nytt",
+      "reelElapsed": "ferdig {{time}} etter at første klipp startet",
+      "reelAssembly": "satt sammen på {{time}}",
+      "reelRender": "klippene: {{time}} opptak til sammen"
     },
     "add": {
       "button": "Legg til en opptaker",
