@@ -609,7 +609,7 @@
         "1v1": "Duell"
       },
       "lookingTitle": "Leter etter spillere",
-      "seats": "{{count}} av {{total}} i køen",
+      "seats": "{{count}} søker · {{total}} trengs for en kamp",
       "leaveQueue": "Forlat køen",
       "level": "Ditt nivå",
       "xp": "{{into}} / {{next}} XP",
@@ -637,7 +637,9 @@
         "5v5": "Active Duty",
         "2v2": "Wingman-kart",
         "1v1": "Active Duty"
-      }
+      },
+      "searchAnyone": "Få spillere søker: du blir satt opp mot hvem som helst ({{count}} søker, {{total}} trengs)",
+      "searchRating": "Finner en jevn kamp for ratingen din · {{count}} søker"
     },
     "queue": {
       "searching": "Søker {{mode}}",

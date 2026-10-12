@@ -16,7 +16,6 @@ import { db } from '../../config/database';
 import { log } from '../../utils/logger';
 import { hasIntegration, getIntegration } from '../../integrations/registry';
 import { matchService } from '../matchService';
-import { resolveTournamentId } from '../../utils/tournamentRow';
 import { configuredPublicOrigin } from '../../utils/publicOrigin';
 import { rating as osRating, rate as osRate } from 'openskill';
 import { DEFAULT_SIGMA, openSkillToDisplayElo } from '../../utils/ratingMath';
@@ -109,7 +108,12 @@ export interface MatchmakingMe {
   /** Party members (or the caller alone) not set up for the game yet: the game on their profile, or its account. Searching waits for them. */
   notReady: Array<{ id: string; name: string; missing: 'game' | 'account' }>;
   /** Open invites to the caller from other parties, newest first. */
-  invites: Array<{ partyId: string; from: { id: string; name: string; avatarUrl: string | null }; mode: string; size: number }>;
+  invites: Array<{
+    partyId: string;
+    from: { id: string; name: string; avatarUrl: string | null };
+    mode: string;
+    size: number;
+  }>;
   queue: { mode: string; queuedAt: number; status: string } | null;
   /** Players searching right now, per mode (the Play page's "in the queue"). */
   queueCounts: Record<string, number>;
@@ -140,6 +144,20 @@ export interface MatchmakingMe {
 
 /** Rounds per half Ready Up plays: wingman MR8, everything else MR12. */
 const MODE_MAX_ROUNDS: Record<MatchmakingMode, number> = { '5v5': 12, '2v2': 8, '1v1': 12 };
+
+/**
+ * Sides and objective per mode. 5v5 keeps the knife round. 1v1 and 2v2 draw
+ * the starting sides (a knife duel for sides is no fun with one or two
+ * players); 1v1 is an aim duel with no bomb, elimination only.
+ */
+export function matchmakingSides(mode: MatchmakingMode): {
+  map_sides?: string[];
+  cvars?: Record<string, number>;
+} {
+  if (mode === '5v5') return {};
+  const sides = { map_sides: [randomInt(2) === 0 ? 'team1_ct' : 'team2_ct'] };
+  return mode === '1v1' ? { ...sides, cvars: { mp_give_player_c4: 0 } } : sides;
+}
 /** Fewer found matches than this in the last week says nothing about the wait. */
 const MIN_WAIT_SAMPLES = 3;
 
@@ -213,7 +231,10 @@ export class MatchmakingService {
 
   /** The game a party plays (matchmaking is CS2 today; the column is ready for more). */
   private async partyGame(partyId: string): Promise<string> {
-    const row = await db.queryOneAsync<{ game: string | null }>('SELECT game FROM mm_parties WHERE id = ?', [partyId]);
+    const row = await db.queryOneAsync<{ game: string | null }>(
+      'SELECT game FROM mm_parties WHERE id = ?',
+      [partyId]
+    );
     return row?.game || 'cs2';
   }
 
@@ -231,20 +252,26 @@ export class MatchmakingService {
   }
 
   private async entryOf(partyId: string): Promise<EntryRow | undefined> {
-    return db.queryOneAsync<EntryRow>('SELECT * FROM mm_queue_entries WHERE party_id = ?', [partyId]);
+    return db.queryOneAsync<EntryRow>('SELECT * FROM mm_queue_entries WHERE party_id = ?', [
+      partyId,
+    ]);
   }
 
   private async newParty(playerId: string, mode: MatchmakingMode): Promise<PartyRow> {
-    const party: PartyRow = { id: randomUUID(), leader_player_id: playerId, mode, invite_code: inviteCode() };
+    const party: PartyRow = {
+      id: randomUUID(),
+      leader_player_id: playerId,
+      mode,
+      invite_code: inviteCode(),
+    };
     await db.runAsync(
       'INSERT INTO mm_parties (id, leader_player_id, mode, invite_code, created_at) VALUES (?, ?, ?, ?, ?)',
       [party.id, playerId, mode, party.invite_code, this.clock()]
     );
-    await db.runAsync('INSERT INTO mm_party_members (party_id, player_id, joined_at) VALUES (?, ?, ?)', [
-      party.id,
-      playerId,
-      this.clock(),
-    ]);
+    await db.runAsync(
+      'INSERT INTO mm_party_members (party_id, player_id, joined_at) VALUES (?, ?, ?)',
+      [party.id, playerId, this.clock()]
+    );
     return party;
   }
 
@@ -265,45 +292,55 @@ export class MatchmakingService {
         'SELECT id, leader_player_id, mode, invite_code FROM mm_parties WHERE invite_code = ?',
         [code.trim().toUpperCase()]
       );
-      if (!party) throw new MatchmakingError(404, 'party_not_found', 'No party with that invite code');
+      if (!party)
+        throw new MatchmakingError(404, 'party_not_found', 'No party with that invite code');
       return this.enter(playerId, party);
     });
   }
 
   /** Put the player in this party (leaving theirs): the shared half of joining by code and by invite. */
   private async enter(playerId: string, party: PartyRow): Promise<PartyRow> {
-      const current = await this.partyOf(playerId);
-      if (current?.id === party.id) return party;
-      if (await this.entryOf(party.id)) {
-        throw new MatchmakingError(409, 'party_searching', 'That party is searching; ask the leader to stop first');
+    const current = await this.partyOf(playerId);
+    if (current?.id === party.id) return party;
+    if (await this.entryOf(party.id)) {
+      throw new MatchmakingError(
+        409,
+        'party_searching',
+        'That party is searching; ask the leader to stop first'
+      );
+    }
+    // A party can grow to the biggest mode on the site; when it outgrows its
+    // mode, it moves to the smallest one it fits.
+    const modes = await this.enabledModes();
+    const members = await this.members(party.id);
+    if (members.length >= Math.max(...modes.map((m) => TEAM_SIZE[m]))) {
+      throw new MatchmakingError(409, 'party_full', 'That party is full');
+    }
+    if (current) await this.leave(playerId, current);
+    await db.runAsync(
+      'INSERT INTO mm_party_members (party_id, player_id, joined_at) VALUES (?, ?, ?)',
+      [party.id, playerId, this.clock()]
+    );
+    const size = members.length + 1;
+    if (size > TEAM_SIZE[party.mode as MatchmakingMode]) {
+      const fits = modes
+        .filter((m) => TEAM_SIZE[m] >= size)
+        .sort((a, b) => TEAM_SIZE[a] - TEAM_SIZE[b]);
+      if (fits[0]) {
+        party.mode = fits[0];
+        await db.runAsync('UPDATE mm_parties SET mode = ? WHERE id = ?', [party.mode, party.id]);
       }
-      // A party can grow to the biggest mode on the site; when it outgrows its
-      // mode, it moves to the smallest one it fits.
-      const modes = await this.enabledModes();
-      const members = await this.members(party.id);
-      if (members.length >= Math.max(...modes.map((m) => TEAM_SIZE[m]))) {
-        throw new MatchmakingError(409, 'party_full', 'That party is full');
-      }
-      if (current) await this.leave(playerId, current);
-      await db.runAsync('INSERT INTO mm_party_members (party_id, player_id, joined_at) VALUES (?, ?, ?)', [
-        party.id,
-        playerId,
-        this.clock(),
-      ]);
-      const size = members.length + 1;
-      if (size > TEAM_SIZE[party.mode as MatchmakingMode]) {
-        const fits = modes.filter((m) => TEAM_SIZE[m] >= size).sort((a, b) => TEAM_SIZE[a] - TEAM_SIZE[b]);
-        if (fits[0]) {
-          party.mode = fits[0];
-          await db.runAsync('UPDATE mm_parties SET mode = ? WHERE id = ?', [party.mode, party.id]);
-        }
-      }
-      // An invite to this party is answered by being in it.
-      const invited = await db.queryAsync('DELETE FROM mm_party_invites WHERE party_id = ? AND to_id = ? RETURNING to_id', [party.id, playerId]);
-      if (invited.length > 0) await notificationService.answer(playerId, inviteKey(party.id), 'joined');
-      await this.touchParty(party.id);
-      emitSocialChanged([playerId]);
-      return party;
+    }
+    // An invite to this party is answered by being in it.
+    const invited = await db.queryAsync(
+      'DELETE FROM mm_party_invites WHERE party_id = ? AND to_id = ? RETURNING to_id',
+      [party.id, playerId]
+    );
+    if (invited.length > 0)
+      await notificationService.answer(playerId, inviteKey(party.id), 'joined');
+    await this.touchParty(party.id);
+    emitSocialChanged([playerId]);
+    return party;
   }
 
   /**
@@ -316,32 +353,56 @@ export class MatchmakingService {
       if (typeof targetId !== 'string' || !/^\d{1,20}$/.test(targetId)) {
         throw new MatchmakingError(400, 'invalid_player', 'That is not a player');
       }
-      if (targetId === playerId) throw new MatchmakingError(400, 'self', 'You are already in your party');
-      const target = await db.queryOneAsync<{ id: string; name: string }>('SELECT id, name FROM players WHERE id = ?', [targetId]);
+      if (targetId === playerId)
+        throw new MatchmakingError(400, 'self', 'You are already in your party');
+      const target = await db.queryOneAsync<{ id: string; name: string }>(
+        'SELECT id, name FROM players WHERE id = ?',
+        [targetId]
+      );
       if (!target) throw new MatchmakingError(404, 'not_found', 'No player with that id');
       const modes = await this.enabledModes();
       const current = await this.partyOf(playerId);
       const game = current ? await this.partyGame(current.id) : 'cs2';
       const allowed = await canInvite(playerId, targetId, game);
-      if (allowed === 'nobody') throw new MatchmakingError(403, 'invites_off', `${target.name} does not take party invites`);
-      if (allowed === 'friends') throw new MatchmakingError(403, 'friends_only', `${target.name} takes party invites from friends only`);
+      if (allowed === 'nobody')
+        throw new MatchmakingError(
+          403,
+          'invites_off',
+          `${target.name} does not take party invites`
+        );
+      if (allowed === 'friends')
+        throw new MatchmakingError(
+          403,
+          'friends_only',
+          `${target.name} takes party invites from friends only`
+        );
       if (allowed === 'no_game') {
-        throw new MatchmakingError(409, 'no_game', `${target.name} has not added ${gameName(game)} to their profile`);
+        throw new MatchmakingError(
+          409,
+          'no_game',
+          `${target.name} has not added ${gameName(game)} to their profile`
+        );
       }
       const party = current ?? (await this.newParty(playerId, modes[0] ?? '5v5'));
       const members = await this.members(party.id);
-      if (members.includes(targetId)) throw new MatchmakingError(409, 'already_member', 'They are already in your party');
-      const open = await db.queryAsync<{ to_id: string }>('SELECT to_id FROM mm_party_invites WHERE party_id = ?', [party.id]);
+      if (members.includes(targetId))
+        throw new MatchmakingError(409, 'already_member', 'They are already in your party');
+      const open = await db.queryAsync<{ to_id: string }>(
+        'SELECT to_id FROM mm_party_invites WHERE party_id = ?',
+        [party.id]
+      );
       if (open.some((r) => r.to_id === targetId)) return;
       if (members.length + open.length >= Math.max(...modes.map((m) => TEAM_SIZE[m]))) {
-        throw new MatchmakingError(409, 'party_full', 'Your party is full, counting the invites still open');
+        throw new MatchmakingError(
+          409,
+          'party_full',
+          'Your party is full, counting the invites still open'
+        );
       }
-      await db.runAsync('INSERT INTO mm_party_invites (party_id, to_id, from_id, created_at) VALUES (?, ?, ?, ?)', [
-        party.id,
-        targetId,
-        playerId,
-        this.clock(),
-      ]);
+      await db.runAsync(
+        'INSERT INTO mm_party_invites (party_id, to_id, from_id, created_at) VALUES (?, ?, ?, ?)',
+        [party.id, targetId, playerId, this.clock()]
+      );
       const [from] = await this.people([playerId]);
       await notificationService.notify(
         targetId,
@@ -360,7 +421,10 @@ export class MatchmakingService {
     return this.locked(async () => {
       const party = await this.partyOf(playerId);
       if (!party || typeof targetId !== 'string') return;
-      await db.runAsync('DELETE FROM mm_party_invites WHERE party_id = ? AND to_id = ?', [party.id, targetId]);
+      await db.runAsync('DELETE FROM mm_party_invites WHERE party_id = ? AND to_id = ?', [
+        party.id,
+        targetId,
+      ]);
       await notificationService.withdraw(targetId, inviteKey(party.id));
       await this.touchParty(party.id);
       this.touch(targetId);
@@ -371,18 +435,33 @@ export class MatchmakingService {
   /** Answer an invite: join that party (leaving your own), or decline it. */
   answerInvite(playerId: string, partyId: unknown, accept: boolean): Promise<void> {
     return this.locked(async () => {
-      if (typeof partyId !== 'string') throw new MatchmakingError(400, 'invalid_party', 'That is not a party');
-      const invite = await db.queryOneAsync('SELECT 1 FROM mm_party_invites WHERE party_id = ? AND to_id = ?', [partyId, playerId]);
-      if (!invite) throw new MatchmakingError(404, 'invite_gone', 'That invite is gone: the party ended or took it back');
+      if (typeof partyId !== 'string')
+        throw new MatchmakingError(400, 'invalid_party', 'That is not a party');
+      const invite = await db.queryOneAsync(
+        'SELECT 1 FROM mm_party_invites WHERE party_id = ? AND to_id = ?',
+        [partyId, playerId]
+      );
+      if (!invite)
+        throw new MatchmakingError(
+          404,
+          'invite_gone',
+          'That invite is gone: the party ended or took it back'
+        );
       if (!accept) {
-        await db.runAsync('DELETE FROM mm_party_invites WHERE party_id = ? AND to_id = ?', [partyId, playerId]);
+        await db.runAsync('DELETE FROM mm_party_invites WHERE party_id = ? AND to_id = ?', [
+          partyId,
+          playerId,
+        ]);
         await notificationService.answer(playerId, inviteKey(partyId), 'declined');
         await this.touchParty(partyId);
         this.touch(playerId);
         emitSocialChanged([playerId]);
         return;
       }
-      const party = await db.queryOneAsync<PartyRow>('SELECT id, leader_player_id, mode, invite_code FROM mm_parties WHERE id = ?', [partyId]);
+      const party = await db.queryOneAsync<PartyRow>(
+        'SELECT id, leader_player_id, mode, invite_code FROM mm_parties WHERE id = ?',
+        [partyId]
+      );
       if (!party) throw new MatchmakingError(404, 'invite_gone', 'That party has ended');
       await this.enter(playerId, party);
     });
@@ -396,15 +475,34 @@ export class MatchmakingService {
   }
 
   /** Open invites to the player, newest first (the Play page shows them). */
-  private async invitesTo(playerId: string): Promise<Array<{ partyId: string; from: { id: string; name: string; avatarUrl: string | null }; mode: string; size: number }>> {
-    const rows = await db.queryAsync<{ party_id: string; from_id: string; mode: string; size: number | string }>(
+  private async invitesTo(
+    playerId: string
+  ): Promise<
+    Array<{
+      partyId: string;
+      from: { id: string; name: string; avatarUrl: string | null };
+      mode: string;
+      size: number;
+    }>
+  > {
+    const rows = await db.queryAsync<{
+      party_id: string;
+      from_id: string;
+      mode: string;
+      size: number | string;
+    }>(
       `SELECT i.party_id, i.from_id, p.mode, (SELECT COUNT(*) FROM mm_party_members m WHERE m.party_id = p.id) AS size
          FROM mm_party_invites i JOIN mm_parties p ON p.id = i.party_id
         WHERE i.to_id = ? ORDER BY i.created_at DESC`,
       [playerId]
     );
     const people = await this.people(rows.map((r) => r.from_id));
-    return rows.map((r, i) => ({ partyId: r.party_id, from: people[i], mode: r.mode, size: Number(r.size) }));
+    return rows.map((r, i) => ({
+      partyId: r.party_id,
+      from: people[i],
+      mode: r.mode,
+      size: Number(r.size),
+    }));
   }
 
   /** The leader picks the party's mode. Not while searching, and only a mode the party fits. */
@@ -420,10 +518,18 @@ export class MatchmakingService {
       }
       if (party.mode === mode) return party;
       if (await this.entryOf(party.id)) {
-        throw new MatchmakingError(409, 'party_searching', 'Stop the search before changing the mode');
+        throw new MatchmakingError(
+          409,
+          'party_searching',
+          'Stop the search before changing the mode'
+        );
       }
       if ((await this.members(party.id)).length > TEAM_SIZE[mode]) {
-        throw new MatchmakingError(409, 'party_too_big', `A ${mode} party has at most ${TEAM_SIZE[mode]} players`);
+        throw new MatchmakingError(
+          409,
+          'party_too_big',
+          `A ${mode} party has at most ${TEAM_SIZE[mode]} players`
+        );
       }
       party.mode = mode;
       await db.runAsync('UPDATE mm_parties SET mode = ? WHERE id = ?', [mode, party.id]);
@@ -448,12 +554,18 @@ export class MatchmakingService {
     await this.touchParty(party.id);
     if (party.leader_player_id === playerId) {
       // Players invited to a party that ends see the invite go.
-      const invited = await db.queryAsync<{ to_id: string }>('SELECT to_id FROM mm_party_invites WHERE party_id = ?', [party.id]);
+      const invited = await db.queryAsync<{ to_id: string }>(
+        'SELECT to_id FROM mm_party_invites WHERE party_id = ?',
+        [party.id]
+      );
       this.touch(...invited.map((r) => r.to_id));
       await db.runAsync('DELETE FROM mm_parties WHERE id = ?', [party.id]);
     } else {
       await db.runAsync('DELETE FROM mm_queue_entries WHERE party_id = ?', [party.id]);
-      await db.runAsync('DELETE FROM mm_party_members WHERE party_id = ? AND player_id = ?', [party.id, playerId]);
+      await db.runAsync('DELETE FROM mm_party_members WHERE party_id = ? AND player_id = ?', [
+        party.id,
+        playerId,
+      ]);
     }
   }
 
@@ -483,7 +595,11 @@ export class MatchmakingService {
       if (existing) return existing;
       const members = await this.members(party.id);
       if (members.length > TEAM_SIZE[mode]) {
-        throw new MatchmakingError(409, 'party_too_big', `A ${mode} party has at most ${TEAM_SIZE[mode]} players`);
+        throw new MatchmakingError(
+          409,
+          'party_too_big',
+          `A ${mode} party has at most ${TEAM_SIZE[mode]} players`
+        );
       }
       // Everyone must be set up for the game: it on their profile, and its account linked.
       const missing = await missingForGame(members, await this.partyGame(party.id));
@@ -494,7 +610,11 @@ export class MatchmakingService {
       for (const member of members) {
         const until = await this.cooldownUntil(member);
         if (until) {
-          throw new MatchmakingError(409, 'cooldown', `A party member can search again at ${new Date(until * 1000).toISOString()}`);
+          throw new MatchmakingError(
+            409,
+            'cooldown',
+            `A party member can search again at ${new Date(until * 1000).toISOString()}`
+          );
         }
       }
       const entry: EntryRow = {
@@ -606,23 +726,32 @@ export class MatchmakingService {
             [lobbyId, player, party.partyId, index + 1, party.queuedAt]
           );
         }
-        await db.runAsync("UPDATE mm_queue_entries SET status = 'found', lobby_id = ? WHERE id = ?", [
-          lobbyId,
-          party.entryId,
-        ]);
+        await db.runAsync(
+          "UPDATE mm_queue_entries SET status = 'found', lobby_id = ? WHERE id = ?",
+          [lobbyId, party.entryId]
+        );
       }
     }
     this.touch(...group.flatMap((p) => p.players));
-    log.info(`[MATCHMAKING] lobby ${lobbyId} (${mode}): ${group.length} parties, waiting for accepts`);
+    log.info(
+      `[MATCHMAKING] lobby ${lobbyId} (${mode}): ${group.length} parties, waiting for accepts`
+    );
     return lobbyId;
   }
 
   // --- accept / decline ------------------------------------------------
 
-  private async lobbyFor(playerId: string, lobbyId: string): Promise<{ lobby: LobbyRow; players: LobbyPlayerRow[] }> {
-    const lobby = await db.queryOneAsync<LobbyRow>('SELECT * FROM mm_lobbies WHERE id = ?', [lobbyId]);
+  private async lobbyFor(
+    playerId: string,
+    lobbyId: string
+  ): Promise<{ lobby: LobbyRow; players: LobbyPlayerRow[] }> {
+    const lobby = await db.queryOneAsync<LobbyRow>('SELECT * FROM mm_lobbies WHERE id = ?', [
+      lobbyId,
+    ]);
     const players = lobby
-      ? await db.queryAsync<LobbyPlayerRow>('SELECT * FROM mm_lobby_players WHERE lobby_id = ?', [lobbyId])
+      ? await db.queryAsync<LobbyPlayerRow>('SELECT * FROM mm_lobby_players WHERE lobby_id = ?', [
+          lobbyId,
+        ])
       : [];
     if (!lobby || !players.some((p) => p.player_id === playerId)) {
       throw new MatchmakingError(404, 'lobby_not_found', 'No such match for you');
@@ -634,7 +763,11 @@ export class MatchmakingService {
     return this.locked(async () => {
       const { lobby, players } = await this.lobbyFor(playerId, lobbyId);
       if (lobby.status !== 'accepting' || lobby.accept_deadline <= this.clock()) {
-        throw new MatchmakingError(409, 'not_accepting', 'This match is no longer waiting for answers');
+        throw new MatchmakingError(
+          409,
+          'not_accepting',
+          'This match is no longer waiting for answers'
+        );
       }
       await db.runAsync(
         'UPDATE mm_lobby_players SET accepted_at = ? WHERE lobby_id = ? AND player_id = ? AND accepted_at IS NULL',
@@ -665,14 +798,17 @@ export class MatchmakingService {
     return this.locked(async () => {
       const { lobby, players } = await this.lobbyFor(playerId, lobbyId);
       if (lobby.status !== 'accepting') {
-        throw new MatchmakingError(409, 'not_accepting', 'This match is no longer waiting for answers');
+        throw new MatchmakingError(
+          409,
+          'not_accepting',
+          'This match is no longer waiting for answers'
+        );
       }
       const now = this.clock();
-      await db.runAsync('UPDATE mm_lobby_players SET declined_at = ? WHERE lobby_id = ? AND player_id = ?', [
-        now,
-        lobbyId,
-        playerId,
-      ]);
+      await db.runAsync(
+        'UPDATE mm_lobby_players SET declined_at = ? WHERE lobby_id = ? AND player_id = ?',
+        [now, lobbyId, playerId]
+      );
       const party = players.find((p) => p.player_id === playerId)!.party_id;
       await this.penalize(playerId, 'decline', lobbyId);
       // The decliner's party leaves the queue; every other party goes back
@@ -689,7 +825,9 @@ export class MatchmakingService {
    */
   private async startMatch(lobby: LobbyRow, players: LobbyPlayerRow[]): Promise<void> {
     if (!hasIntegration('cs2')) throw new Error('The CS2 module is not installed');
-    const poolId = parseModePools(await db.getAppSettingAsync(MM_MODE_POOLS))[lobby.mode as MatchmakingMode] ?? null;
+    const poolId =
+      parseModePools(await db.getAppSettingAsync(MM_MODE_POOLS))[lobby.mode as MatchmakingMode] ??
+      null;
     const pool = (await getIntegration('cs2').matchmakingMapPool?.(lobby.mode, poolId)) ?? [];
     if (pool.length === 0) throw new Error(`No CS2 maps for ${lobby.mode} matchmaking`);
     const map = pool[randomInt(pool.length)].id;
@@ -703,7 +841,10 @@ export class MatchmakingService {
       ).map((r) => [r.id, r.name || r.id])
     );
     const team = (n: number) => {
-      const roster = players.filter((p) => p.team === n).map((p) => p.player_id).sort();
+      const roster = players
+        .filter((p) => p.team === n)
+        .map((p) => p.player_id)
+        .sort();
       return {
         name: `Team ${names.get(roster[0]) ?? n}`,
         players: Object.fromEntries(roster.map((id) => [id, names.get(id) ?? id])),
@@ -711,7 +852,8 @@ export class MatchmakingService {
     };
 
     const slug = `mm-${lobby.id.slice(0, 8)}`;
-    const teamSize = TEAM_SIZE[lobby.mode as MatchmakingMode];
+    const mode = lobby.mode as MatchmakingMode;
+    const teamSize = TEAM_SIZE[mode];
     await matchService.createMatch(
       {
         slug,
@@ -723,17 +865,22 @@ export class MatchmakingService {
           team2: team(2),
           num_maps: 1,
           maplist: [map],
-          wingman: lobby.mode === '2v2',
+          wingman: mode === '2v2',
+          // The mode's own rules, never a tournament's: a 1v1 played the
+          // running tournament's MR6 (2026-10-12).
+          maxRounds: MODE_MAX_ROUNDS[mode],
+          ...matchmakingSides(mode),
         },
       },
       configuredPublicOrigin() ?? '',
-      resolveTournamentId()
+      null
     );
     await db.runAsync("UPDATE matches SET source = 'matchmaking' WHERE slug = ?", [slug]);
     // The pool as it was, for the map roulette the players see: at most 30
     // maps, the chosen one always among them.
     const chosen = pool.find((m) => m.id === map)!;
-    const shown = pool.length <= 30 ? pool : [...pool.filter((m) => m.id !== map).slice(0, 29), chosen];
+    const shown =
+      pool.length <= 30 ? pool : [...pool.filter((m) => m.id !== map).slice(0, 29), chosen];
     await db.runAsync('UPDATE mm_lobbies SET match_slug = ?, map = ?, map_pool = ? WHERE id = ?', [
       slug,
       map,
@@ -759,7 +906,12 @@ export class MatchmakingService {
    * loss. One per player per match.
    */
   private async watchPresence(): Promise<void> {
-    const rows = await db.queryAsync<{ lobby_id: string; match_slug: string; status: string; loaded_at: number | null }>(
+    const rows = await db.queryAsync<{
+      lobby_id: string;
+      match_slug: string;
+      status: string;
+      loaded_at: number | null;
+    }>(
       `SELECT l.id AS lobby_id, l.match_slug, m.status, m.loaded_at
          FROM mm_lobbies l JOIN matches m ON m.slug = l.match_slug
         WHERE l.status = 'ready'`
@@ -777,9 +929,10 @@ export class MatchmakingService {
       for (const p of playerConnectionService.getStatus(row.match_slug)?.connectedPlayers ?? []) {
         watch.lastSeen.set(p.steamId, now);
       }
-      const players = await db.queryAsync<{ player_id: string }>('SELECT player_id FROM mm_lobby_players WHERE lobby_id = ?', [
-        row.lobby_id,
-      ]);
+      const players = await db.queryAsync<{ player_id: string }>(
+        'SELECT player_id FROM mm_lobby_players WHERE lobby_id = ?',
+        [row.lobby_id]
+      );
       const flagged = new Set(
         (
           await db.queryAsync<{ player_id: string }>(
@@ -825,7 +978,10 @@ export class MatchmakingService {
    * seed (not stored until their first rated match): their tournament rating's
    * mu, with a sigma of at least SEED_SIGMA.
    */
-  private async ratingsFor(players: string[], mode: string): Promise<Map<string, { mu: number; sigma: number; games: number; wins: number }>> {
+  private async ratingsFor(
+    players: string[],
+    mode: string
+  ): Promise<Map<string, { mu: number; sigma: number; games: number; wins: number }>> {
     const out = new Map<string, { mu: number; sigma: number; games: number; wins: number }>();
     if (players.length === 0) return out;
     const marks = players.map(() => '?').join(', ');
@@ -833,7 +989,13 @@ export class MatchmakingService {
       `SELECT player_id, mu, sigma, games, wins FROM mm_ratings WHERE game = 'cs2' AND mode = ? AND player_id IN (${marks})`,
       [mode, ...players]
     );
-    for (const r of stored) out.set(r.player_id, { mu: Number(r.mu), sigma: Number(r.sigma), games: Number(r.games), wins: Number(r.wins) });
+    for (const r of stored)
+      out.set(r.player_id, {
+        mu: Number(r.mu),
+        sigma: Number(r.sigma),
+        games: Number(r.games),
+        wins: Number(r.wins),
+      });
     const missing = players.filter((p) => !out.has(p));
     if (missing.length > 0) {
       // Seeded from the player's CS2 tournament rating.
@@ -855,15 +1017,28 @@ export class MatchmakingService {
    */
   applyMatchResult(matchSlug: string, winner: 'team1' | 'team2' | 'none'): Promise<boolean> {
     return this.locked(async () => {
-      const lobby = await db.queryOneAsync<LobbyRow>('SELECT * FROM mm_lobbies WHERE match_slug = ?', [matchSlug]);
+      const lobby = await db.queryOneAsync<LobbyRow>(
+        'SELECT * FROM mm_lobbies WHERE match_slug = ?',
+        [matchSlug]
+      );
       if (!lobby) return false;
-      const already = await db.queryOneAsync<{ id: number }>('SELECT id FROM mm_rating_history WHERE match_slug = ? LIMIT 1', [
-        matchSlug,
-      ]);
+      const already = await db.queryOneAsync<{ id: number }>(
+        'SELECT id FROM mm_rating_history WHERE match_slug = ? LIMIT 1',
+        [matchSlug]
+      );
       if (already) return false;
-      const players = await db.queryAsync<LobbyPlayerRow>('SELECT * FROM mm_lobby_players WHERE lobby_id = ?', [lobby.id]);
-      const team1 = players.filter((p) => p.team === 1).map((p) => p.player_id).sort();
-      const team2 = players.filter((p) => p.team === 2).map((p) => p.player_id).sort();
+      const players = await db.queryAsync<LobbyPlayerRow>(
+        'SELECT * FROM mm_lobby_players WHERE lobby_id = ?',
+        [lobby.id]
+      );
+      const team1 = players
+        .filter((p) => p.team === 1)
+        .map((p) => p.player_id)
+        .sort();
+      const team2 = players
+        .filter((p) => p.team === 2)
+        .map((p) => p.player_id)
+        .sort();
       const before = await this.ratingsFor([...team1, ...team2], lobby.mode);
       const ranks = winner === 'team1' ? [1, 2] : winner === 'team2' ? [2, 1] : [1, 1];
       const [after1, after2] = osRate(
@@ -881,7 +1056,11 @@ export class MatchmakingService {
           )
         ).map((r) => r.player_id)
       );
-      const write = async (ids: string[], after: Array<{ mu: number; sigma: number }>, won: boolean) => {
+      const write = async (
+        ids: string[],
+        after: Array<{ mu: number; sigma: number }>,
+        won: boolean
+      ) => {
         const present = ids.filter((id) => !abandoned.has(id)).length;
         for (const [i, id] of ids.entries()) {
           const b = before.get(id)!;
@@ -907,16 +1086,19 @@ export class MatchmakingService {
       await db.runAsync("UPDATE mm_lobbies SET status = 'finished' WHERE id = ?", [lobby.id]);
       this.touch(...players.map((p) => p.player_id));
       await progressionService.awardMatchXp(matchSlug, winner, abandoned);
-      log.info(`[MATCHMAKING] ${matchSlug} rated (${winner === 'none' ? 'draw' : `${winner} won`})`);
+      log.info(
+        `[MATCHMAKING] ${matchSlug} rated (${winner === 'none' ? 'draw' : `${winner} won`})`
+      );
       return true;
     });
   }
 
   /** Time ran out: who did not answer gets a no-show; parties that all accepted go back to the front. */
   private async resolveTimeout(lobby: LobbyRow): Promise<void> {
-    const players = await db.queryAsync<LobbyPlayerRow>('SELECT * FROM mm_lobby_players WHERE lobby_id = ?', [
-      lobby.id,
-    ]);
+    const players = await db.queryAsync<LobbyPlayerRow>(
+      'SELECT * FROM mm_lobby_players WHERE lobby_id = ?',
+      [lobby.id]
+    );
     const silentParties = new Set<string>();
     for (const p of players) {
       if (p.accepted_at === null) {
@@ -924,19 +1106,33 @@ export class MatchmakingService {
         await this.penalize(p.player_id, 'no_show', lobby.id);
       }
     }
-    for (const party of silentParties) await db.runAsync('DELETE FROM mm_queue_entries WHERE party_id = ?', [party]);
+    for (const party of silentParties)
+      await db.runAsync('DELETE FROM mm_queue_entries WHERE party_id = ?', [party]);
     await this.cancel(lobby.id, 'timeout');
   }
 
   private async cancel(lobbyId: string, reason: string): Promise<void> {
-    const affected = await db.queryAsync<{ player_id: string }>('SELECT player_id FROM mm_lobby_players WHERE lobby_id = ?', [lobbyId]);
+    const affected = await db.queryAsync<{ player_id: string }>(
+      'SELECT player_id FROM mm_lobby_players WHERE lobby_id = ?',
+      [lobbyId]
+    );
     this.touch(...affected.map((p) => p.player_id));
-    await db.runAsync("UPDATE mm_lobbies SET status = 'cancelled', cancel_reason = ? WHERE id = ?", [reason, lobbyId]);
-    await db.runAsync("UPDATE mm_queue_entries SET status = 'searching', lobby_id = NULL WHERE lobby_id = ?", [lobbyId]);
+    await db.runAsync(
+      "UPDATE mm_lobbies SET status = 'cancelled', cancel_reason = ? WHERE id = ?",
+      [reason, lobbyId]
+    );
+    await db.runAsync(
+      "UPDATE mm_queue_entries SET status = 'searching', lobby_id = NULL WHERE lobby_id = ?",
+      [lobbyId]
+    );
     log.info(`[MATCHMAKING] lobby ${lobbyId} cancelled (${reason})`);
   }
 
-  private async penalize(playerId: string, kind: 'decline' | 'no_show', lobbyId: string): Promise<void> {
+  private async penalize(
+    playerId: string,
+    kind: 'decline' | 'no_show',
+    lobbyId: string
+  ): Promise<void> {
     this.touch(playerId);
     const now = this.clock();
     const row = await db.queryOneAsync<{ n: number | string }>(
@@ -969,7 +1165,9 @@ export class MatchmakingService {
     const members = party ? await this.members(party.id) : [];
     const entry = party ? await this.entryOf(party.id) : undefined;
     let lobby: MatchmakingMe['lobby'] = null;
-    const lobbyRow = await db.queryOneAsync<LobbyRow & { team: number; accepted_at: number | null }>(
+    const lobbyRow = await db.queryOneAsync<
+      LobbyRow & { team: number; accepted_at: number | null }
+    >(
       `SELECT l.*, lp.team, lp.accepted_at FROM mm_lobbies l
          JOIN mm_lobby_players lp ON lp.lobby_id = l.id
         WHERE lp.player_id = ? AND l.status IN ('accepting', 'ready')
@@ -1003,16 +1201,24 @@ export class MatchmakingService {
             members,
             people: await this.people(members),
             invited: await this.people(
-              (await db.queryAsync<{ to_id: string }>('SELECT to_id FROM mm_party_invites WHERE party_id = ? ORDER BY created_at', [party.id])).map(
-                (r) => r.to_id
-              )
+              (
+                await db.queryAsync<{ to_id: string }>(
+                  'SELECT to_id FROM mm_party_invites WHERE party_id = ? ORDER BY created_at',
+                  [party.id]
+                )
+              ).map((r) => r.to_id)
             ),
           }
         : null,
-      notReady: await this.notReady(party ? members : [playerId], party ? await this.partyGame(party.id) : 'cs2'),
+      notReady: await this.notReady(
+        party ? members : [playerId],
+        party ? await this.partyGame(party.id) : 'cs2'
+      ),
       invites: await this.invitesTo(playerId),
       queueCounts: await this.queueCounts(),
-      queue: entry ? { mode: entry.mode, queuedAt: Number(entry.queued_at), status: entry.status } : null,
+      queue: entry
+        ? { mode: entry.mode, queuedAt: Number(entry.queued_at), status: entry.status }
+        : null,
       lobby,
       cooldownUntil: await this.cooldownUntil(playerId),
       rating: await this.ratingSummary(playerId, entry?.mode ?? party?.mode ?? '5v5'),
@@ -1050,19 +1256,34 @@ export class MatchmakingService {
   /** Rounds per half and the map pool's name per mode, for the mode cards. */
   private async modeRules(): Promise<Record<string, { maxRounds: number; pool: string | null }>> {
     const chosen = parseModePools(await db.getAppSettingAsync(MM_MODE_POOLS));
-    const pools = hasIntegration('cs2') ? ((await getIntegration('cs2').matchmakingPools?.()) ?? []) : [];
-    const name = (id: number | undefined) => (id ? (pools.find((p) => p.id === id)?.name ?? null) : null);
-    return Object.fromEntries(MODES.map((mode) => [mode, { maxRounds: MODE_MAX_ROUNDS[mode], pool: name(chosen[mode]) }]));
+    const pools = hasIntegration('cs2')
+      ? ((await getIntegration('cs2').matchmakingPools?.()) ?? [])
+      : [];
+    const name = (id: number | undefined) =>
+      id ? (pools.find((p) => p.id === id)?.name ?? null) : null;
+    return Object.fromEntries(
+      MODES.map((mode) => [mode, { maxRounds: MODE_MAX_ROUNDS[mode], pool: name(chosen[mode]) }])
+    );
   }
 
-  private async people(ids: string[]): Promise<Array<{ id: string; name: string; avatarUrl: string | null }>> {
+  private async people(
+    ids: string[]
+  ): Promise<Array<{ id: string; name: string; avatarUrl: string | null }>> {
     if (ids.length === 0) return [];
-    const rows = await db.queryAsync<{ id: string; name: string | null; avatar_url: string | null }>(
+    const rows = await db.queryAsync<{
+      id: string;
+      name: string | null;
+      avatar_url: string | null;
+    }>(
       `SELECT id, name, avatar_url FROM players WHERE id IN (${ids.map(() => '?').join(', ')})`,
       ids
     );
     const byId = new Map(rows.map((r) => [r.id, r]));
-    return ids.map((id) => ({ id, name: byId.get(id)?.name || id, avatarUrl: byId.get(id)?.avatar_url ?? null }));
+    return ids.map((id) => ({
+      id,
+      name: byId.get(id)?.name || id,
+      avatarUrl: byId.get(id)?.avatar_url ?? null,
+    }));
   }
 
   private async queueCounts(): Promise<Record<string, number>> {
@@ -1088,7 +1309,10 @@ export class MatchmakingService {
   }
 
   /** The match room: teams with names, map and the match, for a player in the lobby. */
-  async lobbyView(playerId: string, lobbyId: string): Promise<{
+  async lobbyView(
+    playerId: string,
+    lobbyId: string
+  ): Promise<{
     id: string;
     status: string;
     mode: string;
@@ -1101,7 +1325,13 @@ export class MatchmakingService {
       team: number;
       /** The side this team starts on, from the match config; null for a knife round or before the match exists. */
       startSide: 'CT' | 'T' | null;
-      players: Array<{ id: string; name: string; avatarUrl: string | null; accepted: boolean; inServer: boolean }>;
+      players: Array<{
+        id: string;
+        name: string;
+        avatarUrl: string | null;
+        accepted: boolean;
+        inServer: boolean;
+      }>;
     }>;
     /** Players on the server right now, of `total`. */
     inServer: number;
@@ -1110,37 +1340,56 @@ export class MatchmakingService {
     autostartMinutes: number;
   }> {
     const { lobby, players } = await this.lobbyFor(playerId, lobbyId);
-    const row = lobby as LobbyRow & { map: string | null; match_slug: string | null; map_pool: string | null };
+    const row = lobby as LobbyRow & {
+      map: string | null;
+      match_slug: string | null;
+      map_pool: string | null;
+    };
     let mapPool: Array<{ id: string; name: string; imageUrl: string | null }> = [];
     try {
       mapPool = row.map_pool ? JSON.parse(row.map_pool) : [];
     } catch {
       mapPool = [];
     }
-    const names = await db.queryAsync<{ id: string; name: string | null; avatar_url: string | null }>(
+    const names = await db.queryAsync<{
+      id: string;
+      name: string | null;
+      avatar_url: string | null;
+    }>(
       `SELECT id, name, avatar_url FROM players WHERE id IN (${players.map(() => '?').join(', ')})`,
       players.map((p) => p.player_id)
     );
     const nameOf = new Map(names.map((n) => [n.id, n.name || n.id]));
     const avatarOf = new Map(names.map((n) => [n.id, n.avatar_url]));
     const match = row.match_slug
-      ? await db.queryOneAsync<{ status: string; config: string | null }>('SELECT status, config FROM matches WHERE slug = ?', [row.match_slug])
+      ? await db.queryOneAsync<{ status: string; config: string | null }>(
+          'SELECT status, config FROM matches WHERE slug = ?',
+          [row.match_slug]
+        )
       : undefined;
     // Who is on the server (the game reports joins), and the sides from the match config.
     const connected = new Set(
-      (row.match_slug ? playerConnectionService.getStatus(row.match_slug)?.connectedPlayers ?? [] : []).map((c) => c.steamId)
+      (row.match_slug
+        ? (playerConnectionService.getStatus(row.match_slug)?.connectedPlayers ?? [])
+        : []
+      ).map((c) => c.steamId)
     );
     let team1Side: 'CT' | 'T' | null = null;
     try {
-      const sides = match?.config ? (JSON.parse(match.config) as { map_sides?: string[] }).map_sides : undefined;
+      const sides = match?.config
+        ? (JSON.parse(match.config) as { map_sides?: string[] }).map_sides
+        : undefined;
       team1Side = sides?.[0] === 'team1_ct' ? 'CT' : sides?.[0] === 'team2_ct' ? 'T' : null;
     } catch {
       team1Side = null;
     }
     const sideOf = (team: number): 'CT' | 'T' | null =>
       team1Side === null ? null : team === 1 ? team1Side : team1Side === 'CT' ? 'T' : 'CT';
-    const autostartRaw = Number(await settingsService.getSetting('at_autostart_after_minutes').catch(() => null));
-    const autostartMinutes = Number.isInteger(autostartRaw) && autostartRaw > 0 ? Math.min(autostartRaw, 120) : 0;
+    const autostartRaw = Number(
+      await settingsService.getSetting('at_autostart_after_minutes').catch(() => null)
+    );
+    const autostartMinutes =
+      Number.isInteger(autostartRaw) && autostartRaw > 0 ? Math.min(autostartRaw, 120) : 0;
     return {
       id: lobby.id,
       status: lobby.status,
@@ -1170,9 +1419,31 @@ export class MatchmakingService {
 
   /** Admin: who is searching, open lobbies, and penalties of the last 24 h. */
   async adminQueue(): Promise<{
-    searching: Array<{ partyId: string; mode: string; waited: number; players: Array<{ id: string; name: string }> }>;
-    lobbies: Array<{ id: string; mode: string; status: string; matchSlug: string | null; map: string | null; accepted: number; total: number; createdAt: number }>;
-    penalties: Array<{ id: number; playerId: string; name: string; kind: string; cooldownUntil: number; createdAt: number; cleared: boolean }>;
+    searching: Array<{
+      partyId: string;
+      mode: string;
+      waited: number;
+      players: Array<{ id: string; name: string }>;
+    }>;
+    lobbies: Array<{
+      id: string;
+      mode: string;
+      status: string;
+      matchSlug: string | null;
+      map: string | null;
+      accepted: number;
+      total: number;
+      createdAt: number;
+    }>;
+    penalties: Array<{
+      id: number;
+      playerId: string;
+      name: string;
+      kind: string;
+      cooldownUntil: number;
+      createdAt: number;
+      cleared: boolean;
+    }>;
   }> {
     const now = this.clock();
     const nameOf = async (ids: string[]) => {
@@ -1183,7 +1454,9 @@ export class MatchmakingService {
       );
       return new Map(rows.map((r) => [r.id, r.name || r.id]));
     };
-    const entries = await db.queryAsync<EntryRow>("SELECT * FROM mm_queue_entries WHERE status = 'searching' ORDER BY queued_at");
+    const entries = await db.queryAsync<EntryRow>(
+      "SELECT * FROM mm_queue_entries WHERE status = 'searching' ORDER BY queued_at"
+    );
     const searching = [];
     for (const e of entries) {
       const ids = await this.members(e.party_id);
@@ -1195,7 +1468,9 @@ export class MatchmakingService {
         players: ids.map((id) => ({ id, name: names.get(id) ?? id })),
       });
     }
-    const lobbyRows = await db.queryAsync<LobbyRow & { match_slug: string | null; map: string | null; created_at: number }>(
+    const lobbyRows = await db.queryAsync<
+      LobbyRow & { match_slug: string | null; map: string | null; created_at: number }
+    >(
       "SELECT * FROM mm_lobbies WHERE status IN ('accepting', 'ready') ORDER BY created_at DESC LIMIT 50"
     );
     const lobbies = [];
@@ -1215,7 +1490,14 @@ export class MatchmakingService {
         createdAt: Number(l.created_at),
       });
     }
-    const pen = await db.queryAsync<{ id: number; player_id: string; kind: string; cooldown_until: number; created_at: number; cleared_by: string | null }>(
+    const pen = await db.queryAsync<{
+      id: number;
+      player_id: string;
+      kind: string;
+      cooldown_until: number;
+      created_at: number;
+      cleared_by: string | null;
+    }>(
       'SELECT id, player_id, kind, cooldown_until, created_at, cleared_by FROM mm_penalties WHERE created_at > ? ORDER BY created_at DESC LIMIT 100',
       [now - 86400]
     );
@@ -1256,12 +1538,16 @@ export class MatchmakingService {
   /** Boot: lobbies left accepting by a restart are cancelled without penalty; then the loop starts. */
   async start(): Promise<void> {
     await this.locked(async () => {
-      const open = await db.queryAsync<{ id: string }>("SELECT id FROM mm_lobbies WHERE status = 'accepting'");
+      const open = await db.queryAsync<{ id: string }>(
+        "SELECT id FROM mm_lobbies WHERE status = 'accepting'"
+      );
       for (const lobby of open) await this.cancel(lobby.id, 'restart');
     });
     if (this.timer) return;
     this.timer = setInterval(() => {
-      void this.tick().catch((error) => log.warn('[MATCHMAKING] loop failed', { error: (error as Error).message }));
+      void this.tick().catch((error) =>
+        log.warn('[MATCHMAKING] loop failed', { error: (error as Error).message })
+      );
     }, LOOP_MS);
     this.timer.unref?.();
   }

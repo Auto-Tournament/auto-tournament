@@ -41,7 +41,9 @@ export function parseEnabledModes(raw: unknown): MatchmakingMode[] {
   } catch {
     v = null;
   }
-  const modes = Array.isArray(v) ? [...new Set(v.filter((m): m is MatchmakingMode => isMode(m)))] : [];
+  const modes = Array.isArray(v)
+    ? [...new Set(v.filter((m): m is MatchmakingMode => isMode(m)))]
+    : [];
   return modes.length > 0 ? modes : DEFAULT_MODES;
 }
 
@@ -163,7 +165,10 @@ export function parseSearchWindow(raw: unknown): SearchWindowSettings {
   const start = num(v.start, 0, 2000, d.start);
   const step = num(v.step, 0, 1000, d.step);
   const cap = Math.max(start, num(v.cap, 0, 5000, d.cap));
-  const minutes = v.uncappedAfterMinutes === null ? null : num(v.uncappedAfterMinutes, 1, 120, d.uncappedAfterSeconds / 60);
+  const minutes =
+    v.uncappedAfterMinutes === null
+      ? null
+      : num(v.uncappedAfterMinutes, 1, 120, d.uncappedAfterSeconds / 60);
   return {
     start,
     step,
@@ -178,7 +183,8 @@ export function validateSearchWindow(
   input: unknown
 ): { start: number; step: number; cap: number; uncappedAfterMinutes: number | null } | null {
   const v = (input ?? {}) as Record<string, unknown>;
-  const int = (x: unknown, min: number, max: number) => typeof x === 'number' && Number.isInteger(x) && x >= min && x <= max;
+  const int = (x: unknown, min: number, max: number) =>
+    typeof x === 'number' && Number.isInteger(x) && x >= min && x <= max;
   if (!int(v.start, 0, 2000) || !int(v.step, 0, 1000) || !int(v.cap, 0, 5000)) return null;
   if ((v.cap as number) < (v.start as number)) return null;
   if (v.uncappedAfterMinutes !== null && !int(v.uncappedAfterMinutes, 1, 120)) return null;
@@ -191,7 +197,10 @@ export function validateSearchWindow(
 }
 
 /** The search window in mu after `waitedSeconds` in the queue (Infinity = any rating). */
-export function searchWindow(waitedSeconds: number, s: SearchWindowSettings = DEFAULT_SEARCH_WINDOW): number {
+export function searchWindow(
+  waitedSeconds: number,
+  s: SearchWindowSettings = DEFAULT_SEARCH_WINDOW
+): number {
   const waited = Math.max(0, waitedSeconds);
   if (waited >= s.uncappedAfterSeconds) return Number.POSITIVE_INFINITY;
   const elo = Math.min(s.cap, s.start + Math.floor(waited / s.everySeconds) * s.step);
@@ -217,7 +226,9 @@ export function partyRating(mus: number[]): number {
 function compatible(a: QueuedParty, b: QueuedParty): boolean {
   if (a.rating === undefined || b.rating === undefined) return true;
   const gap = Math.abs(a.rating - b.rating);
-  return gap <= (a.window ?? Number.POSITIVE_INFINITY) && gap <= (b.window ?? Number.POSITIVE_INFINITY);
+  return (
+    gap <= (a.window ?? Number.POSITIVE_INFINITY) && gap <= (b.window ?? Number.POSITIVE_INFINITY)
+  );
 }
 
 /**
@@ -226,14 +237,29 @@ function compatible(a: QueuedParty, b: QueuedParty): boolean {
  * the anchor, then others are added oldest first; if no exact fill exists for
  * that anchor, the next oldest is tried. Returns null when nothing fits.
  */
+/**
+ * Few searching: fewer players in the mode's queue than two matches need. Then
+ * ratings do not hold anyone back, a match now beats a close one later (Sivert
+ * and Emil waited five minutes in an empty 1v1 queue, 2026-10-12). With more
+ * searching, the rating window applies as before.
+ */
+export function fewSearching(queue: QueuedParty[], teamSize: number): boolean {
+  const players = queue.reduce((n, p) => n + p.players.length, 0);
+  return players < teamSize * 2 * 2;
+}
+
 export function findGroup(queue: QueuedParty[], teamSize: number): QueuedParty[] | null {
   const need = teamSize * 2;
+  const open = fewSearching(queue, teamSize);
   const ordered = [...queue]
+    .map((p) => (open ? { ...p, window: Number.POSITIVE_INFINITY } : p))
     .filter((p) => p.players.length > 0 && p.players.length <= teamSize)
     .sort((a, b) => a.queuedAt - b.queuedAt || a.entryId.localeCompare(b.entryId));
 
   for (let anchor = 0; anchor < ordered.length; anchor++) {
-    const picked = pickExact(ordered.slice(anchor + 1), need - ordered[anchor].players.length, [ordered[anchor]]);
+    const picked = pickExact(ordered.slice(anchor + 1), need - ordered[anchor].players.length, [
+      ordered[anchor],
+    ]);
     if (picked) {
       const group = [ordered[anchor], ...picked];
       if (splitTeams(group, teamSize)) return group;
@@ -246,7 +272,11 @@ export function findGroup(queue: QueuedParty[], teamSize: number): QueuedParty[]
  * Oldest-first subset of `candidates` with exactly `need` players, each
  * compatible with every party already `chosen` (backtracking; queues are small).
  */
-function pickExact(candidates: QueuedParty[], need: number, chosen: QueuedParty[]): QueuedParty[] | null {
+function pickExact(
+  candidates: QueuedParty[],
+  need: number,
+  chosen: QueuedParty[]
+): QueuedParty[] | null {
   if (need === 0) return [];
   for (let i = 0; i < candidates.length; i++) {
     const size = candidates[i].players.length;
@@ -287,7 +317,8 @@ export function splitTeams(
   let candidates = splits;
   if (group.every((p) => p.mus && p.mus.length === p.players.length)) {
     const score = (mask: number): [number, number] => {
-      const side = (inTeam1: boolean) => group.filter((_, i) => !!(mask & (1 << i)) === inTeam1).flatMap((p) => p.mus!);
+      const side = (inTeam1: boolean) =>
+        group.filter((_, i) => !!(mask & (1 << i)) === inTeam1).flatMap((p) => p.mus!);
       const a = side(true);
       const b = side(false);
       const sum = (xs: number[]) => xs.reduce((x, y) => x + y, 0);
@@ -301,7 +332,8 @@ export function splitTeams(
     candidates = byTotal.filter((x) => x.s[1] <= bestTop + EPS).map((x) => x.mask);
   }
 
-  const mask = candidates[Math.min(candidates.length - 1, Math.floor(random() * candidates.length))];
+  const mask =
+    candidates[Math.min(candidates.length - 1, Math.floor(random() * candidates.length))];
   const team1 = group.filter((_, i) => mask & (1 << i));
   const team2 = group.filter((_, i) => !(mask & (1 << i)));
   return random() < 0.5 ? [team1, team2] : [team2, team1];
@@ -325,7 +357,11 @@ export function inviteCode(): string {
  * (decided 2026-09-29). Only while matchmaking has players waiting, so
  * nothing is held back for nobody.
  */
-export function freeForTournament(free: number, reserved: number, matchmakingWaiting: boolean): number {
+export function freeForTournament(
+  free: number,
+  reserved: number,
+  matchmakingWaiting: boolean
+): number {
   if (!matchmakingWaiting || reserved <= 0) return free;
   return Math.max(0, free - reserved);
 }
