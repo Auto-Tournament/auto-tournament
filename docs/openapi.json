@@ -2456,6 +2456,29 @@
         ]
       }
     },
+    "/api/chat/{channel}/typing": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Say you are typing (the channel's other players see it for a few seconds)",
+        "responses": {
+          "200": {
+            "description": "Sent"
+          }
+        },
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/compat/badge.json": {
       "get": {
         "tags": [

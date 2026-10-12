@@ -861,7 +861,31 @@
       "searching": "Søker etter kamp",
       "leaderQueues": "Lederen starter søket"
     },
-    "back": "Tilbake"
+    "back": "Tilbake",
+    "typing": {
+      "one": "{{name}} skriver…",
+      "two": "{{first}} og {{second}} skriver…",
+      "many": "{{count}} personer skriver…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Velg en emoji",
+      "search": "Søk etter emoji",
+      "none": "Fant ingen emoji",
+      "categories": {
+        "results": "Treff",
+        "recent": "Nylig brukt",
+        "smileys": "Smilefjes",
+        "gestures": "Hender",
+        "people": "Folk",
+        "animals": "Natur",
+        "food": "Mat og drikke",
+        "activity": "Spill og sport",
+        "travel": "Steder",
+        "objects": "Ting",
+        "symbols": "Symboler"
+      }
+    }
   },
   "search": {
     "open": "Søk",
