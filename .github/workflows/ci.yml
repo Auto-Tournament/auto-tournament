@@ -50,7 +50,7 @@ jobs:
     timeout-minutes: 5
     services:
       recorder-postgres:
-        image: postgres:16-alpine
+        image: mirror.gcr.io/library/postgres:16-alpine
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: recorder_test
@@ -276,6 +276,7 @@ jobs:
           file: docker/Dockerfile
           build-args: |
             APP_BUILD=prebuilt
+            NODE_REGISTRY=mirror.gcr.io/library
           tags: ${{ env.MAT_IMAGE }}
           outputs: type=docker,dest=${{ runner.temp }}/mat-image.tar
           cache-from: type=gha,scope=e2e-image
