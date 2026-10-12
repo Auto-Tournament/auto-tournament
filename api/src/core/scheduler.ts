@@ -53,7 +53,10 @@ export interface MatchAllocationResult {
 }
 
 /** An integration's allocation outcome in the shape the allocator reports. */
-function toMatchAllocationResult(matchSlug: string, outcome: AllocateResult): MatchAllocationResult {
+function toMatchAllocationResult(
+  matchSlug: string,
+  outcome: AllocateResult
+): MatchAllocationResult {
   switch (outcome.status) {
     case 'assigned':
       return {
@@ -377,11 +380,7 @@ export class Scheduler {
     const deadline = Date.now() + MAX_WAIT_MS;
 
     let availableServers = await this.getAvailableServerCount(tournamentId);
-    while (
-      availableServers > 0 &&
-      availableServers < requiredServers &&
-      Date.now() < deadline
-    ) {
+    while (availableServers > 0 && availableServers < requiredServers && Date.now() < deadline) {
       log.info(
         `[ALLOCATION] Waiting for idle servers before batch allocation: ${availableServers}/${requiredServers} available`
       );
@@ -538,7 +537,10 @@ export class Scheduler {
   /**
    * Start tournament - allocate all ready matches to available servers
    */
-  async startTournament(tournamentId: number, baseUrl: string): Promise<{
+  async startTournament(
+    tournamentId: number,
+    baseUrl: string
+  ): Promise<{
     success: boolean;
     message: string;
     allocated: number;
@@ -747,9 +749,9 @@ export class Scheduler {
     // Determine if this tournament uses veto system: the game has a veto
     // (pre-match phase) and the format is a series. Shuffle tournaments
     // *never* use veto, even if format is BO1. This gate is tournament-wide on
-    // purpose: the per-match `isReadyToAllocate` only holds matches for the
-    // simulation auto-veto (see makeMatchReady), so `/restart` of a veto
-    // tournament still allocates nothing here.
+    // purpose (`/restart` of a veto tournament allocates nothing here); the
+    // per-match `isReadyToAllocate` holds each later-round match until its
+    // own veto is done (see makeMatchReady).
     const integration = await this.integrationForTournament(tournamentId);
     const requiresVeto =
       integration.capabilities.veto &&
@@ -991,7 +993,10 @@ export class Scheduler {
   /**
    * Restart tournament - run css_restart on all servers with loaded matches, then reallocate
    */
-  async restartTournament(tournamentId: number, baseUrl: string): Promise<{
+  async restartTournament(
+    tournamentId: number,
+    baseUrl: string
+  ): Promise<{
     success: boolean;
     message: string;
     allocated: number;
@@ -1183,7 +1188,10 @@ export class Scheduler {
   }
 
   /** Admin "reallocate": move a match that has not gone live to another free resource. */
-  async reallocateMatch(match: DbMatchRow, opts: { baseUrl: string }): Promise<ResourceActionResult> {
+  async reallocateMatch(
+    match: DbMatchRow,
+    opts: { baseUrl: string }
+  ): Promise<ResourceActionResult> {
     return integrationForMatch(match).restart(await matchContextFor(match), {
       ...opts,
       moveResource: true,
@@ -1443,7 +1451,9 @@ export class Scheduler {
       // Fleet-level trigger (a server freed up): no single tournament in the
       // call chain, so every running tournament's ready matches get a try,
       // oldest tournament first.
-      const tournamentIds = [...new Set([...(await runningTournamentIds()), resolveTournamentId()])];
+      const tournamentIds = [
+        ...new Set([...(await runningTournamentIds()), resolveTournamentId()]),
+      ];
       const standaloneSlugs = await this.getReadyStandaloneMatchSlugs();
       let anyReady = false;
       for (const tournamentId of tournamentIds) {
