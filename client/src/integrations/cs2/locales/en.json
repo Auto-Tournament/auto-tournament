@@ -2335,5 +2335,54 @@
       "label": "Fill teams with bots",
       "help": "Bots fill empty slots up to the tournament team size and make room for joining players. Ready up and play normally. Requires a Ready Up server with bot-fill support."
     }
+  },
+  "library": {
+    "title": "Highlights",
+    "subtitle": "Every clip and reel from the matches played here.",
+    "kindLabel": "What to show",
+    "sortLabel": "Order",
+    "kind": {
+      "all": "All",
+      "clips": "Clips",
+      "reels": "Reels"
+    },
+    "sort": {
+      "new": "Newest",
+      "views": "Most viewed",
+      "likes": "Most liked"
+    },
+    "filter": {
+      "player": "Player: {{name}}",
+      "team": "Team: {{name}}",
+      "match": "Match: {{name}}",
+      "tournament": "Tournament: {{name}}"
+    },
+    "views_one": "{{count}} view",
+    "views_other": "{{count}} views",
+    "likes_one": "{{count}} like",
+    "likes_other": "{{count}} likes",
+    "more": "Show more ({{shown}} of {{total}})",
+    "empty": "No highlights yet",
+    "emptyHint": "Clips and reels show up here once a match's demos are recorded.",
+    "emptyFiltered": "Nothing here yet",
+    "emptyFilteredHint": "Remove a filter to see more.",
+    "failed": "Could not load the highlights",
+    "failedHint": "Try again in a moment.",
+    "playerReel": "{{name}}'s reel",
+    "tournamentReel": "{{name}} reel",
+    "matchReel": "Match reel",
+    "kindName": {
+      "player": "Player reel",
+      "map": "Map reel",
+      "series": "Series reel",
+      "team": "Team reel",
+      "tournament": "Tournament reel"
+    },
+    "like": "Like",
+    "liked": "Liked",
+    "signInToLike": "Sign in to like videos",
+    "nav": "Highlights",
+    "teamHighlights": "Highlights",
+    "matchHighlights": "All highlights"
   }
 }

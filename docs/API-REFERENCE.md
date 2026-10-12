@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 659 of them, 394 behind auth —
+Every endpoint this API serves — 663 of them, 394 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -311,6 +311,10 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 | `GET` | `/api/game/cs2/watch/match/:slug/:map` | public |
 | `GET` | `/api/game/cs2/watch/tournament/:id` | public |
 | `GET` | `/api/game/cs2/watch/team/:slug/:team` | public |
+| `GET` | `/api/game/cs2/library` | public |
+| `GET` | `/api/game/cs2/watch/stats` | public |
+| `POST` | `/api/game/cs2/watch/view` | public |
+| `PUT` | `/api/game/cs2/watch/like` | public |
 | `GET` | `/api/game/cs2/watch/related` | public |
 | `GET` | `/api/game/cs2/highlights/:file` | public |
 | `GET` | `/api/game/cs2/highlights/:file/music/:track` | public |

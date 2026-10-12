@@ -13,6 +13,7 @@ import {
 import type { TeamProfileViewProps } from '../../types';
 import { getMapDisplayName } from '../maps/mapData';
 import { MapRadar, mapStrength, type MapResult } from './MapRadar';
+import { LibraryStrip } from '../highlights/LibraryStrip';
 
 interface TeamProfileResponse {
   success: boolean;
@@ -30,6 +31,16 @@ interface TeamProfileResponse {
  * most in the veto. Renders nothing until the team has a CS2 map on record.
  */
 export function Cs2TeamProfileStats({ teamId }: TeamProfileViewProps) {
+  return (
+    <>
+      <LibraryStrip filter={{ team: teamId }} id="cs2-team-highlights" />
+      <TeamMapStats teamId={teamId} />
+    </>
+  );
+}
+
+/** The team's map strength, best and weakest map, and veto habits. */
+function TeamMapStats({ teamId }: TeamProfileViewProps) {
   const { t } = useModuleTranslation('cs2');
   const [loaded, setLoaded] = useState<{ teamId: string; data: TeamProfileResponse } | null>(null);
 

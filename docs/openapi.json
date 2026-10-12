@@ -5073,6 +5073,20 @@
         ]
       }
     },
+    "/api/game/cs2/library": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "GET /api/game/cs2/library",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/game/cs2/matches/{slug}/connect": {
       "get": {
         "tags": [
@@ -6954,6 +6968,20 @@
         ]
       }
     },
+    "/api/game/cs2/watch/like": {
+      "put": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "PUT /api/game/cs2/watch/like",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/game/cs2/watch/match/{slug}/{map}": {
       "get": {
         "tags": [
@@ -7040,6 +7068,20 @@
         }
       }
     },
+    "/api/game/cs2/watch/stats": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "GET /api/game/cs2/watch/stats",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/game/cs2/watch/team/{slug}/{team}": {
       "get": {
         "tags": [
@@ -7094,6 +7136,20 @@
             }
           }
         ]
+      }
+    },
+    "/api/game/cs2/watch/view": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "POST /api/game/cs2/watch/view",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
       }
     },
     "/api/game/manual/disputes": {

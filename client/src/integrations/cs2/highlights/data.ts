@@ -117,11 +117,21 @@ export interface TournamentHighlights {
 // ---------------------------------------------------------------------------
 
 export const highlightPaths = {
+  library: '/highlights',
   player: '/player/:playerId/highlights',
   watch: '/watch/*',
 } as const;
 
 const enc = encodeURIComponent;
+/** The highlights library, narrowed to a player, team, match or tournament. */
+export const libraryPath = (
+  filter: { player?: string; team?: string; match?: string; tournament?: number } = {}
+) => {
+  const q = new URLSearchParams(
+    Object.entries(filter).flatMap(([k, v]) => (v === undefined ? [] : [[k, String(v)]]))
+  ).toString();
+  return q ? `/highlights?${q}` : '/highlights';
+};
 export const playerHighlightsPath = (playerId: string) => `/player/${enc(playerId)}/highlights`;
 export const watchClipPath = (id: number) => `/watch/clip/${id}`;
 export const watchReelPath = (matchSlug: string, mapNumber: number, playerId: string) =>
