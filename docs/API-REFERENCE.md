@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 667 of them, 394 behind auth —
+Every endpoint this API serves — 668 of them, 394 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -268,6 +268,14 @@ A finished match's scoreboard over its maps, and its highlight clips.
 | --- | --- | --- |
 | `GET` | `/api/game/cs2/matches/:slug/scoreboard` | public |
 | `GET` | `/api/game/cs2/matches/:slug/highlights` | public |
+
+### Leaderboards
+
+Players ranked by rating, ADR, K/D, headshots, opening duels, clutches and KAST.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/leaderboards` | public |
 
 ### Highlights
 

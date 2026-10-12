@@ -65,7 +65,8 @@ export function parsePublicManifest(body: unknown): LoadableModule[] | null {
   for (const entry of modules) {
     if (!entry || typeof entry !== 'object') continue;
     const { id, version, clientApi, client } = entry as Record<string, unknown>;
-    const url = client && typeof client === 'object' ? (client as { entry?: unknown }).entry : undefined;
+    const url =
+      client && typeof client === 'object' ? (client as { entry?: unknown }).entry : undefined;
     if (typeof id !== 'string' || typeof url !== 'string') continue;
     loadable.push({
       id,
@@ -168,7 +169,10 @@ export function entryProblem(id: string, entry: string): ModuleFailure | null {
     entry.length > prefix.length &&
     !entry.includes('//') &&
     !entry.includes('\\') &&
-    !entry.split(/[?#]/)[0].split('/').some((segment) => segment === '..' || segment === '.');
+    !entry
+      .split(/[?#]/)[0]
+      .split('/')
+      .some((segment) => segment === '..' || segment === '.');
   if (ok) return null;
   return failure('contract', 'badEntry', `its code is not served from ${prefix} (got ${entry})`, {
     entry,
@@ -207,6 +211,7 @@ export const COMPONENT_SLOTS = [
   'manageStatusTile',
   'adminDisputesView',
   'tournamentStatsView',
+  'leaderboardView',
   'playerProfileView',
   'teamProfileView',
   'preMatchView',
@@ -238,7 +243,12 @@ export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];
  * each is a function, and the adapter makes a throw read as "nothing".
  * (`tournamentStart.ownsFailure` is checked and guarded on its own.)
  */
-export const CALLBACKS = ['summarizeAvailability', 'manageNeedsYou', 'adminHomeSetup', 'accountMenuItems'] as const;
+export const CALLBACKS = [
+  'summarizeAvailability',
+  'manageNeedsYou',
+  'adminHomeSetup',
+  'accountMenuItems',
+] as const;
 
 /** Slot groups every integration carries, even when it fills none of them. */
 export const REQUIRED_GROUPS = [

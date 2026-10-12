@@ -2445,5 +2445,54 @@
     "save": "Save",
     "seek": "Jump to {{time}}",
     "failed": "Could not save the comment"
+  },
+  "leaderboards": {
+    "title": "Category leaders",
+    "categoryLabel": "Category",
+    "rangeLabel": "Time range",
+    "category": {
+      "rating": "AT rating",
+      "adr": "ADR",
+      "kd": "K/D",
+      "hs": "Headshots",
+      "opening": "Opening duels",
+      "clutch": "Clutches",
+      "kast": "KAST"
+    },
+    "range": {
+      "all": "All time",
+      "days_one": "{{count}} day",
+      "days_other": "Last {{count}} days"
+    },
+    "explain": {
+      "rating": "Auto Tournament's own rating, 1.00 for an average player: kills, deaths, assists, damage and KAST per round.",
+      "adr": "Average damage per round.",
+      "kd": "Kills per death.",
+      "hs": "The share of kills that were headshots (at least 50 kills).",
+      "opening": "The share of opening duels won: the first kill of a round, for or against (at least 10 duels).",
+      "clutch": "The share of 1vX rounds won when last alive (at least 5).",
+      "kast": "The share of rounds with a kill, an assist, a survival or a trade."
+    },
+    "qualify": "Players need {{maps}} maps and {{rounds}} rounds to qualify; ties share a rank.",
+    "empty": "Nobody qualifies yet.",
+    "player": "Player",
+    "sample": "Over",
+    "sampleHint": "{{maps}} maps, {{rounds}} rounds",
+    "sampleOf": {
+      "rating_one": "{{count}} round",
+      "rating_other": "{{count}} rounds",
+      "adr_one": "{{count}} round",
+      "adr_other": "{{count}} rounds",
+      "kd_one": "{{count}} K+D",
+      "kd_other": "{{count}} K+D",
+      "hs_one": "{{count}} kill",
+      "hs_other": "{{count}} kills",
+      "opening_one": "{{count}} duel",
+      "opening_other": "{{count}} duels",
+      "clutch_one": "{{count}} clutch",
+      "clutch_other": "{{count}} clutches",
+      "kast_one": "{{count}} round",
+      "kast_other": "{{count}} rounds"
+    }
   }
 }

@@ -460,6 +460,9 @@
     "copy": "Copy team match link"
   },
   "playersDirectory": {
+    "toLeaderboards": "Rankings are on Leaderboards →",
+    "matches_one": "{{count}} match",
+    "matches_other": "{{count}} matches",
     "title": "Players",
     "count_one": "{{count}} player",
     "count_other": "{{count}} players",

@@ -58,6 +58,7 @@ import { MapActions } from './demos/MapActions';
 import { highlightPaths } from './highlights/data';
 import { PlayerHighlightsPage } from './highlights/PlayerHighlightsPage';
 import { HighlightsLibraryPage } from './highlights/HighlightsLibraryPage';
+import { Cs2Leaderboards } from './profile/Cs2Leaderboards';
 import { TournamentHighlightsTab, TournamentReelSection } from './highlights/TournamentHighlights';
 import { WatchPage } from './highlights/WatchPage';
 import { MatchPublicPanel } from './highlights/MatchPublicPanel';
@@ -212,6 +213,9 @@ export const cs2ClientIntegration: ClientGameIntegration = {
 
   // Highlights, the library of every clip and reel, in the site's navigation.
   siteNavLinks: [{ path: highlightPaths.library, labelKey: 'library.nav' }],
+
+  // The Leaderboards page's category rankings (rating, ADR, K/D…).
+  leaderboardView: Cs2Leaderboards,
 
   // Each map's match reel and analysis, once the worker made them.
   matchMapAction: MapActions,
