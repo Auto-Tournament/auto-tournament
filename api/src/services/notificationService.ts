@@ -14,6 +14,7 @@ import { emitNotification } from './socketService';
 
 export type NotificationKind =
   | 'party_invite'
+  | 'team_invite'
   | 'friend_request'
   | 'friend_accepted'
   | 'skin'
@@ -48,7 +49,9 @@ const now = () => Math.floor(Date.now() / 1000);
 function parse(raw: string): Record<string, unknown> {
   try {
     const value = JSON.parse(raw);
-    return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
   } catch {
     return {};
   }
@@ -70,10 +73,18 @@ export const notificationService = {
    * already has under that key is replaced (a new invite to the same party, a
    * friend request sent again) and comes back unread at the top.
    */
-  async notify(playerId: string, kind: NotificationKind, data: Record<string, unknown>, dedupeKey?: string): Promise<NotificationView | null> {
+  async notify(
+    playerId: string,
+    kind: NotificationKind,
+    data: Record<string, unknown>,
+    dedupeKey?: string
+  ): Promise<NotificationView | null> {
     try {
       if (dedupeKey) {
-        await db.runAsync('DELETE FROM notifications WHERE player_id = ? AND dedupe_key = ?', [playerId, dedupeKey]);
+        await db.runAsync('DELETE FROM notifications WHERE player_id = ? AND dedupe_key = ?', [
+          playerId,
+          dedupeKey,
+        ]);
       }
       const row = await db.queryOneAsync<Row>(
         `INSERT INTO notifications (player_id, kind, data, dedupe_key, created_at)
@@ -95,7 +106,12 @@ export const notificationService = {
    * Send a notice once per player and key: a sweep that runs again (a
    * restart, the next minute) sends nothing new.
    */
-  async notifyOnce(playerIds: string[], kind: NotificationKind, data: Record<string, unknown>, dedupeKey: string): Promise<number> {
+  async notifyOnce(
+    playerIds: string[],
+    kind: NotificationKind,
+    data: Record<string, unknown>,
+    dedupeKey: string
+  ): Promise<number> {
     let sent = 0;
     for (const playerId of new Set(playerIds)) {
       try {
@@ -130,7 +146,10 @@ export const notificationService = {
   },
 
   /** The player's notices, newest first; `before` pages back by id. */
-  async list(playerId: string, before?: number): Promise<{ items: NotificationView[]; unread: number; more: boolean }> {
+  async list(
+    playerId: string,
+    before?: number
+  ): Promise<{ items: NotificationView[]; unread: number; more: boolean }> {
     const rows = await db.queryAsync<Row>(
       `SELECT id, kind, data, created_at, read_at FROM notifications
         WHERE player_id = ? ${before ? 'AND id < ?' : ''}
@@ -140,7 +159,9 @@ export const notificationService = {
     const items = rows.slice(0, PAGE).map(view);
     // A party invite is only answerable while the invite stands.
     const parties = items
-      .filter((n) => n.kind === 'party_invite' && !n.data.answer && typeof n.data.partyId === 'string')
+      .filter(
+        (n) => n.kind === 'party_invite' && !n.data.answer && typeof n.data.partyId === 'string'
+      )
       .map((n) => n.data.partyId as string);
     if (parties.length > 0) {
       const open = new Set(
@@ -152,7 +173,8 @@ export const notificationService = {
         ).map((r) => r.party_id)
       );
       for (const n of items) {
-        if (n.kind === 'party_invite' && !n.data.answer && !open.has(n.data.partyId as string)) n.data.answer = 'expired';
+        if (n.kind === 'party_invite' && !n.data.answer && !open.has(n.data.partyId as string))
+          n.data.answer = 'expired';
       }
     }
     return { items, unread: await this.unread(playerId), more: rows.length > PAGE };
@@ -175,7 +197,10 @@ export const notificationService = {
         [now(), playerId, ...ids]
       );
     } else {
-      await db.runAsync('UPDATE notifications SET read_at = ? WHERE player_id = ? AND read_at IS NULL', [now(), playerId]);
+      await db.runAsync(
+        'UPDATE notifications SET read_at = ? WHERE player_id = ? AND read_at IS NULL',
+        [now(), playerId]
+      );
     }
     return this.unread(playerId);
   },
@@ -188,20 +213,24 @@ export const notificationService = {
     );
     if (!row) return;
     const data = { ...parse(row.data), answer };
-    await db.runAsync('UPDATE notifications SET data = ?, read_at = COALESCE(read_at, ?) WHERE id = ?', [
-      JSON.stringify(data),
-      now(),
-      row.id,
-    ]);
+    await db.runAsync(
+      'UPDATE notifications SET data = ?, read_at = COALESCE(read_at, ?) WHERE id = ?',
+      [JSON.stringify(data), now(), row.id]
+    );
   },
 
   /** Take back a notice nobody needs to answer any more (a cancelled request or invite). */
   async withdraw(playerId: string, dedupeKey: string): Promise<void> {
-    await db.runAsync('DELETE FROM notifications WHERE player_id = ? AND dedupe_key = ?', [playerId, dedupeKey]);
+    await db.runAsync('DELETE FROM notifications WHERE player_id = ? AND dedupe_key = ?', [
+      playerId,
+      dedupeKey,
+    ]);
   },
 
   /** Drop notices older than KEEP_DAYS. */
   async prune(): Promise<void> {
-    await db.runAsync('DELETE FROM notifications WHERE created_at < ?', [now() - KEEP_DAYS * 86400]);
+    await db.runAsync('DELETE FROM notifications WHERE created_at < ?', [
+      now() - KEEP_DAYS * 86400,
+    ]);
   },
 };

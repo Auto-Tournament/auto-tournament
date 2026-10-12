@@ -71,5 +71,12 @@ test(
     // A cancelled tournament can be archived.
     const archived = await request.post(`/api/tournament/archive?tournamentId=${id}`, { headers });
     expect(archived.ok(), await archived.text()).toBe(true);
+
+    // Leave nothing behind: an ended tournament's matches would show on specs
+    // that expect an empty Matches page (tests/ui/matches.spec.ts).
+    const removed = await request.delete('/api/tournament', {
+      headers: { ...headers, 'X-Tournament-Id': String(id) },
+    });
+    expect(removed.ok(), await removed.text()).toBe(true);
   }
 );

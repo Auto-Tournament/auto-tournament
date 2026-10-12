@@ -21,6 +21,8 @@
     },
     "notice": {
       "partyInvite": "invited you to their party",
+      "teamInvite": "邀请你加入",
+      "joinedTeam": "你已加入战队",
       "partyDetail": "{{mode}} · {{size}} in the party",
       "join": "Join",
       "decline": "Decline",
