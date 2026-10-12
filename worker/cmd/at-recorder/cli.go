@@ -16,7 +16,7 @@ func cli(root string, args []string) (bool, error) {
 	}
 	switch args[0] {
 	case "help", "--help", "-h":
-		fmt.Println("at-recorder: manage a Linux highlight recorder host\n\n  connect URL [KEY]          connect to AT (KEY may be read from stdin)\n  setup --user USER         provision a fresh Ubuntu NVIDIA host\n  setup --adopt --user USER  adopt an existing recorder without restarting it\n  doctor                    check Docker, NVIDIA, Steam, CS2 and platform access\n  status                    show host identity and installed runtime\n  agent                     report identity and software versions to AT\n  version                   print the host binary version\n\nAT_RECORDER_ROOT defaults to /srv/at-recorder. New hosts register disabled.\nSteam sign-in and installing CS2 require the Steam web desktop after fresh setup.")
+		fmt.Println("at-recorder: manage a Linux highlight recorder host\n\n  connect URL [KEY]          connect to AT (KEY may be read from stdin)\n  setup --user USER         provision a fresh Ubuntu NVIDIA host\n  setup --adopt --user USER  adopt an existing recorder without restarting it\n  doctor                    check Docker, NVIDIA, Steam, CS2 and platform access\n  status                    show host identity and installed runtime\n  update [--check]          update the recorder and host agent (as the platform's Update button)\n  logs [-f] [-n LINES]      the host agent's and the worker's logs, secrets hidden\n  restart [--force]         restart the worker when idle (--force: mid-job, after a yes)\n  agent                     report identity and software versions to AT\n  version                   print the host binary version\n\nAT_RECORDER_ROOT defaults to /srv/at-recorder. New hosts register disabled.\nSteam sign-in and installing CS2 require the Steam web desktop after fresh setup.")
 		return true, nil
 	case "version":
 		if len(args) != 1 {
@@ -52,6 +52,22 @@ func cli(root string, args []string) (bool, error) {
 		}
 		fmt.Printf("Container: %s\n", strings.TrimSpace(string(out)))
 		return true, nil
+	case "update":
+		a, err := newAgent(root)
+		if err != nil {
+			return true, err
+		}
+		return true, a.updateCommand(context.Background(), args[1:], os.Stdout, 10*time.Second, 50*time.Minute)
+	case "logs":
+		return true, logsCommand(context.Background(), args[1:], os.Stdout)
+	case "restart":
+		a, err := newAgent(root)
+		if err != nil {
+			return true, err
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		defer cancel()
+		return true, a.restartCommand(ctx, args[1:], stdinOrTTY(), os.Stdout)
 	default:
 		return true, fmt.Errorf("unknown command %q; use at-recorder help", args[0])
 	}

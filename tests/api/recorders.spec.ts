@@ -690,3 +690,36 @@ test(
     expect(await listed()).toMatchObject({ enabled: true, hostId, recorderImage: image });
   }
 );
+
+test(
+  'a host asks for its own update: what is newer, and the same queue as Update',
+  TAGS,
+  async ({ request }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    const name = `spec-self-update-${Date.now()}`;
+    const as = { 'X-AT-Recorder': name };
+    // Unknown until it has said hello.
+    expect(
+      (await request.get('/api/game/cs2/recorder/update/available', { headers: as })).status()
+    ).toBe(404);
+    await request.post('/api/game/cs2/recorder/claim', {
+      data: { recorder: name, version: 7, notReady: 'spec' },
+    });
+    const res = await request.get('/api/game/cs2/recorder/update/available', { headers: as });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    // No host agent with managed updates has been seen for it.
+    expect(body).toMatchObject({ success: true, managed: false, status: 'current' });
+    expect(body.image).toHaveProperty('newer');
+    expect(body.agent).toHaveProperty('newer');
+    // So the same queue as the Update button queues nothing.
+    const asked = await request.post('/api/game/cs2/recorder/update/request', {
+      headers: as,
+      data: {},
+    });
+    expect(asked.status()).toBe(200);
+    expect((await asked.json()).queued).toBe(0);
+    // Not without a name.
+    expect((await request.get('/api/game/cs2/recorder/update/available')).status()).toBe(400);
+  }
+);
