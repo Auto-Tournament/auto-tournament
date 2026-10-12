@@ -1888,7 +1888,8 @@
       "lost": "Verloren {{score}}",
       "drew": "Unentschieden {{score}}"
     },
-    "unequipLabel": "Unequip {{name}}"
+    "unequipLabel": "Unequip {{name}}",
+    "equipFailed": "Could not equip it"
   },
   "matchRules": {
     "title": "Matchregeln",

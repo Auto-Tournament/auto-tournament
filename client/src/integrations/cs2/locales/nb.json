@@ -1888,7 +1888,8 @@
       "lost": "Tapte {{score}}",
       "drew": "Uavgjort {{score}}"
     },
-    "unequipLabel": "Ta av {{name}}"
+    "unequipLabel": "Ta av {{name}}",
+    "equipFailed": "Kunne ikke ta den på"
   },
   "matchRules": {
     "title": "Kampregler",

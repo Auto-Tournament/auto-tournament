@@ -45,7 +45,7 @@ import {
   type StatePatchPayload,
   type StateSnapshotPayload,
 } from './protocol/v1';
-import { pushSkinsOnConnect } from './push/skins';
+import { flushRoundLoadouts, pushSkinsOnConnect, skinsTurnedOn } from './push/skins';
 import {
   liveStateStore,
   type LiveMatchRecord,
@@ -375,6 +375,10 @@ async function applyCommandResult(ctx: InboundContext, env: Envelope): Promise<v
     log.info(
       `[FLEET] ${ctx.serverId}: ${command.type}${command.name ? ` ${command.name}` : ''} -> ${result.status}${detail}`
     );
+    // The skins plugin answered a plugins.set: with skins on, it runs them now.
+    if (command.type === 'cmd' && command.name === 'plugins.set' && result.status === 'ok') {
+      void skinsTurnedOn(ctx.serverId);
+    }
     // match.update answers carry the server's config_rev (the new one, or its own on a conflict).
     if (command.type === 'match.update' && command.matchSlug && typeof result.rev === 'number') {
       await liveStateStore.setConfigRev(command.matchSlug, result.rev);
@@ -421,6 +425,8 @@ export async function processInbound(
   try {
     if (isFleetEventType(env.type)) {
       await applyEvent(ctx, env);
+      // Loadout changes made during the round go out now (push/skins.ts).
+      if (env.type === 'event.round_end') void flushRoundLoadouts(ctx.serverId);
       if (env.type === 'event.player_connect') {
         const p = env.payload as unknown as { match_id: string; data: { steamid64: string } };
         // Not awaited: a loadout never holds up the event stream.

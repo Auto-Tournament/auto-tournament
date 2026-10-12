@@ -365,9 +365,13 @@ export async function syncSkinsPluginEverywhere(): Promise<void> {
   const rows = await db.queryAsync<{ id: string; plugins_state: string | null }>(
     'SELECT id, plugins_state FROM cs2_fleet_servers'
   );
+  const on = await platformSkinsOn();
+  const { skinsTurnedOff } = await import('./skins');
   for (const row of rows) {
     if (!bus.isConnected(row.id)) continue;
     try {
+      // Off: everyone connected loses their skins now, before the plugin goes.
+      if (!on) await skinsTurnedOff(row.id);
       const prefs = await readPrefs(row.id);
       if (prefs.plugins) {
         await sendPluginsSet(row.id, prefs.plugins, PLATFORM_ISSUER, await runsFleetCmds(row.id));
