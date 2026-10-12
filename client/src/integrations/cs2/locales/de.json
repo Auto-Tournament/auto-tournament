@@ -1874,10 +1874,9 @@
       "rewardTitle": "Belohnung für {{place}}",
       "done": "Fertig",
       "fiveVsFive": "These are for 5v5. Smaller modes drop less:",
-      "weeklyCapBefore": "At most",
-      "weeklyCapAfter": "drops per player a week (0 = no cap).",
-      "weeklyCapLabel": "Drops per player a week",
-      "fairRules": "Only players who played the whole game get a chance: nothing for an abandoned game or one that ended early, and a repeat against the same opponents within a day drops much less. Tournament rewards go only to players who played in the tournament."
+      "fairRules": "Only players who played the whole game get a chance: nothing for an abandoned game or one that ended early, and a repeat against the same opponents within a day drops much less. Tournament placement rewards go only to players who played in the tournament.",
+      "tournamentMatchDrops": "Tournament matches drop too (not in esports mode)",
+      "levelUpDrops": "A drop for every new level"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "Was das heißt",
@@ -1900,7 +1899,31 @@
     "keepThis": "Keep this one",
     "keeping": "Keeping…",
     "chooseFailed": "Could not keep it",
-    "newDrop": "New drop"
+    "newDrop": "New drop",
+    "tournamentMatch": "From a tournament match",
+    "levelUp": "Reached a new level",
+    "drops": {
+      "title": "How skin drops work",
+      "intro": "A drop shows you {{count}} skins and you keep one. Here is when a drop can happen and how likely each skin is.",
+      "link": "Drop rates",
+      "whenTitle": "When you can get a drop",
+      "whenMatchmaking": "After a matchmaking game you played to the end",
+      "whenTournament": "After a tournament match you played in",
+      "whenLevel": "Every time you reach a new level",
+      "whenPlacement": "For a top-three place in a tournament",
+      "chanceTitle": "Chance of a drop after a game",
+      "mode": "Mode",
+      "fair": "Nothing drops from a game someone left or that ended early. Playing the same opponents again within a day drops much less.",
+      "rarityTitle": "Odds per rarity",
+      "skins_one": "{{count}} skin",
+      "skins_other": "{{count}} skins",
+      "perSkin": "{{odds}} for one exact skin",
+      "rarityNote": "Each of the {{count}} skins in a drop rolls its rarity on its own; inside a rarity every skin is as likely. Knives and gloves are ranked by price.",
+      "placementTitle": "Tournament placements",
+      "pickOfRarity": "a pick of {{rarity}} skins",
+      "rarityOdds": "Rarity odds",
+      "skinOdds": "This skin"
+    }
   },
   "matchRules": {
     "title": "Matchregeln",

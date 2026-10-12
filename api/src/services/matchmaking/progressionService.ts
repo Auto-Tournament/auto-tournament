@@ -7,6 +7,7 @@ import { rating as osRating } from 'openskill';
 import { db } from '../../config/database';
 import { openSkillToDisplayElo } from '../../utils/ratingMath';
 import { log } from '../../utils/logger';
+import type { DbMatchRow } from '../../types/database.types';
 import {
   COMMEND_WINDOW_SECONDS,
   levelFor,
@@ -41,7 +42,13 @@ async function lobbyPlayersOfMatch(matchSlug: string): Promise<LobbyPlayer[]> {
   );
 }
 
-async function addXp(playerId: string, matchSlug: string | null, amount: number, reason: XpReason, note?: string): Promise<boolean> {
+async function addXp(
+  playerId: string,
+  matchSlug: string | null,
+  amount: number,
+  reason: XpReason,
+  note?: string
+): Promise<boolean> {
   const res = await db.runAsync(
     `INSERT INTO xp_events (player_id, match_slug, amount, reason, note, created_at) VALUES (?, ?, ?, ?, ?, ?)
      ON CONFLICT DO NOTHING`,
@@ -68,12 +75,15 @@ export const progressionService = {
     abandoned: ReadonlySet<string> = new Set()
   ): Promise<void> {
     // No XP for a player who abandoned the match.
-    const players = (await lobbyPlayersOfMatch(matchSlug)).filter((p) => !abandoned.has(p.player_id));
-    if (players.length === 0) return;
-    const stats = await db.queryAsync<{ player_id: string; score: number | null; adr: number | null }>(
-      'SELECT player_id, score, adr FROM player_match_stats WHERE match_slug = ?',
-      [matchSlug]
+    const players = (await lobbyPlayersOfMatch(matchSlug)).filter(
+      (p) => !abandoned.has(p.player_id)
     );
+    if (players.length === 0) return;
+    const stats = await db.queryAsync<{
+      player_id: string;
+      score: number | null;
+      adr: number | null;
+    }>('SELECT player_id, score, adr FROM player_match_stats WHERE match_slug = ?', [matchSlug]);
     // Ranked only when the game reported how they played: rows with no
     // score and no damage for anyone (a game without stats, or stats that
     // never arrived) hold zeros, and ranking those would hand the
@@ -81,20 +91,33 @@ export const progressionService = {
     const reported = stats.some((s) => Number(s.score ?? 0) > 0 || Number(s.adr ?? 0) > 0);
     const ranked = reported
       ? [...stats].sort(
-          (a, b) => Number(b.score ?? 0) - Number(a.score ?? 0) || Number(b.adr ?? 0) - Number(a.adr ?? 0)
+          (a, b) =>
+            Number(b.score ?? 0) - Number(a.score ?? 0) || Number(b.adr ?? 0) - Number(a.adr ?? 0)
         )
       : [];
     const rankOf = new Map(ranked.map((s, i) => [s.player_id, i]));
     const dayStart = startOfUtcDay(now());
+    const totalOf = async (id: string) =>
+      Number(
+        (
+          await db.queryOneAsync<{ total_xp: number }>(
+            'SELECT total_xp FROM player_progress WHERE player_id = ?',
+            [id]
+          )
+        )?.total_xp ?? 0
+      );
+    const levelUps: Array<{ playerId: string; level: number }> = [];
     for (const p of players) {
+      const before = levelFor(await totalOf(p.player_id)).level;
       const side = p.team === 1 ? 'team1' : 'team2';
       const result = winner === 'none' ? 'draw' : winner === side ? 'win' : 'loss';
-      const hadFirstWin = result === 'win'
-        ? await db.queryOneAsync<{ id: number }>(
-            "SELECT id FROM xp_events WHERE player_id = ? AND reason = 'first_win' AND created_at >= ? LIMIT 1",
-            [p.player_id, dayStart]
-          )
-        : undefined;
+      const hadFirstWin =
+        result === 'win'
+          ? await db.queryOneAsync<{ id: number }>(
+              "SELECT id FROM xp_events WHERE player_id = ? AND reason = 'first_win' AND created_at >= ? LIMIT 1",
+              [p.player_id, dayStart]
+            )
+          : undefined;
       const parts = xpForMatch({
         result,
         performanceRank: rankOf.has(p.player_id) ? rankOf.get(p.player_id)! : null,
@@ -102,8 +125,28 @@ export const progressionService = {
         firstWinToday: result === 'win' && !hadFirstWin,
       });
       for (const part of parts) await addXp(p.player_id, matchSlug, part.amount, part.reason);
+      const after = levelFor(await totalOf(p.player_id)).level;
+      for (let level = before + 1; level <= after; level++)
+        levelUps.push({ playerId: p.player_id, level });
     }
     log.info(`[MATCHMAKING] XP awarded for ${matchSlug}`);
+    // Each new level goes to the game's module (CS2: a skin drop to pick from).
+    if (levelUps.length > 0) {
+      const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+        matchSlug,
+      ]);
+      // Loaded here: the registry reaches the game modules, which use this service.
+      const { integrationForMatch } = await import('../../integrations/registry');
+      const onLevelUp = match ? integrationForMatch(match).onLevelUp : undefined;
+      for (const up of levelUps) {
+        await onLevelUp?.({ ...up, matchSlug }).catch((error) =>
+          log.warn('[MATCHMAKING] The game module failed on a level-up', {
+            matchSlug,
+            error: String(error),
+          })
+        );
+      }
+    }
   },
 
   /** Level, XP and commend totals for a profile. */
@@ -116,7 +159,10 @@ export const progressionService = {
     thumbsDown: number;
     topTags: Array<{ tag: string; count: number }>;
   }> {
-    const row = await db.queryOneAsync<{ total_xp: number }>('SELECT total_xp FROM player_progress WHERE player_id = ?', [playerId]);
+    const row = await db.queryOneAsync<{ total_xp: number }>(
+      'SELECT total_xp FROM player_progress WHERE player_id = ?',
+      [playerId]
+    );
     const totalXp = Number(row?.total_xp ?? 0);
     const counts = await db.queryOneAsync<{ up: number | string; down: number | string }>(
       `SELECT COUNT(*) FILTER (WHERE value = 1) AS up, COUNT(*) FILTER (WHERE value = -1) AS down
@@ -138,19 +184,28 @@ export const progressionService = {
   },
 
   /** Give (or change) a thumbs up / down to another player of the same match, within 24 h. */
-  async commend(fromId: string, matchSlug: string, toId: string, body: unknown): Promise<{ value: 1 | -1; tag: string | null }> {
+  async commend(
+    fromId: string,
+    matchSlug: string,
+    toId: string,
+    body: unknown
+  ): Promise<{ value: 1 | -1; tag: string | null }> {
     const parsed = parseCommend(body);
     if (!parsed.ok) throw new ProgressionError(400, parsed.error);
     if (fromId === toId) throw new ProgressionError(400, 'You cannot rate yourself');
     const players = await lobbyPlayersOfMatch(matchSlug);
-    if (!players.some((p) => p.player_id === fromId) || !players.some((p) => p.player_id === toId)) {
+    if (
+      !players.some((p) => p.player_id === fromId) ||
+      !players.some((p) => p.player_id === toId)
+    ) {
       throw new ProgressionError(404, 'No such match for you');
     }
     const match = await db.queryOneAsync<{ status: string; completed_at: number | null }>(
       'SELECT status, completed_at FROM matches WHERE slug = ?',
       [matchSlug]
     );
-    if (match?.status !== 'completed') throw new ProgressionError(409, 'The match has not ended yet');
+    if (match?.status !== 'completed')
+      throw new ProgressionError(409, 'The match has not ended yet');
     if (match.completed_at && now() - Number(match.completed_at) > COMMEND_WINDOW_SECONDS) {
       throw new ProgressionError(409, 'Commends close 24 hours after the match');
     }
@@ -165,18 +220,22 @@ export const progressionService = {
   /** The post-match screen for a player of the match. */
   async result(playerId: string, matchSlug: string) {
     const players = await lobbyPlayersOfMatch(matchSlug);
-    if (!players.some((p) => p.player_id === playerId)) throw new ProgressionError(404, 'No such match for you');
-    const match = await db.queryOneAsync<{ status: string; loaded_at: number | null; completed_at: number | null }>(
-      'SELECT status, loaded_at, completed_at FROM matches WHERE slug = ?',
-      [matchSlug]
-    );
+    if (!players.some((p) => p.player_id === playerId))
+      throw new ProgressionError(404, 'No such match for you');
+    const match = await db.queryOneAsync<{
+      status: string;
+      loaded_at: number | null;
+      completed_at: number | null;
+    }>('SELECT status, loaded_at, completed_at FROM matches WHERE slug = ?', [matchSlug]);
     const ids = players.map((p) => p.player_id);
     const marks = ids.map(() => '?').join(', ');
     const names = new Map(
-      (await db.queryAsync<{ id: string; name: string | null }>(`SELECT id, name FROM players WHERE id IN (${marks})`, ids)).map((r) => [
-        r.id,
-        r.name || r.id,
-      ])
+      (
+        await db.queryAsync<{ id: string; name: string | null }>(
+          `SELECT id, name FROM players WHERE id IN (${marks})`,
+          ids
+        )
+      ).map((r) => [r.id, r.name || r.id])
     );
     const stats = new Map(
       (
@@ -193,11 +252,21 @@ export const progressionService = {
         }>('SELECT * FROM player_match_stats WHERE match_slug = ?', [matchSlug])
       ).map((s) => [s.player_id, s])
     );
-    const maps = await db.queryAsync<{ map_name: string | null; team1_score: number; team2_score: number; winner_team: string | null }>(
+    const maps = await db.queryAsync<{
+      map_name: string | null;
+      team1_score: number;
+      team2_score: number;
+      winner_team: string | null;
+    }>(
       'SELECT map_name, team1_score, team2_score, winner_team FROM match_map_results WHERE match_slug = ? ORDER BY map_number',
       [matchSlug]
     );
-    const rating = await db.queryOneAsync<{ mu_before: number; sigma_before: number; mu_after: number; sigma_after: number }>(
+    const rating = await db.queryOneAsync<{
+      mu_before: number;
+      sigma_before: number;
+      mu_after: number;
+      sigma_after: number;
+    }>(
       'SELECT mu_before, sigma_before, mu_after, sigma_after FROM mm_rating_history WHERE player_id = ? AND match_slug = ?',
       [playerId, matchSlug]
     );
@@ -255,7 +324,11 @@ export const progressionService = {
         : null,
       xp: xp.map((x) => ({ reason: x.reason, amount: Number(x.amount) })),
       progress: await progressionService.progress(playerId),
-      commendsGiven: given.map((g) => ({ playerId: g.to_player_id, value: Number(g.value), tag: g.tag })),
+      commendsGiven: given.map((g) => ({
+        playerId: g.to_player_id,
+        value: Number(g.value),
+        tag: g.tag,
+      })),
     };
   },
 
@@ -264,8 +337,19 @@ export const progressionService = {
    * matchmaking matches in the last 30 days, best conservative rating
    * (mu − 3 sigma, shown as display Elo) first.
    */
-  async leaderboard(mode: string, minGames = 10): Promise<
-    Array<{ rank: number; id: string; name: string; elo: number; games: number; wins: number; level: number }>
+  async leaderboard(
+    mode: string,
+    minGames = 10
+  ): Promise<
+    Array<{
+      rank: number;
+      id: string;
+      name: string;
+      elo: number;
+      games: number;
+      wins: number;
+      level: number;
+    }>
   > {
     const since = now() - 30 * 86400;
     const rows = await db.queryAsync<{
@@ -300,7 +384,10 @@ export const progressionService = {
   },
 
   /** A player's matchmaking matches, newest first, with the rating before and after each. */
-  async history(playerId: string, limit = 20): Promise<
+  async history(
+    playerId: string,
+    limit = 20
+  ): Promise<
     Array<{
       matchSlug: string;
       at: number;
@@ -333,7 +420,11 @@ export const progressionService = {
     );
     const out = [];
     for (const r of rows) {
-      const m = await db.queryOneAsync<{ team1_score: number; team2_score: number; winner_team: string | null }>(
+      const m = await db.queryOneAsync<{
+        team1_score: number;
+        team2_score: number;
+        winner_team: string | null;
+      }>(
         'SELECT team1_score, team2_score, winner_team FROM match_map_results WHERE match_slug = ? ORDER BY map_number LIMIT 1',
         [r.match_slug]
       );
@@ -349,8 +440,12 @@ export const progressionService = {
         own,
         other,
         result,
-        eloBefore: openSkillToDisplayElo(osRating({ mu: Number(r.mu_before), sigma: Number(r.sigma_before) })),
-        eloAfter: openSkillToDisplayElo(osRating({ mu: Number(r.mu_after), sigma: Number(r.sigma_after) })),
+        eloBefore: openSkillToDisplayElo(
+          osRating({ mu: Number(r.mu_before), sigma: Number(r.sigma_before) })
+        ),
+        eloAfter: openSkillToDisplayElo(
+          osRating({ mu: Number(r.mu_after), sigma: Number(r.sigma_after) })
+        ),
       });
     }
     return out;
@@ -361,8 +456,15 @@ export const progressionService = {
    * different voters in the last 30 days. Voters who were in the same party
    * in that match count as one, so a group can't pile on.
    */
-  async reviewList(min = 5): Promise<
-    Array<{ id: string; name: string; voters: number; reasons: Array<{ tag: string; count: number }> }>
+  async reviewList(
+    min = 5
+  ): Promise<
+    Array<{
+      id: string;
+      name: string;
+      voters: number;
+      reasons: Array<{ tag: string; count: number }>;
+    }>
   > {
     const since = now() - 30 * 86400;
     const rows = await db.queryAsync<{ to_player_id: string; voters: number | string }>(
@@ -379,7 +481,10 @@ export const progressionService = {
     );
     const out = [];
     for (const r of rows) {
-      const name = await db.queryOneAsync<{ name: string | null }>('SELECT name FROM players WHERE id = ?', [r.to_player_id]);
+      const name = await db.queryOneAsync<{ name: string | null }>(
+        'SELECT name FROM players WHERE id = ?',
+        [r.to_player_id]
+      );
       const reasons = await db.queryAsync<{ tag: string; n: number | string }>(
         `SELECT tag, COUNT(*) AS n FROM commends WHERE to_player_id = ? AND value = -1 AND created_at > ?
           GROUP BY tag ORDER BY n DESC, tag`,
@@ -402,6 +507,9 @@ export const progressionService = {
     }
     await addXp(playerId, null, amount, 'admin', note.slice(0, 200));
     // XP never goes below 0 in total.
-    await db.runAsync('UPDATE player_progress SET total_xp = GREATEST(total_xp, 0) WHERE player_id = ?', [playerId]);
+    await db.runAsync(
+      'UPDATE player_progress SET total_xp = GREATEST(total_xp, 0) WHERE player_id = ?',
+      [playerId]
+    );
   },
 };

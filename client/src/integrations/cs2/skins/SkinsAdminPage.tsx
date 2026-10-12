@@ -22,6 +22,7 @@ import {
   MenuItem,
   Select,
   Stack,
+  FormControlLabel,
   Switch,
   TextField,
   ToggleButton,
@@ -73,7 +74,8 @@ interface Config {
   dropChance: number;
   playDropChance: number;
   modeChances: Record<'2v2' | '1v1', { win: number; play: number }>;
-  weeklyCap: number;
+  tournamentMatchDrops: boolean;
+  levelUpDrops: boolean;
   rarityWeights: Record<Rarity, number>;
   tournamentRewards: boolean;
   rewards: Reward[];
@@ -903,17 +905,28 @@ export function SkinsAdminPage() {
                 %
               </Box>
             ))}
-            <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
-              {t('skins.admin.weeklyCapBefore')}
-              <SmallNumber
-                value={config.weeklyCap}
-                max={100}
-                label={t('skins.admin.weeklyCapLabel')}
-                onChange={(n) => set({ weeklyCap: n })}
-                testId="skins-weekly-cap"
-              />
-              {t('skins.admin.weeklyCapAfter')}
-            </Box>
+            <FormControlLabel
+              control={
+                <Switch
+                  size="small"
+                  checked={config.tournamentMatchDrops}
+                  onChange={(e) => set({ tournamentMatchDrops: e.target.checked })}
+                />
+              }
+              label={t('skins.admin.tournamentMatchDrops')}
+              data-testid="skins-tournament-match-drops"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  size="small"
+                  checked={config.levelUpDrops}
+                  onChange={(e) => set({ levelUpDrops: e.target.checked })}
+                />
+              }
+              label={t('skins.admin.levelUpDrops')}
+              data-testid="skins-level-up-drops"
+            />
             <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>
               {t('skins.admin.fairRules')}
             </Typography>

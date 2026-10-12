@@ -139,19 +139,22 @@ export function matchDropChance(
 }
 
 /**
- * Whether a finished matchmaking game can drop for one player: nobody
- * abandoned it, it went MIN_DROP_ROUNDS rounds, the player played in it,
- * and they are under the weekly cap (0 = no cap).
+ * Whether a finished game can drop for one player: nobody abandoned it, it
+ * went MIN_DROP_ROUNDS rounds, and the player played in it.
  */
 export function dropEligible(game: {
   abandoned: boolean;
   maxRounds: number;
   playerRounds: number;
-  dropsThisWeek: number;
-  weeklyCap: number;
 }): boolean {
-  if (game.abandoned || game.maxRounds < MIN_DROP_ROUNDS || game.playerRounds <= 0) return false;
-  return game.weeklyCap <= 0 || game.dropsThisWeek < game.weeklyCap;
+  return !game.abandoned && game.maxRounds >= MIN_DROP_ROUNDS && game.playerRounds > 0;
+}
+
+/** The mode a game's team size plays like (a tournament has no lobby to say). */
+export function modeForTeamSize(size: number | undefined): string | null {
+  if (size === 1) return '1v1';
+  if (size === 2) return '2v2';
+  return size ? '5v5' : null;
 }
 
 export interface SkinsConfig {
@@ -163,8 +166,10 @@ export interface SkinsConfig {
   playDropChance: number;
   /** The smaller modes drop less: a 1v1 is over in minutes. */
   modeChances: Record<SmallMode, { win: number; play: number }>;
-  /** At most this many matchmaking drops per player in 7 days; 0 = no cap. */
-  weeklyCap: number;
+  /** Tournament matches drop too (with the same chances), unless the tournament turns skins off. */
+  tournamentMatchDrops: boolean;
+  /** Every new matchmaking level is a drop to pick from. */
+  levelUpDrops: boolean;
   /** Relative weight per rarity for random drops. */
   rarityWeights: Record<Rarity, number>;
   tournamentRewards: boolean;
@@ -177,7 +182,8 @@ export const DEFAULT_CONFIG: SkinsConfig = {
   dropChance: 20,
   playDropChance: 5,
   modeChances: { '2v2': { win: 10, play: 3 }, '1v1': { win: 5, play: 1 } },
-  weeklyCap: 3,
+  tournamentMatchDrops: true,
+  levelUpDrops: true,
   rarityWeights: {
     common: 40,
     uncommon: 25,
@@ -214,7 +220,7 @@ export interface OwnedSkin {
   slot: string;
   float: number;
   pattern: number;
-  source: 'matchmaking' | 'tournament' | 'admin';
+  source: 'matchmaking' | 'tournament' | 'admin' | 'level';
   sourceLabel: string | null;
   sourceRef: string | null;
   place: number | null;
@@ -265,6 +271,34 @@ export function rollPattern(seeds?: number[]): number {
 }
 
 /** A rarity drawn by weight; null when every weight is zero. */
+export interface RarityOdds {
+  rarity: Rarity;
+  /** Percent of drop options that come out this rarity. */
+  chance: number;
+  /** How many skins share it. */
+  skins: number;
+  /** Percent of drop options that are one exact skin of this rarity. */
+  perSkin: number;
+}
+
+/**
+ * The odds a drop option has, from the rarity weights and how many skins
+ * each rarity has: a rarity with no skins never comes up, so the others
+ * share its weight; within a rarity every skin is as likely.
+ */
+export function dropOdds(
+  weights: Record<Rarity, number>,
+  counts: Partial<Record<Rarity, number>>
+): RarityOdds[] {
+  const live = RARITIES.filter((r) => (counts[r] ?? 0) > 0 && Math.max(0, weights[r] ?? 0) > 0);
+  const total = live.reduce((sum, r) => sum + weights[r], 0);
+  return RARITIES.map((rarity) => {
+    const skins = counts[rarity] ?? 0;
+    const chance = total > 0 && live.includes(rarity) ? (weights[rarity] / total) * 100 : 0;
+    return { rarity, chance, skins, perSkin: skins > 0 ? chance / skins : 0 };
+  });
+}
+
 export function rollRarity(weights: Record<Rarity, number>): Rarity | null {
   const entries = RARITIES.map((r) => [r, Math.max(0, weights[r] ?? 0)] as const).filter(
     ([, w]) => w > 0
@@ -348,10 +382,8 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
       },
       {} as SkinsConfig['modeChances']
     ),
-    weeklyCap:
-      typeof raw.weeklyCap === 'number' && Number.isFinite(raw.weeklyCap)
-        ? Math.max(0, Math.min(100, Math.floor(raw.weeklyCap)))
-        : DEFAULT_CONFIG.weeklyCap,
+    tournamentMatchDrops: raw.tournamentMatchDrops !== false,
+    levelUpDrops: raw.levelUpDrops !== false,
     rarityWeights: weights,
     tournamentRewards: raw.tournamentRewards !== false,
     rewards,
@@ -521,22 +553,25 @@ export const skinService = {
   },
 
   /**
-   * A finished matchmaking game: each player who played it may get a drop,
-   * with the mode's chance (winners likelier), less again for a repeat
-   * against the same opponents within a day, and none past the weekly cap.
-   * A game someone abandoned, or one over before MIN_DROP_ROUNDS rounds
-   * (walkover, early end), drops nothing. Never throws; a failed drop only
-   * logs.
+   * A finished matchmaking or tournament game: each player who played it may
+   * get a drop to pick from, with the mode's chance (winners likelier), less
+   * for a repeat against the same opponents within a day. A game someone
+   * abandoned, or one over before MIN_DROP_ROUNDS rounds (walkover, early
+   * end), drops nothing. Never throws; a failed drop only logs.
    */
   async rollMatchDrops(
     matchSlug: string,
     winnerSteamIds: string[],
     otherSteamIds: string[],
-    mapLabel?: string
+    mapLabel?: string,
+    game: { source?: 'matchmaking' | 'tournament'; teamSize?: number } = {}
   ): Promise<void> {
     try {
       const config = await this.config();
-      if (!config.enabled || !config.matchmakingDrops) return;
+      const source = game.source ?? 'matchmaking';
+      if (!config.enabled) return;
+      if (source === 'matchmaking' ? !config.matchmakingDrops : !config.tournamentMatchDrops)
+        return;
       const lobby = await db.queryOneAsync<{ id: string; mode: string }>(
         'SELECT id, mode FROM mm_lobbies WHERE match_slug = ?',
         [matchSlug]
@@ -560,7 +595,6 @@ export const skinService = {
       );
       const maxRounds = Math.max(0, ...rounds.values());
       if (abandoned || maxRounds < MIN_DROP_ROUNDS) return;
-      const weekAgo = Math.floor(Date.now() / 1000) - 7 * 86400;
       const dayAgo = Math.floor(Date.now() / 1000) - 86400;
       const players = [
         ...winnerSteamIds.map((steamId) => ({ steamId, won: true, opponents: otherSteamIds })),
@@ -573,18 +607,8 @@ export const skinService = {
       for (const { steamId, won, opponents } of players) {
         const uid = await uidOf(steamId);
         if (!uid) continue;
-        const week = await db.queryOneAsync<{ n: number }>(
-          "SELECT COUNT(*)::int AS n FROM cs2_skin_choices WHERE player_uid = ? AND source = 'matchmaking' AND created_at > ?",
-          [uid, weekAgo]
-        );
-        const eligible = dropEligible({
-          abandoned,
-          maxRounds,
-          playerRounds: rounds.get(steamId) ?? 0,
-          dropsThisWeek: week?.n ?? 0,
-          weeklyCap: config.weeklyCap,
-        });
-        if (!eligible) continue;
+        if (!dropEligible({ abandoned, maxRounds, playerRounds: rounds.get(steamId) ?? 0 }))
+          continue;
         const others = opponents.filter((id) => id !== steamId);
         const repeats = others.length
           ? Number(
@@ -595,20 +619,21 @@ export const skinService = {
                      JOIN player_match_stats o ON o.match_slug = s.match_slug AND o.team <> s.team
                      JOIN matches m ON m.slug = s.match_slug
                     WHERE s.player_id = ? AND s.match_slug <> ? AND s.created_at > ?
-                      AND m.source = 'matchmaking'
+                      AND (m.source = 'matchmaking' OR (m.source IS NULL AND m.round > 0))
                       AND o.player_id IN (${others.map(() => '?').join(', ')})`,
                   [steamId, matchSlug, dayAgo, ...others]
                 )
               )?.n ?? 0
             )
           : 0;
-        const chance = matchDropChance(config, lobby?.mode ?? null, won, repeats);
+        const mode = lobby?.mode ?? modeForTeamSize(game.teamSize);
+        const chance = matchDropChance(config, mode, won, repeats);
         if (chance <= 0 || randomInt(0, 10000) >= chance * 100) continue;
         // A choice of three, each with its own rarity roll: the player keeps one.
         const options = await this.pickOptions(() => this.pick(null, config.rarityWeights));
         if (!options.length) continue;
         await this.offerChoice(uid, options, {
-          source: 'matchmaking',
+          source,
           label: mapLabel,
           ref: matchSlug,
         });
@@ -616,6 +641,58 @@ export const skinService = {
     } catch (error) {
       log.warn('[Skins] Match drops failed', { matchSlug, error: (error as Error).message });
     }
+  },
+
+  /**
+   * A new matchmaking level: a drop to pick from, once per level (the
+   * choice's `source_ref` is `level:<n>`). Never throws.
+   */
+  async levelUpDrop(steamId: string, level: number): Promise<void> {
+    try {
+      const config = await this.config();
+      if (!config.enabled || !config.levelUpDrops || level < 2) return;
+      const uid = await uidOf(steamId);
+      if (!uid) return;
+      const ref = `level:${level}`;
+      const already = await db.queryOneAsync(
+        'SELECT 1 FROM cs2_skin_choices WHERE player_uid = ? AND source_ref = ? LIMIT 1',
+        [uid, ref]
+      );
+      if (already) return;
+      const options = await this.pickOptions(() => this.pick(null, config.rarityWeights));
+      if (!options.length) return;
+      await this.offerChoice(uid, options, { source: 'level', label: `Level ${level}`, ref });
+    } catch (error) {
+      log.warn('[Skins] Level-up drop failed', { steamId, level, error: (error as Error).message });
+    }
+  },
+
+  /** What players may see of the drops: the odds per rarity and per skin, and when drops happen. */
+  async odds() {
+    const config = await this.config();
+    const counts: Partial<Record<Rarity, number>> = {};
+    for (const skin of await this.catalog()) counts[skin.rarity] = (counts[skin.rarity] ?? 0) + 1;
+    return {
+      enabled: config.enabled,
+      optionsPerDrop: CHOICE_COUNT,
+      rarities: dropOdds(config.rarityWeights, counts),
+      matchmakingDrops: config.matchmakingDrops,
+      tournamentMatchDrops: config.tournamentMatchDrops,
+      levelUpDrops: config.levelUpDrops,
+      chances: {
+        '5v5': { win: config.dropChance, play: config.playDropChance },
+        ...config.modeChances,
+      },
+      tournamentRewards: config.tournamentRewards
+        ? config.rewards.map((r) => ({
+            place: r.place,
+            mode: r.mode,
+            rarity: r.rarity ?? null,
+            weapon: r.weapon ?? null,
+            name: r.name ?? null,
+          }))
+        : [],
+    };
   },
 
   /** Three different catalogue skins from `roll` (fewer when the catalogue cannot give three). */
