@@ -95,6 +95,10 @@ type doneClip struct {
 
 type recorder struct {
 	jobContext context.Context // current platform attempt; nil for local commands
+	// link: the live link to the platform (link.go); nil for local commands.
+	link *recorderLink
+	// job: what the current platform job is, for its progress reports.
+	job jobProgress
 	*client
 	gameDir string
 	sniper  string
@@ -524,8 +528,9 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 		close(queue)
 		<-finished
 	}
-	for _, sh := range shots {
+	for idx, sh := range shots {
 		m, name, look := sh.m, sh.name, sh.look
+		r.report("recording", look.name+" · "+m.Title, idx, len(shots))
 		if ctx.Err() != nil {
 			drain()
 			err = ctx.Err()
@@ -1241,7 +1246,8 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected, f
 	// (too many repeated frames) is recorded again later, maybe elsewhere,
 	// and stays out of the reels made here.
 	var clips []clipResult
-	for _, c := range recorded {
+	for i, c := range recorded {
+		r.report("uploading", c.moment.Title, i, len(recorded))
 		markers, _ := json.Marshal(c.markers)
 		headers := map[string]string{"X-AT-Markers": string(markers)}
 		if c.seconds > 0 {
@@ -1486,6 +1492,17 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 		return err
 	}
 	defer r.endLive()
+	// The live link (link.go): woken when there is work, progress out. With
+	// it up, the poll is only a fallback.
+	r.link = newRecorderLink(c)
+	go r.link.run(ctx)
+	waitForWork := func() {
+		d := poll
+		if r.link.Linked() {
+			d = 2 * time.Minute
+		}
+		r.link.Wait(ctx, d)
+	}
 	// Each job's log goes to the platform with its run report (runlog.go).
 	log.SetOutput(io.MultiWriter(os.Stderr, currentJobLog))
 	log.Printf("recorder: %dx%d, %s, sound from %s, %s, %s", r.width, r.height, r.encoder, r.sink, recorderGPU(), platformName())
@@ -1554,8 +1571,11 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 		started := time.Now()
 		jobCtx, cancelJob := context.WithTimeout(ctx, 45*time.Minute)
 		r.jobContext = jobCtx
+		r.link.Job(cancelJob)
+		r.job = jobProgress{started: started}
 		stopHeartbeat := c.heartbeat(jobCtx, cancelJob)
 		stopBeat := func() {
+			r.link.Job(nil)
 			stopHeartbeat()
 			if jobCtx.Err() != nil {
 				r.endLive()
@@ -1563,6 +1583,7 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 			cancelJob()
 		}
 		if redress != nil {
+			r.report("redressing", "", 0, len(redress.Files))
 			r.runRedress(jobCtx, redress)
 			stopBeat()
 			c.reportRun(jobRun{Kind: "redress", OK: true, Clips: len(redress.Files)}, started)
@@ -1570,6 +1591,8 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 		}
 		if reel != nil {
 			run := jobRun{Kind: reel.Kind, MatchSlug: reel.MatchSlug, MapNumber: intPtr(reel.MapNumber), Clips: len(reel.Clips)}
+			r.job.matchSlug, r.job.mapNumber = reel.MatchSlug, intPtr(reel.MapNumber)
+			r.report("joining", reel.label(), 0, 0)
 			err := r.makeMatchReel(jobCtx, reel)
 			stopBeat()
 			if err != nil {
@@ -1589,18 +1612,20 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 			}
 			stopBeat()
 			keep.release()
-			select {
-			case <-ctx.Done():
-			case <-time.After(poll):
-			}
+			r.job = jobProgress{}
+			r.link.Idle()
+			waitForWork()
 			continue
 		}
 		if j.Kind == "benchmark" {
+			r.report("benchmark", "", 0, 0)
 			r.runBenchmark(jobCtx, j)
 			stopBeat()
 			continue
 		}
 		run := jobRun{Kind: "map", MatchSlug: j.MatchSlug, MapNumber: intPtr(j.MapNumber)}
+		r.job.matchSlug, r.job.mapNumber = j.MatchSlug, intPtr(j.MapNumber)
+		r.report("starting", "", 0, j.moments())
 		kept, rejected, failedN, err := r.recordMap(jobCtx, j)
 		stopBeat()
 		run.Clips, run.Rejected, run.Failed = kept, rejected, failedN
@@ -1620,6 +1645,34 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 		c.reportRun(run, started)
 	}
 	return nil
+}
+
+// jobProgress is the current job, as its progress reports name it.
+type jobProgress struct {
+	matchSlug string
+	mapNumber *int
+	started   time.Time
+}
+
+// report tells the platform what this recorder is doing (link.go), with the
+// job's time so far and, from the clips done, an estimate of the rest.
+func (r *recorder) report(step, detail string, done, total int) {
+	if r.link == nil {
+		return
+	}
+	p := Progress{Step: step, Detail: detail, MatchSlug: r.job.matchSlug, MapNumber: r.job.mapNumber}
+	if total > 0 {
+		p.Done, p.Total = ptrInt(done), ptrInt(total)
+		p.Percent = ptrFloat(float64(done) * 100 / float64(total))
+	}
+	if !r.job.started.IsZero() {
+		el := time.Since(r.job.started).Seconds()
+		p.Elapsed = ptrFloat(el)
+		if done > 0 && total > done {
+			p.ETA = ptrFloat(el / float64(done) * float64(total-done))
+		}
+	}
+	r.link.Report(p)
 }
 
 // All render commands inherit the platform attempt deadline and cancellation.

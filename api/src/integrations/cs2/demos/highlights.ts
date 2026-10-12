@@ -35,6 +35,7 @@ import fs from 'fs';
 import path from 'path';
 import { DATA_DIR } from '../../../config/dataDir';
 import { db } from '../../../config/database';
+import { wakeRecorders } from './recorderLink';
 import { reelFailoverFilter } from './reelFailover';
 import { log } from '../../../utils/logger';
 import type { DemoAnalysisPayload } from './jobs';
@@ -280,8 +281,9 @@ export async function saveMoments(
         ]
       );
     }
-    // Open match pages show them as being recorded.
+    // Open match pages show them as being recorded; linked recorders start now.
     emitHighlightsChanged(matchSlug);
+    wakeRecorders();
   } catch (error) {
     log.warn(`[HIGHLIGHTS] Could not save the moments of ${matchSlug} map ${mapNumber}`, {
       error: (error as Error).message,
@@ -1138,13 +1140,15 @@ export async function queueMatchReelFor(highlightIds: number[]): Promise<void> {
       highlightIds
     );
     const limits = await readReelLimits();
-    const queue = (slug: string, mapNumber: number) =>
-      db.runAsync(
+    const queue = async (slug: string, mapNumber: number) => {
+      await db.runAsync(
         `INSERT INTO cs2_match_reels (match_slug, map_number) VALUES (?, ?)
          ON CONFLICT (match_slug, map_number) DO UPDATE SET status = 'pending', attempts = 0, error = NULL
            WHERE cs2_match_reels.status IN ('failed', 'waiting')`,
         [slug, mapNumber]
       );
+      wakeRecorders();
+    };
     for (const slug of new Set(maps.map((m) => m.match_slug))) {
       const { candidates, maps: all } = await reelCandidates(slug);
       for (const m of maps.filter((x) => x.match_slug === slug)) {

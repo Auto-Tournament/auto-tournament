@@ -161,6 +161,11 @@ export function initializeSocket(
   return io;
 }
 
+/** The socket server, or null before it is up (for emitters that may run early, or in scripts). */
+export function maybeIO(): SocketIOServer | null {
+  return io ?? null;
+}
+
 export function getIO(): SocketIOServer {
   if (!io) {
     throw new Error('Socket.io not initialized. Call initializeSocket first.');

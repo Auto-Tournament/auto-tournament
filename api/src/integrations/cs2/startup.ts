@@ -25,6 +25,7 @@ import { startRoundBackups, stopRoundBackups } from './fleet/backups';
 import { startRestoreAudit, stopRestoreAudit } from './fleet/restore';
 import { startDemoStreams, stopDemoStreams } from './fleet/demoStream';
 import { startFleetHosts, stopFleetHosts } from './fleet/hosts/service';
+import { recorderLink, startRecorderLink } from './demos/recorderLink';
 import { startServerNotices, stopServerNotices } from './fleet/serverNotices';
 import { startFleetPush, stopFleetPush } from './fleet/push';
 import { startFleetFailover, stopFleetFailover } from './fleet/failover';
@@ -84,6 +85,9 @@ export async function startCs2(): Promise<void> {
   await startFleetHosts().catch((error) => {
     log.warn('Failed to start the fleet host gateway', { error });
   });
+  // Recorders' live link (/api/game/cs2/recorder/link): work is pushed to
+  // them the moment it is queued, and they stream their progress.
+  startRecorderLink();
   // Failover proposals for Ready Up servers that die mid-match (FLEET.md §11).
   startFleetFailover();
   // Automatic scaling of Ready Up servers on those machines (fleet/autoscale/).
@@ -121,6 +125,7 @@ export function stopCs2(): void {
   stopRestoreAudit();
   stopDemoStreams();
   stopFleetHosts();
+  recorderLink.shutdown();
   stopFleetFailover();
   stopServerNotices();
   stopFleetPush();

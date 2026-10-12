@@ -96,6 +96,7 @@ import { appendPart, bodyOf, startUpload, UploadError } from '../demos/uploadPar
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
 import { countView, libraryPage, setLike, videoKey, videoStats } from '../demos/library';
+import { recorderLink } from '../demos/recorderLink';
 import {
   addComment,
   cleanBody,
@@ -198,6 +199,21 @@ import {
 import { dropOrphanJobs } from '../demos/jobs';
 
 const router = Router();
+// The Recorders page follows changes live instead of polling: any change to
+// a recorder, its group, key or job (not heartbeats or upload chunks) tells
+// it to read the list again (../demos/recorderLink.ts).
+router.use((req, res, next) => {
+  if (
+    req.method !== 'GET' &&
+    /^\/(recorder|recorders|recorder-groups|recorder-keys|clips|redress)(\/|$)/.test(req.path) &&
+    !/\/(heartbeat|uploads)(\/|$)/.test(req.path)
+  ) {
+    res.on('finish', () => {
+      if (res.statusCode < 400) recorderLink.changed();
+    });
+  }
+  next();
+});
 router.use(recorderFleetRouter);
 
 // Updated workers identify writes, so a late upload/failure cannot change a
@@ -392,6 +408,16 @@ router.post('/recorder/update', requireRecorder, async (req, res) => {
       return res
         .status(409)
         .json({ error: 'Stale request or installed image differs from the requested build' });
+    // The Recorders page follows the update live: its step while it runs
+    // (draining, pulling, restarting, checking), the result when done.
+    const step = req.body?.step;
+    recorderLink.updateProgress(
+      name,
+      status === 'updating' && typeof step === 'string' && /^[a-z-]{1,24}$/.test(step)
+        ? step
+        : null,
+      status
+    );
     return res.json({ success: true });
   } catch (error) {
     log.error('[RECORDER UPDATE] acknowledgement failed', { error });

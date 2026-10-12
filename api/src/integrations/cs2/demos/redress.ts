@@ -12,6 +12,7 @@ import { recordingTargetFilter } from './recorderFleet';
 import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
+import { wakeRecorders } from './recorderLink';
 import { HIGHLIGHTS_DIR, parseMarkers, twinFileOf } from './highlights';
 
 /** How many videos one claim hands out (a clip takes seconds, a reel a minute). */
@@ -65,6 +66,7 @@ export async function queueRedress(files?: string[]): Promise<number> {
       [file]
     );
   }
+  wakeRecorders();
   return clips.length;
 }
 

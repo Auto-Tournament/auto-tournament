@@ -3,6 +3,7 @@ module github.com/Auto-Tournament/auto-tournament/worker
 go 1.26.0
 
 require (
+	github.com/coder/websocket v1.8.13
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/markus-wa/demoinfocs-golang/v5 v5.2.0
 	github.com/pierrec/lz4/v4 v4.1.33

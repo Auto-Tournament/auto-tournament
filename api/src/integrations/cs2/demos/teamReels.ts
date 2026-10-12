@@ -15,6 +15,7 @@ import { readReelLimits } from './highlightQuality';
 import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
+import { wakeRecorders } from './recorderLink';
 import { emitHighlightsChanged } from '../../../services/socketService';
 import { reelFailoverFilter } from './reelFailover';
 import { log } from '../../../utils/logger';
@@ -151,6 +152,7 @@ export async function queueTeamReelsFor(highlightIds: number[]): Promise<void> {
                 OR (cs2_team_reels.status = 'done' AND cs2_team_reels.clip_ids IS DISTINCT FROM ?)`,
           [slug, team.id, ids]
         );
+        wakeRecorders();
       }
     }
   } catch (error) {

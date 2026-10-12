@@ -40,8 +40,13 @@ func (a *agent) saveUpdate(j *updateJournal) error {
 	}
 	return atomicFile(a.journalPath(), b)
 }
-func (a *agent) acknowledge(ctx context.Context, j *updateJournal, status, image, revision string) error {
+func (a *agent) acknowledge(ctx context.Context, j *updateJournal, status, image, revision string, step ...string) error {
 	body := map[string]string{"id": j.Request.ID, "status": status, "error": j.Error, "agentVersion": version}
+	// Where an update is (the Recorders page shows it live): draining,
+	// pulling, restarting, checking. Older platforms ignore it.
+	if len(step) > 0 && step[0] != "" {
+		body["step"] = step[0]
+	}
 	if image != "" {
 		body["image"] = image
 	}
@@ -293,7 +298,7 @@ func (a *agent) managedUpdate(ctx context.Context) error {
 		}
 		return errors.New("platform no longer gates this recorder; refusing to recreate it")
 	}
-	if err = a.acknowledge(ctx, &j, "updating", "", ""); err != nil {
+	if err = a.acknowledge(ctx, &j, "updating", "", "", j.Phase); err != nil {
 		return err
 	}
 	if j.Phase == "draining" {
@@ -315,6 +320,7 @@ func (a *agent) managedUpdate(ctx context.Context) error {
 			return a.saveUpdate(&j)
 		}
 		if j.Request.Image != j.PreviousImage {
+			_ = a.acknowledge(ctx, &j, "updating", "", "", "pulling")
 			pull, cancel := context.WithTimeout(ctx, 10*time.Minute)
 			_, err = a.run(pull, "pull", j.Request.Image)
 			cancel()
@@ -339,7 +345,9 @@ func (a *agent) managedUpdate(ctx context.Context) error {
 			return err
 		}
 		if j.Request.Image != j.PreviousImage {
+			_ = a.acknowledge(ctx, &j, "updating", "", "", "restarting")
 			if err = a.recreate(ctx); err == nil {
+				_ = a.acknowledge(ctx, &j, "updating", "", "", "checking")
 				err = a.waitHealthy(ctx, &j, j.Request.Image)
 			}
 		} else {
