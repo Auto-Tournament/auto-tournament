@@ -188,14 +188,32 @@ async function persistPlayerMatchStats(options: {
 
   log.debug(`Tracked player stats for ${written} players`, { matchSlug });
 
-  // A finished matchmaking game goes to the game's module (CS2: skin drops).
+  // A finished matchmaking or tournament game goes to the game's module (CS2: skin drops).
   const onResult = integrationForMatch(match).onMatchmakingResult;
-  if (onResult && match.source === 'matchmaking') {
-    const ids = (players: typeof team1Players) => players.map((p) => p.steamId).filter((id) => known.has(id));
-    const winners = result === 'team1' ? ids(team1Players) : result === 'team2' ? ids(team2Players) : [];
-    const others = result === 'team1' ? ids(team2Players) : result === 'team2' ? ids(team1Players) : [...ids(team1Players), ...ids(team2Players)];
-    await onResult({ matchSlug, winners, others, map: match.current_map ?? undefined }).catch((error) =>
-      log.warn('[RESULTS] The game module failed on a matchmaking result', { matchSlug, error: String(error) })
+  const tournamentGame = !match.source && match.round > 0;
+  if (onResult && (match.source === 'matchmaking' || tournamentGame)) {
+    const ids = (players: typeof team1Players) =>
+      players.map((p) => p.steamId).filter((id) => known.has(id));
+    const winners =
+      result === 'team1' ? ids(team1Players) : result === 'team2' ? ids(team2Players) : [];
+    const others =
+      result === 'team1'
+        ? ids(team2Players)
+        : result === 'team2'
+          ? ids(team1Players)
+          : [...ids(team1Players), ...ids(team2Players)];
+    await onResult({
+      matchSlug,
+      winners,
+      others,
+      map: match.current_map ?? undefined,
+      source: match.source === 'matchmaking' ? 'matchmaking' : 'tournament',
+      teamSize: Math.max(team1Players.length, team2Players.length),
+    }).catch((error) =>
+      log.warn('[RESULTS] The game module failed on a matchmaking result', {
+        matchSlug,
+        error: String(error),
+      })
     );
   }
 }
@@ -317,6 +335,9 @@ export async function trackPlayerStatsForManualMatch(
       result,
     });
   } catch (error) {
-    log.error('Error tracking player stats for manual match', { error: (error as Error).message, matchSlug });
+    log.error('Error tracking player stats for manual match', {
+      error: (error as Error).message,
+      matchSlug,
+    });
   }
 }

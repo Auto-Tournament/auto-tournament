@@ -56,6 +56,8 @@ export const paths = {
   browseTeams: '/browse/teams',
   /** Matchmaking: find a match, party, the match room. */
   play: '/play',
+  /** Sends the signed-in player to where their match lives (veto, server, score, what is next). */
+  matchNow: '/match/now',
   playLobby: '/play/:lobbyId',
   playLeaderboard: '/play/leaderboard',
   /** Your friends, friend requests, and adding friends. */

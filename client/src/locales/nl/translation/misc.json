@@ -849,7 +849,9 @@
       "adminCalled": "{{name}} riep een admin",
       "timedOut": "tijd om",
       "remindAccount": "{{name}}: log één keer in met Steam om mee te spelen in {{tournament}}.",
-      "remindGame": "{{name}}: voeg het spel toe aan je profiel (Games die je speelt) voor het inchecken van {{tournament}}."
+      "remindGame": "{{name}}: voeg het spel toe aan je profiel (Games die je speelt) voor het inchecken van {{tournament}}.",
+      "serverDown": "The match server crashed. Bringing it back…",
+      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect."
     },
     "party": {
       "inviteCopied": "Uitnodigingslink gekopieerd",
@@ -861,7 +863,31 @@
       "searching": "Zoeken naar een wedstrijd",
       "leaderQueues": "De leider start het zoeken"
     },
-    "back": "Terug"
+    "back": "Terug",
+    "typing": {
+      "one": "{{name}} typt…",
+      "two": "{{first}} en {{second}} typen…",
+      "many": "{{count}} mensen typen…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Kies een emoji",
+      "search": "Emoji zoeken",
+      "none": "Geen emoji gevonden",
+      "categories": {
+        "results": "Resultaten",
+        "recent": "Recent",
+        "smileys": "Smileys",
+        "gestures": "Handen",
+        "people": "Mensen",
+        "animals": "Natuur",
+        "food": "Eten en drinken",
+        "activity": "Games en sport",
+        "travel": "Plaatsen",
+        "objects": "Voorwerpen",
+        "symbols": "Symbolen"
+      }
+    }
   },
   "search": {
     "open": "Search",

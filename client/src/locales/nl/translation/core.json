@@ -76,5 +76,12 @@
   },
   "theme": {
     "label": "Color theme"
+  },
+  "matchNow": {
+    "title": "Your match",
+    "none": "No match right now",
+    "noneBody": "You have no match coming up. Find one in Play, or join a tournament.",
+    "play": "Play",
+    "home": "Home"
   }
 }

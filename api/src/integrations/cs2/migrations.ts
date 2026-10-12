@@ -1533,4 +1533,14 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       CREATE INDEX IF NOT EXISTS cs2_skin_choices_player_idx ON cs2_skin_choices(player_uid, chosen_at);
     `,
   },
+  {
+    // Knives, gloves and every weapon both sides use can be equipped per
+    // side (skins/skinService.ts equip): team 0 both, 2 T, 3 CT.
+    id: '052-loadout-per-side',
+    up: `
+      ALTER TABLE cs2_player_loadout ADD COLUMN IF NOT EXISTS team INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE cs2_player_loadout DROP CONSTRAINT IF EXISTS cs2_player_loadout_pkey;
+      ALTER TABLE cs2_player_loadout ADD PRIMARY KEY (player_uid, slot, team);
+    `,
+  },
 ];
