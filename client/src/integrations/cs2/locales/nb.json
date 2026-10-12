@@ -2470,5 +2470,27 @@
     "saveFailed": "Kunne ikke lagre rollen",
     "team": "Roller",
     "suggestedShort": "{{role}} (foreslått, {{confidence}})"
+  },
+  "recorderProgress": {
+    "step": {
+      "recording": "Tar opp",
+      "encoding": "Koder",
+      "uploading": "Laster opp",
+      "joining": "Setter sammen reel",
+      "redressing": "Tegner overlegg på nytt",
+      "benchmark": "Benchmark",
+      "starting": "Starter",
+      "updating": "Oppdaterer",
+      "waiting": "Venter"
+    },
+    "update": {
+      "draining": "Fullfører jobben",
+      "pulling": "Laster ned oppdatering",
+      "restarting": "Starter på nytt",
+      "checking": "Sjekker helse",
+      "applying": "Installerer"
+    },
+    "clipOf": "klipp {{n}} av {{total}}",
+    "left": "~{{time}} igjen"
   }
 }

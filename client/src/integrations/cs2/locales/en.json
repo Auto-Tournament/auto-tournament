@@ -2470,5 +2470,27 @@
     "saveFailed": "Could not save the role",
     "team": "Roles",
     "suggestedShort": "{{role}} (suggested, {{confidence}})"
+  },
+  "recorderProgress": {
+    "step": {
+      "recording": "Recording",
+      "encoding": "Encoding",
+      "uploading": "Uploading",
+      "joining": "Joining reel",
+      "redressing": "Redrawing overlays",
+      "benchmark": "Benchmark",
+      "starting": "Starting",
+      "updating": "Updating",
+      "waiting": "Waiting"
+    },
+    "update": {
+      "draining": "Finishing its job",
+      "pulling": "Downloading update",
+      "restarting": "Restarting",
+      "checking": "Checking health",
+      "applying": "Installing"
+    },
+    "clipOf": "clip {{n}} of {{total}}",
+    "left": "~{{time}} left"
   }
 }

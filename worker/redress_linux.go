@@ -184,6 +184,7 @@ func (r *recorder) runRedress(ctx context.Context, j *redressJob) {
 		if ctx.Err() != nil {
 			return
 		}
+		r.report("redressing", f.File, i, len(j.Files))
 		local := filepath.Join(dir, fmt.Sprintf("v%d.mp4", i))
 		out := filepath.Join(dir, fmt.Sprintf("v%d-dressed.mp4", i))
 		err := func() error {

@@ -23,6 +23,17 @@ import type { MatchPublicPanelProps } from '../../types';
 import { clock, kindLabel, libraryPath, mapLabel, watchTeamReelPath, type Chapter } from './data';
 import { MatchClipGrid, type MatchClip } from './MatchClipGrid';
 
+/** A recorder working on this match, as its link reports it. */
+interface LiveRecording {
+  recorder: string;
+  step: string;
+  detail: string | null;
+  mapNumber: number | null;
+  done: number | null;
+  total: number | null;
+  percent: number | null;
+}
+
 interface TeamReelRow {
   teamId: string;
   team: string | null;
@@ -82,6 +93,24 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
     return () => {
       socket.off(event, changed);
       if (timer) clearTimeout(timer);
+    };
+  }, [socket, matchSlug]);
+
+  // Who is recording this match right now, and how far (the recorders' live
+  // link): one line per recorder, gone when it is done.
+  const [live, setLive] = useState<Record<string, LiveRecording>>({});
+  useEffect(() => {
+    const event = `highlights:progress:${matchSlug}`;
+    const onProgress = (p: LiveRecording & { step: string | null }) =>
+      setLive((prev) => {
+        const next = { ...prev };
+        if (p.step) next[p.recorder] = p;
+        else delete next[p.recorder];
+        return next;
+      });
+    socket.on(event, onProgress);
+    return () => {
+      socket.off(event, onProgress);
     };
   }, [socket, matchSlug]);
 
@@ -423,6 +452,41 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
                   aria-label={t('matchPage.recordingClips')}
                   sx={{ height: 6, borderRadius: radii.pill }}
                 />
+                {Object.values(live).length > 0 && (
+                  <Box
+                    component="ul"
+                    sx={{ listStyle: 'none', p: 0, m: 0, mt: 1, display: 'grid', gap: 0.25 }}
+                    data-testid="match-page-recording-now"
+                  >
+                    {Object.values(live)
+                      .sort((a, b) =>
+                        a.recorder.localeCompare(b.recorder, undefined, { numeric: true })
+                      )
+                      .map((r) => (
+                        <Typography
+                          key={r.recorder}
+                          component="li"
+                          variant="caption"
+                          color="text.secondary"
+                          noWrap
+                        >
+                          {[
+                            r.recorder,
+                            t(`recorderProgress.step.${r.step}`, { defaultValue: r.step }),
+                            r.detail,
+                            typeof r.done === 'number' && r.total
+                              ? t('recorderProgress.clipOf', {
+                                  n: Math.min(r.done + 1, r.total),
+                                  total: r.total,
+                                })
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </Typography>
+                      ))}
+                  </Box>
+                )}
               </Box>
             )}
             <MatchClipGrid clips={clips} />

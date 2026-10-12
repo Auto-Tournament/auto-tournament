@@ -9,6 +9,7 @@
  */
 
 import { db } from '../../../config/database';
+import { wakeRecorders } from './recorderLink';
 import { emitHighlightsChanged } from '../../../services/socketService';
 import { qualityLabel, readHighlightQuality } from './highlightQuality';
 import { SERIES_REEL } from './highlights';
@@ -279,6 +280,7 @@ export async function redo(req: RedoRequest): Promise<{ clips: number; reels: nu
       ids
     );
     clips = touched.length;
+    if (clips) wakeRecorders();
     // Their reels wait for them.
     for (const t of touched) {
       reels.push({ slug: t.match_slug, mapNumber: Number(t.map_number) });

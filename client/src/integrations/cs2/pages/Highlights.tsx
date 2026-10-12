@@ -44,9 +44,12 @@ import {
   api,
   HighlightPlayer,
   type MusicTrack,
+  onSocketReconnect,
   useModuleTranslation,
   useSnackbar,
+  useSocket,
 } from '../../../module-sdk';
+import { RecorderProgressBar, type RecorderProgress } from '../settings/RecorderProgressBar';
 import { HighlightOverlaySetting } from '../settings/HighlightOverlaySetting';
 
 interface BenchmarkTry {
@@ -95,6 +98,10 @@ interface Recorder {
     mapNumber: number;
     since: number;
   } | null;
+  /** A live link to the platform (it is pushed work and reports progress). */
+  linked?: boolean;
+  /** What it is doing right now, over its link. */
+  progress?: RecorderProgress | null;
 }
 
 interface Run {
@@ -177,14 +184,29 @@ function RecordersTab() {
     }
   }, [showError, t]);
 
+  // Live: the platform says when recorders change (a job, an update, a
+  // toggle) and streams what each is doing; no polling.
+  const socket = useSocket();
   useEffect(() => {
     const first = setTimeout(() => void load(), 0);
-    const id = setInterval(() => void load(), 30_000);
+    const join = () => socket.emit('admin:subscribe');
+    join();
+    const changed = () => void load();
+    const progress = ({ name, progress }: { name: string; progress: RecorderProgress | null }) =>
+      setRecorders((list) => list?.map((r) => (r.name === name ? { ...r, progress } : r)) ?? list);
+    socket.on('recorders:changed', changed);
+    socket.on('recorders:progress', progress);
+    const off = onSocketReconnect(socket, () => {
+      join();
+      void load();
+    });
     return () => {
       clearTimeout(first);
-      clearInterval(id);
+      socket.off('recorders:changed', changed);
+      socket.off('recorders:progress', progress);
+      off();
     };
-  }, [load]);
+  }, [load, socket]);
 
   const act = async (path: string, done: string) => {
     try {
@@ -344,7 +366,34 @@ function RecordersTab() {
                         <Chip
                           size="small"
                           color="warning"
-                          label={t('highlightsAdmin.fleet.updatePending')}
+                          label={
+                            r.progress?.step === 'updating' && r.progress.detail
+                              ? t(`recorderProgress.update.${r.progress.detail}`, {
+                                  defaultValue: r.progress.detail,
+                                })
+                              : t(
+                                  r.updateStatus === 'queued'
+                                    ? 'highlightsAdmin.fleet.updatePending'
+                                    : 'recorderProgress.step.updating'
+                                )
+                          }
+                        />
+                      )}
+                      {r.progress && r.progress.step !== 'updating' && (
+                        <Chip
+                          size="small"
+                          color="info"
+                          data-testid={`recorder-step-${r.name}`}
+                          label={[
+                            t(`recorderProgress.step.${r.progress.step}`, {
+                              defaultValue: r.progress.step,
+                            }),
+                            typeof r.progress.done === 'number' && r.progress.total
+                              ? `${Math.min(r.progress.done + 1, r.progress.total)}/${r.progress.total}`
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
                         />
                       )}
                       {!r.effectiveEnabled ? (
@@ -411,7 +460,8 @@ function RecordersTab() {
                         {t('highlightsAdmin.fleet.drainHelp')}
                       </Typography>
                     )}
-                    {r.working && (
+                    {r.progress && <RecorderProgressBar name={r.name} progress={r.progress} />}
+                    {r.working && !r.progress && (
                       <Typography variant="body2" data-testid={`recorder-working-${r.name}`}>
                         {t('highlightsAdmin.workingOn', {
                           count: r.working.clips,
@@ -1274,14 +1324,24 @@ function ClipsTab() {
     }
   }, [onlyOutdated, showError, t]);
 
+  // Live: a clip recorded, redone or reviewed changes the recorders' work too
+  // (`recorders:changed`), so that is when the list is read again.
+  const socket = useSocket();
   useEffect(() => {
     const first = setTimeout(() => void load(), 0);
-    const id = setInterval(() => void load(), 30_000);
+    socket.emit('admin:subscribe');
+    const changed = () => void load();
+    socket.on('recorders:changed', changed);
+    const off = onSocketReconnect(socket, () => {
+      socket.emit('admin:subscribe');
+      void load();
+    });
     return () => {
       clearTimeout(first);
-      clearInterval(id);
+      socket.off('recorders:changed', changed);
+      off();
     };
-  }, [load]);
+  }, [load, socket]);
 
   const redo = async (body: object) => {
     setBusy(true);

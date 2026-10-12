@@ -19,6 +19,7 @@ import { recordingFailureSql } from './recorderLeases';
  * - Each job's log and timings land in cs2_recorder_runs for the Recorders page.
  */
 import { db } from '../../../config/database';
+import { recorderLink, wakeRecorders } from './recorderLink';
 import { log } from '../../../utils/logger';
 import { jobFor, queueMatchReelFor, type MomentRow } from './highlights';
 import { readHighlightQuality } from './highlightQuality';
@@ -290,6 +291,7 @@ export async function listRecorders() {
     []
   );
   const t = now();
+  const linked = recorderLink.linked();
   return rows.map((r) => {
     let benchmark: unknown = null;
     try {
@@ -310,9 +312,15 @@ export async function listRecorders() {
       platform: r.platform,
       firstSeen: Number(r.first_seen),
       lastSeen: r.last_seen ? Number(r.last_seen) : null,
-      // Busy with a job counts as online, however long since it last asked.
+      // Busy with a job counts as online, however long since it last asked;
+      // so does a live link (./recorderLink.ts).
       online:
-        (!!r.last_seen && t - Number(r.last_seen) < 15 * 60) || Number(r.working_clips ?? 0) > 0,
+        linked.has(r.name) ||
+        (!!r.last_seen && t - Number(r.last_seen) < 15 * 60) ||
+        Number(r.working_clips ?? 0) > 0,
+      // The live link: the platform pushes work to it, and it says what it is doing.
+      linked: linked.has(r.name),
+      progress: recorderLink.progressOf(r.name),
       working:
         Number(r.working_clips ?? 0) > 0
           ? {
@@ -417,6 +425,7 @@ export async function resumeRecorder(name: string): Promise<void> {
 export async function requestBenchmark(name: string): Promise<void> {
   await existing(name);
   await db.runAsync('UPDATE cs2_recorders SET benchmark_wanted = 1 WHERE name = ?', [name]);
+  wakeRecorders();
 }
 
 export async function forgetRecorder(name: string): Promise<void> {
