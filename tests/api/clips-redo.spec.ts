@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { io } from 'socket.io-client';
 import { signInViaRequest } from '../helpers/auth';
 
 /**
@@ -10,6 +11,7 @@ import { signInViaRequest } from '../helpers/auth';
  */
 
 const TAGS = { tag: ['@api'] };
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069';
 
 function fakeDemo(map: string, size: number): Buffer {
   const name = Buffer.from(map);
@@ -128,6 +130,15 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
     expect(recorder.online).toBe(true);
     expect(recorder.working).toMatchObject({ matchSlug: slug, mapNumber: 0 });
 
+    // The match page is told over the socket when a clip arrives.
+    const socket = io(BASE_URL, { transports: ['polling'], forceNew: true });
+    await new Promise<void>((resolve, reject) => {
+      socket.once('connect', () => resolve());
+      socket.once('connect_error', reject);
+    });
+    const told = new Promise<{ matchSlug: string }>((resolve) =>
+      socket.once(`highlights:update:${slug}`, resolve)
+    );
     for (const m of mine.moments) {
       const up = await request.put(`/api/game/cs2/recorder/jobs/${m.id}/clip`, {
         headers: { 'Content-Type': 'video/mp4' },
@@ -135,6 +146,8 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
       });
       expect(up.status()).toBe(200);
     }
+    expect(await told).toEqual({ matchSlug: slug });
+    socket.close();
     // Its overlay recipe (JSON) is kept next to it: the app's JSON parser
     // must not leave it an empty file ("The overlay is not JSON").
     const recipe = { version: 1, name: 'C0', kills: [1.5, 2.25] };

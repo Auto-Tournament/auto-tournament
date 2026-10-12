@@ -77,7 +77,10 @@ async function joinAdminRoom(socket: Socket, ack?: unknown): Promise<void> {
   }
 }
 
-export function initializeSocket(httpServer: HTTPServer, options: SocketOptions = {}): SocketIOServer {
+export function initializeSocket(
+  httpServer: HTTPServer,
+  options: SocketOptions = {}
+): SocketIOServer {
   io = new SocketIOServer(httpServer, {
     cors: {
       origin: process.env.CORS_ORIGIN || '*',
@@ -88,11 +91,17 @@ export function initializeSocket(httpServer: HTTPServer, options: SocketOptions 
   // Session and Passport on the handshake only (not on every polling
   // request of the same connection), as Socket.IO's docs recommend.
   for (const middleware of options.handshakeMiddleware ?? []) {
-    io.engine.use((req: IncomingMessage & { _query?: { sid?: string } }, res: ServerResponse, next: (err?: unknown) => void) => {
-      const isHandshake = req._query?.sid === undefined;
-      if (isHandshake) middleware(req, res, next);
-      else next();
-    });
+    io.engine.use(
+      (
+        req: IncomingMessage & { _query?: { sid?: string } },
+        res: ServerResponse,
+        next: (err?: unknown) => void
+      ) => {
+        const isHandshake = req._query?.sid === undefined;
+        if (isHandshake) middleware(req, res, next);
+        else next();
+      }
+    );
   }
 
   io.on('connection', (socket) => {
@@ -138,7 +147,8 @@ export function initializeSocket(httpServer: HTTPServer, options: SocketOptions 
     socket.on('disconnecting', () => {
       for (const room of socket.rooms) {
         if (!room.startsWith('player:')) continue;
-        if ((io?.sockets.adapter.rooms.get(room)?.size ?? 0) <= 1) presenceListener?.(room.slice('player:'.length), false);
+        if ((io?.sockets.adapter.rooms.get(room)?.size ?? 0) <= 1)
+          presenceListener?.(room.slice('player:'.length), false);
       }
     });
 
@@ -164,7 +174,9 @@ export function getIO(): SocketIOServer {
 export function emitTournamentUpdate(tournament: TournamentUpdateEvent): void {
   // A tournament changed status (created, started, finished, ...): which one
   // is featured may have changed with it.
-  void import('./currentTournament').then((m) => m.refreshCurrentTournamentId()).catch(() => undefined);
+  void import('./currentTournament')
+    .then((m) => m.refreshCurrentTournamentId())
+    .catch(() => undefined);
   if (io) {
     io.emit('tournament:update', tournament);
     log.debug('Emitted tournament update', { tournamentId: tournament.id });
@@ -233,6 +245,18 @@ export function emitMatchEvent(matchSlug: string, event: MatchEventData['event']
     io.emit('match:event', { matchSlug, event });
     io.emit(`match:event:${matchSlug}`, event);
     log.debug('Emitted match event', { matchSlug, eventType: event.event });
+  }
+}
+
+/**
+ * A match's highlights changed (a clip or a reel finished, or one was
+ * dropped): its public page fetches them again. Only the slug goes out;
+ * what changed is read through the usual public routes.
+ */
+export function emitHighlightsChanged(matchSlug: string): void {
+  if (io) {
+    io.emit(`highlights:update:${matchSlug}`, { matchSlug });
+    log.debug('Emitted highlights update', { matchSlug });
   }
 }
 
@@ -366,7 +390,11 @@ export function emitAdminCallResolved(payload: AdminCallResolvedEvent): void {
 }
 
 /** A chat message, to the players in its channel (rooms `player:<id>`) and, for a match, the admins. */
-export function emitChatMessage(playerIds: Iterable<string>, toAdmins: boolean, message: unknown): void {
+export function emitChatMessage(
+  playerIds: Iterable<string>,
+  toAdmins: boolean,
+  message: unknown
+): void {
   if (!io) return;
   const rooms = [...new Set(playerIds)].map(playerRoom);
   if (toAdmins) rooms.push(ADMIN_ROOM);

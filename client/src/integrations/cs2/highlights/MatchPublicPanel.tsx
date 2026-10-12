@@ -16,6 +16,7 @@ import {
   textSize,
   tokens,
   useModuleTranslation,
+  useSocket,
   VideoThumb,
   type HighlightPlayerHandle,
   type MusicTrack,
@@ -82,6 +83,25 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
   const player = useRef<HighlightPlayerHandle>(null);
   const enc = encodeURIComponent;
 
+  // New clips and reels arrive while the page is open (recorders finish them
+  // one by one): the server says so over the socket, and they are read again.
+  const socket = useSocket();
+  const [version, setVersion] = useState(0);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const event = `highlights:update:${matchSlug}`;
+    // A burst (a map's clips finishing together) reads them once.
+    const changed = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => setVersion((v) => v + 1), 1500);
+    };
+    socket.on(event, changed);
+    return () => {
+      socket.off(event, changed);
+      if (timer) clearTimeout(timer);
+    };
+  }, [socket, matchSlug]);
+
   useEffect(() => {
     let cancelled = false;
     void api
@@ -90,9 +110,14 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
         if (cancelled) return;
         const done = (r.teams ?? []).filter((x) => x.status === 'done' && x.video);
         setTeams(done);
-        // The winners' reel first.
+        // The winners' reel first; a reel already picked stays picked.
         const winner = match.winnerSide ? match[match.winnerSide]?.id : null;
-        setPick((done.find((x) => x.teamId === winner) ?? done[0])?.teamId ?? null);
+        setPick(
+          (current) =>
+            (current && done.some((x) => x.teamId === current) ? current : null) ??
+            (done.find((x) => x.teamId === winner) ?? done[0])?.teamId ??
+            null
+        );
       })
       .catch(() => undefined);
     void api
@@ -110,8 +135,8 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per match
-  }, [matchSlug]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- per match, and again when its highlights change
+  }, [matchSlug, version]);
 
   useEffect(() => {
     if (!pick) return;

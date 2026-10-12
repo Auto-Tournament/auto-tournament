@@ -9,6 +9,7 @@
  */
 
 import { db } from '../../../config/database';
+import { emitHighlightsChanged } from '../../../services/socketService';
 import { qualityLabel, readHighlightQuality } from './highlightQuality';
 import { SERIES_REEL } from './highlights';
 
@@ -320,5 +321,7 @@ export async function reviewClip(
       { slug: row.match_slug, mapNumber: SERIES_REEL },
     ],
   });
+  // A dropped clip leaves the match page at once.
+  emitHighlightsChanged(row.match_slug);
   return { clips: 0, reels: reels.reels };
 }
