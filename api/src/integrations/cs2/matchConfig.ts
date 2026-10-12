@@ -1,4 +1,3 @@
-import { realPlayerIds } from '../../services/realPlayers';
 import { storedCs2Settings } from './tournamentSettings';
 import { db } from '../../config/database';
 import type { DbTeamRow, DbMatchRow } from '../../types/database.types';
@@ -280,17 +279,6 @@ export const generateMatchConfig = async (
   const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
 
   const maxRounds = resolveMaxRounds(tournament);
-  // Who the match waits for: with bot fill, only the real people on the
-  // rosters (placeholders never join; bots take their seats).
-  const real = fillBots
-    ? await realPlayerIds([...Object.keys(team1Players), ...Object.keys(team2Players)])
-    : null;
-  const expected1 = real
-    ? Object.keys(team1Players).filter((id) => real.has(id)).length
-    : team1Count;
-  const expected2 = real
-    ? Object.keys(team2Players).filter((id) => real.has(id)).length
-    : team2Count;
 
   // In MatchZy Enhanced, min_players_to_ready is interpreted as a per-team threshold.
   // 0 = everyone connected on that team must ready.
@@ -339,9 +327,9 @@ export const generateMatchConfig = async (
     overtimeSegments: tournament.overtimeSegments,
 
     // Custom fields used by your frontend
-    expected_players_total: expected1 + expected2,
-    expected_players_team1: expected1,
-    expected_players_team2: expected2,
+    expected_players_total: team1Count + team2Count,
+    expected_players_team1: team1Count,
+    expected_players_team2: team2Count,
     team1: team1
       ? {
           id: team1.id,

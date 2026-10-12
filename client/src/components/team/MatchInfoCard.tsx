@@ -441,12 +441,14 @@ export function MatchInfoCard({
 
             {match.status !== 'live' && viewerIsTeamMember && (
               <Alert severity={playersReady ? 'success' : 'info'} icon={<UsersIcon size={20} />}>
-                {playersReady
-                  ? t('matchInfo.allPlayersConnected')
-                  : t('matchInfo.waitingForPlayers', {
-                      connected: totalConnected,
-                      expected: expectedPlayersDisplay,
-                    })}
+                {match.config?.bot_fill && !playersReady
+                  ? t('yourMatch.inServerCountBots', { count: totalConnected })
+                  : playersReady
+                    ? t('matchInfo.allPlayersConnected')
+                    : t('matchInfo.waitingForPlayers', {
+                        connected: totalConnected,
+                        expected: expectedPlayersDisplay,
+                      })}
               </Alert>
             )}
 
