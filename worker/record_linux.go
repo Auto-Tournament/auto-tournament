@@ -711,6 +711,8 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 		kills = []int{m.SlowmoTick}
 	}
 	markers := momentMarkers(windows, edits, kills)
+	// On its own the clip starts after its card's opening (standalone.go).
+	markers.Start = standaloneStart(overlayRecipe{Parts: parts})
 	markers.Reactions = cheerTimes(m.KillTicks, markers.Kills, cheerTicks(look.replay, look.playerID, m))
 	if t := deathTick(look.replay, look.playerID, m); t >= 0 {
 		markers.Reactions = withAww(markers.Reactions, tickAt(windows, edits, t))
@@ -743,18 +745,23 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 			if err := os.Rename(cleans[0], cleanPathOf(out)); err != nil {
 				return err
 			}
-			return os.Rename(pieces[0], out)
+		} else {
+			// The jump cuts between a player's kills blend (reelCrossfade).
+			fades := make([]join, len(pieces)-1)
+			for i := range fades {
+				fades[i] = joinFade
+			}
+			if _, err := r.buildReel(cleans, fades, nil, cleanPathOf(out)); err != nil {
+				return err
+			}
 		}
-		// The jump cuts between a player's kills blend (reelCrossfade).
-		fades := make([]join, len(pieces)-1)
-		for i := range fades {
-			fades[i] = joinFade
-		}
-		if _, err := r.buildReel(pieces, fades, nil, out); err != nil {
+		// The clip itself: its clean twin from markers.Start, with the kill
+		// feed and logo and no caption card (standalone.go).
+		alone := out + ".alone.mp4"
+		if _, err := r.redressClip(cleanPathOf(out), overlayPathOf(out), alone); err != nil {
 			return err
 		}
-		_, err := r.buildReel(cleans, fades, nil, cleanPathOf(out))
-		return err
+		return os.Rename(alone, out)
 	}
 	return markers, finish, nil
 }

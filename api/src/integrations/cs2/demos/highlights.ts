@@ -711,6 +711,28 @@ export interface ClipMarkers {
   slowmo: [number, number] | null;
   /** The kills the crowd reacts to (seconds in, how impressive): the reel's crowd track. */
   reactions?: { t: number; score: number; aww?: boolean }[];
+  /**
+   * The clip itself starts this far into its clean twin (worker/standalone.go:
+   * on its own it skips the caption card's opening). The times above are the
+   * twin's, which reels are joined from; `markersOnItsOwn` shifts them.
+   */
+  start?: number;
+}
+
+/** A clip's markers as the clip itself plays (from `start` into its clean twin). */
+export function markersOnItsOwn(m: ClipMarkers | null): ClipMarkers | null {
+  if (!m || !m.start) return m;
+  const at = m.start;
+  const r = (n: number) => Math.round(n * 100) / 100;
+  const reactions = (m.reactions ?? [])
+    .filter((x) => x.t >= at)
+    .map((x) => ({ ...x, t: r(x.t - at) }));
+  return {
+    duration: r(Math.max(0, m.duration - at)),
+    kills: m.kills.filter((k) => k >= at).map((k) => r(k - at)),
+    slowmo: m.slowmo ? [r(Math.max(0, m.slowmo[0] - at)), r(Math.max(0, m.slowmo[1] - at))] : null,
+    ...(reactions.length ? { reactions } : {}),
+  };
 }
 
 /** The recorder's `X-AT-Markers` header, checked; null when absent or wrong. */
@@ -731,11 +753,13 @@ export function parseMarkers(raw: unknown): ClipMarkers | null {
           .slice(0, 30)
           .map((x) => ({ t: r(x.t), score: r(x.score), ...(x.aww === true ? { aww: true } : {}) }))
       : [];
+    const start = num(m.start) && m.start! < m.duration! ? r(m.start!) : 0;
     return {
       duration: r(m.duration!),
       kills: m.kills.slice(0, 30).map(r),
       slowmo: slowmo ? [r(slowmo[0]), r(slowmo[1])] : null,
       ...(reactions.length ? { reactions } : {}),
+      ...(start > 0 ? { start } : {}),
     };
   } catch {
     return null;

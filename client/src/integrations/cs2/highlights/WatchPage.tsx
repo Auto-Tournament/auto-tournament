@@ -100,6 +100,8 @@ interface Watchable {
   file: string;
   /** A reel's crowd track, played beside it. */
   crowd: string | null;
+  /** A clip's player, shown beside its title (the clip has no caption card). */
+  player?: { id: string; name: string; avatarUrl: string | null };
 }
 
 const pill = {
@@ -181,6 +183,7 @@ export function WatchPage() {
             playerId: clip.playerId,
             file: `${clip.playerName}-${clip.kind}-${clip.id}.mp4`,
             crowd: null,
+            player: { id: clip.playerId, name: clip.playerName, avatarUrl: clip.avatarUrl },
           })
         )
         .catch(fail);
@@ -459,20 +462,30 @@ export function WatchPage() {
               flexWrap: 'wrap',
             }}
           >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
-              <Box
-                component="h1"
-                sx={{
-                  m: 0,
-                  fontFamily: fontDisplay,
-                  fontSize: { xs: '1.25rem', md: '1.375rem' },
-                  fontWeight: 600,
-                  overflowWrap: 'anywhere',
-                }}
-              >
-                {w.title}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+              {w.player && (
+                <PlayerAvatar
+                  id={w.player.id}
+                  name={w.player.name}
+                  avatarUrl={w.player.avatarUrl}
+                  size={48}
+                />
+              )}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
+                <Box
+                  component="h1"
+                  sx={{
+                    m: 0,
+                    fontFamily: fontDisplay,
+                    fontSize: { xs: '1.25rem', md: '1.375rem' },
+                    fontWeight: 600,
+                    overflowWrap: 'anywhere',
+                  }}
+                >
+                  {w.title}
+                </Box>
+                <Box sx={{ fontSize: textSize.sm, color: tokens.color.muted }}>{w.sub}</Box>
               </Box>
-              <Box sx={{ fontSize: textSize.sm, color: tokens.color.muted }}>{w.sub}</Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               {w.match && (

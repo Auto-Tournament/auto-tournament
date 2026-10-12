@@ -152,9 +152,12 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
     const told = new Promise<{ matchSlug: string }>((resolve) =>
       socket.once(`highlights:update:${slug}`, resolve)
     );
+    // The clip on its own starts after its caption card's opening: its
+    // markers are its clean twin's (a reel's), with where it starts.
+    const twin = { duration: 12, kills: [1.6, 5, 7.5], slowmo: [8, 11], start: 2.6 };
     for (const m of mine.moments) {
       const up = await request.put(`/api/game/cs2/recorder/jobs/${m.id}/clip`, {
-        headers: { 'Content-Type': 'video/mp4' },
+        headers: { 'Content-Type': 'video/mp4', 'X-AT-Markers': JSON.stringify(twin) },
         data: Buffer.from('not really a video'),
       });
       expect(up.status()).toBe(200);
@@ -162,6 +165,24 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
     expect(await told).toEqual({ matchSlug: slug });
     socket.close();
     expect(await progress()).toEqual({ done: 2, total: 2, waiting: 0 });
+    const watched = async (id: number) =>
+      (await (await request.get(`/api/game/cs2/watch/clip/${id}`)).json()).clip.markers;
+    expect(await watched(mine.moments[0].id)).toEqual({
+      duration: 9.4,
+      kills: [2.4, 4.9],
+      slowmo: [5.4, 8.4],
+    });
+    // Dressed again on its own, it says where it starts now.
+    const again = await request.put(`/api/game/cs2/recorder/redress/${mine.moments[0].id}.mp4`, {
+      headers: { 'Content-Type': 'video/mp4', 'X-AT-Start': '1.00' },
+      data: Buffer.from('not really a video either'),
+    });
+    expect(again.status(), await again.text()).toBe(200);
+    expect(await watched(mine.moments[0].id)).toEqual({
+      duration: 11,
+      kills: [0.6, 4, 6.5],
+      slowmo: [7, 10],
+    });
     // Its overlay recipe (JSON) is kept next to it: the app's JSON parser
     // must not leave it an empty file ("The overlay is not JSON").
     const recipe = { version: 1, name: 'C0', kills: [1.5, 2.25] };

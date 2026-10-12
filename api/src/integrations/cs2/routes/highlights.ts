@@ -32,7 +32,8 @@ import { recorderAcceptsWork, requestRecorderUpdate } from '../demos/recorderFle
  *   PUT  …/jobs/:id/clip/<twin>, …/reels/:slug/:map/:player/<twin>, …/match-reels/:slug/:map/<twin>,
  *        …/team-reels/:slug/:team/<twin>, …/tournament-reels/:id/<twin>   after the video: a reel's crowd
  *        track (`crowd`, audio/mp4), the clean twin (`clean`, video/mp4) or the overlay's recipe (`overlay`, JSON)
- *   PUT  /api/game/cs2/recorder/redress/:file          a video dressed again from its clean twin (video/mp4 body)
+ *   PUT  /api/game/cs2/recorder/redress/:file          a video dressed again from its clean twin (video/mp4 body);
+ *                                                     a clip's carries `X-AT-Start`: where it starts in its twin (no caption card)
  *   POST /api/game/cs2/recorder/redress/:file/fail     { error }: it could not
  *   GET  /api/game/cs2/redress                         admin: the redress queue ({ queued, working, failed, available })
  *   POST /api/game/cs2/redress                         admin: { files? }: dress these (default: every video with a clean twin) again
@@ -814,7 +815,16 @@ router.put('/recorder/redress/:file', requireRecorder, async (req: Request, res:
     return res.status(400).json({ success: false, error: 'A video/mp4 body for a clip or reel' });
   }
   try {
-    return res.json({ success: true, bytes: await saveRedressed(req.params.file, bodyOf(req)) });
+    // A clip dressed to be watched on its own says where it starts in its clean twin.
+    const start = Number(req.headers['x-at-start']);
+    const at =
+      req.headers['x-at-start'] !== undefined && Number.isFinite(start) && start >= 0
+        ? start
+        : null;
+    return res.json({
+      success: true,
+      bytes: await saveRedressed(req.params.file, bodyOf(req), at),
+    });
   } catch (error) {
     log.error('[HIGHLIGHTS] redressed video save failed', { error, file: req.params.file });
     return res.status(500).json({ success: false, error: 'Could not store the video' });
