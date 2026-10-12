@@ -2144,6 +2144,8 @@
     "offlineFor": "Offline for {{time}}"
   },
   "matchPage": {
+    "recordingClips": "Recording clips",
+    "clipsDone": "{{done}} / {{total}} clips",
     "reelLead": "Their plays in the order they happened. Pick a song in the player, then share or download it.",
     "inThisReel": "In this reel",
     "openReel": "Open in the watch page",
