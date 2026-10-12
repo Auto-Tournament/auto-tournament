@@ -29,6 +29,7 @@ import { io } from 'socket.io-client';
 import { onSocketReconnect } from '../../utils/socketResync';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../../constants/tournament';
 import { RestartTournamentButton } from '../dashboard/RestartTournamentButton';
+import { EndTournamentButton } from '../dashboard/EndTournamentButton';
 import { ChampionBanner } from './ChampionBanner';
 import { api } from '../../utils/api';
 import type { Map, MatchesResponse } from '../../types/api.types';
@@ -263,7 +264,9 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
           <Chip
             data-testid="tournament-status"
             label={
-              isCompleted ? t('matchesPage.statusLabel.completed') : t('matchesPage.statusLabel.live')
+              isCompleted
+                ? t('matchesPage.statusLabel.completed')
+                : t('matchesPage.statusLabel.live')
             }
             // Use the same pastel red/pink accent as other LIVE indicators,
             // and mint green for completed tournaments.
@@ -271,23 +274,20 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
           />
         </Box>
 
-        <Alert
-          severity={isCompleted ? 'success' : isRunning ? 'warning' : 'info'}
-          sx={{ mb: 3 }}
-        >
+        <Alert severity={isCompleted ? 'success' : isRunning ? 'warning' : 'info'} sx={{ mb: 3 }}>
           <Typography variant="body2" fontWeight={600} gutterBottom>
             {isCompleted
               ? t('tournament.live.alert.completedTitle')
               : isRunning
-              ? t('tournament.live.alert.liveTitle')
-              : t('tournament.live.alert.pendingTitle')}
+                ? t('tournament.live.alert.liveTitle')
+                : t('tournament.live.alert.pendingTitle')}
           </Typography>
           <Typography variant="body2">
             {isCompleted
               ? t('tournament.live.alert.completedBody')
               : isRunning
-              ? t('tournament.live.alert.liveBody')
-              : t('tournament.live.alert.pendingBody')}
+                ? t('tournament.live.alert.liveBody')
+                : t('tournament.live.alert.pendingBody')}
           </Typography>
           {isCompleted && onNewTournament && (
             <Button
@@ -313,8 +313,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
               {TOURNAMENT_TYPES.some((tt) => tt.value === tournament.type)
                 ? t(`tournament.typeSelector.types.${tournament.type}.label`)
                 : tournament.type}{' '}
-              •{' '}
-              {MATCH_FORMATS.find((f) => f.value === tournament.format)?.label}
+              • {MATCH_FORMATS.find((f) => f.value === tournament.format)?.label}
             </Typography>
           </Grid>
           {!isShuffle && (
@@ -392,13 +391,15 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
                   </Typography>
                 )}
                 {hasRoundRules && <Typography variant="body2">{renderOvertimeLine()}</Typography>}
-                {hasRoundRules && overtimeMode === 'enabled' && typeof overtimeSegments === 'number' && (
-                  <Typography variant="body2">
-                    {overtimeSegments > 0
-                      ? t('tournament.matchRules.overtimeSegments', { count: overtimeSegments })
-                      : t('tournament.matchRules.overtimeSegmentsDefault')}
-                  </Typography>
-                )}
+                {hasRoundRules &&
+                  overtimeMode === 'enabled' &&
+                  typeof overtimeSegments === 'number' && (
+                    <Typography variant="body2">
+                      {overtimeSegments > 0
+                        ? t('tournament.matchRules.overtimeSegments', { count: overtimeSegments })
+                        : t('tournament.matchRules.overtimeSegmentsDefault')}
+                    </Typography>
+                  )}
                 {tournament.eloTemplateId && (
                   <Typography variant="body2">
                     {t('tournament.live.eloTemplateValue', { template: tournament.eloTemplateId })}
@@ -495,6 +496,11 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
             {tournament.status === 'in_progress' && (
               <DangerRow description={t('tournament.live.restartTooltip')}>
                 <RestartTournamentButton variant="outlined" size="small" />
+              </DangerRow>
+            )}
+            {tournament.status === 'in_progress' && (
+              <DangerRow description={t('tournament.end.tooltip')}>
+                <EndTournamentButton tournamentId={tournamentId} tournamentName={tournament.name} />
               </DangerRow>
             )}
             <DangerRow description={t('tournament.live.resetTooltip')}>

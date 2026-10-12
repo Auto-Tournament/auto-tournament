@@ -676,6 +676,17 @@
       "confirm": "Archive and start new",
       "delete": "Delete it and start new",
       "deleteHint": "Or delete it: its results, matches and stats go with it."
+    },
+    "end": {
+      "button": "End tournament",
+      "tooltip": "Stops the tournament now without a result: matches on servers end, the rest are cancelled. No winner and no rewards. It can be archived afterwards.",
+      "title": "End this tournament?",
+      "body": "Every match still running ends on its server and the rest are cancelled. Nobody wins and no rewards are given. This cannot be undone.",
+      "typeName": "Type \"{{name}}\" to confirm",
+      "confirm": "End tournament",
+      "done_one": "Tournament ended, {{count}} match cancelled",
+      "done_other": "Tournament ended, {{count}} matches cancelled",
+      "failed": "Could not end the tournament"
     }
   },
   "bracket": {

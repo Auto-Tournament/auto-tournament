@@ -1575,6 +1575,48 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
  *       404:
  *         description: No tournament exists
  */
+/**
+ * @openapi
+ * /api/tournament/cancel:
+ *   post:
+ *     tags: [Tournament]
+ *     summary: End a running tournament without a result
+ *     description: |
+ *       Ends the matches on their servers, cancels every match not finished
+ *       and marks the tournament `cancelled` (no winner, no placement
+ *       rewards). It can be archived afterwards. `confirm` must be the
+ *       tournament's name.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { confirm: { type: string } } }
+ *     responses:
+ *       200: { description: "{ ended, cancelled }" }
+ *       400: { description: The name does not match }
+ *       409: { description: Not running }
+ */
+router.post('/cancel', requireAuth, async (req: Request, res: Response) => {
+  const tournamentId = resolveTournamentId(req);
+  try {
+    const tournament = await tournamentService.getTournament(tournamentId);
+    if (!tournament) return res.status(404).json({ success: false, error: 'No tournament' });
+    if (tournament.status !== 'in_progress' && tournament.status !== 'ready') {
+      return res
+        .status(409)
+        .json({ success: false, error: 'Only a running tournament can be ended.' });
+    }
+    const confirm = typeof req.body?.confirm === 'string' ? req.body.confirm.trim() : '';
+    if (confirm !== tournament.name.trim()) {
+      return res.status(400).json({ success: false, error: 'Type the tournament name to end it.' });
+    }
+    const result = await scheduler.cancelTournament(tournamentId);
+    return res.json({ success: true, ...result });
+  } catch (error) {
+    log.error('Error ending the tournament', error);
+    return res.status(500).json({ success: false, error: 'Could not end the tournament' });
+  }
+});
+
 router.post('/restart', requireAuth, async (req: Request, res: Response) => {
   try {
     const tournamentId = resolveTournamentId(req);

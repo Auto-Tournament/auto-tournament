@@ -76,7 +76,9 @@ export async function refreshCurrentTournamentId(): Promise<number> {
   try {
     setCurrentTournamentId(await featuredTournamentId());
   } catch (error) {
-    log.warn('[TOURNAMENT] Could not read the featured tournament', { error: (error as Error).message });
+    log.warn('[TOURNAMENT] Could not read the featured tournament', {
+      error: (error as Error).message,
+    });
   }
   return resolveTournamentId();
 }
@@ -98,7 +100,9 @@ export function stopCurrentTournamentRefresh(): void {
 /** Feature a tournament on the front page (null: let the rules above pick). */
 export async function setFeaturedTournament(id: number | null): Promise<number> {
   if (id !== null) {
-    const row = await db.queryOneAsync<{ id: number }>('SELECT id FROM tournament WHERE id = ?', [id]);
+    const row = await db.queryOneAsync<{ id: number }>('SELECT id FROM tournament WHERE id = ?', [
+      id,
+    ]);
     if (!row) throw new TournamentArchiveError(404, 'Tournament not found');
     await db.runAsync('UPDATE tournament SET archived_at = NULL WHERE id = ?', [id]);
   }
@@ -112,17 +116,25 @@ export async function setFeaturedTournament(id: number | null): Promise<number> 
  * is finished or deleted first. Returns the archived id and the featured one
  * after it.
  */
-export async function archiveTournament(id: number): Promise<{ archivedId: number; currentId: number }> {
+export async function archiveTournament(
+  id: number
+): Promise<{ archivedId: number; currentId: number }> {
   const row = await db.queryOneAsync<{ status: string; archived_at: number | null }>(
     'SELECT status, archived_at FROM tournament WHERE id = ?',
     [id]
   );
   if (!row) throw new TournamentArchiveError(404, 'There is no tournament to archive.');
-  if (row.status !== 'completed') {
-    throw new TournamentArchiveError(409, 'Only a finished tournament can be archived. Finish or delete it first.');
+  if (row.status !== 'completed' && row.status !== 'cancelled') {
+    throw new TournamentArchiveError(
+      409,
+      'Only a finished or cancelled tournament can be archived. Finish, end or delete it first.'
+    );
   }
   if (!row.archived_at) {
-    await db.runAsync('UPDATE tournament SET archived_at = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE id = ?', [id]);
+    await db.runAsync(
+      'UPDATE tournament SET archived_at = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE id = ?',
+      [id]
+    );
   }
   const currentId = await refreshCurrentTournamentId();
   log.success(`[TOURNAMENT] Archived tournament ${id}; featured is now ${currentId}`);
@@ -146,12 +158,16 @@ export async function readableTournamentId(param: string | undefined): Promise<n
   if (param === undefined || param === String(current)) return current;
   const id = Number(param);
   if (!Number.isInteger(id) || id <= 0) return null;
-  const row = await db.queryOneAsync<{ id: number }>('SELECT id FROM tournament WHERE id = ?', [id]);
+  const row = await db.queryOneAsync<{ id: number }>('SELECT id FROM tournament WHERE id = ?', [
+    id,
+  ]);
   return row ? id : null;
 }
 
 /** Every tournament that is running, for work that is not about one tournament (allocation, update holds). */
 export async function runningTournamentIds(): Promise<number[]> {
-  const rows = await db.queryAsync<{ id: number }>("SELECT id FROM tournament WHERE status = 'in_progress' ORDER BY id");
+  const rows = await db.queryAsync<{ id: number }>(
+    "SELECT id FROM tournament WHERE status = 'in_progress' ORDER BY id"
+  );
   return rows.map((r) => r.id);
 }

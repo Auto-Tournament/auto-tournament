@@ -994,6 +994,45 @@ export class Scheduler {
   /**
    * Restart tournament - run css_restart on all servers with loaded matches, then reallocate
    */
+  /**
+   * End a running tournament without a result ("End tournament"): matches on
+   * a server are ended there, every match not finished is cancelled, polling
+   * for servers stops, and the tournament is `cancelled` (no winner, no
+   * placement rewards). It can be archived afterwards.
+   */
+  async cancelTournament(tournamentId: number): Promise<{ ended: number; cancelled: number }> {
+    const tournament = await tournamentService.getTournament(tournamentId);
+    if (!tournament) throw new Error('No tournament exists');
+    const loaded = await db.queryAsync<DbMatchRow>(
+      `SELECT * FROM matches WHERE tournament_id = ? AND status IN ('loaded', 'live')
+         AND server_id IS NOT NULL AND server_id != ''`,
+      [tournamentId]
+    );
+    const { ended } = await this.endMatchesOnResources(loaded, {
+      reason: 'tournament-cancel',
+      logPrefix: '[CANCEL]',
+    });
+    const open = await db.queryAsync<{ slug: string }>(
+      "SELECT slug FROM matches WHERE tournament_id = ? AND status NOT IN ('completed', 'cancelled')",
+      [tournamentId]
+    );
+    for (const { slug } of open) this.stopPollingForServer(slug);
+    const now = Math.floor(Date.now() / 1000);
+    await db.runAsync(
+      "UPDATE matches SET status = 'cancelled', server_id = NULL WHERE tournament_id = ? AND status NOT IN ('completed', 'cancelled')",
+      [tournamentId]
+    );
+    await db.updateAsync('tournament', { status: 'cancelled', updated_at: now }, 'id = ?', [
+      tournamentId,
+    ]);
+    log.info(
+      `[CANCEL] Tournament ${tournamentId} ended by an admin: ${open.length} match(es) cancelled`
+    );
+    emitTournamentUpdate({ id: tournamentId, status: 'cancelled' });
+    emitBracketUpdate({ action: 'tournament_cancelled' });
+    return { ended, cancelled: open.length };
+  }
+
   async restartTournament(
     tournamentId: number,
     baseUrl: string
