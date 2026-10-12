@@ -177,6 +177,36 @@ test(
     expect(logText).toContain('line two');
     expect((await listed()).avgClipSeconds).toBe(75);
 
+    // Runs whose clips failed: none came out, and some did; neither is a success.
+    for (const run of [
+      { clips: 0, failed: 3, error: '3 of 3 moment(s) could not be recorded' },
+      { clips: 2, failed: 1, error: '1 of 3 moment(s) could not be recorded' },
+    ]) {
+      expect(
+        (
+          await request.post('/api/game/cs2/recorder/runs', {
+            data: {
+              recorder: name,
+              kind: 'map',
+              matchSlug: 'spec',
+              mapNumber: 1,
+              startedAt: Math.floor(Date.now() / 1000) - 60,
+              seconds: 0,
+              ok: false,
+              rejected: 0,
+              ...run,
+            },
+          })
+        ).status()
+      ).toBe(200);
+    }
+    const failedRuns = (
+      await (await request.get(`/api/game/cs2/recorders/${encodeURIComponent(name)}/runs`)).json()
+    ).runs as Array<{ clips: number; failed: number; ok: boolean; error: string | null }>;
+    expect(failedRuns[0]).toMatchObject({ clips: 2, failed: 1, ok: false });
+    expect(failedRuns[1]).toMatchObject({ clips: 0, failed: 3, ok: false });
+    expect(failedRuns[1].error).toContain('3 of 3');
+
     // A benchmark: the fastest try that finished wins.
     const bench = await request.post('/api/game/cs2/recorder/benchmark', {
       data: {

@@ -2325,7 +2325,9 @@
       "updateQueued": "Recorder update queued; current work will finish first.",
       "updateAll": "Update all",
       "build": "Build {{revision}}"
-    }
+    },
+    "runFailed_one": "{{count}} failed",
+    "runFailed_other": "{{count}} failed"
   },
   "tournament": {
     "botFill": {

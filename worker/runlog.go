@@ -54,7 +54,9 @@ type jobRun struct {
 	OK        bool    `json:"ok"`
 	Clips     int     `json:"clips"`
 	Rejected  int     `json:"rejected"`
-	Error     string  `json:"error,omitempty"`
+	// Failed: moments that could not be recorded (each told to the platform).
+	Failed int    `json:"failed"`
+	Error  string `json:"error,omitempty"`
 }
 
 // reportRun sends a finished job's timings and log. Best effort: a platform
