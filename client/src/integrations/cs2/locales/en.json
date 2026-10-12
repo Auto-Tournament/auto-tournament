@@ -43,10 +43,10 @@
     "servers": {
       "title": "Servers",
       "open": "Open",
-      "online": "online",
+      "online": "running",
       "inMatch": "In a match",
       "free": "Free",
-      "offline": "Offline",
+      "offline": "Idle",
       "plugin": "Plugin",
       "pluginSame": "{{version}}, all servers match",
       "pluginMixed": "{{count}} plugin versions in use",

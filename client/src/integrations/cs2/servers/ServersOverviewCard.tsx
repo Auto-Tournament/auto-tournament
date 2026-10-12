@@ -83,7 +83,7 @@ function useFleetSummary(): {
   return { loaded, fleet, pluginVersions };
 }
 
-/** A thin stacked bar: in-match / free / offline, in that order (matches the Manage server grid's chip colours). */
+/** A thin stacked bar: in-match / free / idle, in that order. Idle (not connected, nothing on it) is grey, not an alarm. */
 function FleetBar({ fleet }: { fleet: ServerFleetCounts }) {
   const total = fleet.total || 1;
   const pct = (n: number) => `${(n / total) * 100}%`;
@@ -100,7 +100,7 @@ function FleetBar({ fleet }: { fleet: ServerFleetCounts }) {
     >
       <Box sx={{ width: pct(fleet.inMatch), bgcolor: 'info.main' }} />
       <Box sx={{ width: pct(fleet.free), bgcolor: 'success.main' }} />
-      <Box sx={{ width: pct(fleet.offline), bgcolor: 'error.main' }} />
+      <Box sx={{ width: pct(fleet.offline), bgcolor: 'text.disabled' }} />
       <Box sx={{ width: pct(fleet.notConfigured), bgcolor: 'action.disabled' }} />
     </Box>
   );
@@ -174,15 +174,19 @@ export function ServersOverviewCard() {
               </Typography>
             </Box>
             <Box display="flex" justifyContent="space-between">
-              <Typography variant="body2" color="error.main">
+              <Typography variant="body2" color="text.secondary">
                 {t('dashboard.servers.offline')}
               </Typography>
-              <Typography variant="body2" fontWeight={600} color="error.main">
+              <Typography variant="body2" fontWeight={600}>
                 {fleet.offline}
               </Typography>
             </Box>
             {fleet.notConfigured > 0 && (
-              <Box display="flex" justifyContent="space-between" data-testid="admin-home-servers-not-configured">
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                data-testid="admin-home-servers-not-configured"
+              >
                 <Typography variant="body2" color="text.secondary">
                   {t('dashboard.servers.notConfigured')}
                 </Typography>
