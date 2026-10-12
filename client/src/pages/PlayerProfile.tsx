@@ -20,6 +20,7 @@ import { api } from '../utils/api';
 import { onSocketReconnect } from '../utils/socketResync';
 import { io, Socket } from 'socket.io-client';
 import { MatchInfoCard } from '../components/team/MatchInfoCard';
+import { PendingTeamInvites } from '../components/team/PendingTeamInvites';
 import { useSoundSettings } from '../hooks/useSoundSettings';
 import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
@@ -1136,6 +1137,13 @@ export default function PlayerProfile() {
 
           {/* Matchmaking level and commends; nothing while matchmaking is off. */}
           <PlayerProgress playerId={player.id} />
+
+          {/* Teams that asked this player on: answer them here too. */}
+          {isOwnProfile && (
+            <Box sx={{ mt: 4 }}>
+              <PendingTeamInvites />
+            </Box>
+          )}
 
           {/* The player's own match (veto, connect), first: it is what the
               nav bar's match button brings them here for. */}
