@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -77,6 +78,9 @@ func updater(t *testing.T) *updaterFixture {
 		case "compose":
 			f.recreates++
 			compose, _ := os.ReadFile(filepath.Join(root, "compose.yml"))
+			if override, err := os.ReadFile(filepath.Join(root, "compose.override.yml")); err == nil && strings.Contains(string(override), "image:") {
+				compose = override
+			}
 			if strings.Contains(string(compose), nextImage) {
 				f.image = nextImage
 			} else {
@@ -257,5 +261,48 @@ func TestMalformedJournalPreservesRecoveryEvidence(t *testing.T) {
 	after, _ := os.ReadFile(f.a.journalPath())
 	if string(after) != string(original) || f.pulls != 0 || f.recreates != 0 {
 		t.Fatal("invalid recovery evidence was overwritten")
+	}
+}
+
+func TestUpdatePreservesAndPinsLegacyHardwareOverride(t *testing.T) {
+	for _, rollback := range []bool{false, true} {
+		t.Run(fmt.Sprint("rollback=", rollback), func(t *testing.T) {
+			f := updater(t)
+			f.failNew = rollback
+			override := []byte("services:\n  at-recorder:\n    image: " + testImage + "\n    devices:\n      - /dev/dri/renderD128:/dev/dri/renderD128\n    shm_size: 2g\n")
+			path := filepath.Join(f.a.root, "compose.override.yml")
+			os.WriteFile(path, override, 0640)
+			if err := f.a.managedUpdate(context.Background()); err != nil {
+				t.Fatal(err)
+			}
+			if err := f.a.managedUpdate(context.Background()); err != nil {
+				t.Fatal(err)
+			}
+			want := nextImage
+			if rollback {
+				want = testImage
+			}
+			after, _ := os.ReadFile(path)
+			expected, _ := pinnedCompose(override, want)
+			if string(after) != string(expected) || f.image != want {
+				t.Fatal("effective image or hardware override not preserved")
+			}
+			stat, _ := os.Stat(path)
+			if stat.Mode().Perm() != 0640 {
+				t.Fatal("override mode changed")
+			}
+		})
+	}
+}
+func TestUpdateRecoversJournalWithoutOverrideSnapshot(t *testing.T) {
+	f := updater(t)
+	compose, _ := os.ReadFile(filepath.Join(f.a.root, "compose.yml"))
+	os.WriteFile(filepath.Join(f.a.root, "compose.override.yml"), []byte("services:\n  at-recorder:\n    image: "+testImage+"\n    shm_size: 2g\n"), 0640)
+	f.a.saveUpdate(&updateJournal{Request: f.req, PreviousImage: testImage, Compose: compose, Phase: "applying"})
+	if err := f.a.managedUpdate(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if f.image != nextImage || f.recreates != 1 {
+		t.Fatal("old journal still uses the previous override image")
 	}
 }

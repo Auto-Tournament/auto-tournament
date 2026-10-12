@@ -141,7 +141,7 @@ export function WatchPage() {
   const player = useRef<HighlightPlayerHandle>(null);
   const [tracks, setTracks] = useState<MusicTrack[]>([]);
 
-  // Reels play music beside them (not part of the video; a download can mix one in).
+  // Clips and reels play optional music beside the video; downloads can mix it in.
   useEffect(() => {
     let cancelled = false;
     api
@@ -442,9 +442,7 @@ export function WatchPage() {
             downloadName={w.file}
             crowd={w.crowd}
             music={
-              w.chapters.length > 0 && tracks.length > 0
-                ? { tracks, introEnd: Math.max(0, w.chapters[0]?.at ?? 0) }
-                : null
+              tracks.length > 0 ? { tracks, introEnd: Math.max(0, w.chapters[0]?.at ?? 0) } : null
             }
             autoPlay
             onTime={setTime}

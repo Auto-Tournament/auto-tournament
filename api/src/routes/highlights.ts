@@ -31,7 +31,6 @@ const router = Router();
 
 /** A video in DATA_DIR/highlights: a clip (`123`) or a reel (`reel-…`, `match-…`, `team-…`, `tournament-…`). */
 const VIDEO = /^(\d+|(?:reel|match|tournament|team)-[A-Za-z0-9_-][A-Za-z0-9_.-]*?)\.mp4$/;
-const REEL = /^(?:reel|match|tournament|team)-[A-Za-z0-9_.-]+\.mp4$/;
 
 /**
  * @openapi
@@ -213,7 +212,7 @@ router.get('/music/:id/file', requireAuth, async (req: Request, res: Response) =
  *         description: The mix (audio/mp4)
  */
 router.get('/videos/:file/music/:track', async (req: Request, res: Response) => {
-  if (!REEL.test(req.params.file)) return res.status(404).end();
+  if (!VIDEO.test(req.params.file)) return res.status(404).end();
   const video = path.join(HIGHLIGHTS_DIR, req.params.file);
   const track = await trackById(req.params.track);
   if (!track || !fs.existsSync(video)) return res.status(404).end();
