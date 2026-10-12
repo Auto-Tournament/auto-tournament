@@ -90,6 +90,7 @@ import { LicenseGate } from './components/license/LicenseGate';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 import { listRouteIntegrations } from './integrations/registry';
 import { useModuleState } from './module-loader/useModuleState';
+import { modulesMayArrive } from './module-loader/moduleState';
 import { ModulePendingRoute } from './components/common/ModuleNotInstalledNotice';
 import { MatchDetailsHost } from './components/modals/MatchDetailsHost';
 import { adminRoute, LEGACY_ADMIN_PATHS, matchPagePath, paths, playerProfilePath } from './paths';
@@ -227,6 +228,10 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
 function RootRoute() {
   const { isAuthenticated, isLoading, playerSteamId, needsSteamLink, impersonation } = useAuth();
   const location = useLocation();
+  // A page a code module brings (CS2's /watch/…, /highlights) is not routed
+  // until the module has arrived; until then its address lands here. Wait for
+  // the modules instead of sending the visitor to login or their profile.
+  const modulesArriving = modulesMayArrive(useModuleState());
 
   if (isLoading) {
     return (
@@ -256,6 +261,10 @@ function RootRoute() {
         </AdminTournamentProvider>
       </LicenseConsentGate>
     );
+  }
+
+  if (location.pathname !== paths.root && modulesArriving) {
+    return <ModulePendingRoute fallback={<NotFound />} />;
   }
 
   if (playerSteamId) {
