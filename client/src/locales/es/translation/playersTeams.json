@@ -22,6 +22,7 @@
   "playerPage": {
     "playerNotFound": "Este jugador no existe.",
     "backToFindPlayer": "Volver a Buscar jugador",
+    "backToPlayers": "Back to Players",
     "thisIsYou": "Eres tú",
     "skillRatingTooltip": "La puntuación de habilidad se basa en OpenSkill. Alrededor de 1500 es un valor inicial típico; cuanto más alto, mejor.",
     "skillRatingLabel": "Puntuación de habilidad: {{elo}}",
@@ -452,6 +453,7 @@
     "copy": "Copy team match link"
   },
   "playersDirectory": {
+    "findOnSteam": "Look them up on Steam",
     "toLeaderboards": "Rankings are on Leaderboards →",
     "matches_one": "{{count}} match",
     "matches_other": "{{count}} matches",
@@ -682,6 +684,7 @@
     }
   },
   "leaderboard": {
+    "toLadder": "Matchmaking ladder →",
     "title": "Leaderboard",
     "subtitle": "Players ranked by their rating in one game.",
     "game": "Game",

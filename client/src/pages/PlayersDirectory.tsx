@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Alert,
   Box,
+  Button,
   CircularProgress,
   Container,
   InputBase,
@@ -15,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { EmptyPanel, PageHead } from '../components/common/ui';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
+import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsModal';
 import { api } from '../utils/api';
 import { pageTitle } from '../utils/pageTitle';
 import { paths, playerProfilePath } from '../paths';
@@ -47,6 +49,42 @@ export default function PlayersDirectory() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortKey>('name');
   const [shown, setShown] = useState(PAGE);
+  const navigate = useNavigate();
+  // Someone not in the list: look them up on Steam (an ID, a profile link or
+  // a custom URL), as the old Find player page did.
+  const [lookup, setLookup] = useState<{ busy: boolean; error: string | null }>({
+    busy: false,
+    error: null,
+  });
+  const [results, setResults] = useState<Array<{ id: string; name: string; avatar?: string }>>([]);
+  const findOnSteam = async () => {
+    const query = search.trim();
+    if (!query) return;
+    setLookup({ busy: true, error: null });
+    try {
+      const r = await api.get<{
+        success: boolean;
+        player?: { id: string; name: string };
+        players?: Array<{ id: string; name: string; avatar?: string }>;
+        error?: string;
+        steamApiConfigured?: boolean;
+      }>(`/api/players/find?query=${encodeURIComponent(query)}`);
+      const found = r.player ? [r.player] : (r.players ?? []);
+      if (r.success && found.length === 1) navigate(playerProfilePath(found[0].id));
+      else if (r.success && found.length > 1) setResults(found);
+      setLookup({
+        busy: false,
+        error:
+          r.success && found.length > 0
+            ? null
+            : r.steamApiConfigured === false
+              ? t('findPlayer.inputErrorSteamNotConfigured')
+              : t('findPlayer.inputErrorNotFound'),
+      });
+    } catch {
+      setLookup({ busy: false, error: t('findPlayer.searchError') });
+    }
+  };
 
   useEffect(() => {
     document.title = pageTitle(t('playersDirectory.title'));
@@ -126,6 +164,12 @@ export default function PlayersDirectory() {
               onChange={(e) => {
                 setSearch(e.target.value);
                 setShown(PAGE);
+                setLookup({ busy: false, error: null });
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter') return;
+                if (rows.length === 1) navigate(playerProfilePath(rows[0].id));
+                else if (rows.length === 0) void findOnSteam();
               }}
               inputProps={{ 'aria-label': t('playersDirectory.searchPlaceholder') }}
               data-testid="players-directory-search"
@@ -153,11 +197,30 @@ export default function PlayersDirectory() {
             <CircularProgress aria-label={t('playersDirectory.loading')} />
           </Box>
         ) : rows.length === 0 ? (
-          <EmptyPanel
-            title={t('playersDirectory.emptyTitle')}
-            description={t('playersDirectory.emptyDescription')}
-            data-testid="players-directory-empty"
-          />
+          <Box sx={{ display: 'grid', gap: 2 }}>
+            <EmptyPanel
+              title={t('playersDirectory.emptyTitle')}
+              description={t('playersDirectory.emptyDescription')}
+              data-testid="players-directory-empty"
+            />
+            {search.trim() && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => void findOnSteam()}
+                  disabled={lookup.busy}
+                  data-testid="players-directory-steam"
+                >
+                  {t('playersDirectory.findOnSteam')}
+                </Button>
+                {lookup.error && (
+                  <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
+                    {lookup.error}
+                  </Typography>
+                )}
+              </Box>
+            )}
+          </Box>
         ) : (
           <>
             <Box
@@ -242,6 +305,11 @@ export default function PlayersDirectory() {
             )}
           </>
         )}
+        <PlayerSearchResultsModal
+          open={results.length > 0}
+          players={results}
+          onClose={() => setResults([])}
+        />
       </Container>
     </Box>
   );

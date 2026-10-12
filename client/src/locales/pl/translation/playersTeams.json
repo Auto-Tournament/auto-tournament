@@ -22,6 +22,7 @@
   "playerPage": {
     "playerNotFound": "Ten gracz nie istnieje.",
     "backToFindPlayer": "Powrót do Znajdź gracza",
+    "backToPlayers": "Back to Players",
     "thisIsYou": "To Ty",
     "skillRatingTooltip": "Skill Rating opiera się na OpenSkill. Około 1500 to typowa wartość startowa; im wyżej, tym lepiej.",
     "skillRatingLabel": "Skill Rating: {{elo}} pkt",
@@ -460,6 +461,7 @@
     "copy": "Copy team match link"
   },
   "playersDirectory": {
+    "findOnSteam": "Look them up on Steam",
     "toLeaderboards": "Rankings are on Leaderboards →",
     "matches_one": "{{count}} match",
     "matches_other": "{{count}} matches",
@@ -690,6 +692,7 @@
     }
   },
   "leaderboard": {
+    "toLadder": "Matchmaking ladder →",
     "title": "Leaderboard",
     "subtitle": "Players ranked by their rating in one game.",
     "game": "Game",

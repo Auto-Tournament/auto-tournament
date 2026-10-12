@@ -16,7 +16,8 @@ import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { api } from '../utils/api';
 import { useIntegration } from '../integrations/registry';
 import { pageTitle } from '../utils/pageTitle';
-import { playerProfilePath } from '../paths';
+import { paths, playerProfilePath } from '../paths';
+import { useMatchmaking } from '../components/matchmaking/matchmakingStore';
 import { tokens, fontMono, radii, textSize } from '../theme/tokens';
 
 const { color } = tokens;
@@ -57,6 +58,8 @@ export default function Leaderboard() {
   const [error, setError] = useState(false);
 
   // The game's own category rankings, under its rating ranking.
+  // The matchmaking ladder is its own ranking (by queue rating): linked from here.
+  const { available: matchmaking } = useMatchmaking();
   const gameIntegration = useIntegration(board?.game ?? null);
   const GameBoard = board?.game ? gameIntegration.leaderboardView : undefined;
 
@@ -114,6 +117,18 @@ export default function Leaderboard() {
           <PageHead
             title={t('leaderboard.title')}
             subtitle={t('leaderboard.subtitle')}
+            actions={
+              matchmaking ? (
+                <Box
+                  component={RouterLink}
+                  to={paths.playLeaderboard}
+                  sx={{ color: color.accent, fontSize: textSize.sm, textDecoration: 'none' }}
+                  data-testid="leaderboard-to-ladder"
+                >
+                  {t('leaderboard.toLadder')}
+                </Box>
+              ) : undefined
+            }
             sx={{ mb: 0 }}
           />
           {board && board.games.length > 0 && (

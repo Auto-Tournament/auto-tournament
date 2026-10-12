@@ -23,7 +23,8 @@ test.describe.serial('Public Pages UI', () => {
     await setupTestContext(page, request);
   });
 
-  test('should display a player profile page',
+  test(
+    'should display a player profile page',
     {
       tag: ['@ui', '@public', '@players'],
     },
@@ -58,7 +59,8 @@ test.describe.serial('Public Pages UI', () => {
     }
   );
 
-  test('should allow finding player by Steam URL',
+  test(
+    'should find a player by Steam ID from the Players directory',
     {
       tag: ['@ui', '@public', '@players', '@search'],
     },
@@ -71,22 +73,15 @@ test.describe.serial('Public Pages UI', () => {
       });
       expect(player).toBeTruthy();
 
-      // Navigate to public page directly
+      // The old Find player address lands on the Players directory, which finds anyone.
       await page.goto('/player', { waitUntil: 'domcontentloaded' });
-      try {
-        await page.waitForLoadState('networkidle', { timeout: 10000 });
-      } catch (error) {
-        await page.waitForLoadState('domcontentloaded');
-        await page.waitForTimeout(1000);
-      }
+      await expect(page).toHaveURL(/\/browse\/players$/);
+      const input = page.getByTestId('players-directory-search').locator('input');
+      await expect(input).toBeVisible({ timeout: 15000 });
 
-      // Wait for find player form
-      await expect(page.getByTestId('find-player-form')).toBeVisible({ timeout: 15000 });
-
-      // Enter Steam ID
-      const input = page.getByTestId('find-player-input');
+      // A Steam ID: the one match opens on Enter.
       await input.fill(player.id);
-      // Trigger search via keyboard to avoid autocomplete "no options" popper intercepting button clicks
+      await expect(page.getByTestId('players-directory-row')).toHaveCount(1);
       await input.press('Enter');
 
       // Should redirect to player page

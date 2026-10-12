@@ -769,6 +769,7 @@
       "draw": "Draw"
     },
     "leaderboard": {
+      "toLadder": "Matchmaking ladder →",
       "title": "Leaderboard",
       "subtitle_one": "Players with {{count}} or more matches in the last 30 days.",
       "subtitle_other": "Players with {{count}} or more matches in the last 30 days.",

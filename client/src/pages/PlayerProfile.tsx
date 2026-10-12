@@ -866,10 +866,10 @@ export default function PlayerProfile() {
                     <Button
                       variant="outlined"
                       component={RouterLink}
-                      to="/player"
+                      to={paths.browsePlayers}
                       data-testid="player-profile-back-to-find"
                     >
-                      {t('playerPage.backToFindPlayer')}
+                      {t('playerPage.backToPlayers')}
                     </Button>
                   </>
                 )}

@@ -27,6 +27,7 @@
     "bannedBody": "Denne spilleren er utestengt.",
     "playerNotFound": "Denne spilleren finnes ikke.",
     "backToFindPlayer": "Tilbake til Finn spiller",
+    "backToPlayers": "Tilbake til Spillere",
     "profileTitle": "Spillerprofil",
     "thisIsYou": "Dette er deg",
     "skillRatingTooltip": "Skill Rating er basert på OpenSkill. Rundt 1500 er en typisk startverdi; høyere er bedre.",
@@ -452,6 +453,7 @@
     "copy": "Kopier lenke til lagets kampside"
   },
   "playersDirectory": {
+    "findOnSteam": "Søk etter dem på Steam",
     "toLeaderboards": "Rangeringer på Ledertavler →",
     "matches_one": "{{count}} kamp",
     "matches_other": "{{count}} kamper",
@@ -682,6 +684,7 @@
     }
   },
   "leaderboard": {
+    "toLadder": "Matchmaking-stigen →",
     "title": "Ledertavle",
     "subtitle": "Spillere rangert etter ratingen sin i ett spill.",
     "game": "Spill",
