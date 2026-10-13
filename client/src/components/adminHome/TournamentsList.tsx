@@ -18,7 +18,10 @@ interface TournamentsListProps {
 type ActionKey = 'manage' | 'continueSetup' | 'view';
 
 /** Status -> (chip label key, next action). */
-function statusMeta(status: TournamentSummary['status']): { chipKey: string; actionKey: ActionKey } {
+function statusMeta(status: TournamentSummary['status']): {
+  chipKey: string;
+  actionKey: ActionKey;
+} {
   switch (status) {
     case 'ready':
       return { chipKey: 'dashboard.tournaments.status.ready', actionKey: 'manage' };
@@ -47,25 +50,36 @@ export function TournamentsList({ tournaments, loading }: TournamentsListProps) 
 
   const stateLine = (tournament: TournamentSummary): string => {
     const { status, teamCount, winner, liveMatchCount } = tournament;
-    const teams = t('dashboard.tournaments.state.teams', { count: teamCount });
+    // A shuffle tournament enters players (teams are drawn each round).
+    const unit = tournament.type === 'shuffle' ? 'Players' : '';
+    const teams = t(`dashboard.tournaments.state.teams${unit}`, { count: teamCount });
     if (status === 'completed') {
       return winner
         ? [t('dashboard.tournaments.state.winner', { name: winner.name }), teams].join(' · ')
-        : t('dashboard.tournaments.state.completed', { count: teamCount });
+        : t(`dashboard.tournaments.state.completed${unit}`, { count: teamCount });
     }
     if (status === 'in_progress') {
-      return [teams, liveMatchCount ? t('dashboard.tournaments.state.live', { count: liveMatchCount }) : null]
+      return [
+        teams,
+        liveMatchCount ? t('dashboard.tournaments.state.live', { count: liveMatchCount }) : null,
+      ]
         .filter(Boolean)
         .join(' · ');
     }
-    const format = [t(`tournament.typeSelector.types.${tournament.type}.label`), formatBadge(tournament.format)];
+    const format = [
+      t(`tournament.typeSelector.types.${tournament.type}.label`),
+      formatBadge(tournament.format),
+    ];
     if (status === 'ready') {
-      return [t('dashboard.tournaments.state.entered', { count: teamCount }), ...format].join(' · ');
+      return [
+        t(`dashboard.tournaments.state.entered${unit}`, { count: teamCount }),
+        ...format,
+      ].join(' · ');
     }
     // 'setup': a draft, not started.
     return [
       teamCount > 0
-        ? t('dashboard.tournaments.state.draftTeams', { count: teamCount })
+        ? t(`dashboard.tournaments.state.draftTeams${unit}`, { count: teamCount })
         : t('dashboard.tournaments.state.draftEmpty'),
       ...format,
     ].join(' · ');
@@ -82,7 +96,11 @@ export function TournamentsList({ tournaments, loading }: TournamentsListProps) 
   }
 
   return (
-    <Box component="section" aria-labelledby="admin-home-tournament-title" data-testid="admin-home-tournaments">
+    <Box
+      component="section"
+      aria-labelledby="admin-home-tournament-title"
+      data-testid="admin-home-tournaments"
+    >
       <SectionHead
         id="admin-home-tournament-title"
         title={t('dashboard.tournaments.title')}
@@ -113,12 +131,22 @@ export function TournamentsList({ tournaments, loading }: TournamentsListProps) 
                 columns={{ xs: 'auto minmax(0, 1fr)', sm: 'auto minmax(0, 1fr) auto auto' }}
                 data-testid={`admin-home-tournament-${tournament.id}`}
               >
-                <GameMark name={tournament.game ?? tournament.name} slug={tournament.game} size={36} />
+                <GameMark
+                  name={tournament.game ?? tournament.name}
+                  slug={tournament.game}
+                  size={36}
+                />
                 <Box sx={{ minWidth: 0 }}>
-                  <Box component="b" sx={{ display: 'block', fontWeight: 600, overflowWrap: 'anywhere' }}>
+                  <Box
+                    component="b"
+                    sx={{ display: 'block', fontWeight: 600, overflowWrap: 'anywhere' }}
+                  >
                     {tournament.name}
                   </Box>
-                  <Box component="small" sx={{ display: 'block', color: color.muted, fontSize: textSize.xs }}>
+                  <Box
+                    component="small"
+                    sx={{ display: 'block', color: color.muted, fontSize: textSize.xs }}
+                  >
                     {stateLine(tournament)}
                   </Box>
                 </Box>

@@ -1789,7 +1789,7 @@
     "arrange": "Arrange",
     "showInventory": "Show inventory",
     "arrangeTitle": "Arrange your loadout",
-    "arrangeHint": "Pick up to {{max}} skins for your profile, in order. The first two show big.",
+    "arrangeHint": "Pick up to {{max}} skins to show on your profile, their order, and which are big.",
     "big": "Big",
     "moveUp": "Move up",
     "moveDown": "Move down",
