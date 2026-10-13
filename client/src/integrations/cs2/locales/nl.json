@@ -1621,7 +1621,8 @@
       "fun": "Fun",
       "custom": "Aangepast",
       "default": "Vlootstandaard",
-      "none": "Geen"
+      "none": "Geen",
+      "tryout": "Skin tryout"
     },
     "plugin": {
       "fleet": "Vlootverbinding",
@@ -1957,6 +1958,13 @@
       "pickLabel": "{{name}} kiezen",
       "unpickLabel": "{{name}} weghalen",
       "origin": "Via trade-up"
+    },
+    "tryout": {
+      "title": "Try them in game",
+      "hint": "A practice server with your skins. Equip here and they change in game within seconds.",
+      "join": "Join",
+      "joinLabel": "Join {{name}}",
+      "console": "Or paste this in the CS2 console"
     }
   },
   "matchRules": {

@@ -1621,7 +1621,8 @@
       "fun": "Divertimento",
       "custom": "Personalizzato",
       "default": "Predefinito della flotta",
-      "none": "Nessuno"
+      "none": "Nessuno",
+      "tryout": "Skin tryout"
     },
     "plugin": {
       "fleet": "Collegamento flotta",
@@ -1957,6 +1958,13 @@
       "pickLabel": "Scegli {{name}}",
       "unpickLabel": "Togli {{name}}",
       "origin": "Da uno scambio"
+    },
+    "tryout": {
+      "title": "Try them in game",
+      "hint": "A practice server with your skins. Equip here and they change in game within seconds.",
+      "join": "Join",
+      "joinLabel": "Join {{name}}",
+      "console": "Or paste this in the CS2 console"
     }
   },
   "matchRules": {

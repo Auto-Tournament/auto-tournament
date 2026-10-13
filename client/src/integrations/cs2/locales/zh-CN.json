@@ -1621,7 +1621,8 @@
       "fun": "娱乐",
       "custom": "自定义",
       "default": "集群默认",
-      "none": "无"
+      "none": "无",
+      "tryout": "Skin tryout"
     },
     "plugin": {
       "fleet": "集群连接",
@@ -1957,6 +1958,13 @@
       "pickLabel": "选择 {{name}}",
       "unpickLabel": "取消选择 {{name}}",
       "origin": "汰换获得"
+    },
+    "tryout": {
+      "title": "Try them in game",
+      "hint": "A practice server with your skins. Equip here and they change in game within seconds.",
+      "join": "Join",
+      "joinLabel": "Join {{name}}",
+      "console": "Or paste this in the CS2 console"
     }
   },
   "matchRules": {
