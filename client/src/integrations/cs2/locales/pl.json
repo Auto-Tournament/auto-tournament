@@ -1792,6 +1792,7 @@
     "pattern": "Pattern",
     "place": "#{{n}} in a tournament",
     "wonMatchmaking": "Won a matchmaking game",
+    "givenByAdmin": "Given by an admin",
     "equipped": "Equipped",
     "inInventory": "In the inventory",
     "theirInventory": "{{name}}'s inventory",
