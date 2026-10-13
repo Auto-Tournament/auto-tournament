@@ -139,6 +139,11 @@ function ChoiceReveal({
                   sx={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'contain' }}
                 />
                 <Typography sx={{ fontWeight: 600 }}>
+                  {o.stattrak && (
+                    <Box component="span" sx={{ color: color.accent }}>
+                      {t('skins.stattrak')}{' '}
+                    </Box>
+                  )}
                   {o.weaponName} | {o.name}
                 </Typography>
                 <Typography

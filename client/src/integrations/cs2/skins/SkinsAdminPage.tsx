@@ -81,6 +81,7 @@ interface Config {
   tournamentRewards: boolean;
   rewards: Reward[];
   tradeUp?: { enabled: boolean; count: number };
+  statTrakChance?: number;
 }
 
 interface CatalogSkin {
@@ -965,6 +966,25 @@ export function SkinsAdminPage() {
                 sx={{ width: 140 }}
               />
             </Box>
+            <TextField
+              size="small"
+              type="number"
+              label={t('skins.admin.statTrakChance')}
+              helperText={t('skins.admin.statTrakHelp')}
+              value={config.statTrakChance ?? 10}
+              onChange={(e) =>
+                set({
+                  statTrakChance: Math.max(
+                    0,
+                    Math.min(100, Math.round(Number(e.target.value) || 0))
+                  ),
+                })
+              }
+              slotProps={{
+                htmlInput: { min: 0, max: 100, 'data-testid': 'skins-stattrak-chance' },
+              }}
+              sx={{ maxWidth: 260 }}
+            />
             <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>
               {t('skins.admin.fairRules')}
             </Typography>

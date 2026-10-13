@@ -1555,4 +1555,12 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
         ON cs2_fleet_hosts(tenant_id, machine_id, (COALESCE(csm_user, '')));
     `,
   },
+  {
+    // StatTrak (skins/skinService.ts): NULL is a plain skin, a number is a
+    // StatTrak one's kill count, kept up from Ready Up's skins.stattrak.
+    id: '054-skin-stattrak',
+    up: `
+      ALTER TABLE cs2_player_skins ADD COLUMN IF NOT EXISTS stattrak INTEGER;
+    `,
+  },
 ];
