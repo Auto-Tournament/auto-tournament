@@ -349,7 +349,8 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
 
   const team1AverageElo = useMemo(() => {
     if (!isShuffle || !playerEloIndex) return null;
-    const configTeam1Players = (match.config?.team1?.players || []) as Array<{ steamid: string }>;
+    // A shuffle config lists players as { steamid: name }, others as an array.
+    const configTeam1Players = normalizeConfigPlayers(match.config?.team1?.players);
     const values = configTeam1Players
       .map((p) => playerEloIndex[p.steamid])
       .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
@@ -359,7 +360,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
 
   const team2AverageElo = useMemo(() => {
     if (!isShuffle || !playerEloIndex) return null;
-    const configTeam2Players = (match.config?.team2?.players || []) as Array<{ steamid: string }>;
+    const configTeam2Players = normalizeConfigPlayers(match.config?.team2?.players);
     const values = configTeam2Players
       .map((p) => playerEloIndex[p.steamid])
       .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));

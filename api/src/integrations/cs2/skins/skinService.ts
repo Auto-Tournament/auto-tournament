@@ -1214,9 +1214,8 @@ export const skinService = {
   },
 
   /**
-   * A new knife or gloves goes first in the showcase, any other skin third
-   * (after the two the profile shows big); the showcase keeps eight, so the
-   * last one drops off. A player who never
+   * A new skin goes first in the showcase, big for a knife or gloves; the
+   * showcase keeps eight, so the last one drops off. A player who never
    * arranged theirs starts from what the profile showed: their equipped
    * skins, knife and gloves first.
    */
@@ -1236,12 +1235,10 @@ export const skinService = {
         big: isBig(s),
       }));
     }
-    // The profile shows the first two big: a knife or gloves goes first, any
-    // other skin right after those two.
-    const big = slot === 'knife' || slot === 'gloves';
-    const rest = items.filter((i) => i.skinId !== skinId);
-    const at = big ? 0 : Math.min(2, rest.length);
-    const next = [...rest.slice(0, at), { skinId, big }, ...rest.slice(at)];
+    const next = [
+      { skinId, big: slot === 'knife' || slot === 'gloves' },
+      ...items.filter((i) => i.skinId !== skinId),
+    ];
     await this.setShowcase(playerUid, next);
   },
 

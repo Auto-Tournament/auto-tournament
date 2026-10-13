@@ -1,3 +1,4 @@
+import { normalizeConfigPlayers } from '../../utils/playerUtils';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Card, CardContent, Typography, Alert } from '@mui/material';
@@ -207,7 +208,8 @@ export function MatchInfoCard({
 
   const team1AverageElo = useMemo(() => {
     if (!isShuffleMatch || !playerEloIndex) return null;
-    const configTeam1Players = (match.config?.team1?.players || []) as Array<{ steamid: string }>;
+    // A shuffle config lists players as { steamid: name }, others as an array.
+    const configTeam1Players = normalizeConfigPlayers(match.config?.team1?.players);
     const values = configTeam1Players
       .map((p) => playerEloIndex[p.steamid])
       .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
@@ -217,7 +219,7 @@ export function MatchInfoCard({
 
   const team2AverageElo = useMemo(() => {
     if (!isShuffleMatch || !playerEloIndex) return null;
-    const configTeam2Players = (match.config?.team2?.players || []) as Array<{ steamid: string }>;
+    const configTeam2Players = normalizeConfigPlayers(match.config?.team2?.players);
     const values = configTeam2Players
       .map((p) => playerEloIndex[p.steamid])
       .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
