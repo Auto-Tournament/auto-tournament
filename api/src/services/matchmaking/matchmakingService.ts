@@ -1478,6 +1478,68 @@ export class MatchmakingService {
     };
   }
 
+  /**
+   * The queue as counts per enabled mode, for anyone (a Discord bot saying
+   * "3 more for a 2v2"): players and parties searching, how many a match
+   * needs and how many are missing, the longest wait, and players in a
+   * lobby being accepted or playing. No names or ids.
+   */
+  async publicQueue(): Promise<{
+    at: number;
+    modes: Array<{
+      mode: MatchmakingMode;
+      playersPerMatch: number;
+      searching: number;
+      parties: number;
+      missing: number;
+      longestWaitSeconds: number | null;
+      accepting: number;
+      playing: number;
+    }>;
+  }> {
+    const now = this.clock();
+    const searchRows = await db.queryAsync<{
+      mode: string;
+      parties: number | string;
+      players: number | string;
+      oldest: number | string | null;
+    }>(
+      `SELECT e.mode, COUNT(DISTINCT e.party_id) AS parties, COUNT(pm.player_id) AS players, MIN(e.queued_at) AS oldest
+         FROM mm_queue_entries e LEFT JOIN mm_party_members pm ON pm.party_id = e.party_id
+        WHERE e.status = 'searching' GROUP BY e.mode`
+    );
+    const lobbyRows = await db.queryAsync<{
+      mode: string;
+      status: string;
+      players: number | string;
+    }>(
+      `SELECT l.mode, l.status, COUNT(lp.player_id) AS players
+         FROM mm_lobbies l JOIN mm_lobby_players lp ON lp.lobby_id = l.id
+        WHERE l.status IN ('accepting', 'ready') GROUP BY l.mode, l.status`
+    );
+    const modes = (await this.enabledModes()).map((mode) => {
+      const row = searchRows.find((r) => r.mode === mode);
+      const searching = Number(row?.players ?? 0);
+      const playersPerMatch = TEAM_SIZE[mode] * 2;
+      const lobby = (status: string) =>
+        Number(lobbyRows.find((r) => r.mode === mode && r.status === status)?.players ?? 0);
+      return {
+        mode,
+        playersPerMatch,
+        searching,
+        parties: Number(row?.parties ?? 0),
+        missing: Math.max(0, playersPerMatch - searching),
+        longestWaitSeconds:
+          row?.oldest === null || row?.oldest === undefined
+            ? null
+            : Math.max(0, now - Number(row.oldest)),
+        accepting: lobby('accepting'),
+        playing: lobby('ready'),
+      };
+    });
+    return { at: now, modes };
+  }
+
   /** Admin: who is searching, open lobbies, and penalties of the last 24 h. */
   async adminQueue(): Promise<{
     searching: Array<{

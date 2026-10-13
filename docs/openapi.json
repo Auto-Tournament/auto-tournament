@@ -10532,6 +10532,21 @@
       }
     },
     "/api/matchmaking/queue": {
+      "get": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Queue counts per mode",
+        "description": "Public, for bots and overlays (\"3 more for a 2v2\"). Per enabled mode:\nplayers and parties searching, players a match needs, how many are\nmissing, the longest wait in seconds, and players in a lobby being\naccepted or playing. Counts only: no names or ids. Poll it (every\n30-60 s is plenty); 404 while matchmaking is closed to players.\n",
+        "responses": {
+          "200": {
+            "description": "The counts"
+          },
+          "404": {
+            "description": "Matchmaking is closed to players"
+          }
+        }
+      },
       "post": {
         "tags": [
           "Matchmaking"

@@ -142,6 +142,36 @@ router.get(
 
 /**
  * @openapi
+ * /api/matchmaking/queue:
+ *   get:
+ *     tags: [Matchmaking]
+ *     summary: Queue counts per mode
+ *     description: |
+ *       Public, for bots and overlays ("3 more for a 2v2"). Per enabled mode:
+ *       players and parties searching, players a match needs, how many are
+ *       missing, the longest wait in seconds, and players in a lobby being
+ *       accepted or playing. Counts only: no names or ids. Poll it (every
+ *       30-60 s is plenty); 404 while matchmaking is closed to players.
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: The counts
+ *       404:
+ *         description: Matchmaking is closed to players
+ */
+router.get(
+  '/queue',
+  handle('read the queue counts', async (_req, res) => {
+    if (!isOpenToPlayers(await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS))) {
+      return res.status(404).json({ success: false, error: 'Matchmaking is not open to players' });
+    }
+    res.set('Cache-Control', 'public, max-age=10');
+    return res.json({ success: true, ...(await matchmakingService.publicQueue()) });
+  })
+);
+
+/**
+ * @openapi
  * /api/matchmaking/me:
  *   get:
  *     tags: [Matchmaking]

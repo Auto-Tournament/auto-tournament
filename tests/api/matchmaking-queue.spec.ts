@@ -780,6 +780,65 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     }
   );
 
+  test('anyone can read the queue counts per mode; no names or ids', TAGS, async () => {
+    const [leader, friend] = await Promise.all([player(), player()]);
+    contexts.push(leader.ctx, friend.ctx);
+    const anon = await playwrightRequest.newContext({ baseURL: BASE_URL });
+    expect(
+      (await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '2v2'] } })).ok()
+    ).toBe(true);
+    try {
+      const created = await leader.ctx.post('/api/matchmaking/party', { data: { mode: '2v2' } });
+      const code = ((await created.json()) as Me).party!.inviteCode;
+      expect((await friend.ctx.post('/api/matchmaking/party/join', { data: { code } })).ok()).toBe(
+        true
+      );
+      const queued = await leader.ctx.post('/api/matchmaking/queue', { data: { mode: '2v2' } });
+      expect(queued.ok(), await queued.text()).toBe(true);
+
+      const res = await anon.get('/api/matchmaking/queue');
+      expect(res.status(), await res.text()).toBe(200);
+      const text = await res.text();
+      expect(text).not.toContain(leader.id);
+      expect(text).not.toContain(friend.id);
+      const body = JSON.parse(text) as {
+        modes: Array<{
+          mode: string;
+          playersPerMatch: number;
+          searching: number;
+          parties: number;
+          missing: number;
+          longestWaitSeconds: number | null;
+          accepting: number;
+          playing: number;
+        }>;
+      };
+      expect(body.modes.map((m) => m.mode)).toEqual(['5v5', '2v2']);
+      const twos = body.modes.find((m) => m.mode === '2v2')!;
+      expect(twos).toMatchObject({ playersPerMatch: 4 });
+      expect(twos.searching).toBeGreaterThanOrEqual(2);
+      expect(twos.parties).toBeGreaterThanOrEqual(1);
+      expect(twos.missing).toBe(Math.max(0, 4 - twos.searching));
+      expect(twos.longestWaitSeconds).toBeGreaterThanOrEqual(0);
+      expect(body.modes.find((m) => m.mode === '5v5')).toMatchObject({ playersPerMatch: 10 });
+
+      // Closed to players: nothing to read.
+      expect(
+        (
+          await admin.put('/api/matchmaking/admin/settings', { data: { openToPlayers: false } })
+        ).ok()
+      ).toBe(true);
+      expect((await anon.get('/api/matchmaking/queue')).status()).toBe(404);
+    } finally {
+      await admin.put('/api/matchmaking/admin/settings', {
+        data: { openToPlayers: true, modes: ['5v5'] },
+      });
+      for (const p of [friend, leader])
+        await p.ctx.post('/api/matchmaking/party/leave', { data: {} });
+      await anon.dispose();
+    }
+  });
+
   test('the party leader picks the mode; a party moves up when it outgrows it', TAGS, async () => {
     const [leader, friend, third] = await Promise.all([player(), player(), player()]);
     contexts.push(leader.ctx, friend.ctx, third.ctx);
