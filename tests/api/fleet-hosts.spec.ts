@@ -1,6 +1,12 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { signInViaRequest } from '../helpers/auth';
-import { FleetTestClient, createFleetKey, enroll, newInstallId, resetEnrollRateLimit } from '../helpers/fleet';
+import {
+  FleetTestClient,
+  createFleetKey,
+  enroll,
+  newInstallId,
+  resetEnrollRateLimit,
+} from '../helpers/fleet';
 import {
   FakeCsm,
   createPendingHost,
@@ -69,10 +75,16 @@ test.describe.serial('Fleet hosts (csm)', () => {
   test('add machine: one command, a single-use code, and a host token', async ({ request }) => {
     const pending = await createPendingHost(request, 'rack-1');
     expect(pending.code).toMatch(/^RUE-[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
-    expect(pending.command).toMatch(new RegExp(`^(csm link https://\\S+ ${pending.code}|csm link http://\\S+ ${pending.code} --insecure)$`));
+    expect(pending.command).toMatch(
+      new RegExp(
+        `^(csm link https://\\S+ ${pending.code}|csm link http://\\S+ ${pending.code} --insecure)$`
+      )
+    );
     expect(pending.expiresAt).toBeGreaterThan(Date.now() / 1000);
 
-    const listed = (await (await request.get('/api/fleet/hosts')).json()).hosts.find((h: { id: string }) => h.id === pending.hostId);
+    const listed = (await (await request.get('/api/fleet/hosts')).json()).hosts.find(
+      (h: { id: string }) => h.id === pending.hostId
+    );
     expect(listed).toMatchObject({ status: 'pending', online: false, name: 'rack-1' });
     expect(listed.codeExpiresAt).toBe(pending.expiresAt);
 
@@ -116,18 +128,40 @@ test.describe.serial('Fleet hosts (csm)', () => {
     const m = await linkMachine(request);
     const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);
     const welcome = await csm.handshake();
-    expect(welcome.payload).toMatchObject({ protocol: 1, host_id: m.hostId, resume: { result: 'reset', platform_last_rx_seq: 0 } });
-    csm.sendEphemeral('host.inventory', inventory(m.hostId, [inventoryServer('server-1'), inventoryServer('server-2')]));
+    expect(welcome.payload).toMatchObject({
+      protocol: 1,
+      host_id: m.hostId,
+      resume: { result: 'reset', platform_last_rx_seq: 0 },
+    });
+    csm.sendEphemeral(
+      'host.inventory',
+      inventory(m.hostId, [inventoryServer('server-1'), inventoryServer('server-2')])
+    );
 
     await expect.poll(async () => (await getHost(request, m.hostId)).servers?.length).toBe(2);
     const host = await getHost(request, m.hostId);
-    expect(host).toMatchObject({ online: true, status: 'enrolled', hostname: 'csm-box', csmVersion: '2.0.0' });
+    expect(host).toMatchObject({
+      online: true,
+      status: 'enrolled',
+      hostname: 'csm-box',
+      csmVersion: '2.0.0',
+    });
     expect(host.inventory.resources.cpus).toBe(16);
-    expect(host.servers[0]).toMatchObject({ name: 'server-1', fleetServer: null, matchInProgress: false });
+    expect(host.servers[0]).toMatchObject({
+      name: 'server-1',
+      fleetServer: null,
+      matchInProgress: false,
+    });
 
     // Wrong identity in hello.
     const wrong = await FakeCsm.connect(m.token, 'fh_someone_else', m.machineId);
-    wrong.client.send({ v: 1, type: 'hello', id: '01J8ZQ4T8W6N3X0F2R5K7M9P1C', ts: Date.now(), payload: wrong.hello() });
+    wrong.client.send({
+      v: 1,
+      type: 'hello',
+      id: '01J8ZQ4T8W6N3X0F2R5K7M9P1C',
+      ts: Date.now(),
+      payload: wrong.hello(),
+    });
     expect((await wrong.client.waitClosed()).code).toBe(4403);
 
     csm.close();
@@ -135,7 +169,9 @@ test.describe.serial('Fleet hosts (csm)', () => {
     await expect.poll(async () => (await getHost(request, m.hostId)).online).toBe(false);
   });
 
-  test('create server: progress, result, and the new server enrolls itself under the machine', async ({ request }) => {
+  test('create server: progress, result, and the new server enrolls itself under the machine', async ({
+    request,
+  }) => {
     const m = await linkMachine(request, 'creator');
     const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);
     await csm.handshake();
@@ -162,29 +198,57 @@ test.describe.serial('Fleet hosts (csm)', () => {
     expect(payload).toMatchObject({ count: 1, enroll: true });
     expect(payload.enroll_key).toMatch(/^rfk_/);
     // The license use accepted on the platform, for Ready Up's unattended installer.
-    expect((create.payload as { accept_license?: string }).accept_license).toMatch(/^(noncommercial|commercial)$/);
+    expect((create.payload as { accept_license?: string }).accept_license).toMatch(
+      /^(noncommercial|commercial)$/
+    );
     const enrollKey = payload.enroll_key;
 
     csm.sendEphemeral('host.progress', { ref: commandId, step: 'provisioning server-2', pct: 40 });
     await expect
-      .poll(async () => (await (await request.get(`/api/fleet/hosts/${m.hostId}/commands/${commandId}`)).json()).command.progress.pct)
+      .poll(
+        async () =>
+          (await (await request.get(`/api/fleet/hosts/${m.hostId}/commands/${commandId}`)).json())
+            .command.progress.pct
+      )
       .toBe(40);
 
-    const result = csm.sendReliable('host.result', { status: 'ok', output: 'created server-2' }, { ref: commandId });
+    const result = csm.sendReliable(
+      'host.result',
+      { status: 'ok', output: 'created server-2' },
+      { ref: commandId }
+    );
     await csm.acked(result.seq as number);
 
     // csm's new servers are copies of the master install without Ready Up:
     // the platform installs it on them next.
     const install = await csm.nextCommand('host.update_plugins');
-    const { accept_license: acceptLicense, ...installPayload } = install.payload as Record<string, unknown>;
-    expect(installPayload).toEqual({ servers: ['server-2'], readyup: { version: 'latest', bundle: 'default' } });
+    const { accept_license: acceptLicense, ...installPayload } = install.payload as Record<
+      string,
+      unknown
+    >;
+    expect(installPayload).toEqual({
+      servers: ['server-2'],
+      readyup: { version: 'latest', bundle: 'default' },
+    });
     expect(acceptLicense).toMatch(/^(noncommercial|commercial)$/);
-    const done = (await (await request.get(`/api/fleet/hosts/${m.hostId}/commands/${commandId}`)).json()).command;
+    const done = (
+      await (await request.get(`/api/fleet/hosts/${m.hostId}/commands/${commandId}`)).json()
+    ).command;
     expect(done).toMatchObject({ status: 'ok', output: 'created server-2', type: 'server.create' });
-    expect(done.meta).toMatchObject({ serversBefore: ['server-1'], newServers: ['server-2'], followUp: install.id });
-    const installRecord = (await (await request.get(`/api/fleet/hosts/${m.hostId}/commands/${install.id}`)).json()).command;
+    expect(done.meta).toMatchObject({
+      serversBefore: ['server-1'],
+      newServers: ['server-2'],
+      followUp: install.id,
+    });
+    const installRecord = (
+      await (await request.get(`/api/fleet/hosts/${m.hostId}/commands/${install.id}`)).json()
+    ).command;
     expect(installRecord).toMatchObject({ issuedBy: 'platform', meta: { followUpOf: commandId } });
-    const installed = csm.sendReliable('host.result', { status: 'ok', output: 'Ready Up 0.5.0 on server-2' }, { ref: install.id });
+    const installed = csm.sendReliable(
+      'host.result',
+      { status: 'ok', output: 'Ready Up 0.5.0 on server-2' },
+      { ref: install.id }
+    );
     await csm.acked(installed.seq as number);
 
     // Ready Up on server-2 enrolls with the key csm wrote for it...
@@ -201,7 +265,9 @@ test.describe.serial('Fleet hosts (csm)', () => {
 
     // Before csm reports it, the server shows as enrolled from this machine.
     await expect
-      .poll(async () => (await getHost(request, m.hostId)).enrolledServers.map((s: { id: string }) => s.id))
+      .poll(async () =>
+        (await getHost(request, m.hostId)).enrolledServers.map((s: { id: string }) => s.id)
+      )
       .toContain(ru.body.server_id);
 
     // The next inventory joins it on install_id (§18.3).
@@ -209,17 +275,32 @@ test.describe.serial('Fleet hosts (csm)', () => {
       'host.inventory',
       inventory(m.hostId, [
         inventoryServer('server-1'),
-        inventoryServer('server-2', { readyup: { installed: '0.5.0', install_id: installId, health: 'ok', phase: 'idle', update_safe: true } }),
+        inventoryServer('server-2', {
+          readyup: {
+            installed: '0.5.0',
+            install_id: installId,
+            health: 'ok',
+            phase: 'idle',
+            update_safe: true,
+          },
+        }),
       ])
     );
     await expect
-      .poll(async () => (await getHost(request, m.hostId)).servers.find((s: { name: string }) => s.name === 'server-2')?.fleetServer?.id)
+      .poll(
+        async () =>
+          (await getHost(request, m.hostId)).servers.find(
+            (s: { name: string }) => s.name === 'server-2'
+          )?.fleetServer?.id
+      )
       .toBe(ru.body.server_id);
     expect((await getHost(request, m.hostId)).enrolledServers).toEqual([]);
     csm.close();
   });
 
-  test('disruptive actions during a match need force; csm refusals come back', async ({ request }) => {
+  test('disruptive actions during a match need force; csm refusals come back', async ({
+    request,
+  }) => {
     const m = await linkMachine(request, 'live-box');
     const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);
     await csm.handshake();
@@ -227,24 +308,45 @@ test.describe.serial('Fleet hosts (csm)', () => {
       'host.inventory',
       inventory(m.hostId, [
         inventoryServer('server-1'),
-        inventoryServer('server-2', { readyup: { installed: '0.5.0', health: 'ok', phase: 'live', update_safe: false } }),
+        inventoryServer('server-2', {
+          readyup: { installed: '0.5.0', health: 'ok', phase: 'live', update_safe: false },
+        }),
       ])
     );
-    await expect.poll(async () => (await getHost(request, m.hostId)).servers?.[1]?.matchInProgress).toBe(true);
+    await expect
+      .poll(async () => (await getHost(request, m.hostId)).servers?.[1]?.matchInProgress)
+      .toBe(true);
 
-    const refused = await command(request, m.hostId, { type: 'server.stop', payload: { server: 'server-2' } });
+    const refused = await command(request, m.hostId, {
+      type: 'server.stop',
+      payload: { server: 'server-2' },
+    });
     expect(refused.status).toBe(409);
     expect(refused.body).toMatchObject({ code: 'match_in_progress', servers: ['server-2'] });
-    const refusedUpdate = await command(request, m.hostId, { type: 'host.update_game', payload: {} });
+    const refusedUpdate = await command(request, m.hostId, {
+      type: 'host.update_game',
+      payload: {},
+    });
     expect(refusedUpdate.status).toBe(409);
     expect(refusedUpdate.body.servers).toEqual(['server-2']);
     // Only the targeted servers count.
-    const other = await command(request, m.hostId, { type: 'server.restart', payload: { server: 'server-1', reason: 'test' } });
+    const other = await command(request, m.hostId, {
+      type: 'server.restart',
+      payload: { server: 'server-1', reason: 'test' },
+    });
     expect(other.status).toBe(202);
     const otherMsg = await csm.nextCommand('server.restart');
     expect(otherMsg.payload).toEqual({ server: 'server-1', reason: 'test' });
     // A force without a reason is not a force.
-    expect((await command(request, m.hostId, { type: 'server.stop', payload: { server: 'server-2' }, force: {} })).status).toBe(400);
+    expect(
+      (
+        await command(request, m.hostId, {
+          type: 'server.stop',
+          payload: { server: 'server-2' },
+          force: {},
+        })
+      ).status
+    ).toBe(400);
 
     const forced = await command(request, m.hostId, {
       type: 'server.stop',
@@ -252,30 +354,103 @@ test.describe.serial('Fleet hosts (csm)', () => {
       force: { reason: 'server hung mid-match' },
     });
     expect(forced.status, JSON.stringify(forced.body)).toBe(202);
-    expect(forced.body.command).toMatchObject({ forceReason: 'server hung mid-match', server: 'server-2' });
+    expect(forced.body.command).toMatchObject({
+      forceReason: 'server hung mid-match',
+      server: 'server-2',
+    });
     expect(forced.body.command.forcedBy).toBeTruthy();
     const stop = await csm.nextCommand('server.stop');
-    expect(stop.payload).toMatchObject({ server: 'server-2', grace_s: 5, force: { reason: 'server hung mid-match' } });
+    expect(stop.payload).toMatchObject({
+      server: 'server-2',
+      grace_s: 5,
+      force: { reason: 'server hung mid-match' },
+    });
     expect((stop.payload as { force: { by: string } }).force.by).toBe(forced.body.command.forcedBy);
 
     // csm has its own view (§18.2): it refuses without force, and says why.
-    const restart = await command(request, m.hostId, { type: 'server.restart', payload: { server: 'server-1', reason: 'again' } });
+    const restart = await command(request, m.hostId, {
+      type: 'server.restart',
+      payload: { server: 'server-1', reason: 'again' },
+    });
     const msg = await csm.nextCommand('server.restart');
     expect(msg.id).toBe(restart.body.command.id);
     const r = csm.sendReliable(
       'host.result',
-      { status: 'rejected', error: { code: 'match_in_progress', message: 'server-1 update_safe is false' } },
+      {
+        status: 'rejected',
+        error: { code: 'match_in_progress', message: 'server-1 update_safe is false' },
+      },
       { ref: msg.id }
     );
     await csm.acked(r.seq as number);
-    const answered = (await (await request.get(`/api/fleet/hosts/${m.hostId}/commands/${msg.id}`)).json()).command;
+    const answered = (
+      await (await request.get(`/api/fleet/hosts/${m.hostId}/commands/${msg.id}`)).json()
+    ).command;
     expect(answered).toMatchObject({ status: 'rejected', errorCode: 'match_in_progress' });
     csm.close();
   });
 
-  test('commands sent while csm is offline are replayed after hello; health is stored', async ({ request }) => {
+  test('a command csm refuses busy goes again once the job holding the machine is done', async ({
+    request,
+  }) => {
+    const m = await linkMachine(request, 'busy-box');
+    const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);
+    await csm.handshake();
+    csm.sendEphemeral('host.inventory', inventory(m.hostId, [inventoryServer('server-1')]));
+    await expect.poll(async () => (await getHost(request, m.hostId)).servers?.length).toBe(1);
+
+    // A long job holds the machine; a restart asked meanwhile is refused busy.
+    const update = await command(request, m.hostId, { type: 'host.update_game', payload: {} });
+    expect(update.status).toBe(202);
+    const updateMsg = await csm.nextCommand('host.update_game');
+    const restart = await command(request, m.hostId, {
+      type: 'server.restart',
+      payload: { server: 'server-1', reason: 'busy test' },
+    });
+    const restartMsg = await csm.nextCommand('server.restart');
+    const busy = csm.sendReliable(
+      'host.result',
+      { status: 'rejected', error: { code: 'busy', message: 'host.update_game is running' } },
+      { ref: restartMsg.id }
+    );
+    await csm.acked(busy.seq as number);
+
+    // The update finishes: the restart comes again, as a new command, by itself.
+    const done = csm.sendReliable(
+      'host.result',
+      { status: 'ok', output: 'updated' },
+      { ref: updateMsg.id }
+    );
+    await csm.acked(done.seq as number);
+    const again = await csm.nextCommand('server.restart');
+    expect(again.id).not.toBe(restartMsg.id);
+    expect(again.payload).toEqual({ server: 'server-1', reason: 'busy test' });
+    const first = (
+      await (
+        await request.get(`/api/fleet/hosts/${m.hostId}/commands/${restart.body.command.id}`)
+      ).json()
+    ).command;
+    expect(first.meta).toMatchObject({ retriedAs: again.id });
+    // The page lists it once: the new one, pending.
+    const listed = (await getHost(request, m.hostId)).commands as Array<{
+      id: string;
+      type: string;
+      status: string;
+    }>;
+    const restarts = listed.filter((c) => c.type === 'server.restart');
+    expect(restarts.map((c) => c.id)).toEqual([again.id]);
+    expect(restarts[0].status).toBe('pending');
+    csm.close();
+  });
+
+  test('commands sent while csm is offline are replayed after hello; health is stored', async ({
+    request,
+  }) => {
     const m = await linkMachine(request, 'flaky');
-    const sent = await command(request, m.hostId, { type: 'host.updates_hold', payload: { mode: 'on' } });
+    const sent = await command(request, m.hostId, {
+      type: 'host.updates_hold',
+      payload: { mode: 'on' },
+    });
     expect(sent.status).toBe(202);
     expect(sent.body.delivered).toBe(false);
 
@@ -285,32 +460,48 @@ test.describe.serial('Fleet hosts (csm)', () => {
     expect(replayed.id).toBe(sent.body.command.id);
     expect(replayed.payload).toEqual({ mode: 'on' });
 
-    const h = csm.sendReliable('host.health', { server: 'server-1', event: 'hung', detail: '/health silent for 30 s' });
+    const h = csm.sendReliable('host.health', {
+      server: 'server-1',
+      event: 'hung',
+      detail: '/health silent for 30 s',
+    });
     await csm.acked(h.seq as number);
     // A replay of the same seq is not stored twice.
     csm.client.send({ ...h, id: '01J8ZQ4T8W6N3X0F2R5K7M9P1D' });
     await expect.poll(async () => (await getHost(request, m.hostId)).health.length).toBe(1);
-    expect((await getHost(request, m.hostId)).health[0]).toMatchObject({ server: 'server-1', event: 'hung' });
+    expect((await getHost(request, m.hostId)).health[0]).toMatchObject({
+      server: 'server-1',
+      event: 'hung',
+    });
 
     // Reconnect: the acked command is not sent again; resume continues our stream.
     csm.close();
     await csm.client.waitClosed();
     const again = await FakeCsm.connect(m.token, m.hostId, m.machineId);
     again.txSeq = csm.txSeq;
-    const welcome = await again.handshake({ stream: { id: 'csm-stream-1', last_tx_seq: csm.txSeq, last_rx_seq: replayed.seq as number } });
-    expect(welcome.payload).toMatchObject({ resume: { result: 'resumed', platform_last_rx_seq: csm.txSeq } });
+    const welcome = await again.handshake({
+      stream: { id: 'csm-stream-1', last_tx_seq: csm.txSeq, last_rx_seq: replayed.seq as number },
+    });
+    expect(welcome.payload).toMatchObject({
+      resume: { result: 'resumed', platform_last_rx_seq: csm.txSeq },
+    });
     await expect(again.client.nextOfType('host.updates_hold', 1500)).rejects.toThrow();
     again.close();
   });
 
-  test('an agent that starts over (linked again) gets the next command numbered from where it is', async ({ request }) => {
+  test('an agent that starts over (linked again) gets the next command numbered from where it is', async ({
+    request,
+  }) => {
     // csm #108: after a re-link the agent had received nothing (last_rx_seq 0)
     // but the platform carried on numbering from the old session, so the
     // next command waited forever for messages that no longer exist.
     const m = await linkMachine(request, 'relinked');
     const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);
     await csm.handshake();
-    const first = await command(request, m.hostId, { type: 'host.updates_hold', payload: { mode: 'on' } });
+    const first = await command(request, m.hostId, {
+      type: 'host.updates_hold',
+      payload: { mode: 'on' },
+    });
     expect(first.status).toBe(202);
     const got = await csm.nextCommand('host.updates_hold');
     expect(got.seq).toBe(1);
@@ -320,7 +511,10 @@ test.describe.serial('Fleet hosts (csm)', () => {
     await csm.client.waitClosed();
 
     // Queued while offline, then the agent comes back with no state at all.
-    const queued = await command(request, m.hostId, { type: 'host.updates_hold', payload: { mode: 'off' } });
+    const queued = await command(request, m.hostId, {
+      type: 'host.updates_hold',
+      payload: { mode: 'off' },
+    });
     expect(queued.status).toBe(202);
     const fresh = await FakeCsm.connect(m.token, m.hostId, m.machineId);
     await fresh.handshake({ stream: { id: 'csm-stream-fresh', last_tx_seq: 0, last_rx_seq: 0 } });
@@ -356,21 +550,34 @@ test.describe.serial('Fleet hosts (csm)', () => {
     const after = await FleetTestClient.connect(newToken, {}, hostWsUrl());
     expect(await after.waitClosed()).toMatchObject({ code: 4403 });
     // A revoked machine takes no commands.
-    expect((await command(request, m.hostId, { type: 'host.servers.list', payload: {} })).status).toBe(409);
+    expect(
+      (await command(request, m.hostId, { type: 'host.servers.list', payload: {} })).status
+    ).toBe(409);
     // And it can be removed.
     expect((await request.delete(`/api/fleet/hosts/${m.hostId}`)).status()).toBe(200);
   });
 
   test('admin routes need auth; enrollment does not', async ({ playwright }) => {
-    const anon = await playwright.request.newContext({ baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069' });
+    const anon = await playwright.request.newContext({
+      baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
+    });
     expect((await anon.get('/api/fleet/hosts')).status()).toBe(401);
     expect((await anon.post('/api/fleet/hosts', { data: {} })).status()).toBe(401);
     const bad = await anon.post('/api/fleet/enroll', {
-      data: { kind: 'host', code: 'RUE-0000-0000-0000-0000', machine_id: newMachineId(), hostname: 'x', os: 'Linux', csm_version: '2.0.0' },
+      data: {
+        kind: 'host',
+        code: 'RUE-0000-0000-0000-0000',
+        machine_id: newMachineId(),
+        hostname: 'x',
+        os: 'Linux',
+        csm_version: '2.0.0',
+      },
     });
     expect(bad.status()).toBe(401);
     // A host body that is not valid is a 400 from the host path, not the server one.
-    const invalid = await anon.post('/api/fleet/enroll', { data: { kind: 'host', code: 'x', machine_id: 'not-hex', hostname: 'x' } });
+    const invalid = await anon.post('/api/fleet/enroll', {
+      data: { kind: 'host', code: 'x', machine_id: 'not-hex', hostname: 'x' },
+    });
     expect(invalid.status()).toBe(400);
     expect((await invalid.json()).error).toBe('Invalid host enrollment request');
     await anon.dispose();
