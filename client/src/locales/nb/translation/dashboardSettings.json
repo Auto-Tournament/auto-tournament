@@ -45,7 +45,15 @@
         "live_other": "{{count}} kamper pågår",
         "completed_one": "{{count}} lag deltok",
         "completed_other": "{{count}} lag deltok",
-        "winner": "Vinner: {{name}}"
+        "winner": "Vinner: {{name}}",
+        "teamsPlayers_one": "{{count}} spiller",
+        "teamsPlayers_other": "{{count}} spillere",
+        "enteredPlayers_one": "{{count}} spiller påmeldt",
+        "enteredPlayers_other": "{{count}} spillere påmeldt",
+        "draftTeamsPlayers_one": "Utkast · {{count}} spiller",
+        "draftTeamsPlayers_other": "Utkast · {{count}} spillere",
+        "completedPlayers_one": "{{count}} spiller deltok",
+        "completedPlayers_other": "{{count}} spillere deltok"
       },
       "actions": {
         "manage": "Administrer",
@@ -739,6 +747,7 @@
     "recordingGroup": "Opptakergruppe",
     "allRecorders": "Alle opptakere",
     "groupHelp": "Velg gruppen som skal rendre kampen. Deaktiverte grupper venter til de aktiveres.",
-    "groupDisabled": "Deaktivert"
+    "groupDisabled": "Deaktivert",
+    "notCs2Demo": "{{name}} er ikke en CS2-demo (CS:GO-demoer kan ikke importeres)."
   }
 }

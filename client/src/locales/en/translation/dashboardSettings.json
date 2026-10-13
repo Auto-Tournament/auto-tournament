@@ -45,7 +45,15 @@
         "live_other": "{{count}} matches live",
         "completed_one": "{{count}} team took part",
         "completed_other": "{{count}} teams took part",
-        "winner": "Winner: {{name}}"
+        "winner": "Winner: {{name}}",
+        "teamsPlayers_one": "{{count}} player",
+        "teamsPlayers_other": "{{count}} players",
+        "enteredPlayers_one": "{{count}} player entered",
+        "enteredPlayers_other": "{{count}} players entered",
+        "draftTeamsPlayers_one": "Draft · {{count}} player",
+        "draftTeamsPlayers_other": "Draft · {{count}} players",
+        "completedPlayers_one": "{{count}} player took part",
+        "completedPlayers_other": "{{count}} players took part"
       },
       "actions": {
         "manage": "Manage",
@@ -739,6 +747,7 @@
     "recordingGroup": "Recorder group",
     "allRecorders": "All recorders",
     "groupHelp": "Choose which group renders this match. Disabled groups wait until enabled.",
-    "groupDisabled": "Disabled"
+    "groupDisabled": "Disabled",
+    "notCs2Demo": "{{name}} is not a CS2 demo (CS:GO demos can't be imported)."
   }
 }

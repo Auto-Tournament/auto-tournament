@@ -1,7 +1,7 @@
 /**
  * CS2's numbers for a tournament's results (`tournamentPlayerExtras`): each
- * player's rating over the tournament's maps, clutches won and teammates
- * flashed, from what Ready Up servers record (cs2_player_map_stats). Players
+ * player's rating over the tournament's maps, clutches won, teammates
+ * flashed and money spent, from what Ready Up servers record (cs2_player_map_stats). Players
  * with no such maps are left out.
  */
 
@@ -22,11 +22,13 @@ export async function tournamentPlayerExtras(
     kast_rounds: string | number;
     clutches_won: string | number;
     friendlies_flashed: string | number;
+    money_spent: string | number;
   }>(
     `SELECT s.player_id, SUM(s.rounds_played) AS rounds_played, SUM(s.kills) AS kills,
             SUM(s.deaths) AS deaths, SUM(s.assists) AS assists, SUM(s.damage) AS damage,
             SUM(s.kast_rounds) AS kast_rounds,
-            SUM(s.clutches_won) AS clutches_won, SUM(s.friendlies_flashed) AS friendlies_flashed
+            SUM(s.clutches_won) AS clutches_won, SUM(s.friendlies_flashed) AS friendlies_flashed,
+            SUM(s.money_spent) AS money_spent
        FROM cs2_player_map_stats s JOIN matches m ON m.slug = s.match_slug
       WHERE m.tournament_id = ?
       GROUP BY s.player_id`,
@@ -45,6 +47,7 @@ export async function tournamentPlayerExtras(
       }),
       clutchesWon: Number(r.clutches_won),
       teamFlashes: Number(r.friendlies_flashed),
+      moneySpent: Number(r.money_spent),
     };
   }
   return out;

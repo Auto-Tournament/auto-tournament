@@ -22,6 +22,7 @@ import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { recordMapResult, getMapResults } from '../../../services/matchMapResultService';
 import { settingsService } from '../../../services/settingsService';
+import { addPlayedGame } from '../../../services/gameReadiness';
 import { DEMOS_DIR, ensureDemosDir, linkStoredDemo } from '../utils/demoFiles';
 import type { DemoAnalysisPayload, DemoJob } from './jobs';
 
@@ -313,6 +314,14 @@ async function steamProfiles(
 async function ensurePlayers(roster: Record<string, string>): Promise<void> {
   const ids = Object.keys(roster);
   if (ids.length === 0) return;
+  await ensureDemoPlayers(ids, roster);
+  // In a CS2 demo, so they play CS2 (unless they picked their games).
+  await addPlayedGame(ids, 'cs2').catch((error) =>
+    log.debug('[IMPORT] Could not add CS2 to the players', { error })
+  );
+}
+
+async function ensureDemoPlayers(ids: string[], roster: Record<string, string>): Promise<void> {
   const known = new Map(
     (
       await db.queryAsync<{
