@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 692 of them, 402 behind auth —
+Every endpoint this API serves — 694 of them, 403 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -840,6 +840,7 @@ Player records, ratings, match history and profiles.
 | `GET` | `/api/players/:playerId` | public |
 | `GET` | `/api/players/:playerId/rating-history` | public |
 | `GET` | `/api/players/:playerId/matches` | public |
+| `GET` | `/api/players/:playerId/accounts` | admin |
 | `GET` | `/api/players` | admin |
 | `GET` | `/api/players/by-discord-id/:discordId` | admin |
 | `POST` | `/api/players` | admin |
@@ -878,6 +879,7 @@ The game catalogue players pick from (Wikidata-backed search, the built-in games
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/games/search` | public |
+| `GET` | `/api/games/accounts` | public |
 | `GET` | `/api/games/popular` | public |
 | `GET` | `/api/games/playable` | public |
 | `GET` | `/api/games/icons/:file` | public |

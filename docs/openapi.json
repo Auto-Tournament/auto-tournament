@@ -7871,6 +7871,20 @@
         ]
       }
     },
+    "/api/games/accounts": {
+      "get": {
+        "tags": [
+          "Games"
+        ],
+        "summary": "The accounts the installed games need",
+        "description": "Which sign-in provider identifies each installed game's players: a\nmodule's (CS2: Steam) or a pack's (Rocket League: Epic Games).\nGames that need none are left out. The admin's player and team forms\nask for these accounts.\n",
+        "responses": {
+          "200": {
+            "description": "`accounts`: [{ provider, label, games: [{ id, name }] }]"
+          }
+        }
+      }
+    },
     "/api/games/icons/{file}": {
       "get": {
         "tags": [
@@ -11815,6 +11829,38 @@
             }
           }
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/players/{playerId}/accounts": {
+      "get": {
+        "tags": [
+          "Players"
+        ],
+        "summary": "A player's game accounts other than Steam",
+        "description": "Admin. Accounts the games need (Epic Games for Rocket League, ...):\nentered by an admin (`verified: false`, the player lands on this\nplayer when they first sign in with it) or proven by signing in.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "playerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`accounts`: [{ provider, externalId, verified }]"
+          }
+        },
         "security": [
           {
             "bearerAuth": []
