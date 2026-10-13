@@ -1693,7 +1693,7 @@
     "picksMost": "Velger mest",
     "vetoShare": "{{map}} · {{count}} av {{total}} vetoer",
     "noMatchesYet": "Tallene vises etter første CS2-kamp.",
-    "rating": "Rating",
+    "rating": "Prestasjon",
     "ratingNote": "1,00 er en gjennomsnittlig spiller",
     "sides": "Runder vunnet per side",
     "ctWon_one": "CT · {{count}} runde",
@@ -1715,7 +1715,7 @@
       "entry": "Entry fragger · fra åpningskills",
       "clutch": "Clutch-spiller · fra vunne clutcher",
       "support": "Support · fra flasher",
-      "fragger": "Stjernespiller · fra rating"
+      "fragger": "Stjernespiller · etter prestasjon"
     },
     "crosshair": "Siktepunkt",
     "crosshairNote": "Grader fra hodet når en motstander dukker opp",
@@ -2021,7 +2021,7 @@
     },
     "col": {
       "player": "Spiller",
-      "rating": "Rating",
+      "rating": "Prestasjon",
       "kda": "K-D-A",
       "adr": "ADR",
       "kast": "KAST",
@@ -2511,7 +2511,7 @@
     "categoryLabel": "Kategori",
     "rangeLabel": "Tidsrom",
     "category": {
-      "rating": "AT-rating",
+      "rating": "Prestasjon",
       "adr": "ADR",
       "kd": "K/D",
       "hs": "Headshots",
@@ -2525,7 +2525,7 @@
       "days_other": "Siste {{count}} dager"
     },
     "explain": {
-      "rating": "Auto Tournaments egen rating, 1,00 for en gjennomsnittlig spiller: kills, deaths, assists, skade og KAST per runde.",
+      "rating": "Hvor godt en spiller spiller, 1,00 for en gjennomsnittlig spiller: kills, deaths, assists, skade og KAST per runde.",
       "adr": "Gjennomsnittlig skade per runde.",
       "kd": "Kills per death.",
       "hs": "Andelen kills som var headshots (minst 50 kills).",

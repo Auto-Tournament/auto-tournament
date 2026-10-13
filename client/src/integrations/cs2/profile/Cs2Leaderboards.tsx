@@ -1,6 +1,6 @@
 /**
  * CS2's category rankings on the Leaderboards page (`leaderboardView`):
- * AT rating, ADR, K/D, headshots, opening duels, clutches and KAST, over all
+ * Performance, ADR, K/D, headshots, opening duels, clutches and KAST, over all
  * time or the last 30 or 90 days. Each says what it measures and who
  * qualifies; ties share a rank.
  */

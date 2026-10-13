@@ -1257,7 +1257,7 @@ export interface ClientGameIntegration {
 
   /**
    * The Leaderboards page, under the rating ranking: this game's own
-   * category rankings (client API 0.2.21; CS2: AT rating, ADR, K/D,
+   * category rankings (client API 0.2.21; CS2: performance, ADR, K/D,
    * headshots, opening duels, clutches and KAST), shown while the page is on
    * this game. It fetches its own numbers.
    */

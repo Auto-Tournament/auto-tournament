@@ -1693,7 +1693,7 @@
     "picksMost": "Picks most",
     "vetoShare": "{{map}} · {{count}} of {{total}} vetoes",
     "noMatchesYet": "Numbers show up after the first CS2 match.",
-    "rating": "Rating",
+    "rating": "Performance",
     "ratingNote": "1.00 is an average player",
     "sides": "Rounds won by side",
     "ctWon_one": "CT · {{count}} round",
@@ -1710,12 +1710,12 @@
     "enemiesFlashed_other": "{{count}} enemies",
     "friendliesFlashed_one": "{{count}} teammate",
     "friendliesFlashed_other": "{{count}} teammates",
-    "readyUpOnly": "Rating, sides, openings and flashes come from matches on Ready Up servers.",
+    "readyUpOnly": "Performance, sides, openings and flashes come from matches on Ready Up servers.",
     "role": {
       "entry": "Entry fragger · from opening kills",
       "clutch": "Clutch player · from clutches won",
       "support": "Support · from flashes",
-      "fragger": "Star player · from rating"
+      "fragger": "Star player · from performance"
     },
     "crosshair": "Crosshair placement",
     "crosshairNote": "Degrees off the head when an enemy comes into view",
@@ -2021,7 +2021,7 @@
     },
     "col": {
       "player": "Player",
-      "rating": "Rating",
+      "rating": "Performance",
       "kda": "K-D-A",
       "adr": "ADR",
       "kast": "KAST",
@@ -2034,7 +2034,7 @@
       "ttd": "Time to damage",
       "money": "Spent"
     },
-    "note": "Read from the demo after the match. Rating is Auto Tournament's own (1.00 is average). Crosshair: degrees off the head when an enemy came into view.",
+    "note": "Read from the demo after the match. Performance: 1.00 is an average player. Crosshair: degrees off the head when an enemy came into view.",
     "replay": {
       "title": "2D replay",
       "aria": "2D replay of {{map}}",
@@ -2511,7 +2511,7 @@
     "categoryLabel": "Category",
     "rangeLabel": "Time range",
     "category": {
-      "rating": "AT rating",
+      "rating": "Performance",
       "adr": "ADR",
       "kd": "K/D",
       "hs": "Headshots",
@@ -2525,7 +2525,7 @@
       "days_other": "Last {{count}} days"
     },
     "explain": {
-      "rating": "Auto Tournament's own rating, 1.00 for an average player: kills, deaths, assists, damage and KAST per round.",
+      "rating": "How well a player plays, 1.00 for an average player: kills, deaths, assists, damage and KAST per round.",
       "adr": "Average damage per round.",
       "kd": "Kills per death.",
       "hs": "The share of kills that were headshots (at least 50 kills).",
