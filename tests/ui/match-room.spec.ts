@@ -70,11 +70,17 @@ test.describe.serial('Match room', () => {
     await expect(page.getByTestId('veto-interface')).toBeVisible({ timeout: 20000 });
   });
 
-  test('someone not in the match gets the public view, no veto', TAGS, async ({ page }) => {
+  test('someone not in the match sees the room and the veto, read-only', TAGS, async ({ page }) => {
     await page.goto(`/match/${encodeURIComponent(slug)}`, { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('match-page')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('match-room-player')).toHaveCount(0);
-    await expect(page.getByTestId('veto-interface')).toHaveCount(0);
+    // The MatchRoom board: steps, the server state and both rosters...
+    await expect(page.getByTestId('match-spectator-room')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('match-step-veto')).toHaveAttribute('aria-current', 'step');
+    // ...and the veto as it happens, never their turn.
+    const veto = page.getByTestId('veto-interface');
+    await expect(veto).toBeVisible({ timeout: 20000 });
+    await expect(veto.locator('[data-my-turn="true"]')).toHaveCount(0);
   });
 
   test('the profile and the team page link to the room instead', TAGS, async ({ page }) => {

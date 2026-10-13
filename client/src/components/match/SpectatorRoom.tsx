@@ -26,7 +26,9 @@ export interface SpectatorRoomMatch {
 
 type Step = 'veto' | 'server' | 'live' | 'result';
 
-function playersOf(team: { players?: RoomPlayer[] | Record<string, unknown> } | undefined): RoomPlayer[] {
+function playersOf(
+  team: { players?: RoomPlayer[] | Record<string, unknown> } | undefined
+): RoomPlayer[] {
   const players = team?.players;
   if (Array.isArray(players)) return players.filter((p) => p && p.steamid);
   return [];
@@ -42,7 +44,9 @@ export function SpectatorRoom({ match, hasVeto }: { match: SpectatorRoomMatch; h
   const { t } = useTranslation();
   // The veto is the platform's (in the browser); the game server has none.
   const withVeto = hasVeto;
-  const steps: Step[] = withVeto ? ['veto', 'server', 'live', 'result'] : ['server', 'live', 'result'];
+  const steps: Step[] = withVeto
+    ? ['veto', 'server', 'live', 'result']
+    : ['server', 'live', 'result'];
   const now: Step =
     match.status === 'completed' || match.status === 'cancelled'
       ? 'result'
@@ -65,8 +69,16 @@ export function SpectatorRoom({ match, hasVeto }: { match: SpectatorRoomMatch; h
           : t('matchPage.spectator.server.freed');
 
   const teams = [
-    { key: 'team1', name: match.team1?.name ?? match.config?.team1?.name ?? '', players: playersOf(match.config?.team1) },
-    { key: 'team2', name: match.team2?.name ?? match.config?.team2?.name ?? '', players: playersOf(match.config?.team2) },
+    {
+      key: 'team1',
+      name: match.team1?.name ?? match.config?.team1?.name ?? '',
+      players: playersOf(match.config?.team1),
+    },
+    {
+      key: 'team2',
+      name: match.team2?.name ?? match.config?.team2?.name ?? '',
+      players: playersOf(match.config?.team2),
+    },
   ];
 
   return (
@@ -102,7 +114,10 @@ export function SpectatorRoom({ match, hasVeto }: { match: SpectatorRoomMatch; h
                 color: current ? color.paper : done ? color.ink2 : color.muted,
               }}
             >
-              <Box component="span" sx={{ fontFamily: fontMono, fontSize: textSize.xs, opacity: 0.8 }}>
+              <Box
+                component="span"
+                sx={{ fontFamily: fontMono, fontSize: textSize.xs, opacity: 0.8 }}
+              >
                 {i + 1}
               </Box>
               <Box component="span" sx={{ fontFamily: fontDisplay, fontWeight: 600 }}>
@@ -123,12 +138,25 @@ export function SpectatorRoom({ match, hasVeto }: { match: SpectatorRoomMatch; h
       >
         <Box
           component="section"
-          sx={{ p: 2.5, borderRadius: radii.lg, bgcolor: color.paper2, border: `1px solid ${color.rule}`, display: 'grid', gap: 1 }}
+          sx={{
+            p: 2.5,
+            borderRadius: radii.lg,
+            bgcolor: color.paper2,
+            border: `1px solid ${color.rule}`,
+            display: 'grid',
+            gap: 1,
+          }}
         >
-          <Typography component="h2" sx={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: '1.125rem' }}>
+          <Typography
+            component="h2"
+            sx={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: '1.125rem' }}
+          >
             {t('matchPage.spectator.serverTitle')}
           </Typography>
-          <Typography data-testid="match-spectator-server" sx={{ fontSize: textSize.sm, color: color.ink2 }}>
+          <Typography
+            data-testid="match-spectator-server"
+            sx={{ fontSize: textSize.sm, color: color.ink2 }}
+          >
             {serverText}
           </Typography>
         </Box>
@@ -137,9 +165,19 @@ export function SpectatorRoom({ match, hasVeto }: { match: SpectatorRoomMatch; h
             key={team.key}
             component="section"
             data-testid={`match-spectator-${team.key}`}
-            sx={{ p: 2.5, borderRadius: radii.lg, bgcolor: color.paper2, border: `1px solid ${color.rule}`, display: 'grid', gap: 1 }}
+            sx={{
+              p: 2.5,
+              borderRadius: radii.lg,
+              bgcolor: color.paper2,
+              border: `1px solid ${color.rule}`,
+              display: 'grid',
+              gap: 1,
+            }}
           >
-            <Typography component="h2" sx={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: '1.125rem' }}>
+            <Typography
+              component="h2"
+              sx={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: '1.125rem' }}
+            >
               {team.name || t('matchPage.spectator.tbd')}
             </Typography>
             {team.players.length === 0 ? (
@@ -147,13 +185,20 @@ export function SpectatorRoom({ match, hasVeto }: { match: SpectatorRoomMatch; h
                 {t('matchPage.spectator.noRoster')}
               </Typography>
             ) : (
-              <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 0.75 }}>
+              <Box
+                component="ul"
+                sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 0.75 }}
+              >
                 {team.players.map((p) => (
                   <li key={p.steamid}>
                     <Box
                       component={RouterLink}
                       to={playerProfilePath(p.steamid)}
-                      sx={{ color: color.ink, textDecoration: 'none', '&:hover': { color: color.accent } }}
+                      sx={{
+                        color: color.ink,
+                        textDecoration: 'none',
+                        '&:hover': { color: color.accent },
+                      }}
                     >
                       {p.name}
                     </Box>
