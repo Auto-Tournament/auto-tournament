@@ -48,6 +48,7 @@ import { registerShutdown } from './utils/restart';
 import { routeTable } from './routes/routeTable';
 import { listIntegrations } from './integrations/registry';
 import { diskModuleRoutes, scanDiskModules } from './modules/loader';
+import shareRoutes from './routes/share';
 import {
   autoInstallCs2ForExistingData,
   autoUpdateModulesFromSnapshot,
@@ -447,6 +448,10 @@ for (const { prefix, router } of routeTable) {
 // to this router when the modules load, after the database is up, so it has to
 // be in place before the SPA and the 404 handler below.
 app.use(diskModuleRoutes);
+
+// Link previews: /og/<kind>/<key>.png cards, and the shareable pages' HTML
+// with their own Open Graph tags (Caddy sends those paths here).
+app.use(shareRoutes);
 
 // Serve frontend at /app (built client lives under api/public)
 app.use('/app', express.static(PUBLIC_DIR));

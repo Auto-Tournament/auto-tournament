@@ -55,6 +55,12 @@
 	# config/publicPaths.ts resolves. Without this they'd fall through to the
 	# SPA and every map image would come back as index.html.
 	reverse_proxy /map-images/* localhost:3000
+	# Link previews: the share cards, and the shareable pages, whose HTML the
+	# API fills with that page's own title, description and card
+	# (api/src/routes/share.ts; keep the list equal to SHARE_PAGE_PATHS).
+	reverse_proxy /og/* localhost:3000
+	@sharePage path /match/* /team/* /t/team/* /player/* /tournament/* /watch/*
+	reverse_proxy @sharePage localhost:3000
 
 	# Serve React frontend from /app/public
 	root * /app/public
@@ -66,6 +72,8 @@
 		not path /socket.io/*
 		not path /health
 		not path /map-images/*
+		not path /og/*
+		not path /match/* /team/* /t/team/* /player/* /tournament/* /watch/*
 		file {
 			try_files {path} /index.html
 		}

@@ -1112,6 +1112,14 @@ export interface GameIntegration {
   legacyRoutes?(): LegacyRouteMount[];
   /** Client slots this integration fills (see `ClientSlotName`). */
   clientSlots?: ClientSlotName[];
+
+  /**
+   * Share cards for the module's own pages (link previews; CS2: clips and
+   * reels): which page paths they cover, their tags and their card. Optional
+   * and additive: a platform that predates it ignores it.
+   * See services/shareCards/types.ts.
+   */
+  shareCards?: import('../services/shareCards/types').ShareKind[];
   /**
    * Background jobs (monitors, fleet checks) and one-off startup work. Called
    * once the database is ready and the HTTP server is listening, alongside the
