@@ -850,6 +850,12 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
   const done = (await getProposal(id)) as FailoverProposal;
   announce(slug, done);
   void postMatchChatLine(slug, 'serverBack', { map: proposal.mapNumber, round });
+  // In game, once the server has had time to load the match back.
+  setTimeout(() => {
+    void import('./gameMessages').then(({ sayInGame }) =>
+      sayInGame(target.fleetServerId, 'serverBack', { mapNumber: proposal.mapNumber, round })
+    );
+  }, 20_000).unref?.();
   return { ok: true, proposal: done };
 }
 
