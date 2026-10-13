@@ -40,7 +40,7 @@ test(
           weapon: string;
           equippedSides: number[];
         }>;
-        return inv.find((s) => s.weapon === 'weapon_mp7')?.equippedSides ?? [];
+        return [...(inv.find((s) => s.weapon === 'weapon_mp7')?.equippedSides ?? [])].sort();
       };
       const mine = (await (await page.request.get('/api/skins/me')).json()).inventory as Array<{
         id: number;
