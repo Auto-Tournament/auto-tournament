@@ -987,6 +987,32 @@ export default function ManageMatch() {
       {view.server && (
         <Target dot={color.info} title="Server" who="where the match runs">
           <Group label="Instance">
+            {onReadyUp && (
+              <Button
+                onClick={() =>
+                  setConfirm({
+                    target: 'server',
+                    title: `Restart ${view.server?.name ?? 'this server'}?`,
+                    effects: [
+                      'csm restarts the CS2 server (about a minute)',
+                      'Everyone is disconnected and joins again',
+                      'Ready Up reloads the match and restores the last round',
+                    ],
+                    action: 'Restart the server',
+                    cancel: 'Leave it running',
+                    danger: true,
+                    run: () =>
+                      post(
+                        `/api/game/cs2/matches/${encodeURIComponent(slug)}/manage/restart-server`,
+                        {},
+                        'Restarting the server'
+                      ),
+                  })
+                }
+              >
+                Restart server
+              </Button>
+            )}
             <Button
               onClick={() =>
                 setConfirm({

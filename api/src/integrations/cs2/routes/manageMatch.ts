@@ -16,6 +16,9 @@ import { getLiveState } from '../fleet/state';
 import { fleetServerStatus, runFleetCommand } from '../fleet/driver';
 import { fleetResponseBody, isFleetServer, issuedBy } from './fleetCommands';
 import type { CmdName } from '../fleet/protocol/v1';
+import { fleetServerIdOf } from '../fleet/link';
+import { locate } from '../fleet/failoverRecovery';
+import { HostCommandError, sendHostCommand } from '../fleet/hosts/service';
 
 const router = Router();
 
@@ -265,5 +268,76 @@ router.post('/matches/:slug/manage/command', requireAuth, async (req: Request, r
     return res.status(500).json({ success: false, error: 'Could not send the command' });
   }
 });
+
+/**
+ * @openapi
+ * /api/game/cs2/matches/{slug}/manage/restart-server:
+ *   post:
+ *     tags: [Manage a match]
+ *     summary: Ask csm to restart the match's server (Ready Up restores the last round after)
+ *     parameters:
+ *       - { in: path, name: slug, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: "{ commandId }: csm took the command" }
+ *       409: { description: Not on a csm-managed Ready Up server }
+ */
+router.post(
+  '/matches/:slug/manage/restart-server',
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const { slug } = req.params;
+    try {
+      const match = await db.queryOneAsync<{ server_id: string | null }>(
+        'SELECT server_id FROM matches WHERE slug = ?',
+        [slug]
+      );
+      if (!match) return res.status(404).json({ success: false, error: 'Match not found' });
+      const fleetId = match.server_id ? await fleetServerIdOf(match.server_id) : null;
+      const where = fleetId ? await locate(fleetId) : null;
+      if (!where) {
+        return res
+          .status(409)
+          .json({
+            success: false,
+            error: 'The match is not on a server csm manages (or its machine is offline)',
+          });
+      }
+      const who = issuedBy(req);
+      const { command } = await sendHostCommand(
+        where.hostId,
+        'server.restart',
+        { server: where.server, reason: 'admin' },
+        {
+          issuedBy: who.actor,
+          force: { reason: `admin restart for ${slug}` },
+          meta: { match: slug },
+        }
+      );
+      await db
+        .runAsync(
+          'INSERT INTO match_events (match_slug, event_type, event_data) VALUES (?, ?, ?)',
+          [
+            slug,
+            'admin_command',
+            JSON.stringify({
+              command: 'restart_server',
+              args: { server: where.server },
+              by: { userId: who.userId, name: who.name },
+            }),
+          ]
+        )
+        .catch(() => undefined);
+      return res.json({ success: true, commandId: command.id });
+    } catch (error) {
+      if (error instanceof HostCommandError) {
+        return res
+          .status(error.status)
+          .json({ success: false, error: error.message, code: error.code });
+      }
+      log.error(`Error restarting the server of ${slug}`, error as Error);
+      return res.status(500).json({ success: false, error: 'Could not restart the server' });
+    }
+  }
+);
 
 export default router;

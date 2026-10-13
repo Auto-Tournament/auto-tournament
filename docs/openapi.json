@@ -5811,6 +5811,40 @@
         ]
       }
     },
+    "/api/game/cs2/matches/{slug}/manage/restart-server": {
+      "post": {
+        "tags": [
+          "Manage a match"
+        ],
+        "summary": "Ask csm to restart the match's server (Ready Up restores the last round after)",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ commandId }: csm took the command"
+          },
+          "409": {
+            "description": "Not on a csm-managed Ready Up server"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/matches/{slug}/maps/{map}/analysis": {
       "get": {
         "tags": [
