@@ -57,10 +57,17 @@ function when(t: TournamentListItem, locale: string, tr: TFunction): string {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diff = Math.round((day.getTime() - today.getTime()) / 86_400_000);
-  if (t.status === 'completed') return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+  if (t.status === 'completed')
+    return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
   if (diff === 0) return tr('tournamentsPage.whenToday', { time });
   if (diff === 1) return tr('tournamentsPage.whenTomorrow', { time });
-  return date.toLocaleString(locale, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleString(locale, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 /**
@@ -107,9 +114,18 @@ export default function Tournaments() {
     <Box data-testid="tournaments-page">
       <PageHead
         title={t('tournamentsPage.title')}
-        subtitle={live > 1 ? t('tournamentsPage.liveShared', { count: live }) : t('tournamentsPage.subtitle')}
+        subtitle={
+          live > 1
+            ? t('tournamentsPage.liveShared', { count: live })
+            : t('tournamentsPage.subtitle')
+        }
         actions={
-          <Button variant="contained" startIcon={<PlusIcon />} onClick={() => setCreating(true)} data-testid="tournaments-new">
+          <Button
+            variant="contained"
+            startIcon={<PlusIcon />}
+            onClick={() => setCreating(true)}
+            data-testid="tournaments-new"
+          >
             {t('tournamentsPage.new')}
           </Button>
         }
@@ -118,7 +134,15 @@ export default function Tournaments() {
       {tournaments.length === 0 ? (
         <Box
           data-testid="tournaments-empty"
-          sx={{ border: `1px dashed ${color.rule}`, borderRadius: radii.lg, p: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1.5 }}
+          sx={{
+            border: `1px dashed ${color.rule}`,
+            borderRadius: radii.lg,
+            p: { xs: 3, md: 5 },
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: 1.5,
+          }}
         >
           <Typography sx={{ fontWeight: 600 }}>{t('tournamentsPage.emptyTitle')}</Typography>
           <Typography color="text.secondary">{t('tournamentsPage.empty')}</Typography>
@@ -127,8 +151,24 @@ export default function Tournaments() {
           </Button>
         </Box>
       ) : (
-        <Box role="table" aria-label={t('tournamentsPage.title')} sx={{ border: `1px solid ${color.rule}`, borderRadius: radii.lg, overflow: 'hidden' }}>
-          <Box role="row" sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: 'minmax(0, 1.6fr) 150px 190px 110px 120px 44px', gap: 2, px: 2.5, py: 1.5, bgcolor: color.paper2, fontSize: '0.8125rem', color: color.muted }}>
+        <Box
+          role="table"
+          aria-label={t('tournamentsPage.title')}
+          sx={{ border: `1px solid ${color.rule}`, borderRadius: radii.lg, overflow: 'hidden' }}
+        >
+          <Box
+            role="row"
+            sx={{
+              display: { xs: 'none', md: 'grid' },
+              gridTemplateColumns: 'minmax(0, 1.6fr) 150px 190px 110px 120px 44px',
+              gap: 2,
+              px: 2.5,
+              py: 1.5,
+              bgcolor: color.paper2,
+              fontSize: '0.8125rem',
+              color: color.muted,
+            }}
+          >
             <span role="columnheader">{t('tournamentsPage.col.name')}</span>
             <span role="columnheader">{t('tournamentsPage.col.status')}</span>
             <span role="columnheader">{t('tournamentsPage.col.when')}</span>
@@ -146,7 +186,10 @@ export default function Tournaments() {
                 data-testid={`tournaments-row-${x.id}`}
                 sx={{
                   display: 'grid',
-                  gridTemplateColumns: { xs: 'minmax(0, 1fr) auto', md: 'minmax(0, 1.6fr) 150px 190px 110px 120px 44px' },
+                  gridTemplateColumns: {
+                    xs: 'minmax(0, 1fr) auto',
+                    md: 'minmax(0, 1.6fr) 150px 190px 110px 120px 44px',
+                  },
                   gap: 2,
                   px: 2.5,
                   py: 2,
@@ -156,45 +199,107 @@ export default function Tournaments() {
                 }}
               >
                 <Box role="cell" sx={{ minWidth: 0 }}>
-                  <Box component="button" type="button" onClick={() => open(x.id)} sx={{ all: 'unset', cursor: 'pointer', fontWeight: 600, color: color.ink, '&:focus-visible': { outline: `2px solid ${color.focus}` } }}>
+                  <Box
+                    component="button"
+                    type="button"
+                    onClick={() => open(x.id)}
+                    sx={{
+                      all: 'unset',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      color: color.ink,
+                      '&:focus-visible': { outline: `2px solid ${color.focus}` },
+                    }}
+                  >
                     {x.name}
                   </Box>
                   <Typography variant="caption" color="text.secondary" display="block">
-                    {[x.teamSize ? `${x.teamSize}v${x.teamSize}` : x.format.toUpperCase(), t(`tournament.typeSelector.types.${x.type}.label`, { defaultValue: x.type }), x.winner ? t('tournamentsPage.won', { name: x.winner.name }) : null, selected ? t('tournamentsPage.selected') : null]
+                    {[
+                      x.teamSize ? `${x.teamSize}v${x.teamSize}` : x.format.toUpperCase(),
+                      t(`tournament.typeSelector.types.${x.type}.label`, { defaultValue: x.type }),
+                      x.winner ? t('tournamentsPage.won', { name: x.winner.name }) : null,
+                      selected ? t('tournamentsPage.selected') : null,
+                    ]
                       .filter(Boolean)
                       .join(' · ')}
                   </Typography>
                 </Box>
                 <Box role="cell" sx={{ display: { xs: 'none', md: 'block' } }}>
-                  <Box component="span" sx={{ px: 1.25, py: 0.5, borderRadius: radii.pill, bgcolor: tone.bg, color: tone.fg, fontSize: '0.8125rem', fontWeight: 600 }}>
+                  <Box
+                    component="span"
+                    sx={{
+                      px: 1.25,
+                      py: 0.5,
+                      borderRadius: radii.pill,
+                      bgcolor: tone.bg,
+                      color: tone.fg,
+                      fontSize: '0.8125rem',
+                      fontWeight: 600,
+                    }}
+                  >
                     {t(`tournamentsPage.status.${tone.label}`)}
                     {stageOf(x, t) ? ` · ${stageOf(x, t)}` : ''}
                   </Box>
                 </Box>
-                <Box role="cell" sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.875rem', color: color.ink2 }}>{when(x, i18n.language, t) || t('tournamentsPage.notSet')}</Box>
-                <Box role="cell" sx={{ display: { xs: 'none', md: 'block' }, fontFamily: fontMono, fontSize: '0.875rem' }}>
+                <Box
+                  role="cell"
+                  sx={{
+                    display: { xs: 'none', md: 'block' },
+                    fontSize: '0.875rem',
+                    color: color.ink2,
+                  }}
+                >
+                  {when(x, i18n.language, t) || t('tournamentsPage.notSet')}
+                </Box>
+                <Box
+                  role="cell"
+                  sx={{
+                    display: { xs: 'none', md: 'block' },
+                    fontFamily: fontMono,
+                    fontSize: '0.875rem',
+                  }}
+                >
                   {x.maxEntries ? `${x.entries} / ${x.maxEntries}` : x.entries}
                 </Box>
-                <Box role="cell" sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 0.75, fontSize: '0.875rem', color: x.id === featuredId ? color.medalGold : color.ink2 }}>
+                <Box
+                  role="cell"
+                  sx={{
+                    display: { xs: 'none', md: 'flex' },
+                    alignItems: 'center',
+                    gap: 0.75,
+                    fontSize: '0.875rem',
+                    color: x.id === featuredId ? color.medalGold : color.ink2,
+                  }}
+                >
                   {x.id === featuredId && <StarIcon weight="fill" size={16} />}
                   {x.status === 'completed' && x.id !== featuredId ? (
                     <Box
                       component={RouterLink}
                       to={tournamentTabPath(x.id, 'standings')}
                       data-testid={`tournaments-results-${x.id}`}
-                      sx={{ color: color.medalGold, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                      sx={{
+                        color: color.medalGold,
+                        textDecoration: 'none',
+                        '&:hover': { textDecoration: 'underline' },
+                      }}
                     >
                       {t('tournamentsPage.front.results')}
                     </Box>
-                  ) : x.id === featuredId
-                    ? t('tournamentsPage.front.featured')
-                    : x.archived
-                      ? t('tournamentsPage.front.archived')
-                      : x.draft
-                        ? t('tournamentsPage.front.hidden')
-                        : t('tournamentsPage.front.shown')}
+                  ) : x.id === featuredId ? (
+                    t('tournamentsPage.front.featured')
+                  ) : x.archived ? (
+                    t('tournamentsPage.front.archived')
+                  ) : x.draft ? (
+                    t('tournamentsPage.front.hidden')
+                  ) : (
+                    t('tournamentsPage.front.shown')
+                  )}
                 </Box>
-                <IconButton aria-label={t('tournamentsPage.more', { name: x.name })} onClick={(e) => setMenu({ anchor: e.currentTarget, item: x })} data-testid={`tournaments-more-${x.id}`}>
+                <IconButton
+                  aria-label={t('tournamentsPage.more', { name: x.name })}
+                  onClick={(e) => setMenu({ anchor: e.currentTarget, item: x })}
+                  data-testid={`tournaments-more-${x.id}`}
+                >
                   <DotsThreeIcon />
                 </IconButton>
               </Box>
@@ -205,19 +310,48 @@ export default function Tournaments() {
 
       <Menu anchorEl={menu?.anchor ?? null} open={Boolean(menu)} onClose={() => setMenu(null)}>
         {menu && [
-          <MenuItem key="open" onClick={() => open(menu.item.id)}>{t('tournamentsPage.menu.open')}</MenuItem>,
-          <MenuItem key="page" onClick={() => navigate(tournamentTabPath(menu.item.id))}>{t('tournamentsPage.menu.page')}</MenuItem>,
+          <MenuItem key="open" onClick={() => open(menu.item.id)}>
+            {t('tournamentsPage.menu.open')}
+          </MenuItem>,
+          <MenuItem key="page" onClick={() => navigate(tournamentTabPath(menu.item.id))}>
+            {t('tournamentsPage.menu.page')}
+          </MenuItem>,
           menu.item.id !== featuredId ? (
-            <MenuItem key="feature" disabled={busy} onClick={() => void run(() => api.put(`/api/tournaments/${menu.item.id}/feature`, {}), t('tournamentsPage.toast.featured'))}>
+            <MenuItem
+              key="feature"
+              disabled={busy}
+              onClick={() =>
+                void run(
+                  () => api.put(`/api/tournaments/${menu.item.id}/feature`, {}),
+                  t('tournamentsPage.toast.featured')
+                )
+              }
+            >
               {t('tournamentsPage.menu.feature')}
             </MenuItem>
           ) : null,
           menu.item.status === 'completed' && !menu.item.archived ? (
-            <MenuItem key="archive" disabled={busy} onClick={() => void run(() => api.post(`/api/tournaments/${menu.item.id}/archive`, {}), t('tournamentsPage.toast.archived'))}>
+            <MenuItem
+              key="archive"
+              disabled={busy}
+              onClick={() =>
+                void run(
+                  () => api.post(`/api/tournaments/${menu.item.id}/archive`, {}),
+                  t('tournamentsPage.toast.archived')
+                )
+              }
+            >
               {t('tournamentsPage.menu.archive')}
             </MenuItem>
           ) : null,
-          <MenuItem key="delete" sx={{ color: 'error.main' }} onClick={() => { setDeleting(menu.item); setMenu(null); }}>
+          <MenuItem
+            key="delete"
+            sx={{ color: 'error.main' }}
+            onClick={() => {
+              setDeleting(menu.item);
+              setMenu(null);
+            }}
+          >
             {t('tournamentsPage.menu.delete')}
           </MenuItem>,
         ]}
@@ -232,7 +366,14 @@ export default function Tournaments() {
         loading={busy}
         onConfirm={() =>
           deleting &&
-          void run(() => api.fetch('/api/tournament?keepPlayed=1', { method: 'DELETE', headers: { 'X-Tournament-Id': String(deleting.id) } }), t('tournamentsPage.toast.deleted')).then(() => setDeleting(null))
+          void run(
+            () =>
+              api.fetch('/api/tournament?keepPlayed=1', {
+                method: 'DELETE',
+                headers: { 'X-Tournament-Id': String(deleting.id) },
+              }),
+            t('tournamentsPage.toast.deleted')
+          ).then(() => setDeleting(null))
         }
         onCancel={() => setDeleting(null)}
       />
@@ -285,7 +426,9 @@ function NewTournamentDialog({
   const { showError } = useSnackbar();
   const [name, setName] = useState('');
   const [from, setFrom] = useState<'blank' | 'template' | 'copy'>('blank');
-  const [templates, setTemplates] = useState<Array<{ id: number; name: string; format?: string; type?: string }>>([]);
+  const [templates, setTemplates] = useState<
+    Array<{ id: number; name: string; format?: string; type?: string }>
+  >([]);
   const [templateId, setTemplateId] = useState<number | ''>('');
   const [copyId, setCopyId] = useState<number | ''>(tournaments[0]?.id ?? '');
   const [busy, setBusy] = useState(false);
@@ -294,7 +437,9 @@ function NewTournamentDialog({
     if (!open) return;
     let cancelled = false;
     api
-      .get<{ templates: Array<{ id: number; name: string; format?: string; type?: string }> }>('/api/templates')
+      .get<{ templates: Array<{ id: number; name: string; format?: string; type?: string }> }>(
+        '/api/templates'
+      )
       .then((r) => {
         if (cancelled) return;
         setTemplates(r.templates ?? []);
@@ -330,9 +475,19 @@ function NewTournamentDialog({
     }
   };
 
-  const option = (value: 'blank' | 'template' | 'copy', title: string, hint: string, extra?: React.ReactNode) => (
+  const option = (
+    value: 'blank' | 'template' | 'copy',
+    title: string,
+    hint: string,
+    extra?: React.ReactNode
+  ) => (
     <Box
-      sx={{ p: 1.5, borderRadius: radii.md, border: `1px solid ${from === value ? color.accent : color.rule}`, bgcolor: from === value ? color.paper2 : 'transparent' }}
+      sx={{
+        p: 1.5,
+        borderRadius: radii.md,
+        border: `1px solid ${from === value ? color.accent : color.rule}`,
+        bgcolor: from === value ? color.paper2 : 'transparent',
+      }}
     >
       <FormControlLabel
         value={value}
@@ -352,7 +507,13 @@ function NewTournamentDialog({
   );
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" data-testid="new-tournament-dialog">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      data-testid="new-tournament-dialog"
+    >
       <DialogTitle>{t('tournamentsPage.new')}</DialogTitle>
       <DialogContent sx={{ display: 'grid', gap: 2.5, pt: '8px !important' }}>
         <TextField
@@ -363,7 +524,12 @@ function NewTournamentDialog({
           fullWidth
           inputProps={{ maxLength: 100, 'data-testid': 'new-tournament-name' }}
         />
-        <RadioGroup value={from} onChange={(e) => setFrom(e.target.value as typeof from)} aria-label={t('tournamentsPage.startFrom')} sx={{ display: 'grid', gap: 1 }}>
+        <RadioGroup
+          value={from}
+          onChange={(e) => setFrom(e.target.value as typeof from)}
+          aria-label={t('tournamentsPage.startFrom')}
+          sx={{ display: 'grid', gap: 1 }}
+        >
           {option('blank', t('tournamentsPage.blank'), t('tournamentsPage.blankHint'))}
           {templates.length > 0 &&
             option(
@@ -411,7 +577,12 @@ function NewTournamentDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t('common.cancel')}</Button>
-        <Button variant="contained" onClick={() => void create()} disabled={busy} data-testid="new-tournament-create">
+        <Button
+          variant="contained"
+          onClick={() => void create()}
+          disabled={busy}
+          data-testid="new-tournament-create"
+        >
           {t('tournamentsPage.create')}
         </Button>
       </DialogActions>

@@ -20,7 +20,12 @@ import { EmptyPanel, LiveChip, PageHead } from '../components/common/ui';
 import { useTournamentList, type TournamentSummary } from '../hooks/useTournamentList';
 import { useAuth } from '../contexts/AuthContext';
 import { manageTournamentPath } from '../paths';
-import { entriesLine, formatLine, tournamentAction, tournamentWhen } from '../utils/tournamentSummary';
+import {
+  entriesLine,
+  formatLine,
+  tournamentAction,
+  tournamentWhen,
+} from '../utils/tournamentSummary';
 import { eliminationRoundCount, getRoundLabel } from '../utils/matchUtils';
 import { tokens, fontDisplay, fontMono, radii, textSize, withAlpha } from '../theme/tokens';
 
@@ -228,7 +233,17 @@ export default function Browse() {
             sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}
           >
             {hasMine && (
-              <Box role="group" aria-label={t('browsePage.mine.label')} sx={{ display: 'flex', p: 0.5, borderRadius: radii.pill, bgcolor: color.paper2, border: `1px solid ${color.rule}` }}>
+              <Box
+                role="group"
+                aria-label={t('browsePage.mine.label')}
+                sx={{
+                  display: 'flex',
+                  p: 0.5,
+                  borderRadius: radii.pill,
+                  bgcolor: color.paper2,
+                  border: `1px solid ${color.rule}`,
+                }}
+              >
                 {[false, true].map((value) => (
                   <Button
                     key={String(value)}
@@ -489,7 +504,14 @@ export default function Browse() {
                             {tournament.bannerUrl ? (
                               <Box
                                 aria-hidden
-                                sx={{ width: 56, height: 56, borderRadius: radii.md, backgroundImage: `url(${tournament.bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                                sx={{
+                                  width: 56,
+                                  height: 56,
+                                  borderRadius: radii.md,
+                                  backgroundImage: `url(${tournament.bannerUrl})`,
+                                  backgroundSize: 'cover',
+                                  backgroundPosition: 'center',
+                                }}
                               />
                             ) : (
                               <GameMark
@@ -545,12 +567,27 @@ export default function Browse() {
                               ]}
                             >
                               {when.kind === 'live' ? (
-                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                <Box
+                                  component="span"
+                                  sx={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 1,
+                                    flexWrap: 'wrap',
+                                  }}
+                                >
                                   <LiveChip label={t('browsePage.status.live')} />
                                   {tournament.currentRound ? (
                                     <span data-testid={`browse-stage-${tournament.id}`}>
-                                      {tournament.type === 'single_elimination' || tournament.type === 'double_elimination'
-                                        ? getRoundLabel(tournament.currentRound, eliminationRoundCount(tournament.teamCount, tournament.type))
+                                      {tournament.type === 'single_elimination' ||
+                                      tournament.type === 'double_elimination'
+                                        ? getRoundLabel(
+                                            tournament.currentRound,
+                                            eliminationRoundCount(
+                                              tournament.teamCount,
+                                              tournament.type
+                                            )
+                                          )
                                         : t('browsePage.roundN', { n: tournament.currentRound })}
                                     </span>
                                   ) : null}
@@ -561,7 +598,13 @@ export default function Browse() {
                               <Box
                                 component="span"
                                 data-testid={`browse-entries-${tournament.id}`}
-                                sx={{ display: 'block', mt: 0.5, fontFamily: fontMono, fontSize: textSize.xs, color: color.muted }}
+                                sx={{
+                                  display: 'block',
+                                  mt: 0.5,
+                                  fontFamily: fontMono,
+                                  fontSize: textSize.xs,
+                                  color: color.muted,
+                                }}
                               >
                                 {entriesLine(t, tournament)}
                               </Box>
@@ -574,7 +617,13 @@ export default function Browse() {
                                   component={RouterLink}
                                   to={action.to}
                                   data-testid={`browse-action-${tournament.id}`}
-                                  sx={{ borderRadius: radii.pill, px: 2.5, bgcolor: withAlpha(color.pick, 0.14), color: color.pick, '&:hover': { bgcolor: withAlpha(color.pick, 0.22) } }}
+                                  sx={{
+                                    borderRadius: radii.pill,
+                                    px: 2.5,
+                                    bgcolor: withAlpha(color.pick, 0.14),
+                                    color: color.pick,
+                                    '&:hover': { bgcolor: withAlpha(color.pick, 0.22) },
+                                  }}
                                 >
                                   {t('browsePage.actions.youreIn')}
                                 </Button>
