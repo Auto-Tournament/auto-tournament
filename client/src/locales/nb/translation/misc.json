@@ -981,7 +981,8 @@
       "settingsAdvanced": "Innstillinger: avansert"
     },
     "clips_one": "{{count}} klipp",
-    "clips_other": "{{count}} klipp"
+    "clips_other": "{{count}} klipp",
+    "fieldLabel": "Søk"
   },
   "highlightsPage": {
     "title": "Høydepunkter",

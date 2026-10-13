@@ -32,9 +32,9 @@ test.describe.serial('Tournament setup flow', () => {
       await expect(steps).toBeVisible();
       await expect(steps.locator('li')).toHaveCount(7);
 
-      // The setup takes the page over: its steps, under a way back to
-      // Manage, sit in the rail's column, and the form gets the width.
-      await expect(page.getByTestId('manage-rail')).toHaveCount(0);
+      // The rail stays (it is Manage's whole menu); the setup's steps, under
+      // a way back to Manage, are a column of their own beside the form.
+      await expect(page.getByTestId('manage-rail')).toBeVisible();
       const column = page.getByTestId('tournament-setup-column');
       await expect(column).toContainText(/Manage/);
       await expect(page.getByTestId('tournament-setup-back-to-manage')).toHaveAttribute(

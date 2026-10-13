@@ -415,7 +415,10 @@
         "site": "Site",
         "home": "Home",
         "history": "History",
-        "setup": "Setup"
+        "setup": "Setup",
+        "tournaments": "Tournaments",
+        "system": "System",
+        "gamesOf": "Games · {{game}}"
       },
       "label": "Admin",
       "publicPage": "Public page",
@@ -434,7 +437,13 @@
       "reports": "Reports",
       "highlights": "Highlights",
       "license": "License",
-      "templatesAndRatings": "Templates & ratings"
+      "templatesAndRatings": "Templates & ratings",
+      "state": {
+        "live": "live",
+        "setup": "setup"
+      },
+      "openMenu": "Open the Manage menu",
+      "closeMenu": "Close the menu"
     },
     "status": {
       "live": "LIVE",

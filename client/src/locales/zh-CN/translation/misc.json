@@ -981,7 +981,8 @@
       "settingsAdvanced": "Settings: advanced"
     },
     "clips_one": "{{count}} 个片段",
-    "clips_other": "{{count}} 个片段"
+    "clips_other": "{{count}} 个片段",
+    "fieldLabel": "Search"
   },
   "highlightsPage": {
     "title": "Highlights",

@@ -74,7 +74,11 @@ const GROUP_ORDER = [
   'recorders',
 ];
 
-export function SiteSearch() {
+/**
+ * `field`: a full-width box that reads like a search field (the Manage
+ * rail); otherwise a magnifier button (the top bar). Both open the same dialog.
+ */
+export function SiteSearch({ variant = 'icon' }: { variant?: 'icon' | 'field' } = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated: isAdmin, playerSteamId } = useAuth();
@@ -217,14 +221,42 @@ export function SiteSearch() {
 
   return (
     <>
-      <IconButton
-        size="small"
-        onClick={() => setOpen(true)}
-        aria-label={t('search.open')}
-        data-testid="site-search-open"
-      >
-        <MagnifyingGlassIcon size={20} />
-      </IconButton>
+      {variant === 'field' ? (
+        <ButtonBase
+          onClick={() => setOpen(true)}
+          aria-label={t('search.open')}
+          data-testid="site-search-open"
+          sx={{
+            width: '100%',
+            height: 36,
+            px: 1.25,
+            gap: 1,
+            justifyContent: 'flex-start',
+            borderRadius: 1.5,
+            border: 1,
+            borderColor: 'divider',
+            bgcolor: 'background.default',
+            color: 'text.secondary',
+            fontSize: 13,
+            '&.Mui-focusVisible': { outline: '2px solid', outlineColor: 'primary.main' },
+          }}
+        >
+          <MagnifyingGlassIcon size={16} aria-hidden />
+          <span style={{ flex: 1, textAlign: 'left' }}>{t('search.fieldLabel')}</span>
+          <span aria-hidden style={{ fontSize: 12 }}>
+            ⌘K
+          </span>
+        </ButtonBase>
+      ) : (
+        <IconButton
+          size="small"
+          onClick={() => setOpen(true)}
+          aria-label={t('search.open')}
+          data-testid="site-search-open"
+        >
+          <MagnifyingGlassIcon size={20} />
+        </IconButton>
+      )}
       <Dialog
         open={open}
         onClose={close}

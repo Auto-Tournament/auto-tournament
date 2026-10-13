@@ -64,7 +64,6 @@ test.describe.serial('Admin navigation', () => {
       // top bar, and no sidebar drawer.
       await page.goto('/manage');
       await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId('manage-header')).toBeVisible();
       await expect(page.getByTestId('top-nav')).toHaveCount(0);
       await expect(page.locator('.MuiDrawer-root')).toHaveCount(0);
       await expect(page.getByTestId('manage-back-to-site')).toHaveAttribute('href', '/');
@@ -110,18 +109,10 @@ test.describe.serial('Admin navigation', () => {
         await expect(page).toHaveTitle(/ · Auto Tournament$/);
       }
 
-      // The rail: the platform's pages, then CS2's once it is picked in the
-      // rail's dropdown.
-      await expect(page.getByTestId('manage-rail-scope-name')).toHaveText('Platform');
-      for (const [scope, items] of [
-        ['platform', CORE_RAIL_ITEMS],
-        ['cs2', CS2_RAIL_ITEMS],
-      ] as const) {
-        if (scope === 'cs2') {
-          await page.getByTestId('manage-rail-scope').click();
-          await page.getByTestId('manage-rail-scope-cs2').click();
-          await expect(page.getByTestId('manage-rail-scope-name')).toHaveText('Counter-Strike 2');
-        }
+      // The rail: every page in one list, the platform's and CS2's group
+      // (Games · Counter-Strike 2) together; no dropdown.
+      await expect(page.getByTestId('manage-rail-group-game-cs2')).toBeVisible();
+      for (const items of [CORE_RAIL_ITEMS, CS2_RAIL_ITEMS]) {
         for (const [key, url] of items) {
           const item = page.getByTestId(`manage-rail-${key}`);
           await expect(item, `rail item ${key}`).toBeVisible({ timeout: 15000 });
@@ -146,9 +137,7 @@ test.describe.serial('Admin navigation', () => {
         }
       }
 
-      // Back to the platform's pages for its documentation link.
-      await page.getByTestId('manage-rail-scope').click();
-      await page.getByTestId('manage-rail-scope-platform').click();
+      // The documentation link, under System.
       await expect(page.getByTestId('manage-rail-documentation-icon')).toBeVisible();
       // The sidebar's documentation link lives on in the rail.
       await expect(page.getByTestId('manage-rail-documentation')).toHaveAttribute(

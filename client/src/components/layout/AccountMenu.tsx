@@ -44,7 +44,11 @@ function readCachedPlayerAvatarUrl(steamId: string): string | undefined {
  * a module's, connections), theme and language, the notices, and signing in
  * or out. The public top bar and the Manage dashboard's header both use it.
  */
-export function AccountMenu() {
+/**
+ * `wide`: a full-width row with the avatar and the name (the Manage rail's
+ * footer); otherwise the avatar alone (the top bar).
+ */
+export function AccountMenu({ wide = false }: { wide?: boolean } = {}) {
   const {
     playerSteamId,
     isAuthenticated,
@@ -147,7 +151,23 @@ export function AccountMenu() {
       <IconButton
         onClick={handleAvatarMenuOpen}
         size="small"
-        sx={{ p: 0 }}
+        sx={
+          wide
+            ? {
+                width: '100%',
+                minWidth: 0,
+                overflow: 'hidden',
+                justifyContent: 'flex-start',
+                gap: 1.25,
+                px: 1,
+                py: 0.75,
+                borderRadius: 1.5,
+                fontSize: 14,
+                fontWeight: 500,
+                color: 'text.primary',
+              }
+            : { p: 0 }
+        }
         aria-label={t('nav.accountMenu')}
         aria-haspopup="menu"
         aria-controls={anchorEl ? 'account-menu' : undefined}
@@ -184,6 +204,11 @@ export function AccountMenu() {
           >
             <UserIcon size={20} />
           </Avatar>
+        )}
+        {wide && (
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {(playerSteamId ? playerName : adminProfileName) || t('nav.accountMenu')}
+          </span>
         )}
       </IconButton>
       <Menu

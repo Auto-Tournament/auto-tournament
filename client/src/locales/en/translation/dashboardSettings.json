@@ -407,7 +407,7 @@
       "modules": "Modules",
       "templates": "Templates",
       "ratings": "Ratings",
-      "adminTools": "System",
+      "adminTools": "Logs & tools",
       "license": "License",
       "devTools": "Dev tools",
       "documentation": "Documentation",
@@ -421,13 +421,16 @@
         "history": "History",
         "setup": "Setup",
         "configuration": "Configuration",
-        "site": "Site"
+        "site": "Site",
+        "tournaments": "Tournaments",
+        "system": "System",
+        "gamesOf": "Games · {{game}}"
       },
       "templatesAndRatings": "Templates & ratings",
       "allTournaments": "All tournaments",
       "switcher": "Tournament",
       "newTournament": "New tournament",
-      "playedMatches": "All matches",
+      "playedMatches": "Played matches",
       "tournamentBar": "This tournament",
       "scope": {
         "label": "Managing",
@@ -435,7 +438,13 @@
         "platformHint": "Tournaments, people, the site",
         "gameHint": "Its pages and settings"
       },
-      "highlights": "Highlights"
+      "highlights": "Highlights",
+      "state": {
+        "live": "live",
+        "setup": "setup"
+      },
+      "openMenu": "Open the Manage menu",
+      "closeMenu": "Close the menu"
     },
     "status": {
       "live": "LIVE",
