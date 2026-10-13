@@ -223,7 +223,8 @@ server, { resume })`: new epoch and password, `resume` = the latest round
   generous overtime allowance, against absurd rounds) inline, or
   `backup_ref` when it is too large for one frame; no backup yet = round 0
   (the map restarts from warmup, a decided knife kept via `sides`), plus the
-  series score and earlier maps from the last state (`buildResume`). A live
+  series score and earlier maps from the last state (`buildResume`); the
+  backup's `round_sides` goes along as `resume.round_sides`. A live
   match stays `live`. `emitMatchUpdate` + `bracket:update` tell the match
   page; the connect route returns the new address, password and `moved`.
   A refused or unanswered assign puts the failover back to `open` and the
@@ -264,6 +265,9 @@ per match + fleet map number + round, the file base64 in `data`),
   `inlineBackupFor(slug, map, round)` is the `InlineBackup` for a failover
   `match.assign.resume.backup` (null when the file is too large for one
   frame: send `backup_ref` to the server that has it).
+- A backup keeps the `round_sides` Ready Up sent with it (migration
+  `051-round-backup-sides`; a missing or invalid value is stored as null);
+  `toInlineBackup` and the failover resume send it back.
 - `restoreRoundBackup(defaultRestoreDeps(), { matchSlug, mapNumber, round, actor })`
   writes the audit row (its id is `cmd.audit_id`), sends `cmd restore_round`
   with the backup inline to the server of the match's current epoch
