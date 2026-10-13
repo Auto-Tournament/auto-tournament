@@ -30,6 +30,8 @@ import { resolveViewerTeamForMatch } from '../veto/routes';
 import { checkAdminAccess } from '../../../middleware/auth';
 import { connectPasswordFor, fleetServerStatus } from '../fleet/driver';
 import { recentMove } from '../fleet/failover';
+import { liveStateStore } from '../fleet/state';
+import { pauseView } from '../fleet/pauseView';
 
 const router = Router();
 
@@ -68,7 +70,9 @@ async function serverStatus(
 function pickedMaps(vetoState: string | null | undefined): string[] {
   if (!vetoState) return [];
   try {
-    const parsed = JSON.parse(vetoState) as { pickedMaps?: Array<{ mapNumber?: number; mapName: string }> };
+    const parsed = JSON.parse(vetoState) as {
+      pickedMaps?: Array<{ mapNumber?: number; mapName: string }>;
+    };
     return Array.isArray(parsed?.pickedMaps)
       ? [...parsed.pickedMaps]
           .sort((a, b) => (a.mapNumber || 0) - (b.mapNumber || 0))
@@ -140,6 +144,8 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
     let password: string | null = null;
     // A failover moved the match in the last half hour: players reconnect.
     let moved: { at: number; reason: string; inPlace: boolean } | null = null;
+    // Ready Up: the match is paused, and whose seat is empty.
+    let pause: { type: string | null; waitingFor: string[] } | null = null;
     if (canSeeServer && match.server_id) {
       if (onFleet) {
         const move = await recentMove(match.slug).catch(() => null);
@@ -151,12 +157,14 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
           fleet.online && fleet.status
             ? {
                 status: fleet.status,
-                description: (await import('../services/serverStatusService')).serverStatusService.getStatusDescription(
-                  fleet.status
-                ),
+                description: (
+                  await import('../services/serverStatusService')
+                ).serverStatusService.getStatusDescription(fleet.status),
               }
             : null;
         password = await connectPasswordFor(match.slug);
+        const live = await liveStateStore.getLiveState(match.slug).catch(() => null);
+        pause = pauseView(live?.state ?? null);
       } else {
         status = await serverStatus(match.server_id, match.slug);
       }
@@ -183,6 +191,7 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
               status: status?.status ?? null,
               statusDescription: status?.description ?? null,
               moved,
+              pause,
             }
           : null,
     });

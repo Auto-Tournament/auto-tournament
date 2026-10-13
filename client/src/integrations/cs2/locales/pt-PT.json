@@ -409,6 +409,9 @@
   "matchInfo": {
     "server": {
       "waitingTitle": "À espera de atribuição de servidor",
+      "paused": "O jogo está em pausa.",
+      "pausedWaiting_one": "Em pausa: à espera que {{names}} volte a ligar-se.",
+      "pausedWaiting_other": "Em pausa: à espera que {{names}} voltem a ligar-se.",
       "waitingBody": "Um servidor será atribuído automaticamente assim que houver um disponível. Após cada jogo, os servidores entram num breve período de arrefecimento (cerca de 2 minutos) para que as demos sejam enviadas e o servidor seja totalmente reiniciado. Esta página será atualizada automaticamente quando o teu servidor estiver pronto.",
       "serverName": "Servidor: {{name}}",
       "status": "Estado: {{status}}",

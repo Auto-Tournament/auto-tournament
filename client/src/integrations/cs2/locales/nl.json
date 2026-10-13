@@ -409,6 +409,9 @@
   "matchInfo": {
     "server": {
       "waitingTitle": "Wachten op servertoewijzing",
+      "paused": "De match is gepauzeerd.",
+      "pausedWaiting_one": "Gepauzeerd: wachten tot {{names}} opnieuw verbindt.",
+      "pausedWaiting_other": "Gepauzeerd: wachten tot {{names}} opnieuw verbinden.",
       "waitingBody": "Er wordt automatisch een server toegewezen zodra er een beschikbaar is. Na elke wedstrijd gaan servers kort in cooldown (ongeveer 2 minuten) zodat demo's kunnen uploaden en de server volledig kan resetten. Deze pagina wordt automatisch bijgewerkt zodra je server klaar is.",
       "serverName": "Server: {{name}}",
       "status": "Status: {{status}}",

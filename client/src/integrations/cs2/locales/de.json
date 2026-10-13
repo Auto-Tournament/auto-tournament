@@ -409,6 +409,9 @@
   "matchInfo": {
     "server": {
       "waitingTitle": "Warten auf Serverzuweisung",
+      "paused": "Das Match ist pausiert.",
+      "pausedWaiting_one": "Pausiert: Warten, bis {{names}} sich wieder verbindet.",
+      "pausedWaiting_other": "Pausiert: Warten, bis {{names}} sich wieder verbinden.",
       "waitingBody": "Ein Server wird automatisch zugewiesen, sobald einer frei ist. Nach jedem Match haben Server eine kurze Abkühlphase (etwa 2 Minuten), damit Demos hochgeladen werden und der Server vollständig zurückgesetzt werden kann. Diese Seite aktualisiert sich automatisch, sobald dein Server bereit ist.",
       "serverName": "Server: {{name}}",
       "status": "Status: {{status}}",

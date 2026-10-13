@@ -409,6 +409,9 @@
   "matchInfo": {
     "server": {
       "waitingTitle": "Waiting for Server Assignment",
+      "paused": "The match is paused.",
+      "pausedWaiting_one": "Paused: waiting for {{names}} to reconnect.",
+      "pausedWaiting_other": "Paused: waiting for {{names}} to reconnect.",
       "waitingBody": "A server will be automatically assigned as soon as one becomes available. After each match, servers go into a short cooldown (about 2 minutes) so demos can upload and the server can fully reset. This page will update automatically when your server is ready.",
       "serverName": "Server: {{name}}",
       "status": "Status: {{status}}",
