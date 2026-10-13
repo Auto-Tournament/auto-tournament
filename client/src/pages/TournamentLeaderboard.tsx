@@ -123,8 +123,7 @@ export default function TournamentLeaderboard() {
     } catch (err: unknown) {
       // Treat 404 / "not found" as a normal empty state instead of a hard error,
       // so a fresh install without a tournament doesn't look broken.
-      const message =
-        err instanceof Error ? err.message : typeof err === 'string' ? err : '';
+      const message = err instanceof Error ? err.message : typeof err === 'string' ? err : '';
       const isNotFound =
         typeof message === 'string' &&
         (message.includes('404') || message.toLowerCase().includes('not found'));
@@ -143,17 +142,10 @@ export default function TournamentLeaderboard() {
     }
   };
 
-  // Initial load + periodic refresh as a fallback
+  // Initial load; after that the socket below keeps it current (and re-reads after a reconnect).
   useEffect(() => {
     if (!id) return;
-
     void loadStandings(true);
-    // Refresh every 30 seconds without blocking UI
-    const interval = setInterval(() => {
-      void loadStandings(false);
-    }, 30000);
-
-    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, t]);
 
@@ -427,77 +419,77 @@ export default function TournamentLeaderboard() {
   return (
     // The Standings tab of the tournament page, which owns the header and tabs.
     <Box data-testid="public-leaderboard-page">
-        <Stack spacing={3}>
-          <Box display="flex" gap={1} flexWrap="wrap">
-            <Chip label={tournamentTypeLabel} size="small" variant="outlined" />
-            {roundStatus && (
-              <Chip
-                label={t('leaderboardPage.roundOf', {
-                  current: roundStatus.roundNumber,
-                  total: totalRounds,
-                })}
-                size="small"
-                variant="outlined"
-              />
-            )}
-          </Box>
+      <Stack spacing={3}>
+        <Box display="flex" gap={1} flexWrap="wrap">
+          <Chip label={tournamentTypeLabel} size="small" variant="outlined" />
+          {roundStatus && (
+            <Chip
+              label={t('leaderboardPage.roundOf', {
+                current: roundStatus.roundNumber,
+                total: totalRounds,
+              })}
+              size="small"
+              variant="outlined"
+            />
+          )}
+        </Box>
 
-          {(topPerformers || (roundStatus && isActive) || isComplete) && (
+        {(topPerformers || (roundStatus && isActive) || isComplete) && (
           <Panel sx={{ p: 3 }}>
-              {/* Quick-glance top performers */}
-              {topPerformers && (
-                <Box mb={roundStatus && isActive ? 3 : 0}>
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, md: showGameStats ? 6 : 12 }}>
-                      <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                        {t('leaderboardPage.topByWins')}
+            {/* Quick-glance top performers */}
+            {topPerformers && (
+              <Box mb={roundStatus && isActive ? 3 : 0}>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, md: showGameStats ? 6 : 12 }}>
+                    <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                      {t('leaderboardPage.topByWins')}
+                    </Typography>
+                    {topPerformers.byWins.length === 0 ? (
+                      <Typography variant="body2" color="text.secondary">
+                        {t('leaderboardPage.noMatchesYet')}
                       </Typography>
-                      {topPerformers.byWins.length === 0 ? (
-                        <Typography variant="body2" color="text.secondary">
-                          {t('leaderboardPage.noMatchesYet')}
-                        </Typography>
-                      ) : (
-                        <Stack spacing={0.5}>
-                          {topPerformers.byWins.map((player, index) => (
-                            <Box
-                              key={player.playerId}
-                              display="flex"
-                              justifyContent="space-between"
-                              alignItems="center"
+                    ) : (
+                      <Stack spacing={0.5}>
+                        {topPerformers.byWins.map((player, index) => (
+                          <Box
+                            key={player.playerId}
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                          >
+                            <Typography
+                              variant="body2"
+                              component="a"
+                              href={getPlayerPageUrl(player.playerId)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{
+                                textDecoration: 'none',
+                                cursor: 'pointer',
+                                color: 'text.primary',
+                                '&:hover': { textDecoration: 'underline' },
+                              }}
                             >
-                              <Typography
+                              {index + 1}.{' '}
+                              <PlayerName
+                                name={player.name}
+                                // Leaderboard entries currently don't expose isAdmin; this can be extended later.
                                 variant="body2"
-                                component="a"
-                                href={getPlayerPageUrl(player.playerId)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                sx={{
-                                  textDecoration: 'none',
-                                  cursor: 'pointer',
-                                  color: 'text.primary',
-                                  '&:hover': { textDecoration: 'underline' },
-                                }}
-                              >
-                                {index + 1}.{' '}
-                                <PlayerName
-                                  name={player.name}
-                                  // Leaderboard entries currently don't expose isAdmin; this can be extended later.
-                                  variant="body2"
-                                  sx={{ display: 'inline' }}
-                                />
-                              </Typography>
-                              <Chip
-                                label={`${player.matchWins}${t('leaderboardPage.winsShort')} / ${player.matchLosses}${t('leaderboardPage.lossesShort')}`}
-                                size="small"
-                                sx={index === 0 ? { color: tokens.color.accent } : undefined}
+                                sx={{ display: 'inline' }}
                               />
-                            </Box>
-                          ))}
-                        </Stack>
-                      )}
-                    </Grid>
+                            </Typography>
+                            <Chip
+                              label={`${player.matchWins}${t('leaderboardPage.winsShort')} / ${player.matchLosses}${t('leaderboardPage.lossesShort')}`}
+                              size="small"
+                              sx={index === 0 ? { color: tokens.color.accent } : undefined}
+                            />
+                          </Box>
+                        ))}
+                      </Stack>
+                    )}
+                  </Grid>
 
-                    {showGameStats && (
+                  {showGameStats && (
                     <Grid size={{ xs: 12, md: 6 }}>
                       <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                         {t('leaderboardPage.topByAdr')}
@@ -545,386 +537,409 @@ export default function TournamentLeaderboard() {
                         </Stack>
                       )}
                     </Grid>
-                    )}
-                  </Grid>
-                </Box>
-              )}
+                  )}
+                </Grid>
+              </Box>
+            )}
 
-              {/* Round Progress */}
-              {roundStatus && isActive && (
-                <Box>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                    <Typography variant="body2" color="text.secondary">
-                      {t('leaderboardPage.roundMap', {
-                        round: roundStatus.roundNumber,
-                        map: roundStatus.map,
-                      })}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {t('leaderboardPage.matchesCompleted', {
-                        completed: roundStatus.completedMatches,
-                        total: roundStatus.totalMatches,
-                      })}
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={(roundStatus.completedMatches / roundStatus.totalMatches) * 100}
-                    sx={{ height: 8, borderRadius: radii.sm }}
-                  />
+            {/* Round Progress */}
+            {roundStatus && isActive && (
+              <Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('leaderboardPage.roundMap', {
+                      round: roundStatus.roundNumber,
+                      map: roundStatus.map,
+                    })}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('leaderboardPage.matchesCompleted', {
+                      completed: roundStatus.completedMatches,
+                      total: roundStatus.totalMatches,
+                    })}
+                  </Typography>
                 </Box>
-              )}
+                <LinearProgress
+                  variant="determinate"
+                  value={(roundStatus.completedMatches / roundStatus.totalMatches) * 100}
+                  sx={{ height: 8, borderRadius: radii.sm }}
+                />
+              </Box>
+            )}
 
-              {isComplete && (
-                <Alert severity="success" sx={{ mt: 2 }}>
-                  {t('leaderboardPage.tournamentCompletedAlert')}
-                </Alert>
-              )}
+            {isComplete && (
+              <Alert severity="success" sx={{ mt: 2 }}>
+                {t('leaderboardPage.tournamentCompletedAlert')}
+              </Alert>
+            )}
           </Panel>
-          )}
+        )}
 
-          {/* The game's own statistics, when the page's CS2 columns are not
+        {/* The game's own statistics, when the page's CS2 columns are not
               them: manual reporting lists the tournament's custom fields. */}
-          {GameStatsView && <GameStatsView tournamentId={tournament.id} />}
+        {GameStatsView && <GameStatsView tournamentId={tournament.id} />}
 
-          {/* Team Standings (for standard tournaments) */}
-          {teams && teams.length > 0 && (
-            <Box component="section" aria-labelledby="leaderboard-team-standings">
-              <SectionHead
-                id="leaderboard-team-standings"
-                title={t('leaderboardPage.teamStandings')}
-                action={<Chip label={t('leaderboardPage.teamsCount', { count: teams.length })} size="small" />}
-              />
-              <Panel sx={{ p: { xs: 1, sm: 2 } }}>
-                <TableContainer>
-                  <Table size="small" sx={numericCellsSx}>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, width: 60 }}>#</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>{t('leaderboardPage.team')}</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          {t('leaderboardPage.wins')}
+        {/* Team Standings (for standard tournaments) */}
+        {teams && teams.length > 0 && (
+          <Box component="section" aria-labelledby="leaderboard-team-standings">
+            <SectionHead
+              id="leaderboard-team-standings"
+              title={t('leaderboardPage.teamStandings')}
+              action={
+                <Chip
+                  label={t('leaderboardPage.teamsCount', { count: teams.length })}
+                  size="small"
+                />
+              }
+            />
+            <Panel sx={{ p: { xs: 1, sm: 2 } }}>
+              <TableContainer>
+                <Table size="small" sx={numericCellsSx}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 600, width: 60 }}>#</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>{t('leaderboardPage.team')}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600 }}>
+                        {t('leaderboardPage.wins')}
+                      </TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600 }}>
+                        {t('leaderboardPage.losses')}
+                      </TableCell>
+                      {isSwissStandings && (
+                        <>
+                          <TableCell align="right" sx={{ fontWeight: 600 }}>
+                            {t('leaderboardPage.buchholz')}
+                          </TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 600 }}>
+                            {t('leaderboardPage.roundDiff')}
+                          </TableCell>
+                        </>
+                      )}
+                      <TableCell align="right" sx={{ fontWeight: 600 }}>
+                        {t('leaderboardPage.matches')}
+                      </TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600 }}>
+                        {t('leaderboardPage.winRate')}
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {teams.map((team, index) => (
+                      <TableRow key={team.teamId}>
+                        <TableCell>
+                          <Typography
+                            variant="body1"
+                            fontWeight={index === 0 ? 700 : 600}
+                            color={index === 0 ? 'text.primary' : 'text.secondary'}
+                            sx={mono}
+                          >
+                            {index + 1}
+                          </Typography>
                         </TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          {t('leaderboardPage.losses')}
+                        <TableCell>
+                          <TeamNameLink
+                            teamId={team.teamId}
+                            name={team.name}
+                            tag={team.tag ?? undefined}
+                            showTag
+                            variant="body1"
+                            sx={{ fontWeight: 600 }}
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body1" fontWeight={600} color="success.main">
+                            {team.matchWins}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body1" color="error.main">
+                            {team.matchLosses}
+                          </Typography>
                         </TableCell>
                         {isSwissStandings && (
                           <>
-                            <TableCell align="right" sx={{ fontWeight: 600 }}>
-                              {t('leaderboardPage.buchholz')}
-                            </TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 600 }}>
-                              {t('leaderboardPage.roundDiff')}
+                            <TableCell align="right">{team.buchholz ?? 0}</TableCell>
+                            <TableCell align="right">
+                              {(team.roundDiff ?? 0) > 0 ? '+' : ''}
+                              {team.roundDiff ?? 0}
                             </TableCell>
                           </>
                         )}
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          {t('leaderboardPage.matches')}
-                        </TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          {t('leaderboardPage.winRate')}
+                        <TableCell align="right">{team.matchCount}</TableCell>
+                        <TableCell align="right">
+                          <Chip
+                            label={`${(team.winRate * 100).toFixed(1)}%`}
+                            size="small"
+                            color={team.winRate >= 0.5 ? 'success' : 'default'}
+                          />
                         </TableCell>
                       </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {teams.map((team, index) => (
-                        <TableRow key={team.teamId}>
-                          <TableCell>
-                            <Typography
-                              variant="body1"
-                              fontWeight={index === 0 ? 700 : 600}
-                              color={index === 0 ? 'text.primary' : 'text.secondary'}
-                              sx={mono}
-                            >
-                              {index + 1}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <TeamNameLink
-                              teamId={team.teamId}
-                              name={team.name}
-                              tag={team.tag ?? undefined}
-                              showTag
-                              variant="body1"
-                              sx={{ fontWeight: 600 }}
-                            />
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography variant="body1" fontWeight={600} color="success.main">
-                              {team.matchWins}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography variant="body1" color="error.main">
-                              {team.matchLosses}
-                            </Typography>
-                          </TableCell>
-                          {isSwissStandings && (
-                            <>
-                              <TableCell align="right">{team.buchholz ?? 0}</TableCell>
-                              <TableCell align="right">
-                                {(team.roundDiff ?? 0) > 0 ? '+' : ''}
-                                {team.roundDiff ?? 0}
-                              </TableCell>
-                            </>
-                          )}
-                          <TableCell align="right">
-                            {team.matchCount}
-                          </TableCell>
-                          <TableCell align="right">
-                            <Chip
-                              label={`${(team.winRate * 100).toFixed(1)}%`}
-                              size="small"
-                              color={team.winRate >= 0.5 ? 'success' : 'default'}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Panel>
-            </Box>
-          )}
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Panel>
+          </Box>
+        )}
 
-          {/* Player Leaderboard */}
-          <Box component="section" data-testid="public-leaderboard" aria-labelledby="leaderboard-players">
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="baseline"
-                mb={2}
-                flexWrap="wrap"
-                gap={2}
+        {/* Player Leaderboard */}
+        <Box
+          component="section"
+          data-testid="public-leaderboard"
+          aria-labelledby="leaderboard-players"
+        >
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="baseline"
+            mb={2}
+            flexWrap="wrap"
+            gap={2}
+          >
+            <Box display="flex" alignItems="center" gap={1}>
+              <Typography
+                id="leaderboard-players"
+                variant="h5"
+                component="h2"
+                sx={{ letterSpacing: '-0.025em', lineHeight: 1.1 }}
               >
-                <Box display="flex" alignItems="center" gap={1}>
-                  <Typography
-                    id="leaderboard-players"
-                    variant="h5"
-                    component="h2"
-                    sx={{ letterSpacing: '-0.025em', lineHeight: 1.1 }}
-                  >
-                    {t('leaderboardPage.leaderboardTitle')}
-                  </Typography>
-                  <Chip
-                    label={t('leaderboardPage.playersFiltered', {
-                      filtered: filteredLeaderboard.length,
-                      total: leaderboard.length,
-                    })}
-                    size="small"
-                  />
-                </Box>
-                <Box display="flex" gap={1} flexWrap="wrap">
-                  <TextField
-                    size="small"
-                    placeholder={t('leaderboardPage.searchPlaceholder')}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <MagnifyingGlassIcon size={20} />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{ minWidth: 200 }}
-                  />
-                  <Button
-                    variant="outlined"
-                    startIcon={<DownloadSimpleIcon />}
-                    onClick={handleExportClick}
-                  >
-                    {t('leaderboardPage.export')}
-                  </Button>
-                  <Menu
-                    anchorEl={exportMenuAnchor}
-                    open={Boolean(exportMenuAnchor)}
-                    onClose={handleExportClose}
-                  >
-                    <MenuItem onClick={exportToCSV}>{t('leaderboardPage.exportCsv')}</MenuItem>
-                    <MenuItem onClick={exportToJSON}>{t('leaderboardPage.exportJson')}</MenuItem>
-                  </Menu>
-                </Box>
-              </Box>
-
-              {leaderboard.length === 0 ? (
-                <Box textAlign="center" py={4}>
-                  <Box component={UserIcon} size={48} sx={{ color: 'text.secondary', mb: 2 }} />
-                  <Typography variant="body1" color="text.secondary">
-                    {t('leaderboardPage.noPlayersRegistered')}
-                  </Typography>
-                </Box>
-              ) : filteredLeaderboard.length === 0 ? (
-                <Box textAlign="center" py={4}>
-                  <Box component={MagnifyingGlassIcon} size={48} sx={{ color: 'text.secondary', mb: 2 }} />
-                  <Typography variant="body1" color="text.secondary">
-                    {t('leaderboardPage.searchNoMatch', { query: searchQuery })}
-                  </Typography>
-                </Box>
-              ) : (
-                <TableContainer component={Panel} sx={{ p: { xs: 1, sm: 2 } }}>
-                  <Table sx={numericCellsSx}>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, width: 60 }}>#</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>{t('leaderboardPage.player')}</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          {t('leaderboardPage.wins')}
-                        </TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          {t('leaderboardPage.losses')}
-                        </TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          {t('leaderboardPage.winRate')}
-                        </TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          {t('leaderboardPage.skillRating')}
-                        </TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          {t('leaderboardPage.ratingChange')}
-                        </TableCell>
-                        {showGameStats && leaderboard.some((p) => p.averageAdr) && (
-                          <TableCell align="right" sx={{ fontWeight: 600 }}>
-                            {t('leaderboardPage.avgAdr')}
-                          </TableCell>
-                        )}
-                        <TableCell sx={{ width: 100 }}></TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filteredLeaderboard.map((player, _index) => {
-                        // Calculate actual rank in full leaderboard
-                        const actualRank =
-                          leaderboard.findIndex((p) => p.playerId === player.playerId) + 1;
-                        return (
-                          <TableRow
-                            key={player.playerId}
-                            sx={{
-                              '&:hover': { bgcolor: 'action.hover' },
-                              ...(actualRank <= 3 && {
-                                bgcolor: 'background.surface2',
-                              }),
-                            }}
-                          >
-                            <TableCell>
-                              <Box display="flex" alignItems="center" gap={1}>
-                                {actualRank === 1 && (
-                                  <Box component={TrophyIcon} size={20} sx={{ color: tokens.color.medalGold }} />
-                                )}
-                                {actualRank === 2 && (
-                                  <Box component={TrophyIcon} size={20} sx={{ color: tokens.color.medalSilver }} />
-                                )}
-                                {actualRank === 3 && (
-                                  <Box component={TrophyIcon} size={20} sx={{ color: tokens.color.medalBronze }} />
-                                )}
-                                <Typography
-                                  variant="body1"
-                                  fontWeight={actualRank <= 3 ? 700 : 600}
-                                  color={actualRank <= 3 ? 'text.primary' : 'text.secondary'}
-                                  sx={mono}
-                                >
-                                  {actualRank}
-                                </Typography>
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Box display="flex" alignItems="center" gap={2}>
-                                <PlayerAvatar
-                                  id={player.playerId}
-                                  name={player.name}
-                                  avatarUrl={player.avatar}
-                                  size={40}
-                                />
-                                <Typography variant="body1" fontWeight={600}>
-                                  {player.name}
-                                </Typography>
-                              </Box>
-                            </TableCell>
-                            <TableCell align="right">
-                              <Typography variant="body1" fontWeight={600} color="success.main">
-                                {player.matchWins}
-                              </Typography>
-                            </TableCell>
-                            <TableCell align="right">
-                              <Typography variant="body1" color="error.main">
-                                {player.matchLosses}
-                              </Typography>
-                            </TableCell>
-                            <TableCell align="right">
-                              <Chip
-                                label={`${(player.winRate * 100).toFixed(1)}%`}
-                                size="small"
-                                color={player.winRate >= 0.5 ? 'success' : 'default'}
-                              />
-                            </TableCell>
-                            <TableCell align="right">
-                              <Typography variant="body1" fontWeight={600}>
-                                {player.currentElo}
-                              </Typography>
-                            </TableCell>
-                            <TableCell align="right">
-                              {player.eloChange !== 0 && (
-                                <Chip
-                                  label={`${player.eloChange > 0 ? '+' : ''}${player.eloChange}`}
-                                  size="small"
-                                  color={player.eloChange > 0 ? 'success' : 'error'}
-                                />
-                              )}
-                            </TableCell>
-                            {showGameStats && leaderboard.some((p) => p.averageAdr) && (
-                              <TableCell align="right">
-                                {player.averageAdr ? (
-                                  <Typography variant="body2">
-                                    {player.averageAdr.toFixed(1)}
-                                  </Typography>
-                                ) : (
-                                  <Typography variant="body2" color="text.secondary">
-                                    N/A
-                                  </Typography>
-                                )}
-                              </TableCell>
-                            )}
-                            <TableCell>
-                              <Link
-                                component="button"
-                                variant="body2"
-                                onClick={() => handlePlayerClick(player.playerId)}
-                                sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 0.5,
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                View
-                                <ArrowSquareOutIcon size={20} />
-                              </Link>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
+                {t('leaderboardPage.leaderboardTitle')}
+              </Typography>
+              <Chip
+                label={t('leaderboardPage.playersFiltered', {
+                  filtered: filteredLeaderboard.length,
+                  total: leaderboard.length,
+                })}
+                size="small"
+              />
+            </Box>
+            <Box display="flex" gap={1} flexWrap="wrap">
+              <TextField
+                size="small"
+                placeholder={t('leaderboardPage.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <MagnifyingGlassIcon size={20} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ minWidth: 200 }}
+              />
+              <Button
+                variant="outlined"
+                startIcon={<DownloadSimpleIcon />}
+                onClick={handleExportClick}
+              >
+                {t('leaderboardPage.export')}
+              </Button>
+              <Menu
+                anchorEl={exportMenuAnchor}
+                open={Boolean(exportMenuAnchor)}
+                onClose={handleExportClose}
+              >
+                <MenuItem onClick={exportToCSV}>{t('leaderboardPage.exportCsv')}</MenuItem>
+                <MenuItem onClick={exportToJSON}>{t('leaderboardPage.exportJson')}</MenuItem>
+              </Menu>
+            </Box>
           </Box>
 
-          {/* About the format */}
-          <Panel sx={{ p: 3 }}>
-              <Typography variant="h6" component="h2" fontWeight={600} gutterBottom>
-                {tournamentTypeLabel}
+          {leaderboard.length === 0 ? (
+            <Box textAlign="center" py={4}>
+              <Box component={UserIcon} size={48} sx={{ color: 'text.secondary', mb: 2 }} />
+              <Typography variant="body1" color="text.secondary">
+                {t('leaderboardPage.noPlayersRegistered')}
               </Typography>
-              {tournamentTypeDescription && (
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  {tournamentTypeDescription}
-                </Typography>
-              )}
-              <Typography variant="body2" color="text.secondary">
-                Click on any player&apos;s name or the &quot;View&quot; link to see their detailed
-                profile, match history, and Skill Rating progression.
+            </Box>
+          ) : filteredLeaderboard.length === 0 ? (
+            <Box textAlign="center" py={4}>
+              <Box
+                component={MagnifyingGlassIcon}
+                size={48}
+                sx={{ color: 'text.secondary', mb: 2 }}
+              />
+              <Typography variant="body1" color="text.secondary">
+                {t('leaderboardPage.searchNoMatch', { query: searchQuery })}
               </Typography>
-          </Panel>
-        </Stack>
+            </Box>
+          ) : (
+            <TableContainer component={Panel} sx={{ p: { xs: 1, sm: 2 } }}>
+              <Table sx={numericCellsSx}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600, width: 60 }}>#</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('leaderboardPage.player')}</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      {t('leaderboardPage.wins')}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      {t('leaderboardPage.losses')}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      {t('leaderboardPage.winRate')}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      {t('leaderboardPage.skillRating')}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      {t('leaderboardPage.ratingChange')}
+                    </TableCell>
+                    {showGameStats && leaderboard.some((p) => p.averageAdr) && (
+                      <TableCell align="right" sx={{ fontWeight: 600 }}>
+                        {t('leaderboardPage.avgAdr')}
+                      </TableCell>
+                    )}
+                    <TableCell sx={{ width: 100 }}></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredLeaderboard.map((player, _index) => {
+                    // Calculate actual rank in full leaderboard
+                    const actualRank =
+                      leaderboard.findIndex((p) => p.playerId === player.playerId) + 1;
+                    return (
+                      <TableRow
+                        key={player.playerId}
+                        sx={{
+                          '&:hover': { bgcolor: 'action.hover' },
+                          ...(actualRank <= 3 && {
+                            bgcolor: 'background.surface2',
+                          }),
+                        }}
+                      >
+                        <TableCell>
+                          <Box display="flex" alignItems="center" gap={1}>
+                            {actualRank === 1 && (
+                              <Box
+                                component={TrophyIcon}
+                                size={20}
+                                sx={{ color: tokens.color.medalGold }}
+                              />
+                            )}
+                            {actualRank === 2 && (
+                              <Box
+                                component={TrophyIcon}
+                                size={20}
+                                sx={{ color: tokens.color.medalSilver }}
+                              />
+                            )}
+                            {actualRank === 3 && (
+                              <Box
+                                component={TrophyIcon}
+                                size={20}
+                                sx={{ color: tokens.color.medalBronze }}
+                              />
+                            )}
+                            <Typography
+                              variant="body1"
+                              fontWeight={actualRank <= 3 ? 700 : 600}
+                              color={actualRank <= 3 ? 'text.primary' : 'text.secondary'}
+                              sx={mono}
+                            >
+                              {actualRank}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Box display="flex" alignItems="center" gap={2}>
+                            <PlayerAvatar
+                              id={player.playerId}
+                              name={player.name}
+                              avatarUrl={player.avatar}
+                              size={40}
+                            />
+                            <Typography variant="body1" fontWeight={600}>
+                              {player.name}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body1" fontWeight={600} color="success.main">
+                            {player.matchWins}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body1" color="error.main">
+                            {player.matchLosses}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Chip
+                            label={`${(player.winRate * 100).toFixed(1)}%`}
+                            size="small"
+                            color={player.winRate >= 0.5 ? 'success' : 'default'}
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body1" fontWeight={600}>
+                            {player.currentElo}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          {player.eloChange !== 0 && (
+                            <Chip
+                              label={`${player.eloChange > 0 ? '+' : ''}${player.eloChange}`}
+                              size="small"
+                              color={player.eloChange > 0 ? 'success' : 'error'}
+                            />
+                          )}
+                        </TableCell>
+                        {showGameStats && leaderboard.some((p) => p.averageAdr) && (
+                          <TableCell align="right">
+                            {player.averageAdr ? (
+                              <Typography variant="body2">
+                                {player.averageAdr.toFixed(1)}
+                              </Typography>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                N/A
+                              </Typography>
+                            )}
+                          </TableCell>
+                        )}
+                        <TableCell>
+                          <Link
+                            component="button"
+                            variant="body2"
+                            onClick={() => handlePlayerClick(player.playerId)}
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.5,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            View
+                            <ArrowSquareOutIcon size={20} />
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Box>
+
+        {/* About the format */}
+        <Panel sx={{ p: 3 }}>
+          <Typography variant="h6" component="h2" fontWeight={600} gutterBottom>
+            {tournamentTypeLabel}
+          </Typography>
+          {tournamentTypeDescription && (
+            <Typography variant="body2" color="text.secondary" paragraph>
+              {tournamentTypeDescription}
+            </Typography>
+          )}
+          <Typography variant="body2" color="text.secondary">
+            Click on any player&apos;s name or the &quot;View&quot; link to see their detailed
+            profile, match history, and Skill Rating progression.
+          </Typography>
+        </Panel>
+      </Stack>
     </Box>
   );
 }

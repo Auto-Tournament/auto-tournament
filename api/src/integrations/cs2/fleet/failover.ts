@@ -76,6 +76,7 @@ import {
 } from './failoverPlan';
 import type { HostHealthPayload } from './protocol/host/v1';
 import type { HelloPayload, MapStats, MatchPhase, MatchState, Score } from './protocol/v1';
+import { fleetChanged } from './adminTopics';
 
 const CHECK_MS = Number(process.env.FLEET_FAILOVER_CHECK_MS) || 10_000;
 
@@ -262,13 +263,14 @@ function announce(matchSlug: string, proposal: FailoverProposal | null): void {
   }
   try {
     // A broadcast: slug and state only, never a server address or password.
+    fleetChanged();
     getIO().emit('fleet:failover', {
       matchSlug,
       proposalId: proposal?.id ?? null,
       status: proposal?.status ?? null,
     });
   } catch {
-    // No socket server (tests, startup): the admin page polls too.
+    // No socket server (tests, startup): nobody to tell.
   }
 }
 

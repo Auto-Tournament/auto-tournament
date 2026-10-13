@@ -149,5 +149,8 @@
  *
  * 0.2.19 (additive): `links.match(slug)`, a match's own page (where a match
  * opens everywhere, instead of the match details dialog).
+ *
+ * 0.2.22 (additive): `useTopic` (re-read on the server's page topics and
+ * socket events, and after a reconnect, instead of polling).
  */
-export const CLIENT_API_VERSION = '0.2.21';
+export const CLIENT_API_VERSION = '0.2.22';

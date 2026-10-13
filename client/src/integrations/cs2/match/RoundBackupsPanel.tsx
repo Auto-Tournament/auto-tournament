@@ -19,6 +19,7 @@ import {
   SegmentedControl,
   useModuleTranslation,
   useSnackbar,
+  useTopic,
 } from '../../../module-sdk';
 import type { MatchAdminPanelProps } from '../../types';
 
@@ -63,10 +64,12 @@ interface RestoreResponse {
   restore: RestoreRecord;
 }
 
-const REFRESH_MS = 20_000;
-
 function formatTime(unixSeconds: number): string {
-  return new Date(unixSeconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return new Date(unixSeconds * 1000).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
 }
 
 /** The API's `{ code, error }` from a failed request, when it sent one. */
@@ -107,15 +110,20 @@ export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelPro
       setData(body);
       setLoadError(null);
     } catch (err) {
-      setLoadError(apiErrorMessage(err, t('roundBackups.loadFailed', { defaultValue: 'Could not load the round backups' })));
+      setLoadError(
+        apiErrorMessage(
+          err,
+          t('roundBackups.loadFailed', { defaultValue: 'Could not load the round backups' })
+        )
+      );
     }
   }, [base, t]);
 
   useEffect(() => {
     void load();
-    const timer = setInterval(() => void load(), REFRESH_MS);
-    return () => clearInterval(timer);
   }, [load, matchStatus]);
+  // The fleet's changes (a failover, a new backup) and the match's, as they happen.
+  useTopic('fleet', load, { admin: true, events: ['match:update'] });
 
   const mapNumbers = useMemo(() => {
     const set = new Set<number>((data?.backups ?? []).map((b) => b.mapNumber));
@@ -125,7 +133,10 @@ export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelPro
 
   const activeMap = Number(mapChoice ?? data?.currentMap ?? mapNumbers[mapNumbers.length - 1] ?? 1);
   const rounds = useMemo(
-    () => (data?.backups ?? []).filter((b) => b.mapNumber === activeMap).sort((a, b) => b.round - a.round),
+    () =>
+      (data?.backups ?? [])
+        .filter((b) => b.mapNumber === activeMap)
+        .sort((a, b) => b.round - a.round),
     [data, activeMap]
   );
   const latestRound = rounds.find((b) => b.supersededAt === null)?.round ?? null;
@@ -147,7 +158,8 @@ export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelPro
       });
       if (body.restore.status === 'ok') {
         const message = t('roundBackups.restored', {
-          defaultValue: 'Restored to the start of round {{round}}. The match is paused until it is unpaused.',
+          defaultValue:
+            'Restored to the start of round {{round}}. The match is paused until it is unpaused.',
           round,
         });
         showSuccess(message);
@@ -228,7 +240,11 @@ export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelPro
     );
   }
 
-  const confirmBox = (target: { mapNumber: number | null; round: number; score?: { team1: number; team2: number } }) => (
+  const confirmBox = (target: {
+    mapNumber: number | null;
+    round: number;
+    score?: { team1: number; team2: number };
+  }) => (
     <Alert
       severity="warning"
       data-testid="round-backups-confirm"
@@ -273,7 +289,9 @@ export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelPro
 
       {data.transport === null && (
         <Typography variant="body2" color="text.secondary">
-          {t('roundBackups.noServer', { defaultValue: 'No server is running this match, so there is nothing to restore on.' })}
+          {t('roundBackups.noServer', {
+            defaultValue: 'No server is running this match, so there is nothing to restore on.',
+          })}
         </Typography>
       )}
 
@@ -301,10 +319,15 @@ export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelPro
               disabled={busy || !(Number(rconRound) >= 1)}
               onClick={() => setConfirming(true)}
             >
-              {t('roundBackups.restoreTo', { defaultValue: 'Restore to round {{round}}', round: rconRound })}
+              {t('roundBackups.restoreTo', {
+                defaultValue: 'Restore to round {{round}}',
+                round: rconRound,
+              })}
             </Button>
           </Stack>
-          {confirming && Number(rconRound) >= 1 && confirmBox({ mapNumber: null, round: Number(rconRound) })}
+          {confirming &&
+            Number(rconRound) >= 1 &&
+            confirmBox({ mapNumber: null, round: Number(rconRound) })}
         </>
       )}
 
@@ -325,7 +348,8 @@ export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelPro
           {rounds.length === 0 ? (
             <Typography variant="body2" color="text.secondary">
               {t('roundBackups.none', {
-                defaultValue: 'No backups for {{map}} yet. The server sends one at the start of every round.',
+                defaultValue:
+                  'No backups for {{map}} yet. The server sends one at the start of every round.',
                 map: mapLabel(activeMap),
               })}
             </Typography>
@@ -333,7 +357,13 @@ export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelPro
             <Box
               role="radiogroup"
               aria-label={t('roundBackups.title', { defaultValue: 'Round backups' })}
-              sx={{ maxHeight: 280, overflowY: 'auto', border: 1, borderColor: 'divider', borderRadius: 1 }}
+              sx={{
+                maxHeight: 280,
+                overflowY: 'auto',
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 1,
+              }}
             >
               {rounds.map((b) => (
                 <Box
@@ -361,7 +391,10 @@ export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelPro
                       setConfirming(false);
                     }}
                     inputProps={{
-                      'aria-label': t('roundBackups.roundN', { defaultValue: 'Round {{round}}', round: b.round }),
+                      'aria-label': t('roundBackups.roundN', {
+                        defaultValue: 'Round {{round}}',
+                        round: b.round,
+                      }),
                     }}
                   />
                   <Typography variant="body2" sx={{ minWidth: 80 }}>
@@ -374,15 +407,24 @@ export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelPro
                     {formatTime(b.updatedAt)}
                   </Typography>
                   {b.round === latestRound && (
-                    <Chip size="small" variant="outlined" label={t('roundBackups.latest', { defaultValue: 'Latest' })} />
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={t('roundBackups.latest', { defaultValue: 'Latest' })}
+                    />
                   )}
                   {b.supersededAt !== null && (
                     <Tooltip
                       title={t('roundBackups.supersededHint', {
-                        defaultValue: 'A restore went back before this round; it is from the replaced timeline.',
+                        defaultValue:
+                          'A restore went back before this round; it is from the replaced timeline.',
                       })}
                     >
-                      <Chip size="small" variant="outlined" label={t('roundBackups.superseded', { defaultValue: 'Replaced' })} />
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        label={t('roundBackups.superseded', { defaultValue: 'Replaced' })}
+                      />
                     </Tooltip>
                   )}
                 </Box>
@@ -398,11 +440,16 @@ export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelPro
               data-testid="round-backups-restore"
             >
               {chosen
-                ? t('roundBackups.restoreTo', { defaultValue: 'Restore to round {{round}}', round: chosen.round })
+                ? t('roundBackups.restoreTo', {
+                    defaultValue: 'Restore to round {{round}}',
+                    round: chosen.round,
+                  })
                 : t('roundBackups.pick', { defaultValue: 'Pick a round to restore' })}
             </Button>
           </Box>
-          {confirming && chosen && confirmBox({ mapNumber: chosen.mapNumber, round: chosen.round, score: chosen.score })}
+          {confirming &&
+            chosen &&
+            confirmBox({ mapNumber: chosen.mapNumber, round: chosen.round, score: chosen.score })}
         </>
       )}
 
@@ -427,7 +474,9 @@ export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelPro
                 {statusChip(r)}
                 {r.errorCode && (
                   <Typography variant="caption" color="error">
-                    {t(`roundBackups.errors.${r.errorCode}`, { defaultValue: r.errorMessage ?? r.errorCode })}
+                    {t(`roundBackups.errors.${r.errorCode}`, {
+                      defaultValue: r.errorMessage ?? r.errorCode,
+                    })}
                   </Typography>
                 )}
               </Box>

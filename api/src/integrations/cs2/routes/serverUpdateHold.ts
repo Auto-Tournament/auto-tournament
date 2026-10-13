@@ -8,6 +8,7 @@ import {
 import { resolveTournamentId } from '../../../utils/tournamentRow';
 import { log } from '../../../utils/logger';
 import { verifyHostToken } from '../fleet/hosts/registry';
+import { fleetChangedOnWrite } from '../fleet/adminTopics';
 
 /**
  * The update hold CS2 Server Manager (csm) polls.
@@ -35,6 +36,8 @@ import { verifyHostToken } from '../fleet/hosts/registry';
  * The key is never logged here.
  */
 const router = Router();
+// Changes here reach the Servers page at once (the `fleet` topic).
+router.use(fleetChangedOnWrite);
 
 /**
  * @openapi

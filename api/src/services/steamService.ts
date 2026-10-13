@@ -7,13 +7,12 @@ import type {
   SteamWebApiHealth,
 } from '../types/steam.types';
 import { settingsService } from './settingsService';
+import { emitTopic } from './socketService';
 
 class SteamService {
   private readonly baseUrl = 'http://api.steampowered.com';
   private readonly healthCacheTtlMs = 60_000;
-  private steamWebApiHealthCache:
-    | { value: SteamWebApiHealth; expiresAtMs: number }
-    | null = null;
+  private steamWebApiHealthCache: { value: SteamWebApiHealth; expiresAtMs: number } | null = null;
 
   constructor() {
     // Note: Cannot use async in constructor, so we check lazily
@@ -37,7 +36,38 @@ class SteamService {
    * This is cached (short TTL) because it can be called from public endpoints
    * like /api/auth/providers. Call with { force: true } to bypass cache.
    */
+  /** The last health's verdict, to tell the admins' pages when it changes (`steam-health` topic). */
+  private lastHealthKey: string | null = null;
+
   async checkSteamWebApiHealth(options?: { force?: boolean }): Promise<SteamWebApiHealth> {
+    const value = await this.computeSteamWebApiHealth(options);
+    const key = `${value.configured}:${value.ok}:${'errorType' in value ? value.errorType : ''}`;
+    if (this.lastHealthKey !== null && key !== this.lastHealthKey) {
+      emitTopic('steam-health', { admin: true });
+    }
+    this.lastHealthKey = key;
+    return value;
+  }
+
+  /**
+   * Check the key every five minutes on the server (one request, whoever is
+   * looking), so the admins' Steam warning follows a key that broke or was
+   * fixed without each tab polling.
+   */
+  startHealthWatch(): void {
+    if (this.healthWatch) return;
+    this.healthWatch = setInterval(
+      () => void this.checkSteamWebApiHealth({ force: true }).catch(() => undefined),
+      5 * 60_000
+    );
+    this.healthWatch.unref?.();
+  }
+
+  private healthWatch: NodeJS.Timeout | null = null;
+
+  private async computeSteamWebApiHealth(options?: {
+    force?: boolean;
+  }): Promise<SteamWebApiHealth> {
     const force = options?.force === true;
     const now = Date.now();
 
@@ -109,14 +139,14 @@ class SteamService {
     } catch (err) {
       const isAbort =
         (err as { name?: string } | null)?.name === 'AbortError' ||
-        String((err as Error | null)?.message || '').toLowerCase().includes('aborted');
+        String((err as Error | null)?.message || '')
+          .toLowerCase()
+          .includes('aborted');
       const value: SteamWebApiHealth = {
         configured: true,
         ok: false,
         errorType: 'unreachable',
-        error: isAbort
-          ? 'Steam Web API request timed out.'
-          : 'Steam Web API could not be reached.',
+        error: isAbort ? 'Steam Web API request timed out.' : 'Steam Web API could not be reached.',
       };
       this.steamWebApiHealthCache = { value, expiresAtMs: Date.now() + this.healthCacheTtlMs };
       log.warn('Steam Web API health check failed', { error: err });

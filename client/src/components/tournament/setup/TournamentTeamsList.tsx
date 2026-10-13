@@ -13,9 +13,9 @@ import { useSnackbar } from '../../../contexts/SnackbarContext';
 import type { Registration } from '../../../hooks/useTournamentSignup';
 import { RowList, Row } from '../../common/ui';
 import { tokens } from '../../../theme/tokens';
+import { useTopic } from '../../../hooks/useTopic';
 
 const { color } = tokens;
-const POLL_MS = 15_000;
 
 interface TournamentTeamsListProps {
   tournamentId: number;
@@ -28,7 +28,14 @@ interface TournamentTeamsListProps {
   onRemoved: () => void | Promise<void>;
 }
 
-export function TournamentTeamsList({ tournamentId, teamSize, teamKey, canEdit, live, onRemoved }: TournamentTeamsListProps) {
+export function TournamentTeamsList({
+  tournamentId,
+  teamSize,
+  teamKey,
+  canEdit,
+  live,
+  onRemoved,
+}: TournamentTeamsListProps) {
   const { t } = useTranslation();
   const { showError, showSuccess } = useSnackbar();
   const [rows, setRows] = useState<Registration[] | null>(null);
@@ -36,7 +43,9 @@ export function TournamentTeamsList({ tournamentId, teamSize, teamKey, canEdit, 
 
   const load = useCallback(async () => {
     try {
-      const body = await api.get<{ registrations: Registration[] }>(`/api/tournament-signup/${tournamentId}`);
+      const body = await api.get<{ registrations: Registration[] }>(
+        `/api/tournament-signup/${tournamentId}`
+      );
       setRows(body.registrations ?? []);
     } catch {
       // Keep what we had.
@@ -47,11 +56,8 @@ export function TournamentTeamsList({ tournamentId, teamSize, teamKey, canEdit, 
     void load();
   }, [load, teamKey]);
 
-  useEffect(() => {
-    if (!live) return undefined;
-    const id = setInterval(() => void load(), POLL_MS);
-    return () => clearInterval(id);
-  }, [live, load]);
+  // Sign-ups and check-ins go out as tournament updates.
+  useTopic([], load, { events: ['tournament:update'], enabled: !!live });
 
   const remove = async (row: Registration) => {
     setBusy(row.teamId);
@@ -78,7 +84,9 @@ export function TournamentTeamsList({ tournamentId, teamSize, teamKey, canEdit, 
 
   return (
     <Stack spacing={1}>
-      <Typography variant="subtitle2">{t('tournament.setup.signup.inTournament', { count: rows.length })}</Typography>
+      <Typography variant="subtitle2">
+        {t('tournament.setup.signup.inTournament', { count: rows.length })}
+      </Typography>
       <RowList data-testid="setup-teams-list">
         {rows.map((row) => {
           const starters = row.lineup.filter((p) => p.role === 'starter');
@@ -93,16 +101,27 @@ export function TournamentTeamsList({ tournamentId, teamSize, teamKey, canEdit, 
             >
               <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <Typography sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>{row.teamName}</Typography>
+                  <Typography sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>
+                    {row.teamName}
+                  </Typography>
                   <Chip
                     size="small"
-                    label={signedUp ? t('tournament.setup.signup.signedUp') : t('tournament.setup.signup.addedByYou')}
+                    label={
+                      signedUp
+                        ? t('tournament.setup.signup.signedUp')
+                        : t('tournament.setup.signup.addedByYou')
+                    }
                     sx={{ bgcolor: color.paper3, color: signedUp ? color.accent : color.ink2 }}
                   />
                 </Box>
                 <Typography variant="body2" color="text.secondary">
-                  {t('tournament.setup.signup.lineup', { starters: starters.length, size: teamSize })}
-                  {checkedIn > 0 ? ` · ${t('tournament.setup.signup.checkedIn', { count: checkedIn })}` : ''}
+                  {t('tournament.setup.signup.lineup', {
+                    starters: starters.length,
+                    size: teamSize,
+                  })}
+                  {checkedIn > 0
+                    ? ` · ${t('tournament.setup.signup.checkedIn', { count: checkedIn })}`
+                    : ''}
                 </Typography>
               </Box>
               {canEdit && (

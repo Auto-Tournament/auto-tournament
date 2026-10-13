@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { api } from '../../../module-sdk';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { api, useTopic } from '../../../module-sdk';
 import type { Server, ServersResponse } from '../cs2.types';
 
 /**
@@ -13,34 +13,37 @@ import type { Server, ServersResponse } from '../cs2.types';
  * Servers page said "3 servers, 3 not configured". The panels add these to
  * what the allocator reports, so every page counts the same servers.
  *
- * Asked once per mount, plus again every `intervalMs` when given: a server
+ * Asked once per mount, plus again on fleet changes when `live`: a server
  * leaves this list the moment it sends its first event.
  */
-export function useUnconfiguredServers(intervalMs?: number): Pick<Server, 'id' | 'name'>[] {
+export function useUnconfiguredServers(live?: boolean): Pick<Server, 'id' | 'name'>[] {
   const [servers, setServers] = useState<Pick<Server, 'id' | 'name'>[]>([]);
 
+  const mounted = useRef(true);
+  const load = useCallback(async () => {
+    try {
+      const res = await api.get<ServersResponse>('/api/servers');
+      if (!mounted.current) return;
+      setServers(
+        (res.servers ?? [])
+          .filter((s) => s.enabled && !s.lastSeen)
+          .map((s) => ({ id: s.id, name: s.name }))
+      );
+    } catch {
+      // Leave the last answer; the allocator's own view still shows.
+    }
+  }, []);
   useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      try {
-        const res = await api.get<ServersResponse>('/api/servers');
-        if (cancelled) return;
-        setServers(
-          (res.servers ?? [])
-            .filter((s) => s.enabled && !s.lastSeen)
-            .map((s) => ({ id: s.id, name: s.name }))
-        );
-      } catch {
-        // Leave the last answer; the allocator's own view still shows.
-      }
-    };
+    mounted.current = true;
+    // The state is set after the request answers, not synchronously.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
-    const timer = intervalMs ? setInterval(() => void load(), intervalMs) : null;
     return () => {
-      cancelled = true;
-      if (timer) clearInterval(timer);
+      mounted.current = false;
     };
-  }, [intervalMs]);
+  }, [load]);
+  // A server leaves this list the moment it reports in: re-read on fleet changes.
+  useTopic('fleet', load, { admin: true, events: ['server:status'], enabled: !!live });
 
   return servers;
 }

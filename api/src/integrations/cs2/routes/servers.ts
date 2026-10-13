@@ -6,8 +6,11 @@ import { scheduler } from '../../../core/scheduler';
 import { serverInitializationService } from '../services/serverInitializationService';
 import { settingsService } from '../../../services/settingsService';
 import { log } from '../../../utils/logger';
+import { fleetChangedOnWrite } from '../fleet/adminTopics';
 
 const router = Router();
+// Changes here reach the Servers page at once (the `fleet` topic).
+router.use(fleetChangedOnWrite);
 
 // Protect all server routes
 router.use(requireAuth);
@@ -454,8 +457,7 @@ router.post('/:id/reset-initialization', async (req: Request, res: Response) => 
     if (!baseUrl) {
       return res.status(400).json({
         success: false,
-        error:
-          'Webhook URL is not configured. Set it in Settings or FRONTEND_BASE_URL in .env.',
+        error: 'Webhook URL is not configured. Set it in Settings or FRONTEND_BASE_URL in .env.',
       });
     }
 
@@ -476,7 +478,8 @@ router.post('/:id/reset-initialization', async (req: Request, res: Response) => 
       message: `Server ${id} initialization reset and configuration sent.`,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to reset server initialization';
+    const message =
+      error instanceof Error ? error.message : 'Failed to reset server initialization';
     console.error('Error resetting server initialization:', error);
     return res.status(500).json({
       success: false,
@@ -496,10 +499,12 @@ router.post('/reset-all-initialization', async (req: Request, res: Response) => 
 
     return res.json({
       success: true,
-      message: 'All servers initialization reset. Persistent configuration will be resent on next match loads.',
+      message:
+        'All servers initialization reset. Persistent configuration will be resent on next match loads.',
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to reset all servers initialization';
+    const message =
+      error instanceof Error ? error.message : 'Failed to reset all servers initialization';
     console.error('Error resetting all servers initialization:', error);
     return res.status(500).json({
       success: false,

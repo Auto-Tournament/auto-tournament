@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Box, Button, FormControlLabel, Switch, Typography } from '@mui/material';
-import { api, apiErrorMessage, useModuleTranslation } from '../../../module-sdk';
+import { api, apiErrorMessage, useModuleTranslation, useTopic } from '../../../module-sdk';
 
 interface RedressStatus {
   queued: number;
@@ -41,13 +41,10 @@ export function HighlightOverlaySetting({
     void load();
   }, [load]);
 
-  // While a recorder works through the queue, keep the count fresh.
+  // While a recorder works through the queue, the count follows it (the
+  // `highlights-admin` topic: every write to the redraw queue).
+  useTopic('highlights-admin', load, { admin: true });
   const pending = (status?.queued ?? 0) + (status?.working ?? 0);
-  useEffect(() => {
-    if (!pending) return;
-    const timer = window.setInterval(() => void load(), 10_000);
-    return () => window.clearInterval(timer);
-  }, [pending, load]);
 
   const redraw = async () => {
     setBusy(true);

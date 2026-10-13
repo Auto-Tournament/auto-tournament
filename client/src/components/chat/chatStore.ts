@@ -6,8 +6,8 @@
  * Live: one socket joins the player's room (`player:subscribe`) and, for an
  * admin, the admins' room (`admin:subscribe`); every `chat:message` lands in
  * its chat at once. The chat list is read again on every connect, when a
- * message arrives for a chat it does not know, and once a minute (a new match
- * or party shows up without a message).
+ * message arrives for a chat it does not know, and when a match, party, team
+ * or tournament changes (a new match or party shows up without a message).
  *
  * Admins open a match's chat from anywhere with `openChat('match:<slug>')`
  * (or the `at:open-chat` window event with `{ channel, title }` as its detail).
@@ -61,13 +61,23 @@ interface State {
 }
 
 const PAGE = 50;
-const LIST_MS = 60_000;
+/** Channel list re-reads after a burst of changes settle (ms). */
+const LIST_SETTLE_MS = 500;
 
 let state: State = { channels: [], threads: {}, open: false, active: null, peek: null, typing: {} };
 const listeners = new Set<() => void>();
 let socket: Socket | null = null;
 let users = 0;
-let timer: ReturnType<typeof setInterval> | null = null;
+let listTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Re-read the channel list soon, once for a burst of events. */
+function refreshChannelsSoon(): void {
+  if (listTimer) return;
+  listTimer = setTimeout(() => {
+    listTimer = null;
+    void refreshChannels();
+  }, LIST_SETTLE_MS);
+}
 let viewer: { steamId: string | null; isAdmin: boolean } = { steamId: null, isAdmin: false };
 
 function set(next: Partial<State>) {
@@ -246,6 +256,17 @@ function openSocket() {
     if (state.open && state.active) void loadMessages(state.active);
   });
   socket.on('chat:message', (message: ChatMessage) => receive(message));
+  // Channels come and go with matches, parties, teams and tournaments: the
+  // list is re-read when one of those changes, not on a timer.
+  for (const event of [
+    'match:update',
+    'bracket:update',
+    'tournament:update',
+    'mm:changed',
+    'social:changed',
+  ]) {
+    socket.on(event, refreshChannelsSoon);
+  }
   socket.on('chat:typing', (who: { channel: string; playerId: string; name: string }) => {
     if (!who?.channel || who.playerId === viewer.steamId) return;
     set({ typing: addTypist(state.typing, who.channel, who, Date.now()) });
@@ -320,7 +341,6 @@ export function useChat(who?: { steamId: string | null; isAdmin: boolean }): Sta
     users += 1;
     openSocket();
     void refreshChannels();
-    if (!timer) timer = setInterval(() => void refreshChannels(), LIST_MS);
     const onOpen = (event: Event) => {
       const detail = (event as CustomEvent<{ channel?: string; title?: string }>).detail;
       openChat(detail?.channel, detail?.title);
@@ -330,8 +350,8 @@ export function useChat(who?: { steamId: string | null; isAdmin: boolean }): Sta
       window.removeEventListener('at:open-chat', onOpen);
       users -= 1;
       if (users === 0) {
-        if (timer) clearInterval(timer);
-        timer = null;
+        if (listTimer) clearTimeout(listTimer);
+        listTimer = null;
         closeSocket();
         viewer = { steamId: null, isAdmin: false };
         state = { channels: [], threads: {}, open: false, active: null, peek: null, typing: {} };
