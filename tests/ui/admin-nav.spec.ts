@@ -64,7 +64,6 @@ test.describe.serial('Admin navigation', () => {
       // top bar, and no sidebar drawer.
       await page.goto('/manage');
       await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId('manage-header')).toBeVisible();
       await expect(page.getByTestId('top-nav')).toHaveCount(0);
       await expect(page.locator('.MuiDrawer-root')).toHaveCount(0);
       await expect(page.getByTestId('manage-back-to-site')).toHaveAttribute('href', '/');
@@ -90,10 +89,10 @@ test.describe.serial('Admin navigation', () => {
         await tab.click();
         await expect(page).toHaveURL(url);
         if (key === 'tournament') {
-          // With no tournament this opens the setup, which takes the page
-          // over: its steps sit in the rail's column, under a way back.
+          // With no tournament this opens the setup: its steps, under a way
+          // back, are a column beside the form; the rail stays.
           await expect(page.getByTestId('tournament-setup-column')).toBeVisible({ timeout: 15000 });
-          await expect(rail).toHaveCount(0);
+          await expect(rail).toBeVisible();
           await expect(page.locator('h1'), 'one h1 on the setup').toHaveCount(1);
           await expect(page).toHaveTitle(/ · Auto Tournament$/);
           await page.getByTestId('tournament-setup-back-to-manage').click();
@@ -110,18 +109,10 @@ test.describe.serial('Admin navigation', () => {
         await expect(page).toHaveTitle(/ · Auto Tournament$/);
       }
 
-      // The rail: the platform's pages, then CS2's once it is picked in the
-      // rail's dropdown.
-      await expect(page.getByTestId('manage-rail-scope-name')).toHaveText('Platform');
-      for (const [scope, items] of [
-        ['platform', CORE_RAIL_ITEMS],
-        ['cs2', CS2_RAIL_ITEMS],
-      ] as const) {
-        if (scope === 'cs2') {
-          await page.getByTestId('manage-rail-scope').click();
-          await page.getByTestId('manage-rail-scope-cs2').click();
-          await expect(page.getByTestId('manage-rail-scope-name')).toHaveText('Counter-Strike 2');
-        }
+      // The rail: every page in one list, the platform's and CS2's group
+      // (Games · Counter-Strike 2) together; no dropdown.
+      await expect(page.getByTestId('manage-rail-group-game-cs2')).toBeVisible();
+      for (const items of [CORE_RAIL_ITEMS, CS2_RAIL_ITEMS]) {
         for (const [key, url] of items) {
           const item = page.getByTestId(`manage-rail-${key}`);
           await expect(item, `rail item ${key}`).toBeVisible({ timeout: 15000 });
@@ -146,9 +137,7 @@ test.describe.serial('Admin navigation', () => {
         }
       }
 
-      // Back to the platform's pages for its documentation link.
-      await page.getByTestId('manage-rail-scope').click();
-      await page.getByTestId('manage-rail-scope-platform').click();
+      // The documentation link, under System.
       await expect(page.getByTestId('manage-rail-documentation-icon')).toBeVisible();
       // The sidebar's documentation link lives on in the rail.
       await expect(page.getByTestId('manage-rail-documentation')).toHaveAttribute(
@@ -164,7 +153,7 @@ test.describe.serial('Admin navigation', () => {
   );
 
   test(
-    'on a phone the rail scrolls sideways instead of the page',
+    'on a phone the rail is a menu that opens as a drawer, and the page does not scroll sideways',
     { tag: ['@ui', '@navigation'] },
     async ({ page, request }) => {
       await page.setViewportSize({ width: 375, height: 812 });
@@ -172,12 +161,15 @@ test.describe.serial('Admin navigation', () => {
       expect(await signInViaRequest(request)).toBe(true);
 
       await page.goto('/manage');
-      await expect(page.getByTestId('manage-rail')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('manage-rail')).toBeHidden({ timeout: 15000 });
+      await page.getByTestId('manage-rail-open').click();
+      const drawer = page.getByTestId('manage-rail-drawer');
+      await expect(drawer).toBeVisible();
 
-      // The last core item is off to the right; it can still be reached.
-      await page.getByTestId('manage-rail-adminTools').click();
+      // The last core item is at the bottom; it can still be reached.
+      await drawer.getByTestId('manage-rail-adminTools').click();
       await expect(page).toHaveURL(/\/manage\/system$/);
-      await expect(page.getByTestId('manage-rail-adminTools')).toBeInViewport();
+      await expect(drawer).toBeHidden();
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth

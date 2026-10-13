@@ -1,6 +1,5 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -9,7 +8,7 @@ import { ManageRailProvider } from '../../contexts/ManageRailContext';
 import { ShellColumnProvider, useShellColumnSlot } from '../../contexts/ShellColumnContext';
 import { api } from '../../utils/api';
 import { useTranslation } from 'react-i18next';
-import { ManageHeader } from '../manage/ManageHeader';
+import { AdminNoticeBell } from '../admin/AdminNoticeBell';
 import { ManageRail } from '../manage/ManageRail';
 import { TournamentBar, isTournamentPage } from '../manage/TournamentBar';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
@@ -44,8 +43,8 @@ function rememberSteamWarningDismissed(): void {
 }
 
 /**
- * The admin shell, Manage's dashboard: its own header (no public top bar,
- * 2026-10), the rail, and beside it every admin page.
+ * The admin shell, Manage's dashboard: the rail (the whole admin menu, at the
+ * window's full height; no public top bar) and beside it every admin page.
  *
  * 3.0 dropped the 2.x left drawer. The admin menu is the Manage rail
  * (`ManageRail`), and every admin page renders beside it, so an admin never
@@ -96,9 +95,7 @@ function AdminShell() {
     ? undefined
     : tournamentIntegration?.adminGlobalWarning;
 
-  // Every Manage page has the rail: it is the admin menu.
-  const showRail = true;
-  // A page that brings its own left column (the setup wizard) replaces the rail.
+  // A page that brings its own left column (the setup wizard) puts it beside the page.
   const { claimed: columnClaimed, setColumn } = useShellColumnSlot();
 
   // Steam's health stays here rather than moving behind the game integration
@@ -212,26 +209,43 @@ function AdminShell() {
       <CssBaseline />
       {/* The game module's own global warning, or nothing (3.0 phase E). */}
       {AdminGlobalWarning && <AdminGlobalWarning onOpenSettings={handleOpenSettingsFromSnackbar} />}
-      {/* Manage is its own dashboard: its header, not the public top bar. */}
-      <ManageHeader />
-      <Container component="main" maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
+      {/* Manage is its own dashboard: the rail is its whole menu, at the
+          window's full height; no public top bar and no header over it. */}
+      <Box
+        data-testid="admin-shell-content"
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+          [RAIL_COLUMN_MIN_WIDTH]: { flexDirection: 'row' },
+        }}
+      >
+        <ManageRail />
         <Box
-          data-testid="admin-shell-content"
+          component="main"
           sx={{
+            flex: 1,
+            minWidth: 0,
+            px: { xs: 2, md: 4.5 },
+            pt: { xs: 2, md: 3 },
+            pb: 6,
             display: 'flex',
             flexDirection: 'column',
             gap: 2,
-            minWidth: 0,
-            [RAIL_COLUMN_MIN_WIDTH]: showRail ? { flexDirection: 'row', gap: 3 } : {},
+            [RAIL_COLUMN_MIN_WIDTH]: { flexDirection: 'row', gap: 3 },
           }}
         >
-          {showRail &&
-            (columnClaimed ? (
-              <Box ref={setColumn} data-testid="admin-shell-column" sx={railColumnSx} />
-            ) : (
-              <ManageRail />
-            ))}
+          {/* A page that brings its own left column (the setup wizard). */}
+          {columnClaimed && (
+            <Box ref={setColumn} data-testid="admin-shell-column" sx={railColumnSx} />
+          )}
           <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Box
+              sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1, minHeight: 40 }}
+              data-testid="manage-utility-row"
+            >
+              <AdminNoticeBell />
+            </Box>
             {/* The tournament's game module is not installed (or may still be
                 loading): say so once, on every admin page. */}
             {!tournamentGameLoading &&
@@ -257,12 +271,12 @@ function AdminShell() {
               </Box>
             )}
             {/* The tournament's own pages: which tournament, and its tabs. */}
-            {showRail && isTournamentPage(location.pathname) && <TournamentBar />}
+            {isTournamentPage(location.pathname) && <TournamentBar />}
             <UpdateToast />
             <Outlet />
           </Box>
         </Box>
-      </Container>
+      </Box>
     </ManageRailProvider>
   );
 }

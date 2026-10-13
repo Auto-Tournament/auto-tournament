@@ -449,7 +449,7 @@
       "modules": "Moduler",
       "templates": "Maler",
       "ratings": "Rating",
-      "adminTools": "System",
+      "adminTools": "Logger og verktøy",
       "license": "Lisens",
       "devTools": "Dev-verktøy",
       "documentation": "Dokumentasjon",
@@ -463,13 +463,16 @@
         "history": "Historikk",
         "setup": "Oppsett",
         "configuration": "Konfigurasjon",
-        "site": "Nettsted"
+        "site": "Nettsted",
+        "tournaments": "Turneringer",
+        "system": "System",
+        "gamesOf": "Spill · {{game}}"
       },
       "templatesAndRatings": "Maler og rangering",
       "allTournaments": "Alle turneringer",
       "switcher": "Turnering",
       "newTournament": "Ny turnering",
-      "playedMatches": "Alle kamper",
+      "playedMatches": "Spilte kamper",
       "tournamentBar": "Denne turneringen",
       "scope": {
         "label": "Administrerer",
@@ -477,7 +480,13 @@
         "platformHint": "Turneringer, folk, nettstedet",
         "gameHint": "Spillets sider og innstillinger"
       },
-      "highlights": "Høydepunkter"
+      "highlights": "Høydepunkter",
+      "state": {
+        "live": "live",
+        "setup": "oppsett"
+      },
+      "openMenu": "Åpne Administrer-menyen",
+      "closeMenu": "Lukk menyen"
     },
     "status": {
       "live": "LIVE",

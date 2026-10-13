@@ -981,7 +981,8 @@
       "settingsAdvanced": "Settings: advanced"
     },
     "clips_one": "{{count}} clip",
-    "clips_other": "{{count}} clips"
+    "clips_other": "{{count}} clips",
+    "fieldLabel": "Search"
   },
   "highlightsPage": {
     "title": "Highlights",

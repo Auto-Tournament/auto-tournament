@@ -89,7 +89,7 @@ test.describe.serial('The shell follows the tournament game', () => {
       await expect(page.getByTestId('manage-rail-maps')).toHaveCount(0);
       // A game with no pages of its own leaves the rail's game group out; a
       // result that can be argued about brings Disputes in.
-      await expect(page.getByTestId('manage-rail-group-game')).toHaveCount(0);
+      await expect(page.locator('[data-testid^="manage-rail-group-game"]')).toHaveCount(0);
       await expect(page.getByTestId('tournament-bar-disputes')).toBeVisible();
       await expect(page.getByTestId('manage-servers')).toHaveCount(0);
 

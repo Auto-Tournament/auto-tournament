@@ -1,15 +1,16 @@
 import React from 'react';
-import { Box, ButtonBase, Menu, MenuItem } from '@mui/material';
+import { Box, Drawer, IconButton } from '@mui/material';
 import {
+  ArrowLeftIcon,
   BellIcon,
   FlagIcon,
   ListBulletsIcon,
+  ListIcon,
   TrophyIcon,
   FilmSlateIcon,
   FilmStripIcon,
   ArrowSquareOutIcon,
   BookOpenIcon,
-  CaretUpDownIcon,
   CodeIcon,
   GearIcon,
   PuzzlePieceIcon,
@@ -18,24 +19,28 @@ import {
   UserIcon,
   UsersThreeIcon,
   WrenchIcon,
+  XIcon,
 } from '@phosphor-icons/react';
-import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { listIntegrations } from '../../integrations/registry';
-import { gameMonogram } from '../games/GameThumb';
+import { useShellIntegrations } from '../../hooks/useShellIntegrations';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { moduleNavItems, navItemLabel } from '../../utils/moduleNavLabels';
 import { manageTournamentPath, paths } from '../../paths';
 import { useOptionalAdminTournament } from '../../contexts/AdminTournamentContext';
-import { RAIL_COLUMN_MIN_WIDTH, railColumnSx } from '../../constants/adminLayout';
-import { BELOW_NAV_STICKY_TOP } from '../../constants/navBar';
-import { tokens, fontMono, radii, textSize } from '../../theme/tokens';
+import { useManageRailCounts } from '../../contexts/ManageRailContext';
+import { RAIL_COLUMN_MIN_WIDTH, RAIL_ROW_MAX_WIDTH } from '../../constants/adminLayout';
+import { AtIcon } from '../common/AtIcon';
+import { AccountMenu } from '../layout/AccountMenu';
+import { SiteSearch } from '../search/SiteSearch';
+import { api } from '../../utils/api';
+import { tokens, fontDisplay, fontMono, radii, textSize } from '../../theme/tokens';
 import { ICON_SIZE } from '../../theme/icons';
 import type { IntegrationNavIcon } from '../../integrations/types';
 
 const { color } = tokens;
 
-/** Read by a screen reader, not shown (the draft's `.sr-only`). */
+/** Read by a screen reader, not shown. */
 const visuallyHidden = {
   position: 'absolute',
   width: '1px',
@@ -47,6 +52,9 @@ const visuallyHidden = {
 
 const DOCS_URL = 'https://docs.autotournament.gg';
 
+/** The rail's width beside the page (the ManageShell board: 248px). */
+export const MANAGE_RAIL_WIDTH = 248;
+
 interface RailItem {
   key: string;
   label: string;
@@ -56,8 +64,10 @@ interface RailItem {
    * Phosphor; a module's item brings its own (`IntegrationNavItem.icon`).
    */
   icon?: IntegrationNavIcon;
-  /** Only set where a real count exists; omitted items show no badge. */
+  /** Something waiting for an admin; nothing else gets a number. */
   count?: number | null;
+  /** A tournament's state (live, setup), in words. */
+  state?: { label: string; live: boolean };
   /** Opens outside the app (documentation). */
   external?: boolean;
   /** Current only on its own address, not the pages below it (All tournaments). */
@@ -80,68 +90,30 @@ function isCurrent(pathname: string, to: string, item?: Pick<RailItem, 'exact' |
   return pathname === to || pathname.startsWith(`${to}/`);
 }
 
-/** What the rail is about: the platform, or one game. */
-interface RailScope {
-  id: string;
-  label: string;
-  hint: string;
-  /** The game's monogram; the platform shows the app's icon. */
-  mark: string | null;
-  groups: RailGroup[];
+/** Open player reports, for the badge on Reports. Read again on every page. */
+function useOpenReports(pathname: string): number | null {
+  const [open, setOpen] = React.useState<number | null>(null);
+  React.useEffect(() => {
+    let cancelled = false;
+    api
+      .get<{ open?: number }>('/api/player-reports?status=open')
+      .then((res) => {
+        if (!cancelled) setOpen(typeof res.open === 'number' ? res.open : null);
+      })
+      .catch(() => null);
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname]);
+  return open;
 }
 
-/** The platform's icon, or the game's monogram. */
-function ScopeMark({ of, size }: { of: RailScope; size: number }) {
-  return of.mark === null ? (
-    <Box
-      component="img"
-      src="/icon.svg"
-      alt=""
-      sx={{ width: size, height: size, borderRadius: '6px', flex: 'none' }}
-    />
-  ) : (
-    <Box
-      component="span"
-      aria-hidden
-      sx={{
-        width: size,
-        height: size,
-        flex: 'none',
-        borderRadius: '6px',
-        display: 'grid',
-        placeItems: 'center',
-        bgcolor: color.paper3,
-        color: color.ink,
-        fontFamily: fontMono,
-        fontSize: size * 0.38,
-        fontWeight: 600,
-      }}
-    >
-      {of.mark}
-    </Box>
-  );
-}
-
-/**
- * The admin menu, beside every admin page's content (`Layout`). A dropdown at
- * the top picks what it is about: the platform (tournaments, people, the
- * site's own settings) or one installed game (its own pages, CS2: Servers,
- * Maps, Skins, Match rules). The rail lists only that one's pages, and opens
- * on whichever holds the current page.
- *
- * Running one tournament (needs you, matches, bracket, its setup) is not
- * here: it is the tournament's own bar over those pages (`TournamentBar`).
- *
- * A game's pages come from its module's `navItems`, labelled from its own
- * strings; core names none of them. A game with no pages is left out.
- */
-export const ManageRail: React.FC = () => {
+/** Every group, in the ManageShell board's order. */
+function useRailGroups(pathname: string): RailGroup[] {
   const { t } = useTranslation();
-  const { pathname } = useLocation();
-  const navigate = useNavigate();
   const isDevelopment = useIsDevelopment();
-  const scrollerRef = React.useRef<HTMLDivElement>(null);
-  const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
+  const { needsYouCount } = useManageRailCounts();
+  const openReports = useOpenReports(pathname);
 
   // The tournaments being run or set up (not archived), at most three.
   const adminTournaments = useOptionalAdminTournament()?.tournaments ?? [];
@@ -152,195 +124,275 @@ export const ManageRail: React.FC = () => {
     )
     .slice(0, 3);
 
-  const platform: RailScope = {
-    id: 'platform',
-    label: t('managePage.rail.scope.platform'),
-    hint: t('managePage.rail.scope.platformHint'),
-    mark: null,
-    groups: [
-      {
-        key: 'home',
-        label: t('managePage.rail.groups.home'),
-        items: [
-          {
-            key: 'needsYou',
-            label: t('managePage.rail.needsYou'),
-            to: paths.manage,
-            icon: BellIcon,
-            exact: true,
-          },
-        ],
-      },
-      {
-        key: 'tournament',
-        label: t('managePage.rail.groups.tournament'),
-        items: [
-          // The ones being run or set up, by name: one click into its Matches.
-          ...activeTournaments.map((x) => ({
-            key: `tournament-${x.id}`,
-            label: x.name,
-            to: manageTournamentPath(x.id),
-            also: [`${paths.tournaments}/${x.id}`],
-            icon: TrophyIcon,
-          })),
-          {
-            key: 'tournaments',
-            label: t('managePage.rail.allTournaments'),
-            to: paths.tournaments,
-            icon: ListBulletsIcon,
-            exact: true,
-          },
-        ],
-      },
-      {
-        key: 'history',
-        label: t('managePage.rail.groups.history'),
-        items: [
-          {
-            key: 'playedMatches',
-            label: t('managePage.rail.playedMatches'),
-            to: paths.playedMatches,
-            icon: FilmStripIcon,
-          },
-          {
-            key: 'highlights',
-            label: t('managePage.rail.highlights'),
-            to: paths.highlights,
-            icon: FilmSlateIcon,
-          },
-        ],
-      },
-      {
-        key: 'people',
-        label: t('managePage.rail.groups.people'),
-        items: [
-          {
-            key: 'teams',
-            label: t('managePage.rail.teams'),
-            to: paths.teams,
-            icon: UsersThreeIcon,
-          },
-          {
-            key: 'players',
-            label: t('managePage.rail.players'),
-            to: paths.players,
-            icon: UserIcon,
-          },
-          {
-            key: 'reports',
-            label: t('managePage.rail.reports'),
-            to: paths.reports,
-            icon: FlagIcon,
-          },
-        ],
-      },
-      {
-        key: 'setup',
-        label: t('managePage.rail.groups.setup'),
-        items: [
-          {
-            key: 'templates',
-            label: t('managePage.rail.templatesAndRatings'),
-            to: paths.templates,
-            also: [paths.eloTemplates],
-            icon: StackIcon,
-          },
-          {
-            key: 'modules',
-            label: t('managePage.rail.modules'),
-            to: paths.modules,
-            icon: PuzzlePieceIcon,
-          },
-          {
-            key: 'settings',
-            label: t('managePage.rail.settings'),
-            to: paths.settings,
-            icon: GearIcon,
-          },
-          {
-            key: 'license',
-            label: t('managePage.rail.license'),
-            to: paths.license,
-            icon: SealCheckIcon,
-          },
-          {
-            key: 'adminTools',
-            label: t('managePage.rail.adminTools'),
-            to: paths.admin,
-            icon: WrenchIcon,
-          },
-          ...(isDevelopment
-            ? [
-                {
-                  key: 'devTools',
-                  label: t('managePage.rail.devTools'),
-                  to: paths.dev,
-                  icon: CodeIcon,
-                },
-              ]
-            : []),
-          {
-            key: 'documentation',
-            label: t('managePage.rail.documentation'),
-            to: DOCS_URL,
-            icon: BookOpenIcon,
-            external: true,
-          },
-        ],
-      },
-    ],
-  };
-  // One scope per installed game with pages of its own, named by it.
-  const games: RailScope[] = listIntegrations()
+  // One group per game the shell follows (the tournament's, or every
+  // installed one with no tournament), with pages of its own, named by it.
+  const { shell } = useShellIntegrations();
+  const games: RailGroup[] = shell
     .filter((integration) => integration.navItems.length > 0)
-    .map((integration) => {
-      const label = t('managePage.rail.group', {
-        ns: integration.id,
-        defaultValue: t('managePage.rail.groups.game'),
-      });
-      return {
-        id: integration.id,
-        label,
-        hint: t('managePage.rail.scope.gameHint'),
-        mark: gameMonogram(label),
-        groups: [
-          {
-            key: 'game',
-            label,
-            items: moduleNavItems([integration]).map((item) => ({
-              key: item.key,
-              label: navItemLabel(t, item, 'rail'),
-              to: item.path,
-              icon: item.icon,
-            })),
-          },
-        ],
-      };
-    });
-  const scopes = [platform, ...games];
-  const scopeOfPath =
-    scopes.find((scope) =>
-      scope.groups.some((group) =>
-        group.items.some((item) => !item.external && isCurrent(pathname, item.to, item))
-      )
-    ) ?? platform;
-  // Picked by hand until the next page opens; then the page's own scope.
-  const [picked, setPicked] = React.useState<{ id: string; at: string } | null>(null);
-  const scope = (picked?.at === pathname && scopes.find((s) => s.id === picked.id)) || scopeOfPath;
-  const groups = scope.groups.filter((group) => group.items.length > 0);
+    .map((integration) => ({
+      key: `game-${integration.id}`,
+      label: t('managePage.rail.groups.gamesOf', {
+        game: t('managePage.rail.group', {
+          ns: integration.id,
+          defaultValue: t('managePage.rail.groups.game'),
+        }),
+      }),
+      items: moduleNavItems([integration]).map((item) => ({
+        key: item.key,
+        label: navItemLabel(t, item, 'rail'),
+        to: item.path,
+        icon: item.icon,
+      })),
+    }));
 
-  const pickScope = (next: RailScope) => {
-    setMenuAnchor(null);
-    setPicked({ id: next.id, at: pathname });
-    // Straight to the scope's first page when the current one is not in it.
-    const first = next.groups.flatMap((g) => g.items).find((item) => !item.external);
-    if (next.id !== scopeOfPath.id && first) navigate(first.to);
-  };
+  const groups: RailGroup[] = [
+    {
+      key: 'home',
+      label: t('managePage.rail.groups.home'),
+      items: [
+        {
+          key: 'needsYou',
+          label: t('managePage.rail.needsYou'),
+          to: paths.manage,
+          icon: BellIcon,
+          exact: true,
+          count: needsYouCount,
+        },
+      ],
+    },
+    {
+      key: 'tournament',
+      label: t('managePage.rail.groups.tournaments'),
+      items: [
+        // The ones being run or set up, by name and state: one click into it.
+        ...activeTournaments.map((x) => ({
+          key: `tournament-${x.id}`,
+          label: x.name,
+          to: manageTournamentPath(x.id),
+          also: [`${paths.tournaments}/${x.id}`],
+          icon: TrophyIcon,
+          state:
+            x.status === 'in_progress'
+              ? { label: t('managePage.rail.state.live'), live: true }
+              : { label: t('managePage.rail.state.setup'), live: false },
+        })),
+        {
+          key: 'tournaments',
+          label: t('managePage.rail.allTournaments'),
+          to: paths.tournaments,
+          icon: ListBulletsIcon,
+          exact: true,
+        },
+      ],
+    },
+    ...games,
+    {
+      key: 'history',
+      label: t('managePage.rail.groups.history'),
+      items: [
+        {
+          key: 'playedMatches',
+          label: t('managePage.rail.playedMatches'),
+          to: paths.playedMatches,
+          icon: FilmStripIcon,
+        },
+        {
+          key: 'highlights',
+          label: t('managePage.rail.highlights'),
+          to: paths.highlights,
+          icon: FilmSlateIcon,
+        },
+      ],
+    },
+    {
+      key: 'people',
+      label: t('managePage.rail.groups.people'),
+      items: [
+        { key: 'teams', label: t('managePage.rail.teams'), to: paths.teams, icon: UsersThreeIcon },
+        { key: 'players', label: t('managePage.rail.players'), to: paths.players, icon: UserIcon },
+        {
+          key: 'reports',
+          label: t('managePage.rail.reports'),
+          to: paths.reports,
+          icon: FlagIcon,
+          count: openReports,
+        },
+      ],
+    },
+    {
+      key: 'setup',
+      label: t('managePage.rail.groups.setup'),
+      items: [
+        {
+          key: 'templates',
+          label: t('managePage.rail.templatesAndRatings'),
+          to: paths.templates,
+          also: [paths.eloTemplates],
+          icon: StackIcon,
+        },
+        {
+          key: 'modules',
+          label: t('managePage.rail.modules'),
+          to: paths.modules,
+          icon: PuzzlePieceIcon,
+        },
+        {
+          key: 'settings',
+          label: t('managePage.rail.settings'),
+          to: paths.settings,
+          icon: GearIcon,
+        },
+        {
+          key: 'license',
+          label: t('managePage.rail.license'),
+          to: paths.license,
+          icon: SealCheckIcon,
+        },
+      ],
+    },
+    {
+      key: 'system',
+      label: t('managePage.rail.groups.system'),
+      items: [
+        {
+          key: 'adminTools',
+          label: t('managePage.rail.adminTools'),
+          to: paths.admin,
+          icon: WrenchIcon,
+        },
+        ...(isDevelopment
+          ? [
+              {
+                key: 'devTools',
+                label: t('managePage.rail.devTools'),
+                to: paths.dev,
+                icon: CodeIcon,
+              },
+            ]
+          : []),
+        {
+          key: 'documentation',
+          label: t('managePage.rail.documentation'),
+          to: DOCS_URL,
+          icon: BookOpenIcon,
+          external: true,
+        },
+      ],
+    },
+  ];
+  return groups.filter((group) => group.items.length > 0);
+}
 
-  // On a phone the rail scrolls sideways: bring the current page's item into
-  // view, or "Settings" would be selected somewhere off to the right. Again
-  // when items arrive (the module's pages load after the core ones), since
-  // they push the current one along.
+function RailLink({
+  item,
+  pathname,
+  onNavigate,
+}: {
+  item: RailItem;
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  const { t } = useTranslation();
+  const selected = !item.external && isCurrent(pathname, item.to, item);
+  const Icon = item.icon;
+  const linkProps = item.external
+    ? { component: 'a' as const, href: item.to, target: '_blank', rel: 'noopener noreferrer' }
+    : { component: RouterLink, to: item.to, onClick: onNavigate };
+  return (
+    <Box
+      {...linkProps}
+      data-testid={`manage-rail-${item.key}`}
+      aria-current={selected ? 'page' : undefined}
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 1.25,
+        minHeight: 34,
+        px: 1.25,
+        borderRadius: radii.sm,
+        color: selected ? color.ink : color.ink2,
+        bgcolor: selected ? color.paper2 : 'transparent',
+        textDecoration: 'none',
+        fontWeight: 500,
+        lineHeight: 1.3,
+        '&:hover': { bgcolor: color.paper2, color: color.ink },
+        '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
+      }}
+    >
+      <Box
+        component="span"
+        sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, flex: '1 1 auto' }}
+      >
+        {Icon && (
+          <Box
+            component="span"
+            data-testid={`manage-rail-${item.key}-icon`}
+            data-weight={selected ? 'fill' : 'regular'}
+            sx={{
+              display: 'inline-flex',
+              flex: 'none',
+              // Sized here as well as by `size`, so a module's icon that
+              // ignores `size` (an MUI one) fits too.
+              '& > svg': { width: ICON_SIZE.md, height: ICON_SIZE.md },
+            }}
+          >
+            <Icon size={ICON_SIZE.md} weight={selected ? 'fill' : 'regular'} aria-hidden />
+          </Box>
+        )}
+        <Box
+          component="span"
+          sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {item.label}
+        </Box>
+      </Box>
+      {item.external && (
+        <>
+          <ArrowSquareOutIcon
+            aria-hidden
+            size={ICON_SIZE.sm}
+            style={{ flex: 'none', color: color.ink2 }}
+          />
+          <Box component="span" sx={visuallyHidden}>
+            {t('managePage.rail.opensInNewTab')}
+          </Box>
+        </>
+      )}
+      {item.state && (
+        <Box
+          component="span"
+          data-testid={`manage-rail-${item.key}-state`}
+          sx={{
+            flex: 'none',
+            fontSize: textSize.xs,
+            color: item.state.live ? color.live : color.muted,
+          }}
+        >
+          {item.state.label}
+        </Box>
+      )}
+      {typeof item.count === 'number' && item.count > 0 && (
+        <Box
+          component="span"
+          data-testid={`manage-rail-${item.key}-count`}
+          sx={{ flex: 'none', fontFamily: fontMono, fontSize: textSize.xs, color: color.accent }}
+        >
+          {item.count}
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+/** The rail's contents: brand, search, every group, the way back and the account. */
+function RailBody({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useTranslation();
+  const { pathname } = useLocation();
+  const groups = useRailGroups(pathname);
+  const scrollerRef = React.useRef<HTMLDivElement>(null);
+
+  // Taller than the window: bring the current page's item into view.
   const itemKeys = groups.flatMap((group) => group.items.map((item) => item.key)).join(',');
   React.useEffect(() => {
     const scroller = scrollerRef.current;
@@ -348,262 +400,212 @@ export const ManageRail: React.FC = () => {
     if (!scroller || !current) return;
     const box = scroller.getBoundingClientRect();
     const item = current.getBoundingClientRect();
-    if (item.left < box.left || item.right > box.right) {
-      scroller.scrollLeft += item.left - box.left - (box.width - item.width) / 2;
-    }
     if (item.top < box.top || item.bottom > box.bottom) {
       scroller.scrollTop += item.top - box.top - (box.height - item.height) / 2;
     }
   }, [pathname, itemKeys]);
 
   return (
-    <Box
-      component="nav"
-      aria-label={t('managePage.rail.label')}
-      data-testid="manage-rail"
-      sx={{
-        // A horizontal scroller under 820px, so it never makes the page
-        // scroll sideways; a sticky column beside the page above that. A
-        // plain list, as in the draft: no box around it. Each item has an
-        // icon (the owner's call after the draft, which had none).
-        ...railColumnSx,
-        // The whole column, the tournament picker with it, fits the window;
-        // the list under the picker scrolls in what is left.
-        [RAIL_COLUMN_MIN_WIDTH]: {
-          ...railColumnSx[RAIL_COLUMN_MIN_WIDTH],
-          display: 'flex',
-          flexDirection: 'column',
-          maxHeight: `calc(100vh - ${BELOW_NAV_STICKY_TOP} - 24px)`,
-        },
-        fontSize: textSize.sm,
-      }}
-    >
-      <ButtonBase
-        onClick={(e) => setMenuAnchor(e.currentTarget)}
-        aria-haspopup="menu"
-        aria-expanded={menuAnchor ? 'true' : undefined}
-        aria-controls={menuAnchor ? 'manage-rail-scopes' : undefined}
-        data-testid="manage-rail-scope"
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.25,
-          mb: 1.5,
-          px: 1.25,
-          py: 1,
-          minWidth: { xs: 200, md: 0 },
-          flex: 'none',
-          textAlign: 'left',
-          borderRadius: radii.sm,
-          border: `1px solid ${color.rule}`,
-          '&:hover': { bgcolor: color.paper2 },
-          '&.Mui-focusVisible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
-        }}
-      >
-        <ScopeMark of={scope} size={28} />
-        <Box component="span" sx={{ display: 'grid', minWidth: 0, flex: 1 }}>
-          <Box
-            component="span"
-            sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.muted }}
-          >
-            {t('managePage.rail.scope.label')}
-          </Box>
-          <Box
-            component="span"
-            data-testid="manage-rail-scope-name"
-            sx={{
-              fontWeight: 600,
-              color: color.ink,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {scope.label}
-          </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75, height: '100%', minHeight: 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, px: 1 }}>
+        <Box
+          sx={{ height: 28, width: 28, borderRadius: '8px', overflow: 'hidden', display: 'flex' }}
+        >
+          <AtIcon size={28} title="" />
         </Box>
-        <CaretUpDownIcon
-          aria-hidden
-          size={ICON_SIZE.sm}
-          style={{ flex: 'none', color: color.muted }}
-        />
-      </ButtonBase>
-      <Menu
-        id="manage-rail-scopes"
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={() => setMenuAnchor(null)}
-        slotProps={{ paper: { sx: { minWidth: 240, mt: 0.75, borderRadius: radii.md } } }}
-      >
-        {scopes.map((option) => (
-          <MenuItem
-            key={option.id}
-            selected={option.id === scope.id}
-            onClick={() => pickScope(option)}
-            data-testid={`manage-rail-scope-${option.id}`}
-            sx={{ gap: 1.25, py: 1 }}
-          >
-            <ScopeMark of={option} size={26} />
-            <Box sx={{ display: 'grid', minWidth: 0 }}>
-              <Box component="span" sx={{ fontWeight: 600, fontSize: textSize.sm }}>
-                {option.label}
-              </Box>
-              <Box component="span" sx={{ fontSize: textSize.xs, color: color.muted }}>
-                {option.hint}
-              </Box>
-            </Box>
-          </MenuItem>
-        ))}
-      </Menu>
+        <Box component="span" sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: 15 }}>
+          Auto Tournament
+        </Box>
+      </Box>
+      <Box sx={{ px: 1 }}>
+        <SiteSearch variant="field" />
+      </Box>
       <Box
         ref={scrollerRef}
         data-testid="manage-rail-scroller"
         sx={{
+          flex: '1 1 auto',
+          minHeight: 0,
+          overflowX: 'hidden',
+          overflowY: 'auto',
           display: 'flex',
-          alignItems: 'center',
-          gap: 0.5,
-          overflowX: 'auto',
+          flexDirection: 'column',
+          gap: 1.75,
+        }}
+      >
+        {groups.map((group) => (
+          // A group of links, not a <ul>: the items are links (axe `list`).
+          <Box
+            key={group.key}
+            role="group"
+            data-testid={`manage-rail-group-${group.key}`}
+            aria-labelledby={`manage-rail-heading-${group.key}`}
+            sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 0.25 }}
+          >
+            <Box
+              component="span"
+              id={`manage-rail-heading-${group.key}`}
+              sx={{
+                fontFamily: fontMono,
+                fontSize: 10.5,
+                fontWeight: 500,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: color.muted,
+                px: 1.25,
+                pb: 0.75,
+              }}
+            >
+              {group.label}
+            </Box>
+            {group.items.map((item) => (
+              <RailLink key={item.key} item={item} pathname={pathname} onNavigate={onNavigate} />
+            ))}
+          </Box>
+        ))}
+      </Box>
+      <Box sx={{ display: 'grid', gap: 0.25, borderTop: `1px solid ${color.rule}`, pt: 1.5 }}>
+        <Box
+          component={RouterLink}
+          to={paths.root}
+          data-testid="manage-back-to-site"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            minHeight: 34,
+            px: 1.25,
+            borderRadius: radii.sm,
+            color: color.ink2,
+            textDecoration: 'none',
+            '&:hover': { bgcolor: color.paper2, color: color.ink },
+            '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
+          }}
+        >
+          <ArrowLeftIcon size={ICON_SIZE.md} aria-hidden />
+          {t('nav.backToSite')}
+        </Box>
+        <Box sx={{ px: 0.5 }}>
+          <AccountMenu wide />
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+/**
+ * The admin menu, the whole menu of Manage (no site top bar there). As on
+ * the ManageShell board: the brand and search at the top, every admin page
+ * in named groups (Home, Tournaments, each game's own group, History,
+ * People, Setup, System), and the way back to the site and the account at
+ * the bottom. Sticky at the window's full height beside the page; it
+ * scrolls on its own when taller.
+ *
+ * Badges are for work only: Needs you and open reports. Tournaments being
+ * run or set up are listed by name with their state.
+ *
+ * At or below 820px the rail is a menu button in a sticky header that opens
+ * it as a full-height drawer.
+ */
+export const ManageRail: React.FC = () => {
+  const { t } = useTranslation();
+  const { pathname } = useLocation();
+  const [open, setOpen] = React.useState(false);
+  React.useEffect(() => setOpen(false), [pathname]);
+
+  return (
+    <>
+      <Box
+        component="nav"
+        aria-label={t('managePage.rail.label')}
+        data-testid="manage-rail"
+        sx={{
+          display: 'none',
+          displayPrint: 'none',
           [RAIL_COLUMN_MIN_WIDTH]: {
             display: 'block',
-            overflowX: 'hidden',
-            overflowY: 'auto',
-            // Taller than the window (a small laptop, every group open):
-            // the rail scrolls on its own instead of hiding its last items.
-            flex: '1 1 auto',
-            minHeight: 0,
+            position: 'sticky',
+            top: 'var(--mat-impersonation-height, 0px)',
+            alignSelf: 'flex-start',
+            flex: `0 0 ${MANAGE_RAIL_WIDTH}px`,
+            width: MANAGE_RAIL_WIDTH,
+            height: 'calc(100vh - var(--mat-impersonation-height, 0px))',
+            boxSizing: 'border-box',
+            px: 1.75,
+            py: 2.5,
+            bgcolor: color.paper,
+            borderRight: `1px solid ${color.rule}`,
+            fontSize: textSize.sm,
           },
         }}
       >
-        {groups.map((group, index) => (
-          <React.Fragment key={group.key}>
-            {/* Groups are split by a rule, as in the draft; the phone's
-                single row has no room for one. */}
-            {index > 0 && (
-              <Box
-                component="hr"
-                aria-hidden
-                sx={{
-                  display: 'none',
-                  [RAIL_COLUMN_MIN_WIDTH]: {
-                    display: 'block',
-                    border: 0,
-                    borderTop: `1px solid ${color.rule}`,
-                    my: 1.5,
-                    mx: 0,
-                  },
-                }}
-              />
-            )}
-            {/* A group of links, not a <ul>: the items are links, and a
-                <ul> may only hold <li>s (axe `list`). The hidden heading
-                names the group for a screen reader; the rule shows it to
-                everyone else. */}
-            <Box
-              role="group"
-              data-testid={`manage-rail-group-${group.key}`}
-              aria-labelledby={`manage-rail-heading-${group.key}`}
-              sx={{
-                // Holds the hidden heading, which would otherwise widen the
-                // page from wherever the scrolled row put it.
-                position: 'relative',
-                display: 'flex',
-                flex: '0 0 auto',
-                gap: 0.5,
-                [RAIL_COLUMN_MIN_WIDTH]: { display: 'grid' },
-              }}
-            >
-              <Box component="span" id={`manage-rail-heading-${group.key}`} sx={visuallyHidden}>
-                {group.label}
-              </Box>
-              {group.items.map((item) => {
-                const selected = !item.external && isCurrent(pathname, item.to, item);
-                const Icon = item.icon;
-                const linkProps = item.external
-                  ? {
-                      component: 'a' as const,
-                      href: item.to,
-                      target: '_blank',
-                      rel: 'noopener noreferrer',
-                    }
-                  : { component: RouterLink, to: item.to };
-                return (
-                  <Box
-                    key={item.key}
-                    {...linkProps}
-                    data-testid={`manage-rail-${item.key}`}
-                    aria-current={selected ? 'page' : undefined}
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: 1.5,
-                      flex: '0 0 auto',
-                      px: 1.5,
-                      py: 1,
-                      borderRadius: radii.sm,
-                      color: selected ? color.ink : color.ink2,
-                      bgcolor: selected ? color.paper2 : 'transparent',
-                      textDecoration: 'none',
-                      whiteSpace: 'nowrap',
-                      lineHeight: 1.4,
-                      '&:hover': { bgcolor: color.paper2, color: color.ink },
-                      '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
-                    }}
-                  >
-                    <Box
-                      component="span"
-                      sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}
-                    >
-                      {Icon && (
-                        <Box
-                          component="span"
-                          data-testid={`manage-rail-${item.key}-icon`}
-                          data-weight={selected ? 'fill' : 'regular'}
-                          sx={{
-                            display: 'inline-flex',
-                            flex: 'none',
-                            // Sized here as well as by `size`, so a module's
-                            // icon that ignores `size` (an MUI one) fits too.
-                            '& > svg': { width: ICON_SIZE.md, height: ICON_SIZE.md },
-                          }}
-                        >
-                          <Icon
-                            size={ICON_SIZE.md}
-                            weight={selected ? 'fill' : 'regular'}
-                            aria-hidden
-                          />
-                        </Box>
-                      )}
-                      {item.label}
-                    </Box>
-                    {item.external && (
-                      <>
-                        <ArrowSquareOutIcon
-                          aria-hidden
-                          size={ICON_SIZE.sm}
-                          style={{ flex: 'none', color: color.ink2 }}
-                        />
-                        <Box component="span" sx={visuallyHidden}>
-                          {t('managePage.rail.opensInNewTab')}
-                        </Box>
-                      </>
-                    )}
-                    {typeof item.count === 'number' && item.count > 0 && (
-                      <Box
-                        component="span"
-                        data-testid={`manage-rail-${item.key}-count`}
-                        sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.accent }}
-                      >
-                        {item.count}
-                      </Box>
-                    )}
-                  </Box>
-                );
-              })}
-            </Box>
-          </React.Fragment>
-        ))}
+        <RailBody />
       </Box>
-    </Box>
+      <Box
+        component="header"
+        data-testid="manage-phone-header"
+        sx={{
+          display: 'none',
+          displayPrint: 'none',
+          [RAIL_ROW_MAX_WIDTH]: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.25,
+            position: 'sticky',
+            top: 'var(--mat-impersonation-height, 0px)',
+            zIndex: (theme) => theme.zIndex.appBar,
+            px: 2,
+            py: 1.25,
+            bgcolor: color.paper,
+            borderBottom: `1px solid ${color.rule}`,
+          },
+        }}
+      >
+        <IconButton
+          onClick={() => setOpen(true)}
+          aria-label={t('managePage.rail.openMenu')}
+          aria-expanded={open}
+          aria-controls="manage-rail-drawer"
+          data-testid="manage-rail-open"
+          sx={{ width: 44, height: 44, border: `1px solid ${color.rule}`, borderRadius: radii.sm }}
+        >
+          <ListIcon size={ICON_SIZE.lg} aria-hidden />
+        </IconButton>
+        <Box component="span" sx={{ fontFamily: fontDisplay, fontWeight: 600 }}>
+          {t('nav.manageHome')}
+        </Box>
+      </Box>
+      <Drawer
+        id="manage-rail-drawer"
+        open={open}
+        onClose={() => setOpen(false)}
+        PaperProps={{
+          sx: {
+            width: 300,
+            maxWidth: '86vw',
+            height: '100%',
+            bgcolor: color.paper,
+            px: 1.75,
+            py: 2.5,
+          },
+        }}
+      >
+        <Box
+          component="nav"
+          aria-label={t('managePage.rail.label')}
+          data-testid="manage-rail-drawer"
+          sx={{ flex: '1 1 auto', minHeight: 0, fontSize: textSize.sm, position: 'relative' }}
+        >
+          <IconButton
+            onClick={() => setOpen(false)}
+            aria-label={t('managePage.rail.closeMenu')}
+            sx={{ position: 'absolute', top: -6, right: 0, width: 44, height: 44, zIndex: 1 }}
+          >
+            <XIcon size={ICON_SIZE.md} aria-hidden />
+          </IconButton>
+          <RailBody onNavigate={() => setOpen(false)} />
+        </Box>
+      </Drawer>
+    </>
   );
 };

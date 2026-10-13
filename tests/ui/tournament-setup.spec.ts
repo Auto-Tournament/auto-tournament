@@ -32,9 +32,9 @@ test.describe.serial('Tournament setup flow', () => {
       await expect(steps).toBeVisible();
       await expect(steps.locator('li')).toHaveCount(7);
 
-      // The setup takes the page over: its steps, under a way back to
-      // Manage, sit in the rail's column, and the form gets the width.
-      await expect(page.getByTestId('manage-rail')).toHaveCount(0);
+      // The rail stays (it is Manage's whole menu); the setup's steps, under
+      // a way back to Manage, are a column of their own beside the form.
+      await expect(page.getByTestId('manage-rail')).toBeVisible();
       const column = page.getByTestId('tournament-setup-column');
       await expect(column).toContainText(/Manage/);
       await expect(page.getByTestId('tournament-setup-back-to-manage')).toHaveAttribute(
@@ -48,9 +48,8 @@ test.describe.serial('Tournament setup flow', () => {
       expect(columnBox!.x + columnBox!.width, 'steps left of the form').toBeLessThanOrEqual(
         form!.x
       );
-      expect(summaryBox!.x, 'summary right of the form').toBeGreaterThanOrEqual(
-        form!.x + form!.width
-      );
+      // Under 1440px, with the rail beside it, the summary sits below the form.
+      expect(summaryBox!.y, 'summary below the form').toBeGreaterThanOrEqual(form!.y);
       const step = (id: string) => page.getByTestId(`tournament-setup-step-${id}`);
       const next = page.getByTestId('tournament-next-button');
       const summary = (key: string) => page.getByTestId(`tournament-summary-${key}`);
