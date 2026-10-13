@@ -422,6 +422,29 @@ test.describe('Autoscale: plan', () => {
     expect(p.actions).toEqual([expect.objectContaining({ kind: 'start', server: 'server-3' })]);
   });
 
+  test('a practice server is not capacity, and never started or stopped by the scaler', () => {
+    // A running practice server, idle long past the cool-down: left running.
+    const quiet = plan({
+      demand: demand(0),
+      servers: [warmIdle(1, 7200, { practice: true, idle: false }), warmIdle(2, 1200)],
+    });
+    expect(quiet.actions).toEqual([expect.objectContaining({ kind: 'stop', server: 'server-2' })]);
+    // A match waiting: the practice server does not count as warm, and a
+    // stopped one is not started for it.
+    const waiting = plan({
+      demand: demand(0, 1),
+      servers: [
+        warmIdle(1, 60, { practice: true, idle: false }),
+        server(2, { practice: true }),
+        server(3),
+      ],
+    });
+    expect(waiting).toMatchObject({ desired: 1, warm: 0 });
+    expect(waiting.actions).toEqual([
+      expect.objectContaining({ kind: 'start', server: 'server-3' }),
+    ]);
+  });
+
   test('stop after the cool-down: surplus idle servers, longest idle first', () => {
     const p = plan({
       demand: demand(0),
