@@ -172,7 +172,7 @@ test.describe.serial('Code modules in the browser', () => {
       const listed = page.waitForResponse(
         (res) => new URL(res.url()).pathname === '/api/modules/public'
       );
-      await page.goto('/');
+      await page.goto('/manage');
       // The boot asked the public manifest, and it listed nothing, so the
       // absence below is the loader deciding, not the loader never running.
       const manifest = await listed;

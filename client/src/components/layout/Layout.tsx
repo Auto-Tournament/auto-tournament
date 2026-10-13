@@ -9,7 +9,7 @@ import { ManageRailProvider } from '../../contexts/ManageRailContext';
 import { ShellColumnProvider, useShellColumnSlot } from '../../contexts/ShellColumnContext';
 import { api } from '../../utils/api';
 import { useTranslation } from 'react-i18next';
-import { TopNavBar } from './TopNavBar';
+import { ManageHeader } from '../manage/ManageHeader';
 import { ManageRail } from '../manage/ManageRail';
 import { TournamentBar, isTournamentPage } from '../manage/TournamentBar';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
@@ -44,17 +44,16 @@ function rememberSteamWarningDismissed(): void {
 }
 
 /**
- * The admin shell: the top bar, and below it every admin page.
+ * The admin shell, Manage's dashboard: its own header (no public top bar,
+ * 2026-10), the rail, and beside it every admin page.
  *
  * 3.0 dropped the 2.x left drawer. The admin menu is the Manage rail
  * (`ManageRail`), and every admin page renders beside it, so an admin never
- * loses the way around. The admin home ("/") is the landing page with its own
- * links to everything, and has no rail, as in the 3.0 designs.
+ * loses the way around. Its home is `/manage`.
  *
  * The shell prints no page title of its own: each page opens with its own
  * `PageHead` (eyebrow, H1, actions), and sets its own `document.title`
- * through `pageTitle()`. Rail and page share the one 1200px wrap every page
- * uses, under the same floating top bar as the public pages.
+ * through `pageTitle()`. Rail and page share one wide wrap under the header.
  *
  * A page can take the rail's column for its own navigation (the tournament
  * setup wizard, through `useShellColumn`): the shell then renders the column
@@ -97,8 +96,8 @@ function AdminShell() {
     ? undefined
     : tournamentIntegration?.adminGlobalWarning;
 
-  // The admin home is the landing page and links to everything itself.
-  const showRail = location.pathname !== paths.root;
+  // Every Manage page has the rail: it is the admin menu.
+  const showRail = true;
   // A page that brings its own left column (the setup wizard) replaces the rail.
   const { claimed: columnClaimed, setColumn } = useShellColumnSlot();
 
@@ -213,8 +212,9 @@ function AdminShell() {
       <CssBaseline />
       {/* The game module's own global warning, or nothing (3.0 phase E). */}
       {AdminGlobalWarning && <AdminGlobalWarning onOpenSettings={handleOpenSettingsFromSnackbar} />}
-      <TopNavBar adminArea={showRail} />
-      <Container component="main" maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
+      {/* Manage is its own dashboard: its header, not the public top bar. */}
+      <ManageHeader />
+      <Container component="main" maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
         <Box
           data-testid="admin-shell-content"
           sx={{

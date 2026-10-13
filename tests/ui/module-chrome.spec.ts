@@ -69,15 +69,12 @@ test.describe.serial('The shell follows the tournament game', () => {
       });
       expect(created.status(), `creating: ${await created.text()}`).toBe(200);
 
-      // Admin home: no Servers link in the site grid, no fleet card. The
-      // Settings link is there to prove the grid itself rendered — an empty
-      // page would pass the two negatives on its own.
-      await page.goto('/');
+      // Manage's home: no fleet card, and the rail has no Servers or Maps.
+      // The Settings item is there to prove the rail itself rendered — an
+      // empty page would pass the negatives on its own.
+      await page.goto('/manage');
       await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId('admin-home-site-grid')).toBeVisible();
-      await expect(page.getByTestId('admin-home-site-link-settings')).toBeVisible();
-      await expect(page.getByTestId('admin-home-site-link-servers')).toHaveCount(0);
-      await expect(page.getByTestId('admin-home-site-link-maps')).toHaveCount(0);
+      await expect(page.getByTestId('manage-rail-settings')).toBeVisible();
       await expect(page.getByTestId('admin-home-servers-card')).toHaveCount(0);
 
       // Nothing on the page links to CS2's pages (the top bar included).

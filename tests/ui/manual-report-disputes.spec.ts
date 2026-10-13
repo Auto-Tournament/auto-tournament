@@ -217,9 +217,9 @@ test.describe.serial('Disputes, from the team page to the admin queue', () => {
 
         // --- the admin picks it up from the Disputes page --------------------
         await ensureSignedIn(page);
-        await page.goto('/');
-        // It is a sibling of the admin home, and linked from it.
-        const link = page.getByTestId('admin-home-site-link-disputes');
+        await page.goto('/manage');
+        // It is one of the tournament's tabs in Manage.
+        const link = page.getByTestId('tournament-bar-disputes');
         await expect(link).toBeVisible({ timeout: 20_000 });
         await link.click();
 

@@ -14,7 +14,6 @@ import ResetPassword from './pages/ResetPassword';
 import EmailLink from './pages/EmailLink';
 import { BlockedNotice } from './components/auth/BlockedNotice';
 import Reports from './pages/Reports';
-import AdminHome from './pages/AdminHome';
 import Manage from './pages/Manage';
 import Teams from './pages/Teams';
 import Players from './pages/Players';
@@ -218,9 +217,9 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
 /**
  * What "/" shows.
  *
- * - A real admin session (not impersonating): the admin dashboard shell
- *   (`Layout`, with its nested `/teams`, `/players`, etc. routes) — unchanged
- *   from before Home existed.
+ * - A real admin session (not impersonating): Home when the admin is also a
+ *   player, else `/manage`. Every other path under "/" is the Manage
+ *   dashboard (`Layout`, with its nested `/manage/*` routes).
  * - A signed-in player (including an admin impersonating one — impersonation
  *   is there to preview the player experience, and this is the player
  *   experience): `Home`.
@@ -257,6 +256,12 @@ function RootRoute() {
   if (isAuthenticated && !impersonation) {
     if (needsSteamLink && location.pathname !== paths.connectSteam) {
       return <Navigate to={paths.connectSteam} replace />;
+    }
+    // "/" is Home for everyone (2026-10): an admin who plays gets the
+    // player Home with Manage in the top bar; a username-only admin has no
+    // player Home, so Manage is theirs.
+    if (location.pathname === paths.root) {
+      return playerSteamId ? <Home /> : <Navigate to={paths.manage} replace />;
     }
     // The admin shell opens once the license terms are accepted.
     return (
@@ -582,7 +587,6 @@ function AppRoutes() {
       />
 
       <Route path={paths.root} element={<RootRoute />}>
-        <Route index element={<AdminHome />} />
         <Route path={adminRoute(paths.manage)} element={<Manage />} />
         <Route path={adminRoute(paths.teams)} element={<Teams />} />
         <Route path={adminRoute(paths.players)} element={<Players />} />
