@@ -379,6 +379,12 @@ export interface ScalerServer {
   pending: 'start' | 'stop' | null;
   /** Unix s it has been idle since (warm servers). */
   idleSince: number | null;
+  /**
+   * Idle because its match just ended (the demo is uploaded): a server starts
+   * in seconds, so one not needed now stops without the cool-down, which is
+   * for servers warmed ahead of a match (unset: false).
+   */
+  afterMatch?: boolean;
 }
 
 export interface ScalerHost {
@@ -546,19 +552,20 @@ export function planScaling(planInput: PlanInput): ScalePlan {
         (s) =>
           !spare.has(s.fleetServerId) &&
           s.idleSince !== null &&
-          now - s.idleSince >= settings.cooldownSeconds
+          (s.afterMatch || now - s.idleSince >= settings.cooldownSeconds)
       )
       .sort((a, b) => (a.idleSince ?? 0) - (b.idleSince ?? 0) || a.name.localeCompare(b.name));
     const surplus = warm - desired;
     for (const s of stoppable.slice(0, surplus)) {
       const idleMin = Math.floor((now - (s.idleSince ?? now)) / 60);
+      const why = s.afterMatch ? 'Match over, demo uploaded' : `Idle ${idleMin} min`;
       plan.actions.push({
         kind: 'stop',
         hostId: s.hostId,
         server: s.hostServer,
         fleetServerId: s.fleetServerId,
         name: s.name,
-        reason: `Idle ${idleMin} min and not needed (${need}; ${warm - plan.actions.length} warm, ${desired} needed)`,
+        reason: `${why} and not needed (${need}; ${warm - plan.actions.length} warm, ${desired} needed)`,
       });
     }
   }

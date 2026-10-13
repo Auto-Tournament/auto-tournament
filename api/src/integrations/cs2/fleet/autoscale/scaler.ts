@@ -78,6 +78,10 @@ const nowS = () => Math.floor(Date.now() / 1000);
 
 /** Unix s each managed server was first seen idle (in this process). */
 const idleSince = new Map<string, number>();
+/** Servers seen busy with one of our matches; idle after that = the match is over. */
+const busyWithMatch = new Set<string>();
+/** Servers idle since their match ended (the demo uploaded): they stop without the cool-down. */
+const idleAfterMatch = new Set<string>();
 const recentStarts = new Map<string, number>();
 const recentStops = new Map<string, number>();
 let lastNote: string | null = null;
@@ -424,9 +428,14 @@ export async function gatherInputs(settings: StoredAutoscaleSettings): Promise<G
         !updating &&
         !practice;
       if (idle) {
-        if (!idleSince.has(fid)) idleSince.set(fid, now);
+        if (!idleSince.has(fid)) {
+          idleSince.set(fid, now);
+          if (busyWithMatch.delete(fid)) idleAfterMatch.add(fid);
+        }
       } else {
         idleSince.delete(fid);
+        idleAfterMatch.delete(fid);
+        if (ours) busyWithMatch.add(fid);
       }
       servers.push({
         fleetServerId: fid,
@@ -445,10 +454,13 @@ export async function gatherInputs(settings: StoredAutoscaleSettings): Promise<G
         failoverTarget: targets.has(cs2Id),
         pending,
         idleSince: idleSince.get(fid) ?? null,
+        afterMatch: idleAfterMatch.has(fid),
       });
     }
   }
   for (const fid of [...idleSince.keys()]) if (!seen.has(fid)) idleSince.delete(fid);
+  for (const fid of [...busyWithMatch]) if (!seen.has(fid)) busyWithMatch.delete(fid);
+  for (const fid of [...idleAfterMatch]) if (!seen.has(fid)) idleAfterMatch.delete(fid);
   const inFlight = await createInFlight(now, seen);
 
   return {
@@ -550,7 +562,10 @@ async function execute(
       );
       commandId = sent.command.id;
       (action.kind === 'start' ? recentStarts : recentStops).set(action.fleetServerId, now);
-      if (action.kind === 'stop') idleSince.delete(action.fleetServerId);
+      if (action.kind === 'stop') {
+        idleSince.delete(action.fleetServerId);
+        idleAfterMatch.delete(action.fleetServerId);
+      }
     }
     await recordEvent({
       action: action.kind,
