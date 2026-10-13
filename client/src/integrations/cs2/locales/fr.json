@@ -1842,7 +1842,8 @@
         "source": {
           "matchmaking": "Matchmaking",
           "tournament": "Tournament",
-          "admin": "Given by an admin"
+          "admin": "Given by an admin",
+          "tradeup": "Échange"
         },
         "remove": "Take away",
         "removeTitle": "Take this skin away?",
@@ -1876,7 +1877,9 @@
       "fiveVsFive": "These are for 5v5. Smaller modes drop less:",
       "fairRules": "Only players who played the whole game get a chance: nothing for an abandoned game or one that ended early, and a repeat against the same opponents within a day drops much less. Tournament placement rewards go only to players who played in the tournament.",
       "tournamentMatchDrops": "Tournament matches drop too (not in esports mode)",
-      "levelUpDrops": "A drop for every new level"
+      "levelUpDrops": "A drop for every new level",
+      "tradeUp": "Échanges : des skins d'un grade contre un du suivant",
+      "tradeUpCount": "Skins par échange"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "Ce que ça veut dire",
@@ -1937,6 +1940,18 @@
     "rewards": {
       "title": "Rewards",
       "choosing": "choosing a skin…"
+    },
+    "tradeUp": {
+      "start": "Échanger",
+      "picked": "{{picked}} sur {{count}} choisis",
+      "cancel": "Annuler",
+      "confirm": "Échanger",
+      "gives": "Donne un skin {{rarity}}, chacun de ces {{count}} aussi probable. Son usure est la moyenne des tiens.",
+      "help": "Choisis {{count}} skins d’arme d’un grade (ni couteaux ni gants) contre un du grade suivant.",
+      "failed": "Échange impossible.",
+      "pickLabel": "Choisir {{name}}",
+      "unpickLabel": "Retirer {{name}}",
+      "origin": "Obtenu par échange"
     }
   },
   "matchRules": {

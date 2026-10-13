@@ -1842,7 +1842,8 @@
         "source": {
           "matchmaking": "Matchmaking",
           "tournament": "Tournament",
-          "admin": "Given by an admin"
+          "admin": "Given by an admin",
+          "tradeup": "汰换"
         },
         "remove": "Take away",
         "removeTitle": "Take this skin away?",
@@ -1876,7 +1877,9 @@
       "fiveVsFive": "These are for 5v5. Smaller modes drop less:",
       "fairRules": "Only players who played the whole game get a chance: nothing for an abandoned game or one that ended early, and a repeat against the same opponents within a day drops much less. Tournament placement rewards go only to players who played in the tournament.",
       "tournamentMatchDrops": "Tournament matches drop too (not in esports mode)",
-      "levelUpDrops": "A drop for every new level"
+      "levelUpDrops": "A drop for every new level",
+      "tradeUp": "汰换：同品质皮肤换一个更高品质",
+      "tradeUpCount": "每次汰换所需皮肤"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "这是什么意思",
@@ -1937,6 +1940,18 @@
     "rewards": {
       "title": "Rewards",
       "choosing": "choosing a skin…"
+    },
+    "tradeUp": {
+      "start": "汰换",
+      "picked": "已选 {{picked}}/{{count}}",
+      "cancel": "取消",
+      "confirm": "汰换",
+      "gives": "获得一个{{rarity}}皮肤，以下 {{count}} 个概率相同。磨损为你所选的平均值。",
+      "help": "选择 {{count}} 个同品质武器皮肤（不含刀和手套）换一个更高品质的。",
+      "failed": "汰换失败。",
+      "pickLabel": "选择 {{name}}",
+      "unpickLabel": "取消选择 {{name}}",
+      "origin": "汰换获得"
     }
   },
   "matchRules": {

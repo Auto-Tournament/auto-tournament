@@ -1882,7 +1882,8 @@
         "source": {
           "matchmaking": "Matchmaking",
           "tournament": "Tournament",
-          "admin": "Given by an admin"
+          "admin": "Given by an admin",
+          "tradeup": "Wymiana"
         },
         "remove": "Take away",
         "removeTitle": "Take this skin away?",
@@ -1916,7 +1917,9 @@
       "fiveVsFive": "These are for 5v5. Smaller modes drop less:",
       "fairRules": "Only players who played the whole game get a chance: nothing for an abandoned game or one that ended early, and a repeat against the same opponents within a day drops much less. Tournament placement rewards go only to players who played in the tournament.",
       "tournamentMatchDrops": "Tournament matches drop too (not in esports mode)",
-      "levelUpDrops": "A drop for every new level"
+      "levelUpDrops": "A drop for every new level",
+      "tradeUp": "Wymiany: skórki jednej klasy za jedną z następnej",
+      "tradeUpCount": "Skórek na wymianę"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "Co to znaczy",
@@ -1977,6 +1980,18 @@
     "rewards": {
       "title": "Rewards",
       "choosing": "choosing a skin…"
+    },
+    "tradeUp": {
+      "start": "Wymień",
+      "picked": "Wybrano {{picked}} z {{count}}",
+      "cancel": "Anuluj",
+      "confirm": "Wymień",
+      "gives": "Daje jedną skórkę {{rarity}}, każda z tych {{count}} równie prawdopodobna. Zużycie to średnia twoich.",
+      "help": "Wybierz {{count}} skórek broni jednej klasy (bez noży i rękawic) za jedną z następnej.",
+      "failed": "Nie udało się wymienić.",
+      "pickLabel": "Wybierz {{name}}",
+      "unpickLabel": "Odznacz {{name}}",
+      "origin": "Z wymiany"
     }
   },
   "matchRules": {

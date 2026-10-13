@@ -174,6 +174,8 @@ export interface SkinsConfig {
   rarityWeights: Record<Rarity, number>;
   tournamentRewards: boolean;
   rewards: TournamentReward[];
+  /** Trade-up contracts: `count` skins of one grade for one of the next (tradeUpRule). */
+  tradeUp: { enabled: boolean; count: number };
 }
 
 export const DEFAULT_CONFIG: SkinsConfig = {
@@ -199,7 +201,56 @@ export const DEFAULT_CONFIG: SkinsConfig = {
     { place: 2, mode: 'random', rarity: 'mythical' },
     { place: 3, mode: 'random', rarity: 'rare' },
   ],
+  tradeUp: { enabled: true, count: 5 },
 };
+
+/** How many skins a trade-up may take: CS2's contract is ten; five by default here. */
+export const TRADE_UP_MIN = 3;
+export const TRADE_UP_MAX = 10;
+
+/** The grade a trade-up of `rarity` gives; null for the top weapon grade and above (no contraband). */
+export function nextRarity(rarity: Rarity): Rarity | null {
+  const i = RARITIES.indexOf(rarity);
+  // Ancient (covert) is the top a contract reaches; immortal is the one-off contraband tier.
+  return i >= 0 && i < RARITIES.indexOf('ancient') ? RARITIES[i + 1] : null;
+}
+
+/** Knives and gloves are never traded up, nor given by a contract. */
+export function tradeUpWeapon(weapon: string): boolean {
+  const slot = slotOf(weapon);
+  return slot !== 'knife' && slot !== 'gloves';
+}
+
+/**
+ * Whether these skins make a trade-up contract (pure: tested on its own):
+ * exactly `count` distinct skins, the player's own, all weapons (no knife or
+ * gloves), all of one grade below the top. Returns the error to show, or the
+ * grade they give.
+ */
+export function tradeUpRule(
+  skins: ReadonlyArray<{ id: number; rarity: Rarity; weapon: string }>,
+  requested: readonly number[],
+  count: number
+): { ok: true; from: Rarity; to: Rarity } | { ok: false; error: string } {
+  const ids = [...new Set(requested)];
+  if (ids.length !== count) return { ok: false, error: `A trade-up takes exactly ${count} skins.` };
+  if (skins.length !== ids.length) return { ok: false, error: 'Those skins are not all yours.' };
+  if (skins.some((s) => !tradeUpWeapon(s.weapon)))
+    return { ok: false, error: 'Knives and gloves cannot be traded up.' };
+  const grades = new Set(skins.map((s) => s.rarity));
+  if (grades.size !== 1) return { ok: false, error: 'The skins must all be of one grade.' };
+  const from = skins[0].rarity;
+  const to = nextRarity(from);
+  if (!to) return { ok: false, error: 'This grade is the top a trade-up reaches.' };
+  return { ok: true, from, to };
+}
+
+/** The new skin's wear: the inputs' average, as in CS2. */
+export function tradeUpFloat(floats: readonly number[]): number {
+  if (floats.length === 0) return rollFloat();
+  const avg = floats.reduce((a, b) => a + b, 0) / floats.length;
+  return Math.max(0, Math.min(1, avg));
+}
 
 export class SkinError extends Error {
   constructor(
@@ -220,7 +271,7 @@ export interface OwnedSkin {
   slot: string;
   float: number;
   pattern: number;
-  source: 'matchmaking' | 'tournament' | 'admin' | 'level';
+  source: 'matchmaking' | 'tournament' | 'admin' | 'level' | 'tradeup';
   sourceLabel: string | null;
   sourceRef: string | null;
   place: number | null;
@@ -438,6 +489,13 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
     rarityWeights: weights,
     tournamentRewards: raw.tournamentRewards !== false,
     rewards,
+    tradeUp: {
+      enabled: raw.tradeUp?.enabled !== false,
+      count:
+        typeof raw.tradeUp?.count === 'number' && Number.isInteger(raw.tradeUp.count)
+          ? Math.max(TRADE_UP_MIN, Math.min(TRADE_UP_MAX, raw.tradeUp.count))
+          : DEFAULT_CONFIG.tradeUp.count,
+    },
   };
 }
 
@@ -1245,6 +1303,92 @@ export const skinService = {
   },
 
   /** Admin: the numbers at the top of the Skins page. */
+  /** What a trade-up of this grade can give: every weapon skin of the next one, equally likely. */
+  async tradeUpOutcomes(rarity: Rarity): Promise<{ to: Rarity | null; skins: CatalogSkin[] }> {
+    const to = nextRarity(rarity);
+    if (!to) return { to: null, skins: [] };
+    const skins = (await this.catalog()).filter((s) => s.rarity === to && tradeUpWeapon(s.weapon));
+    return { to, skins };
+  },
+
+  /**
+   * A trade-up contract: the player's `count` skins of one grade (equipped or
+   * shown ones too: they leave the loadout and the showcase) for one random
+   * weapon skin of the next grade, with their average wear. The inputs go in
+   * one transaction; the new skin is granted after (a reveal and a notice).
+   */
+  async tradeUp(
+    playerUid: string,
+    skinIds: unknown
+  ): Promise<{ skinId: number; skin: CatalogSkin }> {
+    const config = await this.config();
+    if (!config.tradeUp.enabled) throw new SkinError(404, 'Trade-ups are off on this site.');
+    const requested = Array.isArray(skinIds)
+      ? skinIds.map(Number).filter((n) => Number.isInteger(n) && n > 0)
+      : [];
+    const ids = [...new Set(requested)];
+    const owned = ids.length
+      ? await db.queryAsync<{ id: number; rarity: Rarity; weapon: string; float_value: number }>(
+          `SELECT id, rarity, weapon, float_value FROM cs2_player_skins
+            WHERE player_uid = ? AND id IN (${ids.map(() => '?').join(', ')})`,
+          [playerUid, ...ids]
+        )
+      : [];
+    const rule = tradeUpRule(owned, requested, config.tradeUp.count);
+    if (!rule.ok) throw new SkinError(400, rule.error);
+    const { skins: pool } = await this.tradeUpOutcomes(rule.from);
+    if (pool.length === 0) throw new SkinError(409, 'No skin of the next grade to give.');
+    const skin = pool[randomInt(0, pool.length)];
+    // The inputs, all or none: a second trade-up of the same skins finds them gone.
+    const floats = await db.withClient(async (client) => {
+      await client.query('BEGIN');
+      try {
+        const gone = await client.query<{ float_value: number }>(
+          `DELETE FROM cs2_player_skins WHERE player_uid = $1 AND id = ANY($2::int[]) RETURNING float_value`,
+          [playerUid, ids]
+        );
+        if (gone.rowCount !== ids.length) {
+          await client.query('ROLLBACK');
+          throw new SkinError(409, 'Those skins changed meanwhile. Try again.');
+        }
+        await client.query('COMMIT');
+        return gone.rows.map((r) => Number(r.float_value));
+      } catch (error) {
+        await client.query('ROLLBACK').catch(() => undefined);
+        throw error;
+      }
+    });
+    // Out of the showcase too (the loadout rows went with the skins).
+    const showcase = await db.queryOneAsync<{ items: string }>(
+      'SELECT items FROM cs2_player_skin_showcase WHERE player_uid = ?',
+      [playerUid]
+    );
+    if (showcase) {
+      try {
+        const items = (JSON.parse(showcase.items) as Array<{ skinId: number }>).filter(
+          (i) => !ids.includes(Number(i.skinId))
+        );
+        await db.runAsync('UPDATE cs2_player_skin_showcase SET items = ? WHERE player_uid = ?', [
+          JSON.stringify(items),
+          playerUid,
+        ]);
+      } catch {
+        // A showcase that does not parse is the player's to fix; the trade-up stands.
+      }
+    }
+    const skinId = await this.grant(
+      playerUid,
+      skin,
+      {
+        source: 'tradeup',
+        label: `${ids.length} × ${rule.from.charAt(0).toUpperCase()}${rule.from.slice(1)}`,
+      },
+      { float: tradeUpFloat(floats) }
+    );
+    log.info(`[SKINS] ${playerUid}: traded up ${ids.length} ${rule.from} skins for ${skin.name}`);
+    return { skinId, skin };
+  },
+
   async adminStats() {
     const weekAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 3600;
     const counts = await db.queryOneAsync<{

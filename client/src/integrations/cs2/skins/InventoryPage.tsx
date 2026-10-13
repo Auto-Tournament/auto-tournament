@@ -3,6 +3,7 @@ import { Link as RouterLink, useParams } from 'react-router-dom';
 import { skinPaths } from './paths';
 import {
   Box,
+  Button,
   ButtonBase,
   CircularProgress,
   Container,
@@ -24,6 +25,8 @@ import {
 import { InspectSkinDialog, SkinCard, SlotTile, VirtualNotice } from './SkinParts';
 import { loadoutSlots, useMySkins, useSkinsEnabled, type OwnedSkin, type Rarity } from './useSkins';
 import { equippedFor, type LoadoutTeam } from './loadoutSides';
+import { canPick, togglePick } from './tradeUp';
+import { TradeUpPanel } from './TradeUpPanel';
 
 const { color } = tokens;
 const RARITY_ORDER: Rarity[] = [
@@ -82,6 +85,22 @@ export function InventoryPage() {
   const [helpOpen, setHelpOpen] = useState(false);
   // Which side a click equips for: both, CT or T (one-side weapons go to their side).
   const [side, setSide] = useState<LoadoutTeam>(0);
+  // Trade-ups (when the site has them): picking skins of one grade for one of the next.
+  const [tradeUpCount, setTradeUpCount] = useState<number | null>(null);
+  const [trading, setTrading] = useState(false);
+  const [picked, setPicked] = useState<OwnedSkin[]>([]);
+
+  useEffect(() => {
+    if (!own) return;
+    let cancelled = false;
+    api
+      .get<{ tradeUp: { count: number } | null }>('/api/skins/status')
+      .then((r) => !cancelled && setTradeUpCount(r.tradeUp?.count ?? null))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [own]);
 
   useEffect(() => {
     document.title = pageTitle(t('skins.inventory'));
@@ -332,6 +351,19 @@ export function InventoryPage() {
                   ))}
                 </Box>
               )}
+              {own && tradeUpCount !== null && !trading && (
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    setPicked([]);
+                    setTrading(true);
+                  }}
+                  data-testid="trade-up-start"
+                  sx={{ borderRadius: radii.pill }}
+                >
+                  {t('skins.tradeUp.start')}
+                </Button>
+              )}
               <Select
                 size="small"
                 value={sort}
@@ -343,6 +375,23 @@ export function InventoryPage() {
                 <MenuItem value="newest">{t('skins.sort.newest')}</MenuItem>
               </Select>
             </Box>
+
+            {trading && tradeUpCount !== null && (
+              <TradeUpPanel
+                count={tradeUpCount}
+                picked={picked}
+                onCancel={() => {
+                  setTrading(false);
+                  setPicked([]);
+                }}
+                onDone={(skinId) => {
+                  setTrading(false);
+                  setPicked([]);
+                  void mine.reload();
+                  setInspect(skinId);
+                }}
+              />
+            )}
 
             {shown.length === 0 ? (
               <Typography sx={{ color: color.ink2 }}>
@@ -378,6 +427,15 @@ export function InventoryPage() {
                         : undefined
                     }
                     onInspect={(s) => setInspect(s.id)}
+                    pick={
+                      trading && tradeUpCount !== null
+                        ? {
+                            picked: picked.some((p) => p.id === skin.id),
+                            disabled: !canPick(skin, picked, tradeUpCount),
+                            onToggle: (s) => setPicked((list) => togglePick(s, list, tradeUpCount)),
+                          }
+                        : undefined
+                    }
                   />
                 ))}
               </Box>
