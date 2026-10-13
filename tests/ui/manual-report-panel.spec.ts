@@ -212,7 +212,9 @@ test.describe.serial('Manual reporting on the team page', () => {
         // And the result really was applied, not just drawn.
         const detail = await request.get(`/api/game/manual/matches/${match.slug}`);
         expect(detail.ok(), `reading ${match.slug}: ${await detail.text()}`).toBe(true);
-        const body = (await detail.json()) as { match: { status: string; winnerId: string | null } };
+        const body = (await detail.json()) as {
+          match: { status: string; winnerId: string | null };
+        };
         expect(body.match.status).toBe('completed');
         expect(body.match.winnerId).toBe(one.id);
       } finally {
