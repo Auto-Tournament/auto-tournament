@@ -84,7 +84,9 @@ test.describe.serial('The shell follows the tournament game', () => {
       // Manage: no server grid under the queue, no Servers or Maps in the rail.
       await page.goto('/manage');
       await expect(page.getByTestId('manage-rail')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId('tournament-bar-matches')).toBeVisible();
+      // The tournament's own pages open from its name in the rail.
+      await page.locator('[data-testid^="manage-rail-tournament-"]').first().click();
+      await expect(page.getByTestId('tournament-bar-matches')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('manage-rail-servers')).toHaveCount(0);
       await expect(page.getByTestId('manage-rail-maps')).toHaveCount(0);
       // A game with no pages of its own leaves the rail's game group out; a

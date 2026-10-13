@@ -218,7 +218,8 @@ test.describe.serial('Disputes, from the team page to the admin queue', () => {
         // --- the admin picks it up from the Disputes page --------------------
         await ensureSignedIn(page);
         await page.goto('/manage');
-        // It is one of the tournament's tabs in Manage.
+        // It is one of the tournament's tabs in Manage, opened from its name in the rail.
+        await page.locator('[data-testid^="manage-rail-tournament-"]').first().click();
         const link = page.getByTestId('tournament-bar-disputes');
         await expect(link).toBeVisible({ timeout: 20_000 });
         await link.click();
