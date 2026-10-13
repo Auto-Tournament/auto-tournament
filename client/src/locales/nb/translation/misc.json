@@ -1088,5 +1088,13 @@
     "openConsole": "Open the console ↗",
     "pasteKey": "Paste the new key",
     "replacedSoon": "A new key was made for this license in the console. Paste it in the license settings: this key stops on {{date}}."
+  },
+  "matchAdmin": {
+    "openChat": "Åpne chat",
+    "resetVeto": "Start vetoen på nytt",
+    "resetVetoTitle": "Starte vetoen på nytt?",
+    "resetVetoBody": "Alle bans, picks og sider så langt slettes, og lagene starter vetoen på nytt. Begge lag ser det i kampchatten.",
+    "vetoReset": "Vetoen starter på nytt",
+    "vetoResetFailed": "Kunne ikke starte vetoen på nytt"
   }
 }

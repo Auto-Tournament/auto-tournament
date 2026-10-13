@@ -12,7 +12,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { CodeIcon, XIcon } from '@phosphor-icons/react';
+import { ArrowCounterClockwiseIcon, ChatCircleIcon, CodeIcon, XIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -20,6 +20,7 @@ import { useIntegrationFor } from '../../integrations/registry';
 import { radii } from '../../theme/tokens';
 import type { Match } from '../../types';
 import ConfirmDialog from '../modals/ConfirmDialog';
+import { openChat } from '../chat/chatStore';
 import AdminMatchControls from '../admin/AdminMatchControls';
 import { MatchHoldPanel } from '../admin/MatchHoldPanel';
 import { AddBackupPlayer } from '../admin/AddBackupPlayer';
@@ -37,6 +38,7 @@ export function MatchAdminPanel({ slug, version }: { slug: string; version: numb
   const [match, setMatch] = useState<Match | null>(null);
   const [winnerToSet, setWinnerToSet] = useState<'team1' | 'team2' | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmVetoReset, setConfirmVetoReset] = useState(false);
   const [config, setConfig] = useState<{ open: boolean; json: string | null; loading: boolean }>({
     open: false,
     json: null,
@@ -88,6 +90,21 @@ export function MatchAdminPanel({ slug, version }: { slug: string; version: numb
     }
   };
 
+  // A veto can be redone until the match is on a server (the API refuses after that).
+  const vetoResettable =
+    Boolean(integration.preMatchView) &&
+    (match.status === 'pending' || match.status === 'ready') &&
+    !match.serverId;
+  const resetVeto = async () => {
+    setConfirmVetoReset(false);
+    try {
+      await api.post(`/api/veto/${encodeURIComponent(match.slug)}/reset`, {});
+      showSuccess(t('matchAdmin.vetoReset'));
+    } catch (err) {
+      showError((err as Error).message || t('matchAdmin.vetoResetFailed'));
+    }
+  };
+
   const openConfig = async () => {
     setConfig({ open: true, json: null, loading: true });
     try {
@@ -108,7 +125,28 @@ export function MatchAdminPanel({ slug, version }: { slug: string; version: numb
         <Typography variant="h6" component="h2" sx={{ fontWeight: 700 }}>
           {t('matchDetailsModal.adminControls')}
         </Typography>
-        <Stack direction="row" gap={1}>
+        <Stack direction="row" gap={1} flexWrap="wrap">
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<ChatCircleIcon />}
+            onClick={() => openChat(`match:${match.slug}`, `${team1Name} vs ${team2Name}`)}
+            data-testid="match-admin-open-chat"
+          >
+            {t('matchAdmin.openChat')}
+          </Button>
+          {vetoResettable && (
+            <Button
+              size="small"
+              variant="outlined"
+              color="warning"
+              startIcon={<ArrowCounterClockwiseIcon />}
+              onClick={() => setConfirmVetoReset(true)}
+              data-testid="match-admin-reset-veto"
+            >
+              {t('matchAdmin.resetVeto')}
+            </Button>
+          )}
           <Button size="small" variant="outlined" startIcon={<CodeIcon />} onClick={openConfig}>
             {t('matchDetailsModal.config.view')}
           </Button>
@@ -210,6 +248,15 @@ export function MatchAdminPanel({ slug, version }: { slug: string; version: numb
         onConfirm={setWinner}
         onCancel={() => setWinnerToSet(null)}
         confirmColor="warning"
+      />
+      <ConfirmDialog
+        open={confirmVetoReset}
+        title={t('matchAdmin.resetVetoTitle')}
+        message={t('matchAdmin.resetVetoBody')}
+        confirmLabel={t('matchAdmin.resetVeto')}
+        confirmColor="warning"
+        onConfirm={resetVeto}
+        onCancel={() => setConfirmVetoReset(false)}
       />
       <ConfirmDialog
         open={confirmDelete}
