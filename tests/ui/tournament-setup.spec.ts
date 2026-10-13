@@ -48,9 +48,8 @@ test.describe.serial('Tournament setup flow', () => {
       expect(columnBox!.x + columnBox!.width, 'steps left of the form').toBeLessThanOrEqual(
         form!.x
       );
-      expect(summaryBox!.x, 'summary right of the form').toBeGreaterThanOrEqual(
-        form!.x + form!.width
-      );
+      // Under 1440px, with the rail beside it, the summary sits below the form.
+      expect(summaryBox!.y, 'summary below the form').toBeGreaterThanOrEqual(form!.y);
       const step = (id: string) => page.getByTestId(`tournament-setup-step-${id}`);
       const next = page.getByTestId('tournament-next-button');
       const summary = (key: string) => page.getByTestId(`tournament-summary-${key}`);

@@ -89,10 +89,10 @@ test.describe.serial('Admin navigation', () => {
         await tab.click();
         await expect(page).toHaveURL(url);
         if (key === 'tournament') {
-          // With no tournament this opens the setup, which takes the page
-          // over: its steps sit in the rail's column, under a way back.
+          // With no tournament this opens the setup: its steps, under a way
+          // back, are a column beside the form; the rail stays.
           await expect(page.getByTestId('tournament-setup-column')).toBeVisible({ timeout: 15000 });
-          await expect(rail).toHaveCount(0);
+          await expect(rail).toBeVisible();
           await expect(page.locator('h1'), 'one h1 on the setup').toHaveCount(1);
           await expect(page).toHaveTitle(/ · Auto Tournament$/);
           await page.getByTestId('tournament-setup-back-to-manage').click();

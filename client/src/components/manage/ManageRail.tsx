@@ -23,7 +23,7 @@ import {
 } from '@phosphor-icons/react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { listIntegrations } from '../../integrations/registry';
+import { useShellIntegrations } from '../../hooks/useShellIntegrations';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { moduleNavItems, navItemLabel } from '../../utils/moduleNavLabels';
 import { manageTournamentPath, paths } from '../../paths';
@@ -124,8 +124,10 @@ function useRailGroups(pathname: string): RailGroup[] {
     )
     .slice(0, 3);
 
-  // One group per installed game with pages of its own, named by it.
-  const games: RailGroup[] = listIntegrations()
+  // One group per game the shell follows (the tournament's, or every
+  // installed one with no tournament), with pages of its own, named by it.
+  const { shell } = useShellIntegrations();
+  const games: RailGroup[] = shell
     .filter((integration) => integration.navItems.length > 0)
     .map((integration) => ({
       key: `game-${integration.id}`,
