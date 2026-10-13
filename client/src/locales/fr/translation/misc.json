@@ -901,7 +901,11 @@
       "players": "Players",
       "teams": "Teams",
       "tournaments": "Tournaments",
-      "matches": "Matches"
+      "matches": "Matches",
+      "highlights": "Highlights",
+      "maps": "Cartes",
+      "servers": "Serveurs et machines",
+      "recorders": "Enregistreurs"
     },
     "status": {
       "setup": "Being set up",
@@ -934,7 +938,9 @@
       "settingsLicense": "Settings: license",
       "settingsMatchmaking": "Settings: matchmaking",
       "settingsAdvanced": "Settings: advanced"
-    }
+    },
+    "clips_one": "{{count}} clip",
+    "clips_other": "{{count}} clips"
   },
   "highlightsPage": {
     "title": "Highlights",

@@ -901,7 +901,11 @@
       "players": "Players",
       "teams": "Teams",
       "tournaments": "Tournaments",
-      "matches": "Matches"
+      "matches": "Matches",
+      "highlights": "精彩集锦",
+      "maps": "地图",
+      "servers": "服务器和机器",
+      "recorders": "录制器"
     },
     "status": {
       "setup": "Being set up",
@@ -934,7 +938,9 @@
       "settingsLicense": "Settings: license",
       "settingsMatchmaking": "Settings: matchmaking",
       "settingsAdvanced": "Settings: advanced"
-    }
+    },
+    "clips_one": "{{count}} 个片段",
+    "clips_other": "{{count}} 个片段"
   },
   "highlightsPage": {
     "title": "Highlights",

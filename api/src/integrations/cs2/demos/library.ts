@@ -25,6 +25,8 @@ export interface LibraryQuery {
   team?: string;
   match?: string;
   tournament?: number;
+  /** A map by its id (de_mirage): the clips and reels played on it. */
+  map?: string;
   page: number;
   limit: number;
   /** The signed-in player: whether they liked each video. */
@@ -141,6 +143,10 @@ export async function libraryPage(
   if (q.tournament !== undefined) {
     where.push('(i.tournament_id = ? OR m.tournament_id = ?)');
     args.push(q.tournament, q.tournament);
+  }
+  if (q.map) {
+    where.push('j.map_name = ?');
+    args.push(q.map);
   }
   if (q.team) {
     // The team's reels, its match and series reels, and its players' clips
