@@ -16,6 +16,7 @@ import {
   inventoryServer,
   newMachineId,
 } from '../helpers/fleetHost';
+import { setupShuffleTournament } from '../helpers/shuffleTournament';
 import type { HostInventoryServer } from '../../api/src/integrations/cs2/fleet/protocol/host/v1';
 
 /**
@@ -276,6 +277,101 @@ test.describe.serial('Fleet autoscale (csm)', () => {
     await m.csm.acked(done.seq as number);
   });
 
+  // Vikunja 1911 (auto-tournament#616): a tournament started while every csm
+  // server is stopped. The scaler starts one, and once its Ready Up is up the
+  // waiting match gets it without anyone pressing anything.
+  test('a tournament started with every csm server stopped gets one started and allocated', async ({
+    request,
+  }) => {
+    test.setTimeout(120_000);
+    const m = await machine(request, 'scale-tournament');
+    cleanup.push(() => m.csm.close());
+    const ru = await readyUp(request, 'scale-tournament-1');
+    cleanup.push(() =>
+      request.delete(`/api/fleet/servers/${ru.serverId}/link`, { headers: getAuthHeader() })
+    );
+    const stopped = csmServer('server-1', ru.installId, {
+      process: { running: false, restarts_24h: 0 },
+      readyup: { installed: '0.5.0', install_id: ru.installId, health: 'not_running' },
+    });
+    m.csm.sendEphemeral('host.inventory', inventory(m.hostId, [stopped]));
+    await expect
+      .poll(
+        async () =>
+          (await status(request)).servers.find(
+            (s: { fleetServerId: string }) => s.fleetServerId === ru.serverId
+          )?.state
+      )
+      .toBe('stopped');
+
+    const setup = await setupShuffleTournament(request, {
+      playerCount: 10,
+      serverCount: 0,
+      mapSequence: ['de_mirage'],
+      prefix: 'scale-shuffle',
+      startTournament: true,
+    });
+    expect(setup).toBeTruthy();
+    cleanup.push(() => request.delete('/api/tournament', { headers: getAuthHeader() }));
+
+    await expect.poll(async () => (await status(request)).demand.total).toBeGreaterThanOrEqual(1);
+    const pass = await run(request);
+    expect(pass.actions).toContainEqual(
+      expect.objectContaining({
+        outcome: 'sent',
+        action: expect.objectContaining({ kind: 'start', server: 'server-1', hostId: m.hostId }),
+      })
+    );
+    const start = await m.csm.nextCommand('server.start');
+    const done = m.csm.sendReliable(
+      'host.result',
+      { status: 'ok', output: 'started server-1' },
+      { ref: start.id }
+    );
+    await m.csm.acked(done.seq as number);
+
+    // csm says it runs, and its Ready Up comes up free.
+    m.csm.sendEphemeral(
+      'host.inventory',
+      inventory(m.hostId, [
+        csmServer('server-1', ru.installId, {
+          readyup: { installed: '0.5.0', install_id: ru.installId, health: 'ok' },
+        }),
+      ])
+    );
+    const link = await connect(ru, 'available');
+    cleanup.push(() => link.close());
+
+    const linkRow = (
+      (await (await request.get('/api/servers', { headers: getAuthHeader() })).json())
+        .servers as Array<{
+        id: string;
+        fleetServerId?: string | null;
+        fleet_server_id?: string | null;
+      }>
+    ).find((s) => (s.fleetServerId ?? s.fleet_server_id) === ru.serverId);
+    expect(linkRow).toBeTruthy();
+    await expect
+      .poll(
+        async () => {
+          const list = await (
+            await request.get('/api/matches', { headers: getAuthHeader() })
+          ).json();
+          return (
+            (list.matches ?? []) as Array<{
+              round: number;
+              serverId?: string | null;
+              server_id?: string | null;
+            }>
+          )
+            .filter((x) => x.round === 1)
+            .map((x) => x.serverId ?? x.server_id ?? null);
+        },
+        { timeout: 60_000, intervals: [2000] }
+      )
+      .toContain(linkRow!.id);
+  });
+
   test('no matches: an idle server is stopped after the cool-down, a busy one never', async ({
     request,
   }) => {
@@ -355,7 +451,10 @@ test.describe.serial('Fleet autoscale (csm)', () => {
     });
     expect(saved.ok(), await saved.text()).toBe(true);
     cleanup.push(() =>
-      request.put('/api/fleet/plugins/default', { headers: getAuthHeader(), data: { plugins: null } })
+      request.put('/api/fleet/plugins/default', {
+        headers: getAuthHeader(),
+        data: { plugins: null },
+      })
     );
     const m = await machine(request, 'scale-create');
     cleanup.push(() => m.csm.close());
