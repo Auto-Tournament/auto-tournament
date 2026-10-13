@@ -1933,6 +1933,10 @@
       "pickOfRarity": "a pick of {{rarity}} skins",
       "rarityOdds": "Rarity odds",
       "skinOdds": "This skin"
+    },
+    "rewards": {
+      "title": "Rewards",
+      "choosing": "choosing a skin…"
     }
   },
   "matchRules": {

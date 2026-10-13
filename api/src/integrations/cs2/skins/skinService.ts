@@ -796,6 +796,69 @@ export const skinService = {
     };
   },
 
+  /**
+   * What a finished tournament's top three got: per player, the skin they
+   * kept (or that their choice is still open). Placement rewards only.
+   */
+  async tournamentRewards(tournamentId: number): Promise<
+    Array<{
+      place: number;
+      player: { steamId: string; name: string; avatar: string | null };
+      skin: { weaponName: string; name: string; rarity: Rarity; imageUrl: string } | null;
+      choosing: boolean;
+    }>
+  > {
+    const ref = `tournament:${tournamentId}:%`;
+    const choices = await db.queryAsync<{
+      place: number;
+      player_id: string;
+      name: string;
+      avatar_url: string | null;
+      chosen_skin_id: number | null;
+    }>(
+      `SELECT c.place, p.id AS player_id, p.name, p.avatar_url, c.chosen_skin_id
+         FROM cs2_skin_choices c JOIN players p ON p.uid::text = c.player_uid::text
+        WHERE c.source = 'tournament' AND c.place IS NOT NULL AND c.source_ref LIKE ?`,
+      [ref]
+    );
+    const granted = await db.queryAsync<
+      SkinRow & { player_id: string; player_name: string; avatar_url: string | null }
+    >(
+      `SELECT s.*, p.id AS player_id, p.name AS player_name, p.avatar_url
+         FROM cs2_player_skins s JOIN players p ON p.uid::text = s.player_uid::text
+        WHERE s.source = 'tournament' AND s.place IS NOT NULL AND s.source_ref LIKE ?`,
+      [ref]
+    );
+    const byId = new Map(granted.map((g) => [g.id, g]));
+    const view = (g: SkinRow) => ({
+      weaponName: g.weapon_name,
+      name: g.variant ? `${g.name} (${g.variant})` : g.name,
+      rarity: g.rarity,
+      imageUrl: `${SKIN_IMAGES_BASE}/${g.image}`,
+    });
+    const out = choices.map((c) => {
+      const kept = c.chosen_skin_id ? byId.get(c.chosen_skin_id) : undefined;
+      return {
+        place: Number(c.place),
+        player: { steamId: c.player_id, name: c.name, avatar: c.avatar_url },
+        skin: kept ? view(kept) : null,
+        choosing: !c.chosen_skin_id,
+      };
+    });
+    // Rewards given straight away (an exact skin): not from a choice.
+    const fromChoices = new Set(choices.map((c) => c.chosen_skin_id).filter(Boolean));
+    for (const g of granted) {
+      if (fromChoices.has(g.id)) continue;
+      out.push({
+        place: Number(g.place),
+        player: { steamId: g.player_id, name: g.player_name, avatar: g.avatar_url },
+        skin: view(g),
+        choosing: false,
+      });
+    }
+    return out.sort((a, b) => a.place - b.place || a.player.name.localeCompare(b.player.name));
+  },
+
   /** Three different catalogue skins from `roll` (fewer when the catalogue cannot give three). */
   async pickOptions(
     roll: () => Promise<CatalogSkin | null>,

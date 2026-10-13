@@ -11,6 +11,7 @@
  * PUT    /me/showcase              the profile showcase ({ items: [{ skinId, big }] })
  * GET    /players/:steamId         public: a player's skins
  * GET    /skin/:id                 public: one skin and its owner
+ * GET    /tournaments/:id/rewards  public: what a tournament's top three got
  * GET    /admin/config, PUT        admin: the settings
  * GET    /admin/catalog?q=         admin: search the catalogue (for picking a reward)
  */
@@ -315,6 +316,31 @@ router.get('/skin/:id', async (req, res) => {
     });
   } catch (error) {
     return fail(res, error, 'Reading a skin');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/tournaments/{id}/rewards:
+ *   get:
+ *     tags: [Skins]
+ *     summary: What a finished tournament's top three got (public)
+ *     parameters:
+ *       - { in: path, name: id, required: true, schema: { type: integer } }
+ *     responses:
+ *       200: { description: The rewards, by place }
+ *       404: { description: Skins are off }
+ */
+router.get('/tournaments/:id/rewards', async (req, res) => {
+  try {
+    if (!(await skinService.config()).enabled)
+      return res.status(404).json({ success: false, error: 'Skins are off' });
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0)
+      return res.status(400).json({ success: false, error: 'Bad tournament id' });
+    return res.json({ success: true, rewards: await skinService.tournamentRewards(id) });
+  } catch (error) {
+    return fail(res, error, 'Reading the tournament rewards');
   }
 });
 
