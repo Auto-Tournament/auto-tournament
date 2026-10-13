@@ -65,13 +65,17 @@ export function logEntryOf(row: {
     byRaw && typeof byRaw === 'object' && 'name' in byRaw
       ? String((byRaw as { name: unknown }).name)
       : null;
+  const given =
+    data.level === 'error' || data.level === 'warn' || data.level === 'info' ? data.level : null;
   const level: LogLevel = by
     ? 'admin'
-    : /error|fail/i.test(type)
-      ? 'error'
-      : /disconnect|warn|forfeit|timeout|crash/i.test(type)
-        ? 'warn'
-        : 'info';
+    : given
+      ? given
+      : /error|fail/i.test(type)
+        ? 'error'
+        : /disconnect|warn|forfeit|timeout|crash/i.test(type)
+          ? 'warn'
+          : 'info';
   const source = by
     ? 'admin'
     : type.startsWith('fleet') || type.startsWith('event')

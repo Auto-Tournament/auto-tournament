@@ -33,6 +33,7 @@ import { recordCommandResult, type FleetCommandRecord } from './commands';
 import { saveMapStats } from './mapStats';
 import { toPlatformMapNumber } from './normalize';
 import { ingestFleetEvent } from './ingest';
+import { recordServerLog } from './serverLog';
 import {
   isFleetEventType,
   type Availability,
@@ -343,6 +344,17 @@ async function applyEvent(ctx: InboundContext, env: Envelope): Promise<void> {
     state: record?.state ?? null,
     ...(mapRounds ? { mapRounds } : {}),
   });
+  // The admin match page's server log (a repeat delivery is not a new line).
+  if (outcome.kind !== 'duplicate') {
+    await recordServerLog(
+      payload.match_id,
+      env.type,
+      payload.data as unknown as Record<string, unknown>,
+      record?.state ?? null,
+      payload.map_number,
+      (payload as { round?: number }).round
+    );
+  }
   if (env.type === 'event.map_result') {
     const data = payload.data as FleetEventData['map_result'];
     await saveMapStats(
