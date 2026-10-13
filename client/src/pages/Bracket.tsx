@@ -24,7 +24,7 @@ import {
   TrophyIcon,
 } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
-import { tournamentTabPath } from '../paths';
+import { manageMatchPath, tournamentTabPath } from '../paths';
 import BracketsViewerVisualization from '../components/visualizations/BracketsViewerVisualization';
 import SwissView from '../components/visualizations/SwissView';
 import { EmptyState } from '../components/shared/EmptyState';
@@ -147,7 +147,7 @@ export default function Bracket() {
   // A match opens its match room, the page players and admins run it from.
   const handleMatchClick = (match: Match) => {
     if (!match.team1 || !match.team2 || !match.slug) return;
-    navigate(`/match/${encodeURIComponent(match.slug)}`);
+    navigate(manageMatchPath(match.slug, tournament?.id ?? null));
   };
 
   useEffect(() => {

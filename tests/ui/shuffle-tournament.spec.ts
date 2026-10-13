@@ -127,8 +127,10 @@ test.describe.serial('Shuffle Tournament UI', () => {
         .filter({ hasText: '#1 · Map 1' })
         .first()
         .click({ force: true });
-      await expect(page).toHaveURL(/\/match\//, { timeout: 10000 });
-      await expect(page.getByTestId('match-page')).toBeVisible({ timeout: 10000 });
+      await expect(page).toHaveURL(/\/manage\/tournaments\/\d+\/matches\/[^/]+$/, {
+        timeout: 10000,
+      });
+      await expect(page.getByTestId('manage-match-page')).toBeVisible({ timeout: 10000 });
       expect(errors).toEqual([]);
     }
   );

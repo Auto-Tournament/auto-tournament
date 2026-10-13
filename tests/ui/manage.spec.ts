@@ -63,12 +63,14 @@ test.describe.serial('Manage console', () => {
 
       await queue.getByRole('button', { name: /decide/i }).click();
 
-      // Decide opens the match room, whose admin panel sets the winner.
-      const winnerButton = page.getByRole('button', { name: `${team1.name} wins` });
+      // Decide opens the admin match page; setting the winner asks first and needs the match name typed.
+      await expect(page.getByTestId('manage-match-page')).toBeVisible({ timeout: 10000 });
+      const winnerButton = page.getByRole('button', { name: `${team1.name} wins` }).first();
       await expect(winnerButton).toBeVisible({ timeout: 10000 });
       await winnerButton.click();
 
-      await page.getByTestId('confirm-dialog-confirm-button').click();
+      await page.getByTestId('manage-confirm-type').fill(`${team1.name} vs ${team2.name}`);
+      await page.getByTestId('manage-confirm-action').click();
 
       await expect(page.getByText('Winner set')).toBeVisible({ timeout: 10000 });
     }

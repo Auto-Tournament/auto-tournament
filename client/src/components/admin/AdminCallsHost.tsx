@@ -10,9 +10,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useAdminCalls } from '../../hooks/useAdminCalls';
-import { openMatchDetails } from '../modals/matchDetailsOpener';
 import { openChat } from '../chat/chatStore';
-import { paths } from '../../paths';
+import { manageMatchPath, paths } from '../../paths';
 import type { AdminCall } from '../../types/adminCall';
 
 type TFunction = ReturnType<typeof useTranslation>['t'];
@@ -211,7 +210,6 @@ function AdminCallCard({
   const { playerSteamId } = useAuth();
   const claimedByMe = !!call.claimedBy && call.claimedBy === playerSteamId;
   const navigate = useNavigate();
-  const { showError } = useSnackbar();
   const name = call.player.name || t('adminCalls.unknownPlayer');
   const team = playerLine(call, t);
   const where = [
@@ -227,7 +225,7 @@ function AdminCallCard({
 
   const openMatch = () => {
     if (!call.matchSlug) return;
-    openMatchDetails(call.matchSlug).catch(() => showError(t('adminCalls.matchUnavailable')));
+    navigate(manageMatchPath(call.matchSlug));
   };
 
   return (

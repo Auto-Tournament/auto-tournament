@@ -58,7 +58,7 @@ test.describe.serial('Manage: one tournament by its address', () => {
     await expect(page).toHaveURL(new RegExp(`/manage/tournaments/${id}/bracket$`));
     // An old shared match link opens that match's room.
     await page.goto('/manage/matches?match=abc');
-    await expect(page).toHaveURL(/\/match\/abc$/);
+    await expect(page).toHaveURL(new RegExp(`/manage/tournaments/${id}/matches/abc$`));
     // Creating from a template is the new one's setup.
     await page.goto('/manage/tournament?template=7');
     await expect(page).toHaveURL(/\/manage\/tournaments\/new\/setup\?template=7$/);

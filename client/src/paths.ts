@@ -192,6 +192,17 @@ export function manageTournamentPath(
   return `${paths.tournaments}/${id}/${tab}`;
 }
 
+/**
+ * The admin match page: in its tournament's Manage, or on its own for a
+ * standalone match.
+ */
+export function manageMatchPath(slug: string, tournamentId?: number | null): string {
+  const s = encodeURIComponent(slug);
+  return tournamentId
+    ? `${manageTournamentPath(tournamentId, 'matches')}/${s}`
+    : `/manage/match/${s}`;
+}
+
 /** A match's room, where players and admins run it (the old admin dialog is gone). */
 export function matchDetailsPath(slug: string, _tournamentId?: number | null): string {
   return `/match/${encodeURIComponent(slug)}`;

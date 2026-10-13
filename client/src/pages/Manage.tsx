@@ -33,7 +33,7 @@ import { useModuleTranslation } from '../module-sdk';
 import { PageHead } from '../components/common/ui';
 import { GameMark } from '../components/common/GameMark';
 import { DEFAULT_SETUP_GAME, useSetupGames } from '../components/tournament/setup/games';
-import { paths } from '../paths';
+import { manageMatchPath, paths } from '../paths';
 import { SiteOverview } from '../components/adminHome/SiteOverview';
 import type { Tournament } from '../types/tournament.types';
 
@@ -183,7 +183,7 @@ export default function Manage() {
 
       <NeedsYouQueue
         items={needsYouItems}
-        onDecide={(slug) => navigate(`/match/${encodeURIComponent(slug)}`)}
+        onDecide={(slug) => navigate(manageMatchPath(slug, tournament?.id ?? null))}
         onActionDone={refresh}
       />
 

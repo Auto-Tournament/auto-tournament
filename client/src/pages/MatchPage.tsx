@@ -13,7 +13,16 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
-import { Alert, Box, Chip, CircularProgress, Container, Stack, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { api } from '../utils/api';
@@ -22,9 +31,8 @@ import type { PublicMatch } from '../integrations/types';
 import { fontDisplay, mono, radii, tokens } from '../theme/tokens';
 import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../contexts/AuthContext';
-import { MatchAdminPanel } from '../components/match/MatchAdminPanel';
 import { getStatusLabel } from '../utils/matchUtils';
-import { teamProfilePath } from '../paths';
+import { manageMatchPath, teamProfilePath } from '../paths';
 import { YourMatchCard } from '../components/tournament/match/YourMatchCard';
 
 type MatchResponse = PublicMatch & {
@@ -303,7 +311,14 @@ export default function MatchPage() {
 
       {isAdmin && (
         <Box sx={{ mt: 4 }}>
-          <MatchAdminPanel slug={match.slug} version={version} />
+          <Button
+            component={RouterLink}
+            to={manageMatchPath(match.slug)}
+            variant="contained"
+            data-testid="match-page-manage"
+          >
+            Manage this match
+          </Button>
         </Box>
       )}
 
