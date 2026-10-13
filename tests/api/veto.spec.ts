@@ -6,7 +6,7 @@ import {
   stopImpersonating,
 } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
-import { createAndStartTournament } from '../helpers/tournaments';
+import { createAndStartTournament, createTournament } from '../helpers/tournaments';
 import { findMatchByTeams } from '../helpers/matches';
 import {
   executeVetoActions,
@@ -275,6 +275,26 @@ test.describe.serial('Veto API', () => {
       'waiting_veto'
     );
 
+    await stopImpersonating(request);
+  });
+
+  test('says nothing about the veto before the tournament has started', {
+    tag: ['@api', '@veto', '@cta'],
+  }, async ({ request }) => {
+    const tournament = await createTournament(request, {
+      name: `Veto Not Started ${Date.now()}`,
+      type: 'single_elimination',
+      format: 'bo1',
+      maps,
+      teamIds: [team1Id, team2Id],
+    });
+    expect(tournament).toBeTruthy();
+
+    // The top bar said "your turn in veto" for a tournament still in setup.
+    expect(await impersonatePlayer(request, actingSteamIdFor(team1))).toBe(true);
+    const status = await (await request.get('/api/players/me/match-status')).json();
+    expect(status.status).toBe('none');
+    expect(status.matchSlug).toBeNull();
     await stopImpersonating(request);
   });
 
