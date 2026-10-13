@@ -859,6 +859,7 @@
     "you": "You",
     "adminBadge": "ADMIN",
     "callAdmin": "Call an admin",
+    "adminCallOpen": "An admin call is open here",
     "callAdminConfirmTitle": "Call an admin?",
     "callAdminConfirmBody": "An admin gets a notification and joins this chat. Call one only when you need help with the match.",
     "adminCalled": "An admin has been called",
@@ -876,6 +877,7 @@
     "system": {
       "vetoStarted": "Veto started · {{team}} goes first",
       "vetoBan": "{{team}} banned {{map}}",
+      "vetoReset": "An admin restarted the veto",
       "vetoPick": "{{team}} picked {{map}}",
       "vetoSide": "{{team}} starts {{side}} on {{map}}",
       "vetoDone": "Veto done · {{maps}}",
@@ -1086,5 +1088,13 @@
     "openConsole": "Open the console ↗",
     "pasteKey": "Paste the new key",
     "replacedSoon": "A new key was made for this license in the console. Paste it in the license settings: this key stops on {{date}}."
+  },
+  "matchAdmin": {
+    "openChat": "Open chat",
+    "resetVeto": "Restart veto",
+    "resetVetoTitle": "Restart the veto?",
+    "resetVetoBody": "Every ban, pick and side so far is cleared and the teams start the veto again. Both teams see it in the match chat.",
+    "vetoReset": "The veto starts over",
+    "vetoResetFailed": "Could not restart the veto"
   }
 }

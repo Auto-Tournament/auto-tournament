@@ -26,6 +26,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { systemLineText } from './systemLine';
+import { api } from '../../utils/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import {
@@ -43,6 +44,7 @@ import {
   loadMessages,
   notifyTyping,
   openChat,
+  refreshChannels,
   selectChat,
   sendMessage,
   useChat,
@@ -624,6 +626,7 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
             <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>{subtitle}</Typography>
           )}
           {channel?.kind === 'party' && !readOnly && <PartyBar />}
+          {channel?.admin && channel.call && <AdminCallBar call={channel.call} />}
         </Box>
 
         <Box
@@ -858,6 +861,65 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
   );
 }
 
+/** An admin's match chat with an open call: who has it, and claim / release / resolve. */
+function AdminCallBar({
+  call,
+}: {
+  call: { id: number; claimedBy: string | null; claimedByName: string | null };
+}) {
+  const { t } = useTranslation();
+  const { playerSteamId } = useAuth();
+  const { showError } = useSnackbar();
+  const [busy, setBusy] = useState(false);
+  const mine = !!call.claimedBy && call.claimedBy === playerSteamId;
+  const run = async (path: string) => {
+    setBusy(true);
+    try {
+      await api.post(`/api/admin-calls/${call.id}/${path}`, {});
+      await refreshChannels();
+    } catch {
+      showError(t('adminCalls.resolveFailed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Box
+      data-testid="chat-admin-call"
+      sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', color: admin }}
+    >
+      <Typography sx={{ fontSize: textSize.sm, fontWeight: 600, color: admin, flex: 1 }}>
+        {call.claimedBy
+          ? mine
+            ? t('adminCalls.claimedByYou')
+            : t('adminCalls.claimedBy', { name: call.claimedByName || t('adminCalls.anAdmin') })
+          : t('chat.adminCallOpen')}
+      </Typography>
+      {(!call.claimedBy || mine) && (
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={busy}
+          onClick={() => void run(mine ? 'release' : 'claim')}
+          data-testid={mine ? 'chat-admin-call-release' : 'chat-admin-call-claim'}
+        >
+          {mine ? t('adminCalls.release') : t('adminCalls.claim')}
+        </Button>
+      )}
+      <Button
+        size="small"
+        variant="contained"
+        color="error"
+        disabled={busy}
+        onClick={() => void run('resolve')}
+        data-testid="chat-admin-call-resolve"
+      >
+        {t('adminCalls.resolve')}
+      </Button>
+    </Box>
+  );
+}
+
 /**
  * The party above its chat (draft 5c): who is in it (the leader marked, and
  * who is in a match), Invite (copies the link) and, for the leader, Queue
@@ -1014,7 +1076,8 @@ export function ChatDock() {
   }, [peek]);
 
   if (open) return <Panel phone={phone} wide={!phone} lift={me?.queue ? 56 : 0} />;
-  if (channels.length === 0) return null;
+  // Admins always get the launcher: a call or a match they open lands here.
+  if (channels.length === 0 && !isAdmin) return null;
 
   const peekChannel = peek ? channels.find((c) => c.channel === peek.channel) : null;
   const peekWhere = peekChannel

@@ -779,7 +779,9 @@ export function getSchemaSQL(): string {
       received_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       resolved_at INTEGER, -- NULL while open
       resolved_by TEXT, -- The admin's Steam ID, or token:<label> for an API token
-      resolution_note TEXT
+      resolution_note TEXT,
+      claimed_at INTEGER, -- An admin took it on (the others see who); NULL = nobody yet
+      claimed_by TEXT -- That admin's Steam ID, or token:<label>
     );
 
     CREATE INDEX IF NOT EXISTS idx_admin_calls_open ON admin_calls(received_at) WHERE resolved_at IS NULL;

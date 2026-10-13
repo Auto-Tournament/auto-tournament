@@ -11,6 +11,7 @@ import {
   DEFAULT_RESOLVED_WINDOW_SECONDS,
   getAdminCall,
   listAdminCalls,
+  claimAdminCall,
   resolveAdminCall,
   resolveAllAdminCalls,
 } from '../services/adminCallService';
@@ -172,5 +173,47 @@ router.post('/:id/resolve', async (req: Request, res: Response) => {
     return res.status(500).json({ success: false, error: 'Failed to resolve the admin call' });
   }
 });
+
+/**
+ * @openapi
+ * /api/admin-calls/{id}/claim:
+ *   post:
+ *     tags: [Admin calls]
+ *     summary: Take an open call on, so the other admins see who has it
+ *     parameters:
+ *       - { in: path, name: id, required: true, schema: { type: integer } }
+ *     responses:
+ *       200: { description: "{ call, claimed }: claimed false when another admin has it or it is resolved" }
+ *       404: { description: No such call }
+ * /api/admin-calls/{id}/release:
+ *   post:
+ *     tags: [Admin calls]
+ *     summary: Give back a call you claimed
+ *     parameters:
+ *       - { in: path, name: id, required: true, schema: { type: integer } }
+ *     responses:
+ *       200: { description: "{ call, released }" }
+ *       404: { description: No such call }
+ */
+for (const action of ['claim', 'release'] as const) {
+  router.post(`/:id/${action}`, async (req: Request, res: Response) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(404).json({ success: false, error: 'Admin call not found' });
+    }
+    try {
+      const result = await claimAdminCall(id, requestActorId(req), action === 'release');
+      if (!result) return res.status(404).json({ success: false, error: 'Admin call not found' });
+      return res.json({
+        success: true,
+        call: result.call,
+        [action === 'claim' ? 'claimed' : 'released']: result.changed,
+      });
+    } catch (error) {
+      log.error(`Failed to ${action} an admin call`, error as Error);
+      return res.status(500).json({ success: false, error: `Failed to ${action} the admin call` });
+    }
+  });
+}
 
 export default router;

@@ -6,7 +6,7 @@ import {
   playAdminCallSound,
   setAdminCallSoundMuted,
 } from '../utils/adminCallSound';
-import type { AdminCall, AdminCallResolvedEvent } from '../types/adminCall';
+import type { AdminCall, AdminCallClaimedEvent, AdminCallResolvedEvent } from '../types/adminCall';
 
 interface UseAdminCallsReturn {
   /** Open calls, oldest first. */
@@ -15,6 +15,8 @@ interface UseAdminCallsReturn {
   resolve: (id: number) => Promise<void>;
   /** Resolve every open call. Throws when the API refuses. */
   resolveAll: () => Promise<void>;
+  /** Take a call on (`release`: give it back). Throws when the API refuses. */
+  claim: (id: number, release?: boolean) => Promise<void>;
   muted: boolean;
   setMuted: (muted: boolean) => void;
   /** The browser will not play a sound until the admin interacts with the page. */
@@ -139,14 +141,32 @@ export function useAdminCalls(): UseAdminCallsReturn {
       forget(ids);
     };
 
+    const handleClaimed = (payload: AdminCallClaimedEvent) => {
+      if (!payload || typeof payload.id !== 'number') return;
+      setCalls((prev) =>
+        prev.map((c) =>
+          c.id === payload.id
+            ? {
+                ...c,
+                claimedAt: payload.claimedAt,
+                claimedBy: payload.claimedBy,
+                claimedByName: payload.claimedByName,
+              }
+            : c
+        )
+      );
+    };
+
     socket.on('connect', subscribe);
     socket.on('admin:call', handleCall);
     socket.on('admin:call:resolved', handleResolved);
+    socket.on('admin:call:claimed', handleClaimed);
     if (socket.connected) subscribe();
     return () => {
       socket.off('connect', subscribe);
       socket.off('admin:call', handleCall);
       socket.off('admin:call:resolved', handleResolved);
+      socket.off('admin:call:claimed', handleClaimed);
     };
   }, [socket, load, ring, forget]);
 
@@ -183,6 +203,15 @@ export function useAdminCalls(): UseAdminCallsReturn {
     await load();
   }, [removeLocally, load]);
 
+  const claim = useCallback(async (id: number, release = false) => {
+    const res = await api.post<{ call?: AdminCall }>(
+      `/api/admin-calls/${id}/${release ? 'release' : 'claim'}`,
+      {}
+    );
+    const call = res.call;
+    if (call) setCalls((prev) => prev.map((c) => (c.id === id ? { ...c, ...call } : c)));
+  }, []);
+
   const setMuted = useCallback((next: boolean) => {
     setAdminCallSoundMuted(next);
     setMutedState(next);
@@ -196,5 +225,5 @@ export function useAdminCalls(): UseAdminCallsReturn {
     setMutedState(false);
   }, []);
 
-  return { calls, resolve, resolveAll, muted, setMuted, soundBlocked, enableSound };
+  return { calls, resolve, resolveAll, claim, muted, setMuted, soundBlocked, enableSound };
 }

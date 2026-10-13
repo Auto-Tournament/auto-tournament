@@ -925,6 +925,74 @@
         ]
       }
     },
+    "/api/admin-calls/{id}/claim": {
+      "post": {
+        "tags": [
+          "Admin calls"
+        ],
+        "summary": "Take an open call on, so the other admins see who has it",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ call, claimed }: claimed false when another admin has it or it is resolved"
+          },
+          "404": {
+            "description": "No such call"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/admin-calls/{id}/release": {
+      "post": {
+        "tags": [
+          "Admin calls"
+        ],
+        "summary": "Give back a call you claimed",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ call, released }"
+          },
+          "404": {
+            "description": "No such call"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/admin-calls/{id}/resolve": {
       "post": {
         "tags": [

@@ -859,6 +859,7 @@
     "you": "Du",
     "adminBadge": "ADMIN",
     "callAdmin": "Tilkall en admin",
+    "adminCallOpen": "En admin er tilkalt her",
     "callAdminConfirmTitle": "Tilkalle en admin?",
     "callAdminConfirmBody": "En admin får et varsel og blir med i denne chatten. Tilkall bare når dere trenger hjelp med kampen.",
     "adminCalled": "En admin er tilkalt",
@@ -876,6 +877,7 @@
     "system": {
       "vetoStarted": "Veto startet · {{team}} begynner",
       "vetoBan": "{{team}} bannet {{map}}",
+      "vetoReset": "En admin startet vetoen på nytt",
       "vetoPick": "{{team}} valgte {{map}}",
       "vetoSide": "{{team}} starter {{side}} på {{map}}",
       "vetoDone": "Veto ferdig · {{maps}}",
@@ -1086,5 +1088,13 @@
     "openConsole": "Open the console ↗",
     "pasteKey": "Paste the new key",
     "replacedSoon": "A new key was made for this license in the console. Paste it in the license settings: this key stops on {{date}}."
+  },
+  "matchAdmin": {
+    "openChat": "Åpne chat",
+    "resetVeto": "Start vetoen på nytt",
+    "resetVetoTitle": "Starte vetoen på nytt?",
+    "resetVetoBody": "Alle bans, picks og sider så langt slettes, og lagene starter vetoen på nytt. Begge lag ser det i kampchatten.",
+    "vetoReset": "Vetoen starter på nytt",
+    "vetoResetFailed": "Kunne ikke starte vetoen på nytt"
   }
 }

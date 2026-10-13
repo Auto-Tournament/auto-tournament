@@ -888,7 +888,8 @@
       "remindAccount": "{{name}}: zaloguj się raz przez Steam, aby grać w {{tournament}}.",
       "remindGame": "{{name}}: dodaj grę do profilu (Twoje gry) przed check-inem do {{tournament}}.",
       "serverDown": "The match server crashed. Bringing it back…",
-      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect."
+      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect.",
+      "vetoReset": "An admin restarted the veto"
     },
     "party": {
       "inviteCopied": "Skopiowano link zaproszenia",
@@ -926,7 +927,8 @@
       }
     },
     "callAdminConfirmTitle": "Call an admin?",
-    "callAdminConfirmBody": "An admin gets a notification and joins this chat. Call one only when you need help with the match."
+    "callAdminConfirmBody": "An admin gets a notification and joins this chat. Call one only when you need help with the match.",
+    "adminCallOpen": "An admin call is open here"
   },
   "search": {
     "open": "Search",
@@ -1086,5 +1088,13 @@
     "openConsole": "Open the console ↗",
     "pasteKey": "Paste the new key",
     "replacedSoon": "A new key was made for this license in the console. Paste it in the license settings: this key stops on {{date}}."
+  },
+  "matchAdmin": {
+    "openChat": "Open chat",
+    "resetVeto": "Restart veto",
+    "resetVetoTitle": "Restart the veto?",
+    "resetVetoBody": "Every ban, pick and side so far is cleared and the teams start the veto again. Both teams see it in the match chat.",
+    "vetoReset": "The veto starts over",
+    "vetoResetFailed": "Could not restart the veto"
   }
 }

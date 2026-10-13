@@ -187,6 +187,12 @@
     "mute": "Dempen",
     "unmute": "Dempen opheffen",
     "minimize": "Minimaliseren",
-    "show": "Tonen"
+    "show": "Tonen",
+    "openChat": "Open chat",
+    "claim": "Claim",
+    "release": "Release",
+    "claimedBy": "Claimed by {{name}}",
+    "claimedByYou": "Claimed by you",
+    "anAdmin": "an admin"
   }
 }
