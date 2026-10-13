@@ -35,6 +35,9 @@ export interface AdminSignInProvider {
   hasIssuer: boolean;
   issuerUrl: string | null;
   buttonName: string | null;
+  /** OpenID Connect: the button's logo (where it loads from) and colour. */
+  logoUrl?: string | null;
+  buttonColor?: string | null;
 }
 
 interface ListResponse {
@@ -43,7 +46,8 @@ interface ListResponse {
   secretsKeySource: 'SECRETS_KEY' | 'SESSION_SECRET' | 'default';
 }
 
-type TestResult = 'ok' | 'invalid_credentials' | 'unreachable' | 'not_configured' | 'not_supported' | 'unexpected';
+type TestResult =
+  'ok' | 'invalid_credentials' | 'unreachable' | 'not_configured' | 'not_supported' | 'unexpected';
 
 /**
  * Settings -> Sign-in: every sign-in provider with its enabled switch, client
@@ -83,7 +87,10 @@ export function SignInProvidersCard({ welcome = false }: { welcome?: boolean }) 
           <Typography variant="body2">{t('settingsPage.signIn.welcomeBody')}</Typography>
         </Alert>
       )}
-      <SettingsCardHead title={t('settingsPage.signIn.title')} hint={t('settingsPage.signIn.short')} />
+      <SettingsCardHead
+        title={t('settingsPage.signIn.title')}
+        hint={t('settingsPage.signIn.short')}
+      />
       {data.providers.map((provider) => (
         <ProviderSection key={provider.id} provider={provider} onSaved={setData} />
       ))}
@@ -110,6 +117,7 @@ function ProviderSection({
   const [clientId, setClientId] = useState(provider.clientId ?? '');
   const [issuerUrl, setIssuerUrl] = useState(provider.issuerUrl ?? '');
   const [buttonName, setButtonName] = useState(provider.buttonName ?? '');
+  const [buttonColor, setButtonColor] = useState(provider.buttonColor ?? '');
   const [replacing, setReplacing] = useState(!provider.secretSet);
   const [secret, setSecret] = useState('');
   const [busy, setBusy] = useState(false);
@@ -120,9 +128,16 @@ function ProviderSection({
     setClientId(provider.clientId ?? '');
     setIssuerUrl(provider.issuerUrl ?? '');
     setButtonName(provider.buttonName ?? '');
+    setButtonColor(provider.buttonColor ?? '');
     setReplacing(!provider.secretSet);
     setSecret('');
-  }, [provider.clientId, provider.issuerUrl, provider.buttonName, provider.secretSet]);
+  }, [
+    provider.clientId,
+    provider.issuerUrl,
+    provider.buttonName,
+    provider.buttonColor,
+    provider.secretSet,
+  ]);
 
   const idPrefix = `sign-in-${provider.id}`;
   const secretLabel = provider.hasClientId
@@ -157,14 +172,38 @@ function ProviderSection({
     if (provider.hasIssuer && buttonName.trim() !== (provider.buttonName ?? '')) {
       body.label = buttonName.trim() || null;
     }
+    if (provider.hasIssuer && buttonColor !== (provider.buttonColor ?? '')) {
+      body.buttonColor = buttonColor || null;
+    }
     if (Object.keys(body).length === 0) return;
     void save(body);
+  };
+
+  // The logo is saved as soon as it is picked (or removed).
+  const pickLogo = (file: File | undefined) => {
+    if (!file) return;
+    if (!['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'].includes(file.type)) {
+      showError(t('settingsPage.signIn.logoType'));
+      return;
+    }
+    if (file.size > 150 * 1024) {
+      showError(t('settingsPage.signIn.logoSize'));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') void save({ logo: reader.result });
+    };
+    reader.readAsDataURL(file);
   };
 
   const runTest = async () => {
     setBusy(true);
     try {
-      const res = await api.post<{ result: TestResult }>(`/api/sign-in-providers/${provider.id}/test`, {});
+      const res = await api.post<{ result: TestResult }>(
+        `/api/sign-in-providers/${provider.id}/test`,
+        {}
+      );
       setTestResult(res.result);
     } catch (err) {
       showError(apiErrorMessage(err, t('settingsPage.signIn.testError')));
@@ -190,7 +229,11 @@ function ProviderSection({
         ? { label: t('settingsPage.signIn.status.missing'), color: 'warning' as const }
         : { label: t('settingsPage.signIn.status.off'), color: 'default' as const };
 
-  const statusTone = { success: 'success.main', warning: 'warning.main', default: 'text.secondary' }[status.color];
+  const statusTone = {
+    success: 'success.main',
+    warning: 'warning.main',
+    default: 'text.secondary',
+  }[status.color];
 
   return (
     <SettingsRow
@@ -208,7 +251,11 @@ function ProviderSection({
             checked={provider.enabled}
             disabled={busy}
             onChange={(e) => void save({ enabled: e.target.checked })}
-            slotProps={{ input: { 'aria-label': t('settingsPage.signIn.enabledFor', { provider: provider.label }) } as InputHTMLAttributes<HTMLInputElement> }}
+            slotProps={{
+              input: {
+                'aria-label': t('settingsPage.signIn.enabledFor', { provider: provider.label }),
+              } as InputHTMLAttributes<HTMLInputElement>,
+            }}
             data-testid={`${idPrefix}-enabled`}
           />
         )
@@ -216,7 +263,14 @@ function ProviderSection({
       defaultOpen={provider.enabled && !provider.configured && !provider.comingSoon}
       openLabel={t('settingsPage.signIn.setUp', { provider: provider.label })}
     >
-      <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
+      <Stack
+        direction="row"
+        spacing={1.5}
+        alignItems="center"
+        flexWrap="wrap"
+        useFlexGap
+        sx={{ mb: 2 }}
+      >
         {/* The URL to paste into the provider's console, one click away. Steam needs none. */}
         {provider.id !== 'steam' && !provider.comingSoon && (
           <Button
@@ -258,7 +312,11 @@ function ProviderSection({
               autoComplete="off"
               placeholder="https://sso.example.com/realms/community"
               helperText={t('settingsPage.signIn.issuerUrlHelp')}
-              inputProps={{ 'data-testid': `${idPrefix}-issuer-url`, spellCheck: false, inputMode: 'url' }}
+              inputProps={{
+                'data-testid': `${idPrefix}-issuer-url`,
+                spellCheck: false,
+                inputMode: 'url',
+              }}
             />
           )}
 
@@ -275,6 +333,66 @@ function ProviderSection({
               helperText={t('settingsPage.signIn.buttonNameHelp')}
               inputProps={{ 'data-testid': `${idPrefix}-button-name`, maxLength: 40 }}
             />
+          )}
+
+          {provider.hasIssuer && (
+            <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 1,
+                  border: 1,
+                  borderColor: 'divider',
+                  display: 'grid',
+                  placeItems: 'center',
+                  bgcolor: buttonColor || 'transparent',
+                }}
+                data-testid={`${idPrefix}-logo-preview`}
+              >
+                <ProviderLogo id={provider.id} size={24} src={provider.logoUrl} />
+              </Box>
+              <Button
+                size="small"
+                component="label"
+                disabled={busy}
+                data-testid={`${idPrefix}-logo-pick`}
+              >
+                {provider.logoUrl
+                  ? t('settingsPage.signIn.logoReplace')
+                  : t('settingsPage.signIn.logoUpload')}
+                <input
+                  hidden
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  data-testid={`${idPrefix}-logo-input`}
+                  onChange={(e) => {
+                    pickLogo(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
+              </Button>
+              {provider.logoUrl && (
+                <Button size="small" disabled={busy} onClick={() => void save({ logo: null })}>
+                  {t('settingsPage.signIn.logoRemove')}
+                </Button>
+              )}
+              <TextField
+                type="color"
+                size="small"
+                label={t('settingsPage.signIn.buttonColor')}
+                value={buttonColor || '#1f6feb'}
+                onChange={(e) => setButtonColor(e.target.value)}
+                disabled={busy}
+                sx={{ width: 140 }}
+                inputProps={{ 'data-testid': `${idPrefix}-button-color` }}
+              />
+              {buttonColor && (
+                <Button size="small" disabled={busy} onClick={() => setButtonColor('')}>
+                  {t('settingsPage.signIn.buttonColorDefault')}
+                </Button>
+              )}
+            </Stack>
           )}
 
           {provider.hasClientId && (
@@ -300,7 +418,9 @@ function ProviderSection({
               size="small"
               fullWidth
               autoComplete="new-password"
-              helperText={provider.secretUnreadable ? t('settingsPage.signIn.secretUnreadable') : undefined}
+              helperText={
+                provider.secretUnreadable ? t('settingsPage.signIn.secretUnreadable') : undefined
+              }
               error={provider.secretUnreadable}
               inputProps={{ 'data-testid': `${idPrefix}-secret`, spellCheck: false }}
             />
@@ -309,7 +429,11 @@ function ProviderSection({
               <Typography variant="body2">
                 {secretLabel}: <strong>{t('settingsPage.signIn.secretSet')}</strong>
               </Typography>
-              <Button size="small" onClick={() => setReplacing(true)} data-testid={`${idPrefix}-replace`}>
+              <Button
+                size="small"
+                onClick={() => setReplacing(true)}
+                data-testid={`${idPrefix}-replace`}
+              >
                 {t('settingsPage.signIn.replace')}
               </Button>
             </Stack>
@@ -330,7 +454,12 @@ function ProviderSection({
               <Box
                 component="code"
                 data-testid={`${idPrefix}-callback`}
-                sx={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'text.primary', wordBreak: 'break-all' }}
+                sx={{
+                  fontFamily: 'monospace',
+                  fontSize: '0.8rem',
+                  color: 'text.primary',
+                  wordBreak: 'break-all',
+                }}
               >
                 {provider.callbackUrl}
               </Box>
@@ -338,7 +467,13 @@ function ProviderSection({
           )}
 
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <Button variant="contained" size="small" onClick={saveCredentials} disabled={busy} data-testid={`${idPrefix}-save`}>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={saveCredentials}
+              disabled={busy}
+              data-testid={`${idPrefix}-save`}
+            >
               {t('settingsPage.signIn.save')}
             </Button>
             {replacing && provider.secretSet && (
@@ -366,7 +501,9 @@ function ProviderSection({
 
           {testResult && (
             <Alert
-              severity={testResult === 'ok' ? 'success' : testResult === 'unreachable' ? 'warning' : 'error'}
+              severity={
+                testResult === 'ok' ? 'success' : testResult === 'unreachable' ? 'warning' : 'error'
+              }
               data-testid={`${idPrefix}-test-result`}
             >
               {t(`settingsPage.signIn.testResult.${testResult}`)}

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 683 of them, 401 behind auth —
+Every endpoint this API serves — 684 of them, 401 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -1264,6 +1264,7 @@ Sign-in flows, admin identity, impersonation.
 | `POST` | `/api/auth/epic/link` | public |
 | `GET` | `/api/auth/epic/callback` | public |
 | `POST` | `/api/auth/steam/link` | public |
+| `GET` | `/api/auth/oidc/logo` | public |
 | `GET` | `/api/auth/providers` | public |
 | `GET` | `/api/auth/me` | public |
 | `POST` | `/api/auth/self-register` | public |

@@ -1773,6 +1773,23 @@
         }
       }
     },
+    "/api/auth/oidc/logo": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "The OpenID Connect button's logo (public)",
+        "description": "The image the admin uploaded under Settings > Sign-in, as PNG, JPEG, WebP or SVG. An SVG cannot run scripts here (sandboxed). 404 without one.",
+        "responses": {
+          "200": {
+            "description": "The image"
+          },
+          "404": {
+            "description": "No logo set"
+          }
+        }
+      }
+    },
     "/api/auth/providers": {
       "get": {
         "tags": [
