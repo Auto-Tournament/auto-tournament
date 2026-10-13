@@ -38,7 +38,7 @@ import { InvitePicker } from '../components/social/InvitePicker';
 import { FriendsCard } from '../components/social/FriendsCard';
 import { answerPartyInvite, cancelPartyInvite } from '../components/social/socialStore';
 import { getMapData } from '../constants/maps';
-import { paths, playLobbyPath } from '../paths';
+import { leaderboardsPath, paths, playLobbyPath } from '../paths';
 import { fontDisplay, fontMono, radii, textSize, tokens, withAlpha } from '../theme/tokens';
 
 const { color } = tokens;
@@ -200,7 +200,7 @@ function YouColumn({ playerId, rating }: { playerId: string; rating: { elo: numb
         })}
         <Box
           component={RouterLink}
-          to={paths.playLeaderboard}
+          to={leaderboardsPath('matchmaking')}
           data-testid="mm-leaderboard-link"
           sx={{ mt: 0.5, fontSize: textSize.md, color: color.ink2 }}
         >

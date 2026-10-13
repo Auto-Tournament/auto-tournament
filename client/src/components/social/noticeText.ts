@@ -52,7 +52,7 @@ export function describeNotice(notice: Notice, t: TFunction, viewerId: string | 
       out.lead = person?.name ?? '';
       out.text = t('social.notice.teamInvite');
       out.tail = str(d.teamName);
-      out.to = answer === 'joinedTeam' ? teamProfilePath(teamId) : paths.browseTeams;
+      out.to = answer === 'joinedTeam' ? teamProfilePath(teamId) : paths.communityTeams;
       break;
     }
     case 'friend_request':

@@ -11,7 +11,7 @@
  * named exactly as on the page it opens. `parent` is the entry it sits in,
  * shown beside it ("Highlights › Overlays").
  */
-import { paths } from '../paths';
+import { leaderboardsPath, paths } from '../paths';
 import { fuzzyRank, type SearchField } from './fuzzy';
 
 export type SearchAudience = 'all' | 'player' | 'admin';
@@ -52,7 +52,7 @@ export const SITE_SEARCH_INDEX: SiteSearchEntry[] = [
   {
     key: 'browse',
     title: { key: 'nav.browse' },
-    to: paths.browse,
+    to: paths.tournamentList,
     keywords: 'tournaments events cups upcoming running',
     audience: 'all',
   },
@@ -67,14 +67,14 @@ export const SITE_SEARCH_INDEX: SiteSearchEntry[] = [
   {
     key: 'teamDirectory',
     title: { key: 'nav.teams' },
-    to: paths.browseTeams,
+    to: paths.communityTeams,
     keywords: 'team directory rosters clans',
     audience: 'all',
   },
   {
     key: 'playerDirectory',
     title: { key: 'nav.players' },
-    to: paths.browsePlayers,
+    to: paths.communityPlayers,
     keywords: 'player directory people find player',
     audience: 'all',
   },
@@ -88,7 +88,7 @@ export const SITE_SEARCH_INDEX: SiteSearchEntry[] = [
   {
     key: 'mmLeaderboard',
     title: { key: 'matchmaking.leaderboard.title' },
-    to: paths.playLeaderboard,
+    to: leaderboardsPath('matchmaking'),
     keywords: 'matchmaking ranked leaderboard elo top',
     audience: 'all',
   },

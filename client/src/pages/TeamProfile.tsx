@@ -311,7 +311,7 @@ export default function TeamProfile() {
             await api.delete(
               `/api/team-directory/${encodeURIComponent(teamId ?? '')}/members/${encodeURIComponent(own?.uid ?? '')}`
             );
-            navigate(paths.browseTeams);
+            navigate(paths.communityTeams);
           } catch (err) {
             setLeaveError(apiErrorMessage(err, t('teamProfile.leaveFailed')));
           }

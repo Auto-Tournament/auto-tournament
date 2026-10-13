@@ -689,7 +689,9 @@
     }
   },
   "leaderboard": {
-    "toLadder": "Matchmaking ladder →",
+    "mode": "Which ranking",
+    "modeTournament": "Tournaments",
+    "modeMatchmaking": "Matchmaking",
     "title": "Leaderboard",
     "subtitle": "Players ranked by their rating in one game.",
     "game": "Game",

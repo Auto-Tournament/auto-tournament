@@ -30,7 +30,7 @@ const PAGES = [
   '/tournament/1/matches',
   '/tournament/1/teams',
   '/tournament/1/standings',
-  '/browse/players',
+  '/community/players',
 ];
 
 /**

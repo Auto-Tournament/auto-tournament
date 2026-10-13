@@ -333,7 +333,7 @@ export const teamSelfService = {
         teamId: team.id,
         teamName: team.name,
         from: from ? { id: from.id, name: from.name, avatarUrl: from.avatar } : null,
-        url: '/browse/teams',
+        url: '/community/teams',
       },
       teamInviteKey(team.id)
     );

@@ -1,4 +1,5 @@
 import { logoUrl } from '../services/teamSelfService';
+import { viewerTeamIdOfMatch } from '../services/matchViewer';
 import { Router, Request, Response } from 'express';
 import { getGameRatings } from '../services/gameRatings';
 import { matchService } from '../services/matchService';
@@ -1060,7 +1061,8 @@ router.get('/played', requireAuth, async (req: Request, res: Response) => {
 
 /**
  * GET /api/matches/:slug
- * Get match details (public - used by team pages)
+ * Get match details (public: the match page). `viewerTeamId` is the
+ * signed-in viewer's team in this match (its live roster decides), or null.
  */
 router.get('/:slug', async (req: Request, res: Response) => {
   try {
@@ -1141,6 +1143,14 @@ router.get('/:slug', async (req: Request, res: Response) => {
           row?.tournament ??
           row?.played_in ??
           null,
+        // The signed-in viewer's team in this match: the match room shows
+        // them their part (veto, connect, reporting). Null for everyone else.
+        viewerTeamId: await viewerTeamIdOfMatch(req, {
+          game: (match as { game?: string | null }).game ?? null,
+          config: (match as { config?: unknown }).config ?? null,
+          team1_id: row?.team1_id ?? null,
+          team2_id: row?.team2_id ?? null,
+        }),
       },
     });
   } catch (error) {

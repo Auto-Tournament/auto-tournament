@@ -358,7 +358,7 @@ export default function Home() {
                 id="home-live-title"
                 title={quiet ? t('home.quiet.title') : t('home.live.title')}
                 aside={quiet ? undefined : t('home.live.count', { count: live.length })}
-                link={{ to: paths.browse, label: t('home.allTournaments') }}
+                link={{ to: paths.tournamentList, label: t('home.allTournaments') }}
               />
               <Box
                 data-testid="home-tournaments-list"
@@ -503,7 +503,7 @@ export default function Home() {
                   ) : (
                     <Box
                       component={RouterLink}
-                      to={paths.browsePlayers}
+                      to={paths.communityPlayers}
                       data-testid="home-browse"
                       sx={{
                         p: 2.75,
@@ -568,7 +568,7 @@ export default function Home() {
                 id="home-signup-title"
                 title={t('home.signup.title')}
                 aside={t('home.signup.aside')}
-                link={{ to: paths.browse, label: t('home.allTournaments') }}
+                link={{ to: paths.tournamentList, label: t('home.allTournaments') }}
               />
               <Box
                 sx={{
@@ -674,7 +674,7 @@ export default function Home() {
                   id="home-champions-title"
                   title={t('home.champions.title')}
                   aside={t('home.champions.aside')}
-                  link={{ to: paths.browse, label: t('home.champions.all') }}
+                  link={{ to: paths.tournamentList, label: t('home.champions.all') }}
                 />
                 <Box
                   sx={{

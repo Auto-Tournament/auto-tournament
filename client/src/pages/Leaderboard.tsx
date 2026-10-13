@@ -7,6 +7,8 @@ import {
   Container,
   MenuItem,
   Select,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +18,8 @@ import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { api } from '../utils/api';
 import { useIntegration } from '../integrations/registry';
 import { pageTitle } from '../utils/pageTitle';
-import { paths, playerProfilePath } from '../paths';
+import { playerProfilePath } from '../paths';
+import { MatchmakingLeaderboard } from '../components/leaderboard/MatchmakingLeaderboard';
 import { useMatchmaking } from '../components/matchmaking/matchmakingStore';
 import { tokens, fontMono, radii, textSize } from '../theme/tokens';
 
@@ -47,8 +50,10 @@ interface Board {
 
 /**
  * The platform's leaderboard (`/leaderboards`): players ranked by their
- * rating in one game, picked from a dropdown (ratings are per game). A
- * tournament's own standings are on its page.
+ * rating in one game, picked from a dropdown (ratings are per game). With
+ * matchmaking on, a second mode (`?mode=matchmaking`) shows the matchmaking
+ * ladder, which had its own page before. A tournament's own standings are on
+ * its page.
  */
 export default function Leaderboard() {
   const { t } = useTranslation();
@@ -58,8 +63,15 @@ export default function Leaderboard() {
   const [error, setError] = useState(false);
 
   // The game's own category rankings, under its rating ranking.
-  // The matchmaking ladder is its own ranking (by queue rating): linked from here.
+  // The matchmaking ladder is its own ranking (by queue rating): the second mode.
   const { available: matchmaking } = useMatchmaking();
+  const ladder = matchmaking && params.get('mode') === 'matchmaking';
+  const setMode = (mode: 'tournament' | 'matchmaking') => {
+    const next = new URLSearchParams(params);
+    if (mode === 'matchmaking') next.set('mode', 'matchmaking');
+    else next.delete('mode');
+    setParams(next);
+  };
   const gameIntegration = useIntegration(board?.game ?? null);
   const GameBoard = board?.game ? gameIntegration.leaderboardView : undefined;
 
@@ -119,19 +131,26 @@ export default function Leaderboard() {
             subtitle={t('leaderboard.subtitle')}
             actions={
               matchmaking ? (
-                <Box
-                  component={RouterLink}
-                  to={paths.playLeaderboard}
-                  sx={{ color: color.accent, fontSize: textSize.sm, textDecoration: 'none' }}
-                  data-testid="leaderboard-to-ladder"
+                <ToggleButtonGroup
+                  exclusive
+                  size="small"
+                  value={ladder ? 'matchmaking' : 'tournament'}
+                  onChange={(_, value) => value && setMode(value)}
+                  aria-label={t('leaderboard.mode')}
+                  data-testid="leaderboard-mode"
                 >
-                  {t('leaderboard.toLadder')}
-                </Box>
+                  <ToggleButton value="tournament" data-testid="leaderboard-mode-tournament">
+                    {t('leaderboard.modeTournament')}
+                  </ToggleButton>
+                  <ToggleButton value="matchmaking" data-testid="leaderboard-mode-matchmaking">
+                    {t('leaderboard.modeMatchmaking')}
+                  </ToggleButton>
+                </ToggleButtonGroup>
               ) : undefined
             }
             sx={{ mb: 0 }}
           />
-          {board && board.games.length > 0 && (
+          {!ladder && board && board.games.length > 0 && (
             <Select
               size="small"
               value={board.game ?? ''}
@@ -149,7 +168,9 @@ export default function Leaderboard() {
           )}
         </Box>
 
-        {error ? (
+        {ladder ? (
+          <MatchmakingLeaderboard />
+        ) : error ? (
           <Alert severity="error">{t('leaderboard.loadError')}</Alert>
         ) : !board ? (
           <Box display="flex" justifyContent="center" py={6}>
@@ -215,7 +236,7 @@ export default function Leaderboard() {
           </RowList>
         )}
 
-        {GameBoard && (
+        {!ladder && GameBoard && (
           <Box sx={{ mt: 6 }}>
             <GameBoard />
           </Box>

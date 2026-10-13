@@ -102,7 +102,7 @@ test.describe.serial('License consent UI', () => {
       const visitor = await browser.newContext({ baseURL });
       try {
         const page = await visitor.newPage();
-        await page.goto('/browse');
+        await page.goto('/tournaments');
         await page.waitForLoadState('networkidle');
         await expect(page).not.toHaveURL(/\/welcome\/license/);
         await page.goto('/compatibility');

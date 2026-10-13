@@ -702,7 +702,10 @@
       "rating": "Rating",
       "matches": "Matches",
       "winRate": "Win rate"
-    }
+    },
+    "mode": "Which ranking",
+    "modeTournament": "Tournaments",
+    "modeMatchmaking": "Matchmaking"
   },
   "matchPage": {
     "manage": "Manage",
