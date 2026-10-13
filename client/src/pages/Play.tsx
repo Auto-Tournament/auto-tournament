@@ -335,6 +335,8 @@ export default function Play() {
   const invited = party?.invited ?? [];
   const invites = me?.invites ?? [];
   const notReady = me?.notReady ?? [];
+  // Your own missing game does not hold the search: searching adds it to your games.
+  const blocking = notReady.filter((p) => !(p.id === playerSteamId && p.missing === 'game'));
 
   const queueMode = me?.queue?.mode ?? mode;
   const waited =
@@ -835,7 +837,7 @@ export default function Play() {
                           {p.id === playerSteamId
                             ? t(
                                 p.missing === 'game'
-                                  ? 'social.setup.youGame'
+                                  ? 'social.setup.youGameAuto'
                                   : 'social.setup.youAccount'
                               )
                             : t(
@@ -846,7 +848,7 @@ export default function Play() {
                               )}
                         </Typography>
                       ))}
-                      {notReady.some((p) => p.id === playerSteamId) && (
+                      {blocking.some((p) => p.id === playerSteamId) && (
                         <Button
                           component={RouterLink}
                           to={paths.meConnections}
@@ -870,7 +872,7 @@ export default function Play() {
                       busy ||
                       !isLeader ||
                       cooldown > 0 ||
-                      notReady.length > 0 ||
+                      blocking.length > 0 ||
                       me?.lobby?.status === 'accepting'
                     }
                     onClick={() => void run(() => matchmakingAction('POST', '/queue', { mode }))}

@@ -23,7 +23,7 @@ import { progressionService } from './progressionService';
 import { playerConnectionService } from '../playerConnectionService';
 import { emitMatchmakingChanged, emitSocialChanged, onlinePlayerCount } from '../socketService';
 import { notificationService } from '../notificationService';
-import { canInvite, gameName, missingForGame } from '../gameReadiness';
+import { canInvite, gameName, gameRowId, missingForGame } from '../gameReadiness';
 import { settingsService } from '../settingsService';
 import {
   ABANDON_WINDOW_SECONDS,
@@ -600,7 +600,22 @@ export class MatchmakingService {
         );
       }
       // Everyone must be set up for the game: it on their profile, and its account linked.
-      const missing = await missingForGame(members, await this.partyGame(party.id));
+      const game = await this.partyGame(party.id);
+      let missing = await missingForGame(members, game);
+      // Searching for a game says you play it: the leader's own profile gets it
+      // (the others in the party still add it themselves).
+      if (missing.get(playerId) === 'game') {
+        const gameId = await gameRowId(game);
+        if (gameId !== null) {
+          await db.runAsync(
+            `INSERT INTO player_games (player_uid, game_id, created_at)
+             SELECT uid, ?, ? FROM players WHERE id = ?
+             ON CONFLICT (player_uid, game_id) DO NOTHING`,
+            [gameId, this.clock(), playerId]
+          );
+          missing = await missingForGame(members, game);
+        }
+      }
       if (missing.size > 0) {
         const names = (await this.people([...missing.keys()])).map((p) => p.name).join(', ');
         throw new MatchmakingError(409, 'profile_incomplete', `Finish setting up first: ${names}`);
