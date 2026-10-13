@@ -50,7 +50,7 @@ test.describe.serial('Browse', () => {
       const id = setup.tournament.id;
       await expect(page.getByTestId(`browse-entries-${id}`)).toContainText('2 teams');
       await expect(page.getByTestId(`browse-when-${id}`)).toContainText(/live/i);
-      await expect(page.getByTestId(`browse-action-${id}`)).toHaveText(/watch/i);
+      await expect(page.getByTestId(`browse-action-${id}`)).toHaveText(/open/i);
       await expect(page.getByTestId(`browse-action-${id}`)).toHaveAttribute(
         'href',
         `/tournament/${id}`
