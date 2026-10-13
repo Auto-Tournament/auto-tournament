@@ -40,6 +40,7 @@ import {
   unbanPlayer,
 } from '../services/playerModeration';
 import type { Actor } from '../services/matchHolds';
+import { PresetAccountError, presetAccounts } from '../services/gameAccounts';
 
 function actorOf(req: Request): Actor {
   const id = requestActorId(req) ?? 'admin';
@@ -1727,6 +1728,48 @@ router.get('/:playerId/matches', async (req: Request, res: Response) => {
 router.use(requireAuth);
 
 /**
+ * @openapi
+ * /api/players/{playerId}/accounts:
+ *   get:
+ *     tags: [Players]
+ *     summary: A player's game accounts other than Steam
+ *     description: |
+ *       Admin. Accounts the games need (Epic Games for Rocket League, ...):
+ *       entered by an admin (`verified: false`, the player lands on this
+ *       player when they first sign in with it) or proven by signing in.
+ *     parameters:
+ *       - in: path
+ *         name: playerId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: "`accounts`: [{ provider, externalId, verified }]"
+ */
+router.get('/:playerId/accounts', async (req: Request, res: Response) => {
+  return res.json({ success: true, accounts: await presetAccounts.list(req.params.playerId) });
+});
+
+/** Set the `accounts` a create or update carried; a refusal is answered and returns false. */
+async function applyAccounts(playerId: string, accounts: unknown, res: Response): Promise<boolean> {
+  if (accounts === undefined) return true;
+  if (!accounts || typeof accounts !== 'object' || Array.isArray(accounts)) {
+    res.status(400).json({ success: false, error: 'accounts: { provider: account id or null }' });
+    return false;
+  }
+  try {
+    await presetAccounts.set(playerId, accounts as Record<string, unknown>);
+    return true;
+  } catch (error) {
+    if (error instanceof PresetAccountError) {
+      res.status(error.status).json({ success: false, error: error.message, code: 'account' });
+      return false;
+    }
+    throw error;
+  }
+}
+
+/**
  * GET /api/players
  * Get all players (for admin management)
  */
@@ -1798,6 +1841,12 @@ router.post('/', async (req: Request, res: Response) => {
 
     // An explicit edit: an invalid discordId refuses the whole create (400).
     const created = await playerService.createPlayer(input);
+    // Game accounts (Epic Games, ...): a refused one undoes the create.
+    const accounts = (req.body as { accounts?: unknown }).accounts;
+    if (!(await applyAccounts(created.id, accounts, res))) {
+      await playerService.deletePlayer(created.id).catch(() => undefined);
+      return;
+    }
     const player = (await playerService.getPlayerByIdForAdmin(created.id)) ?? created;
 
     return res.status(201).json({
@@ -2031,6 +2080,12 @@ router.put('/:playerId', async (req: Request, res: Response) => {
 
     // An explicit edit: a string overwrites, null/"" clears, an absent key
     // leaves it alone, and an invalid value refuses the whole update (400).
+    if (
+      before &&
+      !(await applyAccounts(playerId, (req.body as { accounts?: unknown }).accounts, res))
+    ) {
+      return;
+    }
     const updated = await playerService.updatePlayer(playerId, input);
 
     if (!updated) {

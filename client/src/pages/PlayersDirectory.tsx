@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
+import { useGameAccounts } from '../hooks/useGameAccounts';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { EmptyPanel, PageHead } from '../components/common/ui';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
@@ -44,6 +45,8 @@ const PAGE = 50;
  */
 export default function PlayersDirectory() {
   const { t } = useTranslation();
+  // Steam wording only when a game here identifies players by Steam (CS2).
+  const steamContext = useGameAccounts().steam ? 'steam' : undefined;
   const [players, setPlayers] = useState<DirectoryPlayer[] | null>(null);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState('');
@@ -79,7 +82,7 @@ export default function PlayersDirectory() {
             ? null
             : r.steamApiConfigured === false
               ? t('findPlayer.inputErrorSteamNotConfigured')
-              : t('findPlayer.inputErrorNotFound'),
+              : t('findPlayer.inputErrorNotFound', { context: steamContext }),
       });
     } catch {
       setLookup({ busy: false, error: t('findPlayer.searchError') });
@@ -159,7 +162,7 @@ export default function PlayersDirectory() {
             <MagnifyingGlassIcon size={18} aria-hidden />
             <InputBase
               type="search"
-              placeholder={t('playersDirectory.searchPlaceholder')}
+              placeholder={t('playersDirectory.searchPlaceholder', { context: steamContext })}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -169,9 +172,11 @@ export default function PlayersDirectory() {
               onKeyDown={(e) => {
                 if (e.key !== 'Enter') return;
                 if (rows.length === 1) navigate(playerProfilePath(rows[0].id));
-                else if (rows.length === 0) void findOnSteam();
+                else if (rows.length === 0 && steamContext) void findOnSteam();
               }}
-              inputProps={{ 'aria-label': t('playersDirectory.searchPlaceholder') }}
+              inputProps={{
+                'aria-label': t('playersDirectory.searchPlaceholder', { context: steamContext }),
+              }}
               data-testid="players-directory-search"
               sx={{ flex: 1, minWidth: 0, fontSize: textSize.sm, color: color.ink }}
             />
@@ -203,7 +208,7 @@ export default function PlayersDirectory() {
               description={t('playersDirectory.emptyDescription')}
               data-testid="players-directory-empty"
             />
-            {search.trim() && (
+            {search.trim() && steamContext && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                 <Button
                   variant="outlined"

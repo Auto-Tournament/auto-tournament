@@ -31,6 +31,7 @@ import {
   UserIcon,
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
+import { useGameAccounts } from '../hooks/useGameAccounts';
 import { api } from '../utils/api';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
@@ -95,6 +96,8 @@ interface TournamentLeaderboardData {
 export default function TournamentLeaderboard() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
+  // Steam wording only when a game here identifies players by Steam (CS2).
+  const steamContext = useGameAccounts().steam ? 'steam' : undefined;
   const [data, setData] = useState<TournamentLeaderboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -716,7 +719,7 @@ export default function TournamentLeaderboard() {
             <Box display="flex" gap={1} flexWrap="wrap">
               <TextField
                 size="small"
-                placeholder={t('leaderboardPage.searchPlaceholder')}
+                placeholder={t('leaderboardPage.searchPlaceholder', { context: steamContext })}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 InputProps={{

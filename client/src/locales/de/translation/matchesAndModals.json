@@ -211,7 +211,7 @@
     "playersHeader": "Spieler ({{count}})",
     "selectPlayers": "Spieler auswählen",
     "noPlayersInfo": "Noch keine Spieler hinzugefügt. Füge mindestens einen Spieler hinzu.",
-    "addPlayersHelper": "Fügen Sie Spieler hinzu, indem Sie die Steam-URL einfügen oder aus vorhandenen Spielern auswählen",
+    "addPlayersHelper_steam": "Fügen Sie Spieler hinzu, indem Sie die Steam-URL einfügen oder aus vorhandenen Spielern auswählen",
     "steamInputLabel": "Steam-ID / Vanity-URL",
     "steamInputPlaceholder": "gaben oder steamcommunity.com/id/gaben",
     "resolveSteam": "Steam-ID auflösen",
@@ -233,7 +233,9 @@
       "deleteFailed": "Loeschen fehlgeschlagen",
       "discordIdInvalid": "Die Discord-ID muss aus 17–20 Ziffern bestehen (die numerische Benutzer-ID, kein Benutzername)",
       "discordIdInvalidPlayers": "Ungültige Discord-ID für: {{names}}. Sie muss aus 17–20 Ziffern bestehen oder leer bleiben.",
-      "discordIdSaveFailed": "Das Team wurde gespeichert, aber die Discord-ID konnte nicht gespeichert werden für: {{names}}. {{message}}"
+      "discordIdSaveFailed": "Das Team wurde gespeichert, aber die Discord-ID konnte nicht gespeichert werden für: {{names}}. {{message}}",
+      "nameRequired": "Enter the player's name",
+      "addPlayerFailed": "Could not add the player"
     },
     "success": {
       "playerAdded": "Spieler zum Team hinzugefügt",
@@ -254,7 +256,10 @@
       "message": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
     },
     "replacePlayerAria": "Spieler {{name}} ersetzen",
-    "replacePlayerTooltip": "Diesen Spieler ersetzen"
+    "replacePlayerTooltip": "Diesen Spieler ersetzen",
+    "addPlayersHelper": "Add a new player below, or select from existing players",
+    "accountLabel": "{{account}} account (optional)",
+    "accountHelper": "For {{games}}. When they sign in with {{account}}, they become this player."
   },
   "playerModal": {
     "titleCreate": "Spieler erstellen",
@@ -301,7 +306,10 @@
       "title": "Spieler aktualisieren",
       "message": "Sind Sie sicher, dass Sie die ELO dieses Spielers von {{from}} auf {{to}} aktualisieren möchten? Dadurch werden ihre Statistiken und ihr Bewertungsverlauf zurückgesetzt. Diese Aktion kann nicht rückgängig gemacht werden."
     },
-    "discordIdHelper": "Optional. 17–20 Ziffern. Damit Organisatoren diesen Spieler über Discord erreichen können. Wird nie öffentlich angezeigt."
+    "discordIdHelper": "Optional. 17–20 Ziffern. Damit Organisatoren diesen Spieler über Discord erreichen können. Wird nie öffentlich angezeigt.",
+    "accountLabel": "{{account}} account (optional)",
+    "accountHelper": "For {{games}}. The account id; when they sign in with {{account}}, they become this player.",
+    "accountVerified": "Linked: they signed in with {{account}}. They change it themselves."
   },
   "teamImportModal": {
     "title": "Teams aus json importieren",
@@ -377,7 +385,7 @@
   "playerSelectionModal": {
     "title": "Spieler auswählen",
     "selectedCount": "{{count}} ausgewählt",
-    "searchPlaceholder": "Spieler nach Name oder Steam-ID suchen…",
+    "searchPlaceholder_steam": "Spieler nach Name oder Steam-ID suchen…",
     "selectAll": {
       "select": "Alles auswählen",
       "deselect": "Alle abwählen"
@@ -394,7 +402,8 @@
       "noSelectable": "Keine auswählbaren Spieler verfügbar"
     },
     "addPlayersButton_one": "{{count}} Spieler hinzufügen",
-    "addPlayersButton_other": "{{count}} Spieler hinzufügen"
+    "addPlayersButton_other": "{{count}} Spieler hinzufügen",
+    "searchPlaceholder": "Search players by name..."
   },
   "soundSettingsModal": {
     "title": "Sound-Einstellungen",

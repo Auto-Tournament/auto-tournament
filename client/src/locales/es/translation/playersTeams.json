@@ -9,7 +9,7 @@
     "noOptionsLoading": "Cargando jugadores…",
     "noOptionsEmpty": "No se encontraron jugadores. Prueba con un Steam ID o una URL.",
     "inputErrorEmpty": "Introduce un Steam ID, nombre de Steam o URL de perfil",
-    "inputErrorNotFound": "Jugador no encontrado. Comprueba el Steam ID o la URL e inténtalo de nuevo.",
+    "inputErrorNotFound_steam": "Jugador no encontrado. Comprueba el Steam ID o la URL e inténtalo de nuevo.",
     "inputErrorSteamNotConfigured": "La API de Steam no está configurada. No se pueden resolver vanity URLs: introduce un Steam ID64 o pide a un admin que configure la clave de Steam Web API en Ajustes.",
     "searchError": "No se pudo buscar al jugador. Inténtalo de nuevo.",
     "modalTitle": "Se encontraron varios jugadores",
@@ -17,7 +17,8 @@
     "modalElo": "ELO: {{elo}} pts",
     "directoryLabel": "Players",
     "directoryNoMatch": "Nobody here matches that. Press Enter to look it up on Steam.",
-    "directoryMore": "{{count}} more. Type to narrow the list."
+    "directoryMore": "{{count}} more. Type to narrow the list.",
+    "inputErrorNotFound": "Player not found. Check the name and try again."
   },
   "playerPage": {
     "playerNotFound": "Este jugador no existe.",
@@ -137,7 +138,7 @@
     "roundMap": "Ronda {{round}} - {{map}}",
     "matchesCompleted": "{{completed}} / {{total}} partidos completados",
     "tournamentCompletedAlert": "¡Torneo completado! Consulta la clasificación de abajo para el ranking final.",
-    "searchPlaceholder": "Buscar por nombre o Steam ID…",
+    "searchPlaceholder_steam": "Buscar por nombre o Steam ID…",
     "export": "Exportar",
     "exportCsv": "Exportar CSV",
     "exportJson": "Exportar JSON",
@@ -160,7 +161,8 @@
     "team": "Equipo",
     "matches": "Partidos",
     "buchholz": "Buchholz",
-    "roundDiff": "Round Diff"
+    "roundDiff": "Round Diff",
+    "searchPlaceholder": "Search by name…"
   },
   "teamsPage": {
     "headerSelect": {
@@ -214,7 +216,7 @@
       "import": "Importar JSON/CSV",
       "addPlayer": "Añadir jugador"
     },
-    "searchPlaceholder": "Buscar jugadores por nombre o Steam ID...",
+    "searchPlaceholder_steam": "Buscar jugadores por nombre o Steam ID...",
     "empty": {
       "title": "Aún no hay jugadores",
       "description": "Crea tu primer jugador o importa jugadores desde CSV/JSON",
@@ -257,7 +259,8 @@
     "deleteTitle": "Delete {{name}}?",
     "deleteBody": "Their name, picture, email, sign-in methods, friends and teams are removed for good. Their matches stay, shown as \"Deleted player\". This can't be undone.",
     "deletedDone": "{{name}} is deleted",
-    "moderationError": "Could not change the player"
+    "moderationError": "Could not change the player",
+    "searchPlaceholder": "Search players by name..."
   },
   "discordId": {
     "noDiscord": "Sin Discord",
@@ -460,7 +463,7 @@
     "title": "Players",
     "count_one": "{{count}} player",
     "count_other": "{{count}} players",
-    "searchPlaceholder": "Search by name or Steam ID",
+    "searchPlaceholder_steam": "Search by name or Steam ID",
     "sortLabel": "Sort by",
     "sort": {
       "rating": "Rating",
@@ -477,7 +480,8 @@
     "loadError": "The players could not be loaded.",
     "emptyTitle": "No players found",
     "emptyDescription": "Nobody matches that search.",
-    "showMore": "Show more ({{count}})"
+    "showMore": "Show more ({{count}})",
+    "searchPlaceholder": "Search by name"
   },
   "teamsDirectory": {
     "title": "Teams",
@@ -588,14 +592,15 @@
       "sub": "Sub"
     },
     "findPlayer": "Or find a player",
-    "findPlaceholder": "Name, Steam ID or profile link",
+    "findPlaceholder_steam": "Name, Steam ID or profile link",
     "find": "Find",
     "findNone": "No player found. They have to sign in here once first.",
     "onTeam": "On the team",
     "invited": "Invited",
     "invitePlayer": "Invite",
     "inviteSent": "Invite sent to {{name}}",
-    "cancelInvite": "Take back the invite to {{name}}"
+    "cancelInvite": "Take back the invite to {{name}}",
+    "findPlaceholder": "Name or profile link"
   },
   "teamJoin": {
     "title": "Join a team",

@@ -9,7 +9,7 @@
     "noOptionsLoading": "加载选手列表中…",
     "noOptionsEmpty": "未找到选手。请尝试输入 Steam ID 或链接。",
     "inputErrorEmpty": "请输入 Steam ID、Steam 昵称或个人资料链接",
-    "inputErrorNotFound": "未找到选手。请检查 Steam ID 或链接后重试。",
+    "inputErrorNotFound_steam": "未找到选手。请检查 Steam ID 或链接后重试。",
     "inputErrorSteamNotConfigured": "未配置 Steam API。无法解析自定义链接，请直接输入 Steam ID64，或联系管理员在设置中配置 Steam Web API 密钥。",
     "searchError": "搜索选手失败，请重试。",
     "modalTitle": "找到多名选手",
@@ -17,7 +17,8 @@
     "modalElo": "ELO：{{elo}}",
     "directoryLabel": "Players",
     "directoryNoMatch": "Nobody here matches that. Press Enter to look it up on Steam.",
-    "directoryMore": "{{count}} more. Type to narrow the list."
+    "directoryMore": "{{count}} more. Type to narrow the list.",
+    "inputErrorNotFound": "Player not found. Check the name and try again."
   },
   "playerPage": {
     "playerNotFound": "该选手不存在。",
@@ -137,7 +138,7 @@
     "roundMap": "第 {{round}} 轮 - {{map}}",
     "matchesCompleted": "已完成 {{completed}} / {{total}} 场",
     "tournamentCompletedAlert": "锦标赛已结束！请查看下方排行榜获取最终排名。",
-    "searchPlaceholder": "按姓名或 Steam ID 搜索…",
+    "searchPlaceholder_steam": "按姓名或 Steam ID 搜索…",
     "export": "导出",
     "exportCsv": "导出 CSV",
     "exportJson": "导出 JSON",
@@ -160,7 +161,8 @@
     "team": "战队",
     "matches": "场次",
     "buchholz": "Buchholz",
-    "roundDiff": "Round Diff"
+    "roundDiff": "Round Diff",
+    "searchPlaceholder": "Search by name…"
   },
   "teamsPage": {
     "headerSelect": {
@@ -214,7 +216,7 @@
       "import": "导入 JSON/CSV",
       "addPlayer": "新增选手"
     },
-    "searchPlaceholder": "按姓名或 Steam ID 搜索选手…",
+    "searchPlaceholder_steam": "按姓名或 Steam ID 搜索选手…",
     "empty": {
       "title": "还没有选手",
       "description": "创建第一位选手或从 CSV/JSON 导入",
@@ -257,7 +259,8 @@
     "deleteTitle": "Delete {{name}}?",
     "deleteBody": "Their name, picture, email, sign-in methods, friends and teams are removed for good. Their matches stay, shown as \"Deleted player\". This can't be undone.",
     "deletedDone": "{{name}} is deleted",
-    "moderationError": "Could not change the player"
+    "moderationError": "Could not change the player",
+    "searchPlaceholder": "Search players by name..."
   },
   "discordId": {
     "noDiscord": "无 Discord",
@@ -460,7 +463,7 @@
     "title": "Players",
     "count_one": "{{count}} player",
     "count_other": "{{count}} players",
-    "searchPlaceholder": "Search by name or Steam ID",
+    "searchPlaceholder_steam": "Search by name or Steam ID",
     "sortLabel": "Sort by",
     "sort": {
       "rating": "Rating",
@@ -477,7 +480,8 @@
     "loadError": "The players could not be loaded.",
     "emptyTitle": "No players found",
     "emptyDescription": "Nobody matches that search.",
-    "showMore": "Show more ({{count}})"
+    "showMore": "Show more ({{count}})",
+    "searchPlaceholder": "Search by name"
   },
   "teamsDirectory": {
     "title": "Teams",
@@ -588,14 +592,15 @@
       "sub": "Sub"
     },
     "findPlayer": "Or find a player",
-    "findPlaceholder": "Name, Steam ID or profile link",
+    "findPlaceholder_steam": "Name, Steam ID or profile link",
     "find": "Find",
     "findNone": "No player found. They have to sign in here once first.",
     "onTeam": "On the team",
     "invited": "Invited",
     "invitePlayer": "Invite",
     "inviteSent": "Invite sent to {{name}}",
-    "cancelInvite": "Take back the invite to {{name}}"
+    "cancelInvite": "Take back the invite to {{name}}",
+    "findPlaceholder": "Name or profile link"
   },
   "teamJoin": {
     "title": "Join a team",

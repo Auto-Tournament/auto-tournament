@@ -21,6 +21,7 @@ import ConfirmDialog from './ConfirmDialog';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import type { PlayerDetail } from '../../types/api.types';
 import { useTranslation } from 'react-i18next';
+import { isSteamId64, useGameAccounts } from '../../hooks/useGameAccounts';
 
 interface PlayerModalProps {
   open: boolean;
@@ -39,6 +40,12 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
   const [elo, setElo] = useState<number | ''>('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [discordId, setDiscordId] = useState('');
+  // Game accounts other than Steam (Epic Games, ...): provider -> id, as typed and as stored.
+  const [accounts, setAccounts] = useState<Record<string, string>>({});
+  const [storedAccounts, setStoredAccounts] = useState<
+    Record<string, { externalId: string; verified: boolean }>
+  >({});
+  const gameAccounts = useGameAccounts();
 
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -48,8 +55,39 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
   const [pendingElo, setPendingElo] = useState<number | ''>('');
 
   const isEditing = !!player;
+  // The Steam field is for games that use Steam (CS2), or a player who is a Steam player.
+  const showSteam = gameAccounts.steam || isSteamId64(player?.id);
+  const steamGames =
+    (gameAccounts.accounts ?? [])
+      .find((a) => a.provider === 'steam')
+      ?.games.map((g) => g.name)
+      .join(', ') || 'Steam games';
   const originalElo = player?.currentElo ?? null;
   const discordIdInvalid = isInvalidDiscordIdInput(discordId);
+
+  useEffect(() => {
+    setAccounts({});
+    setStoredAccounts({});
+    if (player && open) {
+      void api
+        .get<{ accounts?: { provider: string; externalId: string; verified: boolean }[] }>(
+          `/api/players/${encodeURIComponent(player.id)}/accounts`
+        )
+        .then((r) => {
+          const stored = Object.fromEntries(
+            (r.accounts ?? []).map((a) => [
+              a.provider,
+              { externalId: a.externalId, verified: a.verified },
+            ])
+          );
+          setStoredAccounts(stored);
+          setAccounts(
+            Object.fromEntries(Object.entries(stored).map(([k, v]) => [k, v.externalId]))
+          );
+        })
+        .catch(() => undefined);
+    }
+  }, [player, open]);
 
   useEffect(() => {
     if (player) {
@@ -157,9 +195,18 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
       // the stale value back on a name-only save would silently overwrite
       // their edit. An absent key leaves the stored value alone on the server.
       // On create, a blank field is simply omitted.
-      const originalDiscordId = isEditing ? normalizeDiscordId(player.discordId) ?? null : null;
+      const originalDiscordId = isEditing ? (normalizeDiscordId(player.discordId) ?? null) : null;
       const discordIdChanged = normalizedDiscordId !== originalDiscordId;
+      // Only the accounts the admin changed: a cleared one is null.
+      const changedAccounts = Object.fromEntries(
+        Object.entries(accounts)
+          .filter(
+            ([provider, value]) => value.trim() !== (storedAccounts[provider]?.externalId ?? '')
+          )
+          .map(([provider, value]) => [provider, value.trim() || null])
+      );
       const payload = {
+        ...(Object.keys(changedAccounts).length > 0 ? { accounts: changedAccounts } : {}),
         // Steam is optional: leave it empty and the server makes an account id.
         ...(steamId.trim() ? { id: steamId.trim() } : {}),
         name: name.trim(),
@@ -242,25 +289,27 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
         </DialogTitle>
         <DialogContent>
           <Box display="flex" flexDirection="column" gap={2} mt={1}>
-            <TextField
-              label={t('playerModal.steamLabel')}
-              value={steamId}
-              onChange={(e) => setSteamId(e.target.value)}
-              disabled={isEditing || resolving}
-              fullWidth
-              error={!!error}
-              slotProps={{
-                htmlInput: { 'data-testid': 'player-steam-id-input' },
-              }}
-              helperText={
-                error ||
-                (isEditing
-                  ? t('playerModal.steamHelperEditing')
-                  : t('playerModal.steamHelperNew'))
-              }
-            />
+            {showSteam && (
+              <TextField
+                label={t('playerModal.steamLabel')}
+                value={steamId}
+                onChange={(e) => setSteamId(e.target.value)}
+                disabled={isEditing || resolving}
+                fullWidth
+                error={!!error}
+                slotProps={{
+                  htmlInput: { 'data-testid': 'player-steam-id-input' },
+                }}
+                helperText={
+                  error ||
+                  (isEditing
+                    ? t('playerModal.steamHelperEditing')
+                    : t('playerModal.steamHelperNew', { games: steamGames }))
+                }
+              />
+            )}
 
-            {!isEditing && (
+            {showSteam && !isEditing && (
               <Button
                 variant="outlined"
                 onClick={handleResolveSteam}
@@ -281,6 +330,33 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
                 />
               </Box>
             )}
+
+            {gameAccounts.others.map((account) => {
+              const stored = storedAccounts[account.provider];
+              return (
+                <TextField
+                  key={account.provider}
+                  label={t('playerModal.accountLabel', { account: account.label })}
+                  value={accounts[account.provider] ?? ''}
+                  onChange={(e) =>
+                    setAccounts((prev) => ({ ...prev, [account.provider]: e.target.value }))
+                  }
+                  disabled={!!stored?.verified}
+                  fullWidth
+                  helperText={
+                    stored?.verified
+                      ? t('playerModal.accountVerified', { account: account.label })
+                      : t('playerModal.accountHelper', {
+                          account: account.label,
+                          games: account.games.map((g) => g.name).join(', '),
+                        })
+                  }
+                  slotProps={{
+                    htmlInput: { 'data-testid': `player-account-${account.provider}-input` },
+                  }}
+                />
+              );
+            })}
 
             <TextField
               label={t('playerModal.playerNameLabel')}
@@ -304,9 +380,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
                 htmlInput: { 'data-testid': 'player-elo-input' },
               }}
               helperText={
-                isEditing
-                  ? t('playerModal.eloHelperEdit')
-                  : t('playerModal.eloHelperNew')
+                isEditing ? t('playerModal.eloHelperEdit') : t('playerModal.eloHelperNew')
               }
             />
 
@@ -373,7 +447,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
             disabled={saving || resolving || discordIdInvalid}
             startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
             sx={{
-              ...((!steamId.trim() || !name.trim()) &&
+              ...(!name.trim() &&
                 !saving &&
                 !resolving && {
                   bgcolor: 'action.disabledBackground',
@@ -387,8 +461,8 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
             {saving
               ? t('playerModal.buttons.saving')
               : isEditing
-              ? t('playerModal.buttons.save')
-              : t('playerModal.buttons.create')}
+                ? t('playerModal.buttons.save')
+                : t('playerModal.buttons.create')}
           </Button>
         </DialogActions>
       </Dialog>

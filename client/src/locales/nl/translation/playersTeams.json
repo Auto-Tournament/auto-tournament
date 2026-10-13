@@ -9,7 +9,7 @@
     "noOptionsLoading": "Spelers laden…",
     "noOptionsEmpty": "Geen spelers gevonden. Probeer een Steam ID of URL.",
     "inputErrorEmpty": "Voer een Steam ID, Steam-naam of profiel-URL in",
-    "inputErrorNotFound": "Speler niet gevonden. Controleer Steam ID/URL en probeer opnieuw.",
+    "inputErrorNotFound_steam": "Speler niet gevonden. Controleer Steam ID/URL en probeer opnieuw.",
     "inputErrorSteamNotConfigured": "Steam API is niet geconfigureerd. Vanity-URL’s kunnen niet worden opgelost – voer een Steam ID64 in of vraag een admin om de Steam Web API key in Instellingen te zetten.",
     "searchError": "Zoeken naar speler mislukt. Probeer opnieuw.",
     "modalTitle": "Meerdere spelers gevonden",
@@ -17,7 +17,8 @@
     "modalElo": "ELO-score: {{elo}}",
     "directoryLabel": "Players",
     "directoryNoMatch": "Nobody here matches that. Press Enter to look it up on Steam.",
-    "directoryMore": "{{count}} more. Type to narrow the list."
+    "directoryMore": "{{count}} more. Type to narrow the list.",
+    "inputErrorNotFound": "Player not found. Check the name and try again."
   },
   "playerPage": {
     "playerNotFound": "Deze speler bestaat niet.",
@@ -137,7 +138,7 @@
     "roundMap": "Ronde {{round}} - {{map}}",
     "matchesCompleted": "{{completed}} / {{total}} wedstrijden afgerond",
     "tournamentCompletedAlert": "Toernooi afgerond! Bekijk hieronder de eindranglijst.",
-    "searchPlaceholder": "Zoek op naam of Steam ID…",
+    "searchPlaceholder_steam": "Zoek op naam of Steam ID…",
     "export": "Exporteren",
     "exportCsv": "CSV exporteren",
     "exportJson": "JSON exporteren",
@@ -160,7 +161,8 @@
     "team": "Ploeg",
     "matches": "Wedstrijden",
     "buchholz": "Buchholz",
-    "roundDiff": "Round Diff"
+    "roundDiff": "Round Diff",
+    "searchPlaceholder": "Search by name…"
   },
   "teamsPage": {
     "headerSelect": {
@@ -214,7 +216,7 @@
       "import": "JSON/CSV importeren",
       "addPlayer": "Speler toevoegen"
     },
-    "searchPlaceholder": "Zoek spelers op naam of Steam ID...",
+    "searchPlaceholder_steam": "Zoek spelers op naam of Steam ID...",
     "empty": {
       "title": "Nog geen spelers",
       "description": "Maak je eerste speler of importeer spelers uit CSV/JSON",
@@ -257,7 +259,8 @@
     "deleteTitle": "Delete {{name}}?",
     "deleteBody": "Their name, picture, email, sign-in methods, friends and teams are removed for good. Their matches stay, shown as \"Deleted player\". This can't be undone.",
     "deletedDone": "{{name}} is deleted",
-    "moderationError": "Could not change the player"
+    "moderationError": "Could not change the player",
+    "searchPlaceholder": "Search players by name..."
   },
   "discordId": {
     "noDiscord": "Geen Discord",
@@ -460,7 +463,7 @@
     "title": "Players",
     "count_one": "{{count}} player",
     "count_other": "{{count}} players",
-    "searchPlaceholder": "Search by name or Steam ID",
+    "searchPlaceholder_steam": "Search by name or Steam ID",
     "sortLabel": "Sort by",
     "sort": {
       "rating": "Rating",
@@ -477,7 +480,8 @@
     "loadError": "The players could not be loaded.",
     "emptyTitle": "No players found",
     "emptyDescription": "Nobody matches that search.",
-    "showMore": "Show more ({{count}})"
+    "showMore": "Show more ({{count}})",
+    "searchPlaceholder": "Search by name"
   },
   "teamsDirectory": {
     "title": "Teams",
@@ -588,14 +592,15 @@
       "sub": "Sub"
     },
     "findPlayer": "Or find a player",
-    "findPlaceholder": "Name, Steam ID or profile link",
+    "findPlaceholder_steam": "Name, Steam ID or profile link",
     "find": "Find",
     "findNone": "No player found. They have to sign in here once first.",
     "onTeam": "On the team",
     "invited": "Invited",
     "invitePlayer": "Invite",
     "inviteSent": "Invite sent to {{name}}",
-    "cancelInvite": "Take back the invite to {{name}}"
+    "cancelInvite": "Take back the invite to {{name}}",
+    "findPlaceholder": "Name or profile link"
   },
   "teamJoin": {
     "title": "Join a team",

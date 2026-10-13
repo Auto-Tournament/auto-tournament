@@ -92,7 +92,8 @@
     "playersHeader": "Spillere ({{count}})",
     "selectPlayers": "Velg spillere",
     "noPlayersInfo": "Ingen spillere lagt til ennå. Legg til minst én spiller.",
-    "addPlayersHelper": "Legg til spillere ved å lime inn Steam-URL eller velge fra eksisterende spillere",
+    "addPlayersHelper": "Legg til en ny spiller under, eller velg blant eksisterende spillere",
+    "addPlayersHelper_steam": "Legg til spillere ved å lime inn Steam-URL eller velge fra eksisterende spillere",
     "steamInputLabel": "Steam-ID / Vanity-URL",
     "steamInputPlaceholder": "gaben eller steamcommunity.com/id/gaben",
     "resolveSteam": "Slå opp Steam-ID",
@@ -114,7 +115,9 @@
       "deleteFailed": "Klarte ikke å slette lag",
       "discordIdInvalid": "Discord-ID må være 17–20 sifre (den numeriske bruker-ID-en, ikke et brukernavn)",
       "discordIdInvalidPlayers": "Ugyldig Discord-ID for: {{names}}. Den må være 17–20 sifre, eller stå tom.",
-      "discordIdSaveFailed": "Laget ble lagret, men Discord-ID-en kunne ikke lagres for: {{names}}. {{message}}"
+      "discordIdSaveFailed": "Laget ble lagret, men Discord-ID-en kunne ikke lagres for: {{names}}. {{message}}",
+      "nameRequired": "Skriv inn spillerens navn",
+      "addPlayerFailed": "Kunne ikke legge til spilleren"
     },
     "success": {
       "playerAdded": "Spiller lagt til i laget",
@@ -135,14 +138,16 @@
       "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
     },
     "replacePlayerAria": "Erstatt spiller {{name}}",
-    "replacePlayerTooltip": "Erstatt denne spilleren"
+    "replacePlayerTooltip": "Erstatt denne spilleren",
+    "accountLabel": "{{account}}-konto (valgfritt)",
+    "accountHelper": "For {{games}}. Når de logger inn med {{account}}, blir de denne spilleren."
   },
   "playerModal": {
     "titleCreate": "Opprett spiller",
     "titleEdit": "Rediger spiller",
     "steamLabel": "Steam-ID eller profil-URL",
     "steamHelperEditing": "Steam-ID kan ikke endres",
-    "steamHelperNew": "Skriv inn Steam ID64, vanity-URL eller profil-URL. Klikk «Slå opp» for å fylle inn navn og avatar automatisk.",
+    "steamHelperNew": "For {{games}}. Skriv en Steam ID64, vanity-URL eller profil-URL; «Slå opp» fyller inn navn og avatar.",
     "resolveSteam": "Slå opp Steam-ID",
     "resolving": "Slår opp...",
     "playerNameLabel": "Spillernavn",
@@ -182,7 +187,10 @@
       "title": "Oppdater spiller-ELO",
       "message": "Er du sikker på at du vil oppdatere denne spillerens ELO fra {{from}} til {{to}}? Dette vil tilbakestille statistikk og ratinghistorikk. Dette kan ikke angres."
     },
-    "discordIdHelper": "Valgfritt. 17–20 sifre. Lar arrangørene nå denne spilleren på Discord. Vises aldri offentlig."
+    "discordIdHelper": "Valgfritt. 17–20 sifre. Lar arrangørene nå denne spilleren på Discord. Vises aldri offentlig.",
+    "accountLabel": "{{account}}-konto (valgfritt)",
+    "accountHelper": "For {{games}}. Konto-ID-en; når de logger inn med {{account}}, blir de denne spilleren.",
+    "accountVerified": "Koblet: de har logget inn med {{account}}. De endrer den selv."
   },
   "matchDetailsModal": {
     "delete": {
@@ -377,7 +385,8 @@
   "playerSelectionModal": {
     "title": "Velg spillere",
     "selectedCount": "{{count}} valgt",
-    "searchPlaceholder": "Søk spillere etter navn eller Steam-ID…",
+    "searchPlaceholder": "Søk etter spillere med navn ...",
+    "searchPlaceholder_steam": "Søk spillere etter navn eller Steam-ID…",
     "selectAll": {
       "select": "Velg alle",
       "deselect": "Fjern alle valg"

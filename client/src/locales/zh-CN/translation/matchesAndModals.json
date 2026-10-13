@@ -211,7 +211,7 @@
     "playersHeader": "选手（{{count}}）",
     "selectPlayers": "选择选手",
     "noPlayersInfo": "尚未添加选手，请至少添加一名选手。",
-    "addPlayersHelper": "通过粘贴 Steam 链接或从现有选手中选择来添加选手",
+    "addPlayersHelper_steam": "通过粘贴 Steam 链接或从现有选手中选择来添加选手",
     "steamInputLabel": "Steam ID / 自定义链接",
     "steamInputPlaceholder": "gaben 或 steamcommunity.com/id/gaben",
     "resolveSteam": "解析 Steam ID",
@@ -233,7 +233,9 @@
       "deleteFailed": "删除战队失败",
       "discordIdInvalid": "Discord ID 必须为 17–20 位数字（数字用户 ID，而非用户名）",
       "discordIdInvalidPlayers": "以下选手的 Discord ID 无效：{{names}}。必须为 17–20 位数字，或留空。",
-      "discordIdSaveFailed": "战队已保存，但以下选手的 Discord ID 保存失败：{{names}}。{{message}}"
+      "discordIdSaveFailed": "战队已保存，但以下选手的 Discord ID 保存失败：{{names}}。{{message}}",
+      "nameRequired": "Enter the player's name",
+      "addPlayerFailed": "Could not add the player"
     },
     "success": {
       "playerAdded": "选手已添加到战队",
@@ -254,7 +256,10 @@
       "message": "确定要删除 “{{name}}” 吗？该操作无法撤销。"
     },
     "replacePlayerAria": "替换选手 {{name}}",
-    "replacePlayerTooltip": "替换此选手"
+    "replacePlayerTooltip": "替换此选手",
+    "addPlayersHelper": "Add a new player below, or select from existing players",
+    "accountLabel": "{{account}} account (optional)",
+    "accountHelper": "For {{games}}. When they sign in with {{account}}, they become this player."
   },
   "playerModal": {
     "titleCreate": "创建选手",
@@ -301,7 +306,10 @@
       "title": "更新选手 ELO",
       "message": "确定要将该选手的 ELO 从 {{from}} 更新为 {{to}} 吗？这将重置其统计和评分历史。此操作无法撤销。"
     },
-    "discordIdHelper": "可选，17–20 位数字。便于组织者通过 Discord 联系该选手，不会公开显示。"
+    "discordIdHelper": "可选，17–20 位数字。便于组织者通过 Discord 联系该选手，不会公开显示。",
+    "accountLabel": "{{account}} account (optional)",
+    "accountHelper": "For {{games}}. The account id; when they sign in with {{account}}, they become this player.",
+    "accountVerified": "Linked: they signed in with {{account}}. They change it themselves."
   },
   "teamImportModal": {
     "title": "从 JSON 导入战队",
@@ -377,7 +385,7 @@
   "playerSelectionModal": {
     "title": "选择选手",
     "selectedCount": "已选择 {{count}} 人",
-    "searchPlaceholder": "按姓名或 Steam ID 搜索选手…",
+    "searchPlaceholder_steam": "按姓名或 Steam ID 搜索选手…",
     "selectAll": {
       "select": "全选",
       "deselect": "取消全选"
@@ -394,7 +402,8 @@
       "noSelectable": "没有可选择的选手"
     },
     "addPlayersButton_one": "添加 {{count}} 名选手",
-    "addPlayersButton_other": "添加 {{count}} 名选手"
+    "addPlayersButton_other": "添加 {{count}} 名选手",
+    "searchPlaceholder": "Search players by name..."
   },
   "soundSettingsModal": {
     "title": "声音设置",
