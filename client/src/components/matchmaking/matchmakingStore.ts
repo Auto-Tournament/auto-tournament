@@ -28,8 +28,14 @@ export interface MatchmakingMe {
   /** Party members (or the viewer) not set up for the game yet; searching waits for them (older APIs: missing). */
   notReady?: Array<{ id: string; name: string; missing: 'game' | 'account' }>;
   /** Open invites to the viewer from other parties, newest first (older APIs: missing). */
-  invites?: Array<{ partyId: string; from: { id: string; name: string; avatarUrl: string | null }; mode: string; size: number }>;
-  queue: { mode: string; queuedAt: number; status: string } | null;
+  invites?: Array<{
+    partyId: string;
+    from: { id: string; name: string; avatarUrl: string | null };
+    mode: string;
+    size: number;
+  }>;
+  /** botFill: bots take the empty seats (an unrated game). */
+  queue: { mode: string; queuedAt: number; status: string; botFill?: boolean } | null;
   /** Players searching right now, per mode. */
   queueCounts?: Record<string, number>;
   /** Signed-in players with the site open (older APIs: missing). */

@@ -639,7 +639,9 @@
         "1v1": "Active Duty"
       },
       "searchAnyone": "Få spillere søker: du blir satt opp mot hvem som helst ({{count}} søker, {{total}} trengs)",
-      "searchRating": "Finner en jevn kamp for ratingen din · {{count}} søker"
+      "searchRating": "Finner en jevn kamp for ratingen din · {{count}} søker",
+      "botFill": "Fyll tomme plasser med boter",
+      "botFillUnrated": "Boter fyller tomme plasser · urangert: ingen rating, XP eller drops"
     },
     "queue": {
       "searching": "Søker {{mode}}",
