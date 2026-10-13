@@ -2428,7 +2428,8 @@
       "player": "Spiller: {{name}}",
       "team": "Lag: {{name}}",
       "match": "Kamp: {{name}}",
-      "tournament": "Turnering: {{name}}"
+      "tournament": "Turnering: {{name}}",
+      "map": "Kart: {{name}}"
     },
     "views_one": "{{count}} visning",
     "views_other": "{{count}} visninger",

@@ -639,7 +639,9 @@
         "1v1": "Active Duty"
       },
       "searchAnyone": "Few players searching: you'll be matched with anyone available ({{count}} searching, {{total}} needed)",
-      "searchRating": "Finding a close match for your rating · {{count}} searching"
+      "searchRating": "Finding a close match for your rating · {{count}} searching",
+      "botFill": "Uzupełnij puste miejsca botami",
+      "botFillUnrated": "Boty zajmują puste miejsca · bez rankingu: bez ratingu, XP i dropów"
     },
     "queue": {
       "searching": "Searching {{mode}}",
@@ -901,7 +903,11 @@
       "players": "Players",
       "teams": "Teams",
       "tournaments": "Tournaments",
-      "matches": "Matches"
+      "matches": "Matches",
+      "highlights": "Highlighty",
+      "maps": "Mapy",
+      "servers": "Serwery i maszyny",
+      "recorders": "Rejestratory"
     },
     "status": {
       "setup": "Being set up",
@@ -934,7 +940,9 @@
       "settingsLicense": "Settings: license",
       "settingsMatchmaking": "Settings: matchmaking",
       "settingsAdvanced": "Settings: advanced"
-    }
+    },
+    "clips_one": "{{count}} klip",
+    "clips_other": "{{count}} klipów"
   },
   "highlightsPage": {
     "title": "Highlights",

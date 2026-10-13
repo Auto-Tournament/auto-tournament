@@ -58,7 +58,7 @@ import { recorderAcceptsWork, requestRecorderUpdate } from '../demos/recorderFle
  *   GET  /api/game/cs2/watch/match/:slug/:map         a map's match reel
  *   GET  /api/game/cs2/watch/tournament/:id           a tournament's reel
  *   GET  /api/game/cs2/watch/team/:slug/:team         a team's reel of a match
- *   GET  /api/game/cs2/library                        every clip and reel: ?sort=new|views|likes&kind=all|clips|reels&player&team&match&tournament&page&limit
+ *   GET  /api/game/cs2/library                        every clip and reel: ?sort=new|views|likes&kind=all|clips|reels&player&team&match&tournament&map&page&limit
  *   GET  /api/game/cs2/watch/stats                    ?video=<key>: its views and likes, and whether the viewer liked it
  *   POST /api/game/cs2/watch/view                     { video, browser? }: a view (once per viewer every 12 hours)
  *   PUT  /api/game/cs2/watch/like                     { video, liked }: a signed-in player's like
@@ -1076,6 +1076,7 @@ router.get(
       team: str(q.team),
       match: str(q.match),
       tournament: Number.isInteger(tournament) && tournament > 0 ? tournament : undefined,
+      map: str(q.map),
       page,
       limit,
       viewer: viewer.playerId,

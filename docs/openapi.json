@@ -10496,6 +10496,10 @@
                   "mode": {
                     "type": "string",
                     "example": "5v5"
+                  },
+                  "botFill": {
+                    "type": "boolean",
+                    "description": "Bots take the empty seats (2v2 and 5v5). The game is unrated: no rating, XP or drops."
                   }
                 }
               }
@@ -12856,8 +12860,8 @@
         "tags": [
           "Search"
         ],
-        "summary": "Search players, teams, tournaments and played matches by name",
-        "description": "Public. `q` (2 to 100 characters) matches anywhere in a name, case\ninsensitive; a SteamID64 finds that player. Up to 6 of each kind, the\nclosest first. Banned and deleted players are left out, and a\ntournament still being set up is only found by an admin.\n",
+        "summary": "Search players, teams, tournaments, played matches and what each game adds",
+        "description": "Public. `q` (2 to 100 characters) is matched fuzzily: every word has\nto match a word of the name (exactly, its start, inside it, or with a\ntypo), in any order, ignoring case and diacritics; a SteamID64 finds\nthat player. Up to 6 of each kind, the best match first. `modules` is\nwhat the installed games add (CS2: highlights, maps; for admins\nservers and recorders), up to 12. Banned and deleted players are left\nout, and a tournament still being set up is only found by an admin.\n",
         "parameters": [
           {
             "in": "query",
@@ -12869,7 +12873,7 @@
         ],
         "responses": {
           "200": {
-            "description": "`players`, `teams`, `tournaments`, `matches`"
+            "description": "`players`, `teams`, `tournaments`, `matches`, `modules`"
           }
         }
       }

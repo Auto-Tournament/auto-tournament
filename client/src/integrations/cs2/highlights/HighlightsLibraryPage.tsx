@@ -1,7 +1,7 @@
 /**
  * The highlights library (`/highlights`): every clip and reel, newest, most
- * viewed or most liked first. `?player=`, `?team=`, `?match=` and
- * `?tournament=` narrow it (the links from profiles, team and match pages),
+ * viewed or most liked first. `?player=`, `?team=`, `?match=`,
+ * `?tournament=` and `?map=` narrow it (the links from profiles, team and match pages),
  * and each video opens its own watch page.
  */
 
@@ -78,7 +78,7 @@ export function libraryWatchPath(i: LibraryItem): string {
 }
 
 const PAGE = 24;
-const FILTERS = ['player', 'team', 'match', 'tournament'] as const;
+const FILTERS = ['player', 'team', 'match', 'tournament', 'map'] as const;
 
 export function HighlightsLibraryPage() {
   const { t } = useModuleTranslation('cs2');
@@ -153,6 +153,8 @@ export function HighlightsLibraryPage() {
       return t('library.filter.match', {
         name: i && i.matchSlug === v && i.team1 && i.team2 ? `${i.team1} vs ${i.team2}` : v,
       });
+    if (f === 'map')
+      return t('library.filter.map', { name: items.find((x) => x.map === v)?.map ?? v });
     return t('library.filter.tournament', { name: i?.tournament ?? v });
   };
 

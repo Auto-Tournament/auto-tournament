@@ -46,6 +46,9 @@ import {
   TEAM_SIZE,
   type MatchmakingMode,
   type QueuedParty,
+  BOT_FILL_MODES,
+  findBotFillGroup,
+  splitBotFill,
 } from './rules';
 
 export class MatchmakingError extends Error {
@@ -72,6 +75,7 @@ interface EntryRow {
   queued_at: number;
   status: string;
   lobby_id: string | null;
+  bot_fill?: boolean | null;
 }
 
 interface LobbyRow {
@@ -80,6 +84,7 @@ interface LobbyRow {
   status: string;
   accept_deadline: number;
   cancel_reason: string | null;
+  bot_fill?: boolean | null;
 }
 
 interface LobbyPlayerRow {
@@ -114,7 +119,8 @@ export interface MatchmakingMe {
     mode: string;
     size: number;
   }>;
-  queue: { mode: string; queuedAt: number; status: string } | null;
+  /** botFill: the party asked for bots in the empty seats (an unrated game). */
+  queue: { mode: string; queuedAt: number; status: string; botFill: boolean } | null;
   /** Players searching right now, per mode (the Play page's "in the queue"). */
   queueCounts: Record<string, number>;
   lobby: {
@@ -579,9 +585,18 @@ export class MatchmakingService {
     return until && until > this.clock() ? until : null;
   }
 
-  startSearch(playerId: string, mode: unknown = '5v5'): Promise<EntryRow> {
+  /** `botFill`: bots take the seats nobody fills (2v2 / 5v5), and the game is unrated. */
+  startSearch(
+    playerId: string,
+    mode: unknown = '5v5',
+    options: { botFill?: unknown } = {}
+  ): Promise<EntryRow> {
     return this.locked(async () => {
       if (!isMode(mode)) throw new MatchmakingError(400, 'invalid_mode', 'Unknown mode');
+      const botFill = options.botFill === true;
+      if (botFill && !BOT_FILL_MODES.includes(mode)) {
+        throw new MatchmakingError(400, 'bot_fill_mode', `${mode} cannot be filled with bots`);
+      }
       if (!(await this.enabledModes()).includes(mode)) {
         throw new MatchmakingError(409, 'mode_off', `${mode} is not available on this site`);
       }
@@ -637,11 +652,12 @@ export class MatchmakingService {
         queued_at: this.clock(),
         status: 'searching',
         lobby_id: null,
+        bot_fill: botFill,
       };
       await db.runAsync('UPDATE mm_parties SET mode = ? WHERE id = ?', [mode, party.id]);
       await db.runAsync(
-        'INSERT INTO mm_queue_entries (id, party_id, mode, queued_at, status) VALUES (?, ?, ?, ?, ?)',
-        [entry.id, party.id, mode, entry.queued_at, 'searching']
+        'INSERT INTO mm_queue_entries (id, party_id, mode, queued_at, status, bot_fill) VALUES (?, ?, ?, ?, ?, ?)',
+        [entry.id, party.id, mode, entry.queued_at, 'searching', botFill]
       );
       await this.touchParty(party.id);
       return entry;
@@ -715,21 +731,30 @@ export class MatchmakingService {
         mus,
         rating: partyRating(mus),
         window: searchWindow(now - queuedAt, window),
+        botFill: e.bot_fill === true,
       });
     }
     return parties;
   }
 
   private async formLobby(mode: MatchmakingMode): Promise<string | null> {
-    const group = findGroup(await this.searchingParties(mode), TEAM_SIZE[mode]);
-    if (!group) return null;
-    const teams = splitTeams(group, TEAM_SIZE[mode]);
-    if (!teams) return null;
+    const queue = await this.searchingParties(mode);
+    // A full match first; parties that asked for bots get a bot-filled game
+    // only when none formed.
+    let group = findGroup(queue, TEAM_SIZE[mode]);
+    let teams = group ? splitTeams(group, TEAM_SIZE[mode]) : null;
+    let botFill = false;
+    if (!group && BOT_FILL_MODES.includes(mode)) {
+      group = findBotFillGroup(queue, TEAM_SIZE[mode]);
+      teams = group ? splitBotFill(group, TEAM_SIZE[mode]) : null;
+      botFill = true;
+    }
+    if (!group || !teams) return null;
     const lobbyId = randomUUID();
     const now = this.clock();
     await db.runAsync(
-      "INSERT INTO mm_lobbies (id, mode, status, accept_deadline, created_at) VALUES (?, ?, 'accepting', ?, ?)",
-      [lobbyId, mode, now + ACCEPT_SECONDS, now]
+      "INSERT INTO mm_lobbies (id, mode, status, accept_deadline, created_at, bot_fill) VALUES (?, ?, 'accepting', ?, ?, ?)",
+      [lobbyId, mode, now + ACCEPT_SECONDS, now, botFill]
     );
     for (const [index, team] of teams.entries()) {
       for (const party of team) {
@@ -747,7 +772,7 @@ export class MatchmakingService {
     }
     this.touch(...group.flatMap((p) => p.players));
     log.info(
-      `[MATCHMAKING] lobby ${lobbyId} (${mode}): ${group.length} parties, waiting for accepts`
+      `[MATCHMAKING] lobby ${lobbyId} (${mode}${botFill ? ', bot fill' : ''}): ${group.length} parties, waiting for accepts`
     );
     return lobbyId;
   }
@@ -858,6 +883,8 @@ export class MatchmakingService {
         .filter((p) => p.team === n)
         .map((p) => p.player_id)
         .sort();
+      // A bot-filled game can leave one side without a human.
+      if (roster.length === 0) return { name: 'Bots', players: {} };
       return {
         name: `Team ${names.get(roster[0]) ?? n}`,
         players: Object.fromEntries(roster.map((id) => [id, names.get(id) ?? id])),
@@ -883,6 +910,7 @@ export class MatchmakingService {
           // running tournament's MR6 (2026-10-12).
           maxRounds: MODE_MAX_ROUNDS[mode],
           ...matchmakingSides(mode),
+          ...(lobby.bot_fill ? { bot_fill: true } : {}),
         },
       },
       configuredPublicOrigin() ?? '',
@@ -1044,6 +1072,14 @@ export class MatchmakingService {
         'SELECT * FROM mm_lobby_players WHERE lobby_id = ?',
         [lobby.id]
       );
+      if (lobby.bot_fill) {
+        // Against bots: unrated, and no XP (it would be free to farm).
+        if (lobby.status === 'finished') return false;
+        await db.runAsync("UPDATE mm_lobbies SET status = 'finished' WHERE id = ?", [lobby.id]);
+        this.touch(...players.map((p) => p.player_id));
+        log.info(`[MATCHMAKING] ${matchSlug} finished (bot fill, unrated)`);
+        return true;
+      }
       const team1 = players
         .filter((p) => p.team === 1)
         .map((p) => p.player_id)
@@ -1230,7 +1266,12 @@ export class MatchmakingService {
       invites: await this.invitesTo(playerId),
       queueCounts: await this.queueCounts(),
       queue: entry
-        ? { mode: entry.mode, queuedAt: Number(entry.queued_at), status: entry.status }
+        ? {
+            mode: entry.mode,
+            queuedAt: Number(entry.queued_at),
+            status: entry.status,
+            botFill: entry.bot_fill === true,
+          }
         : null,
       lobby,
       cooldownUntil: await this.cooldownUntil(playerId),

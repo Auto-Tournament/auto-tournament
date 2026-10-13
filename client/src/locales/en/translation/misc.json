@@ -639,7 +639,9 @@
         "1v1": "Active Duty"
       },
       "searchAnyone": "Few players searching: you'll be matched with anyone available ({{count}} searching, {{total}} needed)",
-      "searchRating": "Finding a close match for your rating · {{count}} searching"
+      "searchRating": "Finding a close match for your rating · {{count}} searching",
+      "botFill": "Fill empty seats with bots",
+      "botFillUnrated": "Bots fill the empty seats · unrated: no rating, XP or drops"
     },
     "queue": {
       "searching": "Searching {{mode}}",
@@ -891,8 +893,8 @@
   },
   "search": {
     "open": "Search",
-    "placeholder": "Search players, teams, tournaments, matches…",
-    "placeholderAdmin": "Search players, teams, tournaments, matches and settings…",
+    "placeholder": "Search pages, players, teams, highlights…",
+    "placeholderAdmin": "Search pages, settings, players, teams, servers…",
     "hint": "Type at least two letters. Ctrl K (⌘ K) or / opens this from anywhere.",
     "none": "Nothing found for “{{q}}”.",
     "versus": "{{team1}} vs {{team2}}",
@@ -901,7 +903,11 @@
       "players": "Players",
       "teams": "Teams",
       "tournaments": "Tournaments",
-      "matches": "Matches"
+      "matches": "Matches",
+      "highlights": "Highlights",
+      "maps": "Maps",
+      "servers": "Servers and machines",
+      "recorders": "Recorders"
     },
     "status": {
       "setup": "Being set up",
@@ -934,7 +940,9 @@
       "settingsLicense": "License",
       "settingsMatchmaking": "Settings: matchmaking",
       "settingsAdvanced": "Settings: advanced"
-    }
+    },
+    "clips_one": "{{count}} clip",
+    "clips_other": "{{count}} clips"
   },
   "highlightsPage": {
     "title": "Highlights",

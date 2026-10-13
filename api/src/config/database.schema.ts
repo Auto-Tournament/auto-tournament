@@ -1086,7 +1086,8 @@ export function getSchemaSQL(): string {
       mode TEXT NOT NULL,
       queued_at INTEGER NOT NULL,
       status TEXT NOT NULL DEFAULT 'searching', -- 'searching' | 'found'
-      lobby_id TEXT
+      lobby_id TEXT,
+      bot_fill BOOLEAN NOT NULL DEFAULT FALSE -- bots take the empty seats (2v2 / 5v5); unrated
     );
 
     CREATE TABLE IF NOT EXISTS mm_lobbies (
@@ -1099,6 +1100,7 @@ export function getSchemaSQL(): string {
       map TEXT,
       map_pool TEXT, -- JSON [{ id, name, imageUrl }]: the maps the roulette shows, the chosen one among them
       match_slug TEXT,
+      bot_fill BOOLEAN NOT NULL DEFAULT FALSE, -- a bot-filled game: unrated, no XP or drops
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
