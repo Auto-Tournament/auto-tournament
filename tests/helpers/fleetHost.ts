@@ -30,7 +30,12 @@ export async function createPendingHost(
   const res = await request.post('/api/fleet/hosts', { data: { name } });
   expect(res.status(), await res.text()).toBe(201);
   const body = await res.json();
-  return { hostId: body.host.id, code: body.code, command: body.command, expiresAt: body.expiresAt };
+  return {
+    hostId: body.host.id,
+    code: body.code,
+    command: body.command,
+    expiresAt: body.expiresAt,
+  };
 }
 
 export interface EnrolledHost {
@@ -43,17 +48,27 @@ export interface EnrolledHost {
 
 export async function enrollHost(
   request: APIRequestContext,
-  credential: { code?: string; key?: string },
+  credential: { code?: string; key?: string; csm_user?: string },
   machineId: string,
   path = '/api/fleet/enroll'
 ): Promise<{ status: number; body: EnrolledHost & { code?: string; error?: string } }> {
   const res = await request.post(path, {
-    data: { kind: 'host', ...credential, machine_id: machineId, hostname: 'csm-box', os: 'Ubuntu 24.04', csm_version: '2.0.0' },
+    data: {
+      kind: 'host',
+      ...credential,
+      machine_id: machineId,
+      hostname: 'csm-box',
+      os: 'Ubuntu 24.04',
+      csm_version: '2.0.0',
+    },
   });
   return { status: res.status(), body: await res.json() };
 }
 
-export function inventoryServer(name: string, over: Partial<HostInventoryServer> = {}): HostInventoryServer {
+export function inventoryServer(
+  name: string,
+  over: Partial<HostInventoryServer> = {}
+): HostInventoryServer {
   const n = Number(name.replace(/\D/g, '')) || 1;
   return {
     name,
@@ -74,7 +89,13 @@ export function inventory(hostId: string, servers: HostInventoryServer[]): HostI
     hostname: 'csm-box',
     csm_version: '2.0.0',
     os: 'Ubuntu 24.04',
-    resources: { cpus: 16, load1: 0.42, ram_mb: 65536, ram_free_mb: 40000, disk: [{ mount: '/', total_gb: 1000, free_gb: 600 }] },
+    resources: {
+      cpus: 16,
+      load1: 0.42,
+      ram_mb: 65536,
+      ram_free_mb: 40000,
+      disk: [{ mount: '/', total_gb: 1000, free_gb: 600 }],
+    },
     cs2: { master_build: 14032, update_available: false, updates_hold: 'auto' },
     servers,
   };
