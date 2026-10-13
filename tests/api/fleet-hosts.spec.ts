@@ -124,6 +124,35 @@ test.describe.serial('Fleet hosts (csm)', () => {
     expect(await wrong.waitClosed()).toMatchObject({ code: 4401 });
   });
 
+  test("two csm users on one machine are two hosts; an older csm keeps the machine's", async ({
+    request,
+  }) => {
+    const key = await createFleetKey(request, { name: 'csm-users' });
+    const machine = newMachineId();
+    // An older csm (no user) enrolls the machine first.
+    const old = await enrollHost(request, { key: key.value }, machine);
+    expect(old.status, JSON.stringify(old.body)).toBe(201);
+    // The same csm, now sending its user, keeps that host (and claims it).
+    const first = await enrollHost(
+      request,
+      { key: key.value, csm_user: 'cs2servermanager' },
+      machine
+    );
+    expect(first.body.host_id).toBe(old.body.host_id);
+    // A second user on the same machine is a second host, not a takeover of the first.
+    const second = await enrollHost(request, { key: key.value, csm_user: 'cs2test' }, machine);
+    expect(second.status, JSON.stringify(second.body)).toBe(201);
+    expect(second.body.host_id).not.toBe(first.body.host_id);
+    // Each user enrolling again gets its own host back.
+    expect(
+      (await enrollHost(request, { key: key.value, csm_user: 'cs2test' }, machine)).body.host_id
+    ).toBe(second.body.host_id);
+    expect(
+      (await enrollHost(request, { key: key.value, csm_user: 'cs2servermanager' }, machine)).body
+        .host_id
+    ).toBe(first.body.host_id);
+  });
+
   test('hello → welcome; online with inventory; offline after close', async ({ request }) => {
     const m = await linkMachine(request);
     const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);

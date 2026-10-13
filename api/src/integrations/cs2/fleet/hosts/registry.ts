@@ -25,7 +25,13 @@ import {
   ulid,
   verifySecret,
 } from '../credentials';
-import { CODE_TTL_S, FLEET_TENANT, KEY_LOCK_AFTER_FAILURES, OLD_TOKEN_GRACE_S, TOKEN_ROTATE_AFTER_S } from '../registry';
+import {
+  CODE_TTL_S,
+  FLEET_TENANT,
+  KEY_LOCK_AFTER_FAILURES,
+  OLD_TOKEN_GRACE_S,
+  TOKEN_ROTATE_AFTER_S,
+} from '../registry';
 import type { FleetKeyRow } from '../registry';
 import type { Envelope } from '../protocol/v1';
 import type {
@@ -47,6 +53,8 @@ export interface FleetHostRow {
   id: string;
   tenant_id: string;
   machine_id: string | null;
+  /** The Unix user csm runs as (one machine, several csm users = several hosts); null before csm sent it. */
+  csm_user: string | null;
   name: string;
   status: FleetHostStatus;
   enrolled_via: 'code' | 'key' | null;
@@ -146,7 +154,11 @@ export interface FleetHostView {
   codeExpiresAt: number | null;
 }
 
-function toView(h: FleetHostRow, tokens: FleetHostTokenRow[], codeExpiresAt: number | null): FleetHostView {
+function toView(
+  h: FleetHostRow,
+  tokens: FleetHostTokenRow[],
+  codeExpiresAt: number | null
+): FleetHostView {
   const now = nowS();
   const live = tokens.filter((t) => t.expires_at === null || t.expires_at > now);
   const newest = live[0] ?? null;
@@ -179,7 +191,8 @@ function toView(h: FleetHostRow, tokens: FleetHostTokenRow[], codeExpiresAt: num
         }
       : null,
     rotateRequested: h.rotate_requested_at !== null,
-    codeExpiresAt: h.status === 'pending' && codeExpiresAt && codeExpiresAt > now ? codeExpiresAt : null,
+    codeExpiresAt:
+      h.status === 'pending' && codeExpiresAt && codeExpiresAt > now ? codeExpiresAt : null,
   };
 }
 
@@ -199,7 +212,13 @@ export async function listHosts(): Promise<FleetHostView[]> {
     [FLEET_TENANT]
   );
   const codeBy = new Map(codes.map((c) => [c.host_id, Number(c.expires_at)]));
-  return hosts.map((h) => toView(h, tokens.filter((t) => t.host_id === h.id), codeBy.get(h.id) ?? null));
+  return hosts.map((h) =>
+    toView(
+      h,
+      tokens.filter((t) => t.host_id === h.id),
+      codeBy.get(h.id) ?? null
+    )
+  );
 }
 
 export async function getHostView(id: string): Promise<FleetHostView | null> {
@@ -207,10 +226,10 @@ export async function getHostView(id: string): Promise<FleetHostView | null> {
 }
 
 export async function getHost(id: string): Promise<FleetHostRow | undefined> {
-  return db.queryOneAsync<FleetHostRow>('SELECT * FROM cs2_fleet_hosts WHERE id = ? AND tenant_id = ?', [
-    id,
-    FLEET_TENANT,
-  ]);
+  return db.queryOneAsync<FleetHostRow>(
+    'SELECT * FROM cs2_fleet_hosts WHERE id = ? AND tenant_id = ?',
+    [id, FLEET_TENANT]
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -236,16 +255,17 @@ async function insertCode(c: PoolClient, hostId: string, createdBy: string | nul
 }
 
 /** A pending machine and a one-time code for `csm link <url> <code>` (FLEET.md §18.1). */
-export async function createPendingHost(input: { name?: string; createdBy: string | null }): Promise<CreatedPendingHost> {
+export async function createPendingHost(input: {
+  name?: string;
+  createdBy: string | null;
+}): Promise<CreatedPendingHost> {
   const id = newHostId();
   const name = input.name?.trim() || `Machine ${id.slice(-6)}`;
   const issued = await tx(async (c) => {
-    await c.query(`INSERT INTO cs2_fleet_hosts (id, tenant_id, name, status, created_by) VALUES ($1, $2, $3, 'pending', $4)`, [
-      id,
-      FLEET_TENANT,
-      name,
-      input.createdBy,
-    ]);
+    await c.query(
+      `INSERT INTO cs2_fleet_hosts (id, tenant_id, name, status, created_by) VALUES ($1, $2, $3, 'pending', $4)`,
+      [id, FLEET_TENANT, name, input.createdBy]
+    );
     return insertCode(c, id, input.createdBy);
   });
   const host = await getHostView(id);
@@ -260,7 +280,10 @@ export async function reissueHostCode(
   const host = await getHost(hostId);
   if (!host || host.status !== 'pending') return null;
   return tx(async (c) => {
-    await c.query(`DELETE FROM cs2_fleet_host_enrollment_codes WHERE host_id = $1 AND used_at IS NULL`, [hostId]);
+    await c.query(
+      `DELETE FROM cs2_fleet_host_enrollment_codes WHERE host_id = $1 AND used_at IS NULL`,
+      [hostId]
+    );
     return insertCode(c, hostId, createdBy);
   });
 }
@@ -282,23 +305,43 @@ const invalid = (code: string, error: string, status: 401 | 403 = 401): HostEnro
 
 async function issueTokenFor(c: PoolClient, hostId: string): Promise<string> {
   const now = nowS();
-  await c.query(`UPDATE cs2_fleet_host_tokens SET revoked_at = $1 WHERE host_id = $2 AND revoked_at IS NULL`, [now, hostId]);
+  await c.query(
+    `UPDATE cs2_fleet_host_tokens SET revoked_at = $1 WHERE host_id = $2 AND revoked_at IS NULL`,
+    [now, hostId]
+  );
   const issued = issueHostToken();
-  await c.query(`INSERT INTO cs2_fleet_host_tokens (id, tenant_id, host_id, secret_hash, created_at) VALUES ($1, $2, $3, $4, $5)`, [
-    issued.id,
-    FLEET_TENANT,
-    hostId,
-    issued.hash,
-    now,
-  ]);
+  await c.query(
+    `INSERT INTO cs2_fleet_host_tokens (id, tenant_id, host_id, secret_hash, created_at) VALUES ($1, $2, $3, $4, $5)`,
+    [issued.id, FLEET_TENANT, hostId, issued.hash, now]
+  );
   return issued.value;
 }
 
-async function findByMachine(c: PoolClient, machineId: string): Promise<FleetHostRow | undefined> {
-  const r = await c.query<FleetHostRow>(`SELECT * FROM cs2_fleet_hosts WHERE tenant_id = $1 AND machine_id = $2 FOR UPDATE`, [
-    FLEET_TENANT,
-    machineId,
-  ]);
+/**
+ * The host for this machine and csm user. One machine can run csm for more
+ * than one Unix user, each its own host. A row from before csm sent its user
+ * (csm_user NULL) is this user's until claimed; a csm that sends no user
+ * (older csm) gets the machine's row as before.
+ */
+async function findByMachine(
+  c: PoolClient,
+  machineId: string,
+  csmUser: string | undefined
+): Promise<FleetHostRow | undefined> {
+  if (!csmUser) {
+    const r = await c.query<FleetHostRow>(
+      `SELECT * FROM cs2_fleet_hosts WHERE tenant_id = $1 AND machine_id = $2
+        ORDER BY (csm_user IS NULL) DESC, created_at LIMIT 1 FOR UPDATE`,
+      [FLEET_TENANT, machineId]
+    );
+    return r.rows[0];
+  }
+  const r = await c.query<FleetHostRow>(
+    `SELECT * FROM cs2_fleet_hosts WHERE tenant_id = $1 AND machine_id = $2
+        AND (csm_user = $3 OR csm_user IS NULL)
+      ORDER BY (csm_user IS NULL), created_at LIMIT 1 FOR UPDATE`,
+    [FLEET_TENANT, machineId, csmUser]
+  );
   return r.rows[0];
 }
 
@@ -313,7 +356,12 @@ async function enrollWithCode(req: HostEnrollRequest): Promise<HostEnrollOutcome
   if (!hash) return invalid('invalid_code', 'Invalid or expired enrollment code');
   const now = nowS();
   return tx(async (c) => {
-    const found = await c.query<{ id: string; host_id: string; expires_at: number; used_at: number | null }>(
+    const found = await c.query<{
+      id: string;
+      host_id: string;
+      expires_at: number;
+      used_at: number | null;
+    }>(
       `SELECT id, host_id, expires_at, used_at FROM cs2_fleet_host_enrollment_codes WHERE code_hash = $1 AND tenant_id = $2 FOR UPDATE`,
       [hash, FLEET_TENANT]
     );
@@ -321,15 +369,20 @@ async function enrollWithCode(req: HostEnrollRequest): Promise<HostEnrollOutcome
     if (!code || code.used_at !== null || Number(code.expires_at) <= now) {
       return invalid('invalid_code', 'Invalid or expired enrollment code');
     }
-    await c.query(`UPDATE cs2_fleet_host_enrollment_codes SET used_at = $1 WHERE id = $2`, [now, code.id]);
-    const existing = await findByMachine(c, req.machine_id);
+    await c.query(`UPDATE cs2_fleet_host_enrollment_codes SET used_at = $1 WHERE id = $2`, [
+      now,
+      code.id,
+    ]);
+    const existing = await findByMachine(c, req.machine_id, req.csm_user);
     let hostId: string;
     let reenrolled = false;
     if (existing && existing.id !== code.host_id) {
       // This machine already has a record: keep it (and its servers), drop the placeholder.
       hostId = existing.id;
       reenrolled = true;
-      await c.query(`DELETE FROM cs2_fleet_hosts WHERE id = $1 AND status = 'pending'`, [code.host_id]);
+      await c.query(`DELETE FROM cs2_fleet_hosts WHERE id = $1 AND status = 'pending'`, [
+        code.host_id,
+      ]);
     } else {
       hostId = code.host_id;
       reenrolled = !!existing;
@@ -337,12 +390,23 @@ async function enrollWithCode(req: HostEnrollRequest): Promise<HostEnrollOutcome
     await c.query(
       `UPDATE cs2_fleet_hosts
           SET machine_id = $2, status = 'enrolled', enrolled_via = COALESCE(enrolled_via, 'code'),
-              hostname = $3, os = $4, csm_version = $5, rotate_requested_at = NULL, updated_at = $6
+              hostname = $3, os = $4, csm_version = $5, rotate_requested_at = NULL, updated_at = $6,
+              csm_user = COALESCE($7, csm_user)
         WHERE id = $1`,
-      [hostId, req.machine_id, req.hostname, req.os ?? null, req.csm_version ?? null, now]
+      [
+        hostId,
+        req.machine_id,
+        req.hostname,
+        req.os ?? null,
+        req.csm_version ?? null,
+        now,
+        req.csm_user ?? null,
+      ]
     );
     const token = await issueTokenFor(c, hostId);
-    const host = (await c.query<FleetHostRow>(`SELECT * FROM cs2_fleet_hosts WHERE id = $1`, [hostId])).rows[0];
+    const host = (
+      await c.query<FleetHostRow>(`SELECT * FROM cs2_fleet_hosts WHERE id = $1`, [hostId])
+    ).rows[0];
     return { ok: true as const, host, token, reenrolled };
   });
 }
@@ -356,7 +420,12 @@ async function enrollWithKey(req: HostEnrollRequest): Promise<HostEnrollOutcome>
     [parsed.id, FLEET_TENANT]
   );
   if (!key) return invalid('invalid_key', 'Invalid fleet enrollment key');
-  if (key.locked_at !== null) return invalid('key_locked', 'This fleet key is locked after repeated failures; create a new one', 403);
+  if (key.locked_at !== null)
+    return invalid(
+      'key_locked',
+      'This fleet key is locked after repeated failures; create a new one',
+      403
+    );
   if (!verifySecret(parsed, key.secret_hash)) {
     await db.runAsync(
       `UPDATE cs2_fleet_enrollment_keys
@@ -367,35 +436,57 @@ async function enrollWithKey(req: HostEnrollRequest): Promise<HostEnrollOutcome>
     );
     return invalid('invalid_key', 'Invalid fleet enrollment key');
   }
-  if (key.revoked_at !== null) return invalid('key_revoked', 'This fleet key has been revoked', 403);
-  if (key.expires_at !== null && key.expires_at <= now) return invalid('key_expired', 'This fleet key has expired', 403);
+  if (key.revoked_at !== null)
+    return invalid('key_revoked', 'This fleet key has been revoked', 403);
+  if (key.expires_at !== null && key.expires_at <= now)
+    return invalid('key_expired', 'This fleet key has expired', 403);
   // A key the platform minted for one machine's server.create enrolls servers, not machines.
   if (key.host_id) return invalid('key_scope', 'This fleet key only enrolls servers', 403);
 
   return tx(async (c) => {
-    const existing = await findByMachine(c, req.machine_id);
+    const existing = await findByMachine(c, req.machine_id, req.csm_user);
     let hostId: string;
     if (existing) {
       if (existing.status === 'revoked') {
-        return invalid('host_revoked', 'This machine was revoked on the platform. An admin must remove it before it can enroll again.', 403);
+        return invalid(
+          'host_revoked',
+          'This machine was revoked on the platform. An admin must remove it before it can enroll again.',
+          403
+        );
       }
       hostId = existing.id;
       await c.query(
         `UPDATE cs2_fleet_hosts SET status = 'enrolled', hostname = $2, os = $3, csm_version = $4,
-                rotate_requested_at = NULL, updated_at = $5 WHERE id = $1`,
-        [hostId, req.hostname, req.os ?? null, req.csm_version ?? null, now]
+                rotate_requested_at = NULL, updated_at = $5, csm_user = COALESCE($6, csm_user) WHERE id = $1`,
+        [hostId, req.hostname, req.os ?? null, req.csm_version ?? null, now, req.csm_user ?? null]
       );
     } else {
       hostId = newHostId();
       await c.query(
-        `INSERT INTO cs2_fleet_hosts (id, tenant_id, machine_id, name, status, enrolled_via, enrollment_key_id, hostname, os, csm_version, created_by)
-         VALUES ($1, $2, $3, $4, 'enrolled', 'key', $5, $6, $7, $8, $9)`,
-        [hostId, FLEET_TENANT, req.machine_id, req.hostname.slice(0, 120), key.id, req.hostname, req.os ?? null, req.csm_version ?? null, `fleet-key:${key.id}`]
+        `INSERT INTO cs2_fleet_hosts (id, tenant_id, machine_id, name, status, enrolled_via, enrollment_key_id, hostname, os, csm_version, created_by, csm_user)
+         VALUES ($1, $2, $3, $4, 'enrolled', 'key', $5, $6, $7, $8, $9, $10)`,
+        [
+          hostId,
+          FLEET_TENANT,
+          req.machine_id,
+          (req.csm_user ? `${req.hostname} (${req.csm_user})` : req.hostname).slice(0, 120),
+          key.id,
+          req.hostname,
+          req.os ?? null,
+          req.csm_version ?? null,
+          `fleet-key:${key.id}`,
+          req.csm_user ?? null,
+        ]
       );
     }
-    await c.query(`UPDATE cs2_fleet_enrollment_keys SET last_used_at = $1, failed_attempts = 0 WHERE id = $2`, [now, key.id]);
+    await c.query(
+      `UPDATE cs2_fleet_enrollment_keys SET last_used_at = $1, failed_attempts = 0 WHERE id = $2`,
+      [now, key.id]
+    );
     const token = await issueTokenFor(c, hostId);
-    const host = (await c.query<FleetHostRow>(`SELECT * FROM cs2_fleet_hosts WHERE id = $1`, [hostId])).rows[0];
+    const host = (
+      await c.query<FleetHostRow>(`SELECT * FROM cs2_fleet_hosts WHERE id = $1`, [hostId])
+    ).rows[0];
     return { ok: true as const, host, token, reenrolled: !!existing };
   });
 }
@@ -404,19 +495,22 @@ async function enrollWithKey(req: HostEnrollRequest): Promise<HostEnrollOutcome>
 // Tokens: verify, revoke, rotate
 // ---------------------------------------------------------------------------
 
-export type HostTokenCheck = { ok: true; host: FleetHostRow; token: FleetHostTokenRow } | { ok: false; reason: 'bad' | 'revoked' };
+export type HostTokenCheck =
+  | { ok: true; host: FleetHostRow; token: FleetHostTokenRow }
+  | { ok: false; reason: 'bad' | 'revoked' };
 
 /** Check an `rhs_…` token for the host WS upgrade. */
 export async function verifyHostToken(value: unknown): Promise<HostTokenCheck> {
   const parsed = parseHostToken(value);
   if (!parsed) return { ok: false, reason: 'bad' };
-  const token = await db.queryOneAsync<FleetHostTokenRow>('SELECT * FROM cs2_fleet_host_tokens WHERE id = ? AND tenant_id = ?', [
-    parsed.id,
-    FLEET_TENANT,
-  ]);
+  const token = await db.queryOneAsync<FleetHostTokenRow>(
+    'SELECT * FROM cs2_fleet_host_tokens WHERE id = ? AND tenant_id = ?',
+    [parsed.id, FLEET_TENANT]
+  );
   if (!token || !verifySecret(parsed, token.secret_hash)) return { ok: false, reason: 'bad' };
   const now = nowS();
-  if (token.revoked_at !== null || (token.expires_at !== null && token.expires_at <= now)) return { ok: false, reason: 'revoked' };
+  if (token.revoked_at !== null || (token.expires_at !== null && token.expires_at <= now))
+    return { ok: false, reason: 'revoked' };
   const host = await getHost(token.host_id);
   if (!host || host.status !== 'enrolled') return { ok: false, reason: 'revoked' };
   await db.runAsync(
@@ -436,33 +530,45 @@ export async function verifyHostToken(value: unknown): Promise<HostTokenCheck> {
 export async function revokeHost(id: string): Promise<boolean> {
   const now = nowS();
   return tx(async (c) => {
-    const r = await c.query(`UPDATE cs2_fleet_hosts SET status = 'revoked', online = 0, updated_at = $2 WHERE id = $1 AND tenant_id = $3`, [
-      id,
-      now,
-      FLEET_TENANT,
-    ]);
+    const r = await c.query(
+      `UPDATE cs2_fleet_hosts SET status = 'revoked', online = 0, updated_at = $2 WHERE id = $1 AND tenant_id = $3`,
+      [id, now, FLEET_TENANT]
+    );
     if ((r.rowCount ?? 0) === 0) return false;
-    await c.query(`UPDATE cs2_fleet_host_tokens SET revoked_at = $1 WHERE host_id = $2 AND revoked_at IS NULL`, [now, id]);
-    await c.query(`DELETE FROM cs2_fleet_host_enrollment_codes WHERE host_id = $1 AND used_at IS NULL`, [id]);
-    await c.query(`UPDATE cs2_fleet_enrollment_keys SET revoked_at = $1 WHERE host_id = $2 AND revoked_at IS NULL`, [now, id]);
+    await c.query(
+      `UPDATE cs2_fleet_host_tokens SET revoked_at = $1 WHERE host_id = $2 AND revoked_at IS NULL`,
+      [now, id]
+    );
+    await c.query(
+      `DELETE FROM cs2_fleet_host_enrollment_codes WHERE host_id = $1 AND used_at IS NULL`,
+      [id]
+    );
+    await c.query(
+      `UPDATE cs2_fleet_enrollment_keys SET revoked_at = $1 WHERE host_id = $2 AND revoked_at IS NULL`,
+      [now, id]
+    );
     return true;
   });
 }
 
 export async function renameHost(id: string, name: string): Promise<boolean> {
-  const r = await db.runAsync('UPDATE cs2_fleet_hosts SET name = ?, updated_at = ? WHERE id = ? AND tenant_id = ?', [
-    name,
-    nowS(),
-    id,
-    FLEET_TENANT,
-  ]);
+  const r = await db.runAsync(
+    'UPDATE cs2_fleet_hosts SET name = ?, updated_at = ? WHERE id = ? AND tenant_id = ?',
+    [name, nowS(), id, FLEET_TENANT]
+  );
   return r.changes > 0;
 }
 
 export async function deleteHost(id: string): Promise<boolean> {
   return tx(async (c) => {
-    await c.query(`UPDATE cs2_fleet_enrollment_keys SET revoked_at = $1 WHERE host_id = $2 AND revoked_at IS NULL`, [nowS(), id]);
-    const r = await c.query('DELETE FROM cs2_fleet_hosts WHERE id = $1 AND tenant_id = $2', [id, FLEET_TENANT]);
+    await c.query(
+      `UPDATE cs2_fleet_enrollment_keys SET revoked_at = $1 WHERE host_id = $2 AND revoked_at IS NULL`,
+      [nowS(), id]
+    );
+    const r = await c.query('DELETE FROM cs2_fleet_hosts WHERE id = $1 AND tenant_id = $2', [
+      id,
+      FLEET_TENANT,
+    ]);
     return (r.rowCount ?? 0) > 0;
   });
 }
@@ -504,11 +610,18 @@ export async function beginHostRotation(
     await c.query(`UPDATE cs2_fleet_hosts SET rotate_requested_at = NULL WHERE id = $1`, [hostId]);
     if (newest.rotated_from && newest.activated_at === null) {
       const old = live.rows.find((t) => t.id === newest.rotated_from);
-      return { tokenId: newest.id, oldValidUntil: (old?.expires_at ?? now + OLD_TOKEN_GRACE_S) * 1000, alreadyPending: true };
+      return {
+        tokenId: newest.id,
+        oldValidUntil: (old?.expires_at ?? now + OLD_TOKEN_GRACE_S) * 1000,
+        alreadyPending: true,
+      };
     }
     const oldValidUntil = now + OLD_TOKEN_GRACE_S;
     const issued = issueHostToken();
-    await c.query(`UPDATE cs2_fleet_host_tokens SET expires_at = $1 WHERE id = $2`, [oldValidUntil, newest.id]);
+    await c.query(`UPDATE cs2_fleet_host_tokens SET expires_at = $1 WHERE id = $2`, [
+      oldValidUntil,
+      newest.id,
+    ]);
     await c.query(
       `INSERT INTO cs2_fleet_host_tokens (id, tenant_id, host_id, secret_hash, created_at, rotated_from) VALUES ($1, $2, $3, $4, $5, $6)`,
       [issued.id, FLEET_TENANT, hostId, '', now, newest.id]
@@ -581,7 +694,14 @@ export async function markAllHostsOffline(): Promise<void> {
 export async function markHostConnected(
   hostId: string,
   sessionId: string,
-  hello: { hostname: string; os?: string; csm_version: string; capabilities?: string[]; protocol: number; boot_id: string }
+  hello: {
+    hostname: string;
+    os?: string;
+    csm_version: string;
+    capabilities?: string[];
+    protocol: number;
+    boot_id: string;
+  }
 ): Promise<void> {
   const now = nowS();
   await db.runAsync(
@@ -610,11 +730,10 @@ export async function markHostSeen(hostId: string): Promise<void> {
 }
 
 export async function markHostDisconnected(hostId: string, sessionId: string): Promise<void> {
-  await db.runAsync(`UPDATE cs2_fleet_hosts SET online = 0, session_id = NULL, last_seen = ? WHERE id = ? AND session_id = ?`, [
-    nowS(),
-    hostId,
-    sessionId,
-  ]);
+  await db.runAsync(
+    `UPDATE cs2_fleet_hosts SET online = 0, session_id = NULL, last_seen = ? WHERE id = ? AND session_id = ?`,
+    [nowS(), hostId, sessionId]
+  );
 }
 
 export interface HostStreamState {
@@ -625,10 +744,9 @@ export interface HostStreamState {
 }
 
 export async function getHostStreamState(hostId: string): Promise<HostStreamState> {
-  const row = await db.queryOneAsync<Pick<FleetHostRow, 'rx_stream_id' | 'rx_seq' | 'tx_seq' | 'tx_acked'>>(
-    'SELECT rx_stream_id, rx_seq, tx_seq, tx_acked FROM cs2_fleet_hosts WHERE id = ?',
-    [hostId]
-  );
+  const row = await db.queryOneAsync<
+    Pick<FleetHostRow, 'rx_stream_id' | 'rx_seq' | 'tx_seq' | 'tx_acked'>
+  >('SELECT rx_stream_id, rx_seq, tx_seq, tx_acked FROM cs2_fleet_hosts WHERE id = ?', [hostId]);
   return {
     rxStreamId: row?.rx_stream_id ?? null,
     rxSeq: Number(row?.rx_seq ?? 0),
@@ -637,16 +755,32 @@ export async function getHostStreamState(hostId: string): Promise<HostStreamStat
   };
 }
 
-export async function setHostRxState(hostId: string, streamId: string, rxSeq: number, c?: PoolClient): Promise<void> {
+export async function setHostRxState(
+  hostId: string,
+  streamId: string,
+  rxSeq: number,
+  c?: PoolClient
+): Promise<void> {
   if (c) {
-    await c.query('UPDATE cs2_fleet_hosts SET rx_stream_id = $1, rx_seq = $2 WHERE id = $3', [streamId, rxSeq, hostId]);
+    await c.query('UPDATE cs2_fleet_hosts SET rx_stream_id = $1, rx_seq = $2 WHERE id = $3', [
+      streamId,
+      rxSeq,
+      hostId,
+    ]);
     return;
   }
-  await db.runAsync('UPDATE cs2_fleet_hosts SET rx_stream_id = ?, rx_seq = ? WHERE id = ?', [streamId, rxSeq, hostId]);
+  await db.runAsync('UPDATE cs2_fleet_hosts SET rx_stream_id = ?, rx_seq = ? WHERE id = ?', [
+    streamId,
+    rxSeq,
+    hostId,
+  ]);
 }
 
 export async function ensureHostTxSeqAtLeast(hostId: string, seq: number): Promise<void> {
-  await db.runAsync('UPDATE cs2_fleet_hosts SET tx_seq = GREATEST(tx_seq, ?) WHERE id = ?', [seq, hostId]);
+  await db.runAsync('UPDATE cs2_fleet_hosts SET tx_seq = GREATEST(tx_seq, ?) WHERE id = ?', [
+    seq,
+    hostId,
+  ]);
 }
 
 export async function appendHostOutbox(
@@ -654,7 +788,10 @@ export async function appendHostOutbox(
   message: { id?: string; type: string; payload: Record<string, unknown> }
 ): Promise<Envelope> {
   return tx(async (c) => {
-    const r = await c.query<{ tx_seq: number }>(`UPDATE cs2_fleet_hosts SET tx_seq = tx_seq + 1 WHERE id = $1 RETURNING tx_seq`, [hostId]);
+    const r = await c.query<{ tx_seq: number }>(
+      `UPDATE cs2_fleet_hosts SET tx_seq = tx_seq + 1 WHERE id = $1 RETURNING tx_seq`,
+      [hostId]
+    );
     const seq = r.rows[0]?.tx_seq;
     if (!seq) throw new Error(`fleet: unknown host ${hostId}`);
     const envelope: Envelope = {
@@ -665,13 +802,14 @@ export async function appendHostOutbox(
       ts: Date.now(),
       payload: message.payload,
     };
-    await c.query(`INSERT INTO cs2_fleet_host_outbox (host_id, seq, type, message) VALUES ($1, $2, $3, $4)`, [
-      hostId,
+    await c.query(
+      `INSERT INTO cs2_fleet_host_outbox (host_id, seq, type, message) VALUES ($1, $2, $3, $4)`,
+      [hostId, envelope.seq, envelope.type, JSON.stringify(envelope)]
+    );
+    await c.query(`UPDATE cs2_fleet_host_commands SET seq = $1 WHERE message_id = $2`, [
       envelope.seq,
-      envelope.type,
-      JSON.stringify(envelope),
+      envelope.id,
     ]);
-    await c.query(`UPDATE cs2_fleet_host_commands SET seq = $1 WHERE message_id = $2`, [envelope.seq, envelope.id]);
     return envelope;
   });
 }
@@ -689,7 +827,10 @@ export async function appendHostOutbox(
 export async function rebaseHostTx(hostId: string, lastRx: number): Promise<number> {
   return tx(async (c) => {
     const rows = (
-      await c.query<{ message: string }>('SELECT message FROM cs2_fleet_host_outbox WHERE host_id = $1 ORDER BY seq ASC', [hostId])
+      await c.query<{ message: string }>(
+        'SELECT message FROM cs2_fleet_host_outbox WHERE host_id = $1 ORDER BY seq ASC',
+        [hostId]
+      )
     ).rows;
     await c.query('DELETE FROM cs2_fleet_host_outbox WHERE host_id = $1', [hostId]);
     let seq = lastRx;
@@ -697,15 +838,20 @@ export async function rebaseHostTx(hostId: string, lastRx: number): Promise<numb
       seq += 1;
       const envelope = JSON.parse(row.message) as Envelope;
       envelope.seq = seq;
-      await c.query(`INSERT INTO cs2_fleet_host_outbox (host_id, seq, type, message) VALUES ($1, $2, $3, $4)`, [
-        hostId,
+      await c.query(
+        `INSERT INTO cs2_fleet_host_outbox (host_id, seq, type, message) VALUES ($1, $2, $3, $4)`,
+        [hostId, seq, envelope.type, JSON.stringify(envelope)]
+      );
+      await c.query(`UPDATE cs2_fleet_host_commands SET seq = $1 WHERE message_id = $2`, [
         seq,
-        envelope.type,
-        JSON.stringify(envelope),
+        envelope.id,
       ]);
-      await c.query(`UPDATE cs2_fleet_host_commands SET seq = $1 WHERE message_id = $2`, [seq, envelope.id]);
     }
-    await c.query('UPDATE cs2_fleet_hosts SET tx_seq = $2, tx_acked = $3 WHERE id = $1', [hostId, seq, lastRx]);
+    await c.query('UPDATE cs2_fleet_hosts SET tx_seq = $2, tx_acked = $3 WHERE id = $1', [
+      hostId,
+      seq,
+      lastRx,
+    ]);
     return rows.length;
   });
 }
@@ -720,8 +866,14 @@ export async function pendingHostOutbox(hostId: string, afterSeq: number): Promi
 
 export async function ackHostOutbox(hostId: string, ack: number): Promise<void> {
   await tx(async (c) => {
-    await c.query(`DELETE FROM cs2_fleet_host_outbox WHERE host_id = $1 AND seq <= $2`, [hostId, ack]);
-    await c.query(`UPDATE cs2_fleet_hosts SET tx_acked = GREATEST(tx_acked, $2) WHERE id = $1`, [hostId, ack]);
+    await c.query(`DELETE FROM cs2_fleet_host_outbox WHERE host_id = $1 AND seq <= $2`, [
+      hostId,
+      ack,
+    ]);
+    await c.query(`UPDATE cs2_fleet_hosts SET tx_acked = GREATEST(tx_acked, $2) WHERE id = $1`, [
+      hostId,
+      ack,
+    ]);
   });
 }
 
@@ -729,7 +881,11 @@ export async function ackHostOutbox(hostId: string, ack: number): Promise<void> 
 // Host → platform messages (applied inside the caller's transaction)
 // ---------------------------------------------------------------------------
 
-export async function applyInventory(c: PoolClient, hostId: string, payload: HostInventoryPayload): Promise<void> {
+export async function applyInventory(
+  c: PoolClient,
+  hostId: string,
+  payload: HostInventoryPayload
+): Promise<void> {
   await c.query(
     `UPDATE cs2_fleet_hosts SET inventory = $1, inventory_at = $2, hostname = $3, csm_version = $4, os = $5, last_seen = $2 WHERE id = $6`,
     [JSON.stringify(payload), nowS(), payload.hostname, payload.csm_version, payload.os, hostId]
@@ -747,7 +903,15 @@ export async function applyHealth(
   const r = await c.query(
     `INSERT INTO cs2_fleet_host_events (host_id, stream_id, seq, server, event, exit_code, detail)
      VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING`,
-    [hostId, streamId, seq, payload.server, payload.event, payload.exit_code ?? null, payload.detail ?? null]
+    [
+      hostId,
+      streamId,
+      seq,
+      payload.server,
+      payload.event,
+      payload.exit_code ?? null,
+      payload.detail ?? null,
+    ]
   );
   return (r.rowCount ?? 0) > 0;
 }
@@ -763,12 +927,24 @@ export async function applyResult(
         SET status = $1, error_code = $2, error_message = $3, output = $4, answered_at = $5,
             progress_pct = CASE WHEN $1 = 'ok' THEN 100 ELSE progress_pct END
       WHERE message_id = $6 AND host_id = $7 RETURNING *`,
-    [payload.status, payload.error?.code ?? null, payload.error?.message ?? null, payload.output ?? null, nowS(), ref, hostId]
+    [
+      payload.status,
+      payload.error?.code ?? null,
+      payload.error?.message ?? null,
+      payload.output ?? null,
+      nowS(),
+      ref,
+      hostId,
+    ]
   );
   return r.rows[0] ? commandFromRow(r.rows[0]) : null;
 }
 
-export async function applyProgress(c: PoolClient, hostId: string, payload: HostProgressPayload): Promise<HostCommandRecord | null> {
+export async function applyProgress(
+  c: PoolClient,
+  hostId: string,
+  payload: HostProgressPayload
+): Promise<HostCommandRecord | null> {
   const r = await c.query<HostCommandRow>(
     `UPDATE cs2_fleet_host_commands SET progress_step = $1, progress_pct = COALESCE($2, progress_pct), progress_at = $3
       WHERE message_id = $4 AND host_id = $5 AND status = 'pending' RETURNING *`,
@@ -796,7 +972,10 @@ export async function listHealth(hostId: string, limit = 20): Promise<HostHealth
     exit_code: number | null;
     detail: string | null;
     received_at: number;
-  }>('SELECT * FROM cs2_fleet_host_events WHERE host_id = ? ORDER BY id DESC LIMIT ?', [hostId, limit]);
+  }>('SELECT * FROM cs2_fleet_host_events WHERE host_id = ? ORDER BY id DESC LIMIT ?', [
+    hostId,
+    limit,
+  ]);
   return rows.map((r) => ({
     id: Number(r.id),
     server: r.server,
@@ -912,7 +1091,10 @@ export async function recordHostCommand(input: {
 }
 
 /** Merge `patch` into a command's meta. */
-export async function mergeHostCommandMeta(id: string, patch: Record<string, unknown>): Promise<void> {
+export async function mergeHostCommandMeta(
+  id: string,
+  patch: Record<string, unknown>
+): Promise<void> {
   const current = await getHostCommand(id);
   if (!current) return;
   await db.runAsync('UPDATE cs2_fleet_host_commands SET meta = ? WHERE message_id = ?', [
@@ -922,7 +1104,10 @@ export async function mergeHostCommandMeta(id: string, patch: Record<string, unk
 }
 
 export async function getHostCommand(id: string): Promise<HostCommandRecord | null> {
-  const row = await db.queryOneAsync<HostCommandRow>('SELECT * FROM cs2_fleet_host_commands WHERE message_id = ?', [id]);
+  const row = await db.queryOneAsync<HostCommandRow>(
+    'SELECT * FROM cs2_fleet_host_commands WHERE message_id = ?',
+    [id]
+  );
   return row ? commandFromRow(row) : null;
 }
 
@@ -941,7 +1126,10 @@ export async function listHostCommands(hostId: string, limit = 25): Promise<Host
  * command to an offline machine waits; it is sent when the machine connects.
  * An answer that arrives later still replaces the timeout (applyResult).
  */
-export async function timeOutQuietCommands(limits: { notStartedS: number; stalledS: number }): Promise<HostCommandRecord[]> {
+export async function timeOutQuietCommands(limits: {
+  notStartedS: number;
+  stalledS: number;
+}): Promise<HostCommandRecord[]> {
   const now = nowS();
   const rows = await db.queryAsync<HostCommandRow>(
     `UPDATE cs2_fleet_host_commands c

@@ -299,6 +299,8 @@ export interface HostEnrollRequest {
   code?: string;
   key?: string;
   machine_id: string;
+  /** The Unix user csm runs the servers as: one machine can host several csm users. */
+  csm_user?: string;
   tenant_id?: 'default';
   hostname: string;
   os: string;
