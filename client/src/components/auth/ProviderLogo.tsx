@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { siDiscord, siEpicgames, siGithub, siOpenid, siSteam, siTwitch } from 'simple-icons';
 
 /**
@@ -41,13 +42,47 @@ function GoogleG({ size }: { size: number | string }) {
   );
 }
 
-/** The provider's logo, or nothing when there is none. Decorative: the label names the provider. */
-export function ProviderLogo({ id, size = 20 }: { id: string; size?: number | string }) {
+/**
+ * The provider's logo, or nothing when there is none. Decorative: the label
+ * names the provider. `src`: an image the admin uploaded (OpenID Connect,
+ * GET /api/auth/oidc/logo), shown instead of the generic mark, which comes
+ * back when the image does not load.
+ */
+export function ProviderLogo({
+  id,
+  size = 20,
+  src,
+}: {
+  id: string;
+  size?: number | string;
+  src?: string | null;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt=""
+        aria-hidden
+        width={size}
+        height={size}
+        style={{ objectFit: 'contain', display: 'block' }}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
   if (id === 'google') return <GoogleG size={size} />;
   const path = MONO_LOGOS[id];
   if (!path) return null;
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden focusable="false">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+      focusable="false"
+    >
       <path d={path} />
     </svg>
   );

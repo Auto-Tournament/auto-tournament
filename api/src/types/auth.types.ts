@@ -38,6 +38,9 @@ export interface OidcAuthProviderConfig extends BaseAuthProviderConfig {
    * Public metadata; the client id and secret stay on the server.
    */
   issuerUrl: string;
+  /** The button's logo (GET /api/auth/oidc/logo) and colour (#rrggbb), when the admin set them. */
+  logoUrl?: string | null;
+  buttonColor?: string | null;
 }
 
 export interface DiscordAuthProviderConfig extends BaseAuthProviderConfig {
@@ -73,5 +76,3 @@ export type AuthProviderConfig =
   | GoogleAuthProviderConfig
   | TwitchAuthProviderConfig
   | EpicAuthProviderConfig;
-
-

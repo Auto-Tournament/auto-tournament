@@ -8,10 +8,7 @@ import { playerService } from '../services/playerService';
 import { passport, isStrategyConfigured } from '../config/passport';
 import { settingsService } from '../services/settingsService';
 import { authIdentityService, AuthProvider } from '../services/authIdentityService';
-import {
-  signPlayerSteamId,
-  getVerifiedPlayerSteamId,
-} from '../utils/signedPlayerCookie';
+import { signPlayerSteamId, getVerifiedPlayerSteamId } from '../utils/signedPlayerCookie';
 import {
   PENDING_STEAM_LINK_COOKIE_NAME,
   PENDING_STEAM_LINK_TTL_MS,
@@ -20,10 +17,7 @@ import {
   type PendingSteamLinkRejection,
 } from '../utils/signedPendingSteamLink';
 import { shouldBlockAdminAsDirectAccess } from '../utils/canonicalOrigin';
-import {
-  signImpersonatedSteamId,
-  IMPERSONATION_COOKIE_NAME,
-} from '../utils/impersonationCookie';
+import { signImpersonatedSteamId, IMPERSONATION_COOKIE_NAME } from '../utils/impersonationCookie';
 import { resolveViewerAccount, resolveViewerIdentity } from '../utils/viewerIdentity';
 import { authenticateServiceToken, requireAuth } from '../middleware/auth';
 import {
@@ -33,7 +27,10 @@ import {
 } from '../utils/oauthStateCookie';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { isAdminEmail } from '../utils/adminEmails';
-import { grantAdminForAdminEmailMatch, grantAdminForVerifiedEmail } from '../services/adminSeedService';
+import {
+  grantAdminForAdminEmailMatch,
+  grantAdminForVerifiedEmail,
+} from '../services/adminSeedService';
 import { localAdminService } from '../services/localAdminService';
 import {
   SteamLinkError,
@@ -42,6 +39,7 @@ import {
   isSteamlessPlayerId,
 } from '../services/localAccountSteamLink';
 import { isLocalReauthFresh, markLocalReauth } from '../utils/localReauth';
+import { effectiveProviderSettings, parseLogoDataUrl } from '../config/signInProviders';
 
 const router = Router();
 
@@ -194,7 +192,9 @@ async function applyProviderAvatar(steamId: string, avatarUrl: unknown): Promise
       await playerService.updatePlayer(steamId, { avatar: avatarUrl });
     }
   } catch (error) {
-    log.warn('Could not update the player picture from a sign-in', { error: (error as Error).message });
+    log.warn('Could not update the player picture from a sign-in', {
+      error: (error as Error).message,
+    });
   }
 }
 
@@ -360,12 +360,15 @@ export async function completePendingSteamLink(
     res.clearCookie(PENDING_STEAM_LINK_COOKIE_NAME, PENDING_STEAM_LINK_COOKIE_OPTIONS);
 
     if (outcome === 'taken') {
-      log.warn('Steam callback: pending identity already linked to another Steam account; not re-pointed', {
-        provider: read.link.provider,
-        providerUserId: redactProviderUserId(read.link.providerUserId),
-        steamId,
-        linkSource: read.source,
-      });
+      log.warn(
+        'Steam callback: pending identity already linked to another Steam account; not re-pointed',
+        {
+          provider: read.link.provider,
+          providerUserId: redactProviderUserId(read.link.providerUserId),
+          steamId,
+          linkSource: read.source,
+        }
+      );
       return { ...read, linked: false };
     }
 
@@ -464,7 +467,10 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
       const steamId = verified ? verified.steamId : undefined;
       if (err || !steamId) {
         clearSteamLinkIntent(req);
-        log.warn('Steam account link refused', { reason: 'passport_failure', error: (err as Error)?.message });
+        log.warn('Steam account link refused', {
+          reason: 'passport_failure',
+          error: (err as Error)?.message,
+        });
         return linkResultRedirect(req, res, 'steam', 'failed');
       }
       void completeSteamLink(req, res, steamId);
@@ -812,7 +818,10 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
             await grantAdminForVerifiedEmail(imported, provider, verifiedEmail);
             await applyProviderAvatar(imported, user.avatarUrl);
             setPlayerSteamCookie(req, res, imported);
-            log.success(`${label} login matched an imported player`, { provider, steamId: imported });
+            log.success(`${label} login matched an imported player`, {
+              provider,
+              steamId: imported,
+            });
             return res.redirect(302, `${baseUrl}/`);
           }
           log.warn(`${label} login matched an imported player, but it could not be linked`, {
@@ -839,7 +848,11 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
           displayName,
           typeof user.avatarUrl === 'string' ? user.avatarUrl : undefined
         );
-        const outcome = await authIdentityService.linkIdentityUnlessOwnedElsewhere(provider, providerUserId, accountId);
+        const outcome = await authIdentityService.linkIdentityUnlessOwnedElsewhere(
+          provider,
+          providerUserId,
+          accountId
+        );
         if (outcome === 'linked') {
           user.steamId = accountId;
           await rememberIdentityProfile(provider, providerUserId, user);
@@ -1051,7 +1064,10 @@ function accountLinkCallback(strategyName: string, provider: AuthProvider) {
           }
 
           await rememberIdentityProfile(provider, providerUserId, passportUser);
-          await applyProviderAvatar(intent.steamId, (passportUser as { avatarUrl?: unknown }).avatarUrl);
+          await applyProviderAvatar(
+            intent.steamId,
+            (passportUser as { avatarUrl?: unknown }).avatarUrl
+          );
           log.success(`${label} linked to account`, {
             provider,
             providerUserId: redactProviderUserId(providerUserId),
@@ -1080,7 +1096,11 @@ function accountLinkCallback(strategyName: string, provider: AuthProvider) {
  * `stateProvider` names the state cookie (the strategy's SignedCookieStateStore).
  * Exported for the test-only fake provider routes.
  */
-export function ssoCallbackRoute(strategyName: string, stateProvider: string, provider: AuthProvider) {
+export function ssoCallbackRoute(
+  strategyName: string,
+  stateProvider: string,
+  provider: AuthProvider
+) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (peekOAuthLinkIntent(stateProvider, req.headers.cookie)) {
       return accountLinkCallback(strategyName, provider)(req, res, next);
@@ -1236,14 +1256,20 @@ export async function beginSteamLink(req: Request, res: Response): Promise<boole
     });
     return false;
   }
-  if (!isSteamlessPlayerId(identity.realSteamId) || !(await playerService.getPlayerById(identity.realSteamId))) {
+  if (
+    !isSteamlessPlayerId(identity.realSteamId) ||
+    !(await playerService.getPlayerById(identity.realSteamId))
+  ) {
     // Every other account already is a Steam account.
     res.status(400).json({ success: false, error: 'This account already signs in with Steam' });
     return false;
   }
   // An account with a local admin login re-confirms its password first (one
   // a sign-in method made, acc_*, has no password to confirm).
-  if ((await localAdminService.findByPlayerId(identity.realSteamId)) && !isLocalReauthFresh(req, identity.realSteamId)) {
+  if (
+    (await localAdminService.findByPlayerId(identity.realSteamId)) &&
+    !isLocalReauthFresh(req, identity.realSteamId)
+  ) {
     linkResultRedirect(req, res, 'steam', 'reauth');
     return false;
   }
@@ -1263,7 +1289,11 @@ export async function beginSteamLink(req: Request, res: Response): Promise<boole
  * intent, or queue a merge for confirmation. Always answers with a redirect
  * to /me/connections. Exported for the test-only twin.
  */
-export async function completeSteamLink(req: Request, res: Response, steamId: string): Promise<void> {
+export async function completeSteamLink(
+  req: Request,
+  res: Response,
+  steamId: string
+): Promise<void> {
   const intent = readSteamLinkIntent(req);
   clearSteamLinkIntent(req);
   const refuse = (reason: string, outcome: 'taken' | 'failed' = 'failed'): void => {
@@ -1303,11 +1333,14 @@ export async function completeSteamLink(req: Request, res: Response, steamId: st
       // The local account's name and avatar are kept instead.
     }
     const result = await connectSteamToLocalAccount(intent.playerId, steamId, 'attach', profile);
-    log.warn('[AUDIT] Steam connected to a local admin account; it now signs in as the Steam player', {
-      from: intent.playerId,
-      steamId,
-      moved: result.moved,
-    });
+    log.warn(
+      '[AUDIT] Steam connected to a local admin account; it now signs in as the Steam player',
+      {
+        from: intent.playerId,
+        steamId,
+        moved: result.moved,
+      }
+    );
     await switchSessionAccount(req, res, steamId);
     linkResultRedirect(req, res, 'steam', 'ok');
   } catch (error) {
@@ -1356,6 +1389,33 @@ router.post('/steam/link', async (req: Request, res: Response, next: NextFunctio
     log.error('Steam account link start failed', error as Error);
     return linkResultRedirect(req, res, 'steam', 'failed');
   }
+});
+
+/**
+ * @openapi
+ * /api/auth/oidc/logo:
+ *   get:
+ *     tags: [Auth]
+ *     summary: The OpenID Connect button's logo (public)
+ *     description: The image the admin uploaded under Settings > Sign-in, as PNG, JPEG, WebP or SVG. An SVG cannot run scripts here (sandboxed). 404 without one.
+ *     responses:
+ *       200: { description: The image }
+ *       404: { description: No logo set }
+ */
+router.get('/oidc/logo', (_req: Request, res: Response) => {
+  const logo = effectiveProviderSettings('oidc').logo;
+  const parsed = logo ? parseLogoDataUrl(logo) : null;
+  if (!parsed) return res.status(404).json({ success: false, error: 'No logo set' });
+  res.setHeader('Content-Type', parsed.type);
+  // An SVG opened on its own runs nothing: no scripts, no requests out.
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+  );
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  // The URL carries ?v=<saved at>: a new logo is a new URL.
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  return res.send(parsed.bytes);
 });
 
 /**
@@ -1685,7 +1745,14 @@ router.get('/admin/me', async (req: Request, res: Response) => {
     } else if (provider === 'discord') {
       profileName = (user as { username?: string }).username ?? null;
       profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
-    } else if (provider === 'github' || provider === 'google' || provider === 'twitch' || provider === 'epic' || provider === 'oidc' || provider === 'local') {
+    } else if (
+      provider === 'github' ||
+      provider === 'google' ||
+      provider === 'twitch' ||
+      provider === 'epic' ||
+      provider === 'oidc' ||
+      provider === 'local'
+    ) {
       profileName =
         (user as { displayName?: string }).displayName ||
         (user as { username?: string }).username ||

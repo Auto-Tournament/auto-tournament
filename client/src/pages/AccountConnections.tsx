@@ -26,7 +26,12 @@ import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { GamePicker } from '../components/games/GamePicker';
-import { GAMES_UPDATED_EVENT, fetchMyGames, saveMyGames, type GameSummary } from '../components/games/gamesApi';
+import {
+  GAMES_UPDATED_EVENT,
+  fetchMyGames,
+  saveMyGames,
+  type GameSummary,
+} from '../components/games/gamesApi';
 import {
   apiErrorFlag,
   cancelSteamMerge,
@@ -71,7 +76,14 @@ function ProviderTile({ provider, label }: { provider: string; label: string }) 
         '& svg': { fontSize: 22, width: 22, height: 22 },
       }}
     >
-      {hasProviderLogo(provider) ? <ProviderLogo id={provider} size={22} /> : label.slice(0, 1).toUpperCase()}
+      {provider === 'oidc' ? (
+        // The admin's logo when there is one; the OpenID mark when not.
+        <ProviderLogo id={provider} size={22} src="/api/auth/oidc/logo" />
+      ) : hasProviderLogo(provider) ? (
+        <ProviderLogo id={provider} size={22} />
+      ) : (
+        label.slice(0, 1).toUpperCase()
+      )}
     </Box>
   );
 }
@@ -117,7 +129,9 @@ function Row({
         {children}
       </Box>
       {end && (
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', gridColumn: { xs: 2, sm: 'auto' } }}>
+        <Box
+          sx={{ display: 'flex', gap: 1, alignItems: 'center', gridColumn: { xs: 2, sm: 'auto' } }}
+        >
           {end}
         </Box>
       )}
@@ -158,7 +172,12 @@ function Section({
 }) {
   return (
     <Box component="section" aria-labelledby={id} sx={{ '& + &': { mt: 6 } }}>
-      <Typography id={id} component="h2" variant="h6" sx={{ fontFamily: fontDisplay, fontWeight: 600 }}>
+      <Typography
+        id={id}
+        component="h2"
+        variant="h6"
+        sx={{ fontFamily: fontDisplay, fontWeight: 600 }}
+      >
         {title}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2, maxWidth: '62ch' }}>
@@ -187,13 +206,27 @@ function ConnectedAccount({
   return (
     <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0, mt: 0.5 }}>
       {account.avatarUrl && (
-        <Avatar src={account.avatarUrl} alt="" sx={{ width: 28, height: 28, flex: 'none' }} imgProps={{ referrerPolicy: 'no-referrer' }} />
+        <Avatar
+          src={account.avatarUrl}
+          alt=""
+          sx={{ width: 28, height: 28, flex: 'none' }}
+          imgProps={{ referrerPolicy: 'no-referrer' }}
+        />
       )}
       <Box sx={{ minWidth: 0 }}>
         {account.name && (
-          <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, overflowWrap: 'anywhere' }}>{account.name}</Typography>
+          <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, overflowWrap: 'anywhere' }}>
+            {account.name}
+          </Typography>
         )}
-        <Typography sx={{ ...muted, fontSize: '0.8rem', overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' }}>
+        <Typography
+          sx={{
+            ...muted,
+            fontSize: '0.8rem',
+            overflowWrap: 'anywhere',
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
           {secondary}
         </Typography>
       </Box>
@@ -203,9 +236,7 @@ function ConnectedAccount({
 
 /** What to do once the admin password has been confirmed again. */
 type ReauthNext =
-  | { kind: 'link'; provider: string }
-  | { kind: 'merge' }
-  | { kind: 'remove'; method: SignInMethod };
+  { kind: 'link'; provider: string } | { kind: 'merge' } | { kind: 'remove'; method: SignInMethod };
 
 export default function AccountConnections() {
   const { t, i18n } = useTranslation();
@@ -357,7 +388,9 @@ export default function AccountConnections() {
       setReauthNext(null);
       setPassword('');
       setTotp('');
-      setData((d) => (d && d.localLogin ? { ...d, localLogin: { ...d.localLogin, reauthFresh: true } } : d));
+      setData((d) =>
+        d && d.localLogin ? { ...d, localLogin: { ...d.localLogin, reauthFresh: true } } : d
+      );
       if (next?.kind === 'link') startLink(next.provider);
       else if (next?.kind === 'merge') void doMerge();
       else if (next?.kind === 'remove') void doRemove(next.method);
@@ -396,14 +429,23 @@ export default function AccountConnections() {
   const railLinks = data
     ? [
         { key: 'profile', label: t('account.rail.profile'), to: `/player/${data.account.steamId}` },
-        { key: 'connections', label: t('account.rail.connections'), to: '/me/connections', current: true },
+        {
+          key: 'connections',
+          label: t('account.rail.connections'),
+          to: '/me/connections',
+          current: true,
+        },
       ]
     : [];
 
   const gamesFirst = !readOnly && games !== null && games.length === 0;
   const gamesSection = games !== null && (
     <Box sx={{ scrollMarginTop: 96, mt: gamesFirst ? 0 : 6, mb: gamesFirst ? 5 : 0 }}>
-      <Section id="account-games" title={t('games.profile.title')} description={t('games.profile.description')}>
+      <Section
+        id="account-games"
+        title={t('games.profile.title')}
+        description={t('games.profile.description')}
+      >
         <Box
           sx={{
             bgcolor: color.paper2,
@@ -414,9 +456,7 @@ export default function AccountConnections() {
         >
           {readOnly ? (
             <Typography sx={muted}>
-              {games.length === 0
-                ? t('games.profile.empty')
-                : games.map((g) => g.name).join(', ')}
+              {games.length === 0 ? t('games.profile.empty') : games.map((g) => g.name).join(', ')}
             </Typography>
           ) : (
             <>
@@ -538,7 +578,11 @@ export default function AccountConnections() {
                   bottom (the page used to show both). */}
               {gamesFirst && gamesSection}
 
-              <Section id="account-game-accounts" title={t('account.gameAccounts.title')} description={t('account.gameAccounts.description')}>
+              <Section
+                id="account-game-accounts"
+                title={t('account.gameAccounts.title')}
+                description={t('account.gameAccounts.description')}
+              >
                 <ListPanel label={t('account.gameAccounts.title')}>
                   {data.gameAccounts.map((acct: GameAccount) => (
                     <Row
@@ -569,7 +613,10 @@ export default function AccountConnections() {
                       }
                     >
                       {acct.account ? (
-                        <ConnectedAccount account={acct.account} idLabel={t('account.signIn.accountId')} />
+                        <ConnectedAccount
+                          account={acct.account}
+                          idLabel={t('account.signIn.accountId')}
+                        />
                       ) : acct.externalId ? (
                         <Typography sx={{ ...muted, overflowWrap: 'anywhere' }}>
                           {t('account.gameAccounts.id', { id: acct.externalId })}
@@ -608,7 +655,11 @@ export default function AccountConnections() {
                 </Box>
               </Section>
 
-              <Section id="account-sign-in" title={t('account.signIn.title')} description={t('account.signIn.description')}>
+              <Section
+                id="account-sign-in"
+                title={t('account.signIn.title')}
+                description={t('account.signIn.description')}
+              >
                 <ListPanel label={t('account.signIn.title')}>
                   {data.signInMethods.map((method) => {
                     let detail: string;
@@ -667,7 +718,12 @@ export default function AccountConnections() {
                     }
 
                     // The password login: its owner can change the password here.
-                    if (method.provider === 'local' && method.linked && !readOnly && data.localLogin) {
+                    if (
+                      method.provider === 'local' &&
+                      method.linked &&
+                      !readOnly &&
+                      data.localLogin
+                    ) {
                       end = (
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Button
@@ -692,7 +748,10 @@ export default function AccountConnections() {
                         end={end}
                       >
                         {method.linked && method.account && (
-                          <ConnectedAccount account={method.account} idLabel={t('account.signIn.accountId')} />
+                          <ConnectedAccount
+                            account={method.account}
+                            idLabel={t('account.signIn.accountId')}
+                          />
                         )}
                         <Typography sx={muted}>{detail}</Typography>
                       </Row>
