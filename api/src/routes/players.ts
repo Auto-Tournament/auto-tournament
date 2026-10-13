@@ -625,10 +625,9 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
     // server yet: the top bar shows nothing for it (it said "your turn in veto" before start).
     if (match.status === 'pending' || match.status === 'ready') {
       const tournament = match.tournament_id
-        ? await db.queryOneAsync<{ status: string }>(
-            'SELECT status FROM tournaments WHERE id = ?',
-            [match.tournament_id]
-          )
+        ? await db.queryOneAsync<{ status: string }>('SELECT status FROM tournament WHERE id = ?', [
+            match.tournament_id,
+          ])
         : null;
       const started = !match.tournament_id || tournament?.status === 'in_progress';
       if (!started || !match.team1_id || !match.team2_id) {
