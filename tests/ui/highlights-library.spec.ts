@@ -51,7 +51,7 @@ test(
         },
       });
     });
-    await page.goto('/browse', { waitUntil: 'domcontentloaded' });
+    await page.goto('/tournaments', { waitUntil: 'domcontentloaded' });
     await page.getByTestId('nav-cs2-highlights').first().click();
     await expect(page).toHaveURL(/\/highlights$/);
     await expect(page.getByTestId('library-grid').getByRole('link')).toHaveCount(2);

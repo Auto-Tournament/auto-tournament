@@ -689,7 +689,9 @@
     }
   },
   "leaderboard": {
-    "toLadder": "Matchmaking-stigen →",
+    "mode": "Hvilken rangering",
+    "modeTournament": "Turneringer",
+    "modeMatchmaking": "Matchmaking",
     "title": "Ledertavle",
     "subtitle": "Spillere rangert etter ratingen sin i ett spill.",
     "game": "Spill",

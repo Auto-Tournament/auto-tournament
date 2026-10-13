@@ -796,7 +796,7 @@ export default function TeamManage() {
           if (which === 'disband') {
             try {
               await api.delete(base);
-              navigate(paths.browseTeams);
+              navigate(paths.communityTeams);
             } catch (err) {
               setError(apiErrorMessage(err, t('teamManage.actionFailed')));
             }

@@ -49,17 +49,19 @@ export const paths = {
   tournamentLeaderboard: '/tournament/:id/leaderboard',
   findPlayer: '/player',
   playerProfile: '/player/:steamId',
-  browse: '/browse',
+  /** Every tournament on the site: open sign-ups, live, finished. Was `/browse`. */
+  tournamentList: '/tournaments',
   /** Every player: search, sort by rating / matches / name (public, signed in). */
-  browsePlayers: '/browse/players',
+  communityPlayers: '/community/players',
+  /** Every team, and the teams looking for players. */
+  communityTeams: '/community/teams',
+  /** Ratings per game; `?mode=matchmaking` for the matchmaking ladder. */
   leaderboards: '/leaderboards',
-  browseTeams: '/browse/teams',
   /** Matchmaking: find a match, party, the match room. */
   play: '/play',
   /** Sends the signed-in player to where their match lives (veto, server, score, what is next). */
   matchNow: '/match/now',
   playLobby: '/play/:lobbyId',
-  playLeaderboard: '/play/leaderboard',
   /** Your friends, friend requests, and adding friends. */
   friends: '/friends',
   /** Every notice the bell showed, with filters. */
@@ -108,6 +110,22 @@ export const paths = {
   eloTemplatesLegacy: '/elo-templates',
   dev: '/manage/dev',
 } as const;
+
+/**
+ * Public addresses that moved (2026-10, one home per page): each redirects to
+ * its new place with the query, so shared links and bookmarks keep working.
+ */
+export const MOVED_PUBLIC_PATHS: ReadonlyArray<{ from: string; to: string }> = [
+  { from: '/browse', to: paths.tournamentList },
+  { from: '/browse/teams', to: paths.communityTeams },
+  { from: '/browse/players', to: paths.communityPlayers },
+  { from: '/play/leaderboard', to: `${paths.leaderboards}?mode=matchmaking` },
+];
+
+/** `/leaderboards`, on the matchmaking ladder when asked. */
+export function leaderboardsPath(mode?: 'tournament' | 'matchmaking'): string {
+  return mode === 'matchmaking' ? `${paths.leaderboards}?mode=matchmaking` : paths.leaderboards;
+}
 
 export type AppPath = (typeof paths)[keyof typeof paths];
 

@@ -340,10 +340,10 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
       ]
     : [];
   const browseLink: SiteLink = {
-    to: paths.browse,
+    to: paths.tournamentList,
     label: t('nav.browse'),
     testId: 'nav-browse',
-    current: pathname === paths.browse,
+    current: pathname === paths.tournamentList,
   };
   // Modules' own pages for everyone (CS2: Highlights, every clip and reel).
   const moduleLinks: SiteLink[] = useInstalledIntegrations().flatMap((integration) =>
@@ -371,16 +371,16 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
     browseLink,
     ...moduleLinks,
     {
-      to: paths.browseTeams,
+      to: paths.communityTeams,
       label: t('nav.teams'),
       testId: 'nav-teams',
-      current: pathname === paths.browseTeams,
+      current: pathname === paths.communityTeams,
     },
     {
-      to: paths.browsePlayers,
+      to: paths.communityPlayers,
       label: t('nav.players'),
       testId: 'nav-players',
-      current: pathname === paths.browsePlayers,
+      current: pathname === paths.communityPlayers,
     },
     {
       to: paths.leaderboards,

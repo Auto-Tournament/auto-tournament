@@ -190,7 +190,7 @@ test.describe.serial('Admin navigation', () => {
     // A player's links: Home, Browse, the site-wide Teams page (a team is
     // not tied to a tournament), and the platform's leaderboard (per game;
     // a tournament's standings are on its page).
-    await expect(page.getByTestId('nav-teams')).toHaveAttribute('href', '/browse/teams');
+    await expect(page.getByTestId('nav-teams')).toHaveAttribute('href', '/community/teams');
     await expect(page.getByTestId('nav-leaderboards')).toHaveAttribute('href', '/leaderboards');
 
     // Typing the address sends them to their own page, still without it.
@@ -204,7 +204,7 @@ test.describe.serial('Admin navigation', () => {
     'a visitor who is not signed in sees no admin navigation',
     { tag: ['@ui', '@navigation'] },
     async ({ page }) => {
-      await page.goto('/browse');
+      await page.goto('/tournaments');
       await expect(page.getByTestId('nav-browse')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('nav-manage')).toHaveCount(0);
       await expect(page.getByTestId('manage-rail')).toHaveCount(0);

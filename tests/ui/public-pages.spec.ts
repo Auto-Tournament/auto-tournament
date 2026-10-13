@@ -75,7 +75,7 @@ test.describe.serial('Public Pages UI', () => {
 
       // The old Find player address lands on the Players directory, which finds anyone.
       await page.goto('/player', { waitUntil: 'domcontentloaded' });
-      await expect(page).toHaveURL(/\/browse\/players$/);
+      await expect(page).toHaveURL(/\/community\/players$/);
       const input = page.getByTestId('players-directory-search').locator('input');
       await expect(input).toBeVisible({ timeout: 15000 });
 

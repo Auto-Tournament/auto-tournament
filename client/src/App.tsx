@@ -62,7 +62,6 @@ import TeamJoin from './pages/TeamJoin';
 import Compatibility from './pages/Compatibility';
 import Play from './pages/Play';
 import PlayLobby from './pages/PlayLobby';
-import PlayLeaderboard from './pages/PlayLeaderboard';
 import { MatchmakingOverlay } from './components/matchmaking/MatchmakingOverlay';
 import { ChatDock } from './components/chat/ChatDock';
 import { PartyInviteToast } from './components/social/PartyInviteToast';
@@ -93,7 +92,14 @@ import { useModuleState } from './module-loader/useModuleState';
 import { modulesMayArrive } from './module-loader/moduleState';
 import { ModulePendingRoute } from './components/common/ModuleNotInstalledNotice';
 import { MatchDetailsHost } from './components/modals/MatchDetailsHost';
-import { adminRoute, LEGACY_ADMIN_PATHS, matchPagePath, paths, playerProfilePath } from './paths';
+import {
+  adminRoute,
+  LEGACY_ADMIN_PATHS,
+  matchPagePath,
+  MOVED_PUBLIC_PATHS,
+  paths,
+  playerProfilePath,
+} from './paths';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -432,7 +438,11 @@ function AppRoutes() {
       {/* Standings' old address, still in bookmarks and older links. */}
       <Route path={paths.tournamentLeaderboard} element={<LegacyLeaderboardRedirect />} />
       {/* The old Find player page: the Players directory finds anyone now. */}
-      <Route path={paths.findPlayer} element={<Navigate to={paths.browsePlayers} replace />} />
+      <Route path={paths.findPlayer} element={<Navigate to={paths.communityPlayers} replace />} />
+      {/* Public pages that moved (2026-10): their old addresses redirect, query kept. */}
+      {MOVED_PUBLIC_PATHS.map(({ from, to }) => (
+        <Route key={from} path={from} element={<MovedRedirect to={to} />} />
+      ))}
       {/* Old shared match links (`/matches/<slug>`), for anyone: the match page. */}
       <Route path="/matches/:slug" element={<MatchSlugRedirect />} />
       <Route
@@ -473,7 +483,7 @@ function AppRoutes() {
           />
         ))}
       <Route
-        path={paths.browse}
+        path={paths.tournamentList}
         element={
           <ProtectedRoute adminOnly={false}>
             <Browse />
@@ -505,7 +515,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path={paths.browsePlayers}
+        path={paths.communityPlayers}
         element={
           <ProtectedRoute adminOnly={false}>
             <PlayersDirectory />
@@ -522,7 +532,7 @@ function AppRoutes() {
       />
       <Route path={paths.teamJoin} element={<TeamJoin />} />
       <Route
-        path={paths.browseTeams}
+        path={paths.communityTeams}
         element={
           <ProtectedRoute adminOnly={false}>
             <TeamsDirectory />
@@ -565,7 +575,6 @@ function AppRoutes() {
         }
       />
       {/* Public when an admin allows it; the API decides. */}
-      <Route path={paths.playLeaderboard} element={<PlayLeaderboard />} />
       <Route
         path={paths.playLobby}
         element={
@@ -659,6 +668,16 @@ function LegacyAdminRedirect() {
       replace
     />
   );
+}
+
+/** An old public address → its new one, keeping the query and the hash. */
+function MovedRedirect({ to }: { to: string }) {
+  const location = useLocation();
+  const [path, query = ''] = to.split('?');
+  const params = new URLSearchParams(query);
+  new URLSearchParams(location.search).forEach((value, key) => params.set(key, value));
+  const search = params.toString();
+  return <Navigate to={`${path}${search ? `?${search}` : ''}${location.hash}`} replace />;
 }
 
 /** `/matches/:slug` (old shared links) → the match's own page. */

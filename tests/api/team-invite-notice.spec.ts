@@ -63,7 +63,7 @@ test.describe('Team invite notices', () => {
       const [notice] = await teamNotices(invited.ctx, teamId);
       expect(notice).toBeTruthy();
       expect(notice.read).toBe(false);
-      expect(notice.data).toMatchObject({ teamId, url: '/browse/teams' });
+      expect(notice.data).toMatchObject({ teamId, url: '/community/teams' });
       expect((notice.data.from as { id: string }).id).toBe(owner.id);
 
       const mine = await (await invited.ctx.get('/api/team-directory/mine')).json();
