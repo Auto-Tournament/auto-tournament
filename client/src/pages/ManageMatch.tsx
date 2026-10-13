@@ -69,6 +69,12 @@ interface RoundPlayer {
   kills: number;
   damage: number;
   died: boolean;
+  money_start?: number;
+  money_after_buy?: number;
+  armor?: number;
+  helmet?: boolean;
+  defuser?: boolean;
+  loadout?: string[];
 }
 interface RoundSummary {
   round_number: number;
@@ -254,6 +260,27 @@ const LEVEL_COLOR: Record<LogEntry['level'], string> = {
   info: tokens.color.ink2,
   admin: '#c9a7ff',
 };
+const money = (v: number | undefined) =>
+  typeof v === 'number' && v >= 0 ? `$${v.toLocaleString()}` : '—';
+const WEAPON_NAMES: Record<string, string> = {
+  smokegrenade: 'smoke',
+  flashbang: 'flash',
+  hegrenade: 'HE',
+  molotov: 'molotov',
+  incgrenade: 'incendiary',
+  decoy: 'decoy',
+  m4a1_silencer: 'M4A1-S',
+  usp_silencer: 'USP-S',
+  taser: 'Zeus',
+  c4: 'bomb',
+};
+const weaponLabel = (w: string) => WEAPON_NAMES[w] ?? w.toUpperCase().replace(/_/g, ' ');
+const armourLabel = (p: { armor?: number; helmet?: boolean; defuser?: boolean }) => {
+  if (typeof p.armor !== 'number' || p.armor < 0) return '—';
+  const parts = [p.armor > 0 ? (p.helmet ? 'Kevlar + helmet' : 'Kevlar') : 'None'];
+  if (p.defuser) parts.push('kit');
+  return parts.join(', ');
+};
 const ROUND_REASON: Record<number, string> = {
   1: 'bomb exploded',
   7: 'bomb defused',
@@ -333,13 +360,20 @@ export default function ManageMatch() {
   const send = useCallback(
     async (name: string, args: Record<string, unknown> = {}, ok?: string) => {
       try {
-        const res = await api.post<{ success: boolean; error?: string; message?: string }>(
-          `/api/game/cs2/matches/${encodeURIComponent(slug)}/manage/command`,
-          { name, args }
-        );
+        const res = await api.post<{
+          success: boolean;
+          error?: string;
+          message?: string;
+          response?: unknown;
+        }>(`/api/game/cs2/matches/${encodeURIComponent(slug)}/manage/command`, { name, args });
         if (res && res.success === false) throw new Error(res.error || 'The server refused it');
         if (ok) showSuccess(ok);
         await load();
+        // exec answers with the console lines it saw.
+        const out = res?.response as { lines?: unknown; output?: unknown } | string | undefined;
+        if (typeof out === 'string') return out;
+        const lines = out?.lines ?? out?.output;
+        return Array.isArray(lines) ? lines.join('\n') : typeof lines === 'string' ? lines : '';
       } catch (error) {
         showError((error as Error).message || 'The server refused it');
         throw error;
@@ -697,8 +731,8 @@ export default function ManageMatch() {
                       action: `Run ${command.trim().split(' ')[0]}`,
                       cancel: 'Don’t run it',
                       run: async () => {
-                        await send('exec', { command: command.trim() });
-                        setCommandReply(`Sent: ${command.trim()}`);
+                        const out = await send('exec', { command: command.trim() });
+                        setCommandReply(out || `Sent: ${command.trim()} (no output)`);
                       },
                     })
                   }
@@ -722,9 +756,24 @@ export default function ManageMatch() {
                 )}
               </Box>
               {commandReply && (
-                <Typography sx={{ fontFamily: fontMono, fontSize: textSize.sm, color: color.ink2 }}>
+                <Box
+                  component="pre"
+                  sx={{
+                    m: 0,
+                    p: 1.5,
+                    borderRadius: radii.md,
+                    bgcolor: color.paper,
+                    color: color.ink2,
+                    fontFamily: fontMono,
+                    fontSize: textSize.sm,
+                    whiteSpace: 'pre-wrap',
+                    overflowWrap: 'anywhere',
+                    maxHeight: 280,
+                    overflowY: 'auto',
+                  }}
+                >
                   {commandReply}
-                </Typography>
+                </Box>
               )}
             </Box>
           )}
@@ -1246,6 +1295,15 @@ export default function ManageMatch() {
                           Player
                         </Box>
                         <Box component="th" scope="col" sx={th}>
+                          Money at start
+                        </Box>
+                        <Box component="th" scope="col" sx={th}>
+                          Bought
+                        </Box>
+                        <Box component="th" scope="col" sx={th}>
+                          Armour
+                        </Box>
+                        <Box component="th" scope="col" sx={th}>
                           Kills
                         </Box>
                         <Box component="th" scope="col" sx={th}>
@@ -1263,6 +1321,15 @@ export default function ManageMatch() {
                           <tr key={p.id}>
                             <Box component="td" sx={td}>
                               {playerName(p.id)}
+                            </Box>
+                            <Box component="td" sx={{ ...td, fontFamily: fontMono }}>
+                              {money(p.money_start)}
+                            </Box>
+                            <Box component="td" sx={{ ...td, color: color.ink2 }}>
+                              {(p.loadout ?? []).map(weaponLabel).join(', ') || '—'}
+                            </Box>
+                            <Box component="td" sx={{ ...td, color: color.ink2 }}>
+                              {armourLabel(p)}
                             </Box>
                             <Box component="td" sx={td}>
                               {p.kills}
@@ -1376,6 +1443,28 @@ export default function ManageMatch() {
       </Section>
 
       <Menu open={Boolean(menu)} anchorEl={menu?.anchor} onClose={() => setMenu(null)}>
+        {warmup && (
+          <MenuItem
+            onClick={() => {
+              const m = menu;
+              setMenu(null);
+              if (!m) return;
+              setConfirm({
+                target: 'match',
+                title: `Mark ${m.name} ready?`,
+                effects: [
+                  `${m.name} counts as ready`,
+                  'The map goes live when the ready rules are met',
+                ],
+                action: `Mark ${m.name} ready`,
+                cancel: 'Wait for them',
+                run: () => send('force_ready', { steamid64: m.id }, `${m.name} marked ready`),
+              });
+            }}
+          >
+            Mark ready
+          </MenuItem>
+        )}
         <MenuItem
           sx={{ color: color.ban }}
           onClick={() => {

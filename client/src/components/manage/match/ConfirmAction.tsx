@@ -35,7 +35,7 @@ export interface ConfirmActionSpec {
   danger?: boolean;
   /** Destructive actions: the admin types this to enable the button. */
   typeToConfirm?: string;
-  run: () => Promise<void>;
+  run: () => Promise<unknown>;
 }
 
 /**

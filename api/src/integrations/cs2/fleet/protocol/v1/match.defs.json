@@ -781,6 +781,34 @@
         },
         "clutch_won": {
           "type": "boolean"
+        },
+        "money_start": {
+          "type": "integer",
+          "minimum": -1,
+          "description": "Money when the round started; -1 = not read."
+        },
+        "money_after_buy": {
+          "type": "integer",
+          "minimum": -1,
+          "description": "Money left when the freeze time ended; -1 = not read."
+        },
+        "armor": {
+          "type": "integer",
+          "minimum": -1,
+          "description": "Armour at the end of the freeze time; -1 = not read."
+        },
+        "helmet": {
+          "type": "boolean"
+        },
+        "defuser": {
+          "type": "boolean"
+        },
+        "loadout": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Weapons and grenades carried into the round (weapon_ dropped, knives left out)."
         }
       }
     },
