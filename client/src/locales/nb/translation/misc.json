@@ -173,6 +173,22 @@
       "matches_other": "{{count}} kamper spilt",
       "confirm": "Slå sammen kontoene",
       "failed": "Kunne ikke slå sammen kontoene"
+    },
+    "twoStep": {
+      "turnOn": "Slå på totrinns",
+      "turnOff": "Slå av totrinns",
+      "isOn": "Totrinnsbekreftelse på",
+      "isOff": "Totrinnsbekreftelse av",
+      "onTitle": "Slå på totrinnsbekreftelse",
+      "offTitle": "Slå av totrinnsbekreftelse",
+      "offWarning": "Uten den logger passordet alene inn på denne admin-kontoen.",
+      "password": "Passord",
+      "code": "Kode fra autentiseringsappen",
+      "codeNeeded": "Skriv inn koden fra autentiseringsappen.",
+      "failed": "Kunne ikke slå den av",
+      "cancel": "Avbryt",
+      "turnedOn": "Totrinnsbekreftelse er på",
+      "turnedOff": "Totrinnsbekreftelse er av"
     }
   },
   "home": {

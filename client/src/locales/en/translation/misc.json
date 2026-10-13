@@ -173,6 +173,22 @@
       "matches_other": "{{count}} matches played",
       "confirm": "Merge accounts",
       "failed": "Could not merge the accounts"
+    },
+    "twoStep": {
+      "turnOn": "Turn on two-step",
+      "turnOff": "Turn off two-step",
+      "isOn": "Two-step verification on",
+      "isOff": "Two-step verification off",
+      "onTitle": "Turn on two-step verification",
+      "offTitle": "Turn off two-step verification",
+      "offWarning": "Without it, your password alone signs in to this admin account.",
+      "password": "Password",
+      "code": "Authenticator code",
+      "codeNeeded": "Enter the code from your authenticator app.",
+      "failed": "Could not turn it off",
+      "cancel": "Cancel",
+      "turnedOn": "Two-step verification is on",
+      "turnedOff": "Two-step verification is off"
     }
   },
   "home": {

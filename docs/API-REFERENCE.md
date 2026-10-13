@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 687 of them, 402 behind auth —
+Every endpoint this API serves — 688 of them, 402 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -1234,6 +1234,7 @@ Username + password (+ TOTP) sign-in for local admin accounts, and TOTP enrolmen
 | `GET` | `/api/auth/local/me` | admin |
 | `POST` | `/api/auth/local/totp/start` | admin |
 | `POST` | `/api/auth/local/totp/confirm` | admin |
+| `POST` | `/api/auth/local/totp/disable` | public |
 | `POST` | `/api/auth/local/reauth` | public |
 | `POST` | `/api/auth/local/password` | public |
 | `POST` | `/api/auth/local/forgot` | public |
