@@ -60,7 +60,6 @@ test.describe('Module sections on Admin tools and Settings', () => {
       // Settings is the platform's only: none of CS2's fields, no second nav.
       await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
       await expect(page.getByTestId('cs2-server-defaults')).toHaveCount(0);
-      await expect(page.locator('[id^="settings-nav-"]')).toHaveCount(0);
       await expect(page.getByTestId('settings-game-links')).toBeVisible({ timeout: 30000 });
 
       // The rail is the platform's here; CS2 is its own area in the rail's

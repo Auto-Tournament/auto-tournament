@@ -40,22 +40,25 @@ declare const __APP_VERSION__: string | undefined;
 const { color } = tokens;
 
 /**
- * `?section=` values, old and new, to the card they open. Settings was a page
- * per section with a nav beside it; it is one page now, and a section scrolls
- * to its card (bookmarks, links in docs, `SIGN_IN_SETTINGS_PATH`).
+ * `?section=` values, old and new, to the section they open (bookmarks,
+ * links in docs, `SIGN_IN_SETTINGS_PATH`). Settings is a list of sections
+ * beside the one that is open, as on the SettingsIA board.
  */
 const SECTION_CARDS: Record<string, string> = {
   general: 'site',
-  integrations: 'site',
   site: 'site',
   signin: 'signin',
+  email: 'email',
   players: 'players',
   ratings: 'players',
   matches: 'players',
   webhooks: 'webhooks',
+  integrations: 'webhooks',
   matchmaking: 'matchmaking',
   news: 'news',
   adminNotices: 'adminnotices',
+  adminnotices: 'adminnotices',
+  notifications: 'adminnotices',
   experimental: 'advanced',
   developer: 'advanced',
   advanced: 'advanced',
@@ -76,16 +79,8 @@ const MOVED_SECTIONS: Record<string, string> = {
   'cs2:inventories': '/manage/skins',
 };
 
-/** One card on the page, found by `?section=` (`settings-<key>`). */
-function SettingsCard({
-  cardKey,
-  children,
-  highlight,
-}: {
-  cardKey: string;
-  children: React.ReactNode;
-  highlight: boolean;
-}) {
+/** The open section's card (`settings-<key>`). */
+function SettingsCard({ cardKey, children }: { cardKey: string; children: React.ReactNode }) {
   return (
     <Panel
       component="section"
@@ -94,9 +89,7 @@ function SettingsCard({
       sx={{
         p: { xs: 2, md: 3 },
         minWidth: 0,
-        scrollMarginTop: 96,
-        transition: 'border-color 600ms',
-        borderColor: highlight ? color.accent : color.rule,
+        borderColor: color.rule,
       }}
     >
       {children}
@@ -120,9 +113,11 @@ function coreSettingsFrom(settings: SettingsResponse['settings'] | undefined): C
 }
 
 /**
- * Settings: the platform's own, on one page of cards (site, sign-in, players,
- * webhooks, license, advanced). A game's settings are its own pages in the
- * admin menu (CS2: Skins, Match rules), linked at the bottom.
+ * Settings: the platform's own, as on the SettingsIA board. A list of
+ * sections (Site, Sign-in, Email, Players, Matchmaking, News, Notifications,
+ * Integrations, Advanced) beside the one that is open; `?section=` picks it.
+ * A game's settings are its own pages in the admin menu (CS2: Skins, Match
+ * rules), linked under the list.
  */
 export default function Settings() {
   const { showSuccess, showError } = useSnackbar();
@@ -169,7 +164,6 @@ export default function Settings() {
     (moduleSettings.some(({ id }) => requested === id || requested.startsWith(`${id}:`))
       ? requested.split(':')[0]
       : '');
-  const [highlight, setHighlight] = useState('');
 
   useEffect(() => {
     if (moved) navigate(moved, { replace: true });
@@ -248,28 +242,128 @@ export default function Settings() {
     }
   }, [fetchSettings, showError, showSuccess, t]);
 
-  useEffect(() => {
-    if (loading || !target) return;
-    const card = () => document.getElementById(`settings-${target}`);
-    card()?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // The cards above load their own data and grow after the first scroll,
-    // which can push a card far down the one column out of view: scroll to
-    // it again once they have settled, if it is not in view.
-    const again = [500, 1300].map((ms) =>
-      setTimeout(() => {
-        const box = card()?.getBoundingClientRect();
-        if (box && (box.top < 0 || box.top > window.innerHeight * 0.5)) {
-          card()?.scrollIntoView({ block: 'start' });
+  // The sections, in the SettingsIA board's order. Advanced shows only with
+  // an experimental feature to turn on, or in development.
+  const playersCard = (
+    <>
+      <SettingsCardHead
+        title={t('settingsPage.players.title')}
+        hint={t('settingsPage.players.short')}
+      />
+      <SettingsRow
+        title={t('settingsPage.players.registration.toggleLabel')}
+        sub={t('settingsPage.players.registration.short')}
+        control={
+          <Switch
+            checked={values.allowSelfRegister}
+            onChange={(event) =>
+              setValues((prev) => ({ ...prev, allowSelfRegister: event.target.checked }))
+            }
+            slotProps={{
+              input: {
+                'aria-label': t('settingsPage.players.registration.toggleLabel'),
+                'data-testid': 'settings-self-register',
+              } as React.InputHTMLAttributes<HTMLInputElement>,
+            }}
+          />
         }
-      }, ms)
-    );
-    setHighlight(target);
-    const timer = setTimeout(() => setHighlight(''), 1600);
-    return () => {
-      clearTimeout(timer);
-      again.forEach(clearTimeout);
-    };
-  }, [loading, target]);
+      />
+      <SettingsRow
+        title={t('settingsPage.matchRating.ratings.toggleLabel')}
+        sub={t('settingsPage.matchRating.ratings.short')}
+        control={
+          <Switch
+            checked={values.ratingsEnabled}
+            onChange={(event) =>
+              setValues((prev) => ({ ...prev, ratingsEnabled: event.target.checked }))
+            }
+            slotProps={{
+              input: {
+                'aria-label': t('settingsPage.matchRating.ratings.toggleLabel'),
+                'data-testid': 'settings-ratings-enabled',
+              } as React.InputHTMLAttributes<HTMLInputElement>,
+            }}
+          />
+        }
+      />
+    </>
+  );
+  const advancedCard = (
+    <>
+      <ExperimentalCard features={experimental} onChange={setExperimental} />
+      {isDev && (
+        <Box
+          sx={
+            experimental.length > 0
+              ? { mt: 3, pt: 3, borderTop: `1px solid ${color.rule}` }
+              : undefined
+          }
+          data-testid="settings-developer"
+        >
+          <Typography variant="h6" fontWeight={600} gutterBottom color="error">
+            {t('settingsPage.developer.resetApiTitle')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" mb={2}>
+            {t('settingsPage.developer.resetApiDescription')}
+          </Typography>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => setResetApiDialogOpen(true)}
+            disabled={resettingApi}
+            data-testid="settings-reset-api-button"
+          >
+            {resettingApi
+              ? t('settingsPage.developer.resetApiButtonLoading')
+              : t('settingsPage.developer.resetApiButton')}
+          </Button>
+        </Box>
+      )}
+    </>
+  );
+  const sections: { key: string; name: string; hint: string; body: React.ReactNode }[] = [
+    { key: 'site', body: <SiteNameCard /> },
+    {
+      key: 'signin',
+      body: <SignInProvidersCard welcome={searchParams.get('welcome') === 'setup'} />,
+    },
+    { key: 'email', body: <EmailSettingsCard /> },
+    { key: 'players', body: playersCard },
+    { key: 'matchmaking', body: <MatchmakingSettingsCard /> },
+    { key: 'news', body: <NewsSettingsCard /> },
+    { key: 'adminnotices', body: <AdminNoticesCard /> },
+    { key: 'webhooks', body: <WebhooksCard /> },
+    ...(isDev || experimental.length > 0 ? [{ key: 'advanced', body: advancedCard }] : []),
+  ].map((section) => ({
+    ...section,
+    name: t(`settingsPage.sections.${section.key}.name`),
+    hint: t(`settingsPage.sections.${section.key}.hint`),
+  }));
+  // Modules that still keep settings here: a section each.
+  for (const { id, labelKey, pages, Section } of moduleSettings) {
+    sections.push({
+      key: id,
+      name: t(labelKey, { ns: id }),
+      hint: t('settingsPage.sections.module.hint'),
+      body: (
+        <Box data-testid={`settings-module-${id}`}>
+          <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
+            {t(labelKey, { ns: id })}
+          </Typography>
+          {pages?.length ? (
+            <Stack spacing={3}>
+              {pages.map((page) => (
+                <Section key={page.key} page={page.key} />
+              ))}
+            </Stack>
+          ) : (
+            <Section />
+          )}
+        </Box>
+      ),
+    });
+  }
+  const open = sections.find((section) => section.key === target) ?? sections[0];
 
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
@@ -279,189 +373,143 @@ export default function Settings() {
 
       {!loading && (
         <>
-          {/* One column, full width, like the other admin pages: two columns of
-              cards squeezed every row (an account's name wrapped a letter a line). */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 2 }}>
-            <Stack spacing={2} sx={{ minWidth: 0 }}>
-              <SettingsCard cardKey="site" highlight={highlight === 'site'}>
-                <SiteNameCard />
-              </SettingsCard>
-              <SettingsCard cardKey="signin" highlight={highlight === 'signin'}>
-                <SignInProvidersCard welcome={searchParams.get('welcome') === 'setup'} />
-              </SettingsCard>
-              <SettingsCard cardKey="email" highlight={highlight === 'email'}>
-                <EmailSettingsCard />
-              </SettingsCard>
-              <SettingsCard cardKey="players" highlight={highlight === 'players'}>
-                <SettingsCardHead
-                  title={t('settingsPage.players.title')}
-                  hint={t('settingsPage.players.short')}
-                />
-                <SettingsRow
-                  title={t('settingsPage.players.registration.toggleLabel')}
-                  sub={t('settingsPage.players.registration.short')}
-                  control={
-                    <Switch
-                      checked={values.allowSelfRegister}
-                      onChange={(event) =>
-                        setValues((prev) => ({ ...prev, allowSelfRegister: event.target.checked }))
-                      }
-                      slotProps={{
-                        input: {
-                          'aria-label': t('settingsPage.players.registration.toggleLabel'),
-                          'data-testid': 'settings-self-register',
-                        } as React.InputHTMLAttributes<HTMLInputElement>,
-                      }}
-                    />
-                  }
-                />
-                <SettingsRow
-                  title={t('settingsPage.matchRating.ratings.toggleLabel')}
-                  sub={t('settingsPage.matchRating.ratings.short')}
-                  control={
-                    <Switch
-                      checked={values.ratingsEnabled}
-                      onChange={(event) =>
-                        setValues((prev) => ({ ...prev, ratingsEnabled: event.target.checked }))
-                      }
-                      slotProps={{
-                        input: {
-                          'aria-label': t('settingsPage.matchRating.ratings.toggleLabel'),
-                          'data-testid': 'settings-ratings-enabled',
-                        } as React.InputHTMLAttributes<HTMLInputElement>,
-                      }}
-                    />
-                  }
-                />
-              </SettingsCard>
-              <SettingsCard cardKey="matchmaking" highlight={highlight === 'matchmaking'}>
-                <MatchmakingSettingsCard />
-              </SettingsCard>
-              <SettingsCard cardKey="news" highlight={highlight === 'news'}>
-                <NewsSettingsCard />
-              </SettingsCard>
-            </Stack>
-
-            <Stack spacing={2} sx={{ minWidth: 0 }}>
-              <SettingsCard cardKey="adminnotices" highlight={highlight === 'adminnotices'}>
-                <AdminNoticesCard />
-              </SettingsCard>
-              <SettingsCard cardKey="webhooks" highlight={highlight === 'webhooks'}>
-                <WebhooksCard />
-              </SettingsCard>
-              {(isDev || experimental.length > 0) && (
-                <SettingsCard cardKey="advanced" highlight={highlight === 'advanced'}>
-                  <ExperimentalCard features={experimental} onChange={setExperimental} />
-                  {isDev && (
-                    <Box
-                      sx={
-                        experimental.length > 0
-                          ? { mt: 3, pt: 3, borderTop: `1px solid ${color.rule}` }
-                          : undefined
-                      }
-                      data-testid="settings-developer"
-                    >
-                      <Typography variant="h6" fontWeight={600} gutterBottom color="error">
-                        {t('settingsPage.developer.resetApiTitle')}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" mb={2}>
-                        {t('settingsPage.developer.resetApiDescription')}
-                      </Typography>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        onClick={() => setResetApiDialogOpen(true)}
-                        disabled={resettingApi}
-                        data-testid="settings-reset-api-button"
-                      >
-                        {resettingApi
-                          ? t('settingsPage.developer.resetApiButtonLoading')
-                          : t('settingsPage.developer.resetApiButton')}
-                      </Button>
-                    </Box>
-                  )}
-                </SettingsCard>
-              )}
-            </Stack>
-          </Box>
-
-          {/* Modules that still keep settings here: a card each. */}
-          {moduleSettings.map(({ id, labelKey, pages, Section }) => (
-            <SettingsCard key={id} cardKey={id} highlight={highlight === id}>
-              <Box data-testid={`settings-module-${id}`}>
-                <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-                  {t(labelKey, { ns: id })}
-                </Typography>
-                {pages?.length ? (
-                  <Stack spacing={3}>
-                    {pages.map((page) => (
-                      <Section key={page.key} page={page.key} />
-                    ))}
-                  </Stack>
-                ) : (
-                  <Section />
-                )}
-              </Box>
-            </SettingsCard>
-          ))}
-
-          {/* Each game's own settings sit with the game in the admin menu. */}
-          {gameLinks.length > 0 && (
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 3,
+              gridTemplateColumns: 'minmax(0, 1fr)',
+              alignItems: 'start',
+              '@media (min-width: 900px)': { gridTemplateColumns: '220px minmax(0, 1fr)' },
+            }}
+          >
             <Box
-              data-testid="settings-game-links"
               sx={{
-                mt: 2,
-                border: `1px dashed ${color.rule}`,
-                borderRadius: radii.lg,
-                p: { xs: 2, md: 2.5 },
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
+                display: 'grid',
                 gap: 2,
-                flexWrap: 'wrap',
+                '@media (min-width: 900px)': { position: 'sticky', top: 24 },
               }}
             >
-              <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontWeight: 600 }}>
-                  {t('settingsPage.gameLinks.title')}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {t('settingsPage.gameLinks.hint')}
-                </Typography>
+              {/* The sections: a link each, with what it holds. */}
+              <Box
+                component="nav"
+                aria-label={t('settingsPage.sections.label')}
+                data-testid="settings-sections"
+                sx={{
+                  display: 'flex',
+                  gap: 0.25,
+                  overflowX: 'auto',
+                  '@media (min-width: 900px)': { flexDirection: 'column', overflowX: 'visible' },
+                }}
+              >
+                {sections.map((section) => {
+                  const current = section.key === open.key;
+                  return (
+                    <Box
+                      key={section.key}
+                      component={RouterLink}
+                      to={`?section=${section.key}`}
+                      replace
+                      aria-current={current ? 'page' : undefined}
+                      data-testid={`settings-section-${section.key}`}
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.25,
+                        flex: 'none',
+                        px: 1.5,
+                        py: 1.25,
+                        borderRadius: radii.md,
+                        textDecoration: 'none',
+                        bgcolor: current ? color.paper2 : 'transparent',
+                        '&:hover': { bgcolor: color.paper2 },
+                        '&:focus-visible': {
+                          outline: `2px solid ${color.focus}`,
+                          outlineOffset: 2,
+                        },
+                      }}
+                    >
+                      <Box
+                        component="span"
+                        sx={{
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: current ? color.ink : color.ink2,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {section.name}
+                      </Box>
+                      <Box
+                        component="span"
+                        sx={{
+                          fontSize: 12,
+                          color: color.muted,
+                          display: 'none',
+                          '@media (min-width: 900px)': { display: 'block' },
+                        }}
+                      >
+                        {section.hint}
+                      </Box>
+                    </Box>
+                  );
+                })}
               </Box>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                {gameLinks.map((item) => (
-                  <Button
-                    key={`${item.moduleId}-${item.key}`}
-                    component={RouterLink}
-                    to={item.path}
-                    size="small"
-                    sx={{
-                      borderRadius: radii.pill,
-                      bgcolor: color.paper3,
-                      color: color.ink,
-                      px: 2,
-                    }}
-                  >
-                    {navItemLabel(t, item, 'rail')}
-                  </Button>
-                ))}
-              </Box>
-            </Box>
-          )}
 
-          <Box mt={2} display="flex" justifyContent="flex-end" alignItems="center">
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ textAlign: 'right' }}
-              data-testid="settings-version"
-            >
-              {t('settingsPage.footer.version')}{' '}
-              {typeof __APP_VERSION__ !== 'undefined'
-                ? __APP_VERSION__
-                : t('settingsPage.footer.unknownVersion')}
-            </Typography>
+              {/* Each game's own settings sit with the game in the admin menu. */}
+              {gameLinks.length > 0 && (
+                <Box
+                  data-testid="settings-game-links"
+                  sx={{
+                    border: `1px dashed ${color.rule}`,
+                    borderRadius: radii.md,
+                    p: 1.5,
+                    display: 'grid',
+                    gap: 1,
+                  }}
+                >
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
+                      {t('settingsPage.gameLinks.title')}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
+                      {t('settingsPage.gameLinks.hint')}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                    {gameLinks.map((item) => (
+                      <Button
+                        key={`${item.moduleId}-${item.key}`}
+                        component={RouterLink}
+                        to={item.path}
+                        size="small"
+                        sx={{
+                          borderRadius: radii.pill,
+                          bgcolor: color.paper3,
+                          color: color.ink,
+                          px: 1.5,
+                        }}
+                      >
+                        {navItemLabel(t, item, 'rail')}
+                      </Button>
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ px: 1.5, fontSize: 12 }}
+                data-testid="settings-version"
+              >
+                {t('settingsPage.footer.version')}{' '}
+                {typeof __APP_VERSION__ !== 'undefined'
+                  ? __APP_VERSION__
+                  : t('settingsPage.footer.unknownVersion')}
+              </Typography>
+            </Box>
+
+            <SettingsCard cardKey={open.key}>{open.body}</SettingsCard>
           </Box>
 
           <Dialog

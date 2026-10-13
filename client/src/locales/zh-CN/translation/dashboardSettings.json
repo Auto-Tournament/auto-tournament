@@ -385,6 +385,48 @@
       "testNeedsOn": "Turn sending on (and save the server) before testing.",
       "testSent": "Sent to {{to}}. Check the inbox and the spam folder.",
       "testFailed": "The test email could not be sent"
+    },
+    "sections": {
+      "label": "Settings sections",
+      "site": {
+        "name": "Site",
+        "hint": "Name, logo, language"
+      },
+      "signin": {
+        "name": "Sign-in",
+        "hint": "Providers, admin accounts"
+      },
+      "email": {
+        "name": "Email",
+        "hint": "SMTP, what is sent"
+      },
+      "players": {
+        "name": "Players",
+        "hint": "Sign-up, ratings"
+      },
+      "matchmaking": {
+        "name": "Matchmaking",
+        "hint": "Queues and their rules"
+      },
+      "news": {
+        "name": "News",
+        "hint": "Posts on the home page"
+      },
+      "adminnotices": {
+        "name": "Notifications",
+        "hint": "What admins are told"
+      },
+      "webhooks": {
+        "name": "Integrations",
+        "hint": "Webhooks"
+      },
+      "advanced": {
+        "name": "Advanced",
+        "hint": "Experimental, developer"
+      },
+      "module": {
+        "hint": "This module’s settings"
+      }
     }
   },
   "managePage": {
