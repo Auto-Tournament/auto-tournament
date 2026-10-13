@@ -31,6 +31,14 @@ test('the library lists videos with their counts', TAGS, async ({ request }) => 
   expect(clips.every((i: { kind: string }) => i.kind === 'clip')).toBe(true);
   const reels = (await (await request.get('/api/game/cs2/library?kind=reels')).json()).items;
   expect(reels.every((i: { kind: string }) => i.kind !== 'clip')).toBe(true);
+  // One map's (the site search's map hits link here).
+  const onMap = await request.get('/api/game/cs2/library?map=de_mirage');
+  expect(onMap.ok(), await onMap.text()).toBe(true);
+  expect(
+    ((await onMap.json()).items as Array<{ map: string | null }>).every(
+      (i) => i.map === 'de_mirage'
+    )
+  ).toBe(true);
 });
 
 test('a view counts once per viewer, a like once per player', TAGS, async () => {

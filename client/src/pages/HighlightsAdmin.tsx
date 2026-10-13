@@ -3,7 +3,7 @@
  * game's recorders follow (size, frame rate, clips per player, the logo) and
  * the music library under reels (api: services/highlights). Each installed
  * game adds its own tab (`highlightsAdmin` slot; CS2: its recorders, the
- * overlays and how to add a recorder).
+ * overlays and how to add a recorder). `?tab=` picks the tab.
  */
 import { useEffect, useState } from 'react';
 import {
@@ -19,6 +19,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { PageHead } from '../components/common/ui';
 import { HighlightMusicSetting } from '../components/highlights/HighlightMusicSetting';
 import { useSnackbar } from '../contexts/SnackbarContext';
@@ -45,7 +46,15 @@ const HIGHLIGHT_FPS = [30, 60, 90, 120, 180, 240] as const;
 export default function HighlightsAdmin() {
   const { t } = useTranslation();
   const modules = useInstalledIntegrations().filter((i) => i.highlightsAdmin);
-  const [tab, setTab] = useState('settings');
+  // `?tab=` (settings, or a game's id) opens a tab: the site search links straight to one.
+  const [search, setSearch] = useSearchParams();
+  const tab = search.get('tab') ?? 'settings';
+  const setTab = (value: string) => {
+    const next = new URLSearchParams(search);
+    next.set('tab', value);
+    next.delete('sub');
+    setSearch(next, { replace: true });
+  };
 
   useEffect(() => {
     document.title = pageTitle(t('highlightsPage.title'));

@@ -2429,7 +2429,8 @@
       "player": "Player: {{name}}",
       "team": "Team: {{name}}",
       "match": "Match: {{name}}",
-      "tournament": "Tournament: {{name}}"
+      "tournament": "Tournament: {{name}}",
+      "map": "Mapa: {{name}}"
     },
     "views_one": "{{count}} view",
     "views_other": "{{count}} views",

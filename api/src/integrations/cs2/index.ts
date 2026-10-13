@@ -50,6 +50,7 @@ import {
 } from './tournamentSettings';
 import { CS2_INSTANCE_SCHEMA, CS2_INSTANCE_SETTINGS } from './settings';
 import { CS2_MIGRATIONS } from './migrations';
+import { cs2SiteSearch } from './siteSearch';
 import type { ServerActionResult, ServerAllocationResult } from './allocation';
 import type {
   AllocateResult,
@@ -724,6 +725,10 @@ export const cs2Integration: GameIntegration = {
   },
 
   /** Every new matchmaking level is a skin drop to pick from (skins/skinService). */
+  siteSearch(ctx) {
+    return cs2SiteSearch(ctx);
+  },
+
   async onLevelUp({ playerId, level }) {
     const { skinService } = await import('./skins/skinService');
     await skinService.levelUpDrop(playerId, level);
