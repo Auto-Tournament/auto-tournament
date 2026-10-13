@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 707 of them, 410 behind auth —
+Every endpoint this API serves — 708 of them, 411 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the

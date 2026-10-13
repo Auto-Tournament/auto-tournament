@@ -943,6 +943,9 @@ export const skinService = {
       given += 1;
     }
     return given;
+  },
+
+  /**
    * Ready Up's `skins.stattrak`: kills on StatTrak weapons since its last
    * report. Each goes on the player's equipped StatTrak skin of that weapon
    * (the one equipped for both sides first). Unknown players and weapons
