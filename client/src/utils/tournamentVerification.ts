@@ -1,6 +1,6 @@
 /**
  * Tournament Verification Rules
- * 
+ *
  * Centralized system for validating tournament configurations based on type and format.
  * Makes it easy to add new tournament types and their specific rules.
  */
@@ -67,10 +67,6 @@ export function getTournamentVerificationRules(
         exactMaps: 7,
         requiresVeto: true,
         message: 'Map veto requires exactly 7 maps.',
-      },
-      teams: {
-        requirePowerOfTwo: type === 'single_elimination' || type === 'double_elimination',
-        message: 'Team count must be a power of 2 for elimination brackets.',
       },
     };
   }
@@ -200,4 +196,3 @@ export function validatePlayerCount(
 
   return { valid: true };
 }
-
