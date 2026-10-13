@@ -333,7 +333,7 @@ export default function Home() {
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   <Button
                     component={RouterLink}
-                    to={`/team/${myTeam?.id}`}
+                    to={paths.matchNow}
                     variant="contained"
                     data-testid="home-open-match"
                   >
