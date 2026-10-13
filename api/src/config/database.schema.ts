@@ -1029,6 +1029,31 @@ export function getSchemaSQL(): string {
 
     CREATE INDEX IF NOT EXISTS idx_notifications_player ON notifications(player_id, id);
 
+    -- The admins' bell (services/adminNoticeService.ts): what needs an admin
+    -- (a stuck match, a crashed server, a failing recorder). One feed for
+    -- every admin; a repeat of an open notice (same dedupe_key) counts up
+    -- instead of adding a row. resolved_at: it fixed itself or was dismissed.
+    CREATE TABLE IF NOT EXISTS admin_notices (
+      id SERIAL PRIMARY KEY,
+      kind TEXT NOT NULL,
+      severity TEXT NOT NULL DEFAULT 'warn', -- 'error' | 'warn' | 'info'
+      data TEXT NOT NULL DEFAULT '{}',
+      dedupe_key TEXT NOT NULL,
+      count INTEGER NOT NULL DEFAULT 1,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      resolved_at INTEGER
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_admin_notices_open ON admin_notices(dedupe_key) WHERE resolved_at IS NULL;
+    CREATE INDEX IF NOT EXISTS idx_admin_notices_updated ON admin_notices(updated_at);
+
+    -- What each admin has seen of the admins' bell: everything up to last_seen_at.
+    CREATE TABLE IF NOT EXISTS admin_notice_reads (
+      admin_key TEXT PRIMARY KEY,
+      last_seen_at INTEGER NOT NULL
+    );
+
     -- Chat (services/chatService.ts): a match's both teams and the admins,
     -- a team, a matchmaking party. channel = 'match:<slug>', 'team:<id>',
     -- 'party:<id>'. No foreign keys: the history outlives what it was about.

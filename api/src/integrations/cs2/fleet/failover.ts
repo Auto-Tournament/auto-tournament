@@ -254,6 +254,12 @@ async function setStatus(
 }
 
 function announce(matchSlug: string, proposal: FailoverProposal | null): void {
+  // The admins' bell: a failover that is over (moved, the server back, dismissed) needs nobody.
+  if (!proposal || ['moved', 'withdrawn', 'dismissed'].includes(proposal.status)) {
+    void import('../../../services/adminNoticeService').then(({ adminNoticeService }) =>
+      adminNoticeService.resolve(`failover:${matchSlug}`)
+    );
+  }
   try {
     // A broadcast: slug and state only, never a server address or password.
     getIO().emit('fleet:failover', {
@@ -594,6 +600,21 @@ async function createProposal(input: {
       `${backup ? `resume map ${mapNumber} round ${backup.round}` : `restart map ${mapNumber} from warmup`}`
   );
   announce(input.slug, proposal);
+  // The admins' bell: always worth knowing; a decision is theirs when auto-failover is off.
+  const auto = (await getFailoverSettings().catch(() => null))?.auto !== false;
+  void import('../../../services/adminNoticeService').then(({ adminNoticeService }) =>
+    adminNoticeService.raise(
+      'failover',
+      {
+        matchSlug: input.slug,
+        reason: input.failure.reason,
+        mapNumber,
+        round: backup?.round ?? 0,
+        needsDecision: !auto,
+      },
+      `failover:${input.slug}`
+    )
+  );
   // The players hear it in the match chat too (a popup shows on their pages).
   void postMatchChatLine(input.slug, 'serverDown');
   return proposal;

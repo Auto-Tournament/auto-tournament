@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 677 of them, 395 behind auth —
+Every endpoint this API serves — 683 of them, 401 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -999,6 +999,18 @@ Ready Up compatibility with the latest CS2 build: the runs its CI reports (token
 | `GET` | `/api/compat/runs` | public |
 | `GET` | `/api/compat/badge.json` | public |
 
+### Admin notices
+
+The admins' bell: what needs an admin (a match stuck without a server, a crashed server, a failing recorder, a new beta). One feed for every admin, each with their own seen mark; repeats count up. Admin only. Live updates go to signed-in admins as the Socket.IO events admin:notice and admin:notice:resolved.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/admin-notices` | admin |
+| `POST` | `/api/admin-notices/seen` | admin |
+| `POST` | `/api/admin-notices/:id/dismiss` | admin |
+| `GET` | `/api/admin-notices/settings` | admin |
+| `PUT` | `/api/admin-notices/settings` | admin |
+
 ### Admin calls
 
 Players calling for an admin from a game server (CS2: `.admin [message]` in Ready Up, sent as the admin_called event): list open and recently resolved calls, resolve one or all. Admin only. Live updates go to signed-in admins as the Socket.IO events admin:call and admin:call:resolved.
@@ -1100,6 +1112,7 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 
 | Method | Path | Auth |
 | --- | --- | --- |
+| `POST` | `/api/test/admin-notice` | admin |
 | `POST` | `/api/test/marker` | admin |
 | `POST` | `/api/test/reset-database` | admin |
 | `POST` | `/api/test/match-state` | admin |

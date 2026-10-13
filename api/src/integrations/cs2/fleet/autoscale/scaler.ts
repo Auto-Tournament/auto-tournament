@@ -557,13 +557,25 @@ async function execute(
     log.info(
       `[AUTOSCALE] ${action.kind}${action.kind === 'create' ? '' : ` ${action.server}`} on ${hostName ?? action.hostId}: ${reason}`
     );
-    if (action.kind === 'create') licenseFullUntil = 0;
+    if (action.kind === 'create') {
+      licenseFullUntil = 0;
+      void import('../../../../services/adminNoticeService').then(({ adminNoticeService }) =>
+        adminNoticeService.resolve('autoscale_license')
+      );
+    }
     return { action, outcome: 'sent', commandId, error: null };
   } catch (error) {
     const refused = error instanceof HostCommandError;
     const message = (error as Error).message;
     if (action.kind === 'create' && refused && error.status === 402) {
       licenseFullUntil = now + LICENSE_FULL_BACKOFF_SECONDS;
+      void import('../../../../services/adminNoticeService').then(({ adminNoticeService }) =>
+        adminNoticeService.raise(
+          'autoscale_license',
+          { hostName: hostName ?? action.hostId, error: message },
+          'autoscale_license'
+        )
+      );
     }
     await recordEvent({
       action: action.kind,

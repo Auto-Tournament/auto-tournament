@@ -1,6 +1,16 @@
 import { pageTitle } from '../utils/pageTitle';
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, LinearProgress, Link } from '@mui/material';
+import {
+  Box,
+  Button,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  LinearProgress,
+  Link,
+} from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../contexts/SnackbarContext';
@@ -16,6 +26,7 @@ import { getGlobalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { usePublishNeedsYouCount } from '../contexts/ManageRailContext';
 import { StatusStrip } from '../components/manage/StatusStrip';
 import { NeedsYouQueue } from '../components/manage/NeedsYouQueue';
+import { AdminNoticesPanel } from '../components/admin/AdminNoticesPanel';
 import { useIntegrationFor } from '../integrations/registry';
 import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { RecentLog } from '../components/manage/RecentLog';
@@ -35,7 +46,8 @@ import type { Tournament } from '../types/tournament.types';
 function ManageEyebrow({ tournament }: { tournament: Tournament }) {
   const { games } = useSetupGames();
   const wanted = tournament.game || DEFAULT_SETUP_GAME.id;
-  const game = games.find((entry) => entry.id === wanted) ??
+  const game =
+    games.find((entry) => entry.id === wanted) ??
     (wanted === DEFAULT_SETUP_GAME.id ? DEFAULT_SETUP_GAME : null);
   const gameName = game?.name ?? wanted;
   return (
@@ -61,8 +73,8 @@ export default function Manage() {
   // module the tournament runs (3.0 phase E). A game with no resources has no
   // grid, and the console shows only the work.
   const { shell } = useShellIntegrations();
-  const ServerGrid = shellModule(shell, (i) => i.dashboardWidgets.manageResources)
-    ?.dashboardWidgets.manageResources;
+  const ServerGrid = shellModule(shell, (i) => i.dashboardWidgets.manageResources)?.dashboardWidgets
+    .manageResources;
   // The module whose resources the strip counts: the tournament's, or before
   // there is one, the first the shell shows that has a tile (CS2's servers,
   // which an admin sets up before the tournament that needs them).
@@ -140,7 +152,9 @@ export default function Manage() {
   return (
     <Box data-testid="manage-page" sx={{ width: '100%' }}>
       <PageHead
-        eyebrow={tournament ? <ManageEyebrow tournament={tournament} /> : t('managePage.noTournament')}
+        eyebrow={
+          tournament ? <ManageEyebrow tournament={tournament} /> : t('managePage.noTournament')
+        }
         title={t('managePage.needsYouHeading')}
         actions={
           <Button
@@ -160,11 +174,11 @@ export default function Manage() {
         counts={statusCounts}
         showVeto={tournamentIntegration.capabilities.veto}
         resourceTile={
-          ResourceStatusTile ? (
-            <ResourceStatusTile availability={availability} />
-          ) : null
+          ResourceStatusTile ? <ResourceStatusTile availability={availability} /> : null
         }
       />
+
+      <AdminNoticesPanel />
 
       <NeedsYouQueue
         items={needsYouItems}
