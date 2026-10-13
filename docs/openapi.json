@@ -14134,6 +14134,30 @@
         }
       }
     },
+    "/api/skins/tournaments/{id}/rewards": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "GET /api/skins/tournaments/:id/rewards",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/social/friends": {
       "get": {
         "tags": [
