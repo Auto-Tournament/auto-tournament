@@ -122,7 +122,8 @@ router.get('/:id/client/*', async (req: Request, res: Response) => {
     const stream = fs.createReadStream(file);
     stream.on('error', (error) => {
       log.error('[MODULES] Failed to read a module client file', error);
-      if (!res.headersSent) res.status(500).json({ success: false, error: 'Failed to read the file' });
+      if (!res.headersSent)
+        res.status(500).json({ success: false, error: 'Failed to read the file' });
       else res.destroy();
     });
     stream.pipe(res);
@@ -147,7 +148,8 @@ router.use(requireAuth);
  *       (found, not loaded), `incompatible` (its API ranges exclude this
  *       platform) or `broken` (it failed to validate or load), with the
  *       `reason`. `enabled` is the stored switch, which takes effect on the
- *       next restart. Built-in modules are always on.
+ *       next restart. Built-in modules are always on. `accountProvider` is
+ *       the sign-in a loaded module's players need (CS2: steam), or null.
  *     security: [{ cookieAuth: [] }]
  *     responses:
  *       200:
@@ -173,7 +175,9 @@ async function switchModule(req: Request, res: Response, enabled: boolean): Prom
       res.status(result.status).json({ success: false, error: result.error });
       return;
     }
-    log.info(`[MODULES] ${req.params.id} ${enabled ? 'enabled' : 'disabled'}; takes effect on restart`);
+    log.info(
+      `[MODULES] ${req.params.id} ${enabled ? 'enabled' : 'disabled'}; takes effect on restart`
+    );
     res.json({ success: true, module: result.module, restartRequired: result.restartRequired });
   } catch (error) {
     log.error(`[MODULES] Failed to ${enabled ? 'enable' : 'disable'} a module`, error);

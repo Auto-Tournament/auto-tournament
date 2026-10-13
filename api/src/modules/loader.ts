@@ -75,6 +75,12 @@ export interface ModuleListing {
   reason: string | null;
   /** The client entry's URL, for a loaded, enabled module that has one. */
   client: { entry: string } | null;
+  /**
+   * The sign-in a player needs for this module's game (CS2: 'steam'), for a
+   * loaded module that declares one; null otherwise. Admin pages warn when
+   * that sign-in is turned off.
+   */
+  accountProvider: string | null;
 }
 
 /** What the last scan found in one folder. `status: 'ok'` means loaded. */
@@ -198,7 +204,9 @@ async function importServerEntry(dir: string, manifest: ModuleManifest): Promise
     throw new ModuleLoadError(`The server entry '${manifest.server}' does not exist.`);
   }
   if (!isInside(realDir, realFile)) {
-    throw new ModuleLoadError(`The server entry '${manifest.server}' resolves outside the module folder.`);
+    throw new ModuleLoadError(
+      `The server entry '${manifest.server}' resolves outside the module folder.`
+    );
   }
 
   // The version and the file's mtime in the URL make a reinstalled module a
@@ -323,7 +331,9 @@ async function evaluate(folder: string, dir: string): Promise<Evaluation> {
       'SELECT migration_id FROM module_migrations WHERE module_id = ? ORDER BY migration_id',
       [loaded.id]
     );
-    const unknown = ledger.map((row) => row.migration_id).filter((migration) => !declared.has(migration));
+    const unknown = ledger
+      .map((row) => row.migration_id)
+      .filter((migration) => !declared.has(migration));
     if (unknown.length > 0) {
       throw new ModuleLoadError(
         `This database has migrations of '${loaded.id}' that version ${manifest.version} does not know (${unknown.join(', ')}): ` +
@@ -409,7 +419,10 @@ async function scanOnce(): Promise<GameIntegration[]> {
     const dir = path.join(root, entry.name);
     let isDirectory = entry.isDirectory();
     if (!isDirectory && entry.isSymbolicLink()) {
-      isDirectory = await fs.promises.stat(dir).then((s) => s.isDirectory(), () => false);
+      isDirectory = await fs.promises.stat(dir).then(
+        (s) => s.isDirectory(),
+        () => false
+      );
     }
     if (!isDirectory) continue;
     seen.add(entry.name);
@@ -422,7 +435,13 @@ async function scanOnce(): Promise<GameIntegration[]> {
       evaluation = await evaluate(entry.name, dir);
     } catch (error) {
       evaluation = {
-        record: { folder: entry.name, dir, manifest: null, status: 'broken', reason: messageOf(error) },
+        record: {
+          folder: entry.name,
+          dir,
+          manifest: null,
+          status: 'broken',
+          reason: messageOf(error),
+        },
       };
     }
     diskModules.set(entry.name, evaluation.record);
@@ -581,7 +600,13 @@ function diskListing(record: DiskModule, enabled: boolean): ModuleListing {
       status === 'ok' && enabled && manifest?.client
         ? { entry: clientEntryUrl(manifest.id, manifest.client, manifest.version) }
         : null,
+    accountProvider: status === 'ok' && manifest ? accountProviderOf(manifest.id) : null,
   };
+}
+
+/** A loaded integration's required sign-in (`GameIntegration.accountProvider`). */
+function accountProviderOf(id: string): string | null {
+  return listIntegrations().find((i) => i.id === id)?.accountProvider ?? null;
 }
 
 /** Built-in modules first, in registration order, then disk modules by id. */
@@ -597,6 +622,7 @@ export async function listModules(): Promise<ModuleListing[]> {
     status: 'ok',
     reason: null,
     client: null,
+    accountProvider: integration.accountProvider ?? null,
   }));
 
   const flags = await enabledFlags();
@@ -723,7 +749,9 @@ export async function resolveClientFile(id: string, relative: string): Promise<s
   if (!(await isModuleEnabled(id))) return null;
 
   if (!relative || relative.includes('\0') || relative.includes('\\')) return null;
-  if (relative.split('/').some((segment) => segment === '' || segment === '.' || segment === '..')) {
+  if (
+    relative.split('/').some((segment) => segment === '' || segment === '.' || segment === '..')
+  ) {
     return null;
   }
 

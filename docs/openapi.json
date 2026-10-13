@@ -10902,7 +10902,7 @@
           "Modules"
         ],
         "summary": "Every module, built-in and on disk, with its status",
-        "description": "`platform` is the client and server API versions this instance\nprovides. Each module has a `status`: `ok` (loaded), `disabled`\n(found, not loaded), `incompatible` (its API ranges exclude this\nplatform) or `broken` (it failed to validate or load), with the\n`reason`. `enabled` is the stored switch, which takes effect on the\nnext restart. Built-in modules are always on.\n",
+        "description": "`platform` is the client and server API versions this instance\nprovides. Each module has a `status`: `ok` (loaded), `disabled`\n(found, not loaded), `incompatible` (its API ranges exclude this\nplatform) or `broken` (it failed to validate or load), with the\n`reason`. `enabled` is the stored switch, which takes effect on the\nnext restart. Built-in modules are always on. `accountProvider` is\nthe sign-in a loaded module's players need (CS2: steam), or null.\n",
         "security": [
           {
             "bearerAuth": []

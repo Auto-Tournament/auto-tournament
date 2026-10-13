@@ -490,6 +490,10 @@
         "idTaken": "«{{id}}» er allerede en innebygd modul",
         "render": "delen «{{slot}}» feilet under tegning: {{error}}"
       }
+    },
+    "signInNeed": {
+      "body": "{{game}}-spillere logger inn med {{provider}}, og innlogging med {{provider}} er slått av. De kan ikke koble til kontoen spillet trenger.",
+      "action": "Slå den på"
     }
   },
   "catalog": {

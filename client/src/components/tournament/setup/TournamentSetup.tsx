@@ -1,3 +1,4 @@
+import { SignInNeedsWarning } from '../../modules/SignInNeedsWarning';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Alert, Box, Button, Menu, MenuItem, TextField, Typography } from '@mui/material';
@@ -472,6 +473,15 @@ export function TournamentSetup(props: TournamentSetupProps) {
               disabled={locked || !!tournament}
               label={t('tournament.setup.game.label')}
             />
+            <Box sx={{ mt: 2 }}>
+              <SignInNeedsWarning
+                // While the catalogue loads, the default game (CS2) is the one picked.
+                moduleId={
+                  setupGames.find((g) => g.id === game)?.integrationId ??
+                  (game === DEFAULT_SETUP_GAME.id ? DEFAULT_SETUP_GAME.integrationId : null)
+                }
+              />
+            </Box>
           </Field>
         );
 
