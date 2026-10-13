@@ -76,18 +76,59 @@ test.describe.serial('Shuffle Tournament UI', () => {
   );
 
   // Consolidated tournament UI test - verifies tournament page loads
-  test('should display tournament page',
+  test(
+    'should display tournament page',
     {
       tag: ['@ui', '@shuffle', '@tournament'],
     },
     async ({ page }) => {
       await page.goto('/manage/tournament');
       await page.waitForLoadState('networkidle');
-      
+
       // Verify tournament page loaded
       await expect(page.getByTestId('tournament-page')).toBeVisible({ timeout: 15000 });
       expect(page.url()).toContain('/manage/tournament');
     }
   );
-});
 
+  test(
+    'a started shuffle tournament: players on the home card, no veto, Round 1, its match opens',
+    { tag: ['@ui', '@shuffle', '@regression'] },
+    async ({ page, request }) => {
+      const errors: string[] = [];
+      page.on('pageerror', (e) => errors.push(String(e)));
+      const setup = await setupShuffleTournament(request, {
+        playerCount: 10,
+        serverCount: 0,
+        startTournament: true,
+        prefix: `shuffle-ui-${Date.now()}`,
+      });
+      expect(setup, 'shuffle setup should succeed').toBeTruthy();
+
+      // Admin home: a shuffle tournament enters players, not teams.
+      await page.goto('/');
+      await expect(page.getByTestId('admin-home-tournaments')).toContainText('10 players', {
+        timeout: 15000,
+      });
+
+      // Manage: no veto in a shuffle tournament, and its round is "Round 1", not "Finals".
+      await page.goto('/manage');
+      const strip = page.getByTestId('manage-status-strip');
+      await expect(strip).toContainText('Round 1', { timeout: 15000 });
+      await expect(strip).not.toContainText('IN VETO');
+      await expect(strip).not.toContainText('Finals');
+
+      // Bracket list: opening the match shows it (it used to blank the page).
+      await page.goto('/manage/bracket');
+      const list = page.getByRole('button', { name: 'List' });
+      if (await list.count()) await list.first().click();
+      await page
+        .getByRole('listitem')
+        .filter({ hasText: '#1 · Map 1' })
+        .first()
+        .click({ force: true });
+      await expect(page.getByRole('dialog')).toBeVisible({ timeout: 10000 });
+      expect(errors).toEqual([]);
+    }
+  );
+});
