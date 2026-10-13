@@ -3,13 +3,14 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Link, Typography } from '@mui/material';
 import {
   ChartLineUpIcon,
+  CoinsIcon,
   CrosshairIcon,
   EyeSlashIcon,
-  HandFistIcon,
-  StarIcon,
   FireIcon,
+  HandFistIcon,
   LightningIcon,
   SkullIcon,
+  StarIcon,
   TargetIcon,
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
@@ -31,6 +32,7 @@ const AWARD_ICON: Record<AwardKey, { icon: ReactNode; tone: string }> = {
   bestPlayer: { icon: <StarIcon size={22} />, tone: color.medalGold },
   mostClutches: { icon: <HandFistIcon size={22} />, tone: color.accent },
   mostTeamFlashes: { icon: <EyeSlashIcon size={22} />, tone: color.muted },
+  mostMoney: { icon: <CoinsIcon size={22} />, tone: color.accent },
   mostKills: { icon: <SkullIcon size={22} />, tone: color.ban },
   bestAdr: { icon: <FireIcon size={22} />, tone: color.accent },
   bestHeadshots: { icon: <CrosshairIcon size={22} />, tone: color.sideT },

@@ -465,6 +465,19 @@ test.describe('Autoscale: plan', () => {
     ).toHaveLength(1);
   });
 
+  test('a server whose match just ended stops at once when not needed; one warmed ahead waits', () => {
+    // Match over, demo uploaded, nothing waiting: stop it now (servers start in seconds).
+    const done = plan({ demand: demand(0), servers: [warmIdle(1, 5, { afterMatch: true })] });
+    expect(done.actions.map((a) => a.kind === 'stop' && a.server)).toEqual(['server-1']);
+    expect(done.actions[0].reason).toMatch(/^Match over, demo uploaded and not needed/);
+    // A server started ahead of a match keeps the cool-down.
+    expect(plan({ demand: demand(0), servers: [warmIdle(1, 5)] }).actions).toEqual([]);
+    // Still needed (the next match is waiting): it stays.
+    expect(
+      plan({ demand: demand(0, 1), servers: [warmIdle(1, 5, { afterMatch: true })] }).actions
+    ).toEqual([]);
+  });
+
   test('never stops a busy, updating, failover, pending or not-idle server', () => {
     const p = plan({
       settings: settings({ cooldownSeconds: 0 }),

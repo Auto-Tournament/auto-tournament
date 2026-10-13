@@ -931,7 +931,8 @@
       "biggestGain": "Størst rating-økning",
       "bestPlayer": "Beste spiller",
       "mostClutches": "Flest clutcher",
-      "mostTeamFlashes": "Flest flasher på eget lag"
+      "mostTeamFlashes": "Flest flasher på eget lag",
+      "mostMoney": "Brukte mest penger"
     },
     "awardValue": {
       "mostKills": "{{value}} kills",
@@ -942,7 +943,8 @@
       "biggestGain": "+{{value}} rating",
       "bestPlayer": "rating {{value}}",
       "mostTeamFlashes": "{{value}} lagkamerater flashet",
-      "mostClutches": "{{value}} clutcher vunnet"
+      "mostClutches": "{{value}} clutcher vunnet",
+      "mostMoney": "{{value}} brukt"
     },
     "wonFinal": "Vant finalen {{a}}–{{b}} mot {{opponent}}"
   },

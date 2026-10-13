@@ -5,6 +5,9 @@
  * any admin page. One feed for every admin; each admin's "seen" mark is their
  * own. A repeat of an open notice (same dedupe key) counts up and moves to
  * the top instead of adding a row; `resolve` closes one that fixed itself.
+ * A sweep that re-checks a lasting problem every minute raises it with
+ * `{ ongoing: true }`: that adds nothing while the notice is open, and nothing
+ * after an admin dismissed it until the problem has cleared once.
  * Per kind, admins choose off, bell, or bell with a sound (settings).
  * Raising never throws: a notice is a courtesy, not part of what failed.
  */
@@ -69,6 +72,8 @@ interface Row {
 const SETTINGS_KEY = 'admin_notice_settings';
 /** Resolved notices stay listed this long. */
 const KEEP_RESOLVED_SECONDS = 3 * 24 * 3600;
+/** How long a dismissal keeps a lasting problem quiet, at most. */
+const KEEP_DISMISSED_SECONDS = 14 * 24 * 3600;
 
 const now = () => Math.floor(Date.now() / 1000);
 
@@ -134,11 +139,20 @@ export const adminNoticeService = {
     kind: AdminNoticeKind,
     data: Record<string, unknown>,
     dedupeKey: string = kind,
-    severity: AdminNoticeSeverity = ADMIN_NOTICE_KINDS[kind].severity
+    severity: AdminNoticeSeverity = ADMIN_NOTICE_KINDS[kind].severity,
+    { ongoing = false }: { ongoing?: boolean } = {}
   ): Promise<AdminNotice | null> {
     try {
       const delivery = (await this.settings())[kind];
       if (delivery === 'off') return null;
+      if (ongoing) {
+        const known = await db.queryOneAsync<{ id: number }>(
+          `SELECT id FROM admin_notices
+            WHERE dedupe_key = ? AND (resolved_at IS NULL OR dismissed_at IS NOT NULL) LIMIT 1`,
+          [dedupeKey]
+        );
+        if (known) return null;
+      }
       const at = now();
       const row =
         (await db.queryOneAsync<Row>(
@@ -174,6 +188,11 @@ export const adminNoticeService = {
         'UPDATE admin_notices SET resolved_at = ? WHERE dedupe_key = ? AND resolved_at IS NULL RETURNING id',
         [now(), dedupeKey]
       );
+      // Cleared: a dismissed one may come back the next time it happens.
+      await db.runAsync(
+        'UPDATE admin_notices SET dismissed_at = NULL WHERE dedupe_key = ? AND dismissed_at IS NOT NULL',
+        [dedupeKey]
+      );
       if (rows.length) emitAdminNoticesResolved(rows.map((r) => r.id));
     } catch (error) {
       log.warn('[ADMIN-NOTICES] Could not resolve a notice', {
@@ -185,8 +204,8 @@ export const adminNoticeService = {
 
   async dismiss(id: number): Promise<boolean> {
     const row = await db.queryOneAsync<{ id: number }>(
-      'UPDATE admin_notices SET resolved_at = ? WHERE id = ? AND resolved_at IS NULL RETURNING id',
-      [now(), id]
+      'UPDATE admin_notices SET resolved_at = ?, dismissed_at = ? WHERE id = ? AND resolved_at IS NULL RETURNING id',
+      [now(), now(), id]
     );
     if (row) emitAdminNoticesResolved([row.id]);
     return Boolean(row);
@@ -228,8 +247,9 @@ export const adminNoticeService = {
   /** Old resolved notices go. */
   async prune(): Promise<void> {
     await db.runAsync(
-      'DELETE FROM admin_notices WHERE resolved_at IS NOT NULL AND resolved_at < ?',
-      [now() - KEEP_RESOLVED_SECONDS]
+      `DELETE FROM admin_notices WHERE resolved_at IS NOT NULL AND resolved_at < ?
+         AND (dismissed_at IS NULL OR dismissed_at < ?)`,
+      [now() - KEEP_RESOLVED_SECONDS, now() - KEEP_DISMISSED_SECONDS]
     );
   },
 };

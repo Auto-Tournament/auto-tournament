@@ -149,6 +149,12 @@ test.describe('Redesigned player profile', () => {
       const row = page.getByTestId(`profile-recent-match-${slug}`);
       await expect(row).toBeVisible();
       await expect(row).toContainText('20 / 10');
+      // The row is a link to the match; the opponent in it, to their team page.
+      await expect(row.getByRole('link', { name: 'Open match' })).toHaveAttribute(
+        'href',
+        `/match/${slug}`
+      );
+      await expect(row.getByTestId('match-row-opponent')).toHaveAttribute('href', /^\/t\/team\//);
 
       // CS2 measures kills and damage, so its profile keeps those tiles. The
       // manually reported game's spec (manual-report-stats-pages.spec.ts)
