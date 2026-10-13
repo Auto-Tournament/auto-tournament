@@ -1,8 +1,10 @@
 /**
  * The search box in the top bar: a button (and Ctrl/⌘ K, or "/" outside a
- * text field) that opens a dialog searching players, teams, tournaments and
- * played matches (GET /api/search) and, for admins, the admin pages and
- * settings (search/adminIndex.ts). Arrow keys move, Enter opens.
+ * text field) that opens a dialog searching the site's pages, tabs and actions
+ * (search/siteIndex.ts, in the browser; admin ones for admins) and players,
+ * teams, tournaments, played matches and what each game adds, like highlights
+ * (GET /api/search). Fuzzy: typos, partial words, any order, no diacritics.
+ * Arrow keys move, Enter opens.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -19,12 +21,13 @@ import {
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n';
 import { api } from '../../utils/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useInstalledIntegrations } from '../../integrations/registry';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { paths, playerProfilePath } from '../../paths';
-import { searchAdminIndex } from '../../search/adminIndex';
+import { parentsOf, searchSiteIndex, type SiteSearchEntry } from '../../search/siteIndex';
 
 interface SearchResults {
   players: Array<{ id: string; name: string; avatar: string | null }>;
@@ -36,23 +39,45 @@ interface SearchResults {
     team2: string | null;
     event: string | null;
   }>;
+  /** What the installed games add (CS2: highlights, maps; for admins servers, recorders). */
+  modules: Array<{
+    group: string;
+    key: string;
+    label: string;
+    detail?: string;
+    count?: number;
+    to: string;
+  }>;
 }
 
 interface Hit {
   key: string;
-  group: 'pages' | 'players' | 'teams' | 'tournaments' | 'matches';
+  group: string;
   label: string;
   detail?: string;
   to: string;
   avatar?: { id: string; name: string; url: string | null };
 }
 
-const EMPTY: SearchResults = { players: [], teams: [], tournaments: [], matches: [] };
+const EMPTY: SearchResults = { players: [], teams: [], tournaments: [], matches: [], modules: [] };
+
+/** The groups in the order they are listed; a game's own groups go after these. */
+const GROUP_ORDER = [
+  'pages',
+  'players',
+  'teams',
+  'tournaments',
+  'matches',
+  'highlights',
+  'maps',
+  'servers',
+  'recorders',
+];
 
 export function SiteSearch() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isAuthenticated: isAdmin } = useAuth();
+  const { isAuthenticated: isAdmin, playerSteamId } = useAuth();
   const installed = useInstalledIntegrations();
   const modules = useMemo(() => new Set(installed.map((i) => i.id)), [installed]);
   const [open, setOpen] = useState(false);
@@ -97,15 +122,25 @@ export function SiteSearch() {
     const query = q.trim();
     if (query.length < 2) return [];
     const out: Hit[] = [];
-    if (isAdmin) {
-      for (const p of searchAdminIndex(query, (key) => t(`search.pages.${key}`), modules)) {
-        out.push({
-          key: `page-${p.key}`,
-          group: 'pages',
-          label: t(`search.pages.${p.key}`),
-          to: p.to,
-        });
-      }
+    // The pages, tabs and actions: named as on the page, found in English too.
+    const english = i18n.getFixedT('en');
+    const title = (e: SiteSearchEntry) => t(e.title.key, e.title.ns ? { ns: e.title.ns } : {});
+    const englishTitle = (e: SiteSearchEntry) =>
+      english(e.title.key, e.title.ns ? { ns: e.title.ns } : {});
+    for (const entry of searchSiteIndex(
+      query,
+      { signedIn: !!playerSteamId, admin: isAdmin, modules },
+      title,
+      englishTitle
+    )) {
+      const parents = parentsOf(entry).map(title);
+      out.push({
+        key: `page-${entry.key}`,
+        group: 'pages',
+        label: title(entry),
+        detail: parents.length ? parents.join(' › ') : undefined,
+        to: entry.to,
+      });
     }
     for (const p of results.players) {
       out.push({
@@ -143,8 +178,27 @@ export function SiteSearch() {
         to: paths.match.replace(':slug', encodeURIComponent(m.slug)),
       });
     }
-    return out;
-  }, [q, results, isAdmin, modules, t]);
+    for (const m of results.modules) {
+      out.push({
+        key: `${m.group}-${m.key}`,
+        group: m.group,
+        label: m.label,
+        detail:
+          m.detail ??
+          (typeof m.count === 'number' ? t('search.clips', { count: m.count }) : undefined),
+        to: m.to,
+      });
+    }
+    // Listed group by group: the keyboard order follows the screen.
+    const rank = (g: string) => {
+      const i = GROUP_ORDER.indexOf(g);
+      return i === -1 ? GROUP_ORDER.length : i;
+    };
+    return out
+      .map((hit, i) => ({ hit, i }))
+      .sort((a, b) => rank(a.hit.group) - rank(b.hit.group) || a.i - b.i)
+      .map(({ hit }) => hit);
+  }, [q, results, isAdmin, playerSteamId, modules, t]);
 
   const close = () => {
     setOpen(false);
@@ -158,7 +212,7 @@ export function SiteSearch() {
     navigate(hit.to);
   };
 
-  const groups = ['pages', 'players', 'teams', 'tournaments', 'matches'] as const;
+  const groups = [...new Set(hits.map((h) => h.group))];
   const searching = q.trim().length >= 2;
 
   return (
@@ -270,7 +324,7 @@ export function SiteSearch() {
                         letterSpacing: 0.6,
                       }}
                     >
-                      {t(`search.groups.${group}`)}
+                      {t(`search.groups.${group}`, { defaultValue: group })}
                     </ListSubheader>
                     <Box component="ul" sx={{ p: 0, m: 0 }}>
                       {inGroup.map((hit) => {

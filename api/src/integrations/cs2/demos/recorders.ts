@@ -51,6 +51,7 @@ export interface RecorderRow {
   update_status: string;
   update_error: string | null;
   updated_at: number | null;
+  update_requested_at?: number | null;
   host_name: string | null;
   host_id: string | null;
   agent_version: string | null;
@@ -366,6 +367,8 @@ export async function listRecorders() {
       updateStatus: r.update_status,
       updateError: r.update_error,
       updatedAt: r.updated_at,
+      /** When its last update was asked for: Update all's progress counts the recorders asked together. */
+      updateRequestedAt: r.update_requested_at != null ? Number(r.update_requested_at) : null,
       lastError: r.last_error,
       lastRunFailed: r.last_run_ok === 0,
     };

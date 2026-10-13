@@ -639,7 +639,9 @@
         "1v1": "Active Duty"
       },
       "searchAnyone": "Few players searching: you'll be matched with anyone available ({{count}} searching, {{total}} needed)",
-      "searchRating": "Finding a close match for your rating · {{count}} searching"
+      "searchRating": "Finding a close match for your rating · {{count}} searching",
+      "botFill": "用机器人补满空位",
+      "botFillUnrated": "机器人补满空位 · 不计排名：无评分、经验或掉落"
     },
     "queue": {
       "searching": "Searching {{mode}}",
@@ -901,7 +903,11 @@
       "players": "Players",
       "teams": "Teams",
       "tournaments": "Tournaments",
-      "matches": "Matches"
+      "matches": "Matches",
+      "highlights": "精彩集锦",
+      "maps": "地图",
+      "servers": "服务器和机器",
+      "recorders": "录制器"
     },
     "status": {
       "setup": "Being set up",
@@ -934,7 +940,9 @@
       "settingsLicense": "Settings: license",
       "settingsMatchmaking": "Settings: matchmaking",
       "settingsAdvanced": "Settings: advanced"
-    }
+    },
+    "clips_one": "{{count}} 个片段",
+    "clips_other": "{{count}} 个片段"
   },
   "highlightsPage": {
     "title": "Highlights",

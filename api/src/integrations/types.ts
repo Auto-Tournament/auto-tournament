@@ -718,6 +718,23 @@ export interface GameCatalogEntry {
   appIcon?: string;
 }
 
+/** One hit a game adds to the site search (`siteSearch`). */
+export interface SiteSearchHit {
+  /** The result group: 'highlights' | 'maps' | 'servers' | 'recorders' (the client labels these). */
+  group: string;
+  /** Unique within the group. */
+  key: string;
+  label: string;
+  /** A second line: what or where it is (a host name, a GPU). */
+  detail?: string;
+  /** Highlights: how many clips (the client words it). */
+  count?: number;
+  /** The site path it opens. */
+  to: string;
+  /** The fuzzy score (`rank`). */
+  score: number;
+}
+
 export interface GameIntegration {
   id: GameId;
   displayName: string;
@@ -1047,6 +1064,25 @@ export interface GameIntegration {
    * Server API 0.1.1.
    */
   onLevelUp?(ctx: { playerId: string; level: number; matchSlug: string }): Promise<void>;
+
+  // --- site search -----------------------------------------------------------
+
+  /**
+   * What this game adds to the search box (GET /api/search): its content
+   * (CS2: highlights by player and team, maps; for admins its servers and
+   * recorders). `rank` is core's fuzzy matcher (typos, word order, diacritics);
+   * the hits keep its score so core can merge them with its own. Admin-only
+   * hits only when `admin`. Must not reject.
+   */
+  siteSearch?(ctx: {
+    q: string;
+    admin: boolean;
+    rank: <T>(
+      items: readonly T[],
+      fieldsOf: (item: T) => ReadonlyArray<string | { text: string; weight?: number }>,
+      limit?: number
+    ) => Array<{ item: T; score: number }>;
+  }): Promise<SiteSearchHit[]>;
   /**
    * An elimination tournament this game owns finished: its top three, each
    * with the players who played for it (the lineup when the team signed up

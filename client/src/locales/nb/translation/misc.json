@@ -639,7 +639,9 @@
         "1v1": "Active Duty"
       },
       "searchAnyone": "Få spillere søker: du blir satt opp mot hvem som helst ({{count}} søker, {{total}} trengs)",
-      "searchRating": "Finner en jevn kamp for ratingen din · {{count}} søker"
+      "searchRating": "Finner en jevn kamp for ratingen din · {{count}} søker",
+      "botFill": "Fyll tomme plasser med boter",
+      "botFillUnrated": "Boter fyller tomme plasser · urangert: ingen rating, XP eller drops"
     },
     "queue": {
       "searching": "Søker {{mode}}",
@@ -891,8 +893,8 @@
   },
   "search": {
     "open": "Søk",
-    "placeholder": "Søk etter spillere, lag, turneringer, kamper…",
-    "placeholderAdmin": "Søk etter spillere, lag, turneringer, kamper og innstillinger…",
+    "placeholder": "Søk i sider, spillere, lag, høydepunkter…",
+    "placeholderAdmin": "Søk i sider, innstillinger, spillere, lag, servere…",
     "hint": "Skriv minst to bokstaver. Ctrl K (⌘ K) eller / åpner søket fra hvor som helst.",
     "none": "Fant ingenting for «{{q}}».",
     "versus": "{{team1}} mot {{team2}}",
@@ -901,7 +903,11 @@
       "players": "Spillere",
       "teams": "Lag",
       "tournaments": "Turneringer",
-      "matches": "Kamper"
+      "matches": "Kamper",
+      "highlights": "Høydepunkter",
+      "maps": "Kart",
+      "servers": "Servere og maskiner",
+      "recorders": "Opptakere"
     },
     "status": {
       "setup": "Settes opp",
@@ -934,7 +940,9 @@
       "settingsLicense": "Lisens",
       "settingsMatchmaking": "Innstillinger: matchmaking",
       "settingsAdvanced": "Innstillinger: avansert"
-    }
+    },
+    "clips_one": "{{count}} klipp",
+    "clips_other": "{{count}} klipp"
   },
   "highlightsPage": {
     "title": "Høydepunkter",

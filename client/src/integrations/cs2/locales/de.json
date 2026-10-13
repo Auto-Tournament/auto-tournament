@@ -2379,6 +2379,10 @@
       "updatePending": "Update pending",
       "updateQueued": "Recorder update queued; current work will finish first.",
       "updateAll": "Update all",
+      "updateProgress": "Aktualisierung: {{done}} von {{total}} aktualisiert",
+      "updateDone": "{{done}} von {{total}} aktualisiert",
+      "updateFailed_one": "{{count}} fehlgeschlagen",
+      "updateFailed_other": "{{count}} fehlgeschlagen",
       "build": "Build {{revision}}",
       "latest": "Update all installs image {{image}}, agent {{agent}}",
       "behind_one": "{{count}} recorder behind",
@@ -2429,7 +2433,8 @@
       "player": "Player: {{name}}",
       "team": "Team: {{name}}",
       "match": "Match: {{name}}",
-      "tournament": "Tournament: {{name}}"
+      "tournament": "Tournament: {{name}}",
+      "map": "Map: {{name}}"
     },
     "views_one": "{{count}} view",
     "views_other": "{{count}} views",
