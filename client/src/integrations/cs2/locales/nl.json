@@ -1693,7 +1693,7 @@
     "picksMost": "Picks most",
     "vetoShare": "{{map}} · {{count}} of {{total}} vetoes",
     "noMatchesYet": "De cijfers verschijnen na de eerste CS2-wedstrijd.",
-    "rating": "Rating",
+    "rating": "Performance",
     "ratingNote": "1.00 is an average player",
     "sides": "Rounds won by side",
     "ctWon_one": "CT · {{count}} round",
@@ -2021,7 +2021,7 @@
     },
     "col": {
       "player": "Player",
-      "rating": "Rating",
+      "rating": "Performance",
       "kda": "K-D-A",
       "adr": "ADR",
       "kast": "KAST",
@@ -2516,7 +2516,7 @@
     "categoryLabel": "Category",
     "rangeLabel": "Time range",
     "category": {
-      "rating": "AT rating",
+      "rating": "Performance",
       "adr": "ADR",
       "kd": "K/D",
       "hs": "Headshots",

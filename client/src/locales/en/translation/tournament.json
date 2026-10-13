@@ -920,7 +920,7 @@
       "player": "Player",
       "team": "Team",
       "rating": "Rating ±",
-      "hltv": "Rating"
+      "hltv": "Performance"
     },
     "award": {
       "mostKills": "Most kills",
