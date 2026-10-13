@@ -79,6 +79,7 @@ interface Config {
   rarityWeights: Record<Rarity, number>;
   tournamentRewards: boolean;
   rewards: Reward[];
+  tradeUp?: { enabled: boolean; count: number };
 }
 
 interface CatalogSkin {
@@ -927,6 +928,42 @@ export function SkinsAdminPage() {
               label={t('skins.admin.levelUpDrops')}
               data-testid="skins-level-up-drops"
             />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    size="small"
+                    checked={config.tradeUp?.enabled !== false}
+                    onChange={(e) =>
+                      set({
+                        tradeUp: { count: config.tradeUp?.count ?? 5, enabled: e.target.checked },
+                      })
+                    }
+                  />
+                }
+                label={t('skins.admin.tradeUp')}
+                data-testid="skins-trade-up"
+              />
+              <TextField
+                size="small"
+                type="number"
+                label={t('skins.admin.tradeUpCount')}
+                value={config.tradeUp?.count ?? 5}
+                disabled={config.tradeUp?.enabled === false}
+                onChange={(e) =>
+                  set({
+                    tradeUp: {
+                      enabled: config.tradeUp?.enabled !== false,
+                      count: Math.max(3, Math.min(10, Math.round(Number(e.target.value) || 5))),
+                    },
+                  })
+                }
+                slotProps={{
+                  htmlInput: { min: 3, max: 10, 'data-testid': 'skins-trade-up-count' },
+                }}
+                sx={{ width: 140 }}
+              />
+            </Box>
             <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>
               {t('skins.admin.fairRules')}
             </Typography>
