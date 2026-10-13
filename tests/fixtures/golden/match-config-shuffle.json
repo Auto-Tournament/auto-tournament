@@ -4,9 +4,7 @@
     "round": 1,
     "matchNumber": 1,
     "config": {
-      "admins": [
-        "<test-admin-steam-id>"
-      ],
+      "admins": ["<test-admin-steam-id>"],
       "cvars": {
         "at_autoready_enabled": 0,
         "at_both_teams_unpause_required": 1,
@@ -26,12 +24,8 @@
       "expected_players_team1": 5,
       "expected_players_team2": 5,
       "expected_players_total": 10,
-      "map_sides": [
-        "<random-side>"
-      ],
-      "maplist": [
-        "de_mirage"
-      ],
+      "map_sides": ["<random-side>"],
+      "maplist": ["de_mirage"],
       "matchid": "<matchid>",
       "maxRounds": 16,
       "min_players_to_ready": 5,

@@ -2,9 +2,7 @@
   {
     "bracket": null,
     "config": {
-      "admins": [
-        "<test-admin-steam-id>"
-      ],
+      "admins": ["<test-admin-steam-id>"],
       "cvars": {
         "at_autoready_enabled": 0,
         "at_both_teams_unpause_required": 1,
@@ -24,9 +22,7 @@
       "expected_players_team1": 5,
       "expected_players_team2": 5,
       "expected_players_total": 10,
-      "map_sides": [
-        "team1_ct"
-      ],
+      "map_sides": ["team1_ct"],
       "maplist": null,
       "matchid": "<matchid>",
       "maxRounds": 12,
@@ -75,9 +71,7 @@
   {
     "bracket": null,
     "config": {
-      "admins": [
-        "<test-admin-steam-id>"
-      ],
+      "admins": ["<test-admin-steam-id>"],
       "cvars": {
         "at_autoready_enabled": 0,
         "at_both_teams_unpause_required": 1,
@@ -97,9 +91,7 @@
       "expected_players_team1": 5,
       "expected_players_team2": 5,
       "expected_players_total": 10,
-      "map_sides": [
-        "team1_ct"
-      ],
+      "map_sides": ["team1_ct"],
       "maplist": null,
       "matchid": "<matchid>",
       "maxRounds": 12,
@@ -148,9 +140,7 @@
   {
     "bracket": null,
     "config": {
-      "admins": [
-        "<test-admin-steam-id>"
-      ],
+      "admins": ["<test-admin-steam-id>"],
       "cvars": {
         "at_autoready_enabled": 0,
         "at_both_teams_unpause_required": 1,
@@ -170,9 +160,7 @@
       "expected_players_team1": 5,
       "expected_players_team2": 5,
       "expected_players_total": 10,
-      "map_sides": [
-        "team1_ct"
-      ],
+      "map_sides": ["team1_ct"],
       "maplist": null,
       "matchid": "<matchid>",
       "maxRounds": 12,
@@ -221,9 +209,7 @@
   {
     "bracket": null,
     "config": {
-      "admins": [
-        "<test-admin-steam-id>"
-      ],
+      "admins": ["<test-admin-steam-id>"],
       "cvars": {
         "at_autoready_enabled": 0,
         "at_both_teams_unpause_required": 1,
@@ -243,9 +229,7 @@
       "expected_players_team1": 5,
       "expected_players_team2": 5,
       "expected_players_total": 10,
-      "map_sides": [
-        "team1_ct"
-      ],
+      "map_sides": ["team1_ct"],
       "maplist": null,
       "matchid": "<matchid>",
       "maxRounds": 12,
@@ -294,9 +278,7 @@
   {
     "bracket": null,
     "config": {
-      "admins": [
-        "<test-admin-steam-id>"
-      ],
+      "admins": ["<test-admin-steam-id>"],
       "cvars": {
         "at_autoready_enabled": 0,
         "at_both_teams_unpause_required": 1,
@@ -316,9 +298,7 @@
       "expected_players_team1": 5,
       "expected_players_team2": 5,
       "expected_players_total": 10,
-      "map_sides": [
-        "team1_ct"
-      ],
+      "map_sides": ["team1_ct"],
       "maplist": null,
       "matchid": "<matchid>",
       "maxRounds": 12,
@@ -367,9 +347,7 @@
   {
     "bracket": null,
     "config": {
-      "admins": [
-        "<test-admin-steam-id>"
-      ],
+      "admins": ["<test-admin-steam-id>"],
       "cvars": {
         "at_autoready_enabled": 0,
         "at_both_teams_unpause_required": 1,
@@ -389,9 +367,7 @@
       "expected_players_team1": 5,
       "expected_players_team2": 5,
       "expected_players_total": 10,
-      "map_sides": [
-        "team1_ct"
-      ],
+      "map_sides": ["team1_ct"],
       "maplist": null,
       "matchid": "<matchid>",
       "maxRounds": 12,
