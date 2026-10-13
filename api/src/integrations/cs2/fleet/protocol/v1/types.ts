@@ -321,6 +321,13 @@ export interface PlayerRound {
   mvp?: boolean;
   clutch_vs?: number;
   clutch_won?: boolean;
+  /** Round economy (Ready Up): money at the start and after the buys, armour, helmet, kit, loadout. */
+  money_start?: number;
+  money_after_buy?: number;
+  armor?: number;
+  helmet?: boolean;
+  defuser?: boolean;
+  loadout?: string[];
 }
 
 export interface RoundSummary {
