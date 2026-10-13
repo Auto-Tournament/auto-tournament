@@ -36,7 +36,11 @@
     "language": "Language",
     "signIn": "Sign in",
     "play": "Play",
-    "thirdPartyNotices": "Third-party licenses"
+    "thirdPartyNotices": "Third-party licenses",
+    "tournaments": "Tournaments",
+    "community": "Community",
+    "backToSite": "Back to site",
+    "manageHome": "Manage"
   },
   "layout": {
     "pageTitle": {

@@ -52,6 +52,8 @@ test(
       });
     });
     await page.goto('/tournaments', { waitUntil: 'domcontentloaded' });
+    // Highlights is in the top bar's Community menu.
+    await page.getByTestId('nav-community').click();
     await page.getByTestId('nav-cs2-highlights').first().click();
     await expect(page).toHaveURL(/\/highlights$/);
     await expect(page.getByTestId('library-grid').getByRole('link')).toHaveCount(2);

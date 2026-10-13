@@ -57,13 +57,14 @@ test.describe.serial('Platform update toast', () => {
   test('one toast per update, clickable notes, closing one keeps the other, dismissal per version', async ({
     page,
   }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    // The update toasts are Manage's (the admin dashboard).
+    await page.goto('/manage', { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('update-toast')).toHaveCount(1, { timeout: 15_000 });
     await expect(page.getByTestId('module-update-toast')).toHaveCount(1);
 
     // Moving around the app does not add the same toast again.
+    await page.goto('/manage/teams', { waitUntil: 'domcontentloaded' });
     await page.goto('/manage', { waitUntil: 'domcontentloaded' });
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('update-toast')).toHaveCount(1, { timeout: 15_000 });
 
     // The release notes take a real click (a toast's message used to be inert).

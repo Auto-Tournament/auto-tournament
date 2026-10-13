@@ -77,7 +77,7 @@ test.describe.serial('Admin call toast', () => {
     });
     // Start from no open calls, so the stack only holds this test's.
     await request.post('/api/admin-calls/resolve-all', { data: {} });
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/manage', { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 15_000 });
   });
 

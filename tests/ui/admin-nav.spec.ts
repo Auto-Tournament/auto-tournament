@@ -55,25 +55,34 @@ test.describe.serial('Admin navigation', () => {
       expect(await signInViaRequest(request)).toBe(true);
       await request.delete('/api/tournament');
 
-      // The admin home: the top bar's way in, and no sidebar anywhere.
+      // An admin who plays lands on the player Home at "/", with Manage in
+      // the top bar.
       await page.goto('/');
+      await expect(page.getByTestId('home-page')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('nav-manage')).toHaveAttribute('href', '/manage');
+
+      // Manage is its own dashboard, with its header in place of the public
+      // top bar, and no sidebar drawer.
+      await page.goto('/manage');
       await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('manage-header')).toBeVisible();
+      await expect(page.getByTestId('top-nav')).toHaveCount(0);
       await expect(page.locator('.MuiDrawer-root')).toHaveCount(0);
-      await expect(page.getByRole('button', { name: /navigation menu/i })).toHaveCount(0);
-
-      // An admin's links: Manage in place of Home (the logo is the way home),
-      // then the same site links players get: Browse, Teams, Players, Leaderboards.
-      await expect(page.getByTestId('nav-admin')).toHaveCount(0);
-      await expect(page.getByTestId('nav-manage')).toBeVisible();
-      await expect(page.getByTestId('nav-browse')).toBeVisible();
-      await expect(page.getByTestId('nav-home')).toHaveCount(0);
-      await expect(page.getByTestId('nav-leaderboards')).toBeVisible();
-
-      await page.getByTestId('nav-manage').click();
-      await expect(page).toHaveURL(/\/manage$/);
+      await expect(page.getByTestId('manage-back-to-site')).toHaveAttribute('href', '/');
       const rail = page.getByTestId('manage-rail');
       await expect(rail).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId('nav-manage')).toHaveAttribute('aria-current', 'page');
+
+      // On the public site an admin's top bar has the player's four places,
+      // then Manage.
+      await page.goto('/tournaments');
+      await expect(page.getByTestId('nav-tournaments')).toHaveAttribute('aria-current', 'page');
+      await expect(page.getByTestId('nav-leaderboards')).toBeVisible();
+      await expect(page.getByTestId('nav-community')).toBeVisible();
+      await expect(page.getByTestId('nav-manage')).toHaveAttribute('href', '/manage');
+      await expect(page.getByTestId('nav-admin')).toHaveCount(0);
+      await page.getByTestId('nav-manage').click();
+      await expect(page).toHaveURL(/\/manage$/);
+      await expect(rail).toBeVisible({ timeout: 15000 });
 
       // The tournament's pages are tabs over them, not rail items.
       for (const [key, url] of TOURNAMENT_BAR_ITEMS) {
@@ -182,16 +191,25 @@ test.describe.serial('Admin navigation', () => {
     expect(await signInAsPlayer(page)).toBe(true);
 
     await page.goto('/');
-    await expect(page.getByTestId('nav-home')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('nav-tournaments')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('nav-manage')).toHaveCount(0);
     await expect(page.getByTestId('nav-admin')).toHaveCount(0);
     await expect(page.getByTestId('manage-rail')).toHaveCount(0);
     await expect(page.locator('a[href="/manage"]')).toHaveCount(0);
-    // A player's links: Home, Browse, the site-wide Teams page (a team is
-    // not tied to a tournament), and the platform's leaderboard (per game;
-    // a tournament's standings are on its page).
-    await expect(page.getByTestId('nav-teams')).toHaveAttribute('href', '/community/teams');
+    // A player's places: Tournaments, Leaderboards, and Community for the
+    // directories (the logo is Home).
+    await expect(page.getByTestId('nav-tournaments')).toHaveAttribute('href', '/tournaments');
     await expect(page.getByTestId('nav-leaderboards')).toHaveAttribute('href', '/leaderboards');
+    await page.getByTestId('nav-community').click();
+    await expect(page.getByTestId('nav-community-teams')).toHaveAttribute(
+      'href',
+      '/community/teams'
+    );
+    await expect(page.getByTestId('nav-community-players')).toHaveAttribute(
+      'href',
+      '/community/players'
+    );
+    await page.keyboard.press('Escape');
 
     // Typing the address sends them to their own page, still without it.
     await page.goto('/manage');
@@ -205,7 +223,7 @@ test.describe.serial('Admin navigation', () => {
     { tag: ['@ui', '@navigation'] },
     async ({ page }) => {
       await page.goto('/tournaments');
-      await expect(page.getByTestId('nav-browse')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('nav-tournaments')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('nav-manage')).toHaveCount(0);
       await expect(page.getByTestId('manage-rail')).toHaveCount(0);
     }

@@ -106,7 +106,7 @@ test.describe.serial('Shuffle Tournament UI', () => {
       expect(setup, 'shuffle setup should succeed').toBeTruthy();
 
       // Admin home: a shuffle tournament enters players, not teams.
-      await page.goto('/');
+      await page.goto('/manage');
       await expect(page.getByTestId('admin-home-tournaments')).toContainText('10 players', {
         timeout: 15000,
       });

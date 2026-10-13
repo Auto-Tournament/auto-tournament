@@ -40,7 +40,10 @@ test.describe.serial('Steam health snackbar', () => {
       return { ok: resp.ok, status: resp.status, text };
     }, steamId);
 
-    expect(loginResult.ok, `login-admin failed: ${loginResult.status} ${loginResult.text}`).toBeTruthy();
+    expect(
+      loginResult.ok,
+      `login-admin failed: ${loginResult.status} ${loginResult.text}`
+    ).toBeTruthy();
 
     const adminMe = await page.evaluate(async () => {
       const resp = await globalThis.fetch('/api/auth/admin/me', { credentials: 'include' });
@@ -52,7 +55,7 @@ test.describe.serial('Steam health snackbar', () => {
       `/api/auth/admin/me did not authenticate after login-admin. Response: ${JSON.stringify(adminMe)}`
     ).toBeTruthy();
 
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/manage', { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 15_000 });
   });
 
@@ -157,4 +160,3 @@ test.describe.serial('Steam health snackbar', () => {
     }
   );
 });
-

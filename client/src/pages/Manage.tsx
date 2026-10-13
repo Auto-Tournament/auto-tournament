@@ -36,6 +36,7 @@ import { PageHead } from '../components/common/ui';
 import { GameMark } from '../components/common/GameMark';
 import { DEFAULT_SETUP_GAME, useSetupGames } from '../components/tournament/setup/games';
 import { paths } from '../paths';
+import { SiteOverview } from '../components/adminHome/SiteOverview';
 import type { Match } from '../types/match.types';
 import type { Tournament } from '../types/tournament.types';
 
@@ -144,6 +145,7 @@ export default function Manage() {
   if (loading) {
     return (
       <Box>
+        <SiteOverview />
         <LinearProgress />
       </Box>
     );
@@ -151,6 +153,8 @@ export default function Manage() {
 
   return (
     <Box data-testid="manage-page" sx={{ width: '100%' }}>
+      {/* The whole site first (it was the admin home at "/"), then the tournament's queue. */}
+      <SiteOverview />
       <PageHead
         eyebrow={
           tournament ? <ManageEyebrow tournament={tournament} /> : t('managePage.noTournament')

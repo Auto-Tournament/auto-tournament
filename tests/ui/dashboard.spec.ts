@@ -19,13 +19,14 @@ test.describe.serial('Dashboard Page', () => {
     await ensureSignedIn(page);
   });
 
-  test('should display admin home',
+  test(
+    'should display admin home',
     {
       tag: ['@ui', '@dashboard'],
     },
     async ({ page }) => {
-      await page.goto('/');
-      await expect(page).toHaveTitle(/Admin/i);
+      await page.goto('/manage');
+      await expect(page).toHaveTitle(/ · Auto Tournament$/);
 
       // Wait for page to load and verify we're on the admin home page
       await page.waitForLoadState('networkidle');

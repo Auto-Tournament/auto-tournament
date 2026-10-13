@@ -31,7 +31,7 @@ test.describe.serial('Admin home', () => {
       expect(setup).toBeTruthy();
       if (!setup) return;
 
-      await page.goto('/');
+      await page.goto('/manage');
       await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 15000 });
 
       // Tournaments list: the just-started tournament, with a Manage action
@@ -45,11 +45,11 @@ test.describe.serial('Admin home', () => {
         page.getByTestId(`admin-home-tournament-${setup.tournament.id}-action`)
       ).toHaveText(/manage/i);
 
-      // Site grid: every other admin page is reachable from here, including
-      // Servers and Settings.
-      await expect(page.getByTestId('admin-home-site-grid')).toBeVisible();
-      await expect(page.getByTestId('admin-home-site-link-servers')).toHaveAttribute('href', '/manage/servers');
-      await expect(page.getByTestId('admin-home-site-link-settings')).toHaveAttribute('href', '/manage/settings');
+      // Every other admin page is in the rail beside it.
+      await expect(page.getByTestId('manage-rail-settings')).toHaveAttribute(
+        'href',
+        '/manage/settings'
+      );
 
       // The row links to the public event page, and People counts sign-ins.
       await expect(page.getByTestId('admin-home-tournament-event-page')).toHaveAttribute(
@@ -68,12 +68,16 @@ test.describe.serial('Admin home', () => {
       const before = ((await read.json()) as { settings: { siteName: string } }).settings.siteName;
       try {
         await request.put('/api/settings', { data: { siteName: null } });
-        await page.goto('/');
-        await expect(page.locator('#admin-home-title')).toHaveText('Auto Tournament', { timeout: 15000 });
+        await page.goto('/manage');
+        await expect(page.locator('#admin-home-title')).toHaveText('Auto Tournament', {
+          timeout: 15000,
+        });
 
         await request.put('/api/settings', { data: { siteName: 'Edition 35 LAN' } });
-        await page.goto('/');
-        await expect(page.locator('#admin-home-title')).toHaveText('Edition 35 LAN', { timeout: 15000 });
+        await page.goto('/manage');
+        await expect(page.locator('#admin-home-title')).toHaveText('Edition 35 LAN', {
+          timeout: 15000,
+        });
       } finally {
         await request.put('/api/settings', {
           data: { siteName: before === 'Auto Tournament' ? null : before },
