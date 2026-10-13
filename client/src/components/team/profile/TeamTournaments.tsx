@@ -165,9 +165,9 @@ export function TeamTournaments({
                 </Typography>
               )}
             </Box>
-            {hasMatch ? (
+            {hasMatch && match?.slug ? (
               <RowLink
-                to={paths.teamMatch.replace(':teamId', teamId)}
+                to={matchPagePath(match.slug)}
                 label={t('teamProfile.tournaments.openMatch')}
                 testId="team-profile-open-match"
               />

@@ -55,9 +55,7 @@ export default {
 
 const MANIFEST = {
   success: true,
-  modules: [
-    { id: MODULE_ID, version: '1.0.0', clientApi: '^0.2.0', client: { entry: ENTRY } },
-  ],
+  modules: [{ id: MODULE_ID, version: '1.0.0', clientApi: '^0.2.0', client: { entry: ENTRY } }],
 };
 
 /** A request held until `release()`: what a slow API looks like to the browser. */
@@ -70,7 +68,11 @@ function gate(): { wait: Promise<void>; release: () => void } {
 }
 
 /** Stub the manifest; `hold` keeps it unanswered until released. */
-async function stubManifest(page: Page, body: unknown, hold?: Promise<void>): Promise<() => boolean> {
+async function stubManifest(
+  page: Page,
+  body: unknown,
+  hold?: Promise<void>
+): Promise<() => boolean> {
   let asked = false;
   await page.route('**/api/modules/public', async (route: Route) => {
     asked = true;
@@ -199,7 +201,7 @@ test.describe('Code modules load without holding the page back', () => {
         try {
           await page.goto(`/team/${teamId}`);
           // The page itself is there; only the module's slot waits.
-          await expect(page.getByTestId('team-match-view-profile-link')).toBeVisible();
+          await expect(page.getByTestId('team-profile-page')).toBeVisible();
           await expect(page.getByTestId('module-pending')).toBeVisible();
           await expect(page.getByTestId('e2e-module-slot')).toHaveCount(0);
           // Not manual reporting's panel in the meantime: the code module
@@ -232,7 +234,7 @@ test.describe('Code modules load without holding the page back', () => {
         await page.route(`**${ENTRY}`, () => new Promise<void>(() => undefined));
 
         await page.goto(`/team/${teamId}`);
-        await expect(page.getByTestId('team-match-view-profile-link')).toBeVisible();
+        await expect(page.getByTestId('team-profile-page')).toBeVisible();
         await expect(page.getByTestId('module-pending')).toBeVisible();
 
         // Within the timeouts, the slot is what it is without code modules:

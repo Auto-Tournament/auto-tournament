@@ -752,5 +752,9 @@
     "dismissedDone": "Report dismissed",
     "loadError": "Could not load the reports",
     "actionError": "Could not do that"
+  },
+  "nextMatchCard": {
+    "title": "Your next match",
+    "open": "Open match room"
   }
 }

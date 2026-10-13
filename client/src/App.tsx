@@ -32,7 +32,6 @@ import Settings from './pages/Settings';
 import License from './pages/License';
 import Development from './pages/Development';
 import { useIsDevelopment } from './hooks/useIsDevelopment';
-import TeamMatch from './pages/TeamMatch';
 import TeamProfile from './pages/TeamProfile';
 import PlayerProfile from './pages/PlayerProfile';
 import MatchPage from './pages/MatchPage';
@@ -46,7 +45,7 @@ import TournamentBracketTab from './pages/TournamentBracketTab';
 import TournamentMatchesTab from './pages/TournamentMatchesTab';
 import TournamentTeamsTab from './pages/TournamentTeamsTab';
 import TournamentRulesTab from './pages/TournamentRulesTab';
-import TournamentYourMatchTab from './pages/TournamentYourMatchTab';
+import TournamentMatchRedirect from './pages/TournamentMatchRedirect';
 import TournamentSignupTab from './pages/TournamentSignupTab';
 import { TopNavBar } from './components/layout/TopNavBar';
 import { ModuleGlobalOverlays } from './components/layout/ModuleGlobalOverlays';
@@ -392,21 +391,7 @@ function AppRoutes() {
         ))}
 
       {/* Viewer & player-facing pages – require a signed-in identity (admin or player) */}
-      <Route
-        path={paths.teamMatch}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <TeamMatch />
-          </ProtectedRoute>
-        }
-      />
-      {/*
-        Public team profile. Deliberately not `/team/:teamId` or `/teams/:teamId`:
-        the former is the team's live match/server page (`TeamMatch`, used during
-        play by players and MatchZy Enhanced flows) and must keep its URL unchanged; the
-        latter would sit under the admin-only teams list. `/t/team/:teamId`
-        avoids both.
-      */}
+      {/* A team's page. Its match is played in the match room (`/match/:slug`), which it links to. */}
       <Route
         path={paths.teamProfile}
         element={
@@ -430,7 +415,8 @@ function AppRoutes() {
         <Route path="teams" element={<TournamentTeamsTab />} />
         <Route path="standings" element={<TournamentLeaderboard />} />
         <Route path="rules" element={<TournamentRulesTab />} />
-        <Route path="match" element={<TournamentYourMatchTab />} />
+        {/* The old "Your match" tab: the player's match room now. */}
+        <Route path="match" element={<TournamentMatchRedirect />} />
         <Route path="signup" element={<TournamentSignupTab />} />
         {/* A module's own tab (CS2: highlights). */}
         <Route path=":moduleTab" element={<TournamentModuleTab />} />
@@ -670,14 +656,16 @@ function LegacyAdminRedirect() {
   );
 }
 
-/** An old public address → its new one, keeping the query and the hash. */
+/** An old public address → its new one, keeping its params, the query and the hash. */
 function MovedRedirect({ to }: { to: string }) {
   const location = useLocation();
-  const [path, query = ''] = to.split('?');
-  const params = new URLSearchParams(query);
-  new URLSearchParams(location.search).forEach((value, key) => params.set(key, value));
-  const search = params.toString();
-  return <Navigate to={`${path}${search ? `?${search}` : ''}${location.hash}`} replace />;
+  const params = useParams();
+  const filled = to.replace(/:(\w+)/g, (_, key: string) => encodeURIComponent(params[key] ?? ''));
+  const [path, query = ''] = filled.split('?');
+  const search = new URLSearchParams(query);
+  new URLSearchParams(location.search).forEach((value, key) => search.set(key, value));
+  const searchText = search.toString();
+  return <Navigate to={`${path}${searchText ? `?${searchText}` : ''}${location.hash}`} replace />;
 }
 
 /** `/matches/:slug` (old shared links) → the match's own page. */

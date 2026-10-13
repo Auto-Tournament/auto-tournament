@@ -2,34 +2,28 @@ import { copyTextToClipboard } from './clipboard';
 import { teamProfilePath } from '../paths';
 
 /**
- * Team link utilities
- * Centralized logic for generating and handling team match URLs
+ * Team link utilities: the team's page, shared with its players. It shows
+ * the team's next match, a link to the match room where it is played.
  */
 
-/**
- * Generate team match URL
- */
-export function getTeamMatchUrl(teamId: string): string {
-  return `${window.location.origin}/team/${teamId}`;
+/** The full address of a team's page, to share. */
+export function getTeamPageUrl(teamId: string): string {
+  return `${window.location.origin}${teamProfilePath(teamId)}`;
 }
 
-/**
- * Path to the public team profile page (roster, ratings, current tournament
- * status). Distinct from the team *match* page above — this is the
- * read-only overview anyone can open, not the in-match/server page.
- */
+/** Path to a team's page (roster, ratings, its next match). */
 export function getTeamProfileUrl(teamId: string): string {
   return teamProfilePath(teamId);
 }
 
 /**
- * Copy team match URL to clipboard.
+ * Copy a team's page address to the clipboard.
  *
  * Works over plain HTTP too — see `copyTextToClipboard`.
  */
-export async function copyTeamMatchUrl(teamId: string): Promise<boolean> {
+export async function copyTeamPageUrl(teamId: string): Promise<boolean> {
   try {
-    return await copyTextToClipboard(getTeamMatchUrl(teamId));
+    return await copyTextToClipboard(getTeamPageUrl(teamId));
   } catch (error) {
     console.error('Failed to copy team link:', error);
     return false;

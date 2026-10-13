@@ -2,7 +2,7 @@
  * Link previews (services/shareCards):
  *
  * - GET /og/:kind/:key.png — the page's share card (1200×630 PNG).
- * - GET on a shareable page (/match/…, /t/team/…, /player/…, /tournament/…,
+ * - GET on a shareable page (/match/…, /team/…, /player/…, /tournament/…,
  *   and the module pages such as CS2's /watch/…): the web app's index.html
  *   with that page's title, description and card in its Open Graph and
  *   Twitter tags, so a link pasted in Discord or on X shows the thing itself.

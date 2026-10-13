@@ -1,5 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
-import { ensureSignedIn, signInViaRequest, impersonatePlayer, stopImpersonating } from '../helpers/auth';
+import { openOwnMatchRoom } from '../helpers/matchRoom';
+import {
+  ensureSignedIn,
+  signInViaRequest,
+  impersonatePlayer,
+  stopImpersonating,
+} from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { findMatchByTeams } from '../helpers/matches';
 import { actingSteamIdFor } from '../helpers/veto';
@@ -50,7 +56,15 @@ test.describe.serial('Copy console command over plain HTTP', () => {
     const setup = await setupTournament(request, {
       type: 'single_elimination',
       format: 'bo1',
-      maps: ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'],
+      maps: [
+        'de_mirage',
+        'de_inferno',
+        'de_ancient',
+        'de_anubis',
+        'de_dust2',
+        'de_vertigo',
+        'de_nuke',
+      ],
       teamCount: 2,
       serverCount: 1,
       prefix: 'copy-cmd',
@@ -97,7 +111,7 @@ test.describe.serial('Copy console command over plain HTTP', () => {
       expect(await impersonatePlayer(page.request, steamId)).toBe(true);
 
       await withInsecureClipboard(page, true);
-      await page.goto(`/player/${steamId}`, { waitUntil: 'domcontentloaded' });
+      await openOwnMatchRoom(page);
 
       const copyButton = page.getByRole('button', { name: /Copy Console Command/i });
       await expect(copyButton).toBeVisible({ timeout: 20000 });
@@ -122,7 +136,7 @@ test.describe.serial('Copy console command over plain HTTP', () => {
       expect(await impersonatePlayer(page.request, steamId)).toBe(true);
 
       await withInsecureClipboard(page, false);
-      await page.goto(`/player/${steamId}`, { waitUntil: 'domcontentloaded' });
+      await openOwnMatchRoom(page);
 
       const copyButton = page.getByRole('button', { name: /Copy Console Command/i });
       await expect(copyButton).toBeVisible({ timeout: 20000 });

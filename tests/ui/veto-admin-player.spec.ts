@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { openOwnMatchRoom } from '../helpers/matchRoom';
 import { signInViaRequest, stopImpersonating } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { findMatchByTeams } from '../helpers/matches';
@@ -92,7 +93,7 @@ test.describe.serial('Veto as an admin who also plays', () => {
    * asserting the resulting action request succeeds.
    */
   async function banAsSelf(page: Page, steamId: string, mapName: string) {
-    await page.goto(`/player/${steamId}`, { waitUntil: 'domcontentloaded' });
+    await openOwnMatchRoom(page);
     await expect(page.getByTestId('veto-interface')).toBeVisible({ timeout: 20000 });
 
     const actionResponse = page.waitForResponse(
@@ -113,17 +114,13 @@ test.describe.serial('Veto as an admin who also plays', () => {
     ).toBe(true);
   }
 
-  test(
-    'bans on the first step of the order',
-    { tag: ['@ui', '@veto'] },
-    async ({ page }) => {
-      // Sign in *as* the team1 roster member: the session's real identity is
-      // now both admin and player, with nothing impersonated.
-      expect(await signInViaRequest(page.request, TEAM1_ADMIN_PLAYER)).toBe(true);
+  test('bans on the first step of the order', { tag: ['@ui', '@veto'] }, async ({ page }) => {
+    // Sign in *as* the team1 roster member: the session's real identity is
+    // now both admin and player, with nothing impersonated.
+    expect(await signInViaRequest(page.request, TEAM1_ADMIN_PLAYER)).toBe(true);
 
-      await banAsSelf(page, TEAM1_ADMIN_PLAYER, 'de_inferno');
-    }
-  );
+    await banAsSelf(page, TEAM1_ADMIN_PLAYER, 'de_inferno');
+  });
 
   test(
     'bans mid-order, once the other team has acted',

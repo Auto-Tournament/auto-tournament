@@ -1,4 +1,4 @@
-import { Navigate, Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { KeyDatesBar } from '../components/tournament/overview/KeyDatesBar';
@@ -17,7 +17,8 @@ import { useTournamentPage } from '../components/tournament/page/tournamentPageC
 import { isLiveMatch } from '../components/tournament/page/matchHelpers';
 import { usePublicBracket } from '../hooks/usePublicBracket';
 import { compareMatchOrder } from '../utils/matchUtils';
-import { tournamentTabPath, yourMatchFirst } from '../paths';
+import { tournamentTabPath } from '../paths';
+import { NextMatchCard } from '../components/match/NextMatchCard';
 
 /**
  * The tournament page's Overview tab, kept to what a quick look needs (the
@@ -38,7 +39,9 @@ export default function TournamentOverview() {
   // The calendar shows the check-in window too (gold), when there is one and
   // the organizer did not put it in the schedule themselves.
   const calendar =
-    signup.window?.checkInOpensAt && signup.window.checkInClosesAt && !schedule.some((s) => /check/i.test(s.label))
+    signup.window?.checkInOpensAt &&
+    signup.window.checkInClosesAt &&
+    !schedule.some((s) => /check/i.test(s.label))
       ? [
           ...schedule,
           {
@@ -52,15 +55,18 @@ export default function TournamentOverview() {
   // eslint-disable-next-line react-hooks/purity -- the phase only needs to be right when the page renders
   const phase = signupPhase(signup.window, Date.now());
   const registration = viewerRegistration(signup);
-  const canManage = Boolean(registration && signup.eligibleTeams.some((team) => team.id === registration.teamId));
-  const spotsLeft = signup.window?.maxTeams ? signup.window.maxTeams - tournament.teamIds.length : null;
+  const canManage = Boolean(
+    registration && signup.eligibleTeams.some((team) => team.id === registration.teamId)
+  );
+  const spotsLeft = signup.window?.maxTeams
+    ? signup.window.maxTeams - tournament.teamIds.length
+    : null;
   const canSignUp =
-    tournament.status === 'setup' && phase === 'open' && !registration && (spotsLeft === null || spotsLeft > 0);
+    tournament.status === 'setup' &&
+    phase === 'open' &&
+    !registration &&
+    (spotsLeft === null || spotsLeft > 0);
 
-  // While it runs, a player in it belongs on "Your match".
-  if (yourMatchFirst(tournament.status, Boolean(viewerTeam))) {
-    return <Navigate to={tournamentTabPath(tournament.id, 'match')} replace />;
-  }
   // Once it is over, the overview is the results.
   if (tournament.status === 'completed' && !isShuffle) {
     return <TournamentResults tournament={tournament} teams={teams} players={players} />;
@@ -68,6 +74,10 @@ export default function TournamentOverview() {
 
   return (
     <Stack spacing={{ xs: 3, md: 3.5 }} data-testid="public-tournament-overview">
+      {/* While it runs, the viewer's next match first: a link to its match room. */}
+      {tournament.status === 'in_progress' && viewerTeam && (
+        <NextMatchCard teamId={viewerTeam.id} />
+      )}
       <LiveStrip
         matches={liveMatches}
         linkLabel={t('overviewPage.allMatches')}
@@ -98,7 +108,9 @@ export default function TournamentOverview() {
           registrations={signup.registrations}
           canManage={canManage}
           onWithdraw={async () => {
-            await api.delete(`/api/tournament-signup/${tournament.id}/registration/${registration.teamId}`);
+            await api.delete(
+              `/api/tournament-signup/${tournament.id}/registration/${registration.teamId}`
+            );
             await signup.reload();
           }}
         />
@@ -113,7 +125,13 @@ export default function TournamentOverview() {
                 to={tournamentTabPath(tournament.id, 'signup')}
                 variant="contained"
                 data-testid="overview-sign-up"
-                sx={{ borderRadius: radii.pill, px: 3.25, py: 1.75, fontWeight: 600, whiteSpace: 'nowrap' }}
+                sx={{
+                  borderRadius: radii.pill,
+                  px: 3.25,
+                  py: 1.75,
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                }}
               >
                 {t('signup.cta')}
               </Button>
@@ -145,11 +163,26 @@ export default function TournamentOverview() {
           tournamentId={tournament.id}
         />
       ) : (
-        <Box component="section" aria-labelledby="overview-schedule-empty" data-testid="overview-schedule-empty">
-          <Typography id="overview-schedule-empty" component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600, mb: 1.5 }}>
+        <Box
+          component="section"
+          aria-labelledby="overview-schedule-empty"
+          data-testid="overview-schedule-empty"
+        >
+          <Typography
+            id="overview-schedule-empty"
+            component="h2"
+            sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600, mb: 1.5 }}
+          >
             {t('overviewPage.schedule')}
           </Typography>
-          <Box sx={{ border: `1px dashed ${tokens.color.rule}`, borderRadius: radii.lg, p: 3, color: tokens.color.muted }}>
+          <Box
+            sx={{
+              border: `1px dashed ${tokens.color.rule}`,
+              borderRadius: radii.lg,
+              p: 3,
+              color: tokens.color.muted,
+            }}
+          >
             {t('overviewPage.scheduleSoon')}
           </Box>
         </Box>

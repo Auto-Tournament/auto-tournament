@@ -9,44 +9,10 @@ import { useIntegrationFor } from '../../../integrations/registry';
 import { MatchMapChips } from '../../team/MatchMapChips';
 import { MatchPlayerPerformance } from '../../team/MatchPlayerPerformance';
 import { getMapData, getMapDisplayName } from '../../../constants/maps';
-import { isVetoDisabledForMatch } from '../../../utils/matchFlags';
+import { matchPhaseOf } from '../../../utils/matchPhase';
 import { tokens, fontDisplay, mono, radii, withAlpha } from '../../../theme/tokens';
 
 const { color } = tokens;
-const FORMATS = ['bo1', 'bo3', 'bo5'];
-
-type Phase = 'notStarted' | 'waitingOpponent' | 'veto' | 'joining' | 'live' | 'done';
-
-/** Where the match stands, in the order the tab draws it (boards 7a–7c). */
-function phaseOf(match: TeamMatchInfo, tournamentStatus: string): Phase {
-  const isManual = match.round === 0;
-  const bothTeams = isManual
-    ? Boolean(match.config?.team1 && match.config?.team2)
-    : Boolean(match.team1?.id && match.team2?.id);
-  if (match.status === 'completed') return 'done';
-  if (match.status === 'live' && match.liveStats && match.liveStats.status !== 'warmup')
-    return 'live';
-  if (!isManual && tournamentStatus !== 'in_progress' && match.status === 'pending')
-    return 'notStarted';
-  if (match.status === 'pending' && !bothTeams) return 'waitingOpponent';
-  const vetoOff = isVetoDisabledForMatch({
-    round: match.round,
-    team1: match.team1 ? { id: match.team1.id } : null,
-    team2: match.team2 ? { id: match.team2.id } : null,
-    config: match.config
-      ? {
-          ...match.config,
-          team1: match.config.team1 ? { id: match.config.team1.id } : null,
-          team2: match.config.team2 ? { id: match.config.team2.id } : null,
-        }
-      : null,
-  });
-  const vetoDone = match.veto?.status === 'completed';
-  if (!vetoOff && !vetoDone && match.status === 'pending' && FORMATS.includes(match.matchFormat)) {
-    return 'veto';
-  }
-  return 'joining';
-}
 
 /** Maps won by each side, from the finished maps or the live series score. */
 function seriesWins(match: TeamMatchInfo): { team1: number; team2: number } {
@@ -203,10 +169,20 @@ function InServerList({
  * then the part that matters at that moment: the map veto, who is in the
  * server, or the scoreboard. The maps of the series sit at the bottom.
  *
- * The veto, the join button and the scoreboard are the same pieces the team's
- * match page (`/team/:teamId`) uses, so both always show the same thing.
+ * It is the player's part of the match room (`/match/:slug`), the one place
+ * a match is played from. With `matchSlug`, it shows only while that match is
+ * the team's current one; otherwise it renders `fallback` (an older match's
+ * page is its public view).
  */
-export function YourMatchCard({ teamId }: { teamId: string }) {
+export function YourMatchCard({
+  teamId,
+  matchSlug,
+  fallback = null,
+}: {
+  teamId: string;
+  matchSlug?: string;
+  fallback?: ReactNode;
+}) {
   const { t } = useTranslation();
   const { team, match, hasMatch, loading, tournamentStatus, loadTeamMatch } =
     useTeamMatchData(teamId);
@@ -225,6 +201,10 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
         <CircularProgress aria-label={t('yourMatch.loading')} />
       </Box>
     );
+  }
+
+  if (matchSlug && (!hasMatch || !match || match.slug !== matchSlug)) {
+    return <>{fallback}</>;
   }
 
   if (!hasMatch || !match) {
@@ -250,7 +230,7 @@ export function YourMatchCard({ teamId }: { teamId: string }) {
     );
   }
 
-  const phase = phaseOf(match, tournamentStatus);
+  const phase = matchPhaseOf(match, tournamentStatus);
   const viewerIsMember = match.viewerIsTeamMember !== false;
   const us = match.isTeam1 ? 'team1' : 'team2';
   const them = match.isTeam1 ? 'team2' : 'team1';

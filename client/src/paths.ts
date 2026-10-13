@@ -30,11 +30,16 @@ export const paths = {
   connectSteam: '/connect-steam',
 
   // Viewer and player-facing pages
-  teamMatch: '/team/:teamId',
-  /** A match's own public page: the result, its maps and what the game recorded. */
+  /**
+   * The match room: the result, its maps and what the game recorded, and for
+   * a player in it, the veto, the server and the live score. The only place a
+   * match is played from.
+   */
   match: '/match/:slug',
-  teamProfile: '/t/team/:teamId',
-  teamManage: '/t/team/:teamId/manage',
+  /** A team's page: roster, record, matches, and its next match (a link to the room). */
+  teamProfile: '/team/:teamId',
+  /** Running the team: roster, invites, captains. */
+  teamManage: '/team/:teamId/manage',
   teamJoin: '/join/team/:code',
   tournamentOverview: '/tournament/:id',
   // The tournament page's other tabs, nested under `tournamentOverview`.
@@ -43,6 +48,7 @@ export const paths = {
   tournamentTeams: '/tournament/:id/teams',
   tournamentStandings: '/tournament/:id/standings',
   tournamentRules: '/tournament/:id/rules',
+  /** The old "Your match" tab: sends a player to their match room. */
   tournamentYourMatch: '/tournament/:id/match',
   tournamentSignup: '/tournament/:id/signup',
   /** The old address of Standings; redirects there. */
@@ -116,6 +122,8 @@ export const paths = {
  * its new place with the query, so shared links and bookmarks keep working.
  */
 export const MOVED_PUBLIC_PATHS: ReadonlyArray<{ from: string; to: string }> = [
+  { from: '/t/team/:teamId', to: '/team/:teamId' },
+  { from: '/t/team/:teamId/manage', to: '/team/:teamId/manage' },
   { from: '/browse', to: paths.tournamentList },
   { from: '/browse/teams', to: paths.communityTeams },
   { from: '/browse/players', to: paths.communityPlayers },
@@ -185,7 +193,6 @@ export function playerProfilePath(steamId: string): string {
 /** The public tournament page's tabs, in the order they are shown. */
 export const TOURNAMENT_TABS = [
   'overview',
-  'match',
   'bracket',
   'matches',
   'teams',
@@ -196,27 +203,19 @@ export const TOURNAMENT_TABS = [
 ] as const;
 export type TournamentTab = (typeof TOURNAMENT_TABS)[number];
 
-/** While the tournament runs, a player in it lands on "Your match" instead of Overview. */
-export function yourMatchFirst(status: string | undefined, hasTeam: boolean | undefined): boolean {
-  return status === 'in_progress' && Boolean(hasTeam);
-}
-
 /**
  * The tabs one tournament shows: Rules only when the organizer wrote some, or
  * a description too long for the header to show in full. Before it starts:
- * Overview and Teams. While it runs, a player whose team is in it gets "Your
- * match" in place of Overview: that is what they came for. Once it is over:
- * the results (Overview), Bracket and Matches.
+ * Overview and Teams. While it runs: Overview (with the viewer's next match,
+ * a link to its match room), Bracket, Matches, Teams and Standings. Once it is
+ * over: the results (Overview), Bracket and Matches.
  */
-export function visibleTournamentTabs(
-  tournament: {
-    status?: string;
-    /** Archived: a finished tournament a new one replaced. Only its results tabs are its own. */
-    archived_at?: number | null;
-    settings?: { rules?: string[]; rulebookUrl?: string; description?: string } | null;
-  },
-  viewer: { hasTeam?: boolean } = {}
-): TournamentTab[] {
+export function visibleTournamentTabs(tournament: {
+  status?: string;
+  /** Archived: a finished tournament a new one replaced. Only its results tabs are its own. */
+  archived_at?: number | null;
+  settings?: { rules?: string[]; rulebookUrl?: string; description?: string } | null;
+}): TournamentTab[] {
   // The header shows three lines of the description; a longer one is read in full on Rules.
   const hasRules = Boolean(
     tournament.settings?.rules?.length ||
@@ -242,13 +241,7 @@ export function visibleTournamentTabs(
       ? ['overview', 'bracket', 'matches', 'rules']
       : ['overview', 'bracket', 'matches'];
   }
-  const tabs: TournamentTab[] = [
-    yourMatchFirst(tournament.status, viewer.hasTeam) ? 'match' : 'overview',
-    'bracket',
-    'matches',
-    'teams',
-    'standings',
-  ];
+  const tabs: TournamentTab[] = ['overview', 'bracket', 'matches', 'teams', 'standings'];
   if (hasRules) tabs.push('rules');
   return tabs;
 }
@@ -262,12 +255,12 @@ export function tournamentTabPath(
   return tab === 'overview' ? base : `${base}/${tab}`;
 }
 
-/** `/t/team/:teamId` for one team's public profile page. */
+/** `/team/:teamId` for one team's page. */
 export function teamProfilePath(teamId: string): string {
   return paths.teamProfile.replace(':teamId', teamId);
 }
 
-/** `/t/team/:teamId/manage`: the team's owner view. */
+/** `/team/:teamId/manage`: the team's owner view. */
 export function teamManagePath(teamId: string): string {
   return paths.teamManage.replace(':teamId', teamId);
 }

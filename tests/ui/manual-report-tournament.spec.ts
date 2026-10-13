@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext, type Page, type Browser } from '@playwright/test';
+import { openMatchRoom } from '../helpers/matchRoom';
 import { ensureSignedIn, signInAsPlayer, signInViaRequest } from '../helpers/auth';
 
 /**
@@ -145,7 +146,7 @@ async function playMatch(
   try {
     const reporter: Page = await reporterContext.newPage();
     expect(await signInAsPlayer(reporter, one.captainSteamId)).toBe(true);
-    await reporter.goto(`/team/${one.id}`);
+    await openMatchRoom(reporter, one.id);
 
     const reporterState = reporter.getByTestId('manual-report-state');
     await expect(reporter.getByTestId('manual-report-panel')).toBeVisible();
@@ -163,7 +164,7 @@ async function playMatch(
 
     const opponent: Page = await opponentContext.newPage();
     expect(await signInAsPlayer(opponent, two.captainSteamId)).toBe(true);
-    await opponent.goto(`/team/${two.id}`);
+    await openMatchRoom(opponent, two.id);
 
     const opponentState = opponent.getByTestId('manual-report-state');
     await expect(opponentState).toHaveAttribute('data-state', 'needsAnswer');
@@ -264,10 +265,9 @@ test.describe.serial('A manually reported tournament, wizard to champion', () =>
 
       // --- the two things done over HTTP -----------------------------------
       for (const team of teams) await appointCaptain(request, team);
-      const fields = await request.put(
-        `/api/game/manual/tournaments/${tournament.id}/fields`,
-        { data: { fields: [{ key: 'goals', label: 'Goals', valueType: 'integer', scope: 'team' }] } }
-      );
+      const fields = await request.put(`/api/game/manual/tournaments/${tournament.id}/fields`, {
+        data: { fields: [{ key: 'goals', label: 'Goals', valueType: 'integer', scope: 'team' }] },
+      });
       expect(fields.ok(), `setting fields: ${await fields.text()}`).toBe(true);
 
       // --- start it, from the page that just created it --------------------

@@ -19,7 +19,7 @@ import { RankingIcon, UserFocusIcon } from '@phosphor-icons/react';
 import { api } from '../utils/api';
 import { onSocketReconnect } from '../utils/socketResync';
 import { io, Socket } from 'socket.io-client';
-import { MatchInfoCard } from '../components/team/MatchInfoCard';
+import { NextMatchCard } from '../components/match/NextMatchCard';
 import { PendingTeamInvites } from '../components/team/PendingTeamInvites';
 import { useSoundSettings } from '../hooks/useSoundSettings';
 import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
@@ -586,13 +586,6 @@ export default function PlayerProfile() {
     [steamId, playerSteamId, t]
   );
 
-  const handleVetoComplete = React.useCallback(() => {
-    // Give the backend a moment to persist veto completion + derived match state.
-    window.setTimeout(() => {
-      void loadPlayerData({ silent: true });
-    }, 1000);
-  }, [loadPlayerData]);
-
   const scheduleSilentRefresh = React.useCallback(() => {
     if (unmountedRef.current) return;
     if (silentRefreshTimerRef.current) return;
@@ -1145,22 +1138,12 @@ export default function PlayerProfile() {
             </Box>
           )}
 
-          {/* The player's own match (veto, connect), first: it is what the
-              nav bar's match button brings them here for. */}
-          {ownMatch && (
+          {/* The player's own next match: a link to its match room, where the
+              veto, the server and the score are. */}
+          {ownMatch && currentTeam?.id && (
             <Box component="section" aria-labelledby="profile-own-match" sx={{ mt: 6 }}>
               <SectionHead id="profile-own-match" title={t('playerPage.yourMatch')} />
-              <MatchInfoCard
-                match={ownMatch}
-                team={currentTeam}
-                tournamentStatus={currentTournamentStatus}
-                vetoCompleted={ownMatch.veto?.status === 'completed'}
-                matchFormat={(ownMatch.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1'}
-                onVetoComplete={handleVetoComplete}
-                getRoundLabel={getRoundLabel}
-                highlightPlayerId={player.id}
-                viewerIsTeamMemberOverride
-              />
+              <NextMatchCard teamId={currentTeam.id} />
             </Box>
           )}
 

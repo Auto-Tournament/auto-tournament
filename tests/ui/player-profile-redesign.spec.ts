@@ -154,7 +154,7 @@ test.describe('Redesigned player profile', () => {
         'href',
         `/match/${slug}`
       );
-      await expect(row.getByTestId('match-row-opponent')).toHaveAttribute('href', /^\/t\/team\//);
+      await expect(row.getByTestId('match-row-opponent')).toHaveAttribute('href', /^\/team\//);
 
       // CS2 measures kills and damage, so its profile keeps those tiles. The
       // manually reported game's spec (manual-report-stats-pages.spec.ts)
@@ -169,11 +169,11 @@ test.describe('Redesigned player profile', () => {
       await expect(row).toContainText(/rating \d+/);
 
       // Profile header team chip links to that team's public profile page
-      // (/t/team/:teamId), not the in-match/server team page (/team/:teamId).
+      // (/team/:teamId).
       // It names the team, never "My team" / "Team:".
       const teamChip = page.getByTestId('public-player-team');
       await expect(teamChip).toBeVisible();
-      await expect(teamChip).toHaveAttribute('href', `/t/team/${team1.id}`);
+      await expect(teamChip).toHaveAttribute('href', `/team/${team1.id}`);
       await expect(teamChip).toContainText(team1.name);
       await expect(teamChip).not.toContainText(/my team|team:/i);
 

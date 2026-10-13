@@ -65,7 +65,7 @@ function teamJoinPath(code: string): string {
 }
 
 /**
- * Running your team (`/t/team/:teamId/manage`), for its owner and captains:
+ * Running your team (`/team/:teamId/manage`), for its owner and captains:
  * name, tag and logo; the roster and its roles; the invite link and the
  * players asking to join; handing the team over and disbanding it (owner).
  */

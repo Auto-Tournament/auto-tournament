@@ -5,7 +5,7 @@ import { findMatchByTeams } from '../helpers/matches';
 import { getAuthHeader } from '../helpers/auth';
 
 /**
- * Public team profile page (`/t/team/:teamId`).
+ * A team's page (`/team/:teamId`).
  *
  * Distinct from `/team/:teamId` (the team's live match/server page): this is
  * the read-only overview anyone can open — roster with ratings and the
@@ -35,7 +35,7 @@ test.describe.serial('Team Profile UI', () => {
       expect(setup, 'tournament setup should succeed').toBeTruthy();
       const team = setup!.teams[0];
 
-      await page.goto(`/t/team/${team.id}`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`/team/${team.id}`, { waitUntil: 'domcontentloaded' });
       await expect(page.getByTestId('team-profile-page')).toBeVisible({ timeout: 15000 });
 
       // Header: team name.
@@ -87,13 +87,13 @@ test.describe.serial('Team Profile UI', () => {
       });
       expect(live.ok()).toBe(true);
 
-      await page.goto(`/t/team/${team.id}`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`/team/${team.id}`, { waitUntil: 'domcontentloaded' });
       const row = page.getByTestId(`team-match-${match!.slug}`);
       await expect(row).toBeVisible({ timeout: 15000 });
 
       // The opponent's name is its own link, to their team page.
       await row.getByTestId('match-row-opponent').click();
-      await expect(page).toHaveURL(new RegExp(`/t/team/${opponent.id}$`));
+      await expect(page).toHaveURL(new RegExp(`/team/${opponent.id}$`));
       await expect(page.getByRole('heading', { level: 1 })).toContainText(opponent.name);
 
       // Anywhere else on the row opens the match.
@@ -106,7 +106,7 @@ test.describe.serial('Team Profile UI', () => {
   );
 
   test(
-    'the team match page is the match and nothing else',
+    'the team page links its next match to the match room, and never draws the veto',
     { tag: ['@ui', '@public', '@teams'] },
     async ({ page, request }) => {
       const setup = await setupTournament(request, {
@@ -117,24 +117,36 @@ test.describe.serial('Team Profile UI', () => {
       });
       expect(setup, 'tournament setup should succeed').toBeTruthy();
       const team = setup!.teams[0];
+      const res = await request.get(`/api/team/${team.id}/match`);
+      const slug = ((await res.json()) as { match?: { slug?: string } }).match?.slug;
+      expect(slug, 'the team has a match').toBeTruthy();
 
       await page.goto(`/team/${team.id}`, { waitUntil: 'domcontentloaded' });
-      await expect(page.getByTestId('team-match-page')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByRole('heading', { level: 1 })).toContainText(team.name);
+      await expect(page.getByTestId('team-profile-page')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('next-match-card')).toBeVisible();
+      await expect(page.getByTestId('next-match-open')).toHaveAttribute(
+        'href',
+        `/match/${encodeURIComponent(slug!)}`
+      );
+      // The veto is the match room's alone.
+      await expect(page.getByTestId('veto-interface')).toHaveCount(0);
+    }
+  );
 
-      // The way to the club page, where the roster lives.
-      const profileLink = page.getByTestId('team-match-view-profile-link');
-      await expect(profileLink).toHaveAttribute('href', `/t/team/${team.id}`);
-
-      // Either the next match or a line saying there is none: never the 2.x
-      // stack of roster, team stats, history and "about this tournament".
-      await expect(
-        page.getByTestId('team-match-next').or(page.getByTestId('team-match-none'))
-      ).toBeVisible();
-      await expect(page.getByText('Player 1')).toHaveCount(0);
-      await expect(page.getByText('Want to see your own stats', { exact: false })).toHaveCount(0);
-      await expect(page.getByText('About this tournament')).toHaveCount(0);
-      await expect(page.getByText('Team Performance')).toHaveCount(0);
+  test(
+    'the old /t/team address lands on the team page',
+    { tag: ['@ui', '@public', '@teams'] },
+    async ({ page, request }) => {
+      const setup = await setupTournament(request, {
+        prefix: `team-old-${Date.now()}`,
+        type: 'single_elimination',
+        format: 'bo1',
+        teamCount: 2,
+      });
+      const team = setup!.teams[0];
+      await page.goto(`/t/team/${team.id}?tab=matches`, { waitUntil: 'domcontentloaded' });
+      await expect(page).toHaveURL(new RegExp(`/team/${team.id}\\?tab=matches$`));
+      await expect(page.getByTestId('team-profile-page')).toBeVisible({ timeout: 15000 });
     }
   );
 

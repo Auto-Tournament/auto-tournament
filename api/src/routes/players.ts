@@ -448,10 +448,10 @@ router.get('/:playerId/team', async (req: Request, res: Response) => {
 });
 
 /**
- * Where the signed-in player's match lives, for `/match/now`: a tournament
- * match on its tournament's "Your match" tab, a matchmaking match in its room,
- * a match made by hand on the team's page. With no match coming up, a
- * tournament they are still in (its tab says what is next), else nothing.
+ * Where the signed-in player's match lives, for `/match/now`: a tournament or
+ * hand-made match in its match room (`/match/<slug>`), a matchmaking match in
+ * its lobby. With no match coming up, a tournament they are still in (its
+ * Overview says what is next), else nothing.
  */
 export async function matchNowPath(steamId: string): Promise<string | null> {
   const like = `%${steamId}%`;
@@ -483,12 +483,9 @@ export async function matchNowPath(steamId: string): Promise<string | null> {
       );
       return lobby ? `/play/${lobby.id}` : '/play';
     }
-    if (match.round > 0 && match.tournament_id != null)
-      return `/tournament/${match.tournament_id}/match`;
-    const team = match.in_team2 ? match.team2_id : match.team1_id;
-    return team ? `/team/${encodeURIComponent(team)}` : null;
+    return `/match/${encodeURIComponent(match.slug)}`;
   }
-  // Between matches of a tournament still running: its tab shows the result and what comes next.
+  // Between matches of a tournament still running: its Overview shows what comes next.
   const running = await db.queryOneAsync<{ id: number }>(
     `SELECT DISTINCT t.id FROM tournament t
        JOIN matches m ON m.tournament_id = t.id
@@ -499,7 +496,7 @@ export async function matchNowPath(steamId: string): Promise<string | null> {
       ORDER BY t.id DESC LIMIT 1`,
     [like, like]
   );
-  return running ? `/tournament/${running.id}/match` : null;
+  return running ? `/tournament/${running.id}` : null;
 }
 
 /**

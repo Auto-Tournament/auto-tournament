@@ -1,15 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import type {
-  Team,
-  TeamStats,
-  TeamStanding,
-  TeamMatchInfo,
-  TeamMatchHistory,
-} from '../types';
+import type { Team, TeamStats, TeamStanding, TeamMatchInfo, TeamMatchHistory } from '../types';
 import type { TeamTournamentInfo } from '../components/team/profile/TeamTournaments';
 
 /**
- * Data for the public team profile page (`/t/team/:teamId`).
+ * Data for the public team profile page (`/team/:teamId`).
  *
  * Deliberately composed from the same public, already-audited endpoints the
  * team match page uses (`/api/team/:id/match`, `/stats`, `/history`) rather

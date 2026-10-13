@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openOwnMatchRoom } from '../helpers/matchRoom';
 import {
   ensureSignedIn,
   signInViaRequest,
@@ -46,10 +47,13 @@ const MAPS = [
  * Open a player's page as that player, without requiring the veto board to be
  * present (it is gone once veto completes).
  */
-async function impersonateAndOpenPlayerPage(page: import('@playwright/test').Page, steamId: string) {
+async function impersonateAndOpenPlayerPage(
+  page: import('@playwright/test').Page,
+  steamId: string
+) {
   const ok = await impersonatePlayer(page.request, steamId);
   expect(ok, `Failed to impersonate ${steamId}`).toBe(true);
-  await page.goto(`/player/${steamId}`, { waitUntil: 'domcontentloaded' });
+  await openOwnMatchRoom(page);
 }
 
 test.describe.serial('CS Major BO1 Veto - UI E2E', () => {
@@ -127,21 +131,20 @@ test.describe.serial('CS Major BO1 Veto - UI E2E', () => {
     async ({ page, request }) => {
       const steamId = actingSteamIdFor(team1);
 
-      // Mid-veto the board is up and no match details are shown yet.
+      // Mid-veto the board is up.
       await viewVetoPageAs(page, steamId);
-      await expect(page.getByTestId('match-details')).toHaveCount(0);
 
       await performVetoActionsUI(page, getCSMajorBO1UIActions(team1, team2));
 
       const state = await getVetoState(request, matchSlug, steamId);
       expect(state?.status).toBe('completed');
 
-      // Once veto is done the board is replaced by the match view, which names
-      // the map that survived the veto.
+      // Once veto is done the room's board is replaced by the match itself,
+      // which names the map that survived the veto.
       await impersonateAndOpenPlayerPage(page, steamId);
-      await expect(page.getByTestId('match-details')).toBeVisible({ timeout: 20000 });
+      await expect(page.getByTestId('your-match')).toBeVisible({ timeout: 20000 });
       await expect(page.getByTestId('veto-interface')).toHaveCount(0);
-      await expect(page.getByTestId('match-details')).toContainText('Mirage');
+      await expect(page.getByTestId('your-match')).toContainText('Mirage');
     }
   );
 });
