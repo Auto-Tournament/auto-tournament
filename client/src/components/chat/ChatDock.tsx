@@ -49,6 +49,7 @@ import {
   type ChatChannel,
   type ChatMessage,
 } from './chatStore';
+import ConfirmDialog from '../modals/ConfirmDialog';
 import { EmojiPicker } from './EmojiPicker';
 import { insertAt } from './emojiData';
 import { typingLine, typistsNow } from './typing';
@@ -404,6 +405,7 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [calling, setCalling] = useState(false);
+  const [confirmCall, setConfirmCall] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -817,7 +819,7 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
             {channel.kind === 'match' && myTeam && !readOnly && (
               <Button
                 type="button"
-                onClick={call}
+                onClick={() => setConfirmCall(true)}
                 disabled={calling}
                 data-testid="chat-call-admin"
                 startIcon={<ShieldIcon size={14} />}
@@ -835,6 +837,20 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
                 {t('chat.callAdmin')}
               </Button>
             )}
+            {/* A misclick must not page the admins. */}
+            <ConfirmDialog
+              open={confirmCall}
+              title={t('chat.callAdminConfirmTitle')}
+              message={t('chat.callAdminConfirmBody')}
+              confirmLabel={t('chat.callAdmin')}
+              confirmColor="warning"
+              loading={calling}
+              onCancel={() => setConfirmCall(false)}
+              onConfirm={() => {
+                setConfirmCall(false);
+                void call();
+              }}
+            />
           </Box>
         )}
       </Box>

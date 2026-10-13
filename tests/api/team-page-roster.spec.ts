@@ -51,7 +51,15 @@ test.describe.serial('Team page membership follows the roster', () => {
     const setup = await setupTournament(request, {
       type: 'single_elimination',
       format: 'bo1',
-      maps: ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'],
+      maps: [
+        'de_mirage',
+        'de_inferno',
+        'de_ancient',
+        'de_anubis',
+        'de_dust2',
+        'de_vertigo',
+        'de_nuke',
+      ],
       teamCount: 2,
       serverCount: 1,
       prefix: 'roster',
@@ -67,6 +75,24 @@ test.describe.serial('Team page membership follows the roster', () => {
     });
     expect(state.ok()).toBe(true);
   });
+
+  test(
+    'the match carries both teams\u2019 crest fields for the match room header',
+    { tag: ['@api', '@teams'] },
+    async ({ request }) => {
+      expect(await impersonatePlayer(request, team1.players[0].steamId)).toBe(true);
+      try {
+        const body = (await (await request.get(`/api/team/${team1.id}/match`)).json()) as {
+          match: { team1: Record<string, unknown>; opponent: Record<string, unknown> };
+        };
+        // No uploaded logo here, so null; the header then falls back to the tag.
+        expect(body.match.team1).toHaveProperty('logoUrl', null);
+        expect(body.match.opponent).toHaveProperty('logoUrl', null);
+      } finally {
+        await stopImpersonating(request);
+      }
+    }
+  );
 
   test(
     'a removed player stops seeing the match server',
@@ -97,10 +123,7 @@ test.describe.serial('Team page membership follows the roster', () => {
       const newcomer = { steamId: '76561198000000555', name: 'Newcomer' };
 
       await updateTeam(request, team1.id, {
-        players: [
-          ...team1.players.map((p) => ({ steamId: p.steamId, name: p.name })),
-          newcomer,
-        ],
+        players: [...team1.players.map((p) => ({ steamId: p.steamId, name: p.name })), newcomer],
       });
 
       expect(

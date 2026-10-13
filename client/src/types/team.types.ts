@@ -25,6 +25,8 @@ export interface Team {
   id: string;
   name: string;
   tag?: string;
+  /** The team's uploaded crest, when it has one. */
+  logoUrl?: string | null;
   discordRoleId?: string;
   players?: Player[];
   createdAt?: number;

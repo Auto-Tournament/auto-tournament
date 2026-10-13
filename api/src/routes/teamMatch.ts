@@ -1,3 +1,4 @@
+import { logoUrl } from '../services/teamSelfService';
 import { Router, Request, Response } from 'express';
 import { RATING_ELO, ratingGame, ratingJoin } from '../services/gameRatings';
 import { db } from '../config/database';
@@ -138,6 +139,8 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         team1_tag?: string;
         team2_name?: string;
         team2_tag?: string;
+        team1_logo?: number | null;
+        team2_logo?: number | null;
         server_name?: string;
         server_host?: string;
         server_port?: number;
@@ -147,6 +150,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         m.*,
         t1.name as team1_name, t1.tag as team1_tag,
         t2.name as team2_name, t2.tag as team2_tag,
+        t1.logo_updated_at as team1_logo, t2.logo_updated_at as team2_logo,
         s.name as server_name, s.host as server_host, s.port as server_port
       FROM matches m
       LEFT JOIN teams t1 ON m.team1_id = t1.id
@@ -167,6 +171,8 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
           team1_tag?: string;
           team2_name?: string;
           team2_tag?: string;
+          team1_logo?: number | null;
+          team2_logo?: number | null;
           server_name?: string;
           server_host?: string;
           server_port?: number;
@@ -176,6 +182,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
           m.*,
           t1.name as team1_name, t1.tag as team1_tag,
           t2.name as team2_name, t2.tag as team2_tag,
+        t1.logo_updated_at as team1_logo, t2.logo_updated_at as team2_logo,
           s.name as server_name, s.host as server_host, s.port as server_port
         FROM matches m
         LEFT JOIN teams t1 ON m.team1_id = t1.id
@@ -403,6 +410,12 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       enrichPlayers(normalizedTeam2Players, description.team2.id),
     ]);
 
+    // Both crests for the match room's header (it showed initials only).
+    const ourLogoUrl = logoUrl(team.id, isTeam1 ? match.team1_logo : match.team2_logo);
+    const theirLogoUrl = opponent.id
+      ? logoUrl(opponent.id, isTeam1 ? match.team2_logo : match.team1_logo)
+      : null;
+
     return res.json({
       success: true,
       team: {
@@ -423,20 +436,21 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         currentMap: match.current_map ?? null,
         mapNumber: match.map_number ?? null,
         team1: isTeam1
-          ? { id: team.id, name: team.name, tag: team.tag }
+          ? { id: team.id, name: team.name, tag: team.tag, logoUrl: ourLogoUrl }
           : opponent.id
-            ? { id: opponent.id, name: opponent.name, tag: opponent.tag }
+            ? { id: opponent.id, name: opponent.name, tag: opponent.tag, logoUrl: theirLogoUrl }
             : null,
         team2: !isTeam1
-          ? { id: team.id, name: team.name, tag: team.tag }
+          ? { id: team.id, name: team.name, tag: team.tag, logoUrl: ourLogoUrl }
           : opponent.id
-            ? { id: opponent.id, name: opponent.name, tag: opponent.tag }
+            ? { id: opponent.id, name: opponent.name, tag: opponent.tag, logoUrl: theirLogoUrl }
             : null,
         opponent: opponent.id
           ? {
               id: opponent.id,
               name: opponent.name,
               tag: opponent.tag,
+              logoUrl: theirLogoUrl,
             }
           : null,
         server:

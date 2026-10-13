@@ -32,7 +32,17 @@ function seriesWins(match: TeamMatchInfo): { team1: number; team2: number } {
   };
 }
 
-function TeamMark({ tag, name, highlight }: { tag?: string; name: string; highlight?: boolean }) {
+function TeamMark({
+  tag,
+  name,
+  highlight,
+  logoUrl,
+}: {
+  tag?: string;
+  name: string;
+  highlight?: boolean;
+  logoUrl?: string | null;
+}) {
   const text = (tag?.trim() || name.slice(0, 3)).slice(0, 4).toUpperCase();
   return (
     <Box
@@ -48,9 +58,19 @@ function TeamMark({ tag, name, highlight }: { tag?: string; name: string; highli
         fontWeight: 700,
         fontSize: { xs: '0.75rem', md: '0.875rem' },
         color: highlight ? color.accent : color.ink2,
+        overflow: 'hidden',
       }}
     >
-      {text}
+      {logoUrl ? (
+        <Box
+          component="img"
+          src={logoUrl}
+          alt=""
+          sx={{ width: '100%', height: '100%', objectFit: 'contain', p: '10%' }}
+        />
+      ) : (
+        text
+      )}
     </Box>
   );
 }
@@ -238,6 +258,8 @@ export function YourMatchCard({
   const theirName = match.opponent?.name ?? match.config?.[them]?.name ?? t('home.tbd');
   const ourTag = team?.tag ?? match[us]?.tag ?? match.config?.[us]?.tag;
   const theirTag = match.opponent?.tag ?? match.config?.[them]?.tag;
+  const ourLogo = match[us]?.logoUrl ?? null;
+  const theirLogo = match.opponent?.logoUrl ?? null;
 
   const live = match.liveStats;
   const mapKey = phase === 'veto' ? null : (live?.mapName ?? match.currentMap ?? null);
@@ -492,7 +514,7 @@ export function YourMatchCard({
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
-            <TeamMark tag={ourTag} name={ourName} highlight />
+            <TeamMark tag={ourTag} name={ourName} logoUrl={ourLogo} highlight />
             <Box sx={{ minWidth: 0 }}>
               <Typography
                 sx={{
@@ -565,7 +587,7 @@ export function YourMatchCard({
                 </Typography>
               )}
             </Box>
-            <TeamMark tag={theirTag} name={theirName} />
+            <TeamMark tag={theirTag} name={theirName} logoUrl={theirLogo} />
           </Box>
         </Box>
 
