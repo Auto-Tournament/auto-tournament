@@ -621,6 +621,21 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
       });
     }
 
+    // A match before its tournament starts, or still waiting for an opponent, has no veto or
+    // server yet: the top bar shows nothing for it (it said "your turn in veto" before start).
+    if (match.status === 'pending' || match.status === 'ready') {
+      const tournament = match.tournament_id
+        ? await db.queryOneAsync<{ status: string }>(
+            'SELECT status FROM tournaments WHERE id = ?',
+            [match.tournament_id]
+          )
+        : null;
+      const started = !match.tournament_id || tournament?.status === 'in_progress';
+      if (!started || !match.team1_id || !match.team2_id) {
+        return res.json({ success: true, status: 'none', matchSlug: null, label: null });
+      }
+    }
+
     const vetoState = match.veto_state
       ? (JSON.parse(match.veto_state) as {
           status?: string;
