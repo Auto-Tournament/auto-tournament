@@ -1,6 +1,17 @@
 import { pageTitle } from '../utils/pageTitle';
 import React, { useEffect, useState } from 'react';
-import { Box, Card, Button, Alert, CircularProgress, Container, Link, Skeleton, Stack, Typography } from '@mui/material';
+import {
+  Box,
+  Card,
+  Button,
+  Alert,
+  CircularProgress,
+  Container,
+  Link,
+  Skeleton,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { paths } from '../paths';
 import { BookOpenIcon, GithubLogoIcon, GlobeIcon, ScalesIcon } from '@phosphor-icons/react';
@@ -16,6 +27,16 @@ const SIGN_IN_UNAVAILABLE = 'sign-in-unavailable';
 /** The provider list could not be loaded; rendered as `login.loadFailed`. */
 const LOAD_FAILED = 'load-failed';
 
+/** Black or white text, whichever reads better on `hex` (#rrggbb). */
+function readableOn(hex: string): string {
+  const n = parseInt(hex.slice(1), 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.4 ? '#111111' : '#ffffff';
+}
+
 export default function Login() {
   const { t } = useTranslation();
   const { loginWithSteam } = useAuth();
@@ -25,6 +46,9 @@ export default function Login() {
       label: string;
       loginUrl: string;
       enabled: boolean;
+      /** OpenID Connect: the admin's logo and button colour. */
+      logoUrl?: string | null;
+      buttonColor?: string | null;
     }>
   >([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
@@ -72,6 +96,8 @@ export default function Login() {
             label: string;
             loginUrl: string;
             enabled: boolean;
+            logoUrl?: string | null;
+            buttonColor?: string | null;
           }>;
           error?: string;
         } = await response.json();
@@ -89,12 +115,13 @@ export default function Login() {
           // viewer's language instead (see SIGN_IN_UNAVAILABLE below).
           throw new Error(SIGN_IN_UNAVAILABLE);
         }
-
       } catch (error) {
         console.error(error);
         // The alert says it in the viewer's language; details are in the console.
         setProvidersError(
-          error instanceof Error && error.message === SIGN_IN_UNAVAILABLE ? SIGN_IN_UNAVAILABLE : LOAD_FAILED
+          error instanceof Error && error.message === SIGN_IN_UNAVAILABLE
+            ? SIGN_IN_UNAVAILABLE
+            : LOAD_FAILED
         );
       } finally {
         setLoadingProviders(false);
@@ -129,8 +156,18 @@ export default function Login() {
   };
 
   const footerLinks = [
-    { href: 'https://autotournament.gg', label: t('login.website'), Icon: GlobeIcon, testId: 'login-website-link' },
-    { href: 'https://docs.autotournament.gg', label: t('login.documentation'), Icon: BookOpenIcon, testId: 'login-docs-link' },
+    {
+      href: 'https://autotournament.gg',
+      label: t('login.website'),
+      Icon: GlobeIcon,
+      testId: 'login-website-link',
+    },
+    {
+      href: 'https://docs.autotournament.gg',
+      label: t('login.documentation'),
+      Icon: BookOpenIcon,
+      testId: 'login-docs-link',
+    },
     {
       href: 'https://github.com/Auto-Tournament/auto-tournament',
       label: t('login.github'),
@@ -166,7 +203,16 @@ export default function Login() {
           <Card elevation={0} sx={{ backgroundColor: 'background.paper', overflow: 'hidden' }}>
             <Stack spacing={3.5} sx={{ p: { xs: 3, sm: 4 } }}>
               <Stack direction="row" spacing={2} alignItems="center">
-                <Box sx={{ width: 56, height: 56, borderRadius: '14px', overflow: 'hidden', display: 'flex', flexShrink: 0 }}>
+                <Box
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '14px',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexShrink: 0,
+                  }}
+                >
                   <AtIcon size={56} title="Auto Tournament Logo" />
                 </Box>
                 <Box sx={{ minWidth: 0 }}>
@@ -183,7 +229,12 @@ export default function Login() {
                 <Alert severity="info" data-testid="login-setup-notice">
                   <Stack spacing={0.5}>
                     <Typography variant="body2">{t('login.setupNotice')}</Typography>
-                    <Link component={RouterLink} to={paths.setup} variant="body2" data-testid="login-setup-link">
+                    <Link
+                      component={RouterLink}
+                      to={paths.setup}
+                      variant="body2"
+                      data-testid="login-setup-link"
+                    >
                       {t('login.setupLink')}
                     </Link>
                   </Stack>
@@ -194,9 +245,14 @@ export default function Login() {
                 <Alert severity="error" data-testid="login-providers-error">
                   <Stack spacing={0.5}>
                     <Typography variant="body2">
-                      {providersError === SIGN_IN_UNAVAILABLE ? t('login.unavailable') : t('login.loadFailed')}
+                      {providersError === SIGN_IN_UNAVAILABLE
+                        ? t('login.unavailable')
+                        : t('login.loadFailed')}
                     </Typography>
-                    <ExternalLink href="https://docs.autotournament.gg/guides/sign-in" sx={{ fontSize: '0.8rem' }}>
+                    <ExternalLink
+                      href="https://docs.autotournament.gg/guides/sign-in"
+                      sx={{ fontSize: '0.8rem' }}
+                    >
                       {t('login.signInGuide')}
                     </ExternalLink>
                   </Stack>
@@ -229,20 +285,39 @@ export default function Login() {
                         // The pending button keeps its look; it just stops taking clicks.
                         ...(isPending && { pointerEvents: 'none' }),
                         ...(!isPreferred && { borderColor: 'divider' }),
+                        // The colour the admin gave an OpenID Connect provider.
+                        ...(provider.buttonColor && {
+                          bgcolor: provider.buttonColor,
+                          borderColor: provider.buttonColor,
+                          color: readableOn(provider.buttonColor),
+                          '&:hover': { bgcolor: provider.buttonColor, filter: 'brightness(0.92)' },
+                        }),
                       }}
                     >
                       {/* Fixed logo slot, so every label sits in the same place. */}
                       <Box
                         component="span"
-                        sx={{ width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                        sx={{
+                          width: 20,
+                          height: 20,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                        }}
                       >
                         {isPending ? (
                           <CircularProgress size={18} color="inherit" aria-hidden />
                         ) : (
-                          hasProviderLogo(provider.id) && <ProviderLogo id={provider.id} />
+                          (provider.logoUrl || hasProviderLogo(provider.id)) && (
+                            <ProviderLogo id={provider.id} src={provider.logoUrl} />
+                          )
                         )}
                       </Box>
-                      <Box component="span" sx={{ flex: 1, textAlign: 'center', pr: '20px', whiteSpace: 'nowrap' }}>
+                      <Box
+                        component="span"
+                        sx={{ flex: 1, textAlign: 'center', pr: '20px', whiteSpace: 'nowrap' }}
+                      >
                         {t('login.signInWith', { provider: provider.label })}
                       </Box>
                     </Button>
@@ -253,7 +328,13 @@ export default function Login() {
                 {loadingProviders &&
                   providers.length === 0 &&
                   [0, 1].map((i) => (
-                    <Skeleton key={i} variant="rounded" height={48} sx={{ borderRadius: 999 }} data-testid="login-provider-skeleton" />
+                    <Skeleton
+                      key={i}
+                      variant="rounded"
+                      height={48}
+                      sx={{ borderRadius: 999 }}
+                      data-testid="login-provider-skeleton"
+                    />
                   ))}
               </Stack>
             </Stack>
@@ -285,7 +366,13 @@ export default function Login() {
             </Stack>
           </Card>
 
-          <Stack direction="row" alignItems="center" justifyContent="center" columnGap={1.5} sx={{ mt: 0.5 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            columnGap={1.5}
+            sx={{ mt: 0.5 }}
+          >
             <Typography
               variant="caption"
               color="text.secondary"

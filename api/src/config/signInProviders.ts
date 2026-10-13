@@ -6,14 +6,28 @@
  * database is the source of truth. No database access here, so the tests can import
  * it directly. The store is services/authProviderSettingsService.ts.
  */
-export const SIGN_IN_PROVIDER_IDS = ['steam', 'discord', 'google', 'github', 'twitch', 'epic', 'oidc'] as const;
+export const SIGN_IN_PROVIDER_IDS = [
+  'steam',
+  'discord',
+  'google',
+  'github',
+  'twitch',
+  'epic',
+  'oidc',
+] as const;
 export type SignInProviderId = (typeof SIGN_IN_PROVIDER_IDS)[number];
 
 export interface SignInProviderDefinition {
   id: SignInProviderId;
   label: string;
   /** Env var names, imported once at boot. Steam has no client id. */
-  env: { enabled: string; clientId: string | null; secret: string; issuerUrl?: string; label?: string };
+  env: {
+    enabled: string;
+    clientId: string | null;
+    secret: string;
+    issuerUrl?: string;
+    label?: string;
+  };
   /** OpenID Connect: the admin sets the issuer and the button's name too. */
   hasIssuer?: boolean;
   /** Enabled when neither the environment nor a saved row says otherwise. */
@@ -36,28 +50,44 @@ export const SIGN_IN_PROVIDERS: readonly SignInProviderDefinition[] = [
   {
     id: 'discord',
     label: 'Discord',
-    env: { enabled: 'AUTH_DISCORD_ENABLED', clientId: 'DISCORD_CLIENT_ID', secret: 'DISCORD_CLIENT_SECRET' },
+    env: {
+      enabled: 'AUTH_DISCORD_ENABLED',
+      clientId: 'DISCORD_CLIENT_ID',
+      secret: 'DISCORD_CLIENT_SECRET',
+    },
     defaultEnabled: false,
     docsUrl: 'https://discord.com/developers/applications',
   },
   {
     id: 'google',
     label: 'Google',
-    env: { enabled: 'AUTH_GOOGLE_ENABLED', clientId: 'GOOGLE_CLIENT_ID', secret: 'GOOGLE_CLIENT_SECRET' },
+    env: {
+      enabled: 'AUTH_GOOGLE_ENABLED',
+      clientId: 'GOOGLE_CLIENT_ID',
+      secret: 'GOOGLE_CLIENT_SECRET',
+    },
     defaultEnabled: false,
     docsUrl: 'https://console.cloud.google.com/apis/credentials',
   },
   {
     id: 'github',
     label: 'GitHub',
-    env: { enabled: 'AUTH_GITHUB_ENABLED', clientId: 'GITHUB_CLIENT_ID', secret: 'GITHUB_CLIENT_SECRET' },
+    env: {
+      enabled: 'AUTH_GITHUB_ENABLED',
+      clientId: 'GITHUB_CLIENT_ID',
+      secret: 'GITHUB_CLIENT_SECRET',
+    },
     defaultEnabled: false,
     docsUrl: 'https://github.com/settings/developers',
   },
   {
     id: 'twitch',
     label: 'Twitch',
-    env: { enabled: 'AUTH_TWITCH_ENABLED', clientId: 'TWITCH_CLIENT_ID', secret: 'TWITCH_CLIENT_SECRET' },
+    env: {
+      enabled: 'AUTH_TWITCH_ENABLED',
+      clientId: 'TWITCH_CLIENT_ID',
+      secret: 'TWITCH_CLIENT_SECRET',
+    },
     defaultEnabled: false,
     docsUrl: 'https://dev.twitch.tv/console/apps',
   },
@@ -109,6 +139,9 @@ export interface StoredProviderSettings {
   /** OpenID Connect: the issuer URL and the button's name. */
   issuerUrl?: string | null;
   label?: string | null;
+  /** OpenID Connect: the button's logo (data: URL) and colour (#rrggbb). */
+  logo?: string | null;
+  buttonColor?: string | null;
 }
 
 export type FieldSource = 'db' | 'default' | null;
@@ -121,6 +154,11 @@ export interface EffectiveProviderSettings {
   /** OpenID Connect only; null elsewhere. */
   issuerUrl: string | null;
   label: string | null;
+  /** OpenID Connect only: the button's logo (data: URL) and colour; null elsewhere. */
+  logo: string | null;
+  buttonColor: string | null;
+  /** When the row was saved: the logo's URL changes with it. */
+  updatedAt: number | null;
   source: { enabled: FieldSource; clientId: FieldSource; secret: FieldSource };
   /** Has every credential it needs. */
   configured: boolean;
@@ -150,7 +188,10 @@ export function resolveProviderSettings(
   const secret = stored?.secret ?? null;
   const issuerUrl = def.hasIssuer ? (stored?.issuerUrl ?? null) : null;
   const label = def.hasIssuer ? (stored?.label ?? null) : null;
-  const configured = !!secret && (def.env.clientId === null || !!clientId) && (!def.hasIssuer || !!issuerUrl);
+  const logo = def.hasIssuer ? (stored?.logo ?? null) : null;
+  const buttonColor = def.hasIssuer ? (stored?.buttonColor ?? null) : null;
+  const configured =
+    !!secret && (def.env.clientId === null || !!clientId) && (!def.hasIssuer || !!issuerUrl);
   return {
     id: def.id,
     enabled,
@@ -158,7 +199,14 @@ export function resolveProviderSettings(
     secret,
     issuerUrl,
     label,
-    source: { enabled: stored ? 'db' : 'default', clientId: clientId ? 'db' : null, secret: secret ? 'db' : null },
+    logo,
+    buttonColor,
+    updatedAt: stored?.updatedAt ?? null,
+    source: {
+      enabled: stored ? 'db' : 'default',
+      clientId: clientId ? 'db' : null,
+      secret: secret ? 'db' : null,
+    },
     configured,
     active: enabled && configured && !def.comingSoon,
   };
@@ -191,11 +239,21 @@ export function planProviderEnvImport(
     const row = stored.get(def.id) ?? null;
     const flag = envFlag(env, def.env.enabled);
     if (flag !== undefined && !alreadySeen.has(def.env.enabled)) {
-      out.push({ provider: def.id, field: 'enabled', envName: def.env.enabled, value: row ? null : flag });
+      out.push({
+        provider: def.id,
+        field: 'enabled',
+        envName: def.env.enabled,
+        value: row ? null : flag,
+      });
     }
     const clientId = envValue(env, def.env.clientId);
     if (def.env.clientId && clientId && !alreadySeen.has(def.env.clientId)) {
-      out.push({ provider: def.id, field: 'clientId', envName: def.env.clientId, value: row?.clientId ? null : clientId });
+      out.push({
+        provider: def.id,
+        field: 'clientId',
+        envName: def.env.clientId,
+        value: row?.clientId ? null : clientId,
+      });
     }
     const secret = envValue(env, def.env.secret);
     // A saved secret that no longer decrypts still counts as a value: the
@@ -203,7 +261,12 @@ export function planProviderEnvImport(
     // replacing it.
     const hasSecret = !!row && (!!row.secret || !!row.secretUnreadable);
     if (secret && !alreadySeen.has(def.env.secret)) {
-      out.push({ provider: def.id, field: 'secret', envName: def.env.secret, value: hasSecret ? null : secret });
+      out.push({
+        provider: def.id,
+        field: 'secret',
+        envName: def.env.secret,
+        value: hasSecret ? null : secret,
+      });
     }
     for (const field of ['issuerUrl', 'label'] as const) {
       const name = def.env[field];
@@ -236,6 +299,9 @@ export interface AdminProviderView {
   hasIssuer: boolean;
   issuerUrl: string | null;
   buttonName: string | null;
+  /** OpenID Connect: the button's logo (where the login page loads it) and colour; null when unset. */
+  logoUrl: string | null;
+  buttonColor: string | null;
 }
 
 export interface ProviderPatch {
@@ -247,6 +313,10 @@ export interface ProviderPatch {
   issuerUrl?: string | null;
   /** OpenID Connect: the login button's name; null for the default. */
   label?: string | null;
+  /** OpenID Connect: the button's logo as a data: URL; null removes it. */
+  logo?: string | null;
+  /** OpenID Connect: the button's colour, #rrggbb; null for the default. */
+  buttonColor?: string | null;
 }
 
 /** Longest client id / secret accepted. Real ones are far shorter. */
@@ -266,19 +336,29 @@ export function parseProviderPatch(
     return { ok: false, error: 'Send a JSON object' };
   }
   const input = body as Record<string, unknown>;
-  const allowed = new Set(['enabled', 'clientId', 'clientSecret', 'issuerUrl', 'label']);
+  const allowed = new Set([
+    'enabled',
+    'clientId',
+    'clientSecret',
+    'issuerUrl',
+    'label',
+    'logo',
+    'buttonColor',
+  ]);
   const unknown = Object.keys(input).filter((k) => !allowed.has(k));
   if (unknown.length > 0) return { ok: false, error: `Unknown field: ${unknown[0]}` };
 
   const patch: ProviderPatch = {};
   if (input.enabled !== undefined) {
-    if (typeof input.enabled !== 'boolean') return { ok: false, error: 'enabled must be true or false' };
+    if (typeof input.enabled !== 'boolean')
+      return { ok: false, error: 'enabled must be true or false' };
     patch.enabled = input.enabled;
   }
   if (input.clientId !== undefined) {
     if (!def.env.clientId) return { ok: false, error: `${def.label} has no client id` };
     if (input.clientId === null || input.clientId === '') patch.clientId = null;
-    else if (typeof input.clientId !== 'string') return { ok: false, error: 'clientId must be a string' };
+    else if (typeof input.clientId !== 'string')
+      return { ok: false, error: 'clientId must be a string' };
     else {
       const value = input.clientId.trim();
       if (value.length > MAX_CLIENT_ID || !CREDENTIAL_RE.test(value)) {
@@ -289,7 +369,8 @@ export function parseProviderPatch(
   }
   if (input.clientSecret !== undefined) {
     if (input.clientSecret === null || input.clientSecret === '') patch.clientSecret = null;
-    else if (typeof input.clientSecret !== 'string') return { ok: false, error: 'clientSecret must be a string' };
+    else if (typeof input.clientSecret !== 'string')
+      return { ok: false, error: 'clientSecret must be a string' };
     else {
       const value = input.clientSecret.trim();
       if (value.length > MAX_SECRET || !CREDENTIAL_RE.test(value)) {
@@ -301,11 +382,15 @@ export function parseProviderPatch(
   if (input.issuerUrl !== undefined) {
     if (!def.hasIssuer) return { ok: false, error: `${def.label} has no issuer URL` };
     if (input.issuerUrl === null || input.issuerUrl === '') patch.issuerUrl = null;
-    else if (typeof input.issuerUrl !== 'string') return { ok: false, error: 'issuerUrl must be a string' };
+    else if (typeof input.issuerUrl !== 'string')
+      return { ok: false, error: 'issuerUrl must be a string' };
     else {
       const issuer = normalizeIssuerUrl(input.issuerUrl);
       if (!issuer) {
-        return { ok: false, error: 'The issuer URL must be an http(s) URL with no query, fragment or credentials' };
+        return {
+          ok: false,
+          error: 'The issuer URL must be an http(s) URL with no query, fragment or credentials',
+        };
       }
       patch.issuerUrl = issuer;
     }
@@ -322,10 +407,40 @@ export function parseProviderPatch(
       patch.label = label;
     }
   }
+  if (input.logo !== undefined) {
+    if (!def.hasIssuer) return { ok: false, error: `${def.label} has its own logo` };
+    if (input.logo === null || input.logo === '') patch.logo = null;
+    else if (typeof input.logo !== 'string' || !parseLogoDataUrl(input.logo)) {
+      return {
+        ok: false,
+        error: `The logo must be a PNG, JPEG, WebP or SVG image of at most ${MAX_LOGO_BYTES / 1024} KB`,
+      };
+    } else patch.logo = input.logo;
+  }
+  if (input.buttonColor !== undefined) {
+    if (!def.hasIssuer) return { ok: false, error: `${def.label} has its own colours` };
+    if (input.buttonColor === null || input.buttonColor === '') patch.buttonColor = null;
+    else if (typeof input.buttonColor !== 'string' || !/^#[0-9a-f]{6}$/i.test(input.buttonColor)) {
+      return { ok: false, error: 'The button colour must look like #1f6feb' };
+    } else patch.buttonColor = input.buttonColor.toLowerCase();
+  }
   return { ok: true, patch };
 }
 
 const MAX_LABEL = 40;
+
+/** Largest logo accepted, decoded. */
+export const MAX_LOGO_BYTES = 150 * 1024;
+const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+
+/** A logo data: URL's type and bytes, or null when it is not an accepted image. Pure. */
+export function parseLogoDataUrl(raw: string): { type: string; bytes: Buffer } | null {
+  const m = /^data:([a-z+/]+);base64,([A-Za-z0-9+/=]+)$/.exec(raw);
+  if (!m || !LOGO_TYPES.includes(m[1])) return null;
+  const bytes = Buffer.from(m[2], 'base64');
+  if (bytes.length === 0 || bytes.length > MAX_LOGO_BYTES) return null;
+  return { type: m[1], bytes };
+}
 
 /**
  * An OpenID Connect issuer as saved: http(s), no credentials, query or
@@ -352,7 +467,9 @@ export function normalizeIssuerUrl(raw: string): string | null {
  */
 let storedRows = new Map<SignInProviderId, StoredProviderSettings>();
 
-export function setStoredProviderSettings(rows: Map<SignInProviderId, StoredProviderSettings>): void {
+export function setStoredProviderSettings(
+  rows: Map<SignInProviderId, StoredProviderSettings>
+): void {
   storedRows = rows;
 }
 
