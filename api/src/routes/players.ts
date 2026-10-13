@@ -626,7 +626,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
     if (match.status === 'pending' || match.status === 'ready') {
       const tournament = match.tournament_id
         ? await db.queryOneAsync<{ status: string }>(
-            'SELECT status FROM tournaments WHERE id = ?',
+            'SELECT status FROM tournament WHERE id = ?',
             [match.tournament_id]
           )
         : null;
