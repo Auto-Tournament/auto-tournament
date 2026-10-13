@@ -1920,7 +1920,9 @@
         "give_other": "Give {{count}} drops",
         "given_one": "Gave 1 drop.",
         "given_other": "Gave {{count}} drops."
-      }
+      },
+      "statTrakChance": "StatTrak™ chance (%)",
+      "statTrakHelp": "How often a dropped weapon or knife is StatTrak™ (CS2 cases: 10)."
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "What this means",
@@ -2000,7 +2002,9 @@
       "join": "Join",
       "joinLabel": "Join {{name}}",
       "console": "Or paste this in the CS2 console"
-    }
+    },
+    "stattrak": "StatTrak™",
+    "stattrakKills": "StatTrak™ kills"
   },
   "matchRules": {
     "title": "Match rules",

@@ -18,6 +18,7 @@
 import { log } from '../../../../utils/logger';
 import { onAdminListMaybeChanged } from '../../../../services/adminListEvents';
 import { fleetInbound } from '../inbound';
+import { skinService } from '../../skins/skinService';
 import { onFleetServerReady, setFleetWelcomeRevs } from '../service';
 import { adminsOnHello, syncAdmins } from './admins';
 import { pluginsOnHello } from './controls';
@@ -77,6 +78,16 @@ export function startFleetPush(): void {
   }
 
   unsubscribers.push(onAdminListMaybeChanged(() => scheduleAdminSync('admin users changed')));
+  // StatTrak kills from the servers' skins plugin go on the players' skins.
+  unsubscribers.push(
+    fleetInbound.onStattrak(({ serverId, payload }) => {
+      void skinService
+        .addStatTrakKills(payload.increments ?? [])
+        .catch((error) =>
+          log.warn(`[FLEET] ${serverId}: StatTrak kills not stored: ${(error as Error).message}`)
+        );
+    })
+  );
   unsubscribers.push(
     fleetInbound.onCommandResult(({ command, result }) => {
       if (command?.type !== 'match.update') return;

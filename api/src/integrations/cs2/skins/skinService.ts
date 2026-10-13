@@ -49,6 +49,8 @@ export const CHOICE_COUNT = 3;
 export interface ChoiceOption extends CatalogSkin {
   float: number;
   pattern: number;
+  /** A StatTrak copy (rolled with the option, like its wear). */
+  stattrak?: boolean;
 }
 
 /** A drop waiting for the player to keep one option. */
@@ -176,6 +178,8 @@ export interface SkinsConfig {
   rewards: TournamentReward[];
   /** Trade-up contracts: `count` skins of one grade for one of the next (tradeUpRule). */
   tradeUp: { enabled: boolean; count: number };
+  /** Chance a dropped weapon or knife is StatTrak, 0–100 (CS2 cases: 10). */
+  statTrakChance: number;
 }
 
 export const DEFAULT_CONFIG: SkinsConfig = {
@@ -202,6 +206,7 @@ export const DEFAULT_CONFIG: SkinsConfig = {
     { place: 3, mode: 'random', rarity: 'rare' },
   ],
   tradeUp: { enabled: true, count: 5 },
+  statTrakChance: 10,
 };
 
 /** How many skins a trade-up may take: CS2's contract is ten; five by default here. */
@@ -282,6 +287,8 @@ export interface OwnedSkin {
   equipped: boolean;
   /** Where it is equipped: 0 both sides, 2 T, 3 CT (empty when it is not). */
   equippedSides: LoadoutTeam[];
+  /** A StatTrak skin's kill count; null for a plain one. */
+  stattrak: number | null;
   /** The one side that uses this weapon, or null when both do. */
   side: 2 | 3 | null;
 }
@@ -303,6 +310,7 @@ interface SkinRow {
   variant: string | null;
   created_at: number;
   seen: boolean;
+  stattrak?: number | null;
 }
 
 /** A loadout side: 0 both, 2 T, 3 CT (CS2's team numbers). */
@@ -436,6 +444,7 @@ function toRow(row: SkinRow, equipped: Map<number, LoadoutTeam[]> | Set<number>)
     equipped: sides.length > 0,
     equippedSides: sides,
     side: sideOf(row.weapon),
+    stattrak: row.stattrak === null || row.stattrak === undefined ? null : Number(row.stattrak),
   };
 }
 
@@ -496,7 +505,21 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
           ? Math.max(TRADE_UP_MIN, Math.min(TRADE_UP_MAX, raw.tradeUp.count))
           : DEFAULT_CONFIG.tradeUp.count,
     },
+    statTrakChance:
+      typeof raw.statTrakChance === 'number' && Number.isFinite(raw.statTrakChance)
+        ? Math.max(0, Math.min(100, raw.statTrakChance))
+        : DEFAULT_CONFIG.statTrakChance,
   };
+}
+
+/** Weapons and knives can be StatTrak in CS2; gloves (and agents, music) cannot. */
+export function statTrakCapable(weapon: string): boolean {
+  return slotOf(weapon) !== 'gloves';
+}
+
+/** Roll StatTrak for one dropped skin: `chance` percent, for a skin that can have it. */
+export function rollStatTrak(weapon: string, chance: number): boolean {
+  return statTrakCapable(weapon) && chance > 0 && randomInt(0, 10000) < chance * 100;
 }
 
 /**
@@ -536,6 +559,8 @@ export type DropTarget =
   | { kind: 'match'; id: string };
 
 export interface LoadoutRow {
+  /** The StatTrak count, or null for a plain skin. */
+  stattrak?: number | null;
   weapon: string;
   paint_kit: number;
   float_value: number;
@@ -545,7 +570,14 @@ export interface LoadoutRow {
 }
 
 export interface LoadoutPayload {
-  paints: Array<{ team: LoadoutTeam; defindex: number; paint: number; wear: number; seed: number }>;
+  paints: Array<{
+    team: LoadoutTeam;
+    defindex: number;
+    paint: number;
+    wear: number;
+    seed: number;
+    stattrak?: number;
+  }>;
   knife?: Array<{ team: LoadoutTeam; defindex: number }>;
   gloves?: Array<{ team: LoadoutTeam; defindex: number }>;
 }
@@ -557,13 +589,7 @@ export interface LoadoutPayload {
  */
 export function loadoutPayload(rows: LoadoutRow[]): LoadoutPayload | null {
   // One row per side: the plugin uses a side's own (2 T, 3 CT) over "both" (0).
-  const paints: Array<{
-    team: LoadoutTeam;
-    defindex: number;
-    paint: number;
-    wear: number;
-    seed: number;
-  }> = [];
+  const paints: LoadoutPayload['paints'] = [];
   const knife: Array<{ team: LoadoutTeam; defindex: number }> = [];
   const gloves: Array<{ team: LoadoutTeam; defindex: number }> = [];
   for (const row of rows) {
@@ -576,6 +602,9 @@ export function loadoutPayload(rows: LoadoutRow[]): LoadoutPayload | null {
       paint: row.paint_kit,
       wear: Math.max(0, Math.min(1, Number(row.float_value))),
       seed: Math.max(0, Math.min(1000, row.pattern)),
+      ...(row.stattrak === null || row.stattrak === undefined
+        ? {}
+        : { stattrak: Math.max(0, Number(row.stattrak)) }),
     });
     if (row.slot === 'knife') knife.push({ team, defindex });
     if (row.slot === 'gloves') gloves.push({ team, defindex });
@@ -653,12 +682,16 @@ export const skinService = {
       seeds?: number[];
       float?: number;
       pattern?: number;
+      /** StatTrak or not; unset rolls it with the config's chance. */
+      stattrak?: boolean;
     } = {}
   ): Promise<number> {
+    const stattrak =
+      roll.stattrak ?? rollStatTrak(skin.weapon, (await this.config()).statTrakChance);
     const row = await db.queryOneAsync<{ id: number }>(
       `INSERT INTO cs2_player_skins
-         (player_uid, weapon, weapon_name, paint_kit, name, rarity, image, float_value, pattern, source, source_label, source_ref, place, variant)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+         (player_uid, weapon, weapon_name, paint_kit, name, rarity, image, float_value, pattern, source, source_label, source_ref, place, variant, stattrak)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       [
         playerUid,
         skin.weapon,
@@ -674,6 +707,7 @@ export const skinService = {
         source.ref ?? null,
         source.place ?? null,
         variantOf(skin.paintKitName),
+        stattrak && statTrakCapable(skin.weapon) ? 0 : null,
       ]
     );
     if (row?.id) {
@@ -909,6 +943,40 @@ export const skinService = {
       given += 1;
     }
     return given;
+   * Ready Up's `skins.stattrak`: kills on StatTrak weapons since its last
+   * report. Each goes on the player's equipped StatTrak skin of that weapon
+   * (the one equipped for both sides first). Unknown players and weapons
+   * without an equipped StatTrak skin are skipped.
+   */
+  async addStatTrakKills(
+    increments: Array<{ steamid64: string; defindex: number; kills: number }>
+  ): Promise<number> {
+    const byDefindex = new Map<number, string[]>();
+    for (const [weapon, defindex] of Object.entries(WEAPON_DEFINDEX)) {
+      byDefindex.set(defindex, [...(byDefindex.get(defindex) ?? []), weapon]);
+    }
+    let counted = 0;
+    for (const inc of increments) {
+      const kills = Math.floor(Number(inc.kills));
+      const weapons = byDefindex.get(Number(inc.defindex));
+      if (!weapons?.length || !Number.isFinite(kills) || kills <= 0) continue;
+      const uid = await uidOf(String(inc.steamid64));
+      if (!uid) continue;
+      const skin = await db.queryOneAsync<{ id: number }>(
+        `SELECT s.id FROM cs2_player_loadout l JOIN cs2_player_skins s ON s.id = l.skin_id
+          WHERE l.player_uid = ? AND s.stattrak IS NOT NULL
+            AND s.weapon IN (${weapons.map(() => '?').join(', ')})
+          ORDER BY l.team ASC LIMIT 1`,
+        [uid, ...weapons]
+      );
+      if (!skin) continue;
+      await db.runAsync('UPDATE cs2_player_skins SET stattrak = stattrak + ? WHERE id = ?', [
+        Math.min(kills, 1000),
+        skin.id,
+      ]);
+      counted += 1;
+    }
+    return counted;
   },
 
   /** What players may see of the drops: the odds per rarity and per skin, and when drops happen. */
@@ -1027,10 +1095,12 @@ export const skinService = {
     source: { source: OwnedSkin['source']; label?: string; ref?: string; place?: number },
     roll: { floatMin?: number; floatMax?: number; seeds?: number[] } = {}
   ): Promise<number> {
+    const chance = (await this.config()).statTrakChance;
     const rolled: ChoiceOption[] = options.map((skin) => ({
       ...skin,
       float: rollFloat(roll.floatMin ?? 0, roll.floatMax ?? 1),
       pattern: rollPattern(roll.seeds),
+      stattrak: rollStatTrak(skin.weapon, chance),
     }));
     const row = await db.queryOneAsync<{ id: number }>(
       `INSERT INTO cs2_skin_choices (player_uid, source, source_label, source_ref, place, options, created_at)
@@ -1131,7 +1201,7 @@ export const skinService = {
         ref: row.source_ref ?? undefined,
         place: row.place ?? undefined,
       },
-      { float: option.float, pattern: option.pattern }
+      { float: option.float, pattern: option.pattern, stattrak: option.stattrak === true }
     );
     await db.runAsync('UPDATE cs2_skin_choices SET chosen_skin_id = ? WHERE id = ?', [
       skinId,
@@ -1383,8 +1453,9 @@ export const skinService = {
       pattern: number;
       slot: string;
       team: number;
+      stattrak: number | null;
     }>(
-      `SELECT s.weapon, s.paint_kit, s.float_value, s.pattern, l.slot, l.team
+      `SELECT s.weapon, s.paint_kit, s.float_value, s.pattern, s.stattrak, l.slot, l.team
          FROM cs2_player_loadout l JOIN cs2_player_skins s ON s.id = l.skin_id
         WHERE l.player_uid = ?`,
       [uid]

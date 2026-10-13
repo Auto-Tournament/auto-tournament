@@ -1920,7 +1920,9 @@
         "give_other": "Gi {{count}} drops",
         "given_one": "Ga 1 drop.",
         "given_other": "Ga {{count}} drops."
-      }
+      },
+      "statTrakChance": "StatTrak™-sjanse (%)",
+      "statTrakHelp": "Hvor ofte et våpen eller en kniv som droppes er StatTrak™ (CS2-kasser: 10)."
     },
     "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)",
     "whatThisMeans": "Hva dette betyr",
@@ -2000,7 +2002,9 @@
       "join": "Bli med",
       "joinLabel": "Bli med på {{name}}",
       "console": "Eller lim dette inn i CS2-konsollen"
-    }
+    },
+    "stattrak": "StatTrak™",
+    "stattrakKills": "StatTrak™-drap"
   },
   "matchRules": {
     "title": "Kampregler",

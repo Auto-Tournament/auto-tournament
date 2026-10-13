@@ -224,6 +224,11 @@ export function SkinCard({
             textOverflow: 'ellipsis',
           }}
         >
+          {skin.stattrak !== null && skin.stattrak !== undefined && (
+            <Box component="span" data-testid="skin-card-stattrak" sx={{ color: color.accent }}>
+              {t('skins.stattrak')}{' '}
+            </Box>
+          )}
           {skin.weaponName}
         </Typography>
         <Typography
@@ -570,6 +575,9 @@ export function InspectSkinDialog({
               {[
                 [t('skins.float'), skin.float.toFixed(4)],
                 [t('skins.pattern'), String(skin.pattern)],
+                ...(skin.stattrak !== null && skin.stattrak !== undefined
+                  ? [[t('skins.stattrakKills'), String(skin.stattrak)]]
+                  : []),
                 ...(data.odds
                   ? [
                       [t('skins.drops.rarityOdds'), formatOdds(data.odds.rarity)],

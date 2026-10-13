@@ -28,6 +28,8 @@ export interface OwnedSkin {
   equippedSides: LoadoutTeam[];
   /** The one side that buys this weapon (2 T, 3 CT), or null when both do. */
   side: 2 | 3 | null;
+  /** A StatTrak skin's kill count; null for a plain one. */
+  stattrak: number | null;
 }
 
 /** A drop waiting for the player to keep one of its options (api: skinService.openChoices). */
@@ -45,6 +47,7 @@ export interface SkinChoice {
     image: string;
     float: number;
     pattern: number;
+    stattrak?: boolean;
   }>;
 }
 
