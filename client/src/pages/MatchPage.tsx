@@ -114,9 +114,14 @@ export default function MatchPage() {
   }
 
   const maps = match.mapScores ?? [];
+  // A map's recorded winner counts when the rounds are level (the damage tiebreak).
   const won = (side: 'team1' | 'team2') =>
     maps.filter((m) =>
-      side === 'team1' ? m.team1Score > m.team2Score : m.team2Score > m.team1Score
+      m.winner === 'team1' || m.winner === 'team2'
+        ? m.winner === side
+        : side === 'team1'
+          ? m.team1Score > m.team2Score
+          : m.team2Score > m.team1Score
     ).length;
   const score1 = maps.length ? won('team1') : (match.team1SeriesScore ?? 0);
   const score2 = maps.length ? won('team2') : (match.team2SeriesScore ?? 0);
@@ -164,7 +169,7 @@ export default function MatchPage() {
               component="img"
               src={match[`${key}LogoUrl`]!}
               alt=""
-              sx={{ width: '100%', height: '100%', objectFit: 'contain', p: '10%' }}
+              sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
           ) : (
             crest(team?.name, team?.tag)
