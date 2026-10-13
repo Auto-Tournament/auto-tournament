@@ -3,11 +3,11 @@
  * map's, win or loss, and each opens the match's own page.
  */
 
-import { Link as RouterLink } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { LiveChip, Panel } from '../common/ui';
 import { matchPagePath } from '../../paths';
+import { OpponentName, RowCoverLink, versusLine } from './MatchRowLinks';
 import { tokens, fontMono, radii, textSize } from '../../theme/tokens';
 
 const { color } = tokens;
@@ -43,9 +43,8 @@ export function TeamRecentMatches({ matches }: { matches: TeamRecentMatch[] }) {
       {matches.map((m) => (
         <li key={m.slug}>
           <Box
-            component={RouterLink}
-            to={matchPagePath(m.slug)}
             sx={{
+              position: 'relative',
               display: 'grid',
               gridTemplateColumns: '2.2rem minmax(0, 1fr) auto',
               alignItems: 'center',
@@ -56,12 +55,14 @@ export function TeamRecentMatches({ matches }: { matches: TeamRecentMatch[] }) {
               border: `1px solid ${color.rule}`,
               bgcolor: color.paper2,
               color: 'text.primary',
-              textDecoration: 'none',
               '&:hover': { bgcolor: color.paper3 },
-              '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
             }}
             data-testid={`team-match-${m.slug}`}
           >
+            <RowCoverLink
+              to={matchPagePath(m.slug)}
+              label={t('teamProfile.tournaments.openMatch')}
+            />
             <Box
               sx={{
                 fontFamily: fontMono,
@@ -83,7 +84,15 @@ export function TeamRecentMatches({ matches }: { matches: TeamRecentMatch[] }) {
             </Box>
             <Box sx={{ minWidth: 0 }}>
               <Typography noWrap sx={{ fontWeight: 600, fontSize: textSize.sm }}>
-                {t('teamProfile.matches.vs', { name: m.opponent ?? t('teamProfile.matches.tbd') })}
+                {versusLine(
+                  t,
+                  'teamProfile.matches.vs',
+                  'name',
+                  <OpponentName
+                    id={m.opponentId}
+                    name={m.opponent ?? t('teamProfile.matches.tbd')}
+                  />
+                )}
               </Typography>
               <Typography noWrap sx={{ fontSize: textSize.xs, color: color.muted }}>
                 {[

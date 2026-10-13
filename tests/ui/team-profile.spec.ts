@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { setupTestContext } from '../helpers/setup';
 import { setupTournament } from '../helpers/tournamentSetup';
+import { findMatchByTeams } from '../helpers/matches';
+import { getAuthHeader } from '../helpers/auth';
 
 /**
  * Public team profile page (`/t/team/:teamId`).
@@ -61,6 +63,44 @@ test.describe.serial('Team Profile UI', () => {
       await expect(page.getByTestId('team-profile-current-tournament')).toContainText(
         setup!.tournament.name
       );
+    }
+  );
+
+  test(
+    'a match row opens the match; the opponent in it opens their team',
+    { tag: ['@ui', '@public', '@teams'] },
+    async ({ page, request }) => {
+      const setup = await setupTournament(request, {
+        prefix: `team-rows-${Date.now()}`,
+        type: 'single_elimination',
+        format: 'bo1',
+        teamCount: 2,
+      });
+      expect(setup, 'tournament setup should succeed').toBeTruthy();
+      const [team, opponent] = setup!.teams;
+      const match = await findMatchByTeams(request, team.id, opponent.id);
+      expect(match, 'the two teams have a match').toBeTruthy();
+      // A live match is in the team's match list without a server to play it on.
+      const live = await request.post('/api/test/match-state', {
+        headers: getAuthHeader(),
+        data: { slug: match!.slug, status: 'live' },
+      });
+      expect(live.ok()).toBe(true);
+
+      await page.goto(`/t/team/${team.id}`, { waitUntil: 'domcontentloaded' });
+      const row = page.getByTestId(`team-match-${match!.slug}`);
+      await expect(row).toBeVisible({ timeout: 15000 });
+
+      // The opponent's name is its own link, to their team page.
+      await row.getByTestId('match-row-opponent').click();
+      await expect(page).toHaveURL(new RegExp(`/t/team/${opponent.id}$`));
+      await expect(page.getByRole('heading', { level: 1 })).toContainText(opponent.name);
+
+      // Anywhere else on the row opens the match.
+      await page.goBack();
+      await expect(row).toBeVisible({ timeout: 15000 });
+      await row.getByText('–').click();
+      await expect(page).toHaveURL(new RegExp(`/match/${match!.slug}$`));
     }
   );
 

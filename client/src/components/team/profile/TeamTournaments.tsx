@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { formatDate, getBracketMatchLabel } from '../../../utils/matchUtils';
 import { LiveChip, Panel, Row, RowList, SectionHead } from '../../common/ui';
 import { fontDisplay, mono, textSize, tokens } from '../../../theme/tokens';
-import { paths } from '../../../paths';
+import { matchPagePath, paths } from '../../../paths';
+import { OpponentName, RowCoverLink, versusLine } from '../MatchRowLinks';
 import type { TeamMatchInfo, TeamMatchHistory, TeamStanding } from '../../../types';
 
 export interface TeamTournamentInfo {
@@ -102,14 +103,23 @@ export function TeamTournaments({
 
   // What the row says under the tournament's name: the game, then the match
   // or the placement.
-  const detail = [
-    tournament?.gameName,
+  const versus =
     hasMatch && match?.opponent?.name
-      ? t('teamProfile.tournaments.versus', { opponent: match.opponent.name })
-      : placement,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+      ? versusLine(
+          t,
+          'teamProfile.tournaments.versus',
+          'opponent',
+          <OpponentName id={match.opponent.id} name={match.opponent.name} />
+        )
+      : placement;
+  const detail =
+    tournament?.gameName || versus ? (
+      <>
+        {tournament?.gameName}
+        {tournament?.gameName && versus ? ' · ' : null}
+        {versus}
+      </>
+    ) : null;
 
   return (
     <Box data-testid="team-profile-tournaments">
@@ -206,8 +216,12 @@ export function TeamTournaments({
                 key={result.slug}
                 columns="2.2rem minmax(0, 1fr) auto"
                 data-testid="team-profile-result-row"
-                sx={{ py: 1.5 }}
+                sx={{ py: 1.5, position: 'relative', '&:hover': { bgcolor: tokens.color.paper2 } }}
               >
+                <RowCoverLink
+                  to={matchPagePath(result.slug)}
+                  label={t('teamProfile.tournaments.openMatch')}
+                />
                 <Box
                   sx={{
                     ...mono,
@@ -228,9 +242,12 @@ export function TeamTournaments({
                 </Box>
                 <Box minWidth={0}>
                   <Typography variant="body2" noWrap>
-                    {t('teamProfile.tournaments.versus', {
-                      opponent: result.opponent?.name || '—',
-                    })}
+                    {versusLine(
+                      t,
+                      'teamProfile.tournaments.versus',
+                      'opponent',
+                      <OpponentName id={result.opponent?.id} name={result.opponent?.name || '—'} />
+                    )}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" component="div" noWrap>
                     {[
