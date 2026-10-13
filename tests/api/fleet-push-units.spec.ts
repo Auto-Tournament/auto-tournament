@@ -440,7 +440,13 @@ test.describe('fleet pushes: match.update', () => {
     };
     const withSub = applyOpsToMatchConfig(config, [
       { op: 'add_player', team: 'team1', steamid64: C, name: 'Cid', role: 'sub' },
-      { op: 'add_player', team: 'team2', steamid64: '76561198000000004', name: 'Coach', role: 'coach' },
+      {
+        op: 'add_player',
+        team: 'team2',
+        steamid64: '76561198000000004',
+        name: 'Coach',
+        role: 'coach',
+      },
     ]);
     expect(withSub.team1).toEqual({
       name: 'Red',
@@ -476,7 +482,11 @@ test.describe('fleet pushes: match.update', () => {
       'pw'
     );
     expect(assign.team1.players).toContainEqual({ steamid64: C, name: 'Cid', role: 'sub' });
-    expect(assign.team2.players).toContainEqual({ steamid64: '76561198000000004', name: 'Coach', role: 'coach' });
+    expect(assign.team2.players).toContainEqual({
+      steamid64: '76561198000000004',
+      name: 'Coach',
+      role: 'coach',
+    });
 
     // Made a player again, then removed: nothing left behind.
     const promoted = applyOpsToMatchConfig(withSub, [
@@ -576,7 +586,10 @@ test.describe('fleet pushes: plugin sets', () => {
     // Older Ready Up keeps match on: compared against what it was sent.
     expect(pluginsStateDiffers(cmd, { installed: ['match'], disabled: off.slice(1) })).toBe(true);
     expect(
-      pluginsStateDiffers(pluginsSetFor(cmd, false), { installed: ['match'], disabled: off.slice(1) })
+      pluginsStateDiffers(pluginsSetFor(cmd, false), {
+        installed: ['match'],
+        disabled: off.slice(1),
+      })
     ).toBe(false);
     // Not installed is not a difference: re-sending would change nothing.
     expect(pluginsStateDiffers(cmd, { installed: [], disabled: off })).toBe(false);

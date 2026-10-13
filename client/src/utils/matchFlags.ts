@@ -58,15 +58,13 @@ export const isShuffleMatch = (match: MatchLike): boolean => {
 export const isVetoDisabledForMatch = (match: MatchLike): boolean => {
   // Shuffle matches never use veto
   if (isShuffleMatch(match)) return true;
-  
+
   // Manual matches: check config.vetoDisabled flag
   // If vetoDisabled is explicitly false, veto is enabled
   if (isManualMatch(match)) {
     return match.config?.vetoDisabled !== false;
   }
-  
+
   // For bracket matches, check the explicit flag
   return match.config?.vetoDisabled === true;
 };
-
-

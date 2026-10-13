@@ -34,9 +34,7 @@ export interface ServerDriver {
   /** After a failed load or a move: make sure the server does not start the match later. */
   cancelQueuedLoad(serverId: string, matchSlug: string): Promise<void>;
   /** The allocator's last look before it hands the server a match. */
-  checkIdle(
-    serverId: string
-  ): Promise<{
+  checkIdle(serverId: string): Promise<{
     idle: boolean;
     online: boolean;
     status: ServerStatus | null;
