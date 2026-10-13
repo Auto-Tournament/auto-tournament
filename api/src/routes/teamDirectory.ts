@@ -29,6 +29,7 @@
  * DELETE /:teamId                           disband (owner)
  */
 
+import { gameDisplayName } from '../utils/gameDisplayName';
 import { RATING_ELO, getGameRatings, ratingGame, ratingJoin } from '../services/gameRatings';
 import { randomBytes } from 'node:crypto';
 import { Router, Request, Response } from 'express';
@@ -511,8 +512,9 @@ router.get('/:teamId/profile', async (req: Request, res: Response) => {
       won_maps: number | string | null;
       lost_maps: number | string | null;
       maps: string | null;
+      game: string;
     }>(
-      `SELECT m.slug, m.status, m.winner_id, m.completed_at,
+      `SELECT m.slug, m.status, m.winner_id, m.completed_at, m.game,
               CASE WHEN m.team1_id = ? THEN m.team2_id ELSE m.team1_id END AS opponent_id,
               CASE WHEN m.team1_id = ? THEN t2.name ELSE t1.name END AS opponent,
               (SELECT COUNT(*) FROM match_map_results r WHERE r.match_slug = m.slug AND r.winner_team = CASE WHEN m.team1_id = ? THEN 'team1' ELSE 'team2' END) AS won_maps,
@@ -530,9 +532,16 @@ router.get('/:teamId/profile', async (req: Request, res: Response) => {
       [row.id, row.id, row.id, row.id, row.id, row.id, row.id]
     );
 
+    // The team's game: the one it says it plays, else the one it last played.
+    const game = row.game ?? recent[0]?.game ?? null;
+
     return res.json({
       success: true,
-      team: toDirectoryTeam(row),
+      team: {
+        ...toDirectoryTeam(row),
+        game,
+        gameName: game ? await gameDisplayName(game) : null,
+      },
       members,
       rating,
       recentMatches: recent.map((m) => ({

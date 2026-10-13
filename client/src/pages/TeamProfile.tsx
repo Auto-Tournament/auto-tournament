@@ -4,6 +4,7 @@ import { Alert, Box, Button, CircularProgress, Container, Typography } from '@mu
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { LiveChip, Panel, SectionHead } from '../components/common/ui';
+import { OpponentName, versusLine } from '../components/team/MatchRowLinks';
 import { TeamRecentMatches, type TeamRecentMatch } from '../components/team/TeamRecentMatches';
 import { TeamHeader } from '../components/team/profile/TeamHeader';
 import { RosterList, type RosterPlayer } from '../components/team/profile/RosterList';
@@ -41,7 +42,7 @@ export default function TeamProfile() {
   const [recentMatches, setRecentMatches] = useState<TeamRecentMatch[]>([]);
   const [numbers, setNumbers] = useState<TeamProfileNumbers | null>(null);
   const [members, setMembers] = useState<RosterPlayer[] | null>(null);
-  const [teamGame, setTeamGame] = useState<string | null>(null);
+  const [teamGame, setTeamGame] = useState<{ slug: string; name: string } | null>(null);
   const gameViews = useInstalledIntegrations()
     .map((integration) => integration.teamProfileView)
     .filter((view): view is NonNullable<typeof view> => Boolean(view));
@@ -57,7 +58,7 @@ export default function TeamProfile() {
       .get<
         {
           success: boolean;
-          team: { logoUrl: string | null; game: string | null };
+          team: { logoUrl: string | null; game: string | null; gameName?: string | null };
           recentMatches?: TeamRecentMatch[];
           members: Array<{
             steamId: string;
@@ -78,7 +79,9 @@ export default function TeamProfile() {
         if (cancelled) return;
         setLogoUrl(res.team?.logoUrl ?? null);
         setRecentMatches(res.recentMatches ?? []);
-        setTeamGame(res.team?.game ?? null);
+        setTeamGame(
+          res.team?.game ? { slug: res.team.game, name: res.team.gameName ?? res.team.game } : null
+        );
         setNumbers({
           rating: res.rating,
           record: res.record,
@@ -148,8 +151,8 @@ export default function TeamProfile() {
     )
   ) : undefined;
 
-  // The team's game is its tournament's, else the one it says it mainly plays.
-  const integration = useIntegration(tournament?.game ?? teamGame);
+  // The team's game is its tournament's, else the one it plays (or last played).
+  const integration = useIntegration(tournament?.game ?? teamGame?.slug);
   const MemberStatus = integration.rosterMemberStatus;
   const positionLabel = integration.teamPositions
     ? (position: string) =>
@@ -207,7 +210,7 @@ export default function TeamProfile() {
             game={
               tournament?.game && tournament.gameName
                 ? { slug: tournament.game, name: tournament.gameName }
-                : null
+                : teamGame
             }
           />
 
@@ -226,14 +229,16 @@ export default function TeamProfile() {
             >
               <LiveChip label={t('teamProfile.playingNow')} />
               <Typography sx={{ flex: 1, minWidth: 0 }} noWrap>
-                {[
-                  tournament?.name,
-                  match?.opponent?.name
-                    ? t('teamProfile.tournaments.versus', { opponent: match.opponent.name })
-                    : null,
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
+                {tournament?.name}
+                {tournament?.name && match?.opponent?.name ? ' · ' : null}
+                {match?.opponent?.name
+                  ? versusLine(
+                      t,
+                      'teamProfile.tournaments.versus',
+                      'opponent',
+                      <OpponentName id={match.opponent.id} name={match.opponent.name} />
+                    )
+                  : null}
               </Typography>
               <Button
                 variant="contained"
