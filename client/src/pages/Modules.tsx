@@ -15,6 +15,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { SignInNeedsWarning } from '../components/modules/SignInNeedsWarning';
 import { Box, Button, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
 import { FileArrowUpIcon, PuzzlePieceIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
@@ -161,6 +162,8 @@ export default function Modules() {
           sx={{ mb: 0 }}
         />
 
+        <SignInNeedsWarning />
+
         <Box component="section">
           <Typography variant="h6" fontWeight={700} mb={1}>
             {t('catalog.title')}
@@ -180,7 +183,11 @@ export default function Modules() {
           </Typography>
           <Stack spacing={1.5} data-testid="modules-installed">
             {integrations.map((integration) => (
-              <Card key={integration.id} variant="outlined" data-testid={`module-${integration.id}`}>
+              <Card
+                key={integration.id}
+                variant="outlined"
+                data-testid={`module-${integration.id}`}
+              >
                 <CardContent
                   sx={{ display: 'flex', gap: 2, alignItems: 'center', '&:last-child': { pb: 2 } }}
                 >

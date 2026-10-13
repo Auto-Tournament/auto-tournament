@@ -490,6 +490,10 @@
         "idTaken": "“{{id}}” is already a built-in module",
         "render": "its “{{slot}}” slot failed while rendering: {{error}}"
       }
+    },
+    "signInNeed": {
+      "body": "{{game}} players sign in with {{provider}}, and {{provider}} sign-in is turned off. They can't link the account the game needs.",
+      "action": "Turn it on"
     }
   },
   "catalog": {
