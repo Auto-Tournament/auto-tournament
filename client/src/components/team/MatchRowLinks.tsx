@@ -12,7 +12,15 @@ import { teamProfilePath } from '../../paths';
 import { tokens } from '../../theme/tokens';
 
 /** Covers the whole row; a click anywhere but on another link opens `to`. */
-export function RowCoverLink({ to, label, testId }: { to: string; label: string; testId?: string }) {
+export function RowCoverLink({
+  to,
+  label,
+  testId,
+}: {
+  to: string;
+  label: string;
+  testId?: string;
+}) {
   return (
     <Box
       component={RouterLink}

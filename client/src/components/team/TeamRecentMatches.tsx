@@ -46,7 +46,7 @@ export function TeamRecentMatches({ matches }: { matches: TeamRecentMatch[] }) {
             sx={{
               position: 'relative',
               display: 'grid',
-              gridTemplateColumns: '2.2rem minmax(0, 1fr) auto',
+              gridTemplateColumns: 'minmax(2.2rem, auto) minmax(0, 1fr) auto',
               alignItems: 'center',
               gap: 1.5,
               px: 1.75,
