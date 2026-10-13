@@ -172,6 +172,8 @@ test.describe.serial('Manual reporting on the team page', () => {
         const reporterState = reporter.getByTestId('manual-report-state');
         await expect(reporter.getByTestId('manual-report-panel')).toBeVisible();
         await expect(reporterState).toHaveAttribute('data-state', 'nothing');
+        // A game without a veto never gets the map selection card.
+        await expect(reporter.getByText('Map Selection')).toHaveCount(0);
 
         await reporter.getByTestId('manual-report-open-form').click();
         await reporter.getByTestId('manual-report-game-1-team1').fill('3');

@@ -99,7 +99,7 @@
     "tournamentFinished": "Tournament finished",
     "finalPlacement": "Final placement: #{{position}} of {{total}}",
     "noMatchNow": "No match scheduled right now",
-    "noMatchNowHint": "Your next match shows up here, with the veto and the server to connect to.",
+    "noMatchNowHint": "Your next match shows up here, with what to do before it starts and how to join.",
     "noMatchesYet": "No matches available right now",
     "noMatchesYetHint": "The tournament hasn't started yet. Once it begins, your matches will appear here.",
     "currentMatch": "Current match",

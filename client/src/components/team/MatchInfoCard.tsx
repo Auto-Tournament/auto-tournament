@@ -305,7 +305,9 @@ export function MatchInfoCard({
   // if created before the fix, or if status hasn't updated yet)
   const isVetoEligibleStatus =
     match.status === 'pending' || (isManualMatch && match.status === 'ready');
+  // Only a game whose module runs a veto (its pre-match view) gets this card.
   if (
+    PreMatchView &&
     viewerIsTeamMember &&
     (isManualMatch || tournamentStatus === 'in_progress') &&
     isVetoEligibleStatus &&
@@ -325,15 +327,13 @@ export function MatchInfoCard({
               {t('matchInfo.tournamentStartedBody')}
             </Typography>
           </Alert>
-          {PreMatchView && (
-            <PreMatchView
-              matchSlug={match.slug}
-              team1Name={match.team1?.name ?? match.config?.team1?.name}
-              team2Name={match.team2?.name ?? match.config?.team2?.name}
-              currentTeamSlug={team?.id ?? (match.isTeam1 ? 'team1' : 'team2')}
-              onComplete={onVetoComplete}
-            />
-          )}
+          <PreMatchView
+            matchSlug={match.slug}
+            team1Name={match.team1?.name ?? match.config?.team1?.name}
+            team2Name={match.team2?.name ?? match.config?.team2?.name}
+            currentTeamSlug={team?.id ?? (match.isTeam1 ? 'team1' : 'team2')}
+            onComplete={onVetoComplete}
+          />
         </CardContent>
       </Card>
     );
