@@ -4,6 +4,10 @@
  * hear `notify:new` with it at once (socket room `player:<id>`), so a party
  * invite pops up wherever they are.
  *
+ * Per kind, a player picks off, the bell, or the bell with a sound
+ * (`settings`); what needs an answer can't be off. An "off" notice is not
+ * stored; a "sound" one reaches their tabs with `sound: true`.
+ *
  * What needs an answer (a party invite, a friend request) carries its buttons
  * in the client; answering stores `answer` in the notice's data, so the bell
  * shows what was done. A party invite whose party is gone shows as expired.
@@ -22,6 +26,43 @@ export type NotificationKind =
   | 'tournament'
   | 'news'
   | 'report';
+
+export type NotificationDelivery = 'off' | 'bell' | 'sound';
+
+/** Each kind's delivery for a player who chose nothing. */
+export const NOTIFICATION_DEFAULTS: Record<NotificationKind, NotificationDelivery> = {
+  party_invite: 'sound',
+  team_invite: 'sound',
+  friend_request: 'bell',
+  friend_accepted: 'bell',
+  skin: 'bell',
+  highlight: 'bell',
+  tournament: 'sound',
+  news: 'bell',
+  report: 'bell',
+};
+
+/** Kinds that need an answer: never off, or the question would never reach them. */
+export const NOTIFICATION_ANSWERED: NotificationKind[] = [
+  'party_invite',
+  'team_invite',
+  'friend_request',
+];
+
+export type NotificationSettings = Record<NotificationKind, NotificationDelivery>;
+
+/** Stored (or posted) settings with every kind filled in and nothing unknown. */
+export function normalizeNotificationSettings(raw: unknown): NotificationSettings {
+  const input = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+  const out = { ...NOTIFICATION_DEFAULTS };
+  for (const kind of Object.keys(out) as NotificationKind[]) {
+    const v = input[kind];
+    if (v === 'off' || v === 'bell' || v === 'sound') {
+      out[kind] = v === 'off' && NOTIFICATION_ANSWERED.includes(kind) ? 'bell' : v;
+    }
+  }
+  return out;
+}
 
 export interface NotificationView {
   id: number;
@@ -80,6 +121,8 @@ export const notificationService = {
     dedupeKey?: string
   ): Promise<NotificationView | null> {
     try {
+      const delivery = (await this.settings(playerId))[kind];
+      if (delivery === 'off') return null;
       if (dedupeKey) {
         await db.runAsync('DELETE FROM notifications WHERE player_id = ? AND dedupe_key = ?', [
           playerId,
@@ -94,7 +137,7 @@ export const notificationService = {
       );
       if (!row) return null;
       const notice = view(row);
-      emitNotification(playerId, notice);
+      emitNotification(playerId, { ...notice, sound: delivery === 'sound' });
       return notice;
     } catch (error) {
       log.warn(`[NOTIFY] Could not send a ${kind} notice`, { error });
@@ -115,6 +158,8 @@ export const notificationService = {
     let sent = 0;
     for (const playerId of new Set(playerIds)) {
       try {
+        const delivery = (await this.settings(playerId))[kind];
+        if (delivery === 'off') continue;
         const row = await db.queryOneAsync<Row>(
           `INSERT INTO notifications (player_id, kind, data, dedupe_key, created_at)
            SELECT ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM players WHERE id = ?)
@@ -123,7 +168,7 @@ export const notificationService = {
           [playerId, kind, JSON.stringify(data), dedupeKey, now(), playerId]
         );
         if (row) {
-          emitNotification(playerId, view(row));
+          emitNotification(playerId, { ...view(row), sound: delivery === 'sound' });
           sent += 1;
         }
       } catch (error) {
@@ -137,12 +182,46 @@ export const notificationService = {
   async broadcast(data: Record<string, unknown>): Promise<number> {
     const rows = await db.queryAsync<Row & { player_id: string }>(
       `INSERT INTO notifications (player_id, kind, data, created_at)
-       SELECT id, 'news', ?, ? FROM players WHERE last_sign_in_at IS NOT NULL
+       SELECT id, 'news', ?, ? FROM players
+        WHERE last_sign_in_at IS NOT NULL
+          AND COALESCE(notification_settings, '{}')::jsonb->>'news' IS DISTINCT FROM 'off'
        RETURNING id, player_id, kind, data, created_at, read_at`,
       [JSON.stringify(data), now()]
     );
-    for (const row of rows) emitNotification(row.player_id, view(row));
+    const sound = new Set(
+      (
+        await db.queryAsync<{ id: string }>(
+          `SELECT id FROM players WHERE id = ANY(?::text[])
+              AND COALESCE(notification_settings, '{}')::jsonb->>'news' = 'sound'`,
+          [rows.map((r) => r.player_id)]
+        )
+      ).map((r) => r.id)
+    );
+    for (const row of rows)
+      emitNotification(row.player_id, { ...view(row), sound: sound.has(row.player_id) });
     return rows.length;
+  },
+
+  /** How the player wants each kind of notice (the defaults for what they never chose). */
+  async settings(playerId: string): Promise<NotificationSettings> {
+    const row = await db.queryOneAsync<{ notification_settings: string | null }>(
+      'SELECT notification_settings FROM players WHERE id = ?',
+      [playerId]
+    );
+    return normalizeNotificationSettings(parse(row?.notification_settings ?? '{}'));
+  },
+
+  /** Change some kinds; the rest stay. Returns all of them. */
+  async saveSettings(playerId: string, patch: unknown): Promise<NotificationSettings> {
+    const next = normalizeNotificationSettings({
+      ...(await this.settings(playerId)),
+      ...(patch && typeof patch === 'object' ? patch : {}),
+    });
+    await db.runAsync('UPDATE players SET notification_settings = ? WHERE id = ?', [
+      JSON.stringify(next),
+      playerId,
+    ]);
+    return next;
   },
 
   /** The player's notices, newest first; `before` pages back by id. */

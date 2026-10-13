@@ -6,13 +6,15 @@
  */
 import React from 'react';
 import { Badge, Box, Button, ButtonBase, IconButton, Popover, Typography } from '@mui/material';
-import { BellIcon } from '@phosphor-icons/react';
+import { BellIcon, GearSixIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { fontDisplay, tokens } from '../../theme/tokens';
 import { paths } from '../../paths';
 import { NoticeItem } from './NoticeItem';
-import { markNoticesRead, useSocial, type Notice } from './socialStore';
+import { markNoticesRead, onNewNotice, useSocial, type Notice } from './socialStore';
+import { describeNotice, noticeLine } from './noticeText';
+import { browserNotify } from '../../utils/browserNotify';
 
 const { color } = tokens;
 
@@ -77,6 +79,27 @@ export function NotificationBell({ viewerId }: { viewerId: string }) {
   const [filter, setFilter] = React.useState<NoticeFilter>('all');
   const shown = social.notices.filter((n) => matchesFilter(n, filter)).slice(0, 12);
   const close = () => setAnchor(null);
+  const navigate = useNavigate();
+
+  // A new notice while the tab is in the background: a browser notification
+  // (when the player turned them on), opening what the notice is about.
+  React.useEffect(
+    () =>
+      onNewNotice((notice) => {
+        const said = describeNotice(notice, t, viewerId);
+        const to = said.to ?? (notice.kind === 'party_invite' ? paths.play : paths.notifications);
+        browserNotify({
+          title: noticeLine(said),
+          body: said.detail,
+          tag: `notice-${notice.id}`,
+          onClick: () => {
+            if (/^https:\/\//.test(to)) window.open(to, '_blank', 'noopener');
+            else navigate(to);
+          },
+        });
+      }),
+    [t, viewerId, navigate]
+  );
 
   return (
     <>
@@ -151,9 +174,20 @@ export function NotificationBell({ viewerId }: { viewerId: string }) {
             pb: 1,
           }}
         >
-          <Typography sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: '1rem' }}>
+          <Typography sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: '1rem', flex: 1 }}>
             {t('social.bell.title')}
           </Typography>
+          <IconButton
+            size="small"
+            component={RouterLink}
+            to={`${paths.notifications}#settings`}
+            onClick={close}
+            aria-label={t('social.bell.settings')}
+            data-testid="nav-bell-settings"
+            sx={{ color: color.muted, mr: 0.5 }}
+          >
+            <GearSixIcon size={16} />
+          </IconButton>
           <Button
             size="small"
             onClick={() => void markNoticesRead()}

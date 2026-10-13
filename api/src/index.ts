@@ -4,7 +4,6 @@ import { startModuleUpdateNotices } from './services/platform/moduleUpdates';
 import { socialService } from './services/socialService';
 import { startTournamentNotices } from './services/tournamentNotices';
 import { startAdminNoticeSweep } from './services/adminNoticeSweep';
-import { backfillPlayedGames } from './services/gameReadiness';
 import { startHoldTimer } from './services/matchHolds';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -660,10 +659,6 @@ process.on('uncaughtException', (err) => {
       socialService.start();
       startTournamentNotices();
       startAdminNoticeSweep();
-      // Players with played matches and no games get those matches' game.
-      backfillPlayedGames()
-        .then((n) => n > 0 && log.info(`Added the played game to ${n} player(s)`))
-        .catch((error) => log.warn('Could not add played games', { error }));
       // The admins' Steam warning follows the key (the `steam-health` topic).
       steamService.startHealthWatch();
       // Admins' holds and bracket pauses that end by themselves (services/matchHolds.ts).

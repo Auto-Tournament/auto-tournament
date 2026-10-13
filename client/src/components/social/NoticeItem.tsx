@@ -12,7 +12,7 @@ import { PlayerAvatar } from '../player/PlayerAvatar';
 import { AtIcon } from '../common/AtIcon';
 import { VideoThumb } from '../highlights/HighlightCard';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import { paths, playerProfilePath, teamProfilePath } from '../../paths';
+import { paths, teamProfilePath } from '../../paths';
 import { tokens, withAlpha } from '../../theme/tokens';
 import {
   acceptFriend,
@@ -21,19 +21,11 @@ import {
   declineFriend,
   markNoticesRead,
   type Notice,
-  type Person,
 } from './socialStore';
+import { asPerson, describeNotice } from './noticeText';
 import { useTimeAgo } from './timeAgo';
 
 const { color } = tokens;
-
-function asPerson(value: unknown): Person | null {
-  if (!value || typeof value !== 'object') return null;
-  const p = value as Partial<Person>;
-  return typeof p.id === 'string'
-    ? { id: p.id, name: p.name || p.id, avatarUrl: p.avatarUrl ?? null }
-    : null;
-}
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
 
@@ -66,220 +58,107 @@ export function NoticeItem({ notice, viewerId, onNavigate }: Props) {
     }
   };
 
-  let icon: React.ReactNode = null;
-  let text: React.ReactNode = null;
-  let detail = '';
-  let to: string | null = null;
-  /** A ready highlight's video, shown as a still at the notice's end. */
-  let thumb: string | null = null;
-  let actions: React.ReactNode = null;
-
-  const name = (who: Person | null) => (
-    <Box component="b" sx={{ color: color.ink, fontWeight: 600 }}>
-      {who?.name ?? ''}
-    </Box>
+  const said = describeNotice(notice, t, viewerId);
+  const { detail, to, thumb } = said;
+  const bold = (value: string) =>
+    value ? (
+      <Box component="b" sx={{ color: color.ink, fontWeight: 600 }}>
+        {value}
+      </Box>
+    ) : null;
+  const text = (
+    <>
+      {bold(said.lead)}
+      {said.lead && said.text ? ' ' : null}
+      {said.text}
+      {said.tail ? ' ' : null}
+      {bold(said.tail)}
+    </>
   );
+  const icon: React.ReactNode =
+    notice.kind === 'skin' ? (
+      <SparkleIcon size={16} weight="fill" />
+    ) : notice.kind === 'highlight' ? (
+      <PlayIcon size={16} weight="fill" />
+    ) : notice.kind === 'tournament' ? (
+      <TrophyIcon size={16} />
+    ) : notice.kind === 'report' ? (
+      <FlagIcon size={16} />
+    ) : notice.kind === 'news' ? (
+      <AtIcon size={18} />
+    ) : null;
 
-  switch (notice.kind) {
-    case 'party_invite': {
-      text = (
-        <>
-          {name(person)} {t('social.notice.partyInvite')}
-        </>
-      );
-      detail = t('social.notice.partyDetail', { mode: str(d.mode), size: Number(d.size ?? 1) });
-      if (!answer) {
-        actions = (
-          <>
-            <Button
-              size="small"
-              variant="contained"
-              disabled={busy}
-              onClick={() =>
-                void act(() =>
-                  answerPartyInvite(str(d.partyId), true).then(() => navigate(paths.play))
-                )
-              }
-            >
-              {t('social.notice.join')}
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              disabled={busy}
-              onClick={() => void act(() => answerPartyInvite(str(d.partyId), false))}
-            >
-              {t('social.notice.decline')}
-            </Button>
-          </>
-        );
-      }
-      break;
-    }
-    case 'team_invite': {
-      const teamId = str(d.teamId);
-      text = (
-        <>
-          {name(person)} {t('social.notice.teamInvite')}{' '}
-          <Box component="b" sx={{ color: color.ink, fontWeight: 600 }}>
-            {str(d.teamName)}
-          </Box>
-        </>
-      );
-      to = answer === 'joinedTeam' ? teamProfilePath(teamId) : paths.browseTeams;
-      if (!answer) {
-        actions = (
-          <>
-            <Button
-              size="small"
-              variant="contained"
-              disabled={busy}
-              onClick={() =>
-                void act(() =>
-                  answerTeamInvite(teamId, true).then(() => navigate(teamProfilePath(teamId)))
-                )
-              }
-            >
-              {t('social.notice.accept')}
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              disabled={busy}
-              onClick={() => void act(() => answerTeamInvite(teamId, false))}
-            >
-              {t('social.notice.decline')}
-            </Button>
-          </>
-        );
-      }
-      break;
-    }
-    case 'friend_request':
-      text = (
-        <>
-          {name(person)} {t('social.notice.friendRequest')}
-        </>
-      );
-      to = person ? playerProfilePath(person.id) : null;
-      if (!answer && person) {
-        actions = (
-          <>
-            <Button
-              size="small"
-              variant="contained"
-              disabled={busy}
-              onClick={() => void act(() => acceptFriend(person.id))}
-            >
-              {t('social.notice.accept')}
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              disabled={busy}
-              onClick={() => void act(() => declineFriend(person.id))}
-            >
-              {t('social.notice.ignore')}
-            </Button>
-          </>
-        );
-      }
-      break;
-    case 'friend_accepted':
-      text = (
-        <>
-          {name(person)} {t('social.notice.friendAccepted')}
-        </>
-      );
-      to = person ? playerProfilePath(person.id) : null;
-      break;
-    case 'skin':
-      icon = <SparkleIcon size={16} weight="fill" />;
-      text = (
-        <>
-          {t('social.notice.skin')}{' '}
-          <Box component="b" sx={{ color: color.ink, fontWeight: 600 }}>
-            {str(d.name)}
-          </Box>
-        </>
-      );
-      detail = [str(d.rarity), str(d.source)].filter(Boolean).join(' · ');
-      to = viewerId ? playerProfilePath(viewerId) : null;
-      break;
-    case 'highlight':
-      icon = <PlayIcon size={16} weight="fill" />;
-      text = (
-        <>
-          {d.role === 'victim' || d.role === 'assist' || d.role === 'killer'
-            ? t(
-                `social.notice.${({ victim: 'highlightVictim', assist: 'highlightAssist', killer: 'highlightKiller' } as const)[d.role]}`,
-                { name: str(d.byName) || t('social.notice.someone', { defaultValue: 'Someone' }) }
-              )
-            : t('social.notice.highlight')}{' '}
-          <Box component="b" sx={{ color: color.ink, fontWeight: 600 }}>
-            {str(d.title)}
-          </Box>
-        </>
-      );
-      // The clip's own page (older notices carry only its id); its still beside the text.
-      to =
-        (str(d.url).startsWith('/') ? str(d.url) : '') ||
-        (typeof d.highlightId === 'number' ? `/watch/clip/${d.highlightId}` : null) ||
-        (viewerId ? playerProfilePath(viewerId) : null);
-      thumb =
-        (str(d.video).startsWith('/') ? str(d.video) : '') ||
-        (typeof d.highlightId === 'number'
-          ? `/api/game/cs2/highlights/${d.highlightId}.mp4`
-          : null);
-      break;
-    case 'tournament':
-      icon = <TrophyIcon size={16} />;
-      text = (
-        <>
-          <Box component="b" sx={{ color: color.ink, fontWeight: 600 }}>
-            {str(d.name)}
-          </Box>{' '}
-          {d.event === 'started'
-            ? t('social.notice.tournamentStarted')
-            : d.event === 'lineupGap'
-              ? t('social.notice.lineupGap', { minutes: Number(d.minutes) || 15 })
-              : t('social.notice.checkInOpen')}
-        </>
-      );
-      // A lineup gap: the captain picks a sub on the sign-up page.
-      to = d.tournamentId
-        ? `/tournament/${Number(d.tournamentId)}${d.event === 'started' ? '/match' : '/signup'}`
-        : null;
-      break;
-    case 'report':
-      icon = <FlagIcon size={16} />;
-      if (d.event === 'reviewed') {
-        text = <>{t('social.notice.reportReviewed', { name: str(d.name) })}</>;
-        to = null;
-      } else {
-        text = (
-          <>
-            <Box component="b" sx={{ color: color.ink, fontWeight: 600 }}>
-              {str(d.name)}
-            </Box>{' '}
-            {t('social.notice.reportNew', {
-              reason: t(`report.reasons.${str(d.reason) || 'other'}`),
-            })}
-          </>
-        );
-        to = '/manage/reports';
-      }
-      break;
-    case 'news':
-      icon = <AtIcon size={18} />;
-      text = (
-        <Box component="b" sx={{ color: color.ink, fontWeight: 600 }}>
-          {str(d.title)}
-        </Box>
-      );
-      detail = str(d.body);
-      to = str(d.url) || null;
-      break;
+  let actions: React.ReactNode = null;
+  if (!answer && notice.kind === 'party_invite') {
+    actions = (
+      <>
+        <Button
+          size="small"
+          variant="contained"
+          disabled={busy}
+          onClick={() =>
+            void act(() => answerPartyInvite(str(d.partyId), true).then(() => navigate(paths.play)))
+          }
+        >
+          {t('social.notice.join')}
+        </Button>
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={busy}
+          onClick={() => void act(() => answerPartyInvite(str(d.partyId), false))}
+        >
+          {t('social.notice.decline')}
+        </Button>
+      </>
+    );
+  } else if (!answer && notice.kind === 'team_invite') {
+    const teamId = str(d.teamId);
+    actions = (
+      <>
+        <Button
+          size="small"
+          variant="contained"
+          disabled={busy}
+          onClick={() =>
+            void act(() =>
+              answerTeamInvite(teamId, true).then(() => navigate(teamProfilePath(teamId)))
+            )
+          }
+        >
+          {t('social.notice.accept')}
+        </Button>
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={busy}
+          onClick={() => void act(() => answerTeamInvite(teamId, false))}
+        >
+          {t('social.notice.decline')}
+        </Button>
+      </>
+    );
+  } else if (!answer && notice.kind === 'friend_request' && person) {
+    actions = (
+      <>
+        <Button
+          size="small"
+          variant="contained"
+          disabled={busy}
+          onClick={() => void act(() => acceptFriend(person.id))}
+        >
+          {t('social.notice.accept')}
+        </Button>
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={busy}
+          onClick={() => void act(() => declineFriend(person.id))}
+        >
+          {t('social.notice.ignore')}
+        </Button>
+      </>
+    );
   }
 
   const answered =

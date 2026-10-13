@@ -319,6 +319,7 @@ export function getSchemaSQL(): string {
       last_sign_in_at INTEGER, -- Epoch of the player's last sign-in (Steam or SSO); NULL = never since this column exists. Admin-only, never in a public response
       last_seen_at INTEGER, -- Epoch the player last closed the site (their last socket left); shown to their friends only
       party_invites_from TEXT NOT NULL DEFAULT 'everyone', -- Who may invite them to a matchmaking party: 'everyone' | 'friends' | 'nobody'
+      notification_settings TEXT, -- JSON: per kind of notice, 'off' | 'bell' | 'sound' (services/notificationService); NULL = the defaults
       deleted_at INTEGER, -- Epoch an admin deleted the player: a tombstone named "Deleted player" that keeps their match rows; nothing else of theirs is left (services/playerModeration.ts)
       banned_at INTEGER, -- Epoch an admin banned the player: no sign-in, public pages show only their name and "Banned"
       ban_reason TEXT, -- Why, for admins only; never in a public response
@@ -1045,8 +1046,7 @@ export function getSchemaSQL(): string {
       count INTEGER NOT NULL DEFAULT 1,
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      resolved_at INTEGER,
-      dismissed_at INTEGER -- an admin dismissed it: a sweep that still sees the problem stays quiet until it clears
+      resolved_at INTEGER
     );
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_admin_notices_open ON admin_notices(dedupe_key) WHERE resolved_at IS NULL;

@@ -2,7 +2,9 @@
  * The admins' bell in the top bar (signed-in admins): what needs an admin
  * (api services/adminNoticeService.ts), open ones first, with a count for
  * repeats. A new one also shows as a toast on any page, with a sound for
- * the kinds set to "sound" (Settings → Admin notifications).
+ * the kinds set to "sound" (Settings → Admin notifications), and a browser
+ * notification while the tab is in the background when they are on here
+ * (Notifications → Settings).
  */
 import React from 'react';
 import { Badge, Box, Button, ButtonBase, IconButton, Popover, Typography } from '@mui/material';
@@ -13,6 +15,7 @@ import { fontDisplay, tokens } from '../../theme/tokens';
 import { matchDetailsPath, paths } from '../../paths';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { soundNotification } from '../../utils/soundNotification';
+import { browserNotify } from '../../utils/browserNotify';
 import { useTimeAgo } from '../social/timeAgo';
 import { useAdminNotices } from '../../hooks/useAdminNotices';
 import { noticeKey, noticeLink, noticeParams, type AdminNotice } from './adminNoticeText';
@@ -47,8 +50,15 @@ export function AdminNoticeBell() {
         notice.severity === 'error' ? 'error' : notice.severity === 'warn' ? 'warning' : 'info'
       );
       if (sound) soundNotification.playNotification();
+      // In the background: a browser notification too, when they're on here.
+      const to = noticeLink(notice, LINKS);
+      browserNotify({
+        title: t(noticeKey(notice), noticeParams(notice)),
+        tag: `admin-notice-${notice.id}`,
+        onClick: () => to && navigate(to),
+      });
     },
-    [showSnackbar, t]
+    [showSnackbar, t, navigate]
   );
   const { notices, unread, markSeen, dismiss } = useAdminNotices(true, onNew);
   const close = () => setAnchor(null);

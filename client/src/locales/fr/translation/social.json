@@ -17,7 +17,8 @@
       "emptyHint": "Party invites, friend requests, tournament news, new skins and ready highlights show up here.",
       "loading": "Loading…",
       "seeAll": "See all notifications",
-      "loadOlder": "Load older"
+      "loadOlder": "Load older",
+      "settings": "Notification settings"
     },
     "notice": {
       "partyInvite": "invited you to their party",
@@ -169,6 +170,39 @@
       "sent_one": "Sent to {{count}} player",
       "sent_other": "Sent to {{count}} players",
       "failed": "Could not send the news"
+    },
+    "noticeSettings": {
+      "title": "Settings",
+      "alerts": "Alerts",
+      "browser": "Browser notifications",
+      "browserHint": "While this tab is in the background. On for this browser only.",
+      "browserDenied": "Blocked in this browser's site settings. Allow notifications there to turn them on.",
+      "browserUnsupported": "This browser has no notifications.",
+      "sound": "Sound",
+      "test": "Test",
+      "volume": "Volume {{percent}}%",
+      "group": {
+        "you": "You",
+        "tournaments": "Tournaments",
+        "drops": "Drops",
+        "other": "Other"
+      },
+      "kind": {
+        "party_invite": "Party invites",
+        "team_invite": "Team invites",
+        "friend_request": "Friend requests",
+        "friend_accepted": "Accepted friend requests",
+        "tournament": "Check-ins and starts",
+        "skin": "Skin drops",
+        "highlight": "Your highlights",
+        "news": "News",
+        "report": "Reports"
+      },
+      "delivery": {
+        "off": "Off",
+        "bell": "Bell",
+        "sound": "Bell and sound"
+      }
     }
   }
 }

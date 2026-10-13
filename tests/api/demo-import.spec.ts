@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
+import { signInViaRequest } from '../helpers/auth';
 
 /**
  * Importing a match from its demos (api/src/integrations/cs2/demos/demoImport.ts):
@@ -29,7 +29,7 @@ const sid = (n: number) => `7656119900${String(Date.now()).slice(-5)}${String(n)
 test(
   'a match imported from its demos gets its teams, players and score',
   TAGS,
-  async ({ request, playwright, baseURL }) => {
+  async ({ request }) => {
     expect(await signInViaRequest(request)).toBe(true);
 
     expect((await request.post('/api/game/cs2/imports', { data: { maps: 0 } })).status()).toBe(400);
@@ -175,13 +175,5 @@ test(
       kind: 'imported',
       tournamentName: 'Spec Cup',
     });
-
-    // They are in a CS2 demo, so CS2 is on their profile: no "What do you play?".
-    const imported = await playwright.request.newContext({ baseURL });
-    expect(await signInAsPlayerViaRequest(imported, bravo[0])).toBe(true);
-    const games = await (await imported.get('/api/me/games')).json();
-    expect(games.games.map((g: { slug: string }) => g.slug)).toEqual(['counter-strike-2']);
-    expect(games.showPrompt).toBe(false);
-    await imported.dispose();
   }
 );

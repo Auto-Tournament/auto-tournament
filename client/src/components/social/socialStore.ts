@@ -7,6 +7,7 @@
  * puts a notice at the top of the bell (and a party invite in the toast);
  * `social:changed` reads the friends again. A slow poll is the fallback.
  */
+import { soundNotification } from '../../utils/soundNotification';
 import { useEffect, useSyncExternalStore } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { apiErrorMessage } from '../../utils/api';
@@ -57,6 +58,8 @@ export interface Notice {
   data: Record<string, unknown>;
   createdAt: number;
   read: boolean;
+  /** On a new one only: the player's settings ring this kind. */
+  sound?: boolean;
 }
 
 interface State {
@@ -83,6 +86,13 @@ const EMPTY: State = {
   toasts: [],
 };
 let state: State = EMPTY;
+const newNoticeListeners = new Set<(notice: Notice) => void>();
+
+/** Hear each new notice as it arrives (browser notifications). Returns the unsubscribe. */
+export function onNewNotice(listener: (notice: Notice) => void): () => void {
+  newNoticeListeners.add(listener);
+  return () => newNoticeListeners.delete(listener);
+}
 const listeners = new Set<() => void>();
 let users = 0;
 let socket: Socket | null = null;
@@ -146,6 +156,8 @@ function openSocket() {
         : state.toasts;
     emit({ notices, unread: state.unread + 1, toasts });
     if (notice.kind === 'party_invite') void refreshMatchmaking();
+    if (notice.sound) soundNotification.playNotification();
+    newNoticeListeners.forEach((l) => l(notice));
   });
   socket.on('social:changed', () => void refreshFriends());
 }

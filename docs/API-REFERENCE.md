@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 688 of them, 402 behind auth —
+Every endpoint this API serves — 690 of them, 402 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -702,6 +702,8 @@ Friends, friend requests, finding players, and the signed-in player's notificati
 | `GET` | `/api/social/settings` | public |
 | `PUT` | `/api/social/settings` | public |
 | `GET` | `/api/social/notifications` | public |
+| `GET` | `/api/social/notifications/settings` | public |
+| `PUT` | `/api/social/notifications/settings` | public |
 | `POST` | `/api/social/notifications/read` | public |
 | `POST` | `/api/social/news` | admin |
 
