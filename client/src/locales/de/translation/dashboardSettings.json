@@ -485,7 +485,8 @@
         "setup": "setup"
       },
       "openMenu": "Open the Manage menu",
-      "closeMenu": "Close the menu"
+      "closeMenu": "Close the menu",
+      "setupTab": "Setup"
     },
     "status": {
       "live": "LIVE",

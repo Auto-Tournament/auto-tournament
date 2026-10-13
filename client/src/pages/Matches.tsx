@@ -1,24 +1,14 @@
 import { pageTitle } from '../utils/pageTitle';
 import { manageMatchPath } from '../paths';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  LinearProgress,
-  Snackbar,
-  Alert,
-  Stack,
-  Button,
-  Chip,
-} from '@mui/material';
+import { Box, Typography, LinearProgress, Snackbar, Alert, Button } from '@mui/material';
 import { GameControllerIcon, PlusIcon } from '@phosphor-icons/react';
 import { io } from 'socket.io-client';
 import { onSocketReconnect } from '../utils/socketResync';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { EmptyState } from '../components/shared/EmptyState';
-import { StatusLegend } from '../components/shared/StatusLegend';
-import { MatchCard } from '../components/shared/MatchCard';
+import { MatchesTable } from '../components/manage/MatchesTable';
 import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { useResourceAvailability } from '../hooks/useResourceAvailability';
 import { getGlobalMatchNumber } from '../utils/matchUtils';
@@ -27,7 +17,7 @@ import { api } from '../utils/api';
 import type { Match, MatchEvent, MatchesResponse } from '../types';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
-import { PageHead, RowList, SectionHead } from '../components/common/ui';
+import { PageHead } from '../components/common/ui';
 import { tokens } from '../theme/tokens';
 
 export default function Matches() {
@@ -510,13 +500,6 @@ export default function Matches() {
         <ServerAllocationWidget tournamentId={tournamentId} />
       )}
 
-      {/* Status Legend */}
-      {hasMatches && (
-        <Box mb={3}>
-          <StatusLegend />
-        </Box>
-      )}
-
       {!hasMatches && (
         <Box>
           <EmptyState
@@ -539,163 +522,26 @@ export default function Matches() {
       )}
 
       {hasMatches && (
-        <Stack spacing={6} data-testid="matches-list">
-          {/* Live Matches Section */}
-          {liveMatches.length > 0 && (
-            <Box component="section" aria-labelledby="matches-live-heading">
-              <SectionHead
-                id="matches-live-heading"
-                title={
-                  <Box
-                    component="span"
-                    sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}
-                  >
-                    <Box
-                      component="span"
-                      aria-hidden
-                      sx={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: '50%',
-                        bgcolor: tokens.color.live,
-                        animation: 'pulse 1.6s ease-in-out infinite',
-                        '@keyframes pulse': { '50%': { opacity: 0.35 } },
-                        '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-                      }}
-                    />
-                    {t('matchesPage.sections.live', { count: liveMatches.length })}
-                  </Box>
+        <MatchesTable
+          live={liveMatches}
+          upcoming={upcomingMatches}
+          history={matchHistory}
+          numberOf={(match) => getGlobalMatchNumber(match, allMatches)}
+          latestEvent={(match) => {
+            const event = liveEvents.get(match.slug);
+            return event?.event ? event.event.replace(/_/g, ' ') : null;
+          }}
+          onOpen={selectMatch}
+          selection={
+            selectionMode
+              ? {
+                  can: (match) => isManualMatchFlag(match),
+                  has: (match) => selectedMatchSlugs.has(match.slug),
+                  toggle: toggleMatchSelected,
                 }
-              />
-              <RowList>
-                {liveMatches.map((match) => {
-                  const event = liveEvents.get(match.slug);
-                  const matchNumber = getGlobalMatchNumber(match, allMatches);
-                  return (
-                    <MatchCard
-                      key={match.id}
-                      match={match}
-                      matchNumber={matchNumber}
-                      variant="live"
-                      selectable={selectionMode && isManualMatchFlag(match)}
-                      selected={selectedMatchSlugs.has(match.slug)}
-                      note={
-                        event && event.event ? (
-                          <Typography variant="body2" color="text.secondary">
-                            {t('matchesPage.latestEvent', {
-                              event: event.event.replace(/_/g, ' '),
-                            })}
-                          </Typography>
-                        ) : null
-                      }
-                      onClick={() => {
-                        if (selectionMode && isManualMatchFlag(match)) {
-                          toggleMatchSelected(match);
-                        } else {
-                          selectMatch(match);
-                        }
-                      }}
-                    />
-                  );
-                })}
-              </RowList>
-            </Box>
-          )}
-
-          {/* Upcoming Matches Section */}
-          {upcomingMatches.length > 0 && (
-            <Box component="section" aria-labelledby="matches-upcoming-heading">
-              <SectionHead
-                id="matches-upcoming-heading"
-                title={t('matchesPage.sections.upcoming', { count: upcomingMatches.length })}
-                action={
-                  waitingMatches > 0 ? (
-                    <Chip
-                      label={t('matchesPage.sections.inQueue', {
-                        count: waitingMatches,
-                      })}
-                      size="small"
-                      sx={{ color: tokens.color.accent }}
-                    />
-                  ) : undefined
-                }
-              />
-              <RowList>
-                {upcomingMatches.map((match, queueIndex) => {
-                  const matchNumber = getGlobalMatchNumber(match, allMatches);
-                  const isManualMatch = isManualMatchFlag(match);
-                  // Don't show "Manual match" text - the pill is more explanatory
-                  const manualRoundLabel = undefined;
-                  const tournamentStartedForCard = isManualMatch
-                    ? undefined
-                    : tournamentStatus === 'in_progress';
-
-                  // Use queue position from backend (calculated globally across all matches)
-                  const queuePosition = match.queuePosition;
-
-                  return (
-                    <MatchCard
-                      key={match.id}
-                      match={match}
-                      matchNumber={matchNumber}
-                      roundLabel={manualRoundLabel}
-                      variant="default"
-                      vetoCompleted={match.vetoCompleted}
-                      tournamentStarted={tournamentStartedForCard}
-                      selectable={selectionMode && isManualMatchFlag(match)}
-                      selected={selectedMatchSlugs.has(match.slug)}
-                      queuePosition={queuePosition}
-                      queueStatus={
-                        MatchQueueStatus ? (
-                          <MatchQueueStatus
-                            availability={serverAllocationStatus}
-                            queueIndex={queueIndex}
-                          />
-                        ) : null
-                      }
-                      onClick={() => {
-                        if (selectionMode && isManualMatchFlag(match)) {
-                          toggleMatchSelected(match);
-                        } else {
-                          selectMatch(match);
-                        }
-                      }}
-                    />
-                  );
-                })}
-              </RowList>
-            </Box>
-          )}
-
-          {/* Match History Section */}
-          {matchHistory.length > 0 && (
-            <Box component="section" aria-labelledby="matches-history-heading">
-              <SectionHead
-                id="matches-history-heading"
-                title={t('matchesPage.sections.history', { count: matchHistory.length })}
-              />
-              <RowList>
-                {matchHistory.map((match) => (
-                  <MatchCard
-                    key={match.id}
-                    match={match}
-                    matchNumber={getGlobalMatchNumber(match, allMatches)}
-                    variant="completed"
-                    selectable={selectionMode && isManualMatchFlag(match)}
-                    selected={selectedMatchSlugs.has(match.slug)}
-                    onClick={() => {
-                      if (selectionMode && isManualMatchFlag(match)) {
-                        toggleMatchSelected(match);
-                      } else {
-                        selectMatch(match);
-                      }
-                    }}
-                  />
-                ))}
-              </RowList>
-            </Box>
-          )}
-        </Stack>
+              : null
+          }
+        />
       )}
 
       {/* Create a standalone match: the module's dialog */}
