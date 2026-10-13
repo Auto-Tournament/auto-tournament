@@ -189,6 +189,21 @@
       "cancel": "Cancel",
       "turnedOn": "Two-step verification is on",
       "turnedOff": "Two-step verification is off"
+    },
+    "passkeys": {
+      "title": "Passkeys",
+      "description": "Sign in on the admin sign-in page with your fingerprint, face or device PIN instead of the password and code.",
+      "add": "Add a passkey",
+      "name": "Name",
+      "nameHelp": "A name to tell it apart, like \"MacBook\" or \"Phone\". Your browser asks for your fingerprint, face or PIN next.",
+      "continue": "Continue",
+      "added": "Passkey added",
+      "addFailed": "Could not add the passkey",
+      "removed": "{{name}} removed",
+      "removeFailed": "Could not remove the passkey",
+      "lastUsed": "Last used {{date}}",
+      "addedOn": "Added {{date}}, not used yet",
+      "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
     }
   },
   "home": {

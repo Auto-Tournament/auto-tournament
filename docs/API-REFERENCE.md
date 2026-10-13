@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 694 of them, 403 behind auth —
+Every endpoint this API serves — 701 of them, 404 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -1127,6 +1127,7 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `POST` | `/api/test/match-state` | admin |
 | `POST` | `/api/test/match-report` | admin |
 | `POST` | `/api/test/series-result` | admin |
+| `POST` | `/api/test/passkey-verifier` | admin |
 | `POST` | `/api/test/login-admin` | public |
 | `POST` | `/api/test/login-player` | public |
 | `POST` | `/api/test/pending-steam-link` | admin |
@@ -1242,6 +1243,12 @@ Username + password (+ TOTP) sign-in for local admin accounts, and TOTP enrolmen
 | `POST` | `/api/auth/local/totp/confirm` | admin |
 | `POST` | `/api/auth/local/totp/disable` | public |
 | `POST` | `/api/auth/local/reauth` | public |
+| `GET` | `/api/auth/local/passkeys` | public |
+| `POST` | `/api/auth/local/passkeys/register/options` | public |
+| `POST` | `/api/auth/local/passkeys/register/verify` | public |
+| `DELETE` | `/api/auth/local/passkeys/:id` | public |
+| `POST` | `/api/auth/local/passkeys/login/options` | public |
+| `POST` | `/api/auth/local/passkeys/login/verify` | public |
 | `POST` | `/api/auth/local/password` | public |
 | `POST` | `/api/auth/local/forgot` | public |
 | `POST` | `/api/auth/local/reset` | public |
