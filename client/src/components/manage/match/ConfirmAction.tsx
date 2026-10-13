@@ -35,7 +35,10 @@ export interface ConfirmActionSpec {
   danger?: boolean;
   /** Destructive actions: the admin types this to enable the button. */
   typeToConfirm?: string;
-  run: () => Promise<unknown>;
+  /** A choice the action needs (e.g. where a restarted match picks up); `run` gets the value. */
+  choices?: { value: string; label: string }[];
+  choiceLabel?: string;
+  run: (choice?: string) => Promise<unknown>;
 }
 
 /**
@@ -53,16 +56,19 @@ export function ConfirmAction({
 }) {
   const [typed, setTyped] = useState('');
   const [busy, setBusy] = useState(false);
+  const [choice, setChoice] = useState<string | null>(null);
   if (!spec) return null;
+  const picked = choice ?? spec.choices?.[0]?.value;
   const blocked = Boolean(spec.typeToConfirm) && typed.trim() !== spec.typeToConfirm;
   const close = () => {
     setTyped('');
+    setChoice(null);
     onClose();
   };
   const run = async () => {
     setBusy(true);
     try {
-      await spec.run();
+      await spec.run(picked);
       close();
     } finally {
       setBusy(false);
@@ -106,6 +112,22 @@ export function ConfirmAction({
               </li>
             ))}
           </Box>
+        )}
+        {spec.choices && spec.choices.length > 0 && (
+          <TextField
+            select
+            label={spec.choiceLabel ?? 'Choose'}
+            value={picked ?? ''}
+            onChange={(e) => setChoice(e.target.value)}
+            SelectProps={{ native: true }}
+            inputProps={{ 'data-testid': 'manage-confirm-choice' }}
+          >
+            {spec.choices.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </TextField>
         )}
         {spec.typeToConfirm && (
           <TextField

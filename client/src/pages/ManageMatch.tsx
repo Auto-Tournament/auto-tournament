@@ -1038,20 +1038,58 @@ export default function ManageMatch() {
             <Button
               onClick={() =>
                 setConfirm({
-                  target: 'server',
-                  title: 'Reload the match on its server?',
+                  target: 'match',
+                  title: 'Restart the match: where does it pick up?',
+                  body: 'Pick where play goes on from. Everyone keeps their place on the server unless the match is reloaded.',
                   effects: [
-                    'The match config is sent again and the map reloads',
-                    'The last round backup is restored',
+                    'From the last round: the match config is sent again, the map reloads and the last round backup is restored',
+                    'From an earlier round: rounds from it on are voided; money and equipment as they were then',
+                    'From round 1: every round of this map is voided and both teams ready up again',
                   ],
-                  action: 'Reload the match',
+                  choiceLabel: 'Pick up from',
+                  choices: [
+                    {
+                      value: 'last',
+                      label: `The last round${rounds.length ? ` (round ${rounds[rounds.length - 1].round_number})` : ''}: reload the match`,
+                    },
+                    ...[...rounds]
+                      .reverse()
+                      .slice(1, 31)
+                      .map((r) => ({
+                        value: `round:${r.round_number}`,
+                        label: `The start of round ${r.round_number} (${r.team1_score - (r.winner_team === 1 ? 1 : 0)}–${r.team2_score - (r.winner_team === 2 ? 1 : 0)})`,
+                      })),
+                    ...(state
+                      ? [
+                          {
+                            value: 'scratch',
+                            label: `Round 1: start map ${state.series.current_map} again`,
+                          },
+                        ]
+                      : []),
+                  ],
+                  action: 'Restart the match',
                   cancel: 'Leave it running',
-                  run: () =>
-                    post(`/api/matches/${encodeURIComponent(slug)}/restart`, {}, 'Reloading'),
+                  danger: true,
+                  run: (choice) => {
+                    if (choice === 'scratch')
+                      return send('restart_map', {}, 'Map restarting from round 1');
+                    if (choice?.startsWith('round:') && state)
+                      return send(
+                        'restore_round',
+                        { map_number: state.series.current_map, round: Number(choice.slice(6)) },
+                        'Restoring'
+                      );
+                    return post(
+                      `/api/matches/${encodeURIComponent(slug)}/restart`,
+                      {},
+                      'Reloading the match'
+                    );
+                  },
                 })
               }
             >
-              Reload the match
+              Restart the match
             </Button>
           </Group>
         </Target>
