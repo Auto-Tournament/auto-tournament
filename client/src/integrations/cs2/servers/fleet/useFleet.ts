@@ -6,17 +6,20 @@
  * platform answers: the page never says "sent" and then nothing.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { api, apiErrorMessage, useModuleTranslation, useSnackbar, useSocket } from '../../../../module-sdk';
+import {
+  api,
+  apiErrorMessage,
+  useModuleTranslation,
+  useSnackbar,
+  useSocket,
+  useTopic,
+} from '../../../../module-sdk';
 import type {
   FleetHost,
   FleetHostCommand,
   FleetHostCommandType,
   FleetHostsResponse,
 } from '../../cs2.types';
-
-/** The socket does the work; the poll only catches what it missed. */
-const POLL_MS = 20_000;
-const POLL_BUSY_MS = 5_000;
 
 /** A refused disruptive command: which servers have a match on them. */
 export interface ForcePrompt {
@@ -33,7 +36,9 @@ function matchInProgressServers(err: unknown): string[] | null {
   try {
     const body = JSON.parse(err.message) as { code?: string; servers?: unknown };
     if (body.code !== 'match_in_progress') return null;
-    return Array.isArray(body.servers) ? body.servers.filter((s): s is string => typeof s === 'string') : [];
+    return Array.isArray(body.servers)
+      ? body.servers.filter((s): s is string => typeof s === 'string')
+      : [];
   } catch {
     return null;
   }
@@ -75,12 +80,11 @@ export function useFleet() {
     }
   }, []);
 
-  const busy = hosts.some((h) => h.commands.some((c) => c.status === 'pending'));
   useEffect(() => {
     void load();
-    const timer = setInterval(() => void load(), busy ? POLL_BUSY_MS : POLL_MS);
-    return () => clearInterval(timer);
-  }, [load, busy]);
+  }, [load]);
+  // The machines' servers come and go with the fleet too (`fleet:host` is csm's own progress).
+  useTopic('fleet', load, { admin: true });
 
   useEffect(() => {
     const onHost = () => void load();
@@ -103,7 +107,11 @@ export function useFleet() {
   }, [hosts]);
 
   /** Show a command on its machine at once, until the platform's answer replaces it. */
-  const showPending = (host: FleetHost, type: FleetHostCommandType, payload: Record<string, unknown>) => {
+  const showPending = (
+    host: FleetHost,
+    type: FleetHostCommandType,
+    payload: Record<string, unknown>
+  ) => {
     const now = Math.floor(Date.now() / 1000);
     const command: FleetHostCommand = {
       id: `local-${++optimisticSeq}`,
@@ -123,12 +131,16 @@ export function useFleet() {
       createdAt: now,
       answeredAt: null,
     };
-    setHosts((list) => list.map((h) => (h.id === host.id ? { ...h, commands: [command, ...h.commands] } : h)));
+    setHosts((list) =>
+      list.map((h) => (h.id === host.id ? { ...h, commands: [command, ...h.commands] } : h))
+    );
     return command.id;
   };
   const dropPending = (hostId: string, id: string) =>
     setHosts((list) =>
-      list.map((h) => (h.id === hostId ? { ...h, commands: h.commands.filter((c) => c.id !== id) } : h))
+      list.map((h) =>
+        h.id === hostId ? { ...h, commands: h.commands.filter((c) => c.id !== id) } : h
+      )
     );
 
   /** Send a command to a machine; a refused disruptive one opens the force prompt. */
@@ -141,12 +153,15 @@ export function useFleet() {
     ): Promise<boolean> => {
       const localId = showPending(host, type, payload);
       try {
-        await api.post<{ delivered: boolean; command: FleetHostCommand }>(`/api/fleet/hosts/${host.id}/commands`, {
-          type,
-          payload,
-          ...(opts.forceReason ? { force: { reason: opts.forceReason } } : {}),
-          ...(opts.extra ?? {}),
-        });
+        await api.post<{ delivered: boolean; command: FleetHostCommand }>(
+          `/api/fleet/hosts/${host.id}/commands`,
+          {
+            type,
+            payload,
+            ...(opts.forceReason ? { force: { reason: opts.forceReason } } : {}),
+            ...(opts.extra ?? {}),
+          }
+        );
         await load();
         return true;
       } catch (err) {
@@ -156,7 +171,12 @@ export function useFleet() {
           setForce({ host, type, payload, extra: opts.extra ?? {}, servers: busyServers });
           return false;
         }
-        showError(apiErrorMessage(err, t('serversBoard.errors.command', { defaultValue: 'The command failed' })));
+        showError(
+          apiErrorMessage(
+            err,
+            t('serversBoard.errors.command', { defaultValue: 'The command failed' })
+          )
+        );
         return false;
       }
     },
@@ -183,7 +203,10 @@ export function useFleet() {
     (host: FleetHost, name: string) =>
       removing.has(`${host.id}/${name}`) ||
       host.commands.some(
-        (c) => c.type === 'server.remove' && c.status === 'pending' && (c.server === name || c.payload.server === name)
+        (c) =>
+          c.type === 'server.remove' &&
+          c.status === 'pending' &&
+          (c.server === name || c.payload.server === name)
       ),
     [removing]
   );

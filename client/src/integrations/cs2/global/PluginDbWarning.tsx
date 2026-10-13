@@ -9,19 +9,23 @@
  * for it on every install, once a minute, forever.
  *
  * Everything here is the code that was in `components/layout/Layout.tsx`, so a
- * CS2 instance sees the same persistent snackbar, with the same copy, on the
- * same 60s cadence. Like the webhook warning it renders nothing: the warning
- * *is* the snackbar.
+ * CS2 instance sees the same persistent snackbar, with the same copy. It is
+ * checked again when a server reports in. Like the webhook warning it renders
+ * nothing: the warning *is* the snackbar.
  */
 
 import * as React from 'react';
 import type { SnackbarKey } from 'notistack';
-import { useSnackbar, api, useModuleTranslation } from '../../../module-sdk';
+import { useSnackbar, api, useModuleTranslation, useTopic } from '../../../module-sdk';
 
 export const PluginDbWarning: React.FC = () => {
   const { t } = useModuleTranslation('cs2');
   const { showPersistentError, closeSnackbar } = useSnackbar();
   const [dbHealthSnackbarKey, setDbHealthSnackbarKey] = React.useState<SnackbarKey | null>(null);
+  // Checked again whenever a server reports in (the `fleet` topic), not on a timer.
+  const [checks, setChecks] = React.useState(0);
+  const recheck = React.useCallback(() => setChecks((n) => n + 1), []);
+  useTopic('fleet', recheck, { admin: true, events: ['server:status'] });
 
   // Keep a persistent snackbar while any server reports plugin DB down.
   React.useEffect(() => {
@@ -35,9 +39,7 @@ export const PluginDbWarning: React.FC = () => {
         }>('/api/servers');
         if (cancelled) return;
         const servers = response.servers ?? [];
-        const downCount = servers.filter(
-          (s) => s.enabled !== false && s.atDbOk === false
-        ).length;
+        const downCount = servers.filter((s) => s.enabled !== false && s.atDbOk === false).length;
 
         if (downCount > 0) {
           if (!dbHealthSnackbarKey) {
@@ -60,12 +62,10 @@ export const PluginDbWarning: React.FC = () => {
     };
 
     void checkDbHealth();
-    const interval = window.setInterval(checkDbHealth, 60_000);
     return () => {
       cancelled = true;
-      window.clearInterval(interval);
     };
-  }, [dbHealthSnackbarKey, showPersistentError, closeSnackbar, t]);
+  }, [dbHealthSnackbarKey, showPersistentError, closeSnackbar, t, checks]);
 
   return null;
 };

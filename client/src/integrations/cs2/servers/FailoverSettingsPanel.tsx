@@ -24,6 +24,7 @@ import {
   useSnackbar,
 } from '../../../module-sdk';
 import { ServerSection } from './ServerSection';
+import { useTopic } from '../../../module-sdk';
 
 interface FailoverSettingsResponse {
   settings: { auto: boolean; csm: boolean; reserve: number | null };
@@ -35,7 +36,6 @@ interface FailoverSettingsResponse {
   };
 }
 
-const POLL_MS = 15_000;
 const AUTO = 'auto';
 const RESERVE_CHOICES = [0, 1, 2, 3, 4];
 
@@ -55,9 +55,9 @@ export default function FailoverSettingsPanel() {
 
   useEffect(() => {
     void load();
-    const timer = setInterval(() => void load(), POLL_MS);
-    return () => clearInterval(timer);
   }, [load]);
+  // Re-read when the fleet changes (the `fleet` topic), not on a timer.
+  useTopic('fleet', load, { admin: true });
 
   const save = async (patch: { auto?: boolean; reserve?: number | null; csm?: boolean }) => {
     setBusy(true);

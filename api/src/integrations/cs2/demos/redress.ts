@@ -14,6 +14,7 @@ import path from 'path';
 import { db } from '../../../config/database';
 import { wakeRecorders } from './recorderLink';
 import { HIGHLIGHTS_DIR, parseMarkers, twinFileOf } from './highlights';
+import { runRedressQueue } from './redressQueue';
 
 /** How many videos one claim hands out (a clip takes seconds, a reel a minute). */
 const BATCH = 25;
@@ -60,7 +61,7 @@ export async function queueRedress(files?: string[]): Promise<number> {
   const clips = files ? all.filter((f) => files.includes(f)) : all;
   const reels = clips.length ? (await highlightFiles()).filter((n) => REEL_FILE.test(n)) : [];
   for (const file of [...clips, ...reels]) {
-    await db.runAsync(
+    await runRedressQueue(
       `INSERT INTO cs2_redress_queue (file, status, attempts, error, claimed_at) VALUES (?, 'queued', 0, NULL, NULL)
        ON CONFLICT (file) DO UPDATE SET status = 'queued', attempts = 0, error = NULL, claimed_at = NULL`,
       [file]
@@ -128,7 +129,7 @@ async function claimClips(now: number, recorder: string): Promise<RedressJob | n
   );
   if (rows.length === 0) return null;
   const files = rows.map((r) => r.file);
-  await db.runAsync(
+  await runRedressQueue(
     `UPDATE cs2_redress_queue SET status = 'working', claimed_at = ?, attempts = attempts + 1
       WHERE file IN (${files.map(() => '?').join(', ')})`,
     [now, ...files]
@@ -155,7 +156,7 @@ async function reelAgain(file: string, now: number): Promise<PlayerReelJob | nul
       `UPDATE ${table} SET status = 'pending', attempts = 0, error = NULL WHERE clip_path = ?`,
       [file]
     );
-    await db.runAsync('DELETE FROM cs2_redress_queue WHERE file = ?', [file]);
+    await runRedressQueue('DELETE FROM cs2_redress_queue WHERE file = ?', [file]);
     return null;
   };
   if (file.startsWith('match-')) return requeue('cs2_match_reels');
@@ -177,7 +178,7 @@ async function reelAgain(file: string, now: number): Promise<PlayerReelJob | nul
     ids = [];
   }
   if (!reel || ids.length < 2) {
-    await db.runAsync('DELETE FROM cs2_redress_queue WHERE file = ?', [file]);
+    await runRedressQueue('DELETE FROM cs2_redress_queue WHERE file = ?', [file]);
     return null;
   }
   const rows = await db.queryAsync<{ id: number; title: string; markers: string | null }>(
@@ -205,7 +206,7 @@ async function reelAgain(file: string, now: number): Promise<PlayerReelJob | nul
        LEFT JOIN tournament tr ON tr.id = m.tournament_id`,
     [reel.player_id, reel.match_slug, Number(reel.map_number), reel.match_slug]
   );
-  await db.runAsync(
+  await runRedressQueue(
     `UPDATE cs2_redress_queue SET status = 'working', claimed_at = ?, attempts = attempts + 1 WHERE file = ?`,
     [now, file]
   );
@@ -286,13 +287,13 @@ export async function saveRedressed(
       }
     }
   }
-  await db.runAsync('DELETE FROM cs2_redress_queue WHERE file = ?', [file]);
+  await runRedressQueue('DELETE FROM cs2_redress_queue WHERE file = ?', [file]);
   return size;
 }
 
 /** The recorder could not redress it: again later, a few times. */
 export async function failRedress(file: string, error: string): Promise<void> {
-  await db.runAsync(
+  await runRedressQueue(
     `UPDATE cs2_redress_queue SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'queued' END,
        error = ?, claimed_at = NULL WHERE file = ?`,
     [MAX_ATTEMPTS, error.slice(0, 500), file]

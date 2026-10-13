@@ -114,20 +114,20 @@ function useMatchConnect(
     socket.on(`match:update:${matchSlug}`, reload);
     // server_assigned, match_loaded and the like arrive as bracket updates.
     socket.on('bracket:update', reload);
+    // A failover moves the match to another server (or epoch): its address changes.
+    const onFailover = (data?: { matchSlug?: string }) => {
+      if (!data?.matchSlug || data.matchSlug === matchSlug) reload();
+    };
+    socket.on('fleet:failover', onFailover);
     const offReconnect = onSocketReconnect(socket, reload);
-    // A failover or a restarted server does not always come with an event here, and the page
-    // kept the old server / password until a reload (live test). Ask again every 20 s and when
-    // the tab comes back into view.
-    const poll = setInterval(() => {
-      if (document.visibilityState === 'visible') void load();
-    }, 20_000);
+    // And when the tab comes back into view (events missed while it slept).
     const onVisible = () => {
       if (document.visibilityState === 'visible') reload();
     };
     document.addEventListener('visibilitychange', onVisible);
     return () => {
       if (timer.current) clearTimeout(timer.current);
-      clearInterval(poll);
+      socket.off('fleet:failover', onFailover);
       document.removeEventListener('visibilitychange', onVisible);
       offReconnect();
       socket.off('match:update', onMatch);
@@ -148,7 +148,11 @@ function useMatchConnect(
  * controls to that player alone, even to a teammate looking at it. The route
  * checks again, and sends an address only to a player on the match.
  */
-export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: MatchConnectPanelProps) {
+export function MatchServerPanel({
+  matchSlug,
+  viewerCanJoin,
+  matchStatus,
+}: MatchConnectPanelProps) {
   const { t } = useModuleTranslation('cs2');
   const { showError } = useSnackbar();
   const connect = useMatchConnect(matchSlug, viewerCanJoin, matchStatus);
@@ -158,8 +162,10 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
   const reduceMotion = useReducedMotion();
 
   const server = connect ? effectiveServer(connect) : null;
-  const currentMapData = useMemo(() => mapDataFor(connect?.currentMap ?? null), [connect?.currentMap]);
-
+  const currentMapData = useMemo(
+    () => mapDataFor(connect?.currentMap ?? null),
+    [connect?.currentMap]
+  );
 
   const onConnect = () => {
     if (!server) return;
@@ -221,14 +227,15 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
 
   return (
     <Box display="flex" flexDirection="column" gap={2}>
-
       <Box display="flex" flexDirection="column" gap={2}>
         {server.moved && (
           <Alert severity="warning" data-testid="match-server-moved">
             <Typography variant="body2" fontWeight={600} gutterBottom>
               {server.moved.inPlace
                 ? t('matchInfo.server.resumedTitle', { defaultValue: 'The server restarted' })
-                : t('matchInfo.server.movedTitle', { defaultValue: 'The match moved to a new server' })}
+                : t('matchInfo.server.movedTitle', {
+                    defaultValue: 'The match moved to a new server',
+                  })}
             </Typography>
             <Typography variant="body2">
               {server.moved.inPlace
@@ -267,7 +274,14 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
         <Box display="flex" gap={1} alignItems="center" justifyContent="center" flexWrap="wrap">
           <Typography
             variant="body2"
-            sx={{ ...mono, color: 'text.secondary', px: 1.5, py: 1, borderRadius: radii.md, bgcolor: tokens.color.paper3 }}
+            sx={{
+              ...mono,
+              color: 'text.secondary',
+              px: 1.5,
+              py: 1,
+              borderRadius: radii.md,
+              bgcolor: tokens.color.paper3,
+            }}
           >
             connect {server.host}:{server.port}
             {server.password ? `; password ${server.password}` : ''}
@@ -288,12 +302,18 @@ export function MatchServerPanel({ matchSlug, viewerCanJoin, matchStatus }: Matc
           {server.name}
           {currentMapData ? ` · ${currentMapData.displayName}` : ''}
           {server.status ? ` · ${statusLabel}` : ''}
-          {server.password ? '' : ` · ${t('matchInfo.server.noPassword', { defaultValue: "No password: you're on the list." })}`}
+          {server.password
+            ? ''
+            : ` · ${t('matchInfo.server.noPassword', { defaultValue: "No password: you're on the list." })}`}
           {` ${t('matchInfo.server.startsGame', { defaultValue: 'CS2 not open? The button starts it.' })}`}
         </Typography>
 
         {copyFallbackCommand && (
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, fontFamily: 'monospace' }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ mt: 1, fontFamily: 'monospace' }}
+          >
             {t('matchInfo.copyFallback', { command: copyFallbackCommand })}
           </Typography>
         )}

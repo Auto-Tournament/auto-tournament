@@ -66,9 +66,9 @@ function useTeamNames(slugs: string[]): Map<string, TeamNames> {
  * tournament.
  */
 export const ServerGrid: React.FC<ManageResourcesProps> = () => {
-  const { availability, answers } = useServerAvailability(5000);
+  const { availability, answers } = useServerAvailability();
   const servers = availability?.servers ?? [];
-  const unconfigured = useUnconfiguredServers(30_000);
+  const unconfigured = useUnconfiguredServers(true);
   const teamNames = useTeamNames(
     servers.filter((s) => !bracketLabel(s)).flatMap((s) => (s.matchSlug ? [s.matchSlug] : []))
   );
@@ -93,7 +93,10 @@ function bracketLabel(server: ServerAllocationInfo): string | null {
   });
 }
 
-function timeAgo(unixSeconds: number, t: (key: string, opts?: Record<string, unknown>) => string): string {
+function timeAgo(
+  unixSeconds: number,
+  t: (key: string, opts?: Record<string, unknown>) => string
+): string {
   const seconds = Math.max(0, Math.floor(Date.now() / 1000) - unixSeconds);
   if (seconds < 60) return t('managePage.needsYou.secondsAgo', { count: seconds });
   const minutes = Math.floor(seconds / 60);
@@ -144,8 +147,19 @@ const Tile: React.FC<{
       borderRadius: radii.md,
     }}
   >
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-      <Box component="b" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 1.5,
+        minWidth: 0,
+      }}
+    >
+      <Box
+        component="b"
+        sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+      >
         {name}
       </Box>
       {chip}
@@ -177,12 +191,24 @@ const ServerGridView: React.FC<{
   const body = () => {
     if (answers === 0) {
       return (
-        <Box sx={gridSx} aria-busy="true" aria-label={t('managePage.servers.loading')} data-testid="manage-servers-loading">
+        <Box
+          sx={gridSx}
+          aria-busy="true"
+          aria-label={t('managePage.servers.loading')}
+          data-testid="manage-servers-loading"
+        >
           {[0, 1, 2].map((key) => (
             <Tile
               key={key}
               name={<Skeleton width={80} />}
-              chip={<Skeleton variant="rounded" width={56} height={22} sx={{ borderRadius: radii.pill }} />}
+              chip={
+                <Skeleton
+                  variant="rounded"
+                  width={56}
+                  height={22}
+                  sx={{ borderRadius: radii.pill }}
+                />
+              }
               line={<Skeleton width="70%" />}
             />
           ))}
@@ -228,7 +254,11 @@ const ServerGridView: React.FC<{
                 bad
                 name={server.name}
                 chip={
-                  <Chip size="small" label={t('managePage.servers.offline')} sx={{ color: tokens.color.ban }} />
+                  <Chip
+                    size="small"
+                    label={t('managePage.servers.offline')}
+                    sx={{ color: tokens.color.ban }}
+                  />
                 }
                 line={
                   server.updatedAt
@@ -286,7 +316,9 @@ const ServerGridView: React.FC<{
             key={server.id}
             data-testid="manage-server-not-configured"
             name={server.name}
-            chip={<Chip size="small" variant="outlined" label={t('managePage.servers.notConfigured')} />}
+            chip={
+              <Chip size="small" variant="outlined" label={t('managePage.servers.notConfigured')} />
+            }
             line={t('managePage.servers.notConfiguredHint')}
           />
         ))}
@@ -295,7 +327,12 @@ const ServerGridView: React.FC<{
   };
 
   return (
-    <Box component="section" mt={6} data-testid="manage-servers" aria-labelledby="manage-servers-heading">
+    <Box
+      component="section"
+      mt={6}
+      data-testid="manage-servers"
+      aria-labelledby="manage-servers-heading"
+    >
       <SectionHead
         id="manage-servers-heading"
         title={t('managePage.servers.heading')}

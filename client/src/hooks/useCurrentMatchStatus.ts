@@ -4,11 +4,7 @@ import { io, Socket } from 'socket.io-client';
 import { onSocketReconnect } from '../utils/socketResync';
 
 export type MatchStatusValue =
-  | 'none'
-  | 'your_turn_veto'
-  | 'waiting_veto'
-  | 'waiting_server'
-  | 'match_ready';
+  'none' | 'your_turn_veto' | 'waiting_veto' | 'waiting_server' | 'match_ready';
 
 interface MatchStatusResult {
   status: MatchStatusValue;
@@ -26,11 +22,7 @@ interface MatchStatusResult {
   refetch: () => void;
 }
 
-const POLL_MS = 20_000;
-
-export function useCurrentMatchStatus(
-  playerSteamId: string | null
-): MatchStatusResult {
+export function useCurrentMatchStatus(playerSteamId: string | null): MatchStatusResult {
   const [status, setStatus] = useState<MatchStatusValue>('none');
   const [matchSlug, setMatchSlug] = useState<string | null>(null);
   const [matchName, setMatchName] = useState<string | null>(null);
@@ -44,67 +36,66 @@ export function useCurrentMatchStatus(
   const socketRef = useRef<Socket | null>(null);
   const refreshTimerRef = useRef<number | null>(null);
 
-  const fetchStatus = useCallback(async (options?: { silent?: boolean }) => {
-    if (!playerSteamId) {
-      setStatus('none');
-      setMatchSlug(null);
-      setMatchName(null);
-      setLabel(null);
-      setViewerTeam(null);
-      setVetoActionCount(null);
-      setLastVetoActionTeam(null);
-      return;
-    }
-
-    if (!options?.silent) {
-      setLoading(true);
-    }
-    try {
-      const res = await api.get<{
-        success: boolean;
-        status?: MatchStatusValue;
-        matchSlug?: string | null;
-        matchName?: string | null;
-        label?: string | null;
-        viewerTeam?: 'team1' | 'team2' | null;
-        vetoActionCount?: number | null;
-        lastVetoActionTeam?: 'team1' | 'team2' | null;
-      }>('/api/players/me/match-status');
-
-      if (res?.success) {
-        setStatus((res.status as MatchStatusValue) ?? 'none');
-        setMatchSlug(res.matchSlug ?? null);
-        setMatchName(res.matchName ?? null);
-        setLabel(res.label ?? null);
-        setViewerTeam(res.viewerTeam ?? null);
-        setVetoActionCount(typeof res.vetoActionCount === 'number' ? res.vetoActionCount : null);
-        setLastVetoActionTeam(res.lastVetoActionTeam ?? null);
+  const fetchStatus = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (!playerSteamId) {
+        setStatus('none');
+        setMatchSlug(null);
+        setMatchName(null);
+        setLabel(null);
+        setViewerTeam(null);
+        setVetoActionCount(null);
+        setLastVetoActionTeam(null);
+        return;
       }
-    } catch {
-      setStatus('none');
-      setMatchSlug(null);
-      setMatchName(null);
-      setLabel(null);
-      setViewerTeam(null);
-      setVetoActionCount(null);
-      setLastVetoActionTeam(null);
-    } finally {
+
       if (!options?.silent) {
-        setLoading(false);
+        setLoading(true);
       }
-    }
-  }, [playerSteamId]);
+      try {
+        const res = await api.get<{
+          success: boolean;
+          status?: MatchStatusValue;
+          matchSlug?: string | null;
+          matchName?: string | null;
+          label?: string | null;
+          viewerTeam?: 'team1' | 'team2' | null;
+          vetoActionCount?: number | null;
+          lastVetoActionTeam?: 'team1' | 'team2' | null;
+        }>('/api/players/me/match-status');
+
+        if (res?.success) {
+          setStatus((res.status as MatchStatusValue) ?? 'none');
+          setMatchSlug(res.matchSlug ?? null);
+          setMatchName(res.matchName ?? null);
+          setLabel(res.label ?? null);
+          setViewerTeam(res.viewerTeam ?? null);
+          setVetoActionCount(typeof res.vetoActionCount === 'number' ? res.vetoActionCount : null);
+          setLastVetoActionTeam(res.lastVetoActionTeam ?? null);
+        }
+      } catch {
+        setStatus('none');
+        setMatchSlug(null);
+        setMatchName(null);
+        setLabel(null);
+        setViewerTeam(null);
+        setVetoActionCount(null);
+        setLastVetoActionTeam(null);
+      } finally {
+        if (!options?.silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [playerSteamId]
+  );
 
   useEffect(() => {
     void fetchStatus();
-    if (!playerSteamId) return;
-    const interval = setInterval(fetchStatus, POLL_MS);
-    return () => clearInterval(interval);
   }, [playerSteamId, fetchStatus]);
 
-  // Near real-time updates: veto actions emit `veto:update` via Socket.IO.
-  // When that happens, refetch match-status immediately so the navbar snackbar
-  // doesn't wait for the next poll tick.
+  // Real-time updates: veto actions, match and bracket changes and the
+  // player's matchmaking events refetch match-status at once (no polling).
   useEffect(() => {
     if (!playerSteamId) {
       if (socketRef.current) {
@@ -131,8 +122,14 @@ export function useCurrentMatchStatus(
       }, 50);
     };
 
-    // Any veto update can affect whose turn it is (and thus match-status labels).
-    socket.on('veto:update', scheduleSilentRefetch);
+    // Any veto update can affect whose turn it is (and thus match-status labels);
+    // a match loading, going live or ending, a bracket advancing and the
+    // player's own matchmaking change which match is theirs. No timer.
+    const events = ['veto:update', 'match:update', 'bracket:update', 'mm:changed'];
+    for (const event of events) socket.on(event, scheduleSilentRefetch);
+    socket.emit('player:subscribe');
+    const onConnect = () => socket.emit('player:subscribe');
+    socket.on('connect', onConnect);
     const offReconnect = onSocketReconnect(socket, scheduleSilentRefetch);
 
     return () => {
@@ -141,7 +138,8 @@ export function useCurrentMatchStatus(
         window.clearTimeout(refreshTimerRef.current);
         refreshTimerRef.current = null;
       }
-      socket.off('veto:update', scheduleSilentRefetch);
+      for (const event of events) socket.off(event, scheduleSilentRefetch);
+      socket.off('connect', onConnect);
       // Keep socket open for reuse; it will be closed when playerSteamId becomes null.
     };
   }, [playerSteamId, fetchStatus]);

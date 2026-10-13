@@ -1,6 +1,6 @@
 import { BracketPauseBar } from '../components/bracket/BracketPauseBar';
 import { pageTitle } from '../utils/pageTitle';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -41,6 +41,7 @@ import { StartTournamentButton } from '../components/dashboard';
 import type { Match } from '../types';
 import { useTranslation } from 'react-i18next';
 import { PageHead, Panel, RowList, SectionHead } from '../components/common/ui';
+import { useTopic } from '../hooks/useTopic';
 
 // Interfaces are now imported from useBracket hook
 
@@ -68,7 +69,7 @@ export default function Bracket() {
   const MatchQueueBanner = integration?.matchQueueBanner;
   const MatchQueueChip = integration?.matchQueueChip;
   const { availability: resourceAvailability, nextInSeconds: nextAllocationInSeconds } =
-    useResourceAvailability(integration, 30000);
+    useResourceAvailability(integration);
 
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -98,9 +99,16 @@ export default function Bracket() {
   const selectedMatch: Match | null =
     baseSelectedMatch && selectedMatchOverride
       ? { ...selectedMatchOverride, ...baseSelectedMatch }
-      : baseSelectedMatch ?? null;
+      : (baseSelectedMatch ?? null);
 
-  // Load round status for shuffle tournaments
+  // Load round status for shuffle tournaments, again whenever a match or the
+  // bracket changes (no timer).
+  const [roundChecks, setRoundChecks] = useState(0);
+  const recheckRound = useCallback(() => setRoundChecks((n) => n + 1), []);
+  useTopic([], recheckRound, {
+    events: ['bracket:update', 'match:update'],
+    enabled: tournament?.type === 'shuffle',
+  });
   useEffect(() => {
     if (tournament?.type === 'shuffle' && tournament?.id) {
       const loadRoundStatus = async () => {
@@ -135,19 +143,12 @@ export default function Bracket() {
         }
       };
 
-      loadRoundStatus();
-
-      // Refresh round status every 30 seconds
-      const interval = setInterval(() => {
-        void loadRoundStatus();
-      }, 30000);
-      return () => clearInterval(interval);
+      void loadRoundStatus();
     }
     // Non-shuffle or no tournament:
     // We intentionally do not reset shuffle-specific state here; guards below ensure
     // it is only used when the current tournament is a shuffle tournament.
-  }, [tournament?.type, tournament?.id, tournament?.mapSequence, tournament?.maps]);
-
+  }, [tournament?.type, tournament?.id, tournament?.mapSequence, tournament?.maps, roundChecks]);
 
   // Set dynamic page title
   useEffect(() => {
@@ -322,10 +323,10 @@ export default function Bracket() {
   // For shuffle tournaments, prefer shuffleTotalRounds; fall back to max round present
   const effectiveTotalRounds =
     tournament.type === 'shuffle'
-      ? shuffleTotalRounds ??
+      ? (shuffleTotalRounds ??
         (Object.keys(matchesByRound).length
           ? Math.max(...Object.keys(matchesByRound).map((r) => Number(r)))
-          : 0)
+          : 0))
       : totalRounds;
 
   const getBracketRoundLabel = (round: number): string => {
@@ -417,56 +418,60 @@ export default function Bracket() {
             subtitle={`${t(`tournament.typeSelector.types.${tournament.type}.label`)} • ${tournament.format.toUpperCase()}`}
             actions={
               <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
-            {tournament.status === 'setup' && (
-              <StartTournamentButton variant="contained" size="medium" onSuccess={loadBracket} />
-            )}
-            <ToggleButtonGroup
-              value={effectiveViewMode}
-              exclusive
-              onChange={(_, newMode) => {
-                if (!newMode) return;
-                // Shuffle tournaments do not support visual mode
-                if (tournament.type === 'shuffle' && newMode === 'visual') return;
-                setViewMode(newMode);
-              }}
-              size="small"
-            >
-              <Tooltip
-                title={
-                  tournament.type === 'shuffle'
-                    ? t('bracket.view.shuffleNoVisual')
-                    : ''
-                }
-                disableHoverListener={tournament.type !== 'shuffle'}
-                enterDelay={500}
-              >
-                <span>
-                  <ToggleButton value="visual" disabled={tournament.type === 'shuffle'}>
-                    <Box component={TreeStructureIcon} size={20} sx={{ mr: 1 }} />
-                    {t('bracket.view.visual')}
+                {tournament.status === 'setup' && (
+                  <StartTournamentButton
+                    variant="contained"
+                    size="medium"
+                    onSuccess={loadBracket}
+                  />
+                )}
+                <ToggleButtonGroup
+                  value={effectiveViewMode}
+                  exclusive
+                  onChange={(_, newMode) => {
+                    if (!newMode) return;
+                    // Shuffle tournaments do not support visual mode
+                    if (tournament.type === 'shuffle' && newMode === 'visual') return;
+                    setViewMode(newMode);
+                  }}
+                  size="small"
+                >
+                  <Tooltip
+                    title={tournament.type === 'shuffle' ? t('bracket.view.shuffleNoVisual') : ''}
+                    disableHoverListener={tournament.type !== 'shuffle'}
+                    enterDelay={500}
+                  >
+                    <span>
+                      <ToggleButton value="visual" disabled={tournament.type === 'shuffle'}>
+                        <Box component={TreeStructureIcon} size={20} sx={{ mr: 1 }} />
+                        {t('bracket.view.visual')}
+                      </ToggleButton>
+                    </span>
+                  </Tooltip>
+                  <ToggleButton value="list">
+                    <Box component={ListBulletsIcon} size={20} sx={{ mr: 1 }} />
+                    {t('bracket.view.list')}
                   </ToggleButton>
-                </span>
-              </Tooltip>
-              <ToggleButton value="list">
-                <Box component={ListBulletsIcon} size={20} sx={{ mr: 1 }} />
-                {t('bracket.view.list')}
-              </ToggleButton>
-            </ToggleButtonGroup>
-            <Button
-              variant="outlined"
-              startIcon={<ArrowClockwiseIcon />}
-              onClick={loadBracket}
-              size="small"
-            >
-              {t('bracket.view.refresh')}
-            </Button>
-            <IconButton
-              onClick={toggleFullscreen}
-              color="primary"
-              title={isFullscreen ? t('bracket.view.exitFullscreen') : t('bracket.view.enterFullscreen')}
-            >
-              {isFullscreen ? <CornersInIcon /> : <CornersOutIcon />}
-            </IconButton>
+                </ToggleButtonGroup>
+                <Button
+                  variant="outlined"
+                  startIcon={<ArrowClockwiseIcon />}
+                  onClick={loadBracket}
+                  size="small"
+                >
+                  {t('bracket.view.refresh')}
+                </Button>
+                <IconButton
+                  onClick={toggleFullscreen}
+                  color="primary"
+                  title={
+                    isFullscreen
+                      ? t('bracket.view.exitFullscreen')
+                      : t('bracket.view.enterFullscreen')
+                  }
+                >
+                  {isFullscreen ? <CornersInIcon /> : <CornersOutIcon />}
+                </IconButton>
               </Box>
             }
           />
@@ -613,13 +618,16 @@ export default function Bracket() {
             .map((round) => {
               const roundMatches = matchesByRound[round] || [];
               // Only show matches where both teams are assigned (no TBD placeholders)
-              const visibleMatches = roundMatches.filter(
-                (match) => match.team1 && match.team2
-              );
+              const visibleMatches = roundMatches.filter((match) => match.team1 && match.team2);
               if (visibleMatches.length === 0) return null;
 
               return (
-                <Box component="section" key={round} mb={6} aria-labelledby={`bracket-round-${round}`}>
+                <Box
+                  component="section"
+                  key={round}
+                  mb={6}
+                  aria-labelledby={`bracket-round-${round}`}
+                >
                   <SectionHead
                     id={`bracket-round-${round}`}
                     title={getBracketRoundLabel(round)}

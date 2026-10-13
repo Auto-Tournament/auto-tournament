@@ -86,7 +86,7 @@ export default function Matches() {
     ? null
     : (tournamentIntegration ?? shell[0] ?? null);
   const { availability: serverAllocationStatus, nextInSeconds: nextAllocationInSeconds } =
-    useResourceAvailability(matchIntegration, 5000);
+    useResourceAvailability(matchIntegration);
   // What the waiting matches are waiting for, said in the game's own words:
   // the pass countdown above the list, the same countdown in the toolbar, and
   // the per-match line on a card. A module with no resources fills none of

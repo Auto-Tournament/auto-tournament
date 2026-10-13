@@ -47,8 +47,7 @@ const isBundledDist = (() => {
  *
  * Errors and warnings are **never** suppressed by these flags.
  */
-export const LOG_HTTP_REQUESTS =
-  (process.env.LOG_HTTP_REQUESTS || '').toLowerCase() !== 'false';
+export const LOG_HTTP_REQUESTS = (process.env.LOG_HTTP_REQUESTS || '').toLowerCase() !== 'false';
 
 const _dbVerboseEnv = (process.env.LOG_DB_VERBOSE || '').toLowerCase();
 const _dbValuesEnv = (process.env.LOG_DB_VALUES || '').toLowerCase();
@@ -59,8 +58,7 @@ export const LOG_DB_VERBOSE =
 export const LOG_DB_VALUES =
   _dbValuesEnv === 'true' || (isLogLevelDebug && _dbValuesEnv !== 'false');
 
-export const LOG_RCON_VERBOSE =
-  (process.env.LOG_RCON_VERBOSE || '').toLowerCase() === 'true';
+export const LOG_RCON_VERBOSE = (process.env.LOG_RCON_VERBOSE || '').toLowerCase() === 'true';
 
 /**
  * Create a Pino logger instance with compatibility for older Node.js 18 releases.
@@ -148,6 +146,14 @@ function addToBuffer(level: string, message: string, meta?: object) {
   if (logBuffer.length > MAX_LOGS) {
     logBuffer.shift();
   }
+  for (const listener of logListeners) listener();
+}
+
+const logListeners: Array<() => void> = [];
+
+/** Run `listener` after each entry reaches the buffer (the log viewer's `logs` topic). */
+export function onLogEntry(listener: () => void): void {
+  logListeners.push(listener);
 }
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
@@ -157,11 +163,7 @@ type LogLevel = 'debug' | 'info' | 'warn' | 'error';
  * consistently apply feature flags (e.g. HTTP/DB/RCON verbosity) without
  * touching every call site.
  */
-function emit(
-  level: LogLevel,
-  message: string,
-  meta?: object
-): void {
+function emit(level: LogLevel, message: string, meta?: object): void {
   // Errors and warnings are always logged
   if (level === 'error') {
     addToBuffer('error', message, meta);

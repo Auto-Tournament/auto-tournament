@@ -22,6 +22,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../utils/api';
 import type { ClientGameIntegration, ResourceAvailability } from '../integrations/types';
+import { useTopic } from './useTopic';
 
 /**
  * The module's own answer. Core reads `nextAllocationInSeconds` from it and
@@ -50,9 +51,7 @@ interface UseResourceAvailabilityResult {
 
 export function useResourceAvailability(
   /** The tournament's integration, or null while it is still unknown. */
-  integration: ClientGameIntegration | null,
-  /** How often to ask again, keeping each caller's own cadence. */
-  intervalMs: number
+  integration: ClientGameIntegration | null
 ): UseResourceAvailabilityResult {
   const [answer, setAnswer] = useState<AvailabilityAnswer | null>(null);
   const [seconds, setSeconds] = useState<number | null>(null);
@@ -88,12 +87,26 @@ export function useResourceAvailability(
     };
 
     void load();
-    const interval = setInterval(() => void load(), intervalMs);
     return () => {
       cancelled = true;
-      clearInterval(interval);
     };
-  }, [endpoint, intervalMs, apply]);
+  }, [endpoint, apply]);
+
+  // Re-read when servers or matches change, not on a timer; and once when the
+  // countdown runs out (a grace window ends on a clock, not an event).
+  const reload = useCallback(() => void refresh(), [refresh]);
+  useTopic('fleet', reload, {
+    admin: true,
+    events: ['match:update', 'server:status'],
+    enabled: !!endpoint,
+  });
+  useEffect(() => {
+    if (nextInSeconds === null || nextInSeconds <= 0) return undefined;
+    const timer = setTimeout(reload, (nextInSeconds + 1) * 1000);
+    return () => clearTimeout(timer);
+    // Scheduled from each answer's countdown, not from the ticking one.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availability, reload]);
 
   // Local per-second tick, so the countdown moves between answers.
   useEffect(() => {
