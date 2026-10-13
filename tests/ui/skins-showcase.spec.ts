@@ -53,9 +53,9 @@ test(
       const tiles = page.getByTestId('profile-favourites').getByRole('button');
       await expect(tiles).toHaveCount(3, { timeout: 15000 });
       const spans = await tiles.evaluateAll((els) =>
-        els.map((el) => getComputedStyle(el).gridColumnEnd)
+        els.map((el) => getComputedStyle(el).gridColumnStart)
       );
-      expect(spans).toEqual(['span 2', 'span 2', 'auto']);
+      expect(spans).toEqual(['span 2', 'span 2', 'span 1']);
     } finally {
       await request.put('/api/skins/admin/config', { headers, data: config });
     }
