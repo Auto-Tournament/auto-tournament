@@ -888,7 +888,8 @@
       "remindAccount": "{{name}}: log één keer in met Steam om mee te spelen in {{tournament}}.",
       "remindGame": "{{name}}: voeg het spel toe aan je profiel (Games die je speelt) voor het inchecken van {{tournament}}.",
       "serverDown": "The match server crashed. Bringing it back…",
-      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect."
+      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect.",
+      "vetoReset": "An admin restarted the veto"
     },
     "party": {
       "inviteCopied": "Uitnodigingslink gekopieerd",

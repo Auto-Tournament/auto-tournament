@@ -888,7 +888,8 @@
       "remindAccount": "{{name}}：请用 Steam 登录一次，才能参加 {{tournament}}。",
       "remindGame": "{{name}}：请在 {{tournament}} 签到前把游戏添加到个人资料（你玩的游戏）。",
       "serverDown": "The match server crashed. Bringing it back…",
-      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect."
+      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect.",
+      "vetoReset": "An admin restarted the veto"
     },
     "party": {
       "inviteCopied": "邀请链接已复制",

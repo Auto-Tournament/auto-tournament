@@ -4,6 +4,7 @@ import {
   signInViaRequest,
   impersonatePlayer,
   stopImpersonating,
+  getAuthHeader,
 } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { createAndStartTournament, createTournament } from '../helpers/tournaments';
@@ -304,6 +305,42 @@ test.describe.serial('Veto API', () => {
       );
 
       await stopImpersonating(request);
+    }
+  );
+
+  test(
+    'an admin restarts a veto before the match is on a server',
+    {
+      tag: ['@api', '@veto'],
+    },
+    async ({ request }) => {
+      await createAndStartTournament(request, {
+        name: `Veto Reset ${Date.now()}`,
+        type: 'single_elimination',
+        format: 'bo1',
+        maps,
+        teamIds: [team1Id, team2Id],
+      });
+      const match = await findMatchByTeams(request, team1Id, team2Id);
+      expect(match).toBeTruthy();
+
+      // Two bans in, then a wrong pick: the admin starts it over.
+      await executeVetoActions(
+        request,
+        match!.slug,
+        getCSMajorBO1Actions(team1, team2).slice(0, 2)
+      );
+      let state = await getVetoState(request, match!.slug, actingSteamIdFor(team1));
+      expect(state.actions.length).toBe(2);
+
+      const reset = await request.post(`/api/veto/${match!.slug}/reset`, {
+        headers: getAuthHeader(),
+      });
+      expect(reset.ok(), await reset.text()).toBe(true);
+
+      state = await getVetoState(request, match!.slug, actingSteamIdFor(team1));
+      expect(state.actions ?? []).toHaveLength(0);
+      expect(state.currentStep).toBe(1);
     }
   );
 

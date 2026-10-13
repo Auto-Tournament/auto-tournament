@@ -888,7 +888,8 @@
       "remindAccount": "{{name}}: inicia sesión una vez con Steam para jugar en {{tournament}}.",
       "remindGame": "{{name}}: añade el juego a tu perfil (Juegos a los que juegas) antes del check-in de {{tournament}}.",
       "serverDown": "The match server crashed. Bringing it back…",
-      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect."
+      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect.",
+      "vetoReset": "An admin restarted the veto"
     },
     "party": {
       "inviteCopied": "Enlace de invitación copiado",

@@ -877,6 +877,7 @@
     "system": {
       "vetoStarted": "Veto started · {{team}} goes first",
       "vetoBan": "{{team}} banned {{map}}",
+      "vetoReset": "An admin restarted the veto",
       "vetoPick": "{{team}} picked {{map}}",
       "vetoSide": "{{team}} starts {{side}} on {{map}}",
       "vetoDone": "Veto done · {{maps}}",
