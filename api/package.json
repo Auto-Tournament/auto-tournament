@@ -20,6 +20,7 @@
     "@fontsource/geist": "5.2.6",
     "@fontsource/sora": "5.2.6",
     "@resvg/resvg-wasm": "2.6.2",
+    "@simplewebauthn/server": "14.0.3",
     "ajv": "^8.17.1",
     "brackets-manager": "^1.7.1",
     "brackets-memory-db": "^1.0.5",

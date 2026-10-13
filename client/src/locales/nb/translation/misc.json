@@ -189,6 +189,21 @@
       "cancel": "Avbryt",
       "turnedOn": "Totrinnsbekreftelse er på",
       "turnedOff": "Totrinnsbekreftelse er av"
+    },
+    "passkeys": {
+      "title": "Passnøkler",
+      "description": "Logg inn på admin-innloggingen med fingeravtrykk, ansikt eller PIN-koden på enheten i stedet for passord og kode.",
+      "add": "Legg til en passnøkkel",
+      "name": "Navn",
+      "nameHelp": "Et navn som skiller den fra andre, som «MacBook» eller «Telefon». Nettleseren spør etter fingeravtrykk, ansikt eller PIN etterpå.",
+      "continue": "Fortsett",
+      "added": "Passnøkkel lagt til",
+      "addFailed": "Kunne ikke legge til passnøkkelen",
+      "removed": "{{name}} fjernet",
+      "removeFailed": "Kunne ikke fjerne passnøkkelen",
+      "lastUsed": "Sist brukt {{date}}",
+      "addedOn": "Lagt til {{date}}, ikke brukt ennå",
+      "needsHttps": "Passnøkler krever at siden kjører på https (eller localhost). Be den som drifter den om å sette den bak https."
     }
   },
   "home": {

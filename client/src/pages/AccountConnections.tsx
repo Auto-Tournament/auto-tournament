@@ -20,7 +20,12 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { InfoIcon } from '@phosphor-icons/react';
+import { FingerprintIcon, InfoIcon } from '@phosphor-icons/react';
+import {
+  browserSupportsWebAuthn,
+  startRegistration,
+  type PublicKeyCredentialCreationOptionsJSON,
+} from '@simplewebauthn/browser';
 import { ProviderLogo, hasProviderLogo } from '../components/auth/ProviderLogo';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
@@ -48,7 +53,7 @@ import { ChangePasswordDialog } from '../components/account/ChangePasswordDialog
 import { TwoStepDialog } from '../components/account/TwoStepDialog';
 import { AccountEmailSection } from '../components/account/AccountEmailSection';
 import { useSnackbar } from '../contexts/SnackbarContext';
-import { apiErrorMessage } from '../utils/api';
+import { api, apiErrorMessage } from '../utils/api';
 import { fontDisplay, tokens } from '../theme/tokens';
 
 const { color, radius } = tokens;
@@ -235,9 +240,188 @@ function ConnectedAccount({
   );
 }
 
+interface PasskeyItem {
+  id: string;
+  name: string;
+  createdAt: number;
+  lastUsedAt: number | null;
+}
+
+/**
+ * Passkeys of the account's admin login (Vikunja 1741): sign in on
+ * /login/admin with a fingerprint, face or PIN instead of the password and
+ * code. Adding or removing one asks for the password again (`requestReauth`).
+ * Browsers only allow passkeys on https (or localhost), so elsewhere this
+ * says why there are none.
+ */
+function PasskeysSection({
+  formatDate,
+  requestReauth,
+}: {
+  formatDate: (seconds: number) => string;
+  requestReauth: (run: () => void) => void;
+}) {
+  const { t } = useTranslation();
+  const { showSuccess, showError } = useSnackbar();
+  const [list, setList] = useState<PasskeyItem[] | null>(null);
+  const [available, setAvailable] = useState(false);
+  const [naming, setNaming] = useState(false);
+  const [name, setName] = useState('');
+  const [busy, setBusy] = useState(false);
+  const supported =
+    typeof window !== 'undefined' && window.isSecureContext && browserSupportsWebAuthn();
+
+  const load = useCallback(async () => {
+    try {
+      const r = await api.get<{ available: boolean; passkeys: PasskeyItem[] }>(
+        '/api/auth/local/passkeys'
+      );
+      setList(r.passkeys);
+      setAvailable(r.available);
+    } catch {
+      setList([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const add = async (label: string) => {
+    setBusy(true);
+    try {
+      const { options } = await api.post<{ options: PublicKeyCredentialCreationOptionsJSON }>(
+        '/api/auth/local/passkeys/register/options',
+        {}
+      );
+      const response = await startRegistration({ optionsJSON: options });
+      await api.post('/api/auth/local/passkeys/register/verify', { response, name: label });
+      setNaming(false);
+      setName('');
+      showSuccess(t('account.passkeys.added'));
+      void load();
+    } catch (err) {
+      if (apiErrorFlag(err, 'reauthRequired')) {
+        setNaming(false);
+        requestReauth(() => void add(label));
+      } else if ((err as Error)?.name !== 'NotAllowedError') {
+        // NotAllowedError: the browser's dialog was cancelled.
+        showError(apiErrorMessage(err, t('account.passkeys.addFailed')));
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async (passkey: PasskeyItem) => {
+    setBusy(true);
+    try {
+      await api.delete(`/api/auth/local/passkeys/${encodeURIComponent(passkey.id)}`);
+      showSuccess(t('account.passkeys.removed', { name: passkey.name }));
+      void load();
+    } catch (err) {
+      if (apiErrorFlag(err, 'reauthRequired')) requestReauth(() => void remove(passkey));
+      else showError(apiErrorMessage(err, t('account.passkeys.removeFailed')));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const usable = supported && available;
+  return (
+    <Section
+      id="account-passkeys"
+      title={t('account.passkeys.title')}
+      description={t('account.passkeys.description')}
+    >
+      {!usable ? (
+        <Typography
+          sx={{ color: color.muted, fontSize: '0.875rem' }}
+          data-testid="passkeys-unavailable"
+        >
+          {t('account.passkeys.needsHttps')}
+        </Typography>
+      ) : (
+        <Stack spacing={2} alignItems="flex-start">
+          {list && list.length > 0 && (
+            <Box sx={{ width: '100%' }}>
+              <ListPanel label={t('account.passkeys.title')}>
+                {list.map((p) => (
+                  <Row
+                    key={p.id}
+                    testId="passkey-row"
+                    tile={<Box component={FingerprintIcon} size={28} sx={{ color: color.ink2 }} />}
+                    title={p.name}
+                    end={
+                      <Button
+                        size="small"
+                        color="inherit"
+                        disabled={busy}
+                        onClick={() => void remove(p)}
+                        data-testid="passkey-remove"
+                      >
+                        {t('account.signIn.remove')}
+                      </Button>
+                    }
+                  >
+                    <Typography sx={{ color: color.muted, fontSize: '0.875rem' }}>
+                      {p.lastUsedAt
+                        ? t('account.passkeys.lastUsed', { date: formatDate(p.lastUsedAt) })
+                        : t('account.passkeys.addedOn', { date: formatDate(p.createdAt) })}
+                    </Typography>
+                  </Row>
+                ))}
+              </ListPanel>
+            </Box>
+          )}
+          <Button
+            variant="outlined"
+            size="small"
+            disabled={busy}
+            onClick={() => setNaming(true)}
+            data-testid="passkey-add"
+          >
+            {t('account.passkeys.add')}
+          </Button>
+        </Stack>
+      )}
+      <Dialog open={naming} onClose={() => !busy && setNaming(false)} fullWidth maxWidth="xs">
+        <DialogTitle>{t('account.passkeys.add')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>{t('account.passkeys.nameHelp')}</DialogContentText>
+          <TextField
+            label={t('account.passkeys.name')}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            autoFocus
+            fullWidth
+            inputProps={{ maxLength: 60, 'data-testid': 'passkey-name' }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button color="inherit" onClick={() => setNaming(false)} disabled={busy}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => void add(name)}
+            disabled={busy}
+            data-testid="passkey-continue"
+          >
+            {t('account.passkeys.continue')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Section>
+  );
+}
+
 /** What to do once the admin password has been confirmed again. */
 type ReauthNext =
-  { kind: 'link'; provider: string } | { kind: 'merge' } | { kind: 'remove'; method: SignInMethod };
+  | { kind: 'link'; provider: string }
+  | { kind: 'merge' }
+  | { kind: 'remove'; method: SignInMethod }
+  | { kind: 'retry'; run: () => void };
 
 export default function AccountConnections() {
   const { t, i18n } = useTranslation();
@@ -396,6 +580,7 @@ export default function AccountConnections() {
       if (next?.kind === 'link') startLink(next.provider);
       else if (next?.kind === 'merge') void doMerge();
       else if (next?.kind === 'remove') void doRemove(next.method);
+      else if (next?.kind === 'retry') next.run();
     } catch (err) {
       setReauthError(
         apiErrorFlag(err, 'totpRequired') && !totp.trim()
@@ -780,6 +965,13 @@ export default function AccountConnections() {
                   })}
                 </ListPanel>
               </Section>
+
+              {!readOnly && data.localLogin && (
+                <PasskeysSection
+                  formatDate={formatDate}
+                  requestReauth={(run) => openReauth({ kind: 'retry', run })}
+                />
+              )}
 
               {!readOnly && <AccountEmailSection />}
 
