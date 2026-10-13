@@ -409,6 +409,9 @@
   "matchInfo": {
     "server": {
       "waitingTitle": "等待分配服务器",
+      "paused": "比赛已暂停。",
+      "pausedWaiting_one": "已暂停：等待 {{names}} 重新连接。",
+      "pausedWaiting_other": "已暂停：等待 {{names}} 重新连接。",
       "waitingBody": "一旦有可用服务器，将自动为你分配。每场比赛结束后，服务器会进入短暂的冷却期（约 2 分钟），以便上传录像并完全重置服务器。服务器就绪后此页面会自动更新。",
       "serverName": "服务器：{{name}}",
       "status": "状态：{{status}}",
