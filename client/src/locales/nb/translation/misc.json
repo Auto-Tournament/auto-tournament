@@ -859,6 +859,8 @@
     "you": "Du",
     "adminBadge": "ADMIN",
     "callAdmin": "Tilkall en admin",
+    "callAdminConfirmTitle": "Tilkalle en admin?",
+    "callAdminConfirmBody": "En admin får et varsel og blir med i denne chatten. Tilkall bare når dere trenger hjelp med kampen.",
     "adminCalled": "En admin er tilkalt",
     "callFailed": "Kunne ikke tilkalle en admin",
     "sendFailed": "Kunne ikke sende meldingen",

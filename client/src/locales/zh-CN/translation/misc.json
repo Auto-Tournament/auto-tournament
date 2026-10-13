@@ -924,7 +924,9 @@
         "objects": "物品",
         "symbols": "符号"
       }
-    }
+    },
+    "callAdminConfirmTitle": "Call an admin?",
+    "callAdminConfirmBody": "An admin gets a notification and joins this chat. Call one only when you need help with the match."
   },
   "search": {
     "open": "Search",
