@@ -2317,6 +2317,8 @@
       "next": "Next",
       "close": "Close",
       "redoMatch": "Redo all clips",
+      "heldByFailed_one": "{{count}} 个片段失败。会用到它的集锦将等待你重做或丢弃它。",
+      "heldByFailed_other": "{{count}} 个片段失败。会用到它们的集锦将等待你重做或丢弃它们。",
       "reelElapsed": "ready {{time}} after its first clip started",
       "reelAssembly": "joined in {{time}}",
       "reelRender": "its clips: {{time}} of recording added up"
