@@ -3,8 +3,16 @@
  * used lately and every category. Arrow keys move through the grid, Enter
  * picks, Escape closes; the composer gets its focus back either way.
  */
-import React, { useMemo, useRef, useState, type ComponentRef } from 'react';
-import { Box, ButtonBase, IconButton, InputBase, Popover, Typography } from '@mui/material';
+import React, {
+  memo,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentRef,
+} from 'react';
+import { Box, IconButton, InputBase, Popover, Typography } from '@mui/material';
 import { SmileyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { radii, textSize, tokens } from '../../theme/tokens';
@@ -69,6 +77,12 @@ export function EmojiPicker({
     onPick(char);
     close();
   };
+  // The grids are memoised: they get a stable function that calls the latest `pick`.
+  const latestPick = useRef(pick);
+  useLayoutEffect(() => {
+    latestPick.current = pick;
+  });
+  const pickRef = useCallback((char: string) => latestPick.current(char), []);
 
   // Arrow keys move between the emoji buttons, a row at a time up and down.
   const onGridKey = (event: React.KeyboardEvent) => {
@@ -160,7 +174,34 @@ export function EmojiPicker({
             }}
           />
         </Box>
-        <Box ref={gridRef} onKeyDown={onGridKey} sx={{ maxHeight: 300, overflowY: 'auto', p: 1 }}>
+        <Box
+          ref={gridRef}
+          onKeyDown={onGridKey}
+          sx={{
+            maxHeight: 300,
+            overflowY: 'auto',
+            p: 1,
+            // One rule for every emoji button: ~450 MUI buttons with their own styles and
+            // ripples made the panel slow to open and to type into.
+            '& .emoji-grid': {
+              display: 'grid',
+              gridTemplateColumns: `repeat(${COLUMNS}, minmax(0, 1fr))`,
+            },
+            '& .emoji': {
+              aspectRatio: '1 / 1',
+              fontSize: '1.375rem',
+              lineHeight: 1,
+              border: 0,
+              padding: 0,
+              background: 'none',
+              color: 'inherit',
+              cursor: 'pointer',
+              borderRadius: radii.sm,
+            },
+            '& .emoji:hover, & .emoji:focus-visible': { bgcolor: color.paper3 },
+            '& .emoji:focus-visible': { outline: `2px solid ${color.accent}` },
+          }}
+        >
           {sections.map((section) => (
             <Box key={section.id} sx={{ mb: 1 }}>
               <Typography
@@ -181,31 +222,7 @@ export function EmojiPicker({
                   {t('chat.emoji.none')}
                 </Typography>
               ) : (
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: `repeat(${COLUMNS}, minmax(0, 1fr))`,
-                  }}
-                >
-                  {section.emoji.map((e) => (
-                    <ButtonBase
-                      key={`${section.id}-${e.char}`}
-                      data-emoji={e.char}
-                      title={e.words.split(' ')[0] || undefined}
-                      aria-label={e.words.split(' ')[0] || e.char}
-                      onClick={() => pick(e.char)}
-                      sx={{
-                        aspectRatio: '1 / 1',
-                        fontSize: '1.375rem',
-                        borderRadius: radii.sm,
-                        '&:hover, &:focus-visible': { bgcolor: color.paper3 },
-                        '&:focus-visible': { outline: `2px solid ${color.accent}` },
-                      }}
-                    >
-                      {e.char}
-                    </ButtonBase>
-                  ))}
-                </Box>
+                <EmojiGrid sectionId={section.id} emoji={section.emoji} onPick={pickRef} />
               )}
             </Box>
           ))}
@@ -214,3 +231,35 @@ export function EmojiPicker({
     </>
   );
 }
+
+/** One section's emoji as plain buttons (styled by the grid's one rule), rendered once. */
+const EmojiGrid = memo(function EmojiGrid({
+  sectionId,
+  emoji,
+  onPick,
+}: {
+  sectionId: string;
+  emoji: Emoji[];
+  onPick: (char: string) => void;
+}) {
+  return (
+    <div className="emoji-grid">
+      {emoji.map((e) => {
+        const name = e.words.split(' ')[0];
+        return (
+          <button
+            type="button"
+            className="emoji"
+            key={`${sectionId}-${e.char}`}
+            data-emoji={e.char}
+            title={name || undefined}
+            aria-label={name || e.char}
+            onClick={() => onPick(e.char)}
+          >
+            {e.char}
+          </button>
+        );
+      })}
+    </div>
+  );
+});
