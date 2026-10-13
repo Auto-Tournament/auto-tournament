@@ -877,6 +877,9 @@ export function getSchemaSQL(): string {
       -- OpenID Connect: the issuer and the login button's name.
       issuer_url TEXT,
       label TEXT,
+      -- OpenID Connect: the button's logo (a data: URL, PNG/JPEG/WebP/SVG) and colour (#rrggbb).
+      logo TEXT,
+      button_color TEXT,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_by TEXT
     );

@@ -18,7 +18,9 @@ import { OIDC_DEFAULT_LABEL, effectiveProviderSettings } from './signInProviders
  * strategy under the same rule (config/passport.ts), so a listed button
  * always works.
  */
-function isOAuthProviderConfigured(provider: 'discord' | 'github' | 'google' | 'twitch' | 'epic' | 'oidc'): boolean {
+function isOAuthProviderConfigured(
+  provider: 'discord' | 'github' | 'google' | 'twitch' | 'epic' | 'oidc'
+): boolean {
   return effectiveProviderSettings(provider).active;
 }
 
@@ -119,6 +121,8 @@ export function getAuthProvidersConfig(): AuthProviderConfig[] {
       loginUrl: '/api/auth/oidc',
       enabled: true,
       issuerUrl: oidc.issuerUrl as string,
+      logoUrl: oidc.logo ? `/api/auth/oidc/logo?v=${oidc.updatedAt ?? 0}` : null,
+      buttonColor: oidc.buttonColor,
     };
     providers.push(oidcProvider);
   }
