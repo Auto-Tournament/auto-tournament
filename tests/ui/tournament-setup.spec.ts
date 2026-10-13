@@ -45,7 +45,9 @@ test.describe.serial('Tournament setup flow', () => {
       const summaryBox = await page.getByTestId('tournament-setup-summary').boundingBox();
       const columnBox = await column.boundingBox();
       expect(form!.width, 'the form is wider than the old middle column').toBeGreaterThan(500);
-      expect(columnBox!.x + columnBox!.width, 'steps left of the form').toBeLessThanOrEqual(form!.x);
+      expect(columnBox!.x + columnBox!.width, 'steps left of the form').toBeLessThanOrEqual(
+        form!.x
+      );
       expect(summaryBox!.x, 'summary right of the form').toBeGreaterThanOrEqual(
         form!.x + form!.width
       );
@@ -84,11 +86,11 @@ test.describe.serial('Tournament setup flow', () => {
       );
       await page.getByTestId('tournament-grand-final-option-simple').click();
 
-      // The stepper only lands on counts elimination brackets allow.
+      // Any count: one that is not a power of two gets byes (7 teams, 2n - 2 matches).
       const count = page.getByTestId('tournament-team-count');
       await page.getByTestId('tournament-team-count-decrease').click();
-      await expect(count).toHaveText('4');
-      await expect(summary('matches')).toHaveText('6');
+      await expect(count).toHaveText('7');
+      await expect(summary('matches')).toHaveText('12');
       await page.getByTestId('tournament-team-count-increase').click();
       await expect(count).toHaveText('8');
 
