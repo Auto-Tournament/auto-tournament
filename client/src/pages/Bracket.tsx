@@ -27,7 +27,6 @@ import { useNavigate } from 'react-router-dom';
 import { tournamentTabPath } from '../paths';
 import BracketsViewerVisualization from '../components/visualizations/BracketsViewerVisualization';
 import SwissView from '../components/visualizations/SwissView';
-import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import { MatchListCard } from '../components/shared/MatchListCard';
 import { RoundStatusCard } from '../components/tournament/RoundStatusCard';
@@ -73,8 +72,6 @@ export default function Bracket() {
 
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
-  const [selectedMatchOverride, setSelectedMatchOverride] = useState<Match | null>(null);
   const [roundStatus, setRoundStatus] = useState<{
     roundNumber: number;
     totalMatches: number;
@@ -85,21 +82,7 @@ export default function Bracket() {
   } | null>(null);
   const [shuffleTotalRounds, setShuffleTotalRounds] = useState<number | null>(null);
   const fullscreenRef = useRef<globalThis.HTMLDivElement>(null);
-  const selectedMatchIdRef = useRef<number | null>(null);
   const { t } = useTranslation();
-
-  // Derive the current match from matches array (keeps status/score in sync with
-  // live websocket updates), and optionally merge in richer fields (e.g.
-  // mapResults) from a one-time /api/matches/:slug fetch without freezing the
-  // match in time. We always let the live bracket state "win" for core fields
-  // like status and scores to avoid stale data in the modal.
-  const baseSelectedMatch = selectedMatchId
-    ? matches.find((m) => m.id === selectedMatchId) || null
-    : null;
-  const selectedMatch: Match | null =
-    baseSelectedMatch && selectedMatchOverride
-      ? { ...selectedMatchOverride, ...baseSelectedMatch }
-      : (baseSelectedMatch ?? null);
 
   // Load round status for shuffle tournaments, again whenever a match or the
   // bracket changes (no timer).
@@ -161,42 +144,10 @@ export default function Bracket() {
   // Chronological numbering across upper/lower brackets (see compareMatchOrder).
   const getGlobalMatchNumber = (match: Match): number => globalMatchNumber(match, matches);
 
-  const handleMatchClick = async (match: Match) => {
-    if (!match.team1 || !match.team2) {
-      return;
-    }
-    setSelectedMatchId(match.id);
-    selectedMatchIdRef.current = match.id;
-    setSelectedMatchOverride(null);
-
-    // Bracket matches often only have series score; load full details (including
-    // mapResults) so the modal can show correct per-map rounds even when opened
-    // from the bracket list view.
-    try {
-      const response = await api.get<{ success: boolean; match: Match }>(
-        `/api/matches/${match.slug}`
-      );
-      if (!response?.success || !response.match) {
-        return;
-      }
-      setSelectedMatchOverride((currentOverride) => {
-        // Only override if this match is still the selected one; if the user
-        // clicked a different match while this request was in flight, keep the
-        // newer selection.
-        if (selectedMatchIdRef.current !== match.id) {
-          return currentOverride;
-        }
-        return response.match;
-      });
-    } catch (err) {
-      console.error('Failed to load full match details for bracket modal:', err);
-    }
-  };
-
-  const handleCloseMatchModal = () => {
-    setSelectedMatchId(null);
-    selectedMatchIdRef.current = null;
-    setSelectedMatchOverride(null);
+  // A match opens its match room, the page players and admins run it from.
+  const handleMatchClick = (match: Match) => {
+    if (!match.team1 || !match.team2 || !match.slug) return;
+    navigate(`/match/${encodeURIComponent(match.slug)}`);
   };
 
   useEffect(() => {
@@ -653,20 +604,6 @@ export default function Bracket() {
               );
             })}
         </Box>
-      )}
-
-      {/* Match Details Modal */}
-      {selectedMatch && (
-        <MatchDetailsModal
-          match={selectedMatch}
-          matchNumber={getGlobalMatchNumber(selectedMatch)}
-          roundLabel={
-            tournament.type === 'shuffle'
-              ? getRoundLabel(selectedMatch.round)
-              : getRoundLabel(selectedMatch.round, totalRounds)
-          }
-          onClose={handleCloseMatchModal}
-        />
       )}
     </Box>
   );

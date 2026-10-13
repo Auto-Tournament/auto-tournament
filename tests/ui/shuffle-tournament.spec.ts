@@ -118,7 +118,7 @@ test.describe.serial('Shuffle Tournament UI', () => {
       await expect(strip).not.toContainText('IN VETO');
       await expect(strip).not.toContainText('Finals');
 
-      // Bracket list: opening the match shows it (it used to blank the page).
+      // Bracket list: opening the match opens its match room (it used to blank the page).
       await page.goto('/manage/bracket');
       const list = page.getByRole('button', { name: 'List' });
       if (await list.count()) await list.first().click();
@@ -127,7 +127,8 @@ test.describe.serial('Shuffle Tournament UI', () => {
         .filter({ hasText: '#1 · Map 1' })
         .first()
         .click({ force: true });
-      await expect(page.getByRole('dialog')).toBeVisible({ timeout: 10000 });
+      await expect(page).toHaveURL(/\/match\//, { timeout: 10000 });
+      await expect(page.getByTestId('match-page')).toBeVisible({ timeout: 10000 });
       expect(errors).toEqual([]);
     }
   );

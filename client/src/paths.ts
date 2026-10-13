@@ -192,14 +192,9 @@ export function manageTournamentPath(
   return `${paths.tournaments}/${id}/${tab}`;
 }
 
-/**
- * The admin Matches page with one match open (a link an admin can share).
- * With the tournament, its own Matches tab; without, the old address, which
- * goes to the tournament Manage last had open.
- */
-export function matchDetailsPath(slug: string, tournamentId?: number | null): string {
-  const base = tournamentId ? manageTournamentPath(tournamentId, 'matches') : paths.matches;
-  return `${base}?match=${encodeURIComponent(slug)}`;
+/** A match's room, where players and admins run it (the old admin dialog is gone). */
+export function matchDetailsPath(slug: string, _tournamentId?: number | null): string {
+  return `/match/${encodeURIComponent(slug)}`;
 }
 
 /** `/play/:lobbyId`: a matchmaking match room. */

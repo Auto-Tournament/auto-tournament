@@ -15,13 +15,12 @@ import { io } from 'socket.io-client';
 import { onSocketReconnect } from '../utils/socketResync';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSnackbar } from '../contexts/SnackbarContext';
-import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
 import { MatchCard } from '../components/shared/MatchCard';
 import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { useResourceAvailability } from '../hooks/useResourceAvailability';
-import { getGlobalMatchNumber, getRoundLabel } from '../utils/matchUtils';
+import { getGlobalMatchNumber } from '../utils/matchUtils';
 import { isManualMatch as isManualMatchFlag } from '../utils/matchFlags';
 import { api } from '../utils/api';
 import type { Match, MatchEvent, MatchesResponse } from '../types';
@@ -53,24 +52,14 @@ export default function Matches() {
   const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([]);
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
   const [matchHistory, setMatchHistory] = useState<Match[]>([]);
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-  // `?match=<slug>`: the open match, so its link can be shared (paths.ts matchDetailsPath).
-  const [searchParams, setSearchParams] = useSearchParams();
+  // `?match=<slug>` (an old shared link, paths.ts matchDetailsPath) opens the match room.
+  const [searchParams] = useSearchParams();
   const linkedSlug = searchParams.get('match');
   const selectMatch = useCallback(
-    (match: Match | null) => {
-      setSelectedMatch(match);
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (match?.slug) next.set('match', match.slug);
-          else next.delete('match');
-          return next;
-        },
-        { replace: true }
-      );
+    (match: Match) => {
+      if (match.slug) navigate(`/match/${encodeURIComponent(match.slug)}`);
     },
-    [setSearchParams]
+    [navigate]
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -322,34 +311,12 @@ export default function Matches() {
     fetchMatches();
   }, [fetchMatches]);
 
-  // Legacy delete handler kept for reference; match deletion is currently wired
-  // through the MatchDetailsModal, which calls its own delete endpoint and then
-  // emits socket updates. We keep this here in case we reintroduce list-level
-  // delete actions in the future.
-  // const handleDeleteMatch = async (match: Match) => {
-  //   try {
-  //     await api.delete(`/api/matches/${match.slug}`);
-  //     showSuccess(`Match deleted: ${match.slug}`);
-  //     void fetchMatches();
-  //   } catch (err) {
-  //     const message =
-  //       err instanceof Error ? err.message : 'Failed to delete match. Please try again.';
-  //     showError(message);
-  //     console.error('Failed to delete match', err);
-  //   }
-  // };
-
   // Get all matches for numbering context
   const allMatches = [...upcomingMatches, ...liveMatches, ...matchHistory];
 
-  // A shared link opens its match once the lists have it.
   useEffect(() => {
-    if (!linkedSlug || selectedMatch?.slug === linkedSlug) return;
-    const found = [...upcomingMatches, ...liveMatches, ...matchHistory].find(
-      (m) => m.slug === linkedSlug
-    );
-    if (found) setSelectedMatch(found);
-  }, [linkedSlug, selectedMatch?.slug, upcomingMatches, liveMatches, matchHistory]);
+    if (linkedSlug) navigate(`/match/${encodeURIComponent(linkedSlug)}`, { replace: true });
+  }, [linkedSlug, navigate]);
 
   const toggleMatchSelected = (match: Match) => {
     if (!isManualMatchFlag(match)) {
@@ -725,22 +692,6 @@ export default function Matches() {
             </Box>
           )}
         </Stack>
-      )}
-
-      {/* Match Details Modal */}
-      {selectedMatch && (
-        <MatchDetailsModal
-          match={selectedMatch}
-          matchNumber={getGlobalMatchNumber(selectedMatch, allMatches)}
-          roundLabel={getRoundLabel(selectedMatch.round)}
-          onClose={() => selectMatch(null)}
-          onDeleted={(slug) => {
-            selectMatch(null);
-            setUpcomingMatches((prev) => prev.filter((m) => m.slug !== slug));
-            setLiveMatches((prev) => prev.filter((m) => m.slug !== slug));
-            setMatchHistory((prev) => prev.filter((m) => m.slug !== slug));
-          }}
-        />
       )}
 
       {/* Create a standalone match: the module's dialog */}

@@ -11,7 +11,7 @@ import {
   LinearProgress,
   Link,
 } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useManageData } from '../hooks/useManageData';
@@ -22,7 +22,6 @@ import {
   computeRecentEvents,
   manageMatchRefs,
 } from '../utils/manageSelectors';
-import { getGlobalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { usePublishNeedsYouCount } from '../contexts/ManageRailContext';
 import { StatusStrip } from '../components/manage/StatusStrip';
 import { NeedsYouQueue } from '../components/manage/NeedsYouQueue';
@@ -30,14 +29,12 @@ import { AdminNoticesPanel } from '../components/admin/AdminNoticesPanel';
 import { useIntegrationFor } from '../integrations/registry';
 import { useShellIntegrations, shellModule } from '../hooks/useShellIntegrations';
 import { RecentLog } from '../components/manage/RecentLog';
-import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { useModuleTranslation } from '../module-sdk';
 import { PageHead } from '../components/common/ui';
 import { GameMark } from '../components/common/GameMark';
 import { DEFAULT_SETUP_GAME, useSetupGames } from '../components/tournament/setup/games';
 import { paths } from '../paths';
 import { SiteOverview } from '../components/adminHome/SiteOverview';
-import type { Match } from '../types/match.types';
 import type { Tournament } from '../types/tournament.types';
 
 /**
@@ -80,6 +77,7 @@ export default function Manage() {
   // there is one, the first the shell shows that has a tile (CS2's servers,
   // which an admin sets up before the tournament that needs them).
   const resourceModule = shellModule(shell, (i) => i.manageStatusTile) ?? null;
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
   const { loading, tournament, matches, availability, refresh } = useManageData(resourceModule);
@@ -98,7 +96,6 @@ export default function Manage() {
     () => (availability && summarizeAvailability ? summarizeAvailability(availability) : null),
     [availability, summarizeAvailability]
   );
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [announceOpen, setAnnounceOpen] = useState(false);
   const [announceText, setAnnounceText] = useState('');
   const [announcing, setAnnouncing] = useState(false);
@@ -186,10 +183,7 @@ export default function Manage() {
 
       <NeedsYouQueue
         items={needsYouItems}
-        onDecide={(slug) => {
-          const match = matches.find((m) => m.slug === slug);
-          if (match) setSelectedMatch(match);
-        }}
+        onDecide={(slug) => navigate(`/match/${encodeURIComponent(slug)}`)}
         onActionDone={refresh}
       />
 
@@ -197,22 +191,6 @@ export default function Manage() {
       {ServerGrid && <ServerGrid tournamentId={tournament?.id ?? null} />}
 
       <RecentLog events={recentEvents} />
-
-      {selectedMatch && (
-        <MatchDetailsModal
-          match={selectedMatch}
-          matchNumber={getGlobalMatchNumber(selectedMatch, matches)}
-          roundLabel={getRoundLabel(selectedMatch.round)}
-          onClose={() => {
-            setSelectedMatch(null);
-            refresh();
-          }}
-          onDeleted={() => {
-            setSelectedMatch(null);
-            refresh();
-          }}
-        />
-      )}
 
       <Dialog open={announceOpen} onClose={() => setAnnounceOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{t('managePage.announce.title')}</DialogTitle>
