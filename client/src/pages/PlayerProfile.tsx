@@ -2,7 +2,7 @@
 import { ProfileHighlights } from '../components/highlights/ProfileHighlights';
 import type { PlayerHighlightsFeed } from '../components/highlights/feed';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
+import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -48,7 +48,7 @@ import type {
   Player as TeamPlayer,
 } from '../types';
 import { textSize, tokens } from '../theme/tokens';
-import { matchPagePath, paths } from '../paths';
+import { paths } from '../paths';
 import { pageTitle } from '../utils/pageTitle';
 import { useInstalledIntegrations, useIntegration } from '../integrations/registry';
 
@@ -261,7 +261,6 @@ const RATING_CHART_WINDOW = 20;
  * sees it, and nobody sees a countdown or an empty "no match" card.
  */
 export default function PlayerProfile() {
-  const navigate = useNavigate();
   type AssignedTeam = {
     id: string;
     name: string;
@@ -1053,6 +1052,7 @@ export default function PlayerProfile() {
           slug: m.slug,
           wonMatch: m.wonMatch,
           title: `${t('teamMatchHistory.vs')} ${opponentName}`,
+          opponent: { id: (isTeam1 ? m.team2Id : m.team1Id) ?? null, name: opponentName },
           detail: [rating?.tournamentName, getRoundLabel(m.round)].filter(Boolean).join(' · '),
           ratingAfter: rating?.eloAfter,
           // Only a game that records demos, and only a match that has one: no
@@ -1277,7 +1277,6 @@ export default function PlayerProfile() {
                   <RecentMatches
                     matches={recentMatchEntries}
                     showStatsNote={showGameStats && gameFilteredMatches.length > 0}
-                    onSelect={(slug) => navigate(matchPagePath(slug))}
                   />
                 </Box>
               </Box>

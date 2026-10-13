@@ -1,3 +1,5 @@
+import { OpponentName, RowCoverLink } from '../../team/MatchRowLinks';
+import { matchPagePath } from '../../../paths';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -19,6 +21,8 @@ export interface RecentMatchEntry {
   wonMatch: boolean;
   /** "vs Baltic Five", or the stored "Nordlys vs Baltic Five" of a deleted match. */
   title: string;
+  /** The opponent, when the match is still here: "vs" and their name, linked to their team page. */
+  opponent?: { id: string | null; name: string };
   /** Where it was played: tournament and round, whichever are known. */
   detail: string;
   kills?: number;
@@ -32,7 +36,6 @@ export interface RecentMatchEntry {
 export interface RecentMatchesProps {
   matches: RecentMatchEntry[];
   limit?: number;
-  onSelect: (slug: string) => void;
   /**
    * The footnote explaining the kills / deaths column. A game that measures
    * neither has no column, so the note would explain nothing (default: shown).
@@ -43,14 +46,10 @@ export interface RecentMatchesProps {
 /**
  * The profile's match list (the draft's `ul.row-list.panel`): W/L tile,
  * opponent, where it was played and the rating after it, kills/deaths, and
- * the demo when there is one. A click on a row opens the match's own page.
+ * the demo when there is one. A row opens the match's own page; the
+ * opponent's name in it opens their team page.
  */
-export function RecentMatches({
-  matches,
-  limit = 10,
-  onSelect,
-  showStatsNote = true,
-}: RecentMatchesProps) {
+export function RecentMatches({ matches, limit = 10, showStatsNote = true }: RecentMatchesProps) {
   const { t } = useTranslation();
 
   if (matches.length === 0) {
@@ -80,14 +79,13 @@ export function RecentMatches({
             <Row
               key={match.key}
               columns="2.2rem minmax(0, 1fr) auto auto"
-              onClick={openable ? () => onSelect(slug) : undefined}
               data-testid={
                 openable ? `profile-recent-match-${slug}` : 'profile-recent-match-archived'
               }
               sx={{
+                position: 'relative',
                 py: 1.5,
                 fontSize: textSize.sm,
-                cursor: openable ? 'pointer' : 'default',
                 '&:hover': openable ? { bgcolor: 'action.hover' } : undefined,
                 // The panel's rounded corners, for the hover fill.
                 '&:first-of-type': {
@@ -100,6 +98,12 @@ export function RecentMatches({
                 },
               }}
             >
+              {openable && (
+                <RowCoverLink
+                  to={matchPagePath(slug)}
+                  label={t('teamProfile.tournaments.openMatch')}
+                />
+              )}
               <Box
                 sx={{
                   ...mono,
@@ -118,7 +122,14 @@ export function RecentMatches({
               </Box>
               <Box minWidth={0}>
                 <Typography variant="body2" noWrap>
-                  {match.title}
+                  {match.opponent ? (
+                    <>
+                      {t('teamMatchHistory.vs')}{' '}
+                      <OpponentName id={match.opponent.id} name={match.opponent.name} />
+                    </>
+                  ) : (
+                    match.title
+                  )}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" noWrap component="div">
                   {typeof match.ratingAfter === 'number'
@@ -142,7 +153,15 @@ export function RecentMatches({
                       '—'
                     : `${match.kills} / ${match.deaths}`}
               </Typography>
-              <Box sx={{ width: 32, display: 'flex', justifyContent: 'center' }}>
+              <Box
+                sx={{
+                  width: 32,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+              >
                 {match.hasDemo && slug && (
                   <Tooltip title={t('playerPage.downloadDemo')}>
                     <IconButton
@@ -152,7 +171,6 @@ export function RecentMatches({
                       download
                       aria-label={t('playerPage.downloadDemo')}
                       data-testid={`profile-recent-match-demo-${slug}`}
-                      onClick={(event) => event.stopPropagation()}
                     >
                       <DownloadSimpleIcon size="1em" />
                     </IconButton>
