@@ -68,10 +68,6 @@ export function getTournamentVerificationRules(
         requiresVeto: true,
         message: 'Map veto requires exactly 7 maps.',
       },
-      teams: {
-        requirePowerOfTwo: type === 'single_elimination' || type === 'double_elimination',
-        message: 'Team count must be a power of 2 for elimination brackets.',
-      },
     };
   }
 

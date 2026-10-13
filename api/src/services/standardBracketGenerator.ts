@@ -5,6 +5,7 @@ import { log } from '../utils/logger';
 import type { TournamentResponse } from '../types/tournament.types';
 import type { IBracketGenerator, BracketGeneratorResult } from './bracketGenerators/types';
 import { determineInitialMatchStatus } from '../utils/matchStatusHelpers';
+import { isPowerOfTwo, padWithByes, resolveByes } from './bracketByes';
 
 /**
  * Standard Bracket Generator
@@ -45,6 +46,16 @@ export class StandardBracketGenerator implements IBracketGenerator {
       (settings.grandFinalMode === undefined || settings.grandFinalMode !== 'none')
     ) {
       return this.generatePowerOfTwoDoubleElimination(tournament);
+    }
+
+    // Any other team count (3, 5, 6, …): the bracket for the next power of
+    // two with byes for the top seeds, then the byes taken out (bracketByes.ts).
+    if (
+      (type === 'single_elimination' || type === 'double_elimination') &&
+      teamIds.length > 2 &&
+      !isPowerOfTwo(teamIds.length)
+    ) {
+      return this.generateWithByes(tournament);
     }
 
     // Map our tournament types to brackets-manager types
@@ -356,6 +367,38 @@ export class StandardBracketGenerator implements IBracketGenerator {
   reset(): void {
     this.storage = new InMemoryDatabase();
     this.manager = new BracketsManager(this.storage);
+  }
+
+  /**
+   * Single or double elimination for a team count that is not a power of
+   * two: generated for the next power of two with empty seats, then every
+   * match that can't be played (a bye, or nothing at all) is taken out and
+   * the wiring points past it. Matches whose two teams are known now start
+   * ready, wherever they are in the bracket.
+   */
+  private async generateWithByes(tournament: TournamentResponse): Promise<BracketGeneratorResult> {
+    const padded = {
+      ...tournament,
+      teamIds: padWithByes(tournament.teamIds) as string[],
+    } as TournamentResponse;
+    const full =
+      tournament.type === 'double_elimination'
+        ? await this.generatePowerOfTwoDoubleElimination(padded)
+        : await this.generatePowerOfTwoSingleElimination(padded);
+    // No grand final ('none'): the winners bracket final decides it; the
+    // losers bracket still plays out, as the library's brackets do.
+    const noFinal =
+      tournament.type === 'double_elimination' && tournament.settings.grandFinalMode === 'none';
+    const kept = resolveByes(noFinal ? full.matches.filter((m) => m.slug !== 'gf') : full.matches);
+    return {
+      matches: kept.map((m) => ({
+        ...m,
+        status:
+          m.team1Id && m.team2Id
+            ? determineInitialMatchStatus(m.team1Id, m.team2Id, tournament.format, m.round)
+            : 'pending',
+      })),
+    };
   }
 
   /**

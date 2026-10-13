@@ -200,8 +200,8 @@ export default function BracketsViewerVisualization({
         matchWithTeam?.team1?.id === teamId
           ? matchWithTeam.team1.tag || matchWithTeam.team1.name
           : matchWithTeam?.team2?.id === teamId
-          ? matchWithTeam.team2?.tag || matchWithTeam.team2?.name
-          : teamId;
+            ? matchWithTeam.team2?.tag || matchWithTeam.team2?.name
+            : teamId;
 
       participants.push({
         id: index,
@@ -254,6 +254,54 @@ export default function BracketsViewerVisualization({
       matchesByRound[key].push(m);
     });
 
+    // Byes (a team count that isn't a power of two): the server leaves out the
+    // matches that can't be played, but the viewer lays a bracket out by
+    // position. Put a BYE in each gap: in the winners bracket the team that
+    // skips the match (already seated in the next round) against a BYE, in the
+    // losers bracket an empty one. Slugs keep their positions (r1m2, lb-r1m2).
+    const byeKeys = new Set<string>();
+    if (tournamentType === 'single_elimination' || tournamentType === 'double_elimination') {
+      const wbRoundNumbers = Object.keys(matchesByRound)
+        .filter((k) => k.startsWith('wb-'))
+        .map((k) => Number(k.split('-')[1]));
+      const k = wbRoundNumbers.length ? Math.max(...wbRoundNumbers) : 0;
+      const size = 2 ** k;
+      const prefix = matches[0]?.slug.match(/^t\d+-/)?.[0] ?? '';
+      const seatOf = (round: number, num: number): Match['team1'] | null => {
+        const next = (matchesByRound[`wb-${round + 1}`] ?? []).find(
+          (n) => n.matchNumber === Math.ceil(num / 2)
+        );
+        return (num % 2 === 1 ? next?.team1 : next?.team2) ?? null;
+      };
+      const fill = (key: string, round: number, count: number, lb: boolean) => {
+        const list = matchesByRound[key] ?? [];
+        // A losers-bracket round can be all byes; a winners round never is.
+        if ((!lb && list.length === 0) || list.length >= count) return;
+        for (let num = 1; num <= count; num++) {
+          if (list.some((m) => m.matchNumber === num)) continue;
+          const slug = `${prefix}${lb ? 'lb-' : ''}r${round}m${num}`;
+          byeKeys.add(slug);
+          list.push({
+            id: -(byeKeys.size + 1000),
+            slug,
+            round,
+            matchNumber: num,
+            status: 'completed',
+            team1: lb ? null : seatOf(round, num),
+            team2: null,
+          } as unknown as Match);
+        }
+        list.sort((x, y) => x.matchNumber - y.matchNumber);
+        matchesByRound[key] = list;
+      };
+      for (let r = 1; r < k; r++) fill(`wb-${r}`, r, size / 2 ** r, false);
+      const lbRounds = Math.max(0, 2 * k - 2);
+      if (hasLosersBracket)
+        for (let r = 1; r <= lbRounds; r++)
+          fill(`lb-${r}`, r, size / 2 ** (Math.floor((r + 1) / 2) + 1), true);
+    }
+    const isBye = (m: Match) => byeKeys.has(m.slug);
+
     // Create rounds and matches
     let roundCounter = 0;
     let fallbackMatchId = 1;
@@ -296,7 +344,9 @@ export default function BracketsViewerVisualization({
       }
     };
 
-    const getBracketScores = (match: BracketMatch): { team1Score?: number; team2Score?: number } => {
+    const getBracketScores = (
+      match: BracketMatch
+    ): { team1Score?: number; team2Score?: number } => {
       // Bracket view should always display SERIES score (maps won),
       // never current-map round score.
       const series = deriveSeriesScore(match, match.liveStats ?? null);
@@ -310,12 +360,7 @@ export default function BracketsViewerVisualization({
       }
 
       // For not-started matches, keep dashes unless we have a real series score source.
-      if (
-        isNotStarted &&
-        series.source === 'default' &&
-        series.team1 === 0 &&
-        series.team2 === 0
-      ) {
+      if (isNotStarted && series.source === 'default' && series.team1 === 0 && series.team2 === 0) {
         return { team1Score: undefined, team2Score: undefined };
       }
 
@@ -388,6 +433,20 @@ export default function BracketsViewerVisualization({
       });
 
       roundMatches.forEach((m) => {
+        if (isBye(m)) {
+          viewerMatches.push({
+            id: m.id,
+            number: m.matchNumber,
+            stage_id: 1,
+            group_id: 1,
+            round_id: roundCounter,
+            child_count: 0,
+            status: 4,
+            opponent1: m.team1?.id ? { id: teamIdMap.get(m.team1.id), result: 'win' } : null,
+            opponent2: null,
+          });
+          return;
+        }
         const { team1Score, team2Score } = getBracketScores(m);
         const viewerMatchId = m.id ?? fallbackMatchId++;
         const parentPositions = parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
@@ -427,6 +486,20 @@ export default function BracketsViewerVisualization({
       });
 
       roundMatches.forEach((m) => {
+        if (isBye(m)) {
+          viewerMatches.push({
+            id: m.id,
+            number: m.matchNumber,
+            stage_id: 1,
+            group_id: 2,
+            round_id: roundCounter,
+            child_count: 0,
+            status: 4,
+            opponent1: m.team1?.id ? { id: teamIdMap.get(m.team1.id), result: 'win' } : null,
+            opponent2: null,
+          });
+          return;
+        }
         const { team1Score, team2Score } = getBracketScores(m);
         const viewerMatchId = m.id ?? fallbackMatchId++;
         const parentPositions = parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
@@ -559,12 +632,11 @@ export default function BracketsViewerVisualization({
       // lower bracket final winner second. Its parents cannot be ordered by
       // match number (both finals are match 1), and the viewer's own hint names
       // the lower bracket final for both slots.
-      const parents: SlotSource[] =
-        isGrandFinalSlug(originalMatch.slug)
-          ? grandFinalParents(matches)
-          : [...(parentsByChildId.get(String(originalMatch.id)) ?? [])]
-              .sort((a, b) => a.matchNumber - b.matchNumber)
-              .map((m) => ({ match: m, outcome: 'winner' as const }));
+      const parents: SlotSource[] = isGrandFinalSlug(originalMatch.slug)
+        ? grandFinalParents(matches)
+        : [...(parentsByChildId.get(String(originalMatch.id)) ?? [])]
+            .sort((a, b) => a.matchNumber - b.matchNumber)
+            .map((m) => ({ match: m, outcome: 'winner' as const }));
       if (parents.length < 2) return;
 
       const slots = element.querySelectorAll<HTMLElement>(':scope > .opponents > .participant');
