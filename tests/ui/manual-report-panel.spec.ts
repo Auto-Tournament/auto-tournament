@@ -172,6 +172,8 @@ test.describe.serial('Manual reporting on the team page', () => {
         const reporterState = reporter.getByTestId('manual-report-state');
         await expect(reporter.getByTestId('manual-report-panel')).toBeVisible();
         await expect(reporterState).toHaveAttribute('data-state', 'nothing');
+        // A game without a veto never gets the map selection card.
+        await expect(reporter.getByText('Map Selection')).toHaveCount(0);
 
         await reporter.getByTestId('manual-report-open-form').click();
         await reporter.getByTestId('manual-report-game-1-team1').fill('3');
@@ -210,7 +212,9 @@ test.describe.serial('Manual reporting on the team page', () => {
         // And the result really was applied, not just drawn.
         const detail = await request.get(`/api/game/manual/matches/${match.slug}`);
         expect(detail.ok(), `reading ${match.slug}: ${await detail.text()}`).toBe(true);
-        const body = (await detail.json()) as { match: { status: string; winnerId: string | null } };
+        const body = (await detail.json()) as {
+          match: { status: string; winnerId: string | null };
+        };
         expect(body.match.status).toBe('completed');
         expect(body.match.winnerId).toBe(one.id);
       } finally {

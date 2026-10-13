@@ -99,7 +99,7 @@
     "tournamentFinished": "Turneringen er ferdig",
     "finalPlacement": "Sluttplassering: #{{position}} av {{total}}",
     "noMatchNow": "Ingen kamp planlagt akkurat nå",
-    "noMatchNowHint": "Neste kamp dukker opp her, med vetoen og serveren du kobler til.",
+    "noMatchNowHint": "Neste kamp dukker opp her, med det du må gjøre før den starter og hvordan du blir med.",
     "noMatchesYet": "Ingen kamper tilgjengelig akkurat nå",
     "noMatchesYetHint": "Turneringen har ikke startet ennå. Når den starter, vil kampene dine vises her.",
     "currentMatch": "Nåværende kamp",

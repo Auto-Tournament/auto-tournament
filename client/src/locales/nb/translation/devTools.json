@@ -37,7 +37,7 @@
     },
     "testServers": {
       "title": "Testservere",
-      "description": "Opprett serverkonfigurasjoner for å teste kamphåndtering og RCON-kommandoer.",
+      "description": "Opprett testservere å prøve kamphåndtering mot.",
       "success": "Opprettet {{count}} testserver(e)!",
       "errors": {
         "create": "Kunne ikke opprette testservere",

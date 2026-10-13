@@ -37,7 +37,7 @@
     },
     "testServers": {
       "title": "Test Servers",
-      "description": "Create server configurations for testing match management and RCON commands.",
+      "description": "Create test servers to try match management against.",
       "success": "Successfully created {{count}} test server(s)!",
       "errors": {
         "create": "Failed to create test servers",
