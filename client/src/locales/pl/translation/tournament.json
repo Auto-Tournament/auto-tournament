@@ -933,7 +933,8 @@
       "biggestGain": "Biggest rating gain",
       "bestPlayer": "Best player",
       "mostClutches": "Most clutches",
-      "mostTeamFlashes": "Most team flashes"
+      "mostTeamFlashes": "Most team flashes",
+      "mostMoney": "Spent the most money"
     },
     "awardValue": {
       "mostKills": "{{value}} kills",
@@ -944,7 +945,8 @@
       "biggestGain": "+{{value}} rating",
       "bestPlayer": "rating {{value}}",
       "mostTeamFlashes": "{{value}} teammates flashed",
-      "mostClutches": "{{value}} clutches won"
+      "mostClutches": "{{value}} clutches won",
+      "mostMoney": "{{value}} spent"
     },
     "wonFinal": "Wygrali finał {{a}}–{{b}} z {{opponent}}"
   },

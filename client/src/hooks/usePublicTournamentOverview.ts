@@ -32,6 +32,8 @@ export interface OverviewPlayer {
   clutchesWon?: number;
   /** Times the player flashed a teammate. */
   teamFlashes?: number;
+  /** Money spent over the tournament's maps (CS2: $). */
+  moneySpent?: number;
   team?: { id: string; name: string; tag?: string | null } | null;
 }
 
@@ -159,8 +161,7 @@ export function usePublicTournamentOverview(
 
   // Only surface the viewer's team when it is actually part of this tournament.
   const teamIds = tournament?.teamIds ?? [];
-  const viewerTeamInTournament =
-    viewerTeam && teamIds.includes(viewerTeam.id) ? viewerTeam : null;
+  const viewerTeamInTournament = viewerTeam && teamIds.includes(viewerTeam.id) ? viewerTeam : null;
 
   return {
     tournament,
