@@ -376,6 +376,77 @@ hostEvents.on('result', (hostId: string, record: registry.HostCommandRecord) => 
   });
 });
 
+// ---------------------------------------------------------------------------
+// Commands csm refused `busy` (another job held the machine or the server)
+// ---------------------------------------------------------------------------
+
+/** How long a refused command waits when the machine finishes nothing meanwhile, and how often it is tried. */
+export const BUSY_RETRY_MS = 30_000;
+export const BUSY_RETRY_MAX = 20;
+
+/** Whether a refused command is sent again (pure: tested on its own). */
+export function retriesBusy(record: {
+  status: string;
+  errorCode: string | null;
+  meta: Record<string, unknown> | null;
+}): boolean {
+  if (record.status !== 'rejected' || record.errorCode !== 'busy') return false;
+  if (record.meta?.retriedAs) return false;
+  return Number(record.meta?.busyRetries ?? 0) < BUSY_RETRY_MAX;
+}
+
+/** Refused commands waiting per machine, with their fallback timers. */
+const busyWaiting = new Map<string, Map<string, NodeJS.Timeout>>();
+
+/**
+ * Send a refused command again as a new one (csm answers an id once), with
+ * the same payload, actor and force, and remember the link both ways. The
+ * refused row is then hidden from the Servers page (listHostViews).
+ */
+async function resendBusy(hostId: string, id: string): Promise<void> {
+  const waiting = busyWaiting.get(hostId);
+  const timer = waiting?.get(id);
+  if (timer) clearTimeout(timer);
+  waiting?.delete(id);
+  const record = await registry.getHostCommand(id);
+  if (!record || !retriesBusy(record)) return;
+  const attempts = Number(record.meta?.busyRetries ?? 0) + 1;
+  const payload = { ...record.payload };
+  delete payload.force;
+  try {
+    const sent = await sendHostCommand(hostId, record.type as HostCommandType, payload as never, {
+      issuedBy: record.issuedBy,
+      force: record.forcedBy ? { reason: record.forceReason ?? 'retried after busy' } : null,
+      meta: { ...(record.meta ?? {}), retryOf: record.id, busyRetries: attempts },
+    });
+    await registry.mergeHostCommandMeta(record.id, { retriedAs: sent.command.id });
+    log.info(
+      `[FLEET-HOST] ${hostId}: ${record.type} was refused busy; sent again as ${sent.command.id} (try ${attempts})`
+    );
+  } catch (error) {
+    log.warn(
+      `[FLEET-HOST] ${hostId}: sending ${record.type} again after busy failed: ${(error as Error).message}`
+    );
+  }
+}
+
+hostEvents.on('result', (hostId: string, record: registry.HostCommandRecord) => {
+  if (retriesBusy(record)) {
+    // Wait for the job that holds the machine: its answer sends this one again,
+    // and so does the timer when the machine answers nothing meanwhile.
+    const waiting = busyWaiting.get(hostId) ?? new Map<string, NodeJS.Timeout>();
+    busyWaiting.set(hostId, waiting);
+    if (!waiting.has(record.id)) {
+      const timer = setTimeout(() => void resendBusy(hostId, record.id), BUSY_RETRY_MS);
+      timer.unref?.();
+      waiting.set(record.id, timer);
+    }
+    return;
+  }
+  // Another job finished: whatever it held up goes now.
+  for (const id of [...(busyWaiting.get(hostId)?.keys() ?? [])]) void resendBusy(hostId, id);
+});
+
 /** The answer to command `id`: resolves once it is not pending, or null after `timeoutMs`. */
 export async function awaitHostResult(
   id: string,
@@ -465,7 +536,10 @@ export async function listHostViews(
       servers,
       autoUpdate: autoUpdateStatus(host.id),
       enrolledServers,
-      commands: await registry.listHostCommands(host.id, opts.commands ?? 10),
+      // A command sent again after a busy refusal is shown once, as the new one.
+      commands: (await registry.listHostCommands(host.id, opts.commands ?? 10)).filter(
+        (c) => !c.meta?.retriedAs
+      ),
       health: await registry.listHealth(host.id, opts.health ?? 5),
     });
   }

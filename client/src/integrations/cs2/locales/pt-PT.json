@@ -1842,7 +1842,8 @@
         "source": {
           "matchmaking": "Matchmaking",
           "tournament": "Tournament",
-          "admin": "Given by an admin"
+          "admin": "Given by an admin",
+          "tradeup": "Troca"
         },
         "remove": "Take away",
         "removeTitle": "Take this skin away?",
@@ -1876,7 +1877,9 @@
       "fiveVsFive": "These are for 5v5. Smaller modes drop less:",
       "fairRules": "Only players who played the whole game get a chance: nothing for an abandoned game or one that ended early, and a repeat against the same opponents within a day drops much less. Tournament placement rewards go only to players who played in the tournament.",
       "tournamentMatchDrops": "Tournament matches drop too (not in esports mode)",
-      "levelUpDrops": "A drop for every new level"
+      "levelUpDrops": "A drop for every new level",
+      "tradeUp": "Trocas: skins de um grau por uma do seguinte",
+      "tradeUpCount": "Skins por troca"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "O que significa",
@@ -1937,6 +1940,18 @@
     "rewards": {
       "title": "Rewards",
       "choosing": "choosing a skin…"
+    },
+    "tradeUp": {
+      "start": "Trocar",
+      "picked": "{{picked}} de {{count}} escolhidas",
+      "cancel": "Cancelar",
+      "confirm": "Trocar",
+      "gives": "Dá uma skin {{rarity}}, cada uma destas {{count}} igualmente provável. O desgaste é a média das tuas.",
+      "help": "Escolhe {{count}} skins de arma de um grau (sem facas nem luvas) por uma do seguinte.",
+      "failed": "Não foi possível trocar.",
+      "pickLabel": "Escolher {{name}}",
+      "unpickLabel": "Retirar {{name}}",
+      "origin": "Por troca"
     }
   },
   "matchRules": {
