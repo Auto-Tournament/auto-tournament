@@ -93,10 +93,10 @@ var recorderLook = []string{
 }
 
 var (
-	reUnpaused  = regexp.MustCompile(`unpaused on tick (\d+)`)
-	rePaused    = regexp.MustCompile(`(?:^|[^n])paused on tick (\d+)`)
+	reUnpaused = regexp.MustCompile(`unpaused on tick (\d+)`)
+	rePaused   = regexp.MustCompile(`(?:^|[^n])paused on tick (\d+)`)
 	// getpos: "setpos 1234.000000 -56.000000 89.031250;setang ...".
-	reSetpos = regexp.MustCompile(`setpos (-?[\d.]+ -?[\d.]+ -?[\d.]+)`)
+	reSetpos    = regexp.MustCompile(`setpos (-?[\d.]+ -?[\d.]+ -?[\d.]+)`)
 	reStartTick = regexp.MustCompile(`server_start_tick: (\d+)`)
 	reLastTick  = regexp.MustCompile(`playback_ticks: (\d+)`)
 	reMapLoaded = regexp.MustCompile(`OnSwitchLoopModeFinished\( (game) : success \)`)
