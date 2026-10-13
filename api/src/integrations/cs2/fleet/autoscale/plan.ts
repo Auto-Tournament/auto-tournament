@@ -365,6 +365,12 @@ export interface ScalerServer {
    * one of the warm servers the scaler counts (unset: false).
    */
   occupied?: boolean;
+  /**
+   * A practice server (its plugin set turns match off): never handed a match,
+   * so the scaler leaves it alone: not capacity, not started, not stopped as
+   * idle while people practise (unset: false).
+   */
+  practice?: boolean;
   /** An update (CS2, Ready Up) or restart is in progress. */
   updating: boolean;
   /** An open failover points at it. */
@@ -454,7 +460,9 @@ export function describeNeed(demand: Demand, reserve: number): string {
  * for one new server. More than the need: stop the servers idle longest,
  * once idle past the cool-down, never a busy, updating, failover or spare one.
  */
-export function planScaling(input: PlanInput): ScalePlan {
+export function planScaling(planInput: PlanInput): ScalePlan {
+  // Practice servers are not the scaler's: they take no matches.
+  const input = { ...planInput, servers: planInput.servers.filter((s) => !s.practice) };
   const { now, settings, demand } = input;
   const reserve = scalerReserve(input.reserveConfigured, input.servers.length);
   const desired = demand.total > 0 ? demand.total + reserve : 0;
