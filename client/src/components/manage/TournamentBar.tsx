@@ -7,23 +7,30 @@ import {
   TreeStructureIcon,
   TrophyIcon,
 } from '@phosphor-icons/react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOptionalAdminTournament } from '../../contexts/AdminTournamentContext';
 import { useManageRailCounts } from '../../contexts/ManageRailContext';
 import { useDisputesEntry } from '../../hooks/useDisputesEntry';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
-import { paths } from '../../paths';
+import { manageTournamentPath, paths, type ManageTournamentTab } from '../../paths';
 import { tokens, fontMono, radii, textSize } from '../../theme/tokens';
 import { ICON_SIZE } from '../../theme/icons';
 
 const { color } = tokens;
 
-/** The pages that run one tournament: the bar shows over each of them. */
-export const TOURNAMENT_PAGES = [paths.manage, paths.matches, paths.bracket, paths.disputes];
+/** One tournament's pages in Manage: `/manage/tournaments/<id>/<tab>`. */
+const SCOPED = /^\/manage\/tournaments\/(new|\d+)\/(matches|bracket|disputes|setup)\/?$/;
 
+/** The pages that run one tournament: the bar shows over each of them (and over Needs you). */
 export function isTournamentPage(pathname: string): boolean {
-  return TOURNAMENT_PAGES.some((to) => pathname === to || pathname.startsWith(`${to}/`));
+  return pathname === paths.manage || SCOPED.test(pathname);
+}
+
+/** The tab of a scoped tournament page, or null on another page. */
+function scopedTab(pathname: string): ManageTournamentTab | null {
+  const m = SCOPED.exec(pathname);
+  return m ? (m[2] as ManageTournamentTab) : null;
 }
 
 /**
@@ -39,6 +46,18 @@ export function TournamentBar() {
   const { tournamentId } = useShellIntegrations();
   const { show: showDisputes } = useDisputesEntry();
   const { needsYouCount } = useManageRailCounts();
+  const navigate = useNavigate();
+  // The tournament the tabs open: the one picked, or the one being created.
+  // With none yet, the tabs open the one about to be created.
+  const scopeId: number | 'new' | null = admin
+    ? admin.selectedId !== null && admin.selectedId !== admin.nextId
+      ? admin.selectedId
+      : admin.nextId !== null
+        ? 'new'
+        : null
+    : tournamentId;
+  const tabPath = (tab: ManageTournamentTab) =>
+    scopeId === null ? paths.tournaments : manageTournamentPath(scopeId, tab);
 
   const tabs = [
     {
@@ -48,11 +67,16 @@ export function TournamentBar() {
       icon: BellIcon,
       count: needsYouCount,
     },
-    { key: 'matches', label: t('managePage.rail.matches'), to: paths.matches, icon: SwordIcon },
+    {
+      key: 'matches',
+      label: t('managePage.rail.matches'),
+      to: tabPath('matches'),
+      icon: SwordIcon,
+    },
     {
       key: 'bracket',
       label: t('managePage.rail.bracket'),
-      to: paths.bracket,
+      to: tabPath('bracket'),
       icon: TreeStructureIcon,
     },
     ...(showDisputes
@@ -60,7 +84,7 @@ export function TournamentBar() {
           {
             key: 'disputes',
             label: t('managePage.rail.disputes'),
-            to: paths.disputes,
+            to: tabPath('disputes'),
             icon: ScalesIcon,
           },
         ]
@@ -68,7 +92,7 @@ export function TournamentBar() {
     {
       key: 'tournament',
       label: t('managePage.rail.tournament'),
-      to: paths.tournament,
+      to: tabPath('setup'),
       icon: TrophyIcon,
     },
     ...(tournamentId !== null
@@ -97,7 +121,13 @@ export function TournamentBar() {
               size="small"
               label={t('managePage.rail.switcher')}
               value={selectedId ?? ''}
-              onChange={(e) => select(Number(e.target.value))}
+              onChange={(e) => {
+                const id = Number(e.target.value);
+                // On one of its pages, the same page of the other tournament.
+                const tab = scopedTab(pathname);
+                if (tab) navigate(manageTournamentPath(id === nextId ? 'new' : id, tab));
+                else select(id);
+              }}
               inputProps={{ 'data-testid': 'tournament-switcher' }}
               SelectProps={{ MenuProps: { PaperProps: { sx: { maxHeight: 420 } } } }}
               sx={{ minWidth: 220, maxWidth: '100%' }}

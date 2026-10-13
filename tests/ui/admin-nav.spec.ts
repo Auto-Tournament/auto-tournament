@@ -17,9 +17,9 @@ import { ensureSignedIn, signInViaRequest, signInAsPlayer } from '../helpers/aut
 /** The tournament's own pages, by their tab in the tournament bar. */
 const TOURNAMENT_BAR_ITEMS: [string, RegExp][] = [
   ['needsYou', /\/manage$/],
-  ['matches', /\/matches$/],
-  ['bracket', /\/bracket$/],
-  ['tournament', /\/tournament$/],
+  ['matches', /\/manage\/tournaments\/(new|\d+)\/matches$/],
+  ['bracket', /\/manage\/tournaments\/(new|\d+)\/bracket$/],
+  ['tournament', /\/manage\/tournaments\/(new|\d+)\/setup$/],
 ];
 
 /** Every platform admin page, by its rail item's test id, and the URL it opens. */
@@ -29,7 +29,6 @@ const CORE_RAIL_ITEMS: [string, RegExp][] = [
   ['players', /\/players$/],
   ['modules', /\/modules$/],
   ['templates', /\/templates$/],
-  ['ratings', /\/ratings$/],
   ['settings', /\/settings$/],
   ['adminTools', /\/manage\/system$/],
 ];

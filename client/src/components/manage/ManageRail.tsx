@@ -1,14 +1,15 @@
 import React from 'react';
 import { Box, ButtonBase, Menu, MenuItem } from '@mui/material';
 import {
+  BellIcon,
   FlagIcon,
   ListBulletsIcon,
+  TrophyIcon,
   FilmSlateIcon,
   FilmStripIcon,
   ArrowSquareOutIcon,
   BookOpenIcon,
   CaretUpDownIcon,
-  ChartLineUpIcon,
   CodeIcon,
   GearIcon,
   PuzzlePieceIcon,
@@ -24,7 +25,8 @@ import { listIntegrations } from '../../integrations/registry';
 import { gameMonogram } from '../games/GameThumb';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { moduleNavItems, navItemLabel } from '../../utils/moduleNavLabels';
-import { paths } from '../../paths';
+import { manageTournamentPath, paths } from '../../paths';
+import { useOptionalAdminTournament } from '../../contexts/AdminTournamentContext';
 import { RAIL_COLUMN_MIN_WIDTH, railColumnSx } from '../../constants/adminLayout';
 import { BELOW_NAV_STICKY_TOP } from '../../constants/navBar';
 import { tokens, fontMono, radii, textSize } from '../../theme/tokens';
@@ -58,6 +60,10 @@ interface RailItem {
   count?: number | null;
   /** Opens outside the app (documentation). */
   external?: boolean;
+  /** Current only on its own address, not the pages below it (All tournaments). */
+  exact?: boolean;
+  /** Other addresses that are this item too (Ratings is a tab of Templates). */
+  also?: string[];
 }
 
 interface RailGroup {
@@ -67,7 +73,10 @@ interface RailGroup {
 }
 
 /** The page an item is "on": its own path, or a page below it. */
-function isCurrent(pathname: string, to: string): boolean {
+function isCurrent(pathname: string, to: string, item?: Pick<RailItem, 'exact' | 'also'>): boolean {
+  if (item?.also?.some((other) => pathname === other || pathname.startsWith(`${other}/`)))
+    return true;
+  if (item?.exact) return pathname === to;
   return pathname === to || pathname.startsWith(`${to}/`);
 }
 
@@ -134,6 +143,15 @@ export const ManageRail: React.FC = () => {
   const scrollerRef = React.useRef<HTMLDivElement>(null);
   const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
 
+  // The tournaments being run or set up (not archived), at most three.
+  const adminTournaments = useOptionalAdminTournament()?.tournaments ?? [];
+  const activeTournaments = adminTournaments
+    .filter(
+      (x) =>
+        !x.archived && (x.status === 'in_progress' || x.status === 'setup' || x.status === 'ready')
+    )
+    .slice(0, 3);
+
   const platform: RailScope = {
     id: 'platform',
     label: t('managePage.rail.scope.platform'),
@@ -141,15 +159,43 @@ export const ManageRail: React.FC = () => {
     mark: null,
     groups: [
       {
+        key: 'home',
+        label: t('managePage.rail.groups.home'),
+        items: [
+          {
+            key: 'needsYou',
+            label: t('managePage.rail.needsYou'),
+            to: paths.manage,
+            icon: BellIcon,
+            exact: true,
+          },
+        ],
+      },
+      {
         key: 'tournament',
         label: t('managePage.rail.groups.tournament'),
         items: [
+          // The ones being run or set up, by name: one click into its Matches.
+          ...activeTournaments.map((x) => ({
+            key: `tournament-${x.id}`,
+            label: x.name,
+            to: manageTournamentPath(x.id),
+            also: [`${paths.tournaments}/${x.id}`],
+            icon: TrophyIcon,
+          })),
           {
             key: 'tournaments',
             label: t('managePage.rail.allTournaments'),
             to: paths.tournaments,
             icon: ListBulletsIcon,
+            exact: true,
           },
+        ],
+      },
+      {
+        key: 'history',
+        label: t('managePage.rail.groups.history'),
+        items: [
           {
             key: 'playedMatches',
             label: t('managePage.rail.playedMatches'),
@@ -189,20 +235,15 @@ export const ManageRail: React.FC = () => {
         ],
       },
       {
-        key: 'configuration',
-        label: t('managePage.rail.groups.configuration'),
+        key: 'setup',
+        label: t('managePage.rail.groups.setup'),
         items: [
           {
             key: 'templates',
-            label: t('managePage.rail.templates'),
+            label: t('managePage.rail.templatesAndRatings'),
             to: paths.templates,
+            also: [paths.eloTemplates],
             icon: StackIcon,
-          },
-          {
-            key: 'ratings',
-            label: t('managePage.rail.ratings'),
-            to: paths.eloTemplates,
-            icon: ChartLineUpIcon,
           },
           {
             key: 'modules',
@@ -210,12 +251,6 @@ export const ManageRail: React.FC = () => {
             to: paths.modules,
             icon: PuzzlePieceIcon,
           },
-        ],
-      },
-      {
-        key: 'site',
-        label: t('managePage.rail.groups.site'),
-        items: [
           {
             key: 'settings',
             label: t('managePage.rail.settings'),
@@ -286,7 +321,7 @@ export const ManageRail: React.FC = () => {
   const scopeOfPath =
     scopes.find((scope) =>
       scope.groups.some((group) =>
-        group.items.some((item) => !item.external && isCurrent(pathname, item.to))
+        group.items.some((item) => !item.external && isCurrent(pathname, item.to, item))
       )
     ) ?? platform;
   // Picked by hand until the next page opens; then the page's own scope.
@@ -481,7 +516,7 @@ export const ManageRail: React.FC = () => {
                 {group.label}
               </Box>
               {group.items.map((item) => {
-                const selected = !item.external && isCurrent(pathname, item.to);
+                const selected = !item.external && isCurrent(pathname, item.to, item);
                 const Icon = item.icon;
                 const linkProps = item.external
                   ? {

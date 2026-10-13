@@ -40,7 +40,13 @@ export const ManageStatusTile: React.FC<{ label: string; value: React.ReactNode 
   >
     <Box
       component="dt"
-      sx={{ fontFamily: fontMono, fontSize: textSize.xs, fontWeight: 500, lineHeight: 1.4, color: color.muted }}
+      sx={{
+        fontFamily: fontMono,
+        fontSize: textSize.xs,
+        fontWeight: 500,
+        lineHeight: 1.4,
+        color: color.muted,
+      }}
     >
       {label}
     </Box>
@@ -68,7 +74,11 @@ export const ManageStatusTile: React.FC<{ label: string; value: React.ReactNode 
  * ROUND is always there, "—" before the first one, so the strip keeps its
  * shape from the empty console to the final.
  */
-export const StatusStrip: React.FC<StatusStripProps> = ({ counts, resourceTile, showVeto = true }) => {
+export const StatusStrip: React.FC<StatusStripProps> = ({
+  counts,
+  resourceTile,
+  showVeto = true,
+}) => {
   const { t } = useTranslation();
 
   // IN VETO only for a game that has one: elsewhere it would be a zero

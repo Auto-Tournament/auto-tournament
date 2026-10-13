@@ -388,6 +388,7 @@
     }
   },
   "managePage": {
+    "tournamentNotFound": "No tournament with this id. Pick one from All tournaments.",
     "title": "Manage",
     "needsYouHeading": "Needs you",
     "noTournament": "No tournament yet",
@@ -416,9 +417,13 @@
         "tournament": "Tournament",
         "people": "People",
         "game": "Game",
+        "home": "Home",
+        "history": "History",
+        "setup": "Setup",
         "configuration": "Configuration",
         "site": "Site"
       },
+      "templatesAndRatings": "Templates & ratings",
       "allTournaments": "All tournaments",
       "switcher": "Tournament",
       "newTournament": "New tournament",

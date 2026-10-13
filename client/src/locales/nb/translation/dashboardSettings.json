@@ -388,6 +388,7 @@
     }
   },
   "managePage": {
+    "tournamentNotFound": "Ingen turnering med denne id-en. Velg en under Alle turneringer.",
     "title": "Administrer",
     "needsYouHeading": "Trenger deg",
     "noTournament": "Ingen turnering enda",
@@ -416,9 +417,13 @@
         "tournament": "Turnering",
         "people": "Deltakere",
         "game": "Spill",
+        "home": "Hjem",
+        "history": "Historikk",
+        "setup": "Oppsett",
         "configuration": "Konfigurasjon",
         "site": "Nettsted"
       },
+      "templatesAndRatings": "Maler og rangering",
       "allTournaments": "Alle turneringer",
       "switcher": "Turnering",
       "newTournament": "Ny turnering",

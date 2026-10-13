@@ -10,7 +10,10 @@ interface RecentLogProps {
   events: RecentEvent[];
 }
 
-function relativeTime(unixSeconds: number, t: (key: string, opts?: Record<string, unknown>) => string): string {
+function relativeTime(
+  unixSeconds: number,
+  t: (key: string, opts?: Record<string, unknown>) => string
+): string {
   const seconds = Math.max(0, Math.floor(Date.now() / 1000) - unixSeconds);
   if (seconds < 60) return t('managePage.needsYou.secondsAgo', { count: seconds });
   const minutes = Math.floor(seconds / 60);
@@ -28,7 +31,12 @@ export const RecentLog: React.FC<RecentLogProps> = ({ events }) => {
   const { t } = useTranslation();
 
   return (
-    <Box component="section" mt={6} data-testid="manage-recent" aria-labelledby="manage-recent-heading">
+    <Box
+      component="section"
+      mt={6}
+      data-testid="manage-recent"
+      aria-labelledby="manage-recent-heading"
+    >
       <SectionHead
         id="manage-recent-heading"
         title={t('managePage.recent.heading')}

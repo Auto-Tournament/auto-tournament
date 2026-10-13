@@ -27,6 +27,7 @@ import { api, apiErrorMessage } from '../utils/api';
 import { pageTitle } from '../utils/pageTitle';
 import { paths } from '../paths';
 import { useTopic } from '../hooks/useTopic';
+import { PageTabs } from '../components/manage/PageTabs';
 
 const MAX_MAPS = 5;
 /** Under Cloudflare's 100 MB request limit with room to spare. */
@@ -177,6 +178,13 @@ export default function ImportMatch() {
   return (
     <Box data-testid="import-match-page" sx={{ width: '100%', maxWidth: 760 }}>
       <PageHead title={t('importMatch.title')} subtitle={t('importMatch.subtitle')} />
+      <PageTabs
+        label={t('managePage.rail.groups.history')}
+        tabs={[
+          { key: 'played', label: t('managePage.rail.playedMatches'), to: paths.playedMatches },
+          { key: 'import', label: t('importMatch.title'), to: paths.importMatch },
+        ]}
+      />
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} data-testid="import-error">

@@ -42,6 +42,8 @@ import { useSnackbar } from '../contexts/SnackbarContext';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { EmptyState } from '../components/shared/EmptyState';
 import { useTranslation } from 'react-i18next';
+import { PageTabs } from '../components/manage/PageTabs';
+import { paths, manageTournamentPath } from '../paths';
 
 const TOURNAMENT_TYPE_LABELS: Record<string, string> = {
   single_elimination: 'Single Elimination',
@@ -284,14 +286,27 @@ export default function Templates() {
   };
 
   const pageHead = (
-    <PageHead
-      title={t('layout.pageTitle.templates')}
-      actions={
-        <Button variant="contained" startIcon={<PlusIcon />} onClick={() => navigate('/manage/tournament')}>
-          {t('templatesPage.header.createFromTournament')}
-        </Button>
-      }
-    />
+    <>
+      <PageHead
+        title={t('layout.pageTitle.templates')}
+        actions={
+          <Button
+            variant="contained"
+            startIcon={<PlusIcon />}
+            onClick={() => navigate(manageTournamentPath('new', 'setup'))}
+          >
+            {t('templatesPage.header.createFromTournament')}
+          </Button>
+        }
+      />
+      <PageTabs
+        label={t('managePage.rail.templatesAndRatings')}
+        tabs={[
+          { key: 'templates', label: t('managePage.rail.templates'), to: paths.templates },
+          { key: 'ratings', label: t('managePage.rail.ratings'), to: paths.eloTemplates },
+        ]}
+      />
+    </>
   );
 
   if (loading) {
@@ -317,7 +332,7 @@ export default function Templates() {
           description={t('templatesPage.emptyDescription')}
           actionLabel={t('templatesPage.header.createFromTournament')}
           actionIcon={PlusIcon}
-          onAction={() => navigate('/manage/tournament')}
+          onAction={() => navigate(manageTournamentPath('new', 'setup'))}
         />
       ) : (
         <Grid container spacing={2}>
@@ -398,8 +413,8 @@ export default function Templates() {
                       tournamentStatus === 'in_progress' || tournamentStatus === 'completed'
                         ? t('templatesPage.createFromTemplate.errors.inProgressOrCompleted')
                         : tournamentStatus === 'setup' || tournamentStatus === 'ready'
-                        ? t('templatesPage.createFromTemplate.errors.alreadyExists')
-                        : ''
+                          ? t('templatesPage.createFromTemplate.errors.alreadyExists')
+                          : ''
                     }
                   >
                     {t('templatesPage.createFromTemplate.button')}
@@ -552,7 +567,12 @@ export default function Templates() {
                   fullWidth
                   loading={loadingMaps}
                   getOptionLabel={(option) => getMapDisplayName(option)}
-                  renderInput={(params) => <TextField {...params} placeholder={t('templatesPage.edit.mapPool.chooseMaps')} />}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder={t('templatesPage.edit.mapPool.chooseMaps')}
+                    />
+                  )}
                   renderOption={(props, option) => (
                     <Box component="li" {...props} key={option}>
                       <Box display="flex" alignItems="center" gap={1} width="100%">
