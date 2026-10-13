@@ -1,6 +1,6 @@
 /**
  * Tournament Verification Rules
- * 
+ *
  * Centralized system for validating tournament configurations based on type and format.
  * Makes it easy to add new tournament types and their specific rules.
  */
@@ -196,4 +196,3 @@ export function validatePlayerCount(
 
   return { valid: true };
 }
-

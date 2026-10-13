@@ -15,7 +15,8 @@ export const TOURNAMENT_TYPES: TournamentType[] = [
   {
     value: 'single_elimination',
     label: 'Single Elimination',
-    description: "One loss and you're out. Classic bracket format used in professional tournaments.",
+    description:
+      "One loss and you're out. Classic bracket format used in professional tournaments.",
     category: 'professional',
     icon: 'EmojiEvents',
     minTeams: 2,
@@ -51,7 +52,8 @@ export const TOURNAMENT_TYPES: TournamentType[] = [
   {
     value: 'shuffle',
     label: 'Shuffle Tournament',
-    description: 'Players are dynamically shuffled into balanced teams each round. Individual player competition with ELO-based team balancing.',
+    description:
+      'Players are dynamically shuffled into balanced teams each round. Individual player competition with ELO-based team balancing.',
     category: 'party',
     icon: 'Casino',
     minTeams: 0, // Not team-based, player-based
