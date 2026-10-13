@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, ButtonBase, Dialog, IconButton, Link, Typography } from '@mui/material';
 import {
-  CheckIcon,
   InfoIcon,
   EyeIcon,
   PlayCircleIcon,
@@ -188,8 +187,6 @@ export function SkinCard({
           overflow: 'hidden',
           bgcolor: color.paper2,
           border: `1px solid ${color.rule}`,
-          ...(!pick &&
-            skin.equipped && { outline: `2px solid ${color.accent}`, outlineOffset: '3px' }),
           ...(pick?.picked && { outline: `3px solid ${color.accent}`, outlineOffset: '2px' }),
           ...(pick?.disabled && { opacity: 0.35 }),
           '&:hover': { borderColor: color.muted },
@@ -236,16 +233,30 @@ export function SkinCard({
             height: 24,
             px: 1,
             borderRadius: radii.pill,
-            bgcolor: color.accent,
-            color: color.accentInk,
+            bgcolor: withAlpha(color.paper, 0.85),
+            border: `1px solid ${color.rule}`,
+            color: color.ink,
             display: 'inline-flex',
             alignItems: 'center',
-            gap: 0.5,
+            gap: 0.75,
             fontSize: '0.6875rem',
-            fontWeight: 700,
+            fontWeight: 600,
           }}
         >
-          <CheckIcon size={12} weight="bold" aria-hidden />
+          {/* A dot per side it is on (CT blue, T amber), then the words. */}
+          {equippedOn(skin).map((team) => (
+            <Box
+              key={team}
+              aria-hidden
+              data-testid={`skin-card-side-${team === 3 ? 'ct' : 't'}`}
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                bgcolor: team === 3 ? color.sideCt : color.sideT,
+              }}
+            />
+          ))}
           {sidesLabel(skin, t)}
         </Box>
       )}
@@ -287,6 +298,13 @@ export function SkinCard({
       </IconButton>
     </Box>
   );
+}
+
+/** The sides a skin is on, CT first: a one-side weapon its side, "both" as CT and T. */
+export function equippedOn(skin: Pick<OwnedSkin, 'equippedSides' | 'side'>): Array<2 | 3> {
+  if (skin.side !== null) return [skin.side];
+  if (skin.equippedSides.includes(0)) return [3, 2];
+  return ([3, 2] as const).filter((s) => skin.equippedSides.includes(s));
 }
 
 /** Where a skin is on: "Both", "CT", "T", or "CT · T"; a one-side weapon names its side. */

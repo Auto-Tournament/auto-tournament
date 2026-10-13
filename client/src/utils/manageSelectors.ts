@@ -46,13 +46,7 @@ export interface ManageStatusCounts {
 export function computeStatusCounts(
   matches: Match[],
   /** Matches waiting for a resource, from the module's `summarizeAvailability` (0 without one). */
-  queued: number,
-  /**
-   * The tournament's type: only an elimination bracket names its last rounds
-   * (Finals, Semi-finals); a shuffle, Swiss or round robin round is "Round N",
-   * and a shuffle tournament has no veto (its maps are set per round).
-   */
-  type?: string
+  queued: number
 ): ManageStatusCounts {
   const live = matches.filter(
     (m) => (m.status === 'live' || m.status === 'loaded') && hasAssignedTeams(m)
@@ -60,7 +54,6 @@ export function computeStatusCounts(
 
   const inVeto = matches.filter(
     (m) =>
-      type !== 'shuffle' &&
       (m.status === 'pending' || m.status === 'ready') &&
       m.vetoCompleted === false &&
       hasAssignedTeams(m)
@@ -73,10 +66,7 @@ export function computeStatusCounts(
   );
   const currentRound =
     unfinished.length > 0 ? Math.min(...unfinished.map((m) => m.round)) : maxRound;
-  const named =
-    type === undefined || type === 'single_elimination' || type === 'double_elimination';
-  const roundLabel =
-    maxRound > 0 ? getRoundLabel(currentRound, named ? maxRound : undefined) : null;
+  const roundLabel = maxRound > 0 ? getRoundLabel(currentRound, maxRound) : null;
 
   return {
     live,
@@ -165,10 +155,8 @@ export function computeRecentEvents(matches: Match[], limit = 8): RecentEvent[] 
 
   for (const match of matches) {
     if (match.status !== 'completed') continue;
-    const t1 =
-      match.team1?.name ?? match.config?.team1?.name ?? i18n.t('managePage.recent.team1Fallback');
-    const t2 =
-      match.team2?.name ?? match.config?.team2?.name ?? i18n.t('managePage.recent.team2Fallback');
+    const t1 = match.team1?.name ?? match.config?.team1?.name ?? i18n.t('managePage.recent.team1Fallback');
+    const t2 = match.team2?.name ?? match.config?.team2?.name ?? i18n.t('managePage.recent.team2Fallback');
 
     for (const result of match.mapResults ?? []) {
       if (!result.completedAt) continue;

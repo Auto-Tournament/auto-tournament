@@ -18,12 +18,6 @@ import type {
   TeamsResponse,
 } from './standaloneTypes';
 
-/** A config's players: an array of { steamid } or, in a shuffle config, { steamid: name }. */
-function configSteamIds(players: unknown): string[] {
-  if (Array.isArray(players)) return players.map((p: { steamid?: string }) => p?.steamid ?? '');
-  return players && typeof players === 'object' ? Object.keys(players) : [];
-}
-
 export interface MatchTemplate {
   id: string;
   name: string;
@@ -266,8 +260,8 @@ export function useCreateManualMatchModal({
       const busyTeams = new Set<string>();
       for (const match of activeMatches) {
         const cfg = match.config;
-        const team1Players = configSteamIds(cfg?.team1?.players);
-        const team2Players = configSteamIds(cfg?.team2?.players);
+        const team1Players = (cfg?.team1?.players || []).map((p) => p.steamid);
+        const team2Players = (cfg?.team2?.players || []).map((p) => p.steamid);
         for (const id of [...team1Players, ...team2Players]) {
           if (id) {
             busyPlayers.add(id);
@@ -429,11 +423,11 @@ export function useCreateManualMatchModal({
 
   const team1DisplayName =
     team1Mode === 'existing'
-      ? (existingTeam1?.name ?? '')
+      ? existingTeam1?.name ?? ''
       : team1NewName || t('teamMatchHistory.team1');
   const team2DisplayName =
     team2Mode === 'existing'
-      ? (existingTeam2?.name ?? '')
+      ? existingTeam2?.name ?? ''
       : team2NewName || t('teamMatchHistory.team2');
 
   // Preview the config that would be sent to MatchZy Enhanced, for review step.
@@ -786,14 +780,14 @@ export function useCreateManualMatchModal({
     const trimmedSlug = slug.trim();
     const selectedMatchMaps = maps.filter((m) => m.length > 0);
 
-    console.log('[CreateManualMatchModal] handleSubmit invoked', {
-      trimmedSlug,
-      team1Id,
-      team2Id,
-      mapsCount: selectedMatchMaps.length,
-      bestOf,
-      useVeto,
-    });
+      console.log('[CreateManualMatchModal] handleSubmit invoked', {
+        trimmedSlug,
+        team1Id,
+        team2Id,
+        mapsCount: selectedMatchMaps.length,
+        bestOf,
+        useVeto,
+      });
 
     if (!trimmedSlug || selectedMatchMaps.length === 0) {
       const message = t('manualMatchModal.errors.slugAndMapsRequired');

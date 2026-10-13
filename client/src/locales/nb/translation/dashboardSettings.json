@@ -45,15 +45,7 @@
         "live_other": "{{count}} kamper pågår",
         "completed_one": "{{count}} lag deltok",
         "completed_other": "{{count}} lag deltok",
-        "winner": "Vinner: {{name}}",
-        "teamsPlayers_one": "{{count}} spiller",
-        "teamsPlayers_other": "{{count}} spillere",
-        "enteredPlayers_one": "{{count}} spiller påmeldt",
-        "enteredPlayers_other": "{{count}} spillere påmeldt",
-        "draftTeamsPlayers_one": "Utkast · {{count}} spiller",
-        "draftTeamsPlayers_other": "Utkast · {{count}} spillere",
-        "completedPlayers_one": "{{count}} spiller deltok",
-        "completedPlayers_other": "{{count}} spillere deltok"
+        "winner": "Vinner: {{name}}"
       },
       "actions": {
         "manage": "Administrer",
