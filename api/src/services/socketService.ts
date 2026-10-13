@@ -358,6 +358,16 @@ export function onlinePlayerCount(): number {
   return n;
 }
 
+/** The players with the site open right now (their `player:<id>` rooms have a socket). */
+export function onlinePlayerIds(): string[] {
+  if (!io) return [];
+  const ids: string[] = [];
+  for (const [room, sockets] of io.sockets.adapter.rooms) {
+    if (room.startsWith('player:') && sockets.size > 0) ids.push(room.slice('player:'.length));
+  }
+  return ids;
+}
+
 /** Whether the player has the site open in at least one tab. */
 export function isPlayerOnline(playerId: string): boolean {
   return (io?.sockets.adapter.rooms.get(playerRoom(playerId))?.size ?? 0) > 0;

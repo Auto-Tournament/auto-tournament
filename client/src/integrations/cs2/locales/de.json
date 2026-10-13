@@ -1890,7 +1890,37 @@
       "tournamentMatchDrops": "Tournament matches drop too (not in esports mode)",
       "levelUpDrops": "A drop for every new level",
       "tradeUp": "Trade-ups: Skins einer Stufe gegen einen der nächsten",
-      "tradeUpCount": "Skins pro Trade-up"
+      "tradeUpCount": "Skins pro Trade-up",
+      "drops": {
+        "title": "Give a drop",
+        "help": "A choice of three skins for each player, right away. Each one waits until the player opens it, on their next page view, and several wait in line.",
+        "kind": {
+          "online": "Everyone online",
+          "player": "A player",
+          "team": "A team",
+          "match": "A match"
+        },
+        "idLabel": {
+          "player": "Steam ID",
+          "team": "Team id",
+          "match": "Match id (slug)"
+        },
+        "start": "Give a drop…",
+        "cancel": "Cancel",
+        "nobody": "Nobody to give one to.",
+        "whoOnline_one": "Give a drop to the 1 player online?",
+        "whoOnline_other": "Give a drop to all {{count}} players online?",
+        "whoTeam_one": "Give a drop to the team's 1 player?",
+        "whoTeam_other": "Give a drop to the team's {{count}} players?",
+        "whoMatch_one": "Give a drop to the match's 1 player?",
+        "whoMatch_other": "Give a drop to the match's {{count}} players?",
+        "whoPlayer_one": "Give this player a drop?",
+        "whoPlayer_other": "Give this player a drop?",
+        "give_one": "Give 1 drop",
+        "give_other": "Give {{count}} drops",
+        "given_one": "Gave 1 drop.",
+        "given_other": "Gave {{count}} drops."
+      }
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "Was das heißt",

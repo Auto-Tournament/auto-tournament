@@ -44,6 +44,7 @@ import {
 } from '../../../module-sdk';
 import { rarityColor } from './rarity';
 import { SkinsInventoryAdmin } from './SkinsInventoryAdmin';
+import { GiveDropsAdmin } from './GiveDropsAdmin';
 
 const { color } = tokens;
 const RARITIES = [
@@ -1048,6 +1049,8 @@ export function SkinsAdminPage() {
           </Typography>
         </SkinsCard>
       </Box>
+
+      <GiveDropsAdmin onGiven={() => setStatsVersion((v) => v + 1)} />
 
       <SkinsInventoryAdmin onChanged={() => setStatsVersion((v) => v + 1)} />
 

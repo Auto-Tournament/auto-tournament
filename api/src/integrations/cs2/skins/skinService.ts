@@ -19,7 +19,7 @@ import { randomInt } from 'crypto';
 import fetch from 'node-fetch';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
-import { emitSkinsChanged } from '../../../services/socketService';
+import { emitSkinsChanged, onlinePlayerIds } from '../../../services/socketService';
 import { WEAPON_DEFINDEX } from './skinDefindex';
 import { knifeAndGlovePrices, priceFor, priceKey, rarityIndexByPrice } from './skinPrices';
 
@@ -528,6 +528,13 @@ async function uidOf(steamId: string): Promise<string | null> {
   return row?.uid ?? null;
 }
 
+/** Who an admin drop goes to. */
+export type DropTarget =
+  | { kind: 'player'; id: string }
+  | { kind: 'online' }
+  | { kind: 'team'; id: string }
+  | { kind: 'match'; id: string };
+
 export interface LoadoutRow {
   weapon: string;
   paint_kit: number;
@@ -824,6 +831,82 @@ export const skinService = {
     } catch (error) {
       log.warn('[Skins] Level-up drop failed', { steamId, level, error: (error as Error).message });
     }
+  },
+
+  /**
+   * Who an admin's drop goes to: one player, everyone with the site open, a
+   * team's members, or a match's players. Player uids with their names.
+   */
+  async dropTargets(target: DropTarget): Promise<Array<{ uid: string; name: string }>> {
+    let rows: Array<{ uid: string; name: string }> = [];
+    if (target.kind === 'player') {
+      rows = await db.queryAsync('SELECT uid, name FROM players WHERE id = ?', [target.id]);
+    } else if (target.kind === 'online') {
+      const ids = onlinePlayerIds();
+      if (ids.length)
+        rows = await db.queryAsync(
+          `SELECT uid, name FROM players WHERE id IN (${ids.map(() => '?').join(', ')})`,
+          ids
+        );
+    } else if (target.kind === 'team') {
+      rows = await db.queryAsync(
+        `SELECT p.uid, p.name FROM team_members m JOIN players p ON p.uid::text = m.account_uid::text
+          WHERE m.team_id = ?`,
+        [target.id]
+      );
+    } else if (target.kind === 'match') {
+      const match = await db.queryOneAsync<{
+        config: string | null;
+        team1_id: string | null;
+        team2_id: string | null;
+      }>('SELECT config, team1_id, team2_id FROM matches WHERE slug = ?', [target.id]);
+      if (match) {
+        // The match's own lineups (bots have no account), else its teams' members.
+        let steamIds: string[] = [];
+        try {
+          const config = JSON.parse(match.config ?? '{}') as {
+            team1?: { players?: Record<string, string> };
+            team2?: { players?: Record<string, string> };
+          };
+          steamIds = [config.team1, config.team2].flatMap((t) => Object.keys(t?.players ?? {}));
+        } catch {
+          steamIds = [];
+        }
+        if (steamIds.length) {
+          rows = await db.queryAsync(
+            `SELECT uid, name FROM players WHERE id IN (${steamIds.map(() => '?').join(', ')})`,
+            steamIds
+          );
+        } else {
+          const teams = [match.team1_id, match.team2_id].filter((t): t is string => !!t);
+          if (teams.length)
+            rows = await db.queryAsync(
+              `SELECT p.uid, p.name FROM team_members m JOIN players p ON p.uid::text = m.account_uid::text
+                WHERE m.team_id IN (${teams.map(() => '?').join(', ')})`,
+              teams
+            );
+        }
+      }
+    }
+    const seen = new Set<string>();
+    return rows.filter((r) => r.uid && !seen.has(String(r.uid)) && seen.add(String(r.uid)));
+  },
+
+  /**
+   * An admin's drop: a choice of three for each player, queued behind any they
+   * have not opened yet. Returns how many were given.
+   */
+  async adminDrop(uids: string[], label: string | null): Promise<number> {
+    const config = await this.config();
+    if (!config.enabled) throw new SkinError(404, 'Skins are off.');
+    let given = 0;
+    for (const uid of uids) {
+      const options = await this.pickOptions(() => this.pick(null, config.rarityWeights));
+      if (!options.length) continue;
+      await this.offerChoice(uid, options, { source: 'admin', label: label ?? undefined });
+      given += 1;
+    }
+    return given;
   },
 
   /** What players may see of the drops: the odds per rarity and per skin, and when drops happen. */

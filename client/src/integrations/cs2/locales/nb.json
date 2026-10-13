@@ -1890,7 +1890,37 @@
       "tournamentMatchDrops": "Turneringskamper gir også drops (ikke i esport-modus)",
       "levelUpDrops": "Et drop for hvert nye nivå",
       "tradeUp": "Bytte opp: skins av én grad for én av neste",
-      "tradeUpCount": "Skins per bytte"
+      "tradeUpCount": "Skins per bytte",
+      "drops": {
+        "title": "Gi en drop",
+        "help": "Et valg mellom tre skins til hver spiller, med en gang. Hver drop venter til spilleren åpner den neste gang de laster en side, og flere kan stå i kø.",
+        "kind": {
+          "online": "Alle pålogget",
+          "player": "En spiller",
+          "team": "Et lag",
+          "match": "En kamp"
+        },
+        "idLabel": {
+          "player": "Steam-ID",
+          "team": "Lag-id",
+          "match": "Kamp-id (slug)"
+        },
+        "start": "Gi en drop…",
+        "cancel": "Avbryt",
+        "nobody": "Ingen å gi til.",
+        "whoOnline_one": "Gi en drop til den 1 spilleren som er pålogget?",
+        "whoOnline_other": "Gi en drop til alle {{count}} spillerne som er pålogget?",
+        "whoTeam_one": "Gi en drop til lagets 1 spiller?",
+        "whoTeam_other": "Gi en drop til lagets {{count}} spillere?",
+        "whoMatch_one": "Gi en drop til kampens 1 spiller?",
+        "whoMatch_other": "Gi en drop til kampens {{count}} spillere?",
+        "whoPlayer_one": "Gi denne spilleren en drop?",
+        "whoPlayer_other": "Gi denne spilleren en drop?",
+        "give_one": "Gi 1 drop",
+        "give_other": "Gi {{count}} drops",
+        "given_one": "Ga 1 drop.",
+        "given_other": "Ga {{count}} drops."
+      }
     },
     "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)",
     "whatThisMeans": "Hva dette betyr",

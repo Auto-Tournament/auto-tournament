@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 706 of them, 409 behind auth —
+Every endpoint this API serves — 707 of them, 410 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -76,6 +76,7 @@ Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory mana
 | `GET` | `/api/skins/admin/players` | admin |
 | `GET` | `/api/skins/admin/players/:steamId/inventory` | admin |
 | `POST` | `/api/skins/admin/players/:steamId/skins` | admin |
+| `POST` | `/api/skins/admin/drops` | admin |
 | `DELETE` | `/api/skins/admin/skins/:id` | admin |
 
 ### Server bootstrap

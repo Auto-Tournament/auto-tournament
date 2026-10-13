@@ -29,6 +29,7 @@ import {
   skinService,
   variantOf,
   type SkinsConfig,
+  type DropTarget,
 } from './skinService';
 
 const router = Router();
@@ -646,6 +647,63 @@ router.post('/admin/players/:steamId/skins', requireAuth, async (req, res) => {
     return res.json({ success: true, id });
   } catch (error) {
     return fail(res, error, 'Giving a skin');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/admin/drops:
+ *   post:
+ *     tags: [Skins]
+ *     summary: Give a drop (a choice of three) to a player or a group
+ *     description: With `preview` true, nothing is given; the answer names who would get one.
+ *     security: [{ BearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               target:
+ *                 type: object
+ *                 properties:
+ *                   kind: { type: string, enum: [player, online, team, match] }
+ *                   id: { type: string, description: 'Steam ID, team id or match slug' }
+ *               preview: { type: boolean }
+ *               label: { type: string, description: 'Shown on the drop, e.g. "From the admins"' }
+ *     responses:
+ *       200: { description: 'Who gets one (preview), or how many were given' }
+ *       400: { description: Not a target }
+ */
+router.post('/admin/drops', requireAuth, async (req, res) => {
+  try {
+    const body = (req.body ?? {}) as {
+      target?: { kind?: string; id?: unknown };
+      preview?: boolean;
+      label?: unknown;
+    };
+    const kind = body.target?.kind;
+    const id = typeof body.target?.id === 'string' ? body.target.id.trim() : '';
+    let target: DropTarget;
+    if (kind === 'online') target = { kind };
+    else if ((kind === 'player' || kind === 'team' || kind === 'match') && id)
+      target = { kind, id };
+    else
+      return res.status(400).json({ success: false, error: 'target.kind (and id) are required.' });
+    const players = await skinService.dropTargets(target);
+    if (body.preview) {
+      return res.json({ success: true, count: players.length, names: players.map((p) => p.name) });
+    }
+    const label =
+      typeof body.label === 'string' && body.label.trim() ? body.label.trim().slice(0, 80) : null;
+    const given = await skinService.adminDrop(
+      players.map((p) => p.uid),
+      label
+    );
+    return res.json({ success: true, given });
+  } catch (error) {
+    return fail(res, error, 'Giving drops');
   }
 });
 
