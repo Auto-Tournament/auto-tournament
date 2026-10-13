@@ -1619,6 +1619,7 @@
       "tournament": "Turnering",
       "practice": "Trening",
       "fun": "Moro",
+      "tryout": "Skin-prøving",
       "custom": "Egendefinert",
       "default": "Standard for flåten",
       "none": "Ingen"
@@ -1957,6 +1958,13 @@
       "pickLabel": "Velg {{name}}",
       "unpickLabel": "Fjern {{name}}",
       "origin": "Byttet opp"
+    },
+    "tryout": {
+      "title": "Prøv dem i spillet",
+      "hint": "En treningsserver med skinsene dine. Utrust her, så endres de i spillet etter noen sekunder.",
+      "join": "Bli med",
+      "joinLabel": "Bli med på {{name}}",
+      "console": "Eller lim dette inn i CS2-konsollen"
     }
   },
   "matchRules": {
