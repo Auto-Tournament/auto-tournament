@@ -38,6 +38,10 @@ export interface ChatChannel {
   myTeam: string | null;
   unread: number;
   live?: boolean;
+  /** An admin's match chat (not their own match): an open call there, or one they opened. */
+  admin?: boolean;
+  /** The open admin call in it, and who claimed it. */
+  call?: { id: number; claimedBy: string | null; claimedByName: string | null } | null;
 }
 
 interface Thread {
@@ -266,6 +270,21 @@ function openSocket() {
     'social:changed',
   ]) {
     socket.on(event, refreshChannelsSoon);
+  }
+  // Admins: a call puts its match chat in the dock and opens it; a claim or resolve updates it.
+  socket.on(
+    'admin:call',
+    (call: { matchSlug?: string | null; team1Name?: string | null; team2Name?: string | null }) => {
+      if (!viewer.isAdmin || !call?.matchSlug) return;
+      const title =
+        call.team1Name && call.team2Name ? `${call.team1Name} vs ${call.team2Name}` : undefined;
+      void refreshChannels().then(() => openChat(`match:${call.matchSlug}`, title));
+    }
+  );
+  for (const event of ['admin:call:claimed', 'admin:call:resolved']) {
+    socket.on(event, () => {
+      if (viewer.isAdmin) refreshChannelsSoon();
+    });
   }
   socket.on('chat:typing', (who: { channel: string; playerId: string; name: string }) => {
     if (!who?.channel || who.playerId === viewer.steamId) return;

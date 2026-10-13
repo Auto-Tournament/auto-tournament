@@ -13,7 +13,7 @@
 
 import { db } from '../config/database';
 import { log } from '../utils/logger';
-import { emitAdminCall, emitAdminCallResolved } from './socketService';
+import { emitAdminCall, emitAdminCallClaimed, emitAdminCallResolved } from './socketService';
 import {
   ADMIN_CALL_MESSAGE_MAX,
   type AdminCall,
@@ -47,21 +47,26 @@ interface AdminCallRow {
   resolved_at: number | null;
   resolved_by: string | null;
   resolution_note: string | null;
+  claimed_at: number | null;
+  claimed_by: string | null;
   team1_name: string | null;
   team2_name: string | null;
   resolved_by_name: string | null;
+  claimed_by_name: string | null;
 }
 
 const SELECT_CALLS = `
   SELECT ac.*,
          t1.name AS team1_name,
          t2.name AS team2_name,
-         rp.name AS resolved_by_name
+         rp.name AS resolved_by_name,
+         cp.name AS claimed_by_name
     FROM admin_calls ac
     LEFT JOIN matches m ON m.id = ac.match_id AND m.slug = ac.match_slug
     LEFT JOIN teams t1 ON t1.id = m.team1_id
     LEFT JOIN teams t2 ON t2.id = m.team2_id
     LEFT JOIN players rp ON rp.id = ac.resolved_by
+    LEFT JOIN players cp ON cp.id = ac.claimed_by
 `;
 
 function nowSeconds(): number {
@@ -79,8 +84,7 @@ function asTeam(value: string | null): AdminCallTeam | null {
 
 function toAdminCall(row: AdminCallRow): AdminCall {
   const team = asTeam(row.player_team);
-  const teamName =
-    team === 'team1' ? row.team1_name : team === 'team2' ? row.team2_name : null;
+  const teamName = team === 'team1' ? row.team1_name : team === 'team2' ? row.team2_name : null;
   return {
     id: Number(row.id),
     callId: row.call_id,
@@ -106,6 +110,9 @@ function toAdminCall(row: AdminCallRow): AdminCall {
     resolvedBy: row.resolved_by,
     resolvedByName: row.resolved_by_name,
     resolutionNote: row.resolution_note,
+    claimedAt: iso(row.claimed_at),
+    claimedBy: row.claimed_by,
+    claimedByName: row.claimed_by_name,
   };
 }
 
@@ -178,7 +185,9 @@ export async function recordAdminCall(
   // Integrator webhooks subscribed to admin.called (e.g. a Discord relay for the admins).
   void import('./webhooks')
     .then(({ emitAdminCalledWebhook }) => emitAdminCalledWebhook(call))
-    .catch((err: unknown) => log.warn('[ADMIN CALL] admin.called webhook failed', { error: String(err) }));
+    .catch((err: unknown) =>
+      log.warn('[ADMIN CALL] admin.called webhook failed', { error: String(err) })
+    );
 
   // Keep the table small: resolved calls go after RESOLVED_RETENTION_SECONDS.
   try {
@@ -244,6 +253,44 @@ export async function resolveAdminCall(
   return { call, changed: Boolean(updated) };
 }
 
+/**
+ * Claim an open call for `by` (`release`: give it back). `null` when there is no such call;
+ * `changed: false` when it is resolved, or claimed by another admin (that claim is kept: the
+ * caller shows who has it).
+ */
+export async function claimAdminCall(
+  id: number,
+  by: string | null,
+  release = false
+): Promise<{ call: AdminCall; changed: boolean } | null> {
+  const updated = release
+    ? await db.queryOneAsync<{ id: number }>(
+        `UPDATE admin_calls SET claimed_at = NULL, claimed_by = NULL
+          WHERE id = ? AND resolved_at IS NULL AND claimed_by IS NOT DISTINCT FROM ?
+          RETURNING id`,
+        [id, by]
+      )
+    : await db.queryOneAsync<{ id: number }>(
+        `UPDATE admin_calls SET claimed_at = ?, claimed_by = ?
+          WHERE id = ? AND resolved_at IS NULL AND claimed_by IS NULL
+          RETURNING id`,
+        [nowSeconds(), by, id]
+      );
+  const call = await getAdminCall(id);
+  if (!call) return null;
+  if (updated) {
+    log.info(release ? '[ADMIN CALL] Released' : '[ADMIN CALL] Claimed', { id, by });
+    emitAdminCallClaimed({
+      id,
+      matchSlug: call.matchSlug,
+      claimedAt: call.claimedAt,
+      claimedBy: call.claimedBy,
+      claimedByName: call.claimedByName,
+    });
+  }
+  return { call, changed: Boolean(updated) };
+}
+
 /** Resolve every open call. Returns the ids it resolved. */
 export async function resolveAllAdminCalls(
   resolvedBy: string | null,
@@ -273,9 +320,14 @@ export async function resolveAllAdminCalls(
 function resolvedWebhook(call: AdminCall): void {
   void import('./webhooks')
     .then(({ emitAdminCallResolvedWebhook }) =>
-      emitAdminCallResolvedWebhook(call, { by: call.resolvedByName ?? call.resolvedBy, note: call.resolutionNote })
+      emitAdminCallResolvedWebhook(call, {
+        by: call.resolvedByName ?? call.resolvedBy,
+        note: call.resolutionNote,
+      })
     )
-    .catch((err: unknown) => log.warn('[ADMIN CALL] admin.call_resolved webhook failed', { error: String(err) }));
+    .catch((err: unknown) =>
+      log.warn('[ADMIN CALL] admin.call_resolved webhook failed', { error: String(err) })
+    );
 }
 
 function resolvedPayload(

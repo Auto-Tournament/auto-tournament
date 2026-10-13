@@ -27,6 +27,19 @@ export interface AdminCall {
   resolvedBy: string | null;
   resolvedByName: string | null;
   resolutionNote: string | null;
+  /** An admin took the call on, so the others leave it to them. */
+  claimedAt?: string | null;
+  claimedBy?: string | null;
+  claimedByName?: string | null;
+}
+
+/** `admin:call:claimed` payload: claimed, or released (`claimedBy` null). */
+export interface AdminCallClaimedEvent {
+  id: number;
+  matchSlug: string | null;
+  claimedAt: string | null;
+  claimedBy: string | null;
+  claimedByName: string | null;
 }
 
 /** `admin:call:resolved` payload. */

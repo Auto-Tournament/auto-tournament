@@ -187,6 +187,12 @@
     "mute": "Demp",
     "unmute": "Slå på lyd",
     "minimize": "Minimer",
-    "show": "Vis"
+    "show": "Vis",
+    "openChat": "Åpne chat",
+    "claim": "Ta saken",
+    "release": "Gi fra deg",
+    "claimedBy": "{{name}} har tatt den",
+    "claimedByYou": "Du har tatt den",
+    "anAdmin": "en admin"
   }
 }

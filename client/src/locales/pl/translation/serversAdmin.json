@@ -189,6 +189,12 @@
     "mute": "Wycisz",
     "unmute": "Wyłącz wyciszenie",
     "minimize": "Zminimalizuj",
-    "show": "Pokaż"
+    "show": "Pokaż",
+    "openChat": "Open chat",
+    "claim": "Claim",
+    "release": "Release",
+    "claimedBy": "Claimed by {{name}}",
+    "claimedByYou": "Claimed by you",
+    "anAdmin": "an admin"
   }
 }

@@ -926,7 +926,8 @@
       }
     },
     "callAdminConfirmTitle": "Call an admin?",
-    "callAdminConfirmBody": "An admin gets a notification and joins this chat. Call one only when you need help with the match."
+    "callAdminConfirmBody": "An admin gets a notification and joins this chat. Call one only when you need help with the match.",
+    "adminCallOpen": "An admin call is open here"
   },
   "search": {
     "open": "Search",

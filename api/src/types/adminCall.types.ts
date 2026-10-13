@@ -65,6 +65,19 @@ export interface AdminCall {
   /** That admin's player name, when known. */
   resolvedByName: string | null;
   resolutionNote: string | null;
+  /** An admin took the call on, so the others leave it to them. */
+  claimedAt: string | null;
+  claimedBy: string | null;
+  claimedByName: string | null;
+}
+
+/** `admin:call:claimed`: a call was claimed or released (`claimedBy` null). */
+export interface AdminCallClaimedEvent {
+  id: number;
+  matchSlug: string | null;
+  claimedAt: string | null;
+  claimedBy: string | null;
+  claimedByName: string | null;
 }
 
 /** Socket.IO `admin:call:resolved` payload. */

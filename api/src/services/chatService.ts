@@ -42,6 +42,12 @@ export interface ChatChannel {
   unread: number;
   /** Match channels: live, so the dock can say so. */
   live?: boolean;
+  /**
+   * An admin's match chat (not their own match): one with an open admin call, or one they
+   * joined. `call` is the open call there, with who claimed it.
+   */
+  admin?: boolean;
+  call?: { id: number; claimedBy: string | null; claimedByName: string | null } | null;
 }
 
 export interface ChatViewer {
@@ -219,9 +225,76 @@ async function unreadFor(steamId: string | null, channel: string, since = 0): Pr
   return row?.n ?? 0;
 }
 
+/**
+ * An admin's match chats: every match with an open admin call (the call puts it in every
+ * admin's dock), and the ones the admin opened (a chat_reads row). Open calls first.
+ */
+async function adminChannels(steamId: string | null): Promise<ChatChannel[]> {
+  const rows = await db.queryAsync<{
+    slug: string;
+    status: string;
+    n1: string | null;
+    n2: string | null;
+    call_id: number | null;
+    claimed_by: string | null;
+    claimed_by_name: string | null;
+  }>(
+    `SELECT m.slug, m.status, t1.name AS n1, t2.name AS n2,
+            ac.id AS call_id, ac.claimed_by, cp.name AS claimed_by_name
+       FROM matches m
+       LEFT JOIN teams t1 ON t1.id = m.team1_id
+       LEFT JOIN teams t2 ON t2.id = m.team2_id
+       LEFT JOIN LATERAL (
+         SELECT a.id, a.claimed_by FROM admin_calls a
+          WHERE a.match_slug = m.slug AND a.resolved_at IS NULL
+          ORDER BY a.received_at DESC LIMIT 1
+       ) ac ON TRUE
+       LEFT JOIN players cp ON cp.id = ac.claimed_by
+      WHERE m.status IN ('pending', 'ready', 'loaded', 'live', 'needs_decision')
+        AND (ac.id IS NOT NULL
+             OR EXISTS (SELECT 1 FROM chat_reads r
+                         WHERE r.player_id = ? AND r.channel = 'match:' || m.slug))
+      ORDER BY (ac.id IS NOT NULL) DESC, m.id DESC
+      LIMIT 10`,
+    [steamId ?? '']
+  );
+  const out: ChatChannel[] = [];
+  for (const r of rows) {
+    const channel = `match:${r.slug}`;
+    const found = await matchTeams(r.slug);
+    out.push({
+      channel,
+      kind: 'match',
+      title: r.n1 && r.n2 ? `${r.n1} vs ${r.n2}` : r.slug,
+      myTeam: null,
+      unread: await unreadFor(steamId, channel, found?.since ?? 0),
+      live: r.status === 'loaded' || r.status === 'live',
+      admin: true,
+      call:
+        r.call_id === null
+          ? null
+          : {
+              id: Number(r.call_id),
+              claimedBy: r.claimed_by,
+              claimedByName: r.claimed_by_name,
+            },
+    });
+  }
+  return out;
+}
+
 export const chatService = {
   /** The viewer's chats: their current match, their team, their party. */
   async channels(viewer: ChatViewer): Promise<ChatChannel[]> {
+    const out = await this.ownChannels(viewer);
+    if (!viewer.isAdmin) return out;
+    for (const c of await adminChannels(viewer.steamId)) {
+      if (!out.some((o) => o.channel === c.channel)) out.push(c);
+    }
+    return out;
+  },
+
+  async ownChannels(viewer: ChatViewer): Promise<ChatChannel[]> {
     const out: ChatChannel[] = [];
     const id = viewer.steamId;
     if (!id) return out;

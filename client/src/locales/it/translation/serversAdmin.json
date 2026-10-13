@@ -187,6 +187,12 @@
     "mute": "Silenzia",
     "unmute": "Riattiva audio",
     "minimize": "Riduci",
-    "show": "Mostra"
+    "show": "Mostra",
+    "openChat": "Open chat",
+    "claim": "Claim",
+    "release": "Release",
+    "claimedBy": "Claimed by {{name}}",
+    "claimedByYou": "Claimed by you",
+    "anAdmin": "an admin"
   }
 }

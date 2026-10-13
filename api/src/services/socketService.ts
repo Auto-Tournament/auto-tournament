@@ -5,7 +5,11 @@ import { log, onLogEntry } from '../utils/logger';
 import { getRealViewerSteamId } from '../utils/viewerIdentity';
 import { checkAdminAccess } from '../middleware/auth';
 import { matchChanged } from '../core/matchChangeBus';
-import type { AdminCall, AdminCallResolvedEvent } from '../types/adminCall.types';
+import type {
+  AdminCall,
+  AdminCallClaimedEvent,
+  AdminCallResolvedEvent,
+} from '../types/adminCall.types';
 import type {
   TournamentUpdateEvent,
   BracketUpdateEvent,
@@ -428,6 +432,14 @@ export function emitAdminNoticesResolved(ids: number[]): void {
 }
 
 /** Admin calls resolved, to the signed-in admins (room `admins`). */
+/** A call was claimed or released, to the signed-in admins (the others see who has it). */
+export function emitAdminCallClaimed(payload: AdminCallClaimedEvent): void {
+  if (io) {
+    io.to(ADMIN_ROOM).emit('admin:call:claimed', payload);
+    log.debug('Emitted admin call claimed', { id: payload.id });
+  }
+}
+
 export function emitAdminCallResolved(payload: AdminCallResolvedEvent): void {
   if (io) {
     io.to(ADMIN_ROOM).emit('admin:call:resolved', payload);

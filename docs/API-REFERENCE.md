@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 701 of them, 404 behind auth —
+Every endpoint this API serves — 703 of them, 406 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -1029,6 +1029,8 @@ Players calling for an admin from a game server (CS2: `.admin [message]` in Read
 | `POST` | `/api/admin-calls/resolve-all` | admin |
 | `GET` | `/api/admin-calls/:id` | admin |
 | `POST` | `/api/admin-calls/:id/resolve` | admin |
+| `POST` | `/api/admin-calls/:id/claim` | admin |
+| `POST` | `/api/admin-calls/:id/release` | admin |
 
 ### License
 
