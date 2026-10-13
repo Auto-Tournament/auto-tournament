@@ -17,7 +17,7 @@ import { useShellIntegrations, shellModule } from '../../hooks/useShellIntegrati
 import { PeopleOverviewCard } from './PeopleOverviewCard';
 import { LicenseOverviewCard } from './LicenseOverviewCard';
 import { EventLicensePrompt } from './EventLicensePrompt';
-import { paths } from '../../paths';
+import { manageTournamentPath } from '../../paths';
 import { SIGN_IN_SETTINGS_PATH } from '../../utils/signInSetup';
 import { tokens, fontDisplay } from '../../theme/tokens';
 
@@ -82,7 +82,7 @@ export function SiteOverview() {
         {canCreateTournament && (
           <Button
             component={RouterLink}
-            to={paths.tournament}
+            to={manageTournamentPath('new', 'setup')}
             variant="contained"
             data-testid="admin-home-create-tournament"
           >

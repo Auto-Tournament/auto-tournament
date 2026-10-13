@@ -91,6 +91,12 @@ export const paths = {
   tournament: '/manage/tournament',
   /** Admin: every tournament, and creating another. */
   tournaments: '/manage/tournaments',
+  /**
+   * One tournament in Manage (2026-10): its id in the address, its pages as
+   * tabs below it (matches, bracket, disputes, setup). `new` is the one being
+   * created.
+   */
+  manageTournament: '/manage/tournaments/:id',
   bracket: '/manage/bracket',
   matches: '/manage/matches',
   /** Results nobody agrees on (3.0 phase D, PR D8). */
@@ -175,9 +181,25 @@ export function matchPagePath(slug: string): string {
   return `/match/${encodeURIComponent(slug)}`;
 }
 
-/** The admin Matches page with one match open (a link an admin can share). */
-export function matchDetailsPath(slug: string): string {
-  return `${paths.matches}?match=${encodeURIComponent(slug)}`;
+/** A tournament's tabs in Manage. */
+export type ManageTournamentTab = 'matches' | 'bracket' | 'disputes' | 'setup';
+
+/** `/manage/tournaments/:id/<tab>`: one tournament in Manage (`new` while it is created). */
+export function manageTournamentPath(
+  id: number | 'new',
+  tab: ManageTournamentTab = 'matches'
+): string {
+  return `${paths.tournaments}/${id}/${tab}`;
+}
+
+/**
+ * The admin Matches page with one match open (a link an admin can share).
+ * With the tournament, its own Matches tab; without, the old address, which
+ * goes to the tournament Manage last had open.
+ */
+export function matchDetailsPath(slug: string, tournamentId?: number | null): string {
+  const base = tournamentId ? manageTournamentPath(tournamentId, 'matches') : paths.matches;
+  return `${base}?match=${encodeURIComponent(slug)}`;
 }
 
 /** `/play/:lobbyId`: a matchmaking match room. */

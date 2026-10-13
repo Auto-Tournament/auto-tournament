@@ -19,7 +19,7 @@ import { GameMark } from '../components/common/GameMark';
 import { EmptyPanel, LiveChip, PageHead } from '../components/common/ui';
 import { useTournamentList, type TournamentSummary } from '../hooks/useTournamentList';
 import { useAuth } from '../contexts/AuthContext';
-import { paths } from '../paths';
+import { manageTournamentPath } from '../paths';
 import { entriesLine, formatLine, tournamentAction, tournamentWhen } from '../utils/tournamentSummary';
 import { eliminationRoundCount, getRoundLabel } from '../utils/matchUtils';
 import { tokens, fontDisplay, fontMono, radii, textSize, withAlpha } from '../theme/tokens';
@@ -212,7 +212,7 @@ export default function Browse() {
             canCreate ? (
               <Button
                 component={RouterLink}
-                to={paths.tournament}
+                to={manageTournamentPath('new', 'setup')}
                 variant="outlined"
                 data-testid="browse-create-tournament"
               >

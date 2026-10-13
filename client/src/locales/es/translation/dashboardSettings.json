@@ -412,7 +412,10 @@
         "operate": "Operate",
         "people": "People",
         "game": "Game",
-        "site": "Site"
+        "site": "Site",
+        "home": "Home",
+        "history": "History",
+        "setup": "Setup"
       },
       "label": "Admin",
       "publicPage": "Public page",
@@ -430,7 +433,8 @@
       },
       "reports": "Reports",
       "highlights": "Highlights",
-      "license": "License"
+      "license": "License",
+      "templatesAndRatings": "Templates & ratings"
     },
     "status": {
       "live": "LIVE",
@@ -475,7 +479,8 @@
       "send": "Send",
       "success": "Announcement sent",
       "failed": "Failed to send the announcement"
-    }
+    },
+    "tournamentNotFound": "No tournament with this id. Pick one from All tournaments."
   },
   "license": {
     "title": "Licencia",

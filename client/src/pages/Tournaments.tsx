@@ -24,7 +24,7 @@ import { PageHead } from '../components/common/ui';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { useAdminTournament, type TournamentListItem } from '../contexts/AdminTournamentContext';
 import { useSnackbar } from '../contexts/SnackbarContext';
-import { paths, tournamentTabPath } from '../paths';
+import { tournamentTabPath, manageTournamentPath } from '../paths';
 import { tokens, radii, fontMono } from '../theme/tokens';
 import { api } from '../utils/api';
 import { pageTitle } from '../utils/pageTitle';
@@ -86,7 +86,7 @@ export default function Tournaments() {
 
   const open = (id: number) => {
     select(id);
-    navigate(paths.tournament);
+    navigate(manageTournamentPath(id, 'setup'));
   };
 
   const run = async (fn: () => Promise<unknown>, done: string) => {
@@ -244,18 +244,21 @@ export default function Tournaments() {
         onBlank={(name) => {
           setCreating(false);
           if (nextId) select(nextId);
-          navigate(name ? `${paths.tournament}?name=${encodeURIComponent(name)}` : paths.tournament);
+          const setup = manageTournamentPath('new', 'setup');
+          navigate(name ? `${setup}?name=${encodeURIComponent(name)}` : setup);
         }}
         onTemplate={(templateId, name) => {
           setCreating(false);
           if (nextId) select(nextId);
-          navigate(`${paths.tournament}?template=${templateId}${name ? `&name=${encodeURIComponent(name)}` : ''}`);
+          navigate(
+            `${manageTournamentPath('new', 'setup')}?template=${templateId}${name ? `&name=${encodeURIComponent(name)}` : ''}`
+          );
         }}
         onCopied={async (id) => {
           setCreating(false);
           await reload();
           select(id);
-          navigate(paths.tournament);
+          navigate(manageTournamentPath(id, 'setup'));
         }}
       />
     </Box>

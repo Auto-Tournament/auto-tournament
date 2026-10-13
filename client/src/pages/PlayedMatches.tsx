@@ -23,6 +23,7 @@ import { api } from '../utils/api';
 import { matchPagePath, paths } from '../paths';
 import { Link as RouterLink } from 'react-router-dom';
 import { fontMono, radii, textSize, tokens } from '../theme/tokens';
+import { PageTabs } from '../components/manage/PageTabs';
 
 const { color } = tokens;
 
@@ -115,6 +116,13 @@ export default function PlayedMatches() {
               )}
             </Box>
           }
+        />
+        <PageTabs
+          label={t('managePage.rail.groups.history')}
+          tabs={[
+            { key: 'played', label: t('managePage.rail.playedMatches'), to: paths.playedMatches },
+            { key: 'import', label: t('importMatch.title'), to: paths.importMatch },
+          ]}
         />
 
         <Box role="search" sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>

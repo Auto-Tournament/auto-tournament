@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { GameMark } from '../common/GameMark';
 import { EmptyPanel, LiveChip, Row, RowList, SectionHead } from '../common/ui';
 import type { TournamentSummary } from '../../hooks/useTournamentList';
-import { paths, tournamentTabPath } from '../../paths';
+import { tournamentTabPath, manageTournamentPath } from '../../paths';
 import { formatBadge } from '../../utils/tournamentSummary';
 import { tokens, textSize } from '../../theme/tokens';
 
@@ -86,9 +86,9 @@ export function TournamentsList({ tournaments, loading }: TournamentsListProps) 
   };
 
   const actionHref = (tournament: TournamentSummary, actionKey: ActionKey): string => {
-    if (actionKey === 'continueSetup') return paths.tournament;
+    if (actionKey === 'continueSetup') return manageTournamentPath(tournament.id, 'setup');
     if (actionKey === 'view') return tournamentTabPath(tournament.id);
-    return paths.manage;
+    return manageTournamentPath(tournament.id);
   };
 
   if (loading) {

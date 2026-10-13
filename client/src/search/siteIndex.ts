@@ -11,7 +11,7 @@
  * named exactly as on the page it opens. `parent` is the entry it sits in,
  * shown beside it ("Highlights › Overlays").
  */
-import { leaderboardsPath, paths } from '../paths';
+import { leaderboardsPath, paths, manageTournamentPath } from '../paths';
 import { fuzzyRank, type SearchField } from './fuzzy';
 
 export type SearchAudience = 'all' | 'player' | 'admin';
@@ -164,7 +164,7 @@ export const SITE_SEARCH_INDEX: SiteSearchEntry[] = [
   {
     key: 'newTournament',
     title: page('newTournament'),
-    to: paths.tournament,
+    to: manageTournamentPath('new', 'setup'),
     keywords: 'create tournament setup bracket format swiss round robin elimination',
     audience: 'admin',
   },

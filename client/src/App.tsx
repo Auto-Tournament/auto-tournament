@@ -19,6 +19,7 @@ import Teams from './pages/Teams';
 import Players from './pages/Players';
 import Tournament from './pages/Tournament';
 import Tournaments from './pages/Tournaments';
+import { ScopedTournamentRedirect, TournamentScope } from './components/manage/TournamentScope';
 import Bracket from './pages/Bracket';
 import Matches from './pages/Matches';
 import Disputes from './pages/Disputes';
@@ -591,16 +592,37 @@ function AppRoutes() {
         <Route path={adminRoute(paths.teams)} element={<Teams />} />
         <Route path={adminRoute(paths.players)} element={<Players />} />
         <Route path={adminRoute(paths.reports)} element={<Reports />} />
-        <Route path={adminRoute(paths.tournament)} element={<Tournament />} />
         <Route path={adminRoute(paths.tournaments)} element={<Tournaments />} />
-        <Route path={adminRoute(paths.bracket)} element={<Bracket />} />
-        <Route path={adminRoute(paths.matches)} element={<Matches />} />
+        {/* One tournament: its id in the address, its pages as tabs. */}
+        <Route path={adminRoute(paths.manageTournament)} element={<TournamentScope />}>
+          <Route index element={<Navigate to="matches" replace />} />
+          <Route path="matches" element={<Matches />} />
+          <Route path="bracket" element={<Bracket />} />
+          <Route path="disputes" element={<Disputes />} />
+          <Route path="setup" element={<Tournament />} />
+        </Route>
+        {/* Their old addresses: the tournament Manage last had open. */}
+        <Route
+          path={adminRoute(paths.tournament)}
+          element={<ScopedTournamentRedirect tab="setup" />}
+        />
+        <Route
+          path={adminRoute(paths.bracket)}
+          element={<ScopedTournamentRedirect tab="bracket" />}
+        />
+        <Route
+          path={adminRoute(paths.matches)}
+          element={<ScopedTournamentRedirect tab="matches" />}
+        />
         <Route path={`${adminRoute(paths.matches)}/:slug`} element={<MatchSlugRedirect />} />
         {/* Mounted for every instance, not only one whose game can have a
             dispute: the page itself says "nothing to settle here" when the
             tournament's module fills no queue, and a bookmarked URL is better
             answered that way than with a 404. */}
-        <Route path={adminRoute(paths.disputes)} element={<Disputes />} />
+        <Route
+          path={adminRoute(paths.disputes)}
+          element={<ScopedTournamentRedirect tab="disputes" />}
+        />
         <Route path={adminRoute(paths.playedMatches)} element={<PlayedMatches />} />
         <Route path={adminRoute(paths.importMatch)} element={<ImportMatch />} />
         <Route path={adminRoute(paths.highlights)} element={<HighlightsAdmin />} />
