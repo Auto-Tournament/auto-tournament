@@ -55,6 +55,7 @@ export type Cs2SettingKey =
   // MatchZy Enhanced v1.3.0 settings
   | 'at_autoready_enabled'
   | 'at_both_teams_unpause_required'
+  | 'at_pause_on_disconnect'
   | 'at_max_pauses_per_team'
   | 'at_pause_duration'
   | 'at_side_selection_enabled'
@@ -115,7 +116,6 @@ function integer(
     applyRequest: numberRequest(field, expected),
   };
 }
-
 
 /** Highlight video heights (16:9) and frame rates the recorder offers. */
 export const HIGHLIGHT_HEIGHTS = [720, 1080, 1440, 2160] as const;
@@ -246,11 +246,7 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
   flag('at_join_password', 'atJoinPassword', 155),
   flag('at_stop_command_available', 'atStopCommandAvailable', 160),
   flag('at_stop_command_no_damage', 'atStopCommandNoDamage', 170),
-  flag(
-    'at_use_pause_command_for_tactical_pause',
-    'atUsePauseCommandForTacticalPause',
-    180
-  ),
+  flag('at_use_pause_command_for_tactical_pause', 'atUsePauseCommandForTacticalPause', 180),
   // MatchZy Enhanced core defaults (strings)
   {
     key: 'at_hostname_format',
@@ -299,11 +295,7 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
   },
   // MatchZy Enhanced core defaults (numbers)
   kickDelay('at_series_end_kick_delay_no_demo', 'atSeriesEndKickDelayNoDemo', 220),
-  kickDelay(
-    'at_series_end_kick_delay_demo_no_upload',
-    'atSeriesEndKickDelayDemoNoUpload',
-    230
-  ),
+  kickDelay('at_series_end_kick_delay_demo_no_upload', 'atSeriesEndKickDelayDemoNoUpload', 230),
   kickDelay('at_series_end_kick_delay_demo_upload', 'atSeriesEndKickDelayDemoUpload', 240),
   // Minutes a loaded match waits in warmup before it starts, ready or not (0 = never).
   integer('at_autostart_after_minutes', 'atAutostartAfterMinutes', 245, {
@@ -320,6 +312,8 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
   // MatchZy Enhanced v1.3.0 settings
   binary('at_autoready_enabled', 'atAutoreadyEnabled', 250),
   binary('at_both_teams_unpause_required', 'atBothTeamsUnpauseRequired', 260),
+  // 5v5: pause at the next freeze time when a side is short (a player dropped), on again when full.
+  binary('at_pause_on_disconnect', 'atPauseOnDisconnect', 265),
   integer('at_max_pauses_per_team', 'atMaxPausesPerTeam', 270, {
     min: 0,
     max: 999,

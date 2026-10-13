@@ -6,6 +6,7 @@ import {
   engineCvars,
   generateMatchPassword,
   rulesFromMatchConfig,
+  pausesOnDisconnect,
 } from '../../api/src/integrations/cs2/fleet/assignConfig';
 import { validatePayload } from '../../api/src/integrations/cs2/fleet/protocol/v1';
 import type { MatchConfig } from '../../api/src/types/match.types';
@@ -93,7 +94,8 @@ test.describe('Fleet match.assign config', () => {
     expect(config.admins).toEqual([STEAM(8)]);
     expect(config.password).toBe('Pw7kQ2mZ9x');
     // Engine cvars only; the at_* ones became rules, sv_password / sv_cheats never go.
-    expect(config.cvars).toEqual({ mp_maxrounds: 24, tv_delay: 90 });
+    // …plus the pause for a player who drops (a 5v5 with no bot fill).
+    expect(config.cvars).toEqual({ mp_maxrounds: 24, tv_delay: 90, sv_matchpause_auto_5v5: 1 });
 
     const payload = { match_id: 'r1m1', epoch: 1, config_rev: 1, config };
     expect(validatePayload('match.assign', payload)).toEqual({ ok: true, errors: [] });
@@ -194,7 +196,7 @@ test.describe('Fleet match.assign config', () => {
     ]);
     expect(config.team1).toEqual({ name: 'Team 1', players: [] });
     expect(config.team2.players).toEqual([{ steamid64: STEAM(4), name: STEAM(4), role: 'player' }]);
-    expect(config.cvars).toBeUndefined();
+    expect(config.cvars).toEqual({ sv_matchpause_auto_5v5: 1 });
     expect(validatePayload('match.assign', { match_id: 'manual-1', epoch: 2, config })).toEqual({
       ok: true,
       errors: [],
@@ -211,6 +213,24 @@ test.describe('Fleet match.assign config', () => {
     expect(() =>
       buildAssignConfig(tournamentConfig({ num_maps: 1, maplist: ['de mirage'] }), 'x')
     ).toThrow(/cannot be sent/);
+  });
+
+  test('a 5v5 pauses when a player drops, unless turned off, wingman or bot-filled', () => {
+    expect(pausesOnDisconnect(tournamentConfig())).toBe(true);
+    expect(pausesOnDisconnect(tournamentConfig({ cvars: { at_pause_on_disconnect: 0 } }))).toBe(
+      false
+    );
+    expect(pausesOnDisconnect(tournamentConfig({ bot_fill: true }))).toBe(false);
+    expect(pausesOnDisconnect(tournamentConfig({ wingman: true, players_per_team: 2 }))).toBe(
+      false
+    );
+    expect(pausesOnDisconnect(tournamentConfig({ players_per_team: 1 }))).toBe(false);
+    // A match config that sets the engine cvar itself keeps its own value.
+    const own = buildAssignConfig(
+      tournamentConfig({ cvars: { sv_matchpause_auto_5v5: 0 } }),
+      'abcDEF2345'
+    );
+    expect(own.cvars).toEqual({ sv_matchpause_auto_5v5: 0 });
   });
 
   test('engine cvars: mp_/sv_/tv_/bot_ only, never the password or cheats', () => {

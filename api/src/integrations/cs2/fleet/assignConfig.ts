@@ -308,9 +308,24 @@ export function buildAssignConfig(
   if (spectators.length) out.spectators = spectators.slice(0, 64);
   const admins = (config.admins ?? []).filter((id) => typeof id === 'string' && U64.test(id));
   if (admins.length) out.admins = [...new Set(admins)].slice(0, 64);
-  const cvars = engineCvars(config.cvars);
-  if (cvars) out.cvars = cvars;
+  const cvars = engineCvars(config.cvars) ?? {};
+  // Pause when a player drops (5v5, no bot fill: bots never leave a seat empty):
+  // the engine pauses at the next freeze time, Ready Up goes on once the side is full.
+  if (pausesOnDisconnect(config) && cvars.sv_matchpause_auto_5v5 === undefined) {
+    cvars.sv_matchpause_auto_5v5 = 1;
+  }
+  if (Object.keys(cvars).length) out.cvars = cvars;
   return out;
+}
+
+/** Whether a match pauses when a side is short (pure: tested on its own). */
+export function pausesOnDisconnect(
+  config: Pick<MatchConfig, 'cvars' | 'bot_fill' | 'wingman' | 'players_per_team'>
+): boolean {
+  if (flag(config.cvars?.at_pause_on_disconnect) === false) return false;
+  if (config.bot_fill === true || config.wingman === true) return false;
+  const size = num(config.players_per_team);
+  return size === undefined || size === 5;
 }
 
 function rosterOf(

@@ -1,7 +1,5 @@
 {
-  "admins": [
-    "<test-admin-steam-id>"
-  ],
+  "admins": ["<test-admin-steam-id>"],
   "cvars": {
     "at_autoready_enabled": 0,
     "at_both_teams_unpause_required": 1,
@@ -13,6 +11,7 @@
     "at_gg_threshold": 0.8,
     "at_max_pauses_per_team": 0,
     "at_pause_duration": 0,
+    "at_pause_on_disconnect": 1,
     "at_side_selection_enabled": 1,
     "at_side_selection_time": 60,
     "mp_maxrounds": 24
@@ -20,16 +19,8 @@
   "expected_players_team1": 5,
   "expected_players_team2": 5,
   "expected_players_total": 10,
-  "map_sides": [
-    "team2_ct",
-    "team2_ct",
-    "team2_ct"
-  ],
-  "maplist": [
-    "de_ancient",
-    "de_anubis",
-    "de_nuke"
-  ],
+  "map_sides": ["team2_ct", "team2_ct", "team2_ct"],
+  "maplist": ["de_ancient", "de_anubis", "de_nuke"],
   "matchid": "<matchid>",
   "maxRounds": 24,
   "min_players_to_ready": 0,

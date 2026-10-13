@@ -1,8 +1,6 @@
 {
   "config": {
-    "admins": [
-      "<test-admin-steam-id>"
-    ],
+    "admins": ["<test-admin-steam-id>"],
     "cvars": {
       "at_autoready_enabled": 0,
       "at_both_teams_unpause_required": 1,
@@ -15,6 +13,7 @@
       "at_knife_enabled_default": 1,
       "at_max_pauses_per_team": 0,
       "at_pause_duration": 0,
+      "at_pause_on_disconnect": 1,
       "at_side_selection_enabled": 1,
       "at_side_selection_time": 60,
       "mp_maxrounds": 24,
@@ -24,16 +23,8 @@
     "expected_players_team1": 5,
     "expected_players_team2": 5,
     "expected_players_total": 10,
-    "map_sides": [
-      "team1_ct",
-      "team2_ct",
-      "knife"
-    ],
-    "maplist": [
-      "de_mirage",
-      "de_inferno",
-      "de_nuke"
-    ],
+    "map_sides": ["team1_ct", "team2_ct", "knife"],
+    "maplist": ["de_mirage", "de_inferno", "de_nuke"],
     "matchid": "<matchid>",
     "num_maps": 3,
     "players_per_team": 5,

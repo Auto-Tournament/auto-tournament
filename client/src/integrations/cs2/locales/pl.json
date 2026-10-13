@@ -1106,6 +1106,8 @@
       "pause": {
         "title": "Pauzy",
         "bothTeamsUnpause": "Wymagaj, aby obie drużyny wznowiły grę",
+        "onDisconnect": "Pauza, gdy gracz wypadnie (5v5)",
+        "onDisconnectHelp": "Przy następnym freeze time, gdy drużynie brakuje gracza; mecz rusza sam, gdy wróci (lub po 5 minutach). Nie z uzupełnianiem botami.",
         "maxPausesLabel": "Maks. liczba pauz na drużynę",
         "maxPausesHelper": "0 = nielimitowane pauzy",
         "pauseDurationLabel": "Limit czasu pauzy (sekundy)",

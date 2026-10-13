@@ -16,25 +16,27 @@ import { cs2Settings } from '../settingsReaders';
 export interface AtEnhancedCvars {
   // Auto-Ready System
   at_autoready_enabled?: 0 | 1;
-  
+
   // Pause System
   at_both_teams_unpause_required?: 0 | 1;
+  /** 5v5: pause when a side is short (a player dropped); Ready Up goes on once it is full again. */
+  at_pause_on_disconnect?: 0 | 1;
   at_max_pauses_per_team?: number;
   at_pause_duration?: number;
-  
+
   // Side Selection Timer
   at_side_selection_enabled?: 0 | 1;
   at_side_selection_time?: number;
-  
+
   // Early Match Termination (.gg)
   at_gg_enabled?: 0 | 1;
   at_gg_threshold?: number;
   at_gg_min_score_diff?: number; // Minimum score difference required for .gg (0 = disabled)
-  
+
   // Forfeit/Walkover System
   at_ffw_enabled?: 0 | 1;
   at_ffw_time?: number;
-  
+
   // Demo Recording
   at_demo_recording_enabled?: 0 | 1;
 }
@@ -49,6 +51,7 @@ const DEFAULT_AT_ENHANCED_CVARS: AtEnhancedCvars = {
 
   // PAUSES
   at_both_teams_unpause_required: 1,
+  at_pause_on_disconnect: 1,
   at_max_pauses_per_team: 0,
   at_pause_duration: 0,
 
@@ -80,13 +83,16 @@ export async function generateAtEnhancedCvars(
   // Load global settings from SettingsService (only non-null values override)
   const globalSettings = await cs2Settings.getAtEnhancedSettings();
   const globalOverrides: Partial<AtEnhancedCvars> = {};
-  
+
   // Only include non-null global settings as overrides
   if (globalSettings.at_autoready_enabled !== null) {
     globalOverrides.at_autoready_enabled = globalSettings.at_autoready_enabled;
   }
   if (globalSettings.at_both_teams_unpause_required !== null) {
     globalOverrides.at_both_teams_unpause_required = globalSettings.at_both_teams_unpause_required;
+  }
+  if (globalSettings.at_pause_on_disconnect !== null) {
+    globalOverrides.at_pause_on_disconnect = globalSettings.at_pause_on_disconnect;
   }
   if (globalSettings.at_max_pauses_per_team !== null) {
     globalOverrides.at_max_pauses_per_team = globalSettings.at_max_pauses_per_team;
@@ -118,20 +124,20 @@ export async function generateAtEnhancedCvars(
   if (globalSettings.at_demo_recording_enabled !== null) {
     globalOverrides.at_demo_recording_enabled = globalSettings.at_demo_recording_enabled;
   }
-  
+
   // Apply overrides: baseline defaults -> global settings -> explicit overrides
   const config = {
     ...DEFAULT_AT_ENHANCED_CVARS,
     ...globalOverrides,
     ...overrides, // Explicit overrides take precedence
   };
-  
+
   log.debug('Generated MatchZy Enhanced cvars', {
     tournamentType,
     globalOverrides: Object.keys(globalOverrides).length > 0 ? globalOverrides : undefined,
     config,
   });
-  
+
   return config;
 }
 
@@ -145,28 +151,30 @@ export function getDefaultAtEnhancedCvars(): AtEnhancedCvars {
 /**
  * Validate MatchZy Enhanced cvars
  */
-export function validateAtEnhancedCvars(
-  cvars: Partial<AtEnhancedCvars>
-): { valid: boolean; errors: string[] } {
+export function validateAtEnhancedCvars(cvars: Partial<AtEnhancedCvars>): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
-  
+
   // Validate boolean values (0 or 1)
   const booleanFields: (keyof AtEnhancedCvars)[] = [
     'at_autoready_enabled',
     'at_both_teams_unpause_required',
+    'at_pause_on_disconnect',
     'at_side_selection_enabled',
     'at_gg_enabled',
     'at_ffw_enabled',
     'at_demo_recording_enabled',
   ];
-  
+
   for (const field of booleanFields) {
     const value = cvars[field];
     if (value !== undefined && value !== 0 && value !== 1) {
       errors.push(`${field} must be 0 or 1, got ${value}`);
     }
   }
-  
+
   // Validate numeric ranges
   if (cvars.at_max_pauses_per_team !== undefined) {
     const val = cvars.at_max_pauses_per_team;
@@ -174,42 +182,42 @@ export function validateAtEnhancedCvars(
       errors.push(`at_max_pauses_per_team must be 0-999, got ${val}`);
     }
   }
-  
+
   if (cvars.at_pause_duration !== undefined) {
     const val = cvars.at_pause_duration;
     if (!Number.isInteger(val) || val < 0 || val > 999) {
       errors.push(`at_pause_duration must be 0-999 seconds, got ${val}`);
     }
   }
-  
+
   if (cvars.at_side_selection_time !== undefined) {
     const val = cvars.at_side_selection_time;
     if (!Number.isInteger(val) || val < 1 || val > 999) {
       errors.push(`at_side_selection_time must be 1-999 seconds, got ${val}`);
     }
   }
-  
+
   if (cvars.at_gg_threshold !== undefined) {
     const val = cvars.at_gg_threshold;
     if (typeof val !== 'number' || val < 0 || val > 1) {
       errors.push(`at_gg_threshold must be 0.0-1.0, got ${val}`);
     }
   }
-  
+
   if (cvars.at_gg_min_score_diff !== undefined) {
     const val = cvars.at_gg_min_score_diff;
     if (!Number.isInteger(val) || val < 0 || val > 16) {
       errors.push(`at_gg_min_score_diff must be 0-16, got ${val}`);
     }
   }
-  
+
   if (cvars.at_ffw_time !== undefined) {
     const val = cvars.at_ffw_time;
     if (!Number.isInteger(val) || val < 1 || val > 999) {
       errors.push(`at_ffw_time must be 1-999 seconds, got ${val}`);
     }
   }
-  
+
   return {
     valid: errors.length === 0,
     errors,
