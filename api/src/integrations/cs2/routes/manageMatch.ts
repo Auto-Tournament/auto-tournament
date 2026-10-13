@@ -89,6 +89,19 @@ export function logEntryOf(row: {
 }
 
 /**
+ * @openapi
+ * /api/game/cs2/matches/{slug}/manage:
+ *   get:
+ *     tags: [Manage a match]
+ *     summary: The admin match page's data (match, live state, server, event log)
+ *     parameters:
+ *       - { in: path, name: slug, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: "{ match, server, live, log }" }
+ *       401: { description: Not an admin }
+ *       404: { description: No such match }
+ */
+/**
  * GET /api/game/cs2/matches/:slug/manage
  *
  * The match, its live state from the Ready Up server (teams with each
@@ -177,6 +190,29 @@ router.get('/matches/:slug/manage', requireAuth, async (req: Request, res: Respo
   }
 });
 
+/**
+ * @openapi
+ * /api/game/cs2/matches/{slug}/manage/command:
+ *   post:
+ *     tags: [Manage a match]
+ *     summary: Send one Ready Up command to the match's server (logged with the admin)
+ *     parameters:
+ *       - { in: path, name: slug, required: true, schema: { type: string } }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name]
+ *             properties:
+ *               name: { type: string, enum: [pause, unpause, force_ready, start, restore_round, restart_round, restart_map, change_map, swap_teams, kick, say, end, exec] }
+ *               args: { type: object }
+ *     responses:
+ *       200: { description: The server ran it }
+ *       400: { description: Unknown command }
+ *       409: { description: The match is not on a Ready Up server }
+ */
 /**
  * POST /api/game/cs2/matches/:slug/manage/command
  * Body: { name, args? }. Sends one Ready Up command to the match's server and
