@@ -29,27 +29,50 @@ export function useAdminNotices(
   const [unread, setUnread] = useState(0);
   const [settings, setSettings] = useState<Record<string, AdminNoticeDelivery>>({});
 
-  const reload = useCallback(async () => {
-    if (!enabled) return;
-    try {
-      const res = await api.get<{
+  // Fetches only; the state is set in the callers' `.then`, never synchronously in an effect.
+  const fetchNotices = useCallback(
+    () =>
+      api
+        .get<{
+          success: boolean;
+          notices: AdminNotice[];
+          unread: number;
+          settings: Record<string, AdminNoticeDelivery>;
+        }>('/api/admin-notices')
+        .catch(() => null),
+    []
+  );
+  const apply = useCallback(
+    (
+      res: {
         success: boolean;
         notices: AdminNotice[];
         unread: number;
         settings: Record<string, AdminNoticeDelivery>;
-      }>('/api/admin-notices');
-      if (!res.success) return;
+      } | null
+    ) => {
+      // Not an admin any more, or the API is away: keep what is shown.
+      if (!res?.success) return;
       setNotices(sortNotices(res.notices ?? []));
       setUnread(Number(res.unread ?? 0));
       setSettings(res.settings ?? {});
-    } catch {
-      // Not an admin any more, or the API is away: keep what is shown.
-    }
-  }, [enabled]);
+    },
+    []
+  );
+  const reload = useCallback(async () => {
+    if (enabled) apply(await fetchNotices());
+  }, [enabled, apply, fetchNotices]);
 
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    if (!enabled) return undefined;
+    let live = true;
+    void fetchNotices().then((res) => {
+      if (live) apply(res);
+    });
+    return () => {
+      live = false;
+    };
+  }, [enabled, apply, fetchNotices]);
 
   useEffect(() => {
     if (!enabled) return undefined;
