@@ -1187,4 +1187,6 @@ export interface TournamentPlayerExtras {
   clutchesWon?: number;
   /** Times the player flashed a teammate. */
   teamFlashes?: number;
+  /** Money spent over the tournament's maps (CS2: $). */
+  moneySpent?: number;
 }

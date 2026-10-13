@@ -9,7 +9,8 @@ export type AwardKey =
   | 'mostTeamFlashes'
   | 'mostFlashAssists'
   | 'mostUtility'
-  | 'biggestGain';
+  | 'biggestGain'
+  | 'mostMoney';
 
 export interface Award {
   key: AwardKey;
@@ -63,6 +64,8 @@ export function tournamentAwards(players: OverviewPlayer[]): Award[] {
     ['bestHeadshots', headshotPct],
     ['mostClutches', (p) => p.clutchesWon ?? null],
     ['mostTeamFlashes', (p) => p.teamFlashes ?? null],
+    // Spending is only known from Ready Up servers (CS2).
+    ['mostMoney', (p) => p.moneySpent ?? null],
     ['mostFlashAssists', (p) => p.flashAssists ?? 0],
     ['mostUtility', (p) => p.utilityDamage ?? 0],
     ['biggestGain', (p) => p.eloChange ?? 0],
@@ -77,7 +80,9 @@ export function tournamentAwards(players: OverviewPlayer[]): Award[] {
         ? Math.round(value)
         : key === 'bestPlayer'
           ? value.toFixed(2)
-          : value;
+          : key === 'mostMoney'
+            ? `$${Math.round(value).toLocaleString('en-US')}`
+            : value;
     return [{ key, player, value: shown }];
   });
 }
