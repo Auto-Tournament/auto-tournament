@@ -141,6 +141,8 @@ async function getMatch(request: APIRequestContext, slug: string) {
     winner?: { id: string };
     team1Score?: number;
     team2Score?: number;
+    team1SeriesScore?: number;
+    team2SeriesScore?: number;
   };
 }
 
@@ -190,14 +192,15 @@ test.describe.serial('Series out of maps without series_end', () => {
       await startBo3(request, [team1, team2]);
       const slug = (await findMatchByTeams(request, team1.id, team2.id))!.slug;
 
-      // A 2-0 where map 2 ended 6-6 and team1 won the tiebreak read 1-0 (2026-10-13).
+      // A 2-0 where map 2 ended 6-6 and team1 won the tiebreak read 1-0 (2026-10-13). The
+      // series score is maps won (team1Score is the current map's rounds while it is live).
       await sendMapResult(request, slug, 0, [4, 0], [1, 0], 'team1');
       await sendMapResult(request, slug, 1, [6, 6], [2, 0], 'team1');
 
       await expect
-        .poll(async () => (await getMatch(request, slug)).team1Score, { timeout: 15000 })
+        .poll(async () => (await getMatch(request, slug)).team1SeriesScore, { timeout: 15000 })
         .toBe(2);
-      expect((await getMatch(request, slug)).team2Score).toBe(0);
+      expect((await getMatch(request, slug)).team2SeriesScore).toBe(0);
     }
   );
 
