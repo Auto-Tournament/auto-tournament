@@ -69,7 +69,10 @@ export function describeNotice(notice: Notice, t: TFunction, viewerId: string | 
       out.text = t('social.notice.skin');
       out.tail = str(d.name);
       out.detail = [str(d.rarity), str(d.source)].filter(Boolean).join(' · ');
-      out.to = viewerId ? playerProfilePath(viewerId) : null;
+      // The game's own link (the inventory on that skin); older notices have none.
+      out.to =
+        (str(d.url).startsWith('/') ? str(d.url) : '') ||
+        (viewerId ? playerProfilePath(viewerId) : null);
       break;
     case 'highlight':
       out.text =

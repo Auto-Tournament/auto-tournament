@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useParams } from 'react-router-dom';
 import { skinPaths } from './paths';
 import {
   Box,
@@ -85,6 +85,12 @@ export function InventoryPage() {
   const [filter, setFilter] = useState<Filter>('all');
   const [sort, setSort] = useState<'rarity' | 'newest'>('rarity');
   const [inspect, setInspect] = useState<number | null>(null);
+  // `#skin-<id>` (a new-skin notification, a shared link) opens that skin.
+  const { hash } = useLocation();
+  useEffect(() => {
+    const id = /^#skin-(\d+)$/.exec(hash)?.[1];
+    if (id) setInspect(Number(id));
+  }, [hash]);
   const [helpOpen, setHelpOpen] = useState(false);
   // The skin being dragged onto a loadout slot, and the one whose sides are being picked.
   const [dragging, setDragging] = useState<OwnedSkin | null>(null);
