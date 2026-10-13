@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useParams } from 'react-router-dom';
 import { skinPaths } from './paths';
 import {
   Box,
@@ -84,7 +84,15 @@ export function InventoryPage() {
   const [theirs, setTheirs] = useState<OwnedSkin[] | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [sort, setSort] = useState<'rarity' | 'newest'>('rarity');
-  const [inspect, setInspect] = useState<number | null>(null);
+  // `#skin-<id>` (a new-skin notification, a shared link) opens that skin.
+  const { hash } = useLocation();
+  const [inspect, setInspect] = useState<number | null>(() => skinFromHash(hash));
+  const [seenHash, setSeenHash] = useState(hash);
+  if (hash !== seenHash) {
+    setSeenHash(hash);
+    const id = skinFromHash(hash);
+    if (id !== null) setInspect(id);
+  }
   const [helpOpen, setHelpOpen] = useState(false);
   // The skin being dragged onto a loadout slot, and the one whose sides are being picked.
   const [dragging, setDragging] = useState<OwnedSkin | null>(null);
@@ -564,4 +572,10 @@ function SidePicker({
       </Box>
     </Dialog>
   );
+}
+
+/** The skin id in `#skin-<id>`, or null. */
+function skinFromHash(hash: string): number | null {
+  const id = /^#skin-(\d+)$/.exec(hash)?.[1];
+  return id ? Number(id) : null;
 }

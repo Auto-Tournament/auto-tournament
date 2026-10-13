@@ -695,6 +695,8 @@ export const skinService = {
             rarity: skin.rarity,
             image: skin.image,
             source: source.label ?? source.source,
+            // Opens the inventory on this skin (InventoryPage reads #skin-<id>).
+            url: `/inventory#skin-${row.id}`,
           },
           `skin:${row.id}`
         );
@@ -975,6 +977,8 @@ export const skinService = {
           rarity: rolled[0]!.rarity,
           image: rolled[0]!.image,
           source: source.label ?? source.source,
+          // The inventory shows the choice to pick from.
+          url: '/inventory',
         },
         `skin-choice:${row.id}`
       );
