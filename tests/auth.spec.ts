@@ -25,7 +25,8 @@ test.describe.serial('Authentication', () => {
     await page.evaluate(() => localStorage.clear());
   });
 
-  test('should display login page when not authenticated',
+  test(
+    'should display login page when not authenticated',
     {
       tag: ['@ui', '@auth', '@login'],
     },
@@ -50,7 +51,16 @@ test.describe.serial('Authentication', () => {
         await expect(page.getByTestId(testId)).toBeVisible();
       }
 
-      const local = (await (await page.request.get('/api/auth/local/status')).json()) as { setup?: boolean };
+      const local = (await (await page.request.get('/api/auth/local/status')).json()) as {
+        setup?: boolean;
+        enabled?: boolean;
+      };
+      // The username + password admin login has a visible link while it is on.
+      if (local.enabled && !local.setup) {
+        const admin = page.getByTestId('login-admin-link');
+        await expect(admin).toBeVisible();
+        await expect(admin).toHaveAttribute('href', '/login/admin');
+      }
       if (local.setup) {
         // No admin yet: the page points at /setup instead.
         await expect(page.getByTestId('login-setup-notice')).toBeVisible();
@@ -138,7 +148,8 @@ test.describe.serial('Authentication', () => {
     }
   );
 
-  test('should use ensureSignedIn helper to auto-sign-in',
+  test(
+    'should use ensureSignedIn helper to auto-sign-in',
     {
       tag: ['@ui', '@auth', '@login'],
     },

@@ -336,6 +336,21 @@ export default function Login() {
                       data-testid="login-provider-skeleton"
                     />
                   ))}
+
+                {/* The username + password admin login, while it is on (Settings → Sign-in). */}
+                {localLogin?.enabled && !localLogin.setup && (
+                  <Button
+                    component={RouterLink}
+                    to={paths.adminLogin}
+                    variant="text"
+                    color="inherit"
+                    size="small"
+                    data-testid="login-admin-link"
+                    sx={{ alignSelf: 'center', color: 'text.secondary', mt: 0.5 }}
+                  >
+                    {t('login.adminLink')}
+                  </Button>
+                )}
               </Stack>
             </Stack>
 
