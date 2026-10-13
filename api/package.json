@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.1.0",
+    "@simplewebauthn/server": "14.0.3",
     "ajv": "^8.17.1",
     "brackets-manager": "^1.7.1",
     "brackets-memory-db": "^1.0.5",

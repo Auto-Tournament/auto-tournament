@@ -377,6 +377,70 @@ router.post('/series-result', requireAuth, async (req: Request, res: Response): 
 });
 
 /**
+ * Test-only: swap the passkey verifier for a fake authenticator, or back
+ * (`{ fake: false }`). The fake accepts a browser answer whose
+ * `response.clientDataJSON` is the challenge it was given and whose
+ * `response.signature` (sign-in) or `response.attestationObject` (adding) is
+ * "fake-ok"; the credential id is the answer's `id`. That exercises the
+ * routes (challenges, sessions, owners, counters, sign-in) without a browser.
+ *
+ * POST /api/test/passkey-verifier
+ */
+router.post(
+  '/passkey-verifier',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+      res.status(403).json({ success: false, error: 'disabled in production' });
+      return;
+    }
+    const { setPasskeyVerifier } = await import('../services/localAdminPasskeys');
+    if ((req.body ?? {}).fake === false) {
+      setPasskeyVerifier(null);
+      res.json({ success: true, fake: false });
+      return;
+    }
+    const { randomBytes } = await import('crypto');
+    const challenge = () => randomBytes(16).toString('base64url');
+    type Answer = { id?: string; response?: Record<string, unknown> };
+    setPasskeyVerifier({
+      registrationOptions: async ({ rp, userName }) =>
+        ({
+          challenge: challenge(),
+          rp: { id: rp.id, name: rp.name },
+          user: { name: userName },
+        }) as never,
+      verifyRegistration: async ({ response, challenge: expected }) => {
+        const a = response as unknown as Answer;
+        if (
+          a.response?.clientDataJSON !== expected ||
+          a.response?.attestationObject !== 'fake-ok' ||
+          !a.id
+        ) {
+          return { verified: false };
+        }
+        return {
+          verified: true,
+          credential: {
+            id: a.id,
+            publicKey: new Uint8Array([1, 2, 3]),
+            counter: 0,
+            transports: ['internal'],
+          },
+        };
+      },
+      authenticationOptions: async () => ({ challenge: challenge() }) as never,
+      verifyAuthentication: async ({ response, challenge: expected, credential }) => {
+        const a = response as unknown as Answer;
+        const ok = a.response?.clientDataJSON === expected && a.response?.signature === 'fake-ok';
+        return { verified: ok, newCounter: credential.counter + 1 };
+      },
+    });
+    res.json({ success: true, fake: true });
+  }
+);
+
+/**
  * Test-only helper: create an admin session for Playwright tests.
  *
  * POST /api/test/login-admin

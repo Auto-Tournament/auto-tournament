@@ -1504,6 +1504,127 @@
         ]
       }
     },
+    "/api/auth/local/passkeys": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Your passkeys",
+        "description": "The signed-in account's passkeys (name, added, last used), for an account with an admin login.",
+        "responses": {
+          "200": {
+            "description": "`passkeys` and `available` (whether this address allows passkeys)"
+          }
+        }
+      }
+    },
+    "/api/auth/local/passkeys/login/options": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Start signing in with a passkey",
+        "description": "Same-site JSON. No username needed; the browser offers the passkeys it has for this site.",
+        "responses": {
+          "200": {
+            "description": "`options`"
+          },
+          "403": {
+            "description": "Local admin login is turned off"
+          },
+          "409": {
+            "description": "Passkeys don't work on this address"
+          }
+        }
+      }
+    },
+    "/api/auth/local/passkeys/login/verify": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Sign in with a passkey",
+        "description": "Same-site JSON: `response` from the browser. Signs the passkey's\naccount in, instead of its password and two-step code. Failures are\nthrottled per IP like password sign-in.\n",
+        "responses": {
+          "200": {
+            "description": "Signed in"
+          },
+          "401": {
+            "description": "Not a passkey for this site, or it did not check out"
+          },
+          "429": {
+            "description": "Too many attempts"
+          }
+        }
+      }
+    },
+    "/api/auth/local/passkeys/register/options": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Start adding a passkey",
+        "description": "Same-site JSON. Needs your password confirmed in the last 10 minutes\n(POST /api/auth/local/reauth; `reauthRequired` otherwise). Answers the\nWebAuthn creation options for the browser.\n",
+        "responses": {
+          "200": {
+            "description": "`options`"
+          },
+          "401": {
+            "description": "`reauthRequired`: confirm your password first"
+          },
+          "409": {
+            "description": "Passkeys don't work on this address (not https)"
+          }
+        }
+      }
+    },
+    "/api/auth/local/passkeys/register/verify": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Finish adding a passkey",
+        "description": "Same-site JSON. `response` from the browser and an optional `name` (\"MacBook\", \"Phone\").",
+        "responses": {
+          "200": {
+            "description": "`passkey`: the one added"
+          },
+          "400": {
+            "description": "The browser's answer did not check out"
+          }
+        }
+      }
+    },
+    "/api/auth/local/passkeys/{id}": {
+      "delete": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Remove one of your passkeys",
+        "description": "Same-site. Needs your password confirmed in the last 10 minutes (`reauthRequired` otherwise).",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed"
+          },
+          "401": {
+            "description": "`reauthRequired`"
+          },
+          "404": {
+            "description": "Not one of yours"
+          }
+        }
+      }
+    },
     "/api/auth/local/password": {
       "post": {
         "tags": [
@@ -17623,6 +17744,28 @@
           "Test helpers"
         ],
         "summary": "POST /api/test/packs/reseed",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/passkey-verifier": {
+      "post": {
+        "tags": [
+          "Test helpers"
+        ],
+        "summary": "POST /api/test/passkey-verifier",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {

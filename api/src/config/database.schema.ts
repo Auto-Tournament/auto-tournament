@@ -904,6 +904,20 @@ export function getSchemaSQL(): string {
       must_change_password INTEGER NOT NULL DEFAULT 0
     );
 
+    -- Passkeys of local admin accounts (services/localAdminPasskeys.ts): a
+    -- passkey signs its account in instead of the password and TOTP.
+    CREATE TABLE IF NOT EXISTS local_admin_passkeys (
+      id TEXT PRIMARY KEY, -- the credential id, base64url
+      player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      public_key TEXT NOT NULL, -- base64url COSE key
+      counter BIGINT NOT NULL DEFAULT 0,
+      transports TEXT NOT NULL DEFAULT '[]', -- JSON array
+      name TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      last_used_at INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS idx_local_admin_passkeys_player ON local_admin_passkeys(player_id);
+
     -- Sending email (services/emailService.ts): one row, set on Settings ->
     -- Email. The SMTP password is encrypted with utils/secretBox.
     CREATE TABLE IF NOT EXISTS email_settings (
