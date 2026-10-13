@@ -12,6 +12,7 @@ import { startAutoStart } from './fleet/autoStart';
 import { startVetoTimer, stopVetoTimer } from './veto/timer';
 import { startWaitingSweep, stopWaitingSweep } from './waitingSweep';
 import { startCs2AdminNotices, stopCs2AdminNotices } from './adminNotices';
+import { startGameMessages, stopGameMessages } from './fleet/gameMessages';
 import { log } from '../../utils/logger';
 import { settingsService } from '../../services/settingsService';
 import { serverService } from './services/serverService';
@@ -75,6 +76,8 @@ export async function startCs2(): Promise<void> {
   startWaitingSweep();
   // The admins' bell: crashed servers, failed updates, recorders, failing clips.
   startCs2AdminNotices();
+  // What the platform does to a match, told in game (next map, pauses, a crash recovered).
+  startGameMessages();
 
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
@@ -124,6 +127,7 @@ export function stopCs2(): void {
   healthMonitoringService.stop();
   stopVetoTimer();
   stopCs2AdminNotices();
+  stopGameMessages();
   stopWaitingSweep();
   stopMapAutoSync();
   stopFleet();

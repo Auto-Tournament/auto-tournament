@@ -11,7 +11,11 @@ import {
   type Enrolled,
 } from '../helpers/fleet';
 import { ulid } from '../../api/src/integrations/cs2/fleet/credentials';
-import { validateMessage, type Envelope, type InlineBackup } from '../../api/src/integrations/cs2/fleet/protocol/v1';
+import {
+  validateMessage,
+  type Envelope,
+  type InlineBackup,
+} from '../../api/src/integrations/cs2/fleet/protocol/v1';
 
 /**
  * Round backups end to end, with a fake Ready Up server on the fleet socket
@@ -37,7 +41,11 @@ async function enrollNew(request: APIRequestContext): Promise<Enrolled & { insta
   return { ...res.body, installId };
 }
 
-async function assign(request: APIRequestContext, matchSlug: string, serverId: string): Promise<number> {
+async function assign(
+  request: APIRequestContext,
+  matchSlug: string,
+  serverId: string
+): Promise<number> {
   const res = await request.post('/api/test/fleet/assign', {
     headers: getAuthHeader(),
     data: { matchSlug, serverId },
@@ -100,39 +108,48 @@ async function liveScore(request: APIRequestContext, slug: string): Promise<stri
   return `${m.team1Score ?? '-'}-${m.team2Score ?? '-'}`;
 }
 
+/** The platform has acked `seq`: on an ack, a ping/pong, or piggybacked on anything it sends (a say). */
 async function acked(client: FleetTestClient, seq: number): Promise<void> {
-  await client.next(
-    (m) => ['ack', 'ping', 'pong'].includes(m.type) && typeof m.ack === 'number' && m.ack >= seq,
-    5000
-  );
+  await client.next((m) => typeof m.ack === 'number' && m.ack >= seq, 5000);
 }
 
 async function listBackups(request: APIRequestContext, slug: string) {
-  const res = await request.get(`/api/game/cs2/matches/${slug}/round-backups`, { headers: getAuthHeader() });
+  const res = await request.get(`/api/game/cs2/matches/${slug}/round-backups`, {
+    headers: getAuthHeader(),
+  });
   expect(res.ok(), await res.text()).toBe(true);
   return res.json();
 }
 
-test.describe.serial('Fleet round backups: event.backup -> stored -> restore_round inline -> cmd.result', () => {
+test.describe
+  .serial('Fleet round backups: event.backup -> stored -> restore_round inline -> cmd.result', () => {
   // Matches this spec creates: cancelled afterwards, pass or fail, so the
   // allocator never hands them another spec's server.
   const openMatches: string[] = [];
   test.afterEach(async ({ request }) => {
     for (const slug of openMatches.splice(0)) {
-      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader(), data: {} });
+      await request.post(`/api/matches/${slug}/force-cancel`, {
+        headers: getAuthHeader(),
+        data: {},
+      });
     }
   });
 
   test.beforeEach(async ({ request }) => {
     expect(await signInViaRequest(request)).toBe(true);
     // Loading a match needs a webhook URL; another spec in the same shard may have cleared it.
-    const webhook = await request.put('/api/settings', { headers: getAuthHeader(), data: { webhookUrl: 'http://localhost:3000' } });
+    const webhook = await request.put('/api/settings', {
+      headers: getAuthHeader(),
+      data: { webhookUrl: 'http://localhost:3000' },
+    });
     expect(webhook.ok()).toBe(true);
     await resetEnrollRateLimit(request);
     if (!key) key = await createFleetKey(request, { name: 'round-backup-tests' });
   });
 
-  test('a backup is stored once, listed, and restored inline on the server of the epoch', async ({ request }) => {
+  test('a backup is stored once, listed, and restored inline on the server of the epoch', async ({
+    request,
+  }) => {
     const server = await enrollNew(request);
     const slug = `fleet-bk-${Date.now()}`;
     // A match row, so its live score shows on the match API. A serverId keeps
@@ -258,12 +275,24 @@ test.describe.serial('Fleet round backups: event.backup -> stored -> restore_rou
     });
 
     const after = await listBackups(request, slug);
-    expect(after.restores[0]).toMatchObject({ id: payload.audit_id, status: 'ok', commandId: cmd.id });
+    expect(after.restores[0]).toMatchObject({
+      id: payload.audit_id,
+      status: 'ok',
+      commandId: cmd.id,
+    });
 
     // The match had gone on to 3-2; the restore takes the live score back to
     // the restored backup's (round 1, 0-0), not the abandoned 3-2.
     client.send(
-      liveEvent(slug, epoch, 3, 2, 'event.round_start', { round: 6, score: { team1: 3, team2: 2 } }, 6)
+      liveEvent(
+        slug,
+        epoch,
+        3,
+        2,
+        'event.round_start',
+        { round: 6, score: { team1: 3, team2: 2 } },
+        6
+      )
     );
     await acked(client, 3);
     await expect.poll(() => liveScore(request, slug)).toBe('3-2');
@@ -303,7 +332,11 @@ test.describe.serial('Fleet round backups: event.backup -> stored -> restore_rou
     const anon = await playwright.request.newContext({ baseURL });
     expect((await anon.get(`/api/game/cs2/matches/${slug}/round-backups`)).status()).toBe(401);
     expect(
-      (await anon.post(`/api/game/cs2/matches/${slug}/round-backups/restore`, { data: { round: 1 } })).status()
+      (
+        await anon.post(`/api/game/cs2/matches/${slug}/round-backups/restore`, {
+          data: { round: 1 },
+        })
+      ).status()
     ).toBe(401);
     // The public connect route under the same prefix stays public.
     expect((await anon.get(`/api/game/cs2/matches/${slug}/connect`)).status()).not.toBe(401);
