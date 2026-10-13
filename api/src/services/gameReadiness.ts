@@ -31,7 +31,10 @@ export function gameName(game: string): string {
 }
 
 /** What each of these players still lacks for `game` (absent = ready). */
-export async function missingForGame(playerIds: string[], game: string): Promise<Map<string, Missing>> {
+export async function missingForGame(
+  playerIds: string[],
+  game: string
+): Promise<Map<string, Missing>> {
   const out = new Map<string, Missing>();
   if (playerIds.length === 0) return out;
   const marks = playerIds.map(() => '?').join(', ');
@@ -70,7 +73,10 @@ export async function missingForGame(playerIds: string[], game: string): Promise
 }
 
 export async function invitePolicy(playerId: string): Promise<InvitePolicy> {
-  const row = await db.queryOneAsync<{ party_invites_from: string | null }>('SELECT party_invites_from FROM players WHERE id = ?', [playerId]);
+  const row = await db.queryOneAsync<{ party_invites_from: string | null }>(
+    'SELECT party_invites_from FROM players WHERE id = ?',
+    [playerId]
+  );
   const value = row?.party_invites_from;
   return value === 'friends' || value === 'nobody' ? value : 'everyone';
 }
@@ -79,11 +85,18 @@ export async function invitePolicy(playerId: string): Promise<InvitePolicy> {
  * Whether `fromId` may invite `toId` to a party for `game`: true, or why not
  * ('nobody', 'friends' = friends only, 'no_game' = the game is not on their profile).
  */
-export async function canInvite(fromId: string, toId: string, game: string): Promise<true | 'nobody' | 'friends' | 'no_game'> {
+export async function canInvite(
+  fromId: string,
+  toId: string,
+  game: string
+): Promise<true | 'nobody' | 'friends' | 'no_game'> {
   const policy = await invitePolicy(toId);
   if (policy === 'nobody') return 'nobody';
   if (policy === 'friends') {
-    const friend = await db.queryOneAsync('SELECT 1 FROM friendships WHERE player_id = ? AND friend_id = ?', [toId, fromId]);
+    const friend = await db.queryOneAsync(
+      'SELECT 1 FROM friendships WHERE player_id = ? AND friend_id = ?',
+      [toId, fromId]
+    );
     if (!friend) return 'friends';
   }
   const missing = await missingForGame([toId], game);
