@@ -1761,6 +1761,7 @@
     "equipOnT": "装备到 T",
     "equipOnCt": "装备到 CT",
     "equipOnBoth": "装备到双方",
+    "takeOff": "卸下",
     "keep": "Keep in inventory",
     "inventory": "Inventory",
     "count": "{{count}} skins",

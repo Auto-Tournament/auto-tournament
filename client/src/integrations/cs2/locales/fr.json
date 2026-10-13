@@ -1761,6 +1761,7 @@
     "equipOnT": "Équiper côté T",
     "equipOnCt": "Équiper côté CT",
     "equipOnBoth": "Équiper des deux côtés",
+    "takeOff": "Retirer",
     "keep": "Keep in inventory",
     "inventory": "Inventory",
     "count": "{{count}} skins",

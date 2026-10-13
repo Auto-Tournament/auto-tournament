@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type DragEvent } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, ButtonBase, Dialog, IconButton, Link, Typography } from '@mui/material';
 import {
@@ -153,9 +153,12 @@ export function SkinCard({
   onInspect,
   showNew = false,
   pick,
+  onDragSkin,
 }: {
   skin: OwnedSkin;
   onEquip?: (skin: OwnedSkin) => void;
+  /** Dragging onto a loadout slot equips it there: called with the skin, then null when the drag ends. */
+  onDragSkin?: (skin: OwnedSkin | null) => void;
   onInspect: (skin: OwnedSkin) => void;
   showNew?: boolean;
   /** Trade-up picking: a click picks or unpicks instead of equipping. */
@@ -167,6 +170,17 @@ export function SkinCard({
       <ButtonBase
         onClick={() => (pick ? pick.onToggle(skin) : onEquip ? onEquip(skin) : onInspect(skin))}
         disabled={pick?.disabled}
+        draggable={!!onDragSkin && !pick}
+        onDragStart={
+          onDragSkin && !pick
+            ? (e: DragEvent) => {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', String(skin.id));
+                onDragSkin(skin);
+              }
+            : undefined
+        }
+        onDragEnd={onDragSkin ? () => onDragSkin(null) : undefined}
         aria-label={
           pick
             ? t(pick.picked ? 'skins.tradeUp.unpickLabel' : 'skins.tradeUp.pickLabel', {
@@ -331,17 +345,41 @@ export function SlotTile({
   label,
   skin,
   onClick,
+  onDrop,
 }: {
   label: string;
   skin: OwnedSkin | null;
   onClick?: () => void;
+  /** Set while a skin that fits this slot is being dragged: dropping equips it here. */
+  onDrop?: () => void;
 }) {
+  const [over, setOver] = useState(false);
   return (
     <Box
       data-testid="loadout-slot"
+      data-drop-target={onDrop ? 'true' : undefined}
       component={onClick ? 'button' : 'div'}
       type={onClick ? 'button' : undefined}
       onClick={onClick}
+      onDragOver={
+        onDrop
+          ? (e: DragEvent) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'move';
+              setOver(true);
+            }
+          : undefined
+      }
+      onDragLeave={onDrop ? () => setOver(false) : undefined}
+      onDrop={
+        onDrop
+          ? (e: DragEvent) => {
+              e.preventDefault();
+              setOver(false);
+              onDrop();
+            }
+          : undefined
+      }
       aria-label={
         onClick ? (skin ? `${label}: ${skin.weaponName} ${skin.name}` : label) : undefined
       }
@@ -361,6 +399,10 @@ export function SlotTile({
         border: `1px ${skin ? 'solid' : 'dashed'} ${skin ? rarityColor[skin.rarity] : color.rule}`,
         display: 'flex',
         flexDirection: 'column',
+        ...(onDrop && {
+          outline: `2px dashed ${over ? color.accent : color.muted}`,
+          outlineOffset: 2,
+        }),
       }}
     >
       {skin ? (
