@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 684 of them, 402 behind auth —
+Every endpoint this API serves — 687 of them, 402 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -58,6 +58,8 @@ Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory mana
 | `GET` | `/api/skins/status` | public |
 | `GET` | `/api/skins/odds` | public |
 | `GET` | `/api/skins/me` | public |
+| `GET` | `/api/skins/me/trade-up` | public |
+| `POST` | `/api/skins/me/trade-up` | public |
 | `POST` | `/api/skins/me/choices/:id` | public |
 | `POST` | `/api/skins/me/equip` | public |
 | `DELETE` | `/api/skins/me/equip/:slot` | public |
@@ -1265,6 +1267,7 @@ Sign-in flows, admin identity, impersonation.
 | `POST` | `/api/auth/epic/link` | public |
 | `GET` | `/api/auth/epic/callback` | public |
 | `POST` | `/api/auth/steam/link` | public |
+| `GET` | `/api/auth/oidc/logo` | public |
 | `GET` | `/api/auth/providers` | public |
 | `GET` | `/api/auth/me` | public |
 | `POST` | `/api/auth/self-register` | public |

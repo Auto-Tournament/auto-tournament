@@ -148,25 +148,33 @@ export function SkinCard({
   onEquip,
   onInspect,
   showNew = false,
+  pick,
 }: {
   skin: OwnedSkin;
   onEquip?: (skin: OwnedSkin) => void;
   onInspect: (skin: OwnedSkin) => void;
   showNew?: boolean;
+  /** Trade-up picking: a click picks or unpicks instead of equipping. */
+  pick?: { picked: boolean; disabled: boolean; onToggle: (skin: OwnedSkin) => void };
 }) {
   const { t } = useModuleTranslation('cs2');
   return (
     <Box sx={{ position: 'relative', display: 'flex' }}>
       <ButtonBase
-        onClick={() => (onEquip ? onEquip(skin) : onInspect(skin))}
+        onClick={() => (pick ? pick.onToggle(skin) : onEquip ? onEquip(skin) : onInspect(skin))}
+        disabled={pick?.disabled}
         aria-label={
-          onEquip
-            ? skin.equipped
-              ? t('skins.unequipLabel', { name: skin.name })
-              : t('skins.equipLabel', { name: skin.name })
-            : skin.name
+          pick
+            ? t(pick.picked ? 'skins.tradeUp.unpickLabel' : 'skins.tradeUp.pickLabel', {
+                name: skin.name,
+              })
+            : onEquip
+              ? skin.equipped
+                ? t('skins.unequipLabel', { name: skin.name })
+                : t('skins.equipLabel', { name: skin.name })
+              : skin.name
         }
-        aria-pressed={onEquip ? skin.equipped : undefined}
+        aria-pressed={pick ? pick.picked : onEquip ? skin.equipped : undefined}
         data-testid="skin-card"
         data-equipped={skin.equipped ? 'true' : 'false'}
         sx={{
@@ -180,7 +188,10 @@ export function SkinCard({
           overflow: 'hidden',
           bgcolor: color.paper2,
           border: `1px solid ${color.rule}`,
-          ...(skin.equipped && { outline: `2px solid ${color.accent}`, outlineOffset: '3px' }),
+          ...(!pick &&
+            skin.equipped && { outline: `2px solid ${color.accent}`, outlineOffset: '3px' }),
+          ...(pick?.picked && { outline: `3px solid ${color.accent}`, outlineOffset: '2px' }),
+          ...(pick?.disabled && { opacity: 0.35 }),
           '&:hover': { borderColor: color.muted },
           '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: '3px' },
         }}
@@ -538,7 +549,9 @@ export function InspectSkinDialog({
                       : t('skins.tournamentMatch')
                     : skin.source === 'level'
                       ? t('skins.levelUp')
-                      : t('skins.wonMatchmaking')}
+                      : skin.source === 'tradeup'
+                        ? t('skins.tradeUp.origin')
+                        : t('skins.wonMatchmaking')}
                 </Typography>
                 <Typography sx={{ fontSize: '0.8125rem', color: color.ink2 }}>
                   {[skin.sourceLabel ? sourceLabel(skin.sourceLabel) : null, date]

@@ -1773,6 +1773,23 @@
         }
       }
     },
+    "/api/auth/oidc/logo": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "The OpenID Connect button's logo (public)",
+        "description": "The image the admin uploaded under Settings > Sign-in, as PNG, JPEG, WebP or SVG. An SVG cannot run scripts here (sandboxed). 404 without one.",
+        "responses": {
+          "200": {
+            "description": "The image"
+          },
+          "404": {
+            "description": "No logo set"
+          }
+        }
+      }
+    },
     "/api/auth/providers": {
       "get": {
         "tags": [
@@ -14191,6 +14208,32 @@
           "Skins"
         ],
         "summary": "PUT /api/skins/me/showcase",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/skins/me/trade-up": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "GET /api/skins/me/trade-up",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "POST /api/skins/me/trade-up",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {

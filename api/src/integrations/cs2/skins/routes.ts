@@ -22,8 +22,10 @@ import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
 import {
+  RARITIES,
   SKIN_IMAGES_BASE,
   SkinError,
+  type Rarity,
   skinService,
   variantOf,
   type SkinsConfig,
@@ -75,7 +77,12 @@ async function playerOrStop(req: Request, res: Response): Promise<string | null>
  */
 router.get('/status', async (_req, res) => {
   try {
-    return res.json({ success: true, enabled: (await skinService.config()).enabled });
+    const config = await skinService.config();
+    return res.json({
+      success: true,
+      enabled: config.enabled,
+      tradeUp: config.enabled && config.tradeUp.enabled ? { count: config.tradeUp.count } : null,
+    });
   } catch (error) {
     return fail(res, error, 'Reading the skins status');
   }
@@ -126,6 +133,68 @@ router.get('/me', async (req, res) => {
     });
   } catch (error) {
     return fail(res, error, 'Reading the inventory');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/me/trade-up:
+ *   get:
+ *     tags: [Skins]
+ *     summary: How trade-ups work here, and what one of a grade can give
+ *     parameters:
+ *       - { in: query, name: rarity, schema: { type: string }, description: 'The grade to trade up (common … legendary)' }
+ *     responses:
+ *       200: { description: "{ enabled, count, to, skins }: the skins of the next grade, each equally likely" }
+ *   post:
+ *     tags: [Skins]
+ *     summary: Trade up skins of one grade for one random skin of the next
+ *     description: Exactly `count` of the player's weapon skins (no knives or gloves) of one grade below ancient. They leave the inventory, loadout and showcase; the new skin has their average wear.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { skinIds: { type: array, items: { type: integer } } } }
+ *     responses:
+ *       200: { description: "{ skinId, skin }" }
+ *       400: { description: Not a valid contract (count, grade, knives or gloves, not yours) }
+ *       404: { description: Skins or trade-ups are off }
+ */
+router.get('/me/trade-up', async (req, res) => {
+  try {
+    const uid = await playerOrStop(req, res);
+    if (!uid) return;
+    const { tradeUp } = await skinService.config();
+    const rarity = String(req.query.rarity ?? '');
+    const outcomes = RARITIES.includes(rarity as Rarity)
+      ? await skinService.tradeUpOutcomes(rarity as Rarity)
+      : { to: null, skins: [] };
+    return res.json({
+      success: true,
+      enabled: tradeUp.enabled,
+      count: tradeUp.count,
+      to: outcomes.to,
+      skins: outcomes.skins.map((s) => ({
+        weapon: s.weapon,
+        weaponName: s.weaponName,
+        name: s.name,
+        rarity: s.rarity,
+        imageUrl: `${SKIN_IMAGES_BASE}/${s.image}`,
+      })),
+    });
+  } catch (error) {
+    return fail(res, error, 'Reading the trade-up');
+  }
+});
+
+router.post('/me/trade-up', async (req, res) => {
+  try {
+    const uid = await playerOrStop(req, res);
+    if (!uid) return;
+    const result = await skinService.tradeUp(uid, req.body?.skinIds);
+    void loadoutChanged(uid);
+    return res.json({ success: true, skinId: result.skinId });
+  } catch (error) {
+    return fail(res, error, 'Trading up');
   }
 });
 

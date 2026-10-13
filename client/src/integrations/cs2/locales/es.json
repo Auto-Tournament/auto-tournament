@@ -1842,7 +1842,8 @@
         "source": {
           "matchmaking": "Matchmaking",
           "tournament": "Tournament",
-          "admin": "Given by an admin"
+          "admin": "Given by an admin",
+          "tradeup": "Mejora"
         },
         "remove": "Take away",
         "removeTitle": "Take this skin away?",
@@ -1876,7 +1877,9 @@
       "fiveVsFive": "These are for 5v5. Smaller modes drop less:",
       "fairRules": "Only players who played the whole game get a chance: nothing for an abandoned game or one that ended early, and a repeat against the same opponents within a day drops much less. Tournament placement rewards go only to players who played in the tournament.",
       "tournamentMatchDrops": "Tournament matches drop too (not in esports mode)",
-      "levelUpDrops": "A drop for every new level"
+      "levelUpDrops": "A drop for every new level",
+      "tradeUp": "Mejoras: skins de un grado por uno del siguiente",
+      "tradeUpCount": "Skins por mejora"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "Qué significa",
@@ -1937,6 +1940,18 @@
     "rewards": {
       "title": "Rewards",
       "choosing": "choosing a skin…"
+    },
+    "tradeUp": {
+      "start": "Mejorar",
+      "picked": "{{picked}} de {{count}} elegidos",
+      "cancel": "Cancelar",
+      "confirm": "Mejorar",
+      "gives": "Da un skin {{rarity}}, cada uno de estos {{count}} igual de probable. Su desgaste es la media de los tuyos.",
+      "help": "Elige {{count}} skins de arma de un grado (sin cuchillos ni guantes) por uno del siguiente.",
+      "failed": "No se pudo mejorar.",
+      "pickLabel": "Elegir {{name}}",
+      "unpickLabel": "Quitar {{name}}",
+      "origin": "Mejorado"
     }
   },
   "matchRules": {

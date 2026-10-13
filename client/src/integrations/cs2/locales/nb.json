@@ -1842,7 +1842,8 @@
         "source": {
           "matchmaking": "Matchmaking",
           "tournament": "Turnering",
-          "admin": "Gitt av en admin"
+          "admin": "Gitt av en admin",
+          "tradeup": "Bytte opp"
         },
         "remove": "Ta bort",
         "removeTitle": "Ta bort dette skinet?",
@@ -1876,7 +1877,9 @@
       "fiveVsFive": "Disse gjelder 5v5. Mindre moduser gir sjeldnere:",
       "fairRules": "Bare spillere som spilte hele kampen kan få noe: ingenting for en kamp noen forlot eller som sluttet tidlig, og samme motstandere igjen samme døgn gir mye sjeldnere. Plasseringspremier i turneringer går bare til spillere som spilte i turneringen.",
       "tournamentMatchDrops": "Turneringskamper gir også drops (ikke i esport-modus)",
-      "levelUpDrops": "Et drop for hvert nye nivå"
+      "levelUpDrops": "Et drop for hvert nye nivå",
+      "tradeUp": "Bytte opp: skins av én grad for én av neste",
+      "tradeUpCount": "Skins per bytte"
     },
     "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)",
     "whatThisMeans": "Hva dette betyr",
@@ -1937,6 +1940,18 @@
     "rewards": {
       "title": "Premier",
       "choosing": "velger en skin …"
+    },
+    "tradeUp": {
+      "start": "Bytt opp",
+      "picked": "{{picked}} av {{count}} valgt",
+      "cancel": "Avbryt",
+      "confirm": "Bytt opp",
+      "gives": "Gir ett {{rarity}}-skin, hvert av disse {{count}} like sannsynlig. Slitasjen er snittet av dine.",
+      "help": "Velg {{count}} våpenskins av én grad (ikke kniver eller hansker) for ett av neste grad.",
+      "failed": "Kunne ikke bytte opp.",
+      "pickLabel": "Velg {{name}}",
+      "unpickLabel": "Fjern {{name}}",
+      "origin": "Byttet opp"
     }
   },
   "matchRules": {

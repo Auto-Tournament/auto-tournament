@@ -1842,7 +1842,8 @@
         "source": {
           "matchmaking": "Matchmaking",
           "tournament": "Tournament",
-          "admin": "Given by an admin"
+          "admin": "Given by an admin",
+          "tradeup": "Trade-up"
         },
         "remove": "Take away",
         "removeTitle": "Take this skin away?",
@@ -1876,7 +1877,9 @@
       "fiveVsFive": "These are for 5v5. Smaller modes drop less:",
       "fairRules": "Only players who played the whole game get a chance: nothing for an abandoned game or one that ended early, and a repeat against the same opponents within a day drops much less. Tournament placement rewards go only to players who played in the tournament.",
       "tournamentMatchDrops": "Tournament matches drop too (not in esports mode)",
-      "levelUpDrops": "A drop for every new level"
+      "levelUpDrops": "A drop for every new level",
+      "tradeUp": "Trade-ups: Skins einer Stufe gegen einen der nächsten",
+      "tradeUpCount": "Skins pro Trade-up"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "Was das heißt",
@@ -1937,6 +1940,18 @@
     "rewards": {
       "title": "Rewards",
       "choosing": "choosing a skin…"
+    },
+    "tradeUp": {
+      "start": "Trade-up",
+      "picked": "{{picked}} von {{count}} gewählt",
+      "cancel": "Abbrechen",
+      "confirm": "Trade-up",
+      "gives": "Gibt einen {{rarity}}-Skin, jeder dieser {{count}} gleich wahrscheinlich. Die Abnutzung ist der Schnitt deiner.",
+      "help": "Wähle {{count}} Waffen-Skins einer Stufe (keine Messer oder Handschuhe) für einen der nächsten.",
+      "failed": "Trade-up fehlgeschlagen.",
+      "pickLabel": "{{name}} wählen",
+      "unpickLabel": "{{name}} abwählen",
+      "origin": "Per Trade-up"
     }
   },
   "matchRules": {

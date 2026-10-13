@@ -17,7 +17,7 @@ export interface OwnedSkin {
   slot: string;
   float: number;
   pattern: number;
-  source: 'matchmaking' | 'tournament' | 'admin' | 'level';
+  source: 'matchmaking' | 'tournament' | 'admin' | 'level' | 'tradeup';
   sourceLabel: string | null;
   sourceRef: string | null;
   place: number | null;
