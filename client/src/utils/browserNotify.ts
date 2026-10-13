@@ -30,17 +30,17 @@ function store(on: boolean): void {
 
 export function browserNotifyState(): BrowserNotifyState {
   if (!supported()) return 'unsupported';
-  if (Notification.permission === 'denied') return 'denied';
-  return stored() && Notification.permission === 'granted' ? 'on' : 'off';
+  if (window.Notification.permission === 'denied') return 'denied';
+  return stored() && window.Notification.permission === 'granted' ? 'on' : 'off';
 }
 
 /** Turn them on (asks the browser the first time) or off. Returns the new state. */
 export async function setBrowserNotify(on: boolean): Promise<BrowserNotifyState> {
   if (!supported()) return 'unsupported';
-  if (on && Notification.permission === 'default') {
-    await Notification.requestPermission();
+  if (on && window.Notification.permission === 'default') {
+    await window.Notification.requestPermission();
   }
-  store(on && Notification.permission === 'granted');
+  store(on && window.Notification.permission === 'granted');
   return browserNotifyState();
 }
 
@@ -58,7 +58,7 @@ export function browserNotify(options: {
   if (browserNotifyState() !== 'on') return;
   if (document.visibilityState === 'visible' && document.hasFocus()) return;
   try {
-    const n = new Notification(options.title, {
+    const n = new window.Notification(options.title, {
       body: options.body || undefined,
       tag: options.tag,
       icon: '/icon-192.png',
