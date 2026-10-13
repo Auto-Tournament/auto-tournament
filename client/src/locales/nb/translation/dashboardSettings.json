@@ -385,6 +385,48 @@
     "gameLinks": {
       "title": "Spillinnstillinger",
       "hint": "Hvert spill har sine egne innstillinger i menyen."
+    },
+    "sections": {
+      "label": "Innstillingsseksjoner",
+      "site": {
+        "name": "Nettsted",
+        "hint": "Navn, logo, språk"
+      },
+      "signin": {
+        "name": "Innlogging",
+        "hint": "Leverandører, admin-kontoer"
+      },
+      "email": {
+        "name": "E-post",
+        "hint": "SMTP, hva som sendes"
+      },
+      "players": {
+        "name": "Spillere",
+        "hint": "Registrering, rating"
+      },
+      "matchmaking": {
+        "name": "Matchmaking",
+        "hint": "Køer og reglene deres"
+      },
+      "news": {
+        "name": "Nyheter",
+        "hint": "Innlegg på forsiden"
+      },
+      "adminnotices": {
+        "name": "Varsler",
+        "hint": "Hva admins får beskjed om"
+      },
+      "webhooks": {
+        "name": "Integrasjoner",
+        "hint": "Webhooks"
+      },
+      "advanced": {
+        "name": "Avansert",
+        "hint": "Eksperimentelt, utvikler"
+      },
+      "module": {
+        "hint": "Modulens innstillinger"
+      }
     }
   },
   "managePage": {

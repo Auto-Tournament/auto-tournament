@@ -30,11 +30,18 @@ test.describe.serial('Settings UI', () => {
       await expect(page).toHaveTitle(/Settings/i);
       await page.waitForLoadState('networkidle');
 
-      // One page: the platform's cards, no second nav and nothing of CS2's.
-      for (const card of ['site', 'signin', 'players', 'webhooks', 'advanced']) {
+      // A list of sections beside the open one (Site first); each opens its
+      // card, and nothing of CS2's is here.
+      await expect(page.getByTestId('settings-card-site')).toBeVisible({ timeout: 15000 });
+      for (const card of ['signin', 'players', 'webhooks', 'advanced']) {
+        await page.getByTestId(`settings-section-${card}`).click();
+        await expect(page).toHaveURL(new RegExp(`section=${card}`));
         await expect(page.getByTestId(`settings-card-${card}`)).toBeVisible({ timeout: 15000 });
+        await expect(page.getByTestId(`settings-section-${card}`)).toHaveAttribute(
+          'aria-current',
+          'page'
+        );
       }
-      await expect(page.locator('[id^="settings-nav-"]')).toHaveCount(0);
       await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
 
       // CS2's settings are its Match rules page, linked from here.
