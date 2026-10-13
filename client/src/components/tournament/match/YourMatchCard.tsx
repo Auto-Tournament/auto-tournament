@@ -66,7 +66,7 @@ function TeamMark({
           component="img"
           src={logoUrl}
           alt=""
-          sx={{ width: '100%', height: '100%', objectFit: 'contain', p: '10%' }}
+          sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
       ) : (
         text

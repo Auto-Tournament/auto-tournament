@@ -9,6 +9,22 @@ import type { EnrichableMatch } from '../types/match.types';
 import type { BracketMatch } from '../types/tournament.types';
 
 /**
+ * Who won one map: its recorded winner, which counts when the rounds are level (the damage
+ * tiebreak: a 6-6 map won by team1 made a 2-0 series read 1-0); else the rounds.
+ */
+export function mapWinnerOf(row: {
+  team1_score: number;
+  team2_score: number;
+  winner_team?: string | null;
+}): 'team1' | 'team2' | null {
+  if (row.winner_team === 'team1' || row.winner_team === 'team2') return row.winner_team;
+  if (row.winner_team === 'none') return null;
+  if (row.team1_score > row.team2_score) return 'team1';
+  if (row.team2_score > row.team1_score) return 'team2';
+  return null;
+}
+
+/**
  * Enriches a match object with player stats from match events
  */
 export async function enrichMatchWithPlayerStats(
@@ -44,10 +60,18 @@ export async function enrichMatchWithScores(
   match: EnrichableMatch | BracketMatch,
   matchSlug: string
 ): Promise<void> {
+  // The series score: the series_end event; else the maps' recorded winners; else the newest
+  // round_end / map_end. A round_end of map 2 still carries the 1-0 from before it, so it must
+  // not win over the maps (a 2-0 series read 1-0, 2026-10-13).
+  const mapRows = await db.queryAsync<{ n: number }>(
+    'SELECT COUNT(*)::int AS n FROM match_map_results WHERE match_slug = ?',
+    [matchSlug]
+  );
+  const haveMaps = (mapRows[0]?.n ?? 0) > 0;
   const scoreEvent = await db.queryOneAsync<DbEventRow>(
-    `SELECT event_data FROM match_events 
-     WHERE match_slug = ? AND event_type IN ('series_end', 'round_end', 'map_end') 
-     ORDER BY received_at DESC, id DESC LIMIT 1`,
+    `SELECT event_data FROM match_events
+     WHERE match_slug = ? AND event_type IN (${haveMaps ? "'series_end'" : "'series_end', 'round_end', 'map_end'"})
+     ORDER BY (event_type = 'series_end') DESC, received_at DESC, id DESC LIMIT 1`,
     [matchSlug]
   );
 
@@ -66,17 +90,17 @@ export async function enrichMatchWithScores(
         typeof (eventData as { team1_series_score?: unknown }).team1_series_score === 'number'
           ? (eventData as { team1_series_score: number }).team1_series_score
           : typeof (eventData as { team1?: { series_score?: unknown } }).team1?.series_score ===
-            'number'
-          ? ((eventData as { team1: { series_score: number } }).team1.series_score as number)
-          : undefined;
+              'number'
+            ? ((eventData as { team1: { series_score: number } }).team1.series_score as number)
+            : undefined;
 
       const team2Series =
         typeof (eventData as { team2_series_score?: unknown }).team2_series_score === 'number'
           ? (eventData as { team2_series_score: number }).team2_series_score
           : typeof (eventData as { team2?: { series_score?: unknown } }).team2?.series_score ===
-            'number'
-          ? ((eventData as { team2: { series_score: number } }).team2.series_score as number)
-          : undefined;
+              'number'
+            ? ((eventData as { team2: { series_score: number } }).team2.series_score as number)
+            : undefined;
 
       if (team1Series !== undefined) {
         match.team1Score = team1Series;
@@ -94,17 +118,18 @@ export async function enrichMatchWithScores(
     const rows = await db.queryAsync<{
       team1_score: number;
       team2_score: number;
-    }>('SELECT team1_score, team2_score FROM match_map_results WHERE match_slug = ?', [matchSlug]);
+      winner_team: string | null;
+    }>('SELECT team1_score, team2_score, winner_team FROM match_map_results WHERE match_slug = ?', [
+      matchSlug,
+    ]);
 
     if (rows.length > 0) {
       let team1MapsWon = 0;
       let team2MapsWon = 0;
       for (const row of rows) {
-        if (row.team1_score > row.team2_score) {
-          team1MapsWon += 1;
-        } else if (row.team2_score > row.team1_score) {
-          team2MapsWon += 1;
-        }
+        const side = mapWinnerOf(row);
+        if (side === 'team1') team1MapsWon += 1;
+        else if (side === 'team2') team2MapsWon += 1;
       }
       match.team1Score = team1MapsWon;
       match.team2Score = team2MapsWon;
@@ -121,11 +146,9 @@ export async function enrichMatchWithScores(
   const anyMatch = match as EnrichableMatch & BracketMatch & { status?: string };
   if (
     anyMatch.status === 'completed' &&
-    (
-      match.team1Score === undefined ||
+    (match.team1Score === undefined ||
       match.team2Score === undefined ||
-      ((match.team1Score ?? 0) === 0 && (match.team2Score ?? 0) === 0)
-    ) &&
+      ((match.team1Score ?? 0) === 0 && (match.team2Score ?? 0) === 0)) &&
     anyMatch.winner?.id &&
     anyMatch.team1?.id &&
     anyMatch.team2?.id &&
@@ -234,9 +257,9 @@ export function applyScoreFields(
       match.team2Score = fromResults.team2;
     }
     match.team1SeriesScore =
-      typeof match.team1Score === 'number' ? match.team1Score : fromResults?.team1 ?? 0;
+      typeof match.team1Score === 'number' ? match.team1Score : (fromResults?.team1 ?? 0);
     match.team2SeriesScore =
-      typeof match.team2Score === 'number' ? match.team2Score : fromResults?.team2 ?? 0;
+      typeof match.team2Score === 'number' ? match.team2Score : (fromResults?.team2 ?? 0);
     // Rounds on the last map played, so a finished BO1 still reports its
     // map score (13-7) next to the series score (1-0).
     const lastMap = fromResults ? mapResults![mapResults!.length - 1] : null;
@@ -252,8 +275,8 @@ export function applyScoreFields(
     // Between maps the live stats keep the finished map's rounds until the
     // next map goes live; that score does not belong to the current map.
     const inWarmup = liveStats.status === 'warmup';
-    match.team1MapScore = inWarmup ? 0 : liveStats.team1Score ?? 0;
-    match.team2MapScore = inWarmup ? 0 : liveStats.team2Score ?? 0;
+    match.team1MapScore = inWarmup ? 0 : (liveStats.team1Score ?? 0);
+    match.team2MapScore = inWarmup ? 0 : (liveStats.team2Score ?? 0);
     match.team1Score = match.team1MapScore;
     match.team2Score = match.team2MapScore;
   } else {

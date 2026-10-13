@@ -24,7 +24,15 @@ import { decideExhaustedSeries, isSeriesOutOfMaps } from '../../api/src/utils/ex
  * @tag regression
  */
 
-const MAPS = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'];
+const MAPS = [
+  'de_mirage',
+  'de_inferno',
+  'de_ancient',
+  'de_anubis',
+  'de_dust2',
+  'de_vertigo',
+  'de_nuke',
+];
 
 const HEADERS = {
   'Content-Type': 'application/json',
@@ -48,8 +56,11 @@ test.describe('Exhausted series decision (unit)', () => {
 
   test('maps won decide first, then rounds, then map-0 damage, else an admin', () => {
     expect(
-      decideExhaustedSeries([map(0, 13, 5, 'team1'), map(1, 5, 13, 'team2'), map(2, 13, 11, 'team1')])
-        .winner
+      decideExhaustedSeries([
+        map(0, 13, 5, 'team1'),
+        map(1, 5, 13, 'team2'),
+        map(2, 13, 11, 'team1'),
+      ]).winner
     ).toBe('team1');
 
     // The QA grand final: draw, then one map each. team2 has more rounds.
@@ -58,14 +69,22 @@ test.describe('Exhausted series decision (unit)', () => {
       map(1, 13, 9, 'team1'),
       map(2, 7, 13, 'team2'),
     ]);
-    expect(qa).toMatchObject({ winner: 'team2', decidedBy: 'rounds', team1Rounds: 32, team2Rounds: 34 });
+    expect(qa).toMatchObject({
+      winner: 'team2',
+      decidedBy: 'rounds',
+      team1Rounds: 32,
+      team2Rounds: 34,
+    });
 
     const levelRounds = [map(0, 12, 12, 'none'), map(1, 13, 11, 'team1'), map(2, 11, 13, 'team2')];
     expect(decideExhaustedSeries(levelRounds, { team1: 2400, team2: 2650 })).toMatchObject({
       winner: 'team2',
       decidedBy: 'map0_damage',
     });
-    expect(decideExhaustedSeries(levelRounds, null)).toMatchObject({ winner: null, decidedBy: 'admin' });
+    expect(decideExhaustedSeries(levelRounds, null)).toMatchObject({
+      winner: null,
+      decidedBy: 'admin',
+    });
   });
 });
 
@@ -120,6 +139,10 @@ async function getMatch(request: APIRequestContext, slug: string) {
     team1?: { id: string };
     team2?: { id: string };
     winner?: { id: string };
+    team1Score?: number;
+    team2Score?: number;
+    team1SeriesScore?: number;
+    team2SeriesScore?: number;
   };
 }
 
@@ -159,6 +182,25 @@ test.describe.serial('Series out of maps without series_end', () => {
       expect(match.winner?.id).toBe(match.team2?.id);
       // Last played map, never an index past the maplist.
       expect(match.mapNumber).toBe(2);
+    }
+  );
+
+  test(
+    'a map won on the damage tiebreak counts in the series score',
+    { tag: ['@api', '@regression'] },
+    async ({ request }) => {
+      await startBo3(request, [team1, team2]);
+      const slug = (await findMatchByTeams(request, team1.id, team2.id))!.slug;
+
+      // A 2-0 where map 2 ended 6-6 and team1 won the tiebreak read 1-0 (2026-10-13). The
+      // series score is maps won (team1Score is the current map's rounds while it is live).
+      await sendMapResult(request, slug, 0, [4, 0], [1, 0], 'team1');
+      await sendMapResult(request, slug, 1, [6, 6], [2, 0], 'team1');
+
+      await expect
+        .poll(async () => (await getMatch(request, slug)).team1SeriesScore, { timeout: 15000 })
+        .toBe(2);
+      expect((await getMatch(request, slug)).team2SeriesScore).toBe(0);
     }
   );
 
