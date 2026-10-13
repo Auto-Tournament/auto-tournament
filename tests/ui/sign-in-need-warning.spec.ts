@@ -34,6 +34,13 @@ test(
         '/manage/settings?section=signin'
       );
 
+      // Every tournament goes (other specs leave live ones behind), so setup opens fresh.
+      const list = (await (await request.get('/api/tournaments', { headers })).json()) as {
+        tournaments?: Array<{ id: number }>;
+      };
+      for (const t of list.tournaments ?? []) {
+        await request.delete(`/api/tournament?tournamentId=${t.id}`, { headers });
+      }
       await request.delete('/api/tournament', { headers });
       await page.goto('/manage/tournament');
       await expect(page.getByTestId('sign-in-need-cs2')).toBeVisible({ timeout: 15000 });
