@@ -506,6 +506,7 @@ E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE
 | `POST` | `/api/test/fleet/age-token` | admin |
 | `POST` | `/api/test/fleet/expire-key` | admin |
 | `POST` | `/api/test/fleet/assign` | admin |
+| `POST` | `/api/test/fleet/stattrak` | admin |
 | `POST` | `/api/test/fleet/send` | admin |
 | `GET` | `/api/test/fleet/live-state/:slug` | admin |
 | `GET` | `/api/test/fleet/events/:serverId` | admin |

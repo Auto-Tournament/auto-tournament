@@ -186,6 +186,14 @@ router.post('/fleet/assign', requireAuth, async (req: Request, res: Response): P
   res.json({ success: true, epoch: record.epoch, record });
 });
 
+/** POST /api/test/fleet/stattrak  { increments }: a skins.stattrak report, as from a server. */
+router.post('/fleet/stattrak', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!fleetTestGuard(res)) return;
+  const { skinService } = await import('../skins/skinService');
+  const increments = Array.isArray(req.body?.increments) ? req.body.increments : [];
+  res.json({ success: true, counted: await skinService.addStatTrakKills(increments) });
+});
+
 router.post('/fleet/send', requireAuth, async (req: Request, res: Response): Promise<void> => {
   if (!fleetTestGuard(res)) return;
   const { serverId, type, payload, epoch } = (req.body || {}) as {

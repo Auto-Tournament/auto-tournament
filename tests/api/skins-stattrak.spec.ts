@@ -3,7 +3,6 @@ import { getAuthHeader, signInAsPlayerViaRequest, signInViaRequest } from '../he
 import {
   loadoutPayload,
   rollStatTrak,
-  skinService,
   statTrakCapable,
 } from '../../api/src/integrations/cs2/skins/skinService';
 import { WEAPON_DEFINDEX } from '../../api/src/integrations/cs2/skins/skinDefindex';
@@ -79,11 +78,17 @@ test(
         await player.post('/api/skins/me/equip', { data: { skinId: skin.id, team: 0 } });
       }
 
-      const counted = await skinService.addStatTrakKills([
-        { steamid64: steamId, defindex: WEAPON_DEFINDEX[skin.weapon], kills: 3 },
-        { steamid64: steamId, defindex: WEAPON_DEFINDEX[skin.weapon], kills: 2 },
-      ]);
-      expect(counted).toBe(2);
+      const reported = await request.post('/api/test/fleet/stattrak', {
+        headers,
+        data: {
+          increments: [
+            { steamid64: steamId, defindex: WEAPON_DEFINDEX[skin.weapon], kills: 3 },
+            { steamid64: steamId, defindex: WEAPON_DEFINDEX[skin.weapon], kills: 2 },
+          ],
+        },
+      });
+      expect(reported.ok(), await reported.text()).toBe(true);
+      expect((await reported.json()).counted).toBe(2);
       const after = (await (await player.get('/api/skins/me')).json()).inventory as Array<{
         id: number;
         stattrak: number | null;
