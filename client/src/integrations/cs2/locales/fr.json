@@ -1621,7 +1621,8 @@
       "fun": "Fun",
       "custom": "Personnalisé",
       "default": "Défaut de la flotte",
-      "none": "Aucun"
+      "none": "Aucun",
+      "tryout": "Skin tryout"
     },
     "plugin": {
       "fleet": "Liaison flotte",
@@ -1957,6 +1958,13 @@
       "pickLabel": "Choisir {{name}}",
       "unpickLabel": "Retirer {{name}}",
       "origin": "Obtenu par échange"
+    },
+    "tryout": {
+      "title": "Try them in game",
+      "hint": "A practice server with your skins. Equip here and they change in game within seconds.",
+      "join": "Join",
+      "joinLabel": "Join {{name}}",
+      "console": "Or paste this in the CS2 console"
     }
   },
   "matchRules": {

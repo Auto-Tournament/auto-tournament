@@ -89,7 +89,7 @@ function pickedMaps(vetoState: string | null | undefined): string[] {
  * and nothing happened; the same link with the IP joined). Null when it does
  * not resolve quickly; the client then falls back to the host.
  */
-async function connectIp(host: string | null | undefined): Promise<string | null> {
+export async function connectIp(host: string | null | undefined): Promise<string | null> {
   if (!host) return null;
   if (isIP(host)) return host;
   try {

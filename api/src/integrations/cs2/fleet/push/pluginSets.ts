@@ -1,6 +1,6 @@
 /**
  * Ready Up plugin sets: which plugins a server runs, picked from presets
- * (Tournament, Practice, Fun) or ticked one by one, and applied with
+ * (Tournament, Practice, Fun, Skin tryout) or ticked one by one, and applied with
  * `cmd plugins.set` (./controls.ts). Ready Up keeps the choice across
  * restarts (plugins.json).
  *
@@ -60,6 +60,8 @@ export const PLUGIN_PRESETS = {
   tournament: ['match', 'essentials', 'whitelist'],
   practice: ['practice', 'essentials'],
   fun: ['match', 'skins', 'midas', 'deathmatch', 'essentials'],
+  // Skin tryout: practice with skins, no matches; the inventory links to it.
+  tryout: ['practice', 'skins', 'essentials'],
 } as const satisfies Record<string, readonly CatalogPlugin[]>;
 
 export type PluginPresetName = keyof typeof PLUGIN_PRESETS;

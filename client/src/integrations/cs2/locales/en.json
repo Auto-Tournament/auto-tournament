@@ -1619,6 +1619,7 @@
       "tournament": "Tournament",
       "practice": "Practice",
       "fun": "Fun",
+      "tryout": "Skin tryout",
       "custom": "Custom",
       "default": "Fleet default",
       "none": "None"
@@ -1957,6 +1958,13 @@
       "pickLabel": "Pick {{name}}",
       "unpickLabel": "Unpick {{name}}",
       "origin": "Traded up"
+    },
+    "tryout": {
+      "title": "Try them in game",
+      "hint": "A practice server with your skins. Equip here and they change in game within seconds.",
+      "join": "Join",
+      "joinLabel": "Join {{name}}",
+      "console": "Or paste this in the CS2 console"
     }
   },
   "matchRules": {

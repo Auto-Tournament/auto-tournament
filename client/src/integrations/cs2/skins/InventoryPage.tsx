@@ -27,6 +27,7 @@ import { loadoutSlots, useMySkins, useSkinsEnabled, type OwnedSkin, type Rarity 
 import { equippedFor, type LoadoutTeam } from './loadoutSides';
 import { canPick, togglePick } from './tradeUp';
 import { TradeUpPanel } from './TradeUpPanel';
+import { TryoutLink } from './TryoutLink';
 
 const { color } = tokens;
 const RARITY_ORDER: Rarity[] = [
@@ -206,6 +207,8 @@ export function InventoryPage() {
               </Box>
               <VirtualNotice />
             </Box>
+
+            {own && <TryoutLink />}
 
             <Box
               component="section"

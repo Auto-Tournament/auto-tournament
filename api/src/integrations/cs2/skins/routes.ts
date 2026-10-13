@@ -110,6 +110,34 @@ router.get('/odds', async (_req, res) => {
 
 /**
  * @openapi
+ * /api/skins/tryout:
+ *   get:
+ *     tags: [Skins]
+ *     summary: Servers where you can try your skins in game
+ *     description: >-
+ *       Online Ready Up servers on the Skin tryout plugin set (practice and
+ *       skins, no match plugin). Signed-in players, while skins are on.
+ *     responses:
+ *       200: { description: "`servers`: name, address (host:port), connectIp, port" }
+ *       401: { description: Not signed in }
+ *       404: { description: Skins are off }
+ */
+router.get('/tryout', async (req, res) => {
+  try {
+    if (!(await skinService.config()).enabled) {
+      return res.status(404).json({ success: false, error: 'Skins are off' });
+    }
+    const viewer = await resolveViewerAccount(req);
+    if (!viewer.uid) return res.status(401).json({ success: false, error: 'Sign in first' });
+    const { tryoutServers } = await import('./tryout');
+    return res.json({ success: true, servers: await tryoutServers() });
+  } catch (error) {
+    return fail(res, error, 'Listing the tryout servers');
+  }
+});
+
+/**
+ * @openapi
  * /api/skins/me:
  *   get:
  *     tags: [Skins]
