@@ -1065,6 +1065,8 @@
       "pause": {
         "title": "暂停控制",
         "bothTeamsUnpause": "要求双方队伍都取消暂停",
+        "onDisconnect": "有玩家掉线时暂停（5v5）",
+        "onDisconnectHelp": "在下一个冻结时间若一方缺人则暂停；玩家回来后（或 5 分钟后）比赛自动继续。机器人补位时不生效。",
         "maxPausesLabel": "每队最大暂停次数",
         "maxPausesHelper": "0 = 无限制暂停",
         "pauseDurationLabel": "暂停时长限制（秒）",

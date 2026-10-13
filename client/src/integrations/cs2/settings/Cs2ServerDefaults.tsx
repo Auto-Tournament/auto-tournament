@@ -78,6 +78,7 @@ export interface Cs2DefaultsValues {
   atSeriesEndKickDelayDemoUpload: number;
   atAutoreadyEnabled: Flag;
   atBothTeamsUnpauseRequired: Flag;
+  atPauseOnDisconnect: Flag;
   atMaxPausesPerTeam: number | null;
   atPauseDuration: number | null;
   atSideSelectionEnabled: Flag;
@@ -126,6 +127,7 @@ const DEFAULTS: Cs2DefaultsValues = {
   atSeriesEndKickDelayDemoUpload: 30,
   atAutoreadyEnabled: null,
   atBothTeamsUnpauseRequired: null,
+  atPauseOnDisconnect: null,
   atMaxPausesPerTeam: null,
   atPauseDuration: null,
   atSideSelectionEnabled: null,
@@ -777,6 +779,28 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                   }
                   label={t('settings.atEnhanced.pause.bothTeamsUnpause')}
                 />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      // On unless turned off (the platform's default).
+                      checked={vals.atPauseOnDisconnect !== 0}
+                      onChange={(e) => update('atPauseOnDisconnect', e.target.checked ? 1 : 0)}
+                      color="primary"
+                      size="small"
+                      inputProps={{ 'aria-describedby': 'pause-on-disconnect-help' }}
+                    />
+                  }
+                  label={t('settings.atEnhanced.pause.onDisconnect')}
+                  data-testid="settings-pause-on-disconnect"
+                />
+                <Typography
+                  id="pause-on-disconnect-help"
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ mt: -1.5 }}
+                >
+                  {t('settings.atEnhanced.pause.onDisconnectHelp')}
+                </Typography>
                 <TextField
                   label={t('settings.atEnhanced.pause.maxPausesLabel')}
                   type="number"

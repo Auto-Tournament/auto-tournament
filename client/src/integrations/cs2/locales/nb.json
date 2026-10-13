@@ -1066,6 +1066,8 @@
       "pause": {
         "title": "Pauser",
         "bothTeamsUnpause": "Krev at begge lag unpauser",
+        "onDisconnect": "Pause når en spiller faller ut (5v5)",
+        "onDisconnectHelp": "Ved neste frysetid når et lag mangler en spiller; kampen fortsetter av seg selv når spilleren er tilbake (eller etter 5 minutter). Ikke med bot-fylling.",
         "maxPausesLabel": "Maks pauser per lag",
         "maxPausesHelper": "0 = ubegrenset",
         "pauseDurationLabel": "Maks pauselengde (sekunder)",

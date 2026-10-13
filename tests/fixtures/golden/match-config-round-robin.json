@@ -16,6 +16,7 @@
         "at_gg_threshold": 0.8,
         "at_max_pauses_per_team": 0,
         "at_pause_duration": 0,
+        "at_pause_on_disconnect": 1,
         "at_side_selection_enabled": 1,
         "at_side_selection_time": 60,
         "mp_maxrounds": 12
@@ -88,6 +89,7 @@
         "at_gg_threshold": 0.8,
         "at_max_pauses_per_team": 0,
         "at_pause_duration": 0,
+        "at_pause_on_disconnect": 1,
         "at_side_selection_enabled": 1,
         "at_side_selection_time": 60,
         "mp_maxrounds": 12
@@ -160,6 +162,7 @@
         "at_gg_threshold": 0.8,
         "at_max_pauses_per_team": 0,
         "at_pause_duration": 0,
+        "at_pause_on_disconnect": 1,
         "at_side_selection_enabled": 1,
         "at_side_selection_time": 60,
         "mp_maxrounds": 12
@@ -232,6 +235,7 @@
         "at_gg_threshold": 0.8,
         "at_max_pauses_per_team": 0,
         "at_pause_duration": 0,
+        "at_pause_on_disconnect": 1,
         "at_side_selection_enabled": 1,
         "at_side_selection_time": 60,
         "mp_maxrounds": 12
@@ -304,6 +308,7 @@
         "at_gg_threshold": 0.8,
         "at_max_pauses_per_team": 0,
         "at_pause_duration": 0,
+        "at_pause_on_disconnect": 1,
         "at_side_selection_enabled": 1,
         "at_side_selection_time": 60,
         "mp_maxrounds": 12
@@ -376,6 +381,7 @@
         "at_gg_threshold": 0.8,
         "at_max_pauses_per_team": 0,
         "at_pause_duration": 0,
+        "at_pause_on_disconnect": 1,
         "at_side_selection_enabled": 1,
         "at_side_selection_time": 60,
         "mp_maxrounds": 12

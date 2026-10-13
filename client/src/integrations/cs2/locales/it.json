@@ -1065,6 +1065,8 @@
       "pause": {
         "title": "Controlli pausa",
         "bothTeamsUnpause": "Richiedi che entrambe le squadre tolgano la pausa",
+        "onDisconnect": "Pausa se un giocatore cade (5v5)",
+        "onDisconnectHelp": "Al prossimo freeze time se a una squadra manca qualcuno; la partita riprende da sola quando torna (o dopo 5 minuti). Non con il riempimento bot.",
         "maxPausesLabel": "Pausa max per squadra",
         "maxPausesHelper": "0 = pause illimitate",
         "pauseDurationLabel": "Limite durata pausa (secondi)",

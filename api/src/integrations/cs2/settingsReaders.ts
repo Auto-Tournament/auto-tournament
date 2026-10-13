@@ -18,7 +18,9 @@ import type { Cs2SettingKey } from './settings';
  */
 export function defaultVetoTurnSeconds(): number {
   const env = Number(process.env.AT_VETO_TURN_SECONDS_DEFAULT);
-  return process.env.AT_VETO_TURN_SECONDS_DEFAULT !== undefined && Number.isInteger(env) && env >= 0 ? Math.min(env, 600) : 45;
+  return process.env.AT_VETO_TURN_SECONDS_DEFAULT !== undefined && Number.isInteger(env) && env >= 0
+    ? Math.min(env, 600)
+    : 45;
 }
 
 class Cs2Settings {
@@ -284,6 +286,7 @@ class Cs2Settings {
   async getAtEnhancedSettings(): Promise<{
     at_autoready_enabled: 0 | 1 | null;
     at_both_teams_unpause_required: 0 | 1 | null;
+    at_pause_on_disconnect: 0 | 1 | null;
     at_max_pauses_per_team: number | null;
     at_pause_duration: number | null;
     at_side_selection_enabled: 0 | 1 | null;
@@ -318,9 +321,8 @@ class Cs2Settings {
 
     return {
       at_autoready_enabled: await parseBooleanSetting('at_autoready_enabled'),
-      at_both_teams_unpause_required: await parseBooleanSetting(
-        'at_both_teams_unpause_required'
-      ),
+      at_both_teams_unpause_required: await parseBooleanSetting('at_both_teams_unpause_required'),
+      at_pause_on_disconnect: await parseBooleanSetting('at_pause_on_disconnect'),
       at_max_pauses_per_team: await parseIntSetting('at_max_pauses_per_team'),
       at_pause_duration: await parseIntSetting('at_pause_duration'),
       at_side_selection_enabled: await parseBooleanSetting('at_side_selection_enabled'),
@@ -379,6 +381,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     // MatchZy Enhanced v1.3.0 settings (null = use tournament defaults)
     atAutoreadyEnabled: atEnhanced.at_autoready_enabled,
     atBothTeamsUnpauseRequired: atEnhanced.at_both_teams_unpause_required,
+    atPauseOnDisconnect: atEnhanced.at_pause_on_disconnect,
     atMaxPausesPerTeam: atEnhanced.at_max_pauses_per_team,
     atPauseDuration: atEnhanced.at_pause_duration,
     atSideSelectionEnabled: atEnhanced.at_side_selection_enabled,

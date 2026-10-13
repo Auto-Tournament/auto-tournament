@@ -1065,6 +1065,8 @@
       "pause": {
         "title": "Pausensteuerung",
         "bothTeamsUnpause": "Beide Teams müssen unpausen",
+        "onDisconnect": "Pausieren, wenn ein Spieler ausfällt (5v5)",
+        "onDisconnectHelp": "Zur nächsten Freeze-Time, wenn ein Team unterbesetzt ist; das Match geht von selbst weiter, sobald der Spieler zurück ist (oder nach 5 Minuten). Nicht mit Bot-Auffüllung.",
         "maxPausesLabel": "Max. Pausen pro Team",
         "maxPausesHelper": "0 = unbegrenzt",
         "pauseDurationLabel": "Pausenlimit (Sekunden)",

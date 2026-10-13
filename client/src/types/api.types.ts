@@ -318,6 +318,7 @@ export interface SettingsResponse extends ApiResponse {
     // MatchZy Enhanced v1.3.0 settings (null = use tournament defaults)
     atAutoreadyEnabled?: 0 | 1 | null;
     atBothTeamsUnpauseRequired?: 0 | 1 | null;
+    atPauseOnDisconnect?: 0 | 1 | null;
     atMaxPausesPerTeam?: number | null;
     atPauseDuration?: number | null;
     atSideSelectionEnabled?: 0 | 1 | null;

@@ -1289,6 +1289,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'highlights_team_reel_per_player', field: 'highlightsTeamReelPerPlayer' },
   { key: 'highlights_tournament_reel_max', field: 'highlightsTournamentReelMax' },
   { key: 'highlights_tournament_reel_per_player', field: 'highlightsTournamentReelPerPlayer' },
+  // A 5v5 pauses when a player drops (Ready Up goes on once the side is full).
+  { key: 'at_pause_on_disconnect', field: 'atPauseOnDisconnect' },
 ];
 
 // --- tests -------------------------------------------------------------------
