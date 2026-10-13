@@ -1076,7 +1076,8 @@ export function ChatDock() {
   }, [peek]);
 
   if (open) return <Panel phone={phone} wide={!phone} lift={me?.queue ? 56 : 0} />;
-  if (channels.length === 0) return null;
+  // Admins always get the launcher: a call or a match they open lands here.
+  if (channels.length === 0 && !isAdmin) return null;
 
   const peekChannel = peek ? channels.find((c) => c.channel === peek.channel) : null;
   const peekWhere = peekChannel
