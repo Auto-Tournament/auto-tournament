@@ -45,7 +45,9 @@ test.describe('setup codes and passwords (pure)', () => {
     // Only a hash is stored; compare is on digests.
     expect(hashSetupCode(n)).not.toContain(n);
     expect(digestsEqual(hashSetupCode(n), hashSetupCode(n))).toBe(true);
-    expect(digestsEqual(hashSetupCode(n), hashSetupCode(normalizeSetupCode(generateSetupCode())!))).toBe(false);
+    expect(
+      digestsEqual(hashSetupCode(n), hashSetupCode(normalizeSetupCode(generateSetupCode())!))
+    ).toBe(false);
   });
 
   test('scrypt hash round trip', TAGS, async () => {
@@ -83,7 +85,8 @@ test.describe('TOTP (pure)', () => {
       [1234567890, '89005924'],
       [2000000000, '69279037'],
     ];
-    for (const [time, code] of vectors) expect(totpAt(secret, Math.floor(time / 30))).toBe(code.slice(-6));
+    for (const [time, code] of vectors)
+      expect(totpAt(secret, Math.floor(time / 30))).toBe(code.slice(-6));
   });
 
   test('accepts one step of drift, refuses replays and junk', TAGS, () => {
@@ -100,7 +103,13 @@ test.describe('TOTP (pure)', () => {
 
 test.describe('login throttle (pure)', () => {
   test('locks a target after 5 failures, doubling; limits an IP', TAGS, () => {
-    const th = new LoginThrottle({ ipLimit: 20, ipWindowMs: 900_000, freeFailures: 5, baseLockMs: 30_000, maxLockMs: 3_600_000 });
+    const th = new LoginThrottle({
+      ipLimit: 20,
+      ipWindowMs: 900_000,
+      freeFailures: 5,
+      baseLockMs: 30_000,
+      maxLockMs: 3_600_000,
+    });
     const t0 = 1_000_000;
     for (let i = 0; i < 4; i++) th.recordFailure('1.1.1.1', 'user:a', t0);
     expect(th.retryAfterMs('1.1.1.1', 'user:a', t0)).toBe(0);
@@ -111,7 +120,13 @@ test.describe('login throttle (pure)', () => {
     th.recordSuccess('user:a');
     expect(th.retryAfterMs('9.9.9.9', 'user:a', t0 + 30_000)).toBe(0);
 
-    const ip = new LoginThrottle({ ipLimit: 3, ipWindowMs: 60_000, freeFailures: 100, baseLockMs: 1, maxLockMs: 1 });
+    const ip = new LoginThrottle({
+      ipLimit: 3,
+      ipWindowMs: 60_000,
+      freeFailures: 100,
+      baseLockMs: 1,
+      maxLockMs: 1,
+    });
     for (let i = 0; i < 3; i++) ip.recordFailure('2.2.2.2', `user:${i}`, t0);
     expect(ip.retryAfterMs('2.2.2.2', 'user:new', t0)).toBe(60_000);
     expect(ip.retryAfterMs('3.3.3.3', 'user:new', t0)).toBe(0);
@@ -127,10 +142,12 @@ test.describe('environment import rule (pure)', () => {
   });
 
   test('admin access PUT validation', TAGS, () => {
-    expect(parseAdminAccessPatch({ adminSteamIds: '76561198000000001 76561198000000002' })).toEqual({
-      ok: true,
-      patch: { adminSteamIds: '76561198000000001, 76561198000000002' },
-    });
+    expect(parseAdminAccessPatch({ adminSteamIds: '76561198000000001 76561198000000002' })).toEqual(
+      {
+        ok: true,
+        patch: { adminSteamIds: '76561198000000001, 76561198000000002' },
+      }
+    );
     expect(parseAdminAccessPatch({ adminSteamIds: '123' }).ok).toBe(false);
     expect(parseAdminAccessPatch({ adminEmails: 'nope' }).ok).toBe(false);
     expect(parseAdminAccessPatch({ localAdminLoginEnabled: 'yes' }).ok).toBe(false);
@@ -168,27 +185,47 @@ test.describe.serial('setup, local login, TOTP and reset-admin', () => {
 
     const code = await testCode(request, 'setup');
     const anon = await fresh(playwright);
-    expect((await anon.post('/api/setup/check', { data: { code: 'AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA' } })).status()).toBe(400);
+    expect(
+      (
+        await anon.post('/api/setup/check', {
+          data: { code: 'AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA' },
+        })
+      ).status()
+    ).toBe(400);
     expect((await anon.post('/api/setup/check', { data: { code } })).status()).toBe(200);
     // Password rules are checked before the code is used.
-    const weak = await anon.post('/api/setup/complete', { data: { code, username: USER, password: '' } });
+    const weak = await anon.post('/api/setup/complete', {
+      data: { code, username: USER, password: '' },
+    });
     expect(weak.status()).toBe(400);
     expect((await weak.json()).problem).toBe('too_short');
 
-    const done = await anon.post('/api/setup/complete', { data: { code, username: USER, password: PASSWORD } });
+    const done = await anon.post('/api/setup/complete', {
+      data: { code, username: USER, password: PASSWORD },
+    });
     expect(done.status()).toBe(200);
     const me = await (await anon.get('/api/auth/admin/me')).json();
     expect(me).toMatchObject({ authenticated: true, provider: 'local', steamId: `local-${USER}` });
     await anon.dispose();
   });
 
-  test('/setup answers 404 once an admin exists; the code was single use', TAGS, async ({ request }) => {
-    expect((await request.get('/api/setup/status')).status()).toBe(404);
-    expect((await request.post('/api/setup/check', { data: { code: generateSetupCode() } })).status()).toBe(404);
-    expect(
-      (await request.post('/api/setup/complete', { data: { code: generateSetupCode(), username: 'other', password: PASSWORD } })).status()
-    ).toBe(404);
-  });
+  test(
+    '/setup answers 404 once an admin exists; the code was single use',
+    TAGS,
+    async ({ request }) => {
+      expect((await request.get('/api/setup/status')).status()).toBe(404);
+      expect(
+        (await request.post('/api/setup/check', { data: { code: generateSetupCode() } })).status()
+      ).toBe(404);
+      expect(
+        (
+          await request.post('/api/setup/complete', {
+            data: { code: generateSetupCode(), username: 'other', password: PASSWORD },
+          })
+        ).status()
+      ).toBe(404);
+    }
+  );
 
   test('an expired code is refused', TAGS, async ({ request }) => {
     const code = await testCode(request, 'reset');
@@ -199,27 +236,46 @@ test.describe.serial('setup, local login, TOTP and reset-admin', () => {
 
   test('a cross-site setup or login request is refused', TAGS, async ({ request }) => {
     const headers = { Origin: 'https://evil.example' };
-    expect((await request.post('/api/auth/local/login', { data: { username: USER, password: PASSWORD }, headers })).status()).toBe(403);
-    expect((await request.post('/api/setup/check', { data: { code: 'x' }, headers })).status()).toBe(403);
+    expect(
+      (
+        await request.post('/api/auth/local/login', {
+          data: { username: USER, password: PASSWORD },
+          headers,
+        })
+      ).status()
+    ).toBe(403);
+    expect(
+      (await request.post('/api/setup/check', { data: { code: 'x' }, headers })).status()
+    ).toBe(403);
   });
 
   test('local login: generic errors, then lockout', TAGS, async ({ request, playwright }) => {
     const anon = await fresh(playwright);
-    const ok = await anon.post('/api/auth/local/login', { data: { username: USER, password: PASSWORD } });
+    const ok = await anon.post('/api/auth/local/login', {
+      data: { username: USER, password: PASSWORD },
+    });
     expect(ok.status()).toBe(200);
     expect((await (await anon.get('/api/auth/admin/me')).json()).authenticated).toBe(true);
 
-    const wrongUser = await anon.post('/api/auth/local/login', { data: { username: 'nobody-here', password: PASSWORD } });
-    const wrongPass = await anon.post('/api/auth/local/login', { data: { username: USER, password: 'not the password!' } });
+    const wrongUser = await anon.post('/api/auth/local/login', {
+      data: { username: 'nobody-here', password: PASSWORD },
+    });
+    const wrongPass = await anon.post('/api/auth/local/login', {
+      data: { username: USER, password: 'not the password!' },
+    });
     expect(wrongUser.status()).toBe(401);
     expect(wrongPass.status()).toBe(401);
     expect((await wrongUser.json()).error).toBe((await wrongPass.json()).error);
 
     for (let i = 0; i < 5; i++) {
-      await anon.post('/api/auth/local/login', { data: { username: USER, password: 'not the password!' } });
+      await anon.post('/api/auth/local/login', {
+        data: { username: USER, password: 'not the password!' },
+      });
     }
     // Locked: even the right password waits.
-    const locked = await anon.post('/api/auth/local/login', { data: { username: USER, password: PASSWORD } });
+    const locked = await anon.post('/api/auth/local/login', {
+      data: { username: USER, password: PASSWORD },
+    });
     expect(locked.status()).toBe(429);
     expect(locked.headers()['retry-after']).toBeTruthy();
     await anon.dispose();
@@ -228,19 +284,33 @@ test.describe.serial('setup, local login, TOTP and reset-admin', () => {
 
   test('TOTP: enrol, then sign-in asks for the code', TAGS, async ({ playwright }) => {
     const ctx = await fresh(playwright);
-    expect((await ctx.post('/api/auth/local/login', { data: { username: USER, password: PASSWORD } })).status()).toBe(200);
+    expect(
+      (
+        await ctx.post('/api/auth/local/login', { data: { username: USER, password: PASSWORD } })
+      ).status()
+    ).toBe(200);
     const start = await ctx.post('/api/auth/local/totp/start', { data: {} });
     expect(start.status()).toBe(200);
     const { secret, uri } = (await start.json()) as { secret: string; uri: string };
     expect(uri).toMatch(/^otpauth:\/\/totp\//);
     totpSecret = secret;
-    expect((await ctx.post('/api/auth/local/totp/confirm', { data: { code: '000000' } })).status()).toBe(400);
-    expect((await ctx.post('/api/auth/local/totp/confirm', { data: { code: totpAt(secret, totpStep()) } })).status()).toBe(200);
+    expect(
+      (await ctx.post('/api/auth/local/totp/confirm', { data: { code: '000000' } })).status()
+    ).toBe(400);
+    expect(
+      (
+        await ctx.post('/api/auth/local/totp/confirm', {
+          data: { code: totpAt(secret, totpStep()) },
+        })
+      ).status()
+    ).toBe(200);
     expect((await (await ctx.get('/api/auth/local/me')).json()).totpEnabled).toBe(true);
     await ctx.dispose();
 
     const anon = await fresh(playwright);
-    const noCode = await anon.post('/api/auth/local/login', { data: { username: USER, password: PASSWORD } });
+    const noCode = await anon.post('/api/auth/local/login', {
+      data: { username: USER, password: PASSWORD },
+    });
     expect(noCode.status()).toBe(401);
     expect((await noCode.json()).totpRequired).toBe(true);
     // The step after the one used to confirm (the same step would be a replay).
@@ -251,39 +321,118 @@ test.describe.serial('setup, local login, TOTP and reset-admin', () => {
     await anon.dispose();
   });
 
-  test('reset-admin: new password, TOTP removed, old password refused', TAGS, async ({ request, playwright }) => {
-    const code = await testCode(request, 'reset');
-    const anon = await fresh(playwright);
-    expect((await (await anon.get('/api/setup/status')).json()).mode).toBe('reset');
-    const done = await anon.post('/api/setup/complete', { data: { code, username: USER, password: NEW_PASSWORD } });
-    expect(done.status()).toBe(200);
-    // Used once: /setup closes again.
-    expect((await anon.post('/api/setup/check', { data: { code } })).status()).toBe(404);
-    await anon.dispose();
+  test(
+    'TOTP: turned off from the account with the password and a code',
+    TAGS,
+    async ({ playwright }) => {
+      test.setTimeout(60_000);
+      // Signed in with the password and a code; the enrolment test may have
+      // spent the next step already, so wait for a later one when it has.
+      const ctx = await fresh(playwright);
+      const used = totpStep() + 1;
+      const signIn = await ctx.post('/api/auth/local/login', {
+        data: { username: USER, password: PASSWORD, totp: totpAt(totpSecret, used) },
+      });
+      if (signIn.status() !== 200) {
+        while (totpStep() < used) await new Promise((r) => setTimeout(r, 500));
+        const again = await ctx.post('/api/auth/local/login', {
+          data: { username: USER, password: PASSWORD, totp: totpAt(totpSecret, totpStep() + 1) },
+        });
+        expect(again.status(), await again.text()).toBe(200);
+      }
+      const spent = totpStep() + 1;
+      // On already: a new secret can't replace it without turning it off first.
+      expect((await ctx.post('/api/auth/local/totp/start', { data: {} })).status()).toBe(409);
+      // The password alone, or a wrong code, is not enough.
+      const noCode = await ctx.post('/api/auth/local/totp/disable', {
+        data: { password: PASSWORD },
+      });
+      expect(noCode.status()).toBe(401);
+      expect((await noCode.json()).totpRequired).toBe(true);
+      expect(
+        (
+          await ctx.post('/api/auth/local/totp/disable', {
+            data: { password: PASSWORD, totp: '000000' },
+          })
+        ).status()
+      ).toBe(401);
+      // A code after the one just spent.
+      while (totpStep() < spent) await new Promise((r) => setTimeout(r, 500));
+      const off = await ctx.post('/api/auth/local/totp/disable', {
+        data: { password: PASSWORD, totp: totpAt(totpSecret, totpStep() + 1) },
+      });
+      expect(off.status(), await off.text()).toBe(200);
+      expect((await (await ctx.get('/api/auth/local/me')).json()).totpEnabled).toBe(false);
+      await ctx.dispose();
 
-    const again = await fresh(playwright);
-    expect((await again.post('/api/auth/local/login', { data: { username: USER, password: PASSWORD } })).status()).toBe(401);
-    expect((await again.post('/api/auth/local/login', { data: { username: USER, password: NEW_PASSWORD } })).status()).toBe(200);
-    await again.dispose();
-  });
-
-  test('local login cannot be turned off when it would lock everyone out', TAGS, async ({ request }) => {
-    await signInViaRequest(request);
-    // Steam off (CI has no key anyway): then no admin can sign in with a provider.
-    const providers = (await (await request.get('/api/sign-in-providers')).json()).providers as Array<{ id: string; enabled: boolean }>;
-    const steamWasOn = providers.find((p) => p.id === 'steam')!.enabled;
-    await request.put('/api/sign-in-providers/steam', { data: { enabled: false } });
-    try {
-      const view = await (await request.get('/api/sign-in-providers/admin-access')).json();
-      expect(view.localAdminLoginEnabled).toBe(true);
-      expect(view.canDisableLocalAdminLogin).toBe(false);
-      const off = await request.put('/api/sign-in-providers/admin-access', { data: { localAdminLoginEnabled: false } });
-      expect(off.status()).toBe(409);
-      expect((await (await request.get('/api/auth/local/status')).json()).enabled).toBe(true);
-    } finally {
-      await request.put('/api/sign-in-providers/steam', { data: { enabled: steamWasOn } });
+      const anon = await fresh(playwright);
+      expect(
+        (
+          await anon.post('/api/auth/local/login', { data: { username: USER, password: PASSWORD } })
+        ).status()
+      ).toBe(200);
+      await anon.dispose();
     }
-  });
+  );
+
+  test(
+    'reset-admin: new password, TOTP removed, old password refused',
+    TAGS,
+    async ({ request, playwright }) => {
+      const code = await testCode(request, 'reset');
+      const anon = await fresh(playwright);
+      expect((await (await anon.get('/api/setup/status')).json()).mode).toBe('reset');
+      const done = await anon.post('/api/setup/complete', {
+        data: { code, username: USER, password: NEW_PASSWORD },
+      });
+      expect(done.status()).toBe(200);
+      // Used once: /setup closes again.
+      expect((await anon.post('/api/setup/check', { data: { code } })).status()).toBe(404);
+      await anon.dispose();
+
+      const again = await fresh(playwright);
+      expect(
+        (
+          await again.post('/api/auth/local/login', {
+            data: { username: USER, password: PASSWORD },
+          })
+        ).status()
+      ).toBe(401);
+      expect(
+        (
+          await again.post('/api/auth/local/login', {
+            data: { username: USER, password: NEW_PASSWORD },
+          })
+        ).status()
+      ).toBe(200);
+      await again.dispose();
+    }
+  );
+
+  test(
+    'local login cannot be turned off when it would lock everyone out',
+    TAGS,
+    async ({ request }) => {
+      await signInViaRequest(request);
+      // Steam off (CI has no key anyway): then no admin can sign in with a provider.
+      const providers = (await (await request.get('/api/sign-in-providers')).json())
+        .providers as Array<{ id: string; enabled: boolean }>;
+      const steamWasOn = providers.find((p) => p.id === 'steam')!.enabled;
+      await request.put('/api/sign-in-providers/steam', { data: { enabled: false } });
+      try {
+        const view = await (await request.get('/api/sign-in-providers/admin-access')).json();
+        expect(view.localAdminLoginEnabled).toBe(true);
+        expect(view.canDisableLocalAdminLogin).toBe(false);
+        const off = await request.put('/api/sign-in-providers/admin-access', {
+          data: { localAdminLoginEnabled: false },
+        });
+        expect(off.status()).toBe(409);
+        expect((await (await request.get('/api/auth/local/status')).json()).enabled).toBe(true);
+      } finally {
+        await request.put('/api/sign-in-providers/steam', { data: { enabled: steamWasOn } });
+      }
+    }
+  );
 
   test('env import happens once, then the database wins', TAGS, async ({ request }) => {
     await signInViaRequest(request);
@@ -292,25 +441,43 @@ test.describe.serial('setup, local login, TOTP and reset-admin', () => {
     await request.put('/api/sign-in-providers/admin-access', { data: { adminEmails: '' } });
 
     const first = await request.post('/api/test/env-import', {
-      data: { env: { TWITCH_CLIENT_ID: 'env-twitch-id', ADMIN_EMAILS: 'owner@example.com' }, forget: names },
+      data: {
+        env: { TWITCH_CLIENT_ID: 'env-twitch-id', ADMIN_EMAILS: 'owner@example.com' },
+        forget: names,
+      },
     });
     expect(first.status()).toBe(200);
     const twitch = async () =>
-      ((await (await request.get('/api/sign-in-providers')).json()).providers as Array<{ id: string; clientId: string | null }>).find(
-        (p) => p.id === 'twitch'
-      )!.clientId;
+      (
+        (await (await request.get('/api/sign-in-providers')).json()).providers as Array<{
+          id: string;
+          clientId: string | null;
+        }>
+      ).find((p) => p.id === 'twitch')!.clientId;
     expect(await twitch()).toBe('env-twitch-id');
-    expect((await (await request.get('/api/sign-in-providers/admin-access')).json()).adminEmails).toBe('owner@example.com');
+    expect(
+      (await (await request.get('/api/sign-in-providers/admin-access')).json()).adminEmails
+    ).toBe('owner@example.com');
 
     // Editable in the UI; a later boot with another value does not overwrite it.
-    expect((await request.put('/api/sign-in-providers/twitch', { data: { clientId: 'ui-twitch-id' } })).status()).toBe(200);
-    await request.post('/api/test/env-import', { data: { env: { TWITCH_CLIENT_ID: 'env-twitch-id-2', ADMIN_EMAILS: 'x@example.com' } } });
+    expect(
+      (
+        await request.put('/api/sign-in-providers/twitch', { data: { clientId: 'ui-twitch-id' } })
+      ).status()
+    ).toBe(200);
+    await request.post('/api/test/env-import', {
+      data: { env: { TWITCH_CLIENT_ID: 'env-twitch-id-2', ADMIN_EMAILS: 'x@example.com' } },
+    });
     expect(await twitch()).toBe('ui-twitch-id');
-    expect((await (await request.get('/api/sign-in-providers/admin-access')).json()).adminEmails).toBe('owner@example.com');
+    expect(
+      (await (await request.get('/api/sign-in-providers/admin-access')).json()).adminEmails
+    ).toBe('owner@example.com');
 
     // Cleared in the UI: still not imported again.
     await request.put('/api/sign-in-providers/twitch', { data: { clientId: null } });
-    await request.post('/api/test/env-import', { data: { env: { TWITCH_CLIENT_ID: 'env-twitch-id-3' } } });
+    await request.post('/api/test/env-import', {
+      data: { env: { TWITCH_CLIENT_ID: 'env-twitch-id-3' } },
+    });
     expect(await twitch()).toBeNull();
 
     await request.put('/api/sign-in-providers/admin-access', { data: { adminEmails: '' } });
