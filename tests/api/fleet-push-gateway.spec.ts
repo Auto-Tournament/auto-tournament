@@ -189,7 +189,11 @@ test.describe.serial('Fleet pushes: admins, settings, switches, match.update', (
     expect(JSON.stringify(savedBody)).not.toContain('tok-123');
     expect(savedBody.settings.statusTokenSet).toBe(true);
 
-    const cfg = await client.nextOfType('server.config');
+    // Settings an earlier spec saved go out on connect first (an older rev): ours is the save's.
+    let cfg = await client.nextOfType('server.config');
+    while ((cfg.payload as { rev: number }).rev < savedBody.rev) {
+      cfg = await client.nextOfType('server.config');
+    }
     expectValid(cfg);
     expect(cfg.payload).toEqual({
       rev: savedBody.rev,
