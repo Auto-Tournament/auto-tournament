@@ -52,6 +52,14 @@ import {
 import { RecorderProgressBar, type RecorderProgress } from '../settings/RecorderProgressBar';
 import { HighlightOverlaySetting } from '../settings/HighlightOverlaySetting';
 
+/** An image reference for people: its digest's first 12 characters, or its tag. */
+function shortImage(image: string): string {
+  const digest = image.match(/sha256:([0-9a-f]{12})/i);
+  if (digest) return digest[1];
+  const tag = image.split('/').pop() ?? image;
+  return tag.length > 24 ? `${tag.slice(0, 24)}…` : tag;
+}
+
 interface BenchmarkTry {
   gamescopeHz: number;
   seconds: number | null;
@@ -89,6 +97,10 @@ interface Recorder {
   updateSupported: boolean;
   updateAvailable: boolean;
   recorderRevision: string | null;
+  recorderImage?: string | null;
+  latestImage?: string | null;
+  latestAgentVersion?: string | null;
+  updatedAt?: number | null;
   updateStatus: string;
   updateError: string | null;
   working: {
@@ -272,6 +284,25 @@ function RecordersTab() {
           {t('highlightsAdmin.fleet.updateAll')}
         </Button>
       </Stack>
+      {(() => {
+        // What "Update all" installs: the newest image and agent any recorder was told about.
+        const latestImage = recorders.find((r) => r.latestImage)?.latestImage ?? null;
+        const latestAgent = recorders.find((r) => r.latestAgentVersion)?.latestAgentVersion ?? null;
+        const behind = recorders.filter((r) => r.updateAvailable).length;
+        if (!recorders.length || (!latestImage && !latestAgent)) return null;
+        return (
+          <Typography variant="body2" color="text.secondary" data-testid="recorders-latest">
+            {t('highlightsAdmin.fleet.latest', {
+              image: latestImage ? shortImage(latestImage) : '—',
+              agent: latestAgent ?? '—',
+            })}
+            {' · '}
+            {behind
+              ? t('highlightsAdmin.fleet.behind', { count: behind })
+              : t('highlightsAdmin.fleet.allCurrent')}
+          </Typography>
+        );
+      })()}
       <RecorderGroups groups={groups} onChanged={load} showToggles={false} />
       {recorders.length === 0 && (
         <Box
@@ -472,18 +503,49 @@ function RecordersTab() {
                         {r.working.playerName ? ` · ${r.working.playerName}` : null}
                       </Typography>
                     )}
-                    {r.agentVersion && (
+                    <Box
+                      sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}
+                      data-testid={`recorder-version-${r.name}`}
+                    >
+                      <Chip
+                        size="small"
+                        color={r.updateAvailable ? 'warning' : 'success'}
+                        variant="outlined"
+                        label={
+                          r.updateAvailable
+                            ? t('highlightsAdmin.fleet.updateAvailable')
+                            : t('highlightsAdmin.fleet.upToDate')
+                        }
+                      />
                       <Typography variant="caption" color="text.secondary">
-                        at-recorder {r.agentVersion}
+                        {[
+                          r.agentVersion
+                            ? `at-recorder ${r.agentVersion}${
+                                r.latestAgentVersion && r.latestAgentVersion !== r.agentVersion
+                                  ? ` → ${r.latestAgentVersion}`
+                                  : ''
+                              }`
+                            : null,
+                          r.recorderImage
+                            ? `${t('highlightsAdmin.fleet.image')} ${shortImage(r.recorderImage)}${
+                                r.latestImage && r.latestImage !== r.recorderImage
+                                  ? ` → ${shortImage(r.latestImage)}`
+                                  : ''
+                              }`
+                            : null,
+                          r.recorderRevision
+                            ? t('highlightsAdmin.fleet.build', {
+                                revision: r.recorderRevision.slice(0, 12),
+                              })
+                            : null,
+                          r.updatedAt
+                            ? t('highlightsAdmin.fleet.updatedAt', { time: when(r.updatedAt) })
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
                       </Typography>
-                    )}
-                    {r.recorderRevision && (
-                      <Typography variant="caption" color="text.secondary">
-                        {t('highlightsAdmin.fleet.build', {
-                          revision: r.recorderRevision.slice(0, 12),
-                        })}
-                      </Typography>
-                    )}
+                    </Box>
                     {r.updateError && <Alert severity="error">{r.updateError}</Alert>}
                     {r.paused && r.pauseReason && (
                       <Alert severity="warning" sx={{ py: 0 }}>

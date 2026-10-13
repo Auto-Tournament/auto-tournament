@@ -58,6 +58,7 @@ import { matchLifecycle } from '../../core/matchLifecycle';
 import { teamMembers } from '../../services/teamMembers';
 import { tournamentIdForMatch } from '../../utils/tournamentRow';
 import { NEEDS_DECISION_STATUS } from '../../utils/matchStatusHelpers';
+import { adminNoticeService } from '../../services/adminNoticeService';
 import type { DbMatchRow } from '../../types/database.types';
 import type {
   DbMatchReportRow,
@@ -230,7 +231,9 @@ interface StoredConfig {
 function configOf(match: DbMatchRow): StoredConfig {
   try {
     const value: unknown = JSON.parse(match.config || '{}');
-    return value && typeof value === 'object' && !Array.isArray(value) ? (value as StoredConfig) : {};
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as StoredConfig)
+      : {};
   } catch {
     return {};
   }
@@ -271,7 +274,8 @@ export function reportingRules(match: DbMatchRow): ReportingRules {
     seriesLength: Number(config.seriesLength) > 0 ? Number(config.seriesLength) : 1,
     allowDraw: config.allowDraw === true,
     confirmation: config.confirmation === 'none' ? 'none' : 'opponent',
-    confirmTimeoutMin: Number.isFinite(timeoutMin) && timeoutMin > 0 ? Math.floor(timeoutMin) : null,
+    confirmTimeoutMin:
+      Number.isFinite(timeoutMin) && timeoutMin > 0 ? Math.floor(timeoutMin) : null,
     timeoutAction: config.timeoutAction === 'escalate' ? 'escalate' : 'auto_confirm',
   };
 }
@@ -378,7 +382,10 @@ export function validateResult(
       return { ok: false, error: `Game ${index + 1}: winner must be team1, team2 or null` };
     }
     if (winner === null && !rules.allowDraw) {
-      return { ok: false, error: `Game ${index + 1} has no winner, and this tournament allows no draw` };
+      return {
+        ok: false,
+        error: `Game ${index + 1} has no winner, and this tournament allows no draw`,
+      };
     }
 
     if (winner === 'team1') team1Maps += 1;
@@ -411,7 +418,8 @@ export function validateResult(
     return { ok: false, error: 'The series is level, and this tournament allows no draw' };
   }
 
-  const note = typeof body.note === 'string' && body.note.trim() ? body.note.trim().slice(0, 500) : null;
+  const note =
+    typeof body.note === 'string' && body.note.trim() ? body.note.trim().slice(0, 500) : null;
   return {
     ok: true,
     result: {
@@ -463,17 +471,18 @@ async function reportById(id: number): Promise<MatchReport> {
 async function supersedeOpen(matchSlug: string, actor: ReportActor): Promise<void> {
   const open = await openReport(matchSlug);
   if (!open) return;
-  await db.updateAsync(
-    'match_reports',
-    { status: 'superseded', updated_at: now() },
-    'id = ?',
-    [open.id]
-  );
+  await db.updateAsync('match_reports', { status: 'superseded', updated_at: now() }, 'id = ?', [
+    open.id,
+  ]);
   await recordAction({ id: open.id, matchSlug }, 'supersede', actor, { revision: open.revision });
 }
 
 /** Tell everyone watching this tournament that a report moved. */
-async function announce(match: DbMatchRow, report: MatchReport, action: MatchReportAction): Promise<void> {
+async function announce(
+  match: DbMatchRow,
+  report: MatchReport,
+  action: MatchReportAction
+): Promise<void> {
   emitTournament(tournamentIdForMatch(match), 'match:report', {
     matchSlug: match.slug,
     action,
@@ -513,10 +522,15 @@ function toSeriesResult(result: ReportedResult): SeriesResult {
  * from and is recorded as a `series_result` event.
  */
 async function finalize(match: DbMatchRow, report: MatchReport): Promise<boolean> {
+  // A result stands now: the dispute (if there was one) needs nobody any more.
+  await adminNoticeService.resolve(`report_disputed:${match.slug}`);
   const outcome = await matchLifecycle.applySeriesResult(
     match.slug,
     toSeriesResult(report.result),
-    { source: report.source === 'admin' ? 'admin' : 'report', actorId: report.resolvedByUid ?? report.submittedByUid }
+    {
+      source: report.source === 'admin' ? 'admin' : 'report',
+      actorId: report.resolvedByUid ?? report.submittedByUid,
+    }
   );
   if (!outcome.applied) {
     log.warn(`[manual-report] ${match.slug} was not finished by its confirmed report`, {
@@ -726,6 +740,11 @@ export async function disputeReport(input: {
   await recordAction(report, 'dispute', input.actor, reason ? { reason } : undefined);
   await parkForAdmin(match);
   await announce(match, report, 'dispute');
+  await adminNoticeService.raise(
+    'report_disputed',
+    { matchSlug: match.slug, reason: reason || null },
+    `report_disputed:${match.slug}`
+  );
   return { ok: true, report, finalized: false };
 }
 
@@ -771,7 +790,10 @@ async function mayAnswer(
 ): Promise<{ ok: true } | { ok: false; outcome: ReportOutcome }> {
   if (actor.role === 'admin') return { ok: true };
   if (actor.role !== 'captain' || !actor.team) {
-    return { ok: false, outcome: fail(403, 'Only a captain of one of the two teams may answer a report') };
+    return {
+      ok: false,
+      outcome: fail(403, 'Only a captain of one of the two teams may answer a report'),
+    };
   }
   if (!open.submittedByTeam) {
     // An admin's report is already decided, so there is nothing to answer;
@@ -1046,12 +1068,9 @@ export async function reopenMatch(input: {
   // The result that stood is no longer the match's result.
   const previous = await confirmedReport(match.slug);
   if (previous) {
-    await db.updateAsync(
-      'match_reports',
-      { status: 'superseded', updated_at: now() },
-      'id = ?',
-      [previous.id]
-    );
+    await db.updateAsync('match_reports', { status: 'superseded', updated_at: now() }, 'id = ?', [
+      previous.id,
+    ]);
   }
 
   await recordAction({ id: previous?.id ?? null, matchSlug: match.slug }, 'reopen', input.actor, {
@@ -1178,12 +1197,9 @@ async function escalate(match: DbMatchRow, report: MatchReport): Promise<void> {
   // The report stays `submitted`, so it is still the one open report and
   // nothing can be reported over it while an admin looks at it. Clearing the
   // deadline is what takes it out of the sweep.
-  await db.updateAsync(
-    'match_reports',
-    { confirm_deadline: null, updated_at: at },
-    'id = ?',
-    [report.id]
-  );
+  await db.updateAsync('match_reports', { confirm_deadline: null, updated_at: at }, 'id = ?', [
+    report.id,
+  ]);
   const updated = await reportById(report.id);
   await recordAction(updated, 'timeout_escalate', SYSTEM_ACTOR, {
     deadline: report.confirmDeadline,

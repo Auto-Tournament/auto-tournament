@@ -130,9 +130,12 @@ export async function skinsTurnedOn(fleetServerId: string): Promise<void> {
       'UPDATE cs2_fleet_servers SET capabilities = ?, plugins_state = COALESCE(?, plugins_state) WHERE id = ?',
       [JSON.stringify(caps), nextState ? JSON.stringify(nextState) : null, fleetServerId]
     );
-    for (const { slug, steamid64 } of await connectedOn(fleetServerId)) {
+    const connected = await connectedOn(fleetServerId);
+    for (const { slug, steamid64 } of connected) {
       await pushSkinsOnConnect(fleetServerId, slug, steamid64);
     }
+    if (connected.length)
+      void (await import('../gameMessages')).sayInGame(fleetServerId, 'skinsOn');
   } catch (error) {
     log.warn('[FLEET] skins: could not apply the switched-on plugin', {
       fleetServerId,
@@ -144,9 +147,12 @@ export async function skinsTurnedOn(fleetServerId: string): Promise<void> {
 /** Skins were switched off: everyone connected loses them now. */
 export async function skinsTurnedOff(fleetServerId: string): Promise<void> {
   try {
-    for (const { steamid64 } of await connectedOn(fleetServerId)) {
+    const connected = await connectedOn(fleetServerId);
+    for (const { steamid64 } of connected) {
       await sendReliable(fleetServerId, { type: 'skins.invalidate', payload: { steamid64 } });
     }
+    if (connected.length)
+      void (await import('../gameMessages')).sayInGame(fleetServerId, 'skinsOff');
   } catch (error) {
     log.warn('[FLEET] skins: could not clear skins', {
       fleetServerId,
@@ -174,7 +180,11 @@ export async function flushRoundLoadouts(fleetServerId: string): Promise<void> {
   const pending = pendingByServer.get(fleetServerId);
   if (!pending || pending.size === 0) return;
   pendingByServer.delete(fleetServerId);
-  for (const [steamid64, slug] of pending) await pushSkinsOnConnect(fleetServerId, slug, steamid64);
+  const { sayInGame } = await import('../gameMessages');
+  for (const [steamid64, slug] of pending) {
+    await pushSkinsOnConnect(fleetServerId, slug, steamid64);
+    void sayInGame(fleetServerId, 'loadoutUpdated', {}, { to: steamid64 });
+  }
 }
 
 /**

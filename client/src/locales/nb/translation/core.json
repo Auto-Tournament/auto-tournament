@@ -77,6 +77,73 @@
   "theme": {
     "label": "Fargetema"
   },
+  "adminNotices": {
+    "label": "Admin-varsler",
+    "labelUnread": "Admin-varsler, {{count}} nye",
+    "title": "Admin-varsler",
+    "settings": "Innstillinger",
+    "empty": "Ingenting trenger deg nå.",
+    "times_one": "{{count}} gang",
+    "times_other": "{{count}} ganger",
+    "resolved": "løst",
+    "dismiss": "Avvis",
+    "needsYou": "Trenger deg",
+    "settingsTitle": "Admin-varsler",
+    "settingsHint": "Hva som når admin-klokka, og hvilke typer som også spiller en lyd. Alle admins ser de samme varslene.",
+    "saveFailed": "Kunne ikke lagre",
+    "group": {
+      "matches": "Kamper",
+      "servers": "Servere",
+      "recorders": "Opptakere",
+      "platform": "Plattform"
+    },
+    "delivery": {
+      "off": "Av",
+      "bell": "Klokke",
+      "sound": "Klokke og lyd"
+    },
+    "name": {
+      "match_no_server": "A match waits long for a server",
+      "veto_stalled": "A veto stalls",
+      "warmup_long": "A long warmup",
+      "match_forfeit": "A team forfeits",
+      "report_disputed": "A result is disputed",
+      "failover": "A match server goes down",
+      "server_crashed": "A server crashes",
+      "plugin_update_available": "A Ready Up update is out",
+      "update_failed": "A game or plugin update fails",
+      "autoscale_license": "Autoscale hits the license",
+      "recorder_offline": "A recorder goes offline",
+      "recorder_updated": "A recorder updated",
+      "recorder_update_failed": "A recorder update fails",
+      "benchmark_failed": "A benchmark fails",
+      "clips_failing": "Clips keep failing",
+      "beta_available": "A new platform release",
+      "license_problem": "License problems",
+      "demos_failing": "Demo analyses keep failing"
+    },
+    "kind": {
+      "match_no_server": "{{matchSlug}} has waited {{minutes}} min for a server",
+      "veto_stalled": "The veto of {{matchSlug}} has not moved for {{minutes}} min",
+      "warmup_long": "{{matchSlug}} has been in warmup for {{minutes}} min",
+      "match_forfeit": "{{matchSlug}}: {{team}} gave up ({{reason}})",
+      "report_disputed": "The result of {{matchSlug}} is disputed",
+      "failover": "{{matchSlug}}: the server went down; the match is being brought back (map {{mapNumber}}, round {{round}})",
+      "failoverDecision": "{{matchSlug}}: the server went down and auto-failover is off. Decide on the match page.",
+      "server_crashed": "{{server}} on {{host}}: {{event}}",
+      "plugin_update_available": "Ready Up {{version}} is out; {{servers}} server(s) run an older one",
+      "update_failed": "The {{what}} update on {{host}} failed: {{error}}",
+      "autoscale_license": "Autoscale could not add a server: the license has no room",
+      "recorder_offline": "Recorder {{recorder}} stopped checking in",
+      "recorder_updated": "Recorder {{recorder}} is updated",
+      "recorder_update_failed": "Recorder {{recorder}} could not update: {{error}}",
+      "benchmark_failed": "Recorder {{recorder}}'s benchmark finished no try",
+      "clips_failing": "{{count}} clips failed in the last hour",
+      "beta_available": "Auto Tournament {{version}} is out (this runs {{running}})",
+      "license_problem": "The license needs attention: {{problem}}",
+      "demos_failing": "{{count}} demo analyses failed in the last hour"
+    }
+  },
   "matchNow": {
     "title": "Kampen din",
     "none": "Ingen kamp akkurat nå",

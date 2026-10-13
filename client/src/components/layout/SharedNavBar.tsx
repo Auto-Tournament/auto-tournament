@@ -28,6 +28,7 @@ import { fontDisplay, textSize } from '../../theme/tokens';
 import { paths, playerProfilePath } from '../../paths';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
 import { NotificationBell } from '../social/NotificationBell';
+import { AdminNoticeBell } from '../admin/AdminNoticeBell';
 import { SiteSearch } from '../search/SiteSearch';
 import { useSocial } from '../social/socialStore';
 import { useModuleAccountMenuItems } from '../../hooks/useModuleAccountMenuItems';
@@ -520,6 +521,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
 
         <SiteSearch />
 
+        {showAdminLinks && <AdminNoticeBell />}
         {playerSteamId && !impersonation && <NotificationBell viewerId={playerSteamId} />}
 
         <IconButton

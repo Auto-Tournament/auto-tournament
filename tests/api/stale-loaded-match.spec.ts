@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { signInViaRequest, getAuthHeader } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
+import { createTestServer } from '../helpers/servers';
 
 /**
  * A stale 'loaded' match must not pin its server forever.
@@ -53,6 +54,16 @@ async function serverEntry(
   return entry!;
 }
 
+/**
+ * The bracket match the tournament just produced. Other specs leave standalone
+ * matches (backups, demo imports) in the list, so the first row is not ours.
+ */
+function bracketMatchSlug(body: {
+  matches?: { slug: string; round: number; team1: unknown; team2: unknown }[];
+}): string | undefined {
+  return body.matches?.find((m) => m.round > 0 && m.team1 && m.team2)?.slug;
+}
+
 test.describe.serial('Stale loaded match', () => {
   test(
     'should keep a server busy while a load is fresh, and release it once the row is stale',
@@ -62,7 +73,10 @@ test.describe.serial('Stale loaded match', () => {
 
       const setup = await setupTournament(request, { teamCount: 2, serverCount: 1 });
       expect(setup, 'tournament setup should succeed').toBeTruthy();
-      const server = setup!.servers[0];
+      // A server of its own: setup reuses servers, and a match another spec
+      // left loaded on one would decide what this server reports.
+      const server = (await createTestServer(request, 'stale-row'))!;
+      expect(server, 'creating the probe server should succeed').toBeTruthy();
 
       // The availability view only considers servers that have reported in at
       // least once. Send the real server_configured webhook rather than faking
@@ -91,7 +105,7 @@ test.describe.serial('Stale loaded match', () => {
       const matches = await (
         await request.get('/api/matches', { headers: getAuthHeader() })
       ).json();
-      const slug = matches.matches?.[0]?.slug as string | undefined;
+      const slug = bracketMatchSlug(matches);
       expect(slug, 'the tournament should have produced a match').toBeTruthy();
 
       const now = Math.floor(Date.now() / 1000);
@@ -139,7 +153,10 @@ test.describe.serial('Stale loaded match', () => {
 
       const setup = await setupTournament(request, { teamCount: 2, serverCount: 1 });
       expect(setup).toBeTruthy();
-      const server = setup!.servers[0];
+      // A server of its own: setup reuses servers, and a match another spec
+      // left loaded on one would decide what this server reports.
+      const server = (await createTestServer(request, 'stale-row'))!;
+      expect(server, 'creating the probe server should succeed').toBeTruthy();
 
       await request.post(`/api/events/${server.id}`, {
         headers: SERVER_HEADERS,
@@ -161,7 +178,7 @@ test.describe.serial('Stale loaded match', () => {
       const matches = await (
         await request.get('/api/matches', { headers: getAuthHeader() })
       ).json();
-      const slug = matches.matches?.[0]?.slug as string | undefined;
+      const slug = bracketMatchSlug(matches);
       expect(slug).toBeTruthy();
 
       // An hour old and the plugin claims idle — the same shape that releases a
