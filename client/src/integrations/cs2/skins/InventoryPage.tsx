@@ -74,6 +74,8 @@ function category(skin: OwnedSkin): Filter {
 export function InventoryPage() {
   const { t } = useModuleTranslation('cs2');
   const { showError } = useSnackbar();
+  const equipFailed = (error: unknown) =>
+    showError(error instanceof Error ? error.message : t('skins.equipFailed'));
   const { steamId } = useParams<{ steamId?: string }>();
   // /inventory is your own; /player/:steamId/inventory is anyone's, read only.
   const own = !steamId;
@@ -84,8 +86,9 @@ export function InventoryPage() {
   const [sort, setSort] = useState<'rarity' | 'newest'>('rarity');
   const [inspect, setInspect] = useState<number | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
-  // Which side a click equips for: both, CT or T (one-side weapons go to their side).
-  const [side, setSide] = useState<LoadoutTeam>(0);
+  // The skin being dragged onto a loadout slot, and the one whose sides are being picked.
+  const [dragging, setDragging] = useState<OwnedSkin | null>(null);
+  const [picking, setPicking] = useState<OwnedSkin | null>(null);
   // Trade-ups (when the site has them): picking skins of one grade for one of the next.
   const [tradeUpCount, setTradeUpCount] = useState<number | null>(null);
   const [trading, setTrading] = useState(false);
@@ -269,12 +272,23 @@ export function InventoryPage() {
                             key={slot}
                             label={label}
                             skin={skin}
+                            onDrop={
+                              own &&
+                              dragging &&
+                              dragging.slot === slot &&
+                              (dragging.side === null || dragging.side === team)
+                                ? () => {
+                                    const dropped = dragging;
+                                    setDragging(null);
+                                    void mine.equipOn(dropped, team).catch(equipFailed);
+                                  }
+                                : undefined
+                            }
                             onClick={() => {
                               if (skin) {
                                 setInspect(skin.id);
                                 return;
                               }
-                              if (own) setSide(team);
                               const owned = inventory.find((s) => s.slot === slot);
                               setFilter(
                                 owned
@@ -309,51 +323,6 @@ export function InventoryPage() {
                   ['all', 'rifles', 'pistols', 'smgs', 'heavy', 'knives', 'gloves'] as Filter[]
                 ).map(chip)}
               </Box>
-              {own && (
-                <Box
-                  role="group"
-                  aria-label={t('skins.side.equipFor')}
-                  data-testid="equip-side"
-                  sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    p: 0.5,
-                    borderRadius: radii.pill,
-                    border: `1px solid ${color.rule}`,
-                  }}
-                >
-                  <Typography
-                    component="span"
-                    sx={{ fontSize: '0.8125rem', color: color.muted, px: 1 }}
-                  >
-                    {t('skins.side.equipFor')}
-                  </Typography>
-                  {([0, 3, 2] as const).map((team) => (
-                    <ButtonBase
-                      key={team}
-                      onClick={() => setSide(team)}
-                      aria-pressed={side === team}
-                      data-testid={`equip-side-${team === 0 ? 'both' : team === 3 ? 'ct' : 't'}`}
-                      sx={{
-                        px: 1.5,
-                        py: 0.75,
-                        borderRadius: radii.pill,
-                        fontSize: '0.8125rem',
-                        fontWeight: side === team ? 600 : 400,
-                        bgcolor: side === team ? color.ink : 'transparent',
-                        color: side === team ? color.accentInk : color.ink2,
-                      }}
-                    >
-                      {team === 0
-                        ? t('skins.side.both')
-                        : team === 3
-                          ? t('skins.side.ct')
-                          : t('skins.side.t')}
-                    </ButtonBase>
-                  ))}
-                </Box>
-              )}
               {own && tradeUpCount !== null && !trading && (
                 <Button
                   variant="outlined"
@@ -420,15 +389,13 @@ export function InventoryPage() {
                     onEquip={
                       own
                         ? (s) =>
-                            void mine
-                              .equip(s, side)
-                              .catch((error: unknown) =>
-                                showError(
-                                  error instanceof Error ? error.message : t('skins.equipFailed')
-                                )
-                              )
+                            // A skin both sides can use asks which side; a one-side weapon toggles.
+                            s.side === null
+                              ? setPicking(s)
+                              : void mine.equip(s, 0).catch(equipFailed)
                         : undefined
                     }
+                    onDragSkin={own ? setDragging : undefined}
                     onInspect={(s) => setInspect(s.id)}
                     pick={
                       trading && tradeUpCount !== null
@@ -474,6 +441,31 @@ export function InventoryPage() {
       </Container>
 
       <InspectSkinDialog skinId={inspect} onClose={() => setInspect(null)} />
+      {picking && (
+        <SidePicker
+          skin={inventory.find((x) => x.id === picking.id) ?? picking}
+          onClose={() => setPicking(null)}
+          onPick={(team) => {
+            const skin = picking;
+            setPicking(null);
+            void mine.equipOn(skin, team).catch(equipFailed);
+          }}
+          onTakeOff={() => {
+            const skin = inventory.find((x) => x.id === picking.id) ?? picking;
+            setPicking(null);
+            void (async () => {
+              let current = skin;
+              for (const team of [...skin.equippedSides]) {
+                await mine.equip(current, team);
+                current = {
+                  ...current,
+                  equippedSides: current.equippedSides.filter((x) => x !== team),
+                };
+              }
+            })().catch(equipFailed);
+          }}
+        />
+      )}
       <Dialog
         open={helpOpen}
         onClose={() => setHelpOpen(false)}
@@ -500,5 +492,76 @@ export function InventoryPage() {
         </Box>
       </Dialog>
     </Box>
+  );
+}
+
+/**
+ * Which side a skin both sides can use goes on (a click or Enter on its card):
+ * CT, T or both, or off again. Dragging it onto a side's slot does the same.
+ */
+function SidePicker({
+  skin,
+  onPick,
+  onTakeOff,
+  onClose,
+}: {
+  skin: OwnedSkin;
+  onPick: (team: LoadoutTeam) => void;
+  onTakeOff: () => void;
+  onClose: () => void;
+}) {
+  const { t } = useModuleTranslation('cs2');
+  const on = (team: LoadoutTeam) =>
+    skin.equippedSides.includes(team) || skin.equippedSides.includes(0);
+  const actions: Array<{ team: LoadoutTeam; label: string; id: string; done: boolean }> = [
+    { team: 3, label: t('skins.equipOnCt'), id: 'ct', done: on(3) },
+    { team: 2, label: t('skins.equipOnT'), id: 't', done: on(2) },
+    { team: 0, label: t('skins.equipOnBoth'), id: 'both', done: skin.equippedSides.includes(0) },
+  ];
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      aria-labelledby="side-picker-title"
+      PaperProps={{
+        sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' },
+      }}
+    >
+      <Box
+        data-testid="side-picker"
+        sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, width: 'min(360px, 85vw)' }}
+      >
+        <Typography
+          id="side-picker-title"
+          component="h2"
+          sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600 }}
+        >
+          {skin.weaponName} | {skin.name}
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {actions.map((a) => (
+            <Button
+              key={a.id}
+              variant={a.done ? 'outlined' : 'contained'}
+              disabled={a.done}
+              onClick={() => onPick(a.team)}
+              data-testid={`side-picker-${a.id}`}
+              sx={{ borderRadius: radii.pill, justifyContent: 'center' }}
+            >
+              {a.label}
+            </Button>
+          ))}
+          {skin.equipped && (
+            <Button
+              onClick={onTakeOff}
+              data-testid="side-picker-off"
+              sx={{ borderRadius: radii.pill, color: color.ink2 }}
+            >
+              {t('skins.takeOff')}
+            </Button>
+          )}
+        </Box>
+      </Box>
+    </Dialog>
   );
 }
