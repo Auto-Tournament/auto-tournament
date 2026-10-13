@@ -1045,7 +1045,8 @@ export function getSchemaSQL(): string {
       count INTEGER NOT NULL DEFAULT 1,
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      resolved_at INTEGER
+      resolved_at INTEGER,
+      dismissed_at INTEGER -- an admin dismissed it: a sweep that still sees the problem stays quiet until it clears
     );
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_admin_notices_open ON admin_notices(dedupe_key) WHERE resolved_at IS NULL;

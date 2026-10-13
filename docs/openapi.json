@@ -15899,6 +15899,10 @@
                   },
                   "resolve": {
                     "type": "boolean"
+                  },
+                  "ongoing": {
+                    "type": "boolean",
+                    "description": "Raise the way a sweep does (quiet while open or dismissed)"
                   }
                 }
               }
