@@ -2319,6 +2319,8 @@
       "next": "Neste",
       "close": "Lukk",
       "redoMatch": "Gjør alle klipp på nytt",
+      "heldByFailed_one": "{{count}} klipp feilet. Rullene som ville brukt det venter til du lager det på nytt eller dropper det.",
+      "heldByFailed_other": "{{count}} klipp feilet. Rullene som ville brukt dem venter til du lager dem på nytt eller dropper dem.",
       "reelElapsed": "ferdig {{time}} etter at første klipp startet",
       "reelAssembly": "satt sammen på {{time}}",
       "reelRender": "klippene: {{time}} opptak til sammen"

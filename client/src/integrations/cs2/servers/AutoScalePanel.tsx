@@ -34,7 +34,7 @@ interface AutoscaleSettings {
 }
 
 type ServerState =
-  'busy' | 'idle' | 'starting' | 'stopping' | 'stopped' | 'updating' | 'unreachable';
+  'busy' | 'idle' | 'starting' | 'stopping' | 'stopped' | 'updating' | 'unreachable' | 'practice';
 
 interface AutoscaleEvent {
   id: number;
@@ -78,6 +78,7 @@ const STATE_COLOR: Record<ServerState, 'success' | 'info' | 'default' | 'warning
   stopped: 'default',
   updating: 'warning',
   unreachable: 'error',
+  practice: 'default',
 };
 
 function minutes(seconds: number): string {
