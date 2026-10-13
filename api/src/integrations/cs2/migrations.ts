@@ -1543,4 +1543,16 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_player_loadout ADD PRIMARY KEY (player_uid, slot, team);
     `,
   },
+  {
+    // A machine can run csm for more than one Unix user (fleet/hosts/registry.ts
+    // findByMachine): a host is a machine and the user csm runs as. Hosts
+    // enrolled before csm sent its user keep NULL until it next enrolls.
+    id: '053-host-csm-user',
+    up: `
+      ALTER TABLE cs2_fleet_hosts ADD COLUMN IF NOT EXISTS csm_user TEXT;
+      DROP INDEX IF EXISTS cs2_fleet_hosts_machine_idx;
+      CREATE UNIQUE INDEX IF NOT EXISTS cs2_fleet_hosts_machine_user_idx
+        ON cs2_fleet_hosts(tenant_id, machine_id, (COALESCE(csm_user, '')));
+    `,
+  },
 ];

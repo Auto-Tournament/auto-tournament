@@ -99,8 +99,8 @@ test.describe.serial('Team Profile UI', () => {
       // Anywhere else on the row opens the match.
       await page.goBack();
       await expect(row).toBeVisible({ timeout: 15000 });
-      // (The row re-renders as the page loads again: let click find it.)
-      await row.click({ position: { x: 12, y: 12 } });
+      const box = await row.boundingBox();
+      await row.click({ position: { x: box!.width - 12, y: box!.height / 2 } });
       await expect(page).toHaveURL(new RegExp(`/match/${match!.slug}$`));
     }
   );

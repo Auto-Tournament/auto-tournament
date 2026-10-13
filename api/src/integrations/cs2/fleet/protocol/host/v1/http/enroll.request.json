@@ -4,23 +4,13 @@
   "title": "POST /api/fleet/enroll request body, host enrollment",
   "description": "FLEET.md §18.1. Same endpoint as server enrollment; `kind: \"host\"` selects the host path. Exactly one of `code` (one-time code from Settings → Hosts → Add host) or `key` (fleet enrollment key). Enrolling again with the same machine_id returns the existing host record.",
   "type": "object",
-  "required": [
-    "kind",
-    "machine_id",
-    "hostname",
-    "os",
-    "csm_version"
-  ],
+  "required": ["kind", "machine_id", "hostname", "os", "csm_version"],
   "oneOf": [
     {
-      "required": [
-        "code"
-      ]
+      "required": ["code"]
     },
     {
-      "required": [
-        "key"
-      ]
+      "required": ["key"]
     }
   ],
   "properties": {
@@ -37,6 +27,11 @@
     },
     "machine_id": {
       "$ref": "../defs.json#/$defs/machineId"
+    },
+    "csm_user": {
+      "type": "string",
+      "pattern": "^[a-z_][a-z0-9_.-]{0,31}$",
+      "description": "The Unix user csm runs the servers as. One machine can run csm for several users; each (machine_id, csm_user) is its own host. Optional: an older csm sends none and gets the machine's host."
     },
     "hostname": {
       "type": "string",
