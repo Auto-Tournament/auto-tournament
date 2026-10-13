@@ -15,6 +15,7 @@
         "at_gg_threshold": 0.8,
         "at_max_pauses_per_team": 0,
         "at_pause_duration": 0,
+        "at_pause_on_disconnect": 1,
         "at_side_selection_enabled": 1,
         "at_side_selection_time": 60,
         "mp_maxrounds": 24
@@ -132,6 +133,29 @@
         "winnerTeam": "team1"
       }
     ],
+    "mapScores": [
+      {
+        "map": "de_ancient",
+        "mapNumber": 0,
+        "team1Score": 13,
+        "team2Score": 9,
+        "winner": "team1"
+      },
+      {
+        "map": "de_anubis",
+        "mapNumber": 1,
+        "team1Score": 11,
+        "team2Score": 13,
+        "winner": "team2"
+      },
+      {
+        "map": "de_nuke",
+        "mapNumber": 2,
+        "team1Score": 13,
+        "team2Score": 7,
+        "winner": "team1"
+      }
+    ],
     "maps": ["de_ancient", "de_anubis", "de_nuke"],
     "matchNumber": 1,
     "round": 1,
@@ -156,36 +180,13 @@
     "team2MapScore": 7,
     "team2Score": 1,
     "team2SeriesScore": 1,
+    "tournament": "Golden Replay Tournament",
     "vetoCompleted": true,
     "winner": {
       "id": "golden-replay-a",
       "name": "Replay Alpha",
       "tag": null
     },
-    "mapScores": [
-      {
-        "mapNumber": 0,
-        "map": "de_ancient",
-        "team1Score": 13,
-        "team2Score": 9,
-        "winner": "team1"
-      },
-      {
-        "mapNumber": 1,
-        "map": "de_anubis",
-        "team1Score": 11,
-        "team2Score": 13,
-        "winner": "team2"
-      },
-      {
-        "mapNumber": 2,
-        "map": "de_nuke",
-        "team1Score": 13,
-        "team2Score": 7,
-        "winner": "team1"
-      }
-    ],
-    "tournament": "Golden Replay Tournament",
     "winnerSide": "team1"
   },
   "players": {
@@ -248,6 +249,10 @@
           "avatar": "/api/players/76561199000070001/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1798,
+          "id": "76561199000070001",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Alpha 1",
           "ratingGame": "cs2",
           "ratings": [
             {
@@ -256,10 +261,6 @@
               "matchCount": 1
             }
           ],
-          "id": "76561199000070001",
-          "isAdmin": false,
-          "matchCount": 1,
-          "name": "Alpha 1",
           "startingElo": 1500,
           "updatedAt": "<updatedAt>"
         },
@@ -403,6 +404,10 @@
           "avatar": "/api/players/76561199000070002/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1798,
+          "id": "76561199000070002",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Alpha 2",
           "ratingGame": "cs2",
           "ratings": [
             {
@@ -411,10 +416,6 @@
               "matchCount": 1
             }
           ],
-          "id": "76561199000070002",
-          "isAdmin": false,
-          "matchCount": 1,
-          "name": "Alpha 2",
           "startingElo": 1500,
           "updatedAt": "<updatedAt>"
         },
@@ -558,6 +559,10 @@
           "avatar": "/api/players/76561199000070003/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1798,
+          "id": "76561199000070003",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Alpha 3",
           "ratingGame": "cs2",
           "ratings": [
             {
@@ -566,10 +571,6 @@
               "matchCount": 1
             }
           ],
-          "id": "76561199000070003",
-          "isAdmin": false,
-          "matchCount": 1,
-          "name": "Alpha 3",
           "startingElo": 1500,
           "updatedAt": "<updatedAt>"
         },
@@ -713,6 +714,10 @@
           "avatar": "/api/players/76561199000070004/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1798,
+          "id": "76561199000070004",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Alpha 4",
           "ratingGame": "cs2",
           "ratings": [
             {
@@ -721,10 +726,6 @@
               "matchCount": 1
             }
           ],
-          "id": "76561199000070004",
-          "isAdmin": false,
-          "matchCount": 1,
-          "name": "Alpha 4",
           "startingElo": 1500,
           "updatedAt": "<updatedAt>"
         },
@@ -868,6 +869,10 @@
           "avatar": "/api/players/76561199000070005/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1798,
+          "id": "76561199000070005",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Alpha 5",
           "ratingGame": "cs2",
           "ratings": [
             {
@@ -876,10 +881,6 @@
               "matchCount": 1
             }
           ],
-          "id": "76561199000070005",
-          "isAdmin": false,
-          "matchCount": 1,
-          "name": "Alpha 5",
           "startingElo": 1500,
           "updatedAt": "<updatedAt>"
         },
@@ -1023,6 +1024,10 @@
           "avatar": "/api/players/76561199000080001/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1284,
+          "id": "76561199000080001",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Bravo 1",
           "ratingGame": "cs2",
           "ratings": [
             {
@@ -1031,10 +1036,6 @@
               "matchCount": 1
             }
           ],
-          "id": "76561199000080001",
-          "isAdmin": false,
-          "matchCount": 1,
-          "name": "Bravo 1",
           "startingElo": 1500,
           "updatedAt": "<updatedAt>"
         },
@@ -1178,6 +1179,10 @@
           "avatar": "/api/players/76561199000080002/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1284,
+          "id": "76561199000080002",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Bravo 2",
           "ratingGame": "cs2",
           "ratings": [
             {
@@ -1186,10 +1191,6 @@
               "matchCount": 1
             }
           ],
-          "id": "76561199000080002",
-          "isAdmin": false,
-          "matchCount": 1,
-          "name": "Bravo 2",
           "startingElo": 1500,
           "updatedAt": "<updatedAt>"
         },
@@ -1333,6 +1334,10 @@
           "avatar": "/api/players/76561199000080003/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1284,
+          "id": "76561199000080003",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Bravo 3",
           "ratingGame": "cs2",
           "ratings": [
             {
@@ -1341,10 +1346,6 @@
               "matchCount": 1
             }
           ],
-          "id": "76561199000080003",
-          "isAdmin": false,
-          "matchCount": 1,
-          "name": "Bravo 3",
           "startingElo": 1500,
           "updatedAt": "<updatedAt>"
         },
@@ -1488,6 +1489,10 @@
           "avatar": "/api/players/76561199000080004/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1284,
+          "id": "76561199000080004",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Bravo 4",
           "ratingGame": "cs2",
           "ratings": [
             {
@@ -1496,10 +1501,6 @@
               "matchCount": 1
             }
           ],
-          "id": "76561199000080004",
-          "isAdmin": false,
-          "matchCount": 1,
-          "name": "Bravo 4",
           "startingElo": 1500,
           "updatedAt": "<updatedAt>"
         },
@@ -1643,6 +1644,10 @@
           "avatar": "/api/players/76561199000080005/avatar.svg",
           "createdAt": "<createdAt>",
           "currentElo": 1284,
+          "id": "76561199000080005",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Bravo 5",
           "ratingGame": "cs2",
           "ratings": [
             {
@@ -1651,10 +1656,6 @@
               "matchCount": 1
             }
           ],
-          "id": "76561199000080005",
-          "isAdmin": false,
-          "matchCount": 1,
-          "name": "Bravo 5",
           "startingElo": 1500,
           "updatedAt": "<updatedAt>"
         },
