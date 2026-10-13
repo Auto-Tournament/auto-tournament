@@ -739,6 +739,7 @@
     "recordingGroup": "Opptakergruppe",
     "allRecorders": "Alle opptakere",
     "groupHelp": "Velg gruppen som skal rendre kampen. Deaktiverte grupper venter til de aktiveres.",
-    "groupDisabled": "Deaktivert"
+    "groupDisabled": "Deaktivert",
+    "notCs2Demo": "{{name}} er ikke en CS2-demo (CS:GO-demoer kan ikke importeres)."
   }
 }

@@ -739,6 +739,7 @@
     "recordingGroup": "Recorder group",
     "allRecorders": "All recorders",
     "groupHelp": "Choose which group renders this match. Disabled groups wait until enabled.",
-    "groupDisabled": "Disabled"
+    "groupDisabled": "Disabled",
+    "notCs2Demo": "{{name}} is not a CS2 demo (CS:GO demos can't be imported)."
   }
 }

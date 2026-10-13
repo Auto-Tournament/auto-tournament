@@ -88,7 +88,7 @@ export default function ImportMatch() {
   // The demo worker's progress (the `demo-analysis` topic), not a timer.
   useTopic('demo-analysis', follow, { admin: true, enabled: !!followSlug });
 
-  const add = (list: ArrayLike<File> | null) => {
+  const add = async (list: ArrayLike<File> | null) => {
     if (!list) return;
     // Picked or dropped together: in name order (m1-…, m2-… or map1, map2), the order they were played as a rule.
     const picked = Array.from(list).sort((a, b) =>
@@ -98,6 +98,15 @@ export default function ImportMatch() {
     if (bad) {
       setError(t('importMatch.notDemo', { name: bad.name }));
       return;
+    }
+    // A CS2 demo starts with "PBDEMS2\0" (a CS:GO one does not): say so
+    // now, not after the upload starts.
+    for (const f of picked) {
+      const head = new Uint8Array(await f.slice(0, 8).arrayBuffer());
+      if (String.fromCharCode(...head) !== 'PBDEMS2\0') {
+        setError(t('importMatch.notCs2Demo', { name: f.name }));
+        return;
+      }
     }
     const next = [...files, ...picked].slice(0, MAX_MAPS);
     if (files.length + picked.length > MAX_MAPS)
@@ -176,7 +185,7 @@ export default function ImportMatch() {
       )}
 
       {!status ? (
-        <Panel sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <Panel sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, p: { xs: 2, md: 3 } }}>
           <TextField
             label={t('importMatch.event')}
             helperText={t('importMatch.eventHelp')}
@@ -215,7 +224,7 @@ export default function ImportMatch() {
             onDrop={(e) => {
               e.preventDefault();
               setDragging(false);
-              if (!busy) add(e.dataTransfer.files);
+              if (!busy) void add(e.dataTransfer.files);
             }}
             sx={{
               p: 2,
@@ -279,7 +288,7 @@ export default function ImportMatch() {
               hidden
               data-testid="import-files"
               onChange={(e) => {
-                add(e.target.files);
+                void add(e.target.files);
                 e.target.value = '';
               }}
             />
@@ -316,7 +325,7 @@ export default function ImportMatch() {
         </Panel>
       ) : (
         <Panel
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: { xs: 2, md: 3 } }}
           data-testid="import-status"
         >
           <Typography variant="h6" component="h2">
