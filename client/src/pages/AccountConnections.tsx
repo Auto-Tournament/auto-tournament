@@ -45,6 +45,7 @@ import {
   type SignInMethod,
 } from '../components/account/connectionsApi';
 import { ChangePasswordDialog } from '../components/account/ChangePasswordDialog';
+import { TwoStepDialog } from '../components/account/TwoStepDialog';
 import { AccountEmailSection } from '../components/account/AccountEmailSection';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { apiErrorMessage } from '../utils/api';
@@ -255,6 +256,7 @@ export default function AccountConnections() {
   const [reauthError, setReauthError] = useState<string | null>(null);
   const [mergeDismissed, setMergeDismissed] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [twoStep, setTwoStep] = useState<'on' | 'off' | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -664,7 +666,16 @@ export default function AccountConnections() {
                   {data.signInMethods.map((method) => {
                     let detail: string;
                     if (method.provider === 'local') {
-                      detail = t('account.signIn.localDetail', { username: method.username ?? '' });
+                      detail = [
+                        t('account.signIn.localDetail', { username: method.username ?? '' }),
+                        data.localLogin
+                          ? data.localLogin.totpEnabled
+                            ? t('account.twoStep.isOn')
+                            : t('account.twoStep.isOff')
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ');
                       if (!method.signInEnabled) detail += ` · ${t('account.signIn.turnedOff')}`;
                     } else if (method.primary) {
                       detail =
@@ -734,6 +745,16 @@ export default function AccountConnections() {
                           >
                             {t('account.changePassword.button')}
                           </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => setTwoStep(data.localLogin?.totpEnabled ? 'off' : 'on')}
+                            data-testid="sign-in-two-step"
+                          >
+                            {data.localLogin.totpEnabled
+                              ? t('account.twoStep.turnOff')
+                              : t('account.twoStep.turnOn')}
+                          </Button>
                           {end}
                         </Stack>
                       );
@@ -769,6 +790,18 @@ export default function AccountConnections() {
           </Box>
         )}
       </Container>
+
+      <TwoStepDialog
+        mode={twoStep}
+        onClose={() => setTwoStep(null)}
+        onDone={(on) => {
+          setTwoStep(null);
+          setData((d) =>
+            d && d.localLogin ? { ...d, localLogin: { ...d.localLogin, totpEnabled: on } } : d
+          );
+          showSuccess(on ? t('account.twoStep.turnedOn') : t('account.twoStep.turnedOff'));
+        }}
+      />
 
       <ChangePasswordDialog
         open={changingPassword}

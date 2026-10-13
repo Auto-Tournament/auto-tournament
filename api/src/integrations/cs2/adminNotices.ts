@@ -98,9 +98,7 @@ export async function sweepRecorders(at = now()): Promise<void> {
       await adminNoticeService.raise(
         'recorder_offline',
         { recorder: shown, lastSeen },
-        `recorder_offline:${r.name}`,
-        undefined,
-        { ongoing: true }
+        `recorder_offline:${r.name}`
       );
     } else if (lastSeen >= at - RECORDER_OFFLINE_SECONDS) {
       await adminNoticeService.resolve(`recorder_offline:${r.name}`);
@@ -138,9 +136,7 @@ export async function sweepFailures(at = now()): Promise<void> {
     await adminNoticeService.raise(
       'clips_failing',
       { count: Number(clips?.n), error: clips?.last ?? null },
-      'clips_failing',
-      undefined,
-      { ongoing: true }
+      'clips_failing'
     );
   } else if (Number(clips?.n ?? 0) === 0) {
     await adminNoticeService.resolve('clips_failing');
@@ -154,9 +150,7 @@ export async function sweepFailures(at = now()): Promise<void> {
     await adminNoticeService.raise(
       'demos_failing',
       { count: Number(demos?.n), error: demos?.last ?? null },
-      'demos_failing',
-      undefined,
-      { ongoing: true }
+      'demos_failing'
     );
   } else if (Number(demos?.n ?? 0) === 0) {
     await adminNoticeService.resolve('demos_failing');
@@ -182,9 +176,7 @@ export async function sweepPluginUpdates(): Promise<void> {
       await adminNoticeService.raise(
         'plugin_update_available',
         { version: latest.version, servers: behind.length },
-        dedupe,
-        undefined,
-        { ongoing: true }
+        dedupe
       );
     }
   } else {

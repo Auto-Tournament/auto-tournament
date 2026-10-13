@@ -110,9 +110,7 @@ export async function sweepStuckMatches(now = Math.floor(Date.now() / 1000)): Pr
       await adminNoticeService.raise(
         stuck.kind,
         { matchSlug: row.slug, minutes: Math.floor((now - since) / 60) },
-        dedupe,
-        undefined,
-        { ongoing: true }
+        dedupe
       );
     }
   }
@@ -146,9 +144,7 @@ export async function sweepPlatform(): Promise<void> {
       await adminNoticeService.raise(
         'beta_available',
         { version: update.latest, running: update.running, url: update.releaseUrl },
-        dedupe,
-        undefined,
-        { ongoing: true }
+        dedupe
       );
     }
   }
@@ -167,9 +163,7 @@ export async function sweepPlatform(): Promise<void> {
       await adminNoticeService.raise(
         'license_problem',
         { problem: trouble },
-        `license_problem:${trouble}`,
-        undefined,
-        { ongoing: true }
+        `license_problem:${trouble}`
       );
     }
   }

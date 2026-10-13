@@ -285,23 +285,19 @@ localAuthRouter.post('/login', guardWrite, async (req: Request, res: Response) =
     const result = await localAdminService.verifyLogin(username, body.password, body.totp);
     if (!result.ok) {
       if (result.reason === 'totp_required') {
-        return res
-          .status(401)
-          .json({
-            success: false,
-            totpRequired: true,
-            error: 'Enter the code from your authenticator app',
-          });
+        return res.status(401).json({
+          success: false,
+          totpRequired: true,
+          error: 'Enter the code from your authenticator app',
+        });
       }
       loginThrottle.recordFailure(ip, target);
       log.warn('[AUDIT] Local admin login failed', { username, ip, reason: result.reason });
-      return res
-        .status(401)
-        .json({
-          success: false,
-          error: BAD_LOGIN,
-          totpRequired: result.reason === 'totp_invalid' || undefined,
-        });
+      return res.status(401).json({
+        success: false,
+        error: BAD_LOGIN,
+        totpRequired: result.reason === 'totp_invalid' || undefined,
+      });
     }
     loginThrottle.recordSuccess(target);
     await signIn(req, res, result.playerId, username as string);
@@ -365,6 +361,12 @@ localAuthRouter.post(
   async (req: Request, res: Response) => {
     const playerId = sessionPlayerId(req, res);
     if (!playerId) return;
+    // On already: replacing it needs the current code, so it is turned off first.
+    if ((await localAdminService.status(playerId))?.totpEnabled) {
+      return res
+        .status(409)
+        .json({ success: false, error: 'Two-step verification is on already. Turn it off first.' });
+    }
     const started = await localAdminService.startTotp(playerId);
     if (!started) return res.status(404).json({ success: false, error: 'Not found' });
     const issuer = await settingsService.getSiteName().catch(() => 'Auto Tournament');
@@ -409,17 +411,75 @@ localAuthRouter.post(
     if (wait > 0) return tooMany(res, wait);
     if (!(await localAdminService.confirmTotp(playerId, (req.body as { code?: unknown })?.code))) {
       loginThrottle.recordFailure(ip, target);
-      return res
-        .status(400)
-        .json({
-          success: false,
-          error: 'That code is not right. Check the time on your phone and try again.',
-        });
+      return res.status(400).json({
+        success: false,
+        error: 'That code is not right. Check the time on your phone and try again.',
+      });
     }
     loginThrottle.recordSuccess(target);
     return res.json({ success: true });
   }
 );
+
+/**
+ * @openapi
+ * /api/auth/local/totp/disable:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Turn TOTP off for the signed-in local admin
+ *     description: Same-site JSON. Needs the password and a current code. Throttled like sign-in.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               password: { type: string }
+ *               totp: { type: string }
+ *     responses:
+ *       200:
+ *         description: TOTP is off; sign-in asks for the password only
+ *       401:
+ *         description: Wrong password or code (`totpRequired` when the code is missing)
+ */
+localAuthRouter.post('/totp/disable', guardWrite, async (req: Request, res: Response) => {
+  const identity = await resolveViewerIdentity(req);
+  if (!identity.realSteamId) return res.status(404).json({ success: false, error: 'Not found' });
+  if (identity.isImpersonating) {
+    return res
+      .status(403)
+      .json({ success: false, error: 'Stop impersonating to manage your own account.' });
+  }
+  const row = await localAdminService.findByPlayerId(identity.realSteamId);
+  if (!row)
+    return res.status(404).json({ success: false, error: 'This account has no password login' });
+  if (!row.totp_secret_enc) return res.json({ success: true });
+
+  const body = (req.body ?? {}) as { password?: unknown; totp?: unknown };
+  const ip = clientIp(req);
+  const target = `user:${row.username}`;
+  const wait = loginThrottle.retryAfterMs(ip, target);
+  if (wait > 0) return tooMany(res, wait);
+  const result = await localAdminService.verifyLogin(row.username, body.password, body.totp);
+  if (!result.ok || result.playerId !== identity.realSteamId) {
+    if (!result.ok && result.reason === 'totp_required') {
+      return res.status(401).json({
+        success: false,
+        totpRequired: true,
+        error: 'Enter the code from your authenticator app',
+      });
+    }
+    loginThrottle.recordFailure(ip, target);
+    log.warn('[AUDIT] Turning off TOTP refused: wrong password or code', {
+      username: row.username,
+      ip,
+    });
+    return res.status(401).json({ success: false, error: 'Wrong password or code' });
+  }
+  loginThrottle.recordSuccess(target);
+  await localAdminService.disableTotp(identity.realSteamId);
+  return res.json({ success: true });
+});
 
 /**
  * @openapi
@@ -474,13 +534,11 @@ localAuthRouter.post('/reauth', guardWrite, async (req: Request, res: Response) 
     const result = await localAdminService.verifyLogin(row.username, body.password, body.totp);
     if (!result.ok || result.playerId !== identity.realSteamId) {
       if (!result.ok && result.reason === 'totp_required') {
-        return res
-          .status(401)
-          .json({
-            success: false,
-            totpRequired: true,
-            error: 'Enter the code from your authenticator app',
-          });
+        return res.status(401).json({
+          success: false,
+          totpRequired: true,
+          error: 'Enter the code from your authenticator app',
+        });
       }
       loginThrottle.recordFailure(ip, target);
       log.warn('[AUDIT] Local admin re-confirmation failed', { username: row.username, ip });
@@ -545,13 +603,21 @@ localAuthRouter.post('/password', guardWrite, async (req: Request, res: Response
   if (!row)
     return res.status(404).json({ success: false, error: 'This account has no password login' });
 
-  const body = (req.body ?? {}) as { currentPassword?: unknown; newPassword?: unknown; totp?: unknown };
+  const body = (req.body ?? {}) as {
+    currentPassword?: unknown;
+    newPassword?: unknown;
+    totp?: unknown;
+  };
   const ip = clientIp(req);
   const target = `user:${row.username}`;
   const wait = loginThrottle.retryAfterMs(ip, target);
   if (wait > 0) return tooMany(res, wait);
   try {
-    const result = await localAdminService.verifyLogin(row.username, body.currentPassword, body.totp);
+    const result = await localAdminService.verifyLogin(
+      row.username,
+      body.currentPassword,
+      body.totp
+    );
     if (!result.ok || result.playerId !== identity.realSteamId) {
       if (!result.ok && result.reason === 'totp_required') {
         return res.status(401).json({
@@ -561,7 +627,10 @@ localAuthRouter.post('/password', guardWrite, async (req: Request, res: Response
         });
       }
       loginThrottle.recordFailure(ip, target);
-      log.warn('[AUDIT] Password change refused: wrong current password', { username: row.username, ip });
+      log.warn('[AUDIT] Password change refused: wrong current password', {
+        username: row.username,
+        ip,
+      });
       return res.status(401).json({
         success: false,
         error: 'Your current password is not right',
@@ -606,7 +675,9 @@ localAuthRouter.post('/password', guardWrite, async (req: Request, res: Response
 localAuthRouter.post('/forgot', guardWrite, async (req: Request, res: Response) => {
   const ip = clientIp(req);
   const identifier = (req.body ?? {}).identifier;
-  const target = `forgot:${String(identifier ?? '').slice(0, 254).toLowerCase()}`;
+  const target = `forgot:${String(identifier ?? '')
+    .slice(0, 254)
+    .toLowerCase()}`;
   const wait = loginThrottle.retryAfterMs(ip, target);
   if (wait > 0) return tooMany(res, wait);
   // Counted as a failure every time: a few requests per address, then a pause.
@@ -644,13 +715,16 @@ localAuthRouter.post('/forgot', guardWrite, async (req: Request, res: Response) 
 localAuthRouter.post('/reset', guardWrite, async (req: Request, res: Response) => {
   const body = (req.body ?? {}) as { token?: unknown; password?: unknown };
   const problem = passwordProblem('', body.password);
-  if (problem) return res.status(400).json({ success: false, error: 'Password not accepted', problem });
+  if (problem)
+    return res.status(400).json({ success: false, error: 'Password not accepted', problem });
   try {
     const username = await playerEmailService.resetPassword(body.token, body.password as string);
     if (!username) {
-      return res
-        .status(400)
-        .json({ success: false, error: 'This link does not work any more. Ask for a new one.', code: 'badToken' });
+      return res.status(400).json({
+        success: false,
+        error: 'This link does not work any more. Ask for a new one.',
+        code: 'badToken',
+      });
     }
     return res.json({ success: true, username });
   } catch (error) {
@@ -852,7 +926,12 @@ localAccountsRouter.delete('/:username', guardWrite, async (req: Request, res: R
         .json({ success: false, error: 'You cannot remove the login you are signed in with' });
     }
     const player = await playerService.getPlayerById(row.player_id);
-    if (removesLastAdmin({ targetIsAdmin: !!player?.isAdmin, adminCount: await playerService.countAdmins() })) {
+    if (
+      removesLastAdmin({
+        targetIsAdmin: !!player?.isAdmin,
+        adminCount: await playerService.countAdmins(),
+      })
+    ) {
       return res.status(409).json({ success: false, error: LAST_ADMIN });
     }
     // Removing an account deletes the person (services/playerModeration.ts):

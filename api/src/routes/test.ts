@@ -93,7 +93,6 @@ async function setGamesPromptForTest(steamId: string, body: unknown): Promise<vo
  *               data: { type: object }
  *               dedupeKey: { type: string }
  *               resolve: { type: boolean }
- *               ongoing: { type: boolean, description: Raise the way a sweep does (quiet while open or dismissed) }
  *     responses:
  *       200: { description: Raised (the notice) or resolved }
  *       400: { description: Unknown kind }
@@ -105,7 +104,6 @@ router.post('/admin-notice', requireAuth, async (req: Request, res: Response): P
     data?: Record<string, unknown>;
     dedupeKey?: string;
     resolve?: boolean;
-    ongoing?: boolean;
   };
   if (body.resolve && body.dedupeKey) {
     await adminNoticeService.resolve(body.dedupeKey);
@@ -119,9 +117,7 @@ router.post('/admin-notice', requireAuth, async (req: Request, res: Response): P
   const notice = await adminNoticeService.raise(
     body.kind as keyof typeof ADMIN_NOTICE_KINDS,
     body.data ?? {},
-    body.dedupeKey ?? body.kind,
-    undefined,
-    { ongoing: body.ongoing === true }
+    body.dedupeKey ?? body.kind
   );
   res.json({ success: true, notice });
 });

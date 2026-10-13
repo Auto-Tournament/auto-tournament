@@ -291,6 +291,56 @@ test.describe.serial('friends, invites and the bell', () => {
     await noGame.ctx.delete('/api/matchmaking/queue');
   });
 
+  test(
+    'notification settings: per kind, off is not sent, answers are never off',
+    TAGS,
+    async () => {
+      const a = await player();
+      const b = await player();
+      const anon = await playwrightRequest.newContext({ baseURL: BASE_URL });
+      expect((await anon.get('/api/social/notifications/settings')).status()).toBe(401);
+      await anon.dispose();
+
+      const initial = (await (await a.ctx.get('/api/social/notifications/settings')).json())
+        .settings;
+      expect(initial).toMatchObject({
+        party_invite: 'sound',
+        friend_request: 'bell',
+        friend_accepted: 'bell',
+      });
+
+      // Off for accepted requests; a friend request can't be off (it needs an answer).
+      const saved = await a.ctx.put('/api/social/notifications/settings', {
+        data: { friend_accepted: 'off', friend_request: 'off', skin: 'sound', nonsense: 'off' },
+      });
+      expect(saved.ok(), await saved.text()).toBe(true);
+      const settings = (await saved.json()).settings;
+      expect(settings).toMatchObject({
+        friend_accepted: 'off',
+        friend_request: 'bell',
+        skin: 'sound',
+      });
+      expect(settings.nonsense).toBeUndefined();
+      // Kept across reads; the kinds left out stay.
+      const again = (await (await a.ctx.get('/api/social/notifications/settings')).json()).settings;
+      expect(again).toEqual(settings);
+
+      // a asks, b accepts: a gets no "accepted" notice (off).
+      expect(
+        (await a.ctx.post('/api/social/friends/requests', { data: { playerId: b.id } })).ok()
+      ).toBe(true);
+      expect(
+        (await b.ctx.post(`/api/social/friends/requests/${a.id}/accept`, { data: {} })).ok()
+      ).toBe(true);
+      const mine = await notices(a);
+      expect(
+        mine.items.some(
+          (n) => n.kind === 'friend_accepted' && (n.data.by as { id: string }).id === b.id
+        )
+      ).toBe(false);
+    }
+  );
+
   test('marking notices read', TAGS, async () => {
     const [a, b] = await Promise.all([player(), player()]);
     await a.ctx.post('/api/social/friends/requests', { data: { playerId: b.id } });

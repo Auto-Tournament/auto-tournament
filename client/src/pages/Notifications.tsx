@@ -10,8 +10,13 @@ import { EmptyPanel, PageHead, Panel } from '../components/common/ui';
 import { useAuth } from '../contexts/AuthContext';
 import { pageTitle } from '../utils/pageTitle';
 import { NoticeItem } from '../components/social/NoticeItem';
-import { NoticeFilters, matchesFilter, type NoticeFilter } from '../components/social/NotificationBell';
+import {
+  NoticeFilters,
+  matchesFilter,
+  type NoticeFilter,
+} from '../components/social/NotificationBell';
 import { loadOlderNotices, markNoticesRead, useSocial } from '../components/social/socialStore';
+import { NotificationSettings } from '../components/social/NotificationSettings';
 
 export default function Notifications() {
   const { t } = useTranslation();
@@ -25,13 +30,36 @@ export default function Notifications() {
     document.title = pageTitle(t('social.bell.title'));
   }, [t]);
 
+  // The bell's gear opens this page at #settings.
+  React.useEffect(() => {
+    if (window.location.hash !== '#settings') return;
+    const timer = window.setTimeout(
+      () => document.getElementById('settings')?.scrollIntoView({ behavior: 'smooth' }),
+      150
+    );
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <Box minHeight="100vh" data-testid="notifications-page">
       <TopNavBar />
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 6 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            gap: 2,
+            flexWrap: 'wrap',
+            mb: 2,
+          }}
+        >
           <PageHead title={t('social.bell.title')} sx={{ mb: 0 }} />
-          <Button variant="outlined" onClick={() => void markNoticesRead()} disabled={social.unread === 0}>
+          <Button
+            variant="outlined"
+            onClick={() => void markNoticesRead()}
+            disabled={social.unread === 0}
+          >
             {t('social.bell.markAllRead')}
           </Button>
         </Box>
@@ -39,9 +67,15 @@ export default function Notifications() {
           <NoticeFilters value={filter} onChange={setFilter} />
         </Box>
         {!playerSteamId ? (
-          <EmptyPanel title={t('social.friends.signIn')} description={t('social.friends.signInHint')} />
+          <EmptyPanel
+            title={t('social.friends.signIn')}
+            description={t('social.friends.signInHint')}
+          />
         ) : shown.length === 0 ? (
-          <EmptyPanel title={social.ready ? t('social.bell.empty') : t('social.bell.loading')} description={social.ready ? t('social.bell.emptyHint') : ''} />
+          <EmptyPanel
+            title={social.ready ? t('social.bell.empty') : t('social.bell.loading')}
+            description={social.ready ? t('social.bell.emptyHint') : ''}
+          />
         ) : (
           <Panel sx={{ p: 0, overflow: 'hidden' }}>
             {shown.map((n) => (
@@ -61,6 +95,11 @@ export default function Notifications() {
             >
               {t('social.bell.loadOlder')}
             </Button>
+          </Box>
+        )}
+        {playerSteamId && !impersonation && (
+          <Box sx={{ mt: 6 }}>
+            <NotificationSettings />
           </Box>
         )}
       </Container>

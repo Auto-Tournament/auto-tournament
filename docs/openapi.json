@@ -1681,6 +1681,40 @@
         ]
       }
     },
+    "/api/auth/local/totp/disable": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Turn TOTP off for the signed-in local admin",
+        "description": "Same-site JSON. Needs the password and a current code. Throttled like sign-in.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  },
+                  "totp": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "TOTP is off; sign-in asks for the password only"
+          },
+          "401": {
+            "description": "Wrong password or code (`totpRequired` when the code is missing)"
+          }
+        }
+      }
+    },
     "/api/auth/local/totp/start": {
       "post": {
         "tags": [
@@ -14595,6 +14629,32 @@
         }
       }
     },
+    "/api/social/notifications/settings": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "GET /api/social/notifications/settings",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "PUT /api/social/notifications/settings",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/social/people": {
       "get": {
         "tags": [
@@ -15899,10 +15959,6 @@
                   },
                   "resolve": {
                     "type": "boolean"
-                  },
-                  "ongoing": {
-                    "type": "boolean",
-                    "description": "Raise the way a sweep does (quiet while open or dismissed)"
                   }
                 }
               }

@@ -50,7 +50,9 @@ function handle(what: string, fn: (req: Request, res: Response) => Promise<unkno
       return await fn(req, res);
     } catch (error) {
       if (error instanceof SocialError) {
-        return res.status(error.status).json({ success: false, code: error.code, error: error.message });
+        return res
+          .status(error.status)
+          .json({ success: false, code: error.code, error: error.message });
       }
       log.error(`[SOCIAL] ${what} failed`, error as Error);
       return res.status(500).json({ success: false, error: `Could not ${what}` });
@@ -75,7 +77,9 @@ function handle(what: string, fn: (req: Request, res: Response) => Promise<unkno
 router.get(
   '/friends',
   requirePlayer,
-  handle('load your friends', async (req, res) => res.json({ success: true, ...(await socialService.overview(me(req))) }))
+  handle('load your friends', async (req, res) =>
+    res.json({ success: true, ...(await socialService.overview(me(req))) })
+  )
 );
 
 /**
@@ -99,7 +103,9 @@ router.post(
   '/friends/requests',
   requirePlayer,
   sameSiteJson,
-  handle('send the request', async (req, res) => res.json({ success: true, relation: await socialService.request(me(req), req.body?.playerId) }))
+  handle('send the request', async (req, res) =>
+    res.json({ success: true, relation: await socialService.request(me(req), req.body?.playerId) })
+  )
 );
 
 /**
@@ -202,7 +208,12 @@ router.delete(
 router.get(
   '/relation/:playerId',
   requirePlayer,
-  handle('look that up', async (req, res) => res.json({ success: true, relation: await socialService.relation(me(req), req.params.playerId) }))
+  handle('look that up', async (req, res) =>
+    res.json({
+      success: true,
+      relation: await socialService.relation(me(req), req.params.playerId),
+    })
+  )
 );
 
 /**
@@ -225,7 +236,9 @@ router.get(
   requirePlayer,
   handle('find players', async (req, res) => {
     const q = typeof req.query.q === 'string' ? req.query.q : '';
-    const people = q.trim() ? await socialService.search(me(req), q) : await socialService.recent(me(req));
+    const people = q.trim()
+      ? await socialService.search(me(req), q)
+      : await socialService.recent(me(req));
     return res.json({ success: true, people });
   })
 );
@@ -257,14 +270,18 @@ router.get(
 router.get(
   '/settings',
   requirePlayer,
-  handle('load your settings', async (req, res) => res.json({ success: true, ...(await socialService.settings(me(req))) }))
+  handle('load your settings', async (req, res) =>
+    res.json({ success: true, ...(await socialService.settings(me(req))) })
+  )
 );
 
 router.put(
   '/settings',
   requirePlayer,
   sameSiteJson,
-  handle('save your settings', async (req, res) => res.json({ success: true, ...(await socialService.saveSettings(me(req), req.body ?? {})) }))
+  handle('save your settings', async (req, res) =>
+    res.json({ success: true, ...(await socialService.saveSettings(me(req), req.body ?? {})) })
+  )
 );
 
 /**
@@ -287,8 +304,58 @@ router.get(
   requirePlayer,
   handle('load your notifications', async (req, res) => {
     const before = Number(req.query.before);
-    return res.json({ success: true, ...(await notificationService.list(me(req), Number.isFinite(before) && before > 0 ? before : undefined)) });
+    return res.json({
+      success: true,
+      ...(await notificationService.list(
+        me(req),
+        Number.isFinite(before) && before > 0 ? before : undefined
+      )),
+    });
   })
+);
+
+/**
+ * @openapi
+ * /api/social/notifications/settings:
+ *   get:
+ *     tags: [Social]
+ *     summary: How you get each kind of notification
+ *     description: >-
+ *       Per kind (party_invite, team_invite, friend_request, friend_accepted,
+ *       skin, highlight, tournament, news, report): `off` (not sent), `bell`,
+ *       or `sound` (the bell with a sound). What needs an answer (party_invite,
+ *       team_invite, friend_request) is never off.
+ *     responses:
+ *       200: { description: "`settings`" }
+ *   put:
+ *     tags: [Social]
+ *     summary: Change how you get some kinds of notification
+ *     description: Same-site JSON, `{ kind: 'off' | 'bell' | 'sound' }`; kinds left out stay. Returns them all.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema: { type: object, additionalProperties: { type: string, enum: [off, bell, sound] } }
+ *     responses:
+ *       200: { description: "`settings`, saved" }
+ */
+router.get(
+  '/notifications/settings',
+  requirePlayer,
+  handle('load your notification settings', async (req, res) =>
+    res.json({ success: true, settings: await notificationService.settings(me(req)) })
+  )
+);
+
+router.put(
+  '/notifications/settings',
+  requirePlayer,
+  sameSiteJson,
+  handle('save your notification settings', async (req, res) =>
+    res.json({
+      success: true,
+      settings: await notificationService.saveSettings(me(req), req.body ?? {}),
+    })
+  )
 );
 
 /**
@@ -311,7 +378,12 @@ router.post(
   sameSiteJson,
   handle('mark them read', async (req, res) => {
     const raw = req.body?.ids;
-    const ids = Array.isArray(raw) ? raw.map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 200) : undefined;
+    const ids = Array.isArray(raw)
+      ? raw
+          .map(Number)
+          .filter((n) => Number.isInteger(n) && n > 0)
+          .slice(0, 200)
+      : undefined;
     return res.json({ success: true, unread: await notificationService.markRead(me(req), ids) });
   })
 );
@@ -344,8 +416,15 @@ router.post(
     const title = typeof req.body?.title === 'string' ? req.body.title.trim().slice(0, 140) : '';
     if (!title) return res.status(400).json({ success: false, error: 'Give the news a title' });
     const body = typeof req.body?.body === 'string' ? req.body.body.trim().slice(0, 500) : '';
-    const url = typeof req.body?.url === 'string' && /^(\/|https:\/\/)/.test(req.body.url.trim()) ? req.body.url.trim().slice(0, 300) : '';
-    const sent = await notificationService.broadcast({ title, ...(body ? { body } : {}), ...(url ? { url } : {}) });
+    const url =
+      typeof req.body?.url === 'string' && /^(\/|https:\/\/)/.test(req.body.url.trim())
+        ? req.body.url.trim().slice(0, 300)
+        : '';
+    const sent = await notificationService.broadcast({
+      title,
+      ...(body ? { body } : {}),
+      ...(url ? { url } : {}),
+    });
     return res.json({ success: true, sent });
   })
 );

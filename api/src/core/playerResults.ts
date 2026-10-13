@@ -10,7 +10,6 @@
  * match history and standings work the same for it.
  */
 
-import { addPlayedGame } from '../services/gameReadiness';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { updatePlayerRatings } from '../services/ratingService';
@@ -188,11 +187,6 @@ async function persistPlayerMatchStats(options: {
   }
 
   log.debug(`Tracked player stats for ${written} players`, { matchSlug });
-  // They played this game: it goes on the profile of those who listed none.
-  await addPlayedGame(
-    [...team1Players, ...team2Players].map((p) => p.steamId).filter((id) => known.has(id)),
-    match.game ?? integration.id
-  ).catch((error) => log.debug('Could not add the played game', { matchSlug, error }));
 
   // A finished matchmaking or tournament game goes to the game's module (CS2: skin drops).
   const onResult = integrationForMatch(match).onMatchmakingResult;
