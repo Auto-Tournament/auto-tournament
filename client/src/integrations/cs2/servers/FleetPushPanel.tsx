@@ -60,8 +60,7 @@ import type {
   PluginSetValue,
   PluginsState,
 } from './fleetPush.types';
-
-const POLL_MS = 10_000;
+import { useTopic } from '../../../module-sdk';
 
 type Dialogs =
   | { kind: 'defaults' }
@@ -183,9 +182,9 @@ export default function FleetPushPanel() {
 
   useEffect(() => {
     void load();
-    const timer = setInterval(() => void load(), POLL_MS);
-    return () => clearInterval(timer);
   }, [load]);
+  // Re-read when the fleet changes (the `fleet` topic), not on a timer.
+  useTopic('fleet', load, { admin: true });
 
   const run = async (what: string, fn: () => Promise<void>) => {
     setBusy(true);

@@ -69,8 +69,7 @@ export function useManageData(
   // anything, and where to ask, so a manually reported one never asks at
   // all. Before there is a tournament, the module the caller names.
   const { availability, refresh: refreshAvailability } = useResourceAvailability(
-    tournament ? tournamentIntegration : resourceModuleWithoutTournament,
-    5000
+    tournament ? tournamentIntegration : resourceModuleWithoutTournament
   );
 
   const refresh = useCallback(() => {

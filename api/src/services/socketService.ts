@@ -1,7 +1,7 @@
 import { Server as SocketIOServer, type Socket } from 'socket.io';
 import type { Server as HTTPServer, IncomingMessage, ServerResponse } from 'http';
 import type { Request } from 'express';
-import { log } from '../utils/logger';
+import { log, onLogEntry } from '../utils/logger';
 import { getRealViewerSteamId } from '../utils/viewerIdentity';
 import { checkAdminAccess } from '../middleware/auth';
 import { matchChanged } from '../core/matchChangeBus';
@@ -157,8 +157,39 @@ export function initializeSocket(
     });
   });
 
+  // The admin log viewer follows the log (the `logs` topic, coalesced).
+  onLogEntry(() => emitTopic('logs', { admin: true }));
+
   log.success('Socket.io initialized');
   return io;
+}
+
+/**
+ * Page data changed: every page showing `topic` re-reads it (client
+ * hooks/useTopic.ts), instead of polling. `admin` topics go to the admins'
+ * room only. Coalesced per topic: a burst of changes is one `topic` event
+ * 250 ms after the first.
+ *
+ * Topics: `fleet` (servers, machines, autoscale, failover, pushes, server
+ * availability; admin), `matchmaking` (the admin queue; admin), `steam-health`
+ * (admin), `highlights-admin` (clean copies and redraws; admin),
+ * `logs` (the log viewer; admin), `demo-analysis` (imports; admin).
+ */
+const TOPIC_COALESCE_MS = 250;
+const pendingTopics = new Map<string, NodeJS.Timeout>();
+
+export function emitTopic(topic: string, options: { admin?: boolean } = {}): void {
+  const key = `${options.admin ? 'admin' : 'all'}:${topic}`;
+  if (pendingTopics.has(key)) return;
+  pendingTopics.set(
+    key,
+    setTimeout(() => {
+      pendingTopics.delete(key);
+      if (!io) return;
+      if (options.admin) io.to(ADMIN_ROOM).emit('topic', { topic });
+      else io.emit('topic', { topic });
+    }, TOPIC_COALESCE_MS)
+  );
 }
 
 /** The socket server, or null before it is up (for emitters that may run early, or in scripts). */

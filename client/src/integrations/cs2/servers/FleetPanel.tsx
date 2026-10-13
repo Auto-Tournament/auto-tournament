@@ -57,8 +57,7 @@ import {
 import type { FleetKey, FleetKeysResponse, FleetServer, FleetServersResponse } from '../cs2.types';
 import { insecureFlag, platformIsPlainHttp } from './insecureLink';
 import { ServerSection } from './ServerSection';
-
-const POLL_MS = 10_000;
+import { useTopic } from '../../../module-sdk';
 
 type Secret = { kind: 'code' | 'key'; value: string; expiresAt: number | null; name: string };
 /** The link / connect-address dialog: `link` links the server, `edit` changes a linked server's address. */
@@ -121,9 +120,9 @@ export default function FleetPanel() {
 
   useEffect(() => {
     void load();
-    const timer = setInterval(() => void load(), POLL_MS);
-    return () => clearInterval(timer);
   }, [load]);
+  // Re-read when the fleet changes (the `fleet` topic), not on a timer.
+  useTopic('fleet', load, { admin: true });
 
   const copy = async (value: string) => {
     try {

@@ -34,6 +34,7 @@ import { startFleetPush, stopFleetPush } from './fleet/push';
 import { startFleetFailover, stopFleetFailover } from './fleet/failover';
 import { startAutoscaler, stopAutoscaler } from './fleet/autoscale/scaler';
 import { serverTurnoverTracker } from './utils/serverTurnover';
+import { startFleetTopics } from './fleet/adminTopics';
 
 let stopTurnoverRetry: (() => void) | null = null;
 
@@ -76,6 +77,8 @@ export async function startCs2(): Promise<void> {
   startWaitingSweep();
   // The admins' bell: crashed servers, failed updates, recorders, failing clips.
   startCs2AdminNotices();
+  // The Servers page and match panels re-read on fleet changes (the `fleet` topic).
+  startFleetTopics();
   // What the platform does to a match, told in game (next map, pauses, a crash recovered).
   startGameMessages();
 

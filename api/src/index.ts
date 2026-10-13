@@ -659,6 +659,8 @@ process.on('uncaughtException', (err) => {
       socialService.start();
       startTournamentNotices();
       startAdminNoticeSweep();
+      // The admins' Steam warning follows the key (the `steam-health` topic).
+      steamService.startHealthWatch();
       // Admins' holds and bracket pauses that end by themselves (services/matchHolds.ts).
       startHoldTimer();
       // Matchmaking's 2-second loop (services/matchmaking). Cancels lobbies a restart left open.

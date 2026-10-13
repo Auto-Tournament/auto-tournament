@@ -17,6 +17,7 @@ import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { atRating } from '../rating';
 import { pickMoments, saveMoments } from './highlights';
+import { emitTopic } from '../../../services/socketService';
 
 /** Replays, under DATA_DIR so they survive container recreates. */
 export const REPLAYS_DIR = path.join(DATA_DIR, 'demo-replays');
@@ -138,6 +139,14 @@ export async function enqueueDemoJob(
  * With nothing queued, queue one stored demo that never had a job.
  */
 export async function claimDemoJob(worker: string, analyzerVersion = 0): Promise<DemoJob | null> {
+  try {
+    return await claimDemoJobNow(worker, analyzerVersion);
+  } finally {
+    emitTopic('demo-analysis', { admin: true });
+  }
+}
+
+async function claimDemoJobNow(worker: string, analyzerVersion: number): Promise<DemoJob | null> {
   await dropOrphanJobs();
   for (let pass = 0; pass < 3; pass += 1) {
     const row = await db.queryOneAsync<{ match_slug: string; map_number: number }>(
@@ -204,6 +213,15 @@ export async function claimDemoJob(worker: string, analyzerVersion = 0): Promise
 
 /** The worker could not read the demo: try again later, or give up. */
 export async function failDemoJob(job: DemoJob, error: string): Promise<void> {
+  try {
+    return await failDemoJobNow(job, error);
+  } finally {
+    // The import page follows its maps (the `demo-analysis` topic).
+    emitTopic('demo-analysis', { admin: true });
+  }
+}
+
+async function failDemoJobNow(job: DemoJob, error: string): Promise<void> {
   await db.runAsync(
     `UPDATE cs2_demo_jobs
         SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'pending' END, error = ?, finished_at = ?
@@ -282,6 +300,15 @@ async function teamsOf(matchSlug: string): Promise<Map<string, 'team1' | 'team2'
 
 /** Apply a finished analysis: the players' numbers, the rounds and the kills. */
 export async function completeDemoJob(job: DemoJob, analysis: DemoAnalysisPayload): Promise<void> {
+  try {
+    return await completeDemoJobNow(job, analysis);
+  } finally {
+    // The import page follows its maps (the `demo-analysis` topic).
+    emitTopic('demo-analysis', { admin: true });
+  }
+}
+
+async function completeDemoJobNow(job: DemoJob, analysis: DemoAnalysisPayload): Promise<void> {
   // An imported match learns its teams and score from the demo first, so
   // the players below land on their teams.
   const { applyImportedMap } = await import('./demoImport');

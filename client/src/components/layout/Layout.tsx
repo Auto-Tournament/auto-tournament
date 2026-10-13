@@ -17,6 +17,7 @@ import { ModuleNotInstalledNotice } from '../common/ModuleNotInstalledNotice';
 import { RAIL_COLUMN_MIN_WIDTH, railColumnSx } from '../../constants/adminLayout';
 import { paths } from '../../paths';
 import { UpdateToast } from '../system/UpdateToast';
+import { useTopic } from '../../hooks/useTopic';
 
 /**
  * Set for the rest of the browser session once an admin closes the Steam
@@ -106,6 +107,11 @@ function AdminShell() {
   // sign-ins and vanity URL lookups: Steam is the platform's own login
   // provider, and an instance running a manually reported Rocket League
   // tournament signs its admins in with it exactly like a CS2 one.
+  // Checked again when the server's own check sees the key change (the
+  // `steam-health` topic), not on a timer.
+  const [steamChecks, setSteamChecks] = React.useState(0);
+  const recheckSteam = React.useCallback(() => setSteamChecks((n) => n + 1), []);
+  useTopic('steam-health', recheckSteam, { admin: true });
   // Global admin warning: keep a persistent snackbar while Steam integration is unhealthy.
   React.useEffect(() => {
     let cancelled = false;
@@ -171,16 +177,14 @@ function AdminShell() {
     };
 
     void checkSteamHealth();
-    const interval = window.setInterval(checkSteamHealth, 5 * 60_000);
     // Saving Settings → Sign-in rechecks at once, so a fixed key clears the warning.
     const onSignInChanged = () => void checkSteamHealth();
     window.addEventListener('at:sign-in-settings-changed', onSignInChanged);
     return () => {
       cancelled = true;
-      window.clearInterval(interval);
       window.removeEventListener('at:sign-in-settings-changed', onSignInChanged);
     };
-  }, [steamHealthSnackbarKey, showPersistentError, closeSnackbar, t]);
+  }, [steamHealthSnackbarKey, showPersistentError, closeSnackbar, t, steamChecks]);
 
   // The Steam warning belongs to the admin shell. Without this it outlived the
   // shell: after "Sign out" it was still on the login page, in front of a

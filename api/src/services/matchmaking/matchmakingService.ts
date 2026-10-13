@@ -21,7 +21,12 @@ import { rating as osRating, rate as osRate } from 'openskill';
 import { DEFAULT_SIGMA, openSkillToDisplayElo } from '../../utils/ratingMath';
 import { progressionService } from './progressionService';
 import { playerConnectionService } from '../playerConnectionService';
-import { emitMatchmakingChanged, emitSocialChanged, onlinePlayerCount } from '../socketService';
+import {
+  emitMatchmakingChanged,
+  emitSocialChanged,
+  emitTopic,
+  onlinePlayerCount,
+} from '../socketService';
 import { notificationService } from '../notificationService';
 import { canInvite, gameName, gameRowId, missingForGame } from '../gameReadiness';
 import { settingsService } from '../settingsService';
@@ -215,6 +220,8 @@ export class MatchmakingService {
       } finally {
         if (this.touched.size > 0) {
           emitMatchmakingChanged(this.touched);
+          // The admins' queue panel too (the `matchmaking` topic).
+          emitTopic('matchmaking', { admin: true });
           this.touched = new Set();
         }
       }

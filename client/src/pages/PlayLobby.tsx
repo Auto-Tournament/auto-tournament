@@ -21,6 +21,7 @@ import { openChat } from '../components/chat/chatStore';
 import { getMapData } from '../constants/maps';
 import { paths, playerProfilePath } from '../paths';
 import { fontDisplay, radii, textSize, tokens } from '../theme/tokens';
+import { useTopic } from '../hooks/useTopic';
 
 const { color } = tokens;
 
@@ -36,7 +37,13 @@ interface LobbyView {
     team: number;
     /** The side this team starts on; null for a knife round or before the match exists. */
     startSide?: 'CT' | 'T' | null;
-    players: Array<{ id: string; name: string; avatarUrl?: string | null; accepted: boolean; inServer?: boolean }>;
+    players: Array<{
+      id: string;
+      name: string;
+      avatarUrl?: string | null;
+      accepted: boolean;
+      inServer?: boolean;
+    }>;
   }>;
   inServer?: number;
   total?: number;
@@ -67,12 +74,11 @@ export default function PlayLobby() {
   useEffect(() => {
     document.title = pageTitle(t('matchmaking.room.title'));
     const first = setTimeout(() => void load(), 0);
-    const id = setInterval(() => void load(), 5000);
-    return () => {
-      clearTimeout(first);
-      clearInterval(id);
-    };
+    return () => clearTimeout(first);
   }, [load, t]);
+  // Accepts, the match being made and its progress: the player's own
+  // matchmaking event and the match's updates.
+  useTopic([], load, { player: true, events: ['mm:changed', 'match:update'] });
 
   const onRolled = useCallback(() => setRolled(true), []);
 
@@ -185,9 +191,15 @@ export default function PlayLobby() {
                   : ''}
               </Typography>
               {waiting && (
-                <Typography sx={{ fontSize: textSize.sm, color: color.ink2, maxWidth: 520 }} data-testid="mm-warmup-rule">
+                <Typography
+                  sx={{ fontSize: textSize.sm, color: color.ink2, maxWidth: 520 }}
+                  data-testid="mm-warmup-rule"
+                >
                   {lobby.autostartMinutes
-                    ? t('matchmaking.room.warmupRuleTimed', { total: lobby.total ?? 10, minutes: lobby.autostartMinutes })
+                    ? t('matchmaking.room.warmupRuleTimed', {
+                        total: lobby.total ?? 10,
+                        minutes: lobby.autostartMinutes,
+                      })
                     : t('matchmaking.room.warmupRule', { total: lobby.total ?? 10 })}
                 </Typography>
               )}
@@ -282,7 +294,15 @@ export default function PlayLobby() {
                 >
                   {t('matchmaking.room.teamLetter', { letter: team.team === 1 ? 'A' : 'B' })}
                   {team.startSide && (
-                    <Box component="span" sx={{ ml: 1, fontSize: textSize.sm, fontWeight: 500, color: team.startSide === 'CT' ? color.info : color.medalGold }}>
+                    <Box
+                      component="span"
+                      sx={{
+                        ml: 1,
+                        fontSize: textSize.sm,
+                        fontWeight: 500,
+                        color: team.startSide === 'CT' ? color.info : color.medalGold,
+                      }}
+                    >
                       {t('matchmaking.room.sideFirst', { side: team.startSide })}
                     </Box>
                   )}
@@ -338,10 +358,26 @@ export default function PlayLobby() {
                       {onServer && !completed && (
                         <Typography
                           data-testid="mm-player-presence"
-                          sx={{ fontSize: textSize.sm, color: p.inServer ? color.pick : color.muted, display: 'flex', alignItems: 'center', gap: 0.75 }}
+                          sx={{
+                            fontSize: textSize.sm,
+                            color: p.inServer ? color.pick : color.muted,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.75,
+                          }}
                         >
-                          <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: p.inServer ? color.pick : color.rule }} />
-                          {p.inServer ? t('matchmaking.room.presence.in') : t('matchmaking.room.presence.notYet')}
+                          <Box
+                            component="span"
+                            sx={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              bgcolor: p.inServer ? color.pick : color.rule,
+                            }}
+                          />
+                          {p.inServer
+                            ? t('matchmaking.room.presence.in')
+                            : t('matchmaking.room.presence.notYet')}
                         </Typography>
                       )}
                       {lobby.status === 'accepting' && (

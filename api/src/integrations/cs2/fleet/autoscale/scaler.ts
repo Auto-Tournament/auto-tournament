@@ -52,6 +52,7 @@ import {
   LICENSE_FULL_BACKOFF_SECONDS,
 } from './plan';
 import { configuredReserve, getAutoscaleSettings, type StoredAutoscaleSettings } from './settings';
+import { fleetChanged } from '../adminTopics';
 
 /** `issued_by` on the scaler's host commands. */
 export const AUTOSCALE_ACTOR = 'autoscale';
@@ -119,6 +120,7 @@ interface EventRow {
 }
 
 async function recordEvent(e: Omit<AutoscaleEvent, 'id' | 'at'>): Promise<void> {
+  fleetChanged();
   await db.runAsync(
     `INSERT INTO cs2_fleet_autoscale_events (at, action, host_id, host_name, server, fleet_server_id, server_name, reason, command_id, outcome, error)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,

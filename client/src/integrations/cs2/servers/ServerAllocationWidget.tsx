@@ -17,7 +17,7 @@ import { useServerAvailability } from './useServerAvailability';
  * there is at least one server to show.
  */
 export const ServerAllocationWidget: React.FC<MatchAllocationPanelProps> = () => {
-  const { availability } = useServerAvailability(5000);
+  const { availability } = useServerAvailability();
   if (!availability || availability.servers.length === 0) return null;
   return (
     <ServerAllocationPanel
@@ -209,7 +209,9 @@ const ServerAllocationPanel: React.FC<ServerAllocationPanelProps> = ({
                   <LinearProgress
                     variant="determinate"
                     value={progress}
-                    aria-label={t('serverAllocation.readyIn', { defaultValue: 'Time until the server is ready' })}
+                    aria-label={t('serverAllocation.readyIn', {
+                      defaultValue: 'Time until the server is ready',
+                    })}
                     sx={{
                       position: 'absolute',
                       bottom: 0,
