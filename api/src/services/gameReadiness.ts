@@ -6,7 +6,7 @@
  * setting (players.party_invites_from).
  */
 import { db } from '../config/database';
-import { builtinGames } from './gameCatalogService';
+import { builtinGames, ensureBuiltinGames } from './gameCatalogService';
 import { getIntegration, hasIntegration } from '../integrations/registry';
 
 export type Missing = 'game' | 'account';
@@ -111,7 +111,10 @@ export async function canInvite(
 export async function addPlayedGame(steamIds: string[], game: string): Promise<number> {
   const ids = [...new Set(steamIds.filter(Boolean))];
   if (ids.length === 0) return 0;
-  const gameId = await gameRowId(game);
+  // A fresh install seeds its built-in games in the background: the first
+  // import can come before that.
+  const gameId =
+    (await gameRowId(game)) ?? (await ensureBuiltinGames().then(() => gameRowId(game)));
   if (gameId === null) return 0;
   const rows = await db.queryAsync<{ player_uid: string }>(
     `INSERT INTO player_games (player_uid, game_id, created_at)
