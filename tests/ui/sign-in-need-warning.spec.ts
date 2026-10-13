@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn, getAuthHeader } from '../helpers/auth';
+import { ensureSignedIn } from '../helpers/auth';
 
 /**
  * A game whose players need a sign-in that is off (CS2 needs Steam): Modules
@@ -11,9 +11,8 @@ import { ensureSignedIn, getAuthHeader } from '../helpers/auth';
 test(
   'Steam sign-in off: Modules and the Game step warn about CS2',
   { tag: ['@ui'] },
-  async ({ page, request }) => {
+  async ({ page }) => {
     await ensureSignedIn(page);
-    const headers = getAuthHeader();
     const providers = (await (await page.request.get('/api/sign-in-providers')).json())
       .providers as Array<{
       id: string;
@@ -34,14 +33,15 @@ test(
         '/manage/settings?section=signin'
       );
 
-      // Every tournament goes (other specs leave live ones behind), so setup opens fresh.
-      const list = (await (await request.get('/api/tournaments', { headers })).json()) as {
-        tournaments?: Array<{ id: number }>;
+      // Setup for a new tournament (what "New tournament" in the admin bar
+      // picks), whatever tournaments other specs left running.
+      const { nextId } = (await (await page.request.get('/api/tournaments')).json()) as {
+        nextId: number;
       };
-      for (const t of list.tournaments ?? []) {
-        await request.delete(`/api/tournament?tournamentId=${t.id}`, { headers });
-      }
-      await request.delete('/api/tournament', { headers });
+      await page.evaluate(
+        (id) => window.localStorage.setItem('at:adminTournamentId', String(id)),
+        nextId
+      );
       await page.goto('/manage/tournament');
       await expect(page.getByTestId('sign-in-need-cs2')).toBeVisible({ timeout: 15000 });
     } finally {
