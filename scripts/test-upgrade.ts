@@ -197,6 +197,10 @@ function buildCurrentImage() {
     NEW_IMAGE_TAG,
     '--build-arg',
     'VITE_ENABLE_DEV_PAGE=true',
+    // CI pulls node through Google's mirror: ECR's anonymous data limit (429).
+    ...(process.env.NODE_REGISTRY
+      ? ['--build-arg', `NODE_REGISTRY=${process.env.NODE_REGISTRY}`]
+      : []),
     '.',
   ]);
 }
