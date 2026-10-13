@@ -40,7 +40,8 @@
     "language": "Language",
     "signIn": "Sign in",
     "play": "Play",
-    "thirdPartyNotices": "Third-party licenses"
+    "thirdPartyNotices": "Third-party licenses",
+    "needsYou": "Needs you"
   },
   "layout": {
     "pageTitle": {

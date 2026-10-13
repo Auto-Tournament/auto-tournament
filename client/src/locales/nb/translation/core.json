@@ -40,7 +40,8 @@
     "language": "Språk",
     "signIn": "Logg inn",
     "play": "Spill",
-    "thirdPartyNotices": "Tredjepartslisenser"
+    "thirdPartyNotices": "Tredjepartslisenser",
+    "needsYou": "Trenger deg"
   },
   "layout": {
     "pageTitle": {

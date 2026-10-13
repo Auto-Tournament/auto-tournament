@@ -37,7 +37,8 @@
     "tournaments": "Tournaments",
     "community": "Community",
     "backToSite": "Back to site",
-    "manageHome": "Manage"
+    "manageHome": "Manage",
+    "needsYou": "Needs you"
   },
   "layout": {
     "pageTitle": {

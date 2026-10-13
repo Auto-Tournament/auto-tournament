@@ -8,11 +8,12 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useCurrentMatchStatus } from '../../hooks/useCurrentMatchStatus';
 import { DevAccountSwitcherGate } from '../dev/DevAccountSwitcherGate';
 import { AtIcon } from '../common/AtIcon';
-import { fontDisplay, textSize } from '../../theme/tokens';
+import { fontDisplay, radii, textSize, tokens } from '../../theme/tokens';
 import { paths } from '../../paths';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
 import { NotificationBell } from '../social/NotificationBell';
 import { AdminNoticeBell } from '../admin/AdminNoticeBell';
+import { useNeedsYouCount } from '../../hooks/useNeedsYouCount';
 import { AccountMenu } from './AccountMenu';
 import { SiteSearch } from '../search/SiteSearch';
 import { useInstalledIntegrations } from '../../integrations/registry';
@@ -103,6 +104,8 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
   // The admin links are for a real admin session only. While impersonating,
   // the UI behaves as the player and shows the player's links.
   const showAdminLinks = isAuthenticated && !impersonation;
+  // Things waiting for an admin, site-wide: the pill opens Needs you.
+  const needsYou = useNeedsYouCount(showAdminLinks);
 
   React.useEffect(() => {
     if (!playerSteamId) {
@@ -435,6 +438,42 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
 
         <SiteSearch />
 
+        {showAdminLinks && needsYou > 0 && (
+          <Button
+            component={RouterLink}
+            to={paths.manage}
+            size="small"
+            data-testid="nav-needs-you"
+            sx={{
+              display: { xs: 'none', sm: 'inline-flex' },
+              gap: 1,
+              px: 1.75,
+              borderRadius: radii.pill,
+              border: `1px solid ${tokens.color.accent}`,
+              color: tokens.color.ink,
+              whiteSpace: 'nowrap',
+              fontWeight: 600,
+            }}
+          >
+            <Box
+              component="span"
+              sx={{
+                minWidth: 22,
+                height: 22,
+                px: 0.5,
+                borderRadius: '11px',
+                bgcolor: tokens.color.accent,
+                color: tokens.color.paper,
+                fontSize: 12,
+                lineHeight: '22px',
+                textAlign: 'center',
+              }}
+            >
+              {needsYou}
+            </Box>
+            {t('nav.needsYou')}
+          </Button>
+        )}
         {showAdminLinks && <AdminNoticeBell />}
         {playerSteamId && !impersonation && <NotificationBell viewerId={playerSteamId} />}
 
