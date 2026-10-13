@@ -17,6 +17,9 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.1.0",
+    "@fontsource/geist": "5.2.6",
+    "@fontsource/sora": "5.2.6",
+    "@resvg/resvg-wasm": "2.6.2",
     "ajv": "^8.17.1",
     "brackets-manager": "^1.7.1",
     "brackets-memory-db": "^1.0.5",
@@ -40,6 +43,7 @@
     "pg": "^8.16.3",
     "pino": "^10.1.0",
     "pngjs": "^7.0.0",
+    "satori": "0.18.3",
     "semver": "^7.6.0",
     "socket.io": "^4.8.1",
     "swagger-jsdoc": "^6.2.8",

@@ -61,6 +61,7 @@ import type {
   MatchDescriptionTeam,
   ResourceActionResult,
 } from '../types';
+import { cs2ShareCards } from './shareCards';
 import {
   CS2_STATS_SCHEMA,
   cs2PlayerStatsColumns,
@@ -841,6 +842,9 @@ export const cs2Integration: GameIntegration = {
   },
 
   clientSlots: ['MatchPanel', 'SetupStep', 'StatsPanel'],
+
+  // Link previews for clips and reels (services/shareCards).
+  shareCards: cs2ShareCards,
 };
 
 /**
