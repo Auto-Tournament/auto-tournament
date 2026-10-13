@@ -847,3 +847,53 @@ func teamsOf(rounds []Round, sides map[int]map[string]string, clans map[int]map[
 	}
 	return out
 }
+
+// PositionAt is where the player (their replay id) stood at the replay frame
+// nearest before `tick`, within two frames; false when the replay has no frame
+// with them there (dead, not yet spawned, another tick base).
+func (r *Replay) PositionAt(playerID string, tick int) ([3]float64, bool) {
+	if r == nil || playerID == "" {
+		return [3]float64{}, false
+	}
+	idx := -1
+	for i, p := range r.Players {
+		if p.ID == playerID {
+			idx = i
+			break
+		}
+	}
+	if idx < 0 {
+		return [3]float64{}, false
+	}
+	// Frames are in tick order: the last one at or before `tick`.
+	j := sort.Search(len(r.Frames), func(i int) bool { return frameTick(r.Frames[i]) > tick }) - 1
+	if j < 0 || tick-frameTick(r.Frames[j]) > 2*r.Step {
+		return [3]float64{}, false
+	}
+	row, ok := r.Frames[j][1].([]any)
+	if !ok || idx >= len(row) {
+		return [3]float64{}, false
+	}
+	switch v := row[idx].(type) {
+	case [6]float64:
+		return [3]float64{v[0], v[1], v[5]}, true
+	case []any:
+		if len(v) >= 6 {
+			x, _ := v[0].(float64)
+			y, _ := v[1].(float64)
+			z, _ := v[5].(float64)
+			return [3]float64{x, y, z}, true
+		}
+	}
+	return [3]float64{}, false
+}
+
+func frameTick(f [2]any) int {
+	switch t := f[0].(type) {
+	case int:
+		return t
+	case float64:
+		return int(t)
+	}
+	return 0
+}

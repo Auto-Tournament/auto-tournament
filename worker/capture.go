@@ -95,6 +95,8 @@ var recorderLook = []string{
 var (
 	reUnpaused  = regexp.MustCompile(`unpaused on tick (\d+)`)
 	rePaused    = regexp.MustCompile(`(?:^|[^n])paused on tick (\d+)`)
+	// getpos: "setpos 1234.000000 -56.000000 89.031250;setang ...".
+	reSetpos = regexp.MustCompile(`setpos (-?[\d.]+ -?[\d.]+ -?[\d.]+)`)
 	reStartTick = regexp.MustCompile(`server_start_tick: (\d+)`)
 	reLastTick  = regexp.MustCompile(`playback_ticks: (\d+)`)
 	reMapLoaded = regexp.MustCompile(`OnSwitchLoopModeFinished\( (game) : success \)`)
@@ -195,6 +197,9 @@ type game struct {
 	startTick int // the demo's first tick: the console's ticks count from it
 	lastTick  int // the demo's length in ticks (the analyzer's last tick)
 	logPath   string
+	// follow, when set, is where the followed player stands at a tick (the
+	// demo's replay frames): the capture checks the camera is with them.
+	follow func(tick int) ([3]float64, bool)
 }
 
 // launchGame starts gamescope with CS2 and waits for its console and stream.
@@ -331,7 +336,8 @@ func (g *game) loadDemo(demo string, look []string) error {
 			}
 			// The demo carries the server's host_timescale (4 when its match was
 			// simulated); play it at its own speed.
-			return g.con.send("demo_pause", "host_timescale 1")
+			// sv_cheats for getpos (the follow check); a demo's own setting.
+			return g.con.send("demo_pause", "host_timescale 1", "sv_cheats 1")
 		}
 	}
 	return errors.New("the demo never reported its first tick")
@@ -359,6 +365,57 @@ func (g *game) spectate(name string) error {
 		}
 	}
 	return g.con.send(fmt.Sprintf("spec_player \"%s\"", strings.ReplaceAll(name, `"`, "")))
+}
+
+// followTolerance is how far (game units, about a player's height times 3)
+// the camera may be from where the demo has the player.
+const followTolerance = 250.0
+
+// errNotFollowing: the camera would not follow the player.
+var errNotFollowing = errors.New("could not follow the player: the camera stayed away from them")
+
+// checkFollow asks for the camera's position and compares it with where the
+// demo has the player around `from`; off, it follows again (up to three times)
+// and then gives up, so the clip fails instead of shipping a view from under
+// the map. Without a replay or an answer from getpos it cannot tell, and lets
+// the capture go on.
+func (g *game) checkFollow(name string, from int) error {
+	if g.follow == nil {
+		return nil
+	}
+	want, ok := g.follow(from)
+	if !ok {
+		return nil
+	}
+	for attempt := 0; attempt < 3; attempt++ {
+		g.con.drain()
+		if err := g.con.send("getpos"); err != nil {
+			return err
+		}
+		v, _, err := g.con.expect(reSetpos, 2*time.Second)
+		if err != nil {
+			log.Printf("follow check: no getpos answer (%v); not checked", err)
+			return nil
+		}
+		f := strings.Fields(v)
+		x, _ := strconv.ParseFloat(f[0], 64)
+		y, _ := strconv.ParseFloat(f[1], 64)
+		z, _ := strconv.ParseFloat(f[2], 64)
+		d := math.Sqrt((x-want[0])*(x-want[0]) + (y-want[1])*(y-want[1]) + (z-want[2])*(z-want[2]))
+		if d <= followTolerance {
+			if attempt > 0 {
+				log.Printf("follow check: with %s after %d retries", name, attempt)
+			}
+			return nil
+		}
+		log.Printf("follow check: camera at (%.0f %.0f %.0f), %s at (%.0f %.0f %.0f), %.0f apart; following again",
+			x, y, z, name, want[0], want[1], want[2], d)
+		if err := g.spectate(name); err != nil {
+			return err
+		}
+		time.Sleep(time.Duration(500*(attempt+1)) * time.Millisecond)
+	}
+	return errNotFollowing
 }
 
 // pause pauses the demo. CS2 says "paused on tick" when it pauses and
@@ -501,6 +558,12 @@ func (g *game) playPhases(from int, phases []playPhase, name string, started fun
 		}
 	}
 	if err := g.spectate(name); err != nil {
+		return nil, err
+	}
+	// The camera must be with the player: a follow that never took left it
+	// parked under the map for the whole clip, and the clip still shipped
+	// (2026-10-12/13, clips 243, 244, 505).
+	if err := g.checkFollow(name, from); err != nil {
 		return nil, err
 	}
 	// The capture starts (and links up) while the view settles.
