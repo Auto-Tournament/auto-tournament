@@ -714,7 +714,26 @@
     "scoreLabel": "{{a}} maps to {{b}}",
     "maps": "Maps",
     "mapN": "Map {{n}}",
-    "overtime": "overtime"
+    "overtime": "overtime",
+    "spectator": {
+      "steps": "Match steps",
+      "step": {
+        "veto": "Veto",
+        "server": "Server",
+        "live": "Live",
+        "result": "Result"
+      },
+      "serverTitle": "Server",
+      "server": {
+        "afterVeto": "A server is picked when the veto is done.",
+        "waiting": "Waiting for a free server.",
+        "loading": "The server is getting the match ready. Connect is for the two teams.",
+        "playing": "Being played now. Connect is for the two teams.",
+        "freed": "Played. The server is free again."
+      },
+      "tbd": "To be decided",
+      "noRoster": "No players listed yet."
+    }
   },
   "report": {
     "button": "Report",

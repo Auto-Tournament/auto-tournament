@@ -101,11 +101,11 @@ test.describe.serial('Veto API', () => {
       expect(vetoState.pickedMaps[0].sideTeam2).toBe('CT'); // Team B picked CT
       expect(vetoState.pickedMaps[0].sideTeam1).toBe('T'); // Team A gets opposite
 
-      // A spectator (the admin, on neither team) gets the redacted view, which
-      // carries the record once the veto is over: the match page's veto
-      // history reads it from here (client API 0.2.0).
+      // A spectator (the admin, on neither team) sees the same veto, read-only:
+      // the match page draws it for everyone.
       const spectatorView = await getVetoState(request, match!.slug);
-      expect(spectatorView.availableMaps).toBeUndefined();
+      expect(spectatorView.viewer).toBe('spectator');
+      expect(Array.isArray(spectatorView.bannedMaps)).toBe(true);
       expect(spectatorView.actions).toHaveLength(7);
     }
   );

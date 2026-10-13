@@ -34,16 +34,18 @@ import { useAuth } from '../contexts/AuthContext';
 import { getStatusLabel } from '../utils/matchUtils';
 import { manageMatchPath, teamProfilePath } from '../paths';
 import { YourMatchCard } from '../components/tournament/match/YourMatchCard';
+import { SpectatorRoom, type SpectatorRoomMatch } from '../components/match/SpectatorRoom';
 
-type MatchResponse = PublicMatch & {
-  game?: string | null;
-  /** The signed-in viewer's team in this match (its live roster), or null. */
-  viewerTeamId?: string | null;
-  team1LogoUrl?: string | null;
-  team2LogoUrl?: string | null;
-  team1SeriesScore?: number;
-  team2SeriesScore?: number;
-};
+type MatchResponse = PublicMatch &
+  Omit<SpectatorRoomMatch, 'team1' | 'team2' | 'status'> & {
+    game?: string | null;
+    /** The signed-in viewer's team in this match (its live roster), or null. */
+    viewerTeamId?: string | null;
+    team1LogoUrl?: string | null;
+    team2LogoUrl?: string | null;
+    team1SeriesScore?: number;
+    team2SeriesScore?: number;
+  };
 
 /** "de_inferno" → "Inferno". */
 function mapName(map: string | null, n: number, t: TFunction): string {
@@ -297,8 +299,13 @@ export default function MatchPage() {
         publicHeader
       )}
 
-      {/* An admin who does not play in it sees the pre-match phase (the veto) as players do. */}
-      {isAdmin && !viewerTeamId && matchIsOn && PreMatchView && (
+      {!viewerTeamId && matchIsOn && playsThroughModule && (
+        <SpectatorRoom match={match} hasVeto={integration.capabilities.veto} />
+      )}
+
+      {/* Everyone who does not play in it sees the pre-match phase (the veto)
+          as it happens, read-only (the MatchRoom board). */}
+      {!viewerTeamId && matchIsOn && PreMatchView && (
         <Box sx={{ mt: 4 }} data-testid="match-admin-prematch">
           <PreMatchView
             matchSlug={match.slug}
