@@ -1,6 +1,7 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { signInViaRequest, getAuthHeader } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
+import { createTestServer } from '../helpers/servers';
 import { findMatchByTeams } from '../helpers/matches';
 import {
   ASSUMED_TV_DELAY_SECONDS,
@@ -89,7 +90,11 @@ test.describe.serial('Server turnover after series end', () => {
         prefix: 'turnover',
       });
       expect(setup).toBeTruthy();
-      const serverId = setup!.servers[0].id;
+      // A server of its own: setup reuses servers, and a match another spec
+      // left loaded on one would make it busy here.
+      const server = await createTestServer(request, 'turnover');
+      expect(server, 'creating the probe server should succeed').toBeTruthy();
+      const serverId = server!.id;
 
       await sendEvent(request, serverId, {
         event: 'server_configured',
