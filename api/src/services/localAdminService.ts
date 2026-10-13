@@ -292,6 +292,19 @@ class LocalAdminService {
     return true;
   }
 
+  /** Turn TOTP off for the signed-in local admin (the route checked password and code first). */
+  async disableTotp(playerId: string): Promise<boolean> {
+    const row = await this.findByPlayerId(playerId);
+    if (!row) return false;
+    await db.queryAsync(
+      `UPDATE local_admins SET totp_secret_enc = NULL, totp_pending_enc = NULL, totp_last_step = NULL,
+         updated_at = ? WHERE id = ?`,
+      [now(), row.id]
+    );
+    log.warn('[AUDIT] Local admin turned off TOTP', { username: row.username });
+    return true;
+  }
+
   /** Every local account, with its player's name and admin flag (Settings -> Sign-in -> Accounts). */
   async listAccounts(): Promise<LocalAccountView[]> {
     const rows = await db.queryAsync<{

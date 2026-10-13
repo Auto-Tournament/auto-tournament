@@ -1681,6 +1681,40 @@
         ]
       }
     },
+    "/api/auth/local/totp/disable": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Turn TOTP off for the signed-in local admin",
+        "description": "Same-site JSON. Needs the password and a current code. Throttled like sign-in.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  },
+                  "totp": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "TOTP is off; sign-in asks for the password only"
+          },
+          "401": {
+            "description": "Wrong password or code (`totpRequired` when the code is missing)"
+          }
+        }
+      }
+    },
     "/api/auth/local/totp/start": {
       "post": {
         "tags": [
