@@ -53,7 +53,7 @@ test(
       const tiles = page.getByTestId('profile-favourites').getByRole('button');
       await expect(tiles).toHaveCount(3, { timeout: 15000 });
       const spans = await tiles.evaluateAll((els) =>
-        els.map((el) => getComputedStyle(el).gridColumnStart)
+        els.map((el) => window.getComputedStyle(el).gridColumnStart)
       );
       expect(spans).toEqual(['span 2', 'span 2', 'span 1']);
     } finally {
