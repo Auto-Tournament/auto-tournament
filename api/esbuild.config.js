@@ -7,12 +7,44 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // Node.js built-in modules that should not be bundled
 const nodeBuiltins = [
-  'fs', 'path', 'http', 'https', 'url', 'util', 'events', 'stream',
-  'crypto', 'os', 'net', 'tls', 'dns', 'zlib', 'buffer', 'querystring',
-  'child_process', 'cluster', 'dgram', 'readline', 'repl', 'string_decoder',
-  'tty', 'vm', 'worker_threads', 'diagnostics_channel', 'async_hooks',
-  'perf_hooks', 'trace_events', 'v8', 'assert', 'console', 'process',
-  'module', 'punycode', 'timers', 'domain', 'constants'
+  'fs',
+  'path',
+  'http',
+  'https',
+  'url',
+  'util',
+  'events',
+  'stream',
+  'crypto',
+  'os',
+  'net',
+  'tls',
+  'dns',
+  'zlib',
+  'buffer',
+  'querystring',
+  'child_process',
+  'cluster',
+  'dgram',
+  'readline',
+  'repl',
+  'string_decoder',
+  'tty',
+  'vm',
+  'worker_threads',
+  'diagnostics_channel',
+  'async_hooks',
+  'perf_hooks',
+  'trace_events',
+  'v8',
+  'assert',
+  'console',
+  'process',
+  'module',
+  'punycode',
+  'timers',
+  'domain',
+  'constants',
 ].map((m) => `node:${m}`);
 
 /**
@@ -130,6 +162,32 @@ function licenseLineDefines() {
   };
 }
 
+/**
+ * The share cards' fonts, rasteriser and logo (src/services/shareCards/render.ts
+ * reads them from dist/og-assets in the release image, which has no
+ * node_modules). Keep the list equal to SHARE_CARD_ASSETS there.
+ */
+const SHARE_CARD_ASSETS = {
+  'sora-700.woff': '@fontsource/sora/files/sora-latin-700-normal.woff',
+  'sora-600.woff': '@fontsource/sora/files/sora-latin-600-normal.woff',
+  'geist-400.woff': '@fontsource/geist/files/geist-latin-400-normal.woff',
+  'geist-600.woff': '@fontsource/geist/files/geist-latin-600-normal.woff',
+  'resvg.wasm': '@resvg/resvg-wasm/index_bg.wasm',
+  'logo.png': '../client/public/icon-192.png',
+};
+
+async function copyShareCardAssets() {
+  const target = path.join(__dirname, 'dist', 'og-assets');
+  await fs.promises.mkdir(target, { recursive: true });
+  for (const [name, source] of Object.entries(SHARE_CARD_ASSETS)) {
+    const from = source.startsWith('../') ? path.join(__dirname, source) : require.resolve(source);
+    await fs.promises.copyFile(from, path.join(target, name));
+  }
+  console.log(
+    `Copied ${Object.keys(SHARE_CARD_ASSETS).length} share card assets to api/dist/og-assets`
+  );
+}
+
 async function build() {
   const outfile = path.join(__dirname, 'dist', 'index.js');
 
@@ -137,30 +195,34 @@ async function build() {
   await fs.promises.mkdir(path.dirname(outfile), { recursive: true });
 
   await copySwaggerUiAssets();
+  await copyShareCardAssets();
 
   const result = await esbuild.build({
-  entryPoints: ['src/index.ts'],
-  bundle: true,
-  platform: 'node',
-  target: 'node20',
-  format: 'cjs', // CommonJS for Node.js compatibility
-  outfile,
-  external: [
-    // Node.js built-ins (with and without node: prefix)
-    ...nodeBuiltins,
-    ...nodeBuiltins.map(m => m.replace('node:', '')),
-    // Keep native modules external - they can't be bundled
-    'pg-native',
-    'better-sqlite3',
-  ],
-  minify: isProduction,
-  sourcemap: !isProduction,
-  treeShaking: true,
-  define: licenseLineDefines(),
-  // esbuild automatically handles __dirname and __filename for platform: 'node'
-  plugins: [strictModeDependencyPatches, ...(process.env.AT_CS2_BUILTIN === '1' ? [] : [withoutCs2])],
-  // Write files ourselves so we can fail the build before producing artifacts.
-  write: false,
+    entryPoints: ['src/index.ts'],
+    bundle: true,
+    platform: 'node',
+    target: 'node20',
+    format: 'cjs', // CommonJS for Node.js compatibility
+    outfile,
+    external: [
+      // Node.js built-ins (with and without node: prefix)
+      ...nodeBuiltins,
+      ...nodeBuiltins.map((m) => m.replace('node:', '')),
+      // Keep native modules external - they can't be bundled
+      'pg-native',
+      'better-sqlite3',
+    ],
+    minify: isProduction,
+    sourcemap: !isProduction,
+    treeShaking: true,
+    define: licenseLineDefines(),
+    // esbuild automatically handles __dirname and __filename for platform: 'node'
+    plugins: [
+      strictModeDependencyPatches,
+      ...(process.env.AT_CS2_BUILTIN === '1' ? [] : [withoutCs2]),
+    ],
+    // Write files ourselves so we can fail the build before producing artifacts.
+    write: false,
   });
 
   // Regression guard: the actual Node 20+ crash comes from passing
@@ -206,12 +268,20 @@ async function build() {
     target: 'node20',
     format: 'cjs',
     outfile: path.join(__dirname, 'dist', 'reset-admin.js'),
-    external: [...nodeBuiltins, ...nodeBuiltins.map((m) => m.replace('node:', '')), 'pg-native', 'better-sqlite3'],
+    external: [
+      ...nodeBuiltins,
+      ...nodeBuiltins.map((m) => m.replace('node:', '')),
+      'pg-native',
+      'better-sqlite3',
+    ],
     minify: isProduction,
     sourcemap: false,
     treeShaking: true,
     define: licenseLineDefines(),
-    plugins: [strictModeDependencyPatches, ...(process.env.AT_CS2_BUILTIN === '1' ? [] : [withoutCs2])],
+    plugins: [
+      strictModeDependencyPatches,
+      ...(process.env.AT_CS2_BUILTIN === '1' ? [] : [withoutCs2]),
+    ],
   });
 }
 
@@ -219,4 +289,3 @@ build().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-
