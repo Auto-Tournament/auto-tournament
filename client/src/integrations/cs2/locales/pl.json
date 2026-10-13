@@ -2342,6 +2342,8 @@
       "next": "Next",
       "close": "Close",
       "redoMatch": "Redo all clips",
+      "heldByFailed_one": "{{count}} klip się nie udał. Rolki, które by go użyły, czekają, aż go powtórzysz lub odrzucisz.",
+      "heldByFailed_other": "{{count}} klipów się nie udało. Rolki, które by ich użyły, czekają, aż je powtórzysz lub odrzucisz.",
       "reelElapsed": "ready {{time}} after its first clip started",
       "reelAssembly": "joined in {{time}}",
       "reelRender": "its clips: {{time}} of recording added up"

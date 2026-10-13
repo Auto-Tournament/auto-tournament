@@ -1361,6 +1361,8 @@ interface AdminReel {
 interface AdminMatch {
   slug: string;
   match: string;
+  /** Failed clips: the reels that would take them wait until each is redone or dropped. */
+  failedClips?: number;
   clips: AdminClip[];
   reels: AdminReel[];
 }
@@ -1539,6 +1541,11 @@ function ClipsTab() {
           >
             {t('highlightsAdmin.clips.redoMatch')}
           </Button>
+          {(m.failedClips ?? 0) > 0 && (
+            <Alert severity="warning" sx={{ mb: 1.5 }} data-testid={`clips-held-${m.slug}`}>
+              {t('highlightsAdmin.clips.heldByFailed', { count: m.failedClips })}
+            </Alert>
+          )}
           {m.reels.length > 0 && (
             <Box sx={{ mb: 1.5 }}>
               <Typography variant="caption" color="text.secondary">

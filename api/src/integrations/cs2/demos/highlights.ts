@@ -1107,7 +1107,12 @@ const MATCH_REEL_MIN_PLAYERS = 2;
  */
 export const SERIES_REEL = -1;
 
-/** A moment a reel could use: recorded, or still waiting to be (not failed, skipped or funny). */
+/**
+ * A moment a reel could use: recorded, still waiting to be, or failed (not
+ * skipped or funny). A failed one it would take holds the reel back until it is
+ * redone or dropped (Clips tab): a reel made without a match's best plays is
+ * wrong (2026-10-09: a series reel from map 3 alone, 75 clips of maps 0-2 failed).
+ */
 export interface ReelCandidate {
   id: number;
   playerId: string;
@@ -1164,7 +1169,7 @@ export function seriesReelReady(
   return reelReady(pickSeriesClips(candidates, max, perPlayer));
 }
 
-/** A match's moments a reel could use, and its maps (usable: one recorded or still waiting). */
+/** A match's moments a reel could use (failed ones too: they hold it), and its maps (usable: one recorded or still waiting). */
 async function reelCandidates(
   matchSlug: string
 ): Promise<{ candidates: ReelCandidate[]; maps: { mapNumber: number; usable: boolean }[] }> {
@@ -1187,7 +1192,7 @@ async function reelCandidates(
     const mapNumber = Number(r.map_number);
     const usable = ['done', 'pending', 'recording'].includes(r.status);
     maps.set(mapNumber, (maps.get(mapNumber) ?? false) || usable);
-    if (!usable || r.kind === 'funny') continue;
+    if ((!usable && r.status !== 'failed') || r.kind === 'funny') continue;
     candidates.push({
       id: Number(r.id),
       playerId: r.player_id,

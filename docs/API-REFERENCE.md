@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 683 of them, 401 behind auth —
+Every endpoint this API serves — 684 of them, 402 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -487,6 +487,7 @@ E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE
 | Method | Path | Auth |
 | --- | --- | --- |
 | `POST` | `/api/test/server-status` | admin |
+| `POST` | `/api/test/highlights/status` | admin |
 | `POST` | `/api/test/fleet/reset-enroll-rate-limit` | admin |
 | `POST` | `/api/test/fleet/age-token` | admin |
 | `POST` | `/api/test/fleet/expire-key` | admin |

@@ -2302,6 +2302,8 @@
       "next": "Next",
       "close": "Close",
       "redoMatch": "Redo all clips",
+      "heldByFailed_one": "{{count}} clip a échoué. Les reels qui l'utiliseraient attendent que tu le refasses ou l'écartes.",
+      "heldByFailed_other": "{{count}} clips ont échoué. Les reels qui les utiliseraient attendent que tu les refasses ou les écartes.",
       "reelElapsed": "ready {{time}} after its first clip started",
       "reelAssembly": "joined in {{time}}",
       "reelRender": "its clips: {{time}} of recording added up"

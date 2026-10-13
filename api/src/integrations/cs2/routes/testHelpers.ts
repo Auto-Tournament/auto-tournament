@@ -70,6 +70,33 @@ router.post('/server-status', requireAuth, (req: Request, res: Response): void =
 });
 
 /**
+ * Test-only helper: set clips' status (a recorder that failed them).
+ *
+ * POST /api/test/highlights/status  { ids: number[], status }
+ */
+router.post(
+  '/highlights/status',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+      res.status(403).json({ success: false, error: 'Disabled in production' });
+      return;
+    }
+    const { ids, status } = (req.body || {}) as { ids?: unknown; status?: unknown };
+    const list = Array.isArray(ids) ? ids.map(Number).filter(Number.isInteger) : [];
+    if (list.length === 0 || typeof status !== 'string') {
+      res.status(400).json({ success: false, error: 'ids and status are required' });
+      return;
+    }
+    await db.runAsync(
+      `UPDATE cs2_highlights SET status = ? WHERE id IN (${list.map(() => '?').join(', ')})`,
+      [status, ...list]
+    );
+    res.json({ success: true });
+  }
+);
+
+/**
  * Test-only fleet helpers (the Ready Up fleet link, api/src/integrations/cs2/fleet).
  *
  * POST /api/test/fleet/reset-enroll-rate-limit   forget the 10/min/IP enrollment counts
@@ -103,22 +130,26 @@ router.post('/fleet/age-token', requireAuth, async (req: Request, res: Response)
   res.json({ success: true, tokens: result.changes });
 });
 
-router.post('/fleet/expire-key', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
-    res.status(403).json({ success: false, error: 'Disabled in production' });
-    return;
+router.post(
+  '/fleet/expire-key',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+      res.status(403).json({ success: false, error: 'Disabled in production' });
+      return;
+    }
+    const { keyId } = (req.body || {}) as { keyId?: string };
+    if (!keyId) {
+      res.status(400).json({ success: false, error: 'keyId is required' });
+      return;
+    }
+    const result = await db.runAsync(
+      'UPDATE cs2_fleet_enrollment_keys SET expires_at = ? WHERE id = ?',
+      [Math.floor(Date.now() / 1000) - 1, keyId]
+    );
+    res.json({ success: true, keys: result.changes });
   }
-  const { keyId } = (req.body || {}) as { keyId?: string };
-  if (!keyId) {
-    res.status(400).json({ success: false, error: 'keyId is required' });
-    return;
-  }
-  const result = await db.runAsync('UPDATE cs2_fleet_enrollment_keys SET expires_at = ? WHERE id = ?', [
-    Math.floor(Date.now() / 1000) - 1,
-    keyId,
-  ]);
-  res.json({ success: true, keys: result.changes });
-});
+);
 
 /**
  * Test-only fleet match helpers (step 3: fleet/state.ts, fleet/reliable.ts,
@@ -183,46 +214,65 @@ router.post('/fleet/send', requireAuth, async (req: Request, res: Response): Pro
   }
 });
 
-router.get('/fleet/live-state/:slug', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (!fleetTestGuard(res)) return;
-  const record = await liveStateStore.getLiveState(String(req.params.slug));
-  if (!record) {
-    res.status(404).json({ success: false, error: 'No live state' });
-    return;
+router.get(
+  '/fleet/live-state/:slug',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (!fleetTestGuard(res)) return;
+    const record = await liveStateStore.getLiveState(String(req.params.slug));
+    if (!record) {
+      res.status(404).json({ success: false, error: 'No live state' });
+      return;
+    }
+    res.json({ success: true, record });
   }
-  res.json({ success: true, record });
-});
+);
 
-router.get('/fleet/events/:serverId', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (!fleetTestGuard(res)) return;
-  const rows = await db.queryAsync(
-    `SELECT id, stream_id, seq, message_id, type, match_slug, epoch, rev, ref, processed_at, error
+router.get(
+  '/fleet/events/:serverId',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (!fleetTestGuard(res)) return;
+    const rows = await db.queryAsync(
+      `SELECT id, stream_id, seq, message_id, type, match_slug, epoch, rev, ref, processed_at, error
        FROM cs2_fleet_events WHERE server_id = ? ORDER BY id ASC`,
-    [String(req.params.serverId)]
-  );
-  res.json({ success: true, events: rows });
-});
-
-router.post('/fleet/failover/scan', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (!fleetTestGuard(res)) return;
-  const { liveSeconds, preLiveSeconds } = (req.body || {}) as { liveSeconds?: number; preLiveSeconds?: number };
-  const result = await scanForFailovers({
-    grace: {
-      liveSeconds: typeof liveSeconds === 'number' ? liveSeconds : 0,
-      preLiveSeconds: typeof preLiveSeconds === 'number' ? preLiveSeconds : 0,
-    },
-  });
-  res.json({ success: true, ...result });
-});
-
-router.get('/fleet/commands/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (!fleetTestGuard(res)) return;
-  const command = await getCommand(String(req.params.id));
-  if (!command) {
-    res.status(404).json({ success: false, error: 'No such command' });
-    return;
+      [String(req.params.serverId)]
+    );
+    res.json({ success: true, events: rows });
   }
-  res.json({ success: true, command });
-});
+);
+
+router.post(
+  '/fleet/failover/scan',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (!fleetTestGuard(res)) return;
+    const { liveSeconds, preLiveSeconds } = (req.body || {}) as {
+      liveSeconds?: number;
+      preLiveSeconds?: number;
+    };
+    const result = await scanForFailovers({
+      grace: {
+        liveSeconds: typeof liveSeconds === 'number' ? liveSeconds : 0,
+        preLiveSeconds: typeof preLiveSeconds === 'number' ? preLiveSeconds : 0,
+      },
+    });
+    res.json({ success: true, ...result });
+  }
+);
+
+router.get(
+  '/fleet/commands/:id',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (!fleetTestGuard(res)) return;
+    const command = await getCommand(String(req.params.id));
+    if (!command) {
+      res.status(404).json({ success: false, error: 'No such command' });
+      return;
+    }
+    res.json({ success: true, command });
+  }
+);
 
 export default router;

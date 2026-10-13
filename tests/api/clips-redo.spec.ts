@@ -431,3 +431,41 @@ test(
     expect(redone.trueView).toBe(false);
   }
 );
+
+test(
+  'a failed clip holds its reels, and the Clips list says so until it is redone',
+  TAGS,
+  async ({ request }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    const { slug } = await matchWithMoments(request);
+    type Listed = {
+      matches: Array<{
+        slug: string;
+        failedClips: number;
+        clips: Array<{ id: number; kind: string }>;
+      }>;
+    };
+    const ours = async () =>
+      ((await (await request.get('/api/game/cs2/clips')).json()) as Listed).matches.find(
+        (m) => m.slug === slug
+      )!;
+    const before = await ours();
+    expect(before.failedClips).toBe(0);
+    const clip = before.clips.find((c) => c.kind !== 'funny')!;
+
+    // A recorder failed it: the match says its reels wait.
+    expect(
+      (
+        await request.post('/api/test/highlights/status', {
+          data: { ids: [clip.id], status: 'failed' },
+        })
+      ).ok()
+    ).toBe(true);
+    expect((await ours()).failedClips).toBe(1);
+
+    // Redone: it is waiting to be recorded again, and nothing is held by a failure.
+    const redo = await request.post('/api/game/cs2/clips/redo', { data: { clipIds: [clip.id] } });
+    expect(redo.ok(), await redo.text()).toBe(true);
+    expect((await ours()).failedClips).toBe(0);
+  }
+);
