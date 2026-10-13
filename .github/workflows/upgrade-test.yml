@@ -68,6 +68,9 @@ jobs:
 
       - name: Run the upgrade test
         run: yarn test:upgrade
+        env:
+          # As in ci.yml: ECR Public's anonymous data limit fails the build with 429.
+          NODE_REGISTRY: mirror.gcr.io/library
 
       # The script cleans up its own containers/network in a `finally`, but a
       # cancelled or killed job (timeout, `workflow: cancel`) skips that. This

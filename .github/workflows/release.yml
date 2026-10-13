@@ -344,6 +344,23 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # node comes from ECR Public; when its anonymous data limit answers 429
+      # (it has failed releases), take the same official image from Google's
+      # mirror, as ci.yml does.
+      - name: Pick the node registry
+        id: registry
+        shell: bash
+        run: |
+          set -uo pipefail
+          for i in 1 2 3; do
+            if docker buildx imagetools inspect public.ecr.aws/docker/library/node:20-alpine >/dev/null 2>&1; then
+              echo "node_registry=public.ecr.aws/docker/library" >> "$GITHUB_OUTPUT"; exit 0
+            fi
+            sleep $((i * 10))
+          done
+          echo "ECR Public unavailable; using mirror.gcr.io"
+          echo "node_registry=mirror.gcr.io/library" >> "$GITHUB_OUTPUT"
+
       # Pushed by digest only, to the primary (GHCR) image: it is in the
       # repository but no tag points at it until the release job writes the
       # manifest — for all three images, not just this one (imagetools create
@@ -357,6 +374,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           build-args: |
             AT_LINE_RELEASE_DATE=${{ needs.prepare.outputs.line_release_date }}
+            NODE_REGISTRY=${{ steps.registry.outputs.node_registry }}
           outputs: type=image,name=ghcr.io/auto-tournament/auto-tournament,push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=release-${{ matrix.arch }}
           cache-to: type=gha,scope=release-${{ matrix.arch }},mode=max
