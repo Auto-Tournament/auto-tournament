@@ -4,7 +4,8 @@ import { setupTournament } from '../helpers/tournamentSetup';
 import { withShareTags } from '../../api/src/routes/share';
 import { isPrivateHost } from '../../api/src/services/shareCards/images';
 import { initials } from '../../api/src/services/shareCards/render';
-import { mapLabel, roundLabel } from '../../api/src/services/shareCards/core';
+import { gameKey, mapLabel, roundLabel } from '../../api/src/services/shareCards/core';
+import type { GameIntegration } from '../../api/src/integrations/types';
 
 /**
  * Link previews: a shared match, team, player or tournament page carries its
@@ -63,6 +64,21 @@ test.describe('Share cards (pure)', () => {
     expect(out).toContain(`content='https://cs.example.com/og.png'`);
     expect(meta(out, 'og:title')).toBe('Auto Tournament');
   });
+
+  test(
+    "a player's picked game is keyed like their ratings: a module's catalogue slug is its id",
+    TAGS,
+    () => {
+      const installed = [
+        { id: 'cs2', catalog: { slug: 'counter-strike-2', aliases: ['cs', 'csgo'] } },
+        { id: 'manual-report', catalog: null },
+      ] as unknown as GameIntegration[];
+      expect(gameKey('counter-strike-2', installed)).toBe('cs2');
+      expect(gameKey('CS', installed)).toBe('cs2');
+      expect(gameKey('cs2', installed)).toBe('cs2');
+      expect(gameKey('rocket-league', installed)).toBe('rocket-league');
+    }
+  );
 
   test('helpers: initials, map and round labels, private hosts', TAGS, () => {
     expect(initials('Team Alpha')).toBe('TA');
@@ -143,7 +159,7 @@ test.describe.serial('Share cards', () => {
       ).toBe(true);
       const html = await (await anon.get(`/player/${id}`)).text();
       expect(meta(html, 'og:title')).toBe(`Sharer ${id.slice(-4)}`);
-      expect(meta(html, 'og:description')).toMatch(/^Rating \d+ in /);
+      expect(meta(html, 'og:description')).toMatch(/^Rating \d+ in Counter-Strike 2 · /);
       const image = meta(html, 'og:image')!;
       const png = await anon.get(new URL(image).pathname);
       expect(png.status()).toBe(200);
