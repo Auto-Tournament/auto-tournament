@@ -5,7 +5,8 @@
  *
  * Redoing a clip queues it like a new moment; its old video stays until the
  * new one replaces it. The reels it is in are made again once the redone clips
- * are recorded: they wait ('waiting') and queueMatchReelFor takes them up.
+ * are recorded: they wait ('waiting') and queueMatchReelFor takes them up. A
+ * failed clip holds its reels the same way until it is redone or dropped.
  */
 
 import { db } from '../../../config/database';
@@ -59,6 +60,8 @@ export interface AdminReel {
 export interface AdminMatch {
   slug: string;
   match: string;
+  /** Failed clips (not funny moments): the reels that would take them wait until each is redone or dropped. */
+  failedClips: number;
   clips: AdminClip[];
   reels: AdminReel[];
 }
@@ -204,6 +207,7 @@ export async function listClips(
     if (onlyOutdated && stale === 0) continue;
     out.push({
       slug: m.slug,
+      failedClips: own.filter((c) => c.status === 'failed' && c.kind !== 'funny').length,
       match: [m.team1 && m.team2 ? `${m.team1} vs ${m.team2}` : m.slug, m.played_in]
         .filter(Boolean)
         .join(' · '),
@@ -295,7 +299,8 @@ export async function redo(req: RedoRequest): Promise<{ clips: number; reels: nu
     seen.add(key);
     const waiting = await db.queryOneAsync<{ n: number | string }>(
       `SELECT COUNT(*) AS n FROM cs2_highlights
-        WHERE match_slug = ? AND (map_number = ? OR ? = ${SERIES_REEL}) AND status IN ('pending', 'recording')`,
+        WHERE match_slug = ? AND (map_number = ? OR ? = ${SERIES_REEL}) AND kind <> 'funny'
+          AND status IN ('pending', 'recording', 'failed')`,
       [r.slug, r.mapNumber, r.mapNumber]
     );
     const result = await db.runAsync(
