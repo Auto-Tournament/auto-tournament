@@ -1,14 +1,13 @@
 /**
- * `openMatchDetails(slug)`: how a game module opens the match details dialog
- * (DESIGN-module-client-api.md, decision 7).
+ * `openMatchDetails(slug)`: how a game module opens a match
+ * (DESIGN-module-client-api.md, decision 7). It opens the match room.
  *
- * Core owns the dialog and mounts it once, near the app root
- * (`MatchDetailsHost`), which registers itself here. A module only asks for a
- * match by slug; `MatchDetailsModal`'s props are not public API.
+ * Core mounts `MatchDetailsHost` once, near the app root, which registers
+ * itself here. A module only asks for a match by slug.
  *
  * This file imports nothing on purpose: the SDK re-exports from it, and
- * pulling the 1,400-line dialog (which reads the integration registry) into
- * the SDK's import graph would make a cycle through every bundled module.
+ * importing the router or the registry here would make a cycle through every
+ * bundled module.
  */
 
 type MatchDetailsOpener = (slug: string) => Promise<void>;
@@ -24,14 +23,11 @@ export function registerMatchDetailsOpener(next: MatchDetailsOpener): () => void
 }
 
 /**
- * Open the match details dialog for `slug`.
- *
- * Resolves once the match is loaded and the dialog is showing; rejects when
- * the match cannot be loaded, so the caller can say why in its own words.
+ * Open the match room for `slug`. Rejects only when nothing is mounted to open it.
  */
 export function openMatchDetails(slug: string): Promise<void> {
   if (!opener) {
-    return Promise.reject(new Error('The match details dialog is not mounted'));
+    return Promise.reject(new Error('The match opener is not mounted'));
   }
   return opener(slug);
 }

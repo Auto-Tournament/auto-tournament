@@ -13,17 +13,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Container,
-  Stack,
-  Typography,
-} from '@mui/material';
-import { GearSixIcon } from '@phosphor-icons/react';
+import { Alert, Box, Chip, CircularProgress, Container, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { api } from '../utils/api';
@@ -32,7 +22,7 @@ import type { PublicMatch } from '../integrations/types';
 import { fontDisplay, mono, radii, tokens } from '../theme/tokens';
 import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../contexts/AuthContext';
-import { openMatchDetails } from '../components/modals/matchDetailsOpener';
+import { MatchAdminPanel } from '../components/match/MatchAdminPanel';
 import { getStatusLabel } from '../utils/matchUtils';
 import { teamProfilePath } from '../paths';
 import { YourMatchCard } from '../components/tournament/match/YourMatchCard';
@@ -93,7 +83,7 @@ export default function MatchPage() {
     };
   }, [slug, version]);
 
-  // Admins run the match from here too: the match dialog has its controls.
+  // Admins run the match from here too (MatchAdminPanel).
   const { isAuthenticated: isAdmin } = useAuth();
 
   const current = loaded?.slug === slug ? loaded : null;
@@ -106,6 +96,7 @@ export default function MatchPage() {
   const MapAction = integration.matchMapAction;
   // The player's part for games without servers (manual reporting: the result).
   const ReportPanel = integration.matchPanels.reportView;
+  const PreMatchView = integration.preMatchView;
 
   if (failed) {
     return (
@@ -267,17 +258,6 @@ export default function MatchPage() {
         {maps.length > 0 && (
           <Chip size="small" label={maps.map((m) => mapName(m.map, m.mapNumber, t)).join(' · ')} />
         )}
-        {isAdmin && (
-          <Button
-            size="small"
-            variant="outlined"
-            startIcon={<GearSixIcon />}
-            onClick={() => void openMatchDetails(match.slug).catch(() => undefined)}
-            data-testid="match-page-manage"
-          >
-            {t('matchPage.manage')}
-          </Button>
-        )}
       </Stack>
     </>
   );
@@ -302,6 +282,24 @@ export default function MatchPage() {
         </Box>
       ) : (
         publicHeader
+      )}
+
+      {/* An admin who does not play in it sees the pre-match phase (the veto) as players do. */}
+      {isAdmin && !viewerTeamId && matchIsOn && PreMatchView && (
+        <Box sx={{ mt: 4 }} data-testid="match-admin-prematch">
+          <PreMatchView
+            matchSlug={match.slug}
+            team1Name={match.team1?.name ?? undefined}
+            team2Name={match.team2?.name ?? undefined}
+            onComplete={() => setVersion((v) => v + 1)}
+          />
+        </Box>
+      )}
+
+      {isAdmin && (
+        <Box sx={{ mt: 4 }}>
+          <MatchAdminPanel slug={match.slug} version={version} />
+        </Box>
       )}
 
       {Panel && (
