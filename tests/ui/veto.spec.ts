@@ -145,8 +145,7 @@ test.describe.serial('Veto UI', () => {
       const actions = getCSMajorBO1UIActions(team1, team2);
       await performVetoActionsUI(page, actions);
 
-      // Read the authoritative state back as a team member – spectators get a
-      // redacted view without step/ban details.
+      // Read the authoritative state back as a team member.
       const vetoState = await getVetoState(request, matchSlug, actingSteamIdFor(team1));
       expect(vetoState).toBeTruthy();
       expect(vetoState.status).toBe('completed');

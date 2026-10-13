@@ -714,7 +714,26 @@
     "scoreLabel": "{{a}} maps to {{b}}",
     "maps": "Maps",
     "mapN": "Map {{n}}",
-    "overtime": "overtime"
+    "overtime": "overtime",
+    "spectator": {
+      "steps": "Kampsteg",
+      "step": {
+        "veto": "Veto",
+        "server": "Server",
+        "live": "Live",
+        "result": "Resultat"
+      },
+      "serverTitle": "Server",
+      "server": {
+        "afterVeto": "En server velges når vetoen er ferdig.",
+        "waiting": "Venter på en ledig server.",
+        "loading": "Serveren gjør kampen klar. Tilkobling er for de to lagene.",
+        "playing": "Spilles nå. Tilkobling er for de to lagene.",
+        "freed": "Spilt. Serveren er ledig igjen."
+      },
+      "tbd": "Ikke avgjort",
+      "noRoster": "Ingen spillere oppført ennå."
+    }
   },
   "report": {
     "button": "Rapporter",

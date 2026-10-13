@@ -188,10 +188,9 @@ export async function resolveViewerTeamForMatch(
  * GET /api/veto/:matchSlug
  * Get current veto state for a match.
  *
- * NOTE: This endpoint is intentionally public so spectators can still see
- * high‑level veto results (picked maps, status and, once the veto is over,
- * its actions) via pages like the player profile or bracket. Security‑sensitive operations (choosing bans/picks)
- * are protected at the /action endpoint and via the team view UI.
+ * Public: spectators see the whole veto live (bans, picks, the turn and the
+ * step) on the match page, read-only. Choosing bans and picks is protected
+ * at the /action endpoint.
  */
 router.get('/:matchSlug', async (req: Request, res: Response) => {
   try {
@@ -305,33 +304,14 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
       vetoState.turnSeconds = turnClock.seconds;
     }
 
+    // Everyone sees the veto as it happens (the MatchRoom board): which maps
+    // are banned and picked, whose turn it is and the step. Nothing in it is
+    // secret; both teams see each other's bans anyway. Only the two teams'
+    // players can act (the /action endpoint).
     if (!viewerTeam || viewerTeam === 'both') {
-      const publicVeto = {
-        matchSlug: vetoState.matchSlug,
-        format: vetoState.format,
-        status: vetoState.status,
-        team1Name: vetoState.team1Name,
-        team2Name: vetoState.team2Name,
-        currentTurn: vetoState.status === 'completed' ? undefined : vetoState.currentTurn,
-        turnDeadline: vetoState.turnDeadline,
-        turnSeconds: vetoState.turnSeconds,
-        pickedMaps: Array.isArray(vetoState.pickedMaps)
-          ? vetoState.pickedMaps.map((p: { mapNumber?: number; mapName: string }) => ({
-              mapNumber: p.mapNumber,
-              mapName: p.mapName,
-            }))
-          : [],
-        // Once the veto is over its record is public: the team and player
-        // pages already show it to anyone, and the match page's veto history
-        // reads it from here.
-        ...(vetoState.status === 'completed' && Array.isArray(vetoState.actions)
-          ? { actions: vetoState.actions }
-          : {}),
-      };
-
       return res.json({
         success: true,
-        veto: publicVeto,
+        veto: { ...vetoState, viewer: 'spectator' },
         maps: await vetoMapInfo(vetoState.allMaps ?? tournamentMaps),
       });
     }
