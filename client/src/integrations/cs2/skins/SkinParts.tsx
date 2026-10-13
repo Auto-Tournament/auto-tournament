@@ -38,12 +38,17 @@ export function VirtualNotice({ compact = false }: { compact?: boolean }) {
     <Box
       data-testid="skins-notice"
       sx={{
+        // Wraps on a narrow inventory instead of being cut off (a pill can't hold two lines).
         display: 'inline-flex',
+        flexWrap: 'wrap',
         alignItems: 'center',
+        maxWidth: '100%',
+        minWidth: 0,
+        boxSizing: 'border-box',
         gap: 1.25,
         px: compact ? 0 : 2,
         py: compact ? 0 : 1.25,
-        borderRadius: radii.pill,
+        borderRadius: radii.lg,
         bgcolor: compact ? 'transparent' : color.paper2,
         border: compact ? 'none' : `1px solid ${color.rule}`,
         fontSize: '0.8125rem',
@@ -569,7 +574,9 @@ export function InspectSkinDialog({
                       ? t('skins.levelUp')
                       : skin.source === 'tradeup'
                         ? t('skins.tradeUp.origin')
-                        : t('skins.wonMatchmaking')}
+                        : skin.source === 'admin'
+                          ? t('skins.givenByAdmin')
+                          : t('skins.wonMatchmaking')}
                 </Typography>
                 <Typography sx={{ fontSize: '0.8125rem', color: color.ink2 }}>
                   {[skin.sourceLabel ? sourceLabel(skin.sourceLabel) : null, date]
