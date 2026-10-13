@@ -32,6 +32,7 @@ import radarRoutes from './radars';
 import highlightRoutes from './highlights';
 import teamProfileRoutes from './teamProfile';
 import roundBackupRoutes from './roundBackups';
+import manageMatchRoutes from './manageMatch';
 import { failoverMatchRouter, failoverSettingsRouter } from './failover';
 import testHelperRoutes from './testHelpers';
 import { fleetAdminRouter, fleetEnrollRouter } from '../fleet/routes';
@@ -185,6 +186,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: teamProfileRoutes,
     title: 'Team profile',
     description: "A team's CS2 results per map, and the maps it bans and picks most in the veto.",
+  },
+  {
+    // Admin only, per route: the admin match page's read and its Ready Up commands.
+    prefix: '/api/game/cs2',
+    router: manageMatchRoutes,
+    title: 'Manage a match',
+    description:
+      "The admin match page: a match's live state, server and event log, and the Ready Up commands it sends (logged with who sent them).",
   },
   {
     // Admin only, per route (requireAuth on each): the router shares its

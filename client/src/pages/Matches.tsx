@@ -1,4 +1,5 @@
 import { pageTitle } from '../utils/pageTitle';
+import { manageMatchPath } from '../paths';
 import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
@@ -13,7 +14,7 @@ import {
 import { GameControllerIcon, PlusIcon } from '@phosphor-icons/react';
 import { io } from 'socket.io-client';
 import { onSocketReconnect } from '../utils/socketResync';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
@@ -41,6 +42,9 @@ export default function Matches() {
     tournamentId,
     loading: tournamentIntegrationLoading,
   } = useShellIntegrations();
+  // The tournament in the address (/manage/tournaments/:id/matches), else the one loaded.
+  const { id: routeId } = useParams<{ id?: string }>();
+  const scopeId = routeId && routeId !== 'new' ? Number(routeId) : (tournamentId ?? null);
   const ServerAllocationWidget = shellModule(shell, (i) => i.matchPanels.adminView)?.matchPanels
     .adminView;
   // The "create match" dialog is the module's whole form (client API 0.2.0):
@@ -57,9 +61,9 @@ export default function Matches() {
   const linkedSlug = searchParams.get('match');
   const selectMatch = useCallback(
     (match: Match) => {
-      if (match.slug) navigate(`/match/${encodeURIComponent(match.slug)}`);
+      if (match.slug) navigate(manageMatchPath(match.slug, scopeId));
     },
-    [navigate]
+    [navigate, scopeId]
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -315,8 +319,8 @@ export default function Matches() {
   const allMatches = [...upcomingMatches, ...liveMatches, ...matchHistory];
 
   useEffect(() => {
-    if (linkedSlug) navigate(`/match/${encodeURIComponent(linkedSlug)}`, { replace: true });
-  }, [linkedSlug, navigate]);
+    if (linkedSlug) navigate(manageMatchPath(linkedSlug, scopeId), { replace: true });
+  }, [linkedSlug, navigate, scopeId]);
 
   const toggleMatchSelected = (match: Match) => {
     if (!isManualMatchFlag(match)) {

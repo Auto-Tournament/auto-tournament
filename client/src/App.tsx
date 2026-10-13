@@ -21,6 +21,7 @@ import Tournament from './pages/Tournament';
 import Tournaments from './pages/Tournaments';
 import { ScopedTournamentRedirect, TournamentScope } from './components/manage/TournamentScope';
 import Bracket from './pages/Bracket';
+import ManageMatch from './pages/ManageMatch';
 import Matches from './pages/Matches';
 import Disputes from './pages/Disputes';
 import PlayedMatches from './pages/PlayedMatches';
@@ -593,10 +594,12 @@ function AppRoutes() {
         <Route path={adminRoute(paths.players)} element={<Players />} />
         <Route path={adminRoute(paths.reports)} element={<Reports />} />
         <Route path={adminRoute(paths.tournaments)} element={<Tournaments />} />
+        <Route path={adminRoute('/manage/match/:slug')} element={<ManageMatch />} />
         {/* One tournament: its id in the address, its pages as tabs. */}
         <Route path={adminRoute(paths.manageTournament)} element={<TournamentScope />}>
           <Route index element={<Navigate to="matches" replace />} />
           <Route path="matches" element={<Matches />} />
+          <Route path="matches/:slug" element={<ManageMatch />} />
           <Route path="bracket" element={<Bracket />} />
           <Route path="disputes" element={<Disputes />} />
           <Route path="setup" element={<Tournament />} />
