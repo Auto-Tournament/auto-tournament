@@ -6,7 +6,7 @@
  * setting (players.party_invites_from).
  */
 import { db } from '../config/database';
-import { builtinGames } from './gameCatalogService';
+import { builtinGames, ensureBuiltinGames } from './gameCatalogService';
 import { getIntegration, hasIntegration } from '../integrations/registry';
 
 export type Missing = 'game' | 'account';
@@ -101,4 +101,45 @@ export async function canInvite(
   }
   const missing = await missingForGame([toId], game);
   return missing.get(toId) === 'game' ? 'no_game' : true;
+}
+
+/**
+ * Players who played `game` (a match, an imported demo) play it: it goes on
+ * the profile of each who has no games yet, so "What do you play?" is
+ * answered for them. A player who picked their games keeps their pick.
+ */
+export async function addPlayedGame(steamIds: string[], game: string): Promise<number> {
+  const ids = [...new Set(steamIds.filter(Boolean))];
+  if (ids.length === 0) return 0;
+  // A fresh install seeds its built-in games in the background: the first
+  // import can come before that.
+  const gameId =
+    (await gameRowId(game)) ?? (await ensureBuiltinGames().then(() => gameRowId(game)));
+  if (gameId === null) return 0;
+  const rows = await db.queryAsync<{ player_uid: string }>(
+    `INSERT INTO player_games (player_uid, game_id, created_at)
+     SELECT p.uid, ?, ? FROM players p
+      WHERE p.id = ANY(?::text[]) AND p.deleted_at IS NULL
+        AND NOT EXISTS (SELECT 1 FROM player_games x WHERE x.player_uid = p.uid)
+     ON CONFLICT DO NOTHING
+     RETURNING player_uid`,
+    [gameId, Math.floor(Date.now() / 1000), ids]
+  );
+  return rows.length;
+}
+
+/** Once at start: everyone with a played match and no games gets that match's game. */
+export async function backfillPlayedGames(): Promise<number> {
+  const rows = await db.queryAsync<{ player_id: string; game: string }>(
+    `SELECT DISTINCT s.player_id, m.game
+       FROM player_match_stats s
+       JOIN matches m ON m.slug = s.match_slug
+       JOIN players p ON p.id = s.player_id
+      WHERE NOT EXISTS (SELECT 1 FROM player_games x WHERE x.player_uid = p.uid)`
+  );
+  const byGame = new Map<string, string[]>();
+  for (const r of rows) byGame.set(r.game, [...(byGame.get(r.game) ?? []), r.player_id]);
+  let added = 0;
+  for (const [game, ids] of byGame) added += await addPlayedGame(ids, game);
+  return added;
 }

@@ -107,8 +107,8 @@ export default function Manage() {
   }, [t]);
 
   const statusCounts = useMemo(
-    () => computeStatusCounts(matches, summary?.waitingMatches ?? 0),
-    [matches, summary]
+    () => computeStatusCounts(matches, summary?.waitingMatches ?? 0, tournament?.type),
+    [matches, summary, tournament?.type]
   );
   const needsYouItems = useMemo(
     () =>
@@ -172,7 +172,7 @@ export default function Manage() {
           admin page; this page hands it the "Needs you" count. */}
       <StatusStrip
         counts={statusCounts}
-        showVeto={tournamentIntegration.capabilities.veto}
+        showVeto={tournamentIntegration.capabilities.veto && tournament?.type !== 'shuffle'}
         resourceTile={
           ResourceStatusTile ? <ResourceStatusTile availability={availability} /> : null
         }
