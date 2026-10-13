@@ -8,7 +8,8 @@
 
 import { createHash } from 'crypto';
 import { db } from '../../config/database';
-import { DEFAULT_GAME } from '../../integrations/types';
+import { DEFAULT_GAME, type GameIntegration } from '../../integrations/types';
+import { listIntegrations } from '../../integrations/registry';
 import { tournamentService } from '../tournamentService';
 import { tournamentBannerService } from '../tournamentBannerService';
 import { tournamentSignupService } from '../tournamentSignupService';
@@ -22,13 +23,33 @@ const DAY = 24 * 3600;
 export const versionOf = (...parts: unknown[]) =>
   createHash('sha1').update(JSON.stringify(parts)).digest('base64url').slice(0, 12);
 
-/** A game's display name: the catalogue's, else the id in capitals ("cs2" → "CS2"). */
-export async function gameName(game: string | null | undefined): Promise<string> {
+/**
+ * A game as ratings and matches key it: a module's catalogue slug or alias
+ * becomes its id (CS2's 'counter-strike-2' → 'cs2'); any other game keeps
+ * its catalogue slug.
+ */
+export function gameKey(
+  game: string | null | undefined,
+  installed: readonly GameIntegration[] = listIntegrations()
+): string {
   const key = ratingGame(game);
+  const owner = installed.find(
+    (i) =>
+      i.id === key ||
+      (i.catalog != null &&
+        [i.catalog.slug, ...(i.catalog.aliases ?? [])].some((ref) => ref?.toLowerCase() === key))
+  );
+  return owner?.id ?? key;
+}
+
+/** A game's display name: the catalogue's, else its module's, else the id in capitals ("cs2" → "CS2"). */
+export async function gameName(game: string | null | undefined): Promise<string> {
+  const key = gameKey(game);
+  const owner = listIntegrations().find((i) => i.id === key);
   const row = await db.queryOneAsync<{ name: string }>('SELECT name FROM games WHERE slug = ?', [
-    key,
+    owner?.catalog?.slug || key,
   ]);
-  return row?.name || key.toUpperCase();
+  return row?.name || owner?.displayName || key.toUpperCase();
 }
 
 const TYPE_LABEL: Record<string, string> = {
@@ -315,12 +336,12 @@ export async function mainGame(playerId: string): Promise<string> {
       WHERE p.id = ? ORDER BY pg.created_at, g.id LIMIT 1`,
     [playerId]
   );
-  if (picked) return ratingGame(picked.slug);
+  if (picked) return gameKey(picked.slug);
   const played = await db.queryOneAsync<{ game: string }>(
     'SELECT game FROM player_game_ratings WHERE player_id = ? ORDER BY match_count DESC, updated_at DESC LIMIT 1',
     [playerId]
   );
-  return ratingGame(played?.game ?? DEFAULT_GAME);
+  return gameKey(played?.game ?? DEFAULT_GAME);
 }
 
 async function playerFacts(playerId: string) {
@@ -395,7 +416,7 @@ async function playerFacts(playerId: string) {
     deaths: stats?.deaths == null ? null : Number(stats.deaths),
     adr: stats?.adr == null ? null : Number(stats.adr),
     team: team?.name ?? null,
-    otherGames: others.filter((g) => ratingGame(g.slug) !== game).map((g) => g.name),
+    otherGames: others.filter((g) => gameKey(g.slug) !== game).map((g) => g.name),
   };
 }
 
