@@ -61,7 +61,7 @@ test(
       await expect(page.getByTestId('trade-up-panel')).toHaveCount(0);
       await expect(page.getByRole('dialog')).toBeVisible();
       await expect(page.getByRole('dialog')).toContainText('New skin acquired');
-    await expect(page.getByRole('dialog')).toContainText('5 × Common');
+      await expect(page.getByRole('dialog')).toContainText('5 × Common');
     } finally {
       await request.put('/api/skins/admin/config', { headers, data: config });
     }
