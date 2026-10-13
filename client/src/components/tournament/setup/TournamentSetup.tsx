@@ -475,7 +475,11 @@ export function TournamentSetup(props: TournamentSetupProps) {
             />
             <Box sx={{ mt: 2 }}>
               <SignInNeedsWarning
-                moduleId={setupGames.find((g) => g.id === game)?.integrationId ?? null}
+                // While the catalogue loads, the default game (CS2) is the one picked.
+                moduleId={
+                  setupGames.find((g) => g.id === game)?.integrationId ??
+                  (game === DEFAULT_SETUP_GAME.id ? DEFAULT_SETUP_GAME.integrationId : null)
+                }
               />
             </Box>
           </Field>
