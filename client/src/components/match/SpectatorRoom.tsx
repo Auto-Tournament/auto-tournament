@@ -40,7 +40,7 @@ function playersOf(team: { players?: RoomPlayer[] | Record<string, unknown> } | 
  */
 export function SpectatorRoom({ match, hasVeto }: { match: SpectatorRoomMatch; hasVeto: boolean }) {
   const { t } = useTranslation();
-  // `config.skip_veto` is the plugin's own veto (off: the platform runs it).
+  // The veto is the platform's (in the browser); the game server has none.
   const withVeto = hasVeto;
   const steps: Step[] = withVeto ? ['veto', 'server', 'live', 'result'] : ['server', 'live', 'result'];
   const now: Step =
