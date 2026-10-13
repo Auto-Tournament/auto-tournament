@@ -16,7 +16,6 @@ import { ensureSignedIn, signInViaRequest, signInAsPlayer } from '../helpers/aut
 
 /** The tournament's own pages, by their tab in the tournament bar. */
 const TOURNAMENT_BAR_ITEMS: [string, RegExp][] = [
-  ['needsYou', /\/manage$/],
   ['matches', /\/manage\/tournaments\/(new|\d+)\/matches$/],
   ['bracket', /\/manage\/tournaments\/(new|\d+)\/bracket$/],
   ['tournament', /\/manage\/tournaments\/(new|\d+)\/setup$/],
@@ -82,7 +81,10 @@ test.describe.serial('Admin navigation', () => {
       await expect(page).toHaveURL(/\/manage$/);
       await expect(rail).toBeVisible({ timeout: 15000 });
 
-      // The tournament's pages are tabs over them, not rail items.
+      // The tournament's pages are tabs over them, not rail items (not over
+      // Needs you, which is the whole site's).
+      await expect(page.getByTestId('tournament-bar')).toHaveCount(0);
+      await page.goto('/manage/tournaments/new/matches');
       for (const [key, url] of TOURNAMENT_BAR_ITEMS) {
         const tab = page.getByTestId(`tournament-bar-${key}`);
         await expect(tab, `tournament tab ${key}`).toBeVisible({ timeout: 15000 });

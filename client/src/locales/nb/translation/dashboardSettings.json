@@ -486,7 +486,8 @@
         "setup": "oppsett"
       },
       "openMenu": "Åpne Administrer-menyen",
-      "closeMenu": "Lukk menyen"
+      "closeMenu": "Lukk menyen",
+      "setupTab": "Oppsett"
     },
     "status": {
       "live": "LIVE",

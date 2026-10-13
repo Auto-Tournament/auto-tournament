@@ -78,6 +78,52 @@
       "lower": "LB R{{round}} M{{match}}",
       "grandFinal": "Grand Final",
       "grandFinalReset": "Grand Final Reset"
+    },
+    "table": {
+      "filterLabel": "Vis",
+      "search": "Finn et lag eller en spiller",
+      "tbd": "Ikke klart",
+      "manage": "Administrer kamp",
+      "empty": "Ingen kamper her.",
+      "filter": {
+        "attention_one": "Trenger oppfølging · {{count}}",
+        "attention_other": "Trenger oppfølging · {{count}}",
+        "live_one": "Live · {{count}}",
+        "live_other": "Live · {{count}}",
+        "veto_one": "Veto · {{count}}",
+        "veto_other": "Veto · {{count}}",
+        "waiting_one": "Venter · {{count}}",
+        "waiting_other": "Venter · {{count}}",
+        "finished_one": "Ferdig · {{count}}",
+        "finished_other": "Ferdig · {{count}}",
+        "all_one": "Alle · {{count}}",
+        "all_other": "Alle · {{count}}"
+      },
+      "columns": {
+        "match": "Kamp",
+        "teams": "Lag",
+        "phase": "Fase",
+        "server": "Server",
+        "attention": "Trenger oppfølging",
+        "open": "Åpne"
+      },
+      "attention": {
+        "calls_one": "Admin-kall",
+        "calls_other": "{{count}} admin-kall",
+        "decide": "Avgjør resultatet"
+      },
+      "phase": {
+        "live": "Live · kart {{map}}",
+        "finished": "Ferdig",
+        "finishedScore": "Ferdig · {{score}}",
+        "veto": "Kartveto",
+        "waitingTeams": "Venter på lagene",
+        "queued": "Venter på server · #{{position}} i køen",
+        "waiting": "Venter"
+      },
+      "server": {
+        "freed": "Frigjort"
+      }
     }
   },
   "teamModal": {
