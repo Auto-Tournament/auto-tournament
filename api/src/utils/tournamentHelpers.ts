@@ -29,15 +29,7 @@ export const validateTeamCount = (type: string, count: number): void => {
   switch (type) {
     case 'single_elimination':
     case 'double_elimination':
-      if (!isPowerOfTwo(count)) {
-        const validCounts = [2, 4, 8, 16, 32, 64, 128].filter((n) => n >= count);
-        throw new Error(
-          `${
-            type === 'single_elimination' ? 'Single' : 'Double'
-          } Elimination requires a power-of-2 team count. ` +
-            `Valid options: ${validCounts.join(', ')}`
-        );
-      }
+      // Any count works: one that is not a power of two gets byes (services/bracketByes.ts).
       if (count < 2 || count > 128) {
         throw new Error(`Team count must be between 2 and 128`);
       }

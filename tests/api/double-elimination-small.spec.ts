@@ -67,7 +67,11 @@ async function bracketMatches(request: APIRequestContext): Promise<ListedMatch[]
 
 const bySlug = (matches: ListedMatch[], slug: string) => matches.find((m) => m.slug === slug);
 
-async function seriesEnd(request: APIRequestContext, match: ListedMatch, winner: 'team1' | 'team2') {
+async function seriesEnd(
+  request: APIRequestContext,
+  match: ListedMatch,
+  winner: 'team1' | 'team2'
+) {
   const res = await request.post(`/api/events/${match.slug}`, {
     headers: SERVER_HEADERS,
     data: {
@@ -203,14 +207,7 @@ test.describe.serial('Small double-elimination brackets', () => {
       const [teamA, , teamC] = setup!.teams.map((t) => t.id);
 
       const all = await bracketMatches(request);
-      expect(all.map((m) => m.slug)).toEqual([
-        'gf',
-        'lb-r1m1',
-        'lb-r2m1',
-        'r1m1',
-        'r1m2',
-        'r2m1',
-      ]);
+      expect(all.map((m) => m.slug)).toEqual(['gf', 'lb-r1m1', 'lb-r2m1', 'r1m1', 'r1m2', 'r2m1']);
 
       // A and C win their openers; B and D meet in the losers bracket.
       await seriesEnd(request, bySlug(all, 'r1m1')!, 'team1');
@@ -234,51 +231,49 @@ test.describe.serial('Small double-elimination brackets', () => {
     }
   );
 
-  // Three teams is not a shape either bracket generator can build: both
-  // elimination types require a power-of-two count, and the setup UI offers
-  // the same list (2, 4, 8, ...). Pinned here so the rejection stays a clear
-  // 400 rather than a bracket that cannot be played.
+  // Three teams used to be refused (power-of-two counts only). It now gets a
+  // bye (Vikunja 752): the top seed waits in round 2, and the bracket plays out.
   for (const grandFinalMode of ['simple', 'none'] as const) {
     test(
-      `three teams with grand final '${grandFinalMode}' are rejected, not half-generated`,
+      `three teams with grand final '${grandFinalMode}': the top seed gets a bye and it finishes`,
       { tag: ['@api', '@regression'] },
       async ({ request }) => {
-        const timestamp = Date.now();
-        const teams: Team[] = [];
-        for (let i = 0; i < 3; i++) {
-          const team = await createTeam(request, {
-            id: `de3-${grandFinalMode}-team-${i}-${timestamp}`,
-            name: `de3 ${grandFinalMode} Team ${i + 1} ${timestamp}`,
-            players: [
-              { steamId: `7656119800000${100 + i * 5}`, name: 'Player 1' },
-              { steamId: `7656119800000${101 + i * 5}`, name: 'Player 2' },
-            ],
-          });
-          expect(team, `team ${i + 1} should be created`).toBeTruthy();
-          teams.push(team!);
-        }
-
-        await request.delete('/api/tournament', { headers: getAuthHeader() });
-
-        const res = await request.post('/api/tournament', {
-          headers: getAuthHeader(),
-          data: {
-            name: `Three team double elim ${grandFinalMode}`,
-            type: 'double_elimination',
-            format: 'bo1',
-            maps: MAPS,
-            teamIds: teams.map((t) => t.id),
-            settings: { seedingMethod: 'manual', grandFinalMode },
-          },
+        const setup = await setupTournament(request, {
+          type: 'double_elimination',
+          format: 'bo1',
+          maps: MAPS,
+          teamCount: 3,
+          serverCount: 1,
+          prefix: `de3-${grandFinalMode}`,
+          settings: { seedingMethod: 'manual', grandFinalMode },
         });
+        expect(setup, 'tournament setup failed').toBeTruthy();
+        const [teamA, teamB, teamC] = setup!.teams.map((t) => t.id);
 
-        expect(res.status()).toBe(400);
-        expect(await res.text()).toContain('power-of-2');
+        // Seats: A vs bye, B vs C. A waits for the B/C winner in the winners final.
+        const all = await bracketMatches(request);
+        const opener = all.find((m) => m.team1 && m.team2)!;
+        expect([opener.team1?.id, opener.team2?.id]).toEqual([teamB, teamC]);
+        expect(all.some((m) => m.team1?.id === teamA || m.team2?.id === teamA)).toBe(true);
 
-        // Nothing was left behind.
-        const after = await request.get('/api/tournament', { headers: getAuthHeader() });
-        const body = (await after.json()) as TournamentBody;
-        expect(body.tournament ?? null, 'no tournament should survive').toBeFalsy();
+        const done = new Set<string>();
+        for (let i = 0; i < 20; i++) {
+          const open = (await bracketMatches(request)).filter(
+            (m) => m.team1 && m.team2 && m.status !== 'completed' && !done.has(m.slug)
+          );
+          if (open.length === 0) {
+            const t = await request.get('/api/tournament', { headers: getAuthHeader() });
+            if (((await t.json()) as TournamentBody).tournament?.status === 'completed') break;
+            await new Promise((r) => setTimeout(r, 300));
+            continue;
+          }
+          for (const m of open) {
+            await seriesEnd(request, m, 'team1');
+            done.add(m.slug);
+          }
+        }
+        const champion = await waitForChampion(request);
+        expect([teamA, teamB, teamC]).toContain(champion);
       }
     );
   }

@@ -45,8 +45,6 @@ export interface MatchCountEstimate {
 
 const UNKNOWN: MatchCountEstimate = { matches: null, rounds: null };
 
-const isPowerOfTwo = (n: number) => n > 0 && (n & (n - 1)) === 0;
-
 export function estimateMatchCount(input: MatchCountInput): MatchCountEstimate {
   const { type, teamCount: n } = input;
 
@@ -65,10 +63,9 @@ export function estimateMatchCount(input: MatchCountInput): MatchCountEstimate {
 
   switch (type) {
     case 'single_elimination':
-      if (!isPowerOfTwo(n)) return UNKNOWN;
-      return { matches: n - 1, rounds: Math.log2(n) };
+      // Any count: byes fill the bracket to the next power of two.
+      return { matches: n - 1, rounds: Math.ceil(Math.log2(n)) };
     case 'double_elimination': {
-      if (!isPowerOfTwo(n)) return UNKNOWN;
       const mode = input.grandFinalMode ?? 'simple';
       if (mode === 'none') return { matches: 2 * n - 3, rounds: null };
       return { matches: 2 * n - 2, rounds: null };
