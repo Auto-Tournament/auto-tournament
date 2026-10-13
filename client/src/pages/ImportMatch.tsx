@@ -6,7 +6,7 @@
  * players and each map's score appear as the demos are read
  * (api: integrations/cs2/demos/demoImport.ts).
  */
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -26,6 +26,7 @@ import { PageHead, Panel, Row, RowList } from '../components/common/ui';
 import { api, apiErrorMessage } from '../utils/api';
 import { pageTitle } from '../utils/pageTitle';
 import { paths } from '../paths';
+import { useTopic } from '../hooks/useTopic';
 
 const MAX_MAPS = 5;
 /** Under Cloudflare's 100 MB request limit with room to spare. */
@@ -76,16 +77,16 @@ export default function ImportMatch() {
   // Follow the demo worker until every map is read.
   const allDone =
     !!status && status.maps.every((m) => m.analysis === 'done' || m.analysis === 'failed');
-  useEffect(() => {
-    if (!status || allDone || busy) return;
-    const id = setInterval(() => {
-      api
-        .get<{ import: ImportStatus }>(`/api/game/cs2/imports/${encodeURIComponent(status.slug)}`)
-        .then((res) => setStatus(res.import))
-        .catch(() => null);
-    }, 5000);
-    return () => clearInterval(id);
-  }, [status, allDone, busy]);
+  const followSlug = status && !allDone && !busy ? status.slug : null;
+  const follow = useCallback(() => {
+    if (!followSlug) return;
+    api
+      .get<{ import: ImportStatus }>(`/api/game/cs2/imports/${encodeURIComponent(followSlug)}`)
+      .then((res) => setStatus(res.import))
+      .catch(() => null);
+  }, [followSlug]);
+  // The demo worker's progress (the `demo-analysis` topic), not a timer.
+  useTopic('demo-analysis', follow, { admin: true, enabled: !!followSlug });
 
   const add = (list: ArrayLike<File> | null) => {
     if (!list) return;

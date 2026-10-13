@@ -42,6 +42,7 @@ import { useAuth as useAuthInternal } from '../contexts/AuthContext';
 export { api, apiErrorMessage } from '../utils/api';
 export { onSocketReconnect } from '../utils/socketResync';
 export { useSocket } from '../hooks/useSocket';
+export { useTopic, type TopicOptions } from '../hooks/useTopic';
 
 // Host contexts
 export { useSnackbar } from '../contexts/SnackbarContext';
@@ -119,7 +120,12 @@ export type {
 export { PlayerAvatar } from '../components/player/PlayerAvatar';
 // Highlights are videos any game can have (client API 0.2.14): the player,
 // the cards, and the placeholders while one is being made.
-export { HighlightPlayer, MUSIC_GAIN, PLAYER_VOLUME_DEFAULT, PLAYER_VOLUME_KEY } from '../components/highlights/HighlightPlayer';
+export {
+  HighlightPlayer,
+  MUSIC_GAIN,
+  PLAYER_VOLUME_DEFAULT,
+  PLAYER_VOLUME_KEY,
+} from '../components/highlights/HighlightPlayer';
 export type {
   ChapterInfo,
   HighlightPlayerHandle,

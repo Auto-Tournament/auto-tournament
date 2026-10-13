@@ -114,6 +114,7 @@ test(
             updateSupported: true,
             updateAvailable: true,
             updateStatus: queued ? 'queued' : 'current',
+            updateRequestedAt: queued ? Date.now() / 1000 : null,
             recorderRevision: '0123456789abcdef',
           })),
         },
@@ -162,6 +163,10 @@ test(
     await page.getByTestId('recorder-update-all').click();
     await expect(page.getByTestId('recorder-update-all')).toBeDisabled();
     await expect(page.getByTestId('recorder-update-csrender2')).toBeDisabled();
+    // How far it has got: none of the three updated yet.
+    await expect(page.getByTestId('recorders-update-batch')).toContainText(
+      'Updating: 0 of 3 updated'
+    );
     expect(updateRequests).toBe(1);
   }
 );

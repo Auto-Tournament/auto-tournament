@@ -1,14 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  MenuItem,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, Button, Chip, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { ArrowsLeftRightIcon, ShieldWarningIcon } from '@phosphor-icons/react';
 import {
   api,
@@ -18,6 +9,7 @@ import {
   useModuleTranslation,
   useSnackbar,
   useSocket,
+  useTopic,
 } from '../../../module-sdk';
 import type { MatchAdminPanelProps } from '../../types';
 
@@ -65,12 +57,15 @@ interface FailoverResponse {
   assignment: { serverId: string | null; epoch: number } | null;
 }
 
-const REFRESH_MS = 15_000;
 /** "restart the map from warmup" in the round picker. */
 const WARMUP = '0';
 
 function formatTime(unixSeconds: number): string {
-  return new Date(unixSeconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return new Date(unixSeconds * 1000).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
 }
 
 /**
@@ -107,9 +102,9 @@ export function FailoverPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) 
 
   useEffect(() => {
     void load();
-    const timer = setInterval(() => void load(), REFRESH_MS);
-    return () => clearInterval(timer);
   }, [load, matchStatus]);
+  // The fleet's changes (a failover, a new backup) and the match's, as they happen.
+  useTopic('fleet', load, { admin: true, events: ['match:update'] });
 
   useEffect(() => {
     if (!socket) return;
@@ -123,11 +118,15 @@ export function FailoverPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) 
   }, [socket, matchSlug, load]);
 
   const open = data?.proposal ?? null;
-  const liveBackups = useMemo(() => (data?.backups ?? []).filter((b) => b.supersededAt === null), [data]);
+  const liveBackups = useMemo(
+    () => (data?.backups ?? []).filter((b) => b.supersededAt === null),
+    [data]
+  );
 
   // Defaults: the proposed server and round, else the first free server and the latest backup.
   const effectiveTarget = target || open?.targetCs2ServerId || data?.candidates[0]?.id || '';
-  const effectiveRound = round || (open ? String(open.round) : liveBackups[0] ? String(liveBackups[0].round) : WARMUP);
+  const effectiveRound =
+    round || (open ? String(open.round) : liveBackups[0] ? String(liveBackups[0].round) : WARMUP);
 
   const reasonLabel = (f: Failover) =>
     t(`failover.reasons.${f.reason}`, {
@@ -141,10 +140,12 @@ export function FailoverPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) 
         }[f.reason] ?? f.reason,
     });
 
-  const serverLabel = (id: string | null, name: string | null) => name || id || t('failover.unknownServer', { defaultValue: 'unknown server' });
+  const serverLabel = (id: string | null, name: string | null) =>
+    name || id || t('failover.unknownServer', { defaultValue: 'unknown server' });
 
   const roundLabel = (value: string) => {
-    if (value === WARMUP) return t('failover.fromWarmup', { defaultValue: 'Restart the map from warmup' });
+    if (value === WARMUP)
+      return t('failover.fromWarmup', { defaultValue: 'Restart the map from warmup' });
     const b = (data?.backups ?? []).find((x) => String(x.round) === value);
     return b
       ? t('failover.roundScore', {
@@ -164,7 +165,9 @@ export function FailoverPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) 
       setTarget('');
       setRound('');
     } catch (err) {
-      showError(apiErrorMessage(err, t('failover.failed', { defaultValue: 'Could not move the match' })));
+      showError(
+        apiErrorMessage(err, t('failover.failed', { defaultValue: 'Could not move the match' }))
+      );
     } finally {
       setBusy(false);
       void load();
@@ -175,15 +178,25 @@ export function FailoverPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) 
     void run(
       open && open.status === 'open' ? `${base}/${open.id}/accept` : `${base}/move`,
       {
-        ...(open?.reason === 'restarted' ? {} : effectiveTarget ? { targetServerId: effectiveTarget } : {}),
+        ...(open?.reason === 'restarted'
+          ? {}
+          : effectiveTarget
+            ? { targetServerId: effectiveTarget }
+            : {}),
         round: Number(effectiveRound),
       },
-      t('failover.moved', { defaultValue: 'The match is moving. Players see the new server on the match page.' })
+      t('failover.moved', {
+        defaultValue: 'The match is moving. Players see the new server on the match page.',
+      })
     );
 
   const dismiss = () =>
     open &&
-    void run(`${base}/${open.id}/dismiss`, {}, t('failover.dismissed', { defaultValue: 'Left as it is.' }));
+    void run(
+      `${base}/${open.id}/dismiss`,
+      {},
+      t('failover.dismissed', { defaultValue: 'Left as it is.' })
+    );
 
   if (!data) return null;
   const history = data.recent.filter((f) => f.status !== 'open' && f.status !== 'moving');
@@ -286,7 +299,10 @@ export function FailoverPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) 
           </Typography>
           {open.lastError && (
             <Typography variant="caption" color="error" display="block" gutterBottom>
-              {t('failover.lastError', { defaultValue: 'Last try: {{error}}', error: open.lastError })}
+              {t('failover.lastError', {
+                defaultValue: 'Last try: {{error}}',
+                error: open.lastError,
+              })}
             </Typography>
           )}
           <Box mt={1}>{picker}</Box>
@@ -319,10 +335,16 @@ export function FailoverPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) 
           </Typography>
           {data.candidates.length === 0 ? (
             <Typography variant="body2" color="text.secondary">
-              {t('failover.noneFree', { defaultValue: 'No other Ready Up server is free right now.' })}
+              {t('failover.noneFree', {
+                defaultValue: 'No other Ready Up server is free right now.',
+              })}
             </Typography>
           ) : (
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems={{ md: 'center' }}>
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              spacing={1}
+              alignItems={{ md: 'center' }}
+            >
               {picker}
               <Button
                 size="small"
@@ -376,7 +398,10 @@ export function FailoverPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) 
                   <Typography variant="caption" color="text.secondary">
                     {f.auto
                       ? t('failover.byAuto', { defaultValue: 'automatic' })
-                      : t('failover.byAdmin', { defaultValue: 'by {{who}}', who: f.decidedBy ?? '?' })}
+                      : t('failover.byAdmin', {
+                          defaultValue: 'by {{who}}',
+                          who: f.decidedBy ?? '?',
+                        })}
                   </Typography>
                 )}
               </Box>

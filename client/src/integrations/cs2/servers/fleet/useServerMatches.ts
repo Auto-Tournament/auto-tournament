@@ -5,7 +5,7 @@
  * again when the socket says it changed.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { api, useSocket } from '../../../../module-sdk';
+import { api, useSocket, useTopic } from '../../../../module-sdk';
 
 export interface ServerMatch {
   slug: string;
@@ -40,16 +40,15 @@ interface Availability {
   servers?: Array<{ id: string; matchSlug: string | null }>;
 }
 
-const REFRESH_MS = 30_000;
-
 function toServerMatch(m: NonNullable<MatchResponse['match']>): ServerMatch {
-  const phase = m.vetoing || m.vetoCompleted === false
-    ? 'veto'
-    : m.matchPhase === 'warmup' || m.matchPhase === 'knife' || m.matchPhase === 'live'
-      ? m.matchPhase
-      : m.matchPhase === 'post_match'
-        ? 'post'
-        : null;
+  const phase =
+    m.vetoing || m.vetoCompleted === false
+      ? 'veto'
+      : m.matchPhase === 'warmup' || m.matchPhase === 'knife' || m.matchPhase === 'live'
+        ? m.matchPhase
+        : m.matchPhase === 'post_match'
+          ? 'post'
+          : null;
   const s1 = m.team1MapScore;
   const s2 = m.team2MapScore;
   return {
@@ -96,12 +95,10 @@ export function useServerMatches(): Record<string, ServerMatch> {
 
   useEffect(() => {
     const first = setTimeout(() => void loadAvailability(), 0);
-    const timer = setInterval(() => void loadAvailability(), REFRESH_MS);
-    return () => {
-      clearTimeout(first);
-      clearInterval(timer);
-    };
+    return () => clearTimeout(first);
   }, [loadAvailability]);
+  // Which match is on which server changes with the fleet and the matches.
+  useTopic('fleet', loadAvailability, { admin: true, events: ['match:update', 'bracket:update'] });
 
   useEffect(() => {
     const slugs = new Set(Object.values(slugByServer));
@@ -128,7 +125,16 @@ export function useServerMatches(): Record<string, ServerMatch> {
 
   const out: Record<string, ServerMatch> = {};
   for (const [serverId, slug] of Object.entries(slugByServer)) {
-    out[serverId] = matches[slug] ?? { slug, team1: '', team2: '', score: null, map: null, mapNumber: null, maps: 0, phase: null };
+    out[serverId] = matches[slug] ?? {
+      slug,
+      team1: '',
+      team2: '',
+      score: null,
+      map: null,
+      mapNumber: null,
+      maps: 0,
+      phase: null,
+    };
   }
   return out;
 }

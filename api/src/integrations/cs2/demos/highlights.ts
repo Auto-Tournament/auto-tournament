@@ -39,6 +39,7 @@ import { wakeRecorders } from './recorderLink';
 import { reelFailoverFilter } from './reelFailover';
 import { log } from '../../../utils/logger';
 import type { DemoAnalysisPayload } from './jobs';
+import { runRedressQueue } from './redressQueue';
 
 export const HIGHLIGHTS_DIR = path.join(DATA_DIR, 'highlights');
 
@@ -1069,7 +1070,7 @@ export async function saveReel(
   // A crowd track from an earlier make of this reel would not match it.
   await removeTwins(file);
   // Made again after its clips were redressed (redress.ts): done.
-  await db.runAsync('DELETE FROM cs2_redress_queue WHERE file = ?', [path.basename(file)]);
+  await runRedressQueue('DELETE FROM cs2_redress_queue WHERE file = ?', [path.basename(file)]);
   const moments = await db.queryOneAsync<{ n: number | string }>(
     "SELECT COUNT(*) AS n FROM cs2_highlights WHERE match_slug = ? AND map_number = ? AND player_id = ? AND status = 'done'",
     [matchSlug, mapNumber, playerId]

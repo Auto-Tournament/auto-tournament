@@ -11,6 +11,7 @@ import { PauseIcon, PlayIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { useTopic } from '../../hooks/useTopic';
 
 interface PauseState {
   pausedAt: number | null;
@@ -38,9 +39,9 @@ export function BracketPauseBar({ tournamentId }: { tournamentId: number }) {
 
   useEffect(() => {
     void load();
-    const timer = window.setInterval(() => void load(), 15_000);
-    return () => window.clearInterval(timer);
   }, [load]);
+  // A pause, a resume and its timer running out go out as tournament updates.
+  useTopic([], load, { events: ['tournament:update', 'bracket:update'] });
 
   const act = async (path: string, body: unknown, done: string) => {
     setBusy(true);

@@ -34,6 +34,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  LinearProgress,
   Stack,
   Tab,
   Tabs,
@@ -52,6 +53,7 @@ import {
 } from '../../../module-sdk';
 import { RecorderProgressBar, type RecorderProgress } from '../settings/RecorderProgressBar';
 import { HighlightOverlaySetting } from '../settings/HighlightOverlaySetting';
+import { updateBatch } from './recorderUpdateBatch';
 
 /** An image reference for people: its digest's first 12 characters, or its tag. */
 function shortImage(image: string): string {
@@ -103,6 +105,7 @@ interface Recorder {
   latestAgentVersion?: string | null;
   updatedAt?: number | null;
   updateStatus: string;
+  updateRequestedAt?: number | null;
   updateError: string | null;
   working: {
     playerName: string | null;
@@ -293,6 +296,37 @@ function RecordersTab() {
           {t('highlightsAdmin.fleet.updateAll')}
         </Button>
       </Stack>
+      {(() => {
+        // Update all's progress: the recorders asked together, how many are on the new version.
+        const batch = updateBatch(recorders, Date.now() / 1000);
+        if (!batch) return null;
+        const finished = batch.done + batch.failed;
+        return (
+          <Box data-testid="recorders-update-batch">
+            <Typography variant="body2" color="text.secondary">
+              {t(
+                batch.running > 0
+                  ? 'highlightsAdmin.fleet.updateProgress'
+                  : 'highlightsAdmin.fleet.updateDone',
+                { done: batch.done, total: batch.total }
+              )}
+              {batch.failed > 0 &&
+                ` · ${t('highlightsAdmin.fleet.updateFailed', { count: batch.failed })}`}
+            </Typography>
+            {batch.running > 0 && (
+              <LinearProgress
+                variant="determinate"
+                value={(finished / batch.total) * 100}
+                aria-label={t('highlightsAdmin.fleet.updateProgress', {
+                  done: batch.done,
+                  total: batch.total,
+                })}
+                sx={{ mt: 0.5, maxWidth: 360 }}
+              />
+            )}
+          </Box>
+        );
+      })()}
       {(() => {
         // What "Update all" installs: the newest image and agent any recorder was told about.
         const latestImage = recorders.find((r) => r.latestImage)?.latestImage ?? null;

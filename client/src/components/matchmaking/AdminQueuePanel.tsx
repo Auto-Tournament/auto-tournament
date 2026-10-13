@@ -10,6 +10,7 @@ import { Panel, SectionHead } from '../common/ui';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { playerProfilePath } from '../../paths';
+import { useTopic } from '../../hooks/useTopic';
 
 interface AdminQueue {
   searching: Array<{
@@ -68,12 +69,10 @@ export function AdminQueuePanel() {
 
   useEffect(() => {
     const first = setTimeout(() => void load(), 0);
-    const id = setInterval(() => void load(), 5000);
-    return () => {
-      clearTimeout(first);
-      clearInterval(id);
-    };
+    return () => clearTimeout(first);
   }, [load]);
+  // Re-read when the queue changes (the `matchmaking` topic), not on a timer.
+  useTopic('matchmaking', load, { admin: true });
 
   const clear = async (playerId: string) => {
     try {

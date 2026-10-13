@@ -23,9 +23,11 @@ export const Cs2ServersFreeTile: React.FC<ManageStatusTileProps> = ({ availabili
   const fleet = asServerAvailability(availability);
   // Servers added but not set up count toward the total, as on the Servers
   // page: "0 / 3", not "0 / 0" beside a grid of three servers.
-  const unconfigured = useUnconfiguredServers(30_000);
+  const unconfigured = useUnconfiguredServers(true);
   const free = fleet?.availableServerCount ?? 0;
   const total = (fleet?.servers.length ?? 0) + unconfigured.length;
 
-  return <ManageStatusTile label={t('managePage.status.serversFree')} value={`${free} / ${total}`} />;
+  return (
+    <ManageStatusTile label={t('managePage.status.serversFree')} value={`${free} / ${total}`} />
+  );
 };

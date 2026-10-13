@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import type { LogEntry, LogsResponse } from '../../types';
 import { radii } from '../../theme/tokens';
+import { useTopic } from '../../hooks/useTopic';
 
 export const LogViewer: React.FC = () => {
   const { t } = useTranslation();
@@ -50,15 +51,8 @@ export const LogViewer: React.FC = () => {
     loadLogs();
   }, [loadLogs]);
 
-  useEffect(() => {
-    if (!autoRefresh) return;
-
-    const interval = setInterval(() => {
-      loadLogs();
-    }, 2000); // Refresh every 2 seconds
-
-    return () => clearInterval(interval);
-  }, [autoRefresh, loadLogs]);
+  // New lines as they are written (the `logs` topic), while auto-refresh is on.
+  useTopic('logs', loadLogs, { admin: true, enabled: autoRefresh });
 
   const getLevelColor = (level: string) => {
     switch (level) {
