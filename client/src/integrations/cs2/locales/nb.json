@@ -409,6 +409,9 @@
   "matchInfo": {
     "server": {
       "waitingTitle": "Venter på servertildeling",
+      "paused": "Kampen er pauset.",
+      "pausedWaiting_one": "Pause: venter på at {{names}} kobler til igjen.",
+      "pausedWaiting_other": "Pause: venter på at {{names}} kobler til igjen.",
       "waitingBody": "En server tildeles automatisk så snart en blir ledig. Etter hver kamp har serverne en kort nedkjøling (rundt 2 minutter) slik at demoer kan lastes opp og serveren kan tilbakestilles helt. Siden oppdateres automatisk når serveren din er klar.",
       "serverName": "Server: {{name}}",
       "status": "Status: {{status}}",

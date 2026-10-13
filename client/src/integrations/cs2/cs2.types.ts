@@ -216,6 +216,8 @@ export interface MatchServer {
   } | null;
   /** Ready Up: a failover moved the match here in the last half hour (players reconnect). */
   moved?: { at: number; reason: string; inPlace: boolean } | null;
+  /** Ready Up: the match is paused (its type), and the lineup players not connected. */
+  pause?: { type: string | null; waitingFor: string[] } | null;
 }
 
 /** `GET /api/game/cs2/matches/:slug/connect`: how the viewer joins one match. */

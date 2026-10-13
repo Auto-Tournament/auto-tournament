@@ -3,6 +3,7 @@ import { signInViaRequest, impersonatePlayer, stopImpersonating } from '../helpe
 import { setupTournament } from '../helpers/tournamentSetup';
 import { findMatchByTeams } from '../helpers/matches';
 import { actingSteamIdFor } from '../helpers/veto';
+import { pauseView } from '../../api/src/integrations/cs2/fleet/pauseView';
 
 /**
  * GET /api/game/cs2/matches/:slug/connect (client API 0.2.0).
@@ -26,7 +27,15 @@ test.describe.serial('CS2 match connect route', () => {
     const setup = await setupTournament(request, {
       type: 'single_elimination',
       format: 'bo1',
-      maps: ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'],
+      maps: [
+        'de_mirage',
+        'de_inferno',
+        'de_ancient',
+        'de_anubis',
+        'de_dust2',
+        'de_vertigo',
+        'de_nuke',
+      ],
       teamCount: 2,
       serverCount: 1,
       prefix: 'connect',
@@ -73,4 +82,36 @@ test.describe.serial('CS2 match connect route', () => {
     const res = await request.get('/api/game/cs2/matches/no-such-match/connect');
     expect(res.status()).toBe(404);
   });
+});
+
+test('a paused match names the lineup players not connected', () => {
+  const team = (
+    players: Record<
+      string,
+      { name?: string; connected: boolean; role?: 'player' | 'sub' | 'coach' }
+    >
+  ) => ({
+    name: 'T',
+    score: 0,
+    players: Object.fromEntries(
+      Object.entries(players).map(([id, p]) => [id, { ready: true, ...p }])
+    ),
+  });
+  const state = {
+    pause: { active: true, type: 'auto_5v5' as const },
+    teams: {
+      team1: team({
+        '1': { name: 'alice', connected: true },
+        '2': { name: 'bob', connected: false },
+      }),
+      team2: team({
+        '3': { name: 'carol', connected: false },
+        '4': { name: 'sub', connected: false, role: 'sub' },
+        '5': { name: 'coach', connected: false, role: 'coach' },
+      }),
+    },
+  };
+  expect(pauseView(state)).toEqual({ type: 'auto_5v5', waitingFor: ['bob', 'carol'] });
+  expect(pauseView({ ...state, pause: { active: false } })).toBeNull();
+  expect(pauseView(null)).toBeNull();
 });

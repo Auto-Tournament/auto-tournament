@@ -249,6 +249,18 @@ export function MatchServerPanel({
             </Typography>
           </Alert>
         )}
+        {server.pause && (
+          <Alert severity="info" data-testid="match-server-paused">
+            <Typography variant="body2" fontWeight={600}>
+              {server.pause.waitingFor.length > 0
+                ? t('matchInfo.server.pausedWaiting', {
+                    names: server.pause.waitingFor.join(', '),
+                    count: server.pause.waitingFor.length,
+                  })
+                : t('matchInfo.server.paused')}
+            </Typography>
+          </Alert>
+        )}
         {/* Connect first (design draft "Match A"): one big Join, the console line beside Copy. */}
         <Box
           component={motion.div}

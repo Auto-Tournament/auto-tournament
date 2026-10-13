@@ -409,6 +409,9 @@
   "matchInfo": {
     "server": {
       "waitingTitle": "In attesa dell'assegnazione del server",
+      "paused": "La partita è in pausa.",
+      "pausedWaiting_one": "In pausa: si aspetta che {{names}} si ricolleghi.",
+      "pausedWaiting_other": "In pausa: si aspetta che {{names}} si ricolleghino.",
       "waitingBody": "Un server verrà assegnato automaticamente non appena ne sarà disponibile uno. Dopo ogni match i server entrano in un breve cooldown (circa 2 minuti) per caricare le demo e resettarsi completamente. Questa pagina si aggiornerà automaticamente quando il tuo server sarà pronto.",
       "serverName": "Server: {{name}}",
       "status": "Stato: {{status}}",
