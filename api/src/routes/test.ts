@@ -1370,6 +1370,16 @@ const HANDOVER_PROBE_SCENARIOS: Record<string, string> = {
                   DROP INDEX idx_servers_enabled;`,
   'renamed-by-hand': 'ALTER TABLE servers RENAME TO cs2_servers;',
   both: `CREATE TABLE cs2_maps (id TEXT PRIMARY KEY, display_name TEXT NOT NULL);`,
+  // Skins made before the cs2_ names: the keys keep their old names after the
+  // rename (player_loadout_pkey), which migration 052 has to find.
+  'old-skins': `CREATE TABLE player_skins (id SERIAL PRIMARY KEY, player_uid UUID NOT NULL, weapon TEXT NOT NULL,
+                  weapon_name TEXT NOT NULL, paint_kit INTEGER NOT NULL, name TEXT NOT NULL, rarity TEXT NOT NULL,
+                  image TEXT NOT NULL, float_value REAL NOT NULL, pattern INTEGER NOT NULL, source TEXT NOT NULL,
+                  source_label TEXT, source_ref TEXT, place INTEGER, seen BOOLEAN NOT NULL DEFAULT FALSE,
+                  created_at INTEGER NOT NULL DEFAULT 0);
+                CREATE TABLE player_loadout (player_uid UUID NOT NULL, slot TEXT NOT NULL,
+                  skin_id INTEGER NOT NULL REFERENCES player_skins(id) ON DELETE CASCADE,
+                  PRIMARY KEY (player_uid, slot));`,
 };
 
 router.post(

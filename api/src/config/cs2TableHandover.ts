@@ -335,6 +335,12 @@ async function pendingTables(client: Queryable): Promise<string[]> {
   return pending;
 }
 
+/** Skin tables' keys made under the old table names: [table, old key name, CS2's name]. */
+const SKIN_KEY_RENAMES: Array<[string, string, string]> = [
+  ['cs2_player_skins', 'player_skins_pkey', 'cs2_player_skins_pkey'],
+  ['cs2_player_loadout', 'player_loadout_pkey', 'cs2_player_loadout_pkey'],
+];
+
 /**
  * Rename CS2's 2.x tables and record its first migration; see the top of this
  * file. `cs2` is the registered CS2 module (its id and migrations); without it
@@ -383,6 +389,21 @@ export async function handOverCs2Tables(
     for (const index of ['idx_player_skins_owner', 'idx_player_skins_source_ref']) {
       await client.query(`DROP INDEX IF EXISTS ${ident(index)}`);
     }
+    // Their primary keys kept the old names through the rename, and CS2's
+    // 052-loadout-per-side drops the key by its cs2_ name: an upgraded install
+    // failed there with two primary keys (2026-10-13). Give them CS2's names.
+    for (const [table, from, to] of SKIN_KEY_RENAMES) {
+      const old = await client.query(
+        'SELECT 1 FROM pg_constraint WHERE conrelid = to_regclass($1) AND conname = $2',
+        [table, from]
+      );
+      if (old.rows.length > 0) {
+        await client.query(
+          `ALTER TABLE ${ident(table)} RENAME CONSTRAINT ${ident(from)} TO ${ident(to)}`
+        );
+        log.info(`[PostgreSQL] CS2 handover: renamed ${from} to ${to}`);
+      }
+    }
 
     if (cs2) await adoptFirstMigration(client, cs2, report);
     await client.query('COMMIT');
@@ -411,7 +432,9 @@ export async function handOverCs2Tables(
     );
   }
   if (report.columnsAdded.length > 0) {
-    log.success(`[PostgreSQL] CS2 handover added missing columns: ${report.columnsAdded.join(', ')}`);
+    log.success(
+      `[PostgreSQL] CS2 handover added missing columns: ${report.columnsAdded.join(', ')}`
+    );
   }
   if (report.recorded) {
     log.success(`[PostgreSQL] CS2 migration ${cs2?.migrations?.[0]?.id} recorded as applied`);

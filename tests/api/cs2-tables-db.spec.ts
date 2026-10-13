@@ -313,6 +313,17 @@ test.describe.serial('CS2 tables on the database', () => {
     expect(probe.schema.tables).toEqual(fresh.schema.tables);
   });
 
+  test('skins made before the cs2_ names upgrade: the loadout key is found under its old name', async ({
+    request,
+  }) => {
+    const fresh = await view(request);
+    // The probe runs every later CS2 migration after the rename, as a boot does;
+    // 052 used to fail here ("multiple primary keys", 2026-10-13).
+    const probe = await handoverProbe(request, 'old-skins');
+    expect(probe.first.error).toBeUndefined();
+    expect(probe.schema.tables).toEqual(fresh.schema.tables);
+  });
+
   test('a half-done handover is finished from where it stands', async ({ request }) => {
     const fresh = await view(request);
     // servers was renamed by hand; its index and constraint names, the other
