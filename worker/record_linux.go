@@ -789,6 +789,12 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 		slowFrom = w.slowmo - int(slowBeforeSec*tickrate)
 	}
 	main := prefix + "-picture.yuv"
+	// The camera is checked against where the demo has the player (capture.go checkFollow).
+	if look.replay != nil && look.playerID != "" {
+		rp, id := look.replay, look.playerID
+		g.follow = func(tick int) ([3]float64, bool) { return rp.PositionAt(id, tick) }
+		defer func() { g.follow = nil }()
+	}
 	mainTicks, err := r.capturePicture(g, name, w.from-lead, picturePhases(w, introEnd, slowFrom, speedsFor(r.rate.fps)), main)
 	if err != nil {
 		return nil, nil, fmt.Errorf("picture: %w", err)
