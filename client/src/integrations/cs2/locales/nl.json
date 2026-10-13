@@ -2320,6 +2320,8 @@
       "next": "Next",
       "close": "Close",
       "redoMatch": "Redo all clips",
+      "heldByFailed_one": "{{count}} clip is mislukt. De reels die hem zouden gebruiken wachten tot je hem opnieuw maakt of laat vallen.",
+      "heldByFailed_other": "{{count}} clips zijn mislukt. De reels die ze zouden gebruiken wachten tot je ze opnieuw maakt of laat vallen.",
       "reelElapsed": "ready {{time}} after its first clip started",
       "reelAssembly": "joined in {{time}}",
       "reelRender": "its clips: {{time}} of recording added up"

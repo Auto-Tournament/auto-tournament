@@ -369,6 +369,7 @@ async function main() {
       'CREATE TABLE app_settings (key TEXT PRIMARY KEY, value TEXT, updated_at INTEGER)'
     );
     await db.runAsync('ALTER TABLE cs2_highlights ADD COLUMN map_number INTEGER');
+    await db.runAsync("ALTER TABLE cs2_highlights ADD COLUMN kind TEXT NOT NULL DEFAULT '4k'");
     await db.runAsync('ALTER TABLE cs2_match_reels ADD COLUMN match_slug TEXT');
     await db.runAsync('ALTER TABLE cs2_match_reels ADD COLUMN map_number INTEGER');
     await db.runAsync('DELETE FROM cs2_highlights');

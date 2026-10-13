@@ -53,6 +53,7 @@ import {
 } from './plan';
 import { configuredReserve, getAutoscaleSettings, type StoredAutoscaleSettings } from './settings';
 import { fleetChanged } from '../adminTopics';
+import { matchPluginDisabled } from '../push/pluginSets';
 
 /** `issued_by` on the scaler's host commands. */
 export const AUTOSCALE_ACTOR = 'autoscale';
@@ -414,8 +415,14 @@ export async function gatherInputs(settings: StoredAutoscaleSettings): Promise<G
       const busy = ours || v.matchInProgress;
       // csm reports a match in progress that none of ours is behind (a local match or scrim).
       const occupied = running && v.matchInProgress && !ours;
+      const practice = await matchPluginDisabled(fid);
       const idle =
-        running && linkUp && v.fleetServer?.availability === 'available' && !busy && !updating;
+        running &&
+        linkUp &&
+        v.fleetServer?.availability === 'available' &&
+        !busy &&
+        !updating &&
+        !practice;
       if (idle) {
         if (!idleSince.has(fid)) idleSince.set(fid, now);
       } else {
@@ -433,6 +440,7 @@ export async function gatherInputs(settings: StoredAutoscaleSettings): Promise<G
         idle,
         busy,
         occupied,
+        practice,
         updating,
         failoverTarget: targets.has(cs2Id),
         pending,
@@ -668,7 +676,7 @@ export function runScalerPass(): Promise<PassResult | null> {
 // ---------------------------------------------------------------------------
 
 export type ScalerServerState =
-  'busy' | 'idle' | 'starting' | 'stopping' | 'stopped' | 'updating' | 'unreachable';
+  'busy' | 'idle' | 'starting' | 'stopping' | 'stopped' | 'updating' | 'unreachable' | 'practice';
 
 export interface AutoscaleStatus {
   settings: StoredAutoscaleSettings;
@@ -699,6 +707,8 @@ function stateOf(s: ScalerServer, now: number): ScalerServerState {
   if (s.pending === 'stop') return 'stopping';
   if (!s.running) return 'stopped';
   if (s.busy) return 'busy';
+  // Not the scaler's: it leaves a practice server running.
+  if (s.practice) return 'practice';
   if (s.idle) return 'idle';
   return isWarm(s, now) ? 'starting' : 'unreachable';
 }

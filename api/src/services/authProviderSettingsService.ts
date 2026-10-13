@@ -19,7 +19,12 @@
 import { db } from '../config/database';
 import { markEnvImported, envImportedNames } from './envImport';
 import { log } from '../utils/logger';
-import { decryptSecret, encryptSecret, secretsKeySource, type SecretsKeySource } from '../utils/secretBox';
+import {
+  decryptSecret,
+  encryptSecret,
+  secretsKeySource,
+  type SecretsKeySource,
+} from '../utils/secretBox';
 import {
   SIGN_IN_PROVIDERS,
   planProviderEnvImport,
@@ -43,6 +48,8 @@ interface ProviderRow {
   client_secret_enc: string | null;
   issuer_url: string | null;
   label: string | null;
+  logo: string | null;
+  button_color: string | null;
   updated_at: number;
 }
 
@@ -72,6 +79,8 @@ class AuthProviderSettingsService {
         updatedAt: Number(row.updated_at),
         issuerUrl: row.issuer_url ?? null,
         label: row.label ?? null,
+        logo: row.logo ?? null,
+        buttonColor: row.button_color ?? null,
       });
     }
     setStoredProviderSettings(next);
@@ -149,6 +158,8 @@ class AuthProviderSettingsService {
       hasIssuer: !!def.hasIssuer,
       issuerUrl: effective.issuerUrl,
       buttonName: effective.label,
+      logoUrl: effective.logo ? `/api/auth/${def.id}/logo?v=${effective.updatedAt ?? 0}` : null,
+      buttonColor: effective.buttonColor,
     };
   }
 
@@ -164,7 +175,11 @@ class AuthProviderSettingsService {
       [id]
     );
     const enabled =
-      patch.enabled !== undefined ? patch.enabled : current ? Number(current.enabled) === 1 : def.defaultEnabled;
+      patch.enabled !== undefined
+        ? patch.enabled
+        : current
+          ? Number(current.enabled) === 1
+          : def.defaultEnabled;
     const clientId = patch.clientId !== undefined ? patch.clientId : (current?.client_id ?? null);
     const secretEnc =
       patch.clientSecret !== undefined
@@ -172,23 +187,29 @@ class AuthProviderSettingsService {
           ? null
           : encryptSecret(patch.clientSecret)
         : (current?.client_secret_enc ?? null);
-    const issuerUrl = patch.issuerUrl !== undefined ? patch.issuerUrl : (current?.issuer_url ?? null);
+    const issuerUrl =
+      patch.issuerUrl !== undefined ? patch.issuerUrl : (current?.issuer_url ?? null);
     const label = patch.label !== undefined ? patch.label : (current?.label ?? null);
+    const logo = patch.logo !== undefined ? patch.logo : (current?.logo ?? null);
+    const buttonColor =
+      patch.buttonColor !== undefined ? patch.buttonColor : (current?.button_color ?? null);
     const now = Math.floor(Date.now() / 1000);
 
     await db.queryAsync(
       `INSERT INTO auth_provider_settings
-         (provider, enabled, client_id, client_secret_enc, issuer_url, label, updated_at, updated_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+         (provider, enabled, client_id, client_secret_enc, issuer_url, label, logo, button_color, updated_at, updated_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (provider) DO UPDATE SET
          enabled = EXCLUDED.enabled,
          client_id = EXCLUDED.client_id,
          client_secret_enc = EXCLUDED.client_secret_enc,
          issuer_url = EXCLUDED.issuer_url,
          label = EXCLUDED.label,
+         logo = EXCLUDED.logo,
+         button_color = EXCLUDED.button_color,
          updated_at = EXCLUDED.updated_at,
          updated_by = EXCLUDED.updated_by`,
-      [id, enabled ? 1 : 0, clientId, secretEnc, issuerUrl, label, now, actor]
+      [id, enabled ? 1 : 0, clientId, secretEnc, issuerUrl, label, logo, buttonColor, now, actor]
     );
     await this.load();
 
@@ -200,7 +221,14 @@ class AuthProviderSettingsService {
       clientIdChanged: patch.clientId !== undefined,
       issuerChanged: patch.issuerUrl !== undefined,
       labelChanged: patch.label !== undefined,
-      secret: patch.clientSecret === undefined ? 'unchanged' : patch.clientSecret === null ? 'cleared' : 'replaced',
+      logoChanged: patch.logo !== undefined,
+      colorChanged: patch.buttonColor !== undefined,
+      secret:
+        patch.clientSecret === undefined
+          ? 'unchanged'
+          : patch.clientSecret === null
+            ? 'cleared'
+            : 'replaced',
     });
   }
 }
