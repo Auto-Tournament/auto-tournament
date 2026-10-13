@@ -153,7 +153,7 @@ test.describe.serial('Admin navigation', () => {
   );
 
   test(
-    'on a phone the rail scrolls sideways instead of the page',
+    'on a phone the rail is a menu that opens as a drawer, and the page does not scroll sideways',
     { tag: ['@ui', '@navigation'] },
     async ({ page, request }) => {
       await page.setViewportSize({ width: 375, height: 812 });
@@ -161,12 +161,15 @@ test.describe.serial('Admin navigation', () => {
       expect(await signInViaRequest(request)).toBe(true);
 
       await page.goto('/manage');
-      await expect(page.getByTestId('manage-rail')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('manage-rail')).toBeHidden({ timeout: 15000 });
+      await page.getByTestId('manage-rail-open').click();
+      const drawer = page.getByTestId('manage-rail-drawer');
+      await expect(drawer).toBeVisible();
 
-      // The last core item is off to the right; it can still be reached.
-      await page.getByTestId('manage-rail-adminTools').click();
+      // The last core item is at the bottom; it can still be reached.
+      await drawer.getByTestId('manage-rail-adminTools').click();
       await expect(page).toHaveURL(/\/manage\/system$/);
-      await expect(page.getByTestId('manage-rail-adminTools')).toBeInViewport();
+      await expect(drawer).toBeHidden();
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth
