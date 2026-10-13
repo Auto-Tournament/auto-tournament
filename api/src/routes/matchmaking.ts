@@ -19,7 +19,13 @@ import {
   MM_RESERVED_SERVERS,
   MM_SEARCH_WINDOW,
 } from '../services/matchmaking/matchmakingService';
-import { MODES, parseModePools, parseReservedServers, parseSearchWindow, validateSearchWindow } from '../services/matchmaking/rules';
+import {
+  MODES,
+  parseModePools,
+  parseReservedServers,
+  parseSearchWindow,
+  validateSearchWindow,
+} from '../services/matchmaking/rules';
 import { hasIntegration, getIntegration } from '../integrations/registry';
 import { progressionService, ProgressionError } from '../services/matchmaking/progressionService';
 
@@ -32,7 +38,9 @@ function searchWindowView(raw: string | null) {
     start: w.start,
     step: w.step,
     cap: w.cap,
-    uncappedAfterMinutes: Number.isFinite(w.uncappedAfterSeconds) ? w.uncappedAfterSeconds / 60 : null,
+    uncappedAfterMinutes: Number.isFinite(w.uncappedAfterSeconds)
+      ? w.uncappedAfterSeconds / 60
+      : null,
   };
 }
 
@@ -83,7 +91,9 @@ function handle(what: string, fn: (req: Request, res: Response) => Promise<unkno
       return await fn(req, res);
     } catch (error) {
       if (error instanceof MatchmakingError) {
-        return res.status(error.status).json({ success: false, code: error.code, error: error.message });
+        return res
+          .status(error.status)
+          .json({ success: false, code: error.code, error: error.message });
       }
       if (error instanceof ProgressionError) {
         return res.status(error.status).json({ success: false, error: error.message });
@@ -119,7 +129,9 @@ router.get(
       modes: await matchmakingService.enabledModes(),
       allModes: MODES,
       modePools: parseModePools(await db.getAppSettingAsync(MM_MODE_POOLS)),
-      pools: hasIntegration('cs2') ? ((await getIntegration('cs2').matchmakingPools?.()) ?? []) : [],
+      pools: hasIntegration('cs2')
+        ? ((await getIntegration('cs2').matchmakingPools?.()) ?? [])
+        : [],
       openToPlayers: open,
       leaderboardPublic: board,
       searchWindow: searchWindowView(await db.getAppSettingAsync(MM_SEARCH_WINDOW)),
@@ -382,6 +394,7 @@ router.post(
  *             type: object
  *             properties:
  *               mode: { type: string, example: 5v5 }
+ *               botFill: { type: boolean, description: 'Bots take the empty seats (2v2 and 5v5). The game is unrated: no rating, XP or drops.' }
  *     responses:
  *       200:
  *         description: Searching
@@ -404,7 +417,9 @@ router.post(
   requirePlayer,
   sameSiteJson,
   handle('start the search', async (req, res) => {
-    await matchmakingService.startSearch(me(req), req.body?.mode ?? '5v5');
+    await matchmakingService.startSearch(me(req), req.body?.mode ?? '5v5', {
+      botFill: req.body?.botFill,
+    });
     return res.json({ success: true, ...(await matchmakingService.me(me(req))) });
   })
 );
@@ -503,7 +518,10 @@ router.get(
   '/lobbies/:id',
   requirePlayer,
   handle('read the match', async (req, res) => {
-    return res.json({ success: true, lobby: await matchmakingService.lobbyView(me(req), req.params.id) });
+    return res.json({
+      success: true,
+      lobby: await matchmakingService.lobbyView(me(req), req.params.id),
+    });
   })
 );
 
@@ -529,7 +547,10 @@ router.get(
   '/matches/:slug/result',
   requirePlayer,
   handle('read the result', async (req, res) => {
-    return res.json({ success: true, result: await progressionService.result(me(req), req.params.slug) });
+    return res.json({
+      success: true,
+      result: await progressionService.result(me(req), req.params.slug),
+    });
   })
 );
 
@@ -567,7 +588,12 @@ router.put(
   requirePlayer,
   sameSiteJson,
   handle('save the commend', async (req, res) => {
-    const saved = await progressionService.commend(me(req), req.params.slug, req.params.playerId, req.body);
+    const saved = await progressionService.commend(
+      me(req),
+      req.params.slug,
+      req.params.playerId,
+      req.body
+    );
     return res.json({ success: true, ...saved });
   })
 );
@@ -623,10 +649,19 @@ router.get(
   handle('read the leaderboard', async (req, res) => {
     if ((await db.getAppSettingAsync(MM_LEADERBOARD_PUBLIC)) !== '1') {
       const identity = await resolveViewerIdentity(req);
-      if (!identity.realSteamId) return res.status(401).json({ success: false, error: 'Sign in to see the leaderboard' });
+      if (!identity.realSteamId)
+        return res.status(401).json({ success: false, error: 'Sign in to see the leaderboard' });
     }
-    const mode = typeof req.query.mode === 'string' && MODES.includes(req.query.mode as never) ? req.query.mode : '5v5';
-    return res.json({ success: true, mode, minGames: 10, players: await progressionService.leaderboard(mode) });
+    const mode =
+      typeof req.query.mode === 'string' && MODES.includes(req.query.mode as never)
+        ? req.query.mode
+        : '5v5';
+    return res.json({
+      success: true,
+      mode,
+      minGames: 10,
+      players: await progressionService.leaderboard(mode),
+    });
   })
 );
 
@@ -653,7 +688,10 @@ router.get(
   '/players/:id/history',
   handle('read the history', async (req, res) => {
     const limit = Number(req.query.limit) || 20;
-    return res.json({ success: true, matches: await progressionService.history(req.params.id, limit) });
+    return res.json({
+      success: true,
+      matches: await progressionService.history(req.params.id, limit),
+    });
   })
 );
 
@@ -682,7 +720,9 @@ router.post(
   handle('adjust the XP', async (req, res) => {
     const note = typeof req.body?.note === 'string' ? req.body.note : '';
     await progressionService.adjustXp(req.params.id, Number(req.body?.amount), note);
-    log.info(`[AUDIT] ${req.body?.amount} XP for ${req.params.id} by ${requestActorId(req) ?? 'unknown'}: ${note}`);
+    log.info(
+      `[AUDIT] ${req.body?.amount} XP for ${req.params.id} by ${requestActorId(req) ?? 'unknown'}: ${note}`
+    );
     return res.json({ success: true, progress: await progressionService.progress(req.params.id) });
   })
 );
@@ -717,9 +757,15 @@ router.put(
     const modesInput = req.body?.modes;
     if (
       modesInput !== undefined &&
-      !(Array.isArray(modesInput) && modesInput.length > 0 && modesInput.every((m) => MODES.includes(m)))
+      !(
+        Array.isArray(modesInput) &&
+        modesInput.length > 0 &&
+        modesInput.every((m) => MODES.includes(m))
+      )
     ) {
-      return res.status(400).json({ success: false, error: `modes must be a non-empty list of ${MODES.join(', ')}` });
+      return res
+        .status(400)
+        .json({ success: false, error: `modes must be a non-empty list of ${MODES.join(', ')}` });
     }
     const poolsInput = req.body?.modePools;
     if (poolsInput !== undefined) {
@@ -728,26 +774,44 @@ router.put(
         typeof poolsInput === 'object' &&
         !Array.isArray(poolsInput) &&
         Object.entries(poolsInput as Record<string, unknown>).every(
-          ([m, id]) => MODES.includes(m as never) && (id === null || (Number.isInteger(id) && (id as number) > 0))
+          ([m, id]) =>
+            MODES.includes(m as never) &&
+            (id === null || (Number.isInteger(id) && (id as number) > 0))
         );
-      if (!ok) return res.status(400).json({ success: false, error: 'modePools maps a mode to a pool id, or null for the default' });
-      const next = { ...parseModePools(await db.getAppSettingAsync(MM_MODE_POOLS)) } as Record<string, number>;
+      if (!ok)
+        return res.status(400).json({
+          success: false,
+          error: 'modePools maps a mode to a pool id, or null for the default',
+        });
+      const next = { ...parseModePools(await db.getAppSettingAsync(MM_MODE_POOLS)) } as Record<
+        string,
+        number
+      >;
       for (const [m, id] of Object.entries(poolsInput as Record<string, number | null>)) {
         if (id === null) delete next[m];
         else next[m] = id;
       }
-      await db.setAppSettingAsync(MM_MODE_POOLS, Object.keys(next).length ? JSON.stringify(next) : null);
+      await db.setAppSettingAsync(
+        MM_MODE_POOLS,
+        Object.keys(next).length ? JSON.stringify(next) : null
+      );
     }
     const reservedInput = req.body?.reservedServers;
-    if (reservedInput !== undefined && !(Number.isInteger(reservedInput) && reservedInput >= 0 && reservedInput <= 50)) {
-      return res.status(400).json({ success: false, error: 'reservedServers must be a whole number from 0 to 50' });
+    if (
+      reservedInput !== undefined &&
+      !(Number.isInteger(reservedInput) && reservedInput >= 0 && reservedInput <= 50)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, error: 'reservedServers must be a whole number from 0 to 50' });
     }
     const windowInput = req.body?.searchWindow;
     const window = windowInput === undefined ? undefined : validateSearchWindow(windowInput);
     if (window === null) {
       return res.status(400).json({
         success: false,
-        error: 'searchWindow needs whole numbers: start 0-2000, step 0-1000, cap 0-5000 (at least start), uncappedAfterMinutes 1-120 or null',
+        error:
+          'searchWindow needs whole numbers: start 0-2000, step 0-1000, cap 0-5000 (at least start), uncappedAfterMinutes 1-120 or null',
       });
     }
     if (open !== undefined && typeof open !== 'boolean') {
@@ -756,7 +820,8 @@ router.put(
     if (board !== undefined && typeof board !== 'boolean') {
       return res.status(400).json({ success: false, error: 'leaderboardPublic must be a boolean' });
     }
-    if (modesInput !== undefined) await db.setAppSettingAsync(MM_MODES, JSON.stringify([...new Set(modesInput)]));
+    if (modesInput !== undefined)
+      await db.setAppSettingAsync(MM_MODES, JSON.stringify([...new Set(modesInput)]));
     if (
       open === undefined &&
       board === undefined &&
@@ -770,11 +835,18 @@ router.put(
         error: 'Send openToPlayers, leaderboardPublic, searchWindow and/or reservedServers',
       });
     }
-    if (reservedInput !== undefined) await db.setAppSettingAsync(MM_RESERVED_SERVERS, reservedInput ? String(reservedInput) : null);
+    if (reservedInput !== undefined)
+      await db.setAppSettingAsync(
+        MM_RESERVED_SERVERS,
+        reservedInput ? String(reservedInput) : null
+      );
     if (window !== undefined) await db.setAppSettingAsync(MM_SEARCH_WINDOW, JSON.stringify(window));
     if (open !== undefined) await db.setAppSettingAsync(MM_OPEN_TO_PLAYERS, open ? null : '0');
     if (board !== undefined) await db.setAppSettingAsync(MM_LEADERBOARD_PUBLIC, board ? '1' : null);
-    log.info(`[AUDIT] Matchmaking settings changed by ${requestActorId(req) ?? 'unknown'}`, { openToPlayers: open, leaderboardPublic: board });
+    log.info(`[AUDIT] Matchmaking settings changed by ${requestActorId(req) ?? 'unknown'}`, {
+      openToPlayers: open,
+      leaderboardPublic: board,
+    });
     return res.json({
       success: true,
       openToPlayers: isOpenToPlayers(await db.getAppSettingAsync(MM_OPEN_TO_PLAYERS)),

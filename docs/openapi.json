@@ -10359,6 +10359,10 @@
                   "mode": {
                     "type": "string",
                     "example": "5v5"
+                  },
+                  "botFill": {
+                    "type": "boolean",
+                    "description": "Bots take the empty seats (2v2 and 5v5). The game is unrated: no rating, XP or drops."
                   }
                 }
               }

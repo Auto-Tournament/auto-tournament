@@ -116,6 +116,52 @@ export interface QueuedParty {
   rating?: number;
   /** How far from `rating` this party accepts others, in mu (`searchWindow`). */
   window?: number;
+  /** The party asked for bots in the empty seats (`findBotFillGroup`). */
+  botFill?: boolean;
+}
+
+/** Modes a party may fill with bots: 1v1 against a bot is no match. */
+export const BOT_FILL_MODES: readonly MatchmakingMode[] = ['2v2', '5v5'];
+
+/**
+ * A bot-filled game for parties that asked for one, when no full match formed
+ * (`findGroup` first). The oldest such party anchors it and other bot-fill
+ * parties join, oldest first, while the players still fit; ratings play no part
+ * (bot-filled games are unrated). Null when no party asked for bots.
+ */
+export function findBotFillGroup(queue: QueuedParty[], teamSize: number): QueuedParty[] | null {
+  const ordered = queue
+    .filter((p) => p.botFill && p.players.length > 0 && p.players.length <= teamSize)
+    .sort((a, b) => a.queuedAt - b.queuedAt || a.entryId.localeCompare(b.entryId));
+  if (ordered.length === 0) return null;
+  const group: QueuedParty[] = [];
+  for (const party of ordered) {
+    if (splitBotFill([...group, party], teamSize)) group.push(party);
+  }
+  return group;
+}
+
+/**
+ * Two teams of at most `teamSize` for a bot-filled game, parties kept whole:
+ * largest party first, each to the side with fewer players. One party alone
+ * plays together against bots. Null when they do not fit.
+ */
+export function splitBotFill(
+  group: QueuedParty[],
+  teamSize: number
+): [QueuedParty[], QueuedParty[]] | null {
+  const teams: [QueuedParty[], QueuedParty[]] = [[], []];
+  const size = (t: QueuedParty[]) => t.reduce((n, p) => n + p.players.length, 0);
+  const bySize = [...group].sort(
+    (a, b) => b.players.length - a.players.length || a.queuedAt - b.queuedAt
+  );
+  for (const party of bySize) {
+    const order = size(teams[0]) <= size(teams[1]) ? [0, 1] : [1, 0];
+    const fits = order.find((i) => size(teams[i]) + party.players.length <= teamSize);
+    if (fits === undefined) return null;
+    teams[fits].push(party);
+  }
+  return teams;
 }
 
 // --- ratings (phase 2) -------------------------------------------------
