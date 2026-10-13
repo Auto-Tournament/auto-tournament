@@ -13,7 +13,9 @@ import {
   ButtonBase,
   CircularProgress,
   Container,
+  FormControlLabel,
   LinearProgress,
+  Switch,
   Typography,
 } from '@mui/material';
 import { PlayCircleIcon, PlusIcon, XIcon } from '@phosphor-icons/react';
@@ -257,6 +259,8 @@ export default function Play() {
   const [params, setParams] = useSearchParams();
   const [busy, setBusy] = useState(false);
   const [picked, setPicked] = useState<string | null>(null);
+  // Bots in the empty seats (2v2 / 5v5): an unrated game for a small group.
+  const [botFill, setBotFill] = useState(false);
   const [inviteAnchor, setInviteAnchor] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -508,6 +512,14 @@ export default function Play() {
                       </Box>
                     )}
                   </Typography>
+                  {me?.queue?.botFill && (
+                    <Typography
+                      sx={{ fontSize: textSize.sm, color: color.muted }}
+                      data-testid="mm-searching-bots"
+                    >
+                      {t('matchmaking.play.botFillUnrated')}
+                    </Typography>
+                  )}
                   {isLeader && (
                     <Button
                       variant="outlined"
@@ -866,6 +878,27 @@ export default function Play() {
                       {t('matchmaking.play.cooldown', { minutes: Math.ceil(cooldown / 60) })}
                     </Typography>
                   )}
+                  {isLeader && (mode === '2v2' || mode === '5v5') && (
+                    <Box sx={{ mb: -1 }}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={botFill}
+                            onChange={(e) => setBotFill(e.target.checked)}
+                            inputProps={{ 'aria-describedby': 'mm-bot-fill-help' }}
+                            data-testid="mm-bot-fill"
+                          />
+                        }
+                        label={t('matchmaking.play.botFill')}
+                      />
+                      <Typography
+                        id="mm-bot-fill-help"
+                        sx={{ fontSize: textSize.sm, color: color.muted, ml: 6 }}
+                      >
+                        {t('matchmaking.play.botFillUnrated')}
+                      </Typography>
+                    </Box>
+                  )}
                   <Button
                     variant="contained"
                     disabled={
@@ -875,7 +908,16 @@ export default function Play() {
                       blocking.length > 0 ||
                       me?.lobby?.status === 'accepting'
                     }
-                    onClick={() => void run(() => matchmakingAction('POST', '/queue', { mode }))}
+                    onClick={() =>
+                      void run(() =>
+                        matchmakingAction('POST', '/queue', {
+                          mode,
+                          ...(botFill && (mode === '2v2' || mode === '5v5')
+                            ? { botFill: true }
+                            : {}),
+                        })
+                      )
+                    }
                     data-testid="mm-find"
                     startIcon={<PlayCircleIcon size={26} />}
                     sx={{

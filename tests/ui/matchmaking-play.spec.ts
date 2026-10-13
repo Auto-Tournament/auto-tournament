@@ -1,4 +1,9 @@
-import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
+import {
+  test,
+  expect,
+  request as playwrightRequest,
+  type APIRequestContext,
+} from '@playwright/test';
 import { signInAsPlayer, signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 
 /**
@@ -22,7 +27,9 @@ test.describe.serial('matchmaking: Play page', () => {
   test.beforeAll(async () => {
     admin = await playwrightRequest.newContext({ baseURL: BASE_URL });
     expect(await signInViaRequest(admin)).toBe(true);
-    expect((await admin.put('/api/matchmaking/admin/settings', { data: { openToPlayers: true } })).ok()).toBe(true);
+    expect(
+      (await admin.put('/api/matchmaking/admin/settings', { data: { openToPlayers: true } })).ok()
+    ).toBe(true);
   });
 
   test.afterAll(async () => {
@@ -48,11 +55,15 @@ test.describe.serial('matchmaking: Play page', () => {
     for (let i = 0; i < 9; i++) {
       const ctx = await playwrightRequest.newContext({ baseURL: BASE_URL });
       others.push(ctx);
-      expect(await signInAsPlayerViaRequest(ctx, steamId(), `Api Player ${i}`, { games: ['cs2'] })).toBe(true);
+      expect(
+        await signInAsPlayerViaRequest(ctx, steamId(), `Api Player ${i}`, { games: ['cs2'] })
+      ).toBe(true);
       expect((await ctx.post('/api/matchmaking/queue', { data: { mode: '5v5' } })).ok()).toBe(true);
     }
 
-    await expect(page.getByRole('dialog', { name: 'Match found' })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('dialog', { name: 'Match found' })).toBeVisible({
+      timeout: 20_000,
+    });
     await page.getByTestId('mm-accept').click();
     await expect(page.getByTestId('mm-accept')).toHaveText('Waiting for the others');
 
@@ -62,7 +73,9 @@ test.describe.serial('matchmaking: Play page', () => {
       return ((await res.json()) as { lobby: { id: string } }).lobby.id;
     })();
     for (const ctx of others) {
-      expect((await ctx.post(`/api/matchmaking/lobbies/${lobbyId}/accept`, { data: {} })).ok()).toBe(true);
+      expect(
+        (await ctx.post(`/api/matchmaking/lobbies/${lobbyId}/accept`, { data: {} })).ok()
+      ).toBe(true);
     }
 
     await expect(page).toHaveURL(new RegExp(`/play/${lobbyId}$`), { timeout: 30_000 });
@@ -75,6 +88,47 @@ test.describe.serial('matchmaking: Play page', () => {
     await expect(page.getByText('Browser Player')).toBeVisible();
     await expect(page.getByRole('dialog', { name: 'Match found' })).toHaveCount(0);
   });
+
+  test(
+    'with bots: one player finds a game alone, and the room has a Bots side',
+    TAGS,
+    async ({ page }) => {
+      test.setTimeout(60_000);
+      expect(await signInAsPlayer(page, steamId(), 'Bot Fill Player', { games: ['cs2'] })).toBe(
+        true
+      );
+      await page.goto('/play');
+      const toggle = page.getByRole('switch', { name: 'Fill empty seats with bots' });
+      await expect(toggle).toBeVisible();
+      await expect(
+        page.getByText('Bots fill the empty seats · unrated: no rating, XP or drops')
+      ).toBeVisible();
+      await toggle.check();
+      await page.getByTestId('mm-find').click();
+
+      // Nobody else is needed.
+      await expect(page.getByRole('dialog', { name: 'Match found' })).toBeVisible({
+        timeout: 20_000,
+      });
+      await page.getByTestId('mm-accept').click();
+      await expect(page).toHaveURL(/\/play\/[0-9a-f-]+$/, { timeout: 30_000 });
+      await expect(page.getByText('Bot Fill Player')).toBeVisible();
+
+      // End it so the player is free again.
+      const lobby = (await (await page.request.get('/api/matchmaking/me')).json()).lobby as {
+        id: string;
+      };
+      const room = (await (await page.request.get(`/api/matchmaking/lobbies/${lobby.id}`)).json())
+        .lobby as {
+        matchSlug: string;
+      };
+      const end = {
+        slug: room.matchSlug,
+        result: { winner: 'team1', team1Score: 1, team2Score: 0, games: [] },
+      };
+      expect((await admin.post('/api/test/series-result', { data: end })).ok()).toBe(true);
+    }
+  );
 
   test('the queue bar stops a search', TAGS, async ({ page }) => {
     expect(await signInAsPlayer(page, steamId(), 'Stopper', { games: ['cs2'] })).toBe(true);

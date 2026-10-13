@@ -191,7 +191,9 @@ async function persistPlayerMatchStats(options: {
   // A finished matchmaking or tournament game goes to the game's module (CS2: skin drops).
   const onResult = integrationForMatch(match).onMatchmakingResult;
   const tournamentGame = !match.source && match.round > 0;
-  if (onResult && (match.source === 'matchmaking' || tournamentGame)) {
+  // A matchmaking game against bots is unrated and drops nothing (free to farm).
+  const botFilledMatchmaking = match.source === 'matchmaking' && configHasBotFill(match.config);
+  if (onResult && !botFilledMatchmaking && (match.source === 'matchmaking' || tournamentGame)) {
     const ids = (players: typeof team1Players) =>
       players.map((p) => p.steamId).filter((id) => known.has(id));
     const winners =
@@ -219,6 +221,15 @@ async function persistPlayerMatchStats(options: {
 }
 
 /** The ids among `ids` that have a player record. */
+function configHasBotFill(config: unknown): boolean {
+  try {
+    const parsed = typeof config === 'string' ? JSON.parse(config) : config;
+    return (parsed as { bot_fill?: unknown } | null)?.bot_fill === true;
+  } catch {
+    return false;
+  }
+}
+
 async function knownPlayerIds(ids: string[]): Promise<Set<string>> {
   const unique = [...new Set(ids.filter((id) => typeof id === 'string' && id !== ''))];
   if (unique.length === 0) return new Set();

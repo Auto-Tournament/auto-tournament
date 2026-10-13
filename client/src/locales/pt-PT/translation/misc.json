@@ -639,7 +639,9 @@
         "1v1": "Active Duty"
       },
       "searchAnyone": "Few players searching: you'll be matched with anyone available ({{count}} searching, {{total}} needed)",
-      "searchRating": "Finding a close match for your rating · {{count}} searching"
+      "searchRating": "Finding a close match for your rating · {{count}} searching",
+      "botFill": "Preencher lugares vazios com bots",
+      "botFillUnrated": "Bots ocupam os lugares vazios · sem ranking: sem rating, XP ou drops"
     },
     "queue": {
       "searching": "Searching {{mode}}",
