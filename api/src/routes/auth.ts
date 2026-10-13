@@ -5,6 +5,7 @@ import { log } from '../utils/logger';
 import { getAuthProvidersConfig } from '../config/authProviders';
 import { steamService } from '../services/steamService';
 import { playerService } from '../services/playerService';
+import { presetAccounts } from '../services/gameAccounts';
 import { passport, isStrategyConfigured } from '../config/passport';
 import { settingsService } from '../services/settingsService';
 import { authIdentityService, AuthProvider } from '../services/authIdentityService';
@@ -830,6 +831,36 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
             outcome,
           });
         }
+      }
+
+      // An admin entered this account for a player (a game's account, such as
+      // Epic Games for Rocket League; services/gameAccounts.ts): sign in as
+      // that player, link it, and the account counts as proven from now on.
+      const preset = await presetAccounts.findPreset(provider, providerUserId);
+      if (preset) {
+        const outcome = await authIdentityService.linkIdentityUnlessOwnedElsewhere(
+          provider,
+          providerUserId,
+          preset
+        );
+        if (outcome === 'linked') {
+          await presetAccounts.markVerified(provider, providerUserId);
+          user.steamId = preset;
+          await rememberIdentityProfile(provider, providerUserId, user);
+          await grantAdminForVerifiedEmail(preset, provider, verifiedEmail);
+          await applyProviderAvatar(preset, user.avatarUrl);
+          setPlayerSteamCookie(req, res, preset);
+          log.success(`${label} login matched a player an admin added`, {
+            provider,
+            steamId: preset,
+          });
+          return res.redirect(302, `${baseUrl}/`);
+        }
+        log.warn(`${label} login matched a player an admin added, but it could not be linked`, {
+          provider,
+          steamId: preset,
+          outcome,
+        });
       }
 
       // No existing link: a new account of its own (Steam is optional), when

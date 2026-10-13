@@ -211,7 +211,7 @@
     "playersHeader": "Jogadores ({{count}})",
     "selectPlayers": "Selecionar jogadores",
     "noPlayersInfo": "Ainda não existem jogadores adicionados. Adicione pelo menos um jogador.",
-    "addPlayersHelper": "Adicione jogadores colando um URL Steam ou selecionando de jogadores existentes",
+    "addPlayersHelper_steam": "Adicione jogadores colando um URL Steam ou selecionando de jogadores existentes",
     "steamInputLabel": "Steam ID / vanity URL",
     "steamInputPlaceholder": "gaben or steamcommunity.com/id/gaben",
     "resolveSteam": "Resolver Steam ID",
@@ -233,7 +233,9 @@
       "deleteFailed": "Não foi possível eliminar a equipa",
       "discordIdInvalid": "O ID do Discord tem de ter 17–20 dígitos (o ID numérico do utilizador, não um nome de utilizador)",
       "discordIdInvalidPlayers": "ID do Discord inválido para: {{names}}. Tem de ter 17–20 dígitos ou ficar vazio.",
-      "discordIdSaveFailed": "A equipa foi guardada, mas não foi possível guardar o ID do Discord de: {{names}}. {{message}}"
+      "discordIdSaveFailed": "A equipa foi guardada, mas não foi possível guardar o ID do Discord de: {{names}}. {{message}}",
+      "nameRequired": "Enter the player's name",
+      "addPlayerFailed": "Could not add the player"
     },
     "success": {
       "playerAdded": "Jogador adicionado à equipa",
@@ -254,7 +256,10 @@
       "message": "Tem a certeza de que pretende eliminar \"{{name}}\"? Esta ação não pode ser anulada."
     },
     "replacePlayerAria": "Substituir jogador {{name}}",
-    "replacePlayerTooltip": "Substituir este jogador"
+    "replacePlayerTooltip": "Substituir este jogador",
+    "addPlayersHelper": "Add a new player below, or select from existing players",
+    "accountLabel": "{{account}} account (optional)",
+    "accountHelper": "For {{games}}. When they sign in with {{account}}, they become this player."
   },
   "playerModal": {
     "titleCreate": "Criar jogador",
@@ -301,7 +306,10 @@
       "title": "Atualizar ELO do jogador",
       "message": "Tem a certeza de que pretende atualizar o ELO deste jogador de {{from}} para {{to}}? Isto irá repor as estatísticas e o histórico de rating. Esta ação não pode ser anulada."
     },
-    "discordIdHelper": "Opcional. 17–20 dígitos. Permite que os organizadores contactem este jogador no Discord. Nunca é mostrado publicamente."
+    "discordIdHelper": "Opcional. 17–20 dígitos. Permite que os organizadores contactem este jogador no Discord. Nunca é mostrado publicamente.",
+    "accountLabel": "{{account}} account (optional)",
+    "accountHelper": "For {{games}}. The account id; when they sign in with {{account}}, they become this player.",
+    "accountVerified": "Linked: they signed in with {{account}}. They change it themselves."
   },
   "teamImportModal": {
     "title": "Importar equipas de JSON",
@@ -377,7 +385,7 @@
   "playerSelectionModal": {
     "title": "Selecionar jogadores",
     "selectedCount": "{{count}} selecionado(s)",
-    "searchPlaceholder": "Pesquisar jogadores por nome ou Steam ID...",
+    "searchPlaceholder_steam": "Pesquisar jogadores por nome ou Steam ID...",
     "selectAll": {
       "select": "Selecionar tudo",
       "deselect": "Desmarcar tudo"
@@ -394,7 +402,8 @@
       "noSelectable": "Não existem jogadores selecionáveis"
     },
     "addPlayersButton_one": "Adicionar {{count}} jogador",
-    "addPlayersButton_other": "Adicionar {{count}} jogadores"
+    "addPlayersButton_other": "Adicionar {{count}} jogadores",
+    "searchPlaceholder": "Search players by name..."
   },
   "soundSettingsModal": {
     "title": "Definições de som",

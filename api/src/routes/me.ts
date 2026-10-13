@@ -8,7 +8,7 @@
  * impersonation should not quietly edit the other player's profile.
  */
 
-import { installedPacks } from '../services/packCache';
+import { gameAccountProviders } from '../services/gameAccounts';
 import { Router, Request, Response } from 'express';
 import {
   MAX_PLAYER_GAMES,
@@ -25,7 +25,6 @@ import { log } from '../utils/logger';
 import { getAuthProvidersConfig } from '../config/authProviders';
 import { authIdentityService } from '../services/authIdentityService';
 import { playerService } from '../services/playerService';
-import { listIntegrations } from '../integrations/registry';
 import {
   LINKABLE_PROVIDERS,
   checkRemoveSignInMethod,
@@ -160,16 +159,17 @@ router.put('/games', async (req: Request, res: Response) => {
     }
     const ids = [...new Set(body as number[])];
     if (ids.length > MAX_PLAYER_GAMES) {
-      return res
-        .status(400)
-        .json({ success: false, error: `At most ${MAX_PLAYER_GAMES} games` });
+      return res.status(400).json({ success: false, error: `At most ${MAX_PLAYER_GAMES} games` });
     }
 
     await setPlayerGames(account.uid, ids);
     // Picked games are first in line for their app icons; never waited on.
     scheduleGameIconRefresh();
     return res.json(
-      await gamesResponse({ ...account, gamesPromptDismissedAt: account.gamesPromptDismissedAt ?? 0 })
+      await gamesResponse({
+        ...account,
+        gamesPromptDismissedAt: account.gamesPromptDismissedAt ?? 0,
+      })
     );
   } catch (error) {
     if (error instanceof UnknownGameIdsError) {
@@ -259,7 +259,8 @@ async function connectionsResponse(req: Request, account: PlayerAccount, isImper
   const linkedProviders = identities.map((i) => i.provider);
   if (localLogin) linkedProviders.push('local');
   const removable = (provider: string) =>
-    checkRemoveSignInMethod({ provider, linkedProviders, enabledProviders: enabledIds, hasSteam }).ok;
+    checkRemoveSignInMethod({ provider, linkedProviders, enabledProviders: enabledIds, hasSteam })
+      .ok;
 
   const signInMethods: SignInMethodRow[] = [];
   if (localLogin) {
@@ -287,9 +288,7 @@ async function connectionsResponse(req: Request, account: PlayerAccount, isImper
     ...(hasSteam && { account: { id: account.steamId, name: null, avatarUrl: null, email: null } }),
   });
   // Every provider this site offers, plus any linked one it no longer offers.
-  const shown = LINKABLE_PROVIDERS.filter(
-    (p) => enabled.has(p) || linkedProviders.includes(p)
-  );
+  const shown = LINKABLE_PROVIDERS.filter((p) => enabled.has(p) || linkedProviders.includes(p));
   for (const provider of shown) {
     const identity = identities.find((i) => i.provider === provider);
     signInMethods.push({
@@ -313,22 +312,9 @@ async function connectionsResponse(req: Request, account: PlayerAccount, isImper
   }
 
   // Game accounts follow the installed games: a module (CS2) or a pack
-  // (Rocket League) names the provider whose account identifies its players.
-  const gamesByProvider = new Map<string, Array<{ id: string; name: string }>>();
-  const addGame = (provider: string, game: { id: string; name: string }) => {
-    const games = gamesByProvider.get(provider) ?? [];
-    if (!games.some((g) => g.id === game.id)) games.push(game);
-    gamesByProvider.set(provider, games);
-  };
-  for (const integration of listIntegrations()) {
-    if (integration.accountProvider) {
-      addGame(integration.accountProvider, { id: integration.id, name: integration.displayName });
-    }
-  }
-  for (const pack of installedPacks()) {
-    if (pack.definition.account) addGame(pack.definition.account, { id: pack.slug, name: pack.name });
-  }
-  const gameAccounts = [...gamesByProvider.entries()].map(([provider, games]) => {
+  // (Rocket League) names the provider whose account identifies its players
+  // (services/gameAccounts.ts).
+  const gameAccounts = gameAccountProviders().map(({ provider, games }) => {
     // Steam is the account's own identity, proven by the Steam sign-in; any
     // other is a sign-in method linked to this account (signing in proved it).
     if (provider === 'steam') {
@@ -365,7 +351,12 @@ async function connectionsResponse(req: Request, account: PlayerAccount, isImper
   });
 
   // Back from Steam with a Steam ID that already has a player: ask before merging.
-  let pendingMerge: { steamId: string; name: string; avatar: string | null; matches: number } | null = null;
+  let pendingMerge: {
+    steamId: string;
+    name: string;
+    avatar: string | null;
+    matches: number;
+  } | null = null;
   const pending = !isImpersonating ? readPendingSteamMerge(req, account.steamId) : null;
   if (pending) {
     const steamPlayer = await playerService.getPlayerById(pending.steamId);
@@ -510,7 +501,9 @@ router.post('/connections/:provider/remove', async (req: Request, res: Response)
     if (provider === 'steam') {
       return res.status(400).json({
         success: false,
-        error: hasSteam ? 'Steam is your primary sign-in and cannot be removed' : 'Not linked to your account',
+        error: hasSteam
+          ? 'Steam is your primary sign-in and cannot be removed'
+          : 'Not linked to your account',
       });
     }
     if (!isLinkableProvider(provider) && provider !== 'local') {
@@ -587,24 +580,37 @@ router.post('/connections/steam/merge', async (req: Request, res: Response) => {
     const account = await resolveAccount(req, res, { write: true, what: 'account' });
     if (!account) return;
     const pending = readPendingSteamMerge(req, account.steamId);
-    if (!pending) return res.status(404).json({ success: false, error: 'Nothing to merge. Connect Steam again.' });
+    if (!pending)
+      return res
+        .status(404)
+        .json({ success: false, error: 'Nothing to merge. Connect Steam again.' });
     // Only an account with a local admin login has a password to re-confirm.
-    if ((await localAdminService.findByPlayerId(account.steamId)) && !isLocalReauthFresh(req, account.steamId)) {
+    if (
+      (await localAdminService.findByPlayerId(account.steamId)) &&
+      !isLocalReauthFresh(req, account.steamId)
+    ) {
       return reauthRequired(res);
     }
 
     try {
       const result = await connectSteamToLocalAccount(account.steamId, pending.steamId, 'merge');
       clearPendingSteamMerge(req);
-      log.warn('[AUDIT] Merged local admin account into existing Steam player; that player is now an admin', {
-        from: account.steamId,
-        steamId: pending.steamId,
-        moved: result.moved,
-      });
+      log.warn(
+        '[AUDIT] Merged local admin account into existing Steam player; that player is now an admin',
+        {
+          from: account.steamId,
+          steamId: pending.steamId,
+          moved: result.moved,
+        }
+      );
     } catch (error) {
       if (error instanceof SteamLinkError) {
         clearPendingSteamMerge(req);
-        log.warn('[AUDIT] Steam merge refused', { from: account.steamId, steamId: pending.steamId, reason: error.reason });
+        log.warn('[AUDIT] Steam merge refused', {
+          from: account.steamId,
+          steamId: pending.steamId,
+          reason: error.reason,
+        });
         return res.status(409).json({
           success: false,
           error:

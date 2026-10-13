@@ -42,10 +42,13 @@ import { PlayerName } from '../components/player/PlayerName';
 import { NoDiscordChip } from '../components/player/NoDiscordChip';
 import { ImportWarningsMessage } from '../components/shared/ImportWarningsMessage';
 import { useTranslation } from 'react-i18next';
+import { useGameAccounts } from '../hooks/useGameAccounts';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Players() {
   const { t } = useTranslation();
+  // Steam wording only when a game here identifies players by Steam (CS2).
+  const steamContext = useGameAccounts().steam ? 'steam' : undefined;
   const { showSuccess, showError, showWarning } = useSnackbar();
   const { startImpersonation } = useAuth();
   const [players, setPlayers] = useState<PlayerDetail[]>([]);
@@ -84,7 +87,8 @@ export default function Players() {
   };
 
   const allVisibleSelected =
-    filteredPlayers.length > 0 && filteredPlayers.every((player) => selectedPlayerIds.has(player.id));
+    filteredPlayers.length > 0 &&
+    filteredPlayers.every((player) => selectedPlayerIds.has(player.id));
 
   // The page's own actions, beside its title (the drafts' `.head`), once
   // there is someone to act on; the empty state offers them itself.
@@ -102,7 +106,9 @@ export default function Players() {
             }
           }}
         >
-          {selectionMode ? t('playersPage.headerSelect.done') : t('playersPage.headerSelect.select')}
+          {selectionMode
+            ? t('playersPage.headerSelect.done')
+            : t('playersPage.headerSelect.select')}
         </Button>
         {selectionMode && (
           <>
@@ -168,9 +174,9 @@ export default function Players() {
     try {
       setLoading(true);
       const data = await api.get<PlayersResponse>('/api/players');
-      const sorted = (data.players || []).slice().sort((a, b) =>
-        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
-      );
+      const sorted = (data.players || [])
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
       setPlayers(sorted);
       setFilteredPlayers(sorted);
     } catch (err) {
@@ -291,9 +297,9 @@ export default function Players() {
     return (
       <>
         <PageHead title={t('layout.pageTitle.players')} />
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
       </>
     );
   }
@@ -306,7 +312,7 @@ export default function Players() {
         <Box mb={3}>
           <TextField
             fullWidth
-            placeholder={t('playersPage.searchPlaceholder')}
+            placeholder={t('playersPage.searchPlaceholder', { context: steamContext })}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             slotProps={{
@@ -324,191 +330,195 @@ export default function Players() {
       )}
 
       {players.length === 0 ? (
-          <Box>
-            <EmptyState
-              data-testid="players-empty-state"
-              icon={UserIcon}
-              title={t('playersPage.empty.title')}
-              description={t('playersPage.empty.description')}
-              actionLabel={t('playersPage.empty.createPlayer')}
-              actionIcon={PlusIcon}
-              onAction={() => handleOpenModal()}
-            />
-            <Box display="flex" justifyContent="center" mt={2}>
-              <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
-                {t('playersPage.empty.import')}
-              </Button>
-            </Box>
+        <Box>
+          <EmptyState
+            data-testid="players-empty-state"
+            icon={UserIcon}
+            title={t('playersPage.empty.title')}
+            description={t('playersPage.empty.description')}
+            actionLabel={t('playersPage.empty.createPlayer')}
+            actionIcon={PlusIcon}
+            onAction={() => handleOpenModal()}
+          />
+          <Box display="flex" justifyContent="center" mt={2}>
+            <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
+              {t('playersPage.empty.import')}
+            </Button>
           </Box>
-        ) : filteredPlayers.length === 0 ? (
-          <Alert severity="info">
-            {t('playersPage.searchNoResults', { query: searchQuery })}
-          </Alert>
-        ) : (
-          // One row per player (the drafts' `.row-list.panel`): avatar and
-          // name, a quiet rating chip, and the rest behind the row's menu.
-          // A click on the row edits the player, or picks it while selecting.
-          <RowList data-testid="players-list" aria-label={t('layout.pageTitle.players')}>
-            {filteredPlayers.map((player) => {
-              const selected = selectedPlayerIds.has(player.id);
-              return (
-                <Row
-                  key={player.id}
-                  data-testid={`player-card-${player.id}`}
-                  columns={{
-                    xs: selectionMode ? 'auto auto minmax(0, 1fr) auto' : 'auto minmax(0, 1fr) auto',
-                    sm: selectionMode
-                      ? 'auto auto minmax(0, 1fr) auto auto'
-                      : 'auto minmax(0, 1fr) auto auto',
-                  }}
-                  onClick={() => {
-                    if (selectionMode) {
-                      togglePlayerSelected(player.id);
-                    } else {
-                      handleOpenModal(player);
-                    }
-                  }}
+        </Box>
+      ) : filteredPlayers.length === 0 ? (
+        <Alert severity="info">{t('playersPage.searchNoResults', { query: searchQuery })}</Alert>
+      ) : (
+        // One row per player (the drafts' `.row-list.panel`): avatar and
+        // name, a quiet rating chip, and the rest behind the row's menu.
+        // A click on the row edits the player, or picks it while selecting.
+        <RowList data-testid="players-list" aria-label={t('layout.pageTitle.players')}>
+          {filteredPlayers.map((player) => {
+            const selected = selectedPlayerIds.has(player.id);
+            return (
+              <Row
+                key={player.id}
+                data-testid={`player-card-${player.id}`}
+                columns={{
+                  xs: selectionMode ? 'auto auto minmax(0, 1fr) auto' : 'auto minmax(0, 1fr) auto',
+                  sm: selectionMode
+                    ? 'auto auto minmax(0, 1fr) auto auto'
+                    : 'auto minmax(0, 1fr) auto auto',
+                }}
+                onClick={() => {
+                  if (selectionMode) {
+                    togglePlayerSelected(player.id);
+                  } else {
+                    handleOpenModal(player);
+                  }
+                }}
+                sx={{
+                  cursor: 'pointer',
+                  py: 1.5,
+                  bgcolor: selected ? tokens.color.paper3 : 'transparent',
+                  '&:hover': { bgcolor: tokens.color.paper3 },
+                  '&:first-of-type': {
+                    borderTopLeftRadius: 'inherit',
+                    borderTopRightRadius: 'inherit',
+                  },
+                  '&:last-of-type': {
+                    borderBottomLeftRadius: 'inherit',
+                    borderBottomRightRadius: 'inherit',
+                  },
+                }}
+              >
+                {selectionMode && (
+                  <Checkbox
+                    size="small"
+                    checked={selected}
+                    onClick={(event) => event.stopPropagation()}
+                    onChange={() => togglePlayerSelected(player.id)}
+                    slotProps={{ input: { 'aria-label': player.name } }}
+                    sx={{ m: -1 }}
+                  />
+                )}
+                <PlayerAvatar
+                  id={player.id}
+                  name={player.name}
+                  avatarUrl={player.avatar}
+                  size={36}
+                  isAdmin={player.isAdmin}
+                />
+                <Box sx={{ minWidth: 0 }}>
+                  <PlayerName
+                    name={player.name}
+                    isAdmin={player.isAdmin}
+                    variant="body1"
+                    noWrap
+                    sx={{ fontWeight: 600 }}
+                  />
+                  <Typography variant="body2" color="text.secondary" noWrap>
+                    {t('playersPage.matchesCount', { count: player.matchCount })}
+                  </Typography>
+                </Box>
+                <Box
                   sx={{
-                    cursor: 'pointer',
-                    py: 1.5,
-                    bgcolor: selected ? tokens.color.paper3 : 'transparent',
-                    '&:hover': { bgcolor: tokens.color.paper3 },
-                    '&:first-of-type': { borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' },
-                    '&:last-of-type': { borderBottomLeftRadius: 'inherit', borderBottomRightRadius: 'inherit' },
+                    display: 'flex',
+                    gap: 1,
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+                    // Under the name on a phone, beside it above that.
+                    order: { xs: 1, sm: 0 },
+                    gridColumn: { xs: selectionMode ? '3 / -1' : '2 / -1', sm: 'auto' },
                   }}
                 >
-                  {selectionMode && (
-                    <Checkbox
+                  <Tooltip title={t('playersPage.skillRatingTooltip')}>
+                    <Chip
+                      label={t('playersPage.skillRatingLabel', { elo: player.currentElo })}
                       size="small"
-                      checked={selected}
-                      onClick={(event) => event.stopPropagation()}
-                      onChange={() => togglePlayerSelected(player.id)}
-                      slotProps={{ input: { 'aria-label': player.name } }}
-                      sx={{ m: -1 }}
                     />
+                  </Tooltip>
+                  {!player.discordId && (
+                    <NoDiscordChip testId={`player-card-no-discord-${player.id}`} />
                   )}
-                  <PlayerAvatar
-                    id={player.id}
-                    name={player.name}
-                    avatarUrl={player.avatar}
-                    size={36}
-                    isAdmin={player.isAdmin}
-                  />
-                  <Box sx={{ minWidth: 0 }}>
-                    <PlayerName
-                      name={player.name}
-                      isAdmin={player.isAdmin}
-                      variant="body1"
-                      noWrap
-                      sx={{ fontWeight: 600 }}
-                    />
-                    <Typography variant="body2" color="text.secondary" noWrap>
-                      {t('playersPage.matchesCount', { count: player.matchCount })}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      gap: 1,
-                      flexWrap: 'wrap',
-                      alignItems: 'center',
-                      justifyContent: { xs: 'flex-start', sm: 'flex-end' },
-                      // Under the name on a phone, beside it above that.
-                      order: { xs: 1, sm: 0 },
-                      gridColumn: { xs: selectionMode ? '3 / -1' : '2 / -1', sm: 'auto' },
-                    }}
-                  >
-                    <Tooltip title={t('playersPage.skillRatingTooltip')}>
+                  {player.banned && (
+                    <Tooltip title={player.banReason || ''}>
                       <Chip
-                        label={t('playersPage.skillRatingLabel', { elo: player.currentElo })}
                         size="small"
+                        color="error"
+                        variant="outlined"
+                        label={t('playersPage.banned')}
+                        data-testid={`player-banned-${player.id}`}
                       />
                     </Tooltip>
-                    {!player.discordId && (
-                      <NoDiscordChip testId={`player-card-no-discord-${player.id}`} />
-                    )}
-                    {player.banned && (
-                      <Tooltip title={player.banReason || ''}>
-                        <Chip
-                          size="small"
-                          color="error"
-                          variant="outlined"
-                          label={t('playersPage.banned')}
-                          data-testid={`player-banned-${player.id}`}
-                        />
-                      </Tooltip>
-                    )}
-                  </Box>
-                  <RowMenu
-                    label={t('playersPage.rowActions', { name: player.name })}
-                    data-testid={`player-actions-${player.id}`}
-                    items={[
-                      {
-                        key: 'edit',
-                        label: t('playersPage.edit'),
-                        icon: <PencilSimpleIcon size={20} />,
-                        onClick: () => handleOpenModal(player),
-                      },
-                      {
-                        key: 'open',
-                        label: t('playersPage.openPlayerPageTooltip'),
-                        icon: <ArrowSquareOutIcon size={20} />,
-                        href: getPlayerPageUrl(player.id),
-                      },
-                      // Admins can't be impersonated, so don't offer it.
-                      ...(player.isAdmin
-                        ? []
-                        : [
-                            {
-                              key: 'viewAs',
-                              label: t('impersonation.viewAs'),
-                              icon: <EyeIcon size={20} />,
-                              onClick: () => void handleImpersonate(player),
-                              'data-testid': `impersonate-player-${player.id}`,
-                            },
-                          ]),
-                      // Admins can't be banned: take admin away first.
-                      ...(player.isAdmin
-                        ? []
-                        : [
-                            player.banned
-                              ? {
-                                  key: 'unban',
-                                  label: t('playersPage.unban'),
-                                  icon: <ProhibitIcon size={20} />,
-                                  onClick: () =>
-                                    void moderate(
-                                      () => api.delete(`/api/players/${player.id}/ban`),
-                                      t('playersPage.unbanned', { name: player.name }),
-                                      t('playersPage.moderationError')
-                                    ),
-                                  'data-testid': `unban-player-${player.id}`,
-                                }
-                              : {
-                                  key: 'ban',
-                                  label: t('playersPage.ban'),
-                                  icon: <ProhibitIcon size={20} />,
-                                  onClick: () => {
-                                    setBanReason('');
-                                    setBanFor(player);
-                                  },
-                                  'data-testid': `ban-player-${player.id}`,
+                  )}
+                </Box>
+                <RowMenu
+                  label={t('playersPage.rowActions', { name: player.name })}
+                  data-testid={`player-actions-${player.id}`}
+                  items={[
+                    {
+                      key: 'edit',
+                      label: t('playersPage.edit'),
+                      icon: <PencilSimpleIcon size={20} />,
+                      onClick: () => handleOpenModal(player),
+                    },
+                    {
+                      key: 'open',
+                      label: t('playersPage.openPlayerPageTooltip'),
+                      icon: <ArrowSquareOutIcon size={20} />,
+                      href: getPlayerPageUrl(player.id),
+                    },
+                    // Admins can't be impersonated, so don't offer it.
+                    ...(player.isAdmin
+                      ? []
+                      : [
+                          {
+                            key: 'viewAs',
+                            label: t('impersonation.viewAs'),
+                            icon: <EyeIcon size={20} />,
+                            onClick: () => void handleImpersonate(player),
+                            'data-testid': `impersonate-player-${player.id}`,
+                          },
+                        ]),
+                    // Admins can't be banned: take admin away first.
+                    ...(player.isAdmin
+                      ? []
+                      : [
+                          player.banned
+                            ? {
+                                key: 'unban',
+                                label: t('playersPage.unban'),
+                                icon: <ProhibitIcon size={20} />,
+                                onClick: () =>
+                                  void moderate(
+                                    () => api.delete(`/api/players/${player.id}/ban`),
+                                    t('playersPage.unbanned', { name: player.name }),
+                                    t('playersPage.moderationError')
+                                  ),
+                                'data-testid': `unban-player-${player.id}`,
+                              }
+                            : {
+                                key: 'ban',
+                                label: t('playersPage.ban'),
+                                icon: <ProhibitIcon size={20} />,
+                                onClick: () => {
+                                  setBanReason('');
+                                  setBanFor(player);
                                 },
-                          ]),
-                      {
-                        key: 'delete',
-                        label: t('playersPage.delete'),
-                        icon: <TrashIcon size={20} />,
-                        onClick: () => setDeleteFor(player),
-                        'data-testid': `delete-player-${player.id}`,
-                      },
-                    ]}
-                  />
-                </Row>
-              );
-            })}
-          </RowList>
-        )}
+                                'data-testid': `ban-player-${player.id}`,
+                              },
+                        ]),
+                    {
+                      key: 'delete',
+                      label: t('playersPage.delete'),
+                      icon: <TrashIcon size={20} />,
+                      onClick: () => setDeleteFor(player),
+                      'data-testid': `delete-player-${player.id}`,
+                    },
+                  ]}
+                />
+              </Row>
+            );
+          })}
+        </RowList>
+      )}
 
       <PlayerModal
         open={modalOpen}
@@ -523,7 +533,12 @@ export default function Players() {
         onImport={handleImportPlayers}
       />
 
-      <Dialog open={!!banFor} onClose={() => !moderating && setBanFor(null)} fullWidth maxWidth="xs">
+      <Dialog
+        open={!!banFor}
+        onClose={() => !moderating && setBanFor(null)}
+        fullWidth
+        maxWidth="xs"
+      >
         <DialogTitle>{t('playersPage.banTitle', { name: banFor?.name ?? '' })}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ mb: 2 }}>
@@ -554,7 +569,8 @@ export default function Players() {
               const who = banFor!;
               if (
                 await moderate(
-                  () => api.post(`/api/players/${who.id}/ban`, { reason: banReason.trim() || null }),
+                  () =>
+                    api.post(`/api/players/${who.id}/ban`, { reason: banReason.trim() || null }),
                   t('playersPage.bannedDone', { name: who.name }),
                   t('playersPage.moderationError')
                 )
@@ -620,8 +636,6 @@ export default function Players() {
         }}
         onCancel={() => setBulkDeleteConfirmOpen(false)}
       />
-
     </Box>
   );
 }
-

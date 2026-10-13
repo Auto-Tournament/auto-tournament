@@ -35,6 +35,7 @@ import { NoDiscordChip } from '../player/NoDiscordChip';
 import { isInvalidDiscordIdInput, normalizeDiscordId } from '../../utils/discordId';
 import type { Team, Player } from '../../types';
 import { useTranslation } from 'react-i18next';
+import { useGameAccounts } from '../../hooks/useGameAccounts';
 
 interface TeamModalProps {
   open: boolean;
@@ -102,6 +103,12 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
   const [newPlayerAvatar, setNewPlayerAvatar] = useState<string | undefined>(undefined);
   const [newPlayerElo, setNewPlayerElo] = useState<number | ''>('');
   const [newPlayerDiscordId, setNewPlayerDiscordId] = useState('');
+  // A new player's game accounts other than Steam (Epic Games, ...): provider -> id.
+  const [newPlayerAccounts, setNewPlayerAccounts] = useState<Record<string, string>>({});
+  const [adding, setAdding] = useState(false);
+  const gameAccounts = useGameAccounts();
+  // Steam wording only when a game here identifies players by Steam (CS2).
+  const steamContext = gameAccounts.steam ? 'steam' : undefined;
   // Discord IDs as loaded from the team GET (steamKey -> ID or null), so save only
   // sends the ones the admin actually changed. Players added in this session are
   // not in here.
@@ -200,9 +207,25 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     }
   };
 
-  const handleAddPlayer = () => {
-    if (!newPlayerSteamId.trim() || !newPlayerName.trim()) {
-      const errorMsg = t('teamModal.errors.steamAndNameRequired');
+  const resetNewPlayer = () => {
+    setNewPlayerSteamId('');
+    setNewPlayerName('');
+    setNewPlayerAvatar(undefined);
+    setNewPlayerElo('');
+    setNewPlayerDiscordId('');
+    setNewPlayerAccounts({});
+    setError('');
+  };
+
+  /**
+   * Add a player to the roster. With a Steam ID they go in as they are (the
+   * team save creates the player). Without one (a game that doesn't use
+   * Steam), the player is created first, with the game accounts entered, and
+   * the roster gets their new id.
+   */
+  const handleAddPlayer = async () => {
+    if (!newPlayerName.trim()) {
+      const errorMsg = t('teamModal.errors.nameRequired');
       setError(errorMsg);
       showWarning(errorMsg);
       return;
@@ -211,7 +234,10 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     const trimmedSteamId = newPlayerSteamId.trim();
 
     // Check for duplicates (case-insensitive comparison)
-    if (players.some((p) => p.steamId.toLowerCase() === trimmedSteamId.toLowerCase())) {
+    if (
+      trimmedSteamId &&
+      players.some((p) => p.steamId.toLowerCase() === trimmedSteamId.toLowerCase())
+    ) {
       const errorMsg = t('teamModal.errors.steamDuplicate');
       setError(errorMsg);
       showWarning(errorMsg);
@@ -225,8 +251,34 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       return;
     }
 
+    let playerId = trimmedSteamId;
+    if (!playerId) {
+      const accounts = Object.fromEntries(
+        Object.entries(newPlayerAccounts)
+          .map(([provider, value]) => [provider, value.trim()])
+          .filter(([, value]) => value)
+      );
+      setAdding(true);
+      try {
+        const created = await api.post<{ player?: { id: string } }>('/api/players', {
+          name: newPlayerName.trim(),
+          ...(newPlayerElo !== '' ? { elo: Number(newPlayerElo) } : {}),
+          ...(Object.keys(accounts).length > 0 ? { accounts } : {}),
+        });
+        playerId = created.player?.id ?? '';
+      } catch (err) {
+        const errorMsg = apiErrorMessage(err, t('teamModal.errors.addPlayerFailed'));
+        setError(errorMsg);
+        showError(errorMsg);
+        return;
+      } finally {
+        setAdding(false);
+      }
+      if (!playerId) return;
+    }
+
     const playerToAdd: Player = {
-      steamId: trimmedSteamId,
+      steamId: playerId,
       name: newPlayerName.trim(),
       avatar: newPlayerAvatar,
       elo: newPlayerElo !== '' ? Number(newPlayerElo) : undefined,
@@ -234,12 +286,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     };
 
     setPlayers([...players, playerToAdd]);
-    setNewPlayerSteamId('');
-    setNewPlayerName('');
-    setNewPlayerAvatar(undefined);
-    setNewPlayerElo('');
-    setNewPlayerDiscordId('');
-    setError('');
+    resetNewPlayer();
     showSuccess(t('teamModal.success.playerAdded'));
   };
 
@@ -249,9 +296,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
 
   // Keeps the raw text while typing; it is trimmed and validated on save.
   const handlePlayerDiscordIdChange = (steamId: string, value: string) => {
-    setPlayers((prev) =>
-      prev.map((p) => (p.steamId === steamId ? { ...p, discordId: value } : p))
-    );
+    setPlayers((prev) => prev.map((p) => (p.steamId === steamId ? { ...p, discordId: value } : p)));
   };
 
   const handleSelectPlayers = (selectedPlayerIds: string[]) => {
@@ -321,9 +366,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
             name: `Player ${replacementId.substring(0, 8)}`,
             avatar: undefined,
           };
-          setPlayers((prev) =>
-            prev.map((p) => (steamKey(p.steamId) === outgoing ? fallback : p))
-          );
+          setPlayers((prev) => prev.map((p) => (steamKey(p.steamId) === outgoing ? fallback : p)));
           showSuccess(t('teamModal.success.playerReplaced'));
         } finally {
           setReplacePlayerSteamId(null);
@@ -460,7 +503,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
         return rosterPlayer;
       });
       const payload = {
-        id: isEditing ? id.trim() : createdTeamId ?? slugifyTeamName(name),
+        id: isEditing ? id.trim() : (createdTeamId ?? slugifyTeamName(name)),
         name: name.trim(),
         tag: tag.trim() || undefined,
         discordRoleId: undefined, // Discord notifications not yet implemented
@@ -646,100 +689,100 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   const discordValue = player.discordId ?? '';
                   const discordInvalid = isInvalidDiscordIdInput(discordValue);
                   return (
-                  <ListItem
-                    key={player.steamId}
-                    secondaryAction={
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <IconButton
-                          edge="end"
-                          size="small"
-                          color="primary"
-                          onClick={() => {
-                            setReplacePlayerSteamId(player.steamId);
-                            setPlayerSelectionModalOpen(true);
-                          }}
-                          data-testid={`team-replace-player-${player.steamId}`}
-                          aria-label={t('teamModal.replacePlayerAria', { name: player.name })}
-                        >
-                          <Tooltip title={t('teamModal.replacePlayerTooltip')}>
-                            <ArrowsLeftRightIcon size={20} />
-                          </Tooltip>
-                        </IconButton>
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleRemovePlayer(player.steamId)}
-                          color="error"
-                          size="small"
-                        >
-                          <TrashIcon size={20} />
-                        </IconButton>
-                      </Box>
-                    }
-                  >
-                    <ListItemAvatar>
-                      <PlayerAvatar
-                        id={player.steamId}
-                        name={player.name}
-                        avatarUrl={player.avatar}
-                        size={40}
-                      />
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
-                          <span>{player.name}</span>
-                          {!normalizeDiscordId(discordValue) && (
-                            <NoDiscordChip testId={`team-player-no-discord-${player.steamId}`} />
-                          )}
+                    <ListItem
+                      key={player.steamId}
+                      secondaryAction={
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <IconButton
+                            edge="end"
+                            size="small"
+                            color="primary"
+                            onClick={() => {
+                              setReplacePlayerSteamId(player.steamId);
+                              setPlayerSelectionModalOpen(true);
+                            }}
+                            data-testid={`team-replace-player-${player.steamId}`}
+                            aria-label={t('teamModal.replacePlayerAria', { name: player.name })}
+                          >
+                            <Tooltip title={t('teamModal.replacePlayerTooltip')}>
+                              <ArrowsLeftRightIcon size={20} />
+                            </Tooltip>
+                          </IconButton>
+                          <IconButton
+                            edge="end"
+                            onClick={() => handleRemovePlayer(player.steamId)}
+                            color="error"
+                            size="small"
+                          >
+                            <TrashIcon size={20} />
+                          </IconButton>
                         </Box>
                       }
-                      secondary={
-                        <>
-                          <Typography
-                            component="span"
-                            variant="caption"
-                            display="block"
-                            fontFamily="monospace"
-                          >
-                            {player.steamId}
-                          </Typography>
-                          {player.elo !== undefined && (
+                    >
+                      <ListItemAvatar>
+                        <PlayerAvatar
+                          id={player.steamId}
+                          name={player.name}
+                          avatarUrl={player.avatar}
+                          size={40}
+                        />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={
+                          <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                            <span>{player.name}</span>
+                            {!normalizeDiscordId(discordValue) && (
+                              <NoDiscordChip testId={`team-player-no-discord-${player.steamId}`} />
+                            )}
+                          </Box>
+                        }
+                        secondary={
+                          <>
                             <Typography
                               component="span"
                               variant="caption"
-                              color="text.secondary"
                               display="block"
+                              fontFamily="monospace"
                             >
-                              ELO: {player.elo}
+                              {player.steamId}
                             </Typography>
-                          )}
-                          <TextField
-                            label={t('discordId.label')}
-                            value={discordValue}
-                            onChange={(e) =>
-                              handlePlayerDiscordIdChange(player.steamId, e.target.value)
-                            }
-                            placeholder={t('discordId.placeholder')}
-                            size="small"
-                            error={discordInvalid}
-                            helperText={discordInvalid ? t('discordId.helperInvalid') : undefined}
-                            sx={{ mt: 1, maxWidth: 260 }}
-                            fullWidth
-                            slotProps={{
-                              htmlInput: {
-                                inputMode: 'numeric',
-                                'data-testid': `team-player-discord-${player.steamId}`,
-                              },
-                            }}
-                          />
-                        </>
-                      }
-                      slotProps={{
-                        primary: { fontWeight: 500, component: 'div' },
-                        secondary: { component: 'div' },
-                      }}
-                    />
-                  </ListItem>
+                            {player.elo !== undefined && (
+                              <Typography
+                                component="span"
+                                variant="caption"
+                                color="text.secondary"
+                                display="block"
+                              >
+                                ELO: {player.elo}
+                              </Typography>
+                            )}
+                            <TextField
+                              label={t('discordId.label')}
+                              value={discordValue}
+                              onChange={(e) =>
+                                handlePlayerDiscordIdChange(player.steamId, e.target.value)
+                              }
+                              placeholder={t('discordId.placeholder')}
+                              size="small"
+                              error={discordInvalid}
+                              helperText={discordInvalid ? t('discordId.helperInvalid') : undefined}
+                              sx={{ mt: 1, maxWidth: 260 }}
+                              fullWidth
+                              slotProps={{
+                                htmlInput: {
+                                  inputMode: 'numeric',
+                                  'data-testid': `team-player-discord-${player.steamId}`,
+                                },
+                              }}
+                            />
+                          </>
+                        }
+                        slotProps={{
+                          primary: { fontWeight: 500, component: 'div' },
+                          secondary: { component: 'div' },
+                        }}
+                      />
+                    </ListItem>
                   );
                 })}
               </List>
@@ -752,37 +795,61 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
             <Divider sx={{ my: 2 }} />
 
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              {t('teamModal.addPlayersHelper')}
+              {t('teamModal.addPlayersHelper', { context: steamContext })}
             </Typography>
 
             <Box display="flex" flexDirection="column" gap={1}>
-              <Box display="flex" gap={1}>
+              {gameAccounts.steam && (
+                <Box display="flex" gap={1}>
+                  <TextField
+                    label={t('teamModal.steamInputLabel')}
+                    value={newPlayerSteamId}
+                    onChange={(e) => setNewPlayerSteamId(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newPlayerSteamId.trim() && !resolving) {
+                        handleResolveSteam();
+                      }
+                    }}
+                    placeholder={t('teamModal.steamInputPlaceholder')}
+                    size="small"
+                    disabled={resolving}
+                    sx={{ flex: 2 }}
+                    slotProps={{
+                      htmlInput: { 'data-testid': 'team-steam-id-input' },
+                    }}
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={handleResolveSteam}
+                    disabled={resolving || !newPlayerSteamId.trim()}
+                    size="small"
+                  >
+                    {resolving ? t('teamModal.resolving') : <MagnifyingGlassIcon size={20} />}
+                  </Button>
+                </Box>
+              )}
+              {gameAccounts.others.map((account) => (
                 <TextField
-                  label={t('teamModal.steamInputLabel')}
-                  value={newPlayerSteamId}
-                  onChange={(e) => setNewPlayerSteamId(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && newPlayerSteamId.trim() && !resolving) {
-                      handleResolveSteam();
-                    }
-                  }}
-                  placeholder={t('teamModal.steamInputPlaceholder')}
+                  key={account.provider}
+                  label={t('teamModal.accountLabel', { account: account.label })}
+                  value={newPlayerAccounts[account.provider] ?? ''}
+                  onChange={(e) =>
+                    setNewPlayerAccounts((prev) => ({
+                      ...prev,
+                      [account.provider]: e.target.value,
+                    }))
+                  }
+                  helperText={t('teamModal.accountHelper', {
+                    account: account.label,
+                    games: account.games.map((g) => g.name).join(', '),
+                  })}
                   size="small"
-                  disabled={resolving}
-                  sx={{ flex: 2 }}
+                  disabled={adding || !!newPlayerSteamId.trim()}
                   slotProps={{
-                    htmlInput: { 'data-testid': 'team-steam-id-input' },
+                    htmlInput: { 'data-testid': `team-player-account-${account.provider}-input` },
                   }}
                 />
-                <Button
-                  variant="outlined"
-                  onClick={handleResolveSteam}
-                  disabled={resolving || !newPlayerSteamId.trim()}
-                  size="small"
-                >
-                  {resolving ? t('teamModal.resolving') : <MagnifyingGlassIcon size={20} />}
-                </Button>
-              </Box>
+              ))}
               <Box display="flex" gap={1} alignItems="center">
                 <TextField
                   label={t('teamModal.playerNameLabel')}
@@ -835,8 +902,8 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                 <IconButton
                   data-testid="team-add-player-button"
                   color="primary"
-                  onClick={handleAddPlayer}
-                  disabled={resolving}
+                  onClick={() => void handleAddPlayer()}
+                  disabled={resolving || adding}
                   size="small"
                 >
                   <PlusIcon size={20} />
@@ -873,8 +940,8 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
             {saving
               ? t('teamModal.buttons.saving')
               : isEditing
-              ? t('teamModal.buttons.saveChanges')
-              : t('teamModal.buttons.createTeam')}
+                ? t('teamModal.buttons.saveChanges')
+                : t('teamModal.buttons.createTeam')}
           </Button>
         </DialogActions>
       </Dialog>

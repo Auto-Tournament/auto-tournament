@@ -211,7 +211,7 @@
     "playersHeader": "Spelers ({{count}})",
     "selectPlayers": "Spelers selecteren",
     "noPlayersInfo": "Nog geen spelers toegevoegd. Voeg minstens één speler toe.",
-    "addPlayersHelper": "Voeg spelers toe door een Steam-URL te plakken of uit bestaande spelers te kiezen",
+    "addPlayersHelper_steam": "Voeg spelers toe door een Steam-URL te plakken of uit bestaande spelers te kiezen",
     "steamInputLabel": "Steam-ID / vanity URL",
     "steamInputPlaceholder": "gaben or steamcommunity.com/id/gaben",
     "resolveSteam": "Steam-ID opzoeken",
@@ -233,7 +233,9 @@
       "deleteFailed": "Team verwijderen mislukt",
       "discordIdInvalid": "Discord-ID moet 17–20 cijfers zijn (het numerieke gebruikers-ID, geen gebruikersnaam)",
       "discordIdInvalidPlayers": "Ongeldige Discord-ID voor: {{names}}. Deze moet 17–20 cijfers zijn of leeg blijven.",
-      "discordIdSaveFailed": "Het team is opgeslagen, maar de Discord-ID kon niet worden opgeslagen voor: {{names}}. {{message}}"
+      "discordIdSaveFailed": "Het team is opgeslagen, maar de Discord-ID kon niet worden opgeslagen voor: {{names}}. {{message}}",
+      "nameRequired": "Enter the player's name",
+      "addPlayerFailed": "Could not add the player"
     },
     "success": {
       "playerAdded": "Speler aan team toegevoegd",
@@ -254,7 +256,10 @@
       "message": "Weet je zeker dat je \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
     },
     "replacePlayerAria": "Speler {{name}} vervangen",
-    "replacePlayerTooltip": "Deze speler vervangen"
+    "replacePlayerTooltip": "Deze speler vervangen",
+    "addPlayersHelper": "Add a new player below, or select from existing players",
+    "accountLabel": "{{account}} account (optional)",
+    "accountHelper": "For {{games}}. When they sign in with {{account}}, they become this player."
   },
   "playerModal": {
     "titleCreate": "Speler maken",
@@ -301,7 +306,10 @@
       "title": "Speler-ELO bijwerken",
       "message": "Weet je zeker dat je de ELO van deze speler wilt wijzigen van {{from}} naar {{to}}? Dit reset statistieken en ratinggeschiedenis. Deze actie kan niet ongedaan worden gemaakt."
     },
-    "discordIdHelper": "Optioneel. 17–20 cijfers. Hiermee kunnen organisatoren deze speler via Discord bereiken. Wordt nooit openbaar getoond."
+    "discordIdHelper": "Optioneel. 17–20 cijfers. Hiermee kunnen organisatoren deze speler via Discord bereiken. Wordt nooit openbaar getoond.",
+    "accountLabel": "{{account}} account (optional)",
+    "accountHelper": "For {{games}}. The account id; when they sign in with {{account}}, they become this player.",
+    "accountVerified": "Linked: they signed in with {{account}}. They change it themselves."
   },
   "teamImportModal": {
     "title": "Teams importeren vanuit JSON",
@@ -377,7 +385,7 @@
   "playerSelectionModal": {
     "title": "Spelers selecteren",
     "selectedCount": "{{count}} geselecteerd",
-    "searchPlaceholder": "Zoek spelers op naam of Steam-ID...",
+    "searchPlaceholder_steam": "Zoek spelers op naam of Steam-ID...",
     "selectAll": {
       "select": "Alles selecteren",
       "deselect": "Alles deselecteren"
@@ -394,7 +402,8 @@
       "noSelectable": "Geen selecteerbare spelers beschikbaar"
     },
     "addPlayersButton_one": "{{count}} speler toevoegen",
-    "addPlayersButton_other": "{{count}} spelers toevoegen"
+    "addPlayersButton_other": "{{count}} spelers toevoegen",
+    "searchPlaceholder": "Search players by name..."
   },
   "soundSettingsModal": {
     "title": "Geluidsinstellingen",

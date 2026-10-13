@@ -8,6 +8,7 @@ import {
 } from '../services/gameCatalogService';
 import { createRateLimiter } from '../utils/rateLimit';
 import { log } from '../utils/logger';
+import { gameAccountProviders } from '../services/gameAccounts';
 
 const router = Router();
 
@@ -82,6 +83,25 @@ router.get('/search', gameSearchLimiter, async (req: Request, res: Response) => 
     log.error('Game search failed', error);
     return res.status(500).json({ success: false, error: 'Game search failed' });
   }
+});
+
+/**
+ * @openapi
+ * /api/games/accounts:
+ *   get:
+ *     tags: [Games]
+ *     summary: The accounts the installed games need
+ *     description: |
+ *       Which sign-in provider identifies each installed game's players: a
+ *       module's (CS2: Steam) or a pack's (Rocket League: Epic Games).
+ *       Games that need none are left out. The admin's player and team forms
+ *       ask for these accounts.
+ *     responses:
+ *       200:
+ *         description: "`accounts`: [{ provider, label, games: [{ id, name }] }]"
+ */
+router.get('/accounts', (_req: Request, res: Response) => {
+  return res.json({ success: true, accounts: gameAccountProviders() });
 });
 
 /**
