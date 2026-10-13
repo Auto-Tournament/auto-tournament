@@ -75,7 +75,9 @@ export function TeamTile({
           src={logo}
           alt=""
           onError={() => setBroken(true)}
-          sx={{ width: '100%', height: '100%', objectFit: 'contain', p: '12%' }}
+          // Fills the rounded tile, as on the team's own page: a padded square
+          // logo showed its sharp corners inside the rounded tile.
+          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
           data-testid="team-logo"
         />
       ) : (
