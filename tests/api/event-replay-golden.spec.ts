@@ -3,28 +3,26 @@ import path from 'path';
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { DEFAULT_ADMIN_STEAM_ID, getAuthHeader, signInViaRequest } from '../helpers/auth';
 import { createTeam, type Team } from '../helpers/teams';
-import { createServer, deleteServer, FAKE_SERVER_HOST } from '../helpers/servers';
+import { deleteServer } from '../helpers/servers';
+import { createReadyUpServer, sendReadyUpEvents, type ReadyUpEvent } from '../helpers/readyUp';
 import { createAndStartTournament } from '../helpers/tournaments';
 import { findMatchByTeams } from '../helpers/matches';
 import { executeVetoActions, getCSMajorBO3Actions } from '../helpers/veto';
 import { expectGolden, getOk, normalizeForGolden, resetDatabaseForGolden } from '../helpers/golden';
 
 /**
- * Golden replay of a full MatchZy Enhanced BO3 event sequence.
+ * Golden replay of a full Ready Up BO3 event sequence.
  *
- * Characterization test: it plays tests/fixtures/plugin-bo3-sequence.json (a
- * captured Bo3 - series_start, going_live/round_end/halftime/side_swap/
- * map_result per map, series_end) against a real match created through veto,
- * then records what the app shows afterwards through its own API. It is the
- * safety net for moving CS2 event handling behind the game-module interface:
- * the served config and the post-match state must stay identical through that
- * refactor.
+ * Characterization test: it plays tests/fixtures/readyup-bo3-sequence.json (a
+ * Bo3 as Ready Up sends it: per map the phase going live, round ends,
+ * halftime and map_result with the player stats, then series_end) against a
+ * real match created through veto, through the same `processInbound` a
+ * connected server's messages take, then records what the app shows afterwards
+ * through its own API.
  *
  * Two goldens:
- * - `event-replay-config.json` — the config MatchZy Enhanced would load, served right
- *   after veto (before any event is posted). This is the same served-config
- *   shape as golden-match-config.spec.ts, but for a match that then actually
- *   gets played out.
+ * - `event-replay-config.json` — the `match.assign` config Ready Up would get
+ *   right after veto (before any event), without its per-assignment password.
  * - `event-replay-result.json` — match + map results (GET /api/matches/:slug),
  *   plus each of the 10 players' summary and rating history, all read back
  *   through the public API (never straight from Postgres) after the replay
@@ -49,7 +47,7 @@ import { expectGolden, getOk, normalizeForGolden, resetDatabaseForGolden } from 
  * @tag golden
  */
 
-const FIXTURE_PATH = path.resolve(__dirname, '../fixtures/plugin-bo3-sequence.json');
+const FIXTURE_PATH = path.resolve(__dirname, '../fixtures/readyup-bo3-sequence.json');
 
 interface FixtureTeam {
   id: string;
@@ -60,7 +58,7 @@ interface FixtureTeam {
 interface Fixture {
   teams: { team1: FixtureTeam; team2: FixtureTeam };
   maps: string[];
-  events: unknown[];
+  events: ReadyUpEvent[];
 }
 
 /** The 7-map pool `getCSMajorBO3Actions` vetoes down to the fixture's 3 maps. */
@@ -74,12 +72,6 @@ const VETO_MAP_POOL = [
   'de_vertigo',
 ];
 
-const SERVER_ID = 'golden-replay-server';
-const SERVER_HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-};
-
 const COMMON_REPLACE = {
   [DEFAULT_ADMIN_STEAM_ID]: '<test-admin-steam-id>',
 };
@@ -88,42 +80,27 @@ function loadFixture(): Fixture {
   return JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8')) as Fixture;
 }
 
-/** Deep-replace every `"{{matchid}}"` string with the real numeric matchid. */
-function withMatchId(node: unknown, matchId: number): unknown {
-  if (node === '{{matchid}}') return matchId;
-  if (Array.isArray(node)) return node.map((item) => withMatchId(item, matchId));
-  if (node && typeof node === 'object') {
-    const out: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
-      out[key] = withMatchId(value, matchId);
-    }
-    return out;
-  }
-  return node;
-}
-
 interface MatchListRow {
   id: number;
   slug: string;
 }
 
-async function fetchServedConfig(request: APIRequestContext, match: MatchListRow) {
-  // The header MAT puts on the load command, as the plugin sends it.
-  const res = await request.get(`/api/matches/${match.slug}.json`, {
-    headers: { 'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123' },
+/** The `match.assign` config Ready Up would get for the match now (no password). */
+async function fetchAssignConfig(request: APIRequestContext, match: MatchListRow) {
+  const res = await request.get(`/api/test/fleet/assign-config/${match.slug}`, {
+    headers: getAuthHeader(),
   });
   expect(res.ok(), `config for ${match.slug}: ${res.status()} ${await res.text()}`).toBe(true);
-  const config = (await res.json()) as Record<string, unknown> & { matchid?: number };
-  expect(config.matchid, `${match.slug}: matchid is the matches row id`).toBe(match.id);
-  return { ...config, matchid: '<matchid>' as unknown as number };
+  return ((await res.json()) as { config: Record<string, unknown> }).config;
 }
 
-test.describe.serial('Golden MatchZy Enhanced BO3 event replay', () => {
+test.describe.serial('Golden Ready Up BO3 event replay', () => {
   const fixture = loadFixture();
   let team1: Team;
   let team2: Team;
   let matchSlug: string;
-  let matchId: number;
+  let serverId: string;
+  let fleetId: string;
 
   test.beforeAll(async ({ playwright }) => {
     const request = await playwright.request.newContext({
@@ -132,13 +109,6 @@ test.describe.serial('Golden MatchZy Enhanced BO3 event replay', () => {
     try {
       await resetDatabaseForGolden(request);
 
-      // Manual matches (and tournament start) refuse to run without a webhook URL.
-      const webhookSet = await request.put('/api/settings', {
-        headers: getAuthHeader(),
-        data: { webhookUrl: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069' },
-      });
-      expect(webhookSet.ok()).toBe(true);
-
       const createdTeam1 = await createTeam(request, fixture.teams.team1);
       const createdTeam2 = await createTeam(request, fixture.teams.team2);
       expect(createdTeam1, 'team1 should be created').toBeTruthy();
@@ -146,15 +116,9 @@ test.describe.serial('Golden MatchZy Enhanced BO3 event replay', () => {
       team1 = createdTeam1!;
       team2 = createdTeam2!;
 
-      const server = await createServer(request, {
-        id: SERVER_ID,
-        name: 'Golden Replay Server',
-        host: FAKE_SERVER_HOST,
-        port: 27099,
-        password: 'testpassword123',
-        enabled: true,
-      });
-      expect(server, 'server should be created').toBeTruthy();
+      const server = await createReadyUpServer(request, 'golden-replay');
+      serverId = server.id;
+      fleetId = server.fleetId;
 
       const tournament = await createAndStartTournament(request, {
         name: 'Golden Replay Tournament',
@@ -182,7 +146,6 @@ test.describe.serial('Golden MatchZy Enhanced BO3 event replay', () => {
         .toBe(true);
       expect(match).toBeTruthy();
       matchSlug = match!.slug;
-      matchId = match!.id;
     } finally {
       await request.dispose();
     }
@@ -194,17 +157,12 @@ test.describe.serial('Golden MatchZy Enhanced BO3 event replay', () => {
   });
 
   test.afterAll(async ({ playwright }) => {
-    // ensureServers() (tests/helpers/tournamentSetup.ts) reuses any enabled
-    // server on FAKE_SERVER_HOST it finds, from any spec. Left enabled, this
-    // one gets adopted by later specs that expect a fresh server (and its
-    // in-memory turnover-tracker state, e.g. seriesEndedAt from this replay,
-    // leaks with it) — see tests/api/server-turnover.spec.ts.
     const request = await playwright.request.newContext({
       baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
     });
     try {
       expect(await signInViaRequest(request)).toBe(true);
-      await deleteServer(request, SERVER_ID);
+      if (serverId) await deleteServer(request, serverId);
     } finally {
       await request.dispose();
     }
@@ -222,22 +180,17 @@ test.describe.serial('Golden MatchZy Enhanced BO3 event replay', () => {
       const vetoResult = await executeVetoActions(request, matchSlug, vetoActions);
       expect(vetoResult, 'veto should complete').toBeTruthy();
 
-      // 2. Snapshot the served config right after veto, before any event lands.
-      const configAfterVeto = await fetchServedConfig(request, { id: matchId, slug: matchSlug });
+      // 2. Snapshot the config Ready Up would be assigned right after veto,
+      //    before any event lands.
+      const configAfterVeto = await fetchAssignConfig(request, { id: 0, slug: matchSlug });
       expectGolden(
         'event-replay-config',
         normalizeForGolden(configAfterVeto, { replace: COMMON_REPLACE })
       );
 
-      // 3. Replay the fixture's events against the real match.
-      const events = withMatchId(fixture.events, matchId) as Array<Record<string, unknown>>;
-      for (const event of events) {
-        const res = await request.post(`/api/events?server_id=${SERVER_ID}`, {
-          headers: SERVER_HEADERS,
-          data: event,
-        });
-        expect(res.ok(), `${String(event.event)} rejected: ${await res.text()}`).toBe(true);
-      }
+      // 3. Replay the fixture's events against the real match, as they come
+      //    from Ready Up on the fleet link.
+      await sendReadyUpEvents(request, matchSlug, fixture.events, fleetId);
 
       // 4. Wait for the series to be recorded as completed with its final
       //    score. Processing the last event is not synchronous with the HTTP
@@ -297,14 +250,6 @@ test.describe.serial('Golden MatchZy Enhanced BO3 event replay', () => {
       const matchAfter = await getOk<{
         match: { id: number; config?: { matchid?: number } } & Record<string, unknown>;
       }>(request, `/api/matches/${matchSlug}`);
-      expect(matchAfter.match.id, 'matches row id should still be the match created above').toBe(
-        matchId
-      );
-      if (matchAfter.match.config) {
-        expect(matchAfter.match.config.matchid, 'served config matchid should match too').toBe(
-          matchId
-        );
-      }
 
       const players: Record<string, { summary: unknown; ratingHistory: unknown }> = {};
       for (const steamId of allSteamIds) {

@@ -743,7 +743,7 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
   });
 
-  test('link to an existing server row, unlink restores RCON; RCON servers keep the RCON path', async ({
+  test('link to an existing server row, unlink gives it back; an unlinked row takes no commands', async ({
     request,
   }) => {
     const rcon = await createTestServer(request, 'fleet-rcon');
@@ -752,16 +752,15 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
       await deleteServer(request, rcon!.id);
     });
 
-    // An RCON server: the buttons still speak RCON (the fake host is answered
-    // by rconService itself), never the fleet.
+    // A row no Ready Up server is linked to: the buttons have nothing to send to.
     const res = await request.post('/api/rcon/pause-match', {
       headers: getAuthHeader(),
       data: { serverId: rcon!.id },
     });
     const body = await res.json();
-    expect(body.transport).toBeUndefined();
+    expect(res.status()).toBe(404);
+    expect(body.success).toBe(false);
     expect(body.commandId).toBeUndefined();
-    expect(typeof body.success).toBe('boolean');
     const row = await (
       await request.get(`/api/servers/${rcon!.id}`, { headers: getAuthHeader() })
     ).json();

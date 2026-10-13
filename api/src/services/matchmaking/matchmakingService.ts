@@ -906,7 +906,6 @@ export class MatchmakingService {
         slug,
         config: {
           matchid: 0,
-          skip_veto: true,
           players_per_team: teamSize,
           team1: team(1),
           team2: team(2),

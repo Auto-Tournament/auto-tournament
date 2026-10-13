@@ -4,6 +4,13 @@ import { configureWebhook } from '../helpers/setup';
 import { createTeam, type Team } from '../helpers/teams';
 import { createTestServer } from '../helpers/servers';
 import { getOk, normalizeForGolden, postOk, resetDatabaseForGolden } from '../helpers/golden';
+import {
+  sendReadyUpEvents,
+  goingLive,
+  mapResult,
+  seriesEnd,
+  type ReadyUpEvent,
+} from '../helpers/readyUp';
 
 /**
  * `matchLifecycle.applySeriesResult`: the one path every series end takes (the
@@ -23,12 +30,15 @@ import { getOk, normalizeForGolden, postOk, resetDatabaseForGolden } from '../he
  * @tag regression
  */
 
-const MAPS = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'];
-
-const SERVER_HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-};
+const MAPS = [
+  'de_mirage',
+  'de_inferno',
+  'de_ancient',
+  'de_anubis',
+  'de_dust2',
+  'de_vertigo',
+  'de_nuke',
+];
 
 const TEAMS: Team[] = ['alpha', 'bravo', 'charlie', 'delta'].map((name, t) => ({
   id: `lifecycle-${name}`,
@@ -47,7 +57,10 @@ interface MatchView {
   winner?: { id: string } | null;
 }
 
-async function getMatch(request: APIRequestContext, slug: string): Promise<MatchView & Record<string, unknown>> {
+async function getMatch(
+  request: APIRequestContext,
+  slug: string
+): Promise<MatchView & Record<string, unknown>> {
   const body = await getOk<{ match: MatchView & Record<string, unknown> }>(
     request,
     `/api/matches/${slug}`
@@ -105,35 +118,27 @@ async function applyResult(
   });
 }
 
-async function sendEvent(request: APIRequestContext, slug: string, data: Record<string, unknown>) {
-  const res = await request.post(`/api/events/${slug}`, { headers: SERVER_HEADERS, data });
-  expect(res.ok(), `${String(data.event)} rejected: ${await res.text()}`).toBe(true);
-}
-
 /** Two maps to team1: the series is 2-0 and waits for its series end. */
 async function playTwoMapsForTeam1(request: APIRequestContext, slug: string): Promise<void> {
-  const matchId = (await getMatch(request, slug)).id as number;
-  await sendEvent(request, slug, {
-    event: 'going_live',
-    matchid: matchId,
-    map_number: 0,
-    map_name: 'de_mirage',
-  });
   const scores: Array<[number, number]> = [
     [13, 5],
     [13, 9],
   ];
-  for (const [mapNumber, [t1, t2]] of scores.entries()) {
-    await sendEvent(request, slug, {
-      event: 'map_result',
-      matchid: matchId,
-      map_number: mapNumber,
-      map_name: MAPS[mapNumber],
-      team1: { score: t1, series_score: mapNumber + 1 },
-      team2: { score: t2, series_score: 0 },
-      winner: { side: '3', team: 'team1' },
-    });
+  const events: ReadyUpEvent[] = [goingLive(1)];
+  for (const [i, [t1, t2]] of scores.entries()) {
+    if (i > 0) events.push(goingLive(i + 1));
+    events.push(
+      mapResult({
+        mapNumber: i + 1,
+        mapName: MAPS[i],
+        team1: t1,
+        team2: t2,
+        series: [i + 1, 0],
+        winner: 'team1',
+      })
+    );
   }
+  await sendReadyUpEvents(request, slug, events);
 }
 
 /** Everything a finished series writes, read back through the API. */
@@ -219,10 +224,15 @@ test.describe.serial('Series results through applySeriesResult', () => {
 
       // A result from the game itself records nothing extra.
       await setStatus(request, other, 'live');
-      expect(await applyResult(request, other, 'team1', [2, 1], { source: 'integration' })).toMatchObject({
+      expect(
+        await applyResult(request, other, 'team1', [2, 1], { source: 'integration' })
+      ).toMatchObject({
         applied: true,
       });
-      const none = await getOk<{ data: unknown[] }>(request, `/api/events/${other}?type=series_result`);
+      const none = await getOk<{ data: unknown[] }>(
+        request,
+        `/api/events/${other}?type=series_result`
+      );
       expect(none.data).toEqual([]);
     }
   );
@@ -231,19 +241,13 @@ test.describe.serial('Series results through applySeriesResult', () => {
     'a series finished by an admin leaves the same state as one finished by the game',
     { tag: ['@api', '@regression'] },
     async ({ request }) => {
-      // By the game: two maps, then MatchZy Enhanced's series_end.
+      // By the game: two maps, then Ready Up's series_end.
       await startTournament(request);
       let [slug] = await semiFinals(request);
       await playTwoMapsForTeam1(request, slug);
-      const matchId = (await getMatch(request, slug)).id as number;
-      await sendEvent(request, slug, {
-        event: 'series_end',
-        matchid: matchId,
-        team1_series_score: 2,
-        team2_series_score: 0,
-        winner: { side: '3', team: 'team1' },
-        time_until_restore: 10,
-      });
+      await sendReadyUpEvents(request, slug, [
+        seriesEnd({ winner: 'team1', team1: 2, team2: 0, mapNumber: 2, secondsUntilReset: 10 }),
+      ]);
       await expect.poll(async () => (await getMatch(request, slug)).status).toBe('completed');
       const byGame = await snapshot(request, slug);
 
@@ -264,7 +268,11 @@ test.describe.serial('Series results through applySeriesResult', () => {
       // winner moved into the final, and ratings were written.
       const snap = byAdmin as unknown as {
         match: { status: string; winner?: { id: string } };
-        bracket: Array<{ round: number; team1?: { id: string } | null; team2?: { id: string } | null }>;
+        bracket: Array<{
+          round: number;
+          team1?: { id: string } | null;
+          team2?: { id: string } | null;
+        }>;
         players: Record<string, { ratingHistory: unknown[] }>;
       };
       expect(snap.match.status).toBe('completed');

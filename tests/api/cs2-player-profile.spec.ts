@@ -4,6 +4,13 @@ import { setupTournament } from '../helpers/tournamentSetup';
 import { createAndStartTournament } from '../helpers/tournaments';
 import { findMatchByTeams } from '../helpers/matches';
 import type { Team } from '../helpers/teams';
+import {
+  sendReadyUpEvents,
+  goingLive,
+  mapResult,
+  seriesEnd,
+  type ReadyUpPlayer,
+} from '../helpers/readyUp';
 
 /**
  * GET /api/game/cs2/players/:playerId/profile: the numbers behind the CS2
@@ -24,27 +31,24 @@ const MAPS = [
   'de_nuke',
 ];
 
-const SERVER_HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-};
-
-function playerBlock(team: Team, kills: number, headshots: number) {
-  return {
-    players: team.players.map((p) => ({
-      steamid: p.steamId,
-      name: p.name,
-      stats: {
-        kills,
-        deaths: 10,
-        assists: 3,
-        headshot_kills: headshots,
-        damage: 1800,
-        rounds_played: 20,
-        kast: 70,
-      },
-    })),
-  };
+function players(
+  team: Team,
+  side: 'team1' | 'team2',
+  kills: number,
+  headshots: number
+): ReadyUpPlayer[] {
+  return team.players.map((p) => ({
+    steamId: p.steamId,
+    name: p.name,
+    team: side,
+    kills,
+    deaths: 10,
+    assists: 3,
+    headshots,
+    damage: 1800,
+    roundsPlayed: 20,
+    kastRounds: 14,
+  }));
 }
 
 test.describe.serial('CS2 player profile route', () => {
@@ -78,39 +82,19 @@ test.describe.serial('CS2 player profile route', () => {
       const match = await findMatchByTeams(request, team1.id, team2.id);
       const slug = match!.slug;
 
-      const post = async (data: Record<string, unknown>) => {
-        const res = await request.post(`/api/events/${slug}`, {
-          headers: SERVER_HEADERS,
-          data: { matchid: slug, ...data },
-        });
-        expect(res.ok(), `${data.event} rejected: ${await res.text()}`).toBe(true);
-      };
-      await post({
-        event: 'round_end',
-        map_number: 0,
-        round_number: 20,
-        winner: 'team1',
-        team1_score: 13,
-        team2_score: 7,
-        team1: playerBlock(team1, 20, 8),
-        team2: playerBlock(team2, 10, 2),
-      });
-      await post({
-        event: 'map_result',
-        map_number: 0,
-        map_name: 'de_mirage',
-        team1_score: 13,
-        team2_score: 7,
-        winner: { team: 'team1' },
-      });
-      await post({
-        event: 'series_end',
-        team1_series_score: 1,
-        team2_series_score: 0,
-        winner: 'team1',
-        num_maps: 1,
-        time_until_restore: 0,
-      });
+      await sendReadyUpEvents(request, slug, [
+        goingLive(1),
+        mapResult({
+          mapName: 'de_mirage',
+          team1: 13,
+          team2: 7,
+          series: [1, 0],
+          winner: 'team1',
+          seriesOver: true,
+          players: [...players(team1, 'team1', 20, 8), ...players(team2, 'team2', 10, 2)],
+        }),
+        seriesEnd({ winner: 'team1', team1: 1, team2: 0 }),
+      ]);
 
       const winner = team1.players[0].steamId;
       const loser = team2.players[0].steamId;

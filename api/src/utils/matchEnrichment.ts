@@ -4,7 +4,6 @@
  */
 
 import { db } from '../config/database';
-import type { DbEventRow } from '../types/database.types';
 import type { EnrichableMatch } from '../types/match.types';
 import type { BracketMatch } from '../types/tournament.types';
 
@@ -25,94 +24,12 @@ export function mapWinnerOf(row: {
 }
 
 /**
- * Enriches a match object with player stats from match events
- */
-export async function enrichMatchWithPlayerStats(
-  match: EnrichableMatch | BracketMatch,
-  matchSlug: string
-): Promise<void> {
-  const playerStatsEvent = await db.queryOneAsync<DbEventRow>(
-    `SELECT event_data FROM match_events 
-     WHERE match_slug = ? AND event_type = 'player_stats' 
-     ORDER BY received_at DESC, id DESC LIMIT 1`,
-    [matchSlug]
-  );
-
-  if (playerStatsEvent) {
-    try {
-      const eventData = JSON.parse(playerStatsEvent.event_data);
-      if (eventData.team1_players) {
-        match.team1Players = eventData.team1_players;
-      }
-      if (eventData.team2_players) {
-        match.team2Players = eventData.team2_players;
-      }
-    } catch {
-      // Ignore parse errors
-    }
-  }
-}
-
-/**
- * Enriches a match object with scores from match events
+ * Enriches a match object with its series score: the maps' recorded winners.
  */
 export async function enrichMatchWithScores(
   match: EnrichableMatch | BracketMatch,
   matchSlug: string
 ): Promise<void> {
-  // The series score: the series_end event; else the maps' recorded winners; else the newest
-  // round_end / map_end. A round_end of map 2 still carries the 1-0 from before it, so it must
-  // not win over the maps (a 2-0 series read 1-0, 2026-10-13).
-  const mapRows = await db.queryAsync<{ n: number }>(
-    'SELECT COUNT(*)::int AS n FROM match_map_results WHERE match_slug = ?',
-    [matchSlug]
-  );
-  const haveMaps = (mapRows[0]?.n ?? 0) > 0;
-  const scoreEvent = await db.queryOneAsync<DbEventRow>(
-    `SELECT event_data FROM match_events
-     WHERE match_slug = ? AND event_type IN (${haveMaps ? "'series_end'" : "'series_end', 'round_end', 'map_end'"})
-     ORDER BY (event_type = 'series_end') DESC, received_at DESC, id DESC LIMIT 1`,
-    [matchSlug]
-  );
-
-  if (scoreEvent) {
-    try {
-      const eventData = JSON.parse(scoreEvent.event_data) as
-        | {
-            team1_series_score?: number;
-            team2_series_score?: number;
-            team1?: { series_score?: number };
-            team2?: { series_score?: number };
-          }
-        | Record<string, unknown>;
-
-      const team1Series =
-        typeof (eventData as { team1_series_score?: unknown }).team1_series_score === 'number'
-          ? (eventData as { team1_series_score: number }).team1_series_score
-          : typeof (eventData as { team1?: { series_score?: unknown } }).team1?.series_score ===
-              'number'
-            ? ((eventData as { team1: { series_score: number } }).team1.series_score as number)
-            : undefined;
-
-      const team2Series =
-        typeof (eventData as { team2_series_score?: unknown }).team2_series_score === 'number'
-          ? (eventData as { team2_series_score: number }).team2_series_score
-          : typeof (eventData as { team2?: { series_score?: unknown } }).team2?.series_score ===
-              'number'
-            ? ((eventData as { team2: { series_score: number } }).team2.series_score as number)
-            : undefined;
-
-      if (team1Series !== undefined) {
-        match.team1Score = team1Series;
-      }
-      if (team2Series !== undefined) {
-        match.team2Score = team2Series;
-      }
-    } catch {
-      // Ignore parse errors – we'll fall back to map results below if needed
-    }
-  }
-
   // If we still don't have series scores, derive them from persisted map results.
   if (match.team1Score === undefined && match.team2Score === undefined) {
     const rows = await db.queryAsync<{
@@ -141,7 +58,7 @@ export async function enrichMatchWithScores(
   // DO know the winner and the config explicitly says this is a single‑map
   // series (num_maps = 1), treat the series score as 1–0 in favour of the
   // winner. This prevents bracket/list views from showing "0–0" with a
-  // highlighted winner when map_results or series_end events are missing or
+  // highlighted winner when map results are missing or
   // incomplete (common in simulated games or abrupt server stops).
   const anyMatch = match as EnrichableMatch & BracketMatch & { status?: string };
   if (
@@ -170,13 +87,12 @@ export async function enrichMatchWithScores(
 }
 
 /**
- * Enriches a match with both player stats and scores
+ * Enriches a match with its scores
  */
 export async function enrichMatch(
   match: EnrichableMatch | BracketMatch,
   matchSlug: string
 ): Promise<void> {
-  await enrichMatchWithPlayerStats(match, matchSlug);
   await enrichMatchWithScores(match, matchSlug);
 }
 

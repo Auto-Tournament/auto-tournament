@@ -1,150 +1,23 @@
 import { Router, Request, Response } from 'express';
-import { Rcon } from 'dathost-rcon-client';
-import { rconService } from '../services/rconService';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
-import { db } from '../../../config/database';
-import { parseConVarReply } from '../../../utils/pluginServerReplies';
-import { checkServerReachesApi } from '../utils/connectionTest';
-import { getLastServerTestEvent } from '../services/serverConnectivityService';
 import {
   findActiveMatchForServer,
   settleEndedMatch,
 } from '../../../services/matchTerminationService';
 import {
-  answerUnsupportedOnFleet,
   answerWithFleetCommand,
   fleetCommandFor,
   fleetExec,
   fleetResponseBody,
-  isFleetServer,
   issuedBy,
 } from './fleetCommands';
 import { addPlayer, currentPosition, runFleetCommand } from '../fleet/driver';
 
 const router = Router();
 
-// Apply authentication to all RCON routes
+// The admin server buttons, sent to each server as fleet commands (FLEET.md §7.4).
 router.use(requireAuth);
-
-/**
- * GET /api/rcon/test/:serverId
- * Test RCON connection to a specific server
- */
-router.get('/test/:serverId', async (req: Request, res: Response) => {
-  try {
-    const { serverId } = req.params;
-    const result = await rconService.testConnection(serverId);
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
-  } catch (error) {
-    console.error('Error testing connection:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to test connection',
-    });
-  }
-});
-
-/**
- * GET /api/rcon/test
- * Test RCON connections to all enabled servers
- */
-router.get('/test', async (_req: Request, res: Response) => {
-  try {
-    const results = await rconService.testAllConnections();
-    const successful = results.filter((r) => r.success).length;
-    const failed = results.filter((r) => !r.success).length;
-
-    return res.json({
-      success: failed === 0,
-      message: `${successful} server(s) online, ${failed} offline/failed`,
-      results,
-      stats: {
-        total: results.length,
-        successful,
-        failed,
-      },
-    });
-  } catch (error) {
-    console.error('Error testing connections:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to test connections',
-    });
-  }
-});
-
-/**
- * POST /api/rcon/test-connection
- * Test RCON connection to a server without requiring it to be saved
- */
-router.post('/test-connection', async (req: Request, res: Response) => {
-  try {
-    const { host, port, password, name, serverId: requestedServerId } = req.body;
-
-    if (!host || !port || !password) {
-      return res.status(400).json({
-        success: false,
-        error: 'host, port, and password are required',
-      });
-    }
-
-    const portNum = parseInt(String(port));
-    if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-      return res.status(400).json({
-        success: false,
-        error: 'port must be a number between 1 and 65535',
-      });
-    }
-
-    // Test RCON connection first (API -> Server)
-    const rconResult = await rconService.testConnectionByParams(host, portNum, password, name);
-    
-    // If RCON failed, return early (can't test server->API if we can't reach server)
-    if (!rconResult.success) {
-      return res.status(400).json({
-        ...rconResult,
-        serverCanReachApi: false,
-      });
-    }
-
-    // RCON successful - now test if server can reach API (Server -> API).
-    // Read-only: never set convars here (see utils/connectionTest).
-    const savedServer = await db.queryOneAsync<{ id: string }>(
-      'SELECT id FROM cs2_servers WHERE host = ? AND port = ?',
-      [host, portNum]
-    );
-    const apiReachability = await checkServerReachesApi({
-      client: new Rcon({ host, port: portNum, password, timeout: 5000 }),
-      knownServerIds: [requestedServerId, savedServer?.id],
-      parseReply: parseConVarReply,
-      lastTestEvent: getLastServerTestEvent,
-      onError: (testError) =>
-        log.debug(`Server->API test failed for ${host}:${portNum}`, { error: testError }),
-    });
-
-    const serverCanReachApi = apiReachability === 'reachable';
-
-    const statusCode = rconResult.success ? 200 : 400;
-    return res.status(statusCode).json({
-      ...rconResult,
-      serverCanReachApi,
-      apiReachability,
-    });
-  } catch (error) {
-    console.error('Error testing connection:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to test connection',
-    });
-  }
-});
-
-/**
- * Predefined MatchZy Enhanced commands - Safe and controlled
- */
 
 /**
  * POST /api/rcon/practice-mode
@@ -161,11 +34,8 @@ router.post('/practice-mode', async (req: Request, res: Response) => {
       });
     }
 
-    if (await answerWithFleetCommand(req, res, serverId, 'practice.set', { on: true })) return res;
-    const result = await rconService.sendCommand(serverId, 'css_prac');
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    await answerWithFleetCommand(req, res, serverId, 'practice.set', { on: true });
+    return res;
   } catch (error) {
     console.error('Error starting practice mode:', error);
     return res.status(500).json({
@@ -190,11 +60,8 @@ router.post('/start-match', async (req: Request, res: Response) => {
       });
     }
 
-    if (await answerWithFleetCommand(req, res, serverId, 'start')) return res;
-    const result = await rconService.sendCommand(serverId, 'css_start');
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    await answerWithFleetCommand(req, res, serverId, 'start');
+    return res;
   } catch (error) {
     console.error('Error starting match:', error);
     return res.status(500).json({
@@ -227,11 +94,8 @@ router.post('/change-map', async (req: Request, res: Response) => {
       });
     }
 
-    if (await answerWithFleetCommand(req, res, serverId, 'change_map', { name: mapName })) return res;
-    const result = await rconService.sendCommand(serverId, `css_map ${mapName}`);
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    await answerWithFleetCommand(req, res, serverId, 'change_map', { name: mapName });
+    return res;
   } catch (error) {
     console.error('Error changing map:', error);
     return res.status(500).json({
@@ -256,11 +120,8 @@ router.post('/pause-match', async (req: Request, res: Response) => {
       });
     }
 
-    if (await answerWithFleetCommand(req, res, serverId, 'pause', { type: 'technical' })) return res;
-    const result = await rconService.sendCommand(serverId, 'css_pause');
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    await answerWithFleetCommand(req, res, serverId, 'pause', { type: 'technical' });
+    return res;
   } catch (error) {
     console.error('Error pausing match:', error);
     return res.status(500).json({
@@ -285,11 +146,8 @@ router.post('/unpause-match', async (req: Request, res: Response) => {
       });
     }
 
-    if (await answerWithFleetCommand(req, res, serverId, 'unpause')) return res;
-    const result = await rconService.sendCommand(serverId, 'css_unpause');
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    await answerWithFleetCommand(req, res, serverId, 'unpause');
+    return res;
   } catch (error) {
     console.error('Error unpausing match:', error);
     return res.status(500).json({
@@ -314,11 +172,8 @@ router.post('/force-pause', async (req: Request, res: Response) => {
       });
     }
 
-    if (await answerWithFleetCommand(req, res, serverId, 'pause', { type: 'admin' })) return res;
-    const result = await rconService.sendCommand(serverId, 'css_forcepause');
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    await answerWithFleetCommand(req, res, serverId, 'pause', { type: 'admin' });
+    return res;
   } catch (error) {
     console.error('Error force pausing match:', error);
     return res.status(500).json({
@@ -343,11 +198,8 @@ router.post('/force-unpause', async (req: Request, res: Response) => {
       });
     }
 
-    if (await answerWithFleetCommand(req, res, serverId, 'unpause')) return res;
-    const result = await rconService.sendCommand(serverId, 'css_forceunpause');
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    await answerWithFleetCommand(req, res, serverId, 'unpause');
+    return res;
   } catch (error) {
     console.error('Error force unpausing match:', error);
     return res.status(500).json({
@@ -375,11 +227,8 @@ router.post('/restart-match', async (req: Request, res: Response) => {
     // Note: This endpoint is for CS2 round restart, not match restart
     // For match restart, use css_restart instead
     // (Ready Up: restart_map, back to warmup on the same map.)
-    if (await answerWithFleetCommand(req, res, serverId, 'restart_map')) return res;
-    const result = await rconService.sendCommand(serverId, 'mp_restartgame 1');
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    await answerWithFleetCommand(req, res, serverId, 'restart_map');
+    return res;
   } catch (error) {
     console.error('Error restarting match:', error);
     return res.status(500).json({
@@ -404,11 +253,8 @@ router.post('/end-warmup', async (req: Request, res: Response) => {
       });
     }
 
-    if (await answerWithFleetCommand(req, res, serverId, 'start')) return res;
-    const result = await rconService.sendCommand(serverId, 'mp_warmup_end');
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    await answerWithFleetCommand(req, res, serverId, 'start');
+    return res;
   } catch (error) {
     console.error('Error ending warmup:', error);
     return res.status(500).json({
@@ -433,17 +279,11 @@ router.post('/reload-admins', async (req: Request, res: Response) => {
       });
     }
 
-    if (await isFleetServer(serverId)) {
-      return res.json({
-        success: true,
-        transport: 'fleet',
-        response: 'Ready Up servers get their admins from the platform; nothing to reload',
-      });
-    }
-    const result = await rconService.sendCommand(serverId, 'reload_admins');
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    return res.json({
+      success: true,
+      transport: 'fleet',
+      response: 'Ready Up servers get their admins from the platform; nothing to reload',
+    });
   } catch (error) {
     console.error('Error reloading admins:', error);
     return res.status(500).json({
@@ -471,13 +311,10 @@ router.post('/say', async (req: Request, res: Response) => {
     // Sanitize message (remove special characters that could be exploited)
     const sanitizedMessage = message.replace(/[";\\]/g, '').substring(0, 200);
 
-    if (await answerWithFleetCommand(req, res, serverId, 'say', { text: sanitizedMessage.slice(0, 190) })) {
-      return res;
-    }
-    const result = await rconService.sendCommand(serverId, `say ${sanitizedMessage}`);
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    await answerWithFleetCommand(req, res, serverId, 'say', {
+      text: sanitizedMessage.slice(0, 190),
+    });
+    return res;
   } catch (error) {
     console.error('Error sending message:', error);
     return res.status(500).json({
@@ -505,18 +342,15 @@ router.post('/broadcast', async (req: Request, res: Response) => {
     // Sanitize message (remove special characters that could be exploited)
     const sanitizedMessage = message.replace(/[";\\]/g, '').substring(0, 200);
 
-    // A Ready Up server gets `say {as_admin}` over the fleet link.
+    // `say {as_admin}` over each server's fleet link.
     const sendTo = async (serverId: string) => {
-      if (await isFleetServer(serverId)) {
-        const outcome = await runFleetCommand(
-          serverId,
-          'say',
-          { text: sanitizedMessage.slice(0, 190), as_admin: true },
-          issuedBy(req)
-        );
-        return { ...fleetResponseBody(outcome), serverId };
-      }
-      return rconService.sendCommand(serverId, `css_asay ${sanitizedMessage}`);
+      const outcome = await runFleetCommand(
+        serverId,
+        'say',
+        { text: sanitizedMessage.slice(0, 190), as_admin: true },
+        issuedBy(req)
+      );
+      return { ...fleetResponseBody(outcome), serverId };
     };
 
     let results;
@@ -567,11 +401,8 @@ router.post('/swap-teams', async (req: Request, res: Response) => {
       });
     }
 
-    if (await answerWithFleetCommand(req, res, serverId, 'swap_teams')) return res;
-    const result = await rconService.sendCommand(serverId, 'css_switch');
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    await answerWithFleetCommand(req, res, serverId, 'swap_teams');
+    return res;
   } catch (error) {
     console.error('Error swapping teams:', error);
     return res.status(500).json({
@@ -596,59 +427,26 @@ router.post('/restore-backup', async (req: Request, res: Response) => {
       });
     }
 
-    if (await isFleetServer(serverId)) {
-      // Ready Up: restore_round on the current map; `round` is the round the
-      // backup starts (1-based), and the server uses its own backup file.
-      const position = await currentPosition(serverId);
-      if (!position) {
-        return res.status(409).json({ success: false, transport: 'fleet', error: 'No match is assigned to this server' });
-      }
-      const outcome = await runFleetCommand(
-        serverId,
-        'restore_round',
-        { map_number: position.mapNumber, round: Math.max(1, Math.floor(Number(round)) || 1) },
-        issuedBy(req)
-      );
-      return res.status(outcome.httpStatus).json(fleetResponseBody(outcome));
+    // Ready Up: restore_round on the current map; `round` is the round the
+    // backup starts (1-based), and the server uses its own backup file.
+    const position = await currentPosition(serverId);
+    if (!position) {
+      return res
+        .status(409)
+        .json({ success: false, transport: 'fleet', error: 'No match is assigned to this server' });
     }
-    const result = await rconService.sendCommand(serverId, `css_restore ${round}`);
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    const outcome = await runFleetCommand(
+      serverId,
+      'restore_round',
+      { map_number: position.mapNumber, round: Math.max(1, Math.floor(Number(round)) || 1) },
+      issuedBy(req)
+    );
+    return res.status(outcome.httpStatus).json(fleetResponseBody(outcome));
   } catch (error) {
     console.error('Error restoring backup:', error);
     return res.status(500).json({
       success: false,
       error: 'Failed to restore backup',
-    });
-  }
-});
-
-/**
- * POST /api/rcon/skip-veto
- * Skip the veto phase (css_skipveto or css_sv)
- */
-router.post('/skip-veto', async (req: Request, res: Response) => {
-  try {
-    const { serverId } = req.body;
-
-    if (!serverId) {
-      return res.status(400).json({
-        success: false,
-        error: 'serverId is required',
-      });
-    }
-
-    if (await answerUnsupportedOnFleet(res, serverId, 'Skipping the in-game veto')) return res;
-    const result = await rconService.sendCommand(serverId, 'css_skipveto');
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
-  } catch (error) {
-    console.error('Error skipping veto:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to skip veto',
     });
   }
 });
@@ -668,58 +466,25 @@ router.post('/restart-round', async (req: Request, res: Response) => {
       });
     }
 
-    if (await isFleetServer(serverId)) {
-      // Ready Up: restore the backup the current round started from.
-      const position = await currentPosition(serverId);
-      if (!position?.round) {
-        return res.status(409).json({ success: false, transport: 'fleet', error: 'No round is being played' });
-      }
-      const outcome = await runFleetCommand(
-        serverId,
-        'restart_round',
-        { map_number: position.mapNumber, round: position.round },
-        issuedBy(req)
-      );
-      return res.status(outcome.httpStatus).json(fleetResponseBody(outcome));
+    // Ready Up: restore the backup the current round started from.
+    const position = await currentPosition(serverId);
+    if (!position?.round) {
+      return res
+        .status(409)
+        .json({ success: false, transport: 'fleet', error: 'No round is being played' });
     }
-    const result = await rconService.sendCommand(serverId, 'mp_restartgame 1');
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
+    const outcome = await runFleetCommand(
+      serverId,
+      'restart_round',
+      { map_number: position.mapNumber, round: position.round },
+      issuedBy(req)
+    );
+    return res.status(outcome.httpStatus).json(fleetResponseBody(outcome));
   } catch (error) {
     console.error('Error restarting round:', error);
     return res.status(500).json({
       success: false,
       error: 'Failed to restart round',
-    });
-  }
-});
-
-/**
- * POST /api/rcon/add-time
- * Add time to the current round
- */
-router.post('/add-time', async (req: Request, res: Response) => {
-  try {
-    const { serverId, seconds } = req.body;
-
-    if (!serverId || !seconds) {
-      return res.status(400).json({
-        success: false,
-        error: 'serverId and seconds are required',
-      });
-    }
-
-    if (await answerUnsupportedOnFleet(res, serverId, 'Adding round time')) return res;
-    const result = await rconService.sendCommand(serverId, `mp_roundtime_defuse ${seconds / 60}`);
-    const statusCode = result.success ? 200 : 400;
-
-    return res.status(statusCode).json(result);
-  } catch (error) {
-    console.error('Error adding time:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to add time',
     });
   }
 });
@@ -739,34 +504,32 @@ router.post('/end-match', async (req: Request, res: Response) => {
       });
     }
 
-    // css_restart *restarts* the match; css_endmatch ends it and tells players
-    // an admin did so. Both reset the server, but only one matches the button.
-    // (Ready Up: cmd end_match; the match is settled the same way below.)
-    const fleet = await isFleetServer(serverId);
-    const result = fleet
-      ? fleetResponseBody(
-          await runFleetCommand(serverId, 'end_match', { reason: 'admin' }, issuedBy(req))
-        )
-      : await rconService.sendCommand(serverId, 'css_endmatch');
-    const statusCode = result.success ? 200 : 400;
+    const result = fleetResponseBody(
+      await runFleetCommand(serverId, 'end_match', { reason: 'admin' }, issuedBy(req))
+    );
 
-    // Ending the match on the server is only half of it. MatchZy Enhanced emits no event
-    // when a match is force-ended, so unless MAT settles its own record here the
-    // row stays 'live' and the Matches tab keeps showing LIVE — which is exactly
-    // what was reported. Force Cancel already did this; End Match never did.
-    if (result.success) {
-      const match = await findActiveMatchForServer(serverId);
-      if (match) {
-        await settleEndedMatch(match, 'end match');
-      } else {
-        log.warn(
-          `[RCON] End match sent to ${serverId} but no loaded/live match was found for it; ` +
-            'nothing to settle'
-        );
-      }
+    // The platform's record is what ends the match: settled here even when the
+    // server did not answer, or the row stays 'live' on the Matches tab. The
+    // answer says whether the server confirmed.
+    const match = await findActiveMatchForServer(serverId);
+    if (match) {
+      await settleEndedMatch(match, 'end match');
+      return res.json({
+        ...result,
+        success: true,
+        settled: true,
+        serverConfirmed: result.success,
+        ...(result.success
+          ? {}
+          : {
+              warning: `The match is over here, but the server did not confirm: ${result.error ?? result.status}`,
+            }),
+      });
     }
-
-    return res.status(statusCode).json(result);
+    log.warn(
+      `[RCON] End match on ${serverId}: no loaded/live match was found for it; nothing to settle`
+    );
+    return res.status(result.success ? 200 : 400).json(result);
   } catch (error) {
     console.error('Error ending match:', error);
     return res.status(500).json({
@@ -780,14 +543,7 @@ router.post('/end-match', async (req: Request, res: Response) => {
  * POST /api/rcon/:serverId/add-player
  * Add a backup player or spectator to the match currently set up on a server.
  *
- * The admin tools have always called this; it simply did not exist, so every
- * attempt 404'd and the UI reported "failed to add player to match".
- *
- * MatchZy Enhanced answers over RCON in prose and reports refusals — no match set up,
- * halftime, already on a team, bad Steam ID — through the *reply text* while
- * the RCON call itself succeeds. Returning `result.success` alone would tell
- * the admin the player was added when nothing happened, so the reply is
- * inspected here.
+ * A Ready Up match.update add_player on the match the server plays.
  */
 router.post('/:serverId/add-player', async (req: Request, res: Response) => {
   try {
@@ -820,47 +576,23 @@ router.post('/:serverId/add-player', async (req: Request, res: Response) => {
       });
     }
 
-    // The name is interpolated into a quoted RCON argument, so a quote in it
-    // would end the argument early and corrupt the command.
     const safeName = (nickname || steamId).replace(/"/g, '').trim() || steamId;
 
-    // Ready Up: a match.update add_player on the match the server plays.
-    if (await isFleetServer(serverId)) {
-      const outcome = await addPlayer(serverId, {
-        steamid64: steamId,
-        name: safeName,
-        team: team === 'spec' ? 'spectator' : (team as 'team1' | 'team2'),
-      });
-      if (outcome.ok) {
-        return res.json({ success: true, transport: 'fleet', message: `${safeName} added to ${team}` });
-      }
-      return res.status(outcome.status).json({ success: false, transport: 'fleet', error: outcome.error });
-    }
-
-    const result = await rconService.sendCommand(
-      serverId,
-      `at_addplayer ${steamId} ${team} "${safeName}"`
-    );
-
-    if (!result.success) {
-      return res.status(400).json(result);
-    }
-
-    const reply = (result.response || '').trim();
-
-    // MatchZy Enhanced says "... added to <team> successfully!" on the happy path.
-    if (/successfully/i.test(reply)) {
-      return res.json({ ...result, success: true, message: reply });
-    }
-
-    // Anything else is a refusal it explained in words; pass that on rather
-    // than inventing a generic failure.
-    log.warn('[RCON] at_addplayer refused', { serverId, steamId, team, reply });
-    return res.status(400).json({
-      ...result,
-      success: false,
-      error: reply || 'The server did not confirm the player was added.',
+    const outcome = await addPlayer(serverId, {
+      steamid64: steamId,
+      name: safeName,
+      team: team === 'spec' ? 'spectator' : (team as 'team1' | 'team2'),
     });
+    if (outcome.ok) {
+      return res.json({
+        success: true,
+        transport: 'fleet',
+        message: `${safeName} added to ${team}`,
+      });
+    }
+    return res
+      .status(outcome.status)
+      .json({ success: false, transport: 'fleet', error: outcome.error });
   } catch (error) {
     log.error('Error adding player to match', error as Error);
     return res.status(500).json({
@@ -876,7 +608,7 @@ router.post('/:serverId/add-player', async (req: Request, res: Response) => {
  */
 router.post('/command', async (req: Request, res: Response) => {
   try {
-    const { serverIds, command, message, round, value, map, name } = req.body;
+    const { serverIds, command, message, round, value, map } = req.body;
 
     if (!serverIds || !Array.isArray(serverIds) || serverIds.length === 0) {
       return res.status(400).json({
@@ -892,77 +624,26 @@ router.post('/command', async (req: Request, res: Response) => {
       });
     }
 
-    // Build the full command with parameters
-    let fullCommand = command;
-
-    // Handle custom raw RCON commands
-    if (command === 'custom' && value) {
-      // Use the value directly as the raw command without any prefix
-      fullCommand = value;
-    } else {
-      // List of base RCON commands and prefixes that don't need modification
-      const baseRconCommands = ['status', 'changelevel', 'kick', 'ban', 'exec', 'rcon_password', 'say'];
-
-      // Add css_ prefix if not present and not a raw RCON command or already prefixed
-      if (
-        !fullCommand.startsWith('css_') &&
-        !fullCommand.startsWith('at_') &&
-        !fullCommand.startsWith('mp_') &&
-        !fullCommand.startsWith('sv_') &&
-        !fullCommand.startsWith('say') &&
-        !baseRconCommands.includes(fullCommand.split(' ')[0])
-      ) {
-        fullCommand = `css_${fullCommand}`;
-      }
-
-      // Append parameters based on the command
-      if (message !== undefined) {
-        // For css_asay and say commands
-        fullCommand = `${fullCommand} ${message}`;
-      } else if (round !== undefined) {
-        // For css_restore
-        fullCommand = `${fullCommand} ${round}`;
-      } else if (value !== undefined && command !== 'custom') {
-        // For css commands with value parameters (css_readyrequired, etc.)
-        fullCommand = `${fullCommand} ${value}`;
-      } else if (map !== undefined) {
-        // For css_map
-        fullCommand = `${fullCommand} ${map}`;
-      } else if (name !== undefined) {
-        // For css_team1, css_team2
-        fullCommand = `${fullCommand} ${name}`;
-      }
-    }
-
     // Execute command on all specified servers
     const results = await Promise.all(
       serverIds.map(async (serverId: string) => {
-        if (await isFleetServer(serverId)) {
-          // Ready Up: a raw command is `exec` (root only, audited); the
-          // named ones are their fleet commands.
-          if (command === 'custom') {
-            const exec = await fleetExec(req, serverId, String(value ?? ''));
-            return { serverId, ...exec.body };
-          }
-          const mapped = fleetCommandFor({ command, message, round, value, map });
-          if (!mapped) {
-            return {
-              serverId,
-              success: false,
-              transport: 'fleet' as const,
-              error: `${command} is not available on Ready Up servers`,
-            };
-          }
-          const outcome = await runFleetCommand(serverId, mapped.name, mapped.args, issuedBy(req));
-          return { serverId, ...fleetResponseBody(outcome) };
+        // A raw command is `exec` (root only, audited); the named ones are
+        // their fleet commands.
+        if (command === 'custom') {
+          const exec = await fleetExec(req, serverId, String(value ?? ''));
+          return { serverId, ...exec.body };
         }
-        const result = await rconService.sendCommand(serverId, fullCommand);
-        return {
-          serverId,
-          success: result.success,
-          response: result.response,
-          error: result.error,
-        };
+        const mapped = fleetCommandFor({ command, message, round, value, map });
+        if (!mapped) {
+          return {
+            serverId,
+            success: false,
+            transport: 'fleet' as const,
+            error: `${command} is not available on Ready Up servers`,
+          };
+        }
+        const outcome = await runFleetCommand(serverId, mapped.name, mapped.args, issuedBy(req));
+        return { serverId, ...fleetResponseBody(outcome) };
       })
     );
 

@@ -436,7 +436,7 @@ export function useCreateManualMatchModal({
       ? (existingTeam2?.name ?? '')
       : team2NewName || t('teamMatchHistory.team2');
 
-  // Preview the config that would be sent to MatchZy Enhanced, for review step.
+  // Preview the config that would be sent to the server, for the review step.
   // Teams are **optional** for manual matches: when no teams are selected,
   // we fall back to generic "Team 1"/"Team 2" labels and empty player lists.
   let previewConfig: MatchConfig | null = null;

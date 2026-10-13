@@ -355,6 +355,30 @@ async function servedMatchConfig(match: DbMatchRow): Promise<MatchConfig> {
   return (await currentMatchConfig(match)) as unknown as MatchConfig;
 }
 
+/**
+ * The `match.assign` config a server would get for this match now (no
+ * password): what the golden specs record, through the test route.
+ */
+export async function assignConfigPreview(
+  matchSlug: string
+): Promise<
+  | { config: unknown; notAssignable?: undefined }
+  | { config?: undefined; notAssignable: string; served: MatchConfig }
+  | null
+> {
+  const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+    matchSlug,
+  ]);
+  if (!match) return null;
+  const served = await servedMatchConfig(match);
+  try {
+    return { config: buildAssignConfig(served, '', await assignDefaults()) };
+  } catch (error) {
+    // Not assignable yet (a series before its veto): the platform's own config instead.
+    return { notAssignable: (error as Error).message, served };
+  }
+}
+
 /** The server announced `demo.stream.v1` in its hello (./limits.ts). */
 async function streamsDemos(fleetServerId: string): Promise<boolean> {
   const row = await db.queryOneAsync<{ capabilities: string | null }>(

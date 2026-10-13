@@ -7,11 +7,12 @@
 
 import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../../../middleware/auth';
-import { log } from '../../../utils/logger';
-import { primeServerStatusForTests, ServerStatus } from '../services/serverStatusService';
 import { db } from '../../../config/database';
 import { resetEnrollRateLimit } from '../fleet/routes';
 import { liveStateStore } from '../fleet/state';
+import { processInbound } from '../fleet/inbound';
+import { assignConfigPreview } from '../fleet/driver';
+import type { Envelope } from '../fleet/protocol/v1';
 import { FleetSendError, getCommand, sendReliable, type ReliableType } from '../fleet/reliable';
 import { scanForFailovers } from '../fleet/failover';
 
@@ -21,53 +22,6 @@ function isE2eTestHelperEnabled(): boolean {
   const enabled = (process.env.ENABLE_TEST_ENDPOINTS || '').toLowerCase();
   return enabled === '1' || enabled === 'true' || enabled === 'yes';
 }
-
-/**
- * Test-only helper: stand in for a CS2 server's reported status.
- *
- * POST /api/test/server-status  { serverId, status, updatedAt?, online?, matchSlug? }
- *
- * Allocation decisions hinge on what MatchZy Enhanced reports through its
- * convars, and CI has no CS2 server to report anything — so without this the
- * idle/busy paths cannot be exercised at all.
- *
- * NOTE: This endpoint is only available in non-production environments.
- */
-router.post('/server-status', requireAuth, (req: Request, res: Response): void => {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
-    res.status(403).json({ success: false, error: 'Disabled in production' });
-    return;
-  }
-
-  const { serverId, status, updatedAt, online, matchSlug } = (req.body || {}) as {
-    serverId?: string;
-    status?: string;
-    updatedAt?: number;
-    online?: boolean;
-    matchSlug?: string;
-  };
-
-  if (!serverId) {
-    res.status(400).json({ success: false, error: 'serverId is required' });
-    return;
-  }
-
-  const allowed = Object.values(ServerStatus) as string[];
-  if (status !== undefined && status !== null && !allowed.includes(status)) {
-    res.status(400).json({ success: false, error: `status must be one of: ${allowed.join(', ')}` });
-    return;
-  }
-
-  primeServerStatusForTests(serverId, {
-    status: (status as ServerStatus) ?? null,
-    updatedAt: updatedAt ?? null,
-    online: online ?? true,
-    matchSlug: matchSlug ?? null,
-  });
-
-  log.warn(`[DEV-TOOLS] Primed server status for ${serverId}: ${status ?? 'null'}`);
-  res.json({ success: true });
-});
 
 /**
  * Test-only helper: set clips' status (a recorder that failed them).
@@ -193,6 +147,86 @@ router.post('/fleet/stattrak', requireAuth, async (req: Request, res: Response):
   const increments = Array.isArray(req.body?.increments) ? req.body.increments : [];
   res.json({ success: true, counted: await skinService.addStatTrakKills(increments) });
 });
+
+/**
+ * POST /api/test/fleet/events { matchSlug, serverId?, events: [{ type, map_number?, round?, data, patch? }] }
+ *
+ * Ready Up's `event.*` messages for a match, applied through the same
+ * `processInbound` a connected server's messages take (state store, ingest,
+ * map stats, the driver's hooks), without a socket. `serverId` is the fleet
+ * server they come from (the match's server, else `test-ready-up`). Each
+ * event gets the next rev for the match.
+ */
+const testRevs = new Map<string, number>();
+router.post('/fleet/events', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!fleetTestGuard(res)) return;
+  const { matchSlug, serverId, events } = (req.body || {}) as {
+    matchSlug?: string;
+    serverId?: string;
+    events?: Array<{
+      type: string;
+      map_number?: number;
+      round?: number;
+      data?: Record<string, unknown>;
+      patch?: Record<string, unknown>;
+    }>;
+  };
+  if (!matchSlug || !Array.isArray(events) || events.length === 0) {
+    res.status(400).json({ success: false, error: 'matchSlug and events are required' });
+    return;
+  }
+  const match = await db.queryOneAsync<{ server_id: string | null }>(
+    'SELECT server_id FROM matches WHERE slug = ?',
+    [matchSlug]
+  );
+  // A call for help can come from a server with no match (`admin_called`).
+  if (!match && !serverId) {
+    res.status(404).json({ success: false, error: 'Match not found' });
+    return;
+  }
+  const from = serverId ?? match?.server_id ?? 'test-ready-up';
+  const record = await liveStateStore.getLiveState(matchSlug);
+  const ctx = { serverId: from, streamId: 'test', sendEphemeral: () => false };
+  // In order after the stored state (a real server's revs), else after the last test batch.
+  let rev = record?.state ? record.liveRev : (testRevs.get(matchSlug) ?? 0);
+  for (const event of events) {
+    const type = event.type.startsWith('event.') ? event.type : `event.${event.type}`;
+    rev += 1;
+    testRevs.set(matchSlug, rev);
+    const env = {
+      v: 1,
+      type,
+      id: `test-${matchSlug}-${rev}-${Date.now()}`,
+      ts: Date.now(),
+      ...(record?.epoch !== undefined ? { epoch: record.epoch } : {}),
+      payload: {
+        match_id: matchSlug,
+        map_number: event.map_number ?? 1,
+        round: event.round ?? 0,
+        rev,
+        patch: { ...(event.patch ?? {}), live_rev: rev },
+        data: event.data ?? {},
+      },
+    } as unknown as Envelope;
+    await processInbound(ctx, env, null);
+  }
+  res.json({ success: true, applied: events.length });
+});
+
+/** GET /api/test/fleet/assign-config/:slug  the `match.assign` config the match would get now. */
+router.get(
+  '/fleet/assign-config/:slug',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (!fleetTestGuard(res)) return;
+    const preview = await assignConfigPreview(req.params.slug);
+    if (!preview) {
+      res.status(404).json({ success: false, error: 'Match not found' });
+      return;
+    }
+    res.json({ success: true, ...preview });
+  }
+);
 
 router.post('/fleet/send', requireAuth, async (req: Request, res: Response): Promise<void> => {
   if (!fleetTestGuard(res)) return;

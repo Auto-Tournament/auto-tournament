@@ -303,12 +303,10 @@ export const generateMatchConfig = async (
     num_maps: numMaps,
     players_per_team: playersPerTeam,
     min_players_to_ready: minPlayersToReady,
-    min_spectators_to_ready: 0,
     // A wingman tournament (settings.cs2.mapMode) runs CS2's wingman mode.
     wingman: storedCs2Settings(tournament.settings)?.mapMode === 'wingman',
 
     // veto
-    skip_veto: true,
     maplist, // ordered maps from the veto
     map_sides, // per-map sides matching maplist order
 
@@ -510,12 +508,10 @@ async function generateShuffleMatchConfig(
     players_per_team: playersPerTeam,
     // Require a full team to be ready before going live; for example, 2/2 in 2v2.
     min_players_to_ready: playersPerTeam,
-    min_spectators_to_ready: 0,
     // A wingman tournament (settings.cs2.mapMode) runs CS2's wingman mode.
     wingman: storedCs2Settings(tournament.settings)?.mapMode === 'wingman',
 
     // Shuffle: no veto, fixed map, random side
-    skip_veto: true,
     maplist,
     map_sides,
 
@@ -754,7 +750,6 @@ export async function serveStandaloneMatchConfig(slug: string): Promise<MatchCon
           ? storedConfig.maplist.length
           : 1,
     maplist: storedConfig.maplist ?? null,
-    skip_veto: true,
     spectators: {
       players: normalizeManualPlayers(storedConfig.spectators?.players),
     },

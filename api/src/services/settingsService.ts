@@ -283,14 +283,6 @@ class SettingsService {
     return null;
   }
 
-  async requireWebhookUrl(): Promise<string> {
-    const webhookUrl = await this.getWebhookUrl();
-    if (!webhookUrl) {
-      throw new Error('Webhook URL is not configured. Update it from the Settings page.');
-    }
-    return webhookUrl;
-  }
-
   /** The Steam Web API key: STEAM_API_KEY, else the one saved on Settings -> Sign-in. */
   async isSteamApiConfigured(): Promise<boolean> {
     return (await this.getSteamApiKey()) !== null;

@@ -1,6 +1,7 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
+import { sendReadyUpEvents, seriesEnd as readyUpSeriesEnd } from '../helpers/readyUp';
 
 /**
  * A later round of a BO1 bracket opens its own veto and waits for it.
@@ -29,11 +30,6 @@ const MAPS = [
   'de_nuke',
 ];
 
-const SERVER_HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-};
-
 type ListedMatch = {
   slug: string;
   status: string;
@@ -52,18 +48,9 @@ async function bracketMatch(
 }
 
 async function seriesEnd(request: APIRequestContext, slug: string) {
-  const res = await request.post(`/api/events/${slug}`, {
-    headers: SERVER_HEADERS,
-    data: {
-      event: 'series_end',
-      matchid: slug,
-      team1_series_score: 1,
-      team2_series_score: 0,
-      winner: { side: '3', team: 'team1' },
-      time_until_restore: 0,
-    },
-  });
-  expect(res.status(), `series_end for ${slug}: ${await res.text()}`).toBe(200);
+  await sendReadyUpEvents(request, slug, [
+    readyUpSeriesEnd({ winner: 'team1', team1: 1, team2: 0 }),
+  ]);
 }
 
 test.describe.serial('Next-round veto', () => {

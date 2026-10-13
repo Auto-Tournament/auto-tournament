@@ -3,8 +3,6 @@ import { serverService } from '../services/serverService';
 import { CreateServerInput, UpdateServerInput } from '../../../types/server.types';
 import { requireAuth } from '../../../middleware/auth';
 import { scheduler } from '../../../core/scheduler';
-import { serverInitializationService } from '../services/serverInitializationService';
-import { settingsService } from '../../../services/settingsService';
 import { log } from '../../../utils/logger';
 import { fleetChangedOnWrite } from '../fleet/adminTopics';
 
@@ -61,20 +59,6 @@ router.post('/batch', async (req: Request, res: Response) => {
     if (result.successful.length > 0) {
       setImmediate(() => {
         void scheduler.tryImmediateAllocation();
-      });
-      setImmediate(async () => {
-        try {
-          const baseUrl = await settingsService.getWebhookUrl();
-          if (baseUrl) {
-            for (const s of result.successful) {
-              if (s.enabled !== false) {
-                await serverInitializationService.initializeServer(s.id, baseUrl);
-              }
-            }
-          }
-        } catch (e) {
-          log.warn('Failed to initialize one or more servers from batch create', { error: e });
-        }
       });
     }
 
@@ -201,17 +185,6 @@ router.post('/', async (req: Request, res: Response) => {
       log.info(`New server ${server.id} created and enabled, triggering immediate allocation`);
       setImmediate(() => {
         void scheduler.tryImmediateAllocation();
-      });
-      // Send persistent config (webhook, etc.) so MatchZy Enhanced can start sending events and server becomes "initialized"
-      setImmediate(async () => {
-        try {
-          const baseUrl = await settingsService.getWebhookUrl();
-          if (baseUrl) {
-            await serverInitializationService.initializeServer(server.id, baseUrl);
-          }
-        } catch (e) {
-          log.warn(`Failed to initialize new server ${server.id}`, { error: e });
-        }
       });
     }
 
@@ -429,84 +402,6 @@ router.post('/:id/disable', async (req: Request, res: Response) => {
 
     console.error('Error disabling server:', error);
     return res.status(statusCode).json({
-      success: false,
-      error: message,
-    });
-  }
-});
-
-/**
- * POST /api/servers/:id/reset-initialization
- * Reset server initialization and immediately re-send persistent configuration via RCON.
- * Use when a server shows "Not Initialized" or after configuration changes.
- */
-router.post('/:id/reset-initialization', async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    // Verify server exists
-    const server = await serverService.getServerById(id);
-    if (!server) {
-      return res.status(404).json({
-        success: false,
-        error: 'Server not found',
-      });
-    }
-
-    const baseUrl = await settingsService.getWebhookUrl();
-    if (!baseUrl) {
-      return res.status(400).json({
-        success: false,
-        error: 'Webhook URL is not configured. Set it in Settings or FRONTEND_BASE_URL in .env.',
-      });
-    }
-
-    await serverInitializationService.resetServerInitialization(id);
-    const initResult = await serverInitializationService.initializeServer(id, baseUrl, {
-      force: true,
-    });
-
-    if (!initResult.success && initResult.error) {
-      return res.status(500).json({
-        success: false,
-        error: initResult.error,
-      });
-    }
-
-    return res.json({
-      success: true,
-      message: `Server ${id} initialization reset and configuration sent.`,
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Failed to reset server initialization';
-    console.error('Error resetting server initialization:', error);
-    return res.status(500).json({
-      success: false,
-      error: message,
-    });
-  }
-});
-
-/**
- * POST /api/servers/reset-all-initialization
- * Reset initialization status for ALL servers
- * Useful after global configuration changes
- */
-router.post('/reset-all-initialization', async (req: Request, res: Response) => {
-  try {
-    await serverInitializationService.resetAllServers();
-
-    return res.json({
-      success: true,
-      message:
-        'All servers initialization reset. Persistent configuration will be resent on next match loads.',
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Failed to reset all servers initialization';
-    console.error('Error resetting all servers initialization:', error);
-    return res.status(500).json({
       success: false,
       error: message,
     });

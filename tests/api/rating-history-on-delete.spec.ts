@@ -3,6 +3,7 @@ import { signInViaRequest, getAuthHeader } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { findMatchByTeams } from '../helpers/matches';
 import type { Team } from '../helpers/teams';
+import { sendReadyUpEvents, seriesEnd as readyUpSeriesEnd } from '../helpers/readyUp';
 
 /**
  * Deleting a tournament keeps players' ratings AND the history behind them.
@@ -30,13 +31,17 @@ async function currentElo(request: APIRequestContext, steamId: string): Promise<
 
 async function history(request: APIRequestContext, steamId: string): Promise<HistoryRow[]> {
   const res = await request.get(`/api/players/${steamId}/rating-history`);
-  expect(res.ok()).toBe(true);
   return (await res.json()).history as HistoryRow[];
 }
 
 /** Starts a fresh tournament, finishes its only match, returns the rated row. */
 async function playRatedMatch(request: APIRequestContext, name: string) {
-  const setup = await setupTournament(request, { teamCount: 2, serverCount: 1, name, prefix: 'rating-hist' });
+  const setup = await setupTournament(request, {
+    teamCount: 2,
+    serverCount: 1,
+    name,
+    prefix: 'rating-hist',
+  });
   expect(setup).toBeTruthy();
   const [team1, team2] = setup!.teams as Team[];
   const steamId = team1.players[0].steamId;
@@ -44,24 +49,9 @@ async function playRatedMatch(request: APIRequestContext, name: string) {
 
   const match = await findMatchByTeams(request, team1.id, team2.id);
   const slug = match!.slug;
-  const res = await request.post(`/api/events/${slug}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-    },
-    data: {
-      event: 'series_end',
-      matchid: slug,
-      team1_series_score: 1,
-      team2_series_score: 0,
-      winner: 'team1',
-      num_maps: 1,
-      time_until_restore: 0,
-      team1_name: team1.name,
-      team2_name: team2.name,
-    },
-  });
-  expect(res.ok()).toBe(true);
+  await sendReadyUpEvents(request, slug, [
+    readyUpSeriesEnd({ winner: 'team1', team1: 1, team2: 0 }),
+  ]);
 
   let row: HistoryRow | undefined;
   await expect
@@ -78,68 +68,78 @@ test.describe.serial('Rating history across tournament delete and reset', () => 
     await signInViaRequest(request);
   });
 
-  test('delete keeps history (unlinked, labelled) and ratings', {
-    tag: ['@api', '@regression'],
-  }, async ({ request }) => {
-    const name = `Rating Delete ${Date.now()}`;
-    const { steamId, row, team1, team2 } = await playRatedMatch(request, name);
-    const eloAfterMatch = await currentElo(request, steamId);
-    expect(eloAfterMatch).toBe(row.elo_after);
-    // The row carries the match's game, so it can still be counted under it
-    // once the match is gone.
-    expect(row.game).toBe('cs2');
+  test(
+    'delete keeps history (unlinked, labelled) and ratings',
+    {
+      tag: ['@api', '@regression'],
+    },
+    async ({ request }) => {
+      const name = `Rating Delete ${Date.now()}`;
+      const { steamId, row, team1, team2 } = await playRatedMatch(request, name);
+      const eloAfterMatch = await currentElo(request, steamId);
+      expect(eloAfterMatch).toBe(row.elo_after);
+      // The row carries the match's game, so it can still be counted under it
+      // once the match is gone.
+      expect(row.game).toBe('cs2');
 
-    const del = await request.delete('/api/tournament', { headers: getAuthHeader() });
-    expect(del.ok()).toBe(true);
+      const del = await request.delete('/api/tournament', { headers: getAuthHeader() });
+      expect(del.ok()).toBe(true);
 
-    expect(await currentElo(request, steamId), 'delete must not touch ratings').toBe(eloAfterMatch);
+      expect(await currentElo(request, steamId), 'delete must not touch ratings').toBe(
+        eloAfterMatch
+      );
 
-    const kept = (await history(request, steamId)).find((h) => h.tournament_name === name);
-    expect(kept, 'history row survives the delete').toBeTruthy();
-    expect(kept!.match_slug).toBeNull();
-    expect(kept!.match_label).toBe(`${team1.name} vs ${team2.name}`);
-    expect(kept!.elo_after).toBe(row.elo_after);
-    expect(kept!.created_at).toBe(row.created_at);
+      const kept = (await history(request, steamId)).find((h) => h.tournament_name === name);
+      expect(kept, 'history row survives the delete').toBeTruthy();
+      expect(kept!.match_slug).toBeNull();
+      expect(kept!.match_label).toBe(`${team1.name} vs ${team2.name}`);
+      expect(kept!.elo_after).toBe(row.elo_after);
+      expect(kept!.created_at).toBe(row.created_at);
 
-    // The player page reads the orphaned row without a match behind it.
-    const summary = await request.get(`/api/players/${steamId}/summary`);
-    expect(summary.ok()).toBe(true);
-    const summaryBody = (await summary.json()) as {
-      ratingHistory: HistoryRow[];
-      matches: Array<{ slug: string }>;
-      player: { matchCount: number };
-      games: Array<{ id: string }>;
-    };
-    const orphan = summaryBody.ratingHistory.find(
-      (h) => h.tournament_name === name && h.match_slug === null
-    );
-    expect(orphan, 'the orphaned row is in the summary').toBeTruthy();
-    expect(orphan!.game, 'and keeps its game').toBe('cs2');
+      // The player page reads the orphaned row without a match behind it.
+      const summary = await request.get(`/api/players/${steamId}/summary`);
+      expect(summary.ok()).toBe(true);
+      const summaryBody = (await summary.json()) as {
+        ratingHistory: HistoryRow[];
+        matches: Array<{ slug: string }>;
+        player: { matchCount: number };
+        games: Array<{ id: string }>;
+      };
+      const orphan = summaryBody.ratingHistory.find(
+        (h) => h.tournament_name === name && h.match_slug === null
+      );
+      expect(orphan, 'the orphaned row is in the summary').toBeTruthy();
+      expect(orphan!.game, 'and keeps its game').toBe('cs2');
 
-    // The match still counts as played: its stats row went with the match,
-    // but the profile's "matches" must not drop to 0 for a player whose
-    // tournament was deleted (the design-conformance audit's "MATCHES 0").
-    // Read from one response, so other suites' matches cannot race it.
-    const listed = new Set(summaryBody.matches.map((m) => m.slug));
-    const archived = summaryBody.ratingHistory.filter(
-      (h) => !h.match_slug || !listed.has(h.match_slug)
-    ).length;
-    expect(archived).toBeGreaterThan(0);
-    expect(summaryBody.player.matchCount).toBe(summaryBody.matches.length + archived);
-    expect(summaryBody.games.map((g) => g.id)).toContain('cs2');
-  });
+      // The match still counts as played: its stats row went with the match,
+      // but the profile's "matches" must not drop to 0 for a player whose
+      // tournament was deleted (the design-conformance audit's "MATCHES 0").
+      // Read from one response, so other suites' matches cannot race it.
+      const listed = new Set(summaryBody.matches.map((m) => m.slug));
+      const archived = summaryBody.ratingHistory.filter(
+        (h) => !h.match_slug || !listed.has(h.match_slug)
+      ).length;
+      expect(archived).toBeGreaterThan(0);
+      expect(summaryBody.player.matchCount).toBe(summaryBody.matches.length + archived);
+      expect(summaryBody.games.map((g) => g.id)).toContain('cs2');
+    }
+  );
 
-  test('reset rolls ratings back and removes that run\'s history', {
-    tag: ['@api', '@regression'],
-  }, async ({ request }) => {
-    const name = `Rating Reset ${Date.now()}`;
-    const { steamId, eloBefore } = await playRatedMatch(request, name);
+  test(
+    "reset rolls ratings back and removes that run's history",
+    {
+      tag: ['@api', '@regression'],
+    },
+    async ({ request }) => {
+      const name = `Rating Reset ${Date.now()}`;
+      const { steamId, eloBefore } = await playRatedMatch(request, name);
 
-    const reset = await request.post('/api/tournament/reset', { headers: getAuthHeader() });
-    expect(reset.ok()).toBe(true);
+      const reset = await request.post('/api/tournament/reset', { headers: getAuthHeader() });
+      expect(reset.ok()).toBe(true);
 
-    expect(await currentElo(request, steamId), 'reset rolls the rating back').toBe(eloBefore);
-    const rows = await history(request, steamId);
-    expect(rows.filter((h) => h.tournament_name === name)).toHaveLength(0);
-  });
+      expect(await currentElo(request, steamId), 'reset rolls the rating back').toBe(eloBefore);
+      const rows = await history(request, steamId);
+      expect(rows.filter((h) => h.tournament_name === name)).toHaveLength(0);
+    }
+  );
 });

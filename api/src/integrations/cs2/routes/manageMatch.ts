@@ -14,7 +14,8 @@ import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import { getLiveState } from '../fleet/state';
 import { fleetServerStatus, runFleetCommand } from '../fleet/driver';
-import { fleetResponseBody, isFleetServer, issuedBy } from './fleetCommands';
+import { fleetResponseBody, issuedBy } from './fleetCommands';
+import { isLinkedServer } from '../driver';
 import type { CmdName } from '../fleet/protocol/v1';
 import { fleetServerIdOf } from '../fleet/link';
 import { locate } from '../fleet/failoverRecovery';
@@ -153,7 +154,7 @@ router.get('/matches/:slug/manage', requireAuth, async (req: Request, res: Respo
         'SELECT name FROM cs2_servers WHERE id = ?',
         [match.server_id]
       );
-      const fleet = await isFleetServer(match.server_id);
+      const fleet = await isLinkedServer(match.server_id);
       const status = fleet ? await fleetServerStatus(match.server_id) : null;
       server = {
         id: match.server_id,
@@ -241,7 +242,7 @@ router.post('/matches/:slug/manage/command', requireAuth, async (req: Request, r
       [slug]
     );
     if (!match) return res.status(404).json({ success: false, error: 'Match not found' });
-    if (!match.server_id || !(await isFleetServer(match.server_id))) {
+    if (!match.server_id || !(await isLinkedServer(match.server_id))) {
       return res
         .status(409)
         .json({ success: false, error: 'The match is not on a Ready Up server' });
@@ -295,12 +296,10 @@ router.post(
       const fleetId = match.server_id ? await fleetServerIdOf(match.server_id) : null;
       const where = fleetId ? await locate(fleetId) : null;
       if (!where) {
-        return res
-          .status(409)
-          .json({
-            success: false,
-            error: 'The match is not on a server csm manages (or its machine is offline)',
-          });
+        return res.status(409).json({
+          success: false,
+          error: 'The match is not on a server csm manages (or its machine is offline)',
+        });
       }
       const who = issuedBy(req);
       const { command } = await sendHostCommand(

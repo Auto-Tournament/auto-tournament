@@ -26,7 +26,7 @@ import {
 } from '../utils/serverAttribution';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import { DEFAULT_GAME } from '../integrations/types';
-import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
+import { getBaseUrl } from '../utils/urlHelper';
 import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
 import {
   buildMatchConfigFor,
@@ -1187,7 +1187,6 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
     }
 
     const baseUrl = getBaseUrl(req);
-    const webhookBaseUrl = await getWebhookBaseUrl(req);
     const match = await matchService.createMatch(input, baseUrl, tournamentId);
 
     // When no serverId is provided, attempt to auto-allocate a server for
@@ -1200,7 +1199,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
       // the UI doesn't block on potentially slow RCON / connectivity checks.
       setImmediate(async () => {
         try {
-          const allocation = await scheduler.allocateSingleMatch(match.slug, webhookBaseUrl);
+          const allocation = await scheduler.allocateSingleMatch(match.slug, '');
           if (!allocation.success) {
             if (isQueuedAllocationResult(allocation.error)) {
               // No server free yet (the only one may still be uploading the
@@ -1210,7 +1209,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
               log.info(
                 `Manual match ${match.slug} is waiting for a server (${allocation.error}); retrying until one is free`
               );
-              scheduler.startPollingForServer(match.slug, webhookBaseUrl);
+              scheduler.startPollingForServer(match.slug, '');
             } else {
               log.warn(
                 `Auto-allocation failed for manual match ${match.slug}: ${allocation.error}`

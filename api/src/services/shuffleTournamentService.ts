@@ -664,7 +664,7 @@ export async function generateRoundMatches(
       winner_id: null,
       server_id: null,
       config: serializeMatchConfig(config),
-      status: 'ready', // Changed from 'pending' to 'ready' since skip_veto = true
+      status: 'ready', // No veto for a shuffle match
       next_match_id: null,
       current_map: map,
       map_number: 0,

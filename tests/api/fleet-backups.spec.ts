@@ -93,15 +93,23 @@ test.describe('Round backup store', () => {
   test('idempotent: the same file again is a duplicate, other content replaces it', async () => {
     const { store, persistence } = newStore();
     const first = backupOf('round five, first time');
-    expect((await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: first }, 100)).kind).toBe('stored');
-    const again = await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: first }, 200);
+    expect(
+      (await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: first }, 100)).kind
+    ).toBe('stored');
+    const again = await store.ingest(
+      { matchSlug: SLUG, serverId: 's1', epoch: 1, backup: first },
+      200
+    );
     expect(again.kind).toBe('duplicate');
     expect(persistence.rows).toHaveLength(1);
     expect(persistence.rows[0].updatedAt).toBe(100);
 
     // Round 5 replayed after a restore, with other content: the newest wins.
     const replayed = backupOf('round five, replayed', { score: { team1: 3, team2: 2 } });
-    const outcome = await store.ingest({ matchSlug: SLUG, serverId: 's2', epoch: 2, backup: replayed }, 300);
+    const outcome = await store.ingest(
+      { matchSlug: SLUG, serverId: 's2', epoch: 2, backup: replayed },
+      300
+    );
     expect(outcome).toMatchObject({ kind: 'replaced', previousSha256: first.sha256 });
     expect(persistence.rows).toHaveLength(1);
     expect(persistence.rows[0]).toMatchObject({
@@ -116,15 +124,35 @@ test.describe('Round backup store', () => {
 
   test('forget: a fresh start drops every backup and staged part of that slug, and only that slug', async () => {
     const { store, persistence } = newStore();
-    await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: backupOf('old r5', { round: 5 }) });
-    await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: backupOf('old r11', { round: 11 }) });
-    await store.ingest({ matchSlug: 'other', serverId: 's1', epoch: 1, backup: backupOf('other r2', { round: 2 }) });
+    await store.ingest({
+      matchSlug: SLUG,
+      serverId: 's1',
+      epoch: 1,
+      backup: backupOf('old r5', { round: 5 }),
+    });
+    await store.ingest({
+      matchSlug: SLUG,
+      serverId: 's1',
+      epoch: 1,
+      backup: backupOf('old r11', { round: 11 }),
+    });
+    await store.ingest({
+      matchSlug: 'other',
+      serverId: 's1',
+      epoch: 1,
+      backup: backupOf('other r2', { round: 2 }),
+    });
     const half = Buffer.from('half of a file');
     await store.ingest({
       matchSlug: SLUG,
       serverId: 's1',
       epoch: 1,
-      backup: backupOf('half of a file', { round: 6, part: 1, parts: 2, data: half.subarray(0, 4).toString('base64') }),
+      backup: backupOf('half of a file', {
+        round: 6,
+        part: 1,
+        parts: 2,
+        data: half.subarray(0, 4).toString('base64'),
+      }),
     });
     expect(persistence.partCount()).toBe(1);
     expect(await store.forget(SLUG)).toBe(2);
@@ -145,7 +173,12 @@ test.describe('Round backup store', () => {
       [{ part: 3, parts: 2 }, /part/],
     ];
     for (const [over, reason] of cases) {
-      const outcome = await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: { ...good, ...over } });
+      const outcome = await store.ingest({
+        matchSlug: SLUG,
+        serverId: 's1',
+        epoch: 1,
+        backup: { ...good, ...over },
+      });
       expect(outcome.kind, JSON.stringify(over)).toBe('rejected');
       expect(outcome.kind === 'rejected' && outcome.reason).toMatch(reason);
     }
@@ -157,16 +190,27 @@ test.describe('Round backup store', () => {
     const file = crypto.randomBytes(1000);
     const whole = backupOf(file, { round: 9 });
     const pieces = [file.subarray(0, 400), file.subarray(400, 800), file.subarray(800)];
-    const part = (n: number): InlineBackup => ({ ...whole, data: pieces[n - 1].toString('base64'), part: n, parts: 3 });
+    const part = (n: number): InlineBackup => ({
+      ...whole,
+      data: pieces[n - 1].toString('base64'),
+      part: n,
+      parts: 3,
+    });
 
     // Out of order, with a repeated part.
-    expect(await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: part(2) })).toEqual({
+    expect(
+      await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: part(2) })
+    ).toEqual({
       kind: 'partial',
       received: 1,
       parts: 3,
     });
-    expect((await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: part(2) })).kind).toBe('partial');
-    expect((await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: part(3) })).kind).toBe('partial');
+    expect(
+      (await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: part(2) })).kind
+    ).toBe('partial');
+    expect(
+      (await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: part(3) })).kind
+    ).toBe('partial');
     expect(persistence.rows).toHaveLength(0);
     const done = await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: part(1) });
     expect(done.kind).toBe('stored');
@@ -176,7 +220,12 @@ test.describe('Round backup store', () => {
 
     // Parts that do not add up to the announced file are refused.
     const bad = backupOf(file, { round: 10, sha256: 'a'.repeat(64) });
-    await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: { ...bad, data: pieces[0].toString('base64'), part: 1, parts: 2 } });
+    await store.ingest({
+      matchSlug: SLUG,
+      serverId: 's1',
+      epoch: 1,
+      backup: { ...bad, data: pieces[0].toString('base64'), part: 1, parts: 2 },
+    });
     const refused = await store.ingest({
       matchSlug: SLUG,
       serverId: 's1',
@@ -190,9 +239,19 @@ test.describe('Round backup store', () => {
   test('rounds voided by a restore are superseded; a new backup of the round clears it', async () => {
     const { store } = newStore();
     for (const round of [1, 2, 3, 4]) {
-      await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: backupOf(`r${round}`, { round }) });
+      await store.ingest({
+        matchSlug: SLUG,
+        serverId: 's1',
+        epoch: 1,
+        backup: backupOf(`r${round}`, { round }),
+      });
     }
-    await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: backupOf('other map', { map_number: 2, round: 3 }) });
+    await store.ingest({
+      matchSlug: SLUG,
+      serverId: 's1',
+      epoch: 1,
+      backup: backupOf('other map', { map_number: 2, round: 3 }),
+    });
     expect(await store.roundsVoided(SLUG, 1, 2, 500)).toBe(2);
     const list = await store.list(SLUG);
     expect(list.map((b) => [b.mapNumber, b.round, b.supersededAt])).toEqual([
@@ -203,7 +262,12 @@ test.describe('Round backup store', () => {
       [2, 3, null],
     ]);
     // Round 3 played again: its new backup is current again. The same file again too.
-    await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: backupOf('r3', { round: 3 }) });
+    await store.ingest({
+      matchSlug: SLUG,
+      serverId: 's1',
+      epoch: 1,
+      backup: backupOf('r3', { round: 3 }),
+    });
     expect((await store.get(SLUG, 1, 3))?.supersededAt).toBeNull();
   });
 
@@ -216,7 +280,10 @@ test.describe('Round backup store', () => {
     };
     const { store, persistence } = newStore((slug) => (slug in ended ? ended[slug] : undefined));
     const put = (slug: string, storedAt: number) =>
-      store.ingest({ matchSlug: slug, serverId: 's1', epoch: 1, backup: backupOf(`${slug}-${storedAt}`) }, storedAt);
+      store.ingest(
+        { matchSlug: slug, serverId: 's1', epoch: 1, backup: backupOf(`${slug}-${storedAt}`) },
+        storedAt
+      );
     await put('live', now - 30 * DAY);
     await put('recent', now - 30 * DAY);
     await put('old', now - 30 * DAY);
@@ -224,7 +291,12 @@ test.describe('Round backup store', () => {
     await put('gone-new', now - DAY);
     // A part that never completed, a day and a half old.
     await store.ingest(
-      { matchSlug: 'live', serverId: 's1', epoch: 1, backup: { ...backupOf('xy', { round: 7 }), data: 'eA==', part: 1, parts: 2 } },
+      {
+        matchSlug: 'live',
+        serverId: 's1',
+        epoch: 1,
+        backup: { ...backupOf('xy', { round: 7 }), data: 'eA==', part: 1, parts: 2 },
+      },
       now - 1.5 * DAY
     );
 
@@ -248,26 +320,50 @@ test.describe('Round backup store', () => {
     const { store, persistence } = newStore();
     const frame = example('live.event.backup.json');
     const env = { ...frame, payload: { ...frame.payload, match_id: SLUG } } as Envelope;
-    expect(await handleBackupEvent(store, { serverId: 'zombie', envelope: env, patch: 'stale_epoch' })).toBeNull();
+    expect(
+      await handleBackupEvent(store, { serverId: 'zombie', envelope: env, patch: 'stale_epoch' })
+    ).toBeNull();
     expect(persistence.rows).toHaveLength(0);
-    const outcome = await handleBackupEvent(store, { serverId: 'srv', envelope: env, patch: 'applied' });
+    const outcome = await handleBackupEvent(store, {
+      serverId: 'srv',
+      envelope: env,
+      patch: 'applied',
+    });
     expect(outcome && typeof outcome === 'object' && outcome.kind).toBe('stored');
     // A replay of the same event (after a restart) stores nothing new.
-    const replay = await handleBackupEvent(store, { serverId: 'srv', envelope: env, patch: 'duplicate' });
+    const replay = await handleBackupEvent(store, {
+      serverId: 'srv',
+      envelope: env,
+      patch: 'duplicate',
+    });
     expect(replay && typeof replay === 'object' && replay.kind).toBe('duplicate');
 
-    await store.ingest({ matchSlug: SLUG, serverId: 'srv', epoch: 2, backup: backupOf('r4', { round: 4 }) });
+    await store.ingest({
+      matchSlug: SLUG,
+      serverId: 'srv',
+      epoch: 2,
+      backup: backupOf('r4', { round: 4 }),
+    });
     const voided = example('live.event.rounds_voided.json');
     const voidEnv = {
       ...voided,
-      payload: { ...voided.payload, match_id: SLUG, map_number: 1, data: { from_round: 2, reason: 'restore' } },
+      payload: {
+        ...voided.payload,
+        match_id: SLUG,
+        map_number: 1,
+        data: { from_round: 2, reason: 'restore' },
+      },
     } as Envelope;
-    expect(await handleBackupEvent(store, { serverId: 'srv', envelope: voidEnv, patch: 'applied' })).toBe(1);
+    expect(
+      await handleBackupEvent(store, { serverId: 'srv', envelope: voidEnv, patch: 'applied' })
+    ).toBe(1);
     expect((await store.get(SLUG, 1, 4))?.supersededAt).not.toBeNull();
     expect((await store.get(SLUG, 1, 1))?.supersededAt).toBeNull();
 
     const other = example('live.event.pause.json');
-    expect(await handleBackupEvent(store, { serverId: 'srv', envelope: other, patch: 'applied' })).toBeNull();
+    expect(
+      await handleBackupEvent(store, { serverId: 'srv', envelope: other, patch: 'applied' })
+    ).toBeNull();
   });
 });
 
@@ -313,7 +409,6 @@ function restoreDeps(over: Partial<RestoreDeps> = {}) {
   const { store } = newStore();
   const audit = createMemoryRestoreAudit();
   const sent: Array<{ serverId: string; payload: CmdPayload; epoch: number }> = [];
-  const rcon: Array<{ serverId: string; round: number }> = [];
   let answer: (id: string) => FleetCommandRecord | null = (id) => command(id);
   const deps: RestoreDeps = {
     backups: store,
@@ -327,11 +422,6 @@ function restoreDeps(over: Partial<RestoreDeps> = {}) {
       return { id: `cmd-${sent.length}`, seq: sent.length, delivered: true, answered: true };
     },
     awaitResult: async (id) => answer(id),
-    rconServerFor: async () => null,
-    async rconRestore(serverId, round) {
-      rcon.push({ serverId, round });
-      return { success: true };
-    },
     now: () => 1_000_000_000_000,
     ...over,
   };
@@ -340,7 +430,6 @@ function restoreDeps(over: Partial<RestoreDeps> = {}) {
     store,
     audit,
     sent,
-    rcon,
     setAnswer(fn: (id: string) => FleetCommandRecord | null) {
       answer = fn;
     },
@@ -388,20 +477,47 @@ test.describe('Restore to round N', () => {
       actor: ACTOR.id,
     });
     expect(ctx.audit.records).toHaveLength(1);
-    expect(ctx.audit.records[0]).toMatchObject({ status: 'ok', commandId: 'cmd-1', answeredAt: 1_000_000_000 });
+    expect(ctx.audit.records[0]).toMatchObject({
+      status: 'ok',
+      commandId: 'cmd-1',
+      answeredAt: 1_000_000_000,
+    });
   });
 
   test('fleet: the server refuses it (checksum); no answer in time stays pending and is settled later', async () => {
     const ctx = restoreDeps();
-    await ctx.store.ingest({ matchSlug: SLUG, serverId: 'srv_b', epoch: 3, backup: backupOf('r5') });
+    await ctx.store.ingest({
+      matchSlug: SLUG,
+      serverId: 'srv_b',
+      epoch: 3,
+      backup: backupOf('r5'),
+    });
     ctx.setAnswer((id) =>
-      command(id, { status: 'rejected', errorCode: 'checksum', result: { status: 'rejected', error: { code: 'checksum', message: 'sha256 mismatch' } } })
+      command(id, {
+        status: 'rejected',
+        errorCode: 'checksum',
+        result: { status: 'rejected', error: { code: 'checksum', message: 'sha256 mismatch' } },
+      })
     );
-    const refused = await restoreRoundBackup(ctx.deps, { matchSlug: SLUG, mapNumber: 1, round: 5, actor: ACTOR });
-    expect(refused.restore).toMatchObject({ status: 'rejected', errorCode: 'checksum', errorMessage: 'sha256 mismatch' });
+    const refused = await restoreRoundBackup(ctx.deps, {
+      matchSlug: SLUG,
+      mapNumber: 1,
+      round: 5,
+      actor: ACTOR,
+    });
+    expect(refused.restore).toMatchObject({
+      status: 'rejected',
+      errorCode: 'checksum',
+      errorMessage: 'sha256 mismatch',
+    });
 
     ctx.setAnswer(() => null);
-    const pending = await restoreRoundBackup(ctx.deps, { matchSlug: SLUG, mapNumber: 1, round: 5, actor: ACTOR });
+    const pending = await restoreRoundBackup(ctx.deps, {
+      matchSlug: SLUG,
+      mapNumber: 1,
+      round: 5,
+      actor: ACTOR,
+    });
     expect(pending.restore.status).toBe('pending');
     const row = ctx.audit.records.find((r) => r.id === pending.restore.id)!;
     expect(row).toMatchObject({ status: 'pending', commandId: 'cmd-2', answeredAt: null });
@@ -418,7 +534,13 @@ test.describe('Restore to round N', () => {
   test('fleet: no such backup, no assignment, bad arguments', async () => {
     const ctx = restoreDeps();
     const run = (over: Partial<{ mapNumber: number; round: number }> = {}) =>
-      restoreRoundBackup(ctx.deps, { matchSlug: SLUG, mapNumber: 1, round: 5, actor: ACTOR, ...over });
+      restoreRoundBackup(ctx.deps, {
+        matchSlug: SLUG,
+        mapNumber: 1,
+        round: 5,
+        actor: ACTOR,
+        ...over,
+      });
     await expect(run()).rejects.toMatchObject({ code: 'no_backup', status: 404 });
     await expect(run({ round: 0 })).rejects.toMatchObject({ code: 'bad_args', status: 400 });
     await expect(run({ mapNumber: 10 })).rejects.toMatchObject({ code: 'bad_args', status: 400 });
@@ -447,7 +569,12 @@ test.describe('Restore to round N', () => {
     ).rejects.toMatchObject({ code: 'too_large', status: 422 });
 
     ctx.deps.getLiveState = async () => liveRecord({ serverId: 'srv_a', epoch: 2 });
-    const { restore } = await restoreRoundBackup(ctx.deps, { matchSlug: SLUG, mapNumber: 1, round: 6, actor: ACTOR });
+    const { restore } = await restoreRoundBackup(ctx.deps, {
+      matchSlug: SLUG,
+      mapNumber: 1,
+      round: 6,
+      actor: ACTOR,
+    });
     expect(restore).toMatchObject({ status: 'ok', inline: false });
     expect(ctx.sent[0].payload.args).toEqual({ map_number: 1, round: 6 });
   });
@@ -458,28 +585,27 @@ test.describe('Restore to round N', () => {
         throw new Error('server gone');
       },
     });
-    await ctx.store.ingest({ matchSlug: SLUG, serverId: 'srv_b', epoch: 3, backup: backupOf('r5') });
+    await ctx.store.ingest({
+      matchSlug: SLUG,
+      serverId: 'srv_b',
+      epoch: 3,
+      backup: backupOf('r5'),
+    });
     await expect(
       restoreRoundBackup(ctx.deps, { matchSlug: SLUG, mapNumber: 1, round: 5, actor: ACTOR })
     ).rejects.toMatchObject({ code: 'send_failed' });
-    expect(ctx.audit.records[0]).toMatchObject({ status: 'failed', errorCode: 'send_failed', errorMessage: 'server gone' });
+    expect(ctx.audit.records[0]).toMatchObject({
+      status: 'failed',
+      errorCode: 'send_failed',
+      errorMessage: 'server gone',
+    });
   });
 
-  test('rcon: css_restore on the match server, audited; a failure is recorded', async () => {
-    const ctx = restoreDeps({ getLiveState: async () => null, rconServerFor: async () => 'server-3' });
-    const { restore } = await restoreRoundBackup(ctx.deps, { matchSlug: SLUG, mapNumber: 1, round: 7, actor: ACTOR });
-    expect(ctx.rcon).toEqual([{ serverId: 'server-3', round: 7 }]);
-    expect(ctx.sent).toHaveLength(0);
-    expect(restore).toMatchObject({ transport: 'rcon', status: 'ok', serverId: 'server-3', backupId: null });
-
-    ctx.deps.rconRestore = async () => ({ success: false, error: 'Connection refused' });
-    const failed = await restoreRoundBackup(ctx.deps, { matchSlug: SLUG, mapNumber: 1, round: 7, actor: ACTOR });
-    expect(failed.restore).toMatchObject({ status: 'failed', errorCode: 'rcon', errorMessage: 'Connection refused' });
-    expect(ctx.audit.records.map((r) => r.status)).toEqual(['ok', 'failed']);
-
-    ctx.deps.rconServerFor = async () => null;
+  test('no live assignment: nothing to restore on', async () => {
+    const ctx = restoreDeps({ getLiveState: async () => null });
     await expect(
       restoreRoundBackup(ctx.deps, { matchSlug: SLUG, mapNumber: 1, round: 7, actor: ACTOR })
     ).rejects.toMatchObject({ code: 'not_assigned' });
+    expect(ctx.sent).toHaveLength(0);
   });
 });

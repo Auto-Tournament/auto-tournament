@@ -14,13 +14,6 @@
       "maps": "Mapy i pule map",
       "skins": "Skiny",
       "matchRules": "Zasady meczu"
-    },
-    "atDbDown": {
-      "title": "Baza danych MatchZy Enhanced niedostępna",
-      "body_one": "{{count}} serwer zgłasza, że plugin nie może połączyć się ze swoją bazą danych. Może to wpłynąć na backupy i kolejkę zdarzeń.",
-      "body_few": "{{count}} serwery zgłaszają, że plugin nie może połączyć się ze swoją bazą danych. Może to wpłynąć na backupy i kolejkę zdarzeń.",
-      "body_many": "{{count}} serwerów zgłasza, że plugin nie może połączyć się ze swoją bazą danych. Może to wpłynąć na backupy i kolejkę zdarzeń.",
-      "body_other": "{{count}} serwerów zgłasza, że plugin nie może połączyć się ze swoją bazą danych. Może to wpłynąć na backupy i kolejkę zdarzeń."
     }
   },
   "dashboard": {
@@ -520,7 +513,6 @@
       "message_other": "Czy na pewno chcesz usunąć {{count}} serwerów? Tej operacji nie można cofnąć."
     },
     "autoConfig": {
-      "configuring": "Konfigurowanie nowych serwerów (wysyłanie konfiguracji MatchZy Enhanced przez RCON)…",
       "done": "Nowe serwery skonfigurowane. Odświeżanie statusu…"
     },
     "checkServerLogs": "Sprawdź konsolę/logi serwera gry, aby zobaczyć, czy wtyczka Auto Tournament odbiera konfigurację i wysyła zdarzenia.",
@@ -530,7 +522,6 @@
       "total_few": "{{count}} serwery",
       "total_many": "{{count}} serwerów",
       "total_other": "{{count}} serwerów",
-      "latestRelease": "Najnowsze wydanie MatchZy Enhanced: v{{version}}",
       "olderVersion_one": "{{count}} serwer działa na starszej wersji niż najnowsze wydanie.",
       "olderVersion_few": "{{count}} serwery działają na starszej wersji niż najnowsze wydanie.",
       "olderVersion_many": "{{count}} serwerów działa na starszej wersji niż najnowsze wydanie.",
@@ -583,7 +574,6 @@
       "webhookTitle": "Serwer nie może połączyć się z Auto Tournament (webhook)",
       "webhookBody": "Auto Tournament łączy się z serwerem przez RCON, ale serwer nie może dotrzeć do webhooka Auto Tournament. Sprawdź ruch wychodzący, DNS i skonfigurowany URL webhooka.",
       "versionDiffTitle": "Wersje pluginu różnią się między serwerami",
-      "versionDiffBody": "Niektóre serwery działają na innej wersji MatchZy Enhanced. Jeśli używasz CSM, uruchom {{command}} i zrestartuj serwery.",
       "ipBannedTitle": "IP zbanowane przez RCON",
       "ipBannedBody": "Serwer tymczasowo zbanował IP Auto Tournament po powtarzających się błędach uwierzytelniania RCON. Popraw hasło RCON i odbanuj IP.",
       "pluginDbTitle": "Wtyczka Auto Tournament nie może połączyć się ze swoją bazą danych.",
@@ -985,7 +975,6 @@
       "noServers": "Brak dostępnych serwerów",
       "refreshServers": "Odśwież listę serwerów",
       "noEvents": "Nie odebrano jeszcze zdarzeń z tego serwera.",
-      "noEventsHint": "Nadal brak zdarzeń po 15 sekundach. Sprawdź, czy serwer CS2 wysyła webhooki MatchZy Enhanced na /api/events/:matchSlugOrServerId z poprawnym X-Auto-Tournament-Token.",
       "waiting": "Oczekiwanie na zdarzenia z serwera…",
       "footer_one": "Wyświetlane: {{count}} zdarzenie (maks. 100)",
       "footer_few": "Wyświetlane: {{count}} zdarzenia (maks. 100)",

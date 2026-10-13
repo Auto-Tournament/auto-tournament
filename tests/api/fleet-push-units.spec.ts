@@ -468,7 +468,6 @@ test.describe('fleet pushes: match.update', () => {
     const assign = buildAssignConfig(
       {
         ...withSub,
-        skip_veto: true,
         num_maps: 1,
         players_per_team: 1,
         maplist: ['de_mirage'],

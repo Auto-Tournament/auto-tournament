@@ -1,48 +1,9 @@
 /**
  * @openapi
- * /api/rcon/test:
- *   get:
- *     tags:
- *       - RCON
- *     summary: Test all RCON connections
- *     description: Test RCON connectivity to all enabled servers
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Test results
- *       401:
- *         description: Unauthorized
- */
-
-/**
- * @openapi
- * /api/rcon/test/{serverId}:
- *   get:
- *     tags:
- *       - RCON
- *     summary: Test RCON connection to specific server
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: serverId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Connection successful
- *       400:
- *         description: Connection failed
- */
-
-/**
- * @openapi
  * /api/rcon/practice-mode:
  *   post:
  *     tags:
- *       - RCON
+ *       - Server commands
  *     summary: Start practice mode
  *     description: Execute css_prac command on server
  *     security:
@@ -75,7 +36,7 @@
  * /api/rcon/start-match:
  *   post:
  *     tags:
- *       - RCON
+ *       - Server commands
  *     summary: Force start match
  *     description: Execute css_start command on server
  *     security:
@@ -102,7 +63,7 @@
  * /api/rcon/change-map:
  *   post:
  *     tags:
- *       - RCON
+ *       - Server commands
  *     summary: Change map
  *     description: Execute css_map command on server
  *     security:
@@ -136,7 +97,7 @@
  * /api/rcon/pause-match:
  *   post:
  *     tags:
- *       - RCON
+ *       - Server commands
  *     summary: Pause match
  *     description: Execute css_pause command
  *     security:
@@ -162,7 +123,7 @@
  * /api/rcon/unpause-match:
  *   post:
  *     tags:
- *       - RCON
+ *       - Server commands
  *     summary: Unpause match
  *     description: Execute css_unpause command
  *     security:
@@ -188,7 +149,7 @@
  * /api/rcon/restart-match:
  *   post:
  *     tags:
- *       - RCON
+ *       - Server commands
  *     summary: Restart match
  *     description: Execute mp_restartgame command (restarts current round)
  *     security:
@@ -214,7 +175,7 @@
  * /api/rcon/end-warmup:
  *   post:
  *     tags:
- *       - RCON
+ *       - Server commands
  *     summary: End warmup
  *     description: Execute mp_warmup_end command
  *     security:
@@ -240,7 +201,7 @@
  * /api/rcon/reload-admins:
  *   post:
  *     tags:
- *       - RCON
+ *       - Server commands
  *     summary: Reload admins
  *     description: Execute reload_admins command
  *     security:
@@ -266,7 +227,7 @@
  * /api/rcon/say:
  *   post:
  *     tags:
- *       - RCON
+ *       - Server commands
  *     summary: Send message to server
  *     description: Send a chat message to a specific server (sanitized, max 200 chars)
  *     security:
@@ -298,7 +259,7 @@
  * /api/rcon/broadcast:
  *   post:
  *     tags:
- *       - RCON
+ *       - Server commands
  *     summary: Broadcast message
  *     description: Send a message to all servers or specific servers
  *     security:

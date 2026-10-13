@@ -712,10 +712,6 @@
       "description": "The search box: players, teams, tournaments and played matches by name."
     },
     {
-      "name": "Server bootstrap",
-      "description": "Self-registration for a CS2 server coming online."
-    },
-    {
       "name": "Server status",
       "description": "Liveness, connectivity and CS2 update state per server."
     },
@@ -3537,25 +3533,6 @@
         }
       }
     },
-    "/api/events": {
-      "post": {
-        "tags": [
-          "Events"
-        ],
-        "summary": "POST /api/events",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "atServerToken": []
-          }
-        ]
-      }
-    },
     "/api/events/connections/{matchSlug}": {
       "get": {
         "tags": [
@@ -3604,25 +3581,6 @@
         ]
       }
     },
-    "/api/events/report": {
-      "post": {
-        "tags": [
-          "Events"
-        ],
-        "summary": "POST /api/events/report",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "atServerToken": []
-          }
-        ]
-      }
-    },
     "/api/events/server/{serverId}": {
       "get": {
         "tags": [
@@ -3651,49 +3609,6 @@
           },
           {
             "apiToken": []
-          }
-        ]
-      }
-    },
-    "/api/events/test": {
-      "get": {
-        "tags": [
-          "Events"
-        ],
-        "summary": "GET /api/events/test",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/events/{matchSlugOrServerId}": {
-      "post": {
-        "tags": [
-          "Events"
-        ],
-        "summary": "POST /api/events/:matchSlugOrServerId",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "parameters": [
-          {
-            "name": "matchSlugOrServerId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "atServerToken": []
           }
         ]
       }
@@ -12493,32 +12408,10 @@
         ]
       }
     },
-    "/api/rcon/add-time": {
-      "post": {
-        "tags": [
-          "RCON"
-        ],
-        "summary": "POST /api/rcon/add-time",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
     "/api/rcon/broadcast": {
       "post": {
         "tags": [
-          "RCON"
+          "Server commands"
         ],
         "summary": "Broadcast message",
         "description": "Send a message to all servers or specific servers",
@@ -12575,7 +12468,7 @@
     "/api/rcon/change-map": {
       "post": {
         "tags": [
-          "RCON"
+          "Server commands"
         ],
         "summary": "Change map",
         "description": "Execute css_map command on server",
@@ -12669,7 +12562,7 @@
     "/api/rcon/end-warmup": {
       "post": {
         "tags": [
-          "RCON"
+          "Server commands"
         ],
         "summary": "End warmup",
         "description": "Execute mp_warmup_end command",
@@ -12753,7 +12646,7 @@
     "/api/rcon/pause-match": {
       "post": {
         "tags": [
-          "RCON"
+          "Server commands"
         ],
         "summary": "Pause match",
         "description": "Execute css_pause command",
@@ -12793,7 +12686,7 @@
     "/api/rcon/practice-mode": {
       "post": {
         "tags": [
-          "RCON"
+          "Server commands"
         ],
         "summary": "Start practice mode",
         "description": "Execute css_prac command on server",
@@ -12844,7 +12737,7 @@
     "/api/rcon/reload-admins": {
       "post": {
         "tags": [
-          "RCON"
+          "Server commands"
         ],
         "summary": "Reload admins",
         "description": "Execute reload_admins command",
@@ -12884,7 +12777,7 @@
     "/api/rcon/restart-match": {
       "post": {
         "tags": [
-          "RCON"
+          "Server commands"
         ],
         "summary": "Restart match",
         "description": "Execute mp_restartgame command (restarts current round)",
@@ -12968,7 +12861,7 @@
     "/api/rcon/say": {
       "post": {
         "tags": [
-          "RCON"
+          "Server commands"
         ],
         "summary": "Send message to server",
         "description": "Send a chat message to a specific server (sanitized, max 200 chars)",
@@ -13012,32 +12905,10 @@
         }
       }
     },
-    "/api/rcon/skip-veto": {
-      "post": {
-        "tags": [
-          "RCON"
-        ],
-        "summary": "POST /api/rcon/skip-veto",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
     "/api/rcon/start-match": {
       "post": {
         "tags": [
-          "RCON"
+          "Server commands"
         ],
         "summary": "Force start match",
         "description": "Execute css_start command on server",
@@ -13097,91 +12968,10 @@
         ]
       }
     },
-    "/api/rcon/test": {
-      "get": {
-        "tags": [
-          "RCON"
-        ],
-        "summary": "Test all RCON connections",
-        "description": "Test RCON connectivity to all enabled servers",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Test results"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        }
-      }
-    },
-    "/api/rcon/test-connection": {
-      "post": {
-        "tags": [
-          "RCON"
-        ],
-        "summary": "POST /api/rcon/test-connection",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
-    "/api/rcon/test/{serverId}": {
-      "get": {
-        "tags": [
-          "RCON"
-        ],
-        "summary": "Test RCON connection to specific server",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "serverId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Connection successful"
-          },
-          "400": {
-            "description": "Connection failed"
-          }
-        }
-      }
-    },
     "/api/rcon/unpause-match": {
       "post": {
         "tags": [
-          "RCON"
+          "Server commands"
         ],
         "summary": "Unpause match",
         "description": "Execute css_unpause command",
@@ -13548,28 +13338,6 @@
         ]
       }
     },
-    "/api/servers/reset-all-initialization": {
-      "post": {
-        "tags": [
-          "Servers"
-        ],
-        "summary": "POST /api/servers/reset-all-initialization",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
     "/api/servers/update-hold": {
       "get": {
         "tags": [
@@ -13829,35 +13597,6 @@
         ]
       }
     },
-    "/api/servers/{id}/bootstrap": {
-      "get": {
-        "tags": [
-          "Server bootstrap"
-        ],
-        "summary": "GET /api/servers/:id/bootstrap",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "atServerToken": []
-          }
-        ]
-      }
-    },
     "/api/servers/{id}/disable": {
       "post": {
         "tags": [
@@ -13920,45 +13659,13 @@
         ]
       }
     },
-    "/api/servers/{id}/reset-initialization": {
-      "post": {
-        "tags": [
-          "Servers"
-        ],
-        "summary": "POST /api/servers/:id/reset-initialization",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
     "/api/servers/{id}/status": {
       "get": {
         "tags": [
           "Servers"
         ],
-        "summary": "Test server RCON connection",
-        "description": "Attempts to connect to the server via RCON and returns online/offline status",
+        "summary": "Server status",
+        "description": "The server's state as its Ready Up fleet link reports it",
         "security": [
           {
             "bearerAuth": []
@@ -17025,6 +16732,38 @@
         ]
       }
     },
+    "/api/test/fleet/assign-config/{slug}": {
+      "get": {
+        "tags": [
+          "Test helpers (CS2)"
+        ],
+        "summary": "GET /api/test/fleet/assign-config/:slug",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/test/fleet/commands/{id}": {
       "get": {
         "tags": [
@@ -17047,6 +16786,28 @@
             }
           }
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/fleet/events": {
+      "post": {
+        "tags": [
+          "Test helpers (CS2)"
+        ],
+        "summary": "POST /api/test/fleet/events",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
         "security": [
           {
             "bearerAuth": []
@@ -17450,28 +17211,6 @@
             "description": "Invalid request payload"
           }
         }
-      }
-    },
-    "/api/test/match-report": {
-      "post": {
-        "tags": [
-          "Test helpers"
-        ],
-        "summary": "POST /api/test/match-report",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
       }
     },
     "/api/test/match-reports": {
@@ -18264,28 +18003,6 @@
           "Test helpers"
         ],
         "summary": "POST /api/test/series-result",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
-    "/api/test/server-status": {
-      "post": {
-        "tags": [
-          "Test helpers (CS2)"
-        ],
-        "summary": "POST /api/test/server-status",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {

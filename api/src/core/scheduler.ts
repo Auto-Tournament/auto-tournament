@@ -41,6 +41,13 @@ import {
 } from './allocationQueue';
 import { holdOf, notHeldSql } from '../services/matchHolds';
 
+/**
+ * The platform URL handed to a game's allocation (`baseUrl`). CS2's Ready Up
+ * servers talk to the platform over their own link and need none; it is kept
+ * in the interface for games whose servers call back.
+ */
+const PLATFORM_URL = process.env.FRONTEND_BASE_URL ?? '';
+
 /** allocateSingleMatch result while a team of the match is still playing (#224). */
 const TEAM_BUSY_ERROR = 'Waiting for a team to finish its current match';
 
@@ -1253,16 +1260,7 @@ export class Scheduler {
    */
   async allocateReadyMatch(matchSlug: string): Promise<void> {
     try {
-      const webhookUrl = await settingsService.getWebhookUrl();
-
-      if (!webhookUrl) {
-        log.warn(
-          'Webhook URL is not configured. Skipping auto-allocation for match. Configure the webhook URL in Settings.'
-        );
-        return;
-      }
-
-      const result = await this.allocateSingleMatch(matchSlug, webhookUrl);
+      const result = await this.allocateSingleMatch(matchSlug, PLATFORM_URL);
 
       if (result.success) {
         log.success(`Auto-allocated match ${matchSlug} to server ${result.serverId}`);
@@ -1291,50 +1289,45 @@ export class Scheduler {
     matchSlugs: string[]
   ): Promise<void> {
     try {
-      const webhookUrl = await settingsService.getWebhookUrl();
-      if (webhookUrl) {
-        const delaySeconds = await this.getEffectiveGracePeriodSeconds(tournamentId);
-        const slugs = matchSlugs;
+      const delaySeconds = await this.getEffectiveGracePeriodSeconds(tournamentId);
+      const slugs = matchSlugs;
 
-        log.info(
-          `[ALLOCATION] Scheduling batch allocation of ${slugs.length} shuffle match(es) for round ${roundNumber} in ${delaySeconds}s (inter-round grace window)`
-        );
+      log.info(
+        `[ALLOCATION] Scheduling batch allocation of ${slugs.length} shuffle match(es) for round ${roundNumber} in ${delaySeconds}s (inter-round grace window)`
+      );
 
-        setTimeout(() => {
-          void (async () => {
-            try {
-              const allocationResults = await this.allocateSpecificMatches(
-                tournamentId,
-                slugs,
-                webhookUrl
-              );
+      setTimeout(() => {
+        void (async () => {
+          try {
+            const allocationResults = await this.allocateSpecificMatches(
+              tournamentId,
+              slugs,
+              PLATFORM_URL
+            );
 
-              const successful = allocationResults.filter((r) => r.success).length;
-              const failed = allocationResults.length - successful;
+            const successful = allocationResults.filter((r) => r.success).length;
+            const failed = allocationResults.length - successful;
 
-              if (successful > 0) {
-                log.success(`Auto-allocated ${successful} match(es) to servers`);
-              }
-
-              if (failed > 0) {
-                log.info(
-                  `${failed} match(es) could not be allocated immediately; starting polling where appropriate`
-                );
-                for (const result of allocationResults.filter((r) => !r.success)) {
-                  this.startPollingForServer(result.matchSlug, webhookUrl);
-                }
-              }
-            } catch (error) {
-              log.error(
-                'Error auto-allocating servers to new round matches after grace window',
-                error
-              );
+            if (successful > 0) {
+              log.success(`Auto-allocated ${successful} match(es) to servers`);
             }
-          })();
-        }, delaySeconds * 1000);
-      } else {
-        log.warn('Webhook URL not configured - cannot auto-allocate servers to new round matches');
-      }
+
+            if (failed > 0) {
+              log.info(
+                `${failed} match(es) could not be allocated immediately; starting polling where appropriate`
+              );
+              for (const result of allocationResults.filter((r) => !r.success)) {
+                this.startPollingForServer(result.matchSlug, PLATFORM_URL);
+              }
+            }
+          } catch (error) {
+            log.error(
+              'Error auto-allocating servers to new round matches after grace window',
+              error
+            );
+          }
+        })();
+      }, delaySeconds * 1000);
     } catch (error) {
       log.error('Error scheduling auto-allocation for new round matches', error);
       // Don't throw - allocation scheduling failure shouldn't break round advancement
@@ -1483,11 +1476,6 @@ export class Scheduler {
    */
   async tryImmediateAllocation(): Promise<void> {
     try {
-      const webhookUrl = await settingsService.getWebhookUrl();
-      if (!webhookUrl) {
-        return;
-      }
-
       // Fleet-level trigger (a server freed up): no single tournament in the
       // call chain, so every running tournament's ready matches get a try,
       // oldest tournament first.
@@ -1512,7 +1500,7 @@ export class Scheduler {
         const results = await this.allocateSpecificMatches(
           tournamentId,
           readyMatches.map((m) => m.slug),
-          webhookUrl
+          PLATFORM_URL
         );
 
         const successful = results.filter((r) => r.success).length;
@@ -1526,7 +1514,7 @@ export class Scheduler {
           // Only start polling if some (but not all) matches failed,
           // indicating we might have servers available soon
           for (const result of failed) {
-            this.startPollingForServer(result.matchSlug, webhookUrl);
+            this.startPollingForServer(result.matchSlug, PLATFORM_URL);
           }
         }
       }
@@ -1536,7 +1524,7 @@ export class Scheduler {
 
       // Bracket matches first (they have a queue); manual matches take what is left.
       if (standaloneSlugs.length > 0) {
-        await this.allocateStandaloneMatches(standaloneSlugs, webhookUrl);
+        await this.allocateStandaloneMatches(standaloneSlugs, PLATFORM_URL);
       }
     } catch (error) {
       log.error('Error in tryImmediateAllocation', error);

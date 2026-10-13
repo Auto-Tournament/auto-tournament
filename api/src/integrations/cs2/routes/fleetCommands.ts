@@ -1,17 +1,14 @@
 /**
- * The admin server buttons (`/api/rcon/*`, ./rcon.ts) on a Ready Up server:
- * the same routes, sent as a fleet `cmd` (FLEET.md §7.4) instead of an RCON
- * command, answered with the server's `cmd.result`.
+ * The admin server buttons (`/api/rcon/*`, ./rcon.ts): each is a fleet `cmd`
+ * (FLEET.md §7.4), answered with the server's `cmd.result`.
  *
- * The response keeps the RCON shape (`success`, `response`, `error`) so the
- * admin UI reads both the same way, plus `transport: 'fleet'`, the result
- * `status` / `errorCode` and the command id.
+ * The response is `success`, `response`, `error`, plus `transport: 'fleet'`,
+ * the result `status` / `errorCode` and the command id.
  */
 
 import { isSavedAdminSteamId } from '../../../utils/adminSteamIds';
 import type { Request, Response } from 'express';
 import { requestActorId, type AuthedRequest } from '../../../middleware/auth';
-import { transportOf } from '../driver';
 import {
   execOnFleetServer,
   runFleetCommand,
@@ -53,41 +50,16 @@ export function fleetResponseBody(outcome: FleetCommandOutcome & { auditId?: str
   };
 }
 
-export async function isFleetServer(serverId: string): Promise<boolean> {
-  return (await transportOf(serverId)) === 'fleet';
-}
-
-/**
- * Answer the request with a fleet command when `serverId` is a Ready Up
- * server. Returns false (nothing sent, nothing answered) for an RCON server,
- * so the route carries on with its RCON command.
- */
+/** Answer the request with the fleet command's result. */
 export async function answerWithFleetCommand(
   req: Request,
   res: Response,
   serverId: string,
   name: CmdName,
   args: Record<string, unknown> = {}
-): Promise<boolean> {
-  if (!(await isFleetServer(serverId))) return false;
+): Promise<void> {
   const outcome = await runFleetCommand(serverId, name, args, issuedBy(req));
   res.status(outcome.httpStatus).json(fleetResponseBody(outcome));
-  return true;
-}
-
-/** A button that has no Ready Up equivalent. */
-export async function answerUnsupportedOnFleet(
-  res: Response,
-  serverId: string,
-  what: string
-): Promise<boolean> {
-  if (!(await isFleetServer(serverId))) return false;
-  res.status(400).json({
-    success: false,
-    transport: 'fleet',
-    error: `${what} is not available on Ready Up servers`,
-  });
-  return true;
 }
 
 /** `exec` (root only, audited). 403 for anyone else. */

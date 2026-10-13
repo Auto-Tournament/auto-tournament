@@ -11,7 +11,6 @@
  */
 
 import type { LegacyRouteMount } from '../../types';
-import serverBootstrapRoutes from './serverBootstrap';
 import serverUpdateHoldRoutes from './serverUpdateHold';
 import serverRoutes from './servers';
 import serverStatusRoutes from './serverStatus';
@@ -48,12 +47,6 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Skins',
     description:
       'Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory manager (platform only).',
-  },
-  {
-    prefix: '/api/servers',
-    router: serverBootstrapRoutes,
-    title: 'Server bootstrap',
-    description: 'Self-registration for a CS2 server coming online.',
   },
   {
     // Before `serverRoutes`, whose `/:id` would otherwise swallow

@@ -3,6 +3,7 @@ import { setupTestContext } from '../helpers/setup';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { getAuthHeader } from '../helpers/auth';
 import type { Team } from '../helpers/teams';
+import { sendReadyUpEvents, series } from '../helpers/readyUp';
 
 /**
  * The team page (`/team/:teamId`) follows the team into its next match without
@@ -20,11 +21,6 @@ import type { Team } from '../helpers/teams';
  * @tag regression
  */
 
-const SERVER_HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-};
-
 type ListedMatch = {
   slug: string;
   round: number;
@@ -34,34 +30,7 @@ type ListedMatch = {
 
 async function playBo1(request: APIRequestContext, match: ListedMatch, winner: 'team1' | 'team2') {
   const [t1, t2] = winner === 'team1' ? [13, 4] : [4, 13];
-  const side = winner === 'team1' ? '3' : '2';
-  const mapRes = await request.post(`/api/events/${match.slug}`, {
-    headers: SERVER_HEADERS,
-    data: {
-      event: 'map_result',
-      matchid: match.slug,
-      map_number: 0,
-      map_name: 'de_mirage',
-      team1_score: t1,
-      team2_score: t2,
-      winner: { side, team: winner },
-      team1: { score: t1, series_score: winner === 'team1' ? 1 : 0 },
-      team2: { score: t2, series_score: winner === 'team2' ? 1 : 0 },
-    },
-  });
-  expect(mapRes.ok(), `map_result ${match.slug}: ${await mapRes.text()}`).toBe(true);
-  const endRes = await request.post(`/api/events/${match.slug}`, {
-    headers: SERVER_HEADERS,
-    data: {
-      event: 'series_end',
-      matchid: match.slug,
-      team1_series_score: winner === 'team1' ? 1 : 0,
-      team2_series_score: winner === 'team2' ? 1 : 0,
-      winner: { side, team: winner },
-      time_until_restore: 0,
-    },
-  });
-  expect(endRes.status(), `series_end ${match.slug}: ${await endRes.text()}`).toBe(200);
+  await sendReadyUpEvents(request, match.slug, series([[t1, t2]], { winner }));
 }
 
 /**
@@ -110,7 +79,10 @@ test.describe.serial('Team page live updates', () => {
     'moves on to the next match once the current one finishes',
     { tag: ['@ui', '@teams', '@regression'] },
     async ({ page, request }) => {
-      const { ours, theirs, teamA, finalOpponent } = await setupSemis(request, `live-next-${Date.now()}`);
+      const { ours, theirs, teamA, finalOpponent } = await setupSemis(
+        request,
+        `live-next-${Date.now()}`
+      );
       const semiOpponent = await teamName(request, ours.team2!.id);
       await openTeamPage(page, teamA, semiOpponent);
       await expect(page.getByText(finalOpponent.name)).toHaveCount(0);
@@ -126,7 +98,10 @@ test.describe.serial('Team page live updates', () => {
     'catches up on what it missed while the socket was disconnected',
     { tag: ['@ui', '@teams', '@regression'] },
     async ({ page, request }) => {
-      const { ours, theirs, teamA, finalOpponent } = await setupSemis(request, `live-reconnect-${Date.now()}`);
+      const { ours, theirs, teamA, finalOpponent } = await setupSemis(
+        request,
+        `live-reconnect-${Date.now()}`
+      );
       const semiOpponent = await teamName(request, ours.team2!.id);
 
       // Cut the connection the way a network drop does: the page's socket.io
@@ -157,13 +132,19 @@ test.describe.serial('Team page live updates', () => {
         window.WebSocket = TrackedWebSocket;
       });
       let socketsDown = false;
-      await page.route(/\/socket\.io\//, (route) => (socketsDown ? route.abort() : route.continue()));
+      await page.route(/\/socket\.io\//, (route) =>
+        socketsDown ? route.abort() : route.continue()
+      );
 
       await openTeamPage(page, teamA, semiOpponent);
       // Let socket.io finish upgrading from long-polling to WebSocket first:
       // cutting a probe WebSocket mid-upgrade only makes it stay on polling.
       await expect
-        .poll(() => page.evaluate(() => (window as unknown as { __openSockets: () => number }).__openSockets()))
+        .poll(() =>
+          page.evaluate(() =>
+            (window as unknown as { __openSockets: () => number }).__openSockets()
+          )
+        )
         .toBeGreaterThan(0);
       await page.waitForTimeout(1500);
       socketsDown = true;

@@ -14,11 +14,6 @@
       "maps": "Karten & Kartenpools",
       "skins": "Skins",
       "matchRules": "Matchregeln"
-    },
-    "atDbDown": {
-      "title": "MatchZy Enhanced-DB nicht erreichbar",
-      "body_one": "{{count}} Server meldet, dass das Plugin seine Datenbank nicht erreichen kann. Backups und die Event-Warteschlange können betroffen sein.",
-      "body_other": "{{count}} Server melden, dass das Plugin seine Datenbank nicht erreichen kann. Backups und die Event-Warteschlange können betroffen sein."
     }
   },
   "dashboard": {
@@ -512,7 +507,6 @@
       "message_other": "Möchtest du wirklich {{count}} Server löschen? Diese Aktion kann nicht rückgängig gemacht werden."
     },
     "autoConfig": {
-      "configuring": "Konfiguriere neue Server (sende MatchZy Enhanced-Konfig per RCON)…",
       "done": "Neue Server konfiguriert. Status wird aktualisiert…"
     },
     "checkServerLogs": "Prüfe die Spielserver-Konsole/Logs, um zu sehen, ob das Auto Tournament-Plugin die Konfiguration erhält und Events sendet.",
@@ -520,7 +514,6 @@
       "title": "Status der Serverflotte",
       "total_one": "{{count}} Server",
       "total_other": "{{count}} Server",
-      "latestRelease": "Neuestes MatchZy Enhanced-Release: v{{version}}",
       "olderVersion_one": "{{count}} Server läuft mit einer älteren Version als dem neuesten Release.",
       "olderVersion_other": "{{count}} Server laufen mit einer älteren Version als dem neuesten Release.",
       "downloadLatest": "Neueste herunterladen"
@@ -565,7 +558,6 @@
       "webhookTitle": "Server erreicht Auto Tournament nicht (Webhook)",
       "webhookBody": "Auto Tournament erreicht den Server per RCON, aber der Server erreicht den Webhook von Auto Tournament nicht. Prüfe ausgehende Verbindungen, DNS und die konfigurierte Webhook-URL.",
       "versionDiffTitle": "Plugin-Versionen unterscheiden sich zwischen Servern",
-      "versionDiffBody": "Einige Server laufen mit einer anderen MatchZy Enhanced-Version. Wenn du CSM nutzt, führe {{command}} aus und starte die Server neu.",
       "ipBannedTitle": "RCON-IP gesperrt",
       "ipBannedBody": "Der Server hat die IP von Auto Tournament nach wiederholten fehlgeschlagenen RCON-Anmeldungen vorübergehend gesperrt. Korrigiere das RCON-Passwort und entsperre die IP.",
       "pluginDbTitle": "Das Auto Tournament-Plugin erreicht seine Datenbank nicht.",
@@ -951,7 +943,6 @@
       "noServers": "Keine Server verfügbar",
       "refreshServers": "Serverliste aktualisieren",
       "noEvents": "Von diesem Server wurden noch keine Events empfangen.",
-      "noEventsHint": "Auch nach 15 Sekunden keine Events. Prüfe, ob dein CS2-Server so eingerichtet ist, dass er MatchZy Enhanced-Webhooks mit dem korrekten X-Auto-Tournament-Token an /api/events/:matchSlugOrServerId sendet.",
       "waiting": "Warte auf Events vom Server…",
       "footer_one": "{{count}} Event wird angezeigt (max. 100)",
       "footer_other": "{{count}} Events werden angezeigt (max. 100)",

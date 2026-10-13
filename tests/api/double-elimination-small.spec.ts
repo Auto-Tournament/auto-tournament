@@ -2,6 +2,7 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { createTeam, type Team } from '../helpers/teams';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
+import { sendReadyUpEvents, seriesEnd as readyUpSeriesEnd } from '../helpers/readyUp';
 
 /**
  * The smallest double-elimination brackets.
@@ -37,11 +38,6 @@ const MAPS = [
   'de_nuke',
 ];
 
-const SERVER_HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-};
-
 type ListedMatch = {
   id: number;
   slug: string;
@@ -72,18 +68,13 @@ async function seriesEnd(
   match: ListedMatch,
   winner: 'team1' | 'team2'
 ) {
-  const res = await request.post(`/api/events/${match.slug}`, {
-    headers: SERVER_HEADERS,
-    data: {
-      event: 'series_end',
-      matchid: match.slug,
-      team1_series_score: winner === 'team1' ? 1 : 0,
-      team2_series_score: winner === 'team2' ? 1 : 0,
-      winner: { side: winner === 'team1' ? '3' : '2', team: winner },
-      time_until_restore: 0,
-    },
-  });
-  expect(res.status(), `series_end for ${match.slug}: ${await res.text()}`).toBe(200);
+  await sendReadyUpEvents(request, match.slug, [
+    readyUpSeriesEnd({
+      winner,
+      team1: winner === 'team1' ? 1 : 0,
+      team2: winner === 'team2' ? 1 : 0,
+    }),
+  ]);
 }
 
 /** Wait until `slug` has both teams, and return it. */

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
-import type { DbMatchRow, DbEventRow } from '../types/database.types';
+import { mapWinnerOf } from '../utils/matchEnrichment';
+import type { DbMatchRow } from '../types/database.types';
 import { computeTeamStanding, globalMatchNumbers, type TeamStanding } from '../utils/teamPage';
 import { matchBracketOf } from '../core/allocationQueue';
 import { resolveTournamentId } from '../utils/tournamentRow';
@@ -87,34 +88,24 @@ router.get('/:teamId/history', async (req: Request, res: Response) => {
 
         const won = match.winner_id === teamId;
 
-        // Get scores from latest series_end event
-        const scoreEvent = await db.queryOneAsync<DbEventRow>(
-          `SELECT event_data FROM match_events 
-         WHERE match_slug = ? AND event_type = 'series_end' 
-         ORDER BY received_at DESC, id DESC LIMIT 1`,
+        // The series score: the maps' recorded winners.
+        const mapRows = await db.queryAsync<{
+          team1_score: number;
+          team2_score: number;
+          winner_team: string | null;
+        }>(
+          'SELECT team1_score, team2_score, winner_team FROM match_map_results WHERE match_slug = ?',
           [match.slug]
         );
-
-        let teamScore = 0;
-        let opponentScore = 0;
-
-        if (scoreEvent) {
-          try {
-            const eventData = JSON.parse(scoreEvent.event_data);
-            const team1Score = eventData.team1_series_score || 0;
-            const team2Score = eventData.team2_series_score || 0;
-
-            if (isTeam1) {
-              teamScore = team1Score;
-              opponentScore = team2Score;
-            } else {
-              teamScore = team2Score;
-              opponentScore = team1Score;
-            }
-          } catch {
-            // Ignore parse errors
-          }
+        let team1Score = 0;
+        let team2Score = 0;
+        for (const row of mapRows) {
+          const side = mapWinnerOf(row);
+          if (side === 'team1') team1Score += 1;
+          else if (side === 'team2') team2Score += 1;
         }
+        const teamScore = isTeam1 ? team1Score : team2Score;
+        const opponentScore = isTeam1 ? team2Score : team1Score;
 
         return {
           slug: match.slug,

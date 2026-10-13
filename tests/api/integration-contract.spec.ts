@@ -93,9 +93,6 @@ test.describe('Game integration contract', () => {
           // The core frees a server after every series and shows the pool.
           expect(typeof integration.release).toBe('function');
           expect(typeof integration.poolStatus).toBe('function');
-          // Servers have to reach the platform, so the integration says on
-          // what URL; the core has none of its own to offer them.
-          expect(typeof integration.resolveBaseUrl).toBe('function');
         } else {
           // The scheduler reads null as "never runs out" and must not wait.
           expect(await integration.capacity({ tournamentId: null })).toBeNull();
@@ -167,7 +164,9 @@ test.describe('Game integration contract', () => {
         for (const other of integrations) {
           if (other === integration) continue;
           for (const r of other.legacyRoutes?.() ?? []) {
-            expect(mine.has(r.prefix), `${integration.id} and ${other.id}: ${r.prefix}`).toBe(false);
+            expect(mine.has(r.prefix), `${integration.id} and ${other.id}: ${r.prefix}`).toBe(
+              false
+            );
           }
         }
         for (const prefix of mine) expect(prefix).toMatch(/^\/api\//);

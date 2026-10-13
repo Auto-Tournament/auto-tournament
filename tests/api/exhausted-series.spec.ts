@@ -6,6 +6,11 @@ import { findMatchByTeams } from '../helpers/matches';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
 import type { Team } from '../helpers/teams';
 import { decideExhaustedSeries, isSeriesOutOfMaps } from '../../api/src/utils/exhaustedSeries';
+import {
+  sendReadyUpEvents,
+  seriesEnd as readyUpSeriesEnd,
+  mapResult as readyUpMapResult,
+} from '../helpers/readyUp';
 
 /**
  * A Bo3 that has played all its maps must end, even without series_end.
@@ -33,11 +38,6 @@ const MAPS = [
   'de_vertigo',
   'de_nuke',
 ];
-
-const HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-};
 
 test.describe('Exhausted series decision (unit)', () => {
   const map = (
@@ -106,7 +106,7 @@ async function startBo3(request: APIRequestContext, teams: Team[]) {
   expect(started.ok(), `tournament start failed: ${await started.text()}`).toBe(true);
 }
 
-/** A map_result shaped like MatchZy Enhanced's: nested team scores and a winner object. */
+/** Ready Up's map_result for map `mapNumber` (0-based here). */
 async function sendMapResult(
   request: APIRequestContext,
   slug: string,
@@ -115,19 +115,16 @@ async function sendMapResult(
   series: [number, number],
   winner: 'team1' | 'team2' | 'none'
 ) {
-  const res = await request.post(`/api/events/${slug}`, {
-    headers: HEADERS,
-    data: {
-      event: 'map_result',
-      matchid: slug,
-      map_number: mapNumber,
-      map_name: MAPS[mapNumber],
-      team1: { id: 'team1', name: 'Team One', series_score: series[0], score: score[0] },
-      team2: { id: 'team2', name: 'Team Two', series_score: series[1], score: score[1] },
-      winner: { side: winner === 'none' ? 'none' : 'ct', team: winner },
-    },
-  });
-  expect(res.ok(), `map_result ${mapNumber} rejected: ${await res.text()}`).toBe(true);
+  await sendReadyUpEvents(request, slug, [
+    readyUpMapResult({
+      mapNumber: mapNumber + 1,
+      mapName: MAPS[mapNumber],
+      team1: score[0],
+      team2: score[1],
+      series,
+      winner,
+    }),
+  ]);
 }
 
 async function getMatch(request: APIRequestContext, slug: string) {
@@ -253,18 +250,9 @@ test.describe.serial('Series out of maps without series_end', () => {
       const slug = (await findMatchByTeams(request, team1.id, team2.id))!.slug;
 
       await sendMapResult(request, slug, 0, [2, 2], [0, 0], 'none');
-      const end = await request.post(`/api/events/${slug}`, {
-        headers: HEADERS,
-        data: {
-          event: 'series_end',
-          matchid: slug,
-          team1_series_score: 0,
-          team2_series_score: 0,
-          winner: { side: 'none', team: 'none' },
-          time_until_restore: 10,
-        },
-      });
-      expect(end.ok(), await end.text()).toBe(true);
+      await sendReadyUpEvents(request, slug, [
+        readyUpSeriesEnd({ winner: 'none', team1: 0, team2: 0, secondsUntilReset: 10 }),
+      ]);
 
       await expect
         .poll(async () => (await getMatch(request, slug)).status, { timeout: 15000 })
