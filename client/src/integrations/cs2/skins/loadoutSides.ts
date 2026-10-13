@@ -89,3 +89,15 @@ export function applyStep<T extends SidedSkin>(inventory: T[], skin: T, step: Eq
   const off = applyUnequip(inventory, skin, 0);
   return applyEquip(off, off.find((s) => s.id === skin.id) ?? skin, step.keep);
 }
+
+/**
+ * Put a skin on a side without toggling (the new-skin modal's buttons): null
+ * when that side already has it, so pressing "Equip" on a skin that was
+ * equipped on its own when it dropped no longer takes it off.
+ */
+export function equipOnStep(skin: SidedSkin, wanted: LoadoutTeam): EquipStep | null {
+  const team = teamFor(skin, wanted);
+  if (skin.equippedSides.includes(0)) return null;
+  if (team !== 0 && skin.equippedSides.includes(team)) return null;
+  return { kind: 'equip', team };
+}

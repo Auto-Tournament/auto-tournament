@@ -19,7 +19,7 @@ const { color } = tokens;
 /**
  * "New skin acquired" (board 3): shown once for each skin the player has not
  * seen yet, wherever they are in the app. The glow behind the skin breathes
- * slowly (still for reduced motion). Equip now or keep it in the inventory.
+ * slowly (still for reduced motion). Equip it (on T, CT or both) or keep it in the inventory.
  */
 export function NewSkinReveal() {
   const enabled = useSkinsEnabled();
@@ -161,7 +161,7 @@ function ChoiceReveal({
 
 function Reveal() {
   const { t } = useModuleTranslation('cs2');
-  const { inventory, unseen, equip, markSeen, choices, choose } = useMySkins();
+  const { inventory, unseen, equipOn, markSeen, choices, choose } = useMySkins();
   const [equipping, setEquipping] = useState(false);
   const { showError } = useSnackbar();
   const skin = inventory.find((s) => s.id === unseen[0]) ?? null;
@@ -252,23 +252,34 @@ function Reveal() {
           />
         </Box>
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Button
-            variant="contained"
-            data-testid="new-skin-equip"
-            disabled={equipping}
-            onClick={() => {
-              setEquipping(true);
-              equip(skin)
-                .then(close)
-                .catch((error: unknown) => {
-                  showError(error instanceof Error ? error.message : t('skins.equipFailed'));
-                })
-                .finally(() => setEquipping(false));
-            }}
-            sx={{ borderRadius: radii.pill, px: 4, py: 1.75, fontWeight: 600 }}
-          >
-            {t('skins.equipNow')}
-          </Button>
+          {/* One-side weapons have one button; the rest pick T, CT or both. */}
+          {(skin.side !== null
+            ? [{ team: 0 as const, label: t('skins.equipNow'), testId: 'new-skin-equip' }]
+            : [
+                { team: 2 as const, label: t('skins.equipOnT'), testId: 'new-skin-equip-t' },
+                { team: 3 as const, label: t('skins.equipOnCt'), testId: 'new-skin-equip-ct' },
+                { team: 0 as const, label: t('skins.equipOnBoth'), testId: 'new-skin-equip' },
+              ]
+          ).map((action) => (
+            <Button
+              key={action.team}
+              variant="contained"
+              data-testid={action.testId}
+              disabled={equipping}
+              onClick={() => {
+                setEquipping(true);
+                equipOn(skin, action.team)
+                  .then(close)
+                  .catch((error: unknown) => {
+                    showError(error instanceof Error ? error.message : t('skins.equipFailed'));
+                  })
+                  .finally(() => setEquipping(false));
+              }}
+              sx={{ borderRadius: radii.pill, px: 4, py: 1.75, fontWeight: 600 }}
+            >
+              {action.label}
+            </Button>
+          ))}
           <Button
             variant="outlined"
             onClick={close}

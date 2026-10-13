@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api, useAuth } from '../../../module-sdk';
 import type { AccountMenuItem } from '../../types';
 import { skinPaths } from './paths';
-import { applyStep, equipStep, type LoadoutTeam } from './loadoutSides';
+import { applyStep, equipOnStep, equipStep, type LoadoutTeam } from './loadoutSides';
 
 export type Rarity =
   'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary' | 'ancient' | 'immortal';
@@ -158,6 +158,26 @@ export function useMySkins() {
     }
   }, []);
 
+  /** Put a skin on a side (0 both, 2 T, 3 CT); nothing when it is already there. */
+  const equipOn = useCallback(async (skin: OwnedSkin, wanted: LoadoutTeam = 0) => {
+    const step = equipOnStep(skin, wanted);
+    if (!step) return;
+    let before: OwnedSkin[] = [];
+    setInventory((list) => {
+      before = list;
+      return applyStep(list, skin, step);
+    });
+    try {
+      if (step.kind === 'equip')
+        await api.post('/api/skins/me/equip', { skinId: skin.id, team: step.team });
+    } catch (error) {
+      setInventory(before);
+      throw error;
+    } finally {
+      announceChange();
+    }
+  }, []);
+
   /** Keep option `index` of a choice; the kept skin then shows as new. */
   const choose = useCallback(async (choiceId: number, index: number) => {
     await api.post<{ skinId: number }>(`/api/skins/me/choices/${choiceId}`, { index });
@@ -187,6 +207,7 @@ export function useMySkins() {
     available,
     reload,
     equip,
+    equipOn,
     markSeen,
     saveShowcase,
   };
