@@ -1,5 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { signInAsPlayerViaRequest } from '../helpers/auth';
+import {
+  impersonatePlayer,
+  signInAsPlayerViaRequest,
+  signInViaRequest,
+  stopImpersonating,
+} from '../helpers/auth';
+import { setupTournament } from '../helpers/tournamentSetup';
+import { findMatchByTeams } from '../helpers/matches';
+import { actingSteamIdFor } from '../helpers/veto';
 import {
   nextCrashState,
   showMissedMove,
@@ -28,6 +36,45 @@ test.describe('match now', () => {
       expect((await res.json()).path).toBeNull();
       await anon.dispose();
       await player.dispose();
+    }
+  );
+});
+
+test.describe('match now: a tournament match', () => {
+  test(
+    "a player in a tournament match is sent to that match's room",
+    { tag: ['@api'] },
+    async ({ request }) => {
+      test.setTimeout(120000);
+      expect(await signInViaRequest(request)).toBe(true);
+      const setup = await setupTournament(request, {
+        type: 'single_elimination',
+        format: 'bo1',
+        maps: [
+          'de_mirage',
+          'de_inferno',
+          'de_ancient',
+          'de_anubis',
+          'de_dust2',
+          'de_vertigo',
+          'de_nuke',
+        ],
+        teamCount: 2,
+        serverCount: 1,
+        prefix: 'matchnow',
+      });
+      expect(setup).toBeTruthy();
+      const [team1, team2] = setup!.teams;
+      const match = await findMatchByTeams(request, team1.id, team2.id);
+      expect(match?.slug).toBeTruthy();
+      try {
+        expect(await impersonatePlayer(request, actingSteamIdFor(team1))).toBe(true);
+        const res = await request.get('/api/players/me/match-now');
+        expect(res.ok(), await res.text()).toBe(true);
+        expect((await res.json()).path).toBe(`/match/${encodeURIComponent(match!.slug)}`);
+      } finally {
+        await stopImpersonating(request);
+      }
     }
   );
 });

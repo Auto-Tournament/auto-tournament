@@ -244,7 +244,7 @@ export const matchShare: ShareKind = {
 };
 
 // ---------------------------------------------------------------------------
-// Team: /t/team/:teamId (and the older /team/:teamId)
+// Team: /team/:teamId (and the older /t/team/:teamId)
 // ---------------------------------------------------------------------------
 
 interface TeamRow {

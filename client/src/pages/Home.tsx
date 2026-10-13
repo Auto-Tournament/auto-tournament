@@ -33,24 +33,6 @@ interface ViewerTeam {
   tag?: string;
 }
 
-/**
- * Same "connect" URI as the match panel (`integrations/cs2/match/MatchServerPanel.tsx`).
- * steam://connect joins a CS2 that is already running; steam://run/730 only
- * passed its arguments when it started the game.
- */
-function steamConnectUri(server: {
-  host: string;
-  ip?: string | null;
-  port: number;
-  password?: string;
-}): string {
-  // The IP when known: CS2 ignores steam://connect with a hostname.
-  const address = `${server.ip || server.host}:${server.port}`;
-  return server.password
-    ? `steam://connect/${address}/${encodeURIComponent(server.password)}`
-    : `steam://connect/${address}`;
-}
-
 const isUpcoming = (tour: TournamentSummary) => tour.status === 'setup' || tour.status === 'ready';
 
 function SectionTitle({
@@ -339,16 +321,6 @@ export default function Home() {
                   >
                     {t('home.openMatch')}
                   </Button>
-                  {match.server && (
-                    <Button
-                      component="a"
-                      href={steamConnectUri(match.server)}
-                      variant="outlined"
-                      data-testid="home-connect-server"
-                    >
-                      {t('home.connectToServer')}
-                    </Button>
-                  )}
                 </Box>
               </Box>
             )}

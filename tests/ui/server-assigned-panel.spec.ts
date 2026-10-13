@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn, signInViaRequest, impersonatePlayer, stopImpersonating } from '../helpers/auth';
+import { openOwnMatchRoom } from '../helpers/matchRoom';
+import {
+  ensureSignedIn,
+  signInViaRequest,
+  impersonatePlayer,
+  stopImpersonating,
+} from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { findMatchByTeams } from '../helpers/matches';
 import { actingSteamIdFor } from '../helpers/veto';
@@ -24,7 +30,7 @@ import type { Team } from '../helpers/teams';
  * @tag ui
  * @tag regression
  */
-test.describe.serial('Assigned server on the player page', () => {
+test.describe.serial('Assigned server in the match room', () => {
   test.setTimeout(120000);
 
   let team1: Team;
@@ -37,7 +43,15 @@ test.describe.serial('Assigned server on the player page', () => {
     const setup = await setupTournament(request, {
       type: 'single_elimination',
       format: 'bo1',
-      maps: ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'],
+      maps: [
+        'de_mirage',
+        'de_inferno',
+        'de_ancient',
+        'de_anubis',
+        'de_dust2',
+        'de_vertigo',
+        'de_nuke',
+      ],
       teamCount: 2,
       serverCount: 1,
       prefix: 'assigned',
@@ -66,7 +80,7 @@ test.describe.serial('Assigned server on the player page', () => {
       const steamId = actingSteamIdFor(team1);
       expect(await impersonatePlayer(page.request, steamId)).toBe(true);
 
-      await page.goto(`/player/${steamId}`, { waitUntil: 'domcontentloaded' });
+      await openOwnMatchRoom(page);
 
       // The connect controls are the visible proof the server is treated as
       // assigned and reachable.

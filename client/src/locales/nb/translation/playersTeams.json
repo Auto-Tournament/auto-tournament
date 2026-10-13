@@ -452,8 +452,8 @@
     }
   },
   "teamLinkActions": {
-    "open": "Åpne lagets kampside",
-    "copy": "Kopier lenke til lagets kampside"
+    "open": "Åpne lagsiden",
+    "copy": "Kopier lenken til lagsiden"
   },
   "playersDirectory": {
     "findOnSteam": "Søk etter dem på Steam",
@@ -751,5 +751,9 @@
     "dismissedDone": "Rapporten er avvist",
     "loadError": "Kunne ikke laste rapportene",
     "actionError": "Kunne ikke gjøre det"
+  },
+  "nextMatchCard": {
+    "title": "Neste kamp",
+    "open": "Åpne kamprommet"
   }
 }

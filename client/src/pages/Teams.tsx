@@ -13,7 +13,7 @@ import {
 import { api } from '../utils/api';
 import TeamModal from '../components/modals/TeamModal';
 import { TeamImportModal } from '../components/modals/TeamImportModal';
-import { copyTeamMatchUrl, getTeamMatchUrl, getTeamProfileUrl } from '../utils/teamLinks';
+import { copyTeamPageUrl, getTeamPageUrl, getTeamProfileUrl } from '../utils/teamLinks';
 import { PageHead, Row, RowList } from '../components/common/ui';
 import { RowMenu } from '../components/common/RowMenu';
 import { tokens } from '../theme/tokens';
@@ -46,9 +46,9 @@ export default function Teams() {
       const data = await api.get<TeamsResponse>('/api/teams');
       // Store all teams (including shuffle-generated) in state; we'll hide shuffle teams in the UI.
       // Sort by team name (case-insensitive) for a stable, readable order.
-      const sorted = (data.teams || []).slice().sort((a, b) =>
-        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
-      );
+      const sorted = (data.teams || [])
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
       setTeams(sorted);
     } catch (err) {
       const errorMessage = t('teamsPage.loadError');
@@ -136,9 +136,9 @@ export default function Teams() {
     return (
       <>
         <PageHead title={t('layout.pageTitle.teams')} />
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
       </>
     );
   }
@@ -150,7 +150,7 @@ export default function Teams() {
     visibleTeams.length > 0 && visibleTeams.every((team) => selectedTeamIds.has(team.id));
 
   const copyMatchLink = async (teamId: string) => {
-    if (await copyTeamMatchUrl(teamId)) showSuccess(t('teamsPage.matchLinkCopied'));
+    if (await copyTeamPageUrl(teamId)) showSuccess(t('teamsPage.matchLinkCopied'));
   };
 
   // The page's own actions, beside its title (the drafts' `.head`), once
@@ -297,8 +297,14 @@ export default function Teams() {
                   py: 1.5,
                   bgcolor: selected ? tokens.color.paper3 : 'transparent',
                   '&:hover': { bgcolor: tokens.color.paper3 },
-                  '&:first-of-type': { borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' },
-                  '&:last-of-type': { borderBottomLeftRadius: 'inherit', borderBottomRightRadius: 'inherit' },
+                  '&:first-of-type': {
+                    borderTopLeftRadius: 'inherit',
+                    borderTopRightRadius: 'inherit',
+                  },
+                  '&:last-of-type': {
+                    borderBottomLeftRadius: 'inherit',
+                    borderBottomRightRadius: 'inherit',
+                  },
                 }}
               >
                 {selectionMode && (
@@ -328,9 +334,15 @@ export default function Teams() {
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ display: { xs: 'none', sm: 'block' }, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}
+                  sx={{
+                    display: { xs: 'none', sm: 'block' },
+                    whiteSpace: 'nowrap',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
                 >
-                  {t(count === 1 ? 'teamsPage.playersCount.one' : 'teamsPage.playersCount.other', { count })}
+                  {t(count === 1 ? 'teamsPage.playersCount.one' : 'teamsPage.playersCount.other', {
+                    count,
+                  })}
                 </Typography>
                 <RowMenu
                   label={t('teamsPage.rowActions', { name: team.name })}
@@ -353,7 +365,7 @@ export default function Teams() {
                       key: 'match',
                       label: t('teamLinkActions.open'),
                       icon: <ArrowSquareOutIcon size={20} />,
-                      href: getTeamMatchUrl(team.id),
+                      href: getTeamPageUrl(team.id),
                     },
                     {
                       key: 'copy',
@@ -398,9 +410,7 @@ export default function Teams() {
             const ids = Array.from(selectedTeamIds);
             const count = ids.length;
             await api.post('/api/teams/bulk-delete', { ids });
-            showSuccess(
-              t('teamsPage.bulkDelete.success', { count })
-            );
+            showSuccess(t('teamsPage.bulkDelete.success', { count }));
             setSelectedTeamIds(() => new Set());
             setSelectionMode(false);
             await loadTeams();

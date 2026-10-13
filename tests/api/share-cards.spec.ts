@@ -115,7 +115,7 @@ test.describe.serial('Share cards', () => {
       expect(created.ok(), await created.text()).toBe(true);
       const team = (await created.json()).team as { id: string };
 
-      const page = await anon.get(`/t/team/${team.id}`);
+      const page = await anon.get(`/team/${team.id}`);
       expect(page.status()).toBe(200);
       const html = await page.text();
       expect(meta(html, 'og:title')).toBe(name);
@@ -138,7 +138,7 @@ test.describe.serial('Share cards', () => {
           await owner.put(`${base}/logo`, { data: LOGO, headers: { 'Content-Type': 'image/png' } })
         ).ok()
       ).toBe(true);
-      const after = meta(await (await anon.get(`/t/team/${team.id}`)).text(), 'og:image');
+      const after = meta(await (await anon.get(`/team/${team.id}`)).text(), 'og:image');
       expect(after).not.toBe(image);
       expect((await anon.get(new URL(after!).pathname + new URL(after!).search)).status()).toBe(
         200

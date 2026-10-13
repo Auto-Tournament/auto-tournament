@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn, signInViaRequest, impersonatePlayer, stopImpersonating } from '../helpers/auth';
+import {
+  ensureSignedIn,
+  signInViaRequest,
+  impersonatePlayer,
+  stopImpersonating,
+} from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { findMatchByTeams } from '../helpers/matches';
 import { performVetoActionsUI, getCSMajorBO1UIActions, viewVetoPageAs } from '../helpers/vetoUI';
@@ -67,7 +72,7 @@ test.describe.serial('Veto UI', () => {
   });
 
   test(
-    'should show the veto board on your own player page, with every map rendered',
+    'should show the veto board in your match room, with every map rendered',
     { tag: ['@ui', '@veto'] },
     async ({ page }) => {
       await viewVetoPageAs(page, actingSteamIdFor(team1));

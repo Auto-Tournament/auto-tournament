@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext, type Page } from '@playwright/test';
+import { openMatchRoom } from '../helpers/matchRoom';
 import { ensureSignedIn, signInAsPlayer, signInViaRequest } from '../helpers/auth';
 
 /**
@@ -167,7 +168,7 @@ test.describe.serial('Manual reporting on the team page', () => {
       try {
         const reporter: Page = await reporterContext.newPage();
         expect(await signInAsPlayer(reporter, one.captainSteamId)).toBe(true);
-        await reporter.goto(`/team/${one.id}`);
+        await openMatchRoom(reporter, one.id);
 
         const reporterState = reporter.getByTestId('manual-report-state');
         await expect(reporter.getByTestId('manual-report-panel')).toBeVisible();
@@ -188,7 +189,7 @@ test.describe.serial('Manual reporting on the team page', () => {
         // --- the opponent is not a captain yet, so there is nothing to answer -
         const opponent: Page = await opponentContext.newPage();
         expect(await signInAsPlayer(opponent, two.captainSteamId)).toBe(true);
-        await opponent.goto(`/team/${two.id}`);
+        await openMatchRoom(opponent, two.id);
         await expect(opponent.getByTestId('manual-report-panel')).toHaveCount(0);
 
         const promoted = await request.post(`/api/game/manual/teams/${two.id}/captain`, {

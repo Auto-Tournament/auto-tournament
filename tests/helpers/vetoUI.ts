@@ -1,4 +1,5 @@
 import { Page, expect } from '@playwright/test';
+import { openOwnMatchRoom } from './matchRoom';
 import { impersonatePlayer, stopImpersonating } from './auth';
 import { actingSteamIdFor } from './veto';
 import type { Team } from './teams';
@@ -38,7 +39,8 @@ export async function viewVetoPageAs(page: Page, steamId: string): Promise<void>
   const ok = await impersonatePlayer(page.request, steamId);
   expect(ok, `Failed to impersonate ${steamId}`).toBe(true);
 
-  await page.goto(`/player/${steamId}`, { waitUntil: 'domcontentloaded' });
+  // The veto is in the player's match room (the nav bar's match button goes there).
+  await openOwnMatchRoom(page);
 
   // The veto interface is rendered only after the player's current match resolves.
   await expect(page.getByTestId('veto-interface')).toBeVisible({ timeout: 20000 });

@@ -1,8 +1,14 @@
 /**
- * A match's own page, the link people share (the drafts' match page): the
- * result, each map's score, and under it whatever the match's game recorded
- * (its `matchPanels.publicView`; CS2: the team reels, the scoreboard and the
- * highlight clips).
+ * The match room (`/match/:slug`): the one page for a match, and the link
+ * people share. Everyone sees the result, each map's score, and whatever the
+ * match's game recorded (its `matchPanels.publicView`; CS2: the team reels,
+ * the scoreboard and the highlight clips).
+ *
+ * A player in the match, while it is not over, gets their part first: the
+ * steps of the match with the pre-match phase (CS2: the map veto), the server
+ * and connect, and the live score (`YourMatchCard`), then reporting the result
+ * where the game cannot (`matchPanels.reportView`). Nowhere else draws the
+ * veto: other pages link here.
  */
 
 import { useEffect, useState } from 'react';
@@ -28,9 +34,13 @@ import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../contexts/AuthContext';
 import { openMatchDetails } from '../components/modals/matchDetailsOpener';
 import { getStatusLabel } from '../utils/matchUtils';
+import { teamProfilePath } from '../paths';
+import { YourMatchCard } from '../components/tournament/match/YourMatchCard';
 
 type MatchResponse = PublicMatch & {
   game?: string | null;
+  /** The signed-in viewer's team in this match (its live roster), or null. */
+  viewerTeamId?: string | null;
   team1LogoUrl?: string | null;
   team2LogoUrl?: string | null;
   team1SeriesScore?: number;
@@ -59,11 +69,12 @@ export default function MatchPage() {
   const socket = useSocket();
   const [version, setVersion] = useState(0);
   useEffect(() => {
-    const event = `match:update:${slug}`;
+    // The veto moves the match on too (maps, then a server).
+    const events = [`match:update:${slug}`, `veto:update:${slug}`];
     const changed = () => setVersion((v) => v + 1);
-    socket.on(event, changed);
+    for (const event of events) socket.on(event, changed);
     return () => {
-      socket.off(event, changed);
+      for (const event of events) socket.off(event, changed);
     };
   }, [socket, slug]);
 
@@ -93,6 +104,8 @@ export default function MatchPage() {
   const Panel = integration.matchPanels.publicView;
   // The game's controls on each map (CS2: its analysis with the 2D replay, and its reel).
   const MapAction = integration.matchMapAction;
+  // The player's part for games without servers (manual reporting: the result).
+  const ReportPanel = integration.matchPanels.reportView;
 
   if (failed) {
     return (
@@ -185,7 +198,7 @@ export default function MatchPage() {
     return team?.id ? (
       <Box
         component={RouterLink}
-        to={`/t/team/${encodeURIComponent(team.id)}`}
+        to={teamProfilePath(encodeURIComponent(team.id))}
         sx={{ color: 'inherit', textDecoration: 'none', minWidth: 0 }}
       >
         {body}
@@ -195,8 +208,9 @@ export default function MatchPage() {
     );
   };
 
-  return (
-    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }} data-testid="match-page">
+  // The public header: both teams, the score, and what the match is.
+  const publicHeader = (
+    <>
       <Box
         sx={{
           display: 'grid',
@@ -265,6 +279,30 @@ export default function MatchPage() {
           </Button>
         )}
       </Stack>
+    </>
+  );
+
+  // The viewer plays in this match: their part comes first while it is on.
+  const viewerTeamId = match.viewerTeamId ?? null;
+  const matchIsOn = match.status !== 'completed' && match.status !== 'cancelled';
+  // The steps, veto and server are for a game played on servers through its
+  // module; a manually reported game has only the report panel.
+  const playsThroughModule = Boolean(integration.preMatchView || integration.matchPanels.teamView);
+
+  return (
+    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }} data-testid="match-page">
+      {viewerTeamId ? (
+        <Box data-testid="match-room-player" sx={{ display: 'grid', gap: 3 }}>
+          {matchIsOn && playsThroughModule ? (
+            <YourMatchCard teamId={viewerTeamId} matchSlug={match.slug} fallback={publicHeader} />
+          ) : (
+            publicHeader
+          )}
+          {ReportPanel && <ReportPanel matchSlug={match.slug} matchStatus={match.status} />}
+        </Box>
+      ) : (
+        publicHeader
+      )}
 
       {Panel && (
         <Box sx={{ mt: 4 }}>

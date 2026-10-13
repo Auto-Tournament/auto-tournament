@@ -11,11 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../hooks/useSocket';
 import { useInstalledIntegrations } from '../integrations/registry';
 import { onSocketReconnect } from '../utils/socketResync';
-import {
-  TOURNAMENT_TABS,
-  tournamentTabPath,
-  visibleTournamentTabs,
-} from '../paths';
+import { TOURNAMENT_TABS, tournamentTabPath, visibleTournamentTabs } from '../paths';
 import { pageTitle } from '../utils/pageTitle';
 
 /**
@@ -97,8 +93,12 @@ export default function TournamentPage() {
       return;
     }
     const moduleTab = moduleTabs.find((m) => m.path === tab);
-    const label = moduleTab ? t(moduleTab.labelKey, { ns: moduleTab.id }) : t(`overviewPage.tabs.${tab}`);
-    document.title = pageTitle(tab === 'overview' ? tournament.name : `${label} · ${tournament.name}`);
+    const label = moduleTab
+      ? t(moduleTab.labelKey, { ns: moduleTab.id })
+      : t(`overviewPage.tabs.${tab}`);
+    document.title = pageTitle(
+      tab === 'overview' ? tournament.name : `${label} · ${tournament.name}`
+    );
   }, [tournament, tab, t, moduleTabs]);
 
   if (overview.loading) {
@@ -147,8 +147,11 @@ export default function TournamentPage() {
       <TournamentPageHeader
         tournament={tournament}
         tab={tab}
-        tabs={visibleTournamentTabs(tournament, { hasTeam: Boolean(overview.viewerTeam) })}
-        moduleTabs={shownModuleTabs.map((m) => ({ path: m.path, label: t(m.labelKey, { ns: m.id }) }))}
+        tabs={visibleTournamentTabs(tournament)}
+        moduleTabs={shownModuleTabs.map((m) => ({
+          path: m.path,
+          label: t(m.labelKey, { ns: m.id }),
+        }))}
         showManage={isAuthenticated && !impersonation}
       />
       {/* Each module tab's probe: whether it has anything for this tournament. */}

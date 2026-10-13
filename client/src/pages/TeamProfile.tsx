@@ -10,22 +10,28 @@ import { TeamHeader } from '../components/team/profile/TeamHeader';
 import { RosterList, type RosterPlayer } from '../components/team/profile/RosterList';
 import { TeamTournaments } from '../components/team/profile/TeamTournaments';
 import { useTeamProfileData } from '../hooks/useTeamProfileData';
-import { useInstalledIntegrations, useIntegration } from '../integrations/registry';
+import {
+  useInstalledIntegrations,
+  useIntegration,
+  useIntegrationFor,
+} from '../integrations/registry';
 import { TeamStatStrip, type TeamProfileNumbers } from '../components/team/profile/TeamStatStrip';
 import { useAuth } from '../contexts/AuthContext';
 import { pageTitle } from '../utils/pageTitle';
 import { api, apiErrorMessage } from '../utils/api';
-import { paths, teamManagePath } from '../paths';
+import { matchPagePath, paths, teamManagePath } from '../paths';
+import { NextMatchCard } from '../components/match/NextMatchCard';
+import { ModuleNotInstalledNotice } from '../components/common/ModuleNotInstalledNotice';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 
 /**
- * Public team profile (`/t/team/:teamId`), the 3.0 draft's `team.html`: the
+ * Public team profile (`/team/:teamId`), the 3.0 draft's `team.html`: the
  * club's header, then two columns — the roster, and the tournament the team
  * is in with its latest results.
  *
- * Distinct from `/team/:teamId` (`TeamMatch`), the team's match page (veto,
- * server, connect) used during play. This is the read-only overview anyone
- * can open. What the roster says about each member's game account (CS2:
+ * The team's match is played in its match room (`/match/:slug`), which the
+ * next-match card links to; the game module's team admin panel (manual
+ * reporting: captains) is here. What the roster says about each member's game account (CS2:
  * Steam linked) is the game module's, through `rosterMemberStatus`.
  */
 export default function TeamProfile() {
@@ -35,6 +41,11 @@ export default function TeamProfile() {
   const { isAuthenticated, playerSteamId } = useAuth();
   const { team, hasMatch, match, tournament, standing, recentResults, loading, notFound, error } =
     useTeamProfileData(teamId);
+  // The game module behind the team's match, else its tournament: its admin
+  // control on a team (manual reporting: captains), or a notice while it is
+  // missing or still loading.
+  const matchIntegration = useIntegrationFor(match ?? tournament ?? { game: null });
+  const TeamAdminPanel = matchIntegration.teamAdminPanel;
 
   // The team's logo, and the viewer's place on it: the owner and captains
   // get Manage, a member gets Leave.
@@ -154,6 +165,7 @@ export default function TeamProfile() {
   // The team's game is its tournament's, else the one it plays (or last played).
   const integration = useIntegration(tournament?.game ?? teamGame?.slug);
   const MemberStatus = integration.rosterMemberStatus;
+
   const positionLabel = integration.teamPositions
     ? (position: string) =>
         t(`teamPositions.${position}`, { ns: integration.id, defaultValue: position })
@@ -244,11 +256,29 @@ export default function TeamProfile() {
                 variant="contained"
                 size="small"
                 component={RouterLink}
-                to={paths.teamMatch.replace(':teamId', teamId)}
+                to={match?.slug ? matchPagePath(match.slug) : paths.matchNow}
+                data-testid="team-profile-watch-match"
               >
                 {t('teamProfile.watchMatch')}
               </Button>
             </Panel>
+          )}
+
+          {/* The next match, before it is live: a link to its match room (the veto is there). */}
+          {!playingNow && teamId && (
+            <Box sx={{ mt: 3 }}>
+              <NextMatchCard teamId={teamId} />
+            </Box>
+          )}
+
+          {/* The game module's part of the team page: an admin control (manual
+              reporting: captains), or a notice while the module is missing or loading. */}
+          {teamId && (
+            <Box sx={{ mt: 3, display: 'grid', gap: 2 }}>
+              {/* Says "missing" or, while it may still arrive, "loading". */}
+              <ModuleNotInstalledNotice integration={matchIntegration} />
+              {TeamAdminPanel && <TeamAdminPanel teamId={teamId} />}
+            </Box>
           )}
 
           {numbers && <TeamStatStrip numbers={numbers} />}

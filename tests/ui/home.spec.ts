@@ -57,9 +57,9 @@ test.describe.serial('Home', () => {
       await expect(page.getByTestId('home-next-match')).toBeVisible();
       await expect(page.getByTestId('home-next-match')).toContainText(team1.name);
       await expect(page.getByTestId('home-open-match')).toHaveAttribute('href', '/match/now');
-      // The API says where the match lives: the tournament's "Your match" tab.
+      // The API says where the match lives: its match room.
       const now = await (await page.request.get('/api/players/me/match-now')).json();
-      expect(now.path).toBe(`/tournament/${setup.tournament.id}/match`);
+      expect(now.path).toMatch(/^\/match\/[^/]+$/);
 
       await expect(page.getByTestId('home-tournaments-list')).toBeVisible();
       await expect(page.getByTestId(`home-tournament-${setup.tournament.id}`)).toBeVisible();

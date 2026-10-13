@@ -452,8 +452,8 @@
     }
   },
   "teamLinkActions": {
-    "open": "Open team match page",
-    "copy": "Copy team match link"
+    "open": "Open team page",
+    "copy": "Copy team page link"
   },
   "playersDirectory": {
     "findOnSteam": "Look them up on Steam",
@@ -751,5 +751,9 @@
     "dismissedDone": "Report dismissed",
     "loadError": "Could not load the reports",
     "actionError": "Could not do that"
+  },
+  "nextMatchCard": {
+    "title": "Your next match",
+    "open": "Open match room"
   }
 }
