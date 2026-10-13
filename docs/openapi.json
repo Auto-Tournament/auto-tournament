@@ -2456,6 +2456,29 @@
         ]
       }
     },
+    "/api/chat/{channel}/typing": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Say you are typing (the channel's other players see it for a few seconds)",
+        "responses": {
+          "200": {
+            "description": "Sent"
+          }
+        },
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/compat/badge.json": {
       "get": {
         "tags": [
@@ -11439,6 +11462,20 @@
           "Players"
         ],
         "summary": "PUT /api/players/me/discord-id",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/players/me/match-now": {
+      "get": {
+        "tags": [
+          "Players"
+        ],
+        "summary": "GET /api/players/me/match-now",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {

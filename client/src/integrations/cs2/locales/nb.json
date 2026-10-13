@@ -1721,7 +1721,7 @@
     "ttdLine": "Tid til skade {{ms}} ms"
   },
   "skins": {
-    "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi, kan ikke byttes eller selges, og vises ikke i Counter-Strike 2.",
+    "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi og kan ikke byttes eller selges. Du ser dem i spillet på denne sidens servere.",
     "equipLabel": "Ta i bruk {{name}}",
     "equippedLabel": "{{name}}, i bruk",
     "new": "NY",
@@ -1745,7 +1745,7 @@
     "float": "Float",
     "pattern": "Mønster",
     "place": "#{{n}} i en turnering",
-    "wonMatchmaking": "Fra en matchmaking-kamp",
+    "wonMatchmaking": "Vant en matchmaking-kamp",
     "equipped": "I bruk",
     "inInventory": "I inventaret",
     "theirInventory": "Inventaret til {{name}}",
@@ -1784,7 +1784,7 @@
     "arrange": "Ordne",
     "showInventory": "Vis inventar",
     "arrangeTitle": "Ordne utrustningen",
-    "arrangeHint": "Velg opptil {{max}} skins, rekkefølgen, og hvilke som vises stort.",
+    "arrangeHint": "Velg opptil {{max}} skins å vise på profilen, rekkefølgen og hvilke som er store.",
     "big": "Stor",
     "moveUp": "Flytt opp",
     "moveDown": "Flytt ned",
@@ -1900,6 +1900,16 @@
     "keeping": "Beholder…",
     "chooseFailed": "Kunne ikke beholde den",
     "newDrop": "Nytt drop",
+    "side": {
+      "ct": "CT",
+      "t": "T",
+      "both": "Begge",
+      "equipFor": "Utstyr for",
+      "defaults": "Standard-skins"
+    },
+    "favourites": "Favoritter",
+    "favouritesTitle": "Velg favorittene dine",
+    "pickFavourites": "Favoritter",
     "tournamentMatch": "Fra en turneringskamp",
     "levelUp": "Nådde et nytt nivå",
     "drops": {
@@ -2543,5 +2553,16 @@
     },
     "clipOf": "klipp {{n}} av {{total}}",
     "left": "~{{time}} igjen"
+  },
+  "crash": {
+    "downTitle": "Kampserveren krasjet",
+    "down": "Vi henter den tilbake. Du får en knapp for å koble til igjen her så snart kampen er oppe.",
+    "moving": "Flytter kampen til en annen server, med siste runde gjenopprettet.",
+    "wait": "Dette tar vanligvis under ett minutt.",
+    "backTitle": "Kampen din er tilbake",
+    "backInPlace": "Serveren er oppe igjen med kampen gjenopprettet. Koble til igjen for å spille videre.",
+    "backMoved": "Kampen er flyttet til en annen server, med siste runde gjenopprettet. Koble til igjen for å spille videre.",
+    "reconnect": "Koble til igjen",
+    "close": "Lukk"
   }
 }

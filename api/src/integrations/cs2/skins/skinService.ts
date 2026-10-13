@@ -229,6 +229,10 @@ export interface OwnedSkin {
   createdAt: number;
   seen: boolean;
   equipped: boolean;
+  /** Where it is equipped: 0 both sides, 2 T, 3 CT (empty when it is not). */
+  equippedSides: LoadoutTeam[];
+  /** The one side that uses this weapon, or null when both do. */
+  side: 2 | 3 | null;
 }
 
 interface SkinRow {
@@ -248,6 +252,45 @@ interface SkinRow {
   variant: string | null;
   created_at: number;
   seen: boolean;
+}
+
+/** A loadout side: 0 both, 2 T, 3 CT (CS2's team numbers). */
+export type LoadoutTeam = 0 | 2 | 3;
+
+const T_ONLY = new Set([
+  'weapon_ak47',
+  'weapon_galilar',
+  'weapon_glock',
+  'weapon_tec9',
+  'weapon_sg556',
+  'weapon_g3sg1',
+  'weapon_mac10',
+  'weapon_sawedoff',
+]);
+const CT_ONLY = new Set([
+  'weapon_m4a1',
+  'weapon_m4a1_silencer',
+  'weapon_famas',
+  'weapon_usp_silencer',
+  'weapon_hkp2000',
+  'weapon_fiveseven',
+  'weapon_aug',
+  'weapon_scar20',
+  'weapon_mp9',
+  'weapon_mag7',
+]);
+
+/** The one side that buys a weapon (2 T, 3 CT), or null when both do (knives and gloves too). */
+export function sideOf(weapon: string): 2 | 3 | null {
+  if (T_ONLY.has(weapon)) return 2;
+  if (CT_ONLY.has(weapon)) return 3;
+  return null;
+}
+
+/** The side a skin is equipped for: a one-side weapon is always "both" (its side is the only one). */
+export function equipTeam(weapon: string, wanted: unknown): LoadoutTeam {
+  if (sideOf(weapon) !== null) return 0;
+  return wanted === 2 || wanted === 3 ? wanted : 0;
 }
 
 /** The loadout slot a weapon fills: every knife shares one, every glove one. */
@@ -315,7 +358,13 @@ export function rollRarity(weights: Record<Rarity, number>): Rarity | null {
 
 let catalogCache: { at: number; skins: CatalogSkin[] } | null = null;
 
-function toRow(row: SkinRow, equipped: Set<number>): OwnedSkin {
+function toRow(row: SkinRow, equipped: Map<number, LoadoutTeam[]> | Set<number>): OwnedSkin {
+  const sides =
+    equipped instanceof Map
+      ? (equipped.get(row.id) ?? [])
+      : equipped.has(row.id)
+        ? [0 as const]
+        : [];
   return {
     id: row.id,
     weapon: row.weapon,
@@ -333,7 +382,9 @@ function toRow(row: SkinRow, equipped: Set<number>): OwnedSkin {
     variant: row.variant ?? null,
     createdAt: row.created_at,
     seen: Boolean(row.seen),
-    equipped: equipped.has(row.id),
+    equipped: sides.length > 0,
+    equippedSides: sides,
+    side: sideOf(row.weapon),
   };
 }
 
@@ -417,6 +468,55 @@ async function uidOf(steamId: string): Promise<string | null> {
     steamId,
   ]);
   return row?.uid ?? null;
+}
+
+export interface LoadoutRow {
+  weapon: string;
+  paint_kit: number;
+  float_value: number;
+  pattern: number;
+  slot: string;
+  team: number;
+}
+
+export interface LoadoutPayload {
+  paints: Array<{ team: LoadoutTeam; defindex: number; paint: number; wear: number; seed: number }>;
+  knife?: Array<{ team: LoadoutTeam; defindex: number }>;
+  gloves?: Array<{ team: LoadoutTeam; defindex: number }>;
+}
+
+/**
+ * Equipped rows as Ready Up's `skins.loadout` items: a paint per row with its
+ * side, and the knife and gloves named per side so the plugin swaps them in.
+ * Null with nothing it can paint.
+ */
+export function loadoutPayload(rows: LoadoutRow[]): LoadoutPayload | null {
+  // One row per side: the plugin uses a side's own (2 T, 3 CT) over "both" (0).
+  const paints: Array<{
+    team: LoadoutTeam;
+    defindex: number;
+    paint: number;
+    wear: number;
+    seed: number;
+  }> = [];
+  const knife: Array<{ team: LoadoutTeam; defindex: number }> = [];
+  const gloves: Array<{ team: LoadoutTeam; defindex: number }> = [];
+  for (const row of rows) {
+    const defindex = WEAPON_DEFINDEX[row.weapon];
+    if (!defindex || !row.paint_kit) continue;
+    const team = ([0, 2, 3].includes(Number(row.team)) ? Number(row.team) : 0) as LoadoutTeam;
+    paints.push({
+      team,
+      defindex,
+      paint: row.paint_kit,
+      wear: Math.max(0, Math.min(1, Number(row.float_value))),
+      seed: Math.max(0, Math.min(1000, row.pattern)),
+    });
+    if (row.slot === 'knife') knife.push({ team, defindex });
+    if (row.slot === 'gloves') gloves.push({ team, defindex });
+  }
+  if (!paints.length) return null;
+  return { paints, ...(knife.length ? { knife } : {}), ...(gloves.length ? { gloves } : {}) };
 }
 
 export const skinService = {
@@ -512,12 +612,13 @@ export const skinService = {
       ]
     );
     if (row?.id) {
+      // A first skin for a slot goes on, for both sides; the showcase is the player's own pick.
       await db.runAsync(
-        `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id) VALUES (?, ?, ?)
-         ON CONFLICT (player_uid, slot) DO NOTHING`,
-        [playerUid, slotOf(skin.weapon), row.id]
+        `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id, team)
+         SELECT ?, ?, ?, 0 WHERE NOT EXISTS (
+           SELECT 1 FROM cs2_player_loadout WHERE player_uid = ? AND slot = ?)`,
+        [playerUid, slotOf(skin.weapon), row.id, playerUid, slotOf(skin.weapon)]
       );
-      await this.addToShowcase(playerUid, row.id, slotOf(skin.weapon));
     }
     // The reveal shows at once on any page the player has open.
     const player = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [
@@ -980,29 +1081,52 @@ export const skinService = {
       'SELECT * FROM cs2_player_skins WHERE player_uid = ? ORDER BY created_at DESC, id DESC',
       [playerUid]
     );
-    const equipped = await db.queryAsync<{ skin_id: number }>(
-      'SELECT skin_id FROM cs2_player_loadout WHERE player_uid = ?',
+    const equipped = await db.queryAsync<{ skin_id: number; team: number }>(
+      'SELECT skin_id, team FROM cs2_player_loadout WHERE player_uid = ?',
       [playerUid]
     );
-    const set = new Set(equipped.map((e) => e.skin_id));
-    return rows.map((row) => toRow(row, set));
+    const sides = new Map<number, LoadoutTeam[]>();
+    for (const e of equipped) {
+      sides.set(e.skin_id, [...(sides.get(e.skin_id) ?? []), Number(e.team) as LoadoutTeam]);
+    }
+    return rows.map((row) => toRow(row, sides));
   },
 
-  /** Equips a skin in its slot, replacing what was there. */
-  async equip(playerUid: string, skinId: number): Promise<void> {
+  /**
+   * Equips a skin in its slot for a side (0 both, 2 T, 3 CT), replacing what
+   * that side had. "Both" also clears the slot's one-side picks. A weapon
+   * only one side buys is always equipped for both.
+   */
+  async equip(playerUid: string, skinId: number, team: unknown = 0): Promise<void> {
     const skin = await db.queryOneAsync<SkinRow>(
       'SELECT * FROM cs2_player_skins WHERE id = ? AND player_uid = ?',
       [skinId, playerUid]
     );
     if (!skin) throw new SkinError(404, 'That skin is not in your inventory.');
+    const slot = slotOf(skin.weapon);
+    const side = equipTeam(skin.weapon, team);
+    if (side === 0) {
+      await db.runAsync(
+        'DELETE FROM cs2_player_loadout WHERE player_uid = ? AND slot = ? AND team <> 0',
+        [playerUid, slot]
+      );
+    }
     await db.runAsync(
-      `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id) VALUES (?, ?, ?)
-       ON CONFLICT (player_uid, slot) DO UPDATE SET skin_id = EXCLUDED.skin_id`,
-      [playerUid, slotOf(skin.weapon), skinId]
+      `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id, team) VALUES (?, ?, ?, ?)
+       ON CONFLICT (player_uid, slot, team) DO UPDATE SET skin_id = EXCLUDED.skin_id`,
+      [playerUid, slot, skinId, side]
     );
   },
 
-  async unequip(playerUid: string, slot: string): Promise<void> {
+  /** Empties a slot: one side's pick (2, 3), or every side's (no team). */
+  async unequip(playerUid: string, slot: string, team?: unknown): Promise<void> {
+    if (team === 0 || team === 2 || team === 3) {
+      await db.runAsync(
+        'DELETE FROM cs2_player_loadout WHERE player_uid = ? AND slot = ? AND team = ?',
+        [playerUid, slot, team]
+      );
+      return;
+    }
     await db.runAsync('DELETE FROM cs2_player_loadout WHERE player_uid = ? AND slot = ?', [
       playerUid,
       slot,
@@ -1091,9 +1215,15 @@ export const skinService = {
    * are off, or with nothing equipped.
    */
   async loadoutItems(steamId: string): Promise<{
-    paints: Array<{ team: 0; defindex: number; paint: number; wear: number; seed: number }>;
-    knife?: Array<{ team: 0; defindex: number }>;
-    gloves?: Array<{ team: 0; defindex: number }>;
+    paints: Array<{
+      team: LoadoutTeam;
+      defindex: number;
+      paint: number;
+      wear: number;
+      seed: number;
+    }>;
+    knife?: Array<{ team: LoadoutTeam; defindex: number }>;
+    gloves?: Array<{ team: LoadoutTeam; defindex: number }>;
   } | null> {
     if (!(await this.config()).enabled) return null;
     const uid = await uidOf(steamId);
@@ -1104,31 +1234,14 @@ export const skinService = {
       float_value: number;
       pattern: number;
       slot: string;
+      team: number;
     }>(
-      `SELECT s.weapon, s.paint_kit, s.float_value, s.pattern, l.slot
+      `SELECT s.weapon, s.paint_kit, s.float_value, s.pattern, l.slot, l.team
          FROM cs2_player_loadout l JOIN cs2_player_skins s ON s.id = l.skin_id
         WHERE l.player_uid = ?`,
       [uid]
     );
-    const paints: Array<{ team: 0; defindex: number; paint: number; wear: number; seed: number }> =
-      [];
-    let knife: Array<{ team: 0; defindex: number }> | undefined;
-    let gloves: Array<{ team: 0; defindex: number }> | undefined;
-    for (const row of rows) {
-      const defindex = WEAPON_DEFINDEX[row.weapon];
-      if (!defindex || !row.paint_kit) continue;
-      paints.push({
-        team: 0,
-        defindex,
-        paint: row.paint_kit,
-        wear: Math.max(0, Math.min(1, Number(row.float_value))),
-        seed: Math.max(0, Math.min(1000, row.pattern)),
-      });
-      if (row.slot === 'knife') knife = [{ team: 0, defindex }];
-      if (row.slot === 'gloves') gloves = [{ team: 0, defindex }];
-    }
-    if (!paints.length) return null;
-    return { paints, ...(knife ? { knife } : {}), ...(gloves ? { gloves } : {}) };
+    return loadoutPayload(rows);
   },
 
   /** Admin: the numbers at the top of the Skins page. */

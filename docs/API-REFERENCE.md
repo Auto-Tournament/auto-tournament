@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 675 of them, 395 behind auth —
+Every endpoint this API serves — 677 of them, 395 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -639,6 +639,7 @@ Your match (both teams and the admins), your team and your party.
 | `GET` | `/api/chat/channels` | public |
 | `GET` | `/api/chat/:channel/messages` | public |
 | `POST` | `/api/chat/:channel/messages` | public |
+| `POST` | `/api/chat/:channel/typing` | public |
 | `POST` | `/api/chat/:channel/call-admin` | public |
 | `POST` | `/api/chat/:channel/read` | public |
 
@@ -823,6 +824,7 @@ Player records, ratings, match history and profiles.
 | `GET` | `/api/players/public-selection` | public |
 | `GET` | `/api/players/selection` | admin |
 | `GET` | `/api/players/:playerId/team` | public |
+| `GET` | `/api/players/me/match-now` | public |
 | `GET` | `/api/players/me/match-status` | public |
 | `GET` | `/api/players/me/discord-id` | public |
 | `PUT` | `/api/players/me/discord-id` | public |

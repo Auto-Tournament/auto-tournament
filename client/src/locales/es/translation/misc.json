@@ -849,7 +849,9 @@
       "adminCalled": "{{name}} llamó a un admin",
       "timedOut": "sin tiempo",
       "remindAccount": "{{name}}: inicia sesión una vez con Steam para jugar en {{tournament}}.",
-      "remindGame": "{{name}}: añade el juego a tu perfil (Juegos a los que juegas) antes del check-in de {{tournament}}."
+      "remindGame": "{{name}}: añade el juego a tu perfil (Juegos a los que juegas) antes del check-in de {{tournament}}.",
+      "serverDown": "The match server crashed. Bringing it back…",
+      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect."
     },
     "party": {
       "inviteCopied": "Enlace de invitación copiado",
@@ -861,7 +863,31 @@
       "searching": "Buscando partida",
       "leaderQueues": "El líder inicia la búsqueda"
     },
-    "back": "Atrás"
+    "back": "Atrás",
+    "typing": {
+      "one": "{{name}} está escribiendo…",
+      "two": "{{first}} y {{second}} están escribiendo…",
+      "many": "{{count}} personas están escribiendo…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Elige un emoji",
+      "search": "Buscar emoji",
+      "none": "No se encontraron emoji",
+      "categories": {
+        "results": "Resultados",
+        "recent": "Recientes",
+        "smileys": "Caras",
+        "gestures": "Manos",
+        "people": "Personas",
+        "animals": "Naturaleza",
+        "food": "Comida y bebida",
+        "activity": "Juegos y deporte",
+        "travel": "Lugares",
+        "objects": "Objetos",
+        "symbols": "Símbolos"
+      }
+    }
   },
   "search": {
     "open": "Search",

@@ -849,7 +849,9 @@
       "adminCalled": "{{name}} hat einen Admin gerufen",
       "timedOut": "Zeit abgelaufen",
       "remindAccount": "{{name}}: melde dich einmal mit Steam an, damit du bei {{tournament}} spielen kannst.",
-      "remindGame": "{{name}}: füge das Spiel vor dem Check-in für {{tournament}} deinem Profil hinzu (Deine Spiele)."
+      "remindGame": "{{name}}: füge das Spiel vor dem Check-in für {{tournament}} deinem Profil hinzu (Deine Spiele).",
+      "serverDown": "The match server crashed. Bringing it back…",
+      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect."
     },
     "party": {
       "inviteCopied": "Einladungslink kopiert",
@@ -861,7 +863,31 @@
       "searching": "Suche nach einem Match",
       "leaderQueues": "Der Leader startet die Suche"
     },
-    "back": "Zurück"
+    "back": "Zurück",
+    "typing": {
+      "one": "{{name}} schreibt…",
+      "two": "{{first}} und {{second}} schreiben…",
+      "many": "{{count}} Personen schreiben…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Emoji wählen",
+      "search": "Emoji suchen",
+      "none": "Keine Emoji gefunden",
+      "categories": {
+        "results": "Treffer",
+        "recent": "Zuletzt",
+        "smileys": "Smileys",
+        "gestures": "Hände",
+        "people": "Personen",
+        "animals": "Natur",
+        "food": "Essen & Trinken",
+        "activity": "Spiele & Sport",
+        "travel": "Orte",
+        "objects": "Objekte",
+        "symbols": "Symbole"
+      }
+    }
   },
   "search": {
     "open": "Search",

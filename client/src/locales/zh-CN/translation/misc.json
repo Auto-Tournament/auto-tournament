@@ -849,7 +849,9 @@
       "adminCalled": "{{name}} 呼叫了管理员",
       "timedOut": "超时",
       "remindAccount": "{{name}}：请用 Steam 登录一次，才能参加 {{tournament}}。",
-      "remindGame": "{{name}}：请在 {{tournament}} 签到前把游戏添加到个人资料（你玩的游戏）。"
+      "remindGame": "{{name}}：请在 {{tournament}} 签到前把游戏添加到个人资料（你玩的游戏）。",
+      "serverDown": "The match server crashed. Bringing it back…",
+      "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect."
     },
     "party": {
       "inviteCopied": "邀请链接已复制",
@@ -861,7 +863,31 @@
       "searching": "正在寻找比赛",
       "leaderQueues": "由队长开始排队"
     },
-    "back": "返回"
+    "back": "返回",
+    "typing": {
+      "one": "{{name}} 正在输入…",
+      "two": "{{first}} 和 {{second}} 正在输入…",
+      "many": "{{count}} 人正在输入…"
+    },
+    "emoji": {
+      "open": "表情",
+      "title": "选择表情",
+      "search": "搜索表情",
+      "none": "没有找到表情",
+      "categories": {
+        "results": "结果",
+        "recent": "最近使用",
+        "smileys": "笑脸",
+        "gestures": "手势",
+        "people": "人物",
+        "animals": "自然",
+        "food": "食物和饮料",
+        "activity": "游戏和运动",
+        "travel": "地点",
+        "objects": "物品",
+        "symbols": "符号"
+      }
+    }
   },
   "search": {
     "open": "Search",
