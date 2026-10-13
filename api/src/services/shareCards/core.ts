@@ -504,7 +504,7 @@ async function tournamentFacts(id: number) {
 
 export const tournamentShare: ShareKind = {
   kind: 'tournament',
-  match: (p) => p.match(/^\/tournament\/(\d{1,9})(?:\/[a-z-]*)?\/?$/)?.[1] ?? null,
+  match: (p) => p.match(/^\/tournament\/(?<id>\d{1,9})(?:\/[a-z-]*)?\/?$/)?.groups?.id ?? null,
   async meta(key) {
     const f = await tournamentFacts(Number(key));
     if (!f) return null;
