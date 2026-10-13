@@ -179,68 +179,6 @@ test.describe.serial('admin notices (api)', () => {
     });
   });
 
-  test(
-    'a lasting problem: one notice, and a dismissal holds until it clears',
-    { tag: ['@api'] },
-    async ({ request }) => {
-      expect(await signInViaRequest(request)).toBe(true);
-      const headers = getAuthHeader();
-      await request.put('/api/admin-notices/settings', {
-        headers,
-        data: { recorder_offline: 'bell' },
-      });
-      const key = `recorder_offline:spec-${Date.now()}`;
-      // What the minute sweep does while a recorder stays silent.
-      const sweep = async () =>
-        (
-          await (
-            await request.post('/api/test/admin-notice', {
-              headers,
-              data: {
-                kind: 'recorder_offline',
-                data: { recorder: 'r1' },
-                dedupeKey: key,
-                ongoing: true,
-              },
-            })
-          ).json()
-        ).notice;
-
-      const first = await sweep();
-      expect(first).toMatchObject({ kind: 'recorder_offline', count: 1 });
-      // Still offline a minute later: nothing new, no count, no toast.
-      expect(await sweep()).toBeNull();
-      let list = await (await request.get('/api/admin-notices', { headers })).json();
-      expect(list.notices.find((n: { id: number }) => n.id === first.id).count).toBe(1);
-
-      // Dismissed while still offline: the sweep stays quiet.
-      expect((await request.post(`/api/admin-notices/${first.id}/dismiss`, { headers })).ok()).toBe(
-        true
-      );
-      expect(await sweep()).toBeNull();
-      list = await (await request.get('/api/admin-notices', { headers })).json();
-      expect(
-        list.notices.filter(
-          (n: { dedupeKey: string; resolvedAt: number | null }) =>
-            n.dedupeKey === key && n.resolvedAt === null
-        )
-      ).toHaveLength(0);
-
-      // Back online (cleared), then silent again: a new notice.
-      await request.post('/api/test/admin-notice', {
-        headers,
-        data: { resolve: true, dedupeKey: key },
-      });
-      const again = await sweep();
-      expect(again).toBeTruthy();
-      expect(again.id).not.toBe(first.id);
-      await request.post('/api/test/admin-notice', {
-        headers,
-        data: { resolve: true, dedupeKey: key },
-      });
-    }
-  );
-
   test('settings ignore what they do not know', { tag: ['@api'] }, async ({ request }) => {
     expect(await signInViaRequest(request)).toBe(true);
     const res = await request.put('/api/admin-notices/settings', {

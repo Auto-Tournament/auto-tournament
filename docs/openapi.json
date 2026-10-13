@@ -14595,6 +14595,32 @@
         }
       }
     },
+    "/api/social/notifications/settings": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "GET /api/social/notifications/settings",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "PUT /api/social/notifications/settings",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/social/people": {
       "get": {
         "tags": [
@@ -15899,10 +15925,6 @@
                   },
                   "resolve": {
                     "type": "boolean"
-                  },
-                  "ongoing": {
-                    "type": "boolean",
-                    "description": "Raise the way a sweep does (quiet while open or dismissed)"
                   }
                 }
               }
