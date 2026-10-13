@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Button, Dialog, IconButton, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Checkbox,
+  Dialog,
+  FormControlLabel,
+  IconButton,
+  Typography,
+} from '@mui/material';
 import { ArrowDownIcon, ArrowUpIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import { InspectSkinDialog } from './SkinParts';
 import { api, useModuleTranslation, tokens, fontDisplay, radii } from '../../../module-sdk';
@@ -11,24 +19,18 @@ import { playerInventoryPath, skinPaths } from './paths';
 import { equippedFor } from './loadoutSides';
 
 const { color } = tokens;
-/** The favourites strip: two big tiles, then four small ones (a full 6 × 2 grid). */
-const MAX = 6;
-const BIG = 2;
+const MAX = 8;
 
-/**
- * The favourites strip in the owner's order (nothing until they pick some):
- * the first two big, the rest small.
- */
+/** The favourites strip as the owner arranged it (nothing until they pick some). */
 function arrange(
   inventory: OwnedSkin[],
   showcase: ShowcaseItem[]
 ): Array<{ skin: OwnedSkin; big: boolean }> {
   const byId = new Map(inventory.map((s) => [s.id, s]));
   return showcase
-    .map((item) => byId.get(item.skinId))
-    .filter((skin): skin is OwnedSkin => Boolean(skin))
-    .slice(0, MAX)
-    .map((skin, i) => ({ skin, big: i < BIG }));
+    .map((item) => ({ skin: byId.get(item.skinId), big: item.big }))
+    .filter((x): x is { skin: OwnedSkin; big: boolean } => Boolean(x.skin))
+    .slice(0, MAX);
 }
 
 /** Knife and gloves first, then weapons in a steady order. */
@@ -156,7 +158,7 @@ function SideLoadout({
 /**
  * The loadout on a player's profile (board 4): what they have equipped, per
  * side (CT and T), knife and gloves big. Above it, the favourites the owner
- * picked (at most six in their order, the first two big); none until they pick.
+ * picked (at most eight, their order, some big); none until they pick.
  * "Show inventory" opens everything they own.
  */
 export function ProfileLoadout({
@@ -392,6 +394,22 @@ export function ProfileLoadout({
                 <Typography sx={{ flex: 1, minWidth: 0 }}>
                   {skin.weaponName} · {skin.name}
                 </Typography>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={item.big}
+                      onChange={(e) =>
+                        setDraft((d) =>
+                          d.map((x) =>
+                            x.skinId === item.skinId ? { ...x, big: e.target.checked } : x
+                          )
+                        )
+                      }
+                    />
+                  }
+                  label={t('skins.big')}
+                />
                 <IconButton
                   size="small"
                   aria-label={t('skins.moveUp')}
@@ -435,7 +453,7 @@ export function ProfileLoadout({
             <Button
               variant="contained"
               onClick={async () => {
-                await mine.saveShowcase(draft.map((d, i) => ({ ...d, big: i < BIG })));
+                await mine.saveShowcase(draft);
                 setArranging(false);
                 setVersion((v) => v + 1);
               }}

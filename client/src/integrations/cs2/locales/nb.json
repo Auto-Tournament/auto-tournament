@@ -1789,7 +1789,7 @@
     "arrange": "Ordne",
     "showInventory": "Vis inventar",
     "arrangeTitle": "Ordne utrustningen",
-    "arrangeHint": "Velg opptil {{max}} skins for profilen, i rekkefølge. De to første vises store.",
+    "arrangeHint": "Velg opptil {{max}} skins å vise på profilen, rekkefølgen og hvilke som er store.",
     "big": "Stor",
     "moveUp": "Flytt opp",
     "moveDown": "Flytt ned",
