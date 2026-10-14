@@ -7,6 +7,7 @@ import {
   generateMatchPassword,
   rulesFromMatchConfig,
   pausesOnDisconnect,
+  rostersFull,
 } from '../../api/src/integrations/cs2/fleet/assignConfig';
 import { validatePayload } from '../../api/src/integrations/cs2/fleet/protocol/v1';
 import type { MatchConfig } from '../../api/src/types/match.types';
@@ -231,6 +232,22 @@ test.describe('Fleet match.assign config', () => {
       'abcDEF2345'
     );
     expect(own.cvars).toEqual({ sv_matchpause_auto_5v5: 0 });
+  });
+
+  test('bot fill with fewer than five on a roster gets no auto pause (CS2 counts only people)', () => {
+    const five = (n: number) =>
+      Object.fromEntries([0, 1, 2, 3, 4].map((i) => [STEAM(n * 10 + i), `p${n}${i}`]));
+    const full = tournamentConfig({
+      bot_fill: true,
+      team1: { id: 'a', name: 'A', players: five(1) },
+      team2: { id: 'b', name: 'B', players: five(2) },
+    });
+    expect(rostersFull(buildAssignConfig(full, 'abcDEF2345'))).toBe(true);
+    expect(buildAssignConfig(full, 'abcDEF2345').cvars?.sv_matchpause_auto_5v5).toBe(1);
+    // One person and four bots against a bot team: never paused for the missing people.
+    const short = tournamentConfig({ bot_fill: true });
+    expect(rostersFull(buildAssignConfig(short, 'abcDEF2345'))).toBe(false);
+    expect(buildAssignConfig(short, 'abcDEF2345').cvars?.sv_matchpause_auto_5v5).toBeUndefined();
   });
 
   test('engine cvars: mp_/sv_/tv_/bot_ only, never the password or cheats', () => {
