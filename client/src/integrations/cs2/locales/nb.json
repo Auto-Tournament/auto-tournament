@@ -445,193 +445,9 @@
   },
   "serversPage": {
     "title": "Servere",
-    "headerActions": {
-      "refreshChecking": "Sjekker...",
-      "refresh": "Oppdater status",
-      "retryUninitialized": "Prøv igjen uinitialiserte ({{count}})",
-      "retryUninitializedChecking": "Prøver igjen...",
-      "batchAdd": "Masseopprett",
-      "select": "Velg",
-      "done": "Ferdig",
-      "selectAll": "Velg alle",
-      "unselectAll": "Fjern alle valg",
-      "deleteSelected": "Slett valgte",
-      "addServer": "Legg til server"
-    },
-    "empty": {
-      "createServers": "Link a machine or create servers",
-      "addExisting": "Add an existing server (RCON)",
-      "title": "Ingen servere registrert",
-      "description": "Legg til din første CS2-server for å komme i gang",
-      "addServer": "Legg til server",
-      "batchAdd": "Eller opprett flere servere samtidig"
-    },
-    "allocation": {
-      "loading": "Laster allokeringsstatus...",
-      "nextPass": "Neste allokering om ~{{seconds}}s",
-      "cooldownLabel": "Nedkjøling",
-      "cooldownDescription": "Nylig ferdig kamp – i nedkjøling slik at demoer kan lastes opp og serveren kan resettes (ca. 2 minutter).",
-      "cooldownEta": "Klar om ~{{seconds}}s"
-    },
-    "statusChip": {
-      "checking": "Sjekker...",
-      "disabled": "Deaktivert",
-      "offline": "Frakoblet",
-      "onlineOk": "Online (API ↔ server OK)",
-      "onlineRconOnly": "Online (kun RCON)",
-      "rconFailed": "RCON-feil",
-      "onlineTesting": "Online (tester)",
-      "noEventsYet": "Ingen hendelser ennå",
-      "notConfigured": "Ikke konfigurert",
-      "onlineIdle": "Online (inaktiv – ingen nye hendelser)",
-      "onlineActive": "Online (aktiv)",
-      "online": "Online"
-    },
-    "ipBanned": {
-      "title": "Serveren kan ha blokkert IP-en vår",
-      "message": "Serveren er tilgjengelig, men avviser RCON-autentisering gjentatte ganger. Dette kan indikere IP-blokkering. Hvis RCON-passordet er korrekt, sjekk serverens ban-liste og fjern blokkeringen av IP-en vår."
-    },
-    "connectivity": {
-      "apiToServer": "Auto Tournament API → CS2-server",
-      "serverToApi": "Server → API (/api/events) (hendelser)",
-      "unreachable": "Ikke tilgjengelig",
-      "reachable": "Tilgjengelig",
-      "unknown": "Ukjent",
-      "loading": "Laster…"
-    },
-    "currentMatch": {
-      "view": "Vis kamp",
-      "loading": "Laster...",
-      "queuedPrefix": "I kø: "
-    },
-    "errors": {
-      "loadServers": "Klarte ikke å laste servere",
-      "noMatchesForServer": "Ingen kamper funnet for denne serveren",
-      "loadCurrentMatch": "Klarte ikke å laste nåværende kamp for denne serveren",
-      "bulkDelete": "Klarte ikke å slette én eller flere servere"
-    },
-    "bulkDelete": {
-      "title": "Slett servere",
-      "message_one": "Er du sikker på at du vil slette {{count}} server? Dette kan ikke angres.",
-      "message_other": "Er du sikker på at du vil slette {{count}} servere? Dette kan ikke angres."
-    },
-    "autoConfig": {
-      "done": "Nye servere konfigurert. Oppdaterer status…"
-    },
-    "checkServerLogs": "Sjekk spillserverens konsoll/logger for å se om Auto Tournament-pluginet mottar konfigurasjon og sender hendelser.",
     "fleet": {
-      "title": "Serverstatus",
       "total_one": "{{count}} server",
-      "total_other": "{{count}} servere",
-      "olderVersion_one": "{{count}} server kjører en eldre versjon enn den nyeste.",
-      "olderVersion_other": "{{count}} servere kjører en eldre versjon enn den nyeste.",
-      "downloadLatest": "Last ned nyeste"
-    },
-    "cs2Update": {
-      "title": "CS2 må oppdateres",
-      "snackbarBody_one": "{{count}} server er utdatert. Oppdater serverinstallasjonen og start på nytt.",
-      "snackbarBody_other": "{{count}} servere er utdaterte. Oppdater serverinstallasjonen og start på nytt.",
-      "fleetTitle": "CS2-servere er utdaterte – oppdatering kreves",
-      "fleetBody_one": "{{count}} server har fått melding fra Steam om at CS2 må oppdateres. Oppdater serverinstallasjonen (SteamCMD/vert) og start på nytt.",
-      "fleetBody_other": "{{count}} servere har fått melding fra Steam om at CS2 må oppdateres. Oppdater serverinstallasjonen (SteamCMD/vert) og start på nytt."
-    },
-    "versionMismatch": {
-      "title": "Ulike pluginversjoner",
-      "chip_one": "v{{version}}: {{count}} server",
-      "chip_other": "v{{version}}: {{count}} servere",
-      "recommended": "Anbefalt: oppdater alle servere til v{{version}} så de er likt satt opp"
-    },
-    "notInitialized": {
-      "title": "Serveren er ikke initialisert",
-      "checking": "Sjekker tilkobling …",
-      "rconUnreachable": "Får ikke kontakt via RCON. Sjekk vert, port og at spillserveren kjører. Trykk «Prøv igjen» når den svarer.",
-      "noEvents": "RCON svarer, men Auto Tournament-pluginet har ikke sendt hendelser. Trykk «Prøv igjen» for å konfigurere serveren.",
-      "notChecked": "Tilkoblingen er ikke sjekket ennå. Se status under. Trykk «Prøv igjen» for å konfigurere når RCON svarer."
-    },
-    "chips": {
-      "versionMismatch": "Ulik versjon",
-      "ipBanned": "IP blokkert",
-      "pluginDbDown": "Plugin-DB nede",
-      "cs2UpdateRequired": "CS2 må oppdateres ({{version}})"
-    },
-    "tooltips": {
-      "fixGuide": "Slik fikser du det",
-      "disabledTitle": "Deaktivert server",
-      "disabledBody": "Deaktiverte servere blir ikke tildelt kamper og helsesjekkes ikke.",
-      "noEventsTitle": "Ingen hendelser mottatt fra Auto Tournament-pluginet ennå",
-      "noEventsBody": "Auto Tournament har sendt webhook-konfigurasjonen via RCON, men har ikke mottatt noen hendelser. Som regel betyr det at serveren ikke når Auto Tournaments webhook-URL, eller at Auto Tournament-pluginet ikke kjører.",
-      "notConfiguredTitle": "Ikke konfigurert",
-      "notConfiguredBody": "Auto Tournament har ikke sendt den faste konfigurasjonen til denne serveren ennå. Trykk «Prøv igjen» for å initialisere den.",
-      "unreachableTitle": "Auto Tournament når ikke serveren",
-      "unreachableBody": "Auto Tournament får ikke kontakt med serveren via RCON. Sjekk vert/port, RCON-passord, brannmur og at serveren kjører.",
-      "webhookTitle": "Serveren når ikke Auto Tournament (webhook)",
-      "webhookBody": "Auto Tournament når serveren via RCON, men serveren når ikke Auto Tournaments webhook. Sjekk utgående trafikk, DNS og webhook-URL-en som er satt opp.",
-      "versionDiffTitle": "Serverne har ulike pluginversjoner",
-      "ipBannedTitle": "RCON-IP blokkert",
-      "ipBannedBody": "Serveren har midlertidig blokkert Auto Tournaments IP etter gjentatte mislykkede RCON-innlogginger. Rett RCON-passordet og opphev blokkeringen av IP-en.",
-      "pluginDbTitle": "Auto Tournament-pluginet når ikke databasen sin.",
-      "pluginDbBody": "Bruker du CSM, kjør {{path}}.",
-      "cs2UpdateBody": "Auto Tournament har bekreftet at serverens build er eldre enn den på Steam. Serveren får ikke nye kamper (og turneringen kan ikke startes) før den er oppdatert."
-    },
-    "lastActive": {
-      "justNow": "Aktiv akkurat nå",
-      "minutesAgo_one": "Aktiv for {{count}} minutt siden",
-      "minutesAgo_other": "Aktiv for {{count}} minutter siden",
-      "hoursAgo_one": "Aktiv for {{count}} time siden",
-      "hoursAgo_other": "Aktiv for {{count}} timer siden",
-      "daysAgo_one": "Aktiv for {{count}} dag siden",
-      "daysAgo_other": "Aktiv for {{count}} dager siden"
-    },
-    "pluginStatus": {
-      "idle": "Ledig",
-      "loading": "Laster",
-      "warmup": "Warmup",
-      "knife": "Knivrunde",
-      "live": "Live",
-      "playing": "Spiller",
-      "paused": "Pause",
-      "halftime": "Pause (halvtid)",
-      "postgame": "Ferdig",
-      "queued": "I kø",
-      "error": "Feil"
-    },
-    "retry": {
-      "sendingConfig": "Sender fast konfigurasjon til serveren …",
-      "triggered": "Initialisering av serveren er startet",
-      "failed": "Kunne ikke prøve initialiseringen på nytt: {{message}}",
-      "retryingAll_one": "Prøver å initialisere {{count}} server på nytt …",
-      "retryingAll_other": "Prøver å initialisere {{count}} servere på nytt …",
-      "triggeredAll_one": "Nytt forsøk startet for {{count}} server",
-      "triggeredAll_other": "Nytt forsøk startet for {{count}} servere",
-      "failedAll": "Nytt forsøk mislyktes: {{message}}"
-    },
-    "row": {
-      "details": "Detaljer for {{name}}",
-      "actions": "Handlinger for {{name}}",
-      "edit": "Rediger",
-      "retryInit": "Prøv oppsett på nytt",
-      "disabled": "Deaktivert: tildeling hopper over den",
-      "waitingForPlugin": "Oppsett sendt, venter på første hendelse fra pluginen",
-      "running": "Kjører {{match}}",
-      "ready": "Klar for neste kamp"
-    },
-    "details": {
-      "host": "Vert",
-      "port": "Port",
-      "cs2Name": "CS2-navn",
-      "plugin": "Plugin",
-      "cs2Build": "CS2-bygg",
-      "pluginStatus": "Pluginstatus",
-      "lastEvent": "Siste hendelse",
-      "id": "ID"
-    },
-    "strip": {
-      "online": "ONLINE",
-      "offline": "FRAKOBLET",
-      "notConfigured": "IKKE SATT OPP",
-      "disabled": "DEAKTIVERT",
-      "free": "LEDIGE",
-      "waiting": "VENTER"
+      "total_other": "{{count}} servere"
     },
     "limit": {
       "unlimited": "ingen grense for servere (ikke-kommersiell bruk)",
@@ -641,14 +457,7 @@
       "over": "lisensen dekker {{max}}, {{over}} over grensen"
     },
     "machineCount_one": "{{count}} maskin",
-    "machineCount_other": "{{count}} maskiner",
-    "settings": "Serverinnstillinger",
-    "other": {
-      "title": "Andre servere",
-      "summary_one": "{{count}} server som ikke er på en maskin",
-      "summary_other": "{{count}} servere som ikke er på en maskin",
-      "about": "Servere lagt til med adresse, ikke drevet av csm på en koblet maskin."
-    }
+    "machineCount_other": "{{count}} maskiner"
   },
   "serverModal": {
     "fleetAddress": "Rapportert av Ready Up over fleet-koblingen.",
@@ -667,22 +476,6 @@
     "enabledHelper": "Deaktiverte servere brukes ikke til kamper",
     "tournamentUseLabel": "Use for tournament matches",
     "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
-    "chatPrefixLabel": "Overstyr chat-prefiks",
-    "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
-    "chatPrefixHelper": "Overstyrer at_chat_prefix på denne serveren (valgfritt)",
-    "adminChatPrefixLabel": "Overstyr admin-chat-prefiks",
-    "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
-    "adminChatPrefixHelper": "Overstyrer at_admin_chat_prefix på denne serveren (valgfritt)",
-    "knifeOverrideLabel": "Knivrunde aktivert som standard (overstyr)",
-    "knifeOverrideHelper": "Når satt, overstyrer at_knife_enabled_default for denne serveren. La stå ubestemt for å bruke global standard.",
-    "testConnectivity": "Test tilkobling",
-    "testingConnectivity": "Tester tilkobling…",
-    "connectivity": {
-      "apiToServer": "Auto Tournament API → CS2-server:",
-      "serverToApi": "Server → API (/api/events) (hendelser):",
-      "reachable": "Tilgjengelig",
-      "unreachable": "Ikke tilgjengelig"
-    },
     "errors": {
       "nameRequired": "Servernavn er påkrevd",
       "hostRequired": "Vert er påkrevd",
@@ -690,17 +483,10 @@
       "rconRequired": "RCON-passord er påkrevd",
       "idGenerationFailed": "Kunne ikke generere server-ID. Juster servernavnet.",
       "duplicateId": "Servernavnet gir en duplisert ID '{{id}}'. Velg et annet navn.",
-      "duplicateHostPort": "En server med vert:port '{{host}}:{{port}}' finnes allerede (ID: {{id}}, Navn: {{name}})",
-      "testConnectionSaveFirst": "Lagre serveren før du tester tilkobling",
-      "testConnectionFailed": "Klarte ikke å teste tilkobling",
       "saveFailed": "Klarte ikke å lagre server",
-      "deleteFailed": "Klarte ikke å slette server",
-      "rconReachableApiUnreachable": "Vi når serveren via RCON, men serveren klarte ikke å nå API-endepunktet (testhendelse mangler).",
-      "serverOffline": "Serveren virker å være offline eller utilgjengelig via RCON.",
-      "rconReachableApiUnknown": "RCON works. The server has no event URL yet, so its connection back to the API can't be checked until it is saved and configured."
+      "deleteFailed": "Klarte ikke å slette server"
     },
     "success": {
-      "connectivityOk": "Toveis tilkobling bekreftet: serveren er online og kan nå API-et.",
       "serverUpdated": "Server oppdatert",
       "serverCreated": "Server opprettet",
       "serverDeleted": "Server slettet"
@@ -716,8 +502,6 @@
       "title": "Slett server",
       "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
     },
-    "skinsLabel": "Skins på denne serveren",
-    "skinsHelper": "Spillernes virtuelle skins sendes til serveren i oppvarming og mellom kart, aldri midt i et kart. Krever skins-pluginen til Ready Up og en server uten Steam-servertoken.",
     "skinsTokenWarning": "Denne serveren kjører med et Steam-servertoken (+sv_setsteamaccount), så den får ingen skins: Valve stenger tokenet, og kontoen bak, for servere som deler ut gjenstander. Fjern tokenet i csm for å bruke skins her."
   },
   "mapPoolModal": {
@@ -802,163 +586,6 @@
     },
     "info_one": "Dette lagrer en kartpool med {{count}} kart.",
     "info_other": "Dette lagrer en kartpool med {{count}} kart."
-  },
-  "adminTools": {
-    "title": "Counter-Strike 2-servere",
-    "description": "Kjør vanlige kamp- og serverhandlinger på CS2-serverne dine. Hurtighandlinger vises først, mer avanserte verktøy lenger ned.",
-    "refresh": "Oppdater servere",
-    "serverSelect": {
-      "label": "Målserver(e)",
-      "allServersChip": "Alle servere",
-      "sendStatus": "Send status",
-      "allServersDescription_one": "Kjør på {{count}} server",
-      "allServersDescription_other": "Kjør på alle {{count}} servere"
-    },
-    "command": {
-      "execute": "Kjør"
-    },
-    "customRconWarning": "Advarsel: bruk med forsiktighet!",
-    "results": {
-      "title": "Resultater",
-      "successChip": "✓ Vellykket",
-      "failedChip": "✗ Feilet",
-      "errorPrefix": "Feil:"
-    },
-    "quickActions": {
-      "title": "Hurtighandlinger"
-    },
-    "advanced": {
-      "title": "Avanserte verktøy"
-    },
-    "noServers": "Fant ingen aktiverte servere. Legg til og aktiver servere på Servere-siden.",
-    "toasts": {
-      "commandExecuted_one": "Kommandoen ble kjørt på {{count}} server",
-      "commandExecuted_other": "Kommandoen ble kjørt på {{count}} servere",
-      "commandPartial": "Kommandoen lyktes på {{succeeded}} av {{total}} servere ({{failed}} feilet)",
-      "commandFailed": "Kunne ikke kjøre kommandoen"
-    },
-    "commands": {
-      "matchStart": {
-        "label": "Start kampen",
-        "description": "Start kampen med en gang."
-      },
-      "matchEnd": {
-        "label": "Avslutt kampen",
-        "description": "Tvinger den pågående kampen på de valgte serverne til å avslutte og setter dem tilbake til warmup med css_restart."
-      },
-      "forcePause": {
-        "label": "Tving pause",
-        "description": "Tving kampen på pause."
-      },
-      "forceUnpause": {
-        "label": "Tving fortsett",
-        "description": "Tving kampen til å fortsette etter pause."
-      },
-      "skipVeto": {
-        "label": "Hopp over veto",
-        "description": "Hopp over veto-fasen."
-      },
-      "toggleKnife": {
-        "label": "Knivrunde av/på",
-        "description": "Slå knivrunden for sidevalg av eller på (alias: rk)."
-      },
-      "togglePlayout": {
-        "label": "Spill ut alle runder av/på",
-        "description": "Slå av eller på at alle runder spilles ut."
-      },
-      "toggleWhitelist": {
-        "label": "Whitelist av/på",
-        "description": "Slå lag-whitelisten av eller på."
-      },
-      "showSettings": {
-        "label": "Vis innstillinger",
-        "description": "Vis gjeldende kampinnstillinger."
-      },
-      "reloadAdmins": {
-        "label": "Last inn admins på nytt",
-        "description": "Last inn adminlisten fra admins.json på nytt."
-      },
-      "readyRequired": {
-        "label": "Antall spillere som må være klare",
-        "description": "Angi hvor mange spillere som må være klare før kampen starter.",
-        "inputLabel": "Antall spillere"
-      },
-      "restoreBackup": {
-        "label": "Gjenopprett rundebackup",
-        "description": "Sett kampen tilbake til en bestemt runde.",
-        "inputLabel": "Rundenummer"
-      },
-      "cleanServers": {
-        "label": "Rydd servere",
-        "description": "Avslutter alle pågående kamper på de valgte serverne og setter dem tilbake til warmup med css_restart. Kan ikke angres."
-      },
-      "changeMap": {
-        "label": "Bytt kart",
-        "description": "Bytt til et annet kart (css_map <mapname>).",
-        "inputLabel": "Kartnavn (de_dust2)"
-      },
-      "team1Name": {
-        "label": "Sett navn på lag 1",
-        "description": "Angi navnet på lag 1.",
-        "inputLabel": "Lagnavn"
-      },
-      "team2Name": {
-        "label": "Sett navn på lag 2",
-        "description": "Angi navnet på lag 2.",
-        "inputLabel": "Lagnavn"
-      },
-      "startPractice": {
-        "label": "Start treningsmodus",
-        "description": "Slå på treningsmodus med .-kommandoer."
-      },
-      "exitPractice": {
-        "label": "Avslutt treningsmodus",
-        "description": "Slå av treningsmodus."
-      },
-      "broadcast": {
-        "label": "Send melding til alle",
-        "description": "Send en adminmelding til alle spillerne.",
-        "inputLabel": "Melding"
-      },
-      "customRcon": {
-        "label": "Kjør egen RCON-kommando",
-        "description": "Kjør en hvilken som helst RCON-kommando direkte.",
-        "inputLabel": "RCON-kommando"
-      }
-    },
-    "categories": {
-      "matchControl": "Kampstyring",
-      "matchSettings": "Kampinnstillinger",
-      "backupRestore": "Backup og gjenoppretting",
-      "serverMgmt": "Serveradministrasjon",
-      "teamMgmt": "Lagadministrasjon",
-      "practiceMode": "Treningsmodus",
-      "adminComm": "Admin-meldinger",
-      "advanced": "Avansert RCON"
-    },
-    "events": {
-      "title": "Overvåk serverhendelser",
-      "healthCheckFailed": "Helsesjekken av hendelses-API-et feilet. Sjekk at API-et kjører og at /api/events/test svarer.",
-      "loadFailed": "Kunne ikke laste hendelsene",
-      "connected": "Tilkoblet",
-      "disconnected": "Frakoblet",
-      "paused": "Pauset",
-      "pause": "Pause",
-      "resume": "Fortsett",
-      "refresh": "Oppdater hendelser",
-      "clear": "Tøm konsollen",
-      "filterLabel": "Filtrer på server (valgfritt)",
-      "noServers": "Ingen servere tilgjengelig",
-      "refreshServers": "Oppdater serverlisten",
-      "noEvents": "Ingen hendelser mottatt fra denne serveren ennå.",
-      "waiting": "Venter på hendelser fra serveren …",
-      "footer_one": "Viser {{count}} hendelse (maks 100)",
-      "footer_other": "Viser {{count}} hendelser (maks 100)",
-      "footerForServer_one": "Viser {{count}} hendelse for server {{server}} (maks 100)",
-      "footerForServer_other": "Viser {{count}} hendelser for server {{server}} (maks 100)",
-      "realtime": "Hendelser oppdateres i sanntid via WebSocket",
-      "downloadDemo": "Last ned demo"
-    }
   },
   "settings": {
     "tab": "Counter-Strike 2",
