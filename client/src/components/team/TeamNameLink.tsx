@@ -48,9 +48,10 @@ export function TeamNameLink({
     !isPlaceholderTeamId(teamId) &&
     !(currentTeamId && currentTeamId === teamId);
 
+  // Plain text takes no click: a row it sits in (a match row) still opens.
   if (!canLink) {
     return (
-      <Typography variant={variant} noWrap={noWrap} sx={sx} onClick={onClick}>
+      <Typography variant={variant} noWrap={noWrap} sx={sx}>
         {label}
       </Typography>
     );
