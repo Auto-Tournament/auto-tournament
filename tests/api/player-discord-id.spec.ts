@@ -107,7 +107,10 @@ async function adminCreatePlayer(
   return ((await res.json()) as { player: AdminPlayer }).player;
 }
 
-async function storedDiscordId(request: APIRequestContext, steamId: string): Promise<string | null> {
+async function storedDiscordId(
+  request: APIRequestContext,
+  steamId: string
+): Promise<string | null> {
   const res = await request.get('/api/players');
   expect(res.ok()).toBe(true);
   const { players } = (await res.json()) as { players: AdminPlayer[] };
@@ -234,7 +237,9 @@ test.describe('Discord ID validation (pure)', () => {
   });
 
   test('request paths are logged with the Discord ID abbreviated', () => {
-    expect(redactDiscordIdsInPath('/by-discord-id/123456789012345678')).toBe('/by-discord-id/1234…');
+    expect(redactDiscordIdsInPath('/by-discord-id/123456789012345678')).toBe(
+      '/by-discord-id/1234…'
+    );
     expect(redactDiscordIdsInPath('/api/players/by-discord-id/123456789012345678')).toBe(
       '/api/players/by-discord-id/1234…'
     );
@@ -377,7 +382,7 @@ test.describe('Discord ID: admin edits', () => {
     expect(((await emptyRes.json()) as { player: AdminPlayer }).player.discordId).toBeNull();
   });
 
-  test("a save without discordId keeps an ID the player set meanwhile (stale editor)", async ({
+  test('a save without discordId keeps an ID the player set meanwhile (stale editor)', async ({
     request,
     playwright,
   }) => {
@@ -700,7 +705,12 @@ test.describe('Discord ID: a hand edit is never undone by an import', () => {
     expect(await storedDiscordId(request, steamId)).toBeNull();
 
     // ...and the admin re-imports the same signup export.
-    const again = await postTeam(request, teamId, [{ steamId, name: 'Ola', discordId }], '?upsert=true');
+    const again = await postTeam(
+      request,
+      teamId,
+      [{ steamId, name: 'Ola', discordId }],
+      '?upsert=true'
+    );
     expect(await storedDiscordId(request, steamId)).toBeNull();
     const warnings = handEditWarnings(again);
     expect(warnings).toHaveLength(1);
@@ -811,7 +821,9 @@ test.describe('Discord ID: a hand edit is never undone by an import', () => {
     try {
       const own = await self.put('/api/players/me/discord-id', { data: { discordId } });
       expect(await own.text()).not.toContain('edited_at');
-      expect(await (await self.get('/api/players/me/discord-id')).text()).not.toContain('edited_at');
+      expect(await (await self.get('/api/players/me/discord-id')).text()).not.toContain(
+        'edited_at'
+      );
     } finally {
       await self.dispose();
     }
@@ -1129,10 +1141,7 @@ test.describe('Discord ID: lookup by Discord ID', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('Discord ID: privacy', () => {
-  test('does not appear in any public player or team endpoint', async ({
-    request,
-    playwright,
-  }) => {
+  test('does not appear in any public player or team endpoint', async ({ request, playwright }) => {
     await signInAdmin(request);
     const steamId = uniqueSteamId();
     const discordId = uniqueDiscordId();
@@ -1174,12 +1183,14 @@ test.describe('Discord ID: privacy', () => {
     const discordId = uniqueDiscordId();
     await adminCreatePlayer(request, { id: steamId, name: 'Registered Child', discordId });
 
-    const tournament = await createShuffleTournament(request, { name: `Discord privacy ${Date.now()}` });
+    const tournament = await createShuffleTournament(request, {
+      name: `Discord privacy ${Date.now()}`,
+    });
     expect(tournament).toBeTruthy();
     const registered = await registerPlayers(request, [steamId]);
     expect(registered?.registered).toBe(1);
 
-    const res = await request.get('/api/tournament/1/players');
+    const res = await request.get(`/api/tournament/${tournament!.id}/players`);
     expect(res.ok()).toBe(true);
     const text = await res.text();
     expect(text).toContain(steamId);

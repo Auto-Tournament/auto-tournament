@@ -13,6 +13,7 @@ import {
 } from '../utils/matchIntegration';
 import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
 import { getMapResults } from './matchMapResultService';
+import { forgetMatches } from './forgetMatches';
 import { matchLiveStatsService } from './matchLiveStatsService';
 import { getSwissStandings, getSwissStandingEntries } from './swissProgressionService';
 import { getRoundRobinStandings, getRoundRobinStandingEntries } from './roundRobinStandingsService';
@@ -450,6 +451,7 @@ class TournamentService {
     // standalone match) and keep its name in played_in. Their slugs carry the
     // tournament's id, so that id is never given out again
     // (currentTournament.nextTournamentId).
+    const keptSlugs = new Set<string>();
     if (options.keepPlayed) {
       const kept = await db.queryAsync<{ slug: string }>(
         `UPDATE matches SET tournament_id = NULL,
@@ -458,6 +460,7 @@ class TournamentService {
           WHERE tournament_id = ? AND status = 'completed' RETURNING slug`,
         [tournamentId, tournamentId, tournamentId]
       );
+      for (const { slug } of kept) keptSlugs.add(slug);
       if (kept.length > 0) {
         log.info(`Kept ${kept.length} played match(es) of deleted tournament ${tournamentId}`);
       }
@@ -467,9 +470,9 @@ class TournamentService {
     await db.runAsync('DELETE FROM tournament WHERE id = ?', [tournamentId]);
     log.debug('Tournament deleted from database');
 
-    // Live stats are keyed by slug, and a replacing bracket reuses slugs (r1m1...):
-    // without this a new r1m1 started with the old one's series score.
-    for (const { slug } of slugs) matchLiveStatsService.clear(slug);
+    // The next tournament gets this id and so these slugs: the gone matches
+    // leave nothing under them. Kept ones keep theirs (and their id stays taken).
+    await forgetMatches(slugs.map((r) => r.slug).filter((slug) => !keptSlugs.has(slug)));
     await refreshCurrentTournamentId();
   }
 
@@ -685,13 +688,13 @@ class TournamentService {
     // history before the matches go. (deleteTournament keeps both.)
     await discardTournamentRatings(tournamentId);
 
-    // This tournament's live stats go, so its new bracket does not inherit
-    // stale scores; other tournaments' stay.
+    // The new bracket reuses these slugs: the old matches leave nothing under
+    // them (live stats, clips, demos); other tournaments' stay.
     const resetSlugs = await db.queryAsync<{ slug: string }>(
       'SELECT slug FROM matches WHERE tournament_id = ?',
       [tournamentId]
     );
-    for (const { slug } of resetSlugs) matchLiveStatsService.clear(slug);
+    await forgetMatches(resetSlugs.map((r) => r.slug));
 
     // Delete all matches (this also clears all veto states stored in matches)
     await db.runAsync('DELETE FROM matches WHERE tournament_id = ?', [tournamentId]);

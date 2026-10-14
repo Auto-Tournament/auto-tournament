@@ -1096,6 +1096,14 @@ export interface GameIntegration {
     placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }>;
   }): Promise<void>;
 
+  /**
+   * These matches are gone (their tournament was deleted or reset): drop what
+   * the game keeps under their slugs (clips, stats, demos, live state). A
+   * reset or a deleted tournament's id gives the same slugs (t5-r1m1) to new
+   * matches, which would otherwise show the old ones' data as theirs.
+   */
+  forgetMatches?(slugs: string[]): Promise<void>;
+
   // --- plumbing ------------------------------------------------------------
 
   /** Module routes, mounted at `/api/game/<id>`. */
