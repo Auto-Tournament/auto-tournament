@@ -57,8 +57,7 @@ test(
       // No bell notice for a choice (it opens on every page until one is kept)...
       const skinNotices = async () =>
         (
-          ((await (await player.get('/api/social/notifications')).json()).items ??
-            []) as Array<{
+          ((await (await player.get('/api/social/notifications')).json()).items ?? []) as Array<{
             kind: string;
             data: { image?: string };
           }>
