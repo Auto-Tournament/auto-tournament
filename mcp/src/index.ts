@@ -225,6 +225,81 @@ server.registerTool(
   async ({ path }) => call(() => api.get(path))
 );
 
+server.registerTool(
+  'platform_logs',
+  {
+    title: 'Platform logs',
+    description:
+      "The platform's own recent log lines (the last 1000 are kept): errors, warnings, what it did. level narrows to one level.",
+    inputSchema: {
+      limit: z.number().int().min(1).max(1000).default(200),
+      level: z.enum(['error', 'warn', 'info', 'debug']).optional(),
+    },
+    annotations: read,
+  },
+  async ({ limit, level }) =>
+    call(() => api.get(`/api/logs?limit=${limit}${level ? `&level=${level}` : ''}`))
+);
+
+server.registerTool(
+  'settings',
+  {
+    title: 'Site settings',
+    description:
+      "Every site setting and its value (the core's and the modules', e.g. CS2's server defaults, break between matches, veto turn times). Change them with settings_update.",
+    inputSchema: {},
+    annotations: read,
+  },
+  async () => call(() => api.get('/api/settings'))
+);
+
+server.registerTool(
+  'recorders',
+  {
+    title: 'Highlight recorders',
+    description:
+      "The CS2 highlight recorders (the machines that render clips and reels): online, version, what they are doing; with name, that recorder's recent runs.",
+    inputSchema: { name: z.string().optional() },
+    annotations: read,
+  },
+  async ({ name }) =>
+    call(() =>
+      api.get(name ? `/api/game/cs2/recorders/${enc(name)}/runs` : '/api/game/cs2/recorders')
+    )
+);
+
+server.registerTool(
+  'skins_settings',
+  {
+    title: 'Skins settings',
+    description:
+      'The CS2 skins settings: on or off, drop chances per mode, rarity weights, trade-ups, StatTrak chance and the tournament rewards for places 1 to 3. Change them with skins_settings_update.',
+    inputSchema: {},
+    annotations: read,
+  },
+  async () =>
+    call(async () => {
+      const [config, stats] = await Promise.all([
+        api.get('/api/skins/admin/config'),
+        api.get('/api/skins/admin/stats').catch((e) => ({ error: String(e) })),
+      ]);
+      return { config, stats };
+    })
+);
+
+server.registerTool(
+  'skins_catalog',
+  {
+    title: 'Search the skin catalogue',
+    description:
+      'Search CS2 skins by weapon or name (e.g. "karambit doppler", "ak redline"). Up to 50 rows with weapon, paintKit, rarity and image; knives and gloves carry priceUsd (Skinport market price, at most a day old) to suggest rewards by value. all=true lists every paint kit (each Doppler phase).',
+    inputSchema: { query: z.string().default(''), all: z.boolean().default(false) },
+    annotations: read,
+  },
+  async ({ query, all }) =>
+    call(() => api.get(`/api/skins/admin/catalog?q=${enc(query)}${all ? '&all=1' : ''}`))
+);
+
 // --- Tournament ----------------------------------------------------------------
 
 server.registerTool(
@@ -533,6 +608,69 @@ server.registerTool(
     annotations: write,
   },
   async ({ id, ...body }) => call(() => api.send('PUT', `/api/teams/${enc(id)}`, body))
+);
+
+// --- Settings and skins -------------------------------------------------------
+
+server.registerTool(
+  'settings_update',
+  {
+    title: 'Change site settings',
+    description:
+      'Change site settings: only the keys given (as named by the settings tool); null clears one. A rejected key answers with why, and the keys before it stay saved.',
+    inputSchema: { settings: z.record(z.unknown()) },
+    annotations: write,
+  },
+  async ({ settings }) => call(() => api.send('PUT', '/api/settings', settings))
+);
+
+server.registerTool(
+  'skins_settings_update',
+  {
+    title: 'Change the skins settings',
+    description:
+      'Change the skins settings: only the fields given (see skins_settings). rewards is the whole list for places 1 to 3: { place, mode: "random", rarity } or { place, mode: "skin", weapon, name, floatMin?, floatMax?, seeds? }.',
+    inputSchema: { config: z.record(z.unknown()) },
+    annotations: write,
+  },
+  async ({ config }) => call(() => api.send('PUT', '/api/skins/admin/config', config))
+);
+
+server.registerTool(
+  'skin_give',
+  {
+    title: 'Give a player a skin',
+    description:
+      'Give one exact skin (weapon and paintKit from skins_catalog) to a player by Steam ID. Float and pattern are rolled when left out.',
+    inputSchema: {
+      steamId: z.string().regex(/^\d{17}$/),
+      weapon: z.string(),
+      paintKit: z.number().int(),
+      float: z.number().min(0).max(1).optional(),
+      pattern: z.number().int().min(0).max(1000).optional(),
+    },
+    annotations: write,
+  },
+  async ({ steamId, ...body }) =>
+    call(() => api.send('POST', `/api/skins/admin/players/${enc(steamId)}/skins`, body))
+);
+
+server.registerTool(
+  'skin_drop',
+  {
+    title: 'Give a drop (a choice of three)',
+    description:
+      'Give a drop, a choice of three skins, to a player (Steam ID), everyone online, a team (id), a match (slug) or a tournament (id). preview=true only names who would get one.',
+    inputSchema: {
+      kind: z.enum(['player', 'online', 'team', 'match', 'tournament']),
+      id: z.string().optional(),
+      label: z.string().max(60).optional(),
+      preview: z.boolean().default(true),
+    },
+    annotations: write,
+  },
+  async ({ kind, id, label, preview }) =>
+    call(() => api.send('POST', '/api/skins/admin/drops', { target: { kind, id }, label, preview }))
 );
 
 // --- Anything else -------------------------------------------------------------

@@ -21,6 +21,7 @@ import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
+import { knifeAndGlovePrices, priceFor, priceKey } from './skinPrices';
 import {
   RARITIES,
   SKIN_IMAGES_BASE,
@@ -496,7 +497,7 @@ router.put('/admin/config', requireAuth, async (req, res) => {
  *       - { in: query, name: q, schema: { type: string } }
  *       - { in: query, name: all, schema: { type: string, enum: ['1'] }, description: Every paint kit (each Doppler phase) instead of one per name }
  *     responses:
- *       200: { description: Up to 50 matching skins }
+ *       200: { description: 'Up to 50 matching skins; knives and gloves carry priceUsd (Skinport, at most a day old)' }
  */
 router.get('/admin/catalog', requireAuth, async (req, res) => {
   try {
@@ -508,12 +509,16 @@ router.get('/admin/catalog', requireAuth, async (req, res) => {
     // `all=1`: every paint kit, so each phase of a Doppler is its own row.
     const all = req.query.all === '1';
     const seen = new Set<string>();
+    const prices = await knifeAndGlovePrices();
     const skins = (await skinService.catalog())
-      .map((s) => ({
-        ...s,
-        variant: variantOf(s.paintKitName),
-        imageUrl: `${SKIN_IMAGES_BASE}/${s.image}`,
-      }))
+      .map((s) => {
+        const variant = variantOf(s.paintKitName);
+        return {
+          ...s,
+          variant,
+          imageUrl: `${SKIN_IMAGES_BASE}/${s.image}`,
+        };
+      })
       .filter((s) => {
         const text = `${s.weaponName} ${s.name} ${s.variant ?? ''}`.toLowerCase();
         return words.every((w) => text.includes(w));
@@ -524,7 +529,11 @@ router.get('/admin/catalog', requireAuth, async (req, res) => {
         seen.add(key);
         return true;
       })
-      .slice(0, 50);
+      .slice(0, 50)
+      .map((s) => ({
+        ...s,
+        priceUsd: priceFor(prices, priceKey(s.weaponName, s.name, s.variant)) ?? null,
+      }));
     return res.json({ success: true, skins });
   } catch (error) {
     return fail(res, error, 'Searching the catalogue');
