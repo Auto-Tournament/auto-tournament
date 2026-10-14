@@ -24,6 +24,8 @@ import { ExternalLink } from '../components/common/ExternalLink';
 
 /** Stands for "no sign-in method is available"; rendered as `login.unavailable`. */
 const SIGN_IN_UNAVAILABLE = 'sign-in-unavailable';
+/** The site answered, with no sign-in turned on: a fresh install, not an outage. */
+const SIGN_IN_NOT_SET_UP = 'sign-in-not-set-up';
 /** The provider list could not be loaded; rendered as `login.loadFailed`. */
 const LOAD_FAILED = 'load-failed';
 
@@ -110,7 +112,10 @@ export default function Login() {
         const enabledProviders = providersList.filter((p) => p.enabled);
         setProviders(enabledProviders);
 
-        if (!data.success || enabledProviders.length === 0) {
+        if (data.success && enabledProviders.length === 0) {
+          throw new Error(SIGN_IN_NOT_SET_UP);
+        }
+        if (!data.success) {
           // The API's reason is English only; the alert says it in the
           // viewer's language instead (see SIGN_IN_UNAVAILABLE below).
           throw new Error(SIGN_IN_UNAVAILABLE);
@@ -119,8 +124,9 @@ export default function Login() {
         console.error(error);
         // The alert says it in the viewer's language; details are in the console.
         setProvidersError(
-          error instanceof Error && error.message === SIGN_IN_UNAVAILABLE
-            ? SIGN_IN_UNAVAILABLE
+          error instanceof Error &&
+            (error.message === SIGN_IN_UNAVAILABLE || error.message === SIGN_IN_NOT_SET_UP)
+            ? error.message
             : LOAD_FAILED
         );
       } finally {
@@ -245,9 +251,11 @@ export default function Login() {
                 <Alert severity="error" data-testid="login-providers-error">
                   <Stack spacing={0.5}>
                     <Typography variant="body2">
-                      {providersError === SIGN_IN_UNAVAILABLE
-                        ? t('login.unavailable')
-                        : t('login.loadFailed')}
+                      {providersError === SIGN_IN_NOT_SET_UP
+                        ? t('login.notSetUp')
+                        : providersError === SIGN_IN_UNAVAILABLE
+                          ? t('login.unavailable')
+                          : t('login.loadFailed')}
                     </Typography>
                     <ExternalLink
                       href="https://docs.autotournament.gg/guides/sign-in"

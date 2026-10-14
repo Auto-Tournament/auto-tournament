@@ -37,7 +37,8 @@ export function EventLicensePrompt() {
     try {
       const res = await api.post<LicenseStatusResponse>('/api/license/event-prompt', { action });
       setStatus(res.license);
-      if (action !== 'dismissed' && action !== 'dont_ask') showSuccess(t('license.eventPrompt.thanks'));
+      if (action !== 'dismissed' && action !== 'dont_ask')
+        showSuccess(t('license.eventPrompt.thanks'));
     } catch (err) {
       setHidden(false);
       showError(apiErrorMessage(err, t('license.eventPrompt.failed')));
@@ -53,13 +54,23 @@ export function EventLicensePrompt() {
       severity="info"
       variant="outlined"
       onClose={() => void answer('dismissed')}
-      slotProps={{ closeButton: { title: t('license.eventPrompt.close'), 'aria-label': t('license.eventPrompt.close') } }}
+      slotProps={{
+        closeButton: {
+          title: t('license.eventPrompt.close'),
+          'aria-label': t('license.eventPrompt.close'),
+        },
+      }}
       data-testid="admin-home-event-license-prompt"
     >
       <AlertTitle>{t('license.eventPrompt.title')}</AlertTitle>
       {t('license.eventPrompt.body', { dates: eventDates(prompt.validFrom, prompt.validTo, t) })}
       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
-        <Button size="small" variant="outlined" disabled={busy} onClick={() => void answer('testing')}>
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={busy}
+          onClick={() => void answer('testing')}
+        >
           {t('license.eventPrompt.testing')}
         </Button>
         <Button
@@ -84,7 +95,12 @@ export function EventLicensePrompt() {
         >
           {t('license.eventPrompt.datesMoved')}
         </Button>
-        <Button size="small" color="inherit" disabled={busy} onClick={() => void answer('dont_ask')}>
+        <Button
+          size="small"
+          color="inherit"
+          disabled={busy}
+          onClick={() => void answer('dont_ask')}
+        >
           {t('license.eventPrompt.dontAsk')}
         </Button>
       </Stack>

@@ -19,11 +19,19 @@ interface PeopleOverviewCardProps {
  * accounts waiting for approval" is left out: there is no approval step for
  * a game account to wait in.
  */
-export function PeopleOverviewCard({ playersCount, signedInThisWeekCount, adminsCount }: PeopleOverviewCardProps) {
+export function PeopleOverviewCard({
+  playersCount,
+  signedInThisWeekCount,
+  adminsCount,
+}: PeopleOverviewCardProps) {
   const { t } = useTranslation();
   const lines = [
     { key: 'players', label: t('dashboard.people.players'), value: playersCount },
-    { key: 'signedInThisWeek', label: t('dashboard.people.signedInThisWeek'), value: signedInThisWeekCount },
+    {
+      key: 'signedInThisWeek',
+      label: t('dashboard.people.signedInThisWeek'),
+      value: signedInThisWeekCount,
+    },
     { key: 'admins', label: t('dashboard.people.admins'), value: adminsCount },
   ];
 

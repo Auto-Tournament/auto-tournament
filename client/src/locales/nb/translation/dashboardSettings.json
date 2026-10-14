@@ -22,7 +22,9 @@
     "setup": {
       "title": "Fullfør oppsettet",
       "openSettings": "Åpne innstillinger",
-      "signIn": "Innloggingsleverandør"
+      "signIn": "Innloggingsleverandør",
+      "game": "Installer et spill (CS2) fra Moduler",
+      "discordBot": "Koble til en Discord-bot så spillere får kampene sine som DM"
     },
     "tournaments": {
       "title": "Turnering",
