@@ -738,7 +738,8 @@
       },
       "tbd": "Ikke avgjort",
       "noRoster": "Ingen spillere oppført ennå."
-    }
+    },
+    "bracket": "Turneringstre"
   },
   "report": {
     "button": "Rapporter",

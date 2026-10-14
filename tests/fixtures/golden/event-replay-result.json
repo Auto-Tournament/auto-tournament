@@ -179,6 +179,7 @@
     "team2Score": 1,
     "team2SeriesScore": 1,
     "tournament": "Golden Replay Tournament",
+    "tournamentId": 1,
     "vetoCompleted": true,
     "viewerTeamId": null,
     "winner": {

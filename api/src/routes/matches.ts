@@ -1087,11 +1087,13 @@ router.get('/:slug', async (req: Request, res: Response) => {
       team2_tag: string | null;
       played_in: string | null;
       tournament: string | null;
+      tournament_id: number | null;
       team1_logo: number | null;
       team2_logo: number | null;
     }>(
       `SELECT m.team1_id, m.team2_id, m.winner_id, t1.name AS team1_name, t1.tag AS team1_tag,
               t2.name AS team2_name, t2.tag AS team2_tag, m.played_in, tr.name AS tournament,
+              m.tournament_id,
               t1.logo_updated_at AS team1_logo, t2.logo_updated_at AS team2_logo
          FROM matches m
          LEFT JOIN teams t1 ON t1.id = m.team1_id
@@ -1143,6 +1145,8 @@ router.get('/:slug', async (req: Request, res: Response) => {
           row?.tournament ??
           row?.played_in ??
           null,
+        // The tournament it belongs to: the match room links back to its page.
+        tournamentId: row?.tournament_id ?? null,
         // The signed-in viewer's team in this match: the match room shows
         // them their part (veto, connect, reporting). Null for everyone else.
         viewerTeamId: await viewerTeamIdOfMatch(req, {
