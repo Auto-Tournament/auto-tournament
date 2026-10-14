@@ -104,9 +104,7 @@ export const socialService = {
   },
 
   /** The player's friends (online first), requests to them and from them. */
-  async overview(
-    playerId: string
-  ): Promise<{
+  async overview(playerId: string): Promise<{
     friends: FriendView[];
     incoming: Array<Person & { at: number }>;
     sent: Array<Person & { at: number }>;

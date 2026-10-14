@@ -43,7 +43,8 @@ async function flush() {
         `/api/players/presence?ids=${encodeURIComponent(batch.join(','))}`
       );
       const at = Date.now();
-      for (const [id, presence] of Object.entries(res.presence ?? {})) known.set(id, { presence, at });
+      for (const [id, presence] of Object.entries(res.presence ?? {}))
+        known.set(id, { presence, at });
     } catch {
       // Unknown for now: the names show without a status.
     }

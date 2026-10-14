@@ -18,7 +18,10 @@ function dotColor(p: Presence): string {
   return p.online ? color.live : color.muted;
 }
 
-export function presenceText(p: Presence, t: (k: string, o?: Record<string, unknown>) => string): string {
+export function presenceText(
+  p: Presence,
+  t: (k: string, o?: Record<string, unknown>) => string
+): string {
   const a = p.activity;
   if (a?.kind === 'searching') return t('presence.searching', { mode: a.mode });
   if (a?.kind === 'playing') {
@@ -74,7 +77,12 @@ export function PresenceDot({
         <Typography
           component={RouterLink}
           to={matchPagePath(playing.matchSlug)}
-          sx={{ fontSize: '0.875rem', color: 'text.secondary', textDecoration: 'none', '&:hover': { color: 'text.primary' } }}
+          sx={{
+            fontSize: '0.875rem',
+            color: 'text.secondary',
+            textDecoration: 'none',
+            '&:hover': { color: 'text.primary' },
+          }}
         >
           {text}
         </Typography>
