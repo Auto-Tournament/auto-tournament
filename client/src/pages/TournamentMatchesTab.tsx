@@ -1,5 +1,8 @@
 import { Box, Chip, Stack } from '@mui/material';
+import type { MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { matchPagePath } from '../paths';
 import { LiveChip, Row, RowList, SectionHead } from '../components/common/ui';
 import { TeamNameLink } from '../components/team/TeamNameLink';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
@@ -27,6 +30,7 @@ function MatchRow({
   viewerTeamId: string | null;
 }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const done = match.status === 'completed';
   const score = seriesScore(match);
   // A result set by hand can carry no score at all: the winner is still bold.
@@ -77,7 +81,19 @@ function MatchRow({
         xs: 'minmax(0, 1fr) auto minmax(0, 1fr)',
         md: '9rem minmax(0, 1fr) auto minmax(0, 1fr) 7.5rem',
       }}
-      sx={[{ px: { xs: 2, md: 3 } }, isViewers && { boxShadow: `inset 3px 0 0 ${color.accent}` }]}
+      // The whole row opens the match (a team name opens its team).
+      onClick={(e: MouseEvent<HTMLElement>) => {
+        if ((e.target as HTMLElement).closest('a')) return;
+        navigate(matchPagePath(match.slug));
+      }}
+      sx={[
+        {
+          px: { xs: 2, md: 3 },
+          cursor: 'pointer',
+          '&:hover': { bgcolor: color.paper3 },
+        },
+        isViewers && { boxShadow: `inset 3px 0 0 ${color.accent}` },
+      ]}
     >
       <Box
         sx={{
@@ -91,7 +107,14 @@ function MatchRow({
           color: color.muted,
         }}
       >
-        {publicMatchLabel(match, tournament)}
+        <Box
+          component={RouterLink}
+          to={matchPagePath(match.slug)}
+          data-testid={`public-match-link-${match.slug}`}
+          sx={{ color: 'inherit', textDecoration: 'none', '&:hover': { color: color.ink } }}
+        >
+          {publicMatchLabel(match, tournament)}
+        </Box>
         <Box sx={{ display: { md: 'none' } }}>{status}</Box>
       </Box>
       {team('team1')}
