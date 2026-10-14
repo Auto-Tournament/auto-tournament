@@ -93,6 +93,10 @@ interface KillRow {
   headshot?: boolean;
   penetrated?: boolean;
   throughSmoke?: boolean;
+  /** CS2's kill feed marks: no scope, the killer flashed, in the air. */
+  noScope?: boolean;
+  attackerBlind?: boolean;
+  inAir?: boolean;
   attackerSide?: string | null;
   victimSide?: string | null;
   opening?: boolean;
@@ -167,6 +171,9 @@ export function pickMoments(
       if (k.headshot) score += 5;
       if (k.penetrated) score += 15;
       if (k.throughSmoke) score += 15;
+      if (k.noScope) score += 15;
+      if (k.attackerBlind) score += 20;
+      if (k.inAir) score += 10;
       if (k.opening) score += 5;
     }
     // Clutch: before the run, everyone else on their side in this round died,
