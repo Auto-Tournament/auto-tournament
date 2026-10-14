@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { currentTournamentMatches } from '../helpers/slugs';
 import { impersonatePlayer, signInViaRequest, stopImpersonating } from '../helpers/auth';
 import { validateResult } from '../../api/src/integrations/manual-report/reports';
 import { SWEEP_INTERVAL_MS, reportSweeper } from '../../api/src/integrations/manual-report/sweeper';
@@ -117,6 +118,8 @@ async function createTournament(
     settings?: unknown;
   }
 ) {
+  // A fresh tournament each time: a finished one from an earlier spec stays otherwise.
+  await request.delete('/api/tournament');
   const res = await request.post(`${MR}/tournament`, { data });
   expect(res.status(), `creating: ${await res.text()}`).toBe(200);
   for (const teamId of data.teamIds) await makeCaptain(request, teamId);
@@ -126,7 +129,7 @@ async function listMatches(request: APIRequestContext): Promise<ListedMatch[]> {
   const res = await request.get('/api/matches');
   expect(res.ok(), `listing matches: ${await res.text()}`).toBe(true);
   const body = (await res.json()) as { matches?: ListedMatch[] };
-  return (body.matches ?? []).filter((m) => m.round >= 1);
+  return (await currentTournamentMatches(request, body.matches ?? [])).filter((m) => m.round >= 1);
 }
 
 async function start(request: APIRequestContext) {
@@ -199,7 +202,13 @@ test.describe('Manual-report: what counts as a result', () => {
 
   test('a decisive best-of-3 is normalized to games and a series score', () => {
     const checked = validateResult(
-      { maps: [{ team1Score: 3, team2Score: 1 }, { team1Score: 2, team2Score: 4 }, { team1Score: 5, team2Score: 2 }] },
+      {
+        maps: [
+          { team1Score: 3, team2Score: 1 },
+          { team1Score: 2, team2Score: 4 },
+          { team1Score: 5, team2Score: 2 },
+        ],
+      },
       bo3
     );
     expect(checked.ok).toBe(true);
@@ -214,7 +223,13 @@ test.describe('Manual-report: what counts as a result', () => {
 
   test('a stated winner beats the scores, so a forfeit can be reported', () => {
     const checked = validateResult(
-      { maps: [{ team1Score: 0, team2Score: 0, winner: 'team2' }, { team1Score: 0, team2Score: 0, winner: 'team2' }], note: 'Forfeit' },
+      {
+        maps: [
+          { team1Score: 0, team2Score: 0, winner: 'team2' },
+          { team1Score: 0, team2Score: 0, winner: 'team2' },
+        ],
+        note: 'Forfeit',
+      },
       bo3
     );
     expect(checked.ok).toBe(true);
@@ -231,7 +246,10 @@ test.describe('Manual-report: what counts as a result', () => {
       validateResult({ maps: [{ team1Score: -1, team2Score: 1 }] }, bo3),
       validateResult({ maps: [{ team1Score: 'x', team2Score: 1 }] }, bo3),
       // A level game, in a tournament that allows no draw.
-      validateResult({ maps: [{ team1Score: 2, team2Score: 2 }] }, { seriesLength: 1, allowDraw: false }),
+      validateResult(
+        { maps: [{ team1Score: 2, team2Score: 2 }] },
+        { seriesLength: 1, allowDraw: false }
+      ),
     ];
     for (const [i, result] of errors.entries()) {
       expect(result.ok, `case ${i}`).toBe(false);
@@ -250,7 +268,12 @@ test.describe('Manual-report: what counts as a result', () => {
 
     // A level series that is genuinely over is a result too.
     const drawn = validateResult(
-      { maps: [{ team1Score: 2, team2Score: 1 }, { team1Score: 0, team2Score: 3 }] },
+      {
+        maps: [
+          { team1Score: 2, team2Score: 1 },
+          { team1Score: 0, team2Score: 3 },
+        ],
+      },
       { seriesLength: 3, allowDraw: true }
     );
     expect(drawn.ok).toBe(true);
@@ -260,10 +283,13 @@ test.describe('Manual-report: what counts as a result', () => {
     // "We won the first, then went home" must not finish a best-of-three,
     // whether or not the tournament allows a drawn series.
     for (const allowDraw of [false, true]) {
-      const checked = validateResult({ maps: [{ team1Score: 3, team2Score: 1 }] }, {
-        seriesLength: 3,
-        allowDraw,
-      });
+      const checked = validateResult(
+        { maps: [{ team1Score: 3, team2Score: 1 }] },
+        {
+          seriesLength: 3,
+          allowDraw,
+        }
+      );
       expect(checked.ok, `allowDraw: ${allowDraw}`).toBe(false);
       if (checked.ok) continue;
       expect(checked.error).toContain('Neither side has won 2 of 3');
@@ -320,340 +346,375 @@ test.describe.serial('Manual-report: reporting a tournament to a champion', () =
     await request.delete('/api/tournament');
   });
 
-  test('report and confirm finishes the series and advances the bracket', { tag: ['@api'] }, async ({ request }) => {
-    const teamIds = await createTeams(request, 'mr-happy', 4);
-    await createTournament(request, {
-      name: 'Reported cup',
-      type: 'single_elimination',
-      format: 'bo3',
-      game: 'rocket-league',
-      teamIds,
-      settings: { manualReport: { confirmation: 'opponent', confirmTimeoutMin: 60 } },
-    });
-    await start(request);
-    const round1 = await waitForLive(request, 1, 2);
+  test(
+    'report and confirm finishes the series and advances the bracket',
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const teamIds = await createTeams(request, 'mr-happy', 4);
+      await createTournament(request, {
+        name: 'Reported cup',
+        type: 'single_elimination',
+        format: 'bo3',
+        game: 'rocket-league',
+        teamIds,
+        settings: { manualReport: { confirmation: 'opponent', confirmTimeoutMin: 60 } },
+      });
+      await start(request);
+      const round1 = await waitForLive(request, 1, 2);
 
-    // team1's captain reports. The match stays live: nobody has agreed yet.
-    const submitted = await expectOk(
-      await asCaptain(request, round1[0].team1!.id, () =>
-        act(request, round1[0].slug, 'report', { as: 'captain', data: { result: sweep(3, 'team1') } })
-      ),
-      'reporting'
-    );
-    expect(submitted.report).toMatchObject({
-      revision: 1,
-      status: 'submitted',
-      source: 'report',
-      submittedByTeam: 'team1',
-      timeoutAction: 'auto_confirm',
-    });
-    expect(submitted.report.confirmDeadline).toBeGreaterThan(Math.floor(Date.now() / 1000));
-    expect(submitted.finalized).toBe(false);
-    expect((await reportsOf(request, round1[0].slug)).matchStatus).toBe('live');
-
-    // The opponent confirms, and that is what finishes the series.
-    const confirmed = await expectOk(
-      await asCaptain(request, round1[0].team2!.id, () =>
-        act(request, round1[0].slug, 'confirm', { as: 'captain' })
-      ),
-      'confirming'
-    );
-    expect(confirmed.report.status).toBe('confirmed');
-    expect(confirmed.finalized).toBe(true);
-
-    const after = await reportsOf(request, round1[0].slug);
-    expect(after.matchStatus).toBe('completed');
-    expect(after.winnerId).toBe(round1[0].team1!.id);
-    expect(after.open).toBeNull();
-
-    // The result went through applySeriesResult: the games are map results
-    // with no map name, and the source is on the record as a report.
-    const detail = await request.get(`/api/matches/${round1[0].slug}`);
-    const match = ((await detail.json()) as {
-      match: { mapResults?: Array<{ mapNumber: number; mapName: string | null; winnerTeam: string }> };
-    }).match;
-    expect(match.mapResults).toHaveLength(2);
-    expect(match.mapResults!.every((r) => r.mapName === null)).toBe(true);
-    expect(match.mapResults!.map((r) => r.winnerTeam)).toEqual(['team1', 'team1']);
-
-    // Finish the other semi and the bracket advances by itself.
-    await expectOk(
-      await asCaptain(request, round1[1].team2!.id, () =>
-        act(request, round1[1].slug, 'report', { as: 'captain', data: { result: sweep(3, 'team2') } })
-      ),
-      'reporting the other semi'
-    );
-    await expectOk(
-      await asCaptain(request, round1[1].team1!.id, () =>
-        act(request, round1[1].slug, 'confirm', { as: 'captain' })
-      ),
-      'confirming'
-    );
-
-    const [final] = await waitForLive(request, 2, 1);
-    expect([final.team1!.id, final.team2!.id].sort()).toEqual(
-      [round1[0].team1!.id, round1[1].team2!.id].sort()
-    );
-
-    // And a champion.
-    await expectOk(
-      await asCaptain(request, final.team1!.id, () =>
-        act(request, final.slug, 'report', { as: 'captain', data: { result: sweep(3, 'team1') } })
-      ),
-      'reporting the final'
-    );
-    await expectOk(
-      await asCaptain(request, final.team2!.id, () =>
-        act(request, final.slug, 'confirm', { as: 'captain' })
-      ),
-      'confirming the final'
-    );
-
-    await expect
-      .poll(
-        async () => {
-          const res = await request.get('/api/tournament');
-          return ((await res.json()) as { tournament?: { status?: string } }).tournament?.status;
-        },
-        { message: 'the tournament should complete', timeout: 20_000 }
-      )
-      .toBe('completed');
-
-    const done = await request.get('/api/tournament');
-    const tournament = ((await done.json()) as { tournament: { winner?: { id: string } | null } }).tournament;
-    expect(tournament.winner?.id).toBe(final.team1!.id);
-    expect((await listMatches(request)).every((m) => m.status === 'completed')).toBe(true);
-  });
-
-  test('a team cannot answer its own report, and a newer one supersedes it', { tag: ['@api'] }, async ({ request }) => {
-    const teamIds = await createTeams(request, 'mr-rules', 2);
-    await createTournament(request, {
-      name: 'Rules',
-      type: 'single_elimination',
-      format: 'bo1',
-      game: 'chess',
-      teamIds,
-    });
-    await start(request);
-    const [match] = await waitForLive(request, 1, 1);
-
-    await expectOk(
-      await asCaptain(request, match.team1!.id, () =>
-        act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team1') } })
-      ),
-      'reporting'
-    );
-
-    // The side that reported cannot also answer: the whole point of asking is
-    // that somebody else agrees.
-    for (const action of ['confirm', 'dispute'] as const) {
-      const res = await asCaptain(request, match.team1!.id, () =>
-        act(request, match.slug, action, { as: 'captain' })
+      // team1's captain reports. The match stays live: nobody has agreed yet.
+      const submitted = await expectOk(
+        await asCaptain(request, round1[0].team1!.id, () =>
+          act(request, round1[0].slug, 'report', {
+            as: 'captain',
+            data: { result: sweep(3, 'team1') },
+          })
+        ),
+        'reporting'
       );
-      expect(res.status(), `${action} by the reporting side`).toBe(403);
-      expect(await res.text()).toContain('cannot confirm or dispute its own report');
+      expect(submitted.report).toMatchObject({
+        revision: 1,
+        status: 'submitted',
+        source: 'report',
+        submittedByTeam: 'team1',
+        timeoutAction: 'auto_confirm',
+      });
+      expect(submitted.report.confirmDeadline).toBeGreaterThan(Math.floor(Date.now() / 1000));
+      expect(submitted.finalized).toBe(false);
+      expect((await reportsOf(request, round1[0].slug)).matchStatus).toBe('live');
+
+      // The opponent confirms, and that is what finishes the series.
+      const confirmed = await expectOk(
+        await asCaptain(request, round1[0].team2!.id, () =>
+          act(request, round1[0].slug, 'confirm', { as: 'captain' })
+        ),
+        'confirming'
+      );
+      expect(confirmed.report.status).toBe('confirmed');
+      expect(confirmed.finalized).toBe(true);
+
+      const after = await reportsOf(request, round1[0].slug);
+      expect(after.matchStatus).toBe('completed');
+      expect(after.winnerId).toBe(round1[0].team1!.id);
+      expect(after.open).toBeNull();
+
+      // The result went through applySeriesResult: the games are map results
+      // with no map name, and the source is on the record as a report.
+      const detail = await request.get(`/api/matches/${round1[0].slug}`);
+      const match = (
+        (await detail.json()) as {
+          match: {
+            mapResults?: Array<{ mapNumber: number; mapName: string | null; winnerTeam: string }>;
+          };
+        }
+      ).match;
+      expect(match.mapResults).toHaveLength(2);
+      expect(match.mapResults!.every((r) => r.mapName === null)).toBe(true);
+      expect(match.mapResults!.map((r) => r.winnerTeam)).toEqual(['team1', 'team1']);
+
+      // Finish the other semi and the bracket advances by itself.
+      await expectOk(
+        await asCaptain(request, round1[1].team2!.id, () =>
+          act(request, round1[1].slug, 'report', {
+            as: 'captain',
+            data: { result: sweep(3, 'team2') },
+          })
+        ),
+        'reporting the other semi'
+      );
+      await expectOk(
+        await asCaptain(request, round1[1].team1!.id, () =>
+          act(request, round1[1].slug, 'confirm', { as: 'captain' })
+        ),
+        'confirming'
+      );
+
+      const [final] = await waitForLive(request, 2, 1);
+      expect([final.team1!.id, final.team2!.id].sort()).toEqual(
+        [round1[0].team1!.id, round1[1].team2!.id].sort()
+      );
+
+      // And a champion.
+      await expectOk(
+        await asCaptain(request, final.team1!.id, () =>
+          act(request, final.slug, 'report', { as: 'captain', data: { result: sweep(3, 'team1') } })
+        ),
+        'reporting the final'
+      );
+      await expectOk(
+        await asCaptain(request, final.team2!.id, () =>
+          act(request, final.slug, 'confirm', { as: 'captain' })
+        ),
+        'confirming the final'
+      );
+
+      await expect
+        .poll(
+          async () => {
+            const res = await request.get('/api/tournament');
+            return ((await res.json()) as { tournament?: { status?: string } }).tournament?.status;
+          },
+          { message: 'the tournament should complete', timeout: 20_000 }
+        )
+        .toBe('completed');
+
+      const done = await request.get('/api/tournament');
+      const tournament = ((await done.json()) as { tournament: { winner?: { id: string } | null } })
+        .tournament;
+      expect(tournament.winner?.id).toBe(final.team1!.id);
+      expect((await listMatches(request)).every((m) => m.status === 'completed')).toBe(true);
     }
+  );
 
-    // Nor can someone who captains neither team.
-    const outsider = await act(request, match.slug, 'confirm', { as: 'captain' });
-    expect(outsider.status()).toBe(403);
-    expect(await outsider.text()).toContain('captains neither team');
+  test(
+    'a team cannot answer its own report, and a newer one supersedes it',
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const teamIds = await createTeams(request, 'mr-rules', 2);
+      await createTournament(request, {
+        name: 'Rules',
+        type: 'single_elimination',
+        format: 'bo1',
+        game: 'chess',
+        teamIds,
+      });
+      await start(request);
+      const [match] = await waitForLive(request, 1, 1);
 
-    // A second report from the same side supersedes the first rather than
-    // replacing it: at most one open report, and the history stays whole.
-    const second = await expectOk(
-      await asCaptain(request, match.team1!.id, () =>
-        act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team2') } })
-      ),
-      'reporting again'
-    );
-    expect(second.report.revision).toBe(2);
+      await expectOk(
+        await asCaptain(request, match.team1!.id, () =>
+          act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team1') } })
+        ),
+        'reporting'
+      );
 
-    const state = await reportsOf(request, match.slug);
-    expect(state.reports.map((r) => [r.revision, r.status])).toEqual([
-      [2, 'submitted'],
-      [1, 'superseded'],
-    ]);
-    expect(state.open?.revision).toBe(2);
-    expect(state.matchStatus).toBe('live');
+      // The side that reported cannot also answer: the whole point of asking is
+      // that somebody else agrees.
+      for (const action of ['confirm', 'dispute'] as const) {
+        const res = await asCaptain(request, match.team1!.id, () =>
+          act(request, match.slug, action, { as: 'captain' })
+        );
+        expect(res.status(), `${action} by the reporting side`).toBe(403);
+        expect(await res.text()).toContain('cannot confirm or dispute its own report');
+      }
 
-    // Withdrawing it leaves the match with nothing open and still live.
-    const withdrawn = await expectOk(
-      await asCaptain(request, match.team1!.id, () =>
-        act(request, match.slug, 'withdraw', { as: 'captain' })
-      ),
-      'withdrawing'
-    );
-    expect(withdrawn.report.status).toBe('withdrawn');
-    const empty = await reportsOf(request, match.slug);
-    expect(empty.open).toBeNull();
-    expect(empty.matchStatus).toBe('live');
-  });
+      // Nor can someone who captains neither team.
+      const outsider = await act(request, match.slug, 'confirm', { as: 'captain' });
+      expect(outsider.status()).toBe(403);
+      expect(await outsider.text()).toContain('captains neither team');
 
-  test('a dispute parks the match for an admin, who resolves it', { tag: ['@api'] }, async ({ request }) => {
-    const teamIds = await createTeams(request, 'mr-dispute', 2);
-    await createTournament(request, {
-      name: 'Disputed',
-      type: 'single_elimination',
-      format: 'bo1',
-      game: 'chess',
-      teamIds,
-    });
-    await start(request);
-    const [match] = await waitForLive(request, 1, 1);
+      // A second report from the same side supersedes the first rather than
+      // replacing it: at most one open report, and the history stays whole.
+      const second = await expectOk(
+        await asCaptain(request, match.team1!.id, () =>
+          act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team2') } })
+        ),
+        'reporting again'
+      );
+      expect(second.report.revision).toBe(2);
 
-    await expectOk(
-      await asCaptain(request, match.team1!.id, () =>
-        act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team1') } })
-      ),
-      'reporting'
-    );
-    const disputed = await expectOk(
-      await asCaptain(request, match.team2!.id, () =>
-        act(request, match.slug, 'dispute', { as: 'captain', data: { reason: 'We won 1-0' } })
-      ),
-      'disputing'
-    );
-    expect(disputed.report).toMatchObject({ status: 'disputed', disputeReason: 'We won 1-0' });
-    expect(disputed.report.confirmDeadline).toBeNull();
-    expect(disputed.finalized).toBe(false);
+      const state = await reportsOf(request, match.slug);
+      expect(state.reports.map((r) => [r.revision, r.status])).toEqual([
+        [2, 'submitted'],
+        [1, 'superseded'],
+      ]);
+      expect(state.open?.revision).toBe(2);
+      expect(state.matchStatus).toBe('live');
 
-    const parked = await reportsOf(request, match.slug);
-    expect(parked.matchStatus).toBe('needs_decision');
-    expect(parked.winnerId).toBeNull();
-    // A disputed report is still the open one, so nothing can be reported over it.
-    expect(parked.open?.status).toBe('disputed');
+      // Withdrawing it leaves the match with nothing open and still live.
+      const withdrawn = await expectOk(
+        await asCaptain(request, match.team1!.id, () =>
+          act(request, match.slug, 'withdraw', { as: 'captain' })
+        ),
+        'withdrawing'
+      );
+      expect(withdrawn.report.status).toBe('withdrawn');
+      const empty = await reportsOf(request, match.slug);
+      expect(empty.open).toBeNull();
+      expect(empty.matchStatus).toBe('live');
+    }
+  );
 
-    // The admin settles it with a result of their own: a new admin revision,
-    // the disputed one superseded, and the series finished.
-    const resolved = await expectOk(
-      await act(request, match.slug, 'resolve', { data: { result: sweep(1, 'team2') } }),
-      'resolving'
-    );
-    expect(resolved.report).toMatchObject({ revision: 2, source: 'admin', status: 'confirmed' });
-    expect(resolved.finalized).toBe(true);
+  test(
+    'a dispute parks the match for an admin, who resolves it',
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const teamIds = await createTeams(request, 'mr-dispute', 2);
+      await createTournament(request, {
+        name: 'Disputed',
+        type: 'single_elimination',
+        format: 'bo1',
+        game: 'chess',
+        teamIds,
+      });
+      await start(request);
+      const [match] = await waitForLive(request, 1, 1);
 
-    const settled = await reportsOf(request, match.slug);
-    expect(settled.matchStatus).toBe('completed');
-    expect(settled.winnerId).toBe(match.team2!.id);
-    expect(settled.reports.map((r) => [r.revision, r.status])).toEqual([
-      [2, 'confirmed'],
-      [1, 'superseded'],
-    ]);
-  });
+      await expectOk(
+        await asCaptain(request, match.team1!.id, () =>
+          act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team1') } })
+        ),
+        'reporting'
+      );
+      const disputed = await expectOk(
+        await asCaptain(request, match.team2!.id, () =>
+          act(request, match.slug, 'dispute', { as: 'captain', data: { reason: 'We won 1-0' } })
+        ),
+        'disputing'
+      );
+      expect(disputed.report).toMatchObject({ status: 'disputed', disputeReason: 'We won 1-0' });
+      expect(disputed.report.confirmDeadline).toBeNull();
+      expect(disputed.finalized).toBe(false);
 
-  test('the deadline passes: auto_confirm takes the report', { tag: ['@api'] }, async ({ request }) => {
-    const teamIds = await createTeams(request, 'mr-auto', 2);
-    await createTournament(request, {
-      name: 'Auto confirm',
-      type: 'single_elimination',
-      format: 'bo1',
-      game: 'chess',
-      teamIds,
-      settings: { manualReport: { confirmTimeoutMin: 60, timeoutAction: 'auto_confirm' } },
-    });
-    await start(request);
-    const [match] = await waitForLive(request, 1, 1);
+      const parked = await reportsOf(request, match.slug);
+      expect(parked.matchStatus).toBe('needs_decision');
+      expect(parked.winnerId).toBeNull();
+      // A disputed report is still the open one, so nothing can be reported over it.
+      expect(parked.open?.status).toBe('disputed');
 
-    await expectOk(
-      await asCaptain(request, match.team1!.id, () =>
-        act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team1') } })
-      ),
-      'reporting'
-    );
-    // A sweep before the deadline does nothing.
-    expect((await request.post(`${MR}/sweep`, { data: {} })).ok()).toBe(true);
-    expect((await reportsOf(request, match.slug)).open?.status).toBe('submitted');
+      // The admin settles it with a result of their own: a new admin revision,
+      // the disputed one superseded, and the series finished.
+      const resolved = await expectOk(
+        await act(request, match.slug, 'resolve', { data: { result: sweep(1, 'team2') } }),
+        'resolving'
+      );
+      expect(resolved.report).toMatchObject({ revision: 2, source: 'admin', status: 'confirmed' });
+      expect(resolved.finalized).toBe(true);
 
-    // Move the deadline into the past and sweep again.
-    expect(
-      (await request.post(`${MR}/${match.slug}/deadline`, { data: { minutesFromNow: -1 } })).ok()
-    ).toBe(true);
-    expect((await request.post(`${MR}/sweep`, { data: {} })).ok()).toBe(true);
+      const settled = await reportsOf(request, match.slug);
+      expect(settled.matchStatus).toBe('completed');
+      expect(settled.winnerId).toBe(match.team2!.id);
+      expect(settled.reports.map((r) => [r.revision, r.status])).toEqual([
+        [2, 'confirmed'],
+        [1, 'superseded'],
+      ]);
+    }
+  );
 
-    const swept = await reportsOf(request, match.slug);
-    expect(swept.open).toBeNull();
-    expect(swept.reports[0].status).toBe('confirmed');
-    expect(swept.matchStatus).toBe('completed');
-    expect(swept.winnerId).toBe(match.team1!.id);
+  test(
+    'the deadline passes: auto_confirm takes the report',
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const teamIds = await createTeams(request, 'mr-auto', 2);
+      await createTournament(request, {
+        name: 'Auto confirm',
+        type: 'single_elimination',
+        format: 'bo1',
+        game: 'chess',
+        teamIds,
+        settings: { manualReport: { confirmTimeoutMin: 60, timeoutAction: 'auto_confirm' } },
+      });
+      await start(request);
+      const [match] = await waitForLive(request, 1, 1);
 
-    // Sweeping again changes nothing: the report is closed and the match is done.
-    expect((await request.post(`${MR}/sweep`, { data: {} })).ok()).toBe(true);
-    expect((await reportsOf(request, match.slug)).reports).toHaveLength(1);
-  });
+      await expectOk(
+        await asCaptain(request, match.team1!.id, () =>
+          act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team1') } })
+        ),
+        'reporting'
+      );
+      // A sweep before the deadline does nothing.
+      expect((await request.post(`${MR}/sweep`, { data: {} })).ok()).toBe(true);
+      expect((await reportsOf(request, match.slug)).open?.status).toBe('submitted');
 
-  test('the deadline passes: escalate asks an admin instead', { tag: ['@api'] }, async ({ request }) => {
-    const teamIds = await createTeams(request, 'mr-esc', 2);
-    await createTournament(request, {
-      name: 'Escalate',
-      type: 'single_elimination',
-      format: 'bo1',
-      game: 'chess',
-      teamIds,
-      settings: { manualReport: { confirmTimeoutMin: 30, timeoutAction: 'escalate' } },
-    });
-    await start(request);
-    const [match] = await waitForLive(request, 1, 1);
+      // Move the deadline into the past and sweep again.
+      expect(
+        (await request.post(`${MR}/${match.slug}/deadline`, { data: { minutesFromNow: -1 } })).ok()
+      ).toBe(true);
+      expect((await request.post(`${MR}/sweep`, { data: {} })).ok()).toBe(true);
 
-    const submitted = await expectOk(
-      await asCaptain(request, match.team1!.id, () =>
-        act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team1') } })
-      ),
-      'reporting'
-    );
-    expect(submitted.report.timeoutAction).toBe('escalate');
+      const swept = await reportsOf(request, match.slug);
+      expect(swept.open).toBeNull();
+      expect(swept.reports[0].status).toBe('confirmed');
+      expect(swept.matchStatus).toBe('completed');
+      expect(swept.winnerId).toBe(match.team1!.id);
 
-    await request.post(`${MR}/${match.slug}/deadline`, { data: { minutesFromNow: -1 } });
-    expect((await request.post(`${MR}/sweep`, { data: {} })).ok()).toBe(true);
+      // Sweeping again changes nothing: the report is closed and the match is done.
+      expect((await request.post(`${MR}/sweep`, { data: {} })).ok()).toBe(true);
+      expect((await reportsOf(request, match.slug)).reports).toHaveLength(1);
+    }
+  );
 
-    // The match waits for an admin, and the report stays open so nothing can
-    // be reported over it while they look. Nothing was finalized.
-    const escalated = await reportsOf(request, match.slug);
-    expect(escalated.matchStatus).toBe('needs_decision');
-    expect(escalated.winnerId).toBeNull();
-    expect(escalated.open).toMatchObject({ status: 'submitted', confirmDeadline: null });
+  test(
+    'the deadline passes: escalate asks an admin instead',
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const teamIds = await createTeams(request, 'mr-esc', 2);
+      await createTournament(request, {
+        name: 'Escalate',
+        type: 'single_elimination',
+        format: 'bo1',
+        game: 'chess',
+        teamIds,
+        settings: { manualReport: { confirmTimeoutMin: 30, timeoutAction: 'escalate' } },
+      });
+      await start(request);
+      const [match] = await waitForLive(request, 1, 1);
 
-    // Clearing the deadline is what takes it out of the sweep, so a second
-    // sweep does not act on it twice.
-    expect((await request.post(`${MR}/sweep`, { data: {} })).ok()).toBe(true);
-    expect((await reportsOf(request, match.slug)).matchStatus).toBe('needs_decision');
+      const submitted = await expectOk(
+        await asCaptain(request, match.team1!.id, () =>
+          act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team1') } })
+        ),
+        'reporting'
+      );
+      expect(submitted.report.timeoutAction).toBe('escalate');
 
-    // The admin takes it as reported.
-    const resolved = await expectOk(await act(request, match.slug, 'resolve'), 'resolving');
-    expect(resolved.report).toMatchObject({ revision: 1, status: 'confirmed' });
-    expect(resolved.finalized).toBe(true);
-    const done = await reportsOf(request, match.slug);
-    expect(done.matchStatus).toBe('completed');
-    expect(done.winnerId).toBe(match.team1!.id);
-  });
+      await request.post(`${MR}/${match.slug}/deadline`, { data: { minutesFromNow: -1 } });
+      expect((await request.post(`${MR}/sweep`, { data: {} })).ok()).toBe(true);
 
-  test('no confirmation required: a report stands on its own', { tag: ['@api'] }, async ({ request }) => {
-    const teamIds = await createTeams(request, 'mr-none', 2);
-    await createTournament(request, {
-      name: 'No confirmation',
-      type: 'single_elimination',
-      format: 'bo1',
-      game: 'chess',
-      teamIds,
-      settings: { manualReport: { confirmation: 'none' } },
-    });
-    await start(request);
-    const [match] = await waitForLive(request, 1, 1);
+      // The match waits for an admin, and the report stays open so nothing can
+      // be reported over it while they look. Nothing was finalized.
+      const escalated = await reportsOf(request, match.slug);
+      expect(escalated.matchStatus).toBe('needs_decision');
+      expect(escalated.winnerId).toBeNull();
+      expect(escalated.open).toMatchObject({ status: 'submitted', confirmDeadline: null });
 
-    const reported = await expectOk(
-      await asCaptain(request, match.team2!.id, () =>
-        act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team2') } })
-      ),
-      'reporting'
-    );
-    expect(reported.report).toMatchObject({ status: 'confirmed', confirmation: 'none' });
-    expect(reported.report.confirmDeadline).toBeNull();
-    expect(reported.finalized).toBe(true);
+      // Clearing the deadline is what takes it out of the sweep, so a second
+      // sweep does not act on it twice.
+      expect((await request.post(`${MR}/sweep`, { data: {} })).ok()).toBe(true);
+      expect((await reportsOf(request, match.slug)).matchStatus).toBe('needs_decision');
 
-    const done = await reportsOf(request, match.slug);
-    expect(done.matchStatus).toBe('completed');
-    expect(done.winnerId).toBe(match.team2!.id);
-  });
+      // The admin takes it as reported.
+      const resolved = await expectOk(await act(request, match.slug, 'resolve'), 'resolving');
+      expect(resolved.report).toMatchObject({ revision: 1, status: 'confirmed' });
+      expect(resolved.finalized).toBe(true);
+      const done = await reportsOf(request, match.slug);
+      expect(done.matchStatus).toBe('completed');
+      expect(done.winnerId).toBe(match.team1!.id);
+    }
+  );
+
+  test(
+    'no confirmation required: a report stands on its own',
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const teamIds = await createTeams(request, 'mr-none', 2);
+      await createTournament(request, {
+        name: 'No confirmation',
+        type: 'single_elimination',
+        format: 'bo1',
+        game: 'chess',
+        teamIds,
+        settings: { manualReport: { confirmation: 'none' } },
+      });
+      await start(request);
+      const [match] = await waitForLive(request, 1, 1);
+
+      const reported = await expectOk(
+        await asCaptain(request, match.team2!.id, () =>
+          act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team2') } })
+        ),
+        'reporting'
+      );
+      expect(reported.report).toMatchObject({ status: 'confirmed', confirmation: 'none' });
+      expect(reported.report.confirmDeadline).toBeNull();
+      expect(reported.finalized).toBe(true);
+
+      const done = await reportsOf(request, match.slug);
+      expect(done.matchStatus).toBe('completed');
+      expect(done.winnerId).toBe(match.team2!.id);
+    }
+  );
 
   /**
    * A reported league: round robin on a game with no veto. Every pairing is
@@ -662,134 +723,167 @@ test.describe.serial('Manual-report: reporting a tournament to a champion', () =
    * pre-match phase at all, so the tournament used to stall the moment round 1
    * was reported. The finished round now opens the next one.
    */
-  test('round robin: reporting a round opens the next one, up to a champion', { tag: ['@api'] }, async ({ request }) => {
-    const teamIds = await createTeams(request, 'mr-rr', 4);
-    await createTournament(request, {
-      name: 'Reported league',
-      type: 'round_robin',
-      format: 'bo1',
-      game: 'chess',
-      teamIds,
-      settings: { manualReport: { confirmation: 'none' } },
-    });
+  test(
+    'round robin: reporting a round opens the next one, up to a champion',
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const teamIds = await createTeams(request, 'mr-rr', 4);
+      await createTournament(request, {
+        name: 'Reported league',
+        type: 'round_robin',
+        format: 'bo1',
+        game: 'chess',
+        teamIds,
+        settings: { manualReport: { confirmation: 'none' } },
+      });
 
-    // 4 teams: 3 rounds of 2, every pairing known from the start.
-    const created = await listMatches(request);
-    expect(created).toHaveLength(6);
-    expect(created.filter((m) => m.round > 1).every((m) => m.status === 'pending' && m.team1 && m.team2)).toBe(true);
+      // 4 teams: 3 rounds of 2, every pairing known from the start.
+      const created = await listMatches(request);
+      expect(created).toHaveLength(6);
+      expect(
+        created
+          .filter((m) => m.round > 1)
+          .every((m) => m.status === 'pending' && m.team1 && m.team2)
+      ).toBe(true);
 
-    await start(request);
+      await start(request);
 
-    for (const round of [1, 2, 3]) {
-      const matches = await waitForLive(request, round, 2);
-      const later = (await listMatches(request)).filter((m) => m.round > round);
-      expect(later.every((m) => m.status === 'pending'), `round ${round + 1} is not open yet`).toBe(true);
-      for (const match of matches) {
-        const reported = await expectOk(
-          await asCaptain(request, match.team1!.id, () =>
-            act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team1') } })
-          ),
-          `reporting ${match.slug}`
-        );
-        expect(reported.finalized).toBe(true);
+      for (const round of [1, 2, 3]) {
+        const matches = await waitForLive(request, round, 2);
+        const later = (await listMatches(request)).filter((m) => m.round > round);
+        expect(
+          later.every((m) => m.status === 'pending'),
+          `round ${round + 1} is not open yet`
+        ).toBe(true);
+        for (const match of matches) {
+          const reported = await expectOk(
+            await asCaptain(request, match.team1!.id, () =>
+              act(request, match.slug, 'report', {
+                as: 'captain',
+                data: { result: sweep(1, 'team1') },
+              })
+            ),
+            `reporting ${match.slug}`
+          );
+          expect(reported.finalized).toBe(true);
+        }
       }
+
+      await expect
+        .poll(
+          async () => {
+            const res = await request.get('/api/tournament');
+            return ((await res.json()) as { tournament?: { status?: string } }).tournament?.status;
+          },
+          { message: 'the league should complete', timeout: 20_000 }
+        )
+        .toBe('completed');
+
+      const done = await request.get('/api/tournament');
+      expect(
+        ((await done.json()) as { tournament: { winner?: { id: string } | null } }).tournament
+          .winner?.id
+      ).toBeTruthy();
+      expect((await listMatches(request)).every((m) => m.status === 'completed')).toBe(true);
     }
+  );
 
-    await expect
-      .poll(
-        async () => {
-          const res = await request.get('/api/tournament');
-          return ((await res.json()) as { tournament?: { status?: string } }).tournament?.status;
-        },
-        { message: 'the league should complete', timeout: 20_000 }
-      )
-      .toBe('completed');
-
-    const done = await request.get('/api/tournament');
-    expect(((await done.json()) as { tournament: { winner?: { id: string } | null } }).tournament.winner?.id).toBeTruthy();
-    expect((await listMatches(request)).every((m) => m.status === 'completed')).toBe(true);
-  });
-
-  test('an admin overrides, and reopens only while nothing downstream has finished', { tag: ['@api'] }, async ({ request }) => {
-    const teamIds = await createTeams(request, 'mr-admin', 4);
-    await createTournament(request, {
-      name: 'Admin',
-      type: 'single_elimination',
-      format: 'bo1',
-      game: 'chess',
-      teamIds,
-      settings: { manualReport: { confirmation: 'opponent', confirmTimeoutMin: 0 } },
-    });
-    await start(request);
-    const round1 = await waitForLive(request, 1, 2);
-    const [first, second] = round1;
-
-    // An admin sets the result outright, with no report to settle.
-    const overridden = await expectOk(
-      await act(request, first.slug, 'override', { data: { result: sweep(1, 'team1') } }),
-      'overriding'
-    );
-    expect(overridden.report).toMatchObject({ source: 'admin', status: 'confirmed', submittedByTeam: null });
-    expect(overridden.finalized).toBe(true);
-    expect((await reportsOf(request, first.slug)).winnerId).toBe(first.team1!.id);
-
-    // A finished match cannot simply be overridden again: the result is
-    // downstream already.
-    const again = await act(request, first.slug, 'override', { data: { result: sweep(1, 'team2') } });
-    expect(again.status()).toBe(409);
-    expect(await again.text()).toContain('reopen it first');
-
-    // Nothing downstream has finished yet, so it can be reopened...
-    const reopened = await act(request, first.slug, 'reopen');
-    expect(reopened.status(), await reopened.text()).toBe(200);
-    const live = await reportsOf(request, first.slug);
-    expect(live.matchStatus).toBe('live');
-    expect(live.winnerId).toBeNull();
-    // Its recorded games went with it, and the result that stood is superseded.
-    expect(live.reports.every((r) => r.status === 'superseded')).toBe(true);
-
-    // ...and reported again, the other way.
-    const redone = await expectOk(
-      await act(request, first.slug, 'override', { data: { result: sweep(1, 'team2') } }),
-      'overriding after the reopen'
-    );
-    expect(redone.finalized).toBe(true);
-    expect((await reportsOf(request, first.slug)).winnerId).toBe(first.team2!.id);
-
-    // Finish the other semi so the final has both teams and goes live; the
-    // first match now feeds a match that has started, so reopening it is
-    // refused.
-    await expectOk(
-      await act(request, second.slug, 'override', { data: { result: sweep(1, 'team1') } }),
-      'overriding the other semi'
-    );
-    await waitForLive(request, 2, 1);
-
-    const refused = await act(request, first.slug, 'reopen');
-    expect(refused.status()).toBe(409);
-    expect(await refused.text()).toContain('already started or finished');
-  });
-
-  test('a match that is not reported manually is refused', { tag: ['@api'] }, async ({ request }) => {
-    const teamIds = await createTeams(request, 'mr-cs2', 2);
-    const created = await request.post('/api/tournament', {
-      data: {
-        name: 'CS2',
+  test(
+    'an admin overrides, and reopens only while nothing downstream has finished',
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const teamIds = await createTeams(request, 'mr-admin', 4);
+      await createTournament(request, {
+        name: 'Admin',
         type: 'single_elimination',
         format: 'bo1',
-        maps: ['de_mirage', 'de_inferno', 'de_nuke'],
+        game: 'chess',
         teamIds,
-      },
-    });
-    expect(created.ok(), await created.text()).toBe(true);
-    const [cs2Match] = await listMatches(request);
-    expect(cs2Match.game).toBe('cs2');
+        settings: { manualReport: { confirmation: 'opponent', confirmTimeoutMin: 0 } },
+      });
+      await start(request);
+      const round1 = await waitForLive(request, 1, 2);
+      const [first, second] = round1;
 
-    for (const action of ['report', 'override', 'reopen'] as const) {
-      const res = await act(request, cs2Match.slug, action, { data: { result: sweep(1, 'team1') } });
-      expect(res.status(), action).toBe(409);
-      expect(await res.text()).toContain('not reported manually');
+      // An admin sets the result outright, with no report to settle.
+      const overridden = await expectOk(
+        await act(request, first.slug, 'override', { data: { result: sweep(1, 'team1') } }),
+        'overriding'
+      );
+      expect(overridden.report).toMatchObject({
+        source: 'admin',
+        status: 'confirmed',
+        submittedByTeam: null,
+      });
+      expect(overridden.finalized).toBe(true);
+      expect((await reportsOf(request, first.slug)).winnerId).toBe(first.team1!.id);
+
+      // A finished match cannot simply be overridden again: the result is
+      // downstream already.
+      const again = await act(request, first.slug, 'override', {
+        data: { result: sweep(1, 'team2') },
+      });
+      expect(again.status()).toBe(409);
+      expect(await again.text()).toContain('reopen it first');
+
+      // Nothing downstream has finished yet, so it can be reopened...
+      const reopened = await act(request, first.slug, 'reopen');
+      expect(reopened.status(), await reopened.text()).toBe(200);
+      const live = await reportsOf(request, first.slug);
+      expect(live.matchStatus).toBe('live');
+      expect(live.winnerId).toBeNull();
+      // Its recorded games went with it, and the result that stood is superseded.
+      expect(live.reports.every((r) => r.status === 'superseded')).toBe(true);
+
+      // ...and reported again, the other way.
+      const redone = await expectOk(
+        await act(request, first.slug, 'override', { data: { result: sweep(1, 'team2') } }),
+        'overriding after the reopen'
+      );
+      expect(redone.finalized).toBe(true);
+      expect((await reportsOf(request, first.slug)).winnerId).toBe(first.team2!.id);
+
+      // Finish the other semi so the final has both teams and goes live; the
+      // first match now feeds a match that has started, so reopening it is
+      // refused.
+      await expectOk(
+        await act(request, second.slug, 'override', { data: { result: sweep(1, 'team1') } }),
+        'overriding the other semi'
+      );
+      await waitForLive(request, 2, 1);
+
+      const refused = await act(request, first.slug, 'reopen');
+      expect(refused.status()).toBe(409);
+      expect(await refused.text()).toContain('already started or finished');
     }
-    expect((await act(request, 'no-such-match', 'report')).status()).toBe(404);
-  });
+  );
+
+  test(
+    'a match that is not reported manually is refused',
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const teamIds = await createTeams(request, 'mr-cs2', 2);
+      const created = await request.post('/api/tournament', {
+        data: {
+          name: 'CS2',
+          type: 'single_elimination',
+          format: 'bo1',
+          maps: ['de_mirage', 'de_inferno', 'de_nuke'],
+          teamIds,
+        },
+      });
+      expect(created.ok(), await created.text()).toBe(true);
+      const [cs2Match] = await listMatches(request);
+      expect(cs2Match.game).toBe('cs2');
+
+      for (const action of ['report', 'override', 'reopen'] as const) {
+        const res = await act(request, cs2Match.slug, action, {
+          data: { result: sweep(1, 'team1') },
+        });
+        expect(res.status(), action).toBe(409);
+        expect(await res.text()).toContain('not reported manually');
+      }
+      expect((await act(request, 'no-such-match', 'report')).status()).toBe(404);
+    }
+  );
 });
