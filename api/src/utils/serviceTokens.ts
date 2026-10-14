@@ -168,10 +168,7 @@ export function parseServiceTokens(
  * length mismatch and the comparison leaks nothing about how much of a guess
  * was right.
  */
-export function findServiceToken(
-  presented: string,
-  tokens: ServiceToken[]
-): ServiceToken | null {
+export function findServiceToken(presented: string, tokens: ServiceToken[]): ServiceToken | null {
   if (!presented || presented.length === 0) return null;
 
   const presentedHash = sha256(presented);

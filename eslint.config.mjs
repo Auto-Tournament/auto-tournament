@@ -24,7 +24,7 @@ export default [
       },
     },
   },
- 
+
   // Backend TypeScript files (api/src/**/*.ts)
   {
     files: ['api/src/**/*.ts'],
@@ -368,8 +368,9 @@ export default [
       // Linting them from here would apply this project's type-aware rules to
       // a tsconfig they are not part of.
       'examples/**',
+      // The MCP server: its own package, typechecked on its own in CI.
+      'mcp/**',
       '.pnp.cjs', // Yarn PnP file
     ],
   },
 ];
-
