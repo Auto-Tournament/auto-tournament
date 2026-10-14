@@ -17,7 +17,7 @@ import { getVetoContext } from './context';
 import { settingsService } from '../../../services/settingsService';
 import { normalizeConfigPlayers } from '../../../utils/playerTransform';
 import { resolveViewerIdentity } from '../../../utils/viewerIdentity';
-import { requireAuth } from '../../../middleware/auth';
+import { checkAdminAccess, requireAuth } from '../../../middleware/auth';
 import { tournamentRowToResponse } from '../../../utils/tournamentRow';
 import { mapService } from '../maps/mapService';
 import { vetoTurnDeadline } from './timer';
@@ -341,7 +341,13 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
 router.post('/:matchSlug/action', async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
-    const { mapName, side, teamSlug } = req.body;
+    const { mapName, side, teamSlug, actAs } = req.body as {
+      mapName?: string;
+      side?: string;
+      teamSlug?: string;
+      /** An admin acting for a team (the admin match page's "Act for a team"). */
+      actAs?: unknown;
+    };
 
     const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
       matchSlug,
@@ -357,7 +363,18 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     // Resolve which team (if any) the current viewer belongs to based on their
     // Steam ID (from player_steam_id cookie or Passport user).
     const viewerSteamId = await getViewerSteamId(req);
-    const viewerTeam = await resolveViewerTeamForMatch(match, viewerSteamId);
+    let viewerTeam = await resolveViewerTeamForMatch(match, viewerSteamId);
+    // An admin acts for either team (a captain who can't, a stuck veto).
+    let actingAdmin = false;
+    if (actAs === 'team1' || actAs === 'team2') {
+      const access = await checkAdminAccess(req);
+      if (!access.ok) {
+        return res.status(403).json({ success: false, error: 'Only an admin can act for a team.' });
+      }
+      viewerTeam = actAs;
+      actingAdmin = true;
+      log.info(`[VETO] ${matchSlug}: an admin acts for ${actAs}`);
+    }
 
     if (viewerTeam === 'both') {
       return res.status(409).json({
@@ -367,7 +384,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       });
     }
 
-    if (!viewerSteamId || !viewerTeam) {
+    if ((!viewerSteamId && !actingAdmin) || !viewerTeam) {
       return res.status(403).json({
         success: false,
         error:

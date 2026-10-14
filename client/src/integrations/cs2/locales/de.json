@@ -404,6 +404,10 @@
       "you": "ihr",
       "them": "sie",
       "timedOut": "Zeit abgelaufen"
+    },
+    "actFor": {
+      "label": "Act for:",
+      "watch": "Just watch"
     }
   },
   "matchInfo": {

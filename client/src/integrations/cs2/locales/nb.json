@@ -404,6 +404,10 @@
       "you": "dere",
       "them": "de",
       "timedOut": "tiden gikk ut"
+    },
+    "actFor": {
+      "label": "Handle for:",
+      "watch": "Bare se"
     }
   },
   "matchInfo": {
