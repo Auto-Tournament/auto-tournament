@@ -347,6 +347,11 @@ class FleetSession {
         const payload = msg.payload as unknown as PingPayload;
         this.sendEphemeral('pong', { t: payload.t }, msg.id);
         if (payload.health) this.touchSeen(payload.health, true);
+        // Who is on a server with no match: their skins go out (push/skins.ts).
+        if (this.serverId && payload.health?.steamids)
+          void import('./push/skins').then(({ playersSeen }) =>
+            playersSeen(this.serverId as string, payload.health?.steamids ?? [])
+          );
         return;
       }
       case 'pong':
@@ -698,6 +703,10 @@ class FleetSession {
 
   private onClosed(): void {
     this.closed = true;
+    if (this.serverId)
+      void import('./push/skins').then(({ playersSeen }) =>
+        playersSeen(this.serverId as string, null)
+      );
     for (const t of [this.ackTimer, this.deadTimer, this.helloTimer]) if (t) clearTimeout(t);
     if (this.pingTimer) clearInterval(this.pingTimer);
     this.gateway.unregister(this);

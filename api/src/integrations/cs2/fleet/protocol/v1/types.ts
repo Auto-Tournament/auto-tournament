@@ -136,6 +136,8 @@ export interface PingPayload {
     spool_msgs?: number;
     uptime_s?: number;
     frame_age_ms?: number;
+    /** The connected humans' Steam ids (Ready Up beta.34+; absent with nobody on). */
+    steamids?: string[];
   };
 }
 

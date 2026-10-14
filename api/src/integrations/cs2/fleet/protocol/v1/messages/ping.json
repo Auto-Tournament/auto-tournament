@@ -14,7 +14,17 @@
         "tick_ms_p99": { "type": "number", "minimum": 0 },
         "spool_msgs": { "type": "integer", "minimum": 0 },
         "uptime_s": { "type": "integer", "minimum": 0 },
-        "frame_age_ms": { "type": "integer", "minimum": -1, "description": "ms since the game thread's last frame; -1 before the first. FLEET.md §6.2" }
+        "frame_age_ms": {
+          "type": "integer",
+          "minimum": -1,
+          "description": "ms since the game thread's last frame; -1 before the first. FLEET.md §6.2"
+        },
+        "steamids": {
+          "type": "array",
+          "maxItems": 128,
+          "items": { "$ref": "../defs.json#/$defs/u64s" },
+          "description": "The connected humans' Steam ids (left out with none). The platform sends their skins on a server with no match, where no player_connect event names them. FLEET.md §6.2"
+        }
       }
     }
   }
