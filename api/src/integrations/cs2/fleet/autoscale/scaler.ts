@@ -631,6 +631,12 @@ export function runScalerPass(): Promise<PassResult | null> {
       const settings = await getAutoscaleSettings();
       const linked = settings.enabled ? await linkCreatedServers() : 0;
       const { input, hostNames } = await gatherInputs(settings);
+      if (settings.enabled) {
+        const { keepTryoutServer } = await import('./tryoutKeeper');
+        await keepTryoutServer(input.now).catch((error) =>
+          log.warn(`[AUTOSCALE] Skin tryout server: ${(error as Error).message}`)
+        );
+      }
       const plan = planScaling(input);
       for (const [hostId, times] of sentAt) {
         const kept = times.filter((t) => input.now - t < RATE_WINDOW_SECONDS);
