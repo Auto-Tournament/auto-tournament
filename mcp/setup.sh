@@ -58,8 +58,9 @@ rm -rf "$DEST/dist" "$DEST/node_modules"
 cp -R "$HERE/dist" "$HERE/package.json" "$HERE/package-lock.json" "$DEST/"
 (cd "$DEST" && npm ci --omit=dev --no-audit --no-fund --silent)
 
-claude mcp remove "$NAME" >/dev/null 2>&1 || true
-claude mcp add "$NAME" -e AT_URL="$URL" -e AT_TOKEN="$TOKEN" -- node "$DEST/dist/index.js" >/dev/null
+claude mcp remove "$NAME" --scope local >/dev/null 2>&1 || true
+claude mcp remove "$NAME" --scope user >/dev/null 2>&1 || true
+claude mcp add "$NAME" --scope user -e AT_URL="$URL" -e AT_TOKEN="$TOKEN" -- node "$DEST/dist/index.js" >/dev/null
 unset TOKEN
 echo "Installed in $DEST and registered as '$NAME' for $URL."
 echo "Start a new Claude Code session to load its tools. Run this again with --update after pulling."
