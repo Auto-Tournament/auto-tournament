@@ -1,4 +1,5 @@
 import { Box, Chip, Stack } from '@mui/material';
+import type { MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { matchPagePath } from '../paths';
@@ -81,7 +82,7 @@ function MatchRow({
         md: '9rem minmax(0, 1fr) auto minmax(0, 1fr) 7.5rem',
       }}
       // The whole row opens the match (a team name opens its team).
-      onClick={(e: React.MouseEvent<HTMLElement>) => {
+      onClick={(e: MouseEvent<HTMLElement>) => {
         if ((e.target as HTMLElement).closest('a')) return;
         navigate(matchPagePath(match.slug));
       }}
