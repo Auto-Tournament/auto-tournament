@@ -8,7 +8,11 @@
  * A turn starts at the previous action (its timestamp), or, for the first
  * step, when this process first saw the match waiting on its veto. That first
  * time is kept in memory: a restart gives the first team a fresh clock, which
- * is the fair side to err on.
+ * is the fair side to err on. The first step gets `at_veto_first_turn_seconds`
+ * (default 2 min: the players are coming from their last match).
+ *
+ * A held match (an admin's hold, or the break between a team's matches) has
+ * no clock: its veto opens when the hold ends (`opensAt` until then).
  */
 
 import { db } from '../../../config/database';
@@ -68,16 +72,47 @@ export function turnStartedAt(
   return seen;
 }
 
-/** The current turn's deadline as an ISO string, or null without a limit or a turn. */
+/** Seconds for the turn after `actions` steps: the first one may be longer. */
+async function secondsForTurn(rawVeto: string | null | undefined): Promise<number> {
+  const seconds = await cs2Settings.getVetoTurnSeconds();
+  if (seconds <= 0) return 0;
+  if ((parseVeto(rawVeto)?.actions?.length ?? 0) > 0) return seconds;
+  const first = await cs2Settings.getVetoFirstTurnSeconds();
+  return first > 0 ? Math.max(seconds, first) : seconds;
+}
+
+/** The match's hold end (unix s) while it is held, else null. */
+async function heldUntil(slug: string): Promise<number | null> {
+  const row = await db.queryOneAsync<{ held_until: number | null; paused: number | null }>(
+    `SELECT m.held_until, t.paused_at AS paused FROM matches m LEFT JOIN tournament t ON t.id = m.tournament_id
+      WHERE m.slug = ?`,
+    [slug]
+  );
+  const until = row?.held_until ? Number(row.held_until) : null;
+  return until && until > Math.floor(Date.now() / 1000) ? until : null;
+}
+
+/**
+ * The current turn's deadline as an ISO string, or null without a limit or a
+ * turn; `opensAt` instead while the match is held (the break between matches).
+ */
 export async function vetoTurnDeadline(
   slug: string,
   rawVeto: string | null | undefined
-): Promise<{ deadline: string; seconds: number } | null> {
-  const seconds = await cs2Settings.getVetoTurnSeconds();
+): Promise<{ deadline?: string; seconds?: number; opensAt?: string } | null> {
+  const held = await heldUntil(slug);
+  if (held !== null) return { opensAt: new Date(held * 1000).toISOString() };
+  const seconds = await secondsForTurn(rawVeto);
   if (seconds <= 0) return null;
   const started = turnStartedAt(slug, rawVeto);
   if (started === null) return null;
   return { deadline: new Date(started + seconds * 1000).toISOString(), seconds };
+}
+
+/** Whether the veto of `slug` is waiting for its hold to end (no actions until then). */
+export async function vetoWaitingOnHold(slug: string): Promise<string | null> {
+  const held = await heldUntil(slug);
+  return held === null ? null : new Date(held * 1000).toISOString();
 }
 
 /** Tournament matches whose veto is open: both teams in, no server yet, veto not done. */
@@ -91,6 +126,8 @@ async function openVetoMatches(): Promise<DbMatchRow[]> {
         AND COALESCE(t.settings::jsonb #>> '{cs2,veto}', 'true') <> 'false'
         AND m.team1_id IS NOT NULL
         AND m.team2_id IS NOT NULL
+        AND (m.held_until IS NULL OR m.held_until <= EXTRACT(EPOCH FROM NOW())::int)
+        AND t.paused_at IS NULL
         AND (m.server_id IS NULL OR m.server_id = '')
         AND (
           (m.veto_state IS NULL AND m.status IN ('pending', 'ready'))
@@ -100,14 +137,14 @@ async function openVetoMatches(): Promise<DbMatchRow[]> {
 }
 
 async function tick(): Promise<void> {
-  const seconds = await cs2Settings.getVetoTurnSeconds();
-  if (seconds <= 0) return;
+  if ((await cs2Settings.getVetoTurnSeconds()) <= 0) return;
   const now = Date.now();
   const open = await openVetoMatches();
   const openSlugs = new Set(open.map((m) => m.slug));
   for (const slug of firstSeen.keys()) if (!openSlugs.has(slug)) firstSeen.delete(slug);
 
   for (const match of open) {
+    const seconds = await secondsForTurn(match.veto_state);
     const started = turnStartedAt(match.slug, match.veto_state, now);
     if (started === null || now < started + seconds * 1000 || acting.has(match.slug)) continue;
     acting.add(match.slug);

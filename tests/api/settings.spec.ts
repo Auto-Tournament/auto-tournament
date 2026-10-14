@@ -1273,6 +1273,9 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'at_autostart_after_minutes', field: 'atAutostartAfterMinutes' },
   // Seconds per veto step before the platform takes it (veto/timer.ts).
   { key: 'at_veto_turn_seconds', field: 'vetoTurnSeconds' },
+  // The first veto turn and the break between a team's matches (veto/timer.ts, veto/break.ts).
+  { key: 'at_veto_first_turn_seconds', field: 'vetoFirstTurnSeconds' },
+  { key: 'at_match_break_minutes', field: 'matchBreakMinutes' },
   // The highlight settings, core's (services/highlights/settings.ts).
   { key: 'highlights_watermark', field: 'highlightsWatermark' },
   // Clips per player per map (demos/highlights.ts).

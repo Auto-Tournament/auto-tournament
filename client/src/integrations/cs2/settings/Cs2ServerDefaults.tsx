@@ -67,6 +67,8 @@ export interface Cs2DefaultsValues {
   atJoinPassword: boolean;
   atAutostartAfterMinutes: number;
   vetoTurnSeconds: number;
+  vetoFirstTurnSeconds: number;
+  matchBreakMinutes: number;
   atStopCommandAvailable: boolean;
   atStopCommandNoDamage: boolean;
   atUsePauseCommandForTacticalPause: boolean;
@@ -116,6 +118,8 @@ const DEFAULTS: Cs2DefaultsValues = {
   atJoinPassword: false,
   atAutostartAfterMinutes: 0,
   vetoTurnSeconds: 45,
+  vetoFirstTurnSeconds: 120,
+  matchBreakMinutes: 5,
   atStopCommandAvailable: false,
   atStopCommandNoDamage: false,
   atUsePauseCommandForTacticalPause: false,
@@ -526,6 +530,40 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                 size="small"
                 fullWidth
                 data-testid="setting-veto-turn-seconds"
+              />
+              <TextField
+                label={t('settings.vetoFirstTurn.label')}
+                helperText={t('settings.vetoFirstTurn.helper')}
+                type="number"
+                value={vals.vetoFirstTurnSeconds}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!Number.isFinite(v)) return;
+                  update('vetoFirstTurnSeconds', v);
+                }}
+                onBlur={flush}
+                onKeyDown={onEnter}
+                inputProps={{ min: 0, max: 900 }}
+                size="small"
+                fullWidth
+                data-testid="setting-veto-first-turn-seconds"
+              />
+              <TextField
+                label={t('settings.matchBreak.label')}
+                helperText={t('settings.matchBreak.helper')}
+                type="number"
+                value={vals.matchBreakMinutes}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!Number.isFinite(v)) return;
+                  update('matchBreakMinutes', v);
+                }}
+                onBlur={flush}
+                onKeyDown={onEnter}
+                inputProps={{ min: 0, max: 120 }}
+                size="small"
+                fullWidth
+                data-testid="setting-match-break-minutes"
               />
             </Stack>
           </Stack>

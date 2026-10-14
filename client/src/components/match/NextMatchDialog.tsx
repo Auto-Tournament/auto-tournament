@@ -19,7 +19,7 @@ import { matchPagePath } from '../../paths';
  * (sessionStorage); on that match's own page and on admin pages only the
  * sound plays.
  */
-type Kind = 'veto_open' | 'veto_turn' | 'match_ready';
+type Kind = 'veto_soon' | 'veto_open' | 'veto_turn' | 'match_ready';
 
 const SEEN_KEY = 'at.nextMatchAlerts';
 const seenFallback = new Set<string>();
@@ -47,12 +47,15 @@ export function NextMatchDialog({
   matchSlug,
   matchName,
   vetoActionCount,
+  opensAt = null,
   loading,
 }: {
   status: string;
   matchSlug: string | null;
   matchName: string | null;
   vetoActionCount: number | null;
+  /** `veto_soon`: when the veto opens (ISO). */
+  opensAt?: string | null;
   loading: boolean;
 }) {
   const { t } = useTranslation();
@@ -62,7 +65,8 @@ export function NextMatchDialog({
   React.useEffect(() => {
     if (loading || !matchSlug) return;
     let kind: Kind | null = null;
-    if (status === 'your_turn_veto')
+    if (status === 'veto_soon') kind = 'veto_soon';
+    else if (status === 'your_turn_veto')
       kind = (vetoActionCount ?? 0) === 0 ? 'veto_open' : 'veto_turn';
     else if (status === 'waiting_veto' && (vetoActionCount ?? 0) === 0) kind = 'veto_open';
     else if (status === 'match_ready') kind = 'match_ready';
@@ -79,17 +83,24 @@ export function NextMatchDialog({
 
   if (!open) return null;
   const title =
-    open.kind === 'veto_turn'
-      ? t('nextMatch.vetoTurnTitle', 'Your turn in the veto')
-      : open.kind === 'match_ready'
-        ? t('nextMatch.readyTitle', 'Your match is ready')
-        : t('nextMatch.vetoOpenTitle', 'Your next match is ready');
+    open.kind === 'veto_soon'
+      ? t('nextMatch.soonTitle', 'Your next match')
+      : open.kind === 'veto_turn'
+        ? t('nextMatch.vetoTurnTitle', 'Your turn in the veto')
+        : open.kind === 'match_ready'
+          ? t('nextMatch.readyTitle', 'Your match is ready')
+          : t('nextMatch.vetoOpenTitle', 'Your next match is ready');
   const body =
-    open.kind === 'veto_turn'
-      ? t('nextMatch.vetoTurnBody', 'Pick or ban before the timer runs out.')
-      : open.kind === 'match_ready'
-        ? t('nextMatch.readyBody', 'The server is ready: join it now.')
-        : t('nextMatch.vetoOpenBody', 'The map veto is open. Go to the match to ban and pick.');
+    open.kind === 'veto_soon'
+      ? t(
+          'nextMatch.soonBody',
+          'A short break first. The map veto opens when the countdown ends; you will hear it.'
+        )
+      : open.kind === 'veto_turn'
+        ? t('nextMatch.vetoTurnBody', 'Pick or ban before the timer runs out.')
+        : open.kind === 'match_ready'
+          ? t('nextMatch.readyBody', 'The server is ready: join it now.')
+          : t('nextMatch.vetoOpenBody', 'The map veto is open. Go to the match to ban and pick.');
   return (
     <Dialog
       open
@@ -105,6 +116,7 @@ export function NextMatchDialog({
             {matchName}
           </Typography>
         )}
+        {open.kind === 'veto_soon' && opensAt && <OpensCountdown opensAt={opensAt} />}
         <Typography color="text.secondary">{body}</Typography>
       </DialogContent>
       <DialogActions>
@@ -120,5 +132,27 @@ export function NextMatchDialog({
         </Button>
       </DialogActions>
     </Dialog>
+  );
+}
+
+/** "Veto opens in 4:32", ticking. */
+function OpensCountdown({ opensAt }: { opensAt: string }) {
+  const { t } = useTranslation();
+  const target = Date.parse(opensAt);
+  const [now, setNow] = React.useState(() => Date.now());
+  React.useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  if (!Number.isFinite(target)) return null;
+  const left = Math.max(0, Math.round((target - now) / 1000));
+  const clock = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+  return (
+    <Typography
+      sx={{ fontSize: '1.75rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums', my: 1 }}
+      data-testid="next-match-countdown"
+    >
+      {t('nextMatch.opensIn', { defaultValue: 'Veto opens in {{clock}}', clock })}
+    </Typography>
   );
 }

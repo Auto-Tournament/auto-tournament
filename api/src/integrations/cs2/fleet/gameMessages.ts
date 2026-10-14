@@ -23,7 +23,8 @@ export type GameMessageKey =
   | 'skinsOn'
   | 'skinsOff'
   | 'loadoutUpdated'
-  | 'nextMatchReady';
+  | 'nextMatchReady'
+  | 'nextMatchSoon';
 
 type Params = Record<string, string | number | null | undefined>;
 
@@ -53,6 +54,8 @@ const TEXT: Record<GameMessageKey, (params: Params) => string> = {
   skinsOn: () => 'Skins are on: your loadout from the site is applied.',
   skinsOff: () => 'Skins are off for this match.',
   loadoutUpdated: () => 'Your loadout is updated.',
+  nextMatchSoon: (x) =>
+    `Next: ${p(x, 'name', 'your next match')}. The map veto opens in ${p(x, 'minutes', 'a few')} min at ${p(x, 'url', 'the site')}`,
   nextMatchReady: (x) =>
     `Your next match is ready: ${p(x, 'name', 'next match')}. The map veto is open at ${p(x, 'url', 'the site')}`,
 };
@@ -64,6 +67,7 @@ const CENTER: Partial<Record<GameMessageKey, number>> = {
   serverBack: 10,
   roundRestored: 5,
   nextMatchReady: 10,
+  nextMatchSoon: 8,
 };
 
 /** The line for a message, at most 190 bytes (what Ready Up's say takes). */

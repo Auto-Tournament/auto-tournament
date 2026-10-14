@@ -150,6 +150,23 @@ export async function holdMatch(
   return holdOf(slug);
 }
 
+/**
+ * The break between a team's matches (a game module's rule; CS2: Match rules
+ * → "Break between matches"): the match waits until `until` (unix s), shown
+ * like any hold, and goes ahead by itself then. Never shortens a longer hold.
+ */
+export async function holdForBreak(slug: string, until: number, reason: string): Promise<void> {
+  const changed = await db.queryAsync<{ slug: string }>(
+    `UPDATE matches SET held_until = ?, hold_reason = ?
+      WHERE slug = ? AND (held_until IS NULL OR held_until < ?) RETURNING slug`,
+    [until, reason.slice(0, 200), slug, until]
+  );
+  if (!changed.length) return;
+  await logEvent([slug], 'break_hold', null, { until, reason });
+  await holdChanged([slug]);
+  emitBracketUpdate({ action: 'match_held', matchSlug: slug, heldUntil: until });
+}
+
 /** Let a held match go ahead now; its countdowns start afresh. */
 export async function releaseMatch(slug: string, by: Actor | null): Promise<void> {
   await db.runAsync(
@@ -237,9 +254,13 @@ async function allocateSoon(): Promise<void> {
 /** Holds and pauses whose time is up end by themselves. */
 export async function tickHolds(): Promise<void> {
   // A lineup gap whose time is up is settled before its matches are let go.
-  await (await import('./playerModeration')).resolveDueGaps().catch((error: unknown) =>
-    log.warn('[HOLD] lineup gaps not settled', { error: String(error) })
-  );
+  await (
+    await import('./playerModeration')
+  )
+    .resolveDueGaps()
+    .catch((error: unknown) =>
+      log.warn('[HOLD] lineup gaps not settled', { error: String(error) })
+    );
   const t = now();
   const matches = await db.queryAsync<{ slug: string }>(
     'SELECT slug FROM matches WHERE held_until IS NOT NULL AND held_until <= ?',
