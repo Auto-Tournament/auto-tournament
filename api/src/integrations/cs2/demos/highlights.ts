@@ -268,22 +268,59 @@ export function funnyMoments(
   return out;
 }
 
-/** Replace a map's not-yet-recorded highlights with a fresh pick. */
+/** Where a pick of moments came from: the demo file, and the first round it plays. */
+export interface MomentSource {
+  demoPath: string;
+  firstRound: number;
+}
+
+/**
+ * Replace a map's not-yet-recorded highlights with a fresh pick.
+ *
+ * With `source`, a newer demo of the map (after a restart or a restore)
+ * also replaces the clips an older demo gave for the rounds it plays again:
+ * those are marked `superseded` (kept on disk, out of every list and reel)
+ * and the map's and the series' reels are made again with the new clips.
+ * Clips from the same demo, a retried analysis, are kept.
+ */
 export async function saveMoments(
   matchSlug: string,
   mapNumber: number,
-  moments: Moment[]
+  moments: Moment[],
+  source?: MomentSource
 ): Promise<void> {
   try {
     await db.runAsync(
       "DELETE FROM cs2_highlights WHERE match_slug = ? AND map_number = ? AND status IN ('pending', 'failed', 'skipped')",
       [matchSlug, mapNumber]
     );
+    if (source) {
+      const replaced = await db.queryAsync<{ id: number }>(
+        `UPDATE cs2_highlights SET status = 'superseded', error = 'the round was played again'
+          WHERE match_slug = ? AND map_number = ? AND status IN ('done', 'recording')
+            AND demo_path IS DISTINCT FROM ? AND round >= ?
+          RETURNING id`,
+        [matchSlug, mapNumber, source.demoPath, source.firstRound]
+      );
+      if (replaced.length) {
+        log.info(
+          `[HIGHLIGHTS] ${matchSlug} map ${mapNumber}: ${replaced.length} clip(s) from rounds played again replaced`
+        );
+        // The reels are made again once the new clips are recorded.
+        const { redo } = await import('./clipsAdmin');
+        await redo({
+          reels: [
+            { slug: matchSlug, mapNumber },
+            { slug: matchSlug, mapNumber: SERIES_REEL },
+          ],
+        });
+      }
+    }
     for (const m of moments) {
       await db.runAsync(
         `INSERT INTO cs2_highlights (match_slug, map_number, player_id, kind, score, round, start_tick, end_tick,
-                                     slowmo_tick, kill_ticks, title)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                     slowmo_tick, kill_ticks, title, demo_path)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT (match_slug, map_number, player_id, start_tick) DO NOTHING`,
         [
           matchSlug,
@@ -297,6 +334,7 @@ export async function saveMoments(
           m.slowmoTick,
           JSON.stringify(m.killTicks),
           m.title,
+          source?.demoPath ?? null,
         ]
       );
     }

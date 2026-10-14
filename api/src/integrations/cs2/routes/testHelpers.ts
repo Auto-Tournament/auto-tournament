@@ -140,6 +140,68 @@ router.post('/fleet/assign', requireAuth, async (req: Request, res: Response): P
   res.json({ success: true, epoch: record.epoch, record });
 });
 
+/**
+ * POST /api/test/highlights/repick { matchSlug, mapNumber, clips, source }
+ *
+ * Seeds a map's clips (`clips`: { playerId, round, startTick, status,
+ * demoPath }) and runs `saveMoments` with no new moments from `source`
+ * (the newer demo), as a finished analysis does. Answers each seeded clip's
+ * status afterwards, by start tick.
+ */
+router.post(
+  '/highlights/repick',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (!fleetTestGuard(res)) return;
+    const { matchSlug, mapNumber, clips, source } = (req.body || {}) as {
+      matchSlug?: string;
+      mapNumber?: number;
+      clips?: Array<{
+        playerId: string;
+        round: number;
+        startTick: number;
+        status: string;
+        demoPath: string | null;
+      }>;
+      source?: { demoPath: string; firstRound: number };
+    };
+    if (!matchSlug || typeof mapNumber !== 'number' || !Array.isArray(clips)) {
+      res
+        .status(400)
+        .json({ success: false, error: 'matchSlug, mapNumber and clips are required' });
+      return;
+    }
+    for (const c of clips) {
+      await db.runAsync(
+        `INSERT INTO cs2_highlights (match_slug, map_number, player_id, kind, score, round, start_tick, end_tick,
+                                   slowmo_tick, kill_ticks, title, status, demo_path)
+       VALUES (?, ?, ?, '3k', 300, ?, ?, ?, ?, '[]', 'spec clip', ?, ?)`,
+        [
+          matchSlug,
+          mapNumber,
+          c.playerId,
+          c.round,
+          c.startTick,
+          c.startTick + 640,
+          c.startTick + 320,
+          c.status,
+          c.demoPath,
+        ]
+      );
+    }
+    const { saveMoments } = await import('../demos/highlights');
+    await saveMoments(matchSlug, mapNumber, [], source);
+    const rows = await db.queryAsync<{ start_tick: number; status: string }>(
+      'SELECT start_tick, status FROM cs2_highlights WHERE match_slug = ? AND map_number = ?',
+      [matchSlug, mapNumber]
+    );
+    res.json({
+      success: true,
+      statuses: Object.fromEntries(rows.map((r) => [String(r.start_tick), r.status])),
+    });
+  }
+);
+
 /** POST /api/test/fleet/stattrak  { increments }: a skins.stattrak report, as from a server. */
 router.post('/fleet/stattrak', requireAuth, async (req: Request, res: Response): Promise<void> => {
   if (!fleetTestGuard(res)) return;

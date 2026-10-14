@@ -1563,4 +1563,12 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_player_skins ADD COLUMN IF NOT EXISTS stattrak INTEGER;
     `,
   },
+  {
+    // The demo a highlight came from (demos/highlights.ts saveMoments): a newer
+    // demo of the map replaces the clips of rounds that were played again.
+    id: '055-highlight-demo',
+    up: `
+      ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS demo_path TEXT;
+    `,
+  },
 ];

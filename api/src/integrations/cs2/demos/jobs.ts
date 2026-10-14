@@ -421,7 +421,20 @@ async function completeDemoJobNow(job: DemoJob, analysis: DemoAnalysisPayload): 
   const perPlayer = Number(await settingsService.getSetting('highlights_per_player')) || undefined;
   const { readReelLimits } = await import('./highlightQuality');
   const funny = (await readReelLimits()).funnyPerPlayer;
-  await saveMoments(job.matchSlug, job.mapNumber, pickMoments(analysis, perPlayer, funny));
+  // The demo this pick came from: a newer one replaces the clips of rounds played again.
+  const demo = await db.queryOneAsync<{ demo_path: string }>(
+    'SELECT demo_path FROM cs2_demo_jobs WHERE match_slug = ? AND map_number = ?',
+    [job.matchSlug, job.mapNumber]
+  );
+  const rounds = (analysis.rounds ?? []).map((r) => r.number).filter((r) => Number.isFinite(r));
+  await saveMoments(
+    job.matchSlug,
+    job.mapNumber,
+    pickMoments(analysis, perPlayer, funny),
+    demo
+      ? { demoPath: demo.demo_path, firstRound: rounds.length ? Math.min(...rounds) : 1 }
+      : undefined
+  );
   log.info(
     `[DEMO-JOBS] ${job.matchSlug} map ${job.mapNumber}: analyzed (${Object.keys(analysis.players).length} players)`
   );
