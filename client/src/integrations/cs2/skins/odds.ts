@@ -21,6 +21,8 @@ export interface DropOdds {
   matchmakingDrops: boolean;
   tournamentMatchDrops: boolean;
   levelUpDrops: boolean;
+  /** Less from the third game against the same opponents in a day (an older platform: on). */
+  repeatOpponentCut?: boolean;
   chances: Record<'5v5' | '2v2' | '1v1', { win: number; play: number }>;
   tournamentRewards: Array<{
     place: 1 | 2 | 3;

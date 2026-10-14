@@ -150,7 +150,9 @@ export function DropRatesPage() {
                   </Box>
                 </Box>
                 <Typography sx={{ fontSize: '0.8125rem', color: color.muted, maxWidth: '65ch' }}>
-                  {t('skins.drops.fair')}
+                  {odds.repeatOpponentCut === false
+                    ? t('skins.drops.fairNoRepeat')
+                    : t('skins.drops.fair')}
                 </Typography>
               </Box>
             )}

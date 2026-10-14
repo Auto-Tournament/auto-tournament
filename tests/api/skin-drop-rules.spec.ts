@@ -12,9 +12,9 @@ import {
 
 /**
  * Fair drops after every matchmaking and tournament game (skins/skinService):
- * the chance per mode, less for repeats against the same opponents, and
- * nothing for a game someone abandoned or that ended early. The admin
- * settings are clamped.
+ * the chance per mode, less from the third game against the same opponents
+ * in a day (an admin switch), nothing for the player who left or for a game
+ * over in under MIN_DROP_ROUNDS rounds. The admin settings are clamped.
  *
  * @tag api
  */
@@ -31,16 +31,23 @@ test.describe('skin drop rules', () => {
     expect(matchDropChance(DEFAULT_CONFIG, null, true, 0)).toBe(20);
   });
 
-  test('repeats against the same opponents within a day drop much less', () => {
-    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 1)).toBe(5);
-    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 3)).toBe(20 / 16);
+  test('from the third game against the same opponents in a day, much less (unless turned off)', () => {
+    // A second game (one earlier) is fine: a small platform plays the same people.
+    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 1)).toBe(20);
+    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 2)).toBe(5);
+    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 4)).toBe(20 / 16);
     expect(matchDropChance(DEFAULT_CONFIG, '1v1', true, -2)).toBe(5);
+    expect(matchDropChance({ ...DEFAULT_CONFIG, repeatOpponentCut: false }, '5v5', true, 4)).toBe(
+      20
+    );
   });
 
-  test('only a full game, for a player who played', () => {
-    const game = { abandoned: false, maxRounds: 13, playerRounds: 13 };
+  test('only a full game, for a player who played and did not leave', () => {
+    const game = { left: false, maxRounds: 13, playerRounds: 13 };
+    expect(MIN_DROP_ROUNDS).toBe(8);
     expect(dropEligible(game)).toBe(true);
-    expect(dropEligible({ ...game, abandoned: true })).toBe(false);
+    // Someone left: only they lose their roll.
+    expect(dropEligible({ ...game, left: true })).toBe(false);
     expect(dropEligible({ ...game, maxRounds: MIN_DROP_ROUNDS - 1 })).toBe(false);
     expect(dropEligible({ ...game, playerRounds: 0 })).toBe(false);
   });

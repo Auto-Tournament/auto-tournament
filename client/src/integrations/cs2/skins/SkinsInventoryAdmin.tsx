@@ -16,8 +16,22 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { CaretDownIcon, DiceFiveIcon, MagnifyingGlassIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
-import { api, useSnackbar, useModuleTranslation, tokens, radii, fontDisplay, ConfirmDialog } from '../../../module-sdk';
+import {
+  CaretDownIcon,
+  DiceFiveIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
+  TrashIcon,
+} from '@phosphor-icons/react';
+import {
+  api,
+  useSnackbar,
+  useModuleTranslation,
+  tokens,
+  radii,
+  fontDisplay,
+  ConfirmDialog,
+} from '../../../module-sdk';
 import { rarityColor } from './rarity';
 import { sourceLabel } from './SkinParts';
 import type { OwnedSkin, Rarity } from './useSkins';
@@ -54,7 +68,8 @@ const WEARS = [
   { key: 'bs', min: 0.45, max: 1 },
 ] as const;
 
-const entryLabel = (e: CatalogEntry) => `${e.weaponName} · ${e.name}${e.variant ? ` (${e.variant})` : ''}`;
+const entryLabel = (e: CatalogEntry) =>
+  `${e.weaponName} · ${e.name}${e.variant ? ` (${e.variant})` : ''}`;
 
 /**
  * Players' skins (Skins page, board 7): every player with skins first, each
@@ -80,7 +95,11 @@ export function SkinsInventoryAdmin({ onChanged }: { onChanged?: () => void }) {
       api
         .get<{ players: AdminPlayer[] }>(`/api/skins/admin/players?q=${encodeURIComponent(query)}`)
         // Unsearched, the players who own skins; a search finds anyone.
-        .then((r) => !cancelled && setPlayers((r.players ?? []).filter((p) => query.trim() !== '' || p.skins > 0)))
+        .then(
+          (r) =>
+            !cancelled &&
+            setPlayers((r.players ?? []).filter((p) => query.trim() !== '' || p.skins > 0))
+        )
         .catch(() => !cancelled && setPlayers([]));
     }, 200);
     return () => {
@@ -128,10 +147,28 @@ export function SkinsInventoryAdmin({ onChanged }: { onChanged?: () => void }) {
       component="section"
       aria-labelledby="skins-players-title"
       data-testid="skins-inventory-admin"
-      sx={{ bgcolor: color.paper2, border: `1px solid ${color.rule}`, borderRadius: radii.lg, p: { xs: 2, md: 3 } }}
+      sx={{
+        bgcolor: color.paper2,
+        border: `1px solid ${color.rule}`,
+        borderRadius: radii.lg,
+        p: { xs: 2, md: 3 },
+      }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap', pb: 1.5 }}>
-        <Typography id="skins-players-title" component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.1875rem', fontWeight: 600 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 2,
+          flexWrap: 'wrap',
+          pb: 1.5,
+        }}
+      >
+        <Typography
+          id="skins-players-title"
+          component="h2"
+          sx={{ fontFamily: fontDisplay, fontSize: '1.1875rem', fontWeight: 600 }}
+        >
           {t('skins.admin.inv.title')}
         </Typography>
         <Box
@@ -153,20 +190,30 @@ export function SkinsInventoryAdmin({ onChanged }: { onChanged?: () => void }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('skins.admin.inv.playerHint')}
-            inputProps={{ 'aria-label': t('skins.admin.inv.player'), 'data-testid': 'skins-admin-player' }}
+            inputProps={{
+              'aria-label': t('skins.admin.inv.player'),
+              'data-testid': 'skins-admin-player',
+            }}
             sx={{ flex: 1, fontSize: '0.875rem' }}
           />
         </Box>
       </Box>
 
       {players && players.length === 0 && (
-        <Typography sx={{ color: color.muted, py: 2 }}>{query.trim() ? t('skins.admin.inv.none') : t('skins.admin.inv.nobodyYet')}</Typography>
+        <Typography sx={{ color: color.muted, py: 2 }}>
+          {query.trim() ? t('skins.admin.inv.none') : t('skins.admin.inv.nobodyYet')}
+        </Typography>
       )}
       <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
         {(players ?? []).map((p) => {
           const expanded = open === p.steamId;
           return (
-            <Box component="li" key={p.steamId} sx={{ borderTop: `1px solid ${color.rule}` }} data-testid="skins-admin-player-row">
+            <Box
+              component="li"
+              key={p.steamId}
+              sx={{ borderTop: `1px solid ${color.rule}` }}
+              data-testid="skins-admin-player-row"
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25 }}>
                 <ButtonBase
                   onClick={() => {
@@ -174,14 +221,28 @@ export function SkinsInventoryAdmin({ onChanged }: { onChanged?: () => void }) {
                     setOpen(expanded ? null : p.steamId);
                   }}
                   aria-expanded={expanded}
-                  sx={{ flex: 1, minWidth: 0, justifyContent: 'flex-start', gap: 1.5, borderRadius: radii.md, textAlign: 'left', '&:focus-visible': { outline: `2px solid ${color.focus}` } }}
+                  sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    justifyContent: 'flex-start',
+                    gap: 1.5,
+                    borderRadius: radii.md,
+                    textAlign: 'left',
+                    '&:focus-visible': { outline: `2px solid ${color.focus}` },
+                  }}
                 >
                   <Avatar src={p.avatarUrl ?? undefined} sx={{ width: 34, height: 34 }} />
                   <Box sx={{ minWidth: 0 }}>
                     <Typography noWrap fontWeight={600}>
                       {p.name}
                     </Typography>
-                    <Typography noWrap sx={{ fontSize: '0.8125rem', color: p.best ? rarityColor[p.best.rarity] : color.muted }}>
+                    <Typography
+                      noWrap
+                      sx={{
+                        fontSize: '0.8125rem',
+                        color: p.best ? rarityColor[p.best.rarity] : color.muted,
+                      }}
+                    >
                       {p.best ? `${p.best.weaponName} | ${p.best.name}` : t('skins.emptyTheirs')}
                     </Typography>
                   </Box>
@@ -189,10 +250,24 @@ export function SkinsInventoryAdmin({ onChanged }: { onChanged?: () => void }) {
                     size={14}
                     color={color.muted}
                     aria-hidden
-                    style={{ marginLeft: 'auto', flex: 'none', transform: expanded ? 'rotate(180deg)' : undefined, transition: 'transform 150ms' }}
+                    style={{
+                      marginLeft: 'auto',
+                      flex: 'none',
+                      transform: expanded ? 'rotate(180deg)' : undefined,
+                      transition: 'transform 150ms',
+                    }}
                   />
                 </ButtonBase>
-                <Typography sx={{ fontVariantNumeric: 'tabular-nums', fontSize: '0.875rem', color: color.ink2, display: { xs: 'none', sm: 'block' }, minWidth: 72, textAlign: 'right' }}>
+                <Typography
+                  sx={{
+                    fontVariantNumeric: 'tabular-nums',
+                    fontSize: '0.875rem',
+                    color: color.ink2,
+                    display: { xs: 'none', sm: 'block' },
+                    minWidth: 72,
+                    textAlign: 'right',
+                  }}
+                >
                   {t('skins.count', { count: p.skins })}
                 </Typography>
                 <Button
@@ -200,7 +275,13 @@ export function SkinsInventoryAdmin({ onChanged }: { onChanged?: () => void }) {
                   startIcon={<PlusIcon size={14} />}
                   onClick={() => setGiveTo(p)}
                   data-testid="skins-admin-give"
-                  sx={{ borderRadius: radii.pill, bgcolor: color.paper3, color: color.ink, px: 1.75, flex: 'none' }}
+                  sx={{
+                    borderRadius: radii.pill,
+                    bgcolor: color.paper3,
+                    color: color.ink,
+                    px: 1.75,
+                    flex: 'none',
+                  }}
                 >
                   {t('skins.admin.inv.giveShort')}
                 </Button>
@@ -209,17 +290,32 @@ export function SkinsInventoryAdmin({ onChanged }: { onChanged?: () => void }) {
               <Collapse in={expanded} unmountOnExit>
                 <Box sx={{ pb: 1.5, pl: { md: 5.75 } }}>
                   {inventory && inventory.length === 0 && (
-                    <Typography sx={{ color: color.muted, py: 1 }}>{t('skins.emptyTheirs')}</Typography>
+                    <Typography sx={{ color: color.muted, py: 1 }}>
+                      {t('skins.emptyTheirs')}
+                    </Typography>
                   )}
-                  <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                    {(expanded ? inventory ?? [] : []).map((skin) => (
+                  <Box
+                    component="ul"
+                    sx={{
+                      listStyle: 'none',
+                      m: 0,
+                      p: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 0.75,
+                    }}
+                  >
+                    {(expanded ? (inventory ?? []) : []).map((skin) => (
                       <Box
                         component="li"
                         key={skin.id}
                         data-testid="skins-admin-row"
                         sx={{
                           display: 'grid',
-                          gridTemplateColumns: { xs: '56px minmax(0, 1fr) auto', md: '56px minmax(0, 1fr) 150px 160px auto' },
+                          gridTemplateColumns: {
+                            xs: '56px minmax(0, 1fr) auto',
+                            md: '56px minmax(0, 1fr) 150px 160px auto',
+                          },
                           alignItems: 'center',
                           gap: 1.5,
                           p: 1,
@@ -228,7 +324,13 @@ export function SkinsInventoryAdmin({ onChanged }: { onChanged?: () => void }) {
                           borderLeft: `3px solid ${rarityColor[skin.rarity] ?? color.rule}`,
                         }}
                       >
-                        <Box component="img" src={skin.imageUrl} alt="" loading="lazy" sx={{ width: 56, height: 40, objectFit: 'contain' }} />
+                        <Box
+                          component="img"
+                          src={skin.imageUrl}
+                          alt=""
+                          loading="lazy"
+                          sx={{ width: 56, height: 40, objectFit: 'contain' }}
+                        />
                         <Box sx={{ minWidth: 0 }}>
                           <Typography noWrap fontWeight={600}>
                             {skin.weaponName} · {skin.name}
@@ -238,14 +340,29 @@ export function SkinsInventoryAdmin({ onChanged }: { onChanged?: () => void }) {
                             {skin.equipped ? ` · ${t('skins.admin.inv.equipped')}` : ''}
                           </Typography>
                         </Box>
-                        <Typography variant="body2" sx={{ display: { xs: 'none', md: 'block' }, fontVariantNumeric: 'tabular-nums' }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            display: { xs: 'none', md: 'block' },
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
                           {skin.float.toFixed(4)} · #{skin.pattern}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" noWrap sx={{ display: { xs: 'none', md: 'block' } }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          noWrap
+                          sx={{ display: { xs: 'none', md: 'block' } }}
+                        >
                           {t(`skins.admin.inv.source.${skin.source}`)}
                           {skin.sourceLabel ? ` · ${sourceLabel(skin.sourceLabel)}` : ''}
                         </Typography>
-                        <IconButton aria-label={t('skins.admin.inv.remove')} onClick={() => setRemoving(skin)} data-testid="skins-admin-remove">
+                        <IconButton
+                          aria-label={t('skins.admin.inv.remove')}
+                          onClick={() => setRemoving(skin)}
+                          data-testid="skins-admin-remove"
+                        >
                           <TrashIcon size={18} />
                         </IconButton>
                       </Box>
@@ -272,7 +389,14 @@ export function SkinsInventoryAdmin({ onChanged }: { onChanged?: () => void }) {
       <ConfirmDialog
         open={removing !== null}
         title={t('skins.admin.inv.removeTitle')}
-        message={removing ? t('skins.admin.inv.removeQuestion', { skin: `${removing.weaponName} · ${removing.name}`, player: openPlayer?.name ?? '' }) : ''}
+        message={
+          removing
+            ? t('skins.admin.inv.removeQuestion', {
+                skin: `${removing.weaponName} · ${removing.name}`,
+                player: openPlayer?.name ?? '',
+              })
+            : ''
+        }
         confirmLabel={t('skins.admin.inv.remove')}
         confirmColor="error"
         loading={busy}
@@ -310,7 +434,9 @@ function GiveSkinDialog({
     let cancelled = false;
     const timer = setTimeout(() => {
       api
-        .get<{ skins: CatalogEntry[] }>(`/api/skins/admin/catalog?all=1&q=${encodeURIComponent(query)}`)
+        .get<{ skins: CatalogEntry[] }>(
+          `/api/skins/admin/catalog?all=1&q=${encodeURIComponent(query)}`
+        )
         .then((r) => !cancelled && setOptions(r.skins ?? []))
         .catch(() => !cancelled && setOptions([]));
     }, 200);
@@ -326,15 +452,26 @@ function GiveSkinDialog({
     setPhases([]);
     if (!value?.variant) return;
     api
-      .get<{ skins: CatalogEntry[] }>(`/api/skins/admin/catalog?all=1&q=${encodeURIComponent(`${value.weaponName} ${value.name}`)}`)
-      .then((r) => setPhases((r.skins ?? []).filter((s) => s.weapon === value.weapon && s.name === value.name && s.variant)))
+      .get<{ skins: CatalogEntry[] }>(
+        `/api/skins/admin/catalog?all=1&q=${encodeURIComponent(`${value.weaponName} ${value.name}`)}`
+      )
+      .then((r) =>
+        setPhases(
+          (r.skins ?? []).filter(
+            (s) => s.weapon === value.weapon && s.name === value.name && s.variant
+          )
+        )
+      )
       .catch(() => setPhases([]));
   };
 
   const floatNumber = float.trim() === '' ? null : Number(float);
   const patternNumber = pattern.trim() === '' ? null : Number(pattern);
-  const floatBad = floatNumber !== null && (!Number.isFinite(floatNumber) || floatNumber < 0 || floatNumber > 1);
-  const patternBad = patternNumber !== null && (!Number.isInteger(patternNumber) || patternNumber < 0 || patternNumber > 1000);
+  const floatBad =
+    floatNumber !== null && (!Number.isFinite(floatNumber) || floatNumber < 0 || floatNumber > 1);
+  const patternBad =
+    patternNumber !== null &&
+    (!Number.isInteger(patternNumber) || patternNumber < 0 || patternNumber > 1000);
 
   const give = async () => {
     if (!skin) return;
@@ -362,7 +499,9 @@ function GiveSkinDialog({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" data-testid="skins-give-dialog">
       <DialogTitle>{t('skins.admin.inv.giveTo', { player: player.name })}</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: '8px !important' }}>
+      <DialogContent
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: '8px !important' }}
+      >
         <Autocomplete
           size="small"
           options={options}
@@ -373,24 +512,56 @@ function GiveSkinDialog({
           onInputChange={(_, value, reason) => reason === 'input' && setQuery(value)}
           onChange={(_, value) => pick(value)}
           renderOption={(props, o) => (
-            <Box component="li" {...props} key={`${o.weapon}|${o.paintKit}`} sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-              <Box component="img" src={o.imageUrl} alt="" loading="lazy" sx={{ width: 48, height: 34, objectFit: 'contain' }} />
+            <Box
+              component="li"
+              {...props}
+              key={`${o.weapon}|${o.paintKit}`}
+              sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}
+            >
+              <Box
+                component="img"
+                src={o.imageUrl}
+                alt=""
+                loading="lazy"
+                sx={{ width: 48, height: 34, objectFit: 'contain' }}
+              />
               <Typography sx={{ flex: 1 }}>{entryLabel(o)}</Typography>
               {o.price !== undefined && (
                 <Typography variant="caption" color="text.secondary">
                   ${Math.round(o.price).toLocaleString('en-US')}
                 </Typography>
               )}
-              <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: rarityColor[o.rarity] }} aria-hidden />
+              <Box
+                sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: rarityColor[o.rarity] }}
+                aria-hidden
+              />
             </Box>
           )}
-          renderInput={(params) => <TextField {...params} label={t('skins.admin.skin')} placeholder={t('skins.admin.inv.skinHint')} />}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label={t('skins.admin.skin')}
+              placeholder={t('skins.admin.inv.skinHint')}
+            />
+          )}
           data-testid="skins-give-skin"
         />
 
         {skin && (
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-            <Box component="img" src={skin.imageUrl} alt="" sx={{ width: 120, height: 84, objectFit: 'contain', bgcolor: color.paper3, borderRadius: radii.md, p: 1 }} />
+            <Box
+              component="img"
+              src={skin.imageUrl}
+              alt=""
+              sx={{
+                width: 120,
+                height: 84,
+                objectFit: 'contain',
+                bgcolor: color.paper3,
+                borderRadius: radii.md,
+                p: 1,
+              }}
+            />
             <Box>
               <Typography fontWeight={600}>{entryLabel(skin)}</Typography>
               <Typography variant="caption" sx={{ color: rarityColor[skin.rarity] }}>
@@ -425,7 +596,10 @@ function GiveSkinDialog({
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
             {WEARS.map((w) => {
-              const active = floatNumber !== null && floatNumber >= w.min && floatNumber < (w.max === 1 ? 1.0001 : w.max);
+              const active =
+                floatNumber !== null &&
+                floatNumber >= w.min &&
+                floatNumber < (w.max === 1 ? 1.0001 : w.max);
               return (
                 <Chip
                   key={w.key}
@@ -479,7 +653,12 @@ function GiveSkinDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t('common.cancel')}</Button>
-        <Button variant="contained" disabled={!skin || busy || floatBad || patternBad} onClick={() => void give()} data-testid="skins-give-confirm">
+        <Button
+          variant="contained"
+          disabled={!skin || busy || floatBad || patternBad}
+          onClick={() => void give()}
+          data-testid="skins-give-confirm"
+        >
           {t('skins.admin.inv.give')}
         </Button>
       </DialogActions>
