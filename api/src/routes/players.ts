@@ -453,6 +453,12 @@ router.get('/:playerId/team', async (req: Request, res: Response) => {
  * its lobby. With no match coming up, a tournament they are still in (its
  * Overview says what is next), else nothing.
  */
+/**
+ * A match's config names its players as `"<steam id>": "<name>"` in each
+ * team's players; the same id elsewhere in it (`admins`, coaches) is not a
+ * player. The queries below match `"<id>":` only (an admin who runs the site
+ * was sent to a bots' match as "your match").
+ */
 export async function matchNowPath(steamId: string): Promise<string | null> {
   const like = `%${steamId}%`;
   const match = await db.queryOneAsync<{
@@ -470,7 +476,7 @@ export async function matchNowPath(steamId: string): Promise<string | null> {
        LEFT JOIN teams t1 ON m.team1_id = t1.id
        LEFT JOIN teams t2 ON m.team2_id = t2.id
       WHERE m.status IN ('pending', 'ready', 'loaded', 'live')
-        AND ((t1.players LIKE ? ESCAPE '\\') OR (t2.players LIKE ? ESCAPE '\\') OR (m.config LIKE ? ESCAPE '\\'))
+        AND ((t1.players LIKE ? ESCAPE '\\') OR (t2.players LIKE ? ESCAPE '\\') OR (m.config LIKE ('%"' || TRIM(BOTH '%' FROM ?) || '":%')))
       ORDER BY CASE WHEN m.status IN ('loaded', 'live') THEN 0 ELSE 1 END, m.round ASC, m.match_number ASC
       LIMIT 1`,
     [like, like, like, like]
@@ -558,7 +564,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
          AND (
            (t1.players LIKE ? ESCAPE '\\')
            OR (t2.players LIKE ? ESCAPE '\\')
-           OR (m.config LIKE ? ESCAPE '\\')
+           OR (m.config LIKE ('%"' || TRIM(BOTH '%' FROM ?) || '":%'))
          )
        ORDER BY m.loaded_at DESC
        LIMIT 1`,
@@ -579,7 +585,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
            AND (
              (t1.players LIKE ? ESCAPE '\\')
              OR (t2.players LIKE ? ESCAPE '\\')
-             OR (m.config LIKE ? ESCAPE '\\')
+             OR (m.config LIKE ('%"' || TRIM(BOTH '%' FROM ?) || '":%'))
            )
          ORDER BY m.round ASC, m.match_number ASC
          LIMIT 1`,
@@ -873,7 +879,7 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
         AND (
           (t1.players LIKE ? ESCAPE '\\')
           OR (t2.players LIKE ? ESCAPE '\\')
-          OR (m.config LIKE ? ESCAPE '\\')
+          OR (m.config LIKE ('%"' || TRIM(BOTH '%' FROM ?) || '":%'))
         )
       ORDER BY m.loaded_at DESC
       LIMIT 1`,
@@ -908,7 +914,7 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
           AND (
             (t1.players LIKE ? ESCAPE '\\')
             OR (t2.players LIKE ? ESCAPE '\\')
-            OR (m.config LIKE ? ESCAPE '\\')
+            OR (m.config LIKE ('%"' || TRIM(BOTH '%' FROM ?) || '":%'))
           )
         ORDER BY m.round ASC, m.match_number ASC
         LIMIT 1`,
