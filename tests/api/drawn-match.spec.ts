@@ -4,6 +4,7 @@ import { createTestTeams } from '../helpers/teams';
 import { createTestServer } from '../helpers/servers';
 import { findMatchByTeams } from '../helpers/matches';
 import type { Team } from '../helpers/teams';
+import { sendReadyUpEvents, mapResult as readyUpMapResult } from '../helpers/readyUp';
 
 /**
  * A drawn deciding map with overtime disabled must finish the series.
@@ -27,12 +28,15 @@ import type { Team } from '../helpers/teams';
  * @tag regression
  */
 
-const MAPS = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'];
-
-const HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-};
+const MAPS = [
+  'de_mirage',
+  'de_inferno',
+  'de_ancient',
+  'de_anubis',
+  'de_dust2',
+  'de_vertigo',
+  'de_nuke',
+];
 
 /** Create and start a BO1 tournament with overtime explicitly disabled. */
 async function startTournamentWithoutOvertime(
@@ -84,26 +88,26 @@ test.describe.serial('Drawn match with overtime disabled', () => {
       expect(match?.slug).toBeTruthy();
       const slug = match!.slug;
 
+      const seriesScore: [number, number] = [0, 0];
       const mapResult = async (
         mapNumber: number,
         mapName: string,
         t1: number,
         t2: number,
-        winner: string
+        winner: 'team1' | 'team2' | 'none'
       ) => {
-        const res = await request.post(`/api/events/${slug}`, {
-          headers: HEADERS,
-          data: {
-            event: 'map_result',
-            matchid: slug,
-            map_number: mapNumber,
-            map_name: mapName,
-            team1_score: t1,
-            team2_score: t2,
-            winner: { team: winner },
-          },
-        });
-        expect(res.ok(), `map_result ${mapNumber} rejected: ${await res.text()}`).toBe(true);
+        if (winner === 'team1') seriesScore[0] += 1;
+        if (winner === 'team2') seriesScore[1] += 1;
+        await sendReadyUpEvents(request, slug, [
+          readyUpMapResult({
+            mapNumber: mapNumber + 1,
+            mapName,
+            team1: t1,
+            team2: t2,
+            series: [seriesScore[0], seriesScore[1]],
+            winner,
+          }),
+        ]);
       };
 
       // One map each, so the series is level and unfinished going into map 3.

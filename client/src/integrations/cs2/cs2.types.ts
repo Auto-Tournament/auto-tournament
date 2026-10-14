@@ -63,16 +63,6 @@ export interface Server {
   cs2VersionString?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */
   cs2VersionFetchedAt?: number | null;
-  /** Best-effort: MatchZy Enhanced DB reachable. */
-  atDbOk?: boolean | null;
-  /** Best-effort: 'sqlite' | 'mysql'. */
-  atDbType?: string | null;
-  /** Best-effort: last DB error message (if any). */
-  atDbError?: string | null;
-  /** Unix timestamp when DB was last reported OK. */
-  atDbLastOkAt?: number | null;
-  /** Unix timestamp when DB health was last reported. */
-  atDbLastSeenAt?: number | null;
   /** Unix timestamp when server last successfully sent any event to /api/events. */
   serverCanReachApiAt?: number | null;
   // Optional real-time status values reported by MatchZy Enhanced and

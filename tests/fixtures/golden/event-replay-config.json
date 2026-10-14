@@ -1,63 +1,122 @@
 {
   "admins": ["<test-admin-steam-id>"],
   "cvars": {
-    "at_autoready_enabled": 0,
-    "at_both_teams_unpause_required": 1,
-    "at_demo_recording_enabled": 1,
-    "at_ffw_enabled": 0,
-    "at_ffw_time": 240,
-    "at_gg_enabled": 0,
-    "at_gg_min_score_diff": 0,
-    "at_gg_threshold": 0.8,
-    "at_max_pauses_per_team": 0,
-    "at_pause_duration": 0,
-    "at_pause_on_disconnect": 1,
-    "at_side_selection_enabled": 1,
-    "at_side_selection_time": 60,
-    "mp_maxrounds": 24
+    "mp_maxrounds": 24,
+    "sv_matchpause_auto_5v5": 1
   },
-  "expected_players_team1": 5,
-  "expected_players_team2": 5,
-  "expected_players_total": 10,
-  "map_sides": ["team2_ct", "team2_ct", "team2_ct"],
-  "maplist": ["de_ancient", "de_anubis", "de_nuke"],
-  "matchid": "<matchid>",
-  "maxRounds": 24,
-  "min_players_to_ready": 0,
-  "min_spectators_to_ready": 0,
+  "maps": [
+    {
+      "name": "de_ancient",
+      "number": 1,
+      "sides": "team2_ct"
+    },
+    {
+      "name": "de_anubis",
+      "number": 2,
+      "sides": "team2_ct"
+    },
+    {
+      "name": "de_nuke",
+      "number": 3,
+      "sides": "team2_ct"
+    }
+  ],
   "num_maps": 3,
-  "overtimeMode": "enabled",
-  "players_per_team": 5,
-  "simulation": false,
-  "skip_veto": true,
-  "spectators": {
-    "players": {}
+  "password": "",
+  "rules": {
+    "demo": {
+      "record": true,
+      "upload": false
+    },
+    "forfeit": {
+      "gg_vote": {
+        "enabled": false,
+        "min_score_diff": 0,
+        "threshold": 0.8
+      },
+      "team_absent_seconds": 0
+    },
+    "knife": {
+      "side_pick_seconds": 60
+    },
+    "max_rounds": 24,
+    "overtime": {
+      "enabled": true,
+      "max_overtimes": -1
+    },
+    "pause": {
+      "pause_after_restore": true,
+      "unpause": "both_teams"
+    },
+    "ready": {
+      "allow_force_ready": true,
+      "autoready": false,
+      "min_per_team": 0
+    },
+    "whitelist": true
   },
   "team1": {
     "id": "golden-replay-a",
     "name": "Replay Alpha",
-    "players": {
-      "76561199000070001": "Alpha 1",
-      "76561199000070002": "Alpha 2",
-      "76561199000070003": "Alpha 3",
-      "76561199000070004": "Alpha 4",
-      "76561199000070005": "Alpha 5"
-    },
-    "series_score": 0,
+    "players": [
+      {
+        "name": "Alpha 1",
+        "role": "player",
+        "steamid64": "76561199000070001"
+      },
+      {
+        "name": "Alpha 2",
+        "role": "player",
+        "steamid64": "76561199000070002"
+      },
+      {
+        "name": "Alpha 3",
+        "role": "player",
+        "steamid64": "76561199000070003"
+      },
+      {
+        "name": "Alpha 4",
+        "role": "player",
+        "steamid64": "76561199000070004"
+      },
+      {
+        "name": "Alpha 5",
+        "role": "player",
+        "steamid64": "76561199000070005"
+      }
+    ],
     "tag": "REPL"
   },
   "team2": {
     "id": "golden-replay-b",
     "name": "Replay Bravo",
-    "players": {
-      "76561199000080001": "Bravo 1",
-      "76561199000080002": "Bravo 2",
-      "76561199000080003": "Bravo 3",
-      "76561199000080004": "Bravo 4",
-      "76561199000080005": "Bravo 5"
-    },
-    "series_score": 0,
+    "players": [
+      {
+        "name": "Bravo 1",
+        "role": "player",
+        "steamid64": "76561199000080001"
+      },
+      {
+        "name": "Bravo 2",
+        "role": "player",
+        "steamid64": "76561199000080002"
+      },
+      {
+        "name": "Bravo 3",
+        "role": "player",
+        "steamid64": "76561199000080003"
+      },
+      {
+        "name": "Bravo 4",
+        "role": "player",
+        "steamid64": "76561199000080004"
+      },
+      {
+        "name": "Bravo 5",
+        "role": "player",
+        "steamid64": "76561199000080005"
+      }
+    ],
     "tag": "REPL"
-  },
-  "wingman": false
+  }
 }

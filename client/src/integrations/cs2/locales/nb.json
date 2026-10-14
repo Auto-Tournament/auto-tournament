@@ -14,11 +14,6 @@
       "maps": "Kart og kartpooler",
       "skins": "Skins",
       "matchRules": "Kampregler"
-    },
-    "atDbDown": {
-      "title": "MatchZy Enhanced-databasen er utilgjengelig",
-      "body_one": "{{count}} server melder at pluginen ikke når databasen sin. Backuper og hendelseskøen kan bli berørt.",
-      "body_other": "{{count}} servere melder at pluginen ikke når databasen sin. Backuper og hendelseskøen kan bli berørt."
     }
   },
   "dashboard": {
@@ -518,7 +513,6 @@
       "message_other": "Er du sikker på at du vil slette {{count}} servere? Dette kan ikke angres."
     },
     "autoConfig": {
-      "configuring": "Konfigurerer nye servere (sender MatchZy Enhanced-konfig via RCON)…",
       "done": "Nye servere konfigurert. Oppdaterer status…"
     },
     "checkServerLogs": "Sjekk spillserverens konsoll/logger for å se om Auto Tournament-pluginet mottar konfigurasjon og sender hendelser.",
@@ -526,7 +520,6 @@
       "title": "Serverstatus",
       "total_one": "{{count}} server",
       "total_other": "{{count}} servere",
-      "latestRelease": "Nyeste MatchZy Enhanced-versjon: v{{version}}",
       "olderVersion_one": "{{count}} server kjører en eldre versjon enn den nyeste.",
       "olderVersion_other": "{{count}} servere kjører en eldre versjon enn den nyeste.",
       "downloadLatest": "Last ned nyeste"
@@ -571,7 +564,6 @@
       "webhookTitle": "Serveren når ikke Auto Tournament (webhook)",
       "webhookBody": "Auto Tournament når serveren via RCON, men serveren når ikke Auto Tournaments webhook. Sjekk utgående trafikk, DNS og webhook-URL-en som er satt opp.",
       "versionDiffTitle": "Serverne har ulike pluginversjoner",
-      "versionDiffBody": "Noen servere kjører en annen versjon av MatchZy Enhanced. Bruker du CSM, kjør {{command}} og start serverne på nytt.",
       "ipBannedTitle": "RCON-IP blokkert",
       "ipBannedBody": "Serveren har midlertidig blokkert Auto Tournaments IP etter gjentatte mislykkede RCON-innlogginger. Rett RCON-passordet og opphev blokkeringen av IP-en.",
       "pluginDbTitle": "Auto Tournament-pluginet når ikke databasen sin.",
@@ -958,7 +950,6 @@
       "noServers": "Ingen servere tilgjengelig",
       "refreshServers": "Oppdater serverlisten",
       "noEvents": "Ingen hendelser mottatt fra denne serveren ennå.",
-      "noEventsHint": "Fortsatt ingen hendelser etter 15 sekunder. Sjekk at CS2-serveren er satt opp til å sende MatchZy Enhanced-webhooks til /api/events/:matchSlugOrServerId med riktig X-Auto-Tournament-Token.",
       "waiting": "Venter på hendelser fra serveren …",
       "footer_one": "Viser {{count}} hendelse (maks 100)",
       "footer_other": "Viser {{count}} hendelser (maks 100)",
@@ -974,7 +965,7 @@
     "saveFailed": "Kunne ikke lagre innstillingene",
     "loadFailed": "Kunne ikke laste innstillingene",
     "webhook": {
-      "title": "MatchZy Enhanced-webhook",
+      "title": "Plattform-URL",
       "description": "Webhook-URL som CS2-serverne kan nå.",
       "label": "Webhook-URL",
       "helper": "Eksempel: https://ditt-domene.no"
@@ -997,17 +988,17 @@
     },
     "defaultsTitle": "Serverstandarder",
     "chatDefaults": {
-      "title": "MatchZy Enhanced chat- og knivstandarder",
+      "title": "Chat- og knivstandarder",
       "description": "Konfigurer chat‑prefikser og standard oppførsel for knivrunde.",
       "chatPrefixLabel": "Chat‑prefiks",
       "chatPrefixHelper": "Standard: \"[{Green}Auto Tournament{Default}]\". La stå tomt for standard.",
       "adminChatPrefixLabel": "Admin chat‑prefiks",
       "adminChatPrefixHelper": "Standard: \"[{Red}ADMIN{Default}]\". La stå tomt for standard.",
       "knifeToggleLabel": "Aktiver knivrunder som standard for nye kamper",
-      "knifeNote": "Gjelder kun når MatchZy Enhanced ellers ville kjørt knivrunde."
+      "knifeNote": "Gjelder kun når serveren ellers ville kjørt knivrunde."
     },
     "atCore": {
-      "title": "MatchZy Enhanced core-standarder",
+      "title": "Standard kampinnstillinger",
       "description": "Disse standardene sendes til servere under initialisering og før hver kamp lastes inn.",
       "expert": {
         "title": "Ekspertinnstillinger",
@@ -1065,8 +1056,8 @@
       }
     },
     "atEnhanced": {
-      "title": "MatchZy Enhanced‑funksjoner",
-      "description": "Avanserte match‑funksjoner. La stå tomt for MatchZy Enhanced‑standard.",
+      "title": "Avanserte funksjoner",
+      "description": "Avanserte match‑funksjoner. La stå tomt for Ready Up sine standarder.",
       "autoready": {
         "title": "Auto‑ready",
         "label": "Auto‑marker spillere som ready når de joiner",
@@ -1105,20 +1096,20 @@
       "demo": {
         "title": "Demo‑opptak",
         "enabled": "Aktiver demo‑opptak (Auto Tournament konfigurerer GOTV + opplasting automatisk)",
-        "description": "Når aktivert setter Auto Tournament tv_enable 1 og konfigurerer MatchZy Enhanced til å laste opp demoer til Auto Tournament automatisk etter hvert kart."
+        "description": "Når aktivert setter Auto Tournament tv_enable 1 og lar serveren laste opp demoer til Auto Tournament automatisk etter hvert kart."
       }
     },
     "developer": {
       "title": "Utvikleralternativer",
       "description": "Kun for lokal utvikling – ikke bruk i produksjon.",
       "simulateToggleLabel": "Simuler kamper (bruk bot-styrte demo-kamper i stedet for ekte spillere)",
-      "simulateNote": "Når aktivert, inkluderer genererte MatchZy Enhanced-konfiger \"simulation\": true for automatiserte demo-kamper.",
+      "simulateNote": "Når aktivert, inkluderer genererte kampkonfiger \"simulation\": true for automatiserte demo-kamper.",
       "timescaleTitle": "Simuleringshastighet",
       "timescaleDescription": "Styrer hvor raskt simulerte kamper kjører. Høyere verdier gjør bots og runde-flow raskere. Gjelder kun når simulering er aktivert.",
       "timescaleWarning": "Hastigheter over 2.0 kan være litt ustabile og gi rar bot-oppførsel, men fungerer fint for rask lokal testing.",
       "debugChat": {
-        "label": "Aktiver MatchZy Enhanced debug-chatmeldinger",
-        "description": "Når aktivert, skriver MatchZy Enhanced ekstra debug-meldinger (connect/disconnect, event-traces osv.) i in-game chat. Bruk kun for utvikling og testing."
+        "label": "Aktiver debug-chatmeldinger",
+        "description": "Når aktivert, skriver serveren ekstra debug-meldinger (connect/disconnect, event-traces osv.) i in-game chat. Bruk kun for utvikling og testing."
       }
     },
     "success": {

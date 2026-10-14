@@ -16,13 +16,7 @@ import {
   Alert,
 } from '@mui/material';
 import { EyeIcon, EyeSlashIcon, XIcon } from '@phosphor-icons/react';
-import {
-  api,
-  apiErrorMessage,
-  useSnackbar,
-  ConfirmDialog,
-  useModuleTranslation,
-} from '../../../module-sdk';
+import { api, useSnackbar, ConfirmDialog, useModuleTranslation } from '../../../module-sdk';
 import type { Server } from '../cs2.types';
 
 /**
@@ -53,7 +47,7 @@ const slugifyServerName = (name: string): string => {
 };
 
 export default function ServerModal({ open, server, servers, onClose, onSave }: ServerModalProps) {
-  const { showSuccess, showError, showWarning } = useSnackbar();
+  const { showSuccess, showError } = useSnackbar();
   const [name, setName] = useState('');
   const [host, setHost] = useState('');
   const [port, setPort] = useState('27015');
@@ -63,7 +57,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const [skins, setSkins] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [checking, setChecking] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -214,58 +207,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       showError(errorMessage);
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleCheckConnection = async () => {
-    if (!host?.trim()) {
-      setError(t('serverModal.errors.hostRequired'));
-      return;
-    }
-    const portNum = parseInt(port);
-    if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-      setError(t('serverModal.errors.portInvalid'));
-      return;
-    }
-    if (!password.trim()) {
-      setError(t('serverModal.errors.rconRequired'));
-      return;
-    }
-    setError('');
-    setChecking(true);
-    try {
-      const result = await api.post<{
-        success: boolean;
-        error?: string;
-        serverCanReachApi?: boolean;
-        apiReachability?: 'reachable' | 'unreachable' | 'unknown';
-      }>('/api/rcon/test-connection', {
-        host: host.trim(),
-        port: portNum,
-        password: password.trim(),
-        name: name.trim() || `Test ${host.trim()}:${portNum}`,
-        serverId: server?.id,
-      });
-      if (result.success) {
-        if (result.serverCanReachApi === true) {
-          showSuccess(t('serverModal.success.connectivityOk'));
-        } else if (result.apiReachability === 'unknown') {
-          showWarning(t('serverModal.errors.rconReachableApiUnknown'));
-        } else {
-          showError(t('serverModal.errors.rconReachableApiUnreachable'));
-        }
-      } else {
-        const message = result.error || t('serverModal.errors.serverOffline');
-        setError(message);
-        showError(message);
-      }
-    } catch (err) {
-      // Also inline: a toast alone was easy to miss on a 500.
-      const message = apiErrorMessage(err, t('serverModal.errors.testConnectionFailed'));
-      setError(message);
-      showError(message);
-    } finally {
-      setChecking(false);
     }
   };
 
@@ -470,34 +411,22 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               data-testid="server-delete-button"
               onClick={handleDeleteClick}
               color="error"
-              disabled={saving || checking}
+              disabled={saving}
               sx={{ mr: 'auto' }}
             >
               {t('serverModal.buttons.deleteServer')}
             </Button>
           )}
           {isEditing && (
-            <Button onClick={onClose} disabled={saving || checking}>
+            <Button onClick={onClose} disabled={saving}>
               {t('serverModal.buttons.cancel')}
-            </Button>
-          )}
-          {/* An RCON check: a fleet server has no RCON (its status comes from the fleet link). */}
-          {!isFleet && (
-            <Button
-              variant="outlined"
-              onClick={handleCheckConnection}
-              disabled={saving || checking}
-              startIcon={checking ? <CircularProgress size={16} /> : undefined}
-              data-testid="server-check-button"
-            >
-              {checking ? t('serverModal.testingConnectivity') : t('serverModal.testConnectivity')}
             </Button>
           )}
           <Button
             data-testid="server-save-button"
             onClick={handleSave}
             variant="contained"
-            disabled={saving || checking}
+            disabled={saving}
             startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
             sx={{ ml: 'auto' }}
           >

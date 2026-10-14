@@ -109,7 +109,9 @@ export async function createShuffleTournament(
   // Clean up any existing data for this tournament row, so it can be
   // recreated multiple times (tests do) without PK conflicts.
   await db.runAsync('DELETE FROM matches WHERE tournament_id = ?', [tournamentId]);
-  await db.runAsync('DELETE FROM shuffle_tournament_players WHERE tournament_id = ?', [tournamentId]);
+  await db.runAsync('DELETE FROM shuffle_tournament_players WHERE tournament_id = ?', [
+    tournamentId,
+  ]);
   await db.runAsync('DELETE FROM teams WHERE id LIKE ?', [shuffleTeamLike(tournamentId)]);
   await db.runAsync('DELETE FROM tournament WHERE id = ?', [tournamentId]);
 
@@ -193,7 +195,7 @@ export async function registerPlayers(
   if (tournament.status !== 'setup') {
     throw new Error(
       `Cannot register players. Tournament is in "${tournament.status}" status. ` +
-      'Players can only be registered when tournament is in "setup" status.'
+        'Players can only be registered when tournament is in "setup" status.'
     );
   }
 
@@ -259,14 +261,21 @@ export async function getRegisteredPlayers(tournamentId: number): Promise<Player
 
   // Their ratings in the tournament's game: balancing and the standings use them.
   const ids = playerIds.map((p) => p.player_id);
-  const tournament = await db.queryOneAsync<{ game: string | null }>('SELECT game FROM tournament WHERE id = ?', [
-    tournamentId,
-  ]);
+  const tournament = await db.queryOneAsync<{ game: string | null }>(
+    'SELECT game FROM tournament WHERE id = ?',
+    [tournamentId]
+  );
   const ratings = await getGameRatings(ids, tournament?.game);
   return (await playerService.getPlayersByIds(ids)).map((p) => {
     const r = ratings.get(p.id);
     return r
-      ? { ...p, current_elo: r.elo, openskill_mu: r.mu, openskill_sigma: r.sigma, match_count: r.matchCount }
+      ? {
+          ...p,
+          current_elo: r.elo,
+          openskill_mu: r.mu,
+          openskill_sigma: r.sigma,
+          match_count: r.matchCount,
+        }
       : p;
   });
 }
@@ -291,7 +300,7 @@ export async function setRegisteredPlayers(
   if (tournament.status !== 'setup') {
     throw new Error(
       `Cannot modify player registrations. Tournament is in "${tournament.status}" status. ` +
-      'Players can only be modified when tournament is in "setup" status.'
+        'Players can only be modified when tournament is in "setup" status.'
     );
   }
 
@@ -377,8 +386,8 @@ export async function generateRoundMatches(
   if (roundNumber < 1 || roundNumber > mapSequence.length) {
     throw new Error(
       `Invalid round number: ${roundNumber}. ` +
-      `Tournament has ${mapSequence.length} round(s) (based on ${mapSequence.length} map(s) selected). ` +
-      `Valid round numbers: 1-${mapSequence.length}.`
+        `Tournament has ${mapSequence.length} round(s) (based on ${mapSequence.length} map(s) selected). ` +
+        `Valid round numbers: 1-${mapSequence.length}.`
     );
   }
 
@@ -391,8 +400,8 @@ export async function generateRoundMatches(
   if (players.length < minPlayers) {
     throw new Error(
       `Not enough players registered: ${players.length}. ` +
-      `Shuffle tournaments require at least ${minPlayers} players for ${teamSize}v${teamSize} matches. ` +
-      `Please register ${minPlayers - players.length} more player(s) before generating matches.`
+        `Shuffle tournaments require at least ${minPlayers} players for ${teamSize}v${teamSize} matches. ` +
+        `Please register ${minPlayers - players.length} more player(s) before generating matches.`
     );
   }
 
@@ -425,7 +434,11 @@ export async function generateRoundMatches(
 
   // Balance teams
   const playerIds = players.map((p) => p.id);
-  const tournamentGame = (await db.queryOneAsync<{ game: string | null }>('SELECT game FROM tournament WHERE id = ?', [tournamentId]))?.game;
+  const tournamentGame = (
+    await db.queryOneAsync<{ game: string | null }>('SELECT game FROM tournament WHERE id = ?', [
+      tournamentId,
+    ])
+  )?.game;
   const balanceResult = await balanceTeams(playerIds, teamSize, true, tournamentGame); // Use tournament team size, use optimization
 
   // Create temporary teams for this round
@@ -440,9 +453,10 @@ export async function generateRoundMatches(
 
   // Build a set of team names that have already been used by previous shuffle
   // rounds so we never reuse a name within the same tournament.
-  const existingShuffleTeams = await db.queryAsync<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id LIKE ?', [
-    shuffleTeamLike(tournamentId),
-  ]);
+  const existingShuffleTeams = await db.queryAsync<DbTeamRow>(
+    'SELECT id, name, tag FROM teams WHERE id LIKE ?',
+    [shuffleTeamLike(tournamentId)]
+  );
   const usedTeamNames = new Set<string>(existingShuffleTeams.map((t) => t.name));
 
   // Create matches for each team pair
@@ -664,7 +678,7 @@ export async function generateRoundMatches(
       winner_id: null,
       server_id: null,
       config: serializeMatchConfig(config),
-      status: 'ready', // Changed from 'pending' to 'ready' since skip_veto = true
+      status: 'ready', // No veto for a shuffle match
       next_match_id: null,
       current_map: map,
       map_number: 0,
@@ -772,7 +786,7 @@ export async function advanceToNextRound(tournamentId: number): Promise<{
 
     log.success(
       `Shuffle tournament completed! All ${mapSequence.length} round(s) finished. ` +
-      `Final leaderboard available at /tournament/${tournamentId}/leaderboard`
+        `Final leaderboard available at /tournament/${tournamentId}/leaderboard`
     );
     return null;
   }
@@ -805,7 +819,9 @@ export async function advanceToNextRound(tournamentId: number): Promise<{
 /**
  * Get player leaderboard
  */
-export async function getPlayerLeaderboard(tournamentId: number): Promise<PlayerLeaderboardEntry[]> {
+export async function getPlayerLeaderboard(
+  tournamentId: number
+): Promise<PlayerLeaderboardEntry[]> {
   const players = await getRegisteredPlayers(tournamentId);
 
   // Get match results for all players
@@ -913,10 +929,9 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
   liveMatchCount: number;
 }> {
   // Load base tournament row
-  const row = await db.queryOneAsync<DbTournamentRow>(
-    'SELECT * FROM tournament WHERE id = ?',
-    [tournamentId]
-  );
+  const row = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+    tournamentId,
+  ]);
 
   if (!row) {
     throw new Error('Tournament not found');
@@ -1004,7 +1019,8 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
       }
       for (const member of roster) {
         const steamId = member.steamId ?? member.steamid;
-        if (steamId) teamOfPlayer.set(steamId, { id: team.id, name: team.name, tag: team.tag ?? null });
+        if (steamId)
+          teamOfPlayer.set(steamId, { id: team.id, name: team.name, tag: team.tag ?? null });
       }
     }
 

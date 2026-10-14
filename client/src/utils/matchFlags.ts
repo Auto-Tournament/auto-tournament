@@ -49,9 +49,8 @@ export const isShuffleMatch = (match: MatchLike): boolean => {
 };
 
 /**
- * Frontend-level veto disable flag used by cards, team view and match modal.
- * This is separate from MatchZy Enhanced's skip_veto flag, which is handled entirely
- * on the server/plugin side.
+ * Veto disable flag used by cards, team view and match modal (the veto is the
+ * platform's, in the browser).
  *
  * For manual matches: veto is disabled by default, but can be enabled via
  * config.vetoDisabled === false. Shuffle matches always have veto disabled.
@@ -59,15 +58,13 @@ export const isShuffleMatch = (match: MatchLike): boolean => {
 export const isVetoDisabledForMatch = (match: MatchLike): boolean => {
   // Shuffle matches never use veto
   if (isShuffleMatch(match)) return true;
-  
+
   // Manual matches: check config.vetoDisabled flag
   // If vetoDisabled is explicitly false, veto is enabled
   if (isManualMatch(match)) {
     return match.config?.vetoDisabled !== false;
   }
-  
+
   // For bracket matches, check the explicit flag
   return match.config?.vetoDisabled === true;
 };
-
-

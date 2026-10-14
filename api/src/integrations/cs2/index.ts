@@ -1,16 +1,16 @@
 /**
- * CS2 (MatchZy Enhanced) game integration.
+ * CS2 game integration, on Ready Up (the native CS2 plugin).
  *
- * Owns the MatchZy Enhanced match config: `buildMatchConfig` (./matchConfig) builds the
+ * Owns the match config: `buildMatchConfig` (./matchConfig) builds the
  * `matches.config` blob for tournament and standalone matches, and
- * `describeMatch` is the only reader of it the core uses. It also owns the
- * game servers: RCON, the server fleet and its status, bootstrap, health and
- * CS2 update monitoring, and demos (`services/`, `utils/`, `routes/`), mounted
+ * `describeMatch` is the only reader of it the core uses. The fleet driver
+ * turns it into Ready Up's assign config. It also owns the game servers: the
+ * Ready Up fleet link, their status, csm host agents, CS2 update notices and
+ * demos (`fleet/`, `services/`, `utils/`, `routes/`), mounted
  * through `legacyRoutes` and started through `start()`. Event ingest is the
- * `events/` adapter: the MatchZy Enhanced webhooks (`/api/events`), the match report
- * and connection snapshot, and `normalize()`, which maps MatchZy Enhanced events to
- * `NormalizedEvent`s. The adapter applies the CS2-only side effects (live
- * score, connections, stale-event guards) and hands the rest to the core's
+ * fleet link: `fleet/normalize` maps Ready Up events to `NormalizedEvent`s and
+ * `events/matchEvents` applies the CS2-only side effects (live score,
+ * connections) and hands the rest to the core's
  * `matchLifecycle.ingest`; the core calls back into `release`,
  * `seriesPlayerStats` and `standaloneRoster` when a series ends, and stores
  * and rates the stats through `playerStatsColumns` / `playerStatsMetrics`
@@ -18,8 +18,7 @@
  * free, loading a match onto one, restarting, moving and ending it. The core
  * scheduler (`core/scheduler.ts`) keeps the queue and calls it through
  * `capacity`, `allocate`, `allocateBatch`, `restart`, `load`, `cancel` and
- * `release`; the tournament start preflight and webhook bootstrap are
- * `checkStart` and `prepareStart` (./tournamentStart). The map veto is a
+ * `release`. The map veto is a
  * CS2 pre-match phase (`veto/`: the `/api/veto` routes, the veto orders, and
  * the simulation auto-veto behind `isReadyToAllocate`, `onMatchReady` and
  * `startPendingPreMatchPhases`). Its progress is `matches.veto_state`, which
@@ -41,7 +40,6 @@
 import type { MatchConfig } from '../../types/match.types';
 import type { TournamentResponse } from '../../types/tournament.types';
 import type { DbTournamentRow } from '../../types/database.types';
-import type { MatchReport } from './events/connectionSnapshotService';
 import { normalizeConfigPlayers } from '../../utils/playerTransform';
 import {
   cs2TournamentSettings,
@@ -362,17 +360,16 @@ export const cs2Integration: GameIntegration = {
     return cs2ServerPool.getFreeServerCount();
   },
 
-  async allocate(ctx, { baseUrl }): Promise<AllocateResult> {
+  // The platform URL (`baseUrl`) is not used: Ready Up talks to the platform
+  // over its own link.
+  async allocate(ctx): Promise<AllocateResult> {
     const { cs2ServerPool } = await import('./allocation');
-    return toAllocateResult(await cs2ServerPool.allocate(ctx.slug, baseUrl));
+    return toAllocateResult(await cs2ServerPool.allocate(ctx.slug));
   },
 
-  async allocateBatch(ctxs, { baseUrl }) {
+  async allocateBatch(ctxs) {
     const { cs2ServerPool } = await import('./allocation');
-    const results = await cs2ServerPool.allocateBatch(
-      ctxs.map((ctx) => ctx.slug),
-      baseUrl
-    );
+    const results = await cs2ServerPool.allocateBatch(ctxs.map((ctx) => ctx.slug));
     // The pool reports left-over matches first; answer in the order asked.
     const bySlug = new Map(results.map((result) => [result.matchSlug, result]));
     return ctxs.map((ctx) => {
@@ -383,8 +380,8 @@ export const cs2Integration: GameIntegration = {
     });
   },
 
-  /** css_restart and reload on the same server, or move a match that has not gone live. */
-  async restart(ctx, { baseUrl, moveResource }): Promise<ResourceActionResult> {
+  /** Unassign and reassign on the same server, or move a match that has not gone live. */
+  async restart(ctx, { moveResource }): Promise<ResourceActionResult> {
     const { cs2ServerPool } = await import('./allocation');
     if (moveResource) {
       if (!ctx.resourceId) {
@@ -394,10 +391,10 @@ export const cs2Integration: GameIntegration = {
         };
       }
       return toResourceActionResult(
-        await cs2ServerPool.moveToOtherServer(ctx.slug, ctx.resourceId, baseUrl)
+        await cs2ServerPool.moveToOtherServer(ctx.slug, ctx.resourceId)
       );
     }
-    const result = await cs2ServerPool.restartMatch(ctx.slug, baseUrl);
+    const result = await cs2ServerPool.restartMatch(ctx.slug);
     return result.success
       ? {
           ok: true,
@@ -407,13 +404,15 @@ export const cs2Integration: GameIntegration = {
       : { ok: false, error: result.message };
   },
 
-  async load(ctx, { baseUrl, skipWebhook }) {
+  async load(ctx) {
     const { cs2ServerPool } = await import('./allocation');
     return toResourceActionResult(
-      await cs2ServerPool.loadAssigned(
-        { id: ctx.matchId, slug: ctx.slug, round: ctx.round, server_id: ctx.resourceId ?? null },
-        { baseUrl, skipWebhook }
-      )
+      await cs2ServerPool.loadAssigned({
+        id: ctx.matchId,
+        slug: ctx.slug,
+        round: ctx.round,
+        server_id: ctx.resourceId ?? null,
+      })
     );
   },
 
@@ -430,36 +429,6 @@ export const cs2Integration: GameIntegration = {
       return;
     }
     await cs2ServerPool.restartServerToEndMatch(ctx.resourceId);
-  },
-
-  /** Every enabled server runs an up-to-date CS2 build (RCON BuildID + Steam UpToDateCheck). */
-  async checkStart(_scope) {
-    const { preflightServersUpToDateForTournamentStart } = await import('./tournamentStart');
-    const preflight = await preflightServersUpToDateForTournamentStart();
-    if (preflight.ok) return { ok: true };
-    return {
-      ok: false,
-      errorCode: 'cs2_outdated_servers',
-      message:
-        'One or more enabled servers are out of date (or could not be verified). Update or disable the affected servers before starting the tournament.',
-      details: { servers: preflight.servers },
-    };
-  },
-
-  /** Persistent MatchZy Enhanced webhook config on every enabled server, so allocation's connectivity checks pass. */
-  async prepareStart(_scope) {
-    const { bootstrapServerWebhooksForTournamentStart } = await import('./tournamentStart');
-    await bootstrapServerWebhooksForTournamentStart();
-  },
-
-  /**
-   * The webhook URL from Settings: where MatchZy Enhanced on the server posts its
-   * events, and the base of the match config and demo upload URLs it is
-   * given. Rejects when it is not configured, which blocks the start.
-   */
-  async resolveBaseUrl(_scope) {
-    const { settingsService } = await import('../../services/settingsService');
-    return settingsService.requireWebhookUrl();
   },
 
   /**
@@ -608,40 +577,18 @@ export const cs2Integration: GameIntegration = {
     return cs2ServerPool.getEffectiveGracePeriodSeconds();
   },
 
-  /** Verify the server's persistent webhook and demo upload config (recovery). */
-  async reattach(ctx) {
-    if (!ctx.resourceId) return;
-    // A Ready Up server keeps its own link; there is no RCON config to verify.
-    const { transportOf } = await import('./driver');
-    if ((await transportOf(ctx.resourceId)) === 'fleet') return;
-    const { serverInitializationService } = await import('./services/serverInitializationService');
-    // NOTE: kept as recovery has always called it: `false` lands in the baseUrl
-    // parameter.
-    await serverInitializationService.initializeServer(ctx.resourceId, false);
-  },
-
-  /** The MatchZy Enhanced status convar, read through the short status cache. */
+  /** What the Ready Up server says it is doing. */
   async resourceStatus(resourceId) {
     const { serverStatusService } = await import('./services/serverStatusService');
-    const { transportOf } = await import('./driver');
-    if ((await transportOf(resourceId)) === 'fleet') {
-      const { fleetServerStatus } = await import('./fleet/driver');
-      const fleet = await fleetServerStatus(resourceId);
-      if (!fleet.online || !fleet.status) return null;
-      return {
-        status: fleet.status,
-        description: serverStatusService.getStatusDescription(fleet.status),
-      };
-    }
-    const statusInfo = await serverStatusService.getServerStatus(resourceId);
-    if (!statusInfo.online || !statusInfo.status) return null;
+    const info = await serverStatusService.getServerStatus(resourceId);
+    if (!info.online || !info.status) return null;
     return {
-      status: statusInfo.status,
-      description: serverStatusService.getStatusDescription(statusInfo.status),
+      status: info.status,
+      description: serverStatusService.getStatusDescription(info.status),
     };
   },
 
-  /** MatchZy Enhanced's series stats as stat lines, team1's block first (./stats maps the fields). */
+  /** The series stats as stat lines, team1's block first (./stats maps the fields). */
   async tournamentPlayerExtras(tournamentId) {
     const { tournamentPlayerExtras } = await import('./tournamentExtras');
     return tournamentPlayerExtras(tournamentId);
@@ -744,14 +691,8 @@ export const cs2Integration: GameIntegration = {
     await skinService.awardTournament(tournamentId, tournamentName, placements, rewards === false);
   },
 
-  /** A stored MatchZy Enhanced event through the same handling as the events route, minus its checks. */
-  async replayEvent(event) {
-    const { applyMatchEvent } = await import('./events/matchEvents');
-    await applyMatchEvent(event as import('./events/plugin-events.types').PluginEvent);
-  },
-
   /**
-   * /api/servers (bootstrap, fleet, status), /api/rcon, /api/demos,
+   * /api/servers (fleet, status), /api/rcon, /api/demos,
    * /api/cs2-plugin, /api/events, /api/veto, /api/maps and /api/map-pools, at their existing URLs. Loaded on first call, not with the
    * registry (see the note at the top).
    */
@@ -806,11 +747,6 @@ export const cs2Integration: GameIntegration = {
     return { host: server.host, port: Number(server.port), password: null };
   },
 
-  async refreshPresence(slug, opts) {
-    const { refreshConnectionsFromServer } = await import('./events/connectionSnapshotService');
-    await refreshConnectionsFromServer(slug, opts);
-  },
-
   /**
    * Held or released (services/matchHolds.ts): a match on a Ready Up server
    * gets its config again, with the absent-team forfeit off while held and
@@ -822,23 +758,6 @@ export const cs2Integration: GameIntegration = {
     if (!assignment || assignment.endedAt !== null) return;
     const outcome = await syncMatch(ctx.slug);
     if (!outcome.ok) throw new Error(outcome.error);
-  },
-
-  /** The MatchZy Enhanced match report: fetched over RCON from the server, or passed in. */
-  async syncMatchState(slug, source) {
-    const { fetchMatchReport, applyMatchReport } =
-      await import('./events/connectionSnapshotService');
-    const report =
-      'report' in source
-        ? (source.report as MatchReport)
-        : await fetchMatchReport(source.resourceId);
-    if (!report) return null;
-    await applyMatchReport(slug, report);
-    return {
-      map: report.match?.map?.name,
-      phase: report.match?.phase,
-      score: report.match?.score,
-    };
   },
 
   clientSlots: ['MatchPanel', 'SetupStep', 'StatsPanel'],

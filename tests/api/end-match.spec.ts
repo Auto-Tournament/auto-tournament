@@ -10,13 +10,10 @@ import { createServer, deleteServer } from '../helpers/servers';
  * Reported on Discord: "When the match is live and I click 'End Match' in the
  * Admin Controls, it still shows 'LIVE' in the Matches tab."
  *
- * /api/rcon/end-match sent an RCON command and stopped there. MatchZy Enhanced emits no
- * event when a match is force-ended, so nothing ever told MAT, and the row
- * stayed 'live' indefinitely.
- *
- * Test servers use host 0.0.0.0, which rconService treats as a fake server and
- * answers successfully — so the real path is reachable here: the command
- * "lands", and MAT then has to settle its own record.
+ * /api/rcon/end-match sent the command to the server and stopped there, so the
+ * row stayed 'live' indefinitely. The platform settles its own record now,
+ * whether or not the server answers (a test server has no Ready Up behind it,
+ * so here it does not, and the answer carries a warning).
  *
  * @tag api
  * @tag matches
@@ -59,7 +56,10 @@ test.describe.serial('Ending a match', () => {
         headers: getAuthHeader(),
         data: { serverId: server.id },
       });
-      expect(response.ok(), 'end-match should succeed against this server').toBe(true);
+      expect(response.ok(), 'end-match should settle the match').toBe(true);
+      const body = (await response.json()) as { settled?: boolean; warning?: string };
+      expect(body.settled).toBe(true);
+      expect(body.warning, 'no server answered, and the answer says so').toBeTruthy();
 
       // The reported bug: the command went out, the row was never touched, and
       // the Matches tab kept showing LIVE.
@@ -110,22 +110,8 @@ test.describe.serial('Ending a match', () => {
     'should warn (not silently claim success) when the server cannot be reached',
     { tag: ['@api', '@matches', '@admin'] },
     async ({ request }) => {
-      // Regression test for the bug fixed alongside `css_endmatch`: CS2's
-      // `endMatchOnServer` called the private `rconService.executeCommand`
-      // with a server id where it expects a server record, so the RCON
-      // connect always failed. `executeCommand` resolved `{ success: false }`
-      // instead of throwing, and `endMatchOnServer` ignored the result and
-      // logged "Successfully sent" regardless — force-cancel never reported
-      // a warning, no matter what actually happened on the server.
-      //
-      // `FAKE_SERVER_HOST` (0.0.0.0) short-circuits to success before
-      // rconService even looks at the `enabled` flag, so a disabled fake
-      // server can't be used to exercise the failure path here. Instead this
-      // points the match at a second, real server whose RCON port nothing is
-      // listening on, so the connection is refused immediately (no need to
-      // wait out a connect timeout). It's only registered as a bare server
-      // row via the test-only `/api/test/match-state` serverId override, so
-      // it never has to pass the tournament-start preflight.
+      // A server row with no Ready Up server linked to it: force-cancel must
+      // still cancel the match, and say the server could not be told.
       await signInViaRequest(request);
       const setup = await setupTournament(request, { teamCount: 2, serverCount: 1 });
       expect(setup).toBeTruthy();
@@ -138,9 +124,9 @@ test.describe.serial('Ending a match', () => {
       const unreachableId = `unreachable-${Date.now()}`;
       const badServer = await createServer(request, {
         id: unreachableId,
-        name: 'Unreachable RCON test server',
+        name: 'Unlinked test server',
         host: '127.0.0.1',
-        port: 1, // Nothing listens here; RCON connect is refused immediately.
+        port: 1,
         password: 'irrelevant',
         enabled: true,
       });

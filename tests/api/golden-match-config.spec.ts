@@ -1,6 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { getAuthHeader, DEFAULT_ADMIN_STEAM_ID, signInViaRequest } from '../helpers/auth';
-import { configureWebhook } from '../helpers/setup';
 import {
   expectGolden,
   getOk,
@@ -10,13 +9,11 @@ import {
 } from '../helpers/golden';
 
 /**
- * Golden MatchZy Enhanced match configs, one file per format.
+ * Golden Ready Up match configs, one file per format.
  *
- * Characterization test: it records the JSON that GET /api/matches/:slug.json
- * serves today (the URL MatchZy Enhanced loads a match from) and fails when
- * any of it changes. It is the safety net for moving config building out of
- * the bracket generators and behind the CS2 game module; the served config
- * must stay identical through that refactor.
+ * Characterization test: it records the `match.assign` config Ready Up would
+ * get for each match (through GET /api/test/fleet/assign-config/:slug, without
+ * the per-assignment password) and fails when any of it changes.
  *
  * Update the goldens (then review the diff and explain it in the PR):
  *
@@ -29,8 +26,6 @@ import {
  *   and ids do not depend on earlier specs on the shard;
  * - teams, players and slugs use fixed ids; Swiss uses manual seeding (no
  *   shuffle);
- * - `matchid` is the matches row id; it is checked against the row and then
- *   written as `<matchid>`;
  * - shuffle teams are generated: their ids, names and the balanced rosters are
  *   replaced by placeholders and sorted player lists, and the random starting
  *   side is checked to be one of the two valid values and then written as
@@ -44,7 +39,15 @@ import {
  * @tag golden
  */
 
-const MAPS = ['de_ancient', 'de_anubis', 'de_dust2', 'de_inferno', 'de_mirage', 'de_nuke', 'de_vertigo'];
+const MAPS = [
+  'de_ancient',
+  'de_anubis',
+  'de_dust2',
+  'de_inferno',
+  'de_mirage',
+  'de_nuke',
+  'de_vertigo',
+];
 
 /** 17-digit Steam64-shaped ids so the config builder treats them as Steam IDs. */
 const steamId = (team: number, player: number) =>
@@ -69,11 +72,17 @@ interface MatchListRow {
   bracket?: string;
 }
 
+/** Ready Up's `match.assign` config (protocol/v1 match.defs.json#/$defs/assignConfig). */
+type AssignTeam = {
+  id?: string;
+  name?: string;
+  tag?: string;
+  players?: Array<{ steamid64: string; name: string; role?: string }>;
+};
 type Config = Record<string, unknown> & {
-  matchid?: number;
-  map_sides?: string[];
-  team1?: { id?: string; name?: string; tag?: string; players?: Record<string, string> };
-  team2?: { id?: string; name?: string; tag?: string; players?: Record<string, string> };
+  maps?: Array<{ number: number; name: string; sides: string }>;
+  team1?: AssignTeam;
+  team2?: AssignTeam;
 };
 
 /** Placeholders shared by every format. */
@@ -82,26 +91,34 @@ const COMMON_REPLACE = {
 };
 
 /**
- * A cookie-less context, as the game server is: the config is fetched with the
- * header MAT puts on the load command, not an admin session.
+ * The config Ready Up would be assigned for the match now (no password), through the test
+ * route. A match that cannot be assigned yet (before its veto) records why, and the
+ * platform's served config.
  */
-let serverContext: APIRequestContext;
-
-async function fetchServedConfig(match: MatchListRow): Promise<Config> {
-  const res = await serverContext.get(`/api/matches/${match.slug}.json`, {
-    headers: { 'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123' },
+async function fetchAssignConfig(
+  request: APIRequestContext,
+  match: MatchListRow
+): Promise<Config | { notAssignable: string; served: unknown }> {
+  const res = await request.get(`/api/test/fleet/assign-config/${match.slug}`, {
+    headers: getAuthHeader(),
   });
   expect(res.ok(), `config for ${match.slug}: ${res.status()} ${await res.text()}`).toBe(true);
-  const config = (await res.json()) as Config;
-  expect(config.matchid, `${match.slug}: matchid is the matches row id`).toBe(match.id);
-  return { ...config, matchid: '<matchid>' as unknown as number };
+  const body = (await res.json()) as { config?: Config; notAssignable?: string; served?: unknown };
+  if (body.notAssignable) {
+    // Before its veto: why, and the platform's own config (rounds, sides, map count).
+    const served = body.served as Record<string, unknown>;
+    return { notAssignable: body.notAssignable, served: { ...served, matchid: '<matchid>' } };
+  }
+  return body.config as Config;
 }
 
 async function tournamentMatches(request: APIRequestContext): Promise<MatchListRow[]> {
   const body = await getOk<{ matches: MatchListRow[] }>(request, '/api/matches');
   return body.matches
     .filter((m) => m.round > 0)
-    .sort((a, b) => a.round - b.round || a.matchNumber - b.matchNumber || a.slug.localeCompare(b.slug));
+    .sort(
+      (a, b) => a.round - b.round || a.matchNumber - b.matchNumber || a.slug.localeCompare(b.slug)
+    );
 }
 
 async function createTournament(
@@ -124,34 +141,25 @@ async function snapshotTournament(request: APIRequestContext, name: string): Pro
       round: match.round,
       matchNumber: match.matchNumber,
       bracket: match.bracket ?? null,
-      config: await fetchServedConfig(match),
+      config: await fetchAssignConfig(request, match),
     });
   }
   expectGolden(`match-config-${name}`, normalizeForGolden(snapshot, { replace: COMMON_REPLACE }));
 }
 
-test.describe.serial('Golden MatchZy Enhanced match configs', () => {
+test.describe.serial('Golden Ready Up match configs', () => {
   test.beforeAll(async ({ playwright }) => {
     const request = await playwright.request.newContext({
       baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
     });
     try {
       await resetDatabaseForGolden(request);
-      // Manual matches refuse to be created without a webhook URL.
-      expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
       for (const team of TEAMS) {
         await postOk(request, '/api/teams', team);
       }
     } finally {
       await request.dispose();
     }
-    serverContext = await playwright.request.newContext({
-      baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
-    });
-  });
-
-  test.afterAll(async () => {
-    await serverContext?.dispose();
   });
 
   test.beforeEach(async ({ request }) => {
@@ -197,18 +205,22 @@ test.describe.serial('Golden MatchZy Enhanced match configs', () => {
     await snapshotTournament(request, 'round-robin');
   });
 
-  test('swiss (Bo1, 4 teams, manual seeding)', { tag: ['@api', '@golden'] }, async ({ request }) => {
-    await createTournament(request, {
-      name: 'Golden Swiss',
-      type: 'swiss',
-      format: 'bo1',
-      maps: MAPS,
-      teamIds: TEAMS.map((t) => t.id),
-      // 'random' would shuffle round-1 pairings (Math.random); manual keeps seed order.
-      settings: { seedingMethod: 'manual' },
-    });
-    await snapshotTournament(request, 'swiss');
-  });
+  test(
+    'swiss (Bo1, 4 teams, manual seeding)',
+    { tag: ['@api', '@golden'] },
+    async ({ request }) => {
+      await createTournament(request, {
+        name: 'Golden Swiss',
+        type: 'swiss',
+        format: 'bo1',
+        maps: MAPS,
+        teamIds: TEAMS.map((t) => t.id),
+        // 'random' would shuffle round-1 pairings (Math.random); manual keeps seed order.
+        settings: { seedingMethod: 'manual' },
+      });
+      await snapshotTournament(request, 'swiss');
+    }
+  );
 
   test('shuffle (round 1, 10 players)', { tag: ['@api', '@golden'] }, async ({ request }) => {
     await request.delete('/api/tournament', { headers: getAuthHeader() });
@@ -238,18 +250,18 @@ test.describe.serial('Golden MatchZy Enhanced match configs', () => {
 
     const snapshot = [];
     for (const match of matches) {
-      const config = await fetchServedConfig(match);
+      const config = (await fetchAssignConfig(request, match)) as Config;
 
       // Random per match (Math.random in the shuffle config builder).
-      expect(config.map_sides).toHaveLength(1);
-      expect(['team1_ct', 'team2_ct']).toContain(config.map_sides![0]);
-      config.map_sides = ['<random-side>'];
+      expect(config.maps).toHaveLength(1);
+      expect(['team1_ct', 'team2_ct']).toContain(config.maps![0].sides);
+      config.maps = [{ ...config.maps![0], sides: '<random-side>' }];
 
       // Generated teams: ids and names embed a generated suffix, and which
       // player lands on which side is up to the balancer. Record the union
       // of both rosters (sorted) plus each side's size.
       const rosterIds = [config.team1, config.team2].map((team) =>
-        Object.keys(team?.players ?? {}).sort()
+        (team?.players ?? []).map((p) => p.steamid64).sort()
       );
       const replace: Record<string, string> = { ...COMMON_REPLACE };
       for (const [side, team] of [
@@ -325,13 +337,16 @@ test.describe.serial('Golden MatchZy Enhanced match configs', () => {
     });
 
     try {
-      const config = await fetchServedConfig({
+      const config = await fetchAssignConfig(request, {
         id: created.match.id,
         slug,
         round: 0,
         matchNumber: 0,
       });
-      expectGolden('match-config-manual', normalizeForGolden({ slug, config }, { replace: COMMON_REPLACE }));
+      expectGolden(
+        'match-config-manual',
+        normalizeForGolden({ slug, config }, { replace: COMMON_REPLACE })
+      );
     } finally {
       await request.delete(`/api/matches/${slug}`, { headers: getAuthHeader() });
     }

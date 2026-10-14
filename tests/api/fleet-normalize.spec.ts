@@ -9,7 +9,6 @@ import {
   toPlatformMapNumber,
   totalsFromRounds,
 } from '../../api/src/integrations/cs2/fleet/normalize';
-import { normalize as normalizePlugin } from '../../api/src/integrations/cs2/events/normalize';
 import type {
   Envelope,
   MatchState,
@@ -476,97 +475,6 @@ test.describe('Fleet normalizer', () => {
     ]) {
       expect(normalizeFleetEvent(load(file)), file).toEqual([]);
     }
-  });
-
-  test('same event types and metric keys as the plugin path', () => {
-    // The plugin's map_result for the same numbers: identical neutral shape
-    // apart from the event id prefix (the plugin adds the series score in
-    // matchEvents; the fleet event carries it).
-    const plugin = normalizePlugin({
-      event: 'map_result',
-      matchid: 'm-norm',
-      map_number: 1,
-      map_name: 'de_mirage',
-      winner: { team: 'team2' },
-      team1: { score: 9, players: [] },
-      team2: {
-        score: 13,
-        players: [
-          {
-            steamid: HUMAN_2,
-            name: 'bob',
-            stats: {
-              kills: 20,
-              deaths: 10,
-              assists: 3,
-              damage: 2200,
-              rounds_played: 22,
-              kast: 17,
-              mvp: 4,
-              headshot_kills: 9,
-            },
-          },
-        ],
-      },
-    });
-    const fleet = normalizeFleetEvent(
-      eventFrame(
-        'event.map_result',
-        {
-          type: 'map_result',
-          winner: 'team2',
-          team1_series_score: 1,
-          team2_series_score: 1,
-          map_number: 2,
-          map_name: 'de_mirage',
-          team1_score: 9,
-          team2_score: 13,
-          series_over: false,
-          stats: {
-            live: false,
-            team1_is_ct: true,
-            team1: { score: 9, score_ct: 5, score_t: 4 },
-            team2: { score: 13, score_ct: 7, score_t: 6 },
-            players: [
-              {
-                id: HUMAN_2,
-                name: 'bob',
-                team: 2,
-                bot: false,
-                stats: {
-                  kills: 20,
-                  deaths: 10,
-                  assists: 3,
-                  damage: 2200,
-                  rounds_played: 22,
-                  kast_rounds: 17,
-                  mvp: 4,
-                  headshot_kills: 9,
-                },
-              },
-            ],
-            rounds: [],
-          },
-        },
-        { map: 2 }
-      )
-    );
-    const strip = (events: NormalizedEvent[]) =>
-      events.map((e) => {
-        const { eventId: _id, ...rest } = e as NormalizedEvent & { seriesScore?: unknown };
-        delete (rest as { seriesScore?: unknown }).seriesScore;
-        return rest;
-      });
-    expect(strip(fleet)).toEqual(strip(plugin));
-    expect(
-      Object.keys(
-        metricsFromFleetStats({ kills: 0, deaths: 0, assists: 0, damage: 0, rounds_played: 0 })
-      )
-    ).toEqual(
-      Object.keys(
-        (plugin[1] as Extract<NormalizedEvent, { type: 'player.stats' }>).lines[0].metrics
-      )
-    );
   });
 
   test('totalsFromRounds sums per player and keeps the last team', () => {

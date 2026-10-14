@@ -14,11 +14,6 @@
       "maps": "地图与地图池",
       "skins": "皮肤",
       "matchRules": "比赛规则"
-    },
-    "atDbDown": {
-      "title": "无法连接 MatchZy Enhanced 数据库",
-      "body_one": "{{count}} 台服务器报告插件无法连接其数据库。备份和事件队列可能受到影响。",
-      "body_other": "{{count}} 台服务器报告插件无法连接其数据库。备份和事件队列可能受到影响。"
     }
   },
   "dashboard": {
@@ -518,7 +513,6 @@
       "message_other": "确定要删除 {{count}} 台服务器吗？该操作无法撤销。"
     },
     "autoConfig": {
-      "configuring": "正在配置新服务器（通过 RCON 发送 MatchZy Enhanced 配置）…",
       "done": "新服务器已配置，正在刷新状态…"
     },
     "checkServerLogs": "请查看游戏服务器控制台/日志，确认 Auto Tournament 插件是否收到配置并发送事件。",
@@ -526,7 +520,6 @@
       "title": "服务器集群状态",
       "total_one": "{{count}} 台服务器",
       "total_other": "{{count}} 台服务器",
-      "latestRelease": "MatchZy Enhanced 最新版本：v{{version}}",
       "olderVersion_one": "{{count}} 台服务器运行的版本低于最新版本。",
       "olderVersion_other": "{{count}} 台服务器运行的版本低于最新版本。",
       "downloadLatest": "下载最新版本"
@@ -571,7 +564,6 @@
       "webhookTitle": "服务器无法连接 Auto Tournament（Webhook）",
       "webhookBody": "Auto Tournament 可以通过 RCON 连接服务器，但服务器无法访问 Auto Tournament 的 Webhook。请检查出站网络、DNS 和已配置的 Webhook URL。",
       "versionDiffTitle": "各服务器的插件版本不一致",
-      "versionDiffBody": "部分服务器运行的 MatchZy Enhanced 版本不同。如果使用 CSM，请运行 {{command}} 并重启服务器。",
       "ipBannedTitle": "RCON IP 已被封禁",
       "ipBannedBody": "由于 RCON 认证多次失败，服务器已暂时封禁 Auto Tournament 的 IP。请修正 RCON 密码并解封该 IP。",
       "pluginDbTitle": "Auto Tournament 插件无法连接其数据库。",
@@ -957,7 +949,6 @@
       "noServers": "没有可用的服务器",
       "refreshServers": "刷新服务器列表",
       "noEvents": "尚未收到此服务器的事件。",
-      "noEventsHint": "15 秒后仍未收到事件。请检查你的 CS2 服务器是否已配置为使用正确的 X-Auto-Tournament-Token 将 MatchZy Enhanced Webhook 发送到 /api/events/:matchSlugOrServerId。",
       "waiting": "正在等待服务器事件…",
       "footer_one": "显示 {{count}} 条事件（最多 100 条）",
       "footer_other": "显示 {{count}} 条事件（最多 100 条）",

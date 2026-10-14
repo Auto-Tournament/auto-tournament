@@ -2,20 +2,16 @@
  * Everything CS2 needs an admin to fix before its tournament can run, in the
  * one slot the shell renders on every admin page (3.0 phase E).
  *
- * Two warnings, each already its own component: the webhook URL a CS2 server
- * reaches the platform on, and MatchZy Enhanced's database. The slot takes
- * one component, and grouping them here is what keeps the shell from learning
- * what either of them is.
+ * The webhook URL the platform's links and callbacks use. The slot takes one
+ * component, and keeping it here keeps the shell from learning what it is.
  */
 
 import * as React from 'react';
 import { WebhookWarning } from './WebhookWarning';
-import { PluginDbWarning } from './PluginDbWarning';
 import type { AdminGlobalWarningProps } from '../../types';
 
 export const Cs2AdminWarnings: React.FC<AdminGlobalWarningProps> = ({ onOpenSettings }) => (
   <>
     <WebhookWarning onOpenSettings={onOpenSettings} />
-    <PluginDbWarning />
   </>
 );

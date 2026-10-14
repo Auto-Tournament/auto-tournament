@@ -179,8 +179,8 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
             ? t('tournament.startButton.startingSimulation')
             : t('tournament.startButton.starting')
           : simulationEnabled
-          ? t('tournament.startButton.startSimulation')
-          : t('tournament.startButton.start')}
+            ? t('tournament.startButton.startSimulation')
+            : t('tournament.startButton.start')}
       </Button>
 
       <ConfirmDialog
@@ -224,7 +224,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         When enabled, matches will auto-veto and load with simulation=true so the
-                        MatchZy Enhanced can run full matches with bots instead of players.
+                        The server can run full matches with bots instead of players.
                       </Typography>
                     </Box>
                   }

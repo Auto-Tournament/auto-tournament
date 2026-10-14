@@ -1,11 +1,6 @@
-import { rconService } from './rconService';
-import { serverService } from './serverService';
-import { log } from '../../../utils/logger';
-import { parseConVarReply } from '../../../utils/pluginServerReplies';
-
 /**
  * Server Status Values
- * These represent the actual state of the CS2 server
+ * The match phase a linked Ready Up server reports, in the words the views use.
  */
 export enum ServerStatus {
   IDLE = 'idle', // Server is free, no match loaded
@@ -20,152 +15,22 @@ export enum ServerStatus {
   ERROR = 'error', // Something went wrong
 }
 
-/**
- * Service for managing custom server status ConVars
- * These are the single source of truth for server/match state
- */
-const STATUS_CACHE_TTL_MS = 10_000; // 10 seconds of "buffer" for lightweight status checks
-
+/** A server's status, read from its Ready Up fleet connection. */
 export class ServerStatusService {
-  // Custom ConVar names (must be unique to avoid conflicts)
-  private readonly STATUS_VAR = 'at_tournament_status';
-  private readonly MATCH_SLUG_VAR = 'at_tournament_match';
-  private readonly NEXT_MATCH_VAR = 'at_tournament_next_match';
-  private readonly UPDATE_TIME_VAR = 'at_tournament_updated';
-
-  /**
-   * In-memory cache of the most recent status per server. This is used as a
-   * short-lived buffer for lightweight views (e.g. Servers page) so that
-   * transient RCON issues or brief reconnects don't immediately flip servers
-   * between "online" and "offline" in the UI.
-   */
-  private readonly statusCache = new Map<
-    string,
-    {
-      status: ServerStatus | null;
-      matchSlug: string | null;
-      nextMatchSlug: string | null;
-      updatedAt: number | null;
-      online: boolean;
-      cachedAt: number;
-    }
-  >();
-
-  /**
-   * Get the current server status by querying the server directly
-   * The CS2 plugin manages these ConVars; we only read them.
-   */
-  async getServerStatus(
-    serverId: string,
-    useCache = false
-  ): Promise<{
+  async getServerStatus(serverId: string): Promise<{
     status: ServerStatus | null;
     matchSlug: string | null;
-    nextMatchSlug: string | null;
-    updatedAt: number | null;
     online: boolean;
   }> {
-    if (useCache) {
-      const cached = this.statusCache.get(serverId);
-      if (cached) {
-        const { cachedAt, ...rest } = cached;
-        const age = Date.now() - cachedAt;
-        if (age <= STATUS_CACHE_TTL_MS) {
-          log.debug(`[STATUS] Using cached status for server ${serverId} (age=${age}ms)`);
-          return rest;
-        }
-      }
+    // A fake server (host 0.0.0.0, for screenshots and tests) is always up and idle.
+    const { serverService } = await import('./serverService');
+    const server = await serverService.getServerById(serverId);
+    if (server?.host === '0.0.0.0') {
+      return { status: ServerStatus.IDLE, matchSlug: null, online: true };
     }
-
-    try {
-      // Check if this is a fake server (IP 0.0.0.0) - always return online
-      const server = await serverService.getServerById(serverId);
-      if (server && server.host === '0.0.0.0') {
-        // Fake server for screenshots/testing - always return online with idle status
-        const result = {
-          status: ServerStatus.IDLE,
-          matchSlug: null,
-          nextMatchSlug: null,
-          updatedAt: Math.floor(Date.now() / 1000),
-          online: true,
-        };
-        this.statusCache.set(serverId, { ...result, cachedAt: Date.now() });
-        return result;
-      }
-
-      // Try to get status from server
-      const statusResult = await rconService.sendCommand(serverId, this.STATUS_VAR);
-
-      if (!statusResult.success) {
-        return {
-          status: null,
-          matchSlug: null,
-          nextMatchSlug: null,
-          updatedAt: null,
-          online: false,
-        };
-      }
-
-      // The plugin's convars are CounterStrikeSharp FakeConVars, which answer
-      // `name = value` without quotes. Only the quoted Source 1 form used to be
-      // parsed, so every server read as idle - including one still in postgame,
-      // which is how a match was loaded onto a server that queued it for later.
-      const rawStatus = parseConVarReply(statusResult.response, this.STATUS_VAR);
-      const status = rawStatus ? (rawStatus.toLowerCase() as ServerStatus) : ServerStatus.IDLE;
-
-      // Get current match slug
-      const slugResult = await rconService.sendCommand(serverId, this.MATCH_SLUG_VAR);
-      const matchSlug = parseConVarReply(slugResult.response, this.MATCH_SLUG_VAR) || null;
-
-      // Get queued next match slug (if any)
-      const nextResult = await rconService.sendCommand(serverId, this.NEXT_MATCH_VAR);
-      const nextMatchSlug = parseConVarReply(nextResult.response, this.NEXT_MATCH_VAR) || null;
-
-      // Get update timestamp
-      const timeResult = await rconService.sendCommand(serverId, this.UPDATE_TIME_VAR);
-      const rawUpdated = parseConVarReply(timeResult.response, this.UPDATE_TIME_VAR);
-      const parsedUpdated = rawUpdated ? parseInt(rawUpdated, 10) : NaN;
-      // The plugin's default is "0" - never updated - which is not a timestamp.
-      const updatedAt = Number.isFinite(parsedUpdated) && parsedUpdated > 0 ? parsedUpdated : null;
-
-      const result = {
-        status,
-        matchSlug,
-        nextMatchSlug,
-        updatedAt,
-        online: true,
-      };
-      this.statusCache.set(serverId, { ...result, cachedAt: Date.now() });
-      return result;
-    } catch (error) {
-      log.error(`Failed to get server status from ${serverId}`, error);
-      const result = {
-        status: null,
-        matchSlug: null,
-        nextMatchSlug: null,
-        updatedAt: null,
-        online: false,
-      };
-      this.statusCache.set(serverId, { ...result, cachedAt: Date.now() });
-      return result;
-    }
-  }
-
-  /**
-   * Get descriptive status text for display
-   */
-  /** See `primeServerStatusForTests`. */
-  primeCache(
-    serverId: string,
-    entry: {
-      status: ServerStatus | null;
-      matchSlug: string | null;
-      nextMatchSlug: string | null;
-      updatedAt: number | null;
-      online: boolean;
-    }
-  ): void {
-    this.statusCache.set(serverId, { ...entry, cachedAt: Date.now() });
+    const { fleetServerStatus } = await import('../fleet/driver');
+    const s = await fleetServerStatus(serverId);
+    return { status: s.status, matchSlug: s.matchSlug, online: s.online };
   }
 
   getStatusDescription(status: ServerStatus): {
@@ -243,33 +108,5 @@ export class ServerStatusService {
     }
   }
 }
-
-/**
- * Seed the status cache directly.
- *
- * Only for the gated E2E test endpoints: allocation behaviour depends on what
- * the CS2 plugin reports, and CI has no CS2 server to report anything. Reaching
- * the cache is what lets a test stand in for one.
- */
-export function primeServerStatusForTests(
-  serverId: string,
-  entry: {
-    status: ServerStatus | null;
-    matchSlug?: string | null;
-    nextMatchSlug?: string | null;
-    updatedAt?: number | null;
-    online?: boolean;
-  }
-): void {
-  serverStatusService.primeCache(serverId, {
-    status: entry.status,
-    matchSlug: entry.matchSlug ?? null,
-    nextMatchSlug: entry.nextMatchSlug ?? null,
-    updatedAt: entry.updatedAt ?? null,
-    online: entry.online ?? true,
-  });
-}
-
-export { isAllocatableStatus } from '../../../utils/pluginServerReplies';
 
 export const serverStatusService = new ServerStatusService();

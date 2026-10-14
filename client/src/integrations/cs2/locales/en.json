@@ -14,11 +14,6 @@
       "maps": "Maps & Map Pools",
       "skins": "Skins",
       "matchRules": "Match rules"
-    },
-    "atDbDown": {
-      "title": "MatchZy Enhanced DB unreachable",
-      "body_one": "{{count}} server reports that the plugin cannot reach its database. Backups and the event queue may be affected.",
-      "body_other": "{{count}} servers report that the plugin cannot reach its database. Backups and the event queue may be affected."
     }
   },
   "dashboard": {
@@ -518,7 +513,6 @@
       "message_other": "Are you sure you want to delete {{count}} servers? This action cannot be undone."
     },
     "autoConfig": {
-      "configuring": "Configuring new servers (sending MatchZy Enhanced config via RCON)…",
       "done": "New servers configured. Refreshing status…"
     },
     "checkServerLogs": "Check the game server console/logs to see if the Auto Tournament plugin receives config and sends events.",
@@ -526,7 +520,6 @@
       "title": "Server fleet status",
       "total_one": "{{count}} server",
       "total_other": "{{count}} servers",
-      "latestRelease": "Latest MatchZy Enhanced release: v{{version}}",
       "olderVersion_one": "{{count}} server is running an older version than the latest release.",
       "olderVersion_other": "{{count}} servers are running an older version than the latest release.",
       "downloadLatest": "Download latest"
@@ -571,7 +564,6 @@
       "webhookTitle": "Server can't reach Auto Tournament (webhook)",
       "webhookBody": "Auto Tournament can reach the server via RCON, but the server can't reach Auto Tournament's webhook. Check egress, DNS and the configured webhook URL.",
       "versionDiffTitle": "Plugin versions differ across servers",
-      "versionDiffBody": "Some servers are running a different MatchZy Enhanced version. If you use CSM, run {{command}} and restart the servers.",
       "ipBannedTitle": "RCON IP banned",
       "ipBannedBody": "The server has temporarily banned Auto Tournament's IP after repeated RCON auth failures. Fix the RCON password and unban the IP.",
       "pluginDbTitle": "The Auto Tournament plugin can't reach its database.",
@@ -958,7 +950,6 @@
       "noServers": "No servers available",
       "refreshServers": "Refresh server list",
       "noEvents": "No events received from this server yet.",
-      "noEventsHint": "Still no events after 15 seconds. Check that your CS2 server is set up to send MatchZy Enhanced webhooks to /api/events/:matchSlugOrServerId with the correct X-Auto-Tournament-Token.",
       "waiting": "Waiting for events from the server…",
       "footer_one": "Showing {{count}} event (max 100)",
       "footer_other": "Showing {{count}} events (max 100)",
@@ -974,8 +965,8 @@
     "saveFailed": "Failed to save settings",
     "loadFailed": "Failed to load settings",
     "webhook": {
-      "title": "MatchZy Enhanced Webhook",
-      "description": "MatchZy Enhanced webhook URL that your CS2 servers can reach.",
+      "title": "Platform URL",
+      "description": "The address your CS2 servers, links and webhooks use to reach the platform.",
       "label": "Webhook URL",
       "helper": "Example: https://your-domain.com"
     },
@@ -997,17 +988,17 @@
     },
     "defaultsTitle": "Server defaults",
     "chatDefaults": {
-      "title": "MatchZy Enhanced Chat & Knife Defaults",
+      "title": "Chat & Knife Defaults",
       "description": "Configure in-game chat prefixes and default knife round behavior.",
       "chatPrefixLabel": "Chat Prefix",
       "chatPrefixHelper": "Default: \"[{Green}Auto Tournament{Default}]\". Leave blank to reset to the default prefix.",
       "adminChatPrefixLabel": "Admin Chat Prefix",
       "adminChatPrefixHelper": "Default: \"[{Red}ADMIN{Default}]\". Leave blank to reset to the default admin prefix.",
       "knifeToggleLabel": "Enable knife rounds by default for new matches (when sides are not pre-selected)",
-      "knifeNote": "Applies only when MatchZy Enhanced would normally run a knife round; explicit side picks or shuffle-assigned sides are not changed."
+      "knifeNote": "Applies only when the server would normally run a knife round; explicit side picks or shuffle-assigned sides are not changed."
     },
     "atCore": {
-      "title": "MatchZy Enhanced Core Defaults",
+      "title": "Core Match Defaults",
       "description": "These defaults are sent to servers during initialization and before each match load.",
       "expert": {
         "title": "Expert settings",
@@ -1066,7 +1057,7 @@
     },
     "atEnhanced": {
       "title": "CS2 plugin features",
-      "description": "Configure advanced match features. Leave settings empty to use MatchZy Enhanced defaults.",
+      "description": "Configure advanced match features. Leave settings empty to use Ready Up's defaults.",
       "autoready": {
         "title": "Auto-Ready System",
         "label": "Auto-mark players as ready when they join",
@@ -1112,13 +1103,13 @@
       "title": "Developer Options",
       "description": "Local development helpers only; don't enable in production.",
       "simulateToggleLabel": "Simulate matches (use bot-driven demo matches instead of real players)",
-      "simulateNote": "When enabled, generated MatchZy Enhanced configs include \"simulation\": true for automated demo matches.",
+      "simulateNote": "When enabled, generated match configs include \"simulation\": true for automated demo matches.",
       "timescaleTitle": "Simulation Timescale",
       "timescaleDescription": "Controls how fast simulated matches run. Higher values speed up bots and round flow. This only applies when simulation is enabled.",
       "timescaleWarning": "Speeds above 2.0 can be a bit unstable and may cause odd bot behavior, but are fine to use for quick local testing.",
       "debugChat": {
-        "label": "Enable MatchZy Enhanced debug chat messages",
-        "description": "When enabled, MatchZy Enhanced will print additional debug messages (like player connects, disconnects, and event traces) into in-game chat. Use this only for development and testing – not during live events."
+        "label": "Enable debug chat messages",
+        "description": "When enabled, the server prints additional debug messages (like player connects, disconnects, and event traces) into in-game chat. Use this only for development and testing – not during live events."
       }
     },
     "success": {

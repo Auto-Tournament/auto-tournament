@@ -99,7 +99,7 @@ function AdminShell() {
   const { claimed: columnClaimed, setColumn } = useShellColumnSlot();
 
   // Steam's health stays here rather than moving behind the game integration
-  // with MatchZy Enhanced's database (3.0 phase E). The warning is about
+  // (3.0 phase E). The warning is about
   // sign-ins and vanity URL lookups: Steam is the platform's own login
   // provider, and an instance running a manually reported Rocket League
   // tournament signs its admins in with it exactly like a CS2 one.

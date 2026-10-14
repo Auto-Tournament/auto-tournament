@@ -14,11 +14,6 @@
       "maps": "Cartes & pools",
       "skins": "Skins",
       "matchRules": "Règles de match"
-    },
-    "atDbDown": {
-      "title": "Base de données MatchZy Enhanced injoignable",
-      "body_one": "{{count}} serveur signale que le plugin ne peut pas joindre sa base de données. Les sauvegardes et la file d’événements peuvent être affectées.",
-      "body_other": "{{count}} serveurs signalent que le plugin ne peut pas joindre sa base de données. Les sauvegardes et la file d’événements peuvent être affectées."
     }
   },
   "dashboard": {
@@ -518,7 +513,6 @@
       "message_other": "Voulez-vous vraiment supprimer {{count}} serveurs ? Cette action est irréversible."
     },
     "autoConfig": {
-      "configuring": "Configuration des nouveaux serveurs (envoi de la config MatchZy Enhanced via RCON)…",
       "done": "Nouveaux serveurs configurés. Actualisation du statut…"
     },
     "checkServerLogs": "Consultez la console / les logs du serveur de jeu pour vérifier que le plugin Auto Tournament reçoit la config et envoie des événements.",
@@ -526,7 +520,6 @@
       "title": "État du parc de serveurs",
       "total_one": "{{count}} serveur",
       "total_other": "{{count}} serveurs",
-      "latestRelease": "Dernière version de MatchZy Enhanced : v{{version}}",
       "olderVersion_one": "{{count}} serveur utilise une version plus ancienne que la dernière release.",
       "olderVersion_other": "{{count}} serveurs utilisent une version plus ancienne que la dernière release.",
       "downloadLatest": "Télécharger la dernière version"
@@ -571,7 +564,6 @@
       "webhookTitle": "Le serveur ne peut pas joindre Auto Tournament (webhook)",
       "webhookBody": "Auto Tournament peut joindre le serveur via RCON, mais le serveur ne peut pas joindre le webhook de Auto Tournament. Vérifiez le trafic sortant, le DNS et l’URL du webhook configurée.",
       "versionDiffTitle": "Les versions du plugin diffèrent selon les serveurs",
-      "versionDiffBody": "Certains serveurs utilisent une autre version de MatchZy Enhanced. Si vous utilisez CSM, exécutez {{command}} puis redémarrez les serveurs.",
       "ipBannedTitle": "IP bannie par RCON",
       "ipBannedBody": "Le serveur a temporairement banni l’IP de Auto Tournament après plusieurs échecs d’authentification RCON. Corrigez le mot de passe RCON et débannissez l’IP.",
       "pluginDbTitle": "Le plugin Auto Tournament ne peut pas joindre sa base de données.",
@@ -957,7 +949,6 @@
       "noServers": "Aucun serveur disponible",
       "refreshServers": "Actualiser la liste des serveurs",
       "noEvents": "Aucun événement reçu de ce serveur pour l’instant.",
-      "noEventsHint": "Toujours aucun événement après 15 secondes. Vérifiez que votre serveur CS2 est configuré pour envoyer les webhooks MatchZy Enhanced vers /api/events/:matchSlugOrServerId avec le bon X-Auto-Tournament-Token.",
       "waiting": "En attente d’événements du serveur…",
       "footer_one": "{{count}} événement affiché (max 100)",
       "footer_other": "{{count}} événements affichés (max 100)",

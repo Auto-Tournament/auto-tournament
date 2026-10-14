@@ -14,7 +14,6 @@ import {
 } from '../../../utils/matchIntegration';
 import { getVetoOrder } from './config';
 import { getVetoContext } from './context';
-import { settingsService } from '../../../services/settingsService';
 import { normalizeConfigPlayers } from '../../../utils/playerTransform';
 import { resolveViewerIdentity } from '../../../utils/viewerIdentity';
 import { checkAdminAccess, requireAuth } from '../../../middleware/auth';
@@ -701,48 +700,36 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         pickedMaps: vetoState.pickedMaps.map((m: { mapName: string }) => m.mapName),
       });
 
-      const baseUrl = await settingsService.getWebhookUrl();
+      setImmediate(async () => {
+        try {
+          const result = await scheduler.allocateSingleMatch(matchSlug, '');
 
-      if (!baseUrl) {
-        log.warn(
-          `Webhook URL is not configured. Skipping auto-load for match ${matchSlug} after veto.`
-        );
-      } else {
-        setImmediate(async () => {
-          try {
-            const result = await scheduler.allocateSingleMatch(matchSlug, baseUrl);
-
-            if (result.success) {
-              log.success(
-                `[VETO] Match ${matchSlug} loaded on server ${result.serverId} after veto`
-              );
+          if (result.success) {
+            log.success(`[VETO] Match ${matchSlug} loaded on server ${result.serverId} after veto`);
+          } else {
+            if (isQueuedAllocationResult(result.error)) {
+              log.info(`[VETO] Match ${matchSlug} queued for a server after veto: ${result.error}`);
             } else {
-              if (isQueuedAllocationResult(result.error)) {
-                log.info(
-                  `[VETO] Match ${matchSlug} queued for a server after veto: ${result.error}`
-                );
-              } else {
-                log.warn(
-                  `[VETO] Failed to allocate server for match ${matchSlug} after veto: ${result.error}`
-                );
-              }
-
-              // Start polling for available servers (checks every 10 seconds)
-              // The backend will keep checking for available servers and assign one when found
-              log.debug(`[VETO] Starting background polling for available servers`, { matchSlug });
-              scheduler.startPollingForServer(matchSlug, baseUrl);
+              log.warn(
+                `[VETO] Failed to allocate server for match ${matchSlug} after veto: ${result.error}`
+              );
             }
-          } catch (err) {
-            log.error(`[VETO] Error loading match after veto`, err as Error);
 
-            // Start polling even on exception if match is still ready
-            log.debug(`[VETO] Starting background polling for available servers after error`, {
-              matchSlug,
-            });
-            scheduler.startPollingForServer(matchSlug, baseUrl);
+            // Start polling for available servers (checks every 10 seconds)
+            // The backend will keep checking for available servers and assign one when found
+            log.debug(`[VETO] Starting background polling for available servers`, { matchSlug });
+            scheduler.startPollingForServer(matchSlug, '');
           }
-        });
-      }
+        } catch (err) {
+          log.error(`[VETO] Error loading match after veto`, err as Error);
+
+          // Start polling even on exception if match is still ready
+          log.debug(`[VETO] Starting background polling for available servers after error`, {
+            matchSlug,
+          });
+          scheduler.startPollingForServer(matchSlug, '');
+        }
+      });
     } else {
       // Set next step
       const nextStepConfig = vetoOrder[vetoState.currentStep - 1];

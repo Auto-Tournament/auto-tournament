@@ -1,6 +1,13 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
+import {
+  sendReadyUpEvents,
+  roundEnd as readyUpRoundEnd,
+  mapResult as readyUpMapResult,
+  seriesEnd as readyUpSeriesEnd,
+  type ReadyUpEvent,
+} from '../helpers/readyUp';
 
 /**
  * Score fields on matches, and the tournament champion.
@@ -22,12 +29,15 @@ import { getAuthHeader, signInViaRequest } from '../helpers/auth';
  * @tag regression
  */
 
-const MAPS = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'];
-
-const SERVER_HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-};
+const MAPS = [
+  'de_mirage',
+  'de_inferno',
+  'de_ancient',
+  'de_anubis',
+  'de_dust2',
+  'de_vertigo',
+  'de_nuke',
+];
 
 type ListedMatch = {
   id: number;
@@ -58,50 +68,29 @@ async function matchBySlug(request: APIRequestContext, slug: string): Promise<Li
   return found!;
 }
 
-async function postEvent(request: APIRequestContext, slug: string, data: Record<string, unknown>) {
-  const res = await request.post(`/api/events/${slug}`, { headers: SERVER_HEADERS, data });
-  expect(res.ok(), `${String(data.event)} rejected: ${await res.text()}`).toBe(true);
+async function postEvent(request: APIRequestContext, slug: string, event: ReadyUpEvent) {
+  await sendReadyUpEvents(request, slug, [event]);
 }
 
-function roundEnd(match: ListedMatch, mapNumber: number, team1: number, team2: number) {
-  return {
-    event: 'round_end',
-    matchid: match.id,
-    map_number: mapNumber,
-    round_number: team1 + team2,
-    winner: 'team1',
-    team1_score: team1,
-    team2_score: team2,
-  };
+/** Ready Up's round_end; `mapNumber` is the platform's (0-based). */
+function roundEnd(_match: ListedMatch, mapNumber: number, team1: number, team2: number) {
+  return readyUpRoundEnd(mapNumber + 1, team1 + team2, team1, team2);
 }
 
 function mapResult(
-  match: ListedMatch,
+  _match: ListedMatch,
   mapNumber: number,
   score: { team1: number; team2: number },
   series: { team1: number; team2: number },
   winner: 'team1' | 'team2'
 ) {
-  return {
-    event: 'map_result',
-    matchid: match.id,
-    map_number: mapNumber,
-    winner: { side: winner === 'team1' ? '3' : '2', team: winner },
-    team1: {
-      series_score: series.team1,
-      score: score.team1,
-      players: [],
-      id: match.team1!.id,
-      name: match.team1!.name,
-    },
-    team2: {
-      series_score: series.team2,
-      score: score.team2,
-      players: [],
-      id: match.team2!.id,
-      name: match.team2!.name,
-    },
-  };
+  return readyUpMapResult({
+    mapNumber: mapNumber + 1,
+    team1: score.team1,
+    team2: score.team2,
+    series: [series.team1, series.team2],
+    winner,
+  });
 }
 
 test.describe.serial('Match score fields', () => {
@@ -206,14 +195,7 @@ test.describe.serial('Match score fields', () => {
         slug,
         mapResult(match!, 0, { team1: 7, team2: 13 }, { team1: 0, team2: 1 }, 'team2')
       );
-      await postEvent(request, slug, {
-        event: 'series_end',
-        matchid: match!.id,
-        team1_series_score: 0,
-        team2_series_score: 1,
-        winner: { side: '2', team: 'team2' },
-        time_until_restore: 0,
-      });
+      await postEvent(request, slug, readyUpSeriesEnd({ winner: 'team2', team1: 0, team2: 1 }));
 
       await expect
         .poll(
@@ -224,7 +206,7 @@ test.describe.serial('Match score fields', () => {
               tournament?: { status?: string; winner?: { id: string } | null };
             };
             return body.tournament?.status === 'completed'
-              ? body.tournament?.winner?.id ?? null
+              ? (body.tournament?.winner?.id ?? null)
               : null;
           },
           { message: 'the tournament should name its champion', timeout: 20000 }

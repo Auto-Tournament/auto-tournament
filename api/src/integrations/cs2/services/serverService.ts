@@ -359,12 +359,6 @@ export class ServerService {
       cs2BuildId: server.cs2_build_id ?? null,
       cs2VersionString: server.cs2_version_string ?? null,
       cs2VersionFetchedAt: server.cs2_version_fetched_at ?? null,
-      atDbOk:
-        typeof server.at_db_ok === 'number' ? server.at_db_ok === 1 : (server.at_db_ok ?? null),
-      atDbType: server.at_db_type ?? null,
-      atDbError: server.at_db_error ?? null,
-      atDbLastOkAt: server.at_db_last_ok_at ?? null,
-      atDbLastSeenAt: server.at_db_last_seen_at ?? null,
       serverCanReachApiAt: server.server_can_reach_api_at ?? null,
       transport: server.transport === 'fleet' ? 'fleet' : 'rcon',
       fleetServerId: server.fleet_server_id ?? null,

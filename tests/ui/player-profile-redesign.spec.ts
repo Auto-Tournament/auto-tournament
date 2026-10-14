@@ -3,6 +3,7 @@ import { setupTestContext } from '../helpers/setup';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { findMatchByTeams } from '../helpers/matches';
 import type { Team } from '../helpers/teams';
+import { sendReadyUpEvents, series, type ReadyUpPlayer } from '../helpers/readyUp';
 
 /**
  * Redesigned public player profile.
@@ -17,26 +18,23 @@ import type { Team } from '../helpers/teams';
  * @tag players
  */
 
-const SERVER_HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-};
-
-function statsPayload(team: Team, kills: number, deaths: number) {
-  return {
-    players: team.players.map((p) => ({
-      steamid: p.steamId,
-      name: p.name,
-      stats: {
-        kills,
-        deaths,
-        assists: 2,
-        damage: kills * 100,
-        rounds_played: 16,
-        kast: 70,
-      },
-    })),
-  };
+function players(
+  team: Team,
+  side: 'team1' | 'team2',
+  kills: number,
+  deaths: number
+): ReadyUpPlayer[] {
+  return team.players.map((p) => ({
+    steamId: p.steamId,
+    name: p.name,
+    team: side,
+    kills,
+    deaths,
+    assists: 2,
+    damage: kills * 100,
+    roundsPlayed: 16,
+    kastRounds: 11,
+  }));
 }
 
 test.describe('Redesigned player profile', () => {
@@ -62,37 +60,16 @@ test.describe('Redesigned player profile', () => {
 
       // team1 wins 13-7 with a clean K/D so WIN RATE and the recent-matches
       // row have something real to show.
-      const roundEnd = await request.post(`/api/events/${slug}`, {
-        headers: SERVER_HEADERS,
-        data: {
-          event: 'round_end',
-          matchid: slug,
-          map_number: 0,
-          round_number: 20,
-          winner: 'team1',
-          team1_score: 13,
-          team2_score: 7,
-          team1: statsPayload(team1, 20, 10),
-          team2: statsPayload(team2, 10, 20),
-        },
-      });
-      expect(roundEnd.ok(), `round_end rejected: ${await roundEnd.text()}`).toBe(true);
-
-      const seriesEnd = await request.post(`/api/events/${slug}`, {
-        headers: SERVER_HEADERS,
-        data: {
-          event: 'series_end',
-          matchid: slug,
-          team1_series_score: 1,
-          team2_series_score: 0,
-          winner: 'team1',
-          num_maps: 1,
-          time_until_restore: 0,
-          team1_name: team1.name,
-          team2_name: team2.name,
-        },
-      });
-      expect(seriesEnd.ok(), `series_end rejected: ${await seriesEnd.text()}`).toBe(true);
+      await sendReadyUpEvents(
+        request,
+        slug,
+        series([
+          {
+            score: [13, 7],
+            players: [...players(team1, 'team1', 20, 10), ...players(team2, 'team2', 10, 20)],
+          },
+        ])
+      );
 
       const steamId = team1.players[0].steamId;
 

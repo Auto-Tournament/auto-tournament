@@ -2589,11 +2589,6 @@ dateformat@^4.6.3:
   resolved "https://registry.npmjs.org/dateformat/-/dateformat-4.6.3.tgz"
   integrity sha512-2P0p0pFGzHS5EMnhdxQi7aJN+iMheud0UhG4dlE1DLAlvL8JHjJJTX/CSm4JXwV0Ka5nGk3zC5mcb5bUQUxxMA==
 
-dathost-rcon-client@^1.0.3:
-  version "1.0.8"
-  resolved "https://registry.npmjs.org/dathost-rcon-client/-/dathost-rcon-client-1.0.8.tgz"
-  integrity sha512-EFceIiFYUcQdivvyI+wlYkwGAr3zjm7E2NfhAlMq9RC+r7HeEtVidwfFKeZKV5Ia6YRbRoBegjHWl5nzT0gkcQ==
-
 debug@2.6.9:
   version "2.6.9"
   resolved "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz"

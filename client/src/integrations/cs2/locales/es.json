@@ -14,11 +14,6 @@
       "maps": "Mapas y pools",
       "skins": "Skins",
       "matchRules": "Reglas de partida"
-    },
-    "atDbDown": {
-      "title": "Base de datos de MatchZy Enhanced inaccesible",
-      "body_one": "{{count}} servidor informa de que el plugin no puede acceder a su base de datos. Las copias de seguridad y la cola de eventos pueden verse afectadas.",
-      "body_other": "{{count}} servidores informan de que el plugin no puede acceder a su base de datos. Las copias de seguridad y la cola de eventos pueden verse afectadas."
     }
   },
   "dashboard": {
@@ -518,7 +513,6 @@
       "message_other": "¿Seguro que quieres eliminar {{count}} servidores? Esta acción no se puede deshacer."
     },
     "autoConfig": {
-      "configuring": "Configurando nuevos servidores (enviando configuración de MatchZy Enhanced por RCON)…",
       "done": "Nuevos servidores configurados. Actualizando estado…"
     },
     "checkServerLogs": "Revisa la consola/logs del servidor de juego para ver si el plugin de Auto Tournament recibe la configuración y envía eventos.",
@@ -526,7 +520,6 @@
       "title": "Estado de la flota de servidores",
       "total_one": "{{count}} servidor",
       "total_other": "{{count}} servidores",
-      "latestRelease": "Última versión de MatchZy Enhanced: v{{version}}",
       "olderVersion_one": "{{count}} servidor usa una versión anterior a la última publicada.",
       "olderVersion_other": "{{count}} servidores usan una versión anterior a la última publicada.",
       "downloadLatest": "Descargar la última"
@@ -571,7 +564,6 @@
       "webhookTitle": "El servidor no puede acceder a Auto Tournament (webhook)",
       "webhookBody": "Auto Tournament puede acceder al servidor por RCON, pero el servidor no puede acceder al webhook de Auto Tournament. Revisa la salida de red, el DNS y la URL del webhook configurada.",
       "versionDiffTitle": "Las versiones del plugin difieren entre servidores",
-      "versionDiffBody": "Algunos servidores usan otra versión de MatchZy Enhanced. Si usas CSM, ejecuta {{command}} y reinicia los servidores.",
       "ipBannedTitle": "IP de RCON baneada",
       "ipBannedBody": "El servidor ha baneado temporalmente la IP de Auto Tournament tras varios fallos de autenticación de RCON. Corrige la contraseña de RCON y desbanea la IP.",
       "pluginDbTitle": "El plugin de Auto Tournament no puede acceder a su base de datos.",
@@ -957,7 +949,6 @@
       "noServers": "No hay servidores disponibles",
       "refreshServers": "Actualizar lista de servidores",
       "noEvents": "Aún no se han recibido eventos de este servidor.",
-      "noEventsHint": "Sigue sin haber eventos tras 15 segundos. Revisa que tu servidor de CS2 esté configurado para enviar webhooks de MatchZy Enhanced a /api/events/:matchSlugOrServerId con el X-Auto-Tournament-Token correcto.",
       "waiting": "Esperando eventos del servidor…",
       "footer_one": "Mostrando {{count}} evento (máx. 100)",
       "footer_other": "Mostrando {{count}} eventos (máx. 100)",

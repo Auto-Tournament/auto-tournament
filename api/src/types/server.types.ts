@@ -39,16 +39,6 @@ export interface Server {
   cs2_version_string?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */
   cs2_version_fetched_at?: number | null;
-  /** Best-effort: MatchZy Enhanced DB reachable (1/0). */
-  at_db_ok?: number | null;
-  /** Best-effort: 'sqlite' | 'mysql'. */
-  at_db_type?: string | null;
-  /** Best-effort: last DB error message (if any). */
-  at_db_error?: string | null;
-  /** Unix timestamp when DB was last reported OK. */
-  at_db_last_ok_at?: number | null;
-  /** Unix timestamp when DB health was last reported. */
-  at_db_last_seen_at?: number | null;
   /** Unix timestamp when server last successfully sent any event to /api/events. */
   server_can_reach_api_at?: number | null;
   created_at: number;
@@ -120,16 +110,6 @@ export interface ServerResponse {
   cs2VersionString?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */
   cs2VersionFetchedAt?: number | null;
-  /** Best-effort: MatchZy Enhanced DB reachable. */
-  atDbOk?: boolean | null;
-  /** Best-effort: 'sqlite' | 'mysql'. */
-  atDbType?: string | null;
-  /** Best-effort: last DB error message (if any). */
-  atDbError?: string | null;
-  /** Unix timestamp when DB was last reported OK. */
-  atDbLastOkAt?: number | null;
-  /** Unix timestamp when DB health was last reported. */
-  atDbLastSeenAt?: number | null;
   /** Unix timestamp when server last successfully sent any event to /api/events. */
   serverCanReachApiAt?: number | null;
   /**

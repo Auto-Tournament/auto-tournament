@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 708 of them, 411 behind auth —
+Every endpoint this API serves — 696 of them, 400 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -79,14 +79,6 @@ Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory mana
 | `POST` | `/api/skins/admin/drops` | admin |
 | `DELETE` | `/api/skins/admin/skins/:id` | admin |
 
-### Server bootstrap
-
-Self-registration for a CS2 server coming online.
-
-| Method | Path | Auth |
-| --- | --- | --- |
-| `GET` | `/api/servers/:id/bootstrap` | server token |
-
 ### Update hold
 
 Whether a game host should pause automatic CS2 updates.
@@ -112,8 +104,6 @@ The CS2 server fleet — add, edit, enable, remove.
 | `POST` | `/api/servers/bulk-delete` | admin |
 | `POST` | `/api/servers/:id/enable` | admin |
 | `POST` | `/api/servers/:id/disable` | admin |
-| `POST` | `/api/servers/:id/reset-initialization` | admin |
-| `POST` | `/api/servers/reset-all-initialization` | admin |
 
 ### Server status
 
@@ -129,9 +119,6 @@ Direct server control — pause, say, end match, raw commands.
 
 | Method | Path | Auth |
 | --- | --- | --- |
-| `GET` | `/api/rcon/test/:serverId` | admin |
-| `GET` | `/api/rcon/test` | admin |
-| `POST` | `/api/rcon/test-connection` | admin |
 | `POST` | `/api/rcon/practice-mode` | admin |
 | `POST` | `/api/rcon/start-match` | admin |
 | `POST` | `/api/rcon/change-map` | admin |
@@ -146,9 +133,7 @@ Direct server control — pause, say, end match, raw commands.
 | `POST` | `/api/rcon/broadcast` | admin |
 | `POST` | `/api/rcon/swap-teams` | admin |
 | `POST` | `/api/rcon/restore-backup` | admin |
-| `POST` | `/api/rcon/skip-veto` | admin |
 | `POST` | `/api/rcon/restart-round` | admin |
-| `POST` | `/api/rcon/add-time` | admin |
 | `POST` | `/api/rcon/end-match` | admin |
 | `POST` | `/api/rcon/:serverId/add-player` | admin |
 | `POST` | `/api/rcon/command` | admin |
@@ -179,10 +164,6 @@ MatchZy Enhanced webhooks in, and the recorded event log out.
 
 | Method | Path | Auth |
 | --- | --- | --- |
-| `GET` | `/api/events/test` | public |
-| `POST` | `/api/events` | server token |
-| `POST` | `/api/events/report` | server token |
-| `POST` | `/api/events/:matchSlugOrServerId` | server token |
 | `GET` | `/api/events/connections/:matchSlug` | public |
 | `GET` | `/api/events/live/:matchSlug` | public |
 | `GET` | `/api/events/server/:serverId` | admin |
@@ -500,13 +481,14 @@ E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE
 
 | Method | Path | Auth |
 | --- | --- | --- |
-| `POST` | `/api/test/server-status` | admin |
 | `POST` | `/api/test/highlights/status` | admin |
 | `POST` | `/api/test/fleet/reset-enroll-rate-limit` | admin |
 | `POST` | `/api/test/fleet/age-token` | admin |
 | `POST` | `/api/test/fleet/expire-key` | admin |
 | `POST` | `/api/test/fleet/assign` | admin |
 | `POST` | `/api/test/fleet/stattrak` | admin |
+| `POST` | `/api/test/fleet/events` | admin |
+| `GET` | `/api/test/fleet/assign-config/:slug` | admin |
 | `POST` | `/api/test/fleet/send` | admin |
 | `GET` | `/api/test/fleet/live-state/:slug` | admin |
 | `GET` | `/api/test/fleet/events/:serverId` | admin |
@@ -1139,7 +1121,6 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `POST` | `/api/test/marker` | admin |
 | `POST` | `/api/test/reset-database` | admin |
 | `POST` | `/api/test/match-state` | admin |
-| `POST` | `/api/test/match-report` | admin |
 | `POST` | `/api/test/series-result` | admin |
 | `POST` | `/api/test/passkey-verifier` | admin |
 | `POST` | `/api/test/login-admin` | public |

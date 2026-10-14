@@ -10,6 +10,7 @@ import { setupTournament } from '../helpers/tournamentSetup';
 import { findMatchByTeams } from '../helpers/matches';
 import { actingSteamIdFor } from '../helpers/veto';
 import type { Team } from '../helpers/teams';
+import { sendReadyUpEvents, goingLive } from '../helpers/readyUp';
 
 /**
  * "Copy Console Command" without a secure context.
@@ -84,18 +85,9 @@ test.describe.serial('Copy console command over plain HTTP', () => {
     });
     expect(state.ok()).toBe(true);
 
-    // The panel treats the server as reachable once live stats exist, which is
-    // the path that actually works without a real CS2 server: priming the
-    // status cache does not help, because the player route queries the server
-    // over RCON rather than reading the cache.
-    const live = await request.post(`/api/events/${match!.slug}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-      },
-      data: { event: 'going_live', matchid: match!.slug, map_number: 0 },
-    });
-    expect(live.ok()).toBe(true);
+    // The map goes live on the server (Ready Up's event), so the panel has a
+    // live match to show.
+    await sendReadyUpEvents(request, match!.slug, [goingLive(1)]);
   });
 
   test.afterEach(async ({ page, request }) => {

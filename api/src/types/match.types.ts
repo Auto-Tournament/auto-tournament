@@ -17,14 +17,12 @@ export interface MatchTeam {
    */
   substitutes?: MatchPlayer | null;
   series_score?: number;
-  matchtext?: string | null; // Override team name for single maps
 }
 
 export interface MatchConfig {
   // MatchZy Enhanced expects matchid to be an integer (DB match ID).
   // We enforce number here so config builders must supply a numeric ID.
   matchid: number;
-  skip_veto: true;
   min_players_to_ready?: number;
   players_per_team: number;
   team1: MatchTeam;
@@ -35,7 +33,6 @@ export interface MatchConfig {
   spectators?: {
     players?: MatchPlayer;
   };
-  min_spectators_to_ready?: number;
   expected_players_total?: number;
   expected_players_team1?: number;
   expected_players_team2?: number;

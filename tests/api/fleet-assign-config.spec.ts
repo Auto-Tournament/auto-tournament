@@ -24,7 +24,6 @@ const STEAM = (n: number) => `765611980000${String(n).padStart(5, '0')}`;
 function tournamentConfig(over: Partial<MatchConfig> = {}): MatchConfig {
   return {
     matchid: 42,
-    skip_veto: true,
     num_maps: 3,
     players_per_team: 5,
     min_players_to_ready: 4,
@@ -182,7 +181,6 @@ test.describe('Fleet match.assign config', () => {
     const config = buildAssignConfig(
       {
         matchid: 7,
-        skip_veto: true,
         num_maps: 1,
         players_per_team: 5,
         maplist: ['workshop/3084291314/aim_map'],

@@ -2301,7 +2301,6 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
       // manual matches will normalize this further (matchid, spectators, etc.).
       const config: MatchConfig = {
         matchid: 0,
-        skip_veto: true,
         players_per_team: playersPerTeam,
         num_maps: 1,
         maplist: [resolvedMap],

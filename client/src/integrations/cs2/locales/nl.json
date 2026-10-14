@@ -14,11 +14,6 @@
       "maps": "Kaarten & map-pools",
       "skins": "Skins",
       "matchRules": "Wedstrijdregels"
-    },
-    "atDbDown": {
-      "title": "MatchZy Enhanced-database onbereikbaar",
-      "body_one": "{{count}} server meldt dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben.",
-      "body_other": "{{count}} servers melden dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben."
     }
   },
   "dashboard": {
@@ -518,7 +513,6 @@
       "message_other": "Weet je zeker dat je {{count}} servers wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
     },
     "autoConfig": {
-      "configuring": "Nieuwe servers configureren (MatchZy Enhanced-config via RCON versturen)…",
       "done": "Nieuwe servers geconfigureerd. Status verversen…"
     },
     "checkServerLogs": "Controleer de gameserverconsole/logs om te zien of de Auto Tournament-plugin config ontvangt en events verstuurt.",
@@ -526,7 +520,6 @@
       "title": "Status van alle servers",
       "total_one": "{{count}} server",
       "total_other": "{{count}} servers",
-      "latestRelease": "Nieuwste MatchZy Enhanced-release: v{{version}}",
       "olderVersion_one": "{{count}} server draait een oudere versie dan de nieuwste release.",
       "olderVersion_other": "{{count}} servers draaien een oudere versie dan de nieuwste release.",
       "downloadLatest": "Nieuwste downloaden"
@@ -571,7 +564,6 @@
       "webhookTitle": "Server kan Auto Tournament niet bereiken (webhook)",
       "webhookBody": "Auto Tournament kan de server via RCON bereiken, maar de server kan de webhook van Auto Tournament niet bereiken. Controleer uitgaand verkeer, DNS en de ingestelde webhook-URL.",
       "versionDiffTitle": "Pluginversies verschillen per server",
-      "versionDiffBody": "Sommige servers draaien een andere MatchZy Enhanced-versie. Gebruik je CSM, voer dan {{command}} uit en herstart de servers.",
       "ipBannedTitle": "RCON-IP geblokkeerd",
       "ipBannedBody": "De server heeft het IP van Auto Tournament tijdelijk geblokkeerd na herhaalde mislukte RCON-authenticatie. Corrigeer het RCON-wachtwoord en hef de IP-blokkade op.",
       "pluginDbTitle": "De Auto Tournament-plugin kan zijn database niet bereiken.",
@@ -957,7 +949,6 @@
       "noServers": "Geen servers beschikbaar",
       "refreshServers": "Serverlijst vernieuwen",
       "noEvents": "Nog geen events van deze server ontvangen.",
-      "noEventsHint": "Na 15 seconden nog steeds geen events. Controleer of je CS2-server is ingesteld om MatchZy Enhanced-webhooks naar /api/events/:matchSlugOrServerId te sturen met de juiste X-Auto-Tournament-Token.",
       "waiting": "Wachten op events van de server…",
       "footer_one": "{{count}} event getoond (max. 100)",
       "footer_other": "{{count}} events getoond (max. 100)",

@@ -1,10 +1,11 @@
 import { test, expect, type APIRequestContext, type Page } from '@playwright/test';
 import { setupTestContext } from '../helpers/setup';
 import { signInViaRequest } from '../helpers/auth';
+import { adminCalled, createReadyUpServer, sendReadyUpEvents } from '../helpers/readyUp';
 
 /**
  * The admin call toast: a player's `.admin` call (Ready Up `admin_called` on
- * /api/events) shows on every admin page, stays through navigation and a
+ * the fleet link) shows on every admin page, stays through navigation and a
  * reload, has no close button, and goes away only when an admin resolves it —
  * here, or anywhere else (live, over the socket).
  *
@@ -12,14 +13,12 @@ import { signInViaRequest } from '../helpers/auth';
  * @tag admin-calls
  */
 
-const SERVER_HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Auto-Tournament-Token': process.env.SERVER_TOKEN ?? 'server123',
-};
-
 function uniqueCallId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
+
+/** The Ready Up server the calls come from (beforeAll). */
+let serverId = '';
 
 async function callAdmin(
   request: APIRequestContext,
@@ -27,20 +26,22 @@ async function callAdmin(
   player: string,
   message: string
 ): Promise<number> {
-  const res = await request.post('/api/events?server_id=ui-admin-call-server', {
-    headers: SERVER_HEADERS,
-    data: {
-      event: 'admin_called',
-      matchid: -1,
-      map_number: 0,
-      call_id: callId,
-      player: { steamid64: '76561198000000077', name: player, team: 'team1', side: 'ct' },
-      message,
-      called_at: new Date().toISOString(),
-    },
-  });
-  expect(res.status(), await res.text()).toBe(200);
-  return ((await res.json()) as { adminCallId: number }).adminCallId;
+  await sendReadyUpEvents(
+    request,
+    `no-match-${callId}`,
+    [adminCalled({ callId, steamId: '76561198000000077', name: player, team: 'team1', message })],
+    serverId
+  );
+  let id = 0;
+  await expect
+    .poll(async () => {
+      const res = await request.get('/api/admin-calls');
+      const body = (await res.json()) as { open: Array<{ id: number; callId: string }> };
+      id = body.open.find((c) => c.callId === callId)?.id ?? 0;
+      return id;
+    })
+    .toBeGreaterThan(0);
+  return id;
 }
 
 function toastFor(page: Page, callId: string) {
@@ -48,6 +49,11 @@ function toastFor(page: Page, callId: string) {
 }
 
 test.describe.serial('Admin call toast', () => {
+  test.beforeAll(async ({ request }) => {
+    await signInViaRequest(request);
+    serverId = (await createReadyUpServer(request, 'ui-admin-call')).fleetId;
+  });
+
   test.beforeEach(async ({ page, request }) => {
     await setupTestContext(page, request);
     // Playwright's Chromium lets any page play sound. A real browser refuses
@@ -99,7 +105,7 @@ test.describe.serial('Admin call toast', () => {
       await expect(toast).toContainText('Toast Tester');
       await expect(toast).toContainText('Server is lagging');
       await expect(toast.getByTestId('admin-call-team')).toContainText('CT');
-      await expect(toast).toContainText('ui-admin-call-server');
+      await expect(toast).toContainText('ui-admin-call');
       // Persistent: nothing on it hides the call without resolving it.
       await expect(toast.getByTestId('snackbar-close-button')).toHaveCount(0);
       await expect(toast.getByRole('button', { name: /close|dismiss/i })).toHaveCount(0);

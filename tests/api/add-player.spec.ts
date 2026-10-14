@@ -5,15 +5,10 @@ import { createTestServer, deleteServer } from '../helpers/servers';
 /**
  * Adding a backup player or spectator to a live match.
  *
- * The admin tools have always POSTed to /api/rcon/:serverId/add-player. The
- * route did not exist, so every attempt 404'd and the UI reported "failed to
- * add player to match" — the reported bug, and not only for spectators.
- *
- * MatchZy Enhanced reports refusals (no match set up, halftime, already on a team, bad
- * Steam ID) in the *reply text* while the RCON call itself succeeds, so the
- * route has to read the reply. A fake test server answers "fake_response",
- * which is exactly an unconfirmed add — so the refusal path is what CI can
- * check. The happy path needs a real CS2 server.
+ * The admin tools POST to /api/rcon/:serverId/add-player, which sends a
+ * Ready Up match.update add_player over the server's fleet link. A server
+ * that holds no match says so (the add path itself is covered by the fleet
+ * driver specs).
  *
  * @tag api
  * @tag rcon
@@ -45,7 +40,7 @@ test.describe.serial('Add player to match', () => {
   });
 
   test(
-    'the endpoint exists at all',
+    'a server with no match says so, not a missing route',
     { tag: ['@api', '@rcon', '@regression'] },
     async ({ request }) => {
       const res = await addPlayer(request, serverId, {
@@ -53,30 +48,11 @@ test.describe.serial('Add player to match', () => {
         team: 'spec',
         nickname: 'Caster',
       });
-
-      // The whole bug: this used to be 404, which the UI showed as
-      // "failed to add player to match".
-      expect(res.status(), 'route must be mounted').not.toBe(404);
-    }
-  );
-
-  test(
-    'does not claim success when the server never confirmed',
-    { tag: ['@api', '@rcon', '@regression'] },
-    async ({ request }) => {
-      const res = await addPlayer(request, serverId, {
-        steamId: VALID_STEAM_ID,
-        team: 'spec',
-        nickname: 'Caster',
-      });
-
-      // A fake server answers without MatchZy Enhanced's "successfully" confirmation.
-      // Reporting success off `result.success` alone would tell an admin the
-      // spectator was added when nothing happened.
-      expect(res.status()).toBe(400);
+      // Never claims success when nothing was added.
+      expect(res.ok()).toBe(false);
       const body = (await res.json()) as { success: boolean; error?: string };
       expect(body.success).toBe(false);
-      expect(body.error, 'should pass on what the server actually said').toBeTruthy();
+      expect(body.error).toMatch(/no match is assigned/i);
     }
   );
 

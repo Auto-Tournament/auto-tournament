@@ -101,7 +101,6 @@ test.describe('Game integration registry', () => {
   test('cs2 describeMatch reads the MatchZy Enhanced config into the neutral shape', () => {
     const config = {
       matchid: 7,
-      skip_veto: true,
       players_per_team: 2,
       num_maps: 3,
       maplist: ['de_ancient', 'de_anubis', 'de_nuke'],
