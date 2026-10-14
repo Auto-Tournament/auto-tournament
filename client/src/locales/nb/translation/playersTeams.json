@@ -165,7 +165,12 @@
         "in_progress": "Pågår",
         "completed": "Ferdig"
       },
-      "allMatches": "Alle kamper"
+      "allMatches": "Alle kamper",
+      "results": "Resultater",
+      "place_ordinal_one": "{{count}}.",
+      "place_ordinal_two": "{{count}}.",
+      "place_ordinal_few": "{{count}}.",
+      "place_ordinal_other": "{{count}}."
     },
     "headerLabel": "Lag",
     "captainLine": "kaptein {{name}}",
