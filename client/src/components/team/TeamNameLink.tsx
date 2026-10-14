@@ -39,8 +39,7 @@ export function TeamNameLink({
   const safeName = (name ?? '').trim();
   const safeTag = (tag ?? '').trim();
 
-  const label =
-    showTag && safeTag.length > 0 ? `[${safeTag}] ${safeName || '—'}` : safeName || '—';
+  const label = showTag && safeTag.length > 0 ? `[${safeTag}] ${safeName || '—'}` : safeName || '—';
 
   const canLink =
     !!teamId &&
@@ -77,4 +76,3 @@ export function TeamNameLink({
     </Typography>
   );
 }
-
