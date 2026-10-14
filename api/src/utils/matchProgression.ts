@@ -75,12 +75,9 @@ export async function advanceWinnerToNextMatch(
               if (inferred) {
                 nextMatch = inferred;
                 // Self-heal the missing link so future calls can use next_match_id directly.
-                await db.updateAsync(
-                  'matches',
-                  { next_match_id: inferred.id },
-                  'id = ?',
-                  [currentMatch.id]
-                );
+                await db.updateAsync('matches', { next_match_id: inferred.id }, 'id = ?', [
+                  currentMatch.id,
+                ]);
                 currentMatch.next_match_id = inferred.id;
                 log.debug('Backfilled next_match_id for winners bracket match', {
                   slug: currentMatch.slug,
@@ -128,9 +125,10 @@ export async function advanceWinnerToNextMatch(
     }
 
     // Check if both teams are now assigned
-    const updatedNextMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
-      nextMatch.id,
-    ]);
+    const updatedNextMatch = await db.queryOneAsync<DbMatchRow>(
+      'SELECT * FROM matches WHERE id = ?',
+      [nextMatch.id]
+    );
 
     if (updatedNextMatch && updatedNextMatch.team1_id && updatedNextMatch.team2_id) {
       await makeMatchReady(updatedNextMatch);
@@ -154,9 +152,10 @@ export async function advanceLoserToLosersBracket(
       return;
     }
 
-    const tournament = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
-      tournamentIdForMatch(currentMatch),
-    ]);
+    const tournament = await db.queryOneAsync<DbTournamentRow>(
+      'SELECT * FROM tournament WHERE id = ?',
+      [tournamentIdForMatch(currentMatch)]
+    );
     if (!tournament || tournament.type !== 'double_elimination') {
       return;
     }
@@ -210,18 +209,18 @@ export async function advanceLoserToLosersBracket(
       return;
     }
 
-  // Defensive guard: avoid advancing the same loser twice into the same losers
-  // bracket match. This can happen if we receive both a plugin 'series_end'
-  // event and a synthetic series_end generated from map_end for the same
-  // winners‑bracket match.
-  if (lbMatch.team1_id === loserId || lbMatch.team2_id === loserId) {
-    log.warn('Loser already advanced to losers bracket match, skipping duplicate advance', {
-      lbSlug: lbMatch.slug,
-      winnerSlug: currentMatch.slug,
-      loserId,
-    });
-    return;
-  }
+    // Defensive guard: avoid advancing the same loser twice into the same losers
+    // bracket match. This can happen if we receive both a plugin 'series_end'
+    // event and a synthetic series_end generated from map_end for the same
+    // winners‑bracket match.
+    if (lbMatch.team1_id === loserId || lbMatch.team2_id === loserId) {
+      log.warn('Loser already advanced to losers bracket match, skipping duplicate advance', {
+        lbSlug: lbMatch.slug,
+        winnerSlug: currentMatch.slug,
+        loserId,
+      });
+      return;
+    }
 
     // Assign loser to losers bracket
     if (!lbMatch.team1_id) {
@@ -236,9 +235,10 @@ export async function advanceLoserToLosersBracket(
     }
 
     // Check if losers bracket match is now ready
-    const updatedLbMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
-      lbMatch.id,
-    ]);
+    const updatedLbMatch = await db.queryOneAsync<DbMatchRow>(
+      'SELECT * FROM matches WHERE id = ?',
+      [lbMatch.id]
+    );
 
     if (updatedLbMatch && updatedLbMatch.team1_id && updatedLbMatch.team2_id) {
       await makeMatchReady(updatedLbMatch);
@@ -361,10 +361,15 @@ export async function propagateMatchBySlotSources(matchId: number): Promise<void
  */
 /**
  * The teams placed 1st, 2nd and 3rd of a finished elimination tournament, each
- * with its players (the lineup when the team signed up with one), handed to
- * the game's module (CS2: skin rewards).
+ * with the players who played for it (a map or more in this tournament; a
+ * reserve who never played gets nothing), handed to the game's module (CS2:
+ * skin rewards). A team with no recorded stats at all (results typed in by
+ * hand) falls back to its lineup.
  */
-async function reportTournamentPlacements(tournamentId: number, tournament: DbTournamentRow): Promise<void> {
+async function reportTournamentPlacements(
+  tournamentId: number,
+  tournament: DbTournamentRow
+): Promise<void> {
   if (tournament.type !== 'single_elimination' && tournament.type !== 'double_elimination') return;
   const onPlacements = integrationForMatch(tournament).onTournamentPlacements;
   if (!onPlacements) return;
@@ -375,7 +380,12 @@ async function reportTournamentPlacements(tournamentId: number, tournament: DbTo
       return {};
     }
   })();
-  const finals = await db.queryAsync<{ team1_id: string | null; team2_id: string | null; winner_id: string | null; round: number }>(
+  const finals = await db.queryAsync<{
+    team1_id: string | null;
+    team2_id: string | null;
+    winner_id: string | null;
+    round: number;
+  }>(
     `SELECT team1_id, team2_id, winner_id, round FROM matches
       WHERE tournament_id = ? AND round >= 1 AND next_match_id IS NULL AND status = 'completed'
       ORDER BY round DESC, match_number ASC`,
@@ -383,8 +393,11 @@ async function reportTournamentPlacements(tournamentId: number, tournament: DbTo
   );
   const final = finals[0];
   if (!final?.winner_id) return;
-  const loserOf = (m: { team1_id: string | null; team2_id: string | null; winner_id: string | null }) =>
-    m.winner_id === m.team1_id ? m.team2_id : m.team1_id;
+  const loserOf = (m: {
+    team1_id: string | null;
+    team2_id: string | null;
+    winner_id: string | null;
+  }) => (m.winner_id === m.team1_id ? m.team2_id : m.team1_id);
   const third = finals.find((m) => m !== final && m.winner_id);
   const places: Array<{ place: 1 | 2 | 3; teamId: string | null }> = [
     { place: 1, teamId: final.winner_id },
@@ -395,13 +408,34 @@ async function reportTournamentPlacements(tournamentId: number, tournament: DbTo
   const placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }> = [];
   for (const { place, teamId } of places) {
     if (!teamId) continue;
-    const team = await db.queryOneAsync<{ players: string }>('SELECT players FROM teams WHERE id = ?', [teamId]);
+    const team = await db.queryOneAsync<{ players: string }>(
+      'SELECT players FROM teams WHERE id = ?',
+      [teamId]
+    );
     if (!team) continue;
-    const roster = JSON.parse(await tournamentSignupService.lineupRoster(tournamentId, teamId, team.players)) as Array<{
+    const roster = JSON.parse(
+      await tournamentSignupService.lineupRoster(tournamentId, teamId, team.players)
+    ) as Array<{
       steamId?: string;
       steamid?: string;
     }>;
-    placements.push({ place, steamIds: roster.map((p) => (p.steamId ?? p.steamid) as string).filter(Boolean) });
+    const lineup = roster.map((p) => (p.steamId ?? p.steamid) as string).filter(Boolean);
+    const played = await db.queryAsync<{ player_id: string }>(
+      `SELECT DISTINCT s.player_id FROM player_match_stats s JOIN matches m ON m.slug = s.match_slug
+        WHERE m.tournament_id = ?
+          AND ((s.team = 'team1' AND m.team1_id = ?) OR (s.team = 'team2' AND m.team2_id = ?))
+          AND COALESCE(s.rounds_played, 1) > 0`,
+      [tournamentId, teamId, teamId]
+    );
+    // Bots play too: only Steam accounts can own a skin.
+    const humans = played.map((r) => r.player_id).filter((id) => /^7656\d{13}$/.test(id));
+    const steamIds = humans.length > 0 ? humans : lineup;
+    if (humans.length > 0 && steamIds.length !== lineup.length) {
+      log.info(
+        `[TOURNAMENT] Place ${place} (${teamId}): ${steamIds.length} of ${lineup.length} in the lineup played; only they get the reward`
+      );
+    }
+    placements.push({ place, steamIds });
   }
   await onPlacements({ tournamentId, tournamentName: tournament.name, settings, placements });
 }
@@ -409,23 +443,25 @@ async function reportTournamentPlacements(tournamentId: number, tournament: DbTo
 export async function checkTournamentCompletion(tournamentId: number): Promise<void> {
   try {
     log.debug(`[TOURNAMENT] Starting completion check for tournament ${tournamentId}`);
-    
+
     const tournament = await db.queryOneAsync<DbTournamentRow>(
       'SELECT * FROM tournament WHERE id = ?',
       [tournamentId]
     );
-    
+
     if (!tournament) {
       log.debug(`[TOURNAMENT] Tournament ${tournamentId} not found`);
       return;
     }
-    
+
     if (tournament.status === 'completed') {
       log.debug(`[TOURNAMENT] Tournament ${tournamentId} already completed, skipping check`);
       return;
     }
 
-    log.debug(`[TOURNAMENT] Tournament ${tournamentId} status: ${tournament.status}, type: ${tournament.type}`);
+    log.debug(
+      `[TOURNAMENT] Tournament ${tournamentId} status: ${tournament.status}, type: ${tournament.type}`
+    );
 
     // Skip shuffle tournaments - they handle completion in shuffleTournamentService
     if (tournament.type === 'shuffle') {
@@ -447,9 +483,8 @@ export async function checkTournamentCompletion(tournamentId: number): Promise<v
     // or the tournament stalls after round 1. The service is a no-op for a
     // game that has a veto.
     if (tournament.type === 'round_robin') {
-      const { advanceRoundRobinTournament } = await import(
-        '../services/roundRobinProgressionService'
-      );
+      const { advanceRoundRobinTournament } =
+        await import('../services/roundRobinProgressionService');
       await advanceRoundRobinTournament(tournamentId);
     }
 
@@ -478,10 +513,13 @@ export async function checkTournamentCompletion(tournamentId: number): Promise<v
     const totalMatchesCount = Number(totalMatches?.count ?? 0);
     const pendingMatchesCount = Number(pendingMatches?.count ?? 0);
 
-    const statusBreakdown = matchStatusBreakdown.reduce((acc, row) => {
-      acc[row.status] = Number(row.count);
-      return acc;
-    }, {} as Record<string, number>);
+    const statusBreakdown = matchStatusBreakdown.reduce(
+      (acc, row) => {
+        acc[row.status] = Number(row.count);
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     log.debug(`[TOURNAMENT] Completion check for tournament ${tournamentId}:`, {
       totalBracketMatches: totalMatchesCount,
@@ -493,8 +531,10 @@ export async function checkTournamentCompletion(tournamentId: number): Promise<v
     // 1. There is at least one bracket match (tournament bracket was generated)
     // 2. All bracket matches are completed
     if (totalMatchesCount > 0 && pendingMatchesCount === 0) {
-      log.info(`[TOURNAMENT] All ${totalMatchesCount} bracket match(es) completed. Marking tournament ${tournamentId} as completed.`);
-      
+      log.info(
+        `[TOURNAMENT] All ${totalMatchesCount} bracket match(es) completed. Marking tournament ${tournamentId} as completed.`
+      );
+
       await db.updateAsync(
         'tournament',
         {
@@ -510,21 +550,27 @@ export async function checkTournamentCompletion(tournamentId: number): Promise<v
         'SELECT status, completed_at FROM tournament WHERE id = ?',
         [tournamentId]
       );
-      
-      log.success(`[TOURNAMENT] Tournament ${tournamentId} marked as completed! Status: ${updated?.status}, completed_at: ${updated?.completed_at}`);
+
+      log.success(
+        `[TOURNAMENT] Tournament ${tournamentId} marked as completed! Status: ${updated?.status}, completed_at: ${updated?.completed_at}`
+      );
       emitBracketUpdate({ action: 'tournament_completed' });
 
       // Virtual skin rewards for the top three (off unless skins are on).
       await reportTournamentPlacements(tournamentId, tournament).catch((error) =>
-        log.warn('[TOURNAMENT] The game module failed on the placements', { tournamentId, error: (error as Error).message })
+        log.warn('[TOURNAMENT] The game module failed on the placements', {
+          tournamentId,
+          error: (error as Error).message,
+        })
       );
     } else {
       log.debug(`[TOURNAMENT] Tournament ${tournamentId} not complete yet:`, {
         hasMatches: totalMatchesCount > 0,
         allCompleted: pendingMatchesCount === 0,
-        reason: totalMatchesCount === 0 
-          ? 'No bracket matches found' 
-          : `Still ${pendingMatchesCount} pending match(es)`,
+        reason:
+          totalMatchesCount === 0
+            ? 'No bracket matches found'
+            : `Still ${pendingMatchesCount} pending match(es)`,
       });
     }
   } catch (error) {
@@ -585,8 +631,12 @@ export async function makeMatchReady(match: DbMatchRow): Promise<void> {
     );
 
     // Get team names for logging
-    const team1 = await db.queryOneAsync<DbTeamRow>('SELECT name FROM teams WHERE id = ?', [match.team1_id]);
-    const team2 = await db.queryOneAsync<DbTeamRow>('SELECT name FROM teams WHERE id = ?', [match.team2_id]);
+    const team1 = await db.queryOneAsync<DbTeamRow>('SELECT name FROM teams WHERE id = ?', [
+      match.team1_id,
+    ]);
+    const team2 = await db.queryOneAsync<DbTeamRow>('SELECT name FROM teams WHERE id = ?', [
+      match.team2_id,
+    ]);
 
     log.success(
       `Match ${match.slug} is now ready: ${team1?.name || 'TBD'} vs ${team2?.name || 'TBD'}`
@@ -620,7 +670,7 @@ export async function makeMatchReady(match: DbMatchRow): Promise<void> {
  *   L(r1m1) → lb-r4m1 (team1)
  *   L(r1m2) → lb-r4m1 (team2)
  *   L(r1m3) → lb-r4m2 (team1)
-   *   L(r1m4) → lb-r4m2 (team2)
+ *   L(r1m4) → lb-r4m2 (team2)
  *   lb-r4m1 winner vs L(r2m1) → lb-r5m1
  *   lb-r4m2 winner vs L(r2m2) → lb-r5m2
  *   lb-r5m1 winner vs lb-r5m2 winner → lb-r6m1
@@ -654,10 +704,9 @@ export async function reconcileDoubleElimination8Bracket(tournamentId: number): 
       return;
     }
 
-    const rows = await db.queryAsync<DbMatchRow>(
-      'SELECT * FROM matches WHERE tournament_id = ?',
-      [tournamentId]
-    );
+    const rows = await db.queryAsync<DbMatchRow>('SELECT * FROM matches WHERE tournament_id = ?', [
+      tournamentId,
+    ]);
 
     const bySlug = new Map<string, DbMatchRow>();
     for (const row of rows) {
@@ -686,7 +735,7 @@ export async function reconcileDoubleElimination8Bracket(tournamentId: number): 
 
     const loserOf = (m?: DbMatchRow | null): string | null => {
       if (!m || !m.winner_id || !m.team1_id || !m.team2_id) return null;
-      return m.team1_id === m.winner_id ? m.team2_id ?? null : m.team1_id ?? null;
+      return m.team1_id === m.winner_id ? (m.team2_id ?? null) : (m.team1_id ?? null);
     };
 
     const updateTeamsIfChanged = async (
@@ -706,10 +755,9 @@ export async function reconcileDoubleElimination8Bracket(tournamentId: number): 
 
       if (Object.keys(updates).length > 0) {
         await db.updateAsync('matches', updates as Record<string, unknown>, 'id = ?', [m.id]);
-        const refreshed = await db.queryOneAsync<DbMatchRow>(
-          'SELECT * FROM matches WHERE id = ?',
-          [m.id]
-        );
+        const refreshed = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+          m.id,
+        ]);
         if (refreshed) {
           bySlug.set(bareSlug(refreshed.slug), refreshed);
           return refreshed;
@@ -900,10 +948,7 @@ async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow |
   //     r2m2 → lb‑r5m2
   //
   // This generalises cleanly for larger brackets (16, 32 teams).
-  const lbMatchNum =
-    wbRound === winnersBase
-      ? Math.ceil(wbMatchNum / 2)
-      : wbMatchNum;
+  const lbMatchNum = wbRound === winnersBase ? Math.ceil(wbMatchNum / 2) : wbMatchNum;
   const lbSlug = `${tournamentSlugPrefix(tournamentIdForMatch(wbMatch))}lb-r${lbRound}m${lbMatchNum}`;
 
   const lbMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [

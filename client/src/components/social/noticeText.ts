@@ -69,6 +69,8 @@ export function describeNotice(notice: Notice, t: TFunction, viewerId: string | 
       out.text = t('social.notice.skin');
       out.tail = str(d.name);
       out.detail = [str(d.rarity), str(d.source)].filter(Boolean).join(' · ');
+      // The skin's picture (older notices kept only a file name: no picture).
+      out.thumb = /^https?:\/\//.test(str(d.image)) ? str(d.image) : null;
       // The game's own link (the inventory on that skin); older notices have none.
       out.to =
         (str(d.url).startsWith('/') ? str(d.url) : '') ||

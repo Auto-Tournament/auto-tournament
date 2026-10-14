@@ -237,7 +237,18 @@ export function NoticeItem({ notice, viewerId, onNavigate }: Props) {
           }}
           data-testid="notice-thumb"
         >
-          <VideoThumb src={thumb} at={4} />
+          {/\.(webp|png|jpe?g|gif|svg)(\?|$)/i.test(thumb) ? (
+            // A picture (a skin): shown whole on the card.
+            <Box
+              component="img"
+              src={thumb}
+              alt=""
+              loading="lazy"
+              sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          ) : (
+            <VideoThumb src={thumb} at={4} />
+          )}
         </Box>
       )}
     </>

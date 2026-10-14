@@ -49,6 +49,29 @@ test(
       expect(choices).toHaveLength(2);
       expect(choices.every((c) => c.source === 'admin' && c.options.length > 0)).toBe(true);
 
+      // The options' pictures are full URLs the browser can load.
+      for (const c of choices) {
+        for (const o of c.options as Array<{ image: string }>)
+          expect(o.image).toMatch(/^https:\/\/.+\.webp$/);
+      }
+      // No bell notice for a choice (it opens on every page until one is kept)...
+      const skinNotices = async () =>
+        (
+          ((await (await player.get('/api/social/notifications')).json()).items ?? []) as Array<{
+            kind: string;
+            data: { image?: string };
+          }>
+        ).filter((n) => n.kind === 'skin');
+      expect(await skinNotices()).toHaveLength(0);
+      // ...but the kept skin gets one, with its picture.
+      const kept = await player.post(`/api/skins/me/choices/${choices[0]!.id}`, {
+        data: { index: 0 },
+      });
+      expect(kept.ok(), await kept.text()).toBe(true);
+      const after = await skinNotices();
+      expect(after).toHaveLength(1);
+      expect(after[0]!.data.image).toMatch(/^https:\/\/.+\.webp$/);
+
       // Not a target: refused.
       const bad = await request.post('/api/skins/admin/drops', {
         headers,
