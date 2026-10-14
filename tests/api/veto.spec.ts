@@ -385,7 +385,9 @@ test.describe.serial('Veto API', () => {
       const match = await findMatchByTeams(request, team1Id, team2Id);
       expect(match).toBeTruthy();
 
-      const set = await request.put('/api/settings', { data: { vetoTurnSeconds: 2 } });
+      const set = await request.put('/api/settings', {
+        data: { vetoTurnSeconds: 2, vetoFirstTurnSeconds: 2, matchBreakMinutes: 0 },
+      });
       expect(set.ok(), await set.text()).toBe(true);
       try {
         // The opening turn has a deadline before anyone acts.
@@ -417,7 +419,9 @@ test.describe.serial('Veto API', () => {
         expect(after.actions[0]).toMatchObject({ team: 'team1', action: 'ban', timedOut: true });
         expect(after.turnDeadline).toBeTruthy();
       } finally {
-        await request.put('/api/settings', { data: { vetoTurnSeconds: null } });
+        await request.put('/api/settings', {
+          data: { vetoTurnSeconds: null, vetoFirstTurnSeconds: null, matchBreakMinutes: null },
+        });
       }
     }
   );
