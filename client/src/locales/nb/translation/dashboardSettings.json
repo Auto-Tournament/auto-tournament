@@ -24,7 +24,7 @@
       "openSettings": "Åpne innstillinger",
       "signIn": "Innloggingsleverandør",
       "game": "Installer et spill (CS2) under Moduler",
-      "discordBot": "Koble til en Discord-bot, så får spillerne beskjed om kampene sine på Discord"
+      "discordBot": "Legg inn din egen Discord-bot (tokenet), så kan nettstedet sende spillerne meldinger om kampene deres"
     },
     "tournaments": {
       "title": "Turnering",

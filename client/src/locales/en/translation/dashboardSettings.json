@@ -24,7 +24,7 @@
       "openSettings": "Open settings",
       "signIn": "Sign-in provider",
       "game": "Install a game (CS2) from Modules",
-      "discordBot": "Connect a Discord bot so players get their matches as DMs"
+      "discordBot": "Add your own Discord bot (its token) so the site can DM players about their matches"
     },
     "tournaments": {
       "title": "Tournament",
