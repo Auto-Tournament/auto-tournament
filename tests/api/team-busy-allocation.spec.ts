@@ -21,13 +21,7 @@ import { withoutBusyTeams, type QueueEntry } from '../../api/src/core/allocation
  * @tag allocation
  */
 
-const entry = (
-  slug: string,
-  round: number,
-  matchNumber: number,
-  team1Id: string,
-  team2Id: string
-) => ({
+const entry = (slug: string, round: number, matchNumber: number, team1Id: string, team2Id: string) => ({
   id: round * 10 + matchNumber,
   slug,
   round,
@@ -68,27 +62,16 @@ test.describe('Team busy rule', () => {
       entry('r1m3', 1, 3, 'e', 'f'),
       entry('r1m4', 1, 4, 'g', 'h'),
     ];
-    expect(withoutBusyTeams(eight, new Set(['c'])).map((e) => e.slug)).toEqual([
-      'r1m1',
-      'r1m3',
-      'r1m4',
-    ]);
+    expect(withoutBusyTeams(eight, new Set(['c'])).map((e) => e.slug)).toEqual(['r1m1', 'r1m3', 'r1m4']);
   });
 
   test('matches with an empty slot are left alone (they cannot clash)', () => {
-    const withTbd = [
-      { id: 1, slug: 'r2m1', round: 2, matchNumber: 1, team1Id: 'a', team2Id: null },
-    ];
+    const withTbd = [{ id: 1, slug: 'r2m1', round: 2, matchNumber: 1, team1Id: 'a', team2Id: null }];
     expect(withoutBusyTeams(withTbd, new Set()).map((e) => e.slug)).toEqual(['r2m1']);
   });
 });
 
-type ListedMatch = {
-  slug: string;
-  round: number;
-  team1?: { id: string } | null;
-  team2?: { id: string } | null;
-};
+type ListedMatch = { slug: string; round: number; team1?: { id: string } | null; team2?: { id: string } | null };
 
 async function setMatchState(request: APIRequestContext, data: Record<string, unknown>) {
   const res = await request.post('/api/test/match-state', { headers: getAuthHeader(), data });
@@ -114,17 +97,14 @@ test.describe.serial('Round robin never double-books a team', () => {
 
       const res = await request.get('/api/matches', { headers: getAuthHeader() });
       expect(res.ok()).toBe(true);
-      // Ids are never reused, so this tournament's slugs may carry t<id>-.
-      const id = (setup!.tournament as { id?: number }).id;
-      const prefix = !id || id === 1 ? '' : `t${id}-`;
-      const matches = ((await res.json()) as { matches: ListedMatch[] }).matches.filter(
-        (m) => m.slug.startsWith(prefix) && /^r\d+m\d+$/.test(m.slug.slice(prefix.length))
+      const matches = ((await res.json()) as { matches: ListedMatch[] }).matches.filter((m) =>
+        /^r\d+m\d+$/.test(m.slug)
       );
       expect(matches, '4-team round robin has 6 matches').toHaveLength(6);
 
       // Vetoes done everywhere (every match 'ready'), then r1m1 goes live.
       for (const m of matches) await setMatchState(request, { slug: m.slug, status: 'ready' });
-      const live = matches.find((m) => m.slug === `${prefix}r1m1`)!;
+      const live = matches.find((m) => m.slug === 'r1m1')!;
       await setMatchState(request, {
         slug: live.slug,
         status: 'live',
@@ -134,10 +114,7 @@ test.describe.serial('Round robin never double-books a team', () => {
 
       const busy = new Set([live.team1!.id, live.team2!.id]);
       const free = matches.filter((m) => !busy.has(m.team1!.id) && !busy.has(m.team2!.id));
-      expect(
-        free.map((m) => m.slug),
-        'only one match has neither live team'
-      ).toHaveLength(1);
+      expect(free.map((m) => m.slug), 'only one match has neither live team').toHaveLength(1);
 
       const availability = await request.get('/api/tournament/server-availability', {
         headers: getAuthHeader(),
