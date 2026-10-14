@@ -17324,6 +17324,28 @@
         ]
       }
     },
+    "/api/test/highlights/repick": {
+      "post": {
+        "tags": [
+          "Test helpers (CS2)"
+        ],
+        "summary": "POST /api/test/highlights/repick",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/test/highlights/status": {
       "post": {
         "tags": [
