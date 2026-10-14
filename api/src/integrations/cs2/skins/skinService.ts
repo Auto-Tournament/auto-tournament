@@ -1700,6 +1700,22 @@ export const skinService = {
     return this.inventory(uid);
   },
 
+  /** Admin: equip one of a player's skins (by Steam ID), as the player would (team: 0 both, 2 T, 3 CT). */
+  async adminEquip(steamId: string, skinId: number, team: number): Promise<string> {
+    const uid = await uidOf(steamId);
+    if (!uid) throw new SkinError(404, 'No such player.');
+    await this.equip(uid, skinId, team);
+    return uid;
+  },
+
+  /** Admin: empty a slot of a player's loadout (one side, or every side). */
+  async adminUnequip(steamId: string, slot: string, team?: number): Promise<string> {
+    const uid = await uidOf(steamId);
+    if (!uid) throw new SkinError(404, 'No such player.');
+    await this.unequip(uid, slot, team);
+    return uid;
+  },
+
   /** Admin: give a player one exact skin (a paint kit), with the float and pattern given or rolled. */
   async adminGive(
     steamId: string,

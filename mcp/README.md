@@ -39,7 +39,8 @@ Reading (safe to allow everywhere):
 | `tournaments_list`, `templates_list` | Every tournament; saved templates                                                                             |
 | `matches_list`, `match`, `match_log` | Matches with status and score; one match with its live Ready Up state; its event log and server console lines |
 | `teams_list`, `team`, `players_find` | Teams, rosters and players                                                                                    |
-| `servers`                            | csm machines with their servers, and the Ready Up fleet                                                       |
+| `servers`, `machines`                | csm machines with their servers, and the Ready Up fleet                                                       |
+| `skins_inventory`                    | A player's skins with their ids, and what is equipped                                                         |
 | `platform_logs`                      | The platform's recent log lines, by level                                                                     |
 | `settings`                           | Every site setting and its value                                                                              |
 | `recorders`                          | The highlight recorders, and one recorder's recent runs                                                       |
@@ -62,6 +63,10 @@ Acting (each its own tool, so you can allow them one by one):
 | `settings_update`                                           | Change site settings                                                                                      |
 | `skins_settings_update`                                     | Change drop chances, rewards for places 1 to 3, trade-ups                                                 |
 | `skin_give`, `skin_drop`                                    | Give a player one exact skin; give a drop (a choice of three) to a player, team, match or everyone online |
+| `skin_equip`, `skin_unequip`, `skin_remove`                 | Equip a player's skin (both sides, T or CT); empty a slot; take a skin away                               |
+| `player_update`                                             | A player's name, admin rights or avatar                                                                   |
+| `machine_add`, `machine_command`                            | Add a machine (the one line to paste); start, stop, create, remove or update its servers                  |
+| `server_plugins`                                            | Put a server on a plugin preset (tournament, practice, fun, skin tryout) or a custom list                 |
 | `api_write`                                                 | Any other `POST`/`PUT`/`PATCH`/`DELETE /api/...`                                                          |
 
 The platform checks every call the way it checks the app: a read-only token
