@@ -18,6 +18,7 @@ import { AccountMenu } from './AccountMenu';
 import { SiteSearch } from '../search/SiteSearch';
 import { useInstalledIntegrations } from '../../integrations/registry';
 import { soundNotification } from '../../utils/soundNotification';
+import { NextMatchDialog } from '../match/NextMatchDialog';
 
 /** Top-bar text links: ink2 at rest, ink on hover and on the current page (the drafts' `.nav-links`). */
 const navLinkSx = {
@@ -265,6 +266,13 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
 
   return (
     <>
+      <NextMatchDialog
+        status={matchStatus}
+        matchSlug={matchSlug}
+        matchName={matchName}
+        vetoActionCount={vetoActionCount}
+        loading={matchStatusLoading}
+      />
       <Box
         component={RouterLink}
         to={paths.root}

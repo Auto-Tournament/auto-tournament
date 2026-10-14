@@ -302,6 +302,8 @@ export const cs2Integration: GameIntegration = {
       return;
     }
     log.info(`[VETO] Both teams known for ${ctx.slug}: the veto is open`);
+    const { announceVetoOpen } = await import('./veto/announce');
+    void announceVetoOpen(ctx.slug);
   },
 
   /** The map pool, the shuffle map sequence and max rounds, and the custom veto order. */
