@@ -127,6 +127,17 @@ export default function MatchPage() {
   }
 
   const maps = match.mapScores ?? [];
+  // The series' maps as the game's cards (CS2: picture, pick, winner, rounds).
+  const seriesMaps =
+    SeriesMapsView && (match.maps?.length ?? 0) > 0 ? (
+      <SeriesMapsView
+        matchSlug={match.slug}
+        match={match}
+        renderMapAction={
+          MapAction ? (n) => <MapAction matchSlug={match.slug} mapNumber={n} /> : undefined
+        }
+      />
+    ) : null;
   // A map's recorded winner counts when the rounds are level (the damage tiebreak).
   const won = (side: 'team1' | 'team2') =>
     maps.filter((m) =>
@@ -286,6 +297,8 @@ export default function MatchPage() {
   // The steps, veto and server are for a game played on servers through its
   // module; a manually reported game has only the report panel.
   const playsThroughModule = Boolean(integration.preMatchView || integration.matchPanels.teamView);
+  // A player's match card carries them itself (in place of its map pills).
+  const playerCard = !!viewerTeamId && matchIsOn && playsThroughModule;
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }} data-testid="match-page">
@@ -331,7 +344,12 @@ export default function MatchPage() {
       {viewerTeamId ? (
         <Box data-testid="match-room-player" sx={{ display: 'grid', gap: 3 }}>
           {matchIsOn && playsThroughModule ? (
-            <YourMatchCard teamId={viewerTeamId} matchSlug={match.slug} fallback={publicHeader} />
+            <YourMatchCard
+              teamId={viewerTeamId}
+              matchSlug={match.slug}
+              fallback={publicHeader}
+              mapsView={seriesMaps}
+            />
           ) : (
             publicHeader
           )}
@@ -371,103 +389,92 @@ export default function MatchPage() {
         </Box>
       )}
 
+      {seriesMaps
+        ? !playerCard && <Box sx={{ mt: 4 }}>{seriesMaps}</Box>
+        : maps.length > 0 && (
+            <Box sx={{ mt: 5 }}>
+              <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
+                {t('matchPage.maps')}
+              </Typography>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
+                  gap: 2,
+                }}
+              >
+                {maps.map((m) => {
+                  const total = m.team1Score + m.team2Score || 1;
+                  return (
+                    <Box
+                      key={m.mapNumber}
+                      sx={{
+                        p: 2.5,
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRadius: radii.lg,
+                        bgcolor: 'background.surface2',
+                      }}
+                      data-testid={`match-page-map-${m.mapNumber}`}
+                    >
+                      <Stack direction="row" justifyContent="space-between" alignItems="baseline">
+                        <Typography variant="h6" component="h3" sx={{ fontWeight: 600 }}>
+                          {mapName(m.map, m.mapNumber, t)}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontFamily: fontDisplay,
+                            fontWeight: 700,
+                            fontSize: '1.4rem',
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
+                          {m.team1Score}{' '}
+                          <Box component="span" sx={{ color: 'text.secondary' }}>
+                            : {m.team2Score}
+                          </Box>
+                        </Typography>
+                      </Stack>
+                      <Box
+                        sx={{
+                          mt: 1.5,
+                          height: 6,
+                          borderRadius: 3,
+                          bgcolor: 'background.surface3',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            height: '100%',
+                            width: `${(100 * m.team1Score) / total}%`,
+                            bgcolor: tokens.color.accent,
+                          }}
+                        />
+                      </Box>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mt: 1 }}
+                      >
+                        {t('matchPage.mapN', { n: m.mapNumber + 1 })}
+                        {m.team1Score + m.team2Score > 24 ? ` · ${t('matchPage.overtime')}` : ''}
+                      </Typography>
+                      {MapAction && (
+                        <Stack direction="row" sx={{ mt: 2, gap: 1, flexWrap: 'wrap' }}>
+                          <MapAction matchSlug={match.slug} mapNumber={m.mapNumber} />
+                        </Stack>
+                      )}
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Box>
+          )}
       {Panel && (
         <Box sx={{ mt: 4 }}>
           <Panel matchSlug={match.slug} match={match} />
         </Box>
-      )}
-
-      {SeriesMapsView && (match.maps?.length ?? 0) > 0 ? (
-        <Box sx={{ mt: 5 }}>
-          <SeriesMapsView
-            matchSlug={match.slug}
-            match={match}
-            renderMapAction={
-              MapAction ? (n) => <MapAction matchSlug={match.slug} mapNumber={n} /> : undefined
-            }
-          />
-        </Box>
-      ) : (
-        maps.length > 0 && (
-          <Box sx={{ mt: 5 }}>
-            <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
-              {t('matchPage.maps')}
-            </Typography>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
-                gap: 2,
-              }}
-            >
-              {maps.map((m) => {
-                const total = m.team1Score + m.team2Score || 1;
-                return (
-                  <Box
-                    key={m.mapNumber}
-                    sx={{
-                      p: 2.5,
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: radii.lg,
-                      bgcolor: 'background.surface2',
-                    }}
-                    data-testid={`match-page-map-${m.mapNumber}`}
-                  >
-                    <Stack direction="row" justifyContent="space-between" alignItems="baseline">
-                      <Typography variant="h6" component="h3" sx={{ fontWeight: 600 }}>
-                        {mapName(m.map, m.mapNumber, t)}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          fontFamily: fontDisplay,
-                          fontWeight: 700,
-                          fontSize: '1.4rem',
-                          fontVariantNumeric: 'tabular-nums',
-                        }}
-                      >
-                        {m.team1Score}{' '}
-                        <Box component="span" sx={{ color: 'text.secondary' }}>
-                          : {m.team2Score}
-                        </Box>
-                      </Typography>
-                    </Stack>
-                    <Box
-                      sx={{
-                        mt: 1.5,
-                        height: 6,
-                        borderRadius: 3,
-                        bgcolor: 'background.surface3',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          height: '100%',
-                          width: `${(100 * m.team1Score) / total}%`,
-                          bgcolor: tokens.color.accent,
-                        }}
-                      />
-                    </Box>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ display: 'block', mt: 1 }}
-                    >
-                      {t('matchPage.mapN', { n: m.mapNumber + 1 })}
-                      {m.team1Score + m.team2Score > 24 ? ` · ${t('matchPage.overtime')}` : ''}
-                    </Typography>
-                    {MapAction && (
-                      <Stack direction="row" sx={{ mt: 2, gap: 1, flexWrap: 'wrap' }}>
-                        <MapAction matchSlug={match.slug} mapNumber={m.mapNumber} />
-                      </Stack>
-                    )}
-                  </Box>
-                );
-              })}
-            </Box>
-          </Box>
-        )
       )}
     </Container>
   );
