@@ -1055,7 +1055,7 @@
     "name": "Name (optional)",
     "getCommand": "Get the command",
     "linkTitle": "Run this on {{name}}",
-    "linkHelp": "Run it on the machine as the user that runs csm (not root). The code works once and until {{time}}.",
+    "linkHelp": "Lim den inn i en terminal på Linux-maskinen, som brukeren CS2-serverne skal kjøre som (ikke root). Den installerer csm om nødvendig, ber om sudo én gang, kobler til maskinen og starter agenten. Koden virker én gang og frem til {{time}}.",
     "copy": "Copy",
     "linkConnected": "Connected. The machine is ready.",
     "linkWaiting": "Waiting for the machine to connect…",

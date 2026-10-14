@@ -124,7 +124,7 @@ test.describe.serial('enrollment ws_url behind a TLS proxy', () => {
     });
     expect(created.status(), await created.text()).toBe(201);
     const pending = await created.json();
-    expect(pending.command).toMatch(new RegExp(`^csm link https://\\S+ ${pending.code}$`));
+    expect(pending.command).toMatch(new RegExp(`^curl -fsSL https://\\S+/api/fleet/install-csm`));
 
     const res = await request.post('/api/fleet/enroll', {
       data: {
@@ -146,9 +146,10 @@ test.describe.serial('enrollment ws_url behind a TLS proxy', () => {
     request,
   }) => {
     const pending = await createPendingHost(request, 'ws-url-plain-host');
-    // Plain http: the link command carries csm's explicit --insecure opt-in.
-    expect(pending.command).toMatch(
-      new RegExp(`^csm link http://\\S+ ${pending.code} --insecure$`)
+    // Plain http: the script's csm link carries csm's explicit --insecure opt-in.
+    expect(pending.command).toMatch(new RegExp(`^curl -fsSL http://\\S+/api/fleet/install-csm`));
+    expect(await (await request.get('/api/fleet/install-csm.sh')).text()).toContain(
+      'csm link "$URL" "$CODE" --insecure'
     );
     const res = await request.post('/api/fleet/enroll', {
       data: {

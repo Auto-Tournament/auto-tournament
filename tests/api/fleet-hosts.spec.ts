@@ -21,7 +21,8 @@ import {
  * The host channel end to end (FLEET.md §18), with a fake csm on
  * `/api/fleet/host`:
  *
- * - Add machine → one-time code and the `csm link` command; the code enrolls
+ * - Add machine → one-time code and the one-line install-and-link command
+ *   (`/api/fleet/install-csm.sh`); the code enrolls
  *   once through POST /api/fleet/enroll with `kind: "host"` (host token
  *   `rhs_…`), and a fleet key enrolls a machine;
  * - hello → welcome; the machine shows online with its inventory;
@@ -75,11 +76,18 @@ test.describe.serial('Fleet hosts (csm)', () => {
   test('add machine: one command, a single-use code, and a host token', async ({ request }) => {
     const pending = await createPendingHost(request, 'rack-1');
     expect(pending.code).toMatch(/^RUE-[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
+    // One line for a bare machine: the platform's script installs csm and links it.
     expect(pending.command).toMatch(
       new RegExp(
-        `^(csm link https://\\S+ ${pending.code}|csm link http://\\S+ ${pending.code} --insecure)$`
+        `^curl -fsSL https?://\\S+/api/fleet/install-csm\\.sh \\| bash -s -- ${pending.code}$`
       )
     );
+    const script = await request.get('/api/fleet/install-csm.sh');
+    expect(script.ok()).toBe(true);
+    const text = await script.text();
+    expect(text).toMatch(/^#!\/usr\/bin\/env bash/);
+    expect(text).toContain('sudo csm setup-host');
+    expect(text).toMatch(/csm link "\$URL" "\$CODE"( --insecure)?\n/);
     expect(pending.expiresAt).toBeGreaterThan(Date.now() / 1000);
 
     const listed = (await (await request.get('/api/fleet/hosts')).json()).hosts.find(

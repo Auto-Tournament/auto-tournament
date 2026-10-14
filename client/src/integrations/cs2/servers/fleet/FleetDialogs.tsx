@@ -14,7 +14,14 @@ import {
   Typography,
 } from '@mui/material';
 import { CopyIcon } from '@phosphor-icons/react';
-import { mono, radii, StatusDot, tokens, useModuleTranslation, useSnackbar } from '../../../../module-sdk';
+import {
+  mono,
+  radii,
+  StatusDot,
+  tokens,
+  useModuleTranslation,
+  useSnackbar,
+} from '../../../../module-sdk';
 import type { FleetHost } from '../../cs2.types';
 import type { PluginSetValue } from '../fleetPush.types';
 import PluginSetPicker, { usePluginCatalog } from '../PluginSetPicker';
@@ -41,11 +48,27 @@ export function CommandBox({ command, testId }: { command: string; testId: strin
   const { t } = useModuleTranslation('cs2');
   const copy = useCopy();
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, borderRadius: radii.md, bgcolor: color.paper3, ...mono, fontSize: '0.8125rem', wordBreak: 'break-all' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        p: 1.5,
+        borderRadius: radii.md,
+        bgcolor: color.paper3,
+        ...mono,
+        fontSize: '0.8125rem',
+        wordBreak: 'break-all',
+      }}
+    >
       <Box flex={1} data-testid={testId}>
         {command}
       </Box>
-      <IconButton size="small" onClick={() => void copy(command)} aria-label={t('machinesPanel.copy', { defaultValue: 'Copy' })}>
+      <IconButton
+        size="small"
+        onClick={() => void copy(command)}
+        aria-label={t('machinesPanel.copy', { defaultValue: 'Copy' })}
+      >
         <CopyIcon size={18} />
       </IconButton>
     </Box>
@@ -53,7 +76,15 @@ export function CommandBox({ command, testId }: { command: string; testId: strin
 }
 
 /** Add servers to a machine: how many (always), and their Ready Up plugins. They show as "Creating…" at once. */
-export function AddServersDialog({ fleet, host, onClose }: { fleet: Fleet; host: FleetHost | null; onClose: () => void }) {
+export function AddServersDialog({
+  fleet,
+  host,
+  onClose,
+}: {
+  fleet: Fleet;
+  host: FleetHost | null;
+  onClose: () => void;
+}) {
   const { t } = useModuleTranslation('cs2');
   const [count, setCount] = useState('2');
   const [plugins, setPlugins] = useState<PluginSetValue | null>(null);
@@ -66,7 +97,8 @@ export function AddServersDialog({ fleet, host, onClose }: { fleet: Fleet; host:
       <DialogContent>
         <Typography variant="body2" color="text.secondary" mb={2}>
           {t('serversBoard.addHelp', {
-            defaultValue: 'On {{name}}. New servers get Ready Up and connect to this platform on their own; they show up below as they are made.',
+            defaultValue:
+              'On {{name}}. New servers get Ready Up and connect to this platform on their own; they show up below as they are made.',
             name: host?.name ?? '',
           })}
         </Typography>
@@ -106,9 +138,16 @@ export function AddServersDialog({ fleet, host, onClose }: { fleet: Fleet; host:
           onClick={() => {
             if (!host) return;
             onClose();
-            void fleet.send(host, 'server.create', { count: n, enroll: true }, {
-              extra: plugins ? { plugins: { preset: plugins.preset, plugins: plugins.plugins } } : {},
-            });
+            void fleet.send(
+              host,
+              'server.create',
+              { count: n, enroll: true },
+              {
+                extra: plugins
+                  ? { plugins: { preset: plugins.preset, plugins: plugins.plugins } }
+                  : {},
+              }
+            );
           }}
         >
           {valid
@@ -121,13 +160,23 @@ export function AddServersDialog({ fleet, host, onClose }: { fleet: Fleet; host:
 }
 
 /** Update Ready Up on a machine: which release and bundle. */
-export function ReadyUpDialog({ fleet, host, onClose }: { fleet: Fleet; host: FleetHost | null; onClose: () => void }) {
+export function ReadyUpDialog({
+  fleet,
+  host,
+  onClose,
+}: {
+  fleet: Fleet;
+  host: FleetHost | null;
+  onClose: () => void;
+}) {
   const { t } = useModuleTranslation('cs2');
   const [version, setVersion] = useState('latest');
   const [bundle, setBundle] = useState<'default' | 'skins'>('default');
   return (
     <Dialog open={host !== null} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>{t('machinesPanel.updateReadyUp', { defaultValue: 'Update Ready Up…' })}</DialogTitle>
+      <DialogTitle>
+        {t('machinesPanel.updateReadyUp', { defaultValue: 'Update Ready Up…' })}
+      </DialogTitle>
       <DialogContent>
         <Stack gap={2} mt={1}>
           <TextField
@@ -135,11 +184,23 @@ export function ReadyUpDialog({ fleet, host, onClose }: { fleet: Fleet; host: Fl
             label={t('machinesPanel.version', { defaultValue: 'Version' })}
             value={version}
             onChange={(e) => setVersion(e.target.value)}
-            helperText={t('machinesPanel.versionHelp', { defaultValue: '"latest" or a release, e.g. 0.5.0' })}
+            helperText={t('machinesPanel.versionHelp', {
+              defaultValue: '"latest" or a release, e.g. 0.5.0',
+            })}
           />
-          <TextField select size="small" label={t('machinesPanel.bundle', { defaultValue: 'Bundle' })} value={bundle} onChange={(e) => setBundle(e.target.value as 'default' | 'skins')}>
-            <MenuItem value="default">{t('machinesPanel.bundleDefault', { defaultValue: 'Default' })}</MenuItem>
-            <MenuItem value="skins">{t('machinesPanel.bundleSkins', { defaultValue: 'With skins' })}</MenuItem>
+          <TextField
+            select
+            size="small"
+            label={t('machinesPanel.bundle', { defaultValue: 'Bundle' })}
+            value={bundle}
+            onChange={(e) => setBundle(e.target.value as 'default' | 'skins')}
+          >
+            <MenuItem value="default">
+              {t('machinesPanel.bundleDefault', { defaultValue: 'Default' })}
+            </MenuItem>
+            <MenuItem value="skins">
+              {t('machinesPanel.bundleSkins', { defaultValue: 'With skins' })}
+            </MenuItem>
           </TextField>
         </Stack>
       </DialogContent>
@@ -151,7 +212,9 @@ export function ReadyUpDialog({ fleet, host, onClose }: { fleet: Fleet; host: Fl
           onClick={() => {
             if (!host) return;
             onClose();
-            void fleet.send(host, 'host.update_plugins', { readyup: { version: version.trim(), bundle } });
+            void fleet.send(host, 'host.update_plugins', {
+              readyup: { version: version.trim(), bundle },
+            });
           }}
         >
           {t('machinesPanel.update', { defaultValue: 'Update' })}
@@ -164,7 +227,9 @@ export function ReadyUpDialog({ fleet, host, onClose }: { fleet: Fleet; host: Fl
 /** The servers an update would touch that have no match in progress. */
 function idleTargets(prompt: ForcePrompt): string[] {
   const asked = Array.isArray(prompt.payload.servers) ? (prompt.payload.servers as string[]) : null;
-  return prompt.host.servers.map((s) => s.name).filter((name) => (asked ? asked.includes(name) : true) && !prompt.servers.includes(name));
+  return prompt.host.servers
+    .map((s) => s.name)
+    .filter((name) => (asked ? asked.includes(name) : true) && !prompt.servers.includes(name));
 }
 
 /** A disruptive action refused because a match is on: say why to go ahead, or update only the idle servers. */
@@ -177,11 +242,14 @@ export function ForceDialog({ fleet }: { fleet: Fleet }) {
     fleet.setForce(null);
     setReason('');
   };
-  const isUpdate = force && (force.type === 'host.update_game' || force.type === 'host.update_plugins');
+  const isUpdate =
+    force && (force.type === 'host.update_game' || force.type === 'host.update_plugins');
   const idle = force ? idleTargets(force) : [];
   return (
     <Dialog open={force !== null} onClose={close} maxWidth="xs" fullWidth>
-      <DialogTitle>{t('machinesPanel.forceTitle', { defaultValue: 'A match is in progress' })}</DialogTitle>
+      <DialogTitle>
+        {t('machinesPanel.forceTitle', { defaultValue: 'A match is in progress' })}
+      </DialogTitle>
       <DialogContent>
         <Typography variant="body2" mb={2}>
           {t('machinesPanel.forceHelp', {
@@ -208,10 +276,18 @@ export function ForceDialog({ fleet }: { fleet: Fleet }) {
             onClick={() => {
               if (!force) return;
               close();
-              void fleet.send(force.host, force.type, { ...force.payload, servers: idle }, { extra: force.extra });
+              void fleet.send(
+                force.host,
+                force.type,
+                { ...force.payload, servers: idle },
+                { extra: force.extra }
+              );
             }}
           >
-            {t('machinesPanel.updateIdleOnly', { defaultValue: 'Only the idle servers ({{count}})', count: idle.length })}
+            {t('machinesPanel.updateIdleOnly', {
+              defaultValue: 'Only the idle servers ({{count}})',
+              count: idle.length,
+            })}
           </Button>
         )}
         <Button
@@ -222,7 +298,10 @@ export function ForceDialog({ fleet }: { fleet: Fleet }) {
           onClick={async () => {
             if (!force) return;
             setBusy(true);
-            const ok = await fleet.send(force.host, force.type, force.payload, { forceReason: reason.trim(), extra: force.extra });
+            const ok = await fleet.send(force.host, force.type, force.payload, {
+              forceReason: reason.trim(),
+              extra: force.extra,
+            });
             setBusy(false);
             if (ok) close();
           }}
@@ -237,32 +316,63 @@ export function ForceDialog({ fleet }: { fleet: Fleet }) {
 export type LinkInfo = { hostId: string; name: string; command: string; expiresAt: number };
 
 /** The one command that links a machine; turns green when csm connects. */
-export function LinkDialog({ link, connected, onClose }: { link: LinkInfo | null; connected: boolean; onClose: () => void }) {
+export function LinkDialog({
+  link,
+  connected,
+  onClose,
+}: {
+  link: LinkInfo | null;
+  connected: boolean;
+  onClose: () => void;
+}) {
   const { t, i18n } = useModuleTranslation('cs2');
   return (
     <Dialog open={link !== null} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{t('machinesPanel.linkTitle', { defaultValue: 'Run this on {{name}}', name: link?.name ?? '' })}</DialogTitle>
+      <DialogTitle>
+        {t('machinesPanel.linkTitle', {
+          defaultValue: 'Run this on {{name}}',
+          name: link?.name ?? '',
+        })}
+      </DialogTitle>
       <DialogContent>
         <Typography variant="body2" mb={2}>
           {t('machinesPanel.linkHelp', {
-            defaultValue: 'Run it on the machine as the user that runs csm (not root). The code works once and until {{time}}.',
+            defaultValue:
+              'Paste it in a terminal on the Linux machine, as the user the CS2 servers will run as (not root). It installs csm if needed, asks for sudo once, links the machine and starts the agent. The code works once and until {{time}}.',
             time: link ? new Date(link.expiresAt * 1000).toLocaleString(i18n.language) : '',
           })}
         </Typography>
         {link && <CommandBox command={link.command} testId="machines-link-command" />}
         {platformIsPlainHttp() && (
-          <Typography variant="caption" color="warning.main" display="block" mt={1.5} data-testid="machines-insecure-note">
+          <Typography
+            variant="caption"
+            color="warning.main"
+            display="block"
+            mt={1.5}
+            data-testid="machines-insecure-note"
+          >
             {t('machinesPanel.insecureNote', {
-              defaultValue: 'This site is on plain http://, so the command has --insecure and the token travels unencrypted. Serve the platform over https:// if you can.',
+              defaultValue:
+                'This site is on plain http://, so the command has --insecure and the token travels unencrypted. Serve the platform over https:// if you can.',
             })}
           </Typography>
         )}
-        <Stack direction="row" gap={1} alignItems="center" mt={2} data-testid="machines-link-status">
+        <Stack
+          direction="row"
+          gap={1}
+          alignItems="center"
+          mt={2}
+          data-testid="machines-link-status"
+        >
           <StatusDot state={connected ? 'live' : 'loading'} />
           <Typography variant="body2" color={connected ? 'success.main' : 'text.secondary'}>
             {connected
-              ? t('machinesPanel.linkConnected', { defaultValue: 'Connected. The machine is ready.' })
-              : t('machinesPanel.linkWaiting', { defaultValue: 'Waiting for the machine to connect…' })}
+              ? t('machinesPanel.linkConnected', {
+                  defaultValue: 'Connected. The machine is ready.',
+                })
+              : t('machinesPanel.linkWaiting', {
+                  defaultValue: 'Waiting for the machine to connect…',
+                })}
           </Typography>
         </Stack>
       </DialogContent>
@@ -294,7 +404,10 @@ export function AddMachineDialog({
       <DialogTitle>{t('machinesPanel.add', { defaultValue: 'Add machine' })}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary" mb={2}>
-          {t('machinesPanel.addHelp', { defaultValue: 'You get one command to run on the machine. It needs CS2 Server Manager (csm) installed.' })}
+          {t('machinesPanel.addHelp', {
+            defaultValue:
+              'You get one command to run on the machine. It needs CS2 Server Manager (csm) installed.',
+          })}
         </Typography>
         <TextField
           autoFocus
