@@ -248,7 +248,7 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
           matchSlug: match.slug,
           matchStatus: 'needs_decision',
           reason: 'disputed',
-          tournamentId: 1,
+          tournamentId: await currentTournamentId(request),
         });
         expect(queue[0].team1.name).toBeTruthy();
         expect(queue[0].report).toMatchObject({
