@@ -404,83 +404,12 @@ export default function Browse() {
                     )}
                     {t(`browsePage.groups.${group.key}`)}
                   </Typography>
-                  {group.key === 'finished' ? (
-                    <>
-                      <Box
-                        sx={{
-                          display: 'grid',
-                          gap: 1.5,
-                          gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
-                        }}
-                      >
-                        {(showAllFinished ? group.rows : group.rows.slice(0, FINISHED_SHOWN)).map(
-                          (tournament) => {
-                            const when = tournamentWhen(t, tournament, i18n.language);
-                            const action = tournamentAction(tournament);
-                            return (
-                              <Box
-                                key={tournament.id}
-                                component={RouterLink}
-                                to={action.to}
-                                data-testid={`browse-tournament-${tournament.id}`}
-                                sx={{
-                                  p: 2,
-                                  borderRadius: radii.lg,
-                                  bgcolor: color.paper2,
-                                  border: `1px solid ${color.rule}`,
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  gap: 2,
-                                  alignItems: 'center',
-                                  textDecoration: 'none',
-                                  color: color.ink,
-                                  '&:hover': { borderColor: color.muted },
-                                }}
-                              >
-                                <Box sx={{ minWidth: 0 }}>
-                                  <Box sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>
-                                    {tournament.name}
-                                  </Box>
-                                  <Box
-                                    data-testid={`browse-when-${tournament.id}`}
-                                    sx={{ fontSize: textSize.sm, color: color.muted }}
-                                  >
-                                    {when.kind === 'text' ? when.text : ''}
-                                  </Box>
-                                </Box>
-                                {tournament.winner && (
-                                  <Box
-                                    sx={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: 0.75,
-                                      fontSize: textSize.sm,
-                                      color: color.medalGold,
-                                      flex: 'none',
-                                    }}
-                                  >
-                                    <TrophyIcon size={16} aria-hidden />
-                                    {tournament.winner.name}
-                                  </Box>
-                                )}
-                              </Box>
-                            );
-                          }
-                        )}
-                      </Box>
-                      {!showAllFinished && group.rows.length > FINISHED_SHOWN && (
-                        <Button
-                          onClick={() => setShowAllFinished(true)}
-                          sx={{ mt: 1.5 }}
-                          data-testid="browse-show-older"
-                        >
-                          {t('browsePage.showOlder', { count: group.rows.length - FINISHED_SHOWN })}
-                        </Button>
-                      )}
-                    </>
-                  ) : (
+                  {
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                      {group.rows.map((tournament) => {
+                      {(group.key === 'finished' && !showAllFinished
+                        ? group.rows.slice(0, FINISHED_SHOWN)
+                        : group.rows
+                      ).map((tournament) => {
                         const when = tournamentWhen(t, tournament, i18n.language);
                         const action = tournamentAction(tournament);
                         const byline = [tournament.organizer, tournament.location]
@@ -608,6 +537,23 @@ export default function Browse() {
                               >
                                 {entriesLine(t, tournament)}
                               </Box>
+                              {tournament.winner && (
+                                <Box
+                                  component="span"
+                                  data-testid={`browse-winner-${tournament.id}`}
+                                  sx={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 0.75,
+                                    mt: 0.5,
+                                    fontSize: textSize.sm,
+                                    color: color.medalGold,
+                                  }}
+                                >
+                                  <TrophyIcon size={16} aria-hidden />
+                                  {tournament.winner.name}
+                                </Box>
+                              )}
                             </Box>
                             <Box
                               sx={[STACKED_CELL_SX, { justifySelf: { xs: 'start', md: 'end' } }]}
@@ -642,8 +588,21 @@ export default function Browse() {
                           </Box>
                         );
                       })}
+                      {group.key === 'finished' &&
+                        !showAllFinished &&
+                        group.rows.length > FINISHED_SHOWN && (
+                          <Button
+                            onClick={() => setShowAllFinished(true)}
+                            sx={{ alignSelf: 'flex-start' }}
+                            data-testid="browse-show-older"
+                          >
+                            {t('browsePage.showOlder', {
+                              count: group.rows.length - FINISHED_SHOWN,
+                            })}
+                          </Button>
+                        )}
                     </Box>
-                  )}
+                  }
                 </Box>
               )
             )}
