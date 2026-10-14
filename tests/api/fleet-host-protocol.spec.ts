@@ -82,6 +82,10 @@ test.describe('Fleet host protocol v1', () => {
         expires_at: Date.now() + 60_000,
       },
       'server.remove': { server: 'server-4', keep_files: true },
+      'server.enroll': {
+        servers: ['server-1', 'server-2'],
+        enroll_key: `rfk_${'a'.repeat(12)}_${'A'.repeat(43)}`,
+      },
       'server.set_launch_args': {
         server: 'server-1',
         args: ['+map', 'de_inferno', '-maxplayers', '12'],
@@ -154,6 +158,7 @@ test.describe('Fleet host protocol v1', () => {
       [
         'host.update_game',
         'host.update_plugins',
+        'server.enroll',
         'server.remove',
         'server.restart',
         'server.set_launch_args',

@@ -30,6 +30,7 @@ import serverStop from './messages/server.stop.json';
 import serverRestart from './messages/server.restart.json';
 import serverCreate from './messages/server.create.json';
 import serverRemove from './messages/server.remove.json';
+import serverEnroll from './messages/server.enroll.json';
 import serverSetLaunchArgs from './messages/server.set_launch_args.json';
 import updateGame from './messages/host.update_game.json';
 import updatePlugins from './messages/host.update_plugins.json';
@@ -173,6 +174,8 @@ export interface HostCommands {
     accept_license?: 'noncommercial' | 'commercial';
   };
   'server.remove': Expiring & { server: string; keep_files?: boolean; force?: HostForce };
+  /** csm addition: existing servers enroll here (a new fleet key in fleet.cfg, minted at send time). */
+  'server.enroll': Expiring & { servers: string[]; enroll_key?: string; force?: HostForce };
   'server.set_launch_args': Expiring & { server: string; args: string[]; force?: HostForce };
   'host.update_game': Expiring & { servers?: string[]; force?: HostForce };
   'host.update_plugins': Expiring & {
@@ -210,6 +213,7 @@ export const HOST_COMMAND_TYPES: ReadonlyArray<HostCommandType> = [
   'server.restart',
   'server.create',
   'server.remove',
+  'server.enroll',
   'server.set_launch_args',
   'host.update_game',
   'host.update_plugins',
@@ -228,6 +232,7 @@ export const HOST_DISRUPTIVE_TYPES: ReadonlySet<HostCommandType> = new Set<HostC
   'server.stop',
   'server.restart',
   'server.remove',
+  'server.enroll',
   'server.set_launch_args',
   'host.update_game',
   'host.update_plugins',
@@ -272,6 +277,7 @@ export const HOST_MESSAGE_SCHEMAS: Record<string, Record<string, unknown>> = {
   'server.restart': serverRestart,
   'server.create': serverCreate,
   'server.remove': serverRemove,
+  'server.enroll': serverEnroll,
   'server.set_launch_args': serverSetLaunchArgs,
   'host.update_game': updateGame,
   'host.update_plugins': updatePlugins,

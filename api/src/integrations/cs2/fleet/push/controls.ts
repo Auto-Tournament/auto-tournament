@@ -229,24 +229,28 @@ const PLATFORM_ISSUER: IssuedBy = { user_id: 'platform', name: 'Auto Tournament'
 
 /**
  * A server csm created (an admin's Create server, not only the scaler's or a
- * failover's) joins the match pool on its first hello, unless its plugin set
+ * failover's), or one of a machine's servers enrolled again (server.enroll), joins the match pool on its first hello, unless its plugin set
  * turns match off (a practice server). Once: a cs2_servers row for it means
  * it was linked before, and an admin's unlink keeps that row, so it sticks.
  */
 async function linkCreatedOnce(serverId: string): Promise<void> {
   // The scaler and failover link what they create themselves (with their own records).
-  const cmd = await db.queryOneAsync<{ issued_by: string | null }>(
-    `SELECT c.issued_by FROM cs2_fleet_servers s
+  const cmd = await db.queryOneAsync<{ issued_by: string | null; type: string }>(
+    `SELECT c.issued_by, c.type FROM cs2_fleet_servers s
        JOIN cs2_fleet_enrollment_keys k ON k.id = s.enrollment_key_id
        JOIN cs2_fleet_host_commands c ON c.message_id = k.command_id
-      WHERE s.id = ? AND c.type = 'server.create'`,
+      WHERE s.id = ? AND c.type IN ('server.create', 'server.enroll')`,
     [serverId]
   );
-  if (!cmd || cmd.issued_by === 'autoscale' || (cmd.issued_by ?? '').startsWith('platform:'))
-    return;
-  const created = await createdPluginSet(serverId);
-  if (!created.created) return;
-  if (created.set && !created.set.plugins.includes('match')) return;
+  if (!cmd) return;
+  // A machine's own servers enrolled again (server.enroll, a machine linked
+  // again): they were match servers before, so they are again.
+  if (cmd.type === 'server.create') {
+    if (cmd.issued_by === 'autoscale' || (cmd.issued_by ?? '').startsWith('platform:')) return;
+    const created = await createdPluginSet(serverId);
+    if (!created.created) return;
+    if (created.set && !created.set.plugins.includes('match')) return;
+  }
   const seen = await db.queryOneAsync<{ id: string }>(
     'SELECT id FROM cs2_servers WHERE id = ? OR fleet_server_id = ?',
     [serverId, serverId]

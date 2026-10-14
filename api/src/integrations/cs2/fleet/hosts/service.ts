@@ -192,8 +192,11 @@ export async function sendHostCommand<T extends HostCommandType>(
   const body: Record<string, unknown> = { ...(payload as Record<string, unknown>) };
   delete body.force;
   // A paid license's server limit, before a machine is asked to create any.
-  if (type === 'server.create') {
-    const count = Number((body as { count?: unknown }).count ?? 1);
+  if (type === 'server.create' || type === 'server.enroll') {
+    const count =
+      type === 'server.enroll'
+        ? ((body as { servers?: unknown[] }).servers?.length ?? 1)
+        : Number((body as { count?: unknown }).count ?? 1);
     try {
       await licenseService.assertCanCreateServers(Number.isInteger(count) && count > 0 ? count : 1);
     } catch (error) {
@@ -203,7 +206,7 @@ export async function sendHostCommand<T extends HostCommandType>(
     }
   }
   // The fleet key is the platform's to add, at send time (./gateway.ts).
-  if (type === 'server.create') delete body.enroll_key;
+  if (type === 'server.create' || type === 'server.enroll') delete body.enroll_key;
   // Installs carry the license use the admin accepted on the platform, so
   // csm can run Ready Up's installer unattended on a host whose operator
   // gave no answer of their own (theirs always wins on the host).
@@ -507,6 +510,39 @@ export interface HostAdminView extends registry.FleetHostView {
   health: registry.HostHealthRecord[];
 }
 
+/** How long after a create, an install or an enroll a machine's unenrolled servers are left alone. */
+const ENROLL_QUIET_S = 15 * 60;
+
+/**
+ * A machine's servers with Ready Up that are not enrolled here (a machine
+ * linked again, e.g. to a fresh install: their old credentials are refused)
+ * get a new fleet key (`server.enroll`, csm with the servers.enroll
+ * capability) and join the match pool on their first hello. Not while a
+ * create, a Ready Up install or an enroll on that machine is under way (a
+ * new server enrolls by itself).
+ */
+async function enrollStrayServers(hostId: string): Promise<void> {
+  const host = await registry.getHostView(hostId);
+  if (
+    !host?.inventory ||
+    host.status !== 'enrolled' ||
+    !host.capabilities.includes('servers.enroll')
+  )
+    return;
+  const stray = (await hostServers(hostId))
+    .filter((s) => !!s.readyup.installed && !s.fleetServer)
+    .map((s) => s.name);
+  if (stray.length === 0) return;
+  const recent = await db.queryOneAsync<{ n: number | string }>(
+    `SELECT COUNT(*) AS n FROM cs2_fleet_host_commands
+      WHERE host_id = ? AND type IN ('server.create', 'host.update_plugins', 'server.enroll') AND created_at > ?`,
+    [hostId, Math.floor(Date.now() / 1000) - ENROLL_QUIET_S]
+  );
+  if (Number(recent?.n ?? 0) > 0) return;
+  await sendHostCommand(hostId, 'server.enroll', { servers: stray }, { issuedBy: PLATFORM_ACTOR });
+  log.info(`[FLEET-HOST] ${hostId}: ${stray.join(', ')} not enrolled here; sent server.enroll`);
+}
+
 export async function listHostViews(
   opts: { commands?: number; health?: number } = {}
 ): Promise<HostAdminView[]> {
@@ -600,7 +636,10 @@ export async function startFleetHosts(server?: HttpServer): Promise<void> {
   // A machine's address (inventory.address) is where its servers' players
   // connect unless a server reports its own: move their linked rows to it.
   if (!inventoryListener) {
-    inventoryListener = (_hostId: string, payload: HostInventoryPayload) => {
+    inventoryListener = (hostId: string, payload: HostInventoryPayload) => {
+      void enrollStrayServers(hostId).catch((error) =>
+        log.warn(`[FLEET-HOST] ${hostId}: enrolling its servers: ${(error as Error).message}`)
+      );
       for (const s of payload.servers) {
         const id = s.readyup.server_id;
         if (id)
