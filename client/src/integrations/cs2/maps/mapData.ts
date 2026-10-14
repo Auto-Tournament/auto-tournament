@@ -15,11 +15,12 @@ import type { CS2MapData } from '../cs2.types';
 const MAP_IMAGE_BASE =
   'https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails';
 
-const getFullImageUrl = (mapName: string): string =>
-  `${MAP_IMAGE_BASE}/${mapName}.webp`;
+const MAP_IMAGE_RAW_BASE =
+  'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails';
 
-const getThumbnailUrl = (mapName: string): string =>
-  `${MAP_IMAGE_BASE}/${mapName}_thumb.webp`;
+const getFullImageUrl = (mapName: string): string => `${MAP_IMAGE_BASE}/${mapName}.webp`;
+
+const getThumbnailUrl = (mapName: string): string => `${MAP_IMAGE_BASE}/${mapName}_thumb.webp`;
 
 export const CS2_MAPS: CS2MapData[] = [
   {
@@ -71,6 +72,17 @@ export const getMapData = (mapName: string): CS2MapData | undefined => {
 };
 
 /**
+ * A map's picture by name, for any map csm has one of (Train, Overpass, Cache
+ * and the rest beyond CS2_MAPS): the CDN first, the repository itself behind
+ * it (the CDN can keep a "not found" for a picture added later). For a CSS
+ * background: the second shows where the first does not load.
+ */
+export const mapBackground = (mapName: string): string => {
+  const file = `${mapName}.webp`;
+  return `url("${MAP_IMAGE_BASE}/${file}"), url("${MAP_IMAGE_RAW_BASE}/${file}")`;
+};
+
+/**
  * Title-cased fallback for maps that aren't in CS2_MAPS (workshop maps, maps
  * added to the pool later): "de_train" -> "Train", not "train".
  */
@@ -87,4 +99,3 @@ export const getMapDisplayName = (mapName: string): string => {
   const mapData = getMapData(mapName);
   return mapData?.displayName || titleCaseMapName(mapName) || mapName;
 };
-
