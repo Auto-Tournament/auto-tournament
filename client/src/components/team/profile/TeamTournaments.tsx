@@ -145,7 +145,7 @@ export function TeamTournaments({
                       : tokens.color.ink,
                 }}
               >
-                #{standing.position}
+                {t('teamProfile.tournaments.place', { count: standing.position, ordinal: true })}
               </Box>
             ) : (
               <Chip
@@ -174,7 +174,11 @@ export function TeamTournaments({
             ) : typeof tournament.id === 'number' ? (
               <RowLink
                 to={paths.tournamentOverview.replace(':id', String(tournament.id))}
-                label={t('teamProfile.tournaments.open')}
+                label={
+                  tournament.status === 'completed'
+                    ? t('teamProfile.tournaments.results')
+                    : t('teamProfile.tournaments.open')
+                }
               />
             ) : null}
           </Row>

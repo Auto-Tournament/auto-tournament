@@ -165,7 +165,12 @@
         "in_progress": "In progress",
         "completed": "Finished"
       },
-      "allMatches": "All matches"
+      "allMatches": "All matches",
+      "results": "Results",
+      "place_ordinal_one": "{{count}}st",
+      "place_ordinal_two": "{{count}}nd",
+      "place_ordinal_few": "{{count}}rd",
+      "place_ordinal_other": "{{count}}th"
     },
     "headerLabel": "Team",
     "captainLine": "captain {{name}}",
