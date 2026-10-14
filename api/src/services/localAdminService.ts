@@ -138,14 +138,25 @@ class LocalAdminService {
         return;
       }
       const { code } = await this.createCode('setup');
+      const url = `${publicUrl.replace(/\/+$/, '')}/setup`;
+      log.warn(`[SETUP] No admin account exists yet. Open ${url} and enter this code: ${code}`);
+      // As plain text too: `docker compose logs` shows the logger's JSON, where
+      // the code was hard to find (fresh-install test, 2026-10-14).
       const line = '='.repeat(72);
-      log.warn(line);
-      log.warn(`[SETUP] No admin account exists yet.`);
-      log.warn(`[SETUP] Open ${publicUrl.replace(/\/+$/, '')}/setup and enter this code: ${code}`);
-      log.warn(
-        '[SETUP] The code works once and expires in 24 hours; restart the container for a new one.'
+      process.stdout.write(
+        [
+          '',
+          line,
+          '  Auto Tournament: no admin account exists yet.',
+          `  Open ${url} and enter this code:`,
+          '',
+          `      ${code}`,
+          '',
+          '  It works once and expires in 24 hours; restart the container for a new one.',
+          line,
+          '',
+        ].join('\n') + '\n'
       );
-      log.warn(line);
     } catch (error) {
       log.error('[SETUP] Could not create a setup code', error as Error);
     }
