@@ -48,6 +48,10 @@ interface LivePlayer {
   connected: boolean;
   ready: boolean;
   alive?: boolean;
+  /** ms, while connected (Ready Up's status, the controller's ping). */
+  ping?: number;
+  /** Unix ms the player was first seen connected. */
+  connected_at?: number;
 }
 interface LiveTeam {
   name: string;
@@ -74,6 +78,8 @@ interface LiveState {
   spectators?: Record<string, { name?: string; connected: boolean }>;
   pause?: { active: boolean; type?: string; by?: string; started_at?: number };
   round?: { number: number };
+  /** CS2's own view: its warmup flag, next to Ready Up's phase. */
+  game?: { warmup: boolean };
 }
 interface RoundPlayer {
   id: string;
@@ -268,6 +274,11 @@ const mapLabel = (m: string | undefined) => {
     .replace(/_/g, ' ');
   return bare ? bare.charAt(0).toUpperCase() + bare.slice(1) : '—';
 };
+/** Seconds since a unix-ms time. */
+const secondsAgo = (ms: number) => Math.max(0, Math.round((Date.now() - ms) / 1000));
+/** Connected within the last two minutes: a join or a reconnect worth noticing. */
+const justJoined = (ms: number | undefined) => typeof ms === 'number' && secondsAgo(ms) < 120;
+
 const clock = (unix: number) =>
   new Date(unix * 1000).toLocaleTimeString([], {
     hour: '2-digit',
@@ -551,6 +562,9 @@ export default function ManageMatch() {
                   Connection
                 </Box>
                 <Box component="th" scope="col" sx={th}>
+                  Ping
+                </Box>
+                <Box component="th" scope="col" sx={th}>
                   Ready
                 </Box>
                 <Box component="th" scope="col" sx={th}>
@@ -572,8 +586,32 @@ export default function ManageMatch() {
                   <Box component="td" sx={{ ...td, color: color.muted }}>
                     {p.role ?? 'Player'}
                   </Box>
-                  <Box component="td" sx={{ ...td, color: p.connected ? color.live : color.ban }}>
-                    {p.connected ? 'Connected' : 'Not connected'}
+                  <Box
+                    component="td"
+                    sx={{
+                      ...td,
+                      color: !p.connected
+                        ? color.ban
+                        : justJoined(p.connected_at)
+                          ? color.warning
+                          : color.live,
+                    }}
+                  >
+                    {!p.connected
+                      ? 'Not connected'
+                      : justJoined(p.connected_at)
+                        ? `Joined ${secondsAgo(p.connected_at!)} s ago`
+                        : 'Connected'}
+                  </Box>
+                  <Box
+                    component="td"
+                    sx={{
+                      ...td,
+                      fontFamily: fontMono,
+                      color: (p.ping ?? 0) > 100 ? color.warning : color.ink2,
+                    }}
+                  >
+                    {p.connected && typeof p.ping === 'number' ? `${p.ping} ms` : '—'}
                   </Box>
                   <Box component="td" sx={{ ...td, color: p.ready ? color.live : color.muted }}>
                     {p.ready ? 'Ready' : 'Not ready'}
@@ -602,7 +640,7 @@ export default function ManageMatch() {
               ))}
               {players.length === 0 && (
                 <tr>
-                  <Box component="td" colSpan={6} sx={{ ...td, color: color.muted }}>
+                  <Box component="td" colSpan={7} sx={{ ...td, color: color.muted }}>
                     No players reported by the server yet.
                   </Box>
                 </tr>
@@ -768,6 +806,34 @@ export default function ManageMatch() {
           tone: 'server' as const,
           onClick: () => setDialog({ kind: 'move' }),
           testId: 'manage-state-move',
+        },
+      ],
+    };
+  } else if (state && live && state.game?.warmup === true) {
+    // CS2 and Ready Up disagree (the MatchStates board): e.g. bots joined an empty
+    // server after the map went live and CS2 started its own warmup.
+    banner = {
+      name: 'Game and Ready Up disagree',
+      tone: 'problem',
+      title: 'CS2 is in warmup, Ready Up says the map is live',
+      body: 'CS2 started its own warmup on a live map (players or bots joining an empty server can do it). Ending CS2’s warmup puts the map back to round 1, live.',
+      buttons: [
+        {
+          label: 'End CS2’s warmup…',
+          tone: 'primary',
+          testId: 'manage-state-end-warmup',
+          onClick: () =>
+            setConfirm({
+              target: 'match',
+              title: 'End CS2’s warmup?',
+              effects: [
+                'CS2 leaves its warmup and the map goes live from round 1',
+                'Ready Up keeps the match as it is',
+              ],
+              action: 'End CS2’s warmup',
+              cancel: 'Leave it',
+              run: () => send('start', { force: true }, 'CS2’s warmup ended'),
+            }),
         },
       ],
     };
