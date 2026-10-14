@@ -567,6 +567,7 @@ export function InspectSkinDialog({
               <Typography sx={{ color: color.muted }}>
                 {skin.weaponName} · {t(`skins.wear.${wearKey(skin.float)}`)}
               </Typography>
+              <WearBar float={skin.float} pattern={skin.pattern} />
               <Typography sx={{ fontFamily: fontDisplay, fontSize: '2rem', fontWeight: 700 }}>
                 {skin.name}
               </Typography>
@@ -671,5 +672,77 @@ export function InspectSkinDialog({
         </Box>
       )}
     </Dialog>
+  );
+}
+
+/** CS2's wear ranges, Factory New to Battle-Scarred, in the colours trading sites use (CSFloat). */
+const WEAR_RANGES: Array<{
+  key: 'fn' | 'mw' | 'ft' | 'ww' | 'bs';
+  from: number;
+  to: number;
+  tone: string;
+}> = [
+  { key: 'fn', from: 0, to: 0.07, tone: '#3a7d2c' },
+  { key: 'mw', from: 0.07, to: 0.15, tone: '#5a9f32' },
+  { key: 'ft', from: 0.15, to: 0.38, tone: '#a5c23f' },
+  { key: 'ww', from: 0.38, to: 0.45, tone: '#c46a62' },
+  { key: 'bs', from: 0.45, to: 1, tone: '#d63c34' },
+];
+
+/**
+ * The float bar, as CSFloat draws it: the five wear ranges in their real
+ * widths with a handle at the skin's float, and under it the float to 12
+ * places and the pattern (#seed).
+ */
+export function WearBar({
+  float,
+  pattern,
+  height = 8,
+}: {
+  float: number;
+  pattern?: number | null;
+  height?: number;
+}) {
+  const { t } = useModuleTranslation('cs2');
+  const at = Math.min(1, Math.max(0, float));
+  return (
+    <Box data-testid="wear-bar" sx={{ mt: 1, mb: 0.5 }}>
+      <Box
+        role="img"
+        aria-label={`${t(`skins.wear.${wearKey(float)}`)} · ${float.toFixed(4)}`}
+        sx={{ position: 'relative' }}
+      >
+        <Box sx={{ display: 'flex', height, borderRadius: radii.pill, overflow: 'hidden' }}>
+          {WEAR_RANGES.map((r) => (
+            <Box key={r.key} sx={{ width: `${(r.to - r.from) * 100}%`, bgcolor: r.tone }} />
+          ))}
+        </Box>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -3,
+            left: `clamp(0px, calc(${at * 100}% - 3px), calc(100% - 6px))`,
+            width: 6,
+            height: height + 6,
+            borderRadius: radii.pill,
+            bgcolor: '#e8e8e8',
+            boxShadow: '0 0 0 1px rgba(0,0,0,0.45)',
+          }}
+        />
+      </Box>
+      <Typography
+        component="div"
+        sx={{ ...mono, mt: 0.75, fontSize: '0.8125rem', color: tokens.color.ink }}
+        data-testid="wear-bar-float"
+      >
+        {float.toFixed(12)}
+        {typeof pattern === 'number' && (
+          <Box component="span" sx={{ color: tokens.color.muted }}>
+            {' '}
+            (#{pattern})
+          </Box>
+        )}
+      </Typography>
+    </Box>
   );
 }

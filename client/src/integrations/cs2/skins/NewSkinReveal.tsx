@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Button, Dialog, Typography } from '@mui/material';
-import { sourceLabel } from './SkinParts';
+import { sourceLabel, WearBar } from './SkinParts';
 import {
   useModuleTranslation,
   useSnackbar,
@@ -152,6 +152,7 @@ function ChoiceReveal({
                   {t(`skins.rarity.${o.rarity}`, { defaultValue: o.rarity })} ·{' '}
                   {t(`skins.wear.${wearKey(o.float)}`)}
                 </Typography>
+                <WearBar float={o.float} pattern={o.pattern} />
                 <Typography sx={{ fontWeight: 600, color: tone }}>
                   {busy === index ? t('skins.keeping') : t('skins.keepThis')}
                 </Typography>
@@ -255,6 +256,12 @@ function Reveal() {
             alt={`${skin.weaponName} ${skin.name}`}
             sx={{ position: 'relative', width: '75%', height: '75%', objectFit: 'contain' }}
           />
+        </Box>
+        <Box sx={{ width: '100%', maxWidth: 360 }}>
+          <Typography sx={{ fontSize: '0.875rem', color: color.muted, textAlign: 'center' }}>
+            {t(`skins.wear.${wearKey(skin.float)}`)}
+          </Typography>
+          <WearBar float={skin.float} pattern={skin.pattern} />
         </Box>
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
           {/* One-side weapons have one button; the rest pick T, CT or both. */}
