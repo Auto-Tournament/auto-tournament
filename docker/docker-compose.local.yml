@@ -78,6 +78,8 @@ services:
       - CATALOG_OFFLINE=${CATALOG_OFFLINE:-}
       # Allow simulation settings in local "prod-like" builds
       - AT_ENABLE_SIMULATION_IN_PROD=true
+      # The specs play the demo worker themselves: the built-in one stays off.
+      - AT_BUILTIN_WORKER=${AT_BUILTIN_WORKER:-0}
       # Docker service name for DB connection (not from .env)
       - DB_HOST=postgres
       # Computed DATABASE_URL (uses DB_* vars from .env or defaults)

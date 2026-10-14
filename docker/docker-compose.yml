@@ -79,8 +79,12 @@ services:
       - SESSION_SECRET=${SESSION_SECRET:-}
       # All other variables (SERVER_TOKEN, STEAM_API_KEY, FRONTEND_BASE_URL, LOG_LEVEL, etc.)
       # are loaded from .env via env_file directive above
+      # The built-in demo worker's radar images, from a CS2 install on this
+      # host (optional, read-only): set CS2_GAME_DIR to its game/csgo.
+      - AT_CS2_DIR=${CS2_GAME_DIR:+/cs2}
     volumes:
       - ${AT_DATA_DIR:-./data}:/app/data
+      - ${CS2_GAME_DIR:-${AT_DATA_DIR:-./data}/no-cs2}:/cs2:ro
     healthcheck:
       test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3069/health']
       interval: 30s
@@ -90,10 +94,11 @@ services:
     networks:
       - auto-tournament-network
 
-  # The demo worker (worker/README.md): reads each match's demos after the
-  # match for trades, aim, money and the 2D replay. Opt in with
+  # An extra demo worker (worker/README.md). The platform image runs one
+  # itself (api/src/services/builtinWorker.ts); this one only adds capacity.
+  # Opt in with
   #   COMPOSE_PROFILES=worker docker compose up -d
-  # It authenticates with the first of API_TOKENS in .env.
+  # It authenticates with AT_WORKER_TOKEN, else the first of API_TOKENS in .env.
   auto-tournament-worker:
     image: sivertio/auto-tournament-worker:next
     container_name: auto-tournament-worker
