@@ -45,3 +45,47 @@ func withoutCards(o overlayRecipe) overlayRecipe {
 	o.Parts = parts
 	return o
 }
+
+// continueRecipe is a clip's recipe from `skip` seconds in (its clean twin cut
+// there): the same player again in a reel, so the caption card is already
+// small (no entrance, no blur) and the kill feed carries on.
+func continueRecipe(o overlayRecipe, skip float64) overlayRecipe {
+	out := o
+	out.Duration = math.Max(0, o.Duration-skip)
+	out.Parts = nil
+	for _, p := range o.Parts {
+		end := p.Start + p.Duration
+		if end <= skip {
+			continue
+		}
+		cut := math.Max(0, skip-p.Start)
+		p.Start = math.Max(0, p.Start-skip)
+		p.Duration = end - skip - p.Start
+		if cut > 0 {
+			p.FadeIn = 0
+			feed := make([]feedKill, len(p.Feed))
+			for i, k := range p.Feed {
+				k.At -= cut
+				feed[i] = k
+			}
+			p.Feed = feed
+		}
+		if p.Card != nil {
+			p.Settled = true
+		}
+		out.Parts = append(out.Parts, p)
+	}
+	return out
+}
+
+// continueReactions are a clip's crowd reactions from `skip` seconds in.
+func continueReactions(rs []reaction, skip float64) []reaction {
+	var out []reaction
+	for _, r := range rs {
+		if r.T >= skip {
+			r.T -= skip
+			out = append(out, r)
+		}
+	}
+	return out
+}

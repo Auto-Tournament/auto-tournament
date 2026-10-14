@@ -117,6 +117,8 @@ export async function teamReelClips(
     team: team.name,
     avatarUrl: r.avatar_url,
     title: r.title,
+    matchSlug,
+    mapNumber: Number(r.map_number),
     url: `/api/game/cs2/highlights/${Number(r.id)}.mp4`,
     markers: parseMarkers(r.markers),
   }));
