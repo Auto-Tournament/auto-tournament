@@ -11,7 +11,10 @@
         "all": "All",
         "you": "Needs you",
         "tournaments": "Tournaments",
-        "drops": "Drops"
+        "matches": "Matches",
+        "skins": "Skins",
+        "clips": "Clips",
+        "other": "Other"
       },
       "empty": "Nothing here yet",
       "emptyHint": "Party invites, friend requests, tournament news, new skins and ready highlights show up here.",
@@ -186,8 +189,9 @@
       "group": {
         "you": "You",
         "tournaments": "Tournaments",
-        "drops": "Drops",
-        "other": "Other"
+        "other": "Other",
+        "skins": "Skins",
+        "clips": "Clips"
       },
       "kind": {
         "party_invite": "Party invites",

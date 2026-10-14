@@ -11,7 +11,10 @@
         "all": "Alle",
         "you": "Trenger deg",
         "tournaments": "Turneringer",
-        "drops": "Drops"
+        "matches": "Kamper",
+        "skins": "Skins",
+        "clips": "Klipp",
+        "other": "Annet"
       },
       "empty": "Ingenting her ennå",
       "emptyHint": "Gruppeinvitasjoner, venneforespørsler, turneringsnytt, nye skins og ferdige høydepunkter vises her.",
@@ -186,8 +189,9 @@
       "group": {
         "you": "Deg",
         "tournaments": "Turneringer",
-        "drops": "Drops",
-        "other": "Annet"
+        "other": "Annet",
+        "skins": "Skins",
+        "clips": "Klipp"
       },
       "kind": {
         "party_invite": "Gruppeinvitasjoner",
