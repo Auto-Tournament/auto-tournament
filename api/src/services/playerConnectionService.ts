@@ -27,6 +27,9 @@ export interface MatchConnectionStatus {
 class PlayerConnectionService {
   // Map of match slug -> connected players
   private connections: Map<string, ConnectedPlayer[]> = new Map();
+  // Match slug -> players who were on the server and left (steam id -> when, ms):
+  // the site tells them to reconnect.
+  private dropped: Map<string, Map<string, number>> = new Map();
 
   /**
    * Track player connection
@@ -37,7 +40,8 @@ class PlayerConnectionService {
     }
 
     const players = this.connections.get(matchSlug)!;
-    
+    this.dropped.get(matchSlug)?.delete(steamId);
+
     // Check if already connected
     const existing = players.find((p) => p.steamId === steamId);
     if (existing) {
@@ -73,6 +77,8 @@ class PlayerConnectionService {
       const player = players[index];
       log.debug(`Player disconnected: ${player.name} (${steamId})`, { matchSlug });
       players.splice(index, 1);
+      if (!this.dropped.has(matchSlug)) this.dropped.set(matchSlug, new Map());
+      this.dropped.get(matchSlug)!.set(steamId, Date.now());
       void postMatchChatLine(matchSlug, 'playerLeft', { name: player.name, n: players.length });
       this.emitUpdate(matchSlug);
     }
@@ -109,6 +115,21 @@ class PlayerConnectionService {
   }
 
   /**
+   * One player's connection to a match: on the server, gone after being on it
+   * (with when, ms), or never seen there.
+   */
+  connectionOf(
+    matchSlug: string,
+    steamId: string
+  ): { state: 'connected' | 'dropped' | 'never'; droppedAt: number | null } {
+    if (this.connections.get(matchSlug)?.some((p) => p.steamId === steamId)) {
+      return { state: 'connected', droppedAt: null };
+    }
+    const at = this.dropped.get(matchSlug)?.get(steamId);
+    return at ? { state: 'dropped', droppedAt: at } : { state: 'never', droppedAt: null };
+  }
+
+  /**
    * Get connection status for a match
    */
   getStatus(matchSlug: string): MatchConnectionStatus | null {
@@ -133,6 +154,7 @@ class PlayerConnectionService {
    */
   clearMatch(matchSlug: string): void {
     this.connections.delete(matchSlug);
+    this.dropped.delete(matchSlug);
     log.debug(`Cleared connection tracking for match`, { matchSlug });
   }
 
@@ -141,6 +163,7 @@ class PlayerConnectionService {
    */
   clearAll(): void {
     this.connections.clear();
+    this.dropped.clear();
   }
 
   /**
@@ -156,7 +179,7 @@ class PlayerConnectionService {
    */
   getAllStatuses(): MatchConnectionStatus[] {
     const statuses: MatchConnectionStatus[] = [];
-    
+
     this.connections.forEach((_players, matchSlug) => {
       const status = this.getStatus(matchSlug);
       if (status) {
