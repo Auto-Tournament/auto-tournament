@@ -962,8 +962,8 @@
   },
   "settings": {
     "webhook": {
-      "title": "Webhook MatchZy Enhanced",
-      "description": "URL de webhook MatchZy Enhanced accessible par vos serveurs CS2.",
+      "title": "Platform URL",
+      "description": "The address your CS2 servers, links and webhooks use to reach the platform.",
       "label": "URL de webhook",
       "helper": "Exemple : https://votre-domaine.com"
     },
@@ -988,17 +988,17 @@
     "saveFailed": "Failed to save settings",
     "loadFailed": "Failed to load settings",
     "chatDefaults": {
-      "title": "Paramètres par défaut MatchZy Enhanced (chat & knife)",
+      "title": "Chat & Knife Defaults",
       "description": "Configurez les préfixes du chat en jeu et le comportement par défaut des manches knife.",
       "chatPrefixLabel": "Préfixe du chat",
       "chatPrefixHelper": "Par défaut : \"[{Green}Auto Tournament{Default}]\". Laissez vide pour rétablir la valeur par défaut.",
       "adminChatPrefixLabel": "Préfixe chat admin",
       "adminChatPrefixHelper": "Par défaut : \"[{Red}ADMIN{Default}]\". Laissez vide pour rétablir la valeur par défaut.",
       "knifeToggleLabel": "Activer les manches knife par défaut pour les nouveaux matchs (quand les camps ne sont pas pré-sélectionnés)",
-      "knifeNote": "S’applique uniquement quand MatchZy Enhanced lancerait normalement une manche knife ; les choix de camps explicites ne sont pas modifiés."
+      "knifeNote": "Applies only when the server would normally run a knife round; explicit side picks or shuffle-assigned sides are not changed."
     },
     "atCore": {
-      "title": "Valeurs par défaut MatchZy Enhanced (core)",
+      "title": "Core Match Defaults",
       "description": "Ces valeurs par défaut sont envoyées aux serveurs lors de l’initialisation et avant chaque chargement de match.",
       "expert": {
         "title": "Paramètres experts",
@@ -1056,8 +1056,8 @@
       }
     },
     "atEnhanced": {
-      "title": "Fonctionnalités MatchZy Enhanced",
-      "description": "Configurez des fonctionnalités de match avancées. Laissez vide pour utiliser les valeurs par défaut de MatchZy Enhanced.",
+      "title": "CS2 plugin features",
+      "description": "Configure advanced match features. Leave settings empty to use Ready Up's defaults.",
       "autoready": {
         "title": "Système auto-ready",
         "label": "Marquer automatiquement les joueurs comme prêts à la connexion",
@@ -1103,13 +1103,13 @@
       "title": "Options développeur",
       "description": "Outils de développement local uniquement ; ne pas activer en production.",
       "simulateToggleLabel": "Simuler les matchs (utiliser des matchs démo pilotés par des bots au lieu de vrais joueurs)",
-      "simulateNote": "Quand activé, les configs MatchZy Enhanced générées incluent \"simulation\": true pour des matchs démo automatisés.",
+      "simulateNote": "When enabled, generated match configs include \"simulation\": true for automated demo matches.",
       "timescaleTitle": "Vitesse de simulation",
       "timescaleDescription": "Contrôle la vitesse d’exécution des matchs simulés. Des valeurs plus élevées accélèrent les bots et le déroulement des rounds. Cela ne s’applique que lorsque la simulation est activée.",
       "timescaleWarning": "Des vitesses au-dessus de 2.0 peuvent être instables et provoquer un comportement étrange des bots, mais conviennent pour des tests rapides.",
       "debugChat": {
-        "label": "Activer les messages de debug MatchZy Enhanced dans le chat",
-        "description": "Quand activé, MatchZy Enhanced affiche des messages de debug supplémentaires (connexions/déconnexions, traces d’événements, etc.) dans le chat. À utiliser uniquement pour le développement et les tests."
+        "label": "Enable debug chat messages",
+        "description": "When enabled, the server prints additional debug messages (like player connects, disconnects, and event traces) into in-game chat. Use this only for development and testing – not during live events."
       }
     },
     "success": {
