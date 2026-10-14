@@ -12,26 +12,14 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { fontDisplay, tokens } from '../../theme/tokens';
 import { paths } from '../../paths';
 import { NoticeItem } from './NoticeItem';
-import { markNoticesRead, onNewNotice, useSocial, type Notice } from './socialStore';
+import { markNoticesRead, onNewNotice, useSocial } from './socialStore';
 import { describeNotice, noticeLine } from './noticeText';
 import { browserNotify } from '../../utils/browserNotify';
+import { NOTICE_FILTERS, matchesFilter, type NoticeFilter } from './noticeFilters';
+
+export { NOTICE_FILTERS, matchesFilter, type NoticeFilter };
 
 const { color } = tokens;
-
-export type NoticeFilter = 'all' | 'you' | 'tournaments' | 'drops';
-
-export function matchesFilter(n: Notice, filter: NoticeFilter): boolean {
-  if (filter === 'you')
-    return (
-      n.kind === 'party_invite' ||
-      n.kind === 'team_invite' ||
-      n.kind === 'friend_request' ||
-      n.kind === 'friend_accepted'
-    );
-  if (filter === 'tournaments') return n.kind === 'tournament';
-  if (filter === 'drops') return n.kind === 'skin' || n.kind === 'highlight';
-  return true;
-}
 
 export function NoticeFilters({
   value,
@@ -41,14 +29,13 @@ export function NoticeFilters({
   onChange: (f: NoticeFilter) => void;
 }) {
   const { t } = useTranslation();
-  const filters: NoticeFilter[] = ['all', 'you', 'tournaments', 'drops'];
   return (
     <Box
       role="group"
       aria-label={t('social.bell.show')}
       sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}
     >
-      {filters.map((f) => (
+      {NOTICE_FILTERS.map((f) => (
         <ButtonBase
           key={f}
           onClick={() => onChange(f)}

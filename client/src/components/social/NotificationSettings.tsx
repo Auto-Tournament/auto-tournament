@@ -30,7 +30,8 @@ type Kind = Notice['kind'];
 const GROUPS: Array<{ group: string; kinds: Kind[] }> = [
   { group: 'you', kinds: ['party_invite', 'team_invite', 'friend_request', 'friend_accepted'] },
   { group: 'tournaments', kinds: ['tournament'] },
-  { group: 'drops', kinds: ['skin', 'highlight'] },
+  { group: 'skins', kinds: ['skin'] },
+  { group: 'clips', kinds: ['highlight'] },
   { group: 'other', kinds: ['news', 'report'] },
 ];
 /** Need an answer: never off. */
