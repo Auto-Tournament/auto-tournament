@@ -1097,5 +1097,9 @@
     "resetVetoBody": "Alle bans, picks og sider så langt slettes, og lagene starter vetoen på nytt. Begge lag ser det i kampchatten.",
     "vetoReset": "Vetoen starter på nytt",
     "vetoResetFailed": "Kunne ikke starte vetoen på nytt"
+  },
+  "addressMismatch": {
+    "open": "Åpne {{host}}",
+    "text": "Du er på {{current}}, men nettstedet er satt opp for {{host}}: Steam-innlogging, e-post og spillserverne bruker den adressen."
   }
 }

@@ -85,6 +85,7 @@ import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedir
 import WelcomeGames from './pages/WelcomeGames';
 import LicenseConsent from './pages/LicenseConsent';
 import { LicenseConsentGate } from './components/license/LicenseConsentGate';
+import { AddressMismatchBanner } from './components/admin/AddressMismatchBanner';
 import { LicenseGate } from './components/license/LicenseGate';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 import { listRouteIntegrations } from './integrations/registry';
@@ -716,6 +717,8 @@ export default function App() {
               <ImpersonationBanner />
               {/* A paid license that isn't paid: a warning for admins, then the "expired" page for everyone. */}
               <LicenseGate />
+              {/* Admins on another address than FRONTEND_BASE_URL (e.g. by IP). */}
+              <AddressMismatchBanner />
               <ModuleGlobalOverlays />
               {/* "What do you play?": redirects to /welcome/games once per
                   account, from whatever page the player lands on. The API

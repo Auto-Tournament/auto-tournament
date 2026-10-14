@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 708 of them, 410 behind auth —
+Every endpoint this API serves — 709 of them, 411 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -776,6 +776,7 @@ Instance-wide settings.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/settings/version` | public |
+| `GET` | `/api/settings/site-url` | admin |
 | `GET` | `/api/settings/discord-bot` | admin |
 | `PUT` | `/api/settings/discord-bot` | admin |
 | `GET` | `/api/settings/api-tokens` | admin |

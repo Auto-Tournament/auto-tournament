@@ -14088,6 +14088,28 @@
         }
       }
     },
+    "/api/settings/site-url": {
+      "get": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "The address this site is set up for (FRONTEND_BASE_URL)",
+        "description": "The admin UI compares it with the address it was opened on, and says so when they differ.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`url` (null when not set)"
+          }
+        }
+      }
+    },
     "/api/settings/version": {
       "get": {
         "tags": [
