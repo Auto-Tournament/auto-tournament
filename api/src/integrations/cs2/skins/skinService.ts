@@ -735,7 +735,10 @@ export const skinService = {
             name: skin.name,
             weapon: skin.weaponName,
             rarity: skin.rarity,
-            image: skin.image,
+            // The full URL: the bell shows it as the notice's picture.
+            image: /^https?:\/\//.test(skin.image)
+              ? skin.image
+              : `${SKIN_IMAGES_BASE}/${skin.image}`,
             source: source.label ?? source.source,
             // Opens the inventory on this skin (InventoryPage reads #skin-<id>).
             url: `/inventory#skin-${row.id}`,
@@ -1163,24 +1166,9 @@ export const skinService = {
     const player = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [
       playerUid,
     ]);
-    if (player && row?.id) {
-      emitSkinsChanged(player.id);
-      await notificationService.notify(
-        player.id,
-        'skin',
-        {
-          choiceId: row.id,
-          name: rolled.map((o) => o.name).join(' · '),
-          weapon: '',
-          rarity: rolled[0]!.rarity,
-          image: rolled[0]!.image,
-          source: source.label ?? source.source,
-          // The inventory shows the choice to pick from.
-          url: '/inventory',
-        },
-        `skin-choice:${row.id}`
-      );
-    }
+    // No bell notice: the choice opens on every page until one is kept, and the
+    // kept skin then gets its own notice (with its picture).
+    if (player && row?.id) emitSkinsChanged(player.id);
     return row?.id ?? 0;
   },
 
@@ -1208,7 +1196,8 @@ export const skinService = {
         weaponName: o.weaponName,
         name: o.name,
         rarity: o.rarity,
-        image: o.image,
+        // Stored as the catalog's file name: the browser needs the full URL.
+        image: /^https?:\/\//.test(o.image) ? o.image : `${SKIN_IMAGES_BASE}/${o.image}`,
         float: o.float,
         pattern: o.pattern,
       })),
