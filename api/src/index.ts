@@ -649,7 +649,13 @@ process.on('uncaughtException', (err) => {
       log.server(`Event logs: ${path.join(DATA_DIR, 'logs', 'events')} (30 day retention)`);
       log.server('='.repeat(60));
 
-      reportServiceTokens();
+      // API tokens made in Settings, next to the env ones (services/apiTokenService).
+      void import('./services/apiTokenService')
+        .then(({ apiTokenService }) => apiTokenService.load())
+        .then(() => reportServiceTokens())
+        .catch((error) =>
+          log.warn('[Startup] Could not load the API tokens made in Settings', { error })
+        );
       reportEventAuth();
       reportCompatConfig();
       // Ready Up compatibility, pulled from COMPAT_FEED_URL every 5 minutes

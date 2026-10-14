@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { SiteNameCard } from '../components/settings/SiteNameCard';
 import { EmailSettingsCard } from '../components/settings/EmailSettingsCard';
+import { ApiTokensCard } from '../components/settings/ApiTokensCard';
 import { WebhooksCard } from '../components/settings/WebhooksCard';
 import { MatchmakingSettingsCard } from '../components/settings/MatchmakingSettingsCard';
 import { AdminNoticesCard } from '../components/settings/AdminNoticesCard';
@@ -333,6 +334,7 @@ export default function Settings() {
     { key: 'news', body: <NewsSettingsCard /> },
     { key: 'adminnotices', body: <AdminNoticesCard /> },
     { key: 'webhooks', body: <WebhooksCard /> },
+    { key: 'apitokens', body: <ApiTokensCard /> },
     ...(isDev || experimental.length > 0 ? [{ key: 'advanced', body: advancedCard }] : []),
   ].map((section) => ({
     ...section,

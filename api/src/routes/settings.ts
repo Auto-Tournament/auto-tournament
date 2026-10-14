@@ -1,6 +1,7 @@
 import { readHighlightSettings } from '../services/highlights/settings';
 import { Router, Request, Response } from 'express';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth, requestActorId, type AuthedRequest } from '../middleware/auth';
+import { apiTokenService, ApiTokenError, type StoredTokenScope } from '../services/apiTokenService';
 import { settingsService } from '../services/settingsService';
 import { resolveTournamentId } from '../utils/tournamentRow';
 import { log } from '../utils/logger';
@@ -80,6 +81,81 @@ const mapSettingsResponse = async () => {
   };
 };
 
+/**
+ * @openapi
+ * /api/settings/api-tokens:
+ *   get:
+ *     tags: [Settings]
+ *     summary: API tokens made in Settings (never their secrets)
+ *     security: [{ BearerAuth: [] }]
+ *     responses:
+ *       200: { description: The active tokens }
+ *   post:
+ *     tags: [Settings]
+ *     summary: Make an API token; the secret is in this answer only
+ *     description: A signed-in admin only; an API token cannot make tokens.
+ *     security: [{ BearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               label: { type: string, description: '1-32 letters, digits, - or _' }
+ *               scope: { type: string, enum: [admin, readonly] }
+ *     responses:
+ *       201: { description: The token and its secret }
+ *       400: { description: Not a valid name or scope }
+ *       403: { description: Called with an API token }
+ */
+router.get('/api-tokens', async (_req: Request, res: Response) => {
+  return res.json({ success: true, tokens: await apiTokenService.list() });
+});
+
+router.post('/api-tokens', async (req: Request, res: Response) => {
+  // A leaked token must not be able to make more of itself.
+  if ((req as AuthedRequest).serviceToken) {
+    return res
+      .status(403)
+      .json({ success: false, error: 'Sign in as an admin to make API tokens.' });
+  }
+  try {
+    const { label, scope } = (req.body ?? {}) as { label?: unknown; scope?: unknown };
+    const made = await apiTokenService.create(
+      typeof label === 'string' ? label : '',
+      String(scope ?? '') as StoredTokenScope,
+      requestActorId(req)
+    );
+    return res.status(201).json({ success: true, ...made });
+  } catch (error) {
+    if (error instanceof ApiTokenError) {
+      return res.status(400).json({ success: false, error: error.message });
+    }
+    log.error('Making an API token failed', error as Error);
+    return res.status(500).json({ success: false, error: 'Could not make the token' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/settings/api-tokens/{id}:
+ *   delete:
+ *     tags: [Settings]
+ *     summary: Revoke an API token made in Settings
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: path, name: id, required: true, schema: { type: integer } }
+ *     responses:
+ *       200: { description: Revoked }
+ *       404: { description: No such active token }
+ */
+router.delete('/api-tokens/:id', async (req: Request, res: Response) => {
+  const ok = await apiTokenService.revoke(Number(req.params.id), requestActorId(req));
+  if (!ok) return res.status(404).json({ success: false, error: 'No such token' });
+  return res.json({ success: true });
+});
+
 router.get('/', async (_req: Request, res: Response) => {
   return res.json({
     success: true,
@@ -125,4 +201,3 @@ router.put('/', async (req: Request, res: Response) => {
 });
 
 export default router;
-

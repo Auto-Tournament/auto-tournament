@@ -1053,6 +1053,20 @@ export function getSchemaSQL(): string {
     -- (a stuck match, a crashed server, a failing recorder). One feed for
     -- every admin; a repeat of an open notice (same dedupe_key) counts up
     -- instead of adding a row. resolved_at: it fixed itself or was dismissed.
+    -- API tokens an admin made in Settings (services/apiTokenService): only the
+    -- SHA-256 of the secret is kept. scope: 'admin' | 'readonly'.
+    CREATE TABLE IF NOT EXISTS api_tokens (
+      id SERIAL PRIMARY KEY,
+      label TEXT NOT NULL,
+      scope TEXT NOT NULL,
+      token_hash TEXT NOT NULL UNIQUE,
+      fingerprint TEXT NOT NULL,
+      created_by TEXT,
+      created_at INTEGER NOT NULL,
+      last_used_at INTEGER,
+      revoked_at INTEGER
+    );
+
     CREATE TABLE IF NOT EXISTS admin_notices (
       id SERIAL PRIMARY KEY,
       kind TEXT NOT NULL,

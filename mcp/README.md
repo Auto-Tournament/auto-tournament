@@ -1,0 +1,84 @@
+# Auto Tournament MCP server
+
+Run your Auto Tournament site from Claude (or any MCP client): tournaments,
+matches, teams and servers through the platform's API, without a browser.
+
+## Set up
+
+1. In the app, open **Settings → API tokens** and make a token.
+   - **Read only** lets the client look: tournaments, matches, logs, servers.
+   - **Admin** also lets it act: start, hold, set winners, restart servers.
+
+   The token is shown once. Keep it like a password.
+
+2. Build the server (Node 20 or newer):
+
+   ```bash
+   cd mcp && npm install && npm run build
+   ```
+
+3. Add it to Claude Code:
+
+   ```bash
+   claude mcp add auto-tournament \
+     -e AT_URL=https://tournament.example.com \
+     -e AT_TOKEN=att_... \
+     -- node /path/to/repo/mcp/dist/index.js
+   ```
+
+   Any other MCP client takes the same command and the two variables.
+
+## Tools
+
+Reading (safe to allow everywhere):
+
+| Tool                                 | What it gives                                                                                                 |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `health`                             | Version, modules, the fleet summary and the admin notices                                                     |
+| `tournament_current`                 | The running tournament, with its bracket on request                                                           |
+| `tournaments_list`, `templates_list` | Every tournament; saved templates                                                                             |
+| `matches_list`, `match`, `match_log` | Matches with status and score; one match with its live Ready Up state; its event log and server console lines |
+| `teams_list`, `team`, `players_find` | Teams, rosters and players                                                                                    |
+| `servers`                            | csm machines with their servers, and the Ready Up fleet                                                       |
+| `api_get`                            | Any other `GET /api/...` path (see `/api-docs`)                                                               |
+
+Acting (each its own tool, so you can allow them one by one):
+
+| Tool                                                        | What it does                                                                                  |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `tournament_create`                                         | Make the tournament, from a template or from scratch; `fillBots` puts CS2 bots in empty slots |
+| `tournament_update`                                         | Change it before it starts                                                                    |
+| `tournament_start`, `tournament_pause`, `tournament_resume` | Start; hold and resume the bracket                                                            |
+| `tournament_end`, `tournament_archive`                      | End it (give its name to confirm); archive it                                                 |
+| `match_set_winner`, `match_restart`, `match_cancel`         | Decide, restart or cancel a match                                                             |
+| `match_move_server`, `match_hold`, `match_restore_round`    | Give it another server; hold or release it; restore a round                                   |
+| `team_create`, `team_update`                                | Make a team; change its name, tag or roster                                                   |
+| `server_command`                                            | Start, stop or restart a server on a csm machine                                              |
+| `server_console`, `say`                                     | Run a console line (root admin only, audited); say something in game                          |
+| `api_write`                                                 | Any other `POST`/`PUT`/`PATCH`/`DELETE /api/...`                                              |
+
+The platform checks every call the way it checks the app: a read-only token
+is refused writes, and the same rules apply (no winner for a pending match,
+no archiving a running tournament). The tool hands the refusal back as is.
+
+## Allowing tools in Claude Code
+
+Reads can be allowed outright and writes left to ask, in
+`.claude/settings.json`:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "mcp__auto-tournament__health",
+      "mcp__auto-tournament__tournament_current",
+      "mcp__auto-tournament__matches_list",
+      "mcp__auto-tournament__match",
+      "mcp__auto-tournament__match_log",
+      "mcp__auto-tournament__servers"
+    ]
+  }
+}
+```
+
+Revoke a token in **Settings → API tokens** and it stops working at once.

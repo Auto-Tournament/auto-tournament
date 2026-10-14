@@ -420,6 +420,10 @@
         "name": "Integrasjoner",
         "hint": "Webhooks"
       },
+      "apitokens": {
+        "name": "API-nøkler",
+        "hint": "For skript og MCP"
+      },
       "advanced": {
         "name": "Avansert",
         "hint": "Eksperimentelt, utvikler"
@@ -806,5 +810,34 @@
     "groupHelp": "Velg gruppen som skal rendre kampen. Deaktiverte grupper venter til de aktiveres.",
     "groupDisabled": "Deaktivert",
     "notCs2Demo": "{{name}} er ikke en CS2-demo (CS:GO-demoer kan ikke importeres)."
+  },
+  "apiTokens": {
+    "title": "API-nøkler",
+    "hint": "For skript, botter og Auto Tournaments MCP-server. En lesenøkkel kan bare lese; en adminnøkkel kan det en admin kan. Hemmeligheten vises bare én gang, når nøkkelen lages.",
+    "line": "{{scope}} · {{fingerprint}} · sist brukt {{used}}",
+    "never": "aldri",
+    "none": "Ingen API-nøkler ennå.",
+    "name": "Navn",
+    "nameHelp": "1–32 bokstaver, tall, - eller _",
+    "scopeLabel": "Tilgang",
+    "scope": {
+      "readonly": "Bare lese",
+      "admin": "Admin"
+    },
+    "make": "Lag nøkkel",
+    "madeTitle": "Nøkkel «{{label}}»",
+    "madeHelp": "Kopier den nå: den vises bare denne ene gangen. Lim den inn der skriptet eller MCP-serveren leser den (AT_TOKEN).",
+    "copy": "Kopier nøkkel",
+    "copied": "Kopiert",
+    "done": "Ferdig",
+    "revoke": "Trekk tilbake {{label}}",
+    "revokeTitle": "Trekke tilbake «{{label}}»?",
+    "revokeHelp": "Alt som bruker den slutter å virke med en gang.",
+    "revokeConfirm": "Trekk tilbake",
+    "revoked": "Trakk tilbake {{label}}",
+    "cancel": "Avbryt",
+    "loadFailed": "Kunne ikke laste API-nøklene",
+    "makeFailed": "Kunne ikke lage nøkkelen",
+    "revokeFailed": "Kunne ikke trekke tilbake nøkkelen"
   }
 }
