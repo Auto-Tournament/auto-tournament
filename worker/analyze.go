@@ -59,6 +59,9 @@ type ReplayKill struct {
 	NoScope       bool    `json:"noScope,omitempty"`
 	AttackerBlind bool    `json:"attackerBlind,omitempty"`
 	InAir         bool    `json:"inAir,omitempty"`
+	// The exact knife for a knife kill ("knife_karambit"), for the kill feed's icon;
+	// Weapon stays "Knife" (stats and highlights group knives together).
+	Item string `json:"item,omitempty"`
 	// For the highlights' crowd (cheers.go): the victim was in the air, how
 	// many seconds the killer had them in view (-1: not in view, through a
 	// wall or smoke), and whether the kill ended its round.
@@ -412,7 +415,8 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		}
 		kills = append(kills, k)
 		flags := ReplayKill{AssistedFlash: e.AssistedFlash, NoScope: e.NoScope, AttackerBlind: e.AttackerBlind,
-			InAir: e.Killer != nil && e.Killer.IsAirborne(), VictimInAir: e.Victim.IsAirborne(), SeenFor: -1}
+			InAir: e.Killer != nil && e.Killer.IsAirborne(), VictimInAir: e.Victim.IsAirborne(), SeenFor: -1,
+			Item: knifeItem(e.Weapon)}
 		// How long the killer had the victim in view: a snap shot is a split second.
 		if e.Killer != nil {
 			key := [2]uint64{e.Killer.SteamID64, e.Victim.SteamID64}
@@ -421,6 +425,8 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 			}
 		}
 		killFlags = append(killFlags, flags)
+		last := &kills[len(kills)-1]
+		last.NoScope, last.AttackerBlind, last.InAir = flags.NoScope, flags.AttackerBlind, flags.InAir
 	})
 
 	p.RegisterEventHandler(func(e events.WeaponFire) {
@@ -751,7 +757,7 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		if i < len(killFlags) {
 			f := killFlags[i]
 			rk.AssistedFlash, rk.NoScope, rk.AttackerBlind, rk.InAir = f.AssistedFlash, f.NoScope, f.AttackerBlind, f.InAir
-			rk.VictimInAir, rk.SeenFor = f.VictimInAir, f.SeenFor
+			rk.VictimInAir, rk.SeenFor, rk.Item = f.VictimInAir, f.SeenFor, f.Item
 		}
 		// The kill that ended its round: the round's last kill, won by elimination.
 		for _, r := range rounds {
@@ -896,4 +902,26 @@ func frameTick(f [2]any) int {
 		return int(t)
 	}
 	return 0
+}
+
+// knifeDefs: CS2's knife item definition indexes, by the icon (and class) name.
+var knifeDefs = map[uint64]string{
+	42: "knife", 59: "knife_t", 500: "bayonet", 503: "knife_css", 505: "knife_flip", 506: "knife_gut",
+	507: "knife_karambit", 508: "knife_m9_bayonet", 509: "knife_tactical", 512: "knife_falchion",
+	514: "knife_survival_bowie", 515: "knife_butterfly", 516: "knife_push", 517: "knife_cord",
+	518: "knife_canis", 519: "knife_ursus", 520: "knife_gypsy_jackknife", 521: "knife_outdoor",
+	522: "knife_stiletto", 523: "knife_widowmaker", 525: "knife_skeleton", 526: "knife_kukri",
+}
+
+// knifeItem is the exact knife of a knife kill ("knife_karambit"), from the
+// weapon entity's item definition index; "" for anything else or unknown.
+func knifeItem(w *common.Equipment) string {
+	if w == nil || w.Type != common.EqKnife || w.Entity == nil {
+		return ""
+	}
+	v, ok := w.Entity.PropertyValue("m_AttributeManager.m_Item.m_iItemDefinitionIndex")
+	if !ok {
+		return ""
+	}
+	return knifeDefs[uint64(v.UInt32())]
 }

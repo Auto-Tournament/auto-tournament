@@ -48,6 +48,22 @@ const kill = (
 const rounds = [{ number: 1, startTick: 0, endTick: 20000, winner: 'CT', reason: 't_killed' }];
 
 test.describe('Highlight moments', () => {
+  test(
+    'a no-scope, blind or in-air kill scores higher, as CS2 marks them',
+    { tag: ['@api'] },
+    () => {
+      const plain = pickMoments({ kills: [kill(1000, A, B1), kill(1100, A, B2)], rounds } as never);
+      const marked = pickMoments({
+        kills: [
+          kill(1000, A, B1, { noScope: true }),
+          kill(1100, A, B2, { attackerBlind: true, inAir: true }),
+        ],
+        rounds,
+      } as never);
+      expect(marked[0]!.score - plain[0]!.score).toBe(15 + 20 + 10);
+    }
+  );
+
   test('a triple kill is a moment; a lone kill is not', { tag: ['@api'] }, () => {
     const kills = [
       kill(500, A2, B4),

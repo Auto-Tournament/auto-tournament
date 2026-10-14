@@ -88,7 +88,7 @@ func TestFeedKillsFromReplay(t *testing.T) {
 		Frames:  [][2]any{{100, []any{[6]float64{0, 0, 0, 100, 3, 0}, [6]float64{0, 0, 0, 100, 2, 0}, [6]float64{0, 0, 0, 100, 3, 0}}}},
 		Kills: []ReplayKill{
 			{Tick: 120, Attacker: &me, Victim: them, Weapon: "USP-S", Headshot: true, Assister: &mate},
-			{Tick: 130, Attacker: &them, Victim: mate, Weapon: "AK-47"},
+			{Tick: 130, Attacker: &them, Victim: mate, Weapon: "Knife", Item: "knife_karambit"},
 			{Tick: 900, Attacker: &me, Victim: them, Weapon: "USP-S"},
 		},
 	}
@@ -101,5 +101,9 @@ func TestFeedKillsFromReplay(t *testing.T) {
 	}
 	if got[1].Own || got[1].KillerMine || !got[1].VictimMine {
 		t.Fatalf("second = %+v", got[1])
+	}
+	// A knife kill names the knife it was, for its icon.
+	if got[1].Item != "knife_karambit" {
+		t.Fatalf("knife item = %q", got[1].Item)
 	}
 }

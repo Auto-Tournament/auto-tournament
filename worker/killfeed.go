@@ -60,6 +60,7 @@ type feedKill struct {
 	Victim                  string
 	KillerMine, VictimMine  bool // on the clip's player's team
 	Weapon                  string
+	Item                    string // the exact knife ("knife_karambit"), when known
 	Headshot, Penetrated    bool
 	Smoke, NoScope, Blind   bool
 	InAir, FlashAssist, Own bool // Own: the clip's player killed or died
@@ -210,7 +211,9 @@ func drawFeedRow(kl feedKill, nameFace font.Face, icons *iconSet, px func(float6
 			parts = append(parts, part{text: kl.Assister, ink: side(kl.KillerMine)})
 		}
 	}
-	if name, ok := weaponIcon[kl.Weapon]; ok && icons.icon("weapons", name, weaponH) != nil {
+	if kl.Item != "" && icons.icon("weapons", kl.Item, weaponH) != nil {
+		add("weapons", kl.Item, weaponH) // the knife it really was (Karambit, not the default)
+	} else if name, ok := weaponIcon[kl.Weapon]; ok && icons.icon("weapons", name, weaponH) != nil {
 		add("weapons", name, weaponH)
 	} else if kl.Killer == "" || kl.Weapon == "World" || kl.Weapon == "world" {
 		add("deathnotice", "icon_suicide", weaponH)
@@ -378,6 +381,7 @@ func feedKillsFor(rp *Replay, player string, from, to int) []feedKill {
 		kl := feedKill{
 			Tick: k.Tick, Victim: name(k.Victim), Weapon: k.Weapon, Headshot: k.Headshot, Penetrated: k.Penetrated,
 			Smoke: k.ThroughSmoke, NoScope: k.NoScope, Blind: k.AttackerBlind, InAir: k.InAir, FlashAssist: k.AssistedFlash,
+			Item: k.Item,
 		}
 		kl.VictimMine = mySide != 0 && sideAt(rp, index, k.Victim, k.Tick) == mySide
 		if k.Attacker != nil && *k.Attacker != k.Victim {

@@ -39,16 +39,20 @@ type Kill struct {
 	Victim   string  `json:"victim"`
 	// VictimBot: a bot died (bot-filled matches). Victim is then "bot:<name>"
 	// and the kill counts for the human who made it, never as a death.
-	VictimBot    bool        `json:"victimBot,omitempty"`
-	Assister     *string     `json:"assister"`
-	Weapon       string      `json:"weapon"`
-	Headshot     bool        `json:"headshot"`
-	Penetrated   bool        `json:"penetrated"`
-	ThroughSmoke bool        `json:"throughSmoke"`
-	AttackerSide *string     `json:"attackerSide"`
-	VictimSide   *string     `json:"victimSide"`
-	AttackerPos  *[2]float64 `json:"attackerPos"`
-	VictimPos    [2]float64  `json:"victimPos"`
+	VictimBot    bool    `json:"victimBot,omitempty"`
+	Assister     *string `json:"assister"`
+	Weapon       string  `json:"weapon"`
+	Headshot     bool    `json:"headshot"`
+	Penetrated   bool    `json:"penetrated"`
+	ThroughSmoke bool    `json:"throughSmoke"`
+	// CS2's kill feed marks, for the highlights' scoring.
+	NoScope       bool        `json:"noScope,omitempty"`
+	AttackerBlind bool        `json:"attackerBlind,omitempty"`
+	InAir         bool        `json:"inAir,omitempty"`
+	AttackerSide  *string     `json:"attackerSide"`
+	VictimSide    *string     `json:"victimSide"`
+	AttackerPos   *[2]float64 `json:"attackerPos"`
+	VictimPos     [2]float64  `json:"victimPos"`
 	// Opening: the round's first kill.
 	Opening bool `json:"opening"`
 	// Trade: this kill avenged a teammate who died in the last five seconds.
