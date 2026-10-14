@@ -22,6 +22,7 @@ import { skinService } from '../../skins/skinService';
 import { onFleetServerReady, setFleetWelcomeRevs } from '../service';
 import { adminsOnHello, syncAdmins } from './admins';
 import { pluginsOnHello } from './controls';
+import { matchRunsIn } from './pluginSets';
 import { applyAnsweredUpdate } from './matchUpdate';
 import { settingsOnHello } from './settings';
 import { readList } from './store';
@@ -60,7 +61,9 @@ export function startFleetPush(): void {
 
     onFleetServerReady(async (serverId, hello) => {
       try {
-        await adminsOnHello(serverId, hello.admins_rev);
+        // The admin list lives in Ready Up's match plugin: a server without it
+        // (practice, tryout) answers admins.set with unknown_type.
+        if (matchRunsIn(hello.plugins_state)) await adminsOnHello(serverId, hello.admins_rev);
       } catch (error) {
         log.warn(`[FLEET] ${serverId}: admins.set after hello failed: ${(error as Error).message}`);
       }

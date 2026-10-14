@@ -29,6 +29,7 @@ import {
   pluginsStateOf,
   runsFleetCmds,
   type StoredPlugins,
+  matchPluginDisabled,
 } from './pluginSets';
 import { readPrefs, recordPush, writePref } from './store';
 import { TRYOUT_HOME_CVARS, TRYOUT_HOME_MAP } from '../../skins/tryoutMap';
@@ -250,6 +251,9 @@ async function linkCreatedOnce(serverId: string): Promise<void> {
     const created = await createdPluginSet(serverId);
     if (!created.created) return;
     if (created.set && !created.set.plugins.includes('match')) return;
+  } else if (await matchPluginDisabled(serverId)) {
+    // Enrolled again with match off (it was a practice or tryout server): not a match server.
+    return;
   }
   const seen = await db.queryOneAsync<{ id: string }>(
     'SELECT id FROM cs2_servers WHERE id = ? OR fleet_server_id = ?',

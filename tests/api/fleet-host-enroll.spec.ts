@@ -15,7 +15,8 @@ import {
  * Up on them has credentials this platform does not know, so the platform
  * sends csm `server.enroll` with a new fleet key (csm writes it into each
  * server's fleet.cfg and restarts it), and the server that enrolls with it
- * joins the match pool on its first hello. Only csm with the
+ * joins the match pool on its first hello, unless its Ready Up reports
+ * match off (a practice server). Only csm with the
  * `servers.enroll` capability gets it.
  *
  * @tag api
@@ -112,6 +113,30 @@ test.describe('Fleet: a linked machine enrolls its servers', () => {
         await request.delete(`/api/fleet/servers/${ru.body.server_id}/link`, {
           headers: getAuthHeader(),
         });
+      }
+
+      // server-2 was a practice server (match off): it enrolls, but is no match server.
+      const practiceInstall = newInstallId();
+      const practice = await enroll(request, { key: payload.enroll_key }, practiceInstall, {
+        name: 'relinked-2',
+      });
+      expect(practice.status, JSON.stringify(practice.body)).toBe(201);
+      const pclient = await FleetTestClient.connect(practice.body.token);
+      try {
+        await pclient.handshake(practice.body.server_id, practiceInstall, {
+          stream: { id: `relink-${practice.body.server_id}`, last_tx_seq: 0, last_rx_seq: 0 },
+          plugins_state: {
+            installed: ['fleet', 'match', 'practice', 'essentials'],
+            disabled: ['match'],
+          },
+        });
+        await new Promise((r) => setTimeout(r, 1500));
+        const row = await request.get(`/api/servers/${practice.body.server_id}`, {
+          headers: getAuthHeader(),
+        });
+        expect(row.status()).toBe(404);
+      } finally {
+        pclient.close();
       }
     } finally {
       csm.close();

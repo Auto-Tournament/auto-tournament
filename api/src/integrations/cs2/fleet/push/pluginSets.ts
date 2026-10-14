@@ -218,16 +218,39 @@ export function pluginsSetFor(
   return out;
 }
 
-/** The server's stored plugin set turns match off: it is not for matches (a practice server). */
+/** A hello's plugins_state says match runs (true when it does not say: an older Ready Up). */
+export function matchRunsIn(
+  state: { installed?: string[]; disabled?: string[] } | null | undefined
+): boolean {
+  if (!state || !Array.isArray(state.installed)) return true;
+  return state.installed.includes('match') && !(state.disabled ?? []).includes('match');
+}
+
+/**
+ * The server is not for matches (a practice server): its stored plugin set
+ * turns match off, or, with no set stored here (a server that came with its
+ * plugins, e.g. a machine linked again), its Ready Up reports match off.
+ */
 export async function matchPluginDisabled(fleetServerId: string): Promise<boolean> {
   const row = await db.queryOneAsync<{ plugins: string | null }>(
     'SELECT plugins FROM cs2_fleet_server_prefs WHERE server_id = ?',
     [fleetServerId]
   );
-  if (!row?.plugins) return false;
+  if (row?.plugins) {
+    try {
+      const stored = JSON.parse(row.plugins) as Partial<StoredPlugins>;
+      return Array.isArray(stored.disable) && stored.disable.includes('match');
+    } catch {
+      return false;
+    }
+  }
+  const server = await db.queryOneAsync<{ plugins_state: string | null }>(
+    'SELECT plugins_state FROM cs2_fleet_servers WHERE id = ?',
+    [fleetServerId]
+  );
+  if (!server?.plugins_state) return false;
   try {
-    const stored = JSON.parse(row.plugins) as Partial<StoredPlugins>;
-    return Array.isArray(stored.disable) && stored.disable.includes('match');
+    return !matchRunsIn(JSON.parse(server.plugins_state));
   } catch {
     return false;
   }
