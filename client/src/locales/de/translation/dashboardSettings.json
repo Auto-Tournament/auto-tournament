@@ -637,7 +637,14 @@
       "change": "Ändern",
       "changeTitle": "Nutzung dieser Instanz ändern",
       "changeNote": "Wähle erneut und tippe I AGREE. Die Änderung wird mit Datum und deinem Konto gespeichert.",
-      "commercialNoKey": "Diese Instanz wird kommerziell genutzt, also brauchst du eine Lizenz. Kopiere deinen Schlüssel aus <consoleLink>deinen Lizenzen in der Auto-Tournament-Konsole</consoleLink> und füge ihn unten ein. Solange er fehlt, wird nichts gesperrt."
+      "commercialNoKey": "Diese Instanz wird kommerziell genutzt, also brauchst du eine Lizenz. Kopiere deinen Schlüssel aus <consoleLink>deinen Lizenzen in der Auto-Tournament-Konsole</consoleLink> und füge ihn unten ein. Solange er fehlt, wird nichts gesperrt.",
+      "readHeading": "Before you accept, read these and tick each one:",
+      "readItem": "I have read",
+      "readLinks": {
+        "license": "the full license",
+        "rules": "the rules for commercial use",
+        "pricing": "the pricing"
+      }
     },
     "checkin": {
       "last": "Letzte Lizenzmeldung: {{time}}",
