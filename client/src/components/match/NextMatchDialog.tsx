@@ -92,7 +92,7 @@ export function NextMatchDialog({
     open.kind === 'veto_soon'
       ? t('nextMatch.soonTitle', 'Your next match')
       : open.kind === 'veto_turn'
-        ? t('nextMatch.vetoTurnTitle', 'Your turn in the veto')
+        ? t('nextMatch.vetoTurnTitle', 'Your turn to veto')
         : open.kind === 'match_ready'
           ? t('nextMatch.readyTitle', 'Your match is ready')
           : t('nextMatch.vetoOpenTitle', 'Your next match is ready');
@@ -103,7 +103,10 @@ export function NextMatchDialog({
           'A short break first. The map veto opens when the countdown ends; you will hear it.'
         )
       : open.kind === 'veto_turn'
-        ? t('nextMatch.vetoTurnBody', 'Pick or ban before the timer runs out.')
+        ? t(
+            'nextMatch.vetoTurnBody',
+            'Go to the match and ban or pick a map. If the time runs out, one is chosen for your team at random.'
+          )
         : open.kind === 'match_ready'
           ? t('nextMatch.readyBody', 'The server is ready: join it now.')
           : t('nextMatch.vetoOpenBody', 'The map veto is open. Go to the match to ban and pick.');
@@ -140,6 +143,9 @@ export function NextMatchDialog({
           )
         )}
         {open.kind === 'veto_soon' && opensAt && <OpensCountdown opensAt={opensAt} />}
+        {(open.kind === 'veto_turn' || open.kind === 'veto_open') && (
+          <TurnCountdown slug={open.slug} />
+        )}
         <Typography color="text.secondary">{body}</Typography>
       </DialogContent>
       <DialogActions>
@@ -176,6 +182,55 @@ function MatchupTeam({ side, label }: { side: MatchupSide; label: string }) {
       <Typography sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>{side.name}</Typography>
       <Typography variant="caption" color="text.secondary">
         {label}
+      </Typography>
+    </Box>
+  );
+}
+
+/**
+ * The veto turn's time left, large, ticking (the veto's turnDeadline from
+ * /api/veto/:slug); red in the last 10 seconds. Nothing without a time limit.
+ */
+function TurnCountdown({ slug }: { slug: string }) {
+  const { t } = useTranslation();
+  const [deadline, setDeadline] = React.useState<number | null>(null);
+  const [now, setNow] = React.useState(() => Date.now());
+  React.useEffect(() => {
+    let alive = true;
+    void fetch(`/api/veto/${encodeURIComponent(slug)}`, { credentials: 'same-origin' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { veto?: { turnDeadline?: string }; turnDeadline?: string } | null) => {
+        const raw = d?.veto?.turnDeadline ?? d?.turnDeadline;
+        const at = raw ? Date.parse(raw) : NaN;
+        if (alive && Number.isFinite(at)) setDeadline(at);
+      })
+      .catch(() => undefined);
+    const id = window.setInterval(() => setNow(Date.now()), 250);
+    return () => {
+      alive = false;
+      window.clearInterval(id);
+    };
+  }, [slug]);
+  if (deadline === null) return null;
+  const left = Math.max(0, Math.ceil((deadline - now) / 1000));
+  const clock = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+  return (
+    <Box sx={{ textAlign: 'center', my: 1.5 }} data-testid="next-match-turn-countdown">
+      <Typography
+        sx={{
+          fontSize: '3rem',
+          fontWeight: 800,
+          lineHeight: 1,
+          fontVariantNumeric: 'tabular-nums',
+          color: left <= 10 ? 'error.main' : 'text.primary',
+        }}
+      >
+        {clock}
+      </Typography>
+      <Typography variant="caption" color="text.secondary">
+        {left > 0
+          ? t('nextMatch.turnLeft', 'left to ban or pick')
+          : t('nextMatch.turnOver', 'Time is up: a map is chosen for your team')}
       </Typography>
     </Box>
   );

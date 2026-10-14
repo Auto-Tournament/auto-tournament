@@ -165,13 +165,15 @@
     "opensIn": "Veto opens in {{clock}}",
     "vetoOpenTitle": "Your next match is ready",
     "vetoOpenBody": "The map veto is open. Go to the match to ban and pick.",
-    "vetoTurnTitle": "Your turn in the veto",
-    "vetoTurnBody": "Pick or ban before the timer runs out.",
+    "vetoTurnTitle": "Your turn to veto",
+    "vetoTurnBody": "Go to the match and ban or pick a map. If the time runs out, one is chosen for your team at random.",
     "readyTitle": "Your match is ready",
     "readyBody": "The server is ready. Join it now.",
     "later": "Later",
     "go": "Go to match",
     "yourTeam": "Your team",
-    "opponent": "Opponent"
+    "opponent": "Opponent",
+    "turnLeft": "left to ban or pick",
+    "turnOver": "Time is up: a map is chosen for your team"
   }
 }

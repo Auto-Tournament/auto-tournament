@@ -166,12 +166,14 @@
     "vetoOpenTitle": "Neste kamp er klar",
     "vetoOpenBody": "Kartvetoen er åpen. Gå til kampen for å bannlyse og velge kart.",
     "vetoTurnTitle": "Din tur i vetoen",
-    "vetoTurnBody": "Velg eller bannlys før tiden er ute.",
+    "vetoTurnBody": "Gå til kampen og bannlys eller velg et kart. Går tiden ut, velges et tilfeldig kart for laget ditt.",
     "readyTitle": "Kampen din er klar",
     "readyBody": "Serveren er klar. Koble til nå.",
     "later": "Senere",
     "go": "Gå til kampen",
     "yourTeam": "Laget ditt",
-    "opponent": "Motstander"
+    "opponent": "Motstander",
+    "turnLeft": "igjen til å bannlyse eller velge",
+    "turnOver": "Tiden er ute: et kart velges for laget ditt"
   }
 }
