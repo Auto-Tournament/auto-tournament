@@ -874,7 +874,9 @@
     "scheduleSoon": "Organizator nie opublikował jeszcze harmonogramu.",
     "checkInWindow": "Check-in",
     "mapPoolSoonTitle": "Pula map",
-    "mapPoolSoon": "Organizator nie wybrał jeszcze map."
+    "mapPoolSoon": "Organizator nie wybrał jeszcze map.",
+    "adminBanner": "You are an admin of this tournament. Running it happens in Manage; this page is what players see.",
+    "manageTournament": "Manage tournament"
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",

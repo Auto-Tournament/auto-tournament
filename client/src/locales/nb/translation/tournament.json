@@ -872,7 +872,9 @@
     "scheduleSoon": "Arrangøren har ikke publisert timeplanen ennå.",
     "checkInWindow": "Innsjekk",
     "mapPoolSoonTitle": "Kartpool",
-    "mapPoolSoon": "Arrangøren har ikke valgt kartene ennå."
+    "mapPoolSoon": "Arrangøren har ikke valgt kartene ennå.",
+    "adminBanner": "Du er admin for denne turneringen. Den kjøres fra Administrer; denne siden er det spillerne ser.",
+    "manageTournament": "Administrer turneringen"
   },
   "roundStatusCard": {
     "roundOf": "Runde {{current}} av {{total}}",

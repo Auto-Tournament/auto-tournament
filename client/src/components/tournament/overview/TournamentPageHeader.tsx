@@ -8,7 +8,7 @@ import { GameMark } from '../../common/GameMark';
 import { useSetupGames } from '../setup/games';
 import { usePublicBracket } from '../../../hooks/usePublicBracket';
 import { MATCH_FORMATS } from '../../../constants/tournament';
-import { paths, tournamentTabPath, type TournamentTab } from '../../../paths';
+import { manageTournamentPath, tournamentTabPath, type TournamentTab } from '../../../paths';
 import { tokens, textSize, fontDisplay, mono, radii, withAlpha } from '../../../theme/tokens';
 
 const { color } = tokens;
@@ -63,7 +63,15 @@ export function tournamentDates(tournament: Tournament, language: string): strin
 }
 
 /** A small rounded tag in the hero card: game, format, series. */
-function HeroPill({ icon, children, testId }: { icon?: ReactNode; children: ReactNode; testId?: string }) {
+function HeroPill({
+  icon,
+  children,
+  testId,
+}: {
+  icon?: ReactNode;
+  children: ReactNode;
+  testId?: string;
+}) {
   return (
     <Box
       component="span"
@@ -158,7 +166,13 @@ const tabLinkSx = {
  * to a strip with the name and a live mark, so the match gets the room. The
  * tabs sit under either.
  */
-export function TournamentPageHeader({ tournament, tab, tabs, moduleTabs = [], showManage }: TournamentPageHeaderProps) {
+export function TournamentPageHeader({
+  tournament,
+  tab,
+  tabs,
+  moduleTabs = [],
+  showManage,
+}: TournamentPageHeaderProps) {
   const { t } = useTranslation();
   const isLive = tournament.status === 'in_progress';
   // A finished tournament with a champion puts the champion on the banner.
@@ -172,9 +186,16 @@ export function TournamentPageHeader({ tournament, tab, tabs, moduleTabs = [], s
         .sort((a, b) => (b.round ?? 0) - (a.round ?? 0) || Number(b.id) - Number(a.id))[0]
     : undefined;
   const championIsTeam1 = final?.team1?.id === tournament.winner?.id;
-  const finalOpponent = final ? (championIsTeam1 ? final.team2?.name : final.team1?.name) : undefined;
+  const finalOpponent = final
+    ? championIsTeam1
+      ? final.team2?.name
+      : final.team1?.name
+    : undefined;
   const finalLine =
-    final && finalOpponent && typeof final.team1Score === 'number' && typeof final.team2Score === 'number'
+    final &&
+    finalOpponent &&
+    typeof final.team1Score === 'number' &&
+    typeof final.team2Score === 'number'
       ? t('results.wonFinal', {
           a: Math.max(final.team1Score, final.team2Score),
           b: Math.min(final.team1Score, final.team2Score),
@@ -189,12 +210,58 @@ export function TournamentPageHeader({ tournament, tab, tabs, moduleTabs = [], s
 
   return (
     <Box component="header" data-testid="tournament-header">
+      {showManage && (
+        // The IA boards: this page is what players see; running it is in Manage.
+        <Container maxWidth="lg" sx={{ pt: 2 }}>
+          <Box
+            data-testid="tournament-admin-banner"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 1.5,
+              px: 1.75,
+              py: 1.25,
+              borderRadius: radii.md,
+              bgcolor: color.paper3,
+              border: `1px solid ${withAlpha(color.accent, 0.35)}`,
+            }}
+          >
+            <Typography sx={{ fontSize: textSize.sm, color: color.ink2 }}>
+              {t('overviewPage.adminBanner')}
+            </Typography>
+            <Box
+              component={RouterLink}
+              to={manageTournamentPath(tournament.id)}
+              data-testid="tournament-tab-manage"
+              sx={{
+                px: 1.75,
+                py: 1,
+                borderRadius: radii.md,
+                bgcolor: color.accent,
+                color: color.paper,
+                fontSize: textSize.sm,
+                fontWeight: 600,
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {t('overviewPage.manageTournament')}
+            </Box>
+          </Box>
+        </Container>
+      )}
       <Box
         data-testid="tournament-hero"
         data-has-banner={tournament.bannerUrl ? 'true' : 'false'}
         sx={{
           ...bannerSx(tournament),
-          height: isLive ? { xs: 96, md: 120 } : isFinished ? { xs: 320, md: 360 } : { xs: 320, md: 400 },
+          height: isLive
+            ? { xs: 96, md: 120 }
+            : isFinished
+              ? { xs: 320, md: 360 }
+              : { xs: 320, md: 400 },
           display: 'flex',
           alignItems: isLive || isFinished ? 'stretch' : 'flex-end',
           transition: `height ${tokens.duration.slow}ms ${tokens.ease.inOut}`,
@@ -219,7 +286,13 @@ export function TournamentPageHeader({ tournament, tab, tabs, moduleTabs = [], s
             <Typography
               id="tournament-title"
               component="h1"
-              sx={{ ...mono, m: 0, fontSize: '0.8125rem', color: color.medalGold, textTransform: 'uppercase' }}
+              sx={{
+                ...mono,
+                m: 0,
+                fontSize: '0.8125rem',
+                color: color.medalGold,
+                textTransform: 'uppercase',
+              }}
             >
               {t('results.championsOf', { name: tournament.name })}
             </Typography>
@@ -240,7 +313,9 @@ export function TournamentPageHeader({ tournament, tab, tabs, moduleTabs = [], s
                 color: color.medalGold,
               }}
             >
-              {(tournament.winner?.tag || tournament.winner?.name.slice(0, 3) || '').slice(0, 4).toUpperCase()}
+              {(tournament.winner?.tag || tournament.winner?.name.slice(0, 3) || '')
+                .slice(0, 4)
+                .toUpperCase()}
             </Box>
             <Typography
               sx={{
@@ -261,8 +336,18 @@ export function TournamentPageHeader({ tournament, tab, tabs, moduleTabs = [], s
             )}
           </Box>
         ) : isLive ? (
-          <Box sx={{ flex: 1, bgcolor: withAlpha(color.paper, 0.82), display: 'flex', alignItems: 'center' }}>
-            <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
+          <Box
+            sx={{
+              flex: 1,
+              bgcolor: withAlpha(color.paper, 0.82),
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <Container
+              maxWidth="lg"
+              sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}
+            >
               <Typography
                 id="tournament-title"
                 component="h1"
@@ -294,7 +379,10 @@ export function TournamentPageHeader({ tournament, tab, tabs, moduleTabs = [], s
                   ...mono,
                 }}
               >
-                <Box component="span" sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: color.live }} />
+                <Box
+                  component="span"
+                  sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: color.live }}
+                />
                 {t('overviewPage.status.inProgress').toUpperCase()}
               </Box>
             </Container>
@@ -389,16 +477,6 @@ export function TournamentPageHeader({ tournament, tab, tabs, moduleTabs = [], s
                 {label}
               </Box>
             ))}
-            {showManage && (
-              <Box
-                component={RouterLink}
-                to={paths.manage}
-                data-testid="tournament-tab-manage"
-                sx={[tabLinkSx, { ml: 'auto' }]}
-              >
-                {t('overviewPage.tabs.manage')}
-              </Box>
-            )}
           </Box>
         </Container>
       </Box>

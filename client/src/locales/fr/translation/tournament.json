@@ -872,7 +872,9 @@
     "scheduleSoon": "L’organisateur n’a pas encore publié le planning.",
     "checkInWindow": "Check-in",
     "mapPoolSoonTitle": "Cartes",
-    "mapPoolSoon": "L’organisateur n’a pas encore choisi les cartes."
+    "mapPoolSoon": "L’organisateur n’a pas encore choisi les cartes.",
+    "adminBanner": "You are an admin of this tournament. Running it happens in Manage; this page is what players see.",
+    "manageTournament": "Manage tournament"
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",
