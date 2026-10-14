@@ -401,6 +401,14 @@ func (g *game) checkFollow(name string, from int) error {
 		x, _ := strconv.ParseFloat(f[0], 64)
 		y, _ := strconv.ParseFloat(f[1], 64)
 		z, _ := strconv.ParseFloat(f[2], 64)
+		if x == 0 && y == 0 && z == 0 {
+			// getpos reports the observer entity, not the player it watches, on
+			// some CS2 builds (1.41.9: every in-eye view answered 0 0 0 and
+			// failed every clip). Nobody stands at the map's exact origin: it is
+			// "cannot tell", like no answer.
+			log.Printf("follow check: getpos answered 0 0 0 (no position from this build); not checked")
+			return nil
+		}
 		d := math.Sqrt((x-want[0])*(x-want[0]) + (y-want[1])*(y-want[1]) + (z-want[2])*(z-want[2]))
 		if d <= followTolerance {
 			if attempt > 0 {
