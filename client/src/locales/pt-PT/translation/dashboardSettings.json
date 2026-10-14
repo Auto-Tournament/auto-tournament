@@ -637,7 +637,14 @@
       "change": "Alterar",
       "changeTitle": "Alterar como esta instância é usada",
       "changeNote": "Escolhe de novo e escreve I AGREE. A alteração é guardada com a data e a tua conta.",
-      "commercialNoKey": "Esta instância tem uso comercial, por isso precisas de uma licença. Copia a tua chave das <consoleLink>tuas licenças na consola do Auto Tournament</consoleLink> e cola-a abaixo. Nada é bloqueado enquanto falta."
+      "commercialNoKey": "Esta instância tem uso comercial, por isso precisas de uma licença. Copia a tua chave das <consoleLink>tuas licenças na consola do Auto Tournament</consoleLink> e cola-a abaixo. Nada é bloqueado enquanto falta.",
+      "readHeading": "Before you accept, read these and tick each one:",
+      "readItem": "I have read",
+      "readLinks": {
+        "license": "the full license",
+        "rules": "the rules for commercial use",
+        "pricing": "the pricing"
+      }
     },
     "checkin": {
       "last": "Última comunicação da licença: {{time}}",

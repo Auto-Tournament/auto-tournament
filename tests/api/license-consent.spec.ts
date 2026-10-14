@@ -54,8 +54,18 @@ async function status(request: APIRequestContext): Promise<ConsentBody['consent'
   return ((await res.json()) as ConsentBody).consent;
 }
 
-function accept(request: APIRequestContext, data: Record<string, unknown>, headers: Record<string, string> = {}) {
-  return request.post('/api/license/consent', { data, headers: { ...json, ...headers } });
+const READ_ALL = ['license', 'rules', 'pricing'];
+
+/** Accepts with everything ticked as read, unless `data` says otherwise. */
+function accept(
+  request: APIRequestContext,
+  data: Record<string, unknown>,
+  headers: Record<string, string> = {}
+) {
+  return request.post('/api/license/consent', {
+    data: { read: READ_ALL, ...data },
+    headers: { ...json, ...headers },
+  });
 }
 
 test.describe('License consent (pure)', () => {
@@ -94,7 +104,10 @@ test.describe('License consent (pure)', () => {
     };
     expect(consentStatusFor(record, terms, null)).toMatchObject({ accepted: true, reason: null });
     const bumped = { ...terms, version: terms.version + 1 };
-    expect(consentStatusFor(record, bumped, null)).toMatchObject({ accepted: false, reason: 'version' });
+    expect(consentStatusFor(record, bumped, null)).toMatchObject({
+      accepted: false,
+      reason: 'version',
+    });
 
     expect(parseConsentRecord(JSON.stringify(record))).toEqual(record);
     expect(parseConsentRecord('{"use":"maybe"}')).toBeNull();
@@ -118,7 +131,12 @@ test.describe.serial('License consent API', () => {
     try {
       expect((await stranger.get('/api/license/consent')).status()).toBe(401);
       expect(
-        (await stranger.post('/api/license/consent', { data: { use: 'noncommercial', confirm: 'I AGREE' }, headers: json })).status()
+        (
+          await stranger.post('/api/license/consent', {
+            data: { use: 'noncommercial', confirm: 'I AGREE' },
+            headers: json,
+          })
+        ).status()
       ).toBe(401);
     } finally {
       await stranger.dispose();
@@ -128,7 +146,12 @@ test.describe.serial('License consent API', () => {
   test('before: not accepted, with the terms to show', async ({ request }) => {
     await testConsent(request, { action: 'clear' });
     const before = await status(request);
-    expect(before).toMatchObject({ accepted: false, reason: 'none', consent: null, envAccept: null });
+    expect(before).toMatchObject({
+      accepted: false,
+      reason: 'none',
+      consent: null,
+      envAccept: null,
+    });
     expect(before.terms).toMatchObject({
       version: LICENSE_TERMS_VERSION,
       phrase: 'I AGREE',
@@ -141,18 +164,53 @@ test.describe.serial('License consent API', () => {
   }) => {
     await testConsent(request, { action: 'clear' });
     expect((await accept(request, { confirm: 'I AGREE' })).status()).toBe(400);
+    // Every link has to be ticked as read.
+    expect(
+      (
+        await accept(request, { use: 'noncommercial', confirm: 'I AGREE', read: undefined })
+      ).status()
+    ).toBe(400);
+    expect(
+      (
+        await accept(request, {
+          use: 'noncommercial',
+          confirm: 'I AGREE',
+          read: ['license', 'rules'],
+        })
+      ).status()
+    ).toBe(400);
     expect((await accept(request, { use: 'sometimes', confirm: 'I AGREE' })).status()).toBe(400);
     expect((await accept(request, { use: 'noncommercial' })).status()).toBe(400);
-    expect((await accept(request, { use: 'noncommercial', confirm: 'I agree!' })).status()).toBe(400);
-    expect((await accept(request, { use: 'commercial', confirm: 'I AGREE', key: 'hello' })).status()).toBe(400);
+    expect((await accept(request, { use: 'noncommercial', confirm: 'I agree!' })).status()).toBe(
+      400
+    );
     expect(
-      (await accept(request, { use: 'noncommercial', confirm: 'I AGREE', termsVersion: LICENSE_TERMS_VERSION + 1 })).status()
+      (await accept(request, { use: 'commercial', confirm: 'I AGREE', key: 'hello' })).status()
+    ).toBe(400);
+    expect(
+      (
+        await accept(request, {
+          use: 'noncommercial',
+          confirm: 'I AGREE',
+          termsVersion: LICENSE_TERMS_VERSION + 1,
+        })
+      ).status()
     ).toBe(409);
     expect(
-      (await accept(request, { use: 'noncommercial', confirm: 'I AGREE' }, { Origin: 'https://evil.example' })).status()
+      (
+        await accept(
+          request,
+          { use: 'noncommercial', confirm: 'I AGREE' },
+          { Origin: 'https://evil.example' }
+        )
+      ).status()
     ).toBe(403);
     expect(
-      (await request.post('/api/license/consent', { form: { use: 'noncommercial', confirm: 'I AGREE' } })).status()
+      (
+        await request.post('/api/license/consent', {
+          form: { use: 'noncommercial', confirm: 'I AGREE' },
+        })
+      ).status()
     ).toBe(415);
 
     const token = await accept(
@@ -169,7 +227,11 @@ test.describe.serial('License consent API', () => {
 
   test('after: accepted, recorded with who, when and which terms', async ({ request }) => {
     await testConsent(request, { action: 'clear' });
-    const res = await accept(request, { use: 'noncommercial', confirm: '  i agree ', termsVersion: LICENSE_TERMS_VERSION });
+    const res = await accept(request, {
+      use: 'noncommercial',
+      confirm: '  i agree ',
+      termsVersion: LICENSE_TERMS_VERSION,
+    });
     expect(res.status(), await res.text()).toBe(200);
     const after = ((await res.json()) as ConsentBody).consent;
     expect(after).toMatchObject({ accepted: true, reason: null });
@@ -186,7 +248,9 @@ test.describe.serial('License consent API', () => {
     expect((await status(request)).consent).toEqual(after.consent);
   });
 
-  test('change to commercial with a key: saved, history kept, key never echoed', async ({ request }) => {
+  test('change to commercial with a key: saved, history kept, key never echoed', async ({
+    request,
+  }) => {
     const before = (await status(request)).history.length;
     const res = await accept(request, { use: 'commercial', confirm: 'I AGREE', key: UNSIGNED_KEY });
     const text = await res.text();
@@ -221,13 +285,19 @@ test.describe.serial('License consent API', () => {
     expect(await status(request)).toMatchObject({ accepted: true, reason: null });
   });
 
-  test('AT_ACCEPT_LICENSE accepts up front, and again after a version bump', async ({ request }) => {
+  test('AT_ACCEPT_LICENSE accepts up front, and again after a version bump', async ({
+    request,
+  }) => {
     const { envAccept } = await testConsent(request, { action: 'clear' });
     test.skip(!envAccept, 'this server runs without AT_ACCEPT_LICENSE');
 
     await testConsent(request, { action: 'env' });
     const pre = await status(request);
-    expect(pre).toMatchObject({ accepted: true, reason: null, envAccept: parseLicenseUse(envAccept) });
+    expect(pre).toMatchObject({
+      accepted: true,
+      reason: null,
+      envAccept: parseLicenseUse(envAccept),
+    });
     expect(pre.consent).toMatchObject({
       source: 'env',
       acceptedBy: 'env:AT_ACCEPT_LICENSE',

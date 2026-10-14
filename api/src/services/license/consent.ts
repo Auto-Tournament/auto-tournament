@@ -50,6 +50,21 @@ export interface LicenseConsentRecord {
   termsVersion: number;
   /** `sha256:<hex>` of the LICENSE file this build ships, when it was found. */
   termsHash: string | null;
+  /** What the admin ticked as read (`CONSENT_READ_ITEMS`); absent for `env`. */
+  read?: string[];
+}
+
+/**
+ * What an admin confirms having read before accepting: the license itself,
+ * the rules for commercial use (docs) and the pricing. Each is a checkbox
+ * on the consent page, and the API wants all of them.
+ */
+export const CONSENT_READ_ITEMS = ['license', 'rules', 'pricing'] as const;
+
+/** The read items `value` is missing, in order (all of them when it is not a list). */
+export function missingReadItems(value: unknown): string[] {
+  const read = new Set(Array.isArray(value) ? value.filter((v) => typeof v === 'string') : []);
+  return CONSENT_READ_ITEMS.filter((item) => !read.has(item));
 }
 
 export interface LicenseTerms {
@@ -84,7 +99,10 @@ export const ENV_ACTOR = 'env:AT_ACCEPT_LICENSE';
 /** `noncommercial` / `commercial` (and a few spellings), else null. */
 export function parseLicenseUse(value: unknown): LicenseUse | null {
   if (typeof value !== 'string') return null;
-  const v = value.trim().toLowerCase().replace(/[\s_]+/g, '-');
+  const v = value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, '-');
   if (['noncommercial', 'non-commercial', 'personal', 'free'].includes(v)) return 'noncommercial';
   if (v === 'commercial') return 'commercial';
   return null;
@@ -92,7 +110,9 @@ export function parseLicenseUse(value: unknown): LicenseUse | null {
 
 /** Does the typed confirmation say I AGREE (any case, outer spaces ignored)? */
 export function isConsentPhrase(value: unknown): boolean {
-  return typeof value === 'string' && value.trim().replace(/\s+/g, ' ').toUpperCase() === CONSENT_PHRASE;
+  return (
+    typeof value === 'string' && value.trim().replace(/\s+/g, ' ').toUpperCase() === CONSENT_PHRASE
+  );
 }
 
 /** AT_ACCEPT_LICENSE, read now: the use, `invalid`, or null when unset. */
@@ -157,6 +177,9 @@ export function parseConsentRecord(raw: string | null | undefined): LicenseConse
       source: value.source === 'env' ? 'env' : 'admin',
       termsVersion: value.termsVersion,
       termsHash: typeof value.termsHash === 'string' ? value.termsHash : null,
+      ...(Array.isArray(value.read)
+        ? { read: value.read.filter((v): v is string => typeof v === 'string') }
+        : {}),
     };
   } catch {
     return null;
@@ -228,7 +251,12 @@ class LicenseConsentService {
   }
 
   /** Record an acceptance of the current terms, and keep it in the history. */
-  async record(use: LicenseUse, actor: string, source: 'admin' | 'env'): Promise<LicenseConsentRecord> {
+  async record(
+    use: LicenseUse,
+    actor: string,
+    source: 'admin' | 'env',
+    read?: string[]
+  ): Promise<LicenseConsentRecord> {
     const terms = currentTerms();
     const record: LicenseConsentRecord = {
       use,
@@ -237,6 +265,7 @@ class LicenseConsentService {
       source,
       termsVersion: terms.version,
       termsHash: terms.hash,
+      ...(read ? { read } : {}),
     };
     const history = [record, ...(await this.getHistory())].slice(0, HISTORY_LIMIT);
     await settingsService.setSetting('license_consent', JSON.stringify(record));

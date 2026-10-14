@@ -641,7 +641,14 @@
       "change": "Zmień",
       "changeTitle": "Zmień sposób użycia tej instancji",
       "changeNote": "Wybierz ponownie i wpisz I AGREE. Zmiana zostanie zapisana z datą i Twoim kontem.",
-      "commercialNoKey": "Ta instancja jest używana komercyjnie, więc potrzebujesz licencji. Skopiuj klucz z <consoleLink>swoich licencji w konsoli Auto Tournament</consoleLink> i wklej go poniżej. Dopóki go brakuje, nic nie jest blokowane."
+      "commercialNoKey": "Ta instancja jest używana komercyjnie, więc potrzebujesz licencji. Skopiuj klucz z <consoleLink>swoich licencji w konsoli Auto Tournament</consoleLink> i wklej go poniżej. Dopóki go brakuje, nic nie jest blokowane.",
+      "readHeading": "Before you accept, read these and tick each one:",
+      "readItem": "I have read",
+      "readLinks": {
+        "license": "the full license",
+        "rules": "the rules for commercial use",
+        "pricing": "the pricing"
+      }
     },
     "checkin": {
       "last": "Ostatnie zgłoszenie licencji: {{time}}",

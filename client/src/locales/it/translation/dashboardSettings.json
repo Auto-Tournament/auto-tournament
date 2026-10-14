@@ -637,7 +637,14 @@
       "change": "Modifica",
       "changeTitle": "Modifica come viene usata questa istanza",
       "changeNote": "Scegli di nuovo e scrivi I AGREE. La modifica viene salvata con la data e il tuo account.",
-      "commercialNoKey": "Questa istanza ha un uso commerciale, quindi ti serve una licenza. Copia la chiave dalle <consoleLink>tue licenze nella console di Auto Tournament</consoleLink> e incollala qui sotto. Nel frattempo non viene bloccato nulla."
+      "commercialNoKey": "Questa istanza ha un uso commerciale, quindi ti serve una licenza. Copia la chiave dalle <consoleLink>tue licenze nella console di Auto Tournament</consoleLink> e incollala qui sotto. Nel frattempo non viene bloccato nulla.",
+      "readHeading": "Before you accept, read these and tick each one:",
+      "readItem": "I have read",
+      "readLinks": {
+        "license": "the full license",
+        "rules": "the rules for commercial use",
+        "pricing": "the pricing"
+      }
     },
     "checkin": {
       "last": "Ultimo check-in della licenza: {{time}}",

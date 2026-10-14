@@ -83,11 +83,17 @@ export function setLicenseConsent(status: LicenseConsentStatus) {
 }
 
 /** Accept the terms. Throws the API's error. */
+/** What an admin ticks as read before accepting (the API wants all of them). */
+export const CONSENT_READ_ITEMS = ['license', 'rules', 'pricing'] as const;
+export type ConsentReadItem = (typeof CONSENT_READ_ITEMS)[number];
+
 export async function acceptLicenseTerms(input: {
   use: LicenseUse;
   confirm: string;
   key?: string;
   termsVersion?: number;
+  /** What the admin ticked as read: `CONSENT_READ_ITEMS`. */
+  read: string[];
 }): Promise<LicenseConsentStatus> {
   const res = await api.post<LicenseConsentResponse>('/api/license/consent', input);
   setLicenseConsent(res.consent);

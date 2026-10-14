@@ -15,8 +15,10 @@ import { log } from '../utils/logger';
 import { keyInputProblem, licenseService } from '../services/license/licenseService';
 import {
   CONSENT_PHRASE,
+  CONSENT_READ_ITEMS,
   isConsentPhrase,
   licenseConsentService,
+  missingReadItems,
   parseLicenseUse,
 } from '../services/license/consent';
 import { DECLARATION_ANSWERS, type EventPromptAction } from '../services/license/checkin';
@@ -279,7 +281,8 @@ router.post('/event-prompt', async (req: Request, res: Response) => {
  *     tags: [License]
  *     summary: Accept the license terms
  *     description: |
- *       Body `{ "use": "noncommercial" | "commercial", "confirm": "I AGREE" }`,
+ *       Body `{ "use": "noncommercial" | "commercial", "confirm": "I AGREE",
+ *       "read": ["license", "rules", "pricing"] }` (the admin ticked each as read),
  *       optionally with `"key": "ATL1.…"` to save a license key at the same
  *       time, and `"termsVersion"` (the version the admin read; 409 when the
  *       terms have changed since). `confirm` is matched in any case. Accepting
@@ -293,17 +296,20 @@ router.post('/event-prompt', async (req: Request, res: Response) => {
  *         application/json:
  *           schema:
  *             type: object
- *             required: [use, confirm]
+ *             required: [use, confirm, read]
  *             properties:
  *               use: { type: string, enum: [noncommercial, commercial] }
  *               confirm: { type: string, example: I AGREE }
+ *               read:
+ *                 type: array
+ *                 items: { type: string, enum: [license, rules, pricing] }
  *               key: { type: string }
  *               termsVersion: { type: integer }
  *     responses:
  *       200:
  *         description: Accepted; the new consent status (and the license status when a key was saved)
  *       400:
- *         description: use is missing, confirm is not I AGREE, or key is not a license key
+ *         description: use is missing, confirm is not I AGREE, something is not ticked as read, or key is not a license key
  *       403:
  *         description: An API token, not a signed-in admin
  *       409:
@@ -335,6 +341,7 @@ router.post('/consent', async (req: Request, res: Response) => {
     confirm?: unknown;
     key?: unknown;
     termsVersion?: unknown;
+    read?: unknown;
   };
   const use = parseLicenseUse(body.use);
   if (!use) {
@@ -347,6 +354,13 @@ router.post('/consent', async (req: Request, res: Response) => {
     return res
       .status(400)
       .json({ success: false, error: `Type ${CONSENT_PHRASE} to accept the terms` });
+  }
+  const unread = missingReadItems(body.read);
+  if (unread.length > 0) {
+    return res.status(400).json({
+      success: false,
+      error: `Confirm you have read the ${unread.join(', ')} (read: ${JSON.stringify([...CONSENT_READ_ITEMS])})`,
+    });
   }
   const hasKey = typeof body.key === 'string' && body.key.trim() !== '';
   if (hasKey) {
@@ -365,7 +379,7 @@ router.post('/consent', async (req: Request, res: Response) => {
         error: 'The license terms changed while this page was open. Reload and read them again.',
       });
     }
-    await licenseConsentService.record(use, actor, 'admin');
+    await licenseConsentService.record(use, actor, 'admin', [...CONSENT_READ_ITEMS]);
     const license = hasKey ? await licenseService.setKey(body.key as string) : undefined;
     const [consent, history] = await Promise.all([
       licenseConsentService.getStatus(),

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -17,6 +18,8 @@ import { ExternalLink } from '../common/ExternalLink';
 import { apiErrorMessage } from '../../utils/api';
 import {
   acceptLicenseTerms,
+  CONSENT_READ_ITEMS,
+  type ConsentReadItem,
   isConsentPhrase,
   type LicenseConsentStatus,
   type LicenseUse,
@@ -40,11 +43,17 @@ export function LicenseConsentForm({ status, onAccepted, onCancel }: Props) {
   const [use, setUse] = useState<LicenseUse | ''>(status.consent?.use ?? '');
   const [key, setKey] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [read, setRead] = useState<Record<ConsentReadItem, boolean>>({
+    license: false,
+    rules: false,
+    pricing: false,
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const { terms } = status;
-  const ready = use !== '' && isConsentPhrase(confirm) && !busy;
+  const allRead = CONSENT_READ_ITEMS.every((item) => read[item]);
+  const ready = use !== '' && allRead && isConsentPhrase(confirm) && !busy;
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -56,6 +65,7 @@ export function LicenseConsentForm({ status, onAccepted, onCancel }: Props) {
         use,
         confirm,
         termsVersion: terms.version,
+        read: [...CONSENT_READ_ITEMS],
         ...(use === 'commercial' && key.trim() ? { key: key.trim() } : {}),
       });
       onAccepted(next);
@@ -89,15 +99,48 @@ export function LicenseConsentForm({ status, onAccepted, onCancel }: Props) {
               </Typography>
             ))}
           </Box>
-          <Typography variant="body2" color="text.secondary" mt={1.5}>
-            <ExternalLink href={terms.url} data-testid="license-consent-full-license">
-              {t('license.consent.readLicense')}
-            </ExternalLink>
-            {' · '}
-            <ExternalLink href={terms.docsUrl}>{t('license.consent.readRules')}</ExternalLink>
-            {' · '}
-            <ExternalLink href={terms.pricingUrl}>{t('license.pricing')}</ExternalLink>
-          </Typography>
+          <Box mt={1.5} data-testid="license-consent-read">
+            <Typography variant="body2" fontWeight={600} mb={0.5}>
+              {t('license.consent.readHeading')}
+            </Typography>
+            {(
+              [
+                ['license', terms.url, t('license.consent.readLinks.license')],
+                ['rules', terms.docsUrl, t('license.consent.readLinks.rules')],
+                ['pricing', terms.pricingUrl, t('license.consent.readLinks.pricing')],
+              ] as const
+            ).map(([item, href, label]) => (
+              <FormControlLabel
+                key={item}
+                sx={{ display: 'flex', alignItems: 'center', mr: 0 }}
+                control={
+                  <Checkbox
+                    checked={read[item]}
+                    disabled={busy}
+                    onChange={(e) => setRead((r) => ({ ...r, [item]: e.target.checked }))}
+                    slotProps={{
+                      input: {
+                        'data-testid': `license-consent-read-${item}`,
+                      } as React.InputHTMLAttributes<HTMLInputElement>,
+                    }}
+                  />
+                }
+                label={
+                  <Typography variant="body2">
+                    {t('license.consent.readItem')}{' '}
+                    <ExternalLink
+                      href={href}
+                      {...(item === 'license'
+                        ? { 'data-testid': 'license-consent-full-license' }
+                        : {})}
+                    >
+                      {label}
+                    </ExternalLink>
+                  </Typography>
+                }
+              />
+            ))}
+          </Box>
           <Typography variant="caption" color="text.secondary" display="block" mt={1}>
             {t('license.consent.summaryNote')}{' '}
             <ExternalLink href={terms.commercialTermsUrl}>autotournament.gg</ExternalLink>
@@ -116,7 +159,15 @@ export function LicenseConsentForm({ status, onAccepted, onCancel }: Props) {
             <FormControlLabel
               value="noncommercial"
               disabled={busy}
-              control={<Radio slotProps={{ input: { 'data-testid': 'license-consent-noncommercial' } as React.InputHTMLAttributes<HTMLInputElement> }} />}
+              control={
+                <Radio
+                  slotProps={{
+                    input: {
+                      'data-testid': 'license-consent-noncommercial',
+                    } as React.InputHTMLAttributes<HTMLInputElement>,
+                  }}
+                />
+              }
               label={
                 <Box py={0.5}>
                   <Typography variant="body1">{t('license.consent.use.noncommercial')}</Typography>
@@ -129,7 +180,15 @@ export function LicenseConsentForm({ status, onAccepted, onCancel }: Props) {
             <FormControlLabel
               value="commercial"
               disabled={busy}
-              control={<Radio slotProps={{ input: { 'data-testid': 'license-consent-commercial' } as React.InputHTMLAttributes<HTMLInputElement> }} />}
+              control={
+                <Radio
+                  slotProps={{
+                    input: {
+                      'data-testid': 'license-consent-commercial',
+                    } as React.InputHTMLAttributes<HTMLInputElement>,
+                  }}
+                />
+              }
               label={
                 <Box py={0.5}>
                   <Typography variant="body1">{t('license.consent.use.commercial')}</Typography>
@@ -186,7 +245,12 @@ export function LicenseConsentForm({ status, onAccepted, onCancel }: Props) {
               {t('license.consent.cancel')}
             </Button>
           )}
-          <Button type="submit" variant="contained" disabled={!ready} data-testid="license-consent-accept">
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={!ready}
+            data-testid="license-consent-accept"
+          >
             {t('license.consent.accept')}
           </Button>
         </Stack>

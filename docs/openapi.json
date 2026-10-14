@@ -8899,7 +8899,7 @@
           "License"
         ],
         "summary": "Accept the license terms",
-        "description": "Body `{ \"use\": \"noncommercial\" | \"commercial\", \"confirm\": \"I AGREE\" }`,\noptionally with `\"key\": \"ATL1.…\"` to save a license key at the same\ntime, and `\"termsVersion\"` (the version the admin read; 409 when the\nterms have changed since). `confirm` is matched in any case. Accepting\nagain (to change the use) replaces the record; earlier ones stay in\n`history`. Signed-in admins only: an API token cannot accept terms\n(403); set `AT_ACCEPT_LICENSE` for a non-interactive install instead.\nSame-site JSON only.\n",
+        "description": "Body `{ \"use\": \"noncommercial\" | \"commercial\", \"confirm\": \"I AGREE\",\n\"read\": [\"license\", \"rules\", \"pricing\"] }` (the admin ticked each as read),\noptionally with `\"key\": \"ATL1.…\"` to save a license key at the same\ntime, and `\"termsVersion\"` (the version the admin read; 409 when the\nterms have changed since). `confirm` is matched in any case. Accepting\nagain (to change the use) replaces the record; earlier ones stay in\n`history`. Signed-in admins only: an API token cannot accept terms\n(403); set `AT_ACCEPT_LICENSE` for a non-interactive install instead.\nSame-site JSON only.\n",
         "requestBody": {
           "required": true,
           "content": {
@@ -8908,7 +8908,8 @@
                 "type": "object",
                 "required": [
                   "use",
-                  "confirm"
+                  "confirm",
+                  "read"
                 ],
                 "properties": {
                   "use": {
@@ -8921,6 +8922,17 @@
                   "confirm": {
                     "type": "string",
                     "example": "I AGREE"
+                  },
+                  "read": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "license",
+                        "rules",
+                        "pricing"
+                      ]
+                    }
                   },
                   "key": {
                     "type": "string"
@@ -8938,7 +8950,7 @@
             "description": "Accepted; the new consent status (and the license status when a key was saved)"
           },
           "400": {
-            "description": "use is missing, confirm is not I AGREE, or key is not a license key"
+            "description": "use is missing, confirm is not I AGREE, something is not ticked as read, or key is not a license key"
           },
           "403": {
             "description": "An API token, not a signed-in admin"

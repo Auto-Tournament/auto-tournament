@@ -637,7 +637,14 @@
       "change": "更改",
       "changeTitle": "更改此实例的用途",
       "changeNote": "重新选择并输入 I AGREE。更改会连同日期和你的账号一起保存。",
-      "commercialNoKey": "此实例用于商业用途，因此你需要许可证。请从 <consoleLink>Auto Tournament 控制台中的你的许可证</consoleLink>复制密钥，并粘贴到下方。缺少密钥时不会锁定任何功能。"
+      "commercialNoKey": "此实例用于商业用途，因此你需要许可证。请从 <consoleLink>Auto Tournament 控制台中的你的许可证</consoleLink>复制密钥，并粘贴到下方。缺少密钥时不会锁定任何功能。",
+      "readHeading": "Before you accept, read these and tick each one:",
+      "readItem": "I have read",
+      "readLinks": {
+        "license": "the full license",
+        "rules": "the rules for commercial use",
+        "pricing": "the pricing"
+      }
     },
     "checkin": {
       "last": "上次许可证联络：{{time}}",

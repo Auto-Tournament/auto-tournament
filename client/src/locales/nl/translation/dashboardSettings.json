@@ -637,7 +637,14 @@
       "change": "Wijzigen",
       "changeTitle": "Wijzigen hoe deze instantie wordt gebruikt",
       "changeNote": "Kies opnieuw en typ I AGREE. De wijziging wordt opgeslagen met de datum en je account.",
-      "commercialNoKey": "Deze instantie wordt commercieel gebruikt, dus je hebt een licentie nodig. Kopieer je sleutel uit <consoleLink>je licenties in de Auto Tournament-console</consoleLink> en plak hem hieronder. Zolang die ontbreekt, wordt niets geblokkeerd."
+      "commercialNoKey": "Deze instantie wordt commercieel gebruikt, dus je hebt een licentie nodig. Kopieer je sleutel uit <consoleLink>je licenties in de Auto Tournament-console</consoleLink> en plak hem hieronder. Zolang die ontbreekt, wordt niets geblokkeerd.",
+      "readHeading": "Before you accept, read these and tick each one:",
+      "readItem": "I have read",
+      "readLinks": {
+        "license": "the full license",
+        "rules": "the rules for commercial use",
+        "pricing": "the pricing"
+      }
     },
     "checkin": {
       "last": "Laatste licentiemelding: {{time}}",

@@ -37,6 +37,10 @@ test.describe.serial('License consent UI', () => {
       await expect(page.getByTestId('license-consent-page')).toBeVisible();
       await expect(page.getByTestId('license-consent-summary')).toBeVisible();
 
+      // A public page sends an admin here too.
+      await page.goto('/tournaments');
+      await expect(page).toHaveURL(/\/welcome\/license\?next=%2Ftournaments/);
+
       // Another admin page lands here too.
       await page.goto('/manage/settings');
       await expect(page).toHaveURL(/\/welcome\/license/);
@@ -48,6 +52,11 @@ test.describe.serial('License consent UI', () => {
       await page.getByTestId('license-consent-confirm').fill('I agre');
       await expect(accept).toBeDisabled();
       await page.getByTestId('license-consent-confirm').fill('i agree');
+      // Not until every link is ticked as read.
+      await expect(accept).toBeDisabled();
+      for (const item of ['license', 'rules', 'pricing']) {
+        await page.getByTestId(`license-consent-read-${item}`).check();
+      }
       await expect(accept).toBeEnabled();
       await accept.click();
 
@@ -71,6 +80,9 @@ test.describe.serial('License consent UI', () => {
       await page.goto('/manage/license');
       await expect(page).toHaveURL(/\/welcome\/license/);
       await page.getByTestId('license-consent-noncommercial').check();
+      for (const item of ['license', 'rules', 'pricing']) {
+        await page.getByTestId(`license-consent-read-${item}`).check();
+      }
       await page.getByTestId('license-consent-confirm').fill('I AGREE');
       await page.getByTestId('license-consent-accept').click();
       await expect(page.getByTestId('settings-license-consent-use')).toHaveText(
@@ -96,7 +108,7 @@ test.describe.serial('License consent UI', () => {
   );
 
   test(
-    'public pages are never sent to the terms',
+    'visitors and players are never sent to the terms',
     { tag: ['@ui'] },
     async ({ browser, baseURL }) => {
       const visitor = await browser.newContext({ baseURL });
