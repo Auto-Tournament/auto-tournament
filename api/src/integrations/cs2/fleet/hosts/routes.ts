@@ -89,9 +89,14 @@ if ! command -v csm >/dev/null 2>&1; then
   curl -fsSL "https://github.com/Auto-Tournament/cs2-server-manager/releases/latest/download/$asset" -o "$tmp"
   sudo install -m 0755 "$tmp" /usr/local/bin/csm
   rm -f "$tmp"
+  fresh=1
 fi
-echo "Preparing the machine (SteamCMD, tmux; services that keep running after you log out)..."
-sudo csm setup-host
+# A machine prepared before (csm there, this user's services kept running
+# after logout) skips it: no sudo needed then.
+if [ "\${fresh:-0}" = 1 ] || ! loginctl show-user "$(id -un)" -p Linger 2>/dev/null | grep -q "=yes"; then
+  echo "Preparing the machine (SteamCMD, tmux; services that keep running after you log out)..."
+  sudo csm setup-host
+fi
 echo "Linking to $URL..."
 csm link "$URL" "$CODE"${insecure}
 # csm before 1.27 left the agent to a second command.
