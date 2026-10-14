@@ -23,8 +23,8 @@
       "title": "Fullfør oppsettet",
       "openSettings": "Åpne innstillinger",
       "signIn": "Innloggingsleverandør",
-      "game": "Installer et spill (CS2) fra Moduler",
-      "discordBot": "Koble til en Discord-bot så spillere får kampene sine som DM"
+      "game": "Installer et spill (CS2) under Moduler",
+      "discordBot": "Legg inn din egen Discord-bot (tokenet), så kan nettstedet sende spillerne meldinger om kampene deres"
     },
     "tournaments": {
       "title": "Turnering",
@@ -646,7 +646,7 @@
       "changeTitle": "Endre hvordan denne instansen brukes",
       "changeNote": "Velg på nytt og skriv I AGREE. Endringen lagres med dato og kontoen din.",
       "commercialNoKey": "Denne instansen brukes kommersielt, så du trenger en lisens. Kopier nøkkelen fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink> og lim den inn nedenfor. Ingenting låses mens den mangler.",
-      "readHeading": "Før du godtar: les disse og kryss av for hver:",
+      "readHeading": "Les dette før du godtar, og kryss av for hvert punkt:",
       "readItem": "Jeg har lest",
       "readLinks": {
         "license": "hele lisensen",
@@ -851,7 +851,7 @@
   },
   "discordBot": {
     "title": "Discord-bot",
-    "hint": "Sender spillerne Discord-meldinger (Konto → Varsler). Spillere får meldinger når de er på en Discord-server sammen med boten.",
+    "hint": "Din egen Discord-bot: nettstedet sender spillerne meldinger gjennom den (Konto → Varsler). En spiller får dem når hen er på en Discord-server sammen med boten din.",
     "token": "Bot-token",
     "replace": "Ny bot-token",
     "save": "Lagre",
