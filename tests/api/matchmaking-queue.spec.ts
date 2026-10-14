@@ -316,6 +316,7 @@ interface Me {
   cooldownUntil: number | null;
   rating: { elo: number; games: number; wins: number } | null;
   modes: string[];
+  searchWindow?: Record<string, number | null>;
 }
 
 async function player(): Promise<{ ctx: APIRequestContext; id: string }> {
@@ -376,6 +377,16 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
       step: 25,
       cap: 500,
       uncappedAfterMinutes: null,
+    });
+    // Players get it too, so the queue screen can show the window widening.
+    const p = await player();
+    contexts.push(p.ctx);
+    expect((await me(p.ctx)).searchWindow).toEqual({
+      start: 150,
+      step: 25,
+      everySeconds: 30,
+      cap: 500,
+      uncappedAfterSeconds: null,
     });
     // Back to the defaults for the rest of the suite.
     expect(

@@ -30,6 +30,7 @@ import {
   matchmakingAction,
   playersFor,
   teamSizeOf,
+  searchWindowElo,
   secondsUntil,
   useMatchmaking,
 } from '../components/matchmaking/matchmakingStore';
@@ -493,12 +494,24 @@ export default function Play() {
                     {/* What the search is doing (services/matchmaking/rules.ts
                         fewSearching): with fewer than two matches' worth
                         searching, anyone is matched; otherwise by rating. */}
-                    {t(
-                      (counts[queueMode] ?? inQueue) < need * 2
-                        ? 'matchmaking.play.searchAnyone'
-                        : 'matchmaking.play.searchRating',
-                      { count: counts[queueMode] ?? inQueue, total: need }
-                    )}
+                    {(() => {
+                      const count = counts[queueMode] ?? inQueue;
+                      if (count < need * 2)
+                        return t('matchmaking.play.searchAnyone', { count, total: need });
+                      // The rating window as it widens (rules.ts searchWindow).
+                      const elo = me?.searchWindow
+                        ? searchWindowElo(waited, me.searchWindow)
+                        : undefined;
+                      if (elo === undefined)
+                        return t('matchmaking.play.searchRatingPlain', { count });
+                      if (elo === null) return t('matchmaking.play.searchAnyRating', { count });
+                      return t(
+                        elo > (me?.searchWindow?.start ?? 0)
+                          ? 'matchmaking.play.searchWidening'
+                          : 'matchmaking.play.searchRating',
+                        { count, elo }
+                      );
+                    })()}
                     {typeof me?.waitSeconds?.[queueMode] === 'number' && (
                       <Box
                         component="span"

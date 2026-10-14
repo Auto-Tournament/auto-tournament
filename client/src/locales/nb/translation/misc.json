@@ -671,12 +671,15 @@
       "defaultPool": {
         "5v5": "Active Duty",
         "2v2": "Wingman-kart",
-        "1v1": "Active Duty"
+        "1v1": "Wingman-kart"
       },
       "searchAnyone": "Få spillere søker: du blir satt opp mot hvem som helst ({{count}} søker, {{total}} trengs)",
-      "searchRating": "Finner en jevn kamp for ratingen din · {{count}} søker",
+      "searchRating": "Finner en jevn kamp for ratingen din (±{{elo}}) · {{count}} søker",
       "botFill": "Fyll tomme plasser med boter",
-      "botFillUnrated": "Boter fyller tomme plasser · urangert: ingen rating, XP eller drops"
+      "botFillUnrated": "Boter fyller tomme plasser · urangert: ingen rating, XP eller drops",
+      "searchRatingPlain": "Finner en jevn kamp for ratingen din · {{count}} søker",
+      "searchWidening": "Utvider søket: ±{{elo}} · {{count}} søker",
+      "searchAnyRating": "Søker nå blant alle ratinger · {{count}} søker"
     },
     "queue": {
       "searching": "Søker {{mode}}",

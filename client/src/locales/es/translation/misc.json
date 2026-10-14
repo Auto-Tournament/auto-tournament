@@ -671,12 +671,15 @@
       "defaultPool": {
         "5v5": "Active Duty",
         "2v2": "Wingman maps",
-        "1v1": "Active Duty"
+        "1v1": "Wingman maps"
       },
       "searchAnyone": "Few players searching: you'll be matched with anyone available ({{count}} searching, {{total}} needed)",
       "searchRating": "Finding a close match for your rating · {{count}} searching",
       "botFill": "Rellenar plazas vacías con bots",
-      "botFillUnrated": "Los bots ocupan las plazas vacías · sin clasificar: sin rating, XP ni drops"
+      "botFillUnrated": "Los bots ocupan las plazas vacías · sin clasificar: sin rating, XP ni drops",
+      "searchRatingPlain": "Finding a close match for your rating · {{count}} searching",
+      "searchWidening": "Widening the search: ±{{elo}} · {{count}} searching",
+      "searchAnyRating": "Searching every rating now · {{count}} searching"
     },
     "queue": {
       "searching": "Searching {{mode}}",
