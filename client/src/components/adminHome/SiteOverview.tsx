@@ -5,6 +5,7 @@
  * and license on the side. The rail beside it is the way to every admin page.
  */
 
+import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
@@ -17,7 +18,8 @@ import { useShellIntegrations, shellModule } from '../../hooks/useShellIntegrati
 import { PeopleOverviewCard } from './PeopleOverviewCard';
 import { LicenseOverviewCard } from './LicenseOverviewCard';
 import { EventLicensePrompt } from './EventLicensePrompt';
-import { manageTournamentPath } from '../../paths';
+import { manageTournamentPath, paths } from '../../paths';
+import { api } from '../../utils/api';
 import { SIGN_IN_SETTINGS_PATH } from '../../utils/signInSetup';
 import { tokens, fontDisplay } from '../../theme/tokens';
 
@@ -44,8 +46,16 @@ export function SiteOverview() {
     shellLoading ? null : shell
   );
 
+  const discordBotSet = useDiscordBotSet();
   const canCreateTournament = !tournamentsLoading && tournaments.length === 0;
   const setupItems: SetupItem[] = [
+    {
+      // A fresh install has no game yet: nothing to run a tournament with.
+      key: 'game',
+      done: !shellLoading && (shell ?? []).length > 0,
+      labelKey: 'dashboard.setup.game',
+      to: paths.modules,
+    },
     {
       key: 'signin',
       done: signInConfigured,
@@ -53,6 +63,13 @@ export function SiteOverview() {
       to: SIGN_IN_SETTINGS_PATH,
     },
     ...moduleSetupItems.map((item) => ({ ...item, key: `${item.ns}:${item.key}` })),
+    {
+      key: 'discordbot',
+      optional: true,
+      done: discordBotSet,
+      labelKey: 'dashboard.setup.discordBot',
+      to: `${paths.settings}?section=webhooks`,
+    },
   ];
   const loading = tournamentsLoading || dataLoading || moduleSetupLoading;
 
@@ -129,4 +146,20 @@ export function SiteOverview() {
       )}
     </Box>
   );
+}
+
+/** Whether a Discord bot token is set (Settings → Integrations); false until known. */
+function useDiscordBotSet(): boolean {
+  const [set, setSet] = useState(false);
+  useEffect(() => {
+    let live = true;
+    api
+      .get<{ set: boolean }>('/api/settings/discord-bot')
+      .then((r) => live && setSet(Boolean(r.set)))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+  return set;
 }

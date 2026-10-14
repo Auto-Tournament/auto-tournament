@@ -348,7 +348,9 @@
     "setup": {
       "title": "Finish setting up",
       "openSettings": "Open settings",
-      "signIn": "Sign-in provider"
+      "signIn": "Sign-in provider",
+      "game": "Install a game (CS2) from Modules",
+      "discordBot": "Connect a Discord bot so players get their matches as DMs"
     },
     "tournaments": {
       "title": "Tournaments",

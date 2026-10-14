@@ -74,6 +74,7 @@ export function SetupCard({ items }: SetupCardProps) {
             <Box
               component="li"
               key={item.key}
+              data-testid={`admin-home-setup-${item.key}`}
               data-done={item.done ? 'true' : 'false'}
               sx={{ color: item.done ? color.live : color.ink2 }}
             >
