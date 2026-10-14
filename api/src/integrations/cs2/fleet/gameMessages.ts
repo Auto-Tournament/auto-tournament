@@ -78,6 +78,9 @@ export function gameMessageText(key: GameMessageKey, params: Params = {}): strin
 }
 
 /** Say it on a fleet server: to everyone, or to one player (`to`, SteamID64). */
+/** Lines nobody may miss: the player's next match. */
+const IMPORTANT = new Set<GameMessageKey>(['nextMatchReady', 'nextMatchSoon']);
+
 export async function sayInGame(
   fleetServerId: string,
   key: GameMessageKey,
@@ -94,6 +97,8 @@ export async function sayInGame(
           text: gameMessageText(key, params),
           ...(options.to ? { to: options.to } : {}),
           ...(center ? { center_seconds: center } : {}),
+          // Ready Up beta.36+: gold, three times (a line nobody may miss); older ones ignore it.
+          ...(IMPORTANT.has(key) ? { important: true } : {}),
         },
         issued_by: { user_id: 'platform', name: 'Auto Tournament', root: false },
         expires_at: Date.now() + 60_000,

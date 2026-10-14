@@ -681,11 +681,15 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
       : ((await integrationForMatch(match).preMatchTurn?.(match)) ?? null);
 
     if (['loaded', 'live'].includes(match.status)) {
+      // On the server, or dropped off it (the site offers to reconnect).
+      const connection = playerConnectionService.connectionOf(match.slug, steamId);
       return res.json({
         success: true,
         status: 'match_ready',
         matchSlug: match.slug,
         label: 'match_ready',
+        connection: connection.state,
+        droppedAt: connection.droppedAt,
         matchName,
         matchup,
       });
