@@ -53,7 +53,9 @@
       "pluginSame": "{{version}}, all servers match",
       "pluginMixed": "{{count}} plugin versions in use",
       "none": "No servers connected yet.",
-      "notConfigured": "Not configured"
+      "notConfigured": "Not configured",
+      "readyUp": "Ready Up",
+      "readyUpCurrent": "{{version}}, all up to date"
     },
     "setup": {
       "serversDone": "{{count}} server added",

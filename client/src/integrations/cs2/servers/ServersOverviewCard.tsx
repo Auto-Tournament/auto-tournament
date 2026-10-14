@@ -39,14 +39,31 @@ function countFleet(availability: ServerAvailability, servers: Server[]): Server
   return counts;
 }
 
-/** Which plugin versions the enabled servers report, and whether they agree. */
-function summarisePluginVersions(servers: ServersResponse['servers']): PluginVersionSummary {
-  const versions = Array.from(
-    new Set(
-      servers.filter((s) => s.enabled && s.pluginVersion).map((s) => s.pluginVersion as string)
-    )
-  );
-  return { versions, commonVersion: versions.length === 1 ? versions[0] : null };
+interface FleetServerVersion {
+  status: string;
+  online?: boolean;
+  readyUpUpdate?: { state: 'unknown' | 'current' | 'outdated'; running: string | null } | null;
+}
+
+/**
+ * Which Ready Up versions the online servers run, whether they agree, and
+ * whether every one is on the latest release (an offline server's is stale).
+ */
+function summarisePluginVersions(
+  servers: FleetServerVersion[]
+): PluginVersionSummary & { upToDate: boolean } {
+  const running = servers
+    .filter((s) => s.status === 'enrolled' && s.online && s.readyUpUpdate?.running)
+    .map((s) => ({
+      version: (s.readyUpUpdate!.running as string).replace(/\s*\(.*\)$/, ''),
+      state: s.readyUpUpdate!.state,
+    }));
+  const versions = Array.from(new Set(running.map((r) => r.version)));
+  return {
+    versions,
+    commonVersion: versions.length === 1 ? versions[0] : null,
+    upToDate: running.length > 0 && running.every((r) => r.state === 'current'),
+  };
 }
 
 /**
@@ -57,22 +74,25 @@ function summarisePluginVersions(servers: ServersResponse['servers']): PluginVer
 function useFleetSummary(): {
   loaded: boolean;
   fleet: ServerFleetCounts | null;
-  pluginVersions: PluginVersionSummary | null;
+  pluginVersions: (PluginVersionSummary & { upToDate: boolean }) | null;
 } {
   const [loaded, setLoaded] = useState(false);
   const [fleet, setFleet] = useState<ServerFleetCounts | null>(null);
-  const [pluginVersions, setPluginVersions] = useState<PluginVersionSummary | null>(null);
+  const [pluginVersions, setPluginVersions] = useState<
+    (PluginVersionSummary & { upToDate: boolean }) | null
+  >(null);
 
   useEffect(() => {
     let cancelled = false;
     void Promise.all([
       api.get<ServerAvailability>(SERVER_AVAILABILITY_ENDPOINT).catch(() => null),
       api.get<ServersResponse>('/api/servers').catch(() => null),
-    ]).then(([availability, list]) => {
+      api.get<{ servers?: FleetServerVersion[] }>('/api/fleet/servers').catch(() => null),
+    ]).then(([availability, list, fleetList]) => {
       if (cancelled) return;
       const servers = list?.servers ?? [];
       setFleet(availability ? countFleet(availability, servers) : null);
-      setPluginVersions(list ? summarisePluginVersions(servers) : null);
+      setPluginVersions(fleetList ? summarisePluginVersions(fleetList.servers ?? []) : null);
       setLoaded(true);
     });
     return () => {
@@ -108,8 +128,8 @@ function FleetBar({ fleet }: { fleet: ServerFleetCounts }) {
 
 /**
  * Right-column "Servers" summary: online/total, a stacked in-match/free/
- * offline bar, and plugin version agreement — all from the same
- * server-availability + servers endpoints Manage and Servers already use.
+ * offline bar, and the Ready Up versions the servers run (from the fleet
+ * list), with "all up to date" when every one is on the latest release.
  *
  * It asks for them itself (client API 0.2.0): `AdminHomeResourcesProps` is
  * empty, the admin home hands it nothing.
@@ -198,11 +218,20 @@ export function ServersOverviewCard() {
             {pluginVersions && pluginVersions.versions.length > 0 && (
               <Box display="flex" justifyContent="space-between">
                 <Typography variant="body2" color="text.secondary">
-                  {t('dashboard.servers.plugin')}
+                  {t('dashboard.servers.readyUp')}
                 </Typography>
-                <Typography variant="body2" fontWeight={600}>
+                <Typography
+                  variant="body2"
+                  fontWeight={600}
+                  data-testid="admin-home-servers-readyup"
+                >
                   {pluginVersions.commonVersion
-                    ? t('dashboard.servers.pluginSame', { version: pluginVersions.commonVersion })
+                    ? t(
+                        pluginVersions.upToDate
+                          ? 'dashboard.servers.readyUpCurrent'
+                          : 'dashboard.servers.pluginSame',
+                        { version: pluginVersions.commonVersion }
+                      )
                     : t('dashboard.servers.pluginMixed', { count: pluginVersions.versions.length })}
                 </Typography>
               </Box>
