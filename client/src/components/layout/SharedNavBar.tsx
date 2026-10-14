@@ -87,6 +87,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
     viewerTeam,
     vetoActionCount,
     lastVetoActionTeam,
+    opensAt,
   } = useCurrentMatchStatus(playerSteamId ?? null);
   const { showSnackbar, closeSnackbar } = useSnackbar();
 
@@ -203,6 +204,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
   const ctaLabels: Record<string, string> = {
     your_turn_veto: t('nav.matchStatus.yourTurnVeto'),
     waiting_veto: t('nav.matchStatus.waitingVeto'),
+    veto_soon: t('nav.matchStatus.vetoSoon', 'Veto soon'),
     waiting_server: t('nav.matchStatus.waitingServer'),
     match_ready: t('nav.matchStatus.matchReady'),
   };
@@ -271,6 +273,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
         matchSlug={matchSlug}
         matchName={matchName}
         vetoActionCount={vetoActionCount}
+        opensAt={opensAt}
         loading={matchStatusLoading}
       />
       <Box

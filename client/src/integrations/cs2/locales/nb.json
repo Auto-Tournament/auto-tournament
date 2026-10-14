@@ -405,7 +405,10 @@
     "actFor": {
       "label": "Handle for:",
       "watch": "Bare se"
-    }
+    },
+    "opensIn": "Vetoen åpner om {{clock}}",
+    "opening": "Vetoen åpner …",
+    "opensBreak": "En kort pause mellom kampene. Gjør deg klar – første tur får ekstra tid."
   },
   "matchInfo": {
     "server": {
@@ -1198,6 +1201,14 @@
         "redrawFailed": "Could not queue the redraw."
       },
       "moved": "Highlight settings, the recorders and how to add one are on their own page now:"
+    },
+    "vetoFirstTurn": {
+      "label": "Første tur i vetoen (sekunder)",
+      "helper": "Lengre enn de andre turene, siden spillerne kommer fra forrige kamp. 0 = vanlig tur."
+    },
+    "matchBreak": {
+      "label": "Pause mellom et lags kamper (minutter)",
+      "helper": "Vetoen til neste kamp åpner så lenge etter at lagets forrige kamp var ferdig. 0 = rett videre."
     }
   },
   "roster": {

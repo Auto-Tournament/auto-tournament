@@ -4,7 +4,7 @@ import { io, Socket } from 'socket.io-client';
 import { onSocketReconnect } from '../utils/socketResync';
 
 export type MatchStatusValue =
-  'none' | 'your_turn_veto' | 'waiting_veto' | 'waiting_server' | 'match_ready';
+  'none' | 'your_turn_veto' | 'waiting_veto' | 'veto_soon' | 'waiting_server' | 'match_ready';
 
 interface MatchStatusResult {
   status: MatchStatusValue;
@@ -18,6 +18,8 @@ interface MatchStatusResult {
   vetoActionCount: number | null;
   /** Team that made the most recent veto action (veto phase only). */
   lastVetoActionTeam: 'team1' | 'team2' | null;
+  /** `veto_soon`: when the veto opens (ISO), after the break between matches. */
+  opensAt: string | null;
   loading: boolean;
   refetch: () => void;
 }
@@ -30,6 +32,7 @@ export function useCurrentMatchStatus(playerSteamId: string | null): MatchStatus
   const [viewerTeam, setViewerTeam] = useState<'team1' | 'team2' | null>(null);
   const [vetoActionCount, setVetoActionCount] = useState<number | null>(null);
   const [lastVetoActionTeam, setLastVetoActionTeam] = useState<'team1' | 'team2' | null>(null);
+  const [opensAt, setOpensAt] = useState<string | null>(null);
   // Loading until the first fetch: a navbar mounted by a page change must not
   // take the initial 'none' as the previous status and toast the fetched one.
   const [loading, setLoading] = useState(Boolean(playerSteamId));
@@ -62,6 +65,7 @@ export function useCurrentMatchStatus(playerSteamId: string | null): MatchStatus
           viewerTeam?: 'team1' | 'team2' | null;
           vetoActionCount?: number | null;
           lastVetoActionTeam?: 'team1' | 'team2' | null;
+          opensAt?: string | null;
         }>('/api/players/me/match-status');
 
         if (res?.success) {
@@ -72,6 +76,7 @@ export function useCurrentMatchStatus(playerSteamId: string | null): MatchStatus
           setViewerTeam(res.viewerTeam ?? null);
           setVetoActionCount(typeof res.vetoActionCount === 'number' ? res.vetoActionCount : null);
           setLastVetoActionTeam(res.lastVetoActionTeam ?? null);
+          setOpensAt(res.opensAt ?? null);
         }
       } catch {
         setStatus('none');
@@ -152,6 +157,7 @@ export function useCurrentMatchStatus(playerSteamId: string | null): MatchStatus
     viewerTeam,
     vetoActionCount,
     lastVetoActionTeam,
+    opensAt,
     loading,
     refetch: () => fetchStatus(),
   };

@@ -189,19 +189,14 @@ export async function autoVetoPendingMatches(
   return slugs;
 }
 
-async function runAutoVeto(
-  matchSlug: string,
-  options?: AutoVetoOptions
-): Promise<void> {
+async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promise<void> {
   const stepDelayMs = options?.stepDelayMs ?? DEFAULT_STEP_DELAY_MS;
   const timedOut = options?.timedOut === true;
   let stepsLeft = options?.maxSteps ?? Infinity;
 
   const simulationEnabled = timedOut || (await settingsService.isSimulationModeEnabled());
   if (!simulationEnabled) {
-    log.debug(
-      `[VETO-SIM] Simulation mode disabled; skipping auto veto for match ${matchSlug}`
-    );
+    log.debug(`[VETO-SIM] Simulation mode disabled; skipping auto veto for match ${matchSlug}`);
     return;
   }
 
@@ -266,14 +261,11 @@ async function runAutoVeto(
   const format = tournament.format as 'bo1' | 'bo3' | 'bo5';
   const tournamentMaps: string[] = tournament.maps;
   const tournamentSettings = tournament.settings || {};
-  const customVetoOrder = (tournamentSettings as { customVetoOrder?: unknown })
-    .customVetoOrder;
+  const customVetoOrder = (tournamentSettings as { customVetoOrder?: unknown }).customVetoOrder;
   const vetoOrder = getVetoOrder(format, customVetoOrder, tournamentMaps.length) as VetoStep[];
 
   if (!vetoOrder.length) {
-    log.warn(
-      `[VETO-SIM] Empty veto order for match ${matchSlug}; skipping auto veto`
-    );
+    log.warn(`[VETO-SIM] Empty veto order for match ${matchSlug}; skipping auto veto`);
     return;
   }
 
@@ -313,7 +305,9 @@ async function runAutoVeto(
   }
 
   vetoState.status = 'in_progress';
-  log.info(`[VETO-SIM] ${timedOut ? 'Veto timer: acting for the team on' : 'Starting automated veto for'} match ${matchSlug}`);
+  log.info(
+    `[VETO-SIM] ${timedOut ? 'Veto timer: acting for the team on' : 'Starting automated veto for'} match ${matchSlug}`
+  );
 
   while (vetoState.currentStep <= vetoState.totalSteps) {
     const currentStepConfig = vetoOrder[vetoState.currentStep - 1];
@@ -458,9 +452,7 @@ async function runAutoVeto(
         await db.updateAsync('matches', { config: serializeMatchConfig(cfg) }, 'slug = ?', [
           matchSlug,
         ]);
-        log.success(
-          `[VETO-SIM] Stored fresh config for match ${matchSlug} after automated veto`
-        );
+        log.success(`[VETO-SIM] Stored fresh config for match ${matchSlug} after automated veto`);
       } catch (e) {
         log.error(
           `[VETO-SIM] Failed to generate/store config after automated veto for ${matchSlug}`,
@@ -527,5 +519,3 @@ async function runAutoVeto(
     }
   }
 }
-
-

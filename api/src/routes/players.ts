@@ -554,7 +554,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
     let match = await db.queryOneAsync<
       DbMatchRow & { team1_players?: string | null; team2_players?: string | null }
     >(
-      `SELECT m.id, m.slug, m.status, m.config, m.veto_state, m.team1_id, m.team2_id,
+      `SELECT m.id, m.slug, m.status, m.config, m.veto_state, m.held_until, m.team1_id, m.team2_id,
               m.round, m.tournament_id,
               t1.players as team1_players, t2.players as team2_players
        FROM matches m
@@ -575,7 +575,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
       match = await db.queryOneAsync<
         DbMatchRow & { team1_players?: string | null; team2_players?: string | null }
       >(
-        `SELECT m.id, m.slug, m.status, m.config, m.veto_state, m.team1_id, m.team2_id,
+        `SELECT m.id, m.slug, m.status, m.config, m.veto_state, m.held_until, m.team1_id, m.team2_id,
                 m.round, m.tournament_id,
                 t1.players as team1_players, t2.players as team2_players
          FROM matches m
@@ -666,6 +666,29 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
         matchSlug: match.slug,
         label: 'match_ready',
         matchName,
+      });
+    }
+
+    // Held before its veto started (the break between a team's matches, or an
+    // admin's hold): "the veto opens at …", with the time for a countdown.
+    const heldUntil = Number((match as { held_until?: number | null }).held_until ?? 0);
+    const vetoStarted = Array.isArray(vetoState?.actions) && vetoState.actions.length > 0;
+    if (
+      (match.status === 'pending' || match.status === 'ready') &&
+      !vetoCompleted &&
+      !vetoStarted &&
+      heldUntil > Math.floor(Date.now() / 1000)
+    ) {
+      return res.json({
+        success: true,
+        status: 'veto_soon',
+        matchSlug: match.slug,
+        label: 'veto_soon',
+        matchName,
+        viewerTeam: isTeam1 ? 'team1' : 'team2',
+        vetoActionCount: 0,
+        lastVetoActionTeam: null,
+        opensAt: new Date(heldUntil * 1000).toISOString(),
       });
     }
 

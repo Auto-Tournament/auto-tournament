@@ -11,7 +11,13 @@ interface VetoLineState {
   status?: string;
   currentTurn?: string;
   currentAction?: string;
-  actions?: Array<{ team: string; action: string; mapName?: string; side?: string; timedOut?: boolean }>;
+  actions?: Array<{
+    team: string;
+    action: string;
+    mapName?: string;
+    side?: string;
+    timedOut?: boolean;
+  }>;
   pickedMaps?: Array<{ mapName: string; mapNumber: number }>;
 }
 
@@ -33,7 +39,8 @@ export async function postVetoProgress(slug: string, state: VetoLineState): Prom
     if (!last) return;
     const names = await teamNames(slug);
     const team = last.team === 'team1' ? names.team1 : names.team2;
-    const key = last.action === 'ban' ? 'vetoBan' : last.action === 'pick' ? 'vetoPick' : 'vetoSide';
+    const key =
+      last.action === 'ban' ? 'vetoBan' : last.action === 'pick' ? 'vetoPick' : 'vetoSide';
     await postMatchChatLine(slug, key, {
       team,
       map: last.mapName ?? '',
@@ -41,7 +48,9 @@ export async function postVetoProgress(slug: string, state: VetoLineState): Prom
       timedOut: last.timedOut === true,
     });
     if (state.status === 'completed') {
-      const maps = [...(state.pickedMaps ?? [])].sort((a, b) => a.mapNumber - b.mapNumber).map((m) => m.mapName);
+      const maps = [...(state.pickedMaps ?? [])]
+        .sort((a, b) => a.mapNumber - b.mapNumber)
+        .map((m) => m.mapName);
       await postMatchChatLine(slug, 'vetoDone', { maps });
     }
   } catch {
@@ -52,7 +61,11 @@ export async function postVetoProgress(slug: string, state: VetoLineState): Prom
 const announced = new Set<string>();
 
 /** "Veto started · X bans first", once per match. */
-export async function postVetoStarted(slug: string, turn: 'team1' | 'team2', action: string): Promise<void> {
+export async function postVetoStarted(
+  slug: string,
+  turn: 'team1' | 'team2',
+  action: string
+): Promise<void> {
   if (announced.has(slug)) return;
   announced.add(slug);
   try {
@@ -62,7 +75,10 @@ export async function postVetoStarted(slug: string, turn: 'team1' | 'team2', act
     );
     if ((seen?.n ?? 0) > 0) return;
     const names = await teamNames(slug);
-    await postMatchChatLine(slug, 'vetoStarted', { team: turn === 'team1' ? names.team1 : names.team2, action });
+    await postMatchChatLine(slug, 'vetoStarted', {
+      team: turn === 'team1' ? names.team1 : names.team2,
+      action,
+    });
   } catch {
     // As above.
   }

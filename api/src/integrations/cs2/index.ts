@@ -301,8 +301,18 @@ export const cs2Integration: GameIntegration = {
       await autoCompleteVetoForMatch(ctx.slug);
       return;
     }
-    log.info(`[VETO] Both teams known for ${ctx.slug}: the veto is open`);
+    // The break between a team's matches: the veto waits for it (veto/break.ts).
+    const { holdForMatchBreak } = await import('./veto/break');
+    const opensAt = await holdForMatchBreak(ctx.slug);
     const { announceVetoOpen } = await import('./veto/announce');
+    if (opensAt) {
+      log.info(
+        `[VETO] Both teams known for ${ctx.slug}: the veto opens after the break, at ${new Date(opensAt * 1000).toISOString()}`
+      );
+      void announceVetoOpen(ctx.slug, opensAt);
+      return;
+    }
+    log.info(`[VETO] Both teams known for ${ctx.slug}: the veto is open`);
     void announceVetoOpen(ctx.slug);
   },
 
@@ -789,6 +799,9 @@ export const cs2Integration: GameIntegration = {
    * back (counting afresh) once it goes ahead.
    */
   async onHoldChanged(ctx) {
+    // A break (or hold) over before the veto started: the veto is open now; say so.
+    const { vetoOpenedAfterHold } = await import('./veto/break');
+    await vetoOpenedAfterHold(ctx.slug);
     const { getAssignment, syncMatch } = await import('./fleet/driver');
     const assignment = await getAssignment(ctx.slug);
     if (!assignment || assignment.endedAt !== null) return;

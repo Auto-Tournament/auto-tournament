@@ -120,6 +120,22 @@ class Cs2Settings {
   }
 
   /** Seconds per veto step before the platform picks for the team (unset = defaultVetoTurnSeconds, 0 = no limit). */
+  /** Minutes between a team's matches before the next one's veto opens (0 = none; default 5). */
+  async getMatchBreakMinutes(): Promise<number> {
+    const value = await this.getSetting('at_match_break_minutes');
+    if (value === null || value === undefined || value === '') return 5;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.min(Math.round(parsed), 120) : 0;
+  }
+
+  /** Seconds for the first veto turn of a match (default 120; 0 = the usual turn). */
+  async getVetoFirstTurnSeconds(): Promise<number> {
+    const value = await this.getSetting('at_veto_first_turn_seconds');
+    if (value === null || value === undefined || value === '') return 120;
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed > 0 ? Math.min(parsed, 900) : 0;
+  }
+
   async getVetoTurnSeconds(): Promise<number> {
     const value = await this.getSetting('at_veto_turn_seconds');
     if (value === null || value === undefined || value === '') return defaultVetoTurnSeconds();
@@ -369,6 +385,8 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     atJoinPassword: await cs2Settings.isAtJoinPasswordEnabled(),
     atAutostartAfterMinutes: await cs2Settings.getAtAutostartAfterMinutes(),
     vetoTurnSeconds: await cs2Settings.getVetoTurnSeconds(),
+    vetoFirstTurnSeconds: await cs2Settings.getVetoFirstTurnSeconds(),
+    matchBreakMinutes: await cs2Settings.getMatchBreakMinutes(),
     atStopCommandAvailable: atCore.stopCommandAvailable,
     atStopCommandNoDamage: atCore.stopCommandNoDamage,
     atUsePauseCommandForTacticalPause: atCore.usePauseCommandForTacticalPause,

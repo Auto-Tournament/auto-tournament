@@ -43,6 +43,8 @@ export type Cs2SettingKey =
   | 'at_join_password'
   | 'at_autostart_after_minutes'
   | 'at_veto_turn_seconds'
+  | 'at_veto_first_turn_seconds'
+  | 'at_match_break_minutes'
   | 'at_stop_command_available'
   | 'at_stop_command_no_damage'
   | 'at_use_pause_command_for_tactical_pause'
@@ -308,6 +310,18 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     min: 0,
     max: 600,
     message: 'at_veto_turn_seconds must be 0-600 seconds',
+  }),
+  // Seconds for a match's first veto turn: players coming from their last match need longer (0 = the usual turn).
+  integer('at_veto_first_turn_seconds', 'vetoFirstTurnSeconds', 247, {
+    min: 0,
+    max: 900,
+    message: 'at_veto_first_turn_seconds must be 0-900 seconds',
+  }),
+  // Minutes between a team's matches before the next one's veto opens (0 = straight on).
+  integer('at_match_break_minutes', 'matchBreakMinutes', 248, {
+    min: 0,
+    max: 120,
+    message: 'at_match_break_minutes must be 0-120 minutes',
   }),
   // MatchZy Enhanced v1.3.0 settings
   binary('at_autoready_enabled', 'atAutoreadyEnabled', 250),

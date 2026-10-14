@@ -10,7 +10,8 @@
       "matchReady": "Kampen er klar – koble til",
       "matchReadyNamed": "Kampen er klar: {{match}}.",
       "openMatch": "Åpne kampen",
-      "snackbarOpponentMoved": "Motstanderen gjorde sitt valg"
+      "snackbarOpponentMoved": "Motstanderen gjorde sitt valg",
+      "vetoSoon": "Veto snart"
     },
     "home": "Hjem",
     "browse": "Utforsk",
@@ -157,5 +158,18 @@
     "noneBody": "Du har ingen kamp på vei. Finn en i Spill, eller bli med i en turnering.",
     "play": "Spill",
     "home": "Hjem"
+  },
+  "nextMatch": {
+    "soonTitle": "Neste kamp",
+    "soonBody": "Først en kort pause. Kartvetoen åpner når nedtellingen er ferdig, og du hører et signal.",
+    "opensIn": "Vetoen åpner om {{clock}}",
+    "vetoOpenTitle": "Neste kamp er klar",
+    "vetoOpenBody": "Kartvetoen er åpen. Gå til kampen for å bannlyse og velge kart.",
+    "vetoTurnTitle": "Din tur i vetoen",
+    "vetoTurnBody": "Velg eller bannlys før tiden er ute.",
+    "readyTitle": "Kampen din er klar",
+    "readyBody": "Serveren er klar. Koble til nå.",
+    "later": "Senere",
+    "go": "Gå til kampen"
   }
 }

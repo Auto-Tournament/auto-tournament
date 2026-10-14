@@ -306,6 +306,8 @@ export interface VetoState {
   turnDeadline?: string;
   /** Seconds per turn (Match rules), with `turnDeadline`. */
   turnSeconds?: number;
+  /** The break between a team's matches: the veto opens then (ISO); no actions until. */
+  opensAt?: string;
 }
 
 export interface VetoStep {

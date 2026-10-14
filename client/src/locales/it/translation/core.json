@@ -7,7 +7,8 @@
       "matchReady": "Match pronto – connettiti",
       "matchReadyNamed": "Match pronto: {{match}}.",
       "openMatch": "Apri il match",
-      "snackbarOpponentMoved": "L’avversario ha fatto la sua mossa"
+      "snackbarOpponentMoved": "L’avversario ha fatto la sua mossa",
+      "vetoSoon": "Veto soon"
     },
     "home": "Home",
     "browse": "Browse",
@@ -157,5 +158,18 @@
     "noneBody": "You have no match coming up. Find one in Play, or join a tournament.",
     "play": "Play",
     "home": "Home"
+  },
+  "nextMatch": {
+    "soonTitle": "Your next match",
+    "soonBody": "A short break first. The map veto opens when the countdown ends, and you will hear it.",
+    "opensIn": "Veto opens in {{clock}}",
+    "vetoOpenTitle": "Your next match is ready",
+    "vetoOpenBody": "The map veto is open. Go to the match to ban and pick.",
+    "vetoTurnTitle": "Your turn in the veto",
+    "vetoTurnBody": "Pick or ban before the timer runs out.",
+    "readyTitle": "Your match is ready",
+    "readyBody": "The server is ready. Join it now.",
+    "later": "Later",
+    "go": "Go to match"
   }
 }

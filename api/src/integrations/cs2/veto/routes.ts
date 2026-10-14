@@ -20,7 +20,7 @@ import { resolveViewerIdentity } from '../../../utils/viewerIdentity';
 import { checkAdminAccess, requireAuth } from '../../../middleware/auth';
 import { tournamentRowToResponse } from '../../../utils/tournamentRow';
 import { mapService } from '../maps/mapService';
-import { vetoTurnDeadline } from './timer';
+import { vetoTurnDeadline, vetoWaitingOnHold } from './timer';
 import { postVetoProgress } from './chatLines';
 
 const router = Router();
@@ -302,6 +302,8 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
     if (turnClock) {
       vetoState.turnDeadline = turnClock.deadline;
       vetoState.turnSeconds = turnClock.seconds;
+      // Held (the break between a team's matches): the veto opens then.
+      (vetoState as { opensAt?: string }).opensAt = turnClock.opensAt;
     }
 
     // Everyone sees the veto as it happens (the MatchRoom board): which maps
@@ -357,6 +359,15 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       return res.status(404).json({
         success: false,
         error: 'Match not found',
+      });
+    }
+    // The break between a team's matches (or an admin's hold): the veto opens when it ends.
+    const opensAt = await vetoWaitingOnHold(matchSlug);
+    if (opensAt) {
+      return res.status(409).json({
+        success: false,
+        error: 'The veto has not opened yet: it opens when the break between matches ends.',
+        opensAt,
       });
     }
 

@@ -12,13 +12,13 @@ export interface VetoStep {
 /**
  * Standard CS Major veto formats
  * These follow the official Counter-Strike Major Supplemental Rulebook standards
- * 
+ *
  * Best of 1:
  * - Team A removes 2 maps
  * - Team B removes 3 maps
  * - Team A removes 1 map
  * - Team B chooses starting side
- * 
+ *
  * Best of 3:
  * - Team A removes 1 map
  * - Team B removes 1 map
@@ -142,7 +142,7 @@ export function validateVetoOrder(
       };
     }
   } else if (format === 'bo3') {
-    // BO3 CS Major format: 
+    // BO3 CS Major format:
     // - Team A removes 1, Team B removes 1
     // - Team A picks Map 1, Team B picks side on Map 1
     // - Team B picks Map 2, Team A picks side on Map 2
@@ -188,14 +188,14 @@ export function validateVetoOrder(
     // The decider side pick is the last one, so we exclude it from this check
     const deciderSidePickIndex = sidePickIndices[sidePickIndices.length - 1];
     const sidePicksForPickedMaps = sidePickIndices.slice(0, -1); // All except the last (decider)
-    
+
     for (let i = 0; i < pickIndices.length; i++) {
       const pickIndex = pickIndices[i];
       // Find side picks that come after this pick but before the next pick (or before decider side pick)
       const sidePicksAfterThisPick = sidePicksForPickedMaps.filter((spi) => spi > pickIndex);
       const nextPickIndex = i < pickIndices.length - 1 ? pickIndices[i + 1] : deciderSidePickIndex;
       const sidePicksBeforeNextPick = sidePicksAfterThisPick.filter((spi) => spi < nextPickIndex);
-      
+
       if (sidePicksBeforeNextPick.length !== 1) {
         return {
           valid: false,
@@ -263,7 +263,7 @@ export function validateVetoOrder(
       // Find side picks that come after the next pick (if any)
       const nextPickIndex = i < pickIndices.length - 1 ? pickIndices[i + 1] : vetoOrder.length;
       const sidePicksBeforeNextPick = sidePicksAfterThisPick.filter((spi) => spi < nextPickIndex);
-      
+
       if (sidePicksBeforeNextPick.length !== 1) {
         return {
           valid: false,

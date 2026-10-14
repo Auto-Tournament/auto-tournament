@@ -529,6 +529,11 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         </Paper>
       )}
 
+      {/* The break between matches: the veto opens after a countdown. */}
+      {vetoState.opensAt && (
+        <VetoOpensCountdown opensAt={vetoState.opensAt} onOpen={loadVetoState} />
+      )}
+
       {/* The turn's time, for everyone (both teams and spectators), every
           step including the side pick: a bar that drains as the clock runs. */}
       {vetoState.turnDeadline && (
@@ -1183,5 +1188,41 @@ function VetoStepStrip({
         );
       })}
     </Box>
+  );
+}
+
+/**
+ * "The veto opens in 4:32": the break between a team's matches, counting
+ * down; at zero the veto is loaded again (the navbar plays the sound).
+ */
+function VetoOpensCountdown({ opensAt, onOpen }: { opensAt: string; onOpen: () => void }) {
+  const { t } = useModuleTranslation('cs2');
+  const target = Date.parse(opensAt);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  useEffect(() => {
+    if (!Number.isFinite(target)) return;
+    const id = window.setTimeout(onOpen, Math.max(0, target - Date.now()) + 1500);
+    return () => window.clearTimeout(id);
+  }, [target, onOpen]);
+  if (!Number.isFinite(target)) return null;
+  const left = Math.max(0, Math.round((target - now) / 1000));
+  const clock = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+  return (
+    <Paper
+      variant="outlined"
+      data-testid="veto-opens-countdown"
+      sx={{ p: 2, mb: 2, textAlign: 'center', borderColor: tokens.color.accent }}
+    >
+      <Typography sx={{ fontWeight: 600 }}>
+        {left > 0 ? t('vetoInterface.opensIn', { clock }) : t('vetoInterface.opening')}
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        {t('vetoInterface.opensBreak')}
+      </Typography>
+    </Paper>
   );
 }

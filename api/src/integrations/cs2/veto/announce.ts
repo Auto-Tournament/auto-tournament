@@ -10,7 +10,8 @@ import { announceVetoTurn } from '../../../services/matchNotices';
 import { playerConnectionService } from '../../../services/playerConnectionService';
 import { sayInGame } from '../fleet/gameMessages';
 
-export async function announceVetoOpen(slug: string): Promise<void> {
+/** `opensAt` (unix s): the veto waits for the break; players are told when it opens instead. */
+export async function announceVetoOpen(slug: string, opensAt?: number): Promise<void> {
   try {
     const match = await db.queryOneAsync<{
       slug: string;
@@ -34,7 +35,7 @@ export async function announceVetoOpen(slug: string): Promise<void> {
       [slug]
     );
     const turn = full ? await resolveCurrentVetoTurn(full as never) : null;
-    if (turn?.currentTurn === 'team1' || turn?.currentTurn === 'team2') {
+    if (!opensAt && (turn?.currentTurn === 'team1' || turn?.currentTurn === 'team2')) {
       await announceVetoTurn(slug, turn.currentTurn, 1, String(turn.currentAction ?? 'ban'));
     }
 
@@ -64,7 +65,18 @@ export async function announceVetoOpen(slug: string): Promise<void> {
     for (const row of recent) {
       for (const p of playerConnectionService.getStatus(row.slug)?.connectedPlayers ?? []) {
         if (players.has(p.steamId)) {
-          void sayInGame(row.server_id, 'nextMatchReady', { name, url }, { to: p.steamId });
+          void sayInGame(
+            row.server_id,
+            opensAt ? 'nextMatchSoon' : 'nextMatchReady',
+            {
+              name,
+              url,
+              minutes: opensAt
+                ? Math.max(1, Math.round((opensAt * 1000 - Date.now()) / 60000))
+                : undefined,
+            },
+            { to: p.steamId }
+          );
         }
       }
     }

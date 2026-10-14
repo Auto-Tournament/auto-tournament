@@ -409,7 +409,10 @@
     "actFor": {
       "label": "Act for:",
       "watch": "Just watch"
-    }
+    },
+    "opensIn": "The veto opens in {{clock}}",
+    "opening": "The veto is opening…",
+    "opensBreak": "A short break between matches: get ready, the first turn gets extra time."
   },
   "matchInfo": {
     "server": {
@@ -1234,6 +1237,14 @@
         "redrawFailed": "Could not queue the redraw."
       },
       "moved": "Highlight settings, the recorders and how to add one are on their own page now:"
+    },
+    "vetoFirstTurn": {
+      "label": "First veto turn (seconds)",
+      "helper": "Longer than the other turns: players are coming from their last match. 0 = the usual turn."
+    },
+    "matchBreak": {
+      "label": "Break between a team's matches (minutes)",
+      "helper": "The next match's veto opens this long after the team's last match ended. 0 = straight on."
     }
   },
   "roster": {

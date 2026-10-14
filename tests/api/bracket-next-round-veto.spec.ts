@@ -59,7 +59,14 @@ test.describe.serial('Next-round veto', () => {
     // Simulation off (the state that got stuck); a 1 s turn so the veto timer
     // plays the final's veto for both teams (veto/timer.ts), as it did for the
     // bot teams in the live test.
-    await request.put('/api/settings', { data: { simulateMatches: false, vetoTurnSeconds: 1 } });
+    await request.put('/api/settings', {
+      data: {
+        simulateMatches: false,
+        vetoTurnSeconds: 1,
+        matchBreakMinutes: 0,
+        vetoFirstTurnSeconds: 0,
+      },
+    });
   });
 
   test.afterEach(async ({ request }) => {
