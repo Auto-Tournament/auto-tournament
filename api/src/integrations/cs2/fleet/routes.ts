@@ -28,7 +28,7 @@
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { requireAuth, requestActorId } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
-import { publicWsOrigin } from '../../../utils/publicOrigin';
+import { publicOrigin, publicWsOrigin } from '../../../utils/publicOrigin';
 import {
   validateEnrollRequest,
   FLEET_CLOSE,
@@ -107,6 +107,14 @@ function wsUrl(req: Request): string {
 }
 
 export const fleetEnrollRouter = Router();
+
+/** GET /api/fleet/install-csm.sh: the one-line machine link's script (hosts/routes.ts installCsmScript). */
+fleetEnrollRouter.get('/install-csm.sh', async (req: Request, res: Response) => {
+  const { installCsmScript } = await import('./hosts/routes');
+  res.setHeader('Content-Type', 'text/x-shellscript; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  return res.send(installCsmScript(publicOrigin(req)));
+});
 
 /**
  * POST /api/fleet/enroll
