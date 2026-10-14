@@ -1,5 +1,7 @@
 import React from 'react';
 import {
+  Avatar,
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -11,6 +13,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { soundNotification } from '../../utils/soundNotification';
 import { matchPagePath } from '../../paths';
+import type { MatchupSide } from '../../hooks/useCurrentMatchStatus';
 
 /**
  * "Your next match is ready" / "Your turn in the veto": a dialog with a sound
@@ -48,6 +51,7 @@ export function NextMatchDialog({
   matchName,
   vetoActionCount,
   opensAt = null,
+  matchup = null,
   loading,
 }: {
   status: string;
@@ -56,6 +60,8 @@ export function NextMatchDialog({
   vetoActionCount: number | null;
   /** `veto_soon`: when the veto opens (ISO). */
   opensAt?: string | null;
+  /** Your team and the opponent: shown as "You vs Them" with logos. */
+  matchup?: { you: MatchupSide; opponent: MatchupSide } | null;
   loading: boolean;
 }) {
   const { t } = useTranslation();
@@ -111,10 +117,27 @@ export function NextMatchDialog({
     >
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
-        {matchName && (
-          <Typography sx={{ fontWeight: 600, mb: 1 }} data-testid="next-match-name">
-            {matchName}
-          </Typography>
+        {matchup?.you.name && matchup.opponent.name ? (
+          <Box
+            data-testid="next-match-matchup"
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)',
+              alignItems: 'center',
+              gap: 1.5,
+              my: 1.5,
+            }}
+          >
+            <MatchupTeam side={matchup.you} label={t('nextMatch.yourTeam', 'Your team')} />
+            <Typography sx={{ color: 'text.secondary', fontWeight: 700 }}>vs</Typography>
+            <MatchupTeam side={matchup.opponent} label={t('nextMatch.opponent', 'Opponent')} />
+          </Box>
+        ) : (
+          matchName && (
+            <Typography sx={{ fontWeight: 600, mb: 1 }} data-testid="next-match-name">
+              {matchName}
+            </Typography>
+          )
         )}
         {open.kind === 'veto_soon' && opensAt && <OpensCountdown opensAt={opensAt} />}
         <Typography color="text.secondary">{body}</Typography>
@@ -132,6 +155,29 @@ export function NextMatchDialog({
         </Button>
       </DialogActions>
     </Dialog>
+  );
+}
+
+/** One team of the matchup: logo (or its tag), name, and whose it is. */
+function MatchupTeam({ side, label }: { side: MatchupSide; label: string }) {
+  const crest = (side.tag || side.name || '?').slice(0, 3).toUpperCase();
+  return (
+    <Box
+      sx={{ display: 'grid', justifyItems: 'center', gap: 0.75, minWidth: 0, textAlign: 'center' }}
+    >
+      <Avatar
+        src={side.logoUrl ?? undefined}
+        alt={side.name ?? ''}
+        variant="rounded"
+        sx={{ width: 56, height: 56, fontWeight: 700, fontSize: '0.9rem' }}
+      >
+        {crest}
+      </Avatar>
+      <Typography sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>{side.name}</Typography>
+      <Typography variant="caption" color="text.secondary">
+        {label}
+      </Typography>
+    </Box>
   );
 }
 

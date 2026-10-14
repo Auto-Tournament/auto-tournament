@@ -1,5 +1,4 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { currentTournamentMatches } from '../helpers/slugs';
 import { signInViaRequest } from '../helpers/auth';
 
 /**
@@ -48,9 +47,7 @@ async function createTeams(request: APIRequestContext, prefix: string, count: nu
       steamId: `76561199${stamp}${t}${p}`,
       name: `${prefix} ${t}.${p}`,
     }));
-    const res = await request.post('/api/teams', {
-      data: { id, name: `${prefix} ${stamp} ${t}`, players },
-    });
+    const res = await request.post('/api/teams', { data: { id, name: `${prefix} ${stamp} ${t}`, players } });
     expect(res.ok(), `creating team ${id}: ${await res.text()}`).toBe(true);
     ids.push(id);
   }
@@ -61,17 +58,15 @@ async function listMatches(request: APIRequestContext): Promise<ListedMatch[]> {
   const res = await request.get('/api/matches');
   expect(res.ok(), `listing matches: ${await res.text()}`).toBe(true);
   const body = (await res.json()) as { matches?: ListedMatch[] };
-  return (await currentTournamentMatches(request, body.matches ?? [])).filter((m) => m.round >= 1);
+  return (body.matches ?? []).filter((m) => m.round >= 1);
 }
 
 async function tournament(request: APIRequestContext) {
   const res = await request.get('/api/tournament');
   expect(res.ok()).toBe(true);
-  return (
-    (await res.json()) as {
-      tournament?: { status?: string; game?: string; winner?: { id: string } | null };
-    }
-  ).tournament;
+  return ((await res.json()) as {
+    tournament?: { status?: string; game?: string; winner?: { id: string } | null };
+  }).tournament;
 }
 
 async function createFakeTournament(
@@ -99,12 +94,7 @@ async function postEvents(request: APIRequestContext, slug: string, events: unkn
 }
 
 /** Play a series to a `winner` sweep: one map.result per map, then series.ended. */
-async function playSeries(
-  request: APIRequestContext,
-  match: ListedMatch,
-  games: number,
-  winner: Side
-) {
+async function playSeries(request: APIRequestContext, match: ListedMatch, games: number, winner: Side) {
   const slug = match.slug;
   const events: unknown[] = [
     { type: 'series.started', slug, eventId: eventId(slug, 'start'), seriesLength: games },
@@ -120,10 +110,7 @@ async function playSeries(
       team1Score: winner === 'team1' ? 13 : 7,
       team2Score: winner === 'team2' ? 13 : 7,
       winner,
-      seriesScore: {
-        team1: winner === 'team1' ? series : 0,
-        team2: winner === 'team2' ? series : 0,
-      },
+      seriesScore: { team1: winner === 'team1' ? series : 0, team2: winner === 'team2' ? series : 0 },
     });
   }
   events.push({
@@ -170,9 +157,7 @@ test.describe.serial('Fake integration: a tournament without CS2', () => {
     // The fake game has no servers, so it needs no webhook URL to start
     // (`tournament-start-webhook.spec.ts` proves that). This only puts the
     // suite's default back, and turns simulation off.
-    await request.put('/api/settings', {
-      data: { webhookUrl: 'http://localhost:3069', simulateMatches: false },
-    });
+    await request.put('/api/settings', { data: { webhookUrl: 'http://localhost:3069', simulateMatches: false } });
   });
 
   test.afterAll(async ({ request }) => {
@@ -236,36 +221,22 @@ test.describe.serial('Fake integration: a tournament without CS2', () => {
     }
   );
 
-  test(
-    'swiss BO1: rounds are paired and allocated until a champion',
-    { tag: ['@api'] },
-    async ({ request }) => {
-      const teamIds = await createTeams(request, 'fake-sw', 4);
-      await createFakeTournament(request, {
-        name: 'Fake swiss',
-        type: 'swiss',
-        format: 'bo1',
-        teamIds,
-      });
-      await start(request);
+  test('swiss BO1: rounds are paired and allocated until a champion', { tag: ['@api'] }, async ({ request }) => {
+    const teamIds = await createTeams(request, 'fake-sw', 4);
+    await createFakeTournament(request, { name: 'Fake swiss', type: 'swiss', format: 'bo1', teamIds });
+    await start(request);
 
-      for (const round of [1, 2]) {
-        const matches = await waitForLoadedRound(request, round, 2);
-        expect(matches.every((m) => m.game === 'fake')).toBe(true);
-        for (const match of matches) {
-          await playSeries(
-            request,
-            match,
-            1,
-            match.team1!.id < match.team2!.id ? 'team1' : 'team2'
-          );
-        }
+    for (const round of [1, 2]) {
+      const matches = await waitForLoadedRound(request, round, 2);
+      expect(matches.every((m) => m.game === 'fake')).toBe(true);
+      for (const match of matches) {
+        await playSeries(request, match, 1, match.team1!.id < match.team2!.id ? 'team1' : 'team2');
       }
-
-      const done = await waitForCompletion(request);
-      expect(done?.winner?.id).toBeTruthy();
     }
-  );
+
+    const done = await waitForCompletion(request);
+    expect(done?.winner?.id).toBeTruthy();
+  });
 
   /**
    * Round robin used to stall on a game with no veto (the gap PR #295 left
@@ -277,127 +248,91 @@ test.describe.serial('Fake integration: a tournament without CS2', () => {
    * Now the finished round opens the next one, the way Swiss pairs its next
    * round and the elimination brackets ready the match a winner advances into.
    */
-  test(
-    'round robin: each finished round opens the next one, up to a champion',
-    { tag: ['@api'] },
-    async ({ request }) => {
-      const teamIds = await createTeams(request, 'fake-rr', 4);
-      await createFakeTournament(request, {
-        name: 'Fake round robin',
-        type: 'round_robin',
+  test('round robin: each finished round opens the next one, up to a champion', { tag: ['@api'] }, async ({ request }) => {
+    const teamIds = await createTeams(request, 'fake-rr', 4);
+    await createFakeTournament(request, {
+      name: 'Fake round robin',
+      type: 'round_robin',
+      format: 'bo1',
+      teamIds,
+    });
+
+    // 4 teams: 3 rounds of 2, every pairing seeded from the start. Round 1 is
+    // ready without a veto; the later rounds wait their turn.
+    const created = await listMatches(request);
+    expect(created).toHaveLength(6);
+    expect(created.filter((m) => m.round === 1).map((m) => m.status)).toEqual(['ready', 'ready']);
+    expect(created.filter((m) => m.round > 1).every((m) => m.status === 'pending')).toBe(true);
+    expect(created.filter((m) => m.round > 1).every((m) => m.team1 && m.team2)).toBe(true);
+
+    await start(request);
+
+    const round1 = await waitForLoadedRound(request, 1, 2);
+
+    // Half a round is not a round: the next one stays shut.
+    await playSeries(request, round1[0], 1, 'team1');
+    expect(
+      (await listMatches(request)).filter((m) => m.round === 2).every((m) => m.status === 'pending'),
+      'round 2 waits for the whole of round 1'
+    ).toBe(true);
+    await playSeries(request, round1[1], 1, 'team1');
+
+    // Rounds 2 and 3 open on their own, one at a time.
+    for (const round of [2, 3]) {
+      const matches = await waitForLoadedRound(request, round, 2);
+      expect(matches.every((m) => !m.serverId)).toBe(true);
+      const later = (await listMatches(request)).filter((m) => m.round > round);
+      expect(later.every((m) => m.status === 'pending'), `round ${round + 1} is not open yet`).toBe(true);
+      for (const match of matches) await playSeries(request, match, 1, 'team1');
+    }
+
+    const done = await waitForCompletion(request);
+    expect(done?.winner?.id, 'a round robin ends with a champion').toBeTruthy();
+    expect((await listMatches(request)).every((m) => m.status === 'completed')).toBe(true);
+
+    // The standings are the core's, computed over all 6 completed matches.
+    const bracket = await request.get('/api/tournament/bracket');
+    expect(bracket.ok()).toBe(true);
+    const standings = ((await bracket.json()) as {
+      roundRobinStandings?: Array<{ teamId: string; wins: number; losses: number }>;
+    }).roundRobinStandings;
+    expect(standings).toHaveLength(4);
+    expect(standings!.reduce((sum, s) => sum + s.wins, 0)).toBe(6);
+  });
+
+  test('the event route checks its input and only drives the fake game', { tag: ['@api'] }, async ({ request }) => {
+    expect((await request.post(`${FAKE}/r1m1/events`, { data: { type: 'map.result' } })).status()).toBe(400);
+    expect(
+      (await request.post(`${FAKE}/r1m1/events`, { data: [{ type: 'map_result', slug: 'r1m1', eventId: 'x' }] })).status()
+    ).toBe(400);
+    expect(
+      (await request.post(`${FAKE}/r1m1/events`, { data: [{ type: 'series.ended', slug: 'other', eventId: 'x' }] })).status()
+    ).toBe(400);
+    expect(
+      (await request.post(`${FAKE}/no-such-match/events`, {
+        data: [{ type: 'phase.changed', slug: 'no-such-match', eventId: 'x', phase: 'warmup' }],
+      })).status()
+    ).toBe(404);
+
+    // A CS2 match is refused, whatever the events say.
+    const [a, b] = await createTeams(request, 'fake-cs2', 2);
+    const created = await request.post('/api/tournament', {
+      data: {
+        name: 'CS2 tournament',
+        type: 'single_elimination',
         format: 'bo1',
-        teamIds,
-      });
-
-      // 4 teams: 3 rounds of 2, every pairing seeded from the start. Round 1 is
-      // ready without a veto; the later rounds wait their turn.
-      const created = await listMatches(request);
-      expect(created).toHaveLength(6);
-      expect(created.filter((m) => m.round === 1).map((m) => m.status)).toEqual(['ready', 'ready']);
-      expect(created.filter((m) => m.round > 1).every((m) => m.status === 'pending')).toBe(true);
-      expect(created.filter((m) => m.round > 1).every((m) => m.team1 && m.team2)).toBe(true);
-
-      await start(request);
-
-      const round1 = await waitForLoadedRound(request, 1, 2);
-
-      // Half a round is not a round: the next one stays shut.
-      await playSeries(request, round1[0], 1, 'team1');
-      expect(
-        (await listMatches(request))
-          .filter((m) => m.round === 2)
-          .every((m) => m.status === 'pending'),
-        'round 2 waits for the whole of round 1'
-      ).toBe(true);
-      await playSeries(request, round1[1], 1, 'team1');
-
-      // Rounds 2 and 3 open on their own, one at a time.
-      for (const round of [2, 3]) {
-        const matches = await waitForLoadedRound(request, round, 2);
-        expect(matches.every((m) => !m.serverId)).toBe(true);
-        const later = (await listMatches(request)).filter((m) => m.round > round);
-        expect(
-          later.every((m) => m.status === 'pending'),
-          `round ${round + 1} is not open yet`
-        ).toBe(true);
-        for (const match of matches) await playSeries(request, match, 1, 'team1');
-      }
-
-      const done = await waitForCompletion(request);
-      expect(done?.winner?.id, 'a round robin ends with a champion').toBeTruthy();
-      expect((await listMatches(request)).every((m) => m.status === 'completed')).toBe(true);
-
-      // The standings are the core's, computed over all 6 completed matches.
-      const bracket = await request.get('/api/tournament/bracket');
-      expect(bracket.ok()).toBe(true);
-      const standings = (
-        (await bracket.json()) as {
-          roundRobinStandings?: Array<{ teamId: string; wins: number; losses: number }>;
-        }
-      ).roundRobinStandings;
-      expect(standings).toHaveLength(4);
-      expect(standings!.reduce((sum, s) => sum + s.wins, 0)).toBe(6);
-    }
-  );
-
-  test(
-    'the event route checks its input and only drives the fake game',
-    { tag: ['@api'] },
-    async ({ request }) => {
-      expect(
-        (await request.post(`${FAKE}/r1m1/events`, { data: { type: 'map.result' } })).status()
-      ).toBe(400);
-      expect(
-        (
-          await request.post(`${FAKE}/r1m1/events`, {
-            data: [{ type: 'map_result', slug: 'r1m1', eventId: 'x' }],
-          })
-        ).status()
-      ).toBe(400);
-      expect(
-        (
-          await request.post(`${FAKE}/r1m1/events`, {
-            data: [{ type: 'series.ended', slug: 'other', eventId: 'x' }],
-          })
-        ).status()
-      ).toBe(400);
-      expect(
-        (
-          await request.post(`${FAKE}/no-such-match/events`, {
-            data: [{ type: 'phase.changed', slug: 'no-such-match', eventId: 'x', phase: 'warmup' }],
-          })
-        ).status()
-      ).toBe(404);
-
-      // A CS2 match is refused, whatever the events say.
-      const [a, b] = await createTeams(request, 'fake-cs2', 2);
-      const created = await request.post('/api/tournament', {
-        data: {
-          name: 'CS2 tournament',
-          type: 'single_elimination',
-          format: 'bo1',
-          maps: ['de_mirage', 'de_inferno', 'de_nuke'],
-          teamIds: [a, b],
-        },
-      });
-      expect(created.ok(), await created.text()).toBe(true);
-      const cs2Match = (await listMatches(request))[0];
-      expect(cs2Match.game).toBe('cs2');
-      const refused = await request.post(`${FAKE}/${cs2Match.slug}/events`, {
-        data: [
-          {
-            type: 'series.ended',
-            slug: cs2Match.slug,
-            eventId: 'x',
-            team1SeriesScore: 1,
-            team2SeriesScore: 0,
-            winner: 'team1',
-          },
-        ],
-      });
-      expect(refused.status()).toBe(409);
-    }
-  );
+        maps: ['de_mirage', 'de_inferno', 'de_nuke'],
+        teamIds: [a, b],
+      },
+    });
+    expect(created.ok(), await created.text()).toBe(true);
+    const cs2Match = (await listMatches(request))[0];
+    expect(cs2Match.game).toBe('cs2');
+    const refused = await request.post(`${FAKE}/${cs2Match.slug}/events`, {
+      data: [{ type: 'series.ended', slug: cs2Match.slug, eventId: 'x', team1SeriesScore: 1, team2SeriesScore: 0, winner: 'team1' }],
+    });
+    expect(refused.status()).toBe(409);
+  });
 
   /**
    * The public create route takes a `game` from 3.0 phase D (PR D9), but only
@@ -410,40 +345,34 @@ test.describe.serial('Fake integration: a tournament without CS2', () => {
    * whatever was asked for; silently running the wrong game is the worse of
    * the two answers, so it is a 400 now.
    */
-  test(
-    'the public create route refuses a game this instance does not have',
-    { tag: ['@api'] },
-    async ({ request }) => {
-      const [a, b] = await createTeams(request, 'fake-pub', 2);
-      const refused = await request.post('/api/tournament', {
-        data: {
-          name: 'Asks for fake',
-          type: 'single_elimination',
-          format: 'bo1',
-          game: 'fake',
-          maps: ['de_mirage', 'de_inferno', 'de_nuke'],
-          teamIds: [a, b],
-        },
-      });
-      expect(refused.status()).toBe(400);
-      expect(await refused.text()).toContain('fake');
+  test('the public create route refuses a game this instance does not have', { tag: ['@api'] }, async ({ request }) => {
+    const [a, b] = await createTeams(request, 'fake-pub', 2);
+    const refused = await request.post('/api/tournament', {
+      data: {
+        name: 'Asks for fake',
+        type: 'single_elimination',
+        format: 'bo1',
+        game: 'fake',
+        maps: ['de_mirage', 'de_inferno', 'de_nuke'],
+        teamIds: [a, b],
+      },
+    });
+    expect(refused.status()).toBe(400);
+    expect(await refused.text()).toContain('fake');
 
-      // With no `game` at all it is a CS2 tournament, as it has always been.
-      const res = await request.post('/api/tournament', {
-        data: {
-          name: 'Asks for nothing',
-          type: 'single_elimination',
-          format: 'bo1',
-          maps: ['de_mirage', 'de_inferno', 'de_nuke'],
-          teamIds: [a, b],
-        },
-      });
-      expect(res.ok(), await res.text()).toBe(true);
-      expect(((await res.json()) as { tournament: { game: string } }).tournament.game).toBe('cs2');
-      // CS2 BO1 round 1 waits for the veto, as before.
-      expect((await listMatches(request)).map((m) => [m.game, m.status])).toEqual([
-        ['cs2', 'pending'],
-      ]);
-    }
-  );
+    // With no `game` at all it is a CS2 tournament, as it has always been.
+    const res = await request.post('/api/tournament', {
+      data: {
+        name: 'Asks for nothing',
+        type: 'single_elimination',
+        format: 'bo1',
+        maps: ['de_mirage', 'de_inferno', 'de_nuke'],
+        teamIds: [a, b],
+      },
+    });
+    expect(res.ok(), await res.text()).toBe(true);
+    expect(((await res.json()) as { tournament: { game: string } }).tournament.game).toBe('cs2');
+    // CS2 BO1 round 1 waits for the veto, as before.
+    expect((await listMatches(request)).map((m) => [m.game, m.status])).toEqual([['cs2', 'pending']]);
+  });
 });

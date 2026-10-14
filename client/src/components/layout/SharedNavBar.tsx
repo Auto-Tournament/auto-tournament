@@ -88,6 +88,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
     vetoActionCount,
     lastVetoActionTeam,
     opensAt,
+    matchup,
   } = useCurrentMatchStatus(playerSteamId ?? null);
   const { showSnackbar, closeSnackbar } = useSnackbar();
 
@@ -274,6 +275,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
         matchName={matchName}
         vetoActionCount={vetoActionCount}
         opensAt={opensAt}
+        matchup={matchup}
         loading={matchStatusLoading}
       />
       <Box
