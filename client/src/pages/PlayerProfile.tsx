@@ -843,7 +843,7 @@ export default function PlayerProfile() {
                       <Button
                         variant="outlined"
                         component={RouterLink}
-                        to="/tournament/1/leaderboard"
+                        to={paths.leaderboards}
                         startIcon={<RankingIcon />}
                         data-testid="player-profile-leaderboard"
                       >
