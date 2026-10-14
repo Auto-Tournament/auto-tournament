@@ -404,6 +404,10 @@
       "you": "vocês",
       "them": "eles",
       "timedOut": "sem tempo"
+    },
+    "actFor": {
+      "label": "Act for:",
+      "watch": "Just watch"
     }
   },
   "matchInfo": {

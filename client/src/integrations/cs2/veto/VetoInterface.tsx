@@ -27,6 +27,7 @@ import {
   mono,
   withAlpha,
   useModuleTranslation,
+  useAuth,
 } from '../../../module-sdk';
 import type { PreMatchViewProps as VetoInterfaceProps } from '../../types';
 
@@ -36,7 +37,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   matchSlug,
   team1Name: propTeam1Name,
   team2Name: propTeam2Name,
-  currentTeamSlug,
+  currentTeamSlug: viewerTeamSlug,
   onComplete,
   hideMatchHeader = false,
 }) => {
@@ -71,6 +72,14 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   // Errors from a refused ban/pick/side action are transient: they must not
   // replace the veto board, or the team loses the UI they were acting in.
   const [actionError, setActionError] = useState('');
+  // An admin who does not play in the match can act for either team.
+  const { isAuthenticated: isAdmin } = useAuth();
+  const [actFor, setActFor] = useState<'team1' | 'team2' | null>(null);
+  const actingForTeam = !viewerTeamSlug && isAdmin ? actFor : null;
+  const currentTeamSlug =
+    actingForTeam && vetoState
+      ? ((actingForTeam === 'team1' ? vetoState.team1Id : vetoState.team2Id) ?? undefined)
+      : viewerTeamSlug;
   const [allMaps, setAllMaps] = useState<
     Map<string, { id: string; displayName: string; imageUrl: string | null }>
   >(new Map());
@@ -245,6 +254,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         body: JSON.stringify({
           mapName,
           teamSlug: currentTeamSlug, // Send which team is making the action
+          ...(actingForTeam ? { actAs: actingForTeam } : {}),
         }),
       });
 
@@ -276,6 +286,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         body: JSON.stringify({
           side,
           teamSlug: currentTeamSlug, // Send which team is making the action
+          ...(actingForTeam ? { actAs: actingForTeam } : {}),
         }),
       });
 
@@ -633,6 +644,48 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               <TurnClock deadline={vetoState.turnDeadline} mine={isMyTurn} tone={actionColor} />
             )}
           </Box>
+
+          {!viewerTeamSlug && isAdmin && (
+            <Box
+              role="group"
+              aria-label={t('vetoInterface.actFor.label')}
+              data-testid="veto-act-for"
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 2 }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                {t('vetoInterface.actFor.label')}
+              </Typography>
+              {([null, 'team1', 'team2'] as const).map((team) => (
+                <Box
+                  key={team ?? 'none'}
+                  component="button"
+                  type="button"
+                  onClick={() => setActFor(team)}
+                  aria-pressed={actFor === team}
+                  data-testid={`veto-act-for-${team ?? 'none'}`}
+                  sx={{
+                    all: 'unset',
+                    cursor: 'pointer',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 999,
+                    fontSize: '0.8125rem',
+                    fontWeight: actFor === team ? 600 : 400,
+                    bgcolor: actFor === team ? color.ink : 'transparent',
+                    color: actFor === team ? color.paper : color.ink2,
+                    border: `1px solid ${color.rule}`,
+                    '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
+                  }}
+                >
+                  {team === null
+                    ? t('vetoInterface.actFor.watch')
+                    : team === 'team1'
+                      ? vetoState.team1Name || propTeam1Name
+                      : vetoState.team2Name || propTeam2Name}
+                </Box>
+              ))}
+            </Box>
+          )}
 
           {/* Every step in one strip (draft "Veto B"): what each one did, whose turn now, what is left. */}
           <VetoStepStrip

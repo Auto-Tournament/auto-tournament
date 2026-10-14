@@ -404,6 +404,10 @@
       "you": "你们",
       "them": "对方",
       "timedOut": "超时"
+    },
+    "actFor": {
+      "label": "Act for:",
+      "watch": "Just watch"
     }
   },
   "matchInfo": {

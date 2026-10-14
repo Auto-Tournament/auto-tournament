@@ -410,6 +410,10 @@
       "you": "wy",
       "them": "oni",
       "timedOut": "skończył się czas"
+    },
+    "actFor": {
+      "label": "Act for:",
+      "watch": "Just watch"
     }
   },
   "matchInfo": {
