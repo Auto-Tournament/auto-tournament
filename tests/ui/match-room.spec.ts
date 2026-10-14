@@ -68,6 +68,10 @@ test.describe.serial('Match room', () => {
     expect(path).toBe(`/match/${encodeURIComponent(slug)}`);
     await expect(page.getByTestId('match-room-player')).toBeVisible({ timeout: 20000 });
     await expect(page.getByTestId('veto-interface')).toBeVisible({ timeout: 20000 });
+    // The way back to the tournament: its page and its bracket.
+    const back = page.getByTestId('match-room-tournament');
+    await expect(back.getByRole('link').first()).toHaveAttribute('href', /^\/tournament\/\d+/);
+    await expect(back.getByRole('link').nth(1)).toHaveAttribute('href', /\/bracket$/);
   });
 
   test('someone not in the match sees the room and the veto, read-only', TAGS, async ({ page }) => {

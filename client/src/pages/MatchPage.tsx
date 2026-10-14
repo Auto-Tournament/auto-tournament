@@ -32,7 +32,8 @@ import { fontDisplay, mono, radii, tokens } from '../theme/tokens';
 import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../contexts/AuthContext';
 import { getStatusLabel } from '../utils/matchUtils';
-import { manageMatchPath, teamProfilePath } from '../paths';
+import { manageMatchPath, teamProfilePath, tournamentTabPath } from '../paths';
+import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { YourMatchCard } from '../components/tournament/match/YourMatchCard';
 import { SpectatorRoom, type SpectatorRoomMatch } from '../components/match/SpectatorRoom';
 
@@ -286,6 +287,45 @@ export default function MatchPage() {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }} data-testid="match-page">
+      {/* Back to the tournament this match is part of: its page and bracket. */}
+      {match.tournamentId && match.tournament && (
+        <Stack
+          direction="row"
+          spacing={1.5}
+          alignItems="center"
+          flexWrap="wrap"
+          useFlexGap
+          sx={{ mb: 3, fontSize: '0.875rem' }}
+          data-testid="match-room-tournament"
+        >
+          <Box
+            component={RouterLink}
+            to={tournamentTabPath(match.tournamentId)}
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.75,
+              color: 'text.secondary',
+              textDecoration: 'none',
+              fontWeight: 600,
+              '&:hover': { color: 'text.primary' },
+            }}
+          >
+            <ArrowLeftIcon size={16} aria-hidden />
+            {match.tournament}
+          </Box>
+          <Box component="span" sx={{ color: 'divider' }} aria-hidden>
+            ·
+          </Box>
+          <Box
+            component={RouterLink}
+            to={tournamentTabPath(match.tournamentId, 'bracket')}
+            sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' } }}
+          >
+            {t('matchPage.bracket')}
+          </Box>
+        </Stack>
+      )}
       {viewerTeamId ? (
         <Box data-testid="match-room-player" sx={{ display: 'grid', gap: 3 }}>
           {matchIsOn && playsThroughModule ? (

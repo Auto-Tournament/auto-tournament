@@ -739,7 +739,8 @@
       },
       "tbd": "To be decided",
       "noRoster": "No players listed yet."
-    }
+    },
+    "bracket": "Bracket"
   },
   "report": {
     "button": "Report",

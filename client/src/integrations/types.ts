@@ -113,6 +113,8 @@ export interface PublicMatch {
   }>;
   completedAt?: number | null;
   tournament?: string | null;
+  /** The tournament's id, for a link to its page (null for a match outside one). */
+  tournamentId?: number | null;
 }
 
 export interface MatchPublicPanelProps {
