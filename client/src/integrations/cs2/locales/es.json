@@ -1247,6 +1247,7 @@
     "summaryOff": "Automatic moves off"
   },
   "pluginSets": {
+    "tryoutLicense": "A Skin tryout server takes a server seat on your license, like any other server. It runs no matches.",
     "presetLabel": "Preajuste de plugins",
     "preset": {
       "tournament": "Torneo",
@@ -1523,6 +1524,7 @@
       "tournamentMatchDrops": "Tournament matches drop too (not in esports mode)",
       "levelUpDrops": "A drop for every new level",
       "tryoutServer": "Keep a Skin tryout server (created on a machine with room while automatic scaling is on)",
+      "tryoutServerLicense": "It takes a server seat on your license, like any other server.",
       "tradeUp": "Mejoras: skins de un grado por uno del siguiente",
       "tradeUpCount": "Skins por mejora",
       "drops": {

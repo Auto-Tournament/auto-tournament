@@ -31,7 +31,7 @@ import {
   type StoredPlugins,
 } from './pluginSets';
 import { readPrefs, recordPush, writePref } from './store';
-import { TRYOUT_HOME_MAP } from '../../skins/tryoutMap';
+import { TRYOUT_HOME_CVARS, TRYOUT_HOME_MAP } from '../../skins/tryoutMap';
 
 export const MAX_WHITELIST = 1000;
 export const MAX_PLUGINS_PER_LIST = 16;
@@ -188,7 +188,7 @@ export async function setPlugins(
   ) {
     await sendCmd(serverId, {
       name: 'practice.set',
-      args: { home_map: '' },
+      args: { home_map: '', home_cvars: [] },
       issued_by: issuedBy,
       expires_at: Date.now() + PRACTICE_TTL_MS,
     });
@@ -200,7 +200,7 @@ export async function setPlugins(
 function practiceServerArgs(preset: string, fleetCmds: boolean): Record<string, unknown> {
   if (!fleetCmds) return { on: true };
   return preset === 'tryout'
-    ? { on: true, always: true, home_map: TRYOUT_HOME_MAP }
+    ? { on: true, always: true, home_map: TRYOUT_HOME_MAP, home_cvars: TRYOUT_HOME_CVARS }
     : { on: true, always: true };
 }
 

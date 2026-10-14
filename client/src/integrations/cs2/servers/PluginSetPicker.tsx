@@ -162,6 +162,11 @@ export default function PluginSetPicker({
         onChange={pick}
         disabled={disabled}
       />
+      {value?.preset === 'tryout' && (
+        <Alert severity="info" data-testid={`${testId}-tryout-license`}>
+          {t('pluginSets.tryoutLicense')}
+        </Alert>
+      )}
       {value === null && nullLabel !== undefined ? (
         <Typography variant="body2" color="text.secondary">
           {catalog.default

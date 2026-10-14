@@ -1247,6 +1247,7 @@
     "summaryOff": "Automatisk flytting av"
   },
   "pluginSets": {
+    "tryoutLicense": "En server for å prøve skins bruker en serverplass på lisensen, som alle andre servere. Den kjører ingen kamper.",
     "presetLabel": "Utvidelsesoppsett",
     "preset": {
       "tournament": "Turnering",
@@ -1523,6 +1524,7 @@
       "tournamentMatchDrops": "Turneringskamper gir også drops (ikke i esport-modus)",
       "levelUpDrops": "Et drop for hvert nye nivå",
       "tryoutServer": "Hold en server for å prøve skins (lages på en maskin med plass når automatisk skalering er på)",
+      "tryoutServerLicense": "Den bruker en serverplass på lisensen, som alle andre servere.",
       "tradeUp": "Bytte opp: skins av én grad for én av neste",
       "tradeUpCount": "Skins per bytte",
       "drops": {
