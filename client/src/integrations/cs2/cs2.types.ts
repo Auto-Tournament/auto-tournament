@@ -636,7 +636,7 @@ export interface FleetHost {
   servers: FleetHostServer[];
   enrolledServers: FleetHostServerRef[];
   /** What the platform's automatic updates are doing here, once it has looked. */
-  autoUpdate: { at: number; game: string; readyUp: string } | null;
+  autoUpdate: { at: number; game: string; readyUp: string; csm?: string } | null;
   commands: FleetHostCommand[];
   health: Array<{
     id: number;

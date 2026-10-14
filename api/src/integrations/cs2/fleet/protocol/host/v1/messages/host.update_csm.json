@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.update_csm.json",
+  "title": "host.update_csm (platform → host)",
+  "description": "Update csm itself to its newest release (csm self-update), for a host that advertises `update.csm`. Running servers are not touched; the host agent restarts onto the new csm, so it answers before updating. Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "maxLength": 64,
+      "description": "The release the platform saw as newest (informational: csm installs its latest)."
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
+    }
+  }
+}

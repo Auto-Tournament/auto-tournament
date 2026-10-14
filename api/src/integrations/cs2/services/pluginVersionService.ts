@@ -95,3 +95,36 @@ export async function getLatestReadyUpRelease(options?: {
     return null;
   }
 }
+
+const CSM_RELEASE_URL =
+  'https://api.github.com/repos/Auto-Tournament/cs2-server-manager/releases/latest';
+let csmCache: { version: string | null; at: number } | null = null;
+
+/**
+ * csm's newest release (GitHub's "latest": stable only), cached like Ready
+ * Up's. Null when it cannot be read (not cached, so the next call asks again).
+ */
+export async function getLatestCsmVersion(options?: {
+  forceRefresh?: boolean;
+  fetchImpl?: ReleaseFetch;
+}): Promise<string | null> {
+  const now = Date.now();
+  if (!options?.forceRefresh && csmCache && now - csmCache.at < CACHE_TTL_MS)
+    return csmCache.version;
+  const doFetch: ReleaseFetch = options?.fetchImpl ?? (fetch as unknown as ReleaseFetch);
+  try {
+    const response = await doFetch(CSM_RELEASE_URL, {
+      headers: { Accept: 'application/vnd.github.v3+json', 'User-Agent': 'Auto-Tournament' },
+    });
+    if (!response.ok) return null;
+    const body = (await response.json()) as { tag_name?: string } | null;
+    const version = body?.tag_name ? body.tag_name.replace(/^v/i, '') : null;
+    csmCache = { version: version && parseVersion(version) ? version : null, at: now };
+    return csmCache.version;
+  } catch (error) {
+    log.warn('[PLUGIN-VERSION] Failed to fetch the csm release from GitHub', {
+      error: (error as Error).message,
+    });
+    return null;
+  }
+}

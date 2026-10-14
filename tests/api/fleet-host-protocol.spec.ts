@@ -89,6 +89,7 @@ test.describe('Fleet host protocol v1', () => {
       'host.update_game': { servers: ['server-1', 'server-2'] },
       'host.update_plugins': { readyup: { version: '0.5.0', bundle: 'skins' }, force },
       'host.updates_hold': { mode: 'on' },
+      'host.update_csm': { version: '1.24.1' },
       'host.license': {
         key: 'ATL1.eyJ2IjoxfQ.c2lnbmF0dXJl',
         lease: 'ATL1.eyJ2IjoxLCJsZWFzZSI6dHJ1ZX0.c2lnbmF0dXJl',

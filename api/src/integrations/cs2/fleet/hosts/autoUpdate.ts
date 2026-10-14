@@ -10,6 +10,10 @@
  *   from a server log (older csm). Behind → `host.update_game`.
  * - Ready Up: the newest release on the servers' channel against what each
  *   server last reported. Behind → `host.update_plugins` with that version.
+ * - csm itself: its newest release against the machine's `csm_version`, on a
+ *   host that can update itself (`update.csm`). Behind → `host.update_csm`.
+ *   Servers keep running (only the host agent restarts), so a running
+ *   tournament doesn't hold it; the host's own hold `on` does.
  *
  * Which servers a command names follows the update rules decided on
  * 2026-09-22: a server with a match in progress is never named; while a
@@ -26,7 +30,7 @@
 import { log } from '../../../../utils/logger';
 import { resolveTournamentId } from '../../../../utils/tournamentRow';
 import { cs2UpdateService } from '../../services/cs2UpdateService';
-import { getLatestReadyUpRelease } from '../../services/pluginVersionService';
+import { getLatestCsmVersion, getLatestReadyUpRelease } from '../../services/pluginVersionService';
 import { compareVersions, parseVersion } from '../../services/readyUpVersion';
 import { getUpdateHoldStatus } from '../../services/updateHoldService';
 import { bundleFor, pluginSetFromStored, type StoredPlugins } from '../push/pluginSets';
@@ -37,7 +41,7 @@ import { hostServers, PLATFORM_ACTOR, sendHostCommand, type HostCommandError } f
 const TICK_MS = 5 * 60 * 1000;
 const FIRST_TICK_MS = 60 * 1000;
 /** After a command of a type was answered, how long before the same target is sent again. */
-const COOLDOWN_S = { game: 6 * 3600, plugins: 6 * 3600 } as const;
+const COOLDOWN_S = { game: 6 * 3600, plugins: 6 * 3600, csm: 6 * 3600 } as const;
 /** After a failure, sooner. */
 const RETRY_S = 30 * 60;
 
@@ -63,7 +67,12 @@ export interface PlannerInput {
   /** Commands of each type in flight, and the last answered one (with its target and outcome). */
   recent: {
     game: { inFlight: boolean; lastAt: number | null; lastOk: boolean; lastTarget: string | null };
-    plugins: { inFlight: boolean; lastAt: number | null; lastOk: boolean; lastTarget: string | null };
+    plugins: {
+      inFlight: boolean;
+      lastAt: number | null;
+      lastOk: boolean;
+      lastTarget: string | null;
+    };
   };
   /** The CS2 target to compare cooldowns on (Steam's required version, or the marker). */
   cs2Target: string;
@@ -88,7 +97,12 @@ function eligible(input: PlannerInput): PlannerServer[] {
   return input.servers.filter((s) => !s.matchInProgress && (!tournament || !s.running));
 }
 
-function coolingDown(r: PlannerInput['recent']['game'], target: string, cooldown: number, now: number): boolean {
+function coolingDown(
+  r: PlannerInput['recent']['game'],
+  target: string,
+  cooldown: number,
+  now: number
+): boolean {
   if (r.lastAt === null || r.lastTarget !== target) return false;
   return now - r.lastAt < (r.lastOk ? cooldown : RETRY_S);
 }
@@ -112,7 +126,8 @@ export function planHostUpdates(input: PlannerInput): UpdatePlan {
   } else if (input.recent.game.inFlight) {
     plan.status.game = `${input.cs2Behind.detail} Updating now.`;
   } else if (coolingDown(input.recent.game, input.cs2Target, COOLDOWN_S.game, input.now)) {
-    plan.status.game = `${input.cs2Behind.detail} Sent ${input.recent.game.lastOk ? 'already' : 'and failed'}; ` +
+    plan.status.game =
+      `${input.cs2Behind.detail} Sent ${input.recent.game.lastOk ? 'already' : 'and failed'}; ` +
       'servers pick it up as they restart.';
   } else if (targets.length === 0) {
     plan.status.game = `${input.cs2Behind.detail} ${waitReason()}`;
@@ -124,7 +139,9 @@ export function planHostUpdates(input: PlannerInput): UpdatePlan {
   // Ready Up
   const target = input.readyUpTarget;
   const behind = target
-    ? input.servers.filter((s) => s.readyUp && parseVersion(s.readyUp) && (compareVersions(s.readyUp, target) ?? 0) < 0)
+    ? input.servers.filter(
+        (s) => s.readyUp && parseVersion(s.readyUp) && (compareVersions(s.readyUp, target) ?? 0) < 0
+      )
     : [];
   if (!target) {
     plan.status.readyUp = 'Latest release unknown (GitHub not reachable).';
@@ -142,7 +159,11 @@ export function planHostUpdates(input: PlannerInput): UpdatePlan {
     if (ready.length === 0) {
       plan.status.readyUp = `${target} available; ${waitReason()}`;
     } else {
-      plan.plugins = { servers: ready.map((s) => s.name), version: target, reason: `Ready Up ${target}` };
+      plan.plugins = {
+        servers: ready.map((s) => s.name),
+        version: target,
+        reason: `Ready Up ${target}`,
+      };
       plan.status.readyUp = `Updating to ${target}.`;
     }
   }
@@ -154,13 +175,18 @@ export function planHostUpdates(input: PlannerInput): UpdatePlan {
 // ---------------------------------------------------------------------------
 
 /** The last plan per machine, for the admin page. */
-const lastStatus = new Map<string, { at: number; game: string; readyUp: string }>();
+type AutoUpdateStatus = { at: number; game: string; readyUp: string; csm?: string };
+const lastStatus = new Map<string, AutoUpdateStatus>();
 
-export function autoUpdateStatus(hostId: string): { at: number; game: string; readyUp: string } | null {
+export function autoUpdateStatus(hostId: string): AutoUpdateStatus | null {
   return lastStatus.get(hostId) ?? null;
 }
 
-function recentOf(commands: registry.HostCommandRecord[], type: string, targetOf: (c: registry.HostCommandRecord) => string | null) {
+function recentOf(
+  commands: registry.HostCommandRecord[],
+  type: string,
+  targetOf: (c: registry.HostCommandRecord) => string | null
+) {
   const own = commands.filter((c) => c.type === type);
   const inFlight = own.some((c) => c.status === 'pending');
   const last = own.find((c) => c.status !== 'pending') ?? null;
@@ -172,6 +198,62 @@ function recentOf(commands: registry.HostCommandRecord[], type: string, targetOf
   };
 }
 
+/**
+ * Whether to send `host.update_csm` now, and the line for the admin page.
+ * Only to a host that can update itself; not while the host holds updates
+ * (`on`), one is in flight, or within the cooldown after one for that
+ * version. Pure.
+ */
+export function planCsmUpdate(input: {
+  capable: boolean;
+  running: string | null;
+  latest: string | null;
+  holdMode: HoldMode;
+  recent: ReturnType<typeof recentOf>;
+  now: number;
+}): { version: string | null; status: string } {
+  const { capable, running, latest, holdMode, recent, now } = input;
+  if (!capable) {
+    return {
+      version: null,
+      status: `csm ${running ?? '?'}: updates itself after \`sudo csm self-update\` once.`,
+    };
+  }
+  if (!latest || !running) return { version: null, status: `csm ${running ?? '?'}.` };
+  if ((compareVersions(latest, running) ?? 0) <= 0)
+    return { version: null, status: `csm ${running} is up to date.` };
+  if (holdMode === 'on')
+    return { version: null, status: `csm ${latest} is out; updates are on hold.` };
+  const wait = recent.lastOk ? COOLDOWN_S.csm : RETRY_S;
+  if (
+    recent.inFlight ||
+    (recent.lastTarget === latest && recent.lastAt !== null && now - recent.lastAt < wait)
+  ) {
+    return { version: null, status: `Updating csm to ${latest}.` };
+  }
+  return { version: latest, status: `Updating csm to ${latest}.` };
+}
+
+async function csmUpdateTarget(
+  host: registry.FleetHostView,
+  holdMode: HoldMode,
+  commands: registry.HostCommandRecord[]
+): Promise<{ version: string | null; status: string }> {
+  const capable = host.capabilities.includes('update.csm');
+  return planCsmUpdate({
+    capable,
+    running: host.inventory?.csm_version ?? host.csmVersion ?? null,
+    latest: capable ? await getLatestCsmVersion().catch(() => null) : null,
+    holdMode,
+    recent: recentOf(
+      commands,
+      'host.update_csm',
+      (c) => (c.meta?.target as string | undefined) ?? null
+    ),
+    now: Math.floor(Date.now() / 1000),
+  });
+}
+
 async function hostBundle(fleetServerIds: string[]): Promise<'default' | 'skins'> {
   if (fleetServerIds.length === 0) return 'default';
   const rows = await db.queryAsync<{ plugins: string | null }>(
@@ -180,7 +262,10 @@ async function hostBundle(fleetServerIds: string[]): Promise<'default' | 'skins'
   );
   for (const row of rows) {
     try {
-      if (row.plugins && bundleFor(pluginSetFromStored(JSON.parse(row.plugins) as StoredPlugins)) === 'skins') {
+      if (
+        row.plugins &&
+        bundleFor(pluginSetFromStored(JSON.parse(row.plugins) as StoredPlugins)) === 'skins'
+      ) {
         return 'skins';
       }
     } catch {
@@ -200,7 +285,10 @@ async function cs2BehindFor(inventory: NonNullable<registry.FleetHostView['inven
       const check = await cs2UpdateService.upToDateCheck(patch);
       if (!check.upToDate) {
         const required = check.requiredVersion ? String(check.requiredVersion) : 'newer';
-        return { behind: { behind: true, detail: `CS2 ${patch} is behind (Steam requires ${required}).` }, target: required };
+        return {
+          behind: { behind: true, detail: `CS2 ${patch} is behind (Steam requires ${required}).` },
+          target: required,
+        };
       }
       return { behind: { behind: false, detail: `CS2 ${patch} is up to date.` }, target: patch };
     } catch (error) {
@@ -208,20 +296,32 @@ async function cs2BehindFor(inventory: NonNullable<registry.FleetHostView['inven
     }
   }
   if (inventory.cs2.update_available) {
-    return { behind: { behind: true, detail: 'A server reported a CS2 update.' }, target: `marker:${inventory.cs2.master_build}` };
+    return {
+      behind: { behind: true, detail: 'A server reported a CS2 update.' },
+      target: `marker:${inventory.cs2.master_build}`,
+    };
   }
   return {
-    behind: { behind: false, detail: patch ? `CS2 ${patch}.` : 'No CS2 update reported (csm before 1.20 reports none until a server runs).' },
+    behind: {
+      behind: false,
+      detail: patch
+        ? `CS2 ${patch}.`
+        : 'No CS2 update reported (csm before 1.20 reports none until a server runs).',
+    },
     target: '',
   };
 }
 
-async function tickHost(host: registry.FleetHostView, tournamentHold: { hold: boolean; reason: string }): Promise<void> {
+async function tickHost(
+  host: registry.FleetHostView,
+  tournamentHold: { hold: boolean; reason: string }
+): Promise<void> {
   const inventory = host.inventory;
   if (!inventory) return;
   const view = await hostServers(host.id);
   const servers: PlannerServer[] = view.map((s) => {
-    const installed = s.readyup.installed && parseVersion(s.readyup.installed) ? s.readyup.installed : null;
+    const installed =
+      s.readyup.installed && parseVersion(s.readyup.installed) ? s.readyup.installed : null;
     return {
       name: s.name,
       running: s.process.running,
@@ -229,8 +329,13 @@ async function tickHost(host: registry.FleetHostView, tournamentHold: { hold: bo
       readyUp: installed ?? s.fleetServer?.readyUpVersion ?? null,
     };
   });
-  const newest = servers.map((s) => s.readyUp).filter((v): v is string => !!v).sort((a, b) => compareVersions(b, a) ?? 0)[0];
-  const release = await getLatestReadyUpRelease({ runningVersion: newest ?? null }).catch(() => null);
+  const newest = servers
+    .map((s) => s.readyUp)
+    .filter((v): v is string => !!v)
+    .sort((a, b) => compareVersions(b, a) ?? 0)[0];
+  const release = await getLatestReadyUpRelease({ runningVersion: newest ?? null }).catch(
+    () => null
+  );
   const { behind, target } = await cs2BehindFor(inventory);
   const commands = await registry.listHostCommands(host.id, 50);
   const plan = planHostUpdates({
@@ -241,7 +346,11 @@ async function tickHost(host: registry.FleetHostView, tournamentHold: { hold: bo
     cs2Target: target,
     readyUpTarget: release?.version ?? null,
     recent: {
-      game: recentOf(commands, 'host.update_game', (c) => (c.meta?.target as string | undefined) ?? null),
+      game: recentOf(
+        commands,
+        'host.update_game',
+        (c) => (c.meta?.target as string | undefined) ?? null
+      ),
       plugins: recentOf(commands, 'host.update_plugins', (c) => {
         const ru = c.payload.readyup as { version?: string } | undefined;
         return ru?.version ?? null;
@@ -249,18 +358,52 @@ async function tickHost(host: registry.FleetHostView, tournamentHold: { hold: bo
     },
     now: Math.floor(Date.now() / 1000),
   });
-  lastStatus.set(host.id, { at: Date.now(), ...plan.status });
-
-  const send = async (type: 'host.update_game' | 'host.update_plugins', payload: Record<string, unknown>, meta: Record<string, unknown>) => {
+  const csmTarget = await csmUpdateTarget(host, inventory.cs2.updates_hold, commands);
+  lastStatus.set(host.id, { at: Date.now(), ...plan.status, csm: csmTarget.status });
+  if (csmTarget.version) {
     try {
-      await sendHostCommand(host.id, type, payload as never, { issuedBy: PLATFORM_ACTOR, meta: { auto: true, ...meta } });
-      log.info(`[FLEET-UPDATES] ${host.name}: ${type} (${String(meta.reason)}) on ${String((payload.servers as string[]).join(', '))}`);
+      await sendHostCommand(
+        host.id,
+        'host.update_csm',
+        { version: csmTarget.version },
+        {
+          issuedBy: PLATFORM_ACTOR,
+          meta: { auto: true, target: csmTarget.version },
+        }
+      );
+      log.info(`[FLEET-UPDATES] ${host.name}: host.update_csm to ${csmTarget.version}`);
     } catch (error) {
-      log.warn(`[FLEET-UPDATES] ${host.name}: ${type} not sent: ${(error as HostCommandError).message}`);
+      log.warn(
+        `[FLEET-UPDATES] ${host.name}: host.update_csm not sent: ${(error as HostCommandError).message}`
+      );
+    }
+  }
+
+  const send = async (
+    type: 'host.update_game' | 'host.update_plugins',
+    payload: Record<string, unknown>,
+    meta: Record<string, unknown>
+  ) => {
+    try {
+      await sendHostCommand(host.id, type, payload as never, {
+        issuedBy: PLATFORM_ACTOR,
+        meta: { auto: true, ...meta },
+      });
+      log.info(
+        `[FLEET-UPDATES] ${host.name}: ${type} (${String(meta.reason)}) on ${String((payload.servers as string[]).join(', '))}`
+      );
+    } catch (error) {
+      log.warn(
+        `[FLEET-UPDATES] ${host.name}: ${type} not sent: ${(error as HostCommandError).message}`
+      );
     }
   };
   if (plan.game) {
-    await send('host.update_game', { servers: plan.game.servers }, { reason: plan.game.reason, target });
+    await send(
+      'host.update_game',
+      { servers: plan.game.servers },
+      { reason: plan.game.reason, target }
+    );
   }
   if (plan.plugins) {
     const ids = view.map((s) => s.fleetServer?.id).filter((id): id is string => !!id);
@@ -280,9 +423,14 @@ export async function runAutoUpdates(): Promise<void> {
   if (running) return;
   running = true;
   try {
-    const hosts = (await registry.listHosts()).filter((h) => h.status === 'enrolled' && h.online && h.inventory);
+    const hosts = (await registry.listHosts()).filter(
+      (h) => h.status === 'enrolled' && h.online && h.inventory
+    );
     if (hosts.length === 0) return;
-    const hold = await getUpdateHoldStatus(resolveTournamentId()).catch(() => ({ hold: true, reason: 'the tournament state could not be read.' }));
+    const hold = await getUpdateHoldStatus(resolveTournamentId()).catch(() => ({
+      hold: true,
+      reason: 'the tournament state could not be read.',
+    }));
     for (const host of hosts) {
       await tickHost(host, { hold: hold.hold, reason: hold.reason }).catch((error) =>
         log.warn(`[FLEET-UPDATES] ${host.name}: ${(error as Error).message}`)

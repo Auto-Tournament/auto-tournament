@@ -33,6 +33,7 @@ import serverRemove from './messages/server.remove.json';
 import serverSetLaunchArgs from './messages/server.set_launch_args.json';
 import updateGame from './messages/host.update_game.json';
 import updatePlugins from './messages/host.update_plugins.json';
+import updateCsm from './messages/host.update_csm.json';
 import updatesHold from './messages/host.updates_hold.json';
 import hostLicense from './messages/host.license.json';
 import logsTail from './messages/logs.tail.json';
@@ -183,6 +184,8 @@ export interface HostCommands {
     accept_license?: 'noncommercial' | 'commercial';
   };
   'host.updates_hold': Expiring & { mode: UpdatesHoldMode };
+  /** csm updates itself (hosts with the `update.csm` capability); servers keep running. */
+  'host.update_csm': Expiring & { version?: string };
   /** The platform's license for the servers it owns on the host (csm with the license.push capability). */
   'host.license': Expiring & {
     key: string | null;
@@ -214,6 +217,7 @@ export const HOST_COMMAND_TYPES: ReadonlyArray<HostCommandType> = [
   'host.update_game',
   'host.update_plugins',
   'host.updates_hold',
+  'host.update_csm',
   'host.license',
   'logs.tail',
   'logs.stop',
@@ -276,6 +280,7 @@ export const HOST_MESSAGE_SCHEMAS: Record<string, Record<string, unknown>> = {
   'host.update_game': updateGame,
   'host.update_plugins': updatePlugins,
   'host.updates_hold': updatesHold,
+  'host.update_csm': updateCsm,
   'host.license': hostLicense,
   'logs.tail': logsTail,
   'logs.stop': logsStop,

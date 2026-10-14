@@ -438,6 +438,12 @@ set_launch_args`, `host.update_game/update_plugins`) for a server whose
   enrolled host no longer starts updates itself; its monitor only restarts
   idle servers onto what is installed. The admin page shows the last plan
   per machine (`autoUpdate`).
+- **csm itself** (`host.update_csm`): a machine whose agent advertises
+  `update.csm` (csm can run `csm self-update` as root: a sudoers rule that
+  `sudo csm setup-host` or one `sudo csm self-update` installs) gets the
+  command when GitHub's latest csm release is newer than `csm_version`. Only
+  the agent restarts, so a running tournament doesn't hold it; hold `on`
+  does. Same in-flight and cooldown rules.
 - **Inventory join** (§18.3): each `server-N` joins its Ready Up server on
   `readyup.install_id`, else `readyup.server_id`.
 
