@@ -37,7 +37,7 @@ function mapDataFor(slug: string | null): CS2MapData | null {
 /**
  * The server to show, or null for "waiting for a server".
  *
- * `server.status` is MatchZy Enhanced's own status (idle |
+ * `server.status` is the plugin's own status (idle |
  * loading | warmup | knife | live | paused | halftime | postgame | queued |
  * error), filled in only when the server answered, so any value but `error`
  * means it is reachable. Live stats count on their own: they only arrive from
@@ -217,7 +217,7 @@ export function MatchServerPanel({
     );
   }
 
-  // The API sends an English label alongside the raw MatchZy Enhanced status; translate
+  // The API sends an English label alongside the raw plugin status; translate
   // the known statuses and fall back to that label for anything new.
   const statusLabel = server.status
     ? t(`matchInfo.server.statusLabels.${server.status}`, {

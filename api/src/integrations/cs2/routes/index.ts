@@ -83,14 +83,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
   {
     prefix: '/api/cs2-plugin',
     router: pluginVersionRoutes,
-    title: 'MatchZy Enhanced',
-    description: 'MatchZy Enhanced version information.',
+    title: 'Ready Up version',
+    description: 'The latest Ready Up release, for update checks.',
   },
   {
     prefix: '/api/events',
     router: eventRoutes,
     title: 'Events',
-    description: 'MatchZy Enhanced webhooks in, and the recorded event log out.',
+    description: 'The recorded match event log: Ready Up events and server console lines.',
   },
   {
     prefix: '/api/veto',

@@ -135,9 +135,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   teamPositions: ['rifler', 'awper', 'igl', 'entry', 'support', 'lurker'],
   teamSize: 5,
 
-  // The webhook URL a CS2 server reaches the platform on, and the MatchZy Enhanced
-  // plugin's own database: both are settings only this game has, so the
-  // shell's warnings about them are this module's (3.0 phase E).
+  // Settings only this game has get their warnings from this module, not the
+  // shell (3.0 phase E).
   adminGlobalWarning: Cs2AdminWarnings,
 
   // Starting a CS2 tournament means allocating servers, so the dialog talks

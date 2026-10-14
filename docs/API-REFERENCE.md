@@ -150,9 +150,9 @@ Demo upload from the game server, and download.
 | `GET` | `/api/demos/:matchSlug/info` | admin |
 | `GET` | `/api/demos/archive.tar` | admin |
 
-### MatchZy Enhanced
+### Ready Up version
 
-MatchZy Enhanced version information.
+The latest Ready Up release, for update checks.
 
 | Method | Path | Auth |
 | --- | --- | --- |
@@ -160,7 +160,7 @@ MatchZy Enhanced version information.
 
 ### Events
 
-MatchZy Enhanced webhooks in, and the recorded event log out.
+The recorded match event log: Ready Up events and server console lines.
 
 | Method | Path | Auth |
 | --- | --- | --- |

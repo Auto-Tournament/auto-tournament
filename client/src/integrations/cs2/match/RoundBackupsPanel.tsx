@@ -86,10 +86,8 @@ function errorCode(err: unknown): string | null {
 /**
  * The match admin section's "Round backups" (`matchPanels.adminMatchView`):
  * the backups a Ready Up server sent for this match (FLEET.md §12.3), one per
- * round, and "restore to round N" with an in-page confirmation. On a match
- * run over RCON (MatchZy Enhanced keeps its own backups) it is
- * a round number instead. Both go through
- * POST /api/game/cs2/matches/:slug/round-backups/restore, which audits them.
+ * round, and "restore to round N" with an in-page confirmation. It goes through
+ * POST /api/game/cs2/matches/:slug/round-backups/restore, which audits it.
  */
 export function RoundBackupsPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) {
   const { t } = useModuleTranslation('cs2');

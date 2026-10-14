@@ -664,8 +664,6 @@
     "enabledHelper": "被禁用的服务器不会用于比赛",
     "tournamentUseLabel": "Use for tournament matches",
     "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
-    "overridesTitle": "MatchZy Enhanced 覆盖配置（可选）",
-    "overridesDescription": "这些设置仅覆盖此服务器的全局 MatchZy Enhanced 默认值。留空则使用“设置”中的全局值。",
     "chatPrefixLabel": "聊天前缀覆盖",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
     "chatPrefixHelper": "覆盖此服务器上的 at_chat_prefix（可选）",
