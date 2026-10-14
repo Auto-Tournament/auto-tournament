@@ -83,6 +83,62 @@ const mapSettingsResponse = async () => {
 
 /**
  * @openapi
+ * /api/settings/discord-bot:
+ *   get:
+ *     tags: [Settings]
+ *     summary: Whether a Discord bot token is set (for players' DMs), and the bot's name
+ *     security: [{ BearerAuth: [] }]
+ *     responses:
+ *       200: { description: "`set`, `name`" }
+ *   put:
+ *     tags: [Settings]
+ *     summary: Set (checked with Discord, stored encrypted) or clear the bot token
+ *     description: A signed-in admin only. `token` empty or null clears it.
+ *     security: [{ BearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { token: { type: string, nullable: true } } }
+ *     responses:
+ *       200: { description: "`set`, `name`" }
+ *       400: { description: Discord refused the token }
+ *       403: { description: Called with an API token }
+ */
+router.get('/discord-bot', async (_req: Request, res: Response) => {
+  try {
+    const { discordBot } = await import('../services/notifyChannels');
+    return res.json({ success: true, ...(await discordBot.status()) });
+  } catch (error) {
+    log.error('Reading the Discord bot failed', error as Error);
+    return res.status(500).json({ success: false, error: 'Could not read the Discord bot' });
+  }
+});
+
+router.put('/discord-bot', async (req: Request, res: Response) => {
+  if ((req as AuthedRequest).serviceToken) {
+    return res.status(403).json({ success: false, error: 'Only a signed-in admin can set it' });
+  }
+  try {
+    const { discordBot, ChannelError } = await import('../services/notifyChannels');
+    const raw = (req.body ?? {}).token;
+    const token = typeof raw === 'string' ? raw : null;
+    try {
+      return res.json({ success: true, ...(await discordBot.setToken(token)) });
+    } catch (error) {
+      if (error instanceof ChannelError) {
+        return res.status(error.status).json({ success: false, error: error.message });
+      }
+      throw error;
+    }
+  } catch (error) {
+    log.error('Setting the Discord bot failed', error as Error);
+    return res.status(500).json({ success: false, error: 'Could not save the Discord bot' });
+  }
+});
+
+/**
+ * @openapi
  * /api/settings/api-tokens:
  *   get:
  *     tags: [Settings]

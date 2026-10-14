@@ -1,3 +1,4 @@
+import { announceVetoTurn } from '../../../services/matchNotices';
 import { Router, Request, Response } from 'express';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
@@ -745,6 +746,15 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     // Emit update via Socket.io
     emitVetoUpdate(matchSlug, vetoState);
     void postVetoProgress(matchSlug, vetoState);
+    // The next team's captains: a bell notice, and a DM or email if they want one.
+    if (vetoState.status !== 'completed' && vetoState.currentTurn) {
+      void announceVetoTurn(
+        matchSlug,
+        vetoState.currentTurn,
+        vetoState.currentStep,
+        vetoState.currentAction
+      );
+    }
 
     log.debug(`Veto action processed for ${matchSlug}`, {
       step: vetoState.currentStep - 1,

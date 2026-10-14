@@ -262,6 +262,8 @@ class PlayerEmailService {
    * once per tournament. Runs in the background; failures are logged.
    */
   async notifySignupOpen(tournament: { id: number; name: string }): Promise<void> {
+    // Discord DMs for players who asked for them (notifyChannels); this sends the emails.
+    void this.notifySignupOpenOnDiscord(tournament);
     if (!(await emailService.isReady())) return;
     const claimed = await db.queryAsync<{ tournament_id: number }>(
       `INSERT INTO tournament_signup_notices (tournament_id, sent_at) VALUES (?, ?)
@@ -307,6 +309,31 @@ class PlayerEmailService {
       sent,
       of: recipients.length,
     });
+  }
+
+  private async notifySignupOpenOnDiscord(tournament: { id: number; name: string }): Promise<void> {
+    try {
+      const rows = await db.queryAsync<{ player_id: string }>(
+        `SELECT player_id FROM player_notify_channels
+          WHERE event = 'new_tournament' AND channel = 'discord' AND enabled = 1`,
+        []
+      );
+      if (!rows.length) return;
+      const { notifyChannels } = await import('./notifyChannels');
+      await notifyChannels.deliver(
+        rows.map((r) => r.player_id),
+        'new_tournament',
+        `tournament:${tournament.id}:signup`,
+        {
+          subject: `Sign-up is open: ${tournament.name}`,
+          text: `${tournament.name} is taking sign-ups now.`,
+          url: `/tournament/${tournament.id}`,
+          action: 'See the tournament',
+        }
+      );
+    } catch (error) {
+      log.error('[NOTIFY] Sign-up open DMs failed', error as Error);
+    }
   }
 }
 

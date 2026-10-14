@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 704 of them, 408 behind auth —
+Every endpoint this API serves — 708 of them, 410 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -704,6 +704,8 @@ Friends, friend requests, finding players, and the signed-in player's notificati
 | `GET` | `/api/social/notifications` | public |
 | `GET` | `/api/social/notifications/settings` | public |
 | `PUT` | `/api/social/notifications/settings` | public |
+| `GET` | `/api/social/notifications/channels` | public |
+| `PUT` | `/api/social/notifications/channels` | public |
 | `POST` | `/api/social/notifications/read` | public |
 | `POST` | `/api/social/news` | admin |
 
@@ -774,6 +776,8 @@ Instance-wide settings.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/settings/version` | public |
+| `GET` | `/api/settings/discord-bot` | admin |
+| `PUT` | `/api/settings/discord-bot` | admin |
 | `GET` | `/api/settings/api-tokens` | admin |
 | `POST` | `/api/settings/api-tokens` | admin |
 | `DELETE` | `/api/settings/api-tokens/:id` | admin |

@@ -839,5 +839,20 @@
     "loadFailed": "Kunne ikke laste API-nøklene",
     "makeFailed": "Kunne ikke lage nøkkelen",
     "revokeFailed": "Kunne ikke trekke tilbake nøkkelen"
+  },
+  "discordBot": {
+    "title": "Discord-bot",
+    "hint": "Sender spillerne Discord-meldinger (Konto → Varsler). Spillere får meldinger når de er på en Discord-server sammen med boten.",
+    "token": "Bot-token",
+    "replace": "Ny bot-token",
+    "save": "Lagre",
+    "remove": "Fjern",
+    "connected": "Koblet til som {{name}}",
+    "setNoAnswer": "Et token er satt, men Discord svarte ikke nå.",
+    "saved": "Discord-bot lagret: {{name}}",
+    "cleared": "Discord-bot fjernet",
+    "saveFailed": "Kunne ikke lagre bot-token.",
+    "howTo": "Lag en applikasjon, legg til en bot, kopier tokenet og inviter den til Discord-serveren din:",
+    "portal": "Discord Developer Portal"
   }
 }

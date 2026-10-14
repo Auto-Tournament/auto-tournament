@@ -7,6 +7,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { notificationService } from './notificationService';
+import { notifyChannels } from './notifyChannels';
 
 /** A window that opened longer ago than this is not announced (an old tournament, a first start). */
 const FRESH_SECONDS = 6 * 3600;
@@ -21,7 +22,10 @@ export async function tournamentPlayers(tournamentId: number): Promise<string[]>
     [tournamentId]
   );
   if (lineup.length > 0) return lineup.map((r) => r.player_id);
-  const row = await db.queryOneAsync<{ team_ids: string | null }>('SELECT team_ids FROM tournament WHERE id = ?', [tournamentId]);
+  const row = await db.queryOneAsync<{ team_ids: string | null }>(
+    'SELECT team_ids FROM tournament WHERE id = ?',
+    [tournamentId]
+  );
   let teamIds: string[] = [];
   try {
     const parsed = JSON.parse(row?.team_ids ?? '[]');
@@ -40,7 +44,9 @@ export async function tournamentPlayers(tournamentId: number): Promise<string[]>
 
 export async function noticeTournamentStarted(tournamentId: number): Promise<void> {
   try {
-    const t = await db.queryOneAsync<{ name: string }>('SELECT name FROM tournament WHERE id = ?', [tournamentId]);
+    const t = await db.queryOneAsync<{ name: string }>('SELECT name FROM tournament WHERE id = ?', [
+      tournamentId,
+    ]);
     if (!t) return;
     await notificationService.notifyOnce(
       await tournamentPlayers(tournamentId),
@@ -63,20 +69,37 @@ async function sweepCheckIns(): Promise<void> {
     let opens: number | null = null;
     let closes: number | null = null;
     try {
-      const s = JSON.parse(t.settings ?? '{}') as { checkInOpensAt?: unknown; checkInClosesAt?: unknown };
+      const s = JSON.parse(t.settings ?? '{}') as {
+        checkInOpensAt?: unknown;
+        checkInClosesAt?: unknown;
+      };
       opens = typeof s.checkInOpensAt === 'string' ? Date.parse(s.checkInOpensAt) : null;
       closes = typeof s.checkInClosesAt === 'string' ? Date.parse(s.checkInClosesAt) : null;
     } catch {
       continue;
     }
-    if (!opens || !Number.isFinite(opens) || opens > now || now - opens > FRESH_SECONDS * 1000) continue;
+    if (!opens || !Number.isFinite(opens) || opens > now || now - opens > FRESH_SECONDS * 1000)
+      continue;
     if (closes && Number.isFinite(closes) && closes <= now) continue;
+    const players = await tournamentPlayers(t.id);
     await notificationService.notifyOnce(
-      await tournamentPlayers(t.id),
+      players,
       'tournament',
-      { tournamentId: t.id, name: t.name, event: 'check_in', closesAt: closes && Number.isFinite(closes) ? Math.floor(closes / 1000) : null },
+      {
+        tournamentId: t.id,
+        name: t.name,
+        event: 'check_in',
+        closesAt: closes && Number.isFinite(closes) ? Math.floor(closes / 1000) : null,
+      },
       `tournament:${t.id}:check_in`
     );
+    // Outside the site, for players who asked (notifyChannels).
+    await notifyChannels.deliver(players, 'checkin_open', `tournament:${t.id}:check_in`, {
+      subject: `Check-in is open: ${t.name}`,
+      text: 'Check in on the tournament page so your team keeps its place.',
+      url: `/tournament/${t.id}`,
+      action: 'Check in',
+    });
   }
 }
 
@@ -92,5 +115,8 @@ export function startTournamentNotices(): void {
     });
   setTimeout(run, 15_000).unref?.();
   setInterval(run, 60_000).unref?.();
-  setInterval(() => void notificationService.prune().catch(() => undefined), 24 * 3600_000).unref?.();
+  setInterval(
+    () => void notificationService.prune().catch(() => undefined),
+    24 * 3600_000
+  ).unref?.();
 }

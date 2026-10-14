@@ -44,7 +44,9 @@
       "declined": "Avslått",
       "expired": "Gruppa finnes ikke lenger",
       "reportNew": "ble rapportert: {{reason}}",
-      "reportReviewed": "Takk: rapporten din om {{name}} er gjennomgått."
+      "reportReviewed": "Takk: rapporten din om {{name}} er gjennomgått.",
+      "matchReady": "er klar. Åpne kamprommet for å koble til.",
+      "vetoTurn": "Det er lagets tur i map-vetoen."
     },
     "toast": {
       "join": "Bli med",
@@ -204,5 +206,41 @@
         "sound": "Bjelle og lyd"
       }
     }
+  },
+  "notifyChannels": {
+    "title": "Varsler",
+    "description": "Hvor vi sier fra om ting som trenger deg når du ikke er på siden. Av som standard, bortsett fra dine egne kamper.",
+    "event": "Hendelse",
+    "channel": {
+      "discord": "Discord-melding",
+      "email": "E-post"
+    },
+    "events": {
+      "match_ready": {
+        "title": "Kampen din er klar",
+        "hint": "Server, tilkoblingslenke og hvem du møter"
+      },
+      "veto_turn": {
+        "title": "Din tur i vetoen",
+        "hint": "Bare kapteiner"
+      },
+      "checkin_open": {
+        "title": "Innsjekk åpner",
+        "hint": "For turneringer du er påmeldt"
+      },
+      "new_tournament": {
+        "title": "Nye turneringer",
+        "hint": "Når en turnering tar imot påmeldinger"
+      }
+    },
+    "reason": {
+      "no_bot": "Ikke satt opp på denne siden",
+      "no_discord": "Koble til Discord først",
+      "email_off": "Denne siden kan ikke sende e-post",
+      "no_email": "Legg til en e-post først",
+      "email_unverified": "Bekreft e-posten først"
+    },
+    "switchLabel": "{{event}} via {{channel}}",
+    "saveFailed": "Kunne ikke lagre."
   }
 }

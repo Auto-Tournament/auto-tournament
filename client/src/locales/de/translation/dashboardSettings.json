@@ -839,5 +839,20 @@
     "loadFailed": "Could not load the API tokens",
     "makeFailed": "Could not make the token",
     "revokeFailed": "Could not revoke the token"
+  },
+  "discordBot": {
+    "title": "Discord bot",
+    "hint": "Sends players their Discord DMs (Account → Notifications). Players get DMs when they share a Discord server with the bot.",
+    "token": "Bot token",
+    "replace": "New bot token",
+    "save": "Save",
+    "remove": "Remove",
+    "connected": "Connected as {{name}}",
+    "setNoAnswer": "A token is set, but Discord did not answer just now.",
+    "saved": "Discord bot saved: {{name}}",
+    "cleared": "Discord bot removed",
+    "saveFailed": "Could not save the bot token.",
+    "howTo": "Make an application, add a bot, copy its token, and invite it to your Discord server:",
+    "portal": "Discord Developer Portal"
   }
 }
