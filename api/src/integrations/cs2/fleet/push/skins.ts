@@ -17,6 +17,7 @@ import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
 import { skinService } from '../../skins/skinService';
 import { sendReliable } from '../reliable';
+import { getLiveState } from '../state';
 import type { SkinsLoadoutPayload } from '../protocol/v1';
 
 /** Whether this fleet server takes skins, and why not when it does not. */
@@ -175,6 +176,20 @@ const pendingByServer = new Map<string, Map<string, string>>();
 const OUTSIDE_LIVE_DELAY_MS = 500;
 const outsideLiveTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
+/**
+ * Whether a loadout change waits for the round to end: only while a round is
+ * being played (the match live and its map's phase `live`; an unknown phase
+ * counts as live). Warmup, knife, between maps or before the match: at once.
+ */
+export function waitsForRoundEnd(
+  matchStatus: string,
+  mapPhase: string | null | undefined
+): boolean {
+  return (
+    matchStatus === 'live' && (mapPhase === 'live' || mapPhase === null || mapPhase === undefined)
+  );
+}
+
 /** The round ended on a fleet server: its waiting loadout changes go out. */
 export async function flushRoundLoadouts(fleetServerId: string): Promise<void> {
   const pending = pendingByServer.get(fleetServerId);
@@ -189,8 +204,9 @@ export async function flushRoundLoadouts(fleetServerId: string): Promise<void> {
 
 /**
  * A player changed their loadout on the site: if they are in a match right
- * now, their server gets it at the end of the round (a few seconds later
- * outside a live map), the latest change only.
+ * now, their server gets it at the end of the round being played, or half a
+ * second later in warmup, knife and between maps (the map's phase, not the
+ * match's status), the latest change only.
  */
 export async function pushLoadoutLive(steamid64: string): Promise<void> {
   try {
@@ -207,7 +223,14 @@ export async function pushLoadoutLive(steamid64: string): Promise<void> {
       const pending = pendingByServer.get(row.server_id) ?? new Map<string, string>();
       pending.set(steamid64, row.slug);
       pendingByServer.set(row.server_id, pending);
-      if (row.status !== 'live' && !outsideLiveTimers.has(row.server_id)) {
+      // Only a round being played waits for its end. A match is `live` from its
+      // first map to its last, so warmup, knife and between maps go by the
+      // map's own phase: there no round ends to carry the change.
+      const phase =
+        row.status === 'live'
+          ? (await getLiveState(row.slug).catch(() => null))?.state?.phase
+          : null;
+      if (!waitsForRoundEnd(row.status, phase) && !outsideLiveTimers.has(row.server_id)) {
         outsideLiveTimers.set(
           row.server_id,
           setTimeout(() => {
