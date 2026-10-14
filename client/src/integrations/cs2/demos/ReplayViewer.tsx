@@ -121,9 +121,9 @@ const KILL_SHOWN_TICKS = 3 * 64;
 /** A loaded image (the DOM type, through window: eslint has no browser globals here). */
 type HTMLImageElementLike = InstanceType<typeof window.Image>;
 
-/** Dot radius, and how far the view cone reaches, in canvas pixels. */
-const DOT = 15;
-const CONE = 70;
+/** Dot radius, and how far the view cone reaches, in canvas pixels (half of the first size: the dots hid the map). */
+const DOT = 8;
+const CONE = 40;
 const CONE_HALF_ANGLE = (38 * Math.PI) / 180;
 
 const sideColor = (side: number) => (side === 3 ? color.sideCt : color.sideT);
@@ -584,12 +584,12 @@ export function ReplayViewer({
       ctx.beginPath();
       ctx.arc(x, y, DOT + 3, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * hp) / 100);
       ctx.stroke();
-      ctx.font = '600 18px system-ui, sans-serif';
+      ctx.font = '600 14px system-ui, sans-serif';
       ctx.fillStyle = '#fff';
       ctx.textAlign = 'center';
       ctx.shadowColor = 'rgba(0,0,0,0.8)';
       ctx.shadowBlur = 4;
-      ctx.fillText(s.name.slice(0, 14), x, y - DOT - 10);
+      ctx.fillText(s.name.slice(0, 14), x, y - DOT - 7);
       ctx.shadowBlur = 0;
       // Flashed: a white burst above them, shrinking as the blindness wears off.
       const blind = (replay.blinds ?? []).find(
