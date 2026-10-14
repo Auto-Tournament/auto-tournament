@@ -6,7 +6,7 @@ import type { Match, Tournament } from '../../../types';
 import type { ViewerTeam } from '../../../hooks/usePublicTournamentOverview';
 import { LiveChip, Panel } from '../../common/ui';
 import { useIntegrationFor } from '../../../integrations/registry';
-import { teamProfilePath } from '../../../paths';
+import { matchPagePath, teamProfilePath } from '../../../paths';
 import { tokens, textSize } from '../../../theme/tokens';
 import { isLiveMatch, publicMatchLabel, teamCurrentMatch, teamLastResult } from './matchHelpers';
 
@@ -96,7 +96,7 @@ export function YourePlayingPanel({ tournament, team, matches }: YourePlayingPan
       {current ? (
         <Button
           component={RouterLink}
-          to={`/team/${team.id}`}
+          to={matchPagePath(current.slug)}
           variant={showConnect ? 'outlined' : 'contained'}
           data-testid="overview-your-match"
         >
