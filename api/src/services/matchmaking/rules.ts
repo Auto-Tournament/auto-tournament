@@ -10,7 +10,8 @@ export type MatchmakingMode = '5v5' | '2v2' | '1v1';
 /**
  * Players per team for each mode. 2v2 is wingman (CS2's wingman rules and
  * maps). 2v2 and 1v1 are off unless an admin turns them on (`mm_modes`); 1v1
- * is an aim duel, and the way to test matchmaking with two accounts.
+ * is an aim duel on the wingman maps, and the way to test matchmaking with two
+ * accounts.
  */
 export const TEAM_SIZE: Record<MatchmakingMode, number> = { '5v5': 5, '2v2': 2, '1v1': 1 };
 
