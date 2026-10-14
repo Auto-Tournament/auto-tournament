@@ -4,13 +4,7 @@
   "title": "event.map_result (server → platform, reliable)",
   "description": "Match event (FLEET.md §8.1), source: match_end.h MatchFlowEvent MapResult; critical. Envelope epoch = the assignment's. `rev` / `patch` continue the MatchState stream (see match.defs.json#/$defs/rev); `data` holds the facts.",
   "type": "object",
-  "required": [
-    "match_id",
-    "map_number",
-    "rev",
-    "patch",
-    "data"
-  ],
+  "required": ["match_id", "map_number", "rev", "patch", "data"],
   "properties": {
     "match_id": {
       "$ref": "../match.defs.json#/$defs/matchId"
@@ -59,11 +53,7 @@
           "const": false
         },
         "winner": {
-          "enum": [
-            "team1",
-            "team2",
-            "none"
-          ]
+          "enum": ["team1", "team2", "none"]
         },
         "team1_name": {
           "type": "string",
@@ -112,6 +102,26 @@
         },
         "stats": {
           "$ref": "../match.defs.json#/$defs/mapStats"
+        },
+        "decided_by": {
+          "enum": ["damage"],
+          "description": "Set when the map was tied after its overtimes and won on total damage (damage tiebreak)."
+        },
+        "damage": {
+          "type": "object",
+          "required": ["team1", "team2"],
+          "additionalProperties": false,
+          "properties": {
+            "team1": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "team2": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "description": "Each team's total damage on the map, with decided_by damage."
         }
       }
     }
