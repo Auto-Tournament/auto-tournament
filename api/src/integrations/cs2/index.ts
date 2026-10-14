@@ -523,13 +523,17 @@ export const cs2Integration: GameIntegration = {
       : undefined;
     if (chosen) {
       ids = parseIds(chosen.map_ids);
-    } else if (mode === '2v2') {
+    } else if (mode === '2v2' || mode === '1v1') {
+      // Wingman's small maps: 2v2 plays them, and the 1v1 aim duel uses them
+      // too (Sivert, 2026-10-14) instead of a separate aim pool.
       ids = (
         await db.queryAsync<{ id: string }>(
           "SELECT id FROM cs2_maps WHERE game_mode = 'wingman' ORDER BY id"
         )
       ).map((r) => r.id);
-    } else {
+    }
+    if (!chosen && ids.length === 0) {
+      // 5v5, or a site with no wingman maps yet: Active Duty.
       const row = await db.queryOneAsync<{ map_ids: string }>(
         'SELECT map_ids FROM cs2_map_pools WHERE name = ? AND enabled = 1',
         [ACTIVE_DUTY_POOL]
