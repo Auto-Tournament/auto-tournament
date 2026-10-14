@@ -75,6 +75,38 @@ export async function pushSkinsOnConnect(
   }
 }
 
+/**
+ * Who each server says is on it (ping.health.steamids). A server with no
+ * match (skin tryout, practice) sends no player_connect event, so this is how
+ * its players get their skins: a newcomer gets their loadout, and a change on
+ * the site reaches them at once (pushLoadoutLive).
+ */
+const presentOn = new Map<string, Set<string>>();
+
+/** A ping named the players on a server (null: its link closed). */
+export async function playersSeen(fleetServerId: string, steamids: string[] | null): Promise<void> {
+  if (steamids === null) {
+    presentOn.delete(fleetServerId);
+    return;
+  }
+  const before = presentOn.get(fleetServerId) ?? new Set<string>();
+  const now = new Set(steamids.filter((id) => /^\d{17}$/.test(id)));
+  presentOn.set(fleetServerId, now);
+  const arrived = [...now].filter((id) => !before.has(id));
+  if (arrived.length === 0) return;
+  // A match's players get theirs from its player_connect events.
+  if (await hasMatch(fleetServerId)) return;
+  for (const id of arrived) await pushSkinsOnConnect(fleetServerId, '', id);
+}
+
+async function hasMatch(fleetServerId: string): Promise<boolean> {
+  const row = await db.queryOneAsync<{ slug: string }>(
+    "SELECT slug FROM matches WHERE server_id = ? AND status IN ('loaded', 'live') LIMIT 1",
+    [fleetServerId]
+  );
+  return !!row;
+}
+
 /** The matches on a fleet server right now, with their connected players. */
 async function connectedOn(
   fleetServerId: string
@@ -239,6 +271,11 @@ export async function pushLoadoutLive(steamid64: string): Promise<void> {
           }, OUTSIDE_LIVE_DELAY_MS)
         );
       }
+    }
+    // Servers with no match where a ping saw them: no round to wait for.
+    for (const [serverId, ids] of presentOn) {
+      if (ids.has(steamid64) && !(await hasMatch(serverId)))
+        await pushSkinsOnConnect(serverId, '', steamid64);
     }
   } catch (error) {
     log.warn('[FLEET] skins: live loadout not sent', {
