@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/server.enroll.json",
+  "title": "server.enroll (platform → host)",
+  "description": "Existing servers enroll on this platform: the host writes enroll_key (a fleet key the platform mints when it sends the command, limited to these servers) into each server's cfg/ReadyUp/fleet.cfg and restarts the running ones; their Ready Up's old credentials are refused and it enrolls again with the new key. A stopped server enrolls when it starts. For a machine linked again (e.g. to a fresh install): its servers come back without being created again. Disruptive like server.restart (refused during a match unless force). Capability servers.enroll. Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock.",
+  "type": "object",
+  "required": [
+    "servers"
+  ],
+  "properties": {
+    "servers": {
+      "$ref": "../defs.json#/$defs/serverList"
+    },
+    "enroll_key": {
+      "$ref": "../defs.json#/$defs/fleetKey"
+    },
+    "force": {
+      "$ref": "../defs.json#/$defs/force"
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
+    }
+  }
+}

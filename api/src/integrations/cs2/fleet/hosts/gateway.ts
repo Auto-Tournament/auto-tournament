@@ -19,8 +19,9 @@
  * Platform → host commands go through ./service.ts (`sendHostCommand`),
  * which writes the outbox; this file writes it to the socket. Two payloads
  * get a secret minted at that moment, so none is ever stored: `auth.rotate`
- * (the new host token) and `server.create` with `enroll: true` (its
- * `enroll_key`: a fleet key limited to that command's server count).
+ * (the new host token), `server.create` with `enroll: true` and
+ * `server.enroll` (their `enroll_key`: a fleet key limited to that
+ * command's server count).
  */
 
 import { EventEmitter } from 'events';
@@ -512,6 +513,15 @@ class HostSession {
         hostId: this.hostId as string,
         commandId: env.id,
         count: p.count ?? 1,
+        namePrefix: null,
+      });
+      out = { ...env, payload: { ...env.payload, enroll_key: key } };
+    } else if (env.type === 'server.enroll') {
+      const p = env.payload as { servers?: string[] };
+      const key = await registry.mintCreateKey({
+        hostId: this.hostId as string,
+        commandId: env.id,
+        count: Math.max(1, p.servers?.length ?? 1),
         namePrefix: null,
       });
       out = { ...env, payload: { ...env.payload, enroll_key: key } };
