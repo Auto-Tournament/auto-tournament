@@ -99,6 +99,8 @@ function weaponName(w: string): string {
   return w.replace(/^weapon_/, '').replace(/_/g, ' ');
 }
 
+/** A hit flashes the player's ring for this long (seconds). */
+const HIT_FLASH_SECONDS = 0.35;
 /** A damage number flies for this long. */
 const DAMAGE_TICKS = 48;
 
@@ -123,7 +125,7 @@ type HTMLImageElementLike = InstanceType<typeof window.Image>;
 
 /** Dot radius, and how far the view cone reaches, in canvas pixels (half of the first size: the dots hid the map). */
 const DOT = 8;
-const CONE = 40;
+const CONE = 60;
 const CONE_HALF_ANGLE = (38 * Math.PI) / 180;
 
 const sideColor = (side: number) => (side === 3 ? color.sideCt : color.sideT);
@@ -534,8 +536,15 @@ export function ReplayViewer({
       ctx.stroke();
     }
 
-    for (const s of state) {
-      if (!s) continue;
+    // The last hit each player took, for the flash on their ring.
+    const hitTicks = HIT_FLASH_SECONDS * replay.tickrate;
+    const lastHit = new Map<number, { at: number; hs: boolean }>();
+    for (const [dt, who, , hs] of replay.damage ?? []) {
+      if (dt <= tick && tick - dt <= hitTicks) lastHit.set(who, { at: dt, hs: hs === 1 });
+    }
+
+    state.forEach((s, index) => {
+      if (!s) return;
       const [x0, y0, yaw, hp, side, z] = s.p;
       const x = px(x0);
       const y = py(y0);
@@ -545,15 +554,44 @@ export function ReplayViewer({
       // Where they look: a soft cone, and a pointer on the ring.
       const a = (-yaw * Math.PI) / 180;
       if (hp > 0) {
+        const wedge = () => {
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.arc(x, y, CONE, a - CONE_HALF_ANGLE, a + CONE_HALF_ANGLE);
+          ctx.closePath();
+        };
+        // A dark wedge first, so the colour stands off the radar's own colours.
+        const shade = ctx.createRadialGradient(x, y, DOT, x, y, CONE);
+        shade.addColorStop(0, 'rgba(0,0,0,0.45)');
+        shade.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = shade;
+        wedge();
+        ctx.fill();
         const cone = ctx.createRadialGradient(x, y, DOT, x, y, CONE);
-        cone.addColorStop(0, withAlpha(c, 0.45));
+        cone.addColorStop(0, withAlpha(c, 0.95));
+        cone.addColorStop(0.55, withAlpha(c, 0.45));
         cone.addColorStop(1, withAlpha(c, 0));
         ctx.fillStyle = cone;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.arc(x, y, CONE, a - CONE_HALF_ANGLE, a + CONE_HALF_ANGLE);
-        ctx.closePath();
+        wedge();
         ctx.fill();
+        // Its edges drawn light, so the direction reads on any part of the radar.
+        ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (const edge of [a - CONE_HALF_ANGLE, a + CONE_HALF_ANGLE]) {
+          ctx.moveTo(x + Math.cos(edge) * (DOT + 3), y + Math.sin(edge) * (DOT + 3));
+          ctx.lineTo(x + Math.cos(edge) * CONE * 0.85, y + Math.sin(edge) * CONE * 0.85);
+        }
+        ctx.stroke();
+        // The pointer, outlined dark so it shows on light ground too.
+        ctx.strokeStyle = 'rgba(0,0,0,0.75)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x + Math.cos(a) * (DOT + 9), y + Math.sin(a) * (DOT + 9));
+        ctx.lineTo(x + Math.cos(a + 0.5) * (DOT + 1), y + Math.sin(a + 0.5) * (DOT + 1));
+        ctx.lineTo(x + Math.cos(a - 0.5) * (DOT + 1), y + Math.sin(a - 0.5) * (DOT + 1));
+        ctx.closePath();
+        ctx.stroke();
         ctx.fillStyle = c;
         ctx.beginPath();
         ctx.moveTo(x + Math.cos(a) * (DOT + 9), y + Math.sin(a) * (DOT + 9));
@@ -584,6 +622,15 @@ export function ReplayViewer({
       ctx.beginPath();
       ctx.arc(x, y, DOT + 3, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * hp) / 100);
       ctx.stroke();
+      // Hit: the ring flashes red (a headshot whiter), fading out.
+      const hit = lastHit.get(index);
+      if (hit) {
+        const t = (tick - hit.at) / Math.max(1, hitTicks);
+        ctx.fillStyle = withAlpha(hit.hs ? '#ffd0cc' : '#ff3b30', 0.85 * (1 - t));
+        ctx.beginPath();
+        ctx.arc(x, y, DOT + 3 + 5 * t, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.font = '600 14px system-ui, sans-serif';
       ctx.fillStyle = '#fff';
       ctx.textAlign = 'center';
@@ -619,7 +666,7 @@ export function ReplayViewer({
         ctx.fill();
       }
       ctx.globalAlpha = 1;
-    }
+    });
 
     // Damage numbers: each hit flies out of the player, pops, and fades.
     for (const [dt, who, amount, hs] of replay.damage ?? []) {
