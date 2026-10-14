@@ -170,6 +170,8 @@
     "readyTitle": "Kampen din er klar",
     "readyBody": "Serveren er klar. Koble til nå.",
     "later": "Senere",
-    "go": "Gå til kampen"
+    "go": "Gå til kampen",
+    "yourTeam": "Laget ditt",
+    "opponent": "Motstander"
   }
 }

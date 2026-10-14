@@ -170,6 +170,8 @@
     "readyTitle": "Your match is ready",
     "readyBody": "The server is ready. Join it now.",
     "later": "Later",
-    "go": "Go to match"
+    "go": "Go to match",
+    "yourTeam": "Your team",
+    "opponent": "Opponent"
   }
 }

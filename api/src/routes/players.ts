@@ -1,3 +1,4 @@
+import { logoUrl } from '../services/teamSelfService';
 import { randomBytes } from 'crypto';
 /**
  * Players API Routes
@@ -618,6 +619,26 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
     const in2Json = team2Json.includes(steamId);
     const isTeam1 = in1 || (in1Json && !in2Json) || (!in2 && !in2Json);
 
+    // Your team against theirs, with logos: the next-match dialog shows the matchup.
+    const logos = await db.queryAsync<{ id: string; logo_updated_at: number | null }>(
+      'SELECT id, logo_updated_at FROM teams WHERE id IN (?, ?)',
+      [match.team1_id ?? '', match.team2_id ?? '']
+    );
+    const sideOf = (side: 'team1' | 'team2') => {
+      const id = side === 'team1' ? match!.team1_id : match!.team2_id;
+      const d = side === 'team1' ? description.team1 : description.team2;
+      const row = logos.find((l) => l.id === id);
+      return {
+        name: d.name ?? null,
+        tag: (d as { tag?: string | null }).tag ?? null,
+        logoUrl: id && row ? logoUrl(id, row.logo_updated_at) : null,
+      };
+    };
+    const matchup = {
+      you: sideOf(isTeam1 ? 'team1' : 'team2'),
+      opponent: sideOf(isTeam1 ? 'team2' : 'team1'),
+    };
+
     if (!in1 && !in2 && !in1Json && !in2Json) {
       return res.json({
         success: true,
@@ -660,12 +681,17 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
       : ((await integrationForMatch(match).preMatchTurn?.(match)) ?? null);
 
     if (['loaded', 'live'].includes(match.status)) {
+      // On the server, or dropped off it (the site offers to reconnect).
+      const connection = playerConnectionService.connectionOf(match.slug, steamId);
       return res.json({
         success: true,
         status: 'match_ready',
         matchSlug: match.slug,
         label: 'match_ready',
+        connection: connection.state,
+        droppedAt: connection.droppedAt,
         matchName,
+        matchup,
       });
     }
 
@@ -685,6 +711,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
         matchSlug: match.slug,
         label: 'veto_soon',
         matchName,
+        matchup,
         viewerTeam: isTeam1 ? 'team1' : 'team2',
         vetoActionCount: 0,
         lastVetoActionTeam: null,
@@ -706,6 +733,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
         matchSlug: match.slug,
         label: myTurn ? 'your_turn_veto' : 'waiting_veto',
         matchName,
+        matchup,
         viewerTeam: isTeam1 ? 'team1' : 'team2',
         vetoActionCount: vetoActions.length,
         lastVetoActionTeam: lastTeam === 'team1' || lastTeam === 'team2' ? lastTeam : null,
@@ -719,6 +747,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
         matchSlug: match.slug,
         label: 'waiting_server',
         matchName,
+        matchup,
       });
     }
 
@@ -728,6 +757,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
       matchSlug: match.slug,
       label: 'match_ready',
       matchName,
+      matchup,
     });
   } catch (e) {
     log.error('Failed to compute match status for /me/match-status', e as Error);

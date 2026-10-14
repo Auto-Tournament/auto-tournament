@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext, type Page } from '@playwright/test';
+import { currentTournamentId, currentTournamentMatches } from '../helpers/slugs';
 import { openMatchRoom } from '../helpers/matchRoom';
 import { ensureSignedIn, signInAsPlayer, signInViaRequest } from '../helpers/auth';
 
@@ -101,7 +102,10 @@ async function waitForLiveMatch(admin: APIRequestContext, count: number): Promis
       async () => {
         const res = await admin.get('/api/matches');
         if (!res.ok()) return 0;
-        const all = ((await res.json()) as { matches?: ListedMatch[] }).matches ?? [];
+        const all = await currentTournamentMatches(
+          admin,
+          ((await res.json()) as { matches?: ListedMatch[] }).matches ?? []
+        );
         live = all.filter((m) => m.round === 1 && m.team1 && m.team2 && m.status === 'live');
         return live.length;
       },
@@ -149,19 +153,22 @@ test.describe.serial('Disputes, from the team page to the admin queue', () => {
       // One custom field, per player, so the report form has something beyond
       // the score to render — and filing it needs a uid the captain's own
       // request has to have been given.
-      const fields = await request.put(`${API}/tournaments/1/fields`, {
-        data: {
-          fields: [
-            {
-              key: 'goals',
-              label: 'Goals',
-              valueType: 'integer',
-              scope: 'player',
-              required: false,
-            },
-          ],
-        },
-      });
+      const fields = await request.put(
+        `${API}/tournaments/${await currentTournamentId(request)}/fields`,
+        {
+          data: {
+            fields: [
+              {
+                key: 'goals',
+                label: 'Goals',
+                valueType: 'integer',
+                scope: 'player',
+                required: false,
+              },
+            ],
+          },
+        }
+      );
       expect(fields.status(), `setting fields: ${await fields.text()}`).toBe(200);
 
       const started = await request.post('/api/tournament/start', { data: {} });
