@@ -246,5 +246,13 @@
     },
     "switchLabel": "{{event}} by {{channel}}",
     "saveFailed": "Could not save that."
+  },
+  "presence": {
+    "online": "Online",
+    "offline": "Offline",
+    "searching": "Searching for a {{mode}} game",
+    "playingMatchmaking": "In a matchmaking match: {{label}}",
+    "playingTournament": "In a tournament match: {{label}}",
+    "playing": "In a match: {{label}}"
   }
 }
