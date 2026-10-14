@@ -28,6 +28,34 @@ export const SKIN_IMAGES_BASE =
 export const SKINS_JSON_URL =
   'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/skin_images/skins.json';
 
+/** The worn looks per light image (from the catalogue), for skinImageUrl. */
+const wearLooks = new Map<string, { medium?: string; heavy?: string }>();
+
+/**
+ * A skin's picture for its float: the game ships three looks per finish,
+ * light (Factory New, Minimal Wear: below 0.15), medium (Field-Tested: below
+ * 0.38) and heavy (Well-Worn, Battle-Scarred). Without a float, or a look the
+ * catalogue lacks, the light one.
+ */
+/** Keep the catalogue's worn looks for skinImageUrl (the catalogue load calls it). */
+export function rememberWearLooks(skins: CatalogSkin[]): void {
+  wearLooks.clear();
+  for (const sk of skins) {
+    if (sk.imageMedium || sk.imageHeavy)
+      wearLooks.set(sk.image, { medium: sk.imageMedium, heavy: sk.imageHeavy });
+  }
+}
+
+export function skinImageUrl(image: string, float?: number | null): string {
+  if (/^https?:\/\//.test(image)) return image;
+  let file = image;
+  if (typeof float === 'number' && Number.isFinite(float) && float >= 0.15) {
+    const looks = wearLooks.get(image);
+    file = (float >= 0.38 ? (looks?.heavy ?? looks?.medium) : looks?.medium) ?? image;
+  }
+  return `${SKIN_IMAGES_BASE}/${file}`;
+}
+
 const CONFIG_KEY = 'skins_config';
 const CATALOG_TTL_MS = 60 * 60 * 1000;
 
@@ -74,6 +102,9 @@ export interface CatalogSkin {
   name: string;
   rarity: Rarity;
   image: string;
+  /** The game's worn looks (csm's export): Field-Tested, and Well-Worn / Battle-Scarred. */
+  imageMedium?: string;
+  imageHeavy?: string;
   /** Knives and gloves: the finish's market price in USD (skinPrices.ts), which sets its rarity. */
   price?: number;
 }
@@ -430,7 +461,7 @@ function toRow(row: SkinRow, equipped: Map<number, LoadoutTeam[]> | Set<number>)
     weaponName: row.weapon_name,
     name: row.variant ? `${row.name} (${row.variant})` : row.name,
     rarity: row.rarity,
-    imageUrl: `${SKIN_IMAGES_BASE}/${row.image}`,
+    imageUrl: skinImageUrl(row.image, Number(row.float_value)),
     slot: slotOf(row.weapon),
     float: Number(row.float_value),
     pattern: row.pattern,
@@ -661,6 +692,7 @@ export const skinService = {
         await knifeAndGlovePrices()
       );
       catalogCache = { at: Date.now(), skins };
+      rememberWearLooks(skins);
       return skins;
     } catch (error) {
       log.warn('[Skins] Could not read the skin catalogue', { error: (error as Error).message });
@@ -689,6 +721,7 @@ export const skinService = {
   ): Promise<number> {
     const stattrak =
       roll.stattrak ?? rollStatTrak(skin.weapon, (await this.config()).statTrakChance);
+    const float = roll.float ?? rollFloat(roll.floatMin ?? 0, roll.floatMax ?? 1);
     const row = await db.queryOneAsync<{ id: number }>(
       `INSERT INTO cs2_player_skins
          (player_uid, weapon, weapon_name, paint_kit, name, rarity, image, float_value, pattern, source, source_label, source_ref, place, variant, stattrak)
@@ -701,7 +734,7 @@ export const skinService = {
         skin.name,
         skin.rarity,
         skin.image,
-        roll.float ?? rollFloat(roll.floatMin ?? 0, roll.floatMax ?? 1),
+        float,
         roll.pattern ?? rollPattern(roll.seeds),
         source.source,
         source.label ?? null,
@@ -736,9 +769,7 @@ export const skinService = {
             weapon: skin.weaponName,
             rarity: skin.rarity,
             // The full URL: the bell shows it as the notice's picture.
-            image: /^https?:\/\//.test(skin.image)
-              ? skin.image
-              : `${SKIN_IMAGES_BASE}/${skin.image}`,
+            image: skinImageUrl(skin.image, float),
             source: source.label ?? source.source,
             // Opens the inventory on this skin (InventoryPage reads #skin-<id>).
             url: `/inventory#skin-${row.id}`,
@@ -1197,7 +1228,7 @@ export const skinService = {
         name: o.name,
         rarity: o.rarity,
         // Stored as the catalog's file name: the browser needs the full URL.
-        image: /^https?:\/\//.test(o.image) ? o.image : `${SKIN_IMAGES_BASE}/${o.image}`,
+        image: skinImageUrl(o.image, o.float),
         float: o.float,
         pattern: o.pattern,
       })),
