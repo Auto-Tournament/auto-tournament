@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react';
 import { Box, Chip, LinearProgress, Stack, Typography } from '@mui/material';
 import { ThumbsDownIcon, ThumbsUpIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
+import { matchPagePath } from '../../paths';
+import { Link as RouterLink } from 'react-router-dom';
 import { Panel, SectionHead } from '../common/ui';
 import { RatingChart } from '../player/profile/RatingChart';
 
@@ -131,21 +133,36 @@ export function PlayerProgress({ playerId }: { playerId: string }) {
                   spacing={2}
                   alignItems="center"
                 >
-                  <Typography sx={{ minWidth: 60, fontWeight: 700 }}>
-                    {h.result ? t(`matchmaking.profile.${h.result}`) : '–'}
-                  </Typography>
-                  <Typography sx={{ flex: 1 }} color="text.secondary">
-                    {[h.map, h.own !== null && h.other !== null ? `${h.own}–${h.other}` : null]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </Typography>
-                  <Typography
-                    sx={{ fontVariantNumeric: 'tabular-nums' }}
-                    color={delta >= 0 ? 'success.main' : 'error.main'}
+                  <Stack
+                    component={RouterLink}
+                    to={matchPagePath(h.matchSlug)}
+                    data-testid={`mm-history-${h.matchSlug}`}
+                    direction="row"
+                    spacing={2}
+                    alignItems="center"
+                    sx={{
+                      flex: 1,
+                      color: 'inherit',
+                      textDecoration: 'none',
+                      '&:hover .mm-history-map': { color: 'text.primary' },
+                    }}
                   >
-                    {delta >= 0 ? '+' : ''}
-                    {delta}
-                  </Typography>
+                    <Typography sx={{ minWidth: 60, fontWeight: 700 }}>
+                      {h.result ? t(`matchmaking.profile.${h.result}`) : '–'}
+                    </Typography>
+                    <Typography sx={{ flex: 1 }} color="text.secondary" className="mm-history-map">
+                      {[h.map, h.own !== null && h.other !== null ? `${h.own}–${h.other}` : null]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </Typography>
+                    <Typography
+                      sx={{ fontVariantNumeric: 'tabular-nums' }}
+                      color={delta >= 0 ? 'success.main' : 'error.main'}
+                    >
+                      {delta >= 0 ? '+' : ''}
+                      {delta}
+                    </Typography>
+                  </Stack>
                 </Stack>
               );
             })}

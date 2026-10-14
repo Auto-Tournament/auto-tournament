@@ -6,6 +6,7 @@
  */
 import { db } from '../config/database';
 import { isPlayerOnline } from './socketService';
+import { playerConnectionService } from './playerConnectionService';
 
 export type PresenceActivity =
   | { kind: 'searching'; mode: string }
@@ -25,7 +26,7 @@ export interface Presence {
 /** At most this many players per question. */
 export const PRESENCE_MAX_IDS = 100;
 
-/** What each of these players is doing: searching (their party's queue entry) or in a match on a server. */
+/** What each of these players is doing: searching (their party's queue entry) or connected to a match's server. */
 export async function activitiesOf(ids: string[]): Promise<Map<string, PresenceActivity>> {
   const out = new Map<string, PresenceActivity>();
   if (ids.length === 0) return out;
@@ -53,6 +54,8 @@ export async function activitiesOf(ids: string[]): Promise<Map<string, PresenceA
     const config = match.config ?? '';
     for (const id of ids) {
       if (out.get(id)?.kind === 'playing' || !config.includes(`"${id}"`)) continue;
+      // On the roster is not playing: only while they are on the match's server.
+      if (playerConnectionService.connectionOf(match.slug, id).state !== 'connected') continue;
       const label = match.t1 && match.t2 ? `${match.t1} vs ${match.t2}` : 'A match';
       out.set(id, {
         kind: 'playing',

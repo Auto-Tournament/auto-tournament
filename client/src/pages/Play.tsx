@@ -21,6 +21,7 @@ import {
 import { PlayCircleIcon, PlusIcon, XIcon } from '@phosphor-icons/react';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { matchPagePath } from '../paths';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { Panel } from '../components/common/ui';
 import { useSnackbar } from '../contexts/SnackbarContext';
@@ -163,7 +164,14 @@ function YouColumn({ playerId, rating }: { playerId: string; rating: { elo: numb
           return (
             <Box
               key={m.matchSlug}
+              component={RouterLink}
+              to={matchPagePath(m.matchSlug)}
+              data-testid={`mm-recent-${m.matchSlug}`}
               sx={{
+                color: 'inherit',
+                textDecoration: 'none',
+                borderRadius: '6px',
+                '&:hover': { bgcolor: color.paper2 },
                 display: 'grid',
                 gridTemplateColumns: '24px minmax(0, 1fr) auto',
                 gap: 1.25,

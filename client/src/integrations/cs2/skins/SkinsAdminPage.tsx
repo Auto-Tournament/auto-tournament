@@ -942,6 +942,11 @@ export function SkinsAdminPage() {
               label={t('skins.admin.tryoutServer')}
               data-testid="skins-tryout-server"
             />
+            {config.tryoutServer !== false && (
+              <Typography variant="body2" color="text.secondary" data-testid="skins-tryout-license">
+                {t('skins.admin.tryoutServerLicense')}
+              </Typography>
+            )}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
               <FormControlLabel
                 control={
