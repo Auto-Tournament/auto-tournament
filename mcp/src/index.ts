@@ -676,6 +676,170 @@ server.registerTool(
 // --- Anything else -------------------------------------------------------------
 
 server.registerTool(
+  'skins_inventory',
+  {
+    title: "A player's skins",
+    description:
+      "Every skin a player (Steam ID) owns, with each skin's id (for skin_equip and skin_remove) and what is equipped.",
+    inputSchema: { steamId: z.string().regex(/^\d{17}$/) },
+    annotations: read,
+  },
+  async ({ steamId }) => call(() => api.get(`/api/skins/admin/players/${enc(steamId)}/inventory`))
+);
+
+server.registerTool(
+  'skin_equip',
+  {
+    title: "Equip a skin on a player's loadout",
+    description:
+      "Equip one of a player's skins (skinId from skins_inventory), as they would: team 0 both sides, 2 T, 3 CT (a knife or gloves can differ per side). Reaches their server at once when they are on one.",
+    inputSchema: {
+      steamId: z.string().regex(/^\d{17}$/),
+      skinId: z.number().int(),
+      team: z.union([z.literal(0), z.literal(2), z.literal(3)]).optional(),
+    },
+    annotations: write,
+  },
+  async ({ steamId, skinId, team }) =>
+    call(() =>
+      api.send('POST', `/api/skins/admin/players/${enc(steamId)}/equip`, {
+        skinId,
+        team: team ?? 0,
+      })
+    )
+);
+
+server.registerTool(
+  'skin_unequip',
+  {
+    title: "Empty a slot of a player's loadout",
+    description:
+      'Empty a loadout slot (e.g. knife, gloves, weapon_ak47) of a player: one side (team 2 T, 3 CT) or every side.',
+    inputSchema: {
+      steamId: z.string().regex(/^\d{17}$/),
+      slot: z.string(),
+      team: z.union([z.literal(2), z.literal(3)]).optional(),
+    },
+    annotations: write,
+  },
+  async ({ steamId, slot, team }) =>
+    call(() =>
+      api.send(
+        'DELETE',
+        `/api/skins/admin/players/${enc(steamId)}/equip/${enc(slot)}${team ? `?team=${team}` : ''}`
+      )
+    )
+);
+
+server.registerTool(
+  'skin_remove',
+  {
+    title: 'Take a skin away',
+    description: "Delete one skin (id from skins_inventory) from a player's inventory.",
+    inputSchema: { skinId: z.number().int() },
+    annotations: destructive,
+  },
+  async ({ skinId }) => call(() => api.send('DELETE', `/api/skins/admin/skins/${skinId}`))
+);
+
+server.registerTool(
+  'player_update',
+  {
+    title: 'Change a player',
+    description:
+      'Change a player (Steam ID or player id): name, admin rights (isAdmin), avatar URL. Only the fields given change.',
+    inputSchema: {
+      id: z.string(),
+      name: z.string().min(1).max(64).optional(),
+      isAdmin: z.boolean().optional(),
+      avatar: z.string().url().optional(),
+    },
+    annotations: write,
+  },
+  async ({ id, ...body }) => call(() => api.send('PUT', `/api/players/${enc(id)}`, body))
+);
+
+server.registerTool(
+  'machines',
+  {
+    title: 'Machines (csm) and their servers',
+    description:
+      'Every linked machine with its inventory: CPU, memory, disk and each server-N (running, Ready Up version, the fleet server it is) and recent commands.',
+    inputSchema: {},
+    annotations: read,
+  },
+  async () => call(() => api.get('/api/fleet/hosts'))
+);
+
+server.registerTool(
+  'machine_add',
+  {
+    title: 'Add a machine',
+    description:
+      'A pending machine and the one line to paste on it (installs csm when missing, links it, starts the agent). The code works once, for 15 minutes.',
+    inputSchema: { name: z.string().max(100).optional() },
+    annotations: write,
+  },
+  async ({ name }) => call(() => api.send('POST', '/api/fleet/hosts', name ? { name } : {}))
+);
+
+server.registerTool(
+  'machine_command',
+  {
+    title: 'Run a csm command on a machine',
+    description:
+      'Send a machine (id from machines) one csm command: server.start / server.stop / server.restart {server: "server-2"}, server.create {count, enroll: true}, server.remove, host.update_game {servers?}, host.update_plugins {servers?, readyup: {version: "latest", bundle: "default"|"skins"}}, host.updates_hold {mode}. Disruptive ones are refused during a match unless force {reason} is given.',
+    inputSchema: {
+      hostId: z.string(),
+      type: z.enum([
+        'server.start',
+        'server.stop',
+        'server.restart',
+        'server.create',
+        'server.remove',
+        'server.enroll',
+        'host.update_game',
+        'host.update_plugins',
+        'host.updates_hold',
+      ]),
+      payload: z.record(z.unknown()).optional(),
+      force: z.object({ reason: z.string().min(1).max(500) }).optional(),
+    },
+    annotations: destructive,
+  },
+  async ({ hostId, type, payload, force }) =>
+    call(() =>
+      api.send('POST', `/api/fleet/hosts/${enc(hostId)}/commands`, {
+        type,
+        payload: payload ?? {},
+        ...(force ? { force } : {}),
+      })
+    )
+);
+
+server.registerTool(
+  'server_plugins',
+  {
+    title: "Set a server's Ready Up plugins",
+    description:
+      'Put a fleet server (id from servers or machines) on a plugin preset: tournament (matches), practice, fun, tryout (skin tryout server), or a custom list.',
+    inputSchema: {
+      serverId: z.string(),
+      preset: z.enum(['tournament', 'practice', 'fun', 'tryout', 'custom']),
+      plugins: z.array(z.string()).optional(),
+    },
+    annotations: write,
+  },
+  async ({ serverId, preset, plugins }) =>
+    call(() =>
+      api.send('POST', `/api/fleet/servers/${enc(serverId)}/plugins`, {
+        preset,
+        ...(plugins ? { plugins } : {}),
+      })
+    )
+);
+
+server.registerTool(
   'api_write',
   {
     title: 'POST, PUT, PATCH or DELETE any API path',

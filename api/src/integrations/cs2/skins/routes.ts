@@ -616,6 +616,69 @@ router.get('/admin/players/:steamId/inventory', requireAuth, async (req, res) =>
 
 /**
  * @openapi
+ * /api/skins/admin/players/{steamId}/equip:
+ *   post:
+ *     tags: [Skins]
+ *     summary: Equip one of a player's skins (admin)
+ *     description: As the player would on their inventory. team 0 is both sides, 2 T, 3 CT; a knife or gloves can differ per side.
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: path, name: steamId, required: true, schema: { type: string } }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [skinId]
+ *             properties:
+ *               skinId: { type: integer }
+ *               team: { type: integer, enum: [0, 2, 3] }
+ *     responses:
+ *       200: { description: Equipped (and sent to their server when they are on one) }
+ *       404: { description: No such player or skin }
+ */
+router.post('/admin/players/:steamId/equip', requireAuth, async (req, res) => {
+  try {
+    const uid = await skinService.adminEquip(
+      req.params.steamId,
+      Number(req.body?.skinId),
+      Number(req.body?.team ?? 0)
+    );
+    void loadoutChanged(uid);
+    return res.json({ success: true });
+  } catch (error) {
+    return fail(res, error, 'Equipping');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/admin/players/{steamId}/equip/{slot}:
+ *   delete:
+ *     tags: [Skins]
+ *     summary: Empty a slot of a player's loadout (admin)
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: path, name: steamId, required: true, schema: { type: string } }
+ *       - { in: path, name: slot, required: true, schema: { type: string } }
+ *       - { in: query, name: team, schema: { type: integer, enum: [0, 2, 3] }, description: 'One side only (default: every side)' }
+ *     responses:
+ *       200: { description: Emptied }
+ */
+router.delete('/admin/players/:steamId/equip/:slot', requireAuth, async (req, res) => {
+  try {
+    const team = req.query.team === undefined ? undefined : Number(req.query.team);
+    const uid = await skinService.adminUnequip(req.params.steamId, req.params.slot, team);
+    void loadoutChanged(uid);
+    return res.json({ success: true });
+  } catch (error) {
+    return fail(res, error, 'Unequipping');
+  }
+});
+
+/**
+ * @openapi
  * /api/skins/admin/players/{steamId}/skins:
  *   post:
  *     tags: [Skins]
