@@ -28,6 +28,7 @@ export const NOTICE_GROUPS: Record<string, string[]> = {
     'match_forfeit',
     'report_disputed',
     'failover',
+    'match_silent',
   ],
   servers: ['server_crashed', 'plugin_update_available', 'update_failed', 'autoscale_license'],
   recorders: [

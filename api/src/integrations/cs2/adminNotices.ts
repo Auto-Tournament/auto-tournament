@@ -6,6 +6,9 @@
  * - every minute: a recorder that stopped checking in (it was around in the
  *   last week), a recorder update that finished or failed, clips or demo
  *   analyses failing again and again;
+ * - every minute: a live match whose Ready Up server has sent nothing for
+ *   MATCH_SILENT_SECONDS (paused matches excepted; closed when it talks again
+ *   or the match ends);
  * - hourly: a Ready Up release newer than what the servers run.
  */
 import { db } from '../../config/database';
@@ -18,6 +21,8 @@ import type { HostCommandRecord } from './fleet/hosts/registry';
 
 /** A recorder silent this long is offline. */
 export const RECORDER_OFFLINE_SECONDS = 10 * 60;
+/** A live match whose server sent nothing this long is worth a look (a round is 2-3 min). */
+export const MATCH_SILENT_SECONDS = 15 * 60;
 /** This many failures in the last hour make "keeps failing". */
 export const FAILING_THRESHOLD = 3;
 
@@ -126,6 +131,61 @@ export async function sweepRecorders(at = now()): Promise<void> {
   }
 }
 
+/** A live match is silent when its server sent nothing for MATCH_SILENT_SECONDS and it is not paused. */
+export function isSilentMatch(
+  lastSeen: number,
+  at: number,
+  phase: string | null | undefined
+): boolean {
+  return at - lastSeen >= MATCH_SILENT_SECONDS && phase !== 'paused';
+}
+
+/** Notices sweepSilentMatches raised and has not closed, by match. */
+const silentRaised = new Set<string>();
+
+/**
+ * Live matches whose server has gone quiet: no fleet event for the match in
+ * MATCH_SILENT_SECONDS (a server that lost its players after a map change
+ * kept a match "live" for hours, 2026-10-13). A paused match is left alone.
+ */
+export async function sweepSilentMatches(at = now()): Promise<void> {
+  const rows = await db.queryAsync<{
+    slug: string;
+    last_ms: string | number | null;
+    loaded_at: number | null;
+  }>(
+    `SELECT m.slug, m.loaded_at,
+            (SELECT MAX(e.received_at) FROM cs2_fleet_events e WHERE e.match_slug = m.slug) AS last_ms
+       FROM matches m
+      WHERE m.status = 'live' AND m.server_id IS NOT NULL`
+  );
+  const { liveStateStore } = await import('./fleet/state');
+  const silent = new Set<string>();
+  for (const row of rows) {
+    const lastSeen = row.last_ms
+      ? Math.floor(Number(row.last_ms) / 1000)
+      : Number(row.loaded_at ?? at);
+    if (at - lastSeen < MATCH_SILENT_SECONDS) continue;
+    const record = await liveStateStore.getLiveState(row.slug).catch(() => null);
+    if (!isSilentMatch(lastSeen, at, record?.state?.phase)) continue;
+    silent.add(row.slug);
+    if (silentRaised.has(row.slug)) continue;
+    silentRaised.add(row.slug);
+    await adminNoticeService.raise(
+      'match_silent',
+      { matchSlug: row.slug, minutes: Math.floor((at - lastSeen) / 60) },
+      `match_silent:${row.slug}`,
+      undefined,
+      { ongoing: true }
+    );
+  }
+  for (const slug of [...silentRaised]) {
+    if (silent.has(slug)) continue;
+    silentRaised.delete(slug);
+    await adminNoticeService.resolve(`match_silent:${slug}`);
+  }
+}
+
 /** Clips and demo analyses that keep failing (this hour), and fine again. */
 export async function sweepFailures(at = now()): Promise<void> {
   const hourAgo = at - 3600;
@@ -199,7 +259,7 @@ export function startCs2AdminNotices(): void {
   hostEvents.on('health', onHealth);
   hostEvents.on('result', onResult);
   const minute = () =>
-    Promise.all([sweepRecorders(), sweepFailures()]).catch((error) =>
+    Promise.all([sweepRecorders(), sweepFailures(), sweepSilentMatches()]).catch((error) =>
       log.debug('[ADMIN-NOTICES] CS2 sweep failed', { error })
     );
   const hourly = () =>
