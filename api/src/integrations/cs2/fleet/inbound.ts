@@ -389,6 +389,9 @@ async function applyCommandResult(ctx: InboundContext, env: Envelope): Promise<v
     );
     // The skins plugin answered a plugins.set: with skins on, it runs them now.
     if (command.type === 'cmd' && command.name === 'plugins.set' && result.status === 'ok') {
+      // The server applied it: its plugins are what the command said until its
+      // next hello reports them (the tryout list read the old state, 2026-10-14).
+      await applyPluginsSetToState(ctx.serverId, env.ref as string);
       void skinsTurnedOn(ctx.serverId);
     }
     // match.update answers carry the server's config_rev (the new one, or its own on a conflict).
@@ -397,6 +400,52 @@ async function applyCommandResult(ctx: InboundContext, env: Envelope): Promise<v
     }
   }
   fleetInbound.emit('command', { serverId: ctx.serverId, envelope: env, result, command });
+}
+
+/** A plugins.set the server answered ok: its enable / disable lists onto the stored plugins_state. */
+async function applyPluginsSetToState(serverId: string, messageId: string): Promise<void> {
+  const rows = await db.queryAsync<{ message: string }>(
+    "SELECT message FROM cs2_fleet_outbox WHERE server_id = ? AND type = 'cmd'",
+    [serverId]
+  );
+  type Lists = { enable?: string[]; disable?: string[] };
+  let args = null as Lists | null;
+  // The lists the platform stored with that push (./push/store.ts), else the outbox copy.
+  const { readPrefs } = await import('./push/store');
+  const prefs = await readPrefs(serverId);
+  if (prefs.pushed.plugins?.id === messageId && prefs.plugins) args = prefs.plugins;
+  for (const r of args ? [] : rows) {
+    try {
+      const env = JSON.parse(r.message) as { id?: string; payload?: { args?: Lists } };
+      if (env.id === messageId) args = env.payload?.args ?? null;
+    } catch {
+      // not ours
+    }
+  }
+  if (!args) return;
+  const row = await db.queryOneAsync<{ plugins_state: string | null }>(
+    'SELECT plugins_state FROM cs2_fleet_servers WHERE id = ?',
+    [serverId]
+  );
+  let state: { installed: string[]; disabled: string[] } = { installed: [], disabled: [] };
+  try {
+    if (row?.plugins_state) state = JSON.parse(row.plugins_state);
+  } catch {
+    // start from nothing
+  }
+  const installed = new Set(state.installed ?? []);
+  const disabled = new Set(state.disabled ?? []);
+  for (const name of args.enable ?? []) {
+    installed.add(name);
+    disabled.delete(name);
+  }
+  for (const name of args.disable ?? []) {
+    if (installed.has(name)) disabled.add(name);
+  }
+  await db.runAsync('UPDATE cs2_fleet_servers SET plugins_state = ? WHERE id = ?', [
+    JSON.stringify({ installed: [...installed].sort(), disabled: [...disabled].sort() }),
+    serverId,
+  ]);
 }
 
 async function applyAvailability(

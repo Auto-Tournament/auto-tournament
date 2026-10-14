@@ -146,16 +146,18 @@ export interface TournamentReward {
 
 export type SmallMode = '2v2' | '1v1';
 
-/** A finished matchmaking game counts for drops from this many rounds on (no walkover or early end). */
-export const MIN_DROP_ROUNDS = 4;
+/** A finished game counts for drops from this many rounds on (a walkover or a game ended this early looks like farming). */
+export const MIN_DROP_ROUNDS = 8;
 
 /**
  * One player's drop chance (0–100) for a finished matchmaking game: the
- * mode's win or play chance, much less for every earlier game against the
- * same opponents in the last day (no farming one friend).
+ * mode's win or play chance. With repeatOpponentCut on, much less from the
+ * third game against the same opponents in a day (no farming one friend);
+ * a second game is fine (a small platform plays the same people).
  */
 export function matchDropChance(
-  config: Pick<SkinsConfig, 'dropChance' | 'playDropChance' | 'modeChances'>,
+  config: Pick<SkinsConfig, 'dropChance' | 'playDropChance' | 'modeChances'> &
+    Partial<Pick<SkinsConfig, 'repeatOpponentCut'>>,
   mode: string | null,
   won: boolean,
   repeats: number
@@ -168,19 +170,21 @@ export function matchDropChance(
     : won
       ? config.dropChance
       : config.playDropChance;
-  return base / Math.pow(1 + Math.max(0, repeats), 2);
+  if (config.repeatOpponentCut === false) return base;
+  return base / Math.pow(1 + Math.max(0, repeats - 1), 2);
 }
 
 /**
- * Whether a finished game can drop for one player: nobody abandoned it, it
- * went MIN_DROP_ROUNDS rounds, and the player played in it.
+ * Whether a finished game can drop for one player: it went MIN_DROP_ROUNDS
+ * rounds, the player played in it, and they did not leave it (the ones who
+ * stayed when someone left still roll).
  */
 export function dropEligible(game: {
-  abandoned: boolean;
+  left: boolean;
   maxRounds: number;
   playerRounds: number;
 }): boolean {
-  return !game.abandoned && game.maxRounds >= MIN_DROP_ROUNDS && game.playerRounds > 0;
+  return !game.left && game.maxRounds >= MIN_DROP_ROUNDS && game.playerRounds > 0;
 }
 
 /** The mode a game's team size plays like (a tournament has no lobby to say). */
@@ -211,7 +215,9 @@ export interface SkinsConfig {
   tradeUp: { enabled: boolean; count: number };
   /** Chance a dropped weapon or knife is StatTrak, 0–100 (CS2 cases: 10). */
   statTrakChance: number;
-  /** With the scaler on, keep one Skin tryout server (fleet/autoscale/tryoutKeeper.ts). */
+  /** Drops much less from the third game against the same opponents in a day (off: small platforms). */
+  repeatOpponentCut: boolean;
+  /** With the scaler on, keep one Skin tryout server (fleet/autoscale/tryoutKeeper.ts). Off by default: it takes a license seat. */
   tryoutServer: boolean;
 }
 
@@ -240,7 +246,8 @@ export const DEFAULT_CONFIG: SkinsConfig = {
   ],
   tradeUp: { enabled: true, count: 5 },
   statTrakChance: 10,
-  tryoutServer: true,
+  repeatOpponentCut: true,
+  tryoutServer: false,
 };
 
 /** How many skins a trade-up may take: CS2's contract is ten; five by default here. */
@@ -529,7 +536,8 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
     ),
     tournamentMatchDrops: raw.tournamentMatchDrops !== false,
     levelUpDrops: raw.levelUpDrops !== false,
-    tryoutServer: raw.tryoutServer !== false,
+    repeatOpponentCut: raw.repeatOpponentCut !== false,
+    tryoutServer: raw.tryoutServer === true,
     rarityWeights: weights,
     tournamentRewards: raw.tournamentRewards !== false,
     rewards,
@@ -796,9 +804,10 @@ export const skinService = {
   /**
    * A finished matchmaking or tournament game: each player who played it may
    * get a drop to pick from, with the mode's chance (winners likelier), less
-   * for a repeat against the same opponents within a day. A game someone
-   * abandoned, or one over before MIN_DROP_ROUNDS rounds (walkover, early
-   * end), drops nothing. Never throws; a failed drop only logs.
+   * from the third game against the same opponents in a day. A player who
+   * left the game gets nothing (the rest still roll); a game over before
+   * MIN_DROP_ROUNDS rounds (walkover, early end) drops nothing. Never
+   * throws; a failed drop only logs.
    */
   async rollMatchDrops(
     matchSlug: string,
@@ -817,14 +826,17 @@ export const skinService = {
         'SELECT id, mode FROM mm_lobbies WHERE match_slug = ?',
         [matchSlug]
       );
-      const abandoned = lobby
-        ? Boolean(
-            await db.queryOneAsync(
-              "SELECT 1 FROM mm_penalties WHERE lobby_id = ? AND kind = 'abandon' LIMIT 1",
-              [lobby.id]
-            )
-          )
-        : false;
+      // Who left it (a matchmaking abandon penalty): only they lose their roll.
+      const leavers = new Set(
+        lobby
+          ? (
+              await db.queryAsync<{ player_id: string }>(
+                "SELECT player_id FROM mm_penalties WHERE lobby_id = ? AND kind = 'abandon'",
+                [lobby.id]
+              )
+            ).map((r) => r.player_id)
+          : []
+      );
       // Who played, and how long the game went (the stats rows are written first).
       const rounds = new Map(
         (
@@ -835,7 +847,7 @@ export const skinService = {
         ).map((r) => [r.player_id, Number(r.rounds_played ?? 0)])
       );
       const maxRounds = Math.max(0, ...rounds.values());
-      if (abandoned || maxRounds < MIN_DROP_ROUNDS) return;
+      if (maxRounds < MIN_DROP_ROUNDS) return;
       const dayAgo = Math.floor(Date.now() / 1000) - 86400;
       const players = [
         ...winnerSteamIds.map((steamId) => ({ steamId, won: true, opponents: otherSteamIds })),
@@ -848,7 +860,13 @@ export const skinService = {
       for (const { steamId, won, opponents } of players) {
         const uid = await uidOf(steamId);
         if (!uid) continue;
-        if (!dropEligible({ abandoned, maxRounds, playerRounds: rounds.get(steamId) ?? 0 }))
+        if (
+          !dropEligible({
+            left: leavers.has(steamId),
+            maxRounds,
+            playerRounds: rounds.get(steamId) ?? 0,
+          })
+        )
           continue;
         const others = opponents.filter((id) => id !== steamId);
         const repeats = others.length
@@ -1074,6 +1092,7 @@ export const skinService = {
       matchmakingDrops: config.matchmakingDrops,
       tournamentMatchDrops: config.tournamentMatchDrops,
       levelUpDrops: config.levelUpDrops,
+      repeatOpponentCut: config.repeatOpponentCut,
       chances: {
         '5v5': { win: config.dropChance, play: config.playDropChance },
         ...config.modeChances,

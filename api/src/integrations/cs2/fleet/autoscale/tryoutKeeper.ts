@@ -24,7 +24,7 @@ const MIN_FREE_MB = 2048;
 async function wanted(): Promise<boolean> {
   const { skinService } = await import('../../skins/skinService');
   const config = await skinService.config();
-  return config.enabled === true && config.tryoutServer !== false;
+  return config.enabled === true && config.tryoutServer === true;
 }
 
 /** A server (not revoked) is on the Skin tryout set. */

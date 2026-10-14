@@ -220,6 +220,17 @@ test.describe.serial('Fleet plugin sets', () => {
         disable: ['match', 'whitelist', 'skins', 'midas', 'deathmatch', 'addons'],
       });
       client.send(answer(set, 1));
+      // Answered ok: the platform's view of its plugins follows at once (not at the next hello).
+      await expect
+        .poll(async () => {
+          const list = (await (await request.get('/api/fleet/servers')).json()).servers as Array<{
+            id: string;
+            pluginsState: { installed: string[]; disabled: string[] } | null;
+          }>;
+          const st = list.find((x) => x.id === ru.serverId)?.pluginsState;
+          return !!st && st.installed.includes('practice') && !st.disabled.includes('practice');
+        })
+        .toBe(true);
       const practice = await client.next(
         (msg) => msg.type === 'cmd' && (msg.payload as { name: string }).name === 'practice.set'
       );

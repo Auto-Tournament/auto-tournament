@@ -1520,10 +1520,15 @@
       "rewardTitle": "Premie for {{place}}",
       "done": "Ferdig",
       "fiveVsFive": "Disse gjelder 5v5. Mindre moduser gir sjeldnere:",
-      "fairRules": "Bare spillere som spilte hele kampen kan få noe: ingenting for en kamp noen forlot eller som sluttet tidlig, og samme motstandere igjen samme døgn gir mye sjeldnere. Plasseringspremier i turneringer går bare til spillere som spilte i turneringen.",
+      "fairRules": "En spiller som forlater en kamp får ingenting; de som ble igjen har fortsatt sjansen sin. En kamp som er over etter under 8 runder gir ingen drop (slik ser farming ut). Med bryteren over på gir den tredje kampen mot samme motstandere samme døgn mye sjeldnere drop. Plasseringspremier i turneringer går bare til spillere som spilte i turneringen.",
       "tournamentMatchDrops": "Turneringskamper gir også drops (ikke i esport-modus)",
       "levelUpDrops": "Et drop for hvert nye nivå",
-      "tryoutServer": "Hold en server for å prøve skins (lages på en maskin med plass når automatisk skalering er på)",
+      "tryoutServer": "Hold en server for å prøve skins",
+      "tryoutWhat": "Hva er dette?",
+      "tryoutHelpTitle": "Server for å prøve skins",
+      "tryoutHelpWhat": "En CS2-server bare for å prøve skins: spillerne kobler til fra inventaret («Prøv dem i spillet») og ser det de har utstyrt, med en gang. Den kjører ingen kamper; den venter på et surf-kart og går tilbake til det når den er tom.",
+      "tryoutHelpHow": "Når dette er på og automatisk skalering er på (Servere → Flåteinnstillinger), lager plattformen en på en maskin med plass når det ikke finnes noen. Du kan også sette hvilken som helst server på forhåndsinnstillingen for skin-prøving selv.",
+      "tryoutHelpCost": "Den bruker en serverplass på lisensen, som alle andre servere, og litt minne og CPU på maskinen. Derfor er den av til du slår den på.",
       "tryoutServerLicense": "Den bruker en serverplass på lisensen, som alle andre servere.",
       "tradeUp": "Bytte opp: skins av én grad for én av neste",
       "tradeUpCount": "Skins per bytte",
@@ -1565,7 +1570,8 @@
         "rowAction": "Gi en drop"
       },
       "statTrakChance": "StatTrak™-sjanse (%)",
-      "statTrakHelp": "Hvor ofte et våpen eller en kniv som droppes er StatTrak™ (CS2-kasser: 10)."
+      "statTrakHelp": "Hvor ofte et våpen eller en kniv som droppes er StatTrak™ (CS2-kasser: 10).",
+      "repeatOpponentCut": "Sjeldnere fra den tredje kampen mot samme motstandere samme døgn (slå av for en liten plattform eller et LAN)"
     },
     "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)",
     "whatThisMeans": "Hva dette betyr",
@@ -1612,7 +1618,7 @@
       "whenPlacement": "For topp tre i en turnering",
       "chanceTitle": "Sjanse for drop etter en kamp",
       "mode": "Modus",
-      "fair": "Ingenting dropper fra en kamp noen forlot eller som sluttet tidlig. Samme motstandere igjen samme døgn gir mye sjeldnere drop.",
+      "fair": "En spiller som forlater en kamp får ingenting; resten har fortsatt sjansen sin. Ingenting dropper fra en kamp som er over etter under 8 runder, og den tredje kampen mot samme motstandere samme døgn gir mye sjeldnere drop.",
       "rarityTitle": "Sjanse per sjeldenhet",
       "skins_one": "{{count}} skin",
       "skins_other": "{{count}} skins",
@@ -1621,7 +1627,8 @@
       "placementTitle": "Turneringsplasseringer",
       "pickOfRarity": "et valg blant {{rarity}}-skins",
       "rarityOdds": "Sjanse for sjeldenheten",
-      "skinOdds": "Denne skinen"
+      "skinOdds": "Denne skinen",
+      "fairNoRepeat": "En spiller som forlater en kamp får ingenting; resten har fortsatt sjansen sin. Ingenting dropper fra en kamp som er over etter under 8 runder."
     },
     "rewards": {
       "title": "Premier",

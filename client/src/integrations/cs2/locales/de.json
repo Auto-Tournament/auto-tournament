@@ -1524,6 +1524,11 @@
       "tournamentMatchDrops": "Tournament matches drop too (not in esports mode)",
       "levelUpDrops": "A drop for every new level",
       "tryoutServer": "Keep a Skin tryout server (created on a machine with room while automatic scaling is on)",
+      "tryoutWhat": "What is this?",
+      "tryoutHelpTitle": "Skin tryout server",
+      "tryoutHelpWhat": "A CS2 server just for trying skins: players join from their inventory (\"Try them in game\") and see what they equipped, live. It runs no matches; it waits on a surf map and goes back to it when it is empty.",
+      "tryoutHelpHow": "With this on and automatic scaling on (Servers → Fleet settings), the platform creates one on a machine with room when there is none. You can also put any server on the Skin tryout preset yourself.",
+      "tryoutHelpCost": "It takes a server seat on your license, like any other server, and a little memory and CPU on its machine. That's why it is off unless you turn it on.",
       "tryoutServerLicense": "It takes a server seat on your license, like any other server.",
       "tradeUp": "Trade-ups: Skins einer Stufe gegen einen der nächsten",
       "tradeUpCount": "Skins pro Trade-up",
@@ -1565,7 +1570,8 @@
         "rowAction": "Give a drop"
       },
       "statTrakChance": "StatTrak™ chance (%)",
-      "statTrakHelp": "How often a dropped weapon or knife is StatTrak™ (CS2 cases: 10)."
+      "statTrakHelp": "How often a dropped weapon or knife is StatTrak™ (CS2 cases: 10).",
+      "repeatOpponentCut": "Less from the third game against the same opponents in a day (turn off for a small platform or a LAN)"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "Was das heißt",
@@ -1621,7 +1627,8 @@
       "placementTitle": "Tournament placements",
       "pickOfRarity": "a pick of {{rarity}} skins",
       "rarityOdds": "Rarity odds",
-      "skinOdds": "This skin"
+      "skinOdds": "This skin",
+      "fairNoRepeat": "A player who leaves a game gets nothing; the rest still get their chance. Nothing drops from a game over in under 8 rounds."
     },
     "rewards": {
       "title": "Rewards",
