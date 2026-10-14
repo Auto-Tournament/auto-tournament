@@ -23,6 +23,7 @@ export const ADMIN_NOTICE_KINDS = {
   match_forfeit: { group: 'matches', severity: 'info' },
   report_disputed: { group: 'matches', severity: 'warn' },
   failover: { group: 'matches', severity: 'error' },
+  match_silent: { group: 'matches', severity: 'warn' },
   // Servers
   server_crashed: { group: 'servers', severity: 'error' },
   plugin_update_available: { group: 'servers', severity: 'info' },
