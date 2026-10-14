@@ -202,6 +202,34 @@ router.post(
   }
 );
 
+/**
+ * POST /api/test/fleet/snapshot { serverId?, state }
+ *
+ * A Ready Up `state.snapshot` of a match (`state.match_id`), applied as a
+ * connected server's would be: the match then has a live record the admin
+ * match page reads. `serverId` defaults to `test-ready-up`.
+ */
+router.post('/fleet/snapshot', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!fleetTestGuard(res)) return;
+  const { serverId, state } = (req.body || {}) as {
+    serverId?: string;
+    state?: Record<string, unknown>;
+  };
+  if (!state || typeof state.match_id !== 'string') {
+    res.status(400).json({ success: false, error: 'state with match_id is required' });
+    return;
+  }
+  try {
+    const outcome = await liveStateStore.applySnapshot(serverId || 'test-ready-up', {
+      reason: 'request',
+      state,
+    } as unknown as Parameters<typeof liveStateStore.applySnapshot>[1]);
+    res.json({ success: true, outcome });
+  } catch (error) {
+    res.status(500).json({ success: false, error: (error as Error).message });
+  }
+});
+
 /** POST /api/test/fleet/stattrak  { increments }: a skins.stattrak report, as from a server. */
 router.post('/fleet/stattrak', requireAuth, async (req: Request, res: Response): Promise<void> => {
   if (!fleetTestGuard(res)) return;
