@@ -41,6 +41,8 @@ const MAPS = [
 type ListedMatch = {
   id: number;
   slug: string;
+  /** The slug within its tournament ("r1m1", "gf"): the t<id>- prefix taken off. */
+  key: string;
   round: number;
   status: string;
   team1?: { id: string } | null;
@@ -49,19 +51,26 @@ type ListedMatch = {
 };
 
 type TournamentBody = {
-  tournament?: { status?: string; winner?: { id: string } | null };
+  tournament?: { id?: number; status?: string; winner?: { id: string } | null };
 };
 
+/** The current tournament's matches (ids are never reused, so slugs carry t<id>-). */
 async function bracketMatches(request: APIRequestContext): Promise<ListedMatch[]> {
+  const t = (await (
+    await request.get('/api/tournament', { headers: getAuthHeader() })
+  ).json()) as TournamentBody;
+  const prefix = !t.tournament?.id || t.tournament.id === 1 ? '' : `t${t.tournament.id}-`;
   const res = await request.get('/api/matches', { headers: getAuthHeader() });
   expect(res.ok(), `listing matches failed: ${await res.text()}`).toBe(true);
-  const body = (await res.json()) as { matches?: ListedMatch[] };
+  const body = (await res.json()) as { matches?: Array<Omit<ListedMatch, 'key'>> };
   return (body.matches ?? [])
-    .filter((m) => m.slug === 'gf' || /^(lb-)?r\d+m\d+$/.test(m.slug))
-    .sort((a, b) => a.slug.localeCompare(b.slug));
+    .filter((m) => m.slug.startsWith(prefix))
+    .map((m) => ({ ...m, key: m.slug.slice(prefix.length) }))
+    .filter((m) => m.key === 'gf' || /^(lb-)?r\d+m\d+$/.test(m.key))
+    .sort((a, b) => a.key.localeCompare(b.key));
 }
 
-const bySlug = (matches: ListedMatch[], slug: string) => matches.find((m) => m.slug === slug);
+const bySlug = (matches: ListedMatch[], key: string) => matches.find((m) => m.key === key);
 
 async function seriesEnd(
   request: APIRequestContext,
@@ -136,7 +145,7 @@ test.describe.serial('Small double-elimination brackets', () => {
 
         // One winners match and a grand final; no losers bracket, no reset.
         const all = await bracketMatches(request);
-        expect(all.map((m) => m.slug)).toEqual(['gf', 'r1m1']);
+        expect(all.map((m) => m.key)).toEqual(['gf', 'r1m1']);
 
         const opening = bySlug(all, 'r1m1')!;
         expect([opening.team1?.id, opening.team2?.id]).toEqual([teamA, teamB]);
@@ -173,7 +182,7 @@ test.describe.serial('Small double-elimination brackets', () => {
       const [teamA] = setup!.teams.map((t) => t.id);
 
       const all = await bracketMatches(request);
-      expect(all.map((m) => m.slug)).toEqual(['r1m1']);
+      expect(all.map((m) => m.key)).toEqual(['r1m1']);
 
       await seriesEnd(request, bySlug(all, 'r1m1')!, 'team1');
       expect(await waitForChampion(request)).toBe(teamA);
@@ -198,7 +207,7 @@ test.describe.serial('Small double-elimination brackets', () => {
       const [teamA, , teamC] = setup!.teams.map((t) => t.id);
 
       const all = await bracketMatches(request);
-      expect(all.map((m) => m.slug)).toEqual(['gf', 'lb-r1m1', 'lb-r2m1', 'r1m1', 'r1m2', 'r2m1']);
+      expect(all.map((m) => m.key)).toEqual(['gf', 'lb-r1m1', 'lb-r2m1', 'r1m1', 'r1m2', 'r2m1']);
 
       // A and C win their openers; B and D meet in the losers bracket.
       await seriesEnd(request, bySlug(all, 'r1m1')!, 'team1');
