@@ -151,6 +151,18 @@ export interface MatchmakingMe {
   waitSeconds: Record<string, number | null>;
   /** Each mode's rules for its card: rounds per half (MR) and the map pool's name (null = the default pool). */
   modeRules: Record<string, { maxRounds: number; pool: string | null }>;
+  /**
+   * The rating window a search widens through (display Elo): `start`, plus
+   * `step` every `everySeconds`, up to `cap`; any rating after
+   * `uncappedAfterSeconds` (null = never). The queue screen shows it live.
+   */
+  searchWindow: {
+    start: number;
+    step: number;
+    everySeconds: number;
+    cap: number;
+    uncappedAfterSeconds: number | null;
+  };
 }
 
 /** Rounds per half Ready Up plays: wingman MR8, everything else MR12. */
@@ -1286,6 +1298,19 @@ export class MatchmakingService {
       online: onlinePlayerCount(),
       waitSeconds: await this.waitEstimates(),
       modeRules: await this.modeRules(),
+      searchWindow: await this.searchWindowSettings(),
+    };
+  }
+
+  /** The admin's search window, for the queue screen (Infinity sent as null). */
+  private async searchWindowSettings(): Promise<MatchmakingMe['searchWindow']> {
+    const w = parseSearchWindow(await db.getAppSettingAsync(MM_SEARCH_WINDOW));
+    return {
+      start: w.start,
+      step: w.step,
+      everySeconds: w.everySeconds,
+      cap: w.cap,
+      uncappedAfterSeconds: Number.isFinite(w.uncappedAfterSeconds) ? w.uncappedAfterSeconds : null,
     };
   }
 

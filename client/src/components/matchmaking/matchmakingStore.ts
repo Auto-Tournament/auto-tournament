@@ -44,6 +44,14 @@ export interface MatchmakingMe {
   waitSeconds?: Record<string, number | null>;
   /** Rounds per half and the map pool's name per mode (null pool = the default). */
   modeRules?: Record<string, { maxRounds: number; pool: string | null }>;
+  /** How the rating window widens while searching (display Elo; older APIs: missing). */
+  searchWindow?: {
+    start: number;
+    step: number;
+    everySeconds: number;
+    cap: number;
+    uncappedAfterSeconds: number | null;
+  };
   lobby: {
     id: string;
     status: string;
@@ -183,4 +191,16 @@ export function teamSizeOf(mode: string): number {
 export function playersFor(mode: string): number {
   const m = /^(\d+)v(\d+)$/.exec(mode);
   return m ? Number(m[1]) + Number(m[2]) : 10;
+}
+
+/**
+ * The rating window (± display Elo) after `waited` seconds in the queue, as
+ * the server's matchmaking/rules.ts searchWindow widens it; null = any rating.
+ */
+export function searchWindowElo(
+  waited: number,
+  w: NonNullable<MatchmakingMe['searchWindow']>
+): number | null {
+  if (w.uncappedAfterSeconds !== null && waited >= w.uncappedAfterSeconds) return null;
+  return Math.min(w.cap, w.start + Math.floor(Math.max(0, waited) / w.everySeconds) * w.step);
 }
