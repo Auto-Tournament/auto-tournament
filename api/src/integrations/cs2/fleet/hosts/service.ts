@@ -523,7 +523,11 @@ const ENROLL_QUIET_S = 15 * 60;
  */
 async function enrollStrayServers(hostId: string): Promise<void> {
   const host = await registry.getHostView(hostId);
-  if (!host?.inventory || host.status !== 'enrolled' || !host.capabilities.includes('servers.enroll'))
+  if (
+    !host?.inventory ||
+    host.status !== 'enrolled' ||
+    !host.capabilities.includes('servers.enroll')
+  )
     return;
   const stray = (await hostServers(hostId))
     .filter((s) => !!s.readyup.installed && !s.fleetServer)
