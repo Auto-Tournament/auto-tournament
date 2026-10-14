@@ -221,6 +221,7 @@ test.describe('Fleet match.assign config', () => {
       false
     );
     expect(pausesOnDisconnect(tournamentConfig({ bot_fill: true }))).toBe(false);
+    expect(pausesOnDisconnect(tournamentConfig({ simulation: true }))).toBe(false);
     expect(pausesOnDisconnect(tournamentConfig({ wingman: true, players_per_team: 2 }))).toBe(
       false
     );
