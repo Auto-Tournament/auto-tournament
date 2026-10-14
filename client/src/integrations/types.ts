@@ -19,7 +19,7 @@
  */
 
 import type { PlayerHighlightsFeed } from '../components/highlights/feed';
-import type { ComponentType, ReactElement } from 'react';
+import type { ComponentType, ReactElement, ReactNode } from 'react';
 import type { TFunction } from 'i18next';
 
 /** Integration id, the same value as the API's `game` column. */
@@ -115,6 +115,23 @@ export interface PublicMatch {
   tournament?: string | null;
   /** The tournament's id, for a link to its page (null for a match outside one). */
   tournamentId?: number | null;
+  /** The series' maps in play order, once known (after the veto). */
+  maps?: string[];
+  /** The map being played (0-based), while the match runs. */
+  mapNumber?: number | null;
+  team1LogoUrl?: string | null;
+  team2LogoUrl?: string | null;
+}
+
+/**
+ * The series' maps on a match's page (client API 0.2.24): every map in play
+ * order, the one being played and, for each played one, who won it.
+ */
+export interface MatchSeriesMapsProps {
+  matchSlug: string;
+  match: PublicMatch;
+  /** Core's per-map controls (the game's `matchMapAction`), for the module to place on each card. */
+  renderMapAction?: (mapNumber: number) => ReactNode;
 }
 
 export interface MatchPublicPanelProps {
@@ -1048,6 +1065,12 @@ export interface ClientGameIntegration {
      * scoreboard and the highlight clips.
      */
     publicView?: ComponentType<MatchPublicPanelProps>;
+    /**
+     * A match's page (client API 0.2.24): the series' maps as the game draws
+     * them (CS2: map pictures in play order, who picked each, the winner and
+     * rounds of each played map). Core's text cards without it.
+     */
+    seriesMapsView?: ComponentType<MatchSeriesMapsProps>;
   };
 
   /** Team page: an admin-only control this integration needs (D7: captains). */

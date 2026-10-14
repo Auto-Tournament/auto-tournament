@@ -2659,5 +2659,19 @@
     "backMoved": "Kampen er flyttet til en annen server, med siste runde gjenopprettet. Koble til igjen for å spille videre.",
     "reconnect": "Koble til igjen",
     "close": "Lukk"
+  },
+  "seriesMaps": {
+    "title": "Kart",
+    "mapN": "Kart {{n}}",
+    "pickedBy": "valgt av {{team}}",
+    "decider": "avgjørende kart",
+    "live": "Direkte",
+    "upNext": "Neste",
+    "notPlayed": "Ikke spilt",
+    "won": "{{team}} vant",
+    "draw": "Uavgjort",
+    "regulation": "Uten overtid",
+    "overtime": "Etter overtid",
+    "onDamage": "Likt etter overtid, avgjort på skade"
   }
 }
