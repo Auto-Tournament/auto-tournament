@@ -105,11 +105,16 @@ async function createTeams(request: APIRequestContext, prefix: string, count: nu
   return ids;
 }
 
-async function listMatches(request: APIRequestContext): Promise<ListedMatch[]> {
+// The matches of this test's teams: a finished match another spec in the same
+// shard left behind is listed too (finished matches are kept).
+async function listMatches(request: APIRequestContext, teamIds: string[]): Promise<ListedMatch[]> {
   const res = await request.get('/api/matches');
   expect(res.ok(), `listing matches: ${await res.text()}`).toBe(true);
   const body = (await res.json()) as { matches?: ListedMatch[] };
-  return (body.matches ?? []).filter((m) => m.round >= 1);
+  const ours = new Set(teamIds);
+  return (body.matches ?? []).filter(
+    (m) => m.round >= 1 && (ours.has(m.team1?.id ?? '') || ours.has(m.team2?.id ?? ''))
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -398,119 +403,148 @@ test.describe.serial('Manual-report module: a tournament with no servers', () =>
     await request.delete('/api/tournament');
   });
 
-  test('its games are supported in the catalogue; CS2 stays CS2', { tag: ['@api'] }, async ({ request }) => {
-    const res = await request.get('/api/games/popular');
-    expect(res.ok(), await res.text()).toBe(true);
-    const games = ((await res.json()) as { games: Array<{ slug: string; name: string; supported: boolean }> }).games;
-    const bySlug = new Map(games.map((g) => [g.slug, g]));
+  test(
+    'its games are supported in the catalogue; CS2 stays CS2',
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const res = await request.get('/api/games/popular');
+      expect(res.ok(), await res.text()).toBe(true);
+      const games = (
+        (await res.json()) as { games: Array<{ slug: string; name: string; supported: boolean }> }
+      ).games;
+      const bySlug = new Map(games.map((g) => [g.slug, g]));
 
-    // Every game the image ships, seeded on boot, is supported by name.
-    for (const entry of BUNDLED) {
-      expect(bySlug.get(entry.slug), entry.slug).toMatchObject({
-        name: entry.name,
+      // Every game the image ships, seeded on boot, is supported by name.
+      for (const entry of BUNDLED) {
+        expect(bySlug.get(entry.slug), entry.slug).toMatchObject({
+          name: entry.name,
+          supported: true,
+        });
+      }
+      // The module is not offered as a game of its own.
+      expect(bySlug.has(MANUAL_REPORT_GAME_ID)).toBe(false);
+      expect(bySlug.has('manual-reporting')).toBe(false);
+      // CS2's row still belongs to CS2, with its own name.
+      expect(bySlug.get('counter-strike-2')).toMatchObject({
+        name: 'Counter-Strike 2',
         supported: true,
       });
     }
-    // The module is not offered as a game of its own.
-    expect(bySlug.has(MANUAL_REPORT_GAME_ID)).toBe(false);
-    expect(bySlug.has('manual-reporting')).toBe(false);
-    // CS2's row still belongs to CS2, with its own name.
-    expect(bySlug.get('counter-strike-2')).toMatchObject({
-      name: 'Counter-Strike 2',
-      supported: true,
-    });
-  });
+  );
 
-  test('create, start, and the match is live with no server', { tag: ['@api'] }, async ({ request }) => {
-    const teamIds = await createTeams(request, 'mr-live', 2);
-    const created = await request.post(`${TEST}/tournament`, {
-      data: {
-        name: 'Rocket League Cup',
-        type: 'single_elimination',
-        format: 'bo3',
-        game: 'rocket-league',
-        teamIds,
-        settings: { manualReport: { gameLabel: 'Rocket League', confirmTimeoutMin: 60 } },
-      },
-    });
-    expect(created.status(), `creating: ${await created.text()}`).toBe(200);
-    const tournament = ((await created.json()) as {
-      tournament: { game: string; status: string; settings: Record<string, unknown> };
-    }).tournament;
-
-    // The row carries the *catalogue* id, not the module id: a module that
-    // runs many games cannot be identified by the module alone.
-    expect(tournament.game).toBe('rocket-league');
-    expect(tournament.status).toBe('setup');
-    // The module's settings survive the create untouched, next to the core's.
-    expect(tournament.settings.manualReport).toEqual({
-      gameLabel: 'Rocket League',
-      confirmTimeoutMin: 60,
-    });
-
-    // With no veto, round 1 is ready straight away (a CS2 BO3 would wait).
-    const matches = await listMatches(request);
-    expect(matches).toHaveLength(1);
-    expect(matches[0]).toMatchObject({ game: 'rocket-league', status: 'ready' });
-
-    const started = await request.post('/api/tournament/start', { data: {} });
-    expect(started.ok(), `starting: ${await started.text()}`).toBe(true);
-
-    // Allocation puts it straight to live: there is nothing to load it onto,
-    // so the match going live *is* loading it.
-    let live: ListedMatch[] = [];
-    await expect
-      .poll(
-        async () => {
-          live = (await listMatches(request)).filter((m) => m.status === 'live');
-          return live.length;
+  test(
+    'create, start, and the match is live with no server',
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const teamIds = await createTeams(request, 'mr-live', 2);
+      const created = await request.post(`${TEST}/tournament`, {
+        data: {
+          name: 'Rocket League Cup',
+          type: 'single_elimination',
+          format: 'bo3',
+          game: 'rocket-league',
+          teamIds,
+          settings: { manualReport: { gameLabel: 'Rocket League', confirmTimeoutMin: 60 } },
         },
-        { message: 'the match should go live with no server', timeout: 20_000 }
-      )
-      .toBe(1);
-    expect(live[0].serverId ?? null).toBeNull();
+      });
+      expect(created.status(), `creating: ${await created.text()}`).toBe(200);
+      const tournament = (
+        (await created.json()) as {
+          tournament: { game: string; status: string; settings: Record<string, unknown> };
+        }
+      ).tournament;
 
-    // The stored config is the module's, with the reporting rules as they
-    // stood when the match was built.
-    const detail = await request.get(`/api/matches/${live[0].slug}`);
-    expect(detail.ok()).toBe(true);
-    const config = ((await detail.json()) as { match: { config: Record<string, unknown> } }).match.config;
-    expect(config).toMatchObject({
-      game: MANUAL_REPORT_GAME_ID,
-      catalogGame: 'rocket-league',
-      gameLabel: 'Rocket League',
-      seriesLength: 3,
-      confirmation: 'opponent',
-      confirmTimeoutMin: 60,
-      timeoutAction: 'auto_confirm',
-    });
+      // The row carries the *catalogue* id, not the module id: a module that
+      // runs many games cannot be identified by the module alone.
+      expect(tournament.game).toBe('rocket-league');
+      expect(tournament.status).toBe('setup');
+      // The module's settings survive the create untouched, next to the core's.
+      expect(tournament.settings.manualReport).toEqual({
+        gameLabel: 'Rocket League',
+        confirmTimeoutMin: 60,
+      });
 
-    // Loading it again is a no-op, not a second life: only a `ready` match moves.
-    const reload = await request.post(`/api/matches/${live[0].slug}/load`, { data: {} });
-    expect([200, 400, 409]).toContain(reload.status());
-    expect((await listMatches(request)).find((m) => m.slug === live[0].slug)?.status).toBe('live');
-  });
+      // With no veto, round 1 is ready straight away (a CS2 BO3 would wait).
+      const matches = await listMatches(request, teamIds);
+      expect(matches).toHaveLength(1);
+      expect(matches[0]).toMatchObject({ game: 'rocket-league', status: 'ready' });
 
-  test('the test route only makes tournaments for games this module ships', { tag: ['@api'] }, async ({ request }) => {
-    const teamIds = await createTeams(request, 'mr-guard', 2);
-    const base = {
-      name: 'Guarded',
-      type: 'single_elimination',
-      format: 'bo1',
-      teamIds,
-    };
-    // CS2 has a module of its own; this one must not take its tournaments.
-    expect((await request.post(`${TEST}/tournament`, { data: { ...base, game: 'counter-strike-2' } })).status()).toBe(409);
-    expect((await request.post(`${TEST}/tournament`, { data: { ...base, game: 'cs2' } })).status()).toBe(409);
-    // Input checks.
-    expect((await request.post(`${TEST}/tournament`, { data: { ...base, format: 'bo2' } })).status()).toBe(400);
-    expect((await request.post(`${TEST}/tournament`, { data: { ...base, teamIds: [] } })).status()).toBe(400);
-    expect(
-      (
-        await request.post(`${TEST}/tournament`, {
-          data: { ...base, game: 'chess', settings: { manualReport: { bestOf: 2 } } },
-        })
-      ).status()
-    ).toBe(400);
-  });
+      const started = await request.post('/api/tournament/start', { data: {} });
+      expect(started.ok(), `starting: ${await started.text()}`).toBe(true);
+
+      // Allocation puts it straight to live: there is nothing to load it onto,
+      // so the match going live *is* loading it.
+      let live: ListedMatch[] = [];
+      await expect
+        .poll(
+          async () => {
+            live = (await listMatches(request, teamIds)).filter((m) => m.status === 'live');
+            return live.length;
+          },
+          { message: 'the match should go live with no server', timeout: 20_000 }
+        )
+        .toBe(1);
+      expect(live[0].serverId ?? null).toBeNull();
+
+      // The stored config is the module's, with the reporting rules as they
+      // stood when the match was built.
+      const detail = await request.get(`/api/matches/${live[0].slug}`);
+      expect(detail.ok()).toBe(true);
+      const config = ((await detail.json()) as { match: { config: Record<string, unknown> } }).match
+        .config;
+      expect(config).toMatchObject({
+        game: MANUAL_REPORT_GAME_ID,
+        catalogGame: 'rocket-league',
+        gameLabel: 'Rocket League',
+        seriesLength: 3,
+        confirmation: 'opponent',
+        confirmTimeoutMin: 60,
+        timeoutAction: 'auto_confirm',
+      });
+
+      // Loading it again is a no-op, not a second life: only a `ready` match moves.
+      const reload = await request.post(`/api/matches/${live[0].slug}/load`, { data: {} });
+      expect([200, 400, 409]).toContain(reload.status());
+      expect(
+        (await listMatches(request, teamIds)).find((m) => m.slug === live[0].slug)?.status
+      ).toBe('live');
+    }
+  );
+
+  test(
+    'the test route only makes tournaments for games this module ships',
+    { tag: ['@api'] },
+    async ({ request }) => {
+      const teamIds = await createTeams(request, 'mr-guard', 2);
+      const base = {
+        name: 'Guarded',
+        type: 'single_elimination',
+        format: 'bo1',
+        teamIds,
+      };
+      // CS2 has a module of its own; this one must not take its tournaments.
+      expect(
+        (
+          await request.post(`${TEST}/tournament`, { data: { ...base, game: 'counter-strike-2' } })
+        ).status()
+      ).toBe(409);
+      expect(
+        (await request.post(`${TEST}/tournament`, { data: { ...base, game: 'cs2' } })).status()
+      ).toBe(409);
+      // Input checks.
+      expect(
+        (await request.post(`${TEST}/tournament`, { data: { ...base, format: 'bo2' } })).status()
+      ).toBe(400);
+      expect(
+        (await request.post(`${TEST}/tournament`, { data: { ...base, teamIds: [] } })).status()
+      ).toBe(400);
+      expect(
+        (
+          await request.post(`${TEST}/tournament`, {
+            data: { ...base, game: 'chess', settings: { manualReport: { bestOf: 2 } } },
+          })
+        ).status()
+      ).toBe(400);
+    }
+  );
 });
