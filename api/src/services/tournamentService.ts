@@ -32,11 +32,7 @@ import type {
   BracketMatch,
   BracketResponse,
 } from '../types/tournament.types';
-import {
-  nextTournamentId,
-  noteTournamentId,
-  refreshCurrentTournamentId,
-} from './currentTournament';
+import { refreshCurrentTournamentId } from './currentTournament';
 import { playerEmailService } from './playerEmailService';
 import {
   bareSlug,
@@ -261,30 +257,8 @@ class TournamentService {
 
     const now = Math.floor(Date.now() / 1000);
 
-    // A tournament id whose matches were played is never given again: the new
-    // tournament's slugs (t<id>-r1m1) must not meet the old ones' demos,
-    // clips and analyses. A finished one at this id stays, with its matches;
-    // a running one is replaced and its matches forgotten. A draft nobody
-    // played (its matches never loaded) is replaced in place.
-    const existing = await db.queryOneAsync<{ status: string }>(
-      'SELECT status FROM tournament WHERE id = ?',
-      [tournamentId]
-    );
-    if (existing) {
-      const played = await tournamentWasPlayed(tournamentId);
-      if (existing.status === 'completed') {
-        await noteTournamentId(tournamentId);
-      } else {
-        const gone = await db.queryAsync<{ slug: string }>(
-          'SELECT slug FROM matches WHERE tournament_id = ?',
-          [tournamentId]
-        );
-        if (played) await noteTournamentId(tournamentId);
-        await db.runAsync('DELETE FROM tournament WHERE id = ?', [tournamentId]);
-        await forgetMatches(gone.map((r) => r.slug));
-      }
-      if (existing.status === 'completed' || played) tournamentId = await nextTournamentId();
-    }
+    // Delete existing tournament (if any) - we only support one tournament at a time
+    await db.runAsync('DELETE FROM tournament WHERE id = ?', [tournamentId]);
 
     // Insert new tournament
     await db.insertAsync('tournament', {
@@ -491,9 +465,6 @@ class TournamentService {
         log.info(`Kept ${kept.length} played match(es) of deleted tournament ${tournamentId}`);
       }
     }
-
-    // A played tournament's id is not given out again (its slugs had data).
-    if (await tournamentWasPlayed(tournamentId)) await noteTournamentId(tournamentId);
 
     // Delete tournament (CASCADE will also delete matches and events)
     await db.runAsync('DELETE FROM tournament WHERE id = ?', [tournamentId]);
@@ -1087,21 +1058,6 @@ class TournamentService {
       eloTemplateId: row.elo_template_id ?? null,
     };
   }
-}
-
-/**
- * Whether any match of the tournament was played: put on a server, live or
- * over (kept matches count too: they still carry its slugs).
- */
-async function tournamentWasPlayed(tournamentId: number): Promise<boolean> {
-  const row = await db.queryOneAsync<{ one: number }>(
-    `SELECT 1 AS one FROM matches
-      WHERE (tournament_id = ? OR played_in_id = ?)
-        AND (status NOT IN ('pending', 'ready') OR loaded_at IS NOT NULL)
-      LIMIT 1`,
-    [tournamentId, tournamentId]
-  );
-  return !!row;
 }
 
 export const tournamentService = new TournamentService();
