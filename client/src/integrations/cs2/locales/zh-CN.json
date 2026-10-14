@@ -445,193 +445,9 @@
   },
   "serversPage": {
     "title": "服务器",
-    "headerActions": {
-      "refreshChecking": "正在检查…",
-      "refresh": "刷新状态",
-      "retryUninitialized": "重试未初始化 ({{count}})",
-      "retryUninitializedChecking": "正在重试…",
-      "batchAdd": "批量新增",
-      "select": "选择",
-      "done": "完成选择",
-      "selectAll": "全选",
-      "unselectAll": "取消全选",
-      "deleteSelected": "删除所选",
-      "addServer": "新增服务器"
-    },
-    "empty": {
-      "createServers": "Link a machine or create servers",
-      "addExisting": "Add an existing server (RCON)",
-      "title": "还没有服务器",
-      "description": "添加第一台 CS2 服务器以开始锦标赛",
-      "addServer": "新增服务器",
-      "batchAdd": "或批量新增多个服务器"
-    },
-    "allocation": {
-      "loading": "正在加载分配状态…",
-      "nextPass": "下一次分配轮约在 ~{{seconds}} 秒后",
-      "cooldownLabel": "冷却",
-      "cooldownDescription": "最近完成了一场比赛——进入冷却，以便上传 Demo 并让服务器完全重置（约 2 分钟）。",
-      "cooldownEta": "约 {{seconds}} 秒后就绪"
-    },
-    "statusChip": {
-      "checking": "正在检查…",
-      "disabled": "已禁用",
-      "offline": "离线",
-      "onlineOk": "在线（API ↔ 服务器正常）",
-      "onlineRconOnly": "在线（仅 RCON 可达）",
-      "rconFailed": "RCON 失败",
-      "onlineTesting": "在线（测试中）",
-      "noEventsYet": "暂无事件",
-      "notConfigured": "未配置",
-      "onlineIdle": "在线（空闲 — 近期无事件）",
-      "onlineActive": "在线（活跃）",
-      "online": "在线"
-    },
-    "ipBanned": {
-      "title": "服务器可能已封禁我们的 IP",
-      "message": "服务器可达但反复拒绝 RCON 身份验证。这可能表示 IP 被封禁。如果 RCON 密码正确，请检查服务器的封禁列表并解封我们的 IP 地址。"
-    },
-    "connectivity": {
-      "apiToServer": "Auto Tournament API → CS2 服务器",
-      "serverToApi": "服务器 → API（/api/events）",
-      "unreachable": "不可达",
-      "reachable": "可达",
-      "unknown": "未知",
-      "loading": "加载中…"
-    },
-    "currentMatch": {
-      "view": "查看比赛",
-      "loading": "正在加载…",
-      "queuedPrefix": "已排队："
-    },
-    "errors": {
-      "loadServers": "加载服务器失败",
-      "noMatchesForServer": "未找到该服务器的比赛",
-      "loadCurrentMatch": "加载该服务器的当前比赛失败",
-      "bulkDelete": "删除一台或多台服务器时出错"
-    },
-    "bulkDelete": {
-      "title": "删除服务器",
-      "message_one": "确定要删除 {{count}} 台服务器吗？该操作无法撤销。",
-      "message_other": "确定要删除 {{count}} 台服务器吗？该操作无法撤销。"
-    },
-    "autoConfig": {
-      "done": "新服务器已配置，正在刷新状态…"
-    },
-    "checkServerLogs": "请查看游戏服务器控制台/日志，确认 Auto Tournament 插件是否收到配置并发送事件。",
     "fleet": {
-      "title": "服务器集群状态",
       "total_one": "{{count}} 台服务器",
-      "total_other": "{{count}} 台服务器",
-      "olderVersion_one": "{{count}} 台服务器运行的版本低于最新版本。",
-      "olderVersion_other": "{{count}} 台服务器运行的版本低于最新版本。",
-      "downloadLatest": "下载最新版本"
-    },
-    "cs2Update": {
-      "title": "需要更新 CS2",
-      "snackbarBody_one": "{{count}} 台服务器版本过旧。请更新服务器安装并重启。",
-      "snackbarBody_other": "{{count}} 台服务器版本过旧。请更新服务器安装并重启。",
-      "fleetTitle": "CS2 服务器版本过旧 — 需要更新",
-      "fleetBody_one": "{{count}} 台服务器收到 Steam 的 CS2 强制更新通知。请更新服务器安装（SteamCMD/主机）并重启。",
-      "fleetBody_other": "{{count}} 台服务器收到 Steam 的 CS2 强制更新通知。请更新服务器安装（SteamCMD/主机）并重启。"
-    },
-    "versionMismatch": {
-      "title": "检测到版本不一致",
-      "chip_one": "v{{version}}：{{count}} 台服务器",
-      "chip_other": "v{{version}}：{{count}} 台服务器",
-      "recommended": "建议：将所有服务器更新到 v{{version}} 以保持一致"
-    },
-    "notInitialized": {
-      "title": "服务器未初始化",
-      "checking": "正在检查连接…",
-      "rconUnreachable": "无法连接 RCON。请检查主机、端口以及游戏服务器是否正在运行。可以连接后点击“重试”。",
-      "noEvents": "RCON 可连接，但 Auto Tournament 插件尚未发送任何事件。点击“重试”进行配置。",
-      "notChecked": "尚未检查连接，请查看下方状态。RCON 可连接后点击“重试”进行配置。"
-    },
-    "chips": {
-      "versionMismatch": "版本不一致",
-      "ipBanned": "IP 已被封禁",
-      "pluginDbDown": "插件数据库不可用",
-      "cs2UpdateRequired": "需要更新 CS2（{{version}}）"
-    },
-    "tooltips": {
-      "fixGuide": "修复指南",
-      "disabledTitle": "已禁用的服务器",
-      "disabledBody": "已禁用的服务器不会参与分配和健康检查。",
-      "noEventsTitle": "尚未收到 Auto Tournament 插件的事件",
-      "noEventsBody": "Auto Tournament 已通过 RCON 发送 Webhook 配置，但尚未收到任何事件。这通常表示服务器无法访问 Auto Tournament 的 Webhook URL，或 Auto Tournament 插件未运行。",
-      "notConfiguredTitle": "未配置",
-      "notConfiguredBody": "Auto Tournament 尚未向此服务器发送持久配置。点击“重试”进行初始化。",
-      "unreachableTitle": "Auto Tournament 无法连接服务器",
-      "unreachableBody": "Auto Tournament 无法通过 RCON 连接服务器。请检查主机/端口、RCON 密码、防火墙以及服务器是否正在运行。",
-      "webhookTitle": "服务器无法连接 Auto Tournament（Webhook）",
-      "webhookBody": "Auto Tournament 可以通过 RCON 连接服务器，但服务器无法访问 Auto Tournament 的 Webhook。请检查出站网络、DNS 和已配置的 Webhook URL。",
-      "versionDiffTitle": "各服务器的插件版本不一致",
-      "ipBannedTitle": "RCON IP 已被封禁",
-      "ipBannedBody": "由于 RCON 认证多次失败，服务器已暂时封禁 Auto Tournament 的 IP。请修正 RCON 密码并解封该 IP。",
-      "pluginDbTitle": "Auto Tournament 插件无法连接其数据库。",
-      "pluginDbBody": "如果使用 CSM，请运行 {{path}}。",
-      "cs2UpdateBody": "Auto Tournament 已确认此服务器的构建版本落后于 Steam。更新前，该服务器不会被分配新比赛（也无法用于开始锦标赛）。"
-    },
-    "lastActive": {
-      "justNow": "刚刚活跃",
-      "minutesAgo_one": "{{count}} 分钟前活跃",
-      "minutesAgo_other": "{{count}} 分钟前活跃",
-      "hoursAgo_one": "{{count}} 小时前活跃",
-      "hoursAgo_other": "{{count}} 小时前活跃",
-      "daysAgo_one": "{{count}} 天前活跃",
-      "daysAgo_other": "{{count}} 天前活跃"
-    },
-    "pluginStatus": {
-      "idle": "空闲",
-      "loading": "加载中",
-      "warmup": "热身",
-      "knife": "刀局",
-      "live": "进行中",
-      "playing": "比赛中",
-      "paused": "已暂停",
-      "halftime": "半场",
-      "postgame": "赛后",
-      "queued": "排队中",
-      "error": "错误"
-    },
-    "retry": {
-      "sendingConfig": "正在向服务器发送持久配置…",
-      "triggered": "已触发服务器初始化",
-      "failed": "重试初始化失败：{{message}}",
-      "retryingAll_one": "正在为 {{count}} 台服务器重试初始化…",
-      "retryingAll_other": "正在为 {{count}} 台服务器重试初始化…",
-      "triggeredAll_one": "已为 {{count}} 台服务器触发重试",
-      "triggeredAll_other": "已为 {{count}} 台服务器触发重试",
-      "failedAll": "重试失败：{{message}}"
-    },
-    "row": {
-      "details": "Details for {{name}}",
-      "actions": "Actions for {{name}}",
-      "edit": "Edit",
-      "retryInit": "Retry initialization",
-      "disabled": "Disabled: allocation skips it",
-      "waitingForPlugin": "Config sent, waiting for the plugin's first event",
-      "running": "Running {{match}}",
-      "ready": "Ready for the next match"
-    },
-    "details": {
-      "host": "Host",
-      "port": "Port",
-      "cs2Name": "CS2 name",
-      "plugin": "Plugin",
-      "cs2Build": "CS2 build",
-      "pluginStatus": "Plugin status",
-      "lastEvent": "Last event",
-      "id": "ID"
-    },
-    "strip": {
-      "online": "ONLINE",
-      "offline": "OFFLINE",
-      "notConfigured": "NOT SET UP",
-      "disabled": "DISABLED",
-      "free": "FREE",
-      "waiting": "WAITING"
+      "total_other": "{{count}} 台服务器"
     },
     "limit": {
       "unlimited": "no server limit (non-commercial use)",
@@ -641,14 +457,7 @@
       "over": "your license covers {{max}}, {{over}} over the limit"
     },
     "machineCount_one": "{{count}} machine",
-    "machineCount_other": "{{count}} machines",
-    "settings": "Server settings",
-    "other": {
-      "title": "Other servers",
-      "summary_one": "{{count}} server not on a machine",
-      "summary_other": "{{count}} servers not on a machine",
-      "about": "Servers added by address, not run by csm on a linked machine."
-    }
+    "machineCount_other": "{{count}} machines"
   },
   "serverModal": {
     "fleetAddress": "Reported by Ready Up over the fleet link.",
@@ -667,22 +476,6 @@
     "enabledHelper": "被禁用的服务器不会用于比赛",
     "tournamentUseLabel": "Use for tournament matches",
     "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
-    "chatPrefixLabel": "聊天前缀覆盖",
-    "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
-    "chatPrefixHelper": "覆盖此服务器上的 at_chat_prefix（可选）",
-    "adminChatPrefixLabel": "管理员聊天前缀覆盖",
-    "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
-    "adminChatPrefixHelper": "覆盖此服务器上的 at_admin_chat_prefix（可选）",
-    "knifeOverrideLabel": "默认启用刀局（覆盖）",
-    "knifeOverrideHelper": "设置后会覆盖此服务器上的 at_knife_enabled_default。保持中间态以使用全局默认值。",
-    "testConnectivity": "测试连通性",
-    "testingConnectivity": "正在测试连通性…",
-    "connectivity": {
-      "apiToServer": "Auto Tournament API → CS2 服务器：",
-      "serverToApi": "服务器 → API（/api/events）：",
-      "reachable": "可达",
-      "unreachable": "不可达"
-    },
     "errors": {
       "nameRequired": "服务器名称为必填项",
       "hostRequired": "主机为必填项",
@@ -690,17 +483,10 @@
       "rconRequired": "RCON 密码为必填项",
       "idGenerationFailed": "无法生成服务器 ID，请调整服务器名称。",
       "duplicateId": "服务器名称会生成重复 ID “{{id}}”，请选择其他名称。",
-      "duplicateHostPort": "已存在使用主机与端口 '{{host}}:{{port}}' 的服务器（ID：{{id}}，名称：{{name}}）",
-      "testConnectionSaveFirst": "请先保存服务器，然后再测试连通性",
-      "testConnectionFailed": "测试连通性失败",
       "saveFailed": "保存服务器失败",
-      "deleteFailed": "删除服务器失败",
-      "rconReachableApiUnreachable": "可以通过 RCON 连接到服务器，但服务器无法访问 API 端点（未收到测试事件）。",
-      "serverOffline": "服务器似乎离线或无法通过 RCON 访问。",
-      "rconReachableApiUnknown": "RCON works. The server has no event URL yet, so its connection back to the API can't be checked until it is saved and configured."
+      "deleteFailed": "删除服务器失败"
     },
     "success": {
-      "connectivityOk": "双向连通性验证通过：服务器在线且可以访问 API。",
       "serverUpdated": "服务器更新成功",
       "serverCreated": "服务器创建成功",
       "serverDeleted": "服务器删除成功"
@@ -716,8 +502,6 @@
       "title": "删除服务器",
       "message": "确定要删除 “{{name}}” 吗？该操作无法撤销。"
     },
-    "skinsLabel": "Skins on this server",
-    "skinsHelper": "Players' equipped virtual skins are sent to the server in warmup and between maps, never mid-map. Needs Ready Up's skins plugin and a server without a Steam server token.",
     "skinsTokenWarning": "This server runs with a Steam server token (+sv_setsteamaccount), so it gets no skins: Valve bans the token, and the account behind it, of a server that hands out items. Remove the token in csm to use skins here."
   },
   "mapPoolModal": {
@@ -802,163 +586,6 @@
     },
     "info_one": "将保存一个包含 {{count}} 张地图的地图池。",
     "info_other": "将保存一个包含 {{count}} 张地图的地图池。"
-  },
-  "adminTools": {
-    "description": "在所有 CS2 服务器上批量执行常用比赛与服务器操作。常用操作会优先展示，更高级的工具可以在下方展开查看。",
-    "refresh": "刷新服务器",
-    "serverSelect": {
-      "label": "目标服务器",
-      "allServersChip": "全部服务器",
-      "sendStatus": "发送 status 命令",
-      "allServersDescription_one": "在 {{count}} 台服务器上运行",
-      "allServersDescription_other": "在全部 {{count}} 台服务器上运行"
-    },
-    "command": {
-      "execute": "执行"
-    },
-    "customRconWarning": "警告：请谨慎使用！",
-    "results": {
-      "title": "执行结果",
-      "successChip": "✓ 成功",
-      "failedChip": "✗ 失败",
-      "errorPrefix": "错误："
-    },
-    "quickActions": {
-      "title": "快速操作"
-    },
-    "advanced": {
-      "title": "高级工具"
-    },
-    "noServers": "未找到已启用的服务器。请在“服务器”页面添加并启用至少一台服务器。",
-    "toasts": {
-      "commandExecuted_one": "命令已在 {{count}} 台服务器上执行",
-      "commandExecuted_other": "命令已在 {{count}} 台服务器上执行",
-      "commandPartial": "命令在 {{total}} 台服务器中的 {{succeeded}} 台上执行成功（{{failed}} 台失败）",
-      "commandFailed": "执行命令失败"
-    },
-    "commands": {
-      "matchStart": {
-        "label": "开始比赛",
-        "description": "立即开始比赛。"
-      },
-      "matchEnd": {
-        "label": "结束比赛（css_restart）",
-        "description": "强制结束所选服务器上的当前比赛，并使用 css_restart 将其重置为热身。"
-      },
-      "forcePause": {
-        "label": "强制暂停",
-        "description": "强制暂停比赛。"
-      },
-      "forceUnpause": {
-        "label": "强制取消暂停",
-        "description": "强制取消比赛暂停。"
-      },
-      "skipVeto": {
-        "label": "跳过选图",
-        "description": "跳过选图（veto）阶段。"
-      },
-      "toggleKnife": {
-        "label": "切换刀局",
-        "description": "开启或关闭用于选边的刀局（别名：rk）。"
-      },
-      "togglePlayout": {
-        "label": "切换打满全部回合",
-        "description": "开启或关闭打满全部回合。"
-      },
-      "toggleWhitelist": {
-        "label": "切换白名单",
-        "description": "开启或关闭战队白名单。"
-      },
-      "showSettings": {
-        "label": "显示设置",
-        "description": "显示当前比赛设置。"
-      },
-      "reloadAdmins": {
-        "label": "重新加载管理员",
-        "description": "从 admins.json 重新加载管理员列表。"
-      },
-      "readyRequired": {
-        "label": "设置需准备的玩家数",
-        "description": "设置比赛开始前需要准备的玩家数量。",
-        "inputLabel": "玩家数量"
-      },
-      "restoreBackup": {
-        "label": "恢复回合备份",
-        "description": "将比赛恢复到指定回合。",
-        "inputLabel": "回合编号"
-      },
-      "cleanServers": {
-        "label": "清理服务器（css_restart）",
-        "description": "结束所选服务器上正在进行的比赛，并使用 css_restart 将其重置为热身。此操作具有破坏性。"
-      },
-      "changeMap": {
-        "label": "更换地图",
-        "description": "切换到其他地图（css_map <mapname>）。",
-        "inputLabel": "地图名称（de_dust2）"
-      },
-      "team1Name": {
-        "label": "设置战队 1 名称",
-        "description": "设置战队 1 的名称。",
-        "inputLabel": "战队名称"
-      },
-      "team2Name": {
-        "label": "设置战队 2 名称",
-        "description": "设置战队 2 的名称。",
-        "inputLabel": "战队名称"
-      },
-      "startPractice": {
-        "label": "开启练习模式",
-        "description": "开启支持 .commands 的练习模式。"
-      },
-      "exitPractice": {
-        "label": "退出练习模式",
-        "description": "关闭练习模式。"
-      },
-      "broadcast": {
-        "label": "广播消息",
-        "description": "向所有玩家发送管理员消息。",
-        "inputLabel": "消息"
-      },
-      "customRcon": {
-        "label": "执行自定义 RCON 命令",
-        "description": "直接执行任意 RCON 命令。",
-        "inputLabel": "RCON 命令"
-      }
-    },
-    "categories": {
-      "matchControl": "比赛控制",
-      "matchSettings": "比赛设置",
-      "backupRestore": "备份与恢复",
-      "serverMgmt": "服务器管理",
-      "teamMgmt": "战队管理",
-      "practiceMode": "练习模式",
-      "adminComm": "管理员通知",
-      "advanced": "高级 RCON"
-    },
-    "events": {
-      "title": "服务器事件监控",
-      "healthCheckFailed": "事件 API 健康检查失败。请检查 API 是否正在运行，以及 /api/events/test 是否可访问。",
-      "loadFailed": "加载事件失败",
-      "connected": "已连接",
-      "disconnected": "已断开",
-      "paused": "已暂停",
-      "pause": "暂停",
-      "resume": "继续",
-      "refresh": "刷新事件",
-      "clear": "清空控制台",
-      "filterLabel": "按服务器筛选（可选）",
-      "noServers": "没有可用的服务器",
-      "refreshServers": "刷新服务器列表",
-      "noEvents": "尚未收到此服务器的事件。",
-      "waiting": "正在等待服务器事件…",
-      "footer_one": "显示 {{count}} 条事件（最多 100 条）",
-      "footer_other": "显示 {{count}} 条事件（最多 100 条）",
-      "footerForServer_one": "显示服务器 {{server}} 的 {{count}} 条事件（最多 100 条）",
-      "footerForServer_other": "显示服务器 {{server}} 的 {{count}} 条事件（最多 100 条）",
-      "realtime": "事件通过 WebSocket 实时更新",
-      "downloadDemo": "下载 Demo"
-    },
-    "title": "Counter-Strike 2 servers"
   },
   "settings": {
     "webhook": {
