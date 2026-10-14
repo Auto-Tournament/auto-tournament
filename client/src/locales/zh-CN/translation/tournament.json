@@ -872,7 +872,9 @@
     "scheduleSoon": "主办方还没有公布赛程。",
     "checkInWindow": "签到",
     "mapPoolSoonTitle": "地图池",
-    "mapPoolSoon": "主办方还没有选好地图。"
+    "mapPoolSoon": "主办方还没有选好地图。",
+    "adminBanner": "You are an admin of this tournament. Running it happens in Manage; this page is what players see.",
+    "manageTournament": "Manage tournament"
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",
