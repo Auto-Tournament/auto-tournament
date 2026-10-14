@@ -406,7 +406,7 @@ export function AddMachineDialog({
         <Typography variant="body2" color="text.secondary" mb={2}>
           {t('machinesPanel.addHelp', {
             defaultValue:
-              'You get one command to run on the machine. It needs CS2 Server Manager (csm) installed.',
+              'You get one line to paste on the machine (Linux): it installs CS2 Server Manager (csm) if needed and links the machine.',
           })}
         </Typography>
         <TextField

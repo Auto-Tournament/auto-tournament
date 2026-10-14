@@ -258,8 +258,9 @@ async function linkCreatedOnce(serverId: string): Promise<void> {
   if (seen) return;
   const { linkFleetServer } = await import('../link');
   const outcome = await linkFleetServer(serverId);
-  if (outcome.ok) log.info(`[FLEET] ${serverId}: created through csm; joined the match pool`);
-  else log.warn(`[FLEET] ${serverId}: created through csm but not linked: ${outcome.error}`);
+  const how = cmd.type === 'server.enroll' ? 'enrolled again through csm' : 'created through csm';
+  if (outcome.ok) log.info(`[FLEET] ${serverId}: ${how}; joined the match pool`);
+  else log.warn(`[FLEET] ${serverId}: ${how} but not linked: ${outcome.error}`);
 }
 
 /**

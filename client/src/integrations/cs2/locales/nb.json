@@ -1051,7 +1051,7 @@
     "noServers": "No servers on this machine yet.",
     "enrolledElsewhere": "Enrolled from this machine: {{names}}",
     "activity": "Recent actions",
-    "addHelp": "You get one command to run on the machine. It needs CS2 Server Manager (csm) installed.",
+    "addHelp": "Du får én linje å lime inn på maskinen (Linux): den installerer CS2 Server Manager (csm) om nødvendig og kobler til maskinen.",
     "name": "Name (optional)",
     "getCommand": "Get the command",
     "linkTitle": "Run this on {{name}}",

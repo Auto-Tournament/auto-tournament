@@ -128,23 +128,27 @@ export default function Servers() {
       .catch(() => setLicenseMax(null));
   }, []);
 
-  const linkCommand = (code: string) =>
-    `csm link ${window.location.origin} ${code}${insecureFlag()}`;
+  // The platform's own command (the one line that installs csm and links:
+  // fleet/hosts/routes.ts linkCommand); `csm link` for an older platform.
+  const linkCommand = (code: string, command?: string) =>
+    command || `csm link ${window.location.origin} ${code}${insecureFlag()}`;
 
   const addMachine = useCallback(
     async (name: string, inline: boolean) => {
       setBusy(true);
       try {
-        const res = await api.post<{ host: FleetHost; code: string; expiresAt: number }>(
-          '/api/fleet/hosts',
-          name ? { name } : {}
-        );
+        const res = await api.post<{
+          host: FleetHost;
+          code: string;
+          command?: string;
+          expiresAt: number;
+        }>('/api/fleet/hosts', name ? { name } : {});
         setAddMachineOpen(false);
         setLinkInline(inline);
         setLink({
           hostId: res.host.id,
           name: res.host.name,
-          command: linkCommand(res.code),
+          command: linkCommand(res.code, res.command),
           expiresAt: res.expiresAt,
         });
         await fleet.load();
@@ -164,14 +168,14 @@ export default function Servers() {
 
   const newCode = async (host: FleetHost) => {
     try {
-      const res = await api.post<{ code: string; expiresAt: number }>(
+      const res = await api.post<{ code: string; command?: string; expiresAt: number }>(
         `/api/fleet/hosts/${host.id}/code`
       );
       setLinkInline(false);
       setLink({
         hostId: host.id,
         name: host.name,
-        command: linkCommand(res.code),
+        command: linkCommand(res.code, res.command),
         expiresAt: res.expiresAt,
       });
     } catch (err) {
@@ -241,6 +245,14 @@ export default function Servers() {
         !hosts[0].online));
   const linked = link ? hosts.find((h) => h.id === link.hostId) : undefined;
   const linkConnected = !!linked && linked.status === 'enrolled' && linked.online;
+  // The first machine's inline guide is done once it connects: no dialog
+  // popping up afterwards to say so (the machine's card shows it).
+  useEffect(() => {
+    if (linkInline && linkConnected) {
+      setLink(null);
+      setLinkInline(false);
+    }
+  }, [linkInline, linkConnected]);
 
   const counts = countServers(hosts, fleet.isDeleting);
   const total = hosts.reduce((n, h) => n + h.servers.length, 0);
@@ -499,7 +511,7 @@ export default function Servers() {
         onCreate={(name) => void addMachine(name, false)}
       />
       <LinkDialog
-        link={link && !(linkInline && firstSetup) ? link : null}
+        link={link && !linkInline ? link : null}
         connected={linkConnected}
         onClose={() => setLink(null)}
       />
