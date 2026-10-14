@@ -643,7 +643,14 @@
       "change": "Endre",
       "changeTitle": "Endre hvordan denne instansen brukes",
       "changeNote": "Velg på nytt og skriv I AGREE. Endringen lagres med dato og kontoen din.",
-      "commercialNoKey": "Denne instansen brukes kommersielt, så du trenger en lisens. Kopier nøkkelen fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink> og lim den inn nedenfor. Ingenting låses mens den mangler."
+      "commercialNoKey": "Denne instansen brukes kommersielt, så du trenger en lisens. Kopier nøkkelen fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink> og lim den inn nedenfor. Ingenting låses mens den mangler.",
+      "readHeading": "Før du godtar: les disse og kryss av for hver:",
+      "readItem": "Jeg har lest",
+      "readLinks": {
+        "license": "hele lisensen",
+        "rules": "reglene for kommersiell bruk",
+        "pricing": "prisene"
+      }
     },
     "checkin": {
       "last": "Siste lisensinnsjekk: {{time}}",

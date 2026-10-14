@@ -86,6 +86,7 @@ import WelcomeGames from './pages/WelcomeGames';
 import LicenseConsent from './pages/LicenseConsent';
 import { LicenseConsentGate } from './components/license/LicenseConsentGate';
 import { AddressMismatchBanner } from './components/admin/AddressMismatchBanner';
+import { AdminConsentRedirect } from './components/license/AdminConsentRedirect';
 import { LicenseGate } from './components/license/LicenseGate';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 import { listRouteIntegrations } from './integrations/registry';
@@ -719,6 +720,8 @@ export default function App() {
               <LicenseGate />
               {/* Admins on another address than FRONTEND_BASE_URL (e.g. by IP). */}
               <AddressMismatchBanner />
+              {/* Admins choose a license before anything else, on every page. */}
+              <AdminConsentRedirect />
               <ModuleGlobalOverlays />
               {/* "What do you play?": redirects to /welcome/games once per
                   account, from whatever page the player lands on. The API

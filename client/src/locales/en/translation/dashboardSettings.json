@@ -643,7 +643,14 @@
       "change": "Change",
       "changeTitle": "Change how this instance is used",
       "changeNote": "Choose again and type I AGREE. The change is saved with the date and your account.",
-      "commercialNoKey": "This instance is used commercially, so you need a license. Copy your key from <consoleLink>your licenses in the Auto Tournament console</consoleLink> and paste it below. Nothing is locked while it is missing."
+      "commercialNoKey": "This instance is used commercially, so you need a license. Copy your key from <consoleLink>your licenses in the Auto Tournament console</consoleLink> and paste it below. Nothing is locked while it is missing.",
+      "readHeading": "Before you accept, read these and tick each one:",
+      "readItem": "I have read",
+      "readLinks": {
+        "license": "the full license",
+        "rules": "the rules for commercial use",
+        "pricing": "the pricing"
+      }
     },
     "checkin": {
       "last": "Last license check-in: {{time}}",
