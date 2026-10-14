@@ -14,7 +14,7 @@
 > [!CAUTION]
 > **3.0 is in beta.** The 3.0 betas change often. The stable line is 2.4.
 
-You create the tournament. Auto Tournament starts the servers, loads each match, runs the map veto in the browser, follows the score live and moves the bracket on when a match ends. Games come in as modules: the CS2 module is included and drives servers running [Ready Up](https://github.com/Auto-Tournament/ready-up) (or the older [MatchZy Enhanced](https://github.com/Auto-Tournament/matchzy-enhanced)). Formerly MatchZy Auto Tournament.
+You create the tournament. Auto Tournament starts the servers, loads each match, runs the map veto in the browser, follows the score live and moves the bracket on when a match ends. Games come in as modules: the CS2 module is included and drives servers running [Ready Up](https://github.com/Auto-Tournament/ready-up). Formerly MatchZy Auto Tournament.
 
 ## Features
 
