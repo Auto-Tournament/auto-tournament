@@ -7,6 +7,7 @@ import {
   extractPresentedToken,
   findServiceToken,
   getServiceTokens,
+  isStoredServiceToken,
   isReadOnlyMethod,
   type ServiceTokenScope,
 } from '../utils/serviceTokens';
@@ -102,6 +103,11 @@ export function authenticateServiceToken(
     };
   }
 
+  if (isStoredServiceToken(token.fingerprint)) {
+    void import('../services/apiTokenService').then(({ apiTokenService }) =>
+      apiTokenService.noteUsed(token.fingerprint)
+    );
+  }
   return {
     ok: true,
     identity: { label: token.label, scope: token.scope, fingerprint: token.fingerprint },
@@ -257,12 +263,19 @@ export type IntegratorRequest = Request & { integrator?: IntegratorIdentity };
  * (`API_TOKENS_INTEGRATOR`), an admin token, a read-only token for reads, or
  * an admin's session. Everything else gets the same answers as `requireAuth`.
  */
-export async function requireIntegratorAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function requireIntegratorAuth(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   const tokenAuth = authenticateServiceToken(req, { allowIntegrator: true });
   if (tokenAuth) {
     if (tokenAuth.ok) {
       (req as AuthedRequest).serviceToken = tokenAuth.identity;
-      (req as IntegratorRequest).integrator = { tokenLabel: tokenAuth.identity.label, scope: tokenAuth.identity.scope };
+      (req as IntegratorRequest).integrator = {
+        tokenLabel: tokenAuth.identity.label,
+        scope: tokenAuth.identity.scope,
+      };
       return next();
     }
     log.authFailed(req.path, tokenAuth.reason);

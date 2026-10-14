@@ -420,6 +420,10 @@
         "name": "Integrations",
         "hint": "Webhooks"
       },
+      "apitokens": {
+        "name": "API tokens",
+        "hint": "For scripts and MCP"
+      },
       "advanced": {
         "name": "Advanced",
         "hint": "Experimental, developer"
@@ -806,5 +810,34 @@
     "groupHelp": "Choose which group renders this match. Disabled groups wait until enabled.",
     "groupDisabled": "Disabled",
     "notCs2Demo": "{{name}} is not a CS2 demo (CS:GO demos can't be imported)."
+  },
+  "apiTokens": {
+    "title": "API tokens",
+    "hint": "For scripts, bots and the Auto Tournament MCP server. A read-only token can only read; an admin token can do what an admin can. Only you see a token's secret, once, when it is made.",
+    "line": "{{scope}} · {{fingerprint}} · last used {{used}}",
+    "never": "never",
+    "none": "No API tokens yet.",
+    "name": "Name",
+    "nameHelp": "1–32 letters, digits, - or _",
+    "scopeLabel": "Access",
+    "scope": {
+      "readonly": "Read only",
+      "admin": "Admin"
+    },
+    "make": "Make token",
+    "madeTitle": "Token \"{{label}}\"",
+    "madeHelp": "Copy it now: this is the only time it is shown. Paste it where the script or the MCP server reads it (AT_TOKEN).",
+    "copy": "Copy token",
+    "copied": "Copied",
+    "done": "Done",
+    "revoke": "Revoke {{label}}",
+    "revokeTitle": "Revoke \"{{label}}\"?",
+    "revokeHelp": "Anything using it stops working at once.",
+    "revokeConfirm": "Revoke",
+    "revoked": "Revoked {{label}}",
+    "cancel": "Cancel",
+    "loadFailed": "Could not load the API tokens",
+    "makeFailed": "Could not make the token",
+    "revokeFailed": "Could not revoke the token"
   }
 }

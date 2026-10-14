@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 696 of them, 400 behind auth —
+Every endpoint this API serves — 699 of them, 403 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -769,6 +769,9 @@ Instance-wide settings.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/settings/version` | public |
+| `GET` | `/api/settings/api-tokens` | admin |
+| `POST` | `/api/settings/api-tokens` | admin |
+| `DELETE` | `/api/settings/api-tokens/:id` | admin |
 | `GET` | `/api/settings` | admin |
 | `PUT` | `/api/settings` | admin |
 

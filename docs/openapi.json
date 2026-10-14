@@ -13737,6 +13737,110 @@
         ]
       }
     },
+    "/api/settings/api-tokens": {
+      "get": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "API tokens made in Settings (never their secrets)",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The active tokens"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Make an API token; the secret is in this answer only",
+        "description": "A signed-in admin only; an API token cannot make tokens.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "description": "1-32 letters, digits, - or _"
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "admin",
+                      "readonly"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The token and its secret"
+          },
+          "400": {
+            "description": "Not a valid name or scope"
+          },
+          "403": {
+            "description": "Called with an API token"
+          }
+        }
+      }
+    },
+    "/api/settings/api-tokens/{id}": {
+      "delete": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Revoke an API token made in Settings",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revoked"
+          },
+          "404": {
+            "description": "No such active token"
+          }
+        }
+      }
+    },
     "/api/settings/version": {
       "get": {
         "tags": [
