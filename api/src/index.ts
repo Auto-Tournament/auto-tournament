@@ -187,7 +187,15 @@ const sessionStore = new PgSession({
   tableName: 'session',
   createTableIfMissing: false, // Table is created by our schema
 });
+// The session cookie's own name: express-session's default `connect.sid` is
+// shared with every other Express app, and one on a parent domain (e.g.
+// another site on *.example.com with Domain=example.com) is sent along too.
+// The browser sends the older cookie first and express-session reads the
+// first, so a fresh install behind such a domain never saw its own session
+// (setup signed the new admin in, the next request was signed out).
+const SESSION_COOKIE_NAME = 'at.sid';
 const sessionMiddleware = session({
+  name: SESSION_COOKIE_NAME,
   store: sessionStore,
   secret: sessionSecret,
   resave: false,
@@ -200,6 +208,7 @@ const sessionMiddleware = session({
 // new admin out at once. Such requests get a cookie for the address they
 // came on, Secure only over https.
 const addressSessionMiddleware = session({
+  name: SESSION_COOKIE_NAME,
   store: sessionStore,
   secret: sessionSecret,
   resave: false,
