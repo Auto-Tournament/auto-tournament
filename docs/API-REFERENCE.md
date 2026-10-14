@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 702 of them, 406 behind auth —
+Every endpoint this API serves — 703 of them, 407 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -488,6 +488,7 @@ E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE
 | `POST` | `/api/test/fleet/age-token` | admin |
 | `POST` | `/api/test/fleet/expire-key` | admin |
 | `POST` | `/api/test/fleet/assign` | admin |
+| `POST` | `/api/test/highlights/repick` | admin |
 | `POST` | `/api/test/fleet/stattrak` | admin |
 | `POST` | `/api/test/fleet/events` | admin |
 | `GET` | `/api/test/fleet/assign-config/:slug` | admin |
