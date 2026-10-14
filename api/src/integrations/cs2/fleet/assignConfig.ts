@@ -320,9 +320,12 @@ export function buildAssignConfig(
 
 /** Whether a match pauses when a side is short (pure: tested on its own). */
 export function pausesOnDisconnect(
-  config: Pick<MatchConfig, 'cvars' | 'bot_fill' | 'wingman' | 'players_per_team'>
+  config: Pick<MatchConfig, 'cvars' | 'bot_fill' | 'wingman' | 'players_per_team' | 'simulation'>
 ): boolean {
   if (flag(config.cvars?.at_pause_on_disconnect) === false) return false;
+  // A simulated match is bots only: the rostered players never connect, and
+  // CS2's auto pause would hold round 1's freeze time forever.
+  if (config.simulation === true) return false;
   if (config.bot_fill === true || config.wingman === true) return false;
   const size = num(config.players_per_team);
   return size === undefined || size === 5;
