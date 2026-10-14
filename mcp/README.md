@@ -11,22 +11,22 @@ matches, teams and servers through the platform's API, without a browser.
 
    The token is shown once. Keep it like a password.
 
-2. Build the server (Node 20 or newer):
+2. From a checkout of this repository, run:
 
    ```bash
-   cd mcp && npm install && npm run build
+   bash mcp/setup.sh
    ```
 
-3. Add it to Claude Code:
+   It asks for the site's address and the token (the token isn't shown as
+   you paste it). It builds the server into `~/.auto-tournament/mcp` and
+   registers it with Claude Code as `auto-tournament`.
 
-   ```bash
-   claude mcp add auto-tournament \
-     -e AT_URL=https://tournament.example.com \
-     -e AT_TOKEN=att_... \
-     -- node /path/to/repo/mcp/dist/index.js
-   ```
+3. Start a new Claude Code session; its tools load at startup.
 
-   Any other MCP client takes the same command and the two variables.
+**Updating:** after pulling, run `bash mcp/setup.sh --update`. It rebuilds and
+keeps your site and token. To change the token, run `bash mcp/setup.sh` again
+and paste the new one. Other MCP clients can run
+`node ~/.auto-tournament/mcp/dist/index.js` with `AT_URL` and `AT_TOKEN` set.
 
 ## Tools
 
