@@ -21,7 +21,7 @@ import {
  * and the cookie still say "steamId" for historical reasons.
  *
  * We accept **two** ways to prove admin access:
- *  1. **Passport session** (connect.sid) — used when it works (e.g. same-origin, no tunnel).
+ *  1. **Passport session** (at.sid) — used when it works (e.g. same-origin, no tunnel).
  *  2. **Signed player_steam_id cookie** — verified with SESSION_SECRET. Used when the
  *     session cookie is dropped (e.g. Cloudflare Tunnel, Chrome + 302). Steam ID must
  *     map to admin in DB.

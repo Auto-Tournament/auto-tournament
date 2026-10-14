@@ -1704,7 +1704,7 @@ router.get('/admin-status', async (req: Request, res: Response) => {
  * Returns basic info about the authenticated admin session (if any).
  *
  * We accept two ways to be "admin" (same as requireAuth):
- *  1. Passport session (connect.sid) — Steam/SSO login with session.
+ *  1. Passport session (at.sid) — Steam/SSO login with session.
  *  2. player_steam_id cookie + DB is_admin — used when session cookie is dropped
  *     (e.g. Cloudflare Tunnel, Chrome + OAuth redirect). Same as /admin-status.
  *
