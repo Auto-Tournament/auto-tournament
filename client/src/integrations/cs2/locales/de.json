@@ -664,8 +664,6 @@
     "enabledHelper": "Deaktivierte Server werden nicht für Matches verwendet",
     "tournamentUseLabel": "Use for tournament matches",
     "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
-    "overridesTitle": "MatchZy Enhanced-Overrides (optional)",
-    "overridesDescription": "Diese Einstellungen überschreiben die globalen MatchZy Enhanced-Standards nur für diesen Server. Leer lassen, um globale Werte aus den Einstellungen zu verwenden.",
     "chatPrefixLabel": "Chat-Präfix überschreiben",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
     "chatPrefixHelper": "Überschreibt at_chat_prefix auf diesem Server (optional)",

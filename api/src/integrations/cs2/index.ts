@@ -703,7 +703,7 @@ export const cs2Integration: GameIntegration = {
     return cs2LegacyRoutes;
   },
 
-  /** Server webhook bootstrap, then the MatchZy Enhanced version fetch and the health monitor. */
+  /** Server bootstrap, then the Ready Up release check and the health monitor. */
   async start() {
     const { startCs2 } = await import('./startup');
     await startCs2();

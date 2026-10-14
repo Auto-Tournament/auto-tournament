@@ -537,7 +537,7 @@
     },
     {
       "name": "Events",
-      "description": "MatchZy Enhanced webhooks in, and the recorded event log out."
+      "description": "The recorded match event log: Ready Up events and server console lines."
     },
     {
       "name": "Experimental features",
@@ -668,10 +668,6 @@
       "description": "Parties, the queue, matches and the matchmaking leaderboard (docs/design/matchmaking.md). On by default for signed-in players; an admin can limit it to admins."
     },
     {
-      "name": "MatchZy Enhanced",
-      "description": "MatchZy Enhanced version information."
-    },
-    {
       "name": "Me",
       "description": "The signed-in player's own data, e.g. the games they play."
     },
@@ -698,6 +694,10 @@
     {
       "name": "RCON",
       "description": "RCON command endpoints (authentication required)"
+    },
+    {
+      "name": "Ready Up version",
+      "description": "The latest Ready Up release, for update checks."
     },
     {
       "name": "Recovery",
@@ -3044,7 +3044,7 @@
     "/api/cs2-plugin/latest-version": {
       "get": {
         "tags": [
-          "MatchZy Enhanced"
+          "Ready Up version"
         ],
         "summary": "GET /api/cs2-plugin/latest-version",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",

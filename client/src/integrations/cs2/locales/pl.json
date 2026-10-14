@@ -690,8 +690,6 @@
     "enabledHelper": "Wyłączone serwery nie będą używane do meczów",
     "tournamentUseLabel": "Use for tournament matches",
     "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
-    "overridesTitle": "Nadpisania MatchZy Enhanced (opcjonalnie)",
-    "overridesDescription": "Te ustawienia nadpisują globalne wartości domyślne MatchZy Enhanced tylko dla tego serwera. Pozostaw puste, aby użyć wartości globalnych z Ustawień.",
     "chatPrefixLabel": "Nadpisanie prefiksu czatu",
     "chatPrefixPlaceholder": "[{Green}Auto Tournament{Default}]",
     "chatPrefixHelper": "Nadpisuje at_chat_prefix na tym serwerze (opcjonalnie)",
