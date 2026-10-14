@@ -112,6 +112,31 @@
         },
         "stats": {
           "$ref": "../match.defs.json#/$defs/mapStats"
+        },
+        "decided_by": {
+          "enum": [
+            "damage"
+          ],
+          "description": "Set when the map was tied after its overtimes and won on total damage (damage tiebreak)."
+        },
+        "damage": {
+          "type": "object",
+          "required": [
+            "team1",
+            "team2"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "team1": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "team2": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "description": "Each team's total damage on the map, with decided_by damage."
         }
       }
     }
