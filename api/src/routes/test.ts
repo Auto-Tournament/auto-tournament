@@ -263,7 +263,7 @@ router.post('/match-state', requireAuth, async (req: Request, res: Response): Pr
   const { slug, status, serverId, loadedAt } = (req.body || {}) as {
     slug?: string;
     status?: string;
-    serverId?: string;
+    serverId?: string | null;
     loadedAt?: number;
   };
 
@@ -282,6 +282,8 @@ router.post('/match-state', requireAuth, async (req: Request, res: Response): Pr
     sets.push('server_id = ?');
     params.push(serverId);
   }
+  // null: take the match off its server (a match still in its veto has none).
+  if (serverId === null) sets.push('server_id = NULL');
   if (typeof loadedAt === 'number') {
     sets.push('loaded_at = ?');
     params.push(loadedAt);

@@ -9,6 +9,7 @@
  * "add player" form).
  */
 
+import { PlayerPicker } from '../common/PlayerPicker';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -142,6 +143,11 @@ export const FleetRosterEditor: React.FC<Props> = ({ matchSlug, fallback, onSucc
   if (!loaded) return null;
   if (!info?.fleet || !info.roster) return <>{fallback ?? null}</>;
   const roster = info.roster;
+  const onRoster = [
+    ...roster.team1.players,
+    ...roster.team2.players,
+    ...(roster.spectators ?? []),
+  ].map((p) => p.steamid64);
 
   const send = async (ops: Op[], okText: string) => {
     setBusy(true);
@@ -347,19 +353,12 @@ export const FleetRosterEditor: React.FC<Props> = ({ matchSlug, fallback, onSucc
         {t('fleetRoster.addTitle', { defaultValue: 'Add a player' })}
       </Typography>
       <Stack direction={{ xs: 'column', md: 'row' }} gap={1} mb={2}>
-        <TextField
-          size="small"
-          label="SteamID64"
-          value={add.steamid64}
-          onChange={(e) => setAdd({ ...add, steamid64: e.target.value })}
-          inputProps={{ 'data-testid': 'fleet-roster-add-steamid' }}
-        />
-        <TextField
-          size="small"
-          label={t('fleetRoster.name', { defaultValue: 'Name' })}
-          value={add.name}
-          onChange={(e) => setAdd({ ...add, name: e.target.value })}
-          inputProps={{ maxLength: 128 }}
+        <PlayerPicker
+          label={t('fleetRoster.player', { defaultValue: 'Player' })}
+          value={add.steamid64 ? { steamid64: add.steamid64, name: add.name } : null}
+          onChange={(p) => setAdd({ ...add, steamid64: p?.steamid64 ?? '', name: p?.name ?? '' })}
+          exclude={onRoster}
+          testId="fleet-roster-add-player"
         />
         <TextField
           select
@@ -452,18 +451,14 @@ export const FleetRosterEditor: React.FC<Props> = ({ matchSlug, fallback, onSucc
             })}
           </Typography>
           <Stack gap={2}>
-            <TextField
-              size="small"
-              label="SteamID64"
-              value={sub?.steamid64 ?? ''}
-              onChange={(e) => sub && setSub({ ...sub, steamid64: e.target.value })}
-            />
-            <TextField
-              size="small"
-              label={t('fleetRoster.name', { defaultValue: 'Name' })}
-              value={sub?.name ?? ''}
-              onChange={(e) => sub && setSub({ ...sub, name: e.target.value })}
-              inputProps={{ maxLength: 128 }}
+            <PlayerPicker
+              label={t('fleetRoster.player', { defaultValue: 'Player' })}
+              value={sub?.steamid64 ? { steamid64: sub.steamid64, name: sub.name } : null}
+              onChange={(p) =>
+                sub && setSub({ ...sub, steamid64: p?.steamid64 ?? '', name: p?.name ?? '' })
+              }
+              exclude={onRoster}
+              autoFocus
             />
           </Stack>
         </DialogContent>

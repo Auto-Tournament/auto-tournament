@@ -5653,6 +5653,62 @@
         ]
       }
     },
+    "/api/game/cs2/matches/{slug}/manage/allocate": {
+      "post": {
+        "tags": [
+          "Fleet"
+        ],
+        "summary": "Put a match that waits for a server on the server an admin picked",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "serverId"
+                ],
+                "properties": {
+                  "serverId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Loading on that server"
+          },
+          "404": {
+            "description": "Match not found"
+          },
+          "409": {
+            "description": "The match is not waiting for a server",
+            "or that server is not free": null
+          }
+        }
+      }
+    },
     "/api/game/cs2/matches/{slug}/manage/command": {
       "post": {
         "tags": [
@@ -5758,6 +5814,41 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/game/cs2/matches/{slug}/manage/servers": {
+      "get": {
+        "tags": [
+          "Fleet"
+        ],
+        "summary": "Every Ready Up server, for the admin match page's server picker",
+        "description": "Free servers first (they can take the match), then busy and offline ones, without the server the match is on.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ servers: [{ id, name, state: free|busy|offline, busyWith, lastSeen, readyUp, cs2Build }] }"
+          },
+          "404": {
+            "description": "Match not found"
+          }
+        }
       }
     },
     "/api/game/cs2/matches/{slug}/maps/{map}/analysis": {
@@ -9990,6 +10081,99 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/matches/{slug}/maps/{map}/result": {
+      "post": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Correct one played map's result",
+        "description": "Sets a finished map's rounds and winner (a server crash, a map played on a backup). Logged with the reason. Player stats are not changed. Refused when the match is over and the change would give the series to the other team.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "map",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Map number in the series",
+            "from 1": null
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "team1Score",
+                  "team2Score",
+                  "winner",
+                  "reason"
+                ],
+                "properties": {
+                  "team1Score": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 99
+                  },
+                  "team2Score": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 99
+                  },
+                  "winner": {
+                    "type": "string",
+                    "enum": [
+                      "team1",
+                      "team2"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 300
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Corrected; the series score before and after"
+          },
+          "400": {
+            "description": "Bad scores",
+            "winner or reason": null
+          },
+          "404": {
+            "description": "No such match",
+            "or the map has no result yet": null
+          },
+          "409": {
+            "description": "The match is over and the series winner would change"
+          }
+        }
       }
     },
     "/api/matches/{slug}/reallocate": {

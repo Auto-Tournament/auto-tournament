@@ -614,17 +614,35 @@ export class Cs2ServerPool {
     }
   }
 
+  /**
+   * Put one match on the server an admin picked (the failover reserve
+   * included). Refused when that server is not free right now.
+   */
+  async allocateTo(matchSlug: string, serverId: string): Promise<ServerAllocationResult> {
+    const result = await this.allocateOnce(matchSlug, new Set(), serverId);
+    delete result.retryElsewhere;
+    return result;
+  }
+
   private async allocateOnce(
     matchSlug: string,
-    skip: ReadonlySet<string>
+    skip: ReadonlySet<string>,
+    only?: string
   ): Promise<ServerAllocationResult & { retryElsewhere?: boolean }> {
     let allocatedServerId: string | null = null;
     try {
       // Get first available server, respecting the in‑memory "allocating" guard
-      // so concurrent allocations never pick the same server.
-      const availableServers = (await this.getAvailableServers()).filter((s) => !skip.has(s.id));
+      // so concurrent allocations never pick the same server. An admin's pick
+      // (`only`) may take a failover reserve server too.
+      const availableServers = (
+        await this.getAvailableServers(only ? { includeFleetReserve: true } : undefined)
+      ).filter((s) => !skip.has(s.id) && (!only || s.id === only));
       if (availableServers.length === 0) {
-        return { matchSlug, success: false, error: 'No available servers' };
+        return {
+          matchSlug,
+          success: false,
+          error: only ? 'That server is not free right now' : 'No available servers',
+        };
       }
 
       let server: ServerResponse | null = null;

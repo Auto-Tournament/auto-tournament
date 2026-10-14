@@ -288,6 +288,67 @@ function parseBuild(text: string | null): number | null {
   return typeof versions?.cs2_build === 'number' ? versions.cs2_build : null;
 }
 
+/** One Ready Up server as the "move to another server" picker lists it. */
+export interface ServerChoice {
+  /** The cs2_servers id a move targets. */
+  id: string;
+  name: string;
+  /** free: can take the match now; busy: runs another match; offline: not connected. */
+  state: 'free' | 'busy' | 'offline';
+  /** The match it runs ("Bravo vs Charlie"), when busy. */
+  busyWith: string | null;
+  /** Unix seconds it was last heard from, when offline. */
+  lastSeen: number | null;
+  readyUp: string | null;
+  cs2Build: number | null;
+}
+
+/**
+ * Every Ready Up server, for the picker: the free ones first (those a move can
+ * take), then the busy and offline ones, so an admin sees why there is no
+ * other choice. `exceptId` leaves out the server the match is on.
+ */
+export async function serverChoices(exceptId: string | null): Promise<ServerChoice[]> {
+  const free = new Set((await freeFleetServers()).map((c) => c.cs2ServerId));
+  const rows = await db.queryAsync<{
+    id: string;
+    name: string;
+    fleet_id: string;
+    versions: string | null;
+    last_seen: number | null;
+  }>(
+    `SELECT s.id, s.name, f.id AS fleet_id, f.versions, f.last_seen
+       FROM cs2_servers s JOIN cs2_fleet_servers f ON f.id = s.fleet_server_id
+      WHERE f.status = 'enrolled'`
+  );
+  const busy = await db.queryAsync<{ server_id: string; t1: string | null; t2: string | null }>(
+    `SELECT m.server_id, t1.name AS t1, t2.name AS t2
+       FROM matches m
+       LEFT JOIN teams t1 ON t1.id = m.team1_id
+       LEFT JOIN teams t2 ON t2.id = m.team2_id
+      WHERE m.server_id IS NOT NULL AND m.status IN ('loaded', 'live')`
+  );
+  const busyBy = new Map(busy.map((b) => [b.server_id, `${b.t1 ?? 'TBD'} vs ${b.t2 ?? 'TBD'}`]));
+  const order = { free: 0, busy: 1, offline: 2 } as const;
+  return rows
+    .filter((r) => r.id !== exceptId)
+    .map((r): ServerChoice => {
+      const online = fleetBus().isConnected(r.fleet_id);
+      const versions = parseJson<{ core?: unknown; cs2_build?: unknown }>(r.versions);
+      const state = !online ? 'offline' : free.has(r.id) ? 'free' : 'busy';
+      return {
+        id: r.id,
+        name: r.name,
+        state,
+        busyWith: state === 'busy' ? (busyBy.get(r.id) ?? null) : null,
+        lastSeen: state === 'offline' ? r.last_seen : null,
+        readyUp: typeof versions?.core === 'string' ? versions.core : null,
+        cs2Build: typeof versions?.cs2_build === 'number' ? versions.cs2_build : null,
+      };
+    })
+    .sort((a, b) => order[a.state] - order[b.state] || a.name.localeCompare(b.name));
+}
+
 /** The fleet servers that could take a match right now, the failover reserve included. */
 export async function freeFleetServers(): Promise<FailoverCandidate[]> {
   const { cs2ServerPool } = await import('../allocation');

@@ -37,7 +37,7 @@ import {
 import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import { teamService } from '../services/teamService';
-import { getMapResults } from '../services/matchMapResultService';
+import { getMapResults, recordMapResult } from '../services/matchMapResultService';
 import {
   resolveTournamentId,
   tournamentIdForMatch,
@@ -1403,6 +1403,130 @@ router.delete('/:slug/hold', requireAuth, async (req: Request, res: Response) =>
   } catch (error) {
     log.error(`Error releasing match ${req.params.slug}`, error);
     return res.status(500).json({ success: false, error: 'Could not release the match' });
+  }
+});
+
+/** Maps won by each side, from the stored map results. */
+function seriesScore(maps: Array<{ winnerTeam: string | null }>): [number, number] {
+  return [
+    maps.filter((m) => m.winnerTeam === 'team1').length,
+    maps.filter((m) => m.winnerTeam === 'team2').length,
+  ];
+}
+
+/**
+ * @openapi
+ * /api/matches/{slug}/maps/{map}/result:
+ *   post:
+ *     tags: [Matches]
+ *     summary: Correct one played map's result
+ *     description: >
+ *       Sets a finished map's rounds and winner (a server crash, a map played on a
+ *       backup). Logged with the reason. Player stats are not changed. Refused when
+ *       the match is over and the change would give the series to the other team.
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: path, name: slug, required: true, schema: { type: string } }
+ *       - { in: path, name: map, required: true, schema: { type: integer, minimum: 1 }, description: Map number in the series, from 1 }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [team1Score, team2Score, winner, reason]
+ *             properties:
+ *               team1Score: { type: integer, minimum: 0, maximum: 99 }
+ *               team2Score: { type: integer, minimum: 0, maximum: 99 }
+ *               winner: { type: string, enum: [team1, team2] }
+ *               reason: { type: string, maxLength: 300 }
+ *     responses:
+ *       200: { description: Corrected; the series score before and after }
+ *       400: { description: Bad scores, winner or reason }
+ *       404: { description: No such match, or the map has no result yet }
+ *       409: { description: The match is over and the series winner would change }
+ */
+router.post('/:slug/maps/:map/result', requireAuth, async (req: Request, res: Response) => {
+  const { slug } = req.params;
+  const mapNumber = Number(req.params.map);
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const score = (v: unknown) =>
+    Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 99 ? (v as number) : null;
+  const team1Score = score(body.team1Score);
+  const team2Score = score(body.team2Score);
+  const winner = body.winner === 'team1' || body.winner === 'team2' ? body.winner : null;
+  const reason = typeof body.reason === 'string' ? body.reason.trim().slice(0, 300) : '';
+  if (!Number.isInteger(mapNumber) || mapNumber < 1) {
+    return res.status(400).json({ success: false, error: 'map must be 1 or more' });
+  }
+  if (team1Score === null || team2Score === null || !winner) {
+    return res.status(400).json({
+      success: false,
+      error: 'team1Score and team2Score (0-99) and winner (team1 or team2) are required',
+    });
+  }
+  if (!reason) return res.status(400).json({ success: false, error: 'Say why (reason)' });
+  try {
+    const match = await db.queryOneAsync<{
+      status: string;
+      winner_id: string | null;
+      team1_id: string | null;
+      team2_id: string | null;
+    }>('SELECT status, winner_id, team1_id, team2_id FROM matches WHERE slug = ?', [slug]);
+    if (!match) return res.status(404).json({ success: false, error: 'Match not found' });
+    const maps = await getMapResults(slug);
+    const row = maps.find((m) => m.mapNumber === mapNumber - 1);
+    if (!row) {
+      return res
+        .status(404)
+        .json({ success: false, error: `Map ${mapNumber} has no result to correct yet` });
+    }
+    const before = seriesScore(maps);
+    const after = seriesScore(
+      maps.map((m) => (m === row ? { winnerTeam: winner } : { winnerTeam: m.winnerTeam }))
+    );
+    if (match.status === 'completed' && match.winner_id) {
+      const decided = match.winner_id === match.team1_id ? 'team1' : 'team2';
+      const nowAhead = after[0] > after[1] ? 'team1' : after[1] > after[0] ? 'team2' : null;
+      if (nowAhead !== decided) {
+        return res.status(409).json({
+          success: false,
+          error:
+            'The match is over and this would change who won the series. Set the series winner instead.',
+        });
+      }
+    }
+    await recordMapResult({
+      matchSlug: slug,
+      mapNumber: mapNumber - 1,
+      mapName: row.mapName,
+      team1Score,
+      team2Score,
+      winnerTeam: winner,
+      completedAt: row.completedAt,
+    });
+    const actor = actorOf(req);
+    await db
+      .runAsync('INSERT INTO match_events (match_slug, event_type, event_data) VALUES (?, ?, ?)', [
+        slug,
+        'admin_command',
+        JSON.stringify({
+          command: 'correct_map_result',
+          args: {
+            map: mapNumber,
+            was: { team1: row.team1Score, team2: row.team2Score, winner: row.winnerTeam },
+            now: { team1: team1Score, team2: team2Score, winner },
+            reason,
+          },
+          by: { userId: actor.userId, name: actor.name },
+        }),
+      ])
+      .catch(() => undefined);
+    emitMatchUpdate({ slug });
+    return res.json({ success: true, map: mapNumber, series: { before, after } });
+  } catch (error) {
+    log.error(`Error correcting map ${req.params.map} of ${slug}`, error);
+    return res.status(500).json({ success: false, error: 'Could not correct the map' });
   }
 });
 
