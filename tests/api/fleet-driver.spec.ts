@@ -49,6 +49,9 @@ const ADMIN_TOKEN = (process.env.API_TOKENS || 'ci-admin:ci-admin-token-01234567
   .slice(1)
   .join(':');
 const STEAM = (n: number) => `765611980001${String(n).padStart(5, '0')}`;
+// bob gets a player record, which the spec deletes after: a deleted player
+// leaves a tombstone, so a fixed id would be "Deleted player" on the next run.
+const BOB = `7656119${String(Date.now()).slice(-10)}`;
 
 let key: { id: string; value: string };
 
@@ -211,7 +214,7 @@ async function createMatch(request: APIRequestContext, slug: string): Promise<vo
           name: 'Fleet Alpha',
           players: [
             { steamid: STEAM(1), name: 'alice' },
-            { steamid: STEAM(2), name: 'bob' },
+            { steamid: BOB, name: 'bob' },
           ],
         },
         team2: {
@@ -308,12 +311,12 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     // the error cost bob his row too).
     const bobCreated = await request.post('/api/players', {
       headers: getAuthHeader(),
-      data: { id: STEAM(2), name: 'bob' },
+      data: { id: BOB, name: 'bob' },
     });
     expect([200, 201, 409], await bobCreated.text()).toContain(bobCreated.status());
     if (bobCreated.status() !== 409) {
       cleanup.push(async () => {
-        await request.delete(`/api/players/${STEAM(2)}`, { headers: getAuthHeader() });
+        await request.delete(`/api/players/${BOB}`, { headers: getAuthHeader() });
       });
     }
 
@@ -528,7 +531,7 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     await expect
       .poll(
         async () => {
-          const res = await request.get(`/api/players/${STEAM(2)}/summary`);
+          const res = await request.get(`/api/players/${BOB}/summary`);
           if (!res.ok()) return null;
           const body = await res.json();
           const rows = (body.matches ?? body.data?.matches ?? []) as Array<{
