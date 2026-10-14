@@ -277,8 +277,9 @@ router.post('/fleet/events', requireAuth, async (req: Request, res: Response): P
   const from = serverId ?? match?.server_id ?? 'test-ready-up';
   const record = await liveStateStore.getLiveState(matchSlug);
   const ctx = { serverId: from, streamId: 'test', sendEphemeral: () => false };
-  // In order after the stored state (a real server's revs), else after the last test batch.
-  let rev = record?.state ? record.liveRev : (testRevs.get(matchSlug) ?? 0);
+  // In order after the stored record (a real server's revs, or 0 for a record
+  // a new match with this slug starts from), else after the last test batch.
+  let rev = record ? record.liveRev : (testRevs.get(matchSlug) ?? 0);
   for (const event of events) {
     const type = event.type.startsWith('event.') ? event.type : `event.${event.type}`;
     rev += 1;
