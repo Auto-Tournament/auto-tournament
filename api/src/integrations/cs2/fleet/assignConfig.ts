@@ -311,8 +311,14 @@ export function buildAssignConfig(
   const cvars = engineCvars(config.cvars) ?? {};
   // Pause when a player drops (5v5): the engine pauses at the next freeze time,
   // Ready Up goes on once the side is full. With bot fill too: Ready Up keeps a
-  // live player's seat empty while they are gone (no bot takes it).
-  if (pausesOnDisconnect(config) && cvars.sv_matchpause_auto_5v5 === undefined) {
+  // live player's seat empty while they are gone (no bot takes it). CS2 counts
+  // only people, so a bot-filled side with fewer than five on its roster would
+  // be paused at every freeze time: no auto pause then.
+  if (
+    pausesOnDisconnect(config) &&
+    (config.bot_fill !== true || rostersFull(out)) &&
+    cvars.sv_matchpause_auto_5v5 === undefined
+  ) {
     cvars.sv_matchpause_auto_5v5 = 1;
   }
   if (Object.keys(cvars).length) out.cvars = cvars;
@@ -330,6 +336,13 @@ export function pausesOnDisconnect(
   if (config.wingman === true) return false;
   const size = num(config.players_per_team);
   return size === undefined || size === 5;
+}
+
+/** Both sides have five players on the roster (subs and coaches not counted). */
+export function rostersFull(config: Pick<AssignConfig, 'team1' | 'team2'>): boolean {
+  return (['team1', 'team2'] as const).every(
+    (t) => config[t].players.filter((p) => roleOf(p) === 'player').length >= 5
+  );
 }
 
 function rosterOf(
