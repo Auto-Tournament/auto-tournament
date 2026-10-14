@@ -1,4 +1,5 @@
 import { useCallback, type ReactNode } from 'react';
+import { PresenceDot } from '../../social/PresenceDot';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { ClockIcon, PlayCircleIcon, TrophyIcon, UsersThreeIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
@@ -156,6 +157,7 @@ function InServerList({
             >
               {!player.avatar && player.name.slice(0, 1).toUpperCase()}
             </Box>
+            <PresenceDot playerId={player.steamid} />
             <Typography
               sx={{
                 flex: 1,

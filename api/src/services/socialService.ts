@@ -11,6 +11,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitSocialChanged, isPlayerOnline, onPresence } from './socketService';
+import { activitiesOf, type PresenceActivity } from './presenceService';
 import { notificationService } from './notificationService';
 import { canInvite, INVITE_POLICIES, invitePolicy, type InvitePolicy } from './gameReadiness';
 
@@ -35,7 +36,7 @@ export interface FriendView extends Person {
   /** Epoch the friend last left the site; null while online or never seen. */
   lastSeenAt: number | null;
   /** What they are doing on the platform right now, if anything. */
-  activity: { kind: 'searching'; mode: string } | { kind: 'playing'; matchSlug: string; label: string } | null;
+  activity: PresenceActivity | null;
   since: number;
   /** Whether you can invite them to a CS2 party: true, or why not. */
   invite: Invitable;
@@ -58,43 +59,28 @@ interface PersonRow {
   avatar_url: string | null;
 }
 
-const person = (r: PersonRow): Person => ({ id: r.id, name: r.name, avatarUrl: r.avatar_url ?? null });
+const person = (r: PersonRow): Person => ({
+  id: r.id,
+  name: r.name,
+  avatarUrl: r.avatar_url ?? null,
+});
 
 async function playerExists(id: string): Promise<PersonRow | undefined> {
   return db.queryOneAsync<PersonRow>('SELECT id, name, avatar_url FROM players WHERE id = ?', [id]);
 }
 
-/** What each of these players is doing: searching (their party's queue entry) or in a live match. */
+/** What each of these players is doing (presenceService: one source for the whole site). */
 async function activities(ids: string[]): Promise<Map<string, FriendView['activity']>> {
-  const out = new Map<string, FriendView['activity']>();
-  if (ids.length === 0) return out;
-  const marks = ids.map(() => '?').join(', ');
-  const searching = await db.queryAsync<{ player_id: string; mode: string }>(
-    `SELECT m.player_id, q.mode FROM mm_party_members m JOIN mm_queue_entries q ON q.party_id = m.party_id
-      WHERE m.player_id IN (${marks})`,
-    ids
-  );
-  for (const r of searching) out.set(r.player_id, { kind: 'searching', mode: r.mode });
-  const live = await db.queryAsync<{ slug: string; config: string; t1: string | null; t2: string | null }>(
-    `SELECT m.slug, m.config, t1.name AS t1, t2.name AS t2 FROM matches m
-       LEFT JOIN teams t1 ON t1.id = m.team1_id LEFT JOIN teams t2 ON t2.id = m.team2_id
-      WHERE m.status = 'live'`,
-    []
-  );
-  for (const match of live) {
-    for (const id of ids) {
-      if (out.has(id) || !match.config.includes(`"${id}"`)) continue;
-      const label = match.t1 && match.t2 ? `${match.t1} vs ${match.t2}` : 'A match';
-      out.set(id, { kind: 'playing', matchSlug: match.slug, label });
-    }
-  }
-  return out;
+  return activitiesOf(ids);
 }
 
 async function friendIds(playerId: string): Promise<string[]> {
-  return (await db.queryAsync<{ friend_id: string }>('SELECT friend_id FROM friendships WHERE player_id = ?', [playerId])).map(
-    (r) => r.friend_id
-  );
+  return (
+    await db.queryAsync<{ friend_id: string }>(
+      'SELECT friend_id FROM friendships WHERE player_id = ?',
+      [playerId]
+    )
+  ).map((r) => r.friend_id);
 }
 
 export const socialService = {
@@ -103,7 +89,11 @@ export const socialService = {
     onPresence((playerId, online) => {
       void (async () => {
         try {
-          if (!online) await db.runAsync('UPDATE players SET last_seen_at = ? WHERE id = ?', [now(), playerId]);
+          if (!online)
+            await db.runAsync('UPDATE players SET last_seen_at = ? WHERE id = ?', [
+              now(),
+              playerId,
+            ]);
           const friends = await friendIds(playerId);
           if (friends.length > 0) emitSocialChanged(friends);
         } catch (error) {
@@ -114,8 +104,16 @@ export const socialService = {
   },
 
   /** The player's friends (online first), requests to them and from them. */
-  async overview(playerId: string): Promise<{ friends: FriendView[]; incoming: Array<Person & { at: number }>; sent: Array<Person & { at: number }> }> {
-    const rows = await db.queryAsync<PersonRow & { last_seen_at: number | string | null; created_at: number | string }>(
+  async overview(
+    playerId: string
+  ): Promise<{
+    friends: FriendView[];
+    incoming: Array<Person & { at: number }>;
+    sent: Array<Person & { at: number }>;
+  }> {
+    const rows = await db.queryAsync<
+      PersonRow & { last_seen_at: number | string | null; created_at: number | string }
+    >(
       `SELECT p.id, p.name, p.avatar_url, p.last_seen_at, f.created_at FROM friendships f
          JOIN players p ON p.id = f.friend_id
         WHERE f.player_id = ? ORDER BY LOWER(p.name)`,
@@ -135,7 +133,8 @@ export const socialService = {
       });
     }
     // Playing, then searching, then online, then offline by when they were last here.
-    const rank = (f: FriendView) => (f.activity?.kind === 'playing' ? 0 : f.activity ? 1 : f.online ? 2 : 3);
+    const rank = (f: FriendView) =>
+      f.activity?.kind === 'playing' ? 0 : f.activity ? 1 : f.online ? 2 : 3;
     friends.sort((a, b) => rank(a) - rank(b) || (b.lastSeenAt ?? 0) - (a.lastSeenAt ?? 0));
     const incoming = await db.queryAsync<PersonRow & { created_at: number | string }>(
       `SELECT p.id, p.name, p.avatar_url, r.created_at FROM friend_requests r JOIN players p ON p.id = r.from_id
@@ -156,11 +155,20 @@ export const socialService = {
 
   async relation(playerId: string, otherId: string): Promise<Relation> {
     if (playerId === otherId) return 'self';
-    const friend = await db.queryOneAsync('SELECT 1 FROM friendships WHERE player_id = ? AND friend_id = ?', [playerId, otherId]);
+    const friend = await db.queryOneAsync(
+      'SELECT 1 FROM friendships WHERE player_id = ? AND friend_id = ?',
+      [playerId, otherId]
+    );
     if (friend) return 'friend';
-    const sent = await db.queryOneAsync('SELECT 1 FROM friend_requests WHERE from_id = ? AND to_id = ?', [playerId, otherId]);
+    const sent = await db.queryOneAsync(
+      'SELECT 1 FROM friend_requests WHERE from_id = ? AND to_id = ?',
+      [playerId, otherId]
+    );
     if (sent) return 'sent';
-    const incoming = await db.queryOneAsync('SELECT 1 FROM friend_requests WHERE from_id = ? AND to_id = ?', [otherId, playerId]);
+    const incoming = await db.queryOneAsync(
+      'SELECT 1 FROM friend_requests WHERE from_id = ? AND to_id = ?',
+      [otherId, playerId]
+    );
     return incoming ? 'incoming' : 'none';
   },
 
@@ -178,16 +186,22 @@ export const socialService = {
       await this.accept(playerId, targetId);
       return 'friend';
     }
-    const pending = await db.queryOneAsync<{ n: number | string }>('SELECT COUNT(*) AS n FROM friend_requests WHERE from_id = ?', [playerId]);
+    const pending = await db.queryOneAsync<{ n: number | string }>(
+      'SELECT COUNT(*) AS n FROM friend_requests WHERE from_id = ?',
+      [playerId]
+    );
     if (Number(pending?.n ?? 0) >= MAX_PENDING) {
-      throw new SocialError(409, 'too_many_requests', `You have ${MAX_PENDING} requests waiting; cancel some first`);
+      throw new SocialError(
+        409,
+        'too_many_requests',
+        `You have ${MAX_PENDING} requests waiting; cancel some first`
+      );
     }
     await this.checkRoom(playerId);
-    await db.runAsync('INSERT INTO friend_requests (from_id, to_id, created_at) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [
-      playerId,
-      targetId,
-      now(),
-    ]);
+    await db.runAsync(
+      'INSERT INTO friend_requests (from_id, to_id, created_at) VALUES (?, ?, ?) ON CONFLICT DO NOTHING',
+      [playerId, targetId, now()]
+    );
     const me = await playerExists(playerId);
     await notificationService.notify(
       targetId,
@@ -200,12 +214,19 @@ export const socialService = {
   },
 
   async accept(playerId: string, fromId: unknown): Promise<void> {
-    if (typeof fromId !== 'string') throw new SocialError(400, 'invalid_player', 'That is not a player');
-    const deleted = await db.queryAsync('DELETE FROM friend_requests WHERE from_id = ? AND to_id = ? RETURNING from_id', [fromId, playerId]);
+    if (typeof fromId !== 'string')
+      throw new SocialError(400, 'invalid_player', 'That is not a player');
+    const deleted = await db.queryAsync(
+      'DELETE FROM friend_requests WHERE from_id = ? AND to_id = ? RETURNING from_id',
+      [fromId, playerId]
+    );
     if (deleted.length === 0) throw new SocialError(404, 'no_request', 'That request is gone');
     await this.checkRoom(playerId);
     // A request the other way, if both asked, is answered too.
-    await db.runAsync('DELETE FROM friend_requests WHERE from_id = ? AND to_id = ?', [playerId, fromId]);
+    await db.runAsync('DELETE FROM friend_requests WHERE from_id = ? AND to_id = ?', [
+      playerId,
+      fromId,
+    ]);
     await db.runAsync(
       `INSERT INTO friendships (player_id, friend_id, created_at) VALUES (?, ?, ?), (?, ?, ?) ON CONFLICT DO NOTHING`,
       [playerId, fromId, now(), fromId, playerId, now()]
@@ -213,27 +234,41 @@ export const socialService = {
     await notificationService.answer(playerId, requestKey(fromId), 'accepted');
     await notificationService.withdraw(fromId, requestKey(playerId));
     const me = await playerExists(playerId);
-    await notificationService.notify(fromId, 'friend_accepted', { by: me ? person(me) : { id: playerId, name: playerId, avatarUrl: null } }, `friend_accepted:${playerId}`);
+    await notificationService.notify(
+      fromId,
+      'friend_accepted',
+      { by: me ? person(me) : { id: playerId, name: playerId, avatarUrl: null } },
+      `friend_accepted:${playerId}`
+    );
     emitSocialChanged([playerId, fromId]);
   },
 
   async decline(playerId: string, fromId: unknown): Promise<void> {
-    if (typeof fromId !== 'string') throw new SocialError(400, 'invalid_player', 'That is not a player');
-    await db.runAsync('DELETE FROM friend_requests WHERE from_id = ? AND to_id = ?', [fromId, playerId]);
+    if (typeof fromId !== 'string')
+      throw new SocialError(400, 'invalid_player', 'That is not a player');
+    await db.runAsync('DELETE FROM friend_requests WHERE from_id = ? AND to_id = ?', [
+      fromId,
+      playerId,
+    ]);
     await notificationService.answer(playerId, requestKey(fromId), 'declined');
     emitSocialChanged([playerId, fromId]);
   },
 
   /** Take back a request you sent. */
   async cancel(playerId: string, toId: unknown): Promise<void> {
-    if (typeof toId !== 'string') throw new SocialError(400, 'invalid_player', 'That is not a player');
-    await db.runAsync('DELETE FROM friend_requests WHERE from_id = ? AND to_id = ?', [playerId, toId]);
+    if (typeof toId !== 'string')
+      throw new SocialError(400, 'invalid_player', 'That is not a player');
+    await db.runAsync('DELETE FROM friend_requests WHERE from_id = ? AND to_id = ?', [
+      playerId,
+      toId,
+    ]);
     await notificationService.withdraw(toId, requestKey(playerId));
     emitSocialChanged([playerId, toId]);
   },
 
   async remove(playerId: string, friendId: unknown): Promise<void> {
-    if (typeof friendId !== 'string') throw new SocialError(400, 'invalid_player', 'That is not a player');
+    if (typeof friendId !== 'string')
+      throw new SocialError(400, 'invalid_player', 'That is not a player');
     await db.runAsync(
       'DELETE FROM friendships WHERE (player_id = ? AND friend_id = ?) OR (player_id = ? AND friend_id = ?)',
       [playerId, friendId, friendId, playerId]
@@ -242,12 +277,19 @@ export const socialService = {
   },
 
   async checkRoom(playerId: string): Promise<void> {
-    const count = await db.queryOneAsync<{ n: number | string }>('SELECT COUNT(*) AS n FROM friendships WHERE player_id = ?', [playerId]);
-    if (Number(count?.n ?? 0) >= MAX_FRIENDS) throw new SocialError(409, 'too_many_friends', `At most ${MAX_FRIENDS} friends`);
+    const count = await db.queryOneAsync<{ n: number | string }>(
+      'SELECT COUNT(*) AS n FROM friendships WHERE player_id = ?',
+      [playerId]
+    );
+    if (Number(count?.n ?? 0) >= MAX_FRIENDS)
+      throw new SocialError(409, 'too_many_friends', `At most ${MAX_FRIENDS} friends`);
   },
 
   /** Players by name (or exact Steam id, or a Steam profile link), with how they relate to the caller. */
-  async search(playerId: string, query: unknown): Promise<Array<Person & { relation: Relation; matches: number; invite: Invitable }>> {
+  async search(
+    playerId: string,
+    query: unknown
+  ): Promise<Array<Person & { relation: Relation; matches: number; invite: Invitable }>> {
     const q = typeof query === 'string' ? query.trim().slice(0, 100) : '';
     if (q.length < 2) return [];
     const steamId = /(?:^|profiles\/)(7656\d{13})\b/.exec(q)?.[1];
@@ -265,7 +307,9 @@ export const socialService = {
   },
 
   /** People the player played with or against lately, most recent first, who are not friends yet. */
-  async recent(playerId: string): Promise<Array<Person & { relation: Relation; matches: number; invite: Invitable }>> {
+  async recent(
+    playerId: string
+  ): Promise<Array<Person & { relation: Relation; matches: number; invite: Invitable }>> {
     const rows = await db.queryAsync<PersonRow & { matches: number | string }>(
       `SELECT p.id, p.name, p.avatar_url, COUNT(DISTINCT o.match_slug) AS matches
          FROM player_match_stats s
@@ -298,12 +342,22 @@ export const socialService = {
     return { partyInvitesFrom: await invitePolicy(playerId) };
   },
 
-  async saveSettings(playerId: string, input: { partyInvitesFrom?: unknown }): Promise<{ partyInvitesFrom: InvitePolicy }> {
+  async saveSettings(
+    playerId: string,
+    input: { partyInvitesFrom?: unknown }
+  ): Promise<{ partyInvitesFrom: InvitePolicy }> {
     if (input.partyInvitesFrom !== undefined) {
       if (!INVITE_POLICIES.includes(input.partyInvitesFrom as InvitePolicy)) {
-        throw new SocialError(400, 'invalid_setting', `partyInvitesFrom is one of ${INVITE_POLICIES.join(', ')}`);
+        throw new SocialError(
+          400,
+          'invalid_setting',
+          `partyInvitesFrom is one of ${INVITE_POLICIES.join(', ')}`
+        );
       }
-      await db.runAsync('UPDATE players SET party_invites_from = ? WHERE id = ?', [input.partyInvitesFrom, playerId]);
+      await db.runAsync('UPDATE players SET party_invites_from = ? WHERE id = ?', [
+        input.partyInvitesFrom,
+        playerId,
+      ]);
     }
     return this.settings(playerId);
   },

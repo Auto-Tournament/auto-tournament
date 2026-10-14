@@ -12167,6 +12167,33 @@
         }
       }
     },
+    "/api/players/presence": {
+      "get": {
+        "tags": [
+          "Players"
+        ],
+        "summary": "What players are doing now (online, searching, playing)",
+        "description": "For player names anywhere on the site. Up to 100 ids, comma-separated.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ids",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`presence`: { [playerId]: { online, activity } }"
+          },
+          "400": {
+            "description": "No ids"
+          }
+        }
+      }
+    },
     "/api/players/public-selection": {
       "get": {
         "tags": [

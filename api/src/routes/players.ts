@@ -96,6 +96,35 @@ router.param('playerId', async (req: Request, res: Response, next, playerId: str
 // ============================================================================
 
 /**
+ * @openapi
+ * /api/players/presence:
+ *   get:
+ *     tags: [Players]
+ *     summary: What players are doing now (online, searching, playing)
+ *     description: For player names anywhere on the site. Up to 100 ids, comma-separated.
+ *     parameters:
+ *       - { in: query, name: ids, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: "`presence`: { [playerId]: { online, activity } }" }
+ *       400: { description: No ids }
+ */
+router.get('/presence', async (req: Request, res: Response) => {
+  try {
+    const ids = String(req.query.ids ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => /^[A-Za-z0-9_:.-]{1,64}$/.test(s));
+    if (ids.length === 0) return res.status(400).json({ success: false, error: 'ids is required' });
+    const { presenceOf } = await import('../services/presenceService');
+    const presence = Object.fromEntries(await presenceOf(ids));
+    return res.json({ success: true, presence });
+  } catch (error) {
+    log.error('Failed to read presence', error as Error);
+    return res.status(500).json({ success: false, error: 'Failed to read presence' });
+  }
+});
+
+/**
  * GET /api/players/find
  * Find player by Steam URL or Steam ID (public)
  * NOTE: This route must come before /:playerId to avoid route conflicts

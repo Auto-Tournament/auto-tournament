@@ -1,4 +1,5 @@
 import { ReportPlayerButton } from './ReportPlayerButton';
+import { PresenceDot } from '../../social/PresenceDot';
 import { ProfileSocialButtons } from '../../social/ProfileSocialButtons';
 import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
@@ -70,9 +71,15 @@ export function ProfileHeader({
   const [progress, setProgress] = useState<Progress | null>(null);
   useEffect(() => {
     let cancelled = false;
-    void fetch(`/api/matchmaking/players/${encodeURIComponent(playerId)}/progress`, { credentials: 'same-origin' })
+    void fetch(`/api/matchmaking/players/${encodeURIComponent(playerId)}/progress`, {
+      credentials: 'same-origin',
+    })
       .then((res) => (res.ok ? (res.json() as Promise<{ progress: Progress }>) : null))
-      .then((body) => !cancelled && setProgress(body?.progress && body.progress.totalXp > 0 ? body.progress : null))
+      .then(
+        (body) =>
+          !cancelled &&
+          setProgress(body?.progress && body.progress.totalXp > 0 ? body.progress : null)
+      )
       .catch(() => undefined);
     return () => {
       cancelled = true;
@@ -166,45 +173,88 @@ export function ProfileHeader({
             <Box component="span" data-testid="profile-header-sub">
               {playsLabel ? `${playsLabel} · ` : ''}
               {t('playerPage.profileHeader.joined', { date: joinedLabel })}
+              <Box component="span" sx={{ display: 'flex', mt: 0.5 }}>
+                <PresenceDot playerId={playerId} label />
+              </Box>
             </Box>
           }
           actions={
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
               {progress && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 140 }} data-testid="profile-level">
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 140 }}
+                  data-testid="profile-level"
+                >
                   <Box component="span" sx={{ fontWeight: 600 }}>
                     {t('playerPage.profileHeader.level', { level: progress.level })}
                   </Box>
-                  <Box sx={{ height: 6, borderRadius: 3, bgcolor: tokens.color.rule, overflow: 'hidden' }}>
-                    <Box sx={{ height: '100%', width: `${Math.min(100, (progress.intoLevel / Math.max(1, progress.forNext)) * 100)}%`, bgcolor: tokens.color.accent }} />
+                  <Box
+                    sx={{
+                      height: 6,
+                      borderRadius: 3,
+                      bgcolor: tokens.color.rule,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        height: '100%',
+                        width: `${Math.min(100, (progress.intoLevel / Math.max(1, progress.forNext)) * 100)}%`,
+                        bgcolor: tokens.color.accent,
+                      }}
+                    />
                   </Box>
                   <Box component="span" sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>
-                    {t('playerPage.profileHeader.xpToNext', { xp: Math.max(0, progress.forNext - progress.intoLevel), level: progress.level + 1 })}
+                    {t('playerPage.profileHeader.xpToNext', {
+                      xp: Math.max(0, progress.forNext - progress.intoLevel),
+                      level: progress.level + 1,
+                    })}
                   </Box>
                 </Box>
               )}
               {lastResults.length > 0 && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }} data-testid="profile-last-ten">
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+                  data-testid="profile-last-ten"
+                >
                   <Box component="span" sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>
-                    {t('playerPage.profileHeader.lastN', { count: Math.min(10, lastResults.length) })}
+                    {t('playerPage.profileHeader.lastN', {
+                      count: Math.min(10, lastResults.length),
+                    })}
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 0.5 }} role="img" aria-label={lastResults.slice(0, 10).map((w) => (w ? 'W' : 'L')).join(' ')}>
+                  <Box
+                    sx={{ display: 'flex', gap: 0.5 }}
+                    role="img"
+                    aria-label={lastResults
+                      .slice(0, 10)
+                      .map((w) => (w ? 'W' : 'L'))
+                      .join(' ')}
+                  >
                     {lastResults.slice(0, 10).map((won, i) => (
-                      <Box key={i} sx={{ width: 10, height: 22, borderRadius: '3px', bgcolor: won ? tokens.color.live : tokens.color.ban, opacity: won ? 1 : 0.75 }} />
+                      <Box
+                        key={i}
+                        sx={{
+                          width: 10,
+                          height: 22,
+                          borderRadius: '3px',
+                          bgcolor: won ? tokens.color.live : tokens.color.ban,
+                          opacity: won ? 1 : 0.75,
+                        }}
+                      />
                     ))}
                   </Box>
                 </Box>
               )}
               {isOwnProfile ? (
-              <Button
-                variant="outlined"
-                size="small"
-                component={RouterLink}
-                to="/me/connections"
-                data-testid="profile-edit-link"
-              >
-                {t('playerPage.profileHeader.editProfile')}
-              </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  component={RouterLink}
+                  to="/me/connections"
+                  data-testid="profile-edit-link"
+                >
+                  {t('playerPage.profileHeader.editProfile')}
+                </Button>
               ) : (
                 <>
                   <ProfileSocialButtons playerId={playerId} name={name} />

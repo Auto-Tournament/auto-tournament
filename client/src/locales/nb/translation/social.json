@@ -246,5 +246,13 @@
     },
     "switchLabel": "{{event}} via {{channel}}",
     "saveFailed": "Kunne ikke lagre."
+  },
+  "presence": {
+    "online": "Pålogget",
+    "offline": "Frakoblet",
+    "searching": "Søker etter en {{mode}}-kamp",
+    "playingMatchmaking": "I en matchmaking-kamp: {{label}}",
+    "playingTournament": "I en turneringskamp: {{label}}",
+    "playing": "I en kamp: {{label}}"
   }
 }
