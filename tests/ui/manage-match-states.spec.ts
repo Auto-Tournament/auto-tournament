@@ -120,7 +120,7 @@ test(
         serverId: fleet.serverId,
         state: {
           match_id: slug,
-          epoch: 0,
+          epoch: 1000, // above any epoch other specs left for this slug
           server_id: fleet.serverId,
           config_rev: 1,
           live_rev: 1,
