@@ -51,7 +51,9 @@
       "pluginSame": "{{version}}, alle servere matcher",
       "pluginMixed": "{{count}} plugin-versjoner i bruk",
       "none": "Ingen servere tilkoblet enda.",
-      "notConfigured": "Ikke satt opp"
+      "notConfigured": "Ikke satt opp",
+      "readyUp": "Ready Up",
+      "readyUpCurrent": "{{version}}, alle oppdatert"
     },
     "setup": {
       "serversDone": "{{count}} server lagt til",

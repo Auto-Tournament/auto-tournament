@@ -59,9 +59,10 @@ test(
       await page.getByTestId('trade-up-confirm').click();
       // The new skin opens; the panel is gone.
       await expect(page.getByTestId('trade-up-panel')).toHaveCount(0);
-      await expect(page.getByRole('dialog')).toBeVisible();
-      await expect(page.getByRole('dialog')).toContainText('New skin acquired');
-      await expect(page.getByRole('dialog')).toContainText('5 × Common');
+      // The reveal and the skin's detail both open; whichever renders first is not the point.
+      const reveal = page.getByRole('dialog').filter({ hasText: 'New skin acquired' });
+      await expect(reveal).toBeVisible({ timeout: 15000 });
+      await expect(reveal).toContainText('5 × Common');
     } finally {
       await request.put('/api/skins/admin/config', { headers, data: config });
     }
