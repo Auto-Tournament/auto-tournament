@@ -1522,6 +1522,7 @@
       "fairRules": "Bare spillere som spilte hele kampen kan få noe: ingenting for en kamp noen forlot eller som sluttet tidlig, og samme motstandere igjen samme døgn gir mye sjeldnere. Plasseringspremier i turneringer går bare til spillere som spilte i turneringen.",
       "tournamentMatchDrops": "Turneringskamper gir også drops (ikke i esport-modus)",
       "levelUpDrops": "Et drop for hvert nye nivå",
+      "tryoutServer": "Hold en server for å prøve skins (lages på en maskin med plass når automatisk skalering er på)",
       "tradeUp": "Bytte opp: skins av én grad for én av neste",
       "tradeUpCount": "Skins per bytte",
       "drops": {

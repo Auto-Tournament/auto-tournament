@@ -164,6 +164,11 @@ async function clearDemand(request: APIRequestContext): Promise<void> {
   }
 }
 
+async function skinsConfig(request: APIRequestContext, data: object) {
+  const res = await request.put('/api/skins/admin/config', { headers: getAuthHeader(), data });
+  expect(res.ok(), await res.text()).toBe(true);
+}
+
 const noCommand = async (csm: FakeCsm, type: string) =>
   expect(csm.client.nextOfType(type, 1500)).rejects.toThrow();
 
@@ -175,6 +180,8 @@ test.describe.serial('Fleet autoscale (csm)', () => {
     await resetEnrollRateLimit(request);
     if (!key) key = await createFleetKey(request, { name: 'fleet-autoscale-tests' });
     await clearDemand(request);
+    // No Skin tryout server create in the way (its own test turns it on).
+    await skinsConfig(request, { tryoutServer: false });
   });
 
   test.afterEach(async ({ request }) => {
@@ -583,5 +590,61 @@ test.describe.serial('Fleet autoscale (csm)', () => {
       enable: ['match', 'essentials', 'skins', 'midas', 'deathmatch'],
       disable: ['practice', 'whitelist', 'addons'],
     });
+  });
+  test('skins on: one Skin tryout server is created, not linked to the match pool', async ({
+    request,
+  }) => {
+    test.setTimeout(90_000);
+    const before = (
+      await (await request.get('/api/skins/admin/config', { headers: getAuthHeader() })).json()
+    ).config as { enabled: boolean; tryoutServer: boolean };
+    cleanup.push(() =>
+      skinsConfig(request, { enabled: before.enabled, tryoutServer: before.tryoutServer })
+    );
+    const m = await machine(request, 'scale-tryout');
+    cleanup.push(() => m.csm.close());
+    // The most free memory of any machine: the create goes here.
+    const inv = inventory(m.hostId, []);
+    inv.resources.ram_free_mb = 900_000;
+    m.csm.sendEphemeral('host.inventory', inv);
+    await expect
+      .poll(
+        async () =>
+          (await (await request.get(`/api/fleet/hosts/${m.hostId}`)).json()).host.inventory
+            ?.resources?.ram_free_mb
+      )
+      .toBe(900_000);
+
+    // Off: nothing.
+    await skinsConfig(request, { enabled: true, tryoutServer: false });
+    await run(request);
+    await noCommand(m.csm, 'server.create');
+
+    await skinsConfig(request, { enabled: true, tryoutServer: true });
+    await run(request);
+    const create = await m.csm.nextCommand('server.create');
+    const payload = create.payload as { count: number; enroll: boolean; enroll_key: string };
+    expect(payload).toMatchObject({ count: 1, enroll: true });
+    // Once: not again while it is made.
+    await run(request);
+    await noCommand(m.csm, 'server.create');
+
+    const result = m.csm.sendReliable(
+      'host.result',
+      { status: 'ok', output: 'created server-1' },
+      { ref: create.id }
+    );
+    await m.csm.acked(result.seq as number);
+    const install = await m.csm.nextCommand('host.update_plugins');
+    // Skins are not in the essentials bundle: the full one.
+    expect(install.payload).toMatchObject({ servers: ['server-1'], readyup: { bundle: 'skins' } });
+
+    // Its Ready Up enrolls: not linked to the match pool.
+    const ru = await enroll(request, { key: payload.enroll_key }, newInstallId(), {
+      name: 'scale-tryout-server',
+    });
+    expect(ru.status, JSON.stringify(ru.body)).toBe(201);
+    const pass = await run(request);
+    expect(pass.linked).toBe(0);
   });
 });

@@ -77,6 +77,7 @@ interface Config {
   modeChances: Record<'2v2' | '1v1', { win: number; play: number }>;
   tournamentMatchDrops: boolean;
   levelUpDrops: boolean;
+  tryoutServer: boolean;
   rarityWeights: Record<Rarity, number>;
   tournamentRewards: boolean;
   rewards: Reward[];
@@ -929,6 +930,17 @@ export function SkinsAdminPage() {
               }
               label={t('skins.admin.levelUpDrops')}
               data-testid="skins-level-up-drops"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  size="small"
+                  checked={config.tryoutServer !== false}
+                  onChange={(e) => set({ tryoutServer: e.target.checked })}
+                />
+              }
+              label={t('skins.admin.tryoutServer')}
+              data-testid="skins-tryout-server"
             />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
               <FormControlLabel

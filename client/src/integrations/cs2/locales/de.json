@@ -1522,6 +1522,7 @@
       "fairRules": "Only players who played the whole game get a chance: nothing for an abandoned game or one that ended early, and a repeat against the same opponents within a day drops much less. Tournament placement rewards go only to players who played in the tournament.",
       "tournamentMatchDrops": "Tournament matches drop too (not in esports mode)",
       "levelUpDrops": "A drop for every new level",
+      "tryoutServer": "Keep a Skin tryout server (created on a machine with room while automatic scaling is on)",
       "tradeUp": "Trade-ups: Skins einer Stufe gegen einen der nächsten",
       "tradeUpCount": "Skins pro Trade-up",
       "drops": {

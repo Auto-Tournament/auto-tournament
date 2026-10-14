@@ -211,6 +211,8 @@ export interface SkinsConfig {
   tradeUp: { enabled: boolean; count: number };
   /** Chance a dropped weapon or knife is StatTrak, 0–100 (CS2 cases: 10). */
   statTrakChance: number;
+  /** With the scaler on, keep one Skin tryout server (fleet/autoscale/tryoutKeeper.ts). */
+  tryoutServer: boolean;
 }
 
 export const DEFAULT_CONFIG: SkinsConfig = {
@@ -238,6 +240,7 @@ export const DEFAULT_CONFIG: SkinsConfig = {
   ],
   tradeUp: { enabled: true, count: 5 },
   statTrakChance: 10,
+  tryoutServer: true,
 };
 
 /** How many skins a trade-up may take: CS2's contract is ten; five by default here. */
@@ -526,6 +529,7 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
     ),
     tournamentMatchDrops: raw.tournamentMatchDrops !== false,
     levelUpDrops: raw.levelUpDrops !== false,
+    tryoutServer: raw.tryoutServer !== false,
     rarityWeights: weights,
     tournamentRewards: raw.tournamentRewards !== false,
     rewards,
