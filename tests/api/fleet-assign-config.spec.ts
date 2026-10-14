@@ -213,12 +213,13 @@ test.describe('Fleet match.assign config', () => {
     ).toThrow(/cannot be sent/);
   });
 
-  test('a 5v5 pauses when a player drops, unless turned off, wingman or bot-filled', () => {
+  test('a 5v5 pauses when a player drops (bot-filled too), unless turned off or wingman', () => {
     expect(pausesOnDisconnect(tournamentConfig())).toBe(true);
     expect(pausesOnDisconnect(tournamentConfig({ cvars: { at_pause_on_disconnect: 0 } }))).toBe(
       false
     );
-    expect(pausesOnDisconnect(tournamentConfig({ bot_fill: true }))).toBe(false);
+    // Bot fill: Ready Up keeps a live player's seat empty, so the side is short and it pauses.
+    expect(pausesOnDisconnect(tournamentConfig({ bot_fill: true }))).toBe(true);
     expect(pausesOnDisconnect(tournamentConfig({ simulation: true }))).toBe(false);
     expect(pausesOnDisconnect(tournamentConfig({ wingman: true, players_per_team: 2 }))).toBe(
       false

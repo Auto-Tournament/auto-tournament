@@ -1,7 +1,7 @@
 /**
  * Sound notification utility for team match alerts
  * Supports multiple notification sounds from public/alerts folder
- * 
+ *
  * Sound Effects by DRAGON-STUDIO from Pixabay
  * https://pixabay.com/sound-effects/
  */
@@ -18,7 +18,7 @@ export const NOTIFICATION_SOUNDS = [
   { value: 'slow-cinematic-clock-ticking-405471', label: 'Clock Ticking' },
 ] as const;
 
-export type NotificationSoundValue = typeof NOTIFICATION_SOUNDS[number]['value'];
+export type NotificationSoundValue = (typeof NOTIFICATION_SOUNDS)[number]['value'];
 
 class SoundNotification {
   private audio: HTMLAudioElement | null = null;
@@ -31,7 +31,7 @@ class SoundNotification {
     const savedMute = localStorage.getItem('teamMatchSoundMuted');
     const savedVolume = localStorage.getItem('teamMatchSoundVolume');
     const savedSound = localStorage.getItem('teamMatchSoundFile') as NotificationSoundValue | null;
-    
+
     this.isMuted = savedMute === 'true';
     this.volume = savedVolume ? parseFloat(savedVolume) : 0.25;
     this.soundFile = savedSound || 'notification-bell-sound-1-376885';
@@ -66,10 +66,10 @@ class SoundNotification {
       // Reset to beginning if already playing
       this.audio.currentTime = 0;
       this.audio.volume = this.volume;
-      
+
       // Play the sound
       const playPromise = this.audio.play();
-      
+
       // Handle autoplay policy
       if (playPromise !== undefined) {
         playPromise.catch((error) => {
@@ -90,9 +90,9 @@ class SoundNotification {
     try {
       this.audio.currentTime = 0;
       this.audio.volume = this.volume;
-      
+
       const playPromise = this.audio.play();
-      
+
       if (playPromise !== undefined) {
         playPromise.catch((error) => {
           console.warn('Could not preview sound:', error);
@@ -147,7 +147,7 @@ class SoundNotification {
   setVolume(volume: number) {
     this.volume = Math.max(0, Math.min(1, volume));
     localStorage.setItem('teamMatchSoundVolume', String(this.volume));
-    
+
     if (this.audio) {
       this.audio.volume = this.volume;
     }
@@ -180,3 +180,7 @@ class SoundNotification {
 
 export const soundNotification = new SoundNotification();
 
+/** Play the notification sound (module SDK 0.2.25). */
+export function playNotificationSound(): void {
+  soundNotification.playNotification();
+}

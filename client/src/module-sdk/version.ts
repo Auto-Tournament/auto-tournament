@@ -159,5 +159,8 @@
  * 0.2.24 (additive): `matchPanels.seriesMapsView` with `MatchSeriesMapsProps`
  * (the series' maps on a match's page), and `PublicMatch.maps`, `mapNumber`,
  * `team1LogoUrl`, `team2LogoUrl`.
+ *
+ * 0.2.25 (additive): `playNotificationSound()`, the site's notification sound
+ * (the player's own volume), for a module's alerts.
  */
-export const CLIENT_API_VERSION = '0.2.24';
+export const CLIENT_API_VERSION = '0.2.25';
