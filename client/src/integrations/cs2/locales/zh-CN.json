@@ -589,8 +589,8 @@
   },
   "settings": {
     "webhook": {
-      "title": "MatchZy Enhanced Webhook 地址",
-      "description": "供 CS2 服务器访问的 MatchZy Enhanced Webhook 地址。",
+      "title": "Platform URL",
+      "description": "The address your CS2 servers, links and webhooks use to reach the platform.",
       "label": "Webhook 地址",
       "helper": "示例：https://your-domain.com"
     },
@@ -615,17 +615,17 @@
     "saveFailed": "Failed to save settings",
     "loadFailed": "Failed to load settings",
     "chatDefaults": {
-      "title": "MatchZy Enhanced 聊天与刀局默认值",
+      "title": "Chat & Knife Defaults",
       "description": "配置游戏内聊天前缀和默认刀局行为。",
       "chatPrefixLabel": "聊天前缀",
       "chatPrefixHelper": "默认值：\"[{Green}Auto Tournament{Default}]\"。留空以重置为默认前缀。",
       "adminChatPrefixLabel": "管理员聊天前缀",
       "adminChatPrefixHelper": "默认值：\"[{Red}ADMIN{Default}]\"。留空以重置为默认管理员前缀。",
       "knifeToggleLabel": "对未预先选择阵营的新比赛默认启用刀局",
-      "knifeNote": "仅在 MatchZy Enhanced 正常会运行刀局时生效；不会改变显式选择阵营或洗牌分配阵营的情况。"
+      "knifeNote": "Applies only when the server would normally run a knife round; explicit side picks or shuffle-assigned sides are not changed."
     },
     "atCore": {
-      "title": "MatchZy Enhanced 核心默认值",
+      "title": "Core Match Defaults",
       "description": "这些默认值会在服务器初始化以及每次加载比赛前下发到服务器。",
       "expert": {
         "title": "专家设置",
@@ -683,8 +683,8 @@
       }
     },
     "atEnhanced": {
-      "title": "MatchZy Enhanced 功能",
-      "description": "配置高级比赛功能。留空设置以使用 MatchZy Enhanced 插件默认值。",
+      "title": "CS2 plugin features",
+      "description": "Configure advanced match features. Leave settings empty to use Ready Up's defaults.",
       "autoready": {
         "title": "自动准备系统",
         "label": "玩家加入时自动标记为已准备",
@@ -730,13 +730,13 @@
       "title": "开发者选项",
       "description": "仅用于本地开发，请勿在生产环境启用。",
       "simulateToggleLabel": "模拟比赛（使用机器人驱动的 Demo 比赛代替真实玩家）",
-      "simulateNote": "启用后，生成的 MatchZy Enhanced 配置会包含 \"simulation\": true 字段，用于自动化 Demo 比赛。",
+      "simulateNote": "When enabled, generated match configs include \"simulation\": true for automated demo matches.",
       "timescaleTitle": "模拟时间倍率",
       "timescaleDescription": "控制模拟比赛的运行速度。数值越高，机器人和回合流程越快。仅在启用模拟时生效。",
       "timescaleWarning": "大于 2.0 的速度可能略显不稳定，并可能导致奇怪的机器人行为，但适合快速本地测试。",
       "debugChat": {
-        "label": "启用 MatchZy Enhanced 调试聊天消息",
-        "description": "启用后，MatchZy Enhanced 会在游戏内聊天中打印额外的调试消息（例如玩家连接/断开、事件追踪等）。仅建议在开发和测试环境中使用，请不要在正式赛事中启用。"
+        "label": "Enable debug chat messages",
+        "description": "When enabled, the server prints additional debug messages (like player connects, disconnects, and event traces) into in-game chat. Use this only for development and testing – not during live events."
       }
     },
     "success": {

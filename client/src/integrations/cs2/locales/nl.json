@@ -589,8 +589,8 @@
   },
   "settings": {
     "webhook": {
-      "title": "MatchZy Enhanced webhook",
-      "description": "MatchZy Enhanced webhook-URL die je CS2-servers kunnen bereiken.",
+      "title": "Platform URL",
+      "description": "The address your CS2 servers, links and webhooks use to reach the platform.",
       "label": "Webhook-URL",
       "helper": "Voorbeeld: https://jouw-domein.nl"
     },
@@ -615,17 +615,17 @@
     "saveFailed": "Failed to save settings",
     "loadFailed": "Failed to load settings",
     "chatDefaults": {
-      "title": "MatchZy Enhanced chat- & knife-standaarden",
+      "title": "Chat & Knife Defaults",
       "description": "Configureer chat-prefixen in-game en het standaard knife-round gedrag.",
       "chatPrefixLabel": "Chat-prefix",
       "chatPrefixHelper": "Standaard: \"[{Green}Auto Tournament{Default}]\". Laat leeg om terug te zetten naar de standaard.",
       "adminChatPrefixLabel": "Admin chat-prefix",
       "adminChatPrefixHelper": "Standaard: \"[{Red}ADMIN{Default}]\". Laat leeg om terug te zetten naar de standaard.",
       "knifeToggleLabel": "Knife-rounds standaard inschakelen voor nieuwe wedstrijden (wanneer sides niet vooraf gekozen zijn)",
-      "knifeNote": "Geldt alleen wanneer MatchZy Enhanced normaal een knife-round zou spelen; expliciete side-picks worden niet aangepast."
+      "knifeNote": "Applies only when the server would normally run a knife round; explicit side picks or shuffle-assigned sides are not changed."
     },
     "atCore": {
-      "title": "MatchZy Enhanced Core-standaarden",
+      "title": "Core Match Defaults",
       "description": "Deze standaarden worden naar servers gestuurd tijdens initialisatie en vóór elke wedstrijd-load.",
       "expert": {
         "title": "Expertinstellingen",
@@ -683,8 +683,8 @@
       }
     },
     "atEnhanced": {
-      "title": "MatchZy Enhanced-functies",
-      "description": "Configureer geavanceerde match-functies. Laat velden leeg om de MatchZy Enhanced-standaard te gebruiken.",
+      "title": "CS2 plugin features",
+      "description": "Configure advanced match features. Leave settings empty to use Ready Up's defaults.",
       "autoready": {
         "title": "Auto-ready",
         "label": "Markeer spelers automatisch als ready wanneer ze joinen",
@@ -730,13 +730,13 @@
       "title": "Ontwikkelaarsopties",
       "description": "Alleen voor lokale ontwikkeling; niet inschakelen in productie.",
       "simulateToggleLabel": "Simuleer wedstrijden (gebruik bot-gestuurde demo-wedstrijden i.p.v. echte spelers)",
-      "simulateNote": "Wanneer ingeschakeld, bevatten gegenereerde MatchZy Enhanced-configs \"simulation\": true voor geautomatiseerde demo-wedstrijden.",
+      "simulateNote": "When enabled, generated match configs include \"simulation\": true for automated demo matches.",
       "timescaleTitle": "Simulatie-snelheid",
       "timescaleDescription": "Bepaalt hoe snel gesimuleerde wedstrijden lopen. Hogere waarden versnellen bots en rondes. Dit geldt alleen wanneer simulatie is ingeschakeld.",
       "timescaleWarning": "Snelheden boven 2.0 kunnen instabiel zijn en vreemd bot-gedrag veroorzaken, maar zijn ok voor snelle lokale tests.",
       "debugChat": {
-        "label": "MatchZy Enhanced debug-chatberichten inschakelen",
-        "description": "Wanneer ingeschakeld, toont MatchZy Enhanced extra debug-berichten (connects/disconnects, event-traces, etc.) in de chat. Gebruik dit alleen voor ontwikkeling en testen."
+        "label": "Enable debug chat messages",
+        "description": "When enabled, the server prints additional debug messages (like player connects, disconnects, and event traces) into in-game chat. Use this only for development and testing – not during live events."
       }
     },
     "success": {
