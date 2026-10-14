@@ -83,6 +83,22 @@ const mapSettingsResponse = async () => {
 
 /**
  * @openapi
+ * /api/settings/site-url:
+ *   get:
+ *     tags: [Settings]
+ *     summary: The address this site is set up for (FRONTEND_BASE_URL)
+ *     description: The admin UI compares it with the address it was opened on, and says so when they differ.
+ *     security: [{ BearerAuth: [] }]
+ *     responses:
+ *       200: { description: "`url` (null when not set)" }
+ */
+router.get('/site-url', (_req: Request, res: Response) => {
+  const url = (process.env.FRONTEND_BASE_URL || '').trim().replace(/\/+$/, '');
+  res.json({ url: url || null });
+});
+
+/**
+ * @openapi
  * /api/settings/discord-bot:
  *   get:
  *     tags: [Settings]

@@ -1097,5 +1097,9 @@
     "resetVetoBody": "Every ban, pick and side so far is cleared and the teams start the veto again. Both teams see it in the match chat.",
     "vetoReset": "The veto starts over",
     "vetoResetFailed": "Could not restart the veto"
+  },
+  "addressMismatch": {
+    "open": "Open {{host}}",
+    "text": "You're on {{current}}, but this site is set up for {{host}}: Steam sign-in, emails and the game servers use that address."
   }
 }
