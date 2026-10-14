@@ -1,6 +1,6 @@
 import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHead } from '../components/common/ui';
 import {
   Box,
@@ -60,6 +60,12 @@ const FORMAT_LABELS: Record<string, string> = {
 
 export default function Templates() {
   const navigate = useNavigate();
+  // `?tab=ratings` (old links, the IA plan's address): Ratings is its own page.
+  const [searchParams] = useSearchParams();
+  const ratingsTab = searchParams.get('tab') === 'ratings';
+  useEffect(() => {
+    if (ratingsTab) navigate(paths.eloTemplates, { replace: true });
+  }, [ratingsTab, navigate]);
   const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const { showSuccess, showError } = useSnackbar();
