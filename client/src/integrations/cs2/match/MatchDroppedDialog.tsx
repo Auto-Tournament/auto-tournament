@@ -68,7 +68,9 @@ export function MatchDroppedDialog() {
 
   useEffect(() => {
     if (!isPlayerAuthenticated) return;
-    void check();
+    // After this render: the check can set state before its first await.
+    const first = setTimeout(() => void check(), 0);
+    return () => clearTimeout(first);
   }, [isPlayerAuthenticated, check]);
 
   // A player connecting or leaving changes the match: check again.
