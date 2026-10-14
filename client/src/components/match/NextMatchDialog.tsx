@@ -16,7 +16,8 @@ import { matchPagePath } from '../../paths';
  * "Your next match is ready" / "Your turn in the veto": a dialog with a sound
  * on whatever page the player is on, so a veto that opens right after the
  * last series (or a turn) is never missed. Once per match and turn
- * (sessionStorage); on that match's own page only the sound plays.
+ * (sessionStorage); on that match's own page and on admin pages only the
+ * sound plays.
  */
 type Kind = 'veto_open' | 'veto_turn' | 'match_ready';
 
@@ -71,6 +72,8 @@ export function NextMatchDialog({
     markSeen(key);
     soundNotification.playNotification();
     if (pathname === matchPagePath(matchSlug)) return; // already there: the sound is enough
+    // Admin pages: the sound only; a dialog would get in the way of running the event.
+    if (pathname === '/manage' || pathname.startsWith('/manage/')) return;
     setOpen({ kind, slug: matchSlug });
   }, [status, matchSlug, vetoActionCount, loading, pathname]);
 
