@@ -49,6 +49,31 @@ const TAIL_TICKS = Math.round(1.5 * TICKRATE);
 const PER_PLAYER = 6;
 /** Below this a moment isn't worth a clip (a plain single kill scores 10). */
 const MIN_SCORE = 30;
+/**
+ * A 1v1 has one kill a round, so nothing reaches MIN_SCORE: there a headshot
+ * on the round's first kill (20) is worth a clip, best ones first.
+ */
+const DUEL_MIN_SCORE = 20;
+
+/** Two players in all, one a side (they swap sides at half): a 1v1 aim duel. */
+export function isDuel(
+  kills: ReadonlyArray<Pick<KillRow, 'attacker' | 'victim' | 'attackerSide' | 'victimSide'>>
+): boolean {
+  const perSide = new Map<string, Set<string>>();
+  for (const k of kills) {
+    for (const [id, side] of [
+      [k.attacker, k.attackerSide],
+      [k.victim, k.victimSide],
+    ] as const) {
+      if (!id || !side) continue;
+      const set = perSide.get(side) ?? new Set<string>();
+      set.add(id);
+      perSide.set(side, set);
+    }
+  }
+  const players = new Set([...perSide.values()].flatMap((s) => [...s]));
+  return perSide.size > 0 && players.size <= 2;
+}
 const MULTI_BONUS = [0, 0, 25, 60, 120, 250];
 const FUNNY_PER_PLAYER = 2;
 /** Enough to beat MIN_SCORE: a funny moment is worth a clip on its own. */
@@ -196,7 +221,8 @@ export function pickMoments(
 
   // The best six per player that score enough.
   const byPlayer = new Map<string, Moment[]>();
-  for (const m of moments.filter((m) => m.score >= MIN_SCORE).sort((a, b) => b.score - a.score)) {
+  const minScore = isDuel(kills) ? DUEL_MIN_SCORE : MIN_SCORE;
+  for (const m of moments.filter((m) => m.score >= minScore).sort((a, b) => b.score - a.score)) {
     const list = byPlayer.get(m.playerId) ?? [];
     if (list.length < perPlayer) list.push(m);
     byPlayer.set(m.playerId, list);
