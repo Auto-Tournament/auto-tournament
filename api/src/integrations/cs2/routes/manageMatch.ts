@@ -20,6 +20,8 @@ import type { CmdName } from '../fleet/protocol/v1';
 import { fleetServerIdOf } from '../fleet/link';
 import { locate } from '../fleet/failoverRecovery';
 import { HostCommandError, sendHostCommand } from '../fleet/hosts/service';
+import { serverChoices } from '../fleet/failover';
+import { getMapResults } from '../../../services/matchMapResultService';
 
 const router = Router();
 
@@ -191,6 +193,14 @@ router.get('/matches/:slug/manage', requireAuth, async (req: Request, res: Respo
         ? { state: live.state, mapRounds: live.mapRounds, updatedAt: live.updatedAt }
         : null,
       log: rows.map(logEntryOf),
+      // The stored map results (number from 1), for a match with no live record left.
+      maps: (await getMapResults(slug)).map((m) => ({
+        number: m.mapNumber + 1,
+        name: m.mapName,
+        score: { team1: m.team1Score, team2: m.team2Score },
+        winner: m.winnerTeam,
+        demo: Boolean(m.demoFilePath),
+      })),
     });
   } catch (error) {
     log.error(`Error reading the manage view of ${slug}`, error as Error);
@@ -282,6 +292,97 @@ router.post('/matches/:slug/manage/command', requireAuth, async (req: Request, r
  *       200: { description: "{ commandId }: csm took the command" }
  *       409: { description: Not on a csm-managed Ready Up server }
  */
+/**
+ * @openapi
+ * /api/game/cs2/matches/{slug}/manage/servers:
+ *   get:
+ *     tags: [Fleet]
+ *     summary: Every Ready Up server, for the admin match page's server picker
+ *     description: Free servers first (they can take the match), then busy and offline ones, without the server the match is on.
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: path, name: slug, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: "{ servers: [{ id, name, state: free|busy|offline, busyWith, lastSeen, readyUp, cs2Build }] }" }
+ *       404: { description: Match not found }
+ */
+router.get('/matches/:slug/manage/servers', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const match = await db.queryOneAsync<{ server_id: string | null }>(
+      'SELECT server_id FROM matches WHERE slug = ?',
+      [req.params.slug]
+    );
+    if (!match) return res.status(404).json({ success: false, error: 'Match not found' });
+    return res.json({ success: true, servers: await serverChoices(match.server_id) });
+  } catch (error) {
+    log.error(`Listing servers for ${req.params.slug} failed`, error);
+    return res.status(500).json({ success: false, error: 'Could not list the servers' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/matches/{slug}/manage/allocate:
+ *   post:
+ *     tags: [Fleet]
+ *     summary: Put a match that waits for a server on the server an admin picked
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: path, name: slug, required: true, schema: { type: string } }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, required: [serverId], properties: { serverId: { type: string } } }
+ *     responses:
+ *       200: { description: Loading on that server }
+ *       404: { description: Match not found }
+ *       409: { description: The match is not waiting for a server, or that server is not free }
+ */
+router.post('/matches/:slug/manage/allocate', requireAuth, async (req: Request, res: Response) => {
+  const { slug } = req.params;
+  const serverId = typeof req.body?.serverId === 'string' ? req.body.serverId : '';
+  if (!serverId) return res.status(400).json({ success: false, error: 'serverId is required' });
+  try {
+    const match = await db.queryOneAsync<{ status: string; server_id: string | null }>(
+      'SELECT status, server_id FROM matches WHERE slug = ?',
+      [slug]
+    );
+    if (!match) return res.status(404).json({ success: false, error: 'Match not found' });
+    if (match.status !== 'ready' || match.server_id) {
+      return res.status(409).json({
+        success: false,
+        error: 'Only a match whose veto is done and that waits for a server can be put on one',
+      });
+    }
+    const { cs2ServerPool } = await import('../allocation');
+    const result = await cs2ServerPool.allocateTo(slug, serverId);
+    if (!result.success) {
+      return res
+        .status(409)
+        .json({ success: false, error: result.error || 'Could not load it there' });
+    }
+    const who = issuedBy(req);
+    await db
+      .runAsync('INSERT INTO match_events (match_slug, event_type, event_data) VALUES (?, ?, ?)', [
+        slug,
+        'admin_command',
+        JSON.stringify({
+          command: 'allocate',
+          args: { serverId },
+          by: { userId: who.userId, name: who.name },
+        }),
+      ])
+      .catch(() => undefined);
+    return res.json({ success: true, serverId: result.serverId });
+  } catch (error) {
+    log.error(`Allocating ${slug} to ${serverId} failed`, error);
+    return res
+      .status(500)
+      .json({ success: false, error: 'Could not put the match on that server' });
+  }
+});
+
 router.post(
   '/matches/:slug/manage/restart-server',
   requireAuth,

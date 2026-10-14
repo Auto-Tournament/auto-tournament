@@ -20,6 +20,18 @@ import { useSocket } from '../hooks/useSocket';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { openChat } from '../components/chat/chatStore';
 import { ConfirmAction, type ConfirmActionSpec } from '../components/manage/match/ConfirmAction';
+import {
+  ActForTeamDialog,
+  ChangeMapDialog,
+  CorrectMapDialog,
+  MessageAllDialog,
+  MoveServerDialog,
+  SwapSubDialog,
+  sendRoster,
+  type RosterOp,
+  type SeriesMap,
+} from '../components/manage/match/MatchActionDialogs';
+import { MatchStateBanner } from '../components/manage/match/MatchStateBanner';
 import { manageTournamentPath } from '../paths';
 import { MatchHoldPanel } from '../components/admin/MatchHoldPanel';
 import { FleetRosterEditor } from '../components/admin/FleetRosterEditor';
@@ -116,6 +128,14 @@ interface ManageView {
     updatedAt: number;
   } | null;
   log: LogEntry[];
+  /** Stored map results, for a match with no live record. */
+  maps?: Array<{
+    number: number;
+    name: string | null;
+    score: { team1: number; team2: number };
+    winner: 'team1' | 'team2' | 'none' | null;
+    demo: boolean;
+  }>;
 }
 
 // ---- small pieces ----
@@ -310,8 +330,29 @@ export default function ManageMatch() {
   const [source, setSource] = useState<'all' | 'server' | 'platform' | 'admin'>('all');
   const [command, setCommand] = useState('status');
   const [commandReply, setCommandReply] = useState<string | null>(null);
-  const [message, setMessage] = useState('');
-  const [menu, setMenu] = useState<{ anchor: HTMLElement; id: string; name: string } | null>(null);
+  const [menu, setMenu] = useState<{
+    anchor: HTMLElement;
+    id: string;
+    name: string;
+    team: 'team1' | 'team2';
+  } | null>(null);
+  // The board dialogs (ActionDialogs): one open at a time.
+  const [dialog, setDialog] = useState<
+    | { kind: 'move' | 'allocate' | 'changeMap' | 'actFor' | 'message' }
+    | { kind: 'swap'; id: string; name: string; team: 'team1' | 'team2' }
+    | { kind: 'correct'; map: SeriesMap }
+    | null
+  >(null);
+  // Veto progress, while the match has no server yet (the Veto state banner).
+  const [veto, setVeto] = useState<{
+    status: string;
+    currentStep: number;
+    totalSteps: number;
+    currentTurn: 'team1' | 'team2';
+    currentAction: string;
+    actions?: Array<{ team?: string; action?: string; mapName?: string }>;
+    pickedMaps?: Array<{ mapName: string }>;
+  } | null>(null);
   // The game module's own admin view (CS2: failover and round backups).
   const integration = useIntegrationFor({ game: 'cs2' });
   const ModulePanel = integration.matchPanels.adminMatchView;
@@ -327,6 +368,20 @@ export default function ManageMatch() {
       setFailed(true);
     }
   }, [slug]);
+
+  // The veto, while there is no server yet: whose turn, which step, what is banned.
+  const preServerStatus = view && ['pending', 'ready'].includes(view.match.status) && !view.server;
+  useEffect(() => {
+    if (!preServerStatus) return;
+    let live = true;
+    api
+      .get<{ veto?: typeof veto }>(`/api/veto/${encodeURIComponent(slug)}`)
+      .then((r) => live && setVeto(r.veto ?? null))
+      .catch(() => live && setVeto(null));
+    return () => {
+      live = false;
+    };
+  }, [preServerStatus, slug, view]);
 
   useEffect(() => {
     void load();
@@ -394,6 +449,21 @@ export default function ManageMatch() {
       }
     },
     [load, showError, showSuccess]
+  );
+
+  // Roster changes for the player menu (FLEET.md §7.3 match.update).
+  const rosterOps = useCallback(
+    async (ops: RosterOp[], ok: string) => {
+      try {
+        await sendRoster(slug, () => ops);
+        showSuccess(ok);
+        await load();
+      } catch (error) {
+        showError((error as Error).message || 'The server refused it');
+        throw error;
+      }
+    },
+    [slug, load, showError, showSuccess]
   );
 
   const state = view?.live?.state ?? null;
@@ -517,7 +587,12 @@ export default function ManageMatch() {
                       size="small"
                       disabled={!p.connected || !onReadyUp}
                       onClick={(e) =>
-                        setMenu({ anchor: e.currentTarget, id: pid, name: p.name || pid })
+                        setMenu({
+                          anchor: e.currentTarget,
+                          id: pid,
+                          name: p.name || pid,
+                          team: key,
+                        })
                       }
                     >
                       <DotsThreeIcon size={20} />
@@ -539,9 +614,233 @@ export default function ManageMatch() {
     );
   };
 
-  const mapsList = state
-    ? Object.entries(state.series.maps).sort(([a], [b]) => Number(a) - Number(b))
-    : [];
+  // The live record's maps, or the stored results once it is gone (a finished match).
+  // A finished map shows its stored result, which an admin's correction changes.
+  const stored = (n: string) => view.maps?.find((r) => r.number === Number(n));
+  const mapsList: Array<[string, LiveMap]> = state
+    ? Object.entries(state.series.maps)
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([n, m]): [string, LiveMap] => {
+          const r = m.status === 'done' ? stored(n) : undefined;
+          return r
+            ? [
+                n,
+                {
+                  ...m,
+                  score: r.score,
+                  winner: r.winner === 'team1' || r.winner === 'team2' ? r.winner : m.winner,
+                },
+              ]
+            : [n, m];
+        })
+    : (view.maps ?? []).map((m) => [
+        String(m.number),
+        {
+          name: m.name ?? '',
+          status: 'done',
+          score: m.score,
+          winner: m.winner === 'team1' || m.winner === 'team2' ? m.winner : 'none',
+          ...(m.demo ? { demo: { state: 'stored' } } : {}),
+        },
+      ]);
+
+  const seriesMaps: SeriesMap[] = mapsList.map(([n, m]) => ({
+    number: Number(n),
+    name: m.name,
+    status: m.status,
+    score: m.score,
+  }));
+  const mapsWon: [number, number] = [
+    mapsList.filter(([, m]) => m.winner === 'team1').length,
+    mapsList.filter(([, m]) => m.winner === 'team2').length,
+  ];
+
+  const askForceReady = () =>
+    setConfirm({
+      target: 'match',
+      title: `Mark both teams ready?`,
+      effects: [
+        'Everyone connected is marked ready',
+        'The map goes live when the ready rules are met',
+      ],
+      action: 'Mark both teams ready',
+      cancel: 'Wait for the players',
+      run: () => send('force_ready', {}, 'Both teams marked ready'),
+    });
+  const askStart = () =>
+    state &&
+    setConfirm({
+      target: 'match',
+      title: `Start map ${state.series.current_map} now?`,
+      effects: [
+        'Warmup ends and the map goes live, ready or not',
+        'Players not on the server start without them',
+      ],
+      action: `Start map ${state.series.current_map} now`,
+      cancel: 'Keep the warmup',
+      run: () => send('start', { force: true }, 'Map started'),
+    });
+  const askUnpause = () =>
+    setConfirm({
+      target: 'match',
+      title: 'Unpause the match now?',
+      effects: ['Play goes on without waiting for both teams'],
+      action: 'Unpause now',
+      cancel: 'Stay paused',
+      run: () => send('unpause', {}, 'Unpaused'),
+    });
+  const askRestartServer = () =>
+    setConfirm({
+      target: 'server',
+      title: `Restart ${view.server?.name ?? 'this server'}?`,
+      effects: [
+        'csm restarts the CS2 server (about a minute)',
+        'Everyone is disconnected and joins again',
+        'Ready Up reloads the match and restores the last round',
+      ],
+      action: 'Restart the server',
+      cancel: 'Leave it running',
+      danger: true,
+      run: () =>
+        post(
+          `/api/game/cs2/matches/${encodeURIComponent(slug)}/manage/restart-server`,
+          {},
+          'Restarting the server'
+        ),
+    });
+  const askRestartVeto = () =>
+    setConfirm({
+      target: 'tournament',
+      title: 'Restart the veto?',
+      effects: [
+        'Every ban, pick and side so far is cleared',
+        'Both teams see it in the match chat',
+      ],
+      action: 'Restart the veto',
+      cancel: 'Keep the veto',
+      run: () => post(`/api/veto/${encodeURIComponent(slug)}/reset`, {}, 'The veto starts over'),
+    });
+  const scrollToMaps = () =>
+    document.querySelector('[data-testid="manage-maps"]')?.scrollIntoView({ behavior: 'smooth' });
+
+  // The state banner (MatchStates board): the one line that says what the match is doing.
+  const roster = (key: 'team1' | 'team2') => Object.values(state?.teams[key].players ?? {});
+  const readyLine = (key: 'team1' | 'team2') => {
+    const ps = roster(key);
+    const ready = ps.filter((p) => p.ready).length;
+    const away = ps.filter((p) => !p.connected).length;
+    return `${key === 'team1' ? t1 : t2} ${ready} of ${ps.length} ready${away ? `, ${away} not connected` : ''}`;
+  };
+  const turnTeam = veto ? (veto.currentTurn === 'team1' ? t1 : t2) : '';
+  const lastRound = rounds.length ? rounds[rounds.length - 1] : null;
+  let banner: Parameters<typeof MatchStateBanner>[0] | null = null;
+  if (view.match.status === 'completed') {
+    const winner = mapsWon[0] > mapsWon[1] ? t1 : mapsWon[1] > mapsWon[0] ? t2 : null;
+    banner = {
+      name: 'Finished',
+      tone: 'done',
+      title: winner
+        ? `Finished · ${winner} won ${Math.max(...mapsWon)}–${Math.min(...mapsWon)}`
+        : 'Finished',
+      body: 'Server freed. Demos and the result are saved. Only result corrections are offered now.',
+      buttons: mapsList.some(([, m]) => m.status === 'done')
+        ? [
+            {
+              label: 'Correct a map’s result…',
+              onClick: scrollToMaps,
+              testId: 'manage-state-correct',
+            },
+          ]
+        : [],
+    };
+  } else if (view.server && view.server.online === false) {
+    banner = {
+      name: 'Server offline',
+      tone: 'problem',
+      title: `${view.server.name ?? 'The server'} is not answering`,
+      body: lastRound
+        ? `Last seen at round ${lastRound.round_number}, ${lastRound.team1_score}–${lastRound.team2_score}. The round backups are safe on the platform.`
+        : 'The round backups it sent are safe on the platform.',
+      buttons: [
+        ...(onReadyUp ? [{ label: 'Restart server…', onClick: askRestartServer }] : []),
+        {
+          label: 'Move to another server…',
+          tone: 'server' as const,
+          onClick: () => setDialog({ kind: 'move' }),
+          testId: 'manage-state-move',
+        },
+      ],
+    };
+  } else if (state && paused) {
+    const since = state.pause?.started_at;
+    banner = {
+      name: 'Paused',
+      tone: 'attention',
+      title: `Paused${state.pause?.type ? ` · ${state.pause.type}` : ''}${
+        state.pause?.by ? `, called by ${state.pause.by}` : ''
+      }${since ? ` · since ${clock(since)}` : ''}`,
+      body: `${state.round ? `Round ${state.round.number}. ` : ''}Unpauses when both teams type .unpause, or when an admin does.`,
+      buttons: [{ label: 'Unpause now…', tone: 'primary', onClick: askUnpause }],
+    };
+  } else if (state && warmup) {
+    const all = [...roster('team1'), ...roster('team2')];
+    banner = {
+      name: 'Warmup',
+      tone: 'ok',
+      title: `On ${view.server?.name ?? 'the server'} · warmup · ${all.filter((p) => p.ready).length} of ${all.length} ready`,
+      body: `Players are joining. ${readyLine('team1')}; ${readyLine('team2')}.`,
+      buttons: [
+        { label: 'Force ready…', onClick: askForceReady },
+        { label: 'Start map now…', tone: 'primary', onClick: () => askStart() },
+      ],
+    };
+  } else if (preServer && veto && veto.status !== 'completed') {
+    const banned = (veto.actions ?? [])
+      .filter((a) => a.action === 'ban' && a.mapName)
+      .map((a) => `${mapLabel(a.mapName)} (${a.team === 'team1' ? t1 : t2})`);
+    banner = {
+      name: 'Veto',
+      tone: 'progress',
+      title: `Veto · ${turnTeam}’s turn to ${veto.currentAction === 'side_pick' ? 'pick a side' : veto.currentAction}`,
+      body: `Step ${veto.currentStep} of ${veto.totalSteps}.${
+        banned.length ? ` Banned: ${banned.join(', ')}.` : ''
+      } No server yet: one is picked when the veto is done.`,
+      buttons: [
+        {
+          label: `Act for ${turnTeam}…`,
+          onClick: () => setDialog({ kind: 'actFor' }),
+          testId: 'manage-state-act-for',
+        },
+        { label: 'Restart veto', onClick: askRestartVeto },
+      ],
+    };
+  } else if (preServer) {
+    const picked = (veto?.pickedMaps ?? []).map((m) => mapLabel(m.mapName));
+    banner = {
+      name: 'Waiting for a server',
+      tone: 'progress',
+      title:
+        view.match.status === 'ready'
+          ? 'Veto done · waiting for a free server'
+          : 'Waiting for the teams',
+      body:
+        view.match.status === 'ready'
+          ? `${picked.length ? `Maps: ${picked.join(', ')}. ` : ''}Every server is busy; the next free one is taken automatically. You can give it one now.`
+          : 'Both teams need to be known before the veto starts.',
+      buttons:
+        view.match.status === 'ready'
+          ? [
+              {
+                label: 'Pick a server…',
+                tone: 'server',
+                onClick: () => setDialog({ kind: 'allocate' }),
+                testId: 'manage-state-allocate',
+              },
+              { label: 'Restart veto', onClick: askRestartVeto },
+            ]
+          : [],
+    };
+  }
 
   return (
     <Box sx={{ display: 'grid', gap: 2.25, pb: 12 }} data-testid="manage-match-page">
@@ -627,13 +926,7 @@ export default function ManageMatch() {
         </Button>
       </Box>
 
-      {preServer && (
-        <Alert severity="info">
-          {view.match.status === 'pending'
-            ? 'Veto or waiting: no server yet. One is picked when the veto is done.'
-            : 'Veto done: waiting for a free server.'}
-        </Alert>
-      )}
+      {banner && <MatchStateBanner {...banner} />}
 
       {state && (
         <Section
@@ -789,40 +1082,8 @@ export default function ManageMatch() {
         >
           {warmup && (
             <Group label="Ready-up">
-              <Button
-                onClick={() =>
-                  setConfirm({
-                    target: 'match',
-                    title: `Mark both teams ready?`,
-                    effects: [
-                      'Everyone connected is marked ready',
-                      'The map goes live when the ready rules are met',
-                    ],
-                    action: 'Mark both teams ready',
-                    cancel: 'Wait for the players',
-                    run: () => send('force_ready', {}, 'Both teams marked ready'),
-                  })
-                }
-              >
-                Force ready
-              </Button>
-              <Button
-                onClick={() =>
-                  setConfirm({
-                    target: 'match',
-                    title: `Start map ${state.series.current_map} now?`,
-                    effects: [
-                      'Warmup ends and the map goes live, ready or not',
-                      'Players not on the server start without them',
-                    ],
-                    action: `Start map ${state.series.current_map} now`,
-                    cancel: 'Keep the warmup',
-                    run: () => send('start', { force: true }, 'Map started'),
-                  })
-                }
-              >
-                Start map
-              </Button>
+              <Button onClick={askForceReady}>Force ready</Button>
+              <Button onClick={() => askStart()}>Start map</Button>
             </Group>
           )}
           {live && !paused && (
@@ -848,20 +1109,7 @@ export default function ManageMatch() {
           )}
           {paused && (
             <Group label="Pause">
-              <Button
-                onClick={() =>
-                  setConfirm({
-                    target: 'match',
-                    title: 'Unpause the match now?',
-                    effects: ['Play goes on without waiting for both teams'],
-                    action: 'Unpause now',
-                    cancel: 'Stay paused',
-                    run: () => send('unpause', {}, 'Unpaused'),
-                  })
-                }
-              >
-                Unpause
-              </Button>
+              <Button onClick={askUnpause}>Unpause</Button>
             </Group>
           )}
           {(live || paused || warmup) && (
@@ -885,29 +1133,8 @@ export default function ManageMatch() {
               >
                 Restart map
               </Button>
-              {warmup && mapsList.length > 1 && (
-                <Button
-                  onClick={() => {
-                    const next = mapsList.find(
-                      ([, m]) => m.status === 'pending' && m !== currentMap
-                    );
-                    if (!next) return;
-                    setConfirm({
-                      target: 'match',
-                      title: `Go to map ${next[0]} (${mapLabel(next[1].name)})?`,
-                      effects: [
-                        `${mapLabel(currentMap?.name)} is left for later`,
-                        'The server changes map; players reconnect',
-                      ],
-                      action: `Change to map ${next[0]}, ${mapLabel(next[1].name)}`,
-                      cancel: `Stay on ${mapLabel(currentMap?.name)}`,
-                      run: () =>
-                        send('change_map', { map_number: Number(next[0]) }, 'Changing map'),
-                    });
-                  }}
-                >
-                  Change map
-                </Button>
+              {mapsList.length > 1 && (
+                <Button onClick={() => setDialog({ kind: 'changeMap' })}>Change map</Button>
               )}
               <Button
                 onClick={() =>
@@ -928,31 +1155,15 @@ export default function ManageMatch() {
           <Group label="Players">
             <Button
               onClick={() =>
-                setConfirm({
-                  target: 'match',
-                  title: 'Message everyone on the server?',
-                  body: message || 'Write the message below first.',
-                  effects: ['It shows in the in-game chat as an admin message'],
-                  action: 'Send to everyone',
-                  cancel: 'Don’t send',
-                  run: () => send('say', { text: message, as_admin: true }, 'Sent'),
-                })
+                document
+                  .querySelector('[data-testid="manage-roster"]')
+                  ?.scrollIntoView({ behavior: 'smooth' })
               }
-              disabled={!message.trim()}
             >
-              Message all
+              Edit roster
             </Button>
+            <Button onClick={() => setDialog({ kind: 'message' })}>Message all</Button>
           </Group>
-          <Box sx={{ flexBasis: '100%' }}>
-            <TextField
-              label="Message for everyone on the server"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              size="small"
-              fullWidth
-              inputProps={{ maxLength: 190 }}
-            />
-          </Box>
           {(live || paused || warmup) && (
             <Group label="End">
               {(['team1', 'team2'] as const).map((w) => (
@@ -987,54 +1198,8 @@ export default function ManageMatch() {
       {view.server && (
         <Target dot={color.info} title="Server" who="where the match runs">
           <Group label="Instance">
-            {onReadyUp && (
-              <Button
-                onClick={() =>
-                  setConfirm({
-                    target: 'server',
-                    title: `Restart ${view.server?.name ?? 'this server'}?`,
-                    effects: [
-                      'csm restarts the CS2 server (about a minute)',
-                      'Everyone is disconnected and joins again',
-                      'Ready Up reloads the match and restores the last round',
-                    ],
-                    action: 'Restart the server',
-                    cancel: 'Leave it running',
-                    danger: true,
-                    run: () =>
-                      post(
-                        `/api/game/cs2/matches/${encodeURIComponent(slug)}/manage/restart-server`,
-                        {},
-                        'Restarting the server'
-                      ),
-                  })
-                }
-              >
-                Restart server
-              </Button>
-            )}
-            <Button
-              onClick={() =>
-                setConfirm({
-                  target: 'server',
-                  title: 'Move this match to another free server?',
-                  effects: [
-                    'The match is loaded on the next free server',
-                    'Players are told the new address; the last round is restored there',
-                  ],
-                  action: 'Move to another server',
-                  cancel: 'Stay on this server',
-                  run: () =>
-                    post(
-                      `/api/matches/${encodeURIComponent(slug)}/reallocate`,
-                      {},
-                      'Moving to another server'
-                    ),
-                })
-              }
-            >
-              Move to another server
-            </Button>
+            {onReadyUp && <Button onClick={askRestartServer}>Restart server</Button>}
+            <Button onClick={() => setDialog({ kind: 'move' })}>Move to another server</Button>
             <Button
               onClick={() =>
                 setConfirm({
@@ -1092,57 +1257,70 @@ export default function ManageMatch() {
               Restart the match
             </Button>
           </Group>
+          <Group label="Updates">
+            <Typography sx={{ color: color.ink2, fontSize: textSize.sm, alignSelf: 'center' }}>
+              Held while the tournament runs: csm updates this server only between matches.
+            </Typography>
+          </Group>
+          <Group label="Inspect">
+            <Button
+              onClick={() => {
+                setSource('server');
+                document
+                  .querySelector('[data-testid="manage-logs"]')
+                  ?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              Console log
+            </Button>
+          </Group>
         </Target>
       )}
 
       <Target dot={color.live} title="Tournament" who="changes the platform: veto, result, chat">
         {['pending', 'ready'].includes(view.match.status) && !view.server && (
           <Group label="Veto">
-            <Button
-              onClick={() =>
-                setConfirm({
-                  target: 'tournament',
-                  title: 'Restart the veto?',
-                  effects: [
-                    'Every ban, pick and side so far is cleared',
-                    'Both teams see it in the match chat',
-                  ],
-                  action: 'Restart the veto',
-                  cancel: 'Keep the veto',
-                  run: () =>
-                    post(`/api/veto/${encodeURIComponent(slug)}/reset`, {}, 'The veto starts over'),
-                })
-              }
-            >
-              Restart veto
-            </Button>
+            <Button onClick={askRestartVeto}>Restart veto</Button>
+            <Button onClick={() => setDialog({ kind: 'actFor' })}>Act for a team</Button>
           </Group>
         )}
-        {view.match.status === 'needs_decision' && (
+        {!['completed', 'cancelled'].includes(view.match.status) && (
           <Group label="Result">
-            {(['team1', 'team2'] as const).map((w) => (
+            {['pending', 'ready', 'loaded'].includes(view.match.status) && (
               <Button
-                key={w}
                 onClick={() =>
-                  setConfirm({
-                    target: 'tournament',
-                    title: `Set ${w === 'team1' ? t1 : t2} as the winner?`,
-                    effects: ['The series is recorded for them and the bracket moves on'],
-                    action: `${w === 'team1' ? t1 : t2} wins`,
-                    cancel: 'Decide later',
-                    typeToConfirm: matchName,
-                    run: () =>
-                      post(
-                        `/api/matches/${encodeURIComponent(slug)}/winner`,
-                        { winner: w },
-                        'Winner set'
-                      ),
-                  })
+                  document
+                    .querySelector('[data-testid="manage-hold"]')
+                    ?.scrollIntoView({ behavior: 'smooth' })
                 }
               >
-                {w === 'team1' ? t1 : t2} wins
+                Hold match
               </Button>
-            ))}
+            )}
+            {view.match.status === 'needs_decision' &&
+              (['team1', 'team2'] as const).map((w) => (
+                <Button
+                  key={w}
+                  onClick={() =>
+                    setConfirm({
+                      target: 'tournament',
+                      title: `Set ${w === 'team1' ? t1 : t2} as the winner?`,
+                      effects: ['The series is recorded for them and the bracket moves on'],
+                      action: `${w === 'team1' ? t1 : t2} wins`,
+                      cancel: 'Decide later',
+                      typeToConfirm: matchName,
+                      run: () =>
+                        post(
+                          `/api/matches/${encodeURIComponent(slug)}/winner`,
+                          { winner: w },
+                          'Winner set'
+                        ),
+                    })
+                  }
+                >
+                  {w === 'team1' ? t1 : t2} wins
+                </Button>
+              ))}
           </Group>
         )}
         <Group label="Chat">
@@ -1226,6 +1404,9 @@ export default function ManageMatch() {
                   <Box component="th" scope="col" sx={th}>
                     Demo
                   </Box>
+                  <Box component="th" scope="col" sx={th}>
+                    Actions
+                  </Box>
                 </tr>
               </thead>
               <tbody>
@@ -1252,6 +1433,38 @@ export default function ManageMatch() {
                     </Box>
                     <Box component="td" sx={{ ...td, color: color.muted }}>
                       {m.demo?.state ?? '—'}
+                    </Box>
+                    <Box component="td" sx={{ ...td, whiteSpace: 'nowrap' }}>
+                      {m.status === 'done' && (
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                          {view.maps?.some((r) => r.number === Number(n) && r.demo) && (
+                            <Button
+                              size="small"
+                              component="a"
+                              href={`/api/demos/${encodeURIComponent(slug)}/download/${n}`}
+                            >
+                              Download demo
+                            </Button>
+                          )}
+                          <Button
+                            size="small"
+                            data-testid={`manage-correct-map-${n}`}
+                            onClick={() =>
+                              setDialog({
+                                kind: 'correct',
+                                map: {
+                                  number: Number(n),
+                                  name: m.name,
+                                  status: m.status,
+                                  score: m.score,
+                                },
+                              })
+                            }
+                          >
+                            Correct this map’s result
+                          </Button>
+                        </Box>
+                      )}
                     </Box>
                   </tr>
                 ))}
@@ -1530,6 +1743,71 @@ export default function ManageMatch() {
           </MenuItem>
         )}
         <MenuItem
+          onClick={() => {
+            const m = menu;
+            setMenu(null);
+            if (!m) return;
+            const to = m.team === 'team1' ? 'team2' : 'team1';
+            const toName = to === 'team1' ? t1 : t2;
+            setConfirm({
+              target: 'match',
+              title: `Move ${m.name} to ${toName}?`,
+              effects: [
+                `${m.name} plays for ${toName} from now on`,
+                'They switch sides on the server at once',
+              ],
+              action: `Move ${m.name} to ${toName}`,
+              cancel: `Keep ${m.name} on ${m.team === 'team1' ? t1 : t2}`,
+              run: () =>
+                rosterOps(
+                  [
+                    { op: 'remove_player', steamid64: m.id },
+                    { op: 'add_player', team: to, steamid64: m.id, name: m.name },
+                  ],
+                  `${m.name} moved to ${toName}`
+                ),
+            });
+          }}
+        >
+          Move to the other team
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            const m = menu;
+            setMenu(null);
+            if (!m) return;
+            setConfirm({
+              target: 'match',
+              title: `Move ${m.name} to spectator?`,
+              effects: [
+                `${m.name} leaves ${m.team === 'team1' ? t1 : t2} and watches`,
+                'Their seat stays open until someone takes it',
+              ],
+              action: `Move ${m.name} to spectator`,
+              cancel: `Keep ${m.name} playing`,
+              run: () =>
+                rosterOps(
+                  [
+                    { op: 'remove_player', steamid64: m.id },
+                    { op: 'add_player', team: 'spectator', steamid64: m.id, name: m.name },
+                  ],
+                  `${m.name} moved to spectator`
+                ),
+            });
+          }}
+        >
+          Move to spectator
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            const m = menu;
+            setMenu(null);
+            if (m) setDialog({ kind: 'swap', id: m.id, name: m.name, team: m.team });
+          }}
+        >
+          Swap with a substitute…
+        </MenuItem>
+        <MenuItem
           sx={{ color: color.ban }}
           onClick={() => {
             const m = menu;
@@ -1558,6 +1836,74 @@ export default function ManageMatch() {
         </MenuItem>
       </Menu>
       <ConfirmAction spec={confirm} onClose={() => setConfirm(null)} />
+      {(dialog?.kind === 'move' || dialog?.kind === 'allocate') && (
+        <MoveServerDialog
+          slug={slug}
+          mode={dialog.kind}
+          serverName={view.server?.name ?? 'this server'}
+          round={state?.round?.number ?? null}
+          onClose={() => setDialog(null)}
+          post={post}
+        />
+      )}
+      {dialog?.kind === 'changeMap' && (
+        <ChangeMapDialog
+          current={seriesMaps.find((m) => m.number === state?.series.current_map)}
+          maps={seriesMaps}
+          onClose={() => setDialog(null)}
+          send={send}
+        />
+      )}
+      {dialog?.kind === 'swap' && (
+        <SwapSubDialog
+          slug={slug}
+          player={{ id: dialog.id, name: dialog.name }}
+          team={dialog.team}
+          teamName={dialog.team === 'team1' ? t1 : t2}
+          side={state?.teams[dialog.team].side?.toUpperCase() ?? null}
+          onClose={() => setDialog(null)}
+          onDone={(text) => {
+            showSuccess(text);
+            void load();
+          }}
+          onError={showError}
+        />
+      )}
+      {dialog?.kind === 'actFor' && (
+        <ActForTeamDialog
+          slug={slug}
+          onClose={() => setDialog(null)}
+          onDone={(text) => {
+            showSuccess(text);
+            void load();
+          }}
+          onError={showError}
+        />
+      )}
+      {dialog?.kind === 'correct' && (
+        <CorrectMapDialog
+          slug={slug}
+          map={dialog.map}
+          t1={t1}
+          t2={t2}
+          seriesNow={mapsWon}
+          onClose={() => setDialog(null)}
+          post={post}
+        />
+      )}
+      {dialog?.kind === 'message' && (
+        <MessageAllDialog
+          slug={slug}
+          players={
+            [...roster('team1'), ...roster('team2')].filter((p) => p.connected && p.role !== 'bot')
+              .length
+          }
+          onClose={() => setDialog(null)}
+          send={send}
+          onDone={showSuccess}
+          onError={showError}
+        />
+      )}
     </Box>
   );
 }
