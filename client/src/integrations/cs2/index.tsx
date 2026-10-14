@@ -18,6 +18,7 @@ import type { ClientGameIntegration, PlayerProfileViewProps } from '../types';
 import { links } from '../../module-sdk';
 import { MatchServerPanel } from './match/MatchServerPanel';
 import { Cs2MatchAdminView } from './match/Cs2MatchAdminView';
+import { SeriesMaps } from './match/SeriesMaps';
 import { ServerAllocationWidget } from './servers/ServerAllocationWidget';
 import { ServersOverviewCard } from './servers/ServersOverviewCard';
 import { ServerGrid } from './servers/ServerGrid';
@@ -117,6 +118,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     adminMatchView: Cs2MatchAdminView,
     // A finished match's public page: team reels, scoreboard, highlights.
     publicView: MatchPublicPanel,
+    // The series' maps in play order: picture, pick, winner and rounds.
+    seriesMapsView: SeriesMaps,
   },
 
   preMatchView: VetoInterface,

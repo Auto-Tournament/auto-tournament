@@ -155,5 +155,9 @@
  *
  * 0.2.23 (additive): `adminPlayerAction` (a module's action on each row of
  * Manage → Players, opening its own dialog) with `AdminPlayerActionProps`.
+ *
+ * 0.2.24 (additive): `matchPanels.seriesMapsView` with `MatchSeriesMapsProps`
+ * (the series' maps on a match's page), and `PublicMatch.maps`, `mapNumber`,
+ * `team1LogoUrl`, `team2LogoUrl`.
  */
-export const CLIENT_API_VERSION = '0.2.23';
+export const CLIENT_API_VERSION = '0.2.24';

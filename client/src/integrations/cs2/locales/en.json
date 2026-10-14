@@ -2648,5 +2648,19 @@
     "backMoved": "The match moved to another server, restored to the last round. Reconnect to keep playing.",
     "reconnect": "Reconnect",
     "close": "Close"
+  },
+  "seriesMaps": {
+    "title": "Maps",
+    "mapN": "Map {{n}}",
+    "pickedBy": "{{team}}'s pick",
+    "decider": "Decider",
+    "live": "Live",
+    "upNext": "Up next",
+    "notPlayed": "To play",
+    "won": "{{team}} won",
+    "draw": "Draw",
+    "regulation": "In regulation",
+    "overtime": "After overtime",
+    "onDamage": "Level after overtime, won on damage"
   }
 }
