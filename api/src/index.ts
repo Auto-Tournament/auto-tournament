@@ -179,23 +179,38 @@ if (sessionCookieDomain) {
   sessionCookie.domain = sessionCookieDomain;
 }
 
+// Persist sessions in PostgreSQL so admin logins survive API restarts.
+// Note: Session table is created by our database schema, so we don't need
+// connect-pg-simple to create it (which would require table.sql file).
+const sessionStore = new PgSession({
+  conString: sessionDbConnectionString,
+  tableName: 'session',
+  createTableIfMissing: false, // Table is created by our schema
+});
 const sessionMiddleware = session({
-  // Persist sessions in PostgreSQL so admin logins survive API restarts.
-  // Note: Session table is created by our database schema, so we don't need
-  // connect-pg-simple to create it (which would require table.sql file).
-  store: new PgSession({
-    conString: sessionDbConnectionString,
-    tableName: 'session',
-    createTableIfMissing: false, // Table is created by our schema
-  }),
+  store: sessionStore,
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: sessionCookie,
 });
+// Opened by IP address (a fresh install before its domain points here, e.g.
+// http://10.0.0.5:3069/setup): a cookie for FRONTEND_BASE_URL's domain, or a
+// Secure one over plain http, is dropped by the browser, so setup signed the
+// new admin out at once. Such requests get a cookie for the address they
+// came on, Secure only over https.
+const addressSessionMiddleware = session({
+  store: sessionStore,
+  secret: sessionSecret,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { sameSite: 'lax', secure: 'auto', httpOnly: true },
+});
 const passportInitialize = passport.initialize();
 const passportSession = passport.session();
-app.use(sessionMiddleware);
+app.use((req, res, next) =>
+  (isIP(req.hostname) !== 0 ? addressSessionMiddleware : sessionMiddleware)(req, res, next)
+);
 app.use(passportInitialize);
 app.use(passportSession);
 // A banned or deleted player is signed out on their next request.
