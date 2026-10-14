@@ -107,3 +107,36 @@ test(
     await expect(third).toContainText('To play');
   }
 );
+
+test(
+  'a series won 2-0: the third map is not played and says nothing',
+  { tag: ['@ui', '@public'] },
+  async ({ page }) => {
+    const done = {
+      ...match,
+      slug: 'spec-series-done',
+      status: 'live', // the series is decided before the match is marked finished
+      winnerSide: null,
+      maps: ['de_nuke', 'de_train', 'de_inferno'],
+      mapNumber: 2,
+      mapScores: [
+        { mapNumber: 0, map: 'de_nuke', team1Score: 6, team2Score: 4, winner: 'team1' },
+        { mapNumber: 1, map: 'de_train', team1Score: 6, team2Score: 2, winner: 'team1' },
+      ],
+    };
+    await page.route('**/api/matches/spec-series-done', (route) =>
+      route.fulfill({ json: { success: true, match: done } })
+    );
+    await page.route('**/api/game/cs2/matches/spec-series-done/**', (route) =>
+      route.fulfill({
+        json: { success: true, teams: [], clips: [], team1: [], team2: [], maps: [] },
+      })
+    );
+    await page.goto('/match/spec-series-done', { waitUntil: 'domcontentloaded' });
+    const third = page.getByTestId('match-page-map-2');
+    await expect(third).toHaveAttribute('data-map-state', 'skipped');
+    await expect(third).not.toContainText('To play');
+    await expect(third).not.toContainText('Live');
+    await expect(page.getByTestId('match-page-map-1')).toHaveAttribute('data-map-state', 'played');
+  }
+);

@@ -10,7 +10,7 @@ import {
 } from '../../../module-sdk';
 import type { MatchSeriesMapsProps } from '../../types';
 import type { VetoMapResult, VetoStateResponse } from '../cs2.types';
-import { getMapData, getMapDisplayName } from '../maps/mapData';
+import { getMapDisplayName, mapBackground } from '../maps/mapData';
 
 type Side = 'team1' | 'team2';
 
@@ -52,7 +52,25 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
   // Warmup on the map (loaded) counts: that map is the one on.
   const live = match.status === 'live' || match.status === 'loaded' ? (match.mapNumber ?? 0) : null;
   // The first map with no result is next while the series is still on.
-  const finished = match.status === 'completed' || match.winnerSide != null;
+  // Over once a team has won the majority of the maps (a Bo3 at 2-0), even
+  // before the match itself is marked finished: its other maps are not played.
+  const wins = { team1: 0, team2: 0 };
+  for (const m of match.mapScores ?? []) {
+    const w =
+      m.winner === 'team1' || m.winner === 'team2'
+        ? m.winner
+        : m.team1Score > m.team2Score
+          ? 'team1'
+          : m.team2Score > m.team1Score
+            ? 'team2'
+            : null;
+    if (w) wins[w] += 1;
+  }
+  const majority = Math.floor(order.length / 2) + 1;
+  const finished =
+    match.status === 'completed' ||
+    match.winnerSide != null ||
+    (order.length > 0 && Math.max(wins.team1, wins.team2) >= majority);
   const next = finished || live != null ? null : order.findIndex((_, i) => !results.has(i));
 
   const team = (side: Side) => ({
@@ -78,7 +96,6 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
         {order.map((map, n) => {
           const result = results.get(n);
           const pick = picks.get(n);
-          const data = getMapData(map);
           const winner: Side | null = result
             ? result.winner === 'team1' || result.winner === 'team2'
               ? result.winner
@@ -90,7 +107,7 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
             : null;
           const level = !!result && result.team1Score === result.team2Score;
           const overtime = !!result && result.team1Score + result.team2Score > 24;
-          const isLive = live === n;
+          const isLive = live === n && !finished;
           const pickLabel = pick
             ? pick.pickedBy === 'decider'
               ? t('seriesMaps.decider')
@@ -100,7 +117,7 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
             ? t('seriesMaps.live')
             : next === n
               ? t('seriesMaps.upNext')
-              : !result
+              : !result && !finished
                 ? t('seriesMaps.notPlayed')
                 : null;
           const w = winner ? team(winner) : null;
@@ -108,7 +125,9 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
             <Box
               key={`${n}-${map}`}
               data-testid={`match-page-map-${n}`}
-              data-map-state={isLive ? 'live' : result ? 'played' : 'upcoming'}
+              data-map-state={
+                isLive ? 'live' : result ? 'played' : finished ? 'skipped' : 'upcoming'
+              }
               sx={{
                 border: 1,
                 borderColor: isLive ? tokens.color.accent : 'divider',
@@ -125,10 +144,15 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
                   aspectRatio: '16 / 7',
                   maxWidth: '100%',
                   bgcolor: 'background.surface3',
-                  backgroundImage: data ? `url(${data.image})` : undefined,
+                  backgroundImage: mapBackground(map),
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  filter: result || isLive ? undefined : 'saturate(0.6)',
+                  filter:
+                    result || isLive
+                      ? undefined
+                      : finished
+                        ? 'grayscale(1) opacity(0.5)'
+                        : 'saturate(0.6)',
                 }}
               >
                 <Box
