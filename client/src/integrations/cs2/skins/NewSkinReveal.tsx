@@ -287,7 +287,29 @@ function Reveal() {
                   })
                   .finally(() => setEquipping(false));
               }}
-              sx={{ borderRadius: radii.pill, px: 4, py: 1.75, fontWeight: 600 }}
+              sx={{
+                borderRadius: radii.pill,
+                px: 4,
+                py: 1.75,
+                fontWeight: 600,
+                // The side's own colour: CT blue, T orange; both sides plain.
+                ...(skin.side === null && action.team !== 0
+                  ? {
+                      bgcolor: action.team === 3 ? color.sideCt : color.sideT,
+                      color: '#111111',
+                      '&:hover': {
+                        bgcolor: action.team === 3 ? color.sideCt : color.sideT,
+                        filter: 'brightness(1.1)',
+                      },
+                    }
+                  : skin.side === null
+                    ? {
+                        bgcolor: color.ink,
+                        color: color.paper,
+                        '&:hover': { bgcolor: color.ink, filter: 'brightness(0.9)' },
+                      }
+                    : {}),
+              }}
             >
               {action.label}
             </Button>
