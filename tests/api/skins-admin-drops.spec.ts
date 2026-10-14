@@ -55,6 +55,22 @@ test(
         data: { target: { kind: 'team' } },
       });
       expect(bad.status()).toBe(400);
+
+      // A tournament's players: a tournament that has none names nobody.
+      const none = await request.post('/api/skins/admin/drops', {
+        headers,
+        data: { target: { kind: 'tournament', id: '999999' }, preview: true },
+      });
+      expect(none.ok(), await none.text()).toBe(true);
+      expect((await none.json()).count).toBe(0);
+      expect(
+        (
+          await request.post('/api/skins/admin/drops', {
+            headers,
+            data: { target: { kind: 'tournament' }, preview: true },
+          })
+        ).status()
+      ).toBe(400);
     } finally {
       await request.put('/api/skins/admin/config', { headers, data: config });
       await player.dispose();

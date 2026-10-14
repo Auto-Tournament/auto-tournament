@@ -1893,12 +1893,8 @@
           "online": "Everyone online",
           "player": "A player",
           "team": "A team",
-          "match": "A match"
-        },
-        "idLabel": {
-          "player": "Steam ID",
-          "team": "Team id",
-          "match": "Match id (slug)"
+          "match": "A match",
+          "tournament": "A tournament"
         },
         "start": "Give a drop…",
         "cancel": "Cancel",
@@ -1914,7 +1910,18 @@
         "give_one": "Give 1 drop",
         "give_other": "Give {{count}} drops",
         "given_one": "Gave 1 drop.",
-        "given_other": "Gave {{count}} drops."
+        "given_other": "Gave {{count}} drops.",
+        "pick": {
+          "player": "Player (search by name)",
+          "team": "Team",
+          "match": "Match",
+          "tournament": "Tournament"
+        },
+        "typeName": "Type at least two letters of the name",
+        "noneFound": "Nothing found",
+        "whoTournament_one": "Give a drop to the tournament's 1 player?",
+        "whoTournament_other": "Give a drop to the tournament's {{count}} players?",
+        "rowAction": "Give a drop"
       },
       "statTrakChance": "StatTrak™ chance (%)",
       "statTrakHelp": "How often a dropped weapon or knife is StatTrak™ (CS2 cases: 10)."

@@ -556,7 +556,8 @@ export type DropTarget =
   | { kind: 'player'; id: string }
   | { kind: 'online' }
   | { kind: 'team'; id: string }
-  | { kind: 'match'; id: string };
+  | { kind: 'match'; id: string }
+  | { kind: 'tournament'; id: string };
 
 export interface LoadoutRow {
   /** The StatTrak count, or null for a plain skin. */
@@ -923,6 +924,47 @@ export const skinService = {
             );
         }
       }
+    } else if (target.kind === 'tournament') {
+      // Everyone who took part: the lineups of its matches, and its teams' members.
+      const matches = await db.queryAsync<{
+        config: string | null;
+        team1_id: string | null;
+        team2_id: string | null;
+      }>('SELECT config, team1_id, team2_id FROM matches WHERE tournament_id = ?', [
+        Number(target.id),
+      ]);
+      const steamIds = new Set<string>();
+      const teams = new Set<string>();
+      for (const m of matches) {
+        if (m.team1_id) teams.add(m.team1_id);
+        if (m.team2_id) teams.add(m.team2_id);
+        try {
+          const config = JSON.parse(m.config ?? '{}') as {
+            team1?: { players?: Record<string, string> };
+            team2?: { players?: Record<string, string> };
+          };
+          for (const t of [config.team1, config.team2])
+            for (const id of Object.keys(t?.players ?? {})) steamIds.add(id);
+        } catch {
+          // A match without a stored config: its teams' members below.
+        }
+      }
+      const ids = [...steamIds];
+      const byLineup = ids.length
+        ? await db.queryAsync<{ uid: string; name: string }>(
+            `SELECT uid, name FROM players WHERE id IN (${ids.map(() => '?').join(', ')})`,
+            ids
+          )
+        : [];
+      const teamIds = [...teams];
+      const byTeam = teamIds.length
+        ? await db.queryAsync<{ uid: string; name: string }>(
+            `SELECT p.uid, p.name FROM team_members m JOIN players p ON p.uid::text = m.account_uid::text
+              WHERE m.team_id IN (${teamIds.map(() => '?').join(', ')})`,
+            teamIds
+          )
+        : [];
+      rows = [...byLineup, ...byTeam];
     }
     const seen = new Set<string>();
     return rows.filter((r) => r.uid && !seen.has(String(r.uid)) && seen.add(String(r.uid)));

@@ -234,6 +234,7 @@ export const COMPONENT_SLOTS = [
   'tournamentTab.Component',
   'tournamentResultsSection',
   'highlightsAdmin.Component',
+  'adminPlayerAction.Dialog',
 ] as const;
 
 export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];

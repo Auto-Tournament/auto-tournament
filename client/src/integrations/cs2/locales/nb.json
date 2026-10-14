@@ -1893,12 +1893,8 @@
           "online": "Alle pålogget",
           "player": "En spiller",
           "team": "Et lag",
-          "match": "En kamp"
-        },
-        "idLabel": {
-          "player": "Steam-ID",
-          "team": "Lag-id",
-          "match": "Kamp-id (slug)"
+          "match": "En kamp",
+          "tournament": "En turnering"
         },
         "start": "Gi en drop…",
         "cancel": "Avbryt",
@@ -1914,7 +1910,18 @@
         "give_one": "Gi 1 drop",
         "give_other": "Gi {{count}} drops",
         "given_one": "Ga 1 drop.",
-        "given_other": "Ga {{count}} drops."
+        "given_other": "Ga {{count}} drops.",
+        "pick": {
+          "player": "Spiller (søk på navn)",
+          "team": "Lag",
+          "match": "Kamp",
+          "tournament": "Turnering"
+        },
+        "typeName": "Skriv minst to bokstaver av navnet",
+        "noneFound": "Fant ingen",
+        "whoTournament_one": "Gi en drop til turneringens ene spiller?",
+        "whoTournament_other": "Gi en drop til turneringens {{count}} spillere?",
+        "rowAction": "Gi en drop"
       },
       "statTrakChance": "StatTrak™-sjanse (%)",
       "statTrakHelp": "Hvor ofte et våpen eller en kniv som droppes er StatTrak™ (CS2-kasser: 10)."

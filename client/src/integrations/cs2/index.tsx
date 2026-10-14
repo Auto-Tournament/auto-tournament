@@ -13,6 +13,7 @@ import {
   SlidersHorizontalIcon,
   KnifeIcon,
 } from '@phosphor-icons/react';
+import { GiveDropToPlayer } from './skins/GiveDropsAdmin';
 import type { ClientGameIntegration, PlayerProfileViewProps } from '../types';
 import { links } from '../../module-sdk';
 import { MatchServerPanel } from './match/MatchServerPanel';
@@ -124,6 +125,12 @@ export const cs2ClientIntegration: ClientGameIntegration = {
 
   // The player profile: aim, utility, impact and the map strength radar.
   playerProfileView: Cs2ProfileView,
+  // Manage → Players: give a player a skin drop from their row.
+  adminPlayerAction: {
+    key: 'give-drop',
+    labelKey: 'skins.admin.drops.rowAction',
+    Dialog: GiveDropToPlayer,
+  },
   // The team page: map strength, and the maps the team bans and picks.
   teamProfileView: Cs2TeamProfileStats,
 

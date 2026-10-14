@@ -822,6 +822,12 @@ export interface TournamentStatsViewProps {
  * built-in facts (CS2: aim, utility, impact and map strength). The view
  * fetches its own numbers and renders nothing when there are none.
  */
+/** What an `adminPlayerActions` dialog gets: the player the admin picked on Manage → Players. */
+export interface AdminPlayerActionProps {
+  player: { id: string; name: string };
+  onClose: () => void;
+}
+
 export interface PlayerProfileViewProps {
   playerId: string;
   /** The viewer is this player (client API 0.2.14). */
@@ -1158,6 +1164,17 @@ export interface ClientGameIntegration {
 
   /** The player profile: this game's own statistics. */
   playerProfileView?: ComponentType<PlayerProfileViewProps>;
+
+  /**
+   * An action on each player's row on Manage → Players (client API 0.2.23):
+   * the label (a key in the module's namespace) and the dialog it opens.
+   * CS2: "Give a drop".
+   */
+  adminPlayerAction?: {
+    key: string;
+    labelKey: string;
+    Dialog: ComponentType<AdminPlayerActionProps>;
+  };
 
   /**
    * A player's highlight videos from this game (client API 0.2.14): a hook

@@ -26,6 +26,7 @@ import {
   ProhibitIcon,
   TrashIcon,
   UserIcon,
+  GiftIcon,
 } from '@phosphor-icons/react';
 import { PageHead, Row, RowList } from '../components/common/ui';
 import { RowMenu } from '../components/common/RowMenu';
@@ -44,6 +45,9 @@ import { ImportWarningsMessage } from '../components/shared/ImportWarningsMessag
 import { useTranslation } from 'react-i18next';
 import { useGameAccounts } from '../hooks/useGameAccounts';
 import { useAuth } from '../contexts/AuthContext';
+import { useInstalledIntegrations } from '../integrations/registry';
+import type { AdminPlayerActionProps } from '../integrations/types';
+import type { ComponentType } from 'react';
 
 export default function Players() {
   const { t } = useTranslation();
@@ -65,6 +69,14 @@ export default function Players() {
   const [banFor, setBanFor] = useState<PlayerDetail | null>(null);
   const [banReason, setBanReason] = useState('');
   const [deleteFor, setDeleteFor] = useState<PlayerDetail | null>(null);
+  // Modules' row actions (CS2: Give a drop), and the one open now.
+  const moduleActions = useInstalledIntegrations().flatMap((integration) =>
+    integration.adminPlayerAction ? [{ ...integration.adminPlayerAction, ns: integration.id }] : []
+  );
+  const [moduleAction, setModuleAction] = useState<{
+    Dialog: ComponentType<AdminPlayerActionProps>;
+    player: { id: string; name: string };
+  } | null>(null);
   const [moderating, setModerating] = useState(false);
 
   // Set dynamic page title
@@ -505,6 +517,17 @@ export default function Players() {
                                 'data-testid': `ban-player-${player.id}`,
                               },
                         ]),
+                    ...moduleActions.map((action) => ({
+                      key: `${action.ns}:${action.key}`,
+                      label: t(action.labelKey, { ns: action.ns }),
+                      icon: <GiftIcon size={20} />,
+                      onClick: () =>
+                        setModuleAction({
+                          Dialog: action.Dialog,
+                          player: { id: player.id, name: player.name },
+                        }),
+                      'data-testid': `player-action-${action.key}-${player.id}`,
+                    })),
                     {
                       key: 'delete',
                       label: t('playersPage.delete'),
@@ -518,6 +541,10 @@ export default function Players() {
             );
           })}
         </RowList>
+      )}
+
+      {moduleAction && (
+        <moduleAction.Dialog player={moduleAction.player} onClose={() => setModuleAction(null)} />
       )}
 
       <PlayerModal
