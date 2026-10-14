@@ -686,6 +686,36 @@ export const cs2Integration: GameIntegration = {
     await skinService.levelUpDrop(playerId, level);
   },
 
+  /**
+   * Gone matches leave no clips, reels, stats, demos, recordings, backups or
+   * live state behind for the next match under their slug. The fleet's
+   * audit, assignments and commands stay: they are about the servers.
+   */
+  async forgetMatches(slugs) {
+    if (slugs.length === 0) return;
+    const { db } = await import('../../config/database');
+    const list = slugs.map(() => '?').join(', ');
+    for (const table of [
+      'cs2_highlights',
+      'cs2_highlight_reels',
+      'cs2_match_reels',
+      'cs2_team_reels',
+      'cs2_player_map_stats',
+      'cs2_demo_jobs',
+      'cs2_fleet_demo_streams',
+      'cs2_fleet_events',
+      'cs2_fleet_failovers',
+      'cs2_match_live_state',
+      'cs2_match_round_backup_parts',
+      'cs2_match_round_backups',
+      'cs2_match_round_restores',
+      'cs2_recorder_runs',
+      'cs2_recording_targets',
+    ]) {
+      await db.runAsync(`DELETE FROM ${table} WHERE match_slug IN (${list})`, slugs);
+    }
+  },
+
   /** The top three of a finished tournament get its skin rewards, unless the tournament turned them off. */
   async onTournamentPlacements({ tournamentId, tournamentName, settings, placements }) {
     const { skinService } = await import('./skins/skinService');

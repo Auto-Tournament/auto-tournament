@@ -33,16 +33,14 @@ const DEFAULT_MAPS = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_
  * @param input Tournament configuration
  * @returns Created tournament or null
  */
+/** The last shuffle tournament created here: what `registerPlayers` registers into by default. */
+let lastShuffleTournamentId: number | null = null;
+
 export async function createShuffleTournament(
   request: APIRequestContext,
   input: CreateShuffleTournamentInput = {}
 ): Promise<ShuffleTournament | null> {
-  const {
-    name,
-    mapSequence = DEFAULT_MAPS,
-    maxRounds = 24,
-    overtimeMode = 'enabled',
-  } = input;
+  const { name, mapSequence = DEFAULT_MAPS, maxRounds = 24, overtimeMode = 'enabled' } = input;
 
   const tournamentName = name || `Shuffle Tournament ${Date.now()}`;
 
@@ -79,6 +77,7 @@ export async function createShuffleTournament(
       return null;
     }
 
+    lastShuffleTournamentId = data.tournament.id ?? null;
     return data.tournament;
   } catch (error) {
     console.error('Shuffle tournament creation error:', error);
@@ -94,10 +93,11 @@ export async function createShuffleTournament(
  */
 export async function registerPlayers(
   request: APIRequestContext,
-  playerIds: string[]
+  playerIds: string[],
+  tournamentId: number = lastShuffleTournamentId ?? 1
 ): Promise<{ registered: number; errors: Array<{ playerId: string; error: string }> } | null> {
   try {
-    const response = await request.post('/api/tournament/1/register-players', {
+    const response = await request.post(`/api/tournament/${tournamentId}/register-players`, {
       headers: getAuthHeader(),
       data: { playerIds },
     });
@@ -180,7 +180,7 @@ export async function registerPlayers(
  */
 export async function getRegisteredPlayers(
   request: APIRequestContext,
-  tournamentId: number = 1
+  tournamentId: number = lastShuffleTournamentId ?? 1
 ): Promise<Player[] | null> {
   try {
     const response = await request.get(`/api/tournament/${tournamentId}/players`, {
@@ -207,7 +207,7 @@ export async function getRegisteredPlayers(
  */
 export async function getLeaderboard(
   request: APIRequestContext,
-  tournamentId: number = 1
+  tournamentId: number = lastShuffleTournamentId ?? 1
 ): Promise<any | null> {
   try {
     const response = await request.get(`/api/tournament/${tournamentId}/leaderboard`, {
@@ -234,7 +234,7 @@ export async function getLeaderboard(
  */
 export async function getStandings(
   request: APIRequestContext,
-  tournamentId: number = 1
+  tournamentId: number = lastShuffleTournamentId ?? 1
 ): Promise<any | null> {
   try {
     // Public endpoint - no auth required
@@ -270,7 +270,7 @@ export async function getStandings(
  */
 export async function getRoundStatus(
   request: APIRequestContext,
-  tournamentId: number = 1
+  tournamentId: number = lastShuffleTournamentId ?? 1
 ): Promise<any | null> {
   try {
     const response = await request.get(`/api/tournament/${tournamentId}/round-status`, {
@@ -310,7 +310,7 @@ export async function getRoundStatus(
  */
 export async function generateRound(
   request: APIRequestContext,
-  tournamentId: number = 1,
+  tournamentId: number = lastShuffleTournamentId ?? 1,
   roundNumber?: number
 ): Promise<boolean> {
   try {
