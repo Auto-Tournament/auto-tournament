@@ -13,6 +13,7 @@
  * solid accent bubble with their picture (draft: Auto Tournament Features, chat).
  */
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { PresenceDot } from '../social/PresenceDot';
 import {
   Box,
   Button,
@@ -238,6 +239,11 @@ function MessageLine({
             flexWrap: 'wrap',
           }}
         >
+          {message.senderId && message.senderKind === 'player' && (
+            <Box component="span" sx={{ alignSelf: 'center', display: 'inline-flex' }}>
+              <PresenceDot playerId={message.senderId} size={7} />
+            </Box>
+          )}
           {message.senderId && message.senderKind === 'player' ? (
             // A player's name opens their profile.
             <Box

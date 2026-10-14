@@ -8,6 +8,7 @@
  * `social:changed` reads the friends again. A slow poll is the fallback.
  */
 import { soundNotification } from '../../utils/soundNotification';
+import { refreshAllPresence } from './presenceStore';
 import { useEffect, useSyncExternalStore } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { apiErrorMessage } from '../../utils/api';
@@ -160,6 +161,9 @@ function openSocket() {
     newNoticeListeners.forEach((l) => l(notice));
   });
   socket.on('social:changed', () => void refreshFriends());
+  // A match or the queue changed: what players are doing may have too.
+  socket.on('match:update', () => refreshAllPresence());
+  socket.on('mm:changed', () => refreshAllPresence());
 }
 
 function closeSocket() {
