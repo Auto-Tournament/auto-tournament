@@ -23,3 +23,11 @@ export async function currentTournamentMatches<T extends { slug: string }>(
   const prefix = await currentSlug(request, '');
   return matches.filter((m) => (prefix ? m.slug.startsWith(prefix) : !/^t\d+-/.test(m.slug)));
 }
+
+/** The current (featured) tournament's id, for routes that take it (/api/tournament/:id/...). */
+export async function currentTournamentId(request: APIRequestContext): Promise<number> {
+  const res = await request.get('/api/tournament', { headers: getAuthHeader() });
+  const id = ((await res.json()) as { tournament?: { id?: number } }).tournament?.id;
+  if (!id) throw new Error('no current tournament');
+  return id;
+}

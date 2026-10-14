@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext, type Playwright } from '@playwright/test';
+import { currentTournamentId, currentTournamentMatches } from '../helpers/slugs';
 import { signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 
 /**
@@ -37,7 +38,12 @@ type Dispute = {
   reason: 'disputed' | 'timeout';
   team1: { id: string | null; name: string | null };
   team2: { id: string | null; name: string | null };
-  report: { revision: number; status: string; submittedByTeam: Side | null; disputeReason: string | null };
+  report: {
+    revision: number;
+    status: string;
+    submittedByTeam: Side | null;
+    disputeReason: string | null;
+  };
 };
 
 type Field = {
@@ -117,8 +123,17 @@ async function playerContext(
 
 async function createTournament(
   admin: APIRequestContext,
-  data: { name: string; type: string; format: string; game?: string; teamIds: string[]; settings?: unknown }
+  data: {
+    name: string;
+    type: string;
+    format: string;
+    game?: string;
+    teamIds: string[];
+    settings?: unknown;
+  }
 ) {
+  // A fresh tournament each time: a finished one from an earlier spec stays otherwise.
+  await admin.delete('/api/tournament');
   const res = await admin.post(`${MR}/tournament`, { data });
   expect(res.status(), `creating: ${await res.text()}`).toBe(200);
   await promoteCaptains(admin, data.teamIds);
@@ -133,7 +148,10 @@ async function waitForLive(admin: APIRequestContext, round: number, count: numbe
     .poll(
       async () => {
         const res = await admin.get('/api/matches');
-        const all = ((await res.json()) as { matches?: ListedMatch[] }).matches ?? [];
+        const all = await currentTournamentMatches(
+          admin,
+          ((await res.json()) as { matches?: ListedMatch[] }).matches ?? []
+        );
         live = all.filter((m) => m.round === round && m.team1 && m.team2 && m.status === 'live');
         return live.length;
       },
@@ -159,7 +177,8 @@ async function disputes(admin: APIRequestContext, query = ''): Promise<Dispute[]
   return ((await res.json()) as { disputes: Dispute[] }).disputes;
 }
 
-async function fieldsOf(admin: APIRequestContext, tournamentId = 1): Promise<Field[]> {
+async function fieldsOf(admin: APIRequestContext, id?: number): Promise<Field[]> {
+  const tournamentId = id ?? (await currentTournamentId(admin));
   const res = await admin.get(`${API}/tournaments/${tournamentId}/fields`);
   expect(res.status(), `reading fields: ${await res.text()}`).toBe(200);
   return ((await res.json()) as { fields: Field[] }).fields;
@@ -167,7 +186,10 @@ async function fieldsOf(admin: APIRequestContext, tournamentId = 1): Promise<Fie
 
 async function expectOk(res: Awaited<ReturnType<APIRequestContext['post']>>, what: string) {
   expect(res.status(), `${what}: ${await res.text()}`).toBe(200);
-  return (await res.json()) as { report: { revision: number; status: string; source: string }; finalized: boolean };
+  return (await res.json()) as {
+    report: { revision: number; status: string; source: string };
+    finalized: boolean;
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -209,7 +231,9 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
 
       try {
         await expectOk(
-          await one.post(`${API}/matches/${match.slug}/report`, { data: { result: sweep(1, 'team1') } }),
+          await one.post(`${API}/matches/${match.slug}/report`, {
+            data: { result: sweep(1, 'team1') },
+          }),
           'reporting'
         );
         const disputed = await two.post(`${API}/matches/${match.slug}/dispute`, {
@@ -244,12 +268,18 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
           }),
           'resolving'
         );
-        expect(resolved.report).toMatchObject({ revision: 2, source: 'admin', status: 'confirmed' });
+        expect(resolved.report).toMatchObject({
+          revision: 2,
+          source: 'admin',
+          status: 'confirmed',
+        });
         expect(resolved.finalized).toBe(true);
         expect(await disputes(request), 'the queue empties once it is settled').toEqual([]);
 
         const settled = await one.get(`${API}/matches/${match.slug}`);
-        const settledBody = (await settled.json()) as { match: { status: string; winnerId: string } };
+        const settledBody = (await settled.json()) as {
+          match: { status: string; winnerId: string };
+        };
         expect(settledBody.match.status).toBe('completed');
         expect(settledBody.match.winnerId).toBe(match.team2!.id);
 
@@ -267,7 +297,9 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
         expect(live.open).toBeNull();
 
         const again = await expectOk(
-          await one.post(`${API}/matches/${match.slug}/report`, { data: { result: sweep(1, 'team1') } }),
+          await one.post(`${API}/matches/${match.slug}/report`, {
+            data: { result: sweep(1, 'team1') },
+          }),
           'reporting again after the reopen'
         );
         expect(again.report.revision).toBe(3);
@@ -335,7 +367,9 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
 
       try {
         await expectOk(
-          await one.post(`${API}/matches/${match.slug}/report`, { data: { result: sweep(1, 'team1') } }),
+          await one.post(`${API}/matches/${match.slug}/report`, {
+            data: { result: sweep(1, 'team1') },
+          }),
           'reporting'
         );
         const disputed = await two.post(`${API}/matches/${match.slug}/dispute`, {
@@ -379,7 +413,9 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
         // Not just permitted — a replacement report goes through and settles,
         // over a clean slate.
         const again = await expectOk(
-          await two.post(`${API}/matches/${match.slug}/report`, { data: { result: sweep(1, 'team2') } }),
+          await two.post(`${API}/matches/${match.slug}/report`, {
+            data: { result: sweep(1, 'team2') },
+          }),
           'reporting again after the reopen'
         );
         expect(again.report.revision).toBe(2);
@@ -413,20 +449,34 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
 
       expect(await fieldsOf(request), 'a tournament asks for nothing by default').toEqual([]);
 
-      const put = await request.put(`${API}/tournaments/1/fields`, {
-        data: {
-          fields: [
-            { key: 'goals', label: 'Goals', valueType: 'number', scope: 'player', required: true },
-            { key: 'saves', label: 'Saves' },
-            { key: 'notes', label: 'Match notes', valueType: 'text', scope: 'team' },
-          ],
-        },
-      });
+      const put = await request.put(
+        `${API}/tournaments/${await currentTournamentId(request)}/fields`,
+        {
+          data: {
+            fields: [
+              {
+                key: 'goals',
+                label: 'Goals',
+                valueType: 'number',
+                scope: 'player',
+                required: true,
+              },
+              { key: 'saves', label: 'Saves' },
+              { key: 'notes', label: 'Match notes', valueType: 'text', scope: 'team' },
+            ],
+          },
+        }
+      );
       expect(put.status(), await put.text()).toBe(200);
 
       const stored = await fieldsOf(request);
       expect(stored.map((f) => f.key)).toEqual(['goals', 'saves', 'notes']);
-      expect(stored[0]).toMatchObject({ label: 'Goals', valueType: 'number', scope: 'player', required: true });
+      expect(stored[0]).toMatchObject({
+        label: 'Goals',
+        valueType: 'number',
+        scope: 'player',
+        required: true,
+      });
       // The defaults: a number, per player, not required.
       expect(stored[1]).toMatchObject({ valueType: 'number', scope: 'player', required: false });
       expect(stored[2]).toMatchObject({ valueType: 'text', scope: 'team' });
@@ -435,14 +485,17 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
       // A field that keeps its key keeps its row — and therefore anything
       // already recorded against it — while everything else about it changes.
       const goalsId = stored[0].id;
-      const replaced = await request.put(`${API}/tournaments/1/fields`, {
-        data: {
-          fields: [
-            { key: 'notes', label: 'Notes', valueType: 'text', scope: 'team' },
-            { key: 'goals', label: 'Goals scored', valueType: 'number', scope: 'player' },
-          ],
-        },
-      });
+      const replaced = await request.put(
+        `${API}/tournaments/${await currentTournamentId(request)}/fields`,
+        {
+          data: {
+            fields: [
+              { key: 'notes', label: 'Notes', valueType: 'text', scope: 'team' },
+              { key: 'goals', label: 'Goals scored', valueType: 'number', scope: 'player' },
+            ],
+          },
+        }
+      );
       expect(replaced.status(), await replaced.text()).toBe(200);
 
       const after = await fieldsOf(request);
@@ -461,7 +514,9 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
       const [match] = await waitForLive(request, 1, 1);
       const one = await playerContext(playwright, baseURL, captainSteamIds.get(match.team1!.id)!);
       try {
-        const body = (await (await one.get(`${API}/matches/${match.slug}`)).json()) as { fields: Field[] };
+        const body = (await (await one.get(`${API}/matches/${match.slug}`)).json()) as {
+          fields: Field[];
+        };
         expect(body.fields.map((f) => f.key)).toEqual(['notes', 'goals']);
       } finally {
         await one.dispose();
@@ -471,7 +526,13 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
       const bad: Array<[unknown, string]> = [
         [[{ key: 'Goals!', label: 'Goals' }], 'key must be'],
         [[{ key: 'goals', label: '' }], 'label is required'],
-        [[{ key: 'goals', label: 'Goals' }, { key: 'goals', label: 'Again' }], 'listed twice'],
+        [
+          [
+            { key: 'goals', label: 'Goals' },
+            { key: 'goals', label: 'Again' },
+          ],
+          'listed twice',
+        ],
         // 'integer' joined the list in PR D6; 'boolean' is still not a thing.
         [
           [{ key: 'goals', label: 'Goals', valueType: 'boolean' }],
@@ -480,7 +541,10 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
         [[{ key: 'goals', label: 'Goals', scope: 'league' }], "scope must be 'player' or 'team'"],
       ];
       for (const [fields, message] of bad) {
-        const res = await request.put(`${API}/tournaments/1/fields`, { data: { fields } });
+        const res = await request.put(
+          `${API}/tournaments/${await currentTournamentId(request)}/fields`,
+          { data: { fields } }
+        );
         expect(res.status(), `refusing ${JSON.stringify(fields)}`).toBe(400);
         expect(await res.text()).toContain(message);
       }
@@ -488,7 +552,10 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
       expect((await fieldsOf(request)).map((f) => f.key)).toEqual(['notes', 'goals']);
 
       // An empty list clears them.
-      const cleared = await request.put(`${API}/tournaments/1/fields`, { data: { fields: [] } });
+      const cleared = await request.put(
+        `${API}/tournaments/${await currentTournamentId(request)}/fields`,
+        { data: { fields: [] } }
+      );
       expect(cleared.status()).toBe(200);
       expect(await fieldsOf(request)).toEqual([]);
 
@@ -521,7 +588,11 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
       expect(notAMember.status()).toBe(409);
       expect(await notAMember.text()).toContain('is not on team');
 
-      expect((await request.post(`${API}/teams/no-such-team/captain`, { data: { uid: strangerUid } })).status()).toBe(404);
+      expect(
+        (
+          await request.post(`${API}/teams/no-such-team/captain`, { data: { uid: strangerUid } })
+        ).status()
+      ).toBe(404);
       expect((await request.post(`${API}/teams/${team}/captain`, { data: {} })).status()).toBe(400);
 
       // Demoting the captain takes their right to report with it.
@@ -539,7 +610,9 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
         expect(refused.status(), 'a plain member may not report').toBe(403);
 
         // And promoting them again gives it back.
-        expect((await request.post(`${API}/teams/${team}/captain`, { data: { uid } })).status()).toBe(200);
+        expect(
+          (await request.post(`${API}/teams/${team}/captain`, { data: { uid } })).status()
+        ).toBe(200);
         const allowed = await one.post(`${API}/matches/${match.slug}/report`, {
           data: { result: sweep(1, 'team1') },
         });
@@ -566,14 +639,18 @@ test.describe.serial('Manual reporting over HTTP: admin', () => {
 
       const anon = await playwright.request.newContext({ baseURL });
       // A captain: as player-facing as this API gets, and still not an admin.
-      const captain = await playerContext(playwright, baseURL, captainSteamIds.get(match.team1!.id)!);
+      const captain = await playerContext(
+        playwright,
+        baseURL,
+        captainSteamIds.get(match.team1!.id)!
+      );
 
       const calls: Array<[string, 'get' | 'post' | 'put', string]> = [
         ['disputes', 'get', `${API}/disputes`],
         ['resolve', 'post', `${API}/matches/${match.slug}/resolve`],
         ['reopen', 'post', `${API}/matches/${match.slug}/reopen`],
-        ['read fields', 'get', `${API}/tournaments/1/fields`],
-        ['set fields', 'put', `${API}/tournaments/1/fields`],
+        ['read fields', 'get', `${API}/tournaments/${await currentTournamentId(request)}/fields`],
+        ['set fields', 'put', `${API}/tournaments/${await currentTournamentId(request)}/fields`],
         ['promote', 'post', `${API}/teams/${match.team1!.id}/captain`],
         ['members', 'get', `${API}/teams/${match.team1!.id}/members`],
       ];

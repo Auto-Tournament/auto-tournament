@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { currentTournamentId, currentTournamentMatches } from '../helpers/slugs';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
 import { computeRoundRobinStandings } from '../../api/src/utils/roundRobinStandings';
@@ -195,9 +196,12 @@ test.describe.serial('Round robin completion', () => {
       ];
 
       const res = await request.get('/api/matches', { headers: getAuthHeader() });
-      const matches = ((await res.json()) as { matches: ListedMatch[] }).matches.filter((m) =>
-        /^r\d+m\d+$/.test(m.slug)
-      );
+      const matches = (
+        await currentTournamentMatches(
+          request,
+          ((await res.json()) as { matches: ListedMatch[] }).matches
+        )
+      ).filter((m) => /^(t\d+-)?r\d+m\d+$/.test(m.slug));
       expect(matches).toHaveLength(6);
       for (const match of matches) {
         const ids = [match.team1!.id, match.team2!.id];
@@ -250,7 +254,9 @@ test.describe.serial('Round robin completion', () => {
         [4, bravo, 0, -21],
       ]);
 
-      const lbRes = await request.get('/api/tournament/1/leaderboard');
+      const lbRes = await request.get(
+        `/api/tournament/${await currentTournamentId(request)}/leaderboard`
+      );
       const lb = (await lbRes.json()) as { teams?: Array<{ teamId: string; rank?: number }> };
       expect(
         lb.teams?.map((t) => t.teamId),
@@ -284,9 +290,12 @@ test.describe.serial('Round robin completion', () => {
 
       const listed = async () => {
         const res = await request.get('/api/matches', { headers: getAuthHeader() });
-        return ((await res.json()) as { matches: ListedMatch[] }).matches.filter((m) =>
-          /^r\d+m\d+$/.test(m.slug)
-        );
+        return (
+          await currentTournamentMatches(
+            request,
+            ((await res.json()) as { matches: ListedMatch[] }).matches
+          )
+        ).filter((m) => /^(t\d+-)?r\d+m\d+$/.test(m.slug));
       };
 
       // Started, and every match — round 1 included — waits for its veto.
