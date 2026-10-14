@@ -111,6 +111,17 @@ FROM ${APP_BUILD} AS app-build
 # NO node_modules needed - backend is bundled!
 # Using Alpine for smallest possible image size
 # -------------------------------------------------------------------
+# The demo worker (worker/): stats, the 2D replay and clip moments from each
+# map's demo. The API runs it as a child process (api/src/services/
+# builtinWorker.ts), so an install needs no third container and no token.
+FROM ${NODE_REGISTRY}/golang:1.26-alpine AS worker-build
+WORKDIR /src
+COPY worker/go.mod worker/go.sum ./
+RUN go mod download
+COPY worker/*.go ./
+COPY worker/assets ./assets
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /at-worker .
+
 FROM ${NODE_REGISTRY}/node:20-alpine AS release
 WORKDIR /app
 
@@ -178,6 +189,7 @@ COPY --from=app-build /app/docs/openapi.json ./docs/openapi.json
 
 # Copy Caddy configuration
 COPY docker/Caddyfile /app/Caddyfile
+COPY --from=worker-build /at-worker /app/bin/at-worker
 # License terms travel with the image (PolyForm Noncommercial requires it),
 # with the notices of the third-party packages bundled into the server and the
 # web app (their licenses ask for them; the image has no node_modules that

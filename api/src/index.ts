@@ -629,6 +629,10 @@ process.on('uncaughtException', (err) => {
     const server = httpServer.listen(Number(PORT), () => {
       // Admins hear about module and pack updates, and ones that did not take.
       startModuleUpdateNotices();
+      // The demo worker inside the image (services/builtinWorker.ts).
+      void import('./services/builtinWorker').then(({ startBuiltinWorker }) =>
+        startBuiltinWorker(Number(PORT))
+      );
       log.server('='.repeat(60));
       log.server('Auto Tournament API');
       log.server('='.repeat(60));
@@ -759,6 +763,7 @@ process.on('uncaughtException', (err) => {
       stopWebhooks();
       stopLicenseCheckin();
       stopIntegrations();
+      void import('./services/builtinWorker').then(({ stopBuiltinWorker }) => stopBuiltinWorker());
       // Live sockets and idle keep-alive connections would hold the close.
       getIO().disconnectSockets(true);
       server.close(() => {

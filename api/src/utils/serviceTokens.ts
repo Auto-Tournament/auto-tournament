@@ -226,6 +226,19 @@ let cache: { key: string; parsed: ParsedServiceTokens } | null = null;
 /** Tokens an admin made in Settings (services/apiTokenService), loaded from the database. */
 let stored: ServiceToken[] = [];
 
+/** Tokens the platform made for its own child processes (the built-in demo worker): memory only. */
+let internal: ServiceToken[] = [];
+
+/** Add a token for one of the platform's own processes; it lives until the API exits. */
+export function addInternalServiceToken(label: string, secret: string): void {
+  const hash = sha256(secret);
+  internal = [
+    ...internal.filter((t) => t.label !== label),
+    { label, scope: 'admin', hash, fingerprint: fingerprintOf(hash) },
+  ];
+  cache = null;
+}
+
 /** Replace the Settings-made tokens (services/apiTokenService calls this after every change). */
 export function setStoredServiceTokens(tokens: ServiceToken[]): void {
   stored = tokens;
@@ -243,7 +256,7 @@ export function getServiceTokens(): ParsedServiceTokens {
 
   const parsed = parseServiceTokens(adminRaw, readonlyRaw, integratorRaw);
   const seen = new Set(parsed.tokens.map((t) => t.hash.toString('hex')));
-  for (const token of stored) {
+  for (const token of [...stored, ...internal]) {
     if (!seen.has(token.hash.toString('hex'))) parsed.tokens.push(token);
   }
   cache = { key, parsed };
