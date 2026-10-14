@@ -574,8 +574,6 @@ export function InspectSkinDialog({
             </Box>
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 1 }}>
               {[
-                [t('skins.float'), skin.float.toFixed(4)],
-                [t('skins.pattern'), String(skin.pattern)],
                 ...(skin.stattrak !== null && skin.stattrak !== undefined
                   ? [[t('skins.stattrakKills'), String(skin.stattrak)]]
                   : []),
