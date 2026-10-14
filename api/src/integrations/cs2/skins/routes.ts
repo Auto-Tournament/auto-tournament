@@ -668,8 +668,8 @@ router.post('/admin/players/:steamId/skins', requireAuth, async (req, res) => {
  *               target:
  *                 type: object
  *                 properties:
- *                   kind: { type: string, enum: [player, online, team, match] }
- *                   id: { type: string, description: 'Steam ID, team id or match slug' }
+ *                   kind: { type: string, enum: [player, online, team, match, tournament] }
+ *                   id: { type: string, description: 'Steam ID, team id, match slug or tournament id' }
  *               preview: { type: boolean }
  *               label: { type: string, description: 'Shown on the drop, e.g. "From the admins"' }
  *     responses:
@@ -687,7 +687,10 @@ router.post('/admin/drops', requireAuth, async (req, res) => {
     const id = typeof body.target?.id === 'string' ? body.target.id.trim() : '';
     let target: DropTarget;
     if (kind === 'online') target = { kind };
-    else if ((kind === 'player' || kind === 'team' || kind === 'match') && id)
+    else if (
+      (kind === 'player' || kind === 'team' || kind === 'match' || kind === 'tournament') &&
+      id
+    )
       target = { kind, id };
     else
       return res.status(400).json({ success: false, error: 'target.kind (and id) are required.' });

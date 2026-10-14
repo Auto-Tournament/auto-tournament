@@ -152,5 +152,8 @@
  *
  * 0.2.22 (additive): `useTopic` (re-read on the server's page topics and
  * socket events, and after a reconnect, instead of polling).
+ *
+ * 0.2.23 (additive): `adminPlayerAction` (a module's action on each row of
+ * Manage → Players, opening its own dialog) with `AdminPlayerActionProps`.
  */
-export const CLIENT_API_VERSION = '0.2.22';
+export const CLIENT_API_VERSION = '0.2.23';
