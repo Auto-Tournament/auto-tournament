@@ -4,18 +4,20 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthCard } from '../components/auth/AuthCard';
 import { TotpEnrolment } from '../components/auth/TotpEnrolment';
+import { SetupGames } from '../components/auth/SetupGames';
 import { postJson } from '../utils/postJson';
 import { pageTitle } from '../utils/pageTitle';
 import { paths } from '../paths';
 
-type Step = 'loading' | 'closed' | 'code' | 'account' | 'totp';
+type Step = 'loading' | 'closed' | 'code' | 'account' | 'totp' | 'games';
 
 /** Where setup ends: Settings -> Sign-in, with the "Set up how players sign in" banner. */
 const AFTER_SETUP = '/manage/settings?section=signin&welcome=setup';
 
 /**
  * /setup: the first admin on a fresh install, or recovery with a reset-admin
- * code. Code -> username + password -> optional TOTP -> Settings -> Sign-in.
+ * code. Code -> username + password -> optional TOTP -> (first setup) the
+ * games to install -> Settings -> Sign-in.
  * A full page load at the end, so the app picks up the new admin session.
  */
 export default function Setup() {
@@ -40,6 +42,8 @@ export default function Setup() {
   }, [t]);
 
   const finish = () => window.location.assign(AFTER_SETUP);
+  // A fresh install picks its games next; a reset goes straight on.
+  const afterTotp = () => (mode === 'setup' ? setStep('games') : finish());
 
   const submitCode = async (e: FormEvent) => {
     e.preventDefault();
@@ -94,7 +98,15 @@ export default function Setup() {
   if (step === 'totp') {
     return (
       <AuthCard title={t('adminSetup.totpTitle')} subtitle={t('adminSetup.totpSubtitle')}>
-        <TotpEnrolment onDone={finish} onSkip={finish} />
+        <TotpEnrolment onDone={afterTotp} onSkip={afterTotp} />
+      </AuthCard>
+    );
+  }
+
+  if (step === 'games') {
+    return (
+      <AuthCard title={t('adminSetup.games.title')} subtitle={t('adminSetup.games.subtitle')}>
+        <SetupGames onDone={finish} />
       </AuthCard>
     );
   }
