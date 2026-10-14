@@ -1571,4 +1571,13 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS demo_path TEXT;
     `,
   },
+  {
+    // The match a live record was written for (fleet/state.ts isLeftOver):
+    // slugs come back with every tournament, and a new r1m1 must not show the
+    // last one's live state.
+    id: '056-live-state-match',
+    up: `
+      ALTER TABLE cs2_match_live_state ADD COLUMN IF NOT EXISTS match_row_id INTEGER;
+    `,
+  },
 ];

@@ -441,6 +441,27 @@ interface LiveStateRow {
   map_rounds: string | null;
   needs_snapshot: number;
   updated_at: number;
+  /** matches.id the record was written for (migration 056); null on older rows. */
+  match_row_id?: number | null;
+  /** The match row with this slug now (LEFT JOIN matches); null when there is none. */
+  current_match_id?: number | null;
+}
+
+/**
+ * A record written for an earlier match with the same slug (a deleted or reset
+ * tournament's r1m1): the new match must not inherit its phase, score, rosters
+ * or rounds. Only the epoch is kept, so fencing still holds against a server of
+ * the old match. Rows from before migration 056 carry no match id and count as
+ * current.
+ */
+function isLeftOver(row: LiveStateRow): boolean {
+  return (
+    row.match_row_id !== null &&
+    row.match_row_id !== undefined &&
+    row.current_match_id !== null &&
+    row.current_match_id !== undefined &&
+    Number(row.match_row_id) !== Number(row.current_match_id)
+  );
 }
 
 function parse<T>(raw: string | null): T | null {
@@ -453,6 +474,7 @@ function parse<T>(raw: string | null): T | null {
 }
 
 function fromRow(row: LiveStateRow): LiveMatchRecord {
+  if (isLeftOver(row)) return { ...emptyRecord(row.match_slug), epoch: Number(row.epoch) };
   return {
     matchSlug: row.match_slug,
     epoch: Number(row.epoch),
@@ -469,24 +491,32 @@ function fromRow(row: LiveStateRow): LiveMatchRecord {
 
 const COLUMNS =
   'match_slug, epoch, server_id, live_rev, config_rev, state, map_stats, map_rounds, needs_snapshot, updated_at';
+/** COLUMNS read with the match they were written for and the match there is now. */
+const READ_COLUMNS = `${COLUMNS.split(', ')
+  .map((c) => `l.${c}`)
+  .join(', ')}, l.match_row_id, m.id AS current_match_id`;
+const READ_FROM = 'cs2_match_live_state l LEFT JOIN matches m ON m.slug = l.match_slug';
+/** The id of the match row a write is for. */
+const MATCH_ID = '(SELECT id FROM matches WHERE slug = ?)';
 
 export function createPostgresLiveStatePersistence(): LiveStatePersistence {
   return {
     async load(matchSlug) {
       const row = await db.queryOneAsync<LiveStateRow>(
-        `SELECT ${COLUMNS} FROM cs2_match_live_state WHERE match_slug = ?`,
+        `SELECT ${READ_COLUMNS} FROM ${READ_FROM} WHERE l.match_slug = ?`,
         [matchSlug]
       );
       return row ? fromRow(row) : null;
     },
     async save(r) {
       await db.runAsync(
-        `INSERT INTO cs2_match_live_state (${COLUMNS})
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO cs2_match_live_state (${COLUMNS}, match_row_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${MATCH_ID})
          ON CONFLICT (match_slug) DO UPDATE SET
            epoch = EXCLUDED.epoch, server_id = EXCLUDED.server_id, live_rev = EXCLUDED.live_rev,
            config_rev = EXCLUDED.config_rev, state = EXCLUDED.state, map_stats = EXCLUDED.map_stats,
-           map_rounds = EXCLUDED.map_rounds, needs_snapshot = EXCLUDED.needs_snapshot, updated_at = EXCLUDED.updated_at`,
+           map_rounds = EXCLUDED.map_rounds, needs_snapshot = EXCLUDED.needs_snapshot, updated_at = EXCLUDED.updated_at,
+           match_row_id = EXCLUDED.match_row_id`,
         [
           r.matchSlug,
           r.epoch,
@@ -498,29 +528,31 @@ export function createPostgresLiveStatePersistence(): LiveStatePersistence {
           JSON.stringify(r.mapRounds),
           r.needsSnapshot ? 1 : 0,
           r.updatedAt,
+          r.matchSlug,
         ]
       );
     },
     async allocateEpoch(matchSlug, serverId, configRev) {
       const row = await db.queryOneAsync<LiveStateRow>(
-        `INSERT INTO cs2_match_live_state (match_slug, epoch, server_id, live_rev, config_rev, state, map_stats, map_rounds, needs_snapshot, updated_at)
-         VALUES (?, 1, ?, 0, ?, NULL, NULL, '{}', 0, ?)
+        `INSERT INTO cs2_match_live_state (match_slug, epoch, server_id, live_rev, config_rev, state, map_stats, map_rounds, needs_snapshot, updated_at, match_row_id)
+         VALUES (?, 1, ?, 0, ?, NULL, NULL, '{}', 0, ?, ${MATCH_ID})
          ON CONFLICT (match_slug) DO UPDATE SET
            epoch = cs2_match_live_state.epoch + 1, server_id = EXCLUDED.server_id, live_rev = 0,
            config_rev = EXCLUDED.config_rev, state = NULL, map_stats = NULL, map_rounds = '{}',
-           needs_snapshot = 0, updated_at = EXCLUDED.updated_at
+           needs_snapshot = 0, updated_at = EXCLUDED.updated_at, match_row_id = EXCLUDED.match_row_id
          RETURNING ${COLUMNS}`,
-        [matchSlug, serverId, configRev, nowS()]
+        [matchSlug, serverId, configRev, nowS(), matchSlug]
       );
       if (!row) throw new Error(`fleet: could not allocate an epoch for ${matchSlug}`);
       return fromRow(row);
     },
     async listByServer(serverId) {
       const rows = await db.queryAsync<LiveStateRow>(
-        `SELECT ${COLUMNS} FROM cs2_match_live_state WHERE server_id = ? ORDER BY updated_at DESC`,
+        `SELECT ${READ_COLUMNS} FROM ${READ_FROM} WHERE l.server_id = ? ORDER BY l.updated_at DESC`,
         [serverId]
       );
-      return rows.map(fromRow);
+      // A left-over record is not on that server any more.
+      return rows.filter((r) => !isLeftOver(r)).map(fromRow);
     },
   };
 }
