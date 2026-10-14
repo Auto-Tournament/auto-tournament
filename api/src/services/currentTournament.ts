@@ -53,21 +53,14 @@ export async function featuredTournamentId(): Promise<number> {
   return nextTournamentId();
 }
 
-/** The highest tournament id ever handed out (app_settings). */
-const ID_HIGH_WATER_KEY = 'tournament_id_high_water';
-
 /**
- * The id a new tournament gets: never one handed out before, so its match
- * slugs (t<id>-r1m1) never meet an older tournament's leftovers (demos,
- * clips, analyses keyed by slug). Past every tournament there is, any deleted
- * one whose played matches stayed (`matches.played_in_id`), and the highest
- * id ever given (`tournament_id_high_water`, kept when a tournament is
- * deleted).
+ * The id a new tournament gets: past every tournament there is, and past any
+ * deleted one whose played matches stayed (`matches.played_in_id`): their
+ * slugs carry its id (t<id>-r1m1), so it is not given out while they stay.
  */
 export async function nextTournamentId(): Promise<number> {
   const row = await db.queryOneAsync<{ next: number }>(
     `SELECT GREATEST(
-        COALESCE((SELECT CAST(value AS INTEGER) FROM app_settings WHERE key = '${ID_HIGH_WATER_KEY}' AND value ~ '^[0-9]{1,9}$'), 0),
         COALESCE((SELECT MAX(id) FROM tournament), 0),
         COALESCE((SELECT MAX(played_in_id) FROM matches), 0),
         -- Any other match out of a tournament under a t<id>- slug.
@@ -76,12 +69,6 @@ export async function nextTournamentId(): Promise<number> {
       ) + 1 AS next`
   );
   return Number(row?.next ?? 1);
-}
-
-/** Remember `id` as handed out: nextTournamentId never gives it (or a lower one) again. */
-export async function noteTournamentId(id: number): Promise<void> {
-  const current = Number(await db.getAppSettingAsync(ID_HIGH_WATER_KEY).catch(() => null)) || 0;
-  if (id > current) await db.setAppSettingAsync(ID_HIGH_WATER_KEY, String(id));
 }
 
 /** Read which tournament is featured, and remember it. Never throws (keeps the last answer). */

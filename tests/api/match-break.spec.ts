@@ -1,7 +1,6 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
-import { currentSlug } from '../helpers/slugs';
 import { sendReadyUpEvents, seriesEnd as readyUpSeriesEnd } from '../helpers/readyUp';
 
 /**
@@ -35,10 +34,9 @@ async function bracketMatch(
   request: APIRequestContext,
   slug: string
 ): Promise<ListedMatch | undefined> {
-  const wanted = await currentSlug(request, slug);
   const res = await request.get('/api/matches', { headers: getAuthHeader() });
   const body = (await res.json()) as { matches?: ListedMatch[] };
-  return (body.matches ?? []).find((m) => m.slug === wanted);
+  return (body.matches ?? []).find((m) => m.slug === slug);
 }
 
 test.describe.serial('Break between matches', () => {
@@ -75,7 +73,7 @@ test.describe.serial('Break between matches', () => {
       });
       expect(setup, 'tournament setup failed').toBeTruthy();
       for (const semi of ['r1m1', 'r1m2']) {
-        await sendReadyUpEvents(request, await currentSlug(request, semi), [
+        await sendReadyUpEvents(request, semi, [
           readyUpSeriesEnd({ winner: 'team1', team1: 1, team2: 0 }),
         ]);
       }
