@@ -2300,5 +2300,11 @@
     "regulation": "In regulation",
     "overtime": "After overtime",
     "onDamage": "Level after overtime, won on damage"
+  },
+  "dropped": {
+    "title": "You lost connection",
+    "body": "Looks like you left the match server (a crash or a dropped connection). Your team is waiting: reconnect to get back in.",
+    "reconnect": "Reconnect",
+    "later": "Later"
   }
 }

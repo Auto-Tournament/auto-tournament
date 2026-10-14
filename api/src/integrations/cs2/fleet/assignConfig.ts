@@ -309,8 +309,9 @@ export function buildAssignConfig(
   const admins = (config.admins ?? []).filter((id) => typeof id === 'string' && U64.test(id));
   if (admins.length) out.admins = [...new Set(admins)].slice(0, 64);
   const cvars = engineCvars(config.cvars) ?? {};
-  // Pause when a player drops (5v5, no bot fill: bots never leave a seat empty):
-  // the engine pauses at the next freeze time, Ready Up goes on once the side is full.
+  // Pause when a player drops (5v5): the engine pauses at the next freeze time,
+  // Ready Up goes on once the side is full. With bot fill too: Ready Up keeps a
+  // live player's seat empty while they are gone (no bot takes it).
   if (pausesOnDisconnect(config) && cvars.sv_matchpause_auto_5v5 === undefined) {
     cvars.sv_matchpause_auto_5v5 = 1;
   }
@@ -326,7 +327,7 @@ export function pausesOnDisconnect(
   // A simulated match is bots only: the rostered players never connect, and
   // CS2's auto pause would hold round 1's freeze time forever.
   if (config.simulation === true) return false;
-  if (config.bot_fill === true || config.wingman === true) return false;
+  if (config.wingman === true) return false;
   const size = num(config.players_per_team);
   return size === undefined || size === 5;
 }

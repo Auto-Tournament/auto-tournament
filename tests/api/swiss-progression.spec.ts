@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { currentTournamentId, currentTournamentMatches } from '../helpers/slugs';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
 import {
@@ -54,8 +55,8 @@ async function swissMatches(request: APIRequestContext): Promise<ListedMatch[]> 
   const res = await request.get('/api/matches', { headers: getAuthHeader() });
   expect(res.ok(), `listing matches failed: ${await res.text()}`).toBe(true);
   const body = (await res.json()) as { matches?: ListedMatch[] };
-  return (body.matches ?? [])
-    .filter((m) => /^swiss-r\d+m\d+$/.test(m.slug))
+  return (await currentTournamentMatches(request, body.matches ?? []))
+    .filter((m) => /^(t\d+-)?swiss-r\d+m\d+$/.test(m.slug))
     .sort((a, b) => a.round - b.round || a.slug.localeCompare(b.slug));
 }
 
@@ -447,7 +448,9 @@ test.describe.serial('Swiss round progression', () => {
       // Round differential counts map rounds, not series scores.
       expect(expected.some((s) => Math.abs(s.roundDiff) > 3)).toBe(true);
 
-      const lbRes = await request.get('/api/tournament/1/leaderboard');
+      const lbRes = await request.get(
+        `/api/tournament/${await currentTournamentId(request)}/leaderboard`
+      );
       expect(lbRes.ok()).toBe(true);
       const lb = (await lbRes.json()) as {
         teams?: Array<{ teamId: string; matchWins: number; buchholz?: number; roundDiff?: number }>;

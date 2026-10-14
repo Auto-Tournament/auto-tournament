@@ -42,6 +42,8 @@ import { useAuth as useAuthInternal } from '../contexts/AuthContext';
 export { api, apiErrorMessage } from '../utils/api';
 export { onSocketReconnect } from '../utils/socketResync';
 export { useSocket } from '../hooks/useSocket';
+// 0.2.25: the site's notification sound (the player's volume and mute apply).
+export { playNotificationSound } from '../utils/soundNotification';
 export { useTopic, type TopicOptions } from '../hooks/useTopic';
 
 // Host contexts

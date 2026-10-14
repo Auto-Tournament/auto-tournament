@@ -2300,5 +2300,11 @@
     "regulation": "Uten overtid",
     "overtime": "Etter overtid",
     "onDamage": "Likt etter overtid, avgjort på skade"
+  },
+  "dropped": {
+    "title": "Du mistet tilkoblingen",
+    "body": "Det ser ut som du forlot kampserveren (krasj eller brudd i forbindelsen). Laget ditt venter: koble til igjen for å komme tilbake.",
+    "reconnect": "Koble til igjen",
+    "later": "Senere"
   }
 }
