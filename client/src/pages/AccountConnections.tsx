@@ -1,4 +1,5 @@
 import { PartyInviteSetting } from '../components/social/PartyInviteSetting';
+import { NotifyChannelsSetting } from '../components/social/NotifyChannelsSetting';
 import { pageTitle } from '../utils/pageTitle';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
@@ -974,6 +975,8 @@ export default function AccountConnections() {
               )}
 
               {!readOnly && <AccountEmailSection />}
+
+              {!readOnly && <NotifyChannelsSetting />}
 
               {!readOnly && <PartyInviteSetting />}
 

@@ -3,6 +3,7 @@
  * services/notificationService). Every write is same-site JSON. Party invites
  * live with the party, under /api/matchmaking/party/invites.
  */
+import { ChannelError, notifyChannels } from '../services/notifyChannels';
 import { Router, Request, Response, NextFunction } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
@@ -49,6 +50,9 @@ function handle(what: string, fn: (req: Request, res: Response) => Promise<unkno
     try {
       return await fn(req, res);
     } catch (error) {
+      if (error instanceof ChannelError) {
+        return res.status(error.status).json({ success: false, error: error.message });
+      }
       if (error instanceof SocialError) {
         return res
           .status(error.status)
@@ -356,6 +360,59 @@ router.put(
       settings: await notificationService.saveSettings(me(req), req.body ?? {}),
     })
   )
+);
+
+/**
+ * @openapi
+ * /api/social/notifications/channels:
+ *   get:
+ *     tags: [Social]
+ *     summary: Your notifications outside the site (Discord DM, email), per event
+ *     description: >
+ *       `events`: for match_ready, veto_turn, checkin_open and new_tournament,
+ *       whether each channel (discord, email) is on. `channels`: whether each can
+ *       reach you now, and why not (no_bot, no_discord, email_off, no_email,
+ *       email_unverified).
+ *     responses:
+ *       200: { description: "`events` and `channels`" }
+ *   put:
+ *     tags: [Social]
+ *     summary: Turn one event's channel on or off
+ *     description: Same-site JSON.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [event, channel, on]
+ *             properties:
+ *               event: { type: string, enum: [match_ready, veto_turn, checkin_open, new_tournament] }
+ *               channel: { type: string, enum: [discord, email] }
+ *               on: { type: boolean }
+ *     responses:
+ *       200: { description: "The settings, saved" }
+ *       400: { description: Not an event, channel or boolean }
+ */
+router.get(
+  '/notifications/channels',
+  requirePlayer,
+  handle('load where you get notifications', async (req, res) =>
+    res.json({ success: true, ...(await notifyChannels.prefs(me(req))) })
+  )
+);
+
+router.put(
+  '/notifications/channels',
+  requirePlayer,
+  sameSiteJson,
+  handle('save where you get notifications', async (req, res) => {
+    const body = (req.body ?? {}) as { event?: unknown; channel?: unknown; on?: unknown };
+    return res.json({
+      success: true,
+      ...(await notifyChannels.set(me(req), body.event, body.channel, body.on)),
+    });
+  })
 );
 
 /**

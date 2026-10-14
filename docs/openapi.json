@@ -14025,6 +14025,69 @@
         }
       }
     },
+    "/api/settings/discord-bot": {
+      "get": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Whether a Discord bot token is set (for players' DMs), and the bot's name",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`set`, `name`"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Set (checked with Discord, stored encrypted) or clear the bot token",
+        "description": "A signed-in admin only. `token` empty or null clears it.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`set`, `name`"
+          },
+          "400": {
+            "description": "Discord refused the token"
+          },
+          "403": {
+            "description": "Called with an API token"
+          }
+        }
+      }
+    },
     "/api/settings/version": {
       "get": {
         "tags": [
@@ -15023,6 +15086,72 @@
         "responses": {
           "200": {
             "description": "`items`, `unread` and `more`"
+          }
+        }
+      }
+    },
+    "/api/social/notifications/channels": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Your notifications outside the site (Discord DM, email), per event",
+        "description": "`events`: for match_ready, veto_turn, checkin_open and new_tournament, whether each channel (discord, email) is on. `channels`: whether each can reach you now, and why not (no_bot, no_discord, email_off, no_email, email_unverified).\n",
+        "responses": {
+          "200": {
+            "description": "`events` and `channels`"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Turn one event's channel on or off",
+        "description": "Same-site JSON.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "event",
+                  "channel",
+                  "on"
+                ],
+                "properties": {
+                  "event": {
+                    "type": "string",
+                    "enum": [
+                      "match_ready",
+                      "veto_turn",
+                      "checkin_open",
+                      "new_tournament"
+                    ]
+                  },
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "discord",
+                      "email"
+                    ]
+                  },
+                  "on": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The settings, saved"
+          },
+          "400": {
+            "description": "Not an event",
+            "channel or boolean": null
           }
         }
       }

@@ -27,6 +27,7 @@
  *   into the core's admin calls.
  */
 
+import { announceMatchReady } from '../../../services/matchNotices';
 import { db } from '../../../config/database';
 import { holdOf } from '../../../services/matchHolds';
 import { log } from '../../../utils/logger';
@@ -544,8 +545,11 @@ export async function assignMatch(
   if (updated) {
     emitMatchUpdate(updated);
     emitBracketUpdate({ action: 'match_loaded', matchSlug });
-    if (!options.resume)
+    if (!options.resume) {
       void postMatchChatLine(matchSlug, 'serverReady', { map: firstMapOf(updated) });
+      // Both teams: a bell notice, and a DM or email if they want one.
+      void announceMatchReady(matchSlug);
+    }
   }
   // With rules.demo.upload the server streams each map's demo; turnover
   // holds the server until the receiver (./demoStream.ts) has it.

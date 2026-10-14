@@ -1055,6 +1055,26 @@ export function getSchemaSQL(): string {
     -- instead of adding a row. resolved_at: it fixed itself or was dismissed.
     -- API tokens an admin made in Settings (services/apiTokenService): only the
     -- SHA-256 of the secret is kept. scope: 'admin' | 'readonly'.
+    -- Notifications outside the site (services/notifyChannels.ts): a player's
+    -- switch per event and channel (a missing row is the event's default),
+    -- and what was sent, once per player, event key and channel.
+    CREATE TABLE IF NOT EXISTS player_notify_channels (
+      player_id TEXT NOT NULL,
+      event TEXT NOT NULL, -- match_ready | veto_turn | checkin_open | new_tournament
+      channel TEXT NOT NULL, -- discord | email
+      enabled INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      PRIMARY KEY (player_id, event, channel)
+    );
+
+    CREATE TABLE IF NOT EXISTS notify_deliveries (
+      player_id TEXT NOT NULL,
+      dedupe_key TEXT NOT NULL,
+      channel TEXT NOT NULL,
+      sent_at INTEGER NOT NULL,
+      PRIMARY KEY (player_id, dedupe_key, channel)
+    );
+
     CREATE TABLE IF NOT EXISTS api_tokens (
       id SERIAL PRIMARY KEY,
       label TEXT NOT NULL,

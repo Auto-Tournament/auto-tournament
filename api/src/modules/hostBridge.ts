@@ -31,6 +31,7 @@ import * as matchLiveStatsService from '../services/matchLiveStatsService';
 import * as matchMapResultService from '../services/matchMapResultService';
 import * as matchTerminationService from '../services/matchTerminationService';
 import * as playerConnectionService from '../services/playerConnectionService';
+import * as matchNotices from '../services/matchNotices';
 import * as notificationService from '../services/notificationService';
 import * as adminNoticeService from '../services/adminNoticeService';
 import * as gameReadiness from '../services/gameReadiness';
@@ -74,6 +75,7 @@ const MODULES: Record<string, object> = {
   'services/matchMapResultService': matchMapResultService,
   'services/matchTerminationService': matchTerminationService,
   'services/playerConnectionService': playerConnectionService,
+  'services/matchNotices': matchNotices,
   'services/notificationService': notificationService,
   'services/adminNoticeService': adminNoticeService,
   'services/gameReadiness': gameReadiness,

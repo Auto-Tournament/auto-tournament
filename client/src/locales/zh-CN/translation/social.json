@@ -44,7 +44,9 @@
       "expired": "This party has ended",
       "lineupGap": "· a starter left your lineup. Pick a sub within {{minutes}} minutes, or you play short-handed.",
       "reportNew": "was reported: {{reason}}",
-      "reportReviewed": "Thanks: your report about {{name}} was reviewed."
+      "reportReviewed": "Thanks: your report about {{name}} was reviewed.",
+      "matchReady": "is ready. Open the match room to connect.",
+      "vetoTurn": "it's your team's turn in the veto."
     },
     "toast": {
       "join": "Join party",
@@ -204,5 +206,41 @@
         "sound": "Bell and sound"
       }
     }
+  },
+  "notifyChannels": {
+    "title": "Notifications",
+    "description": "Where we tell you things that need you when you're not on the site. Off by default, except your own matches.",
+    "event": "Event",
+    "channel": {
+      "discord": "Discord DM",
+      "email": "Email"
+    },
+    "events": {
+      "match_ready": {
+        "title": "Your match is ready",
+        "hint": "Server, connect link and who you play"
+      },
+      "veto_turn": {
+        "title": "Your turn in the veto",
+        "hint": "Captains only"
+      },
+      "checkin_open": {
+        "title": "Check-in opens",
+        "hint": "For tournaments you're registered in"
+      },
+      "new_tournament": {
+        "title": "New tournaments",
+        "hint": "When a tournament takes sign-ups"
+      }
+    },
+    "reason": {
+      "no_bot": "Not set up on this site",
+      "no_discord": "Link Discord first",
+      "email_off": "This site can't send email",
+      "no_email": "Add an email first",
+      "email_unverified": "Confirm your email first"
+    },
+    "switchLabel": "{{event}} by {{channel}}",
+    "saveFailed": "Could not save that."
   }
 }

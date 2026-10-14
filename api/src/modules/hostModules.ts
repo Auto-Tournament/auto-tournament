@@ -34,6 +34,7 @@ export const HOST_MODULES: readonly string[] = [
   'services/matchMapResultService',
   'services/matchTerminationService',
   'services/playerConnectionService',
+  'services/matchNotices',
   'services/notificationService',
   'services/adminNoticeService',
   'services/gameReadiness',

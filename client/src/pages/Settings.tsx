@@ -1,3 +1,4 @@
+import { DiscordBotCard } from '../components/settings/DiscordBotCard';
 import { pageTitle } from '../utils/pageTitle';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { PageHead, Panel } from '../components/common/ui';
@@ -336,7 +337,15 @@ export default function Settings() {
     { key: 'matchmaking', body: <MatchmakingSettingsCard /> },
     { key: 'news', body: <NewsSettingsCard /> },
     { key: 'adminnotices', body: <AdminNoticesCard /> },
-    { key: 'webhooks', body: <WebhooksCard /> },
+    {
+      key: 'webhooks',
+      body: (
+        <>
+          <WebhooksCard />
+          <DiscordBotCard />
+        </>
+      ),
+    },
     { key: 'apitokens', body: <ApiTokensCard /> },
     ...(isDev || experimental.length > 0 ? [{ key: 'advanced', body: advancedCard }] : []),
   ].map((section) => ({
