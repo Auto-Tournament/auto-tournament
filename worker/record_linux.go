@@ -1067,6 +1067,8 @@ func (r *recorder) joinReelCrowd(clips []clipResult, intro *reelIntro, crowd, ou
 	for i, c := range clips {
 		paths[i] = c.path
 		sound.reactions = append(sound.reactions, c.markers.Reactions)
+		// One player's clips: the card's entrance once, then the wipe only.
+		sound.continues = append(sound.continues, i > 0)
 	}
 	return r.buildReelSound(paths, wipes(len(paths)), intro, sound, out)
 }

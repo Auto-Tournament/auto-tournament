@@ -30,6 +30,33 @@ type matchReelClip struct {
 	URL         string  `json:"url"`
 	// Markers are its kills and the crowd's reactions, for the reel's crowd.
 	Markers *clipMarkers `json:"markers"`
+	// Its match and map (tournament and team reels span several; older
+	// platforms leave them out: the job's own).
+	MatchSlug string `json:"matchSlug,omitempty"`
+	MapNumber *int   `json:"mapNumber,omitempty"`
+}
+
+// continuesClip: c follows prev with the same player on the same map, so it
+// needs no second caption card entrance.
+func continuesClip(j *matchReelJob, prev, c matchReelClip) bool {
+	if prev.PlayerID == "" || prev.PlayerID != c.PlayerID {
+		return false
+	}
+	where := func(x matchReelClip) string {
+		slug, mapNumber := x.MatchSlug, j.MapNumber
+		if slug == "" {
+			slug = j.MatchSlug
+		}
+		if x.MapNumber != nil {
+			mapNumber = *x.MapNumber
+		}
+		return fmt.Sprintf("%s/%d", slug, mapNumber)
+	}
+	// Without its own match, a tournament or team reel's clip could be from any.
+	if (prev.MatchSlug == "" || c.MatchSlug == "") && j.Kind != "player_reel" && j.Kind != "match_reel" && j.Kind != "" {
+		return false
+	}
+	return where(prev) == where(c)
 }
 
 type matchReelJob struct {
@@ -99,12 +126,13 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 	}
 	reel := filepath.Join(dir, "match.mp4")
 	sound := reelSound{crowd: r.crowdSource(ctx), crowdOut: crowdTrackPath(reel), outro: true}
-	for _, c := range j.Clips {
+	for i, c := range j.Clips {
 		var reactions []reaction
 		if c.Markers != nil {
 			reactions = c.Markers.Reactions
 		}
 		sound.reactions = append(sound.reactions, reactions)
+		sound.continues = append(sound.continues, i > 0 && continuesClip(j, j.Clips[i-1], c))
 	}
 	starts, err := r.buildReelSound(tagged, wipes(len(tagged)), j.Intro, sound, reel)
 	if err != nil {

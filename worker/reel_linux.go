@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -68,6 +69,30 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 		clean := make([]string, len(paths))
 		for i, p := range paths {
 			clean[i] = cleanPathOf(p)
+			// The same player again: from where the card's slowed opening ends.
+			if i == 0 || i >= len(sound.continues) || !sound.continues[i] {
+				continue
+			}
+			skip := standaloneStart(recipes[i])
+			if skip <= 0 {
+				continue
+			}
+			cut := strings.TrimSuffix(clean[i], ".mp4") + "-cont.mp4"
+			if err := r.cutFrom(clean[i], skip, cut); err != nil {
+				log.Printf("reel: clip %d stays whole (%v)", i, err)
+				continue
+			}
+			d, err := probeDuration(cut)
+			if err != nil {
+				continue
+			}
+			defer os.Remove(cut)
+			clean[i] = cut
+			plan.durations[i] = d
+			recipes[i] = continueRecipe(recipes[i], skip)
+			if i < len(sound.reactions) {
+				sound.reactions[i] = continueReactions(sound.reactions[i], skip)
+			}
 		}
 		paths = clean
 		out = cleanPathOf(dressed)
@@ -134,6 +159,17 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 		}
 	}
 	return starts, nil
+}
+
+// cutFrom re-encodes `in` from `at` seconds on (to the frame) into `out`.
+func (r *recorder) cutFrom(in string, at float64, out string) error {
+	args := []string{"-y", "-hide_banner", "-loglevel", "error", "-i", in, "-ss", fmt.Sprintf("%.4f", at)}
+	args = append(args, encodeArgs(r.encoder)...)
+	args = append(args, "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", out)
+	if b, err := exec.CommandContext(r.commandContext(), "ffmpeg", hwEncode(args, r.encoder)...).CombinedOutput(); err != nil {
+		return fmt.Errorf("ffmpeg cut: %v %s", err, strings.TrimSpace(string(b)))
+	}
+	return nil
 }
 
 func exists(p string) bool {

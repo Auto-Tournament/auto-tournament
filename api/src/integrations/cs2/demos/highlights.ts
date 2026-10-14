@@ -1334,6 +1334,13 @@ export interface MatchReelClip {
   url: string;
   /** Its kills and the crowd's reactions, for the reel's crowd track. */
   markers: ClipMarkers | null;
+  /**
+   * Its match and map, when a reel spans several (team and tournament reels):
+   * the same player again on the same map comes in without a second caption
+   * card entrance.
+   */
+  matchSlug?: string;
+  mapNumber?: number;
 }
 
 /**

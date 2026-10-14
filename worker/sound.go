@@ -18,6 +18,10 @@ type reelSound struct {
 	// overlay.go) from the clips' cards and kill feeds: a team's or a
 	// tournament's reel can look its own.
 	restyle func(*overlayRecipe)
+	// continues: per part, the same player on the same map as the part
+	// before it. It comes in behind the wipe without its caption card's
+	// slowed, blurred entrance (continueRecipe): that shows once per player.
+	continues []bool
 }
 
 const (

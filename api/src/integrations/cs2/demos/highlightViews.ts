@@ -847,6 +847,8 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
         title: c.title,
         url: c.video!,
         markers: c.reelMarkers,
+        matchSlug: c.matchSlug,
+        mapNumber: c.mapNumber,
       };
     }),
     upload: `/api/game/cs2/recorder/tournament-reels/${tournamentId}`,
