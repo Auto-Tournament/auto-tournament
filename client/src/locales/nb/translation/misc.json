@@ -1100,6 +1100,6 @@
   },
   "addressMismatch": {
     "open": "Åpne {{host}}",
-    "text": "Du er på {{current}}, men nettstedet er satt opp for {{host}}: Steam-innlogging, e-post og spillserverne bruker den adressen."
+    "text": "Du bruker {{current}}, men nettstedet er satt opp for {{host}}. Steam-innlogging, e-post og spillserverne bruker den adressen."
   }
 }
