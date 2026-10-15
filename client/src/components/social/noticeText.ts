@@ -109,7 +109,12 @@ export function describeNotice(notice: Notice, t: TFunction, viewerId: string | 
         d.event === 'started'
           ? t('social.notice.tournamentStarted')
           : d.event === 'starts_soon'
-            ? t('social.notice.startsSoon', { minutes: Number(d.minutes) || 5 })
+            ? t(
+                (Number(d.minutes) || 5) >= 15
+                  ? 'social.notice.startsSoonUpdate'
+                  : 'social.notice.startsSoon',
+                { minutes: Number(d.minutes) || 5 }
+              )
             : d.event === 'lineupGap'
               ? t('social.notice.lineupGap', { minutes: Number(d.minutes) || 15 })
               : t('social.notice.checkInOpen');

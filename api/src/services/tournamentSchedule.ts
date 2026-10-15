@@ -112,6 +112,10 @@ async function startTournament(id: number, name: string, startsAt: number): Prom
   }
 }
 
+/** Reminders this early also say to update the game: a big patch takes a while to download. */
+export const UPDATE_HINT_MINUTES = 15;
+const UPDATE_HINT = 'Start your game now so any update is done before your first match.';
+
 async function sweep(): Promise<void> {
   const rows = await db.queryAsync<{
     id: number;
@@ -145,7 +149,9 @@ async function sweep(): Promise<void> {
       );
       await notifyChannels.deliver(players, 'tournament_starting', key, {
         subject: `${t.name} starts ${inMinutes(m)}`,
-        text: `You signed up for ${t.name}. It starts ${inMinutes(m)}; be ready to join your first match.`,
+        text:
+          `You signed up for ${t.name}. It starts ${inMinutes(m)}; be ready to join your first match.` +
+          (m >= UPDATE_HINT_MINUTES ? ` ${UPDATE_HINT}` : ''),
         url: `/tournament/${t.id}`,
         action: 'Open the tournament',
       });

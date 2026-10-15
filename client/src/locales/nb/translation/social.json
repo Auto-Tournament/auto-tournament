@@ -50,7 +50,8 @@
       "reportReviewed": "Takk: rapporten din om {{name}} er gjennomgått.",
       "matchReady": "er klar. Åpne kamprommet for å koble til.",
       "vetoTurn": "Det er lagets tur i map-vetoen.",
-      "startsSoon": "starter om {{minutes}} minutter. Gjør deg klar til den første kampen."
+      "startsSoon": "starter om {{minutes}} minutter. Gjør deg klar til den første kampen.",
+      "startsSoonUpdate": "starter om {{minutes}} minutter. Start spillet nå, så er en ev. oppdatering ferdig før første kamp."
     },
     "toast": {
       "join": "Bli med",
