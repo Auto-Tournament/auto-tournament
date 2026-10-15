@@ -22,6 +22,7 @@ services:
       - VITE_ENABLE_DEV_PAGE=true
       - AT_ACCEPT_LICENSE=noncommercial
       - AT_VETO_TURN_SECONDS_DEFAULT=0
+      - AT_UPDATE_CHECK=off
       # Test license keys never check in with autotournament.gg.
       - LICENSE_CHECKIN_URL=off
     volumes:
