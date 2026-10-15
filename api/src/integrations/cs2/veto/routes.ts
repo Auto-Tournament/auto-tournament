@@ -1,4 +1,5 @@
 import { announceVetoTurn } from '../../../services/matchNotices';
+import { withVetoLock } from './lock';
 import { Router, Request, Response } from 'express';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
@@ -340,7 +341,11 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
  * match are allowed to perform veto actions. Spectators and unauthenticated
  * users are blocked here and can only see the public, read‑only views.
  */
-router.post('/:matchSlug/action', async (req: Request, res: Response) => {
+router.post('/:matchSlug/action', (req: Request, res: Response) =>
+  withVetoLock(req.params.matchSlug, () => vetoAction(req, res))
+);
+
+async function vetoAction(req: Request, res: Response) {
   try {
     const { matchSlug } = req.params;
     const { mapName, side, teamSlug, actAs } = req.body as {
@@ -617,6 +622,10 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       });
     }
 
+    // The match's own work once the veto is done (status, config, a server). Runs
+    // after the veto is saved and sent, so the teams see the last step at once.
+    let afterCompletion: (() => Promise<void>) | null = null;
+
     // Move to next step
     vetoState.currentStep += 1;
 
@@ -643,105 +652,116 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         pickedMaps: vetoState.pickedMaps.map((m: { mapName: string }) => m.mapName),
       });
 
-      // Update match status to 'ready' now that veto is completed
-      await db.updateAsync('matches', { status: 'ready' }, 'slug = ?', [matchSlug]);
-      log.info(`Match ${matchSlug} status updated to 'ready' after veto completion`);
+      afterCompletion = async () => {
+        // Update match status to 'ready' now that veto is completed
+        await db.updateAsync('matches', { status: 'ready' }, 'slug = ?', [matchSlug]);
+        log.info(`Match ${matchSlug} status updated to 'ready' after veto completion`);
 
-      // NEW: Recompute and persist the fresh config snapshot so /api/matches and any readers of matches.config are in sync
-      const t = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
-        match.tournament_id,
-      ]);
-      if (t) {
-        // Tournament match: regenerate config from tournament settings
-        const tournament: TournamentResponse = tournamentRowToResponse(t);
-        try {
-          const cfg = await buildMatchConfigFor(
-            {
-              slug: matchSlug,
-              id: match.id,
-              game: match.game,
-              round: match.round,
-              bracket: match.bracket,
-              team1Id: match.team1_id,
-              team2Id: match.team2_id,
-            },
-            tournament
-          );
-          await db.updateAsync('matches', { config: serializeMatchConfig(cfg) }, 'slug = ?', [
-            matchSlug,
-          ]);
-          log.success(`Stored fresh config for match ${matchSlug} after veto completion`);
-        } catch (e) {
-          log.error(`Failed to generate/store config after veto for ${matchSlug}`, e as Error);
+        // NEW: Recompute and persist the fresh config snapshot so /api/matches and any readers of matches.config are in sync
+        const t = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+          match.tournament_id,
+        ]);
+        if (t) {
+          // Tournament match: regenerate config from tournament settings
+          const tournament: TournamentResponse = tournamentRowToResponse(t);
+          try {
+            const cfg = await buildMatchConfigFor(
+              {
+                slug: matchSlug,
+                id: match.id,
+                game: match.game,
+                round: match.round,
+                bracket: match.bracket,
+                team1Id: match.team1_id,
+                team2Id: match.team2_id,
+              },
+              tournament
+            );
+            await db.updateAsync('matches', { config: serializeMatchConfig(cfg) }, 'slug = ?', [
+              matchSlug,
+            ]);
+            log.success(`Stored fresh config for match ${matchSlug} after veto completion`);
+          } catch (e) {
+            log.error(`Failed to generate/store config after veto for ${matchSlug}`, e as Error);
+          }
+        } else if (match.round === 0) {
+          // Manual match (round === 0, tournament_id === null): update config's maplist from veto picks.
+          try {
+            const existingConfig = match.config ? JSON.parse(match.config) : {};
+            const orderedPickedMaps = [...vetoState.pickedMaps].sort(
+              (a: { mapNumber?: number }, b: { mapNumber?: number }) =>
+                (a.mapNumber || 0) - (b.mapNumber || 0)
+            );
+            const pickedMapNames = orderedPickedMaps
+              .map((m: { mapName: string }) => m.mapName)
+              .filter((name): name is string => Boolean(name));
+            const numMaps = format === 'bo1' ? 1 : format === 'bo3' ? 3 : 5;
+
+            const updatedConfig = {
+              ...existingConfig,
+              maplist: pickedMapNames.slice(0, numMaps),
+              map_sides: orderedPickedMaps.slice(0, numMaps).map((p: { sideTeam1?: string }) => {
+                if (p.sideTeam1 === 'CT') return 'team1_ct';
+                if (p.sideTeam1 === 'T') return 'team2_ct';
+                return 'knife';
+              }),
+            };
+
+            await db.updateAsync('matches', { config: JSON.stringify(updatedConfig) }, 'slug = ?', [
+              matchSlug,
+            ]);
+            log.success(
+              `Updated config maplist for manual match ${matchSlug} after veto completion`
+            );
+          } catch (e) {
+            log.error(
+              `Failed to update config for manual match ${matchSlug} after veto`,
+              e as Error
+            );
+          }
         }
-      } else if (match.round === 0) {
-        // Manual match (round === 0, tournament_id === null): update config's maplist from veto picks.
-        try {
-          const existingConfig = match.config ? JSON.parse(match.config) : {};
-          const orderedPickedMaps = [...vetoState.pickedMaps].sort(
-            (a: { mapNumber?: number }, b: { mapNumber?: number }) =>
-              (a.mapNumber || 0) - (b.mapNumber || 0)
-          );
-          const pickedMapNames = orderedPickedMaps
-            .map((m: { mapName: string }) => m.mapName)
-            .filter((name): name is string => Boolean(name));
-          const numMaps = format === 'bo1' ? 1 : format === 'bo3' ? 3 : 5;
 
-          const updatedConfig = {
-            ...existingConfig,
-            maplist: pickedMapNames.slice(0, numMaps),
-            map_sides: orderedPickedMaps.slice(0, numMaps).map((p: { sideTeam1?: string }) => {
-              if (p.sideTeam1 === 'CT') return 'team1_ct';
-              if (p.sideTeam1 === 'T') return 'team2_ct';
-              return 'knife';
-            }),
-          };
+        // Automatically allocate server and load match after veto completion (async)
+        log.info(`[VETO] Auto-loading match ${matchSlug} after veto`, {
+          matchSlug,
+          pickedMaps: vetoState.pickedMaps.map((m: { mapName: string }) => m.mapName),
+        });
 
-          await db.updateAsync('matches', { config: JSON.stringify(updatedConfig) }, 'slug = ?', [
-            matchSlug,
-          ]);
-          log.success(`Updated config maplist for manual match ${matchSlug} after veto completion`);
-        } catch (e) {
-          log.error(`Failed to update config for manual match ${matchSlug} after veto`, e as Error);
-        }
-      }
+        setImmediate(async () => {
+          try {
+            const result = await scheduler.allocateSingleMatch(matchSlug, '');
 
-      // Automatically allocate server and load match after veto completion (async)
-      log.info(`[VETO] Auto-loading match ${matchSlug} after veto`, {
-        matchSlug,
-        pickedMaps: vetoState.pickedMaps.map((m: { mapName: string }) => m.mapName),
-      });
-
-      setImmediate(async () => {
-        try {
-          const result = await scheduler.allocateSingleMatch(matchSlug, '');
-
-          if (result.success) {
-            log.success(`[VETO] Match ${matchSlug} loaded on server ${result.serverId} after veto`);
-          } else {
-            if (isQueuedAllocationResult(result.error)) {
-              log.info(`[VETO] Match ${matchSlug} queued for a server after veto: ${result.error}`);
-            } else {
-              log.warn(
-                `[VETO] Failed to allocate server for match ${matchSlug} after veto: ${result.error}`
+            if (result.success) {
+              log.success(
+                `[VETO] Match ${matchSlug} loaded on server ${result.serverId} after veto`
               );
-            }
+            } else {
+              if (isQueuedAllocationResult(result.error)) {
+                log.info(
+                  `[VETO] Match ${matchSlug} queued for a server after veto: ${result.error}`
+                );
+              } else {
+                log.warn(
+                  `[VETO] Failed to allocate server for match ${matchSlug} after veto: ${result.error}`
+                );
+              }
 
-            // Start polling for available servers (checks every 10 seconds)
-            // The backend will keep checking for available servers and assign one when found
-            log.debug(`[VETO] Starting background polling for available servers`, { matchSlug });
+              // Start polling for available servers (checks every 10 seconds)
+              // The backend will keep checking for available servers and assign one when found
+              log.debug(`[VETO] Starting background polling for available servers`, { matchSlug });
+              scheduler.startPollingForServer(matchSlug, '');
+            }
+          } catch (err) {
+            log.error(`[VETO] Error loading match after veto`, err as Error);
+
+            // Start polling even on exception if match is still ready
+            log.debug(`[VETO] Starting background polling for available servers after error`, {
+              matchSlug,
+            });
             scheduler.startPollingForServer(matchSlug, '');
           }
-        } catch (err) {
-          log.error(`[VETO] Error loading match after veto`, err as Error);
-
-          // Start polling even on exception if match is still ready
-          log.debug(`[VETO] Starting background polling for available servers after error`, {
-            matchSlug,
-          });
-          scheduler.startPollingForServer(matchSlug, '');
-        }
-      });
+        });
+      };
     } else {
       // Set next step
       const nextStepConfig = vetoOrder[vetoState.currentStep - 1];
@@ -757,6 +777,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     // Emit update via Socket.io
     emitVetoUpdate(matchSlug, vetoState);
     void postVetoProgress(matchSlug, vetoState);
+    if (afterCompletion) await afterCompletion();
     // The next team's captains: a bell notice, and a DM or email if they want one.
     if (vetoState.status !== 'completed' && vetoState.currentTurn) {
       void announceVetoTurn(
@@ -785,7 +806,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       error: 'Failed to process veto action',
     });
   }
-});
+}
 
 /**
  * POST /api/veto/:matchSlug/reset

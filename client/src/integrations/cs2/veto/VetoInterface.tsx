@@ -236,8 +236,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vetoState?.allMaps?.join(','), allMaps.size]);
 
+  // A click in flight: no second one until it answers (a slow answer made a
+  // player click both sides, and the last click won).
+  const [submitting, setSubmitting] = useState(false);
+
   const handleMapAction = async (mapName: string) => {
-    if (!vetoState || vetoState.status === 'completed' || !isMyTurn) return;
+    if (!vetoState || vetoState.status === 'completed' || !isMyTurn || submitting) return;
 
     const currentAction = vetoState.currentAction;
 
@@ -247,6 +251,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     }
 
     // For ban/pick actions, submit immediately
+    setSubmitting(true);
     try {
       const response = await fetch(`/api/veto/${matchSlug}/action`, {
         method: 'POST',
@@ -270,6 +275,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     } catch (err) {
       console.error('Error submitting veto action:', err);
       setActionError(t('vetoInterface.errors.failedToSubmitVetoAction'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -278,7 +285,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       console.error('No veto state');
       return;
     }
+    if (submitting) return;
 
+    setSubmitting(true);
     try {
       const response = await fetch(`/api/veto/${matchSlug}/action`, {
         method: 'POST',
@@ -303,6 +312,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     } catch (err) {
       console.error('Error picking side:', err);
       setActionError(t('vetoInterface.errors.failedToPickSide'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -813,7 +824,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       color="info"
                       size="large"
                       onClick={() => handleSidePick('CT')}
-                      disabled={!isMyTurn}
+                      disabled={!isMyTurn || submitting}
                       sx={{
                         py: 2,
                         fontSize: '1.05rem',
@@ -833,7 +844,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       color="warning"
                       size="large"
                       onClick={() => handleSidePick('T')}
-                      disabled={!isMyTurn}
+                      disabled={!isMyTurn || submitting}
                       sx={{
                         py: 2,
                         fontSize: '1.05rem',
@@ -922,7 +933,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       mapNumber={pickedMap?.mapNumber}
                       side={displaySide}
                       onClick={() => handleMapAction(map.name)}
-                      disabled={mapState !== 'available' || !isMyTurn}
+                      disabled={mapState !== 'available' || !isMyTurn || submitting}
                       isCurrentTurn={isMyTurn && mapState === 'available'}
                       currentAction={currentAction}
                       isDecider={mapState === 'picked' && isDeciderMap(map.name)}
