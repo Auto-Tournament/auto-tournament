@@ -1094,6 +1094,32 @@
     "outBody": "Laget ditt er ute av turneringen, så dere har ingen flere kamper. Følg resten i braketten.",
     "wonBody": "Laget ditt vant turneringen. Godt spilt!",
     "close": "Lukk",
-    "seeBracket": "Se braketten"
+    "seeBracket": "Se braketten",
+    "outBodyPlay": "Dere har ingen flere kamper i turneringen. Takk for innsatsen! Lyst på en kamp til? Matchmaking finner en til deg på et par minutter."
+  },
+  "whatsNext": {
+    "eyebrow": "Hva nå",
+    "champions": "Vinnere",
+    "outTitle": "Laget ditt er ute. Dere endte på {{place}}",
+    "outBody": "Det var den siste kampen deres i {{tournament}}. Gode kamper! Vil du spille mer? Matchmaking finner en kamp med andre spillere med en gang.",
+    "playMatchmaking": "Spill matchmaking",
+    "watchLive": "Se en kamp live",
+    "nextMatch": "{{stage}} mot {{opponent}}",
+    "nextMatchReady": "Kampen er klar: åpne kamprommet for å koble til.",
+    "nextMatchSoon": "Neste kamp er satt. Etter en kort pause åpner den, og vi sier fra. Navigasjonslinjen viser nedtellingen uansett hvor du er.",
+    "openMatchRoom": "Åpne kamprommet",
+    "throughTo": "Dere er videre til {{stage}}",
+    "waitingTitle": "Venter på neste motstander",
+    "waitingBody": "Motstanderen kommer fra en kamp som pågår. Når den er ferdig, blir det en kort pause før neste kamp åpner. Vi sier fra.",
+    "watchOpponent": "Se neste motstander live",
+    "shuffleTitle": "Neste runde: nye lag",
+    "shuffleBody": "Når alle kampene i runden er ferdige, trekkes nye lag, og neste kamp dukker opp her.",
+    "stayHere": "Bli på denne siden: den oppdateres av seg selv.",
+    "openTournament": "Åpne turneringen"
+  },
+  "navStatus": {
+    "placed": "Endte på",
+    "placedPlay": "{{place}} · Spill matchmaking",
+    "waiting": "Venter på motstander"
   }
 }

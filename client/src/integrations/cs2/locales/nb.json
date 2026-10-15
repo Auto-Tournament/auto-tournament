@@ -411,7 +411,9 @@
     },
     "opensIn": "Vetoen åpner om {{clock}}",
     "opening": "Vetoen åpner …",
-    "opensBreak": "En kort pause mellom kampene. Gjør deg klar – første tur får ekstra tid."
+    "opensBreak": "En kort pause mellom kampene. Gjør deg klar – første tur får ekstra tid.",
+    "breakEyebrow": "Pause mellom kampene",
+    "opensInTitle": "Kartvetoen åpner om"
   },
   "matchInfo": {
     "server": {

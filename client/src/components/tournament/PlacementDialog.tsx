@@ -21,7 +21,8 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { usePublicBracket } from '../../hooks/usePublicBracket';
 import { placementFor } from '../../hooks/usePlacement';
-import { tournamentTabPath } from '../../paths';
+import { paths, tournamentTabPath } from '../../paths';
+import { useMatchmaking } from '../matchmaking/matchmakingStore';
 import { fontDisplay, tokens } from '../../theme/tokens';
 import { placementLabel } from '../../utils/placement';
 
@@ -112,6 +113,7 @@ function PlacementWatch({
 }) {
   const { t } = useTranslation();
   const { tournament, matches } = usePublicBracket(tournamentId);
+  const { available: matchmakingAvailable } = useMatchmaking();
   const placement = placementFor(tournament, matches, teamId);
   if (!placement) return null;
 
@@ -155,20 +157,46 @@ function PlacementWatch({
           </Box>
         </Box>
         <Typography sx={{ color: tokens.color.ink2 }}>
-          {placement.champion ? t('placement.wonBody') : t('placement.outBody')}
+          {placement.champion
+            ? t('placement.wonBody')
+            : matchmakingAvailable
+              ? t('placement.outBodyPlay')
+              : t('placement.outBody')}
         </Typography>
       </DialogContent>
       <DialogActions>
         <Button onClick={close}>{t('placement.close')}</Button>
-        <Button
-          component={RouterLink}
-          to={tournamentTabPath(tournamentId, 'bracket')}
-          variant="contained"
-          onClick={close}
-          data-testid="placement-dialog-bracket"
-        >
-          {t('placement.seeBracket')}
-        </Button>
+        {!placement.champion && matchmakingAvailable ? (
+          <>
+            <Button
+              component={RouterLink}
+              to={tournamentTabPath(tournamentId, 'bracket')}
+              onClick={close}
+              data-testid="placement-dialog-bracket"
+            >
+              {t('placement.seeBracket')}
+            </Button>
+            <Button
+              component={RouterLink}
+              to={paths.play}
+              variant="contained"
+              onClick={close}
+              data-testid="placement-dialog-play"
+            >
+              {t('whatsNext.playMatchmaking')}
+            </Button>
+          </>
+        ) : (
+          <Button
+            component={RouterLink}
+            to={tournamentTabPath(tournamentId, 'bracket')}
+            variant="contained"
+            onClick={close}
+            data-testid="placement-dialog-bracket"
+          >
+            {t('placement.seeBracket')}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

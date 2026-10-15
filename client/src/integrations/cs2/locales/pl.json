@@ -415,7 +415,9 @@
     },
     "opensIn": "The veto opens in {{clock}}",
     "opening": "The veto is opening…",
-    "opensBreak": "A short break between matches: get ready, the first turn gets extra time."
+    "opensBreak": "A short break between matches: get ready, the first turn gets extra time.",
+    "breakEyebrow": "Break between matches",
+    "opensInTitle": "The map veto opens in"
   },
   "matchInfo": {
     "server": {

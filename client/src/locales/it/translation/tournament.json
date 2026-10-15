@@ -1094,6 +1094,32 @@
     "outBody": "Your team is out of the tournament, so there are no more matches for you. Follow the rest in the bracket.",
     "wonBody": "Your team won the tournament. Well played!",
     "close": "Close",
-    "seeBracket": "See the bracket"
+    "seeBracket": "See the bracket",
+    "outBodyPlay": "You have no more matches in this tournament. Thanks for playing! Fancy another game? Matchmaking puts you in a match in a minute or two."
+  },
+  "whatsNext": {
+    "eyebrow": "What's next",
+    "champions": "Champions",
+    "outTitle": "Your team is out. You placed {{place}}",
+    "outBody": "That was your last match in {{tournament}}. Good games! Want to keep playing? Matchmaking finds you a match with other players right now.",
+    "playMatchmaking": "Play matchmaking",
+    "watchLive": "Watch a live match",
+    "nextMatch": "{{stage}} vs {{opponent}}",
+    "nextMatchReady": "Your match is ready: open the match room to connect.",
+    "nextMatchSoon": "Your next match is set. After a short break it opens, and we ping you. The navbar shows the countdown wherever you are.",
+    "openMatchRoom": "Open the match room",
+    "throughTo": "You're through to the {{stage}}",
+    "waitingTitle": "Waiting for your next opponent",
+    "waitingBody": "Your opponent comes from a match still being played. When it ends there is a short break, then your next match opens. We ping you.",
+    "watchOpponent": "Watch your next opponent live",
+    "shuffleTitle": "Next round: new teams",
+    "shuffleBody": "When every match of this round is done, new teams are drawn and your next match shows up here.",
+    "stayHere": "Stay on this page: it updates by itself.",
+    "openTournament": "Open the tournament"
+  },
+  "navStatus": {
+    "placed": "Placed",
+    "placedPlay": "{{place}} · Play matchmaking",
+    "waiting": "Waiting for opponent"
   }
 }

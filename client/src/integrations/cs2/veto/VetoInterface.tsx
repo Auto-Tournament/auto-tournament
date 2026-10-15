@@ -454,7 +454,23 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         : ArrowsLeftRightIcon;
 
   return (
-    <Box data-testid="veto-interface">
+    <Box
+      data-testid="veto-interface"
+      sx={{
+        // Before the veto opens (the break between matches) the countdown is the page: the
+        // map pool under it is faded and cannot be clicked (2026-10-15 drafts, board 6).
+        ...(vetoState.opensAt
+          ? {
+              '& [data-testid="veto-opens-countdown"] ~ *': {
+                opacity: 0.25,
+                filter: 'grayscale(0.6)',
+                pointerEvents: 'none',
+                userSelect: 'none',
+              },
+            }
+          : {}),
+      }}
+    >
       {actionError && (
         <Alert
           severity="error"
@@ -1252,13 +1268,41 @@ function VetoOpensCountdown({ opensAt, onOpen }: { opensAt: string; onOpen: () =
   return (
     <Paper
       variant="outlined"
+      role="timer"
+      aria-live="polite"
       data-testid="veto-opens-countdown"
-      sx={{ p: 2, mb: 2, textAlign: 'center', borderColor: tokens.color.accent }}
+      sx={{
+        px: 3,
+        py: { xs: 4, md: 5 },
+        mb: 3,
+        textAlign: 'center',
+        borderWidth: 2,
+        borderColor: tokens.color.warning,
+        display: 'grid',
+        justifyItems: 'center',
+        gap: 1.5,
+      }}
     >
-      <Typography sx={{ fontWeight: 600 }}>
-        {left > 0 ? t('vetoInterface.opensIn', { clock }) : t('vetoInterface.opening')}
+      <Typography variant="overline" sx={{ color: tokens.color.warning, lineHeight: 1.4 }}>
+        {t('vetoInterface.breakEyebrow')}
       </Typography>
-      <Typography variant="body2" color="text.secondary">
+      <Typography sx={{ fontWeight: 600, fontSize: '1.25rem', color: 'text.secondary' }}>
+        {left > 0 ? t('vetoInterface.opensInTitle') : t('vetoInterface.opening')}
+      </Typography>
+      {left > 0 && (
+        <Typography
+          sx={{
+            ...mono,
+            fontWeight: 600,
+            fontSize: { xs: '4rem', md: '6rem' },
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          {clock}
+        </Typography>
+      )}
+      <Typography color="text.secondary" sx={{ maxWidth: 560 }}>
         {t('vetoInterface.opensBreak')}
       </Typography>
     </Paper>

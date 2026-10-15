@@ -20,6 +20,7 @@ import { useInstalledIntegrations } from '../../integrations/registry';
 import { soundNotification } from '../../utils/soundNotification';
 import { NextMatchDialog } from '../match/NextMatchDialog';
 import { NavStartCountdown } from './NavStartCountdown';
+import { NavTournamentStatus } from './NavTournamentStatus';
 import { PlacementDialog } from '../tournament/PlacementDialog';
 
 /** Top-bar text links: ink2 at rest, ink on hover and on the current page (the drafts' `.nav-links`). */
@@ -444,7 +445,10 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
             {ctaLabel}
           </Button>
         ) : playerSteamId ? (
-          <NavStartCountdown viewerId={playerSteamId} />
+          <>
+            <NavStartCountdown viewerId={playerSteamId} />
+            <NavTournamentStatus viewerId={playerSteamId} />
+          </>
         ) : null}
         <DevAccountSwitcherGate />
 
