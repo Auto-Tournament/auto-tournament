@@ -1267,6 +1267,7 @@
       "skins": "Skins",
       "midas": "Midas",
       "deathmatch": "Deathmatch",
+      "mapvote": "Map vote",
       "addons": "Addons"
     },
     "pluginHelp": {
@@ -1276,6 +1277,7 @@
       "skins": "Players' weapon skins, knives and gloves",
       "midas": "Gold weapon models",
       "deathmatch": "Deathmatch modes",
+      "mapvote": "Map voting: .rtv, .nominate, end-of-map vote",
       "addons": "Workshop addons"
     },
     "required": "Always on",

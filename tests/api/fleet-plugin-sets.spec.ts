@@ -142,7 +142,7 @@ function answer(to: Envelope, seq: number): Envelope {
   return envelope('cmd.result', { status: 'ok' }, { seq, ack: to.seq, ref: to.id });
 }
 
-const FUN_ENABLE = ['match', 'essentials', 'skins', 'midas', 'deathmatch'];
+const FUN_ENABLE = ['match', 'essentials', 'skins', 'midas', 'deathmatch', 'mapvote'];
 const FUN_DISABLE = ['practice', 'whitelist', 'addons'];
 
 test.describe.serial('Fleet plugin sets', () => {
@@ -169,6 +169,7 @@ test.describe.serial('Fleet plugin sets', () => {
       'skins',
       'midas',
       'deathmatch',
+      'mapvote',
       'addons',
     ]);
     expect(body.required).toEqual(['fleet']);
@@ -179,6 +180,7 @@ test.describe.serial('Fleet plugin sets', () => {
       'skins',
       'midas',
       'deathmatch',
+      'mapvote',
     ]);
 
     expect(
@@ -217,7 +219,7 @@ test.describe.serial('Fleet plugin sets', () => {
       const set = await client.next(isPluginsSet);
       expect((set.payload as { args: unknown }).args).toEqual({
         enable: ['essentials', 'practice'],
-        disable: ['match', 'whitelist', 'skins', 'midas', 'deathmatch', 'addons'],
+        disable: ['match', 'whitelist', 'skins', 'midas', 'deathmatch', 'mapvote', 'addons'],
       });
       client.send(answer(set, 1));
       // Answered ok: the platform's view of its plugins follows at once (not at the next hello).
@@ -418,7 +420,7 @@ test.describe.serial('Fleet plugin sets', () => {
       // match stays on (not in either list).
       expect((set.payload as { args: unknown }).args).toEqual({
         enable: ['essentials', 'practice'],
-        disable: ['whitelist', 'skins', 'midas', 'deathmatch', 'addons'],
+        disable: ['whitelist', 'skins', 'midas', 'deathmatch', 'mapvote', 'addons'],
       });
       client.send(answer(set, 1));
       // Practice is for a practice server: practice mode goes on right after,
@@ -437,7 +439,7 @@ test.describe.serial('Fleet plugin sets', () => {
       const next = await client.next((msg) => isPluginsSet(msg) && msg.id !== set.id);
       expect((next.payload as { args: unknown }).args).toEqual({
         enable: ['match', 'essentials', 'whitelist'],
-        disable: ['practice', 'skins', 'midas', 'deathmatch', 'addons'],
+        disable: ['practice', 'skins', 'midas', 'deathmatch', 'mapvote', 'addons'],
       });
       client.send(answer(next, 3));
       expect((await (await changing).json()).command).toMatchObject({ status: 'ok' });

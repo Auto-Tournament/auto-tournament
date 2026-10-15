@@ -1267,6 +1267,7 @@
       "skins": "Skins",
       "midas": "Midas",
       "deathmatch": "Deathmatch",
+      "mapvote": "Kartavstemning",
       "addons": "Addons"
     },
     "pluginHelp": {
@@ -1276,6 +1277,7 @@
       "skins": "Spillernes våpenskins, kniver og hansker",
       "midas": "Våpenmodeller i gull",
       "deathmatch": "Deathmatch-moduser",
+      "mapvote": "Kartavstemning: .rtv, .nominate og avstemning ved kartslutt",
       "addons": "Workshop-tillegg"
     },
     "required": "Alltid på",

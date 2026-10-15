@@ -18,8 +18,8 @@
  *   server starts in practice mode. Older Ready Up refuses to disable match:
  *   it stays on there (`sendPluginsSet`). A server whose set has match off
  *   is never handed a match (`matchPluginDisabled`, ../driver.ts).
- * - csm's default Ready Up bundle (essentials) has fleet, match, essentials
- *   and practice. A set with anything else makes the install after a create
+ * - csm's default Ready Up bundle (essentials) has fleet, match, essentials,
+ *   practice and mapvote (Ready Up 0.1.0-beta.49+). A set with anything else makes the install after a create
  *   use the full bundle.
  */
 
@@ -38,6 +38,7 @@ export const PLUGIN_CATALOG = [
   'skins',
   'midas',
   'deathmatch',
+  'mapvote',
   'addons',
 ] as const;
 export type CatalogPlugin = (typeof PLUGIN_CATALOG)[number];
@@ -54,14 +55,15 @@ export const ESSENTIALS_BUNDLE_PLUGINS: readonly CatalogPlugin[] = [
   'match',
   'essentials',
   'practice',
+  'mapvote',
 ];
 
 export const PLUGIN_PRESETS = {
   tournament: ['match', 'essentials', 'whitelist'],
   practice: ['practice', 'essentials'],
-  fun: ['match', 'skins', 'midas', 'deathmatch', 'essentials'],
+  fun: ['match', 'skins', 'midas', 'deathmatch', 'mapvote', 'essentials'],
   // Skin tryout: practice with skins, no matches; the inventory links to it.
-  tryout: ['practice', 'skins', 'essentials'],
+  tryout: ['practice', 'skins', 'mapvote', 'essentials'],
 } as const satisfies Record<string, readonly CatalogPlugin[]>;
 
 export type PluginPresetName = keyof typeof PLUGIN_PRESETS;
