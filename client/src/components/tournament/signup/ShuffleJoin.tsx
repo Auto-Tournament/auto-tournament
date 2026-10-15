@@ -81,6 +81,8 @@ export function ShuffleJoin({
       : null;
   const myTeam = myMatch?.teams.find((team) => !!steamId && team.steamIds.includes(steamId));
   const sittingOut = new Set(round?.sittingOut ?? []);
+  const nameOf = new Map(players.map((p) => [p.steamId, p.name]));
+  const names = (ids: string[]) => ids.map((id) => nameOf.get(id) ?? id).join(' + ');
   const iSitOut = !!steamId && joined && roundNo !== null && sittingOut.has(steamId);
   const title =
     joined && roundNo !== null && myMatch
@@ -191,6 +193,56 @@ export function ShuffleJoin({
             )
           ))}
       </Box>
+      {round && roundNo !== null && round.matches.length > 0 && (
+        <Box data-testid="shuffle-round" sx={{ display: 'grid', gap: 1 }}>
+          <Typography variant="overline" sx={{ color: 'text.secondary', lineHeight: 1.4 }}>
+            {t('shuffleJoin.roundHeading', { round: roundNo })}
+          </Typography>
+          {round.matches.map((m) => (
+            <Box
+              key={m.slug}
+              component={RouterLink}
+              to={matchPagePath(m.slug)}
+              data-testid="shuffle-round-match"
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: 1,
+                p: 1.5,
+                borderRadius: radii.md,
+                border: 1,
+                borderColor: m.slug === myMatch?.slug ? color.accent : 'divider',
+                color: 'inherit',
+                textDecoration: 'none',
+              }}
+            >
+              <Typography sx={{ fontWeight: 600, minWidth: 0 }}>
+                {names(m.teams[0]?.steamIds ?? [])}
+              </Typography>
+              <Typography component="span" sx={{ color: 'text.secondary' }}>
+                {t('shuffleJoin.versus')}
+              </Typography>
+              <Typography sx={{ fontWeight: 600, minWidth: 0 }}>
+                {names(m.teams[1]?.steamIds ?? [])}
+              </Typography>
+              <Typography
+                component="span"
+                sx={{ ml: 'auto', fontSize: '0.75rem', color: 'text.secondary' }}
+              >
+                {t(
+                  `shuffleJoin.status.${m.status === 'live' ? 'live' : m.status === 'completed' ? 'done' : 'waiting'}`
+                )}
+              </Typography>
+            </Box>
+          ))}
+          {round.sittingOut.length > 0 && (
+            <Typography sx={{ color: 'text.secondary' }} data-testid="shuffle-round-sitting-out">
+              {t('shuffleJoin.sittingOutList', { names: names(round.sittingOut) })}
+            </Typography>
+          )}
+        </Box>
+      )}
       <Box>
         <Typography variant="overline" sx={{ color: 'text.secondary', lineHeight: 1.4 }}>
           {spots !== null

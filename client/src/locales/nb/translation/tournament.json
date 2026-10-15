@@ -1163,6 +1163,14 @@
     "sittingOutBody": "Det er ikke nok spillere til alle lagene denne runden. Du er med i trekningen til runde {{next}}, og de som har spilt mest, står over først.",
     "goToMatch": "Gå til kampen",
     "tagPlaying": "Spiller",
-    "tagSittingOut": "Står over"
+    "tagSittingOut": "Står over",
+    "roundHeading": "Runde {{round}}",
+    "versus": "mot",
+    "sittingOutList": "Står over: {{names}}",
+    "status": {
+      "live": "Pågår",
+      "done": "Ferdig",
+      "waiting": "Starter"
+    }
   }
 }
