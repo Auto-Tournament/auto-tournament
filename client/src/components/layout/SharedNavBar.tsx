@@ -224,8 +224,8 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
       current: at(link.path),
     }))
   );
-  // The four places a player goes (the IA drafts' top bar): Play, Tournaments,
-  // Leaderboards, and Community for the directories and the modules' pages.
+  // The places a player goes: Play, Tournaments, and Community for the
+  // leaderboards, the directories and the modules' pages (fewer words in the bar).
   // The logo is Home. Admins also get Manage.
   const mainLinks: SiteLink[] = [
     ...(matchmakingAvailable
@@ -237,14 +237,14 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
       testId: 'nav-tournaments',
       current: at(paths.tournamentList) || pathname.startsWith('/tournament/'),
     },
+  ];
+  const communityLinks: SiteLink[] = [
     {
       to: paths.leaderboards,
       label: t('nav.leaderboards'),
       testId: 'nav-leaderboards',
       current: at(paths.leaderboards),
     },
-  ];
-  const communityLinks: SiteLink[] = [
     {
       to: paths.communityTeams,
       label: t('nav.teams'),
