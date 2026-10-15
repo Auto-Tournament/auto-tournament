@@ -289,15 +289,28 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
   }) => {
     test.setTimeout(180_000);
     // The server takes the next match at once (allocation.ts serverCooldownSeconds: a kick
-    // delay of 0 means no wait after a match).
-    await request.put('/api/settings', {
+    // delay of 0 in the fleet's server settings means no wait after a match).
+    const read = (
+      await (await request.get('/api/fleet/settings', { headers: getAuthHeader() })).json()
+    ).settings as { config?: Record<string, unknown>; match?: Record<string, unknown> };
+    const before = { config: read?.config ?? {}, match: read?.match ?? {} };
+    const zero = await request.put('/api/fleet/settings', {
       headers: getAuthHeader(),
-      data: { atSeriesEndKickDelayNoDemo: 0 },
+      data: {
+        settings: {
+          ...before,
+          config: {
+            ...before.config,
+            series_end_kick_delay: { no_demo: 0, demo_no_upload: 0, demo_upload: 0 },
+          },
+        },
+      },
     });
+    expect(zero.ok(), await zero.text()).toBe(true);
     cleanup.push(async () => {
-      await request.put('/api/settings', {
+      await request.put('/api/fleet/settings', {
         headers: getAuthHeader(),
-        data: { atSeriesEndKickDelayNoDemo: null },
+        data: { settings: before },
       });
     });
     const fake = await FakeReadyUp.enroll(request);
