@@ -20922,6 +20922,30 @@
         }
       }
     },
+    "/api/tournament/{id}/shuffle-round": {
+      "get": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "GET /api/tournament/:id/shuffle-round",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/tournaments": {
       "get": {
         "tags": [
