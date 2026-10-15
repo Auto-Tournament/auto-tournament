@@ -575,6 +575,11 @@ export const tournamentSignupService = {
       [tournamentId, steamId, Math.floor(Date.now() / 1000)]
     );
     emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
+    // Joined a running shuffle: enough players waiting get a match now.
+    if (tournament.status === 'in_progress') {
+      const { fillRoundFromBench } = await import('./shuffleTournamentService');
+      await fillRoundFromBench(tournamentId).catch(() => []);
+    }
   },
 
   /** A player leaves a shuffle tournament before it starts. */

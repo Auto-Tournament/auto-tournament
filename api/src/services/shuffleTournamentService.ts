@@ -16,6 +16,7 @@ import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.t
 import { tournamentRowToResponse } from '../utils/tournamentRow';
 import { withModuleSettings } from '../utils/moduleTournamentSettings';
 import { DEFAULT_GAME } from '../integrations/types';
+import { getIntegration } from '../integrations/registry';
 import { getSwissStandingEntries } from './swissProgressionService';
 import { getRoundRobinStandingEntries } from './roundRobinStandingsService';
 import type { Player } from '../types/team.types';
@@ -419,7 +420,19 @@ export async function generateRoundMatches(
       playedCount.set(p.steamId, (playedCount.get(p.steamId) ?? 0) + 1);
     }
   }
-  const sitCount = players.length % (teamSize * 2);
+  // With bot fill on, nobody sits out: every player gets a team, rounded up to an even
+  // number of teams, and the short teams play with bots.
+  const botFill =
+    getIntegration(tournament.game ?? DEFAULT_GAME).fillsShortTeams?.(tournament) ?? false;
+  let teamCount: number | undefined;
+  if (botFill) {
+    teamCount = Math.ceil(players.length / teamSize);
+    if (teamCount % 2 === 1 && teamCount < players.length) teamCount += 1;
+    if (teamCount % 2 === 1) teamCount -= 1;
+  }
+  const sitCount = botFill
+    ? Math.max(0, players.length - (teamCount ?? 0) * teamSize)
+    : players.length % (teamSize * 2);
   const sitOut = new Set(
     players
       .map((p) => ({ id: p.id, played: playedCount.get(p.id) ?? 0, tiebreak: Math.random() }))
@@ -438,10 +451,33 @@ export async function generateRoundMatches(
       tournamentId,
     ])
   )?.game;
-  const balanceResult = await balanceTeams(playerIds, teamSize, true, tournamentGame); // Use tournament team size, use optimization
+  const balanceResult = await balanceTeams(playerIds, teamSize, true, tournamentGame, teamCount); // Use tournament team size, use optimization
 
   // Create temporary teams for this round
   const teams: BalancedTeam[] = balanceResult.teams;
+  const matches = await insertRoundMatches(tournament, tournamentId, roundNumber, map, teams, 1);
+
+  log.success(`Generated ${matches.length} matches for round ${roundNumber}`, {
+    map,
+    players: players.length,
+    teams: teams.length,
+  });
+
+  return { matches, teams };
+}
+
+/**
+ * Pair up `teams` (1 v 2, 3 v 4, ...) into this round's matches, numbered from
+ * `firstMatchNumber`: their teams, rosters and match rows, ready to allocate.
+ */
+async function insertRoundMatches(
+  tournament: TournamentResponse,
+  tournamentId: number,
+  roundNumber: number,
+  map: string,
+  teams: BalancedTeam[],
+  firstMatchNumber: number
+): Promise<DbMatchRow[]> {
   const createdTeams: Array<{ team1Id: string; team2Id: string }> = [];
 
   const now = Math.floor(Date.now() / 1000);
@@ -459,8 +495,9 @@ export async function generateRoundMatches(
   const usedTeamNames = new Set<string>(existingShuffleTeams.map((t) => t.name));
 
   // Create matches for each team pair
-  for (let matchNum = 0; matchNum < teams.length / 2; matchNum++) {
-    const team1Index = matchNum * 2;
+  for (let pair = 0; pair < teams.length / 2; pair++) {
+    const matchNum = firstMatchNumber - 1 + pair;
+    const team1Index = pair * 2;
     const team2Index = team1Index + 1;
 
     if (team2Index >= teams.length) {
@@ -563,14 +600,84 @@ export async function generateRoundMatches(
       matches.push(match);
     }
   }
+  return matches;
+}
 
-  log.success(`Generated ${matches.length} matches for round ${roundNumber}`, {
+/**
+ * Players who joined a running shuffle (or sat this round out) play now when
+ * there are enough of them: the round gets extra matches from its bench
+ * instead of them waiting for the next round. With bot fill two players are
+ * enough (short teams get bots); otherwise it takes two full teams. Returns
+ * the new matches' slugs, already handed to allocation.
+ */
+export async function fillRoundFromBench(tournamentId: number): Promise<string[]> {
+  const tournament = await getShuffleTournament(tournamentId);
+  if (!tournament || tournament.status !== 'in_progress') return [];
+  const top = await db.queryOneAsync<{ round: number | null; open: number }>(
+    `SELECT MAX(round) AS round,
+            SUM(CASE WHEN status NOT IN ('completed', 'cancelled') THEN 1 ELSE 0 END)::INTEGER AS open
+       FROM matches WHERE tournament_id = ?`,
+    [tournamentId]
+  );
+  const roundNumber = top?.round ?? null;
+  // A round that has finished is about to be replaced by the next one, which draws everyone.
+  if (roundNumber === null || !top?.open) return [];
+  const mapSequence = tournament.mapSequence || tournament.maps;
+  const map = mapSequence[roundNumber - 1];
+  if (!map) return [];
+  const teamSize = tournament.teamSize || 5;
+
+  const roundTeams = await db.queryAsync<{ players: string | null }>(
+    `SELECT t.players FROM matches m JOIN teams t ON t.id IN (m.team1_id, m.team2_id)
+      WHERE m.tournament_id = ? AND m.round = ?`,
+    [tournamentId, roundNumber]
+  );
+  const playing = new Set(
+    roundTeams.flatMap((t) => (JSON.parse(t.players || '[]') as Player[]).map((p) => p.steamId))
+  );
+  const bench = (await getRegisteredPlayers(tournamentId)).filter((p) => !playing.has(p.id));
+
+  const botFill =
+    getIntegration(tournament.game ?? DEFAULT_GAME).fillsShortTeams?.(tournament) ?? false;
+  let teamCount: number;
+  if (botFill) {
+    teamCount = Math.ceil(bench.length / teamSize);
+    if (teamCount % 2 === 1)
+      teamCount = teamCount + 1 <= bench.length ? teamCount + 1 : teamCount - 1;
+  } else {
+    teamCount = Math.floor(bench.length / (teamSize * 2)) * 2;
+  }
+  if (teamCount < 2) return [];
+  const take = bench.slice(0, Math.min(bench.length, teamCount * teamSize));
+
+  const existing = await db.queryOneAsync<{ n: number }>(
+    'SELECT COUNT(*)::INTEGER AS n FROM matches WHERE tournament_id = ? AND round = ?',
+    [tournamentId, roundNumber]
+  );
+  const { teams } = await balanceTeams(
+    take.map((p) => p.id),
+    teamSize,
+    true,
+    tournament.game,
+    teamCount
+  );
+  const matches = await insertRoundMatches(
+    tournament,
+    tournamentId,
+    roundNumber,
     map,
-    players: players.length,
-    teams: teams.length,
-  });
-
-  return { matches, teams };
+    teams,
+    Number(existing?.n ?? 0) + 1
+  );
+  const slugs = matches.map((m) => m.slug);
+  log.info(`Round ${roundNumber}: ${slugs.length} extra match(es) from the bench`, { slugs });
+  if (slugs.length > 0) {
+    const { scheduler } = await import('../core/scheduler');
+    void scheduler
+      .allocateSpecificMatches(tournamentId, slugs, process.env.FRONTEND_BASE_URL ?? '')
+      .catch((error) => log.error('Allocating bench matches failed', { error }));
+  }
+  return slugs;
 }
 
 /**

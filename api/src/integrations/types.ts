@@ -861,6 +861,12 @@ export interface GameIntegration {
    */
   usesPreMatchPhase?(tournament: { settings?: unknown }): boolean;
   /**
+   * Whether the game fills a short team with bots in this tournament (CS2:
+   * `settings.cs2.fillTeamsWithBots`). A shuffle round then gives every
+   * player a team instead of sitting some out. Omitted means `false`.
+   */
+  fillsShortTeams?(tournament: { settings?: unknown }): boolean;
+  /**
    * A match got both participants and `isReadyToAllocate` returned `false`:
    * run the integration's pre-match phase. The integration readies and
    * allocates the match when the phase ends (CS2 simulation: the automated

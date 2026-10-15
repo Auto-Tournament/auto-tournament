@@ -16,6 +16,7 @@ import {
   registerPlayers,
   setRegisteredPlayers,
   getRegisteredPlayers,
+  fillRoundFromBench,
   generateRoundMatches,
   getTournamentLeaderboard,
   type ShuffleTournamentConfig,
@@ -2524,6 +2525,8 @@ router.post('/:id/register-players', async (req: Request, res: Response) => {
     }
 
     const result = await registerPlayers(tournamentId, playerIds);
+    // Added to a running shuffle: enough players waiting get a match now.
+    if (result.registered > 0) await fillRoundFromBench(tournamentId).catch(() => []);
 
     const statusCode = result.errors.length > 0 ? 207 : 200; // 207 Multi-Status if some failed
 

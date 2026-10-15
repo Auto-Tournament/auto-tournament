@@ -281,6 +281,9 @@ export const cs2Integration: GameIntegration = {
   },
 
   /** The map veto runs unless the tournament turned it off (`settings.cs2.veto: false`). */
+  fillsShortTeams(tournament) {
+    return storedCs2Settings(tournament.settings)?.fillTeamsWithBots === true;
+  },
   usesPreMatchPhase(tournament) {
     return vetoOn(tournament.settings);
   },
