@@ -22,9 +22,11 @@ import { useMatchmaking } from '../matchmaking/matchmakingStore';
 
 interface Listed {
   id: number;
+  name: string;
   type: string;
   status: string;
   viewerTeamId: string | null;
+  mine?: boolean;
   draft: boolean;
 }
 
@@ -32,6 +34,8 @@ const OUT_SHOWN_FOR_S = 3600;
 
 export function NavTournamentStatus({ viewerId }: { viewerId: string }) {
   const [running, setRunning] = React.useState<{ id: number; teamId: string } | null>(null);
+  // A shuffle the viewer plays in has no team: its pill reads the current round.
+  const [shuffle, setShuffle] = React.useState<{ id: number; name: string } | null>(null);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -48,6 +52,10 @@ export function NavTournamentStatus({ viewerId }: { viewerId: string }) {
               (x.type === 'single_elimination' || x.type === 'double_elimination')
           );
           setRunning(t?.viewerTeamId ? { id: t.id, teamId: t.viewerTeamId } : null);
+          const sh = (r.tournaments ?? []).find(
+            (x) => !x.draft && x.mine && x.type === 'shuffle' && x.status === 'in_progress'
+          );
+          setShuffle(sh ? { id: sh.id, name: sh.name } : null);
         })
         .catch(() => undefined);
     void load();
@@ -58,8 +66,66 @@ export function NavTournamentStatus({ viewerId }: { viewerId: string }) {
     };
   }, [viewerId]);
 
-  if (!running) return null;
-  return <StatusPill key={running.id} tournamentId={running.id} teamId={running.teamId} />;
+  if (running) {
+    return <StatusPill key={running.id} tournamentId={running.id} teamId={running.teamId} />;
+  }
+  if (shuffle) {
+    return (
+      <ShufflePill
+        key={shuffle.id}
+        tournamentId={shuffle.id}
+        name={shuffle.name}
+        viewerId={viewerId}
+      />
+    );
+  }
+  return null;
+}
+
+/** Between a shuffle's matches: the round and whether the viewer sits it out. */
+function ShufflePill({
+  tournamentId,
+  name,
+  viewerId,
+}: {
+  tournamentId: number;
+  name: string;
+  viewerId: string;
+}) {
+  const { t } = useTranslation();
+  const [state, setState] = React.useState<{ round: number | null; sittingOut: string[] } | null>(
+    null
+  );
+  React.useEffect(() => {
+    let cancelled = false;
+    const load = () =>
+      api
+        .get<{ round: number | null; sittingOut: string[] }>(
+          `/api/tournament/${tournamentId}/shuffle-round`
+        )
+        .then((r) => !cancelled && setState(r))
+        .catch(() => undefined);
+    void load();
+    const id = window.setInterval(load, 20_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [tournamentId]);
+  if (!state || state.round === null) return null;
+  const sitting = state.sittingOut.includes(viewerId);
+  return (
+    <PillButton
+      to={tournamentTabPath(tournamentId)}
+      dot={sitting ? tokens.color.muted : tokens.color.live}
+      label={name}
+      value={
+        sitting
+          ? t('navStatus.shuffleSittingOut', { round: state.round })
+          : t('navStatus.shuffleRound', { round: state.round })
+      }
+    />
+  );
 }
 
 function StatusPill({ tournamentId, teamId }: { tournamentId: number; teamId: string }) {
@@ -97,6 +163,20 @@ function StatusPill({ tournamentId, teamId }: { tournamentId: number; teamId: st
     to = tournamentTabPath(tournamentId);
   }
 
+  return <PillButton to={to} dot={dot} label={label} value={value} />;
+}
+
+function PillButton({
+  to,
+  dot,
+  label,
+  value,
+}: {
+  to: string;
+  dot: string;
+  label: string;
+  value: string;
+}) {
   return (
     <Button
       component={RouterLink}

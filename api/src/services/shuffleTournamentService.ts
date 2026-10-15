@@ -761,6 +761,24 @@ export async function advanceToNextRound(tournamentId: number): Promise<{
       [tournamentId]
     );
 
+    // The leaderboard's top three players get the tournament's prizes (CS2: skins).
+    try {
+      const board = await getPlayerLeaderboard(tournamentId);
+      const placed = board
+        .filter((p) => p.matchWins + p.matchLosses > 0 && /^7656\d{13}$/.test(p.playerId))
+        .slice(0, 3)
+        .map((p, i) => ({ place: (i + 1) as 1 | 2 | 3, steamIds: [p.playerId] }));
+      const row = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+        tournamentId,
+      ]);
+      if (row) {
+        const { awardPlacements } = await import('../utils/matchProgression');
+        await awardPlacements(row, placed);
+      }
+    } catch (error) {
+      log.error('Shuffle placements: could not award prizes', { error });
+    }
+
     log.success(
       `Shuffle tournament completed! All ${mapSequence.length} round(s) finished. ` +
         `Final leaderboard available at /tournament/${tournamentId}/leaderboard`
