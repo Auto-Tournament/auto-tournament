@@ -1183,6 +1183,9 @@
     "roundsCount_one": "{{count}} round",
     "roundsCount_other": "{{count}} rounds",
     "now": "Now",
-    "tagLeft": "Left"
+    "tagLeft": "Left",
+    "markOut": "Mark out",
+    "markIn": "Back in",
+    "roundShort": "Round {{round}}"
   }
 }

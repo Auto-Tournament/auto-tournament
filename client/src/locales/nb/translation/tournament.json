@@ -1183,6 +1183,9 @@
     "roundsCount_one": "{{count}} runde",
     "roundsCount_other": "{{count}} runder",
     "now": "Nå",
-    "tagLeft": "Gått"
+    "tagLeft": "Gått",
+    "markOut": "Sett ut",
+    "markIn": "Tilbake",
+    "roundShort": "Runde {{round}}"
   }
 }
