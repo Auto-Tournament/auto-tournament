@@ -35,6 +35,7 @@ export default function TournamentOverview() {
   const { tournament, teams, players, viewerTeam } = useTournamentPage();
   const { matches } = usePublicBracket(tournament.id);
   const RulesView = useIntegrationFor(tournament).tournamentRulesView;
+  const PrizesView = useIntegrationFor(tournament).tournamentPrizesView;
   const liveMatches = matches.filter(isLiveMatch).sort(compareMatchOrder);
   const isShuffle = tournament.type === 'shuffle';
   const maps = tournament.maps ?? [];
@@ -201,6 +202,9 @@ export default function TournamentOverview() {
           </Button>
         </Box>
       )}
+
+      {/* What the tournament gives (CS2: skins), before it is over; the results show who won it. */}
+      {PrizesView && tournament.status !== 'completed' && <PrizesView tournament={tournament} />}
 
       {(maps.length > 0 || !isShuffle) && (
         <Box

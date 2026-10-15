@@ -2,7 +2,7 @@ import { useEffect, useState, type DragEvent } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, ButtonBase, Dialog, IconButton, Link, Typography } from '@mui/material';
 import {
-  InfoIcon,
+  WarningIcon,
   EyeIcon,
   PlayCircleIcon,
   PlusIcon,
@@ -34,29 +34,37 @@ export function sourceLabel(label: string): string {
 /** The fixed notice: skins exist only here. Admins cannot change it. */
 export function VirtualNotice({ compact = false }: { compact?: boolean }) {
   const { t } = useModuleTranslation('cs2');
+  // A warning, not a footnote: players (kids too) must not think a real CS2 skin is being given
+  // away, by this site or by anyone running a tournament on it.
   return (
     <Box
       data-testid="skins-notice"
+      role="note"
       sx={{
         // Wraps on a narrow inventory instead of being cut off (a pill can't hold two lines).
-        display: 'inline-flex',
+        display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
         maxWidth: '100%',
         minWidth: 0,
         boxSizing: 'border-box',
         gap: 1.25,
-        px: compact ? 0 : 2,
-        py: compact ? 0 : 1.25,
+        px: compact ? 1.5 : 2,
+        py: compact ? 1 : 1.25,
         borderRadius: radii.lg,
-        bgcolor: compact ? 'transparent' : color.paper2,
-        border: compact ? 'none' : `1px solid ${color.rule}`,
+        bgcolor: withAlpha(color.warning, 0.1),
+        border: `1px solid ${withAlpha(color.warning, 0.5)}`,
         fontSize: '0.8125rem',
-        color: compact ? color.muted : color.ink2,
+        color: color.ink,
       }}
     >
-      {!compact && <InfoIcon size={16} aria-hidden />}
-      {t('skins.notice')}
+      <WarningIcon size={18} weight="fill" color={color.warning} aria-hidden />
+      <Box component="span" sx={{ flex: '1 1 16rem', minWidth: 0 }}>
+        <Box component="strong" sx={{ fontWeight: 700 }}>
+          {t('skins.notReal')}
+        </Box>{' '}
+        {t('skins.notice')}
+      </Box>
       {!compact && <WhatThisMeans />}
     </Box>
   );

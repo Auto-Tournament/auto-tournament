@@ -162,5 +162,8 @@
  *
  * 0.2.25 (additive): `playNotificationSound()`, the site's notification sound
  * (the player's own volume), for a module's alerts.
+ *
+ * 0.2.26 (additive): `tournamentPrizesView` with `TournamentPrizesViewProps`
+ * ("What you can win" on the tournament overview).
  */
-export const CLIENT_API_VERSION = '0.2.25';
+export const CLIENT_API_VERSION = '0.2.26';

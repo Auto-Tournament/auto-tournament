@@ -1336,7 +1336,14 @@
     "ttdLine": "Tid til skade {{ms}} ms"
   },
   "skins": {
-    "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi og kan ikke byttes eller selges. Du ser dem i spillet på denne sidens servere.",
+    "prizes": {
+      "title": "Dette kan du vinne",
+      "intro": "Eksempler på hva du kan få av å spille i denne turneringen, fra skinsene på dette nettstedet:",
+      "pickOne": "et {{rarity}}-skin du velger selv (velg 1 av 3)",
+      "matchDrops": "Hver turneringskamp du spiller, kan også gi et skin."
+    },
+    "notReal": "Ikke ekte CS2-skins.",
+    "notice": "De finnes bare på dette nettstedet: de er ikke Steam-gjenstander, har ingen pengeverdi og kan ikke byttes eller selges, og ingen arrangør eller sponsor deler ut ekte skins gjennom dem. Du ser dem i spillet på serverne til dette nettstedet.",
     "equipLabel": "Ta i bruk {{name}}",
     "equippedLabel": "{{name}}, i bruk",
     "new": "NY",
