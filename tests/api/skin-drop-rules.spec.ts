@@ -8,6 +8,7 @@ import {
   modeForTeamSize,
   DEFAULT_CONFIG,
   MIN_DROP_ROUNDS,
+  minDropRounds,
 } from '../../api/src/integrations/cs2/skins/skinService';
 
 /**
@@ -50,6 +51,20 @@ test.describe('skin drop rules', () => {
     expect(dropEligible({ ...game, left: true })).toBe(false);
     expect(dropEligible({ ...game, maxRounds: MIN_DROP_ROUNDS - 1 })).toBe(false);
     expect(dropEligible({ ...game, playerRounds: 0 })).toBe(false);
+  });
+
+  test('a short format counts from its win count (MR6: first to 4)', () => {
+    expect(minDropRounds(6)).toBe(4);
+    expect(minDropRounds(16)).toBe(8);
+    expect(minDropRounds(24)).toBe(8);
+    expect(minDropRounds(null)).toBe(MIN_DROP_ROUNDS);
+    // A 4–0 MR6 game drops; a 3-round walkover does not.
+    expect(dropEligible({ left: false, maxRounds: 4, playerRounds: 4, formatMaxRounds: 6 })).toBe(
+      true
+    );
+    expect(dropEligible({ left: false, maxRounds: 3, playerRounds: 3, formatMaxRounds: 6 })).toBe(
+      false
+    );
   });
 
   test('a tournament game plays like the mode of its team size', () => {
