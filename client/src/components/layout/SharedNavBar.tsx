@@ -193,7 +193,8 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
         </Link>
       </span>,
       'success',
-      { persist: true, key: readyToastKey }
+      // Gone by itself after 10 s: the navbar's match button stays (2026-10-15 crew test).
+      { autoHideMs: 10_000, key: readyToastKey }
     );
     soundNotification.playNotification();
   }, [
