@@ -39,6 +39,7 @@ export const PLUGIN_CATALOG = [
   'midas',
   'deathmatch',
   'mapvote',
+  'community',
   'addons',
 ] as const;
 export type CatalogPlugin = (typeof PLUGIN_CATALOG)[number];
@@ -61,9 +62,9 @@ export const ESSENTIALS_BUNDLE_PLUGINS: readonly CatalogPlugin[] = [
 export const PLUGIN_PRESETS = {
   tournament: ['match', 'essentials', 'whitelist'],
   practice: ['practice', 'essentials'],
-  fun: ['match', 'skins', 'midas', 'deathmatch', 'mapvote', 'essentials'],
+  fun: ['match', 'skins', 'midas', 'deathmatch', 'mapvote', 'community', 'essentials'],
   // Skin tryout: practice with skins, no matches; the inventory links to it.
-  tryout: ['practice', 'skins', 'mapvote', 'essentials'],
+  tryout: ['practice', 'skins', 'mapvote', 'community', 'essentials'],
 } as const satisfies Record<string, readonly CatalogPlugin[]>;
 
 export type PluginPresetName = keyof typeof PLUGIN_PRESETS;

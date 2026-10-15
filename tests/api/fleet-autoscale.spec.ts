@@ -587,7 +587,7 @@ test.describe.serial('Fleet autoscale (csm)', () => {
       (msg) => msg.type === 'cmd' && (msg.payload as { name: string }).name === 'plugins.set'
     );
     expect((set.payload as { args: unknown }).args).toEqual({
-      enable: ['match', 'essentials', 'skins', 'midas', 'deathmatch', 'mapvote'],
+      enable: ['match', 'essentials', 'skins', 'midas', 'deathmatch', 'mapvote', 'community'],
       disable: ['practice', 'whitelist', 'addons'],
     });
   });

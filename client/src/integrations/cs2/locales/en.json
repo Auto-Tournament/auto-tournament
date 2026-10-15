@@ -1268,6 +1268,7 @@
       "midas": "Midas",
       "deathmatch": "Deathmatch",
       "mapvote": "Map vote",
+      "community": "Community",
       "addons": "Addons"
     },
     "pluginHelp": {
@@ -1278,6 +1279,7 @@
       "midas": "Gold weapon models",
       "deathmatch": "Deathmatch modes",
       "mapvote": "Map voting: .rtv, .nominate, end-of-map vote",
+      "community": "Community commands: .rank, .top, .speclist, admin .kick",
       "addons": "Workshop addons"
     },
     "required": "Always on",
