@@ -1115,7 +1115,9 @@
     "shuffleTitle": "Neste runde: nye lag",
     "shuffleBody": "Når alle kampene i runden er ferdige, trekkes nye lag, og neste kamp dukker opp her.",
     "stayHere": "Bli på denne siden: den oppdateres av seg selv.",
-    "openTournament": "Åpne turneringen"
+    "openTournament": "Åpne turneringen",
+    "winsToTitle_one": "Én seier til, så er tittelen deres",
+    "winsToTitle_other": "{{count}} seiere til tittelen"
   },
   "navStatus": {
     "placed": "Endte på",

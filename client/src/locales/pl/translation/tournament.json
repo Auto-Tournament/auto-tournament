@@ -1117,7 +1117,9 @@
     "shuffleTitle": "Next round: new teams",
     "shuffleBody": "When every match of this round is done, new teams are drawn and your next match shows up here.",
     "stayHere": "Stay on this page: it updates by itself.",
-    "openTournament": "Open the tournament"
+    "openTournament": "Open the tournament",
+    "winsToTitle_one": "One more win for the title",
+    "winsToTitle_other": "{{count}} more wins to the title"
   },
   "navStatus": {
     "placed": "Placed",

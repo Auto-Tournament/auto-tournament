@@ -31,7 +31,7 @@ export function WhatsNextCard({
   matchSlug: string;
 }) {
   const { t } = useTranslation();
-  const { tournament, matches, loading } = usePublicBracket(tournamentId);
+  const { tournament, matches, totalRounds, loading } = usePublicBracket(tournamentId);
   const { available: matchmakingAvailable } = useMatchmaking();
   if (loading || !tournament) return null;
 
@@ -40,6 +40,13 @@ export function WhatsNextCard({
   const placement = placementFor(tournament, matches, teamId);
   const next = placement ? null : teamCurrentMatch(matches, teamId);
   const otherLive = matches.find((m) => isLiveMatch(m) && m.slug !== matchSlug);
+
+  // Goal-gradient: how far the team is from the title (single elimination, the next
+  // match's round to the final).
+  const winsToTitle =
+    !placement && next && tournament.type === 'single_elimination' && totalRounds > 0
+      ? totalRounds - next.round + 1
+      : null;
 
   let eyebrow = t('whatsNext.eyebrow');
   let title: string;
@@ -131,6 +138,14 @@ export function WhatsNextCard({
           >
             {title}
           </Typography>
+          {winsToTitle !== null && winsToTitle > 0 && (
+            <Typography
+              sx={{ color: tokens.color.warning, fontWeight: 600 }}
+              data-testid="whats-next-to-title"
+            >
+              {t('whatsNext.winsToTitle', { count: winsToTitle })}
+            </Typography>
+          )}
           <Typography sx={{ color: 'text.secondary', lineHeight: 1.55 }}>{body}</Typography>
         </Box>
         <Stack spacing={1.25}>
