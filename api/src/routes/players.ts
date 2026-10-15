@@ -1184,10 +1184,11 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     }
 
     // Get tournament status and format
-    const tournament = await db.queryOneAsync<{ status: string; format: string }>(
-      'SELECT status, format FROM tournament WHERE id = ?',
-      [match.tournament_id]
-    );
+    const tournament = await db.queryOneAsync<{
+      status: string;
+      format: string;
+      settings: unknown;
+    }>('SELECT status, format, settings FROM tournament WHERE id = ?', [match.tournament_id]);
 
     // Note: We're NOT exposing RCON password to players
     const serverPassword = null;
@@ -1377,7 +1378,20 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
           expected_players_total: cfg.playersPerTeam !== undefined ? cfg.playersPerTeam * 2 : 10,
           expected_players_team1: cfg.playersPerTeam ?? 5,
           expected_players_team2: cfg.playersPerTeam ?? 5,
-          vetoDisabled: cfg.skipPreMatchPhase,
+          // Before the match has a config (a later round in its break), the tournament says
+          // whether there is a veto: the page showed one for a tournament without (2026-10-15).
+          vetoDisabled:
+            cfg.skipPreMatchPhase ??
+            (tournament
+              ? !(
+                  integrationForMatch(match).usesPreMatchPhase?.({
+                    settings:
+                      typeof tournament.settings === 'string'
+                        ? JSON.parse(tournament.settings)
+                        : tournament.settings,
+                  }) ?? true
+                )
+              : undefined),
           team1: {
             id: cfg.team1.id,
             name: cfg.team1.name,

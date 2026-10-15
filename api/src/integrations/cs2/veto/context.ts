@@ -15,7 +15,13 @@ import { storedCs2Settings } from '../tournamentSettings';
 export type VetoContext = {
   format: 'bo1' | 'bo3' | 'bo5';
   tournamentMaps: string[];
-  customVetoOrder?: { bo1?: unknown[]; bo3?: unknown[]; bo5?: unknown[] };
+  customVetoOrder?: {
+    bo1?: unknown[];
+    bo3?: unknown[];
+    bo5?: unknown[];
+  };
+  /** The tournament turned the veto off (maps are drawn). */
+  vetoOff?: boolean;
 };
 
 /**
@@ -45,6 +51,8 @@ export async function getVetoContext(match: DbMatchRow): Promise<VetoContext | n
     format: tournament.format as 'bo1' | 'bo3' | 'bo5',
     tournamentMaps: storedCs2Settings(tournamentSettings)?.maps ?? [],
     customVetoOrder: tournamentSettings.customVetoOrder,
+    // `settings.cs2.veto: false`: the tournament draws maps instead.
+    vetoOff: storedCs2Settings(tournamentSettings)?.veto === false,
   };
 }
 
