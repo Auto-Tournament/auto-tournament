@@ -1,5 +1,5 @@
 import { test, expect, request as playwrightRequest } from '@playwright/test';
-import { getAuthHeader, signInAsPlayerViaRequest } from '../helpers/auth';
+import { getAuthHeader, signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 import { createShuffleTournament } from '../helpers/shuffleTournament';
 
 /**
@@ -11,6 +11,8 @@ const TAGS = { tag: ['@api', '@shuffle'] };
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3069';
 
 test('a player joins and leaves a shuffle tournament without a team', TAGS, async ({ request }) => {
+  // Creating a shuffle takes an admin session, not a token.
+  expect(await signInViaRequest(request)).toBe(true);
   const tournament = await createShuffleTournament(request, {
     name: `Self Join ${Date.now()}`,
     maxRounds: 6,
