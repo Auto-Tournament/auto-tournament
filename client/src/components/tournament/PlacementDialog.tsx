@@ -15,7 +15,7 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material';
-import { TrophyIcon } from '@phosphor-icons/react';
+import { GameControllerIcon, TreeStructureIcon, TrophyIcon } from '@phosphor-icons/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
@@ -125,7 +125,7 @@ function PlacementWatch({
     matches.flatMap((m) => [m.team1, m.team2]).find((team) => team?.id === teamId)?.name ?? '';
 
   return (
-    <Dialog open onClose={close} maxWidth="xs" fullWidth data-testid="placement-dialog">
+    <Dialog open onClose={close} maxWidth="sm" fullWidth data-testid="placement-dialog">
       <DialogTitle>
         {placement.champion
           ? t('placement.wonTitle', { tournament: name })
@@ -164,15 +164,23 @@ function PlacementWatch({
               : t('placement.outBody')}
         </Typography>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={close}>{t('placement.close')}</Button>
+      {/* One clear next step (matchmaking when it is on, else the bracket), the bracket as a
+          second step with its own icon, and Close as plain text: three equal pill buttons
+          read as a row of choices with no answer (live test, 2026-10-15). */}
+      <DialogActions sx={{ px: 3, pb: 2.5, gap: 1, flexWrap: 'wrap' }}>
+        <Button onClick={close} color="inherit" sx={{ mr: 'auto', color: 'text.secondary' }}>
+          {t('placement.close')}
+        </Button>
         {!placement.champion && matchmakingAvailable ? (
           <>
             <Button
               component={RouterLink}
               to={tournamentTabPath(tournamentId, 'bracket')}
               onClick={close}
+              variant="outlined"
+              startIcon={<TreeStructureIcon size={18} aria-hidden />}
               data-testid="placement-dialog-bracket"
+              sx={{ whiteSpace: 'nowrap' }}
             >
               {t('placement.seeBracket')}
             </Button>
@@ -181,7 +189,9 @@ function PlacementWatch({
               to={paths.play}
               variant="contained"
               onClick={close}
+              startIcon={<GameControllerIcon size={18} weight="fill" aria-hidden />}
               data-testid="placement-dialog-play"
+              sx={{ whiteSpace: 'nowrap' }}
             >
               {t('whatsNext.playMatchmaking')}
             </Button>
@@ -192,7 +202,9 @@ function PlacementWatch({
             to={tournamentTabPath(tournamentId, 'bracket')}
             variant="contained"
             onClick={close}
+            startIcon={<TreeStructureIcon size={18} aria-hidden />}
             data-testid="placement-dialog-bracket"
+            sx={{ whiteSpace: 'nowrap' }}
           >
             {t('placement.seeBracket')}
           </Button>

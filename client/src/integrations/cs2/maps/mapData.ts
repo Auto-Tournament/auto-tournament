@@ -68,7 +68,18 @@ export const CS2_MAPS: CS2MapData[] = [
 ];
 
 export const getMapData = (mapName: string): CS2MapData | undefined => {
-  return CS2_MAPS.find((m) => m.name === mapName);
+  const known = CS2_MAPS.find((m) => m.name === mapName);
+  if (known) return known;
+  // Any other map csm has a picture of (Overpass, the wingman pool, workshop surf maps): the same
+  // file names. Undefined here left the match room without its map picture (2026-10-15).
+  const bare = mapName.split('/').pop() ?? mapName;
+  if (!/^[a-z0-9_]+$/i.test(bare)) return undefined;
+  return {
+    name: bare,
+    displayName: titleCaseMapName(bare) || bare,
+    image: getFullImageUrl(bare),
+    thumbnail: getThumbnailUrl(bare),
+  } as CS2MapData;
 };
 
 /**
