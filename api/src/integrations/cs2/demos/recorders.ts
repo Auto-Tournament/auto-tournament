@@ -472,6 +472,21 @@ export async function recorderFault(recorder: string, ids: number[], error: stri
     );
   }
   await queueMatchReelFor(ids);
+  // An imported demo that never ticks is usually from an older CS2 build the
+  // current game cannot play: the demo's fault, so it fails its own moments
+  // but does not pause the recorder (2026-10-15: old LAN demos paused every
+  // recorder while a live tournament needed them).
+  if (/first tick/i.test(error) && ids.length > 0) {
+    const imported = await db.queryOneAsync<{ n: number }>(
+      `SELECT COUNT(*)::INTEGER AS n FROM cs2_highlights h LEFT JOIN matches m ON m.slug = h.match_slug
+        WHERE h.id IN (${ids.map(() => '?').join(', ')}) AND m.tournament_id IS NULL`,
+      ids
+    );
+    if (Number(imported?.n ?? 0) === ids.length) {
+      log.warn(`[RECORDERS] ${recorder} could not play an imported demo: ${error.slice(0, 200)}`);
+      return;
+    }
+  }
   const r = await db.queryOneAsync<{ faults_in_row: number }>(
     `UPDATE cs2_recorders SET faults_in_row = faults_in_row + 1 WHERE name = ? RETURNING faults_in_row`,
     [recorder]
