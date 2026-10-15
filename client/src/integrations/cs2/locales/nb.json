@@ -1336,7 +1336,8 @@
     "ttdLine": "Tid til skade {{ms}} ms"
   },
   "skins": {
-    "notice": "Virtuelle skins. De finnes bare på Auto Tournament, har ingen pengeverdi og kan ikke byttes eller selges. Du ser dem i spillet på denne sidens servere.",
+    "notReal": "Ikke ekte CS2-skins.",
+    "notice": "De finnes bare på dette nettstedet: de er ikke Steam-gjenstander, har ingen pengeverdi og kan ikke byttes eller selges, og ingen arrangør eller sponsor deler ut ekte skins gjennom dem. Du ser dem i spillet på serverne til dette nettstedet.",
     "equipLabel": "Ta i bruk {{name}}",
     "equippedLabel": "{{name}}, i bruk",
     "new": "NY",

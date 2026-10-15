@@ -1336,7 +1336,8 @@
     "ttdLine": "Time to damage {{ms}} ms"
   },
   "skins": {
-    "notice": "Virtual skins. They only exist on Auto Tournament, have no money value and can't be traded or sold. You see them in game on this site's servers.",
+    "notReal": "Non sono vere skin di CS2.",
+    "notice": "Esistono solo su questo sito: non sono oggetti Steam, non hanno valore in denaro, non si possono scambiare né vendere, e nessun organizzatore o sponsor regala skin vere tramite esse. Le vedi in gioco sui server di questo sito.",
     "equipLabel": "Equip {{name}}",
     "equippedLabel": "{{name}}, equipped",
     "new": "NEW",

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Button, Dialog, Typography } from '@mui/material';
-import { sourceLabel, WearBar } from './SkinParts';
+import { sourceLabel, VirtualNotice, WearBar } from './SkinParts';
 import {
   useModuleTranslation,
   useSnackbar,
@@ -218,6 +218,9 @@ function Reveal() {
             <Typography sx={{ color: color.muted }}>{sourceLabel(skin.sourceLabel)}</Typography>
           )}
           {skin.source === 'matchmaking' && skin.sourceRef && <MatchPill slug={skin.sourceRef} />}
+        </Box>
+        <Box sx={{ width: '100%', maxWidth: 640 }}>
+          <VirtualNotice compact />
         </Box>
         <Box
           sx={{
