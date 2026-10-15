@@ -112,6 +112,16 @@ export class Cs2ServerPool {
    * Mirrors the constants above so callers (e.g. shuffle round advancement)
    * can schedule delayed batch allocations without duplicating timings.
    */
+  /**
+   * Seconds a server sits out after its match ends: the series-end kick delay players get
+   * to see the result, plus 15 s for the kick and reset. Simulation (bots only): none.
+   */
+  async serverCooldownSeconds(): Promise<number> {
+    if (await settingsService.isSimulationModeEnabled()) return 0;
+    const { cs2Settings } = await import('./settingsReaders');
+    return (await cs2Settings.getAtSeriesEndKickDelayNoDemo()) + 15;
+  }
+
   async getEffectiveGracePeriodSeconds(): Promise<number> {
     const isSimulation = await settingsService.isSimulationModeEnabled();
     return isSimulation
@@ -335,6 +345,28 @@ export class Cs2ServerPool {
     );
     const dbBusyServers = new Set(dbBusyRows.map((row) => row.server_id));
     const now = Math.floor(Date.now() / 1000);
+
+    // A server that just finished a match keeps its players for the series-end kick delay
+    // (the result, a gg): Ready Up reports itself free as soon as the match is unassigned,
+    // so the next match loaded the next map 1 s after the last one ended, over the end
+    // card (2026-10-15). Hold it until the delay has passed, plus a margin.
+    const cooldown = await this.serverCooldownSeconds();
+    if (cooldown > 0) {
+      const recent = await db.queryAsync<{ server_id: string; ended: number }>(
+        `SELECT server_id, MAX(completed_at) AS ended
+           FROM matches
+          WHERE server_id IS NOT NULL AND server_id != '' AND completed_at IS NOT NULL
+            AND completed_at > ?
+          GROUP BY server_id`,
+        [now - cooldown]
+      );
+      for (const row of recent) {
+        log.debug(
+          `Server ${row.server_id} finished a match ${now - Number(row.ended)}s ago; free in ${cooldown - (now - Number(row.ended))}s`
+        );
+        dbBusyServers.add(row.server_id);
+      }
+    }
 
     const available = await this.availableFleetServers(
       servers,
