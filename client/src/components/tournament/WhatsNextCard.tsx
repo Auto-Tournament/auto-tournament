@@ -87,6 +87,9 @@ export function WhatsNextCard({
       label: t('whatsNext.openMatchRoom'),
       testId: 'whats-next-open',
     };
+  } else if (tournament.type === 'shuffle' && tournament.status === 'completed') {
+    title = t('whatsNext.shuffleDoneTitle');
+    body = t('whatsNext.shuffleDoneBody');
   } else if (tournament.type === 'shuffle') {
     title = t('whatsNext.shuffleTitle');
     body = t('whatsNext.shuffleBody');

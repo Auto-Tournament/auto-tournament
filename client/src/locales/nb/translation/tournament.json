@@ -1133,7 +1133,9 @@
     "stayHere": "Bli på denne siden: den oppdateres av seg selv.",
     "openTournament": "Åpne turneringen",
     "winsToTitle_one": "Én seier til, så er tittelen deres",
-    "winsToTitle_other": "{{count}} seiere til tittelen"
+    "winsToTitle_other": "{{count}} seiere til tittelen",
+    "shuffleDoneTitle": "Det var siste runde",
+    "shuffleDoneBody": "Shufflen er ferdig. Åpne turneringen for å se tabellen."
   },
   "navStatus": {
     "placed": "Endte på",
@@ -1171,6 +1173,13 @@
       "live": "Pågår",
       "done": "Ferdig",
       "waiting": "Starter"
-    }
+    },
+    "finishedTitle": "Shufflen er ferdig",
+    "finishedBody_one": "Runden er spilt. Godt spilt!",
+    "finishedBody_other": "Alle {{count}} rundene er spilt. Godt spilt!",
+    "roundOf": "Runde {{round}} av {{total}}",
+    "roundsCount_one": "{{count}} runde",
+    "roundsCount_other": "{{count}} runder",
+    "now": "Nå"
   }
 }
