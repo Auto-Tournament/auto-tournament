@@ -60,7 +60,8 @@ export const CS2_DEFAULTS: Cs2TournamentSettings = {
   maps: [],
   maxRounds: 24,
   overtimeMode: 'enabled',
-  overtimeSegments: null,
+  // One overtime, then team damage decides: a new tournament's default.
+  overtimeSegments: 1,
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -116,6 +117,8 @@ export function cs2SettingsOf(
 ): Cs2TournamentSettings {
   const result: Cs2TournamentSettings = { ...CS2_DEFAULTS, maps: [] };
   if (!settings) return result;
+  // Stored without a count means unlimited overtime (tournaments from before the default).
+  result.overtimeSegments = null;
   applyFields(result, {
     ...(typeof settings.maxRounds === 'number' ? { maxRounds: settings.maxRounds } : {}),
     ...(settings.overtimeMode ? { overtimeMode: settings.overtimeMode } : {}),

@@ -322,8 +322,16 @@ function applyLayer(
   }
 }
 
-/** A new tournament's rules when the request leaves them out: 24 rounds, overtime on. */
-const TOURNAMENT_DEFAULTS: Cs2TournamentSettings = { maxRounds: 24, overtimeMode: 'enabled' };
+/**
+ * A new tournament's rules when the request leaves them out: 24 rounds, one
+ * overtime, then total team damage decides (a LAN schedule cannot take endless
+ * overtimes).
+ */
+const TOURNAMENT_DEFAULTS: Cs2TournamentSettings = {
+  maxRounds: 24,
+  overtimeMode: 'enabled',
+  overtimeSegments: 1,
+};
 
 export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettings> = {
   key: CS2_SETTINGS_KEY,
