@@ -269,6 +269,16 @@ function Reveal() {
           <WearBar float={skin.float} pattern={skin.pattern} />
         </Box>
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
+          {/* Closing is the main button: a player who just wants it gone must not equip it
+              by accident (2026-10-15: a prize went on when its winner meant OK). */}
+          <Button
+            variant="contained"
+            onClick={close}
+            data-testid="new-skin-done"
+            sx={{ borderRadius: radii.pill, px: 4, py: 1.75, fontWeight: 600 }}
+          >
+            {t('skins.keep')}
+          </Button>
           {/* One-side weapons have one button; the rest pick T, CT or both. */}
           {(skin.side !== null
             ? [{ team: 0 as const, label: t('skins.equipNow'), testId: 'new-skin-equip' }]
@@ -280,7 +290,7 @@ function Reveal() {
           ).map((action) => (
             <Button
               key={action.team}
-              variant="contained"
+              variant="outlined"
               data-testid={action.testId}
               disabled={equipping}
               onClick={() => {
@@ -294,38 +304,20 @@ function Reveal() {
               }}
               sx={{
                 borderRadius: radii.pill,
-                px: 4,
-                py: 1.75,
-                fontWeight: 600,
-                // The side's own colour: CT blue, T orange; both sides plain.
+                px: 3,
+                py: 1.5,
+                // The side's own colour on the outline: CT blue, T orange; both sides plain.
                 ...(skin.side === null && action.team !== 0
                   ? {
-                      bgcolor: action.team === 3 ? color.sideCt : color.sideT,
-                      color: '#111111',
-                      '&:hover': {
-                        bgcolor: action.team === 3 ? color.sideCt : color.sideT,
-                        filter: 'brightness(1.1)',
-                      },
+                      borderColor: action.team === 3 ? color.sideCt : color.sideT,
+                      color: action.team === 3 ? color.sideCt : color.sideT,
                     }
-                  : skin.side === null
-                    ? {
-                        bgcolor: color.ink,
-                        color: color.paper,
-                        '&:hover': { bgcolor: color.ink, filter: 'brightness(0.9)' },
-                      }
-                    : {}),
+                  : {}),
               }}
             >
               {action.label}
             </Button>
           ))}
-          <Button
-            variant="outlined"
-            onClick={close}
-            sx={{ borderRadius: radii.pill, px: 4, py: 1.75 }}
-          >
-            {t('skins.keep')}
-          </Button>
           {unseen.length > 1 && (
             <Button
               variant="text"
