@@ -288,6 +288,18 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     request,
   }) => {
     test.setTimeout(180_000);
+    // The server takes the next match at once (allocation.ts serverCooldownSeconds: a kick
+    // delay of 0 means no wait after a match).
+    await request.put('/api/settings', {
+      headers: getAuthHeader(),
+      data: { atSeriesEndKickDelayNoDemo: 0 },
+    });
+    cleanup.push(async () => {
+      await request.put('/api/settings', {
+        headers: getAuthHeader(),
+        data: { atSeriesEndKickDelayNoDemo: null },
+      });
+    });
     const fake = await FakeReadyUp.enroll(request);
     cleanup.push(() => fake.close());
     await fake.hello();
