@@ -20,6 +20,7 @@ import { compareMatchOrder } from '../utils/matchUtils';
 import { tournamentTabPath } from '../paths';
 import { NextMatchCard } from '../components/match/NextMatchCard';
 import { CardBracket } from '../components/tournament/page/CardBracket';
+import { placementFor } from '../hooks/usePlacement';
 
 /**
  * The tournament page's Overview tab, kept to what a quick look needs (the
@@ -68,6 +69,9 @@ export default function TournamentOverview() {
     !registration &&
     (spotsLeft === null || spotsLeft > 0);
 
+  // The viewer's team is out (or won): "Your team" shows where it finished.
+  const viewerPlaced = !!viewerTeam && !!placementFor(tournament, matches, viewerTeam.id);
+
   // Once it is over, the overview is the results.
   if (tournament.status === 'completed' && !isShuffle) {
     return <TournamentResults tournament={tournament} teams={teams} players={players} />;
@@ -75,8 +79,9 @@ export default function TournamentOverview() {
 
   return (
     <Stack spacing={{ xs: 3, md: 3.5 }} data-testid="public-tournament-overview">
-      {/* While it runs, the viewer's next match first: a link to its match room. */}
-      {tournament.status === 'in_progress' && viewerTeam && (
+      {/* While it runs, the viewer's next match first, one card: a link to its match
+          room. Once the team is out, "Your team" below says where it finished. */}
+      {tournament.status === 'in_progress' && viewerTeam && !viewerPlaced && (
         <NextMatchCard teamId={viewerTeam.id} />
       )}
       <LiveStrip
@@ -85,9 +90,11 @@ export default function TournamentOverview() {
         linkTo={tournamentTabPath(tournament.id, 'matches')}
       />
 
-      {viewerTeam && !(registration && tournament.status === 'setup') && (
-        <YourePlayingPanel tournament={tournament} team={viewerTeam} matches={matches} />
-      )}
+      {viewerTeam &&
+        !(registration && tournament.status === 'setup') &&
+        !(tournament.status === 'in_progress' && !viewerPlaced) && (
+          <YourePlayingPanel tournament={tournament} team={viewerTeam} matches={matches} />
+        )}
 
       {registration && tournament.status === 'setup' && phase === 'checkIn' && signup.window ? (
         <CheckInPanel

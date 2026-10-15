@@ -36,6 +36,7 @@ import { manageMatchPath, teamProfilePath, tournamentTabPath } from '../paths';
 import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { YourMatchCard } from '../components/tournament/match/YourMatchCard';
 import { SpectatorRoom, type SpectatorRoomMatch } from '../components/match/SpectatorRoom';
+import { WhatsNextCard } from '../components/tournament/WhatsNextCard';
 
 type MatchResponse = PublicMatch &
   Omit<SpectatorRoomMatch, 'team1' | 'team2' | 'status'> & {
@@ -357,6 +358,17 @@ export default function MatchPage() {
         </Box>
       ) : (
         publicHeader
+      )}
+
+      {/* The player's match is over: what happens now, and the bracket. They stay here. */}
+      {viewerTeamId && match.tournamentId && match.status === 'completed' && (
+        <Box sx={{ mt: 4 }}>
+          <WhatsNextCard
+            tournamentId={match.tournamentId}
+            teamId={viewerTeamId}
+            matchSlug={match.slug}
+          />
+        </Box>
       )}
 
       {!viewerTeamId && matchIsOn && playsThroughModule && (
