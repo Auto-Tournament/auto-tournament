@@ -140,6 +140,19 @@ export function isSilentMatch(
   return at - lastSeen >= MATCH_SILENT_SECONDS && phase !== 'paused';
 }
 
+/** The last sign of life of a live match, in Unix seconds: its last fleet event, else its load. */
+export function lastSeenSeconds(
+  lastEventAt: string | number | null | undefined,
+  loadedAt: number | null | undefined,
+  at: number
+): number {
+  const last = Number(lastEventAt);
+  // Seconds; a millisecond value (13 digits) is taken as such.
+  if (Number.isFinite(last) && last > 0) return last > 1e12 ? Math.floor(last / 1000) : last;
+  const loaded = Number(loadedAt);
+  return Number.isFinite(loaded) && loaded > 0 ? loaded : at;
+}
+
 /** Notices sweepSilentMatches raised and has not closed, by match. */
 const silentRaised = new Set<string>();
 
@@ -151,20 +164,20 @@ const silentRaised = new Set<string>();
 export async function sweepSilentMatches(at = now()): Promise<void> {
   const rows = await db.queryAsync<{
     slug: string;
-    last_ms: string | number | null;
+    last_at: string | number | null;
     loaded_at: number | null;
   }>(
     `SELECT m.slug, m.loaded_at,
-            (SELECT MAX(e.received_at) FROM cs2_fleet_events e WHERE e.match_slug = m.slug) AS last_ms
+            (SELECT MAX(e.received_at) FROM cs2_fleet_events e WHERE e.match_slug = m.slug) AS last_at
        FROM matches m
       WHERE m.status = 'live' AND m.server_id IS NOT NULL`
   );
   const { liveStateStore } = await import('./fleet/state');
   const silent = new Set<string>();
   for (const row of rows) {
-    const lastSeen = row.last_ms
-      ? Math.floor(Number(row.last_ms) / 1000)
-      : Number(row.loaded_at ?? at);
+    // received_at is Unix seconds (it was read as milliseconds: every live match was
+    // "silent for 29837825 min", 2026-10-15).
+    const lastSeen = lastSeenSeconds(row.last_at, row.loaded_at, at);
     if (at - lastSeen < MATCH_SILENT_SECONDS) continue;
     const record = await liveStateStore.getLiveState(row.slug).catch(() => null);
     if (!isSilentMatch(lastSeen, at, record?.state?.phase)) continue;
