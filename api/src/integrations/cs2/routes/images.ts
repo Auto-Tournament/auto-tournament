@@ -1,3 +1,4 @@
+/* global AbortController, fetch */
 /**
  * Map and skin pictures, served by the platform itself (no CDN on the page).
  *
