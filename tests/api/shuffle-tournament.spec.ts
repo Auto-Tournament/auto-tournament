@@ -52,7 +52,8 @@ test.describe.serial('Shuffle Tournament API', () => {
     }
   });
 
-  test('should create shuffle tournament with valid configuration',
+  test(
+    'should create shuffle tournament with valid configuration',
     {
       tag: ['@api', '@shuffle', '@tournament'],
     },
@@ -183,7 +184,7 @@ test.describe.serial('Shuffle Tournament API', () => {
   );
 
   test(
-    'should reject player registration when tournament is not in setup status',
+    'a running shuffle takes a late player into the next draw; a finished one takes nobody',
     {
       tag: ['@api', '@shuffle', '@players'],
     },
@@ -195,7 +196,7 @@ test.describe.serial('Shuffle Tournament API', () => {
       });
       expect(setup).toBeTruthy();
 
-      // Try to register more players (should fail - tournament is live)
+      // A late player joins a running shuffle (they are drawn from the next round on).
       // Use a unique ID based on timestamp to avoid conflicts
       const uniquePlayerId = `76561198${Date.now().toString().slice(-8)}`;
       const newPlayer = await createPlayer(request, {
@@ -205,9 +206,8 @@ test.describe.serial('Shuffle Tournament API', () => {
       expect(newPlayer).toBeTruthy();
 
       const registration = await registerPlayers(request, [newPlayer!.id]);
-      // Should fail or return error
-      expect(registration?.registered).toBe(0);
-      expect(registration?.errors.length).toBeGreaterThan(0);
+      expect(registration?.registered).toBe(1);
+      expect(registration?.errors).toEqual([]);
     }
   );
 

@@ -14,7 +14,7 @@ const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069';
 const id = (n: number) => `7656119${String(Date.now()).slice(-8)}${n}${n}`.slice(0, 17);
 
 test(
-  'settings on the Notifications page; a new notice in the background shows in the browser',
+  'settings on the Notifications page; a friend request stays in the bell, not a system notification',
   { tag: ['@ui'] },
   async ({ page }) => {
     await page.addInitScript(() => {
@@ -73,13 +73,15 @@ test(
     ).toBe(true);
     await other.dispose();
 
-    await expect
-      .poll(async () =>
-        page.evaluate(() =>
-          (window as unknown as { __shown: Array<{ title: string }> }).__shown.map((n) => n.title)
-        )
-      )
-      .toContainEqual(expect.stringContaining('Sender Two'));
+    // System notifications are for what needs the player now (their match, a party invite);
+    // a friend request waits in the bell (2026-10-15).
+    await page.getByTestId('nav-bell').click();
+    await expect(page.getByTestId('bell-list')).toContainText('Sender Two', { timeout: 15000 });
+    await page.keyboard.press('Escape');
+    const shown = await page.evaluate(() =>
+      (window as unknown as { __shown: Array<{ title: string }> }).__shown.map((n) => n.title)
+    );
+    expect(shown.filter((title) => title.includes('Sender Two'))).toEqual([]);
   }
 );
 
