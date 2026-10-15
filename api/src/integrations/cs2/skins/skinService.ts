@@ -159,6 +159,16 @@ export type SmallMode = '2v2' | '1v1';
 export const MIN_DROP_ROUNDS = 8;
 
 /**
+ * The rounds a game must go to drop, for a format of `maxRounds` (MR6 is 6):
+ * MIN_DROP_ROUNDS, or a short format's win count (first to 4 in MR6), since a
+ * full MR6 or wingman game can end in 4 rounds (2026-10-15: MR6 never dropped).
+ */
+export function minDropRounds(maxRounds: number | null | undefined): number {
+  if (!maxRounds || !Number.isFinite(maxRounds) || maxRounds <= 0) return MIN_DROP_ROUNDS;
+  return Math.min(MIN_DROP_ROUNDS, Math.floor(maxRounds / 2) + 1);
+}
+
+/**
  * One player's drop chance (0–100) for a finished matchmaking game: the
  * mode's win or play chance. With repeatOpponentCut on, much less from the
  * third game against the same opponents in a day (no farming one friend);
@@ -192,8 +202,12 @@ export function dropEligible(game: {
   left: boolean;
   maxRounds: number;
   playerRounds: number;
+  /** The format's max rounds (minDropRounds); absent: MIN_DROP_ROUNDS. */
+  formatMaxRounds?: number | null;
 }): boolean {
-  return !game.left && game.maxRounds >= MIN_DROP_ROUNDS && game.playerRounds > 0;
+  return (
+    !game.left && game.maxRounds >= minDropRounds(game.formatMaxRounds) && game.playerRounds > 0
+  );
 }
 
 /** The mode a game's team size plays like (a tournament has no lobby to say). */
@@ -883,7 +897,19 @@ export const skinService = {
         ).map((r) => [r.player_id, Number(r.rounds_played ?? 0)])
       );
       const maxRounds = Math.max(0, ...rounds.values());
-      if (maxRounds < MIN_DROP_ROUNDS) return;
+      const cfg = await db.queryOneAsync<{ config: string | null }>(
+        'SELECT config FROM matches WHERE slug = ?',
+        [matchSlug]
+      );
+      let formatMaxRounds: number | null = null;
+      try {
+        const c = cfg?.config ? (JSON.parse(cfg.config) as Record<string, unknown>) : {};
+        const cv = (c.cvars ?? {}) as Record<string, unknown>;
+        formatMaxRounds = Number(c.maxRounds ?? cv.mp_maxrounds) || null;
+      } catch {
+        formatMaxRounds = null;
+      }
+      if (maxRounds < minDropRounds(formatMaxRounds)) return;
       const dayAgo = Math.floor(Date.now() / 1000) - 86400;
       const players = [
         ...winnerSteamIds.map((steamId) => ({ steamId, won: true, opponents: otherSteamIds })),
@@ -901,6 +927,7 @@ export const skinService = {
             left: leavers.has(steamId),
             maxRounds,
             playerRounds: rounds.get(steamId) ?? 0,
+            formatMaxRounds,
           })
         )
           continue;
