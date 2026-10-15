@@ -28,7 +28,7 @@ import { ServerStatus } from './services/serverStatusService';
 import { serverAllocationTracker } from './services/serverAllocationTracker';
 import { serverTurnoverTracker } from './utils/serverTurnover';
 import { driverFor } from './driver';
-import { fleetServerIsIdle } from './fleet/driver';
+import { execOnFleetServer, fleetServerIsIdle } from './fleet/driver';
 import { reserveCount } from './fleet/failoverSettings';
 import { pickReserved } from './fleet/failoverPlan';
 
@@ -849,7 +849,30 @@ export class Cs2ServerPool {
 
       // Step 4: Reload the match on the same server
       log.info(`Reloading match ${matchSlug} on server ${serverId}`);
-      const loadResult = await driver.loadMatch(matchSlug, serverId);
+      let loadResult = await driver.loadMatch(matchSlug, serverId);
+      if (!loadResult.success && /\bbusy\b/.test(loadResult.error ?? '')) {
+        // The server still holds a match the platform no longer has (one Ready Up restored on
+        // its own after a restart; the unassign above did not name it): end it, load again.
+        log.warn(
+          `[RESTART] ${serverId} still holds a match of its own; ending it before the reload`
+        );
+        await execOnFleetServer(serverId, 'ru match end', {
+          userId: 'platform',
+          name: 'Auto Tournament',
+          root: true,
+          actor: 'platform',
+        }).catch(() => null);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        loadResult = await driver.loadMatch(matchSlug, serverId);
+      }
+      if (!loadResult.success) {
+        // Not left 'ready' on a server that will not take it: the allocator places it again
+        // (a match stuck 'ready' with its server set was never picked up, 2026-10-15).
+        await db.updateAsync('matches', { server_id: null }, 'slug = ? AND status = ?', [
+          matchSlug,
+          'ready',
+        ]);
+      }
 
       if (loadResult.success) {
         log.success(`[RESTART] Match ${matchSlug} restarted successfully`);
