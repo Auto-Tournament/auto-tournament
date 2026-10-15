@@ -867,6 +867,14 @@ router.post('/', async (req: Request, res: Response) => {
       }
     }
 
+    // 2v2 and 1v1 are short: no map veto unless the request asks for one (each match
+    // draws its map from the pool), as the setup page's wingman preset does.
+    const smallTeams = Number((input as { teamSize?: unknown }).teamSize);
+    const cs2Input = (input?.settings as { cs2?: Record<string, unknown> } | undefined)?.cs2;
+    if (cs2Input && smallTeams > 0 && smallTeams <= 2 && typeof cs2Input.veto !== 'boolean') {
+      cs2Input.veto = false;
+    }
+
     // What the request must carry is the picked game's module's business: CS2
     // wants a map pool, manual reporting wants none.
     const gameCheck = validateGameSettings(game, {

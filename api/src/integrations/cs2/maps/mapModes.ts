@@ -27,15 +27,17 @@ export type MapMode = (typeof MAP_MODES)[number];
  * smaller playable area) while their own type stays defusal. A map can only
  * have one type (`cs2_maps.game_mode`), so a wingman tournament takes these
  * as well as maps typed wingman. Check the list against CS2's
- * current wingman pool (2026-10-12).
+ * current wingman pool (2026-10-15: Valve's four, cut to one site, and the
+ * community maps Poseidon, Debris and El Dorado since the 2026-07-08 update).
  */
 export const WINGMAN_LAYOUTS: ReadonlySet<string> = new Set([
   'de_inferno',
   'de_nuke',
   'de_overpass',
   'de_vertigo',
-  'de_palacio',
-  'de_rooftop',
+  'de_poseidon',
+  'de_debris',
+  'de_eldorado',
 ]);
 
 export function isMapMode(value: unknown): value is MapMode {

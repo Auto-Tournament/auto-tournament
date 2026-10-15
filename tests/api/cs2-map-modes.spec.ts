@@ -69,7 +69,7 @@ test.describe('CS2 map types', () => {
     ).toEqual([{ id: 'de_dust2', mode: 'defusal' }]);
     // CS2 plays these defusal maps as wingman too (WINGMAN_LAYOUTS).
     rememberMapModes([{ id: 'de_inferno', gameMode: 'defusal' }]);
-    expect(mapsOfOtherModes(['de_inferno', 'de_vertigo', 'de_palacio'], 'wingman')).toEqual([]);
+    expect(mapsOfOtherModes(['de_inferno', 'de_vertigo', 'de_poseidon'], 'wingman')).toEqual([]);
     expect(mapsOfOtherModes(['de_inferno'], 'hostage')).toEqual([
       { id: 'de_inferno', mode: 'defusal' },
     ]);

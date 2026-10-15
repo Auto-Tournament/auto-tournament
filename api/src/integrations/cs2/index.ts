@@ -538,11 +538,17 @@ export const cs2Integration: GameIntegration = {
     } else if (mode === '2v2' || mode === '1v1') {
       // Wingman's small maps: 2v2 plays them, and the 1v1 aim duel uses them
       // too (Sivert, 2026-10-14) instead of a separate aim pool.
+      const { WINGMAN_LAYOUTS } = await import('./maps/mapModes');
+      // Maps typed wingman, and the maps CS2 plays with a wingman layout while their own
+      // type stays defusal (WINGMAN_LAYOUTS): without them a site with only the stock
+      // maps got Active Duty's 5v5 maps for a 2v2 tournament.
       ids = (
-        await db.queryAsync<{ id: string }>(
-          "SELECT id FROM cs2_maps WHERE game_mode = 'wingman' ORDER BY id"
+        await db.queryAsync<{ id: string; game_mode: string | null }>(
+          'SELECT id, game_mode FROM cs2_maps ORDER BY id'
         )
-      ).map((r) => r.id);
+      )
+        .filter((r) => r.game_mode === 'wingman' || WINGMAN_LAYOUTS.has(r.id))
+        .map((r) => r.id);
     }
     if (!chosen && ids.length === 0) {
       // 5v5, or a site with no wingman maps yet: Active Duty.

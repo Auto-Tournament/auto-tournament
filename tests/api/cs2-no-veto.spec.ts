@@ -15,7 +15,15 @@ test(
   'the map draw is the same for a match every time, and fills a series from a small pool',
   TAGS,
   () => {
-    const pool = ['de_inferno', 'de_nuke', 'de_overpass', 'de_vertigo', 'de_palacio', 'de_rooftop'];
+    const pool = [
+      'de_inferno',
+      'de_nuke',
+      'de_overpass',
+      'de_vertigo',
+      'de_poseidon',
+      'de_debris',
+      'de_eldorado',
+    ];
     expect(drawMaps(pool, 1, 't9-r1m1')).toEqual(drawMaps(pool, 1, 't9-r1m1'));
     expect(pool).toContain(drawMaps(pool, 1, 't9-r1m2')[0]);
     // Different matches spread over the pool.

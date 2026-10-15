@@ -14,7 +14,7 @@ import {
   isBracketManaged,
   serializeMatchConfig,
 } from '../../../utils/matchIntegration';
-import { getVetoOrder } from './config';
+import { getVetoOrder, standardVetoOrder } from './config';
 import { getVetoContext } from './context';
 import { normalizeConfigPlayers } from '../../../utils/playerTransform';
 import { resolveViewerIdentity } from '../../../utils/viewerIdentity';
@@ -253,11 +253,14 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
       customVetoOrder as Parameters<typeof getVetoOrder>[1],
       tournamentMaps.length
     );
-    const official =
-      tournamentMaps.length === 7 &&
-      JSON.stringify(order) ===
-        JSON.stringify(getVetoOrder(format, undefined, tournamentMaps.length));
-    const orderInfo = { steps: order, source: official ? 'valve' : 'custom' };
+    // Valve's order is for 7 maps; another pool size gets the same shape (standardVetoOrder).
+    const standard =
+      JSON.stringify(order) === JSON.stringify(standardVetoOrder(format, tournamentMaps.length));
+    const orderInfo = {
+      steps: order,
+      source: !standard ? 'custom' : tournamentMaps.length === 7 ? 'valve' : 'standard',
+      maps: tournamentMaps.length,
+    };
 
     // Parse existing veto state or create new one
     let vetoState = match.veto_state ? JSON.parse(match.veto_state) : null;

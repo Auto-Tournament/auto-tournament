@@ -329,6 +329,7 @@
   "vetoInterface": {
     "orderValve": "Valve's official order (Major rulebook)",
     "orderCustom": "The organizer's own veto order",
+    "orderStandard": "The standard order for {{count}} maps (Valve's, fitted to the pool)",
     "vetoNotAvailable": "此比赛不支持禁选",
     "vetoUnavailable": "此账号无法查看禁选详情。请以其中一支队伍的队员身份登录以继续禁选。",
     "vetoCompleted": "禁选完成！",

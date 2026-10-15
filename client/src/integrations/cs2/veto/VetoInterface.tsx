@@ -110,9 +110,11 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   }, []);
 
   // The steps this match uses and whose they are (GET /api/veto/:slug): Valve's or the organizer's.
-  const [order, setOrder] = useState<{ steps: VetoStep[]; source: 'valve' | 'custom' } | null>(
-    null
-  );
+  const [order, setOrder] = useState<{
+    steps: VetoStep[];
+    source: 'valve' | 'standard' | 'custom';
+    maps?: number;
+  } | null>(null);
 
   const loadVetoState = useCallback(async () => {
     setLoading(true);
@@ -122,7 +124,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       const response = await fetch(`/api/veto/${matchSlug}`);
       const data = (await response.json()) as VetoStateResponse & {
         veto: VetoState;
-        order?: { steps: VetoStep[]; source: 'valve' | 'custom' };
+        order?: { steps: VetoStep[]; source: 'valve' | 'standard' | 'custom'; maps?: number };
       };
 
       if (data.success) {
@@ -556,7 +558,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               <Typography variant="caption" color="text.secondary" data-testid="veto-order-source">
                 {order.source === 'valve'
                   ? t('vetoInterface.orderValve')
-                  : t('vetoInterface.orderCustom')}
+                  : order.source === 'standard'
+                    ? t('vetoInterface.orderStandard', { count: order.maps ?? 0 })
+                    : t('vetoInterface.orderCustom')}
               </Typography>
             )}
           </Box>
