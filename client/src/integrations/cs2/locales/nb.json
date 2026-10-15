@@ -1675,7 +1675,9 @@
       "console": "Eller lim dette inn i CS2-konsollen"
     },
     "stattrak": "StatTrak™",
-    "stattrakKills": "StatTrak™-drap"
+    "stattrakKills": "StatTrak™-drap",
+    "takeOffSide": "Ta {{name}} av på {{side}}",
+    "takeOffOn": "Ta av på {{side}}"
   },
   "matchRules": {
     "title": "Kampregler",

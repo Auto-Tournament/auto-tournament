@@ -351,106 +351,133 @@ export function SlotTile({
   skin,
   onClick,
   onDrop,
+  onTakeOff,
+  takeOffLabel,
 }: {
   label: string;
   skin: OwnedSkin | null;
   onClick?: () => void;
   /** Set while a skin that fits this slot is being dragged: dropping equips it here. */
   onDrop?: () => void;
+  /** Takes the skin off this side in one click (the x in the corner of an equipped slot). */
+  onTakeOff?: () => void;
+  takeOffLabel?: string;
 }) {
   const [over, setOver] = useState(false);
   return (
-    <Box
-      data-testid="loadout-slot"
-      data-drop-target={onDrop ? 'true' : undefined}
-      component={onClick ? 'button' : 'div'}
-      type={onClick ? 'button' : undefined}
-      onClick={onClick}
-      onDragOver={
-        onDrop
-          ? (e: DragEvent) => {
-              e.preventDefault();
-              e.dataTransfer.dropEffect = 'move';
-              setOver(true);
-            }
-          : undefined
-      }
-      onDragLeave={onDrop ? () => setOver(false) : undefined}
-      onDrop={
-        onDrop
-          ? (e: DragEvent) => {
-              e.preventDefault();
-              setOver(false);
-              onDrop();
-            }
-          : undefined
-      }
-      aria-label={
-        onClick ? (skin ? `${label}: ${skin.weaponName} ${skin.name}` : label) : undefined
-      }
-      sx={{
-        ...(onClick
-          ? {
-              all: 'unset',
-              cursor: 'pointer',
-              boxSizing: 'border-box',
-              '&:hover': { borderColor: color.muted },
-              '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
-            }
-          : {}),
-        borderRadius: '14px',
-        overflow: 'hidden',
-        bgcolor: color.paper2,
-        border: `1px ${skin ? 'solid' : 'dashed'} ${skin ? rarityColor[skin.rarity] : color.rule}`,
-        display: 'flex',
-        flexDirection: 'column',
-        ...(onDrop && {
-          outline: `2px dashed ${over ? color.accent : color.muted}`,
-          outlineOffset: 2,
-        }),
-      }}
-    >
-      {skin ? (
-        <Box
-          component="img"
-          src={skin.imageUrl}
-          alt=""
-          sx={{
-            width: '100%',
-            height: 64,
-            objectFit: 'contain',
-            bgcolor: color.paper3,
-            p: 0.75,
-            boxSizing: 'border-box',
-          }}
-        />
-      ) : (
-        <Box
-          sx={{
-            height: 64,
-            display: 'grid',
-            placeItems: 'center',
-            bgcolor: color.paper3,
-            color: color.muted,
-          }}
-          aria-hidden
-        >
-          <PlusIcon size={20} />
-        </Box>
-      )}
-      <Typography
+    <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
+      <Box
+        data-testid="loadout-slot"
+        data-drop-target={onDrop ? 'true' : undefined}
+        component={onClick ? 'button' : 'div'}
+        type={onClick ? 'button' : undefined}
+        onClick={onClick}
+        onDragOver={
+          onDrop
+            ? (e: DragEvent) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                setOver(true);
+              }
+            : undefined
+        }
+        onDragLeave={onDrop ? () => setOver(false) : undefined}
+        onDrop={
+          onDrop
+            ? (e: DragEvent) => {
+                e.preventDefault();
+                setOver(false);
+                onDrop();
+              }
+            : undefined
+        }
+        aria-label={
+          onClick ? (skin ? `${label}: ${skin.weaponName} ${skin.name}` : label) : undefined
+        }
         sx={{
-          fontSize: '0.75rem',
-          color: color.muted,
-          px: 1.25,
-          py: 1,
-          whiteSpace: 'nowrap',
+          ...(onClick
+            ? {
+                all: 'unset',
+                cursor: 'pointer',
+                boxSizing: 'border-box',
+                '&:hover': { borderColor: color.muted },
+                '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
+              }
+            : {}),
+          borderRadius: '14px',
           overflow: 'hidden',
-          textOverflow: 'ellipsis',
+          bgcolor: color.paper2,
+          border: `1px ${skin ? 'solid' : 'dashed'} ${skin ? rarityColor[skin.rarity] : color.rule}`,
+          display: 'flex',
+          flexDirection: 'column',
+          ...(onDrop && {
+            outline: `2px dashed ${over ? color.accent : color.muted}`,
+            outlineOffset: 2,
+          }),
         }}
       >
-        {label}
-      </Typography>
+        {skin ? (
+          <Box
+            component="img"
+            src={skin.imageUrl}
+            alt=""
+            sx={{
+              width: '100%',
+              height: 64,
+              objectFit: 'contain',
+              bgcolor: color.paper3,
+              p: 0.75,
+              boxSizing: 'border-box',
+            }}
+          />
+        ) : (
+          <Box
+            sx={{
+              height: 64,
+              display: 'grid',
+              placeItems: 'center',
+              bgcolor: color.paper3,
+              color: color.muted,
+            }}
+            aria-hidden
+          >
+            <PlusIcon size={20} />
+          </Box>
+        )}
+        <Typography
+          sx={{
+            fontSize: '0.75rem',
+            color: color.muted,
+            px: 1.25,
+            py: 1,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {label}
+        </Typography>
+      </Box>
+      {skin && onTakeOff && (
+        <IconButton
+          aria-label={takeOffLabel}
+          title={takeOffLabel}
+          onClick={onTakeOff}
+          data-testid="loadout-slot-take-off"
+          sx={{
+            position: 'absolute',
+            top: 4,
+            right: 4,
+            width: 24,
+            height: 24,
+            bgcolor: withAlpha(color.paper, 0.85),
+            border: `1px solid ${color.rule}`,
+            '&:hover': { bgcolor: color.paper3 },
+          }}
+        >
+          <XIcon size={12} />
+        </IconButton>
+      )}
     </Box>
   );
 }
