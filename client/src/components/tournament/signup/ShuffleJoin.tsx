@@ -106,6 +106,8 @@ export function ShuffleJoin({
       ? (round.matches.find((m) => m.teams.some((team) => team.steamIds.includes(steamId))) ?? null)
       : null;
   const myTeam = myMatch?.teams.find((team) => !!steamId && team.steamIds.includes(steamId));
+  // Played this round's match already: waiting for the others before the next draw.
+  const myMatchDone = myMatch?.status === 'completed' || myMatch?.status === 'cancelled';
   const sittingOut = new Set(round?.sittingOut ?? []);
   const nameOf = new Map(players.map((p) => [p.steamId, p.name]));
   const names = (ids: string[]) => ids.map((id) => nameOf.get(id) ?? id).join(' + ');
@@ -113,22 +115,26 @@ export function ShuffleJoin({
   const finished = round?.finished === true;
   const title = finished
     ? t('shuffleJoin.finishedTitle')
-    : joined && roundNo !== null && myMatch
-      ? t('shuffleJoin.playingTitle', { round: roundNo })
-      : iSitOut
-        ? t('shuffleJoin.sittingOutTitle', { round: roundNo })
-        : joined
-          ? t('shuffleJoin.youreIn')
-          : t('shuffleJoin.title');
+    : joined && roundNo !== null && myMatch && myMatchDone
+      ? t('shuffleJoin.playedTitle', { round: roundNo })
+      : joined && roundNo !== null && myMatch
+        ? t('shuffleJoin.playingTitle', { round: roundNo })
+        : iSitOut
+          ? t('shuffleJoin.sittingOutTitle', { round: roundNo })
+          : joined
+            ? t('shuffleJoin.youreIn')
+            : t('shuffleJoin.title');
   const body = finished
     ? t('shuffleJoin.finishedBody', { count: round?.maps?.length ?? roundNo ?? 0 })
-    : joined && myMatch
-      ? t('shuffleJoin.playingBody', { team: myTeam?.name ?? '' })
-      : iSitOut
-        ? t('shuffleJoin.sittingOutBody', { next: (roundNo ?? 0) + 1 })
-        : joined
-          ? t('shuffleJoin.inBody')
-          : t('shuffleJoin.body');
+    : joined && myMatch && myMatchDone
+      ? t('shuffleJoin.playedBody', { next: (roundNo ?? 0) + 1 })
+      : joined && myMatch
+        ? t('shuffleJoin.playingBody', { team: myTeam?.name ?? '' })
+        : iSitOut
+          ? t('shuffleJoin.sittingOutBody', { next: (roundNo ?? 0) + 1 })
+          : joined
+            ? t('shuffleJoin.inBody')
+            : t('shuffleJoin.body');
   const full = spots !== null && players.length >= spots && !joined;
 
   const act = async (join: boolean) => {
@@ -173,7 +179,7 @@ export function ShuffleJoin({
             {body}
           </Typography>
         </Box>
-        {myMatch && !finished && (
+        {myMatch && !myMatchDone && !finished && (
           <Button
             component={RouterLink}
             to={matchPagePath(myMatch.slug)}

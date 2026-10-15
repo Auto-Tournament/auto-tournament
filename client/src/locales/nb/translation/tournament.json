@@ -1186,6 +1186,8 @@
     "tagLeft": "Gått",
     "markOut": "Sett ut",
     "markIn": "Tilbake",
-    "roundShort": "Runde {{round}}"
+    "roundShort": "Runde {{round}}",
+    "playedTitle": "Kampen din i runde {{round}} er ferdig",
+    "playedBody": "Runde {{next}} trekkes når de andre kampene er ferdige. Bli på siden – den oppdaterer seg selv."
   }
 }
