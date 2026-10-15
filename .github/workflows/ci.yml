@@ -350,6 +350,7 @@ jobs:
             echo "AT_ACCEPT_LICENSE=noncommercial"
             echo "AT_VETO_TURN_SECONDS_DEFAULT=0"
             echo "AT_UPDATE_CHECK=off"
+            echo "CS2_IMAGE_PREFETCH=off"
             echo "GAMES_ENRICH=off"
             # The suite saves test license keys: never check in with
             # autotournament.gg from CI (services/license/checkin.ts).

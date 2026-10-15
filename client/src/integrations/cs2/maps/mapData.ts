@@ -9,18 +9,17 @@
 
 import type { CS2MapData } from '../cs2.types';
 
-// Map images from Auto-Tournament/cs2-server-manager
-// Full-size webp images are used for large hero/background displays.
-// Thumbnails (with `_thumb` suffix) are used for smaller cards/lists.
-const MAP_IMAGE_BASE =
-  'https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails';
+// Map pictures, served by the platform (the CS2 module bundles csm's compressed copies):
+// 1280 px for large hero/background displays, 480 px for smaller cards/lists.
+const MAP_IMAGE_BASE = '/api/game/cs2/img';
 
-const MAP_IMAGE_RAW_BASE =
-  'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails';
+/** A picture of csm's map catalogue (old rows hold the CDN URL, new ones the platform's). */
+export const isCatalogMapImage = (url: string | null | undefined): boolean =>
+  !!url && (url.includes('cs2-server-manager') || url.startsWith('/api/game/cs2/img/'));
 
-const getFullImageUrl = (mapName: string): string => `${MAP_IMAGE_BASE}/${mapName}.webp`;
+const getFullImageUrl = (mapName: string): string => `${MAP_IMAGE_BASE}/maps-1280/${mapName}.webp`;
 
-const getThumbnailUrl = (mapName: string): string => `${MAP_IMAGE_BASE}/${mapName}_thumb.webp`;
+const getThumbnailUrl = (mapName: string): string => `${MAP_IMAGE_BASE}/maps-480/${mapName}.webp`;
 
 export const CS2_MAPS: CS2MapData[] = [
   {
@@ -84,14 +83,10 @@ export const getMapData = (mapName: string): CS2MapData | undefined => {
 
 /**
  * A map's picture by name, for any map csm has one of (Train, Overpass, Cache
- * and the rest beyond CS2_MAPS): the CDN first, the repository itself behind
- * it (the CDN can keep a "not found" for a picture added later). For a CSS
- * background: the second shows where the first does not load.
+ * and the rest beyond CS2_MAPS), as a CSS background.
  */
-export const mapBackground = (mapName: string): string => {
-  const file = `${mapName}.webp`;
-  return `url("${MAP_IMAGE_BASE}/${file}"), url("${MAP_IMAGE_RAW_BASE}/${file}")`;
-};
+export const mapBackground = (mapName: string): string =>
+  `url("${MAP_IMAGE_BASE}/maps-1280/${mapName}.webp")`;
 
 /**
  * Title-cased fallback for maps that aren't in CS2_MAPS (workshop maps, maps

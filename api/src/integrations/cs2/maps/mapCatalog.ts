@@ -20,11 +20,10 @@ import fetch from 'node-fetch';
 import { log } from '../../../utils/logger';
 import bundledMapsJson from './bundled-maps.json';
 
-// Images through jsDelivr, a CDN in front of the repository; the catalogue
-// itself from GitHub, which has a new maps.json minutes after a push where
-// jsDelivr's copy of a branch can be up to a day old.
-export const MAP_THUMBNAILS_BASE =
-  'https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails';
+// Images from the platform itself (routes/images.ts: bundled with the module,
+// or fetched once and cached); the catalogue from GitHub, which has a new
+// maps.json minutes after a push where jsDelivr's copy can be a day old.
+export const MAP_THUMBNAILS_BASE = '/api/game/cs2/img/maps-1280';
 export const MAPS_JSON_URL =
   'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails/maps.json';
 
@@ -94,9 +93,11 @@ export function parseMapCatalog(raw: unknown, imageBase = MAP_THUMBNAILS_BASE): 
   }
   if (maps.length === 0) throw new Error('maps.json lists no playable maps');
   const activeDuty = Array.isArray(file.activeDuty)
-    ? [...new Set((file.activeDuty as unknown[]).filter((id): id is string => typeof id === 'string'))].filter(
-        (id) => seen.has(id)
-      )
+    ? [
+        ...new Set(
+          (file.activeDuty as unknown[]).filter((id): id is string => typeof id === 'string')
+        ),
+      ].filter((id) => seen.has(id))
     : [];
   return {
     generatedAt: text(file.generatedAt),
@@ -150,7 +151,9 @@ export interface LoadMapCatalogOptions {
 }
 
 /** maps.json from GitHub, or the bundled copy when it cannot be had. Never throws. */
-export async function loadMapCatalog(options: LoadMapCatalogOptions = {}): Promise<LoadedMapCatalog> {
+export async function loadMapCatalog(
+  options: LoadMapCatalogOptions = {}
+): Promise<LoadedMapCatalog> {
   const url = options.url ?? MAPS_JSON_URL;
   let error: string;
   if (options.offline ?? offline()) {
@@ -173,6 +176,8 @@ export async function loadMapCatalog(options: LoadMapCatalogOptions = {}): Promi
     }
   }
 
-  log.warn(`[CS2 maps] Could not get ${url} (${error}); using the map list bundled with the CS2 module`);
+  log.warn(
+    `[CS2 maps] Could not get ${url} (${error}); using the map list bundled with the CS2 module`
+  );
   return { catalog: bundledMapCatalog(), source: 'bundled', error };
 }

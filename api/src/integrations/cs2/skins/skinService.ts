@@ -21,10 +21,11 @@ import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { emitSkinsChanged, onlinePlayerIds } from '../../../services/socketService';
 import { WEAPON_DEFINDEX } from './skinDefindex';
+import { prefetchSkinImages } from '../routes/images';
 import { knifeAndGlovePrices, priceFor, priceKey, rarityIndexByPrice } from './skinPrices';
 
-export const SKIN_IMAGES_BASE =
-  'https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/skin_images';
+/** Full-size skin pictures, served by the platform (routes/images.ts). */
+export const SKIN_IMAGES_BASE = '/api/game/cs2/img/skins';
 export const SKINS_JSON_URL =
   'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/skin_images/skins.json';
 
@@ -55,6 +56,9 @@ export function skinImageUrl(image: string, float?: number | null): string {
   }
   return `${SKIN_IMAGES_BASE}/${file}`;
 }
+
+/** The background fetch of every full-size skin picture runs once per process. */
+let prefetchStarted = false;
 
 const CONFIG_KEY = 'skins_config';
 const CATALOG_TTL_MS = 60 * 60 * 1000;
@@ -705,6 +709,14 @@ export const skinService = {
       );
       catalogCache = { at: Date.now(), skins };
       rememberWearLooks(skins);
+      if (!prefetchStarted) {
+        prefetchStarted = true;
+        void prefetchSkinImages(
+          skins
+            .flatMap((sk) => [sk.image, sk.imageMedium, sk.imageHeavy])
+            .filter((f): f is string => typeof f === 'string' && !/^https?:\/\//.test(f))
+        );
+      }
       return skins;
     } catch (error) {
       log.warn('[Skins] Could not read the skin catalogue', { error: (error as Error).message });

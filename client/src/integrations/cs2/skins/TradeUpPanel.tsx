@@ -4,6 +4,7 @@ import { api, useModuleTranslation, useSnackbar, tokens, radii } from '../../../
 import type { OwnedSkin, Rarity } from './useSkins';
 import { tradeUpTarget } from './tradeUp';
 import { rarityColor } from './rarity';
+import { skinCardUrl } from './SkinParts';
 
 const { color } = tokens;
 
@@ -127,7 +128,7 @@ export function TradeUpPanel({
             >
               <Box
                 component="img"
-                src={s.imageUrl}
+                src={skinCardUrl(s.imageUrl)}
                 alt=""
                 loading="lazy"
                 sx={{ width: '100%', height: 48, objectFit: 'contain' }}

@@ -16,7 +16,7 @@ import {
 import type { TournamentResultsSectionProps } from '../../types';
 import { rarityColor } from './rarity';
 import type { Rarity } from './useSkins';
-import { VirtualNotice } from './SkinParts';
+import { skinCardUrl, VirtualNotice } from './SkinParts';
 
 const { color } = tokens;
 
@@ -101,7 +101,7 @@ export function TournamentRewardsSection({ tournamentId }: TournamentResultsSect
                   {r.skin ? (
                     <Box
                       component="img"
-                      src={r.skin.imageUrl}
+                      src={skinCardUrl(r.skin.imageUrl)}
                       alt=""
                       sx={{ width: 64, height: 48, objectFit: 'contain' }}
                     />

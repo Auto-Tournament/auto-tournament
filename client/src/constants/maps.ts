@@ -4,24 +4,20 @@
 
 import type { CS2MapData } from '../types/veto.types';
 
-// Map images from Auto-Tournament/cs2-server-manager
-// Full-size webp images are used for large hero/background displays.
-// Thumbnails (with `_thumb` suffix) are used for smaller cards/lists.
-const MAP_IMAGE_BASE =
-  'https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails';
+// Map pictures, served by the platform (the CS2 module bundles csm's compressed copies):
+// 1280 px for large hero/background displays, 480 px for smaller cards/lists.
+const MAP_IMAGE_BASE = '/api/game/cs2/img';
 
-const getFullImageUrl = (mapName: string): string =>
-  `${MAP_IMAGE_BASE}/${mapName}.webp`;
+const getFullImageUrl = (mapName: string): string => `${MAP_IMAGE_BASE}/maps-1280/${mapName}.webp`;
 
-const getThumbnailUrl = (mapName: string): string =>
-  `${MAP_IMAGE_BASE}/${mapName}_thumb.webp`;
+const getThumbnailUrl = (mapName: string): string => `${MAP_IMAGE_BASE}/maps-480/${mapName}.webp`;
 
 /** The map's full-size picture, for heroes and banners. */
 export const getMapImageUrl = (mapName: string): string => getFullImageUrl(mapName);
 
 /** The map's flat icon (`de_mirage_icon.svg`), for small marks and pills. */
 export const getMapIconUrl = (mapName: string): string =>
-  `${MAP_IMAGE_BASE}/${mapName}_icon.svg`;
+  `${MAP_IMAGE_BASE}/map-icons/${mapName}_icon.svg`;
 
 export const CS2_MAPS: CS2MapData[] = [
   {
@@ -89,4 +85,3 @@ export const getMapDisplayName = (mapName: string): string => {
   const mapData = getMapData(mapName);
   return mapData?.displayName || titleCaseMapName(mapName) || mapName;
 };
-

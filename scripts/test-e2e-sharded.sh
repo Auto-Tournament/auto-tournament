@@ -155,7 +155,7 @@ start_api_container() {
     -e DB_PASSWORD="${DB_PASSWORD}" \
     -e DB_NAME="${db_name}" \
     -e VITE_ENABLE_DEV_PAGE=true \
-    -e AT_ACCEPT_LICENSE=noncommercial -e AT_VETO_TURN_SECONDS_DEFAULT=0 -e AT_UPDATE_CHECK=off     -e LICENSE_CHECKIN_URL=off \
+    -e AT_ACCEPT_LICENSE=noncommercial -e AT_VETO_TURN_SECONDS_DEFAULT=0 -e AT_UPDATE_CHECK=off -e CS2_IMAGE_PREFETCH=off -e LICENSE_CHECKIN_URL=off \
     -v "$(pwd)/docker/data:/app/data" \
     "${IMAGE_TAG}" >/dev/null
 
