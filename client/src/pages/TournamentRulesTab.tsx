@@ -4,6 +4,7 @@ import { SectionHead } from '../components/common/ui';
 import { RulesList } from '../components/tournament/overview/RulesList';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
 import { tokens, textSize } from '../theme/tokens';
+import { useIntegrationFor } from '../integrations/registry';
 
 /**
  * The tournament page's Rules tab: the organizer's description in full (the
@@ -15,13 +16,28 @@ export default function TournamentRulesTab() {
   const settings = tournament.settings;
   const description = settings?.description?.trim();
   const hasRules = Boolean(settings?.rules?.length || settings?.rulebookUrl);
+  // How a match is played, in the game's words (CS2: rounds, overtime, maps, bots).
+  const RulesView = useIntegrationFor(tournament).tournamentRulesView;
 
   return (
     <Stack spacing={5} sx={{ maxWidth: '72ch' }} data-testid="tournament-rules-tab">
+      {RulesView && (
+        <Box component="section" aria-labelledby="tournament-howto-title">
+          <SectionHead id="tournament-howto-title" title={t('overviewPage.howItsPlayed')} />
+          <RulesView tournament={tournament} />
+        </Box>
+      )}
       {description && (
         <Box component="section" aria-labelledby="tournament-about-title">
           <SectionHead id="tournament-about-title" title={t('overviewPage.about')} />
-          <Typography sx={{ whiteSpace: 'pre-wrap', color: tokens.color.ink2, fontSize: textSize.lg, lineHeight: 1.6 }}>
+          <Typography
+            sx={{
+              whiteSpace: 'pre-wrap',
+              color: tokens.color.ink2,
+              fontSize: textSize.lg,
+              lineHeight: 1.6,
+            }}
+          >
             {description}
           </Typography>
         </Box>

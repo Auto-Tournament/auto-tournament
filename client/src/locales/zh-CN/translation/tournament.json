@@ -889,7 +889,8 @@
     "mapPoolSoon": "主办方还没有选好地图。",
     "adminBanner": "You are an admin of this tournament. Running it happens in Manage; this page is what players see.",
     "manageTournament": "Manage tournament",
-    "fullBracket": "Full bracket"
+    "fullBracket": "Full bracket",
+    "allRules": "All rules"
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",

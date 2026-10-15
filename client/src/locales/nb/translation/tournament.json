@@ -784,7 +784,7 @@
       "completed": "Avsluttet"
     },
     "liveNow": "{{count}} live nå",
-    "howItsPlayed": "Slik spilles det",
+    "howItsPlayed": "Slik spilles kampene",
     "facts": {
       "teams": "Lag",
       "teamsValue": "{{count}} lag",
@@ -889,7 +889,8 @@
     "mapPoolSoon": "Arrangøren har ikke valgt kartene ennå.",
     "adminBanner": "Du er admin for denne turneringen. Den kjøres fra Administrer; denne siden er det spillerne ser.",
     "manageTournament": "Administrer turneringen",
-    "fullBracket": "Hele braketten"
+    "fullBracket": "Hele braketten",
+    "allRules": "Alle regler"
   },
   "roundStatusCard": {
     "roundOf": "Runde {{current}} av {{total}}",

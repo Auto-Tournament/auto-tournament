@@ -2325,5 +2325,20 @@
     "body": "Looks like you left the match server (a crash or a dropped connection). Your team is waiting: reconnect to get back in.",
     "reconnect": "Reconnect",
     "later": "Later"
+  },
+  "rules": {
+    "mode": "{{size}}v{{size}} competitive.",
+    "modeWingman": "Wingman: 2v2 on one bomb site.",
+    "series_one": "One map per match.",
+    "series_other": "Best of {{count}}: first to {{win}} maps wins the match.",
+    "rounds": "{{rounds}} rounds: first to {{win}} wins the map. Sides switch after {{half}}.",
+    "overtime": "At {{half}}-{{half}}: overtime (6 rounds, first to 4), as many as it takes.",
+    "overtimeLimited_one": "At {{half}}-{{half}}: one overtime (6 rounds, first to 4); still level after it, the map is a draw.",
+    "overtimeLimited_other": "At {{half}}-{{half}}: up to {{count}} overtimes (6 rounds each, first to 4); still level after them, the map is a draw.",
+    "noOvertime": "At {{half}}-{{half}} the map ends in a draw (no overtime).",
+    "veto": "Maps: the two teams ban (and pick) them in the map veto before each match.",
+    "mapsDrawn": "Maps: each match draws one from the pool. No veto.",
+    "shuffleMaps": "Maps: every round plays the next map in the list, with new teams each round.",
+    "bots": "Empty seats are filled with bots."
   }
 }
