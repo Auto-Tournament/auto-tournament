@@ -111,3 +111,8 @@ export function teamPlacement(
   const place = placeTo - outHere + 1;
   return { place: Math.max(1, place), placeTo: Math.max(1, placeTo), champion: false };
 }
+
+/** "#3", or "#3–4" when the place is shared with the round's other losers. */
+export function placementLabel(p: Placement): string {
+  return p.placeTo > p.place ? `#${p.place}–${p.placeTo}` : `#${p.place}`;
+}

@@ -19,6 +19,7 @@ import { usePublicBracket } from '../hooks/usePublicBracket';
 import { compareMatchOrder } from '../utils/matchUtils';
 import { tournamentTabPath } from '../paths';
 import { NextMatchCard } from '../components/match/NextMatchCard';
+import { CardBracket } from '../components/tournament/page/CardBracket';
 
 /**
  * The tournament page's Overview tab, kept to what a quick look needs (the
@@ -139,6 +140,41 @@ export default function TournamentOverview() {
           }
         />
       )}
+
+      {/* The bracket, for everyone, once there is one (elimination formats; swiss and
+          round robin keep theirs on the Bracket tab, where the standings are). */}
+      {(tournament.type === 'single_elimination' || tournament.type === 'double_elimination') &&
+        matches.length > 0 && (
+          <Box
+            component="section"
+            aria-labelledby="overview-bracket"
+            data-testid="overview-bracket"
+          >
+            <Box display="flex" justifyContent="space-between" alignItems="baseline" mb={1.5}>
+              <Typography
+                id="overview-bracket"
+                component="h2"
+                sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600 }}
+              >
+                {t('overviewPage.tabs.bracket')}
+              </Typography>
+              <Button
+                component={RouterLink}
+                to={tournamentTabPath(tournament.id, 'bracket')}
+                size="small"
+              >
+                {t('overviewPage.fullBracket')}
+              </Button>
+            </Box>
+            <Box sx={{ overflowX: 'auto' }}>
+              <CardBracket
+                matches={matches}
+                tournamentType={tournament.type}
+                format={tournament.format}
+              />
+            </Box>
+          </Box>
+        )}
 
       {(maps.length > 0 || !isShuffle) && (
         <Box

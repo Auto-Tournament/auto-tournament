@@ -20,6 +20,7 @@ import { useInstalledIntegrations } from '../../integrations/registry';
 import { soundNotification } from '../../utils/soundNotification';
 import { NextMatchDialog } from '../match/NextMatchDialog';
 import { NavStartCountdown } from './NavStartCountdown';
+import { PlacementDialog } from '../tournament/PlacementDialog';
 
 /** Top-bar text links: ink2 at rest, ink on hover and on the current page (the drafts' `.nav-links`). */
 const navLinkSx = {
@@ -279,6 +280,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
         matchup={matchup}
         loading={matchStatusLoading}
       />
+      {playerSteamId && !impersonation && <PlacementDialog viewerId={playerSteamId} />}
       <Box
         component={RouterLink}
         to={paths.root}

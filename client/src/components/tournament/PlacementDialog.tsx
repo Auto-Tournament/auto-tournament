@@ -23,7 +23,7 @@ import { usePublicBracket } from '../../hooks/usePublicBracket';
 import { placementFor } from '../../hooks/usePlacement';
 import { tournamentTabPath } from '../../paths';
 import { fontDisplay, tokens } from '../../theme/tokens';
-import type { Placement } from '../../utils/placement';
+import { placementLabel } from '../../utils/placement';
 
 interface Listed {
   id: number;
@@ -34,7 +34,8 @@ interface Listed {
   draft: boolean;
 }
 
-const seenKey = (tournamentId: number, teamId: string) => `placement-seen:${tournamentId}:${teamId}`;
+const seenKey = (tournamentId: number, teamId: string) =>
+  `placement-seen:${tournamentId}:${teamId}`;
 
 function seen(tournamentId: number, teamId: string): boolean {
   try {
@@ -50,11 +51,6 @@ function markSeen(tournamentId: number, teamId: string): void {
   } catch {
     // Without storage it may show again on the next page; better than never.
   }
-}
-
-/** "#3", or "#3–4" when the place is shared with the round's other losers. */
-export function placementLabel(p: Placement): string {
-  return p.placeTo > p.place ? `#${p.place}–${p.placeTo}` : `#${p.place}`;
 }
 
 /** Finds the viewer's elimination tournaments that are running (or just ended). */
@@ -124,9 +120,7 @@ function PlacementWatch({
     onDone();
   };
   const teamName =
-    matches
-      .flatMap((m) => [m.team1, m.team2])
-      .find((team) => team?.id === teamId)?.name ?? '';
+    matches.flatMap((m) => [m.team1, m.team2]).find((team) => team?.id === teamId)?.name ?? '';
 
   return (
     <Dialog open onClose={close} maxWidth="xs" fullWidth data-testid="placement-dialog">
@@ -149,7 +143,12 @@ function PlacementWatch({
             </Typography>
             <Typography
               data-testid="placement-dialog-place"
-              sx={{ fontFamily: fontDisplay, fontSize: '2.25rem', fontWeight: 700, lineHeight: 1.1 }}
+              sx={{
+                fontFamily: fontDisplay,
+                fontSize: '2.25rem',
+                fontWeight: 700,
+                lineHeight: 1.1,
+              }}
             >
               {placementLabel(placement)}
             </Typography>

@@ -7,8 +7,10 @@ import type { ViewerTeam } from '../../../hooks/usePublicTournamentOverview';
 import { LiveChip, Panel } from '../../common/ui';
 import { useIntegrationFor } from '../../../integrations/registry';
 import { matchPagePath, teamProfilePath } from '../../../paths';
-import { tokens, textSize } from '../../../theme/tokens';
+import { fontDisplay, tokens, textSize } from '../../../theme/tokens';
 import { isLiveMatch, publicMatchLabel, teamCurrentMatch, teamLastResult } from './matchHelpers';
+import { placementFor } from '../../../hooks/usePlacement';
+import { placementLabel } from '../../../utils/placement';
 
 interface YourePlayingPanelProps {
   tournament: Tournament;
@@ -37,8 +39,22 @@ export function YourePlayingPanel({ tournament, team, matches }: YourePlayingPan
   const last = current ? null : teamLastResult(matches, team.id);
   const opponent = current ? (current.team1?.id === team.id ? current.team2 : current.team1) : null;
 
+  // Out (or the winner): where the team finished, so a player knows they are done.
+  const placement = current ? null : placementFor(tournament, matches, team.id);
+
   let chip: ReactNode;
-  if (current?.status === 'live') {
+  if (placement) {
+    chip = (
+      <Chip
+        size="small"
+        label={
+          placement.champion
+            ? t('overviewPage.yourTeam.state.won')
+            : t('overviewPage.yourTeam.state.out')
+        }
+      />
+    );
+  } else if (current?.status === 'live') {
     chip = <LiveChip label={t('overviewPage.yourTeam.state.live')} />;
   } else if (current?.status === 'loaded') {
     chip = <LiveChip label={t('overviewPage.yourTeam.state.loaded')} />;
@@ -82,12 +98,28 @@ export function YourePlayingPanel({ tournament, team, matches }: YourePlayingPan
         </Typography>
         {chip}
       </Box>
-      <Typography
-        sx={{ color: tokens.color.ink2, fontSize: textSize.sm }}
-        data-testid="overview-your-team-line"
-      >
-        {line}
-      </Typography>
+      {placement ? (
+        <Box data-testid="overview-your-placement">
+          <Typography sx={{ color: tokens.color.muted, fontSize: textSize.sm }}>
+            {t('placement.yourTeamPlaced', { team: team.name })}
+          </Typography>
+          <Typography
+            sx={{ fontFamily: fontDisplay, fontSize: '2rem', fontWeight: 700, lineHeight: 1.15 }}
+          >
+            {placementLabel(placement)}
+          </Typography>
+          <Typography sx={{ color: tokens.color.ink2, fontSize: textSize.sm, mt: 0.5 }}>
+            {placement.champion ? t('placement.wonBody') : t('placement.outBody')}
+          </Typography>
+        </Box>
+      ) : (
+        <Typography
+          sx={{ color: tokens.color.ink2, fontSize: textSize.sm }}
+          data-testid="overview-your-team-line"
+        >
+          {line}
+        </Typography>
+      )}
 
       {showConnect && current && ConnectPanel && (
         <ConnectPanel matchSlug={current.slug} viewerCanJoin matchStatus={current.status} />

@@ -820,7 +820,9 @@
         "finished": "Ferdig",
         "eliminated": "Slått ut",
         "waiting": "Venter på neste kamp",
-        "registered": "Påmeldt"
+        "registered": "Påmeldt",
+        "won": "Vinner",
+        "out": "Ute"
       }
     },
     "prizes": {
@@ -886,7 +888,8 @@
     "mapPoolSoonTitle": "Kartpool",
     "mapPoolSoon": "Arrangøren har ikke valgt kartene ennå.",
     "adminBanner": "Du er admin for denne turneringen. Den kjøres fra Administrer; denne siden er det spillerne ser.",
-    "manageTournament": "Administrer turneringen"
+    "manageTournament": "Administrer turneringen",
+    "fullBracket": "Hele braketten"
   },
   "roundStatusCard": {
     "roundOf": "Runde {{current}} av {{total}}",
@@ -1082,5 +1085,15 @@
     "winnerOf": "Vinner {{match}}",
     "loserOf": "Taper {{match}}",
     "tbd": "Ikke avgjort"
+  },
+  "placement": {
+    "outTitle": "{{tournament}} er over for dere",
+    "wonTitle": "Dere vant {{tournament}}!",
+    "yourTeamPlaced": "{{team}} endte på",
+    "yourTeam": "Laget ditt",
+    "outBody": "Laget ditt er ute av turneringen, så dere har ingen flere kamper. Følg resten i braketten.",
+    "wonBody": "Laget ditt vant turneringen. Godt spilt!",
+    "close": "Lukk",
+    "seeBracket": "Se braketten"
   }
 }
