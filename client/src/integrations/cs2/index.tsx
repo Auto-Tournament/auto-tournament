@@ -31,7 +31,6 @@ import { Cs2TournamentMapsStep } from './setup/Cs2TournamentMapsStep';
 import { Cs2TournamentReview } from './setup/Cs2TournamentReview';
 import { cs2TournamentSetup } from './setup/cs2TournamentSettings';
 import { CreateManualMatchModal } from './standalone/CreateManualMatchModal';
-import { Cs2AdminWarnings } from './global/Cs2AdminWarnings';
 import { TournamentResultsSections } from './global/TournamentResultsSections';
 import { Cs2Overlays } from './global/Cs2Overlays';
 import { Cs2StartConfirm } from './start/Cs2StartConfirm';
@@ -146,10 +145,6 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   tournamentRulesView: Cs2RulesSummary,
   teamPositions: ['rifler', 'awper', 'igl', 'entry', 'support', 'lurker'],
   teamSize: 5,
-
-  // Settings only this game has get their warnings from this module, not the
-  // shell (3.0 phase E).
-  adminGlobalWarning: Cs2AdminWarnings,
 
   // Starting a CS2 tournament means allocating servers, so the dialog talks
   // about servers, and a refusal about out-of-date ones is answered here. The

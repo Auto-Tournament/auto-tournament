@@ -7,8 +7,6 @@
     "highlights": "Highlights"
   },
   "layout": {
-    "webhookNotConfigured": "Die Webhook-URL ist nicht konfiguriert. Matches und Server können keine Events empfangen, bis sie gesetzt ist.",
-    "openSettings": "Einstellungen öffnen",
     "pageTitle": {
       "servers": "Server",
       "maps": "Karten & Kartenpools",

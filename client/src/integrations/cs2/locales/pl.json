@@ -7,8 +7,6 @@
     "highlights": "Highlights"
   },
   "layout": {
-    "webhookNotConfigured": "URL webhooka nie jest skonfigurowany. Mecze i serwery nie mogą odbierać zdarzeń, dopóki nie zostanie ustawiony.",
-    "openSettings": "Otwórz ustawienia",
     "pageTitle": {
       "servers": "Serwery",
       "maps": "Mapy i pule map",

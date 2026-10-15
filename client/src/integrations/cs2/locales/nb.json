@@ -7,8 +7,6 @@
     "highlights": "Highlights"
   },
   "layout": {
-    "webhookNotConfigured": "Webhook-URL er ikke konfigurert. Kamper og servere kan ikke motta hendelser før den er satt.",
-    "openSettings": "Åpne innstillinger",
     "pageTitle": {
       "servers": "Servere",
       "maps": "Kart og kartpooler",
