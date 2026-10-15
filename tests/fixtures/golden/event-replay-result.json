@@ -30,6 +30,7 @@
       "min_players_to_ready": 0,
       "num_maps": 3,
       "overtimeMode": "enabled",
+      "overtimeSegments": 1,
       "players_per_team": 5,
       "simulation": false,
       "spectators": {

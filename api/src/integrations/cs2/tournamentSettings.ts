@@ -366,8 +366,16 @@ function applyLayer(
   }
 }
 
-/** A new tournament's rules when the request leaves them out: 24 rounds, overtime on. */
-const TOURNAMENT_DEFAULTS: Cs2TournamentSettings = { maxRounds: 24, overtimeMode: 'enabled' };
+/**
+ * A new tournament's rules when the request leaves them out: 24 rounds, one
+ * overtime, then total team damage decides (a LAN schedule cannot take endless
+ * overtimes).
+ */
+const TOURNAMENT_DEFAULTS: Cs2TournamentSettings = {
+  maxRounds: 24,
+  overtimeMode: 'enabled',
+  overtimeSegments: 1,
+};
 
 export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettings> = {
   key: CS2_SETTINGS_KEY,
@@ -378,8 +386,20 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
       : target === 'tournament'
         ? { ...TOURNAMENT_DEFAULTS }
         : {};
-    applyLayer(next, objectIn(body.settings, CS2_SETTINGS_KEY), target);
+    const layer = objectIn(body.settings, CS2_SETTINGS_KEY);
+    applyLayer(next, layer, target);
     applyLayer(next, body, target);
+    // The default segment count goes with the default overtime: a new tournament
+    // that turns overtime off and names no segments has none.
+    if (
+      !stored &&
+      target === 'tournament' &&
+      next.overtimeMode === 'disabled' &&
+      layer.overtimeSegments === undefined &&
+      body.overtimeSegments === undefined
+    ) {
+      delete next.overtimeSegments;
+    }
     if (target === 'tournament' && !next.maps) next.maps = [];
     return next;
   },

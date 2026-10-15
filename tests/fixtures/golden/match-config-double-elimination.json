@@ -31,6 +31,7 @@
         "min_players_to_ready": 0,
         "num_maps": 1,
         "overtimeMode": "enabled",
+        "overtimeSegments": 1,
         "players_per_team": 1,
         "simulation": false,
         "spectators": {
@@ -87,6 +88,7 @@
         "min_players_to_ready": 0,
         "num_maps": 1,
         "overtimeMode": "enabled",
+        "overtimeSegments": 1,
         "players_per_team": 1,
         "simulation": false,
         "spectators": {
@@ -143,6 +145,7 @@
         "min_players_to_ready": 0,
         "num_maps": 1,
         "overtimeMode": "enabled",
+        "overtimeSegments": 1,
         "players_per_team": 5,
         "simulation": false,
         "spectators": {
@@ -213,6 +216,7 @@
         "min_players_to_ready": 0,
         "num_maps": 1,
         "overtimeMode": "enabled",
+        "overtimeSegments": 1,
         "players_per_team": 5,
         "simulation": false,
         "spectators": {
@@ -283,6 +287,7 @@
         "min_players_to_ready": 0,
         "num_maps": 1,
         "overtimeMode": "enabled",
+        "overtimeSegments": 1,
         "players_per_team": 1,
         "simulation": false,
         "spectators": {
@@ -339,6 +344,7 @@
         "min_players_to_ready": 0,
         "num_maps": 1,
         "overtimeMode": "enabled",
+        "overtimeSegments": 1,
         "players_per_team": 1,
         "simulation": false,
         "spectators": {

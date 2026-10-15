@@ -42,7 +42,7 @@
     "max_rounds": 24,
     "overtime": {
       "enabled": true,
-      "max_overtimes": -1
+      "max_overtimes": 1
     },
     "pause": {
       "pause_after_restore": true,
@@ -52,6 +52,9 @@
       "allow_force_ready": true,
       "autoready": false,
       "min_per_team": 0
+    },
+    "tiebreak": {
+      "damage": true
     },
     "whitelist": true
   },
