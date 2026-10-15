@@ -1638,7 +1638,8 @@
     "stattrak": "StatTrak™",
     "stattrakKills": "StatTrak™ kills",
     "takeOffSide": "Take {{name}} off {{side}}",
-    "takeOffOn": "Take off {{side}}"
+    "takeOffOn": "Take off {{side}}",
+    "keepAll": "Tout garder ({{count}})"
   },
   "matchRules": {
     "title": "Règles de match",

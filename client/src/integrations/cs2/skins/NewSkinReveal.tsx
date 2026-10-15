@@ -177,6 +177,8 @@ function Reveal() {
   const tone = rarityColor[skin.rarity];
 
   const close = () => void markSeen([skin.id]);
+  // A full loadout given at once is dozens of reveals: one click closes them all.
+  const closeAll = () => void markSeen(unseen);
 
   return (
     <Dialog
@@ -324,6 +326,16 @@ function Reveal() {
           >
             {t('skins.keep')}
           </Button>
+          {unseen.length > 1 && (
+            <Button
+              variant="text"
+              onClick={closeAll}
+              data-testid="new-skin-keep-all"
+              sx={{ borderRadius: radii.pill, px: 3, py: 1.75 }}
+            >
+              {t('skins.keepAll', { count: unseen.length })}
+            </Button>
+          )}
         </Box>
         <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
           {t('skins.notice')}

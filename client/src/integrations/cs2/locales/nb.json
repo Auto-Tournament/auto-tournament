@@ -1638,7 +1638,8 @@
     "stattrak": "StatTrak™",
     "stattrakKills": "StatTrak™-drap",
     "takeOffSide": "Ta {{name}} av på {{side}}",
-    "takeOffOn": "Ta av på {{side}}"
+    "takeOffOn": "Ta av på {{side}}",
+    "keepAll": "Behold alle {{count}}"
   },
   "matchRules": {
     "title": "Kampregler",
