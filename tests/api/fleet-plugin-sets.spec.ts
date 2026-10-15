@@ -238,6 +238,7 @@ test.describe.serial('Fleet plugin sets', () => {
           'deathmatch',
           'mapvote',
           'community',
+          'movement',
           'addons',
         ],
       });
