@@ -108,12 +108,16 @@ export function describeNotice(notice: Notice, t: TFunction, viewerId: string | 
       out.text =
         d.event === 'started'
           ? t('social.notice.tournamentStarted')
-          : d.event === 'lineupGap'
-            ? t('social.notice.lineupGap', { minutes: Number(d.minutes) || 15 })
-            : t('social.notice.checkInOpen');
+          : d.event === 'starts_soon'
+            ? t('social.notice.startsSoon', { minutes: Number(d.minutes) || 5 })
+            : d.event === 'lineupGap'
+              ? t('social.notice.lineupGap', { minutes: Number(d.minutes) || 15 })
+              : t('social.notice.checkInOpen');
       // A lineup gap: the captain picks a sub on the sign-up page.
       out.to = d.tournamentId
-        ? `/tournament/${Number(d.tournamentId)}${d.event === 'started' ? '/match' : '/signup'}`
+        ? `/tournament/${Number(d.tournamentId)}${
+            d.event === 'started' ? '/match' : d.event === 'starts_soon' ? '' : '/signup'
+          }`
         : null;
       break;
     case 'report':

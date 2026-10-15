@@ -438,7 +438,14 @@
       "maxTeams": "Team spots",
       "checkInOpensAt": "Check-in opens",
       "checkInClosesAt": "Check-in closes",
-      "signupHelp": "A team's owner or captain signs up with a lineup. Lineup players check in on the day."
+      "signupHelp": "A team's owner or captain signs up with a lineup. Lineup players check in on the day.",
+      "startLabel": "Start time",
+      "startsAtLabel": "Starts at",
+      "startsAtHelp": "Your local time. The site counts down to it.",
+      "autoStartLabel": "Start the tournament automatically at this time",
+      "remindersLabel": "Remind players before it starts",
+      "reminderMinutes_one": "{{count}} minute before",
+      "reminderMinutes_other": "{{count}} minutes before"
     },
     "setup": {
       "steps": {
@@ -689,6 +696,11 @@
       "done_one": "Tournament ended, {{count}} match cancelled",
       "done_other": "Tournament ended, {{count}} matches cancelled",
       "failed": "Could not end the tournament"
+    },
+    "countdown": {
+      "days": "Starts in {{d}}d {{h}}h",
+      "hours": "Starts in {{h}}h {{m}}m",
+      "minutes": "Starts in {{m}}:{{s}}"
     }
   },
   "bracket": {

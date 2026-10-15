@@ -630,6 +630,10 @@ process.on('uncaughtException', (err) => {
       // Admins hear about module and pack updates, and ones that did not take.
       startModuleUpdateNotices();
       // The demo worker inside the image (services/builtinWorker.ts).
+      // Start times: reminders before, and the automatic start (tournamentSchedule.ts).
+      void import('./services/tournamentSchedule').then(({ startTournamentSchedule }) =>
+        startTournamentSchedule(Number(PORT))
+      );
       void import('./services/builtinWorker').then(({ startBuiltinWorker }) =>
         startBuiltinWorker(Number(PORT))
       );

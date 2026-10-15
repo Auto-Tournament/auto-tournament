@@ -14,9 +14,16 @@ import { fontDisplay, radii, tokens } from '../../theme/tokens';
 
 const { color } = tokens;
 
-type Event = 'match_ready' | 'veto_turn' | 'checkin_open' | 'new_tournament';
+type Event =
+  'match_ready' | 'veto_turn' | 'checkin_open' | 'new_tournament' | 'tournament_starting';
 type Channel = 'discord' | 'email';
-const EVENTS: Event[] = ['match_ready', 'veto_turn', 'checkin_open', 'new_tournament'];
+const EVENTS: Event[] = [
+  'match_ready',
+  'veto_turn',
+  'checkin_open',
+  'tournament_starting',
+  'new_tournament',
+];
 const CHANNELS: Channel[] = ['discord', 'email'];
 
 interface Prefs {

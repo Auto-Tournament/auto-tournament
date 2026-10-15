@@ -127,7 +127,8 @@
       "clips_failing": "Clips keep failing",
       "beta_available": "A new platform release",
       "license_problem": "License problems",
-      "demos_failing": "Demo analyses keep failing"
+      "demos_failing": "Demo analyses keep failing",
+      "tournament_autostart_failed": "En turnering starter ikke i tide"
     },
     "kind": {
       "match_no_server": "{{matchSlug}} has waited {{minutes}} min for a server",
@@ -149,7 +150,8 @@
       "clips_failing": "{{count}} clips failed in the last hour",
       "beta_available": "Auto Tournament {{version}} is out (this runs {{running}})",
       "license_problem": "The license needs attention: {{problem}}",
-      "demos_failing": "{{count}} demo analyses failed in the last hour"
+      "demos_failing": "{{count}} demo analyses failed in the last hour",
+      "tournament_autostart_failed": "{{name}} startet ikke på starttidspunktet: {{reason}}"
     }
   },
   "matchNow": {

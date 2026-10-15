@@ -703,7 +703,32 @@ function validateEventPageSettings(
       return { valid: false, error: 'settings.maxTeams must be a whole number from 2 to 256' };
     }
   }
-  for (const key of ['registrationClosesAt', 'checkInOpensAt', 'checkInClosesAt'] as const) {
+  // The start time: reminders before it and, with autoStart, the start (services/tournamentSchedule.ts).
+  if (s.autoStart !== undefined && typeof s.autoStart !== 'boolean') {
+    return { valid: false, error: 'settings.autoStart must be true or false' };
+  }
+  if (s.startReminders !== undefined && s.startReminders !== null) {
+    const r = s.startReminders;
+    if (
+      !Array.isArray(r) ||
+      r.length > 6 ||
+      r.some((m) => typeof m !== 'number' || !Number.isInteger(m) || m < 1 || m > 10080)
+    ) {
+      return {
+        valid: false,
+        error: 'settings.startReminders must be up to 6 whole numbers of minutes (1 to 10080)',
+      };
+    }
+  }
+  if (s.autoStart === true && (typeof s.startsAt !== 'string' || !s.startsAt)) {
+    return { valid: false, error: 'settings.autoStart needs settings.startsAt' };
+  }
+  for (const key of [
+    'registrationClosesAt',
+    'checkInOpensAt',
+    'checkInClosesAt',
+    'startsAt',
+  ] as const) {
     const value = s[key];
     if (value === undefined || value === null || value === '') continue;
     if (typeof value !== 'string' || Number.isNaN(new Date(value).getTime())) {

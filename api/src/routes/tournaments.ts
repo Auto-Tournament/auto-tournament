@@ -62,9 +62,16 @@ export interface TournamentListItem {
 }
 
 function startOf(settings: Record<string, unknown>, startedAt: number | undefined): number | null {
-  const schedule = Array.isArray(settings.schedule) ? (settings.schedule as Array<{ at?: unknown }>) : [];
+  // The start time the organizer set (tournamentSchedule.ts) wins over the schedule's first entry.
+  const set = typeof settings.startsAt === 'string' ? Date.parse(settings.startsAt) : NaN;
+  if (Number.isFinite(set)) return Math.floor(set / 1000);
+  const schedule = Array.isArray(settings.schedule)
+    ? (settings.schedule as Array<{ at?: unknown }>)
+    : [];
   const first = schedule
-    .map((s) => (typeof s.at === 'string' || typeof s.at === 'number' ? Date.parse(String(s.at)) : NaN))
+    .map((s) =>
+      typeof s.at === 'string' || typeof s.at === 'number' ? Date.parse(String(s.at)) : NaN
+    )
     .filter((t) => Number.isFinite(t))
     .sort((a, b) => a - b)[0];
   if (first !== undefined) return Math.floor(first / 1000);
@@ -72,7 +79,9 @@ function startOf(settings: Record<string, unknown>, startedAt: number | undefine
 }
 
 /** The viewer's teams and the tournaments they are in by name (lineups, the shuffle pool). */
-async function viewerEntries(steamId: string | null): Promise<{ teams: Set<string>; tournaments: Set<number> }> {
+async function viewerEntries(
+  steamId: string | null
+): Promise<{ teams: Set<string>; tournaments: Set<number> }> {
   if (!steamId) return { teams: new Set(), tournaments: new Set() };
   const teams = await db.queryAsync<{ team_id: string }>(
     'SELECT tm.team_id FROM team_members tm JOIN players p ON p.uid = tm.account_uid WHERE p.id = ?',
@@ -87,10 +96,16 @@ async function viewerEntries(steamId: string | null): Promise<{ teams: Set<strin
             WHERE p.id = ?`,
     [steamId, steamId, steamId]
   );
-  return { teams: new Set(teams.map((t) => t.team_id)), tournaments: new Set(named.map((n) => Number(n.tournament_id))) };
+  return {
+    teams: new Set(teams.map((t) => t.team_id)),
+    tournaments: new Set(named.map((n) => Number(n.tournament_id))),
+  };
 }
 
-async function listItems(includeDrafts: boolean, viewerSteamId: string | null = null): Promise<TournamentListItem[]> {
+async function listItems(
+  includeDrafts: boolean,
+  viewerSteamId: string | null = null
+): Promise<TournamentListItem[]> {
   const viewer = await viewerEntries(viewerSteamId);
   const rows = await db.queryAsync<DbTournamentRow>('SELECT * FROM tournament ORDER BY id DESC');
   const featuredId = resolveTournamentId();
@@ -118,7 +133,9 @@ async function listItems(includeDrafts: boolean, viewerSteamId: string | null = 
     }
 
     const winner =
-      t.status === 'completed' ? await tournamentService.getTournamentWinner(t.id, t.type, []).catch(() => null) : null;
+      t.status === 'completed'
+        ? await tournamentService.getTournamentWinner(t.id, t.type, []).catch(() => null)
+        : null;
     const currentRound =
       t.status === 'in_progress'
         ? ((
@@ -137,7 +154,8 @@ async function listItems(includeDrafts: boolean, viewerSteamId: string | null = 
             )
           )?.n ?? 0)
         : 0;
-    const mine = viewer.tournaments.has(t.id) || (t.teamIds ?? []).some((id) => viewer.teams.has(id));
+    const mine =
+      viewer.tournaments.has(t.id) || (t.teamIds ?? []).some((id) => viewer.teams.has(id));
 
     out.push({
       id: t.id,
@@ -151,7 +169,8 @@ async function listItems(includeDrafts: boolean, viewerSteamId: string | null = 
       entries,
       maxEntries: typeof settings.maxTeams === 'number' ? settings.maxTeams : null,
       registrationOpen,
-      registrationClosesAt: typeof settings.registrationClosesAt === 'number' ? settings.registrationClosesAt : null,
+      registrationClosesAt:
+        typeof settings.registrationClosesAt === 'number' ? settings.registrationClosesAt : null,
       startsAt: startOf(settings, t.started_at),
       startedAt: t.started_at ?? null,
       completedAt: t.completed_at ?? null,
@@ -161,7 +180,10 @@ async function listItems(includeDrafts: boolean, viewerSteamId: string | null = 
       draft,
       currentRound: currentRound === null ? null : Number(currentRound),
       liveMatchCount,
-      teamSize: typeof (t as { teamSize?: unknown }).teamSize === 'number' ? (t as { teamSize: number }).teamSize : null,
+      teamSize:
+        typeof (t as { teamSize?: unknown }).teamSize === 'number'
+          ? (t as { teamSize: number }).teamSize
+          : null,
       mine,
     });
   }
@@ -227,9 +249,16 @@ router.post('/', requireAuth, async (req: Request, res: Response, next) => {
     delete body.copyFrom;
     if (Number.isInteger(copyFrom) && copyFrom > 0) {
       const source = await tournamentService.getTournament(copyFrom);
-      if (!source) return res.status(404).json({ success: false, error: 'Tournament to copy not found' });
+      if (!source)
+        return res.status(404).json({ success: false, error: 'Tournament to copy not found' });
       const settings = { ...((source.settings ?? {}) as unknown as Record<string, unknown>) };
-      for (const key of ['registrationOpen', 'registrationClosesAt', 'checkInOpensAt', 'checkInClosesAt', 'schedule']) {
+      for (const key of [
+        'registrationOpen',
+        'registrationClosesAt',
+        'checkInOpensAt',
+        'checkInClosesAt',
+        'schedule',
+      ]) {
         delete settings[key];
       }
       const bodySettings = (body.settings ?? {}) as Record<string, unknown>;
@@ -288,7 +317,8 @@ router.post('/', requireAuth, async (req: Request, res: Response, next) => {
 router.put('/:id/feature', requireAuth, async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ success: false, error: 'Bad tournament id' });
+    if (!Number.isInteger(id) || id <= 0)
+      return res.status(400).json({ success: false, error: 'Bad tournament id' });
     return res.json({ success: true, featuredId: await setFeaturedTournament(id) });
   } catch (error) {
     if (error instanceof TournamentArchiveError) {
@@ -304,7 +334,9 @@ router.delete('/:id/feature', requireAuth, async (_req: Request, res: Response) 
     return res.json({ success: true, featuredId: await setFeaturedTournament(null) });
   } catch (error) {
     log.error('Error clearing the featured tournament', { error });
-    return res.status(500).json({ success: false, error: 'Failed to clear the featured tournament' });
+    return res
+      .status(500)
+      .json({ success: false, error: 'Failed to clear the featured tournament' });
   }
 });
 
@@ -328,7 +360,8 @@ router.delete('/:id/feature', requireAuth, async (_req: Request, res: Response) 
 router.post('/:id/archive', requireAuth, async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ success: false, error: 'Bad tournament id' });
+    if (!Number.isInteger(id) || id <= 0)
+      return res.status(400).json({ success: false, error: 'Bad tournament id' });
     return res.json({ success: true, ...(await archiveTournament(id)) });
   } catch (error) {
     if (error instanceof TournamentArchiveError) {
@@ -373,17 +406,23 @@ router.post('/:id/archive', requireAuth, async (req: Request, res: Response) => 
  *       409:
  *         description: Already started
  */
-function teamAction(action: (id: number, teamId: string) => Promise<string[]>, teamIdOf: (req: Request) => unknown) {
+function teamAction(
+  action: (id: number, teamId: string) => Promise<string[]>,
+  teamIdOf: (req: Request) => unknown
+) {
   return async (req: Request, res: Response) => {
     try {
       const id = Number(req.params.id);
       const teamId = teamIdOf(req);
-      if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ success: false, error: 'Bad tournament id' });
-      if (typeof teamId !== 'string' || !teamId) return res.status(400).json({ success: false, error: 'teamId is required' });
+      if (!Number.isInteger(id) || id <= 0)
+        return res.status(400).json({ success: false, error: 'Bad tournament id' });
+      if (typeof teamId !== 'string' || !teamId)
+        return res.status(400).json({ success: false, error: 'teamId is required' });
       return res.json({ success: true, teamIds: await action(id, teamId) });
     } catch (error) {
-      if (error instanceof SignupError) return res.status(error.status).json({ success: false, error: error.message });
-      log.error('Error changing a tournament\'s teams', { error });
+      if (error instanceof SignupError)
+        return res.status(error.status).json({ success: false, error: error.message });
+      log.error("Error changing a tournament's teams", { error });
       return res.status(500).json({ success: false, error: 'Failed to change the teams' });
     }
   };
@@ -392,12 +431,18 @@ function teamAction(action: (id: number, teamId: string) => Promise<string[]>, t
 router.post(
   '/:id/teams',
   requireAuth,
-  teamAction((id, teamId) => tournamentSignupService.adminAdd(id, teamId), (req) => req.body?.teamId)
+  teamAction(
+    (id, teamId) => tournamentSignupService.adminAdd(id, teamId),
+    (req) => req.body?.teamId
+  )
 );
 router.delete(
   '/:id/teams/:teamId',
   requireAuth,
-  teamAction((id, teamId) => tournamentSignupService.adminRemove(id, teamId), (req) => req.params.teamId)
+  teamAction(
+    (id, teamId) => tournamentSignupService.adminRemove(id, teamId),
+    (req) => req.params.teamId
+  )
 );
 
 export default router;

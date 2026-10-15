@@ -5,6 +5,7 @@ import { ColumnsIcon, TreeStructureIcon, TrophyIcon } from '@phosphor-icons/reac
 import { useTranslation } from 'react-i18next';
 import type { Tournament } from '../../../types';
 import { GameMark } from '../../common/GameMark';
+import { StartCountdown } from '../StartCountdown';
 import { useSetupGames } from '../setup/games';
 import { usePublicBracket } from '../../../hooks/usePublicBracket';
 import { MATCH_FORMATS } from '../../../constants/tournament';
@@ -37,7 +38,14 @@ export function tournamentDates(tournament: Tournament, language: string): strin
 
   let start: number | null = null;
   let end: number | null = null;
-  if (scheduled.length > 0) {
+  const startsAt = tournament.settings?.startsAt
+    ? new Date(tournament.settings.startsAt).getTime()
+    : NaN;
+  if (Number.isFinite(startsAt) && !tournament.started_at) {
+    // The organizer's start time (with its countdown below the title).
+    start = startsAt;
+    end = scheduled.length > 0 ? Math.max(startsAt, scheduled[scheduled.length - 1]) : null;
+  } else if (scheduled.length > 0) {
     start = scheduled[0];
     end = scheduled[scheduled.length - 1];
   } else if (tournament.started_at) {
@@ -422,6 +430,14 @@ export function TournamentPageHeader({
               >
                 {tournament.name}
               </Typography>
+              {tournament.settings?.startsAt && !tournament.started_at && (
+                <Typography sx={{ fontSize: textSize.md }} data-testid="tournament-starts">
+                  <StartCountdown
+                    at={new Date(tournament.settings.startsAt).getTime()}
+                    color={color.accent}
+                  />
+                </Typography>
+              )}
               {description && (
                 <Typography
                   data-testid="overview-about"

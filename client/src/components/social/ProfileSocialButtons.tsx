@@ -9,7 +9,14 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
-import { acceptFriend, friendRequest, inviteToParty, relationTo, useSocial, type Relation } from './socialStore';
+import {
+  acceptFriend,
+  friendRequest,
+  inviteToParty,
+  relationTo,
+  useSocial,
+  type Relation,
+} from './socialStore';
 
 export function ProfileSocialButtons({ playerId, name }: { playerId: string; name: string }) {
   const { t } = useTranslation();
@@ -60,7 +67,12 @@ export function ProfileSocialButtons({ playerId, name }: { playerId: string; nam
           {t('social.friends.requestSent')}
         </Button>
       ) : relation === 'incoming' ? (
-        <Button size="small" variant="contained" disabled={busy} onClick={() => void run(() => acceptFriend(playerId))}>
+        <Button
+          size="small"
+          variant="contained"
+          disabled={busy}
+          onClick={() => void run(() => acceptFriend(playerId))}
+        >
           {t('social.profile.acceptRequest')}
         </Button>
       ) : (
@@ -82,7 +94,11 @@ export function ProfileSocialButtons({ playerId, name }: { playerId: string; nam
         onClick={() => void run(() => inviteToParty(playerId), t('social.invite.sent', { name }))}
         data-testid="profile-invite"
       >
-        {inParty ? t('social.friends.inParty') : invited ? t('social.invite.invited') : t('social.profile.invite')}
+        {inParty
+          ? t('social.friends.inParty')
+          : invited
+            ? t('social.invite.invited')
+            : t('social.profile.invite')}
       </Button>
     </Box>
   );

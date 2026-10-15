@@ -49,7 +49,8 @@
       "reportNew": "ble rapportert: {{reason}}",
       "reportReviewed": "Takk: rapporten din om {{name}} er gjennomgått.",
       "matchReady": "er klar. Åpne kamprommet for å koble til.",
-      "vetoTurn": "Det er lagets tur i map-vetoen."
+      "vetoTurn": "Det er lagets tur i map-vetoen.",
+      "startsSoon": "starter om {{minutes}} minutter. Gjør deg klar til den første kampen."
     },
     "toast": {
       "join": "Bli med",
@@ -235,6 +236,10 @@
       "new_tournament": {
         "title": "Nye turneringer",
         "hint": "Når en turnering tar imot påmeldinger"
+      },
+      "tournament_starting": {
+        "title": "Turneringen starter",
+        "hint": "Påminnelser før en turnering du er med i, starter"
       }
     },
     "reason": {
