@@ -1623,7 +1623,7 @@
     },
     "tryout": {
       "title": "Prøv dem i spillet",
-      "hint": "En treningsserver med skinsene dine. Utrust her, så endres de i spillet etter noen sekunder.",
+      "hint": "En surf-server med skinsene dine, med tidtaker og rekorder. Utrust her, så endres de i spillet etter noen sekunder.",
       "join": "Bli med",
       "joinLabel": "Bli med på {{name}}",
       "console": "Eller lim dette inn i CS2-konsollen"

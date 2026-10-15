@@ -1,6 +1,6 @@
 /**
  * Skin tryout servers: Ready Up servers on the Skin tryout plugin set
- * (practice + skins, no match plugin), where a player tries the skins they
+ * (movement + skins on a surf map, no match plugin), where a player tries the skins they
  * equipped here. Equipping on the site reaches them in game at once (the
  * live loadout push), so the inventory links to whichever is online.
  */
@@ -37,7 +37,9 @@ export async function tryoutServers(): Promise<TryoutServer[]> {
   const out: TryoutServer[] = [];
   for (const s of servers) {
     if (!s.online || s.status === 'revoked') continue;
-    if (!runs(s.pluginsState, 'skins') || !runs(s.pluginsState, 'practice')) continue;
+    if (!runs(s.pluginsState, 'skins')) continue;
+    // Movement (the Skin tryout set) or practice (tryout servers before it).
+    if (!runs(s.pluginsState, 'movement') && !runs(s.pluginsState, 'practice')) continue;
     // A server with the match plugin on takes matches: not a tryout server.
     if (runs(s.pluginsState, 'match')) continue;
     // Not in the match pool, so usually not linked: where it was seen

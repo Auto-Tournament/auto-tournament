@@ -64,8 +64,9 @@ export const PLUGIN_PRESETS = {
   tournament: ['match', 'essentials', 'whitelist'],
   practice: ['practice', 'essentials'],
   fun: ['match', 'skins', 'midas', 'deathmatch', 'mapvote', 'community', 'essentials'],
-  // Skin tryout: practice with skins, no matches; the inventory links to it.
-  tryout: ['practice', 'skins', 'mapvote', 'community', 'essentials'],
+  // Skin tryout: a surf server with skins (movement: timer, records, its surf hub map), no
+  // matches; the inventory links to it.
+  tryout: ['movement', 'skins', 'mapvote', 'community', 'essentials'],
   // Movement: surf / bhop / kz community server (timer, records, leaderboards); no
   // matches, no practice (its commands would let players skip a run).
   movement: ['movement', 'skins', 'mapvote', 'community', 'essentials'],
