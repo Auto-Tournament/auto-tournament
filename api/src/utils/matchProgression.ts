@@ -465,8 +465,14 @@ export async function awardPlacements(
   tournament: DbTournamentRow,
   placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }>
 ): Promise<void> {
+  if (placements.length === 0) return;
+  // The placement XP bonus (every game), then the game's own prizes.
+  const { progressionService } = await import('../services/matchmaking/progressionService');
+  await progressionService
+    .awardPlacementXp(tournament.id, placements)
+    .catch((error) => log.warn('[TOURNAMENT] Placement XP failed', { error: String(error) }));
   const onPlacements = integrationForMatch(tournament).onTournamentPlacements;
-  if (!onPlacements || placements.length === 0) return;
+  if (!onPlacements) return;
   const settings = (() => {
     try {
       return JSON.parse(tournament.settings ?? '{}') as Record<string, unknown>;

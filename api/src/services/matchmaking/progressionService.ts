@@ -12,6 +12,7 @@ import {
   COMMEND_WINDOW_SECONDS,
   levelFor,
   parseCommend,
+  XP,
   xpForMatch,
   type XpReason,
 } from './progression';
@@ -65,17 +66,19 @@ async function addXp(
 
 export const progressionService = {
   /**
-   * XP for everyone in a finished matchmaking match (called once per match,
+   * XP for everyone in a finished matchmaking or tournament match (called once per match,
    * after the rating update). The unique (player, match, reason) index keeps a
    * second call from paying twice.
    */
   async awardMatchXp(
     matchSlug: string,
     winner: 'team1' | 'team2' | 'none',
-    abandoned: ReadonlySet<string> = new Set()
+    abandoned: ReadonlySet<string> = new Set(),
+    /** A tournament match's players (no lobby): who played on which team. */
+    roster?: LobbyPlayer[]
   ): Promise<void> {
     // No XP for a player who abandoned the match.
-    const players = (await lobbyPlayersOfMatch(matchSlug)).filter(
+    const players = (roster ?? (await lobbyPlayersOfMatch(matchSlug))).filter(
       (p) => !abandoned.has(p.player_id)
     );
     if (players.length === 0) return;
@@ -145,6 +148,21 @@ export const progressionService = {
             error: String(error),
           })
         );
+      }
+    }
+  },
+
+  /**
+   * A finished tournament's top three get a placement bonus on top of their
+   * matches' XP (XP.placement). Once per tournament and player.
+   */
+  async awardPlacementXp(
+    tournamentId: number,
+    placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }>
+  ): Promise<void> {
+    for (const { place, steamIds } of placements) {
+      for (const id of steamIds) {
+        await addXp(id, `tournament:${tournamentId}`, XP.placement[place - 1], 'placement');
       }
     }
   },
