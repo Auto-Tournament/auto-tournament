@@ -1122,6 +1122,8 @@
   "navStatus": {
     "placed": "Endte på",
     "placedPlay": "{{place}} · Spill matchmaking",
-    "waiting": "Venter på motstander"
+    "waiting": "Venter på motstander",
+    "vetoIn": "Veto om",
+    "vetoOpening": "Vetoen åpner"
   }
 }

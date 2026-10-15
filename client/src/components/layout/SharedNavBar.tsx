@@ -9,7 +9,7 @@ import { useCurrentMatchStatus } from '../../hooks/useCurrentMatchStatus';
 import { DevAccountSwitcherGate } from '../dev/DevAccountSwitcherGate';
 import { AtIcon } from '../common/AtIcon';
 import { fontDisplay, radii, textSize, tokens } from '../../theme/tokens';
-import { paths } from '../../paths';
+import { matchPagePath, paths } from '../../paths';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
 import { NotificationBell } from '../social/NotificationBell';
 import { AdminNoticeBell } from '../admin/AdminNoticeBell';
@@ -20,6 +20,7 @@ import { useInstalledIntegrations } from '../../integrations/registry';
 import { soundNotification } from '../../utils/soundNotification';
 import { NextMatchDialog } from '../match/NextMatchDialog';
 import { NavStartCountdown } from './NavStartCountdown';
+import { NavVetoCountdown } from './NavVetoCountdown';
 import { NavTournamentStatus } from './NavTournamentStatus';
 import { PlacementDialog } from '../tournament/PlacementDialog';
 
@@ -431,7 +432,10 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
       </Box>
 
       <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-        {ctaLabel ? (
+        {/* The break before the veto: the time, outlined (nothing to do yet). */}
+        {playerSteamId && matchStatusLabel === 'veto_soon' && opensAt && matchSlug ? (
+          <NavVetoCountdown opensAt={opensAt} to={matchPagePath(matchSlug)} />
+        ) : ctaLabel ? (
           <Button
             component={RouterLink}
             to={paths.matchNow}
