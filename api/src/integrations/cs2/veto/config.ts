@@ -122,10 +122,10 @@ export function validateVetoOrder(
         error: 'BO1 veto must end with a side_pick action',
       };
     }
-    if (banCount !== 6) {
+    if (banCount !== totalMaps - 1) {
       return {
         valid: false,
-        error: `BO1 veto must have exactly 6 bans (Team A: 2, Team B: 3, Team A: 1), got ${banCount}`,
+        error: `BO1 veto must ban all maps but one (${totalMaps - 1} bans for ${totalMaps} maps), got ${banCount}`,
       };
     }
     if (pickCount > 0) {
@@ -161,12 +161,7 @@ export function validateVetoOrder(
         error: `BO3 veto must have exactly 3 side picks (one per map including decider), got ${sidePickCount}`,
       };
     }
-    if (banCount !== 4) {
-      return {
-        valid: false,
-        error: `BO3 veto must have exactly 4 bans (Team A: 1, Team B: 1, Team B: 1, Team A: 1), got ${banCount}`,
-      };
-    }
+    // The bans follow from the pool: n - 3 (checked with the picks below).
     // Check that each pick has exactly one side pick after it, plus one side pick for the decider
     let pickIndices: number[] = [];
     let sidePickIndices: number[] = [];
@@ -327,10 +322,57 @@ export function getVetoOrder(
   }
 
   // Fall back to standard formats
-  if (format === 'bo1') return BO1_VETO_ORDER;
-  if (format === 'bo3') return BO3_VETO_ORDER;
-  if (format === 'bo5') return BO5_VETO_ORDER;
-  return BO1_VETO_ORDER;
+  return standardVetoOrder(format, totalMaps);
+}
+
+const other = (team: 'team1' | 'team2'): 'team1' | 'team2' =>
+  team === 'team1' ? 'team2' : 'team1';
+
+/**
+ * The standard order for a pool of `totalMaps`: Valve's Major order for 7 maps,
+ * and the same shape for other pools (a 4-map wingman pool, a 9-map one). The
+ * 7-map orders banned 6 maps in a BO1 whatever the pool, so a 6-map wingman pool
+ * had nothing left to play (2026-10-15).
+ * - BO1: the teams take turns banning until one map is left, A banning last;
+ *   B picks the side.
+ * - BO3: two bans (fewer for a small pool), A picks and B sides, B picks and A
+ *   sides, then turns of bans down to the decider, whose side B picks.
+ * - BO5: bans down to five maps, then A, B, A, B pick with the other team on
+ *   side; the fifth map is the decider.
+ */
+export function standardVetoOrder(format: string, totalMaps: number = 7): VetoStep[] {
+  const n = Math.max(1, Math.floor(totalMaps));
+  if (n === 7) {
+    if (format === 'bo3') return BO3_VETO_ORDER;
+    if (format === 'bo5') return BO5_VETO_ORDER;
+    return BO1_VETO_ORDER;
+  }
+  const steps: Array<Omit<VetoStep, 'step'>> = [];
+  if (format === 'bo3' && n >= 3) {
+    const bans = n - 3;
+    const pre = Math.min(2, bans);
+    let turn: 'team1' | 'team2' = 'team1';
+    for (let i = 0; i < pre; i++, turn = other(turn)) steps.push({ team: turn, action: 'ban' });
+    steps.push({ team: 'team1', action: 'pick' }, { team: 'team2', action: 'side_pick' });
+    steps.push({ team: 'team2', action: 'pick' }, { team: 'team1', action: 'side_pick' });
+    turn = 'team2';
+    for (let i = 0; i < bans - pre; i++, turn = other(turn))
+      steps.push({ team: turn, action: 'ban' });
+    steps.push({ team: 'team2', action: 'side_pick' });
+  } else if (format === 'bo5' && n >= 5) {
+    let turn: 'team1' | 'team2' = 'team1';
+    for (let i = 0; i < n - 5; i++, turn = other(turn)) steps.push({ team: turn, action: 'ban' });
+    for (const picker of ['team1', 'team2', 'team1', 'team2'] as const) {
+      steps.push({ team: picker, action: 'pick' }, { team: other(picker), action: 'side_pick' });
+    }
+  } else {
+    // Team B picks the side (as in Valve's order), so team A bans last: with an even
+    // number of bans, B starts.
+    let turn: 'team1' | 'team2' = (n - 1) % 2 === 1 ? 'team1' : 'team2';
+    for (let i = 0; i < n - 1; i++, turn = other(turn)) steps.push({ team: turn, action: 'ban' });
+    steps.push({ team: 'team2', action: 'side_pick' });
+  }
+  return steps.map((s, i) => ({ step: i + 1, ...s }));
 }
 
 /**

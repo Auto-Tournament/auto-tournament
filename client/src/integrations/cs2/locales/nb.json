@@ -329,6 +329,7 @@
   "vetoInterface": {
     "orderValve": "Valves offisielle rekkefølge (Major-regelverket)",
     "orderCustom": "Arrangørens egen veto-rekkefølge",
+    "orderStandard": "Standardrekkefølge for {{count}} kart (samme oppbygning som Valves)",
     "vetoNotAvailable": "Veto ikke tilgjengelig for denne kampen",
     "vetoUnavailable": "Veto-detaljer er ikke tilgjengelige for denne kontoen. Logg inn som spiller på ett av de to lagene for å fortsette vetoen.",
     "vetoCompleted": "Veto fullført!",

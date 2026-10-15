@@ -329,6 +329,7 @@
   "vetoInterface": {
     "orderValve": "Valve's official order (Major rulebook)",
     "orderCustom": "The organizer's own veto order",
+    "orderStandard": "The standard order for {{count}} maps (Valve's, fitted to the pool)",
     "vetoNotAvailable": "Veto niet beschikbaar voor deze match",
     "vetoUnavailable": "Veto-details zijn niet beschikbaar voor dit account. Log in als speler van een van de twee teams om het veto te voltooien.",
     "vetoCompleted": "Veto voltooid!",
