@@ -29,6 +29,7 @@ import matchPageRoutes from './matchPage';
 import leaderboardRoutes from './leaderboards';
 import movementRoutes from './movement';
 import radarRoutes from './radars';
+import imageRoutes from './images';
 import highlightRoutes from './highlights';
 import teamProfileRoutes from './teamProfile';
 import roundBackupRoutes from './roundBackups';
@@ -173,6 +174,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Highlights',
     description:
       "Each player's best moments, picked from the demo analysis, and the clips the recorder makes of them.",
+  },
+  {
+    // Public: map and skin pictures, bundled with the module or cached from csm.
+    prefix: '/api/game/cs2',
+    router: imageRoutes,
+    title: 'Map and skin pictures',
+    description:
+      'Map screenshots, map icons and skin pictures in the sizes the site shows, served by the platform (bundled with the CS2 module, or fetched once and cached).',
   },
   {
     // Reading is public (the 2D replay); the worker's upload takes an API token.

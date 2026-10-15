@@ -23,6 +23,7 @@ services:
       - AT_ACCEPT_LICENSE=noncommercial
       - AT_VETO_TURN_SECONDS_DEFAULT=0
       - AT_UPDATE_CHECK=off
+      - CS2_IMAGE_PREFETCH=off
       # Test license keys never check in with autotournament.gg.
       - LICENSE_CHECKIN_URL=off
     volumes:

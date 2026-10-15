@@ -91,15 +91,14 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
-  const MAP_IMAGE_BASE =
-    'https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails';
+  const MAP_IMAGE_BASE = '/api/game/cs2/img';
 
-  const getThumbnailUrl = (mapId: string): string => `${MAP_IMAGE_BASE}/${mapId}_thumb.webp`;
+  const getThumbnailUrl = (mapId: string): string => `${MAP_IMAGE_BASE}/maps-480/${mapId}.webp`;
 
-  const getFullImageUrl = (mapId: string): string => `${MAP_IMAGE_BASE}/${mapId}.webp`;
+  const getFullImageUrl = (mapId: string): string => `${MAP_IMAGE_BASE}/maps-1280/${mapId}.webp`;
 
   const isRepoImageUrl = (url: string | null | undefined): boolean =>
-    !!url && url.includes('cs2-server-manager') && url.includes('map_thumbnails');
+    !!url && (url.includes('map_thumbnails') || url.startsWith('/api/game/cs2/img/'));
 
   // The veto response carries its maps' names and pictures (`maps`), so
   // players never need the admin-only `/api/maps` — which answered them with

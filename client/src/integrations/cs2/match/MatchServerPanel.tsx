@@ -17,8 +17,7 @@ import type { CS2MapData, MatchConnectResponse, MatchServer } from '../cs2.types
 import { getMapData, getMapDisplayName } from '../maps/mapData';
 import { copyTextToClipboard } from './clipboard';
 
-const MAP_IMAGE_BASE =
-  'https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails';
+const MAP_IMAGE_BASE = '/api/game/cs2/img';
 
 /** The map's name and pictures, from the built-in list or built from its slug. */
 function mapDataFor(slug: string | null): CS2MapData | null {
@@ -28,8 +27,8 @@ function mapDataFor(slug: string | null): CS2MapData | null {
       name: slug,
       displayName: getMapDisplayName(slug),
       // Full-size webp for the large hero image, thumbnail for smaller usages.
-      image: `${MAP_IMAGE_BASE}/${slug}.webp`,
-      thumbnail: `${MAP_IMAGE_BASE}/${slug}_thumb.webp`,
+      image: `${MAP_IMAGE_BASE}/maps-1280/${slug}.webp`,
+      thumbnail: `${MAP_IMAGE_BASE}/maps-480/${slug}.webp`,
     }
   );
 }

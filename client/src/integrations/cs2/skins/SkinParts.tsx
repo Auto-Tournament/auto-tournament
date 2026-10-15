@@ -120,12 +120,22 @@ function WhatThisMeans() {
   );
 }
 
+/**
+ * The 256 px copy of a skin picture, for cards and lists (the platform serves it; a wear look has
+ * none and gets the full picture). Full-size stays for the inspect view and the reveal.
+ */
+export function skinCardUrl(url: string): string {
+  return url.startsWith('/api/game/cs2/img/skins/')
+    ? `/api/game/cs2/img/skins-256/${url.slice('/api/game/cs2/img/skins/'.length)}`
+    : url;
+}
+
 /** The skin picture on a dark tile. */
 export function SkinImage({ skin, height }: { skin: Pick<OwnedSkin, 'imageUrl'>; height: number }) {
   return (
     <Box
       component="img"
-      src={skin.imageUrl}
+      src={height <= 160 ? skinCardUrl(skin.imageUrl) : skin.imageUrl}
       alt=""
       loading="lazy"
       sx={{

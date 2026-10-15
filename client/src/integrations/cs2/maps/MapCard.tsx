@@ -2,6 +2,7 @@ import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
 import { MapTrifoldIcon } from '@phosphor-icons/react';
 import type { Map } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
+import { isCatalogMapImage } from './mapData';
 import { useModuleTranslation } from '../../../module-sdk';
 import { mapModeColor, mapModeKey, mapModeOf } from './mapModes';
 
@@ -14,10 +15,10 @@ export function MapCard({ map, onClick }: MapCardProps) {
   const { t } = useModuleTranslation('cs2');
   const mode = mapModeOf(map);
   const getPreferredImageUrl = (): string | null => {
-    const baseWebpUrl = `https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails/${map.id}.webp`;
+    const baseWebpUrl = `/api/game/cs2/img/maps-1280/${map.id}.webp`;
 
     // If there's no stored URL or it's a repo URL, always use the standardized WebP path.
-    if (!map.imageUrl || map.imageUrl.includes('cs2-server-manager')) {
+    if (!map.imageUrl || isCatalogMapImage(map.imageUrl)) {
       return baseWebpUrl;
     }
 

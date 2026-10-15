@@ -17,6 +17,7 @@ import { CloudArrowUpIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import { api, useSnackbar, useModuleTranslation, radii } from '../../../module-sdk';
 import type { Map, MapGameMode, MapResponse } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
+import { isCatalogMapImage } from './mapData';
 import { MAP_MODES, mapModeKey, modeFromMapName, modeFromWorkshopTags } from './mapModes';
 
 interface MapModalProps {
@@ -49,7 +50,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
   const isEditing = !!map;
 
   const getDefaultWebpUrlForId = (mapId: string): string =>
-    `https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails/${mapId}.webp`;
+    `/api/game/cs2/img/maps-1280/${mapId}.webp`;
 
   useEffect(() => {
     if (map) {
@@ -60,7 +61,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
       // For repo-backed maps, always prefer the WebP URL derived from the map ID.
       // For custom uploads (non-repo URLs), keep the stored imageUrl.
       const normalizedImageUrl =
-        map.imageUrl && !map.imageUrl.includes('cs2-server-manager')
+        map.imageUrl && !isCatalogMapImage(map.imageUrl)
           ? map.imageUrl
           : getDefaultWebpUrlForId(map.id);
       setImageUrl(normalizedImageUrl || '');
@@ -242,8 +243,8 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
     setError('');
 
     try {
-      // Download full-size webp image from GitHub repo
-      const imageUrl = `https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails/${id}.webp`;
+      // The full-size picture, from the platform
+      const imageUrl = `/api/game/cs2/img/maps-1280/${id}.webp`;
 
       // Test if image exists
       const response = await fetch(imageUrl, { method: 'HEAD' });

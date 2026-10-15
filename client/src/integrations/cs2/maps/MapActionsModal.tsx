@@ -12,6 +12,7 @@ import {
 import { PencilSimpleIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import type { Map } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
+import { isCatalogMapImage } from './mapData';
 import { useModuleTranslation, radii } from '../../../module-sdk';
 
 interface MapActionsModalProps {
@@ -34,7 +35,7 @@ export default function MapActionsModal({
   if (!map) return null;
 
   const getDefaultWebpUrlForId = (mapId: string): string =>
-    `https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@master/map_thumbnails/${mapId}.webp`;
+    `/api/game/cs2/img/maps-1280/${mapId}.webp`;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="map-actions-modal">
@@ -61,7 +62,7 @@ export default function MapActionsModal({
               </Typography>
               <FadeInImage
                 src={
-                  map.imageUrl && !map.imageUrl.includes('cs2-server-manager')
+                  map.imageUrl && !isCatalogMapImage(map.imageUrl)
                     ? map.imageUrl
                     : getDefaultWebpUrlForId(map.id)
                 }
