@@ -1104,5 +1104,8 @@
   "addressMismatch": {
     "open": "Åpne {{host}}",
     "text": "Du bruker {{current}}, men nettstedet er satt opp for {{host}}. Steam-innlogging, e-post og spillserverne bruker den adressen."
+  },
+  "siteFooter": {
+    "trademarks": "Counter-Strike, CS2 og Steam er varemerker som tilhører Valve Corporation. Andre spillnavn er varemerker som tilhører eierne sine. Auto Tournament er ikke tilknyttet eller godkjent av Valve eller noen spillutgiver."
   }
 }

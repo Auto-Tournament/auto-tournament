@@ -70,6 +70,7 @@ import ConnectSteam from './pages/ConnectSteam';
 import Templates from './pages/Templates';
 import ELOTemplates from './pages/ELOTemplates';
 import Layout from './components/layout/Layout';
+import { SiteFooter } from './components/layout/SiteFooter';
 import { AdminTournamentProvider, useAdminTournament } from './contexts/AdminTournamentContext';
 
 /** The admin shell, remounted when the admin picks another tournament so every page reloads for it. */
@@ -732,6 +733,7 @@ export default function App() {
                   state until it arrives, and re-render when it does. */}
               <BlockedNotice />
               <AppRoutes />
+              <SiteFooter />
               {/* The one match details dialog a game module opens with the
                   SDK's openMatchDetails(slug). Core's, so it needs no module
                   to have arrived. Core pages keep their own. */}
