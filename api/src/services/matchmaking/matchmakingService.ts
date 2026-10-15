@@ -327,12 +327,19 @@ export class MatchmakingService {
   private async enter(playerId: string, party: PartyRow): Promise<PartyRow> {
     const current = await this.partyOf(playerId);
     if (current?.id === party.id) return party;
-    if (await this.entryOf(party.id)) {
+    const entry = await this.entryOf(party.id);
+    if (entry && (entry.status !== 'searching' || entry.lobby_id)) {
       throw new MatchmakingError(
         409,
         'party_searching',
-        'That party is searching; ask the leader to stop first'
+        'That party has found a match; join after it'
       );
+    }
+    // A party still searching stops when someone joins it: they invited the player while
+    // queued, so the search goes on with them once the leader starts it again.
+    if (entry) {
+      await db.runAsync('DELETE FROM mm_queue_entries WHERE party_id = ?', [party.id]);
+      this.touch(...(await this.members(party.id)));
     }
     // A party can grow to the biggest mode on the site; when it outgrows its
     // mode, it moves to the smallest one it fits.
