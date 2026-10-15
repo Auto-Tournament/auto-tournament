@@ -16,7 +16,7 @@ const { color } = tokens;
 
 type Event =
   'match_ready' | 'veto_turn' | 'checkin_open' | 'new_tournament' | 'tournament_starting';
-type Channel = 'discord' | 'email';
+type Channel = 'discord' | 'email' | 'push';
 const EVENTS: Event[] = [
   'match_ready',
   'veto_turn',
@@ -24,7 +24,7 @@ const EVENTS: Event[] = [
   'tournament_starting',
   'new_tournament',
 ];
-const CHANNELS: Channel[] = ['discord', 'email'];
+const CHANNELS: Channel[] = ['push', 'discord', 'email'];
 
 interface Prefs {
   events: Record<Event, Record<Channel, boolean>>;

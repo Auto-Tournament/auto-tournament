@@ -23,9 +23,9 @@ test(
 
       const prefs = await (await player.get('/api/social/notifications/channels')).json();
       // Defaults: your own matches on, the rest off.
-      expect(prefs.events.match_ready).toEqual({ discord: true, email: true });
-      expect(prefs.events.veto_turn).toEqual({ discord: true, email: true });
-      expect(prefs.events.checkin_open).toEqual({ discord: false, email: false });
+      expect(prefs.events.match_ready).toEqual({ discord: true, email: true, push: true });
+      expect(prefs.events.veto_turn).toEqual({ discord: true, email: true, push: true });
+      expect(prefs.events.checkin_open).toEqual({ discord: false, email: false, push: false });
       // No Discord linked / no email: each says why.
       expect(prefs.channels.discord.available).toBe(false);
       expect(['no_bot', 'no_discord']).toContain(prefs.channels.discord.reason);
