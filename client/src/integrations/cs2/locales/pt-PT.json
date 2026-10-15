@@ -1267,7 +1267,9 @@
       "skins": "Skins",
       "midas": "Midas",
       "deathmatch": "Deathmatch",
-      "addons": "Extras"
+      "addons": "Extras",
+      "mapvote": "Map vote",
+      "community": "Community"
     },
     "pluginHelp": {
       "essentials": "Administradores, mudança de mapa, recarregar e reiniciar",
@@ -1276,7 +1278,9 @@
       "skins": "Skins de armas, facas e luvas dos jogadores",
       "midas": "Modelos de armas dourados",
       "deathmatch": "Modos deathmatch",
-      "addons": "Extras do Workshop"
+      "addons": "Extras do Workshop",
+      "mapvote": "Map voting: .rtv, .nominate, end-of-map vote",
+      "community": "Community commands: .rank, .top, .speclist, admin .kick"
     },
     "required": "Sempre ativo",
     "usesDefault": "Usa a predefinição da frota: {{plugins}}.",

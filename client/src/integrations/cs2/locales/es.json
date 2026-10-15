@@ -1267,7 +1267,9 @@
       "skins": "Skins",
       "midas": "Midas",
       "deathmatch": "Deathmatch",
-      "addons": "Complementos"
+      "addons": "Complementos",
+      "mapvote": "Map vote",
+      "community": "Community"
     },
     "pluginHelp": {
       "essentials": "Administradores, cambio de mapa, recarga y reinicio",
@@ -1276,7 +1278,9 @@
       "skins": "Skins de armas, cuchillos y guantes de los jugadores",
       "midas": "Modelos de armas dorados",
       "deathmatch": "Modos deathmatch",
-      "addons": "Complementos del Workshop"
+      "addons": "Complementos del Workshop",
+      "mapvote": "Map voting: .rtv, .nominate, end-of-map vote",
+      "community": "Community commands: .rank, .top, .speclist, admin .kick"
     },
     "required": "Siempre activo",
     "usesDefault": "Usa el predeterminado de la flota: {{plugins}}.",

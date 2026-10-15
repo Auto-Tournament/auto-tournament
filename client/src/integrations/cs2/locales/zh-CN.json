@@ -1267,7 +1267,9 @@
       "skins": "皮肤",
       "midas": "Midas",
       "deathmatch": "死亡竞赛",
-      "addons": "附加内容"
+      "addons": "附加内容",
+      "mapvote": "Map vote",
+      "community": "Community"
     },
     "pluginHelp": {
       "essentials": "管理员、换图、重载和重启",
@@ -1276,7 +1278,9 @@
       "skins": "玩家的武器皮肤、刀具和手套",
       "midas": "金色武器模型",
       "deathmatch": "死亡竞赛模式",
-      "addons": "创意工坊附加内容"
+      "addons": "创意工坊附加内容",
+      "mapvote": "Map voting: .rtv, .nominate, end-of-map vote",
+      "community": "Community commands: .rank, .top, .speclist, admin .kick"
     },
     "required": "始终开启",
     "usesDefault": "使用集群默认：{{plugins}}。",
