@@ -5,6 +5,7 @@ import {
   remindersDue,
   startScheduleOf,
 } from '../../api/src/services/tournamentSchedule';
+import { pickUpcoming } from '../../client/src/utils/upcomingStart';
 
 /**
  * Start times (services/tournamentSchedule.ts): reminders before
@@ -55,5 +56,35 @@ test.describe('Tournament start schedule', () => {
     expect(inMinutes(120)).toBe('in 2 hours');
     expect(inMinutes(30)).toBe('in 30 minutes');
     expect(inMinutes(1)).toBe('in 1 minute');
+  });
+
+  test("navbar countdown: the viewer's next start within a day", () => {
+    const now = at - 3600_000;
+    const row = (id: number, startsAt: number | null, extra: Record<string, unknown> = {}) => ({
+      id,
+      name: `T${id}`,
+      status: 'setup',
+      startsAt,
+      mine: true,
+      draft: false,
+      ...extra,
+    });
+    const s = (ms: number) => Math.floor(ms / 1000);
+    expect(
+      pickUpcoming(
+        [
+          row(1, s(at + 3600_000)),
+          row(2, s(at)),
+          row(3, s(at - 600_000), { mine: false }),
+          row(4, s(at - 600_000), { status: 'in_progress' }),
+          row(5, s(at - 600_000), { draft: true }),
+          row(6, s(now - 1000)),
+          row(7, null),
+        ],
+        now
+      )
+    ).toEqual({ id: 2, name: 'T2', at });
+    // More than a day away: nothing yet.
+    expect(pickUpcoming([row(1, s(now + 25 * 3600_000))], now)).toBeNull();
   });
 });

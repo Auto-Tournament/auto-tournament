@@ -19,6 +19,7 @@ import { SiteSearch } from '../search/SiteSearch';
 import { useInstalledIntegrations } from '../../integrations/registry';
 import { soundNotification } from '../../utils/soundNotification';
 import { NextMatchDialog } from '../match/NextMatchDialog';
+import { NavStartCountdown } from './NavStartCountdown';
 
 /** Top-bar text links: ink2 at rest, ink on hover and on the current page (the drafts' `.nav-links`). */
 const navLinkSx = {
@@ -440,6 +441,8 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
           >
             {ctaLabel}
           </Button>
+        ) : playerSteamId ? (
+          <NavStartCountdown viewerId={playerSteamId} />
         ) : null}
         <DevAccountSwitcherGate />
 
