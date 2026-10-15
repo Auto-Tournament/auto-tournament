@@ -15,7 +15,7 @@ import { useShellIntegrations } from '../../hooks/useShellIntegrations';
 import { ModuleNotInstalledNotice } from '../common/ModuleNotInstalledNotice';
 import { RAIL_COLUMN_MIN_WIDTH, railColumnSx } from '../../constants/adminLayout';
 import { paths } from '../../paths';
-import { UpdateToast } from '../system/UpdateToast';
+import { UpdateBanner } from '../system/UpdateBanner';
 import { useTopic } from '../../hooks/useTopic';
 
 /**
@@ -240,6 +240,8 @@ function AdminShell() {
             <Box ref={setColumn} data-testid="admin-shell-column" sx={railColumnSx} />
           )}
           <Box sx={{ flex: 1, minWidth: 0 }}>
+            {/* A newer platform, module or game pack: across the top of Manage. */}
+            <UpdateBanner />
             <Box
               sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1, minHeight: 40 }}
               data-testid="manage-utility-row"
@@ -272,7 +274,6 @@ function AdminShell() {
             )}
             {/* The tournament's own pages: which tournament, and its tabs. */}
             {isTournamentPage(location.pathname) && <TournamentBar />}
-            <UpdateToast />
             <Outlet />
           </Box>
         </Box>

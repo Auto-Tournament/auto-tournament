@@ -31,6 +31,19 @@ router.use(requireAuth);
  *         description: "{ running, latest, available, releaseUrl, modules }"
  */
 router.get('/update', async (_req: Request, res: Response) => {
+  // AT_UPDATE_CHECK=off: nothing to tell (the e2e servers, whose version is never the latest:
+  // a banner appearing above Manage moved what a test was about to click).
+  if (process.env.AT_UPDATE_CHECK === 'off') {
+    res.json({
+      success: true,
+      running: '',
+      latest: null,
+      available: false,
+      releaseUrl: null,
+      modules: [],
+    });
+    return;
+  }
   const [platform, modules] = await Promise.all([checkPlatformUpdate(), listModuleUpdates()]);
   res.json({ success: true, ...platform, modules });
 });
