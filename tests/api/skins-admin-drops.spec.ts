@@ -70,7 +70,7 @@ test(
       expect(kept.ok(), await kept.text()).toBe(true);
       const after = await skinNotices();
       expect(after).toHaveLength(1);
-      expect(after[0]!.data.image).toMatch(/^https:\/\/.+\.webp$/);
+      expect(after[0]!.data.image).toMatch(/^\/api\/game\/cs2\/img\/skins\/.+\.webp$/);
 
       // Not a target: refused.
       const bad = await request.post('/api/skins/admin/drops', {

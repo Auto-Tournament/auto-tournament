@@ -11,7 +11,8 @@
  *   1. the module's own `assets/` folder: csm's `web_assets/`, compressed and bundled by
  *      scripts/modules/cs2/build.ts (maps and 256 px skins);
  *   2. the disk cache, DATA_DIR/cache/cs2-images;
- *   3. csm's repository through jsDelivr, once, kept in the cache. A size csm has not made yet
+ *   3. csm's repository through jsDelivr, once, kept in the cache (never with CATALOG_OFFLINE;
+ *      a miss is not asked for again for 10 minutes). A size csm has not made yet
  *      (a map or skin newer than the module) falls back to the extracted original.
  *
  * Full-size skins are not bundled (csm's skin_images/ is about 100 MB): `prefetchSkinImages`
@@ -30,7 +31,15 @@ const CDN = 'https://cdn.jsdelivr.net/gh/Auto-Tournament/cs2-server-manager@mast
 const RAW = 'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master';
 const CACHE_DIR = path.join(DATA_DIR, 'cache', 'cs2-images');
 const FILE = /^[A-Za-z0-9_.-]{1,160}\.(webp|png|svg)$/;
-const FETCH_TIMEOUT_MS = 10_000;
+const FETCH_TIMEOUT_MS = 4_000;
+/** A picture csm does not have (or that could not be fetched) is not asked for again this long. */
+const MISS_TTL_MS = 10 * 60 * 1000;
+const misses = new Map<string, number>();
+
+/** No network for pictures: the catalogue's offline switch (CI, air-gapped installs). */
+function offline(): boolean {
+  return ['1', 'true', 'yes'].includes((process.env.CATALOG_OFFLINE || '').trim().toLowerCase());
+}
 
 /** A set: its folder in csm's repository, and where to look when that size is missing. */
 const SETS: Record<string, { dir: string; original?: string }> = {
@@ -66,6 +75,15 @@ function existing(file: string): string | null {
 }
 
 async function download(repoPath: string): Promise<Buffer | null> {
+  if (offline()) return null;
+  const missed = misses.get(repoPath);
+  if (missed && missed > Date.now()) return null;
+  const data = await fetchFirst(repoPath);
+  if (!data) misses.set(repoPath, Date.now() + MISS_TTL_MS);
+  return data;
+}
+
+async function fetchFirst(repoPath: string): Promise<Buffer | null> {
   for (const base of [CDN, RAW]) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
