@@ -1633,7 +1633,7 @@
     },
     "tryout": {
       "title": "Try them in game",
-      "hint": "A practice server with your skins. Equip here and they change in game within seconds.",
+      "hint": "A surf server with your skins, with a run timer and records. Equip here and they change in game within seconds.",
       "join": "Join",
       "joinLabel": "Join {{name}}",
       "console": "Or paste this in the CS2 console"
