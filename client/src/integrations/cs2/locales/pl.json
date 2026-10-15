@@ -1277,7 +1277,9 @@
       "skins": "Skins",
       "midas": "Midas",
       "deathmatch": "Deathmatch",
-      "addons": "Dodatki"
+      "addons": "Dodatki",
+      "mapvote": "Map vote",
+      "community": "Community"
     },
     "pluginHelp": {
       "essentials": "Admini, zmiana mapy, przeładowanie i restart",
@@ -1286,7 +1288,9 @@
       "skins": "Skórki broni, noże i rękawice graczy",
       "midas": "Złote modele broni",
       "deathmatch": "Tryby deathmatch",
-      "addons": "Dodatki z Warsztatu"
+      "addons": "Dodatki z Warsztatu",
+      "mapvote": "Map voting: .rtv, .nominate, end-of-map vote",
+      "community": "Community commands: .rank, .top, .speclist, admin .kick"
     },
     "required": "Zawsze włączone",
     "usesDefault": "Używa domyślnego zestawu floty: {{plugins}}.",

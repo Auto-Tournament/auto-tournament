@@ -1267,7 +1267,9 @@
       "skins": "Skins",
       "midas": "Midas",
       "deathmatch": "Deathmatch",
-      "addons": "Addons"
+      "addons": "Addons",
+      "mapvote": "Map vote",
+      "community": "Community"
     },
     "pluginHelp": {
       "essentials": "Admins, map wisselen, herladen en herstarten",
@@ -1276,7 +1278,9 @@
       "skins": "Wapenskins, messen en handschoenen van spelers",
       "midas": "Gouden wapenmodellen",
       "deathmatch": "Deathmatch-modi",
-      "addons": "Workshop-addons"
+      "addons": "Workshop-addons",
+      "mapvote": "Map voting: .rtv, .nominate, end-of-map vote",
+      "community": "Community commands: .rank, .top, .speclist, admin .kick"
     },
     "required": "Altijd aan",
     "usesDefault": "Gebruikt de vlootstandaard: {{plugins}}.",

@@ -516,6 +516,8 @@ test.describe('fleet pushes: plugin sets', () => {
       'skins',
       'midas',
       'deathmatch',
+      'mapvote',
+      'community',
     ]);
   });
 
@@ -541,7 +543,7 @@ test.describe('fleet pushes: plugin sets', () => {
   test('command: picked on, the rest of the catalog off; never disables fleet', () => {
     const cmd = pluginSetCommand(presetSet('fun'));
     expect(cmd).toEqual({
-      enable: ['match', 'essentials', 'skins', 'midas', 'deathmatch'],
+      enable: ['match', 'essentials', 'skins', 'midas', 'deathmatch', 'mapvote', 'community'],
       disable: ['practice', 'whitelist', 'addons'],
       preset: 'fun',
     });
@@ -581,7 +583,16 @@ test.describe('fleet pushes: plugin sets', () => {
 
   test('state: differs when an enabled plugin is off or a disabled one is not; missing ones listed', () => {
     const cmd = pluginSetCommand(presetSet('practice'));
-    const off = ['match', 'whitelist', 'skins', 'midas', 'deathmatch', 'addons'];
+    const off = [
+      'match',
+      'whitelist',
+      'skins',
+      'midas',
+      'deathmatch',
+      'mapvote',
+      'community',
+      'addons',
+    ];
     expect(pluginsStateDiffers(cmd, { installed: ['match'], disabled: off })).toBe(false);
     // Older Ready Up keeps match on: compared against what it was sent.
     expect(pluginsStateDiffers(cmd, { installed: ['match'], disabled: off.slice(1) })).toBe(true);
@@ -600,7 +611,7 @@ test.describe('fleet pushes: plugin sets', () => {
         installed: ['fleet', 'match', 'essentials', 'practice'],
         disabled: [],
       })
-    ).toEqual(['skins', 'midas', 'deathmatch']);
+    ).toEqual(['skins', 'midas', 'deathmatch', 'mapvote', 'community']);
     expect(missingPlugins(presetSet('fun').plugins, null)).toEqual([]);
     expect(pluginsStateOf({})).toBeNull();
     expect(pluginsStateOf({ plugins_state: { installed: ['match'], disabled: [] } })).toEqual({
