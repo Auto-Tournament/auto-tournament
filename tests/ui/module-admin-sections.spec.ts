@@ -73,7 +73,7 @@ test.describe('Module sections on Admin tools and Settings', () => {
       await group.getByRole('link', { name: 'Match rules' }).click();
       await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('cs2-server-defaults')).toBeVisible();
-      await expect(page.getByTestId('at-hostname-format-input')).toBeAttached();
+      await expect(page.getByTestId('at-kick-delay-input')).toBeAttached();
 
       await group.getByRole('link', { name: 'Skins' }).click();
       await expect(page.getByTestId('skins-settings')).toBeVisible({ timeout: 15000 });
