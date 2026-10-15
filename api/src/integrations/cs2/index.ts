@@ -161,7 +161,16 @@ function toResourceActionResult(result: ServerActionResult): ResourceActionResul
 
 /** The tournament runs the map veto (`settings.cs2.veto` is not false). */
 function vetoOn(settings: unknown): boolean {
-  return storedCs2Settings(settings)?.veto !== false;
+  // Callers hand either the stored settings or the whole tournament (MatchContext's
+  // `tournament.settings` is the TournamentResponse, whose settings sit one level down): read
+  // both. Only the first made every later round of a veto-off tournament wait for a veto that
+  // never opened (the final stayed 'pending' in a live test, 2026-10-15).
+  const nested =
+    settings && typeof settings === 'object' && 'settings' in (settings as Record<string, unknown>)
+      ? (settings as { settings?: unknown }).settings
+      : undefined;
+  const cs2 = storedCs2Settings(settings) ?? storedCs2Settings(nested);
+  return cs2?.veto !== false;
 }
 
 /** The stored veto (`matches.veto_state`) is finished. */
