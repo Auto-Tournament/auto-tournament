@@ -289,10 +289,11 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     }
 
     // Get tournament status and format
-    const tournament = await db.queryOneAsync<{ status: string; format: string }>(
-      'SELECT status, format FROM tournament WHERE id = ?',
-      [match.tournament_id]
-    );
+    const tournament = await db.queryOneAsync<{
+      status: string;
+      format: string;
+      settings: string | Record<string, unknown> | null;
+    }>('SELECT status, format, settings FROM tournament WHERE id = ?', [match.tournament_id]);
 
     // Note: We're NOT exposing RCON password to teams
     // CS2 servers typically don't have a join password by default
@@ -494,6 +495,21 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
           expected_players_total: description.playersPerTeam ? description.playersPerTeam * 2 : 10,
           expected_players_team1: description.playersPerTeam || 5,
           expected_players_team2: description.playersPerTeam || 5,
+          // Whether there is a veto: the match's config, else (a later round in its break) the
+          // tournament. Missing here, the team's match room showed a veto for a tournament
+          // without one and the bans were refused (2026-10-15).
+          vetoDisabled:
+            description.skipPreMatchPhase ??
+            (tournament
+              ? !(
+                  integrationForMatch(match).usesPreMatchPhase?.({
+                    settings:
+                      typeof tournament.settings === 'string'
+                        ? JSON.parse(tournament.settings)
+                        : (tournament.settings ?? {}),
+                  }) ?? true
+                )
+              : undefined),
           team1: {
             id: description.team1.id,
             name: description.team1.name,
