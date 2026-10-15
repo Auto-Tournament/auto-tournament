@@ -49,10 +49,10 @@ test(
       expect(choices).toHaveLength(2);
       expect(choices.every((c) => c.source === 'admin' && c.options.length > 0)).toBe(true);
 
-      // The options' pictures are full URLs the browser can load.
+      // The options' pictures are the platform's own picture route.
       for (const c of choices) {
         for (const o of c.options as Array<{ image: string }>)
-          expect(o.image).toMatch(/^https:\/\/.+\.webp$/);
+          expect(o.image).toMatch(/^\/api\/game\/cs2\/img\/skins\/.+\.webp$/);
       }
       // No bell notice for a choice (it opens on every page until one is kept)...
       const skinNotices = async () =>

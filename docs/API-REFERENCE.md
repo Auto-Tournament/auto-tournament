@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 716 of them, 414 behind auth —
+Every endpoint this API serves — 717 of them, 414 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -348,6 +348,14 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 | `DELETE` | `/api/game/cs2/recorder-keys/:id` | admin |
 | `PUT` | `/api/game/cs2/recorders/:name` | admin |
 | `DELETE` | `/api/game/cs2/recorders/:name` | admin |
+
+### Map and skin pictures
+
+Map screenshots, map icons and skin pictures in the sizes the site shows, served by the platform (bundled with the CS2 module, or fetched once and cached).
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/img/:set/:file` | public |
 
 ### Map radars
 

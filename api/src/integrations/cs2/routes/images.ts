@@ -120,6 +120,22 @@ async function resolvePicture(set: string, file: string): Promise<string | null>
   return spec.original ? cacheFrom(`${spec.original}/${file}`) : null;
 }
 
+/**
+ * @openapi
+ * /api/game/cs2/img/{set}/{file}:
+ *   get:
+ *     tags: [CS2]
+ *     summary: A map or skin picture (public)
+ *     description: >-
+ *       set is maps-1280, maps-480, map-icons, skins-256 or skins. Served from the CS2
+ *       module's bundled pictures, else a disk cache filled from cs2-server-manager once.
+ *     parameters:
+ *       - { in: path, name: set, required: true, schema: { type: string } }
+ *       - { in: path, name: file, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: The picture (WebP, PNG or SVG) }
+ *       404: { description: No such set or picture }
+ */
 router.get('/img/:set/:file', async (req: Request, res: Response) => {
   const { set, file } = req.params;
   if (!SETS[set] || !FILE.test(file) || file.includes('..')) {
