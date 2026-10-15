@@ -208,6 +208,15 @@ export interface MatchServer {
   moved?: { at: number; reason: string; inPlace: boolean } | null;
   /** Ready Up: the match is paused (its type), and the lineup players not connected. */
   pause?: { type: string | null; waitingFor: string[] } | null;
+  /** The server's LAN address and its machine's public one, when they differ. */
+  addresses?: Array<{
+    kind: 'lan' | 'public';
+    host: string;
+    ip?: string | null;
+    port: number;
+  }> | null;
+  /** Which of them suits this viewer: LAN when they are on the server's network. */
+  recommended?: 'lan' | 'public' | null;
 }
 
 /** `GET /api/game/cs2/matches/:slug/connect`: how the viewer joins one match. */

@@ -447,7 +447,11 @@
       "resumedTitle": "The server restarted",
       "resumedBody": "Connect again: the match continues from the last round backup.",
       "noPassword": "No password: you're on the list.",
-      "startsGame": "CS2 nie jest otwarte? Przycisk je uruchomi."
+      "startsGame": "CS2 nie jest otwarte? Przycisk je uruchomi.",
+      "via": "Połącz przez",
+      "viaLan": "LAN",
+      "viaPublic": "Internet",
+      "viaRecommended": "dla ciebie"
     }
   },
   "serversPage": {
