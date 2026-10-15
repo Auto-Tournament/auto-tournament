@@ -1,4 +1,5 @@
 import { Link as RouterLink } from 'react-router-dom';
+import { useIntegrationFor } from '../integrations/registry';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { KeyDatesBar } from '../components/tournament/overview/KeyDatesBar';
@@ -32,6 +33,7 @@ export default function TournamentOverview() {
   const { t } = useTranslation();
   const { tournament, teams, players, viewerTeam } = useTournamentPage();
   const { matches } = usePublicBracket(tournament.id);
+  const RulesView = useIntegrationFor(tournament).tournamentRulesView;
   const liveMatches = matches.filter(isLiveMatch).sort(compareMatchOrder);
   const isShuffle = tournament.type === 'shuffle';
   const maps = tournament.maps ?? [];
@@ -175,6 +177,23 @@ export default function TournamentOverview() {
             </Box>
           </Box>
         )}
+
+      {/* How a match is played, in one line; the Rules tab has it in full. */}
+      {RulesView && (
+        <Box
+          sx={{ display: 'flex', gap: 1.5, alignItems: 'baseline', flexWrap: 'wrap' }}
+          data-testid="overview-rules-line"
+        >
+          <RulesView tournament={tournament} compact />
+          <Button
+            component={RouterLink}
+            to={tournamentTabPath(tournament.id, 'rules')}
+            size="small"
+          >
+            {t('overviewPage.allRules')}
+          </Button>
+        </Box>
+      )}
 
       {(maps.length > 0 || !isShuffle) && (
         <Box

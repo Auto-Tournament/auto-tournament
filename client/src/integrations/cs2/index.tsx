@@ -4,6 +4,7 @@
  */
 
 import { vetoMapPickers } from './veto/vetoMapPickers';
+import { Cs2RulesSummary } from './rules/Cs2RulesSummary';
 import { Cs2ProfileStats } from './profile/Cs2ProfileStats';
 import { useCs2PlayerHighlights } from './profile/useCs2PlayerHighlights';
 import { Cs2TeamProfileStats } from './profile/Cs2TeamProfileStats';
@@ -142,6 +143,7 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   rosterMemberStatus: Cs2RosterSteamStatus,
 
   // A team's jobs and size, for the team pages (strings: teamPositions.*).
+  tournamentRulesView: Cs2RulesSummary,
   teamPositions: ['rifler', 'awper', 'igl', 'entry', 'support', 'lurker'],
   teamSize: 5,
 

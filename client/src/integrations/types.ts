@@ -1091,6 +1091,13 @@ export interface ClientGameIntegration {
   teamSize?: number;
 
   /**
+   * "How matches are played", from the tournament's settings in this game's words
+   * (CS2: the mode, rounds, overtime, veto or drawn maps, bots). The Rules tab shows
+   * it in full, the overview as one line (`compact`). Left empty: neither shows it.
+   */
+  tournamentRulesView?: ComponentType<TournamentRulesViewProps>;
+
+  /**
    * The admin shell, every page: a setting this module needs before its
    * tournament can run (CS2: the webhook URL). Left empty by a module that
    * needs nothing configured, and the shell then says nothing.
@@ -1344,4 +1351,16 @@ export interface ClientGameIntegration {
    * them (see Layout, ManageRail and SiteLinksGrid).
    */
   navItems: IntegrationNavItem[];
+}
+
+/** A game module's rules summary (`GameIntegration.tournamentRulesView`). */
+export interface TournamentRulesViewProps {
+  tournament: {
+    type: string;
+    format: string;
+    teamSize?: number | null;
+    settings?: unknown;
+  };
+  /** One line for the overview instead of the list. */
+  compact?: boolean;
 }

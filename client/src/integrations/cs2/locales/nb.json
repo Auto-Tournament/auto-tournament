@@ -2323,5 +2323,20 @@
     "body": "Det ser ut som du forlot kampserveren (krasj eller brudd i forbindelsen). Laget ditt venter: koble til igjen for å komme tilbake.",
     "reconnect": "Koble til igjen",
     "later": "Senere"
+  },
+  "rules": {
+    "mode": "{{size}}v{{size}} konkurranse.",
+    "modeWingman": "Wingman: 2v2 på ett bombested.",
+    "series_one": "Ett kart per kamp.",
+    "series_other": "Best av {{count}}: først til {{win}} kart vinner kampen.",
+    "rounds": "{{rounds}} runder: først til {{win}} vinner kartet. Lagene bytter side etter {{half}}.",
+    "overtime": "Ved {{half}}-{{half}}: ekstraomganger (6 runder, først til 4) til noen vinner.",
+    "overtimeLimited_one": "Ved {{half}}-{{half}}: én ekstraomgang (6 runder, først til 4); står det likt etter den, blir kartet uavgjort.",
+    "overtimeLimited_other": "Ved {{half}}-{{half}}: opptil {{count}} ekstraomganger (6 runder hver, først til 4); står det likt etter dem, blir kartet uavgjort.",
+    "noOvertime": "Ved {{half}}-{{half}} blir kartet uavgjort (ingen ekstraomganger).",
+    "veto": "Kart: lagene bannlyser (og velger) dem i kartvetoen før hver kamp.",
+    "mapsDrawn": "Kart: hver kamp trekker ett fra kartpoolen. Ingen veto.",
+    "shuffleMaps": "Kart: hver runde spiller neste kart på listen, med nye lag hver runde.",
+    "bots": "Ledige plasser fylles med boter."
   }
 }
