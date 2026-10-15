@@ -1085,7 +1085,8 @@
     "bestOf_other": "BO{{count}}",
     "winnerOf": "{{match}} 胜者",
     "loserOf": "{{match}} 败者",
-    "tbd": "待定"
+    "tbd": "待定",
+    "you": "你"
   },
   "placement": {
     "outTitle": "Your run in {{tournament}} is over",
@@ -1129,6 +1130,7 @@
     "matchIn": "Match in",
     "matchLoading": "Match loading"
   },
+<<<<<<< HEAD
   "shuffleJoin": {
     "title": "加入本次随机组队赛",
     "body": "无需队伍：单人报名即可。每一轮平台都会重新抽取实力均衡的队伍。",
@@ -1142,5 +1144,18 @@
     "count_other": "已报名 {{count}} 人",
     "countOf_one": "已报名 {{count}} / {{spots}} 人",
     "countOf_other": "已报名 {{count}} / {{spots}} 人"
+=======
+  "advance": {
+    "title": "漂亮，你们晋级了！",
+    "opponent": "下一个对手：{{opponent}}。",
+    "feederTitle": "你们的下一个对手来自",
+    "vs": "对",
+    "tbd": "待定",
+    "feederNotStarted": "那场比赛还没开始。",
+    "feederMinutes_one": "大约还剩 {{count}} 分钟。",
+    "feederMinutes_other": "大约还剩 {{count}} 分钟。",
+    "feederAlmost": "快结束了。",
+    "watch": "观看直播"
+>>>>>>> origin/main
   }
 }

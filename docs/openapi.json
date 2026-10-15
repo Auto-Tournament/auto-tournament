@@ -15353,7 +15353,8 @@
                     "type": "string",
                     "enum": [
                       "discord",
-                      "email"
+                      "email",
+                      "push"
                     ]
                   },
                   "on": {
@@ -15452,6 +15453,48 @@
         "responses": {
           "200": {
             "description": "Players"
+          }
+        }
+      }
+    },
+    "/api/social/push/key": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "The site's public key for browser notifications (Web Push, VAPID)",
+        "responses": {
+          "200": {
+            "description": "{ publicKey }"
+          }
+        }
+      }
+    },
+    "/api/social/push/subscription": {
+      "post": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Get notifications in this browser (its PushSubscription)",
+        "description": "Same-site JSON. The body is the browser's PushSubscription (endpoint, keys).",
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "400": {
+            "description": "Not a push subscription"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Stop notifications in this browser",
+        "description": "Same-site JSON. `{ endpoint }`.",
+        "responses": {
+          "200": {
+            "description": "Removed"
           }
         }
       }

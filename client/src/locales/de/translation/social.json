@@ -219,7 +219,8 @@
     "event": "Event",
     "channel": {
       "discord": "Discord DM",
-      "email": "Email"
+      "email": "Email",
+      "push": "Browser / Handy"
     },
     "events": {
       "match_ready": {
@@ -248,7 +249,8 @@
       "no_discord": "Link Discord first",
       "email_off": "This site can't send email",
       "no_email": "Add an email first",
-      "email_unverified": "Confirm your email first"
+      "email_unverified": "Confirm your email first",
+      "no_push": "Schalte zuerst Benachrichtigungen in diesem Browser ein"
     },
     "switchLabel": "{{event}} by {{channel}}",
     "saveFailed": "Could not save that."
@@ -260,5 +262,16 @@
     "playingMatchmaking": "In a matchmaking match: {{label}}",
     "playingTournament": "In a tournament match: {{label}}",
     "playing": "In a match: {{label}}"
+  },
+  "notificationPrompt": {
+    "title": "Benachrichtigungen einschalten",
+    "body": "Wir empfehlen, sie einzuschalten. Dann hörst du von uns, auch wenn du diesen Tab schließt:",
+    "matchReady": "wenn dein Match bereit ist",
+    "vetoTurn": "wenn du beim Map-Veto dran bist",
+    "starting": "wenn ein Turnier, für das du angemeldet bist, gleich beginnt",
+    "iphone": "Auf dem iPhone füge diese Seite zuerst zum Home-Bildschirm hinzu (Teilen, dann Zum Home-Bildschirm) und öffne sie von dort.",
+    "change": "Du kannst das jederzeit in deinen Benachrichtigungseinstellungen ändern.",
+    "later": "Nicht jetzt",
+    "turnOn": "Einschalten (empfohlen)"
   }
 }

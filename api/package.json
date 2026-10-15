@@ -49,9 +49,11 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "unique-names-generator": "^4.7.1",
+    "web-push": "3.6.7",
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@types/nodemailer": "^8.0.2"
+    "@types/nodemailer": "^8.0.2",
+    "@types/web-push": "3.6.4"
   }
 }

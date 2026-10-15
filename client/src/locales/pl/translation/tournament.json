@@ -1087,7 +1087,8 @@
     "bestOf_other": "Bo{{count}}",
     "winnerOf": "Zwycięzca {{match}}",
     "loserOf": "Przegrany {{match}}",
-    "tbd": "Do ustalenia"
+    "tbd": "Do ustalenia",
+    "you": "Ty"
   },
   "placement": {
     "outTitle": "Your run in {{tournament}} is over",
@@ -1131,6 +1132,7 @@
     "matchIn": "Match in",
     "matchLoading": "Match loading"
   },
+<<<<<<< HEAD
   "shuffleJoin": {
     "title": "Dołącz do tego shuffle",
     "body": "Nie potrzebujesz drużyny: zapisz się sam. W każdej rundzie platforma losuje nowe, wyrównane drużyny.",
@@ -1144,5 +1146,18 @@
     "count_other": "Zapisanych graczy: {{count}}",
     "countOf_one": "{{count}} z {{spots}} graczy zapisany",
     "countOf_other": "Zapisanych graczy: {{count}} z {{spots}}"
+=======
+  "advance": {
+    "title": "Świetnie, nadal gracie dalej!",
+    "opponent": "Następny rywal: {{opponent}}.",
+    "feederTitle": "Wasz następny rywal wyłoni się z meczu",
+    "vs": "kontra",
+    "tbd": "Do ustalenia",
+    "feederNotStarted": "Ten mecz jeszcze się nie zaczął.",
+    "feederMinutes_one": "Zostało około {{count}} minuty.",
+    "feederMinutes_other": "Zostało około {{count}} minut.",
+    "feederAlmost": "Prawie koniec.",
+    "watch": "Oglądaj na żywo"
+>>>>>>> origin/main
   }
 }

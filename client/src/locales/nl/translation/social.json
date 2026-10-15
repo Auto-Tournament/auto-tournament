@@ -219,7 +219,8 @@
     "event": "Event",
     "channel": {
       "discord": "Discord DM",
-      "email": "Email"
+      "email": "Email",
+      "push": "Browser / telefoon"
     },
     "events": {
       "match_ready": {
@@ -248,7 +249,8 @@
       "no_discord": "Link Discord first",
       "email_off": "This site can't send email",
       "no_email": "Add an email first",
-      "email_unverified": "Confirm your email first"
+      "email_unverified": "Confirm your email first",
+      "no_push": "Zet eerst meldingen aan in deze browser"
     },
     "switchLabel": "{{event}} by {{channel}}",
     "saveFailed": "Could not save that."
@@ -260,5 +262,16 @@
     "playingMatchmaking": "In a matchmaking match: {{label}}",
     "playingTournament": "In a tournament match: {{label}}",
     "playing": "In a match: {{label}}"
+  },
+  "notificationPrompt": {
+    "title": "Meldingen aanzetten",
+    "body": "We raden aan ze aan te zetten. Dan hoor je van ons, ook als je dit tabblad sluit:",
+    "matchReady": "als je wedstrijd klaarstaat",
+    "vetoTurn": "als je aan de beurt bent bij de mapveto",
+    "starting": "als een toernooi waarvoor je bent ingeschreven bijna begint",
+    "iphone": "Zet deze site op een iPhone eerst op je beginscherm (Deel, dan Zet op beginscherm) en open hem vanaf daar.",
+    "change": "Je kunt dit altijd wijzigen in je meldingsinstellingen.",
+    "later": "Niet nu",
+    "turnOn": "Aanzetten (aanbevolen)"
   }
 }

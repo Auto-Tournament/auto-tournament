@@ -219,7 +219,8 @@
     "event": "Event",
     "channel": {
       "discord": "Discord DM",
-      "email": "Email"
+      "email": "Email",
+      "push": "Navigateur / mobile"
     },
     "events": {
       "match_ready": {
@@ -248,7 +249,8 @@
       "no_discord": "Link Discord first",
       "email_off": "This site can't send email",
       "no_email": "Add an email first",
-      "email_unverified": "Confirm your email first"
+      "email_unverified": "Confirm your email first",
+      "no_push": "Activez d'abord les notifications dans ce navigateur"
     },
     "switchLabel": "{{event}} by {{channel}}",
     "saveFailed": "Could not save that."
@@ -260,5 +262,16 @@
     "playingMatchmaking": "In a matchmaking match: {{label}}",
     "playingTournament": "In a tournament match: {{label}}",
     "playing": "In a match: {{label}}"
+  },
+  "notificationPrompt": {
+    "title": "Activer les notifications",
+    "body": "Nous vous recommandons de les activer. Vous serez prévenu même si vous fermez cet onglet :",
+    "matchReady": "quand votre match est prêt",
+    "vetoTurn": "quand c'est votre tour au veto des cartes",
+    "starting": "quand un tournoi auquel vous êtes inscrit va commencer",
+    "iphone": "Sur iPhone, ajoutez d'abord ce site à l'écran d'accueil (Partager, puis Sur l'écran d'accueil) et ouvrez-le depuis là.",
+    "change": "Vous pouvez changer cela à tout moment dans vos réglages de notifications.",
+    "later": "Pas maintenant",
+    "turnOn": "Activer (recommandé)"
   }
 }

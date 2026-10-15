@@ -1085,7 +1085,8 @@
     "bestOf_other": "Best of {{count}}",
     "winnerOf": "Winnaar {{match}}",
     "loserOf": "Verliezer {{match}}",
-    "tbd": "Nog niet bekend"
+    "tbd": "Nog niet bekend",
+    "you": "Jij"
   },
   "placement": {
     "outTitle": "Your run in {{tournament}} is over",
@@ -1129,6 +1130,7 @@
     "matchIn": "Match in",
     "matchLoading": "Match loading"
   },
+<<<<<<< HEAD
   "shuffleJoin": {
     "title": "Doe mee aan deze shuffle",
     "body": "Geen team nodig: schrijf je alleen in. Elke ronde loot het platform nieuwe, gelijkwaardige teams.",
@@ -1142,5 +1144,18 @@
     "count_other": "{{count}} spelers ingeschreven",
     "countOf_one": "{{count}} van {{spots}} spelers ingeschreven",
     "countOf_other": "{{count}} van {{spots}} spelers ingeschreven"
+=======
+  "advance": {
+    "title": "Mooi, jullie zijn nog door!",
+    "opponent": "Volgende tegenstander: {{opponent}}.",
+    "feederTitle": "Jullie volgende tegenstander komt uit",
+    "vs": "tegen",
+    "tbd": "Nog onbekend",
+    "feederNotStarted": "Die wedstrijd is nog niet begonnen.",
+    "feederMinutes_one": "Nog ongeveer {{count}} minuut.",
+    "feederMinutes_other": "Nog ongeveer {{count}} minuten.",
+    "feederAlmost": "Bijna klaar.",
+    "watch": "Live kijken"
+>>>>>>> origin/main
   }
 }
