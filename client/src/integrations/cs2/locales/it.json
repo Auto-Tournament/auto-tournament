@@ -1344,7 +1344,8 @@
       "title": "Cosa puoi vincere",
       "intro": "Esempi di cosa può darti giocare questo torneo, tra le skin di questo sito:",
       "pickOne": "una skin {{rarity}} a tua scelta (scegli 1 su 3)",
-      "matchDrops": "Ogni partita del torneo che giochi può anche far cadere una skin."
+      "matchDrops": "Ogni partita del torneo che giochi può anche far cadere una skin.",
+      "everyone": "Everyone else who plays"
     },
     "notReal": "Non sono vere skin di CS2.",
     "notice": "Esistono solo su questo sito: non sono oggetti Steam, non hanno valore in denaro, non si possono scambiare né vendere, e nessun organizzatore o sponsor regala skin vere tramite esse. Le vedi in gioco sui server di questo sito.",
@@ -1557,7 +1558,10 @@
       },
       "statTrakChance": "StatTrak™ chance (%)",
       "statTrakHelp": "How often a dropped weapon or knife is StatTrak™ (CS2 cases: 10).",
-      "repeatOpponentCut": "Less from the third game against the same opponents in a day (turn off for a small platform or a LAN)"
+      "repeatOpponentCut": "Less from the third game against the same opponents in a day (turn off for a small platform or a LAN)",
+      "place4": "4th",
+      "place0": "Everyone",
+      "noReward": "No reward"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "Cosa significa",
@@ -1643,7 +1647,12 @@
     "stattrakKills": "StatTrak™ kills",
     "takeOffSide": "Take {{name}} off {{side}}",
     "takeOffOn": "Take off {{side}}",
-    "keepAll": "Tienili tutti ({{count}})"
+    "keepAll": "Tienili tutti ({{count}})",
+    "prizesEditor": {
+      "site": "Site's prizes",
+      "custom": "Own prizes",
+      "label": "Prizes"
+    }
   },
   "matchRules": {
     "title": "Regole partita",

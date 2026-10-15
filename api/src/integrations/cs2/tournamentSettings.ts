@@ -27,6 +27,41 @@ import type {
   TournamentSettingsValidation,
 } from '../types';
 import { validateCustomVetoOrderSetting } from './veto/config';
+/** One place's prize as a tournament stores it: a rarity to pick from, or none. */
+export interface TournamentRewardSetting {
+  place: 0 | 1 | 2 | 3 | 4;
+  mode: 'random' | 'none';
+  rarity?: string;
+}
+
+const REWARD_RARITIES = [
+  'common',
+  'uncommon',
+  'rare',
+  'mythical',
+  'legendary',
+  'ancient',
+  'immortal',
+];
+
+/** Places 1–4 and 0 (everyone else), each a rarity or none; anything else dropped. */
+function rewardSettings(raw: unknown[]): TournamentRewardSetting[] {
+  const out: TournamentRewardSetting[] = [];
+  for (const r of raw as Array<Record<string, unknown> | null>) {
+    const place = Number(r?.place);
+    if (![0, 1, 2, 3, 4].includes(place) || out.some((o) => o.place === place)) continue;
+    if (r?.mode === 'none')
+      out.push({ place: place as TournamentRewardSetting['place'], mode: 'none' });
+    else if (typeof r?.rarity === 'string' && REWARD_RARITIES.includes(r.rarity))
+      out.push({
+        place: place as TournamentRewardSetting['place'],
+        mode: 'random',
+        rarity: r.rarity,
+      });
+  }
+  return out;
+}
+
 import { MAP_MODES, isMapMode, mapsOfOtherModes, unknownMaps, type MapMode } from './maps/mapModes';
 
 /** The key of CS2's object inside `tournament.settings` and a template's `settings`. */
@@ -59,6 +94,8 @@ export interface Cs2TournamentSettings {
   mapMode?: MapMode;
   /** False: the top three get no skin rewards (skins/skinService). Absent: on. */
   skinRewards?: boolean;
+  /** This tournament's own prizes per place (skinService.parseRewards); absent: the site's. */
+  rewards?: TournamentRewardSetting[];
   /** Opt-in anonymous bots up to teamSize; humans keep normal ready-up. */
   fillTeamsWithBots?: boolean;
   /**
@@ -318,6 +355,8 @@ function applyLayer(
   if (typeof layer.fillTeamsWithBots === 'boolean')
     into.fillTeamsWithBots = layer.fillTeamsWithBots;
   if (typeof layer.skinRewards === 'boolean') into.skinRewards = layer.skinRewards;
+  if (Array.isArray(layer.rewards)) into.rewards = rewardSettings(layer.rewards);
+  else if (layer.rewards === null) delete into.rewards;
   if (typeof layer.esportsMode === 'boolean') into.esportsMode = layer.esportsMode;
   if (typeof layer.veto === 'boolean') into.veto = layer.veto;
   if (layer.mapPoolId !== undefined) {
@@ -364,6 +403,7 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
         ? { fillTeamsWithBots: value.fillTeamsWithBots }
         : {}),
       ...(value?.skinRewards !== undefined ? { skinRewards: value.skinRewards } : {}),
+      ...(value?.rewards ? { rewards: value.rewards } : {}),
       ...(value?.esportsMode !== undefined ? { esportsMode: value.esportsMode } : {}),
       ...(value?.veto !== undefined ? { veto: value.veto } : {}),
       ...(value?.mapPoolId !== undefined ? { mapPoolId: value.mapPoolId } : {}),

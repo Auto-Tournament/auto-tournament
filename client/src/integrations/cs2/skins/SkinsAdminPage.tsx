@@ -58,9 +58,12 @@ const RARITIES = [
 ] as const;
 type Rarity = (typeof RARITIES)[number];
 
+type RewardPlace = 0 | 1 | 2 | 3 | 4;
+
 interface Reward {
-  place: 1 | 2 | 3;
-  mode: 'random' | 'skin';
+  /** 1–4, and 0 for everyone else who played. */
+  place: RewardPlace;
+  mode: 'random' | 'skin' | 'none';
   rarity?: Rarity;
   weapon?: string;
   name?: string;
@@ -137,6 +140,7 @@ function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward)
         >
           <ToggleButton value="random">{t('skins.admin.random')}</ToggleButton>
           <ToggleButton value="skin">{t('skins.admin.pickSkin')}</ToggleButton>
+          <ToggleButton value="none">{t('skins.admin.noReward')}</ToggleButton>
         </ToggleButtonGroup>
         {reward.mode === 'random' ? (
           <Select
@@ -162,7 +166,7 @@ function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward)
               </MenuItem>
             ))}
           </Select>
-        ) : (
+        ) : reward.mode === 'skin' ? (
           <Autocomplete
             size="small"
             sx={{ minWidth: 280, flex: 1 }}
@@ -187,7 +191,7 @@ function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward)
             }
             renderInput={(params) => <TextField {...params} label={t('skins.admin.skin')} />}
           />
-        )}
+        ) : null}
       </Box>
       {reward.mode === 'skin' && (
         <Box
@@ -680,10 +684,13 @@ function Stat({
   );
 }
 
-const PODIUM = [
-  { place: 1 as const, height: 150, tone: color.medalGold },
-  { place: 2 as const, height: 118, tone: color.medalSilver },
-  { place: 3 as const, height: 92, tone: color.medalBronze },
+const PODIUM: Array<{ place: RewardPlace; height: number; tone: string }> = [
+  { place: 1, height: 150, tone: color.medalGold },
+  { place: 2, height: 118, tone: color.medalSilver },
+  { place: 3, height: 92, tone: color.medalBronze },
+  { place: 4, height: 72, tone: color.ink2 },
+  // Everyone else who played a round in the tournament.
+  { place: 0, height: 56, tone: color.muted },
 ];
 
 /**
@@ -699,7 +706,7 @@ export function SkinsAdminPage() {
   const [config, setConfig] = useState<Config | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [statsVersion, setStatsVersion] = useState(0);
-  const [editing, setEditing] = useState<1 | 2 | 3 | null>(null);
+  const [editing, setEditing] = useState<RewardPlace | null>(null);
   const dirty = useRef(false);
 
   useEffect(() => {
@@ -743,7 +750,7 @@ export function SkinsAdminPage() {
     dirty.current = true;
     setConfig((c) => (c ? { ...c, ...patch } : c));
   };
-  const rewardFor = (place: 1 | 2 | 3): Reward =>
+  const rewardFor = (place: RewardPlace): Reward =>
     config.rewards.find((r) => r.place === place) ?? { place, mode: 'random', rarity: 'rare' };
   const setReward = (reward: Reward) =>
     set({
@@ -752,14 +759,16 @@ export function SkinsAdminPage() {
       ),
     });
   const rewardLabel = (reward: Reward) =>
-    reward.mode === 'skin'
-      ? { text: reward.name ? reward.name : t('skins.admin.pickSkin'), tone: color.ink }
-      : {
-          text: t('skins.admin.anyRarity', {
-            rarity: t(`skins.rarity.${reward.rarity ?? 'rare'}`),
-          }),
-          tone: rarityColor[reward.rarity ?? 'rare'],
-        };
+    reward.mode === 'none'
+      ? { text: t('skins.admin.noReward'), tone: color.muted }
+      : reward.mode === 'skin'
+        ? { text: reward.name ? reward.name : t('skins.admin.pickSkin'), tone: color.ink }
+        : {
+            text: t('skins.admin.anyRarity', {
+              rarity: t(`skins.rarity.${reward.rarity ?? 'rare'}`),
+            }),
+            tone: rarityColor[reward.rarity ?? 'rare'],
+          };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} data-testid="skins-settings">

@@ -47,7 +47,9 @@ export function TournamentRewardsSection({ tournamentId }: TournamentResultsSect
   }, [tournamentId]);
 
   if (!rewards?.length) return null;
-  const places = [...new Set(rewards.map((r) => r.place))].sort();
+  const places = [...new Set(rewards.map((r) => r.place))].sort(
+    (a, b) => (a === 0 ? 99 : a) - (b === 0 ? 99 : b)
+  );
   return (
     <Box
       component="section"
@@ -68,7 +70,7 @@ export function TournamentRewardsSection({ tournamentId }: TournamentResultsSect
           <Typography
             sx={{ fontSize: '0.8125rem', fontWeight: 600, color: MEDAL[place - 1] ?? color.ink2 }}
           >
-            {t('skins.place', { n: place })}
+            {place === 0 ? t('skins.prizes.everyone') : t('skins.place', { n: place })}
           </Typography>
           <Box
             sx={{

@@ -133,10 +133,15 @@ export function variantOf(paintKitName: string | undefined): string | null {
   return phase ? `Phase ${phase[1]}` : null;
 }
 
+/** A tournament place with a reward: 1–4, and 0 for everyone else who played. */
+export type RewardPlace = 0 | 1 | 2 | 3 | 4;
+export const REWARD_PLACES: readonly RewardPlace[] = [1, 2, 3, 4, 0];
+
 export interface TournamentReward {
-  /** 1 = winners, 2 = runners-up, 3 = third place. */
-  place: 1 | 2 | 3;
-  mode: 'random' | 'skin';
+  /** 1 = winners, 2 = runners-up, 3 = third, 4 = fourth; 0 = everyone else who played. */
+  place: RewardPlace;
+  /** random: a choice of three of `rarity`; skin: that skin; none: no reward for this place. */
+  mode: 'random' | 'skin' | 'none';
   /** Random mode: the rarity to draw from. */
   rarity?: Rarity;
   /** Skin mode: the weapon and the skin's name (Doppler covers every phase). */
@@ -225,6 +230,28 @@ export interface SkinsConfig {
   tryoutServer: boolean;
 }
 
+/** A reward list as stored (site config or a tournament's own): bad entries dropped; null when not a list. */
+export function parseRewards(raw: unknown): TournamentReward[] | null {
+  if (!Array.isArray(raw)) return null;
+  return (raw as Array<Partial<TournamentReward> | null>)
+    .filter(
+      (r): r is TournamentReward =>
+        Boolean(r) && (REWARD_PLACES as readonly number[]).includes(Number(r!.place))
+    )
+    .map((r) => ({
+      place: Number(r.place) as RewardPlace,
+      mode: r.mode === 'skin' ? 'skin' : r.mode === 'none' ? 'none' : 'random',
+      rarity: RARITIES.includes(r.rarity as Rarity) ? r.rarity : undefined,
+      weapon: typeof r.weapon === 'string' ? r.weapon : undefined,
+      name: typeof r.name === 'string' ? r.name : undefined,
+      floatMin: typeof r.floatMin === 'number' ? Math.max(0, Math.min(1, r.floatMin)) : undefined,
+      floatMax: typeof r.floatMax === 'number' ? Math.max(0, Math.min(1, r.floatMax)) : undefined,
+      seeds: Array.isArray(r.seeds)
+        ? r.seeds.filter((x) => Number.isInteger(x) && x >= 0 && x <= 1000).slice(0, 100)
+        : [],
+    })) as TournamentReward[];
+}
+
 export const DEFAULT_CONFIG: SkinsConfig = {
   enabled: false,
   matchmakingDrops: true,
@@ -243,10 +270,14 @@ export const DEFAULT_CONFIG: SkinsConfig = {
     immortal: 0,
   },
   tournamentRewards: true,
+  // The best place gets the rarest grade that has skins to choose from (Immortal holds about one),
+  // each place after it one grade lower, and everyone else who played something too.
   rewards: [
-    { place: 1, mode: 'random', rarity: 'legendary' },
-    { place: 2, mode: 'random', rarity: 'mythical' },
-    { place: 3, mode: 'random', rarity: 'rare' },
+    { place: 1, mode: 'random', rarity: 'ancient' },
+    { place: 2, mode: 'random', rarity: 'legendary' },
+    { place: 3, mode: 'random', rarity: 'mythical' },
+    { place: 4, mode: 'random', rarity: 'rare' },
+    { place: 0, mode: 'random', rarity: 'uncommon' },
   ],
   tradeUp: { enabled: true, count: 5 },
   statTrakChance: 10,
@@ -500,20 +531,13 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
     if (typeof value === 'number' && Number.isFinite(value))
       weights[r] = Math.max(0, Math.min(1000, value));
   }
-  const rewards = (Array.isArray(raw.rewards) ? raw.rewards : DEFAULT_CONFIG.rewards)
-    .filter((r): r is TournamentReward => Boolean(r) && [1, 2, 3].includes(Number(r.place)))
-    .map((r) => ({
-      place: Number(r.place) as 1 | 2 | 3,
-      mode: r.mode === 'skin' ? 'skin' : 'random',
-      rarity: RARITIES.includes(r.rarity as Rarity) ? r.rarity : undefined,
-      weapon: typeof r.weapon === 'string' ? r.weapon : undefined,
-      name: typeof r.name === 'string' ? r.name : undefined,
-      floatMin: typeof r.floatMin === 'number' ? Math.max(0, Math.min(1, r.floatMin)) : undefined,
-      floatMax: typeof r.floatMax === 'number' ? Math.max(0, Math.min(1, r.floatMax)) : undefined,
-      seeds: Array.isArray(r.seeds)
-        ? r.seeds.filter((s) => Number.isInteger(s) && s >= 0 && s <= 1000).slice(0, 100)
-        : [],
-    })) as TournamentReward[];
+  // A place the stored list doesn't name (4th and everyone else came later) gets the default.
+  const stored = parseRewards(raw.rewards) ?? [];
+  const rewards = REWARD_PLACES.map(
+    (place) =>
+      stored.find((r) => r.place === place) ??
+      DEFAULT_CONFIG.rewards.find((r) => r.place === place)!
+  );
   return {
     enabled: raw.enabled === true,
     matchmakingDrops: raw.matchmakingDrops !== false,
@@ -1110,7 +1134,7 @@ export const skinService = {
         ...config.modeChances,
       },
       tournamentRewards: config.tournamentRewards
-        ? config.rewards.map((r) => ({
+        ? config.rewards.filter((r) => r.mode !== 'none').map((r) => ({
             place: r.place,
             mode: r.mode,
             rarity: r.rarity ?? null,
@@ -1318,8 +1342,10 @@ export const skinService = {
   async awardTournament(
     tournamentId: number,
     tournamentName: string,
-    placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }>,
-    rewardsOff = false
+    placements: Array<{ place: 1 | 2 | 3 | 4; steamIds: string[] }>,
+    rewardsOff = false,
+    /** The tournament's own rewards (settings.cs2.rewards); absent: the site's. */
+    own: TournamentReward[] | null = null
   ): Promise<void> {
     try {
       const config = await this.config();
@@ -1332,24 +1358,29 @@ export const skinService = {
       if (already) return;
       // Only the people who played: a roster's placeholder players and bots never join a
       // server, so they have no rounds in the tournament's matches.
-      const rostered = placements.flatMap((p) => p.steamIds);
+      // Everyone who played a round in it (Steam accounts: bots and placeholders never do).
       const played = new Set(
-        rostered.length
-          ? (
-              await db.queryAsync<{ player_id: string }>(
-                `SELECT DISTINCT s.player_id FROM player_match_stats s
-                   JOIN matches m ON m.slug = s.match_slug
-                  WHERE m.tournament_id = ? AND COALESCE(s.rounds_played, 0) > 0
-                    AND s.player_id IN (${rostered.map(() => '?').join(', ')})`,
-                [tournamentId, ...rostered]
-              )
-            ).map((r) => r.player_id)
-          : []
+        (
+          await db.queryAsync<{ player_id: string }>(
+            `SELECT DISTINCT s.player_id FROM player_match_stats s
+               JOIN matches m ON m.slug = s.match_slug
+              WHERE m.tournament_id = ? AND COALESCE(s.rounds_played, 0) > 0`,
+            [tournamentId]
+          )
+        )
+          .map((r) => r.player_id)
+          .filter((id) => /^7656\d{13}$/.test(id))
       );
+      const placed = new Set(placements.flatMap((p) => p.steamIds));
+      const everyoneElse = [...played].filter((id) => !placed.has(id));
+      const rewards = own ?? config.rewards;
       const catalog = await this.catalog();
-      for (const { place, steamIds } of placements) {
-        const reward = config.rewards.find((r) => r.place === place);
-        if (!reward) continue;
+      for (const { place, steamIds } of [
+        ...placements,
+        { place: 0 as const, steamIds: everyoneElse },
+      ]) {
+        const reward = rewards.find((r) => r.place === place);
+        if (!reward || reward.mode === 'none') continue;
         for (const steamId of steamIds) {
           if (!played.has(steamId)) continue;
           const uid = await uidOf(steamId);

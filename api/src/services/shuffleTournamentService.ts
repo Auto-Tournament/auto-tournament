@@ -792,8 +792,8 @@ export async function advanceToNextRound(tournamentId: number): Promise<{
       const board = await getPlayerLeaderboard(tournamentId);
       const placed = board
         .filter((p) => p.matchWins + p.matchLosses > 0 && /^7656\d{13}$/.test(p.playerId))
-        .slice(0, 3)
-        .map((p, i) => ({ place: (i + 1) as 1 | 2 | 3, steamIds: [p.playerId] }));
+        .slice(0, 4)
+        .map((p, i) => ({ place: (i + 1) as 1 | 2 | 3 | 4, steamIds: [p.playerId] }));
       const row = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
         tournamentId,
       ]);

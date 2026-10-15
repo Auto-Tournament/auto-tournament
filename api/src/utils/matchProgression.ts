@@ -380,8 +380,8 @@ async function reportTournamentPlacements(
         : await (
             await import('../services/swissProgressionService')
           ).getSwissStandingEntries(tournamentId);
-    const top = entries.slice(0, 3).map((e, i) => ({
-      place: (i + 1) as 1 | 2 | 3,
+    const top = entries.slice(0, 4).map((e, i) => ({
+      place: (i + 1) as 1 | 2 | 3 | 4,
       teamId: (e as { teamId: string }).teamId,
     }));
     await awardTeamPlaces(tournamentId, tournament, top);
@@ -411,6 +411,8 @@ async function reportTournamentPlacements(
     { place: 1, teamId: final.winner_id },
     { place: 2, teamId: loserOf(final) },
     { place: 3, teamId: third?.winner_id ?? null },
+    // Fourth only when a third-place match was played (its loser).
+    { place: 4, teamId: third ? loserOf(third) : null },
   ]);
 }
 
@@ -418,10 +420,10 @@ async function reportTournamentPlacements(
 async function awardTeamPlaces(
   tournamentId: number,
   tournament: DbTournamentRow,
-  places: Array<{ place: 1 | 2 | 3; teamId: string | null }>
+  places: Array<{ place: 1 | 2 | 3 | 4; teamId: string | null }>
 ): Promise<void> {
   const { tournamentSignupService } = await import('../services/tournamentSignupService');
-  const placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }> = [];
+  const placements: Array<{ place: 1 | 2 | 3 | 4; steamIds: string[] }> = [];
   for (const { place, teamId } of places) {
     if (!teamId) continue;
     const team = await db.queryOneAsync<{ players: string }>(
@@ -463,7 +465,7 @@ async function awardTeamPlaces(
  */
 export async function awardPlacements(
   tournament: DbTournamentRow,
-  placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }>
+  placements: Array<{ place: 1 | 2 | 3 | 4; steamIds: string[] }>
 ): Promise<void> {
   const onPlacements = integrationForMatch(tournament).onTournamentPlacements;
   if (!onPlacements || placements.length === 0) return;
