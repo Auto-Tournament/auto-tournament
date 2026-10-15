@@ -508,9 +508,7 @@ export const tournamentSignupService = {
    * A shuffle tournament's players, in the order they joined (no teams: the platform draws
    * them each round). Public, like the team list. Null for any other kind of tournament.
    */
-  async shufflePlayers(
-    tournamentId: number
-  ): Promise<Array<{
+  async shufflePlayers(tournamentId: number): Promise<Array<{
     steamId: string;
     name: string;
     avatar: string | null;
