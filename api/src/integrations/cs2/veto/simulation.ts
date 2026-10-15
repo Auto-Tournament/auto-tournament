@@ -463,40 +463,36 @@ async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promis
       }
 
       // Auto-allocate and load match, same as manual veto completion path
-      const baseUrl = await settingsService.getWebhookUrl();
-      if (!baseUrl) {
-        log.warn(
-          `[VETO-SIM] Webhook URL not configured; skipping auto-load for match ${matchSlug} after automated veto`
-        );
-      } else {
-        setImmediate(async () => {
-          try {
-            const result = await scheduler.allocateSingleMatch(matchSlug, baseUrl);
-            if (result.success) {
-              log.success(
-                `[VETO-SIM] Match ${matchSlug} loaded on server ${result.serverId} after automated veto`
+      // Ready Up servers take the match over the fleet link: no webhook URL needed
+      // (the same '' the veto route passes).
+      const baseUrl = '';
+      setImmediate(async () => {
+        try {
+          const result = await scheduler.allocateSingleMatch(matchSlug, baseUrl);
+          if (result.success) {
+            log.success(
+              `[VETO-SIM] Match ${matchSlug} loaded on server ${result.serverId} after automated veto`
+            );
+          } else {
+            if (isQueuedAllocationResult(result.error)) {
+              log.info(
+                `[VETO-SIM] Match ${matchSlug} queued for a server after automated veto: ${result.error}`
               );
             } else {
-              if (isQueuedAllocationResult(result.error)) {
-                log.info(
-                  `[VETO-SIM] Match ${matchSlug} queued for a server after automated veto: ${result.error}`
-                );
-              } else {
-                log.warn(
-                  `[VETO-SIM] Failed to allocate server for match ${matchSlug} after automated veto: ${result.error}`
-                );
-              }
-              scheduler.startPollingForServer(matchSlug, baseUrl);
+              log.warn(
+                `[VETO-SIM] Failed to allocate server for match ${matchSlug} after automated veto: ${result.error}`
+              );
             }
-          } catch (err) {
-            log.error(
-              `[VETO-SIM] Error loading match after automated veto for ${matchSlug}`,
-              err as Error
-            );
             scheduler.startPollingForServer(matchSlug, baseUrl);
           }
-        });
-      }
+        } catch (err) {
+          log.error(
+            `[VETO-SIM] Error loading match after automated veto for ${matchSlug}`,
+            err as Error
+          );
+          scheduler.startPollingForServer(matchSlug, baseUrl);
+        }
+      });
 
       break;
     } else {

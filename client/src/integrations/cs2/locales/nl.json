@@ -7,8 +7,6 @@
     "highlights": "Highlights"
   },
   "layout": {
-    "webhookNotConfigured": "Webhook-URL is niet ingesteld. Wedstrijden en servers kunnen geen events ontvangen totdat dit is ingesteld.",
-    "openSettings": "Instellingen openen",
     "pageTitle": {
       "servers": "Spelservers",
       "maps": "Kaarten & map-pools",

@@ -7,8 +7,6 @@
     "highlights": "Highlights"
   },
   "layout": {
-    "webhookNotConfigured": "O URL do webhook não está configurado. Jogos e servidores não podem receber eventos até ser definido.",
-    "openSettings": "Abrir definições",
     "pageTitle": {
       "servers": "Servidores",
       "maps": "Mapas e pools",
