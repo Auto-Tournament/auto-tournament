@@ -2,7 +2,7 @@
  * "We recommend turning on notifications": asked once per browser of a signed-in player who
  * has them off, so a player who closed the tab still hears when their match is ready (push,
  * utils/browserNotify.ts). "Not now" asks again after a week; a browser that blocks them, or
- * cannot show them, is never asked. Also keeps this browser's push subscription current.
+ * cannot show them, is never asked, nor is an automated browser. Also keeps this browser's push subscription current.
  */
 import React from 'react';
 import {
@@ -55,6 +55,8 @@ export function NotificationPrompt({ viewerId }: { viewerId: string }) {
 
   React.useEffect(() => {
     void syncBrowserPush();
+    // Automated browsers (the test suite) are never asked: the dialog would cover the page.
+    if (navigator.webdriver) return undefined;
     if (browserNotifyState() !== 'off' || askedRecently()) return undefined;
     const timer = window.setTimeout(() => setOpen(true), DELAY_MS);
     return () => window.clearTimeout(timer);
