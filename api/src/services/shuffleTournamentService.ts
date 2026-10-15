@@ -368,6 +368,17 @@ export async function setRegisteredPlayers(
 }
 
 /**
+ * With bot fill, how many teams a round of `players` makes: an even count where
+ * at most one team is short (bots fill fewer than `teamSize` slots). `undefined`
+ * when that needs more bots: the round sits the fewest players out instead.
+ */
+export function botFillTeamCount(players: number, teamSize: number): number | undefined {
+  let teams = Math.ceil(players / teamSize);
+  if (teams % 2 === 1) teams += 1;
+  return teams * teamSize - players < teamSize ? teams : undefined;
+}
+
+/**
  * Generate matches for a round
  * Automatically balances teams and creates matches
  */
@@ -420,19 +431,13 @@ export async function generateRoundMatches(
       playedCount.set(p.steamId, (playedCount.get(p.steamId) ?? 0) + 1);
     }
   }
-  // With bot fill on, nobody sits out: every player gets a team, rounded up to an even
-  // number of teams, and the short teams play with bots.
+  // Bot fill: as much player-vs-player as possible. Bots only when one short team
+  // covers the gap (15 players in 2v2: one bot, nobody sits out); with more bots than
+  // that (9 players: three), the fewest players sit out instead.
   const botFill =
     getIntegration(tournament.game ?? DEFAULT_GAME).fillsShortTeams?.(tournament) ?? false;
-  let teamCount: number | undefined;
-  if (botFill) {
-    teamCount = Math.ceil(players.length / teamSize);
-    if (teamCount % 2 === 1 && teamCount < players.length) teamCount += 1;
-    if (teamCount % 2 === 1) teamCount -= 1;
-  }
-  const sitCount = botFill
-    ? Math.max(0, players.length - (teamCount ?? 0) * teamSize)
-    : players.length % (teamSize * 2);
+  const teamCount = botFill ? botFillTeamCount(players.length, teamSize) : undefined;
+  const sitCount = teamCount !== undefined ? 0 : players.length % (teamSize * 2);
   const sitOut = new Set(
     players
       .map((p) => ({ id: p.id, played: playedCount.get(p.id) ?? 0, tiebreak: Math.random() }))
@@ -639,14 +644,9 @@ export async function fillRoundFromBench(tournamentId: number): Promise<string[]
 
   const botFill =
     getIntegration(tournament.game ?? DEFAULT_GAME).fillsShortTeams?.(tournament) ?? false;
-  let teamCount: number;
-  if (botFill) {
-    teamCount = Math.ceil(bench.length / teamSize);
-    if (teamCount % 2 === 1)
-      teamCount = teamCount + 1 <= bench.length ? teamCount + 1 : teamCount - 1;
-  } else {
-    teamCount = Math.floor(bench.length / (teamSize * 2)) * 2;
-  }
+  const teamCount =
+    (botFill ? botFillTeamCount(bench.length, teamSize) : undefined) ??
+    Math.floor(bench.length / (teamSize * 2)) * 2;
   if (teamCount < 2) return [];
   const take = bench.slice(0, Math.min(bench.length, teamCount * teamSize));
 
