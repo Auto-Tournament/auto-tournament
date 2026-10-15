@@ -44,6 +44,7 @@
  * it (reserve servers are counted like any other server).
  */
 
+import { reportedSince } from './matchReports';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import {
@@ -79,6 +80,8 @@ import type { HelloPayload, MapStats, MatchPhase, MatchState, Score } from './pr
 import { fleetChanged } from './adminTopics';
 
 const CHECK_MS = Number(process.env.FLEET_FAILOVER_CHECK_MS) || 10_000;
+/** How long a server that came back without its match has to report it (restored locally). */
+const SERVER_BACK_GRACE_MS = Number(process.env.FLEET_SERVER_BACK_GRACE_MS ?? 8_000);
 
 /** Who auto-failover acts as in the records. */
 export const FAILOVER_PLATFORM_ACTOR = 'platform:auto-failover';
@@ -1061,18 +1064,29 @@ async function onServerBack(fleetServerId: string, hello: HelloPayload): Promise
 
   const held = hello.state as { match_id?: unknown } | null | undefined;
   if (held && typeof held.match_id === 'string') return;
-  const rows = await db.queryAsync<{
-    match_slug: string;
-    epoch: number;
-    cs2_server_id: string | null;
-  }>(
-    `SELECT a.match_slug, a.epoch, a.cs2_server_id
+  // Ready Up says hello before it restores a match it kept locally (it reports the match a
+  // moment later): only a server still without it after the grace lost it. Acting on the hello
+  // re-sent a freshly loaded final as a failover resume (no ready-up, live without .r, 2026-10-15).
+  const helloAtMs = Date.now();
+  const openAssignments = () =>
+    db.queryAsync<{
+      match_slug: string;
+      epoch: number;
+      cs2_server_id: string | null;
+    }>(
+      `SELECT a.match_slug, a.epoch, a.cs2_server_id
        FROM cs2_fleet_assignments a JOIN matches m ON m.slug = a.match_slug
       WHERE a.server_id = ? AND a.ended_at IS NULL AND a.config IS NOT NULL AND m.status IN ('loaded', 'live')`,
-    [fleetServerId]
-  );
+      [fleetServerId]
+    );
+  // Only matches the server held when it said hello: one assigned during the grace is not lost.
+  const before = new Set((await openAssignments()).map((r) => `${r.match_slug}:${r.epoch}`));
+  if (before.size === 0) return;
+  await new Promise((resolve) => setTimeout(resolve, SERVER_BACK_GRACE_MS));
+  const rows = (await openAssignments()).filter((r) => before.has(`${r.match_slug}:${r.epoch}`));
   for (const row of rows) {
     const slug = row.match_slug;
+    if (reportedSince(fleetServerId, slug, helloAtMs)) continue;
     const open = await activeProposal(slug);
     if (open?.status === 'moving') continue;
     if (open)
