@@ -69,11 +69,9 @@ test.describe.serial('Admin navigation', () => {
       const rail = page.getByTestId('manage-rail');
       await expect(rail).toBeVisible({ timeout: 15000 });
 
-      // On the public site an admin's top bar has the player's four places,
-      // then Manage.
+      // On the public site an admin's top bar has the player's places, then Manage.
       await page.goto('/tournaments');
       await expect(page.getByTestId('nav-tournaments')).toHaveAttribute('aria-current', 'page');
-      await expect(page.getByTestId('nav-leaderboards')).toBeVisible();
       await expect(page.getByTestId('nav-community')).toBeVisible();
       await expect(page.getByTestId('nav-manage')).toHaveAttribute('href', '/manage');
       await expect(page.getByTestId('nav-admin')).toHaveCount(0);
@@ -189,11 +187,12 @@ test.describe.serial('Admin navigation', () => {
     await expect(page.getByTestId('nav-admin')).toHaveCount(0);
     await expect(page.getByTestId('manage-rail')).toHaveCount(0);
     await expect(page.locator('a[href="/manage"]')).toHaveCount(0);
-    // A player's places: Tournaments, Leaderboards, and Community for the
+    // A player's places: Tournaments, and Community for the leaderboards and the
     // directories (the logo is Home).
     await expect(page.getByTestId('nav-tournaments')).toHaveAttribute('href', '/tournaments');
-    await expect(page.getByTestId('nav-leaderboards')).toHaveAttribute('href', '/leaderboards');
+    await expect(page.getByTestId('nav-leaderboards')).toHaveCount(0);
     await page.getByTestId('nav-community').click();
+    await expect(page.getByTestId('nav-leaderboards')).toHaveAttribute('href', '/leaderboards');
     await expect(page.getByTestId('nav-community-teams')).toHaveAttribute(
       'href',
       '/community/teams'
