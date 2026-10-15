@@ -724,6 +724,25 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
       });
     }
 
+    // A tournament without a veto (2v2, shuffle): the break and the wait are for the match, never
+    // "waiting for veto" (the navbar said "Veto in 3:12" for a veto-off final, 2026-10-15).
+    const tournamentSettings = match.tournament_id
+      ? await db.queryOneAsync<{ settings: string | null }>(
+          'SELECT settings FROM tournament WHERE id = ?',
+          [match.tournament_id]
+        )
+      : null;
+    let vetoOff = false;
+    try {
+      vetoOff = !(
+        integrationForMatch(match).usesPreMatchPhase?.({
+          settings: tournamentSettings?.settings ? JSON.parse(tournamentSettings.settings) : {},
+        }) ?? true
+      );
+    } catch {
+      vetoOff = false;
+    }
+
     // Held before its veto started (the break between a team's matches, or an
     // admin's hold): "the veto opens at …", with the time for a countdown.
     const heldUntil = Number((match as { held_until?: number | null }).held_until ?? 0);
@@ -739,12 +758,25 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
         status: 'veto_soon',
         matchSlug: match.slug,
         label: 'veto_soon',
+        // No veto: the countdown is to the match itself.
+        vetoOff,
         matchName,
         matchup,
         viewerTeam: isTeam1 ? 'team1' : 'team2',
         vetoActionCount: 0,
         lastVetoActionTeam: null,
         opensAt: new Date(heldUntil * 1000).toISOString(),
+      });
+    }
+
+    if ((match.status === 'pending' || match.status === 'ready') && vetoOff) {
+      return res.json({
+        success: true,
+        status: 'waiting_server',
+        matchSlug: match.slug,
+        label: 'waiting_server',
+        matchName,
+        matchup,
       });
     }
 

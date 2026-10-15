@@ -9,7 +9,16 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { mono, radii, tokens } from '../../theme/tokens';
 
-export function NavVetoCountdown({ opensAt, to }: { opensAt: string; to: string }) {
+export function NavVetoCountdown({
+  opensAt,
+  to,
+  vetoOff = false,
+}: {
+  opensAt: string;
+  to: string;
+  /** No veto in this tournament: "Match in 3:12". */
+  vetoOff?: boolean;
+}) {
   const { t } = useTranslation();
   const target = Date.parse(opensAt);
   const [now, setNow] = React.useState(() => Date.now());
@@ -43,7 +52,13 @@ export function NavVetoCountdown({ opensAt, to }: { opensAt: string; to: string 
         sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: tokens.color.warning }}
       />
       <Box component="span" sx={{ color: 'text.secondary' }}>
-        {left > 0 ? t('navStatus.vetoIn') : t('navStatus.vetoOpening')}
+        {vetoOff
+          ? left > 0
+            ? t('navStatus.matchIn')
+            : t('navStatus.matchLoading')
+          : left > 0
+            ? t('navStatus.vetoIn')
+            : t('navStatus.vetoOpening')}
       </Box>
       {left > 0 && (
         <Box component="span" sx={{ ...mono, fontWeight: 600 }}>

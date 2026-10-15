@@ -1125,6 +1125,8 @@
     "placedPlay": "{{place}} · Play matchmaking",
     "waiting": "Waiting for opponent",
     "vetoIn": "Veto in",
-    "vetoOpening": "Veto opening"
+    "vetoOpening": "Veto opening",
+    "matchIn": "Match in",
+    "matchLoading": "Match loading"
   }
 }
