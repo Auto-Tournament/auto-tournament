@@ -2037,8 +2037,12 @@ router.post('/', async (req: Request, res: Response) => {
  *       For a site that registers its players before teams exist (the same API
  *       token as the teams API). Body: an array of players, or
  *       `{ "players": [...] }`. Each player: `steamId`, `name`, and
- *       optionally `discordId` (string) and `oidcSubject` (the `sub` of
- *       their login on the site's OpenID Connect server).
+ *       optionally `discordId` (string), `oidcSubject` (the `sub` of
+ *       their login on the site's OpenID Connect server) and `rating` (a
+ *       starting rating on this site's scale, 100–5000; new players start at
+ *       1500). Shuffle teams are balanced on it. A rating only applies while
+ *       the player has no rated matches here; after that their results rule
+ *       (`ratingsKept` lists them).
  *
  *       A player who already exists keeps their rating, stats and match
  *       history: only the display name is updated, and a Discord ID or
@@ -2323,6 +2327,7 @@ async function importPlayers(req: Request, res: Response) {
     return res.status(400).json({ success: false, error: 'Send an array of players' });
   }
   const players: CreatePlayerInput[] = [];
+  const seeds: Array<{ id: string; rating: number }> = [];
   for (const raw of list) {
     const p = (raw ?? {}) as Record<string, unknown>;
     const steamId = typeof p.steamId === 'string' ? p.steamId.trim() : '';
@@ -2331,6 +2336,16 @@ async function importPlayers(req: Request, res: Response) {
       return res
         .status(400)
         .json({ success: false, error: 'Each player needs a steamId (SteamID64) and a name' });
+    }
+    if (p.rating !== undefined) {
+      const rating = Number(p.rating);
+      if (!Number.isFinite(rating) || rating < 100 || rating > 5000) {
+        return res.status(400).json({
+          success: false,
+          error: 'rating must be a number from 100 to 5000 (this site starts players at 1500)',
+        });
+      }
+      seeds.push({ id: steamId, rating: Math.round(rating) });
     }
     players.push({
       id: steamId,
@@ -2341,7 +2356,9 @@ async function importPlayers(req: Request, res: Response) {
   }
   try {
     const result = await playerService.bulkImportPlayers(players);
+    const seeded = await playerService.seedRatings(seeds);
     return res.status(result.errors.length > 0 ? 207 : 200).json({
+      ...(seeds.length > 0 ? { ratingsSet: seeded.set, ratingsKept: seeded.kept } : {}),
       success: result.errors.length === 0,
       created: result.created,
       updated: result.updated,
