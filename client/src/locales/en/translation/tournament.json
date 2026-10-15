@@ -1133,7 +1133,9 @@
     "stayHere": "Stay on this page: it updates by itself.",
     "openTournament": "Open the tournament",
     "winsToTitle_one": "One more win for the title",
-    "winsToTitle_other": "{{count}} more wins to the title"
+    "winsToTitle_other": "{{count}} more wins to the title",
+    "shuffleDoneTitle": "That was the last round",
+    "shuffleDoneBody": "The shuffle is over. Open the tournament for the standings."
   },
   "navStatus": {
     "placed": "Placed",
@@ -1171,6 +1173,13 @@
       "live": "Live",
       "done": "Done",
       "waiting": "Starting"
-    }
+    },
+    "finishedTitle": "The shuffle is over",
+    "finishedBody_one": "The round is played. Good games!",
+    "finishedBody_other": "All {{count}} rounds are played. Good games!",
+    "roundOf": "Round {{round}} of {{total}}",
+    "roundsCount_one": "{{count}} round",
+    "roundsCount_other": "{{count}} rounds",
+    "now": "Now"
   }
 }

@@ -17,6 +17,7 @@ import {
   setRegisteredPlayers,
   getRegisteredPlayers,
   fillRoundFromBench,
+  getShuffleTournament,
   generateRoundMatches,
   getTournamentLeaderboard,
   type ShuffleTournamentConfig,
@@ -341,20 +342,24 @@ router.get('/:id/bracket', async (req: Request, res: Response) => {
  * GET /api/tournament/:id/shuffle-round
  * A shuffle tournament's current round (public, like the bracket): who plays in
  * which match and who sits it out, so the overview can tell each player.
- * { round, matches: [{ slug, status, teams: [{ name, steamIds }] }], sittingOut: steamIds }
+ * { round, maps, finished, matches: [{ slug, status, teams: [{ name, steamIds }] }], sittingOut: steamIds }
  */
 router.get('/:id/shuffle-round', async (req: Request, res: Response) => {
   try {
     const tournamentId = await readableTournamentId(req.params.id);
     if (tournamentId === null)
       return res.status(404).json({ success: false, error: 'Tournament not found' });
+    const shuffle = await getShuffleTournament(tournamentId);
+    // The rounds' maps in order (one map a round), for the overview's timeline.
+    const maps = shuffle ? shuffle.mapSequence || shuffle.maps || [] : [];
+    const finished = shuffle?.status === 'completed';
     const top = await db.queryOneAsync<{ round: number | null }>(
       'SELECT MAX(round) AS round FROM matches WHERE tournament_id = ?',
       [tournamentId]
     );
     const round = top?.round ?? null;
     if (round === null)
-      return res.json({ success: true, round: null, matches: [], sittingOut: [] });
+      return res.json({ success: true, round: null, maps, finished, matches: [], sittingOut: [] });
     const rows = await db.queryAsync<{
       slug: string;
       status: string;
@@ -385,7 +390,7 @@ router.get('/:id/shuffle-round', async (req: Request, res: Response) => {
     const playing = new Set(matches.flatMap((m) => m.teams.flatMap((t) => t.steamIds)));
     const registered = await getRegisteredPlayers(tournamentId);
     const sittingOut = registered.map((p) => p.id).filter((id) => !playing.has(id));
-    return res.json({ success: true, round, matches, sittingOut });
+    return res.json({ success: true, round, maps, finished, matches, sittingOut });
   } catch (error) {
     log.error('Error reading the shuffle round', { error });
     return res.status(500).json({ success: false, error: 'Could not read the round' });

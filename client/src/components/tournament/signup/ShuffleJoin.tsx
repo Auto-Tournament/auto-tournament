@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../../utils/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { matchPagePath, paths } from '../../../paths';
+import { getMapDisplayName } from '../../../constants/maps';
 import { fontDisplay, radii, tokens } from '../../../theme/tokens';
 import type { ShufflePlayer } from '../../../hooks/useTournamentSignup';
 import { Face } from './PlayerFace';
@@ -19,6 +20,9 @@ const { color } = tokens;
 
 interface ShuffleRound {
   round: number | null;
+  /** The rounds' maps in order (one map a round). */
+  maps?: string[];
+  finished?: boolean;
   matches: Array<{
     slug: string;
     status: string;
@@ -84,16 +88,19 @@ export function ShuffleJoin({
   const nameOf = new Map(players.map((p) => [p.steamId, p.name]));
   const names = (ids: string[]) => ids.map((id) => nameOf.get(id) ?? id).join(' + ');
   const iSitOut = !!steamId && joined && roundNo !== null && sittingOut.has(steamId);
-  const title =
-    joined && roundNo !== null && myMatch
+  const finished = round?.finished === true;
+  const title = finished
+    ? t('shuffleJoin.finishedTitle')
+    : joined && roundNo !== null && myMatch
       ? t('shuffleJoin.playingTitle', { round: roundNo })
       : iSitOut
         ? t('shuffleJoin.sittingOutTitle', { round: roundNo })
         : joined
           ? t('shuffleJoin.youreIn')
           : t('shuffleJoin.title');
-  const body =
-    joined && myMatch
+  const body = finished
+    ? t('shuffleJoin.finishedBody', { count: round?.maps?.length ?? roundNo ?? 0 })
+    : joined && myMatch
       ? t('shuffleJoin.playingBody', { team: myTeam?.name ?? '' })
       : iSitOut
         ? t('shuffleJoin.sittingOutBody', { next: (roundNo ?? 0) + 1 })
@@ -144,7 +151,7 @@ export function ShuffleJoin({
             {body}
           </Typography>
         </Box>
-        {myMatch && (
+        {myMatch && !finished && (
           <Button
             component={RouterLink}
             to={matchPagePath(myMatch.slug)}
@@ -192,7 +199,57 @@ export function ShuffleJoin({
                 </Button>
               )}
       </Box>
-      {round && roundNo !== null && round.matches.length > 0 && (
+      {round?.maps && round.maps.length > 0 && (
+        <Box data-testid="shuffle-timeline" sx={{ display: 'grid', gap: 1 }}>
+          <Typography variant="overline" sx={{ color: 'text.secondary', lineHeight: 1.4 }}>
+            {finished || roundNo === null
+              ? t('shuffleJoin.roundsCount', { count: round.maps.length })
+              : t('shuffleJoin.roundOf', { round: roundNo, total: round.maps.length })}
+          </Typography>
+          <Box
+            component="ol"
+            sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, m: 0, p: 0, listStyle: 'none' }}
+          >
+            {round.maps.map((map, index) => {
+              const n = index + 1;
+              const current = !finished && roundNo === n;
+              const done = finished || (roundNo !== null && n < roundNo);
+              return (
+                <Box
+                  component="li"
+                  key={`${n}-${map}`}
+                  aria-current={current ? 'step' : undefined}
+                  data-testid={current ? 'shuffle-timeline-current' : undefined}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.75,
+                    px: 1.5,
+                    py: 0.75,
+                    borderRadius: radii.pill,
+                    border: 1,
+                    borderColor: current ? color.accent : 'divider',
+                    bgcolor: current ? 'background.paper' : 'transparent',
+                    color: done ? 'text.secondary' : 'text.primary',
+                    fontWeight: current ? 700 : 500,
+                  }}
+                >
+                  <Box component="span" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                    {done ? '\u2713' : n}
+                  </Box>
+                  <Box component="span">{getMapDisplayName(map)}</Box>
+                  {current && (
+                    <Box component="span" sx={{ color: color.accent, fontSize: '0.75rem' }}>
+                      {t('shuffleJoin.now')}
+                    </Box>
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
+      )}
+      {round && roundNo !== null && round.matches.length > 0 && !finished && (
         <Box data-testid="shuffle-round" sx={{ display: 'grid', gap: 1 }}>
           <Typography variant="overline" sx={{ color: 'text.secondary', lineHeight: 1.4 }}>
             {t('shuffleJoin.roundHeading', { round: roundNo })}

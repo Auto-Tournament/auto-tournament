@@ -1223,7 +1223,9 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
 /**
  * Get shuffle tournament (helper)
  */
-async function getShuffleTournament(tournamentId: number): Promise<TournamentResponse | null> {
+export async function getShuffleTournament(
+  tournamentId: number
+): Promise<TournamentResponse | null> {
   const row = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
     tournamentId,
   ]);
