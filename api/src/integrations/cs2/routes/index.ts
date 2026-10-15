@@ -163,7 +163,8 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     prefix: '/api/game/cs2',
     router: movementRoutes,
     title: 'Movement records',
-    description: "Surf, bhop and kz times: each player's best per map and course, across the servers.",
+    description:
+      "Surf, bhop and kz times: each player's best per map and course, across the servers.",
   },
   {
     // A player's clips are public; the recorder's routes take an API token.

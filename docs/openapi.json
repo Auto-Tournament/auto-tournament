@@ -676,6 +676,10 @@
       "description": "Code modules: list built-in and on-disk modules, enable or disable one from the next restart, and serve its client files. Admin only, except the client files and the public manifest of modules to load. Modules are installed from the signed catalog (/api/catalog) or on disk, never uploaded."
     },
     {
+      "name": "Movement records",
+      "description": "Surf, bhop and kz times: each player's best per map and course, across the servers."
+    },
+    {
       "name": "My email",
       "description": "Your own email address (confirmed by a link) and whether you get tournament emails."
     },
@@ -6112,6 +6116,34 @@
             }
           }
         ]
+      }
+    },
+    "/api/game/cs2/movement/maps": {
+      "get": {
+        "tags": [
+          "Movement records"
+        ],
+        "summary": "GET /api/game/cs2/movement/maps",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/game/cs2/movement/records": {
+      "get": {
+        "tags": [
+          "Movement records"
+        ],
+        "summary": "GET /api/game/cs2/movement/records",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
       }
     },
     "/api/game/cs2/players/me/highlights/favourite": {
@@ -17480,6 +17512,28 @@
             }
           }
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/fleet/movement-record": {
+      "post": {
+        "tags": [
+          "Test helpers (CS2)"
+        ],
+        "summary": "POST /api/test/fleet/movement-record",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
         "security": [
           {
             "bearerAuth": []

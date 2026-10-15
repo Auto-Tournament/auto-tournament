@@ -588,7 +588,7 @@ test.describe.serial('Fleet autoscale (csm)', () => {
     );
     expect((set.payload as { args: unknown }).args).toEqual({
       enable: ['match', 'essentials', 'skins', 'midas', 'deathmatch', 'mapvote', 'community'],
-      disable: ['practice', 'whitelist', 'addons'],
+      disable: ['practice', 'whitelist', 'movement', 'addons'],
     });
   });
   test('skins on: one Skin tryout server is created, not linked to the match pool', async ({

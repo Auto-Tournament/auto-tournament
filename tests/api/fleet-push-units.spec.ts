@@ -544,7 +544,7 @@ test.describe('fleet pushes: plugin sets', () => {
     const cmd = pluginSetCommand(presetSet('fun'));
     expect(cmd).toEqual({
       enable: ['match', 'essentials', 'skins', 'midas', 'deathmatch', 'mapvote', 'community'],
-      disable: ['practice', 'whitelist', 'addons'],
+      disable: ['practice', 'whitelist', 'movement', 'addons'],
       preset: 'fun',
     });
     // The lists pass the plugins.set checks.
@@ -591,6 +591,7 @@ test.describe('fleet pushes: plugin sets', () => {
       'deathmatch',
       'mapvote',
       'community',
+      'movement',
       'addons',
     ];
     expect(pluginsStateDiffers(cmd, { installed: ['match'], disabled: off })).toBe(false);

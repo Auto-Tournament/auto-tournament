@@ -85,7 +85,7 @@ export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, Record<string, unkn
   'match.assign': matchAssign,
   'match.update': matchUpdate,
   'match.unassign': matchUnassign,
-  'cmd': cmd,
+  cmd: cmd,
   'cmd.result': cmdResult,
   'state.request': stateRequest,
   'state.snapshot': stateSnapshot,
@@ -161,7 +161,12 @@ let compiled: {
 function validators() {
   if (compiled) return compiled;
   // allowUnionTypes: match.defs.json's `cvars` values are `["string", "number", "boolean"]`.
-  const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false, allowUnionTypes: true });
+  const ajv = new Ajv2020({
+    allErrors: true,
+    strict: true,
+    strictRequired: false,
+    allowUnionTypes: true,
+  });
   ajv.addSchema(defs);
   ajv.addSchema(matchDefs);
   const messages = new Map<string, ValidateFunction>();
