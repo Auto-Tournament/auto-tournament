@@ -1,4 +1,5 @@
 import { db } from '../../../config/database';
+import { withVetoLock } from './lock';
 import { log } from '../../../utils/logger';
 import type { DbMatchRow, DbTournamentRow } from '../../../types/database.types';
 import type { TournamentResponse } from '../../../types/tournament.types';
@@ -97,7 +98,8 @@ export async function autoCompleteVetoForMatch(
 
   vetoRunsInFlight.add(matchSlug);
   try {
-    await runAutoVeto(matchSlug, options);
+    // Same lock as a player's click: the run reads the veto once and writes it per step.
+    await withVetoLock(matchSlug, () => runAutoVeto(matchSlug, options));
   } catch (error) {
     log.error(`[VETO-SIM] Automated veto failed for match ${matchSlug}`, error);
   } finally {
