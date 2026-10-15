@@ -1,2 +1,0 @@
-export { StartTournamentButton } from './StartTournamentButton';
-
