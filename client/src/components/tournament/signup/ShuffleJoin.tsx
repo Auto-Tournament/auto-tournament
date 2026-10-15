@@ -63,7 +63,7 @@ export function ShuffleJoin({
   steamId: string | null;
   /** Sign-up is open now. */
   open: boolean;
-  /** The tournament has started: no joining or leaving. */
+  /** The tournament has started: no leaving; joining puts you in the next round's draw. */
   started: boolean;
   /** How many players it takes, when capped. */
   spots: number | null;
@@ -155,9 +155,8 @@ export function ShuffleJoin({
             {t('shuffleJoin.goToMatch')}
           </Button>
         )}
-        {!started &&
-          (!steamId ? (
-            open && (
+        {!steamId
+          ? open && (
               <Button
                 component={RouterLink}
                 to={paths.login}
@@ -168,30 +167,30 @@ export function ShuffleJoin({
                 {t('shuffleJoin.signInToJoin')}
               </Button>
             )
-          ) : joined ? (
-            <Button
-              variant="outlined"
-              color="inherit"
-              disabled={busy}
-              onClick={() => void act(false)}
-              data-testid="shuffle-leave"
-              sx={{ borderRadius: radii.pill, px: 3, py: 1.5 }}
-            >
-              {t('shuffleJoin.leave')}
-            </Button>
-          ) : (
-            open && (
-              <Button
-                variant="contained"
-                disabled={busy || full}
-                onClick={() => void act(true)}
-                data-testid="shuffle-join-button"
-                sx={{ borderRadius: radii.pill, px: 3.25, py: 1.75, fontWeight: 600 }}
-              >
-                {full ? t('shuffleJoin.full') : t('shuffleJoin.join')}
-              </Button>
-            )
-          ))}
+          : joined
+            ? !started && (
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  disabled={busy}
+                  onClick={() => void act(false)}
+                  data-testid="shuffle-leave"
+                  sx={{ borderRadius: radii.pill, px: 3, py: 1.5 }}
+                >
+                  {t('shuffleJoin.leave')}
+                </Button>
+              )
+            : open && (
+                <Button
+                  variant="contained"
+                  disabled={busy || full}
+                  onClick={() => void act(true)}
+                  data-testid="shuffle-join-button"
+                  sx={{ borderRadius: radii.pill, px: 3.25, py: 1.75, fontWeight: 600 }}
+                >
+                  {full ? t('shuffleJoin.full') : t('shuffleJoin.join')}
+                </Button>
+              )}
       </Box>
       {round && roundNo !== null && round.matches.length > 0 && (
         <Box data-testid="shuffle-round" sx={{ display: 'grid', gap: 1 }}>
