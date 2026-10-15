@@ -1071,6 +1071,7 @@
     "pickSub": "Pick a sub"
   },
   "bracketCards": {
+    "you": "You",
     "open": "Open {{a}} vs {{b}}",
     "upper": "Upper bracket",
     "lower": "Lower bracket",
