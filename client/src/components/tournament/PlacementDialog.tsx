@@ -26,7 +26,7 @@ import {
   TreeStructureIcon,
   TrophyIcon,
 } from '@phosphor-icons/react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { usePublicBracket } from '../../hooks/usePublicBracket';
@@ -265,7 +265,10 @@ function AdvanceWatch({
   teamId: string;
 }) {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
   const [closed, setClosed] = React.useState<string | null>(null);
+  // Read once: whether the win is recent enough to announce (render stays pure).
+  const [loadedAtS] = React.useState(() => Date.now() / 1000);
   const won = matches
     .filter((m) => m.status === 'completed' && m.winner?.id === teamId)
     .sort((x, y) => (y.completedAt ?? 0) - (x.completedAt ?? 0))[0];
@@ -276,9 +279,11 @@ function AdvanceWatch({
     // No storage: shown once per page load.
   }
   // Only right after the win: a player who comes back an hour later has the bracket.
-  if (won.completedAt && Date.now() / 1000 - won.completedAt > 30 * 60) return null;
+  if (won.completedAt && loadedAtS - won.completedAt > 30 * 60) return null;
 
   const next = teamCurrentMatch(matches, teamId);
+  // Already in the next match's room: that page says it all.
+  if (next && pathname === matchPagePath(next.slug)) return null;
   const opponent = next ? (next.team1?.id === teamId ? next.team2 : next.team1) : undefined;
   const feeder =
     next && !opponent
