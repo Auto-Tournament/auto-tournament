@@ -35,6 +35,7 @@ import adminsSet from './messages/admins.set.json';
 import skinsLoadout from './messages/skins.loadout.json';
 import skinsInvalidate from './messages/skins.invalidate.json';
 import skinsStattrak from './messages/skins.stattrak.json';
+import movementRecord from './messages/movement.record.json';
 import eventPlayerConnect from './messages/event.player_connect.json';
 import eventPlayerDisconnect from './messages/event.player_disconnect.json';
 import eventPlayerTeam from './messages/event.player_team.json';
@@ -84,7 +85,7 @@ export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, Record<string, unkn
   'match.assign': matchAssign,
   'match.update': matchUpdate,
   'match.unassign': matchUnassign,
-  'cmd': cmd,
+  cmd: cmd,
   'cmd.result': cmdResult,
   'state.request': stateRequest,
   'state.snapshot': stateSnapshot,
@@ -99,6 +100,7 @@ export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, Record<string, unkn
   'skins.loadout': skinsLoadout,
   'skins.invalidate': skinsInvalidate,
   'skins.stattrak': skinsStattrak,
+  'movement.record': movementRecord,
   'event.player_connect': eventPlayerConnect,
   'event.player_disconnect': eventPlayerDisconnect,
   'event.player_team': eventPlayerTeam,
@@ -159,7 +161,12 @@ let compiled: {
 function validators() {
   if (compiled) return compiled;
   // allowUnionTypes: match.defs.json's `cvars` values are `["string", "number", "boolean"]`.
-  const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false, allowUnionTypes: true });
+  const ajv = new Ajv2020({
+    allErrors: true,
+    strict: true,
+    strictRequired: false,
+    allowUnionTypes: true,
+  });
   ajv.addSchema(defs);
   ajv.addSchema(matchDefs);
   const messages = new Map<string, ValidateFunction>();

@@ -238,6 +238,24 @@ router.post('/fleet/stattrak', requireAuth, async (req: Request, res: Response):
   res.json({ success: true, counted: await skinService.addStatTrakKills(increments) });
 });
 
+/** POST /api/test/fleet/movement-record  { ...movement.record payload }: a finished run, as from a server. */
+router.post(
+  '/fleet/movement-record',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (!fleetTestGuard(res)) return;
+    const { validatePayload } = await import('../fleet/protocol/v1');
+    const check = validatePayload('movement.record', req.body ?? {});
+    if (!check.ok) {
+      res.status(400).json({ success: false, errors: check.errors });
+      return;
+    }
+    const { addMovementRun } = await import('../movement/records');
+    await addMovementRun('test-ready-up', req.body);
+    res.json({ success: true });
+  }
+);
+
 /**
  * POST /api/test/fleet/events { matchSlug, serverId?, events: [{ type, map_number?, round?, data, patch? }] }
  *

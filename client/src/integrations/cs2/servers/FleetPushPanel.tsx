@@ -103,7 +103,7 @@ export function initialPluginSet(
       (p) =>
         catalog.required.includes(p) || (state.installed.includes(p) && !state.disabled.includes(p))
     );
-    const preset = (['tournament', 'practice', 'fun', 'tryout'] as const).find(
+    const preset = (['tournament', 'practice', 'fun', 'tryout', 'movement'] as const).find(
       (x) =>
         catalog.presets[x].length === on.length && catalog.presets[x].every((p) => on.includes(p))
     );

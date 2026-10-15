@@ -1,6 +1,6 @@
 /**
  * Picks the Ready Up plugins a server runs: a preset (Tournament, Practice,
- * Fun, Skin tryout) or plugins ticked one by one. Required plugins (fleet, match) are
+ * Fun, Skin tryout, Movement) or plugins ticked one by one. Required plugins (fleet, match) are
  * always ticked. Used by "Create server" / "Create several" (Machines), a
  * server's Plugins dialog and the fleet default (Fleet settings). The API is
  * `/api/fleet/plugins` (fleet/push/pluginSets.ts).
@@ -16,7 +16,7 @@ import type {
   PluginSetValue,
 } from './fleetPush.types';
 
-const PRESETS: PluginPresetName[] = ['tournament', 'practice', 'fun', 'tryout'];
+const PRESETS: PluginPresetName[] = ['tournament', 'practice', 'fun', 'tryout', 'movement'];
 
 function fetchCatalog(): Promise<PluginCatalogResponse | null> {
   return api.get<PluginCatalogResponse>('/api/fleet/plugins').catch((err: unknown) => {
@@ -117,6 +117,7 @@ export default function PluginSetPicker({
             practice: 'Practice',
             fun: 'Fun',
             tryout: 'Skin tryout',
+            movement: 'Movement',
             custom: 'Custom',
           }[p],
         });

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 713 of them, 413 behind auth —
+Every endpoint this API serves — 716 of them, 414 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -270,6 +270,15 @@ Players ranked by rating, ADR, K/D, headshots, opening duels, clutches and KAST.
 | --- | --- | --- |
 | `GET` | `/api/game/cs2/leaderboards` | public |
 
+### Movement records
+
+Surf, bhop and kz times: each player's best per map and course, across the servers.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/movement/maps` | public |
+| `GET` | `/api/game/cs2/movement/records` | public |
+
 ### Highlights
 
 Each player's best moments, picked from the demo analysis, and the clips the recorder makes of them.
@@ -494,6 +503,7 @@ E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE
 | `POST` | `/api/test/highlights/repick` | admin |
 | `POST` | `/api/test/fleet/snapshot` | admin |
 | `POST` | `/api/test/fleet/stattrak` | admin |
+| `POST` | `/api/test/fleet/movement-record` | admin |
 | `POST` | `/api/test/fleet/events` | admin |
 | `GET` | `/api/test/fleet/assign-config/:slug` | admin |
 | `POST` | `/api/test/fleet/send` | admin |

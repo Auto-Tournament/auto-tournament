@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/movement.record.json",
+  "title": "movement.record (server → platform, reliable)",
+  "description": "Ready Up movement plugin: a finished surf / bhop / kz run. Sent for every finish; the platform keeps each player's best per map, mode and course and shows the leaderboards. course 0 = the map run, N = bonus N. finished_at is unix seconds.",
+  "type": "object",
+  "required": ["map", "mode", "course", "steamid64", "name", "time_ms", "finished_at"],
+  "properties": {
+    "map": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "mode": { "enum": ["surf", "bhop", "kz"] },
+    "course": { "type": "integer", "minimum": 0, "maximum": 99 },
+    "steamid64": { "$ref": "../defs.json#/$defs/u64s" },
+    "name": { "type": "string", "maxLength": 128 },
+    "time_ms": { "type": "integer", "minimum": 1 },
+    "teleports": { "type": "integer", "minimum": 0 },
+    "finished_at": { "type": "integer", "minimum": 0 }
+  }
+}
