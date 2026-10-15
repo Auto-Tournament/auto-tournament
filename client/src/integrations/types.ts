@@ -1098,6 +1098,13 @@ export interface ClientGameIntegration {
   tournamentRulesView?: ComponentType<TournamentRulesViewProps>;
 
   /**
+   * "What you can win" on the tournament overview, in this game's words (CS2: the placement
+   * skins and match drops, with the notice that they are not real skins). Renders nothing when
+   * the tournament gives nothing. Left empty: the overview shows no prizes.
+   */
+  tournamentPrizesView?: ComponentType<TournamentPrizesViewProps>;
+
+  /**
    * The admin shell, every page: a setting this module needs before its
    * tournament can run (CS2: the webhook URL). Left empty by a module that
    * needs nothing configured, and the shell then says nothing.
@@ -1354,6 +1361,11 @@ export interface ClientGameIntegration {
 }
 
 /** A game module's rules summary (`GameIntegration.tournamentRulesView`). */
+/** A game module's prizes view (`GameIntegration.tournamentPrizesView`). */
+export interface TournamentPrizesViewProps {
+  tournament: { id: number; status: string; settings?: unknown };
+}
+
 export interface TournamentRulesViewProps {
   tournament: {
     type: string;

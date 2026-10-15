@@ -16,7 +16,7 @@ import {
 import type { TournamentResultsSectionProps } from '../../types';
 import { rarityColor } from './rarity';
 import type { Rarity } from './useSkins';
-import { skinCardUrl } from './SkinParts';
+import { skinCardUrl, VirtualNotice } from './SkinParts';
 
 const { color } = tokens;
 
@@ -62,6 +62,7 @@ export function TournamentRewardsSection({ tournamentId }: TournamentResultsSect
       >
         {t('skins.rewards.title')}
       </Typography>
+      <VirtualNotice compact />
       {places.map((place) => (
         <Box key={place} sx={{ display: 'grid', gap: 1 }}>
           <Typography

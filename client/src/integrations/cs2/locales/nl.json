@@ -1336,7 +1336,14 @@
     "ttdLine": "Time to damage {{ms}} ms"
   },
   "skins": {
-    "notice": "Virtual skins. They only exist on Auto Tournament, have no money value and can't be traded or sold. You see them in game on this site's servers.",
+    "prizes": {
+      "title": "Wat je kunt winnen",
+      "intro": "Voorbeelden van wat meedoen aan dit toernooi je kan opleveren, uit de skins van deze site:",
+      "pickOne": "een {{rarity}} skin naar keuze (kies 1 van 3)",
+      "matchDrops": "Elke toernooiwedstrijd die je speelt, kan ook een skin opleveren."
+    },
+    "notReal": "Geen echte CS2-skins.",
+    "notice": "Ze bestaan alleen op deze site: het zijn geen Steam-items, ze hebben geen geldwaarde, kunnen niet geruild of verkocht worden, en geen toernooiorganisator of sponsor geeft er echte skins mee weg. Je ziet ze in het spel op de servers van deze site.",
     "equipLabel": "Equip {{name}}",
     "equippedLabel": "{{name}}, equipped",
     "new": "NEW",
@@ -1623,7 +1630,7 @@
     },
     "tryout": {
       "title": "Try them in game",
-      "hint": "A practice server with your skins. Equip here and they change in game within seconds.",
+      "hint": "A surf server with your skins, with a run timer and records. Equip here and they change in game within seconds.",
       "join": "Join",
       "joinLabel": "Join {{name}}",
       "console": "Or paste this in the CS2 console"

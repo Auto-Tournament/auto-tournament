@@ -32,7 +32,6 @@ import {
   matchPluginDisabled,
 } from './pluginSets';
 import { readPrefs, recordPush, writePref } from './store';
-import { TRYOUT_HOME_CVARS, TRYOUT_HOME_MAP } from '../../skins/tryoutMap';
 
 export const MAX_WHITELIST = 1000;
 export const MAX_PLUGINS_PER_LIST = 16;
@@ -166,13 +165,11 @@ export async function setPlugins(
   // practice server: practice on, and always=1 so it stays on at every map
   // (Ready Up without fleet.cmds.v1 keeps match loaded and takes `on` only).
   // Any other set with practice in it is not one: always off again.
-  // A Skin tryout server is one too, and goes back to its hub map whenever
-  // nobody is on it.
-  if (value.preset === 'practice' || value.preset === 'tryout') {
+  if (value.preset === 'practice') {
     await writePref(serverId, 'practice', true, updatedBy);
     const practice = await sendCmd(serverId, {
       name: 'practice.set',
-      args: practiceServerArgs(value.preset, fleetCmds),
+      args: practiceServerArgs(fleetCmds),
       issued_by: issuedBy,
       expires_at: Date.now() + PRACTICE_TTL_MS,
     });
@@ -180,7 +177,8 @@ export async function setPlugins(
   } else if (fleetCmds && value.enable.includes('practice')) {
     await sendPracticeAlways(serverId, false, issuedBy);
   }
-  // No longer a tryout server: no hub map to go back to.
+  // A Skin tryout server from before it ran movement (practice with a surf hub map): practice
+  // forgets the hub map, so a later Practice set stays on its own map.
   if (
     fleetCmds &&
     previous === 'tryout' &&
@@ -197,12 +195,9 @@ export async function setPlugins(
   return sent;
 }
 
-/** practice.set for a practice server: on, always=1, and a tryout server's hub map. */
-function practiceServerArgs(preset: string, fleetCmds: boolean): Record<string, unknown> {
-  if (!fleetCmds) return { on: true };
-  return preset === 'tryout'
-    ? { on: true, always: true, home_map: TRYOUT_HOME_MAP, home_cvars: TRYOUT_HOME_CVARS }
-    : { on: true, always: true };
+/** practice.set for a practice server: on, always=1. */
+function practiceServerArgs(fleetCmds: boolean): Record<string, unknown> {
+  return fleetCmds ? { on: true, always: true } : { on: true };
 }
 
 /** Send a server its plugins.set lists (what is stored is not changed). */
@@ -345,10 +340,10 @@ export async function pluginsOnHello(
   log.info(`[FLEET] ${serverId}: its plugins differ from its plugin set; plugins.set sent again`);
   // A practice server that now runs without match (e.g. after a Ready Up
   // update to fleet.cmds.v1) needs practice on and always=1 again.
-  if (fleetCmds && (prefs.plugins.preset === 'practice' || prefs.plugins.preset === 'tryout')) {
+  if (fleetCmds && prefs.plugins.preset === 'practice') {
     await sendCmd(serverId, {
       name: 'practice.set',
-      args: practiceServerArgs(prefs.plugins.preset, fleetCmds),
+      args: practiceServerArgs(fleetCmds),
       issued_by: PLATFORM_ISSUER,
       expires_at: Date.now() + PRACTICE_TTL_MS,
     });

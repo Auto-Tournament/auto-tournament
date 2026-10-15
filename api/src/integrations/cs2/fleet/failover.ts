@@ -637,7 +637,10 @@ async function createProposal(input: {
     [input.slug]
   );
   const numMaps = mapsOf(row?.config ?? null);
-  const createdAt = Number(row?.created_at ?? 0);
+  // matches.created_at is EXTRACT(EPOCH FROM NOW())::INTEGER, which rounds: up to a second
+  // ahead of the floored storedAt of a backup taken in the same second, which was then dropped
+  // and the match resumed at round 0.
+  const createdAt = Number(row?.created_at ?? 0) - 1;
   const mapNumber = Math.min(Math.max(1, input.state?.series?.current_map ?? 1), numMaps);
   const backup = pickBackup(
     (await roundBackupStore.list(input.slug)).filter((b) => b.storedAt >= createdAt),

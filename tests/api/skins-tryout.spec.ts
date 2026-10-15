@@ -10,7 +10,7 @@ import {
 
 /**
  * Skin tryout servers (/api/skins/tryout): online Ready Up servers running
- * practice and skins without the match plugin, for the inventory's
+ * movement (or practice) and skins without the match plugin, for the inventory's
  * "Try them in game". A server that takes matches is not one.
  *
  * @tag api
