@@ -100,6 +100,16 @@ function useMatchConnect(
     void load();
   }, [enabled, load, matchStatus]);
 
+  // Until there is a server to join, ask again every 5 s as well: a missed socket event left
+  // a matchmaking room without its Join until the page was reloaded (2026-10-15).
+  const waitingForServer =
+    enabled && !connect?.server?.host && connect?.matchStatus !== 'completed';
+  useEffect(() => {
+    if (!waitingForServer) return;
+    const id = window.setInterval(() => void load(), 5000);
+    return () => window.clearInterval(id);
+  }, [waitingForServer, load]);
+
   useEffect(() => {
     if (!enabled) return;
     const reload = () => {
