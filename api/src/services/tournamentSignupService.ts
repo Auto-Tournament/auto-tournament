@@ -508,9 +508,7 @@ export const tournamentSignupService = {
    * A shuffle tournament's players, in the order they joined (no teams: the platform draws
    * them each round). Public, like the team list. Null for any other kind of tournament.
    */
-  async shufflePlayers(
-    tournamentId: number
-  ): Promise<Array<{
+  async shufflePlayers(tournamentId: number): Promise<Array<{
     steamId: string;
     name: string;
     avatar: string | null;
@@ -550,8 +548,9 @@ export const tournamentSignupService = {
         'not_shuffle'
       );
     const win = windowOf(tournament);
-    if (tournament.status !== 'setup')
-      throw new SignupError(409, 'The tournament has started.', 'started');
+    // A running shuffle still takes players: they are in the next round's draw.
+    if (tournament.status !== 'setup' && tournament.status !== 'in_progress')
+      throw new SignupError(409, 'The tournament is over.', 'started');
     if (!win.registrationOpen) throw new SignupError(409, 'Sign-up is not open.', 'closed');
     if (isPast(win.registrationClosesAt))
       throw new SignupError(409, 'Sign-up has closed.', 'closed');

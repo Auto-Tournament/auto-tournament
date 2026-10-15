@@ -191,10 +191,12 @@ export async function registerPlayers(
     throw new Error('No shuffle tournament found. Please create a shuffle tournament first.');
   }
 
-  if (tournament.status !== 'setup') {
+  // Each round draws from whoever is registered then, so a player can join a running
+  // shuffle and is in the next round's draw.
+  if (tournament.status !== 'setup' && tournament.status !== 'in_progress') {
     throw new Error(
       `Cannot register players. Tournament is in "${tournament.status}" status. ` +
-        'Players can only be registered when tournament is in "setup" status.'
+        'Players can only be registered before it starts or while it runs.'
     );
   }
 
