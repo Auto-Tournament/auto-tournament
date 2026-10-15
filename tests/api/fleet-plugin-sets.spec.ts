@@ -346,7 +346,16 @@ test.describe.serial('Fleet plugin sets', () => {
       expect(created.bundle).toBe('skins');
       expect(created.meta.plugins).toEqual({
         preset: 'fun',
-        plugins: ['fleet', 'match', 'essentials', 'skins', 'midas', 'deathmatch'],
+        plugins: [
+          'fleet',
+          'match',
+          'essentials',
+          'skins',
+          'midas',
+          'deathmatch',
+          'mapvote',
+          'community',
+        ],
       });
 
       const ru = await readyUpServer(request, created.enrollKey);
@@ -383,7 +392,16 @@ test.describe.serial('Fleet plugin sets', () => {
       const state = await (await request.get(`/api/fleet/servers/${ru.serverId}/push`)).json();
       expect(state.pluginSet).toEqual({
         preset: 'fun',
-        plugins: ['fleet', 'match', 'essentials', 'skins', 'midas', 'deathmatch'],
+        plugins: [
+          'fleet',
+          'match',
+          'essentials',
+          'skins',
+          'midas',
+          'deathmatch',
+          'mapvote',
+          'community',
+        ],
       });
       expect(state.pluginsState).toEqual({
         installed: ['essentials', 'fleet', 'match', 'practice'],
