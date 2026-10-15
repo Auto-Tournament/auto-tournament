@@ -28,11 +28,24 @@ interface Odds {
   tournamentMatchDrops: boolean;
   tournamentRewards: Array<{
     place: number;
-    mode: 'rarity' | 'skin';
+    mode: 'rarity' | 'random' | 'skin' | 'none' | string;
     rarity: string | null;
     weapon: string | null;
     name: string | null;
   }>;
+}
+
+/** A tournament's own prize list (settings.cs2.rewards), or null to use the site's. */
+function ownRewards(settings: unknown): Odds['tournamentRewards'] | null {
+  const cs2 = ((settings ?? {}) as { cs2?: { rewards?: unknown } }).cs2;
+  if (!Array.isArray(cs2?.rewards)) return null;
+  return (cs2.rewards as Array<Record<string, unknown>>).map((r) => ({
+    place: Number(r.place),
+    mode: String(r.mode ?? 'random'),
+    rarity: (r.rarity as string | undefined) ?? null,
+    weapon: (r.weapon as string | undefined) ?? null,
+    name: (r.name as string | undefined) ?? null,
+  })) as Odds['tournamentRewards'];
 }
 
 /** The tournament's own switches: esports mode and skin rewards off give nothing. */
@@ -60,7 +73,12 @@ export function TournamentPrizes({ tournament }: TournamentPrizesViewProps) {
   }, [off]);
 
   if (off || !odds) return null;
-  const places = [...odds.tournamentRewards].sort((a, b) => a.place - b.place);
+  // The tournament's own prizes when it set them (settings.cs2.rewards), else the site's.
+  const own = ownRewards(tournament.settings);
+  const order = (place: number) => (place === 0 ? 99 : place);
+  const places = [...(own ?? odds.tournamentRewards)]
+    .filter((r) => r.mode !== 'none')
+    .sort((a, b) => order(a.place) - order(b.place));
   if (places.length === 0 && !odds.tournamentMatchDrops) return null;
 
   return (
@@ -99,7 +117,7 @@ export function TournamentPrizes({ tournament }: TournamentPrizesViewProps) {
           }}
         >
           {places.map((r) => {
-            const tone = r.mode === 'rarity' && r.rarity ? rarityColor[r.rarity] : color.accent;
+            const tone = r.mode !== 'skin' && r.rarity ? rarityColor[r.rarity] : color.accent;
             return (
               <Box
                 key={r.place}
@@ -120,7 +138,7 @@ export function TournamentPrizes({ tournament }: TournamentPrizesViewProps) {
                     color: MEDAL[r.place - 1] ?? color.ink2,
                   }}
                 >
-                  {t('skins.place', { n: r.place })}
+                  {r.place === 0 ? t('skins.prizes.everyone') : t('skins.place', { n: r.place })}
                 </Typography>
                 <Typography sx={{ fontSize: '0.9375rem' }}>
                   {r.mode === 'skin' && r.name

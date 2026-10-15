@@ -158,7 +158,7 @@ export const progressionService = {
    */
   async awardPlacementXp(
     tournamentId: number,
-    placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }>
+    placements: Array<{ place: 1 | 2 | 3 | 4; steamIds: string[] }>
   ): Promise<void> {
     for (const { place, steamIds } of placements) {
       for (const id of steamIds) {

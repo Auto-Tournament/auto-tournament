@@ -14,8 +14,8 @@ export const XP = {
   /** The top player of the match gets this much; the last none. */
   performanceMax: 50,
   firstWin: 100,
-  /** A tournament's 1st, 2nd and 3rd place, on top of their matches. */
-  placement: [500, 300, 200],
+  /** A tournament's 1st to 4th place, on top of their matches. */
+  placement: [500, 300, 200, 100],
 } as const;
 
 export interface XpInput {

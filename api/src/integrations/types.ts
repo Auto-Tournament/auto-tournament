@@ -1099,7 +1099,7 @@ export interface GameIntegration {
     tournamentName: string;
     /** The tournament's settings object (CS2 reads `skinRewards`). */
     settings: Record<string, unknown>;
-    placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }>;
+    placements: Array<{ place: 1 | 2 | 3 | 4; steamIds: string[] }>;
   }): Promise<void>;
 
   /**

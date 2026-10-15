@@ -1344,7 +1344,8 @@
       "title": "你可以赢得什么",
       "intro": "参加本次锦标赛可能获得的奖励示例（均为本站皮肤）：",
       "pickOne": "一款自选的{{rarity}}皮肤（三选一）",
-      "matchDrops": "你参加的每场锦标赛比赛也可能掉落皮肤。"
+      "matchDrops": "你参加的每场锦标赛比赛也可能掉落皮肤。",
+      "everyone": "Everyone else who plays"
     },
     "notReal": "这些不是真正的 CS2 皮肤。",
     "notice": "它们只存在于本站：不是 Steam 物品，没有任何金钱价值，不能交易或出售，也没有任何赛事主办方或赞助商通过它们赠送真实皮肤。你可以在本站的服务器上于游戏中看到它们。",
@@ -1557,7 +1558,10 @@
       },
       "statTrakChance": "StatTrak™ chance (%)",
       "statTrakHelp": "How often a dropped weapon or knife is StatTrak™ (CS2 cases: 10).",
-      "repeatOpponentCut": "Less from the third game against the same opponents in a day (turn off for a small platform or a LAN)"
+      "repeatOpponentCut": "Less from the third game against the same opponents in a day (turn off for a small platform or a LAN)",
+      "place4": "4th",
+      "place0": "Everyone",
+      "noReward": "No reward"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
     "whatThisMeans": "这是什么意思",
@@ -1643,7 +1647,12 @@
     "stattrakKills": "StatTrak™ kills",
     "takeOffSide": "Take {{name}} off {{side}}",
     "takeOffOn": "Take off {{side}}",
-    "keepAll": "全部保留（{{count}}）"
+    "keepAll": "全部保留（{{count}}）",
+    "prizesEditor": {
+      "site": "Site's prizes",
+      "custom": "Own prizes",
+      "label": "Prizes"
+    }
   },
   "matchRules": {
     "title": "比赛规则",

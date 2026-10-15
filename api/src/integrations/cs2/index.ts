@@ -750,9 +750,16 @@ export const cs2Integration: GameIntegration = {
   async onTournamentPlacements({ tournamentId, tournamentName, settings, placements }) {
     const { skinService } = await import('./skins/skinService');
     // `settings.cs2.skinRewards`; tournaments from before it moved here kept it at the top level.
-    const own = settings.cs2 as { skinRewards?: unknown } | undefined;
+    const own = settings.cs2 as { skinRewards?: unknown; rewards?: unknown } | undefined;
     const rewards = typeof own?.skinRewards === 'boolean' ? own.skinRewards : settings.skinRewards;
-    await skinService.awardTournament(tournamentId, tournamentName, placements, rewards === false);
+    const { parseRewards } = await import('./skins/skinService');
+    await skinService.awardTournament(
+      tournamentId,
+      tournamentName,
+      placements,
+      rewards === false,
+      parseRewards(own?.rewards)
+    );
   },
 
   /**
