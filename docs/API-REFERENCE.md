@@ -874,11 +874,11 @@ Player records, ratings, match history and profiles.
 | `GET` | `/api/players/:playerId` | public |
 | `GET` | `/api/players/:playerId/rating-history` | public |
 | `GET` | `/api/players/:playerId/matches` | public |
+| `POST` | `/api/players/import` | integrator token or admin |
 | `GET` | `/api/players/:playerId/accounts` | admin |
 | `GET` | `/api/players` | admin |
 | `GET` | `/api/players/by-discord-id/:discordId` | admin |
 | `POST` | `/api/players` | admin |
-| `POST` | `/api/players/import` | admin |
 | `POST` | `/api/players/bulk-import` | admin |
 | `POST` | `/api/players/bulk-delete` | admin |
 | `PUT` | `/api/players/:playerId` | admin |
