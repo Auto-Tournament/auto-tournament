@@ -565,13 +565,28 @@ test.describe('fleet pushes: plugin sets', () => {
   test('older Ready Up (no fleet.cmds.v1) keeps match: it refuses to disable it', () => {
     const practice = pluginSetCommand(presetSet('practice'));
     expect(practice.disable).toContain('match');
-    expect(pluginsSetFor(practice, true)).toBe(practice);
+    expect(pluginsSetFor(practice, true)).toEqual(practice);
     expect(pluginsSetFor(practice, false)).toEqual({
       ...practice,
       disable: practice.disable.filter((n) => n !== 'match'),
     });
     const fun = pluginSetCommand(presetSet('fun'));
-    expect(pluginsSetFor(fun, false)).toBe(fun);
+    expect(pluginsSetFor(fun, false)).toEqual(fun);
+  });
+
+  test('a named preset is sent as it is defined now, not as it was stored', () => {
+    // The Skin tryout set before it ran movement (practice on a surf hub map).
+    const old = {
+      enable: ['practice', 'skins', 'mapvote', 'community', 'essentials'],
+      disable: ['match', 'movement'],
+      preset: 'tryout' as const,
+    };
+    const now = pluginsSetFor(old, true);
+    expect(now.enable).toContain('movement');
+    expect(now.disable).toContain('practice');
+    // A custom set is kept as stored.
+    const custom = { enable: ['practice'], disable: ['match'], preset: 'custom' as const };
+    expect(pluginsSetFor(custom, true)).toBe(custom);
   });
 
   test('bundle: essentials when it has every picked plugin, else full (skins)', () => {

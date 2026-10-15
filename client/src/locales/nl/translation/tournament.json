@@ -1085,7 +1085,8 @@
     "bestOf_other": "Best of {{count}}",
     "winnerOf": "Winnaar {{match}}",
     "loserOf": "Verliezer {{match}}",
-    "tbd": "Nog niet bekend"
+    "tbd": "Nog niet bekend",
+    "you": "Jij"
   },
   "placement": {
     "outTitle": "Your run in {{tournament}} is over",
@@ -1128,5 +1129,17 @@
     "vetoOpening": "Veto opening",
     "matchIn": "Match in",
     "matchLoading": "Match loading"
+  },
+  "advance": {
+    "title": "Mooi, jullie zijn nog door!",
+    "opponent": "Volgende tegenstander: {{opponent}}.",
+    "feederTitle": "Jullie volgende tegenstander komt uit",
+    "vs": "tegen",
+    "tbd": "Nog onbekend",
+    "feederNotStarted": "Die wedstrijd is nog niet begonnen.",
+    "feederMinutes_one": "Nog ongeveer {{count}} minuut.",
+    "feederMinutes_other": "Nog ongeveer {{count}} minuten.",
+    "feederAlmost": "Bijna klaar.",
+    "watch": "Live kijken"
   }
 }

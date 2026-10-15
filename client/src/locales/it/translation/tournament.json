@@ -1085,7 +1085,8 @@
     "bestOf_other": "Al meglio di {{count}}",
     "winnerOf": "Vincente {{match}}",
     "loserOf": "Perdente {{match}}",
-    "tbd": "Da decidere"
+    "tbd": "Da decidere",
+    "you": "Tu"
   },
   "placement": {
     "outTitle": "Your run in {{tournament}} is over",
@@ -1128,5 +1129,17 @@
     "vetoOpening": "Veto opening",
     "matchIn": "Match in",
     "matchLoading": "Match loading"
+  },
+  "advance": {
+    "title": "Ottimo, siete ancora in gara!",
+    "opponent": "Prossimo avversario: {{opponent}}.",
+    "feederTitle": "Il vostro prossimo avversario arriva da",
+    "vs": "contro",
+    "tbd": "Da definire",
+    "feederNotStarted": "Quella partita non è ancora iniziata.",
+    "feederMinutes_one": "Manca circa {{count}} minuto.",
+    "feederMinutes_other": "Mancano circa {{count}} minuti.",
+    "feederAlmost": "Quasi finita.",
+    "watch": "Guardala in diretta"
   }
 }

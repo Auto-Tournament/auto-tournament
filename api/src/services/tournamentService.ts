@@ -235,7 +235,11 @@ class TournamentService {
     options: { game?: GameId; draft?: boolean } = {}
   ): Promise<TournamentResponse> {
     const { name, type, format, teamIds, settings } = input;
-    const teamSize = validTeamSize(input.teamSize);
+    // The team size can come in the settings too (the MCP tool, older clients): the row's
+    // column is what matches and rosters use, so it takes either (it stayed 5 for a 2v2).
+    const teamSize = validTeamSize(
+      input.teamSize ?? (settings as { teamSize?: unknown } | undefined)?.teamSize
+    );
     // A draft with no teams yet: no count check and no bracket until it has some.
     const emptyDraft = options.draft === true && (teamIds?.length ?? 0) === 0;
 
@@ -378,7 +382,9 @@ class TournamentService {
     if (type) updates.type = type;
     if (format) updates.format = format;
     if (teamIds) updates.team_ids = JSON.stringify(teamIds);
-    const teamSize = validTeamSize(input.teamSize);
+    const teamSize = validTeamSize(
+      input.teamSize ?? (input.settings as { teamSize?: unknown } | undefined)?.teamSize
+    );
     if (teamSize !== null && (type ?? existing.type) !== 'shuffle') updates.team_size = teamSize;
     // settings.matchFormat mirrors `format`, so settings are rewritten when
     // either changes (or an edited format leaves the old value behind in
