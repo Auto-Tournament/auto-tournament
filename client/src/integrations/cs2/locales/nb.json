@@ -1270,7 +1270,8 @@
       "tryout": "Skin-prøving",
       "custom": "Egendefinert",
       "default": "Standard for flåten",
-      "none": "Ingen"
+      "none": "Ingen",
+      "movement": "Movement"
     },
     "plugin": {
       "fleet": "Flåtekobling",
@@ -1283,7 +1284,8 @@
       "deathmatch": "Deathmatch",
       "mapvote": "Kartavstemning",
       "community": "Fellesskap",
-      "addons": "Addons"
+      "addons": "Addons",
+      "movement": "Movement"
     },
     "pluginHelp": {
       "essentials": "Administratorer, kartbytte, omlasting og omstart",
@@ -1294,7 +1296,8 @@
       "deathmatch": "Deathmatch-moduser",
       "mapvote": "Kartavstemning: .rtv, .nominate og avstemning ved kartslutt",
       "community": "Fellesskapskommandoer: .rank, .top, .speclist, admin .kick",
-      "addons": "Workshop-tillegg"
+      "addons": "Workshop-tillegg",
+      "movement": "Surf, bhop og kz: timer, rekorder og ledertavler"
     },
     "required": "Alltid på",
     "usesDefault": "Bruker standarden for flåten: {{plugins}}.",
@@ -2349,5 +2352,25 @@
     "mapsDrawn": "Kart: hver kamp trekker ett fra kartpoolen. Ingen veto.",
     "shuffleMaps": "Kart: hver runde spiller neste kart på listen, med nye lag hver runde.",
     "bots": "Ledige plasser fylles med boter."
+  },
+  "movement": {
+    "title": "Surf- og KZ-rekorder",
+    "map": "Kart",
+    "course": "Løype",
+    "mainCourse": "Kart",
+    "bonus": "Bonus {{n}}",
+    "explain": "Hver spillers beste tid på kartets løype eller en bonus, fra alle servere med Movement-oppsettet. I spillet: .rs starter på nytt, .b 1 går til bonus 1, .pb og .wr viser tider.",
+    "empty": "Ingen tider på denne løypa ennå.",
+    "time": "Tid",
+    "teleports": "TP",
+    "pro": "Pro",
+    "date": "Dato",
+    "runs_one": "{{count}} fullført runde",
+    "runs_other": "{{count}} fullførte runder",
+    "mode": {
+      "surf": "Surf",
+      "bhop": "Bhop",
+      "kz": "KZ"
+    }
   }
 }

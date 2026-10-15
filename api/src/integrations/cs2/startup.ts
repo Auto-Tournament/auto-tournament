@@ -23,6 +23,7 @@ import { startDemoStreams, stopDemoStreams } from './fleet/demoStream';
 import { startFleetHosts, stopFleetHosts } from './fleet/hosts/service';
 import { recorderLink, startRecorderLink } from './demos/recorderLink';
 import { startServerNotices, stopServerNotices } from './fleet/serverNotices';
+import { startMovementRecords, stopMovementRecords } from './movement/records';
 import { startFleetPush, stopFleetPush } from './fleet/push';
 import { startFleetFailover, stopFleetFailover } from './fleet/failover';
 import { startAutoscaler, stopAutoscaler } from './fleet/autoscale/scaler';
@@ -62,6 +63,8 @@ export async function startCs2(): Promise<void> {
   startDemoStreams();
   // server.cs2_update_required / server.selftest from Ready Up servers.
   startServerNotices();
+  // Surf / bhop / kz runs from Ready Up's movement plugin (movement.record).
+  startMovementRecords();
   // Matches left in warmup start after the admin's limit (at_autostart_after_minutes).
   startAutoStart();
   // A veto step a team does not take in time is taken for them (veto_turn_seconds).
@@ -124,6 +127,7 @@ export function stopCs2(): void {
   recorderLink.shutdown();
   stopFleetFailover();
   stopServerNotices();
+  stopMovementRecords();
   stopFleetPush();
   stopAutoscaler();
 }

@@ -175,6 +175,7 @@ test.describe('Fleet protocol schemas', () => {
       'skins.loadout',
       'skins.invalidate',
       'skins.stattrak',
+      'movement.record',
       'event.round_end',
       'event.map_result',
       'event.series_end',

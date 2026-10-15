@@ -1270,7 +1270,8 @@
       "custom": "Eigene Auswahl",
       "default": "Flotten-Standard",
       "none": "Keine",
-      "tryout": "Skin tryout"
+      "tryout": "Skin tryout",
+      "movement": "Movement"
     },
     "plugin": {
       "fleet": "Flotten-Verbindung",
@@ -1283,7 +1284,8 @@
       "deathmatch": "Deathmatch",
       "addons": "Addons",
       "mapvote": "Map vote",
-      "community": "Community"
+      "community": "Community",
+      "movement": "Movement"
     },
     "pluginHelp": {
       "essentials": "Admins, Kartenwechsel, Neuladen und Neustart",
@@ -1294,7 +1296,8 @@
       "deathmatch": "Deathmatch-Modi",
       "addons": "Workshop-Addons",
       "mapvote": "Map voting: .rtv, .nominate, end-of-map vote",
-      "community": "Community commands: .rank, .top, .speclist, admin .kick"
+      "community": "Community commands: .rank, .top, .speclist, admin .kick",
+      "movement": "Surf, bhop and kz: run timer, records and leaderboards"
     },
     "required": "Immer an",
     "usesDefault": "Nutzt den Flotten-Standard: {{plugins}}.",
@@ -2354,5 +2357,25 @@
     "mapsDrawn": "Maps: each match draws one from the pool. No veto.",
     "shuffleMaps": "Maps: every round plays the next map in the list, with new teams each round.",
     "bots": "Empty seats are filled with bots."
+  },
+  "movement": {
+    "title": "Surf & KZ records",
+    "map": "Map",
+    "course": "Course",
+    "mainCourse": "Map",
+    "bonus": "Bonus {{n}}",
+    "explain": "Each player's best time on the map's run or a bonus, from every server that runs the Movement preset. In game: .rs restarts, .b 1 goes to bonus 1, .pb and .wr show times.",
+    "empty": "No times on this course yet.",
+    "time": "Time",
+    "teleports": "TP",
+    "pro": "Pro",
+    "date": "Date",
+    "runs_one": "{{count}} finished run",
+    "runs_other": "{{count}} finished runs",
+    "mode": {
+      "surf": "Surf",
+      "bhop": "Bhop",
+      "kz": "KZ"
+    }
   }
 }

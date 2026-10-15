@@ -35,6 +35,7 @@ import adminsSet from './messages/admins.set.json';
 import skinsLoadout from './messages/skins.loadout.json';
 import skinsInvalidate from './messages/skins.invalidate.json';
 import skinsStattrak from './messages/skins.stattrak.json';
+import movementRecord from './messages/movement.record.json';
 import eventPlayerConnect from './messages/event.player_connect.json';
 import eventPlayerDisconnect from './messages/event.player_disconnect.json';
 import eventPlayerTeam from './messages/event.player_team.json';
@@ -99,6 +100,7 @@ export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, Record<string, unkn
   'skins.loadout': skinsLoadout,
   'skins.invalidate': skinsInvalidate,
   'skins.stattrak': skinsStattrak,
+  'movement.record': movementRecord,
   'event.player_connect': eventPlayerConnect,
   'event.player_disconnect': eventPlayerDisconnect,
   'event.player_team': eventPlayerTeam,

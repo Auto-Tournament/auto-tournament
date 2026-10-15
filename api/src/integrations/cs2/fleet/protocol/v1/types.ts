@@ -612,6 +612,20 @@ export interface SkinsStattrakPayload {
   increments: { steamid64: U64s; defindex: number; kills: number }[];
 }
 
+/** Server -> platform (reliable): a finished surf / bhop / kz run (Ready Up movement plugin). */
+export interface MovementRecordPayload {
+  map: string;
+  mode: 'surf' | 'bhop' | 'kz';
+  /** 0 = the map run, N = bonus N. */
+  course: number;
+  steamid64: U64s;
+  name: string;
+  time_ms: number;
+  teleports?: number;
+  /** Unix seconds. */
+  finished_at: number;
+}
+
 // --- Demo streaming (FLEET.md §12.2, §12.4) -------------------------------
 
 /** Server -> platform (ephemeral): a demo that streams while it records; asks where to resume. */
@@ -872,6 +886,7 @@ export interface FleetMessages {
   'skins.loadout': SkinsLoadoutPayload;
   'skins.invalidate': SkinsInvalidatePayload;
   'skins.stattrak': SkinsStattrakPayload;
+  'movement.record': MovementRecordPayload;
   'event.player_connect': FleetEventPayload<FleetEventData['player_connect']>;
   'event.player_disconnect': FleetEventPayload<FleetEventData['player_disconnect']>;
   'event.player_team': FleetEventPayload<FleetEventData['player_team']>;
@@ -936,6 +951,7 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
     'server.drain': P2S_RELIABLE,
     'server.undrain': P2S_RELIABLE,
     'skins.stattrak': S2P_RELIABLE,
+    'movement.record': S2P_RELIABLE,
     'event.player_connect': S2P_RELIABLE,
     'event.player_disconnect': S2P_RELIABLE,
     'event.player_team': S2P_RELIABLE,

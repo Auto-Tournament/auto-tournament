@@ -27,6 +27,7 @@ import demoAnalysisRoutes from './demoAnalysis';
 import demoImportRoutes from './demoImport';
 import matchPageRoutes from './matchPage';
 import leaderboardRoutes from './leaderboards';
+import movementRoutes from './movement';
 import radarRoutes from './radars';
 import highlightRoutes from './highlights';
 import teamProfileRoutes from './teamProfile';
@@ -156,6 +157,13 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: leaderboardRoutes,
     title: 'Leaderboards',
     description: 'Players ranked by rating, ADR, K/D, headshots, opening duels, clutches and KAST.',
+  },
+  {
+    // Public: surf, bhop and kz records from Ready Up's movement plugin.
+    prefix: '/api/game/cs2',
+    router: movementRoutes,
+    title: 'Movement records',
+    description: "Surf, bhop and kz times: each player's best per map and course, across the servers.",
   },
   {
     // A player's clips are public; the recorder's routes take an API token.

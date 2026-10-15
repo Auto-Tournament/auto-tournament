@@ -1589,4 +1589,27 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_fleet_hosts ADD COLUMN IF NOT EXISTS public_address TEXT;
     `,
   },
+  {
+    // Surf / bhop / kz records (movement/records.ts): each player's best per map,
+    // mode and course (0 = the map run, N = bonus N), from Ready Up's movement.record.
+    id: '058-movement-records',
+    up: `
+      CREATE TABLE IF NOT EXISTS cs2_movement_records (
+        map TEXT NOT NULL,
+        mode TEXT NOT NULL,
+        course INTEGER NOT NULL DEFAULT 0,
+        steamid64 TEXT NOT NULL,
+        name TEXT NOT NULL DEFAULT '',
+        time_ms INTEGER NOT NULL,
+        teleports INTEGER NOT NULL DEFAULT 0,
+        finished_at BIGINT NOT NULL,
+        server_id TEXT,
+        runs INTEGER NOT NULL DEFAULT 1,
+        updated_at BIGINT NOT NULL,
+        PRIMARY KEY (map, mode, course, steamid64)
+      );
+      CREATE INDEX IF NOT EXISTS cs2_movement_records_board
+        ON cs2_movement_records(map, mode, course, time_ms);
+    `,
+  },
 ];
