@@ -201,6 +201,7 @@ export const COMPONENT_SLOTS = [
   'teamAdminPanel',
   'rosterMemberStatus',
   'adminGlobalWarning',
+  'tournamentRulesView',
   'tournamentStart.confirmView',
   'tournamentStart.failureView',
   'tournamentStart.preflight.view',
