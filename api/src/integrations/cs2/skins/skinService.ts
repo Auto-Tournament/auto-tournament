@@ -1134,13 +1134,15 @@ export const skinService = {
         ...config.modeChances,
       },
       tournamentRewards: config.tournamentRewards
-        ? config.rewards.filter((r) => r.mode !== 'none').map((r) => ({
-            place: r.place,
-            mode: r.mode,
-            rarity: r.rarity ?? null,
-            weapon: r.weapon ?? null,
-            name: r.name ?? null,
-          }))
+        ? config.rewards
+            .filter((r) => r.mode !== 'none')
+            .map((r) => ({
+              place: r.place,
+              mode: r.mode,
+              rarity: r.rarity ?? null,
+              weapon: r.weapon ?? null,
+              name: r.name ?? null,
+            }))
         : [],
     };
   },
