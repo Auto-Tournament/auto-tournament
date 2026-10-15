@@ -67,7 +67,7 @@ export function ShuffleJoin({
   steamId: string | null;
   /** Sign-up is open now. */
   open: boolean;
-  /** The tournament has started: no leaving; joining puts you in the next round's draw. */
+  /** The tournament has started: joining or leaving counts from the next round's draw. */
   started: boolean;
   /** How many players it takes, when capped. */
   spots: number | null;
@@ -76,7 +76,7 @@ export function ShuffleJoin({
   const { t } = useTranslation();
   const { showError } = useSnackbar();
   const [busy, setBusy] = useState(false);
-  const joined = !!steamId && players.some((p) => p.steamId === steamId);
+  const joined = !!steamId && players.some((p) => p.steamId === steamId && !p.left);
   const round = useShuffleRound(tournamentId, started);
   const roundNo = round?.round ?? null;
   const myMatch =
@@ -175,7 +175,7 @@ export function ShuffleJoin({
               </Button>
             )
           : joined
-            ? !started && (
+            ? !finished && (
                 <Button
                   variant="outlined"
                   color="inherit"
@@ -333,12 +333,14 @@ export function ShuffleJoin({
                     sx={{
                       fontSize: '0.75rem',
                       fontWeight: 600,
-                      color: sittingOut.has(p.steamId) ? color.muted : color.accent,
+                      color: p.left || sittingOut.has(p.steamId) ? color.muted : color.accent,
                     }}
                   >
-                    {sittingOut.has(p.steamId)
-                      ? t('shuffleJoin.tagSittingOut')
-                      : t('shuffleJoin.tagPlaying')}
+                    {p.left
+                      ? t('shuffleJoin.tagLeft')
+                      : sittingOut.has(p.steamId)
+                        ? t('shuffleJoin.tagSittingOut')
+                        : t('shuffleJoin.tagPlaying')}
                   </Typography>
                 )}
               </Box>

@@ -710,6 +710,7 @@ export function getSchemaSQL(): string {
       tournament_id INTEGER NOT NULL DEFAULT 1,
       player_id TEXT NOT NULL,
       registered_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      left_at INTEGER,
       PRIMARY KEY (tournament_id, player_id),
       FOREIGN KEY (tournament_id) REFERENCES tournament(id) ON DELETE CASCADE,
       FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE

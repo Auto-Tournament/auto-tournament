@@ -1182,6 +1182,7 @@
     "roundOf": "Runde {{round}} av {{total}}",
     "roundsCount_one": "{{count}} runde",
     "roundsCount_other": "{{count}} runder",
-    "now": "Nå"
+    "now": "Nå",
+    "tagLeft": "Gått"
   }
 }

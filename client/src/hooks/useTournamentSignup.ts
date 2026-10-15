@@ -60,6 +60,8 @@ export interface ShufflePlayer {
   name: string;
   avatar: string | null;
   joinedAt: number;
+  /** Left a running shuffle (not drawn again). */
+  left?: boolean;
 }
 
 export interface TournamentSignupState {
