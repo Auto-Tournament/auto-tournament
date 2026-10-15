@@ -79,6 +79,8 @@ import type { HelloPayload, MapStats, MatchPhase, MatchState, Score } from './pr
 import { fleetChanged } from './adminTopics';
 
 const CHECK_MS = Number(process.env.FLEET_FAILOVER_CHECK_MS) || 10_000;
+/** How long a server that came back without its match has to report it (restored locally). */
+const SERVER_BACK_GRACE_MS = Number(process.env.FLEET_SERVER_BACK_GRACE_MS ?? 8_000);
 
 /** Who auto-failover acts as in the records. */
 export const FAILOVER_PLATFORM_ACTOR = 'platform:auto-failover';
@@ -1061,6 +1063,11 @@ async function onServerBack(fleetServerId: string, hello: HelloPayload): Promise
 
   const held = hello.state as { match_id?: unknown } | null | undefined;
   if (held && typeof held.match_id === 'string') return;
+  // Ready Up says hello before it restores a match it kept locally (it reports the match a
+  // moment later): only a server still without it after the grace lost it. Acting on the hello
+  // re-sent a freshly loaded final as a failover resume (no ready-up, live without .r, 2026-10-15).
+  const helloAt = nowS();
+  await new Promise((resolve) => setTimeout(resolve, SERVER_BACK_GRACE_MS));
   const rows = await db.queryAsync<{
     match_slug: string;
     epoch: number;
@@ -1073,6 +1080,8 @@ async function onServerBack(fleetServerId: string, hello: HelloPayload): Promise
   );
   for (const row of rows) {
     const slug = row.match_slug;
+    const reported = await liveStateStore.getLiveState(slug);
+    if (reported && reported.epoch === Number(row.epoch) && reported.updatedAt >= helloAt) continue;
     const open = await activeProposal(slug);
     if (open?.status === 'moving') continue;
     if (open)
