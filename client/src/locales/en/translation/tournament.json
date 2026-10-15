@@ -557,7 +557,9 @@
         }
       },
       "teams": {
-        "shuffleBeforeCreate": "Players sign up after you create the tournament. Come back to this step to choose them."
+        "shuffleBeforeCreate": "Players sign up after you create the tournament. Come back to this step to choose them.",
+        "shuffleSelfSignup": "Players join on their own",
+        "shuffleSelfSignupHelp": "They sign up with Join on the tournament page while this is on; you can still add players here."
       },
       "maps": {
         "vetoTitle": "Veto",

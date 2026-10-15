@@ -191,8 +191,9 @@ function rulesLine(cs2: Cs2TournamentSettings, ctx: TournamentSetupContext, t: T
           winRounds: Math.floor(cs2.maxRounds / 2) + 1,
         });
   const fill =
-    (cs2.fillTeamsWithBots === true ? ` · ${t('tournament.botFill.label')}` : '') +
-    (cs2.esportsMode === true ? ` · ${t('tournament.esportsMode.label')}` : '');
+    // CS2's own strings: the caller's t is core's (the review step showed the raw key).
+    (cs2.fillTeamsWithBots === true ? ` · ${t('tournament.botFill.label', { ns: 'cs2' })}` : '') +
+    (cs2.esportsMode === true ? ` · ${t('tournament.esportsMode.label', { ns: 'cs2' })}` : '');
   return `${rounds} · ${overtime}${fill}`;
 }
 
