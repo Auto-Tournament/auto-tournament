@@ -15,6 +15,8 @@ type ShowSnackbarOptions = {
    * When true, the snackbar will stay on screen until it is programmatically closed.
    */
   persist?: boolean;
+  /** How long it stays before it hides itself (default 6 s; ignored with `persist`). */
+  autoHideMs?: number;
   /**
    * Optional stable key so callers can update/close a specific snackbar.
    */
@@ -157,7 +159,7 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
       return enqueueSnackbar(msg, {
         variant,
         persist: options?.persist === true,
-        autoHideDuration: options?.persist === true ? undefined : 6000,
+        autoHideDuration: options?.persist === true ? undefined : (options?.autoHideMs ?? 6000),
         key: options?.key,
         onClose: options?.onClose ? () => options.onClose?.() : undefined,
         anchorOrigin: {

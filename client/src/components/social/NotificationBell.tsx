@@ -73,6 +73,9 @@ export function NotificationBell({ viewerId }: { viewerId: string }) {
   React.useEffect(
     () =>
       onNewNotice((notice) => {
+        // A system notification only for what needs the player now (their match, its veto,
+        // the start, a party invite); a clip or a friend request waits in the bell.
+        if (!isUrgentNotice(notice)) return;
         const said = describeNotice(notice, t, viewerId);
         const to = said.to ?? (notice.kind === 'party_invite' ? paths.play : paths.notifications);
         browserNotify({
@@ -223,4 +226,20 @@ export function NotificationBell({ viewerId }: { viewerId: string }) {
       </Popover>
     </>
   );
+}
+
+const URGENT_TOURNAMENT_EVENTS = new Set([
+  'match_ready',
+  'veto_turn',
+  'starts_soon',
+  'started',
+  'check_in',
+]);
+
+/** Whether a notice is worth a system notification (see the effect above). */
+function isUrgentNotice(notice: { kind: string; data?: unknown }): boolean {
+  if (notice.kind === 'party_invite') return true;
+  if (notice.kind !== 'tournament') return false;
+  const event = (notice.data as { event?: unknown } | null | undefined)?.event;
+  return typeof event === 'string' && URGENT_TOURNAMENT_EVENTS.has(event);
 }
