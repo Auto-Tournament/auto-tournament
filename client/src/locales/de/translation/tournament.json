@@ -1156,6 +1156,21 @@
     "count_one": "{{count}} Spieler dabei",
     "count_other": "{{count}} Spieler dabei",
     "countOf_one": "{{count}} von {{spots}} Spielern dabei",
-    "countOf_other": "{{count}} von {{spots}} Spielern dabei"
+    "countOf_other": "{{count}} von {{spots}} Spielern dabei",
+    "playingTitle": "You're playing round {{round}}",
+    "playingBody": "Your team this round: {{team}}. Open the match to connect.",
+    "sittingOutTitle": "You sit out round {{round}}",
+    "sittingOutBody": "There aren't enough players for every team this round. You're in the draw for round {{next}}, and the ones who played most sit out first.",
+    "goToMatch": "Go to match",
+    "tagPlaying": "Playing",
+    "tagSittingOut": "Sitting out",
+    "roundHeading": "Round {{round}}",
+    "versus": "vs",
+    "sittingOutList": "Sitting out: {{names}}",
+    "status": {
+      "live": "Live",
+      "done": "Done",
+      "waiting": "Starting"
+    }
   }
 }

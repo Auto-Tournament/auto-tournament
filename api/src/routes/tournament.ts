@@ -337,6 +337,61 @@ router.get('/:id/bracket', async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/tournament/:id/shuffle-round
+ * A shuffle tournament's current round (public, like the bracket): who plays in
+ * which match and who sits it out, so the overview can tell each player.
+ * { round, matches: [{ slug, status, teams: [{ name, steamIds }] }], sittingOut: steamIds }
+ */
+router.get('/:id/shuffle-round', async (req: Request, res: Response) => {
+  try {
+    const tournamentId = await readableTournamentId(req.params.id);
+    if (tournamentId === null)
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
+    const top = await db.queryOneAsync<{ round: number | null }>(
+      'SELECT MAX(round) AS round FROM matches WHERE tournament_id = ?',
+      [tournamentId]
+    );
+    const round = top?.round ?? null;
+    if (round === null)
+      return res.json({ success: true, round: null, matches: [], sittingOut: [] });
+    const rows = await db.queryAsync<{
+      slug: string;
+      status: string;
+      t1_name: string | null;
+      t1_players: string | null;
+      t2_name: string | null;
+      t2_players: string | null;
+    }>(
+      `SELECT m.slug, m.status, t1.name AS t1_name, t1.players AS t1_players,
+              t2.name AS t2_name, t2.players AS t2_players
+         FROM matches m
+         LEFT JOIN teams t1 ON t1.id = m.team1_id
+         LEFT JOIN teams t2 ON t2.id = m.team2_id
+        WHERE m.tournament_id = ? AND m.round = ?
+        ORDER BY m.slug`,
+      [tournamentId, round]
+    );
+    const ids = (json: string | null) =>
+      (JSON.parse(json || '[]') as Array<{ steamId: string }>).map((p) => p.steamId);
+    const matches = rows.map((r) => ({
+      slug: r.slug,
+      status: r.status,
+      teams: [
+        { name: r.t1_name, steamIds: ids(r.t1_players) },
+        { name: r.t2_name, steamIds: ids(r.t2_players) },
+      ],
+    }));
+    const playing = new Set(matches.flatMap((m) => m.teams.flatMap((t) => t.steamIds)));
+    const registered = await getRegisteredPlayers(tournamentId);
+    const sittingOut = registered.map((p) => p.id).filter((id) => !playing.has(id));
+    return res.json({ success: true, round, matches, sittingOut });
+  } catch (error) {
+    log.error('Error reading the shuffle round', { error });
+    return res.status(500).json({ success: false, error: 'Could not read the round' });
+  }
+});
+
+/**
  * GET /api/tournament/:id/pause
  * Whether the bracket is paused (public: the bracket shows it): { pausedAt, reason, resumeAt }.
  */
