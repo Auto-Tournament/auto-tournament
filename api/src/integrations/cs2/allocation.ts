@@ -71,8 +71,8 @@ export type ServerPoolEntry = {
     | null;
 };
 
-/** Ready Up's series-end kick delay when its server settings name none (match_end.h). */
-const READY_UP_KICK_DELAY_DEFAULT = 30;
+/** Ready Up's series-end kick delay when its server settings name none (match_end.cpp, 90 s since 0.1.0-beta.57). */
+const READY_UP_KICK_DELAY_DEFAULT = 90;
 /** The longest kick delay the server settings allow (fleet/push/settings.ts). */
 const KICK_DELAY_MAX_SECONDS = 3600;
 
@@ -120,7 +120,7 @@ export class Cs2ServerPool {
   /**
    * Seconds a server sits out after its match ends: the series-end kick delay Ready Up uses
    * (its server settings, `server.config.series_end_kick_delay`, the longest of the three
-   * cases; Ready Up's default is 30 s each), plus 15 s for the kick and reset. Simulation
+   * cases; Ready Up's default is 90 s each), plus 15 s for the kick and reset. Simulation
    * (bots only), or a kick delay of 0: none. The match-rules page had a second copy of this
    * value that Ready Up never read (Vikunja #355).
    */
