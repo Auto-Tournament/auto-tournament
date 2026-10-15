@@ -557,7 +557,9 @@
         }
       },
       "teams": {
-        "shuffleBeforeCreate": "Spillerne melder seg på etter at du har opprettet turneringen. Kom tilbake til dette steget for å velge dem."
+        "shuffleBeforeCreate": "Spillerne melder seg på etter at du har opprettet turneringen. Kom tilbake til dette steget for å velge dem.",
+        "shuffleSelfSignup": "Spillere melder seg på selv",
+        "shuffleSelfSignupHelp": "De melder seg på med «Bli med» på turneringssiden mens dette er på. Du kan fortsatt legge til spillere her."
       },
       "maps": {
         "vetoTitle": "Veto",

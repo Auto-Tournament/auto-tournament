@@ -1,7 +1,16 @@
 import { pageTitle } from '../utils/pageTitle';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+} from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { TournamentLive } from '../components/tournament/TournamentLive';
@@ -11,10 +20,7 @@ import {
   EventPageSettingsCard,
   type EventPageFields,
 } from '../components/tournament/EventPageSettingsCard';
-import {
-  DEFAULT_SIGNUP,
-  signupSettingsPatch,
-} from '../components/tournament/setup/SignupSettings';
+import { DEFAULT_SIGNUP, signupSettingsPatch } from '../components/tournament/setup/SignupSettings';
 import {
   TournamentSetup,
   type SetupFormHandlers,
@@ -498,8 +504,7 @@ const Tournament: React.FC = () => {
       // A draft saved for one game can hold a step the next game does not
       // have, so the bound is that game's own list.
       const stepCount = setupStepsFor(values.game ?? DEFAULT_FORM.game).length;
-      const validStep = (n: unknown) =>
-        typeof n === 'number' && n >= 0 && n < stepCount ? n : 0;
+      const validStep = (n: unknown) => (typeof n === 'number' && n >= 0 && n < stepCount ? n : 0);
       setActiveStep(validStep(step));
       setFurthestStep(Math.max(validStep(step), validStep(savedFurthest)));
     } catch (error) {
@@ -811,9 +816,14 @@ const Tournament: React.FC = () => {
       if (response.success) {
         // The shuffle endpoint takes no settings: send the event page drafted
         // before creation as a settings update.
-        if (!tournament && !isEventPageEmpty(form.eventPage)) {
+        // Self sign-up (Teams and sign-up): players join from the tournament page.
+        const signupOpen = !tournament && form.signup.registrationOpen;
+        if (!tournament && (signupOpen || !isEventPageEmpty(form.eventPage))) {
           try {
-            await updateSettings({ ...form.eventPage });
+            await updateSettings({
+              ...(isEventPageEmpty(form.eventPage) ? {} : form.eventPage),
+              ...(signupOpen ? { registrationOpen: true } : {}),
+            });
           } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             showError(t('tournament.eventPage.saveError', { message }));
@@ -1251,7 +1261,9 @@ const Tournament: React.FC = () => {
         aria-labelledby="new-tournament-dialog-title"
         data-testid="new-tournament-dialog"
       >
-        <DialogTitle id="new-tournament-dialog-title">{t('tournament.archiveDialog.title')}</DialogTitle>
+        <DialogTitle id="new-tournament-dialog-title">
+          {t('tournament.archiveDialog.title')}
+        </DialogTitle>
         <DialogContent sx={{ display: 'grid', gap: 1.5 }}>
           <Typography variant="body2">
             {t('tournament.archiveDialog.message', { name: tournament?.name ?? '' })}
@@ -1275,7 +1287,12 @@ const Tournament: React.FC = () => {
           >
             {t('tournament.archiveDialog.delete')}
           </Button>
-          <Button variant="contained" onClick={() => void handleArchive()} disabled={saving} data-testid="new-tournament-archive">
+          <Button
+            variant="contained"
+            onClick={() => void handleArchive()}
+            disabled={saving}
+            data-testid="new-tournament-archive"
+          >
             {t('tournament.archiveDialog.confirm')}
           </Button>
         </DialogActions>
