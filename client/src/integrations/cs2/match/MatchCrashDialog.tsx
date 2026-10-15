@@ -2,7 +2,8 @@
  * "Looks like the match server crashed": on any page, for a player whose live
  * match lost its server (failover, FLEET.md §11). It follows the recovery
  * (bringing the server back, moving the match) and, once the match is back,
- * gives the Reconnect button for the new address.
+ * gives the Reconnect button for the new address. It closes by itself once the
+ * player is on the server again.
  */
 import { useCallback, useEffect, useState } from 'react';
 import { Box, Button, CircularProgress, Dialog, Typography } from '@mui/material';
@@ -112,13 +113,35 @@ export function MatchCrashDialog() {
     };
   }, [socket, isPlayerAuthenticated, mySlug, loadServer]);
 
-  const close = () => {
+  const close = useCallback(() => {
     if (state && movedAt) markSeen(state.matchSlug, movedAt);
     setState(null);
-  };
+  }, [state, movedAt]);
+
+  // Back on the server: the notice has done its job (it stayed up after the player reconnected,
+  // 2026-10-15). Checked on every match update (a player connecting is one) and every 10 s.
+  const back = state?.phase === 'back';
+  useEffect(() => {
+    if (!back) return;
+    let live = true;
+    const check = async () => {
+      const me = await api
+        .get<{ success: boolean; connection?: string }>('/api/players/me/match-status')
+        .catch(() => null);
+      if (live && me?.success && me.connection === 'connected') close();
+    };
+    const timer = window.setInterval(() => void check(), 10_000);
+    const onUpdate = () => void check();
+    socket?.on('match:update', onUpdate);
+    void check();
+    return () => {
+      live = false;
+      window.clearInterval(timer);
+      socket?.off('match:update', onUpdate);
+    };
+  }, [back, socket, close]);
 
   if (!state) return null;
-  const back = state.phase === 'back';
   return (
     <Dialog
       open
