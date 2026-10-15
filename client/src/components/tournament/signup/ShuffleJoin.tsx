@@ -11,7 +11,8 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../../utils/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { matchPagePath, paths } from '../../../paths';
-import { getMapDisplayName } from '../../../constants/maps';
+import { getMapDisplayName, getMapThumbUrl } from '../../../constants/maps';
+import { useAuth } from '../../../contexts/AuthContext';
 import { fontDisplay, radii, tokens } from '../../../theme/tokens';
 import type { ShufflePlayer } from '../../../hooks/useTournamentSignup';
 import { Face } from './PlayerFace';
@@ -78,6 +79,27 @@ export function ShuffleJoin({
   const [busy, setBusy] = useState(false);
   const joined = !!steamId && players.some((p) => p.steamId === steamId && !p.left);
   const round = useShuffleRound(tournamentId, started);
+  // An admin marks players out (gone home) or back in while it runs: the next draw follows.
+  const { isAuthenticated: isAdmin } = useAuth();
+  const [marking, setMarking] = useState<string | null>(null);
+  const markOut = async (steamId: string, out: boolean) => {
+    setMarking(steamId);
+    try {
+      if (out) {
+        const keep = players.filter((p) => !p.left && p.steamId !== steamId).map((p) => p.steamId);
+        await api.put(`/api/tournament/${tournamentId}/set-players`, { playerIds: keep });
+      } else {
+        await api.post(`/api/tournament/${tournamentId}/register-players`, {
+          playerIds: [steamId],
+        });
+      }
+      await onChange();
+    } catch (error) {
+      showError((error as Error).message);
+    } finally {
+      setMarking(null);
+    }
+  };
   const roundNo = round?.round ?? null;
   const myMatch =
     steamId && round
@@ -208,7 +230,14 @@ export function ShuffleJoin({
           </Typography>
           <Box
             component="ol"
-            sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, m: 0, p: 0, listStyle: 'none' }}
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 9rem), 1fr))',
+              gap: 1,
+              m: 0,
+              p: 0,
+              listStyle: 'none',
+            }}
           >
             {round.maps.map((map, index) => {
               const n = index + 1;
@@ -219,30 +248,66 @@ export function ShuffleJoin({
                   component="li"
                   key={`${n}-${map}`}
                   aria-current={current ? 'step' : undefined}
-                  data-testid={current ? 'shuffle-timeline-current' : undefined}
+                  data-testid={current ? 'shuffle-timeline-current' : 'shuffle-timeline-map'}
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.75,
-                    px: 1.5,
-                    py: 0.75,
-                    borderRadius: radii.pill,
-                    border: 1,
-                    borderColor: current ? color.accent : 'divider',
-                    bgcolor: current ? 'background.paper' : 'transparent',
-                    color: done ? 'text.secondary' : 'text.primary',
-                    fontWeight: current ? 700 : 500,
+                    position: 'relative',
+                    aspectRatio: '16 / 9',
+                    maxWidth: '100%',
+                    borderRadius: radii.md,
+                    overflow: 'hidden',
+                    border: 2,
+                    borderColor: current ? color.accent : 'transparent',
+                    bgcolor: 'background.paper',
                   }}
                 >
-                  <Box component="span" sx={{ fontVariantNumeric: 'tabular-nums' }}>
-                    {done ? '\u2713' : n}
-                  </Box>
-                  <Box component="span">{getMapDisplayName(map)}</Box>
-                  {current && (
-                    <Box component="span" sx={{ color: color.accent, fontSize: '0.75rem' }}>
-                      {t('shuffleJoin.now')}
+                  <Box
+                    component="img"
+                    src={getMapThumbUrl(map)}
+                    alt=""
+                    loading="lazy"
+                    sx={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      filter: done ? 'grayscale(1) brightness(0.55)' : 'none',
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      inset: 0,
+                      p: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      color: '#fff',
+                      background: 'linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.05) 60%)',
+                    }}
+                  >
+                    <Box
+                      component="span"
+                      sx={{
+                        alignSelf: 'flex-start',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        px: 0.75,
+                        borderRadius: radii.pill,
+                        bgcolor: current ? color.accent : 'rgba(0,0,0,0.55)',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {current
+                        ? t('shuffleJoin.now')
+                        : done
+                          ? `\u2713 ${t('shuffleJoin.roundShort', { round: n })}`
+                          : t('shuffleJoin.roundShort', { round: n })}
                     </Box>
-                  )}
+                    <Box component="span" sx={{ fontWeight: 700 }}>
+                      {getMapDisplayName(map)}
+                    </Box>
+                  </Box>
                 </Box>
               );
             })}
@@ -327,6 +392,19 @@ export function ShuffleJoin({
                 >
                   {p.name}
                 </Typography>
+                {isAdmin && started && round?.finished !== true && (
+                  <Button
+                    size="small"
+                    variant="text"
+                    color="inherit"
+                    disabled={marking === p.steamId}
+                    onClick={() => void markOut(p.steamId, !p.left)}
+                    data-testid="shuffle-mark-out"
+                    sx={{ minWidth: 0, px: 1, fontSize: '0.75rem', color: 'text.secondary' }}
+                  >
+                    {p.left ? t('shuffleJoin.markIn') : t('shuffleJoin.markOut')}
+                  </Button>
+                )}
                 {roundNo !== null && (
                   <Typography
                     component="span"
