@@ -102,6 +102,21 @@ export function Cs2TournamentMapsStep({
           </Typography>
         </Box>
       )}
+      {/* Shuffle has no veto, but wingman's one-click setup applies all the same (a 2v2
+          shuffle on the wingman maps: new teams each round). */}
+      {type === 'shuffle' && (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', mb: 2 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            disabled={disabled}
+            onClick={wingmanPreset}
+            data-testid="tournament-wingman-preset"
+          >
+            {t('tournament.wingmanPreset.button')}
+          </Button>
+        </Box>
+      )}
       <MapPoolStep
         format={format}
         type={type}
