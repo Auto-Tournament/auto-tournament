@@ -1130,5 +1130,17 @@
     "vetoOpening": "Veto opening",
     "matchIn": "Match in",
     "matchLoading": "Match loading"
+  },
+  "advance": {
+    "title": "Świetnie, nadal gracie dalej!",
+    "opponent": "Następny rywal: {{opponent}}.",
+    "feederTitle": "Wasz następny rywal wyłoni się z meczu",
+    "vs": "kontra",
+    "tbd": "Do ustalenia",
+    "feederNotStarted": "Ten mecz jeszcze się nie zaczął.",
+    "feederMinutes_one": "Zostało około {{count}} minuty.",
+    "feederMinutes_other": "Zostało około {{count}} minut.",
+    "feederAlmost": "Prawie koniec.",
+    "watch": "Oglądaj na żywo"
   }
 }

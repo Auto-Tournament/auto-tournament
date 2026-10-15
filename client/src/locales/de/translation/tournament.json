@@ -1128,5 +1128,17 @@
     "vetoOpening": "Veto opening",
     "matchIn": "Match in",
     "matchLoading": "Match loading"
+  },
+  "advance": {
+    "title": "Stark, ihr seid noch dabei!",
+    "opponent": "Als Nächstes: {{opponent}}.",
+    "feederTitle": "Euer nächster Gegner kommt aus",
+    "vs": "gegen",
+    "tbd": "Offen",
+    "feederNotStarted": "Dieses Match hat noch nicht begonnen.",
+    "feederMinutes_one": "Noch etwa {{count}} Minute.",
+    "feederMinutes_other": "Noch etwa {{count}} Minuten.",
+    "feederAlmost": "Gleich vorbei.",
+    "watch": "Live ansehen"
   }
 }
