@@ -126,16 +126,16 @@ test.describe.serial('Settings UI', () => {
 
       await page.goto('/manage/match-rules');
       await page.getByTestId('cs2-settings-demos-summary').click({ timeout: 30000 });
-      const hostname = page.getByTestId('at-hostname-format-input');
-      await expect(hostname).toBeVisible({ timeout: 15000 });
+      const delay = page.getByTestId('at-kick-delay-input');
+      await expect(delay).toBeVisible({ timeout: 15000 });
 
-      const value = `{TEAM1} v {TEAM2} ${Date.now()}`;
-      await hostname.fill(value);
-      await hostname.blur();
+      const value = 40 + (Date.now() % 50);
+      await delay.fill(String(value));
+      await delay.blur();
 
       await expect
-        .poll(async () => (await readSettings()).atHostnameFormat, {
-          message: 'hostname format to be saved',
+        .poll(async () => (await readSettings()).atSeriesEndKickDelayNoDemo, {
+          message: 'kick delay to be saved',
           timeout: 15000,
         })
         .toBe(value);
@@ -144,12 +144,12 @@ test.describe.serial('Settings UI', () => {
       await page.getByTestId('cs2-settings-reset-button').click();
       await page.getByTestId('cs2-settings-reset-confirm').click();
       await expect
-        .poll(async () => (await readSettings()).atHostnameFormat, {
-          message: 'hostname format to be reset',
+        .poll(async () => (await readSettings()).atSeriesEndKickDelayNoDemo, {
+          message: 'kick delay to be reset',
           timeout: 15000,
         })
         .not.toBe(value);
-      await expect(hostname).toHaveValue('{TEAM1} vs {TEAM2}');
+      await expect(delay).toHaveValue('30');
     }
   );
 });

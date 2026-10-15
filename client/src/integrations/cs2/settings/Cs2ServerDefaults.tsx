@@ -1,8 +1,10 @@
 /**
  * CS2's server defaults on its Settings tab: what the platform sends every
- * Ready Up server with a match (chat prefixes, knife round, demos,
- * ready-up, pauses, side selection, GG and forfeit), and in development the
- * plugin's debug chat and match simulation.
+ * Ready Up server with a match (demos, ready-up, pauses, side selection, GG
+ * and forfeit, the end-of-series kick delay), and in development match
+ * simulation. Settings only MatchZy Enhanced read (chat prefixes, hostname
+ * and demo name formats, autostart mode, .stop) were removed (2026-10-15):
+ * Ready Up never got them.
  *
  * These were core Settings' "Matches & Ratings", "Advanced" and "Developer"
  * tabs until the module split. They are the `at_*` and simulation keys CS2
@@ -46,10 +48,6 @@ import {
 type Flag = 0 | 1 | null;
 
 export interface Cs2DefaultsValues {
-  atChatPrefix: string;
-  atAdminChatPrefix: string;
-  atKnifeEnabledDefault: boolean;
-  atDebugChatEnabled: boolean;
   highlightsWatermark: boolean;
   highlightsPerPlayer: number | null;
   highlightsResolution: number;
@@ -58,26 +56,15 @@ export interface Cs2DefaultsValues {
   highlightsMusic: string;
   /** Keep each clip's clean twin (the API's highlights_keep_clean). */
   highlightsKeepClean: boolean;
-  atAutostartMode: 0 | 1 | 2;
   atMinimumReadyRequired: number;
   atAllowForceReady: boolean;
-  atKickWhenNoMatchLoaded: boolean;
-  atWhitelistEnabledDefault: boolean;
   atPauseAfterRestore: boolean;
   atJoinPassword: boolean;
   atAutostartAfterMinutes: number;
   vetoTurnSeconds: number;
   vetoFirstTurnSeconds: number;
   matchBreakMinutes: number;
-  atStopCommandAvailable: boolean;
-  atStopCommandNoDamage: boolean;
-  atUsePauseCommandForTacticalPause: boolean;
-  atHostnameFormat: string;
-  atDemoPath: string;
-  atDemoNameFormat: string;
   atSeriesEndKickDelayNoDemo: number;
-  atSeriesEndKickDelayDemoNoUpload: number;
-  atSeriesEndKickDelayDemoUpload: number;
   atAutoreadyEnabled: Flag;
   atBothTeamsUnpauseRequired: Flag;
   atPauseOnDisconnect: Flag;
@@ -99,36 +86,21 @@ type Key = keyof Cs2DefaultsValues;
 
 /** What the page shows for a field the API has no value for (the plugin's own default). */
 const DEFAULTS: Cs2DefaultsValues = {
-  atChatPrefix: '[{Green}MAT{Default}]',
-  atAdminChatPrefix: '[{Red}ADMIN{Default}]',
-  atKnifeEnabledDefault: true,
-  atDebugChatEnabled: false,
   highlightsWatermark: true,
   highlightsPerPlayer: 6,
   highlightsResolution: 1080,
   highlightsFps: 60,
   highlightsMusic: '',
   highlightsKeepClean: true,
-  atAutostartMode: 1,
   atMinimumReadyRequired: 0,
   atAllowForceReady: true,
-  atKickWhenNoMatchLoaded: false,
-  atWhitelistEnabledDefault: false,
   atPauseAfterRestore: true,
   atJoinPassword: false,
   atAutostartAfterMinutes: 0,
   vetoTurnSeconds: 45,
   vetoFirstTurnSeconds: 120,
   matchBreakMinutes: 5,
-  atStopCommandAvailable: false,
-  atStopCommandNoDamage: false,
-  atUsePauseCommandForTacticalPause: false,
-  atHostnameFormat: '{TEAM1} vs {TEAM2}',
-  atDemoPath: 'AutoTournamentCS2/',
-  atDemoNameFormat: '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}',
   atSeriesEndKickDelayNoDemo: 30,
-  atSeriesEndKickDelayDemoNoUpload: 30,
-  atSeriesEndKickDelayDemoUpload: 30,
   atAutoreadyEnabled: null,
   atBothTeamsUnpauseRequired: null,
   atPauseOnDisconnect: null,
@@ -149,11 +121,7 @@ const DEFAULTS: Cs2DefaultsValues = {
 const KEYS = Object.keys(DEFAULTS) as Key[];
 
 /** Only a development build shows (and so can change) these. */
-const DEV_KEYS: ReadonlySet<Key> = new Set<Key>([
-  'atDebugChatEnabled',
-  'simulateMatches',
-  'simulationTimescale',
-]);
+const DEV_KEYS: ReadonlySet<Key> = new Set<Key>(['simulateMatches', 'simulationTimescale']);
 
 /** The fields as `GET`/`PUT /api/settings` answer them, with the plugin defaults for the missing ones. */
 export function cs2DefaultsFrom(settings: Record<string, unknown> | undefined): Cs2DefaultsValues {
@@ -165,12 +133,9 @@ export function cs2DefaultsFrom(settings: Record<string, unknown> | undefined): 
   return values as unknown as Cs2DefaultsValues;
 }
 
-/** A field as `PUT /api/settings` takes it: the chat prefixes clear to null when empty. */
-function toRequest(key: Key, value: Cs2DefaultsValues[Key]): unknown {
-  if (typeof value !== 'string') return value;
-  const trimmed = value.trim();
-  if (key === 'atChatPrefix' || key === 'atAdminChatPrefix') return trimmed === '' ? null : trimmed;
-  return trimmed;
+/** A field as `PUT /api/settings` takes it. */
+function toRequest(_key: Key, value: Cs2DefaultsValues[Key]): unknown {
+  return typeof value === 'string' ? value.trim() : value;
 }
 
 /** Everything back to "not set", so servers use the plugin's (or the tournament's) defaults. */
@@ -180,7 +145,6 @@ function resetRequest(isDev: boolean): Record<string, unknown> {
     if (DEV_KEYS.has(key)) continue;
     body[key] = null;
   }
-  body.atDebugChatEnabled = false;
   if (isDev) body.simulateMatches = false;
   return body;
 }
@@ -329,55 +293,6 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
       </Typography>
 
       <Accordion sx={ACCORDION_SX}>
-        <AccordionSummary expandIcon={<CaretDownIcon size={24} />} sx={ACCORDION_SUMMARY_SX}>
-          <Box>
-            <Typography variant="h6" fontWeight={600}>
-              {t('settings.chatDefaults.title')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t('settings.chatDefaults.description')}
-            </Typography>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails sx={ACCORDION_DETAILS_SX}>
-          <Stack spacing={2}>
-            <TextField
-              label={t('settings.chatDefaults.chatPrefixLabel')}
-              value={vals.atChatPrefix}
-              onChange={(event) => update('atChatPrefix', event.target.value)}
-              onBlur={flush}
-              onKeyDown={onEnter}
-              helperText={t('settings.chatDefaults.chatPrefixHelper')}
-              fullWidth
-            />
-            <TextField
-              label={t('settings.chatDefaults.adminChatPrefixLabel')}
-              value={vals.atAdminChatPrefix}
-              onChange={(event) => update('atAdminChatPrefix', event.target.value)}
-              onBlur={flush}
-              onKeyDown={onEnter}
-              helperText={t('settings.chatDefaults.adminChatPrefixHelper')}
-              fullWidth
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={vals.atKnifeEnabledDefault}
-                  onChange={(event) => update('atKnifeEnabledDefault', event.target.checked)}
-                  color="primary"
-                  size="small"
-                />
-              }
-              label={t('settings.chatDefaults.knifeToggleLabel')}
-            />
-            <Typography variant="caption" color="text.secondary" display="block">
-              {t('settings.chatDefaults.knifeNote')}
-            </Typography>
-          </Stack>
-        </AccordionDetails>
-      </Accordion>
-
-      <Accordion sx={ACCORDION_SX}>
         <AccordionSummary
           expandIcon={<CaretDownIcon size={24} />}
           sx={ACCORDION_SUMMARY_SX}
@@ -409,43 +324,6 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
             <Divider />
 
             <Typography variant="subtitle1" fontWeight={600}>
-              {t('settings.atCore.demos.title')}
-            </Typography>
-            <TextField
-              label={t('settings.atCore.hostname.formatLabel')}
-              value={vals.atHostnameFormat}
-              onChange={(e) => update('atHostnameFormat', e.target.value)}
-              onBlur={flush}
-              onKeyDown={onEnter}
-              helperText={t('settings.atCore.hostname.formatHelper')}
-              fullWidth
-              size="small"
-              inputProps={{ 'data-testid': 'at-hostname-format-input' }}
-            />
-            <TextField
-              label={t('settings.atCore.demos.demoPathLabel')}
-              value={vals.atDemoPath}
-              onChange={(e) => update('atDemoPath', e.target.value)}
-              onBlur={flush}
-              onKeyDown={onEnter}
-              helperText={t('settings.atCore.demos.demoPathHelper')}
-              fullWidth
-              size="small"
-            />
-            <TextField
-              label={t('settings.atCore.demos.demoNameFormatLabel')}
-              value={vals.atDemoNameFormat}
-              onChange={(e) => update('atDemoNameFormat', e.target.value)}
-              onBlur={flush}
-              onKeyDown={onEnter}
-              helperText={t('settings.atCore.demos.demoNameFormatHelper')}
-              fullWidth
-              size="small"
-            />
-
-            <Divider />
-
-            <Typography variant="subtitle1" fontWeight={600}>
               {t('settings.atCore.seriesEnd.title')}
             </Typography>
             <Stack spacing={2}>
@@ -460,37 +338,7 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                 }}
                 onBlur={flush}
                 onKeyDown={onEnter}
-                inputProps={{ min: 0, max: 600 }}
-                size="small"
-                fullWidth
-              />
-              <TextField
-                label={t('settings.atCore.seriesEnd.kickDelayDemoNoUploadLabel')}
-                type="number"
-                value={vals.atSeriesEndKickDelayDemoNoUpload}
-                onChange={(e) => {
-                  const v = parseInt(e.target.value, 10);
-                  if (!Number.isFinite(v)) return;
-                  update('atSeriesEndKickDelayDemoNoUpload', v);
-                }}
-                onBlur={flush}
-                onKeyDown={onEnter}
-                inputProps={{ min: 0, max: 600 }}
-                size="small"
-                fullWidth
-              />
-              <TextField
-                label={t('settings.atCore.seriesEnd.kickDelayDemoUploadLabel')}
-                type="number"
-                value={vals.atSeriesEndKickDelayDemoUpload}
-                onChange={(e) => {
-                  const v = parseInt(e.target.value, 10);
-                  if (!Number.isFinite(v)) return;
-                  update('atSeriesEndKickDelayDemoUpload', v);
-                }}
-                onBlur={flush}
-                onKeyDown={onEnter}
-                inputProps={{ min: 0, max: 600 }}
+                inputProps={{ min: 0, max: 600, 'data-testid': 'at-kick-delay-input' }}
                 size="small"
                 fullWidth
               />
@@ -640,56 +488,6 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
               </Typography>
 
               <Stack spacing={2}>
-                <TextField
-                  select
-                  label={t('settings.atCore.expert.autostartMode.label')}
-                  value={vals.atAutostartMode}
-                  onChange={(e) => update('atAutostartMode', Number(e.target.value) as 0 | 1 | 2)}
-                  onBlur={flush}
-                  helperText={t('settings.atCore.expert.autostartMode.helper')}
-                  size="small"
-                  fullWidth
-                >
-                  <option value={0}>{t('settings.atCore.expert.autostartMode.options.0')}</option>
-                  <option value={1}>{t('settings.atCore.expert.autostartMode.options.1')}</option>
-                  <option value={2}>{t('settings.atCore.expert.autostartMode.options.2')}</option>
-                </TextField>
-
-                <Divider />
-
-                {/* Access / server lockdown */}
-                <Box>
-                  <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                    {t('settings.atCore.access.title')}
-                  </Typography>
-                  <Stack spacing={1}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={vals.atKickWhenNoMatchLoaded}
-                          onChange={(e) => update('atKickWhenNoMatchLoaded', e.target.checked)}
-                          color="primary"
-                          size="small"
-                        />
-                      }
-                      label={t('settings.atCore.access.kickWhenNoMatchLoaded')}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={vals.atWhitelistEnabledDefault}
-                          onChange={(e) => update('atWhitelistEnabledDefault', e.target.checked)}
-                          color="primary"
-                          size="small"
-                        />
-                      }
-                      label={t('settings.atCore.access.whitelistEnabledDefault')}
-                    />
-                  </Stack>
-                </Box>
-
-                <Divider />
-
                 {/* Admin tools */}
                 <Box>
                   <Typography variant="subtitle1" fontWeight={600} gutterBottom>
@@ -717,42 +515,6 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                         />
                       }
                       label={t('settings.atCore.adminTools.pauseAfterRestore')}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={vals.atStopCommandAvailable}
-                          onChange={(e) => update('atStopCommandAvailable', e.target.checked)}
-                          color="primary"
-                          size="small"
-                        />
-                      }
-                      label={t('settings.atCore.adminTools.stopCommandAvailable')}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={vals.atStopCommandNoDamage}
-                          onChange={(e) => update('atStopCommandNoDamage', e.target.checked)}
-                          color="primary"
-                          size="small"
-                          disabled={!vals.atStopCommandAvailable}
-                        />
-                      }
-                      label={t('settings.atCore.adminTools.stopCommandNoDamage')}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={vals.atUsePauseCommandForTacticalPause}
-                          onChange={(e) =>
-                            update('atUsePauseCommandForTacticalPause', e.target.checked)
-                          }
-                          color="primary"
-                          size="small"
-                        />
-                      }
-                      label={t('settings.atCore.adminTools.usePauseForTacticalPause')}
                     />
                   </Stack>
                 </Box>
@@ -1021,24 +783,6 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
             </Typography>
             <Typography variant="body2" color="text.secondary" mb={2}>
               {t('settings.developer.description')}
-            </Typography>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={vals.atDebugChatEnabled}
-                  onChange={(e) => {
-                    const newValue = e.target.checked;
-                    update('atDebugChatEnabled', newValue);
-                    void save({ atDebugChatEnabled: newValue });
-                  }}
-                  size="small"
-                  color="primary"
-                />
-              }
-              label={t('settings.developer.debugChat.label')}
-            />
-            <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-              {t('settings.developer.debugChat.description')}
             </Typography>
             <FormControlLabel
               control={

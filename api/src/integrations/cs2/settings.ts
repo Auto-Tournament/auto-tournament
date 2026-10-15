@@ -21,39 +21,22 @@ import {
   booleanRequest,
   normalizeFlag,
   normalizeInteger,
-  normalizeText,
   numberRequest,
-  stringRequest,
 } from '../../utils/settingFields';
 
 export type Cs2SettingKey =
   | 'simulate_matches'
   | 'simulation_timescale'
-  | 'at_chat_prefix'
-  | 'at_admin_chat_prefix'
-  | 'at_knife_enabled_default'
-  | 'at_debug_chat'
   // MatchZy Enhanced core defaults (persisted convars)
-  | 'at_autostart_mode'
   | 'at_minimum_ready_required'
   | 'at_allow_force_ready'
-  | 'at_kick_when_no_match_loaded'
-  | 'at_whitelist_enabled_default'
   | 'at_pause_after_restore'
   | 'at_join_password'
   | 'at_autostart_after_minutes'
   | 'at_veto_turn_seconds'
   | 'at_veto_first_turn_seconds'
   | 'at_match_break_minutes'
-  | 'at_stop_command_available'
-  | 'at_stop_command_no_damage'
-  | 'at_use_pause_command_for_tactical_pause'
-  | 'at_hostname_format'
-  | 'at_demo_path'
-  | 'at_demo_name_format'
   | 'at_series_end_kick_delay_no_demo'
-  | 'at_series_end_kick_delay_demo_no_upload'
-  | 'at_series_end_kick_delay_demo_upload'
   // MatchZy Enhanced v1.3.0 settings
   | 'at_autoready_enabled'
   | 'at_both_teams_unpause_required'
@@ -202,103 +185,19 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
       return undefined;
     },
   },
-  {
-    key: 'at_chat_prefix',
-    field: 'atChatPrefix',
-    order: 40,
-    schema: { type: 'string' },
-    normalize: normalizeText('MatchZy Enhanced chat prefix updated'),
-    applyRequest: stringRequest('atChatPrefix'),
-  },
-  {
-    key: 'at_admin_chat_prefix',
-    field: 'atAdminChatPrefix',
-    order: 50,
-    schema: { type: 'string' },
-    normalize: normalizeText('MatchZy Enhanced admin chat prefix updated'),
-    applyRequest: stringRequest('atAdminChatPrefix'),
-  },
-  {
-    ...flag('at_knife_enabled_default', 'atKnifeEnabledDefault', 60),
-    normalize: normalizeFlag('MatchZy Enhanced knife round default'),
-  },
   // order 70: the core's ratingsEnabled
-  {
-    ...flag('at_debug_chat', 'atDebugChatEnabled', 80),
-    normalize: normalizeFlag('MatchZy Enhanced debug chat'),
-  },
   // order 90: the core's allowSelfRegister
   integer('at_minimum_ready_required', 'atMinimumReadyRequired', 100, {
     min: 0,
     max: 10,
     message: 'at_minimum_ready_required must be 0-10',
   }),
-  integer(
-    'at_autostart_mode',
-    'atAutostartMode',
-    110,
-    { min: 0, max: 2, message: 'at_autostart_mode must be 0, 1, or 2' },
-    'a number (0-2)'
-  ),
-  // MatchZy Enhanced core defaults (booleans)
+  // Ready Up's ready / restore defaults (sent with every match)
   flag('at_allow_force_ready', 'atAllowForceReady', 120),
-  flag('at_kick_when_no_match_loaded', 'atKickWhenNoMatchLoaded', 130),
-  flag('at_whitelist_enabled_default', 'atWhitelistEnabledDefault', 140),
   flag('at_pause_after_restore', 'atPauseAfterRestore', 150),
   flag('at_join_password', 'atJoinPassword', 155),
-  flag('at_stop_command_available', 'atStopCommandAvailable', 160),
-  flag('at_stop_command_no_damage', 'atStopCommandNoDamage', 170),
-  flag('at_use_pause_command_for_tactical_pause', 'atUsePauseCommandForTacticalPause', 180),
-  // MatchZy Enhanced core defaults (strings)
-  {
-    key: 'at_hostname_format',
-    field: 'atHostnameFormat',
-    order: 190,
-    schema: { type: 'string' },
-    // An empty hostname format is a real choice, not an absent one: it is how
-    // MatchZy Enhanced is told to leave the server's own `hostname` alone. Every other
-    // setting folds "" to NULL and falls back to its default, which would make
-    // "don't touch my hostname" indistinguishable from "never configured".
-    keepEmpty: true,
-    normalize(trimmed) {
-      // The value is sent as `at_hostname_format "<value>"`, so an
-      // embedded quote would terminate the argument and produce a malformed
-      // command. Drop them on write, so what is stored is what is sent.
-      const sanitized = trimmed.replace(/"/g, '');
-      return {
-        value: sanitized,
-        message:
-          sanitized === ''
-            ? 'at_hostname_format cleared - servers keep their own hostname'
-            : `at_hostname_format updated to ${sanitized}`,
-      };
-    },
-    applyRequest: stringRequest('atHostnameFormat'),
-  },
-  {
-    key: 'at_demo_path',
-    field: 'atDemoPath',
-    order: 200,
-    schema: { type: 'string' },
-    normalize(trimmed) {
-      // MatchZy Enhanced expects a path relative to csgo/ and it must end with "/".
-      const normalized = trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
-      return { value: normalized, message: 'at_demo_path updated' };
-    },
-    applyRequest: stringRequest('atDemoPath'),
-  },
-  {
-    key: 'at_demo_name_format',
-    field: 'atDemoNameFormat',
-    order: 210,
-    schema: { type: 'string' },
-    normalize: normalizeText('at_demo_name_format updated'),
-    applyRequest: stringRequest('atDemoNameFormat'),
-  },
-  // MatchZy Enhanced core defaults (numbers)
+  // Seconds players stay on after a series before they are kicked (allocation.ts waits for it)
   kickDelay('at_series_end_kick_delay_no_demo', 'atSeriesEndKickDelayNoDemo', 220),
-  kickDelay('at_series_end_kick_delay_demo_no_upload', 'atSeriesEndKickDelayDemoNoUpload', 230),
-  kickDelay('at_series_end_kick_delay_demo_upload', 'atSeriesEndKickDelayDemoUpload', 240),
   // Minutes a loaded match waits in warmup before it starts, ready or not (0 = never).
   integer('at_autostart_after_minutes', 'atAutostartAfterMinutes', 245, {
     min: 0,
