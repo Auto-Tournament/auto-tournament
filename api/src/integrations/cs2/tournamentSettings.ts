@@ -347,8 +347,20 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
       : target === 'tournament'
         ? { ...TOURNAMENT_DEFAULTS }
         : {};
-    applyLayer(next, objectIn(body.settings, CS2_SETTINGS_KEY), target);
+    const layer = objectIn(body.settings, CS2_SETTINGS_KEY);
+    applyLayer(next, layer, target);
     applyLayer(next, body, target);
+    // The default segment count goes with the default overtime: a new tournament
+    // that turns overtime off and names no segments has none.
+    if (
+      !stored &&
+      target === 'tournament' &&
+      next.overtimeMode === 'disabled' &&
+      layer.overtimeSegments === undefined &&
+      body.overtimeSegments === undefined
+    ) {
+      delete next.overtimeSegments;
+    }
     if (target === 'tournament' && !next.maps) next.maps = [];
     return next;
   },
