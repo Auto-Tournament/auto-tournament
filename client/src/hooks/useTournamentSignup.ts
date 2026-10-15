@@ -54,9 +54,19 @@ export interface EligibleTeam {
   }>;
 }
 
+/** A player who joined a shuffle tournament on their own. */
+export interface ShufflePlayer {
+  steamId: string;
+  name: string;
+  avatar: string | null;
+  joinedAt: number;
+}
+
 export interface TournamentSignupState {
   window: SignupWindow | null;
   registrations: Registration[];
+  /** A shuffle tournament's players (null for any other kind). */
+  players: ShufflePlayer[] | null;
   /** Teams the signed-in player can sign up (owner or captain). */
   eligibleTeams: EligibleTeam[];
   /** The signed-in player's Steam ID. */
@@ -91,20 +101,26 @@ export function useTournamentSignup(tournamentId: number): TournamentSignupState
   const socket = useSocket();
   const [window, setWindow] = useState<SignupWindow | null>(null);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [players, setPlayers] = useState<ShufflePlayer[] | null>(null);
   const [eligibleTeams, setEligibleTeams] = useState<EligibleTeam[]>([]);
   const [steamId, setSteamId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(async () => {
     try {
-      const data = await api.get<{ window: SignupWindow; registrations: Registration[] }>(
-        `/api/tournament-signup/${tournamentId}`
-      );
+      const data = await api.get<{
+        window: SignupWindow;
+        registrations: Registration[];
+        players?: ShufflePlayer[] | null;
+      }>(`/api/tournament-signup/${tournamentId}`);
       setWindow(data.window ?? null);
       setRegistrations(data.registrations ?? []);
+      setPlayers(data.players ?? null);
       if (playerSteamId) {
         const me = await api
-          .get<{ steamId: string; teams: EligibleTeam[] }>(`/api/tournament-signup/${tournamentId}/me`)
+          .get<{ steamId: string; teams: EligibleTeam[] }>(
+            `/api/tournament-signup/${tournamentId}/me`
+          )
           .catch(() => null);
         setEligibleTeams(me?.teams ?? []);
         setSteamId(me?.steamId ?? playerSteamId);
@@ -133,7 +149,7 @@ export function useTournamentSignup(tournamentId: number): TournamentSignupState
     };
   }, [socket, reload]);
 
-  return { window, registrations, eligibleTeams, steamId, loading, reload };
+  return { window, registrations, players, eligibleTeams, steamId, loading, reload };
 }
 
 /** The signed-up team the viewer belongs to: in its lineup, or its owner or captain. */
@@ -148,7 +164,11 @@ export function viewerRegistration(state: TournamentSignupState): Registration |
 }
 
 /** Remind a lineup player what to fix before check-in (a line in the team's chat). */
-export async function remindLineupPlayer(tournamentId: number, teamId: string, steamId: string): Promise<void> {
+export async function remindLineupPlayer(
+  tournamentId: number,
+  teamId: string,
+  steamId: string
+): Promise<void> {
   const res = await fetch(`/api/tournament-signup/${tournamentId}/remind`, {
     method: 'POST',
     credentials: 'same-origin',

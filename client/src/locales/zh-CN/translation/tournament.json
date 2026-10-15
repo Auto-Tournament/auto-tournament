@@ -1128,5 +1128,19 @@
     "vetoOpening": "Veto opening",
     "matchIn": "Match in",
     "matchLoading": "Match loading"
+  },
+  "shuffleJoin": {
+    "title": "加入本次随机组队赛",
+    "body": "无需队伍：单人报名即可。每一轮平台都会重新抽取实力均衡的队伍。",
+    "youreIn": "你已报名",
+    "inBody": "锦标赛开始时会抽取你的第一支队伍，你的比赛会显示在这里。请保持此页面打开。",
+    "join": "加入",
+    "leave": "退出",
+    "full": "已满",
+    "signInToJoin": "登录后加入",
+    "count_one": "已报名 {{count}} 人",
+    "count_other": "已报名 {{count}} 人",
+    "countOf_one": "已报名 {{count}} / {{spots}} 人",
+    "countOf_other": "已报名 {{count}} / {{spots}} 人"
   }
 }

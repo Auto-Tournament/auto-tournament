@@ -1128,5 +1128,19 @@
     "vetoOpening": "Veto opening",
     "matchIn": "Match in",
     "matchLoading": "Match loading"
+  },
+  "shuffleJoin": {
+    "title": "Entra neste shuffle",
+    "body": "Não precisas de equipa: inscreve-te sozinho. Em cada ronda a plataforma sorteia novas equipas equilibradas.",
+    "youreIn": "Estás inscrito",
+    "inBody": "Quando o torneio começar, a tua primeira equipa é sorteada e o teu jogo aparece aqui. Mantém esta página aberta.",
+    "join": "Entrar",
+    "leave": "Sair",
+    "full": "Cheio",
+    "signInToJoin": "Inicia sessão para entrar",
+    "count_one": "{{count}} jogador inscrito",
+    "count_other": "{{count}} jogadores inscritos",
+    "countOf_one": "{{count}} de {{spots}} jogadores inscritos",
+    "countOf_other": "{{count}} de {{spots}} jogadores inscritos"
   }
 }

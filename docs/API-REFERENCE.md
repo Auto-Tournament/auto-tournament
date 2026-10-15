@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 717 of them, 414 behind auth —
+Every endpoint this API serves — 719 of them, 414 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -674,6 +674,8 @@ Teams signing themselves up with a lineup, and check-in on the day.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/tournament-signup/:id` | public |
+| `POST` | `/api/tournament-signup/:id/join` | public |
+| `DELETE` | `/api/tournament-signup/:id/join` | public |
 | `GET` | `/api/tournament-signup/:id/me` | public |
 | `POST` | `/api/tournament-signup/:id/remind` | public |
 | `POST` | `/api/tournament-signup/:id/register` | public |

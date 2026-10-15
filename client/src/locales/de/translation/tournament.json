@@ -1128,5 +1128,19 @@
     "vetoOpening": "Veto opening",
     "matchIn": "Match in",
     "matchLoading": "Match loading"
+  },
+  "shuffleJoin": {
+    "title": "Diesem Shuffle beitreten",
+    "body": "Kein Team nötig: melde dich allein an. In jeder Runde lost die Plattform neue, ausgeglichene Teams aus.",
+    "youreIn": "Du bist dabei",
+    "inBody": "Wenn das Turnier startet, wird dein erstes Team ausgelost und dein Match erscheint hier. Lass diese Seite offen.",
+    "join": "Beitreten",
+    "leave": "Abmelden",
+    "full": "Voll",
+    "signInToJoin": "Zum Beitreten anmelden",
+    "count_one": "{{count}} Spieler dabei",
+    "count_other": "{{count}} Spieler dabei",
+    "countOf_one": "{{count}} von {{spots}} Spielern dabei",
+    "countOf_other": "{{count}} von {{spots}} Spielern dabei"
   }
 }

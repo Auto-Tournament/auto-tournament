@@ -1128,5 +1128,19 @@
     "vetoOpening": "Veto opening",
     "matchIn": "Match in",
     "matchLoading": "Match loading"
+  },
+  "shuffleJoin": {
+    "title": "Doe mee aan deze shuffle",
+    "body": "Geen team nodig: schrijf je alleen in. Elke ronde loot het platform nieuwe, gelijkwaardige teams.",
+    "youreIn": "Je doet mee",
+    "inBody": "Als het toernooi begint, wordt je eerste team geloot en verschijnt je wedstrijd hier. Laat deze pagina open.",
+    "join": "Meedoen",
+    "leave": "Afmelden",
+    "full": "Vol",
+    "signInToJoin": "Log in om mee te doen",
+    "count_one": "{{count}} speler ingeschreven",
+    "count_other": "{{count}} spelers ingeschreven",
+    "countOf_one": "{{count}} van {{spots}} spelers ingeschreven",
+    "countOf_other": "{{count}} van {{spots}} spelers ingeschreven"
   }
 }

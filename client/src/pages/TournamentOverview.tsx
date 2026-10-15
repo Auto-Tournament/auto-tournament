@@ -10,6 +10,7 @@ import { LiveStrip } from '../components/tournament/overview/LiveStrip';
 import { TournamentResults } from '../components/tournament/results/TournamentResults';
 import { RegisteredPanel } from '../components/tournament/signup/RegisteredPanel';
 import { CheckInPanel } from '../components/tournament/signup/CheckInPanel';
+import { ShuffleJoin } from '../components/tournament/signup/ShuffleJoin';
 import { signupPhase, useTournamentSignup, viewerRegistration } from '../hooks/useTournamentSignup';
 import { api } from '../utils/api';
 import { fontDisplay, radii, tokens } from '../theme/tokens';
@@ -67,6 +68,7 @@ export default function TournamentOverview() {
     ? signup.window.maxTeams - tournament.teamIds.length
     : null;
   const canSignUp =
+    !isShuffle &&
     tournament.status === 'setup' &&
     phase === 'open' &&
     !registration &&
@@ -98,6 +100,21 @@ export default function TournamentOverview() {
         !(tournament.status === 'in_progress' && !viewerPlaced) && (
           <YourePlayingPanel tournament={tournament} team={viewerTeam} matches={matches} />
         )}
+
+      {/* A shuffle tournament takes players on their own: Join, and who is in. */}
+      {isShuffle && signup.players && (
+        <ShuffleJoin
+          tournamentId={tournament.id}
+          players={signup.players}
+          steamId={signup.steamId}
+          open={phase === 'open'}
+          started={tournament.status !== 'setup'}
+          spots={
+            signup.window?.maxTeams ? signup.window.maxTeams * (tournament.teamSize ?? 5) : null
+          }
+          onChange={signup.reload}
+        />
+      )}
 
       {registration && tournament.status === 'setup' && phase === 'checkIn' && signup.window ? (
         <CheckInPanel

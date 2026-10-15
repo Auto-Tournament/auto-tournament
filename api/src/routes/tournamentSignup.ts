@@ -8,6 +8,7 @@
  * PUT    /:id/lineup                  owner or captain: change the lineup
  * DELETE /:id/registration/:teamId    owner or captain: withdraw
  * POST   /:id/check-in                a lineup player: "I'm here"
+ * POST   /:id/join, DELETE /:id/join  a player on their own: join / leave a shuffle tournament
  */
 
 import { Router, type Request, type Response } from 'express';
@@ -24,7 +25,11 @@ function idList(value: unknown): string[] {
 
 /** Runs a sign-up action for the tournament in the URL, with or without a signed-in account. */
 function signupAction(
-  action: (tournamentId: number, viewer: { uid: string | null; steamId: string | null }, req: Request) => Promise<unknown>,
+  action: (
+    tournamentId: number,
+    viewer: { uid: string | null; steamId: string | null },
+    req: Request
+  ) => Promise<unknown>,
   { signIn = true }: { signIn?: boolean } = {}
 ) {
   return async (req: Request, res: Response) => {
@@ -40,14 +45,18 @@ function signupAction(
           return res.status(401).json({ success: false, error: 'Sign in first' });
         }
         if (viewer.isImpersonating) {
-          return res.status(403).json({ success: false, error: 'Stop impersonating to act for a team.' });
+          return res
+            .status(403)
+            .json({ success: false, error: 'Stop impersonating to act for a team.' });
         }
       }
       const result = await action(tournamentId, { uid: viewer.uid, steamId: viewer.playerId }, req);
       return res.json({ success: true, ...(result && typeof result === 'object' ? result : {}) });
     } catch (error) {
       if (error instanceof SignupError) {
-        return res.status(error.status).json({ success: false, error: error.message, code: error.code });
+        return res
+          .status(error.status)
+          .json({ success: false, error: error.message, code: error.code });
       }
       log.error('[TournamentSignup] Action failed', { error, path: req.path });
       return res.status(500).json({ success: false, error: 'The sign-up action failed' });
@@ -81,9 +90,57 @@ router.get(
     async (tournamentId) => ({
       window: await tournamentSignupService.window(tournamentId),
       registrations: await tournamentSignupService.registrations(tournamentId),
+      // A shuffle tournament: the players who joined on their own (null otherwise).
+      players: await tournamentSignupService.shufflePlayers(tournamentId),
     }),
     { signIn: false }
   )
+);
+
+/**
+ * @openapi
+ * /api/tournament-signup/{id}/join:
+ *   post:
+ *     tags:
+ *       - Tournament sign-up
+ *     summary: Join a shuffle tournament on your own (no team)
+ *     description: Signed-in player, while sign-up is open. The platform draws the teams each round.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Joined (or already in) }
+ *       401: { description: Not signed in }
+ *       409: { description: Not a shuffle tournament, sign-up closed, started or full }
+ *   delete:
+ *     tags:
+ *       - Tournament sign-up
+ *     summary: Leave a shuffle tournament before it starts
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Left }
+ *       409: { description: It has started }
+ */
+router.post(
+  '/:id/join',
+  signupAction(async (tournamentId, viewer) => {
+    await tournamentSignupService.joinShuffle(tournamentId, viewer.steamId as string);
+    return { joined: true };
+  })
+);
+
+router.delete(
+  '/:id/join',
+  signupAction(async (tournamentId, viewer) => {
+    await tournamentSignupService.leaveShuffle(tournamentId, viewer.steamId as string);
+    return { joined: false };
+  })
 );
 
 /**
@@ -136,7 +193,10 @@ router.post(
     if (typeof body.teamId !== 'string' || typeof body.steamId !== 'string') {
       throw new SignupError(400, 'teamId and steamId are required.', 'invalid');
     }
-    await tournamentSignupService.remind(tournamentId, viewer.uid as string, { teamId: body.teamId, steamId: body.steamId });
+    await tournamentSignupService.remind(tournamentId, viewer.uid as string, {
+      teamId: body.teamId,
+      steamId: body.steamId,
+    });
     return { reminded: true };
   })
 );
