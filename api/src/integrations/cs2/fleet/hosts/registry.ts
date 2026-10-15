@@ -65,6 +65,8 @@ export interface FleetHostRow {
   capabilities: string | null;
   inventory: string | null;
   inventory_at: number | null;
+  /** Set by an admin: where players outside the machine's network connect (057). */
+  public_address?: string | null;
   protocol: number | null;
   boot_id: string | null;
   session_id: string | null;
@@ -143,6 +145,8 @@ export interface FleetHostView {
   createdAt: number;
   inventory: HostInventoryPayload | null;
   inventoryAt: number | null;
+  /** The admin's public address for this machine (players connect there), or null. */
+  publicAddress: string | null;
   token: {
     id: string;
     createdAt: number;
@@ -181,6 +185,7 @@ function toView(
     createdAt: h.created_at,
     inventory: parseJson<HostInventoryPayload>(h.inventory),
     inventoryAt: h.inventory_at,
+    publicAddress: h.public_address ?? null,
     token: newest
       ? {
           id: newest.id,
@@ -555,6 +560,15 @@ export async function renameHost(id: string, name: string): Promise<boolean> {
   const r = await db.runAsync(
     'UPDATE cs2_fleet_hosts SET name = ?, updated_at = ? WHERE id = ? AND tenant_id = ?',
     [name, nowS(), id, FLEET_TENANT]
+  );
+  return r.changes > 0;
+}
+
+/** Set (or with null, clear) the machine's public address. */
+export async function setHostPublicAddress(id: string, address: string | null): Promise<boolean> {
+  const r = await db.runAsync(
+    'UPDATE cs2_fleet_hosts SET public_address = ?, updated_at = ? WHERE id = ? AND tenant_id = ?',
+    [address, nowS(), id, FLEET_TENANT]
   );
   return r.changes > 0;
 }

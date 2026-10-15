@@ -1200,7 +1200,16 @@
     },
     "noCsm": "No csm on the machine yet?",
     "noCsmHelp": "Install CS2 Server Manager first, then come back for step 2.",
-    "installGuide": "Install guide"
+    "installGuide": "Install guide",
+    "publicAddress": {
+      "title": "Public address",
+      "lanOnly": "Players connect to {{address}}, a local address: only players on the same network can join. Set the address players outside it use.",
+      "help": "The IP address or host name players outside this network connect to (forward the game ports on your router). Empty: the address the machine reports.",
+      "label": "Public IP or host name",
+      "save": "Save",
+      "clear": "Use the reported address",
+      "failed": "Could not save the address"
+    }
   },
   "failover": {
     "title": "Failover",
