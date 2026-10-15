@@ -1099,6 +1099,18 @@
     "seeBracket": "Se braketten",
     "outBodyPlay": "Dere har ingen flere kamper i turneringen. Takk for innsatsen! Lyst på en kamp til? Matchmaking finner en til deg på et par minutter."
   },
+  "advance": {
+    "title": "Bra, dere er fortsatt med!",
+    "opponent": "Neste: {{opponent}}.",
+    "feederTitle": "Neste motstander kommer fra",
+    "vs": "mot",
+    "tbd": "Ikke klart",
+    "feederNotStarted": "Den kampen har ikke startet ennå.",
+    "feederMinutes_one": "Omtrent {{count}} minutt igjen.",
+    "feederMinutes_other": "Omtrent {{count}} minutter igjen.",
+    "feederAlmost": "Nesten ferdig.",
+    "watch": "Se den live"
+  },
   "whatsNext": {
     "eyebrow": "Hva nå",
     "champions": "Vinnere",

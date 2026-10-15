@@ -1129,5 +1129,17 @@
     "vetoOpening": "Veto opening",
     "matchIn": "Match in",
     "matchLoading": "Match loading"
+  },
+  "advance": {
+    "title": "漂亮，你们晋级了！",
+    "opponent": "下一个对手：{{opponent}}。",
+    "feederTitle": "你们的下一个对手来自",
+    "vs": "对",
+    "tbd": "待定",
+    "feederNotStarted": "那场比赛还没开始。",
+    "feederMinutes_one": "大约还剩 {{count}} 分钟。",
+    "feederMinutes_other": "大约还剩 {{count}} 分钟。",
+    "feederAlmost": "快结束了。",
+    "watch": "观看直播"
   }
 }
