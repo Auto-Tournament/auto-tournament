@@ -1144,7 +1144,9 @@
     "vetoIn": "Veto om",
     "vetoOpening": "Vetoen åpner",
     "matchIn": "Kamp om",
-    "matchLoading": "Kampen lastes"
+    "matchLoading": "Kampen lastes",
+    "shuffleRound": "Runde {{round}} · Spiller",
+    "shuffleSittingOut": "Runde {{round}} · Står over"
   },
   "shuffleJoin": {
     "title": "Bli med i denne shufflen",

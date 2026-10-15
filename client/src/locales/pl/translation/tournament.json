@@ -1134,7 +1134,9 @@
     "vetoIn": "Veto in",
     "vetoOpening": "Veto opening",
     "matchIn": "Match in",
-    "matchLoading": "Match loading"
+    "matchLoading": "Match loading",
+    "shuffleRound": "Round {{round}} · Playing",
+    "shuffleSittingOut": "Round {{round}} · Sitting out"
   },
   "advance": {
     "title": "Świetnie, nadal gracie dalej!",

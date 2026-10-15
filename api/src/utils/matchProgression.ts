@@ -370,16 +370,24 @@ async function reportTournamentPlacements(
   tournamentId: number,
   tournament: DbTournamentRow
 ): Promise<void> {
+  if (tournament.type === 'round_robin' || tournament.type === 'swiss') {
+    // The standings' top three teams (the same order the bracket shows).
+    const entries =
+      tournament.type === 'round_robin'
+        ? await (
+            await import('../services/roundRobinStandingsService')
+          ).getRoundRobinStandingEntries(tournamentId)
+        : await (
+            await import('../services/swissProgressionService')
+          ).getSwissStandingEntries(tournamentId);
+    const top = entries.slice(0, 3).map((e, i) => ({
+      place: (i + 1) as 1 | 2 | 3,
+      teamId: (e as { teamId: string }).teamId,
+    }));
+    await awardTeamPlaces(tournamentId, tournament, top);
+    return;
+  }
   if (tournament.type !== 'single_elimination' && tournament.type !== 'double_elimination') return;
-  const onPlacements = integrationForMatch(tournament).onTournamentPlacements;
-  if (!onPlacements) return;
-  const settings = (() => {
-    try {
-      return JSON.parse(tournament.settings ?? '{}') as Record<string, unknown>;
-    } catch {
-      return {};
-    }
-  })();
   const finals = await db.queryAsync<{
     team1_id: string | null;
     team2_id: string | null;
@@ -399,11 +407,19 @@ async function reportTournamentPlacements(
     winner_id: string | null;
   }) => (m.winner_id === m.team1_id ? m.team2_id : m.team1_id);
   const third = finals.find((m) => m !== final && m.winner_id);
-  const places: Array<{ place: 1 | 2 | 3; teamId: string | null }> = [
+  await awardTeamPlaces(tournamentId, tournament, [
     { place: 1, teamId: final.winner_id },
     { place: 2, teamId: loserOf(final) },
     { place: 3, teamId: third?.winner_id ?? null },
-  ];
+  ]);
+}
+
+/** The players of each placed team (those who played), handed to the game's placement hook. */
+async function awardTeamPlaces(
+  tournamentId: number,
+  tournament: DbTournamentRow,
+  places: Array<{ place: 1 | 2 | 3; teamId: string | null }>
+): Promise<void> {
   const { tournamentSignupService } = await import('../services/tournamentSignupService');
   const placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }> = [];
   for (const { place, teamId } of places) {
@@ -437,7 +453,33 @@ async function reportTournamentPlacements(
     }
     placements.push({ place, steamIds });
   }
-  await onPlacements({ tournamentId, tournamentName: tournament.name, settings, placements });
+  await awardPlacements(tournament, placements);
+}
+
+/**
+ * Hand a finished tournament's top three (each place's Steam accounts) to its
+ * game module (CS2: skin rewards). Shuffle tournaments place players, the
+ * others teams.
+ */
+export async function awardPlacements(
+  tournament: DbTournamentRow,
+  placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }>
+): Promise<void> {
+  const onPlacements = integrationForMatch(tournament).onTournamentPlacements;
+  if (!onPlacements || placements.length === 0) return;
+  const settings = (() => {
+    try {
+      return JSON.parse(tournament.settings ?? '{}') as Record<string, unknown>;
+    } catch {
+      return {};
+    }
+  })();
+  await onPlacements({
+    tournamentId: tournament.id,
+    tournamentName: tournament.name,
+    settings,
+    placements,
+  });
 }
 
 export async function checkTournamentCompletion(tournamentId: number): Promise<void> {
