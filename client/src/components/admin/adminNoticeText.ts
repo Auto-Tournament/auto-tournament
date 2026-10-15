@@ -29,6 +29,7 @@ export const NOTICE_GROUPS: Record<string, string[]> = {
     'report_disputed',
     'failover',
     'match_silent',
+    'tournament_autostart_failed',
   ],
   servers: ['server_crashed', 'plugin_update_available', 'update_failed', 'autoscale_license'],
   recorders: [

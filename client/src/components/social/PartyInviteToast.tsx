@@ -25,7 +25,11 @@ function Toast({ notice }: { notice: Notice }) {
   const { showError } = useSnackbar();
   const [left, setLeft] = React.useState(SHOW_SECONDS);
   const [busy, setBusy] = React.useState(false);
-  const from = (notice.data.from ?? {}) as { id?: string; name?: string; avatarUrl?: string | null };
+  const from = (notice.data.from ?? {}) as {
+    id?: string;
+    name?: string;
+    avatarUrl?: string | null;
+  };
   const partyId = String(notice.data.partyId ?? '');
 
   React.useEffect(() => {
@@ -71,7 +75,12 @@ function Toast({ notice }: { notice: Notice }) {
         boxShadow: `0 22px 60px ${color.shadow}`,
       }}
     >
-      <PlayerAvatar id={from.id ?? partyId} name={from.name ?? ''} avatarUrl={from.avatarUrl ?? undefined} size={44} />
+      <PlayerAvatar
+        id={from.id ?? partyId}
+        name={from.name ?? ''}
+        avatarUrl={from.avatarUrl ?? undefined}
+        size={44}
+      />
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography sx={{ fontSize: '0.8125rem', color: color.ink2 }}>
           <Box component="b" sx={{ color: color.ink }}>
@@ -80,22 +89,51 @@ function Toast({ notice }: { notice: Notice }) {
           {t('social.notice.partyInvite')}
         </Typography>
         <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>
-          {t('social.notice.partyDetail', { mode: String(notice.data.mode ?? ''), size: Number(notice.data.size ?? 1) })}
+          {t('social.notice.partyDetail', {
+            mode: String(notice.data.mode ?? ''),
+            size: Number(notice.data.size ?? 1),
+          })}
         </Typography>
         <Box sx={{ display: 'flex', gap: 0.75, mt: 1.25 }}>
-          <Button size="small" variant="contained" disabled={busy} onClick={() => void answer(true)}>
+          <Button
+            size="small"
+            variant="contained"
+            disabled={busy}
+            onClick={() => void answer(true)}
+          >
             {t('social.toast.join')}
           </Button>
-          <Button size="small" variant="outlined" disabled={busy} onClick={() => void answer(false)}>
+          <Button
+            size="small"
+            variant="outlined"
+            disabled={busy}
+            onClick={() => void answer(false)}
+          >
             {t('social.notice.decline')}
           </Button>
         </Box>
-        <Box sx={{ height: 3, borderRadius: 9, bgcolor: color.paper3, mt: 1.5, overflow: 'hidden' }}>
-          <Box sx={{ height: '100%', width: `${(left / SHOW_SECONDS) * 100}%`, bgcolor: color.accent, transition: 'width 1s linear' }} />
+        <Box
+          sx={{ height: 3, borderRadius: 9, bgcolor: color.paper3, mt: 1.5, overflow: 'hidden' }}
+        >
+          <Box
+            sx={{
+              height: '100%',
+              width: `${(left / SHOW_SECONDS) * 100}%`,
+              bgcolor: color.accent,
+              transition: 'width 1s linear',
+            }}
+          />
         </Box>
-        <Typography sx={{ fontSize: '0.6875rem', color: color.muted, mt: 0.5 }}>{t('social.toast.closes', { count: left })}</Typography>
+        <Typography sx={{ fontSize: '0.6875rem', color: color.muted, mt: 0.5 }}>
+          {t('social.toast.closes', { count: left })}
+        </Typography>
       </Box>
-      <IconButton size="small" aria-label={t('social.toast.close')} onClick={() => dismissToast(notice.id)} sx={{ alignSelf: 'flex-start', color: color.muted }}>
+      <IconButton
+        size="small"
+        aria-label={t('social.toast.close')}
+        onClick={() => dismissToast(notice.id)}
+        sx={{ alignSelf: 'flex-start', color: color.muted }}
+      >
         <XIcon size={16} />
       </IconButton>
     </Box>

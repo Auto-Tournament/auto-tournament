@@ -33,7 +33,10 @@ export function PartyInviteSetting() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ partyInvitesFrom: next }),
       });
-      if (!res.ok) throw new Error(apiErrorMessage(new Error(await res.text()), t('social.settings.saveFailed')));
+      if (!res.ok)
+        throw new Error(
+          apiErrorMessage(new Error(await res.text()), t('social.settings.saveFailed'))
+        );
       showSnackbar(t('social.settings.saved'), 'success');
     } catch (error) {
       setValue(before);
@@ -44,8 +47,18 @@ export function PartyInviteSetting() {
   };
 
   return (
-    <Box component="section" aria-labelledby="account-party-invites" sx={{ mt: 6 }} data-testid="party-invite-setting">
-      <Typography id="account-party-invites" component="h2" variant="h6" sx={{ fontFamily: fontDisplay, fontWeight: 600 }}>
+    <Box
+      component="section"
+      aria-labelledby="account-party-invites"
+      sx={{ mt: 6 }}
+      data-testid="party-invite-setting"
+    >
+      <Typography
+        id="account-party-invites"
+        component="h2"
+        variant="h6"
+        sx={{ fontFamily: fontDisplay, fontWeight: 600 }}
+      >
         {t('social.settings.title')}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2, maxWidth: '62ch' }}>
@@ -67,7 +80,9 @@ export function PartyInviteSetting() {
               label={
                 <Box>
                   <Typography sx={{ fontWeight: 500 }}>{t(`social.settings.${p}`)}</Typography>
-                  <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>{t(`social.settings.${p}Hint`)}</Typography>
+                  <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
+                    {t(`social.settings.${p}Hint`)}
+                  </Typography>
                 </Box>
               }
               sx={{ alignItems: 'flex-start', '& .MuiRadio-root': { pt: 0.5 } }}

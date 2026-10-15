@@ -21,7 +21,8 @@ import { log } from '../utils/logger';
 import { decryptSecret, encryptSecret } from '../utils/secretBox';
 import { emailService } from './emailService';
 
-export type ChannelEvent = 'match_ready' | 'veto_turn' | 'checkin_open' | 'new_tournament';
+export type ChannelEvent =
+  'match_ready' | 'veto_turn' | 'checkin_open' | 'new_tournament' | 'tournament_starting';
 export type Channel = 'email' | 'discord';
 
 export const CHANNEL_EVENTS: ChannelEvent[] = [
@@ -29,6 +30,7 @@ export const CHANNEL_EVENTS: ChannelEvent[] = [
   'veto_turn',
   'checkin_open',
   'new_tournament',
+  'tournament_starting',
 ];
 export const CHANNELS: Channel[] = ['discord', 'email'];
 
@@ -38,6 +40,8 @@ const DEFAULT_ON: Record<ChannelEvent, boolean> = {
   veto_turn: true,
   checkin_open: false,
   new_tournament: false,
+  // A tournament they signed up for is about to start (tournamentSchedule.ts).
+  tournament_starting: true,
 };
 
 const BOT_TOKEN_KEY = 'discord_bot_token';

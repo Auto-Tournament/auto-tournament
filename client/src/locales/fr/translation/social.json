@@ -49,7 +49,8 @@
       "reportNew": "was reported: {{reason}}",
       "reportReviewed": "Thanks: your report about {{name}} was reviewed.",
       "matchReady": "is ready. Open the match room to connect.",
-      "vetoTurn": "it's your team's turn in the veto."
+      "vetoTurn": "it's your team's turn in the veto.",
+      "startsSoon": "starts in {{minutes}} minutes. Get ready to join your first match."
     },
     "toast": {
       "join": "Join party",
@@ -235,6 +236,10 @@
       "new_tournament": {
         "title": "New tournaments",
         "hint": "When a tournament takes sign-ups"
+      },
+      "tournament_starting": {
+        "title": "Tournament starting",
+        "hint": "Reminders before a tournament you're in starts"
       }
     },
     "reason": {

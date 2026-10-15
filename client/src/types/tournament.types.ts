@@ -66,6 +66,12 @@ export interface TournamentSettings {
   rulebookUrl?: string;
   prizes?: EventPagePrize[];
   schedule?: EventPageScheduleItem[];
+  /** When the tournament starts (ISO 8601): shown with a countdown; reminders go out before it. */
+  startsAt?: string;
+  /** Start the tournament at startsAt by itself. */
+  autoStart?: boolean;
+  /** Minutes before startsAt that players are reminded (default 60, 30, 5). */
+  startReminders?: number[];
 
   // Sign-up and check-in (tournament sign-up). Times are ISO 8601.
   registrationOpen?: boolean;

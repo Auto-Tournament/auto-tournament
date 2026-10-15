@@ -25,5 +25,8 @@ export function formatTimeAgo(epochSeconds: number, language: string, nowMs = Da
 
 export function useTimeAgo(): (epochSeconds: number) => string {
   const { i18n } = useTranslation();
-  return useCallback((epochSeconds: number) => formatTimeAgo(epochSeconds, i18n.language || 'en'), [i18n.language]);
+  return useCallback(
+    (epochSeconds: number) => formatTimeAgo(epochSeconds, i18n.language || 'en'),
+    [i18n.language]
+  );
 }

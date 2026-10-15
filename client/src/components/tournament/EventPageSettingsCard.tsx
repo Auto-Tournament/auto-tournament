@@ -10,6 +10,9 @@ import {
   IconButton,
   Divider,
   Grid,
+  Chip,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +37,9 @@ export type EventPageFields = Pick<
   | 'rules'
   | 'prizes'
   | 'schedule'
+  | 'startsAt'
+  | 'autoStart'
+  | 'startReminders'
 >;
 
 interface EventPageSettingsCardProps {
@@ -50,6 +56,18 @@ interface EventPageSettingsCardProps {
   variant?: 'card' | 'embedded';
   /** The tournament's banner. Shown (with Upload) only once the tournament exists. */
   bannerUrl?: string | null;
+}
+
+const REMINDER_CHOICES = [60, 30, 15, 5];
+const DEFAULT_REMINDERS = [60, 30, 5];
+
+/** An ISO time as the value of a datetime-local input, in the viewer's own time zone. */
+function toLocalInput(iso: string | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 /** Reorder helper: move an array item up (-1) or down (+1), clamped to bounds. */
@@ -85,6 +103,11 @@ export function EventPageSettingsCard({
   const [rules, setRules] = useState<string[]>(settings?.rules ?? []);
   const [prizes, setPrizes] = useState<EventPagePrize[]>(settings?.prizes ?? []);
   const [schedule, setSchedule] = useState<EventPageScheduleItem[]>(settings?.schedule ?? []);
+  const [startsAt, setStartsAt] = useState(settings?.startsAt ?? '');
+  const [autoStart, setAutoStart] = useState(settings?.autoStart === true);
+  const [reminders, setReminders] = useState<number[]>(
+    settings?.startReminders ?? DEFAULT_REMINDERS
+  );
   const [localSaving, setLocalSaving] = useState(false);
 
   // Draft mode: report every edit (but not the initial values) to the parent.
@@ -104,8 +127,22 @@ export function EventPageSettingsCard({
       rules,
       prizes,
       schedule,
+      startsAt: startsAt || undefined,
+      autoStart: autoStart && !!startsAt,
+      startReminders: reminders,
     } as EventPageFields);
-  }, [description, location, organizer, rulebookUrl, rules, prizes, schedule]);
+  }, [
+    description,
+    location,
+    organizer,
+    rulebookUrl,
+    rules,
+    prizes,
+    schedule,
+    startsAt,
+    autoStart,
+    reminders,
+  ]);
 
   const handleSave = async () => {
     if (!onSave) return;
@@ -119,6 +156,9 @@ export function EventPageSettingsCard({
         rules,
         prizes,
         schedule,
+        startsAt: startsAt || '',
+        autoStart: autoStart && !!startsAt,
+        startReminders: reminders,
       });
       showSuccess(t('tournament.eventPage.saveSuccess'));
     } catch (err) {
@@ -297,6 +337,67 @@ export function EventPageSettingsCard({
         >
           {t('tournament.eventPage.addPrize')}
         </Button>
+      </Box>
+
+      <Divider />
+
+      {/* Start time: a countdown on the site, reminders to the players, optionally the start itself */}
+      <Box>
+        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+          {t('tournament.eventPage.startLabel')}
+        </Typography>
+        <Stack spacing={1.5}>
+          <TextField
+            size="small"
+            type="datetime-local"
+            label={t('tournament.eventPage.startsAtLabel')}
+            InputLabelProps={{ shrink: true }}
+            value={toLocalInput(startsAt)}
+            onChange={(e) =>
+              setStartsAt(e.target.value ? new Date(e.target.value).toISOString() : '')
+            }
+            helperText={t('tournament.eventPage.startsAtHelp')}
+            sx={{ maxWidth: 320 }}
+            inputProps={{ 'data-testid': 'event-starts-at' }}
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={autoStart && !!startsAt}
+                disabled={!startsAt}
+                onChange={(e) => setAutoStart(e.target.checked)}
+                data-testid="event-auto-start"
+              />
+            }
+            label={t('tournament.eventPage.autoStartLabel')}
+          />
+          <Box>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              {t('tournament.eventPage.remindersLabel')}
+            </Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              {REMINDER_CHOICES.map((m) => {
+                const on = reminders.includes(m);
+                return (
+                  <Chip
+                    key={m}
+                    label={t('tournament.eventPage.reminderMinutes', { count: m })}
+                    color={on ? 'primary' : 'default'}
+                    variant={on ? 'filled' : 'outlined'}
+                    onClick={() =>
+                      setReminders(
+                        on
+                          ? reminders.filter((x) => x !== m)
+                          : [...reminders, m].sort((a, b) => b - a)
+                      )
+                    }
+                    disabled={!startsAt}
+                  />
+                );
+              })}
+            </Stack>
+          </Box>
+        </Stack>
       </Box>
 
       <Divider />
