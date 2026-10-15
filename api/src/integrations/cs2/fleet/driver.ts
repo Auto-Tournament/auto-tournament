@@ -545,6 +545,10 @@ export async function assignMatch(
   if (updated) {
     emitMatchUpdate(updated);
     emitBracketUpdate({ action: 'match_loaded', matchSlug });
+    // Players already on the server joined before this match: their skins come now.
+    void import('./push/skins').then(({ pushSkinsForPresent }) =>
+      pushSkinsForPresent(fleetServerId, matchSlug)
+    );
     if (!options.resume) {
       void postMatchChatLine(matchSlug, 'serverReady', { map: firstMapOf(updated) });
       // Both teams: a bell notice, and a DM or email if they want one.

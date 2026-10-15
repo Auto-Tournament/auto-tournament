@@ -76,6 +76,17 @@ export async function pushSkinsOnConnect(
 }
 
 /**
+ * A match was (re)assigned to a server: the players already on it get their loadout now. They
+ * joined before the match, so no player_connect event will bring it (a reload after a restart
+ * left a roster player with a vanilla knife, 2026-10-15).
+ */
+export async function pushSkinsForPresent(fleetServerId: string, matchSlug: string): Promise<void> {
+  for (const id of presentOn.get(fleetServerId) ?? []) {
+    await pushSkinsOnConnect(fleetServerId, matchSlug, id);
+  }
+}
+
+/**
  * Who each server says is on it (ping.health.steamids). A server with no
  * match (skin tryout, practice) sends no player_connect event, so this is how
  * its players get their skins: a newcomer gets their loadout, and a change on
