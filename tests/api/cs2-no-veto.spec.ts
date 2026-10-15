@@ -43,3 +43,29 @@ test('veto off turns the pre-match phase off; on (or unset) keeps it', TAGS, () 
   expect(cs2Integration.usesPreMatchPhase?.({ settings: { cs2: { veto: true } } })).toBe(true);
   expect(cs2Integration.usesPreMatchPhase?.({ settings: JSON.stringify({ cs2: {} }) })).toBe(true);
 });
+
+test(
+  'a later round of a veto-off tournament is ready to allocate (no veto to wait for)',
+  TAGS,
+  async () => {
+    // MatchContext hands the whole tournament as `settings` (its settings one level down): the
+    // check read only the top level, so the final of a veto-off bracket waited for a veto that
+    // never opened (2026-10-15).
+    const ctx = (settings: unknown) =>
+      ({
+        slug: 't9-r2m1',
+        matchId: 1,
+        game: 'cs2',
+        tournament: { id: 9, type: 'single_elimination', format: 'bo1', settings },
+        team1: { id: 'a' },
+        team2: { id: 'b' },
+        round: 2,
+        bracket: null,
+        integrationConfig: null,
+        resourceId: null,
+      }) as unknown as Parameters<NonNullable<typeof cs2Integration.isReadyToAllocate>>[0];
+    const whole = { id: 9, format: 'bo1', settings: { cs2: { veto: false } } };
+    expect(await cs2Integration.isReadyToAllocate?.(ctx(whole))).toBe(true);
+    expect(await cs2Integration.isReadyToAllocate?.(ctx({ cs2: { veto: false } }))).toBe(true);
+  }
+);
