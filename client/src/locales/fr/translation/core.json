@@ -176,6 +176,7 @@
     "yourTeam": "Your team",
     "opponent": "Opponent",
     "turnLeft": "left to ban or pick",
-    "turnOver": "Time is up: a map is chosen for your team"
+    "turnOver": "Time is up: a map is chosen for your team",
+    "soonBodyNoVeto": "A short break first. The match loads when the countdown ends."
   }
 }

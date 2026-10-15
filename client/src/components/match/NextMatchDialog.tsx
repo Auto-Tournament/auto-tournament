@@ -51,6 +51,7 @@ export function NextMatchDialog({
   matchName,
   vetoActionCount,
   opensAt = null,
+  vetoOff = false,
   matchup = null,
   loading,
 }: {
@@ -60,6 +61,8 @@ export function NextMatchDialog({
   vetoActionCount: number | null;
   /** `veto_soon`: when the veto opens (ISO). */
   opensAt?: string | null;
+  /** No veto: the break ends with the match itself. */
+  vetoOff?: boolean;
   /** Your team and the opponent: shown as "You vs Them" with logos. */
   matchup?: { you: MatchupSide; opponent: MatchupSide } | null;
   loading: boolean;
@@ -97,19 +100,24 @@ export function NextMatchDialog({
           ? t('nextMatch.readyTitle', 'Your match is ready')
           : t('nextMatch.vetoOpenTitle', 'Your next match is ready');
   const body =
-    open.kind === 'veto_soon'
+    open.kind === 'veto_soon' && vetoOff
       ? t(
-          'nextMatch.soonBody',
-          'A short break first. The map veto opens when the countdown ends; you will hear it.'
+          'nextMatch.soonBodyNoVeto',
+          'A short break first. The match loads when the countdown ends.'
         )
-      : open.kind === 'veto_turn'
+      : open.kind === 'veto_soon'
         ? t(
-            'nextMatch.vetoTurnBody',
-            'Go to the match and ban or pick a map. If the time runs out, one is chosen for your team at random.'
+            'nextMatch.soonBody',
+            'A short break first. The map veto opens when the countdown ends; you will hear it.'
           )
-        : open.kind === 'match_ready'
-          ? t('nextMatch.readyBody', 'The server is ready: join it now.')
-          : t('nextMatch.vetoOpenBody', 'The map veto is open. Go to the match to ban and pick.');
+        : open.kind === 'veto_turn'
+          ? t(
+              'nextMatch.vetoTurnBody',
+              'Go to the match and ban or pick a map. If the time runs out, one is chosen for your team at random.'
+            )
+          : open.kind === 'match_ready'
+            ? t('nextMatch.readyBody', 'The server is ready: join it now.')
+            : t('nextMatch.vetoOpenBody', 'The map veto is open. Go to the match to ban and pick.');
   return (
     <Dialog
       open

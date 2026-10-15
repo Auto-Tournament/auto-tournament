@@ -27,6 +27,8 @@ interface MatchStatusResult {
   lastVetoActionTeam: 'team1' | 'team2' | null;
   /** `veto_soon`: when the veto opens (ISO), after the break between matches. */
   opensAt: string | null;
+  /** The tournament has no veto: `veto_soon` counts down to the match itself. */
+  vetoOff: boolean;
   /** The viewer's team and the opponent, for the next-match dialog. */
   matchup: { you: MatchupSide; opponent: MatchupSide } | null;
   loading: boolean;
@@ -42,6 +44,7 @@ export function useCurrentMatchStatus(playerSteamId: string | null): MatchStatus
   const [vetoActionCount, setVetoActionCount] = useState<number | null>(null);
   const [lastVetoActionTeam, setLastVetoActionTeam] = useState<'team1' | 'team2' | null>(null);
   const [opensAt, setOpensAt] = useState<string | null>(null);
+  const [vetoOff, setVetoOff] = useState(false);
   const [matchup, setMatchup] = useState<MatchStatusResult['matchup']>(null);
   // Loading until the first fetch: a navbar mounted by a page change must not
   // take the initial 'none' as the previous status and toast the fetched one.
@@ -76,6 +79,7 @@ export function useCurrentMatchStatus(playerSteamId: string | null): MatchStatus
           vetoActionCount?: number | null;
           lastVetoActionTeam?: 'team1' | 'team2' | null;
           opensAt?: string | null;
+          vetoOff?: boolean;
           matchup?: MatchStatusResult['matchup'];
         }>('/api/players/me/match-status');
 
@@ -88,6 +92,7 @@ export function useCurrentMatchStatus(playerSteamId: string | null): MatchStatus
           setVetoActionCount(typeof res.vetoActionCount === 'number' ? res.vetoActionCount : null);
           setLastVetoActionTeam(res.lastVetoActionTeam ?? null);
           setOpensAt(res.opensAt ?? null);
+          setVetoOff(res.vetoOff === true);
           setMatchup(res.matchup ?? null);
         }
       } catch {
@@ -170,6 +175,7 @@ export function useCurrentMatchStatus(playerSteamId: string | null): MatchStatus
     vetoActionCount,
     lastVetoActionTeam,
     opensAt,
+    vetoOff,
     matchup,
     loading,
     refetch: () => fetchStatus(),
