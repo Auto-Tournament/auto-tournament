@@ -619,31 +619,12 @@
     "saved": "Settings saved",
     "saveFailed": "Failed to save settings",
     "loadFailed": "Failed to load settings",
-    "chatDefaults": {
-      "title": "Chat & Knife Defaults",
-      "description": "Configureer chat-prefixen in-game en het standaard knife-round gedrag.",
-      "chatPrefixLabel": "Chat-prefix",
-      "chatPrefixHelper": "Standaard: \"[{Green}Auto Tournament{Default}]\". Laat leeg om terug te zetten naar de standaard.",
-      "adminChatPrefixLabel": "Admin chat-prefix",
-      "adminChatPrefixHelper": "Standaard: \"[{Red}ADMIN{Default}]\". Laat leeg om terug te zetten naar de standaard.",
-      "knifeToggleLabel": "Knife-rounds standaard inschakelen voor nieuwe wedstrijden (wanneer sides niet vooraf gekozen zijn)",
-      "knifeNote": "Applies only when the server would normally run a knife round; explicit side picks or shuffle-assigned sides are not changed."
-    },
     "atCore": {
       "title": "Core Match Defaults",
       "description": "Deze standaarden worden naar servers gestuurd tijdens initialisatie en vóór elke wedstrijd-load.",
       "expert": {
         "title": "Expertinstellingen",
-        "description": "Deze instellingen kunnen onverwacht servergedrag veroorzaken als ze verkeerd zijn ingesteld. Wijzig ze alleen als je weet dat je ze nodig hebt.",
-        "autostartMode": {
-          "label": "Autostart-modus bij plugin-load",
-          "helper": "0 = idle/sleep, 1 = match mode (aanbevolen), 2 = practice mode",
-          "options": {
-            "0": "0 — Inactief / slaapstand",
-            "1": "1 — Match-modus",
-            "2": "2 — Practice-modus"
-          }
-        }
+        "description": "Deze instellingen kunnen onverwacht servergedrag veroorzaken als ze verkeerd zijn ingesteld. Wijzig ze alleen als je weet dat je ze nodig hebt."
       },
       "ready": {
         "title": "Ready / Start wedstrijd",
@@ -651,29 +632,10 @@
         "minimumReadyHelper": "0 = iedereen die verbonden is moet ready zijn. Standaard: 0.",
         "allowForceReady": "Sta admins toe spelers force-ready te zetten tijdens setup (!forceready)"
       },
-      "access": {
-        "title": "Servertoegang",
-        "kickWhenNoMatchLoaded": "Kick/voorkom joins wanneer geen wedstrijd geladen is (toernooiservers)",
-        "whitelistEnabledDefault": "Whitelist standaard inschakelen (admins kunnen togglen met .whitelist)"
-      },
       "adminTools": {
         "title": "Admin-tools",
         "pauseAfterRestore": "Pauzeren na round restore (.stop) zodat teams kunnen overleggen",
-        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)",
-        "stopCommandAvailable": "Schakel .stop (round restore) commando in",
-        "stopCommandNoDamage": "Schakel .stop uit na schade aan het andere team",
-        "usePauseForTacticalPause": "Laat .pause zich gedragen als tactische pauze"
-      },
-      "hostname": {
-        "formatLabel": "Formaat serverhostnaam",
-        "formatHelper": "Wordt op elke server toegepast wanneer een wedstrijd wordt geladen. Tokens: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. Laat leeg om de hostnaam te behouden die elke server in zijn eigen config instelt."
-      },
-      "demos": {
-        "title": "Demo’s",
-        "demoPathLabel": "Demo-pad (relatief aan csgo/)",
-        "demoPathHelper": "Moet eindigen op '/'. Standaard: AutoTournamentCS2/",
-        "demoNameFormatLabel": "Demo-bestandsnaamformaat (zonder .dem)",
-        "demoNameFormatHelper": "Plaatsvervangers: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)"
       },
       "autostart": {
         "label": "Start matches after (minutes in warmup)",
@@ -682,8 +644,6 @@
       "seriesEnd": {
         "title": "Timing einde serie",
         "kickDelayNoDemoLabel": "Extra kick-vertraging wanneer demo’s uit staan (seconden)",
-        "kickDelayDemoNoUploadLabel": "Extra kick-vertraging wanneer demo’s aan staan maar geen upload-URL (seconden)",
-        "kickDelayDemoUploadLabel": "Extra kick-vertraging wanneer demo’s aan staan en upload-URL is ingesteld (seconden)",
         "kickDelayHelper": "Wordt opgeteld bij mp_match_restart_delay."
       }
     },
@@ -738,11 +698,7 @@
       "simulateNote": "When enabled, generated match configs include \"simulation\": true for automated demo matches.",
       "timescaleTitle": "Simulatie-snelheid",
       "timescaleDescription": "Bepaalt hoe snel gesimuleerde wedstrijden lopen. Hogere waarden versnellen bots en rondes. Dit geldt alleen wanneer simulatie is ingeschakeld.",
-      "timescaleWarning": "Snelheden boven 2.0 kunnen instabiel zijn en vreemd bot-gedrag veroorzaken, maar zijn ok voor snelle lokale tests.",
-      "debugChat": {
-        "label": "Enable debug chat messages",
-        "description": "When enabled, the server prints additional debug messages (like player connects, disconnects, and event traces) into in-game chat. Use this only for development and testing – not during live events."
-      }
+      "timescaleWarning": "Snelheden boven 2.0 kunnen instabiel zijn en vreemd bot-gedrag veroorzaken, maar zijn ok voor snelle lokale tests."
     },
     "success": {
       "simulationDisabled": "Simulatiemodus uitgeschakeld",

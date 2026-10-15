@@ -620,31 +620,12 @@
       "failed": "Klarte ikke å synkronisere kart"
     },
     "defaultsTitle": "Serverstandarder",
-    "chatDefaults": {
-      "title": "Chat- og knivstandarder",
-      "description": "Konfigurer chat‑prefikser og standard oppførsel for knivrunde.",
-      "chatPrefixLabel": "Chat‑prefiks",
-      "chatPrefixHelper": "Standard: \"[{Green}Auto Tournament{Default}]\". La stå tomt for standard.",
-      "adminChatPrefixLabel": "Admin chat‑prefiks",
-      "adminChatPrefixHelper": "Standard: \"[{Red}ADMIN{Default}]\". La stå tomt for standard.",
-      "knifeToggleLabel": "Aktiver knivrunder som standard for nye kamper",
-      "knifeNote": "Gjelder kun når serveren ellers ville kjørt knivrunde."
-    },
     "atCore": {
       "title": "Standard kampinnstillinger",
       "description": "Disse standardene sendes til servere under initialisering og før hver kamp lastes inn.",
       "expert": {
         "title": "Ekspertinnstillinger",
-        "description": "Disse innstillingene kan gi uventet serveroppførsel hvis de settes feil.",
-        "autostartMode": {
-          "label": "Autostart‑modus ved plugin‑start",
-          "helper": "0 = idle/sleep, 1 = match‑modus (anbefalt), 2 = practice‑modus",
-          "options": {
-            "0": "0 — Inaktiv / hvilemodus",
-            "1": "1 — Match‑modus",
-            "2": "2 — Practice‑modus"
-          }
-        }
+        "description": "Disse innstillingene kan gi uventet serveroppførsel hvis de settes feil."
       },
       "ready": {
         "title": "Ready / kampstart",
@@ -652,29 +633,10 @@
         "minimumReadyHelper": "0 = alle tilkoblede spillere må ready. Standard: 0.",
         "allowForceReady": "Tillat admin å force-ready spillere under oppsett (!forceready)"
       },
-      "access": {
-        "title": "Servertilgang",
-        "kickWhenNoMatchLoaded": "Kick/hindre joins når ingen kamp er lastet (turneringsservere)",
-        "whitelistEnabledDefault": "Aktiver whitelist som standard (admin kan toggle med .whitelist)"
-      },
       "adminTools": {
         "title": "Adminverktøy",
         "pauseAfterRestore": "Pause etter round restore (.stop) slik at lag kan koordinere",
-        "joinPassword": "Passord for å koble til kampservere (av: bare spillerne på laget slipper inn uansett)",
-        "stopCommandAvailable": "Aktiver .stop (round restore)-kommandoen",
-        "stopCommandNoDamage": "Deaktiver .stop etter skade på motstanderlaget",
-        "usePauseForTacticalPause": "La .pause oppføre seg som taktisk pause"
-      },
-      "hostname": {
-        "formatLabel": "Format for serverens vertsnavn",
-        "formatHelper": "Brukes på alle servere når en kamp lastes. Variabler: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. La feltet stå tomt for å beholde vertsnavnet hver server setter i sin egen konfig."
-      },
-      "demos": {
-        "title": "Demoer",
-        "demoPathLabel": "Demo-sti (relativ til csgo/)",
-        "demoPathHelper": "Må slutte med '/'. Standard: AutoTournamentCS2/",
-        "demoNameFormatLabel": "Demo-filnavnformat (uten .dem)",
-        "demoNameFormatHelper": "Tokener: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        "joinPassword": "Passord for å koble til kampservere (av: bare spillerne på laget slipper inn uansett)"
       },
       "autostart": {
         "label": "Start kamper etter (minutter i oppvarming)",
@@ -683,8 +645,6 @@
       "seriesEnd": {
         "title": "Timing ved serieslutt",
         "kickDelayNoDemoLabel": "Ekstra kick-forsinkelse når demoer er av (sekunder)",
-        "kickDelayDemoNoUploadLabel": "Ekstra kick-forsinkelse når demoer er på, men ingen upload-URL (sekunder)",
-        "kickDelayDemoUploadLabel": "Ekstra kick-forsinkelse når demoer er på og upload-URL er satt (sekunder)",
         "kickDelayHelper": "Legges oppå mp_match_restart_delay."
       }
     },
@@ -739,11 +699,7 @@
       "simulateNote": "Når aktivert, inkluderer genererte kampkonfiger \"simulation\": true for automatiserte demo-kamper.",
       "timescaleTitle": "Simuleringshastighet",
       "timescaleDescription": "Styrer hvor raskt simulerte kamper kjører. Høyere verdier gjør bots og runde-flow raskere. Gjelder kun når simulering er aktivert.",
-      "timescaleWarning": "Hastigheter over 2.0 kan være litt ustabile og gi rar bot-oppførsel, men fungerer fint for rask lokal testing.",
-      "debugChat": {
-        "label": "Aktiver debug-chatmeldinger",
-        "description": "Når aktivert, skriver serveren ekstra debug-meldinger (connect/disconnect, event-traces osv.) i in-game chat. Bruk kun for utvikling og testing."
-      }
+      "timescaleWarning": "Hastigheter over 2.0 kan være litt ustabile og gi rar bot-oppførsel, men fungerer fint for rask lokal testing."
     },
     "success": {
       "simulationDisabled": "Simuleringsmodus deaktivert",

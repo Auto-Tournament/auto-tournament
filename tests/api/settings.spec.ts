@@ -99,28 +99,13 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     'webhook_url',
     'simulate_matches',
     'simulation_timescale',
-    'at_chat_prefix',
-    'at_admin_chat_prefix',
-    'at_knife_enabled_default',
-    'at_debug_chat',
     'ratings_enabled',
     'allow_self_register',
     // MatchZy Enhanced core defaults (persisted convars)
-    'at_autostart_mode',
     'at_minimum_ready_required',
     'at_allow_force_ready',
-    'at_kick_when_no_match_loaded',
-    'at_whitelist_enabled_default',
     'at_pause_after_restore',
-    'at_stop_command_available',
-    'at_stop_command_no_damage',
-    'at_use_pause_command_for_tactical_pause',
-    'at_hostname_format',
-    'at_demo_path',
-    'at_demo_name_format',
     'at_series_end_kick_delay_no_demo',
-    'at_series_end_kick_delay_demo_no_upload',
-    'at_series_end_kick_delay_demo_upload',
     // MatchZy Enhanced v1.3.0 settings
     'at_autoready_enabled',
     'at_both_teams_unpause_required',
@@ -458,28 +443,13 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
       webhookUrl,
       simulateMatches,
       simulationTimescale,
-      atChatPrefix,
-      atAdminChatPrefix,
-      atKnifeEnabledDefault,
       ratingsEnabled,
-      atDebugChatEnabled,
       allowSelfRegister,
       // MatchZy Enhanced core defaults
-      atAutostartMode,
       atMinimumReadyRequired,
       atAllowForceReady,
-      atKickWhenNoMatchLoaded,
-      atWhitelistEnabledDefault,
       atPauseAfterRestore,
-      atStopCommandAvailable,
-      atStopCommandNoDamage,
-      atUsePauseCommandForTacticalPause,
-      atHostnameFormat,
-      atDemoPath,
-      atDemoNameFormat,
       atSeriesEndKickDelayNoDemo,
-      atSeriesEndKickDelayDemoNoUpload,
-      atSeriesEndKickDelayDemoUpload,
       // MatchZy Enhanced v1.3.0 settings
       atAutoreadyEnabled,
       atBothTeamsUnpauseRequired,
@@ -497,28 +467,13 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
       webhookUrl?: unknown;
       simulateMatches?: unknown;
       simulationTimescale?: unknown;
-      atChatPrefix?: unknown;
-      atAdminChatPrefix?: unknown;
-      atKnifeEnabledDefault?: unknown;
       ratingsEnabled?: unknown;
-      atDebugChatEnabled?: unknown;
       allowSelfRegister?: unknown;
       // MatchZy Enhanced core defaults
-      atAutostartMode?: unknown;
       atMinimumReadyRequired?: unknown;
       atAllowForceReady?: unknown;
-      atKickWhenNoMatchLoaded?: unknown;
-      atWhitelistEnabledDefault?: unknown;
       atPauseAfterRestore?: unknown;
-      atStopCommandAvailable?: unknown;
-      atStopCommandNoDamage?: unknown;
-      atUsePauseCommandForTacticalPause?: unknown;
-      atHostnameFormat?: unknown;
-      atDemoPath?: unknown;
-      atDemoNameFormat?: unknown;
       atSeriesEndKickDelayNoDemo?: unknown;
-      atSeriesEndKickDelayDemoNoUpload?: unknown;
-      atSeriesEndKickDelayDemoUpload?: unknown;
       // MatchZy Enhanced v1.3.0 settings
       atAutoreadyEnabled?: unknown;
       atBothTeamsUnpauseRequired?: unknown;
@@ -597,48 +552,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         await settingsService.setSetting('simulation_timescale', value);
       }
 
-      if (atChatPrefix !== undefined) {
-        if (typeof atChatPrefix !== 'string' && atChatPrefix !== null) {
-          return res.status(400).json({
-            success: false,
-            error: 'atChatPrefix must be a string or null',
-          });
-        }
-
-        await settingsService.setSetting(
-          'at_chat_prefix',
-          typeof atChatPrefix === 'string' ? atChatPrefix : null
-        );
-      }
-
-      if (atAdminChatPrefix !== undefined) {
-        if (typeof atAdminChatPrefix !== 'string' && atAdminChatPrefix !== null) {
-          return res.status(400).json({
-            success: false,
-            error: 'atAdminChatPrefix must be a string or null',
-          });
-        }
-
-        await settingsService.setSetting(
-          'at_admin_chat_prefix',
-          typeof atAdminChatPrefix === 'string' ? atAdminChatPrefix : null
-        );
-      }
-
-      if (atKnifeEnabledDefault !== undefined) {
-        if (typeof atKnifeEnabledDefault !== 'boolean' && atKnifeEnabledDefault !== null) {
-          return res.status(400).json({
-            success: false,
-            error: 'atKnifeEnabledDefault must be a boolean or null',
-          });
-        }
-
-        const value =
-          atKnifeEnabledDefault === null ? null : atKnifeEnabledDefault === true ? '1' : '0';
-
-        await settingsService.setSetting('at_knife_enabled_default', value);
-      }
-
       if (ratingsEnabled !== undefined) {
         if (typeof ratingsEnabled !== 'boolean' && ratingsEnabled !== null) {
           return res.status(400).json({
@@ -650,19 +563,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         const value = ratingsEnabled === null ? null : ratingsEnabled === true ? '1' : '0';
 
         await settingsService.setSetting('ratings_enabled', value);
-      }
-
-      if (atDebugChatEnabled !== undefined) {
-        if (typeof atDebugChatEnabled !== 'boolean' && atDebugChatEnabled !== null) {
-          return res.status(400).json({
-            success: false,
-            error: 'atDebugChatEnabled must be a boolean or null',
-          });
-        }
-
-        const value = atDebugChatEnabled === null ? null : atDebugChatEnabled === true ? '1' : '0';
-
-        await settingsService.setSetting('at_debug_chat', value);
       }
 
       if (allowSelfRegister !== undefined) {
@@ -688,19 +588,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         await settingsService.setSetting(
           'at_minimum_ready_required',
           atMinimumReadyRequired === null ? null : String(atMinimumReadyRequired)
-        );
-      }
-
-      if (atAutostartMode !== undefined) {
-        if (typeof atAutostartMode !== 'number' && atAutostartMode !== null) {
-          return res.status(400).json({
-            success: false,
-            error: 'atAutostartMode must be a number (0-2) or null',
-          });
-        }
-        await settingsService.setSetting(
-          'at_autostart_mode',
-          atAutostartMode === null ? null : String(atAutostartMode)
         );
       }
 
@@ -762,22 +649,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         );
         if (resp) return resp;
       }
-      if (atKickWhenNoMatchLoaded !== undefined) {
-        const resp = await putBoolOrNull(
-          'at_kick_when_no_match_loaded',
-          atKickWhenNoMatchLoaded,
-          'atKickWhenNoMatchLoaded'
-        );
-        if (resp) return resp;
-      }
-      if (atWhitelistEnabledDefault !== undefined) {
-        const resp = await putBoolOrNull(
-          'at_whitelist_enabled_default',
-          atWhitelistEnabledDefault,
-          'atWhitelistEnabledDefault'
-        );
-        if (resp) return resp;
-      }
       if (atPauseAfterRestore !== undefined) {
         const resp = await putBoolOrNull(
           'at_pause_after_restore',
@@ -786,54 +657,10 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
         );
         if (resp) return resp;
       }
-      if (atStopCommandAvailable !== undefined) {
-        const resp = await putBoolOrNull(
-          'at_stop_command_available',
-          atStopCommandAvailable,
-          'atStopCommandAvailable'
-        );
-        if (resp) return resp;
-      }
-      if (atStopCommandNoDamage !== undefined) {
-        const resp = await putBoolOrNull(
-          'at_stop_command_no_damage',
-          atStopCommandNoDamage,
-          'atStopCommandNoDamage'
-        );
-        if (resp) return resp;
-      }
-      if (atUsePauseCommandForTacticalPause !== undefined) {
-        const resp = await putBoolOrNull(
-          'at_use_pause_command_for_tactical_pause',
-          atUsePauseCommandForTacticalPause,
-          'atUsePauseCommandForTacticalPause'
-        );
-        if (resp) return resp;
-      }
 
       // MatchZy Enhanced core defaults (strings)
       // Note: an empty string is preserved here rather than clearing the setting.
       // "" is how MatchZy Enhanced is told to leave the server's own hostname alone.
-      if (atHostnameFormat !== undefined) {
-        const resp = await putStringOrNull(
-          'at_hostname_format',
-          atHostnameFormat,
-          'atHostnameFormat'
-        );
-        if (resp) return resp;
-      }
-      if (atDemoPath !== undefined) {
-        const resp = await putStringOrNull('at_demo_path', atDemoPath, 'atDemoPath');
-        if (resp) return resp;
-      }
-      if (atDemoNameFormat !== undefined) {
-        const resp = await putStringOrNull(
-          'at_demo_name_format',
-          atDemoNameFormat,
-          'atDemoNameFormat'
-        );
-        if (resp) return resp;
-      }
 
       // MatchZy Enhanced core defaults (numbers)
       if (atSeriesEndKickDelayNoDemo !== undefined) {
@@ -841,22 +668,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
           'at_series_end_kick_delay_no_demo',
           atSeriesEndKickDelayNoDemo,
           'atSeriesEndKickDelayNoDemo'
-        );
-        if (resp) return resp;
-      }
-      if (atSeriesEndKickDelayDemoNoUpload !== undefined) {
-        const resp = await putNumberOrNull(
-          'at_series_end_kick_delay_demo_no_upload',
-          atSeriesEndKickDelayDemoNoUpload,
-          'atSeriesEndKickDelayDemoNoUpload'
-        );
-        if (resp) return resp;
-      }
-      if (atSeriesEndKickDelayDemoUpload !== undefined) {
-        const resp = await putNumberOrNull(
-          'at_series_end_kick_delay_demo_upload',
-          atSeriesEndKickDelayDemoUpload,
-          'atSeriesEndKickDelayDemoUpload'
         );
         if (resp) return resp;
       }
@@ -1141,27 +952,12 @@ const LEGACY_FIELDS = [
   'webhookUrl',
   'simulateMatches',
   'simulationTimescale',
-  'atChatPrefix',
-  'atAdminChatPrefix',
-  'atKnifeEnabledDefault',
   'ratingsEnabled',
-  'atDebugChatEnabled',
   'allowSelfRegister',
   'atMinimumReadyRequired',
-  'atAutostartMode',
   'atAllowForceReady',
-  'atKickWhenNoMatchLoaded',
-  'atWhitelistEnabledDefault',
   'atPauseAfterRestore',
-  'atStopCommandAvailable',
-  'atStopCommandNoDamage',
-  'atUsePauseCommandForTacticalPause',
-  'atHostnameFormat',
-  'atDemoPath',
-  'atDemoNameFormat',
   'atSeriesEndKickDelayNoDemo',
-  'atSeriesEndKickDelayDemoNoUpload',
-  'atSeriesEndKickDelayDemoUpload',
   'atAutoreadyEnabled',
   'atBothTeamsUnpauseRequired',
   'atMaxPausesPerTeam',
@@ -1382,7 +1178,7 @@ test.describe('settings namespace', () => {
         if (allow === undefined) delete process.env.AT_ENABLE_SIMULATION_IN_PROD;
         else process.env.AT_ENABLE_SIMULATION_IN_PROD = allow;
         for (const value of SAMPLE_VALUES) {
-          await compare({}, { simulateMatches: value, atChatPrefix: 'x' });
+          await compare({}, { simulateMatches: value, atMaxPausesPerTeam: 3 });
           await compare({ simulate_matches: '1' }, { simulateMatches: value });
         }
       }

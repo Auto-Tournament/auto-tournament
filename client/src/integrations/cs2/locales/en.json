@@ -620,31 +620,12 @@
       "failed": "Failed to sync maps"
     },
     "defaultsTitle": "Server defaults",
-    "chatDefaults": {
-      "title": "Chat & Knife Defaults",
-      "description": "Configure in-game chat prefixes and default knife round behavior.",
-      "chatPrefixLabel": "Chat Prefix",
-      "chatPrefixHelper": "Default: \"[{Green}Auto Tournament{Default}]\". Leave blank to reset to the default prefix.",
-      "adminChatPrefixLabel": "Admin Chat Prefix",
-      "adminChatPrefixHelper": "Default: \"[{Red}ADMIN{Default}]\". Leave blank to reset to the default admin prefix.",
-      "knifeToggleLabel": "Enable knife rounds by default for new matches (when sides are not pre-selected)",
-      "knifeNote": "Applies only when the server would normally run a knife round; explicit side picks or shuffle-assigned sides are not changed."
-    },
     "atCore": {
       "title": "Core Match Defaults",
       "description": "These defaults are sent to servers during initialization and before each match load.",
       "expert": {
         "title": "Expert settings",
-        "description": "These settings can make servers behave unexpectedly if misconfigured. Change them only if you know you need them.",
-        "autostartMode": {
-          "label": "Autostart mode on plugin load",
-          "helper": "0 = idle/sleep, 1 = match mode (recommended), 2 = practice mode",
-          "options": {
-            "0": "0 — Idle / sleep",
-            "1": "1 — Match mode",
-            "2": "2 — Practice mode"
-          }
-        }
+        "description": "These settings can make servers behave unexpectedly if misconfigured. Change them only if you know you need them."
       },
       "ready": {
         "title": "Ready / Match Start",
@@ -652,29 +633,10 @@
         "minimumReadyHelper": "0 = everyone connected must ready. Default: 0.",
         "allowForceReady": "Allow admins to force-ready players during setup (!forceready)"
       },
-      "access": {
-        "title": "Server Access",
-        "kickWhenNoMatchLoaded": "Kick/prevent joins when no match is loaded (tournament servers)",
-        "whitelistEnabledDefault": "Enable whitelist by default (admins can toggle with .whitelist)"
-      },
       "adminTools": {
         "title": "Admin Tools",
         "pauseAfterRestore": "Pause after round restore (.stop) so teams can coordinate",
-        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)",
-        "stopCommandAvailable": "Enable .stop (round restore) command",
-        "stopCommandNoDamage": "Disable .stop after opposing-team damage occurs",
-        "usePauseForTacticalPause": "Make .pause behave like tactical pause"
-      },
-      "hostname": {
-        "formatLabel": "Server hostname format",
-        "formatHelper": "Applied to every server when a match loads. Tokens: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. Leave empty to keep the hostname each server sets in its own config."
-      },
-      "demos": {
-        "title": "Demos",
-        "demoPathLabel": "Demo path (relative to csgo/)",
-        "demoPathHelper": "Must end with '/'. Default: AutoTournamentCS2/",
-        "demoNameFormatLabel": "Demo filename format (without .dem)",
-        "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)"
       },
       "autostart": {
         "label": "Start matches after (minutes in warmup)",
@@ -683,8 +645,6 @@
       "seriesEnd": {
         "title": "Series End Timing",
         "kickDelayNoDemoLabel": "Extra kick delay when demos are disabled (seconds)",
-        "kickDelayDemoNoUploadLabel": "Extra kick delay when demos enabled but no upload URL (seconds)",
-        "kickDelayDemoUploadLabel": "Extra kick delay when demos enabled and upload URL is set (seconds)",
         "kickDelayHelper": "Added on top of mp_match_restart_delay."
       }
     },
@@ -739,11 +699,7 @@
       "simulateNote": "When enabled, generated match configs include \"simulation\": true for automated demo matches.",
       "timescaleTitle": "Simulation Timescale",
       "timescaleDescription": "Controls how fast simulated matches run. Higher values speed up bots and round flow. This only applies when simulation is enabled.",
-      "timescaleWarning": "Speeds above 2.0 can be a bit unstable and may cause odd bot behavior, but are fine to use for quick local testing.",
-      "debugChat": {
-        "label": "Enable debug chat messages",
-        "description": "When enabled, the server prints additional debug messages (like player connects, disconnects, and event traces) into in-game chat. Use this only for development and testing – not during live events."
-      }
+      "timescaleWarning": "Speeds above 2.0 can be a bit unstable and may cause odd bot behavior, but are fine to use for quick local testing."
     },
     "success": {
       "simulationDisabled": "Simulation mode disabled",

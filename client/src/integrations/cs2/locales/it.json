@@ -619,31 +619,12 @@
     "saved": "Settings saved",
     "saveFailed": "Failed to save settings",
     "loadFailed": "Failed to load settings",
-    "chatDefaults": {
-      "title": "Chat & Knife Defaults",
-      "description": "Configura i prefissi della chat in gioco e il comportamento predefinito della knife round.",
-      "chatPrefixLabel": "Prefisso chat",
-      "chatPrefixHelper": "Predefinito: \"[{Green}Auto Tournament{Default}]\". Lascia vuoto per ripristinare il prefisso predefinito.",
-      "adminChatPrefixLabel": "Prefisso chat admin",
-      "adminChatPrefixHelper": "Predefinito: \"[{Red}ADMIN{Default}]\". Lascia vuoto per ripristinare il prefisso admin predefinito.",
-      "knifeToggleLabel": "Abilita la knife round di default per i nuovi match (quando i lati non sono preselezionati)",
-      "knifeNote": "Applies only when the server would normally run a knife round; explicit side picks or shuffle-assigned sides are not changed."
-    },
     "atCore": {
       "title": "Core Match Defaults",
       "description": "Queste impostazioni vengono inviate ai server durante l’inizializzazione e prima di ogni caricamento match.",
       "expert": {
         "title": "Impostazioni avanzate",
-        "description": "Se configurate male, queste impostazioni possono causare comportamenti imprevisti del server. Modificale solo se sai che ti servono.",
-        "autostartMode": {
-          "label": "Modalità di avvio automatico al caricamento del plugin",
-          "helper": "0 = idle/sleep, 1 = modalità match (consigliata), 2 = modalità practice",
-          "options": {
-            "0": "0 — Inattivo / inattivo",
-            "1": "1 — Modalità match",
-            "2": "2 — Modalità practice"
-          }
-        }
+        "description": "Se configurate male, queste impostazioni possono causare comportamenti imprevisti del server. Modificale solo se sai che ti servono."
       },
       "ready": {
         "title": "Ready / Inizio match",
@@ -651,29 +632,10 @@
         "minimumReadyHelper": "0 = tutti i giocatori connessi devono essere ready. Predefinito: 0.",
         "allowForceReady": "Consenti agli admin di forzare il ready durante il setup (!forceready)"
       },
-      "access": {
-        "title": "Accesso al server",
-        "kickWhenNoMatchLoaded": "Espelli/impedisci l’accesso quando nessun match è caricato (server torneo)",
-        "whitelistEnabledDefault": "Abilita whitelist di default (gli admin possono alternare con .whitelist)"
-      },
       "adminTools": {
         "title": "Strumenti admin",
         "pauseAfterRestore": "Pausa dopo il ripristino round (.stop) così le squadre possono coordinarsi",
-        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)",
-        "stopCommandAvailable": "Abilita il comando .stop (ripristino round)",
-        "stopCommandNoDamage": "Disabilita .stop dopo danni al team avversario",
-        "usePauseForTacticalPause": "Fai sì che .pause si comporti come pausa tattica"
-      },
-      "hostname": {
-        "formatLabel": "Formato hostname del server",
-        "formatHelper": "Applicato a ogni server quando viene caricato un match. Variabili: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. Lascia vuoto per mantenere l'hostname impostato nella configurazione di ciascun server."
-      },
-      "demos": {
-        "title": "Demo",
-        "demoPathLabel": "Percorso demo (relativo a csgo/)",
-        "demoPathHelper": "Deve terminare con '/'. Predefinito: AutoTournamentCS2/",
-        "demoNameFormatLabel": "Formato nome file demo (senza .dem)",
-        "demoNameFormatHelper": "Token: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)"
       },
       "autostart": {
         "label": "Start matches after (minutes in warmup)",
@@ -682,8 +644,6 @@
       "seriesEnd": {
         "title": "Timing fine serie",
         "kickDelayNoDemoLabel": "Ritardo extra di kick quando i demo sono disabilitati (secondi)",
-        "kickDelayDemoNoUploadLabel": "Ritardo extra di kick quando i demo sono abilitati ma non c’è URL di upload (secondi)",
-        "kickDelayDemoUploadLabel": "Ritardo extra di kick quando i demo sono abilitati e l’URL di upload è impostato (secondi)",
         "kickDelayHelper": "Aggiunto sopra mp_match_restart_delay."
       }
     },
@@ -738,11 +698,7 @@
       "simulateNote": "Quando abilitato, le configurazioni generate includono \"simulation\": true per match demo automatizzati.",
       "timescaleTitle": "Velocità simulazione",
       "timescaleDescription": "Controlla quanto velocemente girano i match simulati. Valori più alti accelerano bot e round. Si applica solo quando la simulazione è abilitata.",
-      "timescaleWarning": "Velocità sopra 2.0 possono essere instabili e causare comportamenti strani dei bot, ma vanno bene per test rapidi.",
-      "debugChat": {
-        "label": "Enable debug chat messages",
-        "description": "When enabled, the server prints additional debug messages (like player connects, disconnects, and event traces) into in-game chat. Use this only for development and testing – not during live events."
-      }
+      "timescaleWarning": "Velocità sopra 2.0 possono essere instabili e causare comportamenti strani dei bot, ma vanno bene per test rapidi."
     },
     "success": {
       "simulationDisabled": "Modalità simulazione disabilitata",
