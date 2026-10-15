@@ -1184,6 +1184,7 @@
     "roundOf": "Round {{round}} of {{total}}",
     "roundsCount_one": "{{count}} round",
     "roundsCount_other": "{{count}} rounds",
-    "now": "Now"
+    "now": "Now",
+    "tagLeft": "Left"
   }
 }

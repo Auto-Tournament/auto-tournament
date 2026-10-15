@@ -388,7 +388,7 @@ router.get('/:id/shuffle-round', async (req: Request, res: Response) => {
       ],
     }));
     const playing = new Set(matches.flatMap((m) => m.teams.flatMap((t) => t.steamIds)));
-    const registered = await getRegisteredPlayers(tournamentId);
+    const registered = await getRegisteredPlayers(tournamentId, { active: true });
     const sittingOut = registered.map((p) => p.id).filter((id) => !playing.has(id));
     return res.json({ success: true, round, maps, finished, matches, sittingOut });
   } catch (error) {

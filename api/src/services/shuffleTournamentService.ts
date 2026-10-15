@@ -221,6 +221,14 @@ export async function registerPlayers(
 
       // Register player (upsert - ignore if already registered)
       try {
+        const back = await db.runAsync(
+          'UPDATE shuffle_tournament_players SET left_at = NULL WHERE tournament_id = ? AND player_id = ? AND left_at IS NOT NULL',
+          [tournamentId, playerId]
+        );
+        if (back.changes > 0) {
+          registered++;
+          continue;
+        }
         await db.insertAsync('shuffle_tournament_players', {
           tournament_id: tournamentId,
           player_id: playerId,
@@ -251,9 +259,15 @@ export async function registerPlayers(
 /**
  * Get registered players for shuffle tournament
  */
-export async function getRegisteredPlayers(tournamentId: number): Promise<PlayerRecord[]> {
+export async function getRegisteredPlayers(
+  tournamentId: number,
+  /** Only the players still in it (not left a running shuffle): the ones a round draws. */
+  options: { active?: boolean } = {}
+): Promise<PlayerRecord[]> {
   const playerIds = await db.queryAsync<{ player_id: string }>(
-    'SELECT player_id FROM shuffle_tournament_players WHERE tournament_id = ? ORDER BY registered_at',
+    `SELECT player_id FROM shuffle_tournament_players WHERE tournament_id = ?${
+      options.active ? ' AND left_at IS NULL' : ''
+    } ORDER BY registered_at`,
     [tournamentId]
   );
 
@@ -299,16 +313,18 @@ export async function setRegisteredPlayers(
     throw new Error('No shuffle tournament found. Please create a shuffle tournament first.');
   }
 
-  if (tournament.status !== 'setup') {
+  // A running shuffle: a removed player leaves (keeps their results, is not drawn again).
+  const running = tournament.status === 'in_progress';
+  if (tournament.status !== 'setup' && !running) {
     throw new Error(
       `Cannot modify player registrations. Tournament is in "${tournament.status}" status. ` +
-        'Players can only be modified when tournament is in "setup" status.'
+        'Players can only be modified before it starts or while it runs.'
     );
   }
 
   // Get currently registered players
   const currentPlayerIds = await db.queryAsync<{ player_id: string }>(
-    'SELECT player_id FROM shuffle_tournament_players WHERE tournament_id = ?',
+    'SELECT player_id FROM shuffle_tournament_players WHERE tournament_id = ? AND left_at IS NULL',
     [tournamentId]
   );
   const currentIds = new Set(currentPlayerIds.map((p) => p.player_id));
@@ -325,6 +341,14 @@ export async function setRegisteredPlayers(
   // Remove players that are no longer in the list
   for (const playerId of toRemove) {
     try {
+      if (running) {
+        await db.runAsync(
+          'UPDATE shuffle_tournament_players SET left_at = ? WHERE tournament_id = ? AND player_id = ?',
+          [Math.floor(Date.now() / 1000), tournamentId, playerId]
+        );
+        unregistered++;
+        continue;
+      }
       await db.deleteAsync('shuffle_tournament_players', 'tournament_id = ? AND player_id = ?', [
         tournamentId,
         playerId,
@@ -347,12 +371,12 @@ export async function setRegisteredPlayers(
         continue;
       }
 
-      // Register player
-      await db.insertAsync('shuffle_tournament_players', {
-        tournament_id: tournamentId,
-        player_id: playerId,
-        registered_at: now,
-      });
+      // Register player (or bring back one who left a running shuffle)
+      await db.runAsync(
+        `INSERT INTO shuffle_tournament_players (tournament_id, player_id, registered_at) VALUES (?, ?, ?)
+         ON CONFLICT (tournament_id, player_id) DO UPDATE SET left_at = NULL`,
+        [tournamentId, playerId, now]
+      );
       registered++;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -407,8 +431,8 @@ export async function generateRoundMatches(
   const map = mapSequence[roundNumber - 1];
   const teamSize = tournament.teamSize || 5;
 
-  // Get registered players
-  const players = await getRegisteredPlayers(tournamentId);
+  // Get registered players (not the ones who left)
+  const players = await getRegisteredPlayers(tournamentId, { active: true });
   const minPlayers = teamSize * 2; // Need at least 2 teams
   if (players.length < minPlayers) {
     throw new Error(
@@ -640,7 +664,9 @@ export async function fillRoundFromBench(tournamentId: number): Promise<string[]
   const playing = new Set(
     roundTeams.flatMap((t) => (JSON.parse(t.players || '[]') as Player[]).map((p) => p.steamId))
   );
-  const bench = (await getRegisteredPlayers(tournamentId)).filter((p) => !playing.has(p.id));
+  const bench = (await getRegisteredPlayers(tournamentId, { active: true })).filter(
+    (p) => !playing.has(p.id)
+  );
 
   const botFill =
     getIntegration(tournament.game ?? DEFAULT_GAME).fillsShortTeams?.(tournament) ?? false;
