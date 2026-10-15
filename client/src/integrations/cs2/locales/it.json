@@ -327,6 +327,8 @@
     }
   },
   "vetoInterface": {
+    "orderValve": "Valve's official order (Major rulebook)",
+    "orderCustom": "The organizer's own veto order",
     "vetoNotAvailable": "Veto non disponibile per questa partita",
     "vetoUnavailable": "I dettagli del veto non sono disponibili per questo account. Accedi come giocatore di uno dei due team per continuare il veto.",
     "vetoCompleted": "Veto completato!",

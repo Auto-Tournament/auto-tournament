@@ -18,7 +18,7 @@ import { ArrowsLeftRightIcon, CheckCircleIcon, ProhibitIcon } from '@phosphor-ic
 import { VetoMapCard } from './VetoMapCard';
 import { getMapData, getMapDisplayName } from '../maps/mapData';
 import { getVetoOrder } from './vetoOrders';
-import type { MapSide, VetoMapInfo, VetoState, VetoStateResponse } from '../cs2.types';
+import type { MapSide, VetoMapInfo, VetoState, VetoStateResponse, VetoStep } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
 import {
   onSocketReconnect,
@@ -109,16 +109,25 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     setAllMaps(new Map(maps.map((map) => [map.id, map])));
   }, []);
 
+  // The steps this match uses and whose they are (GET /api/veto/:slug): Valve's or the organizer's.
+  const [order, setOrder] = useState<{ steps: VetoStep[]; source: 'valve' | 'custom' } | null>(
+    null
+  );
+
   const loadVetoState = useCallback(async () => {
     setLoading(true);
     setError('');
 
     try {
       const response = await fetch(`/api/veto/${matchSlug}`);
-      const data = (await response.json()) as VetoStateResponse & { veto: VetoState };
+      const data = (await response.json()) as VetoStateResponse & {
+        veto: VetoState;
+        order?: { steps: VetoStep[]; source: 'valve' | 'custom' };
+      };
 
       if (data.success) {
         storeMapInfo(data.maps);
+        if (data.order) setOrder(data.order);
         setVetoState(data.veto);
         if (data.veto.status === 'completed') {
           onCompleteRef.current?.();
@@ -395,7 +404,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     );
   }
 
-  const vetoOrder = getVetoOrder(vetoState.format);
+  const vetoOrder = order?.steps ?? getVetoOrder(vetoState.format);
   const currentStepConfig = vetoOrder[vetoState.currentStep - 1];
   const currentAction = vetoState.currentAction ?? currentStepConfig?.action;
   const currentTurn =
@@ -523,8 +532,22 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               {team2Name}
             </Typography>
           </Box>
-          <Box display="flex" justifyContent="center" mt={1.5}>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            gap={1}
+            flexWrap="wrap"
+            mt={1.5}
+          >
             <Chip size="small" label={vetoState.format.toUpperCase()} />
+            {order && (
+              <Typography variant="caption" color="text.secondary" data-testid="veto-order-source">
+                {order.source === 'valve'
+                  ? t('vetoInterface.orderValve')
+                  : t('vetoInterface.orderCustom')}
+              </Typography>
+            )}
           </Box>
         </Paper>
       )}
