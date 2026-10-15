@@ -1580,4 +1580,13 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_match_live_state ADD COLUMN IF NOT EXISTS match_row_id INTEGER;
     `,
   },
+  {
+    // The address players outside the machine's network connect to (its public IP or a
+    // host name), set by an admin on the Servers page. csm reports the machine's own
+    // (LAN) address, which remote players cannot reach (2026-10-15, #348).
+    id: '057-fleet-host-public-address',
+    up: `
+      ALTER TABLE cs2_fleet_hosts ADD COLUMN IF NOT EXISTS public_address TEXT;
+    `,
+  },
 ];

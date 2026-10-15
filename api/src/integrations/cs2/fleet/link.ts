@@ -148,6 +148,35 @@ export async function machineAddresses(): Promise<Map<string, string>> {
 }
 
 /** One fleet server's machine address from `machineAddresses()`, or null. */
+/**
+ * The admin's public address of the machine each fleet server runs on (Servers page,
+ * cs2_fleet_hosts.public_address), keyed like `machineAddresses`. It wins over every
+ * reported address: csm and Ready Up report the machine's LAN address, which players
+ * outside its network cannot reach.
+ */
+export async function machinePublicAddresses(): Promise<Map<string, string>> {
+  const rows = await db.queryAsync<{ inventory: string | null; public_address: string | null }>(
+    `SELECT inventory, public_address FROM cs2_fleet_hosts
+      WHERE status = 'enrolled' AND public_address IS NOT NULL AND public_address <> ''`
+  );
+  const out = new Map<string, string>();
+  for (const row of rows) {
+    try {
+      const inv = JSON.parse(row.inventory ?? '{}') as {
+        servers?: Array<{ readyup?: { server_id?: string; install_id?: string } }>;
+      };
+      const address = (row.public_address ?? '').trim();
+      for (const s of inv.servers ?? []) {
+        if (s.readyup?.server_id) out.set(s.readyup.server_id, address);
+        if (s.readyup?.install_id) out.set(`install:${s.readyup.install_id}`, address);
+      }
+    } catch {
+      // An inventory that does not parse names no server.
+    }
+  }
+  return out;
+}
+
 export function machineAddressOf(
   addresses: Map<string, string>,
   fleet: { id: string; install_id?: string | null }
@@ -342,7 +371,15 @@ export async function syncLinkedAddress(fleetServerId: string): Promise<ConnectA
   if (!row || Number(row.host_override ?? 0) === 1) return null;
   const fleet = await getFleetServer(fleetServerId);
   if (!fleet) return null;
-  const next = detectedAddress(fleet, machineAddressOf(await machineAddresses(), fleet));
+  const detected = detectedAddress(fleet, machineAddressOf(await machineAddresses(), fleet));
+  const publicHost = machineAddressOf(await machinePublicAddresses(), fleet);
+  const next: ConnectAddress | null = publicHost
+    ? {
+        host: publicHost,
+        port: detected?.port ?? parseHost(fleet.host)?.game_port ?? DEFAULT_GAME_PORT,
+        source: 'machine_public',
+      }
+    : detected;
   if (!next || (next.host === row.host && next.port === Number(row.port))) return null;
   await db.runAsync(`UPDATE cs2_servers SET host = ?, port = ?, updated_at = ? WHERE id = ?`, [
     next.host,

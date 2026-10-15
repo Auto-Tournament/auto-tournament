@@ -626,6 +626,8 @@ export interface FleetHost {
     };
   } | null;
   inventoryAt: number | null;
+  /** The admin's public address: where players outside the machine's network connect. */
+  publicAddress?: string | null;
   token: {
     id: string;
     createdAt: number;

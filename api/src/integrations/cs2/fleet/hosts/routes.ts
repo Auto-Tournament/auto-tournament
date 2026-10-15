@@ -21,6 +21,9 @@
  */
 
 import { Router, type Request, type Response } from 'express';
+import { isValidConnectHost } from '../address';
+import { syncLinkedAddress } from '../link';
+import { listFleetServers } from '../registry';
 import { requireAuth, requestActorId } from '../../../../middleware/auth';
 import { log } from '../../../../utils/logger';
 import { publicOrigin, publicWsOrigin } from '../../../../utils/publicOrigin';
@@ -249,12 +252,34 @@ fleetHostAdminRouter.get(
 
 fleetHostAdminRouter.patch(
   '/hosts/:id',
-  handler('rename the machine', async (req, res) => {
-    const name = trimmedString(req.body?.name, 100);
-    if (!name)
-      return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
-    if (!(await registry.renameHost(req.params.id, name)))
-      return res.status(404).json({ success: false, error: 'Machine not found' });
+  handler('update the machine', async (req, res) => {
+    const body = (req.body ?? {}) as { name?: unknown; publicAddress?: unknown };
+    if (body.name === undefined && body.publicAddress === undefined)
+      return res.status(400).json({ success: false, error: 'Send name and/or publicAddress' });
+    if (body.publicAddress !== undefined) {
+      // Where players outside the machine's network connect: an IP or a host name, or
+      // null / "" for none (back to the address csm reports).
+      const raw = typeof body.publicAddress === 'string' ? body.publicAddress.trim() : '';
+      if (body.publicAddress !== null && raw !== '' && !isValidConnectHost(raw))
+        return res.status(400).json({
+          success: false,
+          error: 'publicAddress must be an IP address or a host name (no port, scheme or path)',
+        });
+      if (!(await registry.setHostPublicAddress(req.params.id, raw || null)))
+        return res.status(404).json({ success: false, error: 'Machine not found' });
+      // Its servers' connect addresses follow at once.
+      for (const server of await listFleetServers()) await syncLinkedAddress(server.id);
+      log.info(
+        `[FLEET-HOST] ${req.params.id}: public address ${raw || 'cleared'} by ${requestActorId(req) ?? 'unknown'}`
+      );
+    }
+    if (body.name !== undefined) {
+      const name = trimmedString(body.name, 100);
+      if (!name)
+        return res.status(400).json({ success: false, error: 'name must be 1-100 characters' });
+      if (!(await registry.renameHost(req.params.id, name)))
+        return res.status(404).json({ success: false, error: 'Machine not found' });
+    }
     return res.json({ success: true, host: await registry.getHostView(req.params.id) });
   })
 );

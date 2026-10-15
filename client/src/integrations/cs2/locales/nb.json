@@ -1190,7 +1190,16 @@
     },
     "noCsm": "Ingen csm på maskinen ennå?",
     "noCsmHelp": "Installer CS2 Server Manager først, og kom tilbake til steg 2.",
-    "installGuide": "Installasjonsguide"
+    "installGuide": "Installasjonsguide",
+    "publicAddress": {
+      "title": "Offentlig adresse",
+      "lanOnly": "Spillerne kobler til {{address}}, en lokal adresse: bare spillere på samme nettverk kommer inn. Legg inn adressen spillere utenfor nettverket bruker.",
+      "help": "IP-adressen eller vertsnavnet spillere utenfor dette nettverket kobler til (videresend spillportene i ruteren). Tomt: adressen maskinen rapporterer.",
+      "label": "Offentlig IP eller vertsnavn",
+      "save": "Lagre",
+      "clear": "Bruk den rapporterte adressen",
+      "failed": "Kunne ikke lagre adressen"
+    }
   },
   "failover": {
     "title": "Failover",
