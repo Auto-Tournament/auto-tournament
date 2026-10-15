@@ -672,7 +672,7 @@ test.describe('Loading code modules', () => {
       failure: {
         stage: 'contract',
         code: 'outOfRange',
-        message: 'built for client API ^0.3.0; this platform provides 0.2.25',
+        message: 'built for client API ^0.3.0; this platform provides 0.2.26',
       },
     });
   });
