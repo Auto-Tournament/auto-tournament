@@ -1156,6 +1156,13 @@
     "count_one": "{{count}} spiller påmeldt",
     "count_other": "{{count}} spillere påmeldt",
     "countOf_one": "{{count}} av {{spots}} spillere påmeldt",
-    "countOf_other": "{{count}} av {{spots}} spillere påmeldt"
+    "countOf_other": "{{count}} av {{spots}} spillere påmeldt",
+    "playingTitle": "Du spiller runde {{round}}",
+    "playingBody": "Laget ditt denne runden: {{team}}. Åpne kampen for å koble til.",
+    "sittingOutTitle": "Du står over runde {{round}}",
+    "sittingOutBody": "Det er ikke nok spillere til alle lagene denne runden. Du er med i trekningen til runde {{next}}, og de som har spilt mest, står over først.",
+    "goToMatch": "Gå til kampen",
+    "tagPlaying": "Spiller",
+    "tagSittingOut": "Står over"
   }
 }

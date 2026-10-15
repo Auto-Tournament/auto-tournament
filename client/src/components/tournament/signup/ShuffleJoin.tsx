@@ -3,19 +3,50 @@
  * overview shows who is in and a Join (or Leave) button while sign-up is open; a visitor who
  * is not signed in is sent to sign in first.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Typography } from '@mui/material';
 import { ShuffleIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../utils/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
-import { paths } from '../../../paths';
+import { matchPagePath, paths } from '../../../paths';
 import { fontDisplay, radii, tokens } from '../../../theme/tokens';
 import type { ShufflePlayer } from '../../../hooks/useTournamentSignup';
 import { Face } from './PlayerFace';
 
 const { color } = tokens;
+
+interface ShuffleRound {
+  round: number | null;
+  matches: Array<{
+    slug: string;
+    status: string;
+    teams: Array<{ name: string | null; steamIds: string[] }>;
+  }>;
+  sittingOut: string[];
+}
+
+/** The running round: who plays where, who sits out (polled while the tournament runs). */
+function useShuffleRound(tournamentId: number, started: boolean): ShuffleRound | null {
+  const [round, setRound] = useState<ShuffleRound | null>(null);
+  useEffect(() => {
+    if (!started) return;
+    let cancelled = false;
+    const load = () =>
+      api
+        .get<ShuffleRound>(`/api/tournament/${tournamentId}/shuffle-round`)
+        .then((r) => !cancelled && setRound(r))
+        .catch(() => undefined);
+    void load();
+    const id = window.setInterval(load, 15_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [tournamentId, started]);
+  return round;
+}
 
 export function ShuffleJoin({
   tournamentId,
@@ -42,6 +73,31 @@ export function ShuffleJoin({
   const { showError } = useSnackbar();
   const [busy, setBusy] = useState(false);
   const joined = !!steamId && players.some((p) => p.steamId === steamId);
+  const round = useShuffleRound(tournamentId, started);
+  const roundNo = round?.round ?? null;
+  const myMatch =
+    steamId && round
+      ? (round.matches.find((m) => m.teams.some((team) => team.steamIds.includes(steamId))) ?? null)
+      : null;
+  const myTeam = myMatch?.teams.find((team) => !!steamId && team.steamIds.includes(steamId));
+  const sittingOut = new Set(round?.sittingOut ?? []);
+  const iSitOut = !!steamId && joined && roundNo !== null && sittingOut.has(steamId);
+  const title =
+    joined && roundNo !== null && myMatch
+      ? t('shuffleJoin.playingTitle', { round: roundNo })
+      : iSitOut
+        ? t('shuffleJoin.sittingOutTitle', { round: roundNo })
+        : joined
+          ? t('shuffleJoin.youreIn')
+          : t('shuffleJoin.title');
+  const body =
+    joined && myMatch
+      ? t('shuffleJoin.playingBody', { team: myTeam?.name ?? '' })
+      : iSitOut
+        ? t('shuffleJoin.sittingOutBody', { next: (roundNo ?? 0) + 1 })
+        : joined
+          ? t('shuffleJoin.inBody')
+          : t('shuffleJoin.body');
   const full = spots !== null && players.length >= spots && !joined;
 
   const act = async (join: boolean) => {
@@ -80,12 +136,23 @@ export function ShuffleJoin({
             component="h2"
             sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: '1.35rem' }}
           >
-            {joined ? t('shuffleJoin.youreIn') : t('shuffleJoin.title')}
+            {title}
           </Typography>
-          <Typography sx={{ color: 'text.secondary' }}>
-            {joined ? t('shuffleJoin.inBody') : t('shuffleJoin.body')}
+          <Typography sx={{ color: 'text.secondary' }} data-testid="shuffle-round-state">
+            {body}
           </Typography>
         </Box>
+        {myMatch && (
+          <Button
+            component={RouterLink}
+            to={matchPagePath(myMatch.slug)}
+            variant="contained"
+            data-testid="shuffle-my-match"
+            sx={{ borderRadius: radii.pill, px: 3.25, py: 1.75, fontWeight: 600 }}
+          >
+            {t('shuffleJoin.goToMatch')}
+          </Button>
+        )}
         {!started &&
           (!steamId ? (
             open && (
@@ -152,6 +219,20 @@ export function ShuffleJoin({
                 >
                   {p.name}
                 </Typography>
+                {roundNo !== null && (
+                  <Typography
+                    component="span"
+                    sx={{
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      color: sittingOut.has(p.steamId) ? color.muted : color.accent,
+                    }}
+                  >
+                    {sittingOut.has(p.steamId)
+                      ? t('shuffleJoin.tagSittingOut')
+                      : t('shuffleJoin.tagPlaying')}
+                  </Typography>
+                )}
               </Box>
             ))}
           </Box>
