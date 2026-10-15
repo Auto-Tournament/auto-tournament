@@ -443,7 +443,11 @@
       "resumedTitle": "The server restarted",
       "resumedBody": "Connect again: the match continues from the last round backup.",
       "noPassword": "No password: you're on the list.",
-      "startsGame": "CS2 nicht offen? Der Button startet es."
+      "startsGame": "CS2 nicht offen? Der Button startet es.",
+      "via": "Verbinden über",
+      "viaLan": "LAN",
+      "viaPublic": "Internet",
+      "viaRecommended": "für dich"
     }
   },
   "serversPage": {
