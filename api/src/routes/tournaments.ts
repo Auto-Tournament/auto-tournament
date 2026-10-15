@@ -59,6 +59,8 @@ export interface TournamentListItem {
   teamSize: number | null;
   /** The viewer plays in it: their team is in it or signed up, or they are in a lineup or the shuffle pool. */
   mine: boolean;
+  /** The viewer's team in it (one of `teamIds`), for "your team placed #3". */
+  viewerTeamId: string | null;
 }
 
 function startOf(settings: Record<string, unknown>, startedAt: number | undefined): number | null {
@@ -154,8 +156,8 @@ async function listItems(
             )
           )?.n ?? 0)
         : 0;
-    const mine =
-      viewer.tournaments.has(t.id) || (t.teamIds ?? []).some((id) => viewer.teams.has(id));
+    const viewerTeamId = (t.teamIds ?? []).find((id) => viewer.teams.has(id)) ?? null;
+    const mine = viewer.tournaments.has(t.id) || viewerTeamId !== null;
 
     out.push({
       id: t.id,
@@ -185,6 +187,7 @@ async function listItems(
           ? (t as { teamSize: number }).teamSize
           : null,
       mine,
+      viewerTeamId,
     });
   }
   return out;

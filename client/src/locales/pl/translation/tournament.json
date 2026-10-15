@@ -822,7 +822,9 @@
         "finished": "Finished",
         "eliminated": "Eliminated",
         "waiting": "Waiting for next match",
-        "registered": "Registered"
+        "registered": "Registered",
+        "won": "Winner",
+        "out": "Out"
       }
     },
     "prizes": {
@@ -888,7 +890,8 @@
     "mapPoolSoonTitle": "Pula map",
     "mapPoolSoon": "Organizator nie wybrał jeszcze map.",
     "adminBanner": "You are an admin of this tournament. Running it happens in Manage; this page is what players see.",
-    "manageTournament": "Manage tournament"
+    "manageTournament": "Manage tournament",
+    "fullBracket": "Full bracket"
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",
@@ -1084,5 +1087,15 @@
     "winnerOf": "Zwycięzca {{match}}",
     "loserOf": "Przegrany {{match}}",
     "tbd": "Do ustalenia"
+  },
+  "placement": {
+    "outTitle": "Your run in {{tournament}} is over",
+    "wonTitle": "You won {{tournament}}!",
+    "yourTeamPlaced": "{{team}} placed",
+    "yourTeam": "Your team",
+    "outBody": "Your team is out of the tournament, so there are no more matches for you. Follow the rest in the bracket.",
+    "wonBody": "Your team won the tournament. Well played!",
+    "close": "Close",
+    "seeBracket": "See the bracket"
   }
 }
