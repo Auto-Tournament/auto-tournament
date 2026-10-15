@@ -519,10 +519,11 @@ export const tournamentSignupService = {
     const rows = await db.queryAsync<{
       player_id: string;
       registered_at: number;
+      left_at: number | null;
       name: string | null;
       avatar_url: string | null;
     }>(
-      `SELECT s.player_id, s.registered_at, p.name, p.avatar_url
+      `SELECT s.player_id, s.registered_at, s.left_at, p.name, p.avatar_url
          FROM shuffle_tournament_players s LEFT JOIN players p ON p.id = s.player_id
         WHERE s.tournament_id = ? ORDER BY s.registered_at, s.player_id`,
       [tournamentId]
@@ -532,6 +533,8 @@ export const tournamentSignupService = {
       name: r.name || r.player_id,
       avatar: r.avatar_url ?? null,
       joinedAt: Number(r.registered_at),
+      // Left a running shuffle: keeps their results, not drawn again.
+      left: r.left_at !== null,
     }));
   },
 
@@ -571,7 +574,7 @@ export const tournamentSignupService = {
     }
     await db.runAsync(
       `INSERT INTO shuffle_tournament_players (tournament_id, player_id, registered_at) VALUES (?, ?, ?)
-       ON CONFLICT (tournament_id, player_id) DO NOTHING`,
+       ON CONFLICT (tournament_id, player_id) DO UPDATE SET left_at = NULL`,
       [tournamentId, steamId, Math.floor(Date.now() / 1000)]
     );
     emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
@@ -591,8 +594,17 @@ export const tournamentSignupService = {
         'Only a shuffle tournament takes players on their own.',
         'not_shuffle'
       );
+    // Leaving a running shuffle keeps your results; the next rounds do not draw you.
+    if (tournament.status === 'in_progress') {
+      await db.runAsync(
+        'UPDATE shuffle_tournament_players SET left_at = ? WHERE tournament_id = ? AND player_id = ?',
+        [Math.floor(Date.now() / 1000), tournamentId, steamId]
+      );
+      emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
+      return;
+    }
     if (tournament.status !== 'setup')
-      throw new SignupError(409, 'You cannot leave once the tournament has started.', 'started');
+      throw new SignupError(409, 'The tournament is over.', 'started');
     await db.runAsync(
       'DELETE FROM shuffle_tournament_players WHERE tournament_id = ? AND player_id = ?',
       [tournamentId, steamId]

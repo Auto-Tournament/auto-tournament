@@ -1182,6 +1182,12 @@
     "roundOf": "Round {{round}} of {{total}}",
     "roundsCount_one": "{{count}} round",
     "roundsCount_other": "{{count}} rounds",
-    "now": "Now"
+    "now": "Now",
+    "tagLeft": "Left",
+    "markOut": "Mark out",
+    "markIn": "Back in",
+    "roundShort": "Round {{round}}",
+    "playedTitle": "Your round {{round}} match is done",
+    "playedBody": "Round {{next}} is drawn when the other matches finish. Stay on this page: it updates by itself."
   }
 }

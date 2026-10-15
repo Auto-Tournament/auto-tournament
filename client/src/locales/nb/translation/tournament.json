@@ -1182,6 +1182,12 @@
     "roundOf": "Runde {{round}} av {{total}}",
     "roundsCount_one": "{{count}} runde",
     "roundsCount_other": "{{count}} runder",
-    "now": "Nå"
+    "now": "Nå",
+    "tagLeft": "Gått",
+    "markOut": "Sett ut",
+    "markIn": "Tilbake",
+    "roundShort": "Runde {{round}}",
+    "playedTitle": "Kampen din i runde {{round}} er ferdig",
+    "playedBody": "Runde {{next}} trekkes når de andre kampene er ferdige. Bli på siden – den oppdaterer seg selv."
   }
 }

@@ -353,7 +353,7 @@ router.delete(
  *     responses:
  *       200: { description: Joined; your matchmaking state }
  *       404: { description: The invite is gone }
- *       409: { description: The party is searching or full, or you are answering a match }
+ *       409: { description: "The party found a match or is full, or you are answering a match (a party still searching stops its search and takes you)" }
  */
 router.post(
   '/invites/:partyId/accept',

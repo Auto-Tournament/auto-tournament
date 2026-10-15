@@ -27,7 +27,7 @@ import type {
   TournamentSettingsValidation,
 } from '../types';
 import { validateCustomVetoOrderSetting } from './veto/config';
-import { MAP_MODES, isMapMode, mapsOfOtherModes, type MapMode } from './maps/mapModes';
+import { MAP_MODES, isMapMode, mapsOfOtherModes, unknownMaps, type MapMode } from './maps/mapModes';
 
 /** The key of CS2's object inside `tournament.settings` and a template's `settings`. */
 export const CS2_SETTINGS_KEY = 'cs2';
@@ -124,14 +124,19 @@ function requestedMapMode(body: Record<string, unknown> | undefined): unknown {
   return objectIn(body?.settings, CS2_SETTINGS_KEY).mapMode;
 }
 
-/** Errors for `maps` under the map type `mode` (unset, or not a type: only the latter is an error). */
+/**
+ * Errors for `maps`: a map the site does not have, or (with a map type `mode`)
+ * one of another type. An unset mode is fine; one that is not a type is an error.
+ */
 function mapModeErrors(mode: unknown, maps: unknown): string[] {
-  if (mode === undefined || mode === null || mode === '') return [];
-  if (!isMapMode(mode)) return [`mapMode must be one of ${MAP_MODES.join(', ')}`];
   const ids = Array.isArray(maps) ? maps.filter((id): id is string => typeof id === 'string') : [];
-  return mapsOfOtherModes(ids, mode).map(
-    (m) => `Map ${m.id} is a ${m.mode} map; this tournament only plays ${mode} maps`
-  );
+  const errors = unknownMaps(ids).map((id) => `Map ${id} is not in this site's map list`);
+  if (mode === undefined || mode === null || mode === '') return errors;
+  if (!isMapMode(mode)) return [`mapMode must be one of ${MAP_MODES.join(', ')}`];
+  for (const m of mapsOfOtherModes(ids, mode)) {
+    errors.push(`Map ${m.id} is a ${m.mode} map; this tournament only plays ${mode} maps`);
+  }
+  return errors;
 }
 
 function settingsErrors(settings: unknown, mapCount: number | undefined): string[] {

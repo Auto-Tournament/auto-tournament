@@ -122,6 +122,17 @@ export function forgetMapMode(id: string): void {
 }
 
 /** The maps in `mapIds` whose known type is not `mode` (unknown types pass), with their type. */
+/**
+ * The ids that are not maps this site knows (not in its map list), so a
+ * tournament can't be given a map its servers don't have (2026-10-15: a
+ * shuffle round on de_brewery loaded Dust II instead). Empty while the list
+ * has not loaded.
+ */
+export function unknownMaps(mapIds: readonly string[]): string[] {
+  if (knownModes.size === 0) return [];
+  return mapIds.filter((id) => !knownModes.has(id) && !WINGMAN_LAYOUTS.has(id));
+}
+
 export function mapsOfOtherModes(
   mapIds: readonly string[],
   mode: MapMode

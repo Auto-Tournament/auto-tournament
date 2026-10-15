@@ -23,11 +23,18 @@ interface ServedConfig {
   team2?: { name?: string; players?: Roster };
 }
 
-async function roundOneMatches(request: APIRequestContext): Promise<{ slug: string }[]> {
+async function roundOneMatches(
+  request: APIRequestContext,
+  tournamentId: number
+): Promise<{ slug: string }[]> {
+  // This tournament's round 1 only: other specs in the shard leave tournaments of their own.
+  const prefix = tournamentId === 1 ? '' : `t${tournamentId}-`;
   for (let attempt = 0; attempt < 10; attempt++) {
     const res = await request.get('/api/matches', { headers: getAuthHeader() });
     const body = (await res.json()) as { matches: { slug: string; round: number }[] };
-    const matches = body.matches.filter((m) => m.round === 1);
+    const matches = body.matches.filter(
+      (m) => m.round === 1 && m.slug.startsWith(`${prefix}shuffle-r1-`)
+    );
     if (matches.length > 0) return matches;
     if (attempt === 4) await generateRound(request, 1, 1);
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -57,7 +64,10 @@ test.describe.serial('Shuffle tournament rosters', () => {
       expect(setup).toBeTruthy();
       const registered = new Set(setup!.players.map((p) => p.id));
 
-      const matches = await roundOneMatches(request);
+      const matches = await roundOneMatches(
+        request,
+        (setup!.tournament as unknown as { id: number }).id
+      );
       expect(matches.length).toBe(2);
 
       const seen = new Set<string>();
