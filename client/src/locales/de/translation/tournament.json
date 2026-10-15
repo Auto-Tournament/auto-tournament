@@ -1130,7 +1130,18 @@
     "matchIn": "Match in",
     "matchLoading": "Match loading"
   },
-<<<<<<< HEAD
+  "advance": {
+    "title": "Stark, ihr seid noch dabei!",
+    "opponent": "Als Nächstes: {{opponent}}.",
+    "feederTitle": "Euer nächster Gegner kommt aus",
+    "vs": "gegen",
+    "tbd": "Offen",
+    "feederNotStarted": "Dieses Match hat noch nicht begonnen.",
+    "feederMinutes_one": "Noch etwa {{count}} Minute.",
+    "feederMinutes_other": "Noch etwa {{count}} Minuten.",
+    "feederAlmost": "Gleich vorbei.",
+    "watch": "Live ansehen"
+  },
   "shuffleJoin": {
     "title": "Diesem Shuffle beitreten",
     "body": "Kein Team nötig: melde dich allein an. In jeder Runde lost die Plattform neue, ausgeglichene Teams aus.",
@@ -1144,18 +1155,5 @@
     "count_other": "{{count}} Spieler dabei",
     "countOf_one": "{{count}} von {{spots}} Spielern dabei",
     "countOf_other": "{{count}} von {{spots}} Spielern dabei"
-=======
-  "advance": {
-    "title": "Stark, ihr seid noch dabei!",
-    "opponent": "Als Nächstes: {{opponent}}.",
-    "feederTitle": "Euer nächster Gegner kommt aus",
-    "vs": "gegen",
-    "tbd": "Offen",
-    "feederNotStarted": "Dieses Match hat noch nicht begonnen.",
-    "feederMinutes_one": "Noch etwa {{count}} Minute.",
-    "feederMinutes_other": "Noch etwa {{count}} Minuten.",
-    "feederAlmost": "Gleich vorbei.",
-    "watch": "Live ansehen"
->>>>>>> origin/main
   }
 }

@@ -1130,7 +1130,18 @@
     "matchIn": "Match in",
     "matchLoading": "Match loading"
   },
-<<<<<<< HEAD
+  "advance": {
+    "title": "Boa, continuam em prova!",
+    "opponent": "A seguir: {{opponent}}.",
+    "feederTitle": "O vosso próximo adversário sai de",
+    "vs": "contra",
+    "tbd": "Por definir",
+    "feederNotStarted": "Esse jogo ainda não começou.",
+    "feederMinutes_one": "Falta cerca de {{count}} minuto.",
+    "feederMinutes_other": "Faltam cerca de {{count}} minutos.",
+    "feederAlmost": "Quase a acabar.",
+    "watch": "Ver em direto"
+  },
   "shuffleJoin": {
     "title": "Entra neste shuffle",
     "body": "Não precisas de equipa: inscreve-te sozinho. Em cada ronda a plataforma sorteia novas equipas equilibradas.",
@@ -1144,18 +1155,5 @@
     "count_other": "{{count}} jogadores inscritos",
     "countOf_one": "{{count}} de {{spots}} jogadores inscritos",
     "countOf_other": "{{count}} de {{spots}} jogadores inscritos"
-=======
-  "advance": {
-    "title": "Boa, continuam em prova!",
-    "opponent": "A seguir: {{opponent}}.",
-    "feederTitle": "O vosso próximo adversário sai de",
-    "vs": "contra",
-    "tbd": "Por definir",
-    "feederNotStarted": "Esse jogo ainda não começou.",
-    "feederMinutes_one": "Falta cerca de {{count}} minuto.",
-    "feederMinutes_other": "Faltam cerca de {{count}} minutos.",
-    "feederAlmost": "Quase a acabar.",
-    "watch": "Ver em direto"
->>>>>>> origin/main
   }
 }
