@@ -124,8 +124,10 @@ export async function setBrowserNotify(on: boolean): Promise<BrowserNotifyState>
   }
   const granted = window.Notification.permission === 'granted';
   store(on && granted);
-  if (on && granted) await subscribePush();
-  else if (!on) await unsubscribePush();
+  // The subscription is made in the background: the switch answers at once (registering the
+  // service worker and asking the push service can take seconds).
+  if (on && granted) void subscribePush();
+  else if (!on) void unsubscribePush();
   return browserNotifyState();
 }
 
