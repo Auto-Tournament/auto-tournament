@@ -246,6 +246,18 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
       });
     }
     const { format, tournamentMaps, customVetoOrder } = vetoContext;
+    // The steps this match uses, and whether they are Valve's (the Major rulebook's) or the
+    // organizer's own: the veto page draws them and says which.
+    const order = getVetoOrder(
+      format,
+      customVetoOrder as Parameters<typeof getVetoOrder>[1],
+      tournamentMaps.length
+    );
+    const official =
+      tournamentMaps.length === 7 &&
+      JSON.stringify(order) ===
+        JSON.stringify(getVetoOrder(format, undefined, tournamentMaps.length));
+    const orderInfo = { steps: order, source: official ? 'valve' : 'custom' };
 
     // Parse existing veto state or create new one
     let vetoState = match.veto_state ? JSON.parse(match.veto_state) : null;
@@ -316,6 +328,7 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
         success: true,
         veto: { ...vetoState, viewer: 'spectator' },
         maps: await vetoMapInfo(vetoState.allMaps ?? tournamentMaps),
+        order: orderInfo,
       });
     }
 
@@ -323,6 +336,7 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
       success: true,
       veto: vetoState,
       maps: await vetoMapInfo(vetoState.allMaps ?? tournamentMaps),
+      order: orderInfo,
     });
   } catch (error) {
     log.error('Error getting veto state', error);

@@ -327,6 +327,8 @@
     }
   },
   "vetoInterface": {
+    "orderValve": "Valves offisielle rekkefølge (Major-regelverket)",
+    "orderCustom": "Arrangørens egen veto-rekkefølge",
     "vetoNotAvailable": "Veto ikke tilgjengelig for denne kampen",
     "vetoUnavailable": "Veto-detaljer er ikke tilgjengelige for denne kontoen. Logg inn som spiller på ett av de to lagene for å fortsette vetoen.",
     "vetoCompleted": "Veto fullført!",

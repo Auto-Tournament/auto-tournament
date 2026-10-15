@@ -327,6 +327,8 @@
     }
   },
   "vetoInterface": {
+    "orderValve": "Valve's official order (Major rulebook)",
+    "orderCustom": "The organizer's own veto order",
     "vetoNotAvailable": "Veto niet beschikbaar voor deze match",
     "vetoUnavailable": "Veto-details zijn niet beschikbaar voor dit account. Log in als speler van een van de twee teams om het veto te voltooien.",
     "vetoCompleted": "Veto voltooid!",
