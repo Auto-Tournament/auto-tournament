@@ -1,7 +1,17 @@
 import { SignInNeedsWarning } from '../../modules/SignInNeedsWarning';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Alert, Box, Button, Menu, MenuItem, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  FormControlLabel,
+  Menu,
+  MenuItem,
+  Switch,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { ArrowLeftIcon, ArrowRightIcon, FileTextIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../utils/api';
@@ -212,6 +222,25 @@ export function TournamentSetup(props: TournamentSetupProps) {
   const savedSignup = useSavedSignup(signupOf(tournament?.settings, tournament?.teamSize));
   const signup = tournament ? savedSignup.value : form.signup;
   const [savingSignup, setSavingSignup] = useState(false);
+  // Shuffle: players join on their own (the tournament page's Join) while sign-up is open.
+  const [shuffleSignupOpen, setShuffleSignupOpen] = useState(
+    tournament?.settings?.registrationOpen === true
+  );
+  const setShuffleSignup = async (open: boolean) => {
+    if (!tournament) {
+      handlers.onSignupChange({ ...form.signup, registrationOpen: open });
+      return;
+    }
+    setShuffleSignupOpen(open);
+    try {
+      await api.put('/api/tournament', { settings: { registrationOpen: open } });
+      toastSuccess(t('tournament.setup.signup.saved'));
+      await props.onRefreshTeams();
+    } catch (error) {
+      setShuffleSignupOpen(!open);
+      toastError((error as Error).message);
+    }
+  };
   const saveSignup = async () => {
     setSavingSignup(true);
     try {
@@ -625,30 +654,56 @@ export function TournamentSetup(props: TournamentSetupProps) {
 
       case 'teams':
         if (isShuffle) {
+          const selfSignup = (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={tournament ? shuffleSignupOpen : form.signup.registrationOpen}
+                  onChange={(e) => void setShuffleSignup(e.target.checked)}
+                  disabled={locked}
+                  inputProps={{ 'data-testid': 'shuffle-signup-open' } as Record<string, string>}
+                />
+              }
+              label={
+                <Box>
+                  <Typography>{t('tournament.setup.teams.shuffleSelfSignup')}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('tournament.setup.teams.shuffleSelfSignupHelp')}
+                  </Typography>
+                </Box>
+              }
+            />
+          );
           if (!tournament) {
             return (
-              <Alert severity="info" data-testid="shuffle-signup-after-create">
-                {t('tournament.setup.teams.shuffleBeforeCreate')}
-              </Alert>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {selfSignup}
+                <Alert severity="info" data-testid="shuffle-signup-after-create">
+                  {t('tournament.setup.teams.shuffleBeforeCreate')}
+                </Alert>
+              </Box>
             );
           }
           return (
-            <Box
-              sx={{
-                display: 'grid',
-                gap: 2,
-                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
-              }}
-            >
-              <ShufflePlayerRegistration
-                tournamentId={tournament.id}
-                teamSize={tournament.teamSize || 5}
-                onPlayersUpdated={props.onPlayersUpdated}
-              />
-              <ShuffleTournamentStats
-                playerCount={props.registeredPlayerCount || 0}
-                teamSize={tournament.teamSize || 5}
-              />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {selfSignup}
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 2,
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
+                }}
+              >
+                <ShufflePlayerRegistration
+                  tournamentId={tournament.id}
+                  teamSize={tournament.teamSize || 5}
+                  onPlayersUpdated={props.onPlayersUpdated}
+                />
+                <ShuffleTournamentStats
+                  playerCount={props.registeredPlayerCount || 0}
+                  teamSize={tournament.teamSize || 5}
+                />
+              </Box>
             </Box>
           );
         }

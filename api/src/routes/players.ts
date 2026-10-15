@@ -16,7 +16,7 @@ import {
 import { abbreviateId, isValidDiscordId, parseDiscordIdEdit } from '../utils/discordId';
 import { getRatingHistory } from '../services/ratingService';
 import { steamService } from '../services/steamService';
-import { requireAuth, requestActorId } from '../middleware/auth';
+import { requireAuth, requireIntegratorAuth, requestActorId } from '../middleware/auth';
 import { bulkRemovesEveryAdmin, removesLastAdmin } from '../utils/adminRules';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
@@ -1870,6 +1870,12 @@ router.get('/:playerId/matches', async (req: Request, res: Response) => {
 // ============================================================================
 
 // All player management routes require authentication (admin only)
+// The players import (documented below) takes an integrator token too: an event site sends its
+// players with the same token as its teams (/api/integrations/teams).
+router.post('/import', requireIntegratorAuth, (req: Request, res: Response) =>
+  importPlayers(req, res)
+);
+
 router.use(requireAuth);
 
 /**
@@ -2045,47 +2051,6 @@ router.post('/', async (req: Request, res: Response) => {
  *       400:
  *         description: No players, or a player without steamId or name
  */
-router.post('/import', async (req: Request, res: Response) => {
-  const body = req.body as unknown;
-  const list = Array.isArray(body)
-    ? body
-    : body && typeof body === 'object' && Array.isArray((body as { players?: unknown }).players)
-      ? (body as { players: unknown[] }).players
-      : null;
-  if (!list || list.length === 0) {
-    return res.status(400).json({ success: false, error: 'Send an array of players' });
-  }
-  const players: CreatePlayerInput[] = [];
-  for (const raw of list) {
-    const p = (raw ?? {}) as Record<string, unknown>;
-    const steamId = typeof p.steamId === 'string' ? p.steamId.trim() : '';
-    const name = typeof p.name === 'string' ? p.name.trim() : '';
-    if (!/^\d{17}$/.test(steamId) || !name) {
-      return res
-        .status(400)
-        .json({ success: false, error: 'Each player needs a steamId (SteamID64) and a name' });
-    }
-    players.push({
-      id: steamId,
-      name,
-      ...(p.discordId !== undefined ? { discordId: p.discordId } : {}),
-      ...(p.oidcSubject !== undefined ? { oidcSubject: p.oidcSubject } : {}),
-    } as CreatePlayerInput);
-  }
-  try {
-    const result = await playerService.bulkImportPlayers(players);
-    return res.status(result.errors.length > 0 ? 207 : 200).json({
-      success: result.errors.length === 0,
-      created: result.created,
-      updated: result.updated,
-      errors: result.errors.map((e) => ({ steamId: e.player.id, error: e.error })),
-      ...(result.warnings.length > 0 ? { warnings: result.warnings } : {}),
-    });
-  } catch (error) {
-    log.error('Error importing players', { error });
-    return res.status(500).json({ success: false, error: 'Could not import the players' });
-  }
-});
 
 /**
  * POST /api/players/bulk-import
@@ -2345,5 +2310,48 @@ router.delete('/:playerId', async (req: Request, res: Response) => {
     });
   }
 });
+
+/** POST /api/players/import (the @openapi block for /api/players/import documents it). */
+async function importPlayers(req: Request, res: Response) {
+  const body = req.body as unknown;
+  const list = Array.isArray(body)
+    ? body
+    : body && typeof body === 'object' && Array.isArray((body as { players?: unknown }).players)
+      ? (body as { players: unknown[] }).players
+      : null;
+  if (!list || list.length === 0) {
+    return res.status(400).json({ success: false, error: 'Send an array of players' });
+  }
+  const players: CreatePlayerInput[] = [];
+  for (const raw of list) {
+    const p = (raw ?? {}) as Record<string, unknown>;
+    const steamId = typeof p.steamId === 'string' ? p.steamId.trim() : '';
+    const name = typeof p.name === 'string' ? p.name.trim() : '';
+    if (!/^\d{17}$/.test(steamId) || !name) {
+      return res
+        .status(400)
+        .json({ success: false, error: 'Each player needs a steamId (SteamID64) and a name' });
+    }
+    players.push({
+      id: steamId,
+      name,
+      ...(p.discordId !== undefined ? { discordId: p.discordId } : {}),
+      ...(p.oidcSubject !== undefined ? { oidcSubject: p.oidcSubject } : {}),
+    } as CreatePlayerInput);
+  }
+  try {
+    const result = await playerService.bulkImportPlayers(players);
+    return res.status(result.errors.length > 0 ? 207 : 200).json({
+      success: result.errors.length === 0,
+      created: result.created,
+      updated: result.updated,
+      errors: result.errors.map((e) => ({ steamId: e.player.id, error: e.error })),
+      ...(result.warnings.length > 0 ? { warnings: result.warnings } : {}),
+    });
+  } catch (error) {
+    log.error('Error importing players', { error });
+    return res.status(500).json({ success: false, error: 'Could not import the players' });
+  }
+}
 
 export default router;

@@ -556,7 +556,9 @@
         }
       },
       "teams": {
-        "shuffleBeforeCreate": "Players sign up after you create the tournament. Come back to this step to choose them."
+        "shuffleBeforeCreate": "Players sign up after you create the tournament. Come back to this step to choose them.",
+        "shuffleSelfSignup": "玩家自行报名",
+        "shuffleSelfSignupHelp": "开启时，玩家可在锦标赛页面点击“加入”报名；你仍可在此添加玩家。"
       },
       "maps": {
         "vetoTitle": "Veto",
