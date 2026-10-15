@@ -7,8 +7,6 @@
     "highlights": "Highlights"
   },
   "layout": {
-    "webhookNotConfigured": "L’URL del webhook non è configurato. Match e server non possono ricevere eventi finché non viene impostato.",
-    "openSettings": "Apri impostazioni",
     "pageTitle": {
       "servers": "Server",
       "maps": "Mappe e pool",
@@ -1631,7 +1629,9 @@
       "console": "Or paste this in the CS2 console"
     },
     "stattrak": "StatTrak™",
-    "stattrakKills": "StatTrak™ kills"
+    "stattrakKills": "StatTrak™ kills",
+    "takeOffSide": "Take {{name}} off {{side}}",
+    "takeOffOn": "Take off {{side}}"
   },
   "matchRules": {
     "title": "Regole partita",

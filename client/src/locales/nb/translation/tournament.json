@@ -1125,6 +1125,8 @@
     "placedPlay": "{{place}} · Spill matchmaking",
     "waiting": "Venter på motstander",
     "vetoIn": "Veto om",
-    "vetoOpening": "Vetoen åpner"
+    "vetoOpening": "Vetoen åpner",
+    "matchIn": "Kamp om",
+    "matchLoading": "Kampen lastes"
   }
 }

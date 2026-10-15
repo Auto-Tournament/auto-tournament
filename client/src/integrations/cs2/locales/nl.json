@@ -7,8 +7,6 @@
     "highlights": "Highlights"
   },
   "layout": {
-    "webhookNotConfigured": "Webhook-URL is niet ingesteld. Wedstrijden en servers kunnen geen events ontvangen totdat dit is ingesteld.",
-    "openSettings": "Instellingen openen",
     "pageTitle": {
       "servers": "Spelservers",
       "maps": "Kaarten & map-pools",
@@ -1631,7 +1629,9 @@
       "console": "Or paste this in the CS2 console"
     },
     "stattrak": "StatTrak™",
-    "stattrakKills": "StatTrak™ kills"
+    "stattrakKills": "StatTrak™ kills",
+    "takeOffSide": "Take {{name}} off {{side}}",
+    "takeOffOn": "Take off {{side}}"
   },
   "matchRules": {
     "title": "Wedstrijdregels",

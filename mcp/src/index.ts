@@ -318,12 +318,13 @@ server.registerTool(
   {
     title: 'Create a tournament',
     description:
-      'Create the tournament, from a saved template (templateId) or from scratch. A template gives type, format, maps, teams and settings; anything given here wins. type: single_elimination, double_elimination, round_robin, swiss, shuffle. format: bo1, bo3, bo5. fillBots: CS2 bots take empty roster slots.',
+      'Create the tournament, from a saved template (templateId) or from scratch. A template gives type, format, maps, teams and settings; anything given here wins. type: single_elimination, double_elimination, round_robin, swiss, shuffle. format: bo1, bo3, bo5. teamSize: players per team (2 for wingman). fillBots: CS2 bots take empty roster slots.',
     inputSchema: {
       name: z.string().min(1).max(100),
       templateId: z.number().int().optional(),
       type: z.string().optional(),
       format: z.string().optional(),
+      teamSize: z.number().int().min(1).max(10).optional(),
       maps: z.array(z.string()).optional(),
       teamIds: z.array(z.string()).optional(),
       fillBots: z.boolean().optional(),
@@ -331,7 +332,7 @@ server.registerTool(
     },
     annotations: write,
   },
-  async ({ name, templateId, type, format, maps, teamIds, fillBots, settings }) =>
+  async ({ name, templateId, type, format, teamSize, maps, teamIds, fillBots, settings }) =>
     call(async () => {
       let base: Record<string, unknown> = {};
       if (templateId !== undefined) {
@@ -358,6 +359,10 @@ server.registerTool(
         format: format ?? base.format,
         maps: maps ?? base.maps ?? [],
         teamIds: teamIds ?? base.teamIds ?? [],
+        // Top level: the API reads the roster size from here, not from settings.
+        ...((teamSize ?? base.teamSize) !== undefined
+          ? { teamSize: teamSize ?? base.teamSize }
+          : {}),
         settings: merged,
         ...(fillBots !== undefined ? { fillTeamsWithBots: fillBots } : {}),
       };
@@ -370,9 +375,10 @@ server.registerTool(
   {
     title: 'Change the tournament',
     description:
-      'Change the tournament before it starts: name, maps, teams, settings (PUT /api/tournament). fillBots: CS2 bots take empty roster slots.',
+      'Change the tournament before it starts: name, maps, teams, team size, settings (PUT /api/tournament). fillBots: CS2 bots take empty roster slots.',
     inputSchema: {
       name: z.string().min(1).max(100).optional(),
+      teamSize: z.number().int().min(1).max(10).optional(),
       maps: z.array(z.string()).optional(),
       teamIds: z.array(z.string()).optional(),
       fillBots: z.boolean().optional(),

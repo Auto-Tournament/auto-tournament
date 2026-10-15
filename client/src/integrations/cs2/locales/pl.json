@@ -7,8 +7,6 @@
     "highlights": "Highlights"
   },
   "layout": {
-    "webhookNotConfigured": "URL webhooka nie jest skonfigurowany. Mecze i serwery nie mogą odbierać zdarzeń, dopóki nie zostanie ustawiony.",
-    "openSettings": "Otwórz ustawienia",
     "pageTitle": {
       "servers": "Serwery",
       "maps": "Mapy i pule map",
@@ -1641,7 +1639,9 @@
       "console": "Or paste this in the CS2 console"
     },
     "stattrak": "StatTrak™",
-    "stattrakKills": "StatTrak™ kills"
+    "stattrakKills": "StatTrak™ kills",
+    "takeOffSide": "Take {{name}} off {{side}}",
+    "takeOffOn": "Take off {{side}}"
   },
   "matchRules": {
     "title": "Zasady meczu",

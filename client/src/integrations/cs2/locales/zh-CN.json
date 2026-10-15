@@ -7,8 +7,6 @@
     "highlights": "Highlights"
   },
   "layout": {
-    "webhookNotConfigured": "尚未配置 Webhook URL。配置完成之前，比赛和服务器无法接收事件。",
-    "openSettings": "打开设置",
     "pageTitle": {
       "servers": "服务器",
       "maps": "地图与地图池",
@@ -1631,7 +1629,9 @@
       "console": "Or paste this in the CS2 console"
     },
     "stattrak": "StatTrak™",
-    "stattrakKills": "StatTrak™ kills"
+    "stattrakKills": "StatTrak™ kills",
+    "takeOffSide": "Take {{name}} off {{side}}",
+    "takeOffOn": "Take off {{side}}"
   },
   "matchRules": {
     "title": "比赛规则",

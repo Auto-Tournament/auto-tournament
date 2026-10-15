@@ -176,6 +176,7 @@
     "yourTeam": "Laget ditt",
     "opponent": "Motstander",
     "turnLeft": "igjen til å bannlyse eller velge",
-    "turnOver": "Tiden er ute: et kart velges for laget ditt"
+    "turnOver": "Tiden er ute: et kart velges for laget ditt",
+    "soonBodyNoVeto": "Først en kort pause. Kampen lastes når nedtellingen er ferdig."
   }
 }

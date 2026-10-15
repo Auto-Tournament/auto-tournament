@@ -7,8 +7,6 @@
     "highlights": "Highlights"
   },
   "layout": {
-    "webhookNotConfigured": "Webhook-URL er ikke konfigurert. Kamper og servere kan ikke motta hendelser før den er satt.",
-    "openSettings": "Åpne innstillinger",
     "pageTitle": {
       "servers": "Servere",
       "maps": "Kart og kartpooler",
@@ -1631,7 +1629,9 @@
       "console": "Eller lim dette inn i CS2-konsollen"
     },
     "stattrak": "StatTrak™",
-    "stattrakKills": "StatTrak™-drap"
+    "stattrakKills": "StatTrak™-drap",
+    "takeOffSide": "Ta {{name}} av på {{side}}",
+    "takeOffOn": "Ta av på {{side}}"
   },
   "matchRules": {
     "title": "Kampregler",

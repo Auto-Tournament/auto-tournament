@@ -50,6 +50,7 @@ export MAT_TEST_INTEGRATION="${MAT_TEST_INTEGRATION:-1}"
 # The admin UI waits for the license terms; the suite accepts them up front.
 export AT_ACCEPT_LICENSE="${AT_ACCEPT_LICENSE:-noncommercial}"
 export AT_VETO_TURN_SECONDS_DEFAULT="${AT_VETO_TURN_SECONDS_DEFAULT:-0}"
+export AT_UPDATE_CHECK="${AT_UPDATE_CHECK:-off}"
 # Test license keys never check in with autotournament.gg.
 export LICENSE_CHECKIN_URL="${LICENSE_CHECKIN_URL:-off}"
 export API_TOKENS="${API_TOKENS:-ci-admin:ci-admin-token-0123456789abcdef}"

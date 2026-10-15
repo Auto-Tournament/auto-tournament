@@ -598,10 +598,20 @@ async function autoAccept(proposal: FailoverProposal): Promise<AcceptOutcome> {
     log.warn(
       `[FAILOVER] ${proposal.matchSlug}: auto-failover to ${outcome.target} failed: ${outcome.error}`
     );
-  } else if (outcome.code !== 'no_target') {
+  } else if (outcome.code !== 'no_target' && outcome.code !== 'target_refused') {
     log.warn(`[FAILOVER] ${proposal.matchSlug}: auto-failover not done: ${outcome.error}`);
   }
   return outcome;
+}
+
+/** The match config's map count (num_maps; 1 when unreadable). */
+function mapsOf(config: string | null): number {
+  try {
+    const n = Number((JSON.parse(config ?? '{}') as { num_maps?: unknown }).num_maps);
+    return Number.isInteger(n) && n >= 1 ? n : 1;
+  } catch {
+    return 1;
+  }
 }
 
 async function createProposal(input: {
@@ -616,8 +626,20 @@ async function createProposal(input: {
   /** The target when the caller decided it (in place, an admin's pick); else picked from the free servers. */
   targetCs2ServerId?: string | null;
 }): Promise<FailoverProposal | null> {
-  const mapNumber = input.state?.series?.current_map ?? 1;
-  const backup = pickBackup(await roundBackupStore.list(input.slug), mapNumber);
+  // Only this match's own backups and map: a slug comes back with every tournament (t5-r1m1),
+  // and an older match's backup (map 2 round 13 for a Bo1 that never went live) made Ready Up
+  // refuse the resume every 10 s (2026-10-15).
+  const row = await db.queryOneAsync<{ created_at: number | null; config: string | null }>(
+    'SELECT created_at, config FROM matches WHERE slug = ?',
+    [input.slug]
+  );
+  const numMaps = mapsOf(row?.config ?? null);
+  const createdAt = Number(row?.created_at ?? 0);
+  const mapNumber = Math.min(Math.max(1, input.state?.series?.current_map ?? 1), numMaps);
+  const backup = pickBackup(
+    (await roundBackupStore.list(input.slug)).filter((b) => b.storedAt >= createdAt),
+    mapNumber
+  );
   const target =
     input.targetCs2ServerId !== undefined
       ? input.targetCs2ServerId
@@ -778,6 +800,19 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
 
   const inPlace = proposal.reason === 'restarted';
   let target: FailoverCandidate | null;
+  if (
+    inPlace &&
+    proposal.fromCs2ServerId &&
+    (req.exclude ?? []).includes(proposal.fromCs2ServerId)
+  ) {
+    // The server already refused this resume: not again every pass (an admin can still accept).
+    return refuse(
+      409,
+      'target_refused',
+      'The server refused the resume; an admin decides',
+      proposal
+    );
+  }
   if (inPlace) {
     // The server came back without the match: it takes it again.
     const connected = !!proposal.fromServerId && fleetBus().isConnected(proposal.fromServerId);
