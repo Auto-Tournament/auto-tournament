@@ -82,3 +82,39 @@ test(
     await fake.dispose();
   }
 );
+
+test(
+  'recorders that join with one key are numbered after it, in the order they join',
+  TAGS,
+  async ({ request, playwright }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    const base = `farm${Date.now()}`;
+    const { token } = (await (
+      await request.post('/api/game/cs2/recorder-keys', { data: { name: base } })
+    ).json()) as { token: string };
+    const asRecorder = await playwright.request.newContext({
+      baseURL: test.info().project.use.baseURL,
+      extraHTTPHeaders: { Authorization: `Bearer ${token}` },
+    });
+    const hosts = [`${base}-host-a`, `${base}-host-b`];
+    for (const recorder of hosts) {
+      const claim = await asRecorder.post('/api/game/cs2/recorder/claim', {
+        data: { recorder, version: 8 },
+      });
+      expect([200, 204]).toContain(claim.status());
+    }
+    // A second claim keeps the label it got.
+    await asRecorder.post('/api/game/cs2/recorder/claim', {
+      data: { recorder: hosts[0], version: 8 },
+    });
+    const recorders = (await (await request.get('/api/game/cs2/recorders')).json())
+      .recorders as Array<{
+      name: string;
+      label: string | null;
+    }>;
+    const labelOf = (n: string) => recorders.find((r) => r.name === n)?.label;
+    expect(labelOf(hosts[0])).toBe(`${base}-1`);
+    expect(labelOf(hosts[1])).toBe(`${base}-2`);
+    await asRecorder.dispose();
+  }
+);

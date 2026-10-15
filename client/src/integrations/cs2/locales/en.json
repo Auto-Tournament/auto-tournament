@@ -2010,6 +2010,9 @@
       "reelRender": "its clips: {{time}} of recording added up"
     },
     "add": {
+      "baseName": "Name",
+      "baseNameHelp": "Recorders that join with this command show up as {{name}}-1, {{name}}-2, … Rename them in the list.",
+      "makeCommand": "Make the command",
       "button": "Add a recorder",
       "hint": "A gaming PC or a headless server with an NVIDIA or AMD GPU. It shows up here under its own name when it first asks for work; rename it in the list.",
       "keys": "Recorder keys",
