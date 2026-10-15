@@ -34,15 +34,23 @@ test.describe.serial('game field on responses', () => {
 
     const list = await request.get('/api/matches', { headers: getAuthHeader() });
     expect(list.ok()).toBe(true);
-    const { matches } = (await list.json()) as { matches: Array<{ slug: string; game?: string }> };
+    const all = (await list.json()) as { matches: Array<{ slug: string; game?: string }> };
+    // This tournament's matches: other specs in the shard leave their own (a test game's
+    // standalone matches are 'fake').
+    const tournamentId = (created as unknown as { id: number }).id;
+    const matches = all.matches.filter((m) => m.slug.startsWith(`t${tournamentId}-`));
     expect(matches.length).toBeGreaterThan(0);
     for (const match of matches) expect(match.game).toBe('cs2');
 
-    const detail = await request.get(`/api/matches/${matches[0].slug}`, { headers: getAuthHeader() });
+    const detail = await request.get(`/api/matches/${matches[0].slug}`, {
+      headers: getAuthHeader(),
+    });
     expect(detail.ok()).toBe(true);
     expect((await detail.json()).match.game).toBe('cs2');
 
-    const teamMatch = await request.get(`/api/team/${team1.id}/match`, { headers: getAuthHeader() });
+    const teamMatch = await request.get(`/api/team/${team1.id}/match`, {
+      headers: getAuthHeader(),
+    });
     expect(teamMatch.ok()).toBe(true);
     const body = await teamMatch.json();
     if (body.hasMatch) expect(body.match.game).toBe('cs2');
