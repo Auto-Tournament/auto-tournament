@@ -1675,7 +1675,9 @@
       "console": "Or paste this in the CS2 console"
     },
     "stattrak": "StatTrak™",
-    "stattrakKills": "StatTrak™ kills"
+    "stattrakKills": "StatTrak™ kills",
+    "takeOffSide": "Take {{name}} off {{side}}",
+    "takeOffOn": "Take off {{side}}"
   },
   "matchRules": {
     "title": "Reglas de partida",
