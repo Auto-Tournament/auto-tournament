@@ -458,6 +458,14 @@ async function vetoAction(req: Request, res: Response) {
       });
     }
     const { format, tournamentMaps, customVetoOrder } = vetoContext;
+    // A tournament with the veto turned off draws each match's maps (matchConfig.ts):
+    // no action may start one (a player's clicks opened a veto there, 2026-10-15).
+    if (vetoContext.vetoOff) {
+      return res.status(409).json({
+        success: false,
+        error: 'This tournament has no map veto: the map is drawn from the pool.',
+      });
+    }
     const vetoOrder = getVetoOrder(format, customVetoOrder, tournamentMaps.length);
 
     let vetoState = match.veto_state ? JSON.parse(match.veto_state) : null;
