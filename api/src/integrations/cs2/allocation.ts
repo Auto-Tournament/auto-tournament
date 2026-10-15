@@ -114,12 +114,15 @@ export class Cs2ServerPool {
    */
   /**
    * Seconds a server sits out after its match ends: the series-end kick delay players get
-   * to see the result, plus 15 s for the kick and reset. Simulation (bots only): none.
+   * to see the result, plus 15 s for the kick and reset. Simulation (bots only), or a kick
+   * delay of 0: none.
    */
   async serverCooldownSeconds(): Promise<number> {
     if (await settingsService.isSimulationModeEnabled()) return 0;
     const { cs2Settings } = await import('./settingsReaders');
-    return (await cs2Settings.getAtSeriesEndKickDelayNoDemo()) + 15;
+    // A kick delay of 0 is an admin who wants the server back at once: no wait either.
+    const delay = await cs2Settings.getAtSeriesEndKickDelayNoDemo();
+    return delay > 0 ? delay + 15 : 0;
   }
 
   async getEffectiveGracePeriodSeconds(): Promise<number> {
