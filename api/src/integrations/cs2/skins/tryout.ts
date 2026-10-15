@@ -10,6 +10,7 @@ import {
   listLinkAddresses,
   machineAddresses,
   machineAddressOf,
+  machinePublicAddresses,
 } from '../fleet/link';
 import { connectIp } from '../routes/matchConnect';
 
@@ -29,10 +30,11 @@ function runs(state: { installed: string[]; disabled: string[] } | null, plugin:
 
 /** Online tryout servers, by name. */
 export async function tryoutServers(): Promise<TryoutServer[]> {
-  const [servers, links, machines] = await Promise.all([
+  const [servers, links, machines, publicHosts] = await Promise.all([
     listFleetServers(),
     listLinkAddresses(),
     machineAddresses(),
+    machinePublicAddresses(),
   ]);
   const out: TryoutServer[] = [];
   for (const s of servers) {
@@ -57,6 +59,12 @@ export async function tryoutServers(): Promise<TryoutServer[]> {
       host = found.host;
       port = found.port;
     }
+    // The machine's public address wins, as for match servers: players are not on its LAN.
+    const row = await getFleetServer(s.id);
+    const publicHost = row
+      ? machineAddressOf(publicHosts, { id: row.id, install_id: row.install_id })
+      : null;
+    if (publicHost) host = publicHost;
     out.push({
       name: s.name,
       address: `${host}:${port}`,
