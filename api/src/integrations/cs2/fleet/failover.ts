@@ -44,6 +44,7 @@
  * it (reserve servers are counted like any other server).
  */
 
+import { reportedSince } from './matchReports';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import {
@@ -1066,7 +1067,7 @@ async function onServerBack(fleetServerId: string, hello: HelloPayload): Promise
   // Ready Up says hello before it restores a match it kept locally (it reports the match a
   // moment later): only a server still without it after the grace lost it. Acting on the hello
   // re-sent a freshly loaded final as a failover resume (no ready-up, live without .r, 2026-10-15).
-  const helloAt = nowS();
+  const helloAtMs = Date.now();
   await new Promise((resolve) => setTimeout(resolve, SERVER_BACK_GRACE_MS));
   const rows = await db.queryAsync<{
     match_slug: string;
@@ -1080,8 +1081,7 @@ async function onServerBack(fleetServerId: string, hello: HelloPayload): Promise
   );
   for (const row of rows) {
     const slug = row.match_slug;
-    const reported = await liveStateStore.getLiveState(slug);
-    if (reported && reported.epoch === Number(row.epoch) && reported.updatedAt >= helloAt) continue;
+    if (reportedSince(fleetServerId, slug, helloAtMs)) continue;
     const open = await activeProposal(slug);
     if (open?.status === 'moving') continue;
     if (open)

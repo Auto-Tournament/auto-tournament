@@ -24,6 +24,7 @@
  * `onStattrak`.
  */
 
+import { noteMatchReport } from './matchReports';
 import { EventEmitter } from 'events';
 import type { PoolClient } from 'pg';
 import { db } from '../../../config/database';
@@ -286,6 +287,7 @@ async function applyPatchOf(
   env: Envelope,
   payload: { match_id: string; rev: number; patch: Record<string, unknown> }
 ): Promise<PatchOutcome> {
+  noteMatchReport(ctx.serverId, payload.match_id);
   const outcome = await liveStateStore.applyPatch(ctx.serverId, {
     matchSlug: payload.match_id,
     ...(env.epoch !== undefined ? { epoch: env.epoch } : {}),
@@ -590,6 +592,7 @@ export async function handleSnapshot(
   await setAvailability(ctx.serverId, payload.availability).catch((error) => {
     log.warn(`[FLEET] ${ctx.serverId}: availability update failed: ${(error as Error).message}`);
   });
+  noteMatchReport(ctx.serverId, (payload as { match_id?: string | null }).match_id);
   fleetInbound.emit('snapshot', { serverId: ctx.serverId, payload, outcome });
   return outcome;
 }
