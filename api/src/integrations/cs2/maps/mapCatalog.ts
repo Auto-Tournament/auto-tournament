@@ -93,9 +93,11 @@ export function parseMapCatalog(raw: unknown, imageBase = MAP_THUMBNAILS_BASE): 
   }
   if (maps.length === 0) throw new Error('maps.json lists no playable maps');
   const activeDuty = Array.isArray(file.activeDuty)
-    ? [...new Set((file.activeDuty as unknown[]).filter((id): id is string => typeof id === 'string'))].filter(
-        (id) => seen.has(id)
-      )
+    ? [
+        ...new Set(
+          (file.activeDuty as unknown[]).filter((id): id is string => typeof id === 'string')
+        ),
+      ].filter((id) => seen.has(id))
     : [];
   return {
     generatedAt: text(file.generatedAt),
@@ -149,7 +151,9 @@ export interface LoadMapCatalogOptions {
 }
 
 /** maps.json from GitHub, or the bundled copy when it cannot be had. Never throws. */
-export async function loadMapCatalog(options: LoadMapCatalogOptions = {}): Promise<LoadedMapCatalog> {
+export async function loadMapCatalog(
+  options: LoadMapCatalogOptions = {}
+): Promise<LoadedMapCatalog> {
   const url = options.url ?? MAPS_JSON_URL;
   let error: string;
   if (options.offline ?? offline()) {
@@ -172,6 +176,8 @@ export async function loadMapCatalog(options: LoadMapCatalogOptions = {}): Promi
     }
   }
 
-  log.warn(`[CS2 maps] Could not get ${url} (${error}); using the map list bundled with the CS2 module`);
+  log.warn(
+    `[CS2 maps] Could not get ${url} (${error}); using the map list bundled with the CS2 module`
+  );
   return { catalog: bundledMapCatalog(), source: 'bundled', error };
 }

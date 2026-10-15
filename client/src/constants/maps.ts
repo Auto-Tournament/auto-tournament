@@ -8,11 +8,9 @@ import type { CS2MapData } from '../types/veto.types';
 // 1280 px for large hero/background displays, 480 px for smaller cards/lists.
 const MAP_IMAGE_BASE = '/api/game/cs2/img';
 
-const getFullImageUrl = (mapName: string): string =>
-  `${MAP_IMAGE_BASE}/maps-1280/${mapName}.webp`;
+const getFullImageUrl = (mapName: string): string => `${MAP_IMAGE_BASE}/maps-1280/${mapName}.webp`;
 
-const getThumbnailUrl = (mapName: string): string =>
-  `${MAP_IMAGE_BASE}/maps-480/${mapName}.webp`;
+const getThumbnailUrl = (mapName: string): string => `${MAP_IMAGE_BASE}/maps-480/${mapName}.webp`;
 
 /** The map's full-size picture, for heroes and banners. */
 export const getMapImageUrl = (mapName: string): string => getFullImageUrl(mapName);
@@ -87,4 +85,3 @@ export const getMapDisplayName = (mapName: string): string => {
   const mapData = getMapData(mapName);
   return mapData?.displayName || titleCaseMapName(mapName) || mapName;
 };
-

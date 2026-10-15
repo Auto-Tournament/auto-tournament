@@ -42,7 +42,10 @@ import esbuild from 'esbuild';
 import { build as viteBuild, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { HOST_MODULES } from '../../../api/src/modules/hostModules';
-import { SHARED_SPECIFIERS, SDK_SPECIFIER } from '../../../client/src/module-loader/sharedSpecifiers';
+import {
+  SHARED_SPECIFIERS,
+  SDK_SPECIFIER,
+} from '../../../client/src/module-loader/sharedSpecifiers';
 import { CLIENT_API_VERSION, SERVER_API_VERSION } from '../../../api/src/modules/version';
 
 const ROOT = path.resolve(__dirname, '..', '..', '..');
@@ -59,7 +62,13 @@ function fail(message: string): never {
 
 /** The file a relative TypeScript import names, or null. */
 function resolveSource(base: string): string | null {
-  for (const candidate of [base, `${base}.ts`, `${base}.tsx`, path.join(base, 'index.ts'), path.join(base, 'index.tsx')]) {
+  for (const candidate of [
+    base,
+    `${base}.ts`,
+    `${base}.tsx`,
+    path.join(base, 'index.ts'),
+    path.join(base, 'index.tsx'),
+  ]) {
     if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
   }
   return null;
@@ -130,7 +139,9 @@ async function buildServer(out: string): Promise<void> {
         'Add them to api/src/modules/hostModules.ts and hostBridge.ts.'
     );
   }
-  console.log(`server: ${path.relative(ROOT, path.join(out, 'server', 'index.mjs'))} (${used.size} core modules through the bridge)`);
+  console.log(
+    `server: ${path.relative(ROOT, path.join(out, 'server', 'index.mjs'))} (${used.size} core modules through the bridge)`
+  );
 }
 
 /** The SDK by its package name, and every shared package left for the host. */
@@ -143,7 +154,9 @@ function sdkExternal(): Plugin {
       const file = resolveSource(path.resolve(path.dirname(importer), source));
       if (file === SDK_INDEX) return { id: SDK_SPECIFIER, external: true };
       if (file && file.startsWith(path.join(CLIENT_SRC, 'module-sdk') + path.sep)) {
-        throw new Error(`${path.relative(ROOT, importer)} imports ${source}; a module reaches the SDK through its index only`);
+        throw new Error(
+          `${path.relative(ROOT, importer)} imports ${source}; a module reaches the SDK through its index only`
+        );
       }
       return null;
     },
@@ -178,7 +191,9 @@ async function buildClient(out: string): Promise<void> {
   });
   const files = fs.readdirSync(path.join(out, 'client'));
   if (!files.includes('index.js')) fail('the client build wrote no index.js');
-  console.log(`client: ${files.length} file(s) in ${path.relative(ROOT, path.join(out, 'client'))}`);
+  console.log(
+    `client: ${files.length} file(s) in ${path.relative(ROOT, path.join(out, 'client'))}`
+  );
 }
 
 /**
@@ -191,7 +206,8 @@ function copyWebAssets(out: string): void {
   let tmp: string | null = null;
   if (!src) {
     tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'csm-web-assets-'));
-    const repo = process.env.CSM_REPO ?? 'https://github.com/Auto-Tournament/cs2-server-manager.git';
+    const repo =
+      process.env.CSM_REPO ?? 'https://github.com/Auto-Tournament/cs2-server-manager.git';
     const ref = process.env.CSM_REF ?? 'master';
     const git = (...args: string[]) => execFileSync('git', args, { cwd: tmp!, stdio: 'pipe' });
     git('init', '-q');
@@ -225,7 +241,9 @@ async function main(): Promise<void> {
   fs.rmSync(out, { recursive: true, force: true });
   fs.mkdirSync(out, { recursive: true });
 
-  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')) as { version: string };
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')) as {
+    version: string;
+  };
 
   await buildServer(out);
   await buildClient(out);
@@ -245,4 +263,6 @@ async function main(): Promise<void> {
   console.log(`cs2 ${manifest.version} built in ${out}`);
 }
 
-void main().catch((error: unknown) => fail(error instanceof Error ? error.stack ?? error.message : String(error)));
+void main().catch((error: unknown) =>
+  fail(error instanceof Error ? (error.stack ?? error.message) : String(error))
+);

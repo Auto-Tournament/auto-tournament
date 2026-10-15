@@ -89,7 +89,12 @@ export default function MapActionsModal({
         >
           {t('mapActionsModal.edit')}
         </Button>
-        <Button onClick={onDelete} variant="outlined" color="error" startIcon={<TrashIcon size={24} />}>
+        <Button
+          onClick={onDelete}
+          variant="outlined"
+          color="error"
+          startIcon={<TrashIcon size={24} />}
+        >
           {t('common.delete')}
         </Button>
       </DialogActions>
