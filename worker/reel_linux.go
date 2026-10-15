@@ -69,6 +69,13 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 		clean := make([]string, len(paths))
 		for i, p := range paths {
 			clean[i] = cleanPathOf(p)
+			// The reel plays the clean twin, which is longer than the clip itself (a clip
+			// starts after its card's slowed opening, standalone.go): its length is the
+			// twin's. Measured on the clip, every reel cut the last seconds off each
+			// clip and its kill feed and card ran on over the next one (2026-10-15).
+			if d, err := probeDuration(clean[i]); err == nil {
+				plan.durations[i] = d
+			}
 			// The same player again: from where the card's slowed opening ends.
 			if i == 0 || i >= len(sound.continues) || !sound.continues[i] {
 				continue
