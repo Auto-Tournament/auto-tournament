@@ -1336,6 +1336,12 @@
     "ttdLine": "Time to damage {{ms}} ms"
   },
   "skins": {
+    "prizes": {
+      "title": "What you can win",
+      "intro": "Examples of what playing in this tournament can give you, from this site's skins:",
+      "pickOne": "a {{rarity}} skin of your choice (pick 1 of 3)",
+      "matchDrops": "Every tournament match you play in can drop a skin too."
+    },
     "notReal": "Not real CS2 skins.",
     "notice": "They only exist on this site: they are not Steam items, have no money value and can't be traded or sold, and no tournament organiser or sponsor gives away real skins through them. You see them in game on this site's servers.",
     "equipLabel": "Equip {{name}}",

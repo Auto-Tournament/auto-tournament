@@ -141,13 +141,13 @@ function deps(overrides: Partial<LoadDeps> = {}): LoadDeps {
 // ---------------------------------------------------------------------------
 
 test.describe('Client API range', () => {
-  test('the platform publishes 0.2.25, which a module built for ^0.2.0 loads on and one built for ^0.1.0 does not', () => {
+  test('the platform publishes 0.2.26, which a module built for ^0.2.0 loads on and one built for ^0.1.0 does not', () => {
     // 0.2.0 reshaped slots to take ids (item 8b): a break, so the minor moved; 0.2.1 only added SDK exports.
     // 0.2.2 added two optional slots, 0.2.3 to 0.2.5 SDK exports, 0.2.6 one optional slot
     // (`rosterMemberStatus`), 0.2.7 the `ExternalLink` SDK export, 0.2.8 the optional Phosphor nav item
-    // icon and `ICON_SIZE`, 0.2.9 the optional `matchPanels.adminMatchView` slot, 0.2.10 the skin slots, 0.2.11 the profile tab, 0.2.12 the map action, 0.2.13 the tournament tab and results section, 0.2.14 isOwn on the profile view, 0.2.15 reel music on the player, 0.2.16 the crowd track and chapter hover, 0.2.17 the public match view, 0.2.18 the Highlights page tab, 0.2.19 links.match, 0.2.20 site nav links, 0.2.21 the leaderboard view, 0.2.22 useTopic, 0.2.23 admin player actions, 0.2.24 the series maps view, 0.2.25 the notification sound: patches, which ^0.2.0
+    // icon and `ICON_SIZE`, 0.2.9 the optional `matchPanels.adminMatchView` slot, 0.2.10 the skin slots, 0.2.11 the profile tab, 0.2.12 the map action, 0.2.13 the tournament tab and results section, 0.2.14 isOwn on the profile view, 0.2.15 reel music on the player, 0.2.16 the crowd track and chapter hover, 0.2.17 the public match view, 0.2.18 the Highlights page tab, 0.2.19 links.match, 0.2.20 site nav links, 0.2.21 the leaderboard view, 0.2.22 useTopic, 0.2.23 admin player actions, 0.2.24 the series maps view, 0.2.25 the notification sound, 0.2.26 the prizes view: patches, which ^0.2.0
     // still matches.
-    expect(CLIENT_API_VERSION).toBe('0.2.25');
+    expect(CLIENT_API_VERSION).toBe('0.2.26');
     expect(checkClientApi('^0.2.0', CLIENT_API_VERSION)).toBeNull();
     expect(checkClientApi('^0.1.0', CLIENT_API_VERSION)?.code).toBe('outOfRange');
     // Re-exported from the SDK barrel, where a module reads it.

@@ -1346,6 +1346,12 @@
     "ttdLine": "Time to damage {{ms}} ms"
   },
   "skins": {
+    "prizes": {
+      "title": "Co możesz wygrać",
+      "intro": "Przykłady tego, co może dać ci gra w tym turnieju, ze skinów tej strony:",
+      "pickOne": "skin {{rarity}} do wyboru (1 z 3)",
+      "matchDrops": "Każdy mecz turnieju, w którym grasz, może też dać skina."
+    },
     "notReal": "To nie są prawdziwe skiny CS2.",
     "notice": "Istnieją tylko na tej stronie: nie są przedmiotami Steam, nie mają wartości pieniężnej, nie można ich wymieniać ani sprzedawać, a żaden organizator turnieju ani sponsor nie rozdaje przez nie prawdziwych skinów. Widzisz je w grze na serwerach tej strony.",
     "equipLabel": "Equip {{name}}",

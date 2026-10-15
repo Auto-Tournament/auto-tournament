@@ -202,6 +202,7 @@ export const COMPONENT_SLOTS = [
   'rosterMemberStatus',
   'adminGlobalWarning',
   'tournamentRulesView',
+  'tournamentPrizesView',
   'tournamentStart.confirmView',
   'tournamentStart.failureView',
   'tournamentStart.preflight.view',
