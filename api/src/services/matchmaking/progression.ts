@@ -4,7 +4,8 @@
  * platform: how much they play and finish, not how good they are.
  */
 
-export type XpReason = 'completed' | 'win' | 'draw' | 'performance' | 'first_win' | 'admin';
+export type XpReason =
+  'completed' | 'win' | 'draw' | 'performance' | 'first_win' | 'placement' | 'admin';
 
 export const XP = {
   completed: 100,
@@ -13,6 +14,8 @@ export const XP = {
   /** The top player of the match gets this much; the last none. */
   performanceMax: 50,
   firstWin: 100,
+  /** A tournament's 1st, 2nd and 3rd place, on top of their matches. */
+  placement: [500, 300, 200],
 } as const;
 
 export interface XpInput {
@@ -27,7 +30,9 @@ export interface XpInput {
 
 /** The XP parts for one finished match. Never negative. */
 export function xpForMatch(input: XpInput): Array<{ reason: XpReason; amount: number }> {
-  const parts: Array<{ reason: XpReason; amount: number }> = [{ reason: 'completed', amount: XP.completed }];
+  const parts: Array<{ reason: XpReason; amount: number }> = [
+    { reason: 'completed', amount: XP.completed },
+  ];
   if (input.result === 'win') parts.push({ reason: 'win', amount: XP.win });
   if (input.result === 'draw') parts.push({ reason: 'draw', amount: XP.draw });
   if (input.performanceRank !== null && input.rankedPlayers > 1) {
@@ -35,7 +40,8 @@ export function xpForMatch(input: XpInput): Array<{ reason: XpReason; amount: nu
     const amount = Math.round(XP.performanceMax * Math.min(1, Math.max(0, share)));
     if (amount > 0) parts.push({ reason: 'performance', amount });
   }
-  if (input.result === 'win' && input.firstWinToday) parts.push({ reason: 'first_win', amount: XP.firstWin });
+  if (input.result === 'win' && input.firstWinToday)
+    parts.push({ reason: 'first_win', amount: XP.firstWin });
   return parts;
 }
 

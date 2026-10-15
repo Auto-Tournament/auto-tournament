@@ -194,6 +194,24 @@ async function persistPlayerMatchStats(options: {
     match.game ?? integration.id
   ).catch((error) => log.debug('Could not add the played game', { matchSlug, error }));
 
+  // A tournament game earns XP like a matchmaking one (matchmaking's own goes from its service).
+  if (!match.source && match.round > 0) {
+    const roster = [
+      ...team1Players
+        .filter((p) => known.has(p.steamId))
+        .map((p) => ({ player_id: p.steamId, team: 1 })),
+      ...team2Players
+        .filter((p) => known.has(p.steamId))
+        .map((p) => ({ player_id: p.steamId, team: 2 })),
+    ];
+    const { progressionService } = await import('../services/matchmaking/progressionService');
+    await progressionService
+      .awardMatchXp(matchSlug, result === 'draw' ? 'none' : result, new Set(), roster)
+      .catch((error) =>
+        log.warn('Tournament match XP failed', { matchSlug, error: String(error) })
+      );
+  }
+
   // A finished matchmaking or tournament game goes to the game's module (CS2: skin drops).
   const onResult = integrationForMatch(match).onMatchmakingResult;
   const tournamentGame = !match.source && match.round > 0;
