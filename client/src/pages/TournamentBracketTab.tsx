@@ -20,7 +20,7 @@ import { CardBracket } from '../components/tournament/page/CardBracket';
 export default function TournamentBracketTab() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { tournament } = useTournamentPage();
+  const { tournament, viewerTeam } = useTournamentPage();
   const bracket = usePublicBracket(tournament.id);
 
   if (bracket.loading) return <TabLoading label={t('overviewPage.loading')} />;
@@ -85,6 +85,7 @@ export default function TournamentBracketTab() {
           matches={bracket.matches}
           tournamentType={tournament.type}
           format={tournament.format}
+          yourTeamId={viewerTeam?.id ?? null}
         />
       ) : (
         <BracketsViewerVisualization

@@ -1071,6 +1071,7 @@
     "pickSub": "Velg reserve"
   },
   "bracketCards": {
+    "you": "Deg",
     "open": "Åpne {{a}} mot {{b}}",
     "upper": "Øvre bracket",
     "lower": "Nedre bracket",

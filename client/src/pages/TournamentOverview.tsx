@@ -181,6 +181,7 @@ export default function TournamentOverview() {
                 matches={matches}
                 tournamentType={tournament.type}
                 format={tournament.format}
+                yourTeamId={viewerTeam?.id ?? null}
               />
             </Box>
           </Box>

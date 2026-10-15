@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { Box, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,9 @@ const { color } = tokens;
 
 type Tone = 'live' | 'veto' | 'done' | 'next';
 
+/** The viewer's team: its rows get an orange ring and "You" (live test, 2026-10-15). */
+const YourTeam = createContext<string | null>(null);
+
 /**
  * The public Bracket tab's bracket (tournament drafts, board 8): every match
  * as a card with its live state inside, round by round, the rounds joined by
@@ -21,6 +24,23 @@ type Tone = 'live' | 'veto' | 'done' | 'next';
  * shows the upper bracket, the lower bracket, then the grand final.
  */
 export function CardBracket({
+  yourTeamId = null,
+  ...props
+}: {
+  matches: Match[];
+  tournamentType: string;
+  format: string;
+  /** The viewer's team, ringed in orange wherever it plays. */
+  yourTeamId?: string | null;
+}) {
+  return (
+    <YourTeam.Provider value={yourTeamId}>
+      <CardBracketInner {...props} />
+    </YourTeam.Provider>
+  );
+}
+
+function CardBracketInner({
   matches,
   tournamentType,
   format,
@@ -236,6 +256,7 @@ function MatchCard({
   muted?: boolean;
 }) {
   const { t } = useTranslation();
+  const yourTeamId = useContext(YourTeam);
   const tone = toneOf(match);
   const toneColor =
     tone === 'live'
@@ -285,8 +306,10 @@ function MatchCard({
   const row = (team: Match['team1'], score: number | undefined, slot: 0 | 1) => {
     const from = feeders[slot];
     const won = winnerId !== undefined && team?.id === winnerId;
+    const yours = !!team && !!yourTeamId && team.id === yourTeamId;
     return (
       <Box
+        data-your-team={yours ? 'true' : undefined}
         sx={{
           display: 'flex',
           alignItems: 'center',
@@ -294,6 +317,11 @@ function MatchCard({
           px: 1.75,
           py: 1.25,
           borderTop: slot === 1 ? `1px solid ${color.rule}` : 'none',
+          ...(yours && {
+            bgcolor: `color-mix(in srgb, ${color.accent} 12%, transparent)`,
+            boxShadow: `inset 0 0 0 2px ${color.accent}`,
+            borderRadius: slot === 0 ? `${radii.md} ${radii.md} 0 0` : 0,
+          }),
         }}
       >
         {team ? (
@@ -327,6 +355,25 @@ function MatchCard({
             >
               {team.name}
             </Typography>
+            {yours && (
+              <Box
+                component="span"
+                sx={{
+                  ...mono,
+                  flex: 'none',
+                  px: 0.75,
+                  py: 0.25,
+                  borderRadius: radii.pill,
+                  bgcolor: color.accent,
+                  color: color.paper,
+                  fontSize: '0.625rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {t('bracketCards.you')}
+              </Box>
+            )}
             <Typography
               sx={{
                 ...mono,

@@ -1087,7 +1087,8 @@
     "bestOf_other": "Bo{{count}}",
     "winnerOf": "Zwycięzca {{match}}",
     "loserOf": "Przegrany {{match}}",
-    "tbd": "Do ustalenia"
+    "tbd": "Do ustalenia",
+    "you": "Ty"
   },
   "placement": {
     "outTitle": "Your run in {{tournament}} is over",

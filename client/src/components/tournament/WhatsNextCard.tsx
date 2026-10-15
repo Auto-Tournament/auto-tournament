@@ -198,6 +198,7 @@ export function WhatsNextCard({
               matches={matches}
               tournamentType={tournament.type}
               format={tournament.format}
+              yourTeamId={teamId}
             />
           </Box>
         </Box>

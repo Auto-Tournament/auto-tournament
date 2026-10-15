@@ -1085,7 +1085,8 @@
     "bestOf_other": "BO{{count}}",
     "winnerOf": "{{match}} 胜者",
     "loserOf": "{{match}} 败者",
-    "tbd": "待定"
+    "tbd": "待定",
+    "you": "你"
   },
   "placement": {
     "outTitle": "Your run in {{tournament}} is over",
