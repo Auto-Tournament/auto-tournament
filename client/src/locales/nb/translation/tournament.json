@@ -1141,5 +1141,19 @@
     "vetoOpening": "Vetoen åpner",
     "matchIn": "Kamp om",
     "matchLoading": "Kampen lastes"
+  },
+  "shuffleJoin": {
+    "title": "Bli med i denne shufflen",
+    "body": "Du trenger ikke lag: meld deg på alene. Hver runde trekker plattformen nye, jevne lag.",
+    "youreIn": "Du er med",
+    "inBody": "Når turneringen starter, trekkes ditt første lag, og kampen din dukker opp her. Ha siden åpen.",
+    "join": "Bli med",
+    "leave": "Meld av",
+    "full": "Fullt",
+    "signInToJoin": "Logg inn for å bli med",
+    "count_one": "{{count}} spiller påmeldt",
+    "count_other": "{{count}} spillere påmeldt",
+    "countOf_one": "{{count}} av {{spots}} spillere påmeldt",
+    "countOf_other": "{{count}} av {{spots}} spillere påmeldt"
   }
 }

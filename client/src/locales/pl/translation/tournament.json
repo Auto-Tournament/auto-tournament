@@ -1143,5 +1143,19 @@
     "feederMinutes_other": "Zostało około {{count}} minut.",
     "feederAlmost": "Prawie koniec.",
     "watch": "Oglądaj na żywo"
+  },
+  "shuffleJoin": {
+    "title": "Dołącz do tego shuffle",
+    "body": "Nie potrzebujesz drużyny: zapisz się sam. W każdej rundzie platforma losuje nowe, wyrównane drużyny.",
+    "youreIn": "Jesteś zapisany",
+    "inBody": "Gdy turniej się zacznie, zostanie wylosowana twoja pierwsza drużyna, a mecz pojawi się tutaj. Nie zamykaj tej strony.",
+    "join": "Dołącz",
+    "leave": "Wypisz się",
+    "full": "Brak miejsc",
+    "signInToJoin": "Zaloguj się, aby dołączyć",
+    "count_one": "{{count}} gracz zapisany",
+    "count_other": "Zapisanych graczy: {{count}}",
+    "countOf_one": "{{count}} z {{spots}} graczy zapisany",
+    "countOf_other": "Zapisanych graczy: {{count}} z {{spots}}"
   }
 }

@@ -1141,5 +1141,19 @@
     "feederMinutes_other": "Mancano circa {{count}} minuti.",
     "feederAlmost": "Quasi finita.",
     "watch": "Guardala in diretta"
+  },
+  "shuffleJoin": {
+    "title": "Unisciti a questo shuffle",
+    "body": "Non serve una squadra: iscriviti da solo. A ogni turno la piattaforma sorteggia nuove squadre equilibrate.",
+    "youreIn": "Sei dentro",
+    "inBody": "Quando il torneo inizia viene sorteggiata la tua prima squadra e la tua partita compare qui. Tieni aperta questa pagina.",
+    "join": "Unisciti",
+    "leave": "Esci",
+    "full": "Al completo",
+    "signInToJoin": "Accedi per unirti",
+    "count_one": "{{count}} giocatore iscritto",
+    "count_other": "{{count}} giocatori iscritti",
+    "countOf_one": "{{count}} di {{spots}} giocatori iscritti",
+    "countOf_other": "{{count}} di {{spots}} giocatori iscritti"
   }
 }

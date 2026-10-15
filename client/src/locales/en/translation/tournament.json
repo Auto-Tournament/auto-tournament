@@ -1141,5 +1141,19 @@
     "vetoOpening": "Veto opening",
     "matchIn": "Match in",
     "matchLoading": "Match loading"
+  },
+  "shuffleJoin": {
+    "title": "Join this shuffle",
+    "body": "No team needed: sign up on your own. Every round the platform draws new, balanced teams.",
+    "youreIn": "You're in",
+    "inBody": "When the tournament starts, your first team is drawn and your match shows up here. Keep this page open.",
+    "join": "Join",
+    "leave": "Leave",
+    "full": "Full",
+    "signInToJoin": "Sign in to join",
+    "count_one": "{{count}} player in",
+    "count_other": "{{count}} players in",
+    "countOf_one": "{{count}} of {{spots}} players in",
+    "countOf_other": "{{count}} of {{spots}} players in"
   }
 }

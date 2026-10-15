@@ -19495,6 +19495,62 @@
         }
       }
     },
+    "/api/tournament-signup/{id}/join": {
+      "post": {
+        "tags": [
+          "Tournament sign-up"
+        ],
+        "summary": "Join a shuffle tournament on your own (no team)",
+        "description": "Signed-in player, while sign-up is open. The platform draws the teams each round.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Joined (or already in)"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "409": {
+            "description": "Not a shuffle tournament",
+            "sign-up closed": null,
+            "started or full": null
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tournament sign-up"
+        ],
+        "summary": "Leave a shuffle tournament before it starts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Left"
+          },
+          "409": {
+            "description": "It has started"
+          }
+        }
+      }
+    },
     "/api/tournament-signup/{id}/lineup": {
       "put": {
         "tags": [
