@@ -1,4 +1,15 @@
 {
+  "notificationPrompt": {
+    "title": "Slå på varsler",
+    "body": "Vi anbefaler at du slår dem på. Da får du beskjed selv om du lukker fanen:",
+    "matchReady": "når kampen din er klar",
+    "vetoTurn": "når det er din tur i kartvetoen",
+    "starting": "når en turnering du er påmeldt, snart starter",
+    "iphone": "På iPhone må du først legge siden til på Hjem-skjermen (Del, så Legg til på Hjem-skjerm) og åpne den derfra.",
+    "change": "Du kan endre dette når som helst i varselinnstillingene.",
+    "later": "Ikke nå",
+    "turnOn": "Slå på (anbefalt)"
+  },
   "social": {
     "bell": {
       "title": "Varsler",
@@ -218,6 +229,7 @@
     "description": "Hvor vi sier fra om ting som trenger deg når du ikke er på siden. Av som standard, bortsett fra dine egne kamper.",
     "event": "Hendelse",
     "channel": {
+      "push": "Nettleser / mobil",
       "discord": "Discord-melding",
       "email": "E-post"
     },
@@ -246,6 +258,7 @@
     "reason": {
       "no_bot": "Ikke satt opp på denne siden",
       "no_discord": "Koble til Discord først",
+      "no_push": "Slå på varsler i denne nettleseren først",
       "email_off": "Denne siden kan ikke sende e-post",
       "no_email": "Legg til en e-post først",
       "email_unverified": "Bekreft e-posten først"

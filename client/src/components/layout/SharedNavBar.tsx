@@ -23,6 +23,7 @@ import { NavStartCountdown } from './NavStartCountdown';
 import { NavVetoCountdown } from './NavVetoCountdown';
 import { NavTournamentStatus } from './NavTournamentStatus';
 import { PlacementDialog } from '../tournament/PlacementDialog';
+import { NotificationPrompt } from '../social/NotificationPrompt';
 
 /** Top-bar text links: ink2 at rest, ink on hover and on the current page (the drafts' `.nav-links`). */
 const navLinkSx = {
@@ -285,6 +286,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
         loading={matchStatusLoading}
       />
       {playerSteamId && !impersonation && <PlacementDialog viewerId={playerSteamId} />}
+      {playerSteamId && !impersonation && <NotificationPrompt viewerId={playerSteamId} />}
       <Box
         component={RouterLink}
         to={paths.root}

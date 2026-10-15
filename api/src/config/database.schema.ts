@@ -1061,7 +1061,7 @@ export function getSchemaSQL(): string {
     CREATE TABLE IF NOT EXISTS player_notify_channels (
       player_id TEXT NOT NULL,
       event TEXT NOT NULL, -- match_ready | veto_turn | checkin_open | new_tournament
-      channel TEXT NOT NULL, -- discord | email
+      channel TEXT NOT NULL, -- discord | email | push
       enabled INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       PRIMARY KEY (player_id, event, channel)
@@ -1074,6 +1074,18 @@ export function getSchemaSQL(): string {
       sent_at INTEGER NOT NULL,
       PRIMARY KEY (player_id, dedupe_key, channel)
     );
+
+    -- Browser and phone notifications (Web Push): one row per browser a player turned them on in.
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      endpoint TEXT PRIMARY KEY,
+      player_id TEXT NOT NULL,
+      p256dh TEXT NOT NULL,
+      auth TEXT NOT NULL,
+      user_agent TEXT,
+      created_at INTEGER NOT NULL,
+      last_sent_at INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS idx_push_subscriptions_player ON push_subscriptions(player_id);
 
     CREATE TABLE IF NOT EXISTS api_tokens (
       id SERIAL PRIMARY KEY,

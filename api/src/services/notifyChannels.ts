@@ -14,16 +14,19 @@
  * - Discord: a DM from the site's bot (Settings → Integrations, its token
  *   stored encrypted) to the player's Discord account (Discord sign-in, else
  *   the Discord ID an admin entered). The bot must share a server with them.
+ * - Push: a browser or phone notification (webPush.ts) in every browser the player turned
+ *   them on in; they reach a player whose tab is closed.
  * - Each (player, event key, channel) is sent once (notify_deliveries).
  */
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { decryptSecret, encryptSecret } from '../utils/secretBox';
 import { emailService } from './emailService';
+import { webPush } from './webPush';
 
 export type ChannelEvent =
   'match_ready' | 'veto_turn' | 'checkin_open' | 'new_tournament' | 'tournament_starting';
-export type Channel = 'email' | 'discord';
+export type Channel = 'email' | 'discord' | 'push';
 
 export const CHANNEL_EVENTS: ChannelEvent[] = [
   'match_ready',
@@ -32,7 +35,7 @@ export const CHANNEL_EVENTS: ChannelEvent[] = [
   'new_tournament',
   'tournament_starting',
 ];
-export const CHANNELS: Channel[] = ['discord', 'email'];
+export const CHANNELS: Channel[] = ['discord', 'email', 'push'];
 
 /** On for a player who chose nothing: their own matches only. */
 const DEFAULT_ON: Record<ChannelEvent, boolean> = {
@@ -61,7 +64,7 @@ export interface ChannelMessage {
 export interface ChannelState {
   /** Usable for this player now. */
   available: boolean;
-  /** Why not: 'no_email', 'email_unverified', 'email_off' (site cannot send), 'no_bot', 'no_discord'. */
+  /** Why not: 'no_email', 'email_unverified', 'email_off' (site cannot send), 'no_bot', 'no_discord', 'no_push'. */
   reason?: string;
 }
 
@@ -230,7 +233,12 @@ export const notifyChannels = {
       : !(await discordIdOf(playerId))
         ? { available: false, reason: 'no_discord' }
         : { available: true };
-    return { events, channels: { email, discord } };
+    // Browser and phone notifications: on in at least one browser (webPush.ts).
+    const push: ChannelState =
+      (await webPush.count(playerId).catch(() => 0)) > 0
+        ? { available: true }
+        : { available: false, reason: 'no_push' };
+    return { events, channels: { email, discord, push } };
   },
 
   /** Turn one event's channel on or off for a player. */
@@ -272,8 +280,8 @@ export const notifyChannels = {
     event: ChannelEvent,
     key: string,
     message: ChannelMessage
-  ): Promise<{ email: number; discord: number }> {
-    const sent = { email: 0, discord: 0 };
+  ): Promise<{ email: number; discord: number; push: number }> {
+    const sent = { email: 0, discord: 0, push: 0 };
     const base = await emailService.siteUrl().catch(() => null);
     const url = message.url
       ? /^https?:\/\//.test(message.url)
@@ -295,7 +303,15 @@ export const notifyChannels = {
             [playerId, key, channel, now()]
           );
           if (claimed.length === 0) continue;
-          if (channel === 'discord') {
+          if (channel === 'push') {
+            const n = await webPush.send(playerId, {
+              title: message.subject,
+              body: message.text,
+              url: message.url,
+              tag: key,
+            });
+            if (n > 0) sent.push += 1;
+          } else if (channel === 'discord') {
             const id = await discordIdOf(playerId);
             const ok =
               !!id &&

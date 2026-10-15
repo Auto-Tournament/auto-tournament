@@ -82,3 +82,39 @@ test(
       .toContainEqual(expect.stringContaining('Sender Two'));
   }
 );
+
+test(
+  'a player with notifications off is asked once, and Turn on turns them on',
+  { tag: ['@ui'] },
+  async ({ page }) => {
+    await page.addInitScript(() => {
+      // As a real browser: the prompt skips automated ones.
+      Object.defineProperty(navigator, 'webdriver', { get: () => false });
+      class FakeNotification {
+        static permission = 'default';
+        static requestPermission() {
+          FakeNotification.permission = 'granted';
+          return Promise.resolve('granted');
+        }
+        close() {}
+      }
+      Object.defineProperty(window, 'Notification', {
+        value: FakeNotification,
+        configurable: true,
+      });
+    });
+    expect(await signInAsPlayer(page, id(2), 'Prompt Me')).toBe(true);
+    await page.goto('/');
+    const prompt = page.getByTestId('notification-prompt');
+    await expect(prompt).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('notification-prompt-on').click();
+    await expect(prompt).toBeHidden();
+    expect(await page.evaluate(() => window.localStorage.getItem('at.browserNotifications'))).toBe(
+      'on'
+    );
+    // Asked: not again on the next page.
+    await page.reload();
+    await page.waitForTimeout(5000);
+    await expect(prompt).toBeHidden();
+  }
+);

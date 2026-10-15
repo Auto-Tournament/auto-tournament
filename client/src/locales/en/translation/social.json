@@ -1,4 +1,15 @@
 {
+  "notificationPrompt": {
+    "title": "Turn on notifications",
+    "body": "We recommend turning them on. Then you hear from us even if you close this tab:",
+    "matchReady": "your match is ready to join",
+    "vetoTurn": "it's your turn in the map veto",
+    "starting": "a tournament you signed up for is about to start",
+    "iphone": "On an iPhone, add this site to your Home Screen first (Share, then Add to Home Screen), and open it from there.",
+    "change": "You can change this any time in your notification settings.",
+    "later": "Not now",
+    "turnOn": "Turn on (recommended)"
+  },
   "social": {
     "bell": {
       "title": "Notifications",
@@ -182,7 +193,7 @@
       "title": "Settings",
       "alerts": "Alerts",
       "browser": "Browser notifications",
-      "browserHint": "While this tab is in the background. On for this browser only.",
+      "browserHint": "On this device, even with the site closed (your match is ready, your veto turn, a tournament starting). On for this browser only.",
       "browserDenied": "Blocked in this browser's site settings. Allow notifications there to turn them on.",
       "browserUnsupported": "This browser has no notifications.",
       "sound": "Sound",
@@ -218,6 +229,7 @@
     "description": "Where we tell you things that need you when you're not on the site. Off by default, except your own matches.",
     "event": "Event",
     "channel": {
+      "push": "Browser / phone",
       "discord": "Discord DM",
       "email": "Email"
     },
@@ -246,6 +258,7 @@
     "reason": {
       "no_bot": "Not set up on this site",
       "no_discord": "Link Discord first",
+      "no_push": "Turn on notifications in this browser first",
       "email_off": "This site can't send email",
       "no_email": "Add an email first",
       "email_unverified": "Confirm your email first"
