@@ -38,7 +38,10 @@ test.describe.serial('game field on responses', () => {
     // This tournament's matches: other specs in the shard leave their own (a test game's
     // standalone matches are 'fake').
     const tournamentId = (created as unknown as { id: number }).id;
-    const matches = all.matches.filter((m) => m.slug.startsWith(`t${tournamentId}-`));
+    // Tournament 1's slugs carry no prefix (r1m1); later ones do (t2-r1m1).
+    const ofTournament = (slug: string) =>
+      tournamentId === 1 ? !/^t\d+-/.test(slug) : slug.startsWith(`t${tournamentId}-`);
+    const matches = all.matches.filter((m) => ofTournament(m.slug));
     expect(matches.length).toBeGreaterThan(0);
     for (const match of matches) expect(match.game).toBe('cs2');
 
