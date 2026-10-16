@@ -44,13 +44,13 @@ The browser constraints:
 
 ## Options
 
-| Option | Same path as the game? | New infra | Verdict |
-| --- | --- | --- | --- |
-| HTTPS on the host with a real cert (per-host DNS name such as `192-168-1-20.<id>.example.com`, cert via DNS-01) | No: TCP, own port | Wildcard DNS service, cert issuance, a port per host | Rejected: heavy, and tests the wrong port |
-| `<img>` / no-cors timing probe to `http://ip:270x2` | No: TCP, status port | None | Rejected. A router that answers RST for an unforwarded port gives a fast error, which reads as "reachable". Also hits the LNA prompt |
-| Probe through Ready Up's status server (270x2) | No: TCP | None | Rejected: same port problem, and blocked as mixed content |
-| CS2 client reports what worked (server sees the joining player's source IP: private means LAN) | Yes, it's the real join | Ready Up sends `address` on `player_connect` (the game event has it) | Good **after** someone gets in. Can't help the first player, and needs matching venue networks across viewers. Kept as a follow-up |
-| **WebRTC ICE check to the game's own IP:port, answered by csm** | **Yes: UDP, same IP and port** | csm release + one root step on the host | **Picked** |
+| Option                                                                                                          | Same path as the game?         | New infra                                                            | Verdict                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| HTTPS on the host with a real cert (per-host DNS name such as `192-168-1-20.<id>.example.com`, cert via DNS-01) | No: TCP, own port              | Wildcard DNS service, cert issuance, a port per host                 | Rejected: heavy, and tests the wrong port                                                                                            |
+| `<img>` / no-cors timing probe to `http://ip:270x2`                                                             | No: TCP, status port           | None                                                                 | Rejected. A router that answers RST for an unforwarded port gives a fast error, which reads as "reachable". Also hits the LNA prompt |
+| Probe through Ready Up's status server (270x2)                                                                  | No: TCP                        | None                                                                 | Rejected: same port problem, and blocked as mixed content                                                                            |
+| CS2 client reports what worked (server sees the joining player's source IP: private means LAN)                  | Yes, it's the real join        | Ready Up sends `address` on `player_connect` (the game event has it) | Good **after** someone gets in. Can't help the first player, and needs matching venue networks across viewers. Kept as a follow-up   |
+| **WebRTC ICE check to the game's own IP:port, answered by csm**                                                 | **Yes: UDP, same IP and port** | csm release + one root step on the host                              | **Picked**                                                                                                                           |
 
 ## The pick: an ICE check against the game port
 
