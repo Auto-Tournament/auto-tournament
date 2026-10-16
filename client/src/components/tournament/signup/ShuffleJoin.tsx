@@ -11,6 +11,7 @@ import { api } from '../../../utils/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { matchPagePath, paths } from '../../../paths';
 import { getMapDisplayName } from '../../../constants/maps';
+import { fmtCountdown, fmtTime } from '../../../utils/time';
 import { useAuth } from '../../../contexts/AuthContext';
 import { radii, tokens } from '../../../theme/tokens';
 import {
@@ -39,6 +40,43 @@ interface ShuffleRound {
     teams: Array<{ name: string | null; steamIds: string[] }>;
   }>;
   sittingOut: string[];
+  /** A break before this round: when it ends (epoch s); null when none. */
+  breakUntil?: number | null;
+}
+
+/** "Break · round 2 starts at 20:05 (4:12)", ticking every second while the break lasts. */
+function BreakLine({ until, round }: { until: number; round: number }) {
+  const { t } = useTranslation();
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  if (until * 1000 <= now) return null;
+  return (
+    <Box
+      role="status"
+      data-testid="shuffle-break"
+      sx={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'baseline',
+        justifyContent: 'space-between',
+        gap: 1,
+        px: 2,
+        py: 1.5,
+        borderRadius: radii.md,
+        bgcolor: color.paper3,
+      }}
+    >
+      <Typography sx={{ fontWeight: 600 }}>
+        {t('shuffleJoin.breakTitle', { round, time: fmtTime(until) })}
+      </Typography>
+      <Typography sx={{ fontVariantNumeric: 'tabular-nums', color: color.ink2 }}>
+        {fmtCountdown(until, now)}
+      </Typography>
+    </Box>
+  );
 }
 
 /** The running round: who plays where, who sits out (polled while the tournament runs). */
@@ -533,6 +571,7 @@ export function ShuffleJoin({
           id="shuffle-this-round"
           title={`${t('shuffleJoin.roundHeading', { round: roundNo })}${myMap || round.maps?.[roundNo - 1] ? ` · ${getMapDisplayName((round.maps?.[roundNo - 1] ?? myMap) as string)}` : ''}`}
         />
+        {round.breakUntil ? <BreakLine until={round.breakUntil} round={roundNo} /> : null}
         {round.matches.map((m) => matchRow(m, false))}
         {round.sittingOut.length > 0 && (
           <Box

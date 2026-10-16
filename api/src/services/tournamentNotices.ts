@@ -14,7 +14,7 @@ const FRESH_SECONDS = 6 * 3600;
 
 /**
  * The players of a tournament: the lineups teams picked when they signed up,
- * else everyone on the rosters of its teams.
+ * a shuffle's signed-up players, else everyone on the rosters of its teams.
  */
 export async function tournamentPlayers(tournamentId: number): Promise<string[]> {
   const lineup = await db.queryAsync<{ player_id: string }>(
@@ -22,6 +22,12 @@ export async function tournamentPlayers(tournamentId: number): Promise<string[]>
     [tournamentId]
   );
   if (lineup.length > 0) return lineup.map((r) => r.player_id);
+  // A shuffle has no teams before it starts: its signed-up players (who have not left).
+  const shuffle = await db.queryAsync<{ player_id: string }>(
+    'SELECT player_id FROM shuffle_tournament_players WHERE tournament_id = ? AND left_at IS NULL',
+    [tournamentId]
+  );
+  if (shuffle.length > 0) return shuffle.map((r) => r.player_id);
   const row = await db.queryOneAsync<{ team_ids: string | null }>(
     'SELECT team_ids FROM tournament WHERE id = ?',
     [tournamentId]

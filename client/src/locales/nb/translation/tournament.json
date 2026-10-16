@@ -1312,7 +1312,8 @@
     "sittingOutBodyCounts_other": "Det er {{players}} spillere til {{size}}v{{size2}}, så {{count}} står over hver runde. De som har spilt mest, står over først: du er med i neste trekning.",
     "playedBodyLeft_one": "Venter på {{count}} kamp til. Runde {{next}} trekkes når den er ferdig. Kampen din dukker opp her, og du får et varsel.",
     "playedBodyLeft_other": "Venter på {{count}} kamper til. Runde {{next}} trekkes når de er ferdige. Kampen din dukker opp her, og du får et varsel.",
-    "joinedByMistake": "Meldte du deg på ved en feil?"
+    "joinedByMistake": "Meldte du deg på ved en feil?",
+    "breakTitle": "Pause · runde {{round}} starter kl. {{time}}"
   },
   "liveOverview": {
     "roundOf": "Runde {{round}} av {{total}}",
@@ -1591,7 +1592,15 @@
       "late": "En forsinket runde skyver den neste: et lag som fortsatt spiller, eller pausen mellom kampene, holder igjen vetoen, og spillerne ser den nye tiden.",
       "none": "Ingen tid satt: som før starter en kamp så snart begge lagene og en server er klare.",
       "where": "Tidsplanen i oversikten, kampkortene, kamprommet, reglene og innsjekken viser disse tidene."
-    }
+    },
+    "breaksTitle": "Pauser mellom rundene",
+    "breaksNote_one": "La pausen stå tom for å bruke sidens pause på {{count}} minutt. Legg til en lengre pause etter en runde, for eksempel 30 minutter etter runde 3.",
+    "breaksNote_other": "La pausen stå tom for å bruke sidens pause på {{count}} minutter. Legg til en lengre pause etter en runde, for eksempel 30 minutter etter runde 3.",
+    "breakEvery": "Pause etter hver runde (min)",
+    "breakAfterRound": "Etter runde",
+    "breakMinutes": "Pause (min)",
+    "breakRemove": "Fjern",
+    "breakAdd": "Legg til en lengre pause"
   },
   "groups": {
     "groupN": "Gruppe {{letter}}",

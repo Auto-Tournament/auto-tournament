@@ -450,12 +450,14 @@ router.get('/:id/shuffle-round', async (req: Request, res: Response) => {
     const rows = await db.queryAsync<{
       slug: string;
       status: string;
+      held_until: number | null;
+      hold_reason: string | null;
       t1_name: string | null;
       t1_players: string | null;
       t2_name: string | null;
       t2_players: string | null;
     }>(
-      `SELECT m.slug, m.status, t1.name AS t1_name, t1.players AS t1_players,
+      `SELECT m.slug, m.status, m.held_until, m.hold_reason, t1.name AS t1_name, t1.players AS t1_players,
               t2.name AS t2_name, t2.players AS t2_players
          FROM matches m
          LEFT JOIN teams t1 ON t1.id = m.team1_id
@@ -477,7 +479,15 @@ router.get('/:id/shuffle-round', async (req: Request, res: Response) => {
     const playing = new Set(matches.flatMap((m) => m.teams.flatMap((t) => t.steamIds)));
     const registered = await getRegisteredPlayers(tournamentId, { active: true });
     const sittingOut = registered.map((p) => p.id).filter((id) => !playing.has(id));
-    return res.json({ success: true, round, maps, finished, matches, sittingOut });
+    // A break before this round (shuffleTournamentService holdRoundForBreak): when it ends.
+    const now = Math.floor(Date.now() / 1000);
+    const breakUntil =
+      rows
+        .filter(
+          (r) => r.held_until && Number(r.held_until) > now && /^Break/.test(r.hold_reason ?? '')
+        )
+        .reduce<number | null>((max, r) => Math.max(max ?? 0, Number(r.held_until)), null) ?? null;
+    return res.json({ success: true, round, maps, finished, matches, sittingOut, breakUntil });
   } catch (error) {
     log.error('Error reading the shuffle round', { error });
     return res.status(500).json({ success: false, error: 'Could not read the round' });

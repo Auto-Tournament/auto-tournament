@@ -1,4 +1,4 @@
-import { Box, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, Button, MenuItem, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SegmentedControl } from './SegmentedControl';
 import { getRoundLabel } from '../../../utils/matchUtils';
@@ -13,6 +13,12 @@ export interface MatchTimesForm {
   rounds: Record<string, string>;
   vetoLeadMinutes: number;
   reminderMinutes: number;
+  /**
+   * Breaks between rounds (saved as `settings.roundBreaks`, api
+   * shuffleTournamentService): `minutes` after every round (null: the site's
+   * break between matches), and longer ones `after` given rounds.
+   */
+  breaks: { minutes: number | null; after: Array<{ round: number; minutes: number }> };
 }
 
 export const DEFAULT_MATCH_TIMES: MatchTimesForm = {
@@ -20,7 +26,35 @@ export const DEFAULT_MATCH_TIMES: MatchTimesForm = {
   rounds: {},
   vetoLeadMinutes: 5,
   reminderMinutes: 15,
+  breaks: { minutes: null, after: [] },
 };
+
+/** `settings.roundBreaks` as the form holds it. */
+function breaksFormOf(settings: unknown): MatchTimesForm['breaks'] {
+  const raw = (
+    (settings ?? {}) as { roundBreaks?: { minutes?: unknown; after?: Record<string, unknown> } }
+  ).roundBreaks;
+  const minutes = typeof raw?.minutes === 'number' ? raw.minutes : null;
+  const after = Object.entries(raw?.after ?? {})
+    .map(([round, m]) => ({ round: Number(round), minutes: Number(m) }))
+    .filter((b) => Number.isInteger(b.round) && b.round > 0 && Number.isFinite(b.minutes))
+    .sort((a, b) => a.round - b.round);
+  return { minutes, after };
+}
+
+/** `settings.roundBreaks` for saving (undefined: the site's break applies). */
+export function roundBreaksSetting(
+  form: MatchTimesForm
+): { minutes?: number; after?: Record<string, number> } | undefined {
+  const after = Object.fromEntries(
+    form.breaks.after.filter((b) => b.round > 0).map((b) => [String(b.round), b.minutes])
+  );
+  if (form.breaks.minutes === null && Object.keys(after).length === 0) return undefined;
+  return {
+    ...(form.breaks.minutes !== null ? { minutes: form.breaks.minutes } : {}),
+    ...(Object.keys(after).length ? { after } : {}),
+  };
+}
 
 function hhmmOf(iso: string): string {
   const d = new Date(iso);
@@ -41,8 +75,10 @@ export function matchTimesFormOf(settings: unknown): MatchTimesForm {
       }>;
     }
   ).matchTimes;
-  if (!raw) return DEFAULT_MATCH_TIMES;
+  const breaks = breaksFormOf(settings);
+  if (!raw) return { ...DEFAULT_MATCH_TIMES, breaks };
   return {
+    breaks,
     mode: raw.mode === 'times' ? 'times' : 'asap',
     rounds: Object.fromEntries(Object.entries(raw.rounds ?? {}).map(([r, at]) => [r, hhmmOf(at)])),
     vetoLeadMinutes: typeof raw.vetoLeadMinutes === 'number' ? raw.vetoLeadMinutes : 5,
@@ -82,6 +118,7 @@ export function ScheduleStep({
   elimination,
   breakMinutes,
   disabled,
+  roundBreaks = false,
 }: {
   value: MatchTimesForm;
   onChange: (next: MatchTimesForm) => void;
@@ -91,6 +128,8 @@ export function ScheduleStep({
   /** The site's break between a team's matches (CS2 match rules), when known. */
   breakMinutes: number | null;
   disabled?: boolean;
+  /** Edit the breaks between rounds (a shuffle: rounds follow one another). */
+  roundBreaks?: boolean;
 }) {
   const { t } = useTranslation();
   const set = (patch: Partial<MatchTimesForm>) => onChange({ ...value, ...patch });
@@ -107,8 +146,124 @@ export function ScheduleStep({
     bgcolor: color.paper3,
   } as const;
 
+  const breaks = value.breaks;
+  const setBreaks = (patch: Partial<MatchTimesForm['breaks']>) =>
+    set({ breaks: { ...breaks, ...patch } });
+  const minutesField = (
+    id: string,
+    label: string,
+    minutes: number | null,
+    onSet: (n: number | null) => void,
+    placeholder?: string
+  ) => (
+    <TextField
+      id={id}
+      type="number"
+      size="small"
+      label={label}
+      value={minutes ?? ''}
+      placeholder={placeholder}
+      disabled={disabled}
+      onChange={(e) =>
+        onSet(
+          e.target.value === ''
+            ? null
+            : Math.max(0, Math.min(1440, Math.round(Number(e.target.value))))
+        )
+      }
+      slotProps={{ htmlInput: { min: 0, max: 1440, 'data-testid': id } }}
+      sx={{ width: 150 }}
+    />
+  );
+  const breaksEditor = roundBreaks ? (
+    <Box
+      data-testid="setup-round-breaks"
+      sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+    >
+      <Typography sx={{ fontWeight: 600 }}>{t('schedulePage.breaksTitle')}</Typography>
+      <Typography variant="body2" color="text.secondary">
+        {t('schedulePage.breaksNote', { count: breakMinutes ?? 5 })}
+      </Typography>
+      {minutesField(
+        'setup-break-every',
+        t('schedulePage.breakEvery'),
+        breaks.minutes,
+        (n) => setBreaks({ minutes: n }),
+        String(breakMinutes ?? 5)
+      )}
+      {breaks.after.map((b, i) => (
+        <Box key={i} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+          <TextField
+            type="number"
+            size="small"
+            label={t('schedulePage.breakAfterRound')}
+            value={b.round}
+            disabled={disabled}
+            onChange={(e) =>
+              setBreaks({
+                after: breaks.after.map((x, j) =>
+                  j === i
+                    ? { ...x, round: Math.max(1, Math.round(Number(e.target.value) || 1)) }
+                    : x
+                ),
+              })
+            }
+            slotProps={{
+              htmlInput: {
+                min: 1,
+                max: rounds || 99,
+                'data-testid': `setup-break-after-${i}-round`,
+              },
+            }}
+            sx={{ width: 150 }}
+          />
+          {minutesField(
+            `setup-break-after-${i}-minutes`,
+            t('schedulePage.breakMinutes'),
+            b.minutes,
+            (n) =>
+              setBreaks({
+                after: breaks.after.map((x, j) => (j === i ? { ...x, minutes: n ?? 0 } : x)),
+              })
+          )}
+          <Button
+            size="small"
+            disabled={disabled}
+            onClick={() => setBreaks({ after: breaks.after.filter((_, j) => j !== i) })}
+          >
+            {t('schedulePage.breakRemove')}
+          </Button>
+        </Box>
+      ))}
+      <Button
+        size="small"
+        variant="outlined"
+        disabled={disabled}
+        sx={{ alignSelf: 'flex-start' }}
+        onClick={() =>
+          setBreaks({
+            after: [
+              ...breaks.after,
+              {
+                round: Math.min(
+                  Math.max(1, Math.floor((rounds || 2) / 2)),
+                  Math.max(1, (rounds || 2) - 1)
+                ),
+                minutes: 30,
+              },
+            ],
+          })
+        }
+        data-testid="setup-break-add"
+      >
+        {t('schedulePage.breakAdd')}
+      </Button>
+    </Box>
+  ) : null;
+
   return (
     <Box data-testid="setup-schedule" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {breaksEditor}
       <SegmentedControl
         label={t('schedulePage.modeLabel')}
         value={value.mode}

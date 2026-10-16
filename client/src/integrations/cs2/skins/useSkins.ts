@@ -199,6 +199,11 @@ export function useMySkins() {
     try {
       if (step.kind === 'equip')
         await api.post('/api/skins/me/equip', { skinId: skin.id, team: step.team });
+      else if (step.kind === 'split') {
+        // Off both sides, then on the one asked for.
+        await api.delete(`/api/skins/me/equip/${encodeURIComponent(skin.slot)}?team=0`);
+        await api.post('/api/skins/me/equip', { skinId: skin.id, team: step.keep });
+      }
     } catch (error) {
       setInventory(before);
       throw error;

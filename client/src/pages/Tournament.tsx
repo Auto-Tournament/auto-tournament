@@ -3,6 +3,7 @@ import {
   DEFAULT_MATCH_TIMES,
   matchTimesFormOf,
   matchTimesSetting,
+  roundBreaksSetting,
 } from '../components/tournament/setup/ScheduleStep';
 import { pageTitle } from '../utils/pageTitle';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -901,6 +902,8 @@ const Tournament: React.FC = () => {
           (form.eventPage as { startsAt?: string }).startsAt ||
             (tournament?.settings as { startsAt?: string } | undefined)?.startsAt
         ),
+        // Breaks between rounds (a shuffle): none set = the site's break.
+        roundBreaks: roundBreaksSetting(form.matchTimes),
         // The game module's own object (CS2: the map pool and round rules),
         // which the core stores without reading.
         ...savedGameSettings(),

@@ -918,7 +918,7 @@ router.post('/admin/players/:steamId/skins', requireAuth, async (req, res) => {
  *               rarity:
  *                 type: string
  *                 enum: [common, uncommon, rare, mythical, legendary, ancient, immortal]
- *                 description: All three options of this rarity (the catalogue's tiers); without it, the drop odds.
+ *                 description: All three options of this rarity (the catalogue's tiers; knives and gloves are ranked by price into common–ancient, and immortal is one skin, the M4A4 Howl); without it, the drop odds.
  *     responses:
  *       200: { description: 'Who gets one (preview), or how many were given' }
  *       400: { description: Not a target }
