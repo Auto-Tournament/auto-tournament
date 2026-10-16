@@ -1096,6 +1096,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'highlights_tournament_reel_per_player', field: 'highlightsTournamentReelPerPlayer' },
   // A 5v5 pauses when a player drops (Ready Up goes on once the side is full).
   { key: 'at_pause_on_disconnect', field: 'atPauseOnDisconnect' },
+  // Recommend the LAN address to everyone on Connect (fleet/connectChoice.ts).
+  { key: 'connect_prefer_lan', field: 'connectPreferLan' },
 ];
 
 // --- tests -------------------------------------------------------------------
@@ -1114,9 +1116,10 @@ test.describe('settings namespace', () => {
     const coreKeys = CORE_SETTINGS.map((definition) => definition.key);
     expect(coreKeys.filter((key) => cs2Keys.includes(key))).toEqual([]);
     for (const key of cs2Keys) {
-      // Server convars (at_), the simulation, the highlight videos, and GOTV spectating.
+      // Server convars (at_), the simulation, the highlight videos, GOTV spectating, and Connect.
       expect(
         key.startsWith('at_') ||
+          key.startsWith('connect_') ||
           key.startsWith('simulat') ||
           key.startsWith('highlights_') ||
           key.startsWith('gotv_'),
