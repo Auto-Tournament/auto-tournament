@@ -94,6 +94,28 @@ router.get('/status', async (_req, res) => {
 
 /**
  * @openapi
+ * /api/skins/catalog:
+ *   get:
+ *     tags: [Skins]
+ *     summary: Every skin a drop can give, with its rarity and chance per option (public)
+ *     responses:
+ *       200: { description: The skins }
+ *       404: { description: Skins are off }
+ */
+router.get('/catalog', async (_req, res) => {
+  try {
+    const catalog = await skinService.publicCatalog();
+    if (!catalog.enabled) return res.status(404).json({ success: false, error: 'Skins are off' });
+    // The same for everyone and slow to change: let the browser keep it a while.
+    res.set('Cache-Control', 'public, max-age=300');
+    return res.json({ success: true, skins: catalog.skins });
+  } catch (error) {
+    return fail(res, error, 'Reading the skin list');
+  }
+});
+
+/**
+ * @openapi
  * /api/skins/odds:
  *   get:
  *     tags: [Skins]

@@ -5,10 +5,7 @@
       "mp_maxrounds": 24,
       "mp_overtime_enable": 1,
       "mp_overtime_maxrounds": 6,
-      "sv_matchpause_auto_5v5": 1,
-      "tv_delay": 105,
-      "tv_maxclients": 8,
-      "tv_password": "<tv_password>"
+      "sv_matchpause_auto_5v5": 1
     },
     "maps": [
       {

@@ -1813,7 +1813,28 @@
       "eyebrowPlayed": "Premien din · for å ha spilt"
     },
     "toastPrize": "Premie · {{place}}",
-    "mvpPlace": "MVP i en turnering"
+    "mvpPlace": "MVP i en turnering",
+    "catalog": {
+      "title": "Alle skins",
+      "intro": "Alle skins et drop kan gi. Sjansen gjelder per valg i et drop: hvert drop viser tre, og du beholder ett. Kniver og hansker får sjeldenheten sin fra markedsprisen.",
+      "count_one": "{{count}} skin",
+      "count_other": "{{count}} skins",
+      "search": "Søk i skins",
+      "sortLabel": "Sorter skins",
+      "sort": {
+        "rarity": "Sjeldneste først",
+        "chance": "Mest sannsynlige først",
+        "name": "Navn"
+      },
+      "groupLabel": "Våpentype",
+      "rarityLabel": "Sjeldenhet",
+      "loading": "Laster skins …",
+      "none": "Ingen skins passer.",
+      "chanceHelp": "Sjansen for akkurat denne skinen per valg i et drop",
+      "price": "Markedspris {{price}}",
+      "more_one": "Vis flere ({{count}} igjen)",
+      "more_other": "Vis flere ({{count}} igjen)"
+    }
   },
   "matchRules": {
     "title": "Kampregler",

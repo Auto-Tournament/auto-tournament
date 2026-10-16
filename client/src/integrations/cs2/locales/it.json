@@ -1813,7 +1813,28 @@
     "toastWhyDrop": "You got a skin drop",
     "pinned": "Pinned until you pick",
     "toastWhyLevel": "You earned a skin for level {{level}}",
-    "pickLater": "Pick later"
+    "pickLater": "Pick later",
+    "catalog": {
+      "title": "All skins",
+      "intro": "Every skin a drop can give. The chance is per option in a drop: each drop shows three, and you keep one. Knives and gloves get their rarity from their market price.",
+      "count_one": "{{count}} skin",
+      "count_other": "{{count}} skins",
+      "search": "Search skins",
+      "sortLabel": "Sort skins",
+      "sort": {
+        "rarity": "Rarest first",
+        "chance": "Most likely first",
+        "name": "Name"
+      },
+      "groupLabel": "Weapon type",
+      "rarityLabel": "Rarity",
+      "loading": "Loading skins…",
+      "none": "No skins match.",
+      "chanceHelp": "The chance of this exact skin per option in a drop",
+      "price": "Market price {{price}}",
+      "more_one": "Show more ({{count}} left)",
+      "more_other": "Show more ({{count}} left)"
+    }
   },
   "matchRules": {
     "title": "Regole partita",

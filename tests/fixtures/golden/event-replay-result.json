@@ -137,6 +137,7 @@
     ],
     "mapScores": [
       {
+        "hasDemo": false,
         "map": "de_ancient",
         "mapNumber": 0,
         "team1Score": 13,
@@ -144,6 +145,7 @@
         "winner": "team1"
       },
       {
+        "hasDemo": false,
         "map": "de_anubis",
         "mapNumber": 1,
         "team1Score": 11,
@@ -151,6 +153,7 @@
         "winner": "team2"
       },
       {
+        "hasDemo": false,
         "map": "de_nuke",
         "mapNumber": 2,
         "team1Score": 13,
@@ -163,6 +166,7 @@
     "round": 1,
     "serverId": null,
     "slug": "r1m1",
+    "startsAt": null,
     "status": "completed",
     "team1": {
       "id": "golden-replay-a",
@@ -185,6 +189,7 @@
     "tournament": "Golden Replay Tournament",
     "tournamentId": 1,
     "vetoCompleted": true,
+    "vetoOpensAt": null,
     "viewerTeamId": null,
     "winner": {
       "id": "golden-replay-a",

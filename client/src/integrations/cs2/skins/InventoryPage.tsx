@@ -29,6 +29,7 @@ import { equippedFor, type LoadoutTeam } from './loadoutSides';
 import { canPick, togglePick } from './tradeUp';
 import { TradeUpPanel } from './TradeUpPanel';
 import { TryoutLink } from './TryoutLink';
+import { skinCategory, type SkinCategory } from './categories';
 
 const { color } = tokens;
 const RARITY_ORDER: Rarity[] = [
@@ -41,30 +42,10 @@ const RARITY_ORDER: Rarity[] = [
   'common',
 ];
 
-type Filter = 'all' | 'rifles' | 'pistols' | 'smgs' | 'heavy' | 'knives' | 'gloves';
-const PISTOLS = [
-  'glock',
-  'hkp2000',
-  'usp_silencer',
-  'p250',
-  'fiveseven',
-  'tec9',
-  'cz75a',
-  'deagle',
-  'revolver',
-  'elite',
-];
-const SMGS = ['mac10', 'mp9', 'mp7', 'mp5sd', 'ump45', 'p90', 'bizon'];
-const HEAVY = ['nova', 'xm1014', 'sawedoff', 'mag7', 'm249', 'negev'];
+type Filter = 'all' | SkinCategory;
 
 function category(skin: OwnedSkin): Filter {
-  if (skin.slot === 'knife') return 'knives';
-  if (skin.slot === 'gloves') return 'gloves';
-  const w = skin.weapon.replace('weapon_', '');
-  if (PISTOLS.includes(w)) return 'pistols';
-  if (SMGS.includes(w)) return 'smgs';
-  if (HEAVY.includes(w)) return 'heavy';
-  return 'rifles';
+  return skinCategory(skin);
 }
 
 /**

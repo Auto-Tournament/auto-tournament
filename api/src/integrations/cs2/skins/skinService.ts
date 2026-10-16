@@ -1164,6 +1164,37 @@ export const skinService = {
   },
 
   /** What players may see of the drops: the odds per rarity and per skin, and when drops happen. */
+  /**
+   * Every skin a drop can give, for the public skin list: each finish once
+   * (each Doppler phase on its own), its rarity, and its chance per drop
+   * option (the rarity's chance shared by its skins). Knives and gloves carry
+   * the market price that set their rarity.
+   */
+  async publicCatalog() {
+    const config = await this.config();
+    const catalog = await this.catalog();
+    const counts: Partial<Record<Rarity, number>> = {};
+    for (const skin of catalog) counts[skin.rarity] = (counts[skin.rarity] ?? 0) + 1;
+    const perSkin = new Map(
+      dropOdds(config.rarityWeights, counts).map((r) => [r.rarity, r.perSkin])
+    );
+    return {
+      enabled: config.enabled,
+      skins: catalog.map((s) => ({
+        weapon: s.weapon,
+        weaponName: s.weaponName,
+        name: s.name,
+        variant: variantOf(s.paintKitName),
+        paintKit: s.paintKit,
+        rarity: s.rarity,
+        slot: slotOf(s.weapon),
+        image: `${SKIN_IMAGES_BASE}/${s.image}`,
+        price: s.price ?? null,
+        chance: perSkin.get(s.rarity) ?? 0,
+      })),
+    };
+  },
+
   async odds() {
     const config = await this.config();
     const counts: Partial<Record<Rarity, number>> = {};
