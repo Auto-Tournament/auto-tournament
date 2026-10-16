@@ -830,8 +830,15 @@ export async function advanceToNextRound(tournamentId: number): Promise<{
   const mapSequence = tournament.mapSequence || tournament.maps;
   const nextRound = currentRound + 1;
 
+  // Too few players left for another round (no-shows dropped out): the
+  // tournament ends here instead of hanging between rounds.
+  const outOfPlayers =
+    currentRound > 0 &&
+    (await getRegisteredPlayers(tournamentId, { active: true })).length <
+      (tournament.teamSize || 5) * 2;
+
   // Check if tournament is complete
-  if (nextRound > mapSequence.length) {
+  if (nextRound > mapSequence.length || outOfPlayers) {
     // Tournament complete
     const completedAt = Math.floor(Date.now() / 1000);
     await db.updateAsync(
@@ -864,7 +871,9 @@ export async function advanceToNextRound(tournamentId: number): Promise<{
     }
 
     log.success(
-      `Shuffle tournament completed! All ${mapSequence.length} round(s) finished. ` +
+      (outOfPlayers
+        ? `Shuffle tournament completed after round ${currentRound}: too few players left. `
+        : `Shuffle tournament completed! All ${mapSequence.length} round(s) finished. `) +
         `Final leaderboard available at /tournament/${tournamentId}/leaderboard`
     );
     return null;
