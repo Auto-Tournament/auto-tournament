@@ -382,39 +382,47 @@ export function ShuffleStandings({
         {sorted.slice(0, limit).map((r, i) => {
           const me = r.playerId === viewerSteamId;
           return (
-            <Box
-              component="li"
-              key={r.playerId}
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: '24px 32px minmax(0,1fr) auto',
-                gap: 1.25,
-                alignItems: 'center',
-                px: 1.5,
-                py: 1,
-                borderRadius: radii.sm,
-                bgcolor: me ? color.paper3 : 'transparent',
-              }}
-            >
-              <Typography
-                component="span"
-                sx={{ ...mono, fontWeight: 600, color: medal[i] ?? color.muted }}
+            <Box component="li" key={r.playerId}>
+              {/* The whole row opens the player's page, like the full standings' names. */}
+              <Box
+                component={RouterLink}
+                to={getPlayerPageUrl(r.playerId)}
+                data-testid="shuffle-standings-player"
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: '24px 32px minmax(0,1fr) auto',
+                  gap: 1.25,
+                  alignItems: 'center',
+                  px: 1.5,
+                  py: 1,
+                  borderRadius: radii.sm,
+                  bgcolor: me ? color.paper3 : 'transparent',
+                  color: color.ink,
+                  textDecoration: 'none',
+                  '&:hover': { bgcolor: color.paper3 },
+                  '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
+                }}
               >
-                {i + 1}
-              </Typography>
-              <PlayerAvatar id={r.playerId} name={r.name} avatar={r.avatar} size={32} />
-              <Typography
-                component="span"
-                sx={{ fontWeight: me ? 700 : 500, minWidth: 0, overflowWrap: 'anywhere' }}
-              >
-                {r.name}
-              </Typography>
-              <Typography
-                component="span"
-                sx={{ ...mono, fontSize: '0.875rem', color: color.ink2 }}
-              >
-                {r.matchWins}–{r.matchLosses}
-              </Typography>
+                <Typography
+                  component="span"
+                  sx={{ ...mono, fontWeight: 600, color: medal[i] ?? color.muted }}
+                >
+                  {i + 1}
+                </Typography>
+                <PlayerAvatar id={r.playerId} name={r.name} avatar={r.avatar} size={32} />
+                <Typography
+                  component="span"
+                  sx={{ fontWeight: me ? 700 : 500, minWidth: 0, overflowWrap: 'anywhere' }}
+                >
+                  {r.name}
+                </Typography>
+                <Typography
+                  component="span"
+                  sx={{ ...mono, fontSize: '0.875rem', color: color.ink2 }}
+                >
+                  {r.matchWins}–{r.matchLosses}
+                </Typography>
+              </Box>
             </Box>
           );
         })}
