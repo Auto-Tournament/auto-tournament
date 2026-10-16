@@ -38,7 +38,8 @@ test.describe('loadout sides (rules)', () => {
   test('the new-skin modal equips without toggling: a skin already on that side stays on', () => {
     // Equipped on its own when it dropped: "Equip" must not take it off.
     expect(equipOnStep(skin(1, 'knife', null, [0]), 0)).toBeNull();
-    expect(equipOnStep(skin(1, 'knife', null, [0]), 2)).toBeNull();
+    // On both sides (as it dropped), "Equip T" moves it to T only.
+    expect(equipOnStep(skin(1, 'knife', null, [0]), 2)).toEqual({ kind: 'split', keep: 2 });
     expect(equipOnStep(skin(1, 'knife', null, [3]), 3)).toBeNull();
     expect(equipOnStep(skin(1, 'knife', null, [3]), 2)).toEqual({ kind: 'equip', team: 2 });
     expect(equipOnStep(skin(1, 'knife', null, [3]), 0)).toEqual({ kind: 'equip', team: 0 });
