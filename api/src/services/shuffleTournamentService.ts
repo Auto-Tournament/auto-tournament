@@ -1451,3 +1451,31 @@ export async function cancelEmptyShuffleMatch(slug: string): Promise<boolean> {
   await checkAndAdvanceShuffleRound(match.tournament_id, match.round);
   return true;
 }
+
+/**
+ * A player marked out as a no-show who joins their match late (a bot took
+ * their slot when it started) is back in: they play this match and are drawn
+ * for the next rounds. Returns whether they were brought back.
+ */
+export async function bringBackLateJoiner(
+  match: { slug: string; tournament_id: number | null; config?: string | null },
+  steamId: string
+): Promise<boolean> {
+  if (!match.tournament_id || !(match.config ?? '').includes(steamId)) return false;
+  const t = await db.queryOneAsync<{ type: string; status: string }>(
+    'SELECT type, status FROM tournament WHERE id = ?',
+    [match.tournament_id]
+  );
+  if (t?.type !== 'shuffle' || t.status !== 'in_progress') return false;
+  const left = await db.queryOneAsync<{ left_at: number | null }>(
+    'SELECT left_at FROM shuffle_tournament_players WHERE tournament_id = ? AND player_id = ?',
+    [match.tournament_id, steamId]
+  );
+  if (!left?.left_at) return false;
+  await db.runAsync(
+    'UPDATE shuffle_tournament_players SET left_at = NULL WHERE tournament_id = ? AND player_id = ?',
+    [match.tournament_id, steamId]
+  );
+  log.info(`Shuffle ${match.tournament_id}: ${steamId} joined ${match.slug} late and is back in`);
+  return true;
+}

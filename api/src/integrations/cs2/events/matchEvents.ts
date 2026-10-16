@@ -445,6 +445,15 @@ export async function applyNormalizedEvents(
               options.playerName?.(steamId) ?? 'Unknown',
               team
             );
+            // Marked out as a no-show, then joined after all: back in the shuffle.
+            const joined = match;
+            void import('../../../services/shuffleTournamentService')
+              .then(({ bringBackLateJoiner }) => bringBackLateJoiner(joined, steamId))
+              .catch((error: unknown) =>
+                log.warn(`[SHUFFLE] ${joined.slug}: late joiner check failed`, {
+                  error: String(error),
+                })
+              );
           }
         } else if (event.state === 'disconnected') {
           playerConnectionService.playerDisconnected(match.slug, steamId);
