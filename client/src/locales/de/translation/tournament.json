@@ -48,6 +48,10 @@
         "shuffle": {
           "label": "Shuffle-Turnier",
           "description": "Spieler werden in jeder Runde dynamisch in ausgeglichene Teams gemischt. Individual-Wettbewerb mit ELO-basiertem Team-Balancing."
+        },
+        "groups": {
+          "label": "Groups, then playoffs",
+          "description": "Round robin in groups; the best of each group play elimination."
         }
       },
       "selectedChip": "Ausgewählt"
@@ -443,7 +447,9 @@
       "autoStartLabel": "Start the tournament automatically at this time",
       "remindersLabel": "Remind players before it starts",
       "reminderMinutes_one": "{{count}} minute before",
-      "reminderMinutes_other": "{{count}} minutes before"
+      "reminderMinutes_other": "{{count}} minutes before",
+      "bannerMapLabel": "No banner? Use a map's picture",
+      "bannerMapNone": "Pick for me"
     },
     "setup": {
       "steps": {
@@ -453,7 +459,9 @@
         "teams": "Teams and sign-up",
         "maps": "Maps and veto",
         "eventPage": "Event page",
-        "review": "Review"
+        "review": "Review",
+        "schedule": "Schedule",
+        "extras": "Rules and extras"
       },
       "stepsLabel": "Setup steps",
       "stepDone": "done",
@@ -494,6 +502,14 @@
           "title": "Ready to go?",
           "lede": "Check the details, then create the tournament.",
           "ledeExisting": "Check the details, then start the tournament when everyone is ready."
+        },
+        "schedule": {
+          "title": "When do matches start?",
+          "lede": "At set times, with the veto opening before each match, or as soon as both teams and a server are ready."
+        },
+        "extras": {
+          "title": "Rules and extras",
+          "lede": "How rounds are played, what the placings win, and how ratings are counted."
         }
       },
       "game": {
@@ -520,14 +536,16 @@
           "double_elimination": "Double elimination",
           "swiss": "Swiss",
           "round_robin": "Round robin",
-          "shuffle": "Shuffle"
+          "shuffle": "Shuffle",
+          "groups": "Groups, then playoffs"
         },
         "types": {
           "single_elimination": "Lose once and you're out. Fastest.",
           "double_elimination": "A second chance in the lower bracket.",
           "swiss": "Teams play several rounds against similar records.",
           "round_robin": "Everyone plays everyone. Best for small groups.",
-          "shuffle": "Solo sign-up. New balanced teams each round."
+          "shuffle": "Solo sign-up. New balanced teams each round.",
+          "groups": "Round robin in groups; the best of each go on to a final or a bracket."
         },
         "seriesLength": "Series length",
         "grandFinal": "Grand final",
@@ -671,6 +689,57 @@
         "noTeams": "No teams yet.",
         "addYourself": "Add teams yourself",
         "pickTeams": "Pick the teams"
+      },
+      "groups": {
+        "count": "Number of groups",
+        "through": "Through from each group",
+        "throughWinner": "The winner",
+        "throughTop2": "Top 2",
+        "seeding": "How teams are put in groups",
+        "seedingSnake": "Spread by seed (snake)",
+        "seedingRandom": "At random",
+        "playoffs": "Playoffs",
+        "playoffMatches": "Playoff matches",
+        "ties": "Ties in a group: head-to-head, then round difference, then rounds won (same as round robin). If the groups don't fill a bracket, the best of the rest go through too.",
+        "whatPlayersGet": "What players get",
+        "stage": "Group stage",
+        "stageLine": "{{groups}} groups of {{size}}",
+        "stageNote": "{{count}} matches · {{each}} for each team",
+        "playoffFinal": "The two group winners: a {{format}} final",
+        "playoff": {
+          "single_elimination": "{{count}} teams: single elimination",
+          "double_elimination": "{{count}} teams: double elimination"
+        },
+        "throughNote": "{{count}} teams go through",
+        "previewTitle": "The groups (spread by seed)",
+        "previewNote": "In the order of the teams list (the seeding). Groups lock when the tournament starts.",
+        "randomNote": "The groups are drawn at random when the tournament starts.",
+        "groupN": "Group {{letter}}",
+        "groupMatches": "Group matches"
+      },
+      "stepNotes": {
+        "game": "What is played",
+        "basics": "Name, start, where",
+        "format": "How teams meet",
+        "teams": "Added or sign-up",
+        "schedule": "Match times",
+        "maps": "The map pool",
+        "extras": "Rounds, prizes, rating",
+        "review": "Create it"
+      },
+      "stepOf": "Step {{n}} of {{total}}",
+      "schedule": {
+        "timesNote": "Matches wait for their time. Players see it on the match, get a reminder, and the veto opens on time.",
+        "breakNote_one": "A team that just played gets a {{count}}-minute break before its next veto (Match rules).",
+        "breakNote_other": "A team that just played gets a {{count}}-minute break before its next veto (Match rules).",
+        "noBreakNote": "There is no break between a team's matches (Match rules).",
+        "ownTimeNote": "Give one match its own time in Manage › Schedule once the bracket is made."
+      },
+      "extras": {
+        "gotvLabel": "Spectators",
+        "gotvOn_one": "Spectators can watch in GOTV, {{count}} second behind (Match rules › Spectators).",
+        "gotvOn_other": "Spectators can watch in GOTV, {{count}} seconds behind (Match rules › Spectators).",
+        "gotvOff": "Spectators can't watch in GOTV (Match rules › Spectators)."
       }
     },
     "startButton": {
@@ -783,7 +852,8 @@
     "status": {
       "setup": "Upcoming",
       "inProgress": "Live",
-      "completed": "Completed"
+      "completed": "Completed",
+      "finishedOn": "Finished {{date}}"
     },
     "liveNow": "{{count}} live now",
     "howItsPlayed": "How it's played",
@@ -864,7 +934,8 @@
         "loaded": "Starting",
         "final": "Final",
         "upcoming": "Upcoming"
-      }
+      },
+      "emptyDescriptionAt": "Matches appear here when the tournament starts: {{when}}."
     },
     "teamsTab": {
       "shuffleTitle": "Teams change every round",
@@ -892,7 +963,14 @@
     "adminBanner": "You are an admin of this tournament. Running it happens in Manage; this page is what players see.",
     "manageTournament": "Manage tournament",
     "fullBracket": "Full bracket",
-    "allRules": "All rules"
+    "allRules": "All rules",
+    "archivedTitle": "This tournament is archived",
+    "archivedBody": "A newer tournament replaced it. Its results, bracket and standings stay here.",
+    "openCurrent": "Open the current tournament",
+    "allTournaments": "All tournaments",
+    "roundN": "Round {{n}}",
+    "finalRound": "Final",
+    "roundStarts": "{{round}} · veto opens {{time}}"
   },
   "roundStatusCard": {
     "roundOf": "Round {{current}} of {{total}}",
@@ -924,7 +1002,12 @@
       "won": "Ihr habt {{us}}–{{them}} gegen {{opponent}} gewonnen",
       "lost": "Ihr habt {{us}}–{{them}} gegen {{opponent}} verloren",
       "draw": "{{us}}–{{them}} gegen {{opponent}}"
-    }
+    },
+    "ready": "Ready",
+    "waitingForServer": "Waiting for a server",
+    "vetoDoneChip": "Veto done · {{map}}",
+    "waitingForServerBody": "A server is assigned as soon as one is free. You get a notification and this page updates by itself.",
+    "mapDrawnChip": "Map drawn · {{map}}"
   },
   "results": {
     "finalStandings": "Final standings",
@@ -966,7 +1049,15 @@
       "mostClutches": "{{value}} clutches won",
       "mostMoney": "{{value}} spent"
     },
-    "wonFinal": "Finale {{a}}–{{b}} gegen {{opponent}} gewonnen"
+    "wonFinal": "Finale {{a}}–{{b}} gegen {{opponent}} gewonnen",
+    "champions": "Champions",
+    "allMatches": "All {{count}} matches",
+    "demosAndReel": "Demos and reel",
+    "stage": {
+      "final": "Final",
+      "semi": "Semi-final",
+      "round": "Round {{n}}"
+    }
   },
   "signup": {
     "cta": "Sign up your team",
@@ -1053,7 +1144,8 @@
       "takesSpot": "Takes a spot",
       "spotsLeft": "{{count}} left before this",
       "checkIn": "Check in on the day",
-      "firstMatch": "First match"
+      "firstMatch": "First match",
+      "spotOf": "{{n}} of {{max}}"
     },
     "vouch": "I confirm every player in this lineup has read the",
     "vouchNote": "I sign up on their behalf. If a player breaks the rules, the whole team can be penalised or disqualified.",
@@ -1064,13 +1156,22 @@
     "check": {
       "steam": "Steam",
       "game": "{{game}}",
-      "noGame": "{{game}} nicht hinzugefügt"
+      "noGame": "{{game}} nicht hinzugefügt",
+      "steamShort": "Steam"
     },
     "remind": "Erinnern",
     "reminded": "Erinnerung im Team-Chat gesendet",
     "done": "Fertig",
     "lineupGap": "A starter left your lineup (banned or deleted). Your matches wait until {{time}}: pick a sub before then, or the first sub moves in. With no sub you play short-handed.",
-    "pickSub": "Pick a sub"
+    "pickSub": "Pick a sub",
+    "title": "Sign up your team",
+    "editTitle": "Change your lineup",
+    "stepsLabel": "Steps",
+    "changeUntil": "You can change the lineup until check-in on {{when}}.",
+    "counts": "{{starters}} of {{teamSize}} starters · {{subs}} of {{maxSubs}} subs",
+    "lineupRatingValue": "Lineup rating {{rating}}",
+    "missingGame": "{{names}} need {{game}} on their profile.",
+    "subsLine": "sub: {{names}}"
   },
   "bracketCards": {
     "open": "Open {{a}} vs {{b}}",
@@ -1088,7 +1189,11 @@
     "winnerOf": "Sieger {{match}}",
     "loserOf": "Verlierer {{match}}",
     "tbd": "Noch offen",
-    "you": "Du"
+    "you": "Du",
+    "liveCount_one": "{{count}} live",
+    "liveCount_other": "{{count}} live",
+    "matchCount_one": "{{count}} match",
+    "matchCount_other": "{{count}} matches"
   },
   "placement": {
     "outTitle": "Your run in {{tournament}} is over",
@@ -1099,7 +1204,11 @@
     "wonBody": "Your team won the tournament. Well played!",
     "close": "Close",
     "seeBracket": "See the bracket",
-    "outBodyPlay": "You have no more matches in this tournament. Thanks for playing! Fancy another game? Matchmaking puts you in a match in a minute or two."
+    "outBodyPlay": "You have no more matches in this tournament. Thanks for playing! Fancy another game? Matchmaking puts you in a match in a minute or two.",
+    "championsEyebrow": "Champions",
+    "teamPlaced": "{{team}} placed",
+    "wonTitleShort": "You won {{tournament}}!",
+    "wonFinalBody": "{{team}} won the final {{score}}. Well played!"
   },
   "whatsNext": {
     "eyebrow": "What's next",
@@ -1123,7 +1232,11 @@
     "winsToTitle_one": "One more win for the title",
     "winsToTitle_other": "{{count}} more wins to the title",
     "shuffleDoneTitle": "That was the last round",
-    "shuffleDoneBody": "The shuffle is over. Open the tournament for the standings."
+    "shuffleDoneBody": "The shuffle is over. Open the tournament for the standings.",
+    "youWon": "You won {{a}}–{{b}} against {{opponent}}.",
+    "youLost": "You lost {{a}}–{{b}} against {{opponent}}.",
+    "resultPlaced": "{{result}} You placed {{place}}.",
+    "nextUp": "Next: {{match}}."
   },
   "navStatus": {
     "placed": "Placed",
@@ -1134,7 +1247,12 @@
     "matchIn": "Match in",
     "matchLoading": "Match loading",
     "shuffleRound": "Round {{round}} · Playing",
-    "shuffleSittingOut": "Round {{round}} · Sitting out"
+    "shuffleSittingOut": "Round {{round}} · Sitting out",
+    "placedPlayLine": "Placed {{place}} · Play matchmaking",
+    "placedLine": "Placed {{place}}",
+    "waitingOpponent": "Waiting for opponent",
+    "aboutMinutes_one": "~{{count}} min",
+    "aboutMinutes_other": "~{{count}} min"
   },
   "advance": {
     "title": "Stark, ihr seid noch dabei!",
@@ -1146,7 +1264,8 @@
     "feederMinutes_one": "Noch etwa {{count}} Minute.",
     "feederMinutes_other": "Noch etwa {{count}} Minuten.",
     "feederAlmost": "Gleich vorbei.",
-    "watch": "Live ansehen"
+    "watch": "Live ansehen",
+    "wonEyebrow": "{{stage}} won {{score}}"
   },
   "shuffleJoin": {
     "title": "Diesem Shuffle beitreten",
@@ -1188,6 +1307,299 @@
     "markIn": "Back in",
     "roundShort": "Round {{round}}",
     "playedTitle": "Your round {{round}} match is done",
-    "playedBody": "Round {{next}} is drawn when the other matches finish. Stay on this page: it updates by itself."
+    "playedBody": "Round {{next}} is drawn when the other matches finish. Stay on this page: it updates by itself.",
+    "sittingOutBodyCounts_one": "There are {{players}} players for {{size}}v{{size2}}, so {{count}} rests each round. Those who have played most rest first: you are in the next draw.",
+    "sittingOutBodyCounts_other": "There are {{players}} players for {{size}}v{{size2}}, so {{count}} rest each round. Those who have played most rest first: you are in the next draw.",
+    "playedBodyLeft_one": "Waiting for {{count}} more match. Round {{next}} is drawn when it ends; your next match shows up here and you get a notification.",
+    "playedBodyLeft_other": "Waiting for {{count}} more matches. Round {{next}} is drawn when they end; your next match shows up here and you get a notification.",
+    "joinedByMistake": "Joined by mistake?"
+  },
+  "liveOverview": {
+    "roundOf": "Round {{round}} of {{total}}",
+    "liveCount": "{{count}} live now",
+    "hero": {
+      "playingTitle": "You’re playing now",
+      "playingBody": "{{us}} vs {{them}}{{map}}. Join from the match room.",
+      "joiningTitle": "Join the server",
+      "joiningBody": "{{us}} vs {{them}}{{map}}. The match starts when everyone is ready.",
+      "vetoTitle": "Your map veto is open",
+      "vetoBody": "Ban and pick the maps with {{them}} in the match room.",
+      "waitingTitle": "Waiting for your next opponent",
+      "waitingBody": "They come from a match that is still being played. After a short break the veto opens, and you get a notification.",
+      "notStartedTitle": "Next: {{them}}",
+      "notStartedBody": "Your match opens when the round starts. This page updates by itself.",
+      "outTitle": "Your team is out. You placed {{place}}",
+      "outBody": "That was your last match. Good games! Matchmaking is open if you want to keep playing.",
+      "wonTitle": "You won the tournament!",
+      "wonBody": "Well played. Your prize is in your inventory.",
+      "spectatorTitle": "{{count}} matches live",
+      "spectatorTitleOne": "1 match live",
+      "spectatorIdleTitle": "Between rounds",
+      "spectatorBody": "Open a match to see the score, the maps and who is playing.",
+      "openMatchRoom": "Open the match room",
+      "openVeto": "Open the veto",
+      "watchLive": "Watch a live match",
+      "playMatchmaking": "Play matchmaking",
+      "yourMatch": "Your match",
+      "opponentFrom": "Your opponent comes from",
+      "minutesLeft": "about {{count}} min left",
+      "winsToTitle_one": "one more win to the title",
+      "winsToTitle_other": "{{count}} more wins to the title",
+      "waitingServerTitle": "Waiting for a server",
+      "waitingServerBody": "{{us}} vs {{them}}{{map}}. A server is assigned as soon as one is free; you get a notification.",
+      "wonStage": "{{stage}} won {{score}}",
+      "stageNext": "{{stage}} next",
+      "faceWinnerOf": "{{us}} face the winner of {{a}} vs {{b}} ({{state}}). The veto opens when that match ends; you get a notification.",
+      "feederLive": "{{score}}, map {{map}} live",
+      "feederNotStarted": "not started yet",
+      "vetoOpens": "Veto opens",
+      "inAboutMinutes_one": "in ~{{count}} min",
+      "inAboutMinutes_other": "in ~{{count}} min",
+      "later": "later",
+      "afterBreak": "after a short break",
+      "youAre": "you are {{record}}",
+      "nextRoundDrawn": "Round {{round}} is drawn next",
+      "lastRoundPlaying": "The last round is being played",
+      "betweenBody": "Your match this round is done. The next round is drawn when the other matches finish; your match shows up here and you get a notification.",
+      "vetoSoonTitle": "Your map veto opens at {{time}}",
+      "vetoSoonBody": "A short break after your last match. You get a notification when the veto against {{them}} opens."
+    },
+    "schedule": "Schedule",
+    "bracket": "Bracket",
+    "round": "Round {{n}}",
+    "final": "Final",
+    "state": {
+      "now": "Now",
+      "next": "Next",
+      "later": "Later",
+      "done": "✓ Done",
+      "live": "Live",
+      "upcoming": "Upcoming"
+    },
+    "thisRound": "Round {{n}}",
+    "earlier": "Earlier rounds",
+    "standings": "Standings",
+    "teams": "Teams",
+    "wl": "W–L",
+    "rounds": "+/−",
+    "ties": {
+      "round_robin": "Ties: head-to-head, then round difference, then rounds won.",
+      "swiss": "Ties: how strong your opponents were (Buchholz: their wins added up), then round difference.",
+      "elim": "Ordered by wins. Two losses and a team is out.",
+      "singleElim": "Ordered by wins. One loss and a team is out.",
+      "doubleElim": "Ordered by wins. Two losses and a team is out.",
+      "groups": "Ties in a group: head-to-head, then round difference, then rounds won."
+    },
+    "players": {
+      "title": "Players · by rating",
+      "find": "Find a player",
+      "export": "Export",
+      "all": "All {{count}} players",
+      "player": "Player",
+      "team": "Team",
+      "rating": "Rating",
+      "change": "±",
+      "kd": "K / D",
+      "adr": "ADR",
+      "winRate": "Win rate",
+      "none": "No players match."
+    }
+  },
+  "matchesCards": {
+    "show": "Show",
+    "filterAll": "All {{count}}",
+    "filterLive": "Live {{count}}",
+    "filterUpcoming": "Upcoming {{count}}",
+    "done": "Done",
+    "afterOvertime": "after overtime",
+    "startsAt": "starts {{time}} · veto opens {{veto}}",
+    "yourMatch": "Your match"
+  },
+  "standingsTab": {
+    "champions": "Champions",
+    "championBadge": "CHAMPIONS",
+    "vs": "vs",
+    "rounds": "Rounds",
+    "form": "Form",
+    "intro": {
+      "round_robin": "Round robin: every team plays every other team once.",
+      "swiss": "Swiss: each round pairs teams with the same record.",
+      "single": "Single elimination: one loss and a team is out.",
+      "double": "Double elimination: two losses and a team is out.",
+      "groups": "Groups, then playoffs: every team plays the others in its group once; the best go on to the playoffs."
+    }
+  },
+  "teamsCards": {
+    "subs": "Subs: {{names}}"
+  },
+  "rulesTab": {
+    "atAGlance": "At a glance",
+    "onThisPage": "On this page",
+    "fromSettings": "from the tournament settings, always up to date",
+    "organizer": "The organizer’s rules",
+    "facts": {
+      "map": "Map",
+      "firstTo": "first to {{count}}",
+      "noOvertime": "None",
+      "overtimeSegments_one": "1, then damage",
+      "overtimeSegments_other": "{{count}}, then damage",
+      "overtimeUnlimited": "As many as it takes",
+      "thenDamage": "6 rounds each, first to 4",
+      "mapCount_one": "{{count}} map",
+      "mapCount_other": "{{count}} maps"
+    }
+  },
+  "liveMatch": {
+    "updatesEveryRound": "Updates every round",
+    "chat": "Match chat",
+    "system": "Auto Tournament",
+    "noMessages": "No messages yet. Say gl hf!",
+    "chatSignIn": "Sign in as a player in this match to read and write here.",
+    "messageLabel": "Message both teams and the admins",
+    "send": "Send",
+    "callAdmin": "Call an admin",
+    "adminCalled": "An admin is on the way",
+    "joinTitle": "Join the server: {{map}}",
+    "warmup": "Warmup · join now",
+    "isLive": "{{map}} is live",
+    "players": "Players",
+    "playersOnMap": "Players · {{map}}",
+    "noEconomy": "Sorted by rating. No money or equipment: nothing that gives away a team’s economy.",
+    "yourTeam": "Your team",
+    "backToTournament": "Back to the tournament",
+    "manage": "Manage this match",
+    "finishedAt": "finished {{when}}",
+    "delayedNote_one": "Shows what GOTV shows, {{count}} second behind.",
+    "delayedNote_other": "Shows what GOTV shows, {{count}} s behind."
+  },
+  "preStart": {
+    "open": "Sign-up is open",
+    "openCloses": "Sign-up is open · closes {{when}}",
+    "closed": "Sign-up is closed",
+    "notOpenTitle": "Sign-up is not open",
+    "fullTitle": "All spots are taken",
+    "spotsLeft_one": "{{count}} of {{max}} spots left. Captains pick the starters and subs.",
+    "spotsLeft_other": "{{count}} of {{max}} spots left. Captains pick the starters and subs.",
+    "byOrganizer": "The organizer adds the teams.",
+    "startsIn": "Starts in",
+    "allRules": "All rules and prizes",
+    "signedUpEyebrow": "{{team}} · signed up",
+    "inTitle": "You’re in",
+    "inToFix_one": "You’re in. One thing to fix",
+    "inToFix_other": "You’re in. {{count}} things to fix",
+    "fixBefore": "Fix it before check-in on {{when}}, or that player cannot join the server.",
+    "checkInOn": "Check in on {{when}}. A team plays when all its starters are checked in.",
+    "allSet": "Everyone is ready. The schedule shows when it starts.",
+    "checkInOpens": "Check-in opens",
+    "openLineup": "Open your lineup",
+    "yourSignup": "Your sign-up",
+    "spotOf": "spot {{place}} of {{max}}",
+    "lineupCount": "Lineup · {{starters}} starters, {{subs}} subs",
+    "fixBeforeCheckIn": "Fix before check-in",
+    "leave": "Leave the tournament",
+    "withdrawHint": "Can’t make it? Withdrawing frees the spot for another team."
+  },
+  "shuffleOverview": {
+    "yourMatchLive": "your match is live",
+    "yourMatchReady": "your match is ready",
+    "yourMatchDone": "your match is done",
+    "nextDraw": "Next draw",
+    "round": "Round {{n}}",
+    "whenRoundEnds": "when this round’s matches finish",
+    "oneMapPerRound": "One map per round · new teams every round",
+    "sittingOut": "Sitting out:",
+    "firstNextRound": "first in next round",
+    "players": "Players",
+    "markOutHint": "Mark out a player who left; they sit out until you mark them back in."
+  },
+  "checkIn": {
+    "areYouHere": "Are you here?",
+    "teamCount": "{{team}} is checking in: {{in}} of {{total}}. A team plays when all its starters are checked in.",
+    "soundOn": "♪ Sound on",
+    "firstVeto_one": "Your first veto opens at {{time}}, {{count}} minute before the match: be at your PC by then.",
+    "firstVeto_other": "Your first veto opens at {{time}}, {{count}} minutes before the match: be at your PC by then.",
+    "vetoOpensNote": "veto opens {{time}}"
+  },
+  "runState": {
+    "paused": "Tournament paused",
+    "pausedUntil": "Tournament paused until {{time}}",
+    "pausedBody": "Matches already on a server play on. No new round is drawn and no veto opens until it resumes.",
+    "reason": "Reason: {{reason}}.",
+    "waitingServers_one": "{{count}} match is waiting for a server.",
+    "waitingServers_other": "{{count}} matches are waiting for a server.",
+    "allBusy_one": "The server is busy; it starts as soon as it is free.",
+    "allBusy_other": "All {{count}} servers are busy; they start as soon as one is free.",
+    "noneFree": "No server is free; they start as soon as one is.",
+    "servers": "Servers",
+    "pausedShort": "Paused"
+  },
+  "captainsPanel": {
+    "title": "Captains",
+    "note": "Only a captain can report or confirm a result.",
+    "make": "Make captain",
+    "remove": "Remove captain",
+    "role": {
+      "owner": "Owner",
+      "captain": "Captain",
+      "member": "Member"
+    }
+  },
+  "prizesPage": {
+    "title": "Prizes",
+    "intro": "Skins for a placing, given to every player on the team when the tournament ends, and a prize for the MVP. Site skins only: no Steam items, no money value.",
+    "none": "This tournament's game has no prizes.",
+    "loadFailed": "Could not load the tournament."
+  },
+  "schedulePage": {
+    "title": "Match times",
+    "intro": "Give each round a start time, or a single match its own. Players see it on the match, get a reminder, and the veto opens on time.",
+    "loadFailed": "Could not load the tournament.",
+    "rounds": "Rounds",
+    "modeLabel": "When matches start",
+    "modeTimes": "At set times",
+    "modeAsap": "As soon as ready",
+    "modeTimesNote": "Matches wait for their time. Open a round to give one match its own time.",
+    "modeAsapNote": "No times: a match starts when both teams and a server are ready.",
+    "noRounds": "The rounds show here once the bracket is made.",
+    "roundN": "Round {{n}}",
+    "roundNote_one": "{{count}} match · open to set its own time",
+    "roundNote_other": "{{count}} matches · open to set one match’s time",
+    "roundNoMatches": "Its matches are made when the round before ends",
+    "roundStartsAt": "Round starts at",
+    "roundTimeLabel": "Start time for {{round}}",
+    "matchTimeLabel": "Start time for {{match}}",
+    "tbd": "TBD",
+    "ownTime": "Own start time",
+    "sameAsRound": "Same as round",
+    "useRoundTime": "Use round time",
+    "vetoTitle": "The veto",
+    "vetoNote": "Opens by itself before each match, so it is done when the match starts. A team that does not act in time gets a map picked for it.",
+    "vetoLabel": "Veto opens",
+    "vetoZero": "At the start time",
+    "reminderTitle": "Reminder",
+    "reminderNote": "A notification on the site and in Discord, to every player in the match.",
+    "reminderLabel": "Remind players",
+    "reminderZero": "Off",
+    "minutesBefore_one": "{{count}} min before",
+    "minutesBefore_other": "{{count}} min before",
+    "save": "Save times",
+    "saved": "Match times saved",
+    "saveFailed": "Could not save the times",
+    "rulesTitle": "Rules it follows",
+    "rules": {
+      "start": "Nothing about a match starts before its veto opens, even with a free server.",
+      "late": "A late round pushes the next one: a team still playing, or the break between matches, holds the veto, and players see the new time.",
+      "none": "No time set: as before, a match goes ahead as soon as both teams and a server are ready.",
+      "where": "The overview's schedule, the match cards, the match room, the rules and check-in show these times."
+    }
+  },
+  "groups": {
+    "groupN": "Group {{letter}}",
+    "done": "Final",
+    "through_one": "the winner goes through",
+    "through_other": "the top {{count}} go through",
+    "playoffs": "Playoffs",
+    "playoffsSoon": "The playoffs start when every group match is played.",
+    "seedSlot": "Seed {{n}}"
   }
 }

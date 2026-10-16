@@ -804,7 +804,9 @@
         "friendly": "Vennlig",
         "team_player": "Lagspiller",
         "leader": "Leder",
-        "good_comms": "God kommunikasjon"
+        "good_comms": "God kommunikasjon",
+        "teacher": "Teacher",
+        "good_sport": "Good sport"
       },
       "history": "Matchmaking-kamper",
       "historyEmpty": "Ingen matchmaking-kamper ennå.",

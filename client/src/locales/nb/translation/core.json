@@ -177,6 +177,9 @@
     "opponent": "Motstander",
     "turnLeft": "igjen til å bannlyse eller velge",
     "turnOver": "Tiden er ute: et kart velges for laget ditt",
-    "soonBodyNoVeto": "Først en kort pause. Kampen lastes når nedtellingen er ferdig."
+    "soonBodyNoVeto": "Først en kort pause. Kampen lastes når nedtellingen er ferdig.",
+    "openRoom": "Open the match room",
+    "closesItself_one": "Closes by itself in {{count}} s. The navbar keeps the link.",
+    "closesItself_other": "Closes by itself in {{count}} s. The navbar keeps the link."
   }
 }

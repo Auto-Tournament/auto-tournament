@@ -68,6 +68,14 @@
       "team": "Lag",
       "player": "Spiller",
       "matches": "Kamper"
+    },
+    "chip": {
+      "none": "No result yet",
+      "yours": "Your report",
+      "reported": "Reported",
+      "confirm": "Confirm it",
+      "disputed": "Disputed",
+      "final": "Final"
     }
   }
 }

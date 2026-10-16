@@ -62,7 +62,8 @@
       "matchReady": "er klar. Åpne kamprommet for å koble til.",
       "vetoTurn": "Det er lagets tur i map-vetoen.",
       "startsSoon": "starter om {{minutes}} minutter. Gjør deg klar til den første kampen.",
-      "startsSoonUpdate": "starter om {{minutes}} minutter. Start spillet nå, så er en ev. oppdatering ferdig før første kamp."
+      "startsSoonUpdate": "starter om {{minutes}} minutter. Start spillet nå, så er en ev. oppdatering ferdig før første kamp.",
+      "matchSoon": "your veto opens in {{minutes}} minutes and goes on without you. Be at your PC."
     },
     "toast": {
       "join": "Bli med",
