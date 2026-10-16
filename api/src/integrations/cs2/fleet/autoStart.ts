@@ -14,6 +14,25 @@ import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { runFleetCommand, type IssuedBy } from './driver';
 import { notHeldSql } from '../../../services/matchHolds';
+import { playerConnectionService } from '../../../services/playerConnectionService';
+import { cancelEmptyShuffleMatch } from '../../../services/shuffleTournamentService';
+
+/**
+ * Whether anyone on the match's roster has joined the server. Null when the
+ * platform restarted after the match loaded: who joined before that is not
+ * known, so the match goes ahead as before.
+ */
+async function anyoneJoined(slug: string): Promise<boolean | null> {
+  const row = await db.queryOneAsync<{ config: string | null; loaded_at: number | null }>(
+    'SELECT config, loaded_at FROM matches WHERE slug = ?',
+    [slug]
+  );
+  const startedAt = Math.floor(Date.now() / 1000 - process.uptime());
+  if (!row?.loaded_at || startedAt > Number(row.loaded_at)) return null;
+  const roster = new Set(row.config?.match(/\b7656\d{13}\b/g) ?? []);
+  if (roster.size === 0) return null;
+  return [...roster].some((id) => playerConnectionService.connectionOf(slug, id).state !== 'never');
+}
 
 const TICK_MS = 5_000;
 const ISSUED_BY: IssuedBy = { userId: 'platform:auto-start', name: 'Auto-start', root: false };
@@ -42,14 +61,36 @@ async function tick(): Promise<void> {
     sent.set(key, state);
     const left = Number(row.loaded_at) + minutes * 60 - now;
     const say = (text: string) =>
-      runFleetCommand(row.server_id, 'say', { text, as_admin: true }, ISSUED_BY).catch(() => undefined);
+      runFleetCommand(row.server_id, 'say', { text, as_admin: true }, ISSUED_BY).catch(
+        () => undefined
+      );
     if (left <= 0 && !state.started) {
       state.started = true;
-      const outcome = await runFleetCommand(row.server_id, 'start', {}, ISSUED_BY).catch((error: unknown) => {
-        log.warn(`[AUTOSTART] ${row.slug}: start failed`, { error: String(error) });
-        return null;
-      });
-      log.info(`[AUTOSTART] ${row.slug}: ${minutes} min in warmup, started (${outcome?.status ?? 'error'})`);
+      // Nobody from the roster came: no bots-only match. A shuffle calls it
+      // off and moves on without them; anything else waits for an admin.
+      if ((await anyoneJoined(row.slug)) === false) {
+        const cancelled = await cancelEmptyShuffleMatch(row.slug).catch((error: unknown) => {
+          log.warn(`[AUTOSTART] ${row.slug}: could not call off the empty match`, {
+            error: String(error),
+          });
+          return false;
+        });
+        log.info(
+          `[AUTOSTART] ${row.slug}: nobody joined in ${minutes} min, ${
+            cancelled ? 'called off; the players are out' : 'not started; waiting for an admin'
+          }`
+        );
+        continue;
+      }
+      const outcome = await runFleetCommand(row.server_id, 'start', {}, ISSUED_BY).catch(
+        (error: unknown) => {
+          log.warn(`[AUTOSTART] ${row.slug}: start failed`, { error: String(error) });
+          return null;
+        }
+      );
+      log.info(
+        `[AUTOSTART] ${row.slug}: ${minutes} min in warmup, started (${outcome?.status ?? 'error'})`
+      );
     } else if (left <= 10 && !state.warned10 && !state.started) {
       state.warned10 = true;
       void say('The match starts in 10 seconds, ready or not.');
