@@ -2727,6 +2727,9 @@ router.put('/:id/set-players', async (req: Request, res: Response) => {
     }
 
     const result = await setRegisteredPlayers(tournamentId, playerIds);
+    // Added (or brought back) to a running shuffle: enough players waiting get a match now, as
+    // with register-players. Re-adding players by hand left them sitting out (NTLAN, 2026-10-16).
+    if (result.registered > 0) await fillRoundFromBench(tournamentId).catch(() => []);
 
     const statusCode = result.errors.length > 0 ? 207 : 200; // 207 Multi-Status if some failed
 

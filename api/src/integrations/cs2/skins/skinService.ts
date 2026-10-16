@@ -666,6 +666,24 @@ export interface LoadoutRow {
   team: number;
 }
 
+/**
+ * A slot with nothing equipped on the platform (any weapon, the knife, the gloves): the newest
+ * skin the player owns for it, on both sides, rather than the stock look. A knife that dropped
+ * tonight (drops no longer equip themselves) left its owner with the stock knife (NTLAN,
+ * 2026-10-16). An equipped skin, on any side, is never replaced. `owned` newest first.
+ */
+export function withInventoryFallback(rows: LoadoutRow[], owned: LoadoutRow[]): LoadoutRow[] {
+  const out = [...rows];
+  const filled = new Set(rows.map((r) => r.slot));
+  for (const o of owned) {
+    const slot = slotOf(o.weapon);
+    if (filled.has(slot)) continue;
+    filled.add(slot);
+    out.push({ ...o, slot, team: 0 });
+  }
+  return out;
+}
+
 export interface LoadoutPayload {
   paints: Array<{
     team: LoadoutTeam;
@@ -774,9 +792,12 @@ export const skinService = {
   },
 
   /**
-   * Gives a player one skin, rolled like a case unless the reward pins it,
-   * equips it if its slot is empty (never in place of one they chose), and
-   * puts it first in their profile showcase.
+   * Gives a player one skin, rolled like a case unless the reward pins it. An
+   * admin's gift goes on if its slot is empty (never in place of one they
+   * chose); a drop, prize, level reward or trade-up only lands in the
+   * inventory, and the reveal's Equip buttons put it on. (Drops went on by
+   * themselves, and players at NTLAN, 2026-10-16, took the reveal's OK for the
+   * button that equipped them.)
    */
   async grant(
     playerUid: string,
@@ -819,8 +840,8 @@ export const skinService = {
         stattrak && statTrakCapable(skin.weapon) ? 0 : null,
       ]
     );
-    if (row?.id) {
-      // A first skin for a slot goes on, for both sides; the showcase is the player's own pick.
+    if (row?.id && source.source === 'admin' && opts.notify !== false) {
+      // An admin's gift is a first skin for a slot: on, for both sides. The showcase is the player's own pick.
       await db.runAsync(
         `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id, team)
          SELECT ?, ?, ?, 0 WHERE NOT EXISTS (
@@ -1726,7 +1747,13 @@ export const skinService = {
         WHERE l.player_uid = ?`,
       [uid]
     );
-    return loadoutPayload(rows);
+    const owned = await db.queryAsync<LoadoutRow>(
+      `SELECT weapon, paint_kit, float_value, pattern, stattrak, '' AS slot, 0 AS team
+         FROM cs2_player_skins WHERE player_uid = ?
+        ORDER BY created_at DESC, id DESC`,
+      [uid]
+    );
+    return loadoutPayload(withInventoryFallback(rows, owned));
   },
 
   /** Admin: the numbers at the top of the Skins page. */

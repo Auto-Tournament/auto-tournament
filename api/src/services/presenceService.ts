@@ -5,7 +5,8 @@
  * server). One source, so every place says the same thing.
  */
 import { db } from '../config/database';
-import { isPlayerOnline } from './socketService';
+import { presenceStatus } from './socketService';
+import type { PresenceStatus } from './presenceTracker';
 import { playerConnectionService } from './playerConnectionService';
 
 export type PresenceActivity =
@@ -19,7 +20,10 @@ export type PresenceActivity =
     };
 
 export interface Presence {
+  /** Online or away (`status` says which). */
   online: boolean;
+  /** Online, away (idle 5 minutes in every tab that reports it) or offline. */
+  status: PresenceStatus;
   activity: PresenceActivity | null;
 }
 
@@ -73,11 +77,14 @@ export async function activitiesOf(ids: string[]): Promise<Map<string, PresenceA
   return out;
 }
 
-/** Presence of each player: online, and what they are doing. */
+/** Presence of each player: online, away or offline, and what they are doing. */
 export async function presenceOf(ids: string[]): Promise<Map<string, Presence>> {
   const unique = [...new Set(ids)].slice(0, PRESENCE_MAX_IDS);
   const doing = await activitiesOf(unique);
   return new Map(
-    unique.map((id) => [id, { online: isPlayerOnline(id), activity: doing.get(id) ?? null }])
+    unique.map((id) => {
+      const status = presenceStatus(id);
+      return [id, { online: status !== 'offline', status, activity: doing.get(id) ?? null }];
+    })
   );
 }

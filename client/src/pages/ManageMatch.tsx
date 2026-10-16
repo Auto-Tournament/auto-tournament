@@ -1215,6 +1215,24 @@ export default function ManageMatch() {
               >
                 Swap sides
               </Button>
+              <Button
+                onClick={() =>
+                  setConfirm({
+                    target: 'match',
+                    title: 'Kick the bots?',
+                    effects: [
+                      'Every bot on CT and T leaves the server',
+                      'GOTV (SourceTV) stays: the demo keeps recording',
+                    ],
+                    action: 'Kick bots',
+                    cancel: 'Keep them',
+                    run: () => send('kick_bots', {}, 'Bots kicked'),
+                  })
+                }
+                data-testid="manage-kick-bots"
+              >
+                Kick bots
+              </Button>
             </Group>
           )}
           <Group label="Players">

@@ -681,7 +681,9 @@
       "searchWidening": "Widening the search: ±{{elo}} · {{count}} searching",
       "searchAnyRating": "Searching every rating now · {{count}} searching",
       "inTournament": "You are in an active tournament ({{tournament}}), you can't queue for matchmaking right now.",
-      "partyInTournament": "In an active tournament, so the party can't queue right now: {{names}}."
+      "partyInTournament": "In an active tournament, so the party can't queue right now: {{names}}.",
+      "inMatch_one": "{{count}} en match",
+      "inMatch_other": "{{count}} en match"
     },
     "queue": {
       "searching": "Searching {{mode}}",
@@ -752,7 +754,16 @@
       },
       "equip": "Équiper",
       "equipped": "Équipé",
-      "equipFailed": "Impossible de l’équiper"
+      "equipFailed": "Impossible de l’équiper",
+      "rematch": {
+        "title": "Revanche ?",
+        "body": "Mêmes équipes, nouvelle carte. Un oui vaut pour tout ton groupe. Elle démarre quand tout le monde est partant ({{yes}} sur {{total}} pour l'instant), sous 2 minutes.",
+        "yes": "Oui, revanche",
+        "no": "Non merci",
+        "button": "Revanche",
+        "waiting": "En attente des autres : {{yes}} sur {{total}} ont dit oui.",
+        "declined": "Pas de revanche : quelqu'un a dit non."
+      }
     },
     "result": {
       "title": "Result",

@@ -1,5 +1,5 @@
 import { useCallback, type ReactNode } from 'react';
-import { PresenceDot } from '../../social/PresenceDot';
+import { AvatarPresence } from '../../social/PresenceDot';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { TeamMatchInfo } from '../../../types';
@@ -61,24 +61,29 @@ function InServerList({
           >
             <Box
               component="span"
-              sx={{
-                width: 32,
-                height: 32,
-                flex: 'none',
-                borderRadius: '50%',
-                bgcolor: color.paper3,
-                backgroundImage: player.avatar ? `url("${player.avatar}")` : 'none',
-                backgroundSize: 'cover',
-                display: 'grid',
-                placeItems: 'center',
-                fontWeight: 600,
-                fontSize: '0.8125rem',
-                opacity: isIn ? 1 : 0.45,
-              }}
+              sx={{ position: 'relative', flex: 'none', display: 'inline-flex' }}
             >
-              {!player.avatar && player.name.slice(0, 1).toUpperCase()}
+              <Box
+                component="span"
+                sx={{
+                  width: 32,
+                  height: 32,
+                  flex: 'none',
+                  borderRadius: '50%',
+                  bgcolor: color.paper3,
+                  backgroundImage: player.avatar ? `url("${player.avatar}")` : 'none',
+                  backgroundSize: 'cover',
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontWeight: 600,
+                  fontSize: '0.8125rem',
+                  opacity: isIn ? 1 : 0.45,
+                }}
+              >
+                {!player.avatar && player.name.slice(0, 1).toUpperCase()}
+              </Box>
+              <AvatarPresence playerId={player.steamid} size={32} />
             </Box>
-            <PresenceDot playerId={player.steamid} />
             <Typography
               sx={{
                 flex: 1,

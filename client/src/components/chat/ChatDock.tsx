@@ -14,7 +14,7 @@
  */
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { fmtTime } from '../../utils/time';
-import { PresenceDot } from '../social/PresenceDot';
+import { AvatarPresence } from '../social/PresenceDot';
 import {
   Box,
   Button,
@@ -120,31 +120,34 @@ function clockOf(seconds: number): string {
 function Avatar({ message }: { message: ChatMessage }) {
   const isAdmin = message.senderKind === 'admin';
   const picture = isAdmin ? null : message.senderAvatar;
+  const playerId = message.senderKind === 'player' ? message.senderId : null;
   return (
-    <Box
-      aria-hidden
-      sx={{
-        width: 32,
-        height: 32,
-        flex: 'none',
-        borderRadius: '50%',
-        display: 'grid',
-        placeItems: 'center',
-        fontFamily: fontDisplay,
-        fontWeight: 600,
-        fontSize: textSize.sm,
-        bgcolor: isAdmin ? tint(admin, 0.16) : color.paper3,
-        color: isAdmin ? admin : color.ink,
-        backgroundImage: picture ? `url(${picture})` : undefined,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    >
-      {isAdmin ? (
-        <ShieldIcon />
-      ) : picture ? null : (
-        (message.senderName.trim()[0] ?? '?').toUpperCase()
-      )}
+    <Box sx={{ position: 'relative', width: 32, height: 32, flex: 'none' }}>
+      <Box
+        aria-hidden
+        sx={{
+          width: 32,
+          height: 32,
+          borderRadius: '50%',
+          display: 'grid',
+          placeItems: 'center',
+          fontFamily: fontDisplay,
+          fontWeight: 600,
+          fontSize: textSize.sm,
+          bgcolor: isAdmin ? tint(admin, 0.16) : color.paper3,
+          color: isAdmin ? admin : color.ink,
+          backgroundImage: picture ? `url(${picture})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {isAdmin ? (
+          <ShieldIcon />
+        ) : picture ? null : (
+          (message.senderName.trim()[0] ?? '?').toUpperCase()
+        )}
+      </Box>
+      {playerId && <AvatarPresence playerId={playerId} size={32} />}
     </Box>
   );
 }
@@ -240,11 +243,6 @@ function MessageLine({
             flexWrap: 'wrap',
           }}
         >
-          {message.senderId && message.senderKind === 'player' && (
-            <Box component="span" sx={{ alignSelf: 'center', display: 'inline-flex' }}>
-              <PresenceDot playerId={message.senderId} size={7} />
-            </Box>
-          )}
           {message.senderId && message.senderKind === 'player' ? (
             // A player's name opens their profile.
             <Box
@@ -409,6 +407,17 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
   const { playerSteamId, impersonation } = useAuth();
   const { channels, threads, active, typing } = useChat();
   const channel = channels.find((c) => c.channel === active) ?? null;
+  // Toasts sit top-right; the open window reaches up there too. Tell them how far left to go
+  // (SnackbarContext reads --chat-dock-width), so a toast never covers the chat.
+  useEffect(() => {
+    if (phone) return;
+    const root = document.documentElement;
+    const width = (wide ? WIDE_PANEL_WIDTH : PANEL_WIDTH) + PANEL_MARGIN + 12;
+    root.style.setProperty('--chat-dock-width', `${width}px`);
+    return () => {
+      root.style.removeProperty('--chat-dock-width');
+    };
+  }, [phone, wide]);
   const typingNow = typingLine(typistsNow(typing, active, Date.now()), t);
   const thread = active ? threads[active] : undefined;
   const [draft, setDraft] = useState('');

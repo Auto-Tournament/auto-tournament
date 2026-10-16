@@ -236,11 +236,21 @@ router.get('/matches/:slug/manage', requireAuth, async (req: Request, res: Respo
  * Body: { name, args? }. Sends one Ready Up command to the match's server and
  * logs it with the admin who sent it.
  */
+/**
+ * `kick_bots`: the fill bots off both teams, never SourceTV (a spectator). A plain `bot_kick`
+ * takes SourceTV too (NTLAN, 2026-10-16, a surplus bot removed by hand). Sent as a fixed exec
+ * line, so an admin needs no root for it.
+ */
+export const KICK_BOTS_LINE = 'bot_kick t; bot_kick ct';
+
 router.post('/matches/:slug/manage/command', requireAuth, async (req: Request, res: Response) => {
   const { slug } = req.params;
-  const name = String(req.body?.name ?? '') as CmdName;
-  const args =
-    req.body?.args && typeof req.body.args === 'object'
+  const asked = String(req.body?.name ?? '');
+  const kickBots = asked === 'kick_bots';
+  const name = (kickBots ? 'exec' : asked) as CmdName;
+  const args = kickBots
+    ? { command: KICK_BOTS_LINE }
+    : req.body?.args && typeof req.body.args === 'object'
       ? (req.body.args as Record<string, unknown>)
       : {};
   if (!MANAGE_MATCH_COMMANDS.has(name)) {
@@ -257,7 +267,7 @@ router.post('/matches/:slug/manage/command', requireAuth, async (req: Request, r
         .status(409)
         .json({ success: false, error: 'The match is not on a Ready Up server' });
     }
-    const who = issuedBy(req);
+    const who = kickBots ? { ...issuedBy(req), root: true } : issuedBy(req);
     const outcome = await runFleetCommand(match.server_id, name, args, who);
     await db
       .runAsync('INSERT INTO match_events (match_slug, event_type, event_data) VALUES (?, ?, ?)', [

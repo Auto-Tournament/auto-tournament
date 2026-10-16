@@ -681,7 +681,9 @@
       "searchWidening": "Widening the search: ±{{elo}} · {{count}} searching",
       "searchAnyRating": "Searching every rating now · {{count}} searching",
       "inTournament": "You are in an active tournament ({{tournament}}), you can't queue for matchmaking right now.",
-      "partyInTournament": "In an active tournament, so the party can't queue right now: {{names}}."
+      "partyInTournament": "In an active tournament, so the party can't queue right now: {{names}}.",
+      "inMatch_one": "{{count}} im Match",
+      "inMatch_other": "{{count}} im Match"
     },
     "queue": {
       "searching": "Searching {{mode}}",
@@ -752,7 +754,16 @@
       },
       "equip": "Ausrüsten",
       "equipped": "Ausgerüstet",
-      "equipFailed": "Konnte nicht ausgerüstet werden"
+      "equipFailed": "Konnte nicht ausgerüstet werden",
+      "rematch": {
+        "title": "Revanche?",
+        "body": "Gleiche Teams, neue Karte. Ein Ja gilt für deine ganze Gruppe. Sie startet, wenn alle dabei sind ({{yes}} von {{total}} bisher), innerhalb von 2 Minuten.",
+        "yes": "Ja, Revanche",
+        "no": "Nein danke",
+        "button": "Revanche",
+        "waiting": "Warte auf die anderen: {{yes}} von {{total}} haben zugestimmt.",
+        "declined": "Keine Revanche: jemand hat abgelehnt."
+      }
     },
     "result": {
       "title": "Result",

@@ -270,6 +270,7 @@
   "presence": {
     "online": "Online",
     "offline": "Offline",
+    "away": "Away",
     "searching": "Searching for a {{mode}} game",
     "playingMatchmaking": "In a matchmaking match: {{label}}",
     "playingTournament": "In a tournament match: {{label}}",

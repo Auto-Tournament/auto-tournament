@@ -211,6 +211,7 @@ export function TournamentPrizeCards({ tournamentId }: { tournamentId: number })
           }}
         >
           <PlayerAvatar
+            id={mvp.player.steamId}
             name={mvp.player.name}
             avatarUrl={mvp.player.avatar ?? undefined}
             size={40}

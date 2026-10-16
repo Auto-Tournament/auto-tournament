@@ -7,7 +7,9 @@ import {
 import { io, type Socket } from 'socket.io-client';
 import {
   abandonCooldownSeconds,
+  everyoneGone,
   isAbandon,
+  rematchOpen,
   cooldownSeconds,
   findGroup,
   fewSearching,
@@ -217,6 +219,26 @@ test.describe('matchmaking rules (pure)', () => {
   test('abandons: 1 h, doubling within 7 days, at most 7 days', TAGS, () => {
     expect([0, 1, 2, 3].map(abandonCooldownSeconds)).toEqual([3600, 7200, 14400, 28800]);
     expect(abandonCooldownSeconds(20)).toBe(7 * 24 * 3600);
+  });
+
+  test('abandon: the whole match gone at once is the server, not the players', TAGS, () => {
+    // A map change or a crash drops all ten: no penalties.
+    expect(everyoneGone(10, 10, 0)).toBe(true);
+    expect(everyoneGone(10, 4, 6)).toBe(true);
+    // One player leaves a match the others are still in: they are penalized.
+    expect(everyoneGone(10, 1, 0)).toBe(false);
+    expect(everyoneGone(10, 9, 0)).toBe(false);
+    expect(everyoneGone(0, 0, 0)).toBe(false);
+  });
+
+  test('rematch: open for 2 minutes after a completed match only', TAGS, () => {
+    const done = { status: 'completed', completed_at: 1000 };
+    expect(rematchOpen(done, 1000)).toBe(true);
+    expect(rematchOpen(done, 1119)).toBe(true);
+    expect(rematchOpen(done, 1120)).toBe(false);
+    expect(rematchOpen({ status: 'cancelled', completed_at: 1000 }, 1010)).toBe(false);
+    expect(rematchOpen({ status: 'live', completed_at: null }, 1010)).toBe(false);
+    expect(rematchOpen(null, 1010)).toBe(false);
   });
 
   test(

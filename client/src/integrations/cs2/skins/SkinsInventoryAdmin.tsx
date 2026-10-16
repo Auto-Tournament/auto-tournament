@@ -234,7 +234,7 @@ export function SkinsInventoryAdmin({ onChanged }: { onChanged?: () => void }) {
                     '&:focus-visible': { outline: `2px solid ${color.focus}` },
                   }}
                 >
-                  <PlayerAvatar name={p.name} avatarUrl={p.avatarUrl} size={34} />
+                  <PlayerAvatar id={p.steamId} name={p.name} avatarUrl={p.avatarUrl} size={34} />
                   <Box sx={{ minWidth: 0 }}>
                     <Typography noWrap fontWeight={600}>
                       {p.name}

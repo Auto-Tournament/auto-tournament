@@ -1078,6 +1078,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'gotv_seats', field: 'gotvSeats' },
   { key: 'gotv_access', field: 'gotvAccess' },
   { key: 'gotv_live_stats', field: 'gotvLiveStats' },
+  // The connect panel recommends LAN to everyone (CS2 fleet/connectChoice.ts).
+  { key: 'connect_prefer_lan', field: 'connectPreferLan' },
   // The highlight settings, core's (services/highlights/settings.ts).
   { key: 'highlights_watermark', field: 'highlightsWatermark' },
   // Clips per player per map (demos/highlights.ts).
@@ -1114,12 +1116,13 @@ test.describe('settings namespace', () => {
     const coreKeys = CORE_SETTINGS.map((definition) => definition.key);
     expect(coreKeys.filter((key) => cs2Keys.includes(key))).toEqual([]);
     for (const key of cs2Keys) {
-      // Server convars (at_), the simulation, the highlight videos, and GOTV spectating.
+      // Server convars (at_), the simulation, the highlight videos, GOTV spectating, joining.
       expect(
         key.startsWith('at_') ||
           key.startsWith('simulat') ||
           key.startsWith('highlights_') ||
-          key.startsWith('gotv_'),
+          key.startsWith('gotv_') ||
+          key.startsWith('connect_'),
         key
       ).toBe(true);
     }

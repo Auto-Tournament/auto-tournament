@@ -398,7 +398,7 @@ export function AvatarStack({
   players,
   size = 26,
 }: {
-  players: Array<{ name: string; avatar?: string | null }>;
+  players: Array<{ id?: string | null; name: string; avatar?: string | null }>;
   size?: number;
 }) {
   return (
@@ -410,6 +410,7 @@ export function AvatarStack({
       {players.map((p, i) => (
         <PlayerAvatar
           key={`${p.name}-${i}`}
+          id={p.id}
           name={p.name}
           avatar={p.avatar}
           size={size}

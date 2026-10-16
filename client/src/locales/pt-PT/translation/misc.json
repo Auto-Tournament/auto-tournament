@@ -681,7 +681,9 @@
       "searchWidening": "Widening the search: ±{{elo}} · {{count}} searching",
       "searchAnyRating": "Searching every rating now · {{count}} searching",
       "inTournament": "You are in an active tournament ({{tournament}}), you can't queue for matchmaking right now.",
-      "partyInTournament": "In an active tournament, so the party can't queue right now: {{names}}."
+      "partyInTournament": "In an active tournament, so the party can't queue right now: {{names}}.",
+      "inMatch_one": "{{count}} em jogo",
+      "inMatch_other": "{{count}} em jogo"
     },
     "queue": {
       "searching": "Searching {{mode}}",
@@ -752,7 +754,16 @@
       },
       "equip": "Equipar",
       "equipped": "Equipada",
-      "equipFailed": "Não foi possível equipar"
+      "equipFailed": "Não foi possível equipar",
+      "rematch": {
+        "title": "Desforra?",
+        "body": "As mesmas equipas, um mapa novo. Um sim conta para todo o teu grupo. Começa quando estiverem todos ({{yes}} de {{total}} até agora), em 2 minutos.",
+        "yes": "Sim, desforra",
+        "no": "Não, obrigado",
+        "button": "Desforra",
+        "waiting": "À espera dos outros: {{yes}} de {{total}} disseram que sim.",
+        "declined": "Sem desforra: alguém disse que não."
+      }
     },
     "result": {
       "title": "Result",

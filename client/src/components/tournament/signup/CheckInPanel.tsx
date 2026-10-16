@@ -183,6 +183,7 @@ export function CheckInPanel({
               }}
             >
               <PlayerAvatar
+                id={p.steamId}
                 name={p.name}
                 avatar={p.avatar}
                 size={44}
@@ -269,7 +270,13 @@ export function CheckInPanel({
                   <Box sx={{ display: 'flex' }}>
                     {regStarters.map((p, i) => (
                       <Box key={p.steamId} sx={{ ml: i === 0 ? 0 : '-10px' }}>
-                        <Face name={p.name} avatar={p.avatar} size={30} dim={!p.checkedInAt} />
+                        <Face
+                          playerId={p.steamId}
+                          name={p.name}
+                          avatar={p.avatar}
+                          size={30}
+                          dim={!p.checkedInAt}
+                        />
                       </Box>
                     ))}
                   </Box>

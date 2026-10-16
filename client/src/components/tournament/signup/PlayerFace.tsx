@@ -1,17 +1,21 @@
 import type { ReactNode } from 'react';
 import { Box, Typography } from '@mui/material';
 import { tokens } from '../../../theme/tokens';
+import { AvatarPresence } from '../../social/PresenceDot';
 
 const { color } = tokens;
 
-/** A player's avatar (or initial) with an optional corner badge. */
+/** A player's avatar (or initial) with an optional corner badge, and their status dot with a `playerId`. */
 export function Face({
+  playerId,
   name,
   avatar,
   size = 48,
   dim = false,
   badge,
 }: {
+  /** Online / away / offline on the corner (the top one when there is a badge). */
+  playerId?: string | null;
   name: string;
   avatar?: string | null;
   size?: number;
@@ -60,6 +64,9 @@ export function Face({
           {badge.icon}
         </Box>
       )}
+      {playerId && (
+        <AvatarPresence playerId={playerId} size={size} corner={badge ? 'top' : 'bottom'} />
+      )}
     </Box>
   );
 }
@@ -81,14 +88,33 @@ export function PersonTile({
   badge?: { tone: string; icon: ReactNode };
 }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, textAlign: 'center', minWidth: 0 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 1,
+        textAlign: 'center',
+        minWidth: 0,
+      }}
+    >
       <Face name={name} avatar={avatar} size={52} dim={dim} badge={badge} />
       <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0, maxWidth: '100%' }}>
-        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <Typography
+          sx={{
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {name}
         </Typography>
         {note && (
-          <Typography sx={{ fontSize: '0.75rem', color: noteTone ?? color.muted }}>{note}</Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: noteTone ?? color.muted }}>
+            {note}
+          </Typography>
         )}
       </Box>
     </Box>
@@ -96,7 +122,17 @@ export function PersonTile({
 }
 
 /** A team's tag as a small square mark. */
-export function TeamMark({ tag, name, size = 36, highlight }: { tag?: string | null; name: string; size?: number; highlight?: boolean }) {
+export function TeamMark({
+  tag,
+  name,
+  size = 36,
+  highlight,
+}: {
+  tag?: string | null;
+  name: string;
+  size?: number;
+  highlight?: boolean;
+}) {
   return (
     <Box
       component="span"

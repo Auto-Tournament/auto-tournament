@@ -67,6 +67,7 @@ import PlayLobby from './pages/PlayLobby';
 import { MatchmakingOverlay } from './components/matchmaking/MatchmakingOverlay';
 import { ChatDock } from './components/chat/ChatDock';
 import { PartyInviteToast } from './components/social/PartyInviteToast';
+import { PresenceReporter } from './components/social/PresenceReporter';
 import AccountConnections from './pages/AccountConnections';
 import ConnectSteam from './pages/ConnectSteam';
 import Templates from './pages/Templates';
@@ -752,6 +753,8 @@ export default function App() {
               <ChatDock />
               {/* A party invite arriving: a card under the top bar on every page. */}
               <PartyInviteToast />
+              {/* Online or away: this tab says when it goes idle. */}
+              <PresenceReporter />
             </PageHeaderProvider>
           </SnackbarProvider>
         </AuthProvider>

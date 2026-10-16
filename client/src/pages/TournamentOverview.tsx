@@ -90,6 +90,10 @@ export default function TournamentOverview() {
       : schedule;
   // eslint-disable-next-line react-hooks/purity -- the phase only needs to be right when the page renders
   const phase = signupPhase(signup.window, Date.now());
+  // A finished tournament takes nobody new, whatever its registrationOpen still says (NTLAN,
+  // 2026-10-16: "Bli med" stayed on after the last round).
+  const over = tournament.status === 'completed';
+  const joinOpen = phase === 'open' && !over;
   const registration = viewerRegistration(signup);
   const canManage = Boolean(
     registration && signup.eligibleTeams.some((team) => team.id === registration.teamId)
@@ -156,7 +160,7 @@ export default function TournamentOverview() {
             tournamentId={tournament.id}
             players={signup.players}
             steamId={signup.steamId}
-            open={phase === 'open'}
+            open={joinOpen}
             started={false}
             spots={
               signup.window?.maxTeams ? signup.window.maxTeams * (tournament.teamSize ?? 5) : null
@@ -297,7 +301,7 @@ export default function TournamentOverview() {
           tournamentId={tournament.id}
           players={signup.players}
           steamId={signup.steamId}
-          open={phase === 'open'}
+          open={joinOpen}
           started
           spots={
             signup.window?.maxTeams ? signup.window.maxTeams * (tournament.teamSize ?? 5) : null

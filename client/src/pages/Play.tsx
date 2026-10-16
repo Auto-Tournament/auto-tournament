@@ -219,10 +219,12 @@ function YouColumn({ playerId, rating }: { playerId: string; rating: { elo: numb
 }
 
 function PersonChip({
+  id,
   name,
   avatarUrl,
   you,
 }: {
+  id?: string | null;
   name: string;
   avatarUrl: string | null;
   you?: boolean;
@@ -242,7 +244,7 @@ function PersonChip({
         minWidth: 0,
       }}
     >
-      <PlayerAvatar name={name} avatarUrl={avatarUrl} size={30} />
+      <PlayerAvatar id={id} name={name} avatarUrl={avatarUrl} size={30} />
       <Box
         component="span"
         sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
@@ -324,6 +326,9 @@ export default function Play() {
   const cooldown = me?.cooldownUntil ? secondsUntil(me.cooldownUntil, skew) : 0;
   const inviteLink = party ? `${window.location.origin}${paths.play}?join=${party.inviteCode}` : '';
   const counts = me?.queueCounts ?? {};
+  // Players in a matchmaking game right now, per mode and in all.
+  const inMatch = me?.matchCounts ?? {};
+  const totalInMatch = Object.values(inMatch).reduce((sum, n) => sum + n, 0);
   const totalQueued = Object.values(counts).reduce((a, b) => a + b, 0);
   const people =
     party?.people ?? party?.members.map((id) => ({ id, name: id, avatarUrl: null })) ?? [];
@@ -398,6 +403,12 @@ export default function Play() {
                     ●{' '}
                   </Box>
                   {t('matchmaking.play.inQueue', { count: totalQueued })}
+                  {totalInMatch > 0 && (
+                    <Box component="span" sx={{ color: color.muted }} data-testid="mm-in-match">
+                      {' · '}
+                      {t('matchmaking.play.inMatch', { count: totalInMatch })}
+                    </Box>
+                  )}
                   {typeof me?.online === 'number' && (
                     <Box component="span" sx={{ color: color.muted }} data-testid="mm-online">
                       {' · '}
@@ -563,7 +574,12 @@ export default function Play() {
                         borderColor: color.accent,
                       }}
                     >
-                      <PlayerAvatar name={inv.from.name} avatarUrl={inv.from.avatarUrl} size={36} />
+                      <PlayerAvatar
+                        id={inv.from.id}
+                        name={inv.from.name}
+                        avatarUrl={inv.from.avatarUrl}
+                        size={36}
+                      />
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography sx={{ fontSize: textSize.sm }}>
                           <Box component="b">{inv.from.name}</Box> {t('social.notice.partyInvite')}
@@ -611,6 +627,7 @@ export default function Play() {
                         people.map((p) => (
                           <PersonChip
                             key={p.id}
+                            id={p.id}
                             name={p.name}
                             avatarUrl={p.avatarUrl}
                             you={p.id === playerSteamId}
@@ -637,6 +654,7 @@ export default function Play() {
                           }}
                         >
                           <PlayerAvatar
+                            id={p.id}
                             name={p.name}
                             avatarUrl={p.avatarUrl}
                             size={28}
@@ -820,6 +838,9 @@ export default function Play() {
                             <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
                               {[
                                 t('matchmaking.play.inQueue', { count: counts[m] ?? 0 }),
+                                inMatch[m]
+                                  ? t('matchmaking.play.inMatch', { count: inMatch[m] })
+                                  : null,
                                 typeof me?.waitSeconds?.[m] === 'number'
                                   ? t('matchmaking.play.aboutWait', {
                                       count: Math.max(1, Math.round(me.waitSeconds[m]! / 60)),

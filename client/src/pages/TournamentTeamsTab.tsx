@@ -289,7 +289,7 @@ function TeamCards({
                           textAlign: 'center',
                         }}
                       >
-                        <PlayerAvatar name={p.name} avatar={p.avatar} size={40} />
+                        <PlayerAvatar id={p.steamId} name={p.name} avatar={p.avatar} size={40} />
                         <Typography
                           component="span"
                           sx={{ fontSize: textSize.sm, overflowWrap: 'anywhere' }}
