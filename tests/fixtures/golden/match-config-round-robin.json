@@ -19,7 +19,10 @@
           "at_pause_on_disconnect": 1,
           "at_side_selection_enabled": 1,
           "at_side_selection_time": 60,
-          "mp_maxrounds": 12
+          "mp_maxrounds": 12,
+          "tv_delay": 105,
+          "tv_maxclients": 8,
+          "tv_password": "<tv_password>"
         },
         "expected_players_team1": 5,
         "expected_players_team2": 5,
@@ -89,7 +92,10 @@
           "at_pause_on_disconnect": 1,
           "at_side_selection_enabled": 1,
           "at_side_selection_time": 60,
-          "mp_maxrounds": 12
+          "mp_maxrounds": 12,
+          "tv_delay": 105,
+          "tv_maxclients": 8,
+          "tv_password": "<tv_password>"
         },
         "expected_players_team1": 5,
         "expected_players_team2": 5,
@@ -159,7 +165,10 @@
           "at_pause_on_disconnect": 1,
           "at_side_selection_enabled": 1,
           "at_side_selection_time": 60,
-          "mp_maxrounds": 12
+          "mp_maxrounds": 12,
+          "tv_delay": 105,
+          "tv_maxclients": 8,
+          "tv_password": "<tv_password>"
         },
         "expected_players_team1": 5,
         "expected_players_team2": 5,
@@ -229,7 +238,10 @@
           "at_pause_on_disconnect": 1,
           "at_side_selection_enabled": 1,
           "at_side_selection_time": 60,
-          "mp_maxrounds": 12
+          "mp_maxrounds": 12,
+          "tv_delay": 105,
+          "tv_maxclients": 8,
+          "tv_password": "<tv_password>"
         },
         "expected_players_team1": 5,
         "expected_players_team2": 5,
@@ -299,7 +311,10 @@
           "at_pause_on_disconnect": 1,
           "at_side_selection_enabled": 1,
           "at_side_selection_time": 60,
-          "mp_maxrounds": 12
+          "mp_maxrounds": 12,
+          "tv_delay": 105,
+          "tv_maxclients": 8,
+          "tv_password": "<tv_password>"
         },
         "expected_players_team1": 5,
         "expected_players_team2": 5,
@@ -369,7 +384,10 @@
           "at_pause_on_disconnect": 1,
           "at_side_selection_enabled": 1,
           "at_side_selection_time": 60,
-          "mp_maxrounds": 12
+          "mp_maxrounds": 12,
+          "tv_delay": 105,
+          "tv_maxclients": 8,
+          "tv_password": "<tv_password>"
         },
         "expected_players_team1": 5,
         "expected_players_team2": 5,

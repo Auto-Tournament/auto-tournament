@@ -11,12 +11,21 @@ import { getAuthHeader, signInViaRequest } from '../helpers/auth';
  * @tag api
  */
 
-type Embed = { title: string; description?: string; url?: string; color: number; fields?: Array<{ name: string; value: string }>; footer?: { text: string } };
+type Embed = {
+  title: string;
+  description?: string;
+  url?: string;
+  color: number;
+  fields?: Array<{ name: string; value: string }>;
+  footer?: { text: string };
+};
 const embedOf = (msg: Record<string, unknown>) => (msg.embeds as Embed[])[0];
 
 test.describe('Discord webhook format (pure)', () => {
   test('only Discord webhook URLs count as Discord', { tag: ['@api'] }, () => {
-    expect(isDiscordWebhookUrl('https://discord.com/api/webhooks/123456789/abc-DEF_ghi')).toBe(true);
+    expect(isDiscordWebhookUrl('https://discord.com/api/webhooks/123456789/abc-DEF_ghi')).toBe(
+      true
+    );
     expect(isDiscordWebhookUrl('https://canary.discord.com/api/webhooks/1/x')).toBe(true);
     expect(isDiscordWebhookUrl('https://discordapp.com/api/v10/webhooks/1/x')).toBe(true);
     expect(isDiscordWebhookUrl('http://discord.com/api/webhooks/1/x')).toBe(false);
@@ -26,22 +35,29 @@ test.describe('Discord webhook format (pure)', () => {
     expect(isDiscordWebhookUrl('not a url')).toBe(false);
   });
 
-  test('admin.called: who, why, server and the match link; nothing secret, nobody pinged', { tag: ['@api'] }, () => {
-    const envelope = sampleEnvelope('admin.called', { test: false });
-    expect(envelope.data.match.connect).not.toBeNull();
-    const msg = discordMessage(envelope, null);
-    const embed = embedOf(msg);
-    expect(embed.title).toBe(`Admin called: ${envelope.data.match.team1!.name} vs ${envelope.data.match.team2!.name}`);
-    expect(embed.description).toContain('my game crashed');
-    expect(embed.url).toBe(envelope.data.admin_call!.match_url);
-    const text = JSON.stringify(msg);
-    expect(text).toContain('Sample Player');
-    expect(text).toContain('Sample server #1');
-    expect(text).not.toContain(envelope.data.match.connect!.console);
-    if (envelope.data.match.connect!.password) expect(text).not.toContain(envelope.data.match.connect!.password);
-    expect(msg.allowed_mentions).toEqual({ parse: [] });
-    expect(embed.footer).toBeUndefined();
-  });
+  test(
+    'admin.called: who, why, server and the match link; nothing secret, nobody pinged',
+    { tag: ['@api'] },
+    () => {
+      const envelope = sampleEnvelope('admin.called', { test: false });
+      expect(envelope.data.match.connect).not.toBeNull();
+      const msg = discordMessage(envelope, null);
+      const embed = embedOf(msg);
+      expect(embed.title).toBe(
+        `Admin called: ${envelope.data.match.team1!.name} vs ${envelope.data.match.team2!.name}`
+      );
+      expect(embed.description).toContain('my game crashed');
+      expect(embed.url).toBe(envelope.data.admin_call!.match_url);
+      const text = JSON.stringify(msg);
+      expect(text).toContain('Sample Player');
+      expect(text).toContain('Sample server #1');
+      expect(text).not.toContain(envelope.data.match.connect!.console);
+      if (envelope.data.match.connect!.password)
+        expect(text).not.toContain(envelope.data.match.connect!.password);
+      expect(msg.allowed_mentions).toEqual({ parse: [] });
+      expect(embed.footer).toBeUndefined();
+    }
+  );
 
   test('admin.call_resolved and match events get their own embeds', { tag: ['@api'] }, () => {
     const resolved = embedOf(discordMessage(sampleEnvelope('admin.call_resolved'), null));
@@ -50,7 +66,9 @@ test.describe('Discord webhook format (pure)', () => {
     expect(resolved.description).toContain('restarted the round');
     expect(resolved.footer?.text).toMatch(/Test event/);
 
-    const finished = embedOf(discordMessage(sampleEnvelope('match.finished'), 'https://at.example/matches?match=r2m1'));
+    const finished = embedOf(
+      discordMessage(sampleEnvelope('match.finished'), 'https://at.example/matches?match=r2m1')
+    );
     expect(finished.title).toMatch(/^Finished: /);
     expect(finished.url).toBe('https://at.example/matches?match=r2m1');
     // A message far longer than Discord allows is cut.

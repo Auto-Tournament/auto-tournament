@@ -184,80 +184,68 @@ test.describe('Tournament event page settings API', () => {
     }
   );
 
-  test(
-    'rejects more than 20 rules',
-    { tag: ['@api', '@tournament'] },
-    async ({ request }) => {
-      const teams = await createTestTeams(request, 'evtpage-rules');
-      expect(teams).toBeTruthy();
-      const [team1, team2] = teams!;
+  test('rejects more than 20 rules', { tag: ['@api', '@tournament'] }, async ({ request }) => {
+    const teams = await createTestTeams(request, 'evtpage-rules');
+    expect(teams).toBeTruthy();
+    const [team1, team2] = teams!;
 
-      const response = await request.post('/api/tournament', {
-        headers: getAuthHeader(),
-        data: {
-          name: `Event Page Bad Rules ${Date.now()}`,
-          type: 'single_elimination',
-          format: 'bo1',
-          maps: ['de_mirage', 'de_inferno'],
-          teamIds: [team1.id, team2.id],
-          settings: { rules: Array.from({ length: 21 }, (_, i) => `Rule ${i}`) },
+    const response = await request.post('/api/tournament', {
+      headers: getAuthHeader(),
+      data: {
+        name: `Event Page Bad Rules ${Date.now()}`,
+        type: 'single_elimination',
+        format: 'bo1',
+        maps: ['de_mirage', 'de_inferno'],
+        teamIds: [team1.id, team2.id],
+        settings: { rules: Array.from({ length: 21 }, (_, i) => `Rule ${i}`) },
+      },
+    });
+    expect(response.status()).toBe(400);
+    const data = await response.json();
+    expect(data.error).toContain('rules');
+  });
+
+  test('rejects more than 5 prizes', { tag: ['@api', '@tournament'] }, async ({ request }) => {
+    const teams = await createTestTeams(request, 'evtpage-prizes');
+    expect(teams).toBeTruthy();
+    const [team1, team2] = teams!;
+
+    const response = await request.post('/api/tournament', {
+      headers: getAuthHeader(),
+      data: {
+        name: `Event Page Bad Prizes ${Date.now()}`,
+        type: 'single_elimination',
+        format: 'bo1',
+        maps: ['de_mirage', 'de_inferno'],
+        teamIds: [team1.id, team2.id],
+        settings: {
+          prizes: Array.from({ length: 6 }, (_, i) => ({ place: `${i + 1}th`, prize: 'x' })),
         },
-      });
-      expect(response.status()).toBe(400);
-      const data = await response.json();
-      expect(data.error).toContain('rules');
-    }
-  );
+      },
+    });
+    expect(response.status()).toBe(400);
+    const data = await response.json();
+    expect(data.error).toContain('prizes');
+  });
 
-  test(
-    'rejects more than 5 prizes',
-    { tag: ['@api', '@tournament'] },
-    async ({ request }) => {
-      const teams = await createTestTeams(request, 'evtpage-prizes');
-      expect(teams).toBeTruthy();
-      const [team1, team2] = teams!;
+  test('rejects a non-https rulebookUrl', { tag: ['@api', '@tournament'] }, async ({ request }) => {
+    const teams = await createTestTeams(request, 'evtpage-url');
+    expect(teams).toBeTruthy();
+    const [team1, team2] = teams!;
 
-      const response = await request.post('/api/tournament', {
-        headers: getAuthHeader(),
-        data: {
-          name: `Event Page Bad Prizes ${Date.now()}`,
-          type: 'single_elimination',
-          format: 'bo1',
-          maps: ['de_mirage', 'de_inferno'],
-          teamIds: [team1.id, team2.id],
-          settings: {
-            prizes: Array.from({ length: 6 }, (_, i) => ({ place: `${i + 1}th`, prize: 'x' })),
-          },
-        },
-      });
-      expect(response.status()).toBe(400);
-      const data = await response.json();
-      expect(data.error).toContain('prizes');
-    }
-  );
-
-  test(
-    'rejects a non-https rulebookUrl',
-    { tag: ['@api', '@tournament'] },
-    async ({ request }) => {
-      const teams = await createTestTeams(request, 'evtpage-url');
-      expect(teams).toBeTruthy();
-      const [team1, team2] = teams!;
-
-      const response = await request.post('/api/tournament', {
-        headers: getAuthHeader(),
-        data: {
-          name: `Event Page Bad URL ${Date.now()}`,
-          type: 'single_elimination',
-          format: 'bo1',
-          maps: ['de_mirage', 'de_inferno'],
-          teamIds: [team1.id, team2.id],
-          settings: { rulebookUrl: 'http://example.com/rulebook' },
-        },
-      });
-      expect(response.status()).toBe(400);
-      const data = await response.json();
-      expect(data.error).toContain('rulebookUrl');
-    }
-  );
+    const response = await request.post('/api/tournament', {
+      headers: getAuthHeader(),
+      data: {
+        name: `Event Page Bad URL ${Date.now()}`,
+        type: 'single_elimination',
+        format: 'bo1',
+        maps: ['de_mirage', 'de_inferno'],
+        teamIds: [team1.id, team2.id],
+        settings: { rulebookUrl: 'http://example.com/rulebook' },
+      },
+    });
+    expect(response.status()).toBe(400);
+    const data = await response.json();
+    expect(data.error).toContain('rulebookUrl');
+  });
 });

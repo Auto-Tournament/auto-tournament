@@ -46,9 +46,20 @@ type ReportRow = {
 
 type MatchView = {
   success: boolean;
-  match: { slug: string; status: string; winnerId: string | null; team1: { id: string | null; name: string | null } };
+  match: {
+    slug: string;
+    status: string;
+    winnerId: string | null;
+    team1: { id: string | null; name: string | null };
+  };
   rules: { seriesLength: number; allowDraw: boolean; confirmation: string; timeoutAction: string };
-  viewer: { team: Side | null; role: string; canReport: boolean; canConfirm: boolean; canWithdraw: boolean };
+  viewer: {
+    team: Side | null;
+    role: string;
+    canReport: boolean;
+    canConfirm: boolean;
+    canWithdraw: boolean;
+  };
   open: ReportRow | null;
   reports: ReportRow[];
 };
@@ -118,7 +129,14 @@ async function playerContext(
 
 async function createTournament(
   admin: APIRequestContext,
-  data: { name: string; type: string; format: string; game?: string; teamIds: string[]; settings?: unknown }
+  data: {
+    name: string;
+    type: string;
+    format: string;
+    game?: string;
+    teamIds: string[];
+    settings?: unknown;
+  }
 ) {
   const res = await admin.post(`${MR}/tournament`, { data });
   expect(res.status(), `creating: ${await res.text()}`).toBe(200);
@@ -131,7 +149,9 @@ async function createTournament(
 async function listMatches(admin: APIRequestContext): Promise<ListedMatch[]> {
   const res = await admin.get('/api/matches');
   expect(res.ok(), `listing matches: ${await res.text()}`).toBe(true);
-  return (((await res.json()) as { matches?: ListedMatch[] }).matches ?? []).filter((m) => m.round >= 1);
+  return (((await res.json()) as { matches?: ListedMatch[] }).matches ?? []).filter(
+    (m) => m.round >= 1
+  );
 }
 
 async function waitForLive(admin: APIRequestContext, round: number, count: number) {
@@ -210,22 +230,44 @@ test.describe.serial('Manual reporting over HTTP: captains', () => {
         // Before anyone reports, the page knows what it is looking at.
         const before = await view(one, match.slug);
         expect(before.match.status).toBe('live');
-        expect(before.rules).toMatchObject({ seriesLength: 3, allowDraw: false, confirmation: 'opponent' });
-        expect(before.viewer).toMatchObject({ team: 'team1', role: 'captain', canReport: true, canConfirm: false });
+        expect(before.rules).toMatchObject({
+          seriesLength: 3,
+          allowDraw: false,
+          confirmation: 'opponent',
+        });
+        expect(before.viewer).toMatchObject({
+          team: 'team1',
+          role: 'captain',
+          canReport: true,
+          canConfirm: false,
+        });
         expect(before.open).toBeNull();
 
         const submitted = await expectOk(
-          await one.post(`${API}/matches/${match.slug}/report`, { data: { result: sweep(3, 'team1') } }),
+          await one.post(`${API}/matches/${match.slug}/report`, {
+            data: { result: sweep(3, 'team1') },
+          }),
           'reporting'
         );
-        expect(submitted.report).toMatchObject({ revision: 1, status: 'submitted', submittedByTeam: 'team1' });
+        expect(submitted.report).toMatchObject({
+          revision: 1,
+          status: 'submitted',
+          submittedByTeam: 'team1',
+        });
         expect(submitted.finalized).toBe(false);
         expect(submitted.report.confirmDeadline).toBeGreaterThan(Math.floor(Date.now() / 1000));
 
         // The reporter may take it back; the opponent is the one who answers.
-        expect((await view(one, match.slug)).viewer).toMatchObject({ canConfirm: false, canWithdraw: true });
+        expect((await view(one, match.slug)).viewer).toMatchObject({
+          canConfirm: false,
+          canWithdraw: true,
+        });
         const opponentView = await view(two, match.slug);
-        expect(opponentView.viewer).toMatchObject({ team: 'team2', canConfirm: true, canWithdraw: false });
+        expect(opponentView.viewer).toMatchObject({
+          team: 'team2',
+          canConfirm: true,
+          canWithdraw: false,
+        });
         expect(opponentView.open?.revision).toBe(1);
 
         const confirmed = await expectOk(
@@ -253,7 +295,9 @@ test.describe.serial('Manual reporting over HTTP: captains', () => {
         const b = await playerContext(playwright, baseURL, captainSteamIds.get(m.team2!.id)!);
         try {
           await expectOk(
-            await a.post(`${API}/matches/${m.slug}/report`, { data: { result: sweep(3, 'team1') } }),
+            await a.post(`${API}/matches/${m.slug}/report`, {
+              data: { result: sweep(3, 'team1') },
+            }),
             'reporting the other semi'
           );
           await expectOk(
@@ -292,7 +336,9 @@ test.describe.serial('Manual reporting over HTTP: captains', () => {
 
       try {
         await expectOk(
-          await one.post(`${API}/matches/${match.slug}/report`, { data: { result: sweep(1, 'team1') } }),
+          await one.post(`${API}/matches/${match.slug}/report`, {
+            data: { result: sweep(1, 'team1') },
+          }),
           'reporting'
         );
         // team2 reads revision 1 — and while they are reading it, team1
@@ -302,7 +348,9 @@ test.describe.serial('Manual reporting over HTTP: captains', () => {
         expect(stale).toBe(1);
 
         const corrected = await expectOk(
-          await one.post(`${API}/matches/${match.slug}/report`, { data: { result: sweep(1, 'team2') } }),
+          await one.post(`${API}/matches/${match.slug}/report`, {
+            data: { result: sweep(1, 'team2') },
+          }),
           'correcting'
         );
         expect(corrected.report.revision).toBe(2);
@@ -395,11 +443,15 @@ test.describe.serial('Manual reporting over HTTP: captains', () => {
 
         // The side that reported cannot answer its own report.
         await expectOk(
-          await one.post(`${API}/matches/${match.slug}/report`, { data: { result: sweep(1, 'team1') } }),
+          await one.post(`${API}/matches/${match.slug}/report`, {
+            data: { result: sweep(1, 'team1') },
+          }),
           'reporting'
         );
         for (const action of ['confirm', 'dispute']) {
-          const res = await one.post(`${API}/matches/${match.slug}/${action}`, { data: { revision: 1 } });
+          const res = await one.post(`${API}/matches/${match.slug}/${action}`, {
+            data: { revision: 1 },
+          });
           expect(res.status(), `${action} by the reporting side`).toBe(403);
           expect(await res.text()).toContain('cannot confirm or dispute its own report');
         }

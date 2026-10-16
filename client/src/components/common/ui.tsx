@@ -608,6 +608,8 @@ export function SwitchRow({
         slotProps={{
           ...switchProps.slotProps,
           input: {
+            // MUI sets role="switch" on its own input slot props; ours replace them, so set it again.
+            role: 'switch',
             ...(helpId ? { 'aria-describedby': helpId } : {}),
             ...(switchProps.slotProps?.input as object | undefined),
           },

@@ -63,14 +63,12 @@ test(
           }>
         ).filter((n) => n.kind === 'skin');
       expect(await skinNotices()).toHaveLength(0);
-      // ...but the kept skin gets one, with its picture.
+      // ...nor for the skin kept from it: the player picked it in the picker, which is the alert.
       const kept = await player.post(`/api/skins/me/choices/${choices[0]!.id}`, {
         data: { index: 0 },
       });
       expect(kept.ok(), await kept.text()).toBe(true);
-      const after = await skinNotices();
-      expect(after).toHaveLength(1);
-      expect(after[0]!.data.image).toMatch(/^\/api\/game\/cs2\/img\/skins\/.+\.webp$/);
+      expect(await skinNotices()).toHaveLength(0);
 
       // Not a target: refused.
       const bad = await request.post('/api/skins/admin/drops', {

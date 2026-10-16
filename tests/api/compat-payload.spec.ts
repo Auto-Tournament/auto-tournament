@@ -1,7 +1,11 @@
 import http from 'http';
 import type { AddressInfo } from 'net';
 import { test, expect } from '@playwright/test';
-import { compatBadge, validateCompatDocument, COMPAT_MAX_BYTES } from '../../api/src/utils/compatPayload';
+import {
+  compatBadge,
+  validateCompatDocument,
+  COMPAT_MAX_BYTES,
+} from '../../api/src/utils/compatPayload';
 import { fetchCompatFeed } from '../../api/src/services/compatFeedService';
 import { isValidCompatIngestAuth } from '../../api/src/services/compatService';
 import { compatDoc } from '../helpers/compat';
@@ -40,13 +44,19 @@ test.describe('compat document validation', { tag: ['@api', '@compat'] }, () => 
 
   test('a queued run may have no patch yet (Ready Up reads it from steam.inf later)', () => {
     const queued = validateCompatDocument(
-      compatDoc({ cs2: { buildid: '25537999', patch: '' }, run: { state: 'queued', finished_at: null }, overall: 'checking' })
+      compatDoc({
+        cs2: { buildid: '25537999', patch: '' },
+        run: { state: 'queued', finished_at: null },
+        overall: 'checking',
+      })
     );
     expect(queued.ok).toBe(true);
     if (!queued.ok) return;
     expect(queued.value.cs2.patch).toBe('');
     expect(compatBadge(queued.value).message).toContain('CS2 build 25537999');
-    expect(validateCompatDocument(compatDoc({ cs2: { buildid: '1', patch: 'x.y' } })).ok).toBe(false);
+    expect(validateCompatDocument(compatDoc({ cs2: { buildid: '1', patch: 'x.y' } })).ok).toBe(
+      false
+    );
   });
 
   test('refuses what the contract does not allow, naming each field', () => {
@@ -69,14 +79,46 @@ test.describe('compat document validation', { tag: ['@api', '@compat'] }, () => 
       ['component id uppercase', (d) => (d.components[0].id = 'Core'), 'components[0].id'],
       ['duplicate component', (d) => (d.components[1].id = 'core'), 'components[1].id'],
       ['bad component status', (d) => (d.components[0].status = 'ok'), 'components[0].status'],
-      ['bad check kind', (d) => (d.components[0].checks[0].kind = 'magic'), 'components[0].checks[0].kind'],
-      ['passed > total', (d) => (d.components[0].checks[0].passed = 10), 'components[0].checks[0].passed'],
-      ['negative total', (d) => (d.components[0].checks[0].total = -1), 'components[0].checks[0].total'],
-      ['fractional passed', (d) => (d.components[0].checks[0].passed = 1.5), 'components[0].checks[0].passed'],
-      ['failure not a string', (d) => (d.components[0].checks[0].failures = [1]), 'components[0].checks[0].failures[0]'],
-      ['failure too long', (d) => (d.components[0].checks[0].failures = ['x'.repeat(501)]), 'components[0].checks[0].failures[0]'],
+      [
+        'bad check kind',
+        (d) => (d.components[0].checks[0].kind = 'magic'),
+        'components[0].checks[0].kind',
+      ],
+      [
+        'passed > total',
+        (d) => (d.components[0].checks[0].passed = 10),
+        'components[0].checks[0].passed',
+      ],
+      [
+        'negative total',
+        (d) => (d.components[0].checks[0].total = -1),
+        'components[0].checks[0].total',
+      ],
+      [
+        'fractional passed',
+        (d) => (d.components[0].checks[0].passed = 1.5),
+        'components[0].checks[0].passed',
+      ],
+      [
+        'failure not a string',
+        (d) => (d.components[0].checks[0].failures = [1]),
+        'components[0].checks[0].failures[0]',
+      ],
+      [
+        'failure too long',
+        (d) => (d.components[0].checks[0].failures = ['x'.repeat(501)]),
+        'components[0].checks[0].failures[0]',
+      ],
       ['control chars in name', (d) => (d.components[0].name = 'Co\nre'), 'components[0].name'],
-      ['too many components', (d) => (d.components = Array.from({ length: 33 }, (_, i) => ({ ...d.components[0], id: `c${i}` }))), 'components'],
+      [
+        'too many components',
+        (d) =>
+          (d.components = Array.from({ length: 33 }, (_, i) => ({
+            ...d.components[0],
+            id: `c${i}`,
+          }))),
+        'components',
+      ],
       ['components not an array', (d) => (d.components = {}), 'components'],
     ];
     for (const [name, mutate, path] of cases) {
@@ -85,7 +127,10 @@ test.describe('compat document validation', { tag: ['@api', '@compat'] }, () => 
       const checked = validateCompatDocument(doc);
       expect(checked.ok, name).toBe(false);
       if (checked.ok) continue;
-      expect(checked.errors.some((e) => e.startsWith(`${path}:`)), `${name}: ${checked.errors.join(' | ')}`).toBe(true);
+      expect(
+        checked.errors.some((e) => e.startsWith(`${path}:`)),
+        `${name}: ${checked.errors.join(' | ')}`
+      ).toBe(true);
     }
     for (const notADoc of [null, [], 'compat', 42]) {
       expect(validateCompatDocument(notADoc).ok).toBe(false);
@@ -161,7 +206,9 @@ test.describe('COMPAT_FEED_URL fetch', { tag: ['@api', '@compat'] }, () => {
           setTimeout(() => res.writeHead(200).end(body), 2_000).unref();
           return;
         case '/big.json':
-          res.writeHead(200, { 'Content-Type': 'application/json' }).end('x'.repeat(COMPAT_MAX_BYTES + 1));
+          res
+            .writeHead(200, { 'Content-Type': 'application/json' })
+            .end('x'.repeat(COMPAT_MAX_BYTES + 1));
           return;
         case '/html':
           res.writeHead(200, { 'Content-Type': 'text/html' }).end('<html></html>');

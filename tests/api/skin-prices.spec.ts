@@ -15,7 +15,11 @@ import { variantOf } from '../../api/src/integrations/cs2/skins/skinService';
  * @tag api
  */
 
-const row = (market_hash_name: string, median_price: number | null, version: string | null = null) => ({
+const row = (
+  market_hash_name: string,
+  median_price: number | null,
+  version: string | null = null
+) => ({
   market_hash_name,
   version,
   median_price,
@@ -24,16 +28,23 @@ const row = (market_hash_name: string, median_price: number | null, version: str
 });
 
 test.describe('Skin prices', () => {
-  test('reads knife and glove names, and skips StatTrak and plain weapons', { tag: ['@api'] }, () => {
-    expect(parseMarketName('★ Karambit | Doppler (Factory New)')).toEqual({ weaponName: 'Karambit', finish: 'Doppler' });
-    expect(parseMarketName("★ Sport Gloves | Pandora's Box (Field-Tested)")).toEqual({
-      weaponName: 'Sport Gloves',
-      finish: "Pandora's Box",
-    });
-    expect(parseMarketName('★ StatTrak™ Karambit | Doppler (Factory New)')).toBeNull();
-    expect(parseMarketName('AK-47 | Redline (Field-Tested)')).toBeNull();
-    expect(parseMarketName('★ Karambit')).toBeNull();
-  });
+  test(
+    'reads knife and glove names, and skips StatTrak and plain weapons',
+    { tag: ['@api'] },
+    () => {
+      expect(parseMarketName('★ Karambit | Doppler (Factory New)')).toEqual({
+        weaponName: 'Karambit',
+        finish: 'Doppler',
+      });
+      expect(parseMarketName("★ Sport Gloves | Pandora's Box (Field-Tested)")).toEqual({
+        weaponName: 'Sport Gloves',
+        finish: "Pandora's Box",
+      });
+      expect(parseMarketName('★ StatTrak™ Karambit | Doppler (Factory New)')).toBeNull();
+      expect(parseMarketName('AK-47 | Redline (Field-Tested)')).toBeNull();
+      expect(parseMarketName('★ Karambit')).toBeNull();
+    }
+  );
 
   test('a finish costs the median of its wears, per phase', { tag: ['@api'] }, () => {
     const prices = pricesFromItems([

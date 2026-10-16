@@ -7,7 +7,10 @@
       "admins": ["<test-admin-steam-id>"],
       "cvars": {
         "mp_maxrounds": 16,
-        "sv_matchpause_auto_5v5": 1
+        "sv_matchpause_auto_5v5": 1,
+        "tv_delay": 105,
+        "tv_maxclients": 8,
+        "tv_password": "<tv_password>"
       },
       "maps": [
         {

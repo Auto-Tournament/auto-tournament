@@ -86,7 +86,11 @@ test.describe.serial('module migrations on the database', () => {
 
     // A new version appends; only the new one runs.
     const third = await run(request, 'v2');
-    expect(third).toEqual({ moduleId: 'migration-fixture', status: 'ok', applied: ['003-items-note'] });
+    expect(third).toEqual({
+      moduleId: 'migration-fixture',
+      status: 'ok',
+      applied: ['003-items-note'],
+    });
   });
 
   test('an edited, already-applied migration is refused and nothing runs', async ({ request }) => {
@@ -112,7 +116,9 @@ test.describe.serial('module migrations on the database', () => {
     const result = await run(request, 'failing');
     expect(result.status).toBe('failed');
     expect(result.applied).toEqual(['003-items-note']);
-    expect(result.reason).toMatch(/^migration '004-broken' failed and was rolled back: .*missing_column/);
+    expect(result.reason).toMatch(
+      /^migration '004-broken' failed and was rolled back: .*missing_column/
+    );
 
     const after = await view(request);
     expect(ids(after)).toEqual(['001-items', '002-items-label', '003-items-note']);
@@ -127,7 +133,9 @@ test.describe.serial('module migrations on the database', () => {
     expect(again.reason).toContain("'004-broken'");
   });
 
-  test('a migration touching a core table is refused before any of it runs', async ({ request }) => {
+  test('a migration touching a core table is refused before any of it runs', async ({
+    request,
+  }) => {
     await reset(request);
 
     const result = await run(request, 'core');
@@ -162,7 +170,11 @@ test.describe.serial('module migrations on the database', () => {
       const fake = await view(request, 'fake');
       expect(ids(fake)).toEqual(['0001-migration-probe']);
       expect(fake.tables).toEqual(['fake_migration_probe']);
-      expect(fake.state).toEqual({ moduleId: 'fake', status: 'ok', applied: ['0001-migration-probe'] });
+      expect(fake.state).toEqual({
+        moduleId: 'fake',
+        status: 'ok',
+        applied: ['0001-migration-probe'],
+      });
 
       // The fixture is not an installed module: gone, and not re-run.
       const fixture = await view(request);

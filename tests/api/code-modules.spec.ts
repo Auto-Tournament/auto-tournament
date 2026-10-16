@@ -342,7 +342,7 @@ test.describe.serial('Code modules on disk', () => {
       expect(row.status).toBe('incompatible');
       expect(row.serverApi).toBe('^0.3.0');
       expect(row.reason).toContain('^0.3.0');
-      expect(row.reason).toContain('0.1.1');
+      expect(row.reason).toContain('0.1.2');
 
       // Enabling it does not make it load.
       expect((await request.post(`/api/modules/${INCOMPATIBLE}/enable`)).status()).toBe(200);

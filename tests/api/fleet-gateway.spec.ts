@@ -84,7 +84,11 @@ test.describe.serial('Fleet gateway', () => {
       .poll(async () => (await fleetServer(request, server.server_id))?.online)
       .toBe(true);
     const row = await fleetServer(request, server.server_id);
-    expect(row.versions).toMatchObject({ core: '0.4.0', plugins: { match: '0.4.0' }, cs2_patch: '1.40.3.2' });
+    expect(row.versions).toMatchObject({
+      core: '0.4.0',
+      plugins: { match: '0.4.0' },
+      cs2_patch: '1.40.3.2',
+    });
     expect(row.capabilities).toEqual(['match.v1', 'stats.v1']);
     expect(row.availability).toBe('available');
     expect(row.host).toMatchObject({ hostname: 'test-host', game_port: 27015 });
@@ -102,13 +106,18 @@ test.describe.serial('Fleet gateway', () => {
     const server = await enrollNew(request);
     const client = await FleetTestClient.connect(server.token);
     await client.handshake(server.server_id, server.installId);
-    const ping = envelope('ping', { t: 12345, health: { players: 7, tick_ms_p99: 2.5, spool_msgs: 0, uptime_s: 99 } });
+    const ping = envelope('ping', {
+      t: 12345,
+      health: { players: 7, tick_ms_p99: 2.5, spool_msgs: 0, uptime_s: 99 },
+    });
     client.send(ping);
     const pong = await client.nextOfType('pong');
     expectValid(pong);
     expect(pong.ref).toBe(ping.id);
     expect(pong.payload).toEqual({ t: 12345 });
-    await expect.poll(async () => (await fleetServer(request, server.server_id))?.health?.players).toBe(7);
+    await expect
+      .poll(async () => (await fleetServer(request, server.server_id))?.health?.players)
+      .toBe(7);
     client.close();
   });
 
@@ -136,7 +145,10 @@ test.describe.serial('Fleet gateway', () => {
 
     const future = await FleetTestClient.connect(server.token);
     future.send(
-      envelope('hello', helloPayload(server.server_id, server.installId, { protocol: { min: 2, max: 3 } }))
+      envelope(
+        'hello',
+        helloPayload(server.server_id, server.installId, { protocol: { min: 2, max: 3 } })
+      )
     );
     expect(await future.waitClosed()).toMatchObject({ code: 4426 });
 
@@ -208,7 +220,9 @@ test.describe.serial('Fleet gateway', () => {
     reset.close();
   });
 
-  test('server.cs2_update_required and server.selftest are acked; the selftest is stored', async ({ request }) => {
+  test('server.cs2_update_required and server.selftest are acked; the selftest is stored', async ({
+    request,
+  }) => {
     const server = await enrollNew(request);
     const client = await FleetTestClient.connect(server.token);
     await client.handshake(server.server_id, server.installId, {
@@ -220,13 +234,20 @@ test.describe.serial('Fleet gateway', () => {
     client.send(envelope('server.cs2_update_required', { required_build: 14035 }, { seq: 1 }));
     await client.next((m) => m.type === 'ack' && m.ack === 1, 3000);
 
-    const selftest = { pass: false, passed: 57, total: 58, failures: ['fn:CCSPlayer_ItemServices_GiveNamedItem'] };
+    const selftest = {
+      pass: false,
+      passed: 57,
+      total: 58,
+      failures: ['fn:CCSPlayer_ItemServices_GiveNamedItem'],
+    };
     client.send(envelope('server.selftest', selftest, { seq: 2 }));
     await client.next((m) => m.type === 'ack' && m.ack === 2, 3000);
 
     expect(client.received.some((m) => m.type === 'error')).toBe(false);
     expect(client.closed).toBeNull();
-    await expect.poll(async () => (await fleetServer(request, server.server_id)).selftest).toEqual(selftest);
+    await expect
+      .poll(async () => (await fleetServer(request, server.server_id)).selftest)
+      .toEqual(selftest);
 
     // A bad payload is refused (invalid_payload) but still acked, so the spool drains.
     const bad = envelope('server.cs2_update_required', { required_build: 'soon' }, { seq: 3 });
@@ -247,7 +268,9 @@ test.describe.serial('Fleet gateway', () => {
     const closed = await first.waitClosed();
     expect(closed.code).toBe(4409);
     // The replacement stays online.
-    await expect.poll(async () => (await fleetServer(request, server.server_id))?.online).toBe(true);
+    await expect
+      .poll(async () => (await fleetServer(request, server.server_id))?.online)
+      .toBe(true);
     second.close();
   });
 
@@ -261,10 +284,14 @@ test.describe.serial('Fleet gateway', () => {
     expect(await retry.waitClosed()).toMatchObject({ code: 4403 });
   });
 
-  test('token rotation: auth.rotate after welcome; both tokens work until the new one is confirmed', async ({ request }) => {
+  test('token rotation: auth.rotate after welcome; both tokens work until the new one is confirmed', async ({
+    request,
+  }) => {
     const server = await enrollNew(request);
     // A token older than 90 days is due.
-    const aged = await request.post('/api/test/fleet/age-token', { data: { serverId: server.server_id, days: 91 } });
+    const aged = await request.post('/api/test/fleet/age-token', {
+      data: { serverId: server.server_id, days: 91 },
+    });
     expect(aged.ok(), await aged.text()).toBe(true);
 
     const client = await FleetTestClient.connect(server.token);
@@ -306,18 +333,26 @@ test.describe.serial('Fleet gateway', () => {
     withOld.close();
   });
 
-  test('an unacked auth.rotate is replayed after a reconnect, with a fresh secret', async ({ request }) => {
+  test('an unacked auth.rotate is replayed after a reconnect, with a fresh secret', async ({
+    request,
+  }) => {
     const server = await enrollNew(request);
-    await request.post('/api/test/fleet/age-token', { data: { serverId: server.server_id, days: 91 } });
+    await request.post('/api/test/fleet/age-token', {
+      data: { serverId: server.server_id, days: 91 },
+    });
 
     const first = await FleetTestClient.connect(server.token);
-    await first.handshake(server.server_id, server.installId, { stream: { id: 's', last_tx_seq: 0, last_rx_seq: 0 } });
+    await first.handshake(server.server_id, server.installId, {
+      stream: { id: 's', last_tx_seq: 0, last_rx_seq: 0 },
+    });
     const rotate1 = await first.nextOfType('auth.rotate');
     // Drop the connection without processing it.
     first.ws.terminate();
 
     const second = await FleetTestClient.connect(server.token);
-    await second.handshake(server.server_id, server.installId, { stream: { id: 's', last_tx_seq: 0, last_rx_seq: 0 } });
+    await second.handshake(server.server_id, server.installId, {
+      stream: { id: 's', last_tx_seq: 0, last_rx_seq: 0 },
+    });
     const rotate2 = await second.nextOfType('auth.rotate');
     expect(rotate2.seq).toBe(rotate1.seq);
     expect(rotate2.payload.token).not.toBe(rotate1.payload.token);

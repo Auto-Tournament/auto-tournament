@@ -35,93 +35,111 @@ test.describe.serial('The pack index', () => {
     await request.post('/api/test/pack-index', { data: { fake: false } });
   });
 
-  test('lists what can be added, and never an entry pointing elsewhere', {
-    tag: ['@api', '@packs'],
-  }, async ({ request }) => {
-    const response = await request.get('/api/packs/index');
-    expect(response.ok(), `reading the index: ${await response.text()}`).toBe(true);
-    const body = (await response.json()) as {
-      stale: boolean;
-      entries: Array<Record<string, unknown>>;
-    };
-    expect(body.stale).toBe(false);
+  test(
+    'lists what can be added, and never an entry pointing elsewhere',
+    {
+      tag: ['@api', '@packs'],
+    },
+    async ({ request }) => {
+      const response = await request.get('/api/packs/index');
+      expect(response.ok(), `reading the index: ${await response.text()}`).toBe(true);
+      const body = (await response.json()) as {
+        stale: boolean;
+        entries: Array<Record<string, unknown>>;
+      };
+      expect(body.stale).toBe(false);
 
-    const entry = body.entries.find((row) => row.slug === SLUG);
-    expect(entry, 'the fixture game should be listed').toBeTruthy();
-    expect(entry!.installed).toBe(false);
-    expect(entry!.version).toBe('2.0.0');
-    expect(entry!.icon, 'the index names a tile for it').toBe('icons/index-test-game.svg');
+      const entry = body.entries.find((row) => row.slug === SLUG);
+      expect(entry, 'the fixture game should be listed').toBeTruthy();
+      expect(entry!.installed).toBe(false);
+      expect(entry!.version).toBe('2.0.0');
+      expect(entry!.icon, 'the index names a tile for it').toBe('icons/index-test-game.svg');
 
-    // The entry whose `file` is an absolute URL to another host is dropped
-    // while it is being read, so nothing downstream can ever fetch it.
-    expect(
-      body.entries.find((row) => row.slug === 'elsewhere'),
-      'an entry pointing outside the index must not be listed'
-    ).toBeUndefined();
-  });
-
-  test('a listed game can be added, and is then shown as installed', {
-    tag: ['@api', '@packs'],
-  }, async ({ request }) => {
-    const added = await request.post(`/api/packs/index/${SLUG}`);
-    expect(added.status(), `adding: ${await added.text()}`).toBe(200);
-    expect((await added.json()).updated).toBe(false);
-
-    // It is a game a tournament can be created for, exactly like an uploaded
-    // pack: the index is a way of getting the file, not a second code path.
-    const playable = await request.get('/api/games/playable');
-    const games = (await playable.json()).games as Array<Record<string, unknown>>;
-    const game = games.find((row) => row.slug === SLUG);
-    expect(game, 'the added game should be playable').toBeTruthy();
-    expect(game!.integrationId).toBe('manual-report');
-    expect(game!.moduleIcon).toBe(`/api/packs/${SLUG}/icon.svg`);
-
-    const index = await request.get('/api/packs/index');
-    const entry = ((await index.json()).entries as Array<Record<string, unknown>>).find(
-      (row) => row.slug === SLUG
-    );
-    expect(entry!.installed).toBe(true);
-    expect(entry!.updatable, 'installed at the version the index lists').toBe(false);
-  });
-
-  test('a tile for a game that is not installed is served by us, not the index', {
-    tag: ['@api', '@packs'],
-  }, async ({ request }) => {
-    // Browse draws these before anything is installed. They come from this
-    // origin so the page can inline them — and so the index never learns who
-    // is looking.
-    const icon = await request.get(`/api/packs/index/${SLUG}/icon.svg`);
-    expect(icon.ok(), `reading the tile: ${await icon.text()}`).toBe(true);
-    expect(icon.headers()['content-type']).toContain('image/svg+xml');
-    expect(await icon.text()).toContain('var(--at-ember');
-
-    // The entry the index points elsewhere with has none, because it is not
-    // in the list at all.
-    expect((await request.get('/api/packs/index/elsewhere/icon.svg')).status()).toBe(404);
-  });
-
-  test('a game the index does not list cannot be added', {
-    tag: ['@api', '@packs'],
-  }, async ({ request }) => {
-    const refused = await request.post('/api/packs/index/elsewhere');
-    expect(refused.status()).toBe(400);
-    expect((await refused.json()).error).toContain('does not list');
-
-    const missing = await request.post('/api/packs/index/no-such-game');
-    expect(missing.status()).toBe(400);
-  });
-
-  test('reading and adding need an admin', { tag: ['@api', '@packs'] }, async ({
-    playwright,
-  }, testInfo) => {
-    const stranger = await playwright.request.newContext({
-      baseURL: testInfo.project.use.baseURL,
-    });
-    try {
-      expect([401, 403]).toContain((await stranger.get('/api/packs/index')).status());
-      expect([401, 403]).toContain((await stranger.post(`/api/packs/index/${SLUG}`)).status());
-    } finally {
-      await stranger.dispose();
+      // The entry whose `file` is an absolute URL to another host is dropped
+      // while it is being read, so nothing downstream can ever fetch it.
+      expect(
+        body.entries.find((row) => row.slug === 'elsewhere'),
+        'an entry pointing outside the index must not be listed'
+      ).toBeUndefined();
     }
-  });
+  );
+
+  test(
+    'a listed game can be added, and is then shown as installed',
+    {
+      tag: ['@api', '@packs'],
+    },
+    async ({ request }) => {
+      const added = await request.post(`/api/packs/index/${SLUG}`);
+      expect(added.status(), `adding: ${await added.text()}`).toBe(200);
+      expect((await added.json()).updated).toBe(false);
+
+      // It is a game a tournament can be created for, exactly like an uploaded
+      // pack: the index is a way of getting the file, not a second code path.
+      const playable = await request.get('/api/games/playable');
+      const games = (await playable.json()).games as Array<Record<string, unknown>>;
+      const game = games.find((row) => row.slug === SLUG);
+      expect(game, 'the added game should be playable').toBeTruthy();
+      expect(game!.integrationId).toBe('manual-report');
+      expect(game!.moduleIcon).toBe(`/api/packs/${SLUG}/icon.svg`);
+
+      const index = await request.get('/api/packs/index');
+      const entry = ((await index.json()).entries as Array<Record<string, unknown>>).find(
+        (row) => row.slug === SLUG
+      );
+      expect(entry!.installed).toBe(true);
+      expect(entry!.updatable, 'installed at the version the index lists').toBe(false);
+    }
+  );
+
+  test(
+    'a tile for a game that is not installed is served by us, not the index',
+    {
+      tag: ['@api', '@packs'],
+    },
+    async ({ request }) => {
+      // Browse draws these before anything is installed. They come from this
+      // origin so the page can inline them — and so the index never learns who
+      // is looking.
+      const icon = await request.get(`/api/packs/index/${SLUG}/icon.svg`);
+      expect(icon.ok(), `reading the tile: ${await icon.text()}`).toBe(true);
+      expect(icon.headers()['content-type']).toContain('image/svg+xml');
+      expect(await icon.text()).toContain('var(--at-ember');
+
+      // The entry the index points elsewhere with has none, because it is not
+      // in the list at all.
+      expect((await request.get('/api/packs/index/elsewhere/icon.svg')).status()).toBe(404);
+    }
+  );
+
+  test(
+    'a game the index does not list cannot be added',
+    {
+      tag: ['@api', '@packs'],
+    },
+    async ({ request }) => {
+      const refused = await request.post('/api/packs/index/elsewhere');
+      expect(refused.status()).toBe(400);
+      expect((await refused.json()).error).toContain('does not list');
+
+      const missing = await request.post('/api/packs/index/no-such-game');
+      expect(missing.status()).toBe(400);
+    }
+  );
+
+  test(
+    'reading and adding need an admin',
+    { tag: ['@api', '@packs'] },
+    async ({ playwright }, testInfo) => {
+      const stranger = await playwright.request.newContext({
+        baseURL: testInfo.project.use.baseURL,
+      });
+      try {
+        expect([401, 403]).toContain((await stranger.get('/api/packs/index')).status());
+        expect([401, 403]).toContain((await stranger.post(`/api/packs/index/${SLUG}`)).status());
+      } finally {
+        await stranger.dispose();
+      }
+    }
+  );
 });

@@ -34,7 +34,9 @@ import {
 
 function keypair(): { privateKey: crypto.KeyObject; trusted: TrustedKey } {
   const { privateKey, publicKey } = crypto.generateKeyPairSync('ed25519');
-  const raw = Buffer.from(publicKey.export({ format: 'jwk' }).x as string, 'base64url').toString('base64');
+  const raw = Buffer.from(publicKey.export({ format: 'jwk' }).x as string, 'base64url').toString(
+    'base64'
+  );
   return { privateKey, trusted: { keyId: keyIdFor(raw), publicKey: raw, label: 'spec' } };
 }
 
@@ -73,12 +75,24 @@ test.describe('Module archive', () => {
     expect(one.equals(two)).toBe(true);
     const read = readModuleArchive(one);
     expect(read.map((entry) => entry.path)).toEqual([...FILES.map((f) => f.path)].sort());
-    expect(read.find((entry) => entry.path === 'server/index.js')?.data.toString()).toBe('export default {};\n');
+    expect(read.find((entry) => entry.path === 'server/index.js')?.data.toString()).toBe(
+      'export default {};\n'
+    );
   });
 
   test('the writer refuses names the reader would refuse', () => {
-    for (const bad of ['../x.js', '/abs.js', 'a/../b.js', 'a//b.js', 'a\\b.js', '.hidden/..', 'sp ace.js']) {
-      expect(() => writeModuleArchive([{ path: bad, data: Buffer.from('x') }]), bad).toThrow(ArchiveError);
+    for (const bad of [
+      '../x.js',
+      '/abs.js',
+      'a/../b.js',
+      'a//b.js',
+      'a\\b.js',
+      '.hidden/..',
+      'sp ace.js',
+    ]) {
+      expect(() => writeModuleArchive([{ path: bad, data: Buffer.from('x') }]), bad).toThrow(
+        ArchiveError
+      );
     }
     expect(() =>
       writeModuleArchive([
@@ -116,14 +130,26 @@ test.describe('Module archive', () => {
   test('size limits hold, including a zip bomb', () => {
     const bomb = writeModuleArchive([{ path: 'big.bin', data: Buffer.alloc(8 * 1024 * 1024, 0) }]);
     expect(bomb.length).toBeLessThan(64 * 1024);
-    expect(() => readModuleArchive(bomb, { maxUnpackedBytes: 1024 * 1024, maxFileBytes: 64 * 1024 * 1024, maxEntries: 10 })).toThrow(
-      /size limit/
+    expect(() =>
+      readModuleArchive(bomb, {
+        maxUnpackedBytes: 1024 * 1024,
+        maxFileBytes: 64 * 1024 * 1024,
+        maxEntries: 10,
+      })
+    ).toThrow(/size limit/);
+    expect(() =>
+      readModuleArchive(bomb, {
+        maxUnpackedBytes: 64 * 1024 * 1024,
+        maxFileBytes: 1024,
+        maxEntries: 10,
+      })
+    ).toThrow(/file size limit/);
+    const many = writeModuleArchive(
+      Array.from({ length: 20 }, (_, i) => ({ path: `f${i}.js`, data: Buffer.from('x') }))
     );
-    expect(() => readModuleArchive(bomb, { maxUnpackedBytes: 64 * 1024 * 1024, maxFileBytes: 1024, maxEntries: 10 })).toThrow(
-      /file size limit/
-    );
-    const many = writeModuleArchive(Array.from({ length: 20 }, (_, i) => ({ path: `f${i}.js`, data: Buffer.from('x') })));
-    expect(() => readModuleArchive(many, { maxUnpackedBytes: 1e6, maxFileBytes: 1e6, maxEntries: 10 })).toThrow(/entries/);
+    expect(() =>
+      readModuleArchive(many, { maxUnpackedBytes: 1e6, maxFileBytes: 1e6, maxEntries: 10 })
+    ).toThrow(/entries/);
   });
 
   test('extraction writes plain files inside the target only', async () => {
@@ -141,10 +167,14 @@ test.describe('Module archive', () => {
 test.describe('Module signature', () => {
   const archive = writeModuleArchive(FILES);
   const { privateKey, trusted } = keypair();
-  const signature = JSON.stringify(signModuleArchive(archive, { id: 'demo', version: '1.2.3' }, privateKey));
+  const signature = JSON.stringify(
+    signModuleArchive(archive, { id: 'demo', version: '1.2.3' }, privateKey)
+  );
 
   test('a release signed by a trusted key verifies', () => {
-    const result = verifyModuleRelease(archive, signature, { id: 'demo', version: '1.2.3' }, [trusted]);
+    const result = verifyModuleRelease(archive, signature, { id: 'demo', version: '1.2.3' }, [
+      trusted,
+    ]);
     expect(result.ok).toBe(true);
   });
 
@@ -153,12 +183,24 @@ test.describe('Module signature', () => {
     tampered[20] ^= 1;
     const other = keypair();
     const cases: Array<[ReturnType<typeof verifyModuleRelease>, RegExp]> = [
-      [verifyModuleRelease(tampered, signature, { id: 'demo' }, [trusted]), /changed after signing/],
+      [
+        verifyModuleRelease(tampered, signature, { id: 'demo' }, [trusted]),
+        /changed after signing/,
+      ],
       [verifyModuleRelease(archive, signature, { id: 'demo' }, [other.trusted]), /does not trust/],
-      [verifyModuleRelease(archive, signature, { id: 'demo' }, [{ ...trusted, revoked: true }]), /revoked/],
+      [
+        verifyModuleRelease(archive, signature, { id: 'demo' }, [{ ...trusted, revoked: true }]),
+        /revoked/,
+      ],
       [verifyModuleRelease(archive, signature, { id: 'other' }, [trusted]), /not 'other'/],
-      [verifyModuleRelease(archive, signature, { id: 'demo', version: '9.9.9' }, [trusted]), /not 9\.9\.9/],
-      [verifyModuleRelease(archive, signature, { id: 'demo', sha256: 'a'.repeat(64) }, [trusted]), /catalog lists/],
+      [
+        verifyModuleRelease(archive, signature, { id: 'demo', version: '9.9.9' }, [trusted]),
+        /not 9\.9\.9/,
+      ],
+      [
+        verifyModuleRelease(archive, signature, { id: 'demo', sha256: 'a'.repeat(64) }, [trusted]),
+        /catalog lists/,
+      ],
       [verifyModuleRelease(archive, 'not json', { id: 'demo' }, [trusted]), /not valid JSON/],
     ];
     for (const [result, reason] of cases) {
@@ -170,7 +212,11 @@ test.describe('Module signature', () => {
   test('a signature whose bytes were swapped for another key id is refused', () => {
     const other = keypair();
     // Claim the trusted key's id, sign with another key.
-    const forged = { ...JSON.parse(signature), signature: signModuleArchive(archive, { id: 'demo', version: '1.2.3' }, other.privateKey).signature };
+    const forged = {
+      ...JSON.parse(signature),
+      signature: signModuleArchive(archive, { id: 'demo', version: '1.2.3' }, other.privateKey)
+        .signature,
+    };
     const result = verifyModuleRelease(archive, JSON.stringify(forged), { id: 'demo' }, [trusted]);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/does not verify/);
@@ -200,7 +246,12 @@ test.describe('The standalone signer (scripts/sign-module.mjs)', () => {
     });
     expect(output).toContain(trusted.keyId);
     expect(output).not.toContain('PRIVATE KEY');
-    const result = verifyModuleRelease(archive, fs.readFileSync(`${file}.sig`), { id: 'demo', version: '1.2.3' }, [trusted]);
+    const result = verifyModuleRelease(
+      archive,
+      fs.readFileSync(`${file}.sig`),
+      { id: 'demo', version: '1.2.3' },
+      [trusted]
+    );
     expect(result.ok).toBe(true);
   });
 
@@ -208,12 +259,20 @@ test.describe('The standalone signer (scripts/sign-module.mjs)', () => {
     const { dir, pem } = setup();
     fs.writeFileSync(
       path.join(dir, 'catalog-entry.json'),
-      JSON.stringify({ id: 'demo', name: 'Demo', releases: [{ version: '1.2.3', sha256: 'a'.repeat(64) }] })
+      JSON.stringify({
+        id: 'demo',
+        name: 'Demo',
+        releases: [{ version: '1.2.3', sha256: 'a'.repeat(64) }],
+      })
     );
-    const run = spawnSync(process.execPath, [SIGNER, '--entry', path.join(dir, 'catalog-entry.json')], {
-      env: { ...process.env, MODULE_SIGNING_KEY: pem },
-      encoding: 'utf8',
-    });
+    const run = spawnSync(
+      process.execPath,
+      [SIGNER, '--entry', path.join(dir, 'catalog-entry.json')],
+      {
+        env: { ...process.env, MODULE_SIGNING_KEY: pem },
+        encoding: 'utf8',
+      }
+    );
     expect(run.status).not.toBe(0);
     expect(run.stderr).toMatch(/not the archive that was built/);
     expect(fs.existsSync(path.join(dir, 'demo-1.2.3.atmod.sig'))).toBe(false);
@@ -248,7 +307,9 @@ test.describe('Trusted keys', () => {
       expect(keys.find((key) => key.keyId === extra.keyId)?.label).toBe('MODULE_TRUSTED_KEYS');
       // The compiled entry wins over the same key from the environment.
       expect(keys.filter((key) => key.keyId === '65322c04183b7d1d')).toHaveLength(1);
-      expect(keys.find((key) => key.keyId === '65322c04183b7d1d')?.label).not.toBe('MODULE_TRUSTED_KEYS');
+      expect(keys.find((key) => key.keyId === '65322c04183b7d1d')?.label).not.toBe(
+        'MODULE_TRUSTED_KEYS'
+      );
     } finally {
       if (before === undefined) delete process.env.MODULE_TRUSTED_KEYS;
       else process.env.MODULE_TRUSTED_KEYS = before;
@@ -257,7 +318,11 @@ test.describe('Trusted keys', () => {
 });
 
 test.describe('Catalog feed rules', () => {
-  const release = (version: string, serverApi: string, from: 'remote' | 'snapshot' = 'remote'): CatalogRelease => ({
+  const release = (
+    version: string,
+    serverApi: string,
+    from: 'remote' | 'snapshot' = 'remote'
+  ): CatalogRelease => ({
     version,
     serverApi,
     clientApi: '^0.2.0',
@@ -268,17 +333,25 @@ test.describe('Catalog feed rules', () => {
 
   test('picks the newest release this platform can run, preferring the download', () => {
     const picked = pickRelease(
-      [release('1.0.0', '^0.1.0'), release('2.0.0', '^0.1.0', 'snapshot'), release('2.0.0', '^0.1.0'), release('3.0.0', '^9.0.0')],
+      [
+        release('1.0.0', '^0.1.0'),
+        release('2.0.0', '^0.1.0', 'snapshot'),
+        release('2.0.0', '^0.1.0'),
+        release('3.0.0', '^9.0.0'),
+      ],
       { serverApi: '0.1.0', clientApi: '0.2.0' }
     );
     expect(picked.ok && picked.release.version).toBe('2.0.0');
     expect(picked.ok && picked.release.from).toBe('remote');
-    const none = pickRelease([release('3.0.0', '^9.0.0')], { serverApi: '0.1.0', clientApi: '0.2.0' });
+    const none = pickRelease([release('3.0.0', '^9.0.0')], {
+      serverApi: '0.1.0',
+      clientApi: '0.2.0',
+    });
     expect(none.ok).toBe(false);
     if (!none.ok) expect(none.reason).toMatch(/\^9\.0\.0/);
   });
 
-  test('a release download may redirect only to GitHub\'s asset hosts, over https', () => {
+  test("a release download may redirect only to GitHub's asset hosts, over https", () => {
     for (const good of [
       'https://objects.githubusercontent.com/github-production-release-asset/1/2?X-Amz=1',
       'https://release-assets.githubusercontent.com/github-production-release-asset/3/4',
@@ -299,7 +372,12 @@ test.describe('Catalog feed rules', () => {
 
   test('release URLs must be ours', () => {
     const prefix = 'https://github.com/Auto-Tournament/';
-    expect(allowedReleaseUrl('https://github.com/Auto-Tournament/auto-tournament/releases/download/module-cs2-v1.0.0/cs2-1.0.0.atmod', prefix)).toBe(true);
+    expect(
+      allowedReleaseUrl(
+        'https://github.com/Auto-Tournament/auto-tournament/releases/download/module-cs2-v1.0.0/cs2-1.0.0.atmod',
+        prefix
+      )
+    ).toBe(true);
     for (const bad of [
       'http://github.com/Auto-Tournament/x.atmod',
       'https://github.com/Someone-Else/x.atmod',

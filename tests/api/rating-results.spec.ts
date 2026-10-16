@@ -34,7 +34,11 @@ test.describe('Rating result component', () => {
     test(`equal teams (${label}): loser never gains, winner gains more`, () => {
       for (const team1Won of [true, false]) {
         const before = display(skill);
-        const [t1, t2] = computeTeamRatingUpdate(team(skill.mu, skill.sigma), team(skill.mu, skill.sigma), team1Won);
+        const [t1, t2] = computeTeamRatingUpdate(
+          team(skill.mu, skill.sigma),
+          team(skill.mu, skill.sigma),
+          team1Won
+        );
         const winners = team1Won ? t1 : t2;
         const losers = team1Won ? t2 : t1;
         for (const r of losers) expect(openSkillToDisplayElo(r) - before).toBeLessThanOrEqual(0);
@@ -71,7 +75,7 @@ test.describe('Tournament reset rolls ratings back', () => {
     id,
   });
 
-  test('restores the rating before each player\'s first match of the tournament', () => {
+  test("restores the rating before each player's first match of the tournament", () => {
     const rows = [
       row('echo1', 'r2m1', 200, 1799, 5),
       row('echo1', 'r1m3', 100, 1500, 2),
@@ -80,7 +84,13 @@ test.describe('Tournament reset rolls ratings back', () => {
       row('echo1', 'r2m1', 201, 1799, 6),
     ];
     const result = new Map(ratingRollbacks(rows).map((r) => [r.playerId, r]));
-    expect(result.get('echo1')).toEqual({ playerId: 'echo1', elo: 1500, mu: 25, sigma: 8, matches: 2 });
+    expect(result.get('echo1')).toEqual({
+      playerId: 'echo1',
+      elo: 1500,
+      mu: 25,
+      sigma: 8,
+      matches: 2,
+    });
     expect(result.get('alpha1')).toMatchObject({ elo: 1743, matches: 1 });
   });
 

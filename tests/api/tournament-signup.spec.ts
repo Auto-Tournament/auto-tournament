@@ -28,7 +28,9 @@ test.describe('Tournament sign-up', () => {
       const owner = await playwright.request.newContext({ baseURL });
       const ownerId = steamId();
       const mates = [steamId(), steamId(), steamId(), steamId()];
-      expect(await signInAsPlayerViaRequest(owner, ownerId, `Owner ${ownerId.slice(-4)}`)).toBe(true);
+      expect(await signInAsPlayerViaRequest(owner, ownerId, `Owner ${ownerId.slice(-4)}`)).toBe(
+        true
+      );
       const created = await owner.post('/api/team-directory/mine', {
         data: { name: `Signup ${ownerId.slice(-5)}`, tag: 'SU' },
       });
@@ -75,7 +77,9 @@ test.describe('Tournament sign-up', () => {
 
       const board = await (await request.get(`/api/tournament-signup/${id}`)).json();
       const reg = board.registrations.find((r: { teamId: string }) => r.teamId === team.id);
-      expect(reg.lineup.map((p: { steamId: string }) => p.steamId).sort()).toEqual([ownerId, ...mates].sort());
+      expect(reg.lineup.map((p: { steamId: string }) => p.steamId).sort()).toEqual(
+        [ownerId, ...mates].sort()
+      );
       const after = await (await request.get(`/api/tournament/${id}/leaderboard`)).json();
       expect(after.tournament.teamIds).toContain(team.id);
 

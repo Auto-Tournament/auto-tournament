@@ -82,7 +82,9 @@ class MemoryRows implements DemoStreamPersistence {
     return [...this.rows.values()].filter((r) => r.state !== 'complete' && r.updatedAt < before);
   }
   async partPaths() {
-    return new Set([...this.rows.values()].filter((r) => r.state !== 'complete').map((r) => r.partPath));
+    return new Set(
+      [...this.rows.values()].filter((r) => r.state !== 'complete').map((r) => r.partPath)
+    );
   }
 }
 
@@ -118,7 +120,13 @@ function harness(maxBytes = 1024 * 1024): Harness {
     },
   };
   const make = () =>
-    new DemoStreamReceiver({ dir, persistence: h.rows, platform, maxBytes, now: () => h.clock.now });
+    new DemoStreamReceiver({
+      dir,
+      persistence: h.rows,
+      platform,
+      maxBytes,
+      now: () => h.clock.now,
+    });
   h.receiver = make();
   h.restart = () => {
     h.receiver = make();
@@ -159,7 +167,11 @@ function chunkOf(file: Buffer, offset: number, size = CHUNK) {
 }
 
 /** Every chunk of `file` from `from`, in order; returns the last ack. */
-async function sendFrom(r: DemoStreamReceiver, file: Buffer, from: number): Promise<DemoAckPayload> {
+async function sendFrom(
+  r: DemoStreamReceiver,
+  file: Buffer,
+  from: number
+): Promise<DemoAckPayload> {
   let last: DemoAckPayload = { demo_id: DEMO, offset: from };
   for (let off = from; off < file.length; off += CHUNK) {
     last = await r.chunk(SERVER, chunkOf(file, off));
@@ -177,17 +189,40 @@ test.describe('Fleet demo stream receiver', () => {
   test('schemas: the demo.* types are registered, Ready Up examples validate', () => {
     for (const type of ['demo.begin', 'demo.chunk', 'demo.end']) {
       expect(isKnownMessageType(type), type).toBe(true);
-      expect(FLEET_MESSAGES[type as keyof typeof FLEET_MESSAGES]).toEqual({ direction: 'server_to_platform', reliable: false });
+      expect(FLEET_MESSAGES[type as keyof typeof FLEET_MESSAGES]).toEqual({
+        direction: 'server_to_platform',
+        reliable: false,
+      });
     }
-    expect(FLEET_MESSAGES['demo.ack']).toEqual({ direction: 'platform_to_server', reliable: false });
-    for (const file of ['demo.begin', 'demo.chunk', 'demo.end', 'demo.ack', 'demo.ack.gap', 'demo.ack.complete']) {
+    expect(FLEET_MESSAGES['demo.ack']).toEqual({
+      direction: 'platform_to_server',
+      reliable: false,
+    });
+    for (const file of [
+      'demo.begin',
+      'demo.chunk',
+      'demo.end',
+      'demo.ack',
+      'demo.ack.gap',
+      'demo.ack.complete',
+    ]) {
       const msg = example(`${file}.json`);
       expect(validateMessage(msg), file).toEqual({ ok: true, errors: [] });
     }
     // The receiver's answers are valid demo.ack payloads.
-    expect(validatePayload('demo.ack', { demo_id: DEMO, offset: 0, error: { code: 'not_assigned', message: 'x' } }).ok).toBe(true);
-    expect(validatePayload('demo.ack', { demo_id: DEMO, offset: 0, error: { code: 'nope' } }).ok).toBe(false);
-    expect(validatePayload('demo.chunk', { demo_id: DEMO, offset: 0, size: 600000, data: 'AAAA' }).ok).toBe(false);
+    expect(
+      validatePayload('demo.ack', {
+        demo_id: DEMO,
+        offset: 0,
+        error: { code: 'not_assigned', message: 'x' },
+      }).ok
+    ).toBe(true);
+    expect(
+      validatePayload('demo.ack', { demo_id: DEMO, offset: 0, error: { code: 'nope' } }).ok
+    ).toBe(false);
+    expect(
+      validatePayload('demo.chunk', { demo_id: DEMO, offset: 0, size: 600000, data: 'AAAA' }).ok
+    ).toBe(false);
     expect(validatePayload('demo.begin', begin({ file: '../etc/passwd.dem' })).ok).toBe(false);
     // The example chunk's data really is its size.
     const chunk = example('demo.chunk.json').payload as { size: number; data: string };
@@ -198,10 +233,18 @@ test.describe('Fleet demo stream receiver', () => {
     const h = harness();
     const file = demoBytes(3 * CHUNK + 100);
     expect(await h.receiver.begin(SERVER, 3, begin())).toEqual({ demo_id: DEMO, offset: 0 });
-    expect(h.rows.rows.get(DEMO)).toMatchObject({ matchSlug: 'ko-r1-m3', mapNumber: 1, epoch: 3, state: 'receiving' });
+    expect(h.rows.rows.get(DEMO)).toMatchObject({
+      matchSlug: 'ko-r1-m3',
+      mapNumber: 1,
+      epoch: 3,
+      state: 'receiving',
+    });
     expect(fs.statSync(partFile(h)).size).toBe(0);
 
-    expect(await h.receiver.chunk(SERVER, chunkOf(file, 0))).toEqual({ demo_id: DEMO, offset: CHUNK });
+    expect(await h.receiver.chunk(SERVER, chunkOf(file, 0))).toEqual({
+      demo_id: DEMO,
+      offset: CHUNK,
+    });
     // Past the offset: a gap, nothing written.
     const gap = await h.receiver.chunk(SERVER, chunkOf(file, 2 * CHUNK));
     expect(gap).toMatchObject({ offset: CHUNK, error: { code: 'gap' } });
@@ -220,36 +263,57 @@ test.describe('Fleet demo stream receiver', () => {
     expect(fs.readFileSync(partFile(h)).subarray(0, CHUNK).equals(header)).toBe(true);
 
     // Data that is not `size` bytes of base64: a gap at the stored offset.
-    expect(await h.receiver.chunk(SERVER, { demo_id: DEMO, offset: 2 * CHUNK, size: 12, data: 'not base64!!' })).toMatchObject({
+    expect(
+      await h.receiver.chunk(SERVER, {
+        demo_id: DEMO,
+        offset: 2 * CHUNK,
+        size: 12,
+        data: 'not base64!!',
+      })
+    ).toMatchObject({
       offset: 2 * CHUNK,
       error: { code: 'gap' },
     });
-    expect(await h.receiver.chunk(SERVER, { demo_id: DEMO, offset: 2 * CHUNK, size: 5, data: 'AAAA' })).toMatchObject({
+    expect(
+      await h.receiver.chunk(SERVER, { demo_id: DEMO, offset: 2 * CHUNK, size: 5, data: 'AAAA' })
+    ).toMatchObject({
       offset: 2 * CHUNK,
       error: { code: 'gap' },
     });
 
     await sendFrom(h.receiver, file, 2 * CHUNK);
     // End before everything arrived is answered with the offset (here: all there).
-    expect(await h.receiver.end(SERVER, { demo_id: DEMO, size: file.length + 10, sha256: sha(file) })).toEqual({
+    expect(
+      await h.receiver.end(SERVER, { demo_id: DEMO, size: file.length + 10, sha256: sha(file) })
+    ).toEqual({
       demo_id: DEMO,
       offset: file.length,
     });
-    const done = await h.receiver.end(SERVER, { demo_id: DEMO, size: file.length, sha256: sha(file) });
+    const done = await h.receiver.end(SERVER, {
+      demo_id: DEMO,
+      size: file.length,
+      sha256: sha(file),
+    });
     expect(done).toEqual({ demo_id: DEMO, offset: file.length, complete: true });
     expect(sha(fs.readFileSync(finalFile(h)))).toBe(sha(file));
     expect(fs.existsSync(partFile(h))).toBe(false);
     expect(h.stored).toHaveLength(1);
     expect(h.stored[0]).toMatchObject({
       state: 'complete',
-      path: path.join('ko-r1-m3', 'map2', '2026-09-29_18-02-11_ko-r1-m3_de_mirage_Alpha_vs_Bravo.dem'),
+      path: path.join(
+        'ko-r1-m3',
+        'map2',
+        '2026-09-29_18-02-11_ko-r1-m3_de_mirage_Alpha_vs_Bravo.dem'
+      ),
       mapNumber: 1,
       size: file.length,
       sha256: sha(file),
     });
 
     // Repeated demo.end, a later begin, a stray chunk: complete, nothing new stored.
-    expect(await h.receiver.end(SERVER, { demo_id: DEMO, size: file.length, sha256: sha(file) })).toEqual(done);
+    expect(
+      await h.receiver.end(SERVER, { demo_id: DEMO, size: file.length, sha256: sha(file) })
+    ).toEqual(done);
     expect(await h.receiver.begin(SERVER, 3, begin({ recording: false }))).toEqual(done);
     expect(await h.receiver.chunk(SERVER, chunkOf(file, 0))).toEqual(done);
     expect(h.stored).toHaveLength(1);
@@ -262,7 +326,11 @@ test.describe('Fleet demo stream receiver', () => {
     await sendFrom(h.receiver, file, 0);
     // The final file is shorter than what was streamed (the last chunk shrank).
     const final = file.subarray(0, 2 * CHUNK - 300);
-    const ack = await h.receiver.end(SERVER, { demo_id: DEMO, size: final.length, sha256: sha(final) });
+    const ack = await h.receiver.end(SERVER, {
+      demo_id: DEMO,
+      size: final.length,
+      sha256: sha(final),
+    });
     expect(ack).toEqual({ demo_id: DEMO, offset: final.length, complete: true });
     expect(fs.readFileSync(finalFile(h)).equals(final)).toBe(true);
   });
@@ -274,16 +342,29 @@ test.describe('Fleet demo stream receiver', () => {
     const corrupt = Buffer.from(file);
     corrupt[CHUNK + 1] ^= 0x5a;
     await sendFrom(h.receiver, corrupt, 0);
-    const bad = await h.receiver.end(SERVER, { demo_id: DEMO, size: file.length, sha256: sha(file) });
+    const bad = await h.receiver.end(SERVER, {
+      demo_id: DEMO,
+      size: file.length,
+      sha256: sha(file),
+    });
     expect(bad).toMatchObject({ offset: 0, error: { code: 'checksum' } });
     expect(fs.statSync(partFile(h)).size).toBe(0);
-    expect(h.rows.rows.get(DEMO)).toMatchObject({ receivedOffset: 0, checksumFailures: 1, state: 'receiving' });
+    expect(h.rows.rows.get(DEMO)).toMatchObject({
+      receivedOffset: 0,
+      checksumFailures: 1,
+      state: 'receiving',
+    });
     expect(h.stored).toHaveLength(0);
 
     // Ready Up: demo.begin {restart: true}, then everything from 0.
-    expect(await h.receiver.begin(SERVER, 1, begin({ restart: true, recording: false }))).toEqual({ demo_id: DEMO, offset: 0 });
+    expect(await h.receiver.begin(SERVER, 1, begin({ restart: true, recording: false }))).toEqual({
+      demo_id: DEMO,
+      offset: 0,
+    });
     await sendFrom(h.receiver, file, 0);
-    expect(await h.receiver.end(SERVER, { demo_id: DEMO, size: file.length, sha256: sha(file) })).toMatchObject({ complete: true });
+    expect(
+      await h.receiver.end(SERVER, { demo_id: DEMO, size: file.length, sha256: sha(file) })
+    ).toMatchObject({ complete: true });
     expect(sha(fs.readFileSync(finalFile(h)))).toBe(sha(file));
   });
 
@@ -293,23 +374,36 @@ test.describe('Fleet demo stream receiver', () => {
     await h.receiver.begin(SERVER, 1, begin());
     await h.receiver.chunk(SERVER, chunkOf(first, 0));
     await h.receiver.chunk(SERVER, chunkOf(first, CHUNK));
-    expect(await h.receiver.begin(SERVER, 1, begin({ restart: true }))).toEqual({ demo_id: DEMO, offset: 0 });
+    expect(await h.receiver.begin(SERVER, 1, begin({ restart: true }))).toEqual({
+      demo_id: DEMO,
+      offset: 0,
+    });
     expect(fs.statSync(partFile(h)).size).toBe(0);
     // A chunk past 0 now is a gap.
-    expect(await h.receiver.chunk(SERVER, chunkOf(first, CHUNK))).toMatchObject({ offset: 0, error: { code: 'gap' } });
+    expect(await h.receiver.chunk(SERVER, chunkOf(first, CHUNK))).toMatchObject({
+      offset: 0,
+      error: { code: 'gap' },
+    });
     await sendFrom(h.receiver, first, 0);
     await h.receiver.end(SERVER, { demo_id: DEMO, size: first.length, sha256: sha(first) });
 
     // The server's file was replaced after it was confirmed.
     const second = demoBytes(CHUNK + 1, 9);
-    expect(await h.receiver.end(SERVER, { demo_id: DEMO, size: second.length, sha256: sha(second) })).toMatchObject({
+    expect(
+      await h.receiver.end(SERVER, { demo_id: DEMO, size: second.length, sha256: sha(second) })
+    ).toMatchObject({
       offset: 0,
       error: { code: 'checksum' },
     });
     expect(sha(fs.readFileSync(finalFile(h)))).toBe(sha(first)); // still the verified one
-    expect(await h.receiver.begin(SERVER, 1, begin({ restart: true }))).toEqual({ demo_id: DEMO, offset: 0 });
+    expect(await h.receiver.begin(SERVER, 1, begin({ restart: true }))).toEqual({
+      demo_id: DEMO,
+      offset: 0,
+    });
     await sendFrom(h.receiver, second, 0);
-    expect(await h.receiver.end(SERVER, { demo_id: DEMO, size: second.length, sha256: sha(second) })).toMatchObject({ complete: true });
+    expect(
+      await h.receiver.end(SERVER, { demo_id: DEMO, size: second.length, sha256: sha(second) })
+    ).toMatchObject({ complete: true });
     expect(sha(fs.readFileSync(finalFile(h)))).toBe(sha(second));
     expect(h.stored).toHaveLength(2);
   });
@@ -321,7 +415,10 @@ test.describe('Fleet demo stream receiver', () => {
     await h.receiver.chunk(SERVER, chunkOf(file, 0));
     await h.receiver.chunk(SERVER, chunkOf(file, CHUNK));
     // Reconnect: demo.begin again (idempotent), resume at 2 chunks.
-    expect(await h.receiver.begin(SERVER, 2, begin())).toEqual({ demo_id: DEMO, offset: 2 * CHUNK });
+    expect(await h.receiver.begin(SERVER, 2, begin())).toEqual({
+      demo_id: DEMO,
+      offset: 2 * CHUNK,
+    });
     await h.receiver.chunk(SERVER, chunkOf(file, 2 * CHUNK));
     // Platform restart: a new receiver over the same rows and files.
     const r2 = h.restart();
@@ -331,7 +428,9 @@ test.describe('Fleet demo stream receiver', () => {
     expect(await r2.begin(SERVER, 2, begin())).toEqual({ demo_id: DEMO, offset: 2 * CHUNK + 100 });
     await r2.chunk(SERVER, chunkOf(file, 2 * CHUNK)); // re-sent from its chunk boundary
     await sendFrom(r2, file, 3 * CHUNK);
-    expect(await r2.end(SERVER, { demo_id: DEMO, size: file.length, sha256: sha(file) })).toMatchObject({ complete: true });
+    expect(
+      await r2.end(SERVER, { demo_id: DEMO, size: file.length, sha256: sha(file) })
+    ).toMatchObject({ complete: true });
     expect(sha(fs.readFileSync(finalFile(h)))).toBe(sha(file));
 
     // A part file that vanished entirely: back to 0.
@@ -341,8 +440,14 @@ test.describe('Fleet demo stream receiver', () => {
     fs.rmSync(partFile(other));
     expect(await other.receiver.begin(SERVER, 1, begin())).toEqual({ demo_id: DEMO, offset: 0 });
     fs.rmSync(partFile(other));
-    expect(await other.receiver.chunk(SERVER, chunkOf(file, 0))).toMatchObject({ offset: 0, error: { code: 'gap' } });
-    expect(await other.receiver.chunk(SERVER, chunkOf(file, 0))).toEqual({ demo_id: DEMO, offset: CHUNK });
+    expect(await other.receiver.chunk(SERVER, chunkOf(file, 0))).toMatchObject({
+      offset: 0,
+      error: { code: 'gap' },
+    });
+    expect(await other.receiver.chunk(SERVER, chunkOf(file, 0))).toEqual({
+      demo_id: DEMO,
+      offset: CHUNK,
+    });
   });
 
   test('messages of one demo are serialized', async () => {
@@ -350,7 +455,9 @@ test.describe('Fleet demo stream receiver', () => {
     const file = demoBytes(6 * CHUNK, 5);
     await h.receiver.begin(SERVER, 1, begin());
     // Fired together (two sessions overlapping): applied in order, every one lands.
-    const acks = await Promise.all([0, 1, 2, 3, 4, 5].map((i) => h.receiver.chunk(SERVER, chunkOf(file, i * CHUNK))));
+    const acks = await Promise.all(
+      [0, 1, 2, 3, 4, 5].map((i) => h.receiver.chunk(SERVER, chunkOf(file, i * CHUNK)))
+    );
     expect(acks.map((a) => a.offset)).toEqual([1, 2, 3, 4, 5, 6].map((i) => i * CHUNK));
     expect(fs.readFileSync(partFile(h)).equals(file)).toBe(true);
   });
@@ -358,24 +465,39 @@ test.describe('Fleet demo stream receiver', () => {
   test('guards: unknown_demo, not_assigned, stale_epoch, another server, too_large, storage', async () => {
     const h = harness(3 * CHUNK);
     const file = demoBytes(4 * CHUNK);
-    expect(await h.receiver.chunk(SERVER, chunkOf(file, 0))).toMatchObject({ offset: 0, error: { code: 'unknown_demo' } });
-    expect(await h.receiver.end(SERVER, { demo_id: DEMO, size: 1, sha256: sha(file) })).toMatchObject({
+    expect(await h.receiver.chunk(SERVER, chunkOf(file, 0))).toMatchObject({
+      offset: 0,
+      error: { code: 'unknown_demo' },
+    });
+    expect(
+      await h.receiver.end(SERVER, { demo_id: DEMO, size: 1, sha256: sha(file) })
+    ).toMatchObject({
       offset: 0,
       error: { code: 'unknown_demo' },
     });
 
     h.assignment = 'not_assigned';
-    expect(await h.receiver.begin(SERVER, 1, begin())).toMatchObject({ offset: 0, error: { code: 'not_assigned' } });
+    expect(await h.receiver.begin(SERVER, 1, begin())).toMatchObject({
+      offset: 0,
+      error: { code: 'not_assigned' },
+    });
     h.assignment = 'stale_epoch';
-    expect(await h.receiver.begin(SERVER, 9, begin())).toMatchObject({ offset: 0, error: { code: 'stale_epoch' } });
+    expect(await h.receiver.begin(SERVER, 9, begin())).toMatchObject({
+      offset: 0,
+      error: { code: 'stale_epoch' },
+    });
     expect(h.rows.rows.size).toBe(0);
     expect(fs.existsSync(partFile(h))).toBe(false);
 
     h.assignment = 'ok';
     await h.receiver.begin(SERVER, 1, begin());
     // Another server claiming the demo.
-    expect(await h.receiver.begin('s_other', 1, begin())).toMatchObject({ error: { code: 'not_assigned' } });
-    expect(await h.receiver.chunk('s_other', chunkOf(file, 0))).toMatchObject({ error: { code: 'unknown_demo' } });
+    expect(await h.receiver.begin('s_other', 1, begin())).toMatchObject({
+      error: { code: 'not_assigned' },
+    });
+    expect(await h.receiver.chunk('s_other', chunkOf(file, 0))).toMatchObject({
+      error: { code: 'unknown_demo' },
+    });
 
     // Over the size cap: refused for good, the part file goes.
     await sendFrom(h.receiver, file.subarray(0, 3 * CHUNK), 0);
@@ -383,33 +505,48 @@ test.describe('Fleet demo stream receiver', () => {
     expect(big).toMatchObject({ offset: 3 * CHUNK, error: { code: 'too_large' } });
     expect(fs.existsSync(partFile(h))).toBe(false);
     expect(h.refused.map((r) => r.code)).toEqual(['too_large']);
-    expect(await h.receiver.begin(SERVER, 1, begin())).toMatchObject({ error: { code: 'too_large' } });
-    expect(await h.receiver.chunk(SERVER, chunkOf(file, 0))).toMatchObject({ error: { code: 'too_large' } });
+    expect(await h.receiver.begin(SERVER, 1, begin())).toMatchObject({
+      error: { code: 'too_large' },
+    });
+    expect(await h.receiver.chunk(SERVER, chunkOf(file, 0))).toMatchObject({
+      error: { code: 'too_large' },
+    });
 
     // demo.end announcing more than the cap.
     const h2 = harness(3 * CHUNK);
     await h2.receiver.begin(SERVER, 1, begin());
-    expect(await h2.receiver.end(SERVER, { demo_id: DEMO, size: 4 * CHUNK, sha256: sha(file) })).toMatchObject({
+    expect(
+      await h2.receiver.end(SERVER, { demo_id: DEMO, size: 4 * CHUNK, sha256: sha(file) })
+    ).toMatchObject({
       error: { code: 'too_large' },
     });
 
     // Storage: the database fails, the disk fails.
     const h3 = harness();
     h3.rows.failNext = true;
-    expect(await h3.receiver.begin(SERVER, 1, begin())).toMatchObject({ offset: 0, error: { code: 'storage' } });
+    expect(await h3.receiver.begin(SERVER, 1, begin())).toMatchObject({
+      offset: 0,
+      error: { code: 'storage' },
+    });
     await h3.receiver.begin(SERVER, 1, begin());
     h3.rows.failNext = true;
-    expect(await h3.receiver.chunk(SERVER, chunkOf(file, 0))).toMatchObject({ error: { code: 'storage' } });
+    expect(await h3.receiver.chunk(SERVER, chunkOf(file, 0))).toMatchObject({
+      error: { code: 'storage' },
+    });
     // The dir for final files is a file: moving the verified demo fails.
     const small = file.subarray(0, 100);
     await h3.receiver.chunk(SERVER, chunkOf(small, 0, 100));
     fs.writeFileSync(path.join(h3.dir, 'ko-r1-m3'), 'not a directory');
-    expect(await h3.receiver.end(SERVER, { demo_id: DEMO, size: 100, sha256: sha(small) })).toMatchObject({
+    expect(
+      await h3.receiver.end(SERVER, { demo_id: DEMO, size: 100, sha256: sha(small) })
+    ).toMatchObject({
       offset: 100,
       error: { code: 'storage' },
     });
     fs.rmSync(path.join(h3.dir, 'ko-r1-m3'));
-    expect(await h3.receiver.end(SERVER, { demo_id: DEMO, size: 100, sha256: sha(small) })).toMatchObject({ complete: true });
+    expect(
+      await h3.receiver.end(SERVER, { demo_id: DEMO, size: 100, sha256: sha(small) })
+    ).toMatchObject({ complete: true });
   });
 
   test('expiry: abandoned unfinished streams go with their part files; complete ones stay', async () => {
@@ -420,7 +557,11 @@ test.describe('Fleet demo stream receiver', () => {
     const doneId = '01J8ZQ4T8W6N3X0F2R5K7M9D02';
     await h.receiver.begin(SERVER, 1, { ...begin(), demo_id: doneId, map_number: 1 });
     await h.receiver.chunk(SERVER, { ...chunkOf(file, 0, 100), demo_id: doneId });
-    await h.receiver.end(SERVER, { demo_id: doneId, size: 100, sha256: sha(file.subarray(0, 100)) });
+    await h.receiver.end(SERVER, {
+      demo_id: doneId,
+      size: 100,
+      sha256: sha(file.subarray(0, 100)),
+    });
     const orphan = path.join(h.dir, INCOMING_DIR_NAME, '01J8ZQ4T8W6N3X0F2R5K7M9D03.part');
     fs.writeFileSync(orphan, 'left over');
     const old = new Date(h.clock.now - 30 * 86_400_000);
@@ -466,7 +607,9 @@ test.describe('Fleet demo stream receiver', () => {
     expect(socketBytesPerMinute(['match.v1'])).toBe(FLEET_LIMIT_DEFAULTS.bytesPerMinute);
     expect(socketBytesPerMinute(undefined)).toBe(FLEET_LIMIT_DEFAULTS.bytesPerMinute);
     const raised = socketBytesPerMinute(['match.v1', DEMO_STREAM_CAPABILITY]);
-    expect(raised).toBeGreaterThan(FLEET_LIMIT_DEFAULTS.bytesPerMinute + FLEET_LIMIT_DEFAULTS.demoBytesPerMinute);
+    expect(raised).toBeGreaterThan(
+      FLEET_LIMIT_DEFAULTS.bytesPerMinute + FLEET_LIMIT_DEFAULTS.demoBytesPerMinute
+    );
     expect(
       socketBytesPerMinute([DEMO_STREAM_CAPABILITY], {
         ...FLEET_LIMIT_DEFAULTS,

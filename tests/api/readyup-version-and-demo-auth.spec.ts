@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 import type { NextFunction, Request, Response } from 'express';
-import { readyUpUpdateStatus, compareVersions } from '../../api/src/integrations/cs2/services/readyUpVersion';
+import {
+  readyUpUpdateStatus,
+  compareVersions,
+} from '../../api/src/integrations/cs2/services/readyUpVersion';
 import {
   getLatestReadyUpRelease,
   resetReadyUpReleaseCache,
@@ -23,7 +26,10 @@ import type { TokenCheck } from '../../api/src/integrations/cs2/fleet/registry';
  * @tag api
  */
 
-const RELEASE = { version: '1.2.0', releaseUrl: 'https://github.com/Auto-Tournament/ready-up/releases/tag/v1.2.0' };
+const RELEASE = {
+  version: '1.2.0',
+  releaseUrl: 'https://github.com/Auto-Tournament/ready-up/releases/tag/v1.2.0',
+};
 
 test.describe('Ready Up version status', () => {
   test('never outdated while there is no release', { tag: ['@api'] }, () => {
@@ -44,34 +50,42 @@ test.describe('Ready Up version status', () => {
     expect(compareVersions('1.10.0', '1.9.0')).toBe(1);
   });
 
-  test('a 404 from GitHub is "no release"; a release is parsed and cached', { tag: ['@api'] }, async () => {
-    resetReadyUpReleaseCache();
-    let calls = 0;
-    const notFound = async () => {
-      calls++;
-      return { ok: false, status: 404, json: async () => ({}) };
-    };
-    expect(await getLatestReadyUpRelease({ fetchImpl: notFound })).toBeNull();
-    expect(await getLatestReadyUpRelease({ fetchImpl: notFound })).toBeNull();
-    expect(calls).toBe(1);
-
-    const released = async (url: string) => {
-      expect(url).toContain('/repos/Auto-Tournament/ready-up/releases?per_page=20');
-      return {
-        ok: true,
-        status: 200,
-        json: async () => [{ tag_name: 'v1.2.0', html_url: RELEASE.releaseUrl, prerelease: false, draft: false }],
+  test(
+    'a 404 from GitHub is "no release"; a release is parsed and cached',
+    { tag: ['@api'] },
+    async () => {
+      resetReadyUpReleaseCache();
+      let calls = 0;
+      const notFound = async () => {
+        calls++;
+        return { ok: false, status: 404, json: async () => ({}) };
       };
-    };
-    expect(await getLatestReadyUpRelease({ forceRefresh: true, fetchImpl: released })).toEqual(RELEASE);
+      expect(await getLatestReadyUpRelease({ fetchImpl: notFound })).toBeNull();
+      expect(await getLatestReadyUpRelease({ fetchImpl: notFound })).toBeNull();
+      expect(calls).toBe(1);
 
-    resetReadyUpReleaseCache();
-    const boom = async () => {
-      throw new Error('network');
-    };
-    expect(await getLatestReadyUpRelease({ fetchImpl: boom })).toBeNull();
-    resetReadyUpReleaseCache();
-  });
+      const released = async (url: string) => {
+        expect(url).toContain('/repos/Auto-Tournament/ready-up/releases?per_page=20');
+        return {
+          ok: true,
+          status: 200,
+          json: async () => [
+            { tag_name: 'v1.2.0', html_url: RELEASE.releaseUrl, prerelease: false, draft: false },
+          ],
+        };
+      };
+      expect(await getLatestReadyUpRelease({ forceRefresh: true, fetchImpl: released })).toEqual(
+        RELEASE
+      );
+
+      resetReadyUpReleaseCache();
+      const boom = async () => {
+        throw new Error('network');
+      };
+      expect(await getLatestReadyUpRelease({ fetchImpl: boom })).toBeNull();
+      resetReadyUpReleaseCache();
+    }
+  );
 });
 
 const rel = (tag: string, prerelease = false, draft = false) => ({
@@ -80,11 +94,13 @@ const rel = (tag: string, prerelease = false, draft = false) => ({
   prerelease,
   draft,
 });
-const listOf = (...items: ReturnType<typeof rel>[]) => async () => ({
-  ok: true,
-  status: 200,
-  json: async () => items,
-});
+const listOf =
+  (...items: ReturnType<typeof rel>[]) =>
+  async () => ({
+    ok: true,
+    status: 200,
+    json: async () => items,
+  });
 
 test.describe('Ready Up version parsing and channels', () => {
   test.beforeEach(() => resetReadyUpReleaseCache());
@@ -97,13 +113,17 @@ test.describe('Ready Up version parsing and channels', () => {
     expect(compareVersions('0.1.0 (4e42de0)', '0.2.0')).toBe(-1);
   });
 
-  test('semver precedence: beta < rc < stable, numeric identifiers numeric', { tag: ['@api'] }, () => {
-    expect(compareVersions('1.0.0-beta.2', '1.0.0-rc.1')).toBe(-1);
-    expect(compareVersions('1.0.0-rc.1', '1.0.0')).toBe(-1);
-    expect(compareVersions('1.0.0-beta.2', '1.0.0-beta.10')).toBe(-1);
-    expect(compareVersions('1.0.0-beta.11', '1.0.0-beta.2')).toBe(1);
-    expect(compareVersions('1.0.0', '0.9.9-rc.1')).toBe(1);
-  });
+  test(
+    'semver precedence: beta < rc < stable, numeric identifiers numeric',
+    { tag: ['@api'] },
+    () => {
+      expect(compareVersions('1.0.0-beta.2', '1.0.0-rc.1')).toBe(-1);
+      expect(compareVersions('1.0.0-rc.1', '1.0.0')).toBe(-1);
+      expect(compareVersions('1.0.0-beta.2', '1.0.0-beta.10')).toBe(-1);
+      expect(compareVersions('1.0.0-beta.11', '1.0.0-beta.2')).toBe(1);
+      expect(compareVersions('1.0.0', '0.9.9-rc.1')).toBe(1);
+    }
+  );
 
   test('malformed versions are unknown', { tag: ['@api'] }, () => {
     for (const bad of ['', 'dev-build', 'abc (123)', '1.2', '(4e42de0)']) {
@@ -153,34 +173,53 @@ test.describe('Ready Up version parsing and channels', () => {
     expect(readyUpUpdateStatus('0.1.0', mixed).state).toBe('outdated');
   });
 
-  test('empty list and 404 mean no release; errors are not cached; channels cache separately', { tag: ['@api'] }, async () => {
-    expect(await getLatestReadyUpRelease({ fetchImpl: listOf() })).toBeNull();
-    expect(await getLatestReadyUpRelease({ fetchImpl: async () => ({ ok: false, status: 404, json: async () => ({}) }), forceRefresh: true })).toBeNull();
+  test(
+    'empty list and 404 mean no release; errors are not cached; channels cache separately',
+    { tag: ['@api'] },
+    async () => {
+      expect(await getLatestReadyUpRelease({ fetchImpl: listOf() })).toBeNull();
+      expect(
+        await getLatestReadyUpRelease({
+          fetchImpl: async () => ({ ok: false, status: 404, json: async () => ({}) }),
+          forceRefresh: true,
+        })
+      ).toBeNull();
 
-    resetReadyUpReleaseCache();
-    let calls = 0;
-    const failing = async () => {
-      calls++;
-      return { ok: false, status: 500, json: async () => ({}) };
-    };
-    await getLatestReadyUpRelease({ fetchImpl: failing });
-    await getLatestReadyUpRelease({ fetchImpl: failing });
-    expect(calls).toBe(2);
+      resetReadyUpReleaseCache();
+      let calls = 0;
+      const failing = async () => {
+        calls++;
+        return { ok: false, status: 500, json: async () => ({}) };
+      };
+      await getLatestReadyUpRelease({ fetchImpl: failing });
+      await getLatestReadyUpRelease({ fetchImpl: failing });
+      expect(calls).toBe(2);
 
-    let okCalls = 0;
-    const counting = async () => {
-      okCalls++;
-      return { ok: true, status: 200, json: async () => [rel('v1.0.0-beta.1', true), rel('v0.9.0')] };
-    };
-    const stable = await getLatestReadyUpRelease({ fetchImpl: counting });
-    const stableAgain = await getLatestReadyUpRelease({ runningVersion: '0.9.0', fetchImpl: counting });
-    const pre = await getLatestReadyUpRelease({ runningVersion: '1.0.0-beta.0', fetchImpl: counting });
-    expect(stable?.version).toBe('0.9.0');
-    expect(stableAgain?.version).toBe('0.9.0');
-    expect(pre?.version).toBe('1.0.0-beta.1');
-    expect(okCalls).toBe(2);
-    resetReadyUpReleaseCache();
-  });
+      let okCalls = 0;
+      const counting = async () => {
+        okCalls++;
+        return {
+          ok: true,
+          status: 200,
+          json: async () => [rel('v1.0.0-beta.1', true), rel('v0.9.0')],
+        };
+      };
+      const stable = await getLatestReadyUpRelease({ fetchImpl: counting });
+      const stableAgain = await getLatestReadyUpRelease({
+        runningVersion: '0.9.0',
+        fetchImpl: counting,
+      });
+      const pre = await getLatestReadyUpRelease({
+        runningVersion: '1.0.0-beta.0',
+        fetchImpl: counting,
+      });
+      expect(stable?.version).toBe('0.9.0');
+      expect(stableAgain?.version).toBe('0.9.0');
+      expect(pre?.version).toBe('1.0.0-beta.1');
+      expect(okCalls).toBe(2);
+      resetReadyUpReleaseCache();
+    }
+  );
 });
 
 function fakeReq(headers: Record<string, string>): Request {
@@ -188,7 +227,9 @@ function fakeReq(headers: Record<string, string>): Request {
 }
 
 function fakeRes() {
-  const state: { status?: number; body?: unknown; locals: Record<string, unknown> } = { locals: {} };
+  const state: { status?: number; body?: unknown; locals: Record<string, unknown> } = {
+    locals: {},
+  };
   const res = {
     locals: state.locals,
     status(code: number) {
@@ -213,24 +254,31 @@ async function run(headers: Record<string, string>, verify: (t: string) => Promi
   return { nexted, ...state };
 }
 
-const okFleet = (id: string) => async (): Promise<TokenCheck> =>
-  ({ ok: true, server: { id } as never, token: {} as never });
+const okFleet = (id: string) => async (): Promise<TokenCheck> => ({
+  ok: true,
+  server: { id } as never,
+  token: {} as never,
+});
 
 test.describe('demo upload authentication', () => {
   test.beforeAll(() => {
     process.env.SERVER_TOKEN = 'legacy-secret';
   });
 
-  test('the old SERVER_TOKEN still works and never touches the fleet check', { tag: ['@api'] }, async () => {
-    let verified = false;
-    const r = await run({ 'x-auto-tournament-token': 'legacy-secret' }, async () => {
-      verified = true;
-      return { ok: false, reason: 'bad' };
-    });
-    expect(r.nexted).toBe(true);
-    expect(verified).toBe(false);
-    expect(r.locals[FLEET_UPLOAD_SERVER_ID]).toBeUndefined();
-  });
+  test(
+    'the old SERVER_TOKEN still works and never touches the fleet check',
+    { tag: ['@api'] },
+    async () => {
+      let verified = false;
+      const r = await run({ 'x-auto-tournament-token': 'legacy-secret' }, async () => {
+        verified = true;
+        return { ok: false, reason: 'bad' };
+      });
+      expect(r.nexted).toBe(true);
+      expect(verified).toBe(false);
+      expect(r.locals[FLEET_UPLOAD_SERVER_ID]).toBeUndefined();
+    }
+  );
 
   test('wrong or missing old token is 401', { tag: ['@api'] }, async () => {
     for (const headers of [{ 'x-auto-tournament-token': 'nope' }, {}]) {
@@ -250,7 +298,10 @@ test.describe('demo upload authentication', () => {
 
   test('an invalid or revoked fleet token is 401', { tag: ['@api'] }, async () => {
     for (const reason of ['bad', 'revoked'] as const) {
-      const r = await run({ 'x-auto-tournament-token': 'rus_abc123abc123_x' }, async () => ({ ok: false, reason }));
+      const r = await run({ 'x-auto-tournament-token': 'rus_abc123abc123_x' }, async () => ({
+        ok: false,
+        reason,
+      }));
       expect(r.nexted).toBe(false);
       expect(r.status).toBe(401);
     }

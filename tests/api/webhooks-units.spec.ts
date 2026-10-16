@@ -8,7 +8,12 @@ import {
   verifySignature,
   generateWebhookSecret,
 } from '../../api/src/services/webhooks/signing';
-import { MAX_ATTEMPTS, RETRY_DELAYS_MS, nextRetryDelayMs, parseRetryAfter } from '../../api/src/services/webhooks/retry';
+import {
+  MAX_ATTEMPTS,
+  RETRY_DELAYS_MS,
+  nextRetryDelayMs,
+  parseRetryAfter,
+} from '../../api/src/services/webhooks/retry';
 import { redactDeliveryBody, REDACTED, scrubSecrets } from '../../api/src/services/webhooks/redact';
 import {
   checkWebhookUrlSyntax,
@@ -16,7 +21,11 @@ import {
   resolveWebhookTarget,
   WebhookTargetError,
 } from '../../api/src/services/webhooks/ssrf';
-import { diffMatch, type AnnouncedState, type CurrentFacts } from '../../api/src/services/webhooks/diff';
+import {
+  diffMatch,
+  type AnnouncedState,
+  type CurrentFacts,
+} from '../../api/src/services/webhooks/diff';
 import { sampleEnvelope } from '../../api/src/services/webhooks/samples';
 import { WEBHOOK_EVENT_TYPES, connectLinks } from '../../api/src/services/webhooks/events';
 import { attemptDelivery } from '../../api/src/services/webhooks/deliver';
@@ -42,9 +51,18 @@ test.describe('webhook signatures', () => {
     expect(header).toBe(`t=${t},v1=${computeSignature(secret, t, body)}`);
     expect(computeSignature(secret, t, body)).toMatch(/^[0-9a-f]{64}$/);
     expect(verifySignature(secret, header, body, { nowSeconds: t + 10 })).toEqual({ ok: true });
-    expect(verifySignature(secret, header, body + ' ', { nowSeconds: t })).toEqual({ ok: false, reason: 'mismatch' });
-    expect(verifySignature('whsec_other', header, body, { nowSeconds: t })).toEqual({ ok: false, reason: 'mismatch' });
-    expect(verifySignature(secret, header, body, { nowSeconds: t + 301 })).toEqual({ ok: false, reason: 'stale' });
+    expect(verifySignature(secret, header, body + ' ', { nowSeconds: t })).toEqual({
+      ok: false,
+      reason: 'mismatch',
+    });
+    expect(verifySignature('whsec_other', header, body, { nowSeconds: t })).toEqual({
+      ok: false,
+      reason: 'mismatch',
+    });
+    expect(verifySignature(secret, header, body, { nowSeconds: t + 301 })).toEqual({
+      ok: false,
+      reason: 'stale',
+    });
     expect(verifySignature(secret, 'garbage', body)).toEqual({ ok: false, reason: 'malformed' });
   });
 
@@ -67,7 +85,9 @@ test.describe('webhook retry schedule', () => {
   test('exponential-ish backoff, 10 attempts, then give up', () => {
     const fixed = () => 0.5; // no jitter
     expect(MAX_ATTEMPTS).toBe(10);
-    const delays = Array.from({ length: MAX_ATTEMPTS - 1 }, (_, i) => nextRetryDelayMs(i + 1, { random: fixed }));
+    const delays = Array.from({ length: MAX_ATTEMPTS - 1 }, (_, i) =>
+      nextRetryDelayMs(i + 1, { random: fixed })
+    );
     expect(delays).toEqual([...RETRY_DELAYS_MS]);
     for (let i = 1; i < delays.length; i++) expect(delays[i]!).toBeGreaterThan(delays[i - 1]!);
     expect(nextRetryDelayMs(MAX_ATTEMPTS)).toBeNull();
@@ -173,10 +193,14 @@ test.describe('SSRF rules for webhook targets', () => {
       family: 4,
     });
     // One bad address among good ones is enough to refuse (rebinding tricks).
-    await expect(resolveWebhookTarget(url, false, lookup(['93.184.216.34', '10.0.0.5']))).rejects.toMatchObject({
+    await expect(
+      resolveWebhookTarget(url, false, lookup(['93.184.216.34', '10.0.0.5']))
+    ).rejects.toMatchObject({
       code: 'blocked_address',
     });
-    await expect(resolveWebhookTarget(url, true, lookup(['169.254.169.254']))).rejects.toMatchObject({
+    await expect(
+      resolveWebhookTarget(url, true, lookup(['169.254.169.254']))
+    ).rejects.toMatchObject({
       code: 'blocked_address',
     });
     await expect(
@@ -202,7 +226,14 @@ test.describe('which events a match change means', () => {
     const out: string[][] = [];
     for (const step of steps) {
       const r = diffMatch(state, step.facts, { ...opts, now: step.now ?? opts.now });
-      out.push(r.events.map((e) => e.type + (e.reason ? `:${e.reason}` : '') + (e.mapNumber !== undefined ? `#${e.mapNumber}` : '')));
+      out.push(
+        r.events.map(
+          (e) =>
+            e.type +
+            (e.reason ? `:${e.reason}` : '') +
+            (e.mapNumber !== undefined ? `#${e.mapNumber}` : '')
+        )
+      );
       state = r.next;
     }
     return out;
@@ -214,10 +245,27 @@ test.describe('which events a match change means', () => {
         { facts: facts({ status: 'ready' }) },
         { facts: facts({ status: 'loaded', connectKey: 'A' }) },
         { facts: facts({ status: 'live', connectKey: 'A' }) },
-        { facts: facts({ status: 'live', connectKey: 'A', mapScore: { team1: 1, team2: 0 } }), now: 1_010_000 },
-        { facts: facts({ status: 'live', connectKey: 'A', finishedMaps: [0], mapScore: { team1: 13, team2: 5 } }), now: 1_020_000 },
-        { facts: facts({ status: 'live', connectKey: 'A', finishedMaps: [0], mapNumber: 1 }), now: 1_030_000 },
-        { facts: facts({ status: 'completed', finishedMaps: [0, 1], mapNumber: 1 }), now: 1_040_000 },
+        {
+          facts: facts({ status: 'live', connectKey: 'A', mapScore: { team1: 1, team2: 0 } }),
+          now: 1_010_000,
+        },
+        {
+          facts: facts({
+            status: 'live',
+            connectKey: 'A',
+            finishedMaps: [0],
+            mapScore: { team1: 13, team2: 5 },
+          }),
+          now: 1_020_000,
+        },
+        {
+          facts: facts({ status: 'live', connectKey: 'A', finishedMaps: [0], mapNumber: 1 }),
+          now: 1_030_000,
+        },
+        {
+          facts: facts({ status: 'completed', finishedMaps: [0, 1], mapNumber: 1 }),
+          now: 1_040_000,
+        },
       ])
     ).toEqual([
       [],
@@ -238,13 +286,22 @@ test.describe('which events a match change means', () => {
       return r;
     };
     step(facts({ status: 'live', connectKey: 'A' }), 0);
-    expect(step(facts({ status: 'live', connectKey: 'A', mapScore: { team1: 1, team2: 0 } }), 10_000).events.map((e) => e.type)).toEqual([
-      'match.score_updated',
-    ]);
-    const throttled = step(facts({ status: 'live', connectKey: 'A', mapScore: { team1: 2, team2: 0 } }), 11_000);
+    expect(
+      step(
+        facts({ status: 'live', connectKey: 'A', mapScore: { team1: 1, team2: 0 } }),
+        10_000
+      ).events.map((e) => e.type)
+    ).toEqual(['match.score_updated']);
+    const throttled = step(
+      facts({ status: 'live', connectKey: 'A', mapScore: { team1: 2, team2: 0 } }),
+      11_000
+    );
     expect(throttled.events).toEqual([]);
     expect(throttled.recheckAt).toBe(15_000);
-    const later = step(facts({ status: 'live', connectKey: 'A', mapScore: { team1: 2, team2: 0 } }), 15_000);
+    const later = step(
+      facts({ status: 'live', connectKey: 'A', mapScore: { team1: 2, team2: 0 } }),
+      15_000
+    );
     expect(later.events.map((e) => e.type)).toEqual(['match.score_updated']);
   });
 
@@ -287,7 +344,9 @@ test.describe('sample payloads (test events and docs)', () => {
     });
     expect(sampleEnvelope('match.finished').data.match.connect).toBeNull();
     expect(connectLinks('10.0.0.5', 27016, null).steam_url).toBe('steam://connect/10.0.0.5:27016');
-    expect(connectLinks('2001:db8::1', 27015, 'pw').steam_url).toBe('steam://connect/[2001:db8::1]:27015/pw');
+    expect(connectLinks('2001:db8::1', 27015, 'pw').steam_url).toBe(
+      'steam://connect/[2001:db8::1]:27015/pw'
+    );
   });
 });
 
@@ -319,11 +378,21 @@ test.describe('one delivery attempt', () => {
   });
 
   test('sends the body and headers; refuses loopback unless allowed', async () => {
-    const blocked = await attemptDelivery({ url: `${origin}/ok`, body: '{}', headers: {}, allowPrivate: false });
+    const blocked = await attemptDelivery({
+      url: `${origin}/ok`,
+      body: '{}',
+      headers: {},
+      allowPrivate: false,
+    });
     expect(blocked).toMatchObject({ statusCode: null, blocked: true });
     expect(seen).toHaveLength(0);
 
-    const ok = await attemptDelivery({ url: `${origin}/ok`, body: '{"a":1}', headers: { 'X-AT-Event': 'match.ready' }, allowPrivate: true });
+    const ok = await attemptDelivery({
+      url: `${origin}/ok`,
+      body: '{"a":1}',
+      headers: { 'X-AT-Event': 'match.ready' },
+      allowPrivate: true,
+    });
     expect(ok).toMatchObject({ statusCode: 204, error: null });
     expect(seen.at(-1)?.body).toBe('{"a":1}');
     expect(seen.at(-1)?.headers['x-at-event']).toBe('match.ready');
@@ -331,14 +400,35 @@ test.describe('one delivery attempt', () => {
   });
 
   test('timeouts, redirects not followed, answers cut at 64 KB, Retry-After read', async () => {
-    const slow = await attemptDelivery({ url: `${origin}/slow`, body: '{}', headers: {}, allowPrivate: true, timeoutMs: 300 });
+    const slow = await attemptDelivery({
+      url: `${origin}/slow`,
+      body: '{}',
+      headers: {},
+      allowPrivate: true,
+      timeoutMs: 300,
+    });
     expect(slow.statusCode).toBeNull();
     expect(slow.error).toContain('timed out');
-    const redirect = await attemptDelivery({ url: `${origin}/redirect`, body: '{}', headers: {}, allowPrivate: true });
+    const redirect = await attemptDelivery({
+      url: `${origin}/redirect`,
+      body: '{}',
+      headers: {},
+      allowPrivate: true,
+    });
     expect(redirect.statusCode).toBe(302);
-    const big = await attemptDelivery({ url: `${origin}/big`, body: '{}', headers: {}, allowPrivate: true });
+    const big = await attemptDelivery({
+      url: `${origin}/big`,
+      body: '{}',
+      headers: {},
+      allowPrivate: true,
+    });
     expect(big.responseText.length).toBe(64 * 1024);
-    const busy = await attemptDelivery({ url: `${origin}/busy`, body: '{}', headers: {}, allowPrivate: true });
+    const busy = await attemptDelivery({
+      url: `${origin}/busy`,
+      body: '{}',
+      headers: {},
+      allowPrivate: true,
+    });
     expect(busy).toMatchObject({ statusCode: 503, retryAfter: '7' });
   });
 });
@@ -353,8 +443,16 @@ test.describe('teams API input', () => {
   });
 
   test('a team: externalId, name, tag, players; every problem listed', () => {
-    const ok = parseTeamInput({ name: ' Ninjas ', tag: 'NIP', players: [{ steamId: '76561198000000001', name: 'a' }] }, 'ext-1');
-    expect(ok).toEqual({ externalId: 'ext-1', name: 'Ninjas', tag: 'NIP', players: [{ steamId: '76561198000000001', name: 'a' }] });
+    const ok = parseTeamInput(
+      { name: ' Ninjas ', tag: 'NIP', players: [{ steamId: '76561198000000001', name: 'a' }] },
+      'ext-1'
+    );
+    expect(ok).toEqual({
+      externalId: 'ext-1',
+      name: 'Ninjas',
+      tag: 'NIP',
+      players: [{ steamId: '76561198000000001', name: 'a' }],
+    });
     try {
       parseTeamInput({
         externalId: 'has space',
