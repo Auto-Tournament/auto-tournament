@@ -231,7 +231,9 @@ export interface MatchConnectResponse extends Cs2ApiResponse {
   roundNumber?: number | null;
   /** No server yet: the match's place in line for one (1 = next). */
   queuePosition?: number | null;
-  /** Null for a viewer on neither team, and for a match with no server. */
+  /** A finished match: the viewer's match that is loaded or live in the same tournament, if any. */
+  currentMatchSlug?: string | null;
+  /** Null for a viewer on neither team, for a match with no server, and for a finished match. */
   server: MatchServer | null;
 }
 

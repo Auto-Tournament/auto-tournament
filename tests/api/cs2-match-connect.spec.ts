@@ -11,7 +11,8 @@ import { pauseView } from '../../api/src/integrations/cs2/fleet/pauseView';
  * The CS2 join panel reads how to join a match by its slug instead of being
  * handed the server by the team and player pages. The address goes only to a
  * player on the match, the way the team page already decided it; anyone else
- * gets `server: null`, the same answer as a match with no server.
+ * gets `server: null`, the same answer as a match with no server, and so does
+ * everyone once the match is completed or cancelled.
  *
  * @tag api
  */
@@ -77,6 +78,28 @@ test.describe.serial('CS2 match connect route', () => {
     expect(body.server).toMatchObject({ host: serverHost, password: null });
     expect(typeof body.server.port).toBe('number');
   });
+
+  // Last: these finish the match. Its server_id stays set, but the server runs another match by
+  // now; a Connect there kicked shuffle players in round 2 (NTLAN, 2026-10-16).
+  for (const status of ['completed', 'cancelled']) {
+    test(`a ${status} match gives its player no server`, { tag: ['@api'] }, async ({ request }) => {
+      await signInViaRequest(request);
+      const state = await request.post('/api/test/match-state', { data: { slug, status } });
+      expect(state.ok()).toBe(true);
+      expect(await impersonatePlayer(request, team1Player)).toBe(true);
+      const res = await request.get(`/api/game/cs2/matches/${slug}/connect`);
+      expect(res.ok()).toBe(true);
+      const body = await res.json();
+      expect(body).toMatchObject({
+        success: true,
+        viewerIsTeamMember: true,
+        matchStatus: status,
+        server: null,
+        // No other match of theirs is loaded or live.
+        currentMatchSlug: null,
+      });
+    });
+  }
 
   test('an unknown match is a 404', { tag: ['@api'] }, async ({ request }) => {
     const res = await request.get('/api/game/cs2/matches/no-such-match/connect');

@@ -15,6 +15,14 @@
  * A match on a Ready Up server (fleet link) has a connect password, made per
  * assignment (FLEET.md D9). It goes to the roster and to admins, and nobody
  * else: an admin (not impersonating) also gets the server for such a match.
+ *
+ * A finished match (completed or cancelled) gets `server: null` too: its
+ * `server_id` stays set, but the server has moved on to another match, so its
+ * status and address are that match's. In a shuffle the next round puts players
+ * on new servers, and a round-1 page still offering Connect sent them onto
+ * another match's server, which kicked them (NTLAN, 2026-10-16). A player on a
+ * finished match gets `currentMatchSlug`: their match that is loaded or live
+ * in the same tournament, if any, to go to instead.
  */
 
 import { Router, Request, Response } from 'express';
@@ -34,6 +42,34 @@ import { liveStateStore } from '../fleet/state';
 import { pauseView } from '../fleet/pauseView';
 import { connectChoice } from '../fleet/connectChoice';
 import { QUEUE_ORDER_SQL } from '../../../core/allocationQueue';
+
+/** The match is over: its server, if it still names one, belongs to another match now. */
+function isFinishedMatchStatus(status: string | null | undefined): boolean {
+  return status === 'completed' || status === 'cancelled';
+}
+
+/**
+ * The viewer's match that is loaded or live in the same tournament, other than this one; null
+ * when there is none. Shuffle rounds re-form the teams, so it goes by the rosters, not team ids.
+ */
+async function viewerCurrentMatchSlug(
+  match: DbMatchRow,
+  steamId: string | null
+): Promise<string | null> {
+  if (!steamId || !match.tournament_id) return null;
+  const candidates = await db
+    .queryAsync<DbMatchRow>(
+      `SELECT * FROM matches
+        WHERE tournament_id = ? AND slug <> ? AND status IN ('loaded', 'live')
+          AND server_id IS NOT NULL`,
+      [match.tournament_id, match.slug]
+    )
+    .catch(() => [] as DbMatchRow[]);
+  for (const other of candidates) {
+    if (await resolveViewerTeamForMatch(other, steamId).catch(() => null)) return other.slug;
+  }
+  return null;
+}
 
 /**
  * Whether the move no longer concerns this viewer: they are connected again (a player), or every
@@ -148,7 +184,10 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
     const onFleet = match.server_transport === 'fleet';
     // Fleet matches: admins see how to join too (they are not asked otherwise).
     const viewerIsAdmin = onFleet && !viewerIsTeamMember ? (await checkAdminAccess(req)).ok : false;
-    const canSeeServer = viewerIsTeamMember || viewerIsAdmin;
+    const finished = isFinishedMatchStatus(match.status);
+    const canSeeServer = (viewerIsTeamMember || viewerIsAdmin) && !finished;
+    const currentMatchSlug =
+      finished && viewerIsTeamMember ? await viewerCurrentMatchSlug(match, effectiveSteamId) : null;
 
     const liveStats = matchLiveStatsService.getStats(match.slug);
     const mapNumber = liveStats?.mapNumber ?? match.map_number ?? null;
@@ -227,6 +266,7 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
       liveStatus: liveStats?.status ?? null,
       roundNumber: liveStats?.roundNumber ?? null,
       queuePosition,
+      currentMatchSlug,
       currentMap,
       mapNumber,
       server:
