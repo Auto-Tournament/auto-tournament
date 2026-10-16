@@ -7,6 +7,7 @@ import { logoUrl } from './teamSelfService';
 import { RATING_ELO, getGameRatings, ratingGame, ratingJoin } from './gameRatings';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
+import { settingsService } from './settingsService';
 import { balanceTeams, type BalancedTeam } from './teamBalancingService';
 import { playerService, type PlayerRecord } from './playerService';
 import { teamMembers } from './teamMembers';
@@ -739,6 +740,25 @@ export async function checkRoundCompletion(
  * Advance to next round automatically
  * Called when current round is complete
  */
+/** Hold a new shuffle round's matches for the site's break between matches (minutes, 0 = none). */
+async function holdRoundForBreak(round: number, matches: DbMatchRow[]): Promise<void> {
+  try {
+    const raw = await settingsService.getSetting('at_match_break_minutes');
+    const minutes = raw === null || raw === undefined || raw === '' ? 5 : Number(raw);
+    if (!Number.isFinite(minutes) || minutes <= 0) return;
+    const until = Math.floor(Date.now() / 1000) + Math.round(minutes * 60);
+    const { holdForBreak } = await import('./matchHolds');
+    for (const m of matches) {
+      await holdForBreak(m.slug, until, `Break between rounds (${minutes} min)`);
+    }
+    log.info(`Shuffle round ${round}: break until ${new Date(until * 1000).toISOString()}`);
+  } catch (error) {
+    log.warn(`Shuffle round ${round}: could not hold for the break`, {
+      error: (error as Error).message,
+    });
+  }
+}
+
 export async function advanceToNextRound(tournamentId: number): Promise<{
   roundNumber: number;
   matches: DbMatchRow[];
@@ -815,6 +835,10 @@ export async function advanceToNextRound(tournamentId: number): Promise<{
 
   // Generate next round matches
   const result = await generateRoundMatches(tournamentId, nextRound);
+
+  // A break between rounds: players get new partners every round, so the break between a
+  // team's matches (veto/break.ts) never finds an earlier match. Hold the round instead.
+  if (currentRound > 0) await holdRoundForBreak(nextRound, result.matches);
 
   // Update tournament status if starting first round
   if (currentRound === 0) {
@@ -1297,4 +1321,51 @@ export async function getShuffleTournament(
     // Shuffle teams are built from registered players; 5v5 unless configured.
     teamSize: row.team_size || 5,
   };
+}
+
+/**
+ * No-shows drop out (a shuffle): when a shuffle match goes live (at the latest
+ * when warmup's autostart runs out), a signed-up player on its roster who never
+ * joined the server is marked out of the shuffle (left_at), so the rounds after
+ * are made without them; their results so far stay. `seen` says whether a
+ * player was ever on the match's server. Nothing happens when no roster player
+ * was seen at all (the platform lost track, e.g. after a restart). Returns the
+ * players marked out.
+ */
+export async function dropShuffleNoShows(
+  match: { slug: string; tournament_id: number | null; config?: string | null },
+  seen: (steamId: string) => boolean
+): Promise<string[]> {
+  if (!match.tournament_id) return [];
+  const t = await db.queryOneAsync<{ type: string; status: string }>(
+    'SELECT type, status FROM tournament WHERE id = ?',
+    [match.tournament_id]
+  );
+  if (t?.type !== 'shuffle' || t.status !== 'in_progress') return [];
+  const config = match.config ?? '';
+  const ids = new Set(config.match(/\b7656\d{13}\b/g) ?? []);
+  if (ids.size === 0) return [];
+  const signed = await db.queryAsync<{ player_id: string }>(
+    'SELECT player_id FROM shuffle_tournament_players WHERE tournament_id = ? AND left_at IS NULL',
+    [match.tournament_id]
+  );
+  const roster = signed.map((r) => r.player_id).filter((id) => ids.has(id));
+  if (roster.length === 0 || !roster.some(seen)) return [];
+  const missing = roster.filter((id) => !seen(id));
+  const now = Math.floor(Date.now() / 1000);
+  for (const id of missing) {
+    await db.runAsync(
+      'UPDATE shuffle_tournament_players SET left_at = ? WHERE tournament_id = ? AND player_id = ? AND left_at IS NULL',
+      [now, match.tournament_id, id]
+    );
+  }
+  if (missing.length > 0) {
+    log.warn(
+      `Shuffle ${match.tournament_id}: ${missing.length} no-show(s) in ${match.slug} marked out`,
+      {
+        players: missing,
+      }
+    );
+  }
+  return missing;
 }
