@@ -167,8 +167,12 @@ export interface MatchmakingMe {
   };
 }
 
-/** Rounds per half Ready Up plays: wingman MR8, everything else MR12. */
-const MODE_MAX_ROUNDS: Record<MatchmakingMode, number> = { '5v5': 12, '2v2': 8, '1v1': 12 };
+/**
+ * mp_maxrounds per mode: CS2's competitive defaults, MR24 for 5v5 and MR16 for wingman (it was
+ * 12 and 8, which players at NTLAN found too short, 2026-10-16). 1v1 has no competitive default
+ * and stays at 12.
+ */
+const MODE_MAX_ROUNDS: Record<MatchmakingMode, number> = { '5v5': 24, '2v2': 16, '1v1': 12 };
 
 /**
  * Sides and objective per mode. 5v5 keeps the knife round. 1v1 and 2v2 draw
