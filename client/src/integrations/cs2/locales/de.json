@@ -479,7 +479,10 @@
       "pausedBody": "The match paused at the end of the round. It goes on when both teams are ready, or when an admin decides.",
       "pausedBodyWaiting_one": "The match paused at the end of the round. It goes on when {{names}} is back, or when an admin decides.",
       "pausedBodyWaiting_other": "The match paused at the end of the round. It goes on when {{names}} are back, or when an admin decides.",
-      "reconnect": "Reconnect"
+      "reconnect": "Reconnect",
+      "tryOtherBody": "Nicht reingekommen? Dein Netzwerk braucht vielleicht die andere Adresse.",
+      "tryOtherLan": "Über LAN verbinden",
+      "tryOtherPublic": "Über Internet verbinden"
     }
   },
   "serversPage": {
