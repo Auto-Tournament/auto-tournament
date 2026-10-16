@@ -667,16 +667,19 @@ export interface LoadoutRow {
 }
 
 /**
- * Knife and gloves with nothing equipped: the newest one the player owns, on both sides, rather
- * than the stock knife or bare hands. A knife that dropped tonight (drops no longer equip
- * themselves) left its owner with the stock knife (NTLAN, 2026-10-16). `owned` newest first.
+ * A slot with nothing equipped on the platform (any weapon, the knife, the gloves): the newest
+ * skin the player owns for it, on both sides, rather than the stock look. A knife that dropped
+ * tonight (drops no longer equip themselves) left its owner with the stock knife (NTLAN,
+ * 2026-10-16). An equipped skin, on any side, is never replaced. `owned` newest first.
  */
 export function withInventoryFallback(rows: LoadoutRow[], owned: LoadoutRow[]): LoadoutRow[] {
   const out = [...rows];
-  for (const slot of ['knife', 'gloves']) {
-    if (out.some((r) => r.slot === slot)) continue;
-    const newest = owned.find((o) => slotOf(o.weapon) === slot);
-    if (newest) out.push({ ...newest, slot, team: 0 });
+  const filled = new Set(rows.map((r) => r.slot));
+  for (const o of owned) {
+    const slot = slotOf(o.weapon);
+    if (filled.has(slot)) continue;
+    filled.add(slot);
+    out.push({ ...o, slot, team: 0 });
   }
   return out;
 }
@@ -1744,18 +1747,12 @@ export const skinService = {
         WHERE l.player_uid = ?`,
       [uid]
     );
-    const needsFallback =
-      !rows.some((r) => r.slot === 'knife') || !rows.some((r) => r.slot === 'gloves');
-    const owned = needsFallback
-      ? await db.queryAsync<LoadoutRow>(
-          `SELECT weapon, paint_kit, float_value, pattern, stattrak, '' AS slot, 0 AS team
-             FROM cs2_player_skins
-            WHERE player_uid = ? AND (weapon LIKE 'weapon_knife%' OR weapon = 'weapon_bayonet'
-                  OR weapon LIKE '%gloves%' OR weapon LIKE '%handwraps%')
-            ORDER BY created_at DESC, id DESC`,
-          [uid]
-        )
-      : [];
+    const owned = await db.queryAsync<LoadoutRow>(
+      `SELECT weapon, paint_kit, float_value, pattern, stattrak, '' AS slot, 0 AS team
+         FROM cs2_player_skins WHERE player_uid = ?
+        ORDER BY created_at DESC, id DESC`,
+      [uid]
+    );
     return loadoutPayload(withInventoryFallback(rows, owned));
   },
 
