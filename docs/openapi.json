@@ -10928,6 +10928,36 @@
         }
       }
     },
+    "/api/matchmaking/lobbies/{id}/rematch": {
+      "post": {
+        "tags": [
+          "Matchmaking"
+        ],
+        "summary": "Answer \"rematch?\" after the match ended",
+        "description": "Same-site JSON `{ accept: boolean }`, within 2 minutes of the match's end. When every\nplayer said yes, the same teams get a new match at once (`status: ready`, `lobbyId` of\nthe new room). One \"no\" ends it (`declined`).\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`status`: voting, declined or ready (with `lobbyId`)"
+          },
+          "404": {
+            "description": "No such match for the caller"
+          },
+          "409": {
+            "description": "Too late for a rematch, or a player is in another match"
+          }
+        }
+      }
+    },
     "/api/matchmaking/matches/{slug}/commends/{playerId}": {
       "put": {
         "tags": [

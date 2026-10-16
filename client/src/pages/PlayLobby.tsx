@@ -5,9 +5,19 @@
  * match is over: the result, any skin it dropped for you, and Play again.
  */
 import { useCallback, useEffect, useState } from 'react';
-import { Box, Button, CircularProgress, Container, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+} from '@mui/material';
 import { ChatCircleIcon } from '@phosphor-icons/react';
-import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { Panel } from '../components/common/ui';
@@ -23,6 +33,7 @@ import { paths } from '../paths';
 import { fontDisplay, radii, textSize, tokens } from '../theme/tokens';
 import { useTopic } from '../hooks/useTopic';
 import { PlayerChip } from '../components/player/PlayerChip';
+import { matchmakingAction } from '../components/matchmaking/matchmakingStore';
 
 const { color } = tokens;
 
@@ -49,6 +60,16 @@ interface LobbyView {
   inServer?: number;
   total?: number;
   autostartMinutes?: number;
+  /** "Rematch?" after the match: open while it can be agreed; the new room once all said yes. */
+  rematch?: {
+    open: boolean;
+    deadline: number | null;
+    yes: number;
+    total: number;
+    you: 'yes' | 'no' | null;
+    declined: boolean;
+    lobbyId: string | null;
+  };
 }
 
 export default function PlayLobby() {
@@ -98,6 +119,37 @@ export default function PlayLobby() {
   }, [onServerNow, load]);
 
   const onRolled = useCallback(() => setRolled(true), []);
+
+  // Rematch: everyone said yes, so the room moves to the new match's room.
+  const navigate = useNavigate();
+  const rematch = lobby?.rematch ?? null;
+  const nextRoom = rematch?.lobbyId ?? null;
+  useEffect(() => {
+    if (nextRoom && nextRoom !== lobbyId) navigate(paths.playLobby.replace(':lobbyId', nextRoom));
+  }, [nextRoom, lobbyId, navigate]);
+  const [rematchHidden, setRematchHidden] = useState(false);
+  const [rematchBusy, setRematchBusy] = useState(false);
+  const [rematchError, setRematchError] = useState<string | null>(null);
+  const answerRematch = useCallback(
+    async (accept: boolean) => {
+      setRematchBusy(true);
+      setRematchError(null);
+      try {
+        const res = await matchmakingAction<{ status: string; lobbyId?: string }>(
+          'POST',
+          `/lobbies/${encodeURIComponent(lobbyId)}/rematch`,
+          { accept }
+        );
+        if (res.lobbyId) navigate(paths.playLobby.replace(':lobbyId', res.lobbyId));
+        else await load();
+      } catch (err) {
+        setRematchError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setRematchBusy(false);
+      }
+    },
+    [lobbyId, load, navigate]
+  );
 
   if (missing) {
     return (
@@ -403,7 +455,68 @@ export default function PlayLobby() {
           ))}
         </Box>
 
+        {completed && rematch && (rematch.open || rematch.declined) && (
+          <Typography
+            data-testid="mm-rematch-status"
+            sx={{ fontSize: textSize.md, color: color.ink2 }}
+          >
+            {rematch.declined
+              ? t('matchmaking.room.rematch.declined')
+              : rematch.you === 'yes'
+                ? t('matchmaking.room.rematch.waiting', { yes: rematch.yes, total: rematch.total })
+                : null}
+          </Typography>
+        )}
+        <Dialog
+          open={Boolean(completed && rematch?.open && rematch.you === null && !rematchHidden)}
+          onClose={() => setRematchHidden(true)}
+          aria-labelledby="mm-rematch-title"
+          data-testid="mm-rematch-dialog"
+        >
+          <DialogTitle id="mm-rematch-title">{t('matchmaking.room.rematch.title')}</DialogTitle>
+          <DialogContent>
+            <Typography sx={{ color: color.ink2 }}>
+              {t('matchmaking.room.rematch.body', {
+                yes: rematch?.yes ?? 0,
+                total: rematch?.total ?? 0,
+              })}
+            </Typography>
+            {rematchError && (
+              <Typography sx={{ mt: 1.5, color: color.warning }} role="alert">
+                {rematchError}
+              </Typography>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => void answerRematch(false)}
+              disabled={rematchBusy}
+              data-testid="mm-rematch-no"
+            >
+              {t('matchmaking.room.rematch.no')}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => void answerRematch(true)}
+              disabled={rematchBusy}
+              data-testid="mm-rematch-yes"
+            >
+              {t('matchmaking.room.rematch.yes')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
+          {completed && rematch?.open && rematch.you === null && rematchHidden && (
+            <Button
+              variant="outlined"
+              onClick={() => setRematchHidden(false)}
+              sx={{ borderRadius: radii.pill }}
+              data-testid="mm-rematch-open"
+            >
+              {t('matchmaking.room.rematch.button')}
+            </Button>
+          )}
           {completed && (
             <Button
               component={RouterLink}
