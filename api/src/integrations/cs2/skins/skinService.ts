@@ -1106,12 +1106,19 @@ export const skinService = {
    * An admin's drop: a choice of three for each player, queued behind any they
    * have not opened yet. Returns how many were given.
    */
-  async adminDrop(uids: string[], label: string | null): Promise<number> {
+  /** `rarity`: all three options of that rarity (the catalogue's own tiers); else the drop odds. */
+  async adminDrop(
+    uids: string[],
+    label: string | null,
+    rarity: Rarity | null = null
+  ): Promise<number> {
     const config = await this.config();
     if (!config.enabled) throw new SkinError(404, 'Skins are off.');
     let given = 0;
     for (const uid of uids) {
-      const options = await this.pickOptions(() => this.pick(null, config.rarityWeights));
+      const options = await this.pickOptions(() =>
+        rarity ? this.pick(rarity) : this.pick(null, config.rarityWeights)
+      );
       if (!options.length) continue;
       await this.offerChoice(uid, options, { source: 'admin', label: label ?? undefined });
       given += 1;
@@ -1907,6 +1914,36 @@ export const skinService = {
   },
 
   /** Admin: take a skin away (it leaves the loadout and the showcase with it). */
+  /**
+   * Empty a player's skins: every skin, what is equipped, the showcase, open
+   * choices and the skin notices in the bell. Returns what was removed.
+   */
+  async adminClearInventory(
+    playerUid: string,
+    playerId: string
+  ): Promise<{ skins: number; choices: number; notices: number }> {
+    await db.runAsync('DELETE FROM cs2_player_loadout WHERE player_uid = ?', [playerUid]);
+    await db.runAsync('DELETE FROM cs2_player_skin_showcase WHERE player_uid = ?', [playerUid]);
+    const choices = await db.runAsync(
+      'DELETE FROM cs2_skin_choices WHERE player_uid = ? AND chosen_at IS NULL',
+      [playerUid]
+    );
+    const skins = await db.runAsync('DELETE FROM cs2_player_skins WHERE player_uid = ?', [
+      playerUid,
+    ]);
+    const notices = await db.runAsync(
+      "DELETE FROM notifications WHERE player_id = ? AND kind = 'skin'",
+      [playerId]
+    );
+    emitSkinsChanged(playerId);
+    emitSocialChanged([playerId]);
+    return {
+      skins: skins?.changes ?? 0,
+      choices: choices?.changes ?? 0,
+      notices: notices?.changes ?? 0,
+    };
+  },
+
   async adminRemove(skinId: number): Promise<void> {
     const row = await db.queryOneAsync<{ id: number }>(
       'SELECT id FROM cs2_player_skins WHERE id = ?',

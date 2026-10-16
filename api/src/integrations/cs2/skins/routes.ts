@@ -893,6 +893,10 @@ router.post('/admin/players/:steamId/skins', requireAuth, async (req, res) => {
  *                   id: { type: string, description: 'Steam ID, team id, match slug or tournament id' }
  *               preview: { type: boolean }
  *               label: { type: string, description: 'Shown on the drop, e.g. "From the admins"' }
+ *               rarity:
+ *                 type: string
+ *                 enum: [common, uncommon, rare, mythical, legendary, ancient, immortal]
+ *                 description: All three options of this rarity (the catalogue's tiers); without it, the drop odds.
  *     responses:
  *       200: { description: 'Who gets one (preview), or how many were given' }
  *       400: { description: Not a target }
@@ -903,7 +907,16 @@ router.post('/admin/drops', requireAuth, async (req, res) => {
       target?: { kind?: string; id?: unknown };
       preview?: boolean;
       label?: unknown;
+      rarity?: unknown;
     };
+    const rarity =
+      typeof body.rarity === 'string' && RARITIES.includes(body.rarity as Rarity)
+        ? (body.rarity as Rarity)
+        : null;
+    if (body.rarity !== undefined && body.rarity !== null && !rarity)
+      return res
+        .status(400)
+        .json({ success: false, error: `rarity is one of ${RARITIES.join(', ')}.` });
     const kind = body.target?.kind;
     const id = typeof body.target?.id === 'string' ? body.target.id.trim() : '';
     let target: DropTarget;
@@ -923,7 +936,8 @@ router.post('/admin/drops', requireAuth, async (req, res) => {
       typeof body.label === 'string' && body.label.trim() ? body.label.trim().slice(0, 80) : null;
     const given = await skinService.adminDrop(
       players.map((p) => p.uid),
-      label
+      label,
+      rarity
     );
     return res.json({ success: true, given });
   } catch (error) {
@@ -953,6 +967,34 @@ router.delete('/admin/skins/:id', requireAuth, async (req, res) => {
     return res.json({ success: true });
   } catch (error) {
     return fail(res, error, 'Removing a skin');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/admin/players/{steamId}/inventory:
+ *   delete:
+ *     tags: [Skins]
+ *     summary: Empty a player's skins
+ *     description: Every skin, the loadout, the showcase, open choices and skin notices.
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: path, name: steamId, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: 'What was removed: skins, choices, notices' }
+ *       404: { description: No such player }
+ */
+router.delete('/admin/players/:steamId/inventory', requireAuth, async (req, res) => {
+  try {
+    const player = await db.queryOneAsync<{ id: string; uid: string }>(
+      'SELECT id, uid FROM players WHERE id = ?',
+      [String(req.params.steamId)]
+    );
+    if (!player) return res.status(404).json({ success: false, error: 'No such player.' });
+    const removed = await skinService.adminClearInventory(player.uid, player.id);
+    return res.json({ success: true, ...removed });
+  } catch (error) {
+    return fail(res, error, "Emptying a player's skins");
   }
 });
 
