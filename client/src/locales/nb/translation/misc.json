@@ -22,13 +22,13 @@
       "requiresSteamId": "Krever Steam ID64"
     },
     "teamMatch": {
-      "title": "Lag-kampside (offentlig)",
-      "description": "Kun-visning av et lags nåværende eller siste kamp.",
-      "openExample": "Åpne eksempel-lag"
+      "title": "Kampside for lag (offentlig)",
+      "description": "Bare visning av et lags nåværende eller siste kamp.",
+      "openExample": "Åpne eksempellag"
     },
     "tournamentLeaderboard": {
       "title": "Turneringstoppliste (offentlig)",
-      "description": "Offentlig resultat-/plasseringstabell for gjeldende turnering (standard er turnering 1).",
+      "description": "Offentlig resultattabell for gjeldende turnering (standard er turnering 1).",
       "open": "Åpne toppliste"
     }
   },
@@ -78,7 +78,7 @@
   "account": {
     "email": {
       "title": "E-post",
-      "description": "For å komme inn på kontoen igjen hvis du glemmer passordet, og, hvis du vil, e-post når en turnering åpner påmeldingen.",
+      "description": "For å komme inn på kontoen igjen hvis du glemmer passordet, og eventuelt for å få e-post når en turnering åpner påmeldingen.",
       "address": "E-postadresse",
       "sendLink": "Send bekreftelse",
       "cancel": "Avbryt",
@@ -102,7 +102,7 @@
     "title": "Tilkoblinger",
     "subtitle": "Én konto for alle turneringer på denne siden.",
     "loadFailed": "Kunne ikke laste kontoen din.",
-    "impersonating": "Du ser denne siden mens du etterligner en spiller. Den viser din egen konto; slutt å etterligne for å endre den.",
+    "impersonating": "Du ser denne siden mens du etterligner en spiller. Den viser kontoen din, ikke spillerens. Slutt å etterligne for å endre den.",
     "rail": {
       "label": "Konto",
       "profile": "Profil",
@@ -175,8 +175,8 @@
       "failed": "Kunne ikke slå sammen kontoene"
     },
     "twoStep": {
-      "turnOn": "Slå på totrinns",
-      "turnOff": "Slå av totrinns",
+      "turnOn": "Slå på totrinnsbekreftelse",
+      "turnOff": "Slå av totrinnsbekreftelse",
       "isOn": "Totrinnsbekreftelse på",
       "isOff": "Totrinnsbekreftelse av",
       "onTitle": "Slå på totrinnsbekreftelse",
@@ -330,7 +330,7 @@
       "status": {
         "all": "Alle statuser",
         "live": "Live",
-        "registration_open": "Registrering åpen",
+        "registration_open": "Påmelding åpen",
         "finished": "Fullført"
       },
       "where": {
@@ -417,8 +417,8 @@
     },
     "packs": {
       "title": "Spillpakker",
-      "hint": "En pakke er en fil som beskriver ett spill — et navn, en flis og hvordan resultatet rapporteres. Den inneholder ingen kode og kjører på en modul over.",
-      "empty": "Ingen pakker enda. Importer en for å legge til et spill instansen ikke kom med.",
+      "hint": "En pakke er en fil som beskriver ett spill: et navn, en flis og hvordan resultatet rapporteres. Den inneholder ingen kode og kjører på en modul over.",
+      "empty": "Ingen pakker ennå. Importer en for å legge til et spill instansen ikke kom med.",
       "runBy": "Kjøres av {{engine}}",
       "bundled": "Fulgte med Auto Tournament"
     },
@@ -430,7 +430,7 @@
       "notJson": "Den filen er ikke JSON, så den er ikke en pakke",
       "tooLarge": "Den filen er for stor til å være en pakke",
       "noJson": "Velg pakkens .json-fil",
-      "missingIcon": "Denne pakken bruker {{file}} — velg den filen også, eller importer JSON-en alene uten flis"
+      "missingIcon": "Denne pakken bruker {{file}}. Velg den filen også, eller importer JSON-en alene uten flis"
     },
     "confirmRemove": {
       "title": "Fjerne {{name}}?",
@@ -443,9 +443,9 @@
       "add": "Legg til",
       "update": "Oppdater",
       "installed": "Installert",
-      "empty": "Listen har ingen spill denne instansen kan legge til enda.",
+      "empty": "Listen har ingen spill denne instansen kan legge til ennå.",
       "offline": "listen kunne ikke nås",
-      "staleWith": "Viser den siste listen instansen så — {{reason}}.",
+      "staleWith": "Viser den siste listen instansen så ({{reason}}).",
       "failed": "Kunne ikke lese listen"
     },
     "pending": "Laster spillmodulen for {{game}} …",
@@ -480,7 +480,7 @@
       "confirm": {
         "title": "Aktivere {{name}}?",
         "warningTitle": "Dette er en kodemodul.",
-        "warning": "Den kjører inne i Auto Tournaments server med full tilgang til databasen, filene og hemmelighetene dine, og i nettleseren til hver admin og spiller som åpner en side den tegner, med deres tillatelser. Auto Tournament gjennomgår ikke kodemoduler og kjører dem ikke i sandkasse. Aktiver den bare hvis du stoler like mye på forfatteren som på denne plattformen.",
+        "warning": "Den kjører inne i Auto Tournaments server med full tilgang til databasen, filene og hemmelighetene dine, og i nettleseren til hver admin og spiller som åpner en side den tegner, med tillatelsene deres. Auto Tournament gjennomgår ikke kodemoduler og kjører dem ikke i sandkasse. Aktiver den bare hvis du stoler like mye på forfatteren som på denne plattformen.",
         "source": "Kom fra",
         "onDisk": "Denne serverens disk",
         "version": "Versjon",
@@ -513,13 +513,13 @@
   },
   "catalog": {
     "title": "Spill",
-    "hint": "Alle spillene denne instansen kjører, og de du kan legge til. Spillpakker er data; kodemoduler er signert av Auto Tournament. Begge installeres med ett klikk, og de som er merket «I dette imaget» trenger ikke nett.",
+    "hint": "Alle spillene denne instansen kjører, og de du kan legge til. Spillpakker er data, mens kodemoduler er signert av Auto Tournament. Begge installeres med ett klikk, og de som er merket «I dette imaget», trenger ikke nett.",
     "search": "Søk etter spill",
     "installedTitle": "Installert ({{count}})",
     "availableTitle": "Tilgjengelig ({{count}})",
     "empty": "Ingen spill passer.",
     "allInstalled": "Alt i katalogen er installert.",
-    "noneInstalled": "Ingen spill er installert ennå. Installer dem du vil kjøre turneringer for — spillerne velger blant disse.",
+    "noneInstalled": "Ingen spill er installert ennå. Installer dem du vil kjøre turneringer for. Spillerne velger blant disse.",
     "loadFailed": "Kunne ikke lese spillkatalogen: {{reason}}",
     "loadFailedFallback": "serveren svarte ikke",
     "retry": "Prøv igjen",
@@ -603,7 +603,7 @@
     },
     "confirmUninstall": {
       "title": "Avinstallere {{name}}?",
-      "body": "Filene fjernes. Dataene — turneringer, servere, innstillinger — beholdes, og installerer du den igjen, er alt tilbake.",
+      "body": "Filene fjernes. Dataene (turneringer, servere, innstillinger) beholdes, og installerer du den igjen, er alt tilbake.",
       "packBody": "Spillet forsvinner fra oppsettveiviseren. Ingenting annet slettes, og installerer du det igjen, er det tilbake."
     },
     "welcome": {
@@ -633,7 +633,7 @@
       },
       "inQueue_one": "{{count}} i køen",
       "inQueue_other": "{{count}} i køen",
-      "partyTitle": "Gruppa di",
+      "partyTitle": "Gruppen din",
       "invite": "Inviter",
       "partyOf": "{{count}} av {{max}}",
       "you": "Du",
@@ -670,8 +670,8 @@
       "aboutWait_other": "rundt {{count}} min",
       "defaultPool": {
         "5v5": "Active Duty",
-        "2v2": "Wingman-kart",
-        "1v1": "Wingman-kart"
+        "2v2": "Wingman-maps",
+        "1v1": "Wingman-maps"
       },
       "searchAnyone": "Få spillere søker: du blir satt opp mot hvem som helst ({{count}} søker, {{total}} trengs)",
       "searchRating": "Finner en jevn kamp for ratingen din (±{{elo}}) · {{count}} søker",
@@ -729,13 +729,13 @@
         "completed": "Kampen er ferdig.",
         "other": "Kamp: {{status}}"
       },
-      "pickedBy": "{{mode}} · kartlotteriet valgte",
+      "pickedBy": "{{mode}} · maplotteriet valgte",
       "vs": "mot",
       "you": "(deg)",
       "accepted": "godtatt",
       "matchChat": "Kampchat",
       "playAgain": "Spill igjen",
-      "fullScoreboard": "Hele resultattavlen",
+      "fullScoreboard": "Hele scoreboardet",
       "newSkin": "Ny skin",
       "inventory": "Inventar",
       "victory": "Seier",
@@ -756,7 +756,7 @@
     },
     "result": {
       "title": "Resultat",
-      "map": "Kart {{n}}",
+      "map": "Map {{n}}",
       "rating": "Rating",
       "xp": "+{{xp}} XP · nivå {{level}}",
       "levelProgress": "{{into}} av {{next}} XP til neste nivå",
@@ -772,8 +772,8 @@
       "commend": "Vurder",
       "thumbsUp": "Tommel opp",
       "thumbsDown": "Tommel ned",
-      "thumbsUpFor": "Tommel opp til {{name}}",
-      "thumbsDownFor": "Tommel ned til {{name}}",
+      "thumbsUpFor": "Tommel opp for {{name}}",
+      "thumbsDownFor": "Tommel ned for {{name}}",
       "downReason": "Hvorfor?",
       "downTag": {
         "toxic": "Giftig",
@@ -790,8 +790,8 @@
       "minutes_one": "{{count}} min",
       "minutes_other": "{{count}} min",
       "yourGame": "Ditt spill",
-      "fullBoard": "Hele resultattavlen",
-      "hideBoard": "Skjul resultattavlen"
+      "fullBoard": "Hele scoreboardet",
+      "hideBoard": "Skjul scoreboardet"
     },
     "profile": {
       "level": "Nivå {{level}}",
@@ -805,8 +805,8 @@
         "team_player": "Lagspiller",
         "leader": "Leder",
         "good_comms": "God kommunikasjon",
-        "teacher": "Teacher",
-        "good_sport": "Good sport"
+        "teacher": "Lærer",
+        "good_sport": "God taper"
       },
       "history": "Matchmaking-kamper",
       "historyEmpty": "Ingen matchmaking-kamper ennå.",
@@ -844,8 +844,8 @@
       "voters_other": "{{count}} stemmer"
     },
     "roulette": {
-      "rolling": "Velger kart …",
-      "picked": "Kart: {{map}}"
+      "rolling": "Velger map …",
+      "picked": "Map: {{map}}"
     }
   },
   "chat": {
@@ -891,15 +891,15 @@
       "serverReady": "Serveren er klar · {{map}} · bli med fra kampsiden",
       "playerJoined": "{{name}} kom inn på serveren · {{n}} inne",
       "playerLeft": "{{name}} forlot serveren · {{n}} inne",
-      "mapLive": "Kart {{n}} er i gang · {{map}}",
-      "mapResult": "Kart {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "mapLive": "Map {{n}} er i gang · {{map}}",
+      "mapResult": "Map {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
       "seriesWon": "{{team}} vinner serien {{a}}–{{b}}",
       "adminCalled": "{{name}} tilkalte en admin",
       "timedOut": "tiden gikk ut",
       "remindAccount": "{{name}}: logg inn med Steam én gang så du kan spille i {{tournament}}.",
       "remindGame": "{{name}}: legg til spillet på profilen din (Spill du spiller) før innsjekk til {{tournament}}.",
       "serverDown": "Kampserveren krasjet. Vi henter den tilbake …",
-      "serverBack": "Kampen er tilbake: kart {{map}}, runde {{round}}. Koble til på nytt."
+      "serverBack": "Kampen er tilbake: {{map}}, runde {{round}}. Koble til på nytt."
     },
     "party": {
       "inviteCopied": "Invitasjonslenke kopiert",
@@ -951,7 +951,7 @@
       "tournaments": "Turneringer",
       "matches": "Kamper",
       "highlights": "Høydepunkter",
-      "maps": "Kart",
+      "maps": "Maps",
       "servers": "Servere og maskiner",
       "recorders": "Opptakere"
     },
@@ -973,7 +973,7 @@
       "ratings": "Rangering",
       "modules": "Moduler",
       "servers": "Servere",
-      "maps": "Kart og kartsett",
+      "maps": "Maps og mappooler",
       "skins": "Skins",
       "matchRules": "Kampregler",
       "highlights": "Høydepunkter",
@@ -993,17 +993,17 @@
   },
   "highlightsPage": {
     "title": "Høydepunkter",
-    "subtitle": "Klipp og høydepunktsfilmer fra hver kamp: hva opptakerne lager, musikken under filmene, og hvert spills opptakere.",
+    "subtitle": "Klipp og høydepunkt-filmer fra hver kamp: hva opptakerne lager, musikken under filmene og opptakerne til hvert spill.",
     "tabs": {
       "settings": "Innstillinger"
     },
     "watermark": {
-      "label": "Auto Tournament-logo på høydepunktvideoene",
+      "label": "Auto Tournament-logo på høydepunkt-videoene",
       "description": "Vises svakt nede til høyre. Det hjelper oss mye om du lar den stå på."
     },
     "perPlayer": {
-      "label": "Klipp per spiller per kart",
-      "helper": "1 til 6. Flere klipp gjør at høydepunktene fra en kamp tar lengre tid å lage."
+      "label": "Klipp per spiller per map",
+      "helper": "1 til 6. Flere klipp gjør at highlightene fra en kamp tar lengre tid å lage."
     },
     "resolution": {
       "label": "Oppløsning"
@@ -1013,64 +1013,64 @@
       "option": "{{fps}} fps"
     },
     "quality": {
-      "helper": "Mindre og færre bilder tar opp raskere: 720p i 30 fps tar omtrent halvparten så lang tid som 1440p i 120 fps. Klipp som alt er laget, beholder størrelsen sin."
+      "helper": "Mindre og færre bilder tar opp raskere: 720p i 30 fps tar omtrent halvparten så lang tid som 1440p i 120 fps. Klipp som allerede er laget, beholder størrelsen sin."
     },
     "music": {
-      "label": "Music under reels",
-      "all": "Every track ({{count}})",
-      "pick": "Only the ones I pick",
-      "off": "No music",
-      "listen": "Listen to {{title}}",
-      "stop": "Stop {{title}}",
+      "label": "Musikk under reels",
+      "all": "Alle låtene ({{count}})",
+      "pick": "Bare de jeg velger",
+      "off": "Ingen musikk",
+      "listen": "Spill av {{title}}",
+      "stop": "Stopp {{title}}",
       "contentId": "YouTube Content ID",
-      "volume": "Volume",
-      "byo": "Bring your own music: add tracks you have the rights to use. Auto Tournament ships none. The player plays a different one beside each reel, and downloads come with or without it.",
-      "remove": "Remove {{title}}",
-      "removeConfirm": "Remove",
-      "keep": "Keep",
-      "addTitle": "Add a track",
-      "chooseFile": "Choose a file",
-      "noFile": "No file chosen (MP3, M4A, WAV…)",
-      "trackTitle": "Title",
+      "volume": "Lydstyrke",
+      "byo": "Ta med din egen musikk: legg til låter du har rett til å bruke. Auto Tournament leverer ingen. Spilleren spiller en annen låt ved siden av hver reel, og nedlastinger kommer med eller uten musikk.",
+      "remove": "Fjern {{title}}",
+      "removeConfirm": "Fjern",
+      "keep": "Behold",
+      "addTitle": "Legg til en låt",
+      "chooseFile": "Velg en fil",
+      "noFile": "Ingen fil valgt (MP3, M4A, WAV …)",
+      "trackTitle": "Tittel",
       "artist": "Artist",
-      "genre": "Genre (groups the menu)",
-      "source": "Where it is from (a link, for credit)",
-      "contentIdLabel": "Registered with YouTube Content ID (an upload with it can get a claim)",
-      "add": "Add the track",
-      "adding": "Adding…",
-      "rights": "Only add music you have the rights to use in videos. Its loudness is evened out with the other tracks.",
-      "suggestions_one": "{{count}} track that fits reels, on Pixabay",
-      "suggestions_other": "{{count}} tracks that fit reels, on Pixabay",
-      "suggestionsHelp": "Open one, download it from Pixabay under its license, and add it here. The license lets you use it in videos; it does not let anyone pass the file on.",
-      "link": "Or a link to the audio file",
-      "addLink": "Add from the link"
+      "genre": "Sjanger (grupperer menyen)",
+      "source": "Hvor den kommer fra (en lenke, for kreditering)",
+      "contentIdLabel": "Registrert hos YouTube Content ID (en opplasting med den kan få krav mot seg)",
+      "add": "Legg til låten",
+      "adding": "Legger til …",
+      "rights": "Legg bare til musikk du har rett til å bruke i videoer. Lydstyrken jevnes ut mot de andre låtene.",
+      "suggestions_one": "{{count}} låt som passer til reels, på Pixabay",
+      "suggestions_other": "{{count}} låter som passer til reels, på Pixabay",
+      "suggestionsHelp": "Åpne en, last den ned fra Pixabay under lisensen den har, og legg den til her. Lisensen lar deg bruke den i videoer, men ikke gi filen videre til andre.",
+      "link": "Eller en lenke til lydfilen",
+      "addLink": "Legg til fra lenken"
     },
     "overlay": {
-      "label": "Overlays",
-      "helper_one": "{{count}} clip has a clean copy. Redraw puts the current caption card, kill feed and names on it again, then makes the reels again. No CS2 needed.",
-      "helper_other": "{{count}} clips have a clean copy. Redraw puts the current caption card, kill feed and names on them again, then makes the reels again. No CS2 needed.",
-      "redraw": "Redraw overlays",
-      "pending_one": "{{count}} video waiting for a recorder",
-      "pending_other": "{{count}} videos waiting for a recorder",
-      "failed_one": "{{count}} video could not be redrawn",
-      "failed_other": "{{count}} videos could not be redrawn",
-      "keepClean": "Keep clean copies of clips",
-      "keepCleanHelper": "Each clip is also stored as recorded, without the card or kill feed. Reels are then made from the clean clips with an overlay of their own, and overlays can be redrawn. Off uses about half the storage.",
-      "redrawFailed": "Could not queue the redraw."
+      "label": "Overlegg",
+      "helper_one": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende tekstkortet, killfeeden og navnene på den igjen og lager så reelene på nytt. Krever ikke CS2.",
+      "helper_other": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende tekstkortet, killfeeden og navnene på dem igjen og lager så reelene på nytt. Krever ikke CS2.",
+      "redraw": "Tegn overleggene på nytt",
+      "pending_one": "{{count}} video venter på en opptaker",
+      "pending_other": "{{count}} videoer venter på en opptaker",
+      "failed_one": "{{count}} video kunne ikke tegnes på nytt",
+      "failed_other": "{{count}} videoer kunne ikke tegnes på nytt",
+      "keepClean": "Behold rene kopier av klipp",
+      "keepCleanHelper": "Hver klipp lagres også slik den ble tatt opp, uten kort eller killfeed. Reels lages da av de rene clipsene med et eget overlegg, og overleggene kan tegnes på nytt. Er dette av, brukes omtrent halvparten av lagringsplassen.",
+      "redrawFailed": "Kunne ikke sette den nye tegningen i kø."
     },
-    "moved": "Highlight settings, the recorders and how to add one are on their own page now:",
+    "moved": "Innstillingene for høydepunkter, opptakerne og hvordan du legger til en, ligger på en egen side nå:",
     "saved": "Lagret",
     "saveFailed": "Kunne ikke lagre",
     "reels": {
       "title": "Størrelse på reels",
       "description": "Hvor mange klipp hver reel får. Flere klipp gir lengre reels som tar lengre tid å lage.",
-      "funnyPerPlayer": "Morsomme klipp per spiller per kart",
-      "mapReelPerPlayer": "Klipp per spiller i en kart-reel",
+      "funnyPerPlayer": "Morsomme klipp per spiller per map",
+      "mapReelPerPlayer": "Klipp per spiller i en map-reel",
       "seriesReelMax": "Klipp i en serie-reel",
       "seriesReelPerPlayer": "Klipp per spiller i en serie-reel",
       "teamReelPerPlayer": "Klipp per spiller i en lag-reel",
-      "tournamentReelMax": "Klipp i en turnerings-reel",
-      "tournamentReelPerPlayer": "Klipp per spiller i en turnerings-reel",
+      "tournamentReelMax": "Klipp i en turneringsreel",
+      "tournamentReelPerPlayer": "Klipp per spiller i en turneringsreel",
       "range": "{{min}} til {{max}}"
     }
   },
@@ -1082,20 +1082,20 @@
     "openModules": "Moduler"
   },
   "licenseGate": {
-    "expiredTitle": "This platform's license has expired",
-    "expiredAdmin": "The license payment is overdue, so the platform has stopped. Paying turns it back on right away. Your data is safe.",
-    "expiredPlayer": "Matches and sign-ups are paused. The organizer has been told. Check back later.",
-    "pay": "Pay in the console ↗",
-    "settings": "License settings",
-    "fix": "Fix it ↗",
-    "pastDue": "The license payment failed. The platform stops on {{date}} unless it is paid.",
-    "elsewhereTitle": "This license key is in use on another install",
-    "elsewhereAdmin": "One license key works on one Auto Tournament install, and another install has this one. Paste this install's own key, or use \"Move to another install\" in the console. Your data is safe.",
-    "replacedTitle": "This license key was replaced",
-    "replacedAdmin": "A new key was made for this license in the console, so the old one has stopped. Paste the new key in the license settings. Your data is safe.",
-    "openConsole": "Open the console ↗",
-    "pasteKey": "Paste the new key",
-    "replacedSoon": "A new key was made for this license in the console. Paste it in the license settings: this key stops on {{date}}."
+    "expiredTitle": "Lisensen til denne plattformen har utløpt",
+    "expiredAdmin": "Lisensbetalingen er forfalt, så plattformen har stoppet. Så snart du betaler, slås den på igjen. Dataene dine er trygge.",
+    "expiredPlayer": "Kamper og påmeldinger er satt på pause. Arrangøren er varslet. Prøv igjen senere.",
+    "pay": "Betal i konsollen ↗",
+    "settings": "Lisensinnstillinger",
+    "fix": "Rett opp ↗",
+    "pastDue": "Lisensbetalingen feilet. Plattformen stopper {{date}} hvis den ikke blir betalt.",
+    "elsewhereTitle": "Denne lisensnøkkelen brukes på en annen installasjon",
+    "elsewhereAdmin": "Én lisensnøkkel fungerer på én Auto Tournament-installasjon, og en annen installasjon har denne. Lim inn nøkkelen til denne installasjonen, eller bruk «Flytt til en annen installasjon» i konsollen. Dataene dine er trygge.",
+    "replacedTitle": "Denne lisensnøkkelen er byttet ut",
+    "replacedAdmin": "Det ble laget en ny nøkkel for denne lisensen i konsollen, så den gamle har sluttet å virke. Lim inn den nye nøkkelen i lisensinnstillingene. Dataene dine er trygge.",
+    "openConsole": "Åpne konsollen ↗",
+    "pasteKey": "Lim inn den nye nøkkelen",
+    "replacedSoon": "Det ble laget en ny nøkkel for denne lisensen i konsollen. Lim den inn i lisensinnstillingene: denne nøkkelen slutter å virke {{date}}."
   },
   "matchAdmin": {
     "openChat": "Åpne chat",

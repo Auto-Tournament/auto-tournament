@@ -1,6 +1,6 @@
 {
   "devToolsPage": {
-    "alert": "Disse verktøyene er bare tilgjengelige i utviklingsmodus. Bruk dem til å raskt generere testdata for å teste applikasjonen.",
+    "alert": "Disse verktøyene er bare tilgjengelige i utviklingsmodus. Bruk dem til raskt å lage testdata for å teste appen.",
     "sections": {
       "testData": {
         "title": "Lag testdata"
@@ -8,7 +8,7 @@
     },
     "testTeams": {
       "title": "Testlag",
-      "description": "Opprett lag med tilfeldige spillerdata for å teste turneringsbraketter og kamper.",
+      "description": "Opprett lag med tilfeldige spillerdata for å teste turneringsbracketer og kamper.",
       "success": "Opprettet {{count}} testlag!",
       "errors": {
         "create": "Kunne ikke opprette testlag",
@@ -37,7 +37,7 @@
     },
     "testServers": {
       "title": "Testservere",
-      "description": "Opprett testservere å prøve kamphåndtering mot.",
+      "description": "Opprett testservere du kan prøve kamphåndtering mot.",
       "success": "Opprettet {{count}} testserver(e)!",
       "errors": {
         "create": "Kunne ikke opprette testservere",
@@ -55,7 +55,7 @@
     },
     "deleteTestData": {
       "title": "Slett testdata",
-      "description": "Slett all testdata (lag og servere med 'test-' prefiks). Denne handlingen kan ikke angres.",
+      "description": "Slett all testdata (lag og servere med prefikset «test-»). Denne handlingen kan ikke angres.",
       "button": "Slett all testdata",
       "confirmPrompt": "Er du sikker på at du vil slette ALL testdata?",
       "success": "All testdata ble slettet!",
@@ -82,16 +82,16 @@
         "shufflePlayers": "Tøm shuffle-spillere"
       },
       "maps": {
-        "title": "Kart og maler",
-        "maps": "Tøm kart",
-        "mapPools": "Tøm kartpooler",
+        "title": "Maps og maler",
+        "maps": "Tøm map",
+        "mapPools": "Tøm mappooler",
         "tournamentTemplates": "Tøm turneringsmaler",
         "eloTemplates": "Tøm ratingmaler"
       },
       "matchEvents": {
-        "title": "Kamp-hendelser og resultater",
-        "events": "Tøm kamp-hendelser",
-        "mapResults": "Tøm kartresultater"
+        "title": "Kamphendelser og resultater",
+        "events": "Tøm kamphendelser",
+        "mapResults": "Tøm mapresultater"
       },
       "settings": {
         "title": "Innstillinger",
@@ -100,26 +100,26 @@
     },
     "simulation": {
       "title": "Simuleringsstatus",
-      "description": "Slett alle kamper og historiske statistikker slik at du kan klikke \"Start turnering\" i simuleringsmodus på en ren brakett, samtidig som servere, lag, kart og gjeldende turneringsoppsett beholdes.",
-      "button": "Tilbakestill simuleringsstatus (behold konfig)",
+      "description": "Slett alle kamper og historisk statistikk, slik at du kan klikke «Start turnering» i simuleringsmodus på en ren bracket, samtidig som servere, lag, maps og gjeldende turneringsoppsett beholdes.",
+      "button": "Tilbakestill simuleringsstatus (behold oppsett)",
       "reset": {
-        "success": "Simuleringsstatus tilbakestilt. Kamper og statistikk slettet; servere, lag og turneringsoppsett beholdt.",
+        "success": "Simuleringsstatus tilbakestilt. Kamper og statistikk er slettet, og servere, lag og turneringsoppsett er beholdt.",
         "error": "Kunne ikke tilbakestille simuleringsstatus"
       }
     },
     "wipeDatabase": {
       "title": "Slett hele databasen",
       "warningTitle": "EKSTREMT DESTRUKTIVT!",
-      "warningBody": "Dette vil slette ALLE data.",
-      "permanentlyDeletes": "Sletter permanent:",
+      "warningBody": "Dette sletter ALLE data.",
+      "permanentlyDeletes": "Sletter for godt:",
       "items": {
-        "tournaments": "Alle turneringer og braketter",
+        "tournaments": "Alle turneringer og bracketer",
         "matches": "Alle kamper og hendelser",
         "teams": "Alle lag og spillere",
         "servers": "Alle serverkonfigurasjoner"
       },
       "button": "Slett hele databasen",
-      "successRedirect": "Databasen ble slettet! Omdirigerer...",
+      "successRedirect": "Databasen ble slettet! Sender deg videre...",
       "error": "Kunne ikke slette databasen",
       "dialog": {
         "title": "Bekreft sletting av database",
@@ -127,7 +127,7 @@
         "actionWill": "Denne handlingen vil",
         "permanentlyDelete": "slette permanent",
         "items": {
-          "tournaments": "Alle turneringsdata og braketter",
+          "tournaments": "Alle turneringsdata og bracketer",
           "matches": "All kamphistorikk og hendelser",
           "teams": "Alle lag og spillerkonfigurasjoner",
           "servers": "Alle serverkonfigurasjoner"

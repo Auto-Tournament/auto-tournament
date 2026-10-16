@@ -70,12 +70,12 @@
       "matches": "Kamper"
     },
     "chip": {
-      "none": "No result yet",
-      "yours": "Your report",
-      "reported": "Reported",
-      "confirm": "Confirm it",
-      "disputed": "Disputed",
-      "final": "Final"
+      "none": "Ikke noe resultat ennå",
+      "yours": "Innmeldingen din",
+      "reported": "Meldt inn",
+      "confirm": "Godkjenn den",
+      "disputed": "Bestridt",
+      "final": "Endelig"
     }
   }
 }
