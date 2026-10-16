@@ -666,7 +666,7 @@ server.registerTool(
   {
     title: 'Give a drop (a choice of three)',
     description:
-      'Give a drop, a choice of three skins, to a player (Steam ID), everyone online, a team (id), a match (slug) or a tournament (id). rarity makes all three options that rarity (immortal is the rarest: top knives and gloves); without it, the drop odds. preview=true only names who would get one.',
+      'Give a drop, a choice of three skins, to a player (Steam ID), everyone online, a team (id), a match (slug) or a tournament (id). rarity makes all three options that rarity; without it, the drop odds. ancient is the rarest tier with real choice (covert guns and the priciest knives and gloves); immortal is a single skin (M4A4 | Howl), so it offers just that one. preview=true only names who would get one.',
     inputSchema: {
       kind: z.enum(['player', 'online', 'team', 'match', 'tournament']),
       id: z.string().optional(),
