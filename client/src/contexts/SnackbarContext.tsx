@@ -292,7 +292,8 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
             top: 'calc(84px + env(safe-area-inset-top, 0px)) !important',
             bottom: 'auto !important',
             // In line with the navbar's right edge, not the screen's (a 4K screen is wide).
-            right: `${siteEdgeRight} !important`,
+            // Left of the chat window while it is open (ChatDock sets --chat-dock-width).
+            right: `max(${siteEdgeRight}, var(--chat-dock-width, 0px)) !important`,
             // Newest on top.
             flexDirection: 'column-reverse !important',
           },
