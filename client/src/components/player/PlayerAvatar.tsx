@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Box, Skeleton, type BoxProps } from '@mui/material';
 import { tokens } from '../../theme/tokens';
+import { AvatarPresence } from '../social/PresenceDot';
 
 const { color } = tokens;
 
@@ -30,12 +31,15 @@ export interface PlayerAvatarProps {
   isLoading?: boolean;
   /** Ignored: admins show by their name's colour. */
   isAdmin?: boolean;
+  /** The online / away / offline dot on the corner (needs `id`). On by default. */
+  presence?: boolean;
 }
 
 /**
  * The one player picture: their own, else the generated one for their id,
  * else their initials (also when the picture fails to load). Every player
- * everywhere uses this; no MUI <Avatar> for a player.
+ * everywhere uses this; no MUI <Avatar> for a player. With an `id`, a dot on
+ * the bottom-right says whether they are online, away or offline.
  */
 export function PlayerAvatar({
   name,
@@ -46,6 +50,7 @@ export function PlayerAvatar({
   sx,
   label = false,
   isLoading = false,
+  presence = true,
 }: PlayerAvatarProps) {
   const [broken, setBroken] = useState<string | null>(null);
   if (isLoading) {
@@ -61,19 +66,17 @@ export function PlayerAvatar({
   const own = (avatarUrl ?? avatar ?? '').trim();
   const generated = id && id.trim() ? `/api/players/${id}/avatar.svg` : '';
   const src = [own, generated].find((u) => u && u !== broken) ?? '';
+  const playerId = id?.trim() || null;
   return (
     <Box
       component="span"
-      title={name}
-      {...(label ? { role: 'img', 'aria-label': name } : { 'aria-hidden': true })}
       sx={{
         width: size,
         height: size,
         borderRadius: '50%',
         flex: 'none',
-        overflow: 'hidden',
+        position: 'relative',
         display: 'inline-grid',
-        placeItems: 'center',
         bgcolor: color.rule,
         color: color.ink2,
         fontSize: size >= 40 ? '0.8125rem' : '0.6875rem',
@@ -81,17 +84,34 @@ export function PlayerAvatar({
         ...sx,
       }}
     >
-      {src ? (
-        <Box
-          component="img"
-          src={src}
-          alt=""
-          onError={() => setBroken(src)}
-          sx={{ width: size, height: size, objectFit: 'cover', display: 'block' }}
-        />
-      ) : (
-        playerInitials(name)
-      )}
+      {/* The picture; the status dot sits outside it, so a screen reader that
+          skips a decorative avatar still hears the status. */}
+      <Box
+        component="span"
+        title={name}
+        {...(label ? { role: 'img', 'aria-label': name } : { 'aria-hidden': true })}
+        sx={{
+          width: '100%',
+          height: '100%',
+          borderRadius: '50%',
+          overflow: 'hidden',
+          display: 'grid',
+          placeItems: 'center',
+        }}
+      >
+        {src ? (
+          <Box
+            component="img"
+            src={src}
+            alt=""
+            onError={() => setBroken(src)}
+            sx={{ width: size, height: size, objectFit: 'cover', display: 'block' }}
+          />
+        ) : (
+          playerInitials(name)
+        )}
+      </Box>
+      {presence && playerId && <AvatarPresence playerId={playerId} size={size} />}
     </Box>
   );
 }

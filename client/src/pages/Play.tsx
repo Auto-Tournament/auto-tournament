@@ -219,10 +219,12 @@ function YouColumn({ playerId, rating }: { playerId: string; rating: { elo: numb
 }
 
 function PersonChip({
+  id,
   name,
   avatarUrl,
   you,
 }: {
+  id?: string | null;
   name: string;
   avatarUrl: string | null;
   you?: boolean;
@@ -242,7 +244,7 @@ function PersonChip({
         minWidth: 0,
       }}
     >
-      <PlayerAvatar name={name} avatarUrl={avatarUrl} size={30} />
+      <PlayerAvatar id={id} name={name} avatarUrl={avatarUrl} size={30} />
       <Box
         component="span"
         sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
@@ -563,7 +565,12 @@ export default function Play() {
                         borderColor: color.accent,
                       }}
                     >
-                      <PlayerAvatar name={inv.from.name} avatarUrl={inv.from.avatarUrl} size={36} />
+                      <PlayerAvatar
+                        id={inv.from.id}
+                        name={inv.from.name}
+                        avatarUrl={inv.from.avatarUrl}
+                        size={36}
+                      />
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography sx={{ fontSize: textSize.sm }}>
                           <Box component="b">{inv.from.name}</Box> {t('social.notice.partyInvite')}
@@ -611,6 +618,7 @@ export default function Play() {
                         people.map((p) => (
                           <PersonChip
                             key={p.id}
+                            id={p.id}
                             name={p.name}
                             avatarUrl={p.avatarUrl}
                             you={p.id === playerSteamId}
@@ -637,6 +645,7 @@ export default function Play() {
                           }}
                         >
                           <PlayerAvatar
+                            id={p.id}
                             name={p.name}
                             avatarUrl={p.avatarUrl}
                             size={28}

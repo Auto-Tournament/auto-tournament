@@ -356,7 +356,7 @@ export default function TournamentSignupTab() {
                       borderTop: `1px solid ${color.rule}`,
                     }}
                   >
-                    <PlayerAvatar name={m.name} avatar={m.avatar} size={40} />
+                    <PlayerAvatar id={m.steamId} name={m.name} avatar={m.avatar} size={40} />
                     <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
                       <Typography
                         component="span"
@@ -582,7 +582,7 @@ export default function TournamentSignupTab() {
                   {team.name}
                 </Typography>
                 <AvatarStack
-                  players={starters.map((m) => ({ name: m.name, avatar: m.avatar }))}
+                  players={starters.map((m) => ({ id: m.steamId, name: m.name, avatar: m.avatar }))}
                   size={28}
                 />
               </Box>

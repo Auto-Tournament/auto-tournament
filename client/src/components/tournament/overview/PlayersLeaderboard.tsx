@@ -252,7 +252,7 @@ export function PlayersLeaderboard({
                         '&:hover': { textDecoration: 'underline' },
                       }}
                     >
-                      <PlayerAvatar name={r.name} avatar={r.avatar} size={28} />
+                      <PlayerAvatar id={r.playerId} name={r.name} avatar={r.avatar} size={28} />
                       <span>{r.name}</span>
                     </Box>
                   </Box>
@@ -402,7 +402,7 @@ export function ShuffleStandings({
               >
                 {i + 1}
               </Typography>
-              <PlayerAvatar name={r.name} avatar={r.avatar} size={32} />
+              <PlayerAvatar id={r.playerId} name={r.name} avatar={r.avatar} size={32} />
               <Typography
                 component="span"
                 sx={{ fontWeight: me ? 700 : 500, minWidth: 0, overflowWrap: 'anywhere' }}

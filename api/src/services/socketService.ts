@@ -5,6 +5,7 @@ import { log, onLogEntry } from '../utils/logger';
 import { getRealViewerSteamId } from '../utils/viewerIdentity';
 import { checkAdminAccess } from '../middleware/auth';
 import { matchChanged } from '../core/matchChangeBus';
+import { PresenceTracker, type PresenceChange, type PresenceStatus } from './presenceTracker';
 import type {
   AdminCall,
   AdminCallClaimedEvent,
@@ -31,6 +32,12 @@ export const COMPAT_ROOM = 'compat';
  * player's message to the admins is not for every viewer of the bracket.
  */
 export const ADMIN_ROOM = 'admins';
+
+/** Room of the sockets that show player avatars (`presence:subscribe`): they get `presence:update`. */
+export const PRESENCE_ROOM = 'presence';
+
+/** Who is online, away or offline (in memory: a restart starts everyone offline until they reconnect). */
+const presence = new PresenceTracker();
 
 /** Express-style middleware (session, Passport) run on the Socket.IO handshake. */
 export type HandshakeMiddleware = (
@@ -140,20 +147,33 @@ export function initializeSocket(
       const reply = typeof ack === 'function' ? (ack as (body: unknown) => void) : () => undefined;
       const playerId = getRealViewerSteamId(handshakeAsRequest(socket));
       if (!playerId) return reply({ ok: false });
-      const wasOnline = isPlayerOnline(playerId);
+      const change = presence.connect(playerId, socket.id);
       void Promise.resolve(socket.join(playerRoom(playerId))).then(() => {
         reply({ ok: true });
-        if (!wasOnline) presenceListener?.(playerId, true);
+        if (change) presenceChanged(change);
       });
+    });
+
+    // Presence for the avatars on the page: `presence:update` goes to the
+    // sockets that ask (room `presence`), anonymous viewers included.
+    socket.on('presence:subscribe', () => {
+      void socket.join(PRESENCE_ROOM);
+    });
+
+    // The tab went idle (5 minutes without input) or came back. One socket
+    // per tab reports it; nothing for an anonymous socket.
+    socket.on('presence:idle', (idle?: unknown) => {
+      if (typeof idle !== 'boolean') return;
+      const playerId = getRealViewerSteamId(handshakeAsRequest(socket));
+      if (!playerId) return;
+      const change = presence.report(playerId, socket.id, idle);
+      if (change) presenceChanged(change);
     });
 
     // The last tab of a player closing: they went offline.
     socket.on('disconnecting', () => {
-      for (const room of socket.rooms) {
-        if (!room.startsWith('player:')) continue;
-        if ((io?.sockets.adapter.rooms.get(room)?.size ?? 0) <= 1)
-          presenceListener?.(room.slice('player:'.length), false);
-      }
+      const change = presence.disconnect(socket.id);
+      if (change) presenceChanged(change);
     });
 
     socket.on('disconnect', () => {
@@ -346,31 +366,26 @@ export function emitCompatUpdate(payload: CompatUpdateEvent): void {
 const playerRoom = (playerId: string) => `player:${playerId}`;
 
 /**
- * Signed-in players with the site open right now: the `player:<id>` rooms
- * that have a socket in them (each tab asks for its room on connect).
+ * Signed-in players with the site open right now (each tab asks for its
+ * `player:<id>` room on connect).
  */
 export function onlinePlayerCount(): number {
-  if (!io) return 0;
-  let n = 0;
-  for (const [room, sockets] of io.sockets.adapter.rooms) {
-    if (room.startsWith('player:') && sockets.size > 0) n += 1;
-  }
-  return n;
+  return presence.onlineIds().length;
 }
 
-/** The players with the site open right now (their `player:<id>` rooms have a socket). */
+/** The players with the site open right now. */
 export function onlinePlayerIds(): string[] {
-  if (!io) return [];
-  const ids: string[] = [];
-  for (const [room, sockets] of io.sockets.adapter.rooms) {
-    if (room.startsWith('player:') && sockets.size > 0) ids.push(room.slice('player:'.length));
-  }
-  return ids;
+  return presence.onlineIds();
 }
 
-/** Whether the player has the site open in at least one tab. */
+/** Whether the player has the site open in at least one tab (away counts). */
 export function isPlayerOnline(playerId: string): boolean {
-  return (io?.sockets.adapter.rooms.get(playerRoom(playerId))?.size ?? 0) > 0;
+  return presence.status(playerId) !== 'offline';
+}
+
+/** Online, away (every reporting tab idle for 5 minutes) or offline. */
+export function presenceStatus(playerId: string): PresenceStatus {
+  return presence.status(playerId);
 }
 
 type PresenceListener = (playerId: string, online: boolean) => void;
@@ -379,6 +394,16 @@ let presenceListener: PresenceListener | null = null;
 /** Hear players come online (first tab) and go offline (last tab closed). One listener (services/socialService). */
 export function onPresence(listener: PresenceListener): void {
   presenceListener = listener;
+}
+
+/** Tell the pages showing avatars (`presence:update`), and friends when they came or went. */
+function presenceChanged(change: PresenceChange): void {
+  io?.to(PRESENCE_ROOM).emit('presence:update', {
+    playerId: change.playerId,
+    status: change.status,
+  });
+  if (change.previous === 'offline') presenceListener?.(change.playerId, true);
+  else if (change.status === 'offline') presenceListener?.(change.playerId, false);
 }
 
 /** A new notice for the bell (`notify:new`, the notice as payload). Room `player:<id>`. */

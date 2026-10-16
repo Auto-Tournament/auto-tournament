@@ -121,7 +121,12 @@ export function LivePlayersTable({
                       }}
                     >
                       <TeamLogo team={team} size="sm" />
-                      <PlayerAvatar name={name} avatar={avatars?.[p.steamId]} size={28} />
+                      <PlayerAvatar
+                        id={p.steamId}
+                        name={name}
+                        avatar={avatars?.[p.steamId]}
+                        size={28}
+                      />
                       <span>{name}</span>
                     </Box>
                   </Box>

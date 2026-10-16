@@ -88,7 +88,7 @@ export function CaptainsPanel({ teamId }: { teamId: string }) {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
-              <PlayerAvatar name={m.name} avatar={m.avatar} size={32} />
+              <PlayerAvatar id={m.steamId} name={m.name} avatar={m.avatar} size={32} />
               <Typography component="span" sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>
                 {m.name}
               </Typography>

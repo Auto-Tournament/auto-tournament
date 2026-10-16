@@ -22,7 +22,7 @@ test.describe('Player presence', () => {
     const res = await request.get(`/api/players/presence?ids=${id}`);
     expect(res.ok()).toBe(true);
     const body = (await res.json()) as { presence: Record<string, unknown> };
-    expect(body.presence[id]).toEqual({ online: false, activity: null });
+    expect(body.presence[id]).toEqual({ online: false, status: 'offline', activity: null });
     expect((await request.get('/api/players/presence?ids=')).status()).toBe(400);
   });
 

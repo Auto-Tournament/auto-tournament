@@ -100,12 +100,12 @@ router.param('playerId', async (req: Request, res: Response, next, playerId: str
  * /api/players/presence:
  *   get:
  *     tags: [Players]
- *     summary: What players are doing now (online, searching, playing)
+ *     summary: What players are doing now (online, away, searching, playing)
  *     description: For player names anywhere on the site. Up to 100 ids, comma-separated.
  *     parameters:
  *       - { in: query, name: ids, required: true, schema: { type: string } }
  *     responses:
- *       200: { description: "`presence`: { [playerId]: { online, activity } }" }
+ *       200: { description: "`presence`: { [playerId]: { online, status, activity } }; `status` is online, away or offline. Live changes: socket event `presence:update` { playerId, status } after `presence:subscribe`." }
  *       400: { description: No ids }
  */
 router.get('/presence', async (req: Request, res: Response) => {

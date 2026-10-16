@@ -14,7 +14,7 @@
  */
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { fmtTime } from '../../utils/time';
-import { PresenceDot } from '../social/PresenceDot';
+import { AvatarPresence } from '../social/PresenceDot';
 import {
   Box,
   Button,
@@ -120,31 +120,34 @@ function clockOf(seconds: number): string {
 function Avatar({ message }: { message: ChatMessage }) {
   const isAdmin = message.senderKind === 'admin';
   const picture = isAdmin ? null : message.senderAvatar;
+  const playerId = message.senderKind === 'player' ? message.senderId : null;
   return (
-    <Box
-      aria-hidden
-      sx={{
-        width: 32,
-        height: 32,
-        flex: 'none',
-        borderRadius: '50%',
-        display: 'grid',
-        placeItems: 'center',
-        fontFamily: fontDisplay,
-        fontWeight: 600,
-        fontSize: textSize.sm,
-        bgcolor: isAdmin ? tint(admin, 0.16) : color.paper3,
-        color: isAdmin ? admin : color.ink,
-        backgroundImage: picture ? `url(${picture})` : undefined,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    >
-      {isAdmin ? (
-        <ShieldIcon />
-      ) : picture ? null : (
-        (message.senderName.trim()[0] ?? '?').toUpperCase()
-      )}
+    <Box sx={{ position: 'relative', width: 32, height: 32, flex: 'none' }}>
+      <Box
+        aria-hidden
+        sx={{
+          width: 32,
+          height: 32,
+          borderRadius: '50%',
+          display: 'grid',
+          placeItems: 'center',
+          fontFamily: fontDisplay,
+          fontWeight: 600,
+          fontSize: textSize.sm,
+          bgcolor: isAdmin ? tint(admin, 0.16) : color.paper3,
+          color: isAdmin ? admin : color.ink,
+          backgroundImage: picture ? `url(${picture})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {isAdmin ? (
+          <ShieldIcon />
+        ) : picture ? null : (
+          (message.senderName.trim()[0] ?? '?').toUpperCase()
+        )}
+      </Box>
+      {playerId && <AvatarPresence playerId={playerId} size={32} />}
     </Box>
   );
 }
@@ -240,11 +243,6 @@ function MessageLine({
             flexWrap: 'wrap',
           }}
         >
-          {message.senderId && message.senderKind === 'player' && (
-            <Box component="span" sx={{ alignSelf: 'center', display: 'inline-flex' }}>
-              <PresenceDot playerId={message.senderId} size={7} />
-            </Box>
-          )}
           {message.senderId && message.senderKind === 'player' ? (
             // A player's name opens their profile.
             <Box

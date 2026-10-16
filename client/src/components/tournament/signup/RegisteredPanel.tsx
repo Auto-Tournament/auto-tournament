@@ -103,7 +103,7 @@ export function TeamsLadder({
                   .filter((p) => p.role === 'starter')
                   .map((p, i) => (
                     <Box key={p.steamId} sx={{ ml: i === 0 ? 0 : '-8px' }}>
-                      <Face name={p.name} avatar={p.avatar} size={26} />
+                      <Face playerId={p.steamId} name={p.name} avatar={p.avatar} size={26} />
                     </Box>
                   ))}
               </Box>
@@ -387,6 +387,7 @@ export function RegisteredPanel({
               {registration.lineup.map((p) => (
                 <Box key={p.steamId} title={p.name} sx={{ position: 'relative' }}>
                   <PlayerAvatar
+                    id={p.steamId}
                     name={p.name}
                     avatar={p.avatar}
                     size={36}
@@ -478,7 +479,7 @@ export function RegisteredPanel({
               >
                 {p.problems.length ? <WarningIcon size={22} /> : <CheckCircleIcon size={22} />}
               </Box>
-              <Face name={p.name} avatar={p.avatar} size={44} />
+              <Face playerId={p.steamId} name={p.name} avatar={p.avatar} size={44} />
               <Box sx={{ minWidth: 0 }}>
                 <Typography sx={{ fontWeight: 600 }}>{p.name}</Typography>
                 <Typography

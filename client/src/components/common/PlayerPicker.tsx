@@ -98,7 +98,7 @@ export function PlayerPicker({
       }
       renderOption={(props, o) => (
         <Box component="li" {...props} key={o.steamid64} sx={{ display: 'flex', gap: 1.25 }}>
-          <PlayerAvatar name={o.name} avatarUrl={o.avatar} size={24} />
+          <PlayerAvatar id={o.steamid64} name={o.name} avatarUrl={o.avatar} size={24} />
           <Box sx={{ minWidth: 0 }}>
             <Typography sx={{ fontSize: '0.9375rem' }}>
               {o.typed ? 'Not signed up yet: add by SteamID64' : o.name}
