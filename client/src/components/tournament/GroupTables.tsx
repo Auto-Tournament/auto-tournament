@@ -1,8 +1,8 @@
 import { Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { RoundRobinStanding } from '../../types';
-import { SectionTitle, TeamLogo, panel } from './ui/draftUi';
-import { mono, textSize, tokens } from '../../theme/tokens';
+import { SectionTitle, TeamLogo, panel, tableTh } from './ui/draftUi';
+import { mono, tokens } from '../../theme/tokens';
 
 const { color } = tokens;
 
@@ -31,16 +31,7 @@ export function GroupTables({
   compact?: boolean;
 }) {
   const { t } = useTranslation();
-  const th = {
-    py: 1,
-    px: 1,
-    fontSize: textSize.xs,
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.06em',
-    color: color.muted,
-    fontWeight: 600,
-    textAlign: 'right' as const,
-  };
+  const th = tableTh;
   return (
     <Box
       data-testid="group-tables"

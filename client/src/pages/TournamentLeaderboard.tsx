@@ -9,9 +9,17 @@ import { useTournamentPage } from '../components/tournament/page/tournamentPageC
 import { useIntegrationFor } from '../integrations/registry';
 import { usePublicBracket } from '../hooks/usePublicBracket';
 import { PlayersLeaderboard } from '../components/tournament/overview/PlayersLeaderboard';
-import { ChampionHero, SectionTitle, TeamLogo, panel } from '../components/tournament/ui/draftUi';
+import {
+  ChampionHero,
+  SectionTitle,
+  TeamLogo,
+  panel,
+  tableTh,
+  tableTd,
+  tableOptional,
+} from '../components/tournament/ui/draftUi';
 import type { Match, Tournament } from '../types';
-import { tokens, mono, textSize } from '../theme/tokens';
+import { tokens, textSize } from '../theme/tokens';
 
 const { color } = tokens;
 
@@ -190,24 +198,9 @@ export default function TournamentLeaderboard() {
   const hasRounds = rows.some((r) => r.roundsWon !== undefined);
   const hasDiff = rows.some((r) => r.diff !== undefined);
   const hasBuchholz = rows.some((r) => r.buchholz !== undefined);
-  const th = {
-    py: 1,
-    px: 1,
-    fontSize: textSize.xs,
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.06em',
-    color: color.muted,
-    fontWeight: 600,
-    textAlign: 'right' as const,
-  };
-  const td = {
-    py: 1.5,
-    px: 1,
-    borderTop: `1px solid ${color.rule}`,
-    textAlign: 'right' as const,
-    ...mono,
-  };
-  const opt = { display: { xs: 'none', sm: 'table-cell' } } as const;
+  const th = tableTh;
+  const td = tableTd;
+  const opt = tableOptional;
 
   return (
     <Box

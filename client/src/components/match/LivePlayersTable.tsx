@@ -7,13 +7,16 @@
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { MatchPlayerStatsSnapshot } from '../../types';
-import { tokens, mono, textSize } from '../../theme/tokens';
+import { tokens, textSize } from '../../theme/tokens';
 import {
   PlayerAvatar,
   SectionTitle,
   TeamLogo,
   panel,
   type TeamLike,
+  tableTh,
+  tableTd,
+  tableOptional,
 } from '../tournament/ui/draftUi';
 
 const { color } = tokens;
@@ -60,24 +63,9 @@ export function LivePlayersTable({
   ]
     .map((r) => ({ ...r, rating: rating(r.p, roundsSoFar) }))
     .sort((a, b) => b.rating - a.rating);
-  const th = {
-    py: 1,
-    px: 1,
-    fontSize: textSize.xs,
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.06em',
-    color: color.muted,
-    fontWeight: 600,
-    textAlign: 'right' as const,
-  };
-  const td = {
-    py: 1.5,
-    px: 1,
-    borderTop: `1px solid ${color.rule}`,
-    textAlign: 'right' as const,
-    ...mono,
-  };
-  const opt = { display: { xs: 'none', sm: 'table-cell' } } as const;
+  const th = tableTh;
+  const td = tableTd;
+  const opt = tableOptional;
   return (
     <Box component="section" aria-labelledby="live-players" data-testid="live-players" sx={panel}>
       <SectionTitle id="live-players" title={title} note={t('liveMatch.updatesEveryRound')} />

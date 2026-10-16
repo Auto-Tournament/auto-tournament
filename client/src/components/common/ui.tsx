@@ -493,58 +493,6 @@ export function StatusDot({
   );
 }
 
-/** Stat tile: big mono value over a small muted label, on paper3. */
-export function StatTile({
-  value,
-  label,
-  accent,
-  size = 'md',
-  sx,
-}: {
-  value: React.ReactNode;
-  label: React.ReactNode;
-  accent?: string;
-  /** `lg` for page-level stat rows, `md` inside cards. */
-  size?: 'md' | 'lg';
-  sx?: BoxProps['sx'];
-}) {
-  return (
-    <Box
-      sx={{
-        bgcolor: color.paper3,
-        borderRadius: `${radius.sm}px`,
-        p: size === 'lg' ? 2 : 1.5,
-        minWidth: 0,
-        ...(sx as object),
-      }}
-    >
-      <Box
-        sx={{
-          ...mono,
-          fontWeight: 600,
-          fontSize: size === 'lg' ? '1.625rem' : '1.125rem',
-          lineHeight: 1.2,
-          color: accent ?? color.ink,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {value}
-      </Box>
-      <Box
-        sx={{
-          color: color.muted,
-          fontSize: size === 'lg' ? '0.8125rem' : '0.75rem',
-          mt: size === 'lg' ? 0.5 : 0,
-        }}
-      >
-        {label}
-      </Box>
-    </Box>
-  );
-}
-
 /** Small mono label used above groups (round names, section captions). */
 export const sectionLabelSx = {
   ...mono,
