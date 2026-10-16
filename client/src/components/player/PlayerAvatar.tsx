@@ -78,9 +78,6 @@ export function PlayerAvatar({
         position: 'relative',
         display: 'inline-grid',
         bgcolor: color.rule,
-        color: color.ink2,
-        fontSize: size >= 40 ? '0.8125rem' : '0.6875rem',
-        fontWeight: 700,
         ...sx,
       }}
     >
@@ -97,6 +94,13 @@ export function PlayerAvatar({
           overflow: 'hidden',
           display: 'grid',
           placeItems: 'center',
+          // The colours on the element with the initials, so a contrast check
+          // reads them here and not through the status dot on the corner.
+          bgcolor: color.rule,
+          color: color.ink2,
+          fontSize: size >= 40 ? '0.8125rem' : '0.6875rem',
+          fontWeight: 700,
+          lineHeight: 1,
         }}
       >
         {src ? (
