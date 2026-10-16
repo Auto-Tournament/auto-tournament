@@ -740,12 +740,49 @@ export async function checkRoundCompletion(
  * Advance to next round automatically
  * Called when current round is complete
  */
-/** Hold a new shuffle round's matches for the site's break between matches (minutes, 0 = none). */
-async function holdRoundForBreak(round: number, matches: DbMatchRow[]): Promise<void> {
+/**
+ * The tournament's breaks between rounds (settings.roundBreaks): `minutes` after
+ * every round, and `after` a longer (or shorter) one after given rounds, e.g.
+ * { minutes: 0, after: { "3": 30 } } = three rounds back to back, 30 minutes,
+ * then the rest. Without it, the site's break between matches (default 5).
+ */
+export interface RoundBreaks {
+  minutes?: number;
+  after?: Record<string, number>;
+}
+
+/** Minutes of break after `round` (round 1 → before round 2). */
+export async function breakAfterRound(tournamentId: number, round: number): Promise<number> {
+  const row = await db.queryOneAsync<{ settings: string | null }>(
+    'SELECT settings FROM tournament WHERE id = ?',
+    [tournamentId]
+  );
+  let breaks: RoundBreaks | undefined;
   try {
-    const raw = await settingsService.getSetting('at_match_break_minutes');
-    const minutes = raw === null || raw === undefined || raw === '' ? 5 : Number(raw);
-    if (!Number.isFinite(minutes) || minutes <= 0) return;
+    breaks = (JSON.parse(row?.settings ?? '{}') as { roundBreaks?: RoundBreaks }).roundBreaks;
+  } catch {
+    breaks = undefined;
+  }
+  const valid = (n: unknown) =>
+    typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 24 * 60 ? n : undefined;
+  const special = valid(breaks?.after?.[String(round)]);
+  if (special !== undefined) return special;
+  const every = valid(breaks?.minutes);
+  if (every !== undefined) return every;
+  const raw = await settingsService.getSetting('at_match_break_minutes');
+  const site = raw === null || raw === undefined || raw === '' ? 5 : Number(raw);
+  return Number.isFinite(site) && site > 0 ? site : 0;
+}
+
+/** Hold a new shuffle round's matches for the break after the round before it. */
+async function holdRoundForBreak(
+  tournamentId: number,
+  round: number,
+  matches: DbMatchRow[]
+): Promise<void> {
+  try {
+    const minutes = await breakAfterRound(tournamentId, round - 1);
+    if (minutes <= 0) return;
     const until = Math.floor(Date.now() / 1000) + Math.round(minutes * 60);
     const { holdForBreak } = await import('./matchHolds');
     for (const m of matches) {
@@ -838,7 +875,7 @@ export async function advanceToNextRound(tournamentId: number): Promise<{
 
   // A break between rounds: players get new partners every round, so the break between a
   // team's matches (veto/break.ts) never finds an earlier match. Hold the round instead.
-  if (currentRound > 0) await holdRoundForBreak(nextRound, result.matches);
+  if (currentRound > 0) await holdRoundForBreak(tournamentId, nextRound, result.matches);
 
   // Update tournament status if starting first round
   if (currentRound === 0) {

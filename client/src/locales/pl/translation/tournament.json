@@ -1314,7 +1314,8 @@
     "sittingOutBodyCounts_other": "There are {{players}} players for {{size}}v{{size2}}, so {{count}} rest each round. Those who have played most rest first: you are in the next draw.",
     "playedBodyLeft_one": "Waiting for {{count}} more match. Round {{next}} is drawn when it ends; your next match shows up here and you get a notification.",
     "playedBodyLeft_other": "Waiting for {{count}} more matches. Round {{next}} is drawn when they end; your next match shows up here and you get a notification.",
-    "joinedByMistake": "Joined by mistake?"
+    "joinedByMistake": "Joined by mistake?",
+    "breakTitle": "Break · round {{round}} starts at {{time}}"
   },
   "liveOverview": {
     "roundOf": "Round {{round}} of {{total}}",
@@ -1593,7 +1594,15 @@
       "late": "A late round pushes the next one: a team still playing, or the break between matches, holds the veto, and players see the new time.",
       "none": "No time set: as before, a match goes ahead as soon as both teams and a server are ready.",
       "where": "The overview's schedule, the match cards, the match room, the rules and check-in show these times."
-    }
+    },
+    "breaksTitle": "Breaks between rounds",
+    "breaksNote_one": "Leave the break empty to use the site's break of {{count}} minute. Add a longer break after any round, e.g. 30 minutes after round 3.",
+    "breaksNote_other": "Leave the break empty to use the site's break of {{count}} minutes. Add a longer break after any round, e.g. 30 minutes after round 3.",
+    "breakEvery": "Break after each round (min)",
+    "breakAfterRound": "After round",
+    "breakMinutes": "Break (min)",
+    "breakRemove": "Remove",
+    "breakAdd": "Add a longer break"
   },
   "groups": {
     "groupN": "Group {{letter}}",

@@ -869,6 +869,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
             elimination={/elimination/.test(form.type)}
             breakMinutes={siteRules?.matchBreakMinutes ?? null}
             disabled={locked}
+            roundBreaks={isShuffle}
           />
         );
 
