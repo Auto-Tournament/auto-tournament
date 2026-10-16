@@ -681,7 +681,9 @@
       "searchWidening": "Utvider søket: ±{{elo}} · {{count}} søker",
       "searchAnyRating": "Søker nå blant alle ratinger · {{count}} søker",
       "inTournament": "Du er med i en turnering som pågår ({{tournament}}), og kan ikke søke etter kamp akkurat nå.",
-      "partyInTournament": "Med i en turnering som pågår, så laget kan ikke søke akkurat nå: {{names}}."
+      "partyInTournament": "Med i en turnering som pågår, så laget kan ikke søke akkurat nå: {{names}}.",
+      "inMatch_one": "{{count}} i kamp",
+      "inMatch_other": "{{count}} i kamp"
     },
     "queue": {
       "searching": "Søker {{mode}}",

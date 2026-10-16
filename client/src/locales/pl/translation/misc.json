@@ -681,7 +681,11 @@
       "searchWidening": "Widening the search: ±{{elo}} · {{count}} searching",
       "searchAnyRating": "Searching every rating now · {{count}} searching",
       "inTournament": "You are in an active tournament ({{tournament}}), you can't queue for matchmaking right now.",
-      "partyInTournament": "In an active tournament, so the party can't queue right now: {{names}}."
+      "partyInTournament": "In an active tournament, so the party can't queue right now: {{names}}.",
+      "inMatch_one": "{{count}} w meczu",
+      "inMatch_other": "{{count}} w meczu",
+      "inMatch_few": "{{count}} w meczu",
+      "inMatch_many": "{{count}} w meczu"
     },
     "queue": {
       "searching": "Searching {{mode}}",

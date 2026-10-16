@@ -40,6 +40,8 @@ export interface MatchmakingMe {
   queue: { mode: string; queuedAt: number; status: string; botFill?: boolean } | null;
   /** Players searching right now, per mode. */
   queueCounts?: Record<string, number>;
+  /** Players in a matchmaking match still being played, per mode. */
+  matchCounts?: Record<string, number>;
   /** Signed-in players with the site open (older APIs: missing). */
   online?: number;
   /** Typical seconds to a match found, per mode; null with too little history. */
