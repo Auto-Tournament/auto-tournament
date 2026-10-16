@@ -236,7 +236,7 @@
       "accounts": {
         "title": "Kontoer",
         "short": "Kontoer med brukernavn og passord som du lager",
-        "help": "Disse logger inn på /login/admin. Gi admin til dem som driver siden; resten logger inn som spillere.",
+        "help": "Disse logger inn på /login/admin. Gi admin til dem som driver siden. Resten logger inn som spillere.",
         "none": "Ingen kontoer ennå.",
         "admin": "Admin",
         "twoStep": "Totrinn på",
@@ -305,7 +305,7 @@
     },
     "developer": {
       "resetApiTitle": "Tilbakestill API og database",
-      "resetApiDescription": "Faresone: sletter og gjenoppretter hele databaseskjemaet, og initialiserer deretter standarddata (maps, mappooler osv.). Bare for lokal utvikling. Dette kan ikke angres.",
+      "resetApiDescription": "Faresone: sletter og gjenoppretter hele databaseskjemaet, og initialiserer deretter standarddata (kart, kartutvalg osv.). Bare for lokal utvikling. Dette kan ikke angres.",
       "resetApiButton": "Tilbakestill API (slett alt)",
       "resetApiButtonLoading": "Tilbakestiller API…",
       "resetApiSuccess": "API og database er tilbakestilt. All data er slettet og standardverdier er gjenopprettet.",
@@ -366,11 +366,11 @@
       "reservedLabel": "Servere",
       "modesTitle": "Moduser",
       "modesDescription": "Hva spillere kan søke etter. Alle moduser er på som standard. 1v1 er en siktduell.",
-      "poolsTitle": "Maps per modus",
-      "poolsDescription": "Mappoolen hver modus velger fra (Maps-siden, workshop-maps fungerer også). Kamprommet viser et lykkehjul over poolen før mapet vises.",
+      "poolsTitle": "Kart per modus",
+      "poolsDescription": "Kartutvalget hver modus velger fra (Kart-siden, workshopkart fungerer også). Kamprommet viser et lykkehjul over poolen før kartet vises.",
       "poolDefault": {
         "5v5": "Standard: Active Duty",
-        "2v2": "Standard: alle wingman-maps",
+        "2v2": "Standard: alle wingman-kart",
         "1v1": "Standard: Active Duty"
       },
       "save": "Lagre",
@@ -443,7 +443,7 @@
     "rail": {
       "needsYou": "Trenger deg",
       "matches": "Kamper",
-      "bracket": "Bracket",
+      "bracket": "Turneringstre",
       "teams": "Lag",
       "players": "Spillere",
       "reports": "Rapporter",
@@ -511,7 +511,7 @@
       "vsLabel": "{{team1}} mot {{team2}}",
       "decide": {
         "title": "{{teams}} trenger en vinner",
-        "detail": "Alle mapene er spilt, og serien står fortsatt likt.",
+        "detail": "Alle kartene er spilt, og serien står fortsatt likt.",
         "action": "Avgjør"
       },
       "reallocateSuccess": "Kampen ble flyttet til en annen server",
@@ -549,11 +549,11 @@
     "useFromFreeKey": "Satt av den gratis nøkkelen under: bare ideell bruk.",
     "useWithoutKey": "Ingen nøkkel: gratis for ideell bruk. Lim inn en betalt nøkkel under for kommersiell bruk.",
     "publicLine": "Spillere ser «{{line}}» nederst på arrangementssider.",
-    "pageIntro": "Lisensnøkkelen din og hvordan den står. En betalt nøkkel er for kommersiell bruk; en gratis nøkkel er for ideell bruk.",
+    "pageIntro": "Lisensnøkkelen din og hvordan den står. En betalt nøkkel er for kommersiell bruk. En gratis nøkkel er for ideell bruk.",
     "description": "Lim inn lisensnøkkelen for Auto Tournament: en betalt for kommersiell bruk, eller en gratis for ideell bruk. Den sjekkes på denne serveren, og én gang om dagen mot autotournament.gg.",
     "loading": "Laster lisensstatus",
     "loadFailed": "Kunne ikke lese lisensstatusen.",
-    "none": "Ingen lisensnøkkel ennå. Gratis for ideell bruk; kommersiell bruk krever en betalt lisens.",
+    "none": "Ingen lisensnøkkel ennå. Gratis for ideell bruk. Kommersiell bruk krever en betalt lisens.",
     "pricing": "Priser",
     "open": "Innstillinger",
     "id": "Lisens-ID {{id}}",
@@ -619,7 +619,7 @@
     },
     "consent": {
       "title": "En siste ting: lisensen",
-      "subtitle": "Beklager, ett steg til, så er du ferdig. Auto Tournament er gratis hvis ingen tjener penger på det; tjener noen penger, trenger du en lisens. Les kortversjonen, velg hvordan du bruker det, og skriv I AGREE.",
+      "subtitle": "Beklager, ett steg til, så er du ferdig. Auto Tournament er gratis hvis ingen tjener penger på det. Tjener noen penger, trenger du en lisens. Les kortversjonen, velg hvordan du bruker det, og skriv I AGREE.",
       "intro": "Kildekoden til Auto Tournament er tilgjengelig under {{name}}. Kort fortalt:",
       "points": {
         "free": "Gratis for personlig bruk, hobbyprosjekter, læring og arrangementer der ingen tjener penger på det.",
@@ -627,7 +627,7 @@
         "commercial": "Kommersiell bruk krever en lisens. Det gjelder betalt hosting, salg av programmet eller en tjeneste bygget på det, arrangementer som går med overskudd, bruk i en bedrift, og å få betalt for å sette det opp for andre.",
         "servers": "Hver spillserver teller med i lisensen.",
         "nothingLocked": "Ingenting låses eller begrenses uten nøkkel. Du kan legge inn en nøkkel nå eller senere.",
-        "forks": "Du kan endre koden og dele den. Ta med lisensen; de samme reglene gjelder."
+        "forks": "Du kan endre koden og dele den. Ta med lisensen. De samme reglene gjelder."
       },
       "readLicense": "Les hele lisensen",
       "readRules": "Lisens og kommersiell bruk",
@@ -699,7 +699,7 @@
       "failed": "Kunne ikke lagre svaret ditt"
     },
     "warning": {
-      "periodEnded": "Denne arrangementslisensen gjaldt til og med {{date}}. Testing og oppsett krever ingenting; et nytt arrangement får sin egen arrangementslisens.",
+      "periodEnded": "Denne arrangementslisensen gjaldt til og med {{date}}. Testing og oppsett krever ingenting. Et nytt arrangement får sin egen arrangementslisens.",
       "periodNotStarted": "Denne arrangementslisensen gjelder fra {{date}}. Det er helt greit å sette opp og teste før det."
     },
     "short": "Hvordan denne instansen brukes, og nøkkelen.",
@@ -761,9 +761,9 @@
     "newNameBlank": "Du gir den navn i oppsettet",
     "startFrom": "Start fra",
     "blank": "Tom",
-    "blankHint": "Velg spill, format og maps i oppsettet",
+    "blankHint": "Velg spill, format og kart i oppsettet",
     "copy": "Kopier {{name}}",
-    "copyHint": "Samme format, maps, regler og side. Lag og datoer starter tomme.",
+    "copyHint": "Samme format, kart, regler og side. Lag og datoer starter tomme.",
     "create": "Opprett og sett opp",
     "round": "runde {{n}}",
     "whenToday": "I dag, fra {{time}}",
@@ -771,7 +771,7 @@
     "notSet": "Ikke satt",
     "emptyTitle": "Ingen turneringer ennå",
     "template": "En mal",
-    "templateHint": "Et lagret oppsett: format, maps og regler. Du velger lag og datoer.",
+    "templateHint": "Et lagret oppsett: format, kart og regler. Du velger lag og datoer.",
     "copyOne": "Kopier en turnering",
     "copyWhich": "Hvilken"
   },
@@ -796,7 +796,7 @@
     "deleted": "turneringen er slettet",
     "noDemo": "Ingen demo",
     "demo": "Demo",
-    "map": "Map {{n}}",
+    "map": "Kart {{n}}",
     "import": "Importer en kamp"
   },
   "importMatch": {
@@ -805,18 +805,18 @@
     "event": "Hvor den ble spilt",
     "eventHelp": "Valgfritt, for eksempel navnet på arrangementet.",
     "files": "Demoer",
-    "filesHelp": "Én CS2-demo (.dem) per map, i rekkefølgen mapene ble spilt.",
+    "filesHelp": "Én CS2-demo (.dem) per kart, i rekkefølgen kartene ble spilt.",
     "choose": "Velg demoer",
     "moveUp": "Flytt {{name}} opp",
     "moveDown": "Flytt {{name}} ned",
     "remove": "Fjern {{name}}",
     "start": "Importer",
-    "uploading": "Laster opp map {{n}} ({{percent}} %)",
-    "tooMany": "Opptil {{max}} demoer, én per map.",
+    "uploading": "Laster opp kart {{n}} ({{percent}} %)",
+    "tooMany": "Opptil {{max}} demoer, én per kart.",
     "notDemo": "{{name}} er ikke en .dem-fil.",
     "error": "Importen stoppet: {{error}}",
     "progress": "Fremdrift",
-    "mapN": "Map {{n}}",
+    "mapN": "Kart {{n}}",
     "state": {
       "uploading": "Laster opp",
       "waiting": "Venter på demo-workeren",
@@ -837,7 +837,7 @@
   },
   "apiTokens": {
     "title": "API-nøkler",
-    "hint": "For skript, botter og Auto Tournaments MCP-server. En lesenøkkel kan bare lese; en adminnøkkel kan det en admin kan. Hemmeligheten vises bare én gang, når nøkkelen lages.",
+    "hint": "For skript, botter og Auto Tournaments MCP-server. En lesenøkkel kan bare lese. En adminnøkkel kan det en admin kan. Hemmeligheten vises bare én gang, når nøkkelen lages.",
     "line": "{{scope}} · {{fingerprint}} · sist brukt {{used}}",
     "never": "aldri",
     "none": "Ingen API-nøkler ennå.",

@@ -1,7 +1,7 @@
 {
   "nav": {
     "servers": "Servere",
-    "maps": "Map og mappooler",
+    "maps": "Kart og kartutvalg",
     "skins": "Skins",
     "matchRules": "Kampregler",
     "highlights": "Høydepunkter"
@@ -9,7 +9,7 @@
   "layout": {
     "pageTitle": {
       "servers": "Servere",
-      "maps": "Map og mappooler",
+      "maps": "Kart og kartutvalg",
       "skins": "Skins",
       "matchRules": "Kampregler"
     }
@@ -21,7 +21,7 @@
         "hint": "Koble til, oppdater, helse"
       },
       "maps": {
-        "label": "Map",
+        "label": "Kart",
         "hint": "Pooler og bilder"
       },
       "skins": {
@@ -57,7 +57,7 @@
   "managePage": {
     "rail": {
       "servers": "Servere",
-      "maps": "Map",
+      "maps": "Kart",
       "group": "Counter-Strike 2",
       "skins": "Skins",
       "matchRules": "Kampregler"
@@ -104,54 +104,54 @@
     }
   },
   "mapsPage": {
-    "title": "Map og mappooler",
+    "title": "Kart og kartutvalg",
     "tabs": {
-      "maps": "Map",
-      "mapPools": "Mappooler"
+      "maps": "Kart",
+      "mapPools": "Kartutvalg"
     },
     "headerActions": {
-      "addMap": "Legg til map",
-      "createMapPool": "Opprett mappool",
-      "syncMaps": "Synk map",
-      "syncingMaps": "Synkroniserer map…"
+      "addMap": "Legg til kart",
+      "createMapPool": "Opprett kartutvalg",
+      "syncMaps": "Synk kart",
+      "syncingMaps": "Synkroniserer kart…"
     },
     "errors": {
-      "loadMaps": "Klarte ikke å laste map",
-      "loadPools": "Klarte ikke å laste mappooler",
-      "defaultPoolCannotDelete": "Standard mappool kan ikke slettes.",
-      "setDefaultPool": "Klarte ikke å sette standard mappool",
-      "togglePool": "Klarte ikke å endre status på mappool",
-      "deleteMap": "Klarte ikke å slette map",
-      "deletePool": "Klarte ikke å slette mappool"
+      "loadMaps": "Klarte ikke å laste kart",
+      "loadPools": "Klarte ikke å laste kartutvalg",
+      "defaultPoolCannotDelete": "Standard kartutvalg kan ikke slettes.",
+      "setDefaultPool": "Klarte ikke å sette standard kartutvalg",
+      "togglePool": "Klarte ikke å endre status på kartutvalg",
+      "deleteMap": "Klarte ikke å slette kart",
+      "deletePool": "Klarte ikke å slette kartutvalg"
     },
     "success": {
-      "mapDeleted": "Map slettet"
+      "mapDeleted": "Kart slettet"
     },
     "confirmDeleteMap": {
-      "title": "Slett map",
+      "title": "Slett kart",
       "message": "Er du sikker på at du vil slette «{{name}}»? Dette kan ikke angres."
     },
     "confirmDeletePool": {
-      "title": "Slett mappool",
+      "title": "Slett kartutvalg",
       "message": "Er du sikker på at du vil slette «{{name}}»? Dette kan ikke angres."
     },
     "confirmDelete": "Slett",
     "empty": {
-      "mapsTitle": "Ingen map",
-      "mapsDescription": "Kom i gang ved å legge til det første mapet",
-      "poolsTitle": "Ingen mappooler",
-      "poolsDescription": "Kom i gang ved å lage den første mappoolen"
+      "mapsTitle": "Ingen kart",
+      "mapsDescription": "Kom i gang ved å legge til det første kartet",
+      "poolsTitle": "Ingen kartutvalg",
+      "poolsDescription": "Kom i gang ved å lage den første kartutvalget"
     },
     "pool": {
       "default": "Standard",
       "disabled": "Deaktivert",
-      "mapCount": "{{count}} map",
-      "mapCountPlural": "{{count}} map"
+      "mapCount": "{{count}} kart",
+      "mapCountPlural": "{{count}} kart"
     }
   },
   "mapModal": {
-    "titleCreate": "Legg til map",
-    "titleEdit": "Rediger map",
+    "titleCreate": "Legg til kart",
+    "titleEdit": "Rediger kart",
     "workshop": {
       "inputLabel": "Steam Workshop-URL eller -ID",
       "inputPlaceholder": "https://steamcommunity.com/sharedfiles/filedetails/?id=1234567890",
@@ -159,35 +159,35 @@
       "found": "Funnet: {{title}}",
       "lookupFailed": "Oppslag i Workshop mislyktes"
     },
-    "mapIdLabel": "Map-ID",
+    "mapIdLabel": "Kart-ID",
     "mapIdPlaceholder": "de_dust2",
     "mapIdHelper": "Kun små bokstaver, tall og understrek (de_dust2)",
     "displayNameLabel": "Visningsnavn",
     "displayNamePlaceholder": "Dust II",
-    "gameModeLabel": "Maptype",
-    "gameModeHelper": "Grupperer mapet på Map-siden og bestemmer hvilke turneringer som kan spille det.",
-    "mapImageLabel": "Mapbilde",
+    "gameModeLabel": "Karttype",
+    "gameModeHelper": "Grupperer kartet på Kart-siden og bestemmer hvilke turneringer som kan spille det.",
+    "mapImageLabel": "Kartbilde",
     "uploadButton": "Last opp bilde",
     "fetchFromGitHub": "Hent fra GitHub",
     "uploadHelper": "Last opp PNG, JPG, GIF eller WebP (maks 5 MB)",
     "previewLabel": "Forhåndsvisning:",
     "removeImage": "Fjern bilde",
     "errors": {
-      "mapIdRequired": "Map-ID er påkrevd",
+      "mapIdRequired": "Kart-ID er påkrevd",
       "displayNameRequired": "Visningsnavn er påkrevd",
-      "mapIdInvalid": "Map-ID kan kun inneholde små bokstaver, tall og understrek",
+      "mapIdInvalid": "Kart-ID kan kun inneholde små bokstaver, tall og understrek",
       "invalidFileType": "Ugyldig filtype. Velg PNG, JPG, GIF eller WebP.",
       "fileTooLarge": "Filen er for stor. Velg et bilde under 5 MB.",
       "readFileFailed": "Klarte ikke å lese bildefil",
-      "fetchImageIdRequired": "Skriv inn map-ID først",
+      "fetchImageIdRequired": "Skriv inn kart-ID først",
       "fetchImageFailed": "Klarte ikke å hente bilde. Du kan laste opp manuelt.",
       "imageNotFound": "Fant ikke bilde for {{id}}. Du kan laste opp manuelt.",
       "uploadFailed": "Klarte ikke å laste opp bilde",
-      "saveFailed": "Klarte ikke å lagre map"
+      "saveFailed": "Klarte ikke å lagre kart"
     },
     "success": {
-      "mapUpdated": "Map oppdatert",
-      "mapCreated": "Map opprettet"
+      "mapUpdated": "Kart oppdatert",
+      "mapCreated": "Kart opprettet"
     },
     "buttons": {
       "cancel": "Avbryt",
@@ -197,7 +197,7 @@
     }
   },
   "mapActionsModal": {
-    "mapId": "Map-ID",
+    "mapId": "Kart-ID",
     "preview": "Forhåndsvis",
     "edit": "Rediger"
   },
@@ -209,7 +209,7 @@
       "disabled": "Deaktivert"
     },
     "maps": {
-      "label": "Map ({{count}})"
+      "label": "Kart ({{count}})"
     },
     "actions": {
       "edit": "Rediger",
@@ -293,7 +293,7 @@
       "hostRequired": "Vert er påkrevd",
       "countRange": "Antall servere må være mellom 1 og 50",
       "passwordRequired": "RCON-passord er påkrevd",
-      "portRange": "Server #{{index}}-port må være mellom 1 og 65535",
+      "portRange": "Porten til server #{{index}} må være mellom 1 og 65 535",
       "connectionFailed": "Tilkobling feilet",
       "createFailed": "Klarte ikke å opprette servere",
       "partialCreate": "Opprettet {{created}}/{{total}} servere. Feil:\n{{details}}"
@@ -327,18 +327,18 @@
   "vetoInterface": {
     "orderValve": "Valves offisielle rekkefølge (Major-regelverket)",
     "orderCustom": "Arrangørens egen veto-rekkefølge",
-    "orderStandard": "Standardrekkefølge for {{count}} map (samme oppbygning som Valves)",
+    "orderStandard": "Standardrekkefølge for {{count}} kart (samme oppbygning som Valves)",
     "vetoNotAvailable": "Veto ikke tilgjengelig for denne kampen",
     "vetoUnavailable": "Veto-detaljer er ikke tilgjengelige for denne kontoen. Logg inn som spiller på ett av de to lagene for å fortsette vetoen.",
     "vetoCompleted": "Veto fullført!",
-    "vetoCompletedSubtitle": "Mapvalget er fullført. Kampen starter snart.",
-    "selectedMaps": "Valgte map",
-    "yourTurnToBan": "DITT LAGS TUR TIL Å FJERNE ET MAP",
-    "yourTurnToPick": "DITT LAGS TUR TIL Å VELGE ET MAP",
+    "vetoCompletedSubtitle": "Kartvalget er fullført. Kampen starter snart.",
+    "selectedMaps": "Valgte kart",
+    "yourTurnToBan": "DITT LAGS TUR TIL Å FJERNE ET KART",
+    "yourTurnToPick": "DITT LAGS TUR TIL Å VELGE ET KART",
     "yourTurnToChooseSide": "DITT LAGS TUR TIL Å VELGE SIDE",
-    "clickMapToConfirm": "Klikk på ett av de uthevede mapene nedenfor for å bekrefte valget ditt.",
-    "waitingToBan": "Venter på at {{team}} fjerner et map",
-    "waitingToPick": "Venter på at {{team}} velger et map",
+    "clickMapToConfirm": "Klikk på ett av de uthevede kartene nedenfor for å bekrefte valget ditt.",
+    "waitingToBan": "Venter på at {{team}} fjerner et kart",
+    "waitingToPick": "Venter på at {{team}} velger et kart",
     "waitingToChooseSide": "Venter på at {{team}} velger side",
     "pageUpdatesAutomatically": "Hold denne siden åpen – den oppdateres automatisk når det er turen din.",
     "stepOf": "Trinn {{current}} av {{total}}",
@@ -347,13 +347,13 @@
     "sideChoice": "Sidevalg",
     "chooseYourStartingSide": "Velg startsiden din",
     "waitingForSidePick": "Venter på at {{team}} velger startside…",
-    "counterTerrorist": "Counter-Terrorist",
+    "counterTerrorist": "Kontraterrorist",
     "terrorist": "Terrorist",
     "vetoHistory": "Veto-historikk",
     "pickSummary": {
-      "map": "Map {{number}}",
+      "map": "Kart {{number}}",
       "pickedBy": "valgt av {{team}}",
-      "decider": "avgjørende map",
+      "decider": "avgjørende kart",
       "starts": "{{team}} starter {{side}}"
     },
     "historyStep": "Trinn {{step}}:",
@@ -364,7 +364,7 @@
       "pick": "VALGTE",
       "side_pick": "SIDEVALG"
     },
-    "mapBadge": "MAP {{n}}",
+    "mapBadge": "KART {{n}}",
     "mapCardAria": {
       "ban": "Fjern {{map}}",
       "pick": "Velg {{map}}",
@@ -378,20 +378,20 @@
       "failedToPickSide": "Kunne ikke velge side",
       "notYourTurn": "Det er ikke turen din. Venter på det andre laget.",
       "vetoAlreadyCompleted": "Veto allerede fullført",
-      "invalidMapSelection": "Ugyldig mapvalg",
+      "invalidMapSelection": "Ugyldig kartvalg",
       "invalidSideSelection": "Ugyldig sidevalg",
-      "noMapToPickSide": "Ingen map å velge side for",
+      "noMapToPickSide": "Ingen kart å velge side for",
       "matchNotFound": "Kampen ble ikke funnet",
       "unauthorized": "Bare spillere på ett av de to deltakende lagene kan utføre veto-handlinger for denne kampen."
     },
-    "decider": "Avgjørende map",
+    "decider": "Avgjørende kart",
     "question": {
-      "ban": "Hvilket map vil dere fjerne?",
-      "pick": "Hvilket map vil dere spille?",
+      "ban": "Hvilket kart vil dere fjerne?",
+      "pick": "Hvilket kart vil dere spille?",
       "side": "Hvilken side vil dere starte på?"
     },
     "decided": {
-      "map": "Map {{number}}",
+      "map": "Kart {{number}}",
       "pickedBy": "valgt av {{team}}",
       "out": "Ute:"
     },
@@ -411,14 +411,14 @@
     "opening": "Vetoen åpner …",
     "opensBreak": "En kort pause mellom kampene. Gjør deg klar – første tur får ekstra tid.",
     "breakEyebrow": "Pause mellom kampene",
-    "opensInTitle": "Mapvetoen åpner om",
-    "title": "mapveto",
+    "opensInTitle": "Kartvetoen åpner om",
+    "title": "kartveto",
     "sideInWindow": "Velg CT eller T i tidsvinduet.",
-    "pool": "Mappool",
-    "mapsLeft_one": "{{count}} map igjen",
-    "mapsLeft_other": "{{count}} map igjen",
+    "pool": "Kartutvalg",
+    "mapsLeft_one": "{{count}} kart igjen",
+    "mapsLeft_other": "{{count}} kart igjen",
     "pickedBy": "{{team}} valgte",
-    "lastMapLeft": "det siste mapet som er igjen",
+    "lastMapLeft": "det siste kartet som er igjen",
     "toBePicked": "skal velges",
     "ctHint": "Forsvar bombeplassene",
     "tHint": "Plant bomben",
@@ -427,10 +427,10 @@
     "sideOn": "{{side}} på {{map}}",
     "youStart": "Du starter",
     "teamStarts": "{{team}} starter",
-    "spectatorNote": "Bare spillere på ett av de to lagene deltar. Du ser hver ban og pick mens de skjer.",
+    "spectatorNote": "Bare spillere på ett av de to lagene deltar. Du ser hvert kart som fjernes eller velges, mens det skjer.",
     "startsAtEyebrow": "Starter {{time}} · vetoen åpner {{opens}}",
-    "opensBeforeStart_one": "Vetoen åpner av seg selv {{count}} minutt før kampen. Bli på denne siden: du hører en lyd når den åpner. Går laget ditt glipp av turen sin, velges et map for dere.",
-    "opensBeforeStart_other": "Vetoen åpner av seg selv {{count}} minutter før kampen. Bli på denne siden: du hører en lyd når den åpner. Går laget ditt glipp av turen sin, velges et map for dere.",
+    "opensBeforeStart_one": "Vetoen åpner av seg selv {{count}} minutt før kampen. Bli på denne siden: du hører en lyd når den åpner. Går laget ditt glipp av turen sin, velges et kart for dere.",
+    "opensBeforeStart_other": "Vetoen åpner av seg selv {{count}} minutter før kampen. Bli på denne siden: du hører en lyd når den åpner. Går laget ditt glipp av turen sin, velges et kart for dere.",
     "yourTurn": "Din tur"
   },
   "matchInfo": {
@@ -470,7 +470,7 @@
       "viaRecommended": "for deg",
       "vetoDoneChip": "Veto ferdig · {{map}}",
       "queueNext": "i kø for en server: den neste som blir ledig er din.",
-      "queueInLine": "i kø for en server. Kampene foran deg får en først; det skjer av seg selv.",
+      "queueInLine": "i kø for en server. Kampene foran deg får en først. Det skjer av seg selv.",
       "pausedChip": "Pauset · runde {{n}}",
       "pausedChipShort": "Pauset",
       "pausedBody": "Kampen ble pauset på slutten av runden. Den fortsetter når begge lagene er klare, eller når en admin bestemmer det.",
@@ -515,7 +515,7 @@
     "errors": {
       "nameRequired": "Servernavn er påkrevd",
       "hostRequired": "Vert er påkrevd",
-      "portInvalid": "Port må være et gyldig tall mellom 1 og 65535",
+      "portInvalid": "Porten må være et gyldig tall mellom 1 og 65 535",
       "rconRequired": "RCON-passord er påkrevd",
       "idGenerationFailed": "Kunne ikke generere server-ID. Juster servernavnet.",
       "duplicateId": "Servernavnet gir en duplisert ID '{{id}}'. Velg et annet navn.",
@@ -541,14 +541,14 @@
     "skinsTokenWarning": "Denne serveren kjører med et Steam-servertoken (+sv_setsteamaccount), så den får ingen skins: Valve stenger tokenet, og kontoen bak, for servere som deler ut gjenstander. Fjern tokenet i csm for å bruke skins her."
   },
   "mapPoolModal": {
-    "titleCreate": "Lag mappool",
-    "titleEdit": "Rediger mappool",
+    "titleCreate": "Lag kartutvalg",
+    "titleEdit": "Rediger kartutvalg",
     "close": "Lukk",
-    "nameLabel": "Navn på mappool",
-    "namePlaceholder": "Min mappool",
-    "selectMaps": "Velg map ({{count}} valgt)",
+    "nameLabel": "Navn på kartutvalg",
+    "namePlaceholder": "Min kartutvalg",
+    "selectMaps": "Velg kart ({{count}} valgt)",
     "addAll": "Legg til alle",
-    "chooseMaps": "Velg map…",
+    "chooseMaps": "Velg kart…",
     "cancel": "Avbryt",
     "update": "Oppdater",
     "create": "Lag",
@@ -559,9 +559,9 @@
       "unknown": "Ukjent"
     },
     "errors": {
-      "nameRequired": "Mappoolen må ha et navn",
-      "mapsRequired": "Velg minst ett map",
-      "saveFailed": "Kunne ikke lagre mappoolen"
+      "nameRequired": "Kartutvalget må ha et navn",
+      "mapsRequired": "Velg minst ett kart",
+      "saveFailed": "Kunne ikke lagre kartutvalget"
     }
   },
   "manualMatchModal": {
@@ -569,7 +569,7 @@
     "steps": {
       "matchSetup": "Kampoppsett",
       "rules": "Regler",
-      "maps": "Map",
+      "maps": "Kart",
       "teams": "Lag",
       "review": "Oppsummering"
     },
@@ -583,45 +583,45 @@
     "saveTemplate": {
       "title": "Lagre kampmal",
       "nameLabel": "Malnavn",
-      "nameHelper": "For eksempel: BO1 Inferno kniv, BO3 mappool, osv.",
-      "description": "Nåværende map, serieformat, CT-side-regel, veto-bryter, knivmodus og spillere per lag blir lagret i denne malen.",
+      "nameHelper": "For eksempel: BO1 Inferno kniv, BO3 kartutvalg, osv.",
+      "description": "Nåværende kart, serieformat, CT-side-regel, veto-bryter, knivmodus og spillere per lag blir lagret i denne malen.",
       "save": "Lagre"
     },
     "chooseMode": {
       "heading": "Hvordan vil du opprette denne kampen?",
       "template": {
         "title": "Velg mal",
-        "description": "Last inn en forhåndsinnstilling for map, format og regler, og velg deretter lagene.",
+        "description": "Last inn en forhåndsinnstilling for kart, format og regler, og velg deretter lagene.",
         "label": "Kampmal",
         "none": "Ingen",
         "empty": "Ingen maler lagret ennå. Konfigurer en kamp og lagre den som en mal."
       },
       "custom": {
         "title": "Opprett ny kamp",
-        "description": "Konfigurer map, regler, sider og lag fra bunnen av."
+        "description": "Konfigurer kart, regler, sider og lag fra bunnen av."
       }
     },
     "errors": {
-      "slugAndMapsRequired": "Slug og minst ett map er påkrevd.",
+      "slugAndMapsRequired": "Slug og minst ett kart er påkrevd.",
       "teamsMustDiffer": "Lag 1 og lag 2 må være forskjellige.",
-      "invalidMapSelectionVeto": "Ugyldig mapvalg for veto. Velg nøyaktig 7 map eller deaktiver veto.",
-      "invalidMapSelectionFormat": "Ugyldig mapvalg for dette serieformatet. Velg riktig antall map.",
+      "invalidMapSelectionVeto": "Ugyldig kartvalg for veto. Velg nøyaktig 7 kart eller deaktiver veto.",
+      "invalidMapSelectionFormat": "Ugyldig kartvalg for dette serieformatet. Velg riktig antall kart.",
       "configIncomplete": "Kampkonfigurasjonen er ufullstendig. Kontroller innstillingene.",
       "createFailed": "Kunne ikke opprette kampen. Prøv igjen."
     }
   },
   "saveMapPoolModal": {
-    "title": "Lagre mappool",
-    "nameLabel": "Navn på mappool",
+    "title": "Lagre kartutvalg",
+    "nameLabel": "Navn på kartutvalg",
     "namePlaceholder": "Min egendefinerte pool",
     "saveButton": "Lagre",
     "errors": {
-      "nameRequired": "Navn på mappool er påkrevd",
-      "noMaps": "Velg minst ett map",
-      "saveFailed": "Klarte ikke å lagre mappool"
+      "nameRequired": "Navn på kartutvalg er påkrevd",
+      "noMaps": "Velg minst ett kart",
+      "saveFailed": "Klarte ikke å lagre kartutvalg"
     },
-    "info_one": "Dette lagrer en mappool med {{count}} map.",
-    "info_other": "Dette lagrer en mappool med {{count}} map."
+    "info_one": "Dette lagrer en kartutvalg med {{count}} kart.",
+    "info_other": "Dette lagrer en kartutvalg med {{count}} kart."
   },
   "settings": {
     "tab": "Counter-Strike 2",
@@ -636,19 +636,19 @@
     },
     "mapSync": {
       "title": "Mapsynkronisering",
-      "description": "Synk CS2-map og Active Duty-poolen fra maplisten i cs2-server-manager-repositoriet.",
-      "buttonSyncing": "Synkroniserer map…",
-      "buttonIdle": "Synkroniser CS2-map",
-      "newMaps": "Nye map: {{count}}.",
-      "bundled": "Fikk ikke kontakt med GitHub, så maplisten som følger med denne versjonen ble brukt.",
+      "description": "Synk CS2-kart og Active Duty-poolen fra kartlisten i cs2-server-manager-repositoriet.",
+      "buttonSyncing": "Synkroniserer kart…",
+      "buttonIdle": "Synkroniser CS2-kart",
+      "newMaps": "Nye kart: {{count}}.",
+      "bundled": "Fikk ikke kontakt med GitHub, så kartlisten som følger med denne versjonen ble brukt.",
       "activeDuty": {
         "created": "Active Duty-poolen er opprettet.",
         "updated": "Active Duty-poolen er oppdatert.",
         "kept": "Active Duty-poolen er ikke rørt (redigert av en admin).",
         "unchanged": "Active Duty-poolen er allerede oppdatert.",
-        "stale": "Den medfølgende maplisten er eldre enn den som allerede er brukt, så bare nye map ble lagt til."
+        "stale": "Den medfølgende kartlisten er eldre enn den som allerede er brukt, så bare nye kart ble lagt til."
       },
-      "failed": "Klarte ikke å synkronisere map"
+      "failed": "Klarte ikke å synkronisere kart"
     },
     "defaultsTitle": "Serverstandarder",
     "atCore": {
@@ -671,7 +671,7 @@
       },
       "autostart": {
         "label": "Start kamper etter (minutter i oppvarming)",
-        "helper": "0 = vent til alle er klare. Ellers går en lastet kamp live etter så mange minutter, klar eller ikke; spillerne varsles 1 minutt og 10 sekunder før."
+        "helper": "0 = vent til alle er klare. Ellers går en lastet kamp live etter så mange minutter, klar eller ikke. Spillerne varsles 1 minutt og 10 sekunder før."
       },
       "seriesEnd": {
         "title": "Timing ved serieslutt",
@@ -691,7 +691,7 @@
         "title": "Pauser",
         "bothTeamsUnpause": "Krev at begge lag unpauser",
         "onDisconnect": "Pause når en spiller faller ut (5v5)",
-        "onDisconnectHelp": "Ved neste frysetid når et lag mangler en spiller; kampen fortsetter av seg selv når spilleren er tilbake (eller etter 5 minutter). Ikke med bot-fylling.",
+        "onDisconnectHelp": "Ved neste frysetid når et lag mangler en spiller. Kampen fortsetter av seg selv når spilleren er tilbake (eller etter 5 minutter). Ikke med bot-fylling.",
         "maxPausesLabel": "Maks pauser per lag",
         "maxPausesHelper": "0 = ubegrenset",
         "pauseDurationLabel": "Maks pauselengde (sekunder)",
@@ -701,7 +701,7 @@
         "title": "Sidevalg‑timer",
         "enabled": "Aktiver timer for sidevalg",
         "timeLabel": "Tid (sekunder)",
-        "timeHelper": "Tid etter knife round til å velge side"
+        "timeHelper": "Tid etter knivrunde til å velge side"
       },
       "gg": {
         "title": "Tidlig avslutning (.gg)",
@@ -720,7 +720,7 @@
       "demo": {
         "title": "Demo‑opptak",
         "enabled": "Aktiver demo‑opptak (Auto Tournament konfigurerer GOTV + opplasting automatisk)",
-        "description": "Når aktivert setter Auto Tournament tv_enable 1 og lar serveren laste opp demoer til Auto Tournament automatisk etter hvert map."
+        "description": "Når aktivert setter Auto Tournament tv_enable 1 og lar serveren laste opp demoer til Auto Tournament automatisk etter hvert kart."
       }
     },
     "developer": {
@@ -754,7 +754,7 @@
     },
     "vetoTurn": {
       "label": "Sekunder per veto-steg",
-      "helper": "Når et lag går tom for tid, banner eller velger plattformen et tilfeldig map for det. 0 = ingen grense."
+      "helper": "Når et lag går tom for tid, banner eller velger plattformen et tilfeldig kart for det. 0 = ingen grense."
     },
     "highlights": {
       "title": "Høydepunktvideoer",
@@ -763,7 +763,7 @@
         "description": "Vises svakt nede til høyre. Det hjelper oss mye om du lar den stå på."
       },
       "perPlayer": {
-        "label": "Klipp per spiller per map",
+        "label": "Klipp per spiller per kart",
         "helper": "1 til 6. Hvert klipp tar opptakeren omtrent fem minutter, så færre klipp blir ferdige raskere."
       },
       "resolution": {
@@ -777,7 +777,7 @@
         "helper": "Mindre og færre bilder tar opp raskere: 720p i 30 fps tar omtrent halvparten så lang tid som 1440p i 120 fps. Klipp som alt er laget, beholder størrelsen sin."
       },
       "music": {
-        "label": "Musikk under reels",
+        "label": "Musikk under sammendrag",
         "all": "Alle spor ({{count}})",
         "pick": "Bare de jeg velger",
         "off": "Ingen musikk",
@@ -785,7 +785,7 @@
         "stop": "Stopp {{title}}",
         "contentId": "YouTube Content ID",
         "volume": "Volum",
-        "byo": "Ta med din egen musikk: legg til spor du har rett til å bruke. Auto Tournament leverer ingen. Spilleren spiller et annet spor ved siden av hver reel, og nedlastinger kommer med eller uten musikk.",
+        "byo": "Ta med din egen musikk: legg til spor du har rett til å bruke. Auto Tournament leverer ingen. Spilleren spiller et annet spor ved siden av hvert sammendrag, og nedlastinger kommer med eller uten musikk.",
         "remove": "Fjern {{title}}",
         "removeConfirm": "Fjern",
         "keep": "Behold",
@@ -800,23 +800,23 @@
         "add": "Legg til sporet",
         "adding": "Legger til …",
         "rights": "Legg bare til musikk du har rett til å bruke i videoer. Lydstyrken jevnes ut med de andre sporene.",
-        "suggestions_one": "{{count}} spor som passer til reels, på Pixabay",
-        "suggestions_other": "{{count}} spor som passer til reels, på Pixabay",
+        "suggestions_one": "{{count}} spor som passer til sammendrag, på Pixabay",
+        "suggestions_other": "{{count}} spor som passer til sammendrag, på Pixabay",
         "suggestionsHelp": "Åpne ett, last det ned fra Pixabay under lisensen det har, og legg det til her. Lisensen lar deg bruke det i videoer, men ikke gi filen videre.",
         "link": "Eller en lenke til lydfilen",
         "addLink": "Legg til fra lenken"
       },
       "overlay": {
         "label": "Overlegg",
-        "helper_one": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende bildekortet, kill feed og navnene på den igjen, og lager deretter reelene på nytt. Krever ikke CS2.",
-        "helper_other": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende bildekortet, kill feed og navnene på dem igjen, og lager deretter reelene på nytt. Krever ikke CS2.",
+        "helper_one": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende bildekortet, drapslisten og navnene på den igjen, og lager deretter sammendragene på nytt. Krever ikke CS2.",
+        "helper_other": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende bildekortet, drapslisten og navnene på dem igjen, og lager deretter sammendragene på nytt. Krever ikke CS2.",
         "redraw": "Tegn overlegg på nytt",
         "pending_one": "{{count}} video venter på en opptaker",
         "pending_other": "{{count}} videoer venter på en opptaker",
         "failed_one": "{{count}} video kunne ikke tegnes på nytt",
         "failed_other": "{{count}} videoer kunne ikke tegnes på nytt",
         "keepClean": "Behold rene kopier av klipp",
-        "keepCleanHelper": "Hvert klipp lagres også slik det ble tatt opp, uten kortet eller kill feed. Reels lages da fra de rene klippene med et eget overlegg, og overlegg kan tegnes på nytt. Av bruker omtrent halvparten av lagringsplassen.",
+        "keepCleanHelper": "Hvert klipp lagres også slik det ble tatt opp, uten kortet eller drapslisten. Sammendrag lages da fra de rene klippene med et eget overlegg, og overlegg kan tegnes på nytt. Av bruker omtrent halvparten av lagringsplassen.",
         "redrawFailed": "Klarte ikke å sette tegningen i kø."
       },
       "moved": "Innstillingene for høydepunkter, musikken og opptakerne har fått en egen side:"
@@ -877,9 +877,9 @@
     "none": "Ingen type"
   },
   "mapModeFilter": {
-    "label": "Maptype",
+    "label": "Karttype",
     "any": "Alle typer",
-    "offType": "{{maps}}: ikke et {{mode}}-map. Fjern det, eller endre maptypen."
+    "offType": "{{maps}}: ikke et {{mode}}-kart. Fjern det, eller endre karttypen."
   },
   "fleetPanel": {
     "title": "Ready Up-flåte",
@@ -977,9 +977,9 @@
     "refresh": "Oppdater",
     "loading": "Laster …",
     "loadFailed": "Klarte ikke å laste rundesikkerhetskopiene",
-    "map": "Map {{number}}",
-    "mapNamed": "Map {{number}}: {{name}}",
-    "mapPicker": "Map",
+    "map": "Kart {{number}}",
+    "mapNamed": "Kart {{number}}: {{name}}",
+    "mapPicker": "Kart",
     "noServer": "Ingen server kjører denne kampen, så det er ingenting å gjenopprette på.",
     "rconHint": "Denne serveren har sine egne rundesikkerhetskopier (RCON). Skriv inn runden du vil gå tilbake til.",
     "round": "Runde",
@@ -987,14 +987,14 @@
     "none": "Ingen sikkerhetskopier for {{map}} ennå. Serveren sender en ved starten av hver runde.",
     "latest": "Siste",
     "superseded": "Erstattet",
-    "supersededHint": "En gjenoppretting gikk tilbake til før denne runden; den hører til den erstattede tidslinjen.",
+    "supersededHint": "En gjenoppretting gikk tilbake til før denne runden. Den hører til den erstattede tidslinjen.",
     "pick": "Velg en runde å gjenopprette",
     "restoreTo": "Gjenopprett til runde {{round}}",
     "confirm": "Gjenopprett",
     "confirmBody": "Gjenopprette {{map}} til starten av runde {{round}} ({{team1}}–{{team2}})? Rundene som er spilt etter den, blir ugyldige, og kampen pauses.",
     "confirmBodyRcon": "Gjenopprette kampen til runde {{round}} fra serverens egen sikkerhetskopi? Rundene som er spilt etter den, blir ugyldige.",
     "restored": "Gjenopprettet til starten av runde {{round}}. Kampen er pauset til pausen oppheves.",
-    "sentNoAnswer": "Gjenoppretting til runde {{round}} er sendt; serveren har ikke svart ennå.",
+    "sentNoAnswer": "Gjenoppretting til runde {{round}} er sendt. Serveren har ikke svart ennå.",
     "failed": "Gjenopprettingen mislyktes: {{reason}}",
     "unknownError": "ukjent feil",
     "recent": "Nylige gjenopprettinger",
@@ -1011,7 +1011,7 @@
       "not_assigned": "ingen server kjører denne kampen",
       "too_large": "sikkerhetskopien er for stor til å sendes til en annen server",
       "send_failed": "den kunne ikke sendes til serveren",
-      "bad_args": "mapet eller runden er ikke gyldig",
+      "bad_args": "kartet eller runden er ikke gyldig",
       "bad_phase": "kampen kan ikke gjenopprettes akkurat nå",
       "checksum": "serveren fant sikkerhetskopien skadet",
       "stale_epoch": "kampen er flyttet til en annen server",
@@ -1029,7 +1029,7 @@
       "command": "Kommandoen mislyktes"
     },
     "sent": "Sendt til {{name}}",
-    "queued": "{{name}} er frakoblet; kommandoen kjører når csm kobler til igjen",
+    "queued": "{{name}} er frakoblet. Kommandoen kjører når csm kobler til igjen",
     "rotateSent": "Nytt token sendt",
     "rotateQueued": "Maskinen får et nytt token neste gang den kobler til",
     "process": {
@@ -1096,7 +1096,7 @@
     "bundleSkins": "Med skins",
     "update": "Oppdater",
     "forceTitle": "En kamp pågår",
-    "forceHelp": "Dette avbryter kampen på {{servers}}. Oppgi hvorfor; det blir loggført.",
+    "forceHelp": "Dette avbryter kampen på {{servers}}. Oppgi hvorfor. Det blir loggført.",
     "forceReason": "Årsak",
     "forceConfirm": "Avbryt kampen",
     "confirm": {
@@ -1226,7 +1226,7 @@
     "autoOn": "Automatisk",
     "autoOff": "Automatisk failover av",
     "unknownServer": "ukjent server",
-    "fromWarmup": "Start mapet på nytt fra oppvarmingen",
+    "fromWarmup": "Start kartet på nytt fra oppvarmingen",
     "roundScore": "Runde {{round}} ({{team1}}–{{team2}})",
     "roundN": "Runde {{round}}",
     "failed": "Klarte ikke å flytte kampen",
@@ -1302,9 +1302,9 @@
       "skins": "Skins",
       "midas": "Midas",
       "deathmatch": "Deathmatch",
-      "mapvote": "Mapavstemning",
+      "mapvote": "Kartavstemning",
       "community": "Fellesskap",
-      "addons": "Addons",
+      "addons": "Tillegg",
       "movement": "Movement"
     },
     "pluginHelp": {
@@ -1314,7 +1314,7 @@
       "skins": "Spillernes våpenskins, kniver og hansker",
       "midas": "Våpenmodeller i gull",
       "deathmatch": "Deathmatch-moduser",
-      "mapvote": "Mapavstemning: .rtv, .nominate og avstemning ved mapslutt",
+      "mapvote": "Kartavstemning: .rtv, .nominate og avstemning ved mapslutt",
       "community": "Fellesskapskommandoer: .rank, .top, .speclist, admin .kick",
       "addons": "Workshop-tillegg",
       "movement": "Surf, bhop og kz: timer, rekorder og topplister"
@@ -1323,7 +1323,7 @@
     "usesDefault": "Bruker standarden for flåten: {{plugins}}.",
     "keepsBundle": "Ingen standard valgt: serveren beholder utvidelsene Ready Up-pakken laster.",
     "notInstalled": "Ikke installert på denne serveren: {{plugins}}. De er av til Ready Up oppdateres med pakken «Med skins».",
-    "fullBundleNote": "Noen av disse utvidelsene trenger den fulle Ready Up-pakken; de nye serverne får den.",
+    "fullBundleNote": "Noen av disse utvidelsene trenger den fulle Ready Up-pakken. De nye serverne får den.",
     "serverHelp": "Slår Ready Up-utvidelser av eller på på denne serveren (plugins.set). Serveren husker valget etter en omstart, og får det igjen hvis den kobler til med andre utvidelser på.",
     "defaultButton": "Standardutvidelser",
     "defaultTitle": "Standardutvidelser for nye servere",
@@ -1345,25 +1345,25 @@
   "profile": {
     "title": "Prestasjon",
     "kd": "K/D",
-    "kills": "Kills {{count}}",
+    "kills": "Drap {{count}}",
     "deaths": "Dødsfall {{count}}",
     "headshots": "Hodeskudd",
     "adr": "ADR",
     "average": "Snitt {{value}}",
     "impact": "Innvirkning",
     "mvps": "MVP-er",
-    "flashAssists": "flash-assists / kamp",
+    "flashAssists": "flash-assister / kamp",
     "utilityDamage": "utility-skade / runde",
-    "maps": "Mapstyrke",
-    "mapsAria": "Mapstyrke: andel runder vunnet på hvert map",
-    "mapsFew": "Diagrammet vises når du har spilt tre map.",
+    "maps": "Kartstyrke",
+    "mapsAria": "Kartstyrke: andel runder vunnet på hvert kart",
+    "mapsFew": "Diagrammet vises når du har spilt tre kart.",
     "best": "Best · {{map}}",
     "weakest": "Svakest · {{map}}",
     "mapSummary": "{{pct}} % vunnet · {{played}} spilt",
     "mapRecord": "{{won}}/{{played}} vunnet · runder {{rounds}}",
-    "mapsNote": "Ut fra andelen runder vunnet på hvert map. Få runder teller mindre.",
-    "teamMapsAria": "Lagets mapstyrke: andel runder vunnet på hvert map",
-    "teamMapsFew": "Diagrammet vises når laget har spilt tre map.",
+    "mapsNote": "Ut fra andelen runder vunnet på hvert kart. Få runder teller mindre.",
+    "teamMapsAria": "Lagets kartstyrke: andel runder vunnet på hvert kart",
+    "teamMapsFew": "Diagrammet vises når laget har spilt tre kart.",
     "bansMost": "Banner mest",
     "picksMost": "Velger mest",
     "vetoShare": "{{map}} · {{count}} av {{total}} vetoer",
@@ -1379,7 +1379,7 @@
     "openingKillsPerRound": "Åpningskills per runde",
     "clutchesWon": "Clutcher vunnet",
     "openingDuels": "Åpningsdueller vunnet–tapt",
-    "multiKills": "Runder med 3+ kills",
+    "multiKills": "Runder med 3+ drap",
     "flashes": "Hvem flashene dine treffer",
     "enemiesFlashed_one": "{{count}} motstander",
     "enemiesFlashed_other": "{{count}} motstandere",
@@ -1549,7 +1549,7 @@
       },
       "playDropChance": "Sjanse for et skin når du taper eller spiller uavgjort",
       "knivesByPrice": "Kniver og hansker får sjeldenhet etter markedspris (Skinport, oppdatert daglig): billige er vanlige, dyre er sjeldne.",
-      "pageHint": "Virtuelle skins spillerne vinner her. Utstyrte skins vises på Ready Up-servere mellom mapene.",
+      "pageHint": "Virtuelle skins spillerne vinner her. Utstyrte skins vises på Ready Up-servere mellom kartene.",
       "on": "På",
       "off": "Av",
       "stats": {
@@ -1569,13 +1569,13 @@
       "rewardTitle": "Premie for {{place}}",
       "done": "Ferdig",
       "fiveVsFive": "Disse gjelder 5v5. Mindre moduser gir sjeldnere:",
-      "fairRules": "En spiller som forlater en kamp får ingenting; de som ble igjen har fortsatt sjansen sin. En kamp som er over etter under 8 runder gir ingen drop (slik ser farming ut). Med bryteren over på gir den tredje kampen mot samme motstandere samme døgn mye sjeldnere drop. Plasseringspremier i turneringer går bare til spillere som spilte i turneringen.",
+      "fairRules": "En spiller som forlater en kamp får ingenting. De som ble igjen har fortsatt sjansen sin. En kamp som er over etter under 8 runder gir ingen drop (slik ser farming ut). Med bryteren over på gir den tredje kampen mot samme motstandere samme døgn mye sjeldnere drop. Plasseringspremier i turneringer går bare til spillere som spilte i turneringen.",
       "tournamentMatchDrops": "Turneringskamper gir også drops (ikke i esport-modus)",
       "levelUpDrops": "Et drop for hvert nye nivå",
       "tryoutServer": "Hold en server for å prøve skins",
       "tryoutWhat": "Hva er dette?",
       "tryoutHelpTitle": "Server for å prøve skins",
-      "tryoutHelpWhat": "En CS2-server bare for å prøve skins: spillerne kobler til fra inventaret («Prøv dem i spillet») og ser det de har utstyrt, med en gang. Den kjører ingen kamper; den venter på et surf-map og går tilbake til det når den er tom.",
+      "tryoutHelpWhat": "En CS2-server bare for å prøve skins: spillerne kobler til fra inventaret («Prøv dem i spillet») og ser det de har utstyrt, med en gang. Den kjører ingen kamper. Den venter på et surfkart og går tilbake til det når den er tom.",
       "tryoutHelpHow": "Når dette er på og automatisk skalering er på (Servere → Flåteinnstillinger), lager plattformen en på en maskin med plass når det ikke finnes noen. Du kan også sette hvilken som helst server på forhåndsinnstillingen for skin-prøving selv.",
       "tryoutHelpCost": "Den bruker en serverplass på lisensen, som alle andre servere, og litt minne og CPU på maskinen. Derfor er den av til du slår den på.",
       "tryoutServerLicense": "Den bruker en serverplass på lisensen, som alle andre servere.",
@@ -1642,7 +1642,7 @@
     "unequipLabel": "Ta av {{name}}",
     "equipFailed": "Kunne ikke ta den på",
     "chooseTitle": "Velg én å beholde",
-    "chooseHelp": "Tre skins droppet. Behold én; de to andre forsvinner.",
+    "chooseHelp": "Tre skins droppet. Behold én. De to andre forsvinner.",
     "keepThis": "Behold denne",
     "keeping": "Beholder…",
     "chooseFailed": "Kunne ikke beholde den",
@@ -1670,17 +1670,17 @@
       "whenPlacement": "For topp tre i en turnering",
       "chanceTitle": "Sjanse for drop etter en kamp",
       "mode": "Modus",
-      "fair": "En spiller som forlater en kamp får ingenting; resten har fortsatt sjansen sin. Ingenting dropper fra en kamp som er over etter under 8 runder, og den tredje kampen mot samme motstandere samme døgn gir mye sjeldnere drop.",
+      "fair": "En spiller som forlater en kamp får ingenting. Resten har fortsatt sjansen sin. Ingenting dropper fra en kamp som er over etter under 8 runder, og den tredje kampen mot samme motstandere samme døgn gir mye sjeldnere drop.",
       "rarityTitle": "Sjanse per sjeldenhet",
       "skins_one": "{{count}} skin",
       "skins_other": "{{count}} skins",
       "perSkin": "{{odds}} for én bestemt skin",
-      "rarityNote": "Hver av de {{count}} skinsene i et drop trekker sjeldenhet for seg; innen en sjeldenhet er alle skins like sannsynlige. Kniver og hansker rangeres etter pris.",
+      "rarityNote": "Hver av de {{count}} skinsene i et drop trekker sjeldenhet for seg. Innen en sjeldenhet er alle skins like sannsynlige. Kniver og hansker rangeres etter pris.",
       "placementTitle": "Turneringsplasseringer",
       "pickOfRarity": "et valg blant {{rarity}}-skins",
       "rarityOdds": "Sjanse for sjeldenheten",
       "skinOdds": "Denne skinen",
-      "fairNoRepeat": "En spiller som forlater en kamp får ingenting; resten har fortsatt sjansen sin. Ingenting dropper fra en kamp som er over etter under 8 runder."
+      "fairNoRepeat": "En spiller som forlater en kamp får ingenting. Resten har fortsatt sjansen sin. Ingenting dropper fra en kamp som er over etter under 8 runder."
     },
     "rewards": {
       "title": "Premier",
@@ -1835,11 +1835,11 @@
     "titlePlain": "Demoanalyse",
     "eyebrow": "Demoanalyse",
     "back": "Tilbake",
-    "missing": "Dette mapet har ingen analyse ennå. Demoarbeideren leser hver demo etter kampen.",
+    "missing": "Dette kartet har ingen analyse ennå. Demoarbeideren leser hver demo etter kampen.",
     "loading": "Laster analysen",
     "rounds": "Runder",
     "roundLabel": "Runde {{n}}",
-    "noKills": "Ingen kills denne runden.",
+    "noKills": "Ingen drap denne runden.",
     "world": "verden",
     "hs": "hodeskudd",
     "wallbang": "gjennom vegg",
@@ -1885,7 +1885,7 @@
     "replay": {
       "title": "2D-reprise",
       "aria": "2D-reprise av {{map}}",
-      "noRadar": "Ingen radar for dette mapet: tegnet på et rutenett.",
+      "noRadar": "Ingen radar for dette kartet: tegnet på et rutenett.",
       "play": "Spill av",
       "pause": "Pause",
       "scrub": "Tid",
@@ -1917,7 +1917,7 @@
     "queued_other": "{{count}} til på vei",
     "pending": "Venter på opptak",
     "recording": "Tar opp …",
-    "mapN": "Map {{n}}",
+    "mapN": "Kart {{n}}",
     "reelOf": "Høydepunkter fra {{map}}",
     "moments_one": "{{count}} øyeblikk",
     "moments_other": "{{count}} øyeblikk",
@@ -1925,7 +1925,7 @@
     "close": "Lukk",
     "roundN": "Runde {{n}}",
     "seeAll": "Se alle {{count}}",
-    "reelBadge": "REEL",
+    "reelBadge": "SAMMENDRAG",
     "favourite": "Favoritt",
     "makeFavourite": "Gjør til favoritt",
     "unfavourite": "Ikke favoritt lenger",
@@ -1933,13 +1933,13 @@
     "beingRecorded_one": "{{count}} høydepunkt tas opp.",
     "beingRecorded_other": "{{count}} høydepunkter tas opp.",
     "pageTitle": "Høydepunktene til {{name}}",
-    "summary": "{{clips}} klipp · {{reels}} reels · fra {{maps}} map",
+    "summary": "{{clips}} klipp · {{reels}} sammendrag · fra {{maps}} kart",
     "loading": "Laster høydepunkter",
     "loadFailed": "Kunne ikke laste høydepunktene.",
     "filterLabel": "Vis",
     "filter": {
       "all": "Alle",
-      "reels": "Reels",
+      "reels": "Sammendrag",
       "multi": "Aces og 4K",
       "clutch": "Clutcher",
       "flair": "Flicks og wallbangs",
@@ -1949,7 +1949,7 @@
       "best": "Sorter: best",
       "newest": "Sorter: nyest"
     },
-    "reelsHeading": "REELS: HVERT MAPS ØYEBLIKK, ETTER HVERANDRE",
+    "reelsHeading": "SAMMENDRAG: HVERT KART ØYEBLIKK, ETTER HVERANDRE",
     "momentsHeading": "ØYEBLIKK",
     "noneForFilter": "Ingenting her ennå.",
     "showAll": "Vis alle {{count}}",
@@ -1963,7 +1963,7 @@
     },
     "watch": {
       "missing": "Denne videoen finnes ikke (lenger).",
-      "playerReel": "{{name}} · reel fra {{map}}",
+      "playerReel": "{{name}} · sammendrag fra {{map}}",
       "matchReel": "Kampreel · {{map}}",
       "tournamentReel": "Turneringsreel",
       "plays_one": "{{count}} spill",
@@ -1975,11 +1975,11 @@
       "inThisReel": "I DENNE REELEN",
       "more": "MER FRA DEM",
       "players": "SPILLERE",
-      "moreReels": "FLERE REELS",
+      "moreReels": "FLERE SAMMENDRAG",
       "clips_one": "{{count}} klipp",
       "clips_other": "{{count}} klipp",
-      "theirReel_one": "Reelen deres · {{count}} klipp",
-      "theirReel_other": "Reelen deres · {{count}} klipp",
+      "theirReel_one": "Sammendraget deres · {{count}} klipp",
+      "theirReel_other": "Sammendraget deres · {{count}} klipp",
       "teamReel": "Lagets høydepunkter · {{team}}"
     },
     "tournament": {
@@ -2003,11 +2003,11 @@
     "matchReelRecording": "Kampreel · tas opp",
     "teamReelButton": "Høydepunkter for {{team}}",
     "wholeSeries": "Hele serien",
-    "seriesReel": "Serie-reel"
+    "seriesReel": "Seriesammendrag"
   },
   "serversBoard": {
     "addFirstServers": "Legg til de første serverne",
-    "addHelp": "På {{name}}. Nye servere får Ready Up og kobler seg til plattformen selv; de dukker opp under mens de lages.",
+    "addHelp": "På {{name}}. Nye servere får Ready Up og kobler seg til plattformen selv. De dukker opp under mens de lages.",
     "autoUpdates": "Automatiske oppdateringer",
     "close": "Lukk",
     "createN_one": "Lag {{count}} server",
@@ -2036,13 +2036,13 @@
     "linkOffline": "Ikke koblet til",
     "linkOnline": "Koblet til",
     "machineOffline": "Maskinen er frakoblet",
-    "mapOf": "Map {{n}} av {{count}}",
+    "mapOf": "Kart {{n}} av {{count}}",
     "matchHint": "En kamp spilles på denne serveren: å stoppe eller starte den på nytt krever en grunn, og failover kan flytte kampen først.",
     "newServer": "Ny server {{n}}",
     "notAnswering": "Svarer ikke",
     "openMatch": "Åpne kampen",
     "other": {
-      "about": "Lagt til med adresse, eller registrert på egen hånd. De fungerer fortsatt; nye servere lages på en maskin.",
+      "about": "Lagt til med adresse, eller registrert på egen hånd. De fungerer fortsatt. Nye servere lages på en maskin.",
       "disabled": "Deaktivert",
       "title": "Servere som ikke er på en maskin"
     },
@@ -2074,22 +2074,22 @@
   "matchPage": {
     "recordingClips": "Tar opp klipp",
     "clipsDone": "{{done}} / {{total}} klipp",
-    "reelLead": "Spillene deres i den rekkefølgen de skjedde. Velg en sang i spilleren, og del eller last ned reelen.",
-    "inThisReel": "I denne reelen",
+    "reelLead": "Spillene deres i den rekkefølgen de skjedde. Velg en sang i spilleren, og del eller last ned sammendraget.",
+    "inThisReel": "I dette sammendraget",
     "openReel": "Åpne på se-siden",
-    "scoreboard": "Scoreboard",
+    "scoreboard": "Resultattavle",
     "player": "Spiller",
     "openingKills": "Åpningskills",
     "highlights": "Høydepunkter",
     "rating": "Rating",
-    "allMaps": "Alle maps",
-    "scoreboardMap": "Map",
-    "reelTeam": "Reel",
+    "allMaps": "Alle kart",
+    "scoreboardMap": "Kart",
+    "reelTeam": "Sammendrag",
     "teamHighlights": "Høydepunkter for {{team}}"
   },
   "highlightsAdmin": {
     "title": "Høydepunkter",
-    "subtitle": "Opptakerne som gjør demoer om til høydepunkt-klipp og reels: hvordan det går med dem, hva de lager og hvordan du legger til en.",
+    "subtitle": "Opptakerne som gjør demoer om til høydepunktklipp og sammendrag: hvordan det går med dem, hva de lager og hvordan du legger til en.",
     "tabs": {
       "recorders": "Opptakere",
       "settings": "Innstillinger",
@@ -2099,7 +2099,7 @@
     "loadError": "Klarte ikke å laste opptakerne",
     "actionError": "Det gikk ikke",
     "empty": "Ingen opptaker har bedt om arbeid ennå",
-    "emptyHelp": "Legg til en med knappen over; den dukker opp her når den ber om arbeid første gang.",
+    "emptyHelp": "Legg til en med knappen over. Den dukker opp her når den ber om arbeid første gang.",
     "online": "Tilkoblet",
     "offline": "Frakoblet",
     "paused": "Pauset",
@@ -2132,7 +2132,7 @@
     "ok": "OK",
     "failed": "Mislyktes",
     "kind": {
-      "map": "Høydepunkter fra mapet",
+      "map": "Høydepunkter fra kartet",
       "match_reel": "Kampreel",
       "team_reel": "Lagreel",
       "tournament_reel": "Turneringsreel",
@@ -2140,7 +2140,7 @@
       "redress": "Overlegg tegnet på nytt",
       "benchmark": "Benchmark"
     },
-    "map": "map {{n}}",
+    "map": "kart {{n}}",
     "clips_one": "{{count}} klipp",
     "clips_other": "{{count}} klipp",
     "log": "Logg",
@@ -2149,26 +2149,26 @@
     "close": "Lukk",
     "cs2Tab": "Counter-Strike 2",
     "recording": "Tar opp",
-    "workingOn_one": "Tar opp {{count}} klipp fra map {{map}} ({{match}}) siden {{time}}",
-    "workingOn_other": "Tar opp {{count}} klipp fra map {{map}} ({{match}}) siden {{time}}",
+    "workingOn_one": "Tar opp {{count}} klipp fra kart {{map}} ({{match}}) siden {{time}}",
+    "workingOn_other": "Tar opp {{count}} klipp fra kart {{map}} ({{match}}) siden {{time}}",
     "forget": "Glem",
     "forgotten": "Glemt. Den dukker opp igjen hvis den ber om arbeid.",
     "clips": {
       "tab": "Klipp",
-      "current": "Klipp og reels lages nå i {{quality}}.",
+      "current": "Klipp og sammendrag lages nå i {{quality}}.",
       "outdated_other": "{{count}} laget med andre innstillinger",
       "redoOutdated": "Lag de utdaterte på nytt",
       "onlyOutdated": "Bare utdaterte",
       "empty": "Ingen klipp ennå.",
       "emptyOutdated": "Alt er laget med dagens innstillinger.",
       "redo": "Lag på nytt",
-      "redone": "La {{clips}} klipp og {{reels}} reels i kø",
+      "redone": "La {{clips}} klipp og {{reels}} sammendrag i kø",
       "madeWith": "Laget i {{quality}}",
       "madeUnknown": "Laget før dette ble lagret",
-      "mapN": "Map {{n}}",
+      "mapN": "Kart {{n}}",
       "series": "Hele serien",
-      "reels": "Reels",
-      "reelOf": "{{map}}-reel",
+      "reels": "Sammendrag",
+      "reelOf": "{{map}}-sammendrag",
       "status": {
         "pending": "Venter",
         "recording": "Tar opp",
@@ -2193,7 +2193,7 @@
     },
     "add": {
       "button": "Legg til en opptaker",
-      "hint": "En gaming-PC eller en hodeløs server med NVIDIA- eller AMD-GPU. Den dukker opp her med sitt eget navn når den første gang spør etter arbeid; gi den nytt navn i listen.",
+      "hint": "En gaming-PC eller en hodeløs server med NVIDIA- eller AMD-GPU. Den dukker opp her med sitt eget navn når den første gang spør etter arbeid. Gi den nytt navn i listen.",
       "keys": "Opptakernøkler",
       "used": "sist brukt {{time}}",
       "unused": "ikke brukt ennå",
@@ -2207,7 +2207,7 @@
       "pc": "Gaming-PC",
       "server": "Server (hodeløs)",
       "pcNeeds": "En Linux-PC med Docker, Steam (innlogget) og CS2 installert. Lim inn dette i en terminal i skrivebordsøkten. Opptakeren bruker GPU-en og finner CS2 i Steam-bibliotekene. Ikke spill eller kjør annet GPU-arbeid på den mens den tar opp: klippene ville hakke.",
-      "serverNeeds": "En Ubuntu 24.04-server med NVIDIA-GPU, uten skrivebord. Første linje (én gang, med sudo) installerer NVIDIA-driveren og Docker og slår av dvale; start på nytt om den ber om det. Den andre starter Steam og CS2 i en container og opptakeren i den.",
+      "serverNeeds": "En Ubuntu 24.04-server med NVIDIA-GPU, uten skrivebord. Første linje (én gang, med sudo) installerer NVIDIA-driveren og Docker og slår av dvale. Start på nytt om den ber om det. Den andre starter Steam og CS2 i en container og opptakeren i den.",
       "pcAfter": "Den starter nå og igjen hver gang Docker gjør det.",
       "serverAfter": "Deretter, én gang: åpne nettgrensesnittet den skriver ut (https, port 8483) og logg inn med førstegangs-innloggingen den skriver ut, og velg et eget passord. Logg inn i Steam (første innlogging kan si «waiting for network» et minutt), sett den i frakoblet modus og installer CS2. Opptakeren tar arbeid når CS2 er der. Kjør den andre linjen igjen for å oppdatere."
     },
@@ -2223,7 +2223,7 @@
       "approve": "Ser bra ut (A)",
       "redo": "Ta opp på nytt: hakker eller ødelagt (R)",
       "drop": "Dropp: ikke verdt å vise (D)",
-      "help": "Ta opp på nytt tar opp klippet igjen, helst på en annen opptaker, og reelene etterpå. Våpen mangler tar det opp igjen uten TrueView (CS2 mister av og til våpenet og hendene når spillerens syn bygges opp igjen). Dropp holder det ute av alle reeler. ← → for å bla.",
+      "help": "Ta opp på nytt tar opp klippet igjen, helst på en annen opptaker, og sammendragene etterpå. Våpen mangler tar det opp igjen uten TrueView (CS2 mister av og til våpenet og hendene når spillerens syn bygges opp igjen). Dropp holder det ute av alle reeler. ← → for å bla.",
       "state": {
         "approved": "Godkjent",
         "redo": "Tas opp på nytt",
@@ -2232,7 +2232,7 @@
       "done": {
         "approved": "Godkjent",
         "redo": "Satt i kø for nytt opptak",
-        "drop": "Droppet; reelene lages på nytt",
+        "drop": "Forkastet. Sammendragene lages på nytt",
         "weapon": "Lagt i kø for nytt opptak uten TrueView"
       },
       "weapon": "Ta opp igjen: våpen mangler (W)"
@@ -2257,7 +2257,7 @@
       "enabledCount": "{{count}}/{{total}} aktivert",
       "update": "Oppdater opptaker",
       "updatePending": "Oppdatering venter",
-      "updateQueued": "Oppdatering satt i kø; pågående jobb fullføres først.",
+      "updateQueued": "Oppdatering satt i kø. Pågående jobb fullføres først.",
       "updateAll": "Oppdater alle",
       "updateProgress": "Oppdaterer: {{done}} av {{total}} oppdatert",
       "updateDone": "{{done}} av {{total}} oppdatert",
@@ -2286,9 +2286,9 @@
       "help": "Valves konkurranseregler (Premier-innstillinger, telte tekniske pauser, ingen kniv-sidevalg) og ingen skins på serveren. Av: vanlige regler, og spillerne ser skinsene sine."
     },
     "mapVeto": {
-      "label": "Mapveto",
-      "onHelp": "Lagene banner og velger map før hver kamp.",
-      "offHelp": "Uten veto: hver kamp trekker mapene sine fra utvalget, og en knife round avgjør sidene. Ett map eller flere holder."
+      "label": "Kartveto",
+      "onHelp": "Lagene banner og velger kart før hver kamp.",
+      "offHelp": "Uten veto: hver kamp trekker kartene sine fra utvalget, og en knivrunde avgjør sidene. Ett kart eller flere holder."
     },
     "wingmanPreset": {
       "button": "Sett opp som wingman"
@@ -2296,13 +2296,13 @@
   },
   "library": {
     "title": "Høydepunkter",
-    "subtitle": "Alle klipp og reels fra kampene som er spilt her.",
+    "subtitle": "Alle klipp og sammendrag fra kampene som er spilt her.",
     "kindLabel": "Hva som vises",
     "sortLabel": "Rekkefølge",
     "kind": {
       "all": "Alle",
       "clips": "Klipp",
-      "reels": "Reels"
+      "reels": "Sammendrag"
     },
     "sort": {
       "new": "Nyeste",
@@ -2314,7 +2314,7 @@
       "team": "Lag: {{name}}",
       "match": "Kamp: {{name}}",
       "tournament": "Turnering: {{name}}",
-      "map": "Map: {{name}}"
+      "map": "Kart: {{name}}"
     },
     "views_one": "{{count}} visning",
     "views_other": "{{count}} visninger",
@@ -2322,13 +2322,13 @@
     "likes_other": "{{count}} likes",
     "more": "Vis flere ({{shown}} av {{total}})",
     "empty": "Ingen høydepunkter ennå",
-    "emptyHint": "Klipp og reels dukker opp her når demoene fra en kamp er tatt opp.",
+    "emptyHint": "Klipp og sammendrag dukker opp her når demoene fra en kamp er tatt opp.",
     "emptyFiltered": "Ingenting her ennå",
     "emptyFilteredHint": "Fjern et filter for å se flere.",
     "failed": "Kunne ikke hente høydepunktene",
     "failedHint": "Prøv igjen om litt.",
-    "playerReel": "Reelen til {{name}}",
-    "tournamentReel": "{{name}}-reel",
+    "playerReel": "Sammendraget til {{name}}",
+    "tournamentReel": "{{name}}-sammendrag",
     "matchReel": "Kampreel",
     "kindName": {
       "player": "Spillerreel",
@@ -2368,7 +2368,7 @@
       "rating": "Prestasjon",
       "adr": "ADR",
       "kd": "K/D",
-      "hs": "Headshots",
+      "hs": "Hodeskudd",
       "opening": "Åpningsdueller",
       "clutch": "Clutcher",
       "kast": "KAST"
@@ -2379,19 +2379,19 @@
       "days_other": "Siste {{count}} dager"
     },
     "explain": {
-      "rating": "Hvor godt en spiller spiller, 1,00 for en gjennomsnittlig spiller: kills, deaths, assists, skade og KAST per runde.",
+      "rating": "Hvor godt en spiller spiller, 1,00 for en gjennomsnittlig spiller: drap, dødsfall, assister, skade og KAST per runde.",
       "adr": "Gjennomsnittlig skade per runde.",
-      "kd": "Kills per death.",
-      "hs": "Andelen kills som var headshots (minst 50 kills).",
-      "opening": "Andelen åpningsdueller vunnet: rundens første kill, for eller mot (minst 10 dueller).",
+      "kd": "Drap per død.",
+      "hs": "Andelen drap som var hodeskudd (minst 50 drap).",
+      "opening": "Andelen åpningsdueller vunnet: rundens første drap, for eller mot (minst 10 dueller).",
       "clutch": "Andelen 1vX-runder vunnet som sistemann (minst 5).",
-      "kast": "Andelen runder med kill, assist, overlevelse eller trade."
+      "kast": "Andelen runder med drap, assist, overlevelse eller trade."
     },
-    "qualify": "Spillere trenger {{maps}} maps og {{rounds}} runder for å kvalifisere; like verdier deler plass.",
+    "qualify": "Spillere trenger {{maps}} kart og {{rounds}} runder for å kvalifisere. Like verdier deler plass.",
     "empty": "Ingen kvalifiserer ennå.",
     "player": "Spiller",
     "sample": "Av",
-    "sampleHint": "{{maps}} maps, {{rounds}} runder",
+    "sampleHint": "{{maps}} kart, {{rounds}} runder",
     "sampleOf": {
       "rating_one": "{{count}} runde",
       "rating_other": "{{count}} runder",
@@ -2399,8 +2399,8 @@
       "adr_other": "{{count}} runder",
       "kd_one": "{{count}} K+D",
       "kd_other": "{{count}} K+D",
-      "hs_one": "{{count}} kill",
-      "hs_other": "{{count}} kills",
+      "hs_one": "{{count}} drap",
+      "hs_other": "{{count}} drap",
       "opening_one": "{{count}} duell",
       "opening_other": "{{count}} dueller",
       "clutch_one": "{{count}} clutch",
@@ -2413,7 +2413,7 @@
     "title": "Rolle",
     "yours": "Rollen din",
     "none": "Ikke satt",
-    "suggested": "Foreslått ut fra demoene: {{role}} ({{confidence}}, {{maps}} maps).",
+    "suggested": "Foreslått ut fra demoene: {{role}} ({{confidence}}, {{maps}} kart).",
     "confidence": {
       "low": "lav sikkerhet",
       "medium": "middels sikkerhet",
@@ -2425,7 +2425,7 @@
       "support": "{{flashes}} fiender flashet og {{utility}} utility-skade per runde.",
       "rifler": "Ingen annen rolle skiller seg ut."
     },
-    "noSuggestion": "For få analyserte demoer til å foreslå en rolle ennå (3 maps og 30 kills).",
+    "noSuggestion": "For få analyserte demoer til å foreslå en rolle ennå (3 kart og 30 drap).",
     "saveFailed": "Kunne ikke lagre rollen",
     "team": "Roller",
     "suggestedShort": "{{role}} (foreslått, {{confidence}})"
@@ -2435,7 +2435,7 @@
       "recording": "Tar opp",
       "encoding": "Koder",
       "uploading": "Laster opp",
-      "joining": "Setter sammen reel",
+      "joining": "Setter sammen sammendrag",
       "redressing": "Tegner overlegg på nytt",
       "benchmark": "Benchmark",
       "starting": "Starter",
@@ -2467,18 +2467,18 @@
     "movingTitle": "Flytter kampen til en annen server"
   },
   "seriesMaps": {
-    "title": "Map",
-    "mapN": "Map {{n}}",
+    "title": "Kart",
+    "mapN": "Kart {{n}}",
     "pickedBy": "valgt av {{team}}",
-    "decider": "avgjørende map",
+    "decider": "avgjørende kart",
     "live": "Direkte",
     "upNext": "Neste",
     "notPlayed": "Ikke spilt",
     "won": "{{team}} vant",
     "draw": "Uavgjort",
-    "regulation": "Uten overtime",
-    "overtime": "Etter overtime",
-    "onDamage": "Likt etter overtime, avgjort på skade",
+    "regulation": "Uten ekstraomganger",
+    "overtime": "Etter ekstraomganger",
+    "onDamage": "Likt etter ekstraomganger, avgjort på skade",
     "demo": "Demo"
   },
   "dropped": {
@@ -2491,31 +2491,31 @@
   "rules": {
     "mode": "{{size}}v{{size}} konkurranse.",
     "modeWingman": "Wingman: 2v2 på ett bombested.",
-    "series_one": "Ett map per kamp.",
-    "series_other": "Best av {{count}}: først til {{win}} map vinner kampen.",
-    "rounds": "{{rounds}} runder: først til {{win}} vinner mapet. Lagene bytter side etter {{half}}.",
-    "overtime": "Ved {{half}}-{{half}}: overtime (6 runder, først til 4) til noen vinner.",
-    "overtimeLimited_one": "Ved {{half}}-{{half}}: én overtime (6 runder, først til 4); står det fortsatt likt, vinner laget med mest skade totalt.",
-    "overtimeLimited_other": "Ved {{half}}-{{half}}: opptil {{count}} overtime-perioder (6 runder hver, først til 4); står det fortsatt likt, vinner laget med mest skade totalt.",
-    "noOvertime": "Ved {{half}}-{{half}} blir mapet uavgjort (ingen overtime).",
-    "veto": "Map: lagene bannlyser (og velger) dem i mapvetoen før hver kamp.",
-    "mapsDrawn": "Map: hver kamp trekker ett fra mappoolen. Ingen veto.",
-    "shuffleMaps": "Map: hver runde spiller neste map på listen, med nye lag hver runde.",
+    "series_one": "Ett kart per kamp.",
+    "series_other": "Best av {{count}}: først til {{win}} kart vinner kampen.",
+    "rounds": "{{rounds}} runder: først til {{win}} vinner kartet. Lagene bytter side etter {{half}}.",
+    "overtime": "Ved {{half}}–{{half}}: ekstraomganger (6 runder, først til 4) til noen vinner.",
+    "overtimeLimited_one": "Ved {{half}}–{{half}}: én ekstraomgang (6 runder, først til 4). Står det fortsatt likt, vinner laget med mest skade totalt.",
+    "overtimeLimited_other": "Ved {{half}}–{{half}}: opptil {{count}} overtime-perioder (6 runder hver, først til 4). Står det fortsatt likt, vinner laget med mest skade totalt.",
+    "noOvertime": "Ved {{half}}–{{half}} blir kartet uavgjort (ingen ekstraomganger).",
+    "veto": "Kart: lagene bannlyser (og velger) dem i kartvetoen før hver kamp.",
+    "mapsDrawn": "Kart: hver kamp trekker ett fra kartutvalget. Ingen veto.",
+    "shuffleMaps": "Kart: hver runde spiller neste kart på listen, med nye lag hver runde.",
     "bots": "Ledige plasser fylles med boter.",
     "beThere_one": "Sitt klar ved PC-en {{count}} minutt før kampen din.",
     "beThere_other": "Sitt klar ved PC-en {{count}} minutter før kampen din.",
-    "beThereWhy_one": "Vetoen åpner av seg selv {{count}} minutt før starttidspunktet. Hvis laget ditt ikke banner eller velger i tide, velges et map for dere.",
-    "beThereWhy_other": "Vetoen åpner av seg selv {{count}} minutter før starttidspunktet. Hvis laget ditt ikke banner eller velger i tide, velges et map for dere.",
+    "beThereWhy_one": "Vetoen åpner av seg selv {{count}} minutt før starttidspunktet. Hvis laget ditt ikke banner eller velger i tide, velges et kart for dere.",
+    "beThereWhy_other": "Vetoen åpner av seg selv {{count}} minutter før starttidspunktet. Hvis laget ditt ikke banner eller velger i tide, velges et kart for dere.",
     "beThereOnTime": "Sitt klar ved PC-en når kampen din starter.",
-    "beThereOnTimeWhy": "Vetoen åpner av seg selv ved starttidspunktet. Hvis laget ditt ikke banner eller velger i tide, velges et map for dere."
+    "beThereOnTimeWhy": "Vetoen åpner av seg selv ved starttidspunktet. Hvis laget ditt ikke banner eller velger i tide, velges et kart for dere."
   },
   "movement": {
     "title": "Surf- og KZ-rekorder",
-    "map": "Map",
+    "map": "Kart",
     "course": "Løype",
-    "mainCourse": "Map",
+    "mainCourse": "Kart",
     "bonus": "Bonus {{n}}",
-    "explain": "Hver spillers beste tid på mapets løype eller en bonus, fra alle servere med Movement-oppsettet. I spillet: .rs starter på nytt, .b 1 går til bonus 1, .pb og .wr viser tider.",
+    "explain": "Hver spillers beste tid på kartets løype eller en bonus, fra alle servere med Movement-oppsettet. I spillet: .rs starter på nytt, .b 1 går til bonus 1, .pb og .wr viser tider.",
     "empty": "Ingen tider på denne løypa ennå.",
     "time": "Tid",
     "teleports": "TP",
@@ -2534,7 +2534,7 @@
     "liveText_one": "Se den i CS2: knappen åpner kampen i GOTV, {{count}} sekund bak spillerne. {{seats}} plasser.",
     "liveText_other": "Se den i CS2: knappen åpner kampen i GOTV, {{count}} sekunder bak spillerne. {{seats}} plasser.",
     "liveTextNoDelay": "Se den i CS2: knappen åpner kampen i GOTV. {{seats}} plasser.",
-    "beforeText": "GOTV åpner når mapet går live. Oppvarmingen og knife round vises ikke.",
+    "beforeText": "GOTV åpner når kartet går live. Oppvarmingen og knivrunde vises ikke.",
     "offText": "Denne turneringen vises ikke i GOTV. Følg den i tabellen under.",
     "offSignIn": "Logg inn for å se denne kampen i GOTV.",
     "offAdmins": "Bare admins og casters kan se kamper i GOTV her.",
@@ -2544,7 +2544,7 @@
     "buttonOff": "Se kampen",
     "copyLabel": "Kopier tilkoblingskommandoen",
     "copied": "Tilkoblingskommandoen er kopiert: lim den inn i CS2-konsollen",
-    "copyFailed": "Klarte ikke å kopiere; marker teksten i stedet",
+    "copyFailed": "Klarte ikke å kopiere. Marker teksten i stedet",
     "onStage": "På scenen: alle GOTV-plasser, for casterne og strømmen",
     "stageFailed": "Klarte ikke å endre scenekampen"
   }

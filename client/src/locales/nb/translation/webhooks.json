@@ -3,7 +3,7 @@
     "showUrl": "Vis URL",
     "hideUrl": "Skjul URL",
     "title": "Webhooks",
-    "description": "Send kamphendelser (klar til å koble til, live, map og stilling, ferdig, avlyst, tilbakestilt) til en annen nettside som signerte HTTP-forespørsler, for eksempel til nettsiden til et arrangement som viser spillerne et «koble til nå»-banner. Hver levering signeres med endepunktets hemmelighet og prøves på nytt med økende ventetid til den får et 2xx-svar.",
+    "description": "Send kamphendelser (klar til å koble til, live, kart og stilling, ferdig, avlyst, tilbakestilt) til en annen nettside som signerte HTTP-forespørsler, for eksempel til nettsiden til et arrangement som viser spillerne et «koble til nå»-banner. Hver levering signeres med endepunktets hemmelighet og prøves på nytt med økende ventetid til den får et 2xx-svar.",
     "allowPrivate": "Tillat webhooks til private og lokale adresser",
     "allowPrivateHelp": "For LAN der nettsiden kjører på LAN-et (10.x, 192.168.x, 127.0.0.1, ...). Lenkelokale adresser (169.254.x.x) er alltid blokkert.",
     "empty": "Ingen webhook-endepunkter ennå.",
@@ -43,7 +43,7 @@
     "resend": "Send på nytt",
     "resendQueued": "Leveringen er lagt i kø igjen",
     "response": "Mottakerens svar",
-    "redactedNote": "Tilkoblingsdetaljer (serveradresse, passord, steam://-lenke) er skjult her; mottakeren får dem i den signerte leveringen.",
+    "redactedNote": "Tilkoblingsdetaljer (serveradresse, passord, steam://-lenke) er skjult her. Mottakeren får dem i den signerte leveringen.",
     "counts": "{{succeeded}} levert, {{pending}} i kø, {{failed}} feilet",
     "lastSuccess": "sist vellykket {{when}}",
     "col": {

@@ -10,7 +10,7 @@
     },
     "empty": {
       "title": "Ingen kamper å vise",
-      "description": "Opprett en turnering og generer en bracket for å se kamper her",
+      "description": "Opprett en turnering og generer et turneringstre for å se kamper her",
       "createManual": "Eller opprett manuell kamp"
     },
     "sections": {
@@ -46,17 +46,17 @@
       "manual": "Manuell",
       "simulation": "Simulering",
       "winner": "VINNER",
-      "mapN": "Map {{n}}"
+      "mapN": "Kart {{n}}"
     },
     "statusLabel": {
       "walkover": "WALKOVER",
       "waitingForTournament": "VENTER PÅ TURNERINGSSTART",
       "waitingForServer": "VENTER PÅ SERVER",
       "vetoPending": "VETO VENTER",
-      "mapVeto": "MAPVETO",
+      "mapVeto": "KARTVETO",
       "serverAllocated": "SERVER TILDELT",
       "warmup": "OPPVARMING",
-      "overtime": "OVERTIME #{{n}}",
+      "overtime": "EKSTRAOMGANG {{n}}",
       "live": "DIREKTE",
       "completed": "FULLFØRT",
       "cancelled": "AVLYST",
@@ -68,7 +68,7 @@
       "pending": "Kampen er planlagt, men har ikke fått en server ennå. Den tildeles når en server blir ledig.",
       "loaded": "Kampen er lastet inn på serveren og er i oppvarming. Spillerne må koble til og melde seg klare for å starte.",
       "live": "Kampen spilles på serveren.",
-      "completed": "Kampen er ferdig. Vinneren er avgjort og bracketen er oppdatert.",
+      "completed": "Kampen er ferdig. Vinneren er avgjort og turneringstreet er oppdatert.",
       "proTipTitle": "Tips:",
       "proTip": "Når en kamp viser «Venter på spillere (X/Y)», er serveren klar og spillerne bør koble til. Når alle forventede spillere er koblet til og klare, starter kampen automatisk."
     },
@@ -76,7 +76,7 @@
     "matchLabel": {
       "upper": "UB R{{round}} M{{match}}",
       "lower": "LB R{{round}} M{{match}}",
-      "grandFinal": "Grand final",
+      "grandFinal": "Storfinale",
       "grandFinalReset": "Grand final reset",
       "group": "Gruppe {{group}} · Runde {{round}}",
       "playoffs": "Sluttspill · Runde {{round}}"
@@ -115,10 +115,10 @@
         "decide": "Avgjør resultatet"
       },
       "phase": {
-        "live": "Live · map {{map}}",
+        "live": "Live · kart {{map}}",
         "finished": "Ferdig",
         "finishedScore": "Ferdig · {{score}}",
-        "veto": "Mapveto",
+        "veto": "Kartveto",
         "waitingTeams": "Venter på lagene",
         "queued": "Venter på server · #{{position}} i køen",
         "waiting": "Venter"
@@ -204,7 +204,7 @@
     "eloLabelEdit": "ELO",
     "eloHelperNew": "La stå tomt for standardverdi (1500 Skill Rating).",
     "eloHelperEdit": "Hvis du endrer ELO, tilbakestilles spillerens rating og statistikk. Dette kan ikke angres.",
-    "isAdminLabel": "Er admin (administrerer dette nettstedet; spillmoduler kan også gi admins rettigheter i spillet)",
+    "isAdminLabel": "Er admin (administrerer dette nettstedet. Spillmoduler kan også gi admins rettigheter i spillet)",
     "currentElo": "Nåværende ELO: {{value}}",
     "startingElo": "Start-ELO: {{value}}",
     "matchesPlayed": "Spilte kamper: {{count}}",
@@ -259,15 +259,15 @@
       "bot": "BOT"
     },
     "decision": {
-      "body": "Alle mapene er spilt, men serien står likt på map, runder og skade. Velg vinneren for å føre bracketen videre.",
+      "body": "Alle kartene er spilt, men serien står likt på kart, runder og skade. Velg vinneren for å føre turneringstreet videre.",
       "setWinner": "{{team}} vinner",
       "confirmTitle": "Sett seriens vinner",
-      "confirmBody": "Avslutte serien med {{team}} som vinner? Bracketen går videre, og dette kan ikke angres her.",
+      "confirmBody": "Avslutte serien med {{team}} som vinner? Turneringstreet går videre, og dette kan ikke angres her.",
       "confirm": "Sett vinner",
       "success": "Vinner satt",
       "failed": "Kunne ikke sette vinneren"
     },
-    "tiebreakHint": "Stillingen er lik: {{team}} vant mapet etter tiebreak.",
+    "tiebreakHint": "Stillingen er lik: {{team}} vant kartet etter tiebreak.",
     "config": {
       "loadFailed": "Kunne ikke hente kampoppsettet",
       "view": "Vis kampoppsett (JSON)",
@@ -276,9 +276,9 @@
       "empty": "Denne kampen har ikke noe oppsett."
     },
     "tiebreak": {
-      "regulationOnly": "Overtime er slått av for denne kampen (bare ordinær tid), så uavgjort avgjøres av total skade per lag.",
-      "segmentsExhausted": "Overtime har en øvre grense for antall perioder. Står det fortsatt likt, avgjøres vinneren av total skade per lag.",
-      "overtimeDisabled": "Overtime er slått av for denne kampen, så uavgjort avgjøres av total skade per lag.",
+      "regulationOnly": "Ekstraomganger er slått av for denne kampen (bare ordinær tid), så uavgjort avgjøres av total skade per lag.",
+      "segmentsExhausted": "Det er en øvre grense for antall ekstraomganger. Står det fortsatt likt, avgjøres vinneren av total skade per lag.",
+      "overtimeDisabled": "Ekstraomganger er slått av for denne kampen, så uavgjort avgjøres av total skade per lag.",
       "tiedByDamage": "Sluttresultatet var uavgjort, så vinneren ble valgt etter total skade per lag, slik kampoppsettet sier."
     },
     "team1": "Lag 1",
@@ -287,8 +287,8 @@
     "server": "Server:",
     "queuePosition": "Plass i køen:",
     "totalDamage": "Total skade: {{team1}} – {{team2}}",
-    "mapOfTotal": "Map {{index}} av {{total}}: {{map}}",
-    "mapIndex": "Map {{index}}: {{map}}",
+    "mapOfTotal": "Kart {{index}} av {{total}}: {{map}}",
+    "mapIndex": "Kart {{index}}: {{map}}",
     "round": "Runde {{round}}",
     "shuffle": {
       "averageElo": "Lag-ELO (snitt): {{team1}} mot {{team2}}",
@@ -296,10 +296,10 @@
     },
     "playerLeaderboards": "Spillerstatistikk",
     "noPlayerData": "Ingen spillerdata ennå",
-    "currentMap": "Gjeldende map",
-    "maps": "Map",
-    "mapsNotPicked": "Mapene er ikke valgt ennå.",
-    "mapsViaVeto": "Avgjøres i mapvetoen",
+    "currentMap": "Gjeldende kart",
+    "maps": "Kart",
+    "mapsNotPicked": "Kartene er ikke valgt ennå.",
+    "mapsViaVeto": "Avgjøres i kartvetoen",
     "matchInformation": "Kampinformasjon",
     "created": "Opprettet:",
     "started": "Startet:",
@@ -310,16 +310,16 @@
   },
   "bulkShuffleMatchesModal": {
     "title": "Opprett flere shuffle-kamper samtidig",
-    "description": "Sett opp en shuffle-kamp med ett map (map og rundegrense), og legg så til så mange kamper du vil ved å velge nøyaktig hvilke spillere som skal på hvert lag. Kampene opprettes som en del av den gjeldende shuffle-turneringen og tildeles servere når du starter turneringen.",
+    "description": "Sett opp en shuffle-kamp med ett kart (kart og rundegrense), og legg så til så mange kamper du vil ved å velge nøyaktig hvilke spillere som skal på hvert lag. Kampene opprettes som en del av den gjeldende shuffle-turneringen og tildeles servere når du starter turneringen.",
     "mapSelect": {
-      "label": "Map",
-      "noMaps": "Ingen map er satt opp for denne turneringen",
-      "helper": "Alle kampene her bruker dette mapet."
+      "label": "Kart",
+      "noMaps": "Ingen kart er satt opp for denne turneringen",
+      "helper": "Alle kampene her bruker dette kartet."
     },
     "maxRounds": {
-      "label": "Maks runder per map",
+      "label": "Maks runder per kart",
       "helperWithValue": "Kampen spilles til maks {{maxRounds}} runder, og vinneren er første lag til {{winRounds}} runder.",
-      "helperDefault": "Maks antall runder per map (standard: 24, maks: 30)."
+      "helperDefault": "Maks antall runder per kart (standard: 24, maks: 30)."
     },
     "matchesSection": {
       "title": "Kamper ({{count}})",
@@ -334,8 +334,8 @@
       "team1Label": "Lag 1-spillere ({{team1Count}}/{{teamSize}})",
       "team2Label": "Lag 2-spillere ({{team2Count}}/{{teamSize}})",
       "searchPlaceholder": "Søk og velg spillere",
-      "mapOverrideLabel": "Map (valgfri overstyring)",
-      "mapOverrideHelperOwn": "Denne kampen bruker et eget map.",
+      "mapOverrideLabel": "Kart (valgfri overstyring)",
+      "mapOverrideHelperOwn": "Denne kampen bruker et eget kart.",
       "mapOverrideHelperDefault": "La stå tomt for å bruke standardmapet over.",
       "maxRoundsOverrideLabel": "Maks runder (valgfri overstyring)",
       "maxRoundsOverrideHelperOwn": "Overstyrer standard maks runder for denne kampen (for øyeblikket {{value}}).",
@@ -346,7 +346,7 @@
       "noMatches": "Legg til minst én kamp for å opprette.",
       "bothTeamsRequired": "Kamp {{index}}: begge lag må ha minst én spiller.",
       "conflictingPlayers": "Kamp {{index}}: en spiller kan ikke være på begge lag. Konflikt-ID(er): {{ids}}",
-      "mapRequired": "Kamp {{index}}: map er påkrevd (sett et standardmap over eller velg et map for denne kampen).",
+      "mapRequired": "Kamp {{index}}: kart er påkrevd (sett et standardmap over eller velg et kart for denne kampen).",
       "rowMaxRoundsRange": "Kamp {{index}}: maks runder må være mellom 1 og 30 når det overstyres per kamp.",
       "globalMaxRoundsRange": "Maks runder må være mellom 1 og 30.",
       "createFailed": "Klarte ikke å opprette manuelle shuffle-kamper"

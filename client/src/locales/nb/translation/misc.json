@@ -491,7 +491,7 @@
       },
       "failure": {
         "badEntry": "koden serveres ikke fra {{prefix}}",
-        "noClientApi": "den oppgir ikke hvilke klient-API-versjoner den støtter; denne plattformen har {{platform}}",
+        "noClientApi": "den oppgir ikke hvilke klient-API-versjoner den støtter. Denne plattformen har {{platform}}",
         "badClientApi": "klient-API-området «{{range}}» er ikke et gyldig semver-område",
         "outOfRange": "laget for klient-API {{range}}; denne plattformen har {{platform}}",
         "notFound": "koden mangler (HTTP 404)",
@@ -535,10 +535,10 @@
     },
     "feed": {
       "cache": "Viser katalogen fra {{time}}: fikk ikke kontakt med den nettbaserte katalogen ({{reason}}). Spill i dette imaget kan fortsatt installeres uten nett.",
-      "none": "Fikk ikke kontakt med den nettbaserte katalogen ({{reason}}). Viser spillene i dette imaget; de installeres uten nett.",
+      "none": "Fikk ikke kontakt med den nettbaserte katalogen ({{reason}}). Viser spillene i dette imaget. De installeres uten nett.",
       "unknown": "ingen grunn oppgitt",
       "cacheRefreshing": "Viser katalogen fra {{time}} mens den nettbaserte katalogen lastes.",
-      "noneRefreshing": "Laster den nettbaserte katalogen … Imens vises spillene i dette imaget; de installeres uten nett.",
+      "noneRefreshing": "Laster den nettbaserte katalogen … Imens vises spillene i dette imaget. De installeres uten nett.",
       "reason": {
         "timeout": "den svarte ikke i tide",
         "unreachable": "den kunne ikke nås",
@@ -615,7 +615,7 @@
   "matchmaking": {
     "play": {
       "title": "Spill",
-      "subtitle": "Finn en 5v5-kamp. Du blir satt sammen med dem som har ventet lengst, og laget ditt spiller alltid på samme lag.",
+      "subtitle": "Finn en 5v5-kamp. Du blir satt sammen med dem som har ventet lengst, og gruppen din spiller alltid på samme lag.",
       "unavailable": "Matchmaking er ikke åpnet på denne siden ennå.",
       "findTitle": "Finn en kamp",
       "findHelp": "Du kan bruke siden mens du venter. Når en kamp er funnet, har du 20 sekunder på å godta.",
@@ -670,8 +670,8 @@
       "aboutWait_other": "rundt {{count}} min",
       "defaultPool": {
         "5v5": "Active Duty",
-        "2v2": "Wingman-maps",
-        "1v1": "Wingman-maps"
+        "2v2": "Wingman-kart",
+        "1v1": "Wingman-kart"
       },
       "searchAnyone": "Få spillere søker: du blir satt opp mot hvem som helst ({{count}} søker, {{total}} trengs)",
       "searchRating": "Finner en jevn kamp for ratingen din (±{{elo}}) · {{count}} søker",
@@ -729,13 +729,13 @@
         "completed": "Kampen er ferdig.",
         "other": "Kamp: {{status}}"
       },
-      "pickedBy": "{{mode}} · maplotteriet valgte",
+      "pickedBy": "{{mode}} · kartlotteriet valgte",
       "vs": "mot",
       "you": "(deg)",
       "accepted": "godtatt",
       "matchChat": "Kampchat",
       "playAgain": "Spill igjen",
-      "fullScoreboard": "Hele scoreboardet",
+      "fullScoreboard": "Hele resultattavlen",
       "newSkin": "Ny skin",
       "inventory": "Inventar",
       "victory": "Seier",
@@ -756,7 +756,7 @@
     },
     "result": {
       "title": "Resultat",
-      "map": "Map {{n}}",
+      "map": "Kart {{n}}",
       "rating": "Rating",
       "xp": "+{{xp}} XP · nivå {{level}}",
       "levelProgress": "{{into}} av {{next}} XP til neste nivå",
@@ -790,8 +790,8 @@
       "minutes_one": "{{count}} min",
       "minutes_other": "{{count}} min",
       "yourGame": "Ditt spill",
-      "fullBoard": "Hele scoreboardet",
-      "hideBoard": "Skjul scoreboardet"
+      "fullBoard": "Hele resultattavlen",
+      "hideBoard": "Skjul resultattavlen"
     },
     "profile": {
       "level": "Nivå {{level}}",
@@ -844,8 +844,8 @@
       "voters_other": "{{count}} stemmer"
     },
     "roulette": {
-      "rolling": "Velger map …",
-      "picked": "Map: {{map}}"
+      "rolling": "Velger kart …",
+      "picked": "Kart: {{map}}"
     }
   },
   "chat": {
@@ -891,8 +891,8 @@
       "serverReady": "Serveren er klar · {{map}} · bli med fra kampsiden",
       "playerJoined": "{{name}} kom inn på serveren · {{n}} inne",
       "playerLeft": "{{name}} forlot serveren · {{n}} inne",
-      "mapLive": "Map {{n}} er i gang · {{map}}",
-      "mapResult": "Map {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "mapLive": "Kart {{n}} er i gang · {{map}}",
+      "mapResult": "Kart {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
       "seriesWon": "{{team}} vinner serien {{a}}–{{b}}",
       "adminCalled": "{{name}} tilkalte en admin",
       "timedOut": "tiden gikk ut",
@@ -951,7 +951,7 @@
       "tournaments": "Turneringer",
       "matches": "Kamper",
       "highlights": "Høydepunkter",
-      "maps": "Maps",
+      "maps": "Kart",
       "servers": "Servere og maskiner",
       "recorders": "Opptakere"
     },
@@ -973,7 +973,7 @@
       "ratings": "Rangering",
       "modules": "Moduler",
       "servers": "Servere",
-      "maps": "Maps og mappooler",
+      "maps": "Kart og kartutvalg",
       "skins": "Skins",
       "matchRules": "Kampregler",
       "highlights": "Høydepunkter",
@@ -1002,7 +1002,7 @@
       "description": "Vises svakt nede til høyre. Det hjelper oss mye om du lar den stå på."
     },
     "perPlayer": {
-      "label": "Klipp per spiller per map",
+      "label": "Klipp per spiller per kart",
       "helper": "1 til 6. Flere klipp gjør at highlightene fra en kamp tar lengre tid å lage."
     },
     "resolution": {
@@ -1016,7 +1016,7 @@
       "helper": "Mindre og færre bilder tar opp raskere: 720p i 30 fps tar omtrent halvparten så lang tid som 1440p i 120 fps. Klipp som allerede er laget, beholder størrelsen sin."
     },
     "music": {
-      "label": "Musikk under reels",
+      "label": "Musikk under sammendrag",
       "all": "Alle låtene ({{count}})",
       "pick": "Bare de jeg velger",
       "off": "Ingen musikk",
@@ -1024,7 +1024,7 @@
       "stop": "Stopp {{title}}",
       "contentId": "YouTube Content ID",
       "volume": "Lydstyrke",
-      "byo": "Ta med din egen musikk: legg til låter du har rett til å bruke. Auto Tournament leverer ingen. Spilleren spiller en annen låt ved siden av hver reel, og nedlastinger kommer med eller uten musikk.",
+      "byo": "Ta med din egen musikk: legg til låter du har rett til å bruke. Auto Tournament leverer ingen. Spilleren spiller en annen låt ved siden av hvert sammendrag, og nedlastinger kommer med eller uten musikk.",
       "remove": "Fjern {{title}}",
       "removeConfirm": "Fjern",
       "keep": "Behold",
@@ -1039,36 +1039,36 @@
       "add": "Legg til låten",
       "adding": "Legger til …",
       "rights": "Legg bare til musikk du har rett til å bruke i videoer. Lydstyrken jevnes ut mot de andre låtene.",
-      "suggestions_one": "{{count}} låt som passer til reels, på Pixabay",
-      "suggestions_other": "{{count}} låter som passer til reels, på Pixabay",
+      "suggestions_one": "{{count}} låt som passer til sammendrag, på Pixabay",
+      "suggestions_other": "{{count}} låter som passer til sammendrag, på Pixabay",
       "suggestionsHelp": "Åpne en, last den ned fra Pixabay under lisensen den har, og legg den til her. Lisensen lar deg bruke den i videoer, men ikke gi filen videre til andre.",
       "link": "Eller en lenke til lydfilen",
       "addLink": "Legg til fra lenken"
     },
     "overlay": {
       "label": "Overlegg",
-      "helper_one": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende tekstkortet, killfeeden og navnene på den igjen og lager så reelene på nytt. Krever ikke CS2.",
-      "helper_other": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende tekstkortet, killfeeden og navnene på dem igjen og lager så reelene på nytt. Krever ikke CS2.",
+      "helper_one": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende tekstkortet, drapslisten og navnene på den igjen og lager så sammendragene på nytt. Krever ikke CS2.",
+      "helper_other": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende tekstkortet, drapslisten og navnene på dem igjen og lager så sammendragene på nytt. Krever ikke CS2.",
       "redraw": "Tegn overleggene på nytt",
       "pending_one": "{{count}} video venter på en opptaker",
       "pending_other": "{{count}} videoer venter på en opptaker",
       "failed_one": "{{count}} video kunne ikke tegnes på nytt",
       "failed_other": "{{count}} videoer kunne ikke tegnes på nytt",
       "keepClean": "Behold rene kopier av klipp",
-      "keepCleanHelper": "Hver klipp lagres også slik den ble tatt opp, uten kort eller killfeed. Reels lages da av de rene clipsene med et eget overlegg, og overleggene kan tegnes på nytt. Er dette av, brukes omtrent halvparten av lagringsplassen.",
+      "keepCleanHelper": "Hver klipp lagres også slik den ble tatt opp, uten kort eller drapslisten. Sammendrag lages da av de rene clipsene med et eget overlegg, og overleggene kan tegnes på nytt. Er dette av, brukes omtrent halvparten av lagringsplassen.",
       "redrawFailed": "Kunne ikke sette den nye tegningen i kø."
     },
     "moved": "Innstillingene for høydepunkter, opptakerne og hvordan du legger til en, ligger på en egen side nå:",
     "saved": "Lagret",
     "saveFailed": "Kunne ikke lagre",
     "reels": {
-      "title": "Størrelse på reels",
-      "description": "Hvor mange klipp hver reel får. Flere klipp gir lengre reels som tar lengre tid å lage.",
-      "funnyPerPlayer": "Morsomme klipp per spiller per map",
-      "mapReelPerPlayer": "Klipp per spiller i en map-reel",
-      "seriesReelMax": "Klipp i en serie-reel",
-      "seriesReelPerPlayer": "Klipp per spiller i en serie-reel",
-      "teamReelPerPlayer": "Klipp per spiller i en lag-reel",
+      "title": "Størrelse på sammendrag",
+      "description": "Hvor mange klipp hvert sammendrag får. Flere klipp gir lengre sammendrag som tar lengre tid å lage.",
+      "funnyPerPlayer": "Morsomme klipp per spiller per kart",
+      "mapReelPerPlayer": "Klipp per spiller i et kartsammendrag",
+      "seriesReelMax": "Klipp i et seriesammendrag",
+      "seriesReelPerPlayer": "Klipp per spiller i et seriesammendrag",
+      "teamReelPerPlayer": "Klipp per spiller i et lagsammendrag",
       "tournamentReelMax": "Klipp i en turneringsreel",
       "tournamentReelPerPlayer": "Klipp per spiller i en turneringsreel",
       "range": "{{min}} til {{max}}"
@@ -1101,7 +1101,7 @@
     "openChat": "Åpne chat",
     "resetVeto": "Start vetoen på nytt",
     "resetVetoTitle": "Starte vetoen på nytt?",
-    "resetVetoBody": "Alle bans, picks og sider så langt slettes, og lagene starter vetoen på nytt. Begge lag ser det i kampchatten.",
+    "resetVetoBody": "Alle kart som er fjernet eller valgt, og alle sidevalg, slettes, og lagene starter vetoen på nytt. Begge lag ser det i kampchatten.",
     "vetoReset": "Vetoen starter på nytt",
     "vetoResetFailed": "Kunne ikke starte vetoen på nytt"
   },

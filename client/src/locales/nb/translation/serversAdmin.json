@@ -72,14 +72,14 @@
       },
       "skipVeto": {
         "button": "Hopp over veto",
-        "tooltip": "Hopp over mapvetoen og last inn første map med en gang",
+        "tooltip": "Hopp over kartvetoen og last inn første kart med en gang",
         "title": "Hopp over veto",
         "description": "Vetofasen hoppes over, og kampen starter."
       },
       "endWarmup": {
-        "button": "Avslutt warmup",
-        "tooltip": "Avslutt warmup og start kampen (knife round eller live)",
-        "title": "Avslutt warmup",
+        "button": "Avslutt oppvarmingen",
+        "tooltip": "Avslutt oppvarmingen og start kampen (knivrunde eller live)",
+        "title": "Avslutt oppvarmingen",
         "description": "Warmup avsluttes og kampen starter."
       },
       "endMatch": {
@@ -110,9 +110,9 @@
     },
     "inputs": {
       "restoreBackup": {
-        "button": "Gjenopprett backup",
+        "button": "Gjenopprett sikkerhetskopi",
         "tooltip": "Last inn en lagret rundebackup – gjenoppretter økonomi og posisjoner",
-        "title": "Gjenopprett backup",
+        "title": "Gjenopprett sikkerhetskopi",
         "label": "Runde som skal gjenopprettes"
       },
       "addTime": {
@@ -137,7 +137,7 @@
       "endMatch": "Kampen er avsluttet",
       "endWarmup": "Warmup er avsluttet",
       "startMatch": "Kampen er startet",
-      "restoreBackup": "Backup gjenopprettet til runde {{round}}",
+      "restoreBackup": "Sikkerhetskopien gjenopprettet til runde {{round}}",
       "addTime_one": "La til {{count}} sekund på rundetiden",
       "addTime_other": "La til {{count}} sekunder på rundetiden",
       "broadcast": "Meldingen er sendt til serveren",
@@ -176,7 +176,7 @@
     "noMessage": "Ingen melding",
     "unknownPlayer": "Ukjent spiller",
     "unknownServer": "Ukjent server",
-    "matchMap": "{{match}}, map {{map}}",
+    "matchMap": "{{match}}, kart {{map}}",
     "openMatch": "Åpne kamp",
     "openServers": "Servere",
     "resolve": "Merk som løst",

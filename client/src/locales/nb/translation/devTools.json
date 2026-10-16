@@ -82,16 +82,16 @@
         "shufflePlayers": "Tøm shuffle-spillere"
       },
       "maps": {
-        "title": "Maps og maler",
-        "maps": "Tøm map",
-        "mapPools": "Tøm mappooler",
+        "title": "Kart og maler",
+        "maps": "Tøm kart",
+        "mapPools": "Tøm kartutvalg",
         "tournamentTemplates": "Tøm turneringsmaler",
         "eloTemplates": "Tøm ratingmaler"
       },
       "matchEvents": {
         "title": "Kamphendelser og resultater",
         "events": "Tøm kamphendelser",
-        "mapResults": "Tøm mapresultater"
+        "mapResults": "Tøm kartresultater"
       },
       "settings": {
         "title": "Innstillinger",
@@ -100,7 +100,7 @@
     },
     "simulation": {
       "title": "Simuleringsstatus",
-      "description": "Slett alle kamper og historisk statistikk, slik at du kan klikke «Start turnering» i simuleringsmodus på en ren bracket, samtidig som servere, lag, maps og gjeldende turneringsoppsett beholdes.",
+      "description": "Slett alle kamper og historisk statistikk, slik at du kan klikke «Start turnering» i simuleringsmodus på en rent turneringstre, samtidig som servere, lag, kart og gjeldende turneringsoppsett beholdes.",
       "button": "Tilbakestill simuleringsstatus (behold oppsett)",
       "reset": {
         "success": "Simuleringsstatus tilbakestilt. Kamper og statistikk er slettet, og servere, lag og turneringsoppsett er beholdt.",
@@ -113,7 +113,7 @@
       "warningBody": "Dette sletter ALLE data.",
       "permanentlyDeletes": "Sletter for godt:",
       "items": {
-        "tournaments": "Alle turneringer og bracketer",
+        "tournaments": "Alle turneringer og turneringstrær",
         "matches": "Alle kamper og hendelser",
         "teams": "Alle lag og spillere",
         "servers": "Alle serverkonfigurasjoner"
@@ -127,7 +127,7 @@
         "actionWill": "Denne handlingen vil",
         "permanentlyDelete": "slette permanent",
         "items": {
-          "tournaments": "Alle turneringsdata og bracketer",
+          "tournaments": "Alle turneringsdata og turneringstrær",
           "matches": "All kamphistorikk og hendelser",
           "teams": "Alle lag og spillerkonfigurasjoner",
           "servers": "Alle serverkonfigurasjoner"

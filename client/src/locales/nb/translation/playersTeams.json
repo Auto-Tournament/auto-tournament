@@ -335,7 +335,7 @@
       "success_other": "Slettet {{count}} spillere"
     },
     "openPlayerPageTooltip": "Åpne spillersiden",
-    "skillRatingTooltip": "Skill Rating er basert på OpenSkill; høyere er bedre.",
+    "skillRatingTooltip": "Skill Rating er basert på OpenSkill. Høyere er bedre.",
     "skillRatingLabel": "Ferdighetsrating: {{elo}}",
     "matchesCount_one": "{{count}} kamp",
     "matchesCount_other": "{{count}} kamper",
@@ -362,11 +362,11 @@
     "tournamentStatusSetup": "Turneringsstatus: oppsettsfase",
     "waitingForOpponentTitle": "Venter på motstander",
     "waitingForOpponentBody": "Dere har gått videre til neste runde. Neste motstander er ikke avgjort ennå, så kampen åpner når begge lagene er kjent.",
-    "mapSelectionTitle": "Mapvalg",
+    "mapSelectionTitle": "Kartvalg",
     "tournamentStartedTitle": "Turneringen har startet!",
-    "tournamentStartedBody": "Fullfør mapvetoen for å starte kampen.",
-    "mapN": "Map {{n}}",
-    "mapFinishedWaiting": "Mapet er ferdig. Venter på neste map i serien...",
+    "tournamentStartedBody": "Fullfør kartvetoen for å starte kampen.",
+    "mapN": "Kart {{n}}",
+    "mapFinishedWaiting": "Kartet er ferdig. Venter på neste kart i serien...",
     "allPlayersConnected": "Alle nødvendige spillere er tilkoblet. Kampen kan starte.",
     "waitingForPlayers": "Venter på at spillere kobler til ({{connected}}/{{expected}})",
     "copyBlocked": "Nettleseren blokkerte kopieringen. Kommandoen vises nedenfor, så du kan kopiere den selv.",
@@ -375,15 +375,15 @@
     "team2": "Lag 2",
     "liveStatus": {
       "warmup": "Oppvarming",
-      "knife": "Knife runde",
+      "knife": "Knivrunde",
       "live": "Direkte",
       "halftime": "Pause",
-      "postgame": "Mapet er ferdig – venter på neste map",
-      "overtime": "OVERTIME #{{n}}"
+      "postgame": "Kartet er ferdig – venter på neste kart",
+      "overtime": "EKSTRAOMGANG {{n}}"
     },
     "scoreboard": {
-      "mapsWon": "Vunne map",
-      "currentMapScore": "Stilling på dette mapet (runder)",
+      "mapsWon": "Vunne kart",
+      "currentMapScore": "Stilling på dette kartet (runder)",
       "eloAvg": "ELO (snitt): {{elo}}",
       "vs": "MOT",
       "tbd": "Ikke avgjort",
@@ -405,14 +405,14 @@
       "decider": "avgjørende"
     },
     "demos": {
-      "title": "Mapdemoer",
+      "title": "Kartdemoer",
       "download": "Last ned demo for {{map}}",
       "recording": "Tar opp {{map}}…"
     },
     "spectator": {
-      "maps_one": "{{count}} map vunnet",
-      "maps_other": "{{count}} map vunnet",
-      "mapOf": "Map {{n}} av {{total}}",
+      "maps_one": "{{count}} kart vunnet",
+      "maps_other": "{{count}} kart vunnet",
+      "mapOf": "Kart {{n}} av {{total}}",
       "scoreAria": "Rundestilling {{a}} mot {{b}}",
       "roundsPlayed": "{{played}} av {{total}} runder spilt"
     }
@@ -523,7 +523,7 @@
     "noMatchDescription": "Ingen lag passer til søket.",
     "nameLabel": "Lagnavn",
     "tagLabel": "Tagg",
-    "tagHelp": "2 til 5 bokstaver eller tall. Vises i hakeparentes og på scoreboardet.",
+    "tagHelp": "2 til 5 bokstaver eller tall. Vises i hakeparentes og på resultattavlen.",
     "cancel": "Avbryt",
     "createSubmit": "Lag laget",
     "createFailed": "Laget kunne ikke lages.",
@@ -648,7 +648,7 @@
     "queued_one": "{{count}} til på vei",
     "queued_other": "{{count}} til på vei",
     "readyIn": "klar om omtrent {{minutes}} min",
-    "reelBadge": "REEL",
+    "reelBadge": "SAMMENDRAG",
     "player": {
       "play": "Spill av",
       "pause": "Pause",
@@ -664,8 +664,8 @@
       "exitFullscreen": "Avslutt fullskjerm",
       "linkCopied": "Lenke kopiert",
       "slowmo": "Sakte film",
-      "kill": "Kill",
-      "lastKill": "Siste kill",
+      "kill": "Drap",
+      "lastKill": "Siste drap",
       "musicOn": "Musikk: {{title}}",
       "musicOff": "Musikk av",
       "noMusic": "Ingen musikk",
@@ -734,10 +734,10 @@
     "notFound": "Denne kampen finnes ikke.",
     "tbd": "Ikke avgjort",
     "winner": "Vinner",
-    "scoreLabel": "{{a}} map mot {{b}}",
-    "maps": "Map",
-    "mapN": "Map {{n}}",
-    "overtime": "overtime",
+    "scoreLabel": "{{a}} kart mot {{b}}",
+    "maps": "Kart",
+    "mapN": "Kart {{n}}",
+    "overtime": "ekstraomganger",
     "spectator": {
       "steps": "Kampsteg",
       "step": {

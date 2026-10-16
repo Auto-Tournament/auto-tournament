@@ -30,12 +30,12 @@
       "typeLabel": "Turneringstype",
       "formatLabel": "Kampformat",
       "mapPool": {
-        "title": "Mappool",
-        "selectLabel": "Velg en mappool",
+        "title": "Kartutvalg",
+        "selectLabel": "Velg en kartutvalg",
         "customOption": "Egendefinert",
-        "selectedLabel": "Valgte map ({{count}}):",
-        "vetoWarning": "Veto-formater (BO1/BO3/BO5) krever nøyaktig 7 map. Valgt nå: {{count}}",
-        "chooseMaps": "Velg map..."
+        "selectedLabel": "Valgte kart ({{count}}):",
+        "vetoWarning": "Veto-formater (BO1/BO3/BO5) krever nøyaktig 7 kart. Valgt nå: {{count}}",
+        "chooseMaps": "Velg kart..."
       },
       "save": "Lagre"
     },
@@ -153,24 +153,24 @@
     },
     "stats": {
       "kills": {
-        "label": "Kills",
-        "description": "Antall kills per kamp"
+        "label": "Drap",
+        "description": "Antall drap per kamp"
       },
       "deaths": {
         "label": "Dødsfall",
         "description": "Antall dødsfall per kamp (vanligvis negativ vekt)"
       },
       "assists": {
-        "label": "Assists",
-        "description": "Antall assists per kamp"
+        "label": "Assister",
+        "description": "Antall assister per kamp"
       },
       "flashAssists": {
-        "label": "Flash-assists",
-        "description": "Antall flash-assists per kamp"
+        "label": "Flash-assister",
+        "description": "Antall flash-assister per kamp"
       },
       "headshotKills": {
-        "label": "Headshot-kills",
-        "description": "Antall headshot-kills per kamp"
+        "label": "Drap med hodeskudd",
+        "description": "Antall drap med hodeskudd per kamp"
       },
       "damage": {
         "label": "Skade",
@@ -182,7 +182,7 @@
       },
       "kast": {
         "label": "KAST %",
-        "description": "Andel runder med kill, assist, overlevelse eller trade"
+        "description": "Andel runder med drap, assist, overlevelse eller trade"
       },
       "mvps": {
         "label": "MVP-er",
