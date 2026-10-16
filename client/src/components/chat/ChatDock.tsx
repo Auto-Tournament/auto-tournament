@@ -416,7 +416,9 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
     const root = document.documentElement;
     const width = (wide ? WIDE_PANEL_WIDTH : PANEL_WIDTH) + PANEL_MARGIN + 12;
     root.style.setProperty('--chat-dock-width', `${width}px`);
-    return () => root.style.removeProperty('--chat-dock-width');
+    return () => {
+      root.style.removeProperty('--chat-dock-width');
+    };
   }, [phone, wide]);
   const typingNow = typingLine(typistsNow(typing, active, Date.now()), t);
   const thread = active ? threads[active] : undefined;
