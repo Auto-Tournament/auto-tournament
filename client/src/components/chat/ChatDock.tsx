@@ -409,6 +409,15 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
   const { playerSteamId, impersonation } = useAuth();
   const { channels, threads, active, typing } = useChat();
   const channel = channels.find((c) => c.channel === active) ?? null;
+  // Toasts sit top-right; the open window reaches up there too. Tell them how far left to go
+  // (SnackbarContext reads --chat-dock-width), so a toast never covers the chat.
+  useEffect(() => {
+    if (phone) return;
+    const root = document.documentElement;
+    const width = (wide ? WIDE_PANEL_WIDTH : PANEL_WIDTH) + PANEL_MARGIN + 12;
+    root.style.setProperty('--chat-dock-width', `${width}px`);
+    return () => root.style.removeProperty('--chat-dock-width');
+  }, [phone, wide]);
   const typingNow = typingLine(typistsNow(typing, active, Date.now()), t);
   const thread = active ? threads[active] : undefined;
   const [draft, setDraft] = useState('');
