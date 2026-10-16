@@ -61,7 +61,7 @@ interface AutoscaleResponse {
 
 const LEAD_CHOICES = [0, 60, 120, 300, 600];
 const COOLDOWN_CHOICES = [120, 300, 600, 900, 1800, 3600];
-const MAX_CHOICES = [1, 2, 3, 4, 6, 8, 12, 16];
+const MAX_CHOICES = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64];
 
 const STATE_COLOR: Record<ServerState, 'success' | 'info' | 'default' | 'warning' | 'error'> = {
   busy: 'info',

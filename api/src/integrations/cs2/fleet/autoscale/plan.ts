@@ -24,7 +24,11 @@ export interface AutoscaleSettings {
   leadTimeSeconds: number;
   /** Stop a surplus server only after it has been idle this long. */
   cooldownSeconds: number;
-  /** Never ask csm for a new server on a machine that already has this many. */
+  /**
+   * Never ask csm for a new server on a machine that already has this many. The free RAM and
+   * disk checks are the real limit; this only stops a runaway. It was 4, and at NTLAN
+   * (2026-10-16) a 32-core machine sat at 5 servers while matches waited ("no machine has room").
+   */
   maxServersPerHost: number;
 }
 
@@ -32,7 +36,7 @@ export const DEFAULT_AUTOSCALE_SETTINGS: Readonly<AutoscaleSettings> = Object.fr
   enabled: true,
   leadTimeSeconds: 120,
   cooldownSeconds: 600,
-  maxServersPerHost: 4,
+  maxServersPerHost: 32,
 });
 
 export const AUTOSCALE_LIMITS = {

@@ -43,7 +43,7 @@ const DEFAULTS = {
   enabled: true,
   leadTimeSeconds: 120,
   cooldownSeconds: 600,
-  maxServersPerHost: 4,
+  maxServersPerHost: 32,
 };
 
 let key: { id: string; value: string };
