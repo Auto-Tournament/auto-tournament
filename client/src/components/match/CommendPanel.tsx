@@ -151,7 +151,7 @@ export function CommendPanel({
                     bgcolor: tokens.color.paper3,
                   }}
                 >
-                  <PlayerAvatar name={p.name} avatar={p.avatar} />
+                  <PlayerAvatar id={p.id} name={p.name} avatar={p.avatar} />
                   <Typography sx={{ fontWeight: 600, minWidth: 0, overflowWrap: 'anywhere' }}>
                     {p.name}
                   </Typography>

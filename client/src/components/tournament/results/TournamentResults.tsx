@@ -259,7 +259,12 @@ export function TournamentResults({
                     {t(`results.award.${award.key}`)}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-                    <PlayerAvatar name={award.player.name} avatar={award.player.avatar} size={32} />
+                    <PlayerAvatar
+                      id={award.player.playerId}
+                      name={award.player.name}
+                      avatar={award.player.avatar}
+                      size={32}
+                    />
                     <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                       <Typography sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>
                         {award.player.name}
@@ -350,7 +355,12 @@ export function TournamentResults({
                             fontWeight: 600,
                           }}
                         >
-                          <PlayerAvatar name={player.name} avatar={player.avatar} size={28} />
+                          <PlayerAvatar
+                            id={player.playerId}
+                            name={player.name}
+                            avatar={player.avatar}
+                            size={28}
+                          />
                           <span>{player.name}</span>
                         </Link>
                       </Box>

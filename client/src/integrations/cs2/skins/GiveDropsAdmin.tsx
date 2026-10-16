@@ -327,7 +327,9 @@ export function GiveDropsAdmin({ onGiven }: { onGiven?: () => void }) {
           }
           renderOption={(props, o) => (
             <Box component="li" {...props} key={o.id} sx={{ display: 'flex', gap: 1.25 }}>
-              {kind === 'player' && <PlayerAvatar name={o.label} avatarUrl={o.avatar} size={24} />}
+              {kind === 'player' && (
+                <PlayerAvatar id={o.id} name={o.label} avatarUrl={o.avatar} size={24} />
+              )}
               <Box sx={{ minWidth: 0 }}>
                 <Typography sx={{ fontSize: '0.9375rem' }}>{o.label}</Typography>
                 {o.detail && (

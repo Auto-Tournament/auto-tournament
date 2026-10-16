@@ -219,7 +219,7 @@ export function ShuffleJoin({
 
   const avatarOf = new Map(players.map((p) => [p.steamId, p.avatar]));
   const faces = (ids: string[]) =>
-    ids.map((id) => ({ name: nameOf.get(id) ?? id, avatar: avatarOf.get(id) ?? null }));
+    ids.map((id) => ({ id, name: nameOf.get(id) ?? id, avatar: avatarOf.get(id) ?? null }));
   const total = round?.maps?.length ?? null;
   const roundLine =
     roundNo !== null && total ? t('shuffleJoin.roundOf', { round: roundNo, total }) : null;
@@ -385,7 +385,7 @@ export function ShuffleJoin({
                 borderRadius: '50%',
               }}
             >
-              <PlayerAvatar name={p.name} avatar={p.avatar} size={32} label />
+              <PlayerAvatar id={p.steamId} name={p.name} avatar={p.avatar} size={32} label />
             </Box>
           ))}
         </Box>
@@ -656,7 +656,7 @@ export function ShuffleJoin({
                 bgcolor: color.paper3,
               }}
             >
-              <PlayerAvatar name={p.name} avatar={p.avatar} size={32} />
+              <PlayerAvatar id={p.steamId} name={p.name} avatar={p.avatar} size={32} />
               <Typography
                 component="span"
                 sx={{ color: p.left ? color.muted : color.ink, overflowWrap: 'anywhere' }}

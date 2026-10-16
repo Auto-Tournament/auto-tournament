@@ -270,6 +270,7 @@
   "presence": {
     "online": "Pålogget",
     "offline": "Avlogget",
+    "away": "Borte",
     "searching": "Søker etter en {{mode}}-kamp",
     "playingMatchmaking": "I en matchmaking-kamp: {{label}}",
     "playingTournament": "I en turneringskamp: {{label}}",
