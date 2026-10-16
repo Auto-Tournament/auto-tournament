@@ -36,6 +36,7 @@ import {
   panel,
   type TeamLike,
   resultInk,
+  TeamIdentity,
 } from '../ui/draftUi';
 import { PlayersLeaderboard } from './PlayersLeaderboard';
 import { minutesLeft } from '../PlacementDialog';
@@ -129,8 +130,6 @@ function MatchRow({
     minWidth: 0,
     fontWeight: ink(id).won || ink(id).yours ? 700 : 600,
     color: ink(id).name,
-    display: { xs: 'none', sm: 'inline' },
-    overflowWrap: 'anywhere' as const,
   });
   const state = m.status === 'completed' ? 'done' : isLive(m) ? 'live' : 'upcoming';
   return (
@@ -155,12 +154,14 @@ function MatchRow({
         '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-        <TeamLogo team={teamOf(m.team1)} size="sm" />
-        <Box component="span" sx={nameSx(m.team1?.id)}>
-          {m.team1?.name ?? t('bracketCards.tbd')}
-        </Box>
-      </Box>
+      <TeamIdentity
+        team={teamOf(m.team1)}
+        yours={ink(m.team1?.id).yours}
+        link={false}
+        nameOnPhone={false}
+        nameSx={nameSx(m.team1?.id)}
+        tbd={t('bracketCards.tbd')}
+      />
       <Typography
         component="span"
         sx={{ ...mono, fontSize: '0.9375rem', color: color.ink2, whiteSpace: 'nowrap' }}
@@ -179,20 +180,16 @@ function MatchRow({
           </>
         )}
       </Typography>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          minWidth: 0,
-          justifyContent: 'flex-end',
-          textAlign: 'right',
-        }}
-      >
-        <Box component="span" sx={nameSx(m.team2?.id)}>
-          {m.team2?.name ?? t('bracketCards.tbd')}
-        </Box>
-        <TeamLogo team={teamOf(m.team2)} size="sm" />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', minWidth: 0 }}>
+        <TeamIdentity
+          team={teamOf(m.team2)}
+          align="end"
+          yours={ink(m.team2?.id).yours}
+          link={false}
+          nameOnPhone={false}
+          nameSx={nameSx(m.team2?.id)}
+          tbd={t('bracketCards.tbd')}
+        />
       </Box>
       {!done && (
         <Box

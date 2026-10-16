@@ -18,6 +18,8 @@ import {
   withAlpha,
 } from '../../../theme/tokens';
 import { PlayerAvatar, playerInitials } from '../../player/PlayerAvatar';
+import { teamProfilePath } from '../../../paths';
+import { Link as RouterLink } from 'react-router-dom';
 
 /** The one player picture lives in components/player/PlayerAvatar. */
 export { PlayerAvatar, playerInitials };
@@ -230,6 +232,83 @@ export function MarkPill({
       }}
     >
       {children}
+    </Box>
+  );
+}
+
+/**
+ * A team as its logo and name (the one way a team shows in a match card, a row
+ * or the bracket): the name links to the team page when there is one, in the
+ * accent when it is the viewer's (`yours`). `column` stacks the name under the
+ * logo (match cards); `end` puts the logo after the name (the right-hand team).
+ * `nameOnPhone: false` leaves only the logo on a phone.
+ */
+export function TeamIdentity({
+  team,
+  size = 'sm',
+  layout = 'row',
+  align = 'start',
+  yours = false,
+  link = true,
+  nameOnPhone = true,
+  nameSx,
+  tbd,
+  testId,
+}: {
+  team: TeamLike | null | undefined;
+  size?: keyof typeof LOGO_SIZE | number;
+  layout?: 'row' | 'column';
+  align?: 'start' | 'end';
+  yours?: boolean;
+  link?: boolean;
+  nameOnPhone?: boolean;
+  nameSx?: BoxProps['sx'];
+  /** Text when there is no team yet ("TBD", "Winner of A1"). */
+  tbd?: string;
+  testId?: string;
+}) {
+  const linked = link && !!team?.id;
+  const name = team ? (
+    <Box
+      {...(linked
+        ? { component: RouterLink, to: teamProfilePath(team.id as string) }
+        : { component: 'span' })}
+      sx={{
+        minWidth: 0,
+        display: nameOnPhone ? 'block' : { xs: 'none', sm: 'block' },
+        color: yours ? color.accent : color.ink,
+        fontWeight: yours ? 700 : 600,
+        textDecoration: 'none',
+        overflowWrap: layout === 'column' ? 'break-word' : undefined,
+        ...(layout === 'row'
+          ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+          : {}),
+        ...(linked ? { '&:hover': { textDecoration: 'underline' } } : {}),
+        ...nameSx,
+      }}
+    >
+      {team.name}
+    </Box>
+  ) : (
+    <Box component="span" sx={{ color: color.muted, minWidth: 0, ...nameSx }}>
+      {tbd ?? '—'}
+    </Box>
+  );
+  return (
+    <Box
+      data-testid={testId}
+      sx={{
+        display: 'flex',
+        flexDirection: layout === 'column' ? 'column' : align === 'end' ? 'row-reverse' : 'row',
+        alignItems: 'center',
+        justifyContent: layout === 'row' && align === 'end' ? 'flex-start' : undefined,
+        gap: layout === 'column' ? 1 : 1,
+        minWidth: 0,
+        textAlign: layout === 'column' ? 'center' : align === 'end' ? 'right' : 'left',
+      }}
+    >
+      <TeamLogo team={team} size={size} />
+      {name}
     </Box>
   );
 }

@@ -3,7 +3,7 @@ import { fmtTime, fmtWeekdayTime } from '../utils/time';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { matchPagePath, teamProfilePath } from '../paths';
+import { matchPagePath } from '../paths';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
 import { TabEmpty, TabError, TabLoading } from '../components/tournament/page/TabState';
 import {
@@ -17,7 +17,7 @@ import { compareMatchOrder } from '../utils/matchUtils';
 import { getMapData, getMapDisplayName } from '../constants/maps';
 import type { Match, Tournament } from '../types';
 import { tokens, fontDisplay, mono, textSize, withAlpha } from '../theme/tokens';
-import { StatePill, TeamLogo, resultInk, YoursPill } from '../components/tournament/ui/draftUi';
+import { StatePill, TeamIdentity, resultInk, YoursPill } from '../components/tournament/ui/draftUi';
 import { SegmentedControl } from '../components/common/SegmentedControl';
 
 const { color } = tokens;
@@ -78,44 +78,15 @@ function MatchCard({
   const side = (s: 'team1' | 'team2') => {
     const team = match[s];
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 1,
-          textAlign: 'center',
-          minWidth: 0,
-        }}
-      >
-        <TeamLogo
-          team={
-            team ? { id: team.id, name: team.name, tag: team.tag, logoUrl: team.logoUrl } : null
-          }
-          size="lg"
-        />
-        {team ? (
-          <Box
-            component={RouterLink}
-            to={teamProfilePath(team.id)}
-            sx={{
-              display: { xs: 'none', sm: 'block' },
-              color: ink(team.id).name,
-              fontWeight: ink(team.id).yours || ink(team.id).won ? 700 : 600,
-              fontSize: '0.9375rem',
-              textDecoration: 'none',
-              overflowWrap: 'anywhere',
-              '&:hover': { textDecoration: 'underline' },
-            }}
-          >
-            {team.name}
-          </Box>
-        ) : (
-          <Box component="span" sx={{ color: color.muted, fontSize: '0.9375rem' }}>
-            {t('overviewPage.yourTeam.tbd')}
-          </Box>
-        )}
-      </Box>
+      <TeamIdentity
+        team={team ? { id: team.id, name: team.name, tag: team.tag, logoUrl: team.logoUrl } : null}
+        size="lg"
+        layout="column"
+        yours={ink(team?.id).yours}
+        nameOnPhone={false}
+        nameSx={{ fontSize: '0.9375rem' }}
+        tbd={t('overviewPage.yourTeam.tbd')}
+      />
     );
   };
 

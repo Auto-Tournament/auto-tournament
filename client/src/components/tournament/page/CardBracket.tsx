@@ -6,7 +6,7 @@ import type { Match } from '../../../types';
 import { getMapDisplayName } from '../../../constants/maps';
 import { getBracketMatchLabel, getMatchBracket, getRoundLabel } from '../../../utils/matchUtils';
 import { tokens, fontDisplay, mono } from '../../../theme/tokens';
-import { TeamLogo, resultInk } from '../ui/draftUi';
+import { TeamIdentity, resultInk } from '../ui/draftUi';
 import { matchPagePath } from '../../../paths';
 
 const { color } = tokens;
@@ -374,22 +374,12 @@ function MatchCard({
       >
         {team ? (
           <>
-            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-              <TeamLogo team={{ id: team.id, name: team.name, tag: team.tag }} size="sm" />
-              <Typography
-                component="span"
-                sx={{
-                  minWidth: 0,
-                  color: ink,
-                  fontWeight: won || yours ? 700 : 500,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {team.name}
-              </Typography>
-            </Box>
+            <TeamIdentity
+              team={{ id: team.id, name: team.name, tag: team.tag }}
+              yours={yours}
+              link={false}
+              nameSx={{ color: ink, fontWeight: won || yours ? 700 : 500 }}
+            />
             <Typography
               component="span"
               sx={{ ...mono, color: scoreInk, fontWeight: won ? 700 : 500 }}

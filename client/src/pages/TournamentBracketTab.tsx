@@ -108,7 +108,11 @@ export default function TournamentBracketTab() {
           rankingTeamIds={bracket.roundRobinStandings.map((standing) => standing.teamId)}
         />
       )}
-      <BracketResults matches={bracket.matches} tournamentId={tournament.id} />
+      <BracketResults
+        matches={bracket.matches}
+        tournamentId={tournament.id}
+        yourTeamId={viewerTeam?.id ?? null}
+      />
     </Box>
   );
 }
