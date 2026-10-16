@@ -666,6 +666,21 @@ export interface LoadoutRow {
   team: number;
 }
 
+/**
+ * Knife and gloves with nothing equipped: the newest one the player owns, on both sides, rather
+ * than the stock knife or bare hands. A knife that dropped tonight (drops no longer equip
+ * themselves) left its owner with the stock knife (NTLAN, 2026-10-16). `owned` newest first.
+ */
+export function withInventoryFallback(rows: LoadoutRow[], owned: LoadoutRow[]): LoadoutRow[] {
+  const out = [...rows];
+  for (const slot of ['knife', 'gloves']) {
+    if (out.some((r) => r.slot === slot)) continue;
+    const newest = owned.find((o) => slotOf(o.weapon) === slot);
+    if (newest) out.push({ ...newest, slot, team: 0 });
+  }
+  return out;
+}
+
 export interface LoadoutPayload {
   paints: Array<{
     team: LoadoutTeam;
@@ -1729,7 +1744,19 @@ export const skinService = {
         WHERE l.player_uid = ?`,
       [uid]
     );
-    return loadoutPayload(rows);
+    const needsFallback =
+      !rows.some((r) => r.slot === 'knife') || !rows.some((r) => r.slot === 'gloves');
+    const owned = needsFallback
+      ? await db.queryAsync<LoadoutRow>(
+          `SELECT weapon, paint_kit, float_value, pattern, stattrak, '' AS slot, 0 AS team
+             FROM cs2_player_skins
+            WHERE player_uid = ? AND (weapon LIKE 'weapon_knife%' OR weapon = 'weapon_bayonet'
+                  OR weapon LIKE '%gloves%' OR weapon LIKE '%handwraps%')
+            ORDER BY created_at DESC, id DESC`,
+          [uid]
+        )
+      : [];
+    return loadoutPayload(withInventoryFallback(rows, owned));
   },
 
   /** Admin: the numbers at the top of the Skins page. */

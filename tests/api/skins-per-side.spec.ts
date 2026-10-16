@@ -4,6 +4,7 @@ import {
   equipTeam,
   loadoutPayload,
   sideOf,
+  withInventoryFallback,
 } from '../../api/src/integrations/cs2/skins/skinService';
 import {
   applyStep,
@@ -124,6 +125,36 @@ test.describe('loadout sides (rules)', () => {
       [0, 9],
     ]);
     expect(loadoutPayload([])).toBeNull();
+  });
+
+  test('nothing equipped for knife or gloves: the newest owned one, on both sides', () => {
+    const row = (weapon: string, paint: number, slot = '', team = 0) => ({
+      weapon,
+      paint_kit: paint,
+      float_value: 0.1,
+      pattern: 1,
+      slot,
+      team,
+    });
+    const owned = [
+      row('weapon_knife_m9_bayonet', 568),
+      row('sporty_gloves', 10018),
+      row('weapon_knife_tactical', 415),
+    ];
+    // Nothing equipped: the newest knife and gloves.
+    expect(withInventoryFallback([], owned).map((r) => [r.weapon, r.slot, r.team])).toEqual([
+      ['weapon_knife_m9_bayonet', 'knife', 0],
+      ['sporty_gloves', 'gloves', 0],
+    ]);
+    // A knife equipped (any side) stays the only knife.
+    const equipped = [row('weapon_knife_tactical', 415, 'knife', 2)];
+    expect(
+      withInventoryFallback(equipped, owned)
+        .filter((r) => r.slot === 'knife')
+        .map((r) => r.weapon)
+    ).toEqual(['weapon_knife_tactical']);
+    // Nothing owned: nothing added.
+    expect(withInventoryFallback([], [])).toEqual([]);
   });
 });
 
