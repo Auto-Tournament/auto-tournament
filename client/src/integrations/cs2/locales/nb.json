@@ -2220,6 +2220,9 @@
       "reelRender": "klippene: {{time}} opptak til sammen"
     },
     "add": {
+      "baseName": "Navn",
+      "baseNameHelp": "Opptakere som kobler til med denne kommandoen, vises som {{name}}-1, {{name}}-2 osv. Du kan gi dem nye navn i listen.",
+      "makeCommand": "Lag kommandoen",
       "button": "Legg til en opptaker",
       "hint": "En gaming-PC eller en hodeløs server med NVIDIA- eller AMD-GPU. Den dukker opp her med sitt eget navn når den første gang spør etter arbeid. Gi den nytt navn i listen.",
       "keys": "Opptakernøkler",

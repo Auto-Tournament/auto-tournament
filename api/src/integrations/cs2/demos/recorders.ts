@@ -82,11 +82,54 @@ export interface RecorderRow {
 const text = (v: unknown, max: number): string | null =>
   typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : null;
 
-/** A claim: note the recorder and what it runs on. */
+/** New recorders get their numbered labels one at a time (two joining at once took the same). */
+let labelling: Promise<unknown> = Promise.resolve();
+
+/**
+ * The label a new recorder gets from its key: `<key name>-<n>`, the next number after the
+ * highest one in use, so one key pasted on a farm names it renderfarm-1, -2, ... in the order
+ * they join. Rename them in the list afterwards.
+ */
+async function nextKeyLabel(keyName: string): Promise<string> {
+  const base = keyName.trim().slice(0, 70);
+  const rows = await db.queryAsync<{ label: string | null }>(
+    'SELECT label FROM cs2_recorders WHERE label LIKE ?',
+    [`${base.replace(/[\\%_]/g, (c) => `\\${c}`)}-%`]
+  );
+  let max = 0;
+  for (const r of rows) {
+    const m = r.label?.slice(base.length).match(/^-(\d+)$/);
+    if (m) max = Math.max(max, Number(m[1]));
+  }
+  return `${base}-${max + 1}`;
+}
+
+/**
+ * A claim: note the recorder and what it runs on. A recorder seen for the first time with a
+ * recorder key gets a numbered label from the key's name (`keyName`).
+ */
 export async function seenRecorder(
   name: string,
-  info: { version?: unknown; gpu?: unknown; platform?: unknown }
+  info: { version?: unknown; gpu?: unknown; platform?: unknown },
+  keyName?: string | null
 ): Promise<RecorderRow> {
+  // Keys made before the dialog asked for a name are called key-<date>: no numbering for those.
+  if (keyName && !/^key-\d{4}-/.test(keyName)) {
+    const job = labelling.then(async () => {
+      const known = await db.queryOneAsync('SELECT 1 AS x FROM cs2_recorders WHERE name = ?', [
+        name.slice(0, 120),
+      ]);
+      if (known) return;
+      await db.runAsync(
+        'INSERT INTO cs2_recorders (name, label, last_seen) VALUES (?, ?, ?) ON CONFLICT (name) DO NOTHING',
+        [name.slice(0, 120), await nextKeyLabel(keyName), now()]
+      );
+    });
+    labelling = job.catch(() => undefined);
+    await job.catch((error: unknown) => {
+      log.warn(`[RECORDER] naming ${name} after its key failed: ${(error as Error).message}`);
+    });
+  }
   const version = Number.isInteger(Number(info.version)) ? Number(info.version) : null;
   const row = await db.queryOneAsync<RecorderRow>(
     `INSERT INTO cs2_recorders (name, version, gpu, platform, last_seen) VALUES (?, ?, ?, ?, ?)

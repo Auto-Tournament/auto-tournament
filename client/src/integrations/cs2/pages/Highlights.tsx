@@ -1001,22 +1001,23 @@ function AddRecorder({ onKeys }: { onKeys: () => void }) {
     return () => clearTimeout(first);
   }, [loadKeys]);
 
-  // Opening the dialog makes a key: no name to think of. It is named by when
-  // it was made, for the list of keys; the recorder goes by its machine's name.
-  const start = async () => {
+  // The dialog asks for a base name; the key takes it, and each recorder that joins with the
+  // key is labelled <name>-1, <name>-2, ... in the order it joins (rename them in the list).
+  const [baseName, setBaseName] = useState('recorder');
+  const start = () => {
     setOpen(true);
     setToken(null);
-    const stamp = new Date().toISOString().slice(0, 16).replace('T', '-').replace(':', '');
+  };
+  const makeKey = async () => {
     try {
       const res = await api.post<{ token: string }>('/api/game/cs2/recorder-keys', {
-        name: `key-${stamp}`,
+        name: baseName.trim() || 'recorder',
       });
       setToken(res.token);
       await loadKeys();
       onKeys();
     } catch (err) {
       showError(err instanceof Error ? err.message : t('highlightsAdmin.actionError'));
-      setOpen(false);
     }
   };
   const revoke = async (id: string) => {
@@ -1098,7 +1099,26 @@ function AddRecorder({ onKeys }: { onKeys: () => void }) {
               : t('highlightsAdmin.add.serverNeeds')}
           </Typography>
           {!token ? (
-            <CircularProgress size={24} />
+            <Stack direction="row" spacing={1.5} alignItems="flex-start" flexWrap="wrap" useFlexGap>
+              <TextField
+                size="small"
+                label={t('highlightsAdmin.add.baseName')}
+                helperText={t('highlightsAdmin.add.baseNameHelp', {
+                  name: baseName.trim() || 'recorder',
+                })}
+                value={baseName}
+                onChange={(e) => setBaseName(e.target.value.slice(0, 60))}
+                inputProps={{ 'data-testid': 'recorder-base-name' }}
+                sx={{ flex: '1 1 16rem' }}
+              />
+              <Button
+                variant="contained"
+                onClick={() => void makeKey()}
+                data-testid="recorder-make-key"
+              >
+                {t('highlightsAdmin.add.makeCommand')}
+              </Button>
+            </Stack>
           ) : (
             <>
               <Box

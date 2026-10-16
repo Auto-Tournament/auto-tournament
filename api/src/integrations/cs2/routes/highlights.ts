@@ -544,11 +544,11 @@ router.post('/recorder/claim', requireRecorder, claimLock, async (req: Request, 
   try {
     const recorder = typeof req.body?.recorder === 'string' ? req.body.recorder : 'recorder';
     const version = Number(req.body?.version ?? 0);
-    const me = await seenRecorder(recorder, {
-      version,
-      gpu: req.body?.gpu,
-      platform: req.body?.platform,
-    });
+    const me = await seenRecorder(
+      recorder,
+      { version, gpu: req.body?.gpu, platform: req.body?.platform },
+      (res.locals.recorderKey as { name?: string } | undefined)?.name
+    );
     await queueMatchReelFor(await recoverRecordingLeases());
     if (await recorderHasActiveClaim(recorder)) return res.status(204).end();
     // Paused after too many turned-down clips (demos/recorders.ts).

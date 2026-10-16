@@ -121,7 +121,12 @@ export async function requireRecorder(
   const token = presented(req);
   if (token?.startsWith(PREFIX)) {
     try {
-      if (await checkRecorderKey(token)) return next();
+      const key = await checkRecorderKey(token);
+      if (key) {
+        // The routes name a new recorder after its key (recorders.ts seenRecorder).
+        res.locals.recorderKey = key;
+        return next();
+      }
     } catch {
       res.status(500).json({ success: false, error: 'Could not check the recorder key' });
       return;
