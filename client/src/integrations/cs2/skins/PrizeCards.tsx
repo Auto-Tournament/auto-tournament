@@ -19,6 +19,7 @@ import {
   fmtNum,
 } from '../../../module-sdk';
 import { skinPaths } from './paths';
+import { rarityColor } from './rarity';
 
 const { color } = tokens;
 const MVP_PLACE = 99;
@@ -94,12 +95,26 @@ export function TournamentPrizeCards({ tournamentId }: { tournamentId: number })
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
-        justifyContent: 'space-between',
         gap: 2.5,
       }}
     >
+      {/* The skin itself, left of its name, on its rarity colour's line. */}
+      {r.skin && (
+        <Box
+          component="img"
+          src={r.skin.imageUrl}
+          alt=""
+          sx={{
+            width: { xs: 96, sm: 128 },
+            height: { xs: 72, sm: 96 },
+            objectFit: 'contain',
+            flex: 'none',
+            borderBottom: `3px solid ${rarityColor[r.skin.rarity] ?? color.rule}`,
+          }}
+        />
+      )}
       <Box
-        sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: '1 1 420px', minWidth: 0 }}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: '1 1 320px', minWidth: 0 }}
       >
         <Typography
           sx={{
