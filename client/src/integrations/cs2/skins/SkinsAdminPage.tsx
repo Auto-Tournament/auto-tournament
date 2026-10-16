@@ -22,11 +22,8 @@ import {
   MenuItem,
   Select,
   Stack,
-  FormControlLabel,
   Switch,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { LockSimpleIcon } from '@phosphor-icons/react';
@@ -41,6 +38,12 @@ import {
   withAlpha,
   PageHead,
   pageTitle,
+  panelSx,
+  panelBorderSx,
+  dialogPaperSx,
+  SwitchRow,
+  SegmentedControl,
+  fmtPercent,
 } from '../../../module-sdk';
 import { rarityColor } from './rarity';
 import { SkinsInventoryAdmin } from './SkinsInventoryAdmin';
@@ -132,16 +135,17 @@ function RewardRow({ reward, onChange }: { reward: Reward; onChange: (r: Reward)
         <Typography sx={{ width: 36, fontWeight: 700, color: PLACE_COLOR[reward.place - 1] }}>
           {t(`skins.admin.place${reward.place}`)}
         </Typography>
-        <ToggleButtonGroup
-          exclusive
+        <SegmentedControl
           size="small"
+          label={t('skins.admin.pickSkin')}
           value={reward.mode}
-          onChange={(_, mode) => mode && onChange({ ...reward, mode })}
-        >
-          <ToggleButton value="random">{t('skins.admin.random')}</ToggleButton>
-          <ToggleButton value="skin">{t('skins.admin.pickSkin')}</ToggleButton>
-          <ToggleButton value="none">{t('skins.admin.noReward')}</ToggleButton>
-        </ToggleButtonGroup>
+          onChange={(mode) => onChange({ ...reward, mode })}
+          options={[
+            { value: 'random', label: t('skins.admin.random') },
+            { value: 'skin', label: t('skins.admin.pickSkin') },
+            { value: 'none', label: t('skins.admin.noReward') },
+          ]}
+        />
         {reward.mode === 'random' ? (
           <Select
             size="small"
@@ -393,7 +397,7 @@ function RarityBar({
           {RARITIES.map((r, i) => (
             <Box
               key={r}
-              title={`${t(`skins.rarity.${r}`)} ${shares[i]}%`}
+              title={`${t(`skins.rarity.${r}`)} ${fmtPercent(shares[i])}`}
               sx={{
                 width: `${shares[i]}%`,
                 bgcolor: rarityColor[r],
@@ -599,9 +603,8 @@ function SkinsCard({
       component="section"
       aria-labelledby={id}
       sx={{
-        bgcolor: color.paper2,
-        border: `1px solid ${color.rule}`,
-        borderRadius: radii.lg,
+        ...panelSx,
+        ...panelBorderSx,
         p: { xs: 2, md: 3 },
         display: 'flex',
         flexDirection: 'column',
@@ -654,9 +657,8 @@ function Stat({
   return (
     <Box
       sx={{
-        bgcolor: color.paper2,
-        border: `1px solid ${color.rule}`,
-        borderRadius: radii.lg,
+        ...panelSx,
+        ...panelBorderSx,
         p: 2.75,
         display: 'flex',
         flexDirection: 'column',
@@ -920,38 +922,26 @@ export function SkinsAdminPage() {
                 %
               </Box>
             ))}
-            <FormControlLabel
-              control={
-                <Switch
-                  size="small"
-                  checked={config.tournamentMatchDrops}
-                  onChange={(e) => set({ tournamentMatchDrops: e.target.checked })}
-                />
-              }
+            <SwitchRow
               label={t('skins.admin.tournamentMatchDrops')}
+              size="small"
+              checked={config.tournamentMatchDrops}
+              onChange={(e) => set({ tournamentMatchDrops: e.target.checked })}
               data-testid="skins-tournament-match-drops"
             />
-            <FormControlLabel
-              control={
-                <Switch
-                  size="small"
-                  checked={config.levelUpDrops}
-                  onChange={(e) => set({ levelUpDrops: e.target.checked })}
-                />
-              }
+            <SwitchRow
               label={t('skins.admin.levelUpDrops')}
+              size="small"
+              checked={config.levelUpDrops}
+              onChange={(e) => set({ levelUpDrops: e.target.checked })}
               data-testid="skins-level-up-drops"
             />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    size="small"
-                    checked={config.tryoutServer === true}
-                    onChange={(e) => set({ tryoutServer: e.target.checked })}
-                  />
-                }
+              <SwitchRow
                 label={t('skins.admin.tryoutServer')}
+                size="small"
+                checked={config.tryoutServer === true}
+                onChange={(e) => set({ tryoutServer: e.target.checked })}
                 data-testid="skins-tryout-server"
               />
               <Button
@@ -981,19 +971,15 @@ export function SkinsAdminPage() {
               </Typography>
             )}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    size="small"
-                    checked={config.tradeUp?.enabled !== false}
-                    onChange={(e) =>
-                      set({
-                        tradeUp: { count: config.tradeUp?.count ?? 5, enabled: e.target.checked },
-                      })
-                    }
-                  />
-                }
+              <SwitchRow
                 label={t('skins.admin.tradeUp')}
+                size="small"
+                checked={config.tradeUp?.enabled !== false}
+                onChange={(e) =>
+                  set({
+                    tradeUp: { count: config.tradeUp?.count ?? 5, enabled: e.target.checked },
+                  })
+                }
                 data-testid="skins-trade-up"
               />
               <TextField
@@ -1035,15 +1021,11 @@ export function SkinsAdminPage() {
               }}
               sx={{ maxWidth: 260 }}
             />
-            <FormControlLabel
-              control={
-                <Switch
-                  size="small"
-                  checked={config.repeatOpponentCut !== false}
-                  onChange={(e) => set({ repeatOpponentCut: e.target.checked })}
-                />
-              }
+            <SwitchRow
               label={t('skins.admin.repeatOpponentCut')}
+              size="small"
+              checked={config.repeatOpponentCut !== false}
+              onChange={(e) => set({ repeatOpponentCut: e.target.checked })}
               data-testid="skins-repeat-opponent-cut"
             />
             <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>
@@ -1146,7 +1128,7 @@ export function SkinsAdminPage() {
         fullWidth
         maxWidth="sm"
         PaperProps={{
-          sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' },
+          sx: dialogPaperSx,
         }}
         data-testid="skins-reward-dialog"
       >

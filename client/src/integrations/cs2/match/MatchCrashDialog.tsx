@@ -7,7 +7,6 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { Box, Button, CircularProgress, Dialog, Typography } from '@mui/material';
-import { WarningCircleIcon, ArrowClockwiseIcon } from '@phosphor-icons/react';
 import {
   api,
   useAuth,
@@ -151,36 +150,44 @@ export function MatchCrashDialog() {
       aria-labelledby="crash-title"
       data-testid="match-crash-dialog"
       PaperProps={{
-        sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' },
+        sx: {
+          borderRadius: radii.lg,
+          bgcolor: color.paper,
+          border: `1px solid ${color.rule}`,
+          backgroundImage: 'none',
+        },
       }}
     >
-      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        <Box
+      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Typography
+          component="span"
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.25,
-            color: back ? color.live : color.sideT,
+            fontSize: '0.75rem',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            fontWeight: 600,
+            color: back ? color.live : color.warning,
           }}
         >
-          {back ? (
-            <ArrowClockwiseIcon size={24} aria-hidden />
-          ) : (
-            <WarningCircleIcon size={24} aria-hidden />
-          )}
-          <Typography
-            id="crash-title"
-            component="h2"
-            sx={{
-              fontFamily: fontDisplay,
-              fontSize: '1.375rem',
-              fontWeight: 600,
-              color: color.ink,
-            }}
-          >
-            {back ? t('crash.backTitle') : t('crash.downTitle')}
-          </Typography>
-        </Box>
+          {back ? t('crash.backEyebrow') : t('crash.downTitle')}
+        </Typography>
+        <Typography
+          id="crash-title"
+          component="h2"
+          sx={{
+            m: 0,
+            fontFamily: fontDisplay,
+            fontSize: '1.375rem',
+            fontWeight: 700,
+            color: color.ink,
+          }}
+        >
+          {back
+            ? t('crash.backTitle')
+            : state.phase === 'moving'
+              ? t('crash.movingTitle')
+              : t('crash.downHeading')}
+        </Typography>
         <Typography sx={{ color: color.ink2 }} data-testid="match-crash-status">
           {back
             ? server?.moved?.inPlace
@@ -189,24 +196,10 @@ export function MatchCrashDialog() {
             : state.phase === 'moving'
               ? t('crash.moving')
               : t('crash.down')}
+          {!back && <> {t('crash.wait')}</>}
         </Typography>
-        {!back && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.25,
-              color: color.muted,
-              fontSize: '0.875rem',
-            }}
-          >
-            <CircularProgress size={16} aria-hidden />
-            {t('crash.wait')}
-          </Box>
-        )}
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', mt: 1 }}>
-          <Button onClick={close}>{t('crash.close')}</Button>
-          {back && server && (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.25 }}>
+          {back && server ? (
             <Button
               variant="contained"
               component="a"
@@ -216,7 +209,18 @@ export function MatchCrashDialog() {
             >
               {t('crash.reconnect')}
             </Button>
+          ) : (
+            <Button
+              variant="contained"
+              disabled
+              startIcon={<CircularProgress size={14} color="inherit" aria-hidden />}
+            >
+              {t('crash.reconnect')}
+            </Button>
           )}
+          <Button variant="outlined" onClick={close}>
+            {t('crash.close')}
+          </Button>
         </Box>
       </Box>
     </Dialog>

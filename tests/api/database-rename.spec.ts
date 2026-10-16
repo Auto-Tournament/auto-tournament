@@ -30,9 +30,9 @@ test.describe('Database rename: what it acts on', () => {
   });
 
   test('points a connection string at another database, keeping everything else', () => {
-    expect(withDatabase('postgresql://u:p%40ss@db:5432/auto_tournament?sslmode=require', 'postgres')).toBe(
-      'postgresql://u:p%40ss@db:5432/postgres?sslmode=require'
-    );
+    expect(
+      withDatabase('postgresql://u:p%40ss@db:5432/auto_tournament?sslmode=require', 'postgres')
+    ).toBe('postgresql://u:p%40ss@db:5432/postgres?sslmode=require');
   });
 
   test('the platform configured with the 2.x name refuses to start, before connecting', async () => {
@@ -49,7 +49,9 @@ test.describe('Database rename: what it acts on', () => {
 
   test('an unreachable Postgres is reported as such, not as a rename problem', async () => {
     const url = `postgresql://postgres:postgres@127.0.0.1:1/${DATABASE_NAME}`;
-    await expect(renameLegacyDatabase(url, { connectionTimeoutMillis: 2000 })).rejects.toMatchObject({
+    await expect(
+      renameLegacyDatabase(url, { connectionTimeoutMillis: 2000 })
+    ).rejects.toMatchObject({
       code: 'ECONNREFUSED',
     });
   });

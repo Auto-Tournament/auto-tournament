@@ -411,7 +411,27 @@
     "opening": "The veto is opening…",
     "opensBreak": "A short break between matches: get ready, the first turn gets extra time.",
     "breakEyebrow": "Break between matches",
-    "opensInTitle": "The map veto opens in"
+    "opensInTitle": "The map veto opens in",
+    "title": "map veto",
+    "sideInWindow": "Choose CT or T in the window.",
+    "pool": "Map pool",
+    "mapsLeft_one": "{{count}} map left",
+    "mapsLeft_other": "{{count}} maps left",
+    "pickedBy": "{{team}} picked",
+    "lastMapLeft": "the last map left",
+    "toBePicked": "to be picked",
+    "ctHint": "Defend the bomb sites",
+    "tHint": "Plant the bomb",
+    "sideTimeout": "If the time runs out, a side is chosen for you at random.",
+    "now": "now",
+    "sideOn": "{{side}} on {{map}}",
+    "youStart": "You start",
+    "teamStarts": "{{team}} starts",
+    "spectatorNote": "Only players on one of the two teams take part. You see each ban and pick as it happens.",
+    "startsAtEyebrow": "Starts at {{time}} · veto opens {{opens}}",
+    "opensBeforeStart_one": "The veto opens by itself {{count}} minute before the match. Stay on this page: you hear a sound when it opens. If your team misses a turn, a map is picked for you.",
+    "opensBeforeStart_other": "The veto opens by itself {{count}} minutes before the match. Stay on this page: you hear a sound when it opens. If your team misses a turn, a map is picked for you.",
+    "yourTurn": "Your turn"
   },
   "matchInfo": {
     "server": {
@@ -447,7 +467,16 @@
       "via": "Se connecter via",
       "viaLan": "LAN",
       "viaPublic": "Internet",
-      "viaRecommended": "pour vous"
+      "viaRecommended": "pour vous",
+      "vetoDoneChip": "Veto done · {{map}}",
+      "queueNext": "in line for a server: the next one that is free is yours.",
+      "queueInLine": "in line for a server. The matches ahead of you get one first; it goes by itself.",
+      "pausedChip": "Paused · round {{n}}",
+      "pausedChipShort": "Paused",
+      "pausedBody": "The match paused at the end of the round. It goes on when both teams are ready, or when an admin decides.",
+      "pausedBodyWaiting_one": "The match paused at the end of the round. It goes on when {{names}} is back, or when an admin decides.",
+      "pausedBodyWaiting_other": "The match paused at the end of the round. It goes on when {{names}} are back, or when an admin decides.",
+      "reconnect": "Reconnect"
     }
   },
   "serversPage": {
@@ -799,6 +828,39 @@
     "matchBreak": {
       "label": "Break between a team's matches (minutes)",
       "helper": "The next match's veto opens this long after the team's last match ended. 0 = straight on."
+    },
+    "gotv": {
+      "title": "Spectators (GOTV)",
+      "description": "Spectators join a match's GOTV from its match room and watch in CS2, a little behind the players so nobody can ghost.",
+      "enabled": "Spectators can watch matches in GOTV",
+      "gotvDelay": {
+        "label": "Delay",
+        "option_0": "None",
+        "option_30": "30 s",
+        "option_105": "105 s",
+        "option_120": "120 s"
+      },
+      "gotvSeats": {
+        "label": "Seats per match",
+        "option_one": "{{count}} spectator",
+        "option_other": "{{count}} spectators"
+      },
+      "gotvAccess": {
+        "label": "Who can watch",
+        "option_0": "Everyone",
+        "option_1": "Signed-in players",
+        "option_2": "Admins and casters"
+      },
+      "gotvLiveStats": {
+        "label": "Live stats on the match page",
+        "option_0": "Same delay as GOTV",
+        "option_1": "Live (no delay)",
+        "option_2": "Off"
+      },
+      "delayNote_one": "{{count}} second behind the players.",
+      "delayNote_other": "{{count}} seconds behind the players.",
+      "noDelayNote": "No delay: fine for a LAN where nobody can see the screens, risky online.",
+      "portNote": "csm opens a GOTV port per server (27020 and up); the servers need it reachable on the LAN or the internet. Players in a match never get a Watch button."
     }
   },
   "roster": {
@@ -1622,7 +1684,11 @@
     },
     "rewards": {
       "title": "Rewards",
-      "choosing": "choosing a skin…"
+      "choosing": "choosing a skin…",
+      "mvp": "MVP",
+      "summary_one": "{{count}} player got a skin. Open to see who got what.",
+      "summary_other": "{{count}} players got a skin. Open to see who got what.",
+      "placeN": "{{place}} place"
     },
     "tradeUp": {
       "start": "Échanger",
@@ -1652,6 +1718,122 @@
       "site": "Site's prizes",
       "custom": "Own prizes",
       "label": "Prizes"
+    },
+    "toastDrop": "Skin drop",
+    "toastNew": "New skin in your inventory.",
+    "toastMore_one": "+{{count}} more",
+    "toastMore_other": "+{{count}} more",
+    "toastPick_one": "It stays until you look.",
+    "toastPick_other": "Pick one of three. It stays until you do.",
+    "toastChoose": "Pick",
+    "toastSee": "See it",
+    "toastHide": "Hide until later",
+    "prizesManage": {
+      "title": "Prizes",
+      "intro": "Skins for a placing, given to every player on the team when the tournament ends. Site skins only: no Steam items, no money value.",
+      "off": "Skins are off for this tournament (esports mode, or skin rewards turned off in Setup). These prizes are not given.",
+      "byPlace": "By place",
+      "placeN_ordinal_one": "{{count}}st",
+      "placeN_ordinal_two": "{{count}}nd",
+      "placeN_ordinal_few": "{{count}}rd",
+      "placeN_ordinal_other": "{{count}}th",
+      "everyone": "Everyone else",
+      "skin": "Skin",
+      "how": "How",
+      "nothing": "Nothing",
+      "pickChoice": "Pick 1 of 3",
+      "pickOne": "One at random",
+      "matchDrops": "Every match played can drop a skin (the drop rates in Skins)",
+      "mvpToggle": "MVP of the tournament gets a prize too",
+      "chosenBy": "Chosen by",
+      "byCommends": "Most commended",
+      "byRating": "Best rating",
+      "byAdmin": "The organizer picks",
+      "save": "Save prizes",
+      "saved": "Prizes saved",
+      "saveFailed": "Could not save the prizes",
+      "whereTitle": "Where players see it",
+      "where": {
+        "rulesLabel": "Overview:",
+        "rules": "What you can win, from these settings.",
+        "outLabel": "When they are out:",
+        "out": "the match room says what they won.",
+        "championsLabel": "Results:",
+        "champions": "their prize, and the MVP.",
+        "inventoryLabel": "Inventory:",
+        "inventory": "the skin, marked with the tournament and the place."
+      },
+      "mvpTitle": "The MVP",
+      "mvpIs": "{{name}} is the MVP. The prize is theirs.",
+      "mvpNobody": "Nobody has been chosen: no commends or ratings yet.",
+      "hintCommends": "Most commended: {{name}} ({{count}})",
+      "hintRating": "best rating: {{name}} ({{rating}})",
+      "hintNone": "No commends or ratings to go by.",
+      "player": "Player",
+      "commendsN_one": "{{count}} commend",
+      "commendsN_other": "{{count}} commends",
+      "ratingN": "rating {{rating}}",
+      "giveMvp": "Give the MVP prize",
+      "mvpGiven": "MVP prize given",
+      "mvpFailed": "Could not give the MVP prize"
+    },
+    "prizeCard": {
+      "eyebrow": "Your prize · {{place}} place",
+      "eyebrowMvp": "Your prize · MVP",
+      "played": "for playing",
+      "pickTitle": "Pick 1 of 3 {{rarity}} skins",
+      "pickBody": "It waits for you until you pick, and then it is in your inventory.",
+      "gotBody": "It is in your inventory.",
+      "pick": "Pick your skin",
+      "open": "Open your inventory",
+      "openInventory": "Open your inventory",
+      "mvpLine": "MVP: {{name}}",
+      "mvpCommends": "Most commended by the other players: {{count}} commends from {{players}} players ({{kinds}}).",
+      "mvpRating": "Best rating: {{rating}} over {{matches}} matches.",
+      "mvpAdmin": "Picked by the organizer.",
+      "mvpWinsPick": "Wins 1 of 3 {{rarity}} skins.",
+      "mvpWinsOne": "Wins a {{rarity}} skin.",
+      "linePick": "Your prize is waiting: pick 1 of 3 {{rarity}} skins.",
+      "lineGot": "Your prize is in your inventory: a {{rarity}} skin.",
+      "kinds": {
+        "friendly": "Friendly",
+        "leader": "Leader",
+        "teacher": "Teacher",
+        "good_sport": "Good sport",
+        "team_player": "Team player",
+        "good_comms": "Good comms"
+      },
+      "eyebrowPlayed": "Your prize · for playing"
+    },
+    "toastPrize": "Prize · {{place}}",
+    "mvpPlace": "MVP of a tournament",
+    "toastWhyPlayed": "You earned a skin for playing",
+    "toastWhyPlace": "You earned a skin for {{place}} place",
+    "toastWhyMvp": "You earned a skin as MVP",
+    "toastWhyDrop": "You got a skin drop",
+    "pinned": "Pinned until you pick",
+    "toastWhyLevel": "You earned a skin for level {{level}}",
+    "pickLater": "Pick later",
+    "catalog": {
+      "title": "All skins",
+      "intro": "Every skin a drop can give. The chance is per option in a drop: each drop shows three, and you keep one. Knives and gloves get their rarity from their market price.",
+      "count_one": "{{count}} skin",
+      "count_other": "{{count}} skins",
+      "search": "Search skins",
+      "sortLabel": "Sort skins",
+      "sort": {
+        "rarity": "Rarest first",
+        "chance": "Most likely first",
+        "name": "Name"
+      },
+      "groupLabel": "Weapon type",
+      "rarityLabel": "Rarity",
+      "loading": "Loading skins…",
+      "none": "No skins match.",
+      "chanceHelp": "The chance of this exact skin per option in a drop",
+      "price": "Market price {{price}}",
+      "more_one": "Show more ({{count}} left)",
+      "more_other": "Show more ({{count}} left)"
     }
   },
   "matchRules": {
@@ -1834,7 +2016,9 @@
       "players_other": "{{count}} players",
       "none": "No highlights yet. They show up here as the matches' demos are recorded.",
       "playOfTheTournament": "Play of the tournament",
-      "firstSoon": "The first plays show up here soon"
+      "firstSoon": "The first plays show up here soon",
+      "noneTitle": "No highlights yet",
+      "noneBody": "They show up here as the matches' demos are recorded. The first plays show up soon."
     },
     "readyIn": "ready in about {{minutes}} min",
     "matchReelRecording": "Match reel · being recorded",
@@ -1917,7 +2101,12 @@
     "scoreboard": "Scoreboard",
     "player": "Player",
     "openingKills": "Opening kills",
-    "highlights": "Highlights"
+    "highlights": "Highlights",
+    "rating": "Rating",
+    "allMaps": "All maps",
+    "scoreboardMap": "Map",
+    "reelTeam": "Reel",
+    "teamHighlights": "{{team}} highlights"
   },
   "highlightsAdmin": {
     "title": "Highlights",
@@ -2298,7 +2487,10 @@
     "backInPlace": "The server is up again with your match restored. Reconnect to keep playing.",
     "backMoved": "The match moved to another server, restored to the last round. Reconnect to keep playing.",
     "reconnect": "Reconnect",
-    "close": "Close"
+    "close": "Close",
+    "backEyebrow": "Back up",
+    "downHeading": "Bringing the match back",
+    "movingTitle": "Moving the match to another server"
   },
   "seriesMaps": {
     "title": "Maps",
@@ -2312,13 +2504,15 @@
     "draw": "Draw",
     "regulation": "In regulation",
     "overtime": "After overtime",
-    "onDamage": "Level after overtime, won on damage"
+    "onDamage": "Level after overtime, won on damage",
+    "demo": "Demo"
   },
   "dropped": {
     "title": "You lost connection",
     "body": "Looks like you left the match server (a crash or a dropped connection). Your team is waiting: reconnect to get back in.",
     "reconnect": "Reconnect",
-    "later": "Later"
+    "later": "Later",
+    "eyebrow": "Connection"
   },
   "rules": {
     "mode": "{{size}}v{{size}} competitive.",
@@ -2333,7 +2527,13 @@
     "veto": "Maps: the two teams ban (and pick) them in the map veto before each match.",
     "mapsDrawn": "Maps: each match draws one from the pool. No veto.",
     "shuffleMaps": "Maps: every round plays the next map in the list, with new teams each round.",
-    "bots": "Empty seats are filled with bots."
+    "bots": "Empty seats are filled with bots.",
+    "beThere_one": "Be at your PC {{count}} minute before your match.",
+    "beThere_other": "Be at your PC {{count}} minutes before your match.",
+    "beThereWhy_one": "The veto opens by itself {{count}} minute before the start time. If your team does not ban or pick in time, a map is chosen for you.",
+    "beThereWhy_other": "The veto opens by itself {{count}} minutes before the start time. If your team does not ban or pick in time, a map is chosen for you.",
+    "beThereOnTime": "Be at your PC when your match starts.",
+    "beThereOnTimeWhy": "The veto opens by itself at the start time. If your team does not ban or pick in time, a map is chosen for you."
   },
   "movement": {
     "title": "Surf & KZ records",
@@ -2354,5 +2554,24 @@
       "bhop": "Bhop",
       "kz": "KZ"
     }
+  },
+  "watch": {
+    "title": "Watch in CS2",
+    "liveText_one": "Watch it in CS2: the button opens the match in GOTV, {{count}} second behind the players. {{seats}} seats.",
+    "liveText_other": "Watch it in CS2: the button opens the match in GOTV, {{count}} seconds behind the players. {{seats}} seats.",
+    "liveTextNoDelay": "Watch it in CS2: the button opens the match in GOTV. {{seats}} seats.",
+    "beforeText": "GOTV opens when the map goes live. Warmup and the knife round are not shown.",
+    "offText": "This tournament is not shown in GOTV. Follow it in the table below.",
+    "offSignIn": "Sign in to watch this match in GOTV.",
+    "offAdmins": "Only admins and casters can watch matches in GOTV here.",
+    "offNoPort": "This server has no GOTV port to join.",
+    "button": "Watch match",
+    "buttonBefore": "Watch match · opens at the start",
+    "buttonOff": "Watch match",
+    "copyLabel": "Copy the connect command",
+    "copied": "Connect command copied: paste it in the CS2 console",
+    "copyFailed": "Could not copy; select the text instead",
+    "onStage": "On stage: every GOTV seat, for the casters and the stream",
+    "stageFailed": "Could not change the stage match"
   }
 }

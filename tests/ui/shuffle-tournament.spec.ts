@@ -67,6 +67,10 @@ test.describe.serial('Shuffle Tournament UI', () => {
       await expect(page.getByTestId('shuffle-signup-after-create')).toBeVisible();
       await nextButton.click();
 
+      // Schedule: when matches start (at set times, or as soon as ready).
+      await expect(page.getByTestId('setup-schedule')).toBeVisible();
+      await nextButton.click();
+
       // Maps and veto. Shuffle plays the pool in sequence instead of running a
       // veto, and the map step says so. That notice is the shuffle-specific
       // behaviour worth pinning down here.

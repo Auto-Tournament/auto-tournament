@@ -1,24 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { fmtTime, fmtWeekdayTime } from '../utils/time';
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  Alert,
-  Box,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  Link,
-  MenuItem,
-  Select,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from '@mui/material';
-import {
-  CheckCircleIcon,
-  PlayCircleIcon,
-  UsersThreeIcon,
-  WarningIcon,
-} from '@phosphor-icons/react';
+import { Alert, Box, Button, Checkbox, Link, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
 import {
@@ -28,7 +11,14 @@ import {
 } from '../hooks/useTournamentSignup';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useSetupGames } from '../components/tournament/setup/games';
-import { Face, PersonTile, TeamMark } from '../components/tournament/signup/PlayerFace';
+import {
+  AvatarStack,
+  PlayerAvatar,
+  TeamLogo,
+  eyebrowSx,
+  h2Sx,
+  panel,
+} from '../components/tournament/ui/draftUi';
 import { TabLoading } from '../components/tournament/page/TabState';
 import { api } from '../utils/api';
 import { paths, tournamentTabPath } from '../paths';
@@ -45,7 +35,7 @@ type Slot = 'starter' | 'sub' | 'out';
  * With `?edit=1` it changes the lineup of a team that is already in.
  */
 export default function TournamentSignupTab() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const editing = params.get('edit') === '1';
@@ -75,6 +65,11 @@ export default function TournamentSignupTab() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
 
+  // A new step starts at its top, not where the last one was scrolled to.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [step]);
+
   const teams = signup.eligibleTeams;
   const teamId = pickedTeamId ?? (editing ? existing?.teamId : null) ?? teams[0]?.id ?? null;
   const team = teams.find((tm) => tm.id === teamId) ?? null;
@@ -94,23 +89,81 @@ export default function TournamentSignupTab() {
 
   if (signup.loading) return <TabLoading label={t('overviewPage.loading')} />;
 
+  const header = (title: string, stepsShown: boolean) => (
+    <Box component="header" sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+      <Link
+        component={RouterLink}
+        to={tournamentTabPath(tournament.id)}
+        sx={{ fontSize: '0.875rem', color: color.ink2, alignSelf: 'flex-start' }}
+      >
+        ← {tournament.name}
+      </Link>
+      <Typography
+        id="tournament-title"
+        component="h1"
+        sx={{
+          m: 0,
+          fontFamily: fontDisplay,
+          fontSize: { xs: '1.75rem', md: '2.25rem' },
+          fontWeight: 700,
+          lineHeight: 1.15,
+        }}
+      >
+        {title}
+      </Typography>
+      {stepsShown && (
+        <Box
+          component="ol"
+          aria-label={t('signup.stepsLabel')}
+          sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', gap: 1, flexWrap: 'wrap' }}
+        >
+          {(['lineup', 'review'] as const).map((key, i) => (
+            <Box
+              key={key}
+              component="li"
+              aria-current={step === key ? 'step' : undefined}
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 1,
+                px: 1.75,
+                py: 0.75,
+                borderRadius: radii.pill,
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                bgcolor: step === key ? color.accent : color.paper2,
+                color: step === key ? color.accentInk : color.ink2,
+              }}
+            >
+              <Box component="span" sx={mono}>
+                {i + 1}
+              </Box>
+              {t(`signup.steps.${key}`)}
+            </Box>
+          ))}
+        </Box>
+      )}
+    </Box>
+  );
+
   if (!teams.length) {
     return (
-      <Box
-        sx={{
-          maxWidth: 640,
-          p: 3,
-          borderRadius: radii.lg,
-          bgcolor: color.paper2,
-          border: `1px solid ${color.rule}`,
-        }}
-        data-testid="signup-no-team"
-      >
-        <Typography sx={{ fontWeight: 600 }}>{t('signup.noTeamTitle')}</Typography>
-        <Typography sx={{ color: color.ink2, mt: 0.5 }}>{t('signup.noTeamBody')}</Typography>
-        <Button component={RouterLink} to={paths.communityTeams} variant="outlined" sx={{ mt: 2 }}>
-          {t('signup.goToTeams')}
-        </Button>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 880 }}>
+        {header(t('signup.title'), false)}
+        <Box
+          component="section"
+          aria-labelledby="signup-no-team-title"
+          sx={{ ...panel, alignItems: 'flex-start' }}
+          data-testid="signup-no-team"
+        >
+          <Typography id="signup-no-team-title" component="h2" sx={h2Sx}>
+            {t('signup.noTeamTitle')}
+          </Typography>
+          <Typography sx={{ color: color.ink2 }}>{t('signup.noTeamBody')}</Typography>
+          <Button component={RouterLink} to={paths.communityTeams} variant="outlined" size="small">
+            {t('signup.goToTeams')}
+          </Button>
+        </Box>
       </Box>
     );
   }
@@ -127,11 +180,6 @@ export default function TournamentSignupTab() {
     ? signup.window.maxTeams - tournament.teamIds.length
     : null;
   const checkInAt = signup.window?.checkInOpensAt ? new Date(signup.window.checkInOpensAt) : null;
-  const dayAndTime = new Intl.DateTimeFormat(i18n.language, {
-    weekday: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 
   const setSlot = (steamId: string, slot: Slot) => setSlots({ ...current, [steamId]: slot });
 
@@ -159,428 +207,444 @@ export default function TournamentSignupTab() {
     }
   };
 
-  const stepPill = (label: string, active: boolean) => (
-    <Box
-      component="li"
-      sx={{
-        px: 1.75,
-        py: 1,
-        borderRadius: radii.pill,
-        fontSize: '0.875rem',
-        bgcolor: active ? color.accent : color.paper3,
-        color: active ? color.accentInk : color.ink2,
-        fontWeight: active ? 600 : 400,
-      }}
-    >
-      {label}
-    </Box>
-  );
+  const segBtn = (on: boolean) => ({
+    all: 'unset' as const,
+    cursor: 'pointer',
+    px: 1.5,
+    minHeight: 36,
+    display: 'inline-flex',
+    alignItems: 'center',
+    borderRadius: radii.pill,
+    fontSize: '0.875rem',
+    fontWeight: 600,
+    bgcolor: on ? color.rule : 'transparent',
+    color: on ? color.ink : color.muted,
+    '&:hover': { color: color.ink },
+    '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
+  });
+  const problems = [...starters, ...subs].filter((m) => !m.hasAccount || m.hasGame === false);
+  const changeUntil = checkInAt ? fmtWeekdayTime(checkInAt) : null;
+  const checkInEnd = signup.window?.checkInClosesAt
+    ? new Date(signup.window.checkInClosesAt)
+    : null;
+  const firstMatchAt = tournament.settings?.schedule?.[0]?.at
+    ? new Date(tournament.settings.schedule[0].at)
+    : null;
+  const takenAfter = tournament.teamIds.length + (editing ? 0 : 1);
 
   return (
     <Box
-      sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 960 }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 880 }}
       data-testid="signup-page"
     >
-      {!editing && (
-        <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', gap: 1.25 }}>
-          {stepPill(
-            `1 · ${t('signup.steps.lineup')}${step === 'review' ? ' ✓' : ''}`,
-            step === 'lineup'
-          )}
-          {stepPill(`2 · ${t('signup.steps.review')}`, step === 'review')}
-        </Box>
-      )}
+      {header(editing ? t('signup.editTitle') : t('signup.title'), !editing)}
 
       {step === 'lineup' ? (
         <>
           {teams.length > 1 && !editing && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-              <Typography
-                component="h2"
-                sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600 }}
-              >
+            <Box component="section" aria-labelledby="signup-which" sx={panel}>
+              <Typography id="signup-which" component="h2" sx={h2Sx}>
                 {t('signup.whichTeam')}
               </Typography>
-              <Select
-                value={teamId ?? ''}
-                onChange={(event) => {
-                  setPickedTeamId(String(event.target.value));
-                  setSlots(null);
-                }}
+              <Box
+                role="radiogroup"
+                aria-labelledby="signup-which"
                 data-testid="signup-team-select"
                 sx={{
-                  alignSelf: 'flex-start',
-                  minWidth: 360,
-                  borderRadius: '14px',
-                  bgcolor: color.paper2,
+                  display: 'grid',
+                  gap: 1.5,
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 15rem), 1fr))',
                 }}
-                renderValue={(value) => {
-                  const tm = teams.find((x) => x.id === value);
-                  return tm ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <TeamMark tag={tm.tag} name={tm.name} highlight />
-                      <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1.25 }}>
-                        <Typography sx={{ fontWeight: 600 }}>{tm.name}</Typography>
-                        <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
+              >
+                {teams.map((tm) => {
+                  const on = tm.id === teamId;
+                  return (
+                    <Box
+                      key={tm.id}
+                      component="button"
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      onClick={() => {
+                        setPickedTeamId(tm.id);
+                        setSlots(null);
+                      }}
+                      sx={{
+                        all: 'unset',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        p: 2,
+                        borderRadius: radii.md,
+                        bgcolor: color.paper3,
+                        border: `2px solid ${on ? color.accent : 'transparent'}`,
+                        '&:hover': { borderColor: on ? color.accent : color.rule },
+                        '&:focus-visible': {
+                          outline: `2px solid ${color.focus}`,
+                          outlineOffset: 2,
+                        },
+                      }}
+                    >
+                      <TeamLogo team={{ id: tm.id, name: tm.name, tag: tm.tag }} size="md" />
+                      <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                        <Typography
+                          component="span"
+                          sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}
+                        >
+                          {tm.name}
+                        </Typography>
+                        <Typography
+                          component="span"
+                          sx={{ fontSize: '0.8125rem', color: color.ink2 }}
+                        >
                           {t(`signup.role.${tm.role}`)} ·{' '}
                           {t('signup.playerCount', { count: tm.members.length })}
                         </Typography>
                       </Box>
                     </Box>
-                  ) : null;
-                }}
-              >
-                {teams.map((tm) => (
-                  <MenuItem key={tm.id} value={tm.id}>
-                    {tm.name}
-                  </MenuItem>
-                ))}
-              </Select>
+                  );
+                })}
+              </Box>
             </Box>
           )}
 
-          <Box>
-            <Typography
-              component="h1"
-              sx={{ fontFamily: fontDisplay, fontSize: '2.125rem', fontWeight: 600 }}
+          <Box component="section" aria-labelledby="signup-who" sx={panel}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                gap: 1,
+              }}
             >
-              {t('signup.whoPlays')}
-            </Typography>
-            <Typography sx={{ color: color.ink2 }}>
-              {t('signup.whoPlaysHint', { count: teamSize, subs: MAX_SUBS })}
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'minmax(0,1fr) 300px' },
-              gap: 4,
-              alignItems: 'start',
-            }}
-          >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {team?.members.map((m) => (
-                <Box
-                  key={m.steamId}
-                  data-testid="signup-member"
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: {
-                      xs: '44px minmax(0,1fr)',
-                      sm: '44px minmax(0,1fr) auto',
-                    },
-                    gap: 1.75,
-                    alignItems: 'center',
-                    p: '10px 14px',
-                    borderRadius: '14px',
-                    bgcolor: color.paper2,
-                  }}
-                >
-                  <Face name={m.name} avatar={m.avatar} size={44} />
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontWeight: 600 }}>
-                      {m.name}
-                      {m.owner ? (
-                        <Box component="span" sx={{ fontWeight: 400, color: color.muted }}>
-                          {' · '}
-                          {t('signup.ownerTag')}
-                        </Box>
-                      ) : m.captain ? (
-                        <Box component="span" sx={{ fontWeight: 400, color: color.muted }}>
-                          {' · '}
-                          {t('signup.captainTag')}
-                        </Box>
-                      ) : null}
-                    </Typography>
-                    <Typography
-                      component="div"
-                      sx={{
-                        fontSize: '0.8125rem',
-                        color: color.muted,
-                        display: 'flex',
-                        gap: 1,
-                        flexWrap: 'wrap',
-                        alignItems: 'center',
-                      }}
-                      data-testid="signup-member-checks"
-                    >
-                      <Box component="span" sx={{ color: m.hasAccount ? color.live : color.sideT }}>
-                        {m.hasAccount
-                          ? `✓ ${t('signup.check.steam')}`
-                          : t('signup.problem.noAccount')}
-                      </Box>
-                      {m.hasAccount && m.hasGame !== null && m.hasGame !== undefined && (
-                        <Box component="span" sx={{ color: m.hasGame ? color.live : color.sideT }}>
-                          ·{' '}
-                          {m.hasGame
-                            ? `✓ ${t('signup.check.game', { game: gameName })}`
-                            : t('signup.check.noGame', { game: gameName })}
-                        </Box>
-                      )}
-                      {m.hasAccount && m.rating !== null && (
-                        <span>· {t('signup.rating', { rating: m.rating })}</span>
-                      )}
-                      {(!m.hasAccount || m.hasGame === false) && team && (
-                        <Link
-                          component="button"
-                          type="button"
-                          onClick={() => void remind(team.id, m.steamId)}
-                          sx={{ fontSize: 'inherit', color: color.accent }}
-                          data-testid="signup-remind"
-                        >
-                          {t('signup.remind')}
-                        </Link>
-                      )}
-                    </Typography>
-                  </Box>
-                  <ToggleButtonGroup
-                    exclusive
-                    size="small"
-                    value={current[m.steamId] ?? 'out'}
-                    onChange={(_, value: Slot | null) => value && setSlot(m.steamId, value)}
-                    aria-label={t('signup.slotFor', { name: m.name })}
-                    sx={{ gridColumn: { xs: '1 / -1', sm: 'auto' } }}
-                  >
-                    <ToggleButton value="starter">{t('signup.starter')}</ToggleButton>
-                    <ToggleButton value="sub">{t('signup.sub')}</ToggleButton>
-                    <ToggleButton value="out">{t('signup.out')}</ToggleButton>
-                  </ToggleButtonGroup>
-                </Box>
-              ))}
+              <Typography id="signup-who" component="h2" sx={h2Sx}>
+                {t('signup.whoPlays')}
+              </Typography>
+              <Typography component="span" sx={{ fontSize: '0.875rem', color: color.ink2 }}>
+                {t('signup.whoPlaysHint', { count: teamSize, subs: MAX_SUBS })}
+              </Typography>
             </Box>
-
-            <Box component="aside" sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
-              <Box
-                sx={{
-                  p: 2.5,
-                  borderRadius: radii.lg,
-                  bgcolor: color.paper2,
-                  border: `1px solid ${color.rule}`,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1.25,
-                }}
-              >
-                {[
-                  [
-                    t('signup.starters'),
-                    `${starters.length} / ${teamSize}`,
-                    starters.length === teamSize,
-                  ],
-                  [t('signup.subs'), `${subs.length} / ${MAX_SUBS}`, subs.length <= MAX_SUBS],
-                  [t('signup.lineupRating'), rating !== null ? String(rating) : '—', true],
-                ].map(([label, value, ok]) => (
+            {changeUntil && (
+              <Typography sx={{ fontSize: '0.875rem', color: color.ink2 }}>
+                {t('signup.changeUntil', { when: changeUntil })}
+              </Typography>
+            )}
+            <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+              {team?.members.map((m) => {
+                const problem = !m.hasAccount || m.hasGame === false;
+                const tag = m.owner
+                  ? t('signup.ownerTag')
+                  : m.captain
+                    ? t('signup.captainTag')
+                    : '';
+                return (
                   <Box
-                    key={String(label)}
-                    sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}
+                    component="li"
+                    key={m.steamId}
+                    data-testid="signup-member"
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: {
+                        xs: '40px minmax(0,1fr)',
+                        sm: '40px minmax(0,1fr) auto',
+                      },
+                      gap: 1.5,
+                      alignItems: 'center',
+                      py: 1.25,
+                      borderTop: `1px solid ${color.rule}`,
+                    }}
                   >
-                    <Typography sx={{ color: color.ink2, fontSize: 'inherit' }}>{label}</Typography>
-                    <Typography
-                      sx={{ ...mono, fontSize: 'inherit', color: ok ? color.ink : color.ban }}
+                    <PlayerAvatar name={m.name} avatar={m.avatar} size={40} />
+                    <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                      <Typography
+                        component="span"
+                        sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}
+                      >
+                        {m.name}{' '}
+                        {tag && (
+                          <Box
+                            component="span"
+                            sx={{ fontWeight: 400, fontSize: '0.8125rem', color: color.muted }}
+                          >
+                            {tag}
+                          </Box>
+                        )}
+                      </Typography>
+                      <Typography
+                        component="span"
+                        data-testid="signup-member-checks"
+                        sx={{
+                          fontSize: '0.8125rem',
+                          color: problem ? color.warning : color.muted,
+                          display: 'flex',
+                          gap: 0.75,
+                          flexWrap: 'wrap',
+                          alignItems: 'baseline',
+                        }}
+                      >
+                        <span>
+                          {[
+                            m.hasAccount
+                              ? `${t('signup.check.steamShort')} ✓`
+                              : t('signup.problem.noAccount'),
+                            m.hasAccount && m.hasGame === true ? `${gameName} ✓` : null,
+                            m.hasAccount && m.hasGame === false
+                              ? t('signup.check.noGame', { game: gameName })
+                              : null,
+                            m.hasAccount && m.rating !== null && !problem
+                              ? t('signup.rating', { rating: m.rating })
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </span>
+                        {problem && team && (
+                          <Link
+                            component="button"
+                            type="button"
+                            onClick={() => void remind(team.id, m.steamId)}
+                            sx={{ fontSize: 'inherit', color: color.accent }}
+                            data-testid="signup-remind"
+                          >
+                            {t('signup.remind')}
+                          </Link>
+                        )}
+                      </Typography>
+                    </Box>
+                    <Box
+                      role="radiogroup"
+                      aria-label={t('signup.slotFor', { name: m.name })}
+                      sx={{
+                        gridColumn: { xs: '1 / -1', sm: 'auto' },
+                        display: 'inline-flex',
+                        gap: 0.5,
+                        p: 0.5,
+                        borderRadius: radii.pill,
+                        bgcolor: color.paper3,
+                        justifySelf: { xs: 'start', sm: 'end' },
+                      }}
                     >
-                      {value}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-              {missingAccount.length > 0 && (
-                <Box
-                  sx={{
-                    p: 2.25,
-                    borderRadius: radii.lg,
-                    bgcolor: color.paper2,
-                    border: `1px solid ${color.sideT}`,
-                    display: 'flex',
-                    gap: 1.5,
-                  }}
-                >
-                  <WarningIcon size={22} color={color.sideT} aria-hidden />
-                  <Box>
-                    <Typography sx={{ fontWeight: 600 }}>
-                      {t('signup.missingAccounts', {
-                        names: missingAccount.map((m) => m.name).join(', '),
+                      {(['starter', 'sub', 'out'] as const).map((slot) => {
+                        const on = (current[m.steamId] ?? 'out') === slot;
+                        return (
+                          <Box
+                            key={slot}
+                            component="button"
+                            type="button"
+                            role="radio"
+                            aria-checked={on}
+                            onClick={() => setSlot(m.steamId, slot)}
+                            sx={segBtn(on)}
+                          >
+                            {t(`signup.${slot}`)}
+                          </Box>
+                        );
                       })}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
-                      {t('signup.fixBeforeCheckIn')}
-                    </Typography>
+                    </Box>
                   </Box>
-                </Box>
+                );
+              })}
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+                gap: 1,
+                pt: 1.5,
+                borderTop: `1px solid ${color.rule}`,
+              }}
+            >
+              <Typography component="span" sx={{ color: lineupOk ? color.ink : color.ink2 }}>
+                {t('signup.counts', {
+                  starters: starters.length,
+                  teamSize,
+                  subs: subs.length,
+                  maxSubs: MAX_SUBS,
+                })}
+              </Typography>
+              <Typography component="span" sx={{ ...mono }}>
+                {t('signup.lineupRatingValue', { rating: rating ?? '—' })}
+              </Typography>
+            </Box>
+            {problems.length > 0 && (
+              <Typography sx={{ fontSize: '0.875rem', color: color.warning }}>
+                {missingAccount.length > 0
+                  ? t('signup.missingAccounts', {
+                      names: missingAccount.map((m) => m.name).join(', '),
+                    })
+                  : t('signup.missingGame', {
+                      names: problems.map((m) => m.name).join(', '),
+                      game: gameName,
+                    })}{' '}
+                {t('signup.fixBeforeCheckIn')}
+              </Typography>
+            )}
+            {error && <Alert severity="error">{error}</Alert>}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 2,
+              }}
+            >
+              <Link
+                component={RouterLink}
+                to={tournamentTabPath(tournament.id)}
+                sx={{ color: color.ink2 }}
+              >
+                {t('common.cancel')}
+              </Link>
+              {editing ? (
+                <Button
+                  variant="contained"
+                  disabled={!lineupOk || sending}
+                  onClick={() => void send()}
+                  data-testid="signup-save-lineup"
+                >
+                  {t('signup.saveLineup')}
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  disabled={!lineupOk}
+                  onClick={() => setStep('review')}
+                  data-testid="signup-next"
+                >
+                  {t('signup.nextReview')}
+                </Button>
               )}
             </Box>
-          </Box>
-
-          {error && <Alert severity="error">{error}</Alert>}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Link
-              component={RouterLink}
-              to={tournamentTabPath(tournament.id)}
-              sx={{ color: color.ink2 }}
-            >
-              {t('common.cancel')}
-            </Link>
-            {editing ? (
-              <Button
-                variant="contained"
-                disabled={!lineupOk || sending}
-                onClick={() => void send()}
-                data-testid="signup-save-lineup"
-                sx={{ borderRadius: radii.pill, px: 4, py: 1.5 }}
-              >
-                {t('signup.saveLineup')}
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                disabled={!lineupOk}
-                onClick={() => setStep('review')}
-                data-testid="signup-next"
-                sx={{ borderRadius: radii.pill, px: 4, py: 1.5 }}
-              >
-                {t('signup.nextReview')}
-              </Button>
-            )}
           </Box>
         </>
       ) : (
         team && (
-          <>
-            <Typography
-              component="h1"
-              sx={{ fontFamily: fontDisplay, fontSize: '2.125rem', fontWeight: 600 }}
-            >
+          <Box component="section" aria-labelledby="signup-send-title" sx={panel}>
+            <Typography id="signup-send-title" component="h2" sx={h2Sx}>
               {t('signup.readyToSend')}
             </Typography>
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: radii.lg,
-                bgcolor: color.paper2,
-                border: `1px solid ${color.rule}`,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2.75,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75 }}>
-                <TeamMark tag={team.tag} name={team.name} size={56} highlight />
-                <Typography sx={{ fontFamily: fontDisplay, fontSize: '1.5rem', fontWeight: 600 }}>
-                  {team.name}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'flex-start' }}>
-                {starters.map((m) => (
-                  <Box key={m.steamId} sx={{ width: 84 }}>
-                    <PersonTile
-                      name={m.name}
-                      avatar={m.avatar}
-                      note={m.owner || m.captain ? t('signup.captainTag') : undefined}
-                    />
-                  </Box>
-                ))}
-                {subs.length > 0 && (
-                  <Box
-                    sx={{ alignSelf: 'stretch', borderLeft: `1px dashed ${color.rule}`, mx: 1 }}
-                  />
-                )}
-                {subs.map((m) => (
-                  <Box key={m.steamId} sx={{ width: 84 }}>
-                    <PersonTile name={m.name} avatar={m.avatar} note={t('signup.sub')} />
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: radii.lg,
-                bgcolor: color.paper2,
-                border: `1px solid ${color.rule}`,
-                display: 'grid',
-                gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'repeat(3, minmax(0,1fr))' },
-                gap: 2,
-              }}
-            >
+            <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
               {[
                 [
-                  <UsersThreeIcon key="a" size={22} color={color.accent} />,
                   spotsLeft === 1 ? t('signup.next.lastSpot') : t('signup.next.takesSpot'),
-                  spotsLeft !== null
-                    ? t('signup.next.spotsLeft', { count: Math.max(spotsLeft, 0) })
+                  signup.window?.maxTeams
+                    ? t('signup.next.spotOf', { n: takenAfter, max: signup.window.maxTeams })
                     : '',
                 ],
                 [
-                  <CheckCircleIcon key="b" size={22} color={color.sideT} />,
                   t('signup.next.checkIn'),
-                  checkInAt ? dayAndTime.format(checkInAt) : t('signup.todo.notSet'),
-                ],
-                [
-                  <PlayCircleIcon key="c" size={22} color={color.live} />,
-                  t('signup.next.firstMatch'),
-                  tournament.settings?.schedule?.[0]
-                    ? dayAndTime.format(new Date(tournament.settings.schedule[0].at))
+                  checkInAt
+                    ? `${fmtWeekdayTime(checkInAt)}${checkInEnd ? `–${fmtTime(checkInEnd)}` : ''}`
                     : t('signup.todo.notSet'),
                 ],
-              ].map(([icon, title, sub], i) => (
-                <Box key={i} sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-                  {icon}
-                  <Box>
-                    <Typography sx={{ fontWeight: 600 }}>{title}</Typography>
-                    <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
-                      {sub}
-                    </Typography>
+                [
+                  t('signup.next.firstMatch'),
+                  firstMatchAt ? fmtWeekdayTime(firstMatchAt) : t('signup.todo.notSet'),
+                ],
+              ].map(([label, value]) => (
+                <Box
+                  component="li"
+                  key={label}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: 2,
+                    py: 1.25,
+                    borderTop: `1px solid ${color.rule}`,
+                  }}
+                >
+                  <span>{label}</span>
+                  <Box component="span" sx={{ ...mono, color: color.ink2 }}>
+                    {value}
                   </Box>
                 </Box>
               ))}
             </Box>
-            <FormControlLabel
+            <Box
               sx={{
-                alignItems: 'flex-start',
-                m: 0,
-                p: 2.25,
-                borderRadius: '18px',
-                border: `1px solid ${color.rule}`,
-                gap: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 0.75,
+                p: 2,
+                borderRadius: radii.md,
+                bgcolor: color.paper3,
               }}
-              control={
-                <Checkbox
-                  checked={rulesOk}
-                  onChange={(e) => setRulesOk(e.target.checked)}
-                  data-testid="signup-rules"
-                  sx={{ p: 0, mt: 0.25 }}
+            >
+              <Typography component="span" sx={eyebrowSx}>
+                {t('signup.yourLineup')}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                <TeamLogo team={{ id: team.id, name: team.name, tag: team.tag }} size="sm" />
+                <Typography component="span" sx={{ fontWeight: 700 }}>
+                  {team.name}
+                </Typography>
+                <AvatarStack
+                  players={starters.map((m) => ({ name: m.name, avatar: m.avatar }))}
+                  size={28}
                 />
-              }
-              label={
-                <Box>
-                  <Typography>
-                    {t('signup.vouch')}{' '}
-                    <Link component={RouterLink} to={tournamentTabPath(tournament.id, 'rules')}>
-                      {t('signup.rulesLink')}
-                    </Link>
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
-                    {t('signup.vouchNote')}
-                  </Typography>
-                </Box>
-              }
-            />
-            {error && <Alert severity="error">{error}</Alert>}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Link component="button" onClick={() => setStep('lineup')} sx={{ color: color.ink2 }}>
-                ← {t('signup.steps.lineup')}
-              </Link>
-              <Button
-                variant="contained"
-                disabled={!rulesOk || sending}
-                onClick={() => void send()}
-                data-testid="signup-send"
-                sx={{ borderRadius: radii.pill, px: 4, py: 1.75, fontSize: '1rem' }}
+              </Box>
+              <Typography component="span">
+                {starters.map((m) => m.name).join(' · ')}
+                {subs.length > 0 && (
+                  <Box component="span" sx={{ color: color.muted }}>
+                    {' · '}
+                    {t('signup.subsLine', { names: subs.map((m) => m.name).join(', ') })}
+                  </Box>
+                )}
+              </Typography>
+              <Link
+                component="button"
+                type="button"
+                onClick={() => setStep('lineup')}
+                sx={{ alignSelf: 'flex-start', fontSize: '0.875rem' }}
               >
-                {t('signup.send', { team: team.name })}
-              </Button>
+                {t('signup.change')}
+              </Link>
             </Box>
-          </>
+            <Box
+              component="label"
+              sx={{
+                display: 'flex',
+                gap: 1.5,
+                alignItems: 'flex-start',
+                p: 2,
+                borderRadius: radii.md,
+                border: `1px solid ${color.rule}`,
+                cursor: 'pointer',
+              }}
+            >
+              <Checkbox
+                checked={rulesOk}
+                onChange={(e) => setRulesOk(e.target.checked)}
+                inputProps={{ 'data-testid': 'signup-rules' } as never}
+                sx={{ p: 0, mt: 0.25 }}
+              />
+              <Typography component="span">
+                {t('signup.vouch')}{' '}
+                <Link component={RouterLink} to={tournamentTabPath(tournament.id, 'rules')}>
+                  {t('signup.rulesLink')}
+                </Link>
+                .{' '}
+                <Box component="span" sx={{ color: color.muted }}>
+                  {t('signup.vouchNote')}
+                </Box>
+              </Typography>
+            </Box>
+            {error && <Alert severity="error">{error}</Alert>}
+            <Button
+              variant="contained"
+              size="large"
+              disabled={!rulesOk || sending}
+              onClick={() => void send()}
+              data-testid="signup-send"
+              sx={{ alignSelf: 'flex-start', px: 4 }}
+            >
+              {t('signup.send', { team: team.name })}
+            </Button>
+          </Box>
         )
       )}
     </Box>

@@ -29,7 +29,15 @@ import {
 
 const FEED = JSON.stringify({
   schema: 1,
-  packs: [{ slug: 'stall-test', name: 'Stall Test', version: '1.0.0', engine: 'manual-report', file: 'packs/stall-test.json' }],
+  packs: [
+    {
+      slug: 'stall-test',
+      name: 'Stall Test',
+      version: '1.0.0',
+      engine: 'manual-report',
+      file: 'packs/stall-test.json',
+    },
+  ],
   modules: [],
 });
 
@@ -44,7 +52,9 @@ interface FakeServer {
   close: () => Promise<void>;
 }
 
-async function fakeServer(routes: Record<string, (res: http.ServerResponse) => void>): Promise<FakeServer> {
+async function fakeServer(
+  routes: Record<string, (res: http.ServerResponse) => void>
+): Promise<FakeServer> {
   let stallNext = 0;
   let resetNext = 0;
   let count = 0;
@@ -107,8 +117,10 @@ test.describe('catalog feed fetching', () => {
   test.beforeEach(async () => {
     dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'at-catalog-feed-'));
     server = await fakeServer({
-      '/catalog.json': (res) => res.writeHead(200, { 'content-type': 'application/json' }).end(FEED),
-      '/broken.json': (res) => res.writeHead(200, { 'content-type': 'application/json' }).end('{"schema":'),
+      '/catalog.json': (res) =>
+        res.writeHead(200, { 'content-type': 'application/json' }).end(FEED),
+      '/broken.json': (res) =>
+        res.writeHead(200, { 'content-type': 'application/json' }).end('{"schema":'),
       '/releases/demo-1.0.0.atmod': (res) => res.writeHead(200).end('archive-bytes'),
       '/releases/demo-1.0.0.atmod.sig': (res) => res.writeHead(200).end('{"sig":true}'),
     });
@@ -149,13 +161,22 @@ test.describe('catalog feed fetching', () => {
     point();
     server.stall(2);
     const feed = await readRemoteFeed();
-    expect(feed).toMatchObject({ from: 'cache', error: 'timeout', fetchedAt: written, refreshing: false });
+    expect(feed).toMatchObject({
+      from: 'cache',
+      error: 'timeout',
+      fetchedAt: written,
+      refreshing: false,
+    });
     expect(feed.packs.map((pack) => pack.slug)).toEqual(['stall-test']);
     expect(server.connections()).toBe(3);
 
     // Straight after a failure the next page load does not wait on the network again.
     const started = Date.now();
-    expect(await readRemoteFeed()).toMatchObject({ from: 'cache', error: 'timeout', refreshing: false });
+    expect(await readRemoteFeed()).toMatchObject({
+      from: 'cache',
+      error: 'timeout',
+      refreshing: false,
+    });
     expect(Date.now() - started).toBeLessThan(200);
     expect(server.connections()).toBe(3);
   });
@@ -183,7 +204,11 @@ test.describe('catalog feed fetching', () => {
       feedTimeoutMs: 400,
       cacheFile: path.join(dir, 'none.json'),
     });
-    expect(await readRemoteFeed()).toMatchObject({ from: 'none', error: 'http_404', fetchedAt: null });
+    expect(await readRemoteFeed()).toMatchObject({
+      from: 'none',
+      error: 'http_404',
+      fetchedAt: null,
+    });
     expect(server.connections()).toBe(1);
 
     setCatalogOverridesForTests({
@@ -217,15 +242,17 @@ test.describe('catalog feed fetching', () => {
     server.stall(10);
     const started = Date.now();
     const failure = await downloadRelease({
-        version: '1.0.0',
-        serverApi: '^0.1.0',
-        clientApi: '^0.2.0',
-        sha256: null,
-        size: null,
-        from: 'remote',
-        url: `${server.origin}/releases/demo-1.0.0.atmod`,
-      })
-      .then(() => null, (error: Error) => error.message);
+      version: '1.0.0',
+      serverApi: '^0.1.0',
+      clientApi: '^0.2.0',
+      sha256: null,
+      size: null,
+      from: 'remote',
+      url: `${server.origin}/releases/demo-1.0.0.atmod`,
+    }).then(
+      () => null,
+      (error: Error) => error.message
+    );
     expect(failure).toBe('downloading the release failed: it did not answer in time');
     expect(server.connections()).toBe(2);
     expect(Date.now() - started).toBeLessThan(2000);

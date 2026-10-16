@@ -512,6 +512,10 @@
       "description": "Your match (both teams and the admins), your team and your party."
     },
     {
+      "name": "Commends",
+      "description": "Players commend others from a match they played (Friendly, Leader, Teacher, Good sport): up to 3 per match, for 24 hours. Public counts per player; never who gave them."
+    },
+    {
       "name": "Compatibility",
       "description": "Ready Up compatibility with the latest CS2 build: the runs its CI reports (token-guarded push), and public reads for the /compatibility page and a shields.io badge. 404 unless COMPAT_INGEST_TOKEN or COMPAT_FEED_URL is set."
     },
@@ -2864,6 +2868,88 @@
         ]
       }
     },
+    "/api/commends/match/{slug}": {
+      "get": {
+        "tags": [
+          "Commends"
+        ],
+        "summary": "Commends in a match, for the signed-in player",
+        "description": "The match's players by team, whether the viewer can commend (they\nplayed, and it is within 24 hours of the end), when that closes, and\nwhat they gave. Never who else gave what.\n",
+        "responses": {
+          "200": {
+            "description": "`open`, `closesAt`, `max`, `given` and `sides`"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/commends/match/{slug}/{playerId}": {
+      "put": {
+        "tags": [
+          "Commends"
+        ],
+        "summary": "Commend a player from the match, change it, or take it back",
+        "description": "`kind` is friendly, leader, teacher or good_sport; null takes it back.\nUp to 3 players per match, not yourself, for 24 hours after it ends.\n",
+        "responses": {
+          "200": {
+            "description": "The viewer's commends in the match, as GET returns them"
+          },
+          "409": {
+            "description": "Closed, or already 3 given"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "playerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/commends/player/{playerId}": {
+      "get": {
+        "tags": [
+          "Commends"
+        ],
+        "summary": "A player's commends, counts only",
+        "responses": {
+          "200": {
+            "description": "`total`, `matches` and `kinds` (count per kind)"
+          }
+        },
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/compat/badge.json": {
       "get": {
         "tags": [
@@ -3617,6 +3703,30 @@
           },
           {
             "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/events/watch/{matchSlug}": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "GET /api/events/watch/:matchSlug",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "matchSlug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ]
       }
@@ -10274,6 +10384,38 @@
         }
       }
     },
+    "/api/matches/{slug}/on-stage": {
+      "put": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "PUT /api/matches/:slug/on-stage",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/matches/{slug}/reallocate": {
       "post": {
         "tags": [
@@ -10344,6 +10486,38 @@
           "Matches"
         ],
         "summary": "POST /api/matches/:slug/restart-countdown",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/matches/{slug}/start-time": {
+      "put": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "PUT /api/matches/:slug/start-time",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -14754,6 +14928,36 @@
             "apiToken": []
           }
         ]
+      },
+      "delete": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "DELETE /api/skins/admin/players/:steamId/inventory",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "steamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/skins/admin/players/{steamId}/skins": {
@@ -14840,6 +15044,20 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/skins/catalog": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "GET /api/skins/catalog",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
       }
     },
     "/api/skins/me": {
@@ -15046,6 +15264,70 @@
             "description": "Success"
           }
         }
+      }
+    },
+    "/api/skins/tournaments/{id}/mvp": {
+      "post": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "POST /api/skins/tournaments/:id/mvp",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/skins/tournaments/{id}/mvp-candidates": {
+      "get": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "GET /api/skins/tournaments/:id/mvp-candidates",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/skins/tournaments/{id}/rewards": {
@@ -15773,6 +16055,20 @@
         }
       }
     },
+    "/api/team-directory/colors": {
+      "get": {
+        "tags": [
+          "Team directory"
+        ],
+        "summary": "GET /api/team-directory/colors",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/team-directory/invite/{code}": {
       "get": {
         "tags": [
@@ -15895,6 +16191,74 @@
           "Team directory"
         ],
         "summary": "DELETE /api/team-directory/:teamId",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/team-directory/{teamId}/banner": {
+      "get": {
+        "tags": [
+          "Team directory"
+        ],
+        "summary": "GET /api/team-directory/:teamId/banner",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Team directory"
+        ],
+        "summary": "PUT /api/team-directory/:teamId/banner",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Team directory"
+        ],
+        "summary": "DELETE /api/team-directory/:teamId/banner",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -20943,6 +21307,33 @@
             }
           }
         ]
+      }
+    },
+    "/api/tournament/{id}/teams": {
+      "get": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "The tournament's teams with their rosters, logos and banners (public)",
+        "description": "No session. What the tournament page's Teams tab draws: each team in\nseed order with its logo and banner URLs and its players (name and\nSteam picture).\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The teams"
+          },
+          "404": {
+            "description": "Tournament not found"
+          }
+        }
       }
     },
     "/api/tournaments": {

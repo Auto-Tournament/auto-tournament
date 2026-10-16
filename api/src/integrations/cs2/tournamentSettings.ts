@@ -32,6 +32,33 @@ export interface TournamentRewardSetting {
   place: 0 | 1 | 2 | 3 | 4;
   mode: 'random' | 'none';
   rarity?: string;
+  /** 'one': one skin of the rarity at random. Absent: pick 1 of 3. */
+  pick?: 'one';
+}
+
+/** The tournament's MVP prize (skins/skinService awardMvp). */
+export interface MvpSetting {
+  enabled: boolean;
+  /** Most commended, best rating, or the organizer picks after the final. */
+  by: 'commends' | 'rating' | 'admin';
+  rarity: string;
+  /** 'one': one skin at random. Absent: pick 1 of 3. */
+  pick?: 'one';
+}
+
+const MVP_BY = ['commends', 'rating', 'admin'] as const;
+
+/** An MVP setting as stored; null when it is not one. */
+function mvpSetting(raw: unknown): MvpSetting | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const r = raw as Record<string, unknown>;
+  return {
+    enabled: r.enabled === true,
+    by: (MVP_BY as readonly unknown[]).includes(r.by) ? (r.by as MvpSetting['by']) : 'commends',
+    rarity:
+      typeof r.rarity === 'string' && REWARD_RARITIES.includes(r.rarity) ? r.rarity : 'legendary',
+    ...(r.pick === 'one' ? { pick: 'one' as const } : {}),
+  };
 }
 
 const REWARD_RARITIES = [
@@ -57,6 +84,7 @@ function rewardSettings(raw: unknown[]): TournamentRewardSetting[] {
         place: place as TournamentRewardSetting['place'],
         mode: 'random',
         rarity: r.rarity,
+        ...(r.pick === 'one' ? { pick: 'one' as const } : {}),
       });
   }
   return out;
@@ -96,6 +124,10 @@ export interface Cs2TournamentSettings {
   skinRewards?: boolean;
   /** This tournament's own prizes per place (skinService.parseRewards); absent: the site's. */
   rewards?: TournamentRewardSetting[];
+  /** False: its matches drop no skins (the placings still get prizes). Absent: on. */
+  matchDrops?: boolean;
+  /** A prize for the tournament's MVP; absent: none. */
+  mvp?: MvpSetting;
   /** Opt-in anonymous bots up to teamSize; humans keep normal ready-up. */
   fillTeamsWithBots?: boolean;
   /**
@@ -357,6 +389,12 @@ function applyLayer(
   if (typeof layer.skinRewards === 'boolean') into.skinRewards = layer.skinRewards;
   if (Array.isArray(layer.rewards)) into.rewards = rewardSettings(layer.rewards);
   else if (layer.rewards === null) delete into.rewards;
+  if (typeof layer.matchDrops === 'boolean') into.matchDrops = layer.matchDrops;
+  if (layer.mvp === null) delete into.mvp;
+  else if (layer.mvp !== undefined) {
+    const mvp = mvpSetting(layer.mvp);
+    if (mvp) into.mvp = mvp;
+  }
   if (typeof layer.esportsMode === 'boolean') into.esportsMode = layer.esportsMode;
   if (typeof layer.veto === 'boolean') into.veto = layer.veto;
   if (layer.mapPoolId !== undefined) {
@@ -424,6 +462,8 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
         : {}),
       ...(value?.skinRewards !== undefined ? { skinRewards: value.skinRewards } : {}),
       ...(value?.rewards ? { rewards: value.rewards } : {}),
+      ...(value?.matchDrops !== undefined ? { matchDrops: value.matchDrops } : {}),
+      ...(value?.mvp ? { mvp: value.mvp } : {}),
       ...(value?.esportsMode !== undefined ? { esportsMode: value.esportsMode } : {}),
       ...(value?.veto !== undefined ? { veto: value.veto } : {}),
       ...(value?.mapPoolId !== undefined ? { mapPoolId: value.mapPoolId } : {}),

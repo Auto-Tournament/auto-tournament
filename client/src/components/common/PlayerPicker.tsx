@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Autocomplete, Avatar, Box, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, TextField, Typography } from '@mui/material';
 import { api } from '../../utils/api';
 import { tokens } from '../../theme/tokens';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 
 const { color } = tokens;
 
@@ -97,9 +98,7 @@ export function PlayerPicker({
       }
       renderOption={(props, o) => (
         <Box component="li" {...props} key={o.steamid64} sx={{ display: 'flex', gap: 1.25 }}>
-          <Avatar src={o.avatar ?? undefined} sx={{ width: 24, height: 24 }}>
-            {o.name.charAt(0)}
-          </Avatar>
+          <PlayerAvatar name={o.name} avatarUrl={o.avatar} size={24} />
           <Box sx={{ minWidth: 0 }}>
             <Typography sx={{ fontSize: '0.9375rem' }}>
               {o.typed ? 'Not signed up yet: add by SteamID64' : o.name}

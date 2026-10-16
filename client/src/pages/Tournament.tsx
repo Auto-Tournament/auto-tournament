@@ -1,3 +1,9 @@
+import { DEFAULT_GROUPS, groupsFormOf } from '../components/tournament/setup/GroupsFields';
+import {
+  DEFAULT_MATCH_TIMES,
+  matchTimesFormOf,
+  matchTimesSetting,
+} from '../components/tournament/setup/ScheduleStep';
 import { pageTitle } from '../utils/pageTitle';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -102,6 +108,8 @@ const DEFAULT_FORM: SetupFormValues = {
   plannedTeams: 8,
   eventPage: EMPTY_EVENT_PAGE,
   signup: DEFAULT_SIGNUP,
+  groups: DEFAULT_GROUPS,
+  matchTimes: DEFAULT_MATCH_TIMES,
 };
 
 const isEventPageEmpty = (fields: EventPageFields) =>
@@ -138,6 +146,8 @@ const formKeyOf = (tournament: TournamentRecord) =>
     tournament.teamSize,
     tournament.eloTemplateId,
     grandFinalModeOf(tournament),
+    tournament.type === 'groups' ? groupsFormOf(tournament.settings) : null,
+    matchTimesFormOf(tournament.settings),
     tournament.game ?? null,
     // The game module's own settings (CS2: map pool and round rules).
     moduleKeysOf(tournament.settings),
@@ -166,6 +176,8 @@ const formFromTournament = (tournament: TournamentRecord): SetupFormValues => {
     plannedTeams:
       teamCount >= 2 ? teamCount : nearestTeamCount(tournament.type, DEFAULT_FORM.plannedTeams),
     shuffleSettings: { teamSize: tournament.type === 'shuffle' ? tournament.teamSize || 5 : 5 },
+    groups: groupsFormOf(tournament.settings),
+    matchTimes: matchTimesFormOf(tournament.settings),
   };
 };
 
@@ -556,7 +568,13 @@ const Tournament: React.FC = () => {
       grandFinalMode !== savedForm.grandFinalMode
     ) {
       return true;
+    } else if (
+      tournament.type === 'groups' &&
+      JSON.stringify(form.groups) !== JSON.stringify(savedForm.groups)
+    ) {
+      return true;
     }
+    if (JSON.stringify(form.matchTimes) !== JSON.stringify(savedForm.matchTimes)) return true;
 
     return false;
   };
@@ -627,6 +645,8 @@ const Tournament: React.FC = () => {
       onPlannedTeamsChange: (count) => patchForm({ plannedTeams: count }),
       onEventPageChange: (fields) => patchForm({ eventPage: fields }),
       onSignupChange: (fields) => patchForm({ signup: fields }),
+      onGroupsChange: (groups) => patchForm({ groups }),
+      onMatchTimesChange: (matchTimes) => patchForm({ matchTimes }),
     }),
     // handleTypeChange reads grandFinalModePicked and the saved tournament.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -873,6 +893,14 @@ const Tournament: React.FC = () => {
       const settings = {
         ...baseSettings,
         ...(type === 'double_elimination' ? { grandFinalMode } : {}),
+        // Groups, then playoffs: groups, who goes through, the playoffs.
+        ...(type === 'groups' ? form.groups : {}),
+        // When matches start (Manage › Schedule edits the same).
+        matchTimes: matchTimesSetting(
+          form.matchTimes,
+          (form.eventPage as { startsAt?: string }).startsAt ||
+            (tournament?.settings as { startsAt?: string } | undefined)?.startsAt
+        ),
         // The game module's own object (CS2: the map pool and round rules),
         // which the core stores without reading.
         ...savedGameSettings(),

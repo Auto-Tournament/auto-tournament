@@ -3,13 +3,15 @@ import { TOURNAMENT_TYPES } from '../../../constants/tournament';
 import { getIntegration } from '../../../integrations/registry';
 import { validateTeamCountForType } from '../../../utils/tournamentValidation';
 
+/** The 3.0 draft's eight steps: the event page is part of "Name and day". */
 export const SETUP_STEPS = [
   'game',
   'basics',
   'format',
   'teams',
+  'schedule',
   'maps',
-  'eventPage',
+  'extras',
   'review',
 ] as const;
 
@@ -73,6 +75,9 @@ export function stepError(
       if (isShuffle && (input.teamSize < 2 || input.teamSize > 10)) {
         return t('tournament.toasts.teamSizeRange');
       }
+      return null;
+    // The game's round rules and prizes are on "Rules and extras".
+    case 'extras':
       return input.moduleError?.('rules') ?? null;
     case 'teams': {
       if (isShuffle || input.signupOpen) return null;

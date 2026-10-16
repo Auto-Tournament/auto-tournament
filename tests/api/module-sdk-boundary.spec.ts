@@ -26,7 +26,10 @@ async function lint(file: string, code: string): Promise<string[]> {
     [
       {
         files: ['**/*.ts', '**/*.tsx'],
-        languageOptions: { parser: tsParser, parserOptions: { ecmaVersion: 'latest', sourceType: 'module' } },
+        languageOptions: {
+          parser: tsParser,
+          parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+        },
         plugins: { 'module-sdk': plugin },
         rules: { [RULE_ID]: 'warn' },
       },
@@ -78,11 +81,17 @@ test.describe('Module SDK boundary lint', () => {
       )
     ).toEqual(Array(7).fill('platformImport'));
     expect(
-      await lint('client/src/integrations/manual-report/index.ts', "import { x } from '../../utils/x';")
+      await lint(
+        'client/src/integrations/manual-report/index.ts',
+        "import { x } from '../../utils/x';"
+      )
     ).toEqual(['platformImport']);
     // Reaching out of client/src altogether counts too.
     expect(
-      await lint('client/src/integrations/cs2/index.tsx', "import { y } from '../../../../shared/y';")
+      await lint(
+        'client/src/integrations/cs2/index.tsx',
+        "import { y } from '../../../../shared/y';"
+      )
     ).toEqual(['platformImport']);
   });
 
@@ -136,7 +145,10 @@ test.describe('Module SDK boundary lint', () => {
     expect(
       await lint(
         'client/src/integrations/cs2/index.tsx',
-        ["import { a } from '../manual-report/x';", "import { getIntegration } from '../registry';"].join('\n')
+        [
+          "import { a } from '../manual-report/x';",
+          "import { getIntegration } from '../registry';",
+        ].join('\n')
       )
     ).toEqual([]);
   });
@@ -149,9 +161,13 @@ test.describe('Module SDK boundary lint', () => {
       'client/src/module-sdk/index.ts',
       'api/src/integrations/cs2/index.ts',
     ]) {
-      expect(await lint(file, "import { api } from '../utils/api';\nimport Box from '@mui/material/Box';"), file).toEqual(
-        []
-      );
+      expect(
+        await lint(
+          file,
+          "import { api } from '../utils/api';\nimport Box from '@mui/material/Box';"
+        ),
+        file
+      ).toEqual([]);
     }
   });
 

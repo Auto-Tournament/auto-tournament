@@ -47,7 +47,12 @@ test.describe('failover: detection', () => {
     expect(graceSecondsFor(null)).toBe(30);
     expect(graceSecondsFor('map_end')).toBeNull();
     expect(graceSecondsFor('series_end')).toBeNull();
-    expect(failoverGraceFromEnv({ FLEET_FAILOVER_LIVE_SECONDS: '120', FLEET_FAILOVER_PRELIVE_SECONDS: 'x' })).toEqual({
+    expect(
+      failoverGraceFromEnv({
+        FLEET_FAILOVER_LIVE_SECONDS: '120',
+        FLEET_FAILOVER_PRELIVE_SECONDS: 'x',
+      })
+    ).toEqual({
       liveSeconds: 120,
       preLiveSeconds: DEFAULT_FAILOVER_GRACE.preLiveSeconds,
     });
@@ -56,8 +61,13 @@ test.describe('failover: detection', () => {
   test('link down: nothing inside the grace, `offline` after it', () => {
     const base = { online: false, now: NOW, phase: 'live' as const, health: null };
     expect(detectFailure({ ...base, offlineSince: NOW - 89 })).toBeNull();
-    expect(detectFailure({ ...base, offlineSince: NOW - 90 })).toMatchObject({ reason: 'offline', since: NOW - 90 });
-    expect(detectFailure({ ...base, phase: 'warmup', offlineSince: NOW - 31 })).toMatchObject({ reason: 'offline' });
+    expect(detectFailure({ ...base, offlineSince: NOW - 90 })).toMatchObject({
+      reason: 'offline',
+      since: NOW - 90,
+    });
+    expect(detectFailure({ ...base, phase: 'warmup', offlineSince: NOW - 31 })).toMatchObject({
+      reason: 'offline',
+    });
     expect(detectFailure({ ...base, phase: 'series_end', offlineSince: NOW - 999 })).toBeNull();
     expect(detectFailure({ ...base, online: true, offlineSince: null })).toBeNull();
     // A custom grace (the test route uses 0).
@@ -72,7 +82,9 @@ test.describe('failover: detection', () => {
       reason: 'exited',
       since: NOW - 2,
     });
-    expect(detectFailure({ ...base, health: { event: 'hung', at: NOW - 1, detail: '/health 503' } })).toMatchObject({
+    expect(
+      detectFailure({ ...base, health: { event: 'hung', at: NOW - 1, detail: '/health 503' } })
+    ).toMatchObject({
       reason: 'hung',
       detail: expect.stringContaining('/health 503'),
     });
@@ -81,7 +93,11 @@ test.describe('failover: detection', () => {
 });
 
 test.describe('failover: what to resume with', () => {
-  const b = (mapNumber: number, round: number, supersededAt: number | null = null) => ({ mapNumber, round, supersededAt });
+  const b = (mapNumber: number, round: number, supersededAt: number | null = null) => ({
+    mapNumber,
+    round,
+    supersededAt,
+  });
 
   test('backup: the latest of the map a restore has not voided', () => {
     const list = [b(1, 3), b(1, 12), b(1, 14, NOW), b(2, 20), b(1, 9)];
@@ -91,14 +107,24 @@ test.describe('failover: what to resume with', () => {
     expect(pickBackup([b(1, 5, NOW)], 1)).toBeNull();
   });
 
-  const c = (id: string, name: string, cs2Build: number | null, capabilities: string[] = ['match.v1']): FailoverCandidate => ({
+  const c = (
+    id: string,
+    name: string,
+    cs2Build: number | null,
+    capabilities: string[] = ['match.v1']
+  ): FailoverCandidate => ({
     cs2ServerId: id,
     fleetServerId: `f-${id}`,
     name,
     cs2Build,
     capabilities,
   });
-  const failed = { cs2ServerId: 'a', fleetServerId: 'f-a', cs2Build: 100, capabilities: ['match.v1', 'demo.stream.v1'] };
+  const failed = {
+    cs2ServerId: 'a',
+    fleetServerId: 'f-a',
+    cs2Build: 100,
+    capabilities: ['match.v1', 'demo.stream.v1'],
+  };
 
   test('server: never the one that went down; same build and capabilities first; the admin pick wins', () => {
     const list = [
@@ -139,17 +165,31 @@ test.describe('failover: what to resume with', () => {
 
 test.describe('failover: the resume block', () => {
   const assign = example('match.assign.json');
-  const backup = (example('match.assign.resume.json').payload as { resume: { backup: InlineBackup } }).resume.backup;
+  const backup = (
+    example('match.assign.resume.json').payload as { resume: { backup: InlineBackup } }
+  ).resume.backup;
   const state = (): MatchState => {
-    const s = JSON.parse(JSON.stringify(example('live.state.snapshot.json').payload)).state as MatchState;
+    const s = JSON.parse(JSON.stringify(example('live.state.snapshot.json').payload))
+      .state as MatchState;
     s.phase = 'live';
     s.series = {
       num_maps: 3,
       current_map: 2,
       score: { team1: 1, team2: 0 },
       maps: {
-        '1': { name: 'de_mirage', sides: 'team1_ct', status: 'done', score: { team1: 13, team2: 9 }, winner: 'team1' },
-        '2': { name: 'de_inferno', sides: 'team2_ct', status: 'live', score: { team1: 5, team2: 3 } },
+        '1': {
+          name: 'de_mirage',
+          sides: 'team1_ct',
+          status: 'done',
+          score: { team1: 13, team2: 9 },
+          winner: 'team1',
+        },
+        '2': {
+          name: 'de_inferno',
+          sides: 'team2_ct',
+          status: 'live',
+          score: { team1: 5, team2: 3 },
+        },
         '3': { name: 'de_nuke', sides: 'knife', status: 'pending' },
       },
     };
@@ -201,14 +241,32 @@ test.describe('failover: the resume block', () => {
   test('no backup yet: the map restarts from warmup (round 0), sides kept only when decided', () => {
     const s = state();
     s.series.maps['2'].sides = 'knife';
-    const resume = buildResume({ fromEpoch: 1, mapNumber: 2, round: 0, backup: null, backupRef: null, state: s, mapStats: null });
+    const resume = buildResume({
+      fromEpoch: 1,
+      mapNumber: 2,
+      round: 0,
+      backup: null,
+      backupRef: null,
+      state: s,
+      mapStats: null,
+    });
     expect(resume).toMatchObject({ from_epoch: 1, map_number: 2, round: 0 });
     expect(resume.backup).toBeUndefined();
     expect(resume.backup_ref).toBeUndefined();
     expect(resume.sides).toBeUndefined();
     expect(valid(resume)).toEqual({ ok: true, errors: [] });
     // No state at all (it never reached the platform): map and round only.
-    expect(buildResume({ fromEpoch: 1, mapNumber: 1, round: 0, backup: null, backupRef: null, state: null, mapStats: null })).toEqual({
+    expect(
+      buildResume({
+        fromEpoch: 1,
+        mapNumber: 1,
+        round: 0,
+        backup: null,
+        backupRef: null,
+        state: null,
+        mapStats: null,
+      })
+    ).toEqual({
       from_epoch: 1,
       map_number: 1,
       round: 0,

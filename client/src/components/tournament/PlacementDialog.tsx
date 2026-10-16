@@ -10,22 +10,7 @@
  * left).
  */
 import React from 'react';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material';
-import {
-  ArrowRightIcon,
-  EyeIcon,
-  GameControllerIcon,
-  TreeStructureIcon,
-  TrophyIcon,
-} from '@phosphor-icons/react';
+import { Box, Button, Typography } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
@@ -33,7 +18,8 @@ import { usePublicBracket } from '../../hooks/usePublicBracket';
 import { placementFor } from '../../hooks/usePlacement';
 import { paths, tournamentTabPath } from '../../paths';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
-import { fontDisplay, tokens } from '../../theme/tokens';
+import { mono, radii, tokens } from '../../theme/tokens';
+import { DraftDialog } from './ui/draftUi';
 import { placementLabel } from '../../utils/placement';
 import type { Match, Tournament } from '../../types';
 import { isLiveMatch, publicMatchLabel, teamCurrentMatch } from './page/matchHelpers';
@@ -141,93 +127,94 @@ function PlacementWatch({
   const teamName =
     matches.flatMap((m) => [m.team1, m.team2]).find((team) => team?.id === teamId)?.name ?? '';
 
+  // The final: the champion's last match, for "X won the final 2–0".
+  const final = placement.champion
+    ? [...matches]
+        .filter((m) => m.status === 'completed' && m.winner?.id === teamId)
+        .sort((x, y) => (y.completedAt ?? 0) - (x.completedAt ?? 0))[0]
+    : undefined;
+  const finalScore = final
+    ? `${Math.max(final.team1SeriesScore ?? final.team1Score ?? 0, final.team2SeriesScore ?? final.team2Score ?? 0)}–${Math.min(final.team1SeriesScore ?? final.team1Score ?? 0, final.team2SeriesScore ?? final.team2Score ?? 0)}`
+    : null;
+  const playNext = !placement.champion && matchmakingAvailable;
+
   return (
-    <Dialog open onClose={close} maxWidth="sm" fullWidth data-testid="placement-dialog">
-      <DialogTitle>
-        {placement.champion
-          ? t('placement.wonTitle', { tournament: name })
-          : t('placement.outTitle', { tournament: name })}
-      </DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 1 }}>
-          <TrophyIcon
-            size={40}
-            weight="duotone"
-            color={placement.place <= 3 ? tokens.color.medalGold : tokens.color.muted}
-            aria-hidden
-          />
-          <Box>
-            <Typography sx={{ color: tokens.color.muted, fontSize: 14 }}>
-              {t('placement.yourTeamPlaced', { team: teamName || t('placement.yourTeam') })}
-            </Typography>
-            <Typography
-              data-testid="placement-dialog-place"
-              sx={{
-                fontFamily: fontDisplay,
-                fontSize: '2.25rem',
-                fontWeight: 700,
-                lineHeight: 1.1,
-              }}
-            >
-              {placementLabel(placement)}
-            </Typography>
-          </Box>
-        </Box>
-        <Typography sx={{ color: tokens.color.ink2 }}>
-          {placement.champion
-            ? t('placement.wonBody')
-            : matchmakingAvailable
-              ? t('placement.outBodyPlay')
-              : t('placement.outBody')}
-        </Typography>
-      </DialogContent>
-      {/* One clear next step (matchmaking when it is on, else the bracket), the bracket as a
-          second step with its own icon, and Close as plain text: three equal pill buttons
-          read as a row of choices with no answer (live test, 2026-10-15). */}
-      <DialogActions sx={{ px: 3, pb: 2.5, gap: 1, flexWrap: 'wrap' }}>
-        <Button onClick={close} color="inherit" sx={{ mr: 'auto', color: 'text.secondary' }}>
-          {t('placement.close')}
-        </Button>
-        {!placement.champion && matchmakingAvailable ? (
+    <DraftDialog
+      onClose={close}
+      testId="placement-dialog"
+      titleId="placement-dialog-title"
+      eyebrow={
+        placement.champion ? (
+          t('placement.championsEyebrow')
+        ) : (
           <>
-            <Button
-              component={RouterLink}
-              to={tournamentTabPath(tournamentId, 'bracket')}
-              onClick={close}
-              variant="outlined"
-              startIcon={<TreeStructureIcon size={18} aria-hidden />}
-              data-testid="placement-dialog-bracket"
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              {t('placement.seeBracket')}
-            </Button>
+            {t('placement.teamPlaced', { team: teamName || t('placement.yourTeam') })}{' '}
+            <span data-testid="placement-dialog-place">{placementLabel(placement)}</span>
+          </>
+        )
+      }
+      eyebrowColor={
+        placement.champion
+          ? tokens.color.medalGold
+          : placement.place <= 3
+            ? tokens.color.medalGold
+            : tokens.color.muted
+      }
+      title={
+        placement.champion
+          ? t('placement.wonTitleShort', { tournament: name })
+          : t('placement.outTitle', { tournament: name })
+      }
+      actions={
+        <>
+          {playNext ? (
             <Button
               component={RouterLink}
               to={paths.play}
               variant="contained"
               onClick={close}
-              startIcon={<GameControllerIcon size={18} weight="fill" aria-hidden />}
               data-testid="placement-dialog-play"
-              sx={{ whiteSpace: 'nowrap' }}
             >
               {t('whatsNext.playMatchmaking')}
             </Button>
-          </>
-        ) : (
-          <Button
-            component={RouterLink}
-            to={tournamentTabPath(tournamentId, 'bracket')}
-            variant="contained"
-            onClick={close}
-            startIcon={<TreeStructureIcon size={18} aria-hidden />}
-            data-testid="placement-dialog-bracket"
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {t('placement.seeBracket')}
+          ) : (
+            <Button
+              component={RouterLink}
+              to={tournamentTabPath(tournamentId, 'bracket')}
+              variant="contained"
+              onClick={close}
+              data-testid="placement-dialog-bracket"
+            >
+              {t('placement.seeBracket')}
+            </Button>
+          )}
+          {playNext && (
+            <Button
+              component={RouterLink}
+              to={tournamentTabPath(tournamentId, 'bracket')}
+              variant="outlined"
+              onClick={close}
+              data-testid="placement-dialog-bracket"
+            >
+              {t('placement.seeBracket')}
+            </Button>
+          )}
+          <Button variant="outlined" onClick={close}>
+            {t('placement.close')}
           </Button>
-        )}
-      </DialogActions>
-    </Dialog>
+        </>
+      }
+    >
+      <Typography sx={{ color: tokens.color.ink2, lineHeight: 1.55 }}>
+        {placement.champion
+          ? finalScore
+            ? t('placement.wonFinalBody', { team: teamName, score: finalScore })
+            : t('placement.wonBody')
+          : matchmakingAvailable
+            ? t('placement.outBodyPlay')
+            : t('placement.outBody')}
+      </Typography>
+    </DraftDialog>
   );
 }
 
@@ -317,52 +304,111 @@ function AdvanceWatch({
     setClosed(won.slug);
   };
 
+  // The match just won, for the eyebrow ("Quarter-final won 2–0").
+  const wonScore = `${Math.max(won.team1SeriesScore ?? won.team1Score ?? 0, won.team2SeriesScore ?? won.team2Score ?? 0)}–${Math.min(won.team1SeriesScore ?? won.team1Score ?? 0, won.team2SeriesScore ?? won.team2Score ?? 0)}`;
+
   return (
-    <Dialog open onClose={close} maxWidth="sm" fullWidth data-testid="advance-dialog">
-      <DialogTitle sx={{ pb: 0.5 }}>{t('advance.title')}</DialogTitle>
-      <DialogContent sx={{ display: 'grid', gap: 1.5 }}>
-        {next && (
-          <Typography
-            component="p"
-            sx={{ fontFamily: fontDisplay, fontSize: '1.6rem', fontWeight: 700, lineHeight: 1.2 }}
-            data-testid="advance-dialog-stage"
-          >
-            {t('whatsNext.throughTo', { stage: publicMatchLabel(next, tournament) })}
-          </Typography>
-        )}
-        {winsToTitle !== null && winsToTitle > 0 && (
-          <Typography sx={{ color: tokens.color.warning, fontWeight: 600 }}>
-            {t('whatsNext.winsToTitle', { count: winsToTitle })}
-          </Typography>
-        )}
-        {opponent ? (
-          <Typography sx={{ color: tokens.color.ink2 }} data-testid="advance-dialog-opponent">
-            {t('advance.opponent', { opponent: opponent.name })}{' '}
-            {isLiveMatch(next!) ? t('whatsNext.nextMatchReady') : t('whatsNext.nextMatchSoon')}
-          </Typography>
-        ) : feeder ? (
+    <DraftDialog
+      onClose={close}
+      testId="advance-dialog"
+      titleId="advance-dialog-title"
+      eyebrow={t('advance.wonEyebrow', {
+        stage: publicMatchLabel(won, tournament),
+        score: wonScore,
+      })}
+      eyebrowColor={tokens.color.live}
+      title={t('advance.title')}
+      actions={
+        <>
+          {next && opponent ? (
+            <Button
+              component={RouterLink}
+              to={matchPagePath(next.slug)}
+              onClick={close}
+              variant="contained"
+              data-testid="advance-dialog-open"
+            >
+              {t('whatsNext.openMatchRoom')}
+            </Button>
+          ) : feeder && feederLive ? (
+            <Button
+              component={RouterLink}
+              to={matchPagePath(feeder.slug)}
+              onClick={close}
+              variant="contained"
+              data-testid="advance-dialog-watch"
+            >
+              {t('advance.watch')}
+            </Button>
+          ) : (
+            <Button
+              component={RouterLink}
+              to={tournamentTabPath(tournament.id, 'bracket')}
+              onClick={close}
+              variant="contained"
+              data-testid="advance-dialog-bracket"
+            >
+              {t('placement.seeBracket')}
+            </Button>
+          )}
+          <Button variant="outlined" onClick={close}>
+            {t('placement.close')}
+          </Button>
+        </>
+      }
+    >
+      {next && (
+        <Typography sx={{ color: tokens.color.ink2 }} data-testid="advance-dialog-stage">
+          {t('whatsNext.throughTo', { stage: publicMatchLabel(next, tournament) })}
+          {winsToTitle !== null && winsToTitle > 0 && (
+            <Box component="span" sx={{ color: tokens.color.warning, fontWeight: 600 }}>
+              {' · '}
+              {t('whatsNext.winsToTitle', { count: winsToTitle })}
+            </Box>
+          )}
+        </Typography>
+      )}
+      {opponent ? (
+        <Typography sx={{ color: tokens.color.ink2 }} data-testid="advance-dialog-opponent">
+          {t('advance.opponent', { opponent: opponent.name })}{' '}
+          {isLiveMatch(next!) ? t('whatsNext.nextMatchReady') : t('whatsNext.nextMatchSoon')}
+        </Typography>
+      ) : feeder ? (
+        <>
+          <Typography sx={{ color: tokens.color.ink2 }}>{t('advance.feederTitle')}</Typography>
           <Box
+            data-testid="advance-dialog-feeder"
             sx={{
-              p: 1.5,
-              borderRadius: 2,
-              border: 1,
-              borderColor: 'divider',
-              display: 'grid',
+              p: 2,
+              borderRadius: radii.md,
+              bgcolor: tokens.color.paper3,
+              display: 'flex',
+              flexDirection: 'column',
               gap: 0.5,
             }}
-            data-testid="advance-dialog-feeder"
           >
-            <Typography variant="overline" sx={{ color: 'text.secondary', lineHeight: 1.4 }}>
-              {t('advance.feederTitle')}
-            </Typography>
-            <Typography sx={{ fontWeight: 600 }}>
-              {feeder.team1?.name ?? t('advance.tbd')} {t('advance.vs')}{' '}
-              {feeder.team2?.name ?? t('advance.tbd')}
-              {feederLive && feeder.team1MapScore != null && feeder.team2MapScore != null
-                ? ` · ${feeder.team1MapScore}–${feeder.team2MapScore}`
-                : ''}
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                gap: 1.5,
+              }}
+            >
+              <Typography component="span" sx={{ fontWeight: 600 }}>
+                {feeder.team1?.name ?? t('advance.tbd')}{' '}
+                <Box component="span" sx={{ color: tokens.color.muted, fontWeight: 400 }}>
+                  {t('advance.vs')}
+                </Box>{' '}
+                {feeder.team2?.name ?? t('advance.tbd')}
+              </Typography>
+              {feederLive && feeder.team1MapScore != null && feeder.team2MapScore != null && (
+                <Typography component="span" sx={{ ...mono, color: tokens.color.live }}>
+                  {feeder.team1MapScore} – {feeder.team2MapScore}
+                </Typography>
+              )}
+            </Box>
+            <Typography sx={{ fontSize: '0.875rem', color: tokens.color.ink2 }}>
               {!feederLive
                 ? t('advance.feederNotStarted')
                 : feederMinutes !== null && feederMinutes > 0
@@ -370,54 +416,11 @@ function AdvanceWatch({
                   : t('advance.feederAlmost')}
             </Typography>
           </Box>
-        ) : null}
-        {!opponent && (
-          <Typography sx={{ color: tokens.color.ink2 }}>{t('whatsNext.waitingBody')}</Typography>
-        )}
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2.5, gap: 1, flexWrap: 'wrap' }}>
-        <Button onClick={close} color="inherit" sx={{ mr: 'auto', color: 'text.secondary' }}>
-          {t('placement.close')}
-        </Button>
-        {feeder && feederLive && (
-          <Button
-            component={RouterLink}
-            to={matchPagePath(feeder.slug)}
-            onClick={close}
-            variant="outlined"
-            startIcon={<EyeIcon size={18} aria-hidden />}
-            data-testid="advance-dialog-watch"
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {t('advance.watch')}
-          </Button>
-        )}
-        {next && opponent ? (
-          <Button
-            component={RouterLink}
-            to={matchPagePath(next.slug)}
-            onClick={close}
-            variant="contained"
-            endIcon={<ArrowRightIcon size={18} aria-hidden />}
-            data-testid="advance-dialog-open"
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {t('whatsNext.openMatchRoom')}
-          </Button>
-        ) : (
-          <Button
-            component={RouterLink}
-            to={tournamentTabPath(tournament.id, 'bracket')}
-            onClick={close}
-            variant="contained"
-            startIcon={<TreeStructureIcon size={18} aria-hidden />}
-            data-testid="advance-dialog-bracket"
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {t('placement.seeBracket')}
-          </Button>
-        )}
-      </DialogActions>
-    </Dialog>
+        </>
+      ) : null}
+      {!opponent && !feeder && (
+        <Typography sx={{ color: tokens.color.ink2 }}>{t('whatsNext.waitingBody')}</Typography>
+      )}
+    </DraftDialog>
   );
 }

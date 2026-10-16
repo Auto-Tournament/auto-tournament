@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { fmtTime } from '../../utils/time';
 import { Alert, Box, Button, Menu, MenuItem, TextField } from '@mui/material';
 import { PauseIcon, PlayIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
@@ -22,7 +23,7 @@ interface PauseState {
 const PAUSE_MINUTES = [10, 15, 30, 60];
 
 export function BracketPauseBar({ tournamentId }: { tournamentId: number }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
   const [state, setState] = useState<PauseState | null>(null);
   const [menu, setMenu] = useState<HTMLElement | null>(null);
@@ -60,12 +61,7 @@ export function BracketPauseBar({ tournamentId }: { tournamentId: number }) {
 
   if (!state) return null;
   const paused = !!state.pausedAt;
-  const resumeTime = state.resumeAt
-    ? new Date(state.resumeAt * 1000).toLocaleTimeString(i18n.language, {
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : null;
+  const resumeTime = state.resumeAt ? fmtTime(state.resumeAt) : null;
 
   if (paused) {
     return (

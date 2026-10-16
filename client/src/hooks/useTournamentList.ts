@@ -39,6 +39,8 @@ export interface TournamentSummary {
   archived?: boolean;
   description?: string | null;
   bannerUrl?: string | null;
+  /** A map picture chosen instead of an uploaded banner. */
+  bannerMap?: string | null;
   registrationOpen?: boolean;
   /** Teams signed up (players for a shuffle), against the cap when there is one. */
   entries?: number;
@@ -59,6 +61,7 @@ interface ListedTournament {
   status: Tournament['status'];
   description: string | null;
   bannerUrl: string | null;
+  bannerMap?: string | null;
   entries: number;
   maxEntries: number | null;
   registrationOpen: boolean;
@@ -92,6 +95,7 @@ function fromListed(t: ListedTournament): TournamentSummary {
     archived: t.archived,
     description: t.description,
     bannerUrl: t.bannerUrl,
+    bannerMap: t.bannerMap ?? null,
     registrationOpen: t.registrationOpen,
     entries: t.entries,
     maxEntries: t.maxEntries,
@@ -101,8 +105,6 @@ function fromListed(t: ListedTournament): TournamentSummary {
     mine: t.mine === true,
   };
 }
-
-
 
 interface UseTournamentListResult {
   tournaments: TournamentSummary[];
@@ -148,7 +150,6 @@ export function useCurrentTournamentId(): number {
   return id;
 }
 
-
 /**
  * The tournaments this instance runs, shaped for list views: every one but
  * the drafts, newest first (`GET /api/tournaments`).
@@ -163,7 +164,9 @@ export function useTournamentList(): UseTournamentListResult {
     setError('');
     try {
       // Every tournament, newest first; drafts stay on the admin pages.
-      const response = await api.get<{ success: boolean; tournaments?: ListedTournament[] }>('/api/tournaments');
+      const response = await api.get<{ success: boolean; tournaments?: ListedTournament[] }>(
+        '/api/tournaments'
+      );
       setTournaments((response.tournaments ?? []).filter((t) => !t.draft).map(fromListed));
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);

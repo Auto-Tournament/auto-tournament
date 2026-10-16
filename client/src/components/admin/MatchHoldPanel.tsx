@@ -7,6 +7,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { fmtTime } from '../../utils/time';
 import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { ArrowCounterClockwiseIcon, HourglassMediumIcon, PlayIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +35,7 @@ export function MatchHoldPanel({
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [hold, setHold] = useState<HoldState | null>(null);
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
@@ -86,13 +87,7 @@ export function MatchHoldPanel({
   }
 
   const held = !!hold?.heldUntil;
-  const until =
-    hold?.heldUntil && hold.heldUntil !== HOLD_FOREVER
-      ? new Date(hold.heldUntil * 1000).toLocaleTimeString(i18n.language, {
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : null;
+  const until = hold?.heldUntil && hold.heldUntil !== HOLD_FOREVER ? fmtTime(hold.heldUntil) : null;
 
   return (
     <Box data-testid="match-hold-panel">

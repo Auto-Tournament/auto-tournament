@@ -15,15 +15,17 @@
 import { LEGACY_TOURNAMENT_ID } from './tournamentRow';
 
 const PREFIX = /^t\d+-/;
+/** A groups tournament's playoff slugs (`po-gf`, `po-lb-r1m1`): read as the bracket's own. */
+const PLAYOFFS = /^po-/;
 
 /** `''` for tournament 1, `t<id>-` for any later one. */
 export function tournamentSlugPrefix(tournamentId: number | null | undefined): string {
   return !tournamentId || tournamentId === LEGACY_TOURNAMENT_ID ? '' : `t${tournamentId}-`;
 }
 
-/** The slug without its tournament prefix: `t2-lb-r1m1` → `lb-r1m1`. */
+/** The slug without its tournament prefix: `t2-lb-r1m1` → `lb-r1m1`, `t2-po-gf` → `gf`. */
 export function bareSlug(slug: string): string {
-  return slug.replace(PREFIX, '');
+  return slug.replace(PREFIX, '').replace(PLAYOFFS, '');
 }
 
 /** The grand final (`gf`, `t2-gf`). */
@@ -41,7 +43,12 @@ export function isLosersBracketSlug(slug: string): boolean {
  * `shuffle-t2-r1-m2-team1` after it. Teams are global rows, so a later
  * tournament's must not overwrite (or, on reset, delete) an archived one's.
  */
-export function shuffleTeamId(tournamentId: number | null | undefined, round: number, match: number, side: 1 | 2): string {
+export function shuffleTeamId(
+  tournamentId: number | null | undefined,
+  round: number,
+  match: number,
+  side: 1 | 2
+): string {
   const prefix = tournamentSlugPrefix(tournamentId);
   return `shuffle-${prefix}r${round}-m${match}-team${side}`;
 }

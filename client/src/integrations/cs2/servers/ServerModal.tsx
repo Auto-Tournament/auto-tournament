@@ -8,15 +8,19 @@ import {
   TextField,
   Box,
   Typography,
-  Switch,
-  FormControlLabel,
   InputAdornment,
   IconButton,
   CircularProgress,
   Alert,
 } from '@mui/material';
 import { EyeIcon, EyeSlashIcon, XIcon } from '@phosphor-icons/react';
-import { api, useSnackbar, ConfirmDialog, useModuleTranslation } from '../../../module-sdk';
+import {
+  api,
+  useSnackbar,
+  ConfirmDialog,
+  useModuleTranslation,
+  SwitchRow,
+} from '../../../module-sdk';
 import type { Server } from '../cs2.types';
 
 /**
@@ -363,8 +367,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               />
             )}
 
-            <FormControlLabel
-              control={<Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />}
+            <SwitchRow
               label={
                 <Box>
                   <Typography variant="body2" fontWeight={500}>
@@ -375,17 +378,11 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                   </Typography>
                 </Box>
               }
+              checked={enabled}
+              onChange={(e) => setEnabled(e.target.checked)}
             />
 
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={tournamentUse}
-                  onChange={(e) => setTournamentUse(e.target.checked)}
-                  inputProps={{ 'aria-label': t('serverModal.tournamentUseLabel') }}
-                  data-testid="server-tournament-use"
-                />
-              }
+            <SwitchRow
               label={
                 <Box>
                   <Typography variant="body2" fontWeight={500}>
@@ -396,6 +393,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                   </Typography>
                 </Box>
               }
+              checked={tournamentUse}
+              onChange={(e) => setTournamentUse(e.target.checked)}
+              inputProps={{ 'aria-label': t('serverModal.tournamentUseLabel') }}
+              data-testid="server-tournament-use"
             />
 
             {skins && server?.steamToken === true && (

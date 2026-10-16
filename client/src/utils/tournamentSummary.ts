@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { fmtDate, fmtDayTime } from './time';
 import type { TournamentSummary } from '../hooks/useTournamentList';
 import { MATCH_FORMATS } from '../constants/tournament';
 import { tournamentTabPath } from '../paths';
@@ -30,7 +31,8 @@ export function formatLine(t: TFunction, tournament: TournamentSummary): string 
 /** "12 / 16 players", "5 / 8 teams", or "8 teams" without a cap; players for a shuffle. */
 export function entriesLine(t: TFunction, tournament: TournamentSummary): string {
   const n = tournament.entries ?? tournament.teamCount;
-  const key = tournament.type === 'shuffle' ? 'browsePage.entries.players' : 'browsePage.entries.teams';
+  const key =
+    tournament.type === 'shuffle' ? 'browsePage.entries.players' : 'browsePage.entries.teams';
   return tournament.maxEntries
     ? t(`${key}Of`, { count: n, max: tournament.maxEntries })
     : t(key, { count: n });
@@ -38,25 +40,15 @@ export function entriesLine(t: TFunction, tournament: TournamentSummary): string
 
 /** "Sat 5 Apr, 14:00" in the UI language. */
 export function formatDayTime(epochMs: number, language: string): string {
-  return new Intl.DateTimeFormat(language, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(epochMs);
+  return fmtDayTime(epochMs, language);
 }
 
 /** "5 Apr 2026" in the UI language. */
 export function formatDay(epochMs: number, language: string): string {
-  return new Intl.DateTimeFormat(language, { day: 'numeric', month: 'short', year: 'numeric' }).format(
-    epochMs
-  );
+  return fmtDate(epochMs, language);
 }
 
-export type TournamentWhen =
-  | { kind: 'live' }
-  | { kind: 'text'; text: string; muted: boolean };
+export type TournamentWhen = { kind: 'live' } | { kind: 'text'; text: string; muted: boolean };
 
 /**
  * The "when" column: live now, when it starts (the first schedule row or the

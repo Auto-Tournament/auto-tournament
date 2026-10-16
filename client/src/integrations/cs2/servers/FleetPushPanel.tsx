@@ -21,9 +21,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   Stack,
-  Switch,
   TextField,
   Tooltip,
   Typography,
@@ -44,6 +42,7 @@ import {
   StatusDot,
   useModuleTranslation,
   useSnackbar,
+  SwitchRow,
 } from '../../../module-sdk';
 import { ServerSection } from './ServerSection';
 import type { FleetServer, FleetServersResponse } from '../cs2.types';
@@ -525,20 +524,16 @@ export default function FleetPushPanel() {
                   gridColumn={{ xs: '1 / -1', md: 'auto' }}
                   flexWrap="wrap"
                 >
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        size="small"
-                        checked={st?.practice === true}
-                        disabled={busy}
-                        onChange={(e) => void setPractice(server, e.target.checked)}
-                        inputProps={{
-                          'aria-label': t('fleetPush.practice', { defaultValue: 'Practice' }),
-                        }}
-                        data-testid={`fleet-practice-${server.id}`}
-                      />
-                    }
+                  <SwitchRow
                     label={t('fleetPush.practice', { defaultValue: 'Practice' })}
+                    size="small"
+                    checked={st?.practice === true}
+                    disabled={busy}
+                    onChange={(e) => void setPractice(server, e.target.checked)}
+                    inputProps={{
+                      'aria-label': t('fleetPush.practice', { defaultValue: 'Practice' }),
+                    }}
+                    data-testid={`fleet-practice-${server.id}`}
                   />
                   <Button
                     size="small"
@@ -637,14 +632,10 @@ export default function FleetPushPanel() {
                 'Replaces the whitelist plugin\'s list and switch on this server (whitelist.set). One SteamID64 per line; at most 1000. Servers without the whitelist plugin answer "unsupported".',
             })}
           </Typography>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={whitelistEnabled}
-                onChange={(e) => setWhitelistEnabled(e.target.checked)}
-              />
-            }
+          <SwitchRow
             label={t('fleetPush.whitelistEnabled', { defaultValue: 'Whitelist on' })}
+            checked={whitelistEnabled}
+            onChange={(e) => setWhitelistEnabled(e.target.checked)}
           />
           <TextField
             fullWidth

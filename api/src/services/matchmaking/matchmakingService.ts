@@ -115,6 +115,8 @@ export interface MatchmakingMe {
     /** Players invited who have not answered yet. */
     invited: Array<{ id: string; name: string; avatarUrl: string | null }>;
   } | null;
+  /** Party members (or the caller alone) playing in a running tournament: nobody in it can search. */
+  inTournament: Array<{ id: string; name: string; tournament: string }>;
   /** Party members (or the caller alone) not set up for the game yet: the game on their profile, or its account. Searching waits for them. */
   notReady: Array<{ id: string; name: string; missing: 'game' | 'account' }>;
   /** Open invites to the caller from other parties, newest first. */
@@ -499,6 +501,37 @@ export class MatchmakingService {
     });
   }
 
+  /**
+   * Who of `ids` plays in a running tournament (a starter or sub in its
+   * lineup, on a team in it, or a shuffle player who has not left). They
+   * cannot queue until it ends.
+   */
+  private async inTournament(ids: string[]): Promise<MatchmakingMe['inTournament']> {
+    if (ids.length === 0) return [];
+    const rows = await db.queryAsync<{ id: string; name: string; tournament: string }>(
+      `SELECT DISTINCT ON (p.id) p.id, p.name, t.name AS tournament
+         FROM players p
+         JOIN tournament t ON t.status = 'in_progress'
+        WHERE p.id = ANY(?::text[])
+          AND (
+            EXISTS (SELECT 1 FROM tournament_lineups l WHERE l.tournament_id = t.id AND l.player_id = p.id)
+            OR EXISTS (
+              SELECT 1 FROM team_members tm
+               WHERE tm.account_uid::text = p.uid::text
+                 AND (t.team_ids::jsonb @> to_jsonb(tm.team_id)
+                      OR EXISTS (SELECT 1 FROM tournament_registrations r WHERE r.tournament_id = t.id AND r.team_id = tm.team_id))
+            )
+            OR EXISTS (
+              SELECT 1 FROM shuffle_tournament_players sp
+               WHERE sp.tournament_id = t.id AND sp.player_id = p.id AND sp.left_at IS NULL
+            )
+          )
+        ORDER BY p.id, t.id`,
+      [ids]
+    );
+    return rows;
+  }
+
   private async notReady(ids: string[], game: string): Promise<MatchmakingMe['notReady']> {
     const missing = await missingForGame(ids, game);
     if (missing.size === 0) return [];
@@ -638,6 +671,17 @@ export class MatchmakingService {
           409,
           'party_too_big',
           `A ${mode} party has at most ${TEAM_SIZE[mode]} players`
+        );
+      }
+      // Nobody playing in a running tournament searches: their tournament match comes first.
+      const busy = await this.inTournament(members);
+      if (busy.length > 0) {
+        throw new MatchmakingError(
+          409,
+          'in_tournament',
+          busy.length === 1 && busy[0].id === playerId
+            ? "You are in an active tournament, you can't queue for matchmaking right now"
+            : `In an active tournament, so the party can't queue right now: ${busy.map((b) => b.name).join(', ')}`
         );
       }
       // Everyone must be set up for the game: it on their profile, and its account linked.
@@ -1284,6 +1328,7 @@ export class MatchmakingService {
             ),
           }
         : null,
+      inTournament: await this.inTournament(party ? members : [playerId]),
       notReady: await this.notReady(
         party ? members : [playerId],
         party ? await this.partyGame(party.id) : 'cs2'

@@ -87,7 +87,14 @@ type StatTotal = {
 type TournamentStats = {
   tournamentId: number;
   fields: Field[];
-  players: Array<{ uid: string; playerId: string | null; name: string | null; matches: number; totals: StatTotal[]; teams: Array<{ id: string; name: string | null }> }>;
+  players: Array<{
+    uid: string;
+    playerId: string | null;
+    name: string | null;
+    matches: number;
+    totals: StatTotal[];
+    teams: Array<{ id: string; name: string | null }>;
+  }>;
   teams: Array<{ id: string; name: string | null; matches: number; totals: StatTotal[] }>;
 };
 
@@ -222,7 +229,10 @@ async function view(ctx: APIRequestContext, slug: string): Promise<MatchView> {
   return (await res.json()) as MatchView;
 }
 
-async function tournamentStats(ctx: APIRequestContext, tournamentId: number): Promise<TournamentStats> {
+async function tournamentStats(
+  ctx: APIRequestContext,
+  tournamentId: number
+): Promise<TournamentStats> {
   const res = await ctx.get(`${API}/tournaments/${tournamentId}/stats`);
   expect(res.status(), `reading tournament stats: ${await res.text()}`).toBe(200);
   return (await res.json()) as TournamentStats;
@@ -279,7 +289,13 @@ test.describe.serial('Manual reporting: custom stat fields', () => {
         // One field of each type, and both scopes.
         const fields = await setFields(request, tournamentId, [
           { key: 'goals', label: 'Goals', valueType: 'integer', scope: 'player', required: true },
-          { key: 'possession', label: 'Possession %', valueType: 'number', scope: 'team', required: true },
+          {
+            key: 'possession',
+            label: 'Possession %',
+            valueType: 'number',
+            scope: 'team',
+            required: true,
+          },
           { key: 'car', label: 'Car', valueType: 'text', scope: 'player' },
         ]);
         expect(fields.map((f) => f.valueType)).toEqual(['integer', 'number', 'text']);
@@ -292,7 +308,9 @@ test.describe.serial('Manual reporting: custom stat fields', () => {
         expect(((await unknownType.json()) as { error: string }).error).toContain(
           "valueType must be 'number', 'integer' or 'text'"
         );
-        expect(await (await request.get(`${API}/tournaments/${tournamentId}/fields`)).json()).toMatchObject({
+        expect(
+          await (await request.get(`${API}/tournaments/${tournamentId}/fields`)).json()
+        ).toMatchObject({
           fields: [{ key: 'goals' }, { key: 'possession' }, { key: 'car' }],
         });
 
@@ -333,7 +351,9 @@ test.describe.serial('Manual reporting: custom stat fields', () => {
           team: 'team1',
           value: 3,
         });
-        expect(goals.playerId, 'the account behind the uid').toBe(captainSteamIds.get(match.team1!.id));
+        expect(goals.playerId, 'the account behind the uid').toBe(
+          captainSteamIds.get(match.team1!.id)
+        );
         expect(goals.playerName).toBeTruthy();
         expect(goals.reportId, 'filed against the report that carried it').toBeTruthy();
 
@@ -372,7 +392,10 @@ test.describe.serial('Manual reporting: custom stat fields', () => {
 
           const home = settled.teams.find((t) => t.id === match.team1!.id)!;
           expect(totalOf(home.totals, 'possession')).toMatchObject({ total: 58.5, count: 1 });
-          expect(totalOf(home.totals, 'goals'), 'a player field is not a team total').toBeUndefined();
+          expect(
+            totalOf(home.totals, 'goals'),
+            'a player field is not a team total'
+          ).toBeUndefined();
         } finally {
           await anon.dispose();
         }
@@ -381,7 +404,9 @@ test.describe.serial('Manual reporting: custom stat fields', () => {
         // this: custom fields are display only, and the rating maths never
         // sees them.
         const finished = await request.get(`${MR}/${match.slug}/reports`);
-        expect(((await finished.json()) as { winnerId: string | null }).winnerId).toBe(match.team1!.id);
+        expect(((await finished.json()) as { winnerId: string | null }).winnerId).toBe(
+          match.team1!.id
+        );
       } finally {
         await one.dispose();
         await two.dispose();
@@ -451,7 +476,10 @@ test.describe.serial('Manual reporting: custom stat fields', () => {
           ],
           [
             'a player on neither team',
-            [...required, { key: 'goals', playerUid: '00000000-0000-4000-8000-000000000000', value: 9 }],
+            [
+              ...required,
+              { key: 'goals', playerUid: '00000000-0000-4000-8000-000000000000', value: 9 },
+            ],
             'is not on either team',
           ],
           [
@@ -544,7 +572,9 @@ test.describe.serial('Manual reporting: custom stat fields', () => {
           },
         });
         expect(first.status(), await first.text()).toBe(200);
-        expect(valueOf((await view(one, match.slug)).stats, 'moves', { team: 'team1' })!.value).toBe(40);
+        expect(
+          valueOf((await view(one, match.slug)).stats, 'moves', { team: 'team1' })!.value
+        ).toBe(40);
 
         // Reported again over the top: the second report supersedes the first,
         // and its numbers replace the first's rather than colliding with them.
@@ -571,7 +601,10 @@ test.describe.serial('Manual reporting: custom stat fields', () => {
         });
         expect(withdrawn.status(), await withdrawn.text()).toBe(200);
         expect((await view(one, match.slug)).stats).toEqual([]);
-        expect(await tournamentStats(request, tournamentId)).toMatchObject({ players: [], teams: [] });
+        expect(await tournamentStats(request, tournamentId)).toMatchObject({
+          players: [],
+          teams: [],
+        });
 
         // A required field still has to be filled in when reporting again.
         const blank = await one.post(`${API}/matches/${match.slug}/report`, {
@@ -623,7 +656,9 @@ test.describe.serial('Manual reporting: custom stat fields', () => {
         });
         expect(reported.status(), await reported.text()).toBe(200);
         expect(
-          (await view(one, match.slug)).stats.filter((s) => s.key === 'goals' && s.playerUid === aCaptain)
+          (await view(one, match.slug)).stats.filter(
+            (s) => s.key === 'goals' && s.playerUid === aCaptain
+          )
         ).toHaveLength(2);
 
         const confirmed = await two.post(`${API}/matches/${match.slug}/confirm`, {
@@ -649,7 +684,9 @@ test.describe.serial('Manual reporting: custom stat fields', () => {
         const trimmed = await tournamentStats(request, tournamentId);
         expect(trimmed.fields.map((f) => f.key)).toEqual(['goals']);
         // The row that stayed keeps its values, under its new label.
-        expect(totalOf(trimmed.players.find((p) => p.uid === aCaptain)!.totals, 'goals')).toMatchObject({
+        expect(
+          totalOf(trimmed.players.find((p) => p.uid === aCaptain)!.totals, 'goals')
+        ).toMatchObject({
           label: 'Goals scored',
           total: 6,
         });

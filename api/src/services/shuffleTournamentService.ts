@@ -1,3 +1,4 @@
+import { logoUrl } from './teamSelfService';
 /**
  * Shuffle Tournament Service
  * Handles shuffle tournament creation, round generation, and automatic progression
@@ -1023,11 +1024,14 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
   // Team standings for this tournament
   let teams: TeamLeaderboardEntry[] = [];
   // Which team each player (by Steam ID) is on, for the player table.
-  const teamOfPlayer = new Map<string, { id: string; name: string; tag?: string | null }>();
+  const teamOfPlayer = new Map<
+    string,
+    { id: string; name: string; tag?: string | null; logoUrl?: string | null }
+  >();
   if (teamIds.length > 0) {
     const placeholders = teamIds.map(() => '?').join(',');
     const teamRows = await db.queryAsync<DbTeamRow & { players: string | null }>(
-      `SELECT id, name, tag, players FROM teams WHERE id IN (${placeholders})`,
+      `SELECT id, name, tag, players, logo_updated_at FROM teams WHERE id IN (${placeholders})`,
       teamIds
     );
     for (const team of teamRows) {
@@ -1041,7 +1045,16 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
       for (const member of roster) {
         const steamId = member.steamId ?? member.steamid;
         if (steamId)
-          teamOfPlayer.set(steamId, { id: team.id, name: team.name, tag: team.tag ?? null });
+          teamOfPlayer.set(steamId, {
+            id: team.id,
+            name: team.name,
+            tag: team.tag ?? null,
+            // The team's crest on the leaderboard's team column.
+            logoUrl: logoUrl(
+              team.id,
+              (team as { logo_updated_at?: number | null }).logo_updated_at
+            ),
+          });
       }
     }
 

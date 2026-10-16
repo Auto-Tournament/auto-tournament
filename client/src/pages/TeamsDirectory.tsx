@@ -19,12 +19,13 @@ import {
 import { MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
-import { EmptyPanel, PageHead, Panel } from '../components/common/ui';
+import { EmptyPanel, PageHead, Panel, panelSx, panelBorderSx } from '../components/common/ui';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../utils/api';
 import { pageTitle } from '../utils/pageTitle';
 import { teamProfilePath } from '../paths';
-import { PendingTeamInvites, TeamTile } from '../components/team/PendingTeamInvites';
+import { PendingTeamInvites } from '../components/team/PendingTeamInvites';
+import { TeamLogo } from '../components/tournament/ui/draftUi';
 import { useSetupGames } from '../components/tournament/setup/games';
 import { useInstalledIntegrations } from '../integrations/registry';
 import { tokens, fontMono, radii, textSize, withAlpha } from '../theme/tokens';
@@ -180,7 +181,7 @@ export default function TeamsDirectory() {
                   borderColor: color.accent,
                 }}
               >
-                <TeamTile team={mine.owned} size={72} />
+                <TeamLogo team={mine.owned} size={72} />
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography
                     sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.accent }}
@@ -380,10 +381,9 @@ export default function TeamsDirectory() {
                 to={teamProfilePath(team.id)}
                 data-testid="teams-directory-row"
                 sx={{
+                  ...panelSx,
+                  ...panelBorderSx,
                   p: 2,
-                  borderRadius: radii.lg,
-                  bgcolor: color.paper2,
-                  border: `1px solid ${color.rule}`,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1.75,
@@ -393,7 +393,7 @@ export default function TeamsDirectory() {
                   '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
                 }}
               >
-                <TeamTile team={team} />
+                <TeamLogo team={team} size={52} />
                 <Box sx={{ minWidth: 0, flex: 1 }}>
                   <Typography noWrap sx={{ fontWeight: 600 }}>
                     {team.name}

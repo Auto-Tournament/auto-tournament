@@ -227,6 +227,10 @@ export interface MatchConnectResponse extends Cs2ApiResponse {
   liveStatus: string | null;
   currentMap: string | null;
   mapNumber: number | null;
+  /** The round being played, once there are live stats. */
+  roundNumber?: number | null;
+  /** No server yet: the match's place in line for one (1 = next). */
+  queuePosition?: number | null;
   /** Null for a viewer on neither team, and for a match with no server. */
   server: MatchServer | null;
 }
@@ -317,6 +321,8 @@ export interface VetoState {
   turnSeconds?: number;
   /** The break between a team's matches: the veto opens then (ISO); no actions until. */
   opensAt?: string;
+  /** The match's start time when it is held for it (Manage › Schedule). */
+  startsAt?: string;
 }
 
 export interface VetoStep {

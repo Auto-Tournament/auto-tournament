@@ -1,6 +1,6 @@
 import { useEffect, useState, type InputHTMLAttributes } from 'react';
-import { Box, Button, FormControlLabel, Switch, Typography } from '@mui/material';
-import { useModuleTranslation } from '../../../module-sdk';
+import { Box, Button, Typography } from '@mui/material';
+import { useModuleTranslation, SwitchRow } from '../../../module-sdk';
 import type { TournamentContentStepProps } from '../../types';
 import { MapPoolStep } from './MapPoolStep';
 import SaveMapPoolModal from '../maps/SaveMapPoolModal';
@@ -74,20 +74,16 @@ export function Cs2TournamentMapsStep({
     <>
       {vetoFormat && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', mb: 2 }}>
-          <FormControlLabel
+          <SwitchRow
             label={t('tournament.mapVeto.label')}
-            control={
-              <Switch
-                checked={cs2.veto !== false}
-                disabled={disabled}
-                onChange={(_e, checked) => onChange(cs2Patch({ ...cs2, veto: checked }))}
-                slotProps={{
-                  input: {
-                    'data-testid': 'tournament-map-veto',
-                  } as InputHTMLAttributes<HTMLInputElement>,
-                }}
-              />
-            }
+            checked={cs2.veto !== false}
+            disabled={disabled}
+            onChange={(_e, checked) => onChange(cs2Patch({ ...cs2, veto: checked }))}
+            slotProps={{
+              input: {
+                'data-testid': 'tournament-map-veto',
+              } as InputHTMLAttributes<HTMLInputElement>,
+            }}
           />
           <Button
             variant="outlined"

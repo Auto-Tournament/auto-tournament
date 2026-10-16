@@ -21,6 +21,8 @@ import {
   textSize,
   tokens,
   useModuleTranslation,
+  fmtNum,
+  fmtPercent,
 } from '../../../module-sdk';
 import { MovementRecords } from './MovementRecords';
 
@@ -68,10 +70,10 @@ export function Cs2Leaderboards() {
 
   const value = (v: number) =>
     category === 'rating' || category === 'kd'
-      ? v.toFixed(2)
+      ? fmtNum(v, 2)
       : category === 'adr'
-        ? v.toFixed(1)
-        : `${v}%`;
+        ? fmtNum(v, 1)
+        : fmtPercent(v);
   const columns = '3ch minmax(0, 1fr) 5.5rem 5rem';
 
   return (

@@ -1,11 +1,12 @@
+import { keyframes } from '@emotion/react';
 import React from 'react';
-import { Card, CardActionArea, CardContent, Typography, Box, Chip } from '@mui/material';
-import { CheckCircleIcon, ProhibitIcon } from '@phosphor-icons/react';
+import { Box, Typography } from '@mui/material';
 import type { MapSide, VetoActionType } from '../cs2.types';
-import { FadeInImage } from '../common/FadeInImage';
 import { tokens, mono, withAlpha, useModuleTranslation } from '../../../module-sdk';
 
 const { color, radius, ease, duration } = tokens;
+const pill = `${radius.pill}px`;
+const display = 'Sora, Geist, system-ui, sans-serif';
 
 interface VetoMapCardProps {
   mapName: string;
@@ -16,20 +17,25 @@ interface VetoMapCardProps {
   side?: MapSide; // For picked maps with side selection
   onClick?: () => void;
   disabled?: boolean;
-  /**
-   * When true, this card is the primary actionable choice for the current team
-   * (e.g. it is their turn and the map is available). Used to visually
-   * highlight "click me now" maps during the veto phase.
-   */
+  /** This card is a choice for the viewer right now (their turn, the map still in the pool). */
   isCurrentTurn?: boolean;
-  /**
-   * The veto step currently in progress. Used for the tile's accessible name
-   * ("Ban Mirage" / "Pick Mirage").
-   */
+  /** The veto step in progress: the hover says BAN or PICK, and names the button. */
   currentAction?: VetoActionType;
   /** The last map, left over after the bans rather than picked by a team. */
   isDecider?: boolean;
 }
+
+/**
+ * One map of the pool (the drafts' veto): its picture and name. On your turn
+ * a hover or focus outlines it in the action's colour (ban red, pick green)
+ * and shows what a click does, ✕ BAN or ✓ PICK, so nothing is outlined until
+ * you point at it. A picked map shows its number and the side you start on.
+ */
+/** The glow round a map you can click: out and back in, in the action's colour. */
+const glow = keyframes`
+  0%, 100% { box-shadow: 0 0 0 0 var(--veto-glow); }
+  50% { box-shadow: 0 0 0 6px transparent, 0 0 22px 2px var(--veto-glow); }
+`;
 
 export const VetoMapCard: React.FC<VetoMapCardProps> = ({
   mapName,
@@ -45,13 +51,8 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
   isDecider,
 }) => {
   const { t } = useModuleTranslation('cs2');
-  const [imageError] = React.useState(false);
   const isClickable = !disabled && state === 'available' && !!onClick;
-  // Tiles in the live veto grid (the ones given an onClick) are real buttons,
-  // so keyboard and screen-reader users can reach and operate them. A tile that
-  // can't be chosen right now stays focusable and says so via aria-disabled.
   const isInteractive = typeof onClick === 'function';
-
   const accessibleName =
     state === 'banned'
       ? t('vetoInterface.mapCardAria.banned', { map: displayName })
@@ -62,228 +63,211 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
           : currentAction === 'ban'
             ? t('vetoInterface.mapCardAria.ban', { map: displayName })
             : displayName;
+  const actionColor = currentAction === 'pick' ? color.pick : color.ban;
+  const actionLabel =
+    currentAction === 'pick'
+      ? t('vetoInterface.actionLabels.pick')
+      : t('vetoInterface.actionLabels.ban');
 
-  // On your turn a tile takes the action's colour (ban red, pick green), and hovering it shows
-  // the action's icon over the map, so it is clear what a click does.
-  const actionColor = currentAction === 'ban' ? color.ban : color.pick;
-  const ActionIcon = currentAction === 'ban' ? ProhibitIcon : CheckCircleIcon;
-
-  const content = (
+  const body = (
     <>
-      {/* Map Number Badge (for picked maps) */}
-      {state === 'picked' && mapNumber && (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 8,
-            left: 8,
-            zIndex: 2,
-          }}
-        >
-          <Chip
-            label={t('vetoInterface.mapBadge', { n: mapNumber })}
-            color="success"
-            size="small"
-            sx={{
-              ...mono,
-              fontWeight: 600,
-              bgcolor: color.pick,
-              color: color.accentInk,
-            }}
-          />
-        </Box>
-      )}
-
-      {/* Side Badge (for picked maps with side) */}
-      {state === 'picked' && side && (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            zIndex: 2,
-          }}
-        >
-          <Chip
-            data-testid="team-side-badge"
-            label={side}
-            color="primary"
-            size="small"
-            sx={{
-              fontWeight: 600,
-              bgcolor: side === 'CT' ? color.sideCt : color.sideT,
-              color: color.accentInk,
-            }}
-          />
-        </Box>
-      )}
-
-      {/* Banned Overlay */}
-      {state === 'banned' && (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: color.scrim,
-            zIndex: 1,
-          }}
-        >
-          <Box component={ProhibitIcon} size={44} sx={{ color: color.ban }} />
-        </Box>
-      )}
-
-      {/* Picked Checkmark */}
-      {state === 'picked' && (
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: 8,
-            right: 8,
-            zIndex: 2,
-          }}
-        >
-          <Box component={CheckCircleIcon} size={28} sx={{ color: color.pick }} />
-        </Box>
-      )}
-
-      {!imageError ? (
-        <FadeInImage
-          src={imageUrl}
-          alt={displayName}
-          height={140}
-          sx={{
-            filter: state === 'banned' ? 'grayscale(100%)' : 'none',
-          }}
-        />
-      ) : (
-        <Box
-          sx={{
-            height: 140,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: color.paper3,
-            filter: state === 'banned' ? 'grayscale(100%)' : 'none',
-          }}
-        >
-          <Typography variant="h4" fontWeight={700} color="text.primary">
-            {displayName}
-          </Typography>
-        </Box>
-      )}
-
-      <CardContent
+      <Box
+        component="img"
+        src={imageUrl}
+        alt=""
+        loading="lazy"
         sx={{
-          py: 1.25,
-          px: 1.75,
-          '&:last-child': { pb: 1.25 },
-          bgcolor: color.paper3,
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          filter: state === 'banned' ? 'grayscale(1) brightness(0.45)' : 'none',
+        }}
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: 'column',
           justifyContent: 'space-between',
-          gap: 1,
+          p: 1.5,
+          background: `linear-gradient(to top, ${withAlpha(color.paper, 0.85)}, ${withAlpha(color.paper, 0)} 55%)`,
         }}
       >
-        <Typography
-          variant="subtitle1"
-          component="span"
-          sx={{
-            minWidth: 0,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            color: state === 'banned' ? color.ban : state === 'picked' ? color.pick : color.ink,
-            textDecoration: state === 'banned' ? 'line-through' : 'none',
-            textDecorationThickness: '2px',
-            transition: `color ${duration.base}ms ${ease.out}`,
-          }}
-        >
-          {displayName}
-        </Typography>
-        {state === 'picked' && isDecider && (
-          <Box
-            component="span"
-            data-testid="veto-decider-label"
-            sx={{ ...mono, fontSize: '0.75rem', color: color.pick, whiteSpace: 'nowrap' }}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+          {state === 'picked' && mapNumber ? (
+            <Box
+              component="span"
+              sx={{
+                ...mono,
+                px: 1,
+                py: 0.25,
+                borderRadius: pill,
+                bgcolor: color.pick,
+                color: color.accentInk,
+                fontSize: '0.75rem',
+                fontWeight: 700,
+              }}
+            >
+              {t('vetoInterface.mapBadge', { n: mapNumber })}
+            </Box>
+          ) : (
+            <span />
+          )}
+          {state === 'picked' && side && (
+            <Box
+              component="span"
+              data-testid="team-side-badge"
+              sx={{
+                px: 1,
+                py: 0.25,
+                borderRadius: pill,
+                bgcolor: side === 'CT' ? color.sideCt : color.sideT,
+                color: color.accentInk,
+                fontSize: '0.75rem',
+                fontWeight: 700,
+              }}
+            >
+              {side}
+            </Box>
+          )}
+        </Box>
+        <Box>
+          <Typography
+            sx={{
+              fontFamily: display,
+              fontSize: '1.25rem',
+              fontWeight: 700,
+              color: state === 'banned' ? color.ban : color.ink,
+            }}
           >
-            {t('vetoInterface.decider')}
-          </Box>
-        )}
-      </CardContent>
-      {isClickable && (currentAction === 'ban' || currentAction === 'pick') && (
+            {displayName}
+          </Typography>
+          {isDecider && (
+            <Typography
+              data-testid="veto-decider-label"
+              sx={{ fontSize: '0.8125rem', color: color.ink2 }}
+            >
+              {t('vetoInterface.decider')}
+            </Typography>
+          )}
+        </Box>
+      </Box>
+      {isCurrentTurn && state === 'available' && (
         <Box
           className="veto-hover-action"
           aria-hidden
           sx={{
             position: 'absolute',
             inset: 0,
-            display: 'grid',
-            placeItems: 'center',
-            bgcolor: withAlpha(actionColor, 0.18),
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 0.5,
+            bgcolor: withAlpha(color.paper, 0.62),
             color: actionColor,
             opacity: 0,
-            transition: `opacity ${duration.base}ms ${ease.out}`,
+            transition: `opacity ${duration.fast}ms ${ease.out}`,
             pointerEvents: 'none',
-            zIndex: 2,
+            // Touch screens have no hover: the label shows at rest, in the corner.
+            '@media (hover: none)': {
+              opacity: 1,
+              bgcolor: withAlpha(color.paper, 0.3),
+              alignItems: 'flex-end',
+              justifyContent: 'flex-start',
+              p: 1.5,
+              '& svg': { display: 'none' },
+            },
           }}
         >
-          <ActionIcon size={56} weight="bold" />
+          <svg
+            width={44}
+            height={44}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.6}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            {currentAction === 'pick' ? (
+              <path d="M5 12.5l4.5 4.5L19 7.5" />
+            ) : (
+              <path d="M6 6l12 12M18 6L6 18" />
+            )}
+          </svg>
+          <Typography
+            component="span"
+            sx={{
+              fontFamily: display,
+              fontSize: '1.375rem',
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+            }}
+          >
+            {actionLabel}
+          </Typography>
         </Box>
       )}
     </>
   );
 
   return (
-    <Card
+    <Box
       data-testid={`veto-map-card-${mapName}`}
       sx={{
         position: 'relative',
-        cursor: isClickable ? 'pointer' : 'default',
+        overflow: 'hidden',
+        aspectRatio: '16 / 9',
+        maxWidth: '100%',
         borderRadius: `${radius.md}px`,
-        // Banned tiles dim the image (scrim overlay) but keep the red name readable.
-        border: 1,
-        borderColor: state === 'picked' ? color.pick : isCurrentTurn ? actionColor : color.rule,
-        boxShadow:
-          state === 'picked'
-            ? `0 0 0 1px ${color.pick}`
-            : isCurrentTurn
-            ? `0 0 0 1px ${withAlpha(actionColor, 0.5)}`
-            : 'none',
-        transition: `box-shadow ${duration.base}ms ${ease.out}, border-color ${duration.base}ms ${ease.out}`,
-        '&:hover': isClickable
+        border: `2px solid ${state === 'picked' ? color.pick : 'transparent'}`,
+        bgcolor: color.paper3,
+        transition: `transform ${duration.base}ms ${ease.out}, border-color ${duration.fast}ms ${ease.out}`,
+        ...(isClickable
           ? {
-              boxShadow: `0 0 0 2px ${actionColor}`,
+              // Yours to click: a slow glow in the action's colour, so the pool asks for a click.
+              '@media (prefers-reduced-motion: no-preference)': {
+                animation: `${glow} 1.8s ease-in-out infinite`,
+                '--veto-glow': withAlpha(actionColor, 0.55),
+              },
+              '&:hover, &:focus-within': { borderColor: actionColor, animation: 'none' },
+              '&:hover .veto-hover-action, &:focus-within .veto-hover-action': { opacity: 1 },
+              '@media (hover: hover) and (prefers-reduced-motion: no-preference)': {
+                '&:hover': { transform: 'translateY(-3px)' },
+              },
             }
-          : {},
-        '&:hover .veto-hover-action, &:focus-within .veto-hover-action': { opacity: 1 },
+          : {}),
       }}
     >
       {isInteractive ? (
-        <CardActionArea
+        <Box
+          component="button"
+          type="button"
           data-testid={`veto-map-button-${mapName}`}
           aria-label={accessibleName}
           aria-disabled={!isClickable}
           onClick={isClickable ? onClick : undefined}
-          disableRipple={!isClickable}
           sx={{
-            cursor: 'inherit',
-            // Keep the tile looking as it did: no grey wash on mouse hover.
-            // The highlight overlay only appears for keyboard focus.
-            '&:hover .MuiCardActionArea-focusHighlight': { opacity: 0 },
-            '&.Mui-focusVisible .MuiCardActionArea-focusHighlight': { opacity: 0.12 },
+            all: 'unset',
+            position: 'absolute',
+            inset: 0,
+            cursor: isClickable ? 'pointer' : 'default',
+            '&:focus-visible': {
+              outline: `2px solid ${color.focus}`,
+              outlineOffset: -4,
+              borderRadius: `${radius.md}px`,
+            },
           }}
         >
-          {content}
-        </CardActionArea>
+          {body}
+        </Box>
       ) : (
-        content
+        body
       )}
-    </Card>
+    </Box>
   );
 };

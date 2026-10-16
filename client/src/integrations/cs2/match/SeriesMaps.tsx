@@ -1,4 +1,4 @@
-import { Avatar, Box, Chip, Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import {
   api,
@@ -33,10 +33,6 @@ function usePicks(matchSlug: string, hasMaps: boolean): Map<number, VetoMapResul
     };
   }, [matchSlug, hasMaps]);
   return picks;
-}
-
-function crest(name: string | null | undefined, tag: string | null | undefined): string {
-  return (tag || name || '?').slice(0, 3).toUpperCase();
 }
 
 /**
@@ -80,16 +76,18 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
   });
 
   return (
-    <Box>
-      <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Typography
+        component="h2"
+        sx={{ m: 0, fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 700 }}
+      >
         {t('seriesMaps.title')}
       </Typography>
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
           gap: 2,
-          // An unplayed map is only its picture: no stretching to a played one's height.
           alignItems: 'start',
         }}
       >
@@ -121,6 +119,13 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
                 ? t('seriesMaps.notPlayed')
                 : null;
           const w = winner ? team(winner) : null;
+          const how =
+            level && w
+              ? t('seriesMaps.onDamage')
+              : overtime
+                ? t('seriesMaps.overtime')
+                : t('seriesMaps.regulation');
+          const hasDemo = !!result && (result as { hasDemo?: boolean }).hasDemo && finished;
           return (
             <Box
               key={`${n}-${map}`}
@@ -128,22 +133,16 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
               data-map-state={
                 isLive ? 'live' : result ? 'played' : finished ? 'skipped' : 'upcoming'
               }
-              sx={{
-                border: 1,
-                borderColor: isLive ? tokens.color.accent : 'divider',
-                borderRadius: radii.lg,
-                overflow: 'hidden',
-                bgcolor: 'background.surface2',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
+              sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}
             >
               <Box
                 sx={{
                   position: 'relative',
-                  aspectRatio: '16 / 7',
+                  overflow: 'hidden',
+                  aspectRatio: '16 / 9',
                   maxWidth: '100%',
-                  bgcolor: 'background.surface3',
+                  borderRadius: radii.md,
+                  bgcolor: tokens.color.paper3,
                   backgroundImage: mapBackground(map),
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
@@ -159,107 +158,122 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
                   sx={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'linear-gradient(to top, rgba(0,0,0,0.78), rgba(0,0,0,0.05) 70%)',
+                    p: 1.5,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: 0.5,
+                    color: '#fff',
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.82), rgba(0,0,0,0.05) 60%)',
+                    // The live ring is drawn over the picture: a border would leave a frame the picture and the shade don't cover.
+                    borderRadius: 'inherit',
+                    boxShadow: isLive ? `inset 0 0 0 2px ${tokens.color.live}` : 'none',
                   }}
-                />
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="flex-end"
-                  sx={{ position: 'absolute', inset: 'auto 0 0 0', p: 1.5, gap: 1 }}
                 >
-                  <Box sx={{ minWidth: 0 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    {state && (
+                      <Box
+                        component="span"
+                        sx={{
+                          px: 1,
+                          py: 0.25,
+                          borderRadius: 999,
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          color: '#fff',
+                          bgcolor: isLive ? tokens.color.live : withAlpha('#000000', 0.55),
+                        }}
+                      >
+                        {state}
+                      </Box>
+                    )}
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
                     <Typography
-                      variant="caption"
-                      sx={{ color: 'rgba(255,255,255,0.75)', display: 'block' }}
+                      component="span"
+                      sx={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.8)' }}
                     >
                       {t('seriesMaps.mapN', { n: n + 1 })}
                       {pickLabel ? ` · ${pickLabel}` : ''}
                     </Typography>
-                    <Typography
-                      component="h3"
-                      sx={{ color: '#fff', fontWeight: 700, fontSize: '1.25rem', lineHeight: 1.2 }}
-                    >
-                      {getMapDisplayName(map)}
-                    </Typography>
-                  </Box>
-                  {state && (
-                    <Chip
-                      size="small"
-                      label={state}
+                    <Box
                       sx={{
-                        flexShrink: 0,
-                        fontWeight: 600,
-                        color: '#fff',
-                        bgcolor: isLive ? tokens.color.accent : withAlpha('#000000', 0.55),
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'baseline',
+                        gap: 1,
                       }}
-                    />
-                  )}
-                </Stack>
+                    >
+                      <Typography
+                        component="h3"
+                        sx={{
+                          m: 0,
+                          fontFamily: fontDisplay,
+                          fontWeight: 700,
+                          fontSize: '1.25rem',
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {getMapDisplayName(map)}
+                      </Typography>
+                      {result && (
+                        <Typography
+                          component="span"
+                          data-testid={`match-page-map-${n}-score`}
+                          sx={{
+                            fontFamily: '"Geist Mono", ui-monospace, monospace',
+                            fontSize: '1.25rem',
+                            fontVariantNumeric: 'tabular-nums',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {result.team1Score} : {result.team2Score}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
               </Box>
 
               {result && (
-                <Stack direction="row" alignItems="center" sx={{ p: 2, gap: 1.5 }}>
-                  {w ? (
-                    <Avatar
-                      src={w.logo ?? undefined}
-                      alt={w.name}
-                      variant="rounded"
-                      sx={{
-                        width: 44,
-                        height: 44,
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        bgcolor: 'background.surface3',
-                        color: 'text.primary',
-                      }}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    gap: 1,
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  <span>
+                    <Box
+                      component="span"
+                      sx={{ color: w ? tokens.color.live : tokens.color.ink2, fontWeight: 600 }}
                     >
-                      {crest(w.name, w.tag)}
-                    </Avatar>
-                  ) : null}
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography sx={{ fontWeight: 600 }} noWrap>
                       {w ? t('seriesMaps.won', { team: w.name }) : t('seriesMaps.draw')}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                      {level && w
-                        ? t('seriesMaps.onDamage')
-                        : overtime
-                          ? t('seriesMaps.overtime')
-                          : t('seriesMaps.regulation')}
-                    </Typography>
-                  </Box>
-                  <Typography
-                    data-testid={`match-page-map-${n}-score`}
-                    sx={{
-                      fontFamily: fontDisplay,
-                      fontWeight: 700,
-                      fontSize: '1.4rem',
-                      fontVariantNumeric: 'tabular-nums',
-                      flexShrink: 0,
-                    }}
-                  >
+                    </Box>
+                    <Box component="span" sx={{ color: tokens.color.muted }}>
+                      {' '}
+                      · {how}
+                    </Box>
+                  </span>
+                  {hasDemo && (
                     <Box
-                      component="span"
-                      sx={{ color: winner === 'team2' ? 'text.secondary' : undefined }}
+                      component="a"
+                      href={`/api/demos/${encodeURIComponent(matchSlug)}/download/${n}`}
+                      download
+                      data-testid={`match-page-map-${n}-demo`}
+                      sx={{ color: tokens.color.accent }}
                     >
-                      {result.team1Score}
+                      {t('seriesMaps.demo')}
                     </Box>
-                    <Box component="span" sx={{ color: 'text.secondary' }}>
-                      {' : '}
-                    </Box>
-                    <Box
-                      component="span"
-                      sx={{ color: winner === 'team1' ? 'text.secondary' : undefined }}
-                    >
-                      {result.team2Score}
-                    </Box>
-                  </Typography>
-                </Stack>
+                  )}
+                </Box>
               )}
 
               {result && renderMapAction && (
-                <Stack direction="row" sx={{ px: 2, pb: 2, gap: 1, flexWrap: 'wrap' }}>
+                <Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
                   {renderMapAction(n)}
                 </Stack>
               )}

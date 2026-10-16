@@ -11,6 +11,9 @@ import { log } from '../../../utils/logger';
 import { playerConnectionService } from '../../../services/playerConnectionService';
 import { matchLiveStatsService } from '../../../services/matchLiveStatsService';
 import type { DbEventRow } from '../../../types/database.types';
+import { resolveViewerIdentity } from '../../../utils/viewerIdentity';
+import { viewerTeamIdOfMatch } from '../../../services/matchViewer';
+import { gotvPassword, gotvSettings } from '../gotv';
 
 const router = Router();
 
@@ -53,10 +56,16 @@ router.get('/connections/:matchSlug', async (req: Request, res: Response) => {
  * GET /api/events/live/:matchSlug
  * Get latest live stats snapshot for a match (PUBLIC)
  */
-router.get('/live/:matchSlug', (req: Request, res: Response) => {
+router.get('/live/:matchSlug', async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
-    const stats = matchLiveStatsService.getStats(matchSlug);
+    // People who do not play in it see it as GOTV does (gotv.ts): delayed, live or not at all.
+    const delay = await spectatorDelay(req, matchSlug);
+    if (delay === 'off') return res.json({ success: false, matchSlug, hidden: true });
+    const stats =
+      delay > 0
+        ? matchLiveStatsService.getStatsDelayed(matchSlug, delay)
+        : matchLiveStatsService.getStats(matchSlug);
 
     if (!stats) {
       // No in‑memory live stats for this match (likely completed or server restarted).
@@ -71,6 +80,7 @@ router.get('/live/:matchSlug', (req: Request, res: Response) => {
     return res.json({
       success: true,
       ...stats,
+      ...(delay > 0 ? { delaySeconds: delay } : {}),
     });
   } catch (error) {
     log.error('Error fetching live stats', error);
@@ -80,6 +90,109 @@ router.get('/live/:matchSlug', (req: Request, res: Response) => {
     });
   }
 });
+
+/** How a viewer sees a match's live table: 0 (live: a player, an admin), the GOTV delay, or 'off'. */
+async function spectatorDelay(req: Request, matchSlug: string): Promise<number | 'off'> {
+  const settings = await gotvSettings();
+  if (settings.liveStats === 'live') return 0;
+  const identity = await resolveViewerIdentity(req);
+  if (identity.isRealAdmin) return 0;
+  const match = await db.queryOneAsync<{
+    game: string | null;
+    config: string | null;
+    team1_id: string | null;
+    team2_id: string | null;
+  }>('SELECT game, config, team1_id, team2_id FROM matches WHERE slug = ?', [matchSlug]);
+  if (match && (await viewerTeamIdOfMatch(req, match as Parameters<typeof viewerTeamIdOfMatch>[1])))
+    return 0;
+  return settings.liveStats === 'off' ? 'off' : settings.delay;
+}
+
+/**
+ * GET /api/events/watch/:matchSlug
+ * Watching a match in GOTV (public; gotv.ts): `state` is live (with `connect`
+ * for a viewer who may watch), before (the map is not live yet), off (GOTV
+ * is off, or not for this viewer), player (they play in it: no Watch button)
+ * or none (not on a server). Never the address to someone who may not watch.
+ */
+router.get('/watch/:matchSlug', async (req: Request, res: Response) => {
+  try {
+    const { matchSlug } = req.params;
+    const settings = await gotvSettings();
+    const base = {
+      success: true,
+      delay: settings.delay,
+      seats: settings.seats,
+      access: settings.access,
+    };
+    const match = await db.queryOneAsync<{
+      game: string | null;
+      config: string | null;
+      team1_id: string | null;
+      team2_id: string | null;
+      server_id: string | null;
+      status: string;
+      on_stage: number | null;
+    }>(
+      'SELECT game, config, team1_id, team2_id, server_id, status, on_stage FROM matches WHERE slug = ?',
+      [matchSlug]
+    );
+    if (!match) return res.status(404).json({ success: false, error: 'Match not found' });
+    if (!settings.enabled) return res.json({ ...base, state: 'off' });
+    const identity = await resolveViewerIdentity(req);
+    if (await viewerTeamIdOfMatch(req, match as Parameters<typeof viewerTeamIdOfMatch>[1])) {
+      return res.json({ ...base, state: 'player' });
+    }
+    const allowed =
+      settings.access === 'everyone' ||
+      (settings.access === 'signed_in' && Boolean(identity.effectiveSteamId)) ||
+      identity.isRealAdmin;
+    if (!allowed) return res.json({ ...base, state: 'off', reason: settings.access });
+    if (!match.server_id || !['loaded', 'live'].includes(match.status))
+      return res.json({ ...base, state: 'none' });
+    const live = matchLiveStatsService.getStats(matchSlug);
+    if (match.status !== 'live' && live?.status !== 'live')
+      return res.json({ ...base, state: 'before' });
+    const address = await gotvAddress(match.server_id, req);
+    if (!address) return res.json({ ...base, state: 'off', reason: 'no_port' });
+    const password = await gotvPassword(matchSlug);
+    return res.json({
+      ...base,
+      state: 'live',
+      onStage: Number(match.on_stage ?? 0) === 1,
+      seats: Number(match.on_stage ?? 0) === 1 ? 128 : settings.seats,
+      connect: `connect ${address}; password ${password}`,
+      steamUrl: `steam://connect/${address}/${password}`,
+    });
+  } catch (error) {
+    log.error('Error reading how to watch a match', error);
+    return res.status(500).json({ success: false, error: 'Failed to read how to watch' });
+  }
+});
+
+/** host:tv_port of a match's server, the LAN or public host as for players (fleet/connectChoice). */
+async function gotvAddress(serverId: string, req: Request): Promise<string | null> {
+  const row = await db.queryOneAsync<{ fleet_server_id: string | null; host: string | null }>(
+    'SELECT fleet_server_id, host FROM cs2_servers WHERE id = ?',
+    [serverId]
+  );
+  const { getFleetServer } = await import('../fleet/registry');
+  const fleet = await getFleetServer(row?.fleet_server_id ?? serverId);
+  let tvPort: number | null = null;
+  try {
+    const host = fleet?.host ? (JSON.parse(fleet.host) as { tv_port?: number }) : null;
+    tvPort = typeof host?.tv_port === 'number' ? host.tv_port : null;
+  } catch {
+    tvPort = null;
+  }
+  if (!tvPort) return null;
+  const viewerIp = req.get('cf-connecting-ip') || req.ip || null;
+  const { connectChoice } = await import('../fleet/connectChoice');
+  const choice = await connectChoice(serverId, viewerIp).catch(() => null);
+  const chosen = choice?.options.find((o) => o.kind === choice.recommended);
+  const hostName = chosen?.host ?? row?.host ?? null;
+  return hostName ? `${hostName}:${tvPort}` : null;
+}
 
 /**
  * GET /api/events/server/:serverId

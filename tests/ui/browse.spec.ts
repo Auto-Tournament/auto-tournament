@@ -50,11 +50,9 @@ test.describe.serial('Browse', () => {
       const id = setup.tournament.id;
       await expect(page.getByTestId(`browse-entries-${id}`)).toContainText('2 teams');
       await expect(page.getByTestId(`browse-when-${id}`)).toContainText(/live/i);
+      // The whole card is the link.
       await expect(page.getByTestId(`browse-action-${id}`)).toHaveText(/open/i);
-      await expect(page.getByTestId(`browse-action-${id}`)).toHaveAttribute(
-        'href',
-        `/tournament/${id}`
-      );
+      await expect(row).toHaveAttribute('href', `/tournament/${id}`);
       // One tournament per site in 3.0: no "Create tournament" while it exists.
       await expect(page.getByTestId('browse-create-tournament')).toHaveCount(0);
 

@@ -25,6 +25,8 @@ export interface MatchmakingMe {
     /** Players invited who have not answered yet (older APIs: missing). */
     invited?: Array<{ id: string; name: string; avatarUrl: string | null }>;
   } | null;
+  /** Party members (or the viewer) playing in a running tournament: nobody in it can search (older APIs: missing). */
+  inTournament?: Array<{ id: string; name: string; tournament: string }>;
   /** Party members (or the viewer) not set up for the game yet; searching waits for them (older APIs: missing). */
   notReady?: Array<{ id: string; name: string; missing: 'game' | 'account' }>;
   /** Open invites to the viewer from other parties, newest first (older APIs: missing). */

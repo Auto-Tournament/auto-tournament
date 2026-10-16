@@ -32,7 +32,12 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useModuleTranslation, useSocket } from '../../../module-sdk';
+import {
+  useModuleTranslation,
+  useSocket,
+  fmtDateTime,
+  SegmentedControl,
+} from '../../../module-sdk';
 import {
   Alert,
   Box,
@@ -45,8 +50,6 @@ import {
   Divider,
   Stack,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { GavelIcon } from '@phosphor-icons/react';
@@ -77,7 +80,7 @@ const emptyRows = (seriesLength: number) =>
 /** Epoch **seconds** (what the API sends), as a local date and time. */
 function when(seconds: number | null | undefined): string {
   if (!seconds) return '';
-  return new Date(seconds * 1000).toLocaleString();
+  return fmtDateTime(seconds);
 }
 
 /** The score to show for a report: the game's own for a bo1, else maps won. */
@@ -182,7 +185,8 @@ export function DisputesQueue({ tournamentId }: AdminDisputesViewProps) {
   );
 
   const teamName = useCallback(
-    (view: MatchReportView, side: ReportSide) => view.match[side].name || t('manualReport.unknownTeam'),
+    (view: MatchReportView, side: ReportSide) =>
+      view.match[side].name || t('manualReport.unknownTeam'),
     [t]
   );
 
@@ -219,10 +223,9 @@ export function DisputesQueue({ tournamentId }: AdminDisputesViewProps) {
       setActionError(t('manualReport.errors.incomplete'));
       return;
     }
-    const checked: DraftCheck =
-      detail.fields?.length
-        ? validateDraft(detail, detail.fields, statDraft, statLabels)
-        : { ok: true, values: [] };
+    const checked: DraftCheck = detail.fields?.length
+      ? validateDraft(detail, detail.fields, statDraft, statLabels)
+      : { ok: true, values: [] };
     if (!checked.ok) {
       setActionError(checked.error);
       return;
@@ -322,7 +325,11 @@ export function DisputesQueue({ tournamentId }: AdminDisputesViewProps) {
                     })}
                   </Typography>
                   {row.report.disputeReason && (
-                    <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ overflowWrap: 'anywhere' }}
+                    >
                       {t('manualReport.disputeReasonGiven', { reason: row.report.disputeReason })}
                     </Typography>
                   )}
@@ -384,20 +391,24 @@ export function DisputesQueue({ tournamentId }: AdminDisputesViewProps) {
                     <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                       {t('disputes.ruling.title')}
                     </Typography>
-                    <ToggleButtonGroup
-                      exclusive
+                    <SegmentedControl<Ruling>
                       size="small"
+                      label={t('disputes.ruling.asReported')}
                       value={ruling}
-                      onChange={(_event, value: Ruling | null) => value && setRuling(value)}
-                      sx={{ flexWrap: 'wrap' }}
-                    >
-                      <ToggleButton value="asReported" data-testid="dispute-resolve-as-reported">
-                        {t('disputes.ruling.asReported')}
-                      </ToggleButton>
-                      <ToggleButton value="own" data-testid="dispute-resolve-own">
-                        {t('disputes.ruling.own')}
-                      </ToggleButton>
-                    </ToggleButtonGroup>
+                      onChange={setRuling}
+                      options={[
+                        {
+                          value: 'asReported',
+                          label: t('disputes.ruling.asReported'),
+                          testId: 'dispute-resolve-as-reported',
+                        },
+                        {
+                          value: 'own',
+                          label: t('disputes.ruling.own'),
+                          testId: 'dispute-resolve-own',
+                        },
+                      ]}
+                    />
 
                     <Collapse in={ruling === 'own'} unmountOnExit>
                       <Stack spacing={1.5} mt={2} data-testid="dispute-own-form">
@@ -415,7 +426,11 @@ export function DisputesQueue({ tournamentId }: AdminDisputesViewProps) {
                             alignItems={{ xs: 'stretch', sm: 'center' }}
                           >
                             {detail.rules.seriesLength > 1 && (
-                              <Typography variant="body2" color="text.secondary" sx={{ minWidth: 72 }}>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ minWidth: 72 }}
+                              >
                                 {t('manualReport.game', { number: index + 1 })}
                               </Typography>
                             )}

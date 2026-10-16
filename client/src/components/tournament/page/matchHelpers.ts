@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import type { Match, Tournament } from '../../../types';
 import {
   compareMatchOrder,
@@ -12,6 +13,10 @@ export function publicMatchLabel(
   match: Pick<Match, 'slug' | 'bracket' | 'round' | 'matchNumber'>,
   tournament: Pick<Tournament, 'type' | 'teamIds'>
 ): string {
+  // Groups, then playoffs: a playoff match by its own round ("Playoffs · Round 1").
+  const playoff =
+    tournament.type === 'groups' ? /(?:^|-)po-r(\d+)m\d+$/.exec(match.slug ?? '') : null;
+  if (playoff) return i18n.t('matchesPage.matchLabel.playoffs', { round: Number(playoff[1]) });
   return (
     getBracketMatchLabel(match) ??
     getRoundLabel(match.round, eliminationRoundCount(tournament.teamIds.length, tournament.type))

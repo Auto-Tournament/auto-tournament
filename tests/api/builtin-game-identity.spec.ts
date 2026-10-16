@@ -29,8 +29,11 @@ const BUNDLED_INDEX = path.join(__dirname, '../../api/bundled-packs/index.json')
 const CS2_MODULE = path.join(__dirname, '../../api/src/integrations/cs2/index.ts');
 
 function bundledPacks(): Array<{ slug: string; name: string }> {
-  return (JSON.parse(fs.readFileSync(BUNDLED_INDEX, 'utf8')) as { packs: Array<{ slug: string; name: string }> })
-    .packs;
+  return (
+    JSON.parse(fs.readFileSync(BUNDLED_INDEX, 'utf8')) as {
+      packs: Array<{ slug: string; name: string }>;
+    }
+  ).packs;
 }
 
 /** Lowercase letters and digits only, as the catalogue compares names. */
@@ -39,21 +42,27 @@ function key(value: string): string {
 }
 
 test.describe('Built-in game identity', () => {
-  test('every game the image ships is pinned to a Wikidata item', { tag: ['@api', '@games'] }, () => {
-    const cs2Slug = /catalog:\s*{\s*slug:\s*'([^']+)'/.exec(fs.readFileSync(CS2_MODULE, 'utf8'))?.[1];
-    expect(cs2Slug).toBe('counter-strike-2');
+  test(
+    'every game the image ships is pinned to a Wikidata item',
+    { tag: ['@api', '@games'] },
+    () => {
+      const cs2Slug = /catalog:\s*{\s*slug:\s*'([^']+)'/.exec(
+        fs.readFileSync(CS2_MODULE, 'utf8')
+      )?.[1];
+      expect(cs2Slug).toBe('counter-strike-2');
 
-    const slugs = new Set([
-      cs2Slug!,
-      ...bundledPacks().map((p) => p.slug),
-      ...POPULAR_GAMES.map((g) => g.slug),
-    ]);
-    const unpinned = [...slugs].filter((slug) => !pinnedWikidataId(slug));
-    expect(unpinned, 'built-ins with no pinned Wikidata item').toEqual([]);
+      const slugs = new Set([
+        cs2Slug!,
+        ...bundledPacks().map((p) => p.slug),
+        ...POPULAR_GAMES.map((g) => g.slug),
+      ]);
+      const unpinned = [...slugs].filter((slug) => !pinnedWikidataId(slug));
+      expect(unpinned, 'built-ins with no pinned Wikidata item').toEqual([]);
 
-    // And nothing pinned that the image does not ship.
-    expect(Object.keys(BUILTIN_WIKIDATA_QIDS).filter((slug) => !slugs.has(slug))).toEqual([]);
-  });
+      // And nothing pinned that the image does not ship.
+      expect(Object.keys(BUILTIN_WIKIDATA_QIDS).filter((slug) => !slugs.has(slug))).toEqual([]);
+    }
+  );
 
   test('pins are well formed, one game per item', { tag: ['@api', '@games'] }, () => {
     const qids = Object.values(BUILTIN_WIKIDATA_QIDS);
@@ -88,7 +97,10 @@ test.describe('Built-in game identity', () => {
       year: 2024,
     });
     // The 2020 Trackmania, not the 2003 TrackMania.
-    expect(BUILTIN_GAME_IDENTITIES.trackmania).toMatchObject({ wikidataId: 'Q91573142', year: 2020 });
+    expect(BUILTIN_GAME_IDENTITIES.trackmania).toMatchObject({
+      wikidataId: 'Q91573142',
+      year: 2020,
+    });
     // The series the pack reports, not the 2003 game.
     expect(pinnedWikidataId('call-of-duty')).toBe('Q192156');
     // The board game.
@@ -100,22 +112,26 @@ test.describe('Built-in game identity', () => {
     });
   });
 
-  test('the data fix resets rows that hold another item, by pin', { tag: ['@api', '@games'] }, async () => {
-    const calls: Array<{ sql: string; params: unknown[] }> = [];
-    const client = {
-      query: async (sql: string, params: unknown[]) => {
-        calls.push({ sql, params });
-        return { rowCount: 1 };
-      },
-    };
-    const reset = await resetMismatchedBuiltinGames(client as never);
-    expect(reset).toBe(1);
-    expect(calls).toHaveLength(1);
-    const [slugs, qids] = calls[0].params as [string[], string[]];
-    expect(qids[slugs.indexOf('deadlock')]).toBe('Q126042383');
-    expect(slugs).toHaveLength(Object.keys(BUILTIN_WIKIDATA_QIDS).length);
-    // Only a row holding a *different* item is touched, and it forgets it.
-    expect(calls[0].sql).toMatch(/g\.wikidata_id IS NOT NULL AND g\.wikidata_id <> pin\.qid/);
-    expect(calls[0].sql).toMatch(/wikidata_id = NULL, cover_url = NULL/);
-  });
+  test(
+    'the data fix resets rows that hold another item, by pin',
+    { tag: ['@api', '@games'] },
+    async () => {
+      const calls: Array<{ sql: string; params: unknown[] }> = [];
+      const client = {
+        query: async (sql: string, params: unknown[]) => {
+          calls.push({ sql, params });
+          return { rowCount: 1 };
+        },
+      };
+      const reset = await resetMismatchedBuiltinGames(client as never);
+      expect(reset).toBe(1);
+      expect(calls).toHaveLength(1);
+      const [slugs, qids] = calls[0].params as [string[], string[]];
+      expect(qids[slugs.indexOf('deadlock')]).toBe('Q126042383');
+      expect(slugs).toHaveLength(Object.keys(BUILTIN_WIKIDATA_QIDS).length);
+      // Only a row holding a *different* item is touched, and it forgets it.
+      expect(calls[0].sql).toMatch(/g\.wikidata_id IS NOT NULL AND g\.wikidata_id <> pin\.qid/);
+      expect(calls[0].sql).toMatch(/wikidata_id = NULL, cover_url = NULL/);
+    }
+  );
 });

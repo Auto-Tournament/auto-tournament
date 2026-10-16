@@ -51,6 +51,8 @@ const DEFAULT_VOLATILE_KEYS = [
   'startedAt',
   'loadedAt',
   'timestamp',
+  // The GOTV password: an HMAC with the install's own key (CS2 gotv.ts), so it differs per install.
+  'tv_password',
 ];
 
 /**

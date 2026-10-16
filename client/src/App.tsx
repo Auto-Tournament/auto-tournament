@@ -58,6 +58,8 @@ import Friends from './pages/Friends';
 import Notifications from './pages/Notifications';
 import TeamsDirectory from './pages/TeamsDirectory';
 import TeamManage from './pages/TeamManage';
+import TournamentPrizes from './pages/TournamentPrizes';
+import TournamentSchedule from './pages/TournamentSchedule';
 import TeamJoin from './pages/TeamJoin';
 import Compatibility from './pages/Compatibility';
 import Play from './pages/Play';
@@ -606,6 +608,8 @@ function AppRoutes() {
           <Route path="bracket" element={<Bracket />} />
           <Route path="disputes" element={<Disputes />} />
           <Route path="setup" element={<Tournament />} />
+          <Route path="prizes" element={<TournamentPrizes />} />
+          <Route path="schedule" element={<TournamentSchedule />} />
         </Route>
         {/* Their old addresses: the tournament Manage last had open. */}
         <Route

@@ -1,4 +1,5 @@
 import { pageTitle } from '../utils/pageTitle';
+import { fmtDate, fmtDayTime } from '../utils/time';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, CircularProgress, Container, Link, Typography } from '@mui/material';
@@ -12,7 +13,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { PendingTeamInvites } from '../components/team/PendingTeamInvites';
-import { LiveChip } from '../components/common/ui';
+import { LiveChip, panelSx, panelBorderSx } from '../components/common/ui';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
 import { useTournamentList, type TournamentSummary } from '../hooks/useTournamentList';
@@ -23,7 +24,7 @@ import { eliminationRoundCount, getRoundLabel } from '../utils/matchUtils';
 import { formatBadge } from '../utils/tournamentSummary';
 import { paths, tournamentTabPath } from '../paths';
 import { tokens, radii, fontDisplay, fontMono } from '../theme/tokens';
-import { getMapImageUrl } from '../constants/maps';
+import { tournamentArtSx } from '../utils/tournamentArt';
 import { StartCountdown } from '../components/tournament/StartCountdown';
 
 const { color } = tokens;
@@ -124,7 +125,7 @@ function Progress({
  * on a new site as on a busy one; a tournament without a banner gets map art.
  */
 export default function Home() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { playerSteamId, isAuthenticated: isAdmin } = useAuth();
   const [myTeam, setMyTeam] = useState<ViewerTeam | null>(null);
   const [teamLoading, setTeamLoading] = useState(true);
@@ -199,16 +200,7 @@ export default function Home() {
   const hero = quiet ? upcoming[0] : live[0];
   const restUpcoming = quiet ? upcoming.slice(1) : upcoming;
 
-  const when = (ms?: number) =>
-    ms
-      ? new Date(ms).toLocaleString(i18n.language, {
-          weekday: 'short',
-          day: 'numeric',
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : null;
+  const when = (ms?: number) => (ms ? fmtDayTime(ms) : null);
 
   // The page keeps one shape whatever is on (front page drafts, board 1):
   // the big card and its side column, three sign-up cards, three champions.
@@ -354,7 +346,7 @@ export default function Home() {
                       borderRadius: '26px',
                       overflow: 'hidden',
                       display: 'flex',
-                      ...artSx(0),
+                      ...tournamentArtSx({ id: 0 }),
                     }}
                   >
                     <Box
@@ -420,10 +412,9 @@ export default function Home() {
                       to={paths.play}
                       data-testid="home-play"
                       sx={{
+                        ...panelSx,
+                        ...panelBorderSx,
                         p: 2.75,
-                        borderRadius: radii.lg,
-                        bgcolor: color.paper2,
-                        border: `1px solid ${color.rule}`,
                         color: color.ink,
                         textDecoration: 'none',
                         display: 'flex',
@@ -479,10 +470,9 @@ export default function Home() {
                       to={paths.communityPlayers}
                       data-testid="home-browse"
                       sx={{
+                        ...panelSx,
+                        ...panelBorderSx,
                         p: 2.75,
-                        borderRadius: radii.lg,
-                        bgcolor: color.paper2,
-                        border: `1px solid ${color.rule}`,
                         color: color.ink,
                         textDecoration: 'none',
                         display: 'flex',
@@ -561,10 +551,9 @@ export default function Home() {
                     to={tournamentTabPath(tour.id)}
                     data-testid={`home-pick-${tour.id}`}
                     sx={{
-                      borderRadius: radii.lg,
+                      ...panelSx,
+                      ...panelBorderSx,
                       overflow: 'hidden',
-                      bgcolor: color.paper2,
-                      border: `1px solid ${color.rule}`,
                       color: color.ink,
                       textDecoration: 'none',
                       display: 'flex',
@@ -572,7 +561,7 @@ export default function Home() {
                       '&:hover': { borderColor: color.muted },
                     }}
                   >
-                    <Box sx={{ height: 120, ...artSx(tour.id, tour.bannerUrl) }} />
+                    <Box sx={{ height: 120, ...tournamentArtSx(tour) }} />
                     <Box
                       sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5, flex: 1 }}
                     >
@@ -700,9 +689,7 @@ export default function Home() {
                           {tour.winner
                             ? t('home.champions.won', { name: tour.name })
                             : t('home.champions.finished')}
-                          {tour.completedAt
-                            ? ` · ${new Date(tour.completedAt).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' })}`
-                            : ''}
+                          {tour.completedAt ? ` · ${fmtDate(tour.completedAt)}` : ''}
                         </Typography>
                       </Box>
                     </Box>
@@ -756,28 +743,8 @@ export default function Home() {
   );
 }
 
-/** Map art for a tournament without a banner, picked by its id so it stays put. */
-const FALLBACK_MAPS = [
-  'de_ancient',
-  'de_mirage',
-  'de_dust2',
-  'de_inferno',
-  'de_nuke',
-  'de_anubis',
-  'de_overpass',
-];
 const SCRIM_GRADIENT =
   'linear-gradient(to top, rgba(16,9,8,1) 18%, rgba(16,9,8,0.45) 70%, rgba(16,9,8,0.2))';
-
-function artSx(seed: number, bannerUrl?: string | null) {
-  const url = bannerUrl || getMapImageUrl(FALLBACK_MAPS[Math.abs(seed) % FALLBACK_MAPS.length]);
-  return {
-    backgroundImage: `url(${url})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center 40%',
-    bgcolor: color.paper3,
-  };
-}
 
 type When = (ms?: number) => string | null;
 
@@ -796,7 +763,7 @@ function HeroCard({ tour, when }: { tour: TournamentSummary; when: When }) {
         display: 'flex',
         color: color.ink,
         textDecoration: 'none',
-        ...artSx(tour.id, tour.bannerUrl),
+        ...tournamentArtSx(tour),
       }}
     >
       <Box
@@ -912,7 +879,7 @@ function SideCard({ tour, when }: { tour: TournamentSummary; when: When }) {
         display: 'flex',
         color: color.ink,
         textDecoration: 'none',
-        ...artSx(tour.id, tour.bannerUrl),
+        ...tournamentArtSx(tour),
       }}
     >
       <Box
@@ -987,7 +954,14 @@ function Placeholder({
       }}
     >
       {art !== undefined && (
-        <Box sx={{ height: 120, ...artSx(art), opacity: 0.25, filter: 'grayscale(1)' }} />
+        <Box
+          sx={{
+            height: 120,
+            ...tournamentArtSx({ id: art }),
+            opacity: 0.25,
+            filter: 'grayscale(1)',
+          }}
+        />
       )}
       <Box
         sx={{
@@ -1025,7 +999,7 @@ function Placeholder({
 
 /** Between events: the last finished tournament's podium (board 2). */
 function LastTime({ tournament }: { tournament: TournamentSummary }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { teams } = usePublicTournamentOverview(String(tournament.id));
   const [first, second, third] = teams;
   const place = (
@@ -1072,15 +1046,7 @@ function LastTime({ tournament }: { tournament: TournamentSummary }) {
       <SectionTitle
         id="home-last-title"
         title={t('home.lastTime.title')}
-        aside={[
-          tournament.name,
-          tournament.completedAt
-            ? new Date(tournament.completedAt).toLocaleDateString(i18n.language, {
-                day: 'numeric',
-                month: 'short',
-              })
-            : null,
-        ]
+        aside={[tournament.name, tournament.completedAt ? fmtDate(tournament.completedAt) : null]
           .filter(Boolean)
           .join(' · ')}
         link={{ to: tournamentTabPath(tournament.id), label: t('home.lastTime.results') }}

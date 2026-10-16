@@ -17,6 +17,8 @@
  * PATCH  /:teamId                           name and tag, and/or game
  * PUT    /:teamId/logo, DELETE              the logo (PNG, JPEG or WEBP body)
  * GET    /:teamId/logo                      the logo, public
+ * PUT    /:teamId/banner, DELETE            the banner (PNG, JPEG or WEBP body, at most 1 MB)
+ * GET    /:teamId/banner                    the banner, public
  * POST   /:teamId/invite                    a new invite link code
  * GET    /invite/:code, POST /invite/:code  the join page; ask to join
  * POST   /:teamId/requests/:uid/accept|decline
@@ -44,6 +46,8 @@ import {
   teamSelfService,
   TeamActionError,
   LOGO_MAX_BYTES,
+  BANNER_MAX_BYTES,
+  bannerUrl,
   logoUrl,
 } from '../services/teamSelfService';
 
@@ -57,6 +61,7 @@ interface DirectoryRow {
   owner_uid: string | null;
   owner_name: string | null;
   logo_updated_at: number | null;
+  banner_updated_at?: number | null;
   game: string | null;
   created_at: number | string;
 }
@@ -68,6 +73,7 @@ export interface DirectoryTeam {
   memberCount: number;
   ownerName: string | null;
   logoUrl: string | null;
+  bannerUrl: string | null;
   game: string | null;
   createdAt: number;
   /** The roster's average rating; null with no rated player. */
@@ -163,13 +169,14 @@ function toDirectoryTeam(row: DirectoryRow): DirectoryTeam {
     memberCount: rosterSize(row.players),
     ownerName: row.owner_name,
     logoUrl: logoUrl(row.id, row.logo_updated_at),
+    bannerUrl: bannerUrl(row.id, row.banner_updated_at),
     game: row.game ?? null,
     createdAt: Number(row.created_at),
   };
 }
 
 const DIRECTORY_SELECT = `
-  SELECT t.id, t.name, t.tag, t.players, t.owner_uid, p.name AS owner_name, t.logo_updated_at, t.game, t.created_at
+  SELECT t.id, t.name, t.tag, t.players, t.owner_uid, p.name AS owner_name, t.logo_updated_at, t.banner_updated_at, t.game, t.created_at
     FROM teams t
     LEFT JOIN players p ON p.uid = t.owner_uid
 `;
@@ -196,6 +203,25 @@ function newTeamId(name: string): string {
     .slice(0, 24);
   return `${slug || 'team'}-${randomBytes(3).toString('hex')}`;
 }
+
+/**
+ * Every team's colour (public): { colors: { [teamId]: 0-15 } }. The client
+ * reads it once and colours every team tag from it.
+ */
+router.get('/colors', async (_req: Request, res: Response) => {
+  try {
+    const rows = await db.queryAsync<{ id: string; color_index: number | null }>(
+      'SELECT id, color_index FROM teams WHERE color_index IS NOT NULL'
+    );
+    const colors: Record<string, number> = {};
+    for (const r of rows) colors[r.id] = Number(r.color_index);
+    res.set('Cache-Control', 'public, max-age=60');
+    return res.json({ success: true, colors });
+  } catch (error) {
+    log.error('[TeamDirectory] Failed to read team colours', { error });
+    return res.status(500).json({ success: false, error: 'Failed to read team colours' });
+  }
+});
 
 router.get('/', async (_req: Request, res: Response) => {
   try {
@@ -596,6 +622,20 @@ router.get('/:teamId/logo', async (req: Request, res: Response) => {
   }
 });
 
+router.get('/:teamId/banner', async (req: Request, res: Response) => {
+  try {
+    const banner = await teamSelfService.banner(req.params.teamId);
+    if (!banner) return res.status(404).end();
+    res.setHeader('Content-Type', banner.type);
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    return res.send(banner.data);
+  } catch (error) {
+    log.error('[TeamDirectory] Failed to read a banner', { error });
+    return res.status(500).end();
+  }
+});
+
 router.get(
   '/:teamId/manage',
   teamAction(async (req, uid) => teamSelfService.manageView(req.params.teamId, uid!))
@@ -609,6 +649,12 @@ router.patch(
       if (game !== null && (typeof game !== 'string' || !/^[a-z0-9][a-z0-9-]{0,31}$/.test(game)))
         throw new TeamActionError(400, 'game is a game id or null');
       await teamSelfService.setGame(req.params.teamId, uid!, game);
+    }
+    if (req.body && 'colorIndex' in req.body) {
+      const colorIndex = req.body.colorIndex;
+      if (!Number.isInteger(colorIndex) || colorIndex < 0 || colorIndex > 15)
+        throw new TeamActionError(400, 'colorIndex is 0 to 15');
+      await teamSelfService.setColor(req.params.teamId, uid!, colorIndex);
     }
     if (req.body?.name !== undefined || req.body?.tag !== undefined) {
       const fields = validateTeamFields(req.body?.name, req.body?.tag);
@@ -634,6 +680,25 @@ router.delete(
   '/:teamId/logo',
   teamAction(async (req, uid) => {
     await teamSelfService.setLogo(req.params.teamId, uid!, null);
+    return {};
+  })
+);
+
+router.put(
+  '/:teamId/banner',
+  express.raw({ type: ['image/png', 'image/jpeg', 'image/webp'], limit: BANNER_MAX_BYTES }),
+  teamAction(async (req, uid) => {
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+      throw new TeamActionError(415, 'Send the banner as a PNG, JPEG or WEBP image.');
+    }
+    await teamSelfService.setBanner(req.params.teamId, uid!, req.body);
+    return {};
+  })
+);
+router.delete(
+  '/:teamId/banner',
+  teamAction(async (req, uid) => {
+    await teamSelfService.setBanner(req.params.teamId, uid!, null);
     return {};
   })
 );

@@ -33,6 +33,7 @@ import { recentMove } from '../fleet/failover';
 import { liveStateStore } from '../fleet/state';
 import { pauseView } from '../fleet/pauseView';
 import { connectChoice } from '../fleet/connectChoice';
+import { QUEUE_ORDER_SQL } from '../../../core/allocationQueue';
 
 /**
  * Whether the move no longer concerns this viewer: they are connected again (a player), or every
@@ -191,6 +192,23 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
       }
     }
 
+    // No server yet: the match's place in line for one (the allocator's order), 1 = next.
+    let queuePosition: number | null = null;
+    if (!match.server_id && (match.status === 'pending' || match.status === 'ready')) {
+      const waiting = await db
+        .queryAsync<{ slug: string }>(
+          `SELECT slug FROM matches
+            WHERE server_id IS NULL AND status IN ('pending', 'ready')
+              AND team1_id IS NOT NULL AND team2_id IS NOT NULL AND team1_id <> team2_id
+              ${match.tournament_id ? 'AND tournament_id = ?' : ''}
+            ORDER BY ${QUEUE_ORDER_SQL}`,
+          match.tournament_id ? [match.tournament_id] : []
+        )
+        .catch(() => []);
+      const at = waiting.findIndex((w) => w.slug === match.slug);
+      queuePosition = at >= 0 ? at + 1 : null;
+    }
+
     // A LAN address and a public one: the viewer gets the one for where they are (on the
     // server's network: LAN), and both are listed to pick from (fleet/connectChoice.ts).
     const viewerIp = req.get('cf-connecting-ip') || req.ip || null;
@@ -207,6 +225,8 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
       viewerIsTeamMember,
       matchStatus: match.status,
       liveStatus: liveStats?.status ?? null,
+      roundNumber: liveStats?.roundNumber ?? null,
+      queuePosition,
       currentMap,
       mapNumber,
       server:

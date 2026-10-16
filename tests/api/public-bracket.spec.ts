@@ -17,6 +17,10 @@ import { createTestTeams } from '../helpers/teams';
  */
 
 const PUBLIC_MATCH_KEYS = new Set([
+  // Match times (services/matchTimes) and whether a server holds it (Watch for spectators).
+  'startsAt',
+  'vetoOpensAt',
+  'hasServer',
   'id',
   'slug',
   'round',

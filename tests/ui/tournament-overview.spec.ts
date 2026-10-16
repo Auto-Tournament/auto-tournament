@@ -55,10 +55,8 @@ test.describe.serial('Tournament Overview UI', () => {
       await expect(page.getByTestId('overview-schedule')).toBeVisible();
       await expect(page.getByTestId('schedule-event')).toContainText('Quarterfinals');
 
-      // The map pool is a row of icons; it opens the maps with their pictures.
-      await page.getByTestId('overview-map-pool').click();
-      await expect(page.getByTestId('map-pool-dialog-maps')).toContainText('Mirage');
-      await page.keyboard.press('Escape');
+      // The map pool shows every map as a picture tile with its name.
+      await expect(page.getByTestId('overview-map-pool')).toContainText('Mirage');
 
       await page.getByTestId('tournament-tab-rules').click();
       await expect(page.getByTestId('overview-rules')).toContainText('Be ready 10 minutes');
@@ -89,7 +87,8 @@ test.describe.serial('Tournament Overview UI', () => {
       // No schedule: a placeholder keeps its place on the page.
       await expect(page.getByTestId('overview-schedule')).toHaveCount(0);
       await expect(page.getByTestId('overview-schedule-empty')).toBeVisible();
-      await expect(page.getByTestId('tournament-tab-rules')).toHaveCount(0);
+      // Every tournament has Rules: how a match is played comes from its settings.
+      await expect(page.getByTestId('tournament-tab-rules')).toBeVisible();
 
       // The team count and the map pool come from the tournament itself, so
       // they show up even with no organizer content.
@@ -122,7 +121,10 @@ test.describe.serial('Tournament Overview UI', () => {
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(name, { timeout: 15000 });
       await expect(page.getByTestId('tournament-hero')).toBeVisible();
       await expect(page.getByTestId('tournament-game')).toBeVisible();
-      await expect(page.getByTestId('tournament-tab-overview')).toHaveAttribute('aria-current', 'page');
+      await expect(page.getByTestId('tournament-tab-overview')).toHaveAttribute(
+        'aria-current',
+        'page'
+      );
       // "Your match" is only for a player whose team is in a running tournament.
       await expect(page.getByTestId('tournament-tab-match')).toHaveCount(0);
       // Before it starts: the page and who is in, nothing to follow yet.

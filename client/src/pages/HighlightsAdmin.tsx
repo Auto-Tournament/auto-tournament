@@ -9,10 +9,8 @@ import { useEffect, useState } from 'react';
 import {
   Box,
   CircularProgress,
-  FormControlLabel,
   MenuItem,
   Stack,
-  Switch,
   Tab,
   Tabs,
   TextField,
@@ -20,7 +18,7 @@ import {
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { PageHead } from '../components/common/ui';
+import { PageHead, SwitchRow } from '../components/common/ui';
 import { HighlightMusicSetting } from '../components/highlights/HighlightMusicSetting';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useInstalledIntegrations } from '../integrations/registry';
@@ -204,20 +202,14 @@ function HighlightSettings() {
         sx={{ maxWidth: 320 }}
       />
       <Box>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={vals.highlightsWatermark}
-              onChange={(e) => void save({ highlightsWatermark: e.target.checked })}
-              size="small"
-              inputProps={{ 'data-testid': 'highlights-watermark' } as Record<string, string>}
-            />
-          }
+        <SwitchRow
           label={t('highlightsPage.watermark.label')}
+          checked={vals.highlightsWatermark}
+          onChange={(e) => void save({ highlightsWatermark: e.target.checked })}
+          size="small"
+          inputProps={{ 'data-testid': 'highlights-watermark' } as Record<string, string>}
+          help={t('highlightsPage.watermark.description')}
         />
-        <Typography variant="caption" color="text.secondary" display="block">
-          {t('highlightsPage.watermark.description')}
-        </Typography>
       </Box>
       <Box data-testid="highlights-reel-sizes">
         <Typography variant="subtitle2">{t('highlightsPage.reels.title')}</Typography>

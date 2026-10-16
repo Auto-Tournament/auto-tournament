@@ -1072,6 +1072,12 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   // The first veto turn and the break between a team's matches (veto/timer.ts, veto/break.ts).
   { key: 'at_veto_first_turn_seconds', field: 'vetoFirstTurnSeconds' },
   { key: 'at_match_break_minutes', field: 'matchBreakMinutes' },
+  // Spectators in GOTV (CS2 gotv.ts): on, delay, seats, who may watch, live stats for spectators.
+  { key: 'gotv_spectators', field: 'gotvSpectators' },
+  { key: 'gotv_delay', field: 'gotvDelay' },
+  { key: 'gotv_seats', field: 'gotvSeats' },
+  { key: 'gotv_access', field: 'gotvAccess' },
+  { key: 'gotv_live_stats', field: 'gotvLiveStats' },
   // The highlight settings, core's (services/highlights/settings.ts).
   { key: 'highlights_watermark', field: 'highlightsWatermark' },
   // Clips per player per map (demos/highlights.ts).
@@ -1108,9 +1114,12 @@ test.describe('settings namespace', () => {
     const coreKeys = CORE_SETTINGS.map((definition) => definition.key);
     expect(coreKeys.filter((key) => cs2Keys.includes(key))).toEqual([]);
     for (const key of cs2Keys) {
-      // Server convars (at_), the simulation, and the highlight videos.
+      // Server convars (at_), the simulation, the highlight videos, and GOTV spectating.
       expect(
-        key.startsWith('at_') || key.startsWith('simulat') || key.startsWith('highlights_'),
+        key.startsWith('at_') ||
+          key.startsWith('simulat') ||
+          key.startsWith('highlights_') ||
+          key.startsWith('gotv_'),
         key
       ).toBe(true);
     }

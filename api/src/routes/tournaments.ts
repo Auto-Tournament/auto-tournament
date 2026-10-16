@@ -37,6 +37,8 @@ export interface TournamentListItem {
   status: string;
   description: string | null;
   bannerUrl: string | null;
+  /** A map picture chosen for it instead of an uploaded banner (settings.bannerMap). */
+  bannerMap: string | null;
   /** Teams in it (players for a shuffle); for one with sign-up open, the teams signed up. */
   entries: number;
   maxEntries: number | null;
@@ -168,6 +170,7 @@ async function listItems(
       status: t.status,
       description: typeof settings.description === 'string' ? settings.description : null,
       bannerUrl: (t as unknown as { bannerUrl?: string | null }).bannerUrl ?? null,
+      bannerMap: typeof settings.bannerMap === 'string' ? settings.bannerMap : null,
       entries,
       maxEntries: typeof settings.maxTeams === 'number' ? settings.maxTeams : null,
       registrationOpen,

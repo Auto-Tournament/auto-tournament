@@ -68,7 +68,15 @@ export function levelFor(
   }
 }
 
-export const COMMEND_UP_TAGS = ['friendly', 'team_player', 'leader', 'good_comms'] as const;
+export const COMMEND_UP_TAGS = [
+  'friendly',
+  'team_player',
+  'leader',
+  'good_comms',
+  // The tournament match room's commends (services/commends.ts) add these two.
+  'teacher',
+  'good_sport',
+] as const;
 export const COMMEND_DOWN_TAGS = ['toxic', 'griefing', 'afk', 'other'] as const;
 export type CommendTag = (typeof COMMEND_UP_TAGS)[number] | (typeof COMMEND_DOWN_TAGS)[number];
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { fmtDateTime } from '../../utils/time';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -7,15 +8,14 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { SettingsRow } from './SettingsRow';
+import { SwitchRow } from '../../components/common/ui';
 
 interface LocalAccount {
   username: string;
@@ -90,7 +90,7 @@ export function LocalAccountsSection() {
   const lastLogin = (a: LocalAccount) =>
     a.lastLoginAt
       ? t('settingsPage.signIn.accounts.lastLogin', {
-          date: new Date(a.lastLoginAt * 1000).toLocaleString(),
+          date: fmtDateTime(a.lastLoginAt),
         })
       : t('settingsPage.signIn.accounts.neverSignedIn');
 
@@ -152,37 +152,33 @@ export function LocalAccountsSection() {
                   </Typography>
                 </Box>
                 <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexShrink: 0 }}>
-                  <FormControlLabel
-                    sx={{ mr: 1, whiteSpace: 'nowrap' }}
-                    control={
-                      <Switch
-                        size="small"
-                        checked={a.isAdmin}
-                        disabled={busy}
-                        onChange={(e) =>
-                          void run(
-                            () =>
-                              api.put(`/api/local-accounts/${encodeURIComponent(a.username)}`, {
-                                isAdmin: e.target.checked,
-                              }),
-                            e.target.checked
-                              ? t('settingsPage.signIn.accounts.madeAdmin', {
-                                  username: a.username,
-                                })
-                              : t('settingsPage.signIn.accounts.adminRemoved', {
-                                  username: a.username,
-                                })
-                          )
-                        }
-                        inputProps={
-                          {
-                            'aria-label': t('settingsPage.signIn.accounts.admin'),
-                            'data-testid': `local-account-admin-${a.username}`,
-                          } as Record<string, string>
-                        }
-                      />
-                    }
+                  <SwitchRow
                     label={t('settingsPage.signIn.accounts.admin')}
+                    size="small"
+                    checked={a.isAdmin}
+                    disabled={busy}
+                    onChange={(e) =>
+                      void run(
+                        () =>
+                          api.put(`/api/local-accounts/${encodeURIComponent(a.username)}`, {
+                            isAdmin: e.target.checked,
+                          }),
+                        e.target.checked
+                          ? t('settingsPage.signIn.accounts.madeAdmin', {
+                              username: a.username,
+                            })
+                          : t('settingsPage.signIn.accounts.adminRemoved', {
+                              username: a.username,
+                            })
+                      )
+                    }
+                    inputProps={
+                      {
+                        'aria-label': t('settingsPage.signIn.accounts.admin'),
+                        'data-testid': `local-account-admin-${a.username}`,
+                      } as Record<string, string>
+                    }
+                    sx={{ mr: 1, whiteSpace: 'nowrap' }}
                   />
                   <Button
                     size="small"
@@ -253,18 +249,12 @@ export function LocalAccountsSection() {
             useFlexGap
             spacing={1}
           >
-            <FormControlLabel
-              control={
-                <Switch
-                  size="small"
-                  checked={isAdmin}
-                  onChange={(e) => setIsAdmin(e.target.checked)}
-                  inputProps={
-                    { 'data-testid': 'local-account-new-admin' } as Record<string, string>
-                  }
-                />
-              }
+            <SwitchRow
               label={t('settingsPage.signIn.accounts.makeAdmin')}
+              size="small"
+              checked={isAdmin}
+              onChange={(e) => setIsAdmin(e.target.checked)}
+              inputProps={{ 'data-testid': 'local-account-new-admin' } as Record<string, string>}
             />
             <Button
               variant="contained"

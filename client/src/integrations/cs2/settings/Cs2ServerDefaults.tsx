@@ -26,11 +26,10 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  FormControlLabel,
   Link,
   Slider,
   Stack,
-  Switch,
+  MenuItem,
   TextField,
   Typography,
 } from '@mui/material';
@@ -43,6 +42,8 @@ import {
   useIsDevelopment,
   useModuleTranslation,
   useSnackbar,
+  SwitchRow,
+  fmtNum,
 } from '../../../module-sdk';
 
 type Flag = 0 | 1 | null;
@@ -64,6 +65,14 @@ export interface Cs2DefaultsValues {
   vetoTurnSeconds: number;
   vetoFirstTurnSeconds: number;
   matchBreakMinutes: number;
+  /** Spectators in GOTV (api cs2 gotv.ts): 1 on, 0 off. */
+  gotvSpectators: number;
+  gotvDelay: number;
+  gotvSeats: number;
+  /** 0 everyone, 1 signed-in players, 2 admins and casters. */
+  gotvAccess: number;
+  /** 0 the GOTV delay, 1 live, 2 off. */
+  gotvLiveStats: number;
   atSeriesEndKickDelayNoDemo: number;
   atAutoreadyEnabled: Flag;
   atBothTeamsUnpauseRequired: Flag;
@@ -100,6 +109,11 @@ const DEFAULTS: Cs2DefaultsValues = {
   vetoTurnSeconds: 45,
   vetoFirstTurnSeconds: 120,
   matchBreakMinutes: 5,
+  gotvSpectators: 1,
+  gotvDelay: 105,
+  gotvSeats: 8,
+  gotvAccess: 0,
+  gotvLiveStats: 0,
   atSeriesEndKickDelayNoDemo: 30,
   atAutoreadyEnabled: null,
   atBothTeamsUnpauseRequired: null,
@@ -230,7 +244,7 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
           showSnackbar(
             stored.simulateMatches
               ? t('settings.success.simulationEnabledWithSpeed', {
-                  speed: stored.simulationTimescale.toFixed(1),
+                  speed: fmtNum(stored.simulationTimescale, 1),
                 })
               : t('settings.success.simulationDisabled'),
             'info'
@@ -238,7 +252,7 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
         } else if (changed.includes('simulationTimescale') && stored.simulateMatches) {
           showSnackbar(
             t('settings.success.timescaleUpdated', {
-              value: stored.simulationTimescale.toFixed(1),
+              value: fmtNum(stored.simulationTimescale, 1),
             }),
             'info'
           );
@@ -306,20 +320,13 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
         </AccordionSummary>
         <AccordionDetails sx={ACCORDION_DETAILS_SX}>
           <Stack spacing={2}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={vals.atDemoRecordingEnabled !== 0}
-                  onChange={(e) => update('atDemoRecordingEnabled', e.target.checked ? 1 : 0)}
-                  color="primary"
-                  size="small"
-                />
-              }
+            <SwitchRow
               label={t('settings.atEnhanced.demo.enabled')}
+              checked={vals.atDemoRecordingEnabled !== 0}
+              onChange={(e) => update('atDemoRecordingEnabled', e.target.checked ? 1 : 0)}
+              size="small"
+              help={t('settings.atEnhanced.demo.description')}
             />
-            <Typography variant="caption" color="text.secondary" display="block">
-              {t('settings.atEnhanced.demo.description')}
-            </Typography>
 
             <Divider />
 
@@ -418,6 +425,97 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
         </AccordionDetails>
       </Accordion>
 
+      {/* Spectators in GOTV: who can watch a match from its match room, and how far behind. */}
+      <Accordion defaultExpanded sx={ACCORDION_SX} data-testid="settings-gotv">
+        <AccordionSummary expandIcon={<CaretDownIcon size={24} />} sx={ACCORDION_SUMMARY_SX}>
+          <Box>
+            <Typography variant="h6" fontWeight={600}>
+              {t('settings.gotv.title')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('settings.gotv.description')}
+            </Typography>
+          </Box>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Stack spacing={2}>
+            <SwitchRow
+              label={t('settings.gotv.enabled')}
+              checked={vals.gotvSpectators === 1}
+              onChange={(e) => {
+                const v = e.target.checked ? 1 : 0;
+                update('gotvSpectators', v);
+                void save({ gotvSpectators: v });
+              }}
+              slotProps={{
+                input: { 'data-testid': 'setting-gotv-enabled' } as Record<string, string>,
+              }}
+            />
+            {vals.gotvSpectators === 1 && (
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
+                  gap: 2,
+                }}
+              >
+                {(
+                  [
+                    ['gotvDelay', [0, 30, 105, 120]],
+                    ['gotvSeats', [8, 16, 32]],
+                    ['gotvAccess', [0, 1, 2]],
+                    ['gotvLiveStats', [0, 1, 2]],
+                  ] as const
+                ).map(([key, options]) => (
+                  <Box
+                    key={key}
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: '150px minmax(0, 1fr)',
+                      alignItems: 'center',
+                      gap: 1.5,
+                    }}
+                  >
+                    <Typography
+                      component="label"
+                      htmlFor={`setting-${key}`}
+                      variant="body2"
+                      fontWeight={600}
+                    >
+                      {t(`settings.gotv.${key}.label`)}
+                    </Typography>
+                    <TextField
+                      select
+                      size="small"
+                      id={`setting-${key}`}
+                      value={vals[key]}
+                      onChange={(e) => {
+                        const v = Number(e.target.value);
+                        update(key, v);
+                        void save({ [key]: v });
+                      }}
+                      slotProps={{ htmlInput: { 'data-testid': `setting-${key}` } }}
+                    >
+                      {options.map((o) => (
+                        <MenuItem key={o} value={o}>
+                          {t(`settings.gotv.${key}.option`, { context: String(o), count: o })}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Box>
+                ))}
+              </Box>
+            )}
+            <Typography variant="body2" color="text.secondary">
+              {vals.gotvDelay === 0
+                ? t('settings.gotv.noDelayNote')
+                : t('settings.gotv.delayNote', { count: vals.gotvDelay })}{' '}
+              {t('settings.gotv.portNote')}
+            </Typography>
+          </Stack>
+        </AccordionDetails>
+      </Accordion>
+
       <Alert severity="warning">{t('settings.atCore.expert.description')}</Alert>
 
       <Accordion defaultExpanded sx={ACCORDION_SX}>
@@ -455,16 +553,11 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                   size="small"
                   fullWidth
                 />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={vals.atAllowForceReady}
-                      onChange={(e) => update('atAllowForceReady', e.target.checked)}
-                      color="primary"
-                      size="small"
-                    />
-                  }
+                <SwitchRow
                   label={t('settings.atCore.ready.allowForceReady')}
+                  checked={vals.atAllowForceReady}
+                  onChange={(e) => update('atAllowForceReady', e.target.checked)}
+                  size="small"
                 />
               </Stack>
             </Box>
@@ -494,27 +587,17 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                     {t('settings.atCore.adminTools.title')}
                   </Typography>
                   <Stack spacing={1}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={vals.atJoinPassword}
-                          onChange={(e) => update('atJoinPassword', e.target.checked)}
-                          color="primary"
-                          size="small"
-                        />
-                      }
+                    <SwitchRow
                       label={t('settings.atCore.adminTools.joinPassword')}
+                      checked={vals.atJoinPassword}
+                      onChange={(e) => update('atJoinPassword', e.target.checked)}
+                      size="small"
                     />
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={vals.atPauseAfterRestore}
-                          onChange={(e) => update('atPauseAfterRestore', e.target.checked)}
-                          color="primary"
-                          size="small"
-                        />
-                      }
+                    <SwitchRow
                       label={t('settings.atCore.adminTools.pauseAfterRestore')}
+                      checked={vals.atPauseAfterRestore}
+                      onChange={(e) => update('atPauseAfterRestore', e.target.checked)}
+                      size="small"
                     />
                   </Stack>
                 </Box>
@@ -542,20 +625,13 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
               <Typography variant="subtitle1" fontWeight={600} gutterBottom>
                 {t('settings.atEnhanced.autoready.title')}
               </Typography>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={vals.atAutoreadyEnabled === 1}
-                    onChange={(e) => update('atAutoreadyEnabled', e.target.checked ? 1 : 0)}
-                    color="primary"
-                    size="small"
-                  />
-                }
+              <SwitchRow
                 label={t('settings.atEnhanced.autoready.label')}
+                checked={vals.atAutoreadyEnabled === 1}
+                onChange={(e) => update('atAutoreadyEnabled', e.target.checked ? 1 : 0)}
+                size="small"
+                help={t('settings.atEnhanced.autoready.description')}
               />
-              <Typography variant="caption" color="text.secondary" display="block">
-                {t('settings.atEnhanced.autoready.description')}
-              </Typography>
             </Box>
 
             <Divider />
@@ -566,41 +642,21 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                 {t('settings.atEnhanced.pause.title')}
               </Typography>
               <Stack spacing={2}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={vals.atBothTeamsUnpauseRequired === 1}
-                      onChange={(e) =>
-                        update('atBothTeamsUnpauseRequired', e.target.checked ? 1 : 0)
-                      }
-                      color="primary"
-                      size="small"
-                    />
-                  }
+                <SwitchRow
                   label={t('settings.atEnhanced.pause.bothTeamsUnpause')}
+                  checked={vals.atBothTeamsUnpauseRequired === 1}
+                  onChange={(e) => update('atBothTeamsUnpauseRequired', e.target.checked ? 1 : 0)}
+                  size="small"
                 />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      // On unless turned off (the platform's default).
-                      checked={vals.atPauseOnDisconnect !== 0}
-                      onChange={(e) => update('atPauseOnDisconnect', e.target.checked ? 1 : 0)}
-                      color="primary"
-                      size="small"
-                      inputProps={{ 'aria-describedby': 'pause-on-disconnect-help' }}
-                    />
-                  }
+                <SwitchRow
                   label={t('settings.atEnhanced.pause.onDisconnect')}
+                  help={t('settings.atEnhanced.pause.onDisconnectHelp')}
+                  // On unless turned off (the platform's default).
+                  checked={vals.atPauseOnDisconnect !== 0}
+                  onChange={(e) => update('atPauseOnDisconnect', e.target.checked ? 1 : 0)}
+                  size="small"
                   data-testid="settings-pause-on-disconnect"
                 />
-                <Typography
-                  id="pause-on-disconnect-help"
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ mt: -1.5 }}
-                >
-                  {t('settings.atEnhanced.pause.onDisconnectHelp')}
-                </Typography>
                 <TextField
                   label={t('settings.atEnhanced.pause.maxPausesLabel')}
                   type="number"
@@ -640,16 +696,11 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                 {t('settings.atEnhanced.sideSelection.title')}
               </Typography>
               <Stack spacing={2}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={vals.atSideSelectionEnabled === 1}
-                      onChange={(e) => update('atSideSelectionEnabled', e.target.checked ? 1 : 0)}
-                      color="primary"
-                      size="small"
-                    />
-                  }
+                <SwitchRow
                   label={t('settings.atEnhanced.sideSelection.enabled')}
+                  checked={vals.atSideSelectionEnabled === 1}
+                  onChange={(e) => update('atSideSelectionEnabled', e.target.checked ? 1 : 0)}
+                  size="small"
                 />
                 <TextField
                   label={t('settings.atEnhanced.sideSelection.timeLabel')}
@@ -677,16 +728,11 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                 {t('settings.atEnhanced.gg.title')}
               </Typography>
               <Stack spacing={2}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={vals.atGgEnabled === 1}
-                      onChange={(e) => update('atGgEnabled', e.target.checked ? 1 : 0)}
-                      color="primary"
-                      size="small"
-                    />
-                  }
+                <SwitchRow
                   label={t('settings.atEnhanced.gg.enabled')}
+                  checked={vals.atGgEnabled === 1}
+                  onChange={(e) => update('atGgEnabled', e.target.checked ? 1 : 0)}
+                  size="small"
                 />
                 <TextField
                   label={t('settings.atEnhanced.gg.thresholdLabel')}
@@ -729,16 +775,11 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                 {t('settings.atEnhanced.ffw.title')}
               </Typography>
               <Stack spacing={2}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={vals.atFfwEnabled === 1}
-                      onChange={(e) => update('atFfwEnabled', e.target.checked ? 1 : 0)}
-                      color="primary"
-                      size="small"
-                    />
-                  }
+                <SwitchRow
                   label={t('settings.atEnhanced.ffw.enabled')}
+                  checked={vals.atFfwEnabled === 1}
+                  onChange={(e) => update('atFfwEnabled', e.target.checked ? 1 : 0)}
+                  size="small"
                 />
                 <TextField
                   label={t('settings.atEnhanced.ffw.timeLabel')}
@@ -784,25 +825,21 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
             <Typography variant="body2" color="text.secondary" mb={2}>
               {t('settings.developer.description')}
             </Typography>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={vals.simulateMatches}
-                  onChange={(event) => update('simulateMatches', event.target.checked)}
-                  color="error"
-                  size="small"
-                  slotProps={{
-                    input: {
-                      'data-testid': 'settings-simulate-matches-toggle',
-                    } as React.InputHTMLAttributes<HTMLInputElement>,
-                  }}
-                />
-              }
+            <SwitchRow
               label={
                 <Typography component="span" color="error.main" fontWeight={600}>
                   {t('settings.developer.simulateToggleLabel')}
                 </Typography>
               }
+              checked={vals.simulateMatches}
+              onChange={(event) => update('simulateMatches', event.target.checked)}
+              color="error"
+              size="small"
+              slotProps={{
+                input: {
+                  'data-testid': 'settings-simulate-matches-toggle',
+                } as React.InputHTMLAttributes<HTMLInputElement>,
+              }}
             />
             <Typography
               variant="caption"

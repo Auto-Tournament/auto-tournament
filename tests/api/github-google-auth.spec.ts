@@ -126,7 +126,14 @@ test.describe('GitHub and Google provider listing', () => {
     setStoredProviderSettings(
       new Map<SignInProviderId, StoredProviderSettings>([
         ['github', { enabled: true, clientId: 'gh-client-id', secret: 'gh-super-secret' }],
-        ['google', { enabled: true, clientId: 'g-client-id.apps.googleusercontent.com', secret: 'g-super-secret' }],
+        [
+          'google',
+          {
+            enabled: true,
+            clientId: 'g-client-id.apps.googleusercontent.com',
+            secret: 'g-super-secret',
+          },
+        ],
       ])
     );
 
@@ -260,12 +267,8 @@ for (const provider of providers) {
           expect(cookie).toBeTruthy();
           expect(cookie!).toMatch(/httponly/i);
           expect(cookie!).toMatch(/samesite=lax/i);
-          expect(cookie!).toMatch(
-            new RegExp(`path=/api/test/oauth/${provider.id}/callback`, 'i')
-          );
-          expect(decodeURIComponent(cookie!.split(';')[0].split('=')[1]).split('.')[0]).toBe(
-            state
-          );
+          expect(cookie!).toMatch(new RegExp(`path=/api/test/oauth/${provider.id}/callback`, 'i'));
+          expect(decodeURIComponent(cookie!.split(';')[0].split('=')[1]).split('.')[0]).toBe(state);
         } finally {
           await ctx.dispose();
         }

@@ -17,6 +17,7 @@ import { SmileyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { radii, textSize, tokens } from '../../theme/tokens';
 import { EMOJI_CATEGORIES, pushRecent, searchEmoji, type Emoji } from './emojiData';
+import { panelSx } from '../../components/common/ui';
 
 const { color } = tokens;
 const RECENT_KEY = 'chat.recentEmoji';
@@ -134,10 +135,9 @@ export function EmojiPicker({
             role: 'dialog',
             'aria-label': t('chat.emoji.title'),
             sx: {
+              ...panelSx,
               width: 336,
               maxWidth: 'calc(100vw - 24px)',
-              bgcolor: color.paper2,
-              borderRadius: radii.lg,
             },
           } as object,
         }}

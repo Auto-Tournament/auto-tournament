@@ -68,6 +68,14 @@
       "team": "Team",
       "player": "Player",
       "matches": "Matches"
+    },
+    "chip": {
+      "none": "No result yet",
+      "yours": "Your report",
+      "reported": "Reported",
+      "confirm": "Confirm it",
+      "disputed": "Disputed",
+      "final": "Final"
     }
   }
 }

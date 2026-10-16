@@ -72,7 +72,16 @@ test.describe('Missing module placeholder (API registry)', () => {
 
   test('the lookup over the installed list is the registry lookup', () => {
     const installed = listIntegrations();
-    for (const game of [undefined, null, '', 'cs2', 'CS2', 'counter-strike-2', 'rocket-league', 'x']) {
+    for (const game of [
+      undefined,
+      null,
+      '',
+      'cs2',
+      'CS2',
+      'counter-strike-2',
+      'rocket-league',
+      'x',
+    ]) {
       expect(resolveIntegrationForRow({ game }, installed), String(game)).toBe(
         integrationForMatch({ game })
       );

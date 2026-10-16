@@ -88,7 +88,7 @@ test.describe.serial('Assigned server in the match room', () => {
         timeout: 20000,
       });
 
-      await expect(page.getByText(/Waiting for Server Assignment/i)).toHaveCount(0);
+      await expect(page.getByText(/Waiting for a server/i)).toHaveCount(0);
     }
   );
 });

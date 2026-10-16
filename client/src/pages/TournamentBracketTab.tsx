@@ -1,5 +1,5 @@
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { Box, Button, Stack } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import BracketsViewerVisualization from '../components/visualizations/BracketsViewerVisualization';
 import SwissView from '../components/visualizations/SwissView';
@@ -10,6 +10,9 @@ import { TabEmpty, TabError, TabLoading } from '../components/tournament/page/Ta
 import { usePublicBracket } from '../hooks/usePublicBracket';
 import { matchPagePath, tournamentTabPath } from '../paths';
 import { CardBracket } from '../components/tournament/page/CardBracket';
+import { GroupTables, type GroupStandingSet } from '../components/tournament/GroupTables';
+import { fontDisplay, tokens } from '../theme/tokens';
+import type { Match, Tournament } from '../types';
 
 /**
  * The tournament page's Bracket tab: the same bracket, Swiss or round robin
@@ -72,7 +75,17 @@ export default function TournamentBracketTab() {
           <ChampionBanner tournament={bracket.tournament} />
         </Box>
       )}
-      {tournament.type === 'swiss' ? (
+      {tournament.type === 'groups' ? (
+        <GroupsBracket
+          matches={bracket.matches}
+          groups={bracket.groupStandings}
+          tournament={tournament}
+          teams={
+            new Map((bracket.tournament?.teams ?? tournament.teams ?? []).map((tm) => [tm.id, tm]))
+          }
+          viewerTeamId={viewerTeam?.id ?? null}
+        />
+      ) : tournament.type === 'swiss' ? (
         <SwissView
           onMatchClick={(m) => m.slug && navigate(matchPagePath(m.slug))}
           matches={bracket.matches}
@@ -95,7 +108,78 @@ export default function TournamentBracketTab() {
           rankingTeamIds={bracket.roundRobinStandings.map((standing) => standing.teamId)}
         />
       )}
-      <BracketResults matches={bracket.matches} tournamentId={tournament.id} />
+      <BracketResults
+        matches={bracket.matches}
+        tournamentId={tournament.id}
+        yourTeamId={viewerTeam?.id ?? null}
+      />
+    </Box>
+  );
+}
+
+/**
+ * Groups, then playoffs: the group tables, then the playoffs as a bracket
+ * (its rounds numbered from one; empty slots until the groups are played).
+ */
+function GroupsBracket({
+  matches,
+  groups,
+  tournament,
+  teams,
+  viewerTeamId,
+}: {
+  matches: Match[];
+  groups: GroupStandingSet[];
+  tournament: Tournament;
+  teams: Map<string, { name: string; tag?: string }>;
+  viewerTeamId: string | null;
+}) {
+  const { t } = useTranslation();
+  const settings = (tournament.settings ?? {}) as {
+    advancePerGroup?: number;
+    playoffType?: string;
+    playoffFormat?: string;
+  };
+  const playoffs = matches.filter((m) => /(^|-)po-/.test(m.slug ?? ''));
+  const offset = Math.min(...playoffs.map((m) => m.round)) - 1;
+  const renumbered = playoffs.map((m) => ({ ...m, round: m.round - offset }));
+  const started = playoffs.some((m) => m.team1 || m.team2);
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <GroupTables
+        groups={groups}
+        teams={teams}
+        advancePerGroup={Number(settings.advancePerGroup) === 2 ? 2 : 1}
+        viewerTeamId={viewerTeamId}
+      />
+      <Box
+        component="section"
+        aria-labelledby="groups-playoffs"
+        sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+      >
+        <Typography
+          id="groups-playoffs"
+          component="h2"
+          sx={{ m: 0, fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 700 }}
+        >
+          {t('groups.playoffs')}
+        </Typography>
+        {!started && (
+          <Typography sx={{ color: tokens.color.muted }}>{t('groups.playoffsSoon')}</Typography>
+        )}
+        {renumbered.length > 0 && (
+          <CardBracket
+            matches={renumbered}
+            tournamentType={
+              settings.playoffType === 'double_elimination'
+                ? 'double_elimination'
+                : 'single_elimination'
+            }
+            format={settings.playoffFormat ?? tournament.format}
+            yourTeamId={viewerTeamId}
+          />
+        )}
+      </Box>
     </Box>
   );
 }

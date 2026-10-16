@@ -205,14 +205,14 @@ test.describe.serial('A manually reported tournament, wizard to champion', () =>
 
       const steps = page.getByTestId('tournament-setup-steps');
       await expect(steps).toBeVisible();
-      // CS2 has seven steps; the list is the game's, and this one has no maps.
-      await expect(steps.locator('li')).toHaveCount(7);
+      // CS2 has eight steps; the list is the game's, and this one has no maps.
+      await expect(steps.locator('li')).toHaveCount(8);
 
       const rocketLeague = page.getByTestId('tournament-game-option-rocket-league');
       await expect(rocketLeague).toBeVisible();
       await rocketLeague.click();
       await expect(rocketLeague).toHaveAttribute('aria-pressed', 'true');
-      await expect(steps.locator('li')).toHaveCount(6);
+      await expect(steps.locator('li')).toHaveCount(7);
       await expect(page.getByTestId('tournament-setup-step-maps')).toHaveCount(0);
       await expect(page.getByTestId('tournament-summary-game')).toContainText('Rocket League');
 
@@ -238,7 +238,10 @@ test.describe.serial('A manually reported tournament, wizard to champion', () =>
         await page.getByRole('option', { name: team.name }).click();
       }
       await next.click();
-      await expect(page.getByTestId('tournament-setup-question-eventPage')).toBeVisible();
+      // Schedule, then Rules and extras (no maps step for a manually reported game).
+      await expect(page.getByTestId('tournament-setup-question-schedule')).toBeVisible();
+      await next.click();
+      await expect(page.getByTestId('tournament-setup-question-extras')).toBeVisible();
       await next.click();
       await page.getByTestId('tournament-save-button').click();
 

@@ -6,6 +6,8 @@
  */
 import React from 'react';
 import { Badge, Box, Button, ButtonBase, IconButton, Popover, Typography } from '@mui/material';
+import { useInstalledIntegrations } from '../../integrations/registry';
+import { markPinnedNoticesRead, usePinnedNoticeCount } from '../../utils/pinnedNotices';
 import { BellIcon, GearSixIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -16,6 +18,7 @@ import { markNoticesRead, onNewNotice, useSocial } from './socialStore';
 import { describeNotice, noticeLine } from './noticeText';
 import { browserNotify } from '../../utils/browserNotify';
 import { NOTICE_FILTERS, matchesFilter, type NoticeFilter } from './noticeFilters';
+import { SegmentedControl } from '../common/SegmentedControl';
 
 export { NOTICE_FILTERS, matchesFilter, type NoticeFilter };
 
@@ -30,41 +33,32 @@ export function NoticeFilters({
 }) {
   const { t } = useTranslation();
   return (
-    <Box
-      role="group"
-      aria-label={t('social.bell.show')}
-      sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}
-    >
-      {NOTICE_FILTERS.map((f) => (
-        <ButtonBase
-          key={f}
-          onClick={() => onChange(f)}
-          aria-pressed={value === f}
-          sx={{
-            height: 28,
-            px: 1.375,
-            borderRadius: 999,
-            border: 1,
-            borderColor: value === f ? color.ink2 : 'divider',
-            bgcolor: value === f ? color.paper3 : 'transparent',
-            color: value === f ? color.ink : color.ink2,
-            fontSize: '0.75rem',
-            fontWeight: 500,
-          }}
-        >
-          {t(`social.bell.filter.${f}`)}
-        </ButtonBase>
-      ))}
-    </Box>
+    <SegmentedControl
+      look="chips"
+      size="small"
+      label={t('social.bell.show')}
+      value={value}
+      onChange={onChange}
+      options={NOTICE_FILTERS.map((f) => ({ value: f, label: t(`social.bell.filter.${f}`) }))}
+    />
   );
 }
 
 export function NotificationBell({ viewerId }: { viewerId: string }) {
   const { t } = useTranslation();
   const social = useSocial(true);
+  const pinnedCount = usePinnedNoticeCount();
+  const badge = social.unread + pinnedCount;
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null);
   const [filter, setFilter] = React.useState<NoticeFilter>('all');
   const shown = social.notices.filter((n) => matchesFilter(n, filter)).slice(0, 12);
+  // Modules' notices pinned on top until acted on (CS2: a skin to pick), under All and
+  // their own filter; the badge counts them.
+  const pinned = useInstalledIntegrations().flatMap((i) =>
+    i.pinnedNotices && (filter === 'all' || filter === i.pinnedNotices.category)
+      ? [{ id: i.id, Pinned: i.pinnedNotices.Component }]
+      : []
+  );
   const close = () => setAnchor(null);
   const navigate = useNavigate();
 
@@ -96,11 +90,7 @@ export function NotificationBell({ viewerId }: { viewerId: string }) {
       <IconButton
         onClick={(e) => setAnchor(e.currentTarget)}
         size="small"
-        aria-label={
-          social.unread
-            ? t('social.bell.labelUnread', { count: social.unread })
-            : t('social.bell.label')
-        }
+        aria-label={badge ? t('social.bell.labelUnread', { count: badge }) : t('social.bell.label')}
         aria-haspopup="dialog"
         aria-expanded={anchor ? 'true' : undefined}
         data-testid="nav-bell"
@@ -113,7 +103,7 @@ export function NotificationBell({ viewerId }: { viewerId: string }) {
         }}
       >
         <Badge
-          badgeContent={social.unread}
+          badgeContent={badge}
           max={99}
           color="primary"
           overlap="circular"
@@ -180,8 +170,12 @@ export function NotificationBell({ viewerId }: { viewerId: string }) {
           </IconButton>
           <Button
             size="small"
-            onClick={() => void markNoticesRead()}
-            disabled={social.unread === 0}
+            onClick={() => {
+              void markNoticesRead();
+              // Pinned rows stay, but stop counting in the badge.
+              markPinnedNoticesRead();
+            }}
+            disabled={badge === 0}
             sx={{ color: color.ink2 }}
           >
             {t('social.bell.markAllRead')}
@@ -194,7 +188,10 @@ export function NotificationBell({ viewerId }: { viewerId: string }) {
           sx={{ maxHeight: 460, overflowY: 'auto', borderTop: 1, borderColor: 'divider' }}
           data-testid="bell-list"
         >
-          {shown.length === 0 ? (
+          {pinned.map(({ id, Pinned }) => (
+            <Pinned key={id} onNavigate={close} />
+          ))}
+          {shown.length === 0 && (pinned.length === 0 || pinnedCount === 0) ? (
             <Typography
               sx={{ p: 3, textAlign: 'center', color: color.muted, fontSize: '0.8125rem' }}
             >
@@ -232,6 +229,7 @@ const URGENT_TOURNAMENT_EVENTS = new Set([
   'match_ready',
   'veto_turn',
   'starts_soon',
+  'match_soon',
   'started',
   'check_in',
 ]);

@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import type { Match } from '../../../types';
 import { getMapDisplayName } from '../../../constants/maps';
 import { getBracketMatchLabel, getMatchBracket, getRoundLabel } from '../../../utils/matchUtils';
-import { tokens, fontDisplay, mono, radii } from '../../../theme/tokens';
+import { tokens, fontDisplay, mono } from '../../../theme/tokens';
+import { TeamIdentity, resultInk } from '../ui/draftUi';
 import { matchPagePath } from '../../../paths';
 
 const { color } = tokens;
@@ -167,6 +168,7 @@ function Rounds({
   bestOf: number;
   extra?: ReactNode;
 }) {
+  const { t } = useTranslation();
   const roundNumbers = [...new Set(matches.map((m) => m.round))].sort((a, b) => a - b);
   return (
     <Box sx={{ overflowX: 'auto', pb: 1 }}>
@@ -176,27 +178,71 @@ function Rounds({
             .filter((m) => m.round === round)
             .sort((a, b) => a.matchNumber - b.matchNumber);
           const last = index === roundNumbers.length - 1;
+          const liveCount = inRound.filter((m) => toneOf(m) === 'live').length;
+          const doneCount = inRound.filter((m) => m.status === 'completed').length;
+          // Double elimination: the section says upper or lower, the column its round.
+          const columnTitle =
+            inRound[0] && ['WB', 'LB'].includes(getMatchBracket(inRound[0]) ?? '')
+              ? t('liveOverview.round', { n: round })
+              : roundTitle(inRound[0], label);
           return (
             <Box key={round} sx={{ display: 'flex', alignItems: 'stretch' }}>
-              <Box
-                sx={{
-                  width: 280,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-around',
-                  gap: 3,
-                }}
-              >
-                {inRound.map((m) => (
-                  <MatchCard key={m.id} match={m} all={all} heading={label(m)} bestOf={bestOf} />
-                ))}
-                {last ? extra : null}
+              <Box sx={{ width: 260, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    gap: 1,
+                    fontSize: '0.8125rem',
+                  }}
+                >
+                  <Typography
+                    component="h4"
+                    sx={{
+                      m: 0,
+                      fontSize: 'inherit',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.06em',
+                      color: liveCount
+                        ? color.live
+                        : doneCount === inRound.length
+                          ? color.muted
+                          : color.ink,
+                    }}
+                  >
+                    {columnTitle}
+                  </Typography>
+                  <Typography component="span" sx={{ fontSize: 'inherit', color: color.muted }}>
+                    {liveCount
+                      ? t('bracketCards.liveCount', { count: liveCount })
+                      : doneCount === inRound.length
+                        ? t('bracketCards.done')
+                        : t('bracketCards.matchCount', { count: inRound.length })}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-around',
+                    gap: 1.5,
+                  }}
+                >
+                  {inRound.map((m) => (
+                    <MatchCard key={m.id} match={m} all={all} heading={label(m)} bestOf={bestOf} />
+                  ))}
+                  {last ? extra : null}
+                </Box>
               </Box>
               {!last && (
                 <Box
                   aria-hidden
                   sx={{
-                    width: 40,
+                    width: 28,
+                    pt: 4,
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-around',
@@ -215,7 +261,7 @@ function Rounds({
                       <Box
                         sx={{
                           height: inRound.length > 1 ? '50%' : 0,
-                          width: 20,
+                          width: 14,
                           border: `2px solid ${color.rule}`,
                           borderLeft: 'none',
                           borderRadius: '0 12px 12px 0',
@@ -258,14 +304,15 @@ function MatchCard({
   const { t } = useTranslation();
   const yourTeamId = useContext(YourTeam);
   const tone = toneOf(match);
-  const toneColor =
-    tone === 'live'
+  const mine = !!yourTeamId && (match.team1?.id === yourTeamId || match.team2?.id === yourTeamId);
+  // The whole card is ringed (the drafts): your team's match orange, a live one green.
+  const toneColor = mine
+    ? color.accent
+    : tone === 'live'
       ? color.live
       : tone === 'veto'
         ? color.accent
-        : muted
-          ? color.muted
-          : color.rule;
+        : 'transparent';
   const feeders = all
     .filter((m) => m.nextMatchId === match.id)
     .sort((a, b) => a.matchNumber - b.matchNumber);
@@ -305,84 +352,39 @@ function MatchCard({
 
   const row = (team: Match['team1'], score: number | undefined, slot: 0 | 1) => {
     const from = feeders[slot];
-    const won = winnerId !== undefined && team?.id === winnerId;
-    const yours = !!team && !!yourTeamId && team.id === yourTeamId;
+    // Your team's name in orange; who won shows in the score (draftUi resultInk).
+    const {
+      won,
+      yours,
+      name: ink,
+      score: scoreInk,
+    } = resultInk({ teamId: team?.id, winnerId, yourTeamId });
     return (
       <Box
         data-your-team={yours ? 'true' : undefined}
         sx={{
-          display: 'flex',
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1fr) auto',
           alignItems: 'center',
-          gap: 1.5,
-          px: 1.75,
-          py: 1.25,
+          gap: 1,
+          px: 1.5,
+          py: 1,
           borderTop: slot === 1 ? `1px solid ${color.rule}` : 'none',
-          ...(yours && {
-            bgcolor: `color-mix(in srgb, ${color.accent} 12%, transparent)`,
-            boxShadow: `inset 0 0 0 2px ${color.accent}`,
-            borderRadius: slot === 0 ? `${radii.md} ${radii.md} 0 0` : 0,
-          }),
         }}
       >
         {team ? (
           <>
-            <Box
+            <TeamIdentity
+              team={{ id: team.id, name: team.name, tag: team.tag }}
+              yours={yours}
+              link={false}
+              nameSx={{ color: ink, fontWeight: won || yours ? 700 : 500 }}
+            />
+            <Typography
               component="span"
-              sx={{
-                flex: 'none',
-                width: 32,
-                height: 32,
-                borderRadius: '8px',
-                bgcolor: color.paper3,
-                display: 'grid',
-                placeItems: 'center',
-                fontWeight: 700,
-                fontSize: '0.625rem',
-                color: color.ink2,
-              }}
+              sx={{ ...mono, color: scoreInk, fontWeight: won ? 700 : 500 }}
             >
-              {(team.tag || team.name.slice(0, 3)).slice(0, 4).toUpperCase()}
-            </Box>
-            <Typography
-              sx={{
-                flex: 1,
-                minWidth: 0,
-                fontWeight: won ? 700 : 500,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {team.name}
-            </Typography>
-            {yours && (
-              <Box
-                component="span"
-                sx={{
-                  ...mono,
-                  flex: 'none',
-                  px: 0.75,
-                  py: 0.25,
-                  borderRadius: radii.pill,
-                  bgcolor: color.accent,
-                  color: color.paper,
-                  fontSize: '0.625rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                }}
-              >
-                {t('bracketCards.you')}
-              </Box>
-            )}
-            <Typography
-              sx={{
-                ...mono,
-                fontSize: '1rem',
-                fontWeight: 600,
-                color: won || tone === 'live' ? color.ink : color.muted,
-              }}
-            >
-              {typeof score === 'number' ? score : ''}
+              {typeof score === 'number' && (tone !== 'next' || score > 0) ? score : ''}
             </Typography>
           </>
         ) : (
@@ -404,27 +406,30 @@ function MatchCard({
       data-testid={`card-bracket-match-${match.id}`}
       data-tone={tone}
     >
-      <Typography
-        sx={{
-          ...mono,
-          fontSize: '0.6875rem',
-          color: tone === 'live' ? color.live : tone === 'veto' ? color.accent : color.muted,
-          textTransform: 'uppercase',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0.75,
-        }}
-      >
-        {heading}
-        {statusText && ' · '}
-        {tone === 'live' && (
-          <Box
-            component="span"
-            sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: color.live }}
-          />
-        )}
-        {statusText}
-      </Typography>
+      {(muted || tone === 'live' || tone === 'veto') && (
+        <Typography
+          sx={{
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            color: tone === 'live' ? color.live : tone === 'veto' ? color.accent : color.muted,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.75,
+          }}
+        >
+          {tone === 'live' && (
+            <Box
+              component="span"
+              sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: color.live }}
+            />
+          )}
+          {muted ? heading : null}
+          {muted && statusText ? ' · ' : null}
+          {statusText}
+        </Typography>
+      )}
       {/* A match with both teams opens its own page. */}
       <Box
         {...(linked
@@ -438,9 +443,9 @@ function MatchCard({
           display: 'block',
           color: color.ink,
           textDecoration: 'none',
-          borderRadius: radii.md,
+          borderRadius: '12px',
           bgcolor: color.paper2,
-          border: `1px solid ${toneColor}`,
+          border: `2px solid ${toneColor}`,
           overflow: 'hidden',
           ...(linked && {
             transition: 'background-color 150ms',
@@ -451,7 +456,7 @@ function MatchCard({
       >
         {row(match.team1, match.team1SeriesScore ?? match.team1Score, 0)}
         {row(match.team2, match.team2SeriesScore ?? match.team2Score, 1)}
-        {footer && (
+        {footer && (tone === 'live' || tone === 'veto') && (
           <Typography
             sx={{
               ...mono,
@@ -479,4 +484,10 @@ function shortLabel(match: Match, all: Match[]): string {
   const sameRound = all.filter((m) => m.round === match.round);
   const base = getRoundLabel(match.round, rounds);
   return sameRound.length > 1 ? `${base} ${match.matchNumber}` : base;
+}
+
+/** A round's column title: "Quarter-finals" for a round of several, the match's own label for one. */
+function roundTitle(first: Match | undefined, label: (m: Match) => string): string {
+  if (!first) return '';
+  return label(first).replace(/\s\d+$/, '');
 }

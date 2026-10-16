@@ -320,6 +320,7 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
       vetoState.turnSeconds = turnClock.seconds;
       // Held (the break between a team's matches): the veto opens then.
       (vetoState as { opensAt?: string }).opensAt = turnClock.opensAt;
+      if (turnClock.startsAt) (vetoState as { startsAt?: string }).startsAt = turnClock.startsAt;
     }
 
     // Everyone sees the veto as it happens (the MatchRoom board): which maps

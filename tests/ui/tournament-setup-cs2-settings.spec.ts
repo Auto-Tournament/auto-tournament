@@ -70,7 +70,7 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
       await page.goto('/manage/tournament');
       await expect(page.getByTestId('tournament-name-display')).toBeVisible();
 
-      await page.getByTestId('tournament-setup-step-format').click();
+      await page.getByTestId('tournament-setup-step-extras').click();
       const maxRounds = page.getByTestId('tournament-max-rounds-field');
       await expect(maxRounds).toHaveValue('24');
       await maxRounds.fill('16');
@@ -106,7 +106,7 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
       })
     ).toBeTruthy();
     await page.goto('/manage/tournament');
-    await page.getByTestId('tournament-setup-step-format').click();
+    await page.getByTestId('tournament-setup-step-extras').click();
     const fill = page.getByTestId('tournament-bot-fill');
     await expect(fill).not.toBeChecked();
     await fill.check();
@@ -116,7 +116,7 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
       .poll(async () => (await tournamentOf(request))?.settings?.cs2?.fillTeamsWithBots)
       .toBe(true);
     await page.reload();
-    await page.getByTestId('tournament-setup-step-format').click();
+    await page.getByTestId('tournament-setup-step-extras').click();
     await expect(fill).toBeChecked();
     await fill.uncheck();
     await page.getByTestId('tournament-setup-step-review').click();
@@ -166,7 +166,7 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
       try {
         await page.goto(`/manage/tournament?template=${template.id}`);
         await expect(page.getByTestId('tournament-summary-maps')).toHaveText(/7 maps/);
-        await page.getByTestId('tournament-setup-step-format').click();
+        await page.getByTestId('tournament-setup-step-extras').click();
         await expect(page.getByTestId('tournament-max-rounds-field')).toHaveValue('12');
       } finally {
         await request.delete(`/api/templates/${template.id}`, { headers: getAuthHeader() });
@@ -185,10 +185,9 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
       await page.getByTestId('tournament-name-input').fill(`CS2 settings shuffle ${Date.now()}`);
       await next.click();
       await page.getByTestId('tournament-type-option-shuffle').click();
-      await expect(page.getByTestId('shuffle-max-rounds-field')).toHaveValue('24');
-      await page.getByTestId('shuffle-max-rounds-field').fill('10');
       await next.click();
       await next.click(); // Sign-up opens once the tournament exists.
+      await next.click(); // Schedule: as soon as ready.
 
       // A shuffle starts from a custom, empty sequence; take a pool instead.
       await page.getByTestId('tournament-map-pool-select').click();
@@ -197,6 +196,11 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
         .filter({ hasText: 'Active Duty' })
         .click();
       await expect(page.getByTestId('tournament-summary-maps')).toHaveText(/7 maps/);
+
+      // Rules and extras: the round limit.
+      await next.click();
+      await expect(page.getByTestId('shuffle-max-rounds-field')).toHaveValue('24');
+      await page.getByTestId('shuffle-max-rounds-field').fill('10');
 
       await page.getByTestId('tournament-setup-step-review').click();
       await page.getByTestId('tournament-save-button').click();

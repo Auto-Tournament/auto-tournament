@@ -1,12 +1,19 @@
 import { test, expect } from '@playwright/test';
-import { bulkRemovesEveryAdmin, canDisableLocalAdminLogin, removesLastAdmin } from '../../api/src/utils/adminRules';
+import {
+  bulkRemovesEveryAdmin,
+  canDisableLocalAdminLogin,
+  removesLastAdmin,
+} from '../../api/src/utils/adminRules';
 import { isAdminEmail, parseAdminEmails } from '../../api/src/utils/adminEmails';
 import {
   discordVerifiedEmail,
   githubProfileToUser,
   googleProfileToUser,
 } from '../../api/src/config/passport';
-import { signPendingSteamLink, verifyPendingSteamLink } from '../../api/src/utils/signedPendingSteamLink';
+import {
+  signPendingSteamLink,
+  verifyPendingSteamLink,
+} from '../../api/src/utils/signedPendingSteamLink';
 import { signInViaRequest } from '../helpers/auth';
 
 /**
@@ -47,7 +54,10 @@ test.describe('ADMIN_EMAILS', () => {
   const list = env.ADMIN_EMAILS;
 
   test('parses a list, case-insensitively, and drops junk', TAGS, () => {
-    expect([...parseAdminEmails(env.ADMIN_EMAILS)]).toEqual(['owner@example.com', 'ops@example.org']);
+    expect([...parseAdminEmails(env.ADMIN_EMAILS)]).toEqual([
+      'owner@example.com',
+      'ops@example.org',
+    ]);
     expect(isAdminEmail('owner@example.com', list)).toBe(true);
     expect(isAdminEmail('OPS@example.org', list)).toBe(true);
     expect(isAdminEmail('someone@example.com', list)).toBe(false);
@@ -56,19 +66,28 @@ test.describe('ADMIN_EMAILS', () => {
   });
 
   test('only a provider-verified address is offered', TAGS, () => {
-    expect(discordVerifiedEmail({ id: '1', email: 'owner@example.com', verified: true })).toBe('owner@example.com');
-    expect(discordVerifiedEmail({ id: '1', email: 'owner@example.com', verified: false })).toBeUndefined();
+    expect(discordVerifiedEmail({ id: '1', email: 'owner@example.com', verified: true })).toBe(
+      'owner@example.com'
+    );
+    expect(
+      discordVerifiedEmail({ id: '1', email: 'owner@example.com', verified: false })
+    ).toBeUndefined();
 
     const google = (verified: boolean) =>
-      googleProfileToUser({ id: 'sub', emails: [{ value: 'owner@example.com', verified }] }).verifiedEmail;
+      googleProfileToUser({ id: 'sub', emails: [{ value: 'owner@example.com', verified }] })
+        .verifiedEmail;
     expect(google(true)).toBe('owner@example.com');
     expect(google(false)).toBeUndefined();
 
     const github = (emails: Array<{ value: string; primary?: boolean; verified?: boolean }>) =>
       githubProfileToUser({ id: '1', emails }).verifiedEmail;
-    expect(github([{ value: 'owner@example.com', primary: true, verified: true }])).toBe('owner@example.com');
+    expect(github([{ value: 'owner@example.com', primary: true, verified: true }])).toBe(
+      'owner@example.com'
+    );
     // Primary but unverified, or verified but not primary: no.
-    expect(github([{ value: 'owner@example.com', primary: true, verified: false }])).toBeUndefined();
+    expect(
+      github([{ value: 'owner@example.com', primary: true, verified: false }])
+    ).toBeUndefined();
     expect(
       github([
         { value: 'other@example.com', primary: true, verified: false },
@@ -87,9 +106,12 @@ test.describe('ADMIN_EMAILS', () => {
     const read = verifyPendingSteamLink(signed, { secret });
     expect(read.ok && read.link.adminEmail).toBe(true);
 
-    const plain = verifyPendingSteamLink(signPendingSteamLink({ provider: 'google', providerUserId: 'sub-1' }, { secret }), {
-      secret,
-    });
+    const plain = verifyPendingSteamLink(
+      signPendingSteamLink({ provider: 'google', providerUserId: 'sub-1' }, { secret }),
+      {
+        secret,
+      }
+    );
     expect(plain.ok && plain.link.adminEmail).toBeFalsy();
   });
 });
@@ -100,19 +122,31 @@ test.describe('Players page: grant and remove admin', () => {
   test('an admin can promote and demote another account', TAGS, async ({ request }) => {
     await signInViaRequest(request);
     const id = `7656119${String(Date.now()).slice(-10)}`;
-    const created = await request.post('/api/players', { data: { id, name: 'Admin role e2e' }, headers: json });
+    const created = await request.post('/api/players', {
+      data: { id, name: 'Admin role e2e' },
+      headers: json,
+    });
     expect(created.ok()).toBe(true);
     try {
-      const promote = await request.put(`/api/players/${id}`, { data: { isAdmin: true }, headers: json });
+      const promote = await request.put(`/api/players/${id}`, {
+        data: { isAdmin: true },
+        headers: json,
+      });
       expect(promote.status()).toBe(200);
       expect((await promote.json()).player.isAdmin).toBe(true);
 
       // There is at least one other admin (the test admin), so this is allowed.
-      const demote = await request.put(`/api/players/${id}`, { data: { isAdmin: false }, headers: json });
+      const demote = await request.put(`/api/players/${id}`, {
+        data: { isAdmin: false },
+        headers: json,
+      });
       expect(demote.status()).toBe(200);
       expect((await demote.json()).player.isAdmin).toBe(false);
 
-      const bad = await request.put(`/api/players/${id}`, { data: { isAdmin: 'yes' }, headers: json });
+      const bad = await request.put(`/api/players/${id}`, {
+        data: { isAdmin: 'yes' },
+        headers: json,
+      });
       expect(bad.status()).toBe(400);
     } finally {
       await request.delete(`/api/players/${id}`);

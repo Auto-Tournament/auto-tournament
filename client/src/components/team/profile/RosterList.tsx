@@ -8,6 +8,7 @@ import { getPlayerPageUrl } from '../../../utils/playerLinks';
 import type { Player } from '../../../types';
 import type { RosterMemberStatusProps } from '../../../integrations/types';
 import { fontMono, textSize, tokens } from '../../../theme/tokens';
+import { fmtNum } from '../../../utils/number';
 
 /** A roster entry with what the team page knows about the player in this team. */
 export type RosterPlayer = Player & {
@@ -149,7 +150,7 @@ export function RosterList({ players, MemberStatus, positionLabel }: RosterListP
               >
                 {hasNumbers && (
                   <>
-                    <span>{t('teamProfile.roster.kd', { kd: player.kd?.toFixed(2) ?? '—' })}</span>
+                    <span>{t('teamProfile.roster.kd', { kd: fmtNum(player.kd, 2) })}</span>
                     <span>{t('teamProfile.roster.adr', { adr: player.adr ?? '—' })}</span>
                   </>
                 )}

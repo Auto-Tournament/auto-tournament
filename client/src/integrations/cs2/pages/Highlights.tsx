@@ -50,6 +50,7 @@ import {
   useModuleTranslation,
   useSnackbar,
   useSocket,
+  fmtDateTime,
 } from '../../../module-sdk';
 import { RecorderProgressBar, type RecorderProgress } from '../settings/RecorderProgressBar';
 import { HighlightOverlaySetting } from '../settings/HighlightOverlaySetting';
@@ -137,8 +138,7 @@ interface Run {
 
 type TabKey = 'recorders' | 'clips' | 'overlays';
 
-const when = (s: number | null) =>
-  s ? new Date(s * 1000).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+const when = (s: number | null) => (s ? fmtDateTime(s) : '—');
 const duration = (s: number | null) =>
   s == null ? '—' : s >= 90 ? `${Math.floor(s / 60)}m ${Math.round(s % 60)}s` : `${Math.round(s)}s`;
 

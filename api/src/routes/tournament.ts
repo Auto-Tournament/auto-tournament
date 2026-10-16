@@ -4,6 +4,7 @@ import express, { Router, Request, Response } from 'express';
 import { tournamentService } from '../services/tournamentService';
 import { scheduler } from '../core/scheduler';
 import { db } from '../config/database';
+import { bannerUrl, logoUrl } from '../services/teamSelfService';
 import { requestActorId, requireAuth } from '../middleware/auth';
 import { pauseTournament, resumeTournament } from '../services/matchHolds';
 import { log } from '../utils/logger';
@@ -26,6 +27,7 @@ import { eloTemplateService } from '../services/eloTemplateService';
 import { settingsService } from '../services/settingsService';
 import { checkTournamentCompletion } from '../utils/matchProgression';
 import { resolveTournamentId } from '../utils/tournamentRow';
+import { applyMatchTimes, matchTimesError } from '../services/matchTimes';
 import { validateTeamCount } from '../utils/tournamentHelpers';
 import { integrationForMatch } from '../integrations/registry';
 import { resolveGameRef } from '../services/gameCatalogService';
@@ -127,6 +129,91 @@ router.post('/archive', requireAuth, async (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
+/**
+ * @openapi
+ * /api/tournament/{id}/teams:
+ *   get:
+ *     tags: [Tournament]
+ *     summary: The tournament's teams with their rosters, logos and banners (public)
+ *     description: |
+ *       No session. What the tournament page's Teams tab draws: each team in
+ *       seed order with its logo and banner URLs and its players (name and
+ *       Steam picture).
+ *     parameters:
+ *       - { in: path, name: id, required: true, schema: { type: integer } }
+ *     responses:
+ *       200: { description: The teams }
+ *       404: { description: Tournament not found }
+ */
+router.get('/:id/teams', async (req: Request, res: Response) => {
+  try {
+    const tournamentId = await readableTournamentId(req.params.id);
+    if (tournamentId === null) {
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
+    }
+    const row = await db.queryOneAsync<{ team_ids: string | null }>(
+      'SELECT team_ids FROM tournament WHERE id = ?',
+      [tournamentId]
+    );
+    const teamIds: string[] = row?.team_ids ? JSON.parse(row.team_ids) : [];
+    if (teamIds.length === 0) return res.json({ success: true, teams: [] });
+    const rows = await db.queryAsync<{
+      id: string;
+      name: string;
+      tag: string | null;
+      players: string | null;
+      logo_updated_at: number | null;
+      banner_updated_at: number | null;
+    }>(
+      `SELECT id, name, tag, players, logo_updated_at, banner_updated_at FROM teams WHERE id IN (${teamIds.map(() => '?').join(',')})`,
+      teamIds
+    );
+    const rosters = new Map<string, Array<{ steamId: string; name: string }>>();
+    const allIds = new Set<string>();
+    for (const team of rows) {
+      let list: Array<{ steamId?: string; steamid?: string; name?: string }> = [];
+      try {
+        list = team.players ? JSON.parse(team.players) : [];
+      } catch {
+        list = [];
+      }
+      const roster = list
+        .map((p) => ({ steamId: String(p.steamId ?? p.steamid ?? ''), name: p.name ?? '' }))
+        .filter((p) => p.steamId);
+      roster.forEach((p) => allIds.add(p.steamId));
+      rosters.set(team.id, roster);
+    }
+    const ids = [...allIds];
+    const people = ids.length
+      ? await db.queryAsync<{ id: string; name: string; avatar_url: string | null }>(
+          `SELECT id, name, avatar_url FROM players WHERE id IN (${ids.map(() => '?').join(',')})`,
+          ids
+        )
+      : [];
+    const personById = new Map(people.map((p) => [p.id, p]));
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    const teams = teamIds
+      .map((id) => byId.get(id))
+      .filter((team): team is NonNullable<typeof team> => !!team)
+      .map((team) => ({
+        id: team.id,
+        name: team.name,
+        tag: team.tag,
+        logoUrl: logoUrl(team.id, team.logo_updated_at),
+        bannerUrl: bannerUrl(team.id, team.banner_updated_at),
+        players: (rosters.get(team.id) ?? []).map((p) => ({
+          steamId: p.steamId,
+          name: personById.get(p.steamId)?.name || p.name,
+          avatar: personById.get(p.steamId)?.avatar_url ?? null,
+        })),
+      }));
+    return res.json({ success: true, teams });
+  } catch (error) {
+    log.error('Error fetching tournament teams', { error });
+    return res.status(500).json({ success: false, error: 'Could not read the teams' });
+  }
+});
+
 router.get('/:id/leaderboard', async (req: Request, res: Response) => {
   try {
     // The current tournament, or an archived one (its results stay public).
@@ -764,6 +851,15 @@ function validateEventPageSettings(
       return { valid: false, error: 'settings.maxTeams must be a whole number from 2 to 256' };
     }
   }
+  // Groups, then playoffs (services/groupsTournament.ts): its settings, the team count at start.
+  for (const key of ['groupCount', 'advancePerGroup'] as const) {
+    if (s[key] !== undefined && ![1, 2, 3, 4].includes(Number(s[key]))) {
+      return { valid: false, error: `settings.${key} is out of range` };
+    }
+  }
+  // Match times (services/matchTimes.ts): round start times, the veto lead, the reminder.
+  const timesError = matchTimesError(s.matchTimes);
+  if (timesError) return { valid: false, error: timesError };
   // The start time: reminders before it and, with autoStart, the start (services/tournamentSchedule.ts).
   if (s.autoStart !== undefined && typeof s.autoStart !== 'boolean') {
     return { valid: false, error: 'settings.autoStart must be true or false' };
@@ -1116,6 +1212,12 @@ router.put('/', async (req: Request, res: Response) => {
     }
 
     const tournament = await tournamentService.updateTournament(tournamentId, input);
+    // New match times move the holds of the matches that have not begun.
+    if (input.settings && 'matchTimes' in (input.settings as Record<string, unknown>)) {
+      await applyMatchTimes(tournamentId).catch((error) =>
+        log.warn('[MATCH-TIMES] could not apply the new times', { error })
+      );
+    }
 
     // Emit updates to all clients
     emitTournamentUpdate({ action: 'tournament_updated', ...tournament });
@@ -1519,6 +1621,11 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     if (toStart && toStart.type !== 'shuffle') {
       try {
         validateTeamCount(toStart.type, toStart.teamIds.length);
+        if (toStart.type === 'groups') {
+          const { groupsError } = await import('../services/groupsTournament');
+          const problem = groupsError(toStart.settings, toStart.teamIds.length);
+          if (problem) throw new Error(problem);
+        }
       } catch (countError) {
         return res.status(400).json({
           success: false,

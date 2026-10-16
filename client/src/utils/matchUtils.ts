@@ -4,12 +4,13 @@
 
 import i18n from '../i18n';
 import { bareSlug, isGrandFinalSlug, isLosersBracketSlug } from './matchSlug';
+import { fmtDateTime } from './time';
 
 /**
  * Format a Unix timestamp to a localized date string
  */
 export const formatDate = (timestamp: number): string => {
-  return new Date(timestamp * 1000).toLocaleString();
+  return fmtDateTime(timestamp);
 };
 
 /**
@@ -107,11 +108,7 @@ export const getStatusLabel = (
       return label('warmup');
     case 'live':
       // Check if in overtime
-      if (
-        typeof team1Score === 'number' &&
-        typeof team2Score === 'number' &&
-        maxRounds
-      ) {
+      if (typeof team1Score === 'number' && typeof team2Score === 'number' && maxRounds) {
         const overtimeNumber = calculateOvertimeNumber(
           team1Score,
           team2Score,
@@ -202,11 +199,7 @@ export const getDetailedStatusLabel = (
       return 'Server ready - Waiting for players';
     case 'live':
       // Check if in overtime
-      if (
-        typeof team1Score === 'number' &&
-        typeof team2Score === 'number' &&
-        maxRounds
-      ) {
+      if (typeof team1Score === 'number' && typeof team2Score === 'number' && maxRounds) {
         const overtimeNumber = calculateOvertimeNumber(
           team1Score,
           team2Score,
@@ -332,7 +325,9 @@ type BracketMatchRef = {
 };
 
 /** 'WB' | 'LB' | 'GF' | 'GF_RESET' | 'SE' | null, falling back to the slug. */
-export const getMatchBracket = (match: Pick<BracketMatchRef, 'slug' | 'bracket'>): string | null => {
+export const getMatchBracket = (
+  match: Pick<BracketMatchRef, 'slug' | 'bracket'>
+): string | null => {
   if (match.bracket) return match.bracket;
   if (isGrandFinalSlug(match.slug)) return 'GF';
   if (isLosersBracketSlug(match.slug)) return 'LB';
@@ -388,6 +383,12 @@ export const getBracketMatchLabel = (
       return i18n.t('matchesPage.matchLabel.grandFinal');
     case 'GF_RESET':
       return i18n.t('matchesPage.matchLabel.grandFinalReset');
+    // Groups, then playoffs: a group's match ("Group A · Round 2").
+    case 'GA':
+    case 'GB':
+    case 'GC':
+    case 'GD':
+      return i18n.t('matchesPage.matchLabel.group', { group: bracket[1], round: match.round });
     default:
       return null;
   }

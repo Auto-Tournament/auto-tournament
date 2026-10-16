@@ -160,7 +160,11 @@ function openSocket() {
     if (notice.sound) soundNotification.playNotification();
     newNoticeListeners.forEach((l) => l(notice));
   });
-  socket.on('social:changed', () => void refreshFriends());
+  // Friends, requests or a withdrawn notice (a skin whose reveal was seen) changed.
+  socket.on('social:changed', () => {
+    void refreshFriends();
+    void refreshNotices();
+  });
   // A match or the queue changed: what players are doing may have too.
   socket.on('match:update', () => refreshAllPresence());
   socket.on('mm:changed', () => refreshAllPresence());

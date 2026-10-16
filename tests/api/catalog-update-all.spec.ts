@@ -30,7 +30,9 @@ interface UpdateAllResult {
 }
 
 async function fakeCatalog(request: APIRequestContext, goodVersions: string[]): Promise<Ids> {
-  const response = await request.post('/api/test/catalog', { data: { fake: true, run: RUN, goodVersions, resetCache: true } });
+  const response = await request.post('/api/test/catalog', {
+    data: { fake: true, run: RUN, goodVersions, resetCache: true },
+  });
   expect(response.status(), `fake catalog: ${await response.text()}`).toBe(200);
   return ((await response.json()) as { ids: Ids }).ids;
 }
@@ -41,9 +43,14 @@ async function seedInstalled(request: APIRequestContext, id: string): Promise<vo
   expect(response.status(), await response.text()).toBe(200);
 }
 
-async function item(request: APIRequestContext, id: string): Promise<{ installed: { version: string | null } | null; state: string } | undefined> {
+async function item(
+  request: APIRequestContext,
+  id: string
+): Promise<{ installed: { version: string | null } | null; state: string } | undefined> {
   const response = await request.get('/api/catalog');
-  const listing = (await response.json()) as { items: Array<{ id: string; installed: { version: string | null } | null; state: string }> };
+  const listing = (await response.json()) as {
+    items: Array<{ id: string; installed: { version: string | null } | null; state: string }>;
+  };
   return listing.items.find((row) => row.id === id);
 }
 
@@ -60,7 +67,9 @@ test.describe.serial('Catalog update-all', () => {
     await request.delete('/api/test/modules/fixtures');
   });
 
-  test('updates every updatable module in one pass; a bad signature fails without stopping the rest', async ({ request }) => {
+  test('updates every updatable module in one pass; a bad signature fails without stopping the rest', async ({
+    request,
+  }) => {
     ids = await fakeCatalog(request, ['1.0.0', '1.1.0']);
     await seedInstalled(request, ids.good);
     await seedInstalled(request, ids.hop);
@@ -70,7 +79,10 @@ test.describe.serial('Catalog update-all', () => {
     expect((await item(request, ids.hop))?.state).toBe('update-available');
     expect((await item(request, ids.autobadsig))?.state).toBe('update-available');
 
-    const response = await request.post('/api/catalog/update-all', { data: {}, headers: { 'Content-Type': 'application/json' } });
+    const response = await request.post('/api/catalog/update-all', {
+      data: {},
+      headers: { 'Content-Type': 'application/json' },
+    });
     const text = await response.text();
     expect(response.status(), text).toBe(200);
     const body = JSON.parse(text) as UpdateAllResult;
@@ -79,7 +91,9 @@ test.describe.serial('Catalog update-all', () => {
       { kind: 'module', id: ids.good, from: '1.0.0', to: '1.1.0' },
       { kind: 'module', id: ids.hop, from: '1.0.0', to: '1.1.0' },
     ]);
-    expect(body.failed).toEqual([{ kind: 'module', id: ids.autobadsig, error: expect.stringMatching(/does not trust/) }]);
+    expect(body.failed).toEqual([
+      { kind: 'module', id: ids.autobadsig, error: expect.stringMatching(/does not trust/) },
+    ]);
     expect(body.skipped).toEqual([]);
     expect(body.restartRequired).toBe(false);
 
@@ -89,14 +103,23 @@ test.describe.serial('Catalog update-all', () => {
     expect((await item(request, ids.autobadsig))?.installed).toMatchObject({ version: '1.0.0' });
 
     // Nothing left to update: a second pass touches nothing.
-    const again = await request.post('/api/catalog/update-all', { data: {}, headers: { 'Content-Type': 'application/json' } });
+    const again = await request.post('/api/catalog/update-all', {
+      data: {},
+      headers: { 'Content-Type': 'application/json' },
+    });
     expect(again.status(), await again.text()).toBe(200);
     const bodyAgain = JSON.parse(await again.text()) as UpdateAllResult;
     expect(bodyAgain.updated).toEqual([]);
-    expect(bodyAgain.failed).toEqual([{ kind: 'module', id: ids.autobadsig, error: expect.stringMatching(/does not trust/) }]);
+    expect(bodyAgain.failed).toEqual([
+      { kind: 'module', id: ids.autobadsig, error: expect.stringMatching(/does not trust/) },
+    ]);
   });
 
-  test('is admin-only, and refuses a cross-site or non-JSON request', async ({ request, playwright, baseURL }) => {
+  test('is admin-only, and refuses a cross-site or non-JSON request', async ({
+    request,
+    playwright,
+    baseURL,
+  }) => {
     const stranger = await playwright.request.newContext({ baseURL });
     try {
       expect((await stranger.post('/api/catalog/update-all', { data: {} })).status()).toBe(401);

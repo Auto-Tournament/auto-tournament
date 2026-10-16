@@ -117,16 +117,23 @@ test.describe('Tournament config source', () => {
 
   test('series end log names the teams even though series_end carries no names', () => {
     // Logged before: "SERIES ENDED: undefined 0-1 undefined".
-    const event = { event: 'series_end', matchid: 19, team1_series_score: 0, team2_series_score: 1 };
+    const event = {
+      event: 'series_end',
+      matchid: 19,
+      team1_series_score: 0,
+      team2_series_score: 1,
+    };
     expect(formatSeriesEndSummary(event, { team1Name: 'Alpha', team2Name: 'Bravo' })).toBe(
       'SERIES ENDED: Alpha 0-1 Bravo'
     );
     expect(
       formatSeriesEndSummary(event, { configTeam1Name: 'Ad hoc 1', configTeam2Name: 'Ad hoc 2' })
     ).toBe('SERIES ENDED: Ad hoc 1 0-1 Ad hoc 2');
-    expect(formatSeriesEndSummary({ ...event, team1: { name: 'From plugin' } }, { team1Name: 'Alpha' })).toBe(
-      'SERIES ENDED: From plugin 0-1 team2'
+    expect(
+      formatSeriesEndSummary({ ...event, team1: { name: 'From plugin' } }, { team1Name: 'Alpha' })
+    ).toBe('SERIES ENDED: From plugin 0-1 team2');
+    expect(formatSeriesEndSummary({ event: 'series_end' }, {})).toBe(
+      'SERIES ENDED: team1 0-0 team2'
     );
-    expect(formatSeriesEndSummary({ event: 'series_end' }, {})).toBe('SERIES ENDED: team1 0-0 team2');
   });
 });

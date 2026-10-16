@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { fmtDateTime } from '../../utils/time';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -253,7 +254,7 @@ function AdminCallCard({
           color="text.secondary"
           component="time"
           dateTime={call.calledAt}
-          title={new Date(call.calledAt).toLocaleString()}
+          title={fmtDateTime(call.calledAt)}
           sx={{ flexShrink: 0 }}
         >
           {timeAgo(call.calledAt, now, t)}

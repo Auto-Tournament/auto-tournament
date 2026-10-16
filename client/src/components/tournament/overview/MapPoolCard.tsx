@@ -4,6 +4,7 @@ import { ArrowRightIcon, XIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { getMapData, getMapDisplayName, getMapIconUrl } from '../../../constants/maps';
 import { tokens, fontDisplay, radii } from '../../../theme/tokens';
+import { panelSx, panelBorderSx, dialogPaperSx } from '../../../components/common/ui';
 
 const { color } = tokens;
 
@@ -50,10 +51,23 @@ export function MapPoolCard({ maps }: { maps: string[] }) {
     return (
       <Box
         data-testid="overview-map-pool-empty"
-        sx={{ border: `1px dashed ${tokens.color.rule}`, borderRadius: radii.lg, p: 2.5, minHeight: 96, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 0.5 }}
+        sx={{
+          border: `1px dashed ${tokens.color.rule}`,
+          borderRadius: radii.lg,
+          p: 2.5,
+          minHeight: 96,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 0.5,
+        }}
       >
-        <Typography sx={{ fontWeight: 600, color: tokens.color.ink2 }}>{t('overviewPage.mapPoolSoonTitle')}</Typography>
-        <Typography sx={{ fontSize: '0.875rem', color: tokens.color.muted }}>{t('overviewPage.mapPoolSoon')}</Typography>
+        <Typography sx={{ fontWeight: 600, color: tokens.color.ink2 }}>
+          {t('overviewPage.mapPoolSoonTitle')}
+        </Typography>
+        <Typography sx={{ fontSize: '0.875rem', color: tokens.color.muted }}>
+          {t('overviewPage.mapPoolSoon')}
+        </Typography>
       </Box>
     );
   }
@@ -65,13 +79,12 @@ export function MapPoolCard({ maps }: { maps: string[] }) {
         data-testid="overview-map-pool"
         aria-haspopup="dialog"
         sx={{
+          ...panelSx,
+          ...panelBorderSx,
           width: '100%',
           minHeight: 68,
           px: 2.5,
           py: 1.75,
-          borderRadius: radii.lg,
-          bgcolor: color.paper2,
-          border: `1px solid ${color.rule}`,
           display: 'flex',
           alignItems: 'center',
           gap: 2,
@@ -80,7 +93,14 @@ export function MapPoolCard({ maps }: { maps: string[] }) {
           '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
         }}
       >
-        <Typography sx={{ fontFamily: fontDisplay, fontSize: '1.125rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+        <Typography
+          sx={{
+            fontFamily: fontDisplay,
+            fontSize: '1.125rem',
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+          }}
+        >
           {t('overviewPage.mapPool')}
         </Typography>
         <Box sx={{ display: 'flex', gap: 0.75, minWidth: 0, overflow: 'hidden' }}>
@@ -99,10 +119,12 @@ export function MapPoolCard({ maps }: { maps: string[] }) {
         maxWidth="md"
         fullWidth
         aria-labelledby="map-pool-title"
-        PaperProps={{ sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' } }}
+        PaperProps={{ sx: dialogPaperSx }}
       >
         <Box sx={{ p: { xs: 2.5, md: 3.5 }, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}
+          >
             <Typography
               id="map-pool-title"
               component="h2"
@@ -118,7 +140,10 @@ export function MapPoolCard({ maps }: { maps: string[] }) {
             data-testid="map-pool-dialog-maps"
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
+              gridTemplateColumns: {
+                xs: 'repeat(2, minmax(0, 1fr))',
+                md: 'repeat(4, minmax(0, 1fr))',
+              },
               gap: 1.5,
             }}
           >
@@ -127,7 +152,13 @@ export function MapPoolCard({ maps }: { maps: string[] }) {
               return (
                 <Box
                   key={map}
-                  sx={{ borderRadius: '16px', overflow: 'hidden', bgcolor: color.paper3, display: 'flex', flexDirection: 'column' }}
+                  sx={{
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    bgcolor: color.paper3,
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
                 >
                   {data?.thumbnail ? (
                     <Box
@@ -135,7 +166,12 @@ export function MapPoolCard({ maps }: { maps: string[] }) {
                       src={data.thumbnail}
                       alt=""
                       loading="lazy"
-                      sx={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'cover', display: 'block' }}
+                      sx={{
+                        width: '100%',
+                        aspectRatio: '16 / 9',
+                        objectFit: 'cover',
+                        display: 'block',
+                      }}
                     />
                   ) : (
                     <Box sx={{ width: '100%', aspectRatio: '16 / 9', bgcolor: color.rule }} />

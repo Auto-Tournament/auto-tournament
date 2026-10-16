@@ -46,7 +46,7 @@
       "friendRequest": "sendte deg en venneforespørsel",
       "friendAccepted": "godtok venneforespørselen din",
       "skin": "Nytt skin:",
-      "highlight": "Høydepunktet ditt er klart:",
+      "highlight": "Høydepunktet din er klar:",
       "highlightVictim": "{{name}} tok deg ut i klippet sitt:",
       "highlightAssist": "Du assisterte {{name}} i klippet deres:",
       "highlightKiller": "Du tok ut {{name}} i klippet deres:",
@@ -58,11 +58,12 @@
       "declined": "Avslått",
       "expired": "Gruppa finnes ikke lenger",
       "reportNew": "ble rapportert: {{reason}}",
-      "reportReviewed": "Takk: rapporten din om {{name}} er gjennomgått.",
+      "reportReviewed": "Takk. Rapporten din om {{name}} er gjennomgått.",
       "matchReady": "er klar. Åpne kamprommet for å koble til.",
-      "vetoTurn": "Det er lagets tur i map-vetoen.",
+      "vetoTurn": "det er laget ditt sin tur i vetoen.",
       "startsSoon": "starter om {{minutes}} minutter. Gjør deg klar til den første kampen.",
-      "startsSoonUpdate": "starter om {{minutes}} minutter. Start spillet nå, så er en ev. oppdatering ferdig før første kamp."
+      "startsSoonUpdate": "starter om {{minutes}} minutter. Start spillet nå, så er en ev. oppdatering ferdig før første kamp.",
+      "matchSoon": "vetoen din åpner om {{minutes}} minutter og går videre uten deg. Sitt klar ved pc-en."
     },
     "toast": {
       "join": "Bli med",
@@ -96,7 +97,7 @@
       "askedAgo": "Spurte {{when}}",
       "sentAgo": "Sendt {{when}}",
       "cancelRequest": "Trekk tilbake",
-      "searchPlaceholder": "Et navn, eller en Steam-profillenke",
+      "searchPlaceholder": "Et navn eller en Steam-profillenke",
       "results": "På Auto Tournament",
       "playedWith": "Spilt med nylig",
       "noResults": "Ingen med det navnet.",
@@ -124,7 +125,7 @@
       "lastSeen": "Sist sett {{when}}"
     },
     "invite": {
-      "searchPlaceholder": "Hvem som helst på siden, etter navn",
+      "searchPlaceholder": "Søk etter navn på siden",
       "friendsOnline": "Venner pålogget",
       "recent": "Spilt med nylig",
       "onSite": "På Auto Tournament",
@@ -182,7 +183,7 @@
       "urlHint": "En side her (/tournament/3) eller en https://-adresse.",
       "urlBad": "Start med / eller https://",
       "send": "Send til alle spillere",
-      "confirm": "Alle spillere som har logget inn får dette. Sende?",
+      "confirm": "Alle spillere som har logget inn, får dette. Sende?",
       "sendNow": "Send nå",
       "cancel": "Avbryt",
       "sent_one": "Sendt til {{count}} spiller",
@@ -193,7 +194,7 @@
       "title": "Innstillinger",
       "alerts": "Varsler",
       "browser": "Nettleservarsler",
-      "browserHint": "Mens fanen er i bakgrunnen. Gjelder bare denne nettleseren.",
+      "browserHint": "På denne enheten, også når siden er lukket (kampen din er klar, det er din tur i vetoen, en turnering starter). Gjelder bare denne nettleseren.",
       "browserDenied": "Blokkert i nettleserens innstillinger for nettstedet. Tillat varsler der for å slå dem på.",
       "browserUnsupported": "Denne nettleseren har ikke varsler.",
       "sound": "Lyd",
@@ -213,7 +214,7 @@
         "friend_accepted": "Godtatte venneforespørsler",
         "tournament": "Innsjekking og start",
         "skin": "Skin-drops",
-        "highlight": "Dine høydepunkter",
+        "highlight": "Highlightene dine",
         "news": "Nyheter",
         "report": "Rapporter"
       },
@@ -226,7 +227,7 @@
   },
   "notifyChannels": {
     "title": "Varsler",
-    "description": "Hvor vi sier fra om ting som trenger deg når du ikke er på siden. Av som standard, bortsett fra dine egne kamper.",
+    "description": "Hvor vi gir deg beskjed om ting som trenger deg når du ikke er på siden. Av som standard, bortsett fra kampene dine.",
     "event": "Hendelse",
     "channel": {
       "push": "Nettleser / mobil",
@@ -239,11 +240,11 @@
         "hint": "Server, tilkoblingslenke og hvem du møter"
       },
       "veto_turn": {
-        "title": "Din tur i vetoen",
+        "title": "Turen din i vetoen",
         "hint": "Bare kapteiner"
       },
       "checkin_open": {
-        "title": "Innsjekk åpner",
+        "title": "Innsjekkingen åpner",
         "hint": "For turneringer du er påmeldt"
       },
       "new_tournament": {
@@ -268,7 +269,7 @@
   },
   "presence": {
     "online": "Pålogget",
-    "offline": "Frakoblet",
+    "offline": "Avlogget",
     "searching": "Søker etter en {{mode}}-kamp",
     "playingMatchmaking": "I en matchmaking-kamp: {{label}}",
     "playingTournament": "I en turneringskamp: {{label}}",

@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import { fmtDate } from '../../utils/time';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { useLicenseConsent } from '../../hooks/useLicenseConsent';
@@ -16,18 +17,12 @@ interface Props {
  * accepted.
  */
 export function LicenseConsentSection({ keyKind }: Props) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { status, loaded } = useLicenseConsent();
 
   const use = keyKind && keyKind !== 'free' ? 'commercial' : 'noncommercial';
   const consent = loaded ? status?.consent : null;
-  const when = consent
-    ? new Date(consent.acceptedAt).toLocaleDateString(i18n.language, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-    : '';
+  const when = consent ? fmtDate(consent.acceptedAt) : '';
   const who = consent?.source === 'env' ? t('license.consent.byEnv') : (consent?.acceptedBy ?? '');
 
   return (

@@ -6,7 +6,6 @@ import {
   Typography,
   IconButton,
   ToggleButton,
-  ToggleButtonGroup,
   Alert,
   CircularProgress,
   Chip,
@@ -17,6 +16,7 @@ import { api } from '../../utils/api';
 import type { LogEntry, LogsResponse } from '../../types';
 import { radii } from '../../theme/tokens';
 import { useTopic } from '../../hooks/useTopic';
+import { SegmentedControl } from '../common/SegmentedControl';
 
 export const LogViewer: React.FC = () => {
   const { t } = useTranslation();
@@ -83,18 +83,19 @@ export const LogViewer: React.FC = () => {
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Typography variant="h6">{t('adminToolsPage.monitoring.appLogs')}</Typography>
           <Box display="flex" gap={1} alignItems="center">
-            <ToggleButtonGroup
+            <SegmentedControl
               size="small"
-              value={levelFilter}
-              exclusive
-              onChange={(_, value) => setLevelFilter(value || '')}
-            >
-              <ToggleButton value="">{t('adminToolsPage.logs.levelAll')}</ToggleButton>
-              <ToggleButton value="debug">Debug</ToggleButton>
-              <ToggleButton value="info">Info</ToggleButton>
-              <ToggleButton value="warn">Warn</ToggleButton>
-              <ToggleButton value="error">Error</ToggleButton>
-            </ToggleButtonGroup>
+              label={t('adminToolsPage.logs.levelAll')}
+              value={levelFilter || 'all'}
+              onChange={(value) => setLevelFilter(value === 'all' ? '' : value)}
+              options={[
+                { value: 'all', label: t('adminToolsPage.logs.levelAll') },
+                { value: 'debug', label: 'Debug' },
+                { value: 'info', label: 'Info' },
+                { value: 'warn', label: 'Warn' },
+                { value: 'error', label: 'Error' },
+              ]}
+            />
             <ToggleButton
               value="autoRefresh"
               selected={autoRefresh}

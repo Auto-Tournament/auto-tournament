@@ -99,9 +99,34 @@ async function heldUntil(slug: string): Promise<number | null> {
 export async function vetoTurnDeadline(
   slug: string,
   rawVeto: string | null | undefined
-): Promise<{ deadline?: string; seconds?: number; opensAt?: string } | null> {
+): Promise<{ deadline?: string; seconds?: number; opensAt?: string; startsAt?: string } | null> {
   const held = await heldUntil(slug);
-  if (held !== null) return { opensAt: new Date(held * 1000).toISOString() };
+  if (held !== null) {
+    // Held for its start time (Manage › Schedule): the page says when the match starts too.
+    const row = await db.queryOneAsync<{
+      hold_reason: string | null;
+      round: number | null;
+      starts_at: number | null;
+      settings: string | null;
+    }>(
+      `SELECT m.hold_reason, m.round, m.starts_at, t.settings FROM matches m
+         LEFT JOIN tournament t ON t.id = m.tournament_id WHERE m.slug = ?`,
+      [slug]
+    );
+    const { matchTimeFields } = await import('../../../services/matchTimes');
+    let settings: unknown = {};
+    try {
+      settings = JSON.parse(row?.settings ?? '{}');
+    } catch {
+      settings = {};
+    }
+    const times = row ? matchTimeFields(row, settings) : null;
+    const forStart = times?.startsAt && times.vetoOpensAt === held;
+    return {
+      opensAt: new Date(held * 1000).toISOString(),
+      ...(forStart ? { startsAt: new Date(times!.startsAt! * 1000).toISOString() } : {}),
+    };
+  }
   const seconds = await secondsForTurn(rawVeto);
   if (seconds <= 0) return null;
   const started = turnStartedAt(slug, rawVeto);

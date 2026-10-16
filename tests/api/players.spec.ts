@@ -33,7 +33,8 @@ test.describe('Player Management API', () => {
     await signInViaRequest(request);
   });
 
-  test('should create a player with initial Skill Rating',
+  test(
+    'should create a player with initial Skill Rating',
     {
       tag: ['@api', '@players', '@crud'],
     },
@@ -261,4 +262,3 @@ test.describe('Player Management API', () => {
     }
   );
 });
-

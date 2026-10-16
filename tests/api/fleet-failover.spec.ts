@@ -10,7 +10,14 @@ import {
   newInstallId,
   resetEnrollRateLimit,
 } from '../helpers/fleet';
-import { FakeCsm, createPendingHost, enrollHost, inventory, inventoryServer, newMachineId } from '../helpers/fleetHost';
+import {
+  FakeCsm,
+  createPendingHost,
+  enrollHost,
+  inventory,
+  inventoryServer,
+  newMachineId,
+} from '../helpers/fleetHost';
 import { ulid } from '../../api/src/integrations/cs2/fleet/credentials';
 import {
   validateMessage,
@@ -103,12 +110,19 @@ class FakeReadyUp {
 
   send(env: Omit<Envelope, 'seq'>): Envelope {
     const out = { ...env, seq: ++this.seq } as Envelope;
-    expect(validateMessage(out), JSON.stringify(validateMessage(out).errors)).toEqual({ ok: true, errors: [] });
+    expect(validateMessage(out), JSON.stringify(validateMessage(out).errors)).toEqual({
+      ok: true,
+      errors: [],
+    });
     this.client.send(out);
     return out;
   }
 
-  answer(msg: Envelope, status: 'ok' | 'rejected' = 'ok', extra: Record<string, unknown> = {}): Envelope {
+  answer(
+    msg: Envelope,
+    status: 'ok' | 'rejected' = 'ok',
+    extra: Record<string, unknown> = {}
+  ): Envelope {
     return this.send({
       v: 1,
       type: 'cmd.result',
@@ -122,12 +136,24 @@ class FakeReadyUp {
   }
 
   availability(availability: 'available' | 'busy', reason = 'test'): Envelope {
-    return this.send({ v: 1, type: 'server.availability', id: ulid(), ts: Date.now(), payload: { availability, reason } });
+    return this.send({
+      v: 1,
+      type: 'server.availability',
+      id: ulid(),
+      ts: Date.now(),
+      payload: { availability, reason },
+    });
   }
 
   event(
     file: string,
-    opts: { slug: string; epoch: number; rev: number; data?: Record<string, unknown>; patch?: Record<string, unknown> }
+    opts: {
+      slug: string;
+      epoch: number;
+      rev: number;
+      data?: Record<string, unknown>;
+      patch?: Record<string, unknown>;
+    }
   ): Envelope {
     const frame = example(file);
     const payload = JSON.parse(JSON.stringify(frame.payload)) as Record<string, unknown> & {
@@ -162,7 +188,10 @@ class FakeReadyUp {
 }
 
 async function link(request: APIRequestContext, fleetServerId: string): Promise<string> {
-  const res = await request.post(`/api/fleet/servers/${fleetServerId}/link`, { headers: getAuthHeader(), data: {} });
+  const res = await request.post(`/api/fleet/servers/${fleetServerId}/link`, {
+    headers: getAuthHeader(),
+    data: {},
+  });
   expect([200, 201], await res.text()).toContain(res.status());
   return (await res.json()).cs2ServerId as string;
 }
@@ -213,7 +242,10 @@ async function createMatch(request: APIRequestContext, slug: string): Promise<vo
   expect(res.status(), await res.text()).toBe(201);
 }
 
-async function matchRow(request: APIRequestContext, slug: string): Promise<{ status?: string; serverId?: string } | null> {
+async function matchRow(
+  request: APIRequestContext,
+  slug: string
+): Promise<{ status?: string; serverId?: string } | null> {
   const res = await request.get(`/api/matches/${slug}`, { headers: getAuthHeader() });
   if (!res.ok()) return null;
   const body = await res.json();
@@ -226,7 +258,9 @@ async function acceptAssign(fake: FakeReadyUp, slug: string): Promise<Envelope> 
   for (let i = 0; i < 10; i++) {
     const assign = await fake.next('match.assign', 30_000);
     if ((assign.payload as { match_id: string }).match_id !== slug) {
-      fake.answer(assign, 'rejected', { error: { code: 'invalid_config', message: 'not this test' } });
+      fake.answer(assign, 'rejected', {
+        error: { code: 'invalid_config', message: 'not this test' },
+      });
       continue;
     }
     fake.answer(assign, 'ok');
@@ -244,7 +278,9 @@ async function liveWithBackup(
   await createMatch(request, slug);
   const assign = await acceptAssign(fake, slug);
   const epoch = assign.epoch as number;
-  await expect.poll(async () => (await matchRow(request, slug))?.status, { timeout: 20_000 }).toBe('loaded');
+  await expect
+    .poll(async () => (await matchRow(request, slug))?.status, { timeout: 20_000 })
+    .toBe('loaded');
   fake.availability('busy', 'assigned');
   fake.snapshot(slug, epoch);
   fake.event('live.event.phase.json', {
@@ -254,11 +290,15 @@ async function liveWithBackup(
     patch: { phase: 'live' },
     data: { from: 'warmup', to: 'live', reason: 'flow' },
   });
-  await expect.poll(async () => (await matchRow(request, slug))?.status, { timeout: 15_000 }).toBe('live');
+  await expect
+    .poll(async () => (await matchRow(request, slug))?.status, { timeout: 15_000 })
+    .toBe('live');
   const sent = fake.event('live.event.backup.json', { slug, epoch, rev: 2 });
   await expect
     .poll(async () => {
-      const res = await request.get(`/api/game/cs2/matches/${slug}/round-backups`, { headers: getAuthHeader() });
+      const res = await request.get(`/api/game/cs2/matches/${slug}/round-backups`, {
+        headers: getAuthHeader(),
+      });
       return ((await res.json()).backups ?? []).length;
     })
     .toBe(1);
@@ -273,12 +313,18 @@ async function liveWithBackup(
  * Detection passes until one makes a failover for `slug` (auto-failover moves
  * it inside that pass, so answer the assign concurrently).
  */
-async function scanUntilProposed(request: APIRequestContext, slug: string): Promise<{ id: string; matchSlug: string }> {
+async function scanUntilProposed(
+  request: APIRequestContext,
+  slug: string
+): Promise<{ id: string; matchSlug: string }> {
   let found: { id: string; matchSlug: string } | undefined;
   await expect
     .poll(
       async () => {
-        const res = await request.post('/api/test/fleet/failover/scan', { headers: getAuthHeader(), data: {} });
+        const res = await request.post('/api/test/fleet/failover/scan', {
+          headers: getAuthHeader(),
+          data: {},
+        });
         if (!res.ok()) return false;
         const proposed = (await res.json()).proposed as Array<{ id: string; matchSlug: string }>;
         found = proposed.find((p) => p.matchSlug === slug);
@@ -291,12 +337,17 @@ async function scanUntilProposed(request: APIRequestContext, slug: string): Prom
 }
 
 async function failoverView(request: APIRequestContext, slug: string) {
-  const res = await request.get(`/api/game/cs2/matches/${slug}/failover`, { headers: getAuthHeader() });
+  const res = await request.get(`/api/game/cs2/matches/${slug}/failover`, {
+    headers: getAuthHeader(),
+  });
   expect(res.ok(), await res.text()).toBe(true);
   return res.json();
 }
 
-async function setFailover(request: APIRequestContext, data: { auto?: boolean; reserve?: number | null; csm?: boolean }) {
+async function setFailover(
+  request: APIRequestContext,
+  data: { auto?: boolean; reserve?: number | null; csm?: boolean }
+) {
   const res = await request.put('/api/fleet/failover/settings', { headers: getAuthHeader(), data });
   expect(res.ok(), await res.text()).toBe(true);
   return res.json();
@@ -313,13 +364,19 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     // csm recovery only in the tests that bring a fake csm (other specs' machines stay out of it).
     await setFailover(request, { auto: true, reserve: null, csm: false });
     // The auto-scaler would create/link servers of its own and race these moves.
-    await request.put('/api/fleet/autoscale/settings', { headers: getAuthHeader(), data: { enabled: false } });
+    await request.put('/api/fleet/autoscale/settings', {
+      headers: getAuthHeader(),
+      data: { enabled: false },
+    });
   });
 
   test.afterEach(async ({ request }) => {
     while (cleanup.length) await cleanup.pop()?.();
     await setFailover(request, { auto: true, reserve: null, csm: true });
-    await request.put('/api/fleet/autoscale/settings', { headers: getAuthHeader(), data: { enabled: true } });
+    await request.put('/api/fleet/autoscale/settings', {
+      headers: getAuthHeader(),
+      data: { enabled: true },
+    });
   });
 
   test('auto: A dies mid-match → the reserve server B resumes from the backup → A comes back superseded', async ({
@@ -345,7 +402,9 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     await b.hello();
     const cs2B = await link(request, b.serverId);
     cleanup.push(() => unlink(request, b.serverId));
-    const settings = await (await request.get('/api/fleet/failover/settings', { headers: getAuthHeader() })).json();
+    const settings = await (
+      await request.get('/api/fleet/failover/settings', { headers: getAuthHeader() })
+    ).json();
     expect(settings.settings).toMatchObject({ auto: true, reserve: null });
     expect(settings.reserve).toMatchObject({ configured: null, effective: 1, poolSize: 2 });
     expect(settings.reserve.held.map((s: { id: string }) => s.id)).toEqual([cs2B]);
@@ -362,14 +421,25 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
       match_id: string;
       epoch: number;
       config: { password: string };
-      resume: { from_epoch: number; map_number: number; round: number; backup: InlineBackup; score: unknown };
+      resume: {
+        from_epoch: number;
+        map_number: number;
+        round: number;
+        backup: InlineBackup;
+        score: unknown;
+      };
     };
     expect(payload.match_id).toBe(slug);
     expect(assign.epoch).toBe(epoch + 1);
     expect(payload.epoch).toBe(epoch + 1);
     // No join password by default; with at_join_password on each assignment gets a fresh one.
     expect(payload.config.password).toBe(password);
-    expect(payload.resume).toMatchObject({ from_epoch: epoch, map_number: 1, round: backup.round, score: backup.score });
+    expect(payload.resume).toMatchObject({
+      from_epoch: epoch,
+      map_number: 1,
+      round: backup.round,
+      score: backup.score,
+    });
     expect(payload.resume.backup).toEqual({
       map_number: backup.map_number,
       round: backup.round,
@@ -382,9 +452,13 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     });
 
     // The match is on B, still live; players get B's address and password.
-    await expect.poll(async () => (await matchRow(request, slug))?.serverId, { timeout: 15_000 }).toBe(cs2B);
+    await expect
+      .poll(async () => (await matchRow(request, slug))?.serverId, { timeout: 15_000 })
+      .toBe(cs2B);
     expect((await matchRow(request, slug))?.status).toBe('live');
-    const connect = await (await request.get(`/api/game/cs2/matches/${slug}/connect`, { headers: getAuthHeader() })).json();
+    const connect = await (
+      await request.get(`/api/game/cs2/matches/${slug}/connect`, { headers: getAuthHeader() })
+    ).json();
     expect(connect.server).toMatchObject({ id: cs2B, password: payload.config.password });
     expect(connect.server.moved).toMatchObject({ reason: 'offline', inPlace: false });
 
@@ -405,13 +479,19 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     });
 
     // A comes back still holding the old epoch: superseded, with the kick message.
-    const state = JSON.parse(JSON.stringify(example('live.state.snapshot.json').payload)).state as Record<string, unknown>;
+    const state = JSON.parse(JSON.stringify(example('live.state.snapshot.json').payload))
+      .state as Record<string, unknown>;
     state.match_id = slug;
     state.epoch = epoch;
     const welcome = await a.reconnect({ state, availability: 'busy' });
     expect((welcome.payload as { assignment: unknown }).assignment).toBeNull();
     const zombie = await a.next('match.unassign');
-    expect(zombie.payload).toMatchObject({ match_id: slug, epoch, reason: 'superseded', kick_message: expect.any(String) });
+    expect(zombie.payload).toMatchObject({
+      match_id: slug,
+      epoch,
+      reason: 'superseded',
+      kick_message: expect.any(String),
+    });
     expect(zombie.epoch).toBe(epoch);
     a.answer(zombie);
   });
@@ -435,7 +515,10 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     await a.reconnect({ state: null, availability: 'available' });
     // (The new socket queues what arrives, so the assign is not missed.)
     const assign = await acceptAssign(a, slug);
-    const payload = assign.payload as { match_id: string; resume: { from_epoch: number; round: number; backup?: InlineBackup } };
+    const payload = assign.payload as {
+      match_id: string;
+      resume: { from_epoch: number; round: number; backup?: InlineBackup };
+    };
     expect(payload.match_id).toBe(slug);
     expect(assign.epoch).toBe(epoch + 1);
     expect(payload.resume).toMatchObject({ from_epoch: epoch, map_number: 1, round: backup.round });
@@ -445,11 +528,18 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
       .poll(async () => (await failoverView(request, slug)).recent[0]?.status, { timeout: 20_000 })
       .toBe('moved');
     const view = await failoverView(request, slug);
-    expect(view.recent[0]).toMatchObject({ reason: 'restarted', fromCs2ServerId: cs2A, newCs2ServerId: cs2A, auto: true });
+    expect(view.recent[0]).toMatchObject({
+      reason: 'restarted',
+      fromCs2ServerId: cs2A,
+      newCs2ServerId: cs2A,
+      auto: true,
+    });
     expect((await matchRow(request, slug))?.serverId).toBe(cs2A);
   });
 
-  test('no free server: the failover waits, then a server that comes online takes the match', async ({ request }) => {
+  test('no free server: the failover waits, then a server that comes online takes the match', async ({
+    request,
+  }) => {
     test.setTimeout(180_000);
     const a = await FakeReadyUp.enroll(request);
     cleanup.push(() => a.close());
@@ -466,7 +556,12 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     a.kill();
     await scanUntilProposed(request, slug);
     const waiting = await failoverView(request, slug);
-    expect(waiting.proposal).toMatchObject({ status: 'open', reason: 'offline', fromEpoch: epoch, targetCs2ServerId: null });
+    expect(waiting.proposal).toMatchObject({
+      status: 'open',
+      reason: 'offline',
+      fromEpoch: epoch,
+      targetCs2ServerId: null,
+    });
     expect(waiting.candidates).toEqual([]);
 
     // A server comes online and joins the pool: the next pass moves the match there.
@@ -476,16 +571,26 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     const cs2B = await link(request, b.serverId);
     cleanup.push(() => unlink(request, b.serverId));
     const assigned = acceptAssign(b, slug);
-    const scanning = request.post('/api/test/fleet/failover/scan', { headers: getAuthHeader(), data: {} });
+    const scanning = request.post('/api/test/fleet/failover/scan', {
+      headers: getAuthHeader(),
+      data: {},
+    });
     const assign = await assigned;
     expect((assign.payload as { match_id: string }).match_id).toBe(slug);
     expect(assign.epoch).toBe(epoch + 1);
     await scanning;
-    await expect.poll(async () => (await matchRow(request, slug))?.serverId, { timeout: 15_000 }).toBe(cs2B);
-    expect((await failoverView(request, slug)).recent[0]).toMatchObject({ status: 'moved', newCs2ServerId: cs2B });
+    await expect
+      .poll(async () => (await matchRow(request, slug))?.serverId, { timeout: 15_000 })
+      .toBe(cs2B);
+    expect((await failoverView(request, slug)).recent[0]).toMatchObject({
+      status: 'moved',
+      newCs2ServerId: cs2B,
+    });
   });
 
-  test('csm online: the dead server is restarted through csm first, then the match resumes there', async ({ request }) => {
+  test('csm online: the dead server is restarted through csm first, then the match resumes there', async ({
+    request,
+  }) => {
     test.setTimeout(180_000);
     await setFailover(request, { csm: true });
     const a = await FakeReadyUp.enroll(request);
@@ -501,11 +606,25 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     await csm.handshake();
     csm.sendEphemeral(
       'host.inventory',
-      inventory(m.hostId, [inventoryServer('server-1', { readyup: { installed: '0.5.0', install_id: a.installId, health: 'ok', phase: 'live', update_safe: false } })])
+      inventory(m.hostId, [
+        inventoryServer('server-1', {
+          readyup: {
+            installed: '0.5.0',
+            install_id: a.installId,
+            health: 'ok',
+            phase: 'live',
+            update_safe: false,
+          },
+        }),
+      ])
     );
     await expect
       .poll(async () => {
-        const host = (await (await request.get(`/api/fleet/hosts/${m.hostId}`, { headers: getAuthHeader() })).json()).host;
+        const host = (
+          await (
+            await request.get(`/api/fleet/hosts/${m.hostId}`, { headers: getAuthHeader() })
+          ).json()
+        ).host;
         return host.servers?.[0]?.fleetServer?.id ?? null;
       })
       .toBe(a.serverId);
@@ -537,14 +656,21 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     await a.reconnect({ state: null, availability: 'available' });
     const assign = await acceptAssign(a, slug);
     expect(assign.epoch).toBe(epoch + 1);
-    expect((assign.payload as { resume: { round: number } }).resume).toMatchObject({ round: backup.round });
+    expect((assign.payload as { resume: { round: number } }).resume).toMatchObject({
+      round: backup.round,
+    });
     await expect
       .poll(async () => (await failoverView(request, slug)).recent[0]?.status, { timeout: 20_000 })
       .toBe('moved');
-    expect((await failoverView(request, slug)).recent[0]).toMatchObject({ reason: 'restarted', newCs2ServerId: cs2A });
+    expect((await failoverView(request, slug)).recent[0]).toMatchObject({
+      reason: 'restarted',
+      newCs2ServerId: cs2A,
+    });
   });
 
-  test('csm cannot restart the dead server: the match moves at once, without the restart wait', async ({ request }) => {
+  test('csm cannot restart the dead server: the match moves at once, without the restart wait', async ({
+    request,
+  }) => {
     test.setTimeout(180_000);
     await setFailover(request, { csm: true });
     const a = await FakeReadyUp.enroll(request);
@@ -559,11 +685,25 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     await csm.handshake();
     csm.sendEphemeral(
       'host.inventory',
-      inventory(m.hostId, [inventoryServer('server-1', { readyup: { installed: '0.5.0', install_id: a.installId, health: 'ok', phase: 'live', update_safe: false } })])
+      inventory(m.hostId, [
+        inventoryServer('server-1', {
+          readyup: {
+            installed: '0.5.0',
+            install_id: a.installId,
+            health: 'ok',
+            phase: 'live',
+            update_safe: false,
+          },
+        }),
+      ])
     );
     await expect
       .poll(async () => {
-        const host = (await (await request.get(`/api/fleet/hosts/${m.hostId}`, { headers: getAuthHeader() })).json()).host;
+        const host = (
+          await (
+            await request.get(`/api/fleet/hosts/${m.hostId}`, { headers: getAuthHeader() })
+          ).json()
+        ).host;
         return host.servers?.[0]?.fleetServer?.id ?? null;
       })
       .toBe(a.serverId);
@@ -587,20 +727,32 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     // The server cannot start again (csm: game port taken): no 90 s wait, the next pass moves the match.
     const answer = csm.sendReliable(
       'host.result',
-      { status: 'failed', error: { code: 'failed', message: 'restart server-1: game port 27015 is already in use' } },
+      {
+        status: 'failed',
+        error: { code: 'failed', message: 'restart server-1: game port 27015 is already in use' },
+      },
       { ref: restart.id }
     );
     await csm.acked(answer.seq as number);
     const assigned = acceptAssign(b, slug);
-    const scanning = request.post('/api/test/fleet/failover/scan', { headers: getAuthHeader(), data: {} });
+    const scanning = request.post('/api/test/fleet/failover/scan', {
+      headers: getAuthHeader(),
+      data: {},
+    });
     const assign = await assigned;
     await scanning;
     expect(assign.epoch).toBe(epoch + 1);
-    expect((assign.payload as { resume: { round: number } }).resume).toMatchObject({ round: backup.round });
-    await expect.poll(async () => (await matchRow(request, slug))?.serverId, { timeout: 15_000 }).toBe(cs2B);
+    expect((assign.payload as { resume: { round: number } }).resume).toMatchObject({
+      round: backup.round,
+    });
+    await expect
+      .poll(async () => (await matchRow(request, slug))?.serverId, { timeout: 15_000 })
+      .toBe(cs2B);
   });
 
-  test('no free server and csm has room: csm creates one, it joins the pool and takes the match', async ({ request }) => {
+  test('no free server and csm has room: csm creates one, it joins the pool and takes the match', async ({
+    request,
+  }) => {
     test.setTimeout(180_000);
     await setFailover(request, { csm: true });
     const a = await FakeReadyUp.enroll(request);
@@ -615,9 +767,19 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     cleanup.push(() => csm.close());
     await csm.handshake();
     const inv = inventory(m.hostId, [inventoryServer('server-1')]);
-    csm.sendEphemeral('host.inventory', { ...inv, resources: { ...inv.resources, ram_free_mb: 60000 } });
+    csm.sendEphemeral('host.inventory', {
+      ...inv,
+      resources: { ...inv.resources, ram_free_mb: 60000 },
+    });
     await expect
-      .poll(async () => (await (await request.get(`/api/fleet/hosts/${m.hostId}`, { headers: getAuthHeader() })).json()).host.online)
+      .poll(
+        async () =>
+          (
+            await (
+              await request.get(`/api/fleet/hosts/${m.hostId}`, { headers: getAuthHeader() })
+            ).json()
+          ).host.online
+      )
       .toBe(true);
 
     const slug = `fleet-fo-create-${Date.now()}`;
@@ -633,7 +795,9 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     expect(payload).toMatchObject({ count: 1, enroll: true });
     expect(payload.enroll_key).toMatch(/^rfk_/);
     const waitingView = await failoverView(request, slug);
-    expect((waitingView.proposal ?? waitingView.recent[0])?.detail ?? '').toContain('creating one through csm');
+    expect((waitingView.proposal ?? waitingView.recent[0])?.detail ?? '').toContain(
+      'creating one through csm'
+    );
 
     // The new server enrolls with the command's key; the next pass links it and moves the match.
     const b = await FakeReadyUp.enroll(request, payload.enroll_key);
@@ -641,7 +805,10 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     cleanup.push(() => unlink(request, b.serverId));
     await b.hello();
     const assigned = acceptAssign(b, slug);
-    const scanning = request.post('/api/test/fleet/failover/scan', { headers: getAuthHeader(), data: {} });
+    const scanning = request.post('/api/test/fleet/failover/scan', {
+      headers: getAuthHeader(),
+      data: {},
+    });
     const assign = await assigned;
     await scanning;
     expect((assign.payload as { match_id: string }).match_id).toBe(slug);
@@ -677,16 +844,24 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     const proposal = await scanUntilProposed(request, slug);
     const view = await failoverView(request, slug);
     expect(view.autoFailover).toBe(false);
-    expect(view.proposal).toMatchObject({ id: proposal.id, status: 'open', targetCs2ServerId: cs2B, round: backup.round });
+    expect(view.proposal).toMatchObject({
+      id: proposal.id,
+      status: 'open',
+      targetCs2ServerId: cs2B,
+      round: backup.round,
+    });
     expect(view.candidates.map((c: { id: string }) => c.id)).toContain(cs2B);
     expect(view.backups.map((x: { round: number }) => x.round)).toContain(backup.round);
     expect((await matchRow(request, slug))?.serverId).not.toBe(cs2B);
 
     // Another match's slug: not found.
-    const wrong = await request.post(`/api/game/cs2/matches/not-${slug}/failover/${proposal.id}/accept`, {
-      headers: getAuthHeader(),
-      data: {},
-    });
+    const wrong = await request.post(
+      `/api/game/cs2/matches/not-${slug}/failover/${proposal.id}/accept`,
+      {
+        headers: getAuthHeader(),
+        data: {},
+      }
+    );
     expect(wrong.status()).toBe(404);
 
     const accepting = request.post(`/api/game/cs2/matches/${slug}/failover/${proposal.id}/accept`, {
@@ -698,21 +873,34 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     expect((assign.payload as { resume: { round: number } }).resume.round).toBe(backup.round);
     const res = await accepting;
     expect(res.status(), await res.text()).toBe(200);
-    expect((await res.json()).proposal).toMatchObject({ status: 'moved', auto: false, newCs2ServerId: cs2B });
+    expect((await res.json()).proposal).toMatchObject({
+      status: 'moved',
+      auto: false,
+      newCs2ServerId: cs2B,
+    });
     expect((await matchRow(request, slug))?.serverId).toBe(cs2B);
 
     // Decided: a second accept is refused.
-    const again = await request.post(`/api/game/cs2/matches/${slug}/failover/${proposal.id}/accept`, {
-      headers: getAuthHeader(),
-      data: {},
-    });
+    const again = await request.post(
+      `/api/game/cs2/matches/${slug}/failover/${proposal.id}/accept`,
+      {
+        headers: getAuthHeader(),
+        data: {},
+      }
+    );
     expect(again.status()).toBe(409);
   });
 
   test('settings: validated, admin only', async ({ request, playwright, baseURL }) => {
-    const bad = await request.put('/api/fleet/failover/settings', { headers: getAuthHeader(), data: { reserve: -1 } });
+    const bad = await request.put('/api/fleet/failover/settings', {
+      headers: getAuthHeader(),
+      data: { reserve: -1 },
+    });
     expect(bad.status()).toBe(400);
-    const badAuto = await request.put('/api/fleet/failover/settings', { headers: getAuthHeader(), data: { auto: 'yes' } });
+    const badAuto = await request.put('/api/fleet/failover/settings', {
+      headers: getAuthHeader(),
+      data: { auto: 'yes' },
+    });
     expect(badAuto.status()).toBe(400);
     const set = await setFailover(request, { reserve: 0 });
     expect(set.settings).toMatchObject({ auto: true, reserve: 0 });
@@ -721,7 +909,9 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     const anon = await playwright.request.newContext({ baseURL });
     expect((await anon.get('/api/fleet/failover/settings')).status()).toBe(401);
     expect((await anon.get('/api/game/cs2/matches/some-match/failover')).status()).toBe(401);
-    expect((await anon.post('/api/game/cs2/matches/some-match/failover/move', { data: {} })).status()).toBe(401);
+    expect(
+      (await anon.post('/api/game/cs2/matches/some-match/failover/move', { data: {} })).status()
+    ).toBe(401);
     await anon.dispose();
   });
 });

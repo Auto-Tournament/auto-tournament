@@ -9,6 +9,9 @@ import {
   tokens,
   useModuleTranslation,
   withAlpha,
+  fmtDateTime,
+  panelSx,
+  panelBorderSx,
 } from '../../../../module-sdk';
 import type { FleetHost, FleetHostCommand, FleetHostCommandType } from '../../cs2.types';
 import { activeCommand, latestProblem, serverState } from '../machineState';
@@ -198,7 +201,7 @@ export function MachineCard({
   onNewCode,
   onRetry,
 }: MachineCardProps) {
-  const { t, i18n } = useModuleTranslation('cs2');
+  const { t } = useModuleTranslation('cs2');
   const now = useNow();
   const commandLabel = useCommandLabel();
   const problemText = useProblemText();
@@ -211,8 +214,7 @@ export function MachineCard({
   const updatingPlugins = runningOf(host, 'host.update_plugins');
   const creating = host.commands.filter((c) => pending(c) && c.type === 'server.create');
   const creatingCount = creating.reduce((n, c) => n + Math.max(1, Number(c.payload.count) || 1), 0);
-  const when = (s: number | null | undefined) =>
-    s ? new Date(s * 1000).toLocaleString(i18n.language) : '—';
+  const when = (s: number | null | undefined) => (s ? fmtDateTime(s) : '—');
   // "3 min", "4 h", "2 d": how long ago, short (the clock ticks each minute).
   const since = (s: number) => {
     const d = Math.max(0, Math.floor(now - s));
@@ -267,10 +269,9 @@ export function MachineCard({
       data-testid={`machine-${host.id}`}
       aria-label={host.name}
       sx={{
+        ...panelSx,
+        ...panelBorderSx,
         p: { xs: 2, md: 2.75 },
-        borderRadius: radii.lg,
-        bgcolor: color.paper2,
-        border: `1px solid ${color.rule}`,
         display: 'flex',
         flexDirection: 'column',
         gap: 2,

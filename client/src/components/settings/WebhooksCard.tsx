@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type InputHTMLAttributes } from 'react';
+import { fmtDateTime } from '../../utils/time';
 import {
   Alert,
   Box,
@@ -25,12 +26,21 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { ArrowClockwiseIcon, CopyIcon, EyeIcon, EyeSlashIcon, PaperPlaneTiltIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
+import {
+  ArrowClockwiseIcon,
+  CopyIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  PaperPlaneTiltIcon,
+  PlusIcon,
+  TrashIcon,
+} from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { tokens, radii } from '../../theme/tokens';
 import { SettingsCardHead, SettingsRow } from './SettingsRow';
+import { SwitchRow } from '../../components/common/ui';
 
 interface EventTypeInfo {
   type: string;
@@ -104,7 +114,7 @@ const STATUS_COLOR: Record<string, 'success' | 'error' | 'warning' | 'default' |
 };
 
 function when(ms: number | null): string {
-  return ms ? new Date(ms).toLocaleString() : '—';
+  return ms ? fmtDateTime(ms) : '—';
 }
 
 /**
@@ -169,7 +179,9 @@ export function WebhooksCard() {
   const loadDeliveries = useCallback(
     async (endpoint: Endpoint) => {
       try {
-        const res = await api.get<{ deliveries: Delivery[] }>(`/api/webhooks/${endpoint.id}/deliveries?limit=50`);
+        const res = await api.get<{ deliveries: Delivery[] }>(
+          `/api/webhooks/${endpoint.id}/deliveries?limit=50`
+        );
         setDeliveries(res.deliveries);
       } catch (err) {
         showError(apiErrorMessage(err, t('webhooksPage.errors.load')));
@@ -227,7 +239,10 @@ export function WebhooksCard() {
 
   const rotate = async (endpoint: Endpoint) => {
     try {
-      const res = await api.post<{ secret: string }>(`/api/webhooks/${endpoint.id}/rotate-secret`, {});
+      const res = await api.post<{ secret: string }>(
+        `/api/webhooks/${endpoint.id}/rotate-secret`,
+        {}
+      );
       setSecret({ endpointId: endpoint.id, value: res.secret });
       await load();
     } catch (err) {
@@ -277,7 +292,13 @@ export function WebhooksCard() {
             startIcon={<PlusIcon size={14} />}
             onClick={() => setForm({ ...EMPTY_FORM })}
             data-testid="webhook-add"
-            sx={{ borderRadius: radii.pill, bgcolor: tokens.color.paper3, color: tokens.color.ink, px: 1.75, flex: 'none' }}
+            sx={{
+              borderRadius: radii.pill,
+              bgcolor: tokens.color.paper3,
+              color: tokens.color.ink,
+              px: 1.75,
+              flex: 'none',
+            }}
           >
             {t('webhooksPage.addShort')}
           </Button>
@@ -287,7 +308,12 @@ export function WebhooksCard() {
       {data.endpoints
         .filter((e) => e.disabledReason)
         .map((e) => (
-          <Alert severity="error" key={`disabled-${e.id}`} data-testid="webhook-disabled-notice" sx={{ mb: 1.5 }}>
+          <Alert
+            severity="error"
+            key={`disabled-${e.id}`}
+            data-testid="webhook-disabled-notice"
+            sx={{ mb: 1.5 }}
+          >
             <strong>{e.url}</strong>: {e.disabledReason}
           </Alert>
         ))}
@@ -310,16 +336,31 @@ export function WebhooksCard() {
             key={endpoint.id}
             data-testid={`webhook-endpoint-${endpoint.id}`}
             title={
-              <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-                <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <Box
+                component="span"
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}
+              >
+                <Box
+                  component="span"
+                  sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                >
                   {endpoint.description || hostOf(endpoint.url)}
                 </Box>
                 {endpoint.format === 'discord' && (
-                  <Chip size="small" variant="outlined" label="Discord" data-testid={`webhook-discord-${endpoint.id}`} />
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label="Discord"
+                    data-testid={`webhook-discord-${endpoint.id}`}
+                  />
                 )}
               </Box>
             }
-            sub={endpoint.eventTypes.includes('*') ? t('webhooksPage.allEvents') : endpoint.eventTypes.join(', ')}
+            sub={
+              endpoint.eventTypes.includes('*')
+                ? t('webhooksPage.allEvents')
+                : endpoint.eventTypes.join(', ')
+            }
             openLabel={t('webhooksPage.edit')}
             control={
               <>
@@ -327,21 +368,43 @@ export function WebhooksCard() {
                 <Switch
                   checked={endpoint.active}
                   onChange={() => void toggleActive(endpoint)}
-                  slotProps={{ input: { 'aria-label': endpoint.active ? t('webhooksPage.disable') : t('webhooksPage.enable') } as InputHTMLAttributes<HTMLInputElement> }}
+                  slotProps={{
+                    input: {
+                      'aria-label': endpoint.active
+                        ? t('webhooksPage.disable')
+                        : t('webhooksPage.enable'),
+                    } as InputHTMLAttributes<HTMLInputElement>,
+                  }}
                 />
               </>
             }
           >
             <Stack spacing={1.25}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
-                <Typography variant="body2" sx={{ wordBreak: 'break-all' }} data-testid={`webhook-url-${endpoint.id}`}>
+                <Typography
+                  variant="body2"
+                  sx={{ wordBreak: 'break-all' }}
+                  data-testid={`webhook-url-${endpoint.id}`}
+                >
                   {revealed.has(endpoint.id) ? endpoint.url : maskedUrl(endpoint.url)}
-                  {endpoint.source ? ` · ${t('webhooksPage.sourceShort', { source: endpoint.source })}` : ''}
+                  {endpoint.source
+                    ? ` · ${t('webhooksPage.sourceShort', { source: endpoint.source })}`
+                    : ''}
                 </Typography>
-                <Tooltip title={revealed.has(endpoint.id) ? t('webhooksPage.hideUrl') : t('webhooksPage.showUrl')}>
+                <Tooltip
+                  title={
+                    revealed.has(endpoint.id)
+                      ? t('webhooksPage.hideUrl')
+                      : t('webhooksPage.showUrl')
+                  }
+                >
                   <IconButton
                     size="small"
-                    aria-label={revealed.has(endpoint.id) ? t('webhooksPage.hideUrl') : t('webhooksPage.showUrl')}
+                    aria-label={
+                      revealed.has(endpoint.id)
+                        ? t('webhooksPage.hideUrl')
+                        : t('webhooksPage.showUrl')
+                    }
                     onClick={() =>
                       setRevealed((r) => {
                         const next = new Set(r);
@@ -358,7 +421,8 @@ export function WebhooksCard() {
               <Typography variant="caption" color="text.secondary">
                 {t('webhooksPage.counts', {
                   succeeded: endpoint.deliveries.succeeded ?? 0,
-                  pending: (endpoint.deliveries.pending ?? 0) + (endpoint.deliveries.delivering ?? 0),
+                  pending:
+                    (endpoint.deliveries.pending ?? 0) + (endpoint.deliveries.delivering ?? 0),
                   failed,
                 })}
                 {' · '}
@@ -394,7 +458,12 @@ export function WebhooksCard() {
                 <Button size="small" onClick={() => void rotate(endpoint)}>
                   {t('webhooksPage.rotate')}
                 </Button>
-                <IconButton size="small" color="error" onClick={() => setConfirmDelete(endpoint)} aria-label={t('webhooksPage.delete')}>
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => setConfirmDelete(endpoint)}
+                  aria-label={t('webhooksPage.delete')}
+                >
                   <TrashIcon />
                 </IconButton>
               </Stack>
@@ -402,7 +471,9 @@ export function WebhooksCard() {
                 <Select
                   size="small"
                   value={testType[endpoint.id] ?? 'match.ready'}
-                  onChange={(e) => setTestType((prev) => ({ ...prev, [endpoint.id]: e.target.value }))}
+                  onChange={(e) =>
+                    setTestType((prev) => ({ ...prev, [endpoint.id]: e.target.value }))
+                  }
                   sx={{ minWidth: 200 }}
                   inputProps={{ 'aria-label': t('webhooksPage.testType') }}
                 >
@@ -435,7 +506,11 @@ export function WebhooksCard() {
           <Switch
             checked={data.allowPrivateTargets}
             onChange={(event) => void setAllowPrivate(event.target.checked)}
-            slotProps={{ input: { 'aria-label': t('webhooksPage.allowPrivate') } as InputHTMLAttributes<HTMLInputElement> }}
+            slotProps={{
+              input: {
+                'aria-label': t('webhooksPage.allowPrivate'),
+              } as InputHTMLAttributes<HTMLInputElement>,
+            }}
             data-testid="webhooks-allow-private"
           />
         }
@@ -443,7 +518,9 @@ export function WebhooksCard() {
 
       {/* Create / edit */}
       <Dialog open={form !== null} onClose={() => setForm(null)} fullWidth maxWidth="sm">
-        <DialogTitle>{form?.id ? t('webhooksPage.editTitle') : t('webhooksPage.addTitle')}</DialogTitle>
+        <DialogTitle>
+          {form?.id ? t('webhooksPage.editTitle') : t('webhooksPage.addTitle')}
+        </DialogTitle>
         {form && (
           <DialogContent>
             <Stack spacing={2} mt={1}>
@@ -456,11 +533,20 @@ export function WebhooksCard() {
                   // A new Discord endpoint starts on the admin calls, what a #admins channel is for.
                   setForm(
                     format === 'discord' && !form.id && form.allTypes
-                      ? { ...form, format, allTypes: false, eventTypes: ['admin.called', 'admin.call_resolved'] }
+                      ? {
+                          ...form,
+                          format,
+                          allTypes: false,
+                          eventTypes: ['admin.called', 'admin.call_resolved'],
+                        }
                       : { ...form, format }
                   );
                 }}
-                helperText={form.format === 'discord' ? t('webhooksPage.formatDiscordHelp') : t('webhooksPage.formatSignedHelp')}
+                helperText={
+                  form.format === 'discord'
+                    ? t('webhooksPage.formatDiscordHelp')
+                    : t('webhooksPage.formatSignedHelp')
+                }
                 SelectProps={{ native: true }}
                 inputProps={{ 'data-testid': 'webhook-format' }}
                 fullWidth
@@ -477,7 +563,9 @@ export function WebhooksCard() {
                   endAdornment: (
                     <IconButton
                       size="small"
-                      aria-label={showFormUrl ? t('webhooksPage.hideUrl') : t('webhooksPage.showUrl')}
+                      aria-label={
+                        showFormUrl ? t('webhooksPage.hideUrl') : t('webhooksPage.showUrl')
+                      }
                       onClick={() => setShowFormUrl((v) => !v)}
                       edge="end"
                     >
@@ -486,7 +574,11 @@ export function WebhooksCard() {
                   ),
                 }}
                 onChange={(e) => setForm({ ...form, url: e.target.value })}
-                placeholder={form.format === 'discord' ? 'https://discord.com/api/webhooks/…' : 'https://example.com/hooks/auto-tournament'}
+                placeholder={
+                  form.format === 'discord'
+                    ? 'https://discord.com/api/webhooks/…'
+                    : 'https://example.com/hooks/auto-tournament'
+                }
                 fullWidth
                 required
               />
@@ -504,7 +596,12 @@ export function WebhooksCard() {
                 fullWidth
               />
               <FormControlLabel
-                control={<Checkbox checked={form.allTypes} onChange={(e) => setForm({ ...form, allTypes: e.target.checked })} />}
+                control={
+                  <Checkbox
+                    checked={form.allTypes}
+                    onChange={(e) => setForm({ ...form, allTypes: e.target.checked })}
+                  />
+                }
                 label={t('webhooksPage.allEvents')}
               />
               {!form.allTypes && (
@@ -531,9 +628,10 @@ export function WebhooksCard() {
                   ))}
                 </FormGroup>
               )}
-              <FormControlLabel
-                control={<Switch checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />}
+              <SwitchRow
                 label={t('webhooksPage.active')}
+                checked={form.active}
+                onChange={(e) => setForm({ ...form, active: e.target.checked })}
               />
             </Stack>
           </DialogContent>
@@ -554,7 +652,12 @@ export function WebhooksCard() {
             {t('webhooksPage.secretOnce')}
           </Alert>
           <Stack direction="row" spacing={1} alignItems="center">
-            <TextField value={secret?.value ?? ''} fullWidth InputProps={{ readOnly: true }} data-testid="webhook-secret" />
+            <TextField
+              value={secret?.value ?? ''}
+              fullWidth
+              InputProps={{ readOnly: true }}
+              data-testid="webhook-secret"
+            />
             <IconButton
               aria-label={t('webhooksPage.copy')}
               onClick={() => {
@@ -577,7 +680,10 @@ export function WebhooksCard() {
         <DialogTitle>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <span>{t('webhooksPage.deliveriesTitle', { url: logFor?.url ?? '' })}</span>
-            <IconButton onClick={() => logFor && void loadDeliveries(logFor)} aria-label={t('webhooksPage.refresh')}>
+            <IconButton
+              onClick={() => logFor && void loadDeliveries(logFor)}
+              aria-label={t('webhooksPage.refresh')}
+            >
               <ArrowClockwiseIcon />
             </IconButton>
           </Stack>
@@ -609,7 +715,11 @@ export function WebhooksCard() {
                     </TableCell>
                     <TableCell>
                       <Tooltip title={d.lastError ?? ''}>
-                        <Chip size="small" color={STATUS_COLOR[d.status] ?? 'default'} label={d.status} />
+                        <Chip
+                          size="small"
+                          color={STATUS_COLOR[d.status] ?? 'default'}
+                          label={d.status}
+                        />
                       </Tooltip>
                     </TableCell>
                     <TableCell>{d.lastStatusCode ?? '—'}</TableCell>
@@ -618,7 +728,11 @@ export function WebhooksCard() {
                       <Button size="small" onClick={() => setPayload(d)}>
                         {t('webhooksPage.view')}
                       </Button>
-                      <Button size="small" onClick={() => void resend(d)} data-testid={`webhook-resend-${d.id}`}>
+                      <Button
+                        size="small"
+                        onClick={() => void resend(d)}
+                        data-testid={`webhook-resend-${d.id}`}
+                      >
                         {t('webhooksPage.resend')}
                       </Button>
                     </TableCell>
@@ -640,7 +754,10 @@ export function WebhooksCard() {
           <Typography variant="caption" color="text.secondary" display="block" mb={1}>
             {t('webhooksPage.redactedNote')}
           </Typography>
-          <Box component="pre" sx={{ fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', m: 0 }}>
+          <Box
+            component="pre"
+            sx={{ fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', m: 0 }}
+          >
             {JSON.stringify(payload?.payload, null, 2)}
           </Box>
           {payload?.lastResponse && (
@@ -648,7 +765,10 @@ export function WebhooksCard() {
               <Typography variant="subtitle2" mt={2}>
                 {t('webhooksPage.response')}
               </Typography>
-              <Box component="pre" sx={{ fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', m: 0 }}>
+              <Box
+                component="pre"
+                sx={{ fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', m: 0 }}
+              >
                 {payload.lastResponse}
               </Box>
             </>
@@ -662,11 +782,17 @@ export function WebhooksCard() {
       <Dialog open={confirmDelete !== null} onClose={() => setConfirmDelete(null)}>
         <DialogTitle>{t('webhooksPage.deleteTitle')}</DialogTitle>
         <DialogContent>
-          <Typography variant="body2">{t('webhooksPage.deleteBody', { url: confirmDelete?.url ?? '' })}</Typography>
+          <Typography variant="body2">
+            {t('webhooksPage.deleteBody', { url: confirmDelete?.url ?? '' })}
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDelete(null)}>{t('webhooksPage.cancel')}</Button>
-          <Button color="error" variant="contained" onClick={() => confirmDelete && void remove(confirmDelete)}>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => confirmDelete && void remove(confirmDelete)}
+          >
             {t('webhooksPage.delete')}
           </Button>
         </DialogActions>

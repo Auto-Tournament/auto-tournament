@@ -3,7 +3,8 @@ import { Box, Typography } from '@mui/material';
 import { ArrowRightIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { OverviewTeamStanding } from '../../../hooks/usePublicTournamentOverview';
-import { tokens, fontDisplay, radii } from '../../../theme/tokens';
+import { tokens, fontDisplay } from '../../../theme/tokens';
+import { panelSx, panelBorderSx } from '../../../components/common/ui';
 
 const { color } = tokens;
 const SHOWN = 6;
@@ -34,13 +35,12 @@ export function TeamsPreviewCard({ teams, to }: { teams: OverviewTeamStanding[];
       to={to}
       data-testid="overview-teams-card"
       sx={{
+        ...panelSx,
+        ...panelBorderSx,
         minHeight: 68,
         px: 2.5,
         py: 1.75,
         boxSizing: 'border-box',
-        borderRadius: radii.lg,
-        bgcolor: color.paper2,
-        border: `1px solid ${color.rule}`,
         display: 'flex',
         alignItems: 'center',
         gap: 2,
@@ -56,7 +56,10 @@ export function TeamsPreviewCard({ teams, to }: { teams: OverviewTeamStanding[];
       <Typography sx={{ fontSize: '0.875rem', color: color.muted, whiteSpace: 'nowrap' }}>
         {teams.length}
       </Typography>
-      <Box sx={{ display: 'flex', gap: 0.75, ml: 'auto', minWidth: 0, overflow: 'hidden' }} aria-hidden>
+      <Box
+        sx={{ display: 'flex', gap: 0.75, ml: 'auto', minWidth: 0, overflow: 'hidden' }}
+        aria-hidden
+      >
         {teams.slice(0, SHOWN).map((team) => (
           <Box
             key={team.teamId}

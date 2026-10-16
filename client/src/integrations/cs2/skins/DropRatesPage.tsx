@@ -15,12 +15,14 @@ import {
 } from '../../../module-sdk';
 import { rarityColor } from './rarity';
 import { formatOdds, useDropOdds } from './odds';
+import { SkinCatalog } from './SkinCatalog';
 
 const { color } = tokens;
 const mono = { fontVariantNumeric: 'tabular-nums' } as const;
 
 export function DropRatesPage() {
-  const { t } = useModuleTranslation('cs2');
+  const { t, i18n } = useModuleTranslation('cs2');
+  const locale = !i18n.language || i18n.language === 'en' ? 'en-GB' : i18n.language;
   const { odds, loaded } = useDropOdds();
 
   useEffect(() => {
@@ -139,10 +141,10 @@ export function DropRatesPage() {
                             {mode}
                           </Box>
                           <Box component="td" sx={{ py: 1, textAlign: 'right' }}>
-                            {formatOdds(odds.chances[mode].win)}
+                            {formatOdds(odds.chances[mode].win, locale)}
                           </Box>
                           <Box component="td" sx={{ py: 1, textAlign: 'right' }}>
-                            {formatOdds(odds.chances[mode].play)}
+                            {formatOdds(odds.chances[mode].play, locale)}
                           </Box>
                         </Box>
                       ))}
@@ -212,9 +214,11 @@ export function DropRatesPage() {
                         />
                       </Box>
                       <Box sx={{ textAlign: 'right', ...mono }}>
-                        <Typography sx={{ fontWeight: 600 }}>{formatOdds(r.chance)}</Typography>
+                        <Typography sx={{ fontWeight: 600 }}>
+                          {formatOdds(r.chance, locale)}
+                        </Typography>
                         <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>
-                          {t('skins.drops.perSkin', { odds: formatOdds(r.perSkin) })}
+                          {t('skins.drops.perSkin', { odds: formatOdds(r.perSkin, locale) })}
                         </Typography>
                       </Box>
                     </Box>
@@ -225,6 +229,8 @@ export function DropRatesPage() {
                 {t('skins.drops.rarityNote', { count: odds.optionsPerDrop })}
               </Typography>
             </Box>
+
+            <SkinCatalog />
 
             {odds.tournamentRewards.length > 0 && (
               <Box

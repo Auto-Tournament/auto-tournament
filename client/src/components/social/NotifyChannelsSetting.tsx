@@ -3,7 +3,8 @@ import { Box, Switch, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { apiErrorMessage } from '../../utils/api';
-import { fontDisplay, radii, tokens } from '../../theme/tokens';
+import { fontDisplay, tokens } from '../../theme/tokens';
+import { panelSx, panelBorderSx } from '../../components/common/ui';
 
 /**
  * Account page, "Notifications" (the Connections draft): where the site tells
@@ -91,9 +92,8 @@ export function NotifyChannelsSetting() {
       {prefs && (
         <Box
           sx={{
-            border: `1px solid ${color.rule}`,
-            borderRadius: radii.lg,
-            bgcolor: color.paper2,
+            ...panelSx,
+            ...panelBorderSx,
             overflowX: 'auto',
           }}
         >

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, useRef, ReactNode } from 'react';
 import {
   SnackbarProvider as NotistackProvider,
   enqueueSnackbar,
@@ -8,7 +8,14 @@ import {
 } from 'notistack';
 import { Alert, GlobalStyles, IconButton, Slide, TransitionProps } from '@mui/material';
 import { XIcon } from '@phosphor-icons/react';
-import { tokens, withAlpha, radii } from '../theme/tokens';
+import { tokens, withAlpha, radii, siteEdgeRight } from '../theme/tokens';
+
+declare module 'notistack' {
+  interface VariantOverrides {
+    /** The message is the whole toast (a module's own, like CS2's skin to pick). */
+    plain: true;
+  }
+}
 
 type ShowSnackbarOptions = {
   /**
@@ -71,6 +78,8 @@ const SNACKBAR_SX = {
 type SnackbarComponentProps = {
   id: SnackbarKey;
   message: ReactNode;
+  /** The transition's style (its slide): forwarded, or the toast stays where the slide began. */
+  style?: React.CSSProperties;
 };
 
 /**
@@ -120,6 +129,16 @@ function createSnackbarVariant(
   return Component;
 }
 
+/** A toast that is its message: it styles itself, and its buttons take clicks. */
+const PlainSnackbar = React.forwardRef<HTMLDivElement, SnackbarComponentProps>(
+  ({ message, style }, ref) => (
+    <div ref={ref} className="toast-plain" style={{ ...style, maxWidth: 'calc(100vw - 24px)' }}>
+      {message}
+    </div>
+  )
+);
+PlainSnackbar.displayName = 'PlainSnackbar';
+
 const SuccessSnackbar = createSnackbarVariant('success', 'SuccessSnackbar');
 const ErrorSnackbar = createSnackbarVariant('error', 'ErrorSnackbar');
 const WarningSnackbar = createSnackbarVariant('warning', 'WarningSnackbar');
@@ -135,7 +154,7 @@ const SlideTransition = React.forwardRef<
       {...props}
       ref={ref}
       // Use vertical motion to avoid horizontal overflow/scrollbar shifts.
-      direction="up"
+      direction="down"
       timeout={{
         enter: 400,
         exit: 300,
@@ -149,24 +168,38 @@ const SlideTransition = React.forwardRef<
 });
 SlideTransition.displayName = 'SlideTransition';
 
+/** At most this many toasts show at once; older ones fold into "+N more". */
+const VISIBLE_TOASTS = 3;
+
 export function SnackbarProvider({ children }: { children: ReactNode }) {
+  // Keys of the toasts on screen, shown or folded, for the "+N more" line.
+  const open = useRef(new Set<SnackbarKey>());
+  const syncMore = useCallback(() => {
+    const hidden = open.current.size - VISIBLE_TOASTS;
+    const root = document.documentElement;
+    if (hidden > 0) root.style.setProperty('--toast-more', `"+${hidden} more"`);
+    else root.style.removeProperty('--toast-more');
+  }, []);
+
   const showSnackbar = useCallback(
     (
       msg: ReactNode,
       variant: VariantType = 'success',
       options?: ShowSnackbarOptions
     ): SnackbarKey => {
-      return enqueueSnackbar(msg, {
+      const key = enqueueSnackbar(msg, {
         variant,
         persist: options?.persist === true,
         autoHideDuration: options?.persist === true ? undefined : (options?.autoHideMs ?? 6000),
         key: options?.key,
         onClose: options?.onClose ? () => options.onClose?.() : undefined,
+        // Top right, under the navbar: the chat button owns the bottom right.
         anchorOrigin: {
-          vertical: 'bottom',
+          vertical: 'top',
           horizontal: 'right',
         },
       });
+      return key;
     },
     []
   );
@@ -180,7 +213,8 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
 
   const showError = useCallback(
     (msg: ReactNode): SnackbarKey => {
-      return showSnackbar(msg, 'error');
+      // Errors stay until closed: one that goes by itself is easily missed.
+      return showSnackbar(msg, 'error', { persist: true });
     },
     [showSnackbar]
   );
@@ -246,16 +280,70 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
             {
               pointerEvents: 'auto !important',
             },
-          // Above MUI's modal layer (1300), so feedback from a dialog shows.
+          // A plain toast is its own UI: all of it takes clicks.
+          'div.notistack-SnackbarContainer .toast-plain, div.notistack-SnackbarContainer .toast-plain *':
+            {
+              pointerEvents: 'auto !important',
+            },
           'div.notistack-SnackbarContainer': {
+            // Above MUI's modal layer (1300), so feedback from a dialog shows.
             zIndex: 1400,
+            // Clear of the navbar (it floats 12 px down, about 64 px tall).
+            top: 'calc(84px + env(safe-area-inset-top, 0px)) !important',
+            bottom: 'auto !important',
+            // In line with the navbar's right edge, not the screen's (a 4K screen is wide).
+            right: `${siteEdgeRight} !important`,
+            // Newest on top.
+            flexDirection: 'column-reverse !important',
+          },
+          // At most three show; the older ones fold into "+N more" under them.
+          [`div.notistack-SnackbarContainer > div:nth-last-of-type(n+${VISIBLE_TOASTS + 1})`]: {
+            display: 'none !important',
+          },
+          'div.notistack-SnackbarContainer::after': {
+            content: 'var(--toast-more, none)',
+            order: -1,
+            alignSelf: 'flex-end',
+            margin: '2px 4px 0',
+            padding: '4px 12px',
+            borderRadius: radii.pill,
+            background: tokens.color.paper3,
+            color: tokens.color.ink2,
+            fontSize: 12,
+            fontWeight: 600,
+            lineHeight: 1.4,
+            boxShadow: `0 8px 20px -12px ${tokens.color.shadow}`,
+          },
+          // Phones: full width under the top bar, 12 px from each side.
+          '@media (max-width: 599.95px)': {
+            'div.notistack-SnackbarContainer': {
+              left: '12px !important',
+              right: '12px !important',
+              width: 'auto !important',
+              maxWidth: 'none !important',
+              top: 'calc(72px + env(safe-area-inset-top, 0px)) !important',
+            },
+            'div.notistack-SnackbarContainer .MuiAlert-root': {
+              width: '100%',
+              maxWidth: 'none',
+            },
           },
         }}
       />
       <NotistackProvider
-        maxSnack={5}
+        // Folding (above) caps what shows; a high cap here keeps notistack
+        // from closing older toasts, errors included, on its own.
+        maxSnack={50}
+        onEnter={(_node, _appearing, key) => {
+          open.current.add(key);
+          syncMore();
+        }}
+        onExited={(_node, key) => {
+          open.current.delete(key);
+          syncMore();
+        }}
         anchorOrigin={{
-          vertical: 'bottom',
+          vertical: 'top',
           horizontal: 'right',
         }}
         autoHideDuration={6000}
@@ -266,6 +354,7 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
           error: ErrorSnackbar,
           warning: WarningSnackbar,
           info: InfoSnackbar,
+          plain: PlainSnackbar,
         }}
       >
         <SnackbarContext.Provider

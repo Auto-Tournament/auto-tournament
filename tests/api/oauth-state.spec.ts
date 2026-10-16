@@ -94,7 +94,10 @@ for (const provider of providers) {
             cookies.some((c) => c.startsWith('player_steam_id=') && !isCleared(c)),
             url
           ).toBe(false);
-          expect(cookies.some((c) => c.startsWith('pending_steam_link=')), url).toBe(false);
+          expect(
+            cookies.some((c) => c.startsWith('pending_steam_link=')),
+            url
+          ).toBe(false);
         }
 
         // A fresh browser with no state cookie, holding a valid-looking state.

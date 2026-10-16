@@ -7,7 +7,14 @@
 import { useEffect, useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { GameControllerIcon } from '@phosphor-icons/react';
-import { api, useModuleTranslation, tokens, radii } from '../../../module-sdk';
+import {
+  api,
+  useModuleTranslation,
+  tokens,
+  radii,
+  panelSx,
+  panelBorderSx,
+} from '../../../module-sdk';
 
 const { color } = tokens;
 
@@ -40,14 +47,13 @@ export function TryoutLink() {
       aria-labelledby="tryout-title"
       data-testid="skins-tryout"
       sx={{
+        ...panelSx,
+        ...panelBorderSx,
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
         gap: 2,
         p: 2,
-        borderRadius: radii.lg,
-        bgcolor: color.paper2,
-        border: `1px solid ${color.rule}`,
       }}
     >
       <GameControllerIcon size={28} color={color.accent} aria-hidden />

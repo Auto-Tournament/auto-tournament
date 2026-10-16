@@ -10,8 +10,6 @@ import {
   Menu,
   MenuItem,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { DotsThreeIcon } from '@phosphor-icons/react';
@@ -37,6 +35,8 @@ import { MatchHoldPanel } from '../components/admin/MatchHoldPanel';
 import { FleetRosterEditor } from '../components/admin/FleetRosterEditor';
 import { useIntegrationFor } from '../integrations/registry';
 import { fontDisplay, fontMono, radii, textSize, tokens } from '../theme/tokens';
+import { SegmentedControl } from '../components/common/SegmentedControl';
+import { fmtMoney } from '../utils/number';
 
 const { color } = tokens;
 
@@ -291,8 +291,7 @@ const LEVEL_COLOR: Record<LogEntry['level'], string> = {
   info: tokens.color.ink2,
   admin: '#c9a7ff',
 };
-const money = (v: number | undefined) =>
-  typeof v === 'number' && v >= 0 ? `$${v.toLocaleString()}` : '—';
+const money = (v: number | undefined) => (typeof v === 'number' && v >= 0 ? fmtMoney(v) : '—');
 const WEAPON_NAMES: Record<string, string> = {
   smokegrenade: 'smoke',
   flashbang: 'flash',
@@ -1701,31 +1700,34 @@ export default function ManageMatch() {
         title="Logs"
         testId="manage-logs"
         aside={
-          <ToggleButtonGroup
+          <SegmentedControl
             size="small"
-            exclusive
+            label="Source"
             value={source}
-            onChange={(_, v) => v && setSource(v)}
-            aria-label="Source"
-          >
-            <ToggleButton value="all">All</ToggleButton>
-            <ToggleButton value="server">Server</ToggleButton>
-            <ToggleButton value="platform">Platform</ToggleButton>
-            <ToggleButton value="admin">Admins</ToggleButton>
-          </ToggleButtonGroup>
+            onChange={setSource}
+            options={[
+              { value: 'all', label: 'All' },
+              { value: 'server', label: 'Server' },
+              { value: 'platform', label: 'Platform' },
+              { value: 'admin', label: 'Admins' },
+            ]}
+          />
         }
       >
-        <ToggleButtonGroup
+        <SegmentedControl
+          multiple
+          look="chips"
           size="small"
+          label="Level"
           value={levels}
-          onChange={(_, v: string[]) => setLevels(v)}
-          aria-label="Level"
-        >
-          <ToggleButton value="error">Errors {counts.error}</ToggleButton>
-          <ToggleButton value="warn">Warnings {counts.warn}</ToggleButton>
-          <ToggleButton value="info">Info</ToggleButton>
-          <ToggleButton value="admin">Admin actions</ToggleButton>
-        </ToggleButtonGroup>
+          onChange={setLevels}
+          options={[
+            { value: 'error', label: `Errors ${counts.error}` },
+            { value: 'warn', label: `Warnings ${counts.warn}` },
+            { value: 'info', label: 'Info' },
+            { value: 'admin', label: 'Admin actions' },
+          ]}
+        />
         <Box sx={{ overflowX: 'auto' }}>
           <Box
             component="table"
