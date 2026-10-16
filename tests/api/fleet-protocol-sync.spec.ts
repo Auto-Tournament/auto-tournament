@@ -126,12 +126,10 @@ test.describe('Fleet protocol: in sync with Ready Up', () => {
     }
     const onlyReadyUp = source.files.filter((f) => !ours.has(f));
     if (onlyReadyUp.length) {
-      test
-        .info()
-        .annotations.push({
-          type: 'ready-up only (not adopted)',
-          description: onlyReadyUp.join(', '),
-        });
+      test.info().annotations.push({
+        type: 'ready-up only (not adopted)',
+        description: onlyReadyUp.join(', '),
+      });
     }
     expect(drift, `copy these from ${REPO} ${READYUP_PROTOCOL} (or change both sides)`).toEqual([]);
   });
