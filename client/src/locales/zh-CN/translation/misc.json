@@ -681,7 +681,9 @@
       "searchWidening": "Widening the search: ±{{elo}} · {{count}} searching",
       "searchAnyRating": "Searching every rating now · {{count}} searching",
       "inTournament": "You are in an active tournament ({{tournament}}), you can't queue for matchmaking right now.",
-      "partyInTournament": "In an active tournament, so the party can't queue right now: {{names}}."
+      "partyInTournament": "In an active tournament, so the party can't queue right now: {{names}}.",
+      "inMatch_one": "{{count}} 人在比赛中",
+      "inMatch_other": "{{count}} 人在比赛中"
     },
     "queue": {
       "searching": "Searching {{mode}}",

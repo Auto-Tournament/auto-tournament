@@ -326,6 +326,9 @@ export default function Play() {
   const cooldown = me?.cooldownUntil ? secondsUntil(me.cooldownUntil, skew) : 0;
   const inviteLink = party ? `${window.location.origin}${paths.play}?join=${party.inviteCode}` : '';
   const counts = me?.queueCounts ?? {};
+  // Players in a matchmaking game right now, per mode and in all.
+  const inMatch = me?.matchCounts ?? {};
+  const totalInMatch = Object.values(inMatch).reduce((sum, n) => sum + n, 0);
   const totalQueued = Object.values(counts).reduce((a, b) => a + b, 0);
   const people =
     party?.people ?? party?.members.map((id) => ({ id, name: id, avatarUrl: null })) ?? [];
@@ -400,6 +403,12 @@ export default function Play() {
                     ●{' '}
                   </Box>
                   {t('matchmaking.play.inQueue', { count: totalQueued })}
+                  {totalInMatch > 0 && (
+                    <Box component="span" sx={{ color: color.muted }} data-testid="mm-in-match">
+                      {' · '}
+                      {t('matchmaking.play.inMatch', { count: totalInMatch })}
+                    </Box>
+                  )}
                   {typeof me?.online === 'number' && (
                     <Box component="span" sx={{ color: color.muted }} data-testid="mm-online">
                       {' · '}
@@ -829,6 +838,9 @@ export default function Play() {
                             <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
                               {[
                                 t('matchmaking.play.inQueue', { count: counts[m] ?? 0 }),
+                                inMatch[m]
+                                  ? t('matchmaking.play.inMatch', { count: inMatch[m] })
+                                  : null,
                                 typeof me?.waitSeconds?.[m] === 'number'
                                   ? t('matchmaking.play.aboutWait', {
                                       count: Math.max(1, Math.round(me.waitSeconds[m]! / 60)),

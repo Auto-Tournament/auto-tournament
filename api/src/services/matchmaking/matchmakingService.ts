@@ -130,6 +130,8 @@ export interface MatchmakingMe {
   queue: { mode: string; queuedAt: number; status: string; botFill: boolean } | null;
   /** Players searching right now, per mode (the Play page's "in the queue"). */
   queueCounts: Record<string, number>;
+  /** Players in a matchmaking match that has not finished, per mode (the Play page's "in a match"). */
+  matchCounts: Record<string, number>;
   lobby: {
     id: string;
     status: string;
@@ -1335,6 +1337,7 @@ export class MatchmakingService {
       ),
       invites: await this.invitesTo(playerId),
       queueCounts: await this.queueCounts(),
+      matchCounts: await this.matchCounts(),
       queue: entry
         ? {
             mode: entry.mode,
@@ -1421,6 +1424,16 @@ export class MatchmakingService {
       name: byId.get(id)?.name || id,
       avatarUrl: byId.get(id)?.avatar_url ?? null,
     }));
+  }
+
+  private async matchCounts(): Promise<Record<string, number>> {
+    const rows = await db.queryAsync<{ mode: string; n: number | string }>(
+      `SELECT l.mode, COUNT(lp.player_id) AS n FROM mm_lobbies l
+         JOIN mm_lobby_players lp ON lp.lobby_id = l.id
+         JOIN matches m ON m.slug = l.match_slug
+        WHERE m.status NOT IN ('completed', 'cancelled') GROUP BY l.mode`
+    );
+    return Object.fromEntries(rows.map((r) => [r.mode, Number(r.n)]));
   }
 
   private async queueCounts(): Promise<Record<string, number>> {
