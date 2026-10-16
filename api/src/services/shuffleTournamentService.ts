@@ -634,6 +634,23 @@ async function insertRoundMatches(
   return matches;
 }
 
+/** Minutes into a round after which the bench waits for the next round instead. */
+export const LATE_BENCH_SECONDS = 10 * 60;
+
+/**
+ * Too late in the round for an extra match from the bench: one of the round's matches has
+ * already finished, or the round started more than LATE_BENCH_SECONDS ago. The next round waits
+ * for every match of this one, so a full match made at 20:40 held round 3 until it ended, long
+ * after the rest of round 2 (NTLAN, 2026-10-16). Those players are drawn next round instead.
+ */
+export function benchTooLate(
+  round: { startedAt: number | null; finished: number },
+  now: number
+): boolean {
+  if (round.finished > 0) return true;
+  return round.startedAt !== null && now - round.startedAt > LATE_BENCH_SECONDS;
+}
+
 /**
  * Players who joined a running shuffle (or sat this round out) play now when
  * there are enough of them: the round gets extra matches from its bench
@@ -653,6 +670,24 @@ export async function fillRoundFromBench(tournamentId: number): Promise<string[]
   const roundNumber = top?.round ?? null;
   // A round that has finished is about to be replaced by the next one, which draws everyone.
   if (roundNumber === null || !top?.open) return [];
+  const progress = await db.queryOneAsync<{ started: number | null; finished: number | string }>(
+    `SELECT MIN(loaded_at) AS started,
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS finished
+       FROM matches WHERE tournament_id = ? AND round = ?`,
+    [tournamentId, roundNumber]
+  );
+  if (
+    benchTooLate(
+      {
+        startedAt: progress?.started ? Number(progress.started) : null,
+        finished: Number(progress?.finished ?? 0),
+      },
+      Math.floor(Date.now() / 1000)
+    )
+  ) {
+    log.info(`Round ${roundNumber}: too late for a match from the bench; they play next round`);
+    return [];
+  }
   const mapSequence = tournament.mapSequence || tournament.maps;
   const map = mapSequence[roundNumber - 1];
   if (!map) return [];

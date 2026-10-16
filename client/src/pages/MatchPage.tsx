@@ -466,8 +466,10 @@ export default function MatchPage() {
             />
           )}
 
-          {/* Everyone who does not play in it sees the pre-match phase (the veto) as it happens, read-only. */}
-          {!viewerTeamId && matchIsOn && PreMatchView && (
+          {/* Everyone who does not play in it sees the pre-match phase (the veto) as it happens, read-only.
+              Only while there is one: a shuffle match (no veto) that was already live showed "waiting
+              for X to remove a map" (NTLAN, 2026-10-16). */}
+          {!viewerTeamId && vetoing && PreMatchView && (
             <Box data-testid="match-admin-prematch" sx={panel}>
               <PreMatchView
                 matchSlug={match.slug}
