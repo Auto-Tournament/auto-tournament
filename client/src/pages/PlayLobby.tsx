@@ -80,6 +80,22 @@ export default function PlayLobby() {
   // Accepts, the match being made and its progress: the player's own
   // matchmaking event and the match's updates.
   useTopic([], load, { player: true, events: ['mm:changed', 'match:update'] });
+  // A side pick, the knife and the live score change the server's state without a match:update
+  // the page hears, so a player's room stayed on the old view until a reload (NTLAN, 2026-10-16).
+  // While the match is on the server: read again every 5 s, and when the tab comes back.
+  const onServerNow = lobby?.matchStatus === 'loaded' || lobby?.matchStatus === 'live';
+  useEffect(() => {
+    if (!onServerNow) return;
+    const id = window.setInterval(() => void load(), 5000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void load();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [onServerNow, load]);
 
   const onRolled = useCallback(() => setRolled(true), []);
 
