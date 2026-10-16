@@ -666,6 +666,24 @@ export interface LoadoutRow {
   team: number;
 }
 
+/**
+ * A slot with nothing equipped on the platform (any weapon, the knife, the gloves): the newest
+ * skin the player owns for it, on both sides, rather than the stock look. A knife that dropped
+ * tonight (drops no longer equip themselves) left its owner with the stock knife (NTLAN,
+ * 2026-10-16). An equipped skin, on any side, is never replaced. `owned` newest first.
+ */
+export function withInventoryFallback(rows: LoadoutRow[], owned: LoadoutRow[]): LoadoutRow[] {
+  const out = [...rows];
+  const filled = new Set(rows.map((r) => r.slot));
+  for (const o of owned) {
+    const slot = slotOf(o.weapon);
+    if (filled.has(slot)) continue;
+    filled.add(slot);
+    out.push({ ...o, slot, team: 0 });
+  }
+  return out;
+}
+
 export interface LoadoutPayload {
   paints: Array<{
     team: LoadoutTeam;
@@ -1729,7 +1747,13 @@ export const skinService = {
         WHERE l.player_uid = ?`,
       [uid]
     );
-    return loadoutPayload(rows);
+    const owned = await db.queryAsync<LoadoutRow>(
+      `SELECT weapon, paint_kit, float_value, pattern, stattrak, '' AS slot, 0 AS team
+         FROM cs2_player_skins WHERE player_uid = ?
+        ORDER BY created_at DESC, id DESC`,
+      [uid]
+    );
+    return loadoutPayload(withInventoryFallback(rows, owned));
   },
 
   /** Admin: the numbers at the top of the Skins page. */
