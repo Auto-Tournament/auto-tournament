@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import { Alert, Box, Button, Typography } from '@mui/material';
 import { motion, useReducedMotion } from 'motion/react';
 import { CopyIcon, GameControllerIcon } from '@phosphor-icons/react';
 import {
   api,
+  links,
   onSocketReconnect,
   tokens,
   mono,
@@ -32,6 +34,13 @@ function mapDataFor(slug: string | null): CS2MapData | null {
     }
   );
 }
+
+/**
+ * The match is over. Its `server_id` stays set, but the server runs another match by now: a
+ * Connect there lands on that match's server, which kicks the player (NTLAN, 2026-10-16).
+ */
+const isFinished = (status: string | null | undefined): boolean =>
+  status === 'completed' || status === 'cancelled';
 
 /**
  * The server to show, or null for "waiting for a server".
@@ -102,8 +111,7 @@ function useMatchConnect(
 
   // Until there is a server to join, ask again every 5 s as well: a missed socket event left
   // a matchmaking room without its Join until the page was reloaded (2026-10-15).
-  const waitingForServer =
-    enabled && !connect?.server?.host && connect?.matchStatus !== 'completed';
+  const waitingForServer = enabled && !connect?.server?.host && !isFinished(connect?.matchStatus);
   useEffect(() => {
     if (!waitingForServer) return;
     const id = window.setInterval(() => void load(), 5000);
@@ -171,7 +179,9 @@ export function MatchServerPanel({
   const [copyFallbackCommand, setCopyFallbackCommand] = useState<string | null>(null);
   const reduceMotion = useReducedMotion();
 
-  const server = connect ? effectiveServer(connect) : null;
+  // Over, by the route's answer or the page's (whichever heard first): nothing to join.
+  const finished = isFinished(connect?.matchStatus) || isFinished(matchStatus);
+  const server = connect && !finished ? effectiveServer(connect) : null;
   // LAN or internet: the platform picks for where the viewer is; they can switch.
   const [via, setVia] = useState<'lan' | 'public' | null>(null);
   const addresses = server?.addresses ?? null;
@@ -224,6 +234,36 @@ export function MatchServerPanel({
 
   // Not asked yet: nothing, rather than a "waiting" that is about to be wrong.
   if (viewerCanJoin && !connect) return null;
+
+  // The page says the match is over itself; the panel only adds where to play now, if anywhere.
+  if (finished) {
+    const current = connect?.currentMatchSlug ?? null;
+    if (!current) return null;
+    return (
+      <Box
+        data-testid="match-server-finished"
+        sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+      >
+        <Typography sx={{ fontWeight: 700, fontSize: '1.0625rem' }}>
+          {t('matchInfo.server.finishedTitle')}
+        </Typography>
+        <Typography sx={{ color: tokens.color.ink2 }}>
+          {t('matchInfo.server.finishedBody')}
+        </Typography>
+        <Box>
+          <Button
+            component={RouterLink}
+            to={links.match(current)}
+            variant="contained"
+            startIcon={<GameControllerIcon size={18} weight="bold" />}
+            data-testid="match-server-current-match"
+          >
+            {t('matchInfo.server.finishedGoToCurrent')}
+          </Button>
+        </Box>
+      </Box>
+    );
+  }
 
   if (!server) {
     return (
