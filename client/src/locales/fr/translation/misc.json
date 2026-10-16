@@ -757,7 +757,7 @@
       "equipFailed": "Impossible de l’équiper",
       "rematch": {
         "title": "Revanche ?",
-        "body": "Mêmes équipes, nouvelle carte. Elle démarre quand les {{total}} disent oui ({{yes}} pour l'instant), sous 2 minutes.",
+        "body": "Mêmes équipes, nouvelle carte. Un oui vaut pour tout ton groupe. Elle démarre quand tout le monde est partant ({{yes}} sur {{total}} pour l'instant), sous 2 minutes.",
         "yes": "Oui, revanche",
         "no": "Non merci",
         "button": "Revanche",

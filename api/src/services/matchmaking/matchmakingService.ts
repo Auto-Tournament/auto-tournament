@@ -1018,9 +1018,10 @@ export class MatchmakingService {
   // --- rematch ---------------------------------------------------------
 
   /**
-   * A player's answer to "rematch?" after their matchmaking match ended. When every player of
-   * the lobby has said yes (within REMATCH_SECONDS of the end), the same teams get a new match
-   * straight away: a new lobby, accepted by everyone, on a new random map. One "no" ends it.
+   * A player's answer to "rematch?" after their matchmaking match ended. The answer counts for
+   * their whole party (one click for a 5-stack). When every player of the lobby has a yes
+   * (within REMATCH_SECONDS of the end), the same teams get a new match straight away: a new
+   * lobby, accepted by everyone, on a new random map. One "no" ends it.
    */
   voteRematch(
     playerId: string,
@@ -1043,20 +1044,22 @@ export class MatchmakingService {
       if (players.some((p) => p.rematch_declined_at)) return { status: 'declined' };
       const now = this.clock();
       const all = players.map((p) => p.player_id);
+      // The caller's whole party answers with them.
+      const party = players.find((p) => p.player_id === playerId)!.party_id;
       if (!yes) {
         await db.runAsync(
-          'UPDATE mm_lobby_players SET rematch_declined_at = ? WHERE lobby_id = ? AND player_id = ?',
-          [now, lobbyId, playerId]
+          'UPDATE mm_lobby_players SET rematch_declined_at = ? WHERE lobby_id = ? AND party_id = ?',
+          [now, lobbyId, party]
         );
         this.touch(...all);
         return { status: 'declined' };
       }
       await db.runAsync(
-        'UPDATE mm_lobby_players SET rematch_at = COALESCE(rematch_at, ?) WHERE lobby_id = ? AND player_id = ?',
-        [now, lobbyId, playerId]
+        'UPDATE mm_lobby_players SET rematch_at = COALESCE(rematch_at, ?) WHERE lobby_id = ? AND party_id = ?',
+        [now, lobbyId, party]
       );
       this.touch(...all);
-      const waiting = players.filter((p) => p.player_id !== playerId && !p.rematch_at);
+      const waiting = players.filter((p) => p.party_id !== party && !p.rematch_at);
       if (waiting.length > 0) return { status: 'voting' };
 
       // Everyone said yes. Nobody may be in another game or lobby by now.

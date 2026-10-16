@@ -757,7 +757,7 @@
       "equipFailed": "Could not equip it",
       "rematch": {
         "title": "Rematch?",
-        "body": "Same teams, a new map. It starts when all {{total}} say yes ({{yes}} so far), within 2 minutes.",
+        "body": "Same teams, a new map. One yes counts for your whole party. It starts when everyone is in ({{yes}} of {{total}} so far), within 2 minutes.",
         "yes": "Yes, rematch",
         "no": "No thanks",
         "button": "Rematch",

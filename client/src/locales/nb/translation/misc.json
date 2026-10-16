@@ -757,7 +757,7 @@
       "equipFailed": "Kunne ikke utstyre den",
       "rematch": {
         "title": "Revansj?",
-        "body": "Samme lag, nytt kart. Den starter når alle {{total}} sier ja ({{yes}} så langt), innen 2 minutter.",
+        "body": "Samme lag, nytt kart. Ett ja gjelder hele partyet ditt. Den starter når alle er med ({{yes}} av {{total}} så langt), innen 2 minutter.",
         "yes": "Ja, revansj",
         "no": "Nei takk",
         "button": "Revansj",

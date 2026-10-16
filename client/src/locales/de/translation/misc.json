@@ -757,7 +757,7 @@
       "equipFailed": "Konnte nicht ausgerüstet werden",
       "rematch": {
         "title": "Revanche?",
-        "body": "Gleiche Teams, neue Karte. Sie startet, wenn alle {{total}} zustimmen ({{yes}} bisher), innerhalb von 2 Minuten.",
+        "body": "Gleiche Teams, neue Karte. Ein Ja gilt für deine ganze Gruppe. Sie startet, wenn alle dabei sind ({{yes}} von {{total}} bisher), innerhalb von 2 Minuten.",
         "yes": "Ja, Revanche",
         "no": "Nein danke",
         "button": "Revanche",

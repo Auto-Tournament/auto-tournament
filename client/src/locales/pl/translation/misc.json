@@ -759,7 +759,7 @@
       "equipFailed": "Nie udało się założyć",
       "rematch": {
         "title": "Rewanż?",
-        "body": "Te same drużyny, nowa mapa. Startuje, gdy wszyscy {{total}} się zgodzą ({{yes}} do tej pory), w ciągu 2 minut.",
+        "body": "Te same drużyny, nowa mapa. Jedno „tak” liczy się dla całej twojej grupy. Startuje, gdy wszyscy są gotowi ({{yes}} z {{total}} do tej pory), w ciągu 2 minut.",
         "yes": "Tak, rewanż",
         "no": "Nie, dzięki",
         "button": "Rewanż",

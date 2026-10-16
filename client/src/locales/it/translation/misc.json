@@ -757,7 +757,7 @@
       "equipFailed": "Impossibile equipaggiarla",
       "rematch": {
         "title": "Rivincita?",
-        "body": "Stesse squadre, nuova mappa. Parte quando tutti i {{total}} dicono sì ({{yes}} finora), entro 2 minuti.",
+        "body": "Stesse squadre, nuova mappa. Un sì vale per tutto il tuo gruppo. Parte quando ci sono tutti ({{yes}} su {{total}} finora), entro 2 minuti.",
         "yes": "Sì, rivincita",
         "no": "No, grazie",
         "button": "Rivincita",
