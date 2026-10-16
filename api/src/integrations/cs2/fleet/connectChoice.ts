@@ -7,6 +7,11 @@
  * address), or a private one (the platform itself runs on that LAN), the player is on the
  * server's network and gets the LAN address. Everyone else gets the public one. Both are
  * listed, so a player can pick the other.
+ *
+ * Behind Cloudflare that guess can miss: at NTLAN (2026-10-16) players at the venue reached the
+ * site by another address (IPv6, most likely) and were told to use the public one, whose new
+ * ports the router did not forward. The `connect_prefer_lan` site setting skips the guess: LAN
+ * for everyone.
  */
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
@@ -18,6 +23,7 @@ import {
   machinePublicAddresses,
 } from './link';
 import { getFleetServer } from './registry';
+import { settingsService } from '../../../services/settingsService';
 
 export interface ConnectOption {
   kind: 'lan' | 'public';
@@ -95,8 +101,10 @@ export async function connectChoice(
     { kind: 'lan', host: lan.host, port: lan.port },
     { kind: 'public', host: publicHost, port: lan.port },
   ];
+  const preferLan =
+    (await settingsService.getSetting('connect_prefer_lan').catch(() => null)) === '1';
   return {
     options,
-    recommended: (await onServerNetwork(viewerIp, publicHost)) ? 'lan' : 'public',
+    recommended: preferLan || (await onServerNetwork(viewerIp, publicHost)) ? 'lan' : 'public',
   };
 }

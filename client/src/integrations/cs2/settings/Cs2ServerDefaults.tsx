@@ -73,6 +73,8 @@ export interface Cs2DefaultsValues {
   gotvAccess: number;
   /** 0 the GOTV delay, 1 live, 2 off. */
   gotvLiveStats: number;
+  /** The connect panel recommends the LAN address to everyone: 1 on, 0 off. */
+  connectPreferLan: number;
   atSeriesEndKickDelayNoDemo: number;
   atAutoreadyEnabled: Flag;
   atBothTeamsUnpauseRequired: Flag;
@@ -114,6 +116,7 @@ const DEFAULTS: Cs2DefaultsValues = {
   gotvSeats: 8,
   gotvAccess: 0,
   gotvLiveStats: 0,
+  connectPreferLan: 0,
   atSeriesEndKickDelayNoDemo: 30,
   atAutoreadyEnabled: null,
   atBothTeamsUnpauseRequired: null,
@@ -592,6 +595,22 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                       checked={vals.atJoinPassword}
                       onChange={(e) => update('atJoinPassword', e.target.checked)}
                       size="small"
+                    />
+                    <SwitchRow
+                      label={t('settings.atCore.adminTools.connectPreferLan')}
+                      checked={vals.connectPreferLan === 1}
+                      onChange={(e) => {
+                        const v = e.target.checked ? 1 : 0;
+                        update('connectPreferLan', v);
+                        void save({ connectPreferLan: v });
+                      }}
+                      size="small"
+                      slotProps={{
+                        input: { 'data-testid': 'setting-connect-prefer-lan' } as Record<
+                          string,
+                          string
+                        >,
+                      }}
                     />
                     <SwitchRow
                       label={t('settings.atCore.adminTools.pauseAfterRestore')}

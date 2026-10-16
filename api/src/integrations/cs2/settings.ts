@@ -57,6 +57,8 @@ export type Cs2SettingKey =
   | 'gotv_seats'
   | 'gotv_access'
   | 'gotv_live_stats'
+  // How players join (fleet/connectChoice.ts)
+  | 'connect_prefer_lan'
   // Highlight videos (demos/highlights.ts)
   | 'highlights_watermark'
   | 'highlights_per_player'
@@ -298,6 +300,9 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     max: 2,
     message: 'gotv_live_stats must be 0-2',
   }),
+  // The connect panel recommends the LAN address to everyone (fleet/connectChoice.ts): a LAN
+  // event, where the platform cannot tell a player at the venue from one at home.
+  binary('connect_prefer_lan', 'connectPreferLan', 380),
   // The highlights_* settings are core's now (services/highlights/settings.ts).
 ];
 

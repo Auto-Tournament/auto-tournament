@@ -672,7 +672,8 @@
       "adminTools": {
         "title": "Admin-tools",
         "pauseAfterRestore": "Pauzeren na round restore (.stop) zodat teams kunnen overleggen",
-        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)"
+        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)",
+        "connectPreferLan": "Spelers zitten op het LAN van de servers: Verbinden gebruikt voor iedereen het LAN-adres"
       },
       "autostart": {
         "label": "Start matches after (minutes in warmup)",

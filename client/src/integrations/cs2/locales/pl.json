@@ -680,7 +680,8 @@
       "adminTools": {
         "title": "Narzędzia admina",
         "pauseAfterRestore": "Pauzuj po przywróceniu rundy (.stop), aby drużyny mogły się skoordynować",
-        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)"
+        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)",
+        "connectPreferLan": "Gracze są w sieci LAN serwerów: Połącz używa adresu LAN dla wszystkich"
       },
       "autostart": {
         "label": "Start matches after (minutes in warmup)",
