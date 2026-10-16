@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { fmtDayTime, fmtTime } from '../../../utils/time';
 import { Box, Typography } from '@mui/material';
 import {
   CheckCircleIcon,
@@ -10,7 +11,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import type { Tournament } from '../../../types';
 import type { SignupWindow } from '../../../hooks/useTournamentSignup';
-import { tokens, fontDisplay, radii } from '../../../theme/tokens';
+import { tokens, fontDisplay } from '../../../theme/tokens';
+import { panelSx } from '../../../components/common/ui';
 
 const { color } = tokens;
 
@@ -53,15 +55,8 @@ export function KeyDatesBar({
   signup?: SignupWindow | null;
   action?: ReactNode;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { start, end } = startAndEnd(tournament);
-  const dayAndTime = new Intl.DateTimeFormat(i18n.language, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 
   const cells: Cell[] = [];
   if (start !== null) {
@@ -69,10 +64,9 @@ export function KeyDatesBar({
       key: 'starts',
       icon: <PlayCircleIcon size={22} color={color.accent} />,
       label: t('overviewPage.keyDates.starts'),
-      value: dayAndTime.format(start),
+      value: fmtDayTime(start),
     });
   }
-  const time = new Intl.DateTimeFormat(i18n.language, { hour: '2-digit', minute: '2-digit' });
   const showSignup = Boolean(signup?.registrationOpen && signup.registrationClosesAt);
   const showCheckIn = Boolean(signup?.checkInOpensAt && signup.checkInClosesAt);
   if (showSignup && signup?.registrationClosesAt) {
@@ -80,7 +74,7 @@ export function KeyDatesBar({
       key: 'signupCloses',
       icon: <LockSimpleIcon size={22} color={color.muted} />,
       label: t('signup.keyDates.closes'),
-      value: dayAndTime.format(new Date(signup.registrationClosesAt)),
+      value: fmtDayTime(signup.registrationClosesAt),
     });
   }
   if (showCheckIn && signup?.checkInOpensAt && signup.checkInClosesAt) {
@@ -90,7 +84,7 @@ export function KeyDatesBar({
       key: 'checkIn',
       icon: <CheckCircleIcon size={22} color={color.sideT} />,
       label: t('signup.keyDates.checkIn'),
-      value: `${dayAndTime.format(opens)} – ${(sameDay ? time : dayAndTime).format(new Date(signup.checkInClosesAt))}`,
+      value: `${fmtDayTime(opens)} – ${(sameDay ? fmtTime : fmtDayTime)(signup.checkInClosesAt)}`,
     });
   }
   if (end !== null && !showSignup && !showCheckIn) {
@@ -98,7 +92,7 @@ export function KeyDatesBar({
       key: 'ends',
       icon: <FlagCheckeredIcon size={22} color={color.muted} />,
       label: t('overviewPage.keyDates.lastOnSchedule'),
-      value: dayAndTime.format(end),
+      value: fmtDayTime(end),
     });
   }
   if (tournament.type !== 'shuffle') {
@@ -130,9 +124,8 @@ export function KeyDatesBar({
     <Box
       data-testid="overview-key-dates"
       sx={{
+        ...panelSx,
         p: { xs: 2, md: '20px 24px' },
-        borderRadius: radii.lg,
-        bgcolor: color.paper2,
         border: `1px solid ${color.accent}`,
         display: 'grid',
         gridTemplateColumns: {
@@ -161,7 +154,12 @@ export function KeyDatesBar({
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
             <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>{cell.label}</Typography>
             <Typography
-              sx={{ fontFamily: fontDisplay, fontSize: '1.125rem', fontWeight: 600, lineHeight: 1.25 }}
+              sx={{
+                fontFamily: fontDisplay,
+                fontSize: '1.125rem',
+                fontWeight: 600,
+                lineHeight: 1.25,
+              }}
             >
               {cell.value}
             </Typography>

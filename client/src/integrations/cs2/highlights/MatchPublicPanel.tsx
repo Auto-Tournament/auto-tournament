@@ -9,6 +9,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Box, ButtonBase, LinearProgress, Stack, Typography } from '@mui/material';
 import {
   api,
+  fontDisplay,
   HighlightPlayer,
   mono,
   radii,
@@ -18,6 +19,7 @@ import {
   useSocket,
   type HighlightPlayerHandle,
   type MusicTrack,
+  SegmentedControl,
 } from '../../../module-sdk';
 import type { MatchPublicPanelProps } from '../../types';
 import { clock, kindLabel, libraryPath, mapLabel, watchTeamReelPath, type Chapter } from './data';
@@ -52,6 +54,7 @@ interface Line {
   playerId: string;
   name: string;
   avatar: string | null;
+  rounds: number;
   kills: number;
   deaths: number;
   assists: number;
@@ -67,7 +70,13 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
   const [pick, setPick] = useState<string | null>(null);
   const [reel, setReel] = useState<TeamReel | null>(null);
   const [tracks, setTracks] = useState<MusicTrack[]>([]);
-  const [board, setBoard] = useState<{ team1: Line[]; team2: Line[] } | null>(null);
+  const [board, setBoard] = useState<{
+    team1: Line[];
+    team2: Line[];
+    maps: Array<{ mapNumber: number; team1: Line[]; team2: Line[] }>;
+  } | null>(null);
+  // The scoreboard's map: the whole match, or one map of it.
+  const [boardMap, setBoardMap] = useState<'all' | number>('all');
   const [clips, setClips] = useState<MatchClip[]>([]);
   // How many of the match's clips are made, while recorders are still on it.
   const [progress, setProgress] = useState<{ done: number; total: number; waiting: number } | null>(
@@ -133,8 +142,12 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
       })
       .catch(() => undefined);
     void api
-      .get<{ team1: Line[]; team2: Line[] }>(`/api/game/cs2/matches/${enc(matchSlug)}/scoreboard`)
-      .then((r) => !cancelled && setBoard({ team1: r.team1, team2: r.team2 }))
+      .get<{
+        team1: Line[];
+        team2: Line[];
+        maps?: Array<{ mapNumber: number; team1: Line[]; team2: Line[] }>;
+      }>(`/api/game/cs2/matches/${enc(matchSlug)}/scoreboard`)
+      .then((r) => !cancelled && setBoard({ team1: r.team1, team2: r.team2, maps: r.maps ?? [] }))
       .catch(() => undefined);
     void api
       .get<{
@@ -174,18 +187,30 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
   const chapters = useMemo(() => (reel?.chapters ?? []).filter((c) => c.at !== null), [reel]);
   const current = chapters.reduce((at, c, i) => ((c.at ?? 0) <= time + 0.05 ? i : at), -1);
 
+  // Each part is its own panel (the drafts' finished match room).
+  const panelSx = {
+    p: { xs: 2.5, sm: 3 },
+    borderRadius: radii.lg,
+    bgcolor: tokens.color.paper2,
+    border: `1px solid ${tokens.color.rule}`,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+    minWidth: 0,
+  } as const;
+  const h2 = { m: 0, fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 700 } as const;
   const section = (title: string, children: ReactNode, testid: string, action?: ReactNode) => (
-    <Box component="section" sx={{ mt: 5 }} data-testid={testid}>
+    <Box component="section" sx={panelSx} data-testid={testid}>
       <Box
         sx={{
           display: 'flex',
-          alignItems: 'baseline',
+          flexWrap: 'wrap',
+          alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 2,
-          mb: 2,
+          gap: 1.5,
         }}
       >
-        <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
+        <Typography component="h2" sx={h2}>
           {title}
         </Typography>
         {action}
@@ -196,240 +221,290 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
 
   const teamName = (side: 'team1' | 'team2') => match[side]?.name ?? '';
   const recording = (progress?.waiting ?? 0) > 0;
+  // A rating from the line, around 1.00 (the live table's): kills, survival and damage per round.
+  const rating = (l: Line) => {
+    const rounds = Math.max(1, l.rounds || 0);
+    return (
+      0.36 * (l.kills / rounds / 0.68) +
+      0.34 * ((rounds - l.deaths) / rounds / 0.32) * 0.33 +
+      0.3 * (l.adr / 75) +
+      0.11
+    );
+  };
+  const shownBoard =
+    board && boardMap !== 'all'
+      ? (board.maps.find((m) => m.mapNumber === boardMap) ?? board)
+      : board;
+  const mapsInBoard = board?.maps ?? [];
+  const opt = { display: { xs: 'none', sm: 'table-cell' } } as const;
 
   return (
-    <Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
       {reel && (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.8fr) minmax(0, 1fr)' },
-            gap: 3,
-            alignItems: 'start',
-          }}
-          data-testid="match-page-reel"
-        >
-          <HighlightPlayer
-            ref={player}
-            src={reel.video}
-            label={t('highlights.watch.teamReel', { team: reel.team ?? '' })}
-            chapterStarts={chapters.map((c) => c.at as number)}
-            chapterInfo={chapters.map((c) => ({
-              title: `${c.playerName} · ${kindLabel(t, c.kind, c.clutch)}`,
-              sub: [c.map ? mapLabel(t, c.map, 0) : null, t('highlights.roundN', { n: c.round })]
-                .filter(Boolean)
-                .join(' · '),
-              thumb: `/api/game/cs2/highlights/${c.highlightId}.mp4`,
-            }))}
-            downloadName={`${reel.team ?? 'team'}-highlights.mp4`}
-            crowd={reel.crowd ?? null}
-            music={
-              tracks.length > 0 ? { tracks, introEnd: Math.max(0, chapters[0]?.at ?? 0) } : null
-            }
-            onTime={setTime}
-          />
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
-              {t('highlights.watch.teamReel', { team: reel.team ?? '' })}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {t('matchPage.reelLead')}
-            </Typography>
-            {teams.length > 1 && (
-              <Stack direction="row" spacing={1} sx={{ mt: 2 }} flexWrap="wrap" useFlexGap>
-                {teams.map((x) => (
-                  <ButtonBase
-                    key={x.teamId}
-                    onClick={() => setPick(x.teamId)}
-                    aria-pressed={x.teamId === pick}
-                    sx={{
-                      px: 1.5,
-                      py: 0.75,
-                      borderRadius: radii.pill,
-                      border: 1,
-                      borderColor: x.teamId === pick ? tokens.color.accent : 'divider',
-                      fontSize: textSize.sm,
-                      fontWeight: 600,
-                    }}
+        <Box component="section" sx={panelSx} data-testid="match-page-reel">
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.8fr) minmax(0, 1fr)' },
+              gap: 3,
+              alignItems: 'start',
+            }}
+          >
+            <HighlightPlayer
+              ref={player}
+              src={reel.video}
+              label={t('highlights.watch.teamReel', { team: reel.team ?? '' })}
+              chapterStarts={chapters.map((c) => c.at as number)}
+              chapterInfo={chapters.map((c) => ({
+                title: `${c.playerName} · ${kindLabel(t, c.kind, c.clutch)}`,
+                sub: [c.map ? mapLabel(t, c.map, 0) : null, t('highlights.roundN', { n: c.round })]
+                  .filter(Boolean)
+                  .join(' · '),
+                thumb: `/api/game/cs2/highlights/${c.highlightId}.mp4`,
+              }))}
+              downloadName={`${reel.team ?? 'team'}-highlights.mp4`}
+              crowd={reel.crowd ?? null}
+              music={
+                tracks.length > 0 ? { tracks, introEnd: Math.max(0, chapters[0]?.at ?? 0) } : null
+              }
+              onTime={setTime}
+            />
+            <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Typography component="h2" sx={h2}>
+                {t('highlights.watch.teamReel', { team: reel.team ?? '' })}
+              </Typography>
+              <Typography sx={{ fontSize: textSize.sm, color: tokens.color.ink2 }}>
+                {t('matchPage.reelLead')}
+              </Typography>
+              {teams.length > 1 && (
+                <SegmentedControl
+                  look="chips"
+                  size="small"
+                  label={t('matchPage.reelTeam')}
+                  value={String(pick)}
+                  onChange={(id) =>
+                    setPick(teams.find((x) => String(x.teamId) === id)?.teamId ?? pick)
+                  }
+                  options={teams.map((x) => ({
+                    value: String(x.teamId),
+                    label: t('matchPage.teamHighlights', { team: x.team ?? x.teamId }),
+                  }))}
+                />
+              )}
+              <Box
+                component="ol"
+                aria-label={t('matchPage.inThisReel')}
+                sx={{
+                  listStyle: 'none',
+                  p: 0,
+                  m: 0,
+                  maxHeight: 320,
+                  overflowY: 'auto',
+                  borderRadius: radii.md,
+                  bgcolor: tokens.color.paper3,
+                }}
+              >
+                {chapters.map((c, i) => (
+                  <Box
+                    component="li"
+                    key={c.highlightId}
+                    sx={{ '& + &': { borderTop: `1px solid ${tokens.color.rule}` } }}
                   >
-                    {x.team ?? x.teamId}
-                  </ButtonBase>
-                ))}
-              </Stack>
-            )}
-            <Box
-              component="ol"
-              aria-label={t('matchPage.inThisReel')}
-              sx={{
-                listStyle: 'none',
-                p: 0,
-                m: 0,
-                mt: 2,
-                maxHeight: 320,
-                overflowY: 'auto',
-                border: 1,
-                borderColor: 'divider',
-                borderRadius: radii.lg,
-              }}
-            >
-              {chapters.map((c, i) => (
-                <Box
-                  component="li"
-                  key={c.highlightId}
-                  sx={{ '& + &': { borderTop: 1, borderColor: 'divider' } }}
-                >
-                  <ButtonBase
-                    onClick={() => player.current?.seek(c.at ?? 0)}
-                    sx={{
-                      width: '100%',
-                      display: 'grid',
-                      gridTemplateColumns: 'auto minmax(0, 1fr)',
-                      gap: 1.5,
-                      px: 2,
-                      py: 1,
-                      textAlign: 'left',
-                      bgcolor: i === current ? 'background.surface3' : 'transparent',
-                    }}
-                  >
-                    <Box
-                      component="span"
-                      sx={{ ...mono, fontSize: textSize.xs, color: 'text.secondary' }}
+                    <ButtonBase
+                      onClick={() => player.current?.seek(c.at ?? 0)}
+                      sx={{
+                        width: '100%',
+                        display: 'grid',
+                        gridTemplateColumns: 'auto minmax(0, 1fr)',
+                        gap: 1.5,
+                        px: 2,
+                        py: 1,
+                        textAlign: 'left',
+                        bgcolor: i === current ? tokens.color.rule : 'transparent',
+                      }}
                     >
-                      {clock(c.at ?? 0)}
-                    </Box>
-                    <Box component="span" sx={{ minWidth: 0 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
-                        {c.playerName}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" noWrap component="div">
-                        {kindLabel(t, c.kind, c.clutch)} · {t('highlights.roundN', { n: c.round })}
-                      </Typography>
-                    </Box>
-                  </ButtonBase>
-                </Box>
-              ))}
+                      <Box
+                        component="span"
+                        sx={{ ...mono, fontSize: textSize.xs, color: tokens.color.muted }}
+                      >
+                        {clock(c.at ?? 0)}
+                      </Box>
+                      <Box component="span" sx={{ minWidth: 0 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
+                          {c.playerName}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: tokens.color.muted }}
+                          noWrap
+                          component="div"
+                        >
+                          {kindLabel(t, c.kind, c.clutch)} ·{' '}
+                          {t('highlights.roundN', { n: c.round })}
+                        </Typography>
+                      </Box>
+                    </ButtonBase>
+                  </Box>
+                ))}
+              </Box>
+              <Box
+                component={RouterLink}
+                to={watchTeamReelPath(matchSlug, pick ?? '')}
+                sx={{ fontSize: textSize.sm, color: tokens.color.accent }}
+              >
+                {t('matchPage.openReel')}
+              </Box>
             </Box>
-            <ButtonBase
-              component={RouterLink}
-              to={watchTeamReelPath(matchSlug, pick ?? '')}
-              sx={{ mt: 1.5, fontSize: textSize.sm, color: 'text.secondary' }}
-            >
-              {t('matchPage.openReel')}
-            </ButtonBase>
           </Box>
         </Box>
       )}
 
       {board &&
+        shownBoard &&
         board.team1.length + board.team2.length > 0 &&
         section(
           t('matchPage.scoreboard'),
-          <Box
-            sx={{ overflowX: 'auto', border: 1, borderColor: 'divider', borderRadius: radii.lg }}
-          >
-            <Box
-              component="table"
-              sx={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                fontVariantNumeric: 'tabular-nums',
-                fontSize: textSize.sm,
-                '& th, & td': {
-                  px: 2,
-                  py: 1,
-                  textAlign: 'right',
-                  whiteSpace: 'nowrap',
-                  borderBottom: 1,
-                  borderColor: 'divider',
-                },
-                '& th:first-of-type, & td:first-of-type': { textAlign: 'left' },
-                '& th': {
-                  ...mono,
-                  fontSize: textSize.xs,
-                  color: 'text.secondary',
-                  fontWeight: 500,
-                },
-              }}
-            >
-              <thead>
-                <tr>
-                  <th>{t('matchPage.player')}</th>
-                  <th>K</th>
-                  <th>D</th>
-                  <th>A</th>
-                  <th>+/−</th>
-                  <th>ADR</th>
-                  <th>HS %</th>
-                  <th>KAST</th>
-                  <th>{t('matchPage.openingKills')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(['team1', 'team2'] as const).flatMap((side) => [
-                  <Box
-                    component="tr"
-                    key={side}
-                    sx={{
-                      '& td': {
-                        ...mono,
-                        fontSize: textSize.xs,
-                        bgcolor: 'background.surface2',
-                        color: 'text.secondary',
-                        textAlign: 'left !important',
-                      },
-                    }}
-                  >
-                    <td colSpan={9}>{teamName(side)}</td>
-                  </Box>,
-                  ...board[side].map((l) => {
-                    const diff = l.kills - l.deaths;
-                    return (
-                      <tr key={`${side}-${l.playerId}`}>
-                        <td>
-                          <Box
-                            component={RouterLink}
-                            to={`/player/${l.playerId}`}
-                            sx={{ color: 'inherit', textDecoration: 'none', fontWeight: 600 }}
-                          >
-                            {l.name}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            {(['team1', 'team2'] as const).map((side) => (
+              <Box key={side} sx={{ overflowX: 'auto' }}>
+                <Box
+                  component="table"
+                  sx={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    fontVariantNumeric: 'tabular-nums',
+                    fontSize: '0.9375rem',
+                    '& th': {
+                      fontSize: '0.75rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.06em',
+                      color: tokens.color.muted,
+                      fontWeight: 600,
+                      textAlign: 'right',
+                      p: 1,
+                      whiteSpace: 'nowrap',
+                    },
+                    '& td': {
+                      p: '10px 8px',
+                      textAlign: 'right',
+                      borderTop: `1px solid ${tokens.color.rule}`,
+                      whiteSpace: 'nowrap',
+                      ...mono,
+                    },
+                    '& th:first-of-type, & td:first-of-type': {
+                      textAlign: 'left',
+                      fontFamily: 'inherit',
+                      whiteSpace: 'normal',
+                      overflowWrap: 'anywhere',
+                    },
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <th scope="col">{teamName(side)}</th>
+                      <th scope="col">K</th>
+                      <th scope="col">D</th>
+                      <Box component="th" scope="col" sx={opt}>
+                        A
+                      </Box>
+                      <th scope="col">ADR</th>
+                      <Box component="th" scope="col" sx={opt}>
+                        HS %
+                      </Box>
+                      <Box component="th" scope="col" sx={opt}>
+                        KAST
+                      </Box>
+                      <Box component="th" scope="col" sx={opt}>
+                        {t('matchPage.openingKills')}
+                      </Box>
+                      <th scope="col">{t('matchPage.rating')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {shownBoard[side].map((l) => {
+                      const r = rating(l);
+                      return (
+                        <tr key={`${side}-${l.playerId}`}>
+                          <td>
+                            <Box
+                              component={RouterLink}
+                              to={`/player/${l.playerId}`}
+                              sx={{
+                                color: 'inherit',
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                                '&:hover': { color: tokens.color.accent },
+                              }}
+                            >
+                              {l.name}
+                            </Box>
+                          </td>
+                          <td>{l.kills}</td>
+                          <td>{l.deaths}</td>
+                          <Box component="td" sx={opt}>
+                            {l.assists}
                           </Box>
-                        </td>
-                        <td>{l.kills}</td>
-                        <td>{l.deaths}</td>
-                        <td>{l.assists}</td>
-                        <Box
-                          component="td"
-                          sx={{
-                            color:
-                              diff > 0
-                                ? tokens.color.live
-                                : diff < 0
-                                  ? 'text.secondary'
-                                  : undefined,
-                          }}
-                        >
-                          {diff > 0 ? `+${diff}` : diff}
-                        </Box>
-                        <Box
-                          component="td"
-                          sx={{
-                            color: l.adr >= 100 ? tokens.color.accent : undefined,
-                            fontWeight: l.adr >= 100 ? 600 : undefined,
-                          }}
-                        >
-                          {l.adr.toFixed(1)}
-                        </Box>
-                        <td>{l.hsPercent}</td>
-                        <td>{l.kast}%</td>
-                        <td>{l.entryKills}</td>
-                      </tr>
-                    );
-                  }),
-                ])}
-              </tbody>
-            </Box>
+                          <Box
+                            component="td"
+                            sx={{ color: l.adr >= 100 ? tokens.color.accent : undefined }}
+                          >
+                            {l.adr.toFixed(1)}
+                          </Box>
+                          <Box component="td" sx={opt}>
+                            {l.hsPercent}
+                          </Box>
+                          <Box component="td" sx={opt}>
+                            {l.kast}%
+                          </Box>
+                          <Box component="td" sx={opt}>
+                            {l.entryKills}
+                          </Box>
+                          <Box
+                            component="td"
+                            sx={{
+                              fontWeight: 600,
+                              color:
+                                r >= 1.1
+                                  ? tokens.color.live
+                                  : r < 0.9
+                                    ? tokens.color.ink2
+                                    : undefined,
+                            }}
+                          >
+                            {r.toFixed(2)}
+                          </Box>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </Box>
+              </Box>
+            ))}
           </Box>,
-          'match-page-scoreboard'
+          'match-page-scoreboard',
+          mapsInBoard.length > 1 ? (
+            <SegmentedControl
+              size="small"
+              label={t('matchPage.scoreboardMap')}
+              value={String(boardMap)}
+              onChange={(key) => setBoardMap(key === 'all' ? 'all' : Number(key))}
+              options={(
+                ['all', ...mapsInBoard.map((m) => m.mapNumber)] as Array<'all' | number>
+              ).map((key) => {
+                const mapRow =
+                  key === 'all' ? null : match.mapScores.find((m) => m.mapNumber === key);
+                return {
+                  value: String(key),
+                  label:
+                    key === 'all'
+                      ? t('matchPage.allMaps')
+                      : mapRow?.map
+                        ? mapLabel(t, mapRow.map, 0)
+                        : t('seriesMaps.mapN', { n: key + 1 }),
+                };
+              })}
+            />
+          ) : undefined
         )}
 
       {(clips.length > 0 || recording) &&
@@ -437,9 +512,9 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
           t('matchPage.highlights'),
           <>
             {recording && progress && (
-              <Box sx={{ mb: 2.5, maxWidth: 520 }} data-testid="match-page-clip-progress">
+              <Box sx={{ maxWidth: 520 }} data-testid="match-page-clip-progress">
                 <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.75 }}>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" sx={{ color: tokens.color.ink2 }}>
                     {t('matchPage.recordingClips')}
                   </Typography>
                   <Typography variant="body2" sx={{ ...mono, fontVariantNumeric: 'tabular-nums' }}>
@@ -467,7 +542,7 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
                           key={r.recorder}
                           component="li"
                           variant="caption"
-                          color="text.secondary"
+                          sx={{ color: tokens.color.muted }}
                           noWrap
                         >
                           {[

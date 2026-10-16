@@ -5,6 +5,7 @@
  * (after the filters) download together as one .tar.
  */
 import { useEffect, useMemo, useState } from 'react';
+import { fmtDateTime } from '../utils/time';
 import {
   Box,
   Button,
@@ -48,7 +49,7 @@ function demoUrl(slug: string, mapNumber: number): string {
 }
 
 export default function PlayedMatches() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [matches, setMatches] = useState<PlayedMatch[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -77,13 +78,7 @@ export default function PlayedMatches() {
 
   const withDemo = shown.filter((m) => m.demos.length > 0);
   const archiveUrl = `/api/demos/archive.tar?slugs=${encodeURIComponent(withDemo.map((m) => m.slug).join(','))}`;
-  const when = (s: number | null) =>
-    s
-      ? new Date(s * 1000).toLocaleString(i18n.language, {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-        })
-      : '—';
+  const when = (s: number | null) => (s ? fmtDateTime(s) : '—');
 
   return (
     <Box data-testid="played-matches-page" sx={{ width: '100%' }}>

@@ -1,5 +1,6 @@
 import { logoUrl } from '../services/teamSelfService';
 import { viewerTeamIdOfMatch } from '../services/matchViewer';
+import { applyMatchTimes, matchTimeFields } from '../services/matchTimes';
 import { Router, Request, Response } from 'express';
 import { getGameRatings } from '../services/gameRatings';
 import { matchService } from '../services/matchService';
@@ -1090,10 +1091,13 @@ router.get('/:slug', async (req: Request, res: Response) => {
       tournament_id: number | null;
       team1_logo: number | null;
       team2_logo: number | null;
+      round: number | null;
+      starts_at: number | null;
+      tournament_settings: string | null;
     }>(
       `SELECT m.team1_id, m.team2_id, m.winner_id, t1.name AS team1_name, t1.tag AS team1_tag,
               t2.name AS team2_name, t2.tag AS team2_tag, m.played_in, tr.name AS tournament,
-              m.tournament_id,
+              m.tournament_id, m.round, m.starts_at, tr.settings AS tournament_settings,
               t1.logo_updated_at AS team1_logo, t2.logo_updated_at AS team2_logo
          FROM matches m
          LEFT JOIN teams t1 ON t1.id = m.team1_id
@@ -1108,6 +1112,8 @@ router.get('/:slug', async (req: Request, res: Response) => {
       team1Score: r.team1Score,
       team2Score: r.team2Score,
       winner: r.winnerTeam,
+      // The map's demo is in (downloadable once the match is over).
+      hasDemo: Boolean(r.demoFilePath),
     }));
     const teamOf = (side: 'team1' | 'team2') => {
       const id = row?.[`${side}_id`] ?? null;
@@ -1147,6 +1153,19 @@ router.get('/:slug', async (req: Request, res: Response) => {
           null,
         // The tournament it belongs to: the match room links back to its page.
         tournamentId: row?.tournament_id ?? null,
+        // Its start time and when its veto opens (Manage › Schedule), when it has one.
+        ...(row
+          ? matchTimeFields(
+              row,
+              (() => {
+                try {
+                  return JSON.parse(row.tournament_settings ?? '{}');
+                } catch {
+                  return {};
+                }
+              })()
+            )
+          : { startsAt: null, vetoOpensAt: null }),
         // The signed-in viewer's team in this match: the match room shows
         // them their part (veto, connect, reporting). Null for everyone else.
         viewerTeamId: await viewerTeamIdOfMatch(req, {
@@ -1358,6 +1377,51 @@ function holdMinutes(value: unknown): number | null | false {
   const n = Number(value);
   return Number.isFinite(n) && n > 0 && n <= 24 * 60 ? n : false;
 }
+
+/**
+ * PUT /api/matches/:slug/start-time
+ * This match's own start time (authenticated; Manage › Schedule): { startsAt: ISO | null }.
+ * Null goes back to its round's time. Its hold moves with it (services/matchTimes.ts).
+ */
+router.put('/:slug/start-time', requireAuth, async (req: Request, res: Response) => {
+  const raw = (req.body ?? {}).startsAt as unknown;
+  const at = raw === null ? null : typeof raw === 'string' ? Date.parse(raw) : NaN;
+  if (at !== null && !Number.isFinite(at)) {
+    return res.status(400).json({ success: false, error: 'startsAt: an ISO time, or null' });
+  }
+  try {
+    const row = await db.queryOneAsync<{ tournament_id: number | null }>(
+      'UPDATE matches SET starts_at = ? WHERE slug = ? RETURNING tournament_id',
+      [at === null ? null : Math.floor(at / 1000), req.params.slug]
+    );
+    if (!row) return res.status(404).json({ success: false, error: 'Match not found' });
+    if (row.tournament_id) await applyMatchTimes(row.tournament_id);
+    return res.json({ success: true });
+  } catch (error) {
+    log.error(`Error setting the start time of ${req.params.slug}`, error);
+    return res.status(500).json({ success: false, error: 'Could not set the start time' });
+  }
+});
+
+/**
+ * PUT /api/matches/:slug/on-stage
+ * The stage match (authenticated): { onStage: boolean }. Its game may treat it
+ * apart (CS2: every GOTV seat for the casters and the stream).
+ */
+router.put('/:slug/on-stage', requireAuth, async (req: Request, res: Response) => {
+  const onStage = (req.body ?? {}).onStage === true;
+  try {
+    const row = await db.queryOneAsync<{ slug: string }>(
+      'UPDATE matches SET on_stage = ? WHERE slug = ? RETURNING slug',
+      [onStage ? 1 : 0, req.params.slug]
+    );
+    if (!row) return res.status(404).json({ success: false, error: 'Match not found' });
+    return res.json({ success: true, onStage });
+  } catch (error) {
+    log.error(`Error marking ${req.params.slug} on stage`, error);
+    return res.status(500).json({ success: false, error: 'Could not mark the match' });
+  }
+});
 
 /**
  * GET /api/matches/:slug/hold

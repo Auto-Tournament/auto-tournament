@@ -18,6 +18,8 @@ export type PublicBracketMatch = Pick<
   | 'slug'
   | 'round'
   | 'matchNumber'
+  | 'startsAt'
+  | 'vetoOpensAt'
   | 'status'
   | 'nextMatchId'
   | 'createdAt'
@@ -35,6 +37,8 @@ export type PublicBracketMatch = Pick<
   | 'mapNumber'
   | 'vetoing'
 > & {
+  /** A server is assigned (which one stays the organizer's): "waiting for a server" or not. */
+  hasServer: boolean;
   team1?: { id: string; name: string; tag?: string } | null;
   team2?: { id: string; name: string; tag?: string } | null;
   winner?: { id: string; name: string; tag?: string } | null;
@@ -71,6 +75,9 @@ export function toPublicBracketMatch(match: BracketMatch): PublicBracketMatch {
     currentMap: match.currentMap ?? null,
     mapNumber: match.mapNumber ?? null,
     vetoing: match.vetoing === true,
+    startsAt: match.startsAt ?? null,
+    vetoOpensAt: match.vetoOpensAt ?? null,
+    hasServer: Boolean(match.serverId),
     ...(match.mapResults
       ? {
           mapResults: match.mapResults.map((result) => ({
@@ -93,6 +100,7 @@ export function toPublicBracket(bracket: BracketResponse): {
   totalRounds: number;
   swissStandings?: BracketResponse['swissStandings'];
   roundRobinStandings?: BracketResponse['roundRobinStandings'];
+  groupStandings?: BracketResponse['groupStandings'];
 } {
   return {
     tournament: bracket.tournament,
@@ -100,5 +108,6 @@ export function toPublicBracket(bracket: BracketResponse): {
     totalRounds: bracket.totalRounds,
     ...(bracket.swissStandings ? { swissStandings: bracket.swissStandings } : {}),
     ...(bracket.roundRobinStandings ? { roundRobinStandings: bracket.roundRobinStandings } : {}),
+    ...(bracket.groupStandings ? { groupStandings: bracket.groupStandings } : {}),
   };
 }

@@ -7,6 +7,7 @@ import type { TournamentType } from '../../types/tournament.types';
 import type { IBracketGenerator } from './types';
 import { standardBracketGenerator } from '../standardBracketGenerator';
 import { swissBracketGenerator } from '../swissBracketGenerator';
+import { groupsBracketGenerator } from '../groupsTournament';
 
 /**
  * Registry mapping tournament types to their bracket generators
@@ -18,6 +19,7 @@ export const bracketGenerators: Partial<Record<TournamentType, IBracketGenerator
   double_elimination: standardBracketGenerator,
   round_robin: standardBracketGenerator,
   swiss: swissBracketGenerator,
+  groups: groupsBracketGenerator,
   // shuffle: not included - shuffle tournaments generate matches dynamically
 };
 

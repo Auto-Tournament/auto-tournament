@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
-import { api, useModuleTranslation, useSnackbar, tokens, radii } from '../../../module-sdk';
+import {
+  api,
+  useModuleTranslation,
+  useSnackbar,
+  tokens,
+  panelSx,
+  panelBorderSx,
+} from '../../../module-sdk';
 import type { OwnedSkin, Rarity } from './useSkins';
 import { tradeUpTarget } from './tradeUp';
 import { rarityColor } from './rarity';
@@ -70,10 +77,9 @@ export function TradeUpPanel({
     <Box
       data-testid="trade-up-panel"
       sx={{
+        ...panelSx,
+        ...panelBorderSx,
         p: 2.5,
-        borderRadius: radii.lg,
-        border: `1px solid ${color.rule}`,
-        bgcolor: color.paper2,
         display: 'flex',
         flexDirection: 'column',
         gap: 1.5,

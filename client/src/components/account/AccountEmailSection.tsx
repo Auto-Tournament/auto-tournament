@@ -1,21 +1,12 @@
 import { useCallback, useEffect, useState, type InputHTMLAttributes } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  FormControlLabel,
-  Stack,
-  Switch,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, Button, Chip, Stack, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { fontDisplay, tokens } from '../../theme/tokens';
+import { panelSx, panelBorderSx, SwitchRow } from '../../components/common/ui';
 
-const { color, radius } = tokens;
+const { color } = tokens;
 
 interface MyEmail {
   email: string;
@@ -181,6 +172,8 @@ export function AccountEmailSection() {
         <Stack spacing={2} sx={{ maxWidth: 560 }}>
           <Box
             sx={{
+              ...panelSx,
+              ...panelBorderSx,
               display: 'flex',
               flexWrap: 'wrap',
               alignItems: 'center',
@@ -188,9 +181,6 @@ export function AccountEmailSection() {
               rowGap: 1,
               px: 2,
               py: 1.5,
-              bgcolor: color.paper2,
-              border: `1px solid ${color.rule}`,
-              borderRadius: `${radius.lg}px`,
             }}
           >
             <Box sx={{ flex: '1 1 220px', minWidth: 0 }}>
@@ -248,19 +238,7 @@ export function AccountEmailSection() {
             </Stack>
           </Box>
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={email.notifyTournaments}
-                disabled={busy || !email.verified}
-                onChange={(e) => void setNotify(e.target.checked)}
-                slotProps={{
-                  input: {
-                    'data-testid': 'account-email-notify',
-                  } as InputHTMLAttributes<HTMLInputElement>,
-                }}
-              />
-            }
+          <SwitchRow
             label={
               <Box>
                 <Typography sx={{ fontWeight: 500 }}>{t('account.email.notifyLabel')}</Typography>
@@ -271,6 +249,14 @@ export function AccountEmailSection() {
                 </Typography>
               </Box>
             }
+            checked={email.notifyTournaments}
+            disabled={busy || !email.verified}
+            onChange={(e) => void setNotify(e.target.checked)}
+            slotProps={{
+              input: {
+                'data-testid': 'account-email-notify',
+              } as InputHTMLAttributes<HTMLInputElement>,
+            }}
             sx={{ alignItems: 'flex-start', ml: 0, gap: 1, '& .MuiSwitch-root': { mt: 0.25 } }}
           />
           {!canSend && <Alert severity="info">{t('account.email.siteCannotSend')}</Alert>}

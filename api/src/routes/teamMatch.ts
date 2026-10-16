@@ -2,6 +2,7 @@ import { logoUrl } from '../services/teamSelfService';
 import { Router, Request, Response } from 'express';
 import { RATING_ELO, ratingGame, ratingJoin } from '../services/gameRatings';
 import { db } from '../config/database';
+import { matchTimeFields } from '../services/matchTimes';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { integrationForMatch } from '../integrations/registry';
 import { DEFAULT_GAME } from '../integrations/types';
@@ -293,7 +294,10 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       status: string;
       format: string;
       settings: string | Record<string, unknown> | null;
-    }>('SELECT status, format, settings FROM tournament WHERE id = ?', [match.tournament_id]);
+      team_size: number | null;
+    }>('SELECT status, format, settings, team_size FROM tournament WHERE id = ?', [
+      match.tournament_id,
+    ]);
 
     // Note: We're NOT exposing RCON password to teams
     // CS2 servers typically don't have a join password by default
@@ -387,6 +391,16 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       if (!teamId) return normalizedPlayers;
       try {
         const teamData = await teamService.getTeamById(teamId);
+        // A later round's config has no players until its server is assigned (the
+        // config is made then): the team's roster stands in, so the waiting room
+        // lists who plays instead of nobody.
+        if (normalizedPlayers.length === 0 && teamData?.players?.length) {
+          return teamData.players.map((p) => ({
+            steamid: p.steamId,
+            name: p.name,
+            avatar: p.avatar,
+          }));
+        }
         if (teamData?.players) {
           const avatarMap = new Map(
             teamData.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
@@ -407,9 +421,17 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
 
     // Enrich both teams in parallel
     const [enrichedTeam1Players, enrichedTeam2Players] = await Promise.all([
-      enrichPlayers(normalizedTeam1Players, description.team1.id),
-      enrichPlayers(normalizedTeam2Players, description.team2.id),
+      // A config made before both teams were known still says TBD: the match row has the ids.
+      enrichPlayers(normalizedTeam1Players, description.team1.id || match.team1_id || undefined),
+      enrichPlayers(normalizedTeam2Players, description.team2.id || match.team2_id || undefined),
     ]);
+
+    // Players per team: the config's, unless it has no roster yet (then it counts 1): the
+    // tournament's team size.
+    const perTeam =
+      normalizedTeam1Players.length || normalizedTeam2Players.length
+        ? description.playersPerTeam
+        : (tournament?.team_size ?? description.playersPerTeam);
 
     // Both crests for the match room's header (it showed initials only).
     const ourLogoUrl = logoUrl(team.id, isTeam1 ? match.team1_logo : match.team2_logo);
@@ -487,14 +509,32 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         veto: vetoSummary,
         matchFormat: (tournament?.format as 'bo1' | 'bo3' | 'bo5') || 'bo3',
         loadedAt: match.loaded_at,
+        // Held until then (the break between matches, or an admin's hold): its veto opens then.
+        heldUntil:
+          match.held_until && match.held_until > Math.floor(Date.now() / 1000)
+            ? match.held_until
+            : null,
+        // Its start time and when its veto opens (Manage › Schedule), when it has one.
+        ...matchTimeFields(
+          { round: match.round, starts_at: (match as { starts_at?: number | null }).starts_at },
+          (() => {
+            const raw = tournament?.settings ?? {};
+            if (typeof raw !== 'string') return raw;
+            try {
+              return JSON.parse(raw);
+            } catch {
+              return {};
+            }
+          })()
+        ),
         // Neutral match summary, kept in the shape the team page reads.
         config: {
           maplist: description.maps.length > 0 ? description.maps : null,
           num_maps: description.seriesLength,
-          players_per_team: description.playersPerTeam,
-          expected_players_total: description.playersPerTeam ? description.playersPerTeam * 2 : 10,
-          expected_players_team1: description.playersPerTeam || 5,
-          expected_players_team2: description.playersPerTeam || 5,
+          players_per_team: perTeam,
+          expected_players_total: perTeam ? perTeam * 2 : 10,
+          expected_players_team1: perTeam || 5,
+          expected_players_team2: perTeam || 5,
           // Whether there is a veto: the match's config, else (a later round in its break) the
           // tournament. Missing here, the team's match room showed a veto for a tournament
           // without one and the bans were refused (2026-10-15).

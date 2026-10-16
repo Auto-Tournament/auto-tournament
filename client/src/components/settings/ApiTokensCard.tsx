@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { fmtDateTime } from '../../utils/time';
 import {
   Box,
   Button,
@@ -86,8 +87,7 @@ export function ApiTokensCard() {
     }
   };
 
-  const when = (unix: number | null) =>
-    unix ? new Date(unix * 1000).toLocaleString() : t('apiTokens.never');
+  const when = (unix: number | null) => (unix ? fmtDateTime(unix) : t('apiTokens.never'));
 
   return (
     <Box data-testid="api-tokens">

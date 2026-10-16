@@ -28,6 +28,7 @@ import { TopNavBar } from '../components/layout/TopNavBar';
 import { OwnDiscordIdCard } from '../components/player/OwnDiscordIdCard';
 import { OwnGamesCard } from '../components/games/OwnGamesCard';
 import { ProfileHeader } from '../components/player/profile/ProfileHeader';
+import { ProfileCommends } from '../components/player/profile/ProfileCommends';
 import { PlayerProgress } from '../components/matchmaking/PlayerProgress';
 import { GameSwitch } from '../components/player/profile/GameSwitch';
 import { FactGrid, Panel, SectionHead, type Fact } from '../components/common/ui';
@@ -1188,6 +1189,9 @@ export default function PlayerProfile() {
                 data-testid="profile-stats-grid"
                 sx={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))' }}
               />
+
+              {/* What other players commended them for, any game. */}
+              <ProfileCommends playerId={player.id} />
 
               {/* The player's highlight videos from the open game: core lays them
               out, the game says what there is. */}

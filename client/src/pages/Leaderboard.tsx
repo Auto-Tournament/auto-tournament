@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link as RouterLink, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import {
   Alert,
   Box,
@@ -7,21 +7,19 @@ import {
   Container,
   MenuItem,
   Select,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { EmptyPanel, PageHead, Row, RowList } from '../components/common/ui';
-import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { api } from '../utils/api';
 import { useIntegration } from '../integrations/registry';
 import { pageTitle } from '../utils/pageTitle';
-import { playerProfilePath } from '../paths';
 import { MatchmakingLeaderboard } from '../components/leaderboard/MatchmakingLeaderboard';
 import { useMatchmaking } from '../components/matchmaking/matchmakingStore';
 import { tokens, fontMono, radii, textSize } from '../theme/tokens';
+import { SegmentedControl } from '../components/common/SegmentedControl';
+import { PlayerChip } from '../components/player/PlayerChip';
 
 const { color } = tokens;
 
@@ -131,21 +129,25 @@ export default function Leaderboard() {
             subtitle={t('leaderboard.subtitle')}
             actions={
               matchmaking ? (
-                <ToggleButtonGroup
-                  exclusive
+                <SegmentedControl
                   size="small"
+                  label={t('leaderboard.mode')}
                   value={ladder ? 'matchmaking' : 'tournament'}
-                  onChange={(_, value) => value && setMode(value)}
-                  aria-label={t('leaderboard.mode')}
-                  data-testid="leaderboard-mode"
-                >
-                  <ToggleButton value="tournament" data-testid="leaderboard-mode-tournament">
-                    {t('leaderboard.modeTournament')}
-                  </ToggleButton>
-                  <ToggleButton value="matchmaking" data-testid="leaderboard-mode-matchmaking">
-                    {t('leaderboard.modeMatchmaking')}
-                  </ToggleButton>
-                </ToggleButtonGroup>
+                  onChange={(value) => setMode(value)}
+                  testId="leaderboard-mode"
+                  options={[
+                    {
+                      value: 'tournament',
+                      label: t('leaderboard.modeTournament'),
+                      testId: 'leaderboard-mode-tournament',
+                    },
+                    {
+                      value: 'matchmaking',
+                      label: t('leaderboard.modeMatchmaking'),
+                      testId: 'leaderboard-mode-matchmaking',
+                    },
+                  ]}
+                />
               ) : undefined
             }
             sx={{ mb: 0 }}
@@ -202,24 +204,13 @@ export default function Leaderboard() {
                 >
                   {p.rank}
                 </Typography>
-                <Box
-                  component={RouterLink}
-                  to={playerProfilePath(p.id)}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    minWidth: 0,
-                    color: 'text.primary',
-                    textDecoration: 'none',
-                    '&:hover .name': { textDecoration: 'underline' },
-                  }}
-                >
-                  <PlayerAvatar id={p.id} name={p.name} avatarUrl={p.avatar} size={32} />
-                  <Typography className="name" noWrap sx={{ fontWeight: 600, minWidth: 0 }}>
-                    {p.name}
-                  </Typography>
-                </Box>
+                <PlayerChip
+                  id={p.id}
+                  name={p.name}
+                  avatarUrl={p.avatar}
+                  size={32}
+                  sx={{ gap: 1.5 }}
+                />
                 <Typography sx={{ fontFamily: fontMono, textAlign: 'right' }}>
                   {p.rating}
                 </Typography>

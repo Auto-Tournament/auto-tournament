@@ -1,5 +1,6 @@
 import { Box, Button, Typography } from '@mui/material';
 import { fontDisplay, fontMono, radii, textSize, tokens } from '../../../theme/tokens';
+import { panelSx } from '../../../components/common/ui';
 
 const { color } = tokens;
 
@@ -56,9 +57,8 @@ export function MatchStateBanner({
       data-testid="manage-state"
       data-state={name}
       sx={{
-        bgcolor: color.paper2,
+        ...panelSx,
         border: `1px solid ${BORDER[tone]}`,
-        borderRadius: radii.lg,
         p: { xs: 2, md: 2.5 },
         display: 'grid',
         gap: 1.25,

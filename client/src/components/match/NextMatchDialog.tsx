@@ -1,19 +1,12 @@
 import React from 'react';
-import {
-  Avatar,
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { soundNotification } from '../../utils/soundNotification';
 import { matchPagePath } from '../../paths';
 import type { MatchupSide } from '../../hooks/useCurrentMatchStatus';
+import { DraftDialog, TeamLogo } from '../tournament/ui/draftUi';
+import { radii, tokens } from '../../theme/tokens';
 
 /**
  * "Your next match is ready" / "Your turn in the veto": a dialog with a sound
@@ -25,6 +18,7 @@ import type { MatchupSide } from '../../hooks/useCurrentMatchStatus';
 type Kind = 'veto_soon' | 'veto_open' | 'veto_turn' | 'match_ready';
 
 const SEEN_KEY = 'at.nextMatchAlerts';
+const AUTO_CLOSE_S = 10;
 const seenFallback = new Set<string>();
 
 function seen(key: string): boolean {
@@ -70,6 +64,15 @@ export function NextMatchDialog({
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const [open, setOpen] = React.useState<{ kind: Kind; slug: string } | null>(null);
+  // "Your match is ready" and "the veto is open" close by themselves (the drafts): the navbar
+  // pill keeps the link. A turn or a countdown stays until it is closed.
+  const autoClose =
+    open && (open.kind === 'match_ready' || open.kind === 'veto_open') ? AUTO_CLOSE_S : null;
+  React.useEffect(() => {
+    if (!autoClose) return;
+    const id = window.setTimeout(() => setOpen(null), autoClose * 1000);
+    return () => window.clearTimeout(id);
+  }, [autoClose, open]);
 
   React.useEffect(() => {
     if (loading || !matchSlug) return;
@@ -119,78 +122,73 @@ export function NextMatchDialog({
             ? t('nextMatch.readyBody', 'The server is ready: join it now.')
             : t('nextMatch.vetoOpenBody', 'The map veto is open. Go to the match to ban and pick.');
   return (
-    <Dialog
-      open
+    <DraftDialog
       onClose={() => setOpen(null)}
-      data-testid="next-match-dialog"
-      maxWidth="xs"
-      fullWidth
-    >
-      <DialogTitle>{title}</DialogTitle>
-      <DialogContent>
-        {matchup?.you.name && matchup.opponent.name ? (
-          <Box
-            data-testid="next-match-matchup"
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)',
-              alignItems: 'center',
-              gap: 1.5,
-              my: 1.5,
-            }}
+      testId="next-match-dialog"
+      titleId="next-match-title"
+      eyebrow={matchName ?? undefined}
+      eyebrowColor={tokens.color.accent}
+      title={title}
+      note={autoClose ? t('nextMatch.closesItself', { count: autoClose }) : undefined}
+      actions={
+        <>
+          <Button
+            component={RouterLink}
+            to={matchPagePath(open.slug)}
+            variant="contained"
+            onClick={() => setOpen(null)}
+            data-testid="next-match-go"
           >
-            <MatchupTeam side={matchup.you} label={t('nextMatch.yourTeam', 'Your team')} />
-            <Typography sx={{ color: 'text.secondary', fontWeight: 700 }}>vs</Typography>
-            <MatchupTeam side={matchup.opponent} label={t('nextMatch.opponent', 'Opponent')} />
-          </Box>
-        ) : (
-          matchName && (
-            <Typography sx={{ fontWeight: 600, mb: 1 }} data-testid="next-match-name">
-              {matchName}
-            </Typography>
-          )
-        )}
-        {open.kind === 'veto_soon' && opensAt && <OpensCountdown opensAt={opensAt} />}
-        {(open.kind === 'veto_turn' || open.kind === 'veto_open') && (
-          <TurnCountdown slug={open.slug} />
-        )}
-        <Typography color="text.secondary">{body}</Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setOpen(null)}>{t('nextMatch.later', 'Later')}</Button>
-        <Button
-          component={RouterLink}
-          to={matchPagePath(open.slug)}
-          variant="contained"
-          onClick={() => setOpen(null)}
-          data-testid="next-match-go"
+            {t('nextMatch.openRoom')}
+          </Button>
+          <Button variant="outlined" onClick={() => setOpen(null)}>
+            {t('nextMatch.later', 'Later')}
+          </Button>
+        </>
+      }
+    >
+      {matchup?.you.name && matchup.opponent.name && (
+        <Box
+          data-testid="next-match-matchup"
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 1.5,
+            p: 2,
+            borderRadius: radii.md,
+            bgcolor: tokens.color.paper3,
+          }}
         >
-          {t('nextMatch.go', 'Go to match')}
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <MatchupTeam side={matchup.you} label={t('nextMatch.yourTeam', 'Your team')} />
+          <Typography component="span" sx={{ color: tokens.color.muted, fontWeight: 600 }}>
+            vs
+          </Typography>
+          <MatchupTeam side={matchup.opponent} label={t('nextMatch.opponent', 'Opponent')} />
+        </Box>
+      )}
+      {open.kind === 'veto_soon' && opensAt && <OpensCountdown opensAt={opensAt} />}
+      {(open.kind === 'veto_turn' || open.kind === 'veto_open') && (
+        <TurnCountdown slug={open.slug} />
+      )}
+      <Typography sx={{ color: tokens.color.ink2 }}>{body}</Typography>
+    </DraftDialog>
   );
 }
 
 /** One team of the matchup: logo (or its tag), name, and whose it is. */
 function MatchupTeam({ side, label }: { side: MatchupSide; label: string }) {
-  const crest = (side.tag || side.name || '?').slice(0, 3).toUpperCase();
   return (
-    <Box
-      sx={{ display: 'grid', justifyItems: 'center', gap: 0.75, minWidth: 0, textAlign: 'center' }}
-    >
-      <Avatar
-        src={side.logoUrl ?? undefined}
-        alt={side.name ?? ''}
-        variant="rounded"
-        sx={{ width: 56, height: 56, fontWeight: 700, fontSize: '0.9rem' }}
-      >
-        {crest}
-      </Avatar>
-      <Typography sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>{side.name}</Typography>
-      <Typography variant="caption" color="text.secondary">
-        {label}
-      </Typography>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+      <TeamLogo team={{ name: side.name ?? '', tag: side.tag, logoUrl: side.logoUrl }} size="md" />
+      <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <Typography component="span" sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>
+          {side.name}
+        </Typography>
+        <Typography component="span" sx={{ fontSize: '0.75rem', color: tokens.color.muted }}>
+          {label}
+        </Typography>
+      </Box>
     </Box>
   );
 }

@@ -3,19 +3,28 @@
  * overview shows who is in and a Join (or Leave) button while sign-up is open; a visitor who
  * is not signed in is sent to sign in first.
  */
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Button, Typography } from '@mui/material';
-import { ShuffleIcon } from '@phosphor-icons/react';
+import { Box, Button, Link, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../utils/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { matchPagePath, paths } from '../../../paths';
-import { getMapDisplayName, getMapThumbUrl } from '../../../constants/maps';
+import { getMapDisplayName } from '../../../constants/maps';
 import { useAuth } from '../../../contexts/AuthContext';
-import { fontDisplay, radii, tokens } from '../../../theme/tokens';
+import { radii, tokens } from '../../../theme/tokens';
+import {
+  AvatarStack,
+  InfoTile,
+  MapTile,
+  PlayerAvatar,
+  SectionTitle,
+  StatePill,
+  StatusHero,
+  YoursPill,
+  panel,
+} from '../ui/draftUi';
 import type { ShufflePlayer } from '../../../hooks/useTournamentSignup';
-import { Face } from './PlayerFace';
 
 const { color } = tokens;
 
@@ -61,6 +70,8 @@ export function ShuffleJoin({
   started,
   spots,
   onChange,
+  earlier,
+  side,
 }: {
   tournamentId: number;
   players: ShufflePlayer[];
@@ -73,6 +84,10 @@ export function ShuffleJoin({
   /** How many players it takes, when capped. */
   spots: number | null;
   onChange: () => Promise<void>;
+  /** The earlier rounds' results, under this round (the drafts' shuffle board). */
+  earlier?: React.ReactNode[];
+  /** The standings beside the round. */
+  side?: React.ReactNode;
 }) {
   const { t } = useTranslation();
   const { showError } = useSnackbar();
@@ -113,6 +128,15 @@ export function ShuffleJoin({
   const names = (ids: string[]) => ids.map((id) => nameOf.get(id) ?? id).join(' + ');
   const iSitOut = !!steamId && joined && roundNo !== null && sittingOut.has(steamId);
   const finished = round?.finished === true;
+  // For the copy: players per team this round, players in the draw, matches still on.
+  const teamSize = round?.matches[0]?.teams[0]?.steamIds.length || 2;
+  const inDraw =
+    (round?.matches.reduce(
+      (n, m) => n + m.teams.reduce((k, team) => k + team.steamIds.length, 0),
+      0
+    ) ?? 0) + sittingOut.size;
+  const stillPlaying =
+    round?.matches.filter((m) => m.status !== 'completed' && m.status !== 'cancelled').length ?? 0;
   const title = finished
     ? t('shuffleJoin.finishedTitle')
     : joined && roundNo !== null && myMatch && myMatchDone
@@ -127,11 +151,16 @@ export function ShuffleJoin({
   const body = finished
     ? t('shuffleJoin.finishedBody', { count: round?.maps?.length ?? roundNo ?? 0 })
     : joined && myMatch && myMatchDone
-      ? t('shuffleJoin.playedBody', { next: (roundNo ?? 0) + 1 })
+      ? t('shuffleJoin.playedBodyLeft', { count: stillPlaying, next: (roundNo ?? 0) + 1 })
       : joined && myMatch
         ? t('shuffleJoin.playingBody', { team: myTeam?.name ?? '' })
         : iSitOut
-          ? t('shuffleJoin.sittingOutBody', { next: (roundNo ?? 0) + 1 })
+          ? t('shuffleJoin.sittingOutBodyCounts', {
+              players: inDraw,
+              size: teamSize,
+              size2: teamSize,
+              count: sittingOut.size,
+            })
           : joined
             ? t('shuffleJoin.inBody')
             : t('shuffleJoin.body');
@@ -150,288 +179,492 @@ export function ShuffleJoin({
     }
   };
 
-  return (
-    <Box
-      component="section"
-      aria-labelledby="shuffle-join-title"
-      data-testid="shuffle-join"
-      sx={{
-        p: { xs: 2.5, md: 3 },
-        borderRadius: radii.lg,
-        bgcolor: 'background.surface2',
-        border: 1,
-        borderColor: joined ? color.accent : 'divider',
-        display: 'grid',
-        gap: 2,
-      }}
-    >
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-        <ShuffleIcon size={28} weight="duotone" color={color.accent} aria-hidden />
-        <Box sx={{ flex: '1 1 16rem', minWidth: 0 }}>
-          <Typography
-            id="shuffle-join-title"
-            component="h2"
-            sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: '1.35rem' }}
-          >
-            {title}
-          </Typography>
-          <Typography sx={{ color: 'text.secondary' }} data-testid="shuffle-round-state">
-            {body}
-          </Typography>
-        </Box>
-        {myMatch && !myMatchDone && !finished && (
-          <Button
-            component={RouterLink}
-            to={matchPagePath(myMatch.slug)}
-            variant="contained"
-            data-testid="shuffle-my-match"
-            sx={{ borderRadius: radii.pill, px: 3.25, py: 1.75, fontWeight: 600 }}
-          >
-            {t('shuffleJoin.goToMatch')}
-          </Button>
-        )}
-        {!steamId
-          ? open && (
-              <Button
-                component={RouterLink}
-                to={paths.login}
-                variant="contained"
-                data-testid="shuffle-join-sign-in"
-                sx={{ borderRadius: radii.pill, px: 3, py: 1.5, fontWeight: 600 }}
-              >
-                {t('shuffleJoin.signInToJoin')}
-              </Button>
-            )
-          : joined
-            ? !finished && (
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  disabled={busy}
-                  onClick={() => void act(false)}
-                  data-testid="shuffle-leave"
-                  sx={{ borderRadius: radii.pill, px: 3, py: 1.5 }}
-                >
-                  {t('shuffleJoin.leave')}
-                </Button>
-              )
-            : open && (
-                <Button
-                  variant="contained"
-                  disabled={busy || full}
-                  onClick={() => void act(true)}
-                  data-testid="shuffle-join-button"
-                  sx={{ borderRadius: radii.pill, px: 3.25, py: 1.75, fontWeight: 600 }}
-                >
-                  {full ? t('shuffleJoin.full') : t('shuffleJoin.join')}
-                </Button>
-              )}
-      </Box>
-      {round?.maps && round.maps.length > 0 && (
-        <Box data-testid="shuffle-timeline" sx={{ display: 'grid', gap: 1 }}>
-          <Typography variant="overline" sx={{ color: 'text.secondary', lineHeight: 1.4 }}>
-            {finished || roundNo === null
-              ? t('shuffleJoin.roundsCount', { count: round.maps.length })
-              : t('shuffleJoin.roundOf', { round: roundNo, total: round.maps.length })}
-          </Typography>
-          <Box
-            component="ol"
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 9rem), 1fr))',
-              gap: 1,
-              m: 0,
-              p: 0,
-              listStyle: 'none',
-            }}
-          >
-            {round.maps.map((map, index) => {
-              const n = index + 1;
-              const current = !finished && roundNo === n;
-              const done = finished || (roundNo !== null && n < roundNo);
-              return (
-                <Box
-                  component="li"
-                  key={`${n}-${map}`}
-                  aria-current={current ? 'step' : undefined}
-                  data-testid={current ? 'shuffle-timeline-current' : 'shuffle-timeline-map'}
-                  sx={{
-                    position: 'relative',
-                    aspectRatio: '16 / 9',
-                    maxWidth: '100%',
-                    borderRadius: radii.md,
-                    overflow: 'hidden',
-                    border: 2,
-                    borderColor: current ? color.accent : 'transparent',
-                    bgcolor: 'background.paper',
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src={getMapThumbUrl(map)}
-                    alt=""
-                    loading="lazy"
-                    sx={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      filter: done ? 'grayscale(1) brightness(0.55)' : 'none',
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      inset: 0,
-                      p: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      color: '#fff',
-                      background: 'linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.05) 60%)',
-                    }}
-                  >
-                    <Box
-                      component="span"
-                      sx={{
-                        alignSelf: 'flex-start',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        px: 0.75,
-                        borderRadius: radii.pill,
-                        bgcolor: current ? color.accent : 'rgba(0,0,0,0.55)',
-                        fontVariantNumeric: 'tabular-nums',
-                      }}
-                    >
-                      {current
-                        ? t('shuffleJoin.now')
-                        : done
-                          ? `\u2713 ${t('shuffleJoin.roundShort', { round: n })}`
-                          : t('shuffleJoin.roundShort', { round: n })}
-                    </Box>
-                    <Box component="span" sx={{ fontWeight: 700 }}>
-                      {getMapDisplayName(map)}
-                    </Box>
-                  </Box>
-                </Box>
-              );
-            })}
-          </Box>
-        </Box>
-      )}
-      {round && roundNo !== null && round.matches.length > 0 && !finished && (
-        <Box data-testid="shuffle-round" sx={{ display: 'grid', gap: 1 }}>
-          <Typography variant="overline" sx={{ color: 'text.secondary', lineHeight: 1.4 }}>
-            {t('shuffleJoin.roundHeading', { round: roundNo })}
-          </Typography>
-          {round.matches.map((m) => (
-            <Box
-              key={m.slug}
+  const avatarOf = new Map(players.map((p) => [p.steamId, p.avatar]));
+  const faces = (ids: string[]) =>
+    ids.map((id) => ({ name: nameOf.get(id) ?? id, avatar: avatarOf.get(id) ?? null }));
+  const total = round?.maps?.length ?? null;
+  const roundLine =
+    roundNo !== null && total ? t('shuffleJoin.roundOf', { round: roundNo, total }) : null;
+  const myMap = roundNo !== null && round?.maps ? round.maps[roundNo - 1] : null;
+  const playingNow = !!myMatch && !myMatchDone && !finished;
+  const eyebrow = finished
+    ? t('shuffleJoin.roundsCount', { count: total ?? roundNo ?? 0 })
+    : roundLine
+      ? [
+          roundLine,
+          playingNow
+            ? myMatch?.status === 'live'
+              ? t('shuffleOverview.yourMatchLive')
+              : t('shuffleOverview.yourMatchReady')
+            : myMatchDone
+              ? t('shuffleOverview.yourMatchDone')
+              : null,
+        ]
+          .filter(Boolean)
+          .join(' · ')
+      : started
+        ? t('overviewPage.status.inProgress')
+        : spots !== null
+          ? t('shuffleJoin.countOf', { count: players.length, spots })
+          : t('shuffleJoin.count', { count: players.length });
+  const ring = finished
+    ? color.medalGold
+    : playingNow
+      ? color.live
+      : joined && !started
+        ? color.accent
+        : color.rule;
+  const opponents = myMatch?.teams.find((team) => !steamId || !team.steamIds.includes(steamId));
+
+  const hero = (
+    <StatusHero
+      testId="shuffle-join"
+      eyebrow={eyebrow}
+      eyebrowColor={
+        playingNow ? color.live : finished ? color.medalGold : iSitOut ? color.accent : color.muted
+      }
+      ring={ring}
+      title={<span id="shuffle-join-title">{title}</span>}
+      body={<span data-testid="shuffle-round-state">{body}</span>}
+      side={
+        <>
+          {playingNow && myMatch && (
+            <Button
               component={RouterLink}
-              to={matchPagePath(m.slug)}
-              data-testid="shuffle-round-match"
+              to={matchPagePath(myMatch.slug)}
+              variant="contained"
+              data-testid="shuffle-my-match"
               sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                gap: 1,
-                p: 1.5,
-                borderRadius: radii.md,
-                border: 1,
-                borderColor: m.slug === myMatch?.slug ? color.accent : 'divider',
-                color: 'inherit',
-                textDecoration: 'none',
+                minHeight: 56,
+                borderRadius: radii.pill,
+                fontWeight: 700,
+                fontSize: '1.0625rem',
               }}
             >
-              <Typography sx={{ fontWeight: 600, minWidth: 0 }}>
-                {names(m.teams[0]?.steamIds ?? [])}
-              </Typography>
-              <Typography component="span" sx={{ color: 'text.secondary' }}>
-                {t('shuffleJoin.versus')}
-              </Typography>
-              <Typography sx={{ fontWeight: 600, minWidth: 0 }}>
-                {names(m.teams[1]?.steamIds ?? [])}
-              </Typography>
-              <Typography
-                component="span"
-                sx={{ ml: 'auto', fontSize: '0.75rem', color: 'text.secondary' }}
-              >
-                {t(
-                  `shuffleJoin.status.${m.status === 'live' ? 'live' : m.status === 'completed' ? 'done' : 'waiting'}`
+              {t('shuffleJoin.goToMatch')}
+            </Button>
+          )}
+          {(iSitOut || myMatchDone) && !finished && roundNo !== null && (
+            <InfoTile
+              label={t('shuffleOverview.nextDraw')}
+              value={t('shuffleOverview.round', { n: roundNo + 1 })}
+              note={t('shuffleOverview.whenRoundEnds')}
+            />
+          )}
+          {!steamId
+            ? open && (
+                <Button
+                  component={RouterLink}
+                  to={paths.login}
+                  variant="contained"
+                  data-testid="shuffle-join-sign-in"
+                  sx={{ minHeight: 56, borderRadius: radii.pill, fontWeight: 700 }}
+                >
+                  {t('shuffleJoin.signInToJoin')}
+                </Button>
+              )
+            : joined
+              ? !finished &&
+                !playingNow && (
+                  // The drafts: a quiet line, not a second button next to the main one.
+                  <Typography component="span" sx={{ fontSize: '0.875rem', color: color.muted }}>
+                    {t('shuffleJoin.joinedByMistake')}{' '}
+                    <Link
+                      component="button"
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void act(false)}
+                      data-testid="shuffle-leave"
+                      sx={{ fontSize: 'inherit', verticalAlign: 'baseline' }}
+                    >
+                      {t('shuffleJoin.leave')}
+                    </Link>
+                  </Typography>
+                )
+              : open && (
+                  <Button
+                    variant="contained"
+                    disabled={busy || full}
+                    onClick={() => void act(true)}
+                    data-testid="shuffle-join-button"
+                    sx={{
+                      minHeight: 56,
+                      borderRadius: radii.pill,
+                      fontWeight: 700,
+                      fontSize: '1.0625rem',
+                    }}
+                  >
+                    {full ? t('shuffleJoin.full') : t('shuffleJoin.join')}
+                  </Button>
                 )}
-              </Typography>
+        </>
+      }
+    >
+      {playingNow && myTeam && opponents && (
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 1.5,
+            mt: 0.5,
+            fontSize: '1rem',
+          }}
+        >
+          <Box
+            component="span"
+            sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, fontWeight: 600 }}
+          >
+            <AvatarStack players={faces(myTeam.steamIds)} size={28} />
+            {names(myTeam.steamIds)}
+          </Box>
+          <Box component="span" sx={{ color: color.muted }}>
+            {t('shuffleJoin.versus')}
+          </Box>
+          <Box
+            component="span"
+            sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, fontWeight: 600 }}
+          >
+            <AvatarStack players={faces(opponents.steamIds)} size={28} />
+            {names(opponents.steamIds)}
+          </Box>
+          {myMap && (
+            <Box component="span" sx={{ color: color.muted }}>
+              · {getMapDisplayName(myMap)}
             </Box>
-          ))}
-          {round.sittingOut.length > 0 && (
-            <Typography sx={{ color: 'text.secondary' }} data-testid="shuffle-round-sitting-out">
-              {t('shuffleJoin.sittingOutList', { names: names(round.sittingOut) })}
-            </Typography>
           )}
         </Box>
       )}
-      <Box>
-        <Typography variant="overline" sx={{ color: 'text.secondary', lineHeight: 1.4 }}>
-          {spots !== null
-            ? t('shuffleJoin.countOf', { count: players.length, spots })
-            : t('shuffleJoin.count', { count: players.length })}
-        </Typography>
-        {players.length > 0 && (
-          <Box
-            sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mt: 1 }}
-            data-testid="shuffle-players"
-          >
-            {players.map((p) => (
+      {!started && players.length > 0 && (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }} data-testid="shuffle-players">
+          {players.map((p) => (
+            <Box
+              key={p.steamId}
+              title={p.name}
+              sx={{
+                outline: p.steamId === steamId ? `2px solid ${color.accent}` : 'none',
+                outlineOffset: 2,
+                borderRadius: '50%',
+              }}
+            >
+              <PlayerAvatar name={p.name} avatar={p.avatar} size={32} label />
+            </Box>
+          ))}
+        </Box>
+      )}
+    </StatusHero>
+  );
+
+  const timeline =
+    round?.maps && round.maps.length > 0 ? (
+      <Box
+        component="section"
+        aria-labelledby="shuffle-rounds-title"
+        data-testid="shuffle-timeline"
+        sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}
+      >
+        <SectionTitle
+          id="shuffle-rounds-title"
+          title={
+            finished || roundNo === null
+              ? t('shuffleJoin.roundsCount', { count: round.maps.length })
+              : t('shuffleJoin.roundOf', { round: roundNo, total: round.maps.length })
+          }
+          note={t('shuffleOverview.oneMapPerRound')}
+        />
+        {/* One row of rounds; it scrolls sideways on a phone (no round alone on a last row). */}
+        <Box
+          component="ol"
+          sx={{
+            display: 'grid',
+            gridAutoFlow: 'column',
+            gridAutoColumns: { xs: '9.5rem', md: 'minmax(9rem, 1fr)' },
+            overflowX: 'auto',
+            pb: 0.5,
+            gap: 1.5,
+            m: 0,
+            p: 0,
+            listStyle: 'none',
+          }}
+        >
+          {round.maps.map((map, index) => {
+            const n = index + 1;
+            const current = !finished && roundNo === n;
+            const done = finished || (roundNo !== null && n < roundNo);
+            const state = done
+              ? 'done'
+              : current
+                ? 'now'
+                : roundNo !== null && n === roundNo + 1
+                  ? 'next'
+                  : 'later';
+            return (
               <Box
-                key={p.steamId}
-                sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}
+                component="li"
+                key={`${n}-${map}`}
+                aria-current={current ? 'step' : undefined}
+                data-testid={current ? 'shuffle-timeline-current' : 'shuffle-timeline-map'}
               >
-                <Face name={p.name} avatar={p.avatar} size={32} />
-                <Typography
-                  sx={{
-                    fontWeight: p.steamId === steamId ? 700 : 500,
-                    maxWidth: '12rem',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {p.name}
-                </Typography>
-                {isAdmin && started && round?.finished !== true && (
-                  <Button
-                    size="small"
-                    variant="text"
-                    color="inherit"
-                    disabled={marking === p.steamId}
-                    onClick={() => void markOut(p.steamId, !p.left)}
-                    data-testid="shuffle-mark-out"
-                    sx={{ minWidth: 0, px: 1, fontSize: '0.75rem', color: 'text.secondary' }}
-                  >
-                    {p.left ? t('shuffleJoin.markIn') : t('shuffleJoin.markOut')}
-                  </Button>
-                )}
-                {roundNo !== null && (
-                  <Typography
-                    component="span"
-                    sx={{
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      color: p.left || sittingOut.has(p.steamId) ? color.muted : color.accent,
-                    }}
-                  >
-                    {p.left
-                      ? t('shuffleJoin.tagLeft')
-                      : sittingOut.has(p.steamId)
-                        ? t('shuffleJoin.tagSittingOut')
-                        : t('shuffleJoin.tagPlaying')}
-                  </Typography>
-                )}
+                <MapTile
+                  map={map}
+                  played={done}
+                  ring={current ? color.live : 'transparent'}
+                  top={
+                    <>
+                      <Box
+                        component="span"
+                        sx={{
+                          px: 1,
+                          py: 0.25,
+                          borderRadius: radii.pill,
+                          bgcolor: color.paper,
+                          fontSize: '0.8125rem',
+                        }}
+                      >
+                        {t('shuffleJoin.roundShort', { round: n })}
+                      </Box>
+                      <StatePill state={state} label={t(`liveOverview.state.${state}`)} />
+                    </>
+                  }
+                />
               </Box>
-            ))}
+            );
+          })}
+        </Box>
+      </Box>
+    ) : null;
+
+  const matchRow = (m: ShuffleRound['matches'][number], done: boolean) => {
+    const mine = m.slug === myMatch?.slug;
+    const winnerSide = (m as { winner?: 0 | 1 | null }).winner;
+    const side = (i: 0 | 1) => {
+      const ids = m.teams[i]?.steamIds ?? [];
+      const won = done && winnerSide === i;
+      return (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            minWidth: 0,
+            justifyContent: i === 1 ? 'flex-end' : 'flex-start',
+            textAlign: i === 1 ? 'right' : 'left',
+          }}
+        >
+          <Box sx={{ display: { xs: 'inline-flex', sm: 'none' } }}>
+            <AvatarStack players={faces(ids)} size={26} />
+          </Box>
+          <Box
+            component="span"
+            sx={{
+              display: { xs: 'none', sm: 'inline' },
+              fontWeight: won ? 700 : 600,
+              color: color.ink,
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {names(ids)}
+          </Box>
+        </Box>
+      );
+    };
+    return (
+      <Box
+        key={m.slug}
+        component={RouterLink}
+        to={matchPagePath(m.slug)}
+        data-testid="shuffle-round-match"
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr) auto',
+          alignItems: 'center',
+          gap: 1.5,
+          px: 2,
+          py: 1.75,
+          borderRadius: radii.md,
+          bgcolor: color.paper3,
+          color: 'inherit',
+          textDecoration: 'none',
+          '&:hover': { filter: 'brightness(1.12)' },
+        }}
+      >
+        {side(0)}
+        <Box component="span" sx={{ color: color.muted, fontSize: '0.875rem' }}>
+          {t('shuffleJoin.versus')}
+        </Box>
+        {side(1)}
+        <Box
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: 1,
+            minWidth: 56,
+          }}
+        >
+          {mine && <YoursPill kind="match" />}
+          <Typography
+            component="span"
+            sx={{
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              textAlign: 'right',
+              color: m.status === 'live' ? color.live : color.ink2,
+            }}
+          >
+            {t(
+              `shuffleJoin.status.${m.status === 'live' ? 'live' : m.status === 'completed' ? 'done' : 'waiting'}`
+            )}
+          </Typography>
+        </Box>
+      </Box>
+    );
+  };
+
+  const thisRound =
+    round && roundNo !== null && round.matches.length > 0 && !finished ? (
+      <Box
+        component="section"
+        aria-labelledby="shuffle-this-round"
+        data-testid="shuffle-round"
+        sx={{ ...panel, flex: '999 1 520px' }}
+      >
+        <SectionTitle
+          id="shuffle-this-round"
+          title={`${t('shuffleJoin.roundHeading', { round: roundNo })}${myMap || round.maps?.[roundNo - 1] ? ` · ${getMapDisplayName((round.maps?.[roundNo - 1] ?? myMap) as string)}` : ''}`}
+        />
+        {round.matches.map((m) => matchRow(m, false))}
+        {round.sittingOut.length > 0 && (
+          <Box
+            data-testid="shuffle-round-sitting-out"
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: 1,
+              color: color.ink2,
+              fontSize: '0.875rem',
+            }}
+          >
+            <Box component="span" sx={{ color: color.muted }}>
+              {t('shuffleOverview.sittingOut')}
+            </Box>
+            <Box sx={{ display: { xs: 'inline-flex', sm: 'none' } }}>
+              <AvatarStack players={faces(round.sittingOut)} size={26} />
+            </Box>
+            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+              {names(round.sittingOut).replace(/ \+ /g, ', ')}
+            </Box>
+            <Box component="span" sx={{ color: color.muted }}>
+              · {t('shuffleOverview.firstNextRound')}
+            </Box>
           </Box>
         )}
+        {earlier && earlier.length > 0 && (
+          <>
+            <Box sx={{ height: '1px', bgcolor: color.rule, my: 0.5 }} />
+            <Typography
+              component="h3"
+              sx={{
+                m: 0,
+                fontSize: '0.875rem',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: color.muted,
+                fontWeight: 600,
+              }}
+            >
+              {t('liveOverview.earlier')}
+            </Typography>
+            {earlier}
+          </>
+        )}
       </Box>
+    ) : null;
+
+  const adminPlayers =
+    isAdmin && started && !finished && players.length > 0 ? (
+      <Box component="section" aria-labelledby="shuffle-admin-players" sx={panel}>
+        <SectionTitle
+          id="shuffle-admin-players"
+          title={t('shuffleOverview.players')}
+          note={t('shuffleOverview.markOutHint')}
+        />
+        <Box
+          component="ol"
+          sx={{
+            listStyle: 'none',
+            m: 0,
+            p: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.75,
+          }}
+          data-testid="shuffle-players"
+        >
+          {players.map((p) => (
+            <Box
+              component="li"
+              key={p.steamId}
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '32px minmax(0,1fr) auto auto',
+                gap: 1.5,
+                alignItems: 'center',
+                px: 1.5,
+                py: 1,
+                borderRadius: radii.sm,
+                bgcolor: color.paper3,
+              }}
+            >
+              <PlayerAvatar name={p.name} avatar={p.avatar} size={32} />
+              <Typography
+                component="span"
+                sx={{ color: p.left ? color.muted : color.ink, overflowWrap: 'anywhere' }}
+              >
+                {p.name}
+              </Typography>
+              <Typography
+                component="span"
+                sx={{
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  color: p.left ? color.ban : sittingOut.has(p.steamId) ? color.muted : color.live,
+                }}
+              >
+                {p.left
+                  ? t('shuffleJoin.tagLeft')
+                  : sittingOut.has(p.steamId)
+                    ? t('shuffleJoin.tagSittingOut')
+                    : t('shuffleJoin.tagPlaying')}
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                disabled={marking === p.steamId}
+                onClick={() => void markOut(p.steamId, !p.left)}
+                data-testid="shuffle-mark-out"
+                sx={{ minHeight: 36, borderRadius: radii.pill }}
+              >
+                {p.left ? t('shuffleJoin.markIn') : t('shuffleJoin.markOut')}
+              </Button>
+            </Box>
+          ))}
+        </Box>
+      </Box>
+    ) : null;
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {hero}
+      {timeline}
+      {(thisRound || side) && (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, alignItems: 'flex-start' }}>
+          {thisRound}
+          {side}
+        </Box>
+      )}
+      {adminPlayers}
     </Box>
   );
 }

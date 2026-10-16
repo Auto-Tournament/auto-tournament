@@ -14,10 +14,9 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Panel } from '../common/ui';
-import { playerProfilePath } from '../../paths';
+import { PlayerChip } from '../player/PlayerChip';
 
 interface Row {
   rank: number;
@@ -101,13 +100,7 @@ export function MatchmakingLeaderboard() {
               <TableRow key={r.id}>
                 <TableCell>{r.rank}</TableCell>
                 <TableCell>
-                  <Typography
-                    component={RouterLink}
-                    to={playerProfilePath(r.id)}
-                    sx={{ color: 'text.primary' }}
-                  >
-                    {r.name}
-                  </Typography>
+                  <PlayerChip id={r.id} name={r.name} />
                 </TableCell>
                 <TableCell align="right">{r.level}</TableCell>
                 <TableCell align="right" sx={{ fontWeight: 700 }}>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Box, Button, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Alert, Box, Button, Typography } from '@mui/material';
 import { motion, useReducedMotion } from 'motion/react';
 import { CopyIcon, GameControllerIcon } from '@phosphor-icons/react';
 import {
@@ -161,6 +161,7 @@ export function MatchServerPanel({
   matchSlug,
   viewerCanJoin,
   matchStatus,
+  waitingSaidByPage = false,
 }: MatchConnectPanelProps) {
   const { t } = useModuleTranslation('cs2');
   const { showError } = useSnackbar();
@@ -226,12 +227,71 @@ export function MatchServerPanel({
 
   if (!server) {
     return (
-      <Alert severity="info">
-        <Typography variant="body2" fontWeight={600} gutterBottom>
-          {t('matchInfo.server.waitingTitle')}
-        </Typography>
-        <Typography variant="body2">{t('matchInfo.server.waitingBody')}</Typography>
-      </Alert>
+      <Box
+        data-testid="match-server-waiting"
+        sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+      >
+        {!waitingSaidByPage && (
+          <>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                gap: 1,
+              }}
+            >
+              <Typography sx={{ fontWeight: 700, fontSize: '1.0625rem' }}>
+                {t('matchInfo.server.waitingTitle')}
+              </Typography>
+              {connect?.currentMap && (
+                <Box
+                  component="span"
+                  sx={{
+                    px: 1.25,
+                    py: 0.25,
+                    borderRadius: radii.pill,
+                    bgcolor: tokens.color.paper3,
+                    color: tokens.color.ink2,
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  {t('matchInfo.server.vetoDoneChip', {
+                    map: currentMapData?.displayName ?? connect.currentMap,
+                  })}
+                </Box>
+              )}
+            </Box>
+            <Typography sx={{ color: tokens.color.ink2 }}>
+              {t('matchInfo.server.waitingBody')}
+            </Typography>
+          </>
+        )}
+        {typeof connect?.queuePosition === 'number' && (
+          <Box
+            data-testid="match-server-queue"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              borderRadius: radii.md,
+              bgcolor: tokens.color.paper3,
+              p: 2,
+            }}
+          >
+            <Typography component="span" sx={{ ...mono, fontSize: '1.875rem', fontWeight: 500 }}>
+              #{connect.queuePosition}
+            </Typography>
+            <Typography component="span" sx={{ color: tokens.color.ink2 }}>
+              {connect.queuePosition === 1
+                ? t('matchInfo.server.queueNext')
+                : t('matchInfo.server.queueInLine')}
+            </Typography>
+          </Box>
+        )}
+      </Box>
     );
   }
 
@@ -268,75 +328,146 @@ export function MatchServerPanel({
           </Alert>
         )}
         {server.pause && (
-          <Alert severity="info" data-testid="match-server-paused">
-            <Typography variant="body2" fontWeight={600}>
+          <Box
+            data-testid="match-server-paused"
+            role="status"
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 0.75,
+              p: 2,
+              borderRadius: radii.md,
+              border: `2px solid ${tokens.color.warning}`,
+              bgcolor: tokens.color.paper3,
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                gap: 1,
+              }}
+            >
+              <Typography sx={{ fontWeight: 700 }}>
+                {server.pause.waitingFor.length > 0
+                  ? t('matchInfo.server.pausedWaiting', {
+                      names: server.pause.waitingFor.join(', '),
+                      count: server.pause.waitingFor.length,
+                    })
+                  : t('matchInfo.server.paused')}
+              </Typography>
+              <Box
+                component="span"
+                sx={{
+                  px: 1.25,
+                  py: 0.25,
+                  borderRadius: radii.pill,
+                  bgcolor: tokens.color.warning,
+                  color: tokens.color.accentInk,
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                }}
+              >
+                {connect?.roundNumber
+                  ? t('matchInfo.server.pausedChip', { n: connect.roundNumber })
+                  : t('matchInfo.server.pausedChipShort')}
+              </Box>
+            </Box>
+            <Typography sx={{ fontSize: '0.875rem', color: tokens.color.ink2 }}>
               {server.pause.waitingFor.length > 0
-                ? t('matchInfo.server.pausedWaiting', {
+                ? t('matchInfo.server.pausedBodyWaiting', {
                     names: server.pause.waitingFor.join(', '),
                     count: server.pause.waitingFor.length,
                   })
-                : t('matchInfo.server.paused')}
+                : t('matchInfo.server.pausedBody')}
             </Typography>
-          </Alert>
-        )}
-        {/* Connect first (design draft "Match A"): one big Join, the console line beside Copy. */}
-        <Box
-          component={motion.div}
-          whileHover={reduceMotion ? undefined : { scale: 1.015 }}
-          whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-          transition={{ type: 'spring', stiffness: 600, damping: 30 }}
-        >
-          <Button
-            variant="contained"
-            size="large"
-            fullWidth
-            color={connected ? 'success' : 'primary'}
-            startIcon={<GameControllerIcon size={26} />}
-            onClick={onConnect}
-            disabled={!server.host || !server.port} // Disable if server details missing
-            data-testid="match-join-button"
-            sx={{ minHeight: 64, borderRadius: radii.pill, fontSize: '1.15rem', fontWeight: 600 }}
-          >
-            {connected ? t('matchInfo.server.connecting') : t('matchInfo.server.connect')}
-          </Button>
-        </Box>
-
-        {addresses && addresses.length > 1 && (
-          <Box
-            display="flex"
-            gap={1}
-            alignItems="center"
-            justifyContent="center"
-            flexWrap="wrap"
-            data-testid="match-connect-via"
-          >
-            <Typography variant="body2" color="text.secondary">
-              {t('matchInfo.server.via')}
-            </Typography>
-            <ToggleButtonGroup
-              size="small"
-              exclusive
-              value={via ?? server.recommended ?? 'public'}
-              onChange={(_, v: 'lan' | 'public' | null) => v && setVia(v)}
-            >
-              {addresses.map((a) => (
-                <ToggleButton
-                  key={a.kind}
-                  value={a.kind}
-                  data-testid={`match-connect-via-${a.kind}`}
-                  sx={{ textTransform: 'none', px: 1.5 }}
-                >
-                  {a.kind === 'lan'
-                    ? t('matchInfo.server.viaLan')
-                    : t('matchInfo.server.viaPublic')}
-                  {a.kind === server.recommended && ` · ${t('matchInfo.server.viaRecommended')}`}
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
           </Box>
         )}
+        {/* The drafts' match room: Connect and LAN / Internet on one row, the console line under it. */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center' }}>
+          <Box
+            component={motion.div}
+            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 600, damping: 30 }}
+            sx={{ flex: '1 1 260px' }}
+          >
+            <Button
+              variant="contained"
+              size="large"
+              fullWidth
+              color={connected ? 'success' : 'primary'}
+              startIcon={<GameControllerIcon size={24} />}
+              onClick={onConnect}
+              disabled={!server.host || !server.port}
+              data-testid="match-join-button"
+              sx={{
+                minHeight: 56,
+                borderRadius: radii.pill,
+                fontSize: '1.125rem',
+                fontWeight: 700,
+              }}
+            >
+              {connected
+                ? t('matchInfo.server.connecting')
+                : server.pause || server.moved
+                  ? t('matchInfo.server.reconnect')
+                  : t('matchInfo.server.connect')}
+            </Button>
+          </Box>
+          {addresses && addresses.length > 1 && (
+            <Box
+              role="radiogroup"
+              aria-label={t('matchInfo.server.via')}
+              data-testid="match-connect-via"
+              sx={{
+                display: 'flex',
+                borderRadius: radii.pill,
+                bgcolor: tokens.color.paper3,
+                p: 0.5,
+              }}
+            >
+              {addresses.map((a) => {
+                const on = a.kind === (via ?? server.recommended ?? 'public');
+                return (
+                  <Box
+                    key={a.kind}
+                    component="button"
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    data-testid={`match-connect-via-${a.kind}`}
+                    onClick={() => setVia(a.kind)}
+                    sx={{
+                      minHeight: 44,
+                      px: 2,
+                      border: 0,
+                      borderRadius: radii.pill,
+                      bgcolor: on ? tokens.color.rule : 'transparent',
+                      color: on ? tokens.color.ink : tokens.color.ink2,
+                      fontWeight: 600,
+                      font: 'inherit',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      '&:focus-visible': {
+                        outline: `2px solid ${tokens.color.focus}`,
+                        outlineOffset: 2,
+                      },
+                    }}
+                  >
+                    {a.kind === 'lan'
+                      ? t('matchInfo.server.viaLan')
+                      : t('matchInfo.server.viaPublic')}
+                    {a.kind === server.recommended && ` · ${t('matchInfo.server.viaRecommended')}`}
+                  </Box>
+                );
+              })}
+            </Box>
+          )}
+        </Box>
 
-        <Box display="flex" gap={1} alignItems="center" justifyContent="center" flexWrap="wrap">
+        <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
           <Typography
             variant="body2"
             sx={{
@@ -363,7 +494,7 @@ export function MatchServerPanel({
           </Button>
         </Box>
 
-        <Typography variant="caption" color="text.secondary" textAlign="center">
+        <Typography variant="caption" color="text.secondary">
           {server.name}
           {currentMapData ? ` · ${currentMapData.displayName}` : ''}
           {server.status ? ` · ${statusLabel}` : ''}

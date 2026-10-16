@@ -16,6 +16,7 @@ import {
   useAuth,
   useModuleTranslation,
   useSnackbar,
+  fmtDateTime,
 } from '../../../module-sdk';
 import { commentPieces } from './commentText';
 
@@ -42,7 +43,7 @@ export function Comments({
   duration: number | null;
   onSeek: (seconds: number) => void;
 }) {
-  const { t, i18n } = useModuleTranslation('cs2');
+  const { t } = useModuleTranslation('cs2');
   const { playerSteamId, isAuthenticated: isAdmin } = useAuth();
   const { showError } = useSnackbar();
   const [loaded, setLoaded] = useState<{ video: string; comments: VideoComment[] } | null>(null);
@@ -107,13 +108,7 @@ export function Comments({
     }
   };
 
-  const when = (seconds: number) =>
-    new Date(seconds * 1000).toLocaleString(i18n.language, {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const when = (seconds: number) => fmtDateTime(seconds);
 
   const field = {
     width: '100%',

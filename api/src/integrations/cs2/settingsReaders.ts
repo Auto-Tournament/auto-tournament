@@ -215,6 +215,8 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     atFfwEnabled: atEnhanced.at_ffw_enabled,
     atFfwTime: atEnhanced.at_ffw_time,
     atDemoRecordingEnabled: atEnhanced.at_demo_recording_enabled,
+    // Spectators in GOTV (gotv.ts).
+    ...(await (await import('./gotv')).gotvSettingsResponse()),
     // The highlight settings are core's (services/highlights/settings.ts).
   };
 }

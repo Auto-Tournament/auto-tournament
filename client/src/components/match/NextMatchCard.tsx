@@ -14,7 +14,8 @@ import { matchPagePath } from '../../paths';
 import { matchPhaseOf, type MatchPhase } from '../../utils/matchPhase';
 import { useSocket } from '../../hooks/useSocket';
 import { onSocketReconnect } from '../../utils/socketResync';
-import { tokens, fontDisplay, radii } from '../../theme/tokens';
+import { tokens, fontDisplay } from '../../theme/tokens';
+import { panelSx } from '../../components/common/ui';
 
 const { color } = tokens;
 
@@ -83,13 +84,12 @@ export function NextMatchCard({ teamId }: { teamId: string }) {
       aria-label={t('nextMatchCard.title')}
       data-testid="next-match-card"
       sx={{
+        ...panelSx,
         display: 'flex',
         alignItems: 'center',
         gap: 2,
         flexWrap: 'wrap',
         p: { xs: 2, md: 2.5 },
-        borderRadius: radii.lg,
-        bgcolor: color.paper2,
         border: `1px solid ${yourTurn ? color.accent : color.rule}`,
       }}
     >

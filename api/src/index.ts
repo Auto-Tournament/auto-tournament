@@ -631,6 +631,7 @@ process.on('uncaughtException', (err) => {
       startModuleUpdateNotices();
       // The demo worker inside the image (services/builtinWorker.ts).
       // Start times: reminders before, and the automatic start (tournamentSchedule.ts).
+      void import('./services/matchTimes').then(({ startMatchTimes }) => startMatchTimes());
       void import('./services/tournamentSchedule').then(({ startTournamentSchedule }) =>
         startTournamentSchedule(Number(PORT))
       );

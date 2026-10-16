@@ -11,3 +11,22 @@ export const rarityColor: Record<string, string> = {
   ancient: '#eb4b4b',
   immortal: '#e4ae39',
 };
+
+/** Rarities from worst to best. */
+export const RARITY_ORDER = [
+  'common',
+  'uncommon',
+  'rare',
+  'mythical',
+  'legendary',
+  'ancient',
+  'immortal',
+];
+
+/** The best rarity among some skins (a pick's three options). */
+export function bestRarity(rarities: string[]): string {
+  return rarities.reduce(
+    (best, r) => (RARITY_ORDER.indexOf(r) > RARITY_ORDER.indexOf(best) ? r : best),
+    rarities[0] ?? 'common'
+  );
+}

@@ -21,6 +21,7 @@ import {
   tokens,
   fontDisplay,
   radii,
+  dialogPaperSx,
 } from '../../../module-sdk';
 import { InspectSkinDialog, SkinCard, SlotTile, VirtualNotice } from './SkinParts';
 import { loadoutSlots, useMySkins, useSkinsEnabled, type OwnedSkin, type Rarity } from './useSkins';
@@ -496,7 +497,7 @@ export function InventoryPage() {
         open={helpOpen}
         onClose={() => setHelpOpen(false)}
         PaperProps={{
-          sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' },
+          sx: dialogPaperSx,
         }}
       >
         <Box sx={{ p: 3.5, display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 440 }}>
@@ -554,7 +555,7 @@ function SidePicker({
       onClose={onClose}
       aria-labelledby="side-picker-title"
       PaperProps={{
-        sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' },
+        sx: dialogPaperSx,
       }}
     >
       <Box

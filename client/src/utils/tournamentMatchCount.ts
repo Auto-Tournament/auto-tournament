@@ -34,6 +34,10 @@ export interface MatchCountInput {
   playerCount?: number;
   /** Shuffle: players per team. */
   teamSize?: number;
+  /** Groups, then playoffs. */
+  groupCount?: number;
+  advancePerGroup?: number;
+  playoffType?: string;
 }
 
 export interface MatchCountEstimate {
@@ -72,6 +76,25 @@ export function estimateMatchCount(input: MatchCountInput): MatchCountEstimate {
     }
     case 'round_robin':
       return { matches: (n * (n - 1)) / 2, rounds: n % 2 === 0 ? n - 1 : n };
+    case 'groups': {
+      // Each group a round robin, then single (or double) elimination for the qualifiers.
+      const groups = Math.min(4, Math.max(2, input.groupCount ?? 2));
+      const through = input.advancePerGroup === 2 ? 2 : 1;
+      let size = 2;
+      while (size < groups * through) size *= 2;
+      let matches = 0;
+      let rounds = 0;
+      for (let g = 0; g < groups; g++) {
+        const k = Math.floor(n / groups) + (g < n % groups ? 1 : 0);
+        matches += (k * (k - 1)) / 2;
+        rounds = Math.max(rounds, k % 2 === 0 ? k - 1 : k);
+      }
+      const de = input.playoffType === 'double_elimination';
+      return {
+        matches: matches + (de ? 2 * size - 2 : size - 1),
+        rounds: de ? null : rounds + Math.log2(size),
+      };
+    }
     case 'swiss': {
       const rounds = Math.ceil(Math.log2(n));
       return { matches: Math.floor(n / 2) * rounds, rounds };

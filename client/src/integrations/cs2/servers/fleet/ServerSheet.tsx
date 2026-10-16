@@ -1,6 +1,12 @@
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { ArrowClockwiseIcon, PlayIcon, StopIcon, TrashIcon } from '@phosphor-icons/react';
-import { mono, openMatchDetails, tokens, useModuleTranslation } from '../../../../module-sdk';
+import {
+  mono,
+  openMatchDetails,
+  tokens,
+  useModuleTranslation,
+  fmtDateTime,
+} from '../../../../module-sdk';
 import type { FleetHost } from '../../cs2.types';
 import { getMapDisplayName } from '../../maps/mapData';
 import { serverState } from '../machineState';
@@ -32,17 +38,15 @@ export function ServerSheet({
   onClose: () => void;
   onDelete: (host: FleetHost, server: string) => void;
 }) {
-  const { t, i18n } = useModuleTranslation('cs2');
+  const { t } = useModuleTranslation('cs2');
   const label = useStateLabel();
-  const s = host && serverName ? host.servers.find((x) => x.name === serverName) ?? null : null;
+  const s = host && serverName ? (host.servers.find((x) => x.name === serverName) ?? null) : null;
   const open = !!host && !!s;
   const deleting = host && s ? fleet.isDeleting(host, s.name) : false;
   const state = host && s ? serverState(host, s, deleting) : 'offline';
   const canAct = !!host?.online && !deleting;
   const last = host && s ? host.servers[host.servers.length - 1]?.name === s.name : false;
-  const since = s?.process.started_at
-    ? new Date(s.process.started_at * 1000).toLocaleString(i18n.language)
-    : null;
+  const since = s?.process.started_at ? fmtDateTime(s.process.started_at) : null;
 
   return (
     <SideSheet
@@ -58,7 +62,11 @@ export function ServerSheet({
             items={[
               [
                 t('serversBoard.facts.state', { defaultValue: 'State' }),
-                <Box key="state" component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  key="state"
+                  component="span"
+                  sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}
+                >
                   <StateMark state={state} />
                   {label(state, match)}
                 </Box>,
@@ -67,14 +75,18 @@ export function ServerSheet({
                 t('serversBoard.facts.match', { defaultValue: 'Match' }),
                 <Box key="match" component="span">
                   {match.team1 || match.team2 ? `${match.team1} vs ${match.team2}` : match.slug}
-                  {match.score && match.phase !== 'veto' ? ` · ${match.score[0]} – ${match.score[1]}` : ''}
+                  {match.score && match.phase !== 'veto'
+                    ? ` · ${match.score[0]} – ${match.score[1]}`
+                    : ''}
                   {match.map ? ` · ${getMapDisplayName(match.map)}` : ''}
                 </Box>,
               ],
               [
                 t('serversBoard.facts.ports', { defaultValue: 'Ports' }),
                 <Box key="ports" component="span" sx={mono}>
-                  {[`game ${s.game_port}`, s.tv_port ? `GOTV ${s.tv_port}` : null].filter(Boolean).join(' · ')}
+                  {[`game ${s.game_port}`, s.tv_port ? `GOTV ${s.tv_port}` : null]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </Box>,
               ],
               [
@@ -82,7 +94,9 @@ export function ServerSheet({
                 s.readyup.installed
                   ? [
                       s.readyup.installed,
-                      t(`machinesPanel.health.${s.readyup.health}`, { defaultValue: s.readyup.health }),
+                      t(`machinesPanel.health.${s.readyup.health}`, {
+                        defaultValue: s.readyup.health,
+                      }),
                       s.readyup.phase ?? null,
                     ]
                       .filter(Boolean)
@@ -111,7 +125,12 @@ export function ServerSheet({
 
           <Stack direction="row" gap={1} flexWrap="wrap">
             {match && (
-              <Button variant="contained" size="small" onClick={() => void openMatchDetails(match.slug)} data-testid="server-sheet-match">
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => void openMatchDetails(match.slug)}
+                data-testid="server-sheet-match"
+              >
                 {t('serversBoard.openMatch', { defaultValue: 'Open the match' })}
               </Button>
             )}
@@ -133,7 +152,12 @@ export function ServerSheet({
                   variant="outlined"
                   startIcon={<ArrowClockwiseIcon />}
                   disabled={!canAct}
-                  onClick={() => void fleet.send(host, 'server.restart', { server: s.name, reason: 'restart from the Servers page' })}
+                  onClick={() =>
+                    void fleet.send(host, 'server.restart', {
+                      server: s.name,
+                      reason: 'restart from the Servers page',
+                    })
+                  }
                   data-testid={`machine-restart-${s.name}`}
                 >
                   {t('machinesPanel.restart', { defaultValue: 'Restart' })}
@@ -166,13 +190,17 @@ export function ServerSheet({
           {match && s.process.running && (
             <Typography variant="body2" sx={{ color: color.muted }}>
               {t('serversBoard.matchHint', {
-                defaultValue: 'A match is on this server: stopping or restarting it asks for a reason, and failover can move the match first.',
+                defaultValue:
+                  'A match is on this server: stopping or restarting it asks for a reason, and failover can move the match first.',
               })}
             </Typography>
           )}
           {!last && (
             <Typography variant="caption" sx={{ color: color.muted }}>
-              {t('serversBoard.deleteLastOnly', { defaultValue: 'csm deletes the last server on a machine only, so the numbers stay in order.' })}
+              {t('serversBoard.deleteLastOnly', {
+                defaultValue:
+                  'csm deletes the last server on a machine only, so the numbers stay in order.',
+              })}
             </Typography>
           )}
         </>

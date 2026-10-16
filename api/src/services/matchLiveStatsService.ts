@@ -113,11 +113,27 @@ export function sumPlayerStatsAcrossMaps(
   return { team1: sumSide('team1'), team2: sumSide('team2') };
 }
 
+/** How far back the delayed snapshots go (CS2 caps tv_delay at 120 s). */
+const HISTORY_MS = 130_000;
+
 class MatchLiveStatsService {
   private stats = new Map<string, MatchLiveStats>();
+  /** Recent snapshots per match, oldest first, for viewers who see the match delayed (GOTV). */
+  private history = new Map<string, MatchLiveStats[]>();
 
   getStats(matchSlug: string): MatchLiveStats | null {
     return this.stats.get(matchSlug) ?? null;
+  }
+
+  /**
+   * The match as it was `delaySeconds` ago (what GOTV shows), or null when
+   * nothing that old is known yet. 0 is the live state.
+   */
+  getStatsDelayed(matchSlug: string, delaySeconds: number): MatchLiveStats | null {
+    if (delaySeconds <= 0) return this.getStats(matchSlug);
+    const cutoff = Date.now() - delaySeconds * 1000;
+    const past = (this.history.get(matchSlug) ?? []).filter((s) => s.lastEventAt <= cutoff);
+    return past.length ? past[past.length - 1] : null;
   }
 
   reset(matchSlug: string): MatchLiveStats {
@@ -160,6 +176,11 @@ class MatchLiveStatsService {
     }
 
     this.stats.set(matchSlug, next);
+    const kept = (this.history.get(matchSlug) ?? []).filter(
+      (h) => h.lastEventAt >= next.lastEventAt - HISTORY_MS
+    );
+    kept.push(next);
+    this.history.set(matchSlug, kept);
     matchChanged({ slug: matchSlug });
     return next;
   }
@@ -172,12 +193,14 @@ class MatchLiveStatsService {
   }
 
   clear(matchSlug: string): void {
+    this.history.delete(matchSlug);
     if (this.stats.delete(matchSlug)) {
       log.debug('Cleared live stats for match', { matchSlug });
     }
   }
 
   clearAll(): void {
+    this.history.clear();
     if (this.stats.size > 0) {
       this.stats.clear();
       log.debug('Cleared live stats for all matches');
@@ -186,5 +209,3 @@ class MatchLiveStatsService {
 }
 
 export const matchLiveStatsService = new MatchLiveStatsService();
-
-

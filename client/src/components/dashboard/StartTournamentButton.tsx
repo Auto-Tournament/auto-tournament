@@ -13,16 +13,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Button,
-  CircularProgress,
-  Alert,
-  Snackbar,
-  Typography,
-  Box,
-  FormControlLabel,
-  Switch,
-} from '@mui/material';
+import { Button, CircularProgress, Alert, Snackbar, Typography, Box } from '@mui/material';
 import { RobotIcon, RocketLaunchIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useTournament } from '../../hooks/useTournament';
@@ -31,6 +22,7 @@ import { api } from '../../utils/api';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { useSimulationMode } from '../../hooks/useSimulationMode';
 import { useIntegrationFor } from '../../integrations/registry';
+import { SwitchRow } from '../../components/common/ui';
 
 interface StartTournamentButtonProps {
   variant?: 'text' | 'outlined' | 'contained';
@@ -210,13 +202,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
             )}
             {isDev && (
               <Box mt={2}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={enableSimulation}
-                      onChange={(e) => setEnableSimulation(e.target.checked)}
-                    />
-                  }
+                <SwitchRow
                   label={
                     <Box>
                       <Typography variant="body2" fontWeight={500}>
@@ -228,6 +214,8 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
                       </Typography>
                     </Box>
                   }
+                  checked={enableSimulation}
+                  onChange={(e) => setEnableSimulation(e.target.checked)}
                 />
               </Box>
             )}

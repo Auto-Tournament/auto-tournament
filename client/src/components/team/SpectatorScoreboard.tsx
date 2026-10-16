@@ -2,6 +2,7 @@ import { Box, Chip, Typography } from '@mui/material';
 import { motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { tokens, mono, radii } from '../../theme/tokens';
+import { panelSx, panelBorderSx } from '../../components/common/ui';
 
 const { color } = tokens;
 
@@ -59,14 +60,13 @@ export function SpectatorScoreboard({
     <Box
       data-testid="spectator-scoreboard"
       sx={{
+        ...panelSx,
+        ...panelBorderSx,
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', sm: 'minmax(0,1fr) auto minmax(0,1fr)' },
         alignItems: 'center',
         gap: { xs: 2, sm: 4 },
         p: { xs: 2.5, sm: 4 },
-        borderRadius: radii.lg,
-        bgcolor: color.paper2,
-        border: `1px solid ${color.rule}`,
         textAlign: { xs: 'center', sm: 'left' },
       }}
     >
@@ -95,7 +95,15 @@ export function SpectatorScoreboard({
         <Box
           component="p"
           aria-label={t('matchInfo.spectator.scoreAria', { a: team1Rounds, b: team2Rounds })}
-          sx={{ m: 0, display: 'flex', alignItems: 'baseline', gap: 2.5, fontWeight: 700, lineHeight: 1, fontSize: { xs: '3.5rem', sm: '5rem' } }}
+          sx={{
+            m: 0,
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 2.5,
+            fontWeight: 700,
+            lineHeight: 1,
+            fontSize: { xs: '3.5rem', sm: '5rem' },
+          }}
         >
           {score(team1Rounds, 'a')}
           <Box component="span" sx={{ fontSize: '0.4em', color: color.muted }}>

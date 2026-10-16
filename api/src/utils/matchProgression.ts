@@ -387,7 +387,14 @@ async function reportTournamentPlacements(
     await awardTeamPlaces(tournamentId, tournament, top);
     return;
   }
-  if (tournament.type !== 'single_elimination' && tournament.type !== 'double_elimination') return;
+  if (
+    tournament.type !== 'single_elimination' &&
+    tournament.type !== 'double_elimination' &&
+    tournament.type !== 'groups'
+  )
+    return;
+  // Groups: the playoffs decide the places (their slugs carry `po-`).
+  const playoffsOnly = tournament.type === 'groups' ? "AND slug LIKE '%po-%'" : '';
   const finals = await db.queryAsync<{
     team1_id: string | null;
     team2_id: string | null;
@@ -395,7 +402,7 @@ async function reportTournamentPlacements(
     round: number;
   }>(
     `SELECT team1_id, team2_id, winner_id, round FROM matches
-      WHERE tournament_id = ? AND round >= 1 AND next_match_id IS NULL AND status = 'completed'
+      WHERE tournament_id = ? AND round >= 1 AND next_match_id IS NULL AND status = 'completed' ${playoffsOnly}
       ORDER BY round DESC, match_number ASC`,
     [tournamentId]
   );
@@ -532,10 +539,16 @@ export async function checkTournamentCompletion(tournamentId: number): Promise<v
     // without a pre-match phase needs the finished round to open the next one,
     // or the tournament stalls after round 1. The service is a no-op for a
     // game that has a veto.
-    if (tournament.type === 'round_robin') {
+    if (tournament.type === 'round_robin' || tournament.type === 'groups') {
       const { advanceRoundRobinTournament } =
         await import('../services/roundRobinProgressionService');
       await advanceRoundRobinTournament(tournamentId);
+    }
+
+    // Groups, then playoffs: every group match over puts the qualifiers into the playoffs.
+    if (tournament.type === 'groups') {
+      const { advanceGroupsTournament } = await import('../services/groupsTournament');
+      await advanceGroupsTournament(tournamentId);
     }
 
     // Count all matches for this tournament (bracket matches have round >= 1)
@@ -650,6 +663,12 @@ export async function makeMatchReady(match: DbMatchRow): Promise<void> {
     // itself (CS2 in simulation mode: the automated veto, for every round
     // once both teams are known).
     const integration = integrationForMatch(match);
+    // Its start time (Manage › Schedule): held until its veto opens (services/matchTimes.ts).
+    await (
+      await import('../services/matchTimes')
+    )
+      .holdForStartTime(match.slug)
+      .catch((error) => log.warn('[MATCH-TIMES] could not hold for the start time', { error }));
     if (integration.isReadyToAllocate) {
       const ctx = await matchContextFor(match, tournamentData);
       if (!(await integration.isReadyToAllocate(ctx))) {

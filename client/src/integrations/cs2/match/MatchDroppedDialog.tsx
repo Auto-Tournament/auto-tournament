@@ -6,7 +6,6 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, Button, Dialog, Typography } from '@mui/material';
-import { PlugsIcon } from '@phosphor-icons/react';
 import {
   api,
   fontDisplay,
@@ -97,28 +96,42 @@ export function MatchDroppedDialog() {
       aria-labelledby="dropped-title"
       data-testid="match-dropped-dialog"
       PaperProps={{
-        sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' },
+        sx: {
+          borderRadius: radii.lg,
+          bgcolor: color.paper,
+          border: `1px solid ${color.rule}`,
+          backgroundImage: 'none',
+        },
       }}
     >
-      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, color: color.sideT }}>
-          <PlugsIcon size={24} aria-hidden />
-          <Typography
-            id="dropped-title"
-            component="h2"
-            sx={{
-              fontFamily: fontDisplay,
-              fontSize: '1.375rem',
-              fontWeight: 600,
-              color: color.ink,
-            }}
-          >
-            {t('dropped.title')}
-          </Typography>
-        </Box>
+      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Typography
+          component="span"
+          sx={{
+            fontSize: '0.75rem',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            fontWeight: 600,
+            color: color.ban,
+          }}
+        >
+          {t('dropped.eyebrow')}
+        </Typography>
+        <Typography
+          id="dropped-title"
+          component="h2"
+          sx={{
+            m: 0,
+            fontFamily: fontDisplay,
+            fontSize: '1.375rem',
+            fontWeight: 700,
+            color: color.ink,
+          }}
+        >
+          {t('dropped.title')}
+        </Typography>
         <Typography sx={{ color: color.ink2 }}>{t('dropped.body')}</Typography>
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', mt: 1 }}>
-          <Button onClick={close}>{t('dropped.later')}</Button>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.25 }}>
           {server && (
             <Button
               variant="contained"
@@ -130,6 +143,9 @@ export function MatchDroppedDialog() {
               {t('dropped.reconnect')}
             </Button>
           )}
+          <Button variant="outlined" onClick={close}>
+            {t('dropped.later')}
+          </Button>
         </Box>
       </Box>
     </Dialog>

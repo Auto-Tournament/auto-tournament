@@ -17,6 +17,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { fmtDateTime } from '../../utils/time';
 import {
   Accordion,
   AccordionDetails,
@@ -92,7 +93,14 @@ const SEARCH_FROM = 8;
 const FEED_REFRESH_DELAY_MS = 3000;
 const FEED_REFRESH_TRIES = 3;
 /** Reason codes with their own sentence under `catalog.feed.reason`, besides `http_<status>`. */
-const FEED_REASONS = ['timeout', 'unreachable', 'bad_response', 'newer_schema', 'too_large', 'offline'];
+const FEED_REASONS = [
+  'timeout',
+  'unreachable',
+  'bad_response',
+  'newer_schema',
+  'too_large',
+  'offline',
+];
 
 /**
  * The banner over a catalog whose feed is not fresh. The API gives a reason
@@ -109,16 +117,25 @@ function feedMessage(t: TFunction, feed: CatalogListing['feed'], language: strin
   if (feed.from === 'cache') {
     const at = feed.fetchedAt ? new Date(feed.fetchedAt) : null;
     const time =
-      at && !Number.isNaN(at.getTime())
-        ? at.toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' })
-        : t('catalog.feed.unknown');
-    return t(feed.refreshing ? 'catalog.feed.cacheRefreshing' : 'catalog.feed.cache', { time, reason });
+      at && !Number.isNaN(at.getTime()) ? fmtDateTime(at, language) : t('catalog.feed.unknown');
+    return t(feed.refreshing ? 'catalog.feed.cacheRefreshing' : 'catalog.feed.cache', {
+      time,
+      reason,
+    });
   }
   return t(feed.refreshing ? 'catalog.feed.noneRefreshing' : 'catalog.feed.none', { reason });
 }
 
 /** One square tile, or the game's initials when it has no art of its own. */
-export function CatalogTile({ src, name, size = 56 }: { src: string | null; name: string; size?: number }) {
+export function CatalogTile({
+  src,
+  name,
+  size = 56,
+}: {
+  src: string | null;
+  name: string;
+  size?: number;
+}) {
   const [failed, setFailed] = useState(false);
   const initials = name
     .split(/\s+/)
@@ -165,7 +182,12 @@ interface GameCatalogProps {
   refreshKey?: number;
 }
 
-export function GameCatalog({ showBuiltins = false, onListing, onChanged, refreshKey = 0 }: GameCatalogProps) {
+export function GameCatalog({
+  showBuiltins = false,
+  onListing,
+  onChanged,
+  refreshKey = 0,
+}: GameCatalogProps) {
   const { t, i18n } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
   const [listing, setListing] = useState<CatalogListing | null>(null);
@@ -173,7 +195,10 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
   const [busy, setBusy] = useState<{ id: string; action: CatalogAction } | null>(null);
   const [failures, setFailures] = useState<Record<string, string>>({});
   const [reloadFor, setReloadFor] = useState<string[]>([]);
-  const [confirming, setConfirming] = useState<{ item: CatalogItem; action: 'install' | 'uninstall' } | null>(null);
+  const [confirming, setConfirming] = useState<{
+    item: CatalogItem;
+    action: 'install' | 'uninstall';
+  } | null>(null);
   const [query, setQuery] = useState('');
   const [updatingAll, setUpdatingAll] = useState(false);
   const [updateAllSummary, setUpdateAllSummary] = useState<CatalogUpdateAllResult | null>(null);
@@ -251,9 +276,14 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
   const installedNeedsAttention = itemsAll.some(
     (item) =>
       isInstalled(item) &&
-      (item.state === 'update-available' || item.state === 'broken' || item.restartRequired || Boolean(failures[key(item)]))
+      (item.state === 'update-available' ||
+        item.state === 'broken' ||
+        item.restartRequired ||
+        Boolean(failures[key(item)]))
   );
-  const availableNeedsAttention = itemsAll.some((item) => !isInstalled(item) && item.state === 'broken');
+  const availableNeedsAttention = itemsAll.some(
+    (item) => !isInstalled(item) && item.state === 'broken'
+  );
 
   // Installed opens by default; Available opens only when something there
   // needs a look. A stored choice from an earlier visit always wins.
@@ -279,7 +309,8 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
     try {
       const result = await runCatalogUpdateAll();
       setUpdateAllSummary(result);
-      if (result.updated.length > 0) showSuccess(t('catalog.updateAll.done', { count: result.updated.length }));
+      if (result.updated.length > 0)
+        showSuccess(t('catalog.updateAll.done', { count: result.updated.length }));
       await load();
       onChanged?.();
     } catch (error) {
@@ -321,7 +352,11 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
       // A code module the server loaded just now reaches this browser on the
       // next page load (its client half is fetched at boot), so reload now to
       // show its pages and settings. The banner stays as a fallback.
-      if (item.kind === 'module' && !result.restartRequired && (action === 'install' || action === 'enable')) {
+      if (
+        item.kind === 'module' &&
+        !result.restartRequired &&
+        (action === 'install' || action === 'enable')
+      ) {
         setReloadFor((prev) => (prev.includes(name) ? prev : [...prev, name]));
         window.setTimeout(() => window.location.reload(), 1200);
       } else if (action === 'disable' || action === 'uninstall') {
@@ -345,14 +380,20 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
     else void run(item, action);
   };
 
-  const actionsFor = (item: CatalogItem): Array<{ action: CatalogAction; primary?: boolean; danger?: boolean }> => {
+  const actionsFor = (
+    item: CatalogItem
+  ): Array<{ action: CatalogAction; primary?: boolean; danger?: boolean }> => {
     const all = baseActionsFor(item);
     // Waiting for a restart: the server refuses new files until then (the
     // running version still serves its own), so do not offer them.
-    return item.restartRequired ? all.filter(({ action }) => action !== 'install' && action !== 'update') : all;
+    return item.restartRequired
+      ? all.filter(({ action }) => action !== 'install' && action !== 'update')
+      : all;
   };
 
-  const baseActionsFor = (item: CatalogItem): Array<{ action: CatalogAction; primary?: boolean; danger?: boolean }> => {
+  const baseActionsFor = (
+    item: CatalogItem
+  ): Array<{ action: CatalogAction; primary?: boolean; danger?: boolean }> => {
     switch (item.state) {
       case 'available':
         return [{ action: 'install', primary: true }];
@@ -363,9 +404,15 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
           { action: 'uninstall', danger: true },
         ];
       case 'installed':
-        return [...(item.kind === 'module' ? [{ action: 'disable' as const }] : []), { action: 'uninstall', danger: true }];
+        return [
+          ...(item.kind === 'module' ? [{ action: 'disable' as const }] : []),
+          { action: 'uninstall', danger: true },
+        ];
       case 'disabled':
-        return [{ action: 'enable', primary: true }, { action: 'uninstall', danger: true }];
+        return [
+          { action: 'enable', primary: true },
+          { action: 'uninstall', danger: true },
+        ];
       case 'broken':
       case 'incompatible':
         return isInstalled(item) ? [{ action: 'uninstall', danger: true }] : [];
@@ -375,8 +422,10 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
   };
 
   const actionLabel = (item: CatalogItem, action: CatalogAction) => {
-    if (action === 'update') return t('catalog.action.update', { version: item.available?.version ?? '' });
-    if (action === 'uninstall') return t(item.kind === 'pack' ? 'catalog.action.remove' : 'catalog.action.uninstall');
+    if (action === 'update')
+      return t('catalog.action.update', { version: item.available?.version ?? '' });
+    if (action === 'uninstall')
+      return t(item.kind === 'pack' ? 'catalog.action.remove' : 'catalog.action.uninstall');
     return t(`catalog.action.${action}`);
   };
 
@@ -390,13 +439,16 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
           ? 'update'
           : null;
     const failure = failures[key(item)];
-    const icon = item.state === 'builtin' ? builtinGames.get(item.id) ?? null : item.icon;
+    const icon = item.state === 'builtin' ? (builtinGames.get(item.id) ?? null) : item.icon;
     const version = item.installed?.version ?? item.available?.version ?? null;
     const description =
       item.state === 'builtin'
         ? t(`modulesPage.module.${item.id}.hint`, { defaultValue: '' })
-        : item.description || (item.engine ? t('modulesPage.packs.runBy', { engine: item.engine }) : '');
-    const showReason = item.reason && (item.restartRequired || item.state === 'broken' || item.state === 'incompatible');
+        : item.description ||
+          (item.engine ? t('modulesPage.packs.runBy', { engine: item.engine }) : '');
+    const showReason =
+      item.reason &&
+      (item.restartRequired || item.state === 'broken' || item.state === 'incompatible');
 
     return (
       <Card key={key(item)} variant="outlined" data-testid={id}>
@@ -409,25 +461,48 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
             '&:last-child': { pb: 2 },
           }}
         >
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', minWidth: 0, flex: 1, width: '100%' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 2,
+              alignItems: 'center',
+              minWidth: 0,
+              flex: 1,
+              width: '100%',
+            }}
+          >
             <CatalogTile src={icon} name={displayName(item)} />
             <Box sx={{ minWidth: 0, flex: 1 }}>
               <Stack direction="row" spacing={1} alignItems="center" useFlexGap flexWrap="wrap">
                 <Typography fontWeight={600}>{displayName(item)}</Typography>
                 {version && <Chip size="small" label={version} />}
                 {item.kind === 'module' && item.state !== 'builtin' && (
-                  <Chip size="small" variant="outlined" icon={<CodeIcon />} label={t('catalog.kind.module')} />
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    icon={<CodeIcon />}
+                    label={t('catalog.kind.module')}
+                  />
                 )}
                 {working ? (
                   <Chip
                     size="small"
                     color="info"
                     icon={<CircularProgress size={12} color="inherit" />}
-                    label={t(working === 'install' || working === 'update' ? 'catalog.state.installing' : 'catalog.state.working')}
+                    label={t(
+                      working === 'install' || working === 'update'
+                        ? 'catalog.state.installing'
+                        : 'catalog.state.working'
+                    )}
                     data-testid={`${id}-state`}
                   />
                 ) : item.restartRequired ? (
-                  <Chip size="small" color="warning" label={t('catalog.state.restart')} data-testid={`${id}-state`} />
+                  <Chip
+                    size="small"
+                    color="warning"
+                    label={t('catalog.state.restart')}
+                    data-testid={`${id}-state`}
+                  />
                 ) : item.state !== 'available' ? (
                   <Chip
                     size="small"
@@ -438,7 +513,12 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
                   />
                 ) : item.available?.from === 'snapshot' && listing?.feed.from === 'remote' ? (
                   // Said only when the feed is up: offline, everything is from the image.
-                  <Chip size="small" variant="outlined" label={t('catalog.source.snapshot')} data-testid={`${id}-state`} />
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={t('catalog.source.snapshot')}
+                    data-testid={`${id}-state`}
+                  />
                 ) : null}
               </Stack>
               {description && (
@@ -453,7 +533,10 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
                   sx={{ display: 'block' }}
                   data-testid={`${id}-signed-by`}
                 >
-                  {t('catalog.signedBy', { label: item.installed.keyLabel ?? '', keyId: item.installed.keyId })}
+                  {t('catalog.signedBy', {
+                    label: item.installed.keyLabel ?? '',
+                    keyId: item.installed.keyId,
+                  })}
                 </Typography>
               )}
               {showReason && (
@@ -472,7 +555,11 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
               )}
             </Box>
           </Box>
-          <Stack direction="row" spacing={1} sx={{ flexShrink: 0, alignSelf: { xs: 'flex-end', sm: 'center' } }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ flexShrink: 0, alignSelf: { xs: 'flex-end', sm: 'center' } }}
+          >
             {actionsFor(item).map(({ action, primary, danger }) => (
               <Button
                 key={action}
@@ -482,7 +569,9 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
                 // One action at a time: while anything runs (one row, or Update all) nothing else can start.
                 disabled={busy !== null || updatingAll}
                 onClick={() => request(item, action)}
-                startIcon={working === action ? <CircularProgress size={14} color="inherit" /> : undefined}
+                startIcon={
+                  working === action ? <CircularProgress size={14} color="inherit" /> : undefined
+                }
                 data-testid={`${id}-${action}`}
                 aria-busy={working === action || undefined}
               >
@@ -502,7 +591,15 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
 
   if (loadError && !listing) {
     return (
-      <Alert severity="error" data-testid="catalog-load-failed" action={<Button color="inherit" size="small" onClick={() => void load()}>{t('catalog.retry')}</Button>}>
+      <Alert
+        severity="error"
+        data-testid="catalog-load-failed"
+        action={
+          <Button color="inherit" size="small" onClick={() => void load()}>
+            {t('catalog.retry')}
+          </Button>
+        }
+      >
         {t('catalog.loadFailed', { reason: loadError })}
       </Alert>
     );
@@ -515,7 +612,10 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
   return (
     <Stack spacing={2} data-testid="game-catalog">
       {feed.stale && (
-        <Alert severity={feed.from === 'cache' ? 'info' : 'warning'} data-testid="catalog-feed-stale">
+        <Alert
+          severity={feed.from === 'cache' ? 'info' : 'warning'}
+          data-testid="catalog-feed-stale"
+        >
           {feedMessage(t, feed, i18n.language)}
         </Alert>
       )}
@@ -539,7 +639,10 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
             <Box component="ul" sx={{ m: 0, mt: 0.5, pl: 2.5 }}>
               {updateAllSummary.failed.map((entry) => (
                 <li key={`${entry.kind}:${entry.id}`}>
-                  {t('catalog.updateAll.failedItem', { name: nameForEntry(entry), reason: entry.error })}
+                  {t('catalog.updateAll.failedItem', {
+                    name: nameForEntry(entry),
+                    reason: entry.error,
+                  })}
                 </li>
               ))}
             </Box>
@@ -584,8 +687,18 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
         data-testid="catalog-installed"
       >
         <AccordionSummary expandIcon={<CaretDownIcon />} data-testid="catalog-installed-toggle">
-          <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ flex: 1, pr: 1 }}>
-            <Typography variant="subtitle2" color={installedNeedsAttention ? 'warning.main' : 'text.secondary'}>
+          <Stack
+            direction="row"
+            spacing={1.5}
+            alignItems="center"
+            flexWrap="wrap"
+            useFlexGap
+            sx={{ flex: 1, pr: 1 }}
+          >
+            <Typography
+              variant="subtitle2"
+              color={installedNeedsAttention ? 'warning.main' : 'text.secondary'}
+            >
               {t('catalog.installedTitle', { count: installed.length })}
             </Typography>
             <Box sx={{ flex: 1 }} />
@@ -629,7 +742,10 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
         data-testid="catalog-available"
       >
         <AccordionSummary expandIcon={<CaretDownIcon />} data-testid="catalog-available-toggle">
-          <Typography variant="subtitle2" color={availableNeedsAttention ? 'warning.main' : 'text.secondary'}>
+          <Typography
+            variant="subtitle2"
+            color={availableNeedsAttention ? 'warning.main' : 'text.secondary'}
+          >
             {t('catalog.availableTitle', { count: available.length })}
           </Typography>
         </AccordionSummary>
@@ -653,11 +769,17 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
       >
         {confirming?.action === 'install' && (
           <>
-            <DialogTitle>{t('catalog.confirmInstall.title', { name: displayName(confirming.item) })}</DialogTitle>
+            <DialogTitle>
+              {t('catalog.confirmInstall.title', { name: displayName(confirming.item) })}
+            </DialogTitle>
             <DialogContent>
-              <DialogContentText sx={{ mb: 2 }}>{t('catalog.confirmInstall.body')}</DialogContentText>
+              <DialogContentText sx={{ mb: 2 }}>
+                {t('catalog.confirmInstall.body')}
+              </DialogContentText>
               <Typography variant="body2">
-                {t('catalog.confirmInstall.version', { version: confirming.item.available?.version ?? '' })}
+                {t('catalog.confirmInstall.version', {
+                  version: confirming.item.available?.version ?? '',
+                })}
               </Typography>
               <Typography variant="body2">
                 {t('catalog.confirmInstall.from', {
@@ -690,13 +812,22 @@ export function GameCatalog({ showBuiltins = false, onListing, onChanged, refres
         {confirming?.action === 'uninstall' && (
           <>
             <DialogTitle>
-              {t(confirming.item.kind === 'pack' ? 'modulesPage.confirmRemove.title' : 'catalog.confirmUninstall.title', {
-                name: displayName(confirming.item),
-              })}
+              {t(
+                confirming.item.kind === 'pack'
+                  ? 'modulesPage.confirmRemove.title'
+                  : 'catalog.confirmUninstall.title',
+                {
+                  name: displayName(confirming.item),
+                }
+              )}
             </DialogTitle>
             <DialogContent>
               <DialogContentText>
-                {t(confirming.item.kind === 'pack' ? 'catalog.confirmUninstall.packBody' : 'catalog.confirmUninstall.body')}
+                {t(
+                  confirming.item.kind === 'pack'
+                    ? 'catalog.confirmUninstall.packBody'
+                    : 'catalog.confirmUninstall.body'
+                )}
               </DialogContentText>
             </DialogContent>
             <DialogActions>

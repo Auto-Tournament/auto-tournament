@@ -1,28 +1,30 @@
 import { Link as RouterLink } from 'react-router-dom';
+import { fmtTime } from '../utils/time';
 import { useIntegrationFor } from '../integrations/registry';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { KeyDatesBar } from '../components/tournament/overview/KeyDatesBar';
-import { MapPoolCard } from '../components/tournament/overview/MapPoolCard';
-import { TeamsPreviewCard } from '../components/tournament/overview/TeamsPreviewCard';
-import { ScheduleCalendar } from '../components/tournament/overview/ScheduleCalendar';
-import { LiveStrip } from '../components/tournament/overview/LiveStrip';
 import { TournamentResults } from '../components/tournament/results/TournamentResults';
 import { RegisteredPanel } from '../components/tournament/signup/RegisteredPanel';
 import { CheckInPanel } from '../components/tournament/signup/CheckInPanel';
 import { ShuffleJoin } from '../components/tournament/signup/ShuffleJoin';
 import { signupPhase, useTournamentSignup, viewerRegistration } from '../hooks/useTournamentSignup';
 import { api } from '../utils/api';
-import { fontDisplay, radii, tokens } from '../theme/tokens';
-import { YourePlayingPanel } from '../components/tournament/page/YourePlayingPanel';
+import { mono, radii, tokens } from '../theme/tokens';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
-import { isLiveMatch } from '../components/tournament/page/matchHelpers';
 import { usePublicBracket } from '../hooks/usePublicBracket';
-import { compareMatchOrder } from '../utils/matchUtils';
 import { tournamentTabPath } from '../paths';
-import { NextMatchCard } from '../components/match/NextMatchCard';
-import { CardBracket } from '../components/tournament/page/CardBracket';
-import { placementFor } from '../hooks/usePlacement';
+import { TabLoading } from '../components/tournament/page/TabState';
+import {
+  HowMatchesPlayed,
+  KeyDateTiles,
+  MapPoolTiles,
+  ScheduleList,
+  SignUpHero,
+  TeamsByRating,
+} from '../components/tournament/overview/PreStartOverview';
+import { ShuffleStandings } from '../components/tournament/overview/PlayersLeaderboard';
+import { matchPagePath } from '../paths';
+import { OverviewLive } from '../components/tournament/overview/OverviewLive';
 
 /**
  * The tournament page's Overview tab, kept to what a quick look needs (the
@@ -33,14 +35,42 @@ import { placementFor } from '../hooks/usePlacement';
  */
 export default function TournamentOverview() {
   const { t } = useTranslation();
-  const { tournament, teams, players, viewerTeam } = useTournamentPage();
-  const { matches } = usePublicBracket(tournament.id);
+  const page = useTournamentPage();
+  const { tournament, teams, players, viewerTeam } = page;
+  const bracket = usePublicBracket(tournament.id);
+  const { matches } = bracket;
   const RulesView = useIntegrationFor(tournament).tournamentRulesView;
-  const PrizesView = useIntegrationFor(tournament).tournamentPrizesView;
-  const liveMatches = matches.filter(isLiveMatch).sort(compareMatchOrder);
   const isShuffle = tournament.type === 'shuffle';
   const maps = tournament.maps ?? [];
-  const schedule = tournament.settings?.schedule ?? [];
+  // The organizer's schedule, and each round's start time (Manage › Schedule) with when its veto opens.
+  const matchTimes = (
+    tournament.settings as
+      | {
+          matchTimes?: { mode?: string; rounds?: Record<string, string>; vetoLeadMinutes?: number };
+        }
+      | undefined
+  )?.matchTimes;
+  const lastRound = Math.max(0, ...matches.map((m) => m.round ?? 0));
+  const roundTimes =
+    matchTimes?.mode === 'times'
+      ? Object.entries(matchTimes.rounds ?? {})
+          .filter(([, at]) => Number.isFinite(Date.parse(at)))
+          .map(([round, at]) => {
+            const opens = new Date(Date.parse(at) - (matchTimes.vetoLeadMinutes ?? 5) * 60_000);
+            const name =
+              /elimination/.test(tournament.type ?? '') && Number(round) === lastRound
+                ? t('overviewPage.finalRound')
+                : t('overviewPage.roundN', { n: Number(round) });
+            return {
+              at,
+              label: t('overviewPage.roundStarts', {
+                round: name,
+                time: fmtTime(opens),
+              }),
+            };
+          })
+      : [];
+  const schedule = [...(tournament.settings?.schedule ?? []), ...roundTimes];
   const signup = useTournamentSignup(tournament.id);
   // The calendar shows the check-in window too (gold), when there is one and
   // the organizer did not put it in the schedule themselves.
@@ -74,202 +104,214 @@ export default function TournamentOverview() {
     !registration &&
     (spotsLeft === null || spotsLeft > 0);
 
-  // The viewer's team is out (or won): "Your team" shows where it finished.
-  const viewerPlaced = !!viewerTeam && !!placementFor(tournament, matches, viewerTeam.id);
-
   // Once it is over, the overview is the results.
   if (tournament.status === 'completed' && !isShuffle) {
-    return <TournamentResults tournament={tournament} teams={teams} players={players} />;
+    return (
+      <TournamentResults
+        tournament={bracket.tournament ? { ...tournament, ...bracket.tournament } : tournament}
+        teams={teams}
+        players={players}
+        matches={matches}
+      />
+    );
   }
 
-  return (
-    <Stack spacing={{ xs: 3, md: 3.5 }} data-testid="public-tournament-overview">
-      {/* While it runs, the viewer's next match first, one card: a link to its match
-          room. Once the team is out, "Your team" below says where it finished. */}
-      {tournament.status === 'in_progress' && viewerTeam && !viewerPlaced && (
-        <NextMatchCard teamId={viewerTeam.id} />
-      )}
-      <LiveStrip
-        matches={liveMatches}
-        linkLabel={t('overviewPage.allMatches')}
-        linkTo={tournamentTabPath(tournament.id, 'matches')}
-      />
+  // While it runs, a format with fixed teams gets the drafts' live overview:
+  // the status hero, the schedule or bracket, the round, the table, the players.
+  if (tournament.status === 'in_progress' && !isShuffle) {
+    if (bracket.loading) return <TabLoading label={t('overviewPage.loading')} />;
+    return (
+      <Box data-testid="public-tournament-overview">
+        <OverviewLive
+          tournament={
+            bracket.tournament
+              ? {
+                  ...tournament,
+                  ...bracket.tournament,
+                  teams: bracket.tournament.teams ?? tournament.teams,
+                }
+              : tournament
+          }
+          matches={matches}
+          totalRounds={bracket.totalRounds}
+          roundRobinStandings={bracket.roundRobinStandings}
+          swissStandings={bracket.swissStandings}
+          groupStandings={bracket.groupStandings}
+          viewerTeamId={viewerTeam?.id ?? null}
+        />
+      </Box>
+    );
+  }
 
-      {viewerTeam &&
-        !(registration && tournament.status === 'setup') &&
-        !(tournament.status === 'in_progress' && !viewerPlaced) && (
-          <YourePlayingPanel tournament={tournament} team={viewerTeam} matches={matches} />
+  // Before it starts (the drafts' "Before it starts" board): the key dates,
+  // where the viewer stands, the schedule, how matches are played, the map
+  // pool and the teams.
+  if (tournament.status === 'setup' || tournament.status === 'ready') {
+    const { viewerHasSteamIdentity } = page;
+    return (
+      <Stack spacing={3} data-testid="public-tournament-overview">
+        <KeyDateTiles tournament={tournament} signup={signup.window} />
+        {isShuffle && signup.players ? (
+          <ShuffleJoin
+            tournamentId={tournament.id}
+            players={signup.players}
+            steamId={signup.steamId}
+            open={phase === 'open'}
+            started={false}
+            spots={
+              signup.window?.maxTeams ? signup.window.maxTeams * (tournament.teamSize ?? 5) : null
+            }
+            onChange={signup.reload}
+          />
+        ) : registration && phase === 'checkIn' && signup.window ? (
+          <CheckInPanel
+            tournament={tournament}
+            window={signup.window}
+            registration={registration}
+            registrations={signup.registrations}
+            steamId={signup.steamId}
+            onCheckIn={async () => {
+              await api.post(`/api/tournament-signup/${tournament.id}/check-in`, {});
+              await signup.reload();
+            }}
+          />
+        ) : registration ? (
+          <RegisteredPanel
+            tournament={tournament}
+            window={signup.window}
+            registration={registration}
+            registrations={signup.registrations}
+            canManage={canManage}
+            onWithdraw={async () => {
+              await api.delete(
+                `/api/tournament-signup/${tournament.id}/registration/${registration.teamId}`
+              );
+              await signup.reload();
+            }}
+          />
+        ) : (
+          <SignUpHero
+            tournament={tournament}
+            signup={signup.window}
+            canSignUp={canSignUp}
+            hasSteam={viewerHasSteamIdentity}
+            onRoster={!!viewerTeam || signup.eligibleTeams.length > 0}
+          />
         )}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, alignItems: 'flex-start' }}>
+          <ScheduleList tournament={tournament} schedule={calendar} />
+          {RulesView && (
+            <HowMatchesPlayed
+              tournament={tournament}
+              rulesView={<RulesView tournament={tournament} compact />}
+            />
+          )}
+        </Box>
+        <MapPoolTiles maps={maps} />
+        {!isShuffle && (
+          <TeamsByRating
+            teams={(tournament.teams ?? []).map((tm) => ({
+              id: tm.id,
+              name: tm.name,
+              tag: tm.tag,
+            }))}
+            registrations={signup.registrations}
+            viewerTeamId={viewerTeam?.id ?? registration?.teamId ?? null}
+            to={tournamentTabPath(tournament.id, 'teams')}
+          />
+        )}
+      </Stack>
+    );
+  }
 
-      {/* A shuffle tournament takes players on their own: Join, and who is in. */}
-      {isShuffle && signup.players && (
+  // A running or finished shuffle (the drafts' shuffle board): the status hero,
+  // the map rounds, this round and the earlier ones, the standings.
+  const done = matches.filter((m) => m.status === 'completed');
+  const openRounds = matches.filter((m) => m.status !== 'completed').map((m) => m.round);
+  const currentRound = openRounds.length
+    ? Math.min(...openRounds)
+    : Math.max(0, ...matches.map((m) => m.round)) + 1;
+  const earlierRounds = [...new Set(done.map((m) => m.round))]
+    .filter((r) => r < currentRound)
+    .sort((a, b) => b - a);
+  const earlier = earlierRounds.map((r) => (
+    <Box key={r} sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+      <Typography sx={{ fontSize: '0.8125rem', color: tokens.color.muted }}>
+        {t('liveOverview.round', { n: r })}
+      </Typography>
+      {done
+        .filter((m) => m.round === r)
+        .map((m) => (
+          <Box
+            key={m.slug}
+            component={RouterLink}
+            to={matchPagePath(m.slug)}
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)',
+              gap: 1.5,
+              alignItems: 'center',
+              px: 2,
+              py: 1.25,
+              borderRadius: radii.md,
+              bgcolor: tokens.color.paper,
+              color: tokens.color.muted,
+              textDecoration: 'none',
+              fontSize: '0.9375rem',
+            }}
+          >
+            <Box
+              component="span"
+              sx={{
+                minWidth: 0,
+                color: m.winner?.id && m.winner.id === m.team1?.id ? tokens.color.live : 'inherit',
+                fontWeight: m.winner?.id === m.team1?.id ? 600 : 400,
+              }}
+            >
+              {m.team1?.name}
+            </Box>
+            <Box component="span" sx={{ ...mono, fontSize: '0.875rem' }}>
+              {m.mapResults?.length === 1
+                ? `${m.mapResults[0].team1Score} – ${m.mapResults[0].team2Score}`
+                : `${m.team1Score ?? 0} – ${m.team2Score ?? 0}`}
+            </Box>
+            <Box
+              component="span"
+              sx={{
+                minWidth: 0,
+                textAlign: 'right',
+                color: m.winner?.id && m.winner.id === m.team2?.id ? tokens.color.live : 'inherit',
+                fontWeight: m.winner?.id === m.team2?.id ? 600 : 400,
+              }}
+            >
+              {m.team2?.name}
+            </Box>
+          </Box>
+        ))}
+    </Box>
+  ));
+  return (
+    <Stack spacing={3} data-testid="public-tournament-overview">
+      {signup.players && (
         <ShuffleJoin
           tournamentId={tournament.id}
           players={signup.players}
           steamId={signup.steamId}
           open={phase === 'open'}
-          started={tournament.status !== 'setup'}
+          started
           spots={
             signup.window?.maxTeams ? signup.window.maxTeams * (tournament.teamSize ?? 5) : null
           }
           onChange={signup.reload}
-        />
-      )}
-
-      {registration && tournament.status === 'setup' && phase === 'checkIn' && signup.window ? (
-        <CheckInPanel
-          tournament={tournament}
-          window={signup.window}
-          registration={registration}
-          registrations={signup.registrations}
-          steamId={signup.steamId}
-          onCheckIn={async () => {
-            await api.post(`/api/tournament-signup/${tournament.id}/check-in`, {});
-            await signup.reload();
-          }}
-        />
-      ) : registration && tournament.status === 'setup' ? (
-        <RegisteredPanel
-          tournament={tournament}
-          window={signup.window}
-          registration={registration}
-          registrations={signup.registrations}
-          canManage={canManage}
-          onWithdraw={async () => {
-            await api.delete(
-              `/api/tournament-signup/${tournament.id}/registration/${registration.teamId}`
-            );
-            await signup.reload();
-          }}
-        />
-      ) : (
-        <KeyDatesBar
-          tournament={tournament}
-          signup={signup.window}
-          action={
-            canSignUp ? (
-              <Button
-                component={RouterLink}
-                to={tournamentTabPath(tournament.id, 'signup')}
-                variant="contained"
-                data-testid="overview-sign-up"
-                sx={{
-                  borderRadius: radii.pill,
-                  px: 3.25,
-                  py: 1.75,
-                  fontWeight: 600,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {t('signup.cta')}
-              </Button>
-            ) : undefined
+          earlier={earlier}
+          side={
+            <ShuffleStandings
+              tournamentId={tournament.id}
+              viewerSteamId={signup.steamId}
+              allTo={tournamentTabPath(tournament.id, 'standings')}
+            />
           }
         />
-      )}
-
-      {/* The bracket, for everyone, once there is one (elimination formats; swiss and
-          round robin keep theirs on the Bracket tab, where the standings are). */}
-      {(tournament.type === 'single_elimination' || tournament.type === 'double_elimination') &&
-        matches.length > 0 && (
-          <Box
-            component="section"
-            aria-labelledby="overview-bracket"
-            data-testid="overview-bracket"
-          >
-            <Box display="flex" justifyContent="space-between" alignItems="baseline" mb={1.5}>
-              <Typography
-                id="overview-bracket"
-                component="h2"
-                sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600 }}
-              >
-                {t('overviewPage.tabs.bracket')}
-              </Typography>
-              <Button
-                component={RouterLink}
-                to={tournamentTabPath(tournament.id, 'bracket')}
-                size="small"
-              >
-                {t('overviewPage.fullBracket')}
-              </Button>
-            </Box>
-            <Box sx={{ overflowX: 'auto' }}>
-              <CardBracket
-                matches={matches}
-                tournamentType={tournament.type}
-                format={tournament.format}
-                yourTeamId={viewerTeam?.id ?? null}
-              />
-            </Box>
-          </Box>
-        )}
-
-      {/* How a match is played, in one line; the Rules tab has it in full. */}
-      {RulesView && (
-        <Box
-          sx={{ display: 'flex', gap: 1.5, alignItems: 'baseline', flexWrap: 'wrap' }}
-          data-testid="overview-rules-line"
-        >
-          <RulesView tournament={tournament} compact />
-          <Button
-            component={RouterLink}
-            to={tournamentTabPath(tournament.id, 'rules')}
-            size="small"
-          >
-            {t('overviewPage.allRules')}
-          </Button>
-        </Box>
-      )}
-
-      {/* What the tournament gives (CS2: skins), before it is over; the results show who won it. */}
-      {PrizesView && tournament.status !== 'completed' && <PrizesView tournament={tournament} />}
-
-      {(maps.length > 0 || !isShuffle) && (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(2, minmax(0, 1fr))' },
-            gap: 2,
-            alignItems: 'start',
-          }}
-        >
-          <MapPoolCard maps={maps} />
-          {!isShuffle && (
-            <TeamsPreviewCard teams={teams} to={tournamentTabPath(tournament.id, 'teams')} />
-          )}
-        </Box>
-      )}
-
-      {calendar.length > 0 ? (
-        <ScheduleCalendar
-          schedule={calendar}
-          tournamentName={tournament.name}
-          tournamentId={tournament.id}
-        />
-      ) : (
-        <Box
-          component="section"
-          aria-labelledby="overview-schedule-empty"
-          data-testid="overview-schedule-empty"
-        >
-          <Typography
-            id="overview-schedule-empty"
-            component="h2"
-            sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600, mb: 1.5 }}
-          >
-            {t('overviewPage.schedule')}
-          </Typography>
-          <Box
-            sx={{
-              border: `1px dashed ${tokens.color.rule}`,
-              borderRadius: radii.lg,
-              p: 3,
-              color: tokens.color.muted,
-            }}
-          >
-            {t('overviewPage.scheduleSoon')}
-          </Box>
-        </Box>
       )}
     </Stack>
   );

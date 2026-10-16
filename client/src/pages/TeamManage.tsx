@@ -22,7 +22,8 @@ import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { api, apiErrorMessage } from '../utils/api';
 import { pageTitle } from '../utils/pageTitle';
 import { paths, teamProfilePath } from '../paths';
-import { fontMono, radii, textSize, tokens } from '../theme/tokens';
+import { fontMono, radii, teamColors, textSize, tokens } from '../theme/tokens';
+import { refreshTeamColors } from '../components/tournament/ui/draftUi';
 import { useSetupGames } from '../components/tournament/setup/games';
 import { useIntegration } from '../integrations/registry';
 
@@ -36,6 +37,8 @@ interface ManageView {
     name: string;
     tag: string | null;
     logoUrl: string | null;
+    bannerUrl?: string | null;
+    colorIndex?: number | null;
     inviteCode: string | null;
     game: string | null;
   };
@@ -94,6 +97,7 @@ export default function TeamManage() {
   const [confirm, setConfirm] = useState<null | 'disband' | 'transfer'>(null);
   const [copied, setCopied] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const bannerRef = useRef<HTMLInputElement>(null);
   const base = `/api/team-directory/${encodeURIComponent(teamId)}`;
 
   // Bumped after every action, so the view reloads from the server.
@@ -147,6 +151,18 @@ export default function TeamManage() {
       });
       if (!res.ok) throw new Error(await res.text());
     }, t('teamManage.logoSaved'));
+  };
+
+  const uploadBanner = async (file: File) => {
+    await act(async () => {
+      const res = await fetch(`${base}/banner`, {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+      if (!res.ok) throw new Error(await res.text());
+    }, t('teamManage.bannerSaved'));
   };
 
   /** "Or find a player": by name, Steam ID or Steam profile link. */
@@ -358,6 +374,122 @@ export default function TeamManage() {
                   ))}
                 </TextField>
               </Box>
+            </Panel>
+            <Panel
+              component="section"
+              aria-labelledby="team-manage-banner"
+              data-testid="team-manage-banner"
+              sx={{ p: 3, display: 'grid', gap: 1.5 }}
+            >
+              <Typography
+                id="team-manage-banner"
+                component="h2"
+                sx={{ fontWeight: 700, fontSize: textSize.lg }}
+              >
+                {t('teamManage.banner')}
+              </Typography>
+              <Box
+                sx={{
+                  height: 140,
+                  borderRadius: radii.lg,
+                  bgcolor: color.paper3,
+                  overflow: 'hidden',
+                  display: 'grid',
+                  placeItems: 'center',
+                  color: color.muted,
+                  fontSize: textSize.sm,
+                }}
+              >
+                {view.team.bannerUrl ? (
+                  <Box
+                    component="img"
+                    src={view.team.bannerUrl}
+                    alt=""
+                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  t('teamManage.noBanner')
+                )}
+              </Box>
+              <input
+                ref={bannerRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                hidden
+                data-testid="team-manage-banner-input"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void uploadBanner(file);
+                  e.target.value = '';
+                }}
+              />
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Button size="small" variant="outlined" onClick={() => bannerRef.current?.click()}>
+                  {t('teamManage.uploadBanner')}
+                </Button>
+                {view.team.bannerUrl && (
+                  <Button size="small" onClick={() => act(() => api.delete(`${base}/banner`))}>
+                    {t('teamManage.removeBanner')}
+                  </Button>
+                )}
+              </Box>
+              <Typography sx={{ fontSize: textSize.xs, color: color.muted }}>
+                {t('teamManage.bannerHelp')}
+              </Typography>
+            </Panel>
+
+            <Panel
+              component="section"
+              aria-labelledby="team-manage-color"
+              data-testid="team-manage-color"
+              sx={{ p: 3, display: 'grid', gap: 1.5 }}
+            >
+              <Typography
+                id="team-manage-color"
+                component="h2"
+                sx={{ fontWeight: 700, fontSize: textSize.lg }}
+              >
+                {t('teamManage.color')}
+              </Typography>
+              <Box
+                role="radiogroup"
+                aria-labelledby="team-manage-color"
+                sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}
+              >
+                {teamColors.map((hex, index) => {
+                  const on = view.team.colorIndex === index;
+                  return (
+                    <Box
+                      key={hex}
+                      component="button"
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      aria-label={t('teamManage.colorN', { n: index + 1 })}
+                      data-testid={`team-manage-color-${index}`}
+                      onClick={() =>
+                        void act(async () => {
+                          await api.patch(base, { colorIndex: index });
+                          refreshTeamColors();
+                        }, t('teamManage.colorSaved'))
+                      }
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '10px',
+                        bgcolor: hex,
+                        cursor: 'pointer',
+                        border: `3px solid ${on ? color.ink : 'transparent'}`,
+                        outline: 'none',
+                        '&:focus-visible': { boxShadow: `0 0 0 2px ${color.focus}` },
+                      }}
+                    />
+                  );
+                })}
+              </Box>
+              <Typography sx={{ fontSize: textSize.xs, color: color.muted }}>
+                {t('teamManage.colorHelp')}
+              </Typography>
             </Panel>
 
             <Box component="section" aria-labelledby="team-manage-roster">

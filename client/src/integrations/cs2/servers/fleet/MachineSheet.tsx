@@ -21,6 +21,7 @@ import {
   tokens,
   useModuleTranslation,
   withAlpha,
+  fmtDateTime,
 } from '../../../../module-sdk';
 import type { FleetHost, FleetHostCommand } from '../../cs2.types';
 import { readyUpVersion, useCommandLabel, useProblemText } from './MachineCard';
@@ -194,11 +195,10 @@ export function MachineSheet({
   onAddServers: (host: FleetHost) => void;
   onUpdateReadyUp: (host: FleetHost) => void;
 }) {
-  const { t, i18n } = useModuleTranslation('cs2');
+  const { t } = useModuleTranslation('cs2');
   const commandLabel = useCommandLabel();
   const problemText = useProblemText();
-  const when = (s: number | null | undefined) =>
-    s ? new Date(s * 1000).toLocaleString(i18n.language) : '—';
+  const when = (s: number | null | undefined) => (s ? fmtDateTime(s) : '—');
   const inv = host?.inventory ?? null;
   const online = !!host && host.status === 'enrolled' && host.online;
   const disk = inv?.resources.disk[0];

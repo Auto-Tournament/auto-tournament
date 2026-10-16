@@ -1,6 +1,6 @@
 import type { InputHTMLAttributes } from 'react';
-import { Box, FormControlLabel, MenuItem, Switch, TextField, Typography } from '@mui/material';
-import { SegmentedControl, useModuleTranslation, radii } from '../../../module-sdk';
+import { Box, MenuItem, TextField, Typography } from '@mui/material';
+import { SegmentedControl, useModuleTranslation, radii, SwitchRow } from '../../../module-sdk';
 import type { TournamentRulesStepProps as Cs2MatchSettingsProps } from '../../types';
 import {
   cs2Patch,
@@ -84,40 +84,32 @@ export function Cs2MatchSettings({
       </Typography>
 
       <Box>
-        <FormControlLabel
+        <SwitchRow
           label={t('tournament.botFill.label')}
-          control={
-            <Switch
-              checked={value.fillTeamsWithBots === true}
-              disabled={disabled}
-              onChange={(_e, checked) => update({ fillTeamsWithBots: checked })}
-              slotProps={{
-                input: {
-                  'data-testid': 'tournament-bot-fill',
-                } as InputHTMLAttributes<HTMLInputElement>,
-              }}
-            />
-          }
+          checked={value.fillTeamsWithBots === true}
+          disabled={disabled}
+          onChange={(_e, checked) => update({ fillTeamsWithBots: checked })}
+          slotProps={{
+            input: {
+              'data-testid': 'tournament-bot-fill',
+            } as InputHTMLAttributes<HTMLInputElement>,
+          }}
         />
         <Typography variant="body2" color="text.secondary">
           {t('tournament.botFill.help')}
         </Typography>
       </Box>
       <Box>
-        <FormControlLabel
+        <SwitchRow
           label={t('tournament.esportsMode.label')}
-          control={
-            <Switch
-              checked={value.esportsMode === true}
-              disabled={disabled}
-              onChange={(_e, checked) => update({ esportsMode: checked })}
-              slotProps={{
-                input: {
-                  'data-testid': 'tournament-esports-mode',
-                } as InputHTMLAttributes<HTMLInputElement>,
-              }}
-            />
-          }
+          checked={value.esportsMode === true}
+          disabled={disabled}
+          onChange={(_e, checked) => update({ esportsMode: checked })}
+          slotProps={{
+            input: {
+              'data-testid': 'tournament-esports-mode',
+            } as InputHTMLAttributes<HTMLInputElement>,
+          }}
         />
         <Typography variant="body2" color="text.secondary">
           {t('tournament.esportsMode.help')}
@@ -192,15 +184,11 @@ export function Cs2MatchSettings({
           sx={{ maxWidth: 360 }}
         />
       )}
-      <FormControlLabel
-        control={
-          <Switch
-            checked={value.skinRewards !== false}
-            onChange={(event) => update({ skinRewards: event.target.checked })}
-            disabled={disabled}
-          />
-        }
+      <SwitchRow
         label={t('skins.tournamentRewardsSwitch')}
+        checked={value.skinRewards !== false}
+        onChange={(event) => update({ skinRewards: event.target.checked })}
+        disabled={disabled}
       />
       {value.skinRewards !== false && (
         <Box

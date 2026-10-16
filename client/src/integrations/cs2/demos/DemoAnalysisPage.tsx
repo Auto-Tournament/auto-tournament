@@ -14,6 +14,9 @@ import {
   tokens,
   useModuleTranslation,
   withAlpha,
+  fmtClock,
+  panelSx,
+  panelBorderSx,
 } from '../../../module-sdk';
 import { getMapDisplayName } from '../maps/mapData';
 import { ReplayViewer } from './ReplayViewer';
@@ -100,12 +103,6 @@ function buyType(
   if (equipment === undefined || players === 0) return null;
   const avg = equipment / players;
   return avg < 1000 ? 'eco' : avg < 3500 ? 'force' : 'full';
-}
-
-/** mm:ss into the round. */
-function clock(ticks: number): string {
-  const s = Math.max(0, Math.round(ticks / TICKRATE));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
 /**
@@ -479,7 +476,7 @@ export function DemoAnalysisPage() {
                     }}
                   >
                     <Box sx={{ fontFamily: mono.fontFamily, color: color.muted }}>
-                      {clock(k.tick - round.startTick)}
+                      {fmtClock(Math.round((k.tick - round.startTick) / TICKRATE))}
                     </Box>
                     <Box
                       sx={{
@@ -526,10 +523,9 @@ export function DemoAnalysisPage() {
             <SectionHead id={`analysis-${team}`} title={t(`analysis.${team}`)} />
             <Box
               sx={{
+                ...panelSx,
+                ...panelBorderSx,
                 overflowX: 'auto',
-                borderRadius: radii.lg,
-                border: `1px solid ${color.rule}`,
-                bgcolor: color.paper2,
               }}
             >
               <Box

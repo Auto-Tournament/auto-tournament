@@ -11,14 +11,14 @@ import {
   Divider,
   Grid,
   Chip,
-  FormControlLabel,
-  Switch,
 } from '@mui/material';
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { EventPagePrize, EventPageScheduleItem, TournamentSettings } from '../../types';
 import { TournamentBannerField } from './TournamentBannerField';
+import { FALLBACK_ART_MAPS } from '../../utils/tournamentArt';
+import { SwitchRow } from '../../components/common/ui';
 
 const MAX_RULES = 20;
 const MAX_PRIZES = 5;
@@ -173,7 +173,15 @@ export function EventPageSettingsCard({
 
   const fields = (
     <Stack spacing={3}>
-      {onSave && !onDraftChange && <TournamentBannerField bannerUrl={bannerUrl} />}
+      {onSave && !onDraftChange && (
+        <TournamentBannerField
+          bannerUrl={bannerUrl}
+          bannerMap={(settings as { bannerMap?: string } | undefined)?.bannerMap ?? null}
+          maps={
+            (settings as { cs2?: { maps?: string[] } } | undefined)?.cs2?.maps ?? FALLBACK_ART_MAPS
+          }
+        />
+      )}
       <TextField
         label={t('tournament.eventPage.descriptionLabel')}
         value={description}
@@ -360,16 +368,12 @@ export function EventPageSettingsCard({
             sx={{ maxWidth: 320 }}
             inputProps={{ 'data-testid': 'event-starts-at' }}
           />
-          <FormControlLabel
-            control={
-              <Switch
-                checked={autoStart && !!startsAt}
-                disabled={!startsAt}
-                onChange={(e) => setAutoStart(e.target.checked)}
-                data-testid="event-auto-start"
-              />
-            }
+          <SwitchRow
             label={t('tournament.eventPage.autoStartLabel')}
+            checked={autoStart && !!startsAt}
+            disabled={!startsAt}
+            onChange={(e) => setAutoStart(e.target.checked)}
+            data-testid="event-auto-start"
           />
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>

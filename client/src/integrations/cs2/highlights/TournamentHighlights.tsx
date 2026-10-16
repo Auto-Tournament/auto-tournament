@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, ButtonBase } from '@mui/material';
+import { Box, ButtonBase, Typography } from '@mui/material';
 import { PlayIcon } from '@phosphor-icons/react';
 import {
   api,
@@ -11,6 +11,8 @@ import {
   textSize,
   tokens,
   useModuleTranslation,
+  panelSx,
+  panelBorderSx,
 } from '../../../module-sdk';
 import type { TournamentResultsSectionProps, TournamentTabProps } from '../../types';
 import {
@@ -36,9 +38,13 @@ function useTournamentHighlights(tournamentId: number) {
   useEffect(() => {
     let cancelled = false;
     api
-      .get<{ success: boolean } & TournamentHighlights>(`/api/game/cs2/tournaments/${tournamentId}/highlights`)
+      .get<{ success: boolean } & TournamentHighlights>(
+        `/api/game/cs2/tournaments/${tournamentId}/highlights`
+      )
       .then((res) => !cancelled && setData({ id: tournamentId, h: res }))
-      .catch(() => !cancelled && setData({ id: tournamentId, h: { reel: null, plays: [], matches: [] } }));
+      .catch(
+        () => !cancelled && setData({ id: tournamentId, h: { reel: null, plays: [], matches: [] } })
+      );
     return () => {
       cancelled = true;
     };
@@ -50,7 +56,15 @@ function useTournamentHighlights(tournamentId: number) {
  * The big card at the top: the tournament reel once it is made, else the
  * best play so far. Links to its watch page.
  */
-function Hero({ h, tournamentId, height }: { h: TournamentHighlights; tournamentId: number; height: number | object }) {
+function Hero({
+  h,
+  tournamentId,
+  height,
+}: {
+  h: TournamentHighlights;
+  tournamentId: number;
+  height: number | object;
+}) {
   const { t } = useModuleTranslation('cs2');
   const reel = h.reel?.video ? h.reel : null;
   const top = h.plays[0] ?? null;
@@ -77,7 +91,14 @@ function Hero({ h, tournamentId, height }: { h: TournamentHighlights; tournament
       }}
     >
       <VideoThumb src={reel ? reel.video! : top!.video!} at={reel ? 6 : thumbAt(top!.markers)} />
-      <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(16,9,8,0.92) 0%, rgba(16,9,8,0.55) 45%, rgba(16,9,8,0) 75%)' }} />
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'linear-gradient(90deg, rgba(16,9,8,0.92) 0%, rgba(16,9,8,0.55) 45%, rgba(16,9,8,0) 75%)',
+        }}
+      />
       <Box
         sx={{
           position: 'absolute',
@@ -94,16 +115,29 @@ function Hero({ h, tournamentId, height }: { h: TournamentHighlights; tournament
       >
         <Box sx={{ ...mono, fontSize: '0.8125rem', color: tokens.color.accent }}>
           {reel
-            ? [t('highlights.tournament.reel'), reel.duration ? clock(reel.duration) : null].filter(Boolean).join(' · ')
+            ? [t('highlights.tournament.reel'), reel.duration ? clock(reel.duration) : null]
+                .filter(Boolean)
+                .join(' · ')
             : t('highlights.tournament.topSoFar')}
         </Box>
-        <Box sx={{ fontFamily: fontDisplay, fontSize: { xs: '1.5rem', md: '2.25rem' }, fontWeight: 700, lineHeight: 1.1 }}>
-          {reel ? t('highlights.tournament.reelTitle') : `${top!.playerName} · ${playTitle(top!.title)}`}
+        <Box
+          sx={{
+            fontFamily: fontDisplay,
+            fontSize: { xs: '1.5rem', md: '2.25rem' },
+            fontWeight: 700,
+            lineHeight: 1.1,
+          }}
+        >
+          {reel
+            ? t('highlights.tournament.reelTitle')
+            : `${top!.playerName} · ${playTitle(top!.title)}`}
         </Box>
         <Box sx={{ fontSize: '0.9375rem', color: tokens.color.ink2 }}>
           {reel
             ? t('highlights.tournament.reelSub', { plays: reel.chapters.length, players })
-            : [teamsLabel(top!.match), mapLabel(t, top!.map, top!.mapNumber)].filter(Boolean).join(' · ')}
+            : [teamsLabel(top!.match), mapLabel(t, top!.map, top!.mapNumber)]
+                .filter(Boolean)
+                .join(' · ')}
         </Box>
         <Box
           className="hero-play"
@@ -138,7 +172,11 @@ const SHOWN = 8;
  * tournament reel, its top plays with filters, and each match's reels with
  * how far the recording got. With `probe` it only says whether there is any.
  */
-export function TournamentHighlightsTab({ tournamentId, probe, onAvailability }: TournamentTabProps) {
+export function TournamentHighlightsTab({
+  tournamentId,
+  probe,
+  onAvailability,
+}: TournamentTabProps) {
   const { t } = useModuleTranslation('cs2');
   const h = useTournamentHighlights(tournamentId);
   const [filter, setFilter] = useState<HighlightFilter>('all');
@@ -151,24 +189,62 @@ export function TournamentHighlightsTab({ tournamentId, probe, onAvailability }:
   if (probe || !h) return null;
   if (!any) {
     return (
-      <Box sx={{ p: 3, borderRadius: '18px', border: `1px dashed ${tokens.color.rule}`, color: tokens.color.muted }}>
-        {t('highlights.tournament.none')}
+      <Box
+        role="status"
+        sx={{
+          ...panelSx,
+          ...panelBorderSx,
+          p: { xs: 2.5, sm: 3 },
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+        }}
+      >
+        <Typography
+          component="h2"
+          sx={{ m: 0, fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 700 }}
+        >
+          {t('highlights.tournament.noneTitle')}
+        </Typography>
+        <Typography sx={{ color: tokens.color.ink2 }}>
+          {t('highlights.tournament.noneBody')}
+        </Typography>
       </Box>
     );
   }
   const plays = h.plays.filter((c) => inFilter(c, filter));
   const shown = all ? plays : plays.slice(0, SHOWN);
-  const playSub = (c: Clip) => [teamsLabel(c.match), mapLabel(t, c.map, c.mapNumber), t('highlights.roundN', { n: c.round })].filter(Boolean).join(' · ');
+  const playSub = (c: Clip) =>
+    [teamsLabel(c.match), mapLabel(t, c.map, c.mapNumber), t('highlights.roundN', { n: c.round })]
+      .filter(Boolean)
+      .join(' · ');
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }} data-testid="cs2-tournament-highlights">
+    <Box
+      sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}
+      data-testid="cs2-tournament-highlights"
+    >
       <Hero h={h} tournamentId={tournamentId} height={{ xs: 260, md: 400 }} />
 
       {h.plays.length === 0 && recording && (
         <Box component="section" aria-label={t('highlights.tournament.topPlays')}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', sm: 'repeat(2, minmax(0,1fr))', md: 'repeat(4, minmax(0,1fr))' }, gap: 1.5 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: 'minmax(0,1fr)',
+                sm: 'repeat(2, minmax(0,1fr))',
+                md: 'repeat(4, minmax(0,1fr))',
+              },
+              gap: 1.5,
+            }}
+          >
             {[0, 1, 2, 3].map((i) => (
-              <RecordingCard key={i} label={t('highlights.recording')} hint={i === 0 ? t('highlights.tournament.firstSoon') : undefined} />
+              <RecordingCard
+                key={i}
+                label={t('highlights.recording')}
+                hint={i === 0 ? t('highlights.tournament.firstSoon') : undefined}
+              />
             ))}
           </Box>
         </Box>
@@ -176,11 +252,28 @@ export function TournamentHighlightsTab({ tournamentId, probe, onAvailability }:
 
       {h.plays.length > 0 && (
         <Box component="section" aria-labelledby="hl-top-plays">
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 2, flexWrap: 'wrap', mb: 1.5 }}>
-            <Box id="hl-top-plays" component="h2" sx={{ m: 0, fontFamily: fontDisplay, fontSize: '1.375rem', fontWeight: 600 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'baseline',
+              gap: 2,
+              flexWrap: 'wrap',
+              mb: 1.5,
+            }}
+          >
+            <Box
+              id="hl-top-plays"
+              component="h2"
+              sx={{ m: 0, fontFamily: fontDisplay, fontSize: '1.375rem', fontWeight: 600 }}
+            >
               {t('highlights.tournament.topPlays')}
             </Box>
-            <Box role="group" aria-label={t('highlights.filterLabel')} sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Box
+              role="group"
+              aria-label={t('highlights.filterLabel')}
+              sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}
+            >
               {PLAY_FILTERS.map((f) => (
                 <Chip key={f} on={filter === f} onClick={() => setFilter(f)}>
                   {t(`highlights.filter.${f}`)}
@@ -189,11 +282,28 @@ export function TournamentHighlightsTab({ tournamentId, probe, onAvailability }:
             </Box>
           </Box>
           {shown.length === 0 ? (
-            <Box sx={{ p: 3, borderRadius: '18px', border: `1px dashed ${tokens.color.rule}`, color: tokens.color.muted }}>
+            <Box
+              sx={{
+                p: 3,
+                borderRadius: '18px',
+                border: `1px dashed ${tokens.color.rule}`,
+                color: tokens.color.muted,
+              }}
+            >
               {t('highlights.noneForFilter')}
             </Box>
           ) : (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', sm: 'repeat(2, minmax(0,1fr))', md: 'repeat(4, minmax(0,1fr))' }, gap: 1.5 }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: 'minmax(0,1fr)',
+                  sm: 'repeat(2, minmax(0,1fr))',
+                  md: 'repeat(4, minmax(0,1fr))',
+                },
+                gap: 1.5,
+              }}
+            >
               {shown.map((c) => (
                 <HighlightCard
                   key={c.id}
@@ -212,7 +322,15 @@ export function TournamentHighlightsTab({ tournamentId, probe, onAvailability }:
           {plays.length > SHOWN && (
             <ButtonBase
               onClick={() => setAll(!all)}
-              sx={{ mt: 1.5, height: 40, px: 2, borderRadius: radii.pill, border: `1px solid ${tokens.color.rule}`, color: tokens.color.ink2, fontSize: textSize.sm }}
+              sx={{
+                mt: 1.5,
+                height: 40,
+                px: 2,
+                borderRadius: radii.pill,
+                border: `1px solid ${tokens.color.rule}`,
+                color: tokens.color.ink2,
+                fontSize: textSize.sm,
+              }}
             >
               {all ? t('highlights.showFewer') : t('highlights.showAll', { count: plays.length })}
             </ButtonBase>
@@ -222,10 +340,25 @@ export function TournamentHighlightsTab({ tournamentId, probe, onAvailability }:
 
       {h.matches.length > 0 && (
         <Box component="section" aria-labelledby="hl-match-reels">
-          <Box id="hl-match-reels" component="h2" sx={{ m: 0, mb: 1.5, fontFamily: fontDisplay, fontSize: '1.375rem', fontWeight: 600 }}>
+          <Box
+            id="hl-match-reels"
+            component="h2"
+            sx={{ m: 0, mb: 1.5, fontFamily: fontDisplay, fontSize: '1.375rem', fontWeight: 600 }}
+          >
             {t('highlights.tournament.matchReels')}
           </Box>
-          <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, borderRadius: '18px', border: `1px solid ${tokens.color.rule}`, bgcolor: tokens.color.paper2, overflow: 'hidden' }}>
+          <Box
+            component="ul"
+            sx={{
+              listStyle: 'none',
+              m: 0,
+              p: 0,
+              borderRadius: '18px',
+              border: `1px solid ${tokens.color.rule}`,
+              bgcolor: tokens.color.paper2,
+              overflow: 'hidden',
+            }}
+          >
             {h.matches.map((m, i) => {
               const done = m.reels.filter((r) => r.video);
               return (
@@ -233,18 +366,57 @@ export function TournamentHighlightsTab({ tournamentId, probe, onAvailability }:
                   component="li"
                   key={m.slug}
                   data-testid="cs2-tournament-match-reels"
-                  sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, borderTop: i ? `1px solid ${tokens.color.rule}` : 'none', flexWrap: { xs: 'wrap', sm: 'nowrap' } }}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    px: 2,
+                    py: 1.5,
+                    borderTop: i ? `1px solid ${tokens.color.rule}` : 'none',
+                    flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                  }}
                 >
-                  <Box sx={{ position: 'relative', width: 120, flex: 'none', aspectRatio: '16 / 9', borderRadius: '8px', overflow: 'hidden', bgcolor: tokens.color.paper3, display: 'grid', placeItems: 'center', color: tokens.color.muted, fontSize: '0.75rem' }}>
-                    {done[0]?.video ? <VideoThumb src={done[0].video} at={2} /> : t('highlights.recording')}
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      width: 120,
+                      flex: 'none',
+                      aspectRatio: '16 / 9',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      bgcolor: tokens.color.paper3,
+                      display: 'grid',
+                      placeItems: 'center',
+                      color: tokens.color.muted,
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    {done[0]?.video ? (
+                      <VideoThumb src={done[0].video} at={2} />
+                    ) : (
+                      t('highlights.recording')
+                    )}
                   </Box>
-                  <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      minWidth: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 0.25,
+                    }}
+                  >
                     <Box sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>
-                      {[t('highlights.roundN', { n: m.round }), teamsLabel(m)].filter(Boolean).join(' · ')}
+                      {[t('highlights.roundN', { n: m.round }), teamsLabel(m)]
+                        .filter(Boolean)
+                        .join(' · ')}
                     </Box>
                     <Box sx={{ fontSize: '0.8125rem', color: tokens.color.muted }}>
                       {m.recording
-                        ? t('highlights.tournament.progress', { done: m.playersDone, total: m.playersTotal })
+                        ? t('highlights.tournament.progress', {
+                            done: m.playersDone,
+                            total: m.playersTotal,
+                          })
                         : t('highlights.tournament.players', { count: m.playersTotal })}
                     </Box>
                   </Box>
@@ -267,7 +439,10 @@ export function TournamentHighlightsTab({ tournamentId, probe, onAvailability }:
                           fontSize: '0.8125rem',
                           whiteSpace: 'nowrap',
                           '&:hover': { color: tokens.color.ink, borderColor: tokens.color.ink2 },
-                          '&:focus-visible': { outline: `2px solid ${tokens.color.accent}`, outlineOffset: 2 },
+                          '&:focus-visible': {
+                            outline: `2px solid ${tokens.color.accent}`,
+                            outlineOffset: 2,
+                          },
                         }}
                       >
                         <PlayIcon size={12} weight="fill" />
@@ -300,18 +475,31 @@ export function TournamentReelSection({ tournamentId }: TournamentResultsSection
     <Box
       component="section"
       aria-label={t('highlights.title')}
-      sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: top ? 'minmax(0,1.7fr) minmax(0,1fr)' : 'minmax(0,1fr)' }, gap: 2 }}
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: 'minmax(0,1fr)',
+          md: top ? 'minmax(0,1.7fr) minmax(0,1fr)' : 'minmax(0,1fr)',
+        },
+        gap: 2,
+      }}
     >
       <Hero h={h} tournamentId={tournamentId} height={{ xs: 240, md: 340 }} />
       {top && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <SectionHead title={t('highlights.tournament.playOfTheTournament')} level={2} sx={{ mb: 0 }} />
+          <SectionHead
+            title={t('highlights.tournament.playOfTheTournament')}
+            level={2}
+            sx={{ mb: 0 }}
+          />
           <HighlightCard
             to={watchClipPath(top.id)}
             video={top.video}
             markers={top.markers}
             title={`${top.playerName} · ${playTitle(top.title)}`}
-            sub={[teamsLabel(top.match), mapLabel(t, top.map, top.mapNumber)].filter(Boolean).join(' · ')}
+            sub={[teamsLabel(top.match), mapLabel(t, top.map, top.mapNumber)]
+              .filter(Boolean)
+              .join(' · ')}
             badge={<KindBadge kind={top.kind} clutch={top.clutch} />}
             duration={top.markers?.duration}
           />

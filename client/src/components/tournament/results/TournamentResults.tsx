@@ -14,15 +14,17 @@ import {
   TargetIcon,
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
-import type { Tournament } from '../../../types';
+import type { Match, Tournament } from '../../../types';
+import { ChampionHero, PlayerAvatar, SectionTitle, TeamLogo, panel } from '../ui/draftUi';
+import { getMapDisplayName } from '../../../constants/maps';
 import type {
   OverviewPlayer,
   OverviewTeamStanding,
 } from '../../../hooks/usePublicTournamentOverview';
 import { tournamentAwards, type AwardKey } from '../../../utils/tournamentAwards';
 import { getPlayerPageUrl } from '../../../utils/playerLinks';
-import { tournamentTabPath } from '../../../paths';
-import { tokens, fontDisplay, mono, radii } from '../../../theme/tokens';
+import { matchPagePath, tournamentTabPath } from '../../../paths';
+import { tokens, mono, radii } from '../../../theme/tokens';
 import { useInstalledIntegrations } from '../../../integrations/registry';
 
 const { color } = tokens;
@@ -43,60 +45,6 @@ const AWARD_ICON: Record<AwardKey, { icon: ReactNode; tone: string }> = {
 
 const PLACE_COLOR = [color.medalGold, color.medalSilver, color.medalBronze];
 
-function Face({ player, size }: { player: Pick<OverviewPlayer, 'name' | 'avatar'>; size: number }) {
-  return (
-    <Box
-      component="span"
-      aria-hidden
-      sx={{
-        width: size,
-        height: size,
-        flex: 'none',
-        borderRadius: '50%',
-        bgcolor: color.paper3,
-        backgroundImage: player.avatar ? `url("${player.avatar}")` : 'none',
-        backgroundSize: 'cover',
-        display: 'grid',
-        placeItems: 'center',
-        fontWeight: 600,
-        fontSize: size * 0.4,
-      }}
-    >
-      {!player.avatar && player.name.slice(0, 1).toUpperCase()}
-    </Box>
-  );
-}
-
-function TeamTag({
-  tag,
-  name,
-  highlight,
-}: {
-  tag?: string | null;
-  name: string;
-  highlight?: boolean;
-}) {
-  return (
-    <Box
-      component="span"
-      sx={{
-        width: 36,
-        height: 36,
-        flex: 'none',
-        borderRadius: '9px',
-        bgcolor: color.paper3,
-        display: 'grid',
-        placeItems: 'center',
-        fontWeight: 700,
-        fontSize: '0.6875rem',
-        color: highlight ? color.medalGold : color.ink2,
-      }}
-    >
-      {(tag?.trim() || name.slice(0, 3)).slice(0, 4).toUpperCase()}
-    </Box>
-  );
-}
-
 /** Champion first, then the others by matches won (the server's order). */
 export function finalStandings(
   teams: OverviewTeamStanding[],
@@ -115,16 +63,28 @@ export function TournamentResults({
   tournament,
   teams,
   players,
+  matches = [],
 }: {
   tournament: Tournament;
   teams: OverviewTeamStanding[];
   players: OverviewPlayer[];
+  /** The tournament's matches (public bracket): the final for the banner, the latest results. */
+  matches?: Match[];
 }) {
   const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
   // Modules' own part of the results (CS2: the tournament reel).
-  const sections = useInstalledIntegrations().flatMap((i) =>
+  const installed = useInstalledIntegrations();
+  const sections = installed.flatMap((i) =>
     i.tournamentResultsSection ? [{ id: i.id, Section: i.tournamentResultsSection }] : []
+  );
+  // At the very bottom (CS2: every player's reward, folded).
+  const footers = installed.flatMap((i) =>
+    i.tournamentResultsFooter ? [{ id: i.id, Footer: i.tournamentResultsFooter }] : []
+  );
+  // The viewer's prize to pick, if they have one (CS2: "You earned a skin for 1st place").
+  const pickRows = installed.flatMap((i) =>
+    i.prizePickRow ? [{ id: i.id, Row: i.prizePickRow }] : []
   );
   const standings = finalStandings(teams, tournament.winner?.id);
   const awards = tournamentAwards(players);
@@ -137,79 +97,113 @@ export function TournamentResults({
     fontWeight: 500,
     color: color.muted,
     textAlign: 'right',
-    p: '10px 12px',
+    p: { xs: '8px 6px', sm: '10px 12px' },
     textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
   } as const;
-  const td = { p: '10px 12px', textAlign: 'right', ...mono, fontSize: '0.875rem' } as const;
+  const td = {
+    p: { xs: '8px 6px', sm: '10px 12px' },
+    textAlign: 'right',
+    ...mono,
+    fontSize: '0.875rem',
+    whiteSpace: 'nowrap',
+  } as const;
+
+  // The final: the champion's last match, for the banner's line and picture.
+  const champion = tournament.winner ?? null;
+  const final = champion
+    ? [...matches]
+        .filter((m) => m.status === 'completed' && m.winner?.id === champion.id)
+        .sort((x, y) => y.round - x.round || (y.completedAt ?? 0) - (x.completedAt ?? 0))[0]
+    : undefined;
+  const finalMap =
+    final?.mapResults?.[final.mapResults.length - 1]?.mapName ?? final?.maps?.[0] ?? null;
+  const opponent = final ? (final.team1?.id === champion?.id ? final.team2 : final.team1) : null;
+  const finalLine = final
+    ? [
+        t('results.wonFinal', {
+          a: Math.max(
+            final.team1SeriesScore ?? final.team1Score ?? 0,
+            final.team2SeriesScore ?? final.team2Score ?? 0
+          ),
+          b: Math.min(
+            final.team1SeriesScore ?? final.team1Score ?? 0,
+            final.team2SeriesScore ?? final.team2Score ?? 0
+          ),
+          opponent: opponent?.name ?? '',
+        }),
+        ...(final.mapResults ?? []).map(
+          (r) =>
+            `${r.mapName ? getMapDisplayName(r.mapName) : ''} ${Math.max(r.team1Score, r.team2Score)}–${Math.min(r.team1Score, r.team2Score)}`
+        ),
+      ].join(' · ')
+    : null;
+  const recent = [...matches]
+    .filter((m) => m.status === 'completed')
+    .sort((x, y) => y.round - x.round || (y.completedAt ?? 0) - (x.completedAt ?? 0))
+    .slice(0, 4);
+  const lastRound = Math.max(0, ...matches.map((m) => m.round ?? 0));
+  const isElim = /elimination/.test(tournament.type ?? '');
+  const stageOf = (m: Match) =>
+    isElim && m.round === lastRound
+      ? t('results.stage.final')
+      : isElim && m.round === lastRound - 1
+        ? t('results.stage.semi')
+        : t('results.stage.round', { n: m.round });
 
   return (
-    <Box data-testid="tournament-results" sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <Box data-testid="tournament-results" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {champion && (
+        <ChampionHero
+          label={t('results.champions')}
+          team={{ id: champion.id, name: champion.name, tag: champion.tag }}
+          line={finalLine}
+          map={finalMap}
+        />
+      )}
+      {pickRows.map(({ id, Row }) => (
+        <Row key={id} tournamentId={tournament.id} />
+      ))}
       {sections.map(({ id, Section }) => (
         <Section key={id} tournamentId={tournament.id} />
       ))}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'minmax(0,1fr) minmax(0,2fr)' },
-          gap: 2.5,
-        }}
-      >
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, alignItems: 'flex-start' }}>
         <Box
           component="section"
           aria-labelledby="results-standings"
-          sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+          sx={{ ...panel, flex: '1 1 300px' }}
         >
-          <Typography
-            id="results-standings"
-            component="h2"
-            sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600 }}
-          >
-            {t('results.finalStandings')}
-          </Typography>
-          <Box
-            component="ol"
-            sx={{
-              listStyle: 'none',
-              m: 0,
-              p: 1,
-              borderRadius: radii.lg,
-              bgcolor: color.paper2,
-              border: `1px solid ${color.rule}`,
-            }}
-          >
+          <SectionTitle id="results-standings" title={t('results.finalStandings')} />
+          <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
             {standings.map((team, index) => (
               <Box
                 key={team.teamId}
                 component="li"
                 data-testid="results-standing"
                 sx={{
-                  display: 'flex',
+                  display: 'grid',
+                  gridTemplateColumns: '40px minmax(0,1fr)',
+                  gap: 1.5,
                   alignItems: 'center',
-                  gap: 1.75,
-                  p: '12px 14px',
-                  borderTop: index > 0 ? `1px solid ${color.rule}` : 'none',
+                  py: 1,
+                  borderTop: `1px solid ${color.rule}`,
                 }}
               >
                 <Typography
-                  sx={{
-                    width: 40,
-                    fontFamily: fontDisplay,
-                    fontWeight: 700,
-                    color: PLACE_COLOR[index] ?? color.muted,
-                  }}
+                  component="span"
+                  sx={{ ...mono, fontWeight: 600, color: PLACE_COLOR[index] ?? color.muted }}
                 >
                   {t('results.place', { n: index + 1 })}
                 </Typography>
-                <TeamTag tag={team.tag} name={team.name} highlight={index === 0} />
-                <Typography
-                  sx={{
-                    fontWeight: index === 0 ? 600 : 500,
-                    minWidth: 0,
-                    overflowWrap: 'anywhere',
-                  }}
-                >
-                  {team.name}
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                  <TeamLogo team={{ id: team.teamId, name: team.name, tag: team.tag }} size="sm" />
+                  <Typography
+                    component="span"
+                    sx={{ fontWeight: index < 2 ? 700 : 500, overflowWrap: 'anywhere' }}
+                  >
+                    {team.name}
+                  </Typography>
+                </Box>
               </Box>
             ))}
           </Box>
@@ -219,19 +213,13 @@ export function TournamentResults({
           <Box
             component="section"
             aria-labelledby="results-awards"
-            sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+            sx={{ ...panel, flex: '999 1 520px' }}
           >
-            <Typography
-              id="results-awards"
-              component="h2"
-              sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600 }}
-            >
-              {t('results.awards')}
-            </Typography>
+            <SectionTitle id="results-awards" title={t('results.awards')} />
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateColumns: { xs: 'minmax(0,1fr)', sm: 'repeat(2, minmax(0,1fr))' },
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 13rem), 1fr))',
                 gap: 1.5,
               }}
             >
@@ -240,50 +228,51 @@ export function TournamentResults({
                   key={award.key}
                   data-testid={`results-award-${award.key}`}
                   sx={{
-                    p: 2.25,
-                    borderRadius: radii.lg,
-                    bgcolor: color.paper2,
-                    border: `1px solid ${color.rule}`,
+                    borderRadius: radii.md,
+                    bgcolor: color.paper3,
+                    p: 2,
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.75,
+                    flexDirection: 'column',
+                    gap: 1,
                   }}
                 >
-                  <Box
+                  <Typography
+                    component="span"
                     sx={{
-                      width: 44,
-                      height: 44,
-                      flex: 'none',
-                      borderRadius: '12px',
-                      bgcolor: color.paper3,
-                      display: 'grid',
-                      placeItems: 'center',
-                      color: AWARD_ICON[award.key].tone,
-                    }}
-                    aria-hidden
-                  >
-                    {AWARD_ICON[award.key].icon}
-                  </Box>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '2px',
-                      flex: 1,
-                      minWidth: 0,
+                      fontSize: '0.75rem',
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      color: color.muted,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.75,
                     }}
                   >
-                    <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
-                      {t(`results.award.${award.key}`)}
-                    </Typography>
-                    <Typography sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>
-                      {award.player.name}
-                    </Typography>
-                    <Typography sx={{ ...mono, fontSize: '0.75rem', color: color.ink2 }}>
-                      {t(`results.awardValue.${award.key}`, { value: award.value })}
-                    </Typography>
+                    <Box
+                      component="span"
+                      aria-hidden
+                      sx={{ display: 'inline-flex', color: AWARD_ICON[award.key].tone }}
+                    >
+                      {AWARD_ICON[award.key].icon}
+                    </Box>
+                    {t(`results.award.${award.key}`)}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+                    <PlayerAvatar name={award.player.name} avatar={award.player.avatar} size={32} />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                      <Typography sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>
+                        {award.player.name}
+                      </Typography>
+                      {award.player.team?.name && (
+                        <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
+                          {award.player.team.name}
+                        </Typography>
+                      )}
+                    </Box>
                   </Box>
-                  <Face player={award.player} size={40} />
+                  <Typography sx={{ ...mono, color: color.accent }}>
+                    {t(`results.awardValue.${award.key}`, { value: award.value })}
+                  </Typography>
                 </Box>
               ))}
             </Box>
@@ -292,47 +281,13 @@ export function TournamentResults({
       </Box>
 
       {players.length > 0 && (
-        <Box
-          component="section"
-          aria-labelledby="results-players"
-          sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-              gap: 2,
-            }}
-          >
-            <Typography
-              id="results-players"
-              component="h2"
-              sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600 }}
-            >
-              {t('results.players')}
-            </Typography>
-            <Link
-              component={RouterLink}
-              to={tournamentTabPath(tournament.id, 'matches')}
-              sx={{ fontSize: '0.875rem', color: color.ink2 }}
-            >
-              {t('results.matchesAndDemos')}
-            </Link>
-          </Box>
-          <Box
-            sx={{
-              p: '8px 12px',
-              borderRadius: radii.lg,
-              bgcolor: color.paper2,
-              border: `1px solid ${color.rule}`,
-              overflowX: 'auto',
-            }}
-          >
+        <Box component="section" aria-labelledby="results-players" sx={panel}>
+          <SectionTitle id="results-players" title={t('results.players')} />
+          <Box sx={{ overflowX: 'auto' }}>
             <Box
               component="table"
               data-testid="results-players-table"
-              sx={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}
+              sx={{ width: '100%', borderCollapse: 'collapse' }}
             >
               <thead>
                 <tr>
@@ -342,26 +297,23 @@ export function TournamentResults({
                   <Box component="th" sx={{ ...th, textAlign: 'left' }}>
                     {t('results.col.player')}
                   </Box>
-                  <Box component="th" sx={{ ...th, textAlign: 'left' }}>
+                  <Box
+                    component="th"
+                    sx={{ ...th, textAlign: 'left', display: { xs: 'none', sm: 'table-cell' } }}
+                  >
                     {t('results.col.team')}
                   </Box>
                   <Box component="th" sx={th}>
-                    K
-                  </Box>
-                  <Box component="th" sx={th}>
-                    D
-                  </Box>
-                  <Box component="th" sx={th}>
-                    +/−
+                    K / D
                   </Box>
                   <Box component="th" sx={th}>
                     ADR
                   </Box>
-                  <Box component="th" sx={th}>
+                  <Box component="th" sx={{ ...th, display: { xs: 'none', sm: 'table-cell' } }}>
                     HS
                   </Box>
                   {hasRating && (
-                    <Box component="th" sx={th}>
+                    <Box component="th" sx={{ ...th, display: { xs: 'none', sm: 'table-cell' } }}>
                       {t('results.col.hltv')}
                     </Box>
                   )}
@@ -374,7 +326,6 @@ export function TournamentResults({
                 {shown.map((player, index) => {
                   const kills = player.kills ?? 0;
                   const deaths = player.deaths ?? 0;
-                  const diff = kills - deaths;
                   const hs = kills > 0 ? Math.round(((player.headshots ?? 0) / kills) * 100) : 0;
                   return (
                     <Box
@@ -395,41 +346,52 @@ export function TournamentResults({
                             gap: 1.25,
                             color: color.ink,
                             textDecoration: 'none',
+                            fontWeight: 600,
                           }}
                         >
-                          <Face player={player} size={28} />
-                          {player.name}
+                          <PlayerAvatar name={player.name} avatar={player.avatar} size={28} />
+                          <span>{player.name}</span>
                         </Link>
                       </Box>
                       <Box
                         component="td"
-                        sx={{ p: '10px 12px', color: color.muted, fontSize: '0.8125rem' }}
-                      >
-                        {player.team?.tag || player.team?.name || ''}
-                      </Box>
-                      <Box component="td" sx={td}>
-                        {kills}
-                      </Box>
-                      <Box component="td" sx={td}>
-                        {deaths}
-                      </Box>
-                      <Box
-                        component="td"
                         sx={{
-                          ...td,
-                          color: diff > 0 ? color.live : diff < 0 ? color.ban : color.ink2,
+                          p: '10px 12px',
+                          color: color.ink2,
+                          fontSize: '0.875rem',
+                          display: { xs: 'none', sm: 'table-cell' },
                         }}
                       >
-                        {diff > 0 ? `+${diff}` : diff}
+                        {player.team ? (
+                          <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                            <TeamLogo
+                              team={{
+                                id: player.team.id,
+                                name: player.team.name,
+                                tag: player.team.tag,
+                              }}
+                              size="sm"
+                            />
+                            {player.team.name}
+                          </Box>
+                        ) : (
+                          ''
+                        )}
+                      </Box>
+                      <Box component="td" sx={td}>
+                        {kills} / {deaths}
                       </Box>
                       <Box component="td" sx={td}>
                         {player.averageAdr ? Math.round(player.averageAdr) : '—'}
                       </Box>
-                      <Box component="td" sx={td}>
+                      <Box component="td" sx={{ ...td, display: { xs: 'none', sm: 'table-cell' } }}>
                         {kills > 0 ? `${hs}%` : '—'}
                       </Box>
                       {hasRating && (
-                        <Box component="td" sx={{ ...td, fontWeight: 600 }}>
+                        <Box
+                          component="td"
+                          sx={{ ...td, fontWeight: 600, display: { xs: 'none', sm: 'table-cell' } }}
+                        >
                           {typeof player.rating === 'number' ? player.rating.toFixed(2) : '—'}
                         </Box>
                       )}
@@ -467,6 +429,97 @@ export function TournamentResults({
           )}
         </Box>
       )}
+
+      {recent.length > 0 && (
+        <Box component="section" aria-labelledby="results-matches" sx={panel}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'baseline',
+              gap: 1,
+            }}
+          >
+            <SectionTitle id="results-matches" title={t('results.matchesAndDemos')} />
+            <Link
+              component={RouterLink}
+              to={tournamentTabPath(tournament.id, 'matches')}
+              sx={{ fontSize: '0.875rem' }}
+            >
+              {t('results.allMatches', {
+                count: matches.filter((m) => m.status === 'completed').length,
+              })}
+            </Link>
+          </Box>
+          <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+            {recent.map((m) => {
+              const w = m.winner?.id === m.team1?.id ? m.team1 : m.team2;
+              const l = m.winner?.id === m.team1?.id ? m.team2 : m.team1;
+              const ws = Math.max(
+                m.team1SeriesScore ?? m.team1Score ?? 0,
+                m.team2SeriesScore ?? m.team2Score ?? 0
+              );
+              const ls = Math.min(
+                m.team1SeriesScore ?? m.team1Score ?? 0,
+                m.team2SeriesScore ?? m.team2Score ?? 0
+              );
+              return (
+                <Box
+                  component="li"
+                  key={m.slug}
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(0,1fr) auto',
+                    gap: 1.5,
+                    alignItems: 'center',
+                    py: 1.25,
+                    borderTop: `1px solid ${color.rule}`,
+                  }}
+                >
+                  <Box sx={{ minWidth: 0 }}>
+                    <Box
+                      component="span"
+                      sx={{
+                        fontSize: '0.75rem',
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        color: color.muted,
+                        mr: 1.5,
+                      }}
+                    >
+                      {stageOf(m)}
+                    </Box>
+                    <Box component="span" sx={{ color: color.live, fontWeight: 600 }}>
+                      {w?.name}
+                    </Box>{' '}
+                    <Box component="span" sx={{ ...mono }}>
+                      {ws} – {ls}
+                    </Box>{' '}
+                    <Box component="span" sx={{ color: color.muted }}>
+                      {l?.name}
+                    </Box>
+                    <Box component="span" sx={{ fontSize: '0.8125rem', color: color.muted }}>
+                      {(m.mapResults ?? []).length
+                        ? ` · ${(m.mapResults ?? []).map((r) => (r.mapName ? getMapDisplayName(r.mapName) : '')).join(', ')}`
+                        : ''}
+                    </Box>
+                  </Box>
+                  <Link
+                    component={RouterLink}
+                    to={matchPagePath(m.slug)}
+                    sx={{ fontSize: '0.875rem' }}
+                  >
+                    {t('results.demosAndReel')}
+                  </Link>
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
+      )}
+      {footers.map(({ id, Footer }) => (
+        <Footer key={id} tournamentId={tournament.id} />
+      ))}
     </Box>
   );
 }

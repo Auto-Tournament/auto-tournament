@@ -15,6 +15,8 @@ import {
   fontDisplay,
   radii,
   withAlpha,
+  panelSx,
+  panelBorderSx,
 } from '../../../module-sdk';
 import type { TournamentPrizesViewProps } from '../../types';
 import { rarityColor } from './rarity';
@@ -87,12 +89,11 @@ export function TournamentPrizes({ tournament }: TournamentPrizesViewProps) {
       aria-labelledby="prizes-title"
       data-testid="tournament-prizes"
       sx={{
+        ...panelSx,
+        ...panelBorderSx,
         display: 'grid',
         gap: 1.5,
         p: { xs: 2, md: 2.5 },
-        borderRadius: radii.lg,
-        bgcolor: color.paper2,
-        border: `1px solid ${color.rule}`,
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

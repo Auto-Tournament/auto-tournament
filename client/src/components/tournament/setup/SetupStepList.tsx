@@ -60,9 +60,9 @@ export function SetupStepList({ steps, activeStep, isDone, onSelect }: SetupStep
                 gap: 1.5,
                 alignItems: 'center',
                 justifyItems: 'start',
-                px: 1.25,
-                py: 1,
-                borderRadius: `${tokens.radius.sm}px`,
+                px: 1.5,
+                py: 1.25,
+                borderRadius: `${tokens.radius.md}px`,
                 fontSize: '0.875rem',
                 whiteSpace: 'nowrap',
                 textAlign: 'left',
@@ -95,14 +95,28 @@ export function SetupStepList({ steps, activeStep, isDone, onSelect }: SetupStep
               >
                 {done ? <CheckIcon size="0.9rem" /> : index + 1}
               </Box>
-              <span>
-                {t(`tournament.setup.steps.${step}`)}
-                {done && (
-                  <Box component="span" sx={visuallyHidden}>
-                    {` (${t('tournament.setup.stepDone')})`}
-                  </Box>
-                )}
-              </span>
+              <Box component="span" sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <Box component="span" sx={{ fontWeight: current ? 700 : 600 }}>
+                  {t(`tournament.setup.steps.${step}`)}
+                  {done && (
+                    <Box component="span" sx={visuallyHidden}>
+                      {` (${t('tournament.setup.stepDone')})`}
+                    </Box>
+                  )}
+                </Box>
+                {/* What the step asks (the draft's step notes); not on a phone's sideways list. */}
+                <Box
+                  component="span"
+                  sx={{
+                    fontSize: '0.75rem',
+                    color: 'text.secondary',
+                    whiteSpace: 'normal',
+                    [NARROW]: { display: 'none' },
+                  }}
+                >
+                  {t(`tournament.setup.stepNotes.${step}`)}
+                </Box>
+              </Box>
             </ButtonBase>
           </li>
         );

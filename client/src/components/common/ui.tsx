@@ -4,6 +4,7 @@ import Box, { type BoxProps } from '@mui/material/Box';
 import Chip, { type ChipProps } from '@mui/material/Chip';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
+import Switch, { type SwitchProps } from '@mui/material/Switch';
 import type { Breakpoint, SxProps, Theme } from '@mui/material/styles';
 import { tokens, fontDisplay, fontMono, mono, radii, textSize } from '../../theme/tokens';
 
@@ -49,7 +50,15 @@ export type PageHeadProps = {
  * The top of a page (the drafts' `.head`): eyebrow, H1 at `--text-3xl` and
  * subtitle on the left, actions on the right, bottom-aligned.
  */
-export function PageHead({ title, eyebrow, subtitle, actions, titleId, sx, ...rest }: PageHeadProps) {
+export function PageHead({
+  title,
+  eyebrow,
+  subtitle,
+  actions,
+  titleId,
+  sx,
+  ...rest
+}: PageHeadProps) {
   return (
     <Box
       data-testid={rest['data-testid']}
@@ -107,6 +116,8 @@ export type SectionHeadProps = {
   link?: { to: string; label: React.ReactNode; 'data-testid'?: string };
   /** Anything else on the right, instead of `link`. */
   action?: React.ReactNode;
+  /** A muted line on the right ("12 teams", "Final"), when there is no link or action. */
+  note?: React.ReactNode;
   sx?: SxProps<Theme>;
 };
 
@@ -114,7 +125,7 @@ export type SectionHeadProps = {
  * A section's title row (the drafts' `.sec-head`): the heading on the left and
  * a quiet muted link on the right, on one baseline.
  */
-export function SectionHead({ title, id, level = 2, link, action, sx }: SectionHeadProps) {
+export function SectionHead({ title, id, level = 2, link, action, note, sx }: SectionHeadProps) {
   return (
     <Box
       sx={[
@@ -122,7 +133,9 @@ export function SectionHead({ title, id, level = 2, link, action, sx }: SectionH
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'baseline',
-          gap: 2,
+          flexWrap: 'wrap',
+          gap: 1,
+          columnGap: 2,
           mb: 2,
           minWidth: 0,
         },
@@ -130,10 +143,16 @@ export function SectionHead({ title, id, level = 2, link, action, sx }: SectionH
       ]}
     >
       <Typography
-        variant={level === 2 ? 'h5' : 'h6'}
         component={level === 2 ? 'h2' : 'h3'}
         id={id}
-        sx={{ letterSpacing: '-0.025em', lineHeight: 1.1 }}
+        sx={{
+          m: 0,
+          fontFamily: fontDisplay,
+          fontWeight: 700,
+          fontSize: level === 2 ? '1.25rem' : '1.125rem',
+          letterSpacing: '-0.015em',
+          lineHeight: 1.25,
+        }}
       >
         {title}
       </Typography>
@@ -152,9 +171,13 @@ export function SectionHead({ title, id, level = 2, link, action, sx }: SectionH
         >
           {link.label}
         </Link>
-      ) : (
+      ) : action ? (
         action
-      )}
+      ) : note ? (
+        <Typography component="span" sx={{ fontSize: textSize.sm, color: color.muted }}>
+          {note}
+        </Typography>
+      ) : null}
     </Box>
   );
 }
@@ -163,20 +186,52 @@ export function SectionHead({ title, id, level = 2, link, action, sx }: SectionH
 // Surfaces
 // ---------------------------------------------------------------------------
 
-/** The drafts' `.panel`: paper-2, a rule border, the large radius. No padding. */
+/**
+ * The one surface every page uses (the 3.0 drafts' `.panel`): paper-2 and the
+ * large radius, no border. `panelSx` has no padding (a list or a table fills
+ * it); `panelPaddedSx` is the padded section: its children in a column, 16 px
+ * apart (24 px from the edge, 16 on phones).
+ */
 export const panelSx = {
   bgcolor: color.paper2,
-  border: `1px solid ${color.rule}`,
   borderRadius: radii.lg,
 } as const;
 
+export const panelPaddedSx = {
+  ...panelSx,
+  p: { xs: 2, sm: 3 },
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  minWidth: 0,
+} as const;
+
+/** A hairline round a panel, for the few that sit on paper-2 themselves. */
+export const panelBorderSx = { border: `1px solid ${color.rule}` } as const;
+
+/** A dialog's paper: the panel surface, without MUI's elevation overlay. */
+export const dialogPaperSx = { ...panelSx, backgroundImage: 'none' } as const;
+
+export type PanelProps = BoxProps & {
+  /** The padded section look (children in a column). Off: no padding, for a list or a table. */
+  padded?: boolean;
+  /** A hairline border (a panel on a paper-2 background). */
+  bordered?: boolean;
+};
+
 /**
- * One bordered surface (the drafts' `.panel`). It has no padding of its own:
- * pad it for a card (`sx={{ p: 3 }}`), or put a `RowList panel={false}` in
- * it. Takes every `Box` prop, `component` included.
+ * The one panel. `padded` for a section of content (title, text, controls);
+ * without, it is a bare surface for a `RowList panel={false}`, a table or
+ * anything that brings its own padding. Takes every `Box` prop, `component`
+ * included.
  */
-export function Panel({ sx, ...props }: BoxProps) {
-  return <Box {...props} sx={[panelSx, ...sxList(sx)]} />;
+export function Panel({ padded = false, bordered = false, sx, ...props }: PanelProps) {
+  return (
+    <Box
+      {...props}
+      sx={[padded ? panelPaddedSx : panelSx, bordered ? panelBorderSx : {}, ...sxList(sx)]}
+    />
+  );
 }
 
 export type RowListProps = BoxProps & {
@@ -361,14 +416,20 @@ export function CardHead({
         ...(sx as object),
       }}
     >
-      <Box sx={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: '1rem', minWidth: 0 }}>{title}</Box>
+      <Box sx={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: '1rem', minWidth: 0 }}>
+        {title}
+      </Box>
       {tag}
     </Box>
   );
 }
 
 /** Mono chip with a green dot, for anything that is live right now. */
-export function LiveChip({ label, sx, ...props }: Omit<ChipProps, 'label'> & { label: React.ReactNode }) {
+export function LiveChip({
+  label,
+  sx,
+  ...props
+}: Omit<ChipProps, 'label'> & { label: React.ReactNode }) {
   return (
     <Chip
       size="small"
@@ -404,7 +465,15 @@ const dotColor: Record<StatusDotState, string> = {
 };
 
 /** 9px status dot: live green, loading orange, free muted. */
-export function StatusDot({ state, size = 9, sx }: { state: StatusDotState; size?: number; sx?: BoxProps['sx'] }) {
+export function StatusDot({
+  state,
+  size = 9,
+  sx,
+}: {
+  state: StatusDotState;
+  size?: number;
+  sx?: BoxProps['sx'];
+}) {
   return (
     <Box
       component="span"
@@ -463,7 +532,13 @@ export function StatTile({
       >
         {value}
       </Box>
-      <Box sx={{ color: color.muted, fontSize: size === 'lg' ? '0.8125rem' : '0.75rem', mt: size === 'lg' ? 0.5 : 0 }}>
+      <Box
+        sx={{
+          color: color.muted,
+          fontSize: size === 'lg' ? '0.8125rem' : '0.75rem',
+          mt: size === 'lg' ? 0.5 : 0,
+        }}
+      >
         {label}
       </Box>
     </Box>
@@ -512,5 +587,163 @@ export function EmptyPanel({ title, description, children, level = 2, ...rest }:
       </Typography>
       {children && <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>{children}</Box>}
     </Panel>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SwitchRow
+// ---------------------------------------------------------------------------
+
+export type SwitchRowProps = Omit<SwitchProps, 'sx'> & {
+  /** The setting, as a sentence. */
+  label: React.ReactNode;
+  /** A line under it: what it does. */
+  help?: React.ReactNode;
+  /** The row's own style (the switch takes `switchSx`). */
+  sx?: SxProps<Theme>;
+  switchSx?: SxProps<Theme>;
+  'data-testid'?: string;
+};
+
+/**
+ * One setting with a switch (the drafts' `.tglrow`): the sentence on the left,
+ * its help under it, the switch on the right. Every on/off setting uses this;
+ * the label is the switch's label, so clicking it toggles. Takes every
+ * `Switch` prop (`checked`, `onChange(event, checked)`, `disabled`, `inputProps`…).
+ */
+export function SwitchRow({
+  label,
+  help,
+  sx,
+  switchSx,
+  id,
+  'data-testid': testId,
+  ...switchProps
+}: SwitchRowProps) {
+  const autoId = React.useId();
+  const inputId = id ?? `switch-${autoId}`;
+  const helpId = help ? `${inputId}-help` : undefined;
+  return (
+    <Box
+      data-testid={testId}
+      sx={[
+        {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 2,
+          minWidth: 0,
+        },
+        ...sxList(sx),
+      ]}
+    >
+      <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+        <Typography
+          component="label"
+          htmlFor={inputId}
+          sx={{
+            cursor: switchProps.disabled ? 'default' : 'pointer',
+            color: switchProps.disabled ? color.muted : color.ink,
+          }}
+        >
+          {label}
+        </Typography>
+        {help && (
+          <Typography id={helpId} variant="body2" sx={{ color: color.ink2 }}>
+            {help}
+          </Typography>
+        )}
+      </Box>
+      <Switch
+        id={inputId}
+        {...switchProps}
+        slotProps={{
+          ...switchProps.slotProps,
+          input: {
+            ...(helpId ? { 'aria-describedby': helpId } : {}),
+            ...(switchProps.slotProps?.input as object | undefined),
+          },
+        }}
+        sx={[{ flexShrink: 0 }, ...sxList(switchSx)]}
+      />
+    </Box>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// FormField
+// ---------------------------------------------------------------------------
+
+export type FormFieldProps = {
+  label: React.ReactNode;
+  /** The control's id: the label is its <label>. Without, the label is a plain span (give `labelId` for aria-labelledby). */
+  htmlFor?: string;
+  labelId?: string;
+  /** A line under the control. */
+  help?: React.ReactNode;
+  /**
+   * `stack` (default): label, control, help, top to bottom (the wizard's fields).
+   * `side`: the label on the left at `labelWidth`, the control on the right; stacks on phones.
+   */
+  layout?: 'stack' | 'side';
+  labelWidth?: number;
+  children: React.ReactNode;
+  sx?: SxProps<Theme>;
+};
+
+/** A labelled control. Every form uses this instead of its own Field / Row / Setting. */
+export function FormField({
+  label,
+  htmlFor,
+  labelId,
+  help,
+  layout = 'stack',
+  labelWidth = 200,
+  children,
+  sx,
+}: FormFieldProps) {
+  const labelEl = (
+    <Typography
+      component={htmlFor ? 'label' : 'span'}
+      id={labelId}
+      htmlFor={htmlFor}
+      variant="body2"
+      sx={{ fontWeight: 600, color: color.ink }}
+    >
+      {label}
+    </Typography>
+  );
+  const helpEl = help ? (
+    <Typography variant="body2" sx={{ color: color.ink2 }}>
+      {help}
+    </Typography>
+  ) : null;
+  if (layout === 'side') {
+    return (
+      <Box
+        sx={[
+          {
+            display: 'grid',
+            gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: `${labelWidth}px minmax(0, 1fr)` },
+            columnGap: 1.5,
+            rowGap: 0.75,
+            alignItems: 'center',
+            minWidth: 0,
+          },
+          ...sxList(sx),
+        ]}
+      >
+        {labelEl}
+        <Box sx={{ minWidth: 0 }}>{children}</Box>
+        {helpEl && <Box sx={{ gridColumn: { sm: 2 } }}>{helpEl}</Box>}
+      </Box>
+    );
+  }
+  return (
+    <Box sx={[{ display: 'grid', gap: 1.25, minWidth: 0 }, ...sxList(sx)]}>
+      {labelEl}
+      {children}
+      {helpEl}
+    </Box>
   );
 }

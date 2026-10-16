@@ -1,17 +1,18 @@
 import { useCallback, type ReactNode } from 'react';
 import { PresenceDot } from '../../social/PresenceDot';
 import { Box, CircularProgress, Typography } from '@mui/material';
-import { ClockIcon, PlayCircleIcon, TrophyIcon, UsersThreeIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { TeamMatchInfo } from '../../../types';
 import { useTeamMatchData } from '../../../hooks/useTeamMatchData';
 import { useRoundLabel } from '../../../hooks/useRoundLabel';
 import { useIntegrationFor } from '../../../integrations/registry';
 import { MatchMapChips } from '../../team/MatchMapChips';
-import { MatchPlayerPerformance } from '../../team/MatchPlayerPerformance';
-import { getMapData, getMapDisplayName } from '../../../constants/maps';
+import { LivePlayersTable } from '../../match/LivePlayersTable';
+import { SectionTitle, StatePill, TeamLogo, panel } from '../ui/draftUi';
+import { getMapDisplayName } from '../../../constants/maps';
 import { matchPhaseOf } from '../../../utils/matchPhase';
-import { tokens, fontDisplay, mono, radii, withAlpha } from '../../../theme/tokens';
+import { tokens, fontDisplay, mono, radii } from '../../../theme/tokens';
+import { panelSx, panelBorderSx } from '../../../components/common/ui';
 
 const { color } = tokens;
 
@@ -33,103 +34,23 @@ function seriesWins(match: TeamMatchInfo): { team1: number; team2: number } {
   };
 }
 
-function TeamMark({
-  tag,
-  name,
-  highlight,
-  logoUrl,
-}: {
-  tag?: string;
-  name: string;
-  highlight?: boolean;
-  logoUrl?: string | null;
-}) {
-  const text = (tag?.trim() || name.slice(0, 3)).slice(0, 4).toUpperCase();
-  return (
-    <Box
-      component="span"
-      sx={{
-        width: { xs: 48, md: 64 },
-        height: { xs: 48, md: 64 },
-        flex: 'none',
-        borderRadius: '16px',
-        bgcolor: color.paper3,
-        display: 'grid',
-        placeItems: 'center',
-        fontWeight: 700,
-        fontSize: { xs: '0.75rem', md: '0.875rem' },
-        color: highlight ? color.accent : color.ink2,
-        overflow: 'hidden',
-      }}
-    >
-      {logoUrl ? (
-        <Box
-          component="img"
-          src={logoUrl}
-          alt=""
-          sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
-      ) : (
-        text
-      )}
-    </Box>
-  );
-}
-
-/** One line saying what is happening now, with the action that goes with it. */
-function StatusLine({
-  tone,
-  icon,
-  title,
-  detail,
-  action,
-}: {
-  tone: string;
-  icon: ReactNode;
-  title: string;
-  detail?: string;
-  action?: ReactNode;
-}) {
-  return (
-    <Box
-      data-testid="your-match-status"
-      sx={{
-        display: 'flex',
-        flexWrap: { xs: 'wrap', md: 'nowrap' },
-        alignItems: 'center',
-        gap: 2,
-        p: '16px 20px',
-        borderRadius: '16px',
-        bgcolor: withAlpha(tone, 0.14),
-      }}
-    >
-      <Box sx={{ color: tone, display: 'flex' }} aria-hidden>
-        {icon}
-      </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 180 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: '1rem' }}>{title}</Typography>
-        {detail && (
-          <Typography sx={{ fontSize: '0.875rem', color: color.ink2 }}>{detail}</Typography>
-        )}
-      </Box>
-      {action}
-    </Box>
-  );
-}
-
 /** A side's players: a face, the name, and whether they are in the server. */
 function InServerList({
   players,
   connected,
+  ready,
 }: {
   players: Array<{ steamid: string; name: string; avatar?: string }>;
   connected: Set<string>;
+  /** Players in the server who typed .r (the draft's Ready chip). */
+  ready: Set<string>;
 }) {
   const { t } = useTranslation();
   return (
     <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
       {players.map((player) => {
         const isIn = connected.has(player.steamid);
+        const isReady = isIn && ready.has(player.steamid);
         return (
           <Box
             key={player.steamid}
@@ -168,15 +89,34 @@ function InServerList({
             >
               {player.name}
             </Typography>
-            <Typography
+            <Box
+              component="span"
+              data-testid="your-match-player-state"
               sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.75,
+                px: 1.25,
+                py: 0.25,
+                borderRadius: radii.pill,
+                bgcolor: color.paper3,
                 fontSize: '0.8125rem',
-                color: isIn ? color.live : color.muted,
+                fontWeight: 600,
                 whiteSpace: 'nowrap',
+                color: isReady ? color.live : isIn ? color.ink2 : color.muted,
               }}
             >
-              {isIn ? t('yourMatch.inServer') : t('yourMatch.notJoined')}
-            </Typography>
+              <Box
+                component="span"
+                aria-hidden
+                sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: 'currentColor' }}
+              />
+              {isReady
+                ? t('yourMatch.ready')
+                : isIn
+                  ? t('yourMatch.inServer')
+                  : t('yourMatch.notJoined')}
+            </Box>
           </Box>
         );
       })}
@@ -238,10 +178,9 @@ export function YourMatchCard({
       <Box
         data-testid="your-match-none"
         sx={{
+          ...panelSx,
+          ...panelBorderSx,
           p: 3,
-          borderRadius: radii.lg,
-          bgcolor: color.paper2,
-          border: `1px solid ${color.rule}`,
         }}
       >
         <Typography sx={{ fontWeight: 600 }}>
@@ -269,7 +208,6 @@ export function YourMatchCard({
 
   const live = match.liveStats;
   const mapKey = phase === 'veto' ? null : (live?.mapName ?? match.currentMap ?? null);
-  const mapImage = mapKey ? getMapData(mapKey)?.image : undefined;
   const mapNumber = live?.mapNumber ?? match.mapNumber ?? null;
   const totalMaps = live?.totalMaps ?? match.maps?.length ?? null;
 
@@ -284,6 +222,9 @@ export function YourMatchCard({
   const roundLabel = match.round === 0 ? t('teamPage.manualMatch') : getRoundLabel(match.round);
 
   const connected = new Set((match.connectionStatus?.connectedPlayers ?? []).map((p) => p.steamId));
+  const ready = new Set(
+    (match.connectionStatus?.connectedPlayers ?? []).filter((p) => p.isReady).map((p) => p.steamId)
+  );
   const expected =
     match.config?.expected_players_total ??
     (match.config?.players_per_team ? match.config.players_per_team * 2 : 10);
@@ -300,7 +241,6 @@ export function YourMatchCard({
     team1Starts === null ? null : swapped ? (team1Starts === 'CT' ? 'T' : 'CT') : team1Starts;
   const ourSide =
     team1Now === null ? null : match.isTeam1 ? team1Now : team1Now === 'CT' ? 'T' : 'CT';
-  const theirSide = ourSide === null ? null : ourSide === 'CT' ? 'T' : 'CT';
 
   const join =
     ConnectPanel && viewerIsMember ? (
@@ -309,70 +249,153 @@ export function YourMatchCard({
           matchSlug={match.slug}
           viewerCanJoin={viewerIsMember}
           matchStatus={match.status}
+          waitingSaidByPage={!match.server}
         />
       </Box>
     ) : null;
 
-  const score =
-    phase === 'live' ? (
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2 }} data-testid="your-match-score">
-        <Typography
-          sx={{
-            fontFamily: fontDisplay,
-            fontSize: { xs: '2.5rem', md: '3.5rem' },
-            fontWeight: 700,
-            lineHeight: 1,
-          }}
-        >
-          {ourRounds}
-        </Typography>
-        <Typography sx={{ fontSize: '1.5rem', color: color.muted }}>:</Typography>
-        <Typography
-          sx={{
-            fontFamily: fontDisplay,
-            fontSize: { xs: '2.5rem', md: '3.5rem' },
-            fontWeight: 700,
-            lineHeight: 1,
-          }}
-        >
-          {theirRounds}
-        </Typography>
-      </Box>
-    ) : (
+  const mapLabel = mapKey ? getMapDisplayName(mapKey) : null;
+  const mapOfLabel =
+    typeof mapNumber === 'number' && totalMaps && totalMaps > 1
+      ? t('yourMatch.mapOf', { n: mapNumber + 1, total: totalMaps })
+      : null;
+  const outcome = ourMaps > theirMaps ? 'won' : ourMaps < theirMaps ? 'lost' : 'draw';
+
+  // The card's title, its colour and the pill on its right (the drafts' match room).
+  let title: string;
+  let ring: string = color.rule;
+  let pill: ReactNode = null;
+  let detail: ReactNode = null;
+  if (phase === 'notStarted') {
+    title = t('matchInfo.waitingForTournamentTitle');
+    detail = t('matchInfo.waitingForTournamentBody');
+  } else if (phase === 'waitingOpponent') {
+    title = t('matchInfo.waitingForOpponentTitle');
+    detail = t('matchInfo.waitingForOpponentBody');
+  } else if (phase === 'veto') {
+    title = t('yourMatch.vetoTitle');
+    ring = color.accent;
+  } else if (
+    phase === 'joining' &&
+    !match.server &&
+    match.status !== 'loaded' &&
+    match.status !== 'live'
+  ) {
+    // No server yet (the drafts' "Waiting for a server"): the queue place comes from the join panel.
+    title = t('yourMatch.waitingForServer');
+    pill = mapLabel ? (
+      <StatePill
+        state="upcoming"
+        label={
+          match.config?.vetoDisabled
+            ? t('yourMatch.mapDrawnChip', { map: mapLabel })
+            : t('yourMatch.vetoDoneChip', { map: mapLabel })
+        }
+      />
+    ) : null;
+    detail = t('yourMatch.waitingForServerBody');
+  } else if (phase === 'joining') {
+    title = mapLabel
+      ? t('liveMatch.joinTitle', { map: mapLabel })
+      : t('yourMatch.waitingForPlayers');
+    ring = color.live;
+    pill = <StatePill state="live" label={t('liveMatch.warmup')} />;
+    detail = match.config?.bot_fill
+      ? t('yourMatch.inServerCountBots', { count: inServer })
+      : t('yourMatch.inServerCount', { count: inServer, expected });
+  } else if (phase === 'live') {
+    title = [mapOfLabel, mapLabel ? t('liveMatch.isLive', { map: mapLabel }) : t('yourMatch.live')]
+      .filter(Boolean)
+      .join(' · ');
+    ring = color.live;
+    pill = (
       <Typography
+        component="span"
         data-testid="your-match-score"
-        sx={{ fontFamily: fontDisplay, fontSize: { xs: '2rem', md: '2.5rem' }, fontWeight: 700 }}
+        sx={{ ...mono, fontSize: '1.375rem', whiteSpace: 'nowrap' }}
       >
-        {ourMaps} – {theirMaps}
+        {ourRounds} – {theirRounds}
+        {live?.roundNumber ? (
+          <Box component="span" sx={{ fontSize: '0.875rem', color: color.muted }}>
+            {' '}
+            · {t('yourMatch.round', { n: live.roundNumber })}
+          </Box>
+        ) : null}
       </Typography>
     );
-  const scoreLine =
-    phase === 'live'
-      ? t('yourMatch.mapsScore', { us: ourMaps, them: theirMaps })
-      : [roundLabel, formatLabel].filter(Boolean).join(' · ');
+    detail = ourSide ? (
+      <Box
+        component="span"
+        data-testid="your-match-side"
+        sx={{ color: ourSide === 'CT' ? color.sideCt : color.sideT, fontWeight: 600 }}
+      >
+        {t('yourMatch.sideYou', { side: ourSide })}
+      </Box>
+    ) : null;
+  } else {
+    title = t(`yourMatch.outcome.${outcome}`, {
+      us: ourMaps,
+      them: theirMaps,
+      opponent: theirName,
+    });
+    ring = outcome === 'won' ? color.live : color.rule;
+    detail = t('yourMatch.finished');
+  }
 
-  let body: ReactNode = null;
-  if (phase === 'notStarted') {
-    body = (
-      <StatusLine
-        tone={color.muted}
-        icon={<ClockIcon size={24} />}
-        title={t('matchInfo.waitingForTournamentTitle')}
-        detail={t('matchInfo.waitingForTournamentBody')}
+  const roster = (
+    side: 'team1' | 'team2',
+    name: string,
+    tag?: string,
+    logoUrl?: string | null,
+    sideNow?: string | null
+  ) => (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 1 }}
+      >
+        <Box
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 1,
+            fontFamily: fontDisplay,
+            fontWeight: 700,
+          }}
+        >
+          <TeamLogo team={{ id: match[side]?.id, name, tag, logoUrl }} size="sm" />
+          {name}
+        </Box>
+        {sideNow && (
+          <Typography component="span" sx={{ fontSize: '0.8125rem', color: color.muted }}>
+            {sideNow}
+          </Typography>
+        )}
+      </Box>
+      <InServerList
+        players={match.config?.[side]?.players ?? []}
+        connected={connected}
+        ready={ready}
       />
-    );
-  } else if (phase === 'waitingOpponent') {
-    body = (
-      <StatusLine
-        tone={color.muted}
-        icon={<ClockIcon size={24} />}
-        title={t('matchInfo.waitingForOpponentTitle')}
-        detail={t('matchInfo.waitingForOpponentBody')}
-      />
-    );
-  } else if (phase === 'veto') {
-    body =
-      PreMatchView && viewerIsMember ? (
+    </Box>
+  );
+
+  const avatars: Record<string, string | undefined> = {};
+  const names: Record<string, string | undefined> = {};
+  for (const side of ['team1', 'team2'] as const) {
+    for (const p of match.config?.[side]?.players ?? []) {
+      avatars[p.steamid] = p.avatar;
+      names[p.steamid] = p.name;
+    }
+  }
+
+  // The veto is its own page-wide block (the drafts' veto board), not a card in a card.
+  if (phase === 'veto' && PreMatchView && viewerIsMember) {
+    return (
+      <Box
+        data-testid="your-match"
+        data-phase={phase}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}
+      >
         <PreMatchView
           matchSlug={match.slug}
           team1Name={match.team1?.name ?? match.config?.team1?.name}
@@ -381,81 +404,7 @@ export function YourMatchCard({
           onComplete={onVetoComplete}
           hideMatchHeader
         />
-      ) : (
-        <StatusLine
-          tone={color.accent}
-          icon={<ClockIcon size={24} />}
-          title={t('yourMatch.vetoTitle')}
-        />
-      );
-  } else if (phase === 'joining') {
-    body = (
-      <>
-        <StatusLine
-          tone={color.sideT}
-          icon={<UsersThreeIcon size={24} />}
-          title={t('yourMatch.waitingForPlayers')}
-          detail={
-            match.config?.bot_fill
-              ? t('yourMatch.inServerCountBots', { count: inServer })
-              : t('yourMatch.inServerCount', { count: inServer, expected })
-          }
-        />
-        {join}
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'repeat(2, minmax(0,1fr))' },
-            gap: { xs: 2, md: 5 },
-          }}
-        >
-          <InServerList players={match.config?.[us]?.players ?? []} connected={connected} />
-          <InServerList players={match.config?.[them]?.players ?? []} connected={connected} />
-        </Box>
-      </>
-    );
-  } else if (phase === 'live') {
-    body = (
-      <>
-        <StatusLine
-          tone={color.live}
-          icon={<PlayCircleIcon size={24} />}
-          title={t('yourMatch.live')}
-          detail={live?.roundNumber ? t('yourMatch.round', { n: live.roundNumber }) : undefined}
-        />
-        {join}
-        {join && (
-          <Typography
-            sx={{ fontSize: '0.8125rem', color: color.muted, mt: -1.5 }}
-            data-testid="your-match-rejoin"
-          >
-            {t('yourMatch.rejoin')}
-          </Typography>
-        )}
-        {live?.playerStats && (
-          <MatchPlayerPerformance
-            playerStats={live.playerStats}
-            teamName={ourName}
-            opponentName={theirName}
-            yourTeamIsTeam1={match.isTeam1}
-          />
-        )}
-      </>
-    );
-  } else {
-    // Over: who won, by how much (draft 7c); the maps and demos follow below.
-    const outcome = ourMaps > theirMaps ? 'won' : ourMaps < theirMaps ? 'lost' : 'draw';
-    body = (
-      <StatusLine
-        tone={outcome === 'won' ? color.live : outcome === 'lost' ? color.ban : color.muted}
-        icon={outcome === 'won' ? <TrophyIcon size={24} /> : <ClockIcon size={24} />}
-        title={t(`yourMatch.outcome.${outcome}`, {
-          us: ourMaps,
-          them: theirMaps,
-          opponent: theirName,
-        })}
-        detail={t('yourMatch.finished')}
-      />
+      </Box>
     );
   }
 
@@ -463,158 +412,133 @@ export function YourMatchCard({
     <Box
       data-testid="your-match"
       data-phase={phase}
-      sx={{
-        borderRadius: radii.lg,
-        bgcolor: color.paper2,
-        border: `1px solid ${color.rule}`,
-        overflow: 'hidden',
-      }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}
     >
-      {mapKey && (
+      <Box
+        component="section"
+        aria-labelledby="your-match-title"
+        sx={{ ...panel, border: `2px solid ${ring}` }}
+      >
         <Box
-          data-testid="your-match-map"
           sx={{
-            height: { xs: 140, md: 200 },
-            position: 'relative',
             display: 'flex',
-            alignItems: 'flex-end',
-            bgcolor: color.paper3,
-            backgroundImage: mapImage ? `url("${mapImage}")` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            alignItems: 'baseline',
+            gap: 1.5,
           }}
         >
-          <Box
+          <Typography
+            id="your-match-title"
+            component="h2"
+            data-testid="your-match-status"
             sx={{
-              m: { xs: 1.5, md: '20px 24px' },
-              px: 2,
-              py: 1.25,
-              borderRadius: '14px',
-              bgcolor: withAlpha(color.paper, 0.82),
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.75,
+              m: 0,
+              fontFamily: fontDisplay,
+              fontSize: '1.5rem',
+              fontWeight: 700,
+              lineHeight: 1.2,
             }}
           >
-            <Typography sx={{ fontFamily: fontDisplay, fontSize: '1.375rem', fontWeight: 700 }}>
-              {getMapDisplayName(mapKey)}
-            </Typography>
-            {typeof mapNumber === 'number' && totalMaps ? (
-              <Typography
-                sx={{ ...mono, fontSize: '0.75rem', color: color.ink2, textTransform: 'uppercase' }}
-              >
-                {t('yourMatch.mapOf', { n: mapNumber + 1, total: totalMaps })}
-              </Typography>
-            ) : null}
+            {title}
+          </Typography>
+          {pill}
+        </Box>
+        {detail && (
+          <Typography sx={{ m: 0, color: color.ink2, fontSize: '1rem' }}>{detail}</Typography>
+        )}
+        {phase === 'veto' &&
+          (PreMatchView && viewerIsMember ? (
+            <PreMatchView
+              matchSlug={match.slug}
+              team1Name={match.team1?.name ?? match.config?.team1?.name}
+              team2Name={match.team2?.name ?? match.config?.team2?.name}
+              currentTeamSlug={team?.id ?? us}
+              onComplete={onVetoComplete}
+              hideMatchHeader
+            />
+          ) : null)}
+        {(phase === 'joining' || phase === 'live') && join}
+        {phase === 'live' && join && (
+          <Typography
+            sx={{ fontSize: '0.8125rem', color: color.muted }}
+            data-testid="your-match-rejoin"
+          >
+            {t('yourMatch.rejoin')}
+          </Typography>
+        )}
+        <Typography
+          component="span"
+          sx={{
+            position: 'absolute',
+            width: '1px',
+            height: '1px',
+            overflow: 'hidden',
+            clip: 'rect(0 0 0 0)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {[ourName, theirName, roundLabel, formatLabel, mapLabel].filter(Boolean).join(' · ')}
+        </Typography>
+      </Box>
+
+      {mapsView ? (
+        <Box component="section" data-testid="your-match-maps" sx={panel}>
+          {mapsView}
+        </Box>
+      ) : (
+        phase !== 'veto' &&
+        match.maps?.length > 0 && (
+          <Box sx={panel}>
+            <MatchMapChips match={match} currentMapNumber={mapNumber} />
+          </Box>
+        )
+      )}
+
+      {phase === 'joining' && (
+        <Box component="section" aria-labelledby="your-match-players" sx={panel}>
+          <SectionTitle
+            id="your-match-players"
+            title={t('liveMatch.players')}
+            note={t('yourMatch.inServerCount', { count: inServer, expected })}
+          />
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 16rem), 1fr))',
+              gap: 2,
+            }}
+          >
+            {roster(us, ourName, ourTag, ourLogo, null)}
+            {roster(them, theirName, theirTag, theirLogo, null)}
           </Box>
         </Box>
       )}
 
-      <Box sx={{ p: { xs: 2.5, md: 3.5 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)',
-            alignItems: 'center',
-            gap: { xs: 1.5, md: 3 },
+      {phase === 'live' && live?.playerStats && (
+        <LivePlayersTable
+          stats={live.playerStats}
+          team1={{
+            id: match.team1?.id,
+            name: match.team1?.name ?? match.config?.team1?.name ?? '',
+            tag: match.team1?.tag,
+            logoUrl: match.team1?.logoUrl,
           }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
-            <TeamMark tag={ourTag} name={ourName} logoUrl={ourLogo} highlight />
-            <Box sx={{ minWidth: 0 }}>
-              <Typography
-                sx={{
-                  fontFamily: fontDisplay,
-                  fontSize: { xs: '1.125rem', md: '1.625rem' },
-                  fontWeight: 700,
-                  overflowWrap: 'anywhere',
-                }}
-              >
-                {ourName}
-              </Typography>
-              {phase === 'live' && ourSide && (
-                <Typography
-                  data-testid="your-match-side"
-                  sx={{
-                    ...mono,
-                    fontSize: '0.75rem',
-                    color: ourSide === 'CT' ? color.info : color.sideT,
-                  }}
-                >
-                  {t('yourMatch.sideYou', { side: ourSide })}
-                </Typography>
-              )}
-            </Box>
-          </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-            {score}
-            <Typography
-              sx={{
-                ...mono,
-                fontSize: '0.75rem',
-                color: color.muted,
-                textTransform: 'uppercase',
-                textAlign: 'center',
-              }}
-            >
-              {scoreLine}
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              justifyContent: 'flex-end',
-              minWidth: 0,
-            }}
-          >
-            <Box sx={{ minWidth: 0, textAlign: 'right' }}>
-              <Typography
-                sx={{
-                  fontFamily: fontDisplay,
-                  fontSize: { xs: '1.125rem', md: '1.625rem' },
-                  fontWeight: 700,
-                  textAlign: 'right',
-                  overflowWrap: 'anywhere',
-                }}
-              >
-                {theirName}
-              </Typography>
-              {phase === 'live' && theirSide && (
-                <Typography
-                  sx={{
-                    ...mono,
-                    fontSize: '0.75rem',
-                    color: theirSide === 'CT' ? color.info : color.sideT,
-                  }}
-                >
-                  {theirSide}
-                </Typography>
-              )}
-            </Box>
-            <TeamMark tag={theirTag} name={theirName} logoUrl={theirLogo} />
-          </Box>
-        </Box>
-
-        {body}
-
-        {mapsView ? (
-          <Box
-            sx={{ pt: 2.25, borderTop: `1px solid ${color.rule}` }}
-            data-testid="your-match-maps"
-          >
-            {mapsView}
-          </Box>
-        ) : (
-          phase !== 'veto' &&
-          match.maps?.length > 0 && (
-            <Box sx={{ pt: 2.25, borderTop: `1px solid ${color.rule}` }}>
-              <MatchMapChips match={match} currentMapNumber={mapNumber} />
-            </Box>
-          )
-        )}
-      </Box>
+          team2={{
+            id: match.team2?.id,
+            name: match.team2?.name ?? match.config?.team2?.name ?? '',
+            tag: match.team2?.tag,
+            logoUrl: match.team2?.logoUrl,
+          }}
+          avatars={avatars}
+          names={names}
+          rounds={live.roundNumber || (live.team1Score ?? 0) + (live.team2Score ?? 0)}
+          title={
+            mapOfLabel ? t('liveMatch.playersOnMap', { map: mapOfLabel }) : t('liveMatch.players')
+          }
+          note={t('liveMatch.noEconomy')}
+        />
+      )}
     </Box>
   );
 }

@@ -182,7 +182,8 @@ export function matchPagePath(slug: string): string {
 }
 
 /** A tournament's tabs in Manage. */
-export type ManageTournamentTab = 'matches' | 'bracket' | 'disputes' | 'setup';
+export type ManageTournamentTab =
+  'matches' | 'bracket' | 'disputes' | 'setup' | 'prizes' | 'schedule';
 
 /** `/manage/tournaments/:id/<tab>`: one tournament in Manage (`new` while it is created). */
 export function manageTournamentPath(
@@ -232,46 +233,32 @@ export const TOURNAMENT_TABS = [
 export type TournamentTab = (typeof TOURNAMENT_TABS)[number];
 
 /**
- * The tabs one tournament shows: Rules only when the organizer wrote some, or
- * a description too long for the header to show in full. Before it starts:
- * Overview and Teams. While it runs: Overview (with the viewer's next match,
- * a link to its match room), Bracket, Matches, Teams and Standings. Once it is
- * over: the results (Overview), Bracket and Matches.
+ * The tabs one tournament shows, in the drafts' fixed order: Overview, then
+ * Bracket (elimination) or Standings (round robin, Swiss, shuffle), Matches,
+ * Teams, the modules' tabs (CS2: Highlights), and Rules, which every
+ * tournament has (how a match is played comes from its settings). Before it
+ * starts: Overview, Teams and Rules.
  */
 export function visibleTournamentTabs(tournament: {
   status?: string;
+  type?: string;
   /** Archived: a finished tournament a new one replaced. Only its results tabs are its own. */
   archived_at?: number | null;
   settings?: { rules?: string[]; rulebookUrl?: string; description?: string } | null;
 }): TournamentTab[] {
-  // The header shows three lines of the description; a longer one is read in full on Rules.
-  const hasRules = Boolean(
-    tournament.settings?.rules?.length ||
-    tournament.settings?.rulebookUrl ||
-    (tournament.settings?.description?.length ?? 0) > 240
-  );
+  const elim = tournament.type === 'single_elimination' || tournament.type === 'double_elimination';
   // An archived tournament's matches and teams tabs would read the current
   // tournament's, so it shows its results only.
   if (tournament.archived_at) {
-    return hasRules
-      ? ['overview', 'bracket', 'standings', 'rules']
-      : ['overview', 'bracket', 'standings'];
+    return elim ? ['overview', 'bracket', 'rules'] : ['overview', 'standings', 'rules'];
   }
-  // Before it starts there is nothing to follow yet (tournament drafts,
-  // board 1): the page, who is in, and the rules.
   if (tournament.status === 'setup' || tournament.status === 'ready') {
-    return hasRules ? ['overview', 'teams', 'rules'] : ['overview', 'teams'];
+    return ['overview', 'teams', 'rules'];
   }
-  // Once it is over the results lead (board 9): the overview is the results
-  // page, and the bracket and every match (with demos) are kept.
-  if (tournament.status === 'completed') {
-    return hasRules
-      ? ['overview', 'bracket', 'matches', 'rules']
-      : ['overview', 'bracket', 'matches'];
-  }
-  const tabs: TournamentTab[] = ['overview', 'bracket', 'matches', 'teams', 'standings'];
-  if (hasRules) tabs.push('rules');
-  return tabs;
+  if (tournament.type === 'shuffle') return ['overview', 'standings', 'matches', 'rules'];
+  return elim
+    ? ['overview', 'bracket', 'matches', 'teams', 'rules']
+    : ['overview', 'standings', 'matches', 'teams', 'rules'];
 }
 
 /** `/tournament/:id` for Overview, `/tournament/:id/<tab>` for the other tabs. */

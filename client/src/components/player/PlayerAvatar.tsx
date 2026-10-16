@@ -1,76 +1,97 @@
-import { Avatar, Skeleton } from '@mui/material';
+import { useState } from 'react';
+import { Box, Skeleton, type BoxProps } from '@mui/material';
+import { tokens } from '../../theme/tokens';
 
-interface PlayerAvatarProps {
-  id?: string | null;
+const { color } = tokens;
+
+/** "Ola Nordmann" → "ON". */
+export function playerInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((part) => part[0] ?? '')
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+export interface PlayerAvatarProps {
   name: string;
+  /** The player's id: without a picture, the generated one (/api/players/:id/avatar.svg). */
+  id?: string | null;
+  /** Their picture (Steam or their own). `avatar` is the same, for older callers. */
   avatarUrl?: string | null;
+  avatar?: string | null;
   size?: number;
-  isAdmin?: boolean;
-  /**
-   * When true, renders a neutral skeleton/placeholder instead of any avatar
-   * content. Useful while player data is still loading to avoid flashes.
-   */
+  sx?: BoxProps['sx'];
+  /** No name next to it: the avatar names the player itself (otherwise hidden from screen readers). */
+  label?: boolean;
+  /** A placeholder while the player loads. */
   isLoading?: boolean;
+  /** Ignored: admins show by their name's colour. */
+  isAdmin?: boolean;
 }
 
 /**
- * Centralized player avatar component.
- *
- * Rules:
- * - Prefer the explicit avatarUrl passed in (Steam / custom).
- * - Otherwise fall back to the deterministic backend-generated SVG at
- *   /api/players/:id/avatar.svg so all views stay visually consistent.
+ * The one player picture: their own, else the generated one for their id,
+ * else their initials (also when the picture fails to load). Every player
+ * everywhere uses this; no MUI <Avatar> for a player.
  */
 export function PlayerAvatar({
-  id,
   name,
+  id,
   avatarUrl,
-  size = 40,
-  isAdmin: _isAdmin,
+  avatar,
+  size = 32,
+  sx,
+  label = false,
   isLoading = false,
 }: PlayerAvatarProps) {
-  const dimension = size;
-
+  const [broken, setBroken] = useState<string | null>(null);
   if (isLoading) {
     return (
       <Skeleton
         variant="circular"
-        width={dimension}
-        height={dimension}
-        sx={{ bgcolor: 'action.hover', borderRadius: '50%' }}
+        width={size}
+        height={size}
+        sx={{ bgcolor: 'action.hover', flex: 'none' }}
       />
     );
   }
-
-  const hasExplicit = typeof avatarUrl === 'string' && avatarUrl.trim().length > 0;
-  const hasId = typeof id === 'string' && id.trim().length > 0;
-
-  // Only build the backend fallback URL when we have a valid player ID; this
-  // avoids 404s like /api/players/undefined/avatar.svg for temporary/placeholder
-  // rows (e.g., team editors or partial forms).
-  const fallback = hasId ? `/api/players/${id}/avatar.svg` : undefined;
-  const src = hasExplicit ? avatarUrl : fallback;
-
-  const baseSx = { width: size, height: size };
-
-  // Admins are now indicated purely via name color; keep avatars visually neutral.
-  const adminSx = {};
-
-  // If we don't have any source at all, render a neutral gray circle instead of
-  // an initial so we don't "flash" a random letter while things load.
-  if (!src) {
-    return (
-      <Avatar
-        sx={{
-          ...baseSx,
-          ...adminSx,
-          bgcolor: 'action.hover',
-        }}
-      />
-    );
-  }
-
-  return <Avatar src={src} alt={name} sx={{ ...baseSx, ...adminSx }} />;
+  const own = (avatarUrl ?? avatar ?? '').trim();
+  const generated = id && id.trim() ? `/api/players/${id}/avatar.svg` : '';
+  const src = [own, generated].find((u) => u && u !== broken) ?? '';
+  return (
+    <Box
+      component="span"
+      title={name}
+      {...(label ? { role: 'img', 'aria-label': name } : { 'aria-hidden': true })}
+      sx={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        flex: 'none',
+        overflow: 'hidden',
+        display: 'inline-grid',
+        placeItems: 'center',
+        bgcolor: color.rule,
+        color: color.ink2,
+        fontSize: size >= 40 ? '0.8125rem' : '0.6875rem',
+        fontWeight: 700,
+        ...sx,
+      }}
+    >
+      {src ? (
+        <Box
+          component="img"
+          src={src}
+          alt=""
+          onError={() => setBroken(src)}
+          sx={{ width: size, height: size, objectFit: 'cover', display: 'block' }}
+        />
+      ) : (
+        playerInitials(name)
+      )}
+    </Box>
+  );
 }
-
-

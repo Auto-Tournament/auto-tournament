@@ -5,7 +5,7 @@
  * match is over: the result, any skin it dropped for you, and Play again.
  */
 import { useCallback, useEffect, useState } from 'react';
-import { Avatar, Box, Button, CircularProgress, Container, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Container, Typography } from '@mui/material';
 import { ChatCircleIcon } from '@phosphor-icons/react';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -19,9 +19,10 @@ import { MatchDrop } from '../components/matchmaking/MatchDrop';
 import { MapRoulette, type RouletteMap } from '../components/matchmaking/MapRoulette';
 import { openChat } from '../components/chat/chatStore';
 import { getMapData } from '../constants/maps';
-import { paths, playerProfilePath } from '../paths';
+import { paths } from '../paths';
 import { fontDisplay, radii, textSize, tokens } from '../theme/tokens';
 import { useTopic } from '../hooks/useTopic';
+import { PlayerChip } from '../components/player/PlayerChip';
 
 const { color } = tokens;
 
@@ -324,37 +325,25 @@ export default function PlayLobby() {
                       key={p.id}
                       sx={{
                         display: 'grid',
-                        gridTemplateColumns: '36px minmax(0, 1fr) auto',
+                        gridTemplateColumns: 'minmax(0, 1fr) auto',
                         gap: 1.5,
                         alignItems: 'center',
                       }}
                     >
-                      <Avatar
-                        src={p.avatarUrl ?? undefined}
-                        sx={{ width: 36, height: 36, fontSize: textSize.sm, bgcolor: color.paper3 }}
-                      >
-                        {p.name.trim()[0]?.toUpperCase()}
-                      </Avatar>
-                      <Typography
-                        component={RouterLink}
-                        to={playerProfilePath(p.id)}
-                        sx={{
-                          color: color.ink,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          textDecoration: 'none',
-                          '&:hover': { textDecoration: 'underline' },
-                        }}
-                      >
-                        {p.name}
-                        {p.id === playerSteamId && (
-                          <Box component="span" sx={{ color: color.muted }}>
-                            {' '}
-                            {t('matchmaking.room.you')}
-                          </Box>
-                        )}
-                      </Typography>
+                      <PlayerChip
+                        id={p.id}
+                        name={p.name}
+                        avatarUrl={p.avatarUrl}
+                        size={36}
+                        sx={{ gap: 1.5 }}
+                        after={
+                          p.id === playerSteamId ? (
+                            <Box component="span" sx={{ color: color.muted, whiteSpace: 'nowrap' }}>
+                              {t('matchmaking.room.you')}
+                            </Box>
+                          ) : undefined
+                        }
+                      />
                       {onServer && !completed && (
                         <Typography
                           data-testid="mm-player-presence"

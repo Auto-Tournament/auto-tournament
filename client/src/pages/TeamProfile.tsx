@@ -50,6 +50,7 @@ export default function TeamProfile() {
   // The team's logo, and the viewer's place on it: the owner and captains
   // get Manage, a member gets Leave.
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [recentMatches, setRecentMatches] = useState<TeamRecentMatch[]>([]);
   const [numbers, setNumbers] = useState<TeamProfileNumbers | null>(null);
   const [members, setMembers] = useState<RosterPlayer[] | null>(null);
@@ -69,7 +70,12 @@ export default function TeamProfile() {
       .get<
         {
           success: boolean;
-          team: { logoUrl: string | null; game: string | null; gameName?: string | null };
+          team: {
+            logoUrl: string | null;
+            bannerUrl?: string | null;
+            game: string | null;
+            gameName?: string | null;
+          };
           recentMatches?: TeamRecentMatch[];
           members: Array<{
             steamId: string;
@@ -89,6 +95,7 @@ export default function TeamProfile() {
       .then((res) => {
         if (cancelled) return;
         setLogoUrl(res.team?.logoUrl ?? null);
+        setBannerUrl(res.team?.bannerUrl ?? null);
         setRecentMatches(res.recentMatches ?? []);
         setTeamGame(
           res.team?.game ? { slug: res.team.game, name: res.team.gameName ?? res.team.game } : null
@@ -218,6 +225,10 @@ export default function TeamProfile() {
             team={team}
             canEdit={isAuthenticated}
             logoUrl={logoUrl}
+            bannerUrl={bannerUrl}
+            players={members ? members.length : team?.players?.length}
+            owner={members?.find((m) => m.role === 'owner')?.name ?? null}
+            rating={numbers?.rating ?? null}
             actions={ownActions}
             game={
               tournament?.game && tournament.gameName

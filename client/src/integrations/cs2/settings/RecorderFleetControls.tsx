@@ -1,16 +1,6 @@
 import { useEffect, useState, type InputHTMLAttributes } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  FormControlLabel,
-  MenuItem,
-  Stack,
-  Switch,
-  TextField,
-  Typography,
-} from '@mui/material';
-import { api, useModuleTranslation, useSnackbar } from '../../../module-sdk';
+import { Alert, Box, Button, MenuItem, Stack, Switch, TextField, Typography } from '@mui/material';
+import { api, useModuleTranslation, useSnackbar, SwitchRow } from '../../../module-sdk';
 
 export interface RecorderGroup {
   id: number;
@@ -50,24 +40,20 @@ export function RecorderGroups({
       <Stack direction="row" flexWrap="wrap" useFlexGap spacing={2}>
         {showToggles &&
           groups.map((g) => (
-            <FormControlLabel
-              key={g.id}
+            <SwitchRow
               label={g.name}
-              control={
-                <Switch
-                  checked={g.enabled}
-                  disabled={busy}
-                  slotProps={{
-                    input: {
-                      'aria-label': g.name,
-                      'data-testid': `recorder-group-toggle-${g.id}`,
-                    } as InputHTMLAttributes<HTMLInputElement>,
-                  }}
-                  onChange={(_e, enabled) =>
-                    void change(() => api.put(`/api/game/cs2/recorder-groups/${g.id}`, { enabled }))
-                  }
-                />
+              checked={g.enabled}
+              disabled={busy}
+              slotProps={{
+                input: {
+                  'aria-label': g.name,
+                  'data-testid': `recorder-group-toggle-${g.id}`,
+                } as InputHTMLAttributes<HTMLInputElement>,
+              }}
+              onChange={(_e, enabled) =>
+                void change(() => api.put(`/api/game/cs2/recorder-groups/${g.id}`, { enabled }))
               }
+              key={g.id}
             />
           ))}
       </Stack>
@@ -168,23 +154,19 @@ export function RecorderControls({
   return (
     <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
       {showEnabled && (
-        <FormControlLabel
+        <SwitchRow
           label={t('highlightsAdmin.fleet.enabled')}
-          control={
-            <Switch
-              checked={enabled}
-              disabled={
-                busy || (groupId !== null && groups.some((g) => g.id === groupId && !g.enabled))
-              }
-              slotProps={{
-                input: {
-                  'aria-label': `${name}: ${t('highlightsAdmin.fleet.enabled')}`,
-                  'data-testid': `recorder-toggle-${name}`,
-                } as InputHTMLAttributes<HTMLInputElement>,
-              }}
-              onChange={(_e, value) => void save({ enabled: value })}
-            />
+          checked={enabled}
+          disabled={
+            busy || (groupId !== null && groups.some((g) => g.id === groupId && !g.enabled))
           }
+          slotProps={{
+            input: {
+              'aria-label': `${name}: ${t('highlightsAdmin.fleet.enabled')}`,
+              'data-testid': `recorder-toggle-${name}`,
+            } as InputHTMLAttributes<HTMLInputElement>,
+          }}
+          onChange={(_e, value) => void save({ enabled: value })}
         />
       )}
       {showGroup && (

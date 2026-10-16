@@ -13,6 +13,7 @@
  * solid accent bubble with their picture (draft: Auto Tournament Features, chat).
  */
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { fmtTime } from '../../utils/time';
 import { PresenceDot } from '../social/PresenceDot';
 import {
   Box,
@@ -113,7 +114,7 @@ function ShieldIcon({ size = 16 }: { size?: number }) {
 }
 
 function clockOf(seconds: number): string {
-  return new Date(seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return fmtTime(seconds);
 }
 
 function Avatar({ message }: { message: ChatMessage }) {

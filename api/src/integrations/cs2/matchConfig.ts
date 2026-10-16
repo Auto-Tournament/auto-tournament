@@ -1,3 +1,4 @@
+import { gotvCvars } from './gotv';
 import { storedCs2Settings } from './tournamentSettings';
 import { db } from '../../config/database';
 import type { DbTeamRow, DbMatchRow } from '../../types/database.types';
@@ -66,6 +67,16 @@ export interface GenerateMatchConfigOptions {
    * (config built before the insert).
    */
   round?: number;
+}
+
+/** A match an admin put on stage gets every GOTV seat (gotv.ts). */
+async function onStage(slug: string): Promise<boolean> {
+  const row = await db
+    .queryOneAsync<{ on_stage: number | null }>('SELECT on_stage FROM matches WHERE slug = ?', [
+      slug,
+    ])
+    .catch(() => null);
+  return Number(row?.on_stage ?? 0) === 1;
 }
 
 export const generateMatchConfig = async (
@@ -294,6 +305,8 @@ export const generateMatchConfig = async (
     ...atEnhancedCvars,
     // Simulated matches: short SourceTV delay so the demo stops and uploads quickly.
     ...simulationTvCvars(simulation),
+    // Spectators in GOTV: the delay, the seats and this match's password (gotv.ts).
+    ...(slug ? await gotvCvars(slug, { simulation, onStage: await onStage(slug) }) : {}),
   };
 
   const config: MatchConfig = {
@@ -490,6 +503,8 @@ async function generateShuffleMatchConfig(
     ...atEnhancedCvars,
     // Simulated matches: short SourceTV delay so the demo stops and uploads quickly.
     ...simulationTvCvars(simulation),
+    // Spectators in GOTV: the delay, the seats and this match's password (gotv.ts).
+    ...(slug ? await gotvCvars(slug, { simulation, onStage: await onStage(slug) }) : {}),
   };
 
   // For shuffle we want players_per_team to reflect the configured teamSize

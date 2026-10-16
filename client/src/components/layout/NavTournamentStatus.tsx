@@ -8,16 +8,16 @@
  * Outlined like the start countdown: information, not a call to act.
  */
 import React from 'react';
-import { Box, Button } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { paths, tournamentTabPath } from '../../paths';
-import { mono, radii, tokens } from '../../theme/tokens';
+import { tokens } from '../../theme/tokens';
+import { NavPill } from './NavPill';
+import { minutesLeft } from '../tournament/PlacementDialog';
 import { usePublicBracket } from '../../hooks/usePublicBracket';
 import { placementFor } from '../../hooks/usePlacement';
 import { placementLabel } from '../../utils/placement';
-import { teamCurrentMatch, teamLastResult } from '../tournament/page/matchHelpers';
+import { isLiveMatch, teamCurrentMatch, teamLastResult } from '../tournament/page/matchHelpers';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
 
 interface Listed {
@@ -70,28 +70,13 @@ export function NavTournamentStatus({ viewerId }: { viewerId: string }) {
     return <StatusPill key={running.id} tournamentId={running.id} teamId={running.teamId} />;
   }
   if (shuffle) {
-    return (
-      <ShufflePill
-        key={shuffle.id}
-        tournamentId={shuffle.id}
-        name={shuffle.name}
-        viewerId={viewerId}
-      />
-    );
+    return <ShufflePill key={shuffle.id} tournamentId={shuffle.id} viewerId={viewerId} />;
   }
   return null;
 }
 
 /** Between a shuffle's matches: the round and whether the viewer sits it out. */
-function ShufflePill({
-  tournamentId,
-  name,
-  viewerId,
-}: {
-  tournamentId: number;
-  name: string;
-  viewerId: string;
-}) {
+function ShufflePill({ tournamentId, viewerId }: { tournamentId: number; viewerId: string }) {
   const { t } = useTranslation();
   const [state, setState] = React.useState<{ round: number | null; sittingOut: string[] } | null>(
     null
@@ -115,11 +100,12 @@ function ShufflePill({
   if (!state || state.round === null) return null;
   const sitting = state.sittingOut.includes(viewerId);
   return (
-    <PillButton
+    <NavPill
       to={tournamentTabPath(tournamentId)}
+      testId="nav-tournament-status"
       dot={sitting ? tokens.color.muted : tokens.color.live}
-      label={name}
-      value={
+      live={!sitting}
+      text={
         sitting
           ? t('navStatus.shuffleSittingOut', { round: state.round })
           : t('navStatus.shuffleRound', { round: state.round })
@@ -136,8 +122,8 @@ function StatusPill({ tournamentId, teamId }: { tournamentId: number; teamId: st
 
   const placement = placementFor(tournament, matches, teamId);
   let dot: string;
-  let label: string;
-  let value: string;
+  let text: string;
+  let clock: string | null = null;
   let to: string;
   if (placement) {
     const last = teamLastResult(matches, teamId);
@@ -146,74 +132,39 @@ function StatusPill({ tournamentId, teamId }: { tournamentId: number; teamId: st
     if (placement.champion || !last?.completedAt || now - last.completedAt > OUT_SHOWN_FOR_S) {
       return null;
     }
-    dot = tokens.color.muted;
-    label = t('navStatus.placed');
-    value = matchmakingAvailable
-      ? t('navStatus.placedPlay', { place: placementLabel(placement) })
-      : placementLabel(placement);
+    dot =
+      placement.place === 1
+        ? tokens.color.medalGold
+        : placement.place === 2
+          ? tokens.color.medalSilver
+          : placement.place === 3
+            ? tokens.color.medalBronze
+            : tokens.color.muted;
+    text = matchmakingAvailable
+      ? t('navStatus.placedPlayLine', { place: placementLabel(placement) })
+      : t('navStatus.placedLine', { place: placementLabel(placement) });
     to = matchmakingAvailable ? paths.play : tournamentTabPath(tournamentId);
   } else {
     if (tournament.status !== 'in_progress') return null;
     const next = teamCurrentMatch(matches, teamId);
     // A match with both teams: the match CTA (useCurrentMatchStatus) has it.
     if (next && next.team1 && next.team2) return null;
-    dot = tokens.color.live;
-    label = tournament.name;
-    value = t('navStatus.waiting');
+    dot = tokens.color.muted;
+    text = t('navStatus.waitingOpponent');
+    // About how long until the opponent is known: the match they come from.
+    const feeder = next
+      ? matches.find((m) => m.nextMatchId === next.id && m.status !== 'completed' && isLiveMatch(m))
+      : undefined;
+    const maxRounds =
+      tournament.maxRounds ??
+      (tournament.settings as { cs2?: { maxRounds?: number } } | undefined)?.cs2?.maxRounds ??
+      null;
+    const minutes = feeder
+      ? minutesLeft(maxRounds, feeder.team1MapScore, feeder.team2MapScore)
+      : null;
+    clock = minutes ? t('navStatus.aboutMinutes', { count: minutes }) : null;
     to = tournamentTabPath(tournamentId);
   }
 
-  return <PillButton to={to} dot={dot} label={label} value={value} />;
-}
-
-function PillButton({
-  to,
-  dot,
-  label,
-  value,
-}: {
-  to: string;
-  dot: string;
-  label: string;
-  value: string;
-}) {
-  return (
-    <Button
-      component={RouterLink}
-      to={to}
-      size="small"
-      variant="outlined"
-      color="inherit"
-      data-testid="nav-tournament-status"
-      sx={{
-        display: { xs: 'none', sm: 'inline-flex' },
-        gap: 1,
-        px: 1.75,
-        borderRadius: radii.pill,
-        borderColor: tokens.color.rule,
-        whiteSpace: 'nowrap',
-        minWidth: 0,
-      }}
-    >
-      <Box
-        component="span"
-        aria-hidden
-        sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: dot, flex: 'none' }}
-      />
-      <Box
-        component="span"
-        sx={{
-          maxWidth: 160,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          color: 'text.secondary',
-        }}
-      >
-        {label}
-      </Box>
-      <Box component="span" sx={{ ...mono, fontWeight: 600 }}>
-        {value}
-      </Box>
-    </Button>
-  );
+  return <NavPill to={to} testId="nav-tournament-status" dot={dot} text={text} clock={clock} />;
 }

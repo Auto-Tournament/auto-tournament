@@ -24,7 +24,7 @@ export interface BracketGeneratorResult {
      * - 'GF'       → grand final
      * - 'GF_RESET' → optional reset grand final (if supported)
      */
-    bracket?: 'WB' | 'LB' | 'GF' | 'GF_RESET';
+    bracket?: 'WB' | 'LB' | 'GF' | 'GF_RESET' | 'SE' | `G${'A' | 'B' | 'C' | 'D'}`;
     team1Id: string | null;
     team2Id: string | null;
     winnerId: string | null;
@@ -43,6 +43,11 @@ export interface BracketGeneratorResult {
     team2FromOutcome?: 'winner' | 'loser' | null;
     /** Set for slots that are decided at generation (a Swiss round-1 bye). */
     completedAt?: number;
+    /** A playoff slot's qualifier seeds (groups, then playoffs: services/groupsTournament.ts). */
+    team1Seed?: number | null;
+    team2Seed?: number | null;
+    /** This slot's series length when it differs from the tournament's (the playoffs). */
+    format?: 'bo1' | 'bo3' | 'bo5';
   }>;
 }
 

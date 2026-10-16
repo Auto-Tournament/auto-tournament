@@ -21,6 +21,7 @@
 import type { PlayerHighlightsFeed } from '../components/highlights/feed';
 import type { ComponentType, ReactElement, ReactNode } from 'react';
 import type { TFunction } from 'i18next';
+import type { NoticeFilter } from '../components/social/noticeFilters';
 
 /** Integration id, the same value as the API's `game` column. */
 export type GameId = 'cs2' | (string & {});
@@ -76,6 +77,11 @@ export interface MatchConnectPanelProps {
   viewerCanJoin: boolean;
   /** Read again when the match itself moves (loaded → live …). */
   matchStatus?: string;
+  /**
+   * The page's card already says "Waiting for a server" (title and text): the
+   * panel shows only what it adds, the match's place in line.
+   */
+  waitingSaidByPage?: boolean;
 }
 
 /**
@@ -110,6 +116,8 @@ export interface PublicMatch {
     team1Score: number;
     team2Score: number;
     winner: string | null;
+    /** The map's demo is in: a download link once the match is over. */
+    hasDemo?: boolean;
   }>;
   completedAt?: number | null;
   tournament?: string | null;
@@ -966,6 +974,17 @@ export interface PlayerProfileTabProps extends PlayerProfileSectionProps {
  */
 export type ModuleLocales = Readonly<Record<string, Record<string, unknown>>>;
 
+export interface PinnedNoticesProps {
+  onNavigate: () => void;
+}
+
+export interface PrizePickRowProps {
+  /** A finished match: what it dropped. */
+  matchSlug?: string;
+  /** A tournament: the prize for its placings or MVP. */
+  tournamentId?: number | null;
+}
+
 export interface ClientGameIntegration {
   id: GameId;
 
@@ -1103,6 +1122,46 @@ export interface ClientGameIntegration {
    * the tournament gives nothing. Left empty: the overview shows no prizes.
    */
   tournamentPrizesView?: ComponentType<TournamentPrizesViewProps>;
+
+  /**
+   * Manage's Prizes tab for one tournament (CS2: skins per place, match drops,
+   * the MVP prize and, after the final, the organizer's MVP pick). Left empty:
+   * the tab says the game has no prizes.
+   */
+  tournamentPrizesManage?: ComponentType<TournamentPrizesManageProps>;
+
+  /**
+   * One line under "What's next" once the viewer's team is out or won (CS2:
+   * "Your prize is in your inventory: a Legendary skin"). Renders nothing
+   * when they get nothing.
+   */
+  placementPrizeLine?: ComponentType<{ tournamentId: number }>;
+
+  /**
+   * "Watch match" for someone who does not play in it, while a match is on a
+   * server (CS2: join its GOTV, a little behind the players). Renders nothing
+   * when there is nothing to watch.
+   */
+  spectatorWatch?: ComponentType<{ matchSlug: string }>;
+
+  /**
+   * Rows pinned to the top of the bell until the player acts on them (CS2: a
+   * skin to pick). Name them with `setPinnedNotices` so the badge
+   * counts them (until Mark all read). `onNavigate` closes the bell. They show under All and their
+   * own filter only.
+   */
+  pinnedNotices?: {
+    /** The bell filter they belong to: they show under All and this one. */
+    category: NoticeFilter;
+    Component: ComponentType<PinnedNoticesProps>;
+  };
+
+  /**
+   * On the page where a prize was earned (a finished match, the tournament's
+   * results): a row to pick it there (CS2: the skin to pick from this match
+   * or this tournament). Renders nothing when there is nothing to pick.
+   */
+  prizePickRow?: ComponentType<PrizePickRowProps>;
 
   /**
    * The admin shell, every page: a setting this module needs before its
@@ -1350,6 +1409,9 @@ export interface ClientGameIntegration {
   /** At the top of a finished tournament's results (CS2: the tournament reel). */
   tournamentResultsSection?: ComponentType<TournamentResultsSectionProps>;
 
+  /** At the bottom of a finished tournament's results (CS2: every player's reward, folded). */
+  tournamentResultsFooter?: ComponentType<TournamentResultsSectionProps>;
+
   /** Pages the integration owns. URLs come from `paths.ts`. */
   routes: IntegrationRoute[];
 
@@ -1361,6 +1423,13 @@ export interface ClientGameIntegration {
 }
 
 /** A game module's rules summary (`GameIntegration.tournamentRulesView`). */
+/** Manage's Prizes tab (`GameIntegration.tournamentPrizesManage`). */
+export interface TournamentPrizesManageProps {
+  tournament: { id: number; name: string; status: string; settings?: unknown };
+  /** Saves a patch of the tournament's settings (merged into them by the API). */
+  onSave: (settingsPatch: Record<string, unknown>) => Promise<void>;
+}
+
 /** A game module's prizes view (`GameIntegration.tournamentPrizesView`). */
 export interface TournamentPrizesViewProps {
   tournament: { id: number; status: string; settings?: unknown };

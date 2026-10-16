@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { Navigate, Outlet, useLocation, useOutletContext, useParams } from 'react-router-dom';
-import { Alert, Box, CircularProgress, Container, Typography } from '@mui/material';
+import {
+  Link as RouterLink,
+  Navigate,
+  Outlet,
+  useLocation,
+  useOutletContext,
+  useParams,
+} from 'react-router-dom';
+import { Alert, Box, Button, CircularProgress, Container, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { TournamentPageHeader } from '../components/tournament/overview/TournamentPageHeader';
+import { ArchivedNotice } from '../components/tournament/page/ArchivedNotice';
+import { TournamentRunState } from '../components/tournament/page/TournamentRunState';
 import { LicensedBadge } from '../components/tournament/page/LicensedBadge';
 import type { TournamentPageContext } from '../components/tournament/page/tournamentPageContext';
 import { usePublicTournamentOverview } from '../hooks/usePublicTournamentOverview';
@@ -11,7 +20,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../hooks/useSocket';
 import { useInstalledIntegrations } from '../integrations/registry';
 import { onSocketReconnect } from '../utils/socketResync';
-import { TOURNAMENT_TABS, tournamentTabPath, visibleTournamentTabs } from '../paths';
+import { TOURNAMENT_TABS, paths, tournamentTabPath, visibleTournamentTabs } from '../paths';
 import { pageTitle } from '../utils/pageTitle';
 
 /**
@@ -128,6 +137,15 @@ export default function TournamentPage() {
         <Typography variant="body2" color="text.secondary">
           {t('overviewPage.notFoundDescription')}
         </Typography>
+        <Button
+          component={RouterLink}
+          to={paths.tournamentList}
+          variant="outlined"
+          size="small"
+          sx={{ mt: 2 }}
+        >
+          {t('overviewPage.allTournaments')}
+        </Button>
       </Shell>
     );
   }
@@ -144,16 +162,19 @@ export default function TournamentPage() {
   return (
     <Box minHeight="100vh" bgcolor="transparent" data-testid="tournament-page">
       <TopNavBar />
-      <TournamentPageHeader
-        tournament={tournament}
-        tab={tab}
-        tabs={visibleTournamentTabs(tournament)}
-        moduleTabs={shownModuleTabs.map((m) => ({
-          path: m.path,
-          label: t(m.labelKey, { ns: m.id }),
-        }))}
-        showManage={isAuthenticated && !impersonation}
-      />
+      {/* Signing up has its own small header (the drafts): back, title, steps. */}
+      {tab !== 'signup' && (
+        <TournamentPageHeader
+          tournament={tournament}
+          tab={tab}
+          tabs={visibleTournamentTabs(tournament)}
+          moduleTabs={shownModuleTabs.map((m) => ({
+            path: m.path,
+            label: t(m.labelKey, { ns: m.id }),
+          }))}
+          showManage={isAuthenticated && !impersonation}
+        />
+      )}
       {/* Each module tab's probe: whether it has anything for this tournament. */}
       {moduleTabs.map(({ id, Component }) => (
         <Component
@@ -166,6 +187,13 @@ export default function TournamentPage() {
       ))}
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>
         <Box component="main" aria-labelledby="tournament-title">
+          {tournament.archived_at ? <ArchivedNotice tournamentId={tournament.id} /> : null}
+          {tab === 'overview' && tournament.status === 'in_progress' && (
+            <TournamentRunState
+              tournamentId={tournament.id}
+              isAdmin={isAuthenticated && !impersonation}
+            />
+          )}
           <Outlet context={context} />
         </Box>
         {/* Off unless an admin turns it on, and only for a valid license key. */}

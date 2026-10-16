@@ -12,7 +12,8 @@ import { DEFAULT_THEME_ID, THEME_COLORS, readStoredThemeId, type ThemeId } from 
 
 // Read the chosen theme synchronously, before the MUI theme below is built,
 // and merge its overrides over the Ember defaults. See theme/themes.ts.
-export const activeThemeId: ThemeId = typeof window === 'undefined' ? DEFAULT_THEME_ID : readStoredThemeId();
+export const activeThemeId: ThemeId =
+  typeof window === 'undefined' ? DEFAULT_THEME_ID : readStoredThemeId();
 export { setTheme } from './themes';
 
 const activeThemeColors = THEME_COLORS[activeThemeId];
@@ -56,7 +57,16 @@ export const tokens = {
     onBrand: '#ffffff',
   },
   radius: { sm: 8, md: 14, lg: 22, pill: 999 },
-  space: { xs: '0.5rem', sm: '0.75rem', md: '1rem', lg: '1.5rem', xl: '2rem', '2xl': '3rem', '3xl': '5rem', '4xl': '8rem' },
+  space: {
+    xs: '0.5rem',
+    sm: '0.75rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    '2xl': '3rem',
+    '3xl': '5rem',
+    '4xl': '8rem',
+  },
   ease: {
     out: 'cubic-bezier(0.22, 1, 0.36, 1)',
     in: 'cubic-bezier(0.55, 0, 1, 0.45)',
@@ -71,6 +81,36 @@ export const tokens = {
  * token), so surfaces use these instead: `lg` for panels and cards, `md` for
  * tiles and inset boxes, `sm` for small marks and chips, `pill` for pills.
  */
+/**
+ * The 16 team colours (each team stores its index, 0-15; api: teams.color_index).
+ * Same lightness and chroma, hues 22.5° apart, listed in the order new teams get
+ * them (each jumps across the wheel from the last). Dark tags read on all of them.
+ */
+export const teamColors: readonly string[] = [
+  '#f4928a',
+  '#3ecab7',
+  '#e492c9',
+  '#8bc376',
+  '#b7a1f5',
+  '#ccaf4e',
+  '#73b6fa',
+  '#ef996c',
+  '#31c7d5',
+  '#f090aa',
+  '#64c897',
+  '#d098e3',
+  '#afba5c',
+  '#97acfd',
+  '#e2a355',
+  '#4dc0ec',
+];
+
+/**
+ * The right edge of the navbar (MUI's lg container: 1200 px, 24 px inside), as a
+ * fixed element's `right`: toasts line up with it instead of the screen's edge.
+ */
+export const siteEdgeRight = 'max(24px, calc((100% - 1200px) / 2 + 24px))';
+
 export const radii = {
   sm: `${tokens.radius.sm}px`,
   md: `${tokens.radius.md}px`,
@@ -121,7 +161,13 @@ export const mono = { fontFamily: fontMono } as const;
  */
 export function withAlpha(hex: string, alpha: number): string {
   const h = hex.replace('#', '');
-  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const full =
+    h.length === 3
+      ? h
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : h;
   const n = parseInt(full, 16);
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
 }

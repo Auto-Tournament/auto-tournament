@@ -1,67 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { io } from 'socket.io-client';
-import { onSocketReconnect } from '../utils/socketResync';
-import {
-  Box,
-  Typography,
-  Alert,
-  Stack,
-  Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  LinearProgress,
-  Link,
-  TextField,
-  InputAdornment,
-  Button,
-  Menu,
-  MenuItem,
-  Grid,
-} from '@mui/material';
-import {
-  ArrowSquareOutIcon,
-  DownloadSimpleIcon,
-  MagnifyingGlassIcon,
-  TrophyIcon,
-  UserIcon,
-} from '@phosphor-icons/react';
+import { Alert, Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useGameAccounts } from '../hooks/useGameAccounts';
+import { GroupTables } from '../components/tournament/GroupTables';
 import { api } from '../utils/api';
-import { getPlayerPageUrl } from '../utils/playerLinks';
-import { PlayerAvatar } from '../components/player/PlayerAvatar';
-import { PlayerName } from '../components/player/PlayerName';
 import { TabEmpty, TabLoading } from '../components/tournament/page/TabState';
-import { TeamNameLink } from '../components/team/TeamNameLink';
-import type { Tournament } from '../types/tournament.types';
+import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
 import { useIntegrationFor } from '../integrations/registry';
-import { tokens, mono, fontMono, radii } from '../theme/tokens';
-import { Panel, SectionHead } from '../components/common/ui';
+import { usePublicBracket } from '../hooks/usePublicBracket';
+import { PlayersLeaderboard } from '../components/tournament/overview/PlayersLeaderboard';
+import { ChampionHero, SectionTitle, TeamLogo, panel } from '../components/tournament/ui/draftUi';
+import type { Match, Tournament } from '../types';
+import { tokens, mono, textSize } from '../theme/tokens';
 
-/** Right-aligned (numeric) body cells use the mono face. */
-const numericCellsSx = {
-  '& td.MuiTableCell-alignRight, & td.MuiTableCell-alignRight .MuiTypography-root': {
-    fontFamily: fontMono,
-  },
-} as const;
-
-interface PlayerLeaderboardEntry {
-  playerId: string;
-  name: string;
-  avatar?: string;
-  currentElo: number;
-  startingElo: number;
-  matchWins: number;
-  matchLosses: number;
-  winRate: number;
-  eloChange: number;
-  averageAdr?: number;
-}
+const { color } = tokens;
 
 interface TeamLeaderboardEntry {
   teamId: string;
@@ -71,7 +23,6 @@ interface TeamLeaderboardEntry {
   matchLosses: number;
   matchCount: number;
   winRate: number;
-  /** Swiss only: from the server standings, which also set the order. */
   rank?: number;
   buchholz?: number;
   roundDiff?: number;
@@ -79,199 +30,75 @@ interface TeamLeaderboardEntry {
 
 interface TournamentLeaderboardData {
   tournament: Pick<Tournament, 'id' | 'name' | 'status' | 'type' | 'game'>;
-  leaderboard: PlayerLeaderboardEntry[];
+  leaderboard: unknown[];
   teams?: TeamLeaderboardEntry[];
   currentRound: number;
   totalRounds: number;
-  roundStatus?: {
-    roundNumber: number;
-    totalMatches: number;
-    completedMatches: number;
-    pendingMatches: number;
-    isComplete: boolean;
-    map: string;
-  };
 }
 
+type Row = {
+  id: string;
+  name: string;
+  tag?: string | null;
+  wins: number;
+  losses: number;
+  roundsWon?: number;
+  roundsLost?: number;
+  diff?: number;
+  buchholz?: number;
+  form: Array<'W' | 'L'>;
+  out?: boolean;
+};
+
+/** Each team's last five results, oldest first. */
+function formOf(matches: Match[], teamId: string): Array<'W' | 'L'> {
+  return matches
+    .filter(
+      (m) =>
+        m.status === 'completed' &&
+        m.winner?.id &&
+        (m.team1?.id === teamId || m.team2?.id === teamId)
+    )
+    .sort((a, b) => (a.completedAt ?? 0) - (b.completedAt ?? 0) || a.round - b.round)
+    .slice(-5)
+    .map((m) => (m.winner?.id === teamId ? 'W' : 'L'));
+}
+
+/**
+ * The tournament page's Standings tab (the drafts' Standings board): the
+ * champions once it is over, the table with what the format ranks on and each
+ * team's form, the game's own numbers when it has any, and every player.
+ */
 export default function TournamentLeaderboard() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
-  // Steam wording only when a game here identifies players by Steam (CS2).
-  const steamContext = useGameAccounts().steam ? 'steam' : undefined;
+  const { viewerTeam } = useTournamentPage();
   const [data, setData] = useState<TournamentLeaderboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [exportMenuAnchor, setExportMenuAnchor] = useState<HTMLElement | null>(null);
-  // Before the early returns below: a hook, re-rendering when a code module arrives.
+  const bracket = usePublicBracket(id);
   const gameIntegration = useIntegrationFor(data?.tournament);
 
-  // The page title is the tournament page's (`TournamentPage`), like the header.
-  const loadStandings = async (showLoading = true) => {
-    if (!id) return;
-
-    try {
-      if (showLoading) {
-        setLoading(true);
-      }
-      setError('');
-
-      const response = await api.get<TournamentLeaderboardData>(
-        `/api/tournament/${id}/leaderboard`
-      );
-
-      if (response) {
-        setData(response);
-      }
-    } catch (err: unknown) {
-      // Treat 404 / "not found" as a normal empty state instead of a hard error,
-      // so a fresh install without a tournament doesn't look broken.
-      const message = err instanceof Error ? err.message : typeof err === 'string' ? err : '';
-      const isNotFound =
-        typeof message === 'string' &&
-        (message.includes('404') || message.toLowerCase().includes('not found'));
-
-      if (isNotFound) {
-        setData(null);
-        setError('');
-      } else {
-        setError(t('leaderboardPage.loadError'));
-        console.error(err);
-      }
-    } finally {
-      if (showLoading) {
-        setLoading(false);
-      }
-    }
-  };
-
-  // Initial load; after that the socket below keeps it current (and re-reads after a reconnect).
   useEffect(() => {
     if (!id) return;
-    void loadStandings(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let live = true;
+    api
+      .get<TournamentLeaderboardData>(`/api/tournament/${id}/leaderboard`)
+      .then((res) => live && setData(res ?? null))
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : '';
+        if (!live) return;
+        if (message.includes('404') || message.toLowerCase().includes('not found')) setData(null);
+        else setError(t('leaderboardPage.loadError'));
+      })
+      .finally(() => live && setLoading(false));
+    return () => {
+      live = false;
+    };
   }, [id, t]);
 
-  // WebSocket-based realtime updates
-  useEffect(() => {
-    if (!id) return;
-
-    const socket = io();
-
-    const refreshLeaderboardSilently = () => {
-      void loadStandings(false);
-    };
-
-    const handleMatchUpdate = (payload: Record<string, unknown>) => {
-      if (!payload) return;
-      const status =
-        (payload.status as string | undefined) ??
-        (payload as { match_status?: string }).match_status ??
-        undefined;
-
-      if (status === 'completed') {
-        refreshLeaderboardSilently();
-      }
-    };
-
-    const tournamentActionsToRefresh = new Set([
-      'tournament_reset',
-      'tournament_restarted',
-      'tournament_updated',
-      'tournament_completed',
-      'tournament_started',
-    ]);
-
-    const handleTournamentUpdate = (event: Record<string, unknown> | undefined) => {
-      if (!event) return;
-      const action = event.action as string | undefined;
-      if (action && tournamentActionsToRefresh.has(action)) {
-        refreshLeaderboardSilently();
-      }
-    };
-
-    const bracketActionsToRefresh = new Set([
-      'round_advanced',
-      'match_loaded',
-      'match_restarted',
-      'server_assigned',
-      'match_allocated',
-      'bracket_regenerated',
-    ]);
-
-    const handleBracketUpdate = (event: Record<string, unknown> | undefined) => {
-      if (!event) return;
-      const action = event.action as string | undefined;
-      if (!action || bracketActionsToRefresh.has(action)) {
-        refreshLeaderboardSilently();
-      }
-    };
-
-    socket.on('match:update', handleMatchUpdate);
-    socket.on('tournament:update', handleTournamentUpdate);
-    socket.on('bracket:update', handleBracketUpdate);
-    const offReconnect = onSocketReconnect(socket, refreshLeaderboardSilently);
-
-    return () => {
-      offReconnect();
-      socket.off('match:update', handleMatchUpdate);
-      socket.off('tournament:update', handleTournamentUpdate);
-      socket.off('bracket:update', handleBracketUpdate);
-      socket.close();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
-
-  const handlePlayerClick = (playerId: string) => {
-    window.open(`/player/${playerId}`, '_blank');
-  };
-
-  // Filter leaderboard based on search query - must be before early returns
-  const filteredLeaderboard = useMemo(() => {
-    if (!data || !searchQuery.trim()) {
-      return data?.leaderboard || [];
-    }
-    const query = searchQuery.toLowerCase();
-    return (data.leaderboard || []).filter(
-      (player) =>
-        player.name.toLowerCase().includes(query) || player.playerId.toLowerCase().includes(query)
-    );
-  }, [data, searchQuery]);
-
-  // Derive top performers (overall tournament) for quick-glance summary
-  const topPerformers = useMemo(() => {
-    if (!data || !data.leaderboard || data.leaderboard.length === 0) return null;
-
-    const lb = data.leaderboard;
-
-    // Top by wins (then Skill Rating)
-    const byWins = [...lb]
-      .sort((a, b) => {
-        if (b.matchWins !== a.matchWins) return b.matchWins - a.matchWins;
-        return (b.currentElo ?? 0) - (a.currentElo ?? 0);
-      })
-      .slice(0, 3);
-
-    // Top by ADR (only players with ADR)
-    const withAdr = lb.filter((p) => typeof p.averageAdr === 'number');
-    const byAdr = withAdr
-      .slice()
-      .sort((a, b) => (b.averageAdr ?? 0) - (a.averageAdr ?? 0))
-      .slice(0, 3);
-
-    return { byWins, byAdr };
-  }, [data]);
-
-  if (loading) {
-    return <TabLoading label={t('overviewPage.loading')} />;
-  }
-
-  if (error) {
-    return <Alert severity="error">{error}</Alert>;
-  }
-
-  // The tournament page says "not found" itself; no data here means the
-  // standings could not be worked out yet.
+  if (loading || bracket.loading) return <TabLoading label={t('overviewPage.loading')} />;
+  if (error) return <Alert severity="error">{error}</Alert>;
   if (!data) {
     return (
       <Box data-testid="public-leaderboard-page">
@@ -283,666 +110,302 @@ export default function TournamentLeaderboard() {
     );
   }
 
-  const { tournament, leaderboard, currentRound, totalRounds, roundStatus, teams } = data;
-  // ADR is a thing the game measured. A game that measures nothing has no ADR
-  // column, no "top by ADR" card and no ADR in the export — not a column of
-  // N/A, which reads as data that went missing (3.0 phase D, PR D10). What it
-  // has instead is the tournament's own custom fields, which the module that
-  // owns it renders.
+  const tournament = { ...data.tournament, ...(bracket.tournament ?? {}) } as Tournament;
   const showGameStats = gameIntegration.capabilities.playerStats;
   const GameStatsView = gameIntegration.tournamentStatsView;
-  // Swiss team standings come ordered by the server (wins, losses, Buchholz, RD).
-  const isSwissStandings = Boolean(teams?.some((team) => team.buchholz !== undefined));
+  const isShuffle = tournament.type === 'shuffle';
+  const matches = bracket.matches;
+  const teamsById = new Map((tournament.teams ?? []).map((tm) => [tm.id, tm]));
 
-  const tournamentTypeKeyPrefix = `tournament.typeSelector.types.${tournament.type}`;
+  let rows: Row[] = [];
+  let note = '';
+  let intro = '';
+  if (!isShuffle) {
+    if (tournament.type === 'round_robin' && bracket.roundRobinStandings.length) {
+      rows = bracket.roundRobinStandings.map((s) => ({
+        id: s.teamId,
+        name: teamsById.get(s.teamId)?.name ?? s.teamId,
+        tag: teamsById.get(s.teamId)?.tag,
+        wins: s.wins,
+        losses: s.losses,
+        roundsWon: s.roundsWon,
+        roundsLost: s.roundsWon - s.roundDiff,
+        diff: s.roundDiff,
+        form: formOf(matches, s.teamId),
+      }));
+      intro = t('standingsTab.intro.round_robin');
+      note = t('liveOverview.ties.round_robin');
+    } else if (tournament.type === 'swiss' && bracket.swissStandings.length) {
+      rows = bracket.swissStandings.map((s) => ({
+        id: s.teamId,
+        name: teamsById.get(s.teamId)?.name ?? s.teamId,
+        tag: teamsById.get(s.teamId)?.tag,
+        wins: s.wins,
+        losses: s.losses,
+        diff: s.roundDiff,
+        buchholz: s.buchholz,
+        form: formOf(matches, s.teamId),
+      }));
+      intro = t('standingsTab.intro.swiss');
+      note = t('liveOverview.ties.swiss');
+    } else {
+      const lossesOut = tournament.type === 'double_elimination' ? 2 : 1;
+      rows = (data.teams ?? [])
+        .map((tm) => ({
+          id: tm.teamId,
+          name: tm.name,
+          tag: tm.tag,
+          wins: tm.matchWins,
+          losses: tm.matchLosses,
+          form: formOf(matches, tm.teamId),
+          out: tm.matchLosses >= lossesOut && tournament.winner?.id !== tm.teamId,
+        }))
+        .sort((a, b) => Number(a.out) - Number(b.out) || b.wins - a.wins || a.losses - b.losses);
+      intro = t(
+        `standingsTab.intro.${tournament.type === 'double_elimination' ? 'double' : 'single'}`
+      );
+      note = t('liveOverview.ties.elim');
+    }
+  }
 
-  const getTranslationWithFallback = (key: string, fallback: string) => {
-    const value = t(key);
-    return value === key ? fallback : value;
+  // The final: the champion's last match, for the banner's line and picture.
+  const champion = tournament.status === 'completed' ? tournament.winner : null;
+  const final = champion
+    ? [...matches]
+        .filter((m) => m.status === 'completed' && m.winner?.id === champion.id)
+        .sort((a, b) => b.round - a.round || (b.completedAt ?? 0) - (a.completedAt ?? 0))[0]
+    : undefined;
+  const finalMap =
+    final?.mapResults?.[final.mapResults.length - 1]?.mapName ?? final?.maps?.[0] ?? null;
+  const finalLine = final
+    ? [
+        `${t('standingsTab.vs')} ${(final.team1?.id === champion?.id ? final.team2?.name : final.team1?.name) ?? ''}`,
+        ...(final.mapResults ?? []).map(
+          (r) =>
+            `${r.mapName ?? ''} ${Math.max(r.team1Score, r.team2Score)}–${Math.min(r.team1Score, r.team2Score)}`
+        ),
+      ].join(' · ')
+    : undefined;
+
+  const hasRounds = rows.some((r) => r.roundsWon !== undefined);
+  const hasDiff = rows.some((r) => r.diff !== undefined);
+  const hasBuchholz = rows.some((r) => r.buchholz !== undefined);
+  const th = {
+    py: 1,
+    px: 1,
+    fontSize: textSize.xs,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.06em',
+    color: color.muted,
+    fontWeight: 600,
+    textAlign: 'right' as const,
   };
-
-  const tournamentTypeLabel = getTranslationWithFallback(
-    `${tournamentTypeKeyPrefix}.label`,
-    tournament.type
-  );
-
-  const tournamentTypeDescription = (() => {
-    const key = `${tournamentTypeKeyPrefix}.description`;
-    const value = t(key);
-    return value === key ? '' : value;
-  })();
-
-  // Determine tournament status
-  const isComplete = tournament.status === 'completed';
-  // Backend uses 'setup' | 'in_progress' | 'completed' for tournaments
-  const isActive = tournament.status === 'in_progress';
-
-  // Export functions
-  const handleExportClick = (event: React.MouseEvent<HTMLElement>) => {
-    setExportMenuAnchor(event.currentTarget);
+  const td = {
+    py: 1.5,
+    px: 1,
+    borderTop: `1px solid ${color.rule}`,
+    textAlign: 'right' as const,
+    ...mono,
   };
-
-  const handleExportClose = () => {
-    setExportMenuAnchor(null);
-  };
-
-  const exportToCSV = () => {
-    const headers = [
-      t('leaderboardPage.rank'),
-      t('leaderboardPage.player'),
-      t('leaderboardPage.wins'),
-      t('leaderboardPage.losses'),
-      t('leaderboardPage.winRate'),
-      t('leaderboardPage.skillRating'),
-      t('leaderboardPage.ratingChange'),
-      ...(showGameStats ? [t('leaderboardPage.avgAdr')] : []),
-    ];
-    const rows = filteredLeaderboard.map((player, index) => [
-      index + 1,
-      player.name,
-      player.matchWins,
-      player.matchLosses,
-      `${(player.winRate * 100).toFixed(1)}%`,
-      player.currentElo,
-      player.eloChange > 0 ? `+${player.eloChange}` : player.eloChange.toString(),
-      ...(showGameStats ? [player.averageAdr ? player.averageAdr.toFixed(1) : 'N/A'] : []),
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
-    ].join('\n');
-
-    // eslint-disable-next-line no-undef
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    // Preserve non-Latin characters in filenames; only strip reserved filename symbols
-    // and ASCII control characters (0x00-0x1F) without using a control-char regex.
-    const withoutReserved = tournament.name.replace(/[<>:"/\\|?*]/g, '');
-    const safeName = Array.from(withoutReserved)
-      .filter((ch) => {
-        const code = ch.charCodeAt(0);
-        return code < 0x00 || code > 0x1f;
-      })
-      .join('');
-    link.setAttribute('download', `${safeName || 'tournament'}_leaderboard.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    handleExportClose();
-  };
-
-  const exportToJSON = () => {
-    const jsonData = {
-      tournament: {
-        name: tournament.name,
-        status: tournament.status,
-        currentRound,
-        totalRounds,
-      },
-      exportedAt: new Date().toISOString(),
-      leaderboard: filteredLeaderboard.map((player, index) => ({
-        rank: index + 1,
-        playerId: player.playerId,
-        name: player.name,
-        wins: player.matchWins,
-        losses: player.matchLosses,
-        winRate: player.winRate,
-        elo: player.currentElo,
-        eloChange: player.eloChange,
-        ...(showGameStats ? { averageAdr: player.averageAdr } : {}),
-      })),
-    };
-
-    // eslint-disable-next-line no-undef
-    const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    // Preserve non-Latin characters in filenames; only strip reserved filename symbols
-    // and ASCII control characters (0x00-0x1F) without using a control-char regex.
-    const withoutReserved = tournament.name.replace(/[<>:"/\\|?*]/g, '');
-    const safeName = Array.from(withoutReserved)
-      .filter((ch) => {
-        const code = ch.charCodeAt(0);
-        return code < 0x00 || code > 0x1f;
-      })
-      .join('');
-    link.setAttribute('download', `${safeName || 'tournament'}_leaderboard.json`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    handleExportClose();
-  };
+  const opt = { display: { xs: 'none', sm: 'table-cell' } } as const;
 
   return (
-    // The Standings tab of the tournament page, which owns the header and tabs.
-    <Box data-testid="public-leaderboard-page">
-      <Stack spacing={3}>
-        <Box display="flex" gap={1} flexWrap="wrap">
-          <Chip label={tournamentTypeLabel} size="small" variant="outlined" />
-          {roundStatus && (
-            <Chip
-              label={t('leaderboardPage.roundOf', {
-                current: roundStatus.roundNumber,
-                total: totalRounds,
-              })}
-              size="small"
-              variant="outlined"
-            />
-          )}
+    <Box
+      data-testid="public-leaderboard-page"
+      sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
+      {champion && (
+        <ChampionHero
+          label={t('standingsTab.champions')}
+          team={{ id: champion.id, name: champion.name, tag: champion.tag }}
+          line={finalLine}
+          map={finalMap}
+        />
+      )}
+
+      {tournament.type === 'groups' && bracket.groupStandings.length > 0 && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Typography sx={{ color: color.ink2, fontSize: '0.9375rem' }}>
+            {t('standingsTab.intro.groups')}
+          </Typography>
+          <GroupTables
+            groups={bracket.groupStandings}
+            teams={teamsById}
+            advancePerGroup={
+              Number(
+                (tournament.settings as { advancePerGroup?: number } | undefined)?.advancePerGroup
+              ) === 2
+                ? 2
+                : 1
+            }
+            viewerTeamId={viewerTeam?.id ?? null}
+          />
+          <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
+            {t('liveOverview.ties.groups')}
+          </Typography>
         </Box>
+      )}
 
-        {(topPerformers || (roundStatus && isActive) || isComplete) && (
-          <Panel sx={{ p: 3 }}>
-            {/* Quick-glance top performers */}
-            {topPerformers && (
-              <Box mb={roundStatus && isActive ? 3 : 0}>
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, md: showGameStats ? 6 : 12 }}>
-                    <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                      {t('leaderboardPage.topByWins')}
-                    </Typography>
-                    {topPerformers.byWins.length === 0 ? (
-                      <Typography variant="body2" color="text.secondary">
-                        {t('leaderboardPage.noMatchesYet')}
-                      </Typography>
-                    ) : (
-                      <Stack spacing={0.5}>
-                        {topPerformers.byWins.map((player, index) => (
-                          <Box
-                            key={player.playerId}
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                          >
-                            <Typography
-                              variant="body2"
-                              component="a"
-                              href={getPlayerPageUrl(player.playerId)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              sx={{
-                                textDecoration: 'none',
-                                cursor: 'pointer',
-                                color: 'text.primary',
-                                '&:hover': { textDecoration: 'underline' },
-                              }}
-                            >
-                              {index + 1}.{' '}
-                              <PlayerName
-                                name={player.name}
-                                // Leaderboard entries currently don't expose isAdmin; this can be extended later.
-                                variant="body2"
-                                sx={{ display: 'inline' }}
-                              />
-                            </Typography>
-                            <Chip
-                              label={`${player.matchWins}${t('leaderboardPage.winsShort')} / ${player.matchLosses}${t('leaderboardPage.lossesShort')}`}
-                              size="small"
-                              sx={index === 0 ? { color: tokens.color.accent } : undefined}
-                            />
-                          </Box>
-                        ))}
-                      </Stack>
-                    )}
-                  </Grid>
-
-                  {showGameStats && (
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                        {t('leaderboardPage.topByAdr')}
-                      </Typography>
-                      {topPerformers.byAdr.length === 0 ? (
-                        <Typography variant="body2" color="text.secondary">
-                          {t('leaderboardPage.adrDataLater')}
-                        </Typography>
-                      ) : (
-                        <Stack spacing={0.5}>
-                          {topPerformers.byAdr.map((player, index) => (
-                            <Box
-                              key={player.playerId}
-                              display="flex"
-                              justifyContent="space-between"
-                              alignItems="center"
-                            >
-                              <Typography
-                                variant="body2"
-                                component="a"
-                                href={getPlayerPageUrl(player.playerId)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                sx={{
-                                  textDecoration: 'none',
-                                  cursor: 'pointer',
-                                  color: 'text.primary',
-                                  '&:hover': { textDecoration: 'underline' },
-                                }}
-                              >
-                                {index + 1}.{' '}
-                                <PlayerName
-                                  name={player.name}
-                                  variant="body2"
-                                  sx={{ display: 'inline' }}
-                                />
-                              </Typography>
-                              <Chip
-                                label={`${player.averageAdr?.toFixed(1) ?? 'N/A'} ADR`}
-                                size="small"
-                                sx={index === 0 ? { color: tokens.color.accent } : undefined}
-                              />
-                            </Box>
-                          ))}
-                        </Stack>
-                      )}
-                    </Grid>
-                  )}
-                </Grid>
-              </Box>
-            )}
-
-            {/* Round Progress */}
-            {roundStatus && isActive && (
-              <Box>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('leaderboardPage.roundMap', {
-                      round: roundStatus.roundNumber,
-                      map: roundStatus.map,
-                    })}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('leaderboardPage.matchesCompleted', {
-                      completed: roundStatus.completedMatches,
-                      total: roundStatus.totalMatches,
-                    })}
-                  </Typography>
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={(roundStatus.completedMatches / roundStatus.totalMatches) * 100}
-                  sx={{ height: 8, borderRadius: radii.sm }}
-                />
-              </Box>
-            )}
-
-            {isComplete && (
-              <Alert severity="success" sx={{ mt: 2 }}>
-                {t('leaderboardPage.tournamentCompletedAlert')}
-              </Alert>
-            )}
-          </Panel>
-        )}
-
-        {/* The game's own statistics, when the page's CS2 columns are not
-              them: manual reporting lists the tournament's custom fields. */}
-        {GameStatsView && <GameStatsView tournamentId={tournament.id} />}
-
-        {/* Team Standings (for standard tournaments) */}
-        {teams && teams.length > 0 && (
-          <Box component="section" aria-labelledby="leaderboard-team-standings">
-            <SectionHead
-              id="leaderboard-team-standings"
-              title={t('leaderboardPage.teamStandings')}
-              action={
-                <Chip
-                  label={t('leaderboardPage.teamsCount', { count: teams.length })}
-                  size="small"
-                />
-              }
-            />
-            <Panel sx={{ p: { xs: 1, sm: 2 } }}>
-              <TableContainer>
-                <Table size="small" sx={numericCellsSx}>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: 600, width: 60 }}>#</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>{t('leaderboardPage.team')}</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600 }}>
-                        {t('leaderboardPage.wins')}
-                      </TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600 }}>
-                        {t('leaderboardPage.losses')}
-                      </TableCell>
-                      {isSwissStandings && (
-                        <>
-                          <TableCell align="right" sx={{ fontWeight: 600 }}>
-                            {t('leaderboardPage.buchholz')}
-                          </TableCell>
-                          <TableCell align="right" sx={{ fontWeight: 600 }}>
-                            {t('leaderboardPage.roundDiff')}
-                          </TableCell>
-                        </>
-                      )}
-                      <TableCell align="right" sx={{ fontWeight: 600 }}>
-                        {t('leaderboardPage.matches')}
-                      </TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600 }}>
-                        {t('leaderboardPage.winRate')}
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {teams.map((team, index) => (
-                      <TableRow key={team.teamId}>
-                        <TableCell>
-                          <Typography
-                            variant="body1"
-                            fontWeight={index === 0 ? 700 : 600}
-                            color={index === 0 ? 'text.primary' : 'text.secondary'}
-                            sx={mono}
-                          >
-                            {index + 1}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <TeamNameLink
-                            teamId={team.teamId}
-                            name={team.name}
-                            tag={team.tag ?? undefined}
-                            showTag
-                            variant="body1"
-                            sx={{ fontWeight: 600 }}
-                          />
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body1" fontWeight={600} color="success.main">
-                            {team.matchWins}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body1" color="error.main">
-                            {team.matchLosses}
-                          </Typography>
-                        </TableCell>
-                        {isSwissStandings && (
-                          <>
-                            <TableCell align="right">{team.buchholz ?? 0}</TableCell>
-                            <TableCell align="right">
-                              {(team.roundDiff ?? 0) > 0 ? '+' : ''}
-                              {team.roundDiff ?? 0}
-                            </TableCell>
-                          </>
-                        )}
-                        <TableCell align="right">{team.matchCount}</TableCell>
-                        <TableCell align="right">
-                          <Chip
-                            label={`${(team.winRate * 100).toFixed(1)}%`}
-                            size="small"
-                            color={team.winRate >= 0.5 ? 'success' : 'default'}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Panel>
-          </Box>
-        )}
-
-        {/* Player Leaderboard */}
+      {!isShuffle && tournament.type !== 'groups' && rows.length > 0 && (
         <Box
           component="section"
-          data-testid="public-leaderboard"
-          aria-labelledby="leaderboard-players"
+          aria-labelledby="team-standings"
+          data-testid="team-standings"
+          sx={panel}
         >
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="baseline"
-            mb={2}
-            flexWrap="wrap"
-            gap={2}
-          >
-            <Box display="flex" alignItems="center" gap={1}>
-              <Typography
-                id="leaderboard-players"
-                variant="h5"
-                component="h2"
-                sx={{ letterSpacing: '-0.025em', lineHeight: 1.1 }}
-              >
-                {t('leaderboardPage.leaderboardTitle')}
-              </Typography>
-              <Chip
-                label={t('leaderboardPage.playersFiltered', {
-                  filtered: filteredLeaderboard.length,
-                  total: leaderboard.length,
-                })}
-                size="small"
-              />
-            </Box>
-            <Box display="flex" gap={1} flexWrap="wrap">
-              <TextField
-                size="small"
-                placeholder={t('leaderboardPage.searchPlaceholder', { context: steamContext })}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <MagnifyingGlassIcon size={20} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ minWidth: 200 }}
-              />
-              <Button
-                variant="outlined"
-                startIcon={<DownloadSimpleIcon />}
-                onClick={handleExportClick}
-              >
-                {t('leaderboardPage.export')}
-              </Button>
-              <Menu
-                anchorEl={exportMenuAnchor}
-                open={Boolean(exportMenuAnchor)}
-                onClose={handleExportClose}
-              >
-                <MenuItem onClick={exportToCSV}>{t('leaderboardPage.exportCsv')}</MenuItem>
-                <MenuItem onClick={exportToJSON}>{t('leaderboardPage.exportJson')}</MenuItem>
-              </Menu>
-            </Box>
-          </Box>
-
-          {leaderboard.length === 0 ? (
-            <Box textAlign="center" py={4}>
-              <Box component={UserIcon} size={48} sx={{ color: 'text.secondary', mb: 2 }} />
-              <Typography variant="body1" color="text.secondary">
-                {t('leaderboardPage.noPlayersRegistered')}
-              </Typography>
-            </Box>
-          ) : filteredLeaderboard.length === 0 ? (
-            <Box textAlign="center" py={4}>
-              <Box
-                component={MagnifyingGlassIcon}
-                size={48}
-                sx={{ color: 'text.secondary', mb: 2 }}
-              />
-              <Typography variant="body1" color="text.secondary">
-                {t('leaderboardPage.searchNoMatch', { query: searchQuery })}
-              </Typography>
-            </Box>
-          ) : (
-            <TableContainer component={Panel} sx={{ p: { xs: 1, sm: 2 } }}>
-              <Table sx={numericCellsSx}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 600, width: 60 }}>#</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>{t('leaderboardPage.player')}</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      {t('leaderboardPage.wins')}
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      {t('leaderboardPage.losses')}
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      {t('leaderboardPage.winRate')}
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      {t('leaderboardPage.skillRating')}
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      {t('leaderboardPage.ratingChange')}
-                    </TableCell>
-                    {showGameStats && leaderboard.some((p) => p.averageAdr) && (
-                      <TableCell align="right" sx={{ fontWeight: 600 }}>
-                        {t('leaderboardPage.avgAdr')}
-                      </TableCell>
-                    )}
-                    <TableCell sx={{ width: 100 }}></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredLeaderboard.map((player, _index) => {
-                    // Calculate actual rank in full leaderboard
-                    const actualRank =
-                      leaderboard.findIndex((p) => p.playerId === player.playerId) + 1;
-                    return (
-                      <TableRow
-                        key={player.playerId}
+          <SectionTitle
+            id="team-standings"
+            title={t('liveOverview.standings')}
+            note={t('leaderboardPage.teamsCount', { count: rows.length })}
+          />
+          <Typography sx={{ color: color.ink2, fontSize: '0.9375rem' }}>{intro}</Typography>
+          <Box sx={{ overflowX: 'auto' }}>
+            <Box
+              component="table"
+              sx={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9375rem' }}
+            >
+              <thead>
+                <tr>
+                  <Box component="th" scope="col" sx={{ ...th, textAlign: 'left' }}>
+                    #
+                  </Box>
+                  <Box component="th" scope="col" sx={{ ...th, textAlign: 'left' }}>
+                    {t('leaderboardPage.team')}
+                  </Box>
+                  <Box component="th" scope="col" sx={th}>
+                    {t('liveOverview.wl')}
+                  </Box>
+                  {hasRounds && (
+                    <Box component="th" scope="col" sx={{ ...th, ...opt }}>
+                      {t('standingsTab.rounds')}
+                    </Box>
+                  )}
+                  {hasDiff && (
+                    <Box component="th" scope="col" sx={th}>
+                      {t('liveOverview.rounds')}
+                    </Box>
+                  )}
+                  {hasBuchholz && (
+                    <Box component="th" scope="col" sx={{ ...th, ...opt }}>
+                      {t('leaderboardPage.buchholz')}
+                    </Box>
+                  )}
+                  <Box component="th" scope="col" sx={{ ...th, ...opt }}>
+                    {t('standingsTab.form')}
+                  </Box>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => {
+                  const me = r.id === viewerTeam?.id;
+                  return (
+                    <Box
+                      component="tr"
+                      key={r.id}
+                      sx={{ bgcolor: me ? color.paper3 : 'transparent', opacity: r.out ? 0.55 : 1 }}
+                    >
+                      <Box
+                        component="td"
                         sx={{
-                          '&:hover': { bgcolor: 'action.hover' },
-                          ...(actualRank <= 3 && {
-                            bgcolor: 'background.surface2',
-                          }),
+                          ...td,
+                          textAlign: 'left',
+                          color: i === 0 ? color.medalGold : color.muted,
+                          fontWeight: 600,
                         }}
                       >
-                        <TableCell>
-                          <Box display="flex" alignItems="center" gap={1}>
-                            {actualRank === 1 && (
-                              <Box
-                                component={TrophyIcon}
-                                size={20}
-                                sx={{ color: tokens.color.medalGold }}
-                              />
-                            )}
-                            {actualRank === 2 && (
-                              <Box
-                                component={TrophyIcon}
-                                size={20}
-                                sx={{ color: tokens.color.medalSilver }}
-                              />
-                            )}
-                            {actualRank === 3 && (
-                              <Box
-                                component={TrophyIcon}
-                                size={20}
-                                sx={{ color: tokens.color.medalBronze }}
-                              />
-                            )}
-                            <Typography
-                              variant="body1"
-                              fontWeight={actualRank <= 3 ? 700 : 600}
-                              color={actualRank <= 3 ? 'text.primary' : 'text.secondary'}
-                              sx={mono}
+                        {i + 1}
+                      </Box>
+                      <Box
+                        component="td"
+                        sx={{
+                          ...td,
+                          textAlign: 'left',
+                          fontFamily: 'inherit',
+                          fontWeight: me || i === 0 ? 700 : 500,
+                        }}
+                      >
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                          <TeamLogo team={{ id: r.id, name: r.name, tag: r.tag }} size="sm" />
+                          {r.name}
+                          {champion?.id === r.id && (
+                            <Box
+                              component="span"
+                              sx={{
+                                fontSize: textSize.xs,
+                                color: color.medalGold,
+                                fontWeight: 700,
+                              }}
                             >
-                              {actualRank}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Box display="flex" alignItems="center" gap={2}>
-                            <PlayerAvatar
-                              id={player.playerId}
-                              name={player.name}
-                              avatarUrl={player.avatar}
-                              size={40}
-                            />
-                            <Typography variant="body1" fontWeight={600}>
-                              {player.name}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body1" fontWeight={600} color="success.main">
-                            {player.matchWins}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body1" color="error.main">
-                            {player.matchLosses}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Chip
-                            label={`${(player.winRate * 100).toFixed(1)}%`}
-                            size="small"
-                            color={player.winRate >= 0.5 ? 'success' : 'default'}
-                          />
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body1" fontWeight={600}>
-                            {player.currentElo}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          {player.eloChange !== 0 && (
-                            <Chip
-                              label={`${player.eloChange > 0 ? '+' : ''}${player.eloChange}`}
-                              size="small"
-                              color={player.eloChange > 0 ? 'success' : 'error'}
-                            />
+                              {t('standingsTab.championBadge')}
+                            </Box>
                           )}
-                        </TableCell>
-                        {showGameStats && leaderboard.some((p) => p.averageAdr) && (
-                          <TableCell align="right">
-                            {player.averageAdr ? (
-                              <Typography variant="body2">
-                                {player.averageAdr.toFixed(1)}
-                              </Typography>
-                            ) : (
-                              <Typography variant="body2" color="text.secondary">
-                                N/A
-                              </Typography>
-                            )}
-                          </TableCell>
-                        )}
-                        <TableCell>
-                          <Link
-                            component="button"
-                            variant="body2"
-                            onClick={() => handlePlayerClick(player.playerId)}
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 0.5,
-                              cursor: 'pointer',
-                            }}
+                        </Box>
+                      </Box>
+                      <Box component="td" sx={td}>
+                        {r.wins}–{r.losses}
+                      </Box>
+                      {hasRounds && (
+                        <Box component="td" sx={{ ...td, ...opt, color: color.ink2 }}>
+                          {r.roundsWon ?? '—'}–{r.roundsLost ?? '—'}
+                        </Box>
+                      )}
+                      {hasDiff && (
+                        <Box
+                          component="td"
+                          sx={{
+                            ...td,
+                            color:
+                              (r.diff ?? 0) > 0
+                                ? color.live
+                                : (r.diff ?? 0) < 0
+                                  ? color.ban
+                                  : color.ink2,
+                          }}
+                        >
+                          {(r.diff ?? 0) > 0 ? '+' : (r.diff ?? 0) < 0 ? '−' : ''}
+                          {Math.abs(r.diff ?? 0)}
+                        </Box>
+                      )}
+                      {hasBuchholz && (
+                        <Box component="td" sx={{ ...td, ...opt }}>
+                          {r.buchholz}
+                        </Box>
+                      )}
+                      <Box
+                        component="td"
+                        sx={{ ...td, ...opt, letterSpacing: '0.15em' }}
+                        aria-label={r.form.join(' ')}
+                      >
+                        {r.form.map((f, k) => (
+                          <Box
+                            component="span"
+                            key={k}
+                            sx={{ color: f === 'W' ? color.live : color.muted }}
                           >
-                            View
-                            <ArrowSquareOutIcon size={20} />
-                          </Link>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
+                            {f === 'W' ? '●' : '○'}
+                          </Box>
+                        ))}
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </tbody>
+            </Box>
+          </Box>
+          <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>{note}</Typography>
         </Box>
+      )}
 
-        {/* About the format */}
-        <Panel sx={{ p: 3 }}>
-          <Typography variant="h6" component="h2" fontWeight={600} gutterBottom>
-            {tournamentTypeLabel}
-          </Typography>
-          {tournamentTypeDescription && (
-            <Typography variant="body2" color="text.secondary" paragraph>
-              {tournamentTypeDescription}
-            </Typography>
-          )}
-          <Typography variant="body2" color="text.secondary">
-            Click on any player&apos;s name or the &quot;View&quot; link to see their detailed
-            profile, match history, and Skill Rating progression.
-          </Typography>
-        </Panel>
-      </Stack>
+      {GameStatsView && <GameStatsView tournamentId={tournament.id} />}
+
+      <PlayersLeaderboard
+        tournamentId={tournament.id}
+        viewerTeamId={viewerTeam?.id ?? null}
+        gameStats={showGameStats}
+        sortBy={isShuffle ? 'wins' : 'rating'}
+        testId="public-leaderboard"
+        title={isShuffle ? t('liveOverview.standings') : undefined}
+      />
     </Box>
   );
 }

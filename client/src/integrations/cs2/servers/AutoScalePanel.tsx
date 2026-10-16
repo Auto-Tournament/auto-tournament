@@ -6,22 +6,15 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import {
-  Box,
-  Chip,
-  FormControlLabel,
-  MenuItem,
-  Stack,
-  Switch,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Box, Chip, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import {
   api,
   apiErrorMessage,
   Panel,
   useModuleTranslation,
   useSnackbar,
+  fmtTime,
+  SwitchRow,
 } from '../../../module-sdk';
 import { ServerSection } from './ServerSection';
 import { useTopic } from '../../../module-sdk';
@@ -143,18 +136,14 @@ export default function AutoScalePanel() {
       <Panel sx={{ p: 3 }}>
         <Stack spacing={2}>
           <Box>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={s.enabled}
-                  onChange={(e) => void save({ enabled: e.target.checked })}
-                  disabled={busy}
-                  data-testid="autoscale-enabled-switch"
-                />
-              }
+            <SwitchRow
               label={t('autoscale.enabled', {
                 defaultValue: 'Start and stop servers automatically',
               })}
+              checked={s.enabled}
+              onChange={(e) => void save({ enabled: e.target.checked })}
+              disabled={busy}
+              data-testid="autoscale-enabled-switch"
             />
             <Typography variant="body2" color="text.secondary">
               {t('autoscale.help', {
@@ -271,7 +260,7 @@ export default function AutoScalePanel() {
                     color={e.outcome === 'failed' || e.outcome === 'refused' ? 'error' : undefined}
                   >
                     <Box component="span" color="text.secondary" mr={1}>
-                      {new Date(e.at * 1000).toLocaleTimeString()}
+                      {fmtTime(e.at)}
                     </Box>
                     <strong>{t(`autoscale.action.${e.action}`, { defaultValue: e.action })}</strong>
                     {(e.serverName || e.server) && ` ${e.serverName ?? e.server}`}

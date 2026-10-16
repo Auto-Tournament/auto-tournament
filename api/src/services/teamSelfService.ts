@@ -85,7 +85,9 @@ interface TeamRow {
   owner_uid: string | null;
   invite_code: string | null;
   logo_updated_at: number | null;
+  banner_updated_at?: number | null;
   game?: string | null;
+  color_index?: number | null;
 }
 
 /** Logos: PNG, JPEG or WEBP, at most 256 KB, recognised by their first bytes. */
@@ -110,6 +112,15 @@ export function logoMediaType(data: Buffer): string | null {
   return null;
 }
 
+export const BANNER_MAX_BYTES = 1024 * 1024;
+
+/** The team banner's public URL, or null without one. */
+export function bannerUrl(teamId: string, updatedAt: number | null | undefined): string | null {
+  return updatedAt
+    ? `/api/team-directory/${encodeURIComponent(teamId)}/banner?v=${updatedAt}`
+    : null;
+}
+
 export function logoUrl(teamId: string, updatedAt: number | null | undefined): string | null {
   return updatedAt ? `/api/team-directory/${encodeURIComponent(teamId)}/logo?v=${updatedAt}` : null;
 }
@@ -125,7 +136,7 @@ function parseRoster(players: string): Player[] {
 
 async function loadTeam(teamId: string): Promise<TeamRow> {
   const row = await db.queryOneAsync<TeamRow>(
-    'SELECT id, name, tag, players, owner_uid, invite_code, logo_updated_at, game FROM teams WHERE id = ?',
+    'SELECT id, name, tag, players, owner_uid, invite_code, logo_updated_at, banner_updated_at, game, color_index FROM teams WHERE id = ?',
     [teamId]
   );
   if (!row) throw new TeamActionError(404, 'Team not found');
@@ -247,6 +258,8 @@ export const teamSelfService = {
         name: team.name,
         tag: team.tag,
         logoUrl: logoUrl(team.id, team.logo_updated_at),
+        bannerUrl: bannerUrl(team.id, team.banner_updated_at),
+        colorIndex: team.color_index ?? null,
         inviteCode: team.invite_code,
         game: team.game ?? null,
       },
@@ -278,6 +291,16 @@ export const teamSelfService = {
     await db.runAsync(
       'UPDATE teams SET game = ?, updated_at = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE id = ?',
       [game, team.id]
+    );
+  },
+
+  /** The team's colour: one of the 16 team colours (0-15). Owner and captains. */
+  async setColor(teamId: string, uid: string, colorIndex: number): Promise<void> {
+    const team = await loadTeam(teamId);
+    await requireRole(team, uid, ['owner', 'captain']);
+    await db.runAsync(
+      'UPDATE teams SET color_index = ?, updated_at = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE id = ?',
+      [colorIndex, team.id]
     );
   },
 
@@ -447,6 +470,35 @@ export const teamSelfService = {
       'UPDATE teams SET logo = ?, logo_type = ?, logo_updated_at = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE id = ?',
       [data, type, team.id]
     );
+  },
+
+  /** The team's banner (owner or captain): a wide picture behind its card. Null removes it. */
+  async setBanner(teamId: string, uid: string, data: Buffer | null): Promise<void> {
+    const team = await loadTeam(teamId);
+    await requireRole(team, uid, ['owner', 'captain']);
+    if (data === null) {
+      await db.runAsync(
+        'UPDATE teams SET banner = NULL, banner_type = NULL, banner_updated_at = NULL WHERE id = ?',
+        [team.id]
+      );
+      return;
+    }
+    if (data.length > BANNER_MAX_BYTES)
+      throw new TeamActionError(413, 'The banner must be 1 MB or smaller.');
+    const type = logoMediaType(data);
+    if (!type) throw new TeamActionError(415, 'The banner must be a PNG, JPEG or WEBP image.');
+    await db.runAsync(
+      'UPDATE teams SET banner = ?, banner_type = ?, banner_updated_at = EXTRACT(EPOCH FROM NOW())::INTEGER WHERE id = ?',
+      [data, type, team.id]
+    );
+  },
+
+  async banner(teamId: string): Promise<{ data: Buffer; type: string } | null> {
+    const row = await db.queryOneAsync<{ banner: Buffer | null; banner_type: string | null }>(
+      'SELECT banner, banner_type FROM teams WHERE id = ?',
+      [teamId]
+    );
+    return row?.banner && row.banner_type ? { data: row.banner, type: row.banner_type } : null;
   },
 
   async logo(teamId: string): Promise<{ data: Buffer; type: string } | null> {

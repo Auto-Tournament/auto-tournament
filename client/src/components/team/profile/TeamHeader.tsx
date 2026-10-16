@@ -1,126 +1,183 @@
 import type React from 'react';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Team } from '../../../types';
-import { PageHead } from '../../common/ui';
-import { GameMark } from '../../common/GameMark';
-import { fontDisplay, mono, radii, textSize, tokens } from '../../../theme/tokens';
+import { TeamLogo, teamColor, useTeamColors } from '../../tournament/ui/draftUi';
+import { fontDisplay, mono, radii, textSize, tokens, withAlpha } from '../../../theme/tokens';
 
 interface TeamHeaderProps {
   team: Team | null;
   /** Only admins may edit a team today. */
   canEdit: boolean;
-  /** The game the team plays in its tournament, for the game badge. */
+  /** The game the team plays in its tournament, for the eyebrow. */
   game?: { slug: string; name: string } | null;
-  /** The team's uploaded logo, shown in place of its initial. */
+  /** The team's uploaded logo, shown in place of its initials. */
   logoUrl?: string | null;
-  /** Buttons for the viewer's own team (Manage, Leave), beside the name. */
+  /** The team's banner; without one the team's colour fills the strip. */
+  bannerUrl?: string | null;
+  /** How many players are on the roster. */
+  players?: number;
+  /** The team's owner, by name. */
+  owner?: string | null;
+  /** The team's rating, when it has one. */
+  rating?: number | null;
+  /** Buttons for the viewer's own team (Manage, Leave), right of the name. */
   actions?: React.ReactNode;
 }
 
 /**
- * Public team profile header (the draft's `.club`): an 80px crest, then the
- * page head — the team's name as the page's H1, "captain …" under it and
- * "Edit team" on the right — and the team's game below.
- *
- * No logo, location or "since" year: the team record carries none of those,
- * so they are left out rather than faked.
+ * Public team profile header (the 3.0 draft's TeamHeader board): the team's
+ * banner, or its colour, across the top; the logo overlapping its lower edge;
+ * then "Team · <game>", the name as the page's H1, and "5 players · owner … ·
+ * rating …" under it, with the viewer's own actions on the right.
  */
-export function TeamHeader({ team, canEdit, game, logoUrl, actions }: TeamHeaderProps) {
+export function TeamHeader({
+  team,
+  canEdit,
+  game,
+  logoUrl,
+  bannerUrl,
+  players,
+  owner,
+  rating,
+  actions,
+}: TeamHeaderProps) {
   const { t } = useTranslation();
+  useTeamColors();
+  const tone = teamColor(team?.id || team?.name || '');
 
-  const initial = (team?.name || '?').trim().charAt(0).toUpperCase() || '?';
-  const captain = team?.players?.find((p) => p.role === 'captain');
+  const facts = [
+    typeof players === 'number' ? t('teamProfile.header.players', { count: players }) : null,
+    owner ? t('teamProfile.header.owner', { name: owner }) : null,
+    typeof rating === 'number'
+      ? t('teamProfile.header.rating', { rating: Math.round(rating) })
+      : null,
+  ].filter(Boolean);
+
+  const action = actions ? (
+    actions
+  ) : canEdit && team ? (
+    <Button
+      data-testid="team-profile-edit-link"
+      variant="outlined"
+      size="small"
+      component={RouterLink}
+      to="/manage/teams"
+    >
+      {t('teamProfile.editTeam')}
+    </Button>
+  ) : null;
 
   return (
     <Box
       component="section"
-      aria-label={t('teamProfile.headerLabel')}
+      aria-labelledby="team-name"
       data-testid="team-profile-header"
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: 'auto minmax(0, 1fr)',
-        gap: { xs: 2, sm: 3 },
-        alignItems: 'center',
-      }}
+      sx={{ borderRadius: radii.lg, overflow: 'hidden', bgcolor: tokens.color.paper }}
     >
       <Box
-        aria-hidden
-        sx={{
-          width: 80,
-          height: 80,
-          borderRadius: radii.md,
-          bgcolor: tokens.color.paper3,
-          border: `1px solid ${tokens.color.rule}`,
-          display: 'grid',
-          placeItems: 'center',
-          fontFamily: fontDisplay,
-          fontWeight: 700,
-          fontSize: textSize['2xl'],
-          color: tokens.color.accent,
-          overflow: 'hidden',
-        }}
+        data-testid="team-profile-banner"
+        sx={{ position: 'relative', height: { xs: 140, sm: 220 }, bgcolor: tokens.color.paper3 }}
       >
-        {logoUrl ? (
+        {bannerUrl ? (
           <Box
             component="img"
-            src={logoUrl}
+            src={bannerUrl}
             alt=""
-            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
           />
         ) : (
-          initial
+          <Box
+            aria-hidden
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              background: `linear-gradient(120deg, ${tone}, ${withAlpha(tone, 0.08)} 75%)`,
+            }}
+          />
         )}
       </Box>
-
-      <Box sx={{ minWidth: 0 }}>
-        <PageHead
-          sx={{ mb: 0, alignItems: 'center' }}
-          title={
-            <>
-              {team?.tag && (
-                <Box
-                  component="span"
-                  sx={{ ...mono, color: tokens.color.accent, fontSize: '0.6em', mr: 1.5 }}
-                >
-                  [{team.tag}]
-                </Box>
-              )}
-              {team?.name}
-            </>
-          }
-          subtitle={captain ? t('teamProfile.captainLine', { name: captain.name }) : undefined}
-          actions={
-            actions ? (
-              actions
-            ) : canEdit && team ? (
-              <Button
-                data-testid="team-profile-edit-link"
-                variant="outlined"
-                size="small"
-                component={RouterLink}
-                to="/manage/teams"
-              >
-                {t('teamProfile.editTeam')}
-              </Button>
-            ) : undefined
-          }
+      <Box
+        sx={{
+          position: 'relative',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'flex-start',
+          gap: { xs: 2, sm: 2.5 },
+          px: { xs: 2, sm: 3.5 },
+          pt: 2,
+          pb: 3,
+        }}
+      >
+        <TeamLogo
+          team={team ? { id: team.id, name: team.name, tag: team.tag, logoUrl } : null}
+          size="xl"
+          // Only the logo overlaps the banner; the text stays on the page colour.
+          sx={{ outline: `4px solid ${tokens.color.paper}`, mt: '-60px' }}
         />
-        {game && (
-          <Box
+        <Box
+          sx={{
+            flex: '1 1 280px',
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.5,
+          }}
+        >
+          <Typography
+            component="span"
             data-testid="team-profile-game"
             sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 1,
-              mt: 1.5,
               fontSize: textSize.xs,
-              color: tokens.color.ink2,
+              fontWeight: 600,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: tokens.color.muted,
             }}
           >
-            <GameMark name={game.name} slug={game.slug} size={24} />
-            {game.name}
+            {game
+              ? t('teamProfile.header.eyebrowGame', { game: game.name })
+              : t('teamProfile.header.eyebrow')}
+          </Typography>
+          <Typography
+            id="team-name"
+            component="h1"
+            sx={{
+              m: 0,
+              fontFamily: fontDisplay,
+              fontWeight: 700,
+              fontSize: { xs: '2rem', sm: '2.5rem' },
+              lineHeight: 1.1,
+              overflowWrap: 'anywhere',
+              textWrap: 'balance',
+            }}
+          >
+            {team?.tag && (
+              <Box
+                component="span"
+                sx={{ ...mono, color: tokens.color.accent, fontSize: '0.6em', mr: 1.5 }}
+              >
+                [{team.tag}]
+              </Box>
+            )}
+            {team?.name}
+          </Typography>
+          {facts.length > 0 && (
+            <Typography sx={{ fontSize: textSize.sm, color: tokens.color.ink2 }}>
+              {facts.join(' · ')}
+            </Typography>
+          )}
+        </Box>
+        {action && (
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignSelf: 'center' }}>
+            {action}
           </Box>
         )}
       </Box>

@@ -1,5 +1,7 @@
 import { Box } from '@mui/material';
 import {
+  ClockIcon,
+  GiftIcon,
   GlobeIcon,
   ScalesIcon,
   SwordIcon,
@@ -11,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useOptionalAdminTournament } from '../../contexts/AdminTournamentContext';
 import { useDisputesEntry } from '../../hooks/useDisputesEntry';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
+import { listIntegrations } from '../../integrations/registry';
 import { manageTournamentPath, paths, type ManageTournamentTab } from '../../paths';
 import { tokens, textSize } from '../../theme/tokens';
 import { ICON_SIZE } from '../../theme/icons';
@@ -18,7 +21,8 @@ import { ICON_SIZE } from '../../theme/icons';
 const { color } = tokens;
 
 /** One tournament's pages in Manage: `/manage/tournaments/<id>/<tab>`. */
-const SCOPED = /^\/manage\/tournaments\/(new|\d+)\/(matches|bracket|disputes|setup)\/?$/;
+const SCOPED =
+  /^\/manage\/tournaments\/(new|\d+)\/(matches|bracket|disputes|setup|prizes|schedule)\/?$/;
 
 /** The pages that run one tournament: the bar shows over each of them. */
 export function isTournamentPage(pathname: string): boolean {
@@ -38,6 +42,7 @@ export function TournamentBar() {
   const admin = useOptionalAdminTournament();
   const { tournamentId } = useShellIntegrations();
   const { show: showDisputes } = useDisputesEntry();
+  const hasPrizes = listIntegrations().some((i) => Boolean(i.tournamentPrizesManage));
   const scoped = SCOPED.exec(pathname);
   const scopeId: number | 'new' | null = scoped
     ? scoped[1] === 'new'
@@ -80,6 +85,28 @@ export function TournamentBar() {
       to: tabPath('setup'),
       icon: TrophyIcon,
     },
+    // Match times, once the tournament exists.
+    ...(typeof scopeId === 'number'
+      ? [
+          {
+            key: 'schedule',
+            label: t('managePage.rail.schedule'),
+            to: tabPath('schedule'),
+            icon: ClockIcon,
+          },
+        ]
+      : []),
+    // A game with prizes (CS2: skins) gets the Prizes tab, once the tournament exists.
+    ...(typeof scopeId === 'number' && hasPrizes
+      ? [
+          {
+            key: 'prizes',
+            label: t('managePage.rail.prizes'),
+            to: tabPath('prizes'),
+            icon: GiftIcon,
+          },
+        ]
+      : []),
     ...(typeof scopeId === 'number'
       ? [
           {

@@ -1652,7 +1652,18 @@
       "site": "Sidens premier",
       "custom": "Egne premier",
       "label": "Premier"
-    }
+    },
+    "toastPick_one": "Den venter til du ser på den.",
+    "toastPick_other": "Velg én av tre. Den venter til du velger.",
+    "toastChoose": "Velg",
+    "toastWhyPlayed": "Du har fått en skin for å spille",
+    "toastWhyPlace": "Du har fått en skin for {{place}} plass",
+    "toastWhyMvp": "Du har fått en skin som MVP",
+    "toastWhyDrop": "Du har fått en skin",
+    "toastNew": "Ny skin i inventaret ditt.",
+    "pinned": "Festet til du velger",
+    "toastWhyLevel": "Du har fått en skin for nivå {{level}}",
+    "pickLater": "Velg senere"
   },
   "matchRules": {
     "title": "Kampregler",

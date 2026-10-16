@@ -62,7 +62,8 @@
       "matchReady": "is ready. Open the match room to connect.",
       "vetoTurn": "it's your team's turn in the veto.",
       "startsSoon": "starts in {{minutes}} minutes. Get ready to join your first match.",
-      "startsSoonUpdate": "starts in {{minutes}} minutes. Start your game now so any update is done before your first match."
+      "startsSoonUpdate": "starts in {{minutes}} minutes. Start your game now so any update is done before your first match.",
+      "matchSoon": "your veto opens in {{minutes}} minutes and goes on without you. Be at your PC."
     },
     "toast": {
       "join": "Join party",

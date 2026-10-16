@@ -7,8 +7,14 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { Box, Button, FormControlLabel, Switch, Typography } from '@mui/material';
-import { api, apiErrorMessage, useModuleTranslation, useTopic } from '../../../module-sdk';
+import { Box, Button, Typography } from '@mui/material';
+import {
+  api,
+  apiErrorMessage,
+  useModuleTranslation,
+  useTopic,
+  SwitchRow,
+} from '../../../module-sdk';
 
 interface RedressStatus {
   queued: number;
@@ -64,18 +70,13 @@ export function HighlightOverlaySetting({
       <Typography variant="subtitle2" fontWeight={600}>
         {t('settings.highlights.overlay.label')}
       </Typography>
-      <FormControlLabel
-        sx={{ mt: 1 }}
-        control={
-          <Switch
-            checked={keepClean}
-            onChange={(e) => onKeepClean(e.target.checked)}
-            size="small"
-            color="primary"
-            inputProps={{ 'data-testid': 'cs2-highlights-keep-clean' } as Record<string, string>}
-          />
-        }
+      <SwitchRow
         label={t('settings.highlights.overlay.keepClean')}
+        checked={keepClean}
+        onChange={(e) => onKeepClean(e.target.checked)}
+        size="small"
+        inputProps={{ 'data-testid': 'cs2-highlights-keep-clean' } as Record<string, string>}
+        sx={{ mt: 1 }}
       />
       <Typography
         variant="caption"

@@ -8,8 +8,6 @@ import {
   TextField,
   Box,
   Typography,
-  Switch,
-  FormControlLabel,
   Divider,
   Stack,
   Slider,
@@ -28,6 +26,7 @@ import type {
   UpdateEloTemplateInput,
 } from '../../types/elo.types';
 import { useTranslation } from 'react-i18next';
+import { SwitchRow } from '../../components/common/ui';
 
 interface EloTemplateEditorModalProps {
   open: boolean;
@@ -101,10 +100,11 @@ export default function EloTemplateEditorModal({
           maxAdjustment,
           minAdjustment,
         };
-        const response = await api.put<{ success: boolean; template: EloCalculationTemplate; error?: string }>(
-          `/api/elo-templates/${template.id}`,
-          input
-        );
+        const response = await api.put<{
+          success: boolean;
+          template: EloCalculationTemplate;
+          error?: string;
+        }>(`/api/elo-templates/${template.id}`, input);
         if (response.success) {
           showSuccess(t('eloTemplatesPage.editor.update.success', { name }));
           onSave();
@@ -121,10 +121,11 @@ export default function EloTemplateEditorModal({
           maxAdjustment,
           minAdjustment,
         };
-        const response = await api.post<{ success: boolean; template: EloCalculationTemplate; error?: string }>(
-          '/api/elo-templates',
-          input
-        );
+        const response = await api.post<{
+          success: boolean;
+          template: EloCalculationTemplate;
+          error?: string;
+        }>('/api/elo-templates', input);
         if (response.success) {
           showSuccess(t('eloTemplatesPage.editor.create.success', { name }));
           onSave();
@@ -177,9 +178,7 @@ export default function EloTemplateEditorModal({
       <DialogContent dividers>
         <Stack spacing={3}>
           <Alert severity="info" icon={<InfoIcon />}>
-            <Typography variant="body2">
-              {t('eloTemplatesPage.editor.info')}
-            </Typography>
+            <Typography variant="body2">{t('eloTemplatesPage.editor.info')}</Typography>
           </Alert>
 
           <TextField
@@ -190,9 +189,7 @@ export default function EloTemplateEditorModal({
             required
             disabled={template?.id === 'pure-win-loss'}
             helperText={
-              template?.id === 'pure-win-loss'
-                ? t('eloTemplatesPage.editor.nameDefaultLocked')
-                : ''
+              template?.id === 'pure-win-loss' ? t('eloTemplatesPage.editor.nameDefaultLocked') : ''
             }
           />
 
@@ -206,9 +203,10 @@ export default function EloTemplateEditorModal({
             placeholder={t('eloTemplatesPage.editor.descriptionPlaceholder')}
           />
 
-          <FormControlLabel
-            control={<Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />}
+          <SwitchRow
             label={t('eloTemplatesPage.editor.enabledLabel')}
+            checked={enabled}
+            onChange={(e) => setEnabled(e.target.checked)}
           />
 
           <Divider />
@@ -241,10 +239,17 @@ export default function EloTemplateEditorModal({
                           textAlign: 'right',
                           fontFamily: 'monospace',
                           fontWeight: 600,
-                          color: weights[stat] && weights[stat]! > 0 ? 'success.main' : weights[stat] && weights[stat]! < 0 ? 'error.main' : 'text.secondary',
+                          color:
+                            weights[stat] && weights[stat]! > 0
+                              ? 'success.main'
+                              : weights[stat] && weights[stat]! < 0
+                                ? 'error.main'
+                                : 'text.secondary',
                         }}
                       >
-                        {weights[stat] !== undefined ? (weights[stat]! > 0 ? '+' : '') + weights[stat] : '0'}
+                        {weights[stat] !== undefined
+                          ? (weights[stat]! > 0 ? '+' : '') + weights[stat]
+                          : '0'}
                       </Typography>
                     </Box>
                     <Slider
@@ -343,11 +348,10 @@ export default function EloTemplateEditorModal({
           {saving
             ? t('eloTemplatesPage.editor.buttons.saving')
             : template
-            ? t('eloTemplatesPage.editor.buttons.update')
-            : t('eloTemplatesPage.editor.buttons.create')}
+              ? t('eloTemplatesPage.editor.buttons.update')
+              : t('eloTemplatesPage.editor.buttons.create')}
         </Button>
       </DialogActions>
     </Dialog>
   );
 }
-

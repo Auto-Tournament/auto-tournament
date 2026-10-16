@@ -41,6 +41,15 @@ export const TOURNAMENT_TYPES: TournamentType[] = [
     maxTeams: 32,
   },
   {
+    value: 'groups',
+    label: 'Groups, then playoffs',
+    description: 'Round robin in groups; the best of each group play elimination.',
+    category: 'professional',
+    icon: 'Groups',
+    minTeams: 4,
+    maxTeams: 64,
+  },
+  {
     value: 'swiss',
     label: 'Swiss System',
     description: 'Similar records face each other. Balanced matchups throughout the tournament.',

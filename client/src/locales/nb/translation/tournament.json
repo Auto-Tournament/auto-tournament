@@ -997,7 +997,7 @@
     "withdraw": "Trekk laget",
     "withdrawTitle": "Trekke {{team}}?",
     "withdrawBody": "Laget forlater turneringen, og plassen åpnes for et annet lag.",
-    "sub": "reserve",
+    "sub": "Reserve",
     "ready": "Klar",
     "problem": {
       "noAccount": "Har ikke logget inn på Auto Tournament ennå",
