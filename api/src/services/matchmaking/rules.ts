@@ -103,6 +103,15 @@ export function isAbandon(input: {
   return input.now - input.lastSeen >= ABANDON_GRACE_SECONDS;
 }
 
+/**
+ * Every player of a match is gone at once (none seen connected): what a map change, a server
+ * restart or a crash looks like, so nobody is penalized for it. `alreadyFlagged` players count as
+ * gone. An admin's change_map banned all ten players of a game for an hour (NTLAN, 2026-10-16).
+ */
+export function everyoneGone(players: number, newlyGone: number, alreadyFlagged: number): boolean {
+  return players > 0 && newlyGone + alreadyFlagged >= players;
+}
+
 /** A party waiting in the queue. */
 export interface QueuedParty {
   entryId: string;

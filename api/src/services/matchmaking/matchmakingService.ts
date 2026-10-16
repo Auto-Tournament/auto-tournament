@@ -34,6 +34,7 @@ import {
   ABANDON_WINDOW_SECONDS,
   abandonCooldownSeconds,
   isAbandon,
+  everyoneGone,
   ACCEPT_SECONDS,
   cooldownSeconds,
   findGroup,
@@ -1053,15 +1054,25 @@ export class MatchmakingService {
           )
         ).map((r) => r.player_id)
       );
-      for (const { player_id: id } of players) {
-        if (flagged.has(id)) continue;
-        const gone = isAbandon({
-          now,
-          serverReadyAt: Number(row.loaded_at ?? now),
-          watchingSince: watch.since,
-          lastSeen: watch.lastSeen.get(id) ?? null,
-        });
-        if (gone) {
+      const gone = players
+        .map((p) => p.player_id)
+        .filter(
+          (id) =>
+            !flagged.has(id) &&
+            isAbandon({
+              now,
+              serverReadyAt: Number(row.loaded_at ?? now),
+              watchingSince: watch.since,
+              lastSeen: watch.lastSeen.get(id) ?? null,
+            })
+        );
+      // A player leaves a match the others are still in; everyone gone at once is the server.
+      if (gone.length > 0 && everyoneGone(players.length, gone.length, flagged.size)) {
+        log.warn(
+          `[MATCHMAKING] all ${players.length} players of ${row.match_slug} are gone: no abandon penalties (server-side drop)`
+        );
+      } else {
+        for (const id of gone) {
           await this.penalizeAbandon(id, row.lobby_id);
           log.info(`[MATCHMAKING] ${id} abandoned ${row.match_slug}`);
         }
