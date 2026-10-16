@@ -9,6 +9,7 @@ import {
   abandonCooldownSeconds,
   everyoneGone,
   isAbandon,
+  rematchOpen,
   cooldownSeconds,
   findGroup,
   fewSearching,
@@ -228,6 +229,16 @@ test.describe('matchmaking rules (pure)', () => {
     expect(everyoneGone(10, 1, 0)).toBe(false);
     expect(everyoneGone(10, 9, 0)).toBe(false);
     expect(everyoneGone(0, 0, 0)).toBe(false);
+  });
+
+  test('rematch: open for 2 minutes after a completed match only', TAGS, () => {
+    const done = { status: 'completed', completed_at: 1000 };
+    expect(rematchOpen(done, 1000)).toBe(true);
+    expect(rematchOpen(done, 1119)).toBe(true);
+    expect(rematchOpen(done, 1120)).toBe(false);
+    expect(rematchOpen({ status: 'cancelled', completed_at: 1000 }, 1010)).toBe(false);
+    expect(rematchOpen({ status: 'live', completed_at: null }, 1010)).toBe(false);
+    expect(rematchOpen(null, 1010)).toBe(false);
   });
 
   test(

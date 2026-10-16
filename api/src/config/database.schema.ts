@@ -1181,7 +1181,8 @@ export function getSchemaSQL(): string {
       map_pool TEXT, -- JSON [{ id, name, imageUrl }]: the maps the roulette shows, the chosen one among them
       match_slug TEXT,
       bot_fill BOOLEAN NOT NULL DEFAULT FALSE, -- a bot-filled game: unrated, no XP or drops
-      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      rematch_lobby_id TEXT -- the rematch's lobby, once every player said yes
     );
 
     CREATE TABLE IF NOT EXISTS mm_lobby_players (
@@ -1192,6 +1193,8 @@ export function getSchemaSQL(): string {
       queued_at INTEGER, -- when the player's party started searching, for the wait estimate
       accepted_at INTEGER,
       declined_at INTEGER,
+      rematch_at INTEGER, -- said yes to a rematch after the match
+      rematch_declined_at INTEGER, -- said no to a rematch
       PRIMARY KEY (lobby_id, player_id)
     );
 

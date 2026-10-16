@@ -754,7 +754,16 @@
       },
       "equip": "Utstyr",
       "equipped": "Utstyrt",
-      "equipFailed": "Kunne ikke utstyre den"
+      "equipFailed": "Kunne ikke utstyre den",
+      "rematch": {
+        "title": "Revansj?",
+        "body": "Samme lag, nytt kart. Den starter når alle {{total}} sier ja ({{yes}} så langt), innen 2 minutter.",
+        "yes": "Ja, revansj",
+        "no": "Nei takk",
+        "button": "Revansj",
+        "waiting": "Venter på de andre: {{yes}} av {{total}} har sagt ja.",
+        "declined": "Ingen revansj: noen sa nei."
+      }
     },
     "result": {
       "title": "Resultat",

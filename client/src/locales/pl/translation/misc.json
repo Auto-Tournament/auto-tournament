@@ -756,7 +756,16 @@
       },
       "equip": "Załóż",
       "equipped": "Założony",
-      "equipFailed": "Nie udało się założyć"
+      "equipFailed": "Nie udało się założyć",
+      "rematch": {
+        "title": "Rewanż?",
+        "body": "Te same drużyny, nowa mapa. Startuje, gdy wszyscy {{total}} się zgodzą ({{yes}} do tej pory), w ciągu 2 minut.",
+        "yes": "Tak, rewanż",
+        "no": "Nie, dzięki",
+        "button": "Rewanż",
+        "waiting": "Czekamy na pozostałych: {{yes}} z {{total}} się zgodziło.",
+        "declined": "Bez rewanżu: ktoś odmówił."
+      }
     },
     "result": {
       "title": "Result",

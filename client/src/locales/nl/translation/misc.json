@@ -754,7 +754,16 @@
       },
       "equip": "Uitrusten",
       "equipped": "Uitgerust",
-      "equipFailed": "Kon niet uitrusten"
+      "equipFailed": "Kon niet uitrusten",
+      "rematch": {
+        "title": "Revanche?",
+        "body": "Dezelfde teams, een nieuwe map. Hij start als alle {{total}} ja zeggen ({{yes}} tot nu toe), binnen 2 minuten.",
+        "yes": "Ja, revanche",
+        "no": "Nee, bedankt",
+        "button": "Revanche",
+        "waiting": "Wachten op de anderen: {{yes}} van {{total}} zeiden ja.",
+        "declined": "Geen revanche: iemand zei nee."
+      }
     },
     "result": {
       "title": "Result",

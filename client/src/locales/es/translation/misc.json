@@ -754,7 +754,16 @@
       },
       "equip": "Equipar",
       "equipped": "Equipada",
-      "equipFailed": "No se pudo equipar"
+      "equipFailed": "No se pudo equipar",
+      "rematch": {
+        "title": "¿Revancha?",
+        "body": "Mismos equipos, mapa nuevo. Empieza cuando los {{total}} digan que sí ({{yes}} hasta ahora), en 2 minutos.",
+        "yes": "Sí, revancha",
+        "no": "No, gracias",
+        "button": "Revancha",
+        "waiting": "Esperando a los demás: {{yes}} de {{total}} han dicho que sí.",
+        "declined": "Sin revancha: alguien dijo que no."
+      }
     },
     "result": {
       "title": "Result",

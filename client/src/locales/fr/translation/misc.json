@@ -754,7 +754,16 @@
       },
       "equip": "Équiper",
       "equipped": "Équipé",
-      "equipFailed": "Impossible de l’équiper"
+      "equipFailed": "Impossible de l’équiper",
+      "rematch": {
+        "title": "Revanche ?",
+        "body": "Mêmes équipes, nouvelle carte. Elle démarre quand les {{total}} disent oui ({{yes}} pour l'instant), sous 2 minutes.",
+        "yes": "Oui, revanche",
+        "no": "Non merci",
+        "button": "Revanche",
+        "waiting": "En attente des autres : {{yes}} sur {{total}} ont dit oui.",
+        "declined": "Pas de revanche : quelqu'un a dit non."
+      }
     },
     "result": {
       "title": "Result",

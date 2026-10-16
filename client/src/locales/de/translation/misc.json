@@ -754,7 +754,16 @@
       },
       "equip": "Ausrüsten",
       "equipped": "Ausgerüstet",
-      "equipFailed": "Konnte nicht ausgerüstet werden"
+      "equipFailed": "Konnte nicht ausgerüstet werden",
+      "rematch": {
+        "title": "Revanche?",
+        "body": "Gleiche Teams, neue Karte. Sie startet, wenn alle {{total}} zustimmen ({{yes}} bisher), innerhalb von 2 Minuten.",
+        "yes": "Ja, Revanche",
+        "no": "Nein danke",
+        "button": "Revanche",
+        "waiting": "Warte auf die anderen: {{yes}} von {{total}} haben zugestimmt.",
+        "declined": "Keine Revanche: jemand hat abgelehnt."
+      }
     },
     "result": {
       "title": "Result",

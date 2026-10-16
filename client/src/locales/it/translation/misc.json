@@ -754,7 +754,16 @@
       },
       "equip": "Equipaggia",
       "equipped": "Equipaggiata",
-      "equipFailed": "Impossibile equipaggiarla"
+      "equipFailed": "Impossibile equipaggiarla",
+      "rematch": {
+        "title": "Rivincita?",
+        "body": "Stesse squadre, nuova mappa. Parte quando tutti i {{total}} dicono sì ({{yes}} finora), entro 2 minuti.",
+        "yes": "Sì, rivincita",
+        "no": "No, grazie",
+        "button": "Rivincita",
+        "waiting": "In attesa degli altri: {{yes}} su {{total}} hanno detto sì.",
+        "declined": "Niente rivincita: qualcuno ha detto no."
+      }
     },
     "result": {
       "title": "Result",

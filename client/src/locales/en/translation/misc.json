@@ -754,7 +754,16 @@
       },
       "equip": "Equip",
       "equipped": "Equipped",
-      "equipFailed": "Could not equip it"
+      "equipFailed": "Could not equip it",
+      "rematch": {
+        "title": "Rematch?",
+        "body": "Same teams, a new map. It starts when all {{total}} say yes ({{yes}} so far), within 2 minutes.",
+        "yes": "Yes, rematch",
+        "no": "No thanks",
+        "button": "Rematch",
+        "waiting": "Waiting for the others: {{yes}} of {{total}} said yes.",
+        "declined": "No rematch: someone said no."
+      }
     },
     "result": {
       "title": "Result",
