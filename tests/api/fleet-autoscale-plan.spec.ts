@@ -450,11 +450,18 @@ test.describe('Autoscale: plan', () => {
       demand: demand(0),
       servers: [warmIdle(1, 700), warmIdle(2, 1200), warmIdle(3, 300)],
     });
-    expect(p.desired).toBe(0);
+    // No matches: only the failover spare is wanted (it stays warm).
+    expect(p.desired).toBe(1);
     expect(p.actions.map((a) => a.kind === 'stop' && a.server)).toEqual(['server-2', 'server-1']);
     expect(p.actions[0].reason).toMatch(/^Idle 20 min and not needed/);
     // Nothing idle long enough.
     expect(plan({ demand: demand(0), servers: [warmIdle(1, 599)] }).actions).toEqual([]);
+    // No matches, two idle servers: one stops, the other is the failover spare and stays warm.
+    expect(
+      plan({ demand: demand(0), servers: [warmIdle(1, 5000), warmIdle(2, 5000)] }).actions.map(
+        (a) => a.kind === 'stop' && a.server
+      )
+    ).toEqual(['server-1']);
     // A shorter cool-down.
     expect(
       plan({
