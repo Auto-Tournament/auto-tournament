@@ -475,7 +475,9 @@ export function planScaling(planInput: PlanInput): ScalePlan {
   const input = { ...planInput, servers: planInput.servers.filter((s) => !s.practice) };
   const { now, settings, demand } = input;
   const reserve = scalerReserve(input.reserveConfigured, input.servers.length);
-  const desired = demand.total > 0 ? demand.total + reserve : 0;
+  // The failover spare stays warm with no match running too: the scaler stopped it along with the
+  // rest while its reason said "+ 1 spare for failover" (Vikunja 2168).
+  const desired = demand.total + reserve;
   // A server busy with something of its own serves none of the demand.
   const warmServers = input.servers.filter((s) => isWarm(s, now) && !s.occupied);
   const warm = warmServers.length;
@@ -549,7 +551,7 @@ export function planScaling(planInput: PlanInput): ScalePlan {
     // The spare servers failover would pick stay warm.
     const spare = reservedIdle(
       idleWarm.map((s) => ({ id: s.fleetServerId, name: s.name })),
-      desired > 0 ? reserve : 0
+      reserve
     );
     const stoppable = idleWarm
       .filter(
