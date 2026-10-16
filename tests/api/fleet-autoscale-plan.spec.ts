@@ -131,12 +131,12 @@ function plan(over: Partial<PlanInput>) {
 }
 
 test.describe('Autoscale: settings', () => {
-  test('defaults: on, 2 min lead, 10 min cool-down, 4 per machine', () => {
+  test('defaults: on, 2 min lead, 10 min cool-down, 32 per machine', () => {
     expect(normalizeAutoscaleSettings(null)).toEqual({
       enabled: true,
       leadTimeSeconds: 120,
       cooldownSeconds: 600,
-      maxServersPerHost: 4,
+      maxServersPerHost: 32,
     });
     expect(
       normalizeAutoscaleSettings({
@@ -149,7 +149,7 @@ test.describe('Autoscale: settings', () => {
       enabled: false,
       leadTimeSeconds: 120,
       cooldownSeconds: 30,
-      maxServersPerHost: 4,
+      maxServersPerHost: 32,
     });
   });
 
@@ -514,6 +514,7 @@ test.describe('Autoscale: plan', () => {
 
   test('create when short: one server on the machine with room', () => {
     const p = plan({
+      settings: settings({ maxServersPerHost: 4 }),
       demand: demand(1, 2),
       reserveConfigured: 0,
       servers: [warmBusy(1), server(2)],
@@ -542,7 +543,9 @@ test.describe('Autoscale: plan', () => {
       host({ online: false }),
       host({ canCreate: false }),
     ]) {
-      expect(plan({ ...short, hosts: [h] })).toMatchObject({
+      expect(
+        plan({ ...short, settings: settings({ maxServersPerHost: 4 }), hosts: [h] })
+      ).toMatchObject({
         actions: [],
         note: expect.stringContaining('no machine has room'),
       });
