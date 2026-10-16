@@ -479,7 +479,10 @@
       "pausedBody": "Kampen ble pauset på slutten av runden. Den fortsetter når begge lagene er klare, eller når en admin bestemmer det.",
       "pausedBodyWaiting_one": "Kampen ble pauset på slutten av runden. Den fortsetter når {{names}} er tilbake, eller når en admin bestemmer det.",
       "pausedBodyWaiting_other": "Kampen ble pauset på slutten av runden. Den fortsetter når {{names}} er tilbake, eller når en admin bestemmer det.",
-      "reconnect": "Koble til igjen"
+      "reconnect": "Koble til igjen",
+      "tryOtherBody": "Kom du ikke inn? Nettverket ditt trenger kanskje den andre adressen.",
+      "tryOtherLan": "Koble til via LAN",
+      "tryOtherPublic": "Koble til via internett"
     }
   },
   "serversPage": {

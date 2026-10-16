@@ -88,6 +88,21 @@ function backOnServer(state: unknown, steamId: string | null | undefined): boole
   return players.every(([, p]) => p.connected === true);
 }
 
+/** Whether this roster player is on the match's server now; null when the live state does not list them. */
+function viewerOnServer(state: unknown, steamId: string | null | undefined): boolean | null {
+  if (!steamId) return null;
+  const teams = (
+    state as {
+      teams?: Record<string, { players?: Record<string, { connected?: boolean }> }>;
+    } | null
+  )?.teams;
+  for (const t of Object.values(teams ?? {})) {
+    const p = t?.players?.[steamId];
+    if (p) return p.connected === true;
+  }
+  return null;
+}
+
 const router = Router();
 
 /** How long to wait for the server's own status before answering without it. */
@@ -204,6 +219,8 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
     let moved: { at: number; reason: string; inPlace: boolean } | null = null;
     // Ready Up: the match is paused, and whose seat is empty.
     let pause: { type: string | null; waitingFor: string[] } | null = null;
+    // The viewer is on the server: the panel offers the other address when a Connect did not land.
+    let viewerConnected: boolean | null = null;
     if (canSeeServer && match.server_id) {
       if (onFleet) {
         const move = await recentMove(match.slug).catch(() => null);
@@ -223,6 +240,8 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
         password = await connectPasswordFor(match.slug);
         const live = await liveStateStore.getLiveState(match.slug).catch(() => null);
         pause = pauseView(live?.state ?? null);
+        if (viewerIsTeamMember)
+          viewerConnected = viewerOnServer(live?.state ?? null, effectiveSteamId);
         // The viewer is back on the server (or, for an admin, everyone is): the move is done, no
         // "reconnect" notice (it stayed up while the player was playing again, 2026-10-15).
         if (moved && backOnServer(live?.state ?? null, effectiveSteamId)) moved = null;
@@ -291,6 +310,7 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
               statusDescription: status?.description ?? null,
               moved,
               pause,
+              viewerConnected,
             }
           : null,
     });

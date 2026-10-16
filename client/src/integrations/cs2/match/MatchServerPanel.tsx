@@ -86,7 +86,7 @@ function useMatchConnect(
   matchSlug: string,
   enabled: boolean,
   matchStatus: string | undefined
-): MatchConnectResponse | null {
+): { connect: MatchConnectResponse | null; reload: () => Promise<void> } {
   const [connect, setConnect] = useState<MatchConnectResponse | null>(null);
   const socket = useSocket();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -153,8 +153,11 @@ function useMatchConnect(
     };
   }, [enabled, socket, matchSlug, load]);
 
-  return enabled ? connect : null;
+  return { connect: enabled ? connect : null, reload: load };
 }
+
+/** How long after a Connect the panel waits for the player to show up on the server. */
+const CONNECT_CHECK_MS = 10_000;
 
 /**
  * The team match card's join panel (`matchPanels.teamView`): the map that is
@@ -173,7 +176,7 @@ export function MatchServerPanel({
 }: MatchConnectPanelProps) {
   const { t } = useModuleTranslation('cs2');
   const { showError } = useSnackbar();
-  const connect = useMatchConnect(matchSlug, viewerCanJoin, matchStatus);
+  const { connect, reload } = useMatchConnect(matchSlug, viewerCanJoin, matchStatus);
   const [copied, setCopied] = useState(false);
   const [connected, setConnected] = useState(false);
   const [copyFallbackCommand, setCopyFallbackCommand] = useState<string | null>(null);
@@ -186,30 +189,56 @@ export function MatchServerPanel({
   const [via, setVia] = useState<'lan' | 'public' | null>(null);
   const addresses = server?.addresses ?? null;
   const chosen = addresses?.find((a) => a.kind === (via ?? server?.recommended)) ?? null;
-  const target = chosen
+  const targetNow = chosen
     ? { host: chosen.host, ip: chosen.ip ?? null, port: chosen.port }
     : server
       ? { host: server.host, ip: server.ip ?? null, port: server.port }
       : null;
+  // A Connect that did not land: the other address (LAN or internet), offered after a wait.
+  const [attempt, setAttempt] = useState<{ kind: 'lan' | 'public' | null; at: number } | null>(
+    null
+  );
+  const [checkDue, setCheckDue] = useState(false);
+  useEffect(() => {
+    if (!attempt) return;
+    const id = window.setTimeout(() => {
+      void reload().finally(() => setCheckDue(true));
+    }, CONNECT_CHECK_MS);
+    return () => window.clearTimeout(id);
+  }, [attempt, reload]);
+  const other =
+    attempt && addresses && addresses.length > 1
+      ? (addresses.find((a) => a.kind !== (attempt.kind ?? server?.recommended)) ?? null)
+      : null;
+  const showOther = checkDue && !!other && server?.viewerConnected === false;
   const currentMapData = useMemo(
     () => mapDataFor(connect?.currentMap ?? null),
     [connect?.currentMap]
   );
 
-  const onConnect = () => {
-    if (!server || !target) return;
+  const onConnect = (viaKind?: 'lan' | 'public') => {
+    if (!server) return;
+    const pick = viaKind ? (addresses?.find((a) => a.kind === viaKind) ?? null) : null;
+    if (viaKind && pick) setVia(viaKind);
+    const target = pick ? { host: pick.host, ip: pick.ip ?? null, port: pick.port } : targetNow;
+    if (!target) return;
     // The IP, not the hostname: CS2 ignores steam://connect with a hostname.
     const address = `${target.ip || target.host}:${target.port}`;
     // steam://connect, not steam://run/730//+connect: run only passes its
     // arguments when it starts the game, so with CS2 already open the button
     // did nothing. connect joins a running game too (the webhooks use it).
-    window.location.href = server.password
-      ? `steam://connect/${address}/${encodeURIComponent(server.password)}`
-      : `steam://connect/${address}`;
+    window.location.assign(
+      server.password
+        ? `steam://connect/${address}/${encodeURIComponent(server.password)}`
+        : `steam://connect/${address}`
+    );
 
     setConnected(true);
     setTimeout(() => setConnected(false), 3000);
+    setCheckDue(false);
+    setAttempt((prev) => ({ kind: viaKind ?? chosen?.kind ?? null, at: (prev?.at ?? 0) + 1 }));
   };
+  const target = targetNow;
 
   const onCopy = async () => {
     if (!server || !target) return;
@@ -439,7 +468,7 @@ export function MatchServerPanel({
               fullWidth
               color={connected ? 'success' : 'primary'}
               startIcon={<GameControllerIcon size={24} />}
-              onClick={onConnect}
+              onClick={() => onConnect()}
               disabled={!server.host || !server.port}
               data-testid="match-join-button"
               sx={{
@@ -506,6 +535,22 @@ export function MatchServerPanel({
             </Box>
           )}
         </Box>
+
+        {showOther && other && (
+          <Alert
+            severity="info"
+            data-testid="match-connect-try-other"
+            action={
+              <Button color="inherit" size="small" onClick={() => onConnect(other.kind)}>
+                {other.kind === 'lan'
+                  ? t('matchInfo.server.tryOtherLan')
+                  : t('matchInfo.server.tryOtherPublic')}
+              </Button>
+            }
+          >
+            {t('matchInfo.server.tryOtherBody')}
+          </Alert>
+        )}
 
         <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
           <Typography

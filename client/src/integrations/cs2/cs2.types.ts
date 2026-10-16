@@ -217,6 +217,8 @@ export interface MatchServer {
   }> | null;
   /** Which of them suits this viewer: LAN when they are on the server's network. */
   recommended?: 'lan' | 'public' | null;
+  /** Ready Up: the viewer (a roster player) is on the server now; null when unknown. */
+  viewerConnected?: boolean | null;
 }
 
 /** `GET /api/game/cs2/matches/:slug/connect`: how the viewer joins one match. */
