@@ -672,7 +672,8 @@
       "adminTools": {
         "title": "管理员工具",
         "pauseAfterRestore": "回合恢复（.stop）后自动暂停，便于队伍沟通",
-        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)"
+        "joinPassword": "Join password on match servers (off: the roster whitelist alone keeps others out)",
+        "connectPreferLan": "玩家在服务器的局域网内：所有人都通过局域网地址连接"
       },
       "autostart": {
         "label": "Start matches after (minutes in warmup)",

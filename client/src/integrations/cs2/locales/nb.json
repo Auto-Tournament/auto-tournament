@@ -673,7 +673,8 @@
       "adminTools": {
         "title": "Adminverktøy",
         "pauseAfterRestore": "Pause etter runde restore (.stop) slik at lag kan koordinere",
-        "joinPassword": "Passord for å koble til kampservere (av: bare spillerne på laget slipper inn uansett)"
+        "joinPassword": "Passord for å koble til kampservere (av: bare spillerne på laget slipper inn uansett)",
+        "connectPreferLan": "Spillerne er på serverens LAN: Koble til bruker LAN-adressen for alle"
       },
       "autostart": {
         "label": "Start kamper etter (minutter i oppvarming)",

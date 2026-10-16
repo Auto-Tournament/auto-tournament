@@ -217,6 +217,8 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     atDemoRecordingEnabled: atEnhanced.at_demo_recording_enabled,
     // Spectators in GOTV (gotv.ts).
     ...(await (await import('./gotv')).gotvSettingsResponse()),
+    // The connect panel recommends LAN to everyone (fleet/connectChoice.ts): 1 on, 0 off.
+    connectPreferLan: (await settingsService.getSetting('connect_prefer_lan')) === '1' ? 1 : 0,
     // The highlight settings are core's (services/highlights/settings.ts).
   };
 }
