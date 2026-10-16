@@ -295,7 +295,12 @@ export default function TournamentLeaderboard() {
                     <Box
                       component="tr"
                       key={r.id}
-                      sx={{ bgcolor: me ? color.paper3 : 'transparent', opacity: r.out ? 0.55 : 1 }}
+                      // An eliminated team reads muted, not faded: opacity took the
+                      // team mark's initials under the contrast minimum.
+                      sx={{
+                        bgcolor: me ? color.paper3 : 'transparent',
+                        color: r.out ? color.muted : undefined,
+                      }}
                     >
                       <Box
                         component="td"
