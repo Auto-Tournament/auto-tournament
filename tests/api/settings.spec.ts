@@ -1078,6 +1078,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'gotv_seats', field: 'gotvSeats' },
   { key: 'gotv_access', field: 'gotvAccess' },
   { key: 'gotv_live_stats', field: 'gotvLiveStats' },
+  // The connect panel recommends LAN to everyone (CS2 fleet/connectChoice.ts).
+  { key: 'connect_prefer_lan', field: 'connectPreferLan' },
   // The highlight settings, core's (services/highlights/settings.ts).
   { key: 'highlights_watermark', field: 'highlightsWatermark' },
   // Clips per player per map (demos/highlights.ts).
@@ -1096,8 +1098,6 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'highlights_tournament_reel_per_player', field: 'highlightsTournamentReelPerPlayer' },
   // A 5v5 pauses when a player drops (Ready Up goes on once the side is full).
   { key: 'at_pause_on_disconnect', field: 'atPauseOnDisconnect' },
-  // Recommend the LAN address to everyone on Connect (fleet/connectChoice.ts).
-  { key: 'connect_prefer_lan', field: 'connectPreferLan' },
 ];
 
 // --- tests -------------------------------------------------------------------
@@ -1116,13 +1116,13 @@ test.describe('settings namespace', () => {
     const coreKeys = CORE_SETTINGS.map((definition) => definition.key);
     expect(coreKeys.filter((key) => cs2Keys.includes(key))).toEqual([]);
     for (const key of cs2Keys) {
-      // Server convars (at_), the simulation, the highlight videos, GOTV spectating, and Connect.
+      // Server convars (at_), the simulation, the highlight videos, GOTV spectating, joining.
       expect(
         key.startsWith('at_') ||
-          key.startsWith('connect_') ||
           key.startsWith('simulat') ||
           key.startsWith('highlights_') ||
-          key.startsWith('gotv_'),
+          key.startsWith('gotv_') ||
+          key.startsWith('connect_'),
         key
       ).toBe(true);
     }

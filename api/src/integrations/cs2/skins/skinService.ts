@@ -774,9 +774,12 @@ export const skinService = {
   },
 
   /**
-   * Gives a player one skin, rolled like a case unless the reward pins it,
-   * equips it if its slot is empty (never in place of one they chose), and
-   * puts it first in their profile showcase.
+   * Gives a player one skin, rolled like a case unless the reward pins it. An
+   * admin's gift goes on if its slot is empty (never in place of one they
+   * chose); a drop, prize, level reward or trade-up only lands in the
+   * inventory, and the reveal's Equip buttons put it on. (Drops went on by
+   * themselves, and players at NTLAN, 2026-10-16, took the reveal's OK for the
+   * button that equipped them.)
    */
   async grant(
     playerUid: string,
@@ -819,8 +822,8 @@ export const skinService = {
         stattrak && statTrakCapable(skin.weapon) ? 0 : null,
       ]
     );
-    if (row?.id) {
-      // A first skin for a slot goes on, for both sides; the showcase is the player's own pick.
+    if (row?.id && source.source === 'admin' && opts.notify !== false) {
+      // An admin's gift is a first skin for a slot: on, for both sides. The showcase is the player's own pick.
       await db.runAsync(
         `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id, team)
          SELECT ?, ?, ?, 0 WHERE NOT EXISTS (
