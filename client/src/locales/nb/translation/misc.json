@@ -769,7 +769,7 @@
         "admin": "Admin"
       },
       "player": "Spiller",
-      "commend": "Vurder",
+      "commend": "Gi ros",
       "thumbsUp": "Tommel opp",
       "thumbsDown": "Tommel ned",
       "thumbsUpFor": "Tommel opp for {{name}}",
@@ -806,7 +806,7 @@
         "leader": "Leder",
         "good_comms": "God kommunikasjon",
         "teacher": "Lærer",
-        "good_sport": "God taper"
+        "good_sport": "Sportslig"
       },
       "history": "Matchmaking-kamper",
       "historyEmpty": "Ingen matchmaking-kamper ennå.",
