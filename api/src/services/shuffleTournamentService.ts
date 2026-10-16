@@ -1370,7 +1370,12 @@ export async function getShuffleTournament(
  * players marked out.
  */
 export async function dropShuffleNoShows(
-  match: { slug: string; tournament_id: number | null; config?: string | null },
+  match: {
+    slug: string;
+    tournament_id: number | null;
+    config?: string | null;
+    loaded_at?: number | null;
+  },
   seen: (steamId: string) => boolean
 ): Promise<string[]> {
   if (!match.tournament_id) return [];
@@ -1387,7 +1392,13 @@ export async function dropShuffleNoShows(
     [match.tournament_id]
   );
   const roster = signed.map((r) => r.player_id).filter((id) => ids.has(id));
-  if (roster.length === 0 || !roster.some(seen)) return [];
+  if (roster.length === 0) return [];
+  // Who connected is kept in memory. When the platform restarted after the
+  // match loaded, a player who did join reads as never seen; then drop no one
+  // unless someone was seen. Up the whole warmup, nobody showing up is real.
+  const startedAt = Math.floor(Date.now() / 1000 - process.uptime());
+  const watchedWarmup = !!match.loaded_at && startedAt <= Number(match.loaded_at);
+  if (!watchedWarmup && !roster.some(seen)) return [];
   const missing = roster.filter((id) => !seen(id));
   const now = Math.floor(Date.now() / 1000);
   for (const id of missing) {
