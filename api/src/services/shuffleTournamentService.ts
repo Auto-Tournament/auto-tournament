@@ -725,8 +725,8 @@ export async function checkRoundCompletion(
     return false; // No matches for this round
   }
 
-  // Check if all matches are completed
-  const allComplete = matches.every((m) => m.status === 'completed');
+  // Check if all matches are over (a match nobody came to is cancelled)
+  const allComplete = matches.every((m) => ['completed', 'cancelled'].includes(String(m.status)));
 
   if (!allComplete) {
     const completed = matches.filter((m) => m.status === 'completed').length;
@@ -1370,8 +1370,14 @@ export async function getShuffleTournament(
  * players marked out.
  */
 export async function dropShuffleNoShows(
-  match: { slug: string; tournament_id: number | null; config?: string | null },
-  seen: (steamId: string) => boolean
+  match: {
+    slug: string;
+    tournament_id: number | null;
+    config?: string | null;
+    loaded_at?: number | null;
+  },
+  seen: (steamId: string) => boolean,
+  options: { force?: boolean } = {}
 ): Promise<string[]> {
   if (!match.tournament_id) return [];
   const t = await db.queryOneAsync<{ type: string; status: string }>(
@@ -1387,7 +1393,13 @@ export async function dropShuffleNoShows(
     [match.tournament_id]
   );
   const roster = signed.map((r) => r.player_id).filter((id) => ids.has(id));
-  if (roster.length === 0 || !roster.some(seen)) return [];
+  if (roster.length === 0) return [];
+  // Who connected is kept in memory. When the platform restarted after the
+  // match loaded, a player who did join reads as never seen; then drop no one
+  // unless someone was seen. Up the whole warmup, nobody showing up is real.
+  const startedAt = Math.floor(Date.now() / 1000 - process.uptime());
+  const watchedWarmup = !!match.loaded_at && startedAt <= Number(match.loaded_at);
+  if (!options.force && !watchedWarmup && !roster.some(seen)) return [];
   const missing = roster.filter((id) => !seen(id));
   const now = Math.floor(Date.now() / 1000);
   for (const id of missing) {
@@ -1405,4 +1417,28 @@ export async function dropShuffleNoShows(
     );
   }
   return missing;
+}
+
+/**
+ * Auto-start found nobody from a shuffle match's roster on the server: the
+ * match is called off instead of played by bots. Everyone on it is marked out
+ * (they never came), the server is freed, and the round moves on when its
+ * other matches are done.
+ */
+export async function cancelEmptyShuffleMatch(slug: string): Promise<boolean> {
+  const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug]);
+  if (!match || String(match.status) !== 'loaded' || !match.tournament_id) return false;
+  const dropped = await dropShuffleNoShows(match, () => false, { force: true });
+  if (dropped.length === 0) return false;
+  const { scheduler } = await import('../core/scheduler');
+  await scheduler.cancelMatch(match, 'force-cancel').catch((error: unknown) =>
+    log.warn(`Shuffle ${match.tournament_id}: could not end ${slug} on its server`, {
+      error: String(error),
+    })
+  );
+  const { settleEndedMatch } = await import('./matchTerminationService');
+  await settleEndedMatch(match, 'nobody joined');
+  const { checkAndAdvanceShuffleRound } = await import('../core/matchLifecycle');
+  await checkAndAdvanceShuffleRound(match.tournament_id, match.round);
+  return true;
 }
