@@ -1,50 +1,32 @@
 import { useState, type ReactNode } from 'react';
+import { fmtDayTime, fmtTime } from '../../../utils/time';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Dialog, IconButton, Link, Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import {
-  CheckCircleIcon,
-  CheckIcon,
-  ClockIcon,
-  PlayCircleIcon,
-  WarningIcon,
-  XIcon,
-} from '@phosphor-icons/react';
+import { CheckCircleIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { Tournament } from '../../../types';
-import { remindLineupPlayer, type Registration, type SignupWindow } from '../../../hooks/useTournamentSignup';
+import {
+  remindLineupPlayer,
+  type Registration,
+  type SignupWindow,
+} from '../../../hooks/useTournamentSignup';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
-import { Face, PersonTile, TeamMark } from './PlayerFace';
+import { Face, TeamMark } from './PlayerFace';
+import { InfoTile, PlayerAvatar, StatusHero } from '../ui/draftUi';
 import { tokens, fontDisplay, mono, radii } from '../../../theme/tokens';
+import { panelSx, panelBorderSx, dialogPaperSx } from '../../../components/common/ui';
 
 const { color } = tokens;
 
-function Cell({ icon, tone, label, value, first, valueTone }: { icon: ReactNode; tone: string; label: string; value: string; first?: boolean; valueTone?: string }) {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        gap: 1.75,
-        alignItems: 'center',
-        minWidth: 0,
-        ...(!first && { pl: { sm: 2.75 }, borderLeft: { sm: `1px solid ${color.rule}` } }),
-      }}
-    >
-      <Box sx={{ color: tone, display: 'flex', flex: 'none' }} aria-hidden>
-        {icon}
-      </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
-        <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>{label}</Typography>
-        <Typography sx={{ fontFamily: fontDisplay, fontSize: '1.0625rem', fontWeight: 600, color: valueTone ?? color.ink }}>
-          {value}
-        </Typography>
-      </Box>
-    </Box>
-  );
-}
-
 /** Teams by lineup rating, best first, the viewer's own ringed. */
-export function TeamsLadder({ registrations, ownTeamId }: { registrations: Registration[]; ownTeamId: string | null }) {
+export function TeamsLadder({
+  registrations,
+  ownTeamId,
+}: {
+  registrations: Registration[];
+  ownTeamId: string | null;
+}) {
   const { t } = useTranslation();
   const ranked = [...registrations].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
   const top = Math.max(...ranked.map((r) => r.rating ?? 0), 1);
@@ -52,9 +34,30 @@ export function TeamsLadder({ registrations, ownTeamId }: { registrations: Regis
   const position = ranked.findIndex((r) => r.teamId === ownTeamId);
 
   return (
-    <Box data-testid="signup-ladder" sx={{ p: 2.25, borderRadius: radii.lg, bgcolor: color.paper2, border: `1px solid ${color.rule}`, display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', px: 0.75, pb: 0.75 }}>
-        <Typography component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600 }}>
+    <Box
+      data-testid="signup-ladder"
+      sx={{
+        ...panelSx,
+        ...panelBorderSx,
+        p: 2.25,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'baseline',
+          px: 0.75,
+          pb: 0.75,
+        }}
+      >
+        <Typography
+          component="h2"
+          sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600 }}
+        >
           {t('signup.ladder.title')}
         </Typography>
         {position >= 0 && (
@@ -65,7 +68,8 @@ export function TeamsLadder({ registrations, ownTeamId }: { registrations: Regis
       </Box>
       {ranked.map((reg, index) => {
         const own = reg.teamId === ownTeamId;
-        const width = top === bottom ? 100 : 30 + (((reg.rating ?? bottom) - bottom) / (top - bottom)) * 70;
+        const width =
+          top === bottom ? 100 : 30 + (((reg.rating ?? bottom) - bottom) / (top - bottom)) * 70;
         return (
           <Box
             key={reg.teamId}
@@ -79,26 +83,51 @@ export function TeamsLadder({ registrations, ownTeamId }: { registrations: Regis
               ...(own && { bgcolor: color.paper3, outline: `1px solid ${color.accent}` }),
             }}
           >
-            <Typography sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: '1.125rem', color: own ? color.accent : color.muted }}>
+            <Typography
+              sx={{
+                fontFamily: fontDisplay,
+                fontWeight: 700,
+                fontSize: '1.125rem',
+                color: own ? color.accent : color.muted,
+              }}
+            >
               {index + 1}
             </Typography>
             <TeamMark tag={reg.teamTag} name={reg.teamName} highlight={own} />
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, minWidth: 0 }}>
-              <Typography sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>{reg.teamName}</Typography>
+              <Typography sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>
+                {reg.teamName}
+              </Typography>
               <Box sx={{ display: 'flex' }}>
                 {reg.lineup
                   .filter((p) => p.role === 'starter')
                   .map((p, i) => (
                     <Box key={p.steamId} sx={{ ml: i === 0 ? 0 : '-8px' }}>
-                      <Face name={p.name} avatar={p.avatar} size={26} />
+                      <Face playerId={p.steamId} name={p.name} avatar={p.avatar} size={26} />
                     </Box>
                   ))}
               </Box>
             </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.75 }}>
+            <Box
+              sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.75 }}
+            >
               <Typography sx={{ ...mono, fontSize: '0.9375rem' }}>{reg.rating ?? '—'}</Typography>
-              <Box sx={{ width: 90, height: 6, borderRadius: 3, bgcolor: color.rule, overflow: 'hidden' }}>
-                <Box sx={{ height: '100%', width: `${width}%`, bgcolor: own ? color.accent : color.muted }} />
+              <Box
+                sx={{
+                  width: 90,
+                  height: 6,
+                  borderRadius: 3,
+                  bgcolor: color.rule,
+                  overflow: 'hidden',
+                }}
+              >
+                <Box
+                  sx={{
+                    height: '100%',
+                    width: `${width}%`,
+                    bgcolor: own ? color.accent : color.muted,
+                  }}
+                />
               </Box>
             </Box>
           </Box>
@@ -128,7 +157,7 @@ export function RegisteredPanel({
   canManage: boolean;
   onWithdraw: () => Promise<void>;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [fixOpen, setFixOpen] = useState(false);
   const [confirmWithdraw, setConfirmWithdraw] = useState(false);
   const { showSuccess, showError } = useSnackbar();
@@ -140,8 +169,9 @@ export function RegisteredPanel({
       showError((error as Error).message);
     }
   };
-  const problems = registration.lineup.flatMap((p) => p.problems.map((problem) => ({ player: p, problem })));
-  const dayAndTime = new Intl.DateTimeFormat(i18n.language, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const problems = registration.lineup.flatMap((p) =>
+    p.problems.map((problem) => ({ player: p, problem }))
+  );
   const firstAt = (tournament.settings?.schedule ?? [])
     .map((item) => new Date(item.at).getTime())
     .filter(Number.isFinite)
@@ -155,109 +185,276 @@ export function RegisteredPanel({
           data-testid="signup-lineup-gap"
           action={
             canManage ? (
-              <Button color="inherit" size="small" component={RouterLink} to={`/tournament/${tournament.id}/signup?edit=1`}>
+              <Button
+                color="inherit"
+                size="small"
+                component={RouterLink}
+                to={`/tournament/${tournament.id}/signup?edit=1`}
+              >
                 {t('signup.pickSub')}
               </Button>
             ) : undefined
           }
         >
           {t('signup.lineupGap', {
-            time: new Date(registration.lineupGapDeadline * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            time: fmtTime(registration.lineupGapDeadline),
           })}
         </Alert>
       )}
-      <Box
-        sx={{
-          p: { xs: 2, md: '20px 24px' },
-          borderRadius: radii.lg,
-          bgcolor: color.paper2,
-          border: `1px solid ${problems.length ? color.sideT : color.live}`,
-          display: 'grid',
-          gridTemplateColumns: { xs: 'minmax(0,1fr)', md: `repeat(4, minmax(0,1fr))${problems.length ? ' auto' : ''}` },
-          alignItems: 'center',
-          gap: 2.5,
-        }}
-      >
-        <Cell first icon={<CheckCircleIcon size={22} />} tone={color.live} label={registration.teamName} value={t('signup.todo.signedUp')} valueTone={color.live} />
-        {problems.length > 0 ? (
-          <Cell icon={<WarningIcon size={22} />} tone={color.sideT} label={t('signup.todo.beforeTheDay')} value={t('signup.todo.toFix', { count: problems.length })} valueTone={color.sideT} />
-        ) : (
-          <Cell icon={<CheckCircleIcon size={22} />} tone={color.live} label={t('signup.todo.lineup')} value={t('signup.todo.allReady')} valueTone={color.live} />
-        )}
-        <Cell
-          icon={<ClockIcon size={22} />}
-          tone={color.muted}
-          label={t('signup.keyDates.checkIn')}
-          value={window?.checkInOpensAt ? dayAndTime.format(new Date(window.checkInOpensAt)) : t('signup.todo.notSet')}
-        />
-        <Cell
-          icon={<PlayCircleIcon size={22} />}
-          tone={color.muted}
-          label={t('overviewPage.keyDates.starts')}
-          value={firstAt ? dayAndTime.format(firstAt) : t('signup.todo.notSet')}
-        />
-        {problems.length > 0 && (
-          <Button
-            variant="contained"
-            onClick={() => setFixOpen(true)}
-            data-testid="signup-show-fixes"
-            sx={{ borderRadius: radii.pill, bgcolor: color.sideT, color: color.accentInk, fontWeight: 600, px: 3, py: 1.5, whiteSpace: 'nowrap', '&:hover': { bgcolor: color.sideT } }}
+      {(() => {
+        const starters = registration.lineup.filter((p) => p.role !== 'sub').length;
+        const subs = registration.lineup.length - starters;
+        const place =
+          [...registrations]
+            .sort((x, y) => x.registeredAt - y.registeredAt)
+            .findIndex((r) => r.teamId === registration.teamId) + 1;
+        const checkInAt = window?.checkInOpensAt ? new Date(window.checkInOpensAt) : null;
+        const item = (children: ReactNode, warn = false) => (
+          <Box
+            component="li"
+            sx={{
+              px: 2,
+              py: 1.5,
+              borderRadius: radii.md,
+              bgcolor: color.paper3,
+              border: `2px solid ${warn ? color.warning : 'transparent'}`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+            }}
           >
-            {t('signup.todo.showFixes')}
-          </Button>
-        )}
-      </Box>
-
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'minmax(0,1.4fr) minmax(0,1fr)' }, gap: 2, alignItems: 'start' }}>
-        <Box sx={{ p: 3, borderRadius: radii.lg, bgcolor: color.paper2, border: `1px solid ${color.rule}`, display: 'flex', flexDirection: 'column', gap: 2.75 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <TeamMark tag={registration.teamTag} name={registration.teamName} size={40} highlight />
-            <Typography component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600, flex: 1 }}>
-              {t('signup.yourLineup')}
-            </Typography>
-            {canManage && (
+            {children}
+          </Box>
+        );
+        return (
+          <StatusHero
+            eyebrow={t('preStart.signedUpEyebrow', { team: registration.teamName })}
+            eyebrowColor={color.live}
+            ring={problems.length ? color.warning : color.rule}
+            title={
+              problems.length
+                ? t('preStart.inToFix', { count: problems.length })
+                : t('preStart.inTitle')
+            }
+            body={
+              problems.length
+                ? checkInAt
+                  ? t('preStart.fixBefore', { when: fmtDayTime(checkInAt) })
+                  : t('signup.todo.fixNote')
+                : checkInAt
+                  ? t('preStart.checkInOn', { when: fmtDayTime(checkInAt) })
+                  : t('preStart.allSet')
+            }
+            side={
               <>
-                <Link component={RouterLink} to={`/tournament/${tournament.id}/signup?edit=1`} sx={{ fontSize: '0.875rem', color: color.ink2 }}>
-                  {t('signup.change')}
-                </Link>
-                {tournament.status === 'setup' && (
-                  <Link component="button" onClick={() => setConfirmWithdraw(true)} sx={{ fontSize: '0.875rem', color: color.ban }}>
-                    {t('signup.withdraw')}
-                  </Link>
+                <InfoTile
+                  label={checkInAt ? t('preStart.checkInOpens') : t('overviewPage.keyDates.starts')}
+                  value={
+                    checkInAt
+                      ? fmtDayTime(checkInAt)
+                      : firstAt
+                        ? fmtDayTime(firstAt)
+                        : t('signup.todo.notSet')
+                  }
+                  note={
+                    window?.checkInClosesAt ? `– ${fmtTime(window.checkInClosesAt)}` : undefined
+                  }
+                />
+                {canManage && (
+                  <Button
+                    component={RouterLink}
+                    to={`/tournament/${tournament.id}/signup?edit=1`}
+                    variant="contained"
+                    sx={{ minHeight: 56, borderRadius: radii.pill, fontWeight: 700 }}
+                  >
+                    {t('preStart.openLineup')}
+                  </Button>
                 )}
               </>
-            )}
-          </Box>
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))', gap: 1 }}>
-            {registration.lineup.map((p) => (
-              <PersonTile
-                key={p.steamId}
-                name={p.name}
-                avatar={p.avatar}
-                note={
-                  p.problems.length
-                    ? [p.role === 'sub' ? t('signup.sub') : null, ...p.problems.map((problem) => t(`signup.problemShort.${problem}`))].filter(Boolean).join(' · ')
-                    : p.role === 'sub'
-                      ? t('signup.sub')
-                      : undefined
-                }
-                noteTone={p.problems.length ? color.sideT : undefined}
-                badge={
-                  p.problems.length
-                    ? { tone: color.sideT, icon: <WarningIcon size={13} weight="bold" /> }
-                    : { tone: color.live, icon: <CheckIcon size={13} weight="bold" /> }
-                }
-              />
-            ))}
-          </Box>
-        </Box>
-        <TeamsLadder registrations={registrations} ownTeamId={registration.teamId} />
-      </Box>
+            }
+          >
+            <Box
+              component="ol"
+              aria-label={t('preStart.yourSignup')}
+              sx={{
+                listStyle: 'none',
+                m: 0,
+                p: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1,
+              }}
+            >
+              {item(
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+                  <span>
+                    {t('signup.todo.signedUp')}
+                    {place > 0 && window?.maxTeams
+                      ? ` · ${t('preStart.spotOf', { place, max: window.maxTeams })}`
+                      : ''}
+                  </span>
+                  <Box component="span" sx={{ color: color.live, fontWeight: 700 }}>
+                    ✓ {t('signup.done')}
+                  </Box>
+                </Box>
+              )}
+              {item(
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: 1,
+                    alignItems: 'center',
+                  }}
+                >
+                  <span>{t('preStart.lineupCount', { starters, subs })}</span>
+                  {canManage && (
+                    <Link
+                      component={RouterLink}
+                      to={`/tournament/${tournament.id}/signup?edit=1`}
+                      sx={{ fontWeight: 600 }}
+                    >
+                      {t('signup.change')}
+                    </Link>
+                  )}
+                </Box>
+              )}
+              {problems.length > 0 &&
+                item(
+                  <>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        gap: 1,
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Box component="span" sx={{ fontWeight: 600 }}>
+                        {t('signup.todo.beforeTheDay')} ·{' '}
+                        {t('signup.todo.toFix', { count: problems.length })}
+                      </Box>
+                      <Box
+                        component="span"
+                        sx={{
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: radii.pill,
+                          bgcolor: color.warning,
+                          color: color.accentInk,
+                          fontSize: '0.8125rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {t('preStart.fixBeforeCheckIn')}
+                      </Box>
+                    </Box>
+                    {problems.map(({ player, problem }) => (
+                      <Box
+                        key={`${player.steamId}-${problem}`}
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: 1,
+                          alignItems: 'center',
+                          fontSize: '0.9375rem',
+                        }}
+                      >
+                        <span>
+                          <Box component="span" sx={{ color: color.ink2 }}>
+                            {player.name}
+                          </Box>{' '}
+                          · {t(`signup.problem.${problem}`)}
+                        </span>
+                        {canManage && (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => void remind(player.steamId)}
+                            data-testid="signup-fix-remind"
+                            sx={{ minHeight: 36, borderRadius: radii.pill }}
+                          >
+                            {t('signup.remind')}
+                          </Button>
+                        )}
+                      </Box>
+                    ))}
+                  </>,
+                  true
+                )}
+            </Box>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {registration.lineup.map((p) => (
+                <Box key={p.steamId} title={p.name} sx={{ position: 'relative' }}>
+                  <PlayerAvatar
+                    id={p.steamId}
+                    name={p.name}
+                    avatar={p.avatar}
+                    size={36}
+                    label
+                    sx={{
+                      outline: `2px solid ${p.problems.length ? color.warning : color.live}`,
+                      outlineOffset: 2,
+                    }}
+                  />
+                </Box>
+              ))}
+            </Box>
+          </StatusHero>
+        );
+      })()}
 
-      <Dialog open={fixOpen} onClose={() => setFixOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' } }}>
-        <Box sx={{ p: 3.5, display: 'flex', flexDirection: 'column', gap: 1 }} data-testid="signup-fix-list">
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
-            <Typography component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.5rem', fontWeight: 600 }}>
+      {canManage && tournament.status === 'setup' && (
+        <Box
+          component="section"
+          aria-label={t('preStart.leave')}
+          sx={{
+            borderTop: `1px solid ${color.rule}`,
+            pt: 2.5,
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1.5,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            order: 99,
+          }}
+        >
+          <Typography sx={{ fontSize: '0.875rem', color: color.muted }}>
+            {t('preStart.withdrawHint')}
+          </Typography>
+          <Button
+            variant="outlined"
+            onClick={() => setConfirmWithdraw(true)}
+            sx={{
+              minHeight: 44,
+              borderRadius: radii.pill,
+              color: color.ban,
+              borderColor: color.rule,
+            }}
+          >
+            {t('signup.withdraw')} {registration.teamName}
+          </Button>
+        </Box>
+      )}
+
+      <Dialog
+        open={fixOpen}
+        onClose={() => setFixOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: dialogPaperSx }}
+      >
+        <Box
+          sx={{ p: 3.5, display: 'flex', flexDirection: 'column', gap: 1 }}
+          data-testid="signup-fix-list"
+        >
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}
+          >
+            <Typography
+              component="h2"
+              sx={{ fontFamily: fontDisplay, fontSize: '1.5rem', fontWeight: 600 }}
+            >
               {t('signup.todo.toFix', { count: problems.length })}
             </Typography>
             <IconButton aria-label={t('common.close')} onClick={() => setFixOpen(false)}>
@@ -265,15 +462,32 @@ export function RegisteredPanel({
             </IconButton>
           </Box>
           {registration.lineup.map((p) => (
-            <Box key={p.steamId} sx={{ display: 'grid', gridTemplateColumns: '22px 44px minmax(0,1fr) auto', gap: 1.75, alignItems: 'center', py: 1.75, borderBottom: `1px solid ${color.rule}` }}>
-              <Box sx={{ color: p.problems.length ? color.sideT : color.live, display: 'flex' }} aria-hidden>
+            <Box
+              key={p.steamId}
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '22px 44px minmax(0,1fr) auto',
+                gap: 1.75,
+                alignItems: 'center',
+                py: 1.75,
+                borderBottom: `1px solid ${color.rule}`,
+              }}
+            >
+              <Box
+                sx={{ color: p.problems.length ? color.sideT : color.live, display: 'flex' }}
+                aria-hidden
+              >
                 {p.problems.length ? <WarningIcon size={22} /> : <CheckCircleIcon size={22} />}
               </Box>
-              <Face name={p.name} avatar={p.avatar} size={44} />
+              <Face playerId={p.steamId} name={p.name} avatar={p.avatar} size={44} />
               <Box sx={{ minWidth: 0 }}>
                 <Typography sx={{ fontWeight: 600 }}>{p.name}</Typography>
-                <Typography sx={{ fontSize: '0.875rem', color: p.problems.length ? color.ink2 : color.muted }}>
-                  {p.problems.length ? p.problems.map((problem) => t(`signup.problem.${problem}`)).join(' · ') : t('signup.ready')}
+                <Typography
+                  sx={{ fontSize: '0.875rem', color: p.problems.length ? color.ink2 : color.muted }}
+                >
+                  {p.problems.length
+                    ? p.problems.map((problem) => t(`signup.problem.${problem}`)).join(' · ')
+                    : t('signup.ready')}
                 </Typography>
               </Box>
               {p.problems.length > 0 && canManage ? (
@@ -286,15 +500,23 @@ export function RegisteredPanel({
                   {t('signup.remind')}
                 </Button>
               ) : (
-                <Typography sx={{ fontSize: '0.8125rem', color: color.live, fontWeight: 600 }}>{p.problems.length ? '' : t('signup.done')}</Typography>
+                <Typography sx={{ fontSize: '0.8125rem', color: color.live, fontWeight: 600 }}>
+                  {p.problems.length ? '' : t('signup.done')}
+                </Typography>
               )}
             </Box>
           ))}
-          <Typography sx={{ fontSize: '0.8125rem', color: color.muted, pt: 1.25 }}>{t('signup.todo.fixNote')}</Typography>
+          <Typography sx={{ fontSize: '0.8125rem', color: color.muted, pt: 1.25 }}>
+            {t('signup.todo.fixNote')}
+          </Typography>
         </Box>
       </Dialog>
 
-      <Dialog open={confirmWithdraw} onClose={() => setConfirmWithdraw(false)} PaperProps={{ sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' } }}>
+      <Dialog
+        open={confirmWithdraw}
+        onClose={() => setConfirmWithdraw(false)}
+        PaperProps={{ sx: dialogPaperSx }}
+      >
         <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 420 }}>
           <Typography sx={{ fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 600 }}>
             {t('signup.withdrawTitle', { team: registration.teamName })}

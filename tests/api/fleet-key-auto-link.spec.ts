@@ -1,6 +1,12 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
-import { FleetTestClient, createFleetKey, enroll, newInstallId, resetEnrollRateLimit } from '../helpers/fleet';
+import {
+  FleetTestClient,
+  createFleetKey,
+  enroll,
+  newInstallId,
+  resetEnrollRateLimit,
+} from '../helpers/fleet';
 
 /**
  * A fleet key set to auto-link (`autoLink` on `POST /api/fleet/keys`): a
@@ -44,7 +50,10 @@ test.describe.serial('Fleet key auto-link', () => {
     while (cleanup.length) await cleanup.pop()?.();
   });
 
-  async function enrollServer(request: APIRequestContext, keyValue: string): Promise<{
+  async function enrollServer(
+    request: APIRequestContext,
+    keyValue: string
+  ): Promise<{
     id: string;
     hello: () => Promise<void>;
   }> {
@@ -77,7 +86,9 @@ test.describe.serial('Fleet key auto-link', () => {
     expect(await linkedServerId(request, id)).toBeNull();
   }
 
-  test('the key listing says whether a key auto-links; a non-boolean autoLink is refused', async ({ request }) => {
+  test('the key listing says whether a key auto-links; a non-boolean autoLink is refused', async ({
+    request,
+  }) => {
     const on = await createFleetKey(request, { name: 'fleet-auto-link-on', autoLink: true });
     const off = await createFleetKey(request, { name: 'fleet-auto-link-off' });
     expect(await listedKey(request, on.id)).toMatchObject({ autoLink: true });
@@ -92,7 +103,9 @@ test.describe.serial('Fleet key auto-link', () => {
     }
   });
 
-  test('a server enrolled with an auto-link key is linked on its first hello', async ({ request }) => {
+  test('a server enrolled with an auto-link key is linked on its first hello', async ({
+    request,
+  }) => {
     const key = await createFleetKey(request, { name: 'fleet-auto-link', autoLink: true });
     const { id } = await enrollAndHello(request, key.value);
     await expect.poll(() => linkedServerId(request, id)).toBe(id);
@@ -109,7 +122,9 @@ test.describe.serial('Fleet key auto-link', () => {
     const { id, hello } = await enrollAndHello(request, key.value);
     await expect.poll(() => linkedServerId(request, id)).toBe(id);
 
-    const unlink = await request.delete(`/api/fleet/servers/${id}/link`, { headers: getAuthHeader() });
+    const unlink = await request.delete(`/api/fleet/servers/${id}/link`, {
+      headers: getAuthHeader(),
+    });
     expect(unlink.ok(), await unlink.text()).toBeTruthy();
     expect(await linkedServerId(request, id)).toBeNull();
 

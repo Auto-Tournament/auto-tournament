@@ -79,7 +79,9 @@
       "upper": "UB R{{round}} M{{match}}",
       "lower": "LB R{{round}} M{{match}}",
       "grandFinal": "Grand Final",
-      "grandFinalReset": "Grand Final Reset"
+      "grandFinalReset": "Grand Final Reset",
+      "group": "Group {{group}} · Round {{round}}",
+      "playoffs": "Playoffs · Round {{round}}"
     },
     "table": {
       "filterLabel": "Show",

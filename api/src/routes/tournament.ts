@@ -4,6 +4,7 @@ import express, { Router, Request, Response } from 'express';
 import { tournamentService } from '../services/tournamentService';
 import { scheduler } from '../core/scheduler';
 import { db } from '../config/database';
+import { bannerUrl, logoUrl } from '../services/teamSelfService';
 import { requestActorId, requireAuth } from '../middleware/auth';
 import { pauseTournament, resumeTournament } from '../services/matchHolds';
 import { log } from '../utils/logger';
@@ -16,6 +17,8 @@ import {
   registerPlayers,
   setRegisteredPlayers,
   getRegisteredPlayers,
+  fillRoundFromBench,
+  getShuffleTournament,
   generateRoundMatches,
   getTournamentLeaderboard,
   type ShuffleTournamentConfig,
@@ -24,6 +27,7 @@ import { eloTemplateService } from '../services/eloTemplateService';
 import { settingsService } from '../services/settingsService';
 import { checkTournamentCompletion } from '../utils/matchProgression';
 import { resolveTournamentId } from '../utils/tournamentRow';
+import { applyMatchTimes, matchTimesError } from '../services/matchTimes';
 import { validateTeamCount } from '../utils/tournamentHelpers';
 import { integrationForMatch } from '../integrations/registry';
 import { resolveGameRef } from '../services/gameCatalogService';
@@ -125,6 +129,91 @@ router.post('/archive', requireAuth, async (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
+/**
+ * @openapi
+ * /api/tournament/{id}/teams:
+ *   get:
+ *     tags: [Tournament]
+ *     summary: The tournament's teams with their rosters, logos and banners (public)
+ *     description: |
+ *       No session. What the tournament page's Teams tab draws: each team in
+ *       seed order with its logo and banner URLs and its players (name and
+ *       Steam picture).
+ *     parameters:
+ *       - { in: path, name: id, required: true, schema: { type: integer } }
+ *     responses:
+ *       200: { description: The teams }
+ *       404: { description: Tournament not found }
+ */
+router.get('/:id/teams', async (req: Request, res: Response) => {
+  try {
+    const tournamentId = await readableTournamentId(req.params.id);
+    if (tournamentId === null) {
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
+    }
+    const row = await db.queryOneAsync<{ team_ids: string | null }>(
+      'SELECT team_ids FROM tournament WHERE id = ?',
+      [tournamentId]
+    );
+    const teamIds: string[] = row?.team_ids ? JSON.parse(row.team_ids) : [];
+    if (teamIds.length === 0) return res.json({ success: true, teams: [] });
+    const rows = await db.queryAsync<{
+      id: string;
+      name: string;
+      tag: string | null;
+      players: string | null;
+      logo_updated_at: number | null;
+      banner_updated_at: number | null;
+    }>(
+      `SELECT id, name, tag, players, logo_updated_at, banner_updated_at FROM teams WHERE id IN (${teamIds.map(() => '?').join(',')})`,
+      teamIds
+    );
+    const rosters = new Map<string, Array<{ steamId: string; name: string }>>();
+    const allIds = new Set<string>();
+    for (const team of rows) {
+      let list: Array<{ steamId?: string; steamid?: string; name?: string }> = [];
+      try {
+        list = team.players ? JSON.parse(team.players) : [];
+      } catch {
+        list = [];
+      }
+      const roster = list
+        .map((p) => ({ steamId: String(p.steamId ?? p.steamid ?? ''), name: p.name ?? '' }))
+        .filter((p) => p.steamId);
+      roster.forEach((p) => allIds.add(p.steamId));
+      rosters.set(team.id, roster);
+    }
+    const ids = [...allIds];
+    const people = ids.length
+      ? await db.queryAsync<{ id: string; name: string; avatar_url: string | null }>(
+          `SELECT id, name, avatar_url FROM players WHERE id IN (${ids.map(() => '?').join(',')})`,
+          ids
+        )
+      : [];
+    const personById = new Map(people.map((p) => [p.id, p]));
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    const teams = teamIds
+      .map((id) => byId.get(id))
+      .filter((team): team is NonNullable<typeof team> => !!team)
+      .map((team) => ({
+        id: team.id,
+        name: team.name,
+        tag: team.tag,
+        logoUrl: logoUrl(team.id, team.logo_updated_at),
+        bannerUrl: bannerUrl(team.id, team.banner_updated_at),
+        players: (rosters.get(team.id) ?? []).map((p) => ({
+          steamId: p.steamId,
+          name: personById.get(p.steamId)?.name || p.name,
+          avatar: personById.get(p.steamId)?.avatar_url ?? null,
+        })),
+      }));
+    return res.json({ success: true, teams });
+  } catch (error) {
+    log.error('Error fetching tournament teams', { error });
+    return res.status(500).json({ success: false, error: 'Could not read the teams' });
+  }
+});
+
 router.get('/:id/leaderboard', async (req: Request, res: Response) => {
   try {
     // The current tournament, or an archived one (its results stay public).
@@ -333,6 +422,75 @@ router.get('/:id/bracket', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Error fetching the public bracket', error);
     return res.status(500).json({ success: false, error: 'Failed to fetch bracket' });
+  }
+});
+
+/**
+ * GET /api/tournament/:id/shuffle-round
+ * A shuffle tournament's current round (public, like the bracket): who plays in
+ * which match and who sits it out, so the overview can tell each player.
+ * { round, maps, finished, matches: [{ slug, status, teams: [{ name, steamIds }] }], sittingOut: steamIds }
+ */
+router.get('/:id/shuffle-round', async (req: Request, res: Response) => {
+  try {
+    const tournamentId = await readableTournamentId(req.params.id);
+    if (tournamentId === null)
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
+    const shuffle = await getShuffleTournament(tournamentId);
+    // The rounds' maps in order (one map a round), for the overview's timeline.
+    const maps = shuffle ? shuffle.mapSequence || shuffle.maps || [] : [];
+    const finished = shuffle?.status === 'completed';
+    const top = await db.queryOneAsync<{ round: number | null }>(
+      'SELECT MAX(round) AS round FROM matches WHERE tournament_id = ?',
+      [tournamentId]
+    );
+    const round = top?.round ?? null;
+    if (round === null)
+      return res.json({ success: true, round: null, maps, finished, matches: [], sittingOut: [] });
+    const rows = await db.queryAsync<{
+      slug: string;
+      status: string;
+      held_until: number | null;
+      hold_reason: string | null;
+      t1_name: string | null;
+      t1_players: string | null;
+      t2_name: string | null;
+      t2_players: string | null;
+    }>(
+      `SELECT m.slug, m.status, m.held_until, m.hold_reason, t1.name AS t1_name, t1.players AS t1_players,
+              t2.name AS t2_name, t2.players AS t2_players
+         FROM matches m
+         LEFT JOIN teams t1 ON t1.id = m.team1_id
+         LEFT JOIN teams t2 ON t2.id = m.team2_id
+        WHERE m.tournament_id = ? AND m.round = ?
+        ORDER BY m.slug`,
+      [tournamentId, round]
+    );
+    const ids = (json: string | null) =>
+      (JSON.parse(json || '[]') as Array<{ steamId: string }>).map((p) => p.steamId);
+    const matches = rows.map((r) => ({
+      slug: r.slug,
+      status: r.status,
+      teams: [
+        { name: r.t1_name, steamIds: ids(r.t1_players) },
+        { name: r.t2_name, steamIds: ids(r.t2_players) },
+      ],
+    }));
+    const playing = new Set(matches.flatMap((m) => m.teams.flatMap((t) => t.steamIds)));
+    const registered = await getRegisteredPlayers(tournamentId, { active: true });
+    const sittingOut = registered.map((p) => p.id).filter((id) => !playing.has(id));
+    // A break before this round (shuffleTournamentService holdRoundForBreak): when it ends.
+    const now = Math.floor(Date.now() / 1000);
+    const breakUntil =
+      rows
+        .filter(
+          (r) => r.held_until && Number(r.held_until) > now && /^Break/.test(r.hold_reason ?? '')
+        )
+        .reduce<number | null>((max, r) => Math.max(max ?? 0, Number(r.held_until)), null) ?? null;
+    return res.json({ success: true, round, maps, finished, matches, sittingOut, breakUntil });
+  } catch (error) {
+    log.error('Error reading the shuffle round', { error });
+    return res.status(500).json({ success: false, error: 'Could not read the round' });
   }
 });
 
@@ -703,6 +861,15 @@ function validateEventPageSettings(
       return { valid: false, error: 'settings.maxTeams must be a whole number from 2 to 256' };
     }
   }
+  // Groups, then playoffs (services/groupsTournament.ts): its settings, the team count at start.
+  for (const key of ['groupCount', 'advancePerGroup'] as const) {
+    if (s[key] !== undefined && ![1, 2, 3, 4].includes(Number(s[key]))) {
+      return { valid: false, error: `settings.${key} is out of range` };
+    }
+  }
+  // Match times (services/matchTimes.ts): round start times, the veto lead, the reminder.
+  const timesError = matchTimesError(s.matchTimes);
+  if (timesError) return { valid: false, error: timesError };
   // The start time: reminders before it and, with autoStart, the start (services/tournamentSchedule.ts).
   if (s.autoStart !== undefined && typeof s.autoStart !== 'boolean') {
     return { valid: false, error: 'settings.autoStart must be true or false' };
@@ -1055,6 +1222,12 @@ router.put('/', async (req: Request, res: Response) => {
     }
 
     const tournament = await tournamentService.updateTournament(tournamentId, input);
+    // New match times move the holds of the matches that have not begun.
+    if (input.settings && 'matchTimes' in (input.settings as Record<string, unknown>)) {
+      await applyMatchTimes(tournamentId).catch((error) =>
+        log.warn('[MATCH-TIMES] could not apply the new times', { error })
+      );
+    }
 
     // Emit updates to all clients
     emitTournamentUpdate({ action: 'tournament_updated', ...tournament });
@@ -1458,6 +1631,11 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     if (toStart && toStart.type !== 'shuffle') {
       try {
         validateTeamCount(toStart.type, toStart.teamIds.length);
+        if (toStart.type === 'groups') {
+          const { groupsError } = await import('../services/groupsTournament');
+          const problem = groupsError(toStart.settings, toStart.teamIds.length);
+          if (problem) throw new Error(problem);
+        }
       } catch (countError) {
         return res.status(400).json({
           success: false,
@@ -2469,6 +2647,8 @@ router.post('/:id/register-players', async (req: Request, res: Response) => {
     }
 
     const result = await registerPlayers(tournamentId, playerIds);
+    // Added to a running shuffle: enough players waiting get a match now.
+    if (result.registered > 0) await fillRoundFromBench(tournamentId).catch(() => []);
 
     const statusCode = result.errors.length > 0 ? 207 : 200; // 207 Multi-Status if some failed
 
@@ -2547,6 +2727,9 @@ router.put('/:id/set-players', async (req: Request, res: Response) => {
     }
 
     const result = await setRegisteredPlayers(tournamentId, playerIds);
+    // Added (or brought back) to a running shuffle: enough players waiting get a match now, as
+    // with register-players. Re-adding players by hand left them sitting out (NTLAN, 2026-10-16).
+    if (result.registered > 0) await fillRoundFromBench(tournamentId).catch(() => []);
 
     const statusCode = result.errors.length > 0 ? 207 : 200; // 207 Multi-Status if some failed
 

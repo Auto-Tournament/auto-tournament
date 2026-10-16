@@ -12,23 +12,15 @@
  */
 
 import { useEffect, useState } from 'react';
+import { fmtDate, fmtDateTime, fmtTime } from '../utils/time';
 import { useParams, Link as RouterLink } from 'react-router-dom';
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Container,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Container, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { api } from '../utils/api';
 import { useIntegrationFor } from '../integrations/registry';
 import type { PublicMatch } from '../integrations/types';
-import { fontDisplay, mono, radii, tokens } from '../theme/tokens';
+import { fontDisplay, mono, tokens } from '../theme/tokens';
 import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../contexts/AuthContext';
 import { getStatusLabel } from '../utils/matchUtils';
@@ -37,6 +29,10 @@ import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { YourMatchCard } from '../components/tournament/match/YourMatchCard';
 import { SpectatorRoom, type SpectatorRoomMatch } from '../components/match/SpectatorRoom';
 import { WhatsNextCard } from '../components/tournament/WhatsNextCard';
+import { CaptainsPanel } from '../components/match/CaptainsPanel';
+import { MatchChatPanel } from '../components/match/MatchChatPanel';
+import { CommendPanel } from '../components/match/CommendPanel';
+import { MapTile, TeamLogo, panel } from '../components/tournament/ui/draftUi';
 
 type MatchResponse = PublicMatch &
   Omit<SpectatorRoomMatch, 'team1' | 'team2' | 'status'> & {
@@ -47,6 +43,9 @@ type MatchResponse = PublicMatch &
     team2LogoUrl?: string | null;
     team1SeriesScore?: number;
     team2SeriesScore?: number;
+    /** Its start time and when its veto opens (unix s), when it has one. */
+    startsAt?: number | null;
+    vetoOpensAt?: number | null;
   };
 
 /** "de_inferno" → "Inferno". */
@@ -56,13 +55,9 @@ function mapName(map: string | null, n: number, t: TFunction): string {
   return bare.charAt(0).toUpperCase() + bare.slice(1);
 }
 
-function crest(name: string | null | undefined, tag: string | null | undefined): string {
-  return (tag || name || '?').slice(0, 3).toUpperCase();
-}
-
 export default function MatchPage() {
   const { slug = '' } = useParams<{ slug: string }>();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   // The answer for the slug it was asked for (a new slug shows loading again).
   const [loaded, setLoaded] = useState<{ slug: string; match: MatchResponse | null } | null>(null);
 
@@ -150,71 +145,77 @@ export default function MatchPage() {
     ).length;
   const score1 = maps.length ? won('team1') : (match.team1SeriesScore ?? 0);
   const score2 = maps.length ? won('team2') : (match.team2SeriesScore ?? 0);
-  const date = match.completedAt
-    ? new Date(match.completedAt * 1000).toLocaleDateString(i18n.language, {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : null;
+  const date = match.completedAt ? fmtDate(match.completedAt) : null;
 
+  // The score panel every viewer gets (the drafts' match room): both teams'
+  // logos and names, the maps won, and what the match is.
   const side = (key: 'team1' | 'team2', right: boolean) => {
     const team = match[key];
     const win = match.winnerSide === key;
+    const mine = !!match.viewerTeamId && team?.id === match.viewerTeamId;
     const body = (
-      <Stack
-        direction={right ? 'row-reverse' : 'row'}
-        spacing={2}
-        alignItems="center"
+      <Box
         sx={{
+          display: 'flex',
+          // Phones: the logo with its label under it (the name is hidden there, the drafts' phone boards).
+          flexDirection: { xs: 'column', sm: right ? 'row-reverse' : 'row' },
+          alignItems: 'center',
+          gap: { xs: 0.75, sm: 2 },
           minWidth: 0,
-          textAlign: right ? 'right' : 'left',
-          justifyContent: { xs: 'center', sm: 'flex-start' },
+          textAlign: { xs: 'center', sm: right ? 'right' : 'left' },
         }}
       >
-        <Box
-          sx={{
-            width: 56,
-            height: 56,
-            flex: 'none',
-            borderRadius: radii.md,
-            display: 'grid',
-            placeItems: 'center',
-            bgcolor: 'background.surface3',
-            border: 1,
-            borderColor: win ? tokens.color.accent : 'divider',
-            color: win ? tokens.color.accent : 'text.secondary',
-            fontFamily: fontDisplay,
-            fontWeight: 700,
-            overflow: 'hidden',
-          }}
-        >
-          {match[`${key}LogoUrl`] ? (
-            <Box
-              component="img"
-              src={match[`${key}LogoUrl`]!}
-              alt=""
-              sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            />
-          ) : (
-            crest(team?.name, team?.tag)
-          )}
-        </Box>
-        <Box sx={{ minWidth: 0 }}>
+        <TeamLogo
+          team={
+            team
+              ? {
+                  id: team.id,
+                  name: team.name ?? '',
+                  tag: team.tag,
+                  logoUrl: match[`${key}LogoUrl`],
+                }
+              : null
+          }
+          size="lg"
+        />
+        <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           <Typography
-            variant="h4"
-            component="h1"
-            sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}
+            component={right ? 'span' : 'h1'}
+            sx={{
+              m: 0,
+              fontFamily: fontDisplay,
+              fontSize: { xs: '1.125rem', sm: '1.75rem' },
+              fontWeight: 700,
+              // Your team's name in the accent, as on every page.
+              color: mine ? tokens.color.accent : tokens.color.ink,
+              overflowWrap: 'anywhere',
+              // Phones: kept for screen readers, the logo says it on screen.
+              '@media (max-width: 599.95px)': {
+                position: 'absolute',
+                width: '1px',
+                height: '1px',
+                overflow: 'hidden',
+                clip: 'rect(0 0 0 0)',
+                whiteSpace: 'nowrap',
+              },
+            }}
           >
             {team?.name ?? t('matchPage.tbd')}
           </Typography>
-          {win && (
-            <Typography variant="caption" color="text.secondary">
-              {t('matchPage.winner')}
-            </Typography>
-          )}
+          <Typography
+            component="span"
+            sx={{
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              color: mine ? tokens.color.accent : tokens.color.muted,
+              fontWeight: mine ? 600 : 400,
+            }}
+          >
+            {[mine ? t('liveMatch.yourTeam') : null, win ? t('matchPage.winner') : null]
+              .filter(Boolean)
+              .join(' · ')}
+          </Typography>
         </Box>
-      </Stack>
+      </Box>
     );
     return team?.id ? (
       <Box
@@ -229,67 +230,62 @@ export default function MatchPage() {
     );
   };
 
-  // The public header: both teams, the score, and what the match is.
   const publicHeader = (
-    <>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'minmax(0, 1fr) auto minmax(0, 1fr)' },
-          gap: 3,
-          alignItems: 'center',
-          textAlign: { xs: 'center', sm: 'initial' },
-        }}
-      >
-        {side('team1', false)}
+    <Box
+      component="section"
+      aria-label={t('matchPage.scoreLabel', { a: score1, b: score2 })}
+      sx={{
+        ...panel,
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)',
+        gap: { xs: 1.5, sm: 2.5 },
+        alignItems: 'center',
+        p: { xs: 2, sm: 3.5 },
+      }}
+    >
+      {side('team1', false)}
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.25 }}>
         <Typography
           component="div"
-          aria-label={t('matchPage.scoreLabel', { a: score1, b: score2 })}
           sx={{
-            fontFamily: fontDisplay,
-            fontWeight: 700,
-            fontSize: '3rem',
-            fontVariantNumeric: 'tabular-nums',
-            display: 'flex',
-            gap: 1.5,
-            justifyContent: 'center',
+            ...mono,
+            fontSize: { xs: '2.25rem', sm: '3rem' },
+            fontWeight: 500,
+            whiteSpace: 'nowrap',
           }}
         >
-          <span style={{ opacity: match.winnerSide === 'team2' ? 0.55 : 1 }}>{score1}</span>
-          <Box component="span" sx={{ color: 'divider' }}>
-            :
-          </Box>
-          <span style={{ opacity: match.winnerSide === 'team1' ? 0.55 : 1 }}>{score2}</span>
+          <span
+            style={{
+              color:
+                match.winnerSide === 'team1'
+                  ? tokens.color.live
+                  : match.winnerSide === 'team2'
+                    ? tokens.color.ban
+                    : undefined,
+            }}
+          >
+            {score1}
+          </span>
+          {' – '}
+          <span
+            style={{
+              color:
+                match.winnerSide === 'team2'
+                  ? tokens.color.live
+                  : match.winnerSide === 'team1'
+                    ? tokens.color.ban
+                    : undefined,
+            }}
+          >
+            {score2}
+          </span>
         </Typography>
-        {side('team2', true)}
+        <Typography component="span" sx={{ fontSize: '0.8125rem', color: tokens.color.muted }}>
+          {t('matchPage.maps').toLowerCase()}
+        </Typography>
       </Box>
-      <Stack
-        direction="row"
-        spacing={1}
-        justifyContent="center"
-        flexWrap="wrap"
-        useFlexGap
-        sx={{ mt: 2 }}
-      >
-        {match.status !== 'completed' && (
-          <Chip
-            size="small"
-            label={getStatusLabel(match.status)}
-            data-testid="match-page-status"
-            sx={
-              match.status === 'live'
-                ? { bgcolor: tokens.color.live, color: tokens.color.accentInk, fontWeight: 700 }
-                : undefined
-            }
-          />
-        )}
-        {match.tournament && <Chip size="small" label={match.tournament} />}
-        {date && <Chip size="small" label={date} sx={{ ...mono }} />}
-        {maps.length > 0 && (
-          <Chip size="small" label={maps.map((m) => mapName(m.map, m.mapNumber, t)).join(' · ')} />
-        )}
-      </Stack>
-    </>
+      {side('team2', true)}
+    </Box>
   );
 
   // The viewer plays in this match: their part comes first while it is on.
@@ -301,193 +297,273 @@ export default function MatchPage() {
   // A player's match card carries them itself (in place of its map pills).
   const playerCard = !!viewerTeamId && matchIsOn && playsThroughModule;
 
+  const live = match.status === 'live' || match.status === 'loaded';
+  const showChat = !!viewerTeamId || isAdmin;
+  // The veto takes the page's width (the drafts' veto board); the chat moves under it.
+  const vetoing = matchIsOn && match.status === 'pending' && match.vetoCompleted === false;
+
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }} data-testid="match-page">
-      {/* Back to the tournament this match is part of: its page and bracket. */}
-      {match.tournamentId && match.tournament && (
-        <Stack
-          direction="row"
-          spacing={1.5}
-          alignItems="center"
-          flexWrap="wrap"
-          useFlexGap
-          sx={{ mb: 3, fontSize: '0.875rem' }}
-          data-testid="match-room-tournament"
+    <Container
+      maxWidth="lg"
+      sx={{ py: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 3 }}
+      data-testid="match-page"
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: 1.5,
+        }}
+      >
+        <Box
+          component="div"
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 1,
+            fontSize: '0.8125rem',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: tokens.color.muted,
+          }}
         >
-          <Box
-            component={RouterLink}
-            to={tournamentTabPath(match.tournamentId)}
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.75,
-              color: 'text.secondary',
-              textDecoration: 'none',
-              fontWeight: 600,
-              '&:hover': { color: 'text.primary' },
-            }}
-          >
-            <ArrowLeftIcon size={16} aria-hidden />
-            {match.tournament}
-          </Box>
-          <Box component="span" sx={{ color: 'divider' }} aria-hidden>
-            ·
-          </Box>
-          <Box
-            component={RouterLink}
-            to={tournamentTabPath(match.tournamentId, 'bracket')}
-            sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' } }}
-          >
-            {t('matchPage.bracket')}
-          </Box>
-        </Stack>
-      )}
-      {viewerTeamId ? (
-        <Box data-testid="match-room-player" sx={{ display: 'grid', gap: 3 }}>
-          {matchIsOn && playsThroughModule ? (
-            <YourMatchCard
-              teamId={viewerTeamId}
-              matchSlug={match.slug}
-              fallback={publicHeader}
-              mapsView={seriesMaps}
-            />
-          ) : (
-            publicHeader
-          )}
-          {ReportPanel && <ReportPanel matchSlug={match.slug} matchStatus={match.status} />}
-        </Box>
-      ) : (
-        publicHeader
-      )}
-
-      {/* The player's match is over: what happens now, and the bracket. They stay here. */}
-      {viewerTeamId && match.tournamentId && match.status === 'completed' && (
-        <Box sx={{ mt: 4 }}>
-          <WhatsNextCard
-            tournamentId={match.tournamentId}
-            teamId={viewerTeamId}
-            matchSlug={match.slug}
-          />
-        </Box>
-      )}
-
-      {!viewerTeamId && matchIsOn && playsThroughModule && (
-        <SpectatorRoom match={match} hasVeto={integration.capabilities.veto} />
-      )}
-
-      {/* Everyone who does not play in it sees the pre-match phase (the veto)
-          as it happens, read-only (the MatchRoom board). */}
-      {!viewerTeamId && matchIsOn && PreMatchView && (
-        <Box sx={{ mt: 4 }} data-testid="match-admin-prematch">
-          <PreMatchView
-            matchSlug={match.slug}
-            team1Name={match.team1?.name ?? undefined}
-            team2Name={match.team2?.name ?? undefined}
-            onComplete={() => setVersion((v) => v + 1)}
-          />
-        </Box>
-      )}
-
-      {isAdmin && (
-        <Box sx={{ mt: 4 }}>
-          <Button
-            component={RouterLink}
-            to={manageMatchPath(match.slug)}
-            variant="contained"
-            data-testid="match-page-manage"
-          >
-            Manage this match
-          </Button>
-        </Box>
-      )}
-
-      {seriesMaps
-        ? !playerCard && <Box sx={{ mt: 4 }}>{seriesMaps}</Box>
-        : maps.length > 0 && (
-            <Box sx={{ mt: 5 }}>
-              <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
-                {t('matchPage.maps')}
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
-                  gap: 2,
-                }}
-              >
-                {maps.map((m) => {
-                  const total = m.team1Score + m.team2Score || 1;
-                  return (
-                    <Box
-                      key={m.mapNumber}
-                      sx={{
-                        p: 2.5,
-                        border: 1,
-                        borderColor: 'divider',
-                        borderRadius: radii.lg,
-                        bgcolor: 'background.surface2',
-                      }}
-                      data-testid={`match-page-map-${m.mapNumber}`}
-                    >
-                      <Stack direction="row" justifyContent="space-between" alignItems="baseline">
-                        <Typography variant="h6" component="h3" sx={{ fontWeight: 600 }}>
-                          {mapName(m.map, m.mapNumber, t)}
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontFamily: fontDisplay,
-                            fontWeight: 700,
-                            fontSize: '1.4rem',
-                            fontVariantNumeric: 'tabular-nums',
-                          }}
-                        >
-                          {m.team1Score}{' '}
-                          <Box component="span" sx={{ color: 'text.secondary' }}>
-                            : {m.team2Score}
-                          </Box>
-                        </Typography>
-                      </Stack>
-                      <Box
-                        sx={{
-                          mt: 1.5,
-                          height: 6,
-                          borderRadius: 3,
-                          bgcolor: 'background.surface3',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            height: '100%',
-                            width: `${(100 * m.team1Score) / total}%`,
-                            bgcolor: tokens.color.accent,
-                          }}
-                        />
-                      </Box>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ display: 'block', mt: 1 }}
-                      >
-                        {t('matchPage.mapN', { n: m.mapNumber + 1 })}
-                        {m.team1Score + m.team2Score > 24 ? ` · ${t('matchPage.overtime')}` : ''}
-                      </Typography>
-                      {MapAction && (
-                        <Stack direction="row" sx={{ mt: 2, gap: 1, flexWrap: 'wrap' }}>
-                          <MapAction matchSlug={match.slug} mapNumber={m.mapNumber} />
-                        </Stack>
-                      )}
-                    </Box>
-                  );
-                })}
-              </Box>
+          {match.tournamentId && match.tournament && (
+            <Box
+              component={RouterLink}
+              to={tournamentTabPath(match.tournamentId)}
+              sx={{
+                color: 'inherit',
+                textDecoration: 'none',
+                '&:hover': { color: tokens.color.ink },
+              }}
+            >
+              {match.tournament}
             </Box>
           )}
-      {Panel && (
-        <Box sx={{ mt: 4 }}>
-          <Panel matchSlug={match.slug} match={match} />
+          {date && (
+            <span>
+              ·{' '}
+              {match.status === 'completed' && match.completedAt
+                ? t('liveMatch.finishedAt', { when: fmtDateTime(match.completedAt) })
+                : date}
+            </span>
+          )}
+          {match.status !== 'completed' && (
+            <Box
+              component="span"
+              data-testid="match-page-status"
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.75,
+                color: live ? tokens.color.live : tokens.color.ink2,
+                fontWeight: 600,
+              }}
+            >
+              {live && (
+                <Box
+                  component="span"
+                  sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: tokens.color.live }}
+                />
+              )}
+              {getStatusLabel(match.status)}
+            </Box>
+          )}
+          {/* Its start time (Manage › Schedule), until it is on a server. */}
+          {matchIsOn && !live && match.startsAt && match.vetoOpensAt && (
+            <Box
+              component="span"
+              data-testid="match-page-starts"
+              sx={{ color: tokens.color.ink2, fontWeight: 600 }}
+            >
+              ·{' '}
+              {t('matchPage.startsAt', {
+                time: fmtTime(match.startsAt),
+                veto: fmtTime(match.vetoOpensAt),
+              })}
+            </Box>
+          )}
         </Box>
-      )}
+        {match.tournamentId && match.tournament && (
+          <Box
+            data-testid="match-room-tournament"
+            sx={{ display: 'flex', gap: 2, fontSize: '0.875rem' }}
+          >
+            <Box
+              component={RouterLink}
+              to={tournamentTabPath(match.tournamentId)}
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.75,
+                color: tokens.color.accent,
+              }}
+            >
+              <ArrowLeftIcon size={16} aria-hidden />
+              {t('liveMatch.backToTournament')}
+            </Box>
+          </Box>
+        )}
+      </Box>
+
+      {publicHeader}
+
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, alignItems: 'flex-start' }}>
+        <Box
+          sx={{
+            flex: vetoing ? '1 1 100%' : '999 1 560px',
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2.5,
+          }}
+        >
+          {viewerTeamId && (
+            <Box data-testid="match-room-player" sx={{ display: 'grid', gap: 2.5 }}>
+              {matchIsOn && playsThroughModule && (
+                <YourMatchCard
+                  teamId={viewerTeamId}
+                  matchSlug={match.slug}
+                  fallback={null}
+                  mapsView={seriesMaps}
+                />
+              )}
+              {ReportPanel && <ReportPanel matchSlug={match.slug} matchStatus={match.status} />}
+              {ReportPanel && matchIsOn && <CaptainsPanel teamId={viewerTeamId} />}
+            </Box>
+          )}
+
+          {/* The player's match is over: what happens now, and the bracket. They stay here. */}
+          {viewerTeamId && match.tournamentId && match.status === 'completed' && (
+            <WhatsNextCard
+              tournamentId={match.tournamentId}
+              teamId={viewerTeamId}
+              matchSlug={match.slug}
+            />
+          )}
+
+          {/* A prize this match dropped (or the tournament's, once placed): pick it here. */}
+          {viewerTeamId && match.status === 'completed' && integration.prizePickRow && (
+            <integration.prizePickRow
+              matchSlug={match.slug}
+              tournamentId={match.tournamentId ?? null}
+            />
+          )}
+
+          {/* After the match: commend players from it (24 hours; shows only while open). */}
+          {viewerTeamId && match.status === 'completed' && (
+            <CommendPanel matchSlug={match.slug} viewerTeamId={viewerTeamId} />
+          )}
+
+          {!viewerTeamId && matchIsOn && playsThroughModule && (
+            <SpectatorRoom
+              match={match}
+              hasVeto={integration.capabilities.veto}
+              Watch={integration.spectatorWatch}
+            />
+          )}
+
+          {/* Everyone who does not play in it sees the pre-match phase (the veto) as it happens, read-only.
+              Only while there is one: a shuffle match (no veto) that was already live showed "waiting
+              for X to remove a map" (NTLAN, 2026-10-16). */}
+          {!viewerTeamId && vetoing && PreMatchView && (
+            <Box data-testid="match-admin-prematch" sx={panel}>
+              <PreMatchView
+                matchSlug={match.slug}
+                team1Name={match.team1?.name ?? undefined}
+                team2Name={match.team2?.name ?? undefined}
+                onComplete={() => setVersion((v) => v + 1)}
+              />
+            </Box>
+          )}
+
+          {seriesMaps
+            ? !playerCard && <Box sx={panel}>{seriesMaps}</Box>
+            : maps.length > 0 && (
+                <Box component="section" aria-labelledby="match-maps" sx={panel}>
+                  <Typography
+                    id="match-maps"
+                    component="h2"
+                    sx={{ m: 0, fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 700 }}
+                  >
+                    {t('matchPage.maps')}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 14rem), 1fr))',
+                      gap: 1.5,
+                    }}
+                  >
+                    {maps.map((m) => (
+                      <Box
+                        key={m.mapNumber}
+                        data-testid={`match-page-map-${m.mapNumber}`}
+                        sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+                      >
+                        <MapTile map={m.map ?? ''} played aspect="16 / 9">
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'flex-end',
+                              gap: 1,
+                            }}
+                          >
+                            <Typography
+                              sx={{
+                                fontFamily: fontDisplay,
+                                fontSize: '1.125rem',
+                                fontWeight: 700,
+                              }}
+                            >
+                              {mapName(m.map, m.mapNumber, t)}
+                            </Typography>
+                            <Typography
+                              data-testid={`match-page-map-${m.mapNumber}-score`}
+                              sx={{ ...mono, fontSize: '1.125rem' }}
+                            >
+                              {m.team1Score} : {m.team2Score}
+                            </Typography>
+                          </Box>
+                        </MapTile>
+                        <Typography variant="caption" color="text.secondary">
+                          {t('matchPage.mapN', { n: m.mapNumber + 1 })}
+                          {m.team1Score + m.team2Score > 24 ? ` · ${t('matchPage.overtime')}` : ''}
+                        </Typography>
+                        {MapAction && (
+                          <Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
+                            <MapAction matchSlug={match.slug} mapNumber={m.mapNumber} />
+                          </Stack>
+                        )}
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
+          {Panel && <Panel matchSlug={match.slug} match={match} />}
+
+          {isAdmin && (
+            <Box>
+              <Button
+                component={RouterLink}
+                to={manageMatchPath(match.slug)}
+                variant="outlined"
+                data-testid="match-page-manage"
+                sx={{ borderRadius: tokens.radius.pill, minHeight: 44 }}
+              >
+                {t('liveMatch.manage')}
+              </Button>
+            </Box>
+          )}
+        </Box>
+
+        {showChat && <MatchChatPanel slug={match.slug} myTeam={viewerTeamId} />}
+      </Box>
     </Container>
   );
 }

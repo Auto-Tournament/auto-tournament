@@ -112,7 +112,7 @@ for (const provider of providers) {
     }
 
     test(
-      "an identity owned by another account is refused and left where it was",
+      'an identity owned by another account is refused and left where it was',
       TAGS,
       async () => {
         const providerUserId = provider.newId();

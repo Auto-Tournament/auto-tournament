@@ -43,7 +43,9 @@ test.describe.serial('Non-admin page permissions', () => {
       page.on('response', (response) => {
         const status = response.status();
         if (status === 401 || status === 403) {
-          denied.push(`${status} ${response.request().method()} ${new URL(response.url()).pathname}`);
+          denied.push(
+            `${status} ${response.request().method()} ${new URL(response.url()).pathname}`
+          );
         }
       });
 
@@ -78,10 +80,9 @@ test.describe.serial('Non-admin page permissions', () => {
       const adminOnly = await request.get('/api/tournament/server-availability', {
         headers: { Authorization: '' },
       });
-      expect(
-        [401, 403],
-        'server-availability should still require an admin session'
-      ).toContain(adminOnly.status());
+      expect([401, 403], 'server-availability should still require an admin session').toContain(
+        adminOnly.status()
+      );
     }
   );
 });

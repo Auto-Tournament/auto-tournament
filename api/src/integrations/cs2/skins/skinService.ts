@@ -19,7 +19,11 @@ import { randomInt } from 'crypto';
 import fetch from 'node-fetch';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
-import { emitSkinsChanged, onlinePlayerIds } from '../../../services/socketService';
+import {
+  emitSkinsChanged,
+  emitSocialChanged,
+  onlinePlayerIds,
+} from '../../../services/socketService';
 import { WEAPON_DEFINDEX } from './skinDefindex';
 import { prefetchSkinImages } from '../routes/images';
 import { knifeAndGlovePrices, priceFor, priceKey, rarityIndexByPrice } from './skinPrices';
@@ -90,6 +94,8 @@ export interface SkinChoice {
   id: number;
   source: OwnedSkin['source'];
   sourceLabel: string | null;
+  /** The match slug for a match drop, `level:<n>`, or the tournament prize's ref. */
+  sourceRef: string | null;
   place: number | null;
   createdAt: number;
   options: Array<
@@ -133,12 +139,21 @@ export function variantOf(paintKitName: string | undefined): string | null {
   return phase ? `Phase ${phase[1]}` : null;
 }
 
+/** A tournament place with a reward: 1–4, and 0 for everyone else who played. */
+export type RewardPlace = 0 | 1 | 2 | 3 | 4;
+export const REWARD_PLACES: readonly RewardPlace[] = [1, 2, 3, 4, 0];
+/** The `place` an MVP prize is stored with (skins and choices), apart from the placings. */
+export const MVP_PLACE = 99;
+
 export interface TournamentReward {
-  /** 1 = winners, 2 = runners-up, 3 = third place. */
-  place: 1 | 2 | 3;
-  mode: 'random' | 'skin';
+  /** 1 = winners, 2 = runners-up, 3 = third, 4 = fourth; 0 = everyone else who played. */
+  place: RewardPlace;
+  /** random: a choice of three of `rarity`; skin: that skin; none: no reward for this place. */
+  mode: 'random' | 'skin' | 'none';
   /** Random mode: the rarity to draw from. */
   rarity?: Rarity;
+  /** Random mode: 'one' gives one skin at random; absent, the player picks 1 of 3. */
+  pick?: 'one';
   /** Skin mode: the weapon and the skin's name (Doppler covers every phase). */
   weapon?: string;
   name?: string;
@@ -152,6 +167,16 @@ export type SmallMode = '2v2' | '1v1';
 
 /** A finished game counts for drops from this many rounds on (a walkover or a game ended this early looks like farming). */
 export const MIN_DROP_ROUNDS = 8;
+
+/**
+ * The rounds a game must go to drop, for a format of `maxRounds` (MR6 is 6):
+ * MIN_DROP_ROUNDS, or a short format's win count (first to 4 in MR6), since a
+ * full MR6 or wingman game can end in 4 rounds (2026-10-15: MR6 never dropped).
+ */
+export function minDropRounds(maxRounds: number | null | undefined): number {
+  if (!maxRounds || !Number.isFinite(maxRounds) || maxRounds <= 0) return MIN_DROP_ROUNDS;
+  return Math.min(MIN_DROP_ROUNDS, Math.floor(maxRounds / 2) + 1);
+}
 
 /**
  * One player's drop chance (0–100) for a finished matchmaking game: the
@@ -187,8 +212,12 @@ export function dropEligible(game: {
   left: boolean;
   maxRounds: number;
   playerRounds: number;
+  /** The format's max rounds (minDropRounds); absent: MIN_DROP_ROUNDS. */
+  formatMaxRounds?: number | null;
 }): boolean {
-  return !game.left && game.maxRounds >= MIN_DROP_ROUNDS && game.playerRounds > 0;
+  return (
+    !game.left && game.maxRounds >= minDropRounds(game.formatMaxRounds) && game.playerRounds > 0
+  );
 }
 
 /** The mode a game's team size plays like (a tournament has no lobby to say). */
@@ -225,6 +254,29 @@ export interface SkinsConfig {
   tryoutServer: boolean;
 }
 
+/** A reward list as stored (site config or a tournament's own): bad entries dropped; null when not a list. */
+export function parseRewards(raw: unknown): TournamentReward[] | null {
+  if (!Array.isArray(raw)) return null;
+  return (raw as Array<Partial<TournamentReward> | null>)
+    .filter(
+      (r): r is TournamentReward =>
+        Boolean(r) && (REWARD_PLACES as readonly number[]).includes(Number(r!.place))
+    )
+    .map((r) => ({
+      place: Number(r.place) as RewardPlace,
+      mode: r.mode === 'skin' ? 'skin' : r.mode === 'none' ? 'none' : 'random',
+      rarity: RARITIES.includes(r.rarity as Rarity) ? r.rarity : undefined,
+      ...(r.pick === 'one' ? { pick: 'one' } : {}),
+      weapon: typeof r.weapon === 'string' ? r.weapon : undefined,
+      name: typeof r.name === 'string' ? r.name : undefined,
+      floatMin: typeof r.floatMin === 'number' ? Math.max(0, Math.min(1, r.floatMin)) : undefined,
+      floatMax: typeof r.floatMax === 'number' ? Math.max(0, Math.min(1, r.floatMax)) : undefined,
+      seeds: Array.isArray(r.seeds)
+        ? r.seeds.filter((x) => Number.isInteger(x) && x >= 0 && x <= 1000).slice(0, 100)
+        : [],
+    })) as TournamentReward[];
+}
+
 export const DEFAULT_CONFIG: SkinsConfig = {
   enabled: false,
   matchmakingDrops: true,
@@ -243,10 +295,14 @@ export const DEFAULT_CONFIG: SkinsConfig = {
     immortal: 0,
   },
   tournamentRewards: true,
+  // The best place gets the rarest grade that has skins to choose from (Immortal holds about one),
+  // each place after it one grade lower, and everyone else who played something too.
   rewards: [
-    { place: 1, mode: 'random', rarity: 'legendary' },
-    { place: 2, mode: 'random', rarity: 'mythical' },
-    { place: 3, mode: 'random', rarity: 'rare' },
+    { place: 1, mode: 'random', rarity: 'ancient' },
+    { place: 2, mode: 'random', rarity: 'legendary' },
+    { place: 3, mode: 'random', rarity: 'mythical' },
+    { place: 4, mode: 'random', rarity: 'rare' },
+    { place: 0, mode: 'random', rarity: 'uncommon' },
   ],
   tradeUp: { enabled: true, count: 5 },
   statTrakChance: 10,
@@ -500,20 +556,13 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
     if (typeof value === 'number' && Number.isFinite(value))
       weights[r] = Math.max(0, Math.min(1000, value));
   }
-  const rewards = (Array.isArray(raw.rewards) ? raw.rewards : DEFAULT_CONFIG.rewards)
-    .filter((r): r is TournamentReward => Boolean(r) && [1, 2, 3].includes(Number(r.place)))
-    .map((r) => ({
-      place: Number(r.place) as 1 | 2 | 3,
-      mode: r.mode === 'skin' ? 'skin' : 'random',
-      rarity: RARITIES.includes(r.rarity as Rarity) ? r.rarity : undefined,
-      weapon: typeof r.weapon === 'string' ? r.weapon : undefined,
-      name: typeof r.name === 'string' ? r.name : undefined,
-      floatMin: typeof r.floatMin === 'number' ? Math.max(0, Math.min(1, r.floatMin)) : undefined,
-      floatMax: typeof r.floatMax === 'number' ? Math.max(0, Math.min(1, r.floatMax)) : undefined,
-      seeds: Array.isArray(r.seeds)
-        ? r.seeds.filter((s) => Number.isInteger(s) && s >= 0 && s <= 1000).slice(0, 100)
-        : [],
-    })) as TournamentReward[];
+  // A place the stored list doesn't name (4th and everyone else came later) gets the default.
+  const stored = parseRewards(raw.rewards) ?? [];
+  const rewards = REWARD_PLACES.map(
+    (place) =>
+      stored.find((r) => r.place === place) ??
+      DEFAULT_CONFIG.rewards.find((r) => r.place === place)!
+  );
   return {
     enabled: raw.enabled === true,
     matchmakingDrops: raw.matchmakingDrops !== false,
@@ -615,6 +664,24 @@ export interface LoadoutRow {
   pattern: number;
   slot: string;
   team: number;
+}
+
+/**
+ * A slot with nothing equipped on the platform (any weapon, the knife, the gloves): the newest
+ * skin the player owns for it, on both sides, rather than the stock look. A knife that dropped
+ * tonight (drops no longer equip themselves) left its owner with the stock knife (NTLAN,
+ * 2026-10-16). An equipped skin, on any side, is never replaced. `owned` newest first.
+ */
+export function withInventoryFallback(rows: LoadoutRow[], owned: LoadoutRow[]): LoadoutRow[] {
+  const out = [...rows];
+  const filled = new Set(rows.map((r) => r.slot));
+  for (const o of owned) {
+    const slot = slotOf(o.weapon);
+    if (filled.has(slot)) continue;
+    filled.add(slot);
+    out.push({ ...o, slot, team: 0 });
+  }
+  return out;
 }
 
 export interface LoadoutPayload {
@@ -725,9 +792,12 @@ export const skinService = {
   },
 
   /**
-   * Gives a player one skin, rolled like a case unless the reward pins it,
-   * equips it if its slot is empty (never in place of one they chose), and
-   * puts it first in their profile showcase.
+   * Gives a player one skin, rolled like a case unless the reward pins it. An
+   * admin's gift goes on if its slot is empty (never in place of one they
+   * chose); a drop, prize, level reward or trade-up only lands in the
+   * inventory, and the reveal's Equip buttons put it on. (Drops went on by
+   * themselves, and players at NTLAN, 2026-10-16, took the reveal's OK for the
+   * button that equipped them.)
    */
   async grant(
     playerUid: string,
@@ -741,7 +811,9 @@ export const skinService = {
       pattern?: number;
       /** StatTrak or not; unset rolls it with the config's chance. */
       stattrak?: boolean;
-    } = {}
+    } = {},
+    /** notify: false for a skin the player just picked themselves (the reveal is the alert). */
+    opts: { notify?: boolean } = {}
   ): Promise<number> {
     const stattrak =
       roll.stattrak ?? rollStatTrak(skin.weapon, (await this.config()).statTrakChance);
@@ -768,8 +840,8 @@ export const skinService = {
         stattrak && statTrakCapable(skin.weapon) ? 0 : null,
       ]
     );
-    if (row?.id) {
-      // A first skin for a slot goes on, for both sides; the showcase is the player's own pick.
+    if (row?.id && source.source === 'admin' && opts.notify !== false) {
+      // An admin's gift is a first skin for a slot: on, for both sides. The showcase is the player's own pick.
       await db.runAsync(
         `INSERT INTO cs2_player_loadout (player_uid, slot, skin_id, team)
          SELECT ?, ?, ?, 0 WHERE NOT EXISTS (
@@ -783,7 +855,7 @@ export const skinService = {
     ]);
     if (player) {
       emitSkinsChanged(player.id);
-      if (row?.id) {
+      if (row?.id && opts.notify !== false) {
         await notificationService.notify(
           player.id,
           'skin',
@@ -859,7 +931,19 @@ export const skinService = {
         ).map((r) => [r.player_id, Number(r.rounds_played ?? 0)])
       );
       const maxRounds = Math.max(0, ...rounds.values());
-      if (maxRounds < MIN_DROP_ROUNDS) return;
+      const cfg = await db.queryOneAsync<{ config: string | null }>(
+        'SELECT config FROM matches WHERE slug = ?',
+        [matchSlug]
+      );
+      let formatMaxRounds: number | null = null;
+      try {
+        const c = cfg?.config ? (JSON.parse(cfg.config) as Record<string, unknown>) : {};
+        const cv = (c.cvars ?? {}) as Record<string, unknown>;
+        formatMaxRounds = Number(c.maxRounds ?? cv.mp_maxrounds) || null;
+      } catch {
+        formatMaxRounds = null;
+      }
+      if (maxRounds < minDropRounds(formatMaxRounds)) return;
       const dayAgo = Math.floor(Date.now() / 1000) - 86400;
       const players = [
         ...winnerSteamIds.map((steamId) => ({ steamId, won: true, opponents: otherSteamIds })),
@@ -877,6 +961,7 @@ export const skinService = {
             left: leavers.has(steamId),
             maxRounds,
             playerRounds: rounds.get(steamId) ?? 0,
+            formatMaxRounds,
           })
         )
           continue;
@@ -1042,12 +1127,19 @@ export const skinService = {
    * An admin's drop: a choice of three for each player, queued behind any they
    * have not opened yet. Returns how many were given.
    */
-  async adminDrop(uids: string[], label: string | null): Promise<number> {
+  /** `rarity`: all three options of that rarity (the catalogue's own tiers); else the drop odds. */
+  async adminDrop(
+    uids: string[],
+    label: string | null,
+    rarity: Rarity | null = null
+  ): Promise<number> {
     const config = await this.config();
     if (!config.enabled) throw new SkinError(404, 'Skins are off.');
     let given = 0;
     for (const uid of uids) {
-      const options = await this.pickOptions(() => this.pick(null, config.rarityWeights));
+      const options = await this.pickOptions(() =>
+        rarity ? this.pick(rarity) : this.pick(null, config.rarityWeights)
+      );
       if (!options.length) continue;
       await this.offerChoice(uid, options, { source: 'admin', label: label ?? undefined });
       given += 1;
@@ -1093,6 +1185,37 @@ export const skinService = {
   },
 
   /** What players may see of the drops: the odds per rarity and per skin, and when drops happen. */
+  /**
+   * Every skin a drop can give, for the public skin list: each finish once
+   * (each Doppler phase on its own), its rarity, and its chance per drop
+   * option (the rarity's chance shared by its skins). Knives and gloves carry
+   * the market price that set their rarity.
+   */
+  async publicCatalog() {
+    const config = await this.config();
+    const catalog = await this.catalog();
+    const counts: Partial<Record<Rarity, number>> = {};
+    for (const skin of catalog) counts[skin.rarity] = (counts[skin.rarity] ?? 0) + 1;
+    const perSkin = new Map(
+      dropOdds(config.rarityWeights, counts).map((r) => [r.rarity, r.perSkin])
+    );
+    return {
+      enabled: config.enabled,
+      skins: catalog.map((s) => ({
+        weapon: s.weapon,
+        weaponName: s.weaponName,
+        name: s.name,
+        variant: variantOf(s.paintKitName),
+        paintKit: s.paintKit,
+        rarity: s.rarity,
+        slot: slotOf(s.weapon),
+        image: `${SKIN_IMAGES_BASE}/${s.image}`,
+        price: s.price ?? null,
+        chance: perSkin.get(s.rarity) ?? 0,
+      })),
+    };
+  },
+
   async odds() {
     const config = await this.config();
     const counts: Partial<Record<Rarity, number>> = {};
@@ -1110,13 +1233,15 @@ export const skinService = {
         ...config.modeChances,
       },
       tournamentRewards: config.tournamentRewards
-        ? config.rewards.map((r) => ({
-            place: r.place,
-            mode: r.mode,
-            rarity: r.rarity ?? null,
-            weapon: r.weapon ?? null,
-            name: r.name ?? null,
-          }))
+        ? config.rewards
+            .filter((r) => r.mode !== 'none')
+            .map((r) => ({
+              place: r.place,
+              mode: r.mode,
+              rarity: r.rarity ?? null,
+              weapon: r.weapon ?? null,
+              name: r.name ?? null,
+            }))
         : [],
     };
   },
@@ -1244,17 +1369,19 @@ export const skinService = {
       id: number;
       source: OwnedSkin['source'];
       source_label: string | null;
+      source_ref: string | null;
       place: number | null;
       options: string;
       created_at: number;
     }>(
-      'SELECT id, source, source_label, place, options, created_at FROM cs2_skin_choices WHERE player_uid = ? AND chosen_at IS NULL ORDER BY id',
+      'SELECT id, source, source_label, source_ref, place, options, created_at FROM cs2_skin_choices WHERE player_uid = ? AND chosen_at IS NULL ORDER BY id',
       [playerUid]
     );
     return rows.map((r) => ({
       id: r.id,
       source: r.source,
       sourceLabel: r.source_label,
+      sourceRef: r.source_ref,
       place: r.place,
       createdAt: Number(r.created_at),
       options: (JSON.parse(r.options) as ChoiceOption[]).map((o) => ({
@@ -1301,7 +1428,9 @@ export const skinService = {
         ref: row.source_ref ?? undefined,
         place: row.place ?? undefined,
       },
-      { float: option.float, pattern: option.pattern, stattrak: option.stattrak === true }
+      { float: option.float, pattern: option.pattern, stattrak: option.stattrak === true },
+      // They picked it in the picker and see it there: no notice in the bell.
+      { notify: false }
     );
     await db.runAsync('UPDATE cs2_skin_choices SET chosen_skin_id = ? WHERE id = ?', [
       skinId,
@@ -1318,8 +1447,10 @@ export const skinService = {
   async awardTournament(
     tournamentId: number,
     tournamentName: string,
-    placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }>,
-    rewardsOff = false
+    placements: Array<{ place: 1 | 2 | 3 | 4; steamIds: string[] }>,
+    rewardsOff = false,
+    /** The tournament's own rewards (settings.cs2.rewards); absent: the site's. */
+    own: TournamentReward[] | null = null
   ): Promise<void> {
     try {
       const config = await this.config();
@@ -1332,24 +1463,29 @@ export const skinService = {
       if (already) return;
       // Only the people who played: a roster's placeholder players and bots never join a
       // server, so they have no rounds in the tournament's matches.
-      const rostered = placements.flatMap((p) => p.steamIds);
+      // Everyone who played a round in it (Steam accounts: bots and placeholders never do).
       const played = new Set(
-        rostered.length
-          ? (
-              await db.queryAsync<{ player_id: string }>(
-                `SELECT DISTINCT s.player_id FROM player_match_stats s
-                   JOIN matches m ON m.slug = s.match_slug
-                  WHERE m.tournament_id = ? AND COALESCE(s.rounds_played, 0) > 0
-                    AND s.player_id IN (${rostered.map(() => '?').join(', ')})`,
-                [tournamentId, ...rostered]
-              )
-            ).map((r) => r.player_id)
-          : []
+        (
+          await db.queryAsync<{ player_id: string }>(
+            `SELECT DISTINCT s.player_id FROM player_match_stats s
+               JOIN matches m ON m.slug = s.match_slug
+              WHERE m.tournament_id = ? AND COALESCE(s.rounds_played, 0) > 0`,
+            [tournamentId]
+          )
+        )
+          .map((r) => r.player_id)
+          .filter((id) => /^7656\d{13}$/.test(id))
       );
+      const placed = new Set(placements.flatMap((p) => p.steamIds));
+      const everyoneElse = [...played].filter((id) => !placed.has(id));
+      const rewards = own ?? config.rewards;
       const catalog = await this.catalog();
-      for (const { place, steamIds } of placements) {
-        const reward = config.rewards.find((r) => r.place === place);
-        if (!reward) continue;
+      for (const { place, steamIds } of [
+        ...placements,
+        { place: 0 as const, steamIds: everyoneElse },
+      ]) {
+        const reward = rewards.find((r) => r.place === place);
+        if (!reward || reward.mode === 'none') continue;
         for (const steamId of steamIds) {
           if (!played.has(steamId)) continue;
           const uid = await uidOf(steamId);
@@ -1361,6 +1497,9 @@ export const skinService = {
               (s) => s.weapon === reward.weapon && s.name === reward.name
             );
             skin = variants.length ? variants[randomInt(0, variants.length)] : null;
+          } else if (reward.pick === 'one') {
+            // One of that rarity at random, straight into the inventory.
+            skin = await this.pick(reward.rarity ?? 'rare');
           } else {
             // A rarity reward is a choice of three of that rarity: the player keeps one.
             const options = await this.pickOptions(() => this.pick(reward.rarity ?? 'rare'));
@@ -1389,6 +1528,46 @@ export const skinService = {
         error: (error as Error).message,
       });
     }
+  },
+
+  /**
+   * The tournament's MVP prize (settings.cs2.mvp): a choice of three of the
+   * rarity, or one at random. Once per tournament: a second call does nothing.
+   * Returns false when it was given before (or skins are off).
+   */
+  async awardMvp(
+    tournamentId: number,
+    tournamentName: string,
+    steamId: string,
+    prize: { rarity: string; pick?: 'one' }
+  ): Promise<boolean> {
+    const config = await this.config();
+    if (!config.enabled) return false;
+    const ref = `tournament:${tournamentId}:${tournamentName}:mvp`;
+    const given =
+      (await db.queryOneAsync('SELECT id FROM cs2_player_skins WHERE source_ref = ? LIMIT 1', [
+        ref,
+      ])) ??
+      (await db.queryOneAsync('SELECT id FROM cs2_skin_choices WHERE source_ref = ? LIMIT 1', [
+        ref,
+      ]));
+    if (given) return false;
+    const uid = await uidOf(steamId);
+    if (!uid) return false;
+    const rarity = (
+      RARITIES.includes(prize.rarity as Rarity) ? prize.rarity : 'legendary'
+    ) as Rarity;
+    const source = { source: 'tournament' as const, label: tournamentName, ref, place: MVP_PLACE };
+    if (prize.pick === 'one') {
+      const skin = await this.pick(rarity);
+      if (!skin) return false;
+      await this.grant(uid, skin, source, {});
+      return true;
+    }
+    const options = await this.pickOptions(() => this.pick(rarity));
+    if (!options.length) return false;
+    await this.offerChoice(uid, options, source, {});
+    return true;
   },
 
   async inventory(playerUid: string): Promise<OwnedSkin[]> {
@@ -1454,6 +1633,14 @@ export const skinService = {
       'UPDATE cs2_player_skins SET seen = TRUE WHERE player_uid = ? AND id = ANY(?::int[])',
       [playerUid, ids]
     );
+    // The reveal was the alert: its notice leaves the bell.
+    const player = await db.queryOneAsync<{ id: string }>('SELECT id FROM players WHERE uid = ?', [
+      playerUid,
+    ]);
+    if (player) {
+      for (const id of ids) await notificationService.withdraw(player.id, `skin:${id}`);
+      emitSocialChanged([player.id]);
+    }
   },
 
   /** The profile showcase: up to eight equipped skins in the owner's order, some big. */
@@ -1560,7 +1747,13 @@ export const skinService = {
         WHERE l.player_uid = ?`,
       [uid]
     );
-    return loadoutPayload(rows);
+    const owned = await db.queryAsync<LoadoutRow>(
+      `SELECT weapon, paint_kit, float_value, pattern, stattrak, '' AS slot, 0 AS team
+         FROM cs2_player_skins WHERE player_uid = ?
+        ORDER BY created_at DESC, id DESC`,
+      [uid]
+    );
+    return loadoutPayload(withInventoryFallback(rows, owned));
   },
 
   /** Admin: the numbers at the top of the Skins page. */
@@ -1779,6 +1972,36 @@ export const skinService = {
   },
 
   /** Admin: take a skin away (it leaves the loadout and the showcase with it). */
+  /**
+   * Empty a player's skins: every skin, what is equipped, the showcase, open
+   * choices and the skin notices in the bell. Returns what was removed.
+   */
+  async adminClearInventory(
+    playerUid: string,
+    playerId: string
+  ): Promise<{ skins: number; choices: number; notices: number }> {
+    await db.runAsync('DELETE FROM cs2_player_loadout WHERE player_uid = ?', [playerUid]);
+    await db.runAsync('DELETE FROM cs2_player_skin_showcase WHERE player_uid = ?', [playerUid]);
+    const choices = await db.runAsync(
+      'DELETE FROM cs2_skin_choices WHERE player_uid = ? AND chosen_at IS NULL',
+      [playerUid]
+    );
+    const skins = await db.runAsync('DELETE FROM cs2_player_skins WHERE player_uid = ?', [
+      playerUid,
+    ]);
+    const notices = await db.runAsync(
+      "DELETE FROM notifications WHERE player_id = ? AND kind = 'skin'",
+      [playerId]
+    );
+    emitSkinsChanged(playerId);
+    emitSocialChanged([playerId]);
+    return {
+      skins: skins?.changes ?? 0,
+      choices: choices?.changes ?? 0,
+      notices: notices?.changes ?? 0,
+    };
+  },
+
   async adminRemove(skinId: number): Promise<void> {
     const row = await db.queryOneAsync<{ id: number }>(
       'SELECT id FROM cs2_player_skins WHERE id = ?',

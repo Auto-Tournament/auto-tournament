@@ -25,7 +25,8 @@ test.describe('Public Pages API', () => {
     await signInViaRequest(request);
   });
 
-  test('should provide public player page endpoint without authentication',
+  test(
+    'should provide public player page endpoint without authentication',
     {
       tag: ['@api', '@public', '@players'],
     },
@@ -135,6 +136,4 @@ test.describe('Public Pages API', () => {
       expect(response.status()).toBe(404);
     }
   );
-
 });
-

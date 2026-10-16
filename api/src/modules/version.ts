@@ -13,7 +13,7 @@
  */
 
 /** The server API version: the `GameIntegration` contract. */
-export const SERVER_API_VERSION = '0.1.1';
+export const SERVER_API_VERSION = '0.1.3';
 
 /**
  * The client API version the web client provides. The client owns it
@@ -22,4 +22,4 @@ export const SERVER_API_VERSION = '0.1.1';
  * a module the browser would refuse is never loaded on the server either.
  * Keep the two equal.
  */
-export const CLIENT_API_VERSION = '0.2.26';
+export const CLIENT_API_VERSION = '0.2.28';

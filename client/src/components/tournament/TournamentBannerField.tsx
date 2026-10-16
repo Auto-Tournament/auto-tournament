@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Button, ButtonBase, Stack, Typography } from '@mui/material';
 import { ImageIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
+import { getMapDisplayName, getMapImageUrl } from '../../constants/maps';
 import { tokens, radii } from '../../theme/tokens';
 
 const MAX_BYTES = 2 * 1024 * 1024;
@@ -13,8 +14,30 @@ const TYPES = ['image/png', 'image/jpeg', 'image/webp'];
  * at the page's shape, Upload and Remove. Saves at once; the page and this
  * preview pick the new image up from the tournament update that follows.
  */
-export function TournamentBannerField({ bannerUrl }: { bannerUrl: string | null | undefined }) {
+export function TournamentBannerField({
+  bannerUrl,
+  bannerMap,
+  maps,
+}: {
+  bannerUrl: string | null | undefined;
+  /** The map picture picked instead of an upload (settings.bannerMap). */
+  bannerMap?: string | null;
+  /** The maps to pick from (the tournament's pool). */
+  maps?: string[];
+}) {
   const { t } = useTranslation();
+  const [picked, setPicked] = useState<string | null>(bannerMap ?? null);
+  const pickMap = async (map: string | null) => {
+    setError('');
+    setPicked(map);
+    try {
+      await api.put('/api/tournament', { settings: { bannerMap: map } });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+  // What shows: the upload, else the picked map.
+  const shown = bannerUrl || (picked ? getMapImageUrl(picked) : null);
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -63,9 +86,9 @@ export function TournamentBannerField({ bannerUrl }: { bannerUrl: string | null 
           aspectRatio: '16 / 5',
           maxWidth: 640,
           borderRadius: radii.md,
-          border: `1px ${bannerUrl ? 'solid' : 'dashed'} ${tokens.color.rule}`,
+          border: `1px ${shown ? 'solid' : 'dashed'} ${tokens.color.rule}`,
           bgcolor: tokens.color.paper3,
-          backgroundImage: bannerUrl ? `url("${bannerUrl}")` : 'none',
+          backgroundImage: shown ? `url("${shown}")` : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center 40%',
           display: 'grid',
@@ -73,11 +96,18 @@ export function TournamentBannerField({ bannerUrl }: { bannerUrl: string | null 
           color: tokens.color.muted,
         }}
       >
-        {!bannerUrl && <ImageIcon size={32} aria-hidden />}
+        {!shown && <ImageIcon size={32} aria-hidden />}
       </Box>
       <Stack direction="row" spacing={1} alignItems="center">
-        <Button variant="outlined" size="small" disabled={busy} onClick={() => input.current?.click()}>
-          {bannerUrl ? t('tournament.eventPage.bannerReplace') : t('tournament.eventPage.bannerUpload')}
+        <Button
+          variant="outlined"
+          size="small"
+          disabled={busy}
+          onClick={() => input.current?.click()}
+        >
+          {bannerUrl
+            ? t('tournament.eventPage.bannerReplace')
+            : t('tournament.eventPage.bannerUpload')}
         </Button>
         {bannerUrl && (
           <Button size="small" color="error" disabled={busy} onClick={() => void remove()}>
@@ -99,6 +129,63 @@ export function TournamentBannerField({ bannerUrl }: { bannerUrl: string | null 
       <Typography variant="caption" color={error ? 'error' : 'text.secondary'}>
         {error || t('tournament.eventPage.bannerHelp')}
       </Typography>
+      {/* No upload: a map's picture instead (the pool's maps). */}
+      {!bannerUrl && maps && maps.length > 0 && (
+        <Box
+          data-testid="tournament-banner-maps"
+          sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            {t('tournament.eventPage.bannerMapLabel')}
+          </Typography>
+          <Box
+            role="radiogroup"
+            aria-label={t('tournament.eventPage.bannerMapLabel')}
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 7.5rem), 1fr))',
+              gap: 1,
+              maxWidth: 640,
+            }}
+          >
+            {[null, ...maps].map((map) => {
+              const on = picked === map;
+              return (
+                <ButtonBase
+                  key={map ?? 'none'}
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => void pickMap(map)}
+                  data-testid={`tournament-banner-map-${map ?? 'none'}`}
+                  sx={{
+                    aspectRatio: '16 / 9',
+                    borderRadius: radii.sm,
+                    border: `2px solid ${on ? tokens.color.accent : 'transparent'}`,
+                    bgcolor: tokens.color.paper3,
+                    backgroundImage: map ? `url("${getMapImageUrl(map)}")` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'flex-start',
+                    p: 0.75,
+                    color: tokens.color.ink,
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                    '&.Mui-focusVisible': {
+                      outline: `2px solid ${tokens.color.focus}`,
+                      outlineOffset: 2,
+                    },
+                  }}
+                >
+                  {map ? getMapDisplayName(map) : t('tournament.eventPage.bannerMapNone')}
+                </ButtonBase>
+              );
+            })}
+          </Box>
+        </Box>
+      )}
     </Stack>
   );
 }

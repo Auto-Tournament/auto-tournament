@@ -3,6 +3,7 @@ import { api } from '../utils/api';
 import { useSocket } from './useSocket';
 import { onSocketReconnect } from '../utils/socketResync';
 import type { Match, RoundRobinStanding, SwissStanding, Tournament } from '../types';
+import type { GroupStandingSet } from '../components/tournament/GroupTables';
 
 interface PublicBracketResponse {
   success: boolean;
@@ -12,6 +13,7 @@ interface PublicBracketResponse {
   totalRounds: number;
   swissStandings?: SwissStanding[];
   roundRobinStandings?: RoundRobinStanding[];
+  groupStandings?: GroupStandingSet[];
 }
 
 export interface UsePublicBracketResult {
@@ -21,6 +23,8 @@ export interface UsePublicBracketResult {
   totalRounds: number;
   swissStandings: SwissStanding[];
   roundRobinStandings: RoundRobinStanding[];
+  /** Groups, then playoffs: each group's table. */
+  groupStandings: GroupStandingSet[];
   loading: boolean;
   error: string;
 }
@@ -92,6 +96,7 @@ export function usePublicBracket(
     totalRounds: data?.totalRounds ?? 0,
     swissStandings: data?.swissStandings ?? [],
     roundRobinStandings: data?.roundRobinStandings ?? [],
+    groupStandings: data?.groupStandings ?? [],
     loading,
     error,
   };

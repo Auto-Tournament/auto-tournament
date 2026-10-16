@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Dialog, Typography } from '@mui/material';
+import { useLocation } from 'react-router-dom';
+import { Box, Button, Dialog, IconButton, Typography } from '@mui/material';
+import { XIcon } from '@phosphor-icons/react';
 import { sourceLabel, VirtualNotice, WearBar } from './SkinParts';
 import {
   useModuleTranslation,
@@ -10,11 +12,24 @@ import {
   mono,
   radii,
   withAlpha,
+  setPinnedNotices,
 } from '../../../module-sdk';
-import { announceChange, useMySkins, useSkinsEnabled, wearKey, type SkinChoice } from './useSkins';
+import { useChoiceText } from './PrizePick';
+import {
+  announceChange,
+  onSkinPick,
+  useMySkins,
+  useSkinsEnabled,
+  wearKey,
+  type SkinChoice,
+  type OwnedSkin,
+} from './useSkins';
 import { rarityColor } from './rarity';
 
 const { color } = tokens;
+
+/** Gives each skin toast its own snackbar key. */
+let toastSeq = 0;
 
 /**
  * "New skin acquired" (board 3): shown once for each skin the player has not
@@ -60,9 +75,12 @@ function SkinsLive() {
 function ChoiceReveal({
   choice,
   choose,
+  onClose,
 }: {
   choice: SkinChoice;
   choose: (choiceId: number, index: number) => Promise<void>;
+  /** Later: the choice stays pinned in the bell. */
+  onClose: () => void;
 }) {
   const { t } = useModuleTranslation('cs2');
   const { showError } = useSnackbar();
@@ -81,8 +99,25 @@ function ChoiceReveal({
       maxWidth="md"
       fullWidth
       data-testid="skin-choice"
-      PaperProps={{ sx: { borderRadius: radii.lg, bgcolor: color.paper, backgroundImage: 'none' } }}
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          position: 'relative',
+          borderRadius: radii.lg,
+          bgcolor: color.paper,
+          backgroundImage: 'none',
+        },
+      }}
     >
+      <IconButton
+        onClick={onClose}
+        aria-label={t('skins.pickLater')}
+        title={t('skins.pickLater')}
+        data-testid="skin-choice-later"
+        sx={{ position: 'absolute', top: 12, right: 12, color: color.ink2 }}
+      >
+        <XIcon size={18} />
+      </IconButton>
       <Box sx={{ p: { xs: 3, md: 5 }, display: 'grid', gap: 3, textAlign: 'center' }}>
         <Box>
           <Typography
@@ -124,7 +159,7 @@ function ChoiceReveal({
                   display: 'grid',
                   gap: 1,
                   p: 2,
-                  borderRadius: `${radii.md}px`,
+                  borderRadius: radii.md,
                   border: `2px solid ${withAlpha(tone, 0.5)}`,
                   bgcolor: withAlpha(tone, 0.08),
                   opacity: busy !== null && busy !== index ? 0.5 : 1,
@@ -169,14 +204,94 @@ function Reveal() {
   const { t } = useModuleTranslation('cs2');
   const { inventory, unseen, equipOn, markSeen, choices, choose } = useMySkins();
   const [equipping, setEquipping] = useState(false);
-  const { showError } = useSnackbar();
+  const { showError, showSnackbar, closeSnackbar } = useSnackbar();
+  const { pathname } = useLocation();
+  // A drop or a new skin is a toast in the corner, not a pop-up over the page (it covered the
+  // match room and stacked with other pop-ups): the full view opens when the player asks. On
+  // the inventory (a trade-up, a skin they just made) it opens at once.
+  const [open, setOpen] = useState(false);
+  // Hidden with ×: until the next page load (a pending pick only lives here, so it comes back).
+  const [hidden, setHidden] = useState<string | null>(null);
+  // A Pick somewhere else (the bell's pinned row, a page's row): that choice, opened.
+  const [wanted, setWanted] = useState<number | null>(null);
+  useEffect(
+    () =>
+      onSkinPick((id) => {
+        setWanted(id);
+        setOpen(true);
+      }),
+    []
+  );
+  // The bell pins every choice until it is picked (its badge counts them).
+  const choiceIds = choices.map((c) => c.id).join(',');
+  useEffect(() => {
+    setPinnedNotices('cs2', choiceIds ? choiceIds.split(',') : []);
+    return () => setPinnedNotices('cs2', []);
+  }, [choiceIds]);
+  const expanded = open || pathname.startsWith('/inventory');
   const skin = inventory.find((s) => s.id === unseen[0]) ?? null;
-  // A choice first: the kept skin then shows here as new.
-  if (choices.length > 0) return <ChoiceReveal choice={choices[0]!} choose={choose} />;
+  const choice = choices.find((c) => c.id === wanted) ?? choices[0] ?? null;
+  const key = choice ? `choice-${choice.id}` : skin ? `skin-${skin.id}` : null;
+  // A choice first: the kept skin then shows here as new (the player is in it: opened).
+  const keep = async (choiceId: number, index: number) => {
+    await choose(choiceId, index);
+    setOpen(true);
+  };
+  // The toast is one of the site's toasts (the same stack, newest on top, folding after
+  // three), so "Waiting for the server" and the like never cover it.
+  const toastKey = key && !expanded && hidden !== key ? `skin-toast-${key}` : null;
+  useEffect(() => {
+    if (!toastKey || !key) return;
+    // Its own key each time: a toast closed and shown again at once (a re-render, React's
+    // strict mode) is a new toast, not the old one stuck mid-exit.
+    const snack = `${toastKey}-${(toastSeq += 1)}`;
+    showSnackbar(
+      <DropToast
+        choice={choice}
+        skin={choice ? null : skin}
+        onOpen={() => {
+          closeSnackbar(snack);
+          setOpen(true);
+        }}
+        onHide={() => {
+          closeSnackbar(snack);
+          setHidden(key);
+        }}
+      />,
+      'plain',
+      { persist: true, key: snack }
+    );
+    return () => closeSnackbar(snack);
+    // The key names the choice or skin: a new one is a new toast.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toastKey]);
+  if (!key || !expanded) return null;
+  if (choice)
+    return (
+      <ChoiceReveal
+        choice={choice}
+        choose={keep}
+        onClose={() => {
+          setOpen(false);
+          setWanted(null);
+          // Not straight back as a toast: it waits in the bell.
+          setHidden(key);
+        }}
+      />
+    );
   if (!skin) return null;
   const tone = rarityColor[skin.rarity];
 
-  const close = () => void markSeen([skin.id]);
+  const close = () => {
+    void markSeen([skin.id]);
+    // The next new skin is a toast again, not another pop-up.
+    setOpen(false);
+  };
+  // A full loadout given at once is dozens of reveals: one click closes them all.
+  const closeAll = () => {
+    void markSeen(unseen);
+    setOpen(false);
+  };
 
   return (
     <Dialog
@@ -267,6 +382,16 @@ function Reveal() {
           <WearBar float={skin.float} pattern={skin.pattern} />
         </Box>
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
+          {/* Closing is the main button: a player who just wants it gone must not equip it
+              by accident (2026-10-15: a prize went on when its winner meant OK). */}
+          <Button
+            variant="contained"
+            onClick={close}
+            data-testid="new-skin-done"
+            sx={{ borderRadius: radii.pill, px: 4, py: 1.75, fontWeight: 600 }}
+          >
+            {t('skins.keep')}
+          </Button>
           {/* One-side weapons have one button; the rest pick T, CT or both. */}
           {(skin.side !== null
             ? [{ team: 0 as const, label: t('skins.equipNow'), testId: 'new-skin-equip' }]
@@ -278,7 +403,7 @@ function Reveal() {
           ).map((action) => (
             <Button
               key={action.team}
-              variant="contained"
+              variant="outlined"
               data-testid={action.testId}
               disabled={equipping}
               onClick={() => {
@@ -292,38 +417,30 @@ function Reveal() {
               }}
               sx={{
                 borderRadius: radii.pill,
-                px: 4,
-                py: 1.75,
-                fontWeight: 600,
-                // The side's own colour: CT blue, T orange; both sides plain.
+                px: 3,
+                py: 1.5,
+                // The side's own colour on the outline: CT blue, T orange; both sides plain.
                 ...(skin.side === null && action.team !== 0
                   ? {
-                      bgcolor: action.team === 3 ? color.sideCt : color.sideT,
-                      color: '#111111',
-                      '&:hover': {
-                        bgcolor: action.team === 3 ? color.sideCt : color.sideT,
-                        filter: 'brightness(1.1)',
-                      },
+                      borderColor: action.team === 3 ? color.sideCt : color.sideT,
+                      color: action.team === 3 ? color.sideCt : color.sideT,
                     }
-                  : skin.side === null
-                    ? {
-                        bgcolor: color.ink,
-                        color: color.paper,
-                        '&:hover': { bgcolor: color.ink, filter: 'brightness(0.9)' },
-                      }
-                    : {}),
+                  : {}),
               }}
             >
               {action.label}
             </Button>
           ))}
-          <Button
-            variant="outlined"
-            onClick={close}
-            sx={{ borderRadius: radii.pill, px: 4, py: 1.75 }}
-          >
-            {t('skins.keep')}
-          </Button>
+          {unseen.length > 1 && (
+            <Button
+              variant="text"
+              onClick={closeAll}
+              data-testid="new-skin-keep-all"
+              sx={{ borderRadius: radii.pill, px: 3, py: 1.75 }}
+            >
+              {t('skins.keepAll', { count: unseen.length })}
+            </Button>
+          )}
         </Box>
         <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
           {t('skins.notice')}
@@ -385,6 +502,111 @@ function MatchPill({ slug }: { slug: string }) {
     >
       {t(`skins.match.${outcome}`, { score })}
       {maps ? ` · ${maps}` : ''}
+    </Box>
+  );
+}
+
+/**
+ * A drop or a new skin as a toast (top right under the navbar, with the other toasts and clear
+ * of the chat button). Words only, no pictures: what came and why, tinted in the rarity (the
+ * best one on offer for a pick). Pick / See it opens the full view; it does not block the page.
+ */
+function DropToast({
+  choice,
+  skin,
+  onOpen,
+  onHide,
+}: {
+  choice: SkinChoice | null;
+  skin: OwnedSkin | null;
+  onOpen: () => void;
+  onHide: () => void;
+}) {
+  const { t } = useModuleTranslation('cs2');
+  const text = useChoiceText();
+  const said = choice ? text(choice) : null;
+  const tone = said?.tone ?? (skin ? rarityColor[skin.rarity] : null) ?? color.accent;
+  const rarity = said?.rarity ?? skin?.rarity ?? 'common';
+  const title = said?.title ?? `${skin?.weaponName ?? ''} | ${skin?.name ?? ''}`;
+  const line = said?.line ?? t('skins.toastNew');
+  return (
+    <Box
+      role="status"
+      aria-live="polite"
+      data-testid="skin-toast"
+      data-rarity={rarity}
+      sx={{
+        // In the site's toast stack. As wide as its two lines, each on one line; full width on phones.
+        width: { xs: '100%', sm: 'max-content' },
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1fr) auto',
+        alignItems: 'center',
+        columnGap: 1.5,
+        // The draft (canvas "Skin to pick", option A): 12 px round, 14 px left, 8 px right.
+        pt: 1.5,
+        pb: 1.5,
+        pl: 1.75,
+        pr: 1,
+        borderRadius: '14px',
+        bgcolor: color.paper2,
+        // The only colour: a hairline in the rarity.
+        border: `1px solid ${withAlpha(tone, 0.55)}`,
+        boxShadow: `0 16px 40px ${withAlpha('#000000', 0.45)}`,
+      }}
+    >
+      <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+        <Typography
+          sx={{
+            fontWeight: 600,
+            lineHeight: 1.35,
+            whiteSpace: { sm: 'nowrap' },
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {title}
+        </Typography>
+        <Typography
+          sx={{
+            fontSize: '13px',
+            lineHeight: 1.4,
+            color: color.ink2,
+            whiteSpace: { sm: 'nowrap' },
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {line}
+        </Typography>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Button
+          variant="outlined"
+          onClick={onOpen}
+          data-testid="skin-toast-open"
+          sx={{
+            minHeight: 36,
+            px: 2,
+            borderRadius: radii.pill,
+            border: `2px solid ${color.rule}`,
+            color: color.ink,
+            fontSize: '14px',
+            fontWeight: 600,
+            '&:hover': { border: `2px solid ${color.muted}`, bgcolor: 'transparent' },
+          }}
+        >
+          {choice ? t('skins.toastChoose') : t('skins.toastSee')}
+        </Button>
+        <IconButton
+          onClick={onHide}
+          aria-label={t('skins.toastHide')}
+          sx={{ width: 32, height: 32, color: color.ink }}
+        >
+          <XIcon size={16} />
+        </IconButton>
+      </Box>
     </Box>
   );
 }

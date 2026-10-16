@@ -35,20 +35,41 @@ function deriveKey(env: NodeJS.ProcessEnv): Buffer {
   );
 }
 
+/**
+ * A key for one purpose (`info`), from the same secret as the stored secrets'
+ * key but never equal to it (cs2 gotv.ts: the GOTV passwords).
+ */
+export function purposeKey(info: string, env: NodeJS.ProcessEnv = process.env): Buffer {
+  return Buffer.from(
+    crypto.hkdfSync(
+      'sha256',
+      Buffer.from(keyMaterial(env), 'utf8'),
+      Buffer.alloc(0),
+      `at:${info}`,
+      32
+    )
+  );
+}
+
 /** Encrypt `plaintext` for storage. */
 export function encryptSecret(plaintext: string, env: NodeJS.ProcessEnv = process.env): string {
   const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv('aes-256-gcm', deriveKey(env), iv);
   const ciphertext = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
   const tag = cipher.getAuthTag();
-  return [VERSION, iv, tag, ciphertext].map((p) => (typeof p === 'string' ? p : p.toString('base64url'))).join('.');
+  return [VERSION, iv, tag, ciphertext]
+    .map((p) => (typeof p === 'string' ? p : p.toString('base64url')))
+    .join('.');
 }
 
 /**
  * Decrypt a value `encryptSecret` wrote, or null when it is malformed, was
  * tampered with or was encrypted with another key.
  */
-export function decryptSecret(stored: string | null | undefined, env: NodeJS.ProcessEnv = process.env): string | null {
+export function decryptSecret(
+  stored: string | null | undefined,
+  env: NodeJS.ProcessEnv = process.env
+): string | null {
   if (!stored) return null;
   const parts = stored.split('.');
   if (parts.length !== 4 || parts[0] !== VERSION) return null;

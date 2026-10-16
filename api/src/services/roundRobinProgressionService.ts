@@ -51,7 +51,8 @@ export async function advanceRoundRobinTournament(tournamentId: number): Promise
     'SELECT * FROM tournament WHERE id = ?',
     [tournamentId]
   );
-  if (!tournament || tournament.type !== 'round_robin') return;
+  // Groups play a round robin each first (groupsTournament.ts): same rule.
+  if (!tournament || (tournament.type !== 'round_robin' && tournament.type !== 'groups')) return;
   if (tournament.status === 'completed') return;
 
   // Not started yet: `POST /api/tournament/start` opens round 1.

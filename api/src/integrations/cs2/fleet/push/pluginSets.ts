@@ -212,7 +212,9 @@ export function pluginsSetFor(
   fleetCmds: boolean,
   skinsOn = false
 ): StoredPlugins {
-  let out = value;
+  // A named preset is what it is today: a server stored under an older definition (the Skin
+  // tryout set before it ran movement, 2026-10-15) gets the current one on its next resync.
+  let out = isPreset(value.preset) ? pluginSetCommand(presetSet(value.preset)) : value;
   if (!fleetCmds && out.disable.includes('match')) {
     out = { ...out, disable: out.disable.filter((n) => n !== 'match') };
   }

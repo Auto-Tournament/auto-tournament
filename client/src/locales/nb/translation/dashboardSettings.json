@@ -15,7 +15,7 @@
     },
     "header": {
       "brand": "Auto Tournament",
-      "version": "Din Auto Tournament-side · versjon {{version}}",
+      "version": "Auto Tournament-siden din · versjon {{version}}",
       "unknownVersion": "utvikling",
       "createTournament": "Opprett turnering"
     },
@@ -24,7 +24,7 @@
       "openSettings": "Åpne innstillinger",
       "signIn": "Innloggingsleverandør",
       "game": "Installer et spill (CS2) under Moduler",
-      "discordBot": "Legg inn din egen Discord-bot (tokenet), så kan nettstedet sende spillerne meldinger om kampene deres"
+      "discordBot": "Legg inn Discord-boten din (tokenet), så kan nettstedet sende spillerne meldinger om kampene deres"
     },
     "tournaments": {
       "title": "Turnering",
@@ -193,7 +193,7 @@
       "save": "Lagre",
       "callbackHint": "Satt automatisk. Lim den inn som omdirigerings-URL i {{provider}}s utviklerinnstillinger:",
       "copy": "Kopier",
-      "copyCallback": "Kopier tilbakekallings-URL",
+      "copyCallback": "Kopier callback-URL",
       "copied": "Kopiert",
       "copyError": "Kunne ikke kopiere",
       "guide": "Oppsettsguide",
@@ -236,7 +236,7 @@
       "accounts": {
         "title": "Kontoer",
         "short": "Kontoer med brukernavn og passord som du lager",
-        "help": "Disse logger inn på /login/admin. Gi admin til dem som driver siden; resten logger inn som spillere.",
+        "help": "Disse logger inn på /login/admin. Gi admin til dem som driver siden. Resten logger inn som spillere.",
         "none": "Ingen kontoer ennå.",
         "admin": "Admin",
         "twoStep": "Totrinn på",
@@ -248,7 +248,7 @@
         "username": "Brukernavn",
         "usernameHelp": "3 til 32 tegn: små bokstaver, sifre, punktum, bindestrek og understrek.",
         "name": "Visningsnavn",
-        "nameHelp": "Valgfritt. Vises på siden; brukernavnet brukes hvis tomt.",
+        "nameHelp": "Valgfritt. Vises på siden. Er feltet tomt, brukes brukernavnet.",
         "password": "Passord",
         "makeAdmin": "Admin",
         "create": "Opprett konto",
@@ -256,12 +256,12 @@
         "madeAdmin": "{{username}} er nå admin",
         "adminRemoved": "{{username}} er ikke lenger admin",
         "setPasswordTitle": "Nytt passord for {{username}}",
-        "setPasswordTotp": "Totrinnsbekreftelsen deres slås også av; de setter den opp igjen etter innlogging.",
+        "setPasswordTotp": "Totrinnsbekreftelsen deres slås også av. De setter den opp igjen etter innlogging.",
         "newPassword": "Nytt passord",
         "savePassword": "Lagre passord",
         "passwordSet": "Nytt passord lagret for {{username}}",
         "removeTitle": "Fjerne {{username}}?",
-        "removeBody": "De kan ikke lenger logge inn med dette brukernavnet og passordet, og de er ikke lenger admin. Spilleren, kampene og statistikken blir; lager du samme brukernavn igjen, får de dem tilbake.",
+        "removeBody": "De kan ikke lenger logge inn med dette brukernavnet og passordet, og de er ikke lenger admin. Spilleren, kampene og statistikken blir værende. Lager du samme brukernavn igjen, får de dem tilbake.",
         "removeConfirm": "Fjern",
         "removed": "{{username}} er fjernet",
         "cancel": "Avbryt",
@@ -295,24 +295,24 @@
     "players": {
       "registration": {
         "title": "Spillerregistrering",
-        "description": "Styr om nye Steam-innlogginger automatisk oppretter spillerprofiler. Når deaktivert vil kun spillere som admins har opprettet eller importert vises i private turneringer og shuffle-pooler.",
-        "toggleLabel": "Tillat at hvem som helst kan registrere seg via Steam-innlogging",
+        "description": "Styr om nye Steam-innlogginger automatisk oppretter spillerprofiler. Når dette er av, vises bare spillere som admins har opprettet eller importert, i private turneringer og shuffle-pooler.",
+        "toggleLabel": "Tillat at hvem som helst registrerer seg via Steam-innlogging",
         "recommendation": "Anbefalt: la dette være av for invitasjons‑ eller private turneringer, slik at tilfeldige Steam-innlogginger ikke fyller opp spillerlisten.",
-        "short": "Innlogging gjør hvem som helst nye til spiller. Av: bare spillere du legger til."
+        "short": "Ny innlogging gjør hvem som helst til spiller. Av: bare spillere du legger til."
       },
       "title": "Spillere",
       "short": "Hvem som blir med, og hvordan rating endres."
     },
     "developer": {
       "resetApiTitle": "Tilbakestill API og database",
-      "resetApiDescription": "Faresone: sletter og gjenoppretter hele databaseskjemaet, og initialiserer deretter standarddata (kart, kartpooler osv.). Kun for lokal utvikling. Dette kan ikke angres.",
+      "resetApiDescription": "Faresone: sletter og gjenoppretter hele databaseskjemaet, og initialiserer deretter standarddata (kart, kartutvalg osv.). Bare for lokal utvikling. Dette kan ikke angres.",
       "resetApiButton": "Tilbakestill API (slett alt)",
       "resetApiButtonLoading": "Tilbakestiller API…",
       "resetApiSuccess": "API og database er tilbakestilt. All data er slettet og standardverdier er gjenopprettet.",
       "resetApiError": "Klarte ikke å tilbakestille API og database. Sjekk API-loggene for detaljer.",
       "resetApiDialog": {
         "title": "Tilbakestill API og slett all data?",
-        "description": "Dette vil slette og gjenopprette hele databaseskjemaet. Alle turneringer, kamper, spillere, lag, ratinger, hendelser, logger og innstillinger vil bli permanent slettet. Dette kan ikke angres. Fortsette?",
+        "description": "Dette sletter og gjenoppretter hele databaseskjemaet. Alle turneringer, kamper, spillere, lag, ratinger, hendelser, logger og innstillinger slettes for godt. Dette kan ikke angres. Vil du fortsette?",
         "cancel": "Avbryt",
         "confirm": "Ja, tilbakestill API og slett data",
         "confirmLoading": "Tilbakestiller…"
@@ -367,7 +367,7 @@
       "modesTitle": "Moduser",
       "modesDescription": "Hva spillere kan søke etter. Alle moduser er på som standard. 1v1 er en siktduell.",
       "poolsTitle": "Kart per modus",
-      "poolsDescription": "Kartsamlingen hver modus velger fra (Kart-siden; Workshop-kart fungerer også). Kamprommet viser et lykkehjul over samlingen før kartet vises.",
+      "poolsDescription": "Kartutvalget hver modus velger fra (Kart-siden, workshopkart fungerer også). Kamprommet viser et lykkehjul over poolen før kartet vises.",
       "poolDefault": {
         "5v5": "Standard: Active Duty",
         "2v2": "Standard: alle wingman-kart",
@@ -439,11 +439,11 @@
     "tournamentNotFound": "Ingen turnering med denne id-en. Velg en under Alle turneringer.",
     "title": "Administrer",
     "needsYouHeading": "Trenger deg",
-    "noTournament": "Ingen turnering enda",
+    "noTournament": "Ingen turnering ennå",
     "rail": {
       "needsYou": "Trenger deg",
       "matches": "Kamper",
-      "bracket": "Bracket",
+      "bracket": "Turneringstre",
       "teams": "Lag",
       "players": "Spillere",
       "reports": "Rapporter",
@@ -493,7 +493,9 @@
       },
       "openMenu": "Åpne Administrer-menyen",
       "closeMenu": "Lukk menyen",
-      "setupTab": "Oppsett"
+      "setupTab": "Oppsett",
+      "prizes": "Premier",
+      "schedule": "Tidsplan"
     },
     "status": {
       "live": "LIVE",
@@ -509,7 +511,7 @@
       "vsLabel": "{{team1}} mot {{team2}}",
       "decide": {
         "title": "{{teams}} trenger en vinner",
-        "detail": "Alle banene er spilt og serien står fortsatt likt.",
+        "detail": "Alle kartene er spilt, og serien står fortsatt likt.",
         "action": "Avgjør"
       },
       "reallocateSuccess": "Kampen ble flyttet til en annen server",
@@ -528,7 +530,7 @@
       "closingLine": "Alt annet går sin gang selv. Du ser det bare her når noe trenger en avgjørelse.",
       "team1Fallback": "Lag 1",
       "team2Fallback": "Lag 2",
-      "mapResult": "{{winner}} vant bane {{map}} mot {{loser}}, {{score}}",
+      "mapResult": "{{winner}} vant {{map}} mot {{loser}}, {{score}}",
       "seriesEnd": "{{winner}} vant serien mot {{loser}}, {{score}}"
     },
     "announce": {
@@ -544,14 +546,14 @@
     "title": "Lisens",
     "getKey": "Har du allerede en lisens? Kopier nøkkelen fra <consoleLink>Auto Tournament-konsollen</consoleLink>. Trenger du en? <pricingLink>Se priser</pricingLink>.",
     "useFromPaidKey": "Satt av den betalte lisensnøkkelen under.",
-    "useFromFreeKey": "Satt av den gratis nøkkelen under: kun ideell bruk.",
+    "useFromFreeKey": "Satt av den gratis nøkkelen under: bare ideell bruk.",
     "useWithoutKey": "Ingen nøkkel: gratis for ideell bruk. Lim inn en betalt nøkkel under for kommersiell bruk.",
     "publicLine": "Spillere ser «{{line}}» nederst på arrangementssider.",
-    "pageIntro": "Lisensnøkkelen din og hvordan den står. En betalt nøkkel er for kommersiell bruk; en gratis nøkkel er for ideell bruk.",
+    "pageIntro": "Lisensnøkkelen din og hvordan den står. En betalt nøkkel er for kommersiell bruk. En gratis nøkkel er for ideell bruk.",
     "description": "Lim inn lisensnøkkelen for Auto Tournament: en betalt for kommersiell bruk, eller en gratis for ideell bruk. Den sjekkes på denne serveren, og én gang om dagen mot autotournament.gg.",
     "loading": "Laster lisensstatus",
     "loadFailed": "Kunne ikke lese lisensstatusen.",
-    "none": "Ingen lisensnøkkel ennå. Gratis for ideell bruk; kommersiell bruk krever en betalt lisens.",
+    "none": "Ingen lisensnøkkel ennå. Gratis for ideell bruk. Kommersiell bruk krever en betalt lisens.",
     "pricing": "Priser",
     "open": "Innstillinger",
     "id": "Lisens-ID {{id}}",
@@ -600,11 +602,24 @@
       "licensed": "Lisensiert",
       "commercial": "Lisensiert · Kommersiell bruk",
       "nonCommercial": "Lisensiert · Ideell bruk",
-      "unlicensed": "Ingen lisensnøkkel"
+      "unlicensed": "Ingen lisensnøkkel",
+      "about": {
+        "title": "Om lisensen til dette nettstedet",
+        "none": "Dette nettstedet kjører Auto Tournament uten lisensnøkkel. Det er greit for arrangementer der ingen tjener penger på det: venner, klubber, skole-LAN og veldedige organisasjoner.",
+        "nonCommercial": "Dette nettstedet har en gratis ideell lisens: det kan kjøre arrangementer der ingen tjener penger på det.",
+        "commercial": "Dette nettstedet har en betalt kommersiell lisens: det kan kjøre arrangementer med betaling og ta inngangspenger.",
+        "free": "Auto Tournament er gratis når ingen tjener penger på det, og for veldedige organisasjoner, skoler og offentlige etater også når de tar inngangspenger. Alle andre som tjener penger på det, ved å ta inngangspenger, selge plasser eller drive det for en bedrift, trenger en betalt lisens.",
+        "paidTitle": "Blir du bedt om å betale for å delta?",
+        "paidBody": "Hvis du har betalt inngangspenger eller ble bedt om det, og arrangøren ikke er en veldedig organisasjon, en skole eller en offentlig etat, kan dette arrangementet bruke Auto Tournament i strid med lisensen. Du kan si fra til oss. Vi leser alle meldinger og deler aldri hvem som sendte dem.",
+        "paidCommercial": "Betalt inngang er tillatt her. Hvis noe ved det likevel ser galt ut, kan du si fra til oss.",
+        "report": "Meld fra til Auto Tournament",
+        "rules": "Les lisensen",
+        "verify": "Sjekk denne lisensen"
+      }
     },
     "consent": {
       "title": "En siste ting: lisensen",
-      "subtitle": "Beklager, ett steg til, så er du ferdig. Auto Tournament er gratis hvis ingen tjener penger på det; tjener noen penger, trenger du en lisens. Les kortversjonen, velg hvordan du bruker det, og skriv I AGREE.",
+      "subtitle": "Beklager, ett steg til, så er du ferdig. Auto Tournament er gratis hvis ingen tjener penger på det. Tjener noen penger, trenger du en lisens. Les kortversjonen, velg hvordan du bruker det, og skriv I AGREE.",
       "intro": "Kildekoden til Auto Tournament er tilgjengelig under {{name}}. Kort fortalt:",
       "points": {
         "free": "Gratis for personlig bruk, hobbyprosjekter, læring og arrangementer der ingen tjener penger på det.",
@@ -612,11 +627,11 @@
         "commercial": "Kommersiell bruk krever en lisens. Det gjelder betalt hosting, salg av programmet eller en tjeneste bygget på det, arrangementer som går med overskudd, bruk i en bedrift, og å få betalt for å sette det opp for andre.",
         "servers": "Hver spillserver teller med i lisensen.",
         "nothingLocked": "Ingenting låses eller begrenses uten nøkkel. Du kan legge inn en nøkkel nå eller senere.",
-        "forks": "Du kan endre koden og dele den. Ta med lisensen; de samme reglene gjelder."
+        "forks": "Du kan endre koden og dele den. Ta med lisensen. De samme reglene gjelder."
       },
       "readLicense": "Les hele lisensen",
       "readRules": "Lisens og kommersiell bruk",
-      "summaryNote": "Dette er et kort sammendrag, og teksten i din versjon kan være utdatert. Gjeldende lisens og lisensreglene finner du på autotournament.gg. Hvis de avviker fra dette sammendraget, gjelder de.",
+      "summaryNote": "Dette er et kort sammendrag, og teksten i versjonen din kan være utdatert. Gjeldende lisens og lisensreglene finner du på autotournament.gg. Hvis de avviker fra dette sammendraget, gjelder de.",
       "useQuestion": "Hvordan brukes denne instansen?",
       "privacyNote": "Svaret ditt lagres bare på denne serveren. Uten lisensnøkkel sendes ingenting til Auto Tournament. Med nøkkel melder denne serveren seg én gang i døgnet med nøkkelens ID og antall servere.",
       "use": {
@@ -684,7 +699,7 @@
       "failed": "Kunne ikke lagre svaret ditt"
     },
     "warning": {
-      "periodEnded": "Denne arrangementslisensen gjaldt til og med {{date}}. Testing og oppsett krever ingenting; et nytt arrangement får sin egen arrangementslisens.",
+      "periodEnded": "Denne arrangementslisensen gjaldt til og med {{date}}. Testing og oppsett krever ingenting. Et nytt arrangement får sin egen arrangementslisens.",
       "periodNotStarted": "Denne arrangementslisensen gjelder fra {{date}}. Det er helt greit å sette opp og teste før det."
     },
     "short": "Hvordan denne instansen brukes, og nøkkelen.",
@@ -810,7 +825,7 @@
       "failed": "Demoen kunne ikke leses"
     },
     "teams": "{{team1}} mot {{team2}}",
-    "doneAll": "Importert. Høydepunktene tas opp etterpå hvis en opptaker er koblet til.",
+    "doneAll": "Importert. Highlightene tas opp etterpå hvis en opptaker er koblet til.",
     "openMatch": "Åpne kampen",
     "another": "Importer en til",
     "dropHint": "eller slipp dem her. Velg flere samtidig med Cmd eller Ctrl.",
@@ -822,7 +837,7 @@
   },
   "apiTokens": {
     "title": "API-nøkler",
-    "hint": "For skript, botter og Auto Tournaments MCP-server. En lesenøkkel kan bare lese; en adminnøkkel kan det en admin kan. Hemmeligheten vises bare én gang, når nøkkelen lages.",
+    "hint": "For skript, botter og Auto Tournaments MCP-server. En lesenøkkel kan bare lese. En adminnøkkel kan det en admin kan. Hemmeligheten vises bare én gang, når nøkkelen lages.",
     "line": "{{scope}} · {{fingerprint}} · sist brukt {{used}}",
     "never": "aldri",
     "none": "Ingen API-nøkler ennå.",
@@ -851,7 +866,7 @@
   },
   "discordBot": {
     "title": "Discord-bot",
-    "hint": "Din egen Discord-bot: nettstedet sender spillerne meldinger gjennom den (Konto → Varsler). En spiller får dem når hen er på en Discord-server sammen med boten din.",
+    "hint": "Discord-boten din: nettstedet sender spillerne meldinger gjennom den (Konto → Varsler). En spiller får dem når hen er på en Discord-server sammen med boten din.",
     "token": "Bot-token",
     "replace": "Ny bot-token",
     "save": "Lagre",

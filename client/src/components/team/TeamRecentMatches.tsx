@@ -4,6 +4,7 @@
  */
 
 import { Box, Typography } from '@mui/material';
+import { fmtDate } from '../../utils/time';
 import { useTranslation } from 'react-i18next';
 import { LiveChip, Panel } from '../common/ui';
 import { matchPagePath } from '../../paths';
@@ -24,7 +25,7 @@ export interface TeamRecentMatch {
 }
 
 export function TeamRecentMatches({ matches }: { matches: TeamRecentMatch[] }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   if (matches.length === 0) {
     return (
       <Panel sx={{ px: 3, py: 2 }}>
@@ -95,15 +96,7 @@ export function TeamRecentMatches({ matches }: { matches: TeamRecentMatch[] }) {
                 )}
               </Typography>
               <Typography noWrap sx={{ fontSize: textSize.xs, color: color.muted }}>
-                {[
-                  m.maps,
-                  m.completedAt
-                    ? new Date(m.completedAt * 1000).toLocaleDateString(i18n.language, {
-                        day: 'numeric',
-                        month: 'short',
-                      })
-                    : null,
-                ]
+                {[m.maps, m.completedAt ? fmtDate(m.completedAt) : null]
                   .filter(Boolean)
                   .join(' · ')}
               </Typography>

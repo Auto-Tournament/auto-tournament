@@ -44,10 +44,13 @@ export { onSocketReconnect } from '../utils/socketResync';
 export { useSocket } from '../hooks/useSocket';
 // 0.2.25: the site's notification sound (the player's volume and mute apply).
 export { playNotificationSound } from '../utils/soundNotification';
+export { setPinnedNotices } from '../utils/pinnedNotices';
 export { useTopic, type TopicOptions } from '../hooks/useTopic';
 
 // Host contexts
 export { useSnackbar } from '../contexts/SnackbarContext';
+export { SegmentedControl } from '../components/common/SegmentedControl';
+export type { SegmentedOption, SegmentedControlProps } from '../components/common/SegmentedControl';
 /**
  * @deprecated since client API 0.2.3. Render the SDK's `PageHead` with the
  * buttons as its `actions` instead. Buttons handed to it still show, in a
@@ -93,7 +96,15 @@ export type ModuleAuth = {
 export const useAuth: () => ModuleAuth = useAuthInternal;
 
 // Design tokens
-export { tokens, radii, mono, textSize, withAlpha, fontDisplay } from '../theme/tokens';
+export {
+  tokens,
+  radii,
+  mono,
+  textSize,
+  withAlpha,
+  fontDisplay,
+  siteEdgeRight,
+} from '../theme/tokens';
 // The icon size scale, 16/20/24 px (client API 0.2.8; see theme/icons.tsx)
 export { ICON_SIZE } from '../theme/icons';
 
@@ -102,7 +113,6 @@ export { openMatchDetails } from '../components/modals/matchDetailsOpener';
 
 // Components
 export { default as ConfirmDialog } from '../components/modals/ConfirmDialog';
-export { SegmentedControl } from '../components/tournament/setup/SegmentedControl';
 export { EmptyState } from '../components/shared/EmptyState';
 export { StatusDot, LiveChip } from '../components/common/ui';
 // A link that leaves the app: icon, rel and the hidden "opens in a new tab"
@@ -110,7 +120,20 @@ export { StatusDot, LiveChip } from '../components/common/ui';
 export { ExternalLink } from '../components/common/ExternalLink';
 export type { ExternalLinkProps } from '../components/common/ExternalLink';
 // Page patterns of the 3.0 drafts (client API 0.2.1)
-export { PageHead, SectionHead, Panel, RowList, Row, FactGrid } from '../components/common/ui';
+export {
+  PageHead,
+  SectionHead,
+  Panel,
+  RowList,
+  Row,
+  FactGrid,
+  SwitchRow,
+  FormField,
+  panelSx,
+  panelPaddedSx,
+  panelBorderSx,
+  dialogPaperSx,
+} from '../components/common/ui';
 export type {
   PageHeadProps,
   SectionHeadProps,
@@ -120,6 +143,7 @@ export type {
   FactGridProps,
 } from '../components/common/ui';
 export { PlayerAvatar } from '../components/player/PlayerAvatar';
+export { PlayerChip } from '../components/player/PlayerChip';
 // Highlights are videos any game can have (client API 0.2.14): the player,
 // the cards, and the placeholders while one is being made.
 export {
@@ -149,6 +173,19 @@ export type { ClipMarkers } from '../components/highlights/media';
 export type { HighlightVideo, PlayerHighlightsFeed } from '../components/highlights/feed';
 // "Page · Auto Tournament" for document.title (client API 0.2.3)
 export { pageTitle } from '../utils/pageTitle';
+/** Dates, times and countdowns, one format everywhere (utils/time.ts). */
+export {
+  fmtTime,
+  fmtWeekdayTime,
+  fmtDayTime,
+  fmtDate,
+  fmtLongDay,
+  fmtDateTime,
+  fmtClock,
+  fmtCountdown,
+  toMs,
+} from '../utils/time';
+export { fmtNum, fmtPercent, fmtShare, fmtMoney } from '../utils/number';
 export { ManageStatusTile } from '../components/manage/StatusStrip';
 
 // Strings

@@ -24,7 +24,13 @@ const Component = () => null;
 function moduleDef(overrides: Record<string, unknown> = {}) {
   return {
     id: 'fixture',
-    capabilities: { servers: false, veto: false, liveEvents: false, demos: false, playerStats: false },
+    capabilities: {
+      servers: false,
+      veto: false,
+      liveEvents: false,
+      demos: false,
+      playerStats: false,
+    },
     matchPanels: {},
     tournamentSetupSteps: {},
     resourceDialogs: {},
@@ -62,11 +68,17 @@ test.describe('module locales', () => {
     expect(localesProblem('en')).toBe('locales is not an object of language bundles');
     expect(localesProblem({ English: {} })).toBe('locales.English is not a language code');
     expect(localesProblem({ en: 'Arena' })).toBe('locales.en is not an object');
-    expect(localesProblem({ en: { page: { count: 3 } } })).toBe('locales.en.page.count is not a string');
+    expect(localesProblem({ en: { page: { count: 3 } } })).toBe(
+      'locales.en.page.count is not a string'
+    );
   });
 
   test('the loader refuses a code module whose locales or nav labels are malformed', () => {
-    const badLocales = validateModuleExport({ default: moduleDef({ locales: { en: [] } }) }, 'fixture', []);
+    const badLocales = validateModuleExport(
+      { default: moduleDef({ locales: { en: [] } }) },
+      'fixture',
+      []
+    );
     expect(badLocales.ok).toBe(false);
     if (!badLocales.ok) expect(badLocales.failure.message).toContain('locales.en is not an object');
 
@@ -80,13 +92,16 @@ test.describe('module locales', () => {
       []
     );
     expect(badLabel.ok).toBe(false);
-    if (!badLabel.ok) expect(badLabel.failure.message).toContain('navItems[0].labels.sidebar is not a label');
+    if (!badLabel.ok)
+      expect(badLabel.failure.message).toContain('navItems[0].labels.sidebar is not a label');
 
     const good = validateModuleExport(
       {
         default: moduleDef({
           locales: { en: { nav: { arena: 'Arena' } } },
-          navItems: [{ key: 'arena', path: '/arena', icon: Component, labels: { nav: 'nav.arena' } }],
+          navItems: [
+            { key: 'arena', path: '/arena', icon: Component, labels: { nav: 'nav.arena' } },
+          ],
         }),
       },
       'fixture',

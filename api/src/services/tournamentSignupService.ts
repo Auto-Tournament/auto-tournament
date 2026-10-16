@@ -69,6 +69,7 @@ export interface Registration {
 interface TournamentRow {
   id: number;
   name: string;
+  type?: string;
   status: string;
   game: string | null;
   team_ids: string;
@@ -109,7 +110,7 @@ function isPast(iso: string | null, now = Date.now()): boolean {
 
 async function loadTournament(tournamentId: number): Promise<TournamentRow> {
   const row = await db.queryOneAsync<TournamentRow>(
-    'SELECT id, name, status, game, team_ids, team_size, settings FROM tournament WHERE id = ?',
+    'SELECT id, name, type, status, game, team_ids, team_size, settings FROM tournament WHERE id = ?',
     [tournamentId]
   );
   if (!row) throw new SignupError(404, 'There is no tournament.');
@@ -134,7 +135,9 @@ async function teamRow(teamId: string) {
     owner_uid: string | null;
     logo_updated_at: number | null;
     game: string | null;
-  }>('SELECT id, name, tag, players, owner_uid, logo_updated_at, game FROM teams WHERE id = ?', [teamId]);
+  }>('SELECT id, name, tag, players, owner_uid, logo_updated_at, game FROM teams WHERE id = ?', [
+    teamId,
+  ]);
   if (!team) throw new SignupError(404, 'That team does not exist.');
   return team;
 }
@@ -148,7 +151,11 @@ async function requireCaptain(teamId: string, uid: string): Promise<void> {
   const team = await teamRow(teamId);
   if (team.owner_uid === uid) return;
   if ((await teamMembers.roleFor(teamId, uid)) === 'captain') return;
-  throw new SignupError(403, 'Only the team owner or a captain can sign the team up.', 'not_captain');
+  throw new SignupError(
+    403,
+    'Only the team owner or a captain can sign the team up.',
+    'not_captain'
+  );
 }
 
 /** Rejects a lineup that is not the team's own players, or has the wrong size. */
@@ -160,7 +167,8 @@ function validateLineup(
 ): void {
   const ids = new Set(roster.map((p) => (p.steamId ?? p.steamid) as string));
   const all = [...starters, ...subs];
-  if (new Set(all).size !== all.length) throw new SignupError(400, 'A player is in the lineup twice.');
+  if (new Set(all).size !== all.length)
+    throw new SignupError(400, 'A player is in the lineup twice.');
   if (all.some((id) => !ids.has(id))) {
     throw new SignupError(400, 'Every player in the lineup must be on the team.');
   }
@@ -178,11 +186,20 @@ async function rejectBlocked(ids: string[]): Promise<void> {
     [ids]
   );
   if (blocked.length) {
-    throw new SignupError(400, `${blocked.map((b) => b.name).join(', ')} cannot play: banned or deleted.`, 'blocked');
+    throw new SignupError(
+      400,
+      `${blocked.map((b) => b.name).join(', ')} cannot play: banned or deleted.`,
+      'blocked'
+    );
   }
 }
 
-async function writeLineup(tournamentId: number, teamId: string, starters: string[], subs: string[]) {
+async function writeLineup(
+  tournamentId: number,
+  teamId: string,
+  starters: string[],
+  subs: string[]
+) {
   await rejectBlocked([...starters, ...subs]);
   await db.runAsync('DELETE FROM tournament_lineups WHERE tournament_id = ? AND team_id = ?', [
     tournamentId,
@@ -212,7 +229,9 @@ async function setTeamIds(tournamentId: number, teamIds: string[]): Promise<void
   try {
     await tournamentService.regenerateBracket(tournamentId, true);
   } catch {
-    await db.runAsync("DELETE FROM matches WHERE tournament_id = ? AND status = 'pending'", [tournamentId]);
+    await db.runAsync("DELETE FROM matches WHERE tournament_id = ? AND status = 'pending'", [
+      tournamentId,
+    ]);
   }
   emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
 }
@@ -282,7 +301,13 @@ export const tournamentSignupService = {
       if (registered.has(teamId)) continue;
       const team = await teamRow(teamId).catch(() => null);
       if (!team) continue;
-      rows.push({ team_id: team.id, name: team.name, tag: team.tag, logo_updated_at: team.logo_updated_at, created_at: 0 });
+      rows.push({
+        team_id: team.id,
+        name: team.name,
+        tag: team.tag,
+        logo_updated_at: team.logo_updated_at,
+        created_at: 0,
+      });
       const roster = rosterSteamIds(team.players);
       const steamIds = roster.map((p) => (p.steamId ?? p.steamid) as string);
       const extra = steamIds.length
@@ -371,11 +396,15 @@ export const tournamentSignupService = {
   /** Teams the account may sign up (owner or captain), with their rosters. */
   async eligibleTeams(uid: string, tournamentId?: number) {
     // The tournament's game, to say who has it on their profile (null: unknown).
-    const tournamentGame = tournamentId ? (await loadTournament(tournamentId).catch(() => null))?.game ?? null : null;
+    const tournamentGame = tournamentId
+      ? ((await loadTournament(tournamentId).catch(() => null))?.game ?? null)
+      : null;
     const gameId = tournamentId ? await gameRowId(tournamentGame).catch(() => null) : null;
     const memberships = await teamMembers.listForAccount(uid);
     const captainOf = memberships.filter((m) => m.role === 'captain').map((m) => m.teamId);
-    const owned = await db.queryAsync<{ id: string }>('SELECT id FROM teams WHERE owner_uid = ?', [uid]);
+    const owned = await db.queryAsync<{ id: string }>('SELECT id FROM teams WHERE owner_uid = ?', [
+      uid,
+    ]);
     const ids = [...new Set([...owned.map((t) => t.id), ...captainOf])];
     const teams = [];
     for (const id of ids) {
@@ -383,7 +412,14 @@ export const tournamentSignupService = {
       const roster = rosterSteamIds(team.players);
       const steamIds = roster.map((p) => (p.steamId ?? p.steamid) as string);
       const players = steamIds.length
-        ? await db.queryAsync<{ id: string; name: string; avatar_url: string | null; current_elo: number; uid: string; has_game: boolean }>(
+        ? await db.queryAsync<{
+            id: string;
+            name: string;
+            avatar_url: string | null;
+            current_elo: number;
+            uid: string;
+            has_game: boolean;
+          }>(
             `SELECT p.id, p.name, p.avatar_url, ${RATING_ELO} AS current_elo, p.uid, (pg.player_uid IS NOT NULL) AS has_game
                FROM players p
                ${ratingJoin('p')}
@@ -431,11 +467,16 @@ export const tournamentSignupService = {
    * before check-in (an account, or the game on their profile). Owner or
    * captain only; once per player per ten minutes.
    */
-  async remind(tournamentId: number, uid: string, input: { teamId: string; steamId: string }): Promise<void> {
+  async remind(
+    tournamentId: number,
+    uid: string,
+    input: { teamId: string; steamId: string }
+  ): Promise<void> {
     await requireCaptain(input.teamId, uid);
     const key = `${tournamentId}:${input.steamId}`;
     const last = remindedAt.get(key) ?? 0;
-    if (Date.now() - last < 10 * 60 * 1000) throw new SignupError(429, 'Reminded a moment ago.', 'too_soon');
+    if (Date.now() - last < 10 * 60 * 1000)
+      throw new SignupError(429, 'Reminded a moment ago.', 'too_soon');
     const tournament = await loadTournament(tournamentId);
     const gameId = await gameRowId(tournament.game).catch(() => null);
     const player = await db.queryOneAsync<{ name: string; uid: string; has_game: boolean }>(
@@ -445,13 +486,130 @@ export const tournamentSignupService = {
       [gameId ?? -1, input.steamId]
     );
     const team = await teamRow(input.teamId);
-    const name = player?.name ?? rosterSteamIds(team.players).find((p) => (p.steamId ?? p.steamid) === input.steamId)?.name ?? input.steamId;
+    const name =
+      player?.name ??
+      rosterSteamIds(team.players).find((p) => (p.steamId ?? p.steamid) === input.steamId)?.name ??
+      input.steamId;
     const missing = !player ? 'account' : gameId !== null && !player.has_game ? 'game' : null;
     if (!missing) throw new SignupError(409, 'Nothing to fix for this player.', 'ready');
     remindedAt.set(key, Date.now());
     const { chatService } = await import('./chatService');
     const { chatLineBody } = await import('./matchChatLines');
-    await chatService.system(`team:${input.teamId}`, chatLineBody(missing === 'account' ? 'remindAccount' : 'remindGame', { name, tournament: tournament.name }));
+    await chatService.system(
+      `team:${input.teamId}`,
+      chatLineBody(missing === 'account' ? 'remindAccount' : 'remindGame', {
+        name,
+        tournament: tournament.name,
+      })
+    );
+  },
+
+  /**
+   * A shuffle tournament's players, in the order they joined (no teams: the platform draws
+   * them each round). Public, like the team list. Null for any other kind of tournament.
+   */
+  async shufflePlayers(tournamentId: number): Promise<Array<{
+    steamId: string;
+    name: string;
+    avatar: string | null;
+    joinedAt: number;
+  }> | null> {
+    const tournament = await loadTournament(tournamentId);
+    if (tournament.type !== 'shuffle') return null;
+    const rows = await db.queryAsync<{
+      player_id: string;
+      registered_at: number;
+      left_at: number | null;
+      name: string | null;
+      avatar_url: string | null;
+    }>(
+      `SELECT s.player_id, s.registered_at, s.left_at, p.name, p.avatar_url
+         FROM shuffle_tournament_players s LEFT JOIN players p ON p.id = s.player_id
+        WHERE s.tournament_id = ? ORDER BY s.registered_at, s.player_id`,
+      [tournamentId]
+    );
+    return rows.map((r) => ({
+      steamId: r.player_id,
+      name: r.name || r.player_id,
+      avatar: r.avatar_url ?? null,
+      joinedAt: Number(r.registered_at),
+      // Left a running shuffle: keeps their results, not drawn again.
+      left: r.left_at !== null,
+    }));
+  },
+
+  /**
+   * A signed-in player joins a shuffle tournament on their own, while its sign-up is open.
+   * `maxTeams` caps it at that many teams of `team_size` players.
+   */
+  async joinShuffle(tournamentId: number, steamId: string): Promise<void> {
+    const tournament = await loadTournament(tournamentId);
+    if (tournament.type !== 'shuffle')
+      throw new SignupError(
+        409,
+        'Only a shuffle tournament takes players on their own.',
+        'not_shuffle'
+      );
+    const win = windowOf(tournament);
+    // A running shuffle still takes players: they are in the next round's draw.
+    if (tournament.status !== 'setup' && tournament.status !== 'in_progress')
+      throw new SignupError(409, 'The tournament is over.', 'started');
+    if (!win.registrationOpen) throw new SignupError(409, 'Sign-up is not open.', 'closed');
+    if (isPast(win.registrationClosesAt))
+      throw new SignupError(409, 'Sign-up has closed.', 'closed');
+    const blocked = await db
+      .queryOneAsync<{ id: string }>(
+        'SELECT id FROM players WHERE id = ? AND (banned_at IS NOT NULL OR deleted_at IS NOT NULL)',
+        [steamId]
+      )
+      .catch(() => null);
+    if (blocked) throw new SignupError(403, 'This account cannot join tournaments.', 'blocked');
+    if (win.maxTeams !== null) {
+      const cap = win.maxTeams * (tournament.team_size ?? 5);
+      const row = await db.queryOneAsync<{ n: number | string }>(
+        'SELECT COUNT(*) AS n FROM shuffle_tournament_players WHERE tournament_id = ? AND player_id <> ?',
+        [tournamentId, steamId]
+      );
+      if (Number(row?.n ?? 0) >= cap) throw new SignupError(409, 'Every spot is taken.', 'full');
+    }
+    await db.runAsync(
+      `INSERT INTO shuffle_tournament_players (tournament_id, player_id, registered_at) VALUES (?, ?, ?)
+       ON CONFLICT (tournament_id, player_id) DO UPDATE SET left_at = NULL`,
+      [tournamentId, steamId, Math.floor(Date.now() / 1000)]
+    );
+    emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
+    // Joined a running shuffle: enough players waiting get a match now.
+    if (tournament.status === 'in_progress') {
+      const { fillRoundFromBench } = await import('./shuffleTournamentService');
+      await fillRoundFromBench(tournamentId).catch(() => []);
+    }
+  },
+
+  /** A player leaves a shuffle tournament before it starts. */
+  async leaveShuffle(tournamentId: number, steamId: string): Promise<void> {
+    const tournament = await loadTournament(tournamentId);
+    if (tournament.type !== 'shuffle')
+      throw new SignupError(
+        409,
+        'Only a shuffle tournament takes players on their own.',
+        'not_shuffle'
+      );
+    // Leaving a running shuffle keeps your results; the next rounds do not draw you.
+    if (tournament.status === 'in_progress') {
+      await db.runAsync(
+        'UPDATE shuffle_tournament_players SET left_at = ? WHERE tournament_id = ? AND player_id = ?',
+        [Math.floor(Date.now() / 1000), tournamentId, steamId]
+      );
+      emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
+      return;
+    }
+    if (tournament.status !== 'setup')
+      throw new SignupError(409, 'The tournament is over.', 'started');
+    await db.runAsync(
+      'DELETE FROM shuffle_tournament_players WHERE tournament_id = ? AND player_id = ?',
+      [tournamentId, steamId]
+    );
+    emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
   },
 
   async register(
@@ -461,22 +619,30 @@ export const tournamentSignupService = {
   ): Promise<void> {
     const tournament = await loadTournament(tournamentId);
     const win = windowOf(tournament);
-    if (tournament.status !== 'setup') throw new SignupError(409, 'The tournament has started.', 'started');
+    if (tournament.status !== 'setup')
+      throw new SignupError(409, 'The tournament has started.', 'started');
     if (!win.registrationOpen) throw new SignupError(409, 'Sign-up is not open.', 'closed');
-    if (isPast(win.registrationClosesAt)) throw new SignupError(409, 'Sign-up has closed.', 'closed');
+    if (isPast(win.registrationClosesAt))
+      throw new SignupError(409, 'Sign-up has closed.', 'closed');
     if (!input.acceptRules) {
       throw new SignupError(400, 'Confirm that every player has read the rules.', 'rules');
     }
     await requireCaptain(input.teamId, uid);
 
     const teamIds = parse<string[]>(tournament.team_ids, []);
-    if (teamIds.includes(input.teamId)) throw new SignupError(409, 'The team is already in.', 'already_in');
+    if (teamIds.includes(input.teamId))
+      throw new SignupError(409, 'The team is already in.', 'already_in');
     if (win.maxTeams !== null && teamIds.length >= win.maxTeams) {
       throw new SignupError(409, 'Every team spot is taken.', 'full');
     }
 
     const team = await teamRow(input.teamId);
-    validateLineup(rosterSteamIds(team.players), input.starters, input.subs, tournament.team_size ?? 5);
+    validateLineup(
+      rosterSteamIds(team.players),
+      input.starters,
+      input.subs,
+      tournament.team_size ?? 5
+    );
 
     await db.runAsync(
       `INSERT INTO tournament_registrations (tournament_id, team_id, registered_by_uid, rules_accepted_at)
@@ -507,7 +673,12 @@ export const tournamentSignupService = {
     );
     if (!registered) throw new SignupError(404, 'The team is not signed up.');
     const team = await teamRow(input.teamId);
-    validateLineup(rosterSteamIds(team.players), input.starters, input.subs, tournament.team_size ?? 5);
+    validateLineup(
+      rosterSteamIds(team.players),
+      input.starters,
+      input.subs,
+      tournament.team_size ?? 5
+    );
     await writeLineup(tournamentId, input.teamId, input.starters, input.subs);
     if (gap) await lineupPicked(tournamentId, input.teamId);
     emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
@@ -516,13 +687,17 @@ export const tournamentSignupService = {
   async withdraw(tournamentId: number, uid: string, teamId: string): Promise<void> {
     const tournament = await loadTournament(tournamentId);
     if (tournament.status !== 'setup') {
-      throw new SignupError(409, 'A team cannot withdraw once the tournament has started.', 'started');
+      throw new SignupError(
+        409,
+        'A team cannot withdraw once the tournament has started.',
+        'started'
+      );
     }
     await requireCaptain(teamId, uid);
-    await db.runAsync('DELETE FROM tournament_registrations WHERE tournament_id = ? AND team_id = ?', [
-      tournamentId,
-      teamId,
-    ]);
+    await db.runAsync(
+      'DELETE FROM tournament_registrations WHERE tournament_id = ? AND team_id = ?',
+      [tournamentId, teamId]
+    );
     await db.runAsync('DELETE FROM tournament_lineups WHERE tournament_id = ? AND team_id = ?', [
       tournamentId,
       teamId,
@@ -573,7 +748,10 @@ export const tournamentSignupService = {
    */
   async dropRemovedTeams(tournamentId: number, keep: string[]): Promise<void> {
     for (const table of ['tournament_registrations', 'tournament_lineups', 'tournament_checkins']) {
-      await db.runAsync(`DELETE FROM ${table} WHERE tournament_id = ? AND NOT (team_id = ANY(?::text[]))`, [tournamentId, keep]);
+      await db.runAsync(
+        `DELETE FROM ${table} WHERE tournament_id = ? AND NOT (team_id = ANY(?::text[]))`,
+        [tournamentId, keep]
+      );
     }
   },
 
@@ -593,13 +771,17 @@ export const tournamentSignupService = {
       // A team an admin added has no lineup: its roster checks in.
       for (const teamId of parse<string[]>(tournament.team_ids, [])) {
         const team = await teamRow(teamId).catch(() => null);
-        if (team && rosterSteamIds(team.players).some((p) => (p.steamId ?? p.steamid) === steamId)) {
+        if (
+          team &&
+          rosterSteamIds(team.players).some((p) => (p.steamId ?? p.steamid) === steamId)
+        ) {
           slot = { team_id: teamId };
           break;
         }
       }
     }
-    if (!slot) throw new SignupError(403, 'You are not in a lineup in this tournament.', 'not_in_lineup');
+    if (!slot)
+      throw new SignupError(403, 'You are not in a lineup in this tournament.', 'not_in_lineup');
     await db.runAsync(
       `INSERT INTO tournament_checkins (tournament_id, team_id, player_id) VALUES (?, ?, ?)
        ON CONFLICT (tournament_id, player_id) DO NOTHING`,

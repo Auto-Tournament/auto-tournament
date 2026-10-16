@@ -91,7 +91,8 @@ function legacySum(weights: EloTemplateWeights, p: LegacyLine): number {
   if (weights.kills !== undefined) adjustment += (p.kills || 0) * weights.kills;
   if (weights.deaths !== undefined) adjustment += (p.deaths || 0) * weights.deaths;
   if (weights.assists !== undefined) adjustment += (p.assists || 0) * weights.assists;
-  if (weights.flashAssists !== undefined) adjustment += (p.flashAssists || 0) * weights.flashAssists;
+  if (weights.flashAssists !== undefined)
+    adjustment += (p.flashAssists || 0) * weights.flashAssists;
   if (weights.headshotKills !== undefined)
     adjustment += (p.headshotKills || 0) * weights.headshotKills;
   if (weights.damage !== undefined) adjustment += (p.damage || 0) * weights.damage;
@@ -128,7 +129,14 @@ test.describe('CS2 stats through statsSchema', () => {
       {},
       { kills: 3 },
       { rounds_played: 0, damage: 500 },
-      { roundsPlayed: 21, damage: 1733, headshotKills: 4, flashAssists: 2, utilityDamage: 90, mvps: 3 },
+      {
+        roundsPlayed: 21,
+        damage: 1733,
+        headshotKills: 4,
+        flashAssists: 2,
+        utilityDamage: 90,
+        mvps: 3,
+      },
       { rounds_played: null, roundsPlayed: 13, damage: 999, mvp: 0, mvps: 2 },
     ];
     for (let i = 0; i < 500; i++) {

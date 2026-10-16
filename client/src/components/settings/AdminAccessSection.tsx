@@ -1,15 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { SettingsRow } from './SettingsRow';
+import { SwitchRow } from '../../components/common/ui';
 
 interface AdminAccess {
   localAdminLoginEnabled: boolean;
@@ -40,7 +38,9 @@ export function AdminAccessSection() {
     api
       .get<AdminAccess>('/api/sign-in-providers/admin-access')
       .then(apply)
-      .catch((err) => showError(apiErrorMessage(err, t('settingsPage.signIn.adminAccess.loadError'))));
+      .catch((err) =>
+        showError(apiErrorMessage(err, t('settingsPage.signIn.adminAccess.loadError')))
+      );
   }, [apply, showError, t]);
 
   const save = async (body: Partial<AdminAccess>) => {
@@ -67,23 +67,19 @@ export function AdminAccessSection() {
     >
       <Stack spacing={2}>
         <div>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={data.localAdminLoginEnabled}
-                disabled={busy || lockedOn}
-                onChange={(e) => void save({ localAdminLoginEnabled: e.target.checked })}
-                size="small"
-                data-testid="admin-access-local-login"
-              />
-            }
+          <SwitchRow
             label={t('settingsPage.signIn.adminAccess.localLogin')}
+            checked={data.localAdminLoginEnabled}
+            disabled={busy || lockedOn}
+            onChange={(e) => void save({ localAdminLoginEnabled: e.target.checked })}
+            size="small"
+            data-testid="admin-access-local-login"
+            help={
+              lockedOn
+                ? t('settingsPage.signIn.adminAccess.localLoginLocked')
+                : t('settingsPage.signIn.adminAccess.localLoginHelp')
+            }
           />
-          <Typography variant="caption" color="text.secondary" display="block">
-            {lockedOn
-              ? t('settingsPage.signIn.adminAccess.localLoginLocked')
-              : t('settingsPage.signIn.adminAccess.localLoginHelp')}
-          </Typography>
         </div>
         <TextField
           label={t('settingsPage.signIn.adminAccess.steamIds')}

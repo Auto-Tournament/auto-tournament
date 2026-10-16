@@ -8,7 +8,7 @@
 import { Box, Typography } from '@mui/material';
 import { useModuleTranslation, tokens, textSize } from '../../../module-sdk';
 import type { TournamentRulesViewProps } from '../../types';
-import { rulesLines } from './rulesLines';
+import { rulesLines, STRONG_END } from './rulesLines';
 
 export function Cs2RulesSummary({ tournament, compact }: TournamentRulesViewProps) {
   const { t } = useModuleTranslation('cs2');
@@ -19,7 +19,10 @@ export function Cs2RulesSummary({ tournament, compact }: TournamentRulesViewProp
         data-testid="rules-summary-line"
         sx={{ color: tokens.color.ink2, fontSize: textSize.sm }}
       >
-        {lines.slice(0, 3).join(' · ')}
+        {lines
+          .slice(0, 3)
+          .map((l) => l.replace(STRONG_END, ' '))
+          .join(' · ')}
       </Typography>
     );
   }
@@ -29,9 +32,19 @@ export function Cs2RulesSummary({ tournament, compact }: TournamentRulesViewProp
       data-testid="rules-summary"
       sx={{ m: 0, pl: 2.5, display: 'grid', gap: 1, color: tokens.color.ink2, lineHeight: 1.6 }}
     >
-      {lines.map((line) => (
-        <li key={line}>{line}</li>
-      ))}
+      {lines.map((line) => {
+        const [strong, rest] = line.includes(STRONG_END) ? line.split(STRONG_END) : [null, line];
+        return (
+          <li key={line}>
+            {strong && (
+              <Box component="strong" sx={{ color: tokens.color.ink }}>
+                {strong}
+              </Box>
+            )}
+            {strong ? ` ${rest}` : rest}
+          </li>
+        );
+      })}
     </Box>
   );
 }

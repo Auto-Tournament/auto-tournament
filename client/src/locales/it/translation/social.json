@@ -51,7 +51,8 @@
       "matchReady": "is ready. Open the match room to connect.",
       "vetoTurn": "it's your team's turn in the veto.",
       "startsSoon": "starts in {{minutes}} minutes. Get ready to join your first match.",
-      "startsSoonUpdate": "starts in {{minutes}} minutes. Start your game now so any update is done before your first match."
+      "startsSoonUpdate": "starts in {{minutes}} minutes. Start your game now so any update is done before your first match.",
+      "matchSoon": "your veto opens in {{minutes}} minutes and goes on without you. Be at your PC."
     },
     "toast": {
       "join": "Join party",
@@ -219,7 +220,8 @@
     "event": "Event",
     "channel": {
       "discord": "Discord DM",
-      "email": "Email"
+      "email": "Email",
+      "push": "Browser / telefono"
     },
     "events": {
       "match_ready": {
@@ -248,7 +250,8 @@
       "no_discord": "Link Discord first",
       "email_off": "This site can't send email",
       "no_email": "Add an email first",
-      "email_unverified": "Confirm your email first"
+      "email_unverified": "Confirm your email first",
+      "no_push": "Attiva prima le notifiche in questo browser"
     },
     "switchLabel": "{{event}} by {{channel}}",
     "saveFailed": "Could not save that."
@@ -256,9 +259,21 @@
   "presence": {
     "online": "Online",
     "offline": "Offline",
+    "away": "Assente",
     "searching": "Searching for a {{mode}} game",
     "playingMatchmaking": "In a matchmaking match: {{label}}",
     "playingTournament": "In a tournament match: {{label}}",
     "playing": "In a match: {{label}}"
+  },
+  "notificationPrompt": {
+    "title": "Attiva le notifiche",
+    "body": "Ti consigliamo di attivarle. Così ti avvisiamo anche se chiudi questa scheda:",
+    "matchReady": "quando la tua partita è pronta",
+    "vetoTurn": "quando tocca a te nel veto delle mappe",
+    "starting": "quando un torneo a cui sei iscritto sta per iniziare",
+    "iphone": "Su iPhone, aggiungi prima questo sito alla schermata Home (Condividi, poi Aggiungi alla schermata Home) e aprilo da lì.",
+    "change": "Puoi cambiarlo in qualsiasi momento nelle impostazioni delle notifiche.",
+    "later": "Non ora",
+    "turnOn": "Attiva (consigliato)"
   }
 }

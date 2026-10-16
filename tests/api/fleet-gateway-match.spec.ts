@@ -147,7 +147,7 @@ function reliable(
 async function acked(client: FleetTestClient, seq: number): Promise<void> {
   const carries = (m: Envelope) => typeof m.ack === 'number' && m.ack >= seq;
   const control = (m: Envelope) => ['ack', 'ping', 'pong'].includes(m.type);
-  for (const deadline = Date.now() + 5000; Date.now() < deadline; ) {
+  for (const deadline = Date.now() + 5000; Date.now() < deadline;) {
     const i = client.received.findIndex((m) => carries(m) && control(m));
     if (i >= 0) {
       client.received.splice(i, 1);
@@ -156,7 +156,9 @@ async function acked(client: FleetTestClient, seq: number): Promise<void> {
     if (client.received.some(carries)) return;
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
-  throw new Error(`seq ${seq} not acked; received: ${JSON.stringify(client.received.map((m) => m.type))}`);
+  throw new Error(
+    `seq ${seq} not acked; received: ${JSON.stringify(client.received.map((m) => m.type))}`
+  );
 }
 
 test.describe.serial('Fleet gateway: match state and events (step 3)', () => {

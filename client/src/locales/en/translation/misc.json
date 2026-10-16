@@ -679,7 +679,11 @@
       "botFillUnrated": "Bots fill the empty seats · unrated: no rating, XP or drops",
       "searchRatingPlain": "Finding a close match for your rating · {{count}} searching",
       "searchWidening": "Widening the search: ±{{elo}} · {{count}} searching",
-      "searchAnyRating": "Searching every rating now · {{count}} searching"
+      "searchAnyRating": "Searching every rating now · {{count}} searching",
+      "inTournament": "You are in an active tournament ({{tournament}}), you can't queue for matchmaking right now.",
+      "partyInTournament": "In an active tournament, so the party can't queue right now: {{names}}.",
+      "inMatch_one": "{{count}} in a match",
+      "inMatch_other": "{{count}} in a match"
     },
     "queue": {
       "searching": "Searching {{mode}}",
@@ -750,7 +754,16 @@
       },
       "equip": "Equip",
       "equipped": "Equipped",
-      "equipFailed": "Could not equip it"
+      "equipFailed": "Could not equip it",
+      "rematch": {
+        "title": "Rematch?",
+        "body": "Same teams, a new map. One yes counts for your whole party. It starts when everyone is in ({{yes}} of {{total}} so far), within 2 minutes.",
+        "yes": "Yes, rematch",
+        "no": "No thanks",
+        "button": "Rematch",
+        "waiting": "Waiting for the others: {{yes}} of {{total}} said yes.",
+        "declined": "No rematch: someone said no."
+      }
     },
     "result": {
       "title": "Result",
@@ -802,7 +815,9 @@
         "friendly": "Friendly",
         "team_player": "Team player",
         "leader": "Leader",
-        "good_comms": "Good comms"
+        "good_comms": "Good comms",
+        "teacher": "Teacher",
+        "good_sport": "Good sport"
       },
       "history": "Matchmaking matches",
       "historyEmpty": "No matchmaking matches yet.",

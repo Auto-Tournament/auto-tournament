@@ -1,9 +1,26 @@
 import { useEffect, useId, useState } from 'react';
-import { Alert, Box, ButtonBase, CircularProgress, Collapse, Container, Typography } from '@mui/material';
+import { fmtDateTime } from '../utils/time';
+import {
+  Alert,
+  Box,
+  ButtonBase,
+  CircularProgress,
+  Collapse,
+  Container,
+  Typography,
+} from '@mui/material';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
-import { EmptyPanel, FactGrid, PageHead, Panel, Row, RowList, SectionHead } from '../components/common/ui';
+import {
+  EmptyPanel,
+  FactGrid,
+  PageHead,
+  Panel,
+  Row,
+  RowList,
+  SectionHead,
+} from '../components/common/ui';
 import { ExternalLink } from '../components/common/ExternalLink';
 import { CompatDot, compatTone, compatToneColor } from '../components/compat/CompatDot';
 import { useCompat, useNow } from '../hooks/useCompat';
@@ -25,10 +42,18 @@ function relativeTime(iso: string, now: number, language: string): string {
 }
 
 function absoluteTime(iso: string, language: string): string {
-  return new Date(iso).toLocaleString(language);
+  return fmtDateTime(iso, language);
 }
 
-function TimeAgo({ iso, now, prefix }: { iso: string; now: number; prefix?: (time: string) => string }) {
+function TimeAgo({
+  iso,
+  now,
+  prefix,
+}: {
+  iso: string;
+  now: number;
+  prefix?: (time: string) => string;
+}) {
   const { i18n } = useTranslation();
   const time = relativeTime(iso, now, i18n.language);
   return (
@@ -43,7 +68,10 @@ function OverallPanel({ latest, now }: { latest: CompatSnapshot; now: number }) 
   const { t } = useTranslation();
   const tone = compatTone(latest.overall);
   return (
-    <Panel sx={{ p: { xs: 3, md: 4 }, mb: 5, display: 'grid', gap: 3 }} data-testid="compat-overall">
+    <Panel
+      sx={{ p: { xs: 3, md: 4 }, mb: 5, display: 'grid', gap: 3 }}
+      data-testid="compat-overall"
+    >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, flexWrap: 'wrap' }}>
         <CompatDot tone={tone} size={16} data-testid="compat-overall-dot" />
         <Box sx={{ minWidth: 0, flex: '1 1 16rem' }}>
@@ -60,11 +88,21 @@ function OverallPanel({ latest, now }: { latest: CompatSnapshot; now: number }) 
             {t(`compatPage.overallHint.${latest.overall}`)}
           </Typography>
         </Box>
-        <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, fontSize: textSize.sm, color: color.muted }}>
+        <Box
+          sx={{ textAlign: { xs: 'left', sm: 'right' }, fontSize: textSize.sm, color: color.muted }}
+        >
           <Box data-testid="compat-checked-ago">
-            <TimeAgo iso={latest.checked_at} now={now} prefix={(time) => t('compatPage.checkedAgo', { time })} />
+            <TimeAgo
+              iso={latest.checked_at}
+              now={now}
+              prefix={(time) => t('compatPage.checkedAgo', { time })}
+            />
           </Box>
-          <ExternalLink href={latest.run.url} data-testid="compat-run-link" sx={{ fontSize: textSize.sm }}>
+          <ExternalLink
+            href={latest.run.url}
+            data-testid="compat-run-link"
+            sx={{ fontSize: textSize.sm }}
+          >
             {t('compatPage.viewRun')}
           </ExternalLink>
         </Box>
@@ -72,7 +110,9 @@ function OverallPanel({ latest, now }: { latest: CompatSnapshot; now: number }) 
       <FactGrid
         variant="fact"
         aria-label={t('compatPage.factsLabel')}
-        sx={{ gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' } }}
+        sx={{
+          gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
+        }}
         items={[
           {
             key: 'patch',
@@ -129,10 +169,20 @@ function CheckRow({ check }: { check: CompatCheck }) {
       >
         <CompatDot tone={compatTone(check.status)} size={8} />
         <Box sx={{ fontWeight: 500, minWidth: 0 }}>{t(`compatPage.kind.${check.kind}`)}</Box>
-        <Box sx={{ ...mono, fontSize: textSize.sm, color: color.ink2 }} data-testid="compat-check-count">
+        <Box
+          sx={{ ...mono, fontSize: textSize.sm, color: color.ink2 }}
+          data-testid="compat-check-count"
+        >
           {check.passed}/{check.total}
         </Box>
-        <Box sx={{ fontSize: textSize.sm, color: compatToneColor[compatTone(check.status)], minWidth: '5.5rem', textAlign: 'right' }}>
+        <Box
+          sx={{
+            fontSize: textSize.sm,
+            color: compatToneColor[compatTone(check.status)],
+            minWidth: '5.5rem',
+            textAlign: 'right',
+          }}
+        >
           {t(`compatPage.status.${check.status}`)}
         </Box>
       </Box>
@@ -183,7 +233,10 @@ function ComponentRow({ component }: { component: CompatSnapshot['components'][n
         sx={{
           width: '100%',
           display: 'grid',
-          gridTemplateColumns: { xs: 'auto minmax(0, 1fr) auto auto', sm: 'auto minmax(0, 1fr) auto auto auto' },
+          gridTemplateColumns: {
+            xs: 'auto minmax(0, 1fr) auto auto',
+            sm: 'auto minmax(0, 1fr) auto auto auto',
+          },
           alignItems: 'center',
           gap: 2,
           px: 3,
@@ -220,13 +273,19 @@ function ComponentRow({ component }: { component: CompatSnapshot['components'][n
           component={CaretDownIcon}
           size={18}
           aria-hidden
-          sx={{ color: color.muted, transition: 'transform 150ms', transform: open ? 'rotate(180deg)' : 'none' }}
+          sx={{
+            color: color.muted,
+            transition: 'transform 150ms',
+            transform: open ? 'rotate(180deg)' : 'none',
+          }}
         />
       </ButtonBase>
       <Collapse in={open} unmountOnExit>
         <Box id={panelId} sx={{ px: 3, pb: 2 }}>
           {component.checks.length === 0 ? (
-            <Typography sx={{ color: color.muted, fontSize: textSize.sm }}>{t('compatPage.noChecks')}</Typography>
+            <Typography sx={{ color: color.muted, fontSize: textSize.sm }}>
+              {t('compatPage.noChecks')}
+            </Typography>
           ) : (
             <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
               {component.checks.map((check, i) => (
@@ -269,7 +328,13 @@ export default function Compatibility() {
               <Box
                 data-testid="compat-live"
                 data-live={live ? 'true' : 'false'}
-                sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, fontSize: textSize.sm, color: color.muted }}
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  fontSize: textSize.sm,
+                  color: color.muted,
+                }}
               >
                 <CompatDot tone={live ? 'pass' : 'none'} size={8} />
                 {live ? t('compatPage.live') : t('compatPage.offline')}
@@ -327,20 +392,29 @@ export default function Compatibility() {
                     key={run.run.id}
                     data-testid="compat-history-run"
                     data-run-id={run.run.id}
-                    columns={{ xs: 'auto minmax(0, 1fr) auto', md: 'auto minmax(0, 1.4fr) minmax(0, 1fr) 9rem auto' }}
+                    columns={{
+                      xs: 'auto minmax(0, 1fr) auto',
+                      md: 'auto minmax(0, 1.4fr) minmax(0, 1fr) 9rem auto',
+                    }}
                     sx={{ py: 1.5, fontSize: textSize.sm }}
                   >
                     <CompatDot tone={compatTone(run.overall)} size={8} />
                     <Box sx={{ minWidth: 0 }}>
                       <Box sx={{ fontWeight: 500 }}>
-                        {t('compatPage.historyItem', { patch: run.cs2.patch || '—', buildid: run.cs2.buildid })}
+                        {t('compatPage.historyItem', {
+                          patch: run.cs2.patch || '—',
+                          buildid: run.cs2.buildid,
+                        })}
                       </Box>
                       <Box sx={{ color: compatToneColor[compatTone(run.overall)] }}>
                         {t(`compatPage.overall.${run.overall}`)}
                       </Box>
                     </Box>
-                    <Box sx={{ display: { xs: 'none', md: 'block' }, color: color.muted, minWidth: 0 }}>
-                      {t(`compatPage.trigger.${run.run.trigger}`)} · {t(`compatPage.stage.${run.run.stage}`)}
+                    <Box
+                      sx={{ display: { xs: 'none', md: 'block' }, color: color.muted, minWidth: 0 }}
+                    >
+                      {t(`compatPage.trigger.${run.run.trigger}`)} ·{' '}
+                      {t(`compatPage.stage.${run.run.stage}`)}
                     </Box>
                     <Box sx={{ display: { xs: 'none', md: 'block' }, color: color.muted }}>
                       <TimeAgo iso={run.run.started_at} now={now} />

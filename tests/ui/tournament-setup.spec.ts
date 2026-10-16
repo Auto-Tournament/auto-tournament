@@ -30,7 +30,7 @@ test.describe.serial('Tournament setup flow', () => {
 
       const steps = page.getByTestId('tournament-setup-steps');
       await expect(steps).toBeVisible();
-      await expect(steps.locator('li')).toHaveCount(7);
+      await expect(steps.locator('li')).toHaveCount(8);
 
       // The rail stays (it is Manage's whole menu); the setup's steps, under
       // a way back to Manage, are a column of their own beside the form.
@@ -162,7 +162,7 @@ test.describe.serial('Tournament setup flow', () => {
       // The way back comes first, the steps scroll sideways after it.
       await expect(page.getByTestId('tournament-setup-back-to-manage')).toBeInViewport();
 
-      for (const id of ['game', 'basics', 'format', 'maps', 'eventPage', 'review']) {
+      for (const id of ['game', 'basics', 'format', 'schedule', 'maps', 'extras', 'review']) {
         await page.getByTestId(`tournament-setup-step-${id}`).click();
         await expect(page.getByTestId(`tournament-setup-question-${id}`)).toBeVisible();
         await expect(page.getByTestId(`tournament-setup-step-${id}`)).toBeInViewport();

@@ -37,6 +37,8 @@ export interface SkinChoice {
   id: number;
   source: OwnedSkin['source'];
   sourceLabel: string | null;
+  /** The match slug for a match drop, `level:<n>`, or `tournament:<id>:…` for a prize. */
+  sourceRef: string | null;
   place: number | null;
   createdAt: number;
   options: Array<{
@@ -85,6 +87,30 @@ const CHANGED = 'skins:changed';
 /** Every open skins view reads again (after a change here, or a push from the platform). */
 export function announceChange(): void {
   window.dispatchEvent(new Event(CHANGED));
+}
+
+const PICK = 'skins:pick';
+
+/** Open the picker for one choice (the bell's pinned row, a page's Pick row). */
+export function openSkinPick(choiceId: number): void {
+  window.dispatchEvent(new CustomEvent<number>(PICK, { detail: choiceId }));
+}
+
+/** Listen for `openSkinPick`. */
+export function onSkinPick(handler: (choiceId: number) => void): () => void {
+  const listener = (e: Event) => handler((e as CustomEvent<number>).detail);
+  window.addEventListener(PICK, listener);
+  return () => window.removeEventListener(PICK, listener);
+}
+
+/** Whether a choice came from this match or this tournament. */
+export function choiceFrom(
+  choice: SkinChoice,
+  where: { matchSlug?: string; tournamentId?: number | null }
+): boolean {
+  if (!choice.sourceRef) return false;
+  if (where.matchSlug && choice.sourceRef === where.matchSlug) return true;
+  return !!where.tournamentId && choice.sourceRef.startsWith(`tournament:${where.tournamentId}:`);
 }
 
 /** The signed-in player's inventory, showcase and new skins, with the actions on them. */
@@ -173,6 +199,11 @@ export function useMySkins() {
     try {
       if (step.kind === 'equip')
         await api.post('/api/skins/me/equip', { skinId: skin.id, team: step.team });
+      else if (step.kind === 'split') {
+        // Off both sides, then on the one asked for.
+        await api.delete(`/api/skins/me/equip/${encodeURIComponent(skin.slot)}?team=0`);
+        await api.post('/api/skins/me/equip', { skinId: skin.id, team: step.keep });
+      }
     } catch (error) {
       setInventory(before);
       throw error;

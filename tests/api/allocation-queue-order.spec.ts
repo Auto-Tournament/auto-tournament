@@ -24,7 +24,12 @@ const entry = (slug: string, round: number, matchNumber: number, id: number): Qu
   matchNumber,
 });
 
-const r1 = [entry('r1m1', 1, 1, 11), entry('r1m2', 1, 2, 12), entry('r1m3', 1, 3, 13), entry('r1m4', 1, 4, 14)];
+const r1 = [
+  entry('r1m1', 1, 1, 11),
+  entry('r1m2', 1, 2, 12),
+  entry('r1m3', 1, 3, 13),
+  entry('r1m4', 1, 4, 14),
+];
 
 test.describe('Allocation queue order', () => {
   test('order is round, then match number, then row id', () => {
@@ -130,11 +135,19 @@ test.describe('Allocation queue order', () => {
 
   test('rows without a bracket column fall back to the slug', () => {
     const legacy = [entry('gf', 1, 1, 15), entry('lb-r1m2', 1, 2, 10), entry('r1m1', 1, 1, 1)];
-    expect([...legacy].sort(compareQueueOrder).map((e) => e.slug)).toEqual(['r1m1', 'lb-r1m2', 'gf']);
+    expect([...legacy].sort(compareQueueOrder).map((e) => e.slug)).toEqual([
+      'r1m1',
+      'lb-r1m2',
+      'gf',
+    ]);
   });
 
   test('mixed brackets: a freed server goes to queue #1 (r1m1), not lb-r1m2 or r2m2', () => {
-    const queue = [de('lb-r1m2', 'LB', 1, 2, 10), de('r2m2', 'WB', 2, 2, 6), de('r1m1', 'WB', 1, 1, 1)];
+    const queue = [
+      de('lb-r1m2', 'LB', 1, 2, 10),
+      de('r2m2', 'WB', 2, 2, 6),
+      de('r1m1', 'WB', 1, 1, 1),
+    ];
     expect(checkQueueTurn(queue, 'lb-r1m2', 1).allowed).toBe(false);
     expect(checkQueueTurn(queue, 'r2m2', 1).allowed).toBe(false);
     expect(checkQueueTurn(queue, 'r1m1', 1)).toMatchObject({ allowed: true, position: 1 });
@@ -148,9 +161,9 @@ test.describe('Allocation queue order', () => {
     expect(isQueueable({ status: 'pending', team1: team('a'), team2: undefined })).toBe(false);
     expect(isQueueable({ status: 'pending', team1: undefined, team2: undefined })).toBe(false);
     expect(isQueueable({ status: 'ready', team1: team('a'), team2: team('a') })).toBe(false);
-    expect(isQueueable({ status: 'ready', team1: team('a'), team2: team('b'), serverId: 's1' })).toBe(
-      false
-    );
+    expect(
+      isQueueable({ status: 'ready', team1: team('a'), team2: team('b'), serverId: 's1' })
+    ).toBe(false);
     expect(isQueueable({ status: 'live', team1: team('a'), team2: team('b') })).toBe(false);
     expect(isQueueable({ status: 'ready', team1: team('a'), team2: team('b') })).toBe(true);
     expect(isQueueable({ status: 'pending', team1: team('a'), team2: team('b') })).toBe(true);

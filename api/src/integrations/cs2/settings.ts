@@ -51,6 +51,14 @@ export type Cs2SettingKey =
   | 'at_ffw_enabled'
   | 'at_ffw_time'
   | 'at_demo_recording_enabled'
+  // Spectators in GOTV (gotv.ts)
+  | 'gotv_spectators'
+  | 'gotv_delay'
+  | 'gotv_seats'
+  | 'gotv_access'
+  | 'gotv_live_stats'
+  // How players join (fleet/connectChoice.ts)
+  | 'connect_prefer_lan'
   // Highlight videos (demos/highlights.ts)
   | 'highlights_watermark'
   | 'highlights_per_player'
@@ -272,6 +280,29 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     message: 'at_ffw_time must be 1-999 seconds',
   }),
   binary('at_demo_recording_enabled', 'atDemoRecordingEnabled', 360),
+  // Spectators watch matches in GOTV (gotv.ts): on/off, the delay, seats, who, the live stats.
+  binary('gotv_spectators', 'gotvSpectators', 370),
+  integer('gotv_delay', 'gotvDelay', 371, {
+    min: 0,
+    max: 120,
+    message: 'gotv_delay must be 0-120 seconds',
+  }),
+  integer('gotv_seats', 'gotvSeats', 372, {
+    min: 1,
+    max: 128,
+    message: 'gotv_seats must be 1-128',
+  }),
+  // 0 everyone, 1 signed-in players, 2 admins (and casters).
+  integer('gotv_access', 'gotvAccess', 373, { min: 0, max: 2, message: 'gotv_access must be 0-2' }),
+  // 0 the same delay as GOTV, 1 live, 2 off.
+  integer('gotv_live_stats', 'gotvLiveStats', 374, {
+    min: 0,
+    max: 2,
+    message: 'gotv_live_stats must be 0-2',
+  }),
+  // The connect panel recommends the LAN address to everyone (fleet/connectChoice.ts): a LAN
+  // event, where the platform cannot tell a player at the venue from one at home.
+  binary('connect_prefer_lan', 'connectPreferLan', 380),
   // The highlights_* settings are core's now (services/highlights/settings.ts).
 ];
 

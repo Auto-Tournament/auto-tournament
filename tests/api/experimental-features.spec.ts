@@ -62,16 +62,19 @@ test.describe('experimental features: resolution', () => {
   });
 
   test('the environment wins over the setting, both ways', () => {
-    expect(
-      resolveExperimentalFeature(sample, null, { EXPERIMENTAL_SAMPLE: '1' })
-    ).toMatchObject({ enabled: true, source: 'env' });
-    expect(
-      resolveExperimentalFeature(sample, '1', { EXPERIMENTAL_SAMPLE: '0' })
-    ).toMatchObject({ enabled: false, source: 'env' });
+    expect(resolveExperimentalFeature(sample, null, { EXPERIMENTAL_SAMPLE: '1' })).toMatchObject({
+      enabled: true,
+      source: 'env',
+    });
+    expect(resolveExperimentalFeature(sample, '1', { EXPERIMENTAL_SAMPLE: '0' })).toMatchObject({
+      enabled: false,
+      source: 'env',
+    });
     // An empty variable is no override.
-    expect(
-      resolveExperimentalFeature(sample, '1', { EXPERIMENTAL_SAMPLE: '' })
-    ).toMatchObject({ enabled: true, source: 'setting' });
+    expect(resolveExperimentalFeature(sample, '1', { EXPERIMENTAL_SAMPLE: '' })).toMatchObject({
+      enabled: true,
+      source: 'setting',
+    });
   });
 
   test('matchmaking modes: every mode is on when the admin never chose', () => {
@@ -89,8 +92,9 @@ test.describe.serial('experimental features: HTTP', () => {
     });
     expect((await anon.get('/api/experimental')).status()).toBe(401);
     expect(
-      (await anon.put('/api/experimental/matchmaking', { data: { enabled: true }, headers: json }))
-        .status()
+      (
+        await anon.put('/api/experimental/matchmaking', { data: { enabled: true }, headers: json })
+      ).status()
     ).toBe(401);
     await anon.dispose();
 
@@ -98,12 +102,19 @@ test.describe.serial('experimental features: HTTP', () => {
     const list = await (await request.get('/api/experimental')).json();
     expect(list.features).toEqual([]);
     expect(
-      (await request.put('/api/experimental/matchmaking', { data: { enabled: true }, headers: json }))
-        .status()
+      (
+        await request.put('/api/experimental/matchmaking', {
+          data: { enabled: true },
+          headers: json,
+        })
+      ).status()
     ).toBe(404);
   });
 
-  test('matchmaking needs no setting: status works and lists every mode', async ({ request, playwright }) => {
+  test('matchmaking needs no setting: status works and lists every mode', async ({
+    request,
+    playwright,
+  }) => {
     expect(await signInViaRequest(request)).toBe(true);
     const res = await request.get('/api/matchmaking/status');
     expect(res.status()).toBe(200);

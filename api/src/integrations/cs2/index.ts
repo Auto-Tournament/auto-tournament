@@ -281,6 +281,9 @@ export const cs2Integration: GameIntegration = {
   },
 
   /** The map veto runs unless the tournament turned it off (`settings.cs2.veto: false`). */
+  fillsShortTeams(tournament) {
+    return storedCs2Settings(tournament.settings)?.fillTeamsWithBots === true;
+  },
   usesPreMatchPhase(tournament) {
     return vetoOn(tournament.settings);
   },
@@ -312,7 +315,10 @@ export const cs2Integration: GameIntegration = {
     }
     // The break between a team's matches: the veto waits for it (veto/break.ts).
     const { holdForMatchBreak } = await import('./veto/break');
-    const opensAt = await holdForMatchBreak(ctx.slug);
+    // The break, or a hold already on it (its start time, an admin's): the veto opens when it ends.
+    const { holdOf } = await import('../../services/matchHolds');
+    const opensAt =
+      (await holdForMatchBreak(ctx.slug)) ?? (await holdOf(ctx.slug))?.heldUntil ?? null;
     const { announceVetoOpen } = await import('./veto/announce');
     if (opensAt) {
       log.info(
@@ -696,9 +702,11 @@ export const cs2Integration: GameIntegration = {
         settings = {};
       }
       const own = storedCs2Settings(settings) as
-        { esportsMode?: boolean; skinRewards?: boolean } | undefined;
+        { esportsMode?: boolean; skinRewards?: boolean; matchDrops?: boolean } | undefined;
       if (own?.esportsMode === true || own?.skinRewards === false || settings.skinRewards === false)
         return;
+      // The tournament's Prizes: "Every match played can drop a skin" off.
+      if (own?.matchDrops === false) return;
     }
     await skinService.rollMatchDrops(matchSlug, winners, others, map, { source, teamSize });
   },
@@ -747,9 +755,35 @@ export const cs2Integration: GameIntegration = {
   async onTournamentPlacements({ tournamentId, tournamentName, settings, placements }) {
     const { skinService } = await import('./skins/skinService');
     // `settings.cs2.skinRewards`; tournaments from before it moved here kept it at the top level.
-    const own = settings.cs2 as { skinRewards?: unknown } | undefined;
+    const own = settings.cs2 as { skinRewards?: unknown; rewards?: unknown } | undefined;
     const rewards = typeof own?.skinRewards === 'boolean' ? own.skinRewards : settings.skinRewards;
-    await skinService.awardTournament(tournamentId, tournamentName, placements, rewards === false);
+    const { parseRewards } = await import('./skins/skinService');
+    await skinService.awardTournament(
+      tournamentId,
+      tournamentName,
+      placements,
+      rewards === false,
+      parseRewards(own?.rewards)
+    );
+    // The MVP prize, when it is chosen by commends or rating; the organizer's
+    // pick waits for them (Prizes in Manage).
+    const mvp = (own as { mvp?: { enabled?: boolean; by?: string; rarity?: string; pick?: 'one' } })
+      ?.mvp;
+    if (rewards !== false && mvp?.enabled && (mvp.by === 'commends' || mvp.by === 'rating')) {
+      try {
+        const { mvpCandidates, pickMvp } = await import('./skins/mvp');
+        const winner = pickMvp(await mvpCandidates(tournamentId), mvp.by);
+        if (winner) {
+          await skinService.awardMvp(tournamentId, tournamentName, winner.steamId, {
+            rarity: mvp.rarity ?? 'legendary',
+            pick: mvp.pick,
+          });
+        }
+      } catch (error) {
+        const { log } = await import('../../utils/logger');
+        log.warn('[Skins] MVP prize failed', { tournamentId, error: (error as Error).message });
+      }
+    }
   },
 
   /**

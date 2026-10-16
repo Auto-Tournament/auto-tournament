@@ -40,8 +40,8 @@ function manifest(overrides: Record<string, unknown> = {}) {
 
 test.describe('module.json', () => {
   test('the platform publishes its API versions', { tag: ['@api', '@modules'] }, () => {
-    expect(SERVER_API_VERSION).toBe('0.1.1');
-    expect(CLIENT_API_VERSION).toBe('0.2.26');
+    expect(SERVER_API_VERSION).toBe('0.1.3');
+    expect(CLIENT_API_VERSION).toBe('0.2.28');
   });
 
   test(

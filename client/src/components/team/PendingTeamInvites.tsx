@@ -8,11 +8,12 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Button, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Panel } from '../common/ui';
+import { TeamLogo } from '../tournament/ui/draftUi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
 import { teamProfilePath } from '../../paths';
-import { tokens, radii, textSize } from '../../theme/tokens';
+import { tokens, textSize } from '../../theme/tokens';
 import { answerTeamInvite, useSocial } from '../social/socialStore';
 
 const { color } = tokens;
@@ -23,68 +24,6 @@ export interface ReceivedTeamInvite {
   tag: string | null;
   logoUrl?: string | null;
   invitedBy: string | null;
-}
-
-interface TileTeam {
-  name: string;
-  tag: string | null;
-  logoUrl?: string | null;
-}
-
-/** The team's tag, or the first letters of its name, for the logo tile. */
-function initials(team: TileTeam): string {
-  if (team.tag) return team.tag;
-  return team.name
-    .split(/\s+/)
-    .map((w) => w[0])
-    .join('')
-    .slice(0, 3)
-    .toUpperCase();
-}
-
-/** The team's logo, or its tag/initials on a tile when it has none (or it fails to load). */
-export function TeamTile({
-  team,
-  size = 52,
-}: {
-  team: TileTeam & { logoUrl?: string | null };
-  size?: number;
-}) {
-  const [broken, setBroken] = useState(false);
-  const logo = team.logoUrl && !broken ? team.logoUrl : null;
-  return (
-    <Box
-      aria-hidden
-      sx={{
-        width: size,
-        height: size,
-        flex: 'none',
-        borderRadius: radii.md,
-        bgcolor: color.paper3,
-        display: 'grid',
-        placeItems: 'center',
-        overflow: 'hidden',
-        fontWeight: 700,
-        fontSize: size > 60 ? textSize.xl : textSize.sm,
-        color: color.ink2,
-      }}
-    >
-      {logo ? (
-        <Box
-          component="img"
-          src={logo}
-          alt=""
-          onError={() => setBroken(true)}
-          // Fills the rounded tile, as on the team's own page: a padded square
-          // logo showed its sharp corners inside the rounded tile.
-          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          data-testid="team-logo"
-        />
-      ) : (
-        initials(team)
-      )}
-    </Box>
-  );
 }
 
 /**
@@ -157,7 +96,15 @@ export function PendingTeamInvites({
             borderColor: color.accent,
           }}
         >
-          <TeamTile team={invite} size={44} />
+          <TeamLogo
+            team={{
+              id: invite.teamId,
+              name: invite.name,
+              tag: invite.tag,
+              logoUrl: invite.logoUrl,
+            }}
+            size={44}
+          />
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography noWrap sx={{ fontWeight: 600 }}>
               {t('teamsDirectory.invites.line', { team: invite.name })}

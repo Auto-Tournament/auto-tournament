@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { fmtDate, fmtDayTime, fmtTime } from '../utils/time';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -51,23 +52,16 @@ function when(t: TournamentListItem, locale: string, tr: TFunction): string {
   const at = t.status === 'completed' ? t.completedAt : (t.startsAt ?? t.startedAt);
   if (!at) return '';
   const date = new Date(at * 1000);
-  const time = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  const time = fmtTime(date, locale);
   const day = new Date(date);
   day.setHours(0, 0, 0, 0);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diff = Math.round((day.getTime() - today.getTime()) / 86_400_000);
-  if (t.status === 'completed')
-    return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+  if (t.status === 'completed') return fmtDate(date, locale);
   if (diff === 0) return tr('tournamentsPage.whenToday', { time });
   if (diff === 1) return tr('tournamentsPage.whenTomorrow', { time });
-  return date.toLocaleString(locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return fmtDayTime(date, locale);
 }
 
 /**

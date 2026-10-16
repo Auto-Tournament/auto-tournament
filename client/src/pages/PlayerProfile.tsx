@@ -28,6 +28,7 @@ import { TopNavBar } from '../components/layout/TopNavBar';
 import { OwnDiscordIdCard } from '../components/player/OwnDiscordIdCard';
 import { OwnGamesCard } from '../components/games/OwnGamesCard';
 import { ProfileHeader } from '../components/player/profile/ProfileHeader';
+import { ProfileCommends } from '../components/player/profile/ProfileCommends';
 import { PlayerProgress } from '../components/matchmaking/PlayerProgress';
 import { GameSwitch } from '../components/player/profile/GameSwitch';
 import { FactGrid, Panel, SectionHead, type Fact } from '../components/common/ui';
@@ -51,6 +52,7 @@ import { textSize, tokens } from '../theme/tokens';
 import { paths } from '../paths';
 import { pageTitle } from '../utils/pageTitle';
 import { useInstalledIntegrations, useIntegration } from '../integrations/registry';
+import { fmtNum } from '../utils/number';
 
 interface RatingHistoryEntry {
   /** Stable per row: the slug, or the row's position for a deleted match. */
@@ -1003,7 +1005,7 @@ export default function PlayerProfile() {
             key: 'adr',
             'data-testid': 'profile-stat-adr',
             label: t('playerPage.stats.adr'),
-            value: profileAvgAdr.toFixed(1),
+            value: fmtNum(profileAvgAdr, 1),
           },
         ]
       : []),
@@ -1013,7 +1015,7 @@ export default function PlayerProfile() {
             key: 'kd',
             'data-testid': 'profile-stat-kd',
             label: t('playerPage.stats.kd'),
-            value: profileKd.toFixed(2),
+            value: fmtNum(profileKd, 2),
           },
         ]
       : []),
@@ -1188,6 +1190,9 @@ export default function PlayerProfile() {
                 data-testid="profile-stats-grid"
                 sx={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))' }}
               />
+
+              {/* What other players commended them for, any game. */}
+              <ProfileCommends playerId={player.id} />
 
               {/* The player's highlight videos from the open game: core lays them
               out, the game says what there is. */}

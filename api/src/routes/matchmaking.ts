@@ -353,7 +353,7 @@ router.delete(
  *     responses:
  *       200: { description: Joined; your matchmaking state }
  *       404: { description: The invite is gone }
- *       409: { description: The party is searching or full, or you are answering a match }
+ *       409: { description: "The party found a match or is full, or you are answering a match (a party still searching stops its search and takes you)" }
  */
 router.post(
   '/invites/:partyId/accept',
@@ -523,6 +523,40 @@ router.post(
   handle('decline the match', async (req, res) => {
     await matchmakingService.decline(me(req), req.params.id);
     return res.json({ success: true });
+  })
+);
+
+/**
+ * @openapi
+ * /api/matchmaking/lobbies/{id}/rematch:
+ *   post:
+ *     tags: [Matchmaking]
+ *     summary: Answer "rematch?" after the match ended
+ *     description: |
+ *       Same-site JSON `{ accept: boolean }`, within 2 minutes of the match's end. When every
+ *       player said yes, the same teams get a new match at once (`status: ready`, `lobbyId` of
+ *       the new room). One "no" ends it (`declined`).
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: "`status`: voting, declined or ready (with `lobbyId`)"
+ *       404:
+ *         description: No such match for the caller
+ *       409:
+ *         description: Too late for a rematch, or a player is in another match
+ */
+router.post(
+  '/lobbies/:id/rematch',
+  requirePlayer,
+  sameSiteJson,
+  handle('answer the rematch', async (req, res) => {
+    const accept = (req.body as { accept?: unknown } | undefined)?.accept === true;
+    const result = await matchmakingService.voteRematch(me(req), req.params.id, accept);
+    return res.json({ success: true, ...result });
   })
 );
 

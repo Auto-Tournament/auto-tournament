@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { fmtDateTime } from '../../utils/time';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -278,12 +279,12 @@ const SENT_ROWS = [
  * back (calm, never a block), the event-license answer, and "What is sent".
  */
 function CheckinDetails({ status }: { status: LicenseStatus }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const checkin = status.checkin;
   if (!checkin) return null;
   const when = (iso: string) => {
     const date = new Date(iso);
-    return Number.isNaN(date.getTime()) ? iso : date.toLocaleString(i18n.language);
+    return Number.isNaN(date.getTime()) ? iso : fmtDateTime(date);
   };
   const prompt = status.eventPrompt;
   return (

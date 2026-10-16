@@ -37,14 +37,20 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useModuleTranslation, useSocket } from '../../../module-sdk';
+import {
+  fontDisplay,
+  mono,
+  tokens,
+  useModuleTranslation,
+  useSocket,
+  panelSx,
+} from '../../../module-sdk';
 import {
   Alert,
   Box,
   Button,
   Card,
   CardContent,
-  Chip,
   CircularProgress,
   Collapse,
   Divider,
@@ -52,7 +58,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { ListChecksIcon } from '@phosphor-icons/react';
 import type { MatchReportPanelProps } from '../../types';
 import {
   isNotOurs,
@@ -63,22 +68,12 @@ import {
 } from '../api';
 import { RecordedStats } from './RecordedStats';
 import { StatFieldsForm } from './StatFieldsForm';
-import {
-  draftFromRecorded,
-  validateDraft,
-  type DraftCheck,
-  type StatDraft,
-} from './statFields';
+import { draftFromRecorded, validateDraft, type DraftCheck, type StatDraft } from './statFields';
 import { useStatDraftLabels } from './statFieldMessages';
 
 /** Which of the five sentences the panel is showing. */
 type PanelState =
-  | 'nothing'
-  | 'waitingOpponent'
-  | 'needsAnswer'
-  | 'disputed'
-  | 'awaitingAdmin'
-  | 'confirmed';
+  'nothing' | 'waitingOpponent' | 'needsAnswer' | 'disputed' | 'awaitingAdmin' | 'confirmed';
 
 /**
  * Match statuses a result may still be reported for, the same set
@@ -266,10 +261,9 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
     // Checked here as well as by the API, which refuses the whole report —
     // score included — on one bad value. Saying which field while the captain
     // is still looking at it beats handing the refusal back as prose.
-    const checked: DraftCheck =
-      view?.fields?.length
-        ? validateDraft(view, view.fields, statDraft, statLabels)
-        : { ok: true, values: [] };
+    const checked: DraftCheck = view?.fields?.length
+      ? validateDraft(view, view.fields, statDraft, statLabels)
+      : { ok: true, values: [] };
     if (!checked.ok) {
       setError(checked.error);
       return;
@@ -312,16 +306,69 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
   // games won, with the individual games on the chips below.
   const headline = headlineScore(report);
   const canAnswer = viewer.canConfirm || viewer.canDispute;
+  // The state's chip and the panel's ring (the drafts' manual report).
+  const chip = formOpen
+    ? { key: 'yours', bg: tokens.color.accent }
+    : state === 'needsAnswer'
+      ? { key: 'confirm', bg: tokens.color.warning }
+      : state === 'disputed' || state === 'awaitingAdmin'
+        ? { key: 'disputed', bg: tokens.color.ban }
+        : state === 'confirmed'
+          ? { key: 'final', bg: tokens.color.live }
+          : state === 'waitingOpponent'
+            ? { key: 'reported', bg: tokens.color.ink2 }
+            : { key: 'none', bg: tokens.color.ink2 };
+  const ring = chip.key === 'none' || chip.key === 'reported' ? tokens.color.rule : chip.bg;
   const buttonSx = { width: { xs: '100%', sm: 'auto' } };
 
   return (
-    <Card data-testid="manual-report-panel">
-      <CardContent>
-        <Box display="flex" alignItems="center" gap={1} mb={2}>
-          <Box component={ListChecksIcon} size={24} sx={{ color: 'primary.main' }} />
-          <Typography variant="h6" fontWeight={600}>
+    <Box
+      component="section"
+      aria-labelledby="manual-report-title"
+      data-testid="manual-report-panel"
+      sx={{
+        ...panelSx,
+        p: { xs: 2.5, sm: 3 },
+        border: `2px solid ${ring}`,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1.5,
+      }}
+    >
+      <Box>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1.5,
+            mb: 1,
+          }}
+        >
+          <Typography
+            id="manual-report-title"
+            component="h2"
+            sx={{ m: 0, fontFamily: fontDisplay, fontSize: '1.25rem', fontWeight: 700 }}
+          >
             {t('manualReport.title')}
           </Typography>
+          <Box
+            component="span"
+            data-testid="manual-report-chip"
+            sx={{
+              px: 1.5,
+              py: 0.5,
+              borderRadius: `${tokens.radius.pill}px`,
+              bgcolor: chip.bg,
+              color: tokens.color.accentInk,
+              fontSize: '0.8125rem',
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {t(`manualReport.chip.${chip.key}`)}
+          </Box>
         </Box>
 
         <Typography
@@ -335,14 +382,29 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
         </Typography>
 
         {deadline && (
-          <Typography variant="body2" color="text.secondary" mt={0.5} data-testid="manual-report-deadline">
+          <Typography
+            variant="body2"
+            sx={{ color: tokens.color.muted, mt: 0.5 }}
+            data-testid="manual-report-deadline"
+          >
             {deadline}
           </Typography>
         )}
 
         {report && (
-          <Box mt={2} data-testid="manual-report-score">
-            <Typography variant="h5" sx={{ overflowWrap: 'anywhere' }}>
+          <Box
+            mt={2}
+            data-testid="manual-report-score"
+            sx={{
+              p: 2,
+              borderRadius: `${tokens.radius.md}px`,
+              bgcolor: tokens.color.paper3,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 0.75,
+            }}
+          >
+            <Typography sx={{ ...mono, fontSize: '1.25rem', overflowWrap: 'anywhere' }}>
               {t('manualReport.score', {
                 team1: teamName('team1'),
                 score1: headline.team1,
@@ -351,24 +413,28 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
               })}
             </Typography>
             {rules.seriesLength > 1 && (
-              <Stack direction="row" flexWrap="wrap" gap={1} mt={1}>
-                {report.result.maps.map((game) => (
-                  <Chip
-                    key={game.mapNumber}
-                    size="small"
-                    variant="outlined"
-                    label={`${t('manualReport.game', { number: game.mapNumber })} ${game.team1Score}-${game.team2Score}`}
-                  />
-                ))}
-              </Stack>
+              <Typography variant="body2" sx={{ color: tokens.color.ink2 }}>
+                {report.result.maps
+                  .map(
+                    (game) =>
+                      `${t('manualReport.game', { number: game.mapNumber })}: ${game.team1Score}–${game.team2Score}`
+                  )
+                  .join(' · ')}
+              </Typography>
             )}
             {report.result.note && (
-              <Typography variant="body2" color="text.secondary" mt={1} sx={{ overflowWrap: 'anywhere' }}>
+              <Typography
+                variant="body2"
+                sx={{ color: tokens.color.ink2, overflowWrap: 'anywhere' }}
+              >
                 {t('manualReport.noteGiven', { note: report.result.note })}
               </Typography>
             )}
             {report.disputeReason && (
-              <Typography variant="body2" color="text.secondary" mt={1} sx={{ overflowWrap: 'anywhere' }}>
+              <Typography
+                variant="body2"
+                sx={{ color: tokens.color.ban, overflowWrap: 'anywhere' }}
+              >
                 {t('manualReport.disputeReasonGiven', { reason: report.disputeReason })}
               </Typography>
             )}
@@ -393,8 +459,13 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
 
         {(mayReport || canAnswer || viewer.canWithdraw) && (
           <>
-            <Divider sx={{ my: 2 }} />
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} flexWrap="wrap" useFlexGap>
+            <Stack
+              sx={{ mt: 2 }}
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1}
+              flexWrap="wrap"
+              useFlexGap
+            >
               {viewer.canConfirm && view.open && (
                 <Button
                   variant="contained"
@@ -402,7 +473,9 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
                   disabled={busy}
                   sx={buttonSx}
                   data-testid="manual-report-confirm"
-                  onClick={() => void act(() => manualReportApi.confirm(matchSlug, view.open!.revision))}
+                  onClick={() =>
+                    void act(() => manualReportApi.confirm(matchSlug, view.open!.revision))
+                  }
                 >
                   {t('manualReport.actions.confirm')}
                 </Button>
@@ -435,7 +508,11 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
                     else openForm();
                   }}
                 >
-                  {t(state === 'nothing' ? 'manualReport.actions.report' : 'manualReport.actions.reportAgain')}
+                  {t(
+                    state === 'nothing'
+                      ? 'manualReport.actions.report'
+                      : 'manualReport.actions.reportAgain'
+                  )}
                 </Button>
               )}
               {viewer.canWithdraw && view.open && (
@@ -445,7 +522,9 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
                   disabled={busy}
                   sx={buttonSx}
                   data-testid="manual-report-withdraw"
-                  onClick={() => void act(() => manualReportApi.withdraw(matchSlug, view.open!.revision))}
+                  onClick={() =>
+                    void act(() => manualReportApi.withdraw(matchSlug, view.open!.revision))
+                  }
                 >
                   {t('manualReport.actions.withdraw')}
                 </Button>
@@ -507,9 +586,7 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
                     draft={statDraft}
                     disabled={busy}
                     testIdPrefix="manual-report"
-                    onChange={(cell, value) =>
-                      setStatDraft((prev) => ({ ...prev, [cell]: value }))
-                    }
+                    onChange={(cell, value) => setStatDraft((prev) => ({ ...prev, [cell]: value }))}
                   />
                 </>
               )}
@@ -592,7 +669,7 @@ export function ManualReportPanel({ matchSlug, matchStatus }: MatchReportPanelPr
             </Stack>
           </Box>
         </Collapse>
-      </CardContent>
-    </Card>
+      </Box>
+    </Box>
   );
 }

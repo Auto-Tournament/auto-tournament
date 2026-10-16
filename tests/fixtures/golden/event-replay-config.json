@@ -2,7 +2,10 @@
   "admins": ["<test-admin-steam-id>"],
   "cvars": {
     "mp_maxrounds": 24,
-    "sv_matchpause_auto_5v5": 1
+    "sv_matchpause_auto_5v5": 1,
+    "tv_delay": 105,
+    "tv_maxclients": 8,
+    "tv_password": "<tv_password>"
   },
   "maps": [
     {
@@ -42,7 +45,7 @@
     "max_rounds": 24,
     "overtime": {
       "enabled": true,
-      "max_overtimes": -1
+      "max_overtimes": 1
     },
     "pause": {
       "pause_after_restore": true,
@@ -52,6 +55,9 @@
       "allow_force_ready": true,
       "autoready": false,
       "min_per_team": 0
+    },
+    "tiebreak": {
+      "damage": true
     },
     "whitelist": true
   },

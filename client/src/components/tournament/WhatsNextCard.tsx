@@ -16,7 +16,9 @@ import { useMatchmaking } from '../matchmaking/matchmakingStore';
 import { CardBracket } from './page/CardBracket';
 import { isLiveMatch, publicMatchLabel, teamCurrentMatch } from './page/matchHelpers';
 import { matchPagePath, paths, tournamentTabPath } from '../../paths';
-import { fontDisplay, radii, tokens } from '../../theme/tokens';
+import { fontDisplay, tokens } from '../../theme/tokens';
+import { StatusHero } from './ui/draftUi';
+import { useIntegrationFor } from '../../integrations/registry';
 
 const opponentOf = (m: Match, teamId: string) => (m.team1?.id === teamId ? m.team2 : m.team1);
 
@@ -33,6 +35,8 @@ export function WhatsNextCard({
   const { t } = useTranslation();
   const { tournament, matches, totalRounds, loading } = usePublicBracket(tournamentId);
   const { available: matchmakingAvailable } = useMatchmaking();
+  // The game's line about the viewer's prize (CS2: the skin they got or can pick).
+  const PrizeLine = useIntegrationFor(tournament ?? { game: null }).placementPrizeLine;
   if (loading || !tournament) return null;
 
   const elimination =
@@ -48,6 +52,29 @@ export function WhatsNextCard({
       ? totalRounds - next.round + 1
       : null;
 
+  // The match that just ended, for the title's result ("You lost 0–2 against …").
+  const ended = matches.find((m) => m.slug === matchSlug);
+  const endedOpponent = ended ? opponentOf(ended, teamId) : null;
+  const mineFirst = ended?.team1?.id === teamId;
+  const ownScore = ended
+    ? ((mineFirst
+        ? (ended.team1SeriesScore ?? ended.team1Score)
+        : (ended.team2SeriesScore ?? ended.team2Score)) ?? 0)
+    : 0;
+  const theirScore = ended
+    ? ((mineFirst
+        ? (ended.team2SeriesScore ?? ended.team2Score)
+        : (ended.team1SeriesScore ?? ended.team1Score)) ?? 0)
+    : 0;
+  const result =
+    ended?.status === 'completed' && endedOpponent?.name
+      ? t(ended.winner?.id === teamId ? 'whatsNext.youWon' : 'whatsNext.youLost', {
+          a: ownScore,
+          b: theirScore,
+          opponent: endedOpponent.name,
+        })
+      : null;
+
   let eyebrow = t('whatsNext.eyebrow');
   let title: string;
   let body: string;
@@ -59,7 +86,9 @@ export function WhatsNextCard({
     title = t('placement.wonTitle', { tournament: tournament.name });
     body = t('placement.wonBody');
   } else if (placement) {
-    title = t('whatsNext.outTitle', { place: placementLabel(placement) });
+    title = result
+      ? t('whatsNext.resultPlaced', { result, place: placementLabel(placement) })
+      : t('whatsNext.outTitle', { place: placementLabel(placement) });
     body = t('whatsNext.outBody', { tournament: tournament.name });
     if (matchmakingAvailable) {
       primary = {
@@ -77,16 +106,20 @@ export function WhatsNextCard({
     }
   } else if (next && opponentOf(next, teamId)) {
     const opponent = opponentOf(next, teamId);
-    title = t('whatsNext.nextMatch', {
+    const nextLine = t('whatsNext.nextMatch', {
       stage: publicMatchLabel(next, tournament),
       opponent: opponent?.name ?? '',
     });
+    title = result ? `${result} ${t('whatsNext.nextUp', { match: nextLine })}` : nextLine;
     body = isLiveMatch(next) ? t('whatsNext.nextMatchReady') : t('whatsNext.nextMatchSoon');
     primary = {
       to: matchPagePath(next.slug),
       label: t('whatsNext.openMatchRoom'),
       testId: 'whats-next-open',
     };
+  } else if (tournament.type === 'shuffle' && tournament.status === 'completed') {
+    title = t('whatsNext.shuffleDoneTitle');
+    body = t('whatsNext.shuffleDoneBody');
   } else if (tournament.type === 'shuffle') {
     title = t('whatsNext.shuffleTitle');
     body = t('whatsNext.shuffleBody');
@@ -108,76 +141,64 @@ export function WhatsNextCard({
 
   return (
     <Stack spacing={3} data-testid="whats-next">
-      <Box
-        component="section"
-        aria-labelledby="whats-next-title"
-        sx={{
-          p: { xs: 2.5, md: 3.5 },
-          borderRadius: radii.lg,
-          bgcolor: 'background.surface2',
-          border: 1,
-          borderColor: placement ? 'divider' : tokens.color.accent,
-          display: 'grid',
-          gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.4fr) minmax(0, 1fr)' },
-          gap: 3,
-          alignItems: 'center',
-        }}
+      <StatusHero
+        testId="whats-next-hero"
+        eyebrow={eyebrow}
+        eyebrowColor={
+          placement?.champion
+            ? tokens.color.medalGold
+            : placement
+              ? tokens.color.muted
+              : tokens.color.accent
+        }
+        ring={placement ? tokens.color.rule : tokens.color.accent}
+        title={<span data-testid="whats-next-title">{title}</span>}
+        body={
+          <>
+            {winsToTitle !== null && winsToTitle > 0 && (
+              <Box
+                component="span"
+                data-testid="whats-next-to-title"
+                sx={{ display: 'block', color: tokens.color.warning, fontWeight: 600, mb: 0.5 }}
+              >
+                {t('whatsNext.winsToTitle', { count: winsToTitle })}
+              </Box>
+            )}
+            {body}
+            {placement && PrizeLine && <PrizeLine tournamentId={tournamentId} />}
+            {!placement && (
+              <Box component="span" sx={{ display: 'block', mt: 0.5, color: tokens.color.muted }}>
+                {t('whatsNext.stayHere')}
+              </Box>
+            )}
+          </>
+        }
       >
-        <Box sx={{ display: 'grid', gap: 1.25, minWidth: 0 }}>
-          <Typography
-            variant="overline"
-            sx={{ color: placement ? 'text.secondary' : tokens.color.accent, lineHeight: 1.4 }}
-          >
-            {eyebrow}
-          </Typography>
-          <Typography
-            id="whats-next-title"
-            component="h2"
-            sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: '1.6rem' }}
-            data-testid="whats-next-title"
-          >
-            {title}
-          </Typography>
-          {winsToTitle !== null && winsToTitle > 0 && (
-            <Typography
-              sx={{ color: tokens.color.warning, fontWeight: 600 }}
-              data-testid="whats-next-to-title"
-            >
-              {t('whatsNext.winsToTitle', { count: winsToTitle })}
-            </Typography>
-          )}
-          <Typography sx={{ color: 'text.secondary', lineHeight: 1.55 }}>{body}</Typography>
-        </Box>
-        <Stack spacing={1.25}>
-          {primary && (
-            <Button
-              component={RouterLink}
-              to={primary.to}
-              variant="contained"
-              size="large"
-              data-testid={primary.testId}
-            >
-              {primary.label}
-            </Button>
-          )}
-          {secondary && (
-            <Button
-              component={RouterLink}
-              to={secondary.to}
-              variant="outlined"
-              size="large"
-              data-testid={secondary.testId}
-            >
-              {secondary.label}
-            </Button>
-          )}
-          {!placement && (
-            <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
-              {t('whatsNext.stayHere')}
-            </Typography>
-          )}
-        </Stack>
-      </Box>
+        {(primary || secondary) && (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.25 }}>
+            {primary && (
+              <Button
+                component={RouterLink}
+                to={primary.to}
+                variant="contained"
+                data-testid={primary.testId}
+              >
+                {primary.label}
+              </Button>
+            )}
+            {secondary && (
+              <Button
+                component={RouterLink}
+                to={secondary.to}
+                variant="outlined"
+                data-testid={secondary.testId}
+              >
+                {secondary.label}
+              </Button>
+            )}
+          </Box>
+        )}
+      </StatusHero>
 
       {elimination && matches.length > 0 && (
         <Box component="section" aria-labelledby="whats-next-bracket">
@@ -198,6 +219,7 @@ export function WhatsNextCard({
               matches={matches}
               tournamentType={tournament.type}
               format={tournament.format}
+              yourTeamId={teamId}
             />
           </Box>
         </Box>

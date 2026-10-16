@@ -9,6 +9,10 @@ import {
   tokens,
   useModuleTranslation,
   withAlpha,
+  fmtNum,
+  fmtPercent,
+  fmtShare,
+  fmtMoney,
 } from '../../../module-sdk';
 import type { PlayerProfileViewProps } from '../../types';
 import { getMapDisplayName } from '../maps/mapData';
@@ -225,7 +229,7 @@ export function Cs2ProfileStats({ playerId }: PlayerProfileViewProps) {
           data-testid="cs2-profile-kd"
         >
           <Label>{t('profile.kd')}</Label>
-          <Big>{kd.toFixed(2)}</Big>
+          <Big>{fmtNum(kd, 2)}</Big>
           <SplitBar
             left={player.kills}
             right={player.deaths}
@@ -241,9 +245,9 @@ export function Cs2ProfileStats({ playerId }: PlayerProfileViewProps) {
           <Ring value={hsPct ?? 0} />
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
             <Label>{t('profile.headshots')}</Label>
-            <Big>{hsPct === null ? '—' : `${Math.round(hsPct * 100)}%`}</Big>
+            <Big>{fmtShare(hsPct)}</Big>
             {avgHsPct !== null && (
-              <Small>{t('profile.average', { value: `${Math.round(avgHsPct * 100)}%` })}</Small>
+              <Small>{t('profile.average', { value: fmtShare(avgHsPct) })}</Small>
             )}
           </Box>
         </Panel>
@@ -253,11 +257,11 @@ export function Cs2ProfileStats({ playerId }: PlayerProfileViewProps) {
           data-testid="cs2-profile-adr"
         >
           <Label>{t('profile.adr')}</Label>
-          <Big>{adr === null ? '—' : adr.toFixed(1)}</Big>
+          <Big>{fmtNum(adr, 1)}</Big>
           {adr !== null && avgAdr !== null && (
             <>
               <MarkerBar value={adr} marker={avgAdr} max={Math.max(150, adr, avgAdr)} />
-              <Small>{t('profile.average', { value: avgAdr.toFixed(1) })}</Small>
+              <Small>{t('profile.average', { value: fmtNum(avgAdr, 1) })}</Small>
             </>
           )}
         </Panel>
@@ -268,13 +272,10 @@ export function Cs2ProfileStats({ playerId }: PlayerProfileViewProps) {
         >
           <Label>{t('profile.impact')}</Label>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.5 }}>
-            <Fact value={player.kast === null ? '—' : `${Math.round(player.kast)}%`} label="KAST" />
+            <Fact value={fmtPercent(player.kast)} label="KAST" />
             <Fact value={String(player.mvps)} label={t('profile.mvps')} />
-            <Fact value={flashPerMatch.toFixed(1)} label={t('profile.flashAssists')} />
-            <Fact
-              value={utilPerRound === null ? '—' : utilPerRound.toFixed(1)}
-              label={t('profile.utilityDamage')}
-            />
+            <Fact value={fmtNum(flashPerMatch, 1)} label={t('profile.flashAssists')} />
+            <Fact value={fmtNum(utilPerRound, 1)} label={t('profile.utilityDamage')} />
           </Box>
         </Panel>
       </Box>
@@ -366,9 +367,8 @@ export function Cs2ProfileStats({ playerId }: PlayerProfileViewProps) {
  */
 function DetailRow({ mine, avg }: { mine: Detail | null; avg: Detail | null }) {
   const { t } = useModuleTranslation('cs2');
-  const pct = (won: number, rounds: number) =>
-    rounds ? `${Math.round((won / rounds) * 100)}%` : '—';
-  const perRound = (n: number) => (mine?.roundsPlayed ? (n / mine.roundsPlayed).toFixed(2) : '—');
+  const pct = (won: number, rounds: number) => (rounds ? fmtShare(won / rounds) : '—');
+  const perRound = (n: number) => (mine?.roundsPlayed ? fmtNum(n / mine.roundsPlayed, 2) : '—');
   const dashed = mine ? undefined : 'dashed';
   return (
     <>
@@ -390,10 +390,10 @@ function DetailRow({ mine, avg }: { mine: Detail | null; avg: Detail | null }) {
           data-testid="cs2-profile-rating"
         >
           <Label>{t('profile.rating')}</Label>
-          <Big>{mine?.rating?.toFixed(2) ?? '—'}</Big>
+          <Big>{fmtNum(mine?.rating, 2)}</Big>
           <Small>
             {avg?.rating != null
-              ? t('profile.average', { value: avg.rating.toFixed(2) })
+              ? t('profile.average', { value: fmtNum(avg.rating, 2) })
               : t('profile.ratingNote')}
           </Small>
         </Panel>
@@ -463,18 +463,17 @@ function DetailRow({ mine, avg }: { mine: Detail | null; avg: Detail | null }) {
  */
 function AimRow({ aim, avg }: { aim: Detail['aim']; avg: Detail['aim'] }) {
   const { t } = useModuleTranslation('cs2');
-  const pct = (v: number | null | undefined) =>
-    v === null || v === undefined ? '—' : `${Math.round(v * 100)}%`;
+  const pct = (v: number | null | undefined) => fmtShare(v);
   const tiles: Array<{ key: string; label: string; value: string; note: string | null }> = [
     {
       key: 'crosshair',
       label: t('profile.crosshair'),
-      value: aim?.crosshairDegrees != null ? `${aim.crosshairDegrees.toFixed(1)}°` : '—',
+      value: aim?.crosshairDegrees != null ? `${fmtNum(aim.crosshairDegrees, 1)}°` : '—',
       note:
         aim?.timeToDamageMs != null
           ? t('profile.ttdLine', { ms: aim.timeToDamageMs })
           : avg?.crosshairDegrees != null
-            ? t('profile.average', { value: `${avg.crosshairDegrees.toFixed(1)}°` })
+            ? t('profile.average', { value: `${fmtNum(avg.crosshairDegrees, 1)}°` })
             : t('profile.crosshairNote'),
     },
     {
@@ -495,8 +494,8 @@ function AimRow({ aim, avg }: { aim: Detail['aim']; avg: Detail['aim'] }) {
     {
       key: 'money',
       label: t('profile.moneyPerRound'),
-      value: aim ? `$${aim.moneyPerRound.toLocaleString()}` : '—',
-      note: avg ? t('profile.average', { value: `$${avg.moneyPerRound.toLocaleString()}` }) : null,
+      value: aim ? fmtMoney(aim.moneyPerRound) : '—',
+      note: avg ? t('profile.average', { value: fmtMoney(avg.moneyPerRound) }) : null,
     },
   ];
   return (

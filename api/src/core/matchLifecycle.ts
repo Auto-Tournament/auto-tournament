@@ -81,7 +81,10 @@ async function ingest(events: NormalizedEvent[]): Promise<void> {
   for (const event of events) {
     switch (event.type) {
       case 'map.started':
-        void postMatchChatLine(event.slug, 'mapLive', { n: event.mapNumber + 1, map: event.mapName ?? '' });
+        void postMatchChatLine(event.slug, 'mapLive', {
+          n: event.mapNumber + 1,
+          map: event.mapName ?? '',
+        });
         break;
       case 'map.result': {
         const match = await matchBySlug(event.slug);
@@ -317,9 +320,7 @@ function decideLevelSeries(
 ) {
   const inSeries = results.filter((r) => r.mapNumber >= 0 && r.mapNumber < totalMaps);
   const map0 = matchLiveStatsService.getStats(match.slug)?.playerStatsByMap?.[0];
-  const map0Damage = map0
-    ? { team1: teamDamage(map0.team1), team2: teamDamage(map0.team2) }
-    : null;
+  const map0Damage = map0 ? { team1: teamDamage(map0.team1), team2: teamDamage(map0.team2) } : null;
   const decision = decideExhaustedSeries(inSeries, map0Damage);
   const summary = {
     slug: match.slug,
@@ -360,7 +361,11 @@ async function awaitAdminDecision(
     team2Score: decision.team2Maps,
     mapResults: results,
   });
-  emitBracketUpdate({ action: 'match_status', matchSlug: match.slug, status: NEEDS_DECISION_STATUS });
+  emitBracketUpdate({
+    action: 'match_status',
+    matchSlug: match.slug,
+    status: NEEDS_DECISION_STATUS,
+  });
 }
 
 /**
@@ -645,7 +650,7 @@ async function processSeriesEnd(
   } else if (team1Score !== team2Score) {
     // Legacy fallback: derive winner from series score when the result doesn't
     // provide a decisive winner.
-    winnerId = team1Score > team2Score ? match.team1_id ?? null : match.team2_id ?? null;
+    winnerId = team1Score > team2Score ? (match.team1_id ?? null) : (match.team2_id ?? null);
   } else {
     winnerId = null;
   }
@@ -683,7 +688,14 @@ async function processSeriesEnd(
 
       // A matchmaking match: its own rating (never the tournament rating).
       if ((match as DbMatchRow & { source?: string | null }).source === 'matchmaking') {
-        const side = winnerSide !== 'none' ? winnerSide : team1Score === team2Score ? 'none' : team1Score > team2Score ? 'team1' : 'team2';
+        const side =
+          winnerSide !== 'none'
+            ? winnerSide
+            : team1Score === team2Score
+              ? 'none'
+              : team1Score > team2Score
+                ? 'team1'
+                : 'team2';
         try {
           const { matchmakingService } = await import('../services/matchmaking/matchmakingService');
           await matchmakingService.applyMatchResult(matchSlug, side);
@@ -726,7 +738,8 @@ async function processSeriesEnd(
           `[SERIES GUARD] ${matchSlug} ended level in an elimination bracket; finishing it for ${decision.winner} (decided by ${decision.decidedBy})`,
           summary
         );
-        winnerId = decision.winner === 'team1' ? match.team1_id ?? null : match.team2_id ?? null;
+        winnerId =
+          decision.winner === 'team1' ? (match.team1_id ?? null) : (match.team2_id ?? null);
       } else {
         log.warn(
           `[SERIES GUARD] ${matchSlug} ended level in an elimination bracket on maps, rounds and map-0 damage; waiting for an admin to set the winner`,
@@ -932,7 +945,7 @@ async function processSeriesEnd(
 /**
  * Check if shuffle round is complete and advance if needed
  */
-async function checkAndAdvanceShuffleRound(
+export async function checkAndAdvanceShuffleRound(
   tournamentId: number,
   roundNumber: number
 ): Promise<void> {

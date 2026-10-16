@@ -38,38 +38,40 @@ test.describe('Generated Discord IDs', () => {
     expect(new Set(ids).size, 'ids should vary').toBeGreaterThan(400);
   });
 
-  test('survive an import and can be looked up', { tag: ['@api', '@players'] }, async ({
-    request,
-  }) => {
-    expect(await signInViaRequest(request)).toBe(true);
+  test(
+    'survive an import and can be looked up',
+    { tag: ['@api', '@players'] },
+    async ({ request }) => {
+      expect(await signInViaRequest(request)).toBe(true);
 
-    const stamp = `${Date.now()}`.slice(-9);
-    const players = Array.from({ length: 3 }, (_, index) => ({
-      id: `7656119${stamp}${index}`,
-      name: `Discord ID import ${stamp} ${index}`,
-      discordId: generateDiscordId(),
-    }));
+      const stamp = `${Date.now()}`.slice(-9);
+      const players = Array.from({ length: 3 }, (_, index) => ({
+        id: `7656119${stamp}${index}`,
+        name: `Discord ID import ${stamp} ${index}`,
+        discordId: generateDiscordId(),
+      }));
 
-    const imported = await request.post('/api/players/bulk-import', { data: players });
-    expect([201, 207], `importing: ${await imported.text()}`).toContain(imported.status());
+      const imported = await request.post('/api/players/bulk-import', { data: players });
+      expect([201, 207], `importing: ${await imported.text()}`).toContain(imported.status());
 
-    const body = (await imported.json()) as { warnings?: string[]; errors?: unknown[] };
-    // The import drops a malformed Discord ID with a warning instead of
-    // failing, so a warning here is the generator being wrong.
-    expect(body.warnings ?? [], 'no Discord ID should have been dropped').toEqual([]);
+      const body = (await imported.json()) as { warnings?: string[]; errors?: unknown[] };
+      // The import drops a malformed Discord ID with a warning instead of
+      // failing, so a warning here is the generator being wrong.
+      expect(body.warnings ?? [], 'no Discord ID should have been dropped').toEqual([]);
 
-    try {
-      for (const player of players) {
-        const response = await request.get(`/api/players/by-discord-id/${player.discordId}`);
-        expect(response.status(), `looking up ${player.discordId}`).toBe(200);
-        const found = (await response.json()) as { players: Array<{ id: string }> };
-        expect(
-          found.players.map((row) => row.id),
-          'the imported player should be found by the ID it was imported with'
-        ).toContain(player.id);
+      try {
+        for (const player of players) {
+          const response = await request.get(`/api/players/by-discord-id/${player.discordId}`);
+          expect(response.status(), `looking up ${player.discordId}`).toBe(200);
+          const found = (await response.json()) as { players: Array<{ id: string }> };
+          expect(
+            found.players.map((row) => row.id),
+            'the imported player should be found by the ID it was imported with'
+          ).toContain(player.id);
+        }
+      } finally {
+        await request.post('/api/players/bulk-delete', { data: players.map((p) => p.id) });
       }
-    } finally {
-      await request.post('/api/players/bulk-delete', { data: players.map((p) => p.id) });
     }
-  });
+  );
 });

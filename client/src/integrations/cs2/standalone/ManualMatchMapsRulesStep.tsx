@@ -1,6 +1,7 @@
 import React from 'react';
-import { Box, FormControlLabel, MenuItem, Switch, TextField, Typography } from '@mui/material';
+import { Box, MenuItem, TextField, Typography } from '@mui/material';
 import type { StartingSide } from './standaloneTypes';
+import { SwitchRow } from '../../../module-sdk';
 
 /** The dialog's rules step: series length, veto, sides, rounds and roster size. */
 interface ManualMatchMapsRulesStepProps {
@@ -78,15 +79,10 @@ export const ManualMatchMapsRulesStep: React.FC<ManualMatchMapsRulesStepProps> =
         </TextField>
 
         {/* Veto mode first so rules and map validation are consistent. */}
-        <FormControlLabel
-          control={
-            <Switch
-              checked={useVeto}
-              onChange={(e) => onUseVetoChange(e.target.checked)}
-              color="primary"
-            />
-          }
+        <SwitchRow
           label="Enable veto flow (requires 7-map pool)"
+          checked={useVeto}
+          onChange={(e) => onUseVetoChange(e.target.checked)}
           sx={{ mt: 1 }}
         />
 
@@ -172,19 +168,14 @@ export const ManualMatchMapsRulesStep: React.FC<ManualMatchMapsRulesStepProps> =
             <Typography variant="subtitle2" gutterBottom>
               Overtime
             </Typography>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={overtimeEnabled}
-                  onChange={(e) => onOvertimeEnabledChange(e.target.checked)}
-                  color="primary"
-                />
-              }
+            <SwitchRow
               label={
                 overtimeEnabled
                   ? 'Overtime enabled (standard CS2 overtime when scores are tied)'
                   : 'No overtime (decide ties by the plugin tiebreak rule or leave them as draws)'
               }
+              checked={overtimeEnabled}
+              onChange={(e) => onOvertimeEnabledChange(e.target.checked)}
             />
 
             {overtimeEnabled && (

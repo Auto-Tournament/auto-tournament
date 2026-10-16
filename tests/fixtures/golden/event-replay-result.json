@@ -18,7 +18,10 @@
         "at_pause_on_disconnect": 1,
         "at_side_selection_enabled": 1,
         "at_side_selection_time": 60,
-        "mp_maxrounds": 24
+        "mp_maxrounds": 24,
+        "tv_delay": 105,
+        "tv_maxclients": 8,
+        "tv_password": "<tv_password>"
       },
       "expected_players_team1": 5,
       "expected_players_team2": 5,
@@ -30,6 +33,7 @@
       "min_players_to_ready": 0,
       "num_maps": 3,
       "overtimeMode": "enabled",
+      "overtimeSegments": 1,
       "players_per_team": 5,
       "simulation": false,
       "spectators": {
@@ -133,6 +137,7 @@
     ],
     "mapScores": [
       {
+        "hasDemo": false,
         "map": "de_ancient",
         "mapNumber": 0,
         "team1Score": 13,
@@ -140,6 +145,7 @@
         "winner": "team1"
       },
       {
+        "hasDemo": false,
         "map": "de_anubis",
         "mapNumber": 1,
         "team1Score": 11,
@@ -147,6 +153,7 @@
         "winner": "team2"
       },
       {
+        "hasDemo": false,
         "map": "de_nuke",
         "mapNumber": 2,
         "team1Score": 13,
@@ -159,6 +166,7 @@
     "round": 1,
     "serverId": null,
     "slug": "r1m1",
+    "startsAt": null,
     "status": "completed",
     "team1": {
       "id": "golden-replay-a",
@@ -181,6 +189,7 @@
     "tournament": "Golden Replay Tournament",
     "tournamentId": 1,
     "vetoCompleted": true,
+    "vetoOpensAt": null,
     "viewerTeamId": null,
     "winner": {
       "id": "golden-replay-a",

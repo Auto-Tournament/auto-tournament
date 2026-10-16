@@ -35,6 +35,10 @@ export function getSchemaSQL(): string {
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
+    -- Each new team takes the next of the 16 team colours (client theme: teamColors);
+    -- a counter, not the team count, so a deleted team never makes two teams match.
+    CREATE SEQUENCE IF NOT EXISTS team_color_seq;
+
     -- Teams table (must be created before matches due to foreign key)
     CREATE TABLE IF NOT EXISTS teams (
       id TEXT PRIMARY KEY,
@@ -47,7 +51,11 @@ export function getSchemaSQL(): string {
       logo BYTEA, -- the team's logo (PNG, JPEG or WEBP, at most 256 KB)
       logo_type TEXT, -- its media type
       logo_updated_at INTEGER, -- for the logo URL, so a new logo is not served from cache
+      banner BYTEA, -- the team's banner, a wide picture behind its card (PNG, JPEG or WEBP, at most 1 MB)
+      banner_type TEXT, -- its media type
+      banner_updated_at INTEGER, -- for the banner URL, like the logo's
       game TEXT, -- the game the team mainly plays (an integration id), for the team list; it still enters any game's tournament
+      color_index INTEGER DEFAULT ((nextval('team_color_seq') - 1) % 16), -- the team's colour, 0-15 of the 16 team colours; the owner can pick another
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
@@ -186,6 +194,8 @@ export function getSchemaSQL(): string {
       team1_from_outcome TEXT, -- 'winner' | 'loser'
       team2_from_match_id INTEGER,
       team2_from_outcome TEXT, -- 'winner' | 'loser'
+      team1_seed INTEGER, -- Groups, then playoffs: the qualifier seed (1…N) this playoff slot takes once the groups end (services/groupsTournament.ts)
+      team2_seed INTEGER,
       next_match_id INTEGER,
       demo_file_path TEXT,
       -- Integration-owned: the CS2 map veto's progress (integrations/cs2/veto).
@@ -201,6 +211,8 @@ export function getSchemaSQL(): string {
       -- and no walkover clock until this time (HOLD_FOREVER: until released).
       held_until INTEGER,
       hold_reason TEXT,
+      on_stage INTEGER NOT NULL DEFAULT 0, -- 1: the stage match (casters, the stream): every GOTV seat (cs2 gotv.ts)
+      starts_at INTEGER, -- This match's own start time (unix s), set in Manage › Schedule; NULL: its round's time, if any (services/matchTimes.ts)
       -- When the auto-start countdown runs from, if not loaded_at: a hold ended
       -- or an admin restarted the countdown.
       countdown_from INTEGER,
@@ -710,6 +722,7 @@ export function getSchemaSQL(): string {
       tournament_id INTEGER NOT NULL DEFAULT 1,
       player_id TEXT NOT NULL,
       registered_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      left_at INTEGER,
       PRIMARY KEY (tournament_id, player_id),
       FOREIGN KEY (tournament_id) REFERENCES tournament(id) ON DELETE CASCADE,
       FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
@@ -1061,7 +1074,7 @@ export function getSchemaSQL(): string {
     CREATE TABLE IF NOT EXISTS player_notify_channels (
       player_id TEXT NOT NULL,
       event TEXT NOT NULL, -- match_ready | veto_turn | checkin_open | new_tournament
-      channel TEXT NOT NULL, -- discord | email
+      channel TEXT NOT NULL, -- discord | email | push
       enabled INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       PRIMARY KEY (player_id, event, channel)
@@ -1074,6 +1087,18 @@ export function getSchemaSQL(): string {
       sent_at INTEGER NOT NULL,
       PRIMARY KEY (player_id, dedupe_key, channel)
     );
+
+    -- Browser and phone notifications (Web Push): one row per browser a player turned them on in.
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      endpoint TEXT PRIMARY KEY,
+      player_id TEXT NOT NULL,
+      p256dh TEXT NOT NULL,
+      auth TEXT NOT NULL,
+      user_agent TEXT,
+      created_at INTEGER NOT NULL,
+      last_sent_at INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS idx_push_subscriptions_player ON push_subscriptions(player_id);
 
     CREATE TABLE IF NOT EXISTS api_tokens (
       id SERIAL PRIMARY KEY,
@@ -1156,7 +1181,8 @@ export function getSchemaSQL(): string {
       map_pool TEXT, -- JSON [{ id, name, imageUrl }]: the maps the roulette shows, the chosen one among them
       match_slug TEXT,
       bot_fill BOOLEAN NOT NULL DEFAULT FALSE, -- a bot-filled game: unrated, no XP or drops
-      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      rematch_lobby_id TEXT -- the rematch's lobby, once every player said yes
     );
 
     CREATE TABLE IF NOT EXISTS mm_lobby_players (
@@ -1167,6 +1193,8 @@ export function getSchemaSQL(): string {
       queued_at INTEGER, -- when the player's party started searching, for the wait estimate
       accepted_at INTEGER,
       declined_at INTEGER,
+      rematch_at INTEGER, -- said yes to a rematch after the match
+      rematch_declined_at INTEGER, -- said no to a rematch
       PRIMARY KEY (lobby_id, player_id)
     );
 
@@ -1237,8 +1265,9 @@ export function getSchemaSQL(): string {
       updated_at INTEGER NOT NULL
     );
 
-    -- Thumbs up / down between players of one matchmaking match. Totals are
-    -- shown; who voted never is.
+    -- Thumbs up / down between players of one matchmaking match, and commends
+    -- after a tournament match (value 1 with a tag; services/commends.ts).
+    -- Totals are shown; who voted never is.
     CREATE TABLE IF NOT EXISTS commends (
       match_slug TEXT NOT NULL,
       from_player_id TEXT NOT NULL REFERENCES players(id) ON DELETE CASCADE,

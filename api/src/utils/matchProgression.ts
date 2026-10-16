@@ -370,16 +370,31 @@ async function reportTournamentPlacements(
   tournamentId: number,
   tournament: DbTournamentRow
 ): Promise<void> {
-  if (tournament.type !== 'single_elimination' && tournament.type !== 'double_elimination') return;
-  const onPlacements = integrationForMatch(tournament).onTournamentPlacements;
-  if (!onPlacements) return;
-  const settings = (() => {
-    try {
-      return JSON.parse(tournament.settings ?? '{}') as Record<string, unknown>;
-    } catch {
-      return {};
-    }
-  })();
+  if (tournament.type === 'round_robin' || tournament.type === 'swiss') {
+    // The standings' top three teams (the same order the bracket shows).
+    const entries =
+      tournament.type === 'round_robin'
+        ? await (
+            await import('../services/roundRobinStandingsService')
+          ).getRoundRobinStandingEntries(tournamentId)
+        : await (
+            await import('../services/swissProgressionService')
+          ).getSwissStandingEntries(tournamentId);
+    const top = entries.slice(0, 4).map((e, i) => ({
+      place: (i + 1) as 1 | 2 | 3 | 4,
+      teamId: (e as { teamId: string }).teamId,
+    }));
+    await awardTeamPlaces(tournamentId, tournament, top);
+    return;
+  }
+  if (
+    tournament.type !== 'single_elimination' &&
+    tournament.type !== 'double_elimination' &&
+    tournament.type !== 'groups'
+  )
+    return;
+  // Groups: the playoffs decide the places (their slugs carry `po-`).
+  const playoffsOnly = tournament.type === 'groups' ? "AND slug LIKE '%po-%'" : '';
   const finals = await db.queryAsync<{
     team1_id: string | null;
     team2_id: string | null;
@@ -387,7 +402,7 @@ async function reportTournamentPlacements(
     round: number;
   }>(
     `SELECT team1_id, team2_id, winner_id, round FROM matches
-      WHERE tournament_id = ? AND round >= 1 AND next_match_id IS NULL AND status = 'completed'
+      WHERE tournament_id = ? AND round >= 1 AND next_match_id IS NULL AND status = 'completed' ${playoffsOnly}
       ORDER BY round DESC, match_number ASC`,
     [tournamentId]
   );
@@ -399,13 +414,23 @@ async function reportTournamentPlacements(
     winner_id: string | null;
   }) => (m.winner_id === m.team1_id ? m.team2_id : m.team1_id);
   const third = finals.find((m) => m !== final && m.winner_id);
-  const places: Array<{ place: 1 | 2 | 3; teamId: string | null }> = [
+  await awardTeamPlaces(tournamentId, tournament, [
     { place: 1, teamId: final.winner_id },
     { place: 2, teamId: loserOf(final) },
     { place: 3, teamId: third?.winner_id ?? null },
-  ];
+    // Fourth only when a third-place match was played (its loser).
+    { place: 4, teamId: third ? loserOf(third) : null },
+  ]);
+}
+
+/** The players of each placed team (those who played), handed to the game's placement hook. */
+async function awardTeamPlaces(
+  tournamentId: number,
+  tournament: DbTournamentRow,
+  places: Array<{ place: 1 | 2 | 3 | 4; teamId: string | null }>
+): Promise<void> {
   const { tournamentSignupService } = await import('../services/tournamentSignupService');
-  const placements: Array<{ place: 1 | 2 | 3; steamIds: string[] }> = [];
+  const placements: Array<{ place: 1 | 2 | 3 | 4; steamIds: string[] }> = [];
   for (const { place, teamId } of places) {
     if (!teamId) continue;
     const team = await db.queryOneAsync<{ players: string }>(
@@ -437,7 +462,39 @@ async function reportTournamentPlacements(
     }
     placements.push({ place, steamIds });
   }
-  await onPlacements({ tournamentId, tournamentName: tournament.name, settings, placements });
+  await awardPlacements(tournament, placements);
+}
+
+/**
+ * Hand a finished tournament's top three (each place's Steam accounts) to its
+ * game module (CS2: skin rewards). Shuffle tournaments place players, the
+ * others teams.
+ */
+export async function awardPlacements(
+  tournament: DbTournamentRow,
+  placements: Array<{ place: 1 | 2 | 3 | 4; steamIds: string[] }>
+): Promise<void> {
+  if (placements.length === 0) return;
+  // The placement XP bonus (every game), then the game's own prizes.
+  const { progressionService } = await import('../services/matchmaking/progressionService');
+  await progressionService
+    .awardPlacementXp(tournament.id, placements)
+    .catch((error) => log.warn('[TOURNAMENT] Placement XP failed', { error: String(error) }));
+  const onPlacements = integrationForMatch(tournament).onTournamentPlacements;
+  if (!onPlacements) return;
+  const settings = (() => {
+    try {
+      return JSON.parse(tournament.settings ?? '{}') as Record<string, unknown>;
+    } catch {
+      return {};
+    }
+  })();
+  await onPlacements({
+    tournamentId: tournament.id,
+    tournamentName: tournament.name,
+    settings,
+    placements,
+  });
 }
 
 export async function checkTournamentCompletion(tournamentId: number): Promise<void> {
@@ -482,10 +539,16 @@ export async function checkTournamentCompletion(tournamentId: number): Promise<v
     // without a pre-match phase needs the finished round to open the next one,
     // or the tournament stalls after round 1. The service is a no-op for a
     // game that has a veto.
-    if (tournament.type === 'round_robin') {
+    if (tournament.type === 'round_robin' || tournament.type === 'groups') {
       const { advanceRoundRobinTournament } =
         await import('../services/roundRobinProgressionService');
       await advanceRoundRobinTournament(tournamentId);
+    }
+
+    // Groups, then playoffs: every group match over puts the qualifiers into the playoffs.
+    if (tournament.type === 'groups') {
+      const { advanceGroupsTournament } = await import('../services/groupsTournament');
+      await advanceGroupsTournament(tournamentId);
     }
 
     // Count all matches for this tournament (bracket matches have round >= 1)
@@ -600,6 +663,12 @@ export async function makeMatchReady(match: DbMatchRow): Promise<void> {
     // itself (CS2 in simulation mode: the automated veto, for every round
     // once both teams are known).
     const integration = integrationForMatch(match);
+    // Its start time (Manage › Schedule): held until its veto opens (services/matchTimes.ts).
+    await (
+      await import('../services/matchTimes')
+    )
+      .holdForStartTime(match.slug)
+      .catch((error) => log.warn('[MATCH-TIMES] could not hold for the start time', { error }));
     if (integration.isReadyToAllocate) {
       const ctx = await matchContextFor(match, tournamentData);
       if (!(await integration.isReadyToAllocate(ctx))) {

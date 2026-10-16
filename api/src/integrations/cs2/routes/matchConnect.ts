@@ -15,6 +15,14 @@
  * A match on a Ready Up server (fleet link) has a connect password, made per
  * assignment (FLEET.md D9). It goes to the roster and to admins, and nobody
  * else: an admin (not impersonating) also gets the server for such a match.
+ *
+ * A finished match (completed or cancelled) gets `server: null` too: its
+ * `server_id` stays set, but the server has moved on to another match, so its
+ * status and address are that match's. In a shuffle the next round puts players
+ * on new servers, and a round-1 page still offering Connect sent them onto
+ * another match's server, which kicked them (NTLAN, 2026-10-16). A player on a
+ * finished match gets `currentMatchSlug`: their match that is loaded or live
+ * in the same tournament, if any, to go to instead.
  */
 
 import { Router, Request, Response } from 'express';
@@ -32,6 +40,36 @@ import { connectPasswordFor, fleetServerStatus } from '../fleet/driver';
 import { recentMove } from '../fleet/failover';
 import { liveStateStore } from '../fleet/state';
 import { pauseView } from '../fleet/pauseView';
+import { connectChoice } from '../fleet/connectChoice';
+import { QUEUE_ORDER_SQL } from '../../../core/allocationQueue';
+
+/** The match is over: its server, if it still names one, belongs to another match now. */
+function isFinishedMatchStatus(status: string | null | undefined): boolean {
+  return status === 'completed' || status === 'cancelled';
+}
+
+/**
+ * The viewer's match that is loaded or live in the same tournament, other than this one; null
+ * when there is none. Shuffle rounds re-form the teams, so it goes by the rosters, not team ids.
+ */
+async function viewerCurrentMatchSlug(
+  match: DbMatchRow,
+  steamId: string | null
+): Promise<string | null> {
+  if (!steamId || !match.tournament_id) return null;
+  const candidates = await db
+    .queryAsync<DbMatchRow>(
+      `SELECT * FROM matches
+        WHERE tournament_id = ? AND slug <> ? AND status IN ('loaded', 'live')
+          AND server_id IS NOT NULL`,
+      [match.tournament_id, match.slug]
+    )
+    .catch(() => [] as DbMatchRow[]);
+  for (const other of candidates) {
+    if (await resolveViewerTeamForMatch(other, steamId).catch(() => null)) return other.slug;
+  }
+  return null;
+}
 
 /**
  * Whether the move no longer concerns this viewer: they are connected again (a player), or every
@@ -48,6 +86,21 @@ function backOnServer(state: unknown, steamId: string | null | undefined): boole
   const mine = steamId ? players.find(([id]) => id === steamId) : undefined;
   if (mine) return mine[1].connected === true;
   return players.every(([, p]) => p.connected === true);
+}
+
+/** Whether this roster player is on the match's server now; null when the live state does not list them. */
+function viewerOnServer(state: unknown, steamId: string | null | undefined): boolean | null {
+  if (!steamId) return null;
+  const teams = (
+    state as {
+      teams?: Record<string, { players?: Record<string, { connected?: boolean }> }>;
+    } | null
+  )?.teams;
+  for (const t of Object.values(teams ?? {})) {
+    const p = t?.players?.[steamId];
+    if (p) return p.connected === true;
+  }
+  return null;
 }
 
 const router = Router();
@@ -146,7 +199,10 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
     const onFleet = match.server_transport === 'fleet';
     // Fleet matches: admins see how to join too (they are not asked otherwise).
     const viewerIsAdmin = onFleet && !viewerIsTeamMember ? (await checkAdminAccess(req)).ok : false;
-    const canSeeServer = viewerIsTeamMember || viewerIsAdmin;
+    const finished = isFinishedMatchStatus(match.status);
+    const canSeeServer = (viewerIsTeamMember || viewerIsAdmin) && !finished;
+    const currentMatchSlug =
+      finished && viewerIsTeamMember ? await viewerCurrentMatchSlug(match, effectiveSteamId) : null;
 
     const liveStats = matchLiveStatsService.getStats(match.slug);
     const mapNumber = liveStats?.mapNumber ?? match.map_number ?? null;
@@ -163,6 +219,8 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
     let moved: { at: number; reason: string; inPlace: boolean } | null = null;
     // Ready Up: the match is paused, and whose seat is empty.
     let pause: { type: string | null; waitingFor: string[] } | null = null;
+    // The viewer is on the server: the panel offers the other address when a Connect did not land.
+    let viewerConnected: boolean | null = null;
     if (canSeeServer && match.server_id) {
       if (onFleet) {
         const move = await recentMove(match.slug).catch(() => null);
@@ -182,6 +240,8 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
         password = await connectPasswordFor(match.slug);
         const live = await liveStateStore.getLiveState(match.slug).catch(() => null);
         pause = pauseView(live?.state ?? null);
+        if (viewerIsTeamMember)
+          viewerConnected = viewerOnServer(live?.state ?? null, effectiveSteamId);
         // The viewer is back on the server (or, for an admin, everyone is): the move is done, no
         // "reconnect" notice (it stayed up while the player was playing again, 2026-10-15).
         if (moved && backOnServer(live?.state ?? null, effectiveSteamId)) moved = null;
@@ -190,11 +250,42 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
       }
     }
 
+    // No server yet: the match's place in line for one (the allocator's order), 1 = next.
+    let queuePosition: number | null = null;
+    if (!match.server_id && (match.status === 'pending' || match.status === 'ready')) {
+      const waiting = await db
+        .queryAsync<{ slug: string }>(
+          `SELECT slug FROM matches
+            WHERE server_id IS NULL AND status IN ('pending', 'ready')
+              AND team1_id IS NOT NULL AND team2_id IS NOT NULL AND team1_id <> team2_id
+              ${match.tournament_id ? 'AND tournament_id = ?' : ''}
+            ORDER BY ${QUEUE_ORDER_SQL}`,
+          match.tournament_id ? [match.tournament_id] : []
+        )
+        .catch(() => []);
+      const at = waiting.findIndex((w) => w.slug === match.slug);
+      queuePosition = at >= 0 ? at + 1 : null;
+    }
+
+    // A LAN address and a public one: the viewer gets the one for where they are (on the
+    // server's network: LAN), and both are listed to pick from (fleet/connectChoice.ts).
+    const viewerIp = req.get('cf-connecting-ip') || req.ip || null;
+    const choice =
+      canSeeServer && match.server_id && onFleet
+        ? await connectChoice(match.server_id, viewerIp).catch(() => null)
+        : null;
+    const chosen = choice?.options.find((o) => o.kind === choice.recommended) ?? null;
+    const host = chosen?.host ?? match.server_host;
+    const port = chosen?.port ?? match.server_port;
+
     return res.json({
       success: true,
       viewerIsTeamMember,
       matchStatus: match.status,
       liveStatus: liveStats?.status ?? null,
+      roundNumber: liveStats?.roundNumber ?? null,
+      queuePosition,
+      currentMatchSlug,
       currentMap,
       mapNumber,
       server:
@@ -202,9 +293,16 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
           ? {
               id: match.server_id,
               name: match.server_name,
-              host: match.server_host,
-              ip: await connectIp(match.server_host),
-              port: match.server_port,
+              host,
+              ip: await connectIp(host),
+              port,
+              // Where to connect from: the LAN address and the public one, when they differ.
+              addresses: choice
+                ? await Promise.all(
+                    choice.options.map(async (o) => ({ ...o, ip: await connectIp(o.host) }))
+                  )
+                : null,
+              recommended: choice?.recommended ?? null,
               // RCON servers have no join password; the RCON password is never
               // sent. Ready Up servers: this assignment's sv_password.
               password,
@@ -212,6 +310,7 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
               statusDescription: status?.description ?? null,
               moved,
               pause,
+              viewerConnected,
             }
           : null,
     });

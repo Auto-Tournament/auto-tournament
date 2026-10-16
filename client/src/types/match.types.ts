@@ -39,6 +39,9 @@ export interface Match {
   currentMap?: string | null; // Current map being played (e.g., de_mirage)
   /** Both teams are in and it waits on its map veto (public bracket). */
   vetoing?: boolean;
+  /** Its start time and when its veto opens (unix s; Manage › Schedule), when it has one. */
+  startsAt?: number | null;
+  vetoOpensAt?: number | null;
   mapNumber?: number | null; // Current map number in series (0-indexed)
   demoFilePath?: string;
   config?: MatchConfig;

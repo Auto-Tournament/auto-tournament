@@ -16,7 +16,7 @@ import {
 import { abbreviateId, isValidDiscordId, parseDiscordIdEdit } from '../utils/discordId';
 import { getRatingHistory } from '../services/ratingService';
 import { steamService } from '../services/steamService';
-import { requireAuth, requestActorId } from '../middleware/auth';
+import { requireAuth, requireIntegratorAuth, requestActorId } from '../middleware/auth';
 import { bulkRemovesEveryAdmin, removesLastAdmin } from '../utils/adminRules';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
@@ -100,12 +100,12 @@ router.param('playerId', async (req: Request, res: Response, next, playerId: str
  * /api/players/presence:
  *   get:
  *     tags: [Players]
- *     summary: What players are doing now (online, searching, playing)
+ *     summary: What players are doing now (online, away, searching, playing)
  *     description: For player names anywhere on the site. Up to 100 ids, comma-separated.
  *     parameters:
  *       - { in: query, name: ids, required: true, schema: { type: string } }
  *     responses:
- *       200: { description: "`presence`: { [playerId]: { online, activity } }" }
+ *       200: { description: "`presence`: { [playerId]: { online, status, activity } }; `status` is online, away or offline. Live changes: socket event `presence:update` { playerId, status } after `presence:subscribe`." }
  *       400: { description: No ids }
  */
 router.get('/presence', async (req: Request, res: Response) => {
@@ -1870,6 +1870,12 @@ router.get('/:playerId/matches', async (req: Request, res: Response) => {
 // ============================================================================
 
 // All player management routes require authentication (admin only)
+// The players import (documented below) takes an integrator token too: an event site sends its
+// players with the same token as its teams (/api/integrations/teams).
+router.post('/import', requireIntegratorAuth, (req: Request, res: Response) =>
+  importPlayers(req, res)
+);
+
 router.use(requireAuth);
 
 /**
@@ -2031,8 +2037,12 @@ router.post('/', async (req: Request, res: Response) => {
  *       For a site that registers its players before teams exist (the same API
  *       token as the teams API). Body: an array of players, or
  *       `{ "players": [...] }`. Each player: `steamId`, `name`, and
- *       optionally `discordId` (string) and `oidcSubject` (the `sub` of
- *       their login on the site's OpenID Connect server).
+ *       optionally `discordId` (string), `oidcSubject` (the `sub` of
+ *       their login on the site's OpenID Connect server) and `rating` (a
+ *       starting rating on this site's scale, 100–5000; new players start at
+ *       1500). Shuffle teams are balanced on it. A rating only applies while
+ *       the player has no rated matches here; after that their results rule
+ *       (`ratingsKept` lists them).
  *
  *       A player who already exists keeps their rating, stats and match
  *       history: only the display name is updated, and a Discord ID or
@@ -2045,47 +2055,6 @@ router.post('/', async (req: Request, res: Response) => {
  *       400:
  *         description: No players, or a player without steamId or name
  */
-router.post('/import', async (req: Request, res: Response) => {
-  const body = req.body as unknown;
-  const list = Array.isArray(body)
-    ? body
-    : body && typeof body === 'object' && Array.isArray((body as { players?: unknown }).players)
-      ? (body as { players: unknown[] }).players
-      : null;
-  if (!list || list.length === 0) {
-    return res.status(400).json({ success: false, error: 'Send an array of players' });
-  }
-  const players: CreatePlayerInput[] = [];
-  for (const raw of list) {
-    const p = (raw ?? {}) as Record<string, unknown>;
-    const steamId = typeof p.steamId === 'string' ? p.steamId.trim() : '';
-    const name = typeof p.name === 'string' ? p.name.trim() : '';
-    if (!/^\d{17}$/.test(steamId) || !name) {
-      return res
-        .status(400)
-        .json({ success: false, error: 'Each player needs a steamId (SteamID64) and a name' });
-    }
-    players.push({
-      id: steamId,
-      name,
-      ...(p.discordId !== undefined ? { discordId: p.discordId } : {}),
-      ...(p.oidcSubject !== undefined ? { oidcSubject: p.oidcSubject } : {}),
-    } as CreatePlayerInput);
-  }
-  try {
-    const result = await playerService.bulkImportPlayers(players);
-    return res.status(result.errors.length > 0 ? 207 : 200).json({
-      success: result.errors.length === 0,
-      created: result.created,
-      updated: result.updated,
-      errors: result.errors.map((e) => ({ steamId: e.player.id, error: e.error })),
-      ...(result.warnings.length > 0 ? { warnings: result.warnings } : {}),
-    });
-  } catch (error) {
-    log.error('Error importing players', { error });
-    return res.status(500).json({ success: false, error: 'Could not import the players' });
-  }
-});
 
 /**
  * POST /api/players/bulk-import
@@ -2345,5 +2314,61 @@ router.delete('/:playerId', async (req: Request, res: Response) => {
     });
   }
 });
+
+/** POST /api/players/import (the @openapi block for /api/players/import documents it). */
+async function importPlayers(req: Request, res: Response) {
+  const body = req.body as unknown;
+  const list = Array.isArray(body)
+    ? body
+    : body && typeof body === 'object' && Array.isArray((body as { players?: unknown }).players)
+      ? (body as { players: unknown[] }).players
+      : null;
+  if (!list || list.length === 0) {
+    return res.status(400).json({ success: false, error: 'Send an array of players' });
+  }
+  const players: CreatePlayerInput[] = [];
+  const seeds: Array<{ id: string; rating: number }> = [];
+  for (const raw of list) {
+    const p = (raw ?? {}) as Record<string, unknown>;
+    const steamId = typeof p.steamId === 'string' ? p.steamId.trim() : '';
+    const name = typeof p.name === 'string' ? p.name.trim() : '';
+    if (!/^\d{17}$/.test(steamId) || !name) {
+      return res
+        .status(400)
+        .json({ success: false, error: 'Each player needs a steamId (SteamID64) and a name' });
+    }
+    if (p.rating !== undefined) {
+      const rating = Number(p.rating);
+      if (!Number.isFinite(rating) || rating < 100 || rating > 5000) {
+        return res.status(400).json({
+          success: false,
+          error: 'rating must be a number from 100 to 5000 (this site starts players at 1500)',
+        });
+      }
+      seeds.push({ id: steamId, rating: Math.round(rating) });
+    }
+    players.push({
+      id: steamId,
+      name,
+      ...(p.discordId !== undefined ? { discordId: p.discordId } : {}),
+      ...(p.oidcSubject !== undefined ? { oidcSubject: p.oidcSubject } : {}),
+    } as CreatePlayerInput);
+  }
+  try {
+    const result = await playerService.bulkImportPlayers(players);
+    const seeded = await playerService.seedRatings(seeds);
+    return res.status(result.errors.length > 0 ? 207 : 200).json({
+      ...(seeds.length > 0 ? { ratingsSet: seeded.set, ratingsKept: seeded.kept } : {}),
+      success: result.errors.length === 0,
+      created: result.created,
+      updated: result.updated,
+      errors: result.errors.map((e) => ({ steamId: e.player.id, error: e.error })),
+      ...(result.warnings.length > 0 ? { warnings: result.warnings } : {}),
+    });
+  } catch (error) {
+    log.error('Error importing players', { error });
+    return res.status(500).json({ success: false, error: 'Could not import the players' });
+  }
+}
 
 export default router;

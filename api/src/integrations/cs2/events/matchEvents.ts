@@ -366,6 +366,22 @@ export async function applyNormalizedEvents(
           matchSlug: match.slug,
         });
         await updateMatchStatus(match, 'live');
+        // A shuffle: players who never joined the server drop out of the rounds after.
+        if (event.mapNumber === 0) {
+          const live = match;
+          void import('../../../services/shuffleTournamentService')
+            .then(({ dropShuffleNoShows }) =>
+              dropShuffleNoShows(
+                live,
+                (id) => playerConnectionService.connectionOf(live.slug, id).state !== 'never'
+              )
+            )
+            .catch((error: unknown) =>
+              log.warn(`[SHUFFLE] ${live.slug}: no-show check failed`, {
+                error: (error as Error).message,
+              })
+            );
+        }
         playerConnectionService.markAllReady(match.slug);
         updateLiveStats(match, {
           status: 'live',
@@ -429,6 +445,15 @@ export async function applyNormalizedEvents(
               options.playerName?.(steamId) ?? 'Unknown',
               team
             );
+            // Marked out as a no-show, then joined after all: back in the shuffle.
+            const joined = match;
+            void import('../../../services/shuffleTournamentService')
+              .then(({ bringBackLateJoiner }) => bringBackLateJoiner(joined, steamId))
+              .catch((error: unknown) =>
+                log.warn(`[SHUFFLE] ${joined.slug}: late joiner check failed`, {
+                  error: String(error),
+                })
+              );
           }
         } else if (event.state === 'disconnected') {
           playerConnectionService.playerDisconnected(match.slug, steamId);

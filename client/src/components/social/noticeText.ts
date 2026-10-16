@@ -99,9 +99,16 @@ export function describeNotice(notice: Notice, t: TFunction, viewerId: string | 
     case 'tournament':
       out.lead = str(d.name);
       // Your own match: it is ready, or it is your team's turn in its veto.
-      if ((d.event === 'match_ready' || d.event === 'veto_turn') && str(d.matchSlug)) {
+      if (
+        (d.event === 'match_ready' || d.event === 'veto_turn' || d.event === 'match_soon') &&
+        str(d.matchSlug)
+      ) {
         out.text =
-          d.event === 'match_ready' ? t('social.notice.matchReady') : t('social.notice.vetoTurn');
+          d.event === 'match_soon'
+            ? t('social.notice.matchSoon', { minutes: Number(d.minutes) || 15 })
+            : d.event === 'match_ready'
+              ? t('social.notice.matchReady')
+              : t('social.notice.vetoTurn');
         out.to = `/match/${encodeURIComponent(str(d.matchSlug))}`;
         break;
       }

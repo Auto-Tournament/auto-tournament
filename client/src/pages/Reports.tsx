@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { fmtDateTime } from '../utils/time';
 import {
   Box,
   Button,
@@ -11,8 +12,6 @@ import {
   Link,
   Stack,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
@@ -25,6 +24,7 @@ import { useSnackbar } from '../contexts/SnackbarContext';
 import { api, apiErrorMessage } from '../utils/api';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { pageTitle } from '../utils/pageTitle';
+import { SegmentedControl } from '../components/common/SegmentedControl';
 
 interface Report {
   id: number;
@@ -86,8 +86,7 @@ export default function Reports() {
     }
   };
 
-  const when = (s: number) =>
-    new Date(s * 1000).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+  const when = (s: number) => fmtDateTime(s);
 
   return (
     <Box data-testid="reports-page">
@@ -95,16 +94,16 @@ export default function Reports() {
         title={t('reportsPage.title')}
         subtitle={t('reportsPage.subtitle')}
         actions={
-          <ToggleButtonGroup
+          <SegmentedControl
             size="small"
-            exclusive
+            label={t('reportsPage.title')}
             value={filter}
-            onChange={(_e, v: 'open' | 'all' | null) => v && setFilter(v)}
-            aria-label={t('reportsPage.title')}
-          >
-            <ToggleButton value="open">{t('reportsPage.open')}</ToggleButton>
-            <ToggleButton value="all">{t('reportsPage.all')}</ToggleButton>
-          </ToggleButtonGroup>
+            onChange={setFilter}
+            options={[
+              { value: 'open', label: t('reportsPage.open') },
+              { value: 'all', label: t('reportsPage.all') },
+            ]}
+          />
         }
       />
 

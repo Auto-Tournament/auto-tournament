@@ -1,4 +1,5 @@
 import { PartyInviteSetting } from '../components/social/PartyInviteSetting';
+import { fmtDate } from '../utils/time';
 import { NotifyChannelsSetting } from '../components/social/NotifyChannelsSetting';
 import { pageTitle } from '../utils/pageTitle';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -56,6 +57,7 @@ import { AccountEmailSection } from '../components/account/AccountEmailSection';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { api, apiErrorMessage } from '../utils/api';
 import { fontDisplay, tokens } from '../theme/tokens';
+import { panelSx, panelBorderSx } from '../components/common/ui';
 
 const { color, radius } = tokens;
 
@@ -152,12 +154,11 @@ function ListPanel({ children, label }: { children: React.ReactNode; label: stri
       component="ul"
       aria-label={label}
       sx={{
+        ...panelSx,
+        ...panelBorderSx,
         listStyle: 'none',
         m: 0,
         p: 0,
-        bgcolor: color.paper2,
-        border: `1px solid ${color.rule}`,
-        borderRadius: `${radius.lg}px`,
         overflow: 'hidden',
       }}
     >
@@ -425,7 +426,7 @@ type ReauthNext =
   | { kind: 'retry'; run: () => void };
 
 export default function AccountConnections() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<ConnectionsResponse | null>(null);
@@ -492,12 +493,7 @@ export default function AccountConnections() {
     // Once per flag, after the first load so the provider's label is known.
   }, [searchParams, data, loadFailed]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const formatDate = (seconds: number) =>
-    new Date(seconds * 1000).toLocaleDateString(i18n.language, {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
+  const formatDate = (seconds: number) => fmtDate(seconds);
 
   const labelOf = (method: SignInMethod) =>
     method.provider === 'local' ? t('account.signIn.localLabel') : method.label;
@@ -636,9 +632,8 @@ export default function AccountConnections() {
       >
         <Box
           sx={{
-            bgcolor: color.paper2,
-            border: `1px solid ${color.rule}`,
-            borderRadius: `${radius.lg}px`,
+            ...panelSx,
+            ...panelBorderSx,
             p: { xs: 2, sm: 3 },
           }}
         >

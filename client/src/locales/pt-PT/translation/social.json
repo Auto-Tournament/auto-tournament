@@ -51,7 +51,8 @@
       "matchReady": "is ready. Open the match room to connect.",
       "vetoTurn": "it's your team's turn in the veto.",
       "startsSoon": "starts in {{minutes}} minutes. Get ready to join your first match.",
-      "startsSoonUpdate": "starts in {{minutes}} minutes. Start your game now so any update is done before your first match."
+      "startsSoonUpdate": "starts in {{minutes}} minutes. Start your game now so any update is done before your first match.",
+      "matchSoon": "your veto opens in {{minutes}} minutes and goes on without you. Be at your PC."
     },
     "toast": {
       "join": "Join party",
@@ -219,7 +220,8 @@
     "event": "Event",
     "channel": {
       "discord": "Discord DM",
-      "email": "Email"
+      "email": "Email",
+      "push": "Navegador / telemóvel"
     },
     "events": {
       "match_ready": {
@@ -248,7 +250,8 @@
       "no_discord": "Link Discord first",
       "email_off": "This site can't send email",
       "no_email": "Add an email first",
-      "email_unverified": "Confirm your email first"
+      "email_unverified": "Confirm your email first",
+      "no_push": "Ativa primeiro as notificações neste navegador"
     },
     "switchLabel": "{{event}} by {{channel}}",
     "saveFailed": "Could not save that."
@@ -256,9 +259,21 @@
   "presence": {
     "online": "Online",
     "offline": "Offline",
+    "away": "Ausente",
     "searching": "Searching for a {{mode}} game",
     "playingMatchmaking": "In a matchmaking match: {{label}}",
     "playingTournament": "In a tournament match: {{label}}",
     "playing": "In a match: {{label}}"
+  },
+  "notificationPrompt": {
+    "title": "Ativar notificações",
+    "body": "Recomendamos que as ative. Assim avisamos-te mesmo que feches este separador:",
+    "matchReady": "quando o teu jogo estiver pronto",
+    "vetoTurn": "quando for a tua vez no veto de mapas",
+    "starting": "quando um torneio em que estás inscrito estiver quase a começar",
+    "iphone": "No iPhone, adiciona primeiro este site ao ecrã principal (Partilhar e depois Adicionar ao ecrã principal) e abre-o a partir daí.",
+    "change": "Podes mudar isto a qualquer momento nas definições de notificações.",
+    "later": "Agora não",
+    "turnOn": "Ativar (recomendado)"
   }
 }

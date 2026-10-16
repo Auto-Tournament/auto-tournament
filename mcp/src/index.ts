@@ -666,17 +666,22 @@ server.registerTool(
   {
     title: 'Give a drop (a choice of three)',
     description:
-      'Give a drop, a choice of three skins, to a player (Steam ID), everyone online, a team (id), a match (slug) or a tournament (id). preview=true only names who would get one.',
+      'Give a drop, a choice of three skins, to a player (Steam ID), everyone online, a team (id), a match (slug) or a tournament (id). rarity makes all three options that rarity; without it, the drop odds. ancient is the rarest tier with real choice (covert guns and the priciest knives and gloves); immortal is a single skin (M4A4 | Howl), so it offers just that one. preview=true only names who would get one.',
     inputSchema: {
       kind: z.enum(['player', 'online', 'team', 'match', 'tournament']),
       id: z.string().optional(),
       label: z.string().max(60).optional(),
+      rarity: z
+        .enum(['common', 'uncommon', 'rare', 'mythical', 'legendary', 'ancient', 'immortal'])
+        .optional(),
       preview: z.boolean().default(true),
     },
     annotations: write,
   },
-  async ({ kind, id, label, preview }) =>
-    call(() => api.send('POST', '/api/skins/admin/drops', { target: { kind, id }, label, preview }))
+  async ({ kind, id, label, rarity, preview }) =>
+    call(() =>
+      api.send('POST', '/api/skins/admin/drops', { target: { kind, id }, label, rarity, preview })
+    )
 );
 
 // --- Anything else -------------------------------------------------------------
@@ -746,6 +751,19 @@ server.registerTool(
     annotations: destructive,
   },
   async ({ skinId }) => call(() => api.send('DELETE', `/api/skins/admin/skins/${skinId}`))
+);
+
+server.registerTool(
+  'skins_clear',
+  {
+    title: "Empty a player's skins",
+    description:
+      "Remove every skin a player (Steam ID) has: the inventory, what is equipped, the showcase, open drops to pick from and the skin notices. Check skins_inventory first; this can't be undone.",
+    inputSchema: { steamId: z.string().regex(/^\d{17}$/) },
+    annotations: destructive,
+  },
+  async ({ steamId }) =>
+    call(() => api.send('DELETE', `/api/skins/admin/players/${enc(steamId)}/inventory`))
 );
 
 server.registerTool(

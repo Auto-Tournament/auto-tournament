@@ -12,11 +12,12 @@ import {
   Select,
   Typography,
 } from '@mui/material';
-import { MagnifyingGlassIcon, TrophyIcon } from '@phosphor-icons/react';
+import { tournamentArtSx, tournamentArtUrl } from '../utils/tournamentArt';
+import { CaretRightIcon, MagnifyingGlassIcon, TrophyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { GameMark } from '../components/common/GameMark';
-import { EmptyPanel, LiveChip, PageHead } from '../components/common/ui';
+import { EmptyPanel, LiveChip, PageHead, panelSx, panelBorderSx } from '../components/common/ui';
 import { useTournamentList, type TournamentSummary } from '../hooks/useTournamentList';
 import { useAuth } from '../contexts/AuthContext';
 import { manageTournamentPath } from '../paths';
@@ -28,6 +29,7 @@ import {
 } from '../utils/tournamentSummary';
 import { eliminationRoundCount, getRoundLabel } from '../utils/matchUtils';
 import { tokens, fontDisplay, fontMono, radii, textSize, withAlpha } from '../theme/tokens';
+import { SegmentedControl } from '../components/common/SegmentedControl';
 
 const { color } = tokens;
 
@@ -233,38 +235,16 @@ export default function Browse() {
             sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}
           >
             {hasMine && (
-              <Box
-                role="group"
-                aria-label={t('browsePage.mine.label')}
-                sx={{
-                  display: 'flex',
-                  p: 0.5,
-                  borderRadius: radii.pill,
-                  bgcolor: color.paper2,
-                  border: `1px solid ${color.rule}`,
-                }}
-              >
-                {[false, true].map((value) => (
-                  <Button
-                    key={String(value)}
-                    size="small"
-                    aria-pressed={mineOnly === value}
-                    onClick={() => setMineOnly(value)}
-                    data-testid={value ? 'browse-mine' : 'browse-all'}
-                    sx={{
-                      borderRadius: radii.pill,
-                      px: 2,
-                      minWidth: 0,
-                      textTransform: 'none',
-                      bgcolor: mineOnly === value ? color.ink : 'transparent',
-                      color: mineOnly === value ? color.accentInk : color.ink2,
-                      '&:hover': { bgcolor: mineOnly === value ? color.ink : color.paper3 },
-                    }}
-                  >
-                    {value ? t('browsePage.mine.mine') : t('browsePage.mine.all')}
-                  </Button>
-                ))}
-              </Box>
+              <SegmentedControl
+                size="small"
+                label={t('browsePage.mine.label')}
+                value={mineOnly ? 'mine' : 'all'}
+                onChange={(v) => setMineOnly(v === 'mine')}
+                options={[
+                  { value: 'all', label: t('browsePage.mine.all'), testId: 'browse-all' },
+                  { value: 'mine', label: t('browsePage.mine.mine'), testId: 'browse-mine' },
+                ]}
+              />
             )}
             <FilterField grow>
               <MagnifyingGlassIcon size={18} aria-hidden />
@@ -416,30 +396,40 @@ export default function Browse() {
                           .filter(Boolean)
                           .join(' · ');
                         return (
+                          // The whole card is the link (to the action's page: sign up, the
+                          // event page, its results); live ones are marked by the Live chip.
                           <Box
                             key={tournament.id}
+                            component={RouterLink}
+                            to={action.to}
                             data-testid={`browse-tournament-${tournament.id}`}
                             sx={{
+                              ...panelSx,
+                              ...panelBorderSx,
                               display: 'grid',
                               gridTemplateColumns: ROW_COLUMNS,
                               gap: { xs: 1.5, md: 2.5 },
                               alignItems: 'center',
                               p: { xs: 2, md: 2.25 },
-                              borderRadius: radii.lg,
-                              bgcolor: color.paper2,
-                              border: `1px solid ${group.key === 'live' ? color.accent : color.rule}`,
+                              color: 'inherit',
+                              textDecoration: 'none',
+                              transition: 'background-color 120ms, border-color 120ms',
+                              '&:hover': { bgcolor: color.paper3, borderColor: color.muted },
+                              '&:focus-visible': {
+                                outline: `2px solid ${color.focus}`,
+                                outlineOffset: 2,
+                              },
                             }}
                           >
-                            {tournament.bannerUrl ? (
+                            {tournamentArtUrl(tournament, { fallback: false }) ? (
                               <Box
                                 aria-hidden
+                                data-testid={`browse-art-${tournament.id}`}
                                 sx={{
-                                  width: 56,
+                                  width: { xs: 56, sm: 96 },
                                   height: 56,
                                   borderRadius: radii.md,
-                                  backgroundImage: `url(${tournament.bannerUrl})`,
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center',
+                                  ...tournamentArtSx(tournament, { fallback: false }),
                                 }}
                               />
                             ) : (
@@ -559,30 +549,39 @@ export default function Browse() {
                               sx={[STACKED_CELL_SX, { justifySelf: { xs: 'start', md: 'end' } }]}
                             >
                               {action.key === 'signUp' && tournament.mine ? (
-                                <Button
-                                  component={RouterLink}
-                                  to={action.to}
+                                <Box
+                                  component="span"
                                   data-testid={`browse-action-${tournament.id}`}
                                   sx={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    minHeight: 32,
                                     borderRadius: radii.pill,
-                                    px: 2.5,
+                                    px: 1.5,
+                                    fontSize: textSize.sm,
+                                    fontWeight: 600,
                                     bgcolor: withAlpha(color.pick, 0.14),
                                     color: color.pick,
-                                    '&:hover': { bgcolor: withAlpha(color.pick, 0.22) },
                                   }}
                                 >
                                   {t('browsePage.actions.youreIn')}
-                                </Button>
+                                </Box>
                               ) : (
-                                <Button
-                                  component={RouterLink}
-                                  to={action.to}
-                                  variant={action.primary ? 'contained' : 'outlined'}
+                                <Box
+                                  component="span"
                                   data-testid={`browse-action-${tournament.id}`}
-                                  sx={{ borderRadius: radii.pill, px: 2.5 }}
+                                  sx={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                    fontSize: textSize.sm,
+                                    color: action.primary ? color.accent : color.ink2,
+                                    fontWeight: 600,
+                                  }}
                                 >
                                   {t(`browsePage.actions.${action.key}`)}
-                                </Button>
+                                  <CaretRightIcon size={16} aria-hidden />
+                                </Box>
                               )}
                             </Box>
                           </Box>

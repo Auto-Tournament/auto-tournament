@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Autocomplete,
-  Avatar,
   Box,
   Button,
   Dialog,
@@ -9,8 +8,6 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import {
@@ -20,6 +17,11 @@ import {
   tokens,
   radii,
   fontDisplay,
+  panelSx,
+  panelBorderSx,
+  dialogPaperSx,
+  SegmentedControl,
+  PlayerAvatar,
 } from '../../../module-sdk';
 import type { AdminPlayerActionProps } from '../../types';
 
@@ -196,7 +198,7 @@ function DropConfirm({
       open={open && who !== null}
       onClose={onClose}
       PaperProps={{
-        sx: { borderRadius: radii.lg, bgcolor: color.paper2, backgroundImage: 'none' },
+        sx: dialogPaperSx,
       }}
       data-testid="give-drops-confirm"
     >
@@ -260,9 +262,8 @@ export function GiveDropsAdmin({ onGiven }: { onGiven?: () => void }) {
       aria-labelledby="give-drops-title"
       data-testid="give-drops"
       sx={{
-        bgcolor: color.paper2,
-        border: `1px solid ${color.rule}`,
-        borderRadius: radii.lg,
+        ...panelSx,
+        ...panelBorderSx,
         p: { xs: 2, md: 3 },
         display: 'flex',
         flexDirection: 'column',
@@ -282,25 +283,21 @@ export function GiveDropsAdmin({ onGiven }: { onGiven?: () => void }) {
           {t('skins.admin.drops.help')}
         </Typography>
       </Box>
-      <ToggleButtonGroup
-        exclusive
+      <SegmentedControl<Kind>
         size="small"
+        label={t('skins.admin.drops.title')}
         value={kind}
-        onChange={(_, v: Kind | null) => {
-          if (!v) return;
+        onChange={(v) => {
           setKind(v);
           setPicked(null);
           setQuery('');
         }}
-        aria-label={t('skins.admin.drops.title')}
-        sx={{ flexWrap: 'wrap' }}
-      >
-        {(['online', 'player', 'team', 'match', 'tournament'] as const).map((k) => (
-          <ToggleButton key={k} value={k} data-testid={`give-drops-${k}`}>
-            {t(`skins.admin.drops.kind.${k}`)}
-          </ToggleButton>
-        ))}
-      </ToggleButtonGroup>
+        options={(['online', 'player', 'team', 'match', 'tournament'] as const).map((k) => ({
+          value: k,
+          label: t(`skins.admin.drops.kind.${k}`),
+          testId: `give-drops-${k}`,
+        }))}
+      />
       {kind !== 'online' && (
         <Autocomplete
           size="small"
@@ -331,9 +328,7 @@ export function GiveDropsAdmin({ onGiven }: { onGiven?: () => void }) {
           renderOption={(props, o) => (
             <Box component="li" {...props} key={o.id} sx={{ display: 'flex', gap: 1.25 }}>
               {kind === 'player' && (
-                <Avatar src={o.avatar ?? undefined} sx={{ width: 24, height: 24 }}>
-                  {o.label.charAt(0)}
-                </Avatar>
+                <PlayerAvatar id={o.id} name={o.label} avatarUrl={o.avatar} size={24} />
               )}
               <Box sx={{ minWidth: 0 }}>
                 <Typography sx={{ fontSize: '0.9375rem' }}>{o.label}</Typography>

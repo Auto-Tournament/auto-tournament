@@ -26,7 +26,10 @@ async function lint(file: string, code: string): Promise<string[]> {
     [
       {
         files: ['**/*.ts', '**/*.tsx'],
-        languageOptions: { parser: tsParser, parserOptions: { ecmaVersion: 'latest', sourceType: 'module' } },
+        languageOptions: {
+          parser: tsParser,
+          parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+        },
         plugins: { local: plugin },
         rules: { [RULE_ID]: 'error' },
       },
@@ -71,7 +74,10 @@ test.describe('Integration boundary lint', () => {
 
   test('core deeper in the tree is resolved by path, not by pattern', async () => {
     expect(
-      await lint('api/src/routes/v2/matches.ts', "import { a } from '../../integrations/cs2/veto/state';")
+      await lint(
+        'api/src/routes/v2/matches.ts',
+        "import { a } from '../../integrations/cs2/veto/state';"
+      )
     ).toEqual(['coreToIntegration']);
   });
 
@@ -95,7 +101,10 @@ test.describe('Integration boundary lint', () => {
 
   test('the legacy allowlist is gone from the rule', async () => {
     const fs = await import('fs');
-    const source = fs.readFileSync(path.join(REPO_ROOT, 'eslint-rules/integration-boundaries.mjs'), 'utf8');
+    const source = fs.readFileSync(
+      path.join(REPO_ROOT, 'eslint-rules/integration-boundaries.mjs'),
+      'utf8'
+    );
     expect(source).not.toMatch(/LEGACY_CORE_IMPORTS|isLegacyCoreImport/);
   });
 
@@ -116,16 +125,24 @@ test.describe('Integration boundary lint', () => {
       )
     ).toEqual(Array(5).fill('coreForbiddenModule'));
     expect(
-      await lint('api/src/core/sub/x.ts', "export * from '../../integrations/cs2/events/plugin-events.types';")
+      await lint(
+        'api/src/core/sub/x.ts',
+        "export * from '../../integrations/cs2/events/plugin-events.types';"
+      )
     ).toEqual(['coreForbiddenModule', 'coreToIntegration']);
   });
 
   test('the core-only rule leaves the rest of the tree and look-alike names alone', async () => {
     // Outside api/src/core, rule 1 alone decides (a core-path import is fine).
-    expect(await lint('api/src/services/x.ts', "import { a } from '../utils/rconService';")).toEqual([]);
+    expect(
+      await lint('api/src/services/x.ts', "import { a } from '../utils/rconService';")
+    ).toEqual([]);
     // The CS2 integration owns these modules.
     expect(
-      await lint('api/src/integrations/cs2/allocation.ts', "import { rconService } from './services/rconService';")
+      await lint(
+        'api/src/integrations/cs2/allocation.ts',
+        "import { rconService } from './services/rconService';"
+      )
     ).toEqual([]);
     // Only the exact module names.
     expect(
@@ -151,20 +168,25 @@ test.describe('Integration boundary lint', () => {
     expect(
       await lint(
         'api/src/integrations/manual-report/index.ts',
-        [
-          "import { cs2Integration } from '../cs2';",
-          "import { a } from '../cs2/veto/state';",
-        ].join('\n')
+        ["import { cs2Integration } from '../cs2';", "import { a } from '../cs2/veto/state';"].join(
+          '\n'
+        )
       )
     ).toEqual(['crossIntegration', 'crossIntegration']);
     expect(
-      await lint('api/src/integrations/cs2/events/x.ts', "import { b } from '../../manual-report/report';")
+      await lint(
+        'api/src/integrations/cs2/events/x.ts',
+        "import { b } from '../../manual-report/report';"
+      )
     ).toEqual(['crossIntegration']);
   });
 
   test('an integration must not import the registry', async () => {
     expect(
-      await lint('api/src/integrations/cs2/index.ts', "import { getIntegration } from '../registry';")
+      await lint(
+        'api/src/integrations/cs2/index.ts',
+        "import { getIntegration } from '../registry';"
+      )
     ).toEqual(['integrationToRegistry']);
   });
 
@@ -176,13 +198,22 @@ test.describe('Integration boundary lint', () => {
 
   test('the same rules apply to the client', async () => {
     expect(
-      await lint('client/src/pages/TeamMatch.tsx', "import { MatchPanel } from '../integrations/cs2/MatchPanel';")
+      await lint(
+        'client/src/pages/TeamMatch.tsx',
+        "import { MatchPanel } from '../integrations/cs2/MatchPanel';"
+      )
     ).toEqual(['coreToIntegration']);
     expect(
-      await lint('client/src/pages/TeamMatch.tsx', "import { slotFor } from '../integrations/registry';")
+      await lint(
+        'client/src/pages/TeamMatch.tsx',
+        "import { slotFor } from '../integrations/registry';"
+      )
     ).toEqual([]);
     expect(
-      await lint('client/src/integrations/cs2/MatchPanel.tsx', "import { X } from '../manual-report/Panel';")
+      await lint(
+        'client/src/integrations/cs2/MatchPanel.tsx',
+        "import { X } from '../manual-report/Panel';"
+      )
     ).toEqual(['crossIntegration']);
   });
 

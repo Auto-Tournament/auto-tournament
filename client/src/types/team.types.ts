@@ -92,6 +92,8 @@ export interface TeamMatchInfo {
   mapResults: MatchMapResult[];
   matchFormat: string;
   loadedAt?: number;
+  /** Held until then (unix s): the break before its veto, or an admin's hold. */
+  heldUntil?: number | null;
   /**
    * NOTE: this mirrors `MatchConfig` in match.types.ts rather than reusing it,
    * and the two have already drifted — `cvars` was missing here while callers
@@ -100,6 +102,8 @@ export interface TeamMatchInfo {
   config?: {
     // Core player / team counts
     players_per_team?: number;
+    /** The match has no map veto (the tournament draws its maps). */
+    vetoDisabled?: boolean;
     expected_players_total?: number;
     expected_players_team1?: number;
     expected_players_team2?: number;
@@ -150,6 +154,8 @@ export interface MatchConnectionStatus {
 }
 
 export interface MatchLiveStats {
+  /** Seconds behind the players, when this viewer sees it as GOTV does (CS2). */
+  delaySeconds?: number;
   matchSlug: string;
   team1Score: number;
   team2Score: number;

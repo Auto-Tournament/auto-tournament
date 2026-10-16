@@ -13,12 +13,7 @@ import {
 } from '../../api/src/services/gameCatalogService';
 import { wikidataSteamAppId } from '../../api/src/services/wikidataService';
 import { clientIconHash } from '../../api/src/services/gameIconService';
-import {
-  GAME_ICON_SIZE,
-  encodePng,
-  icoFrames,
-  toGameIconPng,
-} from '../../api/src/utils/iconImage';
+import { GAME_ICON_SIZE, encodePng, icoFrames, toGameIconPng } from '../../api/src/utils/iconImage';
 
 /**
  * App icons in the game pills, for every game a player can pick.
@@ -121,11 +116,17 @@ const BUILTINS: BuiltinGame[] = [
 
 test.describe('Linking a stored game to its module or pack', () => {
   const links = buildGameLinks(BUILTINS);
-  const link = (row: { igdb_id: number | null; slug: string; name: string; wikidata_id?: string | null }) =>
-    linkBuiltin(row, links)?.slug ?? null;
+  const link = (row: {
+    igdb_id: number | null;
+    slug: string;
+    name: string;
+    wikidata_id?: string | null;
+  }) => linkBuiltin(row, links)?.slug ?? null;
 
   test('by IGDB id first, whatever the slug and name', { tag: ['@api', '@games'] }, () => {
-    expect(link({ igdb_id: 242408, slug: 'cs2-something', name: 'Something' })).toBe('counter-strike-2');
+    expect(link({ igdb_id: 242408, slug: 'cs2-something', name: 'Something' })).toBe(
+      'counter-strike-2'
+    );
     expect(link({ igdb_id: 2963, slug: 'dota-2--1', name: 'DOTA 2' })).toBe('dota-2');
   });
 
@@ -138,98 +139,124 @@ test.describe('Linking a stored game to its module or pack', () => {
     expect(link({ igdb_id: 4711, slug: 'chess-deluxe', name: 'Chess' })).toBe('chess');
   });
 
-  test('never a name or alias match that is a different game by IGDB id', {
-    tag: ['@api', '@games'],
-  }, () => {
-    // "DeadLock (2021)" is not Valve's Deadlock.
-    expect(link({ igdb_id: 157000, slug: 'deadlock--1', name: 'DeadLock' })).toBeNull();
-    // Nor is a same-named game a Wikidata search stored: the built-in is
-    // pinned to Valve's item (Q126042383), and this row is another one.
-    expect(link({ igdb_id: null, slug: 'deadlock-2016', name: 'Deadlock', wikidata_id: 'Q990016' })).toBeNull();
-    expect(
-      link({ igdb_id: null, slug: 'deadlock-valve', name: 'Deadlock', wikidata_id: 'Q126042383' })
-    ).toBe('deadlock');
-    expect(link({ igdb_id: 555, slug: 'cs2', name: 'Cs2' })).toBeNull();
-    expect(link({ igdb_id: null, slug: 'hollow-knight', name: 'Hollow Knight' })).toBeNull();
-  });
-
-  test("the pill's icon: the linked one, else the cached one, else none", {
-    tag: ['@api', '@games'],
-  }, () => {
-    const cached = '/api/games/icons/0123456789abcdef.png';
-    expect(gameAppIconUrl({ igdb_id: 2963, slug: 'x', name: 'x', icon_url: cached }, links)).toBe(
-      '/api/packs/dota-2/app-icon'
-    );
-    expect(gameAppIconUrl({ igdb_id: 1, slug: 'celeste', name: 'Celeste', icon_url: cached }, links)).toBe(
-      cached
-    );
-    expect(gameAppIconUrl({ igdb_id: 1, slug: 'celeste', name: 'Celeste', icon_url: null }, links)).toBeNull();
-  });
-
-  test('a pack may name its IGDB id, as a positive whole number', { tag: ['@api', '@packs'] }, () => {
-    const pack = (igdbId: unknown) => ({
-      schema: 1,
-      slug: 'igdb-id-test-game',
-      name: 'IGDB Id Test Game',
-      engine: 'manual-report',
-      igdbId,
-    });
-    const ok = validatePack(pack(2963));
-    expect(ok.ok && ok.pack.igdbId).toBe(2963);
-    for (const bad of [0, -1, 1.5, '2963', null]) {
-      const result = validatePack(pack(bad));
-      expect(result.ok, `${JSON.stringify(bad)} should be refused`).toBe(false);
-      expect(!result.ok && result.error).toContain('igdbId');
+  test(
+    'never a name or alias match that is a different game by IGDB id',
+    {
+      tag: ['@api', '@games'],
+    },
+    () => {
+      // "DeadLock (2021)" is not Valve's Deadlock.
+      expect(link({ igdb_id: 157000, slug: 'deadlock--1', name: 'DeadLock' })).toBeNull();
+      // Nor is a same-named game a Wikidata search stored: the built-in is
+      // pinned to Valve's item (Q126042383), and this row is another one.
+      expect(
+        link({ igdb_id: null, slug: 'deadlock-2016', name: 'Deadlock', wikidata_id: 'Q990016' })
+      ).toBeNull();
+      expect(
+        link({ igdb_id: null, slug: 'deadlock-valve', name: 'Deadlock', wikidata_id: 'Q126042383' })
+      ).toBe('deadlock');
+      expect(link({ igdb_id: 555, slug: 'cs2', name: 'Cs2' })).toBeNull();
+      expect(link({ igdb_id: null, slug: 'hollow-knight', name: 'Hollow Knight' })).toBeNull();
     }
-  });
+  );
 
-  test('a pack may name the account its players need, as a sign-in provider', { tag: ['@api', '@packs'] }, () => {
-    const pack = (account: unknown) => ({
-      schema: 1,
-      slug: 'account-test-game',
-      name: 'Account Test Game',
-      engine: 'manual-report',
-      account,
-    });
-    const ok = validatePack(pack(' Epic '));
-    expect(ok.ok && ok.pack.account).toBe('epic');
-    for (const bad of ['riot', '', 7, null]) {
-      const result = validatePack(pack(bad));
-      expect(result.ok, `${JSON.stringify(bad)} should be refused`).toBe(false);
-      expect(!result.ok && result.error).toContain('account');
-    }
-    // The bundled packs that name one pass their own validation.
-    for (const slug of ['rocket-league', 'fortnite', 'dota-2']) {
-      const file = JSON.parse(
-        fs.readFileSync(path.join(__dirname, `../../api/bundled-packs/packs/${slug}.json`), 'utf8')
+  test(
+    "the pill's icon: the linked one, else the cached one, else none",
+    {
+      tag: ['@api', '@games'],
+    },
+    () => {
+      const cached = '/api/games/icons/0123456789abcdef.png';
+      expect(gameAppIconUrl({ igdb_id: 2963, slug: 'x', name: 'x', icon_url: cached }, links)).toBe(
+        '/api/packs/dota-2/app-icon'
       );
-      const result = validatePack(file);
-      expect(result.ok, slug).toBe(true);
-      expect(result.ok && result.pack.account).toBe(slug === 'dota-2' ? 'steam' : 'epic');
+      expect(
+        gameAppIconUrl({ igdb_id: 1, slug: 'celeste', name: 'Celeste', icon_url: cached }, links)
+      ).toBe(cached);
+      expect(
+        gameAppIconUrl({ igdb_id: 1, slug: 'celeste', name: 'Celeste', icon_url: null }, links)
+      ).toBeNull();
     }
-  });
+  );
 
-  test('every bundled pack names a real IGDB id, or none on purpose', { tag: ['@api', '@packs'] }, () => {
-    const index = JSON.parse(
-      fs.readFileSync(path.join(__dirname, '../../api/bundled-packs/index.json'), 'utf8')
-    ) as { packs: Array<{ slug: string; file: string; igdbId?: number }> };
-    const ids = new Set<number>();
-    for (const entry of index.packs) {
-      const file = JSON.parse(
-        fs.readFileSync(path.join(__dirname, '../../api/bundled-packs', entry.file), 'utf8')
-      ) as { igdbId?: number };
-      // The index repeats the pack's own id, so a pack not yet installed links too.
-      expect(entry.igdbId, `${entry.slug}: index and pack disagree`).toBe(file.igdbId);
-      if (entry.igdbId === undefined) continue;
-      expect(ids.has(entry.igdbId), `${entry.slug}: IGDB id used twice`).toBe(false);
-      ids.add(entry.igdbId);
+  test(
+    'a pack may name its IGDB id, as a positive whole number',
+    { tag: ['@api', '@packs'] },
+    () => {
+      const pack = (igdbId: unknown) => ({
+        schema: 1,
+        slug: 'igdb-id-test-game',
+        name: 'IGDB Id Test Game',
+        engine: 'manual-report',
+        igdbId,
+      });
+      const ok = validatePack(pack(2963));
+      expect(ok.ok && ok.pack.igdbId).toBe(2963);
+      for (const bad of [0, -1, 1.5, '2963', null]) {
+        const result = validatePack(pack(bad));
+        expect(result.ok, `${JSON.stringify(bad)} should be refused`).toBe(false);
+        expect(!result.ok && result.error).toContain('igdbId');
+      }
     }
-    // A franchise and a board game have no single IGDB entry.
-    expect(index.packs.filter((entry) => entry.igdbId === undefined).map((entry) => entry.slug)).toEqual([
-      'call-of-duty',
-      'chess',
-    ]);
-  });
+  );
+
+  test(
+    'a pack may name the account its players need, as a sign-in provider',
+    { tag: ['@api', '@packs'] },
+    () => {
+      const pack = (account: unknown) => ({
+        schema: 1,
+        slug: 'account-test-game',
+        name: 'Account Test Game',
+        engine: 'manual-report',
+        account,
+      });
+      const ok = validatePack(pack(' Epic '));
+      expect(ok.ok && ok.pack.account).toBe('epic');
+      for (const bad of ['riot', '', 7, null]) {
+        const result = validatePack(pack(bad));
+        expect(result.ok, `${JSON.stringify(bad)} should be refused`).toBe(false);
+        expect(!result.ok && result.error).toContain('account');
+      }
+      // The bundled packs that name one pass their own validation.
+      for (const slug of ['rocket-league', 'fortnite', 'dota-2']) {
+        const file = JSON.parse(
+          fs.readFileSync(
+            path.join(__dirname, `../../api/bundled-packs/packs/${slug}.json`),
+            'utf8'
+          )
+        );
+        const result = validatePack(file);
+        expect(result.ok, slug).toBe(true);
+        expect(result.ok && result.pack.account).toBe(slug === 'dota-2' ? 'steam' : 'epic');
+      }
+    }
+  );
+
+  test(
+    'every bundled pack names a real IGDB id, or none on purpose',
+    { tag: ['@api', '@packs'] },
+    () => {
+      const index = JSON.parse(
+        fs.readFileSync(path.join(__dirname, '../../api/bundled-packs/index.json'), 'utf8')
+      ) as { packs: Array<{ slug: string; file: string; igdbId?: number }> };
+      const ids = new Set<number>();
+      for (const entry of index.packs) {
+        const file = JSON.parse(
+          fs.readFileSync(path.join(__dirname, '../../api/bundled-packs', entry.file), 'utf8')
+        ) as { igdbId?: number };
+        // The index repeats the pack's own id, so a pack not yet installed links too.
+        expect(entry.igdbId, `${entry.slug}: index and pack disagree`).toBe(file.igdbId);
+        if (entry.igdbId === undefined) continue;
+        expect(ids.has(entry.igdbId), `${entry.slug}: IGDB id used twice`).toBe(false);
+        ids.add(entry.igdbId);
+      }
+      // A franchise and a board game have no single IGDB entry.
+      expect(
+        index.packs.filter((entry) => entry.igdbId === undefined).map((entry) => entry.slug)
+      ).toEqual(['call-of-duty', 'chess']);
+    }
+  );
 });
 
 // ---------------------------------------------------------------------------
@@ -243,9 +270,9 @@ test.describe('Steam app ids and client icons', () => {
     expect(wikidataSteamAppId({ claims: { P1733: [claim('not-a-number')] } })).toBeNull();
     expect(wikidataSteamAppId({ claims: {} })).toBeNull();
 
-    expect(clientIconHash({ data: { '570': { common: { clienticon: 'A'.repeat(40) } } } }, 570)).toBe(
-      'a'.repeat(40)
-    );
+    expect(
+      clientIconHash({ data: { '570': { common: { clienticon: 'A'.repeat(40) } } } }, 570)
+    ).toBe('a'.repeat(40));
     expect(clientIconHash({ data: { '570': { common: {} } } }, 570)).toBeNull();
     expect(clientIconHash({ data: { '570': { common: { clienticon: '../x' } } } }, 570)).toBeNull();
   });
@@ -267,21 +294,31 @@ test.describe('Steam app ids and client icons', () => {
     expect(rgba).toEqual([255, 70, 85, 255]);
   });
 
-  test('a BMP frame is read, and a small one is never scaled up', { tag: ['@api', '@games'] }, () => {
-    const png = toGameIconPng(ico([{ size: 64, bytes: bmpFrame(64, [10, 200, 30, 255]) }]))!;
-    const { width, rgba } = pixelAt(png, 10, 10);
-    expect(width).toBe(64);
-    expect(rgba).toEqual([10, 200, 30, 255]);
-  });
+  test(
+    'a BMP frame is read, and a small one is never scaled up',
+    { tag: ['@api', '@games'] },
+    () => {
+      const png = toGameIconPng(ico([{ size: 64, bytes: bmpFrame(64, [10, 200, 30, 255]) }]))!;
+      const { width, rgba } = pixelAt(png, 10, 10);
+      expect(width).toBe(64);
+      expect(rgba).toEqual([10, 200, 30, 255]);
+    }
+  );
 
-  test('anything else is no icon: too small, not square, not an image', { tag: ['@api', '@games'] }, () => {
-    expect(toGameIconPng(ico([{ size: 32, bytes: encodePng(solid(32, [1, 2, 3, 255])) }]))).toBeNull();
-    expect(
-      toGameIconPng(encodePng({ width: 128, height: 64, data: Buffer.alloc(128 * 64 * 4, 255) }))
-    ).toBeNull();
-    expect(toGameIconPng(Buffer.from('<html>404</html>'))).toBeNull();
-    expect(toGameIconPng(Buffer.alloc(0))).toBeNull();
-  });
+  test(
+    'anything else is no icon: too small, not square, not an image',
+    { tag: ['@api', '@games'] },
+    () => {
+      expect(
+        toGameIconPng(ico([{ size: 32, bytes: encodePng(solid(32, [1, 2, 3, 255])) }]))
+      ).toBeNull();
+      expect(
+        toGameIconPng(encodePng({ width: 128, height: 64, data: Buffer.alloc(128 * 64 * 4, 255) }))
+      ).toBeNull();
+      expect(toGameIconPng(Buffer.from('<html>404</html>'))).toBeNull();
+      expect(toGameIconPng(Buffer.alloc(0))).toBeNull();
+    }
+  );
 });
 
 // ---------------------------------------------------------------------------
@@ -344,115 +381,145 @@ test.describe.serial('Game icons over HTTP', () => {
     await request.post('/api/test/game-icons', { data: { fake: false } });
   });
 
-  test('a Wikidata result linked to a module by slug alias draws that module\'s icon', {
-    tag: ['@api', '@games'],
-  }, async ({ request, playwright, baseURL }) => {
-    // Installed modules are built-ins too, found by alias — proof that the
-    // module's own app icon, not a catalogue picture, draws for its pill.
-    const [cs2] = await search(request, 'cs2');
-    expect(cs2).toMatchObject({ slug: 'counter-strike-2' });
-    expect(cs2.appIconUrl).toBe('/games/counter-strike-2-app-icon.webp');
+  test(
+    "a Wikidata result linked to a module by slug alias draws that module's icon",
+    {
+      tag: ['@api', '@games'],
+    },
+    async ({ request, playwright, baseURL }) => {
+      // Installed modules are built-ins too, found by alias — proof that the
+      // module's own app icon, not a catalogue picture, draws for its pill.
+      const [cs2] = await search(request, 'cs2');
+      expect(cs2).toMatchObject({ slug: 'counter-strike-2' });
+      expect(cs2.appIconUrl).toBe('/games/counter-strike-2-app-icon.webp');
 
-    // A game an installed pack ships (Dota 2), found by its Wikidata name.
-    const [dota] = await search(request, 'dota 2');
-    expect(dota).toMatchObject({ slug: 'dota-2' });
-    expect(dota.appIconUrl).toBe('/api/packs/dota-2/app-icon');
+      // A game an installed pack ships (Dota 2), found by its Wikidata name.
+      const [dota] = await search(request, 'dota 2');
+      expect(dota).toMatchObject({ slug: 'dota-2' });
+      expect(dota.appIconUrl).toBe('/api/packs/dota-2/app-icon');
 
-    // And so in a player's own games.
-    const games = await playerPicks(playwright, baseURL, [cs2.id, dota.id]);
-    expect(games.map((game) => game.appIconUrl)).toEqual([
-      '/games/counter-strike-2-app-icon.webp',
-      '/api/packs/dota-2/app-icon',
-    ]);
-  });
-
-  test('an installed pack without its own icon still shows its game icon', {
-    tag: ['@api', '@packs'],
-  }, async ({ request }) => {
-    const slug = 'dota-2';
-    try {
-      // What an instance that installed Dota 2 from the catalog before its
-      // pack had an icon holds: the game, and no picture.
-      const created = await request.post('/api/packs', {
-        data: { pack: { schema: 1, slug, name: 'Dota 2', engine: 'manual-report', version: '0.0.1' } },
-      });
-      expect(created.status(), await created.text()).toBe(200);
-
-      const popular = ((await (await request.get('/api/games/popular')).json()) as {
-        games: GameSummary[];
-      }).games;
-      expect(popular.find((game) => game.slug === slug)?.appIconUrl).toBe(`/api/packs/${slug}/app-icon`);
-
-      const icon = await request.get(`/api/packs/${slug}/app-icon`);
-      expect(icon.status()).toBe(200);
-      const bundled = fs.readFileSync(path.join(__dirname, `../../api/bundled-packs/app-icons/${slug}.webp`));
-      expect(Buffer.compare(await icon.body(), bundled)).toBe(0);
-    } finally {
-      // Back exactly as a fresh install has it: bundled.
-      await request.delete(`/api/packs/${slug}`);
-      await post(request, '/api/test/packs/reseed', { forget: [slug], preinstall: [slug] });
+      // And so in a player's own games.
+      const games = await playerPicks(playwright, baseURL, [cs2.id, dota.id]);
+      expect(games.map((game) => game.appIconUrl)).toEqual([
+        '/games/counter-strike-2-app-icon.webp',
+        '/api/packs/dota-2/app-icon',
+      ]);
     }
-  });
+  );
 
-  test('a game no pack covers gets its Steam client icon, cached', {
-    tag: ['@api', '@games'],
-  }, async ({ request }) => {
-    const before = await search(request, 'icon quest');
-    expect(before.map((game) => game.slug).sort()).toEqual([
-      'icon-quest',
-      'icon-quest-legacy',
-      'icon-quest-offline',
-      'icon-quest-tiny',
-    ]);
-    // Nothing yet: the lookup runs in the background, never in the request.
-    expect(before.every((game) => game.appIconUrl === null)).toBe(true);
+  test(
+    'an installed pack without its own icon still shows its game icon',
+    {
+      tag: ['@api', '@packs'],
+    },
+    async ({ request }) => {
+      const slug = 'dota-2';
+      try {
+        // What an instance that installed Dota 2 from the catalog before its
+        // pack had an icon holds: the game, and no picture.
+        const created = await request.post('/api/packs', {
+          data: {
+            pack: { schema: 1, slug, name: 'Dota 2', engine: 'manual-report', version: '0.0.1' },
+          },
+        });
+        expect(created.status(), await created.text()).toBe(200);
 
-    expect(await runIconPass(request)).toBeGreaterThanOrEqual(1);
+        const popular = (
+          (await (await request.get('/api/games/popular')).json()) as {
+            games: GameSummary[];
+          }
+        ).games;
+        expect(popular.find((game) => game.slug === slug)?.appIconUrl).toBe(
+          `/api/packs/${slug}/app-icon`
+        );
 
-    const after = new Map((await search(request, 'icon quest')).map((game) => [game.slug, game]));
-    const quest = after.get('icon-quest')!.appIconUrl!;
-    expect(quest).toMatch(CACHED_ICON);
-    // Only on the older CDN path: found by the fallback. Same picture, same
-    // file — a cached icon is named by its bytes.
-    expect(after.get('icon-quest-legacy')!.appIconUrl).toBe(quest);
-    // A 32 px icon is not worth more than a monogram; no Steam id, no lookup.
-    expect(after.get('icon-quest-tiny')!.appIconUrl).toBeNull();
-    expect(after.get('icon-quest-offline')!.appIconUrl).toBeNull();
+        const icon = await request.get(`/api/packs/${slug}/app-icon`);
+        expect(icon.status()).toBe(200);
+        const bundled = fs.readFileSync(
+          path.join(__dirname, `../../api/bundled-packs/app-icons/${slug}.webp`)
+        );
+        expect(Buffer.compare(await icon.body(), bundled)).toBe(0);
+      } finally {
+        // Back exactly as a fresh install has it: bundled.
+        await request.delete(`/api/packs/${slug}`);
+        await post(request, '/api/test/packs/reseed', { forget: [slug], preinstall: [slug] });
+      }
+    }
+  );
 
-    const served = await request.get(quest);
-    expect(served.status()).toBe(200);
-    expect(served.headers()['content-type']).toBe('image/png');
-    expect(served.headers()['cache-control']).toContain('immutable');
-    expect(served.headers()['x-content-type-options']).toBe('nosniff');
-    const { width, height, rgba } = pixelAt(await served.body(), 0, GAME_ICON_SIZE - 1);
-    expect([width, height]).toEqual([GAME_ICON_SIZE, GAME_ICON_SIZE]);
-    expect(rgba).toEqual([250, 99, 42, 255]);
-  });
+  test(
+    'a game no pack covers gets its Steam client icon, cached',
+    {
+      tag: ['@api', '@games'],
+    },
+    async ({ request }) => {
+      const before = await search(request, 'icon quest');
+      expect(before.map((game) => game.slug).sort()).toEqual([
+        'icon-quest',
+        'icon-quest-legacy',
+        'icon-quest-offline',
+        'icon-quest-tiny',
+      ]);
+      // Nothing yet: the lookup runs in the background, never in the request.
+      expect(before.every((game) => game.appIconUrl === null)).toBe(true);
 
-  test('a Wikidata game gets its Steam icon too', {
-    tag: ['@api', '@games'],
-  }, async ({ request }) => {
-    const [voyage] = await search(request, 'icon voyage');
-    expect(voyage).toMatchObject({ slug: 'icon-voyage', appIconUrl: null });
+      expect(await runIconPass(request)).toBeGreaterThanOrEqual(1);
 
-    await runIconPass(request);
+      const after = new Map((await search(request, 'icon quest')).map((game) => [game.slug, game]));
+      const quest = after.get('icon-quest')!.appIconUrl!;
+      expect(quest).toMatch(CACHED_ICON);
+      // Only on the older CDN path: found by the fallback. Same picture, same
+      // file — a cached icon is named by its bytes.
+      expect(after.get('icon-quest-legacy')!.appIconUrl).toBe(quest);
+      // A 32 px icon is not worth more than a monogram; no Steam id, no lookup.
+      expect(after.get('icon-quest-tiny')!.appIconUrl).toBeNull();
+      expect(after.get('icon-quest-offline')!.appIconUrl).toBeNull();
 
-    const [after] = await search(request, 'icon voyage');
-    expect(after.appIconUrl).toMatch(CACHED_ICON);
-  });
+      const served = await request.get(quest);
+      expect(served.status()).toBe(200);
+      expect(served.headers()['content-type']).toBe('image/png');
+      expect(served.headers()['cache-control']).toContain('immutable');
+      expect(served.headers()['x-content-type-options']).toBe('nosniff');
+      const { width, height, rgba } = pixelAt(await served.body(), 0, GAME_ICON_SIZE - 1);
+      expect([width, height]).toEqual([GAME_ICON_SIZE, GAME_ICON_SIZE]);
+      expect(rgba).toEqual([250, 99, 42, 255]);
+    }
+  );
+
+  test(
+    'a Wikidata game gets its Steam icon too',
+    {
+      tag: ['@api', '@games'],
+    },
+    async ({ request }) => {
+      const [voyage] = await search(request, 'icon voyage');
+      expect(voyage).toMatchObject({ slug: 'icon-voyage', appIconUrl: null });
+
+      await runIconPass(request);
+
+      const [after] = await search(request, 'icon voyage');
+      expect(after.appIconUrl).toMatch(CACHED_ICON);
+    }
+  );
 
   test('every popular game has an icon', { tag: ['@api', '@games'] }, async ({ request }) => {
-    const popular = ((await (await request.get('/api/games/popular')).json()) as {
-      games: GameSummary[];
-    }).games;
+    const popular = (
+      (await (await request.get('/api/games/popular')).json()) as {
+        games: GameSummary[];
+      }
+    ).games;
     expect(popular.length).toBeGreaterThan(20);
     const missing = popular.filter((game) => !game.appIconUrl).map((game) => game.slug);
     expect(missing, 'popular games without an app icon').toEqual([]);
   });
 
-  test('the icon route serves cached icons and nothing else', { tag: ['@api', '@games'] }, async ({ request }) => {
-    expect((await request.get('/api/games/icons/0123456789abcdef.png')).status()).toBe(404);
-    expect((await request.get('/api/games/icons/..%2F..%2Fpackage.json')).status()).toBe(404);
-    expect((await request.get('/api/games/icons/0123456789abcdef.svg')).status()).toBe(404);
-  });
+  test(
+    'the icon route serves cached icons and nothing else',
+    { tag: ['@api', '@games'] },
+    async ({ request }) => {
+      expect((await request.get('/api/games/icons/0123456789abcdef.png')).status()).toBe(404);
+      expect((await request.get('/api/games/icons/..%2F..%2Fpackage.json')).status()).toBe(404);
+      expect((await request.get('/api/games/icons/0123456789abcdef.svg')).status()).toBe(404);
+    }
+  );
 });

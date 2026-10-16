@@ -90,12 +90,16 @@ test.describe('Signed pending Steam link cookie', () => {
     expect(verify(`${payload}.`).ok).toBe(false);
   });
 
-  test('a cookie signed with another secret is rejected', { tag: ['@api', '@auth', '@security'] }, () => {
-    expect(verify(sign({ secret: 'some-other-secret' }))).toEqual({
-      ok: false,
-      reason: 'bad-signature',
-    });
-  });
+  test(
+    'a cookie signed with another secret is rejected',
+    { tag: ['@api', '@auth', '@security'] },
+    () => {
+      expect(verify(sign({ secret: 'some-other-secret' }))).toEqual({
+        ok: false,
+        reason: 'bad-signature',
+      });
+    }
+  );
 
   test('an expired cookie is rejected', { tag: ['@api', '@auth', '@security'] }, () => {
     expect(verify(sign(), { now: NOW + PENDING_STEAM_LINK_TTL_MS })).toEqual({

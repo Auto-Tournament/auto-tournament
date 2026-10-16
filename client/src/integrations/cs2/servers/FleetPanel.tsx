@@ -53,6 +53,7 @@ import {
   StatusDot,
   useModuleTranslation,
   useSnackbar,
+  fmtDateTime,
 } from '../../../module-sdk';
 import type { FleetKey, FleetKeysResponse, FleetServer, FleetServersResponse } from '../cs2.types';
 import { insecureFlag, platformIsPlainHttp } from './insecureLink';
@@ -69,7 +70,7 @@ type Pending =
 
 function when(unixSeconds: number | null | undefined, locale: string): string {
   if (!unixSeconds) return '—';
-  return new Date(unixSeconds * 1000).toLocaleString(locale);
+  return fmtDateTime(unixSeconds, locale);
 }
 
 function statusDot(server: FleetServer): 'live' | 'free' | 'loading' | 'error' {

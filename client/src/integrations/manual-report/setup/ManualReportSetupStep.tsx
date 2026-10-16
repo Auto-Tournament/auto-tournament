@@ -16,9 +16,8 @@
  * longest series a `format` can spell.
  */
 
-import type { ReactNode } from 'react';
 import { Box, TextField, Typography } from '@mui/material';
-import { SegmentedControl, useModuleTranslation, radii } from '../../../module-sdk';
+import { SegmentedControl, useModuleTranslation, radii, FormField } from '../../../module-sdk';
 import type { TournamentGameSettingsStepProps } from '../../types';
 
 /** The module's key inside `tournament.settings`. */
@@ -68,8 +67,7 @@ function readSettings(settings: Record<string, unknown>, format: string): Manual
     bestOf: Number.isInteger(bestOf) && bestOf > 0 ? bestOf : seriesLengthOf(format),
     allowDraw: own.allowDraw === true,
     confirmation: own.confirmation === 'none' ? 'none' : 'opponent',
-    confirmTimeoutMin:
-      Number.isInteger(timeout) && timeout >= 0 ? timeout : DEFAULT_TIMEOUT_MIN,
+    confirmTimeoutMin: Number.isInteger(timeout) && timeout >= 0 ? timeout : DEFAULT_TIMEOUT_MIN,
     timeoutAction: own.timeoutAction === 'escalate' ? 'escalate' : 'auto_confirm',
   };
 }
@@ -124,7 +122,7 @@ export function ManualReportSetupStep({
         {t('tournament.setup.manualReport.help')}
       </Typography>
 
-      <Setting
+      <FormField
         label={t('tournament.setup.manualReport.seriesLength')}
         help={t('tournament.setup.manualReport.seriesLengthHelp')}
       >
@@ -140,7 +138,7 @@ export function ManualReportSetupStep({
             testId: `manual-report-best-of-${n}`,
           }))}
         />
-      </Setting>
+      </FormField>
 
       <TextField
         label={t('tournament.setup.manualReport.gameLabel')}
@@ -153,7 +151,7 @@ export function ManualReportSetupStep({
         sx={{ maxWidth: 360 }}
       />
 
-      <Setting
+      <FormField
         label={t('tournament.setup.manualReport.allowDraw')}
         help={t('tournament.setup.manualReport.allowDrawHelp')}
       >
@@ -176,9 +174,9 @@ export function ManualReportSetupStep({
             },
           ]}
         />
-      </Setting>
+      </FormField>
 
-      <Setting
+      <FormField
         label={t('tournament.setup.manualReport.confirmation')}
         help={t(`tournament.setup.manualReport.confirmationHelp.${value.confirmation}`)}
       >
@@ -194,7 +192,7 @@ export function ManualReportSetupStep({
             testId: `manual-report-confirmation-${mode}`,
           }))}
         />
-      </Setting>
+      </FormField>
 
       <TextField
         label={t('tournament.setup.manualReport.confirmTimeout')}
@@ -216,7 +214,7 @@ export function ManualReportSetupStep({
         sx={{ maxWidth: 360 }}
       />
 
-      <Setting
+      <FormField
         label={t('tournament.setup.manualReport.timeoutAction')}
         help={t(`tournament.setup.manualReport.timeoutActionHelp.${value.timeoutAction}`)}
       >
@@ -232,30 +230,7 @@ export function ManualReportSetupStep({
             testId: `manual-report-timeout-action-${action}`,
           }))}
         />
-      </Setting>
-    </Box>
-  );
-}
-
-/** A labelled control with a help line, the shape the wizard's own steps use. */
-function Setting({
-  label,
-  help,
-  children,
-}: {
-  label: string;
-  help: string;
-  children: ReactNode;
-}) {
-  return (
-    <Box sx={{ display: 'grid', gap: 1, minWidth: 0 }}>
-      <Typography component="span" variant="body2" fontWeight={600}>
-        {label}
-      </Typography>
-      {children}
-      <Typography variant="body2" color="text.secondary">
-        {help}
-      </Typography>
+      </FormField>
     </Box>
   );
 }

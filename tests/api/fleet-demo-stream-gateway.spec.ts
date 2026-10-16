@@ -46,7 +46,11 @@ async function enrollNew(request: APIRequestContext): Promise<Enrolled & { insta
   return { ...res.body, installId };
 }
 
-async function assign(request: APIRequestContext, matchSlug: string, serverId: string): Promise<number> {
+async function assign(
+  request: APIRequestContext,
+  matchSlug: string,
+  serverId: string
+): Promise<number> {
   const res = await request.post('/api/test/fleet/assign', {
     headers: getAuthHeader(),
     data: { matchSlug, serverId },
@@ -56,13 +60,21 @@ async function assign(request: APIRequestContext, matchSlug: string, serverId: s
 }
 
 async function acked(client: FleetTestClient, seq: number): Promise<void> {
-  await client.next((m) => ['ack', 'ping', 'pong'].includes(m.type) && typeof m.ack === 'number' && m.ack >= seq, 5000);
+  await client.next(
+    (m) => ['ack', 'ping', 'pong'].includes(m.type) && typeof m.ack === 'number' && m.ack >= seq,
+    5000
+  );
 }
 
 /** A reliable frame from the examples, re-keyed to `slug` / `epoch` / `seq` / `rev`. */
-function reliable(file: string, o: { slug: string; epoch: number; seq: number; rev: number; data?: Record<string, unknown> }): Envelope {
+function reliable(
+  file: string,
+  o: { slug: string; epoch: number; seq: number; rev: number; data?: Record<string, unknown> }
+): Envelope {
   const frame = example(file);
-  const payload = JSON.parse(JSON.stringify(frame.payload)) as Record<string, unknown> & { patch?: Record<string, unknown> };
+  const payload = JSON.parse(JSON.stringify(frame.payload)) as Record<string, unknown> & {
+    patch?: Record<string, unknown>;
+  };
   payload.match_id = o.slug;
   payload.rev = o.rev;
   payload.patch = { ...(payload.patch ?? {}), live_rev: o.rev };
@@ -97,9 +109,17 @@ function demoFile(size: number): Buffer {
 const sha = (b: Buffer) => crypto.createHash('sha256').update(b).digest('hex');
 
 /** Send a demo.* frame, return the demo.ack answering it (ref = its id). */
-async function send(client: FleetTestClient, type: string, payload: object, epoch?: number): Promise<Envelope> {
+async function send(
+  client: FleetTestClient,
+  type: string,
+  payload: object,
+  epoch?: number
+): Promise<Envelope> {
   const msg = envelope(type, payload, epoch !== undefined ? { epoch } : {});
-  expect(validateMessage(msg), JSON.stringify(validateMessage(msg).errors)).toEqual({ ok: true, errors: [] });
+  expect(validateMessage(msg), JSON.stringify(validateMessage(msg).errors)).toEqual({
+    ok: true,
+    errors: [],
+  });
   client.send(msg);
   const answer = await client.next((m) => m.type === 'demo.ack' && m.ref === msg.id, 10_000);
   expect(validateMessage(answer)).toEqual({ ok: true, errors: [] });
@@ -118,7 +138,9 @@ test.describe.serial('Fleet demo stream (gateway)', () => {
     if (!key) key = await createFleetKey(request, { name: 'demo-stream-tests' });
   });
 
-  test('a demo streamed across a reconnect is stored, verified and shows up like an uploaded one', async ({ request }) => {
+  test('a demo streamed across a reconnect is stored, verified and shows up like an uploaded one', async ({
+    request,
+  }) => {
     const setup = await setupTournament(request, { teamCount: 2, serverCount: 1, format: 'bo1' });
     expect(setup).toBeTruthy();
     const matches = await (await request.get('/api/matches', { headers: getAuthHeader() })).json();
@@ -129,12 +151,23 @@ test.describe.serial('Fleet demo stream (gateway)', () => {
     const epoch = await assign(request, slug, server.server_id);
     const stream = { id: 'demo-stream', last_tx_seq: 0, last_rx_seq: 0 };
     let client = await FleetTestClient.connect(server.token);
-    await client.handshake(server.server_id, server.installId, { capabilities: CAPABILITIES, stream });
+    await client.handshake(server.server_id, server.installId, {
+      capabilities: CAPABILITIES,
+      stream,
+    });
     client.send(assignSnapshot(slug, epoch));
 
     // Live, then map 1's result, so the map has its result row (as when the
     // demo finishes after the map ended).
-    client.send(reliable('live.event.phase.json', { slug, epoch, seq: 1, rev: 1, data: { from: 'warmup', to: 'live', reason: 'flow' } }));
+    client.send(
+      reliable('live.event.phase.json', {
+        slug,
+        epoch,
+        seq: 1,
+        rev: 1,
+        data: { from: 'warmup', to: 'live', reason: 'flow' },
+      })
+    );
     await acked(client, 1);
     const mapResult = example('live.event.map_result.json');
     client.send(
@@ -176,11 +209,22 @@ test.describe.serial('Fleet demo stream (gateway)', () => {
       error: { code: 'unknown_demo' },
     });
 
-    expect((await send(client, 'demo.begin', begin, epoch)).payload).toEqual({ demo_id: demoId, offset: 0 });
-    expect((await send(client, 'demo.chunk', chunk(demoId, file, 0))).payload).toEqual({ demo_id: demoId, offset: CHUNK });
-    expect((await send(client, 'demo.chunk', chunk(demoId, file, CHUNK))).payload).toEqual({ demo_id: demoId, offset: 2 * CHUNK });
+    expect((await send(client, 'demo.begin', begin, epoch)).payload).toEqual({
+      demo_id: demoId,
+      offset: 0,
+    });
+    expect((await send(client, 'demo.chunk', chunk(demoId, file, 0))).payload).toEqual({
+      demo_id: demoId,
+      offset: CHUNK,
+    });
+    expect((await send(client, 'demo.chunk', chunk(demoId, file, CHUNK))).payload).toEqual({
+      demo_id: demoId,
+      offset: 2 * CHUNK,
+    });
     // A chunk past the offset: a gap.
-    expect((await send(client, 'demo.chunk', chunk(demoId, file, 3 * CHUNK))).payload).toMatchObject({
+    expect(
+      (await send(client, 'demo.chunk', chunk(demoId, file, 3 * CHUNK))).payload
+    ).toMatchObject({
       offset: 2 * CHUNK,
       error: { code: 'gap' },
     });
@@ -195,41 +239,70 @@ test.describe.serial('Fleet demo stream (gateway)', () => {
       capabilities: CAPABILITIES,
       stream: { ...stream, last_tx_seq: 2 },
     });
-    const resumed = (await send(client, 'demo.begin', { ...begin, recording: false }, epoch)).payload as { offset: number };
+    const resumed = (await send(client, 'demo.begin', { ...begin, recording: false }, epoch))
+      .payload as { offset: number };
     expect([2 * CHUNK, 3 * CHUNK]).toContain(resumed.offset);
     // CS2 rewrote the header when the recording stopped: re-sent below the offset.
     file.write('HL2DEMO\0\x04', 0, 'latin1');
-    expect((await send(client, 'demo.chunk', chunk(demoId, file, 0))).payload).toEqual({ demo_id: demoId, offset: resumed.offset });
+    expect((await send(client, 'demo.chunk', chunk(demoId, file, 0))).payload).toEqual({
+      demo_id: demoId,
+      offset: resumed.offset,
+    });
     for (let off = resumed.offset; off < file.length; off += CHUNK) {
       const ack = (await send(client, 'demo.chunk', chunk(demoId, file, off))).payload;
       expect(ack).toEqual({ demo_id: demoId, offset: Math.min(off + CHUNK, file.length) });
     }
     // A wrong hash: the copy is discarded, Ready Up restarts.
-    expect((await send(client, 'demo.end', { demo_id: demoId, size: file.length, sha256: 'f'.repeat(64) })).payload).toMatchObject({
+    expect(
+      (
+        await send(client, 'demo.end', {
+          demo_id: demoId,
+          size: file.length,
+          sha256: 'f'.repeat(64),
+        })
+      ).payload
+    ).toMatchObject({
       offset: 0,
       error: { code: 'checksum' },
     });
-    expect((await send(client, 'demo.begin', { ...begin, recording: false, restart: true }, epoch)).payload).toEqual({
+    expect(
+      (await send(client, 'demo.begin', { ...begin, recording: false, restart: true }, epoch))
+        .payload
+    ).toEqual({
       demo_id: demoId,
       offset: 0,
     });
-    for (let off = 0; off < file.length; off += CHUNK) await send(client, 'demo.chunk', chunk(demoId, file, off));
-    const done = await send(client, 'demo.end', { demo_id: demoId, size: file.length, sha256: sha(file) });
+    for (let off = 0; off < file.length; off += CHUNK)
+      await send(client, 'demo.chunk', chunk(demoId, file, off));
+    const done = await send(client, 'demo.end', {
+      demo_id: demoId,
+      size: file.length,
+      sha256: sha(file),
+    });
     expect(done.payload).toEqual({ demo_id: demoId, offset: file.length, complete: true });
     // demo.end again (Ready Up repeats it until it sees complete): same answer.
-    expect((await send(client, 'demo.end', { demo_id: demoId, size: file.length, sha256: sha(file) })).payload).toEqual(done.payload);
+    expect(
+      (await send(client, 'demo.end', { demo_id: demoId, size: file.length, sha256: sha(file) }))
+        .payload
+    ).toEqual(done.payload);
 
     // Like an uploaded demo: on the map result, and downloadable byte for byte.
     const matchRes = await request.get(`/api/matches/${slug}`, { headers: getAuthHeader() });
     expect(matchRes.ok()).toBe(true);
     const body = await matchRes.json();
     const match = body.match ?? body;
-    const map0 = (match.mapResults as Array<{ mapNumber: number; demoFilePath: string | null }>).find((m) => m.mapNumber === 0);
+    const map0 = (
+      match.mapResults as Array<{ mapNumber: number; demoFilePath: string | null }>
+    ).find((m) => m.mapNumber === 0);
     expect(map0?.demoFilePath).toContain(name);
-    const download = await request.get(`/api/demos/${slug}/download/0`, { headers: getAuthHeader() });
+    const download = await request.get(`/api/demos/${slug}/download/0`, {
+      headers: getAuthHeader(),
+    });
     expect(download.status()).toBe(200);
     expect(sha(Buffer.from(await download.body()))).toBe(sha(file));
-    const info = await (await request.get(`/api/demos/${slug}/info`, { headers: getAuthHeader() })).json();
+    const info = await (
+      await request.get(`/api/demos/${slug}/info`, { headers: getAuthHeader() })
+    ).json();
     expect(info).toMatchObject({ hasDemo: true, size: file.length, filename: name });
     client.close();
   });
@@ -248,7 +321,15 @@ test.describe.serial('Fleet demo stream (gateway)', () => {
     const client = await FleetTestClient.connect(server.token);
     await client.handshake(server.server_id, server.installId, { capabilities: CAPABILITIES });
     client.send(assignSnapshot(slug, epoch));
-    client.send(reliable('live.event.phase.json', { slug, epoch, seq: 1, rev: 1, data: { from: 'warmup', to: 'live', reason: 'flow' } }));
+    client.send(
+      reliable('live.event.phase.json', {
+        slug,
+        epoch,
+        seq: 1,
+        rev: 1,
+        data: { from: 'warmup', to: 'live', reason: 'flow' },
+      })
+    );
     await acked(client, 1);
     const mapResult = example('live.event.map_result.json');
     client.send(
@@ -272,10 +353,26 @@ test.describe.serial('Fleet demo stream (gateway)', () => {
 
     const streamWhole = async (name: string, startedAt: number, file: Buffer) => {
       const demoId = ulid();
-      const begin = { demo_id: demoId, match_id: slug, map_number: 1, file: name, started_at: startedAt, chunk_size: CHUNK, recording: false };
-      expect((await send(client, 'demo.begin', begin, epoch)).payload).toEqual({ demo_id: demoId, offset: 0 });
-      for (let off = 0; off < file.length; off += CHUNK) await send(client, 'demo.chunk', chunk(demoId, file, off));
-      const done = await send(client, 'demo.end', { demo_id: demoId, size: file.length, sha256: sha(file) });
+      const begin = {
+        demo_id: demoId,
+        match_id: slug,
+        map_number: 1,
+        file: name,
+        started_at: startedAt,
+        chunk_size: CHUNK,
+        recording: false,
+      };
+      expect((await send(client, 'demo.begin', begin, epoch)).payload).toEqual({
+        demo_id: demoId,
+        offset: 0,
+      });
+      for (let off = 0; off < file.length; off += CHUNK)
+        await send(client, 'demo.chunk', chunk(demoId, file, off));
+      const done = await send(client, 'demo.end', {
+        demo_id: demoId,
+        size: file.length,
+        sha256: sha(file),
+      });
       expect(done.payload).toEqual({ demo_id: demoId, offset: file.length, complete: true });
     };
     const tag = slug.replace(/[^A-Za-z0-9_-]/g, '_');
@@ -290,17 +387,25 @@ test.describe.serial('Fleet demo stream (gateway)', () => {
     await streamWhole(lastName, Date.now() - 60_000, lastPart);
     await streamWhole(firstName, Date.now() - 600_000, firstPart);
 
-    const body = await (await request.get(`/api/matches/${slug}`, { headers: getAuthHeader() })).json();
+    const body = await (
+      await request.get(`/api/matches/${slug}`, { headers: getAuthHeader() })
+    ).json();
     const match = body.match ?? body;
-    const map0 = (match.mapResults as Array<{ mapNumber: number; demoFilePath: string | null }>).find((m) => m.mapNumber === 0);
+    const map0 = (
+      match.mapResults as Array<{ mapNumber: number; demoFilePath: string | null }>
+    ).find((m) => m.mapNumber === 0);
     expect(map0?.demoFilePath).toContain(lastName);
-    const download = await request.get(`/api/demos/${slug}/download/0`, { headers: getAuthHeader() });
+    const download = await request.get(`/api/demos/${slug}/download/0`, {
+      headers: getAuthHeader(),
+    });
     expect(download.status()).toBe(200);
     expect(sha(Buffer.from(await download.body()))).toBe(sha(lastPart));
     client.close();
   });
 
-  test('a demo for a match the server never held is refused (not_assigned)', async ({ request }) => {
+  test('a demo for a match the server never held is refused (not_assigned)', async ({
+    request,
+  }) => {
     const server = await enrollNew(request);
     const client = await FleetTestClient.connect(server.token);
     await client.handshake(server.server_id, server.installId, { capabilities: CAPABILITIES });
@@ -319,7 +424,11 @@ test.describe.serial('Fleet demo stream (gateway)', () => {
       },
       1
     );
-    expect(answer.payload).toMatchObject({ demo_id: demoId, offset: 0, error: { code: 'not_assigned' } });
+    expect(answer.payload).toMatchObject({
+      demo_id: demoId,
+      offset: 0,
+      error: { code: 'not_assigned' },
+    });
     client.close();
   });
 });

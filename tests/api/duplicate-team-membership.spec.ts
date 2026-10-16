@@ -37,7 +37,15 @@ test.describe.serial('Player on two teams of one tournament', () => {
     const setup = await setupTournament(request, {
       type: 'single_elimination',
       format: 'bo1',
-      maps: ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'],
+      maps: [
+        'de_mirage',
+        'de_inferno',
+        'de_ancient',
+        'de_anubis',
+        'de_dust2',
+        'de_vertigo',
+        'de_nuke',
+      ],
       teamCount: 2,
       serverCount: 1,
       prefix: 'dupe',

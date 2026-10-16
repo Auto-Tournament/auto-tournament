@@ -21,6 +21,7 @@ import {
   tokens,
   useModuleTranslation,
   useSnackbar,
+  fmtDateTime,
 } from '../../../../module-sdk';
 import type { FleetHost } from '../../cs2.types';
 import type { PluginSetValue } from '../fleetPush.types';
@@ -325,7 +326,7 @@ export function LinkDialog({
   connected: boolean;
   onClose: () => void;
 }) {
-  const { t, i18n } = useModuleTranslation('cs2');
+  const { t } = useModuleTranslation('cs2');
   return (
     <Dialog open={link !== null} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
@@ -339,7 +340,7 @@ export function LinkDialog({
           {t('machinesPanel.linkHelp', {
             defaultValue:
               'Paste it in a terminal on the Linux machine, as the user the CS2 servers will run as (not root). It installs csm if needed, asks for sudo once, links the machine and starts the agent. The code works once and until {{time}}.',
-            time: link ? new Date(link.expiresAt * 1000).toLocaleString(i18n.language) : '',
+            time: link ? fmtDateTime(link.expiresAt) : '',
           })}
         </Typography>
         {link && <CommandBox command={link.command} testId="machines-link-command" />}

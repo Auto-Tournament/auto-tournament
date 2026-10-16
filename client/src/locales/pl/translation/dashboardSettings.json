@@ -492,7 +492,9 @@
       },
       "openMenu": "Open the Manage menu",
       "closeMenu": "Close the menu",
-      "setupTab": "Setup"
+      "setupTab": "Setup",
+      "prizes": "Prizes",
+      "schedule": "Schedule"
     },
     "status": {
       "live": "LIVE",
@@ -598,7 +600,20 @@
       "licensed": "Licencjonowane",
       "commercial": "Licensed · Commercial use",
       "nonCommercial": "Licensed · Non-profit use",
-      "unlicensed": "No license key"
+      "unlicensed": "No license key",
+      "about": {
+        "title": "About this site's license",
+        "none": "This site runs Auto Tournament without a license key. That is fine for events where nobody earns money from it: friends, clubs, school LANs, charities.",
+        "nonCommercial": "This site has a free non-profit license: it may run events where nobody earns money from it.",
+        "commercial": "This site has a paid commercial license: it may run paid events and charge entry.",
+        "free": "Auto Tournament is free when nobody makes money from it, and for charities, schools and public bodies even when they charge entry. Anyone else who earns money with it, by charging entry, selling places or running it for a business, needs a paid license.",
+        "paidTitle": "Asked to pay to take part?",
+        "paidBody": "If you paid an entry fee, or were asked to, and the organizer is not a charity, school or public body, this event may be using Auto Tournament against its license. You can tell us; we read every report and never share who sent it.",
+        "paidCommercial": "Paid entry is allowed here. If something about it looks wrong anyway, you can tell us.",
+        "report": "Report it to Auto Tournament",
+        "rules": "Read the license",
+        "verify": "Check this license"
+      }
     },
     "consent": {
       "title": "Zanim zaczniesz: licencja",

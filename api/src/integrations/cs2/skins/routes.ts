@@ -31,6 +31,8 @@ import {
   variantOf,
   type SkinsConfig,
   type DropTarget,
+  MVP_PLACE,
+  parseRewards,
 } from './skinService';
 
 const router = Router();
@@ -87,6 +89,28 @@ router.get('/status', async (_req, res) => {
     });
   } catch (error) {
     return fail(res, error, 'Reading the skins status');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/catalog:
+ *   get:
+ *     tags: [Skins]
+ *     summary: Every skin a drop can give, with its rarity and chance per option (public)
+ *     responses:
+ *       200: { description: The skins }
+ *       404: { description: Skins are off }
+ */
+router.get('/catalog', async (_req, res) => {
+  try {
+    const catalog = await skinService.publicCatalog();
+    if (!catalog.enabled) return res.status(404).json({ success: false, error: 'Skins are off' });
+    // The same for everyone and slow to change: let the browser keep it a while.
+    res.set('Cache-Control', 'public, max-age=300');
+    return res.json({ success: true, skins: catalog.skins });
+  } catch (error) {
+    return fail(res, error, 'Reading the skin list');
   }
 });
 
@@ -437,9 +461,156 @@ router.get('/tournaments/:id/rewards', async (req, res) => {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id <= 0)
       return res.status(400).json({ success: false, error: 'Bad tournament id' });
-    return res.json({ success: true, rewards: await skinService.tournamentRewards(id) });
+    return res.json({
+      success: true,
+      rewards: await skinService.tournamentRewards(id),
+      ...(await tournamentPrizeInfo(id)),
+    });
   } catch (error) {
     return fail(res, error, 'Reading the tournament rewards');
+  }
+});
+
+/**
+ * What a tournament gives (its own prizes, else the site's) and its MVP: who,
+ * why (commends, rating or the organizer) and their numbers, for Results.
+ */
+async function tournamentPrizeInfo(tournamentId: number) {
+  const { storedCs2Settings } = await import('../tournamentSettings');
+  const { mvpCandidates, MIN_ROUNDS_FOR_RATING } = await import('./mvp');
+  const row = await db.queryOneAsync<{ settings: string | null; status: string }>(
+    'SELECT settings, status FROM tournament WHERE id = ?',
+    [tournamentId]
+  );
+  const own = storedCs2Settings(row?.settings ?? null);
+  const config = await skinService.config();
+  const off = own?.skinRewards === false || !config.tournamentRewards;
+  const places = off
+    ? []
+    : (parseRewards(own?.rewards) ?? config.rewards)
+        .filter((r) => r.mode !== 'none')
+        .map((r) => ({
+          place: r.place,
+          mode: r.mode,
+          rarity: r.rarity ?? null,
+          pick: r.mode === 'random' ? (r.pick === 'one' ? 'one' : 'choice') : null,
+        }));
+  const mvpSetting = !off && own?.mvp?.enabled ? own.mvp : null;
+  let mvp = null;
+  if (mvpSetting) {
+    const rewards = await skinService.tournamentRewards(tournamentId);
+    const winner = rewards.find((r) => r.place === MVP_PLACE);
+    if (winner) {
+      const numbers = (await mvpCandidates(tournamentId)).find(
+        (c) => c.steamId === winner.player.steamId
+      );
+      mvp = {
+        player: winner.player,
+        teamName: numbers?.teamName ?? null,
+        commends: numbers?.commends ?? 0,
+        commendedBy: numbers?.commendedBy ?? 0,
+        kinds: numbers?.kinds ?? {},
+        rating: numbers?.rating ?? null,
+        matches: numbers?.matches ?? 0,
+        skin: winner.skin,
+        choosing: winner.choosing,
+      };
+    }
+  }
+  return {
+    prizes: {
+      places,
+      mvp: mvpSetting
+        ? {
+            by: mvpSetting.by,
+            rarity: mvpSetting.rarity,
+            pick: mvpSetting.pick === 'one' ? 'one' : 'choice',
+          }
+        : null,
+      minRoundsForRating: MIN_ROUNDS_FOR_RATING,
+    },
+    mvp,
+  };
+}
+
+/**
+ * @openapi
+ * /api/game/cs2/skins/tournaments/{id}/mvp-candidates:
+ *   get:
+ *     tags: [Skins]
+ *     summary: Who could be the tournament's MVP (admin)
+ *     description: Everyone who played in it, with commends and rating, ranked by the tournament's MVP rule.
+ *     responses:
+ *       200: { description: "`candidates`, best first, and whether the MVP prize is given" }
+ */
+router.get('/tournaments/:id/mvp-candidates', requireAuth, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0)
+      return res.status(400).json({ success: false, error: 'Bad tournament id' });
+    const { storedCs2Settings } = await import('../tournamentSettings');
+    const { mvpCandidates, rankMvp } = await import('./mvp');
+    const row = await db.queryOneAsync<{ settings: string | null }>(
+      'SELECT settings FROM tournament WHERE id = ?',
+      [id]
+    );
+    const by = storedCs2Settings(row?.settings ?? null)?.mvp?.by ?? 'commends';
+    const given = (await skinService.tournamentRewards(id)).find((r) => r.place === MVP_PLACE);
+    return res.json({
+      success: true,
+      by,
+      given: given ? given.player : null,
+      candidates: rankMvp(await mvpCandidates(id), by).slice(0, 50),
+    });
+  } catch (error) {
+    return fail(res, error, 'Reading the MVP candidates');
+  }
+});
+
+/**
+ * @openapi
+ * /api/game/cs2/skins/tournaments/{id}/mvp:
+ *   post:
+ *     tags: [Skins]
+ *     summary: Give the MVP prize to a player (admin)
+ *     description: Once the tournament is over, to a player who played in it. Once per tournament.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { steamId: { type: string } } }
+ *     responses:
+ *       200: { description: Given }
+ *       409: { description: Not over yet, no MVP prize, or already given }
+ */
+router.post('/tournaments/:id/mvp', requireAuth, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const steamId = String((req.body as { steamId?: unknown } | undefined)?.steamId ?? '');
+    if (!Number.isInteger(id) || id <= 0 || !steamId)
+      return res.status(400).json({ success: false, error: 'Pick a player' });
+    const { storedCs2Settings } = await import('../tournamentSettings');
+    const { mvpCandidates } = await import('./mvp');
+    const row = await db.queryOneAsync<{ settings: string | null; status: string; name: string }>(
+      'SELECT settings, status, name FROM tournament WHERE id = ?',
+      [id]
+    );
+    if (!row) return res.status(404).json({ success: false, error: 'No such tournament' });
+    if (row.status !== 'completed')
+      return res.status(409).json({ success: false, error: 'The tournament is not over yet' });
+    const mvp = storedCs2Settings(row.settings)?.mvp;
+    if (!mvp?.enabled)
+      return res.status(409).json({ success: false, error: 'This tournament has no MVP prize' });
+    if (!(await mvpCandidates(id)).some((c) => c.steamId === steamId))
+      return res.status(400).json({ success: false, error: 'That player did not play in it' });
+    const given = await skinService.awardMvp(id, row.name, steamId, {
+      rarity: mvp.rarity,
+      pick: mvp.pick,
+    });
+    if (!given)
+      return res.status(409).json({ success: false, error: 'The MVP prize is already given' });
+    return res.json({ success: true });
+  } catch (error) {
+    return fail(res, error, 'Giving the MVP prize');
   }
 });
 
@@ -744,6 +915,10 @@ router.post('/admin/players/:steamId/skins', requireAuth, async (req, res) => {
  *                   id: { type: string, description: 'Steam ID, team id, match slug or tournament id' }
  *               preview: { type: boolean }
  *               label: { type: string, description: 'Shown on the drop, e.g. "From the admins"' }
+ *               rarity:
+ *                 type: string
+ *                 enum: [common, uncommon, rare, mythical, legendary, ancient, immortal]
+ *                 description: All three options of this rarity (the catalogue's tiers; knives and gloves are ranked by price into common–ancient, and immortal is one skin, the M4A4 Howl); without it, the drop odds.
  *     responses:
  *       200: { description: 'Who gets one (preview), or how many were given' }
  *       400: { description: Not a target }
@@ -754,7 +929,16 @@ router.post('/admin/drops', requireAuth, async (req, res) => {
       target?: { kind?: string; id?: unknown };
       preview?: boolean;
       label?: unknown;
+      rarity?: unknown;
     };
+    const rarity =
+      typeof body.rarity === 'string' && RARITIES.includes(body.rarity as Rarity)
+        ? (body.rarity as Rarity)
+        : null;
+    if (body.rarity !== undefined && body.rarity !== null && !rarity)
+      return res
+        .status(400)
+        .json({ success: false, error: `rarity is one of ${RARITIES.join(', ')}.` });
     const kind = body.target?.kind;
     const id = typeof body.target?.id === 'string' ? body.target.id.trim() : '';
     let target: DropTarget;
@@ -774,7 +958,8 @@ router.post('/admin/drops', requireAuth, async (req, res) => {
       typeof body.label === 'string' && body.label.trim() ? body.label.trim().slice(0, 80) : null;
     const given = await skinService.adminDrop(
       players.map((p) => p.uid),
-      label
+      label,
+      rarity
     );
     return res.json({ success: true, given });
   } catch (error) {
@@ -804,6 +989,34 @@ router.delete('/admin/skins/:id', requireAuth, async (req, res) => {
     return res.json({ success: true });
   } catch (error) {
     return fail(res, error, 'Removing a skin');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/admin/players/{steamId}/inventory:
+ *   delete:
+ *     tags: [Skins]
+ *     summary: Empty a player's skins
+ *     description: Every skin, the loadout, the showcase, open choices and skin notices.
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: path, name: steamId, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: 'What was removed: skins, choices, notices' }
+ *       404: { description: No such player }
+ */
+router.delete('/admin/players/:steamId/inventory', requireAuth, async (req, res) => {
+  try {
+    const player = await db.queryOneAsync<{ id: string; uid: string }>(
+      'SELECT id, uid FROM players WHERE id = ?',
+      [String(req.params.steamId)]
+    );
+    if (!player) return res.status(404).json({ success: false, error: 'No such player.' });
+    const removed = await skinService.adminClearInventory(player.uid, player.id);
+    return res.json({ success: true, ...removed });
+  } catch (error) {
+    return fail(res, error, "Emptying a player's skins");
   }
 });
 

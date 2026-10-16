@@ -22,13 +22,22 @@ test.describe('CS2 purge', () => {
     expect(await signInViaRequest(request)).toBe(true);
   });
 
-  test("drops core's keys into CS2's tables, then the tables, in one transaction", async ({ request }) => {
+  test("drops core's keys into CS2's tables, then the tables, in one transaction", async ({
+    request,
+  }) => {
     const response = await request.post('/api/test/modules/cs2/purge-probe');
     expect(response.status(), await response.text()).toBe(200);
-    const probe = (await response.json()) as { ok: boolean; tables: string[]; constraints: string[]; error?: string };
+    const probe = (await response.json()) as {
+      ok: boolean;
+      tables: string[];
+      constraints: string[];
+      error?: string;
+    };
     expect(probe.error ?? null).toBeNull();
     expect(probe.ok).toBe(true);
-    expect(probe.tables).toEqual(expect.arrayContaining(['cs2_servers', 'cs2_maps', 'cs2_map_pools']));
+    expect(probe.tables).toEqual(
+      expect.arrayContaining(['cs2_servers', 'cs2_maps', 'cs2_map_pools'])
+    );
     // Never a core table.
     for (const table of probe.tables) expect(table.startsWith('cs2_')).toBe(true);
     expect(probe.constraints).toEqual(
@@ -49,6 +58,8 @@ test.describe('CS2 purge', () => {
       headers: { 'Content-Type': 'application/json' },
     });
     expect(response.status()).toBe(409);
-    expect(((await response.json()) as { error: string }).error).toMatch(/Uninstall 'cs2' first|still loaded/);
+    expect(((await response.json()) as { error: string }).error).toMatch(
+      /Uninstall 'cs2' first|still loaded/
+    );
   });
 });

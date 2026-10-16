@@ -10,6 +10,7 @@
  */
 
 import { PlayerPicker } from '../common/PlayerPicker';
+import { fmtTime } from '../../utils/time';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -428,7 +429,7 @@ export const FleetRosterEditor: React.FC<Props> = ({ matchSlug, fallback, onSucc
                 color={
                   u.status === 'ok' ? 'success' : u.status === 'pending' ? 'default' : 'warning'
                 }
-                label={`${new Date(u.createdAt * 1000).toLocaleTimeString()} ${u.errorCode ?? u.status}`}
+                label={`${fmtTime(u.createdAt)} ${u.errorCode ?? u.status}`}
                 sx={{ mr: 0.5, mt: 0.5 }}
               />
             ))}

@@ -103,6 +103,30 @@ export function isAbandon(input: {
   return input.now - input.lastSeen >= ABANDON_GRACE_SECONDS;
 }
 
+/**
+ * Every player of a match is gone at once (none seen connected): what a map change, a server
+ * restart or a crash looks like, so nobody is penalized for it. `alreadyFlagged` players count as
+ * gone. An admin's change_map banned all ten players of a game for an hour (NTLAN, 2026-10-16).
+ */
+export function everyoneGone(players: number, newlyGone: number, alreadyFlagged: number): boolean {
+  return players > 0 && newlyGone + alreadyFlagged >= players;
+}
+
+/** Seconds after a matchmaking match ends that its players can agree to a rematch. */
+export const REMATCH_SECONDS = 120;
+
+/**
+ * A rematch can still be agreed: the match finished (not cancelled) less than REMATCH_SECONDS
+ * ago. `completedAt` in epoch seconds.
+ */
+export function rematchOpen(
+  match: { status: string; completed_at: number | null } | null,
+  now: number
+): boolean {
+  if (!match || match.status !== 'completed' || !match.completed_at) return false;
+  return now - Number(match.completed_at) < REMATCH_SECONDS;
+}
+
 /** A party waiting in the queue. */
 export interface QueuedParty {
   entryId: string;

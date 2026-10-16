@@ -14,7 +14,7 @@ const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069';
 const id = (n: number) => `7656119${String(Date.now()).slice(-8)}${n}${n}`.slice(0, 17);
 
 test(
-  'settings on the Notifications page; a new notice in the background shows in the browser',
+  'settings on the Notifications page; a friend request stays in the bell, not a system notification',
   { tag: ['@ui'] },
   async ({ page }) => {
     await page.addInitScript(() => {
@@ -73,12 +73,50 @@ test(
     ).toBe(true);
     await other.dispose();
 
-    await expect
-      .poll(async () =>
-        page.evaluate(() =>
-          (window as unknown as { __shown: Array<{ title: string }> }).__shown.map((n) => n.title)
-        )
-      )
-      .toContainEqual(expect.stringContaining('Sender Two'));
+    // System notifications are for what needs the player now (their match, a party invite);
+    // a friend request waits in the bell (2026-10-15).
+    await page.getByTestId('nav-bell').click();
+    await expect(page.getByTestId('bell-list')).toContainText('Sender Two', { timeout: 15000 });
+    await page.keyboard.press('Escape');
+    const shown = await page.evaluate(() =>
+      (window as unknown as { __shown: Array<{ title: string }> }).__shown.map((n) => n.title)
+    );
+    expect(shown.filter((title) => title.includes('Sender Two'))).toEqual([]);
+  }
+);
+
+test(
+  'a player with notifications off is asked once, and Turn on turns them on',
+  { tag: ['@ui'] },
+  async ({ page }) => {
+    await page.addInitScript(() => {
+      // As a real browser: the prompt skips automated ones.
+      Object.defineProperty(navigator, 'webdriver', { get: () => false });
+      class FakeNotification {
+        static permission = 'default';
+        static requestPermission() {
+          FakeNotification.permission = 'granted';
+          return Promise.resolve('granted');
+        }
+        close() {}
+      }
+      Object.defineProperty(window, 'Notification', {
+        value: FakeNotification,
+        configurable: true,
+      });
+    });
+    expect(await signInAsPlayer(page, id(2), 'Prompt Me')).toBe(true);
+    await page.goto('/');
+    const prompt = page.getByTestId('notification-prompt');
+    await expect(prompt).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('notification-prompt-on').click();
+    await expect(prompt).toBeHidden();
+    expect(await page.evaluate(() => window.localStorage.getItem('at.browserNotifications'))).toBe(
+      'on'
+    );
+    // Asked: not again on the next page.
+    await page.reload();
+    await page.waitForTimeout(5000);
+    await expect(prompt).toBeHidden();
   }
 );

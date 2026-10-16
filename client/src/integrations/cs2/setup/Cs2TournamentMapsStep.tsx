@@ -1,10 +1,10 @@
 import { useEffect, useState, type InputHTMLAttributes } from 'react';
-import { Box, Button, FormControlLabel, Switch, Typography } from '@mui/material';
-import { useModuleTranslation } from '../../../module-sdk';
+import { Box, Button, Typography } from '@mui/material';
+import { useModuleTranslation, SwitchRow } from '../../../module-sdk';
 import type { TournamentContentStepProps } from '../../types';
 import { MapPoolStep } from './MapPoolStep';
 import SaveMapPoolModal from '../maps/SaveMapPoolModal';
-import { cs2Patch, cs2SettingsOf, withMaps } from './cs2TournamentSettings';
+import { CS2_DEFAULTS, cs2Patch, cs2SettingsOf, withMaps } from './cs2TournamentSettings';
 import { defaultMapPool, useCs2MapData } from './useCs2MapData';
 import { fitsMapMode } from '../maps/mapModes';
 
@@ -53,8 +53,9 @@ export function Cs2TournamentMapsStep({
   };
 
   // Wingman, set up in one go: CS2's wingman maps, no veto (each match draws
-  // its map), wingman's 16 rounds. Wingman is 2v2: the match fills or plays
-  // two a side whatever the team size says.
+  // its map), wingman's 16 rounds unless the organiser already picked a round
+  // count (it overwrote MR6 with 16, 2026-10-15). Wingman is 2v2: the match
+  // fills or plays two a side whatever the team size says.
   const wingmanPreset = () => {
     const maps = availableMaps.filter((m) => fitsMapMode(m, m.id, 'wingman')).map((m) => m.id);
     onChange(
@@ -62,7 +63,7 @@ export function Cs2TournamentMapsStep({
         ...withMaps(cs2, maps, type, null),
         mapMode: 'wingman',
         veto: false,
-        maxRounds: 16,
+        maxRounds: cs2.maxRounds === CS2_DEFAULTS.maxRounds ? 16 : cs2.maxRounds,
       })
     );
   };
@@ -73,20 +74,16 @@ export function Cs2TournamentMapsStep({
     <>
       {vetoFormat && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', mb: 2 }}>
-          <FormControlLabel
+          <SwitchRow
             label={t('tournament.mapVeto.label')}
-            control={
-              <Switch
-                checked={cs2.veto !== false}
-                disabled={disabled}
-                onChange={(_e, checked) => onChange(cs2Patch({ ...cs2, veto: checked }))}
-                slotProps={{
-                  input: {
-                    'data-testid': 'tournament-map-veto',
-                  } as InputHTMLAttributes<HTMLInputElement>,
-                }}
-              />
-            }
+            checked={cs2.veto !== false}
+            disabled={disabled}
+            onChange={(_e, checked) => onChange(cs2Patch({ ...cs2, veto: checked }))}
+            slotProps={{
+              input: {
+                'data-testid': 'tournament-map-veto',
+              } as InputHTMLAttributes<HTMLInputElement>,
+            }}
           />
           <Button
             variant="outlined"

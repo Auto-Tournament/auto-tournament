@@ -8,11 +8,8 @@ import {
   Alert,
   Button,
   Stack,
-  ToggleButton,
-  ToggleButtonGroup,
   IconButton,
   Chip,
-  Tooltip,
 } from '@mui/material';
 import {
   ArrowClockwiseIcon,
@@ -41,6 +38,7 @@ import type { Match } from '../types';
 import { useTranslation } from 'react-i18next';
 import { PageHead, Panel, RowList, SectionHead } from '../components/common/ui';
 import { useTopic } from '../hooks/useTopic';
+import { SegmentedControl } from '../components/common/SegmentedControl';
 
 // Interfaces are now imported from useBracket hook
 
@@ -376,34 +374,30 @@ export default function Bracket() {
                     onSuccess={loadBracket}
                   />
                 )}
-                <ToggleButtonGroup
-                  value={effectiveViewMode}
-                  exclusive
-                  onChange={(_, newMode) => {
-                    if (!newMode) return;
-                    // Shuffle tournaments do not support visual mode
-                    if (tournament.type === 'shuffle' && newMode === 'visual') return;
-                    setViewMode(newMode);
-                  }}
+                <SegmentedControl
                   size="small"
-                >
-                  <Tooltip
-                    title={tournament.type === 'shuffle' ? t('bracket.view.shuffleNoVisual') : ''}
-                    disableHoverListener={tournament.type !== 'shuffle'}
-                    enterDelay={500}
-                  >
-                    <span>
-                      <ToggleButton value="visual" disabled={tournament.type === 'shuffle'}>
-                        <Box component={TreeStructureIcon} size={20} sx={{ mr: 1 }} />
-                        {t('bracket.view.visual')}
-                      </ToggleButton>
-                    </span>
-                  </Tooltip>
-                  <ToggleButton value="list">
-                    <Box component={ListBulletsIcon} size={20} sx={{ mr: 1 }} />
-                    {t('bracket.view.list')}
-                  </ToggleButton>
-                </ToggleButtonGroup>
+                  label={t('bracket.view.visual')}
+                  value={effectiveViewMode}
+                  onChange={(newMode) => setViewMode(newMode)}
+                  options={[
+                    {
+                      value: 'visual',
+                      label: t('bracket.view.visual'),
+                      icon: <TreeStructureIcon size={18} />,
+                      // Shuffle tournaments do not support visual mode
+                      disabled: tournament.type === 'shuffle',
+                      title:
+                        tournament.type === 'shuffle'
+                          ? t('bracket.view.shuffleNoVisual')
+                          : undefined,
+                    },
+                    {
+                      value: 'list',
+                      label: t('bracket.view.list'),
+                      icon: <ListBulletsIcon size={18} />,
+                    },
+                  ]}
+                />
                 <Button
                   variant="outlined"
                   startIcon={<ArrowClockwiseIcon />}

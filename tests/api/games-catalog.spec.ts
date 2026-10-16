@@ -213,7 +213,7 @@ test.describe.serial('Game catalogue', () => {
   );
 
   test(
-    'popular: every built-in, an open tournament\'s game first, never filtered by picks',
+    "popular: every built-in, an open tournament's game first, never filtered by picks",
     { tag: ['@api', '@games'] },
     async ({ request, playwright, baseURL }) => {
       await request.delete('/api/tournament');
@@ -253,7 +253,9 @@ test.describe.serial('Game catalogue', () => {
         // A game a player already picked still shows (selected, in the UI).
         const { ctx } = await playerContext(playwright, baseURL);
         expect((await ctx.put('/api/me/games', { data: [withTournament[0].id] })).ok()).toBe(true);
-        const forPlayer = (await (await ctx.get('/api/games/popular')).json()) as { games: GameSummary[] };
+        const forPlayer = (await (await ctx.get('/api/games/popular')).json()) as {
+          games: GameSummary[];
+        };
         expect(forPlayer.games.map((g) => g.slug)).toEqual(withTournament.map((g) => g.slug));
         await ctx.dispose();
       } finally {

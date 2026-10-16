@@ -27,7 +27,70 @@ import type {
   TournamentSettingsValidation,
 } from '../types';
 import { validateCustomVetoOrderSetting } from './veto/config';
-import { MAP_MODES, isMapMode, mapsOfOtherModes, type MapMode } from './maps/mapModes';
+/** One place's prize as a tournament stores it: a rarity to pick from, or none. */
+export interface TournamentRewardSetting {
+  place: 0 | 1 | 2 | 3 | 4;
+  mode: 'random' | 'none';
+  rarity?: string;
+  /** 'one': one skin of the rarity at random. Absent: pick 1 of 3. */
+  pick?: 'one';
+}
+
+/** The tournament's MVP prize (skins/skinService awardMvp). */
+export interface MvpSetting {
+  enabled: boolean;
+  /** Most commended, best rating, or the organizer picks after the final. */
+  by: 'commends' | 'rating' | 'admin';
+  rarity: string;
+  /** 'one': one skin at random. Absent: pick 1 of 3. */
+  pick?: 'one';
+}
+
+const MVP_BY = ['commends', 'rating', 'admin'] as const;
+
+/** An MVP setting as stored; null when it is not one. */
+function mvpSetting(raw: unknown): MvpSetting | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const r = raw as Record<string, unknown>;
+  return {
+    enabled: r.enabled === true,
+    by: (MVP_BY as readonly unknown[]).includes(r.by) ? (r.by as MvpSetting['by']) : 'commends',
+    rarity:
+      typeof r.rarity === 'string' && REWARD_RARITIES.includes(r.rarity) ? r.rarity : 'legendary',
+    ...(r.pick === 'one' ? { pick: 'one' as const } : {}),
+  };
+}
+
+const REWARD_RARITIES = [
+  'common',
+  'uncommon',
+  'rare',
+  'mythical',
+  'legendary',
+  'ancient',
+  'immortal',
+];
+
+/** Places 1–4 and 0 (everyone else), each a rarity or none; anything else dropped. */
+function rewardSettings(raw: unknown[]): TournamentRewardSetting[] {
+  const out: TournamentRewardSetting[] = [];
+  for (const r of raw as Array<Record<string, unknown> | null>) {
+    const place = Number(r?.place);
+    if (![0, 1, 2, 3, 4].includes(place) || out.some((o) => o.place === place)) continue;
+    if (r?.mode === 'none')
+      out.push({ place: place as TournamentRewardSetting['place'], mode: 'none' });
+    else if (typeof r?.rarity === 'string' && REWARD_RARITIES.includes(r.rarity))
+      out.push({
+        place: place as TournamentRewardSetting['place'],
+        mode: 'random',
+        rarity: r.rarity,
+        ...(r.pick === 'one' ? { pick: 'one' as const } : {}),
+      });
+  }
+  return out;
+}
+
+import { MAP_MODES, isMapMode, mapsOfOtherModes, unknownMaps, type MapMode } from './maps/mapModes';
 
 /** The key of CS2's object inside `tournament.settings` and a template's `settings`. */
 export const CS2_SETTINGS_KEY = 'cs2';
@@ -59,6 +122,12 @@ export interface Cs2TournamentSettings {
   mapMode?: MapMode;
   /** False: the top three get no skin rewards (skins/skinService). Absent: on. */
   skinRewards?: boolean;
+  /** This tournament's own prizes per place (skinService.parseRewards); absent: the site's. */
+  rewards?: TournamentRewardSetting[];
+  /** False: its matches drop no skins (the placings still get prizes). Absent: on. */
+  matchDrops?: boolean;
+  /** A prize for the tournament's MVP; absent: none. */
+  mvp?: MvpSetting;
   /** Opt-in anonymous bots up to teamSize; humans keep normal ready-up. */
   fillTeamsWithBots?: boolean;
   /**
@@ -124,14 +193,19 @@ function requestedMapMode(body: Record<string, unknown> | undefined): unknown {
   return objectIn(body?.settings, CS2_SETTINGS_KEY).mapMode;
 }
 
-/** Errors for `maps` under the map type `mode` (unset, or not a type: only the latter is an error). */
+/**
+ * Errors for `maps`: a map the site does not have, or (with a map type `mode`)
+ * one of another type. An unset mode is fine; one that is not a type is an error.
+ */
 function mapModeErrors(mode: unknown, maps: unknown): string[] {
-  if (mode === undefined || mode === null || mode === '') return [];
-  if (!isMapMode(mode)) return [`mapMode must be one of ${MAP_MODES.join(', ')}`];
   const ids = Array.isArray(maps) ? maps.filter((id): id is string => typeof id === 'string') : [];
-  return mapsOfOtherModes(ids, mode).map(
-    (m) => `Map ${m.id} is a ${m.mode} map; this tournament only plays ${mode} maps`
-  );
+  const errors = unknownMaps(ids).map((id) => `Map ${id} is not in this site's map list`);
+  if (mode === undefined || mode === null || mode === '') return errors;
+  if (!isMapMode(mode)) return [`mapMode must be one of ${MAP_MODES.join(', ')}`];
+  for (const m of mapsOfOtherModes(ids, mode)) {
+    errors.push(`Map ${m.id} is a ${m.mode} map; this tournament only plays ${mode} maps`);
+  }
+  return errors;
 }
 
 function settingsErrors(settings: unknown, mapCount: number | undefined): string[] {
@@ -313,6 +387,14 @@ function applyLayer(
   if (typeof layer.fillTeamsWithBots === 'boolean')
     into.fillTeamsWithBots = layer.fillTeamsWithBots;
   if (typeof layer.skinRewards === 'boolean') into.skinRewards = layer.skinRewards;
+  if (Array.isArray(layer.rewards)) into.rewards = rewardSettings(layer.rewards);
+  else if (layer.rewards === null) delete into.rewards;
+  if (typeof layer.matchDrops === 'boolean') into.matchDrops = layer.matchDrops;
+  if (layer.mvp === null) delete into.mvp;
+  else if (layer.mvp !== undefined) {
+    const mvp = mvpSetting(layer.mvp);
+    if (mvp) into.mvp = mvp;
+  }
   if (typeof layer.esportsMode === 'boolean') into.esportsMode = layer.esportsMode;
   if (typeof layer.veto === 'boolean') into.veto = layer.veto;
   if (layer.mapPoolId !== undefined) {
@@ -322,8 +404,16 @@ function applyLayer(
   }
 }
 
-/** A new tournament's rules when the request leaves them out: 24 rounds, overtime on. */
-const TOURNAMENT_DEFAULTS: Cs2TournamentSettings = { maxRounds: 24, overtimeMode: 'enabled' };
+/**
+ * A new tournament's rules when the request leaves them out: 24 rounds, one
+ * overtime, then total team damage decides (a LAN schedule cannot take endless
+ * overtimes).
+ */
+const TOURNAMENT_DEFAULTS: Cs2TournamentSettings = {
+  maxRounds: 24,
+  overtimeMode: 'enabled',
+  overtimeSegments: 1,
+};
 
 export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettings> = {
   key: CS2_SETTINGS_KEY,
@@ -334,8 +424,20 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
       : target === 'tournament'
         ? { ...TOURNAMENT_DEFAULTS }
         : {};
-    applyLayer(next, objectIn(body.settings, CS2_SETTINGS_KEY), target);
+    const layer = objectIn(body.settings, CS2_SETTINGS_KEY);
+    applyLayer(next, layer, target);
     applyLayer(next, body, target);
+    // The default segment count goes with the default overtime: a new tournament
+    // that turns overtime off and names no segments has none.
+    if (
+      !stored &&
+      target === 'tournament' &&
+      next.overtimeMode === 'disabled' &&
+      layer.overtimeSegments === undefined &&
+      body.overtimeSegments === undefined
+    ) {
+      delete next.overtimeSegments;
+    }
     if (target === 'tournament' && !next.maps) next.maps = [];
     return next;
   },
@@ -359,6 +461,9 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
         ? { fillTeamsWithBots: value.fillTeamsWithBots }
         : {}),
       ...(value?.skinRewards !== undefined ? { skinRewards: value.skinRewards } : {}),
+      ...(value?.rewards ? { rewards: value.rewards } : {}),
+      ...(value?.matchDrops !== undefined ? { matchDrops: value.matchDrops } : {}),
+      ...(value?.mvp ? { mvp: value.mvp } : {}),
       ...(value?.esportsMode !== undefined ? { esportsMode: value.esportsMode } : {}),
       ...(value?.veto !== undefined ? { veto: value.veto } : {}),
       ...(value?.mapPoolId !== undefined ? { mapPoolId: value.mapPoolId } : {}),

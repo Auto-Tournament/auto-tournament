@@ -39,7 +39,14 @@ test.describe('module migrations: names', () => {
 
   test('core tables are known', () => {
     const core = coreObjectNames();
-    for (const name of ['matches', 'players', 'tournament', 'teams', 'module_migrations', 'tournament_templates']) {
+    for (const name of [
+      'matches',
+      'players',
+      'tournament',
+      'teams',
+      'module_migrations',
+      'tournament_templates',
+    ]) {
       expect(core.has(name), name).toBe(true);
     }
   });
@@ -94,7 +101,10 @@ test.describe('module migrations: the DDL check', () => {
     refused('ALTER TABLE matches ADD COLUMN demo_flag TEXT', "'matches' is a core table");
     refused('CREATE INDEX demo_idx ON players (name)', "'players' is a core table");
     refused('DROP TABLE tournament', "'tournament' is a core table");
-    refused('INSERT INTO app_settings (key, value) VALUES (1, 2)', "'app_settings' is a core table");
+    refused(
+      'INSERT INTO app_settings (key, value) VALUES (1, 2)',
+      "'app_settings' is a core table"
+    );
     refused('UPDATE teams SET name = 1', "'teams' is a core table");
     refused('DELETE FROM matches', "'matches' is a core table");
     refused('ALTER TABLE demo_items RENAME TO matches', "'matches' is a core table");
@@ -115,8 +125,14 @@ test.describe('module migrations: the DDL check', () => {
     refused('ALTER TABLE demo_items SET SCHEMA other', 'SET SCHEMA');
     refused('TRUNCATE demo_items', 'is not allowed');
     refused('DO $$ BEGIN EXECUTE $q$DROP TABLE matches$q$; END $$', 'is not allowed');
-    refused('CREATE FUNCTION demo_f() RETURNS int AS $$ SELECT 1 $$ LANGUAGE sql', 'is not allowed');
-    refused('CREATE TRIGGER demo_t AFTER INSERT ON matches EXECUTE FUNCTION demo_f()', 'is not allowed');
+    refused(
+      'CREATE FUNCTION demo_f() RETURNS int AS $$ SELECT 1 $$ LANGUAGE sql',
+      'is not allowed'
+    );
+    refused(
+      'CREATE TRIGGER demo_t AFTER INSERT ON matches EXECUTE FUNCTION demo_f()',
+      'is not allowed'
+    );
     refused('CREATE VIEW demo_v AS SELECT * FROM matches', 'is not allowed');
     refused('COMMIT', 'is not allowed');
     refused('GRANT ALL ON demo_items TO public', 'is not allowed');
@@ -176,7 +192,9 @@ test.describe('module migrations: checksums and planning', () => {
 
   test('an edited, already-applied migration is refused', () => {
     const plan = planModuleMigrations([A, B], [row(A, 'CREATE TABLE demo_a (id BIGINT);')]);
-    expect('error' in plan && plan.error).toContain("migration '001-a' was already applied with different SQL");
+    expect('error' in plan && plan.error).toContain(
+      "migration '001-a' was already applied with different SQL"
+    );
   });
 
   test('a migration inserted before an applied one is refused', () => {
@@ -186,7 +204,10 @@ test.describe('module migrations: checksums and planning', () => {
 
   test('an applied migration the module no longer declares is only a warning', () => {
     const plan = planModuleMigrations([A], [row(A), row(B)]);
-    expect(plan).toEqual({ pending: [], warnings: ["migration '002-b' was applied but is no longer declared"] });
+    expect(plan).toEqual({
+      pending: [],
+      warnings: ["migration '002-b' was applied but is no longer declared"],
+    });
   });
 });
 
@@ -219,17 +240,29 @@ test.describe('module migrations: the run loop', () => {
 
   test('each migration is its own transaction, recorded inside it', async () => {
     const { client, log, ledger } = stubClient();
-    const state = await runModuleMigrations({ id: 'demo', migrations: [A, B] }, { client, installedModuleIds });
+    const state = await runModuleMigrations(
+      { id: 'demo', migrations: [A, B] },
+      { client, installedModuleIds }
+    );
     expect(state).toEqual({ moduleId: 'demo', status: 'ok', applied: ['001-a', '002-b'] });
     expect(ledger.map((r) => r.migration_id)).toEqual(['001-a', '002-b']);
     expect(log.filter((l) => /^(BEGIN|COMMIT|ROLLBACK|CREATE|INSERT)/.test(l))).toEqual([
-      'BEGIN', 'CREATE TABLE', 'INSERT INTO', 'COMMIT',
-      'BEGIN', 'CREATE TABLE', 'INSERT INTO', 'COMMIT',
+      'BEGIN',
+      'CREATE TABLE',
+      'INSERT INTO',
+      'COMMIT',
+      'BEGIN',
+      'CREATE TABLE',
+      'INSERT INTO',
+      'COMMIT',
     ]);
   });
 
   test('a failure rolls back that migration only, stops, and never throws', async () => {
-    const broken: ModuleMigration = { id: '002-broken', up: 'INSERT INTO demo_a (id) VALUES (1); -- FAIL' };
+    const broken: ModuleMigration = {
+      id: '002-broken',
+      up: 'INSERT INTO demo_a (id) VALUES (1); -- FAIL',
+    };
     const { client, log, ledger } = stubClient();
     const state = await runModuleMigrations(
       { id: 'demo', migrations: [A, broken, C] },
@@ -264,8 +297,13 @@ test.describe('module migrations: the run loop', () => {
   });
 
   test('a ledger it cannot read fails the module, not the caller', async () => {
-    const client = { query: async () => Promise.reject(new Error('relation does not exist')) } as never;
-    const state = await runModuleMigrations({ id: 'demo', migrations: [A] }, { client, installedModuleIds });
+    const client = {
+      query: async () => Promise.reject(new Error('relation does not exist')),
+    } as never;
+    const state = await runModuleMigrations(
+      { id: 'demo', migrations: [A] },
+      { client, installedModuleIds }
+    );
     expect(state.status).toBe('failed');
     expect(state.reason).toContain('relation does not exist');
   });

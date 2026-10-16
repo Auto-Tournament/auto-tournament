@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 717 of them, 414 behind auth —
+Every endpoint this API serves — 739 of them, 419 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -56,6 +56,7 @@ Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory mana
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/skins/status` | public |
+| `GET` | `/api/skins/catalog` | public |
 | `GET` | `/api/skins/odds` | public |
 | `GET` | `/api/skins/tryout` | public |
 | `GET` | `/api/skins/me` | public |
@@ -69,6 +70,8 @@ Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory mana
 | `GET` | `/api/skins/players/:steamId` | public |
 | `GET` | `/api/skins/skin/:id` | public |
 | `GET` | `/api/skins/tournaments/:id/rewards` | public |
+| `GET` | `/api/skins/tournaments/:id/mvp-candidates` | admin |
+| `POST` | `/api/skins/tournaments/:id/mvp` | admin |
 | `GET` | `/api/skins/admin/config` | admin |
 | `PUT` | `/api/skins/admin/config` | admin |
 | `GET` | `/api/skins/admin/catalog` | admin |
@@ -80,6 +83,7 @@ Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory mana
 | `POST` | `/api/skins/admin/players/:steamId/skins` | admin |
 | `POST` | `/api/skins/admin/drops` | admin |
 | `DELETE` | `/api/skins/admin/skins/:id` | admin |
+| `DELETE` | `/api/skins/admin/players/:steamId/inventory` | admin |
 
 ### Update hold
 
@@ -168,6 +172,7 @@ The recorded match event log: Ready Up events and server console lines.
 | --- | --- | --- |
 | `GET` | `/api/events/connections/:matchSlug` | public |
 | `GET` | `/api/events/live/:matchSlug` | public |
+| `GET` | `/api/events/watch/:matchSlug` | public |
 | `GET` | `/api/events/server/:serverId` | admin |
 | `GET` | `/api/events/:matchSlug` | admin |
 
@@ -576,6 +581,8 @@ Create, load, restart and cancel matches; read match state.
 | `POST` | `/api/matches` | admin |
 | `POST` | `/api/matches/:slug/load` | admin |
 | `POST` | `/api/matches/:slug/restart` | admin |
+| `PUT` | `/api/matches/:slug/start-time` | admin |
+| `PUT` | `/api/matches/:slug/on-stage` | admin |
 | `GET` | `/api/matches/:slug/hold` | public |
 | `POST` | `/api/matches/:slug/hold` | admin |
 | `DELETE` | `/api/matches/:slug/hold` | admin |
@@ -605,10 +612,12 @@ The tournament itself — setup, bracket, rounds, standings.
 | --- | --- | --- |
 | `GET` | `/api/tournament/current-id` | public |
 | `POST` | `/api/tournament/archive` | admin |
+| `GET` | `/api/tournament/:id/teams` | public |
 | `GET` | `/api/tournament/:id/leaderboard` | public |
 | `GET` | `/api/tournament/allocation-status` | public |
 | `GET` | `/api/tournament/game` | public |
 | `GET` | `/api/tournament/:id/bracket` | public |
+| `GET` | `/api/tournament/:id/shuffle-round` | public |
 | `GET` | `/api/tournament/:id/pause` | public |
 | `GET` | `/api/tournament/:id/banner` | public |
 | `PUT` | `/api/tournament/banner` | admin |
@@ -674,6 +683,8 @@ Teams signing themselves up with a lineup, and check-in on the day.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/tournament-signup/:id` | public |
+| `POST` | `/api/tournament-signup/:id/join` | public |
+| `DELETE` | `/api/tournament-signup/:id/join` | public |
 | `GET` | `/api/tournament-signup/:id/me` | public |
 | `POST` | `/api/tournament-signup/:id/remind` | public |
 | `POST` | `/api/tournament-signup/:id/register` | public |
@@ -727,6 +738,9 @@ Friends, friend requests, finding players, and the signed-in player's notificati
 | `PUT` | `/api/social/notifications/settings` | public |
 | `GET` | `/api/social/notifications/channels` | public |
 | `PUT` | `/api/social/notifications/channels` | public |
+| `GET` | `/api/social/push/key` | public |
+| `POST` | `/api/social/push/subscription` | public |
+| `DELETE` | `/api/social/push/subscription` | public |
 | `POST` | `/api/social/notifications/read` | public |
 | `POST` | `/api/social/news` | admin |
 
@@ -767,6 +781,7 @@ Every team (public), and the signed-in player's own teams: list them, make one (
 
 | Method | Path | Auth |
 | --- | --- | --- |
+| `GET` | `/api/team-directory/colors` | public |
 | `GET` | `/api/team-directory` | public |
 | `GET` | `/api/team-directory/mine` | public |
 | `POST` | `/api/team-directory/mine` | public |
@@ -775,10 +790,13 @@ Every team (public), and the signed-in player's own teams: list them, make one (
 | `GET` | `/api/team-directory/invite/:code` | public |
 | `POST` | `/api/team-directory/invite/:code` | public |
 | `GET` | `/api/team-directory/:teamId/logo` | public |
+| `GET` | `/api/team-directory/:teamId/banner` | public |
 | `GET` | `/api/team-directory/:teamId/manage` | public |
 | `PATCH` | `/api/team-directory/:teamId` | public |
 | `PUT` | `/api/team-directory/:teamId/logo` | public |
 | `DELETE` | `/api/team-directory/:teamId/logo` | public |
+| `PUT` | `/api/team-directory/:teamId/banner` | public |
+| `DELETE` | `/api/team-directory/:teamId/banner` | public |
 | `POST` | `/api/team-directory/:teamId/invite` | public |
 | `POST` | `/api/team-directory/:teamId/requests/:uid/accept` | public |
 | `POST` | `/api/team-directory/:teamId/requests/:uid/decline` | public |
@@ -869,11 +887,11 @@ Player records, ratings, match history and profiles.
 | `GET` | `/api/players/:playerId` | public |
 | `GET` | `/api/players/:playerId/rating-history` | public |
 | `GET` | `/api/players/:playerId/matches` | public |
+| `POST` | `/api/players/import` | integrator token or admin |
 | `GET` | `/api/players/:playerId/accounts` | admin |
 | `GET` | `/api/players` | admin |
 | `GET` | `/api/players/by-discord-id/:discordId` | admin |
 | `POST` | `/api/players` | admin |
-| `POST` | `/api/players/import` | admin |
 | `POST` | `/api/players/bulk-import` | admin |
 | `POST` | `/api/players/bulk-delete` | admin |
 | `PUT` | `/api/players/:playerId` | admin |
@@ -980,6 +998,16 @@ Players report another player to the admins; admins list, dismiss, or ban from a
 | `GET` | `/api/player-reports` | admin |
 | `POST` | `/api/player-reports/:id/dismiss` | admin |
 | `POST` | `/api/player-reports/:id/ban` | admin |
+
+### Commends
+
+Players commend others from a match they played (Friendly, Leader, Teacher, Good sport): up to 3 per match, for 24 hours. Public counts per player; never who gave them.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/commends/match/:slug` | public |
+| `PUT` | `/api/commends/match/:slug/:playerId` | public |
+| `GET` | `/api/commends/player/:playerId` | public |
 
 ### My email
 
@@ -1134,6 +1162,7 @@ Parties, the queue, matches and the matchmaking leaderboard (docs/design/matchma
 | `DELETE` | `/api/matchmaking/queue` | public |
 | `POST` | `/api/matchmaking/lobbies/:id/accept` | public |
 | `POST` | `/api/matchmaking/lobbies/:id/decline` | public |
+| `POST` | `/api/matchmaking/lobbies/:id/rematch` | public |
 | `GET` | `/api/matchmaking/lobbies/:id` | public |
 | `GET` | `/api/matchmaking/matches/:slug/result` | public |
 | `PUT` | `/api/matchmaking/matches/:slug/commends/:playerId` | public |

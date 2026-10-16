@@ -70,7 +70,7 @@ test.describe.serial('A played but unsettled match on the team page', () => {
   });
 
   test(
-    'CS2: a series parked level is the team\'s current match, and a live one still outranks it',
+    "CS2: a series parked level is the team's current match, and a live one still outranks it",
     { tag: ['@api', '@regression'] },
     async ({ request, baseURL }) => {
       // Round robin, so one team has more than one match and the ordering
@@ -100,7 +100,9 @@ test.describe.serial('A played but unsettled match on the team page', () => {
 
       const now = await teamMatch(request, one.id);
       expect(now.hasMatch, 'a parked match must not read as "no match"').toBe(true);
-      expect(now.match?.slug, 'the parked match outranks the one not yet played').toBe(parked!.slug);
+      expect(now.match?.slug, 'the parked match outranks the one not yet played').toBe(
+        parked!.slug
+      );
       expect(now.match?.status).toBe('needs_decision');
       // The page draws "TEAM vs OPPONENT" off this, so a parked match that
       // arrives without an opponent would render as a broken card.
@@ -161,9 +163,11 @@ test.describe.serial('A played but unsettled match on the team page', () => {
       for (const teamId of teamIds) {
         const members = await request.get(`${API}/teams/${teamId}/members`);
         expect(members.status(), await members.text()).toBe(200);
-        const list = ((await members.json()) as {
-          members: Array<{ accountUid: string; playerId: string | null }>;
-        }).members;
+        const list = (
+          (await members.json()) as {
+            members: Array<{ accountUid: string; playerId: string | null }>;
+          }
+        ).members;
         const uid = list.find((m) => m.playerId === captains.get(teamId))?.accountUid;
         expect(uid, `${teamId} should have its captain in the membership mirror`).toBeTruthy();
         const promoted = await request.post(`${API}/teams/${teamId}/captain`, { data: { uid } });

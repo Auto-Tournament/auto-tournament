@@ -28,6 +28,7 @@ import { pageTitle } from '../utils/pageTitle';
 import { paths } from '../paths';
 import { useTopic } from '../hooks/useTopic';
 import { PageTabs } from '../components/manage/PageTabs';
+import { fmtNum } from '../utils/number';
 
 const MAX_MAPS = 5;
 /** Under Cloudflare's 100 MB request limit with room to spare. */
@@ -258,7 +259,7 @@ export default function ImportMatch() {
                       variant="body2"
                       sx={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}
                     >
-                      {f.name} · {(f.size / 1024 ** 2).toFixed(0)} MB
+                      {f.name} · {fmtNum(f.size / 1024 ** 2, 0)} MB
                     </Typography>
                     <IconButton
                       size="small"

@@ -17,6 +17,9 @@ import {
   mono,
   radii,
   withAlpha,
+  fmtLongDay,
+  dialogPaperSx,
+  fmtNum,
 } from '../../../module-sdk';
 import { wearKey, type OwnedSkin } from './useSkins';
 import { rarityColor } from './rarity';
@@ -97,9 +100,7 @@ function WhatThisMeans() {
         onClose={() => setOpen(false)}
         PaperProps={{
           sx: {
-            borderRadius: radii.lg,
-            bgcolor: color.paper2,
-            backgroundImage: 'none',
+            ...dialogPaperSx,
             maxWidth: 460,
           },
         }}
@@ -518,7 +519,7 @@ export function InspectSkinDialog({
   skinId: number | null;
   onClose: () => void;
 }) {
-  const { t, i18n } = useModuleTranslation('cs2');
+  const { t } = useModuleTranslation('cs2');
   const [data, setData] = useState<InspectData | null>(null);
 
   useEffect(() => {
@@ -534,13 +535,7 @@ export function InspectSkinDialog({
   }, [skinId]);
 
   const skin = data?.skin && data.skin.id === skinId ? data.skin : null;
-  const date = skin
-    ? new Intl.DateTimeFormat(i18n.language, {
-        weekday: 'short',
-        day: 'numeric',
-        month: 'short',
-      }).format(skin.createdAt * 1000)
-    : '';
+  const date = skin ? fmtLongDay(skin.createdAt) : '';
 
   return (
     <Dialog
@@ -550,9 +545,7 @@ export function InspectSkinDialog({
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: radii.lg,
-          bgcolor: color.paper2,
-          backgroundImage: 'none',
+          ...dialogPaperSx,
           overflow: 'hidden',
         },
       }}
@@ -662,7 +655,9 @@ export function InspectSkinDialog({
                 >
                   {skin.source === 'tournament'
                     ? skin.place
-                      ? t('skins.place', { n: skin.place })
+                      ? skin.place === 99
+                        ? t('skins.mvpPlace')
+                        : t('skins.place', { n: skin.place })
                       : t('skins.tournamentMatch')
                     : skin.source === 'level'
                       ? t('skins.levelUp')
@@ -752,7 +747,7 @@ export function WearBar({
     <Box data-testid="wear-bar" sx={{ mt: 1, mb: 0.5 }}>
       <Box
         role="img"
-        aria-label={`${t(`skins.wear.${wearKey(float)}`)} · ${float.toFixed(4)}`}
+        aria-label={`${t(`skins.wear.${wearKey(float)}`)} · ${fmtNum(float, 4)}`}
         sx={{ position: 'relative' }}
       >
         <Box sx={{ display: 'flex', height, borderRadius: radii.pill, overflow: 'hidden' }}>
@@ -778,7 +773,7 @@ export function WearBar({
         sx={{ ...mono, mt: 0.75, fontSize: '0.8125rem', color: tokens.color.ink }}
         data-testid="wear-bar-float"
       >
-        {float.toFixed(12)}
+        {fmtNum(float, 12)}
         {typeof pattern === 'number' && (
           <Box component="span" sx={{ color: tokens.color.muted }}>
             {' '}

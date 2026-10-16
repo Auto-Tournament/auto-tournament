@@ -24,7 +24,11 @@ export interface AutoscaleSettings {
   leadTimeSeconds: number;
   /** Stop a surplus server only after it has been idle this long. */
   cooldownSeconds: number;
-  /** Never ask csm for a new server on a machine that already has this many. */
+  /**
+   * Never ask csm for a new server on a machine that already has this many. The free RAM and
+   * disk checks are the real limit; this only stops a runaway. It was 4, and at NTLAN
+   * (2026-10-16) a 32-core machine sat at 5 servers while matches waited ("no machine has room").
+   */
   maxServersPerHost: number;
 }
 
@@ -32,7 +36,7 @@ export const DEFAULT_AUTOSCALE_SETTINGS: Readonly<AutoscaleSettings> = Object.fr
   enabled: true,
   leadTimeSeconds: 120,
   cooldownSeconds: 600,
-  maxServersPerHost: 4,
+  maxServersPerHost: 32,
 });
 
 export const AUTOSCALE_LIMITS = {
@@ -471,7 +475,9 @@ export function planScaling(planInput: PlanInput): ScalePlan {
   const input = { ...planInput, servers: planInput.servers.filter((s) => !s.practice) };
   const { now, settings, demand } = input;
   const reserve = scalerReserve(input.reserveConfigured, input.servers.length);
-  const desired = demand.total > 0 ? demand.total + reserve : 0;
+  // The failover spare stays warm with no match running too: the scaler stopped it along with the
+  // rest while its reason said "+ 1 spare for failover" (Vikunja 2168).
+  const desired = demand.total + reserve;
   // A server busy with something of its own serves none of the demand.
   const warmServers = input.servers.filter((s) => isWarm(s, now) && !s.occupied);
   const warm = warmServers.length;
@@ -545,7 +551,7 @@ export function planScaling(planInput: PlanInput): ScalePlan {
     // The spare servers failover would pick stay warm.
     const spare = reservedIdle(
       idleWarm.map((s) => ({ id: s.fleetServerId, name: s.name })),
-      desired > 0 ? reserve : 0
+      reserve
     );
     const stoppable = idleWarm
       .filter(

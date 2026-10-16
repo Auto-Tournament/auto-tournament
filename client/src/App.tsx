@@ -58,6 +58,8 @@ import Friends from './pages/Friends';
 import Notifications from './pages/Notifications';
 import TeamsDirectory from './pages/TeamsDirectory';
 import TeamManage from './pages/TeamManage';
+import TournamentPrizes from './pages/TournamentPrizes';
+import TournamentSchedule from './pages/TournamentSchedule';
 import TeamJoin from './pages/TeamJoin';
 import Compatibility from './pages/Compatibility';
 import Play from './pages/Play';
@@ -65,6 +67,7 @@ import PlayLobby from './pages/PlayLobby';
 import { MatchmakingOverlay } from './components/matchmaking/MatchmakingOverlay';
 import { ChatDock } from './components/chat/ChatDock';
 import { PartyInviteToast } from './components/social/PartyInviteToast';
+import { PresenceReporter } from './components/social/PresenceReporter';
 import AccountConnections from './pages/AccountConnections';
 import ConnectSteam from './pages/ConnectSteam';
 import Templates from './pages/Templates';
@@ -606,6 +609,8 @@ function AppRoutes() {
           <Route path="bracket" element={<Bracket />} />
           <Route path="disputes" element={<Disputes />} />
           <Route path="setup" element={<Tournament />} />
+          <Route path="prizes" element={<TournamentPrizes />} />
+          <Route path="schedule" element={<TournamentSchedule />} />
         </Route>
         {/* Their old addresses: the tournament Manage last had open. */}
         <Route
@@ -748,6 +753,8 @@ export default function App() {
               <ChatDock />
               {/* A party invite arriving: a card under the top bar on every page. */}
               <PartyInviteToast />
+              {/* Online or away: this tab says when it goes idle. */}
+              <PresenceReporter />
             </PageHeaderProvider>
           </SnackbarProvider>
         </AuthProvider>

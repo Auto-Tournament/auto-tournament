@@ -48,6 +48,8 @@ export interface Cs2TournamentSettings {
   mapMode?: MapGameMode;
   /** False: the top three get no skin rewards. Absent: on. */
   skinRewards?: boolean;
+  /** This tournament's own prizes per place (0 = everyone else); absent: the site's. */
+  rewards?: Array<{ place: number; mode: 'random' | 'none'; rarity?: string }> | null;
   /** Opt-in anonymous bots up to teamSize; humans keep normal ready-up. */
   fillTeamsWithBots?: boolean;
   /** Esports mode: Valve's rules, no skins in the server. */
@@ -60,7 +62,8 @@ export const CS2_DEFAULTS: Cs2TournamentSettings = {
   maps: [],
   maxRounds: 24,
   overtimeMode: 'enabled',
-  overtimeSegments: null,
+  // One overtime, then team damage decides: a new tournament's default.
+  overtimeSegments: 1,
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -99,6 +102,8 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, unknown
   if (typeof source.fillTeamsWithBots === 'boolean')
     into.fillTeamsWithBots = source.fillTeamsWithBots;
   if (typeof source.skinRewards === 'boolean') into.skinRewards = source.skinRewards;
+  if (Array.isArray(source.rewards))
+    into.rewards = source.rewards as Cs2TournamentSettings['rewards'];
   if (typeof source.esportsMode === 'boolean') into.esportsMode = source.esportsMode;
   if (typeof source.veto === 'boolean') into.veto = source.veto;
   if (isMapMode(source.mapMode)) into.mapMode = source.mapMode;
@@ -116,6 +121,8 @@ export function cs2SettingsOf(
 ): Cs2TournamentSettings {
   const result: Cs2TournamentSettings = { ...CS2_DEFAULTS, maps: [] };
   if (!settings) return result;
+  // Stored without a count means unlimited overtime (tournaments from before the default).
+  result.overtimeSegments = null;
   applyFields(result, {
     ...(typeof settings.maxRounds === 'number' ? { maxRounds: settings.maxRounds } : {}),
     ...(settings.overtimeMode ? { overtimeMode: settings.overtimeMode } : {}),
@@ -142,6 +149,8 @@ export function cs2Patch(next: Cs2TournamentSettings): Record<string, unknown> {
   stored.esportsMode = next.esportsMode === true;
   stored.veto = next.veto !== false;
   if (next.skinRewards !== undefined) stored.skinRewards = next.skinRewards;
+  // null goes back to the site's prizes.
+  if (next.rewards !== undefined) stored.rewards = next.rewards;
   // null clears a type set before (the API keeps a field a patch leaves out).
   stored.mapMode = next.mapMode ?? null;
   return { [CS2_SETTINGS_KEY]: stored };
@@ -191,8 +200,9 @@ function rulesLine(cs2: Cs2TournamentSettings, ctx: TournamentSetupContext, t: T
           winRounds: Math.floor(cs2.maxRounds / 2) + 1,
         });
   const fill =
-    (cs2.fillTeamsWithBots === true ? ` · ${t('tournament.botFill.label')}` : '') +
-    (cs2.esportsMode === true ? ` · ${t('tournament.esportsMode.label')}` : '');
+    // CS2's own strings: the caller's t is core's (the review step showed the raw key).
+    (cs2.fillTeamsWithBots === true ? ` · ${t('tournament.botFill.label', { ns: 'cs2' })}` : '') +
+    (cs2.esportsMode === true ? ` · ${t('tournament.esportsMode.label', { ns: 'cs2' })}` : '');
   return `${rounds} · ${overtime}${fill}`;
 }
 

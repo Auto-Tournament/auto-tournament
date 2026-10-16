@@ -11,11 +11,20 @@ const DIAGRAMS: Record<string, string> = {
   swiss:
     'M4 6h30M4 16h30M4 26h30M4 36h30M44 6h30M44 16h30M44 26h30M44 36h30M84 11h30M84 21h30M84 31h30',
   round_robin: 'M20 6h80v32H20zM20 14h80M20 22h80M20 30h80M40 6v32M60 6v32M80 6v32',
+  groups:
+    'M4 6h34v14H4zM4 13h34M4 26h34v14H4zM4 33h34M38 13h14M38 33h14M52 13v20M52 23h14M66 19h22v8H66z',
   shuffle: 'M10 10l20 24M30 10L10 34M50 10h20v24H50zM90 10l20 24M110 10L90 34',
 };
 
 /** Card order from the design: brackets first, then the table formats, then shuffle. */
-const ORDER = ['single_elimination', 'double_elimination', 'swiss', 'round_robin', 'shuffle'];
+const ORDER = [
+  'groups',
+  'single_elimination',
+  'double_elimination',
+  'swiss',
+  'round_robin',
+  'shuffle',
+];
 
 interface FormatCardsProps {
   value: string;

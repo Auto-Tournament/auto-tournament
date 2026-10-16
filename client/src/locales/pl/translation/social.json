@@ -51,7 +51,8 @@
       "matchReady": "is ready. Open the match room to connect.",
       "vetoTurn": "it's your team's turn in the veto.",
       "startsSoon": "starts in {{minutes}} minutes. Get ready to join your first match.",
-      "startsSoonUpdate": "starts in {{minutes}} minutes. Start your game now so any update is done before your first match."
+      "startsSoonUpdate": "starts in {{minutes}} minutes. Start your game now so any update is done before your first match.",
+      "matchSoon": "your veto opens in {{minutes}} minutes and goes on without you. Be at your PC."
     },
     "toast": {
       "join": "Join party",
@@ -219,7 +220,8 @@
     "event": "Event",
     "channel": {
       "discord": "Discord DM",
-      "email": "Email"
+      "email": "Email",
+      "push": "Przeglądarka / telefon"
     },
     "events": {
       "match_ready": {
@@ -248,7 +250,8 @@
       "no_discord": "Link Discord first",
       "email_off": "This site can't send email",
       "no_email": "Add an email first",
-      "email_unverified": "Confirm your email first"
+      "email_unverified": "Confirm your email first",
+      "no_push": "Najpierw włącz powiadomienia w tej przeglądarce"
     },
     "switchLabel": "{{event}} by {{channel}}",
     "saveFailed": "Could not save that."
@@ -256,9 +259,21 @@
   "presence": {
     "online": "Online",
     "offline": "Offline",
+    "away": "Zaraz wracam",
     "searching": "Searching for a {{mode}} game",
     "playingMatchmaking": "In a matchmaking match: {{label}}",
     "playingTournament": "In a tournament match: {{label}}",
     "playing": "In a match: {{label}}"
+  },
+  "notificationPrompt": {
+    "title": "Włącz powiadomienia",
+    "body": "Zalecamy je włączyć. Wtedy damy ci znać, nawet jeśli zamkniesz tę kartę:",
+    "matchReady": "gdy twój mecz jest gotowy",
+    "vetoTurn": "gdy przyjdzie twoja kolej w wecie map",
+    "starting": "gdy turniej, na który się zapisałeś, zaraz się zacznie",
+    "iphone": "Na iPhonie najpierw dodaj tę stronę do ekranu początkowego (Udostępnij, potem Do ekranu początkowego) i otwieraj ją stamtąd.",
+    "change": "Możesz to zmienić w każdej chwili w ustawieniach powiadomień.",
+    "later": "Nie teraz",
+    "turnOn": "Włącz (zalecane)"
   }
 }

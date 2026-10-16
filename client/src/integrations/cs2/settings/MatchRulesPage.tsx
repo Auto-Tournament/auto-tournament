@@ -11,11 +11,18 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, LinearProgress, Stack, TextField, Typography } from '@mui/material';
-import { api, useModuleTranslation, useSnackbar, PageHead, pageTitle, tokens, radii, fontDisplay } from '../../../module-sdk';
+import {
+  api,
+  useModuleTranslation,
+  useSnackbar,
+  PageHead,
+  pageTitle,
+  fontDisplay,
+  panelSx,
+  panelBorderSx,
+} from '../../../module-sdk';
 import type { WebhookSettings, WebhookSettingsResponse } from '../cs2.types';
 import { Cs2ServerDefaults } from './Cs2ServerDefaults';
-
-const { color } = tokens;
 
 export const MatchRulesPage: React.FC = () => {
   const { t } = useModuleTranslation('cs2');
@@ -102,9 +109,13 @@ export const MatchRulesPage: React.FC = () => {
           <Box
             component="section"
             aria-labelledby="match-rules-webhook"
-            sx={{ bgcolor: color.paper2, border: `1px solid ${color.rule}`, borderRadius: radii.lg, p: { xs: 2, md: 3 } }}
+            sx={{ ...panelSx, ...panelBorderSx, p: { xs: 2, md: 3 } }}
           >
-            <Typography id="match-rules-webhook" component="h2" sx={{ fontFamily: fontDisplay, fontSize: '1.1875rem', fontWeight: 600, mb: 0.5 }}>
+            <Typography
+              id="match-rules-webhook"
+              component="h2"
+              sx={{ fontFamily: fontDisplay, fontSize: '1.1875rem', fontWeight: 600, mb: 0.5 }}
+            >
               {t('settings.webhook.title')}
             </Typography>
             <Typography variant="body2" color="text.secondary" mb={2}>

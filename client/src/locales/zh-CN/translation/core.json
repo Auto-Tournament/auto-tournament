@@ -177,6 +177,9 @@
     "opponent": "Opponent",
     "turnLeft": "left to ban or pick",
     "turnOver": "Time is up: a map is chosen for your team",
-    "soonBodyNoVeto": "A short break first. The match loads when the countdown ends."
+    "soonBodyNoVeto": "A short break first. The match loads when the countdown ends.",
+    "openRoom": "Open the match room",
+    "closesItself_one": "Closes by itself in {{count}} s. The navbar keeps the link.",
+    "closesItself_other": "Closes by itself in {{count}} s. The navbar keeps the link."
   }
 }

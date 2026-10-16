@@ -28,6 +28,8 @@ import * as matchConfigFetchTracker from '../services/matchConfigFetchTracker';
 import * as matchHolds from '../services/matchHolds';
 import * as adminCallTypes from '../types/adminCall.types';
 import * as matchLiveStatsService from '../services/matchLiveStatsService';
+import * as matchTimes from '../services/matchTimes';
+import * as matchViewer from '../services/matchViewer';
 import * as matchMapResultService from '../services/matchMapResultService';
 import * as matchTerminationService from '../services/matchTerminationService';
 import * as playerConnectionService from '../services/playerConnectionService';
@@ -36,12 +38,14 @@ import * as notificationService from '../services/notificationService';
 import * as adminNoticeService from '../services/adminNoticeService';
 import * as gameReadiness from '../services/gameReadiness';
 import * as settingsService from '../services/settingsService';
+import * as shuffleTournamentService from '../services/shuffleTournamentService';
 import * as tournamentSignupService from '../services/tournamentSignupService';
 import * as socketService from '../services/socketService';
 import * as adminSteamIds from '../utils/adminSteamIds';
 import * as cs2Version from '../utils/cs2Version';
 import * as eventLogger from '../utils/eventLogger';
 import * as logger from '../utils/logger';
+import * as secretBox from '../utils/secretBox';
 import * as matchIntegration from '../utils/matchIntegration';
 import * as matchStatusHelpers from '../utils/matchStatusHelpers';
 import * as playerTransform from '../utils/playerTransform';
@@ -73,6 +77,8 @@ const MODULES: Record<string, object> = {
   'services/matchHolds': matchHolds,
   'services/matchLiveStatsService': matchLiveStatsService,
   'services/matchMapResultService': matchMapResultService,
+  'services/matchTimes': matchTimes,
+  'services/matchViewer': matchViewer,
   'services/matchTerminationService': matchTerminationService,
   'services/playerConnectionService': playerConnectionService,
   'services/matchNotices': matchNotices,
@@ -80,6 +86,7 @@ const MODULES: Record<string, object> = {
   'services/adminNoticeService': adminNoticeService,
   'services/gameReadiness': gameReadiness,
   'services/settingsService': settingsService,
+  'services/shuffleTournamentService': shuffleTournamentService,
   'services/tournamentSignupService': tournamentSignupService,
   'services/socketService': socketService,
   'types/adminCall.types': adminCallTypes,
@@ -92,6 +99,7 @@ const MODULES: Record<string, object> = {
   'utils/playerTransform': playerTransform,
   'utils/pluginServerReplies': pluginServerReplies,
   'utils/publicOrigin': publicOrigin,
+  'utils/secretBox': secretBox,
   'utils/serverAttribution': serverAttribution,
   'utils/settingFields': settingFields,
   'utils/simulationTimescale': simulationTimescale,

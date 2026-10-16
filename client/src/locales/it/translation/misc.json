@@ -679,7 +679,11 @@
       "botFillUnrated": "I bot occupano i posti vuoti · non classificata: niente rating, XP o drop",
       "searchRatingPlain": "Finding a close match for your rating · {{count}} searching",
       "searchWidening": "Widening the search: ±{{elo}} · {{count}} searching",
-      "searchAnyRating": "Searching every rating now · {{count}} searching"
+      "searchAnyRating": "Searching every rating now · {{count}} searching",
+      "inTournament": "You are in an active tournament ({{tournament}}), you can't queue for matchmaking right now.",
+      "partyInTournament": "In an active tournament, so the party can't queue right now: {{names}}.",
+      "inMatch_one": "{{count}} in partita",
+      "inMatch_other": "{{count}} in partita"
     },
     "queue": {
       "searching": "Searching {{mode}}",
@@ -750,7 +754,16 @@
       },
       "equip": "Equipaggia",
       "equipped": "Equipaggiata",
-      "equipFailed": "Impossibile equipaggiarla"
+      "equipFailed": "Impossibile equipaggiarla",
+      "rematch": {
+        "title": "Rivincita?",
+        "body": "Stesse squadre, nuova mappa. Un sì vale per tutto il tuo gruppo. Parte quando ci sono tutti ({{yes}} su {{total}} finora), entro 2 minuti.",
+        "yes": "Sì, rivincita",
+        "no": "No, grazie",
+        "button": "Rivincita",
+        "waiting": "In attesa degli altri: {{yes}} su {{total}} hanno detto sì.",
+        "declined": "Niente rivincita: qualcuno ha detto no."
+      }
     },
     "result": {
       "title": "Result",
@@ -802,7 +815,9 @@
         "friendly": "Friendly",
         "team_player": "Team player",
         "leader": "Leader",
-        "good_comms": "Good comms"
+        "good_comms": "Good comms",
+        "teacher": "Teacher",
+        "good_sport": "Good sport"
       },
       "history": "Matchmaking matches",
       "historyEmpty": "No matchmaking matches yet.",

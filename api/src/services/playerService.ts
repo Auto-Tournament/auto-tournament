@@ -741,6 +741,38 @@ class PlayerService {
    * Bulk import players from array
    * Creates players if they don't exist, updates if they do
    */
+  /**
+   * Starting ratings from an import (an event site's own estimate). Applied
+   * only to a player with no rated matches on this site: their starting and
+   * current rating, and any per-game rating row still at 0 matches is dropped
+   * so it falls back to it. Players who have played keep what they earned.
+   */
+  async seedRatings(
+    seeds: Array<{ id: string; rating: number }>
+  ): Promise<{ set: number; kept: string[] }> {
+    let set = 0;
+    const kept: string[] = [];
+    for (const { id, rating } of seeds) {
+      const played = await db.queryOneAsync<{ n: number }>(
+        'SELECT COALESCE(SUM(match_count), 0)::INTEGER AS n FROM player_game_ratings WHERE player_id = ?',
+        [id]
+      );
+      if (Number(played?.n ?? 0) > 0) {
+        kept.push(id);
+        continue;
+      }
+      const res = await db.runAsync(
+        'UPDATE players SET starting_elo = ?, current_elo = ?, updated_at = ? WHERE id = ?',
+        [rating, rating, Math.floor(Date.now() / 1000), id]
+      );
+      await db.runAsync('DELETE FROM player_game_ratings WHERE player_id = ? AND match_count = 0', [
+        id,
+      ]);
+      if (res.changes > 0) set += 1;
+    }
+    return { set, kept };
+  }
+
   async bulkImportPlayers(players: CreatePlayerInput[]): Promise<{
     created: number;
     updated: number;

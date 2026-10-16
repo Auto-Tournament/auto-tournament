@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Button, Link, Menu, MenuItem } from '@mui/material';
-import { CaretDownIcon, GameControllerIcon } from '@phosphor-icons/react';
+import { CaretDownIcon } from '@phosphor-icons/react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,7 +22,9 @@ import { NextMatchDialog } from '../match/NextMatchDialog';
 import { NavStartCountdown } from './NavStartCountdown';
 import { NavVetoCountdown } from './NavVetoCountdown';
 import { NavTournamentStatus } from './NavTournamentStatus';
+import { NavPill } from './NavPill';
 import { PlacementDialog } from '../tournament/PlacementDialog';
+import { NotificationPrompt } from '../social/NotificationPrompt';
 
 /** Top-bar text links: ink2 at rest, ink on hover and on the current page (the drafts' `.nav-links`). */
 const navLinkSx = {
@@ -192,7 +194,8 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
         </Link>
       </span>,
       'success',
-      { persist: true, key: readyToastKey }
+      // Gone by itself after 10 s: the navbar's match button stays (2026-10-15 crew test).
+      { autoHideMs: 10_000, key: readyToastKey }
     );
     soundNotification.playNotification();
   }, [
@@ -285,6 +288,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
         loading={matchStatusLoading}
       />
       {playerSteamId && !impersonation && <PlacementDialog viewerId={playerSteamId} />}
+      {playerSteamId && !impersonation && <NotificationPrompt viewerId={playerSteamId} />}
       <Box
         component={RouterLink}
         to={paths.root}
@@ -438,18 +442,19 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
         {playerSteamId && matchStatusLabel === 'veto_soon' && opensAt && matchSlug ? (
           <NavVetoCountdown opensAt={opensAt} to={matchPagePath(matchSlug)} vetoOff={vetoOff} />
         ) : ctaLabel ? (
-          <Button
-            component={RouterLink}
+          <NavPill
             to={paths.matchNow}
-            variant="contained"
-            color="primary"
-            size="small"
-            data-testid="nav-match-cta"
-            startIcon={<GameControllerIcon />}
-            sx={{ display: { xs: 'none', sm: 'inline-flex' }, px: 2, whiteSpace: 'nowrap' }}
-          >
-            {ctaLabel}
-          </Button>
+            testId="nav-match-cta"
+            text={ctaLabel}
+            dot={
+              matchStatusLabel === 'match_ready'
+                ? tokens.color.live
+                : matchStatusLabel === 'waiting_server'
+                  ? tokens.color.muted
+                  : tokens.color.accent
+            }
+            live={matchStatusLabel === 'match_ready'}
+          />
         ) : playerSteamId ? (
           <>
             <NavStartCountdown viewerId={playerSteamId} />

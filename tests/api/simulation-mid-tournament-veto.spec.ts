@@ -30,7 +30,15 @@ import type { Team } from '../helpers/teams';
  * @tag regression
  */
 
-const MAPS = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'];
+const MAPS = [
+  'de_mirage',
+  'de_inferno',
+  'de_ancient',
+  'de_anubis',
+  'de_dust2',
+  'de_vertigo',
+  'de_nuke',
+];
 
 // BO1 is 7 steps at ~1s each when automated; leave CI headroom.
 const VETO_TIMEOUT_MS = 45_000;
@@ -75,8 +83,11 @@ test.describe.serial('Enabling simulation mid-tournament', () => {
   });
 
   async function expectVetoCompletes(request: APIRequestContext) {
-    let veto: { status?: string; actions?: Array<{ mapName: string }>; pickedMaps?: unknown[] } | null =
-      null;
+    let veto: {
+      status?: string;
+      actions?: Array<{ mapName: string }>;
+      pickedMaps?: unknown[];
+    } | null = null;
     await expect
       .poll(
         async () => {

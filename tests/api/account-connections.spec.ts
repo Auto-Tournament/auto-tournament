@@ -1,4 +1,9 @@
-import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
+import {
+  test,
+  expect,
+  request as playwrightRequest,
+  type APIRequestContext,
+} from '@playwright/test';
 import { checkRemoveSignInMethod, isSameSiteRequest } from '../../api/src/utils/accountConnections';
 import {
   OAUTH_STATE_TTL_MS,
@@ -426,7 +431,9 @@ test.describe('Account connections: removing a sign-in method', () => {
       };
       const epic = body.gameAccounts.find((a) => a.provider === 'epic');
       // CI installs every bundled pack; Epic sign-in is not set up there.
-      expect(epic?.games.map((g) => g.id)).toEqual(expect.arrayContaining(['rocket-league', 'fortnite']));
+      expect(epic?.games.map((g) => g.id)).toEqual(
+        expect.arrayContaining(['rocket-league', 'fortnite'])
+      );
       expect(epic).toMatchObject({ linked: false, canConnect: false, signInEnabled: false });
       const steam = body.gameAccounts.find((a) => a.provider === 'steam');
       expect(steam?.games.map((g) => g.id)).toEqual(expect.arrayContaining(['cs2', 'dota-2']));
@@ -479,7 +486,11 @@ test.describe('Account connections: rules (unit)', () => {
       })
     ).toEqual({ ok: false, reason: 'last_method' });
     expect(
-      checkRemoveSignInMethod({ provider: 'steam', linkedProviders: [], enabledProviders: ['steam'] })
+      checkRemoveSignInMethod({
+        provider: 'steam',
+        linkedProviders: [],
+        enabledProviders: ['steam'],
+      })
     ).toEqual({ ok: false, reason: 'primary' });
     expect(
       checkRemoveSignInMethod({ provider: 'github', linkedProviders: [], enabledProviders: [] })
@@ -521,7 +532,9 @@ test.describe('Account connections: rules (unit)', () => {
       get: (name: string) => headers[name.toLowerCase()],
     });
     expect(isSameSiteRequest(req({ host: 'app.example' }))).toBe(true);
-    expect(isSameSiteRequest(req({ host: 'app.example', origin: 'https://app.example' }))).toBe(true);
+    expect(isSameSiteRequest(req({ host: 'app.example', origin: 'https://app.example' }))).toBe(
+      true
+    );
     // Dev proxy: same hostname, different port.
     expect(
       isSameSiteRequest(req({ host: 'localhost:3000', origin: 'http://localhost:5173' }))
@@ -530,9 +543,9 @@ test.describe('Account connections: rules (unit)', () => {
       false
     );
     expect(isSameSiteRequest(req({ host: 'app.example', origin: 'null' }))).toBe(false);
-    expect(
-      isSameSiteRequest(req({ host: 'app.example', referer: 'https://evil.example/x' }))
-    ).toBe(false);
+    expect(isSameSiteRequest(req({ host: 'app.example', referer: 'https://evil.example/x' }))).toBe(
+      false
+    );
     expect(isSameSiteRequest(req({ host: 'app.example', 'sec-fetch-site': 'cross-site' }))).toBe(
       false
     );

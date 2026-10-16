@@ -43,7 +43,7 @@ const DEFAULTS = {
   enabled: true,
   leadTimeSeconds: 120,
   cooldownSeconds: 600,
-  maxServersPerHost: 4,
+  maxServersPerHost: 32,
 };
 
 let key: { id: string; value: string };
@@ -384,6 +384,18 @@ test.describe.serial('Fleet autoscale (csm)', () => {
   }) => {
     const m = await machine(request, 'scale-stop');
     cleanup.push(() => m.csm.close());
+    // No failover spare here: with one kept warm, the only idle server would stay up.
+    const reserve = await request.put('/api/fleet/failover/settings', {
+      headers: getAuthHeader(),
+      data: { reserve: 0 },
+    });
+    expect(reserve.ok(), await reserve.text()).toBe(true);
+    cleanup.push(() =>
+      request.put('/api/fleet/failover/settings', {
+        headers: getAuthHeader(),
+        data: { reserve: null },
+      })
+    );
     const idle = await readyUp(request, 'scale-idle');
     const busy = await readyUp(request, 'scale-busy');
     for (const ru of [idle, busy]) {

@@ -1,7 +1,23 @@
+import { DEFAULT_GROUPS, groupsFormOf } from '../components/tournament/setup/GroupsFields';
+import {
+  DEFAULT_MATCH_TIMES,
+  matchTimesFormOf,
+  matchTimesSetting,
+  roundBreaksSetting,
+} from '../components/tournament/setup/ScheduleStep';
 import { pageTitle } from '../utils/pageTitle';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+} from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { TournamentLive } from '../components/tournament/TournamentLive';
@@ -11,10 +27,7 @@ import {
   EventPageSettingsCard,
   type EventPageFields,
 } from '../components/tournament/EventPageSettingsCard';
-import {
-  DEFAULT_SIGNUP,
-  signupSettingsPatch,
-} from '../components/tournament/setup/SignupSettings';
+import { DEFAULT_SIGNUP, signupSettingsPatch } from '../components/tournament/setup/SignupSettings';
 import {
   TournamentSetup,
   type SetupFormHandlers,
@@ -96,6 +109,8 @@ const DEFAULT_FORM: SetupFormValues = {
   plannedTeams: 8,
   eventPage: EMPTY_EVENT_PAGE,
   signup: DEFAULT_SIGNUP,
+  groups: DEFAULT_GROUPS,
+  matchTimes: DEFAULT_MATCH_TIMES,
 };
 
 const isEventPageEmpty = (fields: EventPageFields) =>
@@ -132,6 +147,8 @@ const formKeyOf = (tournament: TournamentRecord) =>
     tournament.teamSize,
     tournament.eloTemplateId,
     grandFinalModeOf(tournament),
+    tournament.type === 'groups' ? groupsFormOf(tournament.settings) : null,
+    matchTimesFormOf(tournament.settings),
     tournament.game ?? null,
     // The game module's own settings (CS2: map pool and round rules).
     moduleKeysOf(tournament.settings),
@@ -160,6 +177,8 @@ const formFromTournament = (tournament: TournamentRecord): SetupFormValues => {
     plannedTeams:
       teamCount >= 2 ? teamCount : nearestTeamCount(tournament.type, DEFAULT_FORM.plannedTeams),
     shuffleSettings: { teamSize: tournament.type === 'shuffle' ? tournament.teamSize || 5 : 5 },
+    groups: groupsFormOf(tournament.settings),
+    matchTimes: matchTimesFormOf(tournament.settings),
   };
 };
 
@@ -498,8 +517,7 @@ const Tournament: React.FC = () => {
       // A draft saved for one game can hold a step the next game does not
       // have, so the bound is that game's own list.
       const stepCount = setupStepsFor(values.game ?? DEFAULT_FORM.game).length;
-      const validStep = (n: unknown) =>
-        typeof n === 'number' && n >= 0 && n < stepCount ? n : 0;
+      const validStep = (n: unknown) => (typeof n === 'number' && n >= 0 && n < stepCount ? n : 0);
       setActiveStep(validStep(step));
       setFurthestStep(Math.max(validStep(step), validStep(savedFurthest)));
     } catch (error) {
@@ -551,7 +569,13 @@ const Tournament: React.FC = () => {
       grandFinalMode !== savedForm.grandFinalMode
     ) {
       return true;
+    } else if (
+      tournament.type === 'groups' &&
+      JSON.stringify(form.groups) !== JSON.stringify(savedForm.groups)
+    ) {
+      return true;
     }
+    if (JSON.stringify(form.matchTimes) !== JSON.stringify(savedForm.matchTimes)) return true;
 
     return false;
   };
@@ -622,6 +646,8 @@ const Tournament: React.FC = () => {
       onPlannedTeamsChange: (count) => patchForm({ plannedTeams: count }),
       onEventPageChange: (fields) => patchForm({ eventPage: fields }),
       onSignupChange: (fields) => patchForm({ signup: fields }),
+      onGroupsChange: (groups) => patchForm({ groups }),
+      onMatchTimesChange: (matchTimes) => patchForm({ matchTimes }),
     }),
     // handleTypeChange reads grandFinalModePicked and the saved tournament.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -811,9 +837,14 @@ const Tournament: React.FC = () => {
       if (response.success) {
         // The shuffle endpoint takes no settings: send the event page drafted
         // before creation as a settings update.
-        if (!tournament && !isEventPageEmpty(form.eventPage)) {
+        // Self sign-up (Teams and sign-up): players join from the tournament page.
+        const signupOpen = !tournament && form.signup.registrationOpen;
+        if (!tournament && (signupOpen || !isEventPageEmpty(form.eventPage))) {
           try {
-            await updateSettings({ ...form.eventPage });
+            await updateSettings({
+              ...(isEventPageEmpty(form.eventPage) ? {} : form.eventPage),
+              ...(signupOpen ? { registrationOpen: true } : {}),
+            });
           } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             showError(t('tournament.eventPage.saveError', { message }));
@@ -863,6 +894,16 @@ const Tournament: React.FC = () => {
       const settings = {
         ...baseSettings,
         ...(type === 'double_elimination' ? { grandFinalMode } : {}),
+        // Groups, then playoffs: groups, who goes through, the playoffs.
+        ...(type === 'groups' ? form.groups : {}),
+        // When matches start (Manage › Schedule edits the same).
+        matchTimes: matchTimesSetting(
+          form.matchTimes,
+          (form.eventPage as { startsAt?: string }).startsAt ||
+            (tournament?.settings as { startsAt?: string } | undefined)?.startsAt
+        ),
+        // Breaks between rounds (a shuffle): none set = the site's break.
+        roundBreaks: roundBreaksSetting(form.matchTimes),
         // The game module's own object (CS2: the map pool and round rules),
         // which the core stores without reading.
         ...savedGameSettings(),
@@ -1251,7 +1292,9 @@ const Tournament: React.FC = () => {
         aria-labelledby="new-tournament-dialog-title"
         data-testid="new-tournament-dialog"
       >
-        <DialogTitle id="new-tournament-dialog-title">{t('tournament.archiveDialog.title')}</DialogTitle>
+        <DialogTitle id="new-tournament-dialog-title">
+          {t('tournament.archiveDialog.title')}
+        </DialogTitle>
         <DialogContent sx={{ display: 'grid', gap: 1.5 }}>
           <Typography variant="body2">
             {t('tournament.archiveDialog.message', { name: tournament?.name ?? '' })}
@@ -1275,7 +1318,12 @@ const Tournament: React.FC = () => {
           >
             {t('tournament.archiveDialog.delete')}
           </Button>
-          <Button variant="contained" onClick={() => void handleArchive()} disabled={saving} data-testid="new-tournament-archive">
+          <Button
+            variant="contained"
+            onClick={() => void handleArchive()}
+            disabled={saving}
+            data-testid="new-tournament-archive"
+          >
             {t('tournament.archiveDialog.confirm')}
           </Button>
         </DialogActions>

@@ -1,6 +1,9 @@
 import type { TournamentRulesViewProps } from '../../types';
 import { cs2SettingsOf } from '../setup/cs2TournamentSettings';
 
+/** Splits a line's bold first sentence from the rest (the view draws it strong). */
+export const STRONG_END = '\u0000';
+
 /** The lines, in order: pure, so the view and a test read the same words. */
 export function rulesLines(
   t: (key: string, values?: Record<string, unknown>) => string,
@@ -28,7 +31,22 @@ export function rulesLines(
   }
   if (tournament.type === 'shuffle') lines.push(t('rules.shuffleMaps'));
   else if (cs2.veto === false) lines.push(t('rules.mapsDrawn'));
-  else lines.push(t('rules.veto'));
+  else {
+    lines.push(t('rules.veto'));
+    // Match times (Manage › Schedule): the veto opens by itself before each match.
+    const times = (
+      tournament.settings as
+        { matchTimes?: { mode?: string; vetoLeadMinutes?: number } } | undefined
+    )?.matchTimes;
+    if (times?.mode === 'times') {
+      const lead = typeof times.vetoLeadMinutes === 'number' ? times.vetoLeadMinutes : 5;
+      lines.push(
+        lead > 0
+          ? `${t('rules.beThere', { count: lead })}${STRONG_END}${t('rules.beThereWhy', { count: lead })}`
+          : `${t('rules.beThereOnTime')}${STRONG_END}${t('rules.beThereOnTimeWhy')}`
+      );
+    }
+  }
   if (cs2.fillTeamsWithBots) lines.push(t('rules.bots'));
   return lines;
 }

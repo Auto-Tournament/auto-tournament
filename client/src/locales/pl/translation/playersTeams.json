@@ -415,7 +415,15 @@
       "noTrophies": "No titles yet"
     },
     "playingNow": "Playing now",
-    "watchMatch": "Watch the match"
+    "watchMatch": "Watch the match",
+    "header": {
+      "eyebrow": "Team",
+      "eyebrowGame": "Team · {{game}}",
+      "players_one": "{{count}} player",
+      "players_other": "{{count}} players",
+      "owner": "owner {{name}}",
+      "rating": "rating {{rating}}"
+    }
   },
   "disputes": {
     "title": "Disputes",
@@ -613,7 +621,17 @@
     "invitePlayer": "Invite",
     "inviteSent": "Invite sent to {{name}}",
     "cancelInvite": "Take back the invite to {{name}}",
-    "findPlaceholder": "Name or profile link"
+    "findPlaceholder": "Name or profile link",
+    "banner": "Banner",
+    "noBanner": "No banner yet: the team's colour shows instead.",
+    "uploadBanner": "Upload banner",
+    "removeBanner": "Remove banner",
+    "bannerSaved": "Banner saved.",
+    "bannerHelp": "A wide picture behind your team's card and page. PNG, JPEG or WEBP, at most 1 MB; about 1200 × 300 looks best.",
+    "color": "Team colour",
+    "colorN": "Colour {{n}}",
+    "colorSaved": "Colour saved",
+    "colorHelp": "Your tag shows on this colour wherever the team has no logo, and the colour marks the team in tables and brackets."
   },
   "teamJoin": {
     "title": "Join a team",
@@ -748,7 +766,8 @@
       "tbd": "To be decided",
       "noRoster": "No players listed yet."
     },
-    "bracket": "Bracket"
+    "bracket": "Bracket",
+    "startsAt": "starts {{time}} · veto opens {{veto}}"
   },
   "report": {
     "button": "Report",
@@ -766,7 +785,11 @@
     "send": "Send report",
     "cancel": "Cancel",
     "sent": "Report about {{name}} sent to the admins",
-    "failed": "Could not send the report"
+    "failed": "Could not send the report",
+    "link": "Report a player (private, to the admins)",
+    "titleChoose": "Report a player",
+    "introChoose": "The admins see this, not the player. They never learn who reported them.",
+    "player": "Player"
   },
   "reportsPage": {
     "title": "Reports",
@@ -789,5 +812,35 @@
   "nextMatchCard": {
     "title": "Your next match",
     "open": "Open match room"
+  },
+  "commends": {
+    "title": "Commend players from this match",
+    "intro": "Friendly, a Leader, a Teacher or a Good sport? Pick up to {{max}} players, teammates or opponents. Nobody sees who commended them, only the counts on their profile.",
+    "givenOf": "{{count}} of {{max}} given",
+    "closesToday": "open until {{time}}",
+    "closesTomorrow": "open until tomorrow {{time}}",
+    "yourTeam": "Your team · {{name}}",
+    "opponents": "Opponents · {{name}}",
+    "groupLabel": "Commend {{name}}",
+    "failed": "Could not save the commend",
+    "kinds": {
+      "friendly": "Friendly",
+      "leader": "Leader",
+      "teacher": "Teacher",
+      "good_sport": "Good sport"
+    },
+    "kindNotes": {
+      "friendly": "kind to everyone",
+      "leader": "kept spirits up",
+      "teacher": "helped others learn",
+      "good_sport": "fair, win or lose"
+    },
+    "profileTitle": "Commended by other players",
+    "profileFoot": "Counts only: nobody sees who commended whom.",
+    "fromMatchmaking": "from matchmaking",
+    "totalN_one": "{{count}} commend",
+    "totalN_other": "{{count}} commends",
+    "matchesN_one": "{{count}} match",
+    "matchesN_other": "{{count}} matches"
   }
 }

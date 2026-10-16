@@ -1,21 +1,28 @@
 /**
  * A player's status as a dot (and, with `label`, the words): offline (grey),
- * online (green), searching for a game (blue), playing a match (orange). The
- * words say which match, and link to it.
+ * online (green), away (amber), searching for a game (blue), playing a match
+ * (brand orange). The words say which match, and link to it. `AvatarPresence`
+ * is the same dot on the corner of a PlayerAvatar.
  */
 import { Box, Tooltip, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { tokens } from '../../theme/tokens';
 import { matchPagePath } from '../../paths';
-import { usePresence, type Presence } from './presenceStore';
+import { presenceStatus, usePresence, type Presence } from './presenceStore';
 
 const { color } = tokens;
 
 function dotColor(p: Presence): string {
-  if (p.activity?.kind === 'playing') return color.sideT;
+  if (p.activity?.kind === 'playing') return color.accent;
   if (p.activity?.kind === 'searching') return color.info;
-  return p.online ? color.live : color.muted;
+  const status = presenceStatus(p);
+  return status === 'online' ? color.live : status === 'away' ? color.warning : color.muted;
+}
+
+/** What the dot shows: the activity, else online, away or offline. */
+function dotKind(p: Presence): string {
+  return p.activity?.kind ?? presenceStatus(p);
 }
 
 export function presenceText(
@@ -29,7 +36,8 @@ export function presenceText(
     if (a.source === 'tournament') return t('presence.playingTournament', { label: a.label });
     return t('presence.playing', { label: a.label });
   }
-  return p.online ? t('presence.online') : t('presence.offline');
+  const status = presenceStatus(p);
+  return t(`presence.${status}`);
 }
 
 export function PresenceDot({
@@ -52,7 +60,7 @@ export function PresenceDot({
       component="span"
       aria-label={text}
       data-testid="presence-dot"
-      data-presence={p.activity?.kind ?? (p.online ? 'online' : 'offline')}
+      data-presence={dotKind(p)}
       sx={{
         display: 'inline-block',
         width: size,
@@ -92,5 +100,49 @@ export function PresenceDot({
         </Typography>
       )}
     </Box>
+  );
+}
+
+/**
+ * The status dot on the bottom-right of a player's avatar (PlayerAvatar puts
+ * it there for any avatar with a player id). Nothing until the status is known.
+ */
+export function AvatarPresence({
+  playerId,
+  size,
+  corner = 'bottom',
+}: {
+  playerId: string;
+  /** The avatar's size: the dot scales with it. */
+  size: number;
+  /** Bottom-right; top-right where the bottom corner has another badge. */
+  corner?: 'bottom' | 'top';
+}) {
+  const { t } = useTranslation();
+  const p = usePresence([playerId])[playerId];
+  if (!p) return null;
+  const text = presenceText(p, t);
+  const dot = Math.min(14, Math.max(8, Math.round(size * 0.28)));
+  const ring = size >= 56 ? 3 : 2;
+  return (
+    <Tooltip title={text}>
+      <Box
+        component="span"
+        role="img"
+        aria-label={text}
+        data-testid="avatar-presence"
+        data-presence={dotKind(p)}
+        sx={{
+          position: 'absolute',
+          right: size >= 56 ? '4%' : -1,
+          [corner]: size >= 56 ? '4%' : -1,
+          width: dot,
+          height: dot,
+          borderRadius: '50%',
+          bgcolor: dotColor(p),
+          boxShadow: `0 0 0 ${ring}px ${color.paper}`,
+        }}
+      />
+    </Tooltip>
   );
 }

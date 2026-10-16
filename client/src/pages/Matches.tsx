@@ -18,7 +18,6 @@ import type { Match, MatchEvent, MatchesResponse } from '../types';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 import { PageHead } from '../components/common/ui';
-import { tokens } from '../theme/tokens';
 
 export default function Matches() {
   // One read of the tournament for both of this page's game-dependent parts:

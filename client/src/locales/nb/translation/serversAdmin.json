@@ -3,7 +3,7 @@
     "description": "Kampgjenoppretting og applikasjonsloggen for dette nettstedet.",
     "recovery": {
       "title": "Kampgjenoppretting",
-      "description": "Hvis API-et eller serverne ble startet på nytt under en turnering og kampstatusen ser feil ut (f.eks. kamper som står fast før de går live, eller som mangler live-resultater), kan du starte en gjenoppretting manuelt. Da spørres alle servere om gjeldende kamprapport, resultater og faser synkroniseres, og webhooks og demo-opplasting settes opp igjen der det går.",
+      "description": "Hvis API-et eller serverne ble startet på nytt under en turnering og kampstatusen ser feil ut (for eksempel kamper som står fast før de går live, eller som mangler live-resultater), kan du starte en gjenoppretting manuelt. Da spørres alle servere om gjeldende kamprapport, resultater og faser synkroniseres, og webhooks og demo-opplasting settes opp igjen der det går.",
       "button": "Kjør kampgjenoppretting nå",
       "success": "Kampgjenoppretting fullført.",
       "error": "Kampgjenoppretting feilet.",
@@ -74,12 +74,12 @@
         "button": "Hopp over veto",
         "tooltip": "Hopp over kartvetoen og last inn første kart med en gang",
         "title": "Hopp over veto",
-        "description": "Veto-fasen hoppes over og kampen starter."
+        "description": "Vetofasen hoppes over, og kampen starter."
       },
       "endWarmup": {
-        "button": "Avslutt warmup",
-        "tooltip": "Avslutt warmup og start kampen (knivrunde eller live)",
-        "title": "Avslutt warmup",
+        "button": "Avslutt oppvarmingen",
+        "tooltip": "Avslutt oppvarmingen og start kampen (knivrunde eller live)",
+        "title": "Avslutt oppvarmingen",
         "description": "Warmup avsluttes og kampen starter."
       },
       "endMatch": {
@@ -97,7 +97,7 @@
       "reallocateServer": {
         "button": "Flytt til annen server",
         "tooltip": "Flytt kampen til en annen server (før kampen er live)",
-        "tooltipUnavailable": "Bare mulig for kamper som er klare/lastet (ikke under live-spill)",
+        "tooltipUnavailable": "Bare mulig for kamper som er klare eller innlastet (ikke under live-spill)",
         "title": "Flytt til annen server",
         "description": "Kampen flyttes til en annen ledig server og lastes inn på nytt. Bruk dette hvis serveren er utdatert eller spillerne ikke får koblet til. Ikke mulig under en live-kamp."
       },
@@ -105,14 +105,14 @@
         "button": "Tving avbrudd",
         "tooltip": "Avbryt kampen selv om serveren er frakoblet – frigjør serveren",
         "title": "Tving avbrudd av kampen",
-        "description": "⚠️ Kampen avbrytes selv om serveren er frakoblet. Kampen markeres som fullført og serveren frigjøres. Dette kan ikke angres."
+        "description": "⚠️ Kampen avbrytes selv om serveren er frakoblet. Kampen markeres som fullført, og serveren frigjøres. Dette kan ikke angres."
       }
     },
     "inputs": {
       "restoreBackup": {
-        "button": "Gjenopprett backup",
+        "button": "Gjenopprett sikkerhetskopi",
         "tooltip": "Last inn en lagret rundebackup – gjenoppretter økonomi og posisjoner",
-        "title": "Gjenopprett backup",
+        "title": "Gjenopprett sikkerhetskopi",
         "label": "Runde som skal gjenopprettes"
       },
       "addTime": {
@@ -132,12 +132,12 @@
       "pause": "Kampen er satt på pause",
       "unpause": "Kampen fortsetter",
       "swap": "Lagene har byttet side",
-      "skipVeto": "Veto-fasen er hoppet over",
+      "skipVeto": "Vetofasen er hoppet over",
       "restartRound": "Runden er startet på nytt",
       "endMatch": "Kampen er avsluttet",
       "endWarmup": "Warmup er avsluttet",
       "startMatch": "Kampen er startet",
-      "restoreBackup": "Backup gjenopprettet til runde {{round}}",
+      "restoreBackup": "Sikkerhetskopien gjenopprettet til runde {{round}}",
       "addTime_one": "La til {{count}} sekund på rundetiden",
       "addTime_other": "La til {{count}} sekunder på rundetiden",
       "broadcast": "Meldingen er sendt til serveren",
@@ -147,26 +147,26 @@
       "default": "Kommandoen er kjørt"
     },
     "hold": {
-      "title": "Hold instead of a walkover",
-      "description": "While held, the match is not loaded or started and nobody gets a walkover. When it goes ahead, the teams get the full time again.",
-      "reason": "Reason (shown to admins)",
-      "delay": "Delay {{minutes}} min",
-      "holdUntilReleased": "Hold until released",
-      "release": "Release now",
-      "restartCountdown": "Restart the countdown",
-      "heldUntil": "On hold until {{time}}",
-      "heldIndefinitely": "On hold until released",
-      "tournamentPaused": "The tournament is paused",
-      "heldDone": "Match on hold",
-      "delayedDone": "Match delayed {{minutes}} min",
-      "releasedDone": "Match released",
-      "restartedDone": "Countdown restarted: the teams have the full time again",
-      "failed": "Could not change the hold"
+      "title": "Sett på vent i stedet for walkover",
+      "description": "Mens kampen er satt på vent, lastes eller startes den ikke, og ingen får walkover. Når den går videre, får lagene full tid igjen.",
+      "reason": "Grunn (vises for admins)",
+      "delay": "Utsett {{minutes}} min",
+      "holdUntilReleased": "Sett på vent til den frigis",
+      "release": "Frigi nå",
+      "restartCountdown": "Start nedtellingen på nytt",
+      "heldUntil": "På vent til {{time}}",
+      "heldIndefinitely": "På vent til den frigis",
+      "tournamentPaused": "Turneringen er satt på pause",
+      "heldDone": "Kampen er satt på vent",
+      "delayedDone": "Kampen er utsatt {{minutes}} min",
+      "releasedDone": "Kampen er frigitt",
+      "restartedDone": "Nedtellingen er startet på nytt, og lagene har full tid igjen",
+      "failed": "Kunne ikke endre ventestatusen"
     }
   },
   "adminCalls": {
     "header": "Adminanrop ({{count}})",
-    "title": "{{player}} tilkaller en admin",
+    "title": "{{player}} kaller på en admin",
     "justNow": "akkurat nå",
     "minutesAgo": "for {{count}} min siden",
     "hoursAgo": "for {{count}} t siden",

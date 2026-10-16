@@ -514,7 +514,53 @@ export async function recorderFault(recorder: string, ids: number[], error: stri
       [error.slice(0, 500), ...ids]
     );
   }
+  // A demo that never ticks on two different recorders does not play in this CS2 build (the
+  // March LAN demos, 2026-10-15: every recorder tried each map three to five times). Its map's
+  // waiting moments fail for good instead of going round the recorders again.
+  if (/first tick/i.test(error) && ids.length > 0) {
+    const maps = await db.queryAsync<{ match_slug: string; map_number: number }>(
+      `SELECT DISTINCT match_slug, map_number FROM cs2_highlights WHERE id IN (${ids
+        .map(() => '?')
+        .join(', ')})`,
+      ids
+    );
+    for (const m of maps) {
+      const before = await db.queryAsync<{ recorder: string }>(
+        `SELECT DISTINCT recorder FROM cs2_recorder_runs
+          WHERE match_slug = ? AND map_number = ? AND error ILIKE '%first tick%'`,
+        [m.match_slug, m.map_number]
+      );
+      const recorders = new Set([...before.map((r) => r.recorder), recorder]);
+      if (recorders.size < 2) continue;
+      const gone = await db.runAsync(
+        `UPDATE cs2_highlights SET status = 'failed',
+                error = 'This demo does not play in the current CS2 build (it never reached its first tick on two recorders)'
+          WHERE match_slug = ? AND map_number = ? AND status IN ('pending', 'recording')`,
+        [m.match_slug, m.map_number]
+      );
+      if (gone.changes > 0) {
+        log.warn(
+          `[RECORDERS] ${m.match_slug} map ${m.map_number + 1}: the demo does not play in this CS2 build; ${gone.changes} moment(s) failed`
+        );
+      }
+    }
+  }
   await queueMatchReelFor(ids);
+  // An imported demo that never ticks is usually from an older CS2 build the
+  // current game cannot play: the demo's fault, so it fails its own moments
+  // but does not pause the recorder (2026-10-15: old LAN demos paused every
+  // recorder while a live tournament needed them).
+  if (/first tick/i.test(error) && ids.length > 0) {
+    const imported = await db.queryOneAsync<{ n: number }>(
+      `SELECT COUNT(*)::INTEGER AS n FROM cs2_highlights h LEFT JOIN matches m ON m.slug = h.match_slug
+        WHERE h.id IN (${ids.map(() => '?').join(', ')}) AND m.tournament_id IS NULL`,
+      ids
+    );
+    if (Number(imported?.n ?? 0) === ids.length) {
+      log.warn(`[RECORDERS] ${recorder} could not play an imported demo: ${error.slice(0, 200)}`);
+      return;
+    }
+  }
   const r = await db.queryOneAsync<{ faults_in_row: number }>(
     `UPDATE cs2_recorders SET faults_in_row = faults_in_row + 1 WHERE name = ? RETURNING faults_in_row`,
     [recorder]

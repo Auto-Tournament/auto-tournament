@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Alert, Box, CircularProgress, Typography } from '@mui/material';
-import { Panel } from '../../common/ui';
-import { tokens, textSize } from '../../../theme/tokens';
+import { tokens } from '../../../theme/tokens';
+import { h2Sx, panel } from '../ui/draftUi';
 
 /** A tab with nothing to show yet: a quiet panel with a title and one line. */
 export function TabEmpty({
@@ -16,15 +16,15 @@ export function TabEmpty({
   'data-testid'?: string;
 }) {
   return (
-    <Panel role="status" data-testid={testId} sx={{ p: { xs: 3, md: 4 }, display: 'grid', gap: 1 }}>
-      <Typography variant="h6" component="h2">
+    <Box role="status" data-testid={testId} sx={{ ...panel, alignItems: 'flex-start' }}>
+      <Typography component="h2" sx={h2Sx}>
         {title}
       </Typography>
-      <Typography sx={{ color: tokens.color.muted, fontSize: textSize.sm, maxWidth: '60ch' }}>
+      <Typography sx={{ color: tokens.color.ink2, maxWidth: '60ch', lineHeight: 1.55 }}>
         {description}
       </Typography>
       {children}
-    </Panel>
+    </Box>
   );
 }
 

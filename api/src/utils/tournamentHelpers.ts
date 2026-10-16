@@ -39,6 +39,12 @@ export const validateTeamCount = (type: string, count: number): void => {
         throw new Error(`Round Robin requires 2-32 teams. You have ${count} teams.`);
       }
       break;
+    case 'groups':
+      // Two groups of two at least; the groups' own rule is checked with its settings (groupsTournament.ts).
+      if (count < 4 || count > 64) {
+        throw new Error(`Groups, then playoffs requires 4-64 teams. You have ${count} teams.`);
+      }
+      break;
     case 'swiss':
       if (count < 4 || count > 64) {
         throw new Error(`Swiss System requires 4-64 teams. You have ${count} teams.`);

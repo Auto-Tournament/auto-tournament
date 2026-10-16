@@ -20,6 +20,7 @@ import {
   textSize,
   tokens,
   useModuleTranslation,
+  fmtDate,
 } from '../../../module-sdk';
 
 interface MovementMap {
@@ -58,7 +59,7 @@ export function formatRunTime(ms: number): string {
 const keyOf = (m: Pick<MovementMap, 'map' | 'mode'>) => `${m.map}|${m.mode}`;
 
 export function MovementRecords() {
-  const { t, i18n } = useModuleTranslation('cs2');
+  const { t } = useModuleTranslation('cs2');
   const [maps, setMaps] = useState<MovementMap[] | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [course, setCourse] = useState(0);
@@ -97,8 +98,7 @@ export function MovementRecords() {
   const board = loaded?.query === query ? loaded.board : undefined;
   const kz = current.mode === 'kz';
   const columns = kz ? '3ch minmax(0, 1fr) 6.5rem 3.5rem 6rem' : '3ch minmax(0, 1fr) 6.5rem 6rem';
-  const date = (s: number) =>
-    new Date(s * 1000).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' });
+  const date = (s: number) => fmtDate(s);
 
   return (
     <Box

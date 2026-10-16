@@ -48,7 +48,11 @@ async function delivery(request: APIRequestContext, id: string) {
   };
 }
 
-async function sendTest(request: APIRequestContext, endpointId: string, type: string): Promise<string> {
+async function sendTest(
+  request: APIRequestContext,
+  endpointId: string,
+  type: string
+): Promise<string> {
   const res = await request.post(`/api/webhooks/${endpointId}/test`, { data: { type } });
   expect(res.status(), await res.text()).toBe(202);
   return (await res.json()).delivery.id as string;
@@ -67,7 +71,9 @@ test.describe.serial('Integrator webhooks', () => {
     await setAllowPrivate(request, false);
   });
 
-  test('target URLs: private and local need the LAN switch, link-local never', async ({ request }) => {
+  test('target URLs: private and local need the LAN switch, link-local never', async ({
+    request,
+  }) => {
     await deleteAllEndpoints(request);
     await setAllowPrivate(request, false);
     const url = await sinkUrl(request, newBin());
@@ -75,17 +81,30 @@ test.describe.serial('Integrator webhooks', () => {
     expect(refused.status()).toBe(400);
     expect((await refused.json()).error).toContain('private and local');
 
-    for (const bad of ['http://192.168.1.20/hook', 'http://localhost/hook', 'ftp://example.com', 'https://u:p@example.com']) {
+    for (const bad of [
+      'http://192.168.1.20/hook',
+      'http://localhost/hook',
+      'ftp://example.com',
+      'https://u:p@example.com',
+    ]) {
       expect((await request.post('/api/webhooks', { data: { url: bad } })).status(), bad).toBe(400);
     }
 
     await setAllowPrivate(request, true);
-    const metadata = await request.post('/api/webhooks', { data: { url: 'http://169.254.169.254/latest/meta-data' } });
+    const metadata = await request.post('/api/webhooks', {
+      data: { url: 'http://169.254.169.254/latest/meta-data' },
+    });
     expect(metadata.status()).toBe(400);
-    const unknownType = await request.post('/api/webhooks', { data: { url, eventTypes: ['match.exploded'] } });
+    const unknownType = await request.post('/api/webhooks', {
+      data: { url, eventTypes: ['match.exploded'] },
+    });
     expect(unknownType.status()).toBe(400);
 
-    const created = await createEndpoint(request, { url, eventTypes: ['match.ready', 'match.finished'], description: 'CI' });
+    const created = await createEndpoint(request, {
+      url,
+      eventTypes: ['match.ready', 'match.finished'],
+      description: 'CI',
+    });
     const list = await (await request.get('/api/webhooks')).json();
     expect(JSON.stringify(list)).not.toContain(created.secret);
     expect(list.endpoints.find((e: { id: string }) => e.id === created.id)).toMatchObject({
@@ -96,16 +115,23 @@ test.describe.serial('Integrator webhooks', () => {
     expect(list.eventTypes.map((e: { type: string }) => e.type)).toContain('match.ready');
   });
 
-  test('a test event per type: signed, test: true, shaped like the real one', async ({ request }) => {
+  test('a test event per type: signed, test: true, shaped like the real one', async ({
+    request,
+  }) => {
     await deleteAllEndpoints(request);
     await setAllowPrivate(request, true);
     const bin = newBin('test');
-    const endpoint = await createEndpoint(request, { url: await sinkUrl(request, bin), source: 'ci-ntlan' });
+    const endpoint = await createEndpoint(request, {
+      url: await sinkUrl(request, bin),
+      source: 'ci-ntlan',
+    });
 
     await sendTest(request, endpoint.id, 'match.ready');
     await sendTest(request, endpoint.id, 'match.finished');
     // Only the test events: a match another spec left in play may send real ones here too.
-    const got = (await waitForTypes(request, bin, ['match.ready', 'match.finished'])).filter((r) => r.envelope.test);
+    const got = (await waitForTypes(request, bin, ['match.ready', 'match.finished'])).filter(
+      (r) => r.envelope.test
+    );
     for (const r of got) expectSigned(r, endpoint.secret);
 
     const ready = got.find((r) => r.envelope.type === 'match.ready')!.envelope;
@@ -123,20 +149,31 @@ test.describe.serial('Integrator webhooks', () => {
 
     // A switched-off endpoint gets no test events.
     await request.patch(`/api/webhooks/${endpoint.id}`, { data: { active: false } });
-    expect((await request.post(`/api/webhooks/${endpoint.id}/test`, { data: { type: 'match.live' } })).status()).toBe(409);
+    expect(
+      (
+        await request.post(`/api/webhooks/${endpoint.id}/test`, { data: { type: 'match.live' } })
+      ).status()
+    ).toBe(409);
   });
 
-  test('retries until a 2xx, resend keeps the event id, the log hides connect details', async ({ request }) => {
+  test('retries until a 2xx, resend keeps the event id, the log hides connect details', async ({
+    request,
+  }) => {
     await deleteAllEndpoints(request);
     await setAllowPrivate(request, true);
     const bin = newBin('retry');
     // Subscribed to a type nothing else here sends: test events go out whatever the subscription.
-    const endpoint = await createEndpoint(request, { url: await sinkUrl(request, bin), eventTypes: ['match.reset'] });
+    const endpoint = await createEndpoint(request, {
+      url: await sinkUrl(request, bin),
+      eventTypes: ['match.reset'],
+    });
 
     // Two failures (echoing the body back), then success.
     await sinkBehaviour(request, bin, { status: 500, times: 2, echo: true });
     const id = await sendTest(request, endpoint.id, 'match.ready');
-    await expect.poll(async () => (await delivery(request, id)).status, { timeout: 30_000 }).toBe('succeeded');
+    await expect
+      .poll(async () => (await delivery(request, id)).status, { timeout: 30_000 })
+      .toBe('succeeded');
     const d = await delivery(request, id);
     expect(d.attempts).toBe(3);
     expect(d.attemptLog.map((a) => a.statusCode)).toEqual([500, 500, 200]);
@@ -169,13 +206,20 @@ test.describe.serial('Integrator webhooks', () => {
     expect(last.envelope.id).toBe(got[0].envelope.id);
   });
 
-  test('rotating the secret: both sign during the grace, only the new one after', async ({ request }) => {
+  test('rotating the secret: both sign during the grace, only the new one after', async ({
+    request,
+  }) => {
     await deleteAllEndpoints(request);
     await setAllowPrivate(request, true);
     const bin = newBin('rotate');
-    const endpoint = await createEndpoint(request, { url: await sinkUrl(request, bin), eventTypes: ['match.reset'] });
+    const endpoint = await createEndpoint(request, {
+      url: await sinkUrl(request, bin),
+      eventTypes: ['match.reset'],
+    });
 
-    const rotated = await request.post(`/api/webhooks/${endpoint.id}/rotate-secret`, { data: { graceHours: 1 } });
+    const rotated = await request.post(`/api/webhooks/${endpoint.id}/rotate-secret`, {
+      data: { graceHours: 1 },
+    });
     expect(rotated.ok(), await rotated.text()).toBe(true);
     const newSecret = (await rotated.json()).secret as string;
     expect(newSecret).not.toBe(endpoint.secret);
@@ -185,16 +229,22 @@ test.describe.serial('Integrator webhooks', () => {
     const [first] = await mine();
     expect(parseSignatureHeader(first.headers['x-at-signature'])?.signatures).toHaveLength(2);
     expect(verifySignature(newSecret, first.headers['x-at-signature'], first.body).ok).toBe(true);
-    expect(verifySignature(endpoint.secret, first.headers['x-at-signature'], first.body).ok).toBe(true);
+    expect(verifySignature(endpoint.secret, first.headers['x-at-signature'], first.body).ok).toBe(
+      true
+    );
 
-    const again = await request.post(`/api/webhooks/${endpoint.id}/rotate-secret`, { data: { graceHours: 0 } });
+    const again = await request.post(`/api/webhooks/${endpoint.id}/rotate-secret`, {
+      data: { graceHours: 0 },
+    });
     const newest = (await again.json()).secret as string;
     await sendTest(request, endpoint.id, 'match.live');
     await expect.poll(async () => (await mine()).length, { timeout: 20_000 }).toBe(2);
     const second = (await mine())[1];
     expect(parseSignatureHeader(second.headers['x-at-signature'])?.signatures).toHaveLength(1);
     expect(verifySignature(newest, second.headers['x-at-signature'], second.body).ok).toBe(true);
-    expect(verifySignature(newSecret, second.headers['x-at-signature'], second.body).ok).toBe(false);
+    expect(verifySignature(newSecret, second.headers['x-at-signature'], second.body).ok).toBe(
+      false
+    );
   });
 
   test('an endpoint that keeps failing is switched off, with a notice', async ({ request }) => {
@@ -206,7 +256,10 @@ test.describe.serial('Integrator webhooks', () => {
     await setAllowPrivate(request, true);
     await setTiming(request, { retryScale: 0.0001 });
     const bin = newBin('dead');
-    const endpoint = await createEndpoint(request, { url: await sinkUrl(request, bin), eventTypes: ['match.live'] });
+    const endpoint = await createEndpoint(request, {
+      url: await sinkUrl(request, bin),
+      eventTypes: ['match.live'],
+    });
     await sinkBehaviour(request, bin, { status: 503, times: 1000 });
 
     // A real event: a standalone match (no server) goes live.
@@ -243,7 +296,9 @@ test.describe.serial('Integrator webhooks', () => {
     expect(body.endpoint.deliveries.failed).toBeGreaterThanOrEqual(1);
     const ours = (await received(request, bin)).filter((r) => r.envelope.data.match.slug === slug);
     expect(ours.length).toBeGreaterThanOrEqual(10);
-    const [failed] = (await (await request.get(`/api/webhooks/${endpoint.id}/deliveries?status=failed`)).json()).deliveries;
+    const [failed] = (
+      await (await request.get(`/api/webhooks/${endpoint.id}/deliveries?status=failed`)).json()
+    ).deliveries;
     expect(failed).toMatchObject({ eventType: 'match.live', attempts: 10, lastStatusCode: 503 });
 
     // Switching it on again clears the notice.

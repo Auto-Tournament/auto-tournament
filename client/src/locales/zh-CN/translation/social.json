@@ -51,7 +51,8 @@
       "matchReady": "is ready. Open the match room to connect.",
       "vetoTurn": "it's your team's turn in the veto.",
       "startsSoon": "starts in {{minutes}} minutes. Get ready to join your first match.",
-      "startsSoonUpdate": "starts in {{minutes}} minutes. Start your game now so any update is done before your first match."
+      "startsSoonUpdate": "starts in {{minutes}} minutes. Start your game now so any update is done before your first match.",
+      "matchSoon": "your veto opens in {{minutes}} minutes and goes on without you. Be at your PC."
     },
     "toast": {
       "join": "Join party",
@@ -219,7 +220,8 @@
     "event": "Event",
     "channel": {
       "discord": "Discord DM",
-      "email": "Email"
+      "email": "Email",
+      "push": "浏览器 / 手机"
     },
     "events": {
       "match_ready": {
@@ -248,7 +250,8 @@
       "no_discord": "Link Discord first",
       "email_off": "This site can't send email",
       "no_email": "Add an email first",
-      "email_unverified": "Confirm your email first"
+      "email_unverified": "Confirm your email first",
+      "no_push": "请先在此浏览器中开启通知"
     },
     "switchLabel": "{{event}} by {{channel}}",
     "saveFailed": "Could not save that."
@@ -256,9 +259,21 @@
   "presence": {
     "online": "Online",
     "offline": "Offline",
+    "away": "离开",
     "searching": "Searching for a {{mode}} game",
     "playingMatchmaking": "In a matchmaking match: {{label}}",
     "playingTournament": "In a tournament match: {{label}}",
     "playing": "In a match: {{label}}"
+  },
+  "notificationPrompt": {
+    "title": "开启通知",
+    "body": "我们建议你开启通知。这样即使关闭此标签页，你也能收到提醒：",
+    "matchReady": "你的比赛准备好时",
+    "vetoTurn": "轮到你进行地图禁选时",
+    "starting": "你报名的锦标赛即将开始时",
+    "iphone": "在 iPhone 上，请先将本站添加到主屏幕（分享 → 添加到主屏幕），然后从主屏幕打开。",
+    "change": "你可以随时在通知设置中更改。",
+    "later": "暂不",
+    "turnOn": "开启（推荐）"
   }
 }

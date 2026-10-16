@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
+import { fmtLongDay, fmtTime } from '../../../utils/time';
 import { Box, Link, Typography } from '@mui/material';
 import { CalendarPlusIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { EventPageScheduleItem } from '../../../types';
 import { layoutSchedule, scheduleToIcs } from '../../../utils/scheduleCalendar';
-import { tokens, fontDisplay, mono, radii, withAlpha } from '../../../theme/tokens';
+import { tokens, fontDisplay, mono, withAlpha } from '../../../theme/tokens';
+import { panelSx, panelBorderSx } from '../../../components/common/ui';
 
 const { color } = tokens;
 const ROW = 40;
@@ -23,8 +25,12 @@ interface ScheduleCalendarProps {
  * to read at a glance than a list of times. "Add to calendar" downloads it as
  * an .ics file.
  */
-export function ScheduleCalendar({ schedule, tournamentName, tournamentId }: ScheduleCalendarProps) {
-  const { t, i18n } = useTranslation();
+export function ScheduleCalendar({
+  schedule,
+  tournamentName,
+  tournamentId,
+}: ScheduleCalendarProps) {
+  const { t } = useTranslation();
   const layout = useMemo(() => layoutSchedule(schedule), [schedule]);
   const icsHref = useMemo(
     () =>
@@ -39,13 +45,17 @@ export function ScheduleCalendar({ schedule, tournamentName, tournamentId }: Sch
 
   const { days, firstHour, lastHour } = layout;
   const rows = lastHour - firstHour;
-  const dayLabel = new Intl.DateTimeFormat(i18n.language, { weekday: 'long', day: 'numeric', month: 'short' });
-  const time = new Intl.DateTimeFormat(i18n.language, { hour: '2-digit', minute: '2-digit' });
-  const hourLabel = (hour: number) => time.format(new Date(2026, 0, 1, hour));
+  const hourLabel = (hour: number) => fmtTime(new Date(2026, 0, 1, hour));
 
   return (
-    <Box component="section" aria-labelledby="overview-schedule-title" data-testid="overview-schedule">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 1.5 }}>
+    <Box
+      component="section"
+      aria-labelledby="overview-schedule-title"
+      data-testid="overview-schedule"
+    >
+      <Box
+        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 1.5 }}
+      >
         <Typography
           id="overview-schedule-title"
           component="h2"
@@ -57,7 +67,13 @@ export function ScheduleCalendar({ schedule, tournamentName, tournamentId }: Sch
           <Link
             href={icsHref}
             download={`${tournamentName.replace(/[^\w-]+/g, '-').toLowerCase() || 'schedule'}.ics`}
-            sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.875rem', color: color.ink2 }}
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.75,
+              fontSize: '0.875rem',
+              color: color.ink2,
+            }}
           >
             <CalendarPlusIcon size={16} aria-hidden />
             {t('overviewPage.addToCalendar')}
@@ -67,10 +83,9 @@ export function ScheduleCalendar({ schedule, tournamentName, tournamentId }: Sch
 
       <Box
         sx={{
+          ...panelSx,
+          ...panelBorderSx,
           p: { xs: 2, md: '20px 24px' },
-          borderRadius: radii.lg,
-          bgcolor: color.paper2,
-          border: `1px solid ${color.rule}`,
           overflowX: 'auto',
         }}
       >
@@ -86,15 +101,24 @@ export function ScheduleCalendar({ schedule, tournamentName, tournamentId }: Sch
             <Typography
               key={day.key}
               component="h3"
-              sx={{ ...mono, fontSize: '0.75rem', color: color.ink2, pb: 1.25, textTransform: 'uppercase' }}
+              sx={{
+                ...mono,
+                fontSize: '0.75rem',
+                color: color.ink2,
+                pb: 1.25,
+                textTransform: 'uppercase',
+              }}
             >
-              {dayLabel.format(day.midnight)}
+              {fmtLongDay(day.midnight)}
             </Typography>
           ))}
 
           <Box aria-hidden sx={{ display: 'flex', flexDirection: 'column' }}>
             {Array.from({ length: rows }, (_, i) => (
-              <Typography key={i} sx={{ ...mono, height: ROW, fontSize: '0.75rem', color: color.muted }}>
+              <Typography
+                key={i}
+                sx={{ ...mono, height: ROW, fontSize: '0.75rem', color: color.muted }}
+              >
                 {hourLabel(firstHour + i)}
               </Typography>
             ))}
@@ -116,7 +140,11 @@ export function ScheduleCalendar({ schedule, tournamentName, tournamentId }: Sch
               {day.events.map((event, index) => {
                 const top = ((event.start - day.midnight) / HOUR - firstHour) * ROW + 2;
                 const height = Math.max(((event.end - event.start) / HOUR) * ROW - 4, 30);
-                const accent = event.isCheckIn ? color.medalGold : event.isLast ? color.sideT : color.accent;
+                const accent = event.isCheckIn
+                  ? color.medalGold
+                  : event.isLast
+                    ? color.sideT
+                    : color.accent;
                 const width = `calc(${100 / event.lanes}% - ${event.lanes > 1 ? 4 : 0}px)`;
                 return (
                   <Box
@@ -148,7 +176,11 @@ export function ScheduleCalendar({ schedule, tournamentName, tournamentId }: Sch
                       sx={{
                         fontSize: '0.8125rem',
                         fontWeight: 600,
-                        color: event.isCheckIn ? color.medalGold : event.isLast ? color.sideT : color.ink,
+                        color: event.isCheckIn
+                          ? color.medalGold
+                          : event.isLast
+                            ? color.sideT
+                            : color.ink,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: height < 50 ? 'nowrap' : 'normal',
@@ -156,8 +188,10 @@ export function ScheduleCalendar({ schedule, tournamentName, tournamentId }: Sch
                     >
                       {event.label}
                     </Typography>
-                    <Typography sx={{ ...mono, fontSize: '0.75rem', color: color.muted, flex: 'none' }}>
-                      {time.format(event.start)} – {time.format(event.end)}
+                    <Typography
+                      sx={{ ...mono, fontSize: '0.75rem', color: color.muted, flex: 'none' }}
+                    >
+                      {fmtTime(event.start)} – {fmtTime(event.end)}
                     </Typography>
                   </Box>
                 );
