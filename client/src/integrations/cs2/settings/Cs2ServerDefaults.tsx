@@ -43,6 +43,7 @@ import {
   useModuleTranslation,
   useSnackbar,
   SwitchRow,
+  fmtNum,
 } from '../../../module-sdk';
 
 type Flag = 0 | 1 | null;
@@ -243,7 +244,7 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
           showSnackbar(
             stored.simulateMatches
               ? t('settings.success.simulationEnabledWithSpeed', {
-                  speed: stored.simulationTimescale.toFixed(1),
+                  speed: fmtNum(stored.simulationTimescale, 1),
                 })
               : t('settings.success.simulationDisabled'),
             'info'
@@ -251,7 +252,7 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
         } else if (changed.includes('simulationTimescale') && stored.simulateMatches) {
           showSnackbar(
             t('settings.success.timescaleUpdated', {
-              value: stored.simulationTimescale.toFixed(1),
+              value: fmtNum(stored.simulationTimescale, 1),
             }),
             'info'
           );

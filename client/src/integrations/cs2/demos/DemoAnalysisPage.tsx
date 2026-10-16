@@ -17,6 +17,8 @@ import {
   fmtClock,
   panelSx,
   panelBorderSx,
+  fmtNum,
+  fmtMoney,
 } from '../../../module-sdk';
 import { getMapDisplayName } from '../maps/mapData';
 import { ReplayViewer } from './ReplayViewer';
@@ -438,7 +440,7 @@ export function DemoAnalysisPage() {
                       >
                         {t(`analysis.buy.${buy}`)}
                         {equipment !== undefined && buy !== 'pistol'
-                          ? ` · $${equipment.toLocaleString()}`
+                          ? ` · ${fmtMoney(equipment)}`
                           : ''}
                       </Box>
                     )}
@@ -590,7 +592,7 @@ export function DemoAnalysisPage() {
                         {p.name}
                       </Box>
                       <Box component="td" sx={{ fontWeight: 700 }}>
-                        {p.rating?.toFixed(2) ?? '—'}
+                        {fmtNum(p.rating, 2)}
                       </Box>
                       <td>
                         {p.kills}-{p.deaths}-{p.assists}
@@ -607,10 +609,10 @@ export function DemoAnalysisPage() {
                       </td>
                       <td>{p.multiKills.slice(1).reduce((a, b) => a + b, 0)}</td>
                       <td>
-                        {p.crosshairDegrees === null ? '—' : `${p.crosshairDegrees.toFixed(1)}°`}
+                        {p.crosshairDegrees === null ? '—' : `${fmtNum(p.crosshairDegrees, 1)}°`}
                       </td>
                       <td>{p.timeToDamageMs === null ? '—' : `${p.timeToDamageMs} ms`}</td>
-                      <td>${p.moneySpent.toLocaleString()}</td>
+                      <td>{fmtMoney(p.moneySpent)}</td>
                     </Box>
                   ))}
                 </tbody>

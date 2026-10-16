@@ -4,12 +4,13 @@
 
 import i18n from '../i18n';
 import { bareSlug, isGrandFinalSlug, isLosersBracketSlug } from './matchSlug';
+import { fmtDateTime } from './time';
 
 /**
  * Format a Unix timestamp to a localized date string
  */
 export const formatDate = (timestamp: number): string => {
-  return new Date(timestamp * 1000).toLocaleString();
+  return fmtDateTime(timestamp);
 };
 
 /**

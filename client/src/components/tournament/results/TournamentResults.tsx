@@ -26,6 +26,7 @@ import { getPlayerPageUrl } from '../../../utils/playerLinks';
 import { matchPagePath, tournamentTabPath } from '../../../paths';
 import { tokens, mono, radii } from '../../../theme/tokens';
 import { useInstalledIntegrations } from '../../../integrations/registry';
+import { fmtNum } from '../../../utils/number';
 
 const { color } = tokens;
 const SHOWN_PLAYERS = 10;
@@ -392,7 +393,7 @@ export function TournamentResults({
                           component="td"
                           sx={{ ...td, fontWeight: 600, display: { xs: 'none', sm: 'table-cell' } }}
                         >
-                          {typeof player.rating === 'number' ? player.rating.toFixed(2) : '—'}
+                          {fmtNum(player.rating, 2)}
                         </Box>
                       )}
                       <Box

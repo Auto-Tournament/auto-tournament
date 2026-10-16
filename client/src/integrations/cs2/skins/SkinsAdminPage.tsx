@@ -43,6 +43,7 @@ import {
   dialogPaperSx,
   SwitchRow,
   SegmentedControl,
+  fmtPercent,
 } from '../../../module-sdk';
 import { rarityColor } from './rarity';
 import { SkinsInventoryAdmin } from './SkinsInventoryAdmin';
@@ -396,7 +397,7 @@ function RarityBar({
           {RARITIES.map((r, i) => (
             <Box
               key={r}
-              title={`${t(`skins.rarity.${r}`)} ${shares[i]}%`}
+              title={`${t(`skins.rarity.${r}`)} ${fmtPercent(shares[i])}`}
               sx={{
                 width: `${shares[i]}%`,
                 bgcolor: rarityColor[r],

@@ -27,6 +27,7 @@ import type {
 } from '../../types/elo.types';
 import { useTranslation } from 'react-i18next';
 import { SwitchRow } from '../../components/common/ui';
+import { fmtNum } from '../../utils/number';
 
 interface EloTemplateEditorModalProps {
   open: boolean;
@@ -264,7 +265,7 @@ export default function EloTemplateEditorModal({
                         { value: 2, label: '+2' },
                       ]}
                       valueLabelDisplay="auto"
-                      valueLabelFormat={(value) => (value > 0 ? '+' : '') + value.toFixed(1)}
+                      valueLabelFormat={(value) => (value > 0 ? '+' : '') + fmtNum(value, 1)}
                       disabled={template?.id === 'pure-win-loss'}
                     />
                   </Box>

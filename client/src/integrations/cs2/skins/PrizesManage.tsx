@@ -19,6 +19,7 @@ import {
   panelSx,
   SwitchRow,
   FormField,
+  fmtNum,
 } from '../../../module-sdk';
 import type { TournamentPrizesManageProps } from '../../types';
 import { rarityColor } from './rarity';
@@ -467,7 +468,7 @@ function MvpPick({ tournamentId }: { tournamentId: number }) {
     [
       c.teamName,
       t('skins.prizesManage.commendsN', { count: c.commends }),
-      c.rating !== null ? t('skins.prizesManage.ratingN', { rating: c.rating.toFixed(2) }) : null,
+      c.rating !== null ? t('skins.prizesManage.ratingN', { rating: fmtNum(c.rating, 2) }) : null,
     ]
       .filter(Boolean)
       .join(' · ');
@@ -510,7 +511,7 @@ function MvpPick({ tournamentId }: { tournamentId: number }) {
               bestRating
                 ? t('skins.prizesManage.hintRating', {
                     name: bestRating.name,
-                    rating: bestRating.rating?.toFixed(2),
+                    rating: fmtNum(bestRating.rating, 2),
                   })
                 : null,
             ]

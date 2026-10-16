@@ -52,6 +52,7 @@ import { textSize, tokens } from '../theme/tokens';
 import { paths } from '../paths';
 import { pageTitle } from '../utils/pageTitle';
 import { useInstalledIntegrations, useIntegration } from '../integrations/registry';
+import { fmtNum } from '../utils/number';
 
 interface RatingHistoryEntry {
   /** Stable per row: the slug, or the row's position for a deleted match. */
@@ -1004,7 +1005,7 @@ export default function PlayerProfile() {
             key: 'adr',
             'data-testid': 'profile-stat-adr',
             label: t('playerPage.stats.adr'),
-            value: profileAvgAdr.toFixed(1),
+            value: fmtNum(profileAvgAdr, 1),
           },
         ]
       : []),
@@ -1014,7 +1015,7 @@ export default function PlayerProfile() {
             key: 'kd',
             'data-testid': 'profile-stat-kd',
             label: t('playerPage.stats.kd'),
-            value: profileKd.toFixed(2),
+            value: fmtNum(profileKd, 2),
           },
         ]
       : []),

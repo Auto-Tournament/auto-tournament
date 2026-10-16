@@ -36,6 +36,7 @@ import { FleetRosterEditor } from '../components/admin/FleetRosterEditor';
 import { useIntegrationFor } from '../integrations/registry';
 import { fontDisplay, fontMono, radii, textSize, tokens } from '../theme/tokens';
 import { SegmentedControl } from '../components/common/SegmentedControl';
+import { fmtMoney } from '../utils/number';
 
 const { color } = tokens;
 
@@ -290,8 +291,7 @@ const LEVEL_COLOR: Record<LogEntry['level'], string> = {
   info: tokens.color.ink2,
   admin: '#c9a7ff',
 };
-const money = (v: number | undefined) =>
-  typeof v === 'number' && v >= 0 ? `$${v.toLocaleString()}` : '—';
+const money = (v: number | undefined) => (typeof v === 'number' && v >= 0 ? fmtMoney(v) : '—');
 const WEAPON_NAMES: Record<string, string> = {
   smokegrenade: 'smoke',
   flashbang: 'flash',

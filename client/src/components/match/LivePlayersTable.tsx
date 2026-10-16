@@ -18,6 +18,7 @@ import {
   tableTd,
   tableOptional,
 } from '../tournament/ui/draftUi';
+import { fmtNum } from '../../utils/number';
 
 const { color } = tokens;
 
@@ -140,7 +141,7 @@ export function LivePlayersTable({
                     {Math.round(p.damage / rounds)}
                   </Box>
                   <Box component="td" sx={{ ...td, color: r >= 1 ? color.live : color.ink2 }}>
-                    {r.toFixed(2)}
+                    {fmtNum(r, 2)}
                   </Box>
                 </Box>
               );

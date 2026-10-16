@@ -33,6 +33,8 @@ import {
   panelSx,
   panelBorderSx,
   PlayerAvatar,
+  fmtNum,
+  fmtMoney,
 } from '../../../module-sdk';
 import { rarityColor } from './rarity';
 import { sourceLabel } from './SkinParts';
@@ -348,7 +350,7 @@ export function SkinsInventoryAdmin({ onChanged }: { onChanged?: () => void }) {
                             fontVariantNumeric: 'tabular-nums',
                           }}
                         >
-                          {skin.float.toFixed(4)} · #{skin.pattern}
+                          {fmtNum(skin.float, 4)} · #{skin.pattern}
                         </Typography>
                         <Typography
                           variant="body2"
@@ -529,7 +531,7 @@ function GiveSkinDialog({
               <Typography sx={{ flex: 1 }}>{entryLabel(o)}</Typography>
               {o.price !== undefined && (
                 <Typography variant="caption" color="text.secondary">
-                  ${Math.round(o.price).toLocaleString('en-US')}
+                  {fmtMoney(o.price)}
                 </Typography>
               )}
               <Box

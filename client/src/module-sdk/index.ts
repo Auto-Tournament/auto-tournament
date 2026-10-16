@@ -185,6 +185,7 @@ export {
   fmtCountdown,
   toMs,
 } from '../utils/time';
+export { fmtNum, fmtPercent, fmtShare, fmtMoney } from '../utils/number';
 export { ManageStatusTile } from '../components/manage/StatusStrip';
 
 // Strings

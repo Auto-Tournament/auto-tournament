@@ -20,6 +20,7 @@ import {
   type HighlightPlayerHandle,
   type MusicTrack,
   SegmentedControl,
+  fmtNum,
 } from '../../../module-sdk';
 import type { MatchPublicPanelProps } from '../../types';
 import { clock, kindLabel, libraryPath, mapLabel, watchTeamReelPath, type Chapter } from './data';
@@ -448,7 +449,7 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
                             component="td"
                             sx={{ color: l.adr >= 100 ? tokens.color.accent : undefined }}
                           >
-                            {l.adr.toFixed(1)}
+                            {fmtNum(l.adr, 1)}
                           </Box>
                           <Box component="td" sx={opt}>
                             {l.hsPercent}
@@ -471,7 +472,7 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
                                     : undefined,
                             }}
                           >
-                            {r.toFixed(2)}
+                            {fmtNum(r, 2)}
                           </Box>
                         </tr>
                       );

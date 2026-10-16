@@ -1,4 +1,5 @@
 import type { OverviewPlayer } from '../hooks/usePublicTournamentOverview';
+import { fmtNum, fmtMoney } from './number';
 
 export type AwardKey =
   | 'bestPlayer'
@@ -79,9 +80,9 @@ export function tournamentAwards(players: OverviewPlayer[]): Award[] {
       key === 'bestAdr' || key === 'bestHeadshots'
         ? Math.round(value)
         : key === 'bestPlayer'
-          ? value.toFixed(2)
+          ? fmtNum(value, 2)
           : key === 'mostMoney'
-            ? `$${Math.round(value).toLocaleString('en-US')}`
+            ? fmtMoney(value)
             : value;
     return [{ key, player, value: shown }];
   });

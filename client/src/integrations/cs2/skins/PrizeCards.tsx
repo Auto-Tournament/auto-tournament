@@ -16,6 +16,7 @@ import {
   fontDisplay,
   PlayerAvatar,
   panelSx,
+  fmtNum,
 } from '../../../module-sdk';
 import { skinPaths } from './paths';
 
@@ -155,7 +156,7 @@ export function TournamentPrizeCards({ tournamentId }: { tournamentId: number })
           })
         : info.prizes.mvp.by === 'rating'
           ? t('skins.prizeCard.mvpRating', {
-              rating: mvp.rating?.toFixed(2) ?? '—',
+              rating: fmtNum(mvp.rating, 2),
               matches: mvp.matches,
             })
           : t('skins.prizeCard.mvpAdmin')

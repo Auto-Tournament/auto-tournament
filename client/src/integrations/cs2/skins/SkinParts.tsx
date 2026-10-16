@@ -19,6 +19,7 @@ import {
   withAlpha,
   fmtLongDay,
   dialogPaperSx,
+  fmtNum,
 } from '../../../module-sdk';
 import { wearKey, type OwnedSkin } from './useSkins';
 import { rarityColor } from './rarity';
@@ -746,7 +747,7 @@ export function WearBar({
     <Box data-testid="wear-bar" sx={{ mt: 1, mb: 0.5 }}>
       <Box
         role="img"
-        aria-label={`${t(`skins.wear.${wearKey(float)}`)} · ${float.toFixed(4)}`}
+        aria-label={`${t(`skins.wear.${wearKey(float)}`)} · ${fmtNum(float, 4)}`}
         sx={{ position: 'relative' }}
       >
         <Box sx={{ display: 'flex', height, borderRadius: radii.pill, overflow: 'hidden' }}>
@@ -772,7 +773,7 @@ export function WearBar({
         sx={{ ...mono, mt: 0.75, fontSize: '0.8125rem', color: tokens.color.ink }}
         data-testid="wear-bar-float"
       >
-        {float.toFixed(12)}
+        {fmtNum(float, 12)}
         {typeof pattern === 'number' && (
           <Box component="span" sx={{ color: tokens.color.muted }}>
             {' '}
