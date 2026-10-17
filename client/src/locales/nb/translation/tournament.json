@@ -1419,7 +1419,10 @@
     "done": "Ferdig",
     "afterOvertime": "etter overtid",
     "startsAt": "starter {{time}} · vetoen åpner {{veto}}",
-    "yourMatch": "Kampen din"
+    "yourMatch": "Kampen din",
+    "placeholderTbd": "Ikke satt",
+    "placeholderVeto": "Map-veto",
+    "placeholderVetoAt": "Veto {{time}}"
   },
   "standingsTab": {
     "champions": "Vinnere",
