@@ -4,23 +4,10 @@
   "title": "state.snapshot (server → platform, ephemeral)",
   "description": "The whole MatchState (§8.2): after connect (`hello`), on assign (`assign`), on state.request / cmd snapshot_now / match.update conflict (`request`), after a reset resume (`reset`), every 60 s while a match runs (`periodic`) and after a failover resume restored its backup (`restored`). Envelope epoch = state.epoch. state = null when idle. Ephemeral: never replayed.",
   "type": "object",
-  "required": [
-    "reason",
-    "state",
-    "availability",
-    "config_rev",
-    "admins_rev"
-  ],
+  "required": ["reason", "state", "availability", "config_rev", "admins_rev"],
   "properties": {
     "reason": {
-      "enum": [
-        "hello",
-        "request",
-        "reset",
-        "periodic",
-        "assign",
-        "restored"
-      ]
+      "enum": ["hello", "request", "reset", "periodic", "assign", "restored"]
     },
     "state": {
       "oneOf": [
@@ -46,6 +33,10 @@
     },
     "map_stats": {
       "$ref": "../match.defs.json#/$defs/mapStats"
+    },
+    "tv": {
+      "$ref": "../tv.defs.json#/$defs/tvState",
+      "description": "GOTV state (tv.so); absent without it"
     }
   }
 }

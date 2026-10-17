@@ -37,7 +37,10 @@ export function startFleetTopics(): void {
   onFleetServerClosed(() => fleetChanged());
   fleetInbound.onAvailability(() => fleetChanged());
   fleetInbound.onSnapshot(() => fleetChanged());
-  fleetInbound.onEvent(() => fleetChanged());
+  // A rev-only event (in-game chat) changes nothing the admin pages show.
+  fleetInbound.onEvent((notice) => {
+    if (!notice.revOnly) fleetChanged();
+  });
   fleetInbound.onCommandResult(() => fleetChanged());
   liveStateStore.onLiveStateChange(() => fleetChanged());
   for (const event of ['inventory', 'health', 'result', 'progress', 'online', 'offline']) {

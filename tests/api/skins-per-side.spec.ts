@@ -4,7 +4,6 @@ import {
   equipTeam,
   loadoutPayload,
   sideOf,
-  withInventoryFallback,
 } from '../../api/src/integrations/cs2/skins/skinService';
 import {
   applyStep,
@@ -125,52 +124,6 @@ test.describe('loadout sides (rules)', () => {
       [0, 9],
     ]);
     expect(loadoutPayload([])).toBeNull();
-  });
-
-  test('nothing equipped in a slot: the newest owned skin for it, on both sides', () => {
-    const row = (weapon: string, paint: number, slot = '', team = 0) => ({
-      weapon,
-      paint_kit: paint,
-      float_value: 0.1,
-      pattern: 1,
-      slot,
-      team,
-    });
-    const owned = [
-      row('weapon_knife_m9_bayonet', 568),
-      row('sporty_gloves', 10018),
-      row('weapon_knife_tactical', 415),
-    ];
-    // Nothing equipped: the newest knife and gloves.
-    expect(withInventoryFallback([], owned).map((r) => [r.weapon, r.slot, r.team])).toEqual([
-      ['weapon_knife_m9_bayonet', 'knife', 0],
-      ['sporty_gloves', 'gloves', 0],
-    ]);
-    // Weapons too: the newest AK skin owned, unless one is equipped.
-    const guns = [row('weapon_ak47', 180), row('weapon_ak47', 44), row('weapon_awp', 344)];
-    expect(withInventoryFallback([], guns).map((r) => [r.weapon, r.paint_kit])).toEqual([
-      ['weapon_ak47', 180],
-      ['weapon_awp', 344],
-    ]);
-    expect(
-      withInventoryFallback([row('weapon_ak47', 44, 'weapon_ak47', 3)], guns).map((r) => [
-        r.weapon,
-        r.paint_kit,
-        r.team,
-      ])
-    ).toEqual([
-      ['weapon_ak47', 44, 3],
-      ['weapon_awp', 344, 0],
-    ]);
-    // A knife equipped (any side) stays the only knife.
-    const equipped = [row('weapon_knife_tactical', 415, 'knife', 2)];
-    expect(
-      withInventoryFallback(equipped, owned)
-        .filter((r) => r.slot === 'knife')
-        .map((r) => r.weapon)
-    ).toEqual(['weapon_knife_tactical']);
-    // Nothing owned: nothing added.
-    expect(withInventoryFallback([], [])).toEqual([]);
   });
 });
 

@@ -1,0 +1,28 @@
+{
+  "v": 1,
+  "type": "event.chat",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P2C",
+  "ts": 1790340013345,
+  "seq": 1905,
+  "epoch": 1,
+  "payload": {
+    "match_id": "ko-r1-m3",
+    "map_number": 1,
+    "round": 9,
+    "rev": 45,
+    "patch": {
+      "live_rev": 45
+    },
+    "data": {
+      "player": {
+        "steamid64": "76561198000000001",
+        "name": "alice",
+        "team": "team1",
+        "side": "ct"
+      },
+      "message": "admin, can we get a tech pause?",
+      "team_only": false,
+      "at": 1790340013300
+    }
+  }
+}

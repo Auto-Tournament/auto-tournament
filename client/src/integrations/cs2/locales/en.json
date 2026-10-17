@@ -668,7 +668,8 @@
         "title": "Ready / Match Start",
         "minimumReadyLabel": "Minimum ready players required",
         "minimumReadyHelper": "0 = everyone connected must ready. Default: 0.",
-        "allowForceReady": "Allow admins to force-ready players during setup (!forceready)"
+        "allowForceReady": "Allow admins to force-ready players during setup (!forceready)",
+        "teamReady": "Tournament matches: one player's .ready readies the whole team"
       },
       "adminTools": {
         "title": "Admin Tools",
@@ -1453,7 +1454,7 @@
     "equipOnBoth": "Equip on CT and T",
     "takeOff": "Take off",
     "keep": "Okay",
-    "inventory": "Inventory",
+    "inventory": "Loadout",
     "count": "{{count}} skins",
     "equippedTitle": "Equipped",
     "slot": {
@@ -1483,7 +1484,7 @@
     "off": "Skins are not turned on here.",
     "loadout": "Loadout",
     "arrange": "Arrange",
-    "showInventory": "Show inventory",
+    "showInventory": "Show loadout",
     "arrangeTitle": "Arrange your loadout",
     "arrangeHint": "Pick up to {{max}} skins for your profile, in order. The first two show big.",
     "big": "Big",
@@ -1792,8 +1793,8 @@
       "pickBody": "It waits for you until you pick, and then it is in your inventory.",
       "gotBody": "It is in your inventory.",
       "pick": "Pick your skin",
-      "open": "Open your inventory",
-      "openInventory": "Open your inventory",
+      "open": "Open your loadout",
+      "openInventory": "Open your loadout",
       "mvpLine": "MVP: {{name}}",
       "mvpCommends": "Most commended by the other players: {{count}} commends from {{players}} players ({{kinds}}).",
       "mvpRating": "Best rating: {{rating}} over {{matches}} matches.",
@@ -2323,6 +2324,16 @@
     },
     "wingmanPreset": {
       "button": "Set up as wingman"
+    },
+    "broadcast": {
+      "title": "Broadcast (GOTV)",
+      "delay": "GOTV delay",
+      "seats": "GOTV viewers per match",
+      "siteDefault": "Site default",
+      "noDelayWarning": "No delay: players who can see the stream could ghost.",
+      "insecureObservers": "Allow insecure observers (HUD tools like LHM)",
+      "insecureObserversHelp": "Lets observer HUDs that read GOTV connect. Takes effect when a match loads.",
+      "manyViewersHint": "Many viewers on the match server cost it bandwidth and CPU; for big audiences use a GOTV relay."
     }
   },
   "library": {
@@ -2503,6 +2514,7 @@
     "pickedBy": "{{team}}'s pick",
     "decider": "Decider",
     "live": "Live",
+    "round": "Round {{n}}",
     "upNext": "Up next",
     "notPlayed": "To play",
     "won": "{{team}} won",

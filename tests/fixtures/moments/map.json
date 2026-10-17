@@ -1,0 +1,747 @@
+{
+  "analysis": {
+    "analyzerVersion": 10,
+    "map": "de_mirage",
+    "liveTick": 0,
+    "lastTick": 60000,
+    "rounds": [
+      {
+        "number": 1,
+        "startTick": 0,
+        "endTick": 10000,
+        "winner": "CT",
+        "reason": "t_killed",
+        "ctEquipment": 4000,
+        "tEquipment": 4000
+      },
+      {
+        "number": 2,
+        "startTick": 10000,
+        "endTick": 20000,
+        "winner": "CT",
+        "reason": "t_killed",
+        "ctEquipment": 4000,
+        "tEquipment": 4000
+      },
+      {
+        "number": 3,
+        "startTick": 20000,
+        "endTick": 30000,
+        "winner": "T",
+        "reason": "ct_killed",
+        "ctEquipment": 4000,
+        "tEquipment": 4000
+      },
+      {
+        "number": 4,
+        "startTick": 30000,
+        "endTick": 40000,
+        "winner": "CT",
+        "reason": "t_killed",
+        "ctEquipment": 4000,
+        "tEquipment": 4000
+      },
+      {
+        "number": 5,
+        "startTick": 40000,
+        "endTick": 50000,
+        "winner": "CT",
+        "reason": "bomb_defused",
+        "ctEquipment": 4000,
+        "tEquipment": 4000
+      },
+      {
+        "number": 6,
+        "startTick": 50000,
+        "endTick": 60000,
+        "winner": "CT",
+        "reason": "bomb_defused",
+        "ctEquipment": 4000,
+        "tEquipment": 4000
+      }
+    ],
+    "kills": [
+      {
+        "tick": 3000,
+        "round": 1,
+        "attacker": "76561198000000011",
+        "victim": "76561198000000021",
+        "assister": null,
+        "weapon": "Knife",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 3100,
+        "round": 1,
+        "attacker": "76561198000000012",
+        "victim": "76561198000000022",
+        "assister": null,
+        "weapon": "Knife",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 3200,
+        "round": 1,
+        "attacker": "76561198000000013",
+        "victim": "76561198000000023",
+        "assister": null,
+        "weapon": "Knife",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 3300,
+        "round": 1,
+        "attacker": "76561198000000014",
+        "victim": "76561198000000024",
+        "assister": null,
+        "weapon": "Knife",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 3400,
+        "round": 1,
+        "attacker": "76561198000000015",
+        "victim": "76561198000000025",
+        "assister": null,
+        "weapon": "Knife",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 13000,
+        "round": 2,
+        "attacker": "76561198000000011",
+        "victim": "76561198000000021",
+        "assister": null,
+        "weapon": "Knife",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 13100,
+        "round": 2,
+        "attacker": "76561198000000012",
+        "victim": "76561198000000022",
+        "assister": null,
+        "weapon": "Zeus x27",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 13200,
+        "round": 2,
+        "attacker": "76561198000000023",
+        "victim": "76561198000000024",
+        "assister": null,
+        "weapon": "Knife",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "T",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 13300,
+        "round": 2,
+        "attacker": "76561198000000013",
+        "victim": "bot:Bob",
+        "assister": null,
+        "weapon": "Knife",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false,
+        "victimBot": true
+      },
+      {
+        "tick": 13400,
+        "round": 2,
+        "attacker": "76561198000000014",
+        "victim": "76561198000000023",
+        "assister": null,
+        "weapon": "M4A4",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 13500,
+        "round": 2,
+        "attacker": "76561198000000015",
+        "victim": "76561198000000025",
+        "assister": null,
+        "weapon": "M4A4",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 23000,
+        "round": 3,
+        "attacker": "76561198000000021",
+        "victim": "76561198000000011",
+        "assister": null,
+        "weapon": "AK-47",
+        "headshot": true,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "T",
+        "victimSide": "CT",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 23300,
+        "round": 3,
+        "attacker": "76561198000000021",
+        "victim": "76561198000000012",
+        "assister": null,
+        "weapon": "AK-47",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "T",
+        "victimSide": "CT",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 23600,
+        "round": 3,
+        "attacker": "76561198000000021",
+        "victim": "76561198000000013",
+        "assister": null,
+        "weapon": "HE Grenade",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "T",
+        "victimSide": "CT",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 23900,
+        "round": 3,
+        "attacker": "76561198000000021",
+        "victim": "76561198000000014",
+        "assister": null,
+        "weapon": "AK-47",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "T",
+        "victimSide": "CT",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 24200,
+        "round": 3,
+        "attacker": "76561198000000021",
+        "victim": "76561198000000015",
+        "assister": null,
+        "weapon": "AK-47",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "T",
+        "victimSide": "CT",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 32500,
+        "round": 4,
+        "attacker": "76561198000000015",
+        "victim": "76561198000000021",
+        "assister": null,
+        "weapon": "AWP",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false,
+        "noScope": true
+      },
+      {
+        "tick": 32600,
+        "round": 4,
+        "attacker": "76561198000000014",
+        "victim": "76561198000000022",
+        "assister": null,
+        "weapon": "AWP",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 33000,
+        "round": 4,
+        "attacker": "76561198000000023",
+        "victim": "76561198000000011",
+        "assister": null,
+        "weapon": "AK-47",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "T",
+        "victimSide": "CT",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 33200,
+        "round": 4,
+        "attacker": "76561198000000023",
+        "victim": "76561198000000012",
+        "assister": null,
+        "weapon": "AK-47",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "T",
+        "victimSide": "CT",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 33400,
+        "round": 4,
+        "attacker": "76561198000000023",
+        "victim": "76561198000000013",
+        "assister": null,
+        "weapon": "AK-47",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "T",
+        "victimSide": "CT",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 33600,
+        "round": 4,
+        "attacker": "76561198000000023",
+        "victim": "76561198000000014",
+        "assister": null,
+        "weapon": "AK-47",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "T",
+        "victimSide": "CT",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 34000,
+        "round": 4,
+        "attacker": "76561198000000015",
+        "victim": "76561198000000023",
+        "assister": null,
+        "weapon": "M4A1-S",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 34200,
+        "round": 4,
+        "attacker": "76561198000000015",
+        "victim": "76561198000000024",
+        "assister": null,
+        "weapon": "M4A1-S",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 34400,
+        "round": 4,
+        "attacker": "76561198000000015",
+        "victim": "76561198000000025",
+        "assister": null,
+        "weapon": "M4A1-S",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 42000,
+        "round": 5,
+        "attacker": "76561198000000021",
+        "victim": "76561198000000011",
+        "assister": null,
+        "weapon": "Molotov",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "T",
+        "victimSide": "CT",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 42100,
+        "round": 5,
+        "attacker": "76561198000000012",
+        "victim": "76561198000000021",
+        "assister": null,
+        "weapon": "Incendiary Grenade",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 52000,
+        "round": 6,
+        "attacker": "76561198000000011",
+        "victim": "76561198000000021",
+        "assister": null,
+        "weapon": "Knife",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      },
+      {
+        "tick": 60100,
+        "round": 7,
+        "attacker": "76561198000000011",
+        "victim": "76561198000000022",
+        "assister": null,
+        "weapon": "Knife",
+        "headshot": false,
+        "penetrated": false,
+        "throughSmoke": false,
+        "attackerSide": "CT",
+        "victimSide": "T",
+        "attackerPos": [0, 0],
+        "victimPos": [10, 10],
+        "opening": false,
+        "trade": false,
+        "traded": false
+      }
+    ],
+    "players": {
+      "76561198000000011": {
+        "name": "Ninja 1"
+      },
+      "76561198000000012": {
+        "name": "Ninja 2"
+      },
+      "76561198000000013": {
+        "name": "Ninja 3"
+      },
+      "76561198000000014": {
+        "name": "Ninja 4"
+      },
+      "76561198000000015": {
+        "name": "Ninja 5"
+      },
+      "76561198000000021": {
+        "name": "Pirate 1"
+      },
+      "76561198000000022": {
+        "name": "Pirate 2"
+      },
+      "76561198000000023": {
+        "name": "Pirate 3"
+      },
+      "76561198000000024": {
+        "name": "Pirate 4"
+      },
+      "76561198000000025": {
+        "name": "Pirate 5"
+      }
+    }
+  },
+  "replay": {
+    "map": "de_mirage",
+    "tickrate": 64,
+    "step": 16,
+    "players": [
+      {
+        "id": "76561198000000011",
+        "name": "Ninja 1"
+      },
+      {
+        "id": "76561198000000012",
+        "name": "Ninja 2"
+      },
+      {
+        "id": "76561198000000013",
+        "name": "Ninja 3"
+      },
+      {
+        "id": "76561198000000014",
+        "name": "Ninja 4"
+      },
+      {
+        "id": "76561198000000015",
+        "name": "Ninja 5"
+      },
+      {
+        "id": "76561198000000021",
+        "name": "Pirate 1"
+      },
+      {
+        "id": "76561198000000022",
+        "name": "Pirate 2"
+      },
+      {
+        "id": "76561198000000023",
+        "name": "Pirate 3"
+      },
+      {
+        "id": "76561198000000024",
+        "name": "Pirate 4"
+      },
+      {
+        "id": "76561198000000025",
+        "name": "Pirate 5"
+      }
+    ],
+    "frames": [
+      [
+        31000,
+        [
+          [0, 0, 0, 100, 3, 0],
+          [0, 0, 0, 100, 3, 0],
+          [0, 0, 0, 100, 3, 0],
+          [0, 0, 0, 100, 3, 0],
+          [0, 0, 0, 100, 3, 0],
+          [0, 0, 0, 100, 2, 0],
+          [0, 0, 0, 100, 2, 0],
+          [0, 0, 0, 100, 2, 0],
+          [0, 0, 0, 100, 2, 0],
+          [0, 0, 0, 100, 2, 0]
+        ]
+      ],
+      [
+        41000,
+        [
+          [0, 0, 0, 100, 3, 0],
+          [0, 0, 0, 100, 3, 0],
+          [0, 0, 0, 100, 3, 0],
+          [0, 0, 0, 100, 3, 0],
+          [0, 0, 0, 100, 3, 0],
+          [0, 0, 0, 100, 2, 0],
+          [0, 0, 0, 100, 2, 0],
+          [0, 0, 0, 100, 2, 0],
+          [0, 0, 0, 100, 2, 0],
+          [0, 0, 0, 100, 2, 0]
+        ]
+      ],
+      [
+        44300,
+        [
+          null,
+          [900, 900, 0, 100, 3, 0],
+          [500, 500, 0, 100, 3, 0],
+          [1500, 0, 0, 100, 3, 0],
+          [-800, 0, 0, 100, 3, 0],
+          null,
+          [0, 0, 0, 100, 2, 0],
+          [0, 0, 0, 100, 2, 0],
+          [0, 0, 0, 100, 2, 0],
+          [0, 0, 0, 100, 2, 0]
+        ]
+      ]
+    ],
+    "bomb": [
+      {
+        "tick": 41800,
+        "kind": "planted",
+        "site": "B",
+        "x": 510,
+        "y": 495
+      },
+      {
+        "tick": 44328,
+        "kind": "defused",
+        "site": "B",
+        "x": 510,
+        "y": 495
+      },
+      {
+        "tick": 51800,
+        "kind": "planted",
+        "site": "A",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "tick": 54040,
+        "kind": "defused",
+        "site": "A",
+        "x": 0,
+        "y": 0,
+        "player": "76561198000000012"
+      }
+    ]
+  }
+}

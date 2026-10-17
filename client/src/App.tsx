@@ -22,6 +22,7 @@ import Tournaments from './pages/Tournaments';
 import { ScopedTournamentRedirect, TournamentScope } from './components/manage/TournamentScope';
 import Bracket from './pages/Bracket';
 import ManageMatch from './pages/ManageMatch';
+import LiveMatches from './pages/LiveMatches';
 import Matches from './pages/Matches';
 import Disputes from './pages/Disputes';
 import PlayedMatches from './pages/PlayedMatches';
@@ -596,6 +597,7 @@ function AppRoutes() {
 
       <Route path={paths.root} element={<RootRoute />}>
         <Route path={adminRoute(paths.manage)} element={<Manage />} />
+        <Route path={adminRoute(paths.liveMatches)} element={<LiveMatches />} />
         <Route path={adminRoute(paths.teams)} element={<Teams />} />
         <Route path={adminRoute(paths.players)} element={<Players />} />
         <Route path={adminRoute(paths.reports)} element={<Reports />} />

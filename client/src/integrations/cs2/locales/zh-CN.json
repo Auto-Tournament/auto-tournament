@@ -667,7 +667,8 @@
         "title": "准备 / 比赛开始",
         "minimumReadyLabel": "最少准备人数要求",
         "minimumReadyHelper": "0 = 所有已连接玩家都必须准备。默认：0。",
-        "allowForceReady": "允许管理员在设置阶段强制准备玩家（!forceready）"
+        "allowForceReady": "允许管理员在设置阶段强制准备玩家（!forceready）",
+        "teamReady": "Tournament matches: one player's .ready readies the whole team"
       },
       "adminTools": {
         "title": "管理员工具",
@@ -2328,6 +2329,16 @@
     },
     "wingmanPreset": {
       "button": "Set up as wingman"
+    },
+    "broadcast": {
+      "title": "Broadcast (GOTV)",
+      "delay": "GOTV delay",
+      "seats": "GOTV viewers per match",
+      "siteDefault": "Site default",
+      "noDelayWarning": "No delay: players who can see the stream could ghost.",
+      "insecureObservers": "Allow insecure observers (HUD tools like LHM)",
+      "insecureObserversHelp": "Lets observer HUDs that read GOTV connect. Takes effect when a match loads.",
+      "manyViewersHint": "Many viewers on the match server cost it bandwidth and CPU; for big audiences use a GOTV relay."
     }
   },
   "library": {
@@ -2508,6 +2519,7 @@
     "pickedBy": "{{team}}'s pick",
     "decider": "Decider",
     "live": "Live",
+    "round": "Round {{n}}",
     "upNext": "Up next",
     "notPlayed": "To play",
     "won": "{{team}} won",

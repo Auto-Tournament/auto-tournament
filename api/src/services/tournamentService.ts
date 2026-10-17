@@ -1,3 +1,4 @@
+import { withoutConfigSecrets } from '../utils/matchConfigSecrets';
 import { discardTournamentRatings } from './ratingService';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
@@ -905,7 +906,10 @@ class TournamentService {
 
       // Integration-owned config, forwarded as-is (client slots: PR 12).
       if (row.config) {
-        match.config = parseStoredMatchConfig(row.config) as BracketMatch['config'];
+        // The public bracket: no GOTV password with no delay (utils/matchConfigSecrets).
+        match.config = withoutConfigSecrets(
+          parseStoredMatchConfig(row.config)
+        ) as BracketMatch['config'];
       }
 
       // Attach team info if available

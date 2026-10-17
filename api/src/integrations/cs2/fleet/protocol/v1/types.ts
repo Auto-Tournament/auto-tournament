@@ -80,6 +80,8 @@ export interface HelloPayload {
   state?: Record<string, unknown> | null;
   availability: Availability;
   selftest?: SelftestSummary;
+  /** GOTV state from the tv plugin; absent without tv.so. */
+  tv?: TvState;
   /** Rev of the admins.set list the server has cached (D13); absent = none. */
   admins_rev?: number;
   /** Plugins the core did not load on this CS2 build (informational). */
@@ -184,7 +186,13 @@ export interface MatchRules {
   max_rounds?: number;
   overtime?: { enabled?: boolean; rounds_per_half?: number; max_overtimes?: number };
   tiebreak?: { damage?: boolean; sudden_death_on_tie?: boolean };
-  ready?: { min_per_team?: number; allow_force_ready?: boolean; autoready?: boolean };
+  ready?: {
+    min_per_team?: number;
+    allow_force_ready?: boolean;
+    autoready?: boolean;
+    /** One player's `.ready` readies their whole team. Older Ready Ups ignore it. */
+    team_ready?: boolean;
+  };
   knife?: { side_pick_seconds?: number };
   pause?: {
     tactical_per_team?: number;
@@ -201,6 +209,14 @@ export interface MatchRules {
     gg_vote?: { enabled?: boolean; threshold?: number; min_score_diff?: number };
   };
   demo?: { record?: boolean; upload?: boolean };
+  /** GOTV, for Ready Up's `tv` plugin. Older Ready Ups ignore it (the tv_* cvars still go). */
+  broadcast?: {
+    delay_seconds?: number;
+    allow_insecure_observers?: boolean;
+    max_clients?: number;
+    relay_text_chat?: boolean;
+    relay_voice?: boolean;
+  };
   wingman?: boolean;
   simulation?: { timescale?: number };
   bot_fill?: { players_per_team: number };
@@ -502,7 +518,8 @@ export type CmdName =
   | 'plugins.set'
   | 'whitelist.set'
   | 'practice.set'
-  | 'settings.set';
+  | 'settings.set'
+  | 'tv.set';
 
 export interface CmdPayload {
   match_id?: string;
@@ -570,6 +587,31 @@ export interface StateSnapshotPayload {
   config_rev: number;
   admins_rev: number;
   map_stats?: MapStats;
+  /** GOTV state (tv.so); absent without it. */
+  tv?: TvState;
+}
+
+/**
+ * GOTV state of a server from Ready Up's tv plugin (tv.defs.json#/$defs/tvState):
+ * hello.tv, state.snapshot.tv, server.tv. Engine values are null when unread.
+ * Never the password.
+ */
+export interface TvState {
+  available: boolean;
+  port: number | null;
+  enabled: boolean | null;
+  delay_seconds: number | null;
+  max_clients: number | null;
+  clients: number | null;
+  secure_bypass: boolean | null;
+  deltaticks_enforce: boolean | null;
+  relay_text_chat: boolean | null;
+  relay_voice: boolean | null;
+  password_set: boolean | null;
+  profile: { source: 'server' | 'match'; match_id?: string; settings: Record<string, unknown> };
+  delay_floor: number;
+  casters: number;
+  server_insecure: boolean;
 }
 
 export interface StatePatchPayload {
@@ -795,6 +837,18 @@ export interface FleetEventData {
     message: string;
     called_at: string;
   };
+  chat: {
+    player: {
+      steamid64: U64s;
+      name: string;
+      team: TeamKey | null;
+      side: Side | 'spec';
+    };
+    message: string;
+    team_only: boolean;
+    /** Unix ms. */
+    at: number;
+  };
   error: { code: string; message: string; fatal: boolean };
 }
 
@@ -824,6 +878,7 @@ export const FLEET_EVENT_NAMES: ReadonlyArray<FleetEventName> = [
   'forfeit',
   'gg',
   'admin_called',
+  'chat',
   'error',
 ];
 
@@ -880,6 +935,7 @@ export interface FleetMessages {
   'server.availability': ServerAvailabilityPayload;
   'server.cs2_update_required': ServerCs2UpdateRequiredPayload;
   'server.selftest': ServerSelftestPayload;
+  'server.tv': TvState;
   'server.drain': ServerDrainPayload;
   'server.undrain': ServerUndrainPayload;
   'admins.set': AdminsSetPayload;
@@ -909,6 +965,7 @@ export interface FleetMessages {
   'event.forfeit': FleetEventPayload<FleetEventData['forfeit']>;
   'event.gg': FleetEventPayload<FleetEventData['gg']>;
   'event.admin_called': FleetEventPayload<FleetEventData['admin_called']>;
+  'event.chat': FleetEventPayload<FleetEventData['chat']>;
   'event.error': FleetEventPayload<FleetEventData['error']>;
   'demo.begin': DemoBeginPayload;
   'demo.chunk': DemoChunkPayload;
@@ -948,6 +1005,7 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
     'server.availability': S2P_RELIABLE,
     'server.cs2_update_required': S2P_RELIABLE,
     'server.selftest': S2P_RELIABLE,
+    'server.tv': S2P_RELIABLE,
     'server.drain': P2S_RELIABLE,
     'server.undrain': P2S_RELIABLE,
     'skins.stattrak': S2P_RELIABLE,
@@ -974,6 +1032,7 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
     'event.forfeit': S2P_RELIABLE,
     'event.gg': S2P_RELIABLE,
     'event.admin_called': S2P_RELIABLE,
+    'event.chat': S2P_RELIABLE,
     'event.error': S2P_RELIABLE,
     'demo.begin': { direction: 'server_to_platform', reliable: false },
     'demo.chunk': { direction: 'server_to_platform', reliable: false },

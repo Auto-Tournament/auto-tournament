@@ -89,7 +89,15 @@ export function ManageTable({
   ...rest
 }: Omit<BoxProps, 'rows'> & {
   columns: ManageColumn[];
-  rows: { key: string; cells: React.ReactNode[]; testId?: string }[];
+  rows: {
+    key: string;
+    cells: React.ReactNode[];
+    testId?: string;
+    /** A coloured bar on the row's left edge (how urgent it is). */
+    stripe?: string;
+    /** Extra `data-*` attributes on the row. */
+    data?: Record<`data-${string}`, string>;
+  }[];
   /** Shown in place of the rows when there are none. */
   empty?: React.ReactNode;
   /** The table's accessible name. */
@@ -157,9 +165,17 @@ export function ManageTable({
             </tr>
           ) : (
             rows.map((row) => (
-              <tr key={row.key} data-testid={row.testId}>
+              <tr key={row.key} data-testid={row.testId} {...row.data}>
                 {row.cells.map((cell, index) => (
-                  <td key={index} className={columns[index]?.numeric ? 'num' : undefined}>
+                  <td
+                    key={index}
+                    className={columns[index]?.numeric ? 'num' : undefined}
+                    style={
+                      index === 0 && row.stripe
+                        ? { boxShadow: `inset 3px 0 0 ${row.stripe}` }
+                        : undefined
+                    }
+                  >
                     {cell}
                   </td>
                 ))}

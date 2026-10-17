@@ -16,6 +16,7 @@ import { AdminNoticeBell } from '../admin/AdminNoticeBell';
 import { useNeedsYouCount } from '../../hooks/useNeedsYouCount';
 import { AccountMenu } from './AccountMenu';
 import { SiteSearch } from '../search/SiteSearch';
+import { useModuleAccountMenuItems } from '../../hooks/useModuleAccountMenuItems';
 import { useInstalledIntegrations } from '../../integrations/registry';
 import { soundNotification } from '../../utils/soundNotification';
 import { NextMatchDialog } from '../match/NextMatchDialog';
@@ -233,6 +234,15 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
   // The places a player goes: Play, Tournaments, and Community for the
   // leaderboards, the directories and the modules' pages (fewer words in the bar).
   // The logo is Home. Admins also get Manage.
+  // A module's links for the signed-in player (CS2: Loadout, while skins are on).
+  const playerModuleLinks: SiteLink[] = useModuleAccountMenuItems(playerSteamId ?? null).map(
+    (item) => ({
+      to: item.path,
+      label: t(item.labelKey, { ns: item.moduleId }),
+      testId: `nav-${item.key}`,
+      current: at(item.path),
+    })
+  );
   const mainLinks: SiteLink[] = [
     ...(matchmakingAvailable
       ? [{ to: paths.play, label: t('nav.play'), testId: 'nav-play', current: at(paths.play) }]
@@ -243,6 +253,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
       testId: 'nav-tournaments',
       current: at(paths.tournamentList) || pathname.startsWith('/tournament/'),
     },
+    ...playerModuleLinks,
   ];
   const communityLinks: SiteLink[] = [
     {

@@ -43,6 +43,14 @@ class Cs2Settings {
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
+  /** Tournament matches: one player's `.ready` readies their whole team. On by default. */
+  async isAtTeamReadyEnabled(): Promise<boolean> {
+    const value = await this.getSetting('at_team_ready');
+    if (!value) return true;
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
   async isAtPauseAfterRestoreEnabled(): Promise<boolean> {
     const value = await this.getSetting('at_pause_after_restore');
     if (!value) return true; // MatchZy Enhanced default
@@ -194,6 +202,7 @@ export async function readCs2InstanceSettings(): Promise<Record<string, unknown>
     // MatchZy Enhanced core defaults
     atMinimumReadyRequired: atCore.minimumReadyRequired,
     atAllowForceReady: atCore.allowForceReady,
+    atTeamReady: await cs2Settings.isAtTeamReadyEnabled(),
     atPauseAfterRestore: atCore.pauseAfterRestore,
     atJoinPassword: await cs2Settings.isAtJoinPasswordEnabled(),
     atAutostartAfterMinutes: await cs2Settings.getAtAutostartAfterMinutes(),

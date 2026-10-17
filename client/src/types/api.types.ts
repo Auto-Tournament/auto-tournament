@@ -285,6 +285,7 @@ export interface SettingsResponse extends ApiResponse {
     // Ready Up's ready / restore defaults
     atMinimumReadyRequired?: number;
     atAllowForceReady?: boolean;
+    atTeamReady?: boolean;
     atPauseAfterRestore?: boolean;
     atJoinPassword?: boolean;
     atAutostartAfterMinutes?: number;

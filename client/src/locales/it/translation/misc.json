@@ -907,7 +907,9 @@
       "remindGame": "{{name}}: aggiungi il gioco al profilo (I tuoi giochi) prima del check-in di {{tournament}}.",
       "serverDown": "The match server crashed. Bringing it back…",
       "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect.",
-      "vetoReset": "An admin restarted the veto"
+      "vetoReset": "An admin restarted the veto",
+      "adminClaimed": "{{name}} took the admin call",
+      "adminResolved": "{{name}} resolved the admin call"
     },
     "party": {
       "inviteCopied": "Link di invito copiato",
@@ -996,7 +998,8 @@
       "settingsWebhooks": "Settings: webhooks",
       "settingsLicense": "Settings: license",
       "settingsMatchmaking": "Settings: matchmaking",
-      "settingsAdvanced": "Settings: advanced"
+      "settingsAdvanced": "Settings: advanced",
+      "liveMatches": "Live matches"
     },
     "clips_one": "{{count}} clip",
     "clips_other": "{{count}} clip",

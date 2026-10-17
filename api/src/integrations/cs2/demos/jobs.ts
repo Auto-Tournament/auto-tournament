@@ -106,6 +106,8 @@ export async function dropOrphanJobs(): Promise<void> {
           AND NOT EXISTS (SELECT 1 FROM matches m WHERE m.slug = h.match_slug)`,
       []
     );
+    const { revokeOrphanMoments } = await import('./momentStore');
+    await revokeOrphanMoments();
   } catch (error) {
     log.warn('[DEMO-JOBS] Could not drop the jobs of deleted matches', {
       error: (error as Error).message,
@@ -435,9 +437,33 @@ async function completeDemoJobNow(job: DemoJob, analysis: DemoAnalysisPayload): 
       ? { demoPath: demo.demo_path, firstRound: rounds.length ? Math.min(...rounds) : 1 }
       : undefined
   );
+  // The map's notable moments, for integrators (GET /api/integrations/highlights).
+  await storeMoments(job, analysis);
   log.info(
     `[DEMO-JOBS] ${job.matchSlug} map ${job.mapNumber}: analyzed (${Object.keys(analysis.players).length} players)`
   );
+}
+
+/** Find and store a map's notable moments (./momentStore.ts); a failure leaves the analysis applied. */
+async function storeMoments(job: DemoJob, analysis: DemoAnalysisPayload): Promise<void> {
+  try {
+    const { momentsFromAnalysis, readReplay } = await import('./momentStore');
+    const replay = await readReplay(replayFile(job));
+    const { sync } = await momentsFromAnalysis(
+      job,
+      { rounds: analysis.rounds ?? [], kills: analysis.kills ?? [], players: analysis.players },
+      replay
+    );
+    if (sync && (sync.created.length || sync.updated.length || sync.revoked.length)) {
+      log.info(
+        `[DEMO-JOBS] ${job.matchSlug} map ${job.mapNumber}: moments +${sync.created.length} ~${sync.updated.length} -${sync.revoked.length}`
+      );
+    }
+  } catch (error) {
+    log.warn(`[DEMO-JOBS] ${job.matchSlug} map ${job.mapNumber}: could not store the moments`, {
+      error: (error as Error).message,
+    });
+  }
 }
 
 /** The analysis of one map, for the match page: status, rounds and kills. */

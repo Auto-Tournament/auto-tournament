@@ -107,7 +107,7 @@ test.describe.serial('Break between matches', () => {
       expect(early.status()).toBe(409);
       expect((await early.json()).opensAt).toBeTruthy();
 
-      // The break over (an admin lets it go now): the veto opens, first turn 120 s.
+      // The break over (an admin lets it go now): the veto opens, first turn 120 s plus the 60 s grace.
       expect(
         (await request.delete(`/api/matches/${slug}/hold`, { headers: getAuthHeader() })).ok()
       ).toBe(true);
@@ -115,7 +115,7 @@ test.describe.serial('Break between matches', () => {
         veto: { opensAt?: string; turnSeconds?: number };
       };
       expect(after.veto.opensAt).toBeUndefined();
-      expect(after.veto.turnSeconds).toBe(120);
+      expect(after.veto.turnSeconds).toBe(180);
     }
   );
 });

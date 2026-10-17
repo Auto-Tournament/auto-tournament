@@ -39,6 +39,7 @@ import {
   TeamIdentity,
 } from '../ui/draftUi';
 import { PlayersLeaderboard } from './PlayersLeaderboard';
+import type { NextRoundEta } from '../../../hooks/usePublicBracket';
 import { minutesLeft } from '../PlacementDialog';
 import { publicMatchLabel } from '../page/matchHelpers';
 
@@ -748,6 +749,22 @@ function SideTable({
   );
 }
 
+/** "Next round about 15:47" while a round is being played; nothing when there is no estimate. */
+function NextRoundEtaLine({ eta }: { eta: NextRoundEta | null }) {
+  const { t, i18n } = useTranslation();
+  if (!eta) return null;
+  const time = fmtTime(eta.at, i18n.language);
+  const key = eta.final ? 'finalEnds' : eta.exact ? 'nextRoundAt' : 'nextRoundAbout';
+  return (
+    <Typography
+      data-testid="overview-next-round-eta"
+      sx={{ px: 1, fontSize: textSize.sm, color: color.ink2, fontVariantNumeric: 'tabular-nums' }}
+    >
+      {t(`liveOverview.eta.${key}`, { time })}
+    </Typography>
+  );
+}
+
 export function OverviewLive({
   tournament,
   matches,
@@ -755,6 +772,7 @@ export function OverviewLive({
   roundRobinStandings,
   swissStandings,
   groupStandings = [],
+  nextRoundEta = null,
   viewerTeamId,
 }: {
   tournament: Tournament;
@@ -764,6 +782,7 @@ export function OverviewLive({
   swissStandings: SwissStanding[];
   /** Groups, then playoffs: each group's table. */
   groupStandings?: GroupStandingSet[];
+  nextRoundEta?: NextRoundEta | null;
   viewerTeamId: string | null;
 }) {
   const { t } = useTranslation();
@@ -783,7 +802,10 @@ export function OverviewLive({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} data-testid="overview-live">
-      <Hero tournament={tournament} matches={matches} viewerTeamId={viewerTeamId} />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+        <Hero tournament={tournament} matches={matches} viewerTeamId={viewerTeamId} />
+        <NextRoundEtaLine eta={nextRoundEta} />
+      </Box>
 
       {elim ? (
         <Box

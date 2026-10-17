@@ -37,6 +37,7 @@ import { useIntegrationFor } from '../integrations/registry';
 import { fontDisplay, fontMono, radii, textSize, tokens } from '../theme/tokens';
 import { SegmentedControl } from '../components/common/SegmentedControl';
 import { fmtMoney } from '../utils/number';
+import { copyTextToClipboard } from '../utils/clipboard';
 
 const { color } = tokens;
 
@@ -132,6 +133,24 @@ interface ManageView {
     state: LiveState | null;
     mapRounds: Record<string, RoundSummary[]>;
     updatedAt: number;
+  } | null;
+  /** GOTV on the match's server: each address with this match's password. */
+  broadcast?: {
+    password: string;
+    delay: number;
+    seats: number;
+    insecureObservers: boolean;
+    addresses: Array<{ kind: 'lan' | 'public' | 'server'; address: string }>;
+    /** What the server's tv plugin reports; null without it. */
+    server: {
+      port: number | null;
+      delay: number | null;
+      clients: number | null;
+      maxClients: number | null;
+      passwordSet: boolean | null;
+      insecure: boolean | null;
+      at: number;
+    } | null;
   } | null;
   log: LogEntry[];
   /** Stored map results, for a match with no live record. */
@@ -1135,6 +1154,84 @@ export default function ManageMatch() {
               )}
             </Box>
           )}
+        </Section>
+      )}
+
+      {view.broadcast && (
+        <Section
+          title="Broadcast"
+          aside={
+            <Typography sx={{ fontFamily: fontMono, fontSize: textSize.sm, color: color.ink2 }}>
+              {view.broadcast.delay > 0 ? `${view.broadcast.delay} s delay` : 'No delay'}
+              {` · ${view.broadcast.seats} viewers`}
+              {view.broadcast.insecureObservers ? ' · insecure observers' : ''}
+            </Typography>
+          }
+          testId="manage-broadcast"
+        >
+          <Typography sx={{ color: color.ink2 }}>
+            GOTV password{' '}
+            <Box component="span" sx={{ fontFamily: fontMono, color: color.ink }}>
+              {view.broadcast.password}
+            </Box>
+          </Typography>
+          {view.broadcast.server && (
+            <Typography
+              sx={{ color: color.ink2, fontSize: textSize.sm }}
+              data-testid="manage-broadcast-server"
+            >
+              {[
+                'Server reports',
+                view.broadcast.server.clients !== null
+                  ? `${view.broadcast.server.clients}${view.broadcast.server.maxClients !== null ? `/${view.broadcast.server.maxClients}` : ''} watching`
+                  : null,
+                view.broadcast.server.delay !== null
+                  ? view.broadcast.server.delay > 0
+                    ? `${view.broadcast.server.delay} s delay`
+                    : 'no delay'
+                  : null,
+                view.broadcast.server.passwordSet === false
+                  ? 'no password set'
+                  : view.broadcast.server.passwordSet
+                    ? 'password set'
+                    : null,
+                view.broadcast.server.insecure ? 'insecure observers' : null,
+                view.broadcast.server.port !== null ? `port ${view.broadcast.server.port}` : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </Typography>
+          )}
+          {view.broadcast.addresses.map((a) => {
+            const line = `password ${view.broadcast!.password}; connect ${a.address}`;
+            return (
+              <Box
+                key={a.address}
+                sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}
+              >
+                <Typography sx={{ color: color.muted, fontSize: textSize.sm, minWidth: 56 }}>
+                  {a.kind === 'lan' ? 'LAN' : a.kind === 'public' ? 'Public' : 'Server'}
+                </Typography>
+                <Typography
+                  sx={{ fontFamily: fontMono, fontSize: textSize.sm, overflowWrap: 'anywhere' }}
+                  data-testid={`manage-broadcast-${a.kind}`}
+                >
+                  {line}
+                </Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() =>
+                    void copyTextToClipboard(line).then((ok) =>
+                      ok ? showSuccess('Copied') : showError('Could not copy, select the text')
+                    )
+                  }
+                >
+                  Copy
+                </Button>
+              </Box>
+            );
+          })}
         </Section>
       )}
 

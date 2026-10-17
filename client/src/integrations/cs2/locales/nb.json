@@ -668,7 +668,8 @@
         "title": "Ready / kampstart",
         "minimumReadyLabel": "Minimum antall ready-spillere",
         "minimumReadyHelper": "0 = alle tilkoblede spillere må ready. Standard: 0.",
-        "allowForceReady": "Tillat admin å force-ready spillere under oppsett (!forceready)"
+        "allowForceReady": "Tillat admin å force-ready spillere under oppsett (!forceready)",
+        "teamReady": "Tournament matches: one player's .ready readies the whole team"
       },
       "adminTools": {
         "title": "Adminverktøy",
@@ -1453,7 +1454,7 @@
     "equipOnBoth": "Bruk på CT og T",
     "takeOff": "Ta av",
     "keep": "Ok",
-    "inventory": "Inventar",
+    "inventory": "Utrustning",
     "count": "{{count}} skins",
     "equippedTitle": "I bruk",
     "slot": {
@@ -1483,7 +1484,7 @@
     "off": "Skins er ikke slått på her.",
     "loadout": "Utrustning",
     "arrange": "Ordne",
-    "showInventory": "Vis inventar",
+    "showInventory": "Vis utrustning",
     "arrangeTitle": "Ordne utrustningen",
     "arrangeHint": "Velg opptil {{max}} skins for profilen, i rekkefølge. De to første vises store.",
     "big": "Stor",
@@ -1799,8 +1800,8 @@
       "pickBody": "Den venter på deg til du velger, og så ligger den i inventaret ditt.",
       "gotBody": "Den ligger i inventaret ditt.",
       "pick": "Velg skinnet ditt",
-      "open": "Åpne inventaret ditt",
-      "openInventory": "Åpne inventaret ditt",
+      "open": "Åpne utrustningen din",
+      "openInventory": "Åpne utrustningen din",
       "mvpLine": "MVP: {{name}}",
       "mvpCommends": "Mest rost av de andre spillerne: rost {{count}} ganger av {{players}} spillere ({{kinds}}).",
       "mvpRating": "Best rating: {{rating}} over {{matches}} kamper.",
@@ -2323,6 +2324,16 @@
     },
     "wingmanPreset": {
       "button": "Sett opp som wingman"
+    },
+    "broadcast": {
+      "title": "Kringkasting (GOTV)",
+      "delay": "GOTV-forsinkelse",
+      "seats": "GOTV-seere per kamp",
+      "siteDefault": "Standard for nettstedet",
+      "noDelayWarning": "Ingen forsinkelse: spillere som ser strømmen, kan ghoste.",
+      "insecureObservers": "Tillat usikre observatører (HUD-verktøy som LHM)",
+      "insecureObserversHelp": "Lar observatør-HUD-er som leser GOTV, koble til. Gjelder fra kampen lastes.",
+      "manyViewersHint": "Mange seere på kampserveren koster båndbredde og CPU; bruk et GOTV-relé for store publikum."
     }
   },
   "library": {
@@ -2503,6 +2514,7 @@
     "pickedBy": "valgt av {{team}}",
     "decider": "avgjørende kart",
     "live": "Direkte",
+    "round": "Runde {{n}}",
     "upNext": "Neste",
     "notPlayed": "Ikke spilt",
     "won": "{{team}} vant",

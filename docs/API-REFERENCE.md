@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 739 of them, 419 behind auth —
+Every endpoint this API serves — 742 of them, 422 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -48,6 +48,22 @@ Served by the app itself rather than a router.
 | `GET` | `/` | public |
 | `GET` | `/health` | public |
 | `GET` | `/api/health/fleet` | public |
+
+### Integrations: highlights
+
+Notable moments from the demos (knife and Zeus kills, aces, 1vN clutches, no-scopes, grenade kills, last-second defuses) for integrators, oldest change first with a cursor; stable ids, revoked rows. Integrator token (API_TOKENS_INTEGRATOR), read-only or admin token, or admin session.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/integrations/highlights` | integrator token or admin |
+
+### Highlights backfill
+
+Find the notable moments of maps analyzed before, from the stored kill feeds and replays (no demo is read again).
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `POST` | `/api/game/cs2/moments/backfill` | admin |
 
 ### Skins
 
@@ -392,6 +408,14 @@ The admin match page: a match's live state, server and event log, and the Ready 
 | `GET` | `/api/game/cs2/matches/:slug/manage/servers` | admin |
 | `POST` | `/api/game/cs2/matches/:slug/manage/allocate` | admin |
 | `POST` | `/api/game/cs2/matches/:slug/manage/restart-server` | admin |
+
+### Live matches
+
+Every match on a server now, for the admins: teams, players connected and ready, map, round, scores, pause, the open admin call and the server.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/live-overview` | admin |
 
 ### Round backups
 

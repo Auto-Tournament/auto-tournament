@@ -59,6 +59,7 @@ export interface Cs2DefaultsValues {
   highlightsKeepClean: boolean;
   atMinimumReadyRequired: number;
   atAllowForceReady: boolean;
+  atTeamReady: boolean;
   atPauseAfterRestore: boolean;
   atJoinPassword: boolean;
   atAutostartAfterMinutes: number;
@@ -105,6 +106,7 @@ const DEFAULTS: Cs2DefaultsValues = {
   highlightsKeepClean: true,
   atMinimumReadyRequired: 0,
   atAllowForceReady: true,
+  atTeamReady: true,
   atPauseAfterRestore: true,
   atJoinPassword: false,
   atAutostartAfterMinutes: 0,
@@ -560,6 +562,12 @@ export const Cs2ServerDefaults: React.FC<{ initial: Record<string, unknown> | un
                   label={t('settings.atCore.ready.allowForceReady')}
                   checked={vals.atAllowForceReady}
                   onChange={(e) => update('atAllowForceReady', e.target.checked)}
+                  size="small"
+                />
+                <SwitchRow
+                  label={t('settings.atCore.ready.teamReady')}
+                  checked={vals.atTeamReady}
+                  onChange={(e) => update('atTeamReady', e.target.checked)}
                   size="small"
                 />
               </Stack>

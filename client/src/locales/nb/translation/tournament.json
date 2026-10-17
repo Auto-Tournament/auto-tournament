@@ -1318,6 +1318,11 @@
   "liveOverview": {
     "roundOf": "Runde {{round}} av {{total}}",
     "liveCount": "{{count}} live nå",
+    "eta": {
+      "nextRoundAbout": "Neste runde ca. {{time}}",
+      "nextRoundAt": "Neste runde kl. {{time}}",
+      "finalEnds": "Siste runde: ferdig ca. {{time}}"
+    },
     "hero": {
       "playingTitle": "Du spiller nå",
       "playingBody": "{{us}} mot {{them}}{{map}}. Bli med fra kamprommet.",
@@ -1414,7 +1419,10 @@
     "done": "Ferdig",
     "afterOvertime": "etter overtid",
     "startsAt": "starter {{time}} · vetoen åpner {{veto}}",
-    "yourMatch": "Kampen din"
+    "yourMatch": "Kampen din",
+    "placeholderTbd": "Ikke satt",
+    "placeholderVeto": "Map-veto",
+    "placeholderVetoAt": "Veto {{time}}"
   },
   "standingsTab": {
     "champions": "Vinnere",
@@ -1448,6 +1456,18 @@
       "thenDamage": "6 runder hver, først til 4",
       "mapCount_one": "{{count}} kart",
       "mapCount_other": "{{count}} kart"
+    },
+    "format": {
+      "title": "Slik fungerer formatet",
+      "navTitle": "Formatet",
+      "swiss_one": "Alle spiller {{count}} runde, mot et lag med lik rekord. Ingen omkamper. Rangert etter seiere, så tiebreakerne under.",
+      "swiss_other": "Alle spiller {{count}} runder, hver gang mot et lag med lik rekord. Ingen omkamper. Rangert etter seiere, så tiebreakerne under.",
+      "single_elimination": "Taper du én gang, er du ute. Bracketen går fram til en finale.",
+      "double_elimination": "En øvre og en nedre bracket. Taper du to ganger, er du ute.",
+      "round_robin": "Alle møter alle én gang. Rangert etter seiere, så tiebreakerne under.",
+      "shuffle": "Lagene trekkes på nytt hver runde blant de påmeldte spillerne. Spillerne rangeres etter seiere.",
+      "matches": "Hver kamp er {{series}} på MR{{mr}}-kart. Overtid: {{overtime}}.",
+      "damage": "Står et kart fortsatt likt etter siste overtid, vinner laget med mest total skade."
     }
   },
   "liveMatch": {

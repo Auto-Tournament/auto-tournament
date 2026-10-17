@@ -1145,7 +1145,11 @@ export function getSchemaSQL(): string {
       sender_kind TEXT NOT NULL, -- 'player' | 'admin' | 'system'
       sender_team TEXT, -- match channels: the sender's team id, to colour friend and enemy
       body TEXT NOT NULL,
-      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      -- Typed on the match's game server (CS2: Ready Up's event.chat), not on the site.
+      from_game BOOLEAN NOT NULL DEFAULT FALSE,
+      -- Team chat from the game: only this team id (and the admins) may read it.
+      only_team TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_chat_messages_channel ON chat_messages(channel, id);
 

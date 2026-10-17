@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import {
   AssignConfigError,
+  broadcastRules,
   buildAssignConfig,
   diffAssignConfig,
   engineCvars,
@@ -11,6 +12,7 @@ import {
 } from '../../api/src/integrations/cs2/fleet/assignConfig';
 import { validatePayload } from '../../api/src/integrations/cs2/fleet/protocol/v1';
 import type { MatchConfig } from '../../api/src/types/match.types';
+import { INSECURE_OBSERVER_CVARS, withBroadcast } from '../../api/src/integrations/cs2/gotv';
 
 /**
  * The fleet driver's `match.assign.config` (fleet/assignConfig.ts): the
@@ -101,6 +103,80 @@ test.describe('Fleet match.assign config', () => {
     expect(validatePayload('match.assign', payload)).toEqual({ ok: true, errors: [] });
   });
 
+  test('GOTV: rules.broadcast from the tv_* cvars, which still go for servers without the tv plugin', () => {
+    const config = buildAssignConfig(
+      tournamentConfig({
+        cvars: {
+          tv_delay: 0,
+          tv_maxclients: 16,
+          tv_password: 'abc123',
+          tv_secure_bypass: 1,
+          sv_deltaticks_enforce: 0,
+        },
+      }),
+      'Pw7kQ2mZ9x'
+    );
+    expect(config.rules?.broadcast).toEqual({
+      delay_seconds: 0,
+      max_clients: 16,
+      allow_insecure_observers: true,
+    });
+    expect(config.cvars).toMatchObject({
+      tv_delay: 0,
+      tv_maxclients: 16,
+      tv_password: 'abc123',
+      tv_secure_bypass: 1,
+      sv_deltaticks_enforce: 0,
+    });
+    const payload = { match_id: 'r1m1', epoch: 1, config_rev: 1, config };
+    expect(validatePayload('match.assign', payload)).toEqual({ ok: true, errors: [] });
+
+    // No GOTV cvars: no broadcast field (an old config behaves as before).
+    expect(rulesFromMatchConfig(tournamentConfig({ cvars: {} })).broadcast).toBeUndefined();
+    expect(broadcastRules({ tv_delay: 105, tv_maxclients: 8 })).toEqual({
+      delay_seconds: 105,
+      max_clients: 8,
+    });
+  });
+
+  test("GOTV cvars: a tournament's own delay and seats over the site's, insecure observers add two cvars", () => {
+    const site = {
+      enabled: true,
+      delay: 105,
+      seats: 8,
+      access: 'everyone' as const,
+      liveStats: 'delayed' as const,
+      insecureObservers: false,
+    };
+    expect(withBroadcast(site, undefined)).toEqual(site);
+    expect(withBroadcast(site, { delay: 0, insecureObservers: true })).toEqual({
+      ...site,
+      delay: 0,
+      insecureObservers: true,
+    });
+    // Out of range: the site's.
+    expect(withBroadcast(site, { delay: 500, seats: 0 })).toEqual(site);
+    expect(INSECURE_OBSERVER_CVARS).toEqual({ tv_secure_bypass: 1, sv_deltaticks_enforce: 0 });
+  });
+
+  test('team ready: rules.ready.team_ready only when the driver asks (tournament matches)', () => {
+    // The driver passes teamReady for a bracket, swiss, round robin or groups match with
+    // at_team_ready on (fleet/driver.ts isTeamReadyMatch); shuffle, matchmaking and
+    // standalone matches never get it.
+    const on = rulesFromMatchConfig(tournamentConfig(), { teamReady: true });
+    expect(on.ready).toMatchObject({ team_ready: true });
+    expect(rulesFromMatchConfig(tournamentConfig()).ready?.team_ready).toBeUndefined();
+    expect(
+      rulesFromMatchConfig(tournamentConfig(), { teamReady: false }).ready?.team_ready
+    ).toBeUndefined();
+    // The schema takes it (older Ready Ups read known rule fields one by one and skip it).
+    const config = buildAssignConfig(tournamentConfig(), 'pw', { teamReady: true });
+    expect(config.rules?.ready?.team_ready).toBe(true);
+    expect(
+      validatePayload('match.assign', { match_id: 'r1m1', epoch: 1, config_rev: 1, config })
+    ).toEqual({ ok: true, errors: [] });
+  });
+
   test('rules replace maxRounds, overtime and the at_* cvars', () => {
     expect(
       rulesFromMatchConfig(tournamentConfig(), { allowForceReady: false, pauseAfterRestore: true })
@@ -116,6 +192,7 @@ test.describe('Fleet match.assign config', () => {
         gg_vote: { enabled: true, threshold: 0.8, min_score_diff: 8 },
       },
       demo: { record: true, upload: false },
+      broadcast: { delay_seconds: 90 },
     });
 
     const off = rulesFromMatchConfig(

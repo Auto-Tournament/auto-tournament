@@ -34,6 +34,7 @@ import highlightRoutes from './highlights';
 import teamProfileRoutes from './teamProfile';
 import roundBackupRoutes from './roundBackups';
 import manageMatchRoutes from './manageMatch';
+import liveOverviewRoutes from './liveOverview';
 import { failoverMatchRouter, failoverSettingsRouter } from './failover';
 import testHelperRoutes from './testHelpers';
 import { fleetAdminRouter, fleetEnrollRouter } from '../fleet/routes';
@@ -41,8 +42,27 @@ import { fleetHostAdminRouter } from '../fleet/hosts/routes';
 import { fleetPushRouter } from '../fleet/push/routes';
 import { fleetAutoscaleRouter } from '../fleet/autoscale/routes';
 import skinsRoutes from '../skins/routes';
+import { integrationHighlightsRouter, momentAdminRouter } from './integrationHighlights';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
+  {
+    // Not a legacy URL: the integrations API's (beside the core's
+    // /api/integrations/teams), served by CS2 because the moments come from
+    // its demos.
+    prefix: '/api/integrations/highlights',
+    router: integrationHighlightsRouter,
+    title: 'Integrations: highlights',
+    description:
+      'Notable moments from the demos (knife and Zeus kills, aces, 1vN clutches, no-scopes, grenade kills, last-second defuses) for integrators, oldest change first with a cursor; stable ids, revoked rows. Integrator token (API_TOKENS_INTEGRATOR), read-only or admin token, or admin session.',
+  },
+  {
+    // Admin only (requireAuth).
+    prefix: '/api/game/cs2',
+    router: momentAdminRouter,
+    title: 'Highlights backfill',
+    description:
+      'Find the notable moments of maps analyzed before, from the stored kill feeds and replays (no demo is read again).',
+  },
   {
     prefix: '/api/skins',
     router: skinsRoutes,
@@ -205,6 +225,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Manage a match',
     description:
       "The admin match page: a match's live state, server and event log, and the Ready Up commands it sends (logged with who sent them).",
+  },
+  {
+    // Admin only (requireAuth on the route).
+    prefix: '/api/game/cs2',
+    router: liveOverviewRoutes,
+    title: 'Live matches',
+    description:
+      'Every match on a server now, for the admins: teams, players connected and ready, map, round, scores, pause, the open admin call and the server.',
   },
   {
     // Admin only, per route (requireAuth on each): the router shares its

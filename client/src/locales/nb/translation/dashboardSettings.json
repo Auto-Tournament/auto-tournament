@@ -495,7 +495,8 @@
       "closeMenu": "Lukk menyen",
       "setupTab": "Oppsett",
       "prizes": "Premier",
-      "schedule": "Tidsplan"
+      "schedule": "Tidsplan",
+      "liveMatches": "Direktekamper"
     },
     "status": {
       "live": "LIVE",
@@ -878,5 +879,73 @@
     "saveFailed": "Kunne ikke lagre bot-token.",
     "howTo": "Lag en applikasjon, legg til en bot, kopier tokenet og inviter den til Discord-serveren din:",
     "portal": "Discord Developer Portal"
+  },
+  "liveMatchesPage": {
+    "title": "Direktekamper",
+    "subtitle": "Alle kamper på en server akkurat nå. Rader som trenger deg, står først.",
+    "loading": "Laster …",
+    "loadFailed": "Kunne ikke hente direktekampene. Prøver igjen …",
+    "empty": "Ingen kamper pågår",
+    "chat": "Chat",
+    "mapOf": "Kart {{n}}/{{total}}",
+    "columns": {
+      "match": "Kamp",
+      "map": "Kart",
+      "phase": "Fase",
+      "score": "Stilling",
+      "round": "Runde",
+      "players": "Spillere",
+      "pause": "Pause",
+      "call": "Adminkall",
+      "server": "Server",
+      "chat": "Chat"
+    },
+    "source": {
+      "matchmaking": "Matchmaking",
+      "manual": "Frittstående"
+    },
+    "phase": {
+      "none": "Ingen serverstatus",
+      "loading": "Laster",
+      "warmup": "Oppvarming",
+      "knife": "Kniv",
+      "side_pick": "Sidevalg",
+      "live": "Direkte",
+      "paused": "Pause",
+      "halftime": "Pause ved halvtid",
+      "overtime": "Ekstraomganger",
+      "map_end": "Etter kampen",
+      "series_end": "Etter kampen",
+      "restoring": "Gjenoppretter",
+      "error": "Feil"
+    },
+    "players": {
+      "summary": "{{connected}}/{{total}} inne · {{ready}} klare",
+      "connected": "Tilkoblet",
+      "disconnected": "Ikke tilkoblet",
+      "readyTag": "klar",
+      "none": "Ingen spillere"
+    },
+    "pause": {
+      "by": "av {{name}}",
+      "unpause": "Vil fortsette",
+      "type": {
+        "tactical": "Taktisk",
+        "technical": "Teknisk",
+        "admin": "Admin",
+        "offline": "Spiller frakoblet",
+        "halftime": "Halvtid",
+        "auto_5v5": "Venter på 5v5",
+        "unknown": "Pause"
+      }
+    },
+    "call": {
+      "noMessage": "Ingen melding"
+    },
+    "server": {
+      "online": "Tilkoblet",
+      "offline": "Frakoblet",
+      "unknown": "Ukjent status"
+    }
   }
 }

@@ -667,7 +667,8 @@
         "title": "Ready / Start wedstrijd",
         "minimumReadyLabel": "Minimum aantal ready-spelers vereist",
         "minimumReadyHelper": "0 = iedereen die verbonden is moet ready zijn. Standaard: 0.",
-        "allowForceReady": "Sta admins toe spelers force-ready te zetten tijdens setup (!forceready)"
+        "allowForceReady": "Sta admins toe spelers force-ready te zetten tijdens setup (!forceready)",
+        "teamReady": "Tournament matches: one player's .ready readies the whole team"
       },
       "adminTools": {
         "title": "Admin-tools",
@@ -2328,6 +2329,16 @@
     },
     "wingmanPreset": {
       "button": "Set up as wingman"
+    },
+    "broadcast": {
+      "title": "Broadcast (GOTV)",
+      "delay": "GOTV delay",
+      "seats": "GOTV viewers per match",
+      "siteDefault": "Site default",
+      "noDelayWarning": "No delay: players who can see the stream could ghost.",
+      "insecureObservers": "Allow insecure observers (HUD tools like LHM)",
+      "insecureObserversHelp": "Lets observer HUDs that read GOTV connect. Takes effect when a match loads.",
+      "manyViewersHint": "Many viewers on the match server cost it bandwidth and CPU; for big audiences use a GOTV relay."
     }
   },
   "library": {
@@ -2508,6 +2519,7 @@
     "pickedBy": "{{team}}'s pick",
     "decider": "Decider",
     "live": "Live",
+    "round": "Round {{n}}",
     "upNext": "Up next",
     "notPlayed": "To play",
     "won": "{{team}} won",

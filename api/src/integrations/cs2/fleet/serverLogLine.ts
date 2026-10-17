@@ -6,7 +6,8 @@ import type { MatchState } from './protocol/v1';
 
 export type ServerLogLevel = 'error' | 'warn' | 'info';
 
-const QUIET = new Set(['event.round_start', 'event.backup']);
+// Chat lines go to the match's chat (chatBridge.ts), not the log.
+const QUIET = new Set(['event.round_start', 'event.backup', 'event.chat']);
 
 function nameOf(state: MatchState | null, sid: unknown): string {
   const id = typeof sid === 'string' ? sid : '';

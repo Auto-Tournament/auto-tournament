@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/tv.defs.json",
+  "title": "GOTV broadcast definitions (proposed by Ready Up, docs/design/tv-plugin.md)",
+  "$defs": {
+    "broadcastProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The tv plugin's GOTV profile (match.assign config.rules.broadcast, cmd tv.set settings). Every key optional; absent = the server's setting. Must not disagree with config.cvars (invalid_config).",
+      "properties": {
+        "delay_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 960,
+          "description": "tv_delay. Never below the match's own minimum (config.cvars.tv_delay, rules.overrides.tv_delay, 105 under ruleset valve): match.assign is refused (invalid_config) when it is lower"
+        },
+        "allow_insecure_observers": {
+          "type": "boolean",
+          "description": "true: tv_secure_bypass 1 + sv_deltaticks_enforce 0 (observers with an insecure client, e.g. HLAE / Lexogrine HUD Manager, may watch over GOTV; the game port stays VAC-secured). false: tv_secure_bypass 0, sv_deltaticks_enforce back to its value before"
+        },
+        "max_clients": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255,
+          "description": "tv_maxclients"
+        },
+        "relay_text_chat": {
+          "type": "boolean",
+          "description": "tv_relaytextchat"
+        },
+        "relay_voice": {
+          "type": "boolean",
+          "description": "tv_relayvoice"
+        }
+      }
+    },
+    "broadcastSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "cmd tv.set args.settings: like broadcastProfile, null = back to the default (server: tv.cfg; match: the match's rules.broadcast)",
+      "properties": {
+        "delay_seconds": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 960,
+              "description": "tv_delay. Never below the match's own minimum (config.cvars.tv_delay, rules.overrides.tv_delay, 105 under ruleset valve): match.assign is refused (invalid_config) when it is lower"
+            }
+          ]
+        },
+        "allow_insecure_observers": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "boolean",
+              "description": "true: tv_secure_bypass 1 + sv_deltaticks_enforce 0 (observers with an insecure client, e.g. HLAE / Lexogrine HUD Manager, may watch over GOTV; the game port stays VAC-secured). false: tv_secure_bypass 0, sv_deltaticks_enforce back to its value before"
+            }
+          ]
+        },
+        "max_clients": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255,
+              "description": "tv_maxclients"
+            }
+          ]
+        },
+        "relay_text_chat": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "boolean",
+              "description": "tv_relaytextchat"
+            }
+          ]
+        },
+        "relay_voice": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "boolean",
+              "description": "tv_relayvoice"
+            }
+          ]
+        }
+      }
+    },
+    "tvState": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "GOTV state of the server (hello.tv, state.snapshot.tv, server.tv). Engine values are what the server read back (null = not read / unknown). Never contains the GOTV password.",
+      "required": [
+        "available",
+        "port",
+        "enabled",
+        "delay_seconds",
+        "max_clients",
+        "clients",
+        "secure_bypass",
+        "deltaticks_enforce",
+        "relay_text_chat",
+        "relay_voice",
+        "password_set",
+        "profile",
+        "delay_floor",
+        "casters",
+        "server_insecure"
+      ],
+      "properties": {
+        "available": {
+          "type": "boolean",
+          "description": "false: tv.so is loaded but tv.cfg enabled=0 (it touches nothing)"
+        },
+        "port": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "GOTV port (+tv_port, else the tv_port cvar)"
+        },
+        "enabled": {
+          "type": ["boolean", "null"]
+        },
+        "delay_seconds": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "max_clients": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "clients": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "GOTV spectators on this server (tv_status); null = not read yet"
+        },
+        "secure_bypass": {
+          "type": ["boolean", "null"]
+        },
+        "deltaticks_enforce": {
+          "type": ["boolean", "null"]
+        },
+        "relay_text_chat": {
+          "type": ["boolean", "null"]
+        },
+        "relay_voice": {
+          "type": ["boolean", "null"]
+        },
+        "password_set": {
+          "type": ["boolean", "null"],
+          "description": "a non-empty tv_password is set (from match.assign cvars, the console or the command line); null = unknown. Never the value"
+        },
+        "profile": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source", "settings"],
+          "properties": {
+            "source": {
+              "enum": ["server", "match"]
+            },
+            "match_id": {
+              "$ref": "match.defs.json#/$defs/matchId"
+            },
+            "settings": {
+              "$ref": "#/$defs/broadcastProfile",
+              "description": "the effective profile (server settings, then the match's rules.broadcast and tv.set {scope: match} on top)"
+            }
+          }
+        },
+        "delay_floor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 960,
+          "description": "the loaded match's own minimum tv_delay; 0 = none"
+        },
+        "casters": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256,
+          "description": "how many casters may join the game port as spectators (count only)"
+        },
+        "server_insecure": {
+          "type": "boolean",
+          "description": "the server process itself runs -insecure (not VAC-secured)"
+        }
+      }
+    }
+  }
+}

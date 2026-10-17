@@ -30,6 +30,7 @@ export type Cs2SettingKey =
   // MatchZy Enhanced core defaults (persisted convars)
   | 'at_minimum_ready_required'
   | 'at_allow_force_ready'
+  | 'at_team_ready'
   | 'at_pause_after_restore'
   | 'at_join_password'
   | 'at_autostart_after_minutes'
@@ -202,6 +203,8 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
   }),
   // Ready Up's ready / restore defaults (sent with every match)
   flag('at_allow_force_ready', 'atAllowForceReady', 120),
+  // One player's .ready readies their team, in tournament matches (fleet/assignConfig.ts).
+  flag('at_team_ready', 'atTeamReady', 125),
   flag('at_pause_after_restore', 'atPauseAfterRestore', 150),
   flag('at_join_password', 'atJoinPassword', 155),
   // Seconds players stay on after a series before they are kicked (allocation.ts waits for it)

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/server.tv.json",
+  "title": "server.tv (server → platform, reliable)",
+  "description": "The server's GOTV state changed (tv.so, docs/design/tv-plugin.md): a setting, the active match profile, what the engine reports, the client count. At most every 5 s, only while online; hello.tv carries the latest on every connect. Proposed here.",
+  "$ref": "../tv.defs.json#/$defs/tvState"
+}

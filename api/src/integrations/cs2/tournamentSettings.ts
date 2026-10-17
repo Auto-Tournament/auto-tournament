@@ -140,6 +140,32 @@ export interface Cs2TournamentSettings {
    * from the pool (matchConfig.ts), and the pool needs only one map.
    */
   veto?: boolean;
+  /** GOTV for this tournament's matches (gotv.ts); a field left out is the site's. */
+  broadcast?: Cs2BroadcastSettings;
+}
+
+/** `settings.cs2.broadcast`: the tournament's own GOTV settings. */
+export interface Cs2BroadcastSettings {
+  /** tv_delay, 0–120 s (0: live). */
+  delay?: number;
+  /** tv_maxclients, 1–100. */
+  seats?: number;
+  /** HUD tools like LHM may connect (tv_secure_bypass 1, sv_deltaticks_enforce 0). */
+  insecureObservers?: boolean;
+}
+
+/** A requested `broadcast`, with only its valid fields; null when it is not an object. */
+export function broadcastSetting(value: unknown): Cs2BroadcastSettings | null {
+  if (!isRecord(value)) return null;
+  const out: Cs2BroadcastSettings = {};
+  const delay = value.delay;
+  if (typeof delay === 'number' && Number.isInteger(delay) && delay >= 0 && delay <= 120)
+    out.delay = delay;
+  const seats = value.seats;
+  if (typeof seats === 'number' && Number.isInteger(seats) && seats >= 1 && seats <= 100)
+    out.seats = seats;
+  if (typeof value.insecureObservers === 'boolean') out.insecureObservers = value.insecureObservers;
+  return out;
 }
 
 /** The map pool size a veto order is checked against when nothing else says (Active Duty). */
@@ -309,6 +335,22 @@ function validateUpdate(input: TournamentSettingsInput): TournamentSettingsValid
   });
 }
 
+/** Errors for a requested `broadcast` (absent and null are fine: the site's settings). */
+function broadcastFieldErrors(value: unknown): string[] {
+  if (value === undefined || value === null) return [];
+  if (!isRecord(value)) return ['broadcast must be an object'];
+  const errors: string[] = [];
+  const int = (v: unknown, min: number, max: number) =>
+    typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
+  if (value.delay !== undefined && value.delay !== null && !int(value.delay, 0, 120))
+    errors.push('broadcast.delay must be 0-120 seconds');
+  if (value.seats !== undefined && value.seats !== null && !int(value.seats, 1, 100))
+    errors.push('broadcast.seats must be 1-100');
+  if (value.insecureObservers !== undefined && typeof value.insecureObservers !== 'boolean')
+    errors.push('broadcast.insecureObservers must be a boolean');
+  return errors;
+}
+
 export function validateCs2TournamentSettings(
   input: TournamentSettingsInput
 ): TournamentSettingsValidation {
@@ -321,6 +363,10 @@ export function validateCs2TournamentSettings(
   const esports = objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).esportsMode;
   if (esports !== undefined && typeof esports !== 'boolean')
     return done({ fieldErrors: ['esportsMode must be a boolean'] });
+  const broadcastErrors = broadcastFieldErrors(
+    objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).broadcast
+  );
+  if (broadcastErrors.length) return done({ fieldErrors: broadcastErrors });
   switch (input.mode) {
     case 'create':
       return validateCreate(input);
@@ -397,6 +443,12 @@ function applyLayer(
   }
   if (typeof layer.esportsMode === 'boolean') into.esportsMode = layer.esportsMode;
   if (typeof layer.veto === 'boolean') into.veto = layer.veto;
+  if (layer.broadcast === null) delete into.broadcast;
+  else if (layer.broadcast !== undefined) {
+    const broadcast = broadcastSetting(layer.broadcast);
+    if (broadcast && Object.keys(broadcast).length) into.broadcast = broadcast;
+    else if (broadcast) delete into.broadcast;
+  }
   if (layer.mapPoolId !== undefined) {
     const id = Number(layer.mapPoolId);
     if (layer.mapPoolId !== null && Number.isInteger(id) && id > 0) into.mapPoolId = id;

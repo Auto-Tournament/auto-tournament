@@ -5,6 +5,13 @@ import { onSocketReconnect } from '../utils/socketResync';
 import type { Match, RoundRobinStanding, SwissStanding, Tournament } from '../types';
 import type { GroupStandingSet } from '../components/tournament/GroupTables';
 
+/** A rough estimate from the API of when the next round opens (or the tournament ends). */
+export interface NextRoundEta {
+  at: string;
+  exact: boolean;
+  final: boolean;
+}
+
 interface PublicBracketResponse {
   success: boolean;
   /** Carries `winner` once completed. */
@@ -14,6 +21,7 @@ interface PublicBracketResponse {
   swissStandings?: SwissStanding[];
   roundRobinStandings?: RoundRobinStanding[];
   groupStandings?: GroupStandingSet[];
+  nextRoundEta?: NextRoundEta;
 }
 
 export interface UsePublicBracketResult {
@@ -25,6 +33,8 @@ export interface UsePublicBracketResult {
   roundRobinStandings: RoundRobinStanding[];
   /** Groups, then playoffs: each group's table. */
   groupStandings: GroupStandingSet[];
+  /** While a round is being played: about when the next one opens. */
+  nextRoundEta: NextRoundEta | null;
   loading: boolean;
   error: string;
 }
@@ -97,6 +107,7 @@ export function usePublicBracket(
     swissStandings: data?.swissStandings ?? [],
     roundRobinStandings: data?.roundRobinStandings ?? [],
     groupStandings: data?.groupStandings ?? [],
+    nextRoundEta: data?.nextRoundEta ?? null,
     loading,
     error,
   };

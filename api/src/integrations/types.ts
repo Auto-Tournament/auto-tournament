@@ -1181,7 +1181,7 @@ export interface GameIntegration {
    * walkover on the resource (CS2: Ready Up's absent-team forfeit). A match on
    * no resource needs nothing.
    */
-  onHoldChanged?(ctx: MatchContext): Promise<void>;
+  onHoldChanged?(ctx: MatchContext, change?: { earlyRelease?: boolean }): Promise<void>;
 }
 
 /** A router mounted at a fixed prefix, plus its heading in the API reference. */

@@ -517,3 +517,46 @@ export async function postMatchChatLine(
   const lines = await import('./matchChatLines');
   await lines.postMatchChatLine(slug, key, params);
 }
+
+/** A message written on the site in a match's chat (not one that came from the game). */
+export interface MatchChatPosted {
+  slug: string;
+  senderKind: 'player' | 'admin';
+  senderName: string;
+  body: string;
+}
+
+const matchChatListeners = new Set<(posted: MatchChatPosted) => void>();
+
+/**
+ * Hear every message written on the site in a match's chat, for a game module that sends
+ * them to the match's server (CS2: fleet/chatBridge.ts). Lines that came from the game
+ * itself (`postGameChatMessage`) are not heard here, so nothing loops.
+ */
+export function onMatchChatPosted(listener: (posted: MatchChatPosted) => void): () => void {
+  matchChatListeners.add(listener);
+  return () => matchChatListeners.delete(listener);
+}
+
+/** Called by the chat service after a site message in a match's chat is stored and sent. */
+export function matchChatPosted(posted: MatchChatPosted): void {
+  for (const listener of matchChatListeners) {
+    try {
+      listener(posted);
+    } catch (error) {
+      log.debug('A match chat listener failed', { error: (error as Error).message });
+    }
+  }
+}
+
+/**
+ * A player's chat line from the match's game server, into the match's chat (for a game
+ * module: it reaches core through this bridged module). See chatService.fromGame.
+ */
+export async function postGameChatMessage(
+  slug: string,
+  input: import('./chatService').GameChatInput
+): Promise<void> {
+  const { chatService } = await import('./chatService');
+  await chatService.fromGame(slug, input);
+}

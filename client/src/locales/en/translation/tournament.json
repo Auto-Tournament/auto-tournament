@@ -1317,6 +1317,11 @@
   "liveOverview": {
     "roundOf": "Round {{round}} of {{total}}",
     "liveCount": "{{count}} live now",
+    "eta": {
+      "nextRoundAbout": "Next round about {{time}}",
+      "nextRoundAt": "Next round at {{time}}",
+      "finalEnds": "Final round: ends about {{time}}"
+    },
     "hero": {
       "playingTitle": "You’re playing now",
       "playingBody": "{{us}} vs {{them}}{{map}}. Join from the match room.",
@@ -1413,7 +1418,10 @@
     "done": "Done",
     "afterOvertime": "after overtime",
     "startsAt": "starts {{time}} · veto opens {{veto}}",
-    "yourMatch": "Your match"
+    "yourMatch": "Your match",
+    "placeholderTbd": "TBD",
+    "placeholderVeto": "Map veto",
+    "placeholderVetoAt": "Veto {{time}}"
   },
   "standingsTab": {
     "champions": "Champions",
@@ -1447,6 +1455,18 @@
       "thenDamage": "6 rounds each, first to 4",
       "mapCount_one": "{{count}} map",
       "mapCount_other": "{{count}} maps"
+    },
+    "format": {
+      "title": "How this format works",
+      "navTitle": "The format",
+      "swiss_one": "Everyone plays {{count}} round, against a team on the same record. No rematches. Ranked by wins, then the tiebreakers below.",
+      "swiss_other": "Everyone plays {{count}} rounds, each against a team on the same record. No rematches. Ranked by wins, then the tiebreakers below.",
+      "single_elimination": "Lose once and you are out. The bracket runs to a final.",
+      "double_elimination": "An upper and a lower bracket. Lose twice and you are out.",
+      "round_robin": "Everyone meets everyone once. Ranked by wins, then the tiebreakers below.",
+      "shuffle": "Teams are drawn fresh every round from the signed-up players. Players are ranked by wins.",
+      "matches": "Each match is {{series}} on MR{{mr}} maps. Overtime: {{overtime}}.",
+      "damage": "If a map is still level after the last overtime, the team with more total damage wins it."
     }
   },
   "liveMatch": {

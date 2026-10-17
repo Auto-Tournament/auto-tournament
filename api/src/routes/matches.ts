@@ -7,7 +7,7 @@ import { matchService } from '../services/matchService';
 import { isQueuedAllocationResult, scheduler } from '../core/scheduler';
 import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
 import { TournamentResponse } from '../types/tournament.types';
-import { requestActorId, requireAuth } from '../middleware/auth';
+import { checkAdminAccess, requestActorId, requireAuth } from '../middleware/auth';
 import {
   holdMatch,
   holdOf,
@@ -17,6 +17,7 @@ import {
 } from '../services/matchHolds';
 import { MATCH_CONFIG_FETCHED_BY_SERVER, requireMatchConfigAccess } from '../middleware/serverAuth';
 import { log } from '../utils/logger';
+import { withoutConfigSecrets } from '../utils/matchConfigSecrets';
 import { db } from '../config/database';
 import { matchConfigFetchTracker } from '../services/matchConfigFetchTracker';
 import {
@@ -914,6 +915,11 @@ router.get('/', async (req: Request, res: Response) => {
       [tournamentId]
     );
 
+    // No GOTV password for non-admins when the match broadcasts with no delay.
+    if (!(await checkAdminAccess(req)).ok) {
+      for (const match of matches) match.config = withoutConfigSecrets(match.config);
+    }
+
     return res.json({
       success: true,
       count: matches.length,
@@ -1129,10 +1135,14 @@ router.get('/:slug', async (req: Request, res: Response) => {
         : null;
     };
 
+    const admin = (await checkAdminAccess(req)).ok;
+
     return res.json({
       success: true,
       match: {
         ...match,
+        // No GOTV password for non-admins when the match broadcasts with no delay.
+        config: admin ? match.config : withoutConfigSecrets(match.config),
         // Kept as they are where the match already has them (tournament matches).
         team1: (match as { team1?: unknown }).team1 ?? teamOf('team1'),
         team2: (match as { team2?: unknown }).team2 ?? teamOf('team2'),

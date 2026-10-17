@@ -749,6 +749,9 @@ export const cs2Integration: GameIntegration = {
     ]) {
       await db.runAsync(`DELETE FROM ${table} WHERE match_slug IN (${list})`, slugs);
     }
+    // Their notable moments stay, revoked: an integrator takes back what it gave for them.
+    const { revokeMomentsOfSlugs } = await import('./demos/momentStore');
+    await revokeMomentsOfSlugs(slugs);
   },
 
   /** The top three of a finished tournament get its skin rewards, unless the tournament turned them off. */
@@ -847,7 +850,9 @@ export const cs2Integration: GameIntegration = {
    * gets its config again, with the absent-team forfeit off while held and
    * back (counting afresh) once it goes ahead.
    */
-  async onHoldChanged(ctx) {
+  async onHoldChanged(ctx, change) {
+    // An admin let the hold go before it ran out: the veto's first turn gets a grace.
+    if (change?.earlyRelease) (await import('./veto/timer')).markEarlyRelease(ctx.slug);
     // A break (or hold) over before the veto started: the veto is open now; say so.
     const { vetoOpenedAfterHold } = await import('./veto/break');
     await vetoOpenedAfterHold(ctx.slug);
