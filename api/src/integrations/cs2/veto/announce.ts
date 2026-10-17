@@ -37,6 +37,9 @@ export async function announceVetoOpen(slug: string, opensAt?: number): Promise<
     const turn = full ? await resolveCurrentVetoTurn(full as never) : null;
     if (!opensAt && (turn?.currentTurn === 'team1' || turn?.currentTurn === 'team2')) {
       await announceVetoTurn(slug, turn.currentTurn, 1, String(turn.currentAction ?? 'ban'));
+      // The match chat says the veto is on too (once per match).
+      const { postVetoStarted } = await import('./chatLines');
+      await postVetoStarted(slug, turn.currentTurn, String(turn.currentAction ?? 'ban'));
     }
 
     const players = new Set<string>();
