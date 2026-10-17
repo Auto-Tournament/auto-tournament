@@ -6,6 +6,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { notificationService } from './notificationService';
+import { configTeamName, matchNoticeName } from './matchNoticeName';
 import { notifyChannels } from './notifyChannels';
 
 interface MatchRow {
@@ -64,7 +65,12 @@ async function captainsOf(teamId: string | null): Promise<string[]> {
   return captains.length ? captains : rows.map((r) => r.id);
 }
 
-const nameOf = (m: MatchRow) => `${m.t1 ?? 'TBD'} vs ${m.t2 ?? 'TBD'}`;
+/** "A vs B", or null while a side is still unknown (the match is not announced yet). */
+const nameOf = (m: MatchRow) =>
+  matchNoticeName(
+    m.t1 ?? configTeamName(m.config, 'team1'),
+    m.t2 ?? configTeamName(m.config, 'team2')
+  );
 
 /** The server has the match: both teams can connect. */
 export async function announceMatchReady(slug: string): Promise<void> {
@@ -79,6 +85,7 @@ export async function announceMatchReady(slug: string): Promise<void> {
     // A reload of the same match (failover, restart) is a new "ready".
     const key = `match:${slug}:ready:${match.loaded_at ?? 0}`;
     const name = nameOf(match);
+    if (!name) return;
     await notificationService.notifyOnce(
       players,
       'tournament',
@@ -110,6 +117,7 @@ export async function announceVetoTurn(
     if (!players.length) return;
     const key = `match:${slug}:veto:${step}`;
     const name = nameOf(match);
+    if (!name) return;
     const verb =
       action === 'pick' ? 'pick a map' : action === 'side_pick' ? 'pick a side' : 'ban a map';
     await notificationService.notifyOnce(

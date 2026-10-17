@@ -97,7 +97,9 @@ export function describeNotice(notice: Notice, t: TFunction, viewerId: string | 
           : null);
       break;
     case 'tournament':
-      out.lead = str(d.name);
+      // Older match notices were stored with "TBD" for a team that was not known
+      // yet (the server fills them in on read); a leftover shows no placeholder.
+      out.lead = /(^|\s)TBD(\s|$)/i.test(str(d.name)) ? '' : str(d.name);
       // Your own match: it is ready, or it is your team's turn in its veto.
       if (
         (d.event === 'match_ready' || d.event === 'veto_turn' || d.event === 'match_soon') &&
