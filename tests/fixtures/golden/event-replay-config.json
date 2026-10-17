@@ -27,6 +27,10 @@
   "num_maps": 3,
   "password": "",
   "rules": {
+    "broadcast": {
+      "delay_seconds": 105,
+      "max_clients": 8
+    },
     "demo": {
       "record": true,
       "upload": false
