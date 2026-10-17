@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-25T09:00:59Z",
-  "patchVersion": "1.41.8.3",
-  "buildId": "25515054",
+  "generatedAt": "2026-10-17T19:51:29Z",
+  "patchVersion": "1.41.8.6",
+  "buildId": "25588766",
   "maps": [
     {
       "id": "ar_baggage",
@@ -9,7 +9,8 @@
       "mode": "armsrace",
       "images": {
         "full": "ar_baggage.webp",
-        "thumb": "ar_baggage_thumb.webp"
+        "thumb": "ar_baggage_thumb.webp",
+        "icon": "ar_baggage_icon.svg"
       },
       "variants": [
         "ar_baggage_1_thumb.webp",
@@ -24,7 +25,8 @@
       "mode": "armsrace",
       "images": {
         "full": "ar_pool_day.webp",
-        "thumb": "ar_pool_day_thumb.webp"
+        "thumb": "ar_pool_day_thumb.webp",
+        "icon": "ar_pool_day_icon.svg"
       },
       "variants": []
     },
@@ -34,7 +36,8 @@
       "mode": "armsrace",
       "images": {
         "full": "ar_shoots.webp",
-        "thumb": "ar_shoots_thumb.webp"
+        "thumb": "ar_shoots_thumb.webp",
+        "icon": "ar_shoots_icon.svg"
       },
       "variants": [
         "ar_shoots_1_thumb.webp",
@@ -48,7 +51,8 @@
       "mode": "armsrace",
       "images": {
         "full": "ar_shoots_night.webp",
-        "thumb": "ar_shoots_night_thumb.webp"
+        "thumb": "ar_shoots_night_thumb.webp",
+        "icon": "ar_shoots_night_icon.svg"
       },
       "variants": [
         "ar_shoots_night_1_thumb.webp",
@@ -58,12 +62,28 @@
       ]
     },
     {
+      "id": "cs_agency",
+      "name": "Agency",
+      "mode": "hostage",
+      "images": {
+        "full": "cs_agency.webp",
+        "thumb": "cs_agency_thumb.webp"
+      },
+      "variants": [
+        "cs_agency_1_thumb.webp",
+        "cs_agency_2_thumb.webp",
+        "cs_agency_3_thumb.webp",
+        "cs_agency_4_thumb.webp"
+      ]
+    },
+    {
       "id": "cs_italy",
       "name": "Italy",
       "mode": "hostage",
       "images": {
         "full": "cs_italy.webp",
-        "thumb": "cs_italy_thumb.webp"
+        "thumb": "cs_italy_thumb.webp",
+        "icon": "cs_italy_icon.svg"
       },
       "variants": [
         "cs_italy_0_thumb.webp",
@@ -78,7 +98,8 @@
       "mode": "hostage",
       "images": {
         "full": "cs_office.webp",
-        "thumb": "cs_office_thumb.webp"
+        "thumb": "cs_office_thumb.webp",
+        "icon": "cs_office_icon.svg"
       },
       "variants": [
         "cs_office_1_thumb.webp",
@@ -93,7 +114,8 @@
       "mode": "hostage",
       "images": {
         "full": "cs_shelter.webp",
-        "thumb": "cs_shelter_thumb.webp"
+        "thumb": "cs_shelter_thumb.webp",
+        "icon": "cs_shelter_icon.svg"
       },
       "variants": []
     },
@@ -103,7 +125,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_ancient.webp",
-        "thumb": "de_ancient_thumb.webp"
+        "thumb": "de_ancient_thumb.webp",
+        "icon": "de_ancient_icon.svg"
       },
       "variants": [
         "de_ancient_2_thumb.webp",
@@ -117,7 +140,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_ancient_night.webp",
-        "thumb": "de_ancient_night_thumb.webp"
+        "thumb": "de_ancient_night_thumb.webp",
+        "icon": "de_ancient_night_icon.svg"
       },
       "variants": [
         "de_ancient_night_1_thumb.webp",
@@ -132,7 +156,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_anubis.webp",
-        "thumb": "de_anubis_thumb.webp"
+        "thumb": "de_anubis_thumb.webp",
+        "icon": "de_anubis_icon.svg"
       },
       "variants": [
         "de_anubis_1_thumb.webp",
@@ -148,7 +173,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_boulder.webp",
-        "thumb": "de_boulder_thumb.webp"
+        "thumb": "de_boulder_thumb.webp",
+        "icon": "de_boulder_icon.svg"
       },
       "variants": []
     },
@@ -158,7 +184,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_cache.webp",
-        "thumb": "de_cache_thumb.webp"
+        "thumb": "de_cache_thumb.webp",
+        "icon": "de_cache_icon.svg"
       },
       "variants": [
         "de_cache_1_thumb.webp",
@@ -173,7 +200,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_debris.webp",
-        "thumb": "de_debris_thumb.webp"
+        "thumb": "de_debris_thumb.webp",
+        "icon": "de_debris_icon.svg"
       },
       "variants": []
     },
@@ -183,7 +211,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_dust2.webp",
-        "thumb": "de_dust2_thumb.webp"
+        "thumb": "de_dust2_thumb.webp",
+        "icon": "de_dust2_icon.svg"
       },
       "variants": [
         "de_dust2_1_thumb.webp",
@@ -196,7 +225,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_eldorado.webp",
-        "thumb": "de_eldorado_thumb.webp"
+        "thumb": "de_eldorado_thumb.webp",
+        "icon": "de_eldorado_icon.svg"
       },
       "variants": []
     },
@@ -206,7 +236,18 @@
       "mode": "defusal",
       "images": {
         "full": "de_fachwerk.webp",
-        "thumb": "de_fachwerk_thumb.webp"
+        "thumb": "de_fachwerk_thumb.webp",
+        "icon": "de_fachwerk_icon.svg"
+      },
+      "variants": []
+    },
+    {
+      "id": "de_golden",
+      "name": "Golden",
+      "mode": "defusal",
+      "images": {
+        "full": "de_golden.webp",
+        "thumb": "de_golden_thumb.webp"
       },
       "variants": []
     },
@@ -216,7 +257,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_inferno.webp",
-        "thumb": "de_inferno_thumb.webp"
+        "thumb": "de_inferno_thumb.webp",
+        "icon": "de_inferno_icon.svg"
       },
       "variants": [
         "de_inferno_1_thumb.webp",
@@ -231,7 +273,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_mirage.webp",
-        "thumb": "de_mirage_thumb.webp"
+        "thumb": "de_mirage_thumb.webp",
+        "icon": "de_mirage_icon.svg"
       },
       "variants": [
         "de_mirage_1_thumb.webp",
@@ -246,7 +289,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_nuke.webp",
-        "thumb": "de_nuke_thumb.webp"
+        "thumb": "de_nuke_thumb.webp",
+        "icon": "de_nuke_icon.svg"
       },
       "variants": [
         "de_nuke_1_thumb.webp",
@@ -261,7 +305,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_overpass.webp",
-        "thumb": "de_overpass_thumb.webp"
+        "thumb": "de_overpass_thumb.webp",
+        "icon": "de_overpass_icon.svg"
       },
       "variants": [
         "de_overpass_1_thumb.webp",
@@ -272,12 +317,33 @@
       ]
     },
     {
+      "id": "de_palacio",
+      "name": "Palacio",
+      "mode": "defusal",
+      "images": {
+        "full": "de_palacio.webp",
+        "thumb": "de_palacio_thumb.webp"
+      },
+      "variants": []
+    },
+    {
       "id": "de_poseidon",
       "name": "Poseidon",
       "mode": "defusal",
       "images": {
         "full": "de_poseidon.webp",
-        "thumb": "de_poseidon_thumb.webp"
+        "thumb": "de_poseidon_thumb.webp",
+        "icon": "de_poseidon_icon.svg"
+      },
+      "variants": []
+    },
+    {
+      "id": "de_rooftop",
+      "name": "Rooftop",
+      "mode": "defusal",
+      "images": {
+        "full": "de_rooftop.webp",
+        "thumb": "de_rooftop_thumb.webp"
       },
       "variants": []
     },
@@ -287,7 +353,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_train.webp",
-        "thumb": "de_train_thumb.webp"
+        "thumb": "de_train_thumb.webp",
+        "icon": "de_train_icon.svg"
       },
       "variants": [
         "de_train_1_thumb.webp",
@@ -302,7 +369,8 @@
       "mode": "defusal",
       "images": {
         "full": "de_vertigo.webp",
-        "thumb": "de_vertigo_thumb.webp"
+        "thumb": "de_vertigo_thumb.webp",
+        "icon": "de_vertigo_icon.svg"
       },
       "variants": [
         "de_vertigo_1_thumb.webp",
@@ -313,12 +381,12 @@
     }
   ],
   "activeDuty": [
+    "de_cache",
+    "de_anubis",
     "de_inferno",
-    "de_train",
     "de_mirage",
-    "de_nuke",
     "de_dust2",
-    "de_overpass",
-    "de_vertigo"
+    "de_nuke",
+    "de_ancient"
   ]
 }

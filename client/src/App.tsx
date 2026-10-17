@@ -66,6 +66,7 @@ import Compatibility from './pages/Compatibility';
 import Play from './pages/Play';
 import PlayLobby from './pages/PlayLobby';
 import { MatchmakingOverlay } from './components/matchmaking/MatchmakingOverlay';
+import { useMatchRoomPath } from './components/matchmaking/matchRoomPath';
 import { ChatDock } from './components/chat/ChatDock';
 import { PartyInviteToast } from './components/social/PartyInviteToast';
 import { PresenceReporter } from './components/social/PresenceReporter';
@@ -449,10 +450,12 @@ function AppRoutes() {
         path={paths.match}
         element={
           <ProtectedRoute adminOnly={false}>
-            <Box minHeight="100vh" bgcolor="transparent">
-              <TopNavBar />
-              <MatchPage />
-            </Box>
+            <MatchRoute>
+              <Box minHeight="100vh" bgcolor="transparent">
+                <TopNavBar />
+                <MatchPage />
+              </Box>
+            </MatchRoute>
           </ProtectedRoute>
         }
       />
@@ -711,6 +714,18 @@ function MovedRedirect({ to }: { to: string }) {
 function MatchSlugRedirect() {
   const { slug = '' } = useParams();
   return <Navigate to={matchPagePath(slug)} replace />;
+}
+
+/**
+ * `/match/:slug`. The player's own matchmaking match (`mm-…`) is played from
+ * its room, `/play/<lobbyId>`: a link to the match lands there, as a full
+ * reload already did (MatchmakingOverlay).
+ */
+function MatchRoute({ children }: { children: React.ReactNode }) {
+  const { slug = '' } = useParams();
+  const room = useMatchRoomPath(slug);
+  if (room !== matchPagePath(slug)) return <Navigate to={room} replace />;
+  return <>{children}</>;
 }
 
 export default function App() {
