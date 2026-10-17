@@ -41,7 +41,7 @@ function convertPlaceholders(sql: string, params: unknown[]): { sql: string; par
  * Database class for PostgreSQL
  */
 class DatabaseManager {
-  private postgresPool?: Pool;
+  private pool?: Pool;
   private connectionString: string;
   private initialized = false;
 
@@ -56,14 +56,31 @@ class DatabaseManager {
       }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || DATABASE_NAME}`;
     this.connectionString = connString;
 
-    this.postgresPool = new Pool({
-      connectionString: connString,
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
-    });
+    // The pool is created lazily (see `postgresPool`) so importing this module
+    // never opens a connection or reaches for the network.
+  }
 
-    log.database(`[PostgreSQL] Database pool created: ${connString.replace(/:[^:@]+@/, ':****@')}`);
+  /**
+   * Lazily-created connection pool. Throws when AT_NO_DB=1 (set by tooling such
+   * as `yarn docs:api` that imports route modules but must never touch a
+   * database).
+   */
+  private get postgresPool(): Pool {
+    if (process.env.AT_NO_DB === '1') {
+      throw new Error('Database access is disabled (AT_NO_DB=1)');
+    }
+    if (!this.pool) {
+      this.pool = new Pool({
+        connectionString: this.connectionString,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 2000,
+      });
+      log.database(
+        `[PostgreSQL] Database pool created: ${this.connectionString.replace(/:[^:@]+@/, ':****@')}`
+      );
+    }
+    return this.pool;
   }
 
   /**
@@ -820,8 +837,10 @@ class DatabaseManager {
   }
 
   close(): void {
-    if (this.postgresPool) {
-      this.postgresPool.end().catch((err) => {
+    if (this.pool) {
+      const pool = this.pool;
+      this.pool = undefined;
+      pool.end().catch((err) => {
         log.error('Failed to close PostgreSQL pool', err as Error);
       });
       log.database('[PostgreSQL] Database pool closed');

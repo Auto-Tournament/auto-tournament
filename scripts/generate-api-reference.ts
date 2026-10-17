@@ -15,11 +15,15 @@
  * this repo: generate a typed client from it, in any language, without needing
  * a MAT instance to point at.
  *
+ * Needs no database: it sets AT_NO_DB=1, which makes api/src/config/database
+ * refuse to create a pool or run queries.
+ *
  * Usage:
  *   yarn docs:api           # write both files
  *   yarn docs:api --check   # exit 1 if either is stale (used by CI)
  */
 
+import './no-db-env';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
