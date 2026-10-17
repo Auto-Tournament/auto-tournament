@@ -998,7 +998,8 @@
       "settingsWebhooks": "Settings: webhooks",
       "settingsLicense": "Settings: license",
       "settingsMatchmaking": "Settings: matchmaking",
-      "settingsAdvanced": "Settings: advanced"
+      "settingsAdvanced": "Settings: advanced",
+      "liveMatches": "Live matches"
     },
     "clips_one": "{{count}} clip",
     "clips_other": "{{count}} clip",

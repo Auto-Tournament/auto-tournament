@@ -3,6 +3,7 @@ import { Box, Drawer, IconButton } from '@mui/material';
 import {
   ArrowLeftIcon,
   BellIcon,
+  BroadcastIcon,
   FlagIcon,
   ListBulletsIcon,
   ListIcon,
@@ -157,6 +158,12 @@ function useRailGroups(pathname: string): RailGroup[] {
           icon: BellIcon,
           exact: true,
           count: needsYouCount,
+        },
+        {
+          key: 'liveMatches',
+          label: t('managePage.rail.liveMatches'),
+          to: paths.liveMatches,
+          icon: BroadcastIcon,
         },
       ],
     },

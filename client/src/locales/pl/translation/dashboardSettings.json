@@ -494,7 +494,8 @@
       "closeMenu": "Close the menu",
       "setupTab": "Setup",
       "prizes": "Prizes",
-      "schedule": "Schedule"
+      "schedule": "Schedule",
+      "liveMatches": "Live matches"
     },
     "status": {
       "live": "LIVE",
@@ -882,5 +883,73 @@
     "saveFailed": "Could not save the bot token.",
     "howTo": "Make an application, add a bot, copy its token, and invite it to your Discord server:",
     "portal": "Discord Developer Portal"
+  },
+  "liveMatchesPage": {
+    "title": "Live matches",
+    "subtitle": "Every match on a server right now. Rows that need you come first.",
+    "loading": "Loading…",
+    "loadFailed": "Could not read the live matches. Trying again…",
+    "empty": "No matches running",
+    "chat": "Chat",
+    "mapOf": "Map {{n}}/{{total}}",
+    "columns": {
+      "match": "Match",
+      "map": "Map",
+      "phase": "Phase",
+      "score": "Score",
+      "round": "Round",
+      "players": "Players",
+      "pause": "Pause",
+      "call": "Admin call",
+      "server": "Server",
+      "chat": "Chat"
+    },
+    "source": {
+      "matchmaking": "Matchmaking",
+      "manual": "Standalone"
+    },
+    "phase": {
+      "none": "No server state",
+      "loading": "Loading",
+      "warmup": "Warmup",
+      "knife": "Knife",
+      "side_pick": "Side pick",
+      "live": "Live",
+      "paused": "Paused",
+      "halftime": "Halftime",
+      "overtime": "Overtime",
+      "map_end": "Postgame",
+      "series_end": "Postgame",
+      "restoring": "Restoring",
+      "error": "Error"
+    },
+    "players": {
+      "summary": "{{connected}}/{{total}} in · {{ready}} ready",
+      "connected": "Connected",
+      "disconnected": "Not connected",
+      "readyTag": "ready",
+      "none": "No players"
+    },
+    "pause": {
+      "by": "by {{name}}",
+      "unpause": "Wants to unpause",
+      "type": {
+        "tactical": "Tactical",
+        "technical": "Technical",
+        "admin": "Admin",
+        "offline": "Player offline",
+        "halftime": "Halftime",
+        "auto_5v5": "Waiting for 5v5",
+        "unknown": "Paused"
+      }
+    },
+    "call": {
+      "noMessage": "No message"
+    },
+    "server": {
+      "online": "Online",
+      "offline": "Offline",
+      "unknown": "Status unknown"
+    }
   }
 }

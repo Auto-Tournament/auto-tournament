@@ -83,6 +83,8 @@ export const paths = {
   // Admin shell: every admin page under /manage (the site root is the public
   // site's). The pages' old root addresses redirect (LEGACY_ADMIN_PATHS).
   manage: '/manage',
+  /** Admin: every match on a server now, one row each (the live overview). */
+  liveMatches: '/manage/live',
   teams: '/manage/teams',
   players: '/manage/players',
   /** Admin: player reports. */
