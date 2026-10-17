@@ -4,6 +4,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ArrowsLeftRightIcon, CheckCircleIcon, ProhibitIcon } from '@phosphor-icons/react';
 import { VetoMapCard } from './VetoMapCard';
+import { VetoVoters, type VetoVoter } from './VetoVoters';
 import { getMapData, getMapDisplayName } from '../maps/mapData';
 import { getVetoOrder } from './vetoOrders';
 import type { MapSide, VetoMapInfo, VetoState, VetoStateResponse, VetoStep } from '../cs2.types';
@@ -64,7 +65,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   // replace the veto board, or the team loses the UI they were acting in.
   const [actionError, setActionError] = useState('');
   // An admin who does not play in the match can act for either team.
-  const { isAuthenticated: isAdmin } = useAuth();
+  const { isAuthenticated: isAdmin, playerSteamId } = useAuth();
+  // A matchmaking veto is a vote (GET's `vote`): who may vote, for the avatars on the maps.
+  const [vote, setVote] = useState<{ seconds: number; voters: VetoVoter[] } | null>(null);
   const [actFor, setActFor] = useState<'team1' | 'team2' | null>(null);
   const actingForTeam = !viewerTeamSlug && isAdmin ? actFor : null;
   const currentTeamSlug =
@@ -115,10 +118,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       const data = (await response.json()) as VetoStateResponse & {
         veto: VetoState;
         order?: { steps: VetoStep[]; source: 'valve' | 'standard' | 'custom'; maps?: number };
+        vote?: { seconds: number; voters: VetoVoter[] };
       };
 
       if (data.success) {
         storeMapInfo(data.maps);
+        setVote(data.vote ?? null);
         if (data.order) setOrder(data.order);
         setVetoState(data.veto);
         if (data.veto.status === 'completed') {
@@ -344,9 +349,10 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     return <Alert severity="warning">{t('vetoInterface.vetoUnavailable')}</Alert>;
   }
 
-  // Determine which team is viewing (must be defined before early returns)
-  const team1Name = vetoState.team1Name || propTeam1Name || t('teamMatchHistory.team1');
-  const team2Name = vetoState.team2Name || propTeam2Name || t('teamMatchHistory.team2');
+  // Determine which team is viewing (must be defined before early returns). The page's names
+  // first: a matchmaking room calls its teams A and B.
+  const team1Name = propTeam1Name || vetoState.team1Name || t('teamMatchHistory.team1');
+  const team2Name = propTeam2Name || vetoState.team2Name || t('teamMatchHistory.team2');
   const isViewingTeam1 = currentTeamSlug === vetoState.team1Id;
   const isViewingTeam2 = currentTeamSlug === vetoState.team2Id;
   // A picked map no team chose is the decider (what is left after the bans).
@@ -463,6 +469,11 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       : currentAction === 'pick'
         ? CheckCircleIcon
         : ArrowsLeftRightIcon;
+
+  // A vote: who voted for what in this step, and the viewer's own vote.
+  const votersFor = (choice: string) =>
+    vote ? vote.voters.filter((v) => vetoState.votes?.[v.id] === choice) : [];
+  const myVote = vote && playerSteamId ? vetoState.votes?.[playerSteamId] : undefined;
 
   const pool = mapsToShow.filter(
     (map) =>
@@ -676,13 +687,15 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             {title}
           </Typography>
           <Typography sx={{ color: color.ink2 }}>
-            {isMyTurn
-              ? choosingSide
-                ? t('vetoInterface.sideInWindow')
-                : t('vetoInterface.clickMapToConfirm')
-              : !viewerTeamSlug && !isAdmin
-                ? t('vetoInterface.spectatorNote')
-                : t('vetoInterface.pageUpdatesAutomatically')}
+            {isMyTurn && vote
+              ? t('vetoInterface.vote.hint', { seconds: vote.seconds })
+              : isMyTurn
+                ? choosingSide
+                  ? t('vetoInterface.sideInWindow')
+                  : t('vetoInterface.clickMapToConfirm')
+                : !viewerTeamSlug && !isAdmin
+                  ? t('vetoInterface.spectatorNote')
+                  : t('vetoInterface.pageUpdatesAutomatically')}
           </Typography>
           {!viewerTeamSlug && isAdmin && (
             <Box
@@ -793,7 +806,10 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               gap: { xs: 1, sm: 1.5 },
               // Not your turn: the pool steps back (fades), so it is plain you are waiting.
               '& > *': { transition: 'opacity 260ms' },
-              ...(isMyTurn ? {} : { '& > *': { opacity: 0.3, transition: 'opacity 260ms' } }),
+              // A vote: everyone follows the votes, so nothing fades.
+              ...(isMyTurn || vote
+                ? {}
+                : { '& > *': { opacity: 0.3, transition: 'opacity 260ms' } }),
             }}
           >
             <AnimatePresence mode="popLayout" initial={false}>
@@ -824,6 +840,15 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     disabled={!isMyTurn || submitting}
                     isCurrentTurn={isMyTurn}
                     currentAction={currentAction}
+                    voters={
+                      vote ? (
+                        <VetoVoters
+                          voters={votersFor(map.name)}
+                          testId={`veto-votes-${map.name}`}
+                        />
+                      ) : undefined
+                    }
+                    chosen={!!myVote && myVote === map.name}
                   />
                 </Box>
               ))}
@@ -929,8 +954,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     cursor: 'pointer',
                     minHeight: 96,
                     borderRadius: `${radius.md}px`,
-                    border: `2px solid ${tone}`,
-                    bgcolor: withAlpha(tone, 0.12),
+                    border: `${myVote === sideKey ? 4 : 2}px solid ${tone}`,
+                    bgcolor: withAlpha(tone, myVote === sideKey ? 0.26 : 0.12),
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
@@ -955,12 +980,17 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   <Typography component="span" sx={{ fontSize: '0.875rem', color: color.ink2 }}>
                     {sideKey === 'CT' ? t('vetoInterface.ctHint') : t('vetoInterface.tHint')}
                   </Typography>
+                  {vote && (
+                    <VetoVoters voters={votersFor(sideKey)} testId={`veto-votes-${sideKey}`} />
+                  )}
                 </Box>
               );
             })}
           </Box>
           <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
-            {t('vetoInterface.sideTimeout')}
+            {vote
+              ? t('vetoInterface.vote.hint', { seconds: vote.seconds })
+              : t('vetoInterface.sideTimeout')}
           </Typography>
         </Box>
       </Dialog>

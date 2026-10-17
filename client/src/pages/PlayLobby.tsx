@@ -1,8 +1,9 @@
 /**
  * A matchmaking match room (the Lobby and Result drafts): the map large on
  * top with how to join the server beside it, the two teams below, and the
- * match chat. While the map roulette rolls the top waits for it. Once the
- * match is over: the result, any skin it dropped for you, and Play again.
+ * match chat. While the map roulette rolls the top waits for it; a 5v5
+ * vetoes its map instead (the tournaments' veto board, either team's players
+ * acting for it). Once the match is over: the result, any skin it dropped for you, and Play again.
  */
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -45,6 +46,8 @@ interface LobbyView {
   matchSlug: string | null;
   matchStatus: string | null;
   mapPool: RouletteMap[];
+  /** The map comes from a veto (5v5): the veto board shows while the match is pending. */
+  veto?: boolean;
   teams: Array<{
     team: number;
     /** The side this team starts on; null for a knife round or before the match exists. */
@@ -80,7 +83,9 @@ export default function PlayLobby() {
   const [missing, setMissing] = useState(false);
   const [rolled, setRolled] = useState(false);
   // Matchmaking is CS2 only for now (docs/design/matchmaking.md).
-  const ConnectPanel = useIntegration('cs2').matchPanels.teamView;
+  const cs2 = useIntegration('cs2');
+  const ConnectPanel = cs2.matchPanels.teamView;
+  const VetoBoard = cs2.preMatchView;
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/matchmaking/lobbies/${encodeURIComponent(lobbyId)}`, {
@@ -181,7 +186,10 @@ export default function PlayLobby() {
   // Loaded on a server, waiting in warmup for everyone to join.
   const waiting = lobby.matchStatus === 'loaded';
   const onServer = lobby.matchStatus === 'loaded' || lobby.matchStatus === 'live';
-  const rolls = !!lobby.map && lobby.mapPool.length > 1 && !completed;
+  const rolls = !lobby.veto && !!lobby.map && lobby.mapPool.length > 1 && !completed;
+  // The 5v5 veto, before the match gets a server. Any player of a team acts for it.
+  const vetoing = !!lobby.veto && !!lobby.matchSlug && lobby.matchStatus === 'pending';
+  const myTeam = lobby.teams.find((team) => team.players.some((p) => p.id === playerSteamId));
   const revealed = !!lobby.map && (!rolls || rolled);
   const mapName = lobby.map
     ? (lobby.mapPool.find((m) => m.id === lobby.map)?.name ??
@@ -235,7 +243,11 @@ export default function PlayLobby() {
           >
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, mt: 'auto' }}>
               <Typography sx={{ fontSize: textSize.md, color: color.ink2 }}>
-                {revealed ? t('matchmaking.room.pickedBy', { mode: modeLabel }) : modeLabel}
+                {revealed
+                  ? t(lobby.veto ? 'matchmaking.room.pickedByVeto' : 'matchmaking.room.pickedBy', {
+                      mode: modeLabel,
+                    })
+                  : modeLabel}
               </Typography>
               <Typography
                 component="h1"
@@ -273,7 +285,7 @@ export default function PlayLobby() {
                 </Typography>
               )}
             </Box>
-            {lobby.matchSlug && !completed && ConnectPanel && (
+            {lobby.matchSlug && !completed && !vetoing && ConnectPanel && (
               <Box
                 data-testid="mm-connect"
                 sx={{
@@ -294,6 +306,18 @@ export default function PlayLobby() {
             )}
           </Box>
         </Box>
+
+        {vetoing && VetoBoard && (
+          <Panel sx={{ p: 3, borderRadius: '24px' }} data-testid="mm-veto">
+            <VetoBoard
+              matchSlug={lobby.matchSlug!}
+              team1Name={t('matchmaking.room.teamLetter', { letter: 'A' })}
+              team2Name={t('matchmaking.room.teamLetter', { letter: 'B' })}
+              currentTeamSlug={myTeam ? `team${myTeam.team}` : undefined}
+              onComplete={() => void load()}
+            />
+          </Panel>
+        )}
 
         {rolls && (
           <Panel sx={{ p: 3, borderRadius: '24px' }}>

@@ -725,6 +725,7 @@
         "cancelled": "cancelled"
       },
       "match": {
+        "pending": "Map veto: ban maps in turn until one is left. Anyone on your team can click; the first click counts.",
         "ready": "Waiting for a free server.",
         "loaded": "The server is ready. Join it.",
         "live": "The match is live.",
@@ -732,6 +733,7 @@
         "other": "Match: {{status}}"
       },
       "pickedBy": "{{mode}} · the map roulette picked",
+      "pickedByVeto": "{{mode}} · picked in the veto",
       "vs": "vs",
       "you": "(you)",
       "accepted": "accepted",

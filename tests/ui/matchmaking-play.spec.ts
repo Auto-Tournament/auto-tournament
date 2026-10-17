@@ -79,14 +79,32 @@ test.describe.serial('matchmaking: Play page', () => {
     }
 
     await expect(page).toHaveURL(new RegExp(`/play/${lobbyId}$`), { timeout: 30_000 });
-    // The map roulette rolls, then stops on the match's map.
-    await expect(page.getByTestId('mm-roulette')).toBeVisible();
-    await expect(page.getByTestId('mm-roulette-picked')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText(/^Map: /)).toBeVisible();
+    // 5v5 votes its map: the veto board in the room. On our side's turn a click is our
+    // vote, and our avatar shows on that map.
+    await expect(page.getByTestId('mm-veto')).toBeVisible();
+    await expect(page.getByTestId('veto-interface')).toBeVisible();
+    if (await page.getByTestId('veto-your-turn').isVisible()) {
+      await page.locator('[data-testid^="veto-map-button-"]').first().click();
+      await expect(page.locator('[data-testid^="veto-votes-"][data-votes="1"]')).toHaveCount(1);
+    }
     await expect(page.getByTestId('mm-team-1')).toBeVisible();
     await expect(page.getByTestId('mm-team-2')).toBeVisible();
     await expect(page.getByText('Browser Player')).toBeVisible();
     await expect(page.getByRole('dialog', { name: 'Match found' })).toHaveCount(0);
+
+    // End it so these players are free again.
+    const room = (await (await page.request.get(`/api/matchmaking/lobbies/${lobbyId}`)).json())
+      .lobby as { matchSlug: string };
+    expect(
+      (
+        await admin.post('/api/test/series-result', {
+          data: {
+            slug: room.matchSlug,
+            result: { winner: 'team1', team1Score: 1, team2Score: 0, games: [] },
+          },
+        })
+      ).ok()
+    ).toBe(true);
   });
 
   test(

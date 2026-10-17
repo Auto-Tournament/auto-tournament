@@ -364,6 +364,76 @@ async function lobbyOf(ctx: APIRequestContext): Promise<NonNullable<Me['lobby']>
   return lobby!;
 }
 
+interface VetoView {
+  status: string;
+  currentTurn: 'team1' | 'team2';
+  currentAction: 'ban' | 'pick' | 'side_pick';
+  availableMaps: string[];
+  actions: Array<{
+    team: string;
+    action: string;
+    mapName?: string;
+    timedOut?: boolean;
+    votes?: number;
+  }>;
+  turnDeadline?: string;
+}
+
+async function vetoOf(ctx: APIRequestContext, slug: string): Promise<VetoView> {
+  const res = await ctx.get(`/api/veto/${slug}`);
+  expect(res.ok(), await res.text()).toBe(true);
+  return (await res.json()).veto as VetoView;
+}
+
+/**
+ * Walk a matchmaking 5v5's veto vote: on each step every player of the side whose turn it
+ * is votes for the same map (or side), which ends the turn at once. Returns the map;
+ * checks it is the match config's only map and the match waits for a server.
+ */
+async function runVeto(
+  slug: string,
+  team1: APIRequestContext[],
+  team2: APIRequestContext[],
+  admin: APIRequestContext
+): Promise<string> {
+  for (let i = 0; i < 30; i++) {
+    const veto = await vetoOf(team1[0], slug);
+    if (veto.status === 'completed') break;
+    const side = veto.currentTurn === 'team1' ? team1 : team2;
+    const other = veto.currentTurn === 'team1' ? team2 : team1;
+    const data =
+      veto.currentAction === 'side_pick' ? { side: 'CT' } : { mapName: veto.availableMaps[0] };
+    // The other team cannot vote out of turn.
+    expect((await other[0].post(`/api/veto/${slug}/action`, { data })).status()).toBe(403);
+    for (const ctx of side) {
+      const res = await ctx.post(`/api/veto/${slug}/action`, { data });
+      expect(res.ok(), await res.text()).toBe(true);
+    }
+    // The whole side voted: the step is taken now, not when the 10 s run out.
+    await expect
+      .poll(async () => (await vetoOf(team1[0], slug)).actions.length, { timeout: 5_000 })
+      .toBe(veto.actions.length + 1);
+    const after = await vetoOf(team1[0], slug);
+    expect(after.actions[after.actions.length - 1]).toMatchObject({ votes: side.length });
+  }
+  const done = (await (await team1[0].get(`/api/veto/${slug}`)).json()).veto as {
+    status: string;
+    pickedMaps: Array<{ mapName: string; sideTeam1?: string; sideTeam2?: string }>;
+  };
+  expect(done.status).toBe('completed');
+  const map = done.pickedMaps[0].mapName;
+  await expect
+    .poll(async () => {
+      const match = (await (await admin.get(`/api/matches/${slug}`)).json()).match as {
+        status: string;
+        config: { maplist?: string[] };
+      };
+      return { status: match.status, maplist: match.config?.maplist };
+    })
+    .toEqual({ status: 'ready', maplist: [map] });
+  return map;
+}
+
 test.describe.serial('matchmaking queue (phase 1)', () => {
   let admin: APIRequestContext;
   const contexts: APIRequestContext[] = [];
@@ -498,16 +568,33 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     expect(after.lobby).toMatchObject({ status: 'ready', accepted: 10, total: 10 });
     expect(after.queue).toBeNull();
 
-    // The match exists: a standalone Bo1 on a map from the pool, both teams as split.
+    // The match exists: a standalone Bo1 whose map the 5v5 veto picks, both teams as split.
     const room = await leader.ctx.get(`/api/matchmaking/lobbies/${lobbyId}`);
     expect(room.ok(), await room.text()).toBe(true);
     const view = (await room.json()).lobby as {
       matchSlug: string;
-      map: string;
+      map: string | null;
+      veto: boolean;
+      matchStatus: string;
       teams: Array<{ team: number; players: Array<{ id: string; accepted: boolean }> }>;
     };
     expect(view.matchSlug).toMatch(/^mm-/);
-    expect(view.map).toMatch(/^de_|^cs_/);
+    expect(view).toMatchObject({ veto: true, map: null, matchStatus: 'pending' });
+    const ctxOfTeam = (team: number) =>
+      view.teams
+        .find((t) => t.team === team)!
+        .players.map((member) => players.find((p) => p.id === member.id)!.ctx);
+    const vetoed = await runVeto(view.matchSlug, ctxOfTeam(1), ctxOfTeam(2), admin);
+    await expect
+      .poll(
+        async () =>
+          (
+            (await (await leader.ctx.get(`/api/matchmaking/lobbies/${lobbyId}`)).json()).lobby as {
+              map: string | null;
+            }
+          ).map
+      )
+      .toBe(vetoed);
     expect(view.teams.map((t) => t.players.length)).toEqual([5, 5]);
     expect(view.teams.flatMap((t) => t.players).every((p) => p.accepted)).toBe(true);
     const leaderTeam = view.teams.find((t) => t.players.some((p) => p.id === leader.id))!;
@@ -607,6 +694,63 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     ).toBe(true);
     await anon.dispose();
     expect((await outsider.ctx.get(`/api/matchmaking/lobbies/${lobbyId}`)).status()).toBe(404);
+  });
+
+  test('5v5 veto vote: when the 10 s run out the most-voted map is banned', TAGS, async () => {
+    const players = await Promise.all(Array.from({ length: 10 }, () => player()));
+    contexts.push(...players.map((p) => p.ctx));
+    for (const p of players) {
+      const res = await p.ctx.post('/api/matchmaking/queue', { data: { mode: '5v5' } });
+      expect(res.ok(), await res.text()).toBe(true);
+    }
+    const lobby = await lobbyOf(players[0].ctx);
+    for (const p of players)
+      expect(
+        (await p.ctx.post(`/api/matchmaking/lobbies/${lobby.id}/accept`, { data: {} })).ok()
+      ).toBe(true);
+    const room = (await (await players[0].ctx.get(`/api/matchmaking/lobbies/${lobby.id}`)).json())
+      .lobby as {
+      matchSlug: string;
+      veto: boolean;
+      teams: Array<{ team: number; players: Array<{ id: string }> }>;
+    };
+    expect(room.veto).toBe(true);
+    const opening = await vetoOf(players[0].ctx, room.matchSlug);
+    expect(opening.turnDeadline).toBeTruthy();
+    // One player of the side to act votes, the rest do not: their map goes when time is up.
+    const voterId = room.teams.find((t) => t.team === (opening.currentTurn === 'team1' ? 1 : 2))!
+      .players[0].id;
+    const voter = players.find((p) => p.id === voterId)!.ctx;
+    const target = opening.availableMaps[opening.availableMaps.length - 1];
+    expect(
+      (await voter.post(`/api/veto/${room.matchSlug}/action`, { data: { mapName: target } })).ok()
+    ).toBe(true);
+    expect((await vetoOf(players[0].ctx, room.matchSlug)) as unknown).toMatchObject({
+      votes: { [voterId]: target },
+    });
+    await expect
+      .poll(async () => (await vetoOf(players[0].ctx, room.matchSlug)).actions.length, {
+        timeout: 20_000,
+      })
+      .toBeGreaterThan(0);
+    const veto = await vetoOf(players[0].ctx, room.matchSlug);
+    expect(veto.actions[0]).toMatchObject({ action: 'ban', mapName: target, votes: 1 });
+    // Nobody votes on the next turn: a map is drawn, marked as out of time.
+    await expect
+      .poll(async () => (await vetoOf(players[0].ctx, room.matchSlug)).actions.length, {
+        timeout: 20_000,
+      })
+      .toBeGreaterThan(1);
+    expect((await vetoOf(players[0].ctx, room.matchSlug)).actions[1]).toMatchObject({
+      action: 'ban',
+      timedOut: true,
+    });
+    await admin.post('/api/test/series-result', {
+      data: {
+        slug: room.matchSlug,
+        result: { winner: 'team1', team1Score: 1, team2Score: 0, games: [] },
+      },
+    });
   });
 
   test('a decline: cooldown for the decliner, everyone else back at the front', TAGS, async () => {
@@ -798,10 +942,13 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
         ).lobby as {
           mode: string;
           map: string;
+          veto: boolean;
           mapPool: Array<{ id: string; name: string }>;
           teams: Array<{ players: unknown[] }>;
         };
         expect(room.mode).toBe('2v2');
+        // 2v2 has no veto: the roulette's map, at once.
+        expect(room.veto).toBe(false);
         expect(room.teams.map((t) => t.players.length)).toEqual([2, 2]);
         expect(room.mapPool.length).toBe(activeDuty!.maps);
         expect(room.mapPool.map((m) => m.id)).toContain(room.map);

@@ -289,6 +289,8 @@ export interface VetoAction {
   timestamp: number;
   /** Taken by the platform because the team ran out of time. */
   timedOut?: boolean;
+  /** A matchmaking vote: the votes the choice had. */
+  votes?: number;
 }
 
 export interface VetoMapResult {
@@ -327,6 +329,8 @@ export interface VetoState {
   opensAt?: string;
   /** The match's start time when it is held for it (Manage › Schedule). */
   startsAt?: string;
+  /** A matchmaking vote: the current step's votes, steam id → map or side. */
+  votes?: Record<string, string>;
 }
 
 export interface VetoStep {
