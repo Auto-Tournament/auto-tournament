@@ -9,6 +9,8 @@ export interface MatchTeam {
   flag?: string; // Country code (e.g., "US", "EU")
   logo?: string | null; // URL to team logo
   players: MatchPlayer;
+  /** Matchmaking: the player the team is named after (steam id). */
+  captainSteamId?: string | null;
   coaches?: MatchPlayer | null;
   /**
    * Roster players who are substitutes (Ready Up role `sub`), also listed in

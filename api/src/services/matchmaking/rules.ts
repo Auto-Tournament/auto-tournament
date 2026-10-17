@@ -442,3 +442,39 @@ export function parseReservedServers(raw: unknown): number {
   const n = typeof raw === 'string' ? Number(raw) : raw;
   return typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= 50 ? n : 0;
 }
+
+/**
+ * The captain of a team: the leader of its largest party (a tie: the party
+ * that queued first); a team of solos: the highest rated (a tie: queued first,
+ * then id). `members` are one team's players, `leaders` maps party id to its
+ * leader's player id, `mus` is each player's rating.
+ */
+export function pickCaptain(
+  members: { playerId: string; partyId: string; queuedAt: number | null }[],
+  leaders: Map<string, string>,
+  mus: Map<string, number>
+): string | null {
+  if (members.length === 0) return null;
+  const at = (m: { queuedAt: number | null }) => m.queuedAt ?? Number.MAX_SAFE_INTEGER;
+  const sizes = new Map<string, number>();
+  for (const m of members) sizes.set(m.partyId, (sizes.get(m.partyId) ?? 0) + 1);
+  const best = [...members].sort(
+    (a, b) =>
+      sizes.get(b.partyId)! - sizes.get(a.partyId)! ||
+      at(a) - at(b) ||
+      (mus.get(b.playerId) ?? 0) - (mus.get(a.playerId) ?? 0) ||
+      a.playerId.localeCompare(b.playerId)
+  )[0];
+  if (sizes.get(best.partyId)! > 1) {
+    const leader = leaders.get(best.partyId);
+    if (leader && members.some((m) => m.playerId === leader && m.partyId === best.partyId))
+      return leader;
+  }
+  // Solos: highest rated.
+  return [...members].sort(
+    (a, b) =>
+      (mus.get(b.playerId) ?? 0) - (mus.get(a.playerId) ?? 0) ||
+      at(a) - at(b) ||
+      a.playerId.localeCompare(b.playerId)
+  )[0].playerId;
+}
