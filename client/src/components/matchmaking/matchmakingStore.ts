@@ -72,6 +72,26 @@ export interface MatchmakingMe {
   rating: { elo: number; games: number; wins: number } | null;
   /** The modes players can search on this site (5v5; 1v1 when an admin turned it on). */
   modes?: string[];
+  /** A rematch someone asked for after the player's last match (`room`); null when none (older APIs: missing). */
+  rematch?: (RematchView & { room: string }) | null;
+}
+
+/** A finished match's rematch as one of its players sees it. */
+export interface RematchView {
+  /** Votes are still taken, until `deadline` (epoch seconds). */
+  open: boolean;
+  deadline: number | null;
+  /** The team whose player asked first; null until someone said yes. */
+  offerTeam: number | null;
+  /** The viewer's team. */
+  team: number;
+  teams: Array<{ team: number; yes: number; no: number; total: number }>;
+  yes: number;
+  total: number;
+  you: 'yes' | 'no' | null;
+  declined: boolean;
+  /** The new match's room once both teams said yes. */
+  lobbyId: string | null;
 }
 
 interface State {
@@ -113,7 +133,7 @@ function emit(next: State) {
 function nextDelay(): number {
   if (!state.available) return 60_000;
   const me = state.me;
-  return me?.queue || me?.lobby?.status === 'accepting' ? 5_000 : 30_000;
+  return me?.queue || me?.lobby?.status === 'accepting' || me?.rematch?.open ? 5_000 : 30_000;
 }
 
 /** Fetch now; reschedule the next poll. */
