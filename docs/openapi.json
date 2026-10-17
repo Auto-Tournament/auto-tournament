@@ -596,6 +596,14 @@
       "description": "Each player's best moments, picked from the demo analysis, and the clips the recorder makes of them."
     },
     {
+      "name": "Highlights backfill",
+      "description": "Find the notable moments of maps analyzed before, from the stored kill feeds and replays (no demo is read again)."
+    },
+    {
+      "name": "Integrations: highlights",
+      "description": "Notable moments from the demos (knife and Zeus kills, aces, 1vN clutches, no-scopes, grenade kills, last-second defuses) for integrators, oldest change first with a cursor; stable ids, revoked rows. Integrator token (API_TOKENS_INTEGRATOR), read-only or admin token, or admin session."
+    },
+    {
       "name": "Integrations: teams",
       "description": "Teams API for integrators: idempotent upsert of teams by the integrator's own externalId (single and batch), and reads by externalId. Integrator token (API_TOKENS_INTEGRATOR), admin token or admin session. See docs/WEBHOOKS.md."
     },
@@ -6297,6 +6305,59 @@
         ]
       }
     },
+    "/api/game/cs2/moments/backfill": {
+      "post": {
+        "tags": [
+          {
+            "Integrations": "highlights"
+          }
+        ],
+        "summary": "Find the notable moments of maps analyzed before (admin)",
+        "description": "Reads the kill feeds and 2D replays already stored for each analyzed\nmap and stores its moments (GET /api/integrations/highlights). No demo\nis read again. Safe to run more than once: a moment keeps its id, and\none no longer found is revoked. `dryRun: true` stores nothing and\nreturns what it would find.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "match": {
+                    "type": "string",
+                    "description": "Only this match (slug)"
+                  },
+                  "tournament": {
+                    "type": "integer",
+                    "description": "Only this tournament's matches"
+                  },
+                  "imported": {
+                    "type": "boolean",
+                    "description": "Only imported matches"
+                  },
+                  "dryRun": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Maps read, moments found by kind, rows created, updated, revoked; the knife kills"
+          },
+          "400": {
+            "description": "A bad parameter"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/movement/maps": {
       "get": {
         "tags": [
@@ -8867,6 +8928,215 @@
             "schema": {
               "type": "string"
             }
+          }
+        ]
+      }
+    },
+    "/api/integrations/highlights": {
+      "get": {
+        "tags": [
+          {
+            "Integrations": "highlights"
+          }
+        ],
+        "summary": "Notable moments from the demos, oldest change first",
+        "description": "One row per moment the demo analysis found in a real round (no warmup,\nno knife round, never a kill on a teammate or a bot): `knife_kill`,\n`zeus_kill`, `ace`, `clutch_1vN` (`detail.against` = N ≥ 3),\n`noscope_kill`, `grenade_kill` (HE, molotov, incendiary) and\n`bomb_defuse_last_second` (`detail.secondsLeft` < 1). Imported\nmatches are included (`imported: true`).\n\n`id` is the same on every re-parse. A moment a re-parse no longer\nfinds, or one of a deleted match, comes back with `revoked: true`.\nEvery change moves the moment to the end of the list: poll with\n`since=<nextCursor>` and apply rows by `id`.\n\nIntegrator token (API_TOKENS_INTEGRATOR), read-only or admin token,\nor an admin session.\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `nextCursor` of the last page; from the start without it."
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 500
+            }
+          },
+          {
+            "in": "query",
+            "name": "tournament",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Only this tournament's matches (and played matches kept from it)."
+          },
+          {
+            "in": "query",
+            "name": "match",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Only this match (slug)."
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Only these kinds, comma-separated."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of moments, and the cursor for the next one.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "highlights": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "hl_3f9a0c1b2d4e5f6a7b8c9d0e"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "example": "knife_kill"
+                          },
+                          "matchSlug": {
+                            "type": "string",
+                            "example": "t4-swiss-r3m3"
+                          },
+                          "tournament": {
+                            "type": "object",
+                            "nullable": true,
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "nullable": true,
+                                "description": "null for an imported match"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "mapNumber": {
+                            "type": "integer",
+                            "description": "1-based",
+                            "example": 1
+                          },
+                          "map": {
+                            "type": "string",
+                            "nullable": true,
+                            "example": "de_mirage"
+                          },
+                          "round": {
+                            "type": "integer",
+                            "example": 7
+                          },
+                          "tick": {
+                            "type": "integer",
+                            "example": 51234
+                          },
+                          "playedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "nullable": true,
+                            "description": "Estimated from the map's end; null for an imported match"
+                          },
+                          "player": {
+                            "type": "object",
+                            "properties": {
+                              "steamId64": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          },
+                          "victim": {
+                            "type": "object",
+                            "nullable": true,
+                            "properties": {
+                              "steamId64": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          },
+                          "weapon": {
+                            "type": "string",
+                            "nullable": true,
+                            "example": "Knife"
+                          },
+                          "detail": {
+                            "type": "object",
+                            "additionalProperties": true
+                          },
+                          "clipUrl": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "The recorded clip of the player's round",
+                            "when there is one": null
+                          },
+                          "replayUrl": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "The map's 2D replay at that round"
+                          },
+                          "imported": {
+                            "type": "boolean"
+                          },
+                          "revoked": {
+                            "type": "boolean"
+                          },
+                          "revokedReason": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string"
+                    },
+                    "hasMore": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A bad parameter"
+          },
+          "401": {
+            "description": "No or a wrong token"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }

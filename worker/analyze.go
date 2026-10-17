@@ -125,6 +125,9 @@ type ReplayBomb struct {
 	Site string  `json:"site"`
 	X    float64 `json:"x"`
 	Y    float64 `json:"y"`
+	// Player: who planted or defused it (Steam ID 64), for the platform's
+	// last-second defuse; empty for an explosion.
+	Player string `json:"player,omitempty"`
 }
 
 type rawGrenade struct {
@@ -596,7 +599,11 @@ func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
 		if e.Site == 0 {
 			site = ""
 		}
-		bomb = append(bomb, ReplayBomb{Tick: gs.IngameTick(), Kind: kind, Site: site, X: math.Round(pos.X), Y: math.Round(pos.Y)})
+		player := ""
+		if e.Player != nil && human(e.Player) {
+			player = id(e.Player)
+		}
+		bomb = append(bomb, ReplayBomb{Tick: gs.IngameTick(), Kind: kind, Site: site, X: math.Round(pos.X), Y: math.Round(pos.Y), Player: player})
 	}
 	p.RegisterEventHandler(func(e events.BombPlanted) { bombEvent("planted", e.BombEvent) })
 	p.RegisterEventHandler(func(e events.BombDefused) { bombEvent("defused", e.BombEvent) })

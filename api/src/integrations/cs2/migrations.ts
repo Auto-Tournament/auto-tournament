@@ -1612,4 +1612,45 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
         ON cs2_movement_records(map, mode, course, time_ms);
     `,
   },
+  {
+    // Notable moments for integrators (demos/moments.ts, demos/momentStore.ts):
+    // knife and Zeus kills, aces, 1vN clutches and so on, read by an event
+    // website over GET /api/integrations/highlights. `id` stays the same on a
+    // re-parse; `seq` goes up on every change (new, changed, revoked), so a
+    // poller reads them in order and sees a revoked one again.
+    id: '059-integration-highlights',
+    up: `
+      CREATE SEQUENCE IF NOT EXISTS cs2_moments_seq;
+      CREATE TABLE IF NOT EXISTS cs2_moments (
+        id TEXT PRIMARY KEY, -- hl_<hash of the match row, map and moment key>
+        seq BIGINT NOT NULL DEFAULT nextval('cs2_moments_seq'),
+        match_id INTEGER NOT NULL, -- matches.id: slugs come back, this does not
+        match_slug TEXT NOT NULL,
+        map_number INTEGER NOT NULL, -- 0-based
+        map_name TEXT,
+        tournament_id INTEGER, -- the tournament, or the one a kept match was played in
+        tournament_name TEXT, -- or where an imported match was played
+        imported BOOLEAN NOT NULL DEFAULT FALSE,
+        kind TEXT NOT NULL,
+        moment_key TEXT NOT NULL,
+        round INTEGER NOT NULL,
+        tick INTEGER NOT NULL,
+        played_at BIGINT, -- unix seconds, estimated from the map's end; NULL for an import
+        player_id TEXT NOT NULL, -- Steam ID 64
+        player_name TEXT,
+        victim_id TEXT,
+        victim_name TEXT,
+        weapon TEXT,
+        detail TEXT NOT NULL DEFAULT '{}', -- JSON
+        revoked BOOLEAN NOT NULL DEFAULT FALSE,
+        revoked_reason TEXT,
+        created_at BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
+        updated_at BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS cs2_moments_seq_idx ON cs2_moments(seq);
+      CREATE INDEX IF NOT EXISTS cs2_moments_map_idx ON cs2_moments(match_id, map_number);
+      CREATE INDEX IF NOT EXISTS cs2_moments_slug_idx ON cs2_moments(match_slug, seq);
+      CREATE INDEX IF NOT EXISTS cs2_moments_tournament_idx ON cs2_moments(tournament_id, seq);
+    `,
+  },
 ];
