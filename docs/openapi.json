@@ -712,6 +712,10 @@
       "description": "Your own email address (confirmed by a link) and whether you get tournament emails."
     },
     {
+      "name": "Party maps",
+      "description": "A matchmaking party's CS2 results per map (its members' results added up), and the Active Duty maps."
+    },
+    {
       "name": "Player profile",
       "description": "A player's CS2 totals, everyone's totals to compare with, and their results per map."
     },
@@ -6386,6 +6390,20 @@
           "Movement records"
         ],
         "summary": "GET /api/game/cs2/movement/records",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/game/cs2/party-maps": {
+      "get": {
+        "tags": [
+          "Party maps"
+        ],
+        "summary": "GET /api/game/cs2/party-maps",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {

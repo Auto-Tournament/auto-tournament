@@ -13,6 +13,7 @@ import { WatchMatchCard } from './watch/WatchMatchCard';
 import { TournamentRewardsSection } from './skins/TournamentRewards';
 import { Cs2ProfileStats } from './profile/Cs2ProfileStats';
 import { useCs2PlayerHighlights } from './profile/useCs2PlayerHighlights';
+import { PartyMaps } from './profile/PartyMaps';
 import { Cs2TeamProfileStats } from './profile/Cs2TeamProfileStats';
 import {
   HardDrivesIcon,
@@ -142,6 +143,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
   },
   // The team page: map strength, and the maps the team bans and picks.
   teamProfileView: Cs2TeamProfileStats,
+  // The Play page's party: its members' map strength, Active Duty marked.
+  partyView: PartyMaps,
 
   // The team page roster: whether the roster has a Steam account for each
   // member, which a CS2 player needs to join the server.
