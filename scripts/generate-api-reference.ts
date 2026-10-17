@@ -132,9 +132,7 @@ row claims different auth from the row above it, the row above is what answers.
 ${
   shadowed.length === 0
     ? ''
-    : `\nCurrently shadowed:\n\n${shadowed
-        .map((e) => `- \`${e.method} ${e.path}\``)
-        .join('\n')}\n`
+    : `\nCurrently shadowed:\n\n${shadowed.map((e) => `- \`${e.method} ${e.path}\``).join('\n')}\n`
 }
 ## Endpoints
 
@@ -181,16 +179,16 @@ function assertSpecIsSound(spec: Record<string, unknown>): void {
       );
       for (const name of templated) {
         if (!declared.has(name)) {
-          problems.push(`${method.toUpperCase()} ${routePath}: path parameter "${name}" is not declared`);
+          problems.push(
+            `${method.toUpperCase()} ${routePath}: path parameter "${name}" is not declared`
+          );
         }
       }
     }
   }
 
   if (problems.length > 0) {
-    throw new Error(
-      `Refusing to write a malformed OpenAPI spec:\n  - ${problems.join('\n  - ')}`
-    );
+    throw new Error(`Refusing to write a malformed OpenAPI spec:\n  - ${problems.join('\n  - ')}`);
   }
 }
 

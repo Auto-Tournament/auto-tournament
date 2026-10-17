@@ -11,11 +11,7 @@
 
 import { Pool, type PoolClient } from 'pg';
 import { log, LOG_DB_VERBOSE, LOG_DB_VALUES } from '../utils/logger';
-import {
-  safeLogJson,
-  redactParamsForLog,
-  redactInsertValuesForLog,
-} from '../utils/dbLogRedaction';
+import { safeLogJson, redactParamsForLog, redactInsertValuesForLog } from '../utils/dbLogRedaction';
 import { getSchemaSQL, getSchemaColumns } from './database.schema';
 import { runSchemaMigrations } from './schemaMigrations';
 import { markModuleMigrationsFailed, runModuleMigrations } from './moduleMigrations';
@@ -422,7 +418,9 @@ class DatabaseManager {
         const open = await client.query<{ id: number }>(
           'SELECT id FROM tournament WHERE archived_at IS NULL ORDER BY id DESC LIMIT 1'
         );
-        const next = await client.query<{ next: number }>('SELECT COALESCE(MAX(id), 0) + 1 AS next FROM tournament');
+        const next = await client.query<{ next: number }>(
+          'SELECT COALESCE(MAX(id), 0) + 1 AS next FROM tournament'
+        );
         setCurrentTournamentId(Number(open.rows[0]?.id ?? next.rows[0]?.next ?? 1));
       }
 
