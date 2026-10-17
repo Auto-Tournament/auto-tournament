@@ -288,6 +288,7 @@ yarn test:manual --debug
 ### Using Docker Compose (Recommended)
 
 The `yarn test` command uses Docker Compose to:
+
 1. Start PostgreSQL
 2. Build and start the application
 3. Run all tests
