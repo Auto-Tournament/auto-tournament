@@ -128,7 +128,28 @@ export default function TournamentRulesTab() {
       : []),
   ];
 
+  const formatKey = tournament.type;
+  const showTies = formatKey === 'swiss' || formatKey === 'round_robin' || formatKey === 'groups';
+  const swissRounds = Math.max(1, Math.ceil(Math.log2(Math.max(tournament.teamIds.length, 2))));
+  const formatIntro =
+    formatKey === 'swiss'
+      ? t('rulesTab.format.swiss', { count: swissRounds })
+      : formatKey === 'groups'
+        ? t('standingsTab.intro.groups')
+        : t(`rulesTab.format.${formatKey}`);
+  const grandFinal =
+    formatKey === 'double_elimination' ? (tournament.settings?.grandFinalMode ?? 'simple') : null;
+  const bestOf = tournament.format.replace('bo', 'Bo');
+  // The server's damage decider: overtime capped at N segments, or none with
+  // 0 segments set (assignConfig.ts). Unlimited overtime never needs it.
+  const segments = tournament.overtimeSegments;
+  const damageDecides =
+    tournament.overtimeMode === 'disabled'
+      ? segments === 0
+      : segments !== undefined && segments > 0;
+
   const sections = [
+    { id: 'rules-format', title: t('rulesTab.format.navTitle') },
     RulesView && { id: 'rules-how', title: t('overviewPage.howItsPlayed') },
     description && { id: 'rules-about', title: t('overviewPage.about') },
     schedule.length > 0 && { id: 'rules-schedule', title: t('overviewPage.schedule') },
@@ -227,6 +248,33 @@ export default function TournamentRulesTab() {
             gap: 2,
           }}
         >
+          <Section id="rules-format" title={t('rulesTab.format.title')}>
+            <Typography sx={{ color: color.ink2, maxWidth: '68ch' }}>{formatIntro}</Typography>
+            {grandFinal && (
+              <Typography sx={{ color: color.ink2, maxWidth: '68ch' }}>
+                {t(`tournament.setup.format.grandFinalHelp.${grandFinal}`)}
+              </Typography>
+            )}
+            {showTies && (
+              <Typography sx={{ color: color.ink2, maxWidth: '68ch' }}>
+                {t(`liveOverview.ties.${formatKey}`)}
+              </Typography>
+            )}
+            {rounds ? (
+              <Typography sx={{ color: color.ink2, maxWidth: '68ch' }}>
+                {t('rulesTab.format.matches', {
+                  series: bestOf,
+                  mr: rounds / 2,
+                  overtime,
+                })}
+              </Typography>
+            ) : null}
+            {damageDecides && (
+              <Typography sx={{ color: color.ink2, maxWidth: '68ch' }}>
+                {t('rulesTab.format.damage')}
+              </Typography>
+            )}
+          </Section>
           {RulesView && (
             <Section
               id="rules-how"
