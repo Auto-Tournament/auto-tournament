@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography } from '@mui/material';
-import { api, textSize, tokens, useModuleTranslation } from '../../../module-sdk';
+import { api, Panel, textSize, tokens, useModuleTranslation } from '../../../module-sdk';
 import type { PartyViewProps } from '../../types';
 import { MapRadar, type MapResult } from './MapRadar';
 
@@ -11,7 +11,7 @@ interface PartyMapsResponse {
 }
 
 /**
- * The `partyView` slot: the party's map strength on /play, the team page's
+ * The `partyView` slot: the party's map strength, a small card above your level on /play, the team page's
  * radar over every member's matches added up, with the Active Duty maps in
  * colour. Renders nothing until the party has three maps on record.
  */
@@ -40,11 +40,14 @@ export function PartyMaps({ members }: PartyViewProps) {
   if (!data || data.maps.filter((m) => m.played > 0).length < 3) return null;
 
   return (
-    <Box data-testid="cs2-party-maps" sx={{ width: '100%', display: 'grid', gap: 1 }}>
-      <Typography sx={{ fontSize: textSize.sm, fontWeight: 600, color: tokens.color.ink2 }}>
+    <Panel data-testid="cs2-party-maps" sx={{ p: 2, display: 'grid', gap: 1 }}>
+      <Typography
+        component="h2"
+        sx={{ m: 0, fontSize: textSize.md, fontWeight: 600, color: tokens.color.ink2 }}
+      >
         {t('profile.partyMaps')}
       </Typography>
-      <Box sx={{ maxWidth: 340, width: '100%', mx: 'auto' }}>
+      <Box sx={{ maxWidth: 220, width: '100%', mx: 'auto' }}>
         <MapRadar
           maps={data.maps}
           label={t('profile.partyMapsAria')}
@@ -54,6 +57,6 @@ export function PartyMaps({ members }: PartyViewProps) {
       <Typography sx={{ fontSize: textSize.sm, color: tokens.color.muted, textAlign: 'center' }}>
         {t('profile.partyMapsNote')}
       </Typography>
-    </Box>
+    </Panel>
   );
 }
