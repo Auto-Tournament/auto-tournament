@@ -37,6 +37,13 @@ export async function storeStandaloneVetoConfig(
     await db.updateAsync('matches', { config: JSON.stringify(updatedConfig) }, 'slug = ?', [
       matchSlug,
     ]);
+    // A matchmaking lobby shows its map too: write the veto's pick back to it.
+    if (updatedConfig.maplist[0]) {
+      await db.runAsync('UPDATE mm_lobbies SET map = ? WHERE match_slug = ? AND map IS NULL', [
+        updatedConfig.maplist[0],
+        matchSlug,
+      ]);
+    }
     log.success(`Updated config maplist for standalone match ${matchSlug} after veto completion`);
   } catch (e) {
     log.error(`Failed to update config for standalone match ${matchSlug} after veto`, e as Error);

@@ -10,6 +10,7 @@
  * back to searching. Every change runs through one in-process lock, so the
  * loop and the API never interleave.
  */
+import { playedMapOf } from './playedMap';
 import { getGameRatings } from '../gameRatings';
 import { randomInt, randomUUID } from 'crypto';
 import { db } from '../../config/database';
@@ -1625,7 +1626,9 @@ export class MatchmakingService {
         status: lobbyRow.status,
         acceptDeadline: Number(lobbyRow.accept_deadline),
         matchSlug: (lobbyRow as LobbyRow & { match_slug?: string | null }).match_slug ?? null,
-        map: (lobbyRow as LobbyRow & { map?: string | null }).map ?? null,
+        map:
+          (lobbyRow as LobbyRow & { map?: string | null }).map ??
+          (await playedMapOf((lobbyRow as LobbyRow & { match_slug?: string | null }).match_slug)),
         accepted: Number(counts?.accepted ?? 0),
         total: Number(counts?.total ?? 0),
         youAccepted: lobbyRow.accepted_at !== null,
@@ -2044,7 +2047,7 @@ export class MatchmakingService {
         mode: l.mode,
         status: l.status,
         matchSlug: l.match_slug,
-        map: l.map,
+        map: l.map ?? (await playedMapOf(l.match_slug)),
         accepted: Number(c?.accepted ?? 0),
         total: Number(c?.total ?? 0),
         createdAt: Number(l.created_at),
