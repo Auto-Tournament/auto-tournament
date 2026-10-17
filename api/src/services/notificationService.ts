@@ -14,6 +14,12 @@
  */
 import { db } from '../config/database';
 import { log } from '../utils/logger';
+import {
+  MATCH_NAMED_EVENTS,
+  configTeamName,
+  hasTbdSide,
+  matchNoticeName,
+} from './matchNoticeName';
 import { emitNotification } from './socketService';
 
 export type NotificationKind =
@@ -106,6 +112,52 @@ function view(row: Row): NotificationView {
     createdAt: Number(row.created_at),
     read: row.read_at !== null && row.read_at !== undefined,
   };
+}
+
+/**
+ * Match notices stored with a "TBD" side: the name from the match as it is
+ * now, or the notice dropped while the match still has no teams. Returns the
+ * ids to hide.
+ */
+async function fillTbdMatchNames(items: NotificationView[]): Promise<Set<number>> {
+  const hidden = new Set<number>();
+  const stale = items.filter(
+    (n) =>
+      n.kind === 'tournament' &&
+      MATCH_NAMED_EVENTS.includes(String(n.data.event)) &&
+      typeof n.data.matchSlug === 'string' &&
+      hasTbdSide(n.data.name)
+  );
+  if (!stale.length) return hidden;
+  const slugs = [...new Set(stale.map((n) => n.data.matchSlug as string))];
+  const rows = await db.queryAsync<{
+    slug: string;
+    config: string | null;
+    t1: string | null;
+    t2: string | null;
+  }>(
+    `SELECT m.slug, m.config, t1.name AS t1, t2.name AS t2
+       FROM matches m
+       LEFT JOIN teams t1 ON t1.id = m.team1_id
+       LEFT JOIN teams t2 ON t2.id = m.team2_id
+      WHERE m.slug IN (${slugs.map(() => '?').join(', ')})`,
+    slugs
+  );
+  const names = new Map(
+    rows.map((r) => [
+      r.slug,
+      matchNoticeName(
+        r.t1 ?? configTeamName(r.config, 'team1'),
+        r.t2 ?? configTeamName(r.config, 'team2')
+      ),
+    ])
+  );
+  for (const n of stale) {
+    const name = names.get(n.data.matchSlug as string);
+    if (name) n.data.name = name;
+    else hidden.add(n.id);
+  }
+  return hidden;
 }
 
 export const notificationService = {
@@ -235,7 +287,9 @@ export const notificationService = {
         ORDER BY id DESC LIMIT ?`,
       before ? [playerId, before, PAGE + 1] : [playerId, PAGE + 1]
     );
-    const items = rows.slice(0, PAGE).map(view);
+    const page = rows.slice(0, PAGE).map(view);
+    const hidden = await fillTbdMatchNames(page);
+    const items = page.filter((n) => !hidden.has(n.id));
     // A party invite is only answerable while the invite stands.
     const parties = items
       .filter(
@@ -264,7 +318,14 @@ export const notificationService = {
       'SELECT COUNT(*) AS n FROM notifications WHERE player_id = ? AND read_at IS NULL',
       [playerId]
     );
-    return Number(row?.n ?? 0);
+    // Not counted: match notices that still have no teams (see list).
+    const tbd = await db.queryAsync<Row>(
+      `SELECT id, kind, data, created_at, read_at FROM notifications
+        WHERE player_id = ? AND read_at IS NULL AND kind = 'tournament' AND data LIKE '%TBD%'`,
+      [playerId]
+    );
+    const hidden = await fillTbdMatchNames(tbd.map(view));
+    return Number(row?.n ?? 0) - hidden.size;
   },
 
   /** Mark some (or, with no ids, all) of the player's notices read. */
