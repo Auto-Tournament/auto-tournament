@@ -746,9 +746,6 @@ export default function Play() {
                         </Button>
                       </Box>
                     )}
-                    {party &&
-                      party.members.length >= 2 &&
-                      partyViews.map((View, i) => <View key={i} members={party.members} />)}
                   </Panel>
 
                   <Box
@@ -984,6 +981,9 @@ export default function Play() {
             </Box>
             {playerSteamId && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                {party &&
+                  party.members.length >= 2 &&
+                  partyViews.map((View, i) => <View key={i} members={party.members} />)}
                 <YouColumn playerId={playerSteamId} rating={me?.rating ?? null} />
                 <FriendsCard
                   members={party?.members ?? [playerSteamId]}
