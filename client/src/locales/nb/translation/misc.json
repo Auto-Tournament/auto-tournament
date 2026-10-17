@@ -725,6 +725,7 @@
         "cancelled": "avlyst"
       },
       "match": {
+        "pending": "Kartveto: lagene fjerner kart etter tur til ett er igjen. Alle på laget kan klikke, og første klikk gjelder.",
         "ready": "Venter på en ledig server.",
         "loaded": "Serveren er klar. Koble til.",
         "live": "Kampen er i gang.",
@@ -732,6 +733,7 @@
         "other": "Kamp: {{status}}"
       },
       "pickedBy": "{{mode}} · kartlotteriet valgte",
+      "pickedByVeto": "{{mode}} · valgt i vetoen",
       "vs": "mot",
       "you": "(deg)",
       "accepted": "godtatt",

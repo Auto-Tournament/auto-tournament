@@ -344,9 +344,10 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     return <Alert severity="warning">{t('vetoInterface.vetoUnavailable')}</Alert>;
   }
 
-  // Determine which team is viewing (must be defined before early returns)
-  const team1Name = vetoState.team1Name || propTeam1Name || t('teamMatchHistory.team1');
-  const team2Name = vetoState.team2Name || propTeam2Name || t('teamMatchHistory.team2');
+  // Determine which team is viewing (must be defined before early returns). The page's names
+  // first: a matchmaking room calls its teams A and B.
+  const team1Name = propTeam1Name || vetoState.team1Name || t('teamMatchHistory.team1');
+  const team2Name = propTeam2Name || vetoState.team2Name || t('teamMatchHistory.team2');
   const isViewingTeam1 = currentTeamSlug === vetoState.team1Id;
   const isViewingTeam2 = currentTeamSlug === vetoState.team2Id;
   // A picked map no team chose is the decider (what is left after the bans).

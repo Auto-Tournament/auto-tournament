@@ -5,6 +5,8 @@ import type { DbMatchRow, DbTournamentRow } from '../../../types/database.types'
 import type { TournamentResponse } from '../../../types/tournament.types';
 import { getVetoOrder } from './config';
 import { postVetoProgress } from './chatLines';
+import { getVetoContext } from './context';
+import { storeStandaloneVetoConfig } from './standaloneConfig';
 import { emitVetoUpdate } from '../../../services/socketService';
 import { settingsService } from '../../../services/settingsService';
 import { buildMatchConfigFor, serializeMatchConfig } from '../../../utils/matchIntegration';
@@ -214,7 +216,10 @@ async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promis
   // Bracket "TBD vs TBD" slots (future rounds) should behave exactly like
   // they would for real players: they are not ready yet, so we do not
   // simulate bans/picks or attempt to load them onto a server.
-  if (!match.team1_id || !match.team2_id) {
+  // A standalone match (manual, matchmaking 5v5) has its teams and map pool in its own
+  // config, not a tournament's.
+  const standalone = match.round === 0 || match.tournament_id == null;
+  if (!standalone && (!match.team1_id || !match.team2_id)) {
     log.debug(
       `[VETO-SIM] Match ${matchSlug} does not have both teams assigned (team1_id=${match.team1_id}, team2_id=${match.team2_id}); skipping auto veto`
     );
@@ -241,30 +246,45 @@ async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promis
     }
   }
 
-  // Load tournament
-  const t = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
-    tournamentIdForMatch(match),
-  ]);
-  if (!t) {
+  // Load tournament (none for a standalone match: getVetoContext reads its config)
+  const t = standalone
+    ? null
+    : await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+        tournamentIdForMatch(match),
+      ]);
+  if (!standalone && !t) {
     log.warn(`[VETO-SIM] Tournament not found for match ${matchSlug}; skipping auto veto`);
     return;
   }
-
-  const tournament: TournamentResponse = tournamentRowToResponse(t);
+  const tournament: TournamentResponse | null = t ? tournamentRowToResponse(t) : null;
 
   // Only BO formats use veto; safeguard here in case caller forgot.
-  if (!['bo1', 'bo3', 'bo5'].includes(tournament.format)) {
+  if (tournament && !['bo1', 'bo3', 'bo5'].includes(tournament.format)) {
     log.debug(
       `[VETO-SIM] Tournament format ${tournament.format} does not use veto – skipping auto veto for ${matchSlug}`
     );
     return;
   }
+  const context = tournament
+    ? {
+        format: tournament.format as 'bo1' | 'bo3' | 'bo5',
+        tournamentMaps: tournament.maps,
+        customVetoOrder: (tournament.settings as { customVetoOrder?: unknown } | undefined)
+          ?.customVetoOrder,
+      }
+    : await getVetoContext(match);
+  if (!context) {
+    log.debug(`[VETO-SIM] Match ${matchSlug} has no map pool to veto – skipping auto veto`);
+    return;
+  }
 
-  const format = tournament.format as 'bo1' | 'bo3' | 'bo5';
-  const tournamentMaps: string[] = tournament.maps;
-  const tournamentSettings = tournament.settings || {};
-  const customVetoOrder = (tournamentSettings as { customVetoOrder?: unknown }).customVetoOrder;
-  const vetoOrder = getVetoOrder(format, customVetoOrder, tournamentMaps.length) as VetoStep[];
+  const format = context.format;
+  const tournamentMaps: string[] = context.tournamentMaps;
+  const vetoOrder = getVetoOrder(
+    format,
+    context.customVetoOrder as Parameters<typeof getVetoOrder>[1],
+    tournamentMaps.length
+  ) as VetoStep[];
 
   if (!vetoOrder.length) {
     log.warn(`[VETO-SIM] Empty veto order for match ${matchSlug}; skipping auto veto`);
@@ -299,8 +319,8 @@ async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promis
       actions: [],
       currentTurn: vetoOrder[0].team,
       currentAction: vetoOrder[0].action,
-      team1Id: match.team1_id ?? undefined,
-      team2Id: match.team2_id ?? undefined,
+      team1Id: match.team1_id ?? (standalone ? 'team1' : undefined),
+      team2Id: match.team2_id ?? (standalone ? 'team2' : undefined),
       team1Name: undefined,
       team2Name: undefined,
     };
@@ -438,28 +458,32 @@ async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promis
       });
 
       // Recompute and persist fresh config
-      try {
-        const cfg = await buildMatchConfigFor(
-          {
-            slug: matchSlug,
-            id: match.id,
-            game: match.game,
-            round: match.round,
-            bracket: match.bracket,
-            team1Id: match.team1_id,
-            team2Id: match.team2_id,
-          },
-          tournament
-        );
-        await db.updateAsync('matches', { config: serializeMatchConfig(cfg) }, 'slug = ?', [
-          matchSlug,
-        ]);
-        log.success(`[VETO-SIM] Stored fresh config for match ${matchSlug} after automated veto`);
-      } catch (e) {
-        log.error(
-          `[VETO-SIM] Failed to generate/store config after automated veto for ${matchSlug}`,
-          e as Error
-        );
+      if (!tournament) {
+        await storeStandaloneVetoConfig(matchSlug, match.config, vetoState.pickedMaps, format);
+      } else {
+        try {
+          const cfg = await buildMatchConfigFor(
+            {
+              slug: matchSlug,
+              id: match.id,
+              game: match.game,
+              round: match.round,
+              bracket: match.bracket,
+              team1Id: match.team1_id,
+              team2Id: match.team2_id,
+            },
+            tournament
+          );
+          await db.updateAsync('matches', { config: serializeMatchConfig(cfg) }, 'slug = ?', [
+            matchSlug,
+          ]);
+          log.success(`[VETO-SIM] Stored fresh config for match ${matchSlug} after automated veto`);
+        } catch (e) {
+          log.error(
+            `[VETO-SIM] Failed to generate/store config after automated veto for ${matchSlug}`,
+            e as Error
+          );
+        }
       }
 
       // Auto-allocate and load match, same as manual veto completion path

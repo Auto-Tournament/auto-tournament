@@ -161,8 +161,25 @@ export async function vetoWaitingOnHold(slug: string): Promise<string | null> {
   return held === null ? null : new Date(held * 1000).toISOString();
 }
 
-/** Tournament matches whose veto is open: both teams in, no server yet, veto not done. */
+/**
+ * Matches whose veto is open: tournament matches with both teams in, and matchmaking 5v5s
+ * (standalone, their teams in the config); no server yet, veto not done.
+ */
 async function openVetoMatches(): Promise<DbMatchRow[]> {
+  const matchmaking = await db.queryAsync<DbMatchRow>(
+    `SELECT m.* FROM matches m
+      WHERE m.source = 'matchmaking'
+        AND m.tournament_id IS NULL
+        AND m.status = 'pending'
+        AND m.config LIKE '%"vetoDisabled":false%'
+        AND (m.server_id IS NULL OR m.server_id = '')
+        AND (m.held_until IS NULL OR m.held_until <= EXTRACT(EPOCH FROM NOW())::int)
+        AND (m.veto_state IS NULL OR m.veto_state NOT LIKE '%"status":"completed"%')`
+  );
+  return [...(await tournamentVetoMatches()), ...matchmaking];
+}
+
+async function tournamentVetoMatches(): Promise<DbMatchRow[]> {
   return db.queryAsync<DbMatchRow>(
     `SELECT m.* FROM matches m
        JOIN tournament t ON t.id = m.tournament_id

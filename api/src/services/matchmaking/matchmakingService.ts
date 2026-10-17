@@ -940,8 +940,8 @@ export class MatchmakingService {
 
   /**
    * Create the lobby's match: a standalone Bo1 on a random map from the
-   * game's matchmaking pool, teams as split, then ask the scheduler to give
-   * it a server.
+   * game's matchmaking pool (5v5: the map veto picks it), teams as split,
+   * then ask the scheduler to give it a server (5v5: once the veto is done).
    */
   private async startMatch(lobby: LobbyRow, players: LobbyPlayerRow[]): Promise<void> {
     if (!hasIntegration('cs2')) throw new Error('The CS2 module is not installed');
@@ -950,7 +950,10 @@ export class MatchmakingService {
       null;
     const pool = (await getIntegration('cs2').matchmakingMapPool?.(lobby.mode, poolId)) ?? [];
     if (pool.length === 0) throw new Error(`No CS2 maps for ${lobby.mode} matchmaking`);
-    const map = pool[randomInt(pool.length)].id;
+    // 5v5 vetoes its map (Bo1, the tournaments' veto: bans in turn, last map left, side pick);
+    // 2v2, 1v1 and a bot-filled game (nobody on the bots' side to ban) draw one.
+    const veto = lobby.mode === '5v5' && !lobby.bot_fill && pool.length > 1;
+    const map = veto ? null : pool[randomInt(pool.length)].id;
 
     const names = new Map(
       (
@@ -985,7 +988,9 @@ export class MatchmakingService {
           team1: team(1),
           team2: team(2),
           num_maps: 1,
-          maplist: [map],
+          maplist: veto ? pool.map((m) => m.id) : [map!],
+          // The veto runs before the match gets a server (status 'pending' until it is done).
+          ...(veto ? { vetoDisabled: false } : {}),
           wingman: mode === '2v2',
           // The mode's own rules, never a tournament's: a 1v1 played the
           // running tournament's MR6 (2026-10-12).
@@ -1000,16 +1005,20 @@ export class MatchmakingService {
     await db.runAsync("UPDATE matches SET source = 'matchmaking' WHERE slug = ?", [slug]);
     // The pool as it was, for the map roulette the players see: at most 30
     // maps, the chosen one always among them.
-    const chosen = pool.find((m) => m.id === map)!;
+    const chosen = pool.find((m) => m.id === map);
     const shown =
-      pool.length <= 30 ? pool : [...pool.filter((m) => m.id !== map).slice(0, 29), chosen];
+      pool.length <= 30 || !chosen
+        ? pool.slice(0, 30)
+        : [...pool.filter((m) => m.id !== map).slice(0, 29), chosen];
     await db.runAsync('UPDATE mm_lobbies SET match_slug = ?, map = ?, map_pool = ? WHERE id = ?', [
       slug,
       map,
       JSON.stringify(shown),
       lobby.id,
     ]);
-    log.info(`[MATCHMAKING] lobby ${lobby.id}: match ${slug} on ${map}`);
+    log.info(
+      `[MATCHMAKING] lobby ${lobby.id}: match ${slug} ${veto ? 'vetoes its map' : `on ${map}`}`
+    );
 
     // Allocation is the scheduler's (manual matches go the same way); it keeps
     // retrying while no server is free.
@@ -1600,6 +1609,8 @@ export class MatchmakingService {
     matchStatus: string | null;
     /** The maps the roulette rolls over; `map` is one of them. */
     mapPool: Array<{ id: string; name: string; imageUrl: string | null }>;
+    /** The map comes from a veto (5v5), not the roulette; `map` is null until it is done. */
+    veto: boolean;
     teams: Array<{
       team: number;
       /** The side this team starts on, from the match config; null for a knife round or before the match exists. */
@@ -1659,8 +1670,27 @@ export class MatchmakingService {
           status: string;
           config: string | null;
           completed_at: number | null;
-        }>('SELECT status, config, completed_at FROM matches WHERE slug = ?', [row.match_slug])
+          veto_state: string | null;
+        }>('SELECT status, config, completed_at, veto_state FROM matches WHERE slug = ?', [
+          row.match_slug,
+        ])
       : undefined;
+    // A vetoed match (5v5): the map is the veto's once it is done.
+    let veto = false;
+    let vetoedMap: string | null = null;
+    try {
+      const cfg = match?.config ? (JSON.parse(match.config) as { vetoDisabled?: boolean }) : {};
+      veto = cfg.vetoDisabled === false;
+      const state = match?.veto_state
+        ? (JSON.parse(match.veto_state) as {
+            status?: string;
+            pickedMaps?: Array<{ mapName?: string }>;
+          })
+        : null;
+      if (veto && state?.status === 'completed') vetoedMap = state.pickedMaps?.[0]?.mapName ?? null;
+    } catch {
+      veto = false;
+    }
     // Who is on the server (the game reports joins), and the sides from the match config.
     const connected = new Set(
       (row.match_slug
@@ -1688,10 +1718,11 @@ export class MatchmakingService {
       id: lobby.id,
       status: lobby.status,
       mode: lobby.mode,
-      map: row.map ?? null,
+      map: row.map ?? vetoedMap,
       matchSlug: row.match_slug ?? null,
       matchStatus: match?.status ?? null,
       mapPool,
+      veto,
       teams: [1, 2].map((team) => ({
         team,
         startSide: sideOf(team),

@@ -23,6 +23,7 @@ import { tournamentRowToResponse } from '../../../utils/tournamentRow';
 import { mapService } from '../maps/mapService';
 import { vetoTurnDeadline, vetoWaitingOnHold } from './timer';
 import { postVetoProgress } from './chatLines';
+import { storeStandaloneVetoConfig } from './standaloneConfig';
 
 const router = Router();
 
@@ -711,40 +712,8 @@ async function vetoAction(req: Request, res: Response) {
             log.error(`Failed to generate/store config after veto for ${matchSlug}`, e as Error);
           }
         } else if (match.round === 0) {
-          // Manual match (round === 0, tournament_id === null): update config's maplist from veto picks.
-          try {
-            const existingConfig = match.config ? JSON.parse(match.config) : {};
-            const orderedPickedMaps = [...vetoState.pickedMaps].sort(
-              (a: { mapNumber?: number }, b: { mapNumber?: number }) =>
-                (a.mapNumber || 0) - (b.mapNumber || 0)
-            );
-            const pickedMapNames = orderedPickedMaps
-              .map((m: { mapName: string }) => m.mapName)
-              .filter((name): name is string => Boolean(name));
-            const numMaps = format === 'bo1' ? 1 : format === 'bo3' ? 3 : 5;
-
-            const updatedConfig = {
-              ...existingConfig,
-              maplist: pickedMapNames.slice(0, numMaps),
-              map_sides: orderedPickedMaps.slice(0, numMaps).map((p: { sideTeam1?: string }) => {
-                if (p.sideTeam1 === 'CT') return 'team1_ct';
-                if (p.sideTeam1 === 'T') return 'team2_ct';
-                return 'knife';
-              }),
-            };
-
-            await db.updateAsync('matches', { config: JSON.stringify(updatedConfig) }, 'slug = ?', [
-              matchSlug,
-            ]);
-            log.success(
-              `Updated config maplist for manual match ${matchSlug} after veto completion`
-            );
-          } catch (e) {
-            log.error(
-              `Failed to update config for manual match ${matchSlug} after veto`,
-              e as Error
-            );
-          }
+          // Standalone match (manual, matchmaking): the veto's picks go into its own config.
+          await storeStandaloneVetoConfig(matchSlug, match.config, vetoState.pickedMaps, format);
         }
 
         // Automatically allocate server and load match after veto completion (async)

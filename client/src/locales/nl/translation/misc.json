@@ -729,7 +729,8 @@
         "loaded": "The server is ready. Join it.",
         "live": "The match is live.",
         "completed": "The match is over.",
-        "other": "Match: {{status}}"
+        "other": "Match: {{status}}",
+        "pending": "Map veto: ban maps in turn until one is left. Anyone on your team can click; the first click counts."
       },
       "pickedBy": "{{mode}} · the map roulette picked",
       "vs": "vs",
@@ -763,7 +764,8 @@
         "button": "Revanche",
         "waiting": "Wachten op de anderen: {{yes}} van {{total}} zeiden ja.",
         "declined": "Geen revanche: iemand zei nee."
-      }
+      },
+      "pickedByVeto": "{{mode}} · picked in the veto"
     },
     "result": {
       "title": "Result",
