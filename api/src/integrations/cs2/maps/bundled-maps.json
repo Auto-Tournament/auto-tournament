@@ -39,11 +39,7 @@
         "thumb": "ar_shoots_thumb.webp",
         "icon": "ar_shoots_icon.svg"
       },
-      "variants": [
-        "ar_shoots_1_thumb.webp",
-        "ar_shoots_2_thumb.webp",
-        "ar_shoots_4_thumb.webp"
-      ]
+      "variants": ["ar_shoots_1_thumb.webp", "ar_shoots_2_thumb.webp", "ar_shoots_4_thumb.webp"]
     },
     {
       "id": "ar_shoots_night",
@@ -128,11 +124,7 @@
         "thumb": "de_ancient_thumb.webp",
         "icon": "de_ancient_icon.svg"
       },
-      "variants": [
-        "de_ancient_2_thumb.webp",
-        "de_ancient_3_thumb.webp",
-        "de_ancient_4_thumb.webp"
-      ]
+      "variants": ["de_ancient_2_thumb.webp", "de_ancient_3_thumb.webp", "de_ancient_4_thumb.webp"]
     },
     {
       "id": "de_ancient_night",
@@ -214,10 +206,7 @@
         "thumb": "de_dust2_thumb.webp",
         "icon": "de_dust2_icon.svg"
       },
-      "variants": [
-        "de_dust2_1_thumb.webp",
-        "de_dust2_2_thumb.webp"
-      ]
+      "variants": ["de_dust2_1_thumb.webp", "de_dust2_2_thumb.webp"]
     },
     {
       "id": "de_eldorado",
