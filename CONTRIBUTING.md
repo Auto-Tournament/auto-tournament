@@ -11,7 +11,9 @@ Thanks for helping out. A few things keep reviews quick:
 - **Tests:** add or update a spec under `tests/` for what you change; `yarn
 test:api` runs the API specs against a local stack (`scripts/test-e2e-all.sh`).
 - **API routes:** after adding or changing one, run `yarn docs:api` and commit
-  `docs/API-REFERENCE.md` and `docs/openapi.json`.
+  `docs/API-REFERENCE.md` and `docs/openapi.json`. It needs no database: the script
+  sets `AT_NO_DB=1`, which makes the DB layer refuse to connect (and the pool is
+  only created on first query anyway).
 - **Strings:** add English in `client/src/locales/en` (and the CS2 module's
   `locales/en.json`), then `yarn --cwd client i18n:sync` fills the other
   languages.

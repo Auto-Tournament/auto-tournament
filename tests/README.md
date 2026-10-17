@@ -139,6 +139,11 @@ await stopImpersonating(request);
 
 ### Database
 
+Specs that import `api/src/config/database` directly need an explicit `DATABASE_URL`
+(or `DB_HOST`/`DB_PORT`/...). Outside CI the Playwright config sets
+`AT_REQUIRE_EXPLICIT_DB=1`, so a missing config fails with a clear message instead
+of connecting to `127.0.0.1:5432`.
+
 ```typescript
 import { wipeDatabase, wipeDatabaseAuto } from './helpers/database';
 
@@ -283,6 +288,7 @@ yarn test:manual --debug
 ### Using Docker Compose (Recommended)
 
 The `yarn test` command uses Docker Compose to:
+
 1. Start PostgreSQL
 2. Build and start the application
 3. Run all tests
