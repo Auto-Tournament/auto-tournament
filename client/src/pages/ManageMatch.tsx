@@ -141,6 +141,16 @@ interface ManageView {
     seats: number;
     insecureObservers: boolean;
     addresses: Array<{ kind: 'lan' | 'public' | 'server'; address: string }>;
+    /** What the server's tv plugin reports; null without it. */
+    server: {
+      port: number | null;
+      delay: number | null;
+      clients: number | null;
+      maxClients: number | null;
+      passwordSet: boolean | null;
+      insecure: boolean | null;
+      at: number;
+    } | null;
   } | null;
   log: LogEntry[];
   /** Stored map results, for a match with no live record. */
@@ -1165,6 +1175,33 @@ export default function ManageMatch() {
               {view.broadcast.password}
             </Box>
           </Typography>
+          {view.broadcast.server && (
+            <Typography
+              sx={{ color: color.ink2, fontSize: textSize.sm }}
+              data-testid="manage-broadcast-server"
+            >
+              {[
+                'Server reports',
+                view.broadcast.server.clients !== null
+                  ? `${view.broadcast.server.clients}${view.broadcast.server.maxClients !== null ? `/${view.broadcast.server.maxClients}` : ''} watching`
+                  : null,
+                view.broadcast.server.delay !== null
+                  ? view.broadcast.server.delay > 0
+                    ? `${view.broadcast.server.delay} s delay`
+                    : 'no delay'
+                  : null,
+                view.broadcast.server.passwordSet === false
+                  ? 'no password set'
+                  : view.broadcast.server.passwordSet
+                    ? 'password set'
+                    : null,
+                view.broadcast.server.insecure ? 'insecure observers' : null,
+                view.broadcast.server.port !== null ? `port ${view.broadcast.server.port}` : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </Typography>
+          )}
           {view.broadcast.addresses.map((a) => {
             const line = `password ${view.broadcast!.password}; connect ${a.address}`;
             return (

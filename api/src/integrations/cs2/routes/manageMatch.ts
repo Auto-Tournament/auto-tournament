@@ -23,6 +23,7 @@ import { HostCommandError, sendHostCommand } from '../fleet/hosts/service';
 import { serverChoices } from '../fleet/failover';
 import { getMapResults } from '../../../services/matchMapResultService';
 import { gotvHosts, gotvPassword, matchGotvSettings } from '../gotv';
+import { getTvState } from '../fleet/tvState';
 
 const router = Router();
 
@@ -175,6 +176,16 @@ router.get('/matches/:slug/manage', requireAuth, async (req: Request, res: Respo
       seats: number;
       insecureObservers: boolean;
       addresses: Array<{ kind: 'lan' | 'public' | 'server'; address: string }>;
+      /** What the server's tv plugin reports (fleet/tvState.ts); null without it. */
+      server: {
+        port: number | null;
+        delay: number | null;
+        clients: number | null;
+        maxClients: number | null;
+        passwordSet: boolean | null;
+        insecure: boolean | null;
+        at: number;
+      } | null;
     } | null = null;
     if (match.server_id) {
       const [where, gotv, password] = await Promise.all([
@@ -182,6 +193,8 @@ router.get('/matches/:slug/manage', requireAuth, async (req: Request, res: Respo
         matchGotvSettings(slug),
         gotvPassword(slug),
       ]);
+      const fleetId = await fleetServerIdOf(match.server_id).catch(() => null);
+      const reported = fleetId ? getTvState(fleetId) : null;
       if (where && where.options.length) {
         broadcast = {
           password,
@@ -192,6 +205,17 @@ router.get('/matches/:slug/manage', requireAuth, async (req: Request, res: Respo
             kind: o.kind,
             address: `${o.host}:${where.port}`,
           })),
+          server: reported
+            ? {
+                port: reported.tv.port,
+                delay: reported.tv.delay_seconds,
+                clients: reported.tv.clients,
+                maxClients: reported.tv.max_clients,
+                passwordSet: reported.tv.password_set,
+                insecure: reported.tv.secure_bypass,
+                at: reported.at,
+              }
+            : null,
         };
       }
     }
