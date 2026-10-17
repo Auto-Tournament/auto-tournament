@@ -141,6 +141,7 @@ export default function TournamentOverview() {
           roundRobinStandings={bracket.roundRobinStandings}
           swissStandings={bracket.swissStandings}
           groupStandings={bracket.groupStandings}
+          nextRoundEta={bracket.nextRoundEta}
           viewerTeamId={viewerTeam?.id ?? null}
         />
       </Box>

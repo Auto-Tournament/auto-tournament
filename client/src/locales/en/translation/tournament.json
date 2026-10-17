@@ -1317,6 +1317,11 @@
   "liveOverview": {
     "roundOf": "Round {{round}} of {{total}}",
     "liveCount": "{{count}} live now",
+    "eta": {
+      "nextRoundAbout": "Next round about {{time}}",
+      "nextRoundAt": "Next round at {{time}}",
+      "finalEnds": "Final round: ends about {{time}}"
+    },
     "hero": {
       "playingTitle": "You’re playing now",
       "playingBody": "{{us}} vs {{them}}{{map}}. Join from the match room.",
