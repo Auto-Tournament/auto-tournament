@@ -758,12 +758,17 @@
       "equipFailed": "Impossibile equipaggiarla",
       "rematch": {
         "title": "Rivincita?",
-        "body": "Stesse squadre, nuova mappa. Un sì vale per tutto il tuo gruppo. Parte quando ci sono tutti ({{yes}} su {{total}} finora), entro 2 minuti.",
+        "ask": "Stesse squadre, una nuova partita. La tua risposta vale per tutto il tuo gruppo. Se la maggioranza della tua squadra dice sì, l'altra squadra ha 30 secondi per accettare.",
         "yes": "Sì, rivincita",
         "no": "No, grazie",
         "button": "Rivincita",
-        "waiting": "In attesa degli altri: {{yes}} su {{total}} hanno detto sì.",
-        "declined": "Niente rivincita: qualcuno ha detto no."
+        "offerTitle": "L'altra squadra vuole la rivincita",
+        "teamTitle": "La tua squadra vuole la rivincita",
+        "offerBody": "Stesse squadre, una nuova partita. La maggioranza della tua squadra deve dire sì. La tua risposta vale per tutto il tuo gruppo.",
+        "waitingOther": "In attesa dell'altra squadra… {{s}} s",
+        "waitingTeam": "In attesa della tua squadra… {{s}} s",
+        "accepted": "Rivincita accettata. Apertura della nuova partita…",
+        "refused": "Rivincita rifiutata."
       },
       "pickedByVeto": "{{mode}} · picked in the veto"
     },

@@ -1201,7 +1201,10 @@ export function getSchemaSQL(): string {
       match_slug TEXT,
       bot_fill BOOLEAN NOT NULL DEFAULT FALSE, -- a bot-filled game: unrated, no XP or drops
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      rematch_lobby_id TEXT -- the rematch's lobby, once every player said yes
+      rematch_lobby_id TEXT, -- the rematch's lobby, once both teams said yes
+      rematch_offer_at INTEGER, -- the first yes to a rematch: the other team has REMATCH_ANSWER_SECONDS
+      rematch_offer_team INTEGER, -- the team of that first yes
+      rematch_outcome TEXT -- 'declined' once the rematch is off
     );
 
     CREATE TABLE IF NOT EXISTS mm_lobby_players (

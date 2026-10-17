@@ -758,12 +758,17 @@
       "equipFailed": "Kon niet uitrusten",
       "rematch": {
         "title": "Revanche?",
-        "body": "Dezelfde teams, een nieuwe map. Eén ja geldt voor je hele groep. Hij start als iedereen meedoet ({{yes}} van {{total}} tot nu toe), binnen 2 minuten.",
+        "ask": "Dezelfde teams, een nieuwe match. Je antwoord geldt voor je hele party. Zegt de meerderheid van je team ja, dan heeft het andere team 30 seconden om te accepteren.",
         "yes": "Ja, revanche",
         "no": "Nee, bedankt",
         "button": "Revanche",
-        "waiting": "Wachten op de anderen: {{yes}} van {{total}} zeiden ja.",
-        "declined": "Geen revanche: iemand zei nee."
+        "offerTitle": "Het andere team wil een rematch",
+        "teamTitle": "Je team wil een rematch",
+        "offerBody": "Dezelfde teams, een nieuwe match. De meerderheid van je team moet ja zeggen. Je antwoord geldt voor je hele party.",
+        "waitingOther": "Wachten op het andere team… {{s}} s",
+        "waitingTeam": "Wachten op je team… {{s}} s",
+        "accepted": "Rematch geaccepteerd. De nieuwe match wordt geopend…",
+        "refused": "Rematch geweigerd."
       },
       "pickedByVeto": "{{mode}} · picked in the veto"
     },

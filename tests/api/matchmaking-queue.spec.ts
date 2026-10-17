@@ -10,6 +10,8 @@ import {
   everyoneGone,
   isAbandon,
   rematchOpen,
+  rematchOutcome,
+  teamRematchAnswer,
   cooldownSeconds,
   findGroup,
   fewSearching,
@@ -298,6 +300,41 @@ test.describe('matchmaking rules (pure)', () => {
       ).toBeNull();
     }
   );
+
+  test('rematch: each team decides by majority; a tie is a no', TAGS, () => {
+    // Before the time is up: a yes majority, or a no once a yes majority is out of reach.
+    expect(teamRematchAnswer([true, true, true, null, null], false)).toBe('yes');
+    expect(teamRematchAnswer([true, true, null, null, null], false)).toBe('open');
+    expect(teamRematchAnswer([true, true, false, false, false], false)).toBe('no');
+    expect(teamRematchAnswer([true, false], false)).toBe('no');
+    expect(teamRematchAnswer([true, null], false)).toBe('open');
+    expect(teamRematchAnswer([false], false)).toBe('no');
+    // The bots' side of a bot-filled game always agrees.
+    expect(teamRematchAnswer([], false)).toBe('yes');
+    const v = (team: number, ...votes: Array<boolean | null>) =>
+      votes.map((vote) => ({ team, vote }));
+    expect(
+      rematchOutcome(
+        [...v(1, true, true, true, null, null), ...v(2, true, true, true, false, null)],
+        false
+      )
+    ).toBe('ready');
+    expect(rematchOutcome([...v(1, true, true, true), ...v(2, null, null, null)], false)).toBe(
+      'voting'
+    );
+    expect(rematchOutcome([...v(1, true, false), ...v(2, true, true)], false)).toBe('declined');
+  });
+
+  test('rematch: when the 30 s run out the votes cast decide; none is a no', TAGS, () => {
+    expect(teamRematchAnswer([true, true, false, null, null], true)).toBe('yes');
+    expect(teamRematchAnswer([true, false, null, null, null], true)).toBe('no');
+    expect(teamRematchAnswer([true, null], true)).toBe('yes');
+    expect(teamRematchAnswer([null, null], true)).toBe('no');
+    const v = (team: number, ...votes: Array<boolean | null>) =>
+      votes.map((vote) => ({ team, vote }));
+    expect(rematchOutcome([...v(1, true), ...v(2, null)], true)).toBe('declined');
+    expect(rematchOutcome([...v(1, true, true), ...v(2, true, null)], true)).toBe('ready');
+  });
 
   test('servers kept free for matchmaking: only while players wait', TAGS, () => {
     expect(freeForTournament(3, 1, true)).toBe(2);
@@ -1061,6 +1098,159 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
         await p.ctx.post('/api/matchmaking/party/leave', { data: {} });
       await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5'] } });
     }
+  });
+
+  /**
+   * A finished matchmaking match of `mode` between fresh solo players: each player with their
+   * team, the room and the match.
+   */
+  async function finishedMatch(mode: '5v5' | '2v2' | '1v1') {
+    const n = mode === '5v5' ? 10 : mode === '2v2' ? 4 : 2;
+    const players = await Promise.all(Array.from({ length: n }, () => player()));
+    contexts.push(...players.map((p) => p.ctx));
+    for (const p of players) {
+      const res = await p.ctx.post('/api/matchmaking/queue', { data: { mode } });
+      expect(res.ok(), await res.text()).toBe(true);
+    }
+    const lobbies = await Promise.all(players.map((p) => lobbyOf(p.ctx)));
+    const lobbyId = lobbies[0].id;
+    for (const p of players)
+      expect(
+        (await p.ctx.post(`/api/matchmaking/lobbies/${lobbyId}/accept`, { data: {} })).ok()
+      ).toBe(true);
+    const room = (await (await players[0].ctx.get(`/api/matchmaking/lobbies/${lobbyId}`)).json())
+      .lobby as { matchSlug: string };
+    const result = await admin.post('/api/test/series-result', {
+      data: {
+        slug: room.matchSlug,
+        result: { winner: 'team1', team1Score: 1, team2Score: 0, games: [] },
+      },
+    });
+    expect(result.ok(), await result.text()).toBe(true);
+    const team = (t: number) => players.filter((_, i) => lobbies[i].team === t).map((p) => p.ctx);
+    return { lobbyId, slug: room.matchSlug, team1: team(1), team2: team(2) };
+  }
+
+  const vote = async (ctx: APIRequestContext, lobbyId: string, accept: boolean) => {
+    const res = await ctx.post(`/api/matchmaking/lobbies/${lobbyId}/rematch`, {
+      data: { accept },
+    });
+    expect(res.ok(), await res.text()).toBe(true);
+    const { status, lobbyId: next } = (await res.json()) as { status: string; lobbyId?: string };
+    return next ? { status, lobbyId: next } : { status };
+  };
+
+  interface RematchMe {
+    room: string;
+    open: boolean;
+    deadline: number | null;
+    offerTeam: number | null;
+    team: number;
+    you: string | null;
+    declined: boolean;
+    lobbyId: string | null;
+  }
+  const rematchOf = async (ctx: APIRequestContext) =>
+    ((await me(ctx)) as Me & { rematch: RematchMe | null }).rematch;
+
+  test(
+    '5v5 rematch: one yes asks the other team, majorities agree, the new match vetoes its map',
+    TAGS,
+    async () => {
+      await admin.put('/api/matchmaking/admin/settings', {
+        data: { modes: ['5v5', '2v2', '1v1'] },
+      });
+      const { lobbyId, team1, team2 } = await finishedMatch('5v5');
+      // Nobody asked yet: nothing on the other team's screen.
+      expect(await rematchOf(team2[0])).toBeNull();
+
+      expect(await vote(team1[0], lobbyId, true)).toEqual({ status: 'voting' });
+      // The other team is asked at once, with 30 s to answer.
+      const asked = (await rematchOf(team2[0]))!;
+      expect(asked).toMatchObject({ room: lobbyId, open: true, offerTeam: 1, team: 2, you: null });
+      expect(asked.deadline! - Math.floor(Date.now() / 1000)).toBeGreaterThan(20);
+      expect(await rematchOf(team1[0])).toMatchObject({ you: 'yes', offerTeam: 1, team: 1 });
+
+      // Team 1: 3 of 5 yes is a majority. Team 2: 2 yes and a no is not yet.
+      await vote(team1[1], lobbyId, true);
+      expect(await vote(team1[2], lobbyId, true)).toEqual({ status: 'voting' });
+      await vote(team2[0], lobbyId, true);
+      await vote(team2[1], lobbyId, false);
+      expect(await vote(team2[2], lobbyId, true)).toEqual({ status: 'voting' });
+      // A third yes on team 2: both teams agree, the rematch starts at once.
+      const ready = await vote(team2[3], lobbyId, true);
+      expect(ready.status).toBe('ready');
+      expect(ready.lobbyId).toBeTruthy();
+      expect((await me(team2[4])).lobby).toMatchObject({ id: ready.lobbyId, status: 'ready' });
+
+      // Same teams, and 5v5 goes through the Bo1 veto vote instead of a random map.
+      const next = (await (await team1[0].get(`/api/matchmaking/lobbies/${ready.lobbyId}`)).json())
+        .lobby as { veto: boolean; map: string | null; matchSlug: string; matchStatus: string };
+      expect(next).toMatchObject({ veto: true, map: null, matchStatus: 'pending' });
+      const veto = await vetoOf(team1[0], next.matchSlug);
+      expect(veto.status).not.toBe('completed');
+      expect(await me(team1[4])).toMatchObject({ lobby: { team: 1 } });
+      expect(await me(team2[4])).toMatchObject({ lobby: { team: 2 } });
+      await admin.post('/api/test/series-result', {
+        data: {
+          slug: next.matchSlug,
+          result: { winner: 'team1', team1Score: 1, team2Score: 0, games: [] },
+        },
+      });
+    }
+  );
+
+  test('2v2 rematch: a tie within a team is a no', TAGS, async () => {
+    await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '2v2', '1v1'] } });
+    const { lobbyId, team1, team2 } = await finishedMatch('2v2');
+    expect(await vote(team2[0], lobbyId, true)).toEqual({ status: 'voting' });
+    expect(await rematchOf(team1[0])).toMatchObject({ open: true, offerTeam: 2, you: null });
+    // One yes and one no on team 2: a tie, so no rematch, whatever team 1 says.
+    expect(await vote(team2[1], lobbyId, false)).toEqual({ status: 'declined' });
+    expect(await rematchOf(team1[0])).toMatchObject({ open: false, declined: true });
+    expect(await vote(team1[0], lobbyId, true)).toEqual({ status: 'declined' });
+    expect((await me(team1[0])).lobby).toBeNull();
+  });
+
+  test('2v2 rematch: when the 30 s run out the votes cast decide', TAGS, async () => {
+    test.setTimeout(120_000);
+    await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '2v2', '1v1'] } });
+    const { lobbyId, team1, team2 } = await finishedMatch('2v2');
+    await vote(team1[0], lobbyId, true);
+    await vote(team1[1], lobbyId, true);
+    // Team 2: one yes, the other never answers. 1 of 2 is no majority yet ...
+    expect(await vote(team2[0], lobbyId, true)).toEqual({ status: 'voting' });
+    // ... but when the time is up the votes cast decide: 1 yes, 0 no.
+    await expect
+      .poll(async () => (await me(team2[1])).lobby?.status ?? 'none', {
+        timeout: 45_000,
+        intervals: [2_000],
+      })
+      .toBe('ready');
+    const next = (await me(team2[1])).lobby as NonNullable<Me['lobby']> & { matchSlug: string };
+    expect(await rematchOf(team1[0])).toMatchObject({ lobbyId: next.id });
+    await admin.post('/api/test/series-result', {
+      data: {
+        slug: next.matchSlug,
+        result: { winner: 'team1', team1Score: 1, team2Score: 0, games: [] },
+      },
+    });
+  });
+
+  test('1v1 rematch: nobody answers in time, so no rematch', TAGS, async () => {
+    test.setTimeout(120_000);
+    await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '2v2', '1v1'] } });
+    const { lobbyId, team1, team2 } = await finishedMatch('1v1');
+    await vote(team1[0], lobbyId, true);
+    await expect
+      .poll(async () => (await rematchOf(team2[0]))?.declined ?? null, {
+        timeout: 45_000,
+        intervals: [2_000],
+      })
+      .toBe(true);
+    expect((await me(team2[0])).lobby).toBeNull();
+    // Too late to answer now.
+    expect(await vote(team2[0], lobbyId, true)).toEqual({ status: 'declined' });
   });
 });
 

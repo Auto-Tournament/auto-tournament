@@ -759,12 +759,17 @@
       "equipFailed": "Kunne ikke utstyre den",
       "rematch": {
         "title": "Revansj?",
-        "body": "Samme lag, nytt kart. Ett ja gjelder hele partyet ditt. Den starter når alle er med ({{yes}} av {{total}} så langt), innen 2 minutter.",
+        "ask": "Samme lag, ny kamp. Svaret ditt gjelder hele partyet ditt. Sier flertallet på laget ditt ja, får det andre laget 30 sekunder på å svare.",
         "yes": "Ja, revansj",
         "no": "Nei takk",
         "button": "Revansj",
-        "waiting": "Venter på de andre: {{yes}} av {{total}} har sagt ja.",
-        "declined": "Ingen revansj: noen sa nei."
+        "offerTitle": "Det andre laget vil ha revansj",
+        "teamTitle": "Laget ditt vil ha revansj",
+        "offerBody": "Samme lag, ny kamp. Flertallet på laget ditt må si ja. Svaret ditt gjelder hele partyet ditt.",
+        "waitingOther": "Venter på det andre laget … {{s}} s",
+        "waitingTeam": "Venter på laget ditt … {{s}} s",
+        "accepted": "Revansj godtatt. Åpner den nye kampen …",
+        "refused": "Revansj avslått."
       }
     },
     "result": {

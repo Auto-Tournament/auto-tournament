@@ -57,6 +57,8 @@ import {
   findBotFillGroup,
   splitBotFill,
   rematchOpen,
+  rematchOutcome,
+  REMATCH_ANSWER_SECONDS,
   REMATCH_SECONDS,
 } from './rules';
 
@@ -95,6 +97,9 @@ interface LobbyRow {
   cancel_reason: string | null;
   bot_fill?: boolean | null;
   rematch_lobby_id?: string | null;
+  rematch_offer_at?: number | null;
+  rematch_offer_team?: number | null;
+  rematch_outcome?: string | null;
 }
 
 interface LobbyPlayerRow {
@@ -106,6 +111,24 @@ interface LobbyPlayerRow {
   declined_at: number | null;
   rematch_at?: number | null;
   rematch_declined_at?: number | null;
+}
+
+/** A lobby's rematch as one of its players sees it (MatchmakingService.rematchView). */
+export interface RematchView {
+  /** Votes are still taken (until `deadline`, epoch seconds). */
+  open: boolean;
+  deadline: number | null;
+  /** The team whose player asked first; null until someone said yes. */
+  offerTeam: number | null;
+  /** The caller's team. */
+  team: number;
+  teams: Array<{ team: number; yes: number; no: number; total: number }>;
+  yes: number;
+  total: number;
+  you: 'yes' | 'no' | null;
+  declined: boolean;
+  /** The new match's room once both teams said yes. */
+  lobbyId: string | null;
 }
 
 /** The notice of an invite to a party (one per party per player). */
@@ -157,6 +180,11 @@ export interface MatchmakingMe {
   rating: { elo: number; games: number; wins: number } | null;
   /** The modes players can search on this site. */
   modes: string[];
+  /**
+   * A rematch someone asked for after the caller's last match (`room` = that match's room),
+   * while it is answered and 15 s after; null when there is none.
+   */
+  rematch: (RematchView & { room: string }) | null;
   /** Signed-in players with the site open. */
   online: number;
   /** Typical seconds from searching to a match found, per mode; null with too few recent games. */
@@ -779,6 +807,7 @@ export class MatchmakingService {
         [this.clock()]
       );
       for (const lobby of expired) await this.resolveTimeout(lobby);
+      await this.settleExpiredRematches();
 
       await this.watchPresence();
 
@@ -1059,9 +1088,10 @@ export class MatchmakingService {
 
   /**
    * A player's answer to "rematch?" after their matchmaking match ended. The answer counts for
-   * their whole party (one click for a 5-stack). When every player of the lobby has a yes
-   * (within REMATCH_SECONDS of the end), the same teams get a new match straight away: a new
-   * lobby, accepted by everyone, on a new random map. One "no" ends it.
+   * their whole party (one click for a 5-stack) and cannot be changed. The first yes (within
+   * REMATCH_SECONDS of the end) asks the other team, who get REMATCH_ANSWER_SECONDS to answer.
+   * Each team decides by majority (rules.teamRematchAnswer); both yes = the same teams get a new
+   * match straight away (5v5 vetoes its map, 2v2 and 1v1 draw one). Either no = declined.
    */
   voteRematch(
     playerId: string,
@@ -1072,96 +1102,222 @@ export class MatchmakingService {
       const { lobby, players } = await this.lobbyFor(playerId, lobbyId);
       const row = lobby as LobbyRow & { match_slug: string | null };
       if (row.rematch_lobby_id) return { status: 'ready', lobbyId: row.rematch_lobby_id };
-      const match = row.match_slug
-        ? await db.queryOneAsync<{ status: string; completed_at: number | null }>(
-            'SELECT status, completed_at FROM matches WHERE slug = ?',
-            [row.match_slug]
-          )
-        : undefined;
-      if (!rematchOpen(match ?? null, this.clock())) {
-        throw new MatchmakingError(409, 'rematch_closed', 'A rematch is no longer possible');
-      }
-      if (players.some((p) => p.rematch_declined_at)) return { status: 'declined' };
+      if (row.rematch_outcome === 'declined') return { status: 'declined' };
       const now = this.clock();
-      const all = players.map((p) => p.player_id);
-      // The caller's whole party answers with them.
-      const party = players.find((p) => p.player_id === playerId)!.party_id;
-      if (!yes) {
-        await db.runAsync(
-          'UPDATE mm_lobby_players SET rematch_declined_at = ? WHERE lobby_id = ? AND party_id = ?',
-          [now, lobbyId, party]
-        );
-        this.touch(...all);
-        return { status: 'declined' };
+      const offerAt = row.rematch_offer_at == null ? null : Number(row.rematch_offer_at);
+      if (offerAt !== null && now >= offerAt + REMATCH_ANSWER_SECONDS) {
+        // Time is up (the loop settles it within 2 s): the votes cast decide.
+        return this.settleRematch(lobbyId);
       }
+      if (offerAt === null) {
+        const match = row.match_slug
+          ? await db.queryOneAsync<{ status: string; completed_at: number | null }>(
+              'SELECT status, completed_at FROM matches WHERE slug = ?',
+              [row.match_slug]
+            )
+          : undefined;
+        if (!rematchOpen(match ?? null, now)) {
+          throw new MatchmakingError(409, 'rematch_closed', 'A rematch is no longer possible');
+        }
+      }
+      // The caller's whole party answers with them; an answer is not changed.
+      const me = players.find((p) => p.player_id === playerId)!;
       await db.runAsync(
-        'UPDATE mm_lobby_players SET rematch_at = COALESCE(rematch_at, ?) WHERE lobby_id = ? AND party_id = ?',
-        [now, lobbyId, party]
+        `UPDATE mm_lobby_players SET ${yes ? 'rematch_at' : 'rematch_declined_at'} = ?
+          WHERE lobby_id = ? AND party_id = ? AND rematch_at IS NULL AND rematch_declined_at IS NULL`,
+        [now, lobbyId, me.party_id]
       );
-      this.touch(...all);
-      const waiting = players.filter((p) => p.party_id !== party && !p.rematch_at);
-      if (waiting.length > 0) return { status: 'voting' };
-
-      // Everyone said yes. Nobody may be in another game or lobby by now.
-      const busy = await db.queryOneAsync<{ n: number | string }>(
-        `SELECT COUNT(*) AS n FROM mm_lobby_players lp
-           JOIN mm_lobbies l ON l.id = lp.lobby_id
-           LEFT JOIN matches m ON m.slug = l.match_slug
-          WHERE lp.player_id IN (${all.map(() => '?').join(', ')}) AND l.id <> ?
-            AND (l.status = 'accepting'
-                 OR (l.status = 'ready' AND (m.status IS NULL OR m.status NOT IN ('completed', 'cancelled'))))`,
-        [...all, lobbyId]
-      );
-      if (Number(busy?.n ?? 0) > 0) {
-        throw new MatchmakingError(409, 'rematch_busy', 'Someone is already in another match');
-      }
-      // A party that started searching again stops: they are playing the rematch.
-      const parties = [...new Set(players.map((p) => p.party_id))];
-      await db.runAsync(
-        `DELETE FROM mm_queue_entries WHERE party_id IN (${parties.map(() => '?').join(', ')})`,
-        parties
-      );
-      const next = randomUUID();
-      await db.runAsync(
-        "INSERT INTO mm_lobbies (id, mode, status, accept_deadline, created_at, bot_fill) VALUES (?, ?, 'accepting', ?, ?, ?)",
-        [next, lobby.mode, now, now, lobby.bot_fill === true]
-      );
-      for (const p of players) {
+      if (yes && offerAt === null) {
         await db.runAsync(
-          'INSERT INTO mm_lobby_players (lobby_id, player_id, party_id, team, accepted_at) VALUES (?, ?, ?, ?, ?)',
-          [next, p.player_id, p.party_id, p.team, now]
+          'UPDATE mm_lobbies SET rematch_offer_at = ?, rematch_offer_team = ? WHERE id = ? AND rematch_offer_at IS NULL',
+          [now, me.team, lobbyId]
         );
       }
-      const nextLobby: LobbyRow = {
-        id: next,
-        mode: lobby.mode,
-        status: 'accepting',
-        accept_deadline: now,
-        cancel_reason: null,
-        bot_fill: lobby.bot_fill === true,
-      };
-      try {
-        await this.startMatch(
-          nextLobby,
-          players.map((p) => ({ ...p, accepted_at: now, declined_at: null }))
-        );
-      } catch (error) {
-        log.error(
-          `[MATCHMAKING] rematch of ${lobbyId}: could not create the match`,
-          error as Error
-        );
-        await db.runAsync(
-          "UPDATE mm_lobbies SET status = 'cancelled', cancel_reason = 'match_failed' WHERE id = ?",
-          [next]
-        );
-        throw new MatchmakingError(409, 'rematch_failed', 'The rematch could not be created');
-      }
-      await db.runAsync("UPDATE mm_lobbies SET status = 'ready' WHERE id = ?", [next]);
-      await db.runAsync('UPDATE mm_lobbies SET rematch_lobby_id = ? WHERE id = ?', [next, lobbyId]);
-      this.touch(...all);
-      log.info(`[MATCHMAKING] lobby ${lobbyId}: rematch agreed, lobby ${next}`);
-      return { status: 'ready', lobbyId: next };
+      this.touch(...players.map((p) => p.player_id));
+      return this.settleRematch(lobbyId);
     });
+  }
+
+  /**
+   * Decide a lobby's rematch from the votes so far: start the new match when both teams said
+   * yes, end it when either said no (or time ran out without both yes). Inside `locked`.
+   */
+  private async settleRematch(
+    lobbyId: string
+  ): Promise<{ status: 'voting' | 'declined' | 'ready'; lobbyId?: string }> {
+    const lobby = (await db.queryOneAsync<LobbyRow>('SELECT * FROM mm_lobbies WHERE id = ?', [
+      lobbyId,
+    ]))!;
+    if (lobby.rematch_lobby_id) return { status: 'ready', lobbyId: lobby.rematch_lobby_id };
+    if (lobby.rematch_outcome === 'declined') return { status: 'declined' };
+    const players = await db.queryAsync<LobbyPlayerRow>(
+      'SELECT * FROM mm_lobby_players WHERE lobby_id = ?',
+      [lobbyId]
+    );
+    const all = players.map((p) => p.player_id);
+    const now = this.clock();
+    const expired =
+      lobby.rematch_offer_at != null &&
+      now >= Number(lobby.rematch_offer_at) + REMATCH_ANSWER_SECONDS;
+    const outcome = rematchOutcome(
+      players.map((p) => ({
+        team: Number(p.team),
+        vote: p.rematch_at ? true : p.rematch_declined_at ? false : null,
+      })),
+      expired
+    );
+    const decline = async () => {
+      await db.runAsync("UPDATE mm_lobbies SET rematch_outcome = 'declined' WHERE id = ?", [
+        lobbyId,
+      ]);
+      this.touch(...all);
+      log.info(`[MATCHMAKING] lobby ${lobbyId}: rematch declined`);
+      return { status: 'declined' as const };
+    };
+    if (outcome === 'declined') return decline();
+    if (outcome === 'voting') return { status: 'voting' };
+
+    // Both teams said yes. Nobody may be in another game or lobby by now.
+    const busy = await db.queryOneAsync<{ n: number | string }>(
+      `SELECT COUNT(*) AS n FROM mm_lobby_players lp
+         JOIN mm_lobbies l ON l.id = lp.lobby_id
+         LEFT JOIN matches m ON m.slug = l.match_slug
+        WHERE lp.player_id IN (${all.map(() => '?').join(', ')}) AND l.id <> ?
+          AND (l.status = 'accepting'
+               OR (l.status = 'ready' AND (m.status IS NULL OR m.status NOT IN ('completed', 'cancelled'))))`,
+      [...all, lobbyId]
+    );
+    if (Number(busy?.n ?? 0) > 0) {
+      await decline();
+      throw new MatchmakingError(409, 'rematch_busy', 'Someone is already in another match');
+    }
+    // A party that started searching again stops: they are playing the rematch.
+    const parties = [...new Set(players.map((p) => p.party_id))];
+    await db.runAsync(
+      `DELETE FROM mm_queue_entries WHERE party_id IN (${parties.map(() => '?').join(', ')})`,
+      parties
+    );
+    const next = randomUUID();
+    await db.runAsync(
+      "INSERT INTO mm_lobbies (id, mode, status, accept_deadline, created_at, bot_fill) VALUES (?, ?, 'accepting', ?, ?, ?)",
+      [next, lobby.mode, now, now, lobby.bot_fill === true]
+    );
+    for (const p of players) {
+      await db.runAsync(
+        'INSERT INTO mm_lobby_players (lobby_id, player_id, party_id, team, accepted_at) VALUES (?, ?, ?, ?, ?)',
+        [next, p.player_id, p.party_id, p.team, now]
+      );
+    }
+    const nextLobby: LobbyRow = {
+      id: next,
+      mode: lobby.mode,
+      status: 'accepting',
+      accept_deadline: now,
+      cancel_reason: null,
+      bot_fill: lobby.bot_fill === true,
+    };
+    try {
+      await this.startMatch(
+        nextLobby,
+        players.map((p) => ({ ...p, accepted_at: now, declined_at: null }))
+      );
+    } catch (error) {
+      log.error(`[MATCHMAKING] rematch of ${lobbyId}: could not create the match`, error as Error);
+      await db.runAsync(
+        "UPDATE mm_lobbies SET status = 'cancelled', cancel_reason = 'match_failed' WHERE id = ?",
+        [next]
+      );
+      await decline();
+      throw new MatchmakingError(409, 'rematch_failed', 'The rematch could not be created');
+    }
+    await db.runAsync("UPDATE mm_lobbies SET status = 'ready' WHERE id = ?", [next]);
+    await db.runAsync('UPDATE mm_lobbies SET rematch_lobby_id = ? WHERE id = ?', [next, lobbyId]);
+    this.touch(...all);
+    log.info(`[MATCHMAKING] lobby ${lobbyId}: rematch agreed, lobby ${next}`);
+    return { status: 'ready', lobbyId: next };
+  }
+
+  /** Rematch offers whose answer time ran out: the votes cast decide. Inside `locked`. */
+  private async settleExpiredRematches(): Promise<void> {
+    const rows = await db.queryAsync<{ id: string }>(
+      `SELECT id FROM mm_lobbies WHERE rematch_offer_at IS NOT NULL AND rematch_offer_at <= ?
+          AND rematch_lobby_id IS NULL AND rematch_outcome IS NULL`,
+      [this.clock() - REMATCH_ANSWER_SECONDS]
+    );
+    for (const r of rows) {
+      try {
+        await this.settleRematch(r.id);
+      } catch (error) {
+        log.warn(`[MATCHMAKING] lobby ${r.id}: rematch not started: ${(error as Error).message}`);
+      }
+    }
+  }
+
+  /**
+   * The rematch as one player of the lobby sees it: open while votes are taken (until
+   * `deadline`: the other team's answer time once someone asked, else REMATCH_SECONDS after
+   * the end), who asked (`offerTeam`), each team's votes, the caller's answer, and the new room.
+   */
+  private rematchView(
+    lobby: LobbyRow,
+    players: LobbyPlayerRow[],
+    playerId: string,
+    match: { status: string; completed_at: number | null } | null
+  ): RematchView {
+    const now = this.clock();
+    const mine = players.find((p) => p.player_id === playerId);
+    const next = lobby.rematch_lobby_id ?? null;
+    const offerAt = lobby.rematch_offer_at == null ? null : Number(lobby.rematch_offer_at);
+    const deadline =
+      offerAt !== null
+        ? offerAt + REMATCH_ANSWER_SECONDS
+        : match?.completed_at
+          ? Number(match.completed_at) + REMATCH_SECONDS
+          : null;
+    const declined = lobby.rematch_outcome === 'declined';
+    const open =
+      !next &&
+      !declined &&
+      (offerAt !== null ? now < offerAt + REMATCH_ANSWER_SECONDS : rematchOpen(match, now));
+    return {
+      open,
+      deadline,
+      offerTeam: lobby.rematch_offer_team == null ? null : Number(lobby.rematch_offer_team),
+      team: Number(mine?.team ?? 0),
+      teams: [1, 2].map((team) => {
+        const on = players.filter((p) => Number(p.team) === team);
+        return {
+          team,
+          yes: on.filter((p) => p.rematch_at).length,
+          no: on.filter((p) => p.rematch_declined_at).length,
+          total: on.length,
+        };
+      }),
+      yes: players.filter((p) => p.rematch_at).length,
+      total: players.length,
+      you: mine?.rematch_declined_at ? 'no' : mine?.rematch_at ? 'yes' : null,
+      declined,
+      lobbyId: next,
+    };
+  }
+
+  /**
+   * The caller's open rematch offer (or one that ended less than 15 s ago), for the dialog
+   * every page shows: null when there is none.
+   */
+  private async rematchFor(playerId: string): Promise<MatchmakingMe['rematch']> {
+    const lobby = await db.queryOneAsync<LobbyRow & { match_slug: string | null }>(
+      `SELECT l.* FROM mm_lobbies l JOIN mm_lobby_players lp ON lp.lobby_id = l.id
+        WHERE lp.player_id = ? AND l.rematch_offer_at IS NOT NULL AND l.rematch_offer_at > ?
+        ORDER BY l.rematch_offer_at DESC LIMIT 1`,
+      [playerId, this.clock() - REMATCH_ANSWER_SECONDS - 15]
+    );
+    if (!lobby) return null;
+    const players = await db.queryAsync<LobbyPlayerRow>(
+      'SELECT * FROM mm_lobby_players WHERE lobby_id = ?',
+      [lobby.id]
+    );
+    return { room: lobby.id, ...this.rematchView(lobby, players, playerId, null) };
   }
 
   // --- abandons --------------------------------------------------------
@@ -1515,6 +1671,7 @@ export class MatchmakingService {
       cooldownUntil: await this.cooldownUntil(playerId),
       rating: await this.ratingSummary(playerId, entry?.mode ?? party?.mode ?? '5v5'),
       modes: await this.enabledModes(),
+      rematch: await this.rematchFor(playerId),
       online: onlinePlayerCount(),
       waitSeconds: await this.waitEstimates(),
       modeRules: await this.modeRules(),
@@ -1655,20 +1812,8 @@ export class MatchmakingService {
     total: number;
     /** Minutes a loaded match waits in warmup before it starts anyway (0 = until everyone is in). */
     autostartMinutes: number;
-    /**
-     * "Rematch?" after the match ended: open while it can still be agreed (until `deadline`,
-     * epoch seconds), how many said yes, the caller's answer, whether someone said no, and the
-     * new room once everyone said yes.
-     */
-    rematch: {
-      open: boolean;
-      deadline: number | null;
-      yes: number;
-      total: number;
-      you: 'yes' | 'no' | null;
-      declined: boolean;
-      lobbyId: string | null;
-    };
+    /** "Rematch?" after the match ended. */
+    rematch: RematchView;
   }> {
     const { lobby, players } = await this.lobbyFor(playerId, lobbyId);
     const row = lobby as LobbyRow & {
@@ -1766,20 +1911,7 @@ export class MatchmakingService {
       inServer: players.filter((p) => connected.has(p.player_id)).length,
       total: players.length,
       autostartMinutes,
-      rematch: (() => {
-        const mine = players.find((p) => p.player_id === playerId);
-        const declined = players.some((p) => p.rematch_declined_at);
-        const next = (lobby as LobbyRow).rematch_lobby_id ?? null;
-        return {
-          open: !next && !declined && rematchOpen(match ?? null, this.clock()),
-          deadline: match?.completed_at ? Number(match.completed_at) + REMATCH_SECONDS : null,
-          yes: players.filter((p) => p.rematch_at).length,
-          total: players.length,
-          you: mine?.rematch_declined_at ? 'no' : mine?.rematch_at ? 'yes' : null,
-          declined,
-          lobbyId: next,
-        };
-      })(),
+      rematch: this.rematchView(lobby, players, playerId, match ?? null),
     };
   }
 

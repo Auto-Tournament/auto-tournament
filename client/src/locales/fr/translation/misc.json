@@ -758,12 +758,17 @@
       "equipFailed": "Impossible de l’équiper",
       "rematch": {
         "title": "Revanche ?",
-        "body": "Mêmes équipes, nouvelle carte. Un oui vaut pour tout ton groupe. Elle démarre quand tout le monde est partant ({{yes}} sur {{total}} pour l'instant), sous 2 minutes.",
+        "ask": "Mêmes équipes, un nouveau match. Ta réponse vaut pour tout ton groupe. Si la majorité de ton équipe dit oui, l'autre équipe a 30 secondes pour accepter.",
         "yes": "Oui, revanche",
         "no": "Non merci",
         "button": "Revanche",
-        "waiting": "En attente des autres : {{yes}} sur {{total}} ont dit oui.",
-        "declined": "Pas de revanche : quelqu'un a dit non."
+        "offerTitle": "L'autre équipe veut une revanche",
+        "teamTitle": "Ton équipe veut une revanche",
+        "offerBody": "Mêmes équipes, un nouveau match. La majorité de ton équipe doit dire oui. Ta réponse vaut pour tout ton groupe.",
+        "waitingOther": "En attente de l'autre équipe… {{s}} s",
+        "waitingTeam": "En attente de ton équipe… {{s}} s",
+        "accepted": "Revanche acceptée. Ouverture du nouveau match…",
+        "refused": "Revanche refusée."
       },
       "pickedByVeto": "{{mode}} · picked in the veto"
     },
