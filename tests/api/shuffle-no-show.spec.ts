@@ -40,7 +40,13 @@ test(
     expect(await signInViaRequest(request)).toBe(true);
     const created = await request.post('/api/tournament/shuffle', {
       headers: getAuthHeader(),
-      data: { name: `No-shows ${Date.now()}`, mapSequence: MAPS, maxRounds: 3, teamSize: 2 },
+      data: {
+        name: `No-shows ${Date.now()}`,
+        mapSequence: MAPS,
+        maxRounds: 3,
+        overtimeMode: 'enabled',
+        teamSize: 2,
+      },
     });
     expect(created.ok(), await created.text()).toBe(true);
     const id = (await created.json()).tournament.id as number;

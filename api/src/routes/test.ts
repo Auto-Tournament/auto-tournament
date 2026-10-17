@@ -301,13 +301,27 @@ router.post('/match-state', requireAuth, async (req: Request, res: Response): Pr
 });
 
 /**
- * Test-only helper: the shuffle no-show check a match runs when it goes live
- * (shuffleTournamentService.dropShuffleNoShows), with `seen` as the players who
- * were on the server. Answers with the players marked out.
- *
- * POST /api/test/shuffle-no-shows  { slug, seen: string[] }
- *
- * NOTE: This endpoint is only available in non-production environments.
+ * @openapi
+ * /api/test/shuffle-no-shows:
+ *   post:
+ *     tags: [Test]
+ *     summary: Run a shuffle match's no-show check (tests only)
+ *     description: >
+ *       The check a shuffle match runs when it goes live (dropShuffleNoShows), with
+ *       `seen` as the players who were on the server. Answers with the players marked
+ *       out. Only available in non-production environments.
+ *     security: [{ BearerAuth: [] }]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               slug: { type: string }
+ *               seen: { type: array, items: { type: string } }
+ *     responses:
+ *       200: { description: The players marked out }
+ *       404: { description: No such match }
  */
 router.post(
   '/shuffle-no-shows',
