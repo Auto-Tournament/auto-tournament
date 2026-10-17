@@ -167,6 +167,110 @@ test.describe('Live state store', () => {
     expect(changes.map((c) => c.cause)).toEqual(['snapshot', 'patch', 'patch', 'patch']);
   });
 
+  test('a rev-only patch (in-game chat) advances the rev in memory: no write, no change event; the next real patch stores it', async () => {
+    const { store, persistence, changes } = newStore();
+    const snap = assignSnapshot();
+    const slug = snap.state!.match_id;
+    await store.applySnapshot(SERVER, snap);
+    const saved = persistence.load.bind(persistence);
+    let saves = 0;
+    const origSave = persistence.save.bind(persistence);
+    persistence.save = async (r) => {
+      saves += 1;
+      return origSave(r);
+    };
+    const before = changes.length;
+
+    const chat1 = await store.applyPatch(SERVER, {
+      matchSlug: slug,
+      epoch: 2,
+      rev: 1,
+      patch: { live_rev: 1 },
+      type: 'event.chat',
+    });
+    expect(chat1).toMatchObject({ kind: 'applied', revOnly: true });
+    const chat2 = await store.applyPatch(SERVER, {
+      matchSlug: slug,
+      epoch: 2,
+      rev: 2,
+      patch: { live_rev: 2 },
+      type: 'event.chat',
+    });
+    expect(chat2).toMatchObject({ kind: 'applied', revOnly: true });
+    expect(saves).toBe(0);
+    expect(changes.length).toBe(before);
+    // Nothing was stored, yet the store knows the rev.
+    expect((await saved(slug))!.liveRev).toBe(0);
+    expect((await store.getLiveState(slug))!.liveRev).toBe(2);
+
+    // A redelivery of a rev-only patch is a duplicate; a skipped rev is still a gap.
+    const dup = await store.applyPatch(SERVER, {
+      matchSlug: slug,
+      epoch: 2,
+      rev: 2,
+      patch: { live_rev: 2 },
+      type: 'event.chat',
+    });
+    expect(dup.kind).toBe('duplicate');
+    const gap = await store.applyPatch(SERVER, {
+      matchSlug: slug,
+      epoch: 2,
+      rev: 4,
+      patch: { live_rev: 4 },
+      type: 'event.chat',
+    });
+    expect(gap.kind).toBe('gap');
+
+    // The next real patch follows on from the in-memory rev and persists it.
+    const real = await store.applyPatch(SERVER, {
+      matchSlug: slug,
+      epoch: 2,
+      rev: 3,
+      patch: { live_rev: 3, phase: 'warmup' },
+      type: 'state.patch',
+    });
+    expect(real.kind).toBe('applied');
+    expect((real as { revOnly?: boolean }).revOnly).toBeUndefined();
+    // One save for the gap's needs-snapshot flag, one for the real patch.
+    expect(saves).toBe(2);
+    expect((await saved(slug))!.liveRev).toBe(3);
+    expect(changes.slice(before).map((c) => c.cause)).toEqual(['patch']);
+  });
+
+  test('a lost in-memory rev (restart) reads as a gap that a snapshot repairs', async () => {
+    const { store, persistence } = newStore();
+    const snap = assignSnapshot();
+    const slug = snap.state!.match_id;
+    await store.applySnapshot(SERVER, snap);
+    await store.applyPatch(SERVER, {
+      matchSlug: slug,
+      epoch: 2,
+      rev: 1,
+      patch: { live_rev: 1 },
+      type: 'event.chat',
+    });
+    // A new store over the same persistence = a restarted platform.
+    const restarted = new LiveStateStore(persistence);
+    const gap = await restarted.applyPatch(SERVER, {
+      matchSlug: slug,
+      epoch: 2,
+      rev: 2,
+      patch: { live_rev: 2, phase: 'warmup' },
+      type: 'state.patch',
+    });
+    expect(gap).toMatchObject({ kind: 'gap', requestSnapshot: true });
+    const answer: StateSnapshotPayload = {
+      ...snap,
+      reason: 'request',
+      state: { ...snap.state!, live_rev: 1 },
+    };
+    const replaced = await restarted.applySnapshot(SERVER, answer);
+    expect(replaced).toMatchObject({ kind: 'replaced', released: 1 });
+    const rec = (await restarted.getLiveState(slug))!;
+    expect(rec.liveRev).toBe(2);
+    expect(rec.state!.phase).toBe('warmup');
+  });
+
   test('a rev gap holds the patch and asks for a snapshot once; the snapshot releases what follows', async () => {
     const { store } = newStore();
     const snap = assignSnapshot();
