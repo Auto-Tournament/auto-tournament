@@ -3,7 +3,8 @@ import { Box, Button, Typography } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { soundNotification } from '../../utils/soundNotification';
-import { matchPagePath } from '../../paths';
+import { useMatchmaking } from '../matchmaking/matchmakingStore';
+import { matchRoomPath } from '../matchmaking/matchRoomPath';
 import type { MatchupSide } from '../../hooks/useCurrentMatchStatus';
 import { DraftDialog, TeamLogo } from '../tournament/ui/draftUi';
 import { radii, tokens } from '../../theme/tokens';
@@ -63,6 +64,8 @@ export function NextMatchDialog({
 }) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
+  // A matchmaking match's room is /play/<lobbyId>, not /match/<slug>.
+  const lobby = useMatchmaking().me?.lobby;
   const [open, setOpen] = React.useState<{ kind: Kind; slug: string } | null>(null);
   // "Your match is ready" and "the veto is open" close by themselves (the drafts): the navbar
   // pill keeps the link. A turn or a countdown stays until it is closed.
@@ -87,11 +90,11 @@ export function NextMatchDialog({
     if (seen(key)) return;
     markSeen(key);
     soundNotification.playNotification();
-    if (pathname === matchPagePath(matchSlug)) return; // already there: the sound is enough
+    if (pathname === matchRoomPath(matchSlug, lobby)) return; // already there: the sound is enough
     // Admin pages: the sound only; a dialog would get in the way of running the event.
     if (pathname === '/manage' || pathname.startsWith('/manage/')) return;
     setOpen({ kind, slug: matchSlug });
-  }, [status, matchSlug, vetoActionCount, loading, pathname]);
+  }, [status, matchSlug, vetoActionCount, loading, pathname, lobby]);
 
   if (!open) return null;
   const title =
@@ -134,7 +137,7 @@ export function NextMatchDialog({
         <>
           <Button
             component={RouterLink}
-            to={matchPagePath(open.slug)}
+            to={matchRoomPath(open.slug, lobby)}
             variant="contained"
             onClick={() => setOpen(null)}
             data-testid="next-match-go"
