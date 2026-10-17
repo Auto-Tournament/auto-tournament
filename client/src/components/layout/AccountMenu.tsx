@@ -20,7 +20,6 @@ import { generateAvatarDataUrl } from '../../generation/avatar';
 import { api } from '../../utils/api';
 import { paths, playerProfilePath } from '../../paths';
 import { useSocial } from '../social/socialStore';
-import { useModuleAccountMenuItems } from '../../hooks/useModuleAccountMenuItems';
 
 const PLAYER_AVATAR_CACHE_KEY_PREFIX = 'mat.playerAvatarUrl:';
 
@@ -60,7 +59,6 @@ export function AccountMenu({ wide = false }: { wide?: boolean } = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const friendRequests = useSocial(Boolean(playerSteamId) && !impersonation).incoming.length;
-  const moduleMenuItems = useModuleAccountMenuItems(playerSteamId ?? null);
   const currentLanguage = useCurrentLanguage();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -249,18 +247,6 @@ export function AccountMenu({ wide = false }: { wide?: boolean } = {}) {
             )}
           </MenuItem>
         )}
-        {moduleMenuItems.map((item) => (
-          <MenuItem
-            key={`${item.moduleId}:${item.key}`}
-            onClick={() => {
-              handleAvatarMenuClose();
-              navigate(item.path);
-            }}
-            data-testid={`nav-${item.key}`}
-          >
-            {t(item.labelKey, { ns: item.moduleId })}
-          </MenuItem>
-        ))}
         {playerSteamId && (
           <MenuItem
             onClick={() => {
