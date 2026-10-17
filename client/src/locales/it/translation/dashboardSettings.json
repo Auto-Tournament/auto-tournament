@@ -151,7 +151,11 @@
         "short": "L’accesso crea un giocatore per chiunque sia nuovo. Disattivato: solo i giocatori che aggiungi tu."
       },
       "title": "Giocatori",
-      "short": "Chi partecipa e come cambiano i rating."
+      "short": "Chi partecipa e come cambiano i rating.",
+      "chooseName": {
+        "toggleLabel": "I giocatori scelgono il proprio nome visualizzato",
+        "short": "Ai giocatori viene chiesto il nome e possono cambiarlo una volta al giorno. Disattivato: i nomi arrivano dalle importazioni e dagli admin."
+      }
     },
     "developer": {
       "resetApiTitle": "Reimposta API e database",

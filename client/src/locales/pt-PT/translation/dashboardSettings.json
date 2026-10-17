@@ -151,7 +151,11 @@
         "short": "Iniciar sessão cria um jogador para qualquer pessoa nova. Desligado: só os jogadores que adicionar."
       },
       "title": "Jogadores",
-      "short": "Quem entra, e como mudam as classificações."
+      "short": "Quem entra, e como mudam as classificações.",
+      "chooseName": {
+        "toggleLabel": "Os jogadores escolhem o seu nome visível",
+        "short": "Os jogadores indicam o seu nome e podem alterá-lo uma vez por dia. Desligado: os nomes vêm das importações e dos administradores."
+      }
     },
     "developer": {
       "resetApiTitle": "Repor API e base de dados",

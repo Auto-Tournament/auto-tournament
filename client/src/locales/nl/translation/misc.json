@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "Weergavenaam",
+      "description": "Zichtbaar op de site en in het spel. Je kunt hem één keer per dag wijzigen.",
+      "lockedUntil": "Zichtbaar op de site en in het spel. Je hebt hem onlangs gewijzigd; vanaf {{date}} kan het weer.",
+      "label": "Naam",
+      "lengthHint": "{{min}}–{{max}} tekens",
+      "badChars": "Geen aanhalingstekens, < of > of besturingstekens",
+      "promptTitle": "Hoe heet je?",
+      "promptBody": "Je naam is zichtbaar in het spel en op de site.",
+      "notNow": "Niet nu",
+      "save": "Opslaan",
+      "saved": "Naam opgeslagen. Gameservers gebruiken hem vanaf je volgende match.",
+      "saveFailed": "Kon je naam niet opslaan"
     }
   },
   "home": {

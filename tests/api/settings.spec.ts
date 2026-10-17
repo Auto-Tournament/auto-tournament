@@ -1061,6 +1061,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'license_lease', field: null },
   // Integrator webhooks to private / loopback targets (services/webhooks/ssrf).
   { key: 'webhooks_allow_private_targets', field: 'webhooksAllowPrivateTargets' },
+  // Players choose their own display name (/api/me/name).
+  { key: 'players_choose_name', field: 'playersChooseName' },
   // Experimental feature toggles: /api/experimental only.
   { key: 'experimental_matchmaking', field: null },
   // Ready Up match servers' join password (off by default; the roster whitelist keeps others out).

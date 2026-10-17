@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "Wyświetlana nazwa",
+      "description": "Widoczna na stronie i w grze. Możesz ją zmienić raz dziennie.",
+      "lockedUntil": "Widoczna na stronie i w grze. Zmieniłeś ją niedawno; ponownie możesz ją zmienić od {{date}}.",
+      "label": "Nazwa",
+      "lengthHint": "{{min}}–{{max}} znaków",
+      "badChars": "Bez cudzysłowów, < i > oraz znaków sterujących",
+      "promptTitle": "Jak się nazywasz?",
+      "promptBody": "Nazwa jest widoczna w grze i na stronie.",
+      "notNow": "Nie teraz",
+      "save": "Zapisz",
+      "saved": "Nazwa zapisana. Serwery użyją jej od Twojego następnego meczu.",
+      "saveFailed": "Nie udało się zapisać nazwy"
     }
   },
   "home": {

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 749 of them, 426 behind auth —
+Every endpoint this API serves — 751 of them, 426 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -1099,6 +1099,8 @@ The signed-in player's own data, e.g. the games they play.
 | `GET` | `/api/me/games` | public |
 | `PUT` | `/api/me/games` | public |
 | `POST` | `/api/me/games/prompt/dismiss` | public |
+| `GET` | `/api/me/name` | public |
+| `PUT` | `/api/me/name` | public |
 | `GET` | `/api/me/connections` | public |
 | `POST` | `/api/me/connections/:provider/remove` | public |
 | `POST` | `/api/me/connections/steam/merge` | public |

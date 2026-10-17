@@ -12262,6 +12262,64 @@
         }
       }
     },
+    "/api/me/name": {
+      "get": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "The signed-in player's display name, and whether they may change it",
+        "description": "`enabled` follows the `playersChooseName` setting. `showPrompt` asks the\nplayer to confirm their name (on, and never confirmed). `nextChangeAt`\nis when they may change it again (epoch seconds), or null.\n",
+        "responses": {
+          "200": {
+            "description": "`name`, `enabled`, `showPrompt`, `nextChangeAt`"
+          },
+          "401": {
+            "description": "Not signed in"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "Set or confirm the signed-in player's display name",
+        "description": "Only while `playersChooseName` is on. 2-32 characters after trimming, no\ncontrol characters, quotes or < >. The same name confirms it; a new one\nworks once a day. A live game server gets it at the next match assign.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new state",
+            "as GET": null
+          },
+          "400": {
+            "description": "Not a valid name"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "403": {
+            "description": "The setting is off",
+            "or impersonating": null
+          },
+          "429": {
+            "description": "Changed less than a day ago"
+          }
+        }
+      }
+    },
     "/api/modules": {
       "get": {
         "tags": [

@@ -40,6 +40,7 @@ import {
   isSteamlessPlayerId,
 } from '../services/localAccountSteamLink';
 import { isLocalReauthFresh } from '../utils/localReauth';
+import { NameChangeError, getOwnNameState, setOwnName } from '../services/playerName';
 import { clearPendingSteamMerge, readPendingSteamMerge, switchSessionAccount } from './auth';
 
 const router = Router();
@@ -203,6 +204,69 @@ router.post('/games/prompt/dismiss', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Error dismissing games prompt', error);
     return res.status(500).json({ success: false, error: 'Failed to skip' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/me/name:
+ *   get:
+ *     tags: [Me]
+ *     summary: The signed-in player's display name, and whether they may change it
+ *     description: |
+ *       `enabled` follows the `playersChooseName` setting. `showPrompt` asks the
+ *       player to confirm their name (on, and never confirmed). `nextChangeAt`
+ *       is when they may change it again (epoch seconds), or null.
+ *     responses:
+ *       200: { description: "`name`, `enabled`, `showPrompt`, `nextChangeAt`" }
+ *       401: { description: Not signed in }
+ *   put:
+ *     tags: [Me]
+ *     summary: Set or confirm the signed-in player's display name
+ *     description: |
+ *       Only while `playersChooseName` is on. 2-32 characters after trimming, no
+ *       control characters, quotes or < >. The same name confirms it; a new one
+ *       works once a day. A live game server gets it at the next match assign.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { name: { type: string } } }
+ *     responses:
+ *       200: { description: The new state, as GET }
+ *       400: { description: Not a valid name }
+ *       401: { description: Not signed in }
+ *       403: { description: The setting is off, or impersonating }
+ *       429: { description: Changed less than a day ago }
+ */
+router.get('/name', async (req: Request, res: Response) => {
+  try {
+    const account = await resolveAccount(req, res, { write: false, what: 'account' });
+    if (!account) return;
+    const state = await getOwnNameState(account.steamId);
+    if (!state) {
+      return res.status(404).json({ success: false, error: 'No player record for this account' });
+    }
+    return res.json({ success: true, ...state });
+  } catch (error) {
+    log.error('Error reading own name', error);
+    return res.status(500).json({ success: false, error: 'Failed to load your name' });
+  }
+});
+
+router.put('/name', async (req: Request, res: Response) => {
+  try {
+    const account = await resolveAccount(req, res, { write: true, what: 'account' });
+    if (!account) return;
+    const state = await setOwnName(account.steamId, (req.body as { name?: unknown })?.name);
+    log.info('Player set their display name', { steamId: account.steamId });
+    return res.json({ success: true, ...state });
+  } catch (error) {
+    if (error instanceof NameChangeError) {
+      return res.status(error.status).json({ success: false, error: error.message });
+    }
+    log.error('Error saving own name', error);
+    return res.status(500).json({ success: false, error: 'Failed to save your name' });
   }
 });
 

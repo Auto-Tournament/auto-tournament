@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "Anzeigename",
+      "description": "Wird auf der Website und im Spiel angezeigt. Du kannst ihn einmal am Tag ändern.",
+      "lockedUntil": "Wird auf der Website und im Spiel angezeigt. Du hast ihn kürzlich geändert und kannst ihn ab {{date}} wieder ändern.",
+      "label": "Name",
+      "lengthHint": "{{min}}–{{max}} Zeichen",
+      "badChars": "Keine Anführungszeichen, < oder > und keine Steuerzeichen",
+      "promptTitle": "Wie heißt du?",
+      "promptBody": "Der Name wird im Spiel und auf der Website angezeigt.",
+      "notNow": "Nicht jetzt",
+      "save": "Speichern",
+      "saved": "Name gespeichert. Gameserver verwenden ihn ab deinem nächsten Match.",
+      "saveFailed": "Name konnte nicht gespeichert werden"
     }
   },
   "home": {

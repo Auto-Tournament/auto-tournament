@@ -57,6 +57,7 @@ const mapSettingsResponse = async () => {
   const defaultPlayerElo = null;
   const ratingsEnabled = await settingsService.areRatingsEnabled();
   const allowSelfRegister = await settingsService.isSelfRegistrationAllowed();
+  const playersChooseName = await settingsService.canPlayersChooseName();
   const siteName = await settingsService.getSiteName();
   const webhooksAllowPrivateTargets = await settingsService.areWebhookPrivateTargetsAllowed();
   const highlights = await readHighlightSettings((key) => settingsService.getSetting(key));
@@ -75,6 +76,7 @@ const mapSettingsResponse = async () => {
     defaultPlayerElo,
     ratingsEnabled,
     allowSelfRegister,
+    playersChooseName,
     ...highlights,
     webhooksAllowPrivateTargets,
     ...integrationFields,

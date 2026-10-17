@@ -301,7 +301,11 @@
         "short": "Signing in makes a player of anyone new. Off: only players you add."
       },
       "title": "Players",
-      "short": "Who joins, and how ratings move."
+      "short": "Who joins, and how ratings move.",
+      "chooseName": {
+        "toggleLabel": "Players choose their display name",
+        "short": "Players are asked for their name and can change it once a day. Off: names come from imports and admins."
+      }
     },
     "developer": {
       "resetApiTitle": "Reset API & Database",
