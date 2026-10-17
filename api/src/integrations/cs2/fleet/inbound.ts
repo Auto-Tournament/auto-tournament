@@ -138,6 +138,8 @@ export interface FleetEventNotice {
   envelope: Envelope;
   /** What the state store did with the patch. */
   patch: PatchOutcome['kind'];
+  /** The patch changed nothing but `live_rev` (an in-game chat line): no state was stored. */
+  revOnly?: boolean;
   /** The match's record after the patch (null when it has none yet). */
   record: LiveMatchRecord | null;
 }
@@ -371,6 +373,7 @@ async function applyEvent(ctx: InboundContext, env: Envelope): Promise<void> {
     serverId: ctx.serverId,
     envelope: env,
     patch: outcome.kind,
+    ...(outcome.kind === 'applied' && outcome.revOnly ? { revOnly: true } : {}),
     record,
   });
 }
