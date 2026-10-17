@@ -4,13 +4,7 @@
   "title": "event.chat (server → platform, reliable)",
   "description": "Match event (FLEET.md §8.1), source: a player's chat line on the match server (all chat or team chat; not chat commands). Envelope epoch = the assignment's. `rev` / `patch` continue the MatchState stream (see match.defs.json#/$defs/rev). The platform posts it in the match's web chat (`match:<match_id>`), where the admins read it; an admin's reply comes back as `cmd say`. There is no answer on the link.",
   "type": "object",
-  "required": [
-    "match_id",
-    "map_number",
-    "rev",
-    "patch",
-    "data"
-  ],
+  "required": ["match_id", "map_number", "rev", "patch", "data"],
   "properties": {
     "match_id": {
       "$ref": "../match.defs.json#/$defs/matchId"
@@ -31,21 +25,11 @@
     },
     "data": {
       "type": "object",
-      "required": [
-        "player",
-        "message",
-        "team_only",
-        "at"
-      ],
+      "required": ["player", "message", "team_only", "at"],
       "properties": {
         "player": {
           "type": "object",
-          "required": [
-            "steamid64",
-            "name",
-            "team",
-            "side"
-          ],
+          "required": ["steamid64", "name", "team", "side"],
           "properties": {
             "steamid64": {
               "$ref": "../defs.json#/$defs/u64s"
@@ -55,18 +39,10 @@
               "maxLength": 256
             },
             "team": {
-              "enum": [
-                "team1",
-                "team2",
-                null
-              ]
+              "enum": ["team1", "team2", null]
             },
             "side": {
-              "enum": [
-                "ct",
-                "t",
-                "spec"
-              ]
+              "enum": ["ct", "t", "spec"]
             }
           }
         },
