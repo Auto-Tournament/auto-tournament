@@ -236,6 +236,20 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_matches_team_from_match1 ON matches(team1_from_match_id);
     CREATE INDEX IF NOT EXISTS idx_matches_team_from_match2 ON matches(team2_from_match_id);
 
+    -- Who plays a match for a team whose roster is bigger than the team size
+    -- (services/matchLineups.ts). No row: the team's last lineup in the
+    -- tournament, else the first players of its roster.
+    CREATE TABLE IF NOT EXISTS match_lineups (
+      match_slug TEXT NOT NULL REFERENCES matches(slug) ON DELETE CASCADE,
+      team_id TEXT NOT NULL,
+      players TEXT NOT NULL, -- JSON array of Steam IDs (players.id), in order
+      set_by TEXT, -- players.id of whoever set it; NULL = an admin token
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (match_slug, team_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_match_lineups_team ON match_lineups(team_id, updated_at);
+
     -- Match events table
     CREATE TABLE IF NOT EXISTS match_events (
       id SERIAL PRIMARY KEY,

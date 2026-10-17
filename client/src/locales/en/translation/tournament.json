@@ -1569,6 +1569,23 @@
       "member": "Member"
     }
   },
+  "lineupPanel": {
+    "title": "Lineup",
+    "note_one": "Pick {{count}} player for this match. The rest sit on the bench.",
+    "note_other": "Pick {{count}} players for this match. The rest sit on the bench.",
+    "picked": "{{picked}} of {{count}} picked",
+    "plays": "Plays",
+    "bench": "Bench",
+    "save": "Save lineup",
+    "saved": "Lineup saved",
+    "notOnServer": "Lineup saved, but the server did not take it: {{error}}",
+    "locked": "The lineup is locked while a map is live. It can change between maps.",
+    "captainOnly": "Only the team owner or a captain can change the lineup.",
+    "source": {
+      "previous": "Same as the team's last match.",
+      "roster": "The first players on the roster."
+    }
+  },
   "prizesPage": {
     "title": "Prizes",
     "intro": "Skins for a placing, given to every player on the team when the tournament ends, and a prize for the MVP. Site skins only: no Steam items, no money value.",

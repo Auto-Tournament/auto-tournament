@@ -1570,6 +1570,23 @@
       "member": "Medlem"
     }
   },
+  "lineupPanel": {
+    "title": "Laguppstilling",
+    "note_one": "Velg {{count}} spiller til denne kampen. De andre sitter på benken.",
+    "note_other": "Velg {{count}} spillere til denne kampen. De andre sitter på benken.",
+    "picked": "{{picked}} av {{count}} valgt",
+    "plays": "Spiller",
+    "bench": "Benk",
+    "save": "Lagre laguppstillingen",
+    "saved": "Laguppstillingen er lagret",
+    "notOnServer": "Laguppstillingen er lagret, men serveren tok den ikke imot: {{error}}",
+    "locked": "Laguppstillingen er låst mens et kart spilles. Den kan endres mellom kartene.",
+    "captainOnly": "Bare lageieren eller en kaptein kan endre laguppstillingen.",
+    "source": {
+      "previous": "Samme som i lagets forrige kamp.",
+      "roster": "De første spillerne på laglisten."
+    }
+  },
   "prizesPage": {
     "title": "Premier",
     "intro": "Skins for en plassering, gitt til alle spillerne på laget når turneringen er over, og en premie til MVP. Bare skins på siden: ingen Steam-gjenstander og ingen pengeverdi.",

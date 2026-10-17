@@ -163,8 +163,24 @@ export const generateMatchConfig = async (
   const team2Roster = team2
     ? await tournamentSignupService.lineupRoster(tournament.id, team2.id, team2.players)
     : null;
-  const team1Players = team1Roster ? convertPlayersToPluginFormat(team1Roster) : {};
-  const team2Players = team2Roster ? convertPlayersToPluginFormat(team2Roster) : {};
+  // A team bigger than the team size plays the lineup picked for this match
+  // (services/matchLineups); the bench is whitelisted as spectators.
+  const { lineupFor } = await import('../../services/matchLineups');
+  const bench: MatchPlayer = {};
+  const playing = async (teamId: string, players: Record<string, string>) => {
+    const lineup = slug ? await lineupFor(slug, tournament.id, teamId, 'cs2') : null;
+    if (!lineup) return players;
+    const out: Record<string, string> = {};
+    for (const [id, name] of Object.entries(players)) {
+      if (lineup.has(id)) out[id] = name;
+      else bench[id] = name;
+    }
+    return out;
+  };
+  const team1Players =
+    team1 && team1Roster ? await playing(team1.id, convertPlayersToPluginFormat(team1Roster)) : {};
+  const team2Players =
+    team2 && team2Roster ? await playing(team2.id, convertPlayersToPluginFormat(team2Roster)) : {};
   const team1Count = Object.keys(team1Players).length;
   const team2Count = Object.keys(team2Players).length;
 
@@ -333,7 +349,7 @@ export const generateMatchConfig = async (
     // Your allocator / match loader should read this and configure the server accordingly.
     // veto_per_map_sides: per_map_sides, // ['team1_ct' | 'team2_ct' | 'knife'] per map index
 
-    spectators: { players: {} },
+    spectators: { players: bench },
 
     // Round limit configuration
     cvars,
