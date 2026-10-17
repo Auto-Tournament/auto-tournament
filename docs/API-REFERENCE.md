@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 748 of them, 426 behind auth —
+Every endpoint this API serves — 749 of them, 426 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -404,6 +404,14 @@ A team's CS2 results per map, and the maps it bans and picks most in the veto.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/game/cs2/teams/:teamId/profile` | public |
+
+### Party maps
+
+A matchmaking party's CS2 results per map (its members' results added up), and the Active Duty maps.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/party-maps` | public |
 
 ### Manage a match
 
