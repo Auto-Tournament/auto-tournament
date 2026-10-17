@@ -11516,7 +11516,7 @@
           "Matchmaking"
         ],
         "summary": "Answer \"rematch?\" after the match ended",
-        "description": "Same-site JSON `{ accept: boolean }`, within 2 minutes of the match's end. When every\nplayer said yes, the same teams get a new match at once (`status: ready`, `lobbyId` of\nthe new room). One \"no\" ends it (`declined`).\n",
+        "description": "Same-site JSON `{ accept: boolean }`; counts for the caller's whole party. The first yes\n(within 2 minutes of the match's end) asks the other team, who have 30 s to answer. Each\nteam decides by majority (a tie is a no; when time runs out the votes cast decide). Both\nteams yes: the same teams get a new match at once (`status: ready`, `lobbyId` of the new\nroom; 5v5 vetoes its map). Either team no: `declined`.\n",
         "parameters": [
           {
             "in": "path",
