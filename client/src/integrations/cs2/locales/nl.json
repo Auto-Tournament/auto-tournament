@@ -2509,6 +2509,7 @@
     "pickedBy": "{{team}}'s pick",
     "decider": "Decider",
     "live": "Live",
+    "round": "Round {{n}}",
     "upNext": "Up next",
     "notPlayed": "To play",
     "won": "{{team}} won",

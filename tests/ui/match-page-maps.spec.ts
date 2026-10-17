@@ -76,10 +76,19 @@ test(
         json: {
           success: true,
           veto: {
+            // The veto numbers its picks from 1; the cards go by map name.
             pickedMaps: [
-              { mapNumber: 0, mapName: 'de_inferno', pickedBy: 'team1', knifeRound: false },
-              { mapNumber: 1, mapName: 'de_nuke', pickedBy: 'team2', knifeRound: false },
-              { mapNumber: 2, mapName: 'de_mirage', pickedBy: 'decider', knifeRound: true },
+              { mapNumber: 1, mapName: 'de_inferno', pickedBy: 'team1', knifeRound: false },
+              { mapNumber: 2, mapName: 'de_nuke', pickedBy: 'team2', knifeRound: false },
+              { mapNumber: 3, mapName: 'de_mirage', pickedBy: 'decider', knifeRound: true },
+            ],
+            actions: [
+              { step: 1, team: 'team1', action: 'ban', mapName: 'de_train' },
+              { step: 2, team: 'team1', action: 'pick', mapName: 'de_inferno' },
+              { step: 3, team: 'team2', action: 'side_pick', mapName: 'de_inferno', side: 'CT' },
+              { step: 4, team: 'team2', action: 'pick', mapName: 'de_nuke' },
+              { step: 5, team: 'team1', action: 'side_pick', mapName: 'de_nuke', side: 'T' },
+              { step: 6, team: 'team2', action: 'ban', mapName: 'de_overpass' },
             ],
           },
           maps: [],
@@ -138,5 +147,113 @@ test(
     await expect(third).not.toContainText('To play');
     await expect(third).not.toContainText('Live');
     await expect(page.getByTestId('match-page-map-1')).toHaveAttribute('data-map-state', 'played');
+  }
+);
+
+const emptyCs2 = { success: true, teams: [], clips: [], team1: [], team2: [], maps: [] };
+
+test(
+  'the live map shows its rounds, a Live chip and the round; the picks follow the veto',
+  { tag: ['@ui', '@public'] },
+  async ({ page }) => {
+    // Map 1 done; map 2 (Dust II) on at 2-4; Inferno is left over. The veto's
+    // picks are numbered from 1, and Mirage (map 1) was Alpha's pick.
+    const live = {
+      ...match,
+      slug: 'spec-series-live',
+      status: 'live',
+      winnerSide: null,
+      completedAt: null,
+      maps: ['de_mirage', 'de_dust2', 'de_inferno'],
+      mapNumber: 1,
+      team1MapScore: 2,
+      team2MapScore: 4,
+      mapScores: [
+        { mapNumber: 0, map: 'de_mirage', team1Score: 13, team2Score: 16, winner: 'team2' },
+      ],
+    };
+    await page.route('**/api/matches/spec-series-live', (route) =>
+      route.fulfill({ json: { success: true, match: live } })
+    );
+    await page.route('**/api/game/cs2/matches/spec-series-live/**', (route) =>
+      route.fulfill({ json: emptyCs2 })
+    );
+    await page.route('**/api/veto/spec-series-live', (route) =>
+      route.fulfill({
+        json: {
+          success: true,
+          veto: {
+            actions: [
+              { step: 1, team: 'team1', action: 'ban', mapName: 'de_train' },
+              { step: 2, team: 'team2', action: 'ban', mapName: 'de_nuke' },
+              { step: 3, team: 'team1', action: 'pick', mapName: 'de_mirage' },
+              { step: 4, team: 'team2', action: 'side_pick', mapName: 'de_mirage', side: 'CT' },
+              { step: 5, team: 'team2', action: 'pick', mapName: 'de_dust2' },
+              { step: 6, team: 'team1', action: 'side_pick', mapName: 'de_dust2', side: 'T' },
+              { step: 7, team: 'team2', action: 'ban', mapName: 'de_vertigo' },
+              { step: 8, team: 'team1', action: 'ban', mapName: 'de_overpass' },
+            ],
+          },
+        },
+      })
+    );
+    await page.goto('/match/spec-series-live', { waitUntil: 'domcontentloaded' });
+
+    const first = page.getByTestId('match-page-map-0');
+    await expect(first).toHaveAttribute('data-map-state', 'played');
+    await expect(first).toContainText("Alpha's pick");
+
+    const second = page.getByTestId('match-page-map-1');
+    await expect(second).toHaveAttribute('data-map-state', 'live');
+    await expect(second).toContainText("Bravo's pick");
+    await expect(second).toContainText('Live');
+    await expect(second).toContainText('Round 7');
+    await expect(page.getByTestId('match-page-map-1-score')).toHaveText('2 : 4');
+    await expect(second).not.toContainText('To play');
+
+    const third = page.getByTestId('match-page-map-2');
+    await expect(third).toHaveAttribute('data-map-state', 'upcoming');
+    await expect(third).toContainText('Decider');
+    await expect(third).toContainText('To play');
+  }
+);
+
+test(
+  'a Bo1 with the last map left over: that map is the decider',
+  { tag: ['@ui', '@public'] },
+  async ({ page }) => {
+    const bo1 = {
+      ...match,
+      slug: 'spec-series-bo1',
+      status: 'live',
+      winnerSide: null,
+      completedAt: null,
+      maps: ['de_ancient'],
+      mapNumber: 0,
+      mapScores: [],
+    };
+    await page.route('**/api/matches/spec-series-bo1', (route) =>
+      route.fulfill({ json: { success: true, match: bo1 } })
+    );
+    await page.route('**/api/game/cs2/matches/spec-series-bo1/**', (route) =>
+      route.fulfill({ json: emptyCs2 })
+    );
+    await page.route('**/api/veto/spec-series-bo1', (route) =>
+      route.fulfill({
+        json: {
+          success: true,
+          veto: {
+            actions: [
+              { step: 1, team: 'team1', action: 'ban', mapName: 'de_train' },
+              { step: 2, team: 'team2', action: 'ban', mapName: 'de_nuke' },
+            ],
+          },
+        },
+      })
+    );
+    await page.goto('/match/spec-series-bo1', { waitUntil: 'domcontentloaded' });
+    const only = page.getByTestId('match-page-map-0');
+    await expect(only).toHaveAttribute('data-map-state', 'live');
+    await expect(only).toContainText('Decider');
   }
 );

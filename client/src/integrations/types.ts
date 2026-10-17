@@ -127,6 +127,9 @@ export interface PublicMatch {
   maps?: string[];
   /** The map being played (0-based), while the match runs. */
   mapNumber?: number | null;
+  /** Rounds won on the map being played (live; the series score is separate). */
+  team1MapScore?: number | null;
+  team2MapScore?: number | null;
   team1LogoUrl?: string | null;
   team2LogoUrl?: string | null;
 }
