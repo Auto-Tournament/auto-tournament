@@ -1570,6 +1570,23 @@
       "member": "Member"
     }
   },
+  "lineupPanel": {
+    "title": "Opstelling",
+    "note_one": "Kies {{count}} speler voor deze wedstrijd. De rest zit op de bank.",
+    "note_other": "Kies {{count}} spelers voor deze wedstrijd. De rest zit op de bank.",
+    "picked": "{{picked}} van {{count}} gekozen",
+    "plays": "Speelt",
+    "bench": "Bank",
+    "save": "Opstelling opslaan",
+    "saved": "Opstelling opgeslagen",
+    "notOnServer": "Opstelling opgeslagen, maar de server nam haar niet over: {{error}}",
+    "locked": "De opstelling ligt vast zolang er een map gespeeld wordt. Tussen de maps kan ze veranderen.",
+    "captainOnly": "Alleen de eigenaar of een captain van het team kan de opstelling wijzigen.",
+    "source": {
+      "previous": "Dezelfde als in de vorige wedstrijd van het team.",
+      "roster": "De eerste spelers van de selectie."
+    }
+  },
   "prizesPage": {
     "title": "Prizes",
     "intro": "Skins for a placing, given to every player on the team when the tournament ends, and a prize for the MVP. Site skins only: no Steam items, no money value.",

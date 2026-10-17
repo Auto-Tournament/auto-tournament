@@ -1570,6 +1570,23 @@
       "member": "Member"
     }
   },
+  "lineupPanel": {
+    "title": "Formazione",
+    "note_one": "Scegli {{count}} giocatore per questa partita. Gli altri restano in panchina.",
+    "note_other": "Scegli {{count}} giocatori per questa partita. Gli altri restano in panchina.",
+    "picked": "{{picked}} di {{count}} scelti",
+    "plays": "Gioca",
+    "bench": "Panchina",
+    "save": "Salva formazione",
+    "saved": "Formazione salvata",
+    "notOnServer": "Formazione salvata, ma il server non l'ha accettata: {{error}}",
+    "locked": "La formazione è bloccata mentre si gioca una mappa. Si può cambiare tra una mappa e l'altra.",
+    "captainOnly": "Solo il proprietario della squadra o un capitano può cambiare la formazione.",
+    "source": {
+      "previous": "La stessa dell'ultima partita della squadra.",
+      "roster": "I primi giocatori della rosa."
+    }
+  },
   "prizesPage": {
     "title": "Prizes",
     "intro": "Skins for a placing, given to every player on the team when the tournament ends, and a prize for the MVP. Site skins only: no Steam items, no money value.",

@@ -1570,6 +1570,23 @@
       "member": "Member"
     }
   },
+  "lineupPanel": {
+    "title": "Alinhamento",
+    "note_one": "Escolhe {{count}} jogador para este jogo. Os restantes ficam no banco.",
+    "note_other": "Escolhe {{count}} jogadores para este jogo. Os restantes ficam no banco.",
+    "picked": "{{picked}} de {{count}} escolhidos",
+    "plays": "Joga",
+    "bench": "Banco",
+    "save": "Guardar alinhamento",
+    "saved": "Alinhamento guardado",
+    "notOnServer": "Alinhamento guardado, mas o servidor não o aceitou: {{error}}",
+    "locked": "O alinhamento fica bloqueado enquanto se joga um mapa. Pode mudar entre mapas.",
+    "captainOnly": "Só o dono da equipa ou um capitão pode mudar o alinhamento.",
+    "source": {
+      "previous": "O mesmo do último jogo da equipa.",
+      "roster": "Os primeiros jogadores do plantel."
+    }
+  },
   "prizesPage": {
     "title": "Prizes",
     "intro": "Skins for a placing, given to every player on the team when the tournament ends, and a prize for the MVP. Site skins only: no Steam items, no money value.",

@@ -1572,6 +1572,25 @@
       "member": "Member"
     }
   },
+  "lineupPanel": {
+    "title": "Skład",
+    "note_one": "Wybierz {{count}} gracza na ten mecz. Reszta siedzi na ławce.",
+    "note_few": "Wybierz {{count}} graczy na ten mecz. Reszta siedzi na ławce.",
+    "note_many": "Wybierz {{count}} graczy na ten mecz. Reszta siedzi na ławce.",
+    "note_other": "Wybierz {{count}} graczy na ten mecz. Reszta siedzi na ławce.",
+    "picked": "Wybrano {{picked}} z {{count}}",
+    "plays": "Gra",
+    "bench": "Ławka",
+    "save": "Zapisz skład",
+    "saved": "Skład zapisany",
+    "notOnServer": "Skład zapisany, ale serwer go nie przyjął: {{error}}",
+    "locked": "Skład jest zablokowany, gdy trwa mapa. Można go zmienić między mapami.",
+    "captainOnly": "Tylko właściciel drużyny lub kapitan może zmienić skład.",
+    "source": {
+      "previous": "Taki sam jak w ostatnim meczu drużyny.",
+      "roster": "Pierwsi gracze z listy drużyny."
+    }
+  },
   "prizesPage": {
     "title": "Prizes",
     "intro": "Skins for a placing, given to every player on the team when the tournament ends, and a prize for the MVP. Site skins only: no Steam items, no money value.",

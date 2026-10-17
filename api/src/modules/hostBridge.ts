@@ -40,6 +40,7 @@ import * as gameReadiness from '../services/gameReadiness';
 import * as settingsService from '../services/settingsService';
 import * as shuffleTournamentService from '../services/shuffleTournamentService';
 import * as tournamentSignupService from '../services/tournamentSignupService';
+import * as matchLineups from '../services/matchLineups';
 import * as socketService from '../services/socketService';
 import * as adminSteamIds from '../utils/adminSteamIds';
 import * as cs2Version from '../utils/cs2Version';
@@ -88,6 +89,7 @@ const MODULES: Record<string, object> = {
   'services/settingsService': settingsService,
   'services/shuffleTournamentService': shuffleTournamentService,
   'services/tournamentSignupService': tournamentSignupService,
+  'services/matchLineups': matchLineups,
   'services/socketService': socketService,
   'types/adminCall.types': adminCallTypes,
   'utils/adminSteamIds': adminSteamIds,

@@ -1570,6 +1570,23 @@
       "member": "Member"
     }
   },
+  "lineupPanel": {
+    "title": "出场阵容",
+    "note_one": "为本场比赛选择 {{count}} 名选手，其余选手替补。",
+    "note_other": "为本场比赛选择 {{count}} 名选手，其余选手替补。",
+    "picked": "已选 {{picked}}/{{count}}",
+    "plays": "出场",
+    "bench": "替补",
+    "save": "保存阵容",
+    "saved": "阵容已保存",
+    "notOnServer": "阵容已保存，但服务器未接受：{{error}}",
+    "locked": "地图进行中时阵容已锁定，可在两张地图之间更改。",
+    "captainOnly": "只有队伍所有者或队长可以更改阵容。",
+    "source": {
+      "previous": "与队伍上一场比赛相同。",
+      "roster": "名单中的前几名选手。"
+    }
+  },
   "prizesPage": {
     "title": "Prizes",
     "intro": "Skins for a placing, given to every player on the team when the tournament ends, and a prize for the MVP. Site skins only: no Steam items, no money value.",
