@@ -1,5 +1,5 @@
 import { Box, Stack, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   api,
   fontDisplay,
@@ -9,22 +9,29 @@ import {
   withAlpha,
 } from '../../../module-sdk';
 import type { MatchSeriesMapsProps } from '../../types';
-import type { VetoMapResult, VetoStateResponse } from '../cs2.types';
+import type { VetoAction, VetoStateResponse } from '../cs2.types';
 import { getMapDisplayName, mapBackground } from '../maps/mapData';
+import { liveMapIndex, pickedByMap, type VetoPickedBy } from './seriesMapsLogic';
 
 type Side = 'team1' | 'team2';
 
-/** Who picked each map (by its place in the series), from the veto. */
-function usePicks(matchSlug: string, hasMaps: boolean): Map<number, VetoMapResult> {
-  const [picks, setPicks] = useState<Map<number, VetoMapResult>>(new Map());
+/**
+ * Who picked each map, by map name, from the veto's actions: a map a pick
+ * action names was picked by that team; a map no pick names (left over when the
+ * bans ran out) is the decider. Not by place in the series: the veto numbers
+ * its picks from 1 while the cards count from 0, and the order the maps are
+ * played in need not be the order they were picked in.
+ */
+function usePicks(matchSlug: string, hasMaps: boolean): Map<string, VetoPickedBy> | null {
+  const [actions, setActions] = useState<VetoAction[] | null>(null);
   useEffect(() => {
     if (!hasMaps) return;
     let cancelled = false;
     api
       .get<VetoStateResponse>(`/api/veto/${encodeURIComponent(matchSlug)}`)
       .then((res) => {
-        if (cancelled || !res.success || !Array.isArray(res.veto?.pickedMaps)) return;
-        setPicks(new Map(res.veto.pickedMaps.map((p) => [p.mapNumber, p])));
+        if (cancelled || !res.success || !Array.isArray(res.veto?.actions)) return;
+        setActions(res.veto.actions);
       })
       // No veto (maps set by the admin): no picks to show.
       .catch(() => undefined);
@@ -32,7 +39,7 @@ function usePicks(matchSlug: string, hasMaps: boolean): Map<number, VetoMapResul
       cancelled = true;
     };
   }, [matchSlug, hasMaps]);
-  return picks;
+  return useMemo(() => (actions ? pickedByMap(actions) : null), [actions]);
 }
 
 /**
@@ -46,7 +53,12 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
   const picks = usePicks(matchSlug, order.length > 0);
   const results = new Map((match.mapScores ?? []).map((m) => [m.mapNumber, m]));
   // Warmup on the map (loaded) counts: that map is the one on.
-  const live = match.status === 'live' || match.status === 'loaded' ? (match.mapNumber ?? 0) : null;
+  const live = liveMapIndex(match.status, match.mapNumber, order.length, results);
+  // The live map's rounds so far (the match's own score is the map's while it runs).
+  const liveScore =
+    typeof match.team1MapScore === 'number' && typeof match.team2MapScore === 'number'
+      ? { team1: match.team1MapScore, team2: match.team2MapScore }
+      : null;
   // The first map with no result is next while the series is still on.
   // Over once a team has won the majority of the maps (a Bo3 at 2-0), even
   // before the match itself is marked finished: its other maps are not played.
@@ -93,7 +105,7 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
       >
         {order.map((map, n) => {
           const result = results.get(n);
-          const pick = picks.get(n);
+          const picker = picks ? (picks.get(map) ?? 'decider') : null;
           const winner: Side | null = result
             ? result.winner === 'team1' || result.winner === 'team2'
               ? result.winner
@@ -106,13 +118,20 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
           const level = !!result && result.team1Score === result.team2Score;
           const overtime = !!result && result.team1Score + result.team2Score > 24;
           const isLive = live === n && !finished;
-          const pickLabel = pick
-            ? pick.pickedBy === 'decider'
+          const pickLabel = picker
+            ? picker === 'decider'
               ? t('seriesMaps.decider')
-              : t('seriesMaps.pickedBy', { team: team(pick.pickedBy).name })
+              : t('seriesMaps.pickedBy', { team: team(picker).name })
             : null;
+          const shownScore = result
+            ? { team1: result.team1Score, team2: result.team2Score }
+            : isLive
+              ? liveScore
+              : null;
           const state = isLive
-            ? t('seriesMaps.live')
+            ? liveScore
+              ? `${t('seriesMaps.live')} · ${t('seriesMaps.round', { n: liveScore.team1 + liveScore.team2 + 1 })}`
+              : t('seriesMaps.live')
             : next === n
               ? t('seriesMaps.upNext')
               : !result && !finished
@@ -216,7 +235,7 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
                       >
                         {getMapDisplayName(map)}
                       </Typography>
-                      {result && (
+                      {shownScore && (
                         <Typography
                           component="span"
                           data-testid={`match-page-map-${n}-score`}
@@ -227,7 +246,7 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
                             flexShrink: 0,
                           }}
                         >
-                          {result.team1Score} : {result.team2Score}
+                          {shownScore.team1} : {shownScore.team2}
                         </Typography>
                       )}
                     </Box>
