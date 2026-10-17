@@ -604,6 +604,10 @@
       "description": "Notable moments from the demos (knife and Zeus kills, aces, 1vN clutches, no-scopes, grenade kills, last-second defuses) for integrators, oldest change first with a cursor; stable ids, revoked rows. Integrator token (API_TOKENS_INTEGRATOR), read-only or admin token, or admin session."
     },
     {
+      "name": "Integrations: player stats",
+      "description": "Each player's numbers summed over tournaments, matches or an import's event, for an event website's stat trophies; null for a number not measured, never 0. Integrator token (API_TOKENS_INTEGRATOR), read-only or admin token, or admin session."
+    },
+    {
       "name": "Integrations: teams",
       "description": "Teams API for integrators: idempotent upsert of teams by the integrator's own externalId (single and batch), and reads by externalId. Integrator token (API_TOKENS_INTEGRATOR), admin token or admin session. See docs/WEBHOOKS.md."
     },
@@ -9126,6 +9130,186 @@
           },
           "400": {
             "description": "A bad parameter"
+          },
+          "401": {
+            "description": "No or a wrong token"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/integrations/player-stats": {
+      "get": {
+        "tags": [
+          {
+            "Integrations": "player stats"
+          }
+        ],
+        "summary": "Each player's numbers summed over tournaments or matches",
+        "description": "One row per player, summed over every match the filters take (a match\nis in when any of `tournament`, `match` or `event` takes it; at least\none is required). Read the whole answer each time: a re-parsed demo or\na changed map result shows in the next read.\n\nOnly finished series count (an imported match once its last map is\nin), never a simulation or a bot-filled match, and of those only the\nmaps with a result. Warmup is never in the numbers; the kill feed's\nknife round is left out. `matchesPlayed` and `matchesWon` count series\n(a Bo3 is one), `adr` is damage per round, `kast` the percentage of\nrounds with a kill, an assist, a survival or a trade, `clutches` the\nrounds won as the last player alive against one or more,\n`multiKills5k` aces, `firstKills` the round's opening kills.\n\n**null means not measured, never 0.** A number is null for a player\nwhen one of their matches has no source for it: `mvps`, `score` and\n`flashAssists` come from the series result the game server sends, so\nthey are null for imported matches; `knifeKills` and `teamKills` come\nfrom the demo's kill feed, so they are null when a map's demo wasn't\nanalyzed; `kast`, `firstKills`, `clutches`, `multiKills5k` and the\nflashes are null for a match from a plugin (MatchZy Enhanced) server.\n\nIntegrator token (API_TOKENS_INTEGRATOR), read-only or admin token,\nor an admin session.\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tournament",
+            "schema": {
+              "type": "string",
+              "example": "4,5"
+            },
+            "description": "Tournament ids, comma-separated (and played matches kept from them). Summed over all of them."
+          },
+          {
+            "in": "query",
+            "name": "match",
+            "schema": {
+              "type": "string",
+              "example": "import-9080a5c286,import-ca96f894f8"
+            },
+            "description": "Match slugs, comma-separated."
+          },
+          {
+            "in": "query",
+            "name": "event",
+            "schema": {
+              "type": "string",
+              "example": "NTLAN 2026-03"
+            },
+            "description": "The event name of matches in no tournament (an import's event), any case."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every player's numbers, most kills first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "tournaments": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      },
+                      "description": "The tournament ids asked for"
+                    },
+                    "players": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "steamId": {
+                            "type": "string",
+                            "example": "76561198157519659"
+                          },
+                          "name": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "matchesPlayed": {
+                            "type": "integer"
+                          },
+                          "matchesWon": {
+                            "type": "integer"
+                          },
+                          "roundsPlayed": {
+                            "type": "integer"
+                          },
+                          "kills": {
+                            "type": "integer"
+                          },
+                          "deaths": {
+                            "type": "integer"
+                          },
+                          "assists": {
+                            "type": "integer"
+                          },
+                          "headshotKills": {
+                            "type": "integer"
+                          },
+                          "totalDamage": {
+                            "type": "integer"
+                          },
+                          "utilityDamage": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "flashAssists": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "mvps": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "score": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "adr": {
+                            "type": "number",
+                            "nullable": true,
+                            "example": 95
+                          },
+                          "kast": {
+                            "type": "number",
+                            "nullable": true,
+                            "example": 74
+                          },
+                          "teamKills": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "friendliesFlashed": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "enemiesFlashed": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "knifeKills": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "firstKills": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "clutches": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "multiKills5k": {
+                            "type": "integer",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true,
+                      "description": "The newest change to the numbers counted (a series finished, a map analyzed); null when nothing is counted."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A bad parameter",
+            "or none of tournament": null,
+            "match and event": null
           },
           "401": {
             "description": "No or a wrong token"
@@ -19527,6 +19711,50 @@
             "description": "No such match"
           }
         }
+      }
+    },
+    "/api/test/stats-fixture": {
+      "post": {
+        "tags": [
+          "Test helpers (CS2)"
+        ],
+        "summary": "POST /api/test/stats-fixture",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/stats-fixture/cleanup": {
+      "post": {
+        "tags": [
+          "Test helpers (CS2)"
+        ],
+        "summary": "POST /api/test/stats-fixture/cleanup",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/test/steam-link/callback": {
