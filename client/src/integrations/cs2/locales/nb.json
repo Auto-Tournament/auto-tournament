@@ -2324,6 +2324,15 @@
     },
     "wingmanPreset": {
       "button": "Sett opp som wingman"
+    },
+    "broadcast": {
+      "title": "Kringkasting (GOTV)",
+      "delay": "GOTV-forsinkelse",
+      "seats": "GOTV-seere per kamp",
+      "siteDefault": "Standard for nettstedet",
+      "noDelayWarning": "Ingen forsinkelse: spillere som ser strømmen, kan ghoste.",
+      "insecureObservers": "Tillat usikre observatører (HUD-verktøy som LHM)",
+      "insecureObserversHelp": "Lar observatør-HUD-er som leser GOTV, koble til. Gjelder fra kampen lastes."
     }
   },
   "library": {

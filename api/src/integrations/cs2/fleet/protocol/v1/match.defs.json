@@ -204,6 +204,36 @@
             }
           }
         },
+        "broadcast": {
+          "type": "object",
+          "description": "GOTV, for the tv plugin. Absent: the server's own (the tv_* cvars still apply)",
+          "properties": {
+            "delay_seconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 120,
+              "description": "tv_delay; 0 = live"
+            },
+            "allow_insecure_observers": {
+              "type": "boolean",
+              "description": "HUD tools like LHM may connect: tv_secure_bypass 1, sv_deltaticks_enforce 0"
+            },
+            "max_clients": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 128,
+              "description": "tv_maxclients"
+            },
+            "relay_text_chat": {
+              "type": "boolean",
+              "description": "tv_relaytextchat"
+            },
+            "relay_voice": {
+              "type": "boolean",
+              "description": "tv_relayvoice"
+            }
+          }
+        },
         "wingman": {
           "type": "boolean"
         },

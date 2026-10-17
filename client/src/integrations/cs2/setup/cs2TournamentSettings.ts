@@ -56,6 +56,18 @@ export interface Cs2TournamentSettings {
   esportsMode?: boolean;
   /** The map veto (default on); off: each match draws its maps from the pool. */
   veto?: boolean;
+  /** GOTV for this tournament's matches; a field left out is the site's (Settings › Spectators). */
+  broadcast?: Cs2BroadcastSettings;
+}
+
+/** `settings.cs2.broadcast` (api cs2 tournamentSettings.ts). */
+export interface Cs2BroadcastSettings {
+  /** tv_delay, 0–120 s; 0 is live. */
+  delay?: number;
+  /** GOTV viewers per match (tv_maxclients). */
+  seats?: number;
+  /** HUD tools like LHM may connect (tv_secure_bypass). */
+  insecureObservers?: boolean;
 }
 
 export const CS2_DEFAULTS: Cs2TournamentSettings = {
@@ -106,6 +118,16 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, unknown
     into.rewards = source.rewards as Cs2TournamentSettings['rewards'];
   if (typeof source.esportsMode === 'boolean') into.esportsMode = source.esportsMode;
   if (typeof source.veto === 'boolean') into.veto = source.veto;
+  if (isRecord(source.broadcast)) {
+    const b = source.broadcast;
+    into.broadcast = {
+      ...(typeof b.delay === 'number' ? { delay: b.delay } : {}),
+      ...(typeof b.seats === 'number' ? { seats: b.seats } : {}),
+      ...(typeof b.insecureObservers === 'boolean'
+        ? { insecureObservers: b.insecureObservers }
+        : {}),
+    };
+  }
   if (isMapMode(source.mapMode)) into.mapMode = source.mapMode;
   else if (source.mapMode === null) delete into.mapMode;
 }
@@ -148,6 +170,7 @@ export function cs2Patch(next: Cs2TournamentSettings): Record<string, unknown> {
   stored.fillTeamsWithBots = next.fillTeamsWithBots === true;
   stored.esportsMode = next.esportsMode === true;
   stored.veto = next.veto !== false;
+  if (next.broadcast !== undefined) stored.broadcast = next.broadcast;
   if (next.skinRewards !== undefined) stored.skinRewards = next.skinRewards;
   // null goes back to the site's prizes.
   if (next.rewards !== undefined) stored.rewards = next.rewards;
@@ -318,6 +341,16 @@ export const cs2TournamentSetup: TournamentSetupModel = {
         label: t('tournament.labels.matchRules'),
         oldValue: rulesLine(old, ctx, t),
         newValue: rulesLine(next, ctx, t),
+        confirm: false,
+      });
+    }
+    // GOTV: saved with the rest, no confirmation.
+    if (JSON.stringify(old.broadcast ?? {}) !== JSON.stringify(next.broadcast ?? {})) {
+      changes.push({
+        field: 'broadcast',
+        label: t('tournament.broadcast.title', { ns: 'cs2' }),
+        oldValue: JSON.stringify(old.broadcast ?? {}),
+        newValue: JSON.stringify(next.broadcast ?? {}),
         confirm: false,
       });
     }

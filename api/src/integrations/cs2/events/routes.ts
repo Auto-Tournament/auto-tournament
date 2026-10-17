@@ -13,7 +13,7 @@ import { matchLiveStatsService } from '../../../services/matchLiveStatsService';
 import type { DbEventRow } from '../../../types/database.types';
 import { resolveViewerIdentity } from '../../../utils/viewerIdentity';
 import { viewerTeamIdOfMatch } from '../../../services/matchViewer';
-import { gotvPassword, gotvSettings } from '../gotv';
+import { gotvHosts, gotvPassword, matchGotvSettings } from '../gotv';
 
 const router = Router();
 
@@ -93,7 +93,7 @@ router.get('/live/:matchSlug', async (req: Request, res: Response) => {
 
 /** How a viewer sees a match's live table: 0 (live: a player, an admin), the GOTV delay, or 'off'. */
 async function spectatorDelay(req: Request, matchSlug: string): Promise<number | 'off'> {
-  const settings = await gotvSettings();
+  const settings = await matchGotvSettings(matchSlug);
   if (settings.liveStats === 'live') return 0;
   const identity = await resolveViewerIdentity(req);
   if (identity.isRealAdmin) return 0;
@@ -118,7 +118,7 @@ async function spectatorDelay(req: Request, matchSlug: string): Promise<number |
 router.get('/watch/:matchSlug', async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
-    const settings = await gotvSettings();
+    const settings = await matchGotvSettings(matchSlug);
     const base = {
       success: true,
       delay: settings.delay,
@@ -172,26 +172,9 @@ router.get('/watch/:matchSlug', async (req: Request, res: Response) => {
 
 /** host:tv_port of a match's server, the LAN or public host as for players (fleet/connectChoice). */
 async function gotvAddress(serverId: string, req: Request): Promise<string | null> {
-  const row = await db.queryOneAsync<{ fleet_server_id: string | null; host: string | null }>(
-    'SELECT fleet_server_id, host FROM cs2_servers WHERE id = ?',
-    [serverId]
-  );
-  const { getFleetServer } = await import('../fleet/registry');
-  const fleet = await getFleetServer(row?.fleet_server_id ?? serverId);
-  let tvPort: number | null = null;
-  try {
-    const host = fleet?.host ? (JSON.parse(fleet.host) as { tv_port?: number }) : null;
-    tvPort = typeof host?.tv_port === 'number' ? host.tv_port : null;
-  } catch {
-    tvPort = null;
-  }
-  if (!tvPort) return null;
   const viewerIp = req.get('cf-connecting-ip') || req.ip || null;
-  const { connectChoice } = await import('../fleet/connectChoice');
-  const choice = await connectChoice(serverId, viewerIp).catch(() => null);
-  const chosen = choice?.options.find((o) => o.kind === choice.recommended);
-  const hostName = chosen?.host ?? row?.host ?? null;
-  return hostName ? `${hostName}:${tvPort}` : null;
+  const where = await gotvHosts(serverId, viewerIp);
+  return where?.recommended ? `${where.recommended}:${where.port}` : null;
 }
 
 /**

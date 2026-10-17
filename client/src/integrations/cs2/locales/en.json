@@ -2324,6 +2324,15 @@
     },
     "wingmanPreset": {
       "button": "Set up as wingman"
+    },
+    "broadcast": {
+      "title": "Broadcast (GOTV)",
+      "delay": "GOTV delay",
+      "seats": "GOTV viewers per match",
+      "siteDefault": "Site default",
+      "noDelayWarning": "No delay: players who can see the stream could ghost.",
+      "insecureObservers": "Allow insecure observers (HUD tools like LHM)",
+      "insecureObserversHelp": "Lets observer HUDs that read GOTV connect. Takes effect when a match loads."
     }
   },
   "library": {

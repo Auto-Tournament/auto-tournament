@@ -22,6 +22,7 @@ import { locate } from '../fleet/failoverRecovery';
 import { HostCommandError, sendHostCommand } from '../fleet/hosts/service';
 import { serverChoices } from '../fleet/failover';
 import { getMapResults } from '../../../services/matchMapResultService';
+import { gotvHosts, gotvPassword, matchGotvSettings } from '../gotv';
 
 const router = Router();
 
@@ -107,7 +108,7 @@ export function logEntryOf(row: {
  *     parameters:
  *       - { in: path, name: slug, required: true, schema: { type: string } }
  *     responses:
- *       200: { description: "{ match, server, live, log }" }
+ *       200: { description: "{ match, server, broadcast, live, log }" }
  *       401: { description: Not an admin }
  *       404: { description: No such match }
  */
@@ -167,6 +168,34 @@ router.get('/matches/:slug/manage', requireAuth, async (req: Request, res: Respo
       };
     }
 
+    // GOTV, for casters and HUD tools: every address with this match's password.
+    let broadcast: {
+      password: string;
+      delay: number;
+      seats: number;
+      insecureObservers: boolean;
+      addresses: Array<{ kind: 'lan' | 'public' | 'server'; address: string }>;
+    } | null = null;
+    if (match.server_id) {
+      const [where, gotv, password] = await Promise.all([
+        gotvHosts(match.server_id, null).catch(() => null),
+        matchGotvSettings(slug),
+        gotvPassword(slug),
+      ]);
+      if (where && where.options.length) {
+        broadcast = {
+          password,
+          delay: gotv.delay,
+          seats: gotv.seats,
+          insecureObservers: gotv.insecureObservers,
+          addresses: where.options.map((o) => ({
+            kind: o.kind,
+            address: `${o.host}:${where.port}`,
+          })),
+        };
+      }
+    }
+
     const rows = await db.queryAsync<{
       event_type: string;
       event_data: string;
@@ -189,6 +218,7 @@ router.get('/matches/:slug/manage', requireAuth, async (req: Request, res: Respo
         team2: { id: match.team2_id, name: match.t2 },
       },
       server,
+      broadcast,
       live: live
         ? { state: live.state, mapRounds: live.mapRounds, updatedAt: live.updatedAt }
         : null,
