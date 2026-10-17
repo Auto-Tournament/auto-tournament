@@ -108,6 +108,8 @@ async function relay(posted: MatchChatPosted): Promise<void> {
 
 function onEvent(notice: FleetEventNotice): void {
   if (notice.envelope.type !== 'event.chat') return;
+  // A redelivered line (after a reconnect or a platform restart) was posted the first time.
+  if (notice.patch === 'duplicate') return;
   // Taken whatever the epoch, like an admin call: the players are talking now.
   const payload = notice.envelope.payload as {
     match_id: string;
