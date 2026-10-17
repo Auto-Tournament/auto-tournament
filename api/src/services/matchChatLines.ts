@@ -24,6 +24,8 @@ export type MatchChatKey =
   | 'mapResult'
   | 'seriesWon'
   | 'adminCalled'
+  | 'adminClaimed'
+  | 'adminResolved'
   | 'remindAccount'
   | 'remindGame'
   | 'serverDown'

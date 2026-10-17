@@ -611,6 +611,189 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     fake.answer(unassign2);
   });
 
+  test('match chat bridge: in-game chat in, admin chat out as say, admin call notices', async ({
+    request,
+  }) => {
+    test.setTimeout(150_000);
+    const fake = await FakeReadyUp.enroll(request);
+    cleanup.push(() => fake.close());
+    await fake.hello();
+    const cs2ServerId = await link(request, fake.serverId);
+    cleanup.push(() => unlink(request, fake.serverId));
+
+    const slug = `fleet-chat-${Date.now()}`;
+    await createMatch(request, slug);
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    const assign = await acceptAssign(fake, slug);
+    const epoch = (assign.payload as { epoch: number }).epoch;
+    await expect
+      .poll(async () => (await matchRow(request, slug))?.status, { timeout: 20_000 })
+      .toBe('loaded');
+    fake.availability('busy', 'assigned');
+    fake.snapshot(slug, epoch);
+    fake.event('live.event.phase.json', {
+      slug,
+      epoch,
+      rev: 1,
+      data: { from: 'warmup', to: 'live', reason: 'flow' },
+    });
+    await expect
+      .poll(async () => (await matchRow(request, slug))?.status, { timeout: 15_000 })
+      .toBe('live');
+
+    const channel = encodeURIComponent(`match:${slug}`);
+    type Line = {
+      body: string;
+      senderKind: string;
+      senderName: string;
+      senderId: string | null;
+      fromGame: boolean;
+      onlyTeam: string | null;
+    };
+    const lines = async (): Promise<Line[]> =>
+      (
+        (await (
+          await request.get(`/api/chat/${channel}/messages`, { headers: getAuthHeader() })
+        ).json()) as { messages: Line[] }
+      ).messages;
+
+    // In: a chat line in game lands in the match's chat as the player (event.chat).
+    const chat = (rev: number, message: string, teamOnly = false) =>
+      fake.event('event.chat.json', {
+        slug,
+        epoch,
+        rev,
+        data: {
+          player: { steamid64: STEAM(1), name: 'alice', team: 'team1', side: 'ct' },
+          message,
+          team_only: teamOnly,
+          at: Date.now(),
+        },
+      });
+    chat(2, 'need an admin for a sec');
+    chat(3, 'eco this round', true);
+    chat(4, '.ready');
+    await expect
+      .poll(async () => (await lines()).filter((l) => l.fromGame).map((l) => l.body))
+      .toEqual(['need an admin for a sec', '(team) eco this round']);
+    const [said, team] = (await lines()).filter((l) => l.fromGame);
+    expect(said).toMatchObject({
+      senderKind: 'player',
+      senderName: 'alice',
+      senderId: STEAM(1),
+      onlyTeam: null,
+    });
+    // Team chat: alice's team (and the admins) only.
+    expect(team.onlyTeam).toBeTruthy();
+    // No loop: nothing from the game went back to the server.
+    expect(
+      fake.client.received.filter(
+        (m) => m.type === 'cmd' && (m.payload as { name: string }).name === 'say'
+      )
+    ).toEqual([]);
+
+    // The live overview has the match, with its server.
+    const overview = (await (
+      await request.get('/api/game/cs2/live-overview', { headers: getAuthHeader() })
+    ).json()) as { matches: Array<Record<string, unknown>> };
+    expect(overview.matches.find((m) => m.slug === slug)).toMatchObject({
+      slug,
+      status: 'live',
+      source: 'manual',
+      team1: { name: 'Fleet Alpha' },
+      team2: { name: 'Fleet Bravo' },
+      server: { id: cs2ServerId, online: true },
+      call: null,
+    });
+
+    // Out: an admin's message is said on the server, with who wrote it.
+    const posted = await request.post(`/api/chat/${channel}/messages`, {
+      headers: getAuthHeader(),
+      data: { body: 'on my way' },
+    });
+    expect(posted.ok(), await posted.text()).toBe(true);
+    const out = await fake.next('cmd');
+    expect(out.payload).toMatchObject({
+      name: 'say',
+      args: { text: 'on my way', from: expect.any(String), as_admin: true },
+    });
+    // A Ready Up that does not take it: the chat keeps the message, nothing breaks.
+    fake.answer(out, 'rejected', { error: { code: 'unknown_command', message: 'say' } });
+    await expect
+      .poll(async () => (await lines()).some((l) => l.body === 'on my way' && !l.fromGame))
+      .toBe(true);
+    const again = await request.post(`/api/chat/${channel}/messages`, {
+      headers: getAuthHeader(),
+      data: { body: 'still here' },
+    });
+    expect(again.ok(), await again.text()).toBe(true);
+    const out2 = await fake.next('cmd');
+    expect(out2.payload).toMatchObject({ name: 'say', args: { text: 'still here' } });
+    fake.answer(out2);
+
+    // An admin call claimed and resolved: said in game, and a line in the match chat.
+    const callId = `fleet-chat-call-${Date.now()}`;
+    fake.event('event.admin_called.json', {
+      slug,
+      epoch,
+      rev: 5,
+      data: {
+        call_id: callId,
+        player: { steamid64: STEAM(1), name: 'alice', team: 'team1', side: 'ct' },
+        message: 'smoke bugged',
+        called_at: new Date().toISOString(),
+      },
+    });
+    let call = 0;
+    await expect
+      .poll(async () => {
+        const calls = (await (
+          await request.get('/api/admin-calls', { headers: getAuthHeader() })
+        ).json()) as { open: Array<{ id: number; callId: string }> };
+        call = calls.open.find((c) => c.callId === callId)?.id ?? 0;
+        return call;
+      })
+      .toBeGreaterThan(0);
+    const overviewCall = (await (
+      await request.get('/api/game/cs2/live-overview', { headers: getAuthHeader() })
+    ).json()) as { matches: Array<{ slug: string; call: { id: number } | null }> };
+    expect(overviewCall.matches.find((m) => m.slug === slug)?.call).toMatchObject({ id: call });
+
+    const claimed = await request.post(`/api/admin-calls/${call}/claim`, {
+      headers: getAuthHeader(),
+    });
+    expect((await claimed.json()).claimed).toBe(true);
+    const onIt = await fake.next('cmd');
+    expect(onIt.payload).toMatchObject({
+      name: 'say',
+      args: { text: expect.stringMatching(/is on it\. Reply here in chat\.$/) },
+    });
+    fake.answer(onIt);
+    const resolved = await request.post(`/api/admin-calls/${call}/resolve`, {
+      headers: getAuthHeader(),
+    });
+    expect(resolved.ok(), await resolved.text()).toBe(true);
+    const done = await fake.next('cmd');
+    expect(done.payload).toMatchObject({ name: 'say', args: { text: 'Admin call resolved.' } });
+    fake.answer(done);
+    await expect
+      .poll(async () =>
+        (await lines())
+          .filter((l) => l.senderKind === 'system')
+          .map((l) => (JSON.parse(l.body.slice(5)) as { key: string }).key)
+          .filter((k) => k === 'adminClaimed' || k === 'adminResolved')
+      )
+      .toEqual(['adminClaimed', 'adminResolved']);
+    // The platform's own lines are not said again in game.
+    expect(
+      fake.client.received.filter(
+        (m) => m.type === 'cmd' && (m.payload as { name: string }).name === 'say'
+      )
+    ).toEqual([]);
+  });
+
   test('a busy Ready Up server is skipped for the next one', async ({ request }) => {
     test.setTimeout(120_000);
     // Both servers take matches: no failover reserve (with two online, one is

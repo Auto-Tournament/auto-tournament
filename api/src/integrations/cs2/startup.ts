@@ -12,6 +12,7 @@ import { startVetoTimer, stopVetoTimer } from './veto/timer';
 import { startWaitingSweep, stopWaitingSweep } from './waitingSweep';
 import { startCs2AdminNotices, stopCs2AdminNotices } from './adminNotices';
 import { startGameMessages, stopGameMessages } from './fleet/gameMessages';
+import { startChatBridge, stopChatBridge } from './fleet/chatBridge';
 import { log } from '../../utils/logger';
 import { startMapAutoSync, stopMapAutoSync } from './maps/autoSync';
 import { mapService } from './maps/mapService';
@@ -77,6 +78,8 @@ export async function startCs2(): Promise<void> {
   startFleetTopics();
   // What the platform does to a match, told in game (next map, pauses, a crash recovered).
   startGameMessages();
+  // The match chat to and from the game server (event.chat in, say out, admin call notices).
+  startChatBridge();
 
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
@@ -115,6 +118,7 @@ export function stopCs2(): void {
   stopVetoTimer();
   stopCs2AdminNotices();
   stopGameMessages();
+  stopChatBridge();
   stopWaitingSweep();
   stopMapAutoSync();
   stopFleet();

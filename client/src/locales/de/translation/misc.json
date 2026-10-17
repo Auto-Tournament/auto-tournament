@@ -907,7 +907,9 @@
       "remindGame": "{{name}}: füge das Spiel vor dem Check-in für {{tournament}} deinem Profil hinzu (Deine Spiele).",
       "serverDown": "The match server crashed. Bringing it back…",
       "serverBack": "The match is back: map {{map}}, round {{round}}. Reconnect.",
-      "vetoReset": "An admin restarted the veto"
+      "vetoReset": "An admin restarted the veto",
+      "adminClaimed": "{{name}} took the admin call",
+      "adminResolved": "{{name}} resolved the admin call"
     },
     "party": {
       "inviteCopied": "Einladungslink kopiert",

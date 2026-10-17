@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 739 of them, 419 behind auth —
+Every endpoint this API serves — 740 of them, 420 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -392,6 +392,14 @@ The admin match page: a match's live state, server and event log, and the Ready 
 | `GET` | `/api/game/cs2/matches/:slug/manage/servers` | admin |
 | `POST` | `/api/game/cs2/matches/:slug/manage/allocate` | admin |
 | `POST` | `/api/game/cs2/matches/:slug/manage/restart-server` | admin |
+
+### Live matches
+
+Every match on a server now, for the admins: teams, players connected and ready, map, round, scores, pause, the open admin call and the server.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/live-overview` | admin |
 
 ### Round backups
 

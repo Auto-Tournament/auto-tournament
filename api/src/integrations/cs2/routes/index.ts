@@ -34,6 +34,7 @@ import highlightRoutes from './highlights';
 import teamProfileRoutes from './teamProfile';
 import roundBackupRoutes from './roundBackups';
 import manageMatchRoutes from './manageMatch';
+import liveOverviewRoutes from './liveOverview';
 import { failoverMatchRouter, failoverSettingsRouter } from './failover';
 import testHelperRoutes from './testHelpers';
 import { fleetAdminRouter, fleetEnrollRouter } from '../fleet/routes';
@@ -205,6 +206,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Manage a match',
     description:
       "The admin match page: a match's live state, server and event log, and the Ready Up commands it sends (logged with who sent them).",
+  },
+  {
+    // Admin only (requireAuth on the route).
+    prefix: '/api/game/cs2',
+    router: liveOverviewRoutes,
+    title: 'Live matches',
+    description:
+      'Every match on a server now, for the admins: teams, players connected and ready, map, round, scores, pause, the open admin call and the server.',
   },
   {
     // Admin only, per route (requireAuth on each): the router shares its

@@ -9,11 +9,16 @@
  *
  * A call stays open until an admin resolves it. Resolving is idempotent: a
  * second resolve of the same call changes nothing and emits nothing.
+ *
+ * A claim and a resolve are also told in the match's chat (a system line), and
+ * to the game module (`onAdminCallChanged`), which says it on the game server
+ * so the player knows someone is on it (CS2: fleet/chatBridge.ts).
  */
 
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitAdminCall, emitAdminCallClaimed, emitAdminCallResolved } from './socketService';
+import { postMatchChatLine } from './matchChatLines';
 import {
   ADMIN_CALL_MESSAGE_MAX,
   type AdminCall,
@@ -68,6 +73,39 @@ const SELECT_CALLS = `
     LEFT JOIN players rp ON rp.id = ac.resolved_by
     LEFT JOIN players cp ON cp.id = ac.claimed_by
 `;
+
+/** A call an admin claimed or resolved. */
+export interface AdminCallChange {
+  kind: 'claimed' | 'resolved';
+  call: AdminCall;
+}
+
+const changeListeners = new Set<(change: AdminCallChange) => void>();
+
+/** Hear claims and resolves (not releases), for a game module that tells the server. */
+export function onAdminCallChanged(listener: (change: AdminCallChange) => void): () => void {
+  changeListeners.add(listener);
+  return () => changeListeners.delete(listener);
+}
+
+function changed(kind: AdminCallChange['kind'], call: AdminCall): void {
+  for (const listener of changeListeners) {
+    try {
+      listener({ kind, call });
+    } catch (err) {
+      log.debug('[ADMIN CALL] A change listener failed', { error: (err as Error).message });
+    }
+  }
+  if (call.matchSlug) {
+    void postMatchChatLine(
+      call.matchSlug,
+      kind === 'claimed' ? 'adminClaimed' : 'adminResolved',
+      kind === 'claimed'
+        ? { name: call.claimedByName ?? 'An admin' }
+        : { name: call.resolvedByName ?? 'An admin' }
+    );
+  }
+}
 
 function nowSeconds(): number {
   return Math.floor(Date.now() / 1000);
@@ -249,6 +287,7 @@ export async function resolveAdminCall(
     log.info('[ADMIN CALL] Resolved', { id, resolvedBy });
     emitAdminCallResolved(resolvedPayload([id], resolvedAt, resolvedBy));
     resolvedWebhook(call);
+    changed('resolved', call);
   }
   return { call, changed: Boolean(updated) };
 }
@@ -287,6 +326,7 @@ export async function claimAdminCall(
       claimedBy: call.claimedBy,
       claimedByName: call.claimedByName,
     });
+    if (!release) changed('claimed', call);
   }
   return { call, changed: Boolean(updated) };
 }
@@ -310,7 +350,10 @@ export async function resolveAllAdminCalls(
     emitAdminCallResolved(resolvedPayload(ids, resolvedAt, resolvedBy));
     for (const id of ids) {
       const call = await getAdminCall(id).catch(() => null);
-      if (call) resolvedWebhook(call);
+      if (call) {
+        resolvedWebhook(call);
+        changed('resolved', call);
+      }
     }
   }
   return ids;

@@ -2,7 +2,8 @@
  * What the platform does to a match, told in game (Ready Up `say`): the next
  * map and the series score, the end of the series, a pause or restore done
  * from the site, a server brought back after a crash, skins switched on or
- * off, a player's loadout updated. Chat with the server's prefix, and the
+ * off, a player's loadout updated, an admin call taken on or resolved
+ * (./chatBridge.ts). Chat with the server's prefix, and the
  * center panel for the big ones. Fire and forget: a message never holds up
  * what it reports, and a server that is gone simply misses it.
  */
@@ -24,7 +25,9 @@ export type GameMessageKey =
   | 'skinsOff'
   | 'loadoutUpdated'
   | 'nextMatchReady'
-  | 'nextMatchSoon';
+  | 'nextMatchSoon'
+  | 'adminClaimed'
+  | 'adminResolved';
 
 type Params = Record<string, string | number | null | undefined>;
 
@@ -56,6 +59,9 @@ const TEXT: Record<GameMessageKey, (params: Params) => string> = {
   loadoutUpdated: () => 'Your loadout is updated.',
   nextMatchSoon: (x) =>
     `Next: ${p(x, 'name', 'your next match')}. The map veto opens in ${p(x, 'minutes', 'a few')} min at ${p(x, 'url', 'the site')}`,
+  adminClaimed: (x) =>
+    `${x.name ? `Admin ${p(x, 'name')}` : 'An admin'} is on it. Reply here in chat.`,
+  adminResolved: () => 'Admin call resolved.',
   nextMatchReady: (x) =>
     `Your next match is ready: ${p(x, 'name', 'next match')}. The map veto is open at ${p(x, 'url', 'the site')}`,
 };

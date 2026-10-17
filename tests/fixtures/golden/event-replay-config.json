@@ -54,7 +54,8 @@
     "ready": {
       "allow_force_ready": true,
       "autoready": false,
-      "min_per_team": 0
+      "min_per_team": 0,
+      "team_ready": true
     },
     "tiebreak": {
       "damage": true

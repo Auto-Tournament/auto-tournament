@@ -910,7 +910,9 @@
       "remindAccount": "{{name}}: logg inn med Steam én gang så du kan spille i {{tournament}}.",
       "remindGame": "{{name}}: legg til spillet på profilen din (Spill du spiller) før innsjekk til {{tournament}}.",
       "serverDown": "Kampserveren krasjet. Vi henter den tilbake …",
-      "serverBack": "Kampen er tilbake: {{map}}, runde {{round}}. Koble til på nytt."
+      "serverBack": "Kampen er tilbake: {{map}}, runde {{round}}. Koble til på nytt.",
+      "adminClaimed": "{{name}} took the admin call",
+      "adminResolved": "{{name}} resolved the admin call"
     },
     "party": {
       "inviteCopied": "Invitasjonslenke kopiert",

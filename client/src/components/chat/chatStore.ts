@@ -29,6 +29,8 @@ export interface ChatMessage {
   body: string;
   createdAt: number;
   senderAvatar?: string | null;
+  /** Typed on the match's game server, not on the site. */
+  fromGame?: boolean;
 }
 
 export interface ChatChannel {
@@ -42,6 +44,8 @@ export interface ChatChannel {
   admin?: boolean;
   /** The open admin call in it, and who claimed it. */
   call?: { id: number; claimedBy: string | null; claimedByName: string | null } | null;
+  /** An admin's match chat listed because its players talk in game: it does not ping. */
+  quiet?: boolean;
 }
 
 interface Thread {
@@ -184,8 +188,13 @@ export async function callAdmin(channel: string, message = ''): Promise<void> {
 export function markRead(channel: string): void {
   const last = state.threads[channel]?.messages.slice(-1)[0];
   const listed = state.channels.find((c) => c.channel === channel);
-  if (listed && listed.unread > 0) {
-    set({ channels: state.channels.map((c) => (c.channel === channel ? { ...c, unread: 0 } : c)) });
+  if (listed && (listed.unread > 0 || listed.quiet)) {
+    // Opened: a quiet chat (in-game chatter) pings from now on, like the server says next read.
+    set({
+      channels: state.channels.map((c) =>
+        c.channel === channel ? { ...c, unread: 0, quiet: false } : c
+      ),
+    });
   }
   if (last && viewer.steamId)
     void api
@@ -219,6 +228,8 @@ function receive(message: ChatMessage) {
     markRead(message.channel);
     return;
   }
+  // Player chatter in a match the admin has not opened: in the thread, no ping.
+  if (state.channels.find((c) => c.channel === message.channel)?.quiet) return;
   set({
     channels: state.channels.map((c) =>
       c.channel === message.channel ? { ...c, unread: c.unread + 1 } : c

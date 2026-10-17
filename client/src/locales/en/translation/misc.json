@@ -906,6 +906,8 @@
       "mapResult": "Map {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
       "seriesWon": "{{team}} wins the series {{a}}–{{b}}",
       "adminCalled": "{{name}} called an admin",
+      "adminClaimed": "{{name}} took the admin call",
+      "adminResolved": "{{name}} resolved the admin call",
       "timedOut": "out of time",
       "remindAccount": "{{name}}: sign in once with Steam so you can play in {{tournament}}.",
       "remindGame": "{{name}}: add the game to your profile (Games you play) before check-in for {{tournament}}.",

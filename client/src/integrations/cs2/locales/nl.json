@@ -667,7 +667,8 @@
         "title": "Ready / Start wedstrijd",
         "minimumReadyLabel": "Minimum aantal ready-spelers vereist",
         "minimumReadyHelper": "0 = iedereen die verbonden is moet ready zijn. Standaard: 0.",
-        "allowForceReady": "Sta admins toe spelers force-ready te zetten tijdens setup (!forceready)"
+        "allowForceReady": "Sta admins toe spelers force-ready te zetten tijdens setup (!forceready)",
+        "teamReady": "Tournament matches: one player's .ready readies the whole team"
       },
       "adminTools": {
         "title": "Admin-tools",

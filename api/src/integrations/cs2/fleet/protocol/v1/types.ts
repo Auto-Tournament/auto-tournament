@@ -184,7 +184,13 @@ export interface MatchRules {
   max_rounds?: number;
   overtime?: { enabled?: boolean; rounds_per_half?: number; max_overtimes?: number };
   tiebreak?: { damage?: boolean; sudden_death_on_tie?: boolean };
-  ready?: { min_per_team?: number; allow_force_ready?: boolean; autoready?: boolean };
+  ready?: {
+    min_per_team?: number;
+    allow_force_ready?: boolean;
+    autoready?: boolean;
+    /** One player's `.ready` readies their whole team. Older Ready Ups ignore it. */
+    team_ready?: boolean;
+  };
   knife?: { side_pick_seconds?: number };
   pause?: {
     tactical_per_team?: number;
@@ -795,6 +801,18 @@ export interface FleetEventData {
     message: string;
     called_at: string;
   };
+  chat: {
+    player: {
+      steamid64: U64s;
+      name: string;
+      team: TeamKey | null;
+      side: Side | 'spec';
+    };
+    message: string;
+    team_only: boolean;
+    /** Unix ms. */
+    at: number;
+  };
   error: { code: string; message: string; fatal: boolean };
 }
 
@@ -824,6 +842,7 @@ export const FLEET_EVENT_NAMES: ReadonlyArray<FleetEventName> = [
   'forfeit',
   'gg',
   'admin_called',
+  'chat',
   'error',
 ];
 
@@ -909,6 +928,7 @@ export interface FleetMessages {
   'event.forfeit': FleetEventPayload<FleetEventData['forfeit']>;
   'event.gg': FleetEventPayload<FleetEventData['gg']>;
   'event.admin_called': FleetEventPayload<FleetEventData['admin_called']>;
+  'event.chat': FleetEventPayload<FleetEventData['chat']>;
   'event.error': FleetEventPayload<FleetEventData['error']>;
   'demo.begin': DemoBeginPayload;
   'demo.chunk': DemoChunkPayload;
@@ -974,6 +994,7 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
     'event.forfeit': S2P_RELIABLE,
     'event.gg': S2P_RELIABLE,
     'event.admin_called': S2P_RELIABLE,
+    'event.chat': S2P_RELIABLE,
     'event.error': S2P_RELIABLE,
     'demo.begin': { direction: 'server_to_platform', reliable: false },
     'demo.chunk': { direction: 'server_to_platform', reliable: false },
