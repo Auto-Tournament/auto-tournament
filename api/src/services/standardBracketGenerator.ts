@@ -7,6 +7,67 @@ import type { IBracketGenerator, BracketGeneratorResult } from './bracketGenerat
 import { determineInitialMatchStatus } from '../utils/matchStatusHelpers';
 import { isPowerOfTwo, padWithByes, resolveByes } from './bracketByes';
 
+type DropInOrdering = 'natural' | 'reverse' | 'half_shift' | 'reverse_half_shift' | 'pair_flip';
+
+/**
+ * How the losers of each upper-bracket round are laid over the lower-bracket
+ * round they drop into, per bracket size. Index 0 is WB round 1 (its losers
+ * pair up with each other in LB round 1, so it is always natural); index r-1
+ * is WB round r. These are brackets-manager's `defaultMinorOrdering` values.
+ *
+ * The point is the crossover: a team losing in WB round r has only played
+ * teams from its own part of the upper bracket, so it is sent to the lower
+ * bracket match fed from the other part. With natural order (the old wiring)
+ * the loser of WB r2m1 met the winner of lb-r1m1, i.e. a team it had just
+ * knocked out in WB round 1. Reverse for round 2 fixes that; for 16+ teams
+ * the later rounds also keep the halves apart for as long as that is
+ * possible (reverse_half_shift, then reverse or half_shift).
+ */
+const DROP_IN_ORDERING: Record<number, DropInOrdering[]> = {
+  4: ['natural', 'reverse'],
+  8: ['natural', 'reverse', 'natural'],
+  16: ['natural', 'reverse_half_shift', 'reverse', 'natural'],
+  32: ['natural', 'reverse', 'half_shift', 'natural', 'natural'],
+  64: ['natural', 'reverse', 'half_shift', 'reverse', 'natural', 'natural'],
+  128: ['natural', 'reverse', 'half_shift', 'pair_flip', 'pair_flip', 'pair_flip', 'natural'],
+};
+
+function applyOrdering<T>(method: DropInOrdering, array: T[]): T[] {
+  const half = array.length / 2;
+  switch (method) {
+    case 'reverse':
+      return [...array].reverse();
+    case 'half_shift':
+      return [...array.slice(half), ...array.slice(0, half)];
+    case 'reverse_half_shift':
+      return [...array.slice(0, half).reverse(), ...array.slice(half).reverse()];
+    case 'pair_flip': {
+      const out: T[] = [];
+      for (let i = 0; i < array.length; i += 2) out.push(array[i + 1], array[i]);
+      return out;
+    }
+    default:
+      return [...array];
+  }
+}
+
+/**
+ * The matches of WB round `wbRound` in the order their losers fill the
+ * lower-bracket round they drop into. Sizes past the table get round 2
+ * reversed and round 3 half-shifted, the part every listed size shares.
+ */
+export function dropInOrder<T>(teamCount: number, wbRound: number, wbMatches: T[]): T[] {
+  const table = DROP_IN_ORDERING[teamCount];
+  const method: DropInOrdering = table
+    ? (table[wbRound - 1] ?? 'natural')
+    : wbRound === 2
+      ? 'reverse'
+      : wbRound === 3
+        ? 'half_shift'
+        : 'natural';
+  return applyOrdering(method, wbMatches);
+}
+
 /**
  * Standard Bracket Generator
  * Generates single elimination, double elimination, and round robin brackets
@@ -581,17 +642,20 @@ export class StandardBracketGenerator implements IBracketGenerator {
       }
     }
 
-    // 3.3) LB even rounds: LB odd winners vs WB (i+1) losers
+    // 3.3) LB even rounds: LB odd winners vs WB (i+1) losers. The WB losers
+    // are crossed over (dropInOrder) so they land against the half of the
+    // lower bracket they could not have met in the upper bracket.
     for (let i = 1; i <= k - 1; i++) {
       const L_even = 2 * i;
       const evenIndex = L_even - 1;
       const prevOddIndex = L_even - 2;
       const matchesPerRound = lb[evenIndex].length;
+      const wbLosers = dropInOrder(N, i + 1, wb[i]);
 
       for (let m = 1; m <= matchesPerRound; m++) {
         const lbMatch = lb[evenIndex][m - 1];
         const lbSource = lb[prevOddIndex][m - 1];
-        const wbSource = wb[i][m - 1]; // WB round (i+1), match m
+        const wbSource = wbLosers[m - 1]; // a loser of WB round (i+1)
 
         lbMatch.team1FromMatchSlug = lbSource.slug;
         lbMatch.team1FromOutcome = 'winner';
