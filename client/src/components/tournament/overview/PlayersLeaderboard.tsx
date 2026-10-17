@@ -21,6 +21,8 @@ interface Entry {
   avatar?: string;
   currentElo: number;
   eloChange: number;
+  /** This tournament's match rating (1.00 = average); null before a player has played. */
+  rating?: number | null;
   matchWins: number | string;
   matchLosses: number | string;
   winRate: number;
@@ -84,7 +86,9 @@ export function PlayersLeaderboard({
           ? Number(b.matchWins) - Number(a.matchWins) ||
             Number(a.matchLosses) - Number(b.matchLosses) ||
             b.currentElo - a.currentElo
-          : b.currentElo - a.currentElo
+          : // How they play in this tournament, not their rating from before it (NTLAN 2026-10-17:
+            // 60/24 at 133 ADR sat below players with a higher platform rating).
+            (b.rating ?? -1) - (a.rating ?? -1) || b.currentElo - a.currentElo
       ),
     [rows, sortBy]
   );
@@ -105,7 +109,8 @@ export function PlayersLeaderboard({
       rank: i + 1,
       player: r.name,
       team: r.team?.name ?? '',
-      rating: r.currentElo,
+      rating: r.rating ?? '',
+      elo: r.currentElo,
       change: r.eloChange,
       kills: r.kills ?? '',
       deaths: r.deaths ?? '',
@@ -278,8 +283,8 @@ export function PlayersLeaderboard({
                       {r.matchWins}–{r.matchLosses}
                     </Box>
                   )}
-                  <Box component="td" sx={num}>
-                    {r.currentElo}
+                  <Box component="td" sx={num} title={`${r.currentElo}`}>
+                    {sortBy === 'rating' && r.rating != null ? r.rating.toFixed(2) : r.currentElo}
                   </Box>
                   <Box
                     component="td"
