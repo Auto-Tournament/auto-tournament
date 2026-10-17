@@ -62,6 +62,8 @@ export interface ShufflePlayer {
   joinedAt: number;
   /** Left a running shuffle (not drawn again). */
   left?: boolean;
+  /** Why: left on their own, removed by an admin, or marked out for not joining their match. */
+  leftReason?: 'left' | 'removed' | 'no_show';
 }
 
 export interface TournamentSignupState {

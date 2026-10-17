@@ -513,6 +513,8 @@ export const tournamentSignupService = {
     name: string;
     avatar: string | null;
     joinedAt: number;
+    left: boolean;
+    leftReason?: string;
   }> | null> {
     const tournament = await loadTournament(tournamentId);
     if (tournament.type !== 'shuffle') return null;
@@ -520,10 +522,11 @@ export const tournamentSignupService = {
       player_id: string;
       registered_at: number;
       left_at: number | null;
+      left_reason: string | null;
       name: string | null;
       avatar_url: string | null;
     }>(
-      `SELECT s.player_id, s.registered_at, s.left_at, p.name, p.avatar_url
+      `SELECT s.player_id, s.registered_at, s.left_at, s.left_reason, p.name, p.avatar_url
          FROM shuffle_tournament_players s LEFT JOIN players p ON p.id = s.player_id
         WHERE s.tournament_id = ? ORDER BY s.registered_at, s.player_id`,
       [tournamentId]
@@ -535,6 +538,8 @@ export const tournamentSignupService = {
       joinedAt: Number(r.registered_at),
       // Left a running shuffle: keeps their results, not drawn again.
       left: r.left_at !== null,
+      // Why: left on their own, removed by an admin, or marked out as a no-show.
+      ...(r.left_at !== null && r.left_reason ? { leftReason: r.left_reason } : {}),
     }));
   },
 
@@ -554,9 +559,21 @@ export const tournamentSignupService = {
     // A running shuffle still takes players: they are in the next round's draw.
     if (tournament.status !== 'setup' && tournament.status !== 'in_progress')
       throw new SignupError(409, 'The tournament is over.', 'started');
-    if (!win.registrationOpen) throw new SignupError(409, 'Sign-up is not open.', 'closed');
-    if (isPast(win.registrationClosesAt))
-      throw new SignupError(409, 'Sign-up has closed.', 'closed');
+    // Marked out as a no-show: back in for the next draw, even after sign-up closed
+    // (they had a spot).
+    const noShow =
+      tournament.status === 'in_progress' &&
+      (
+        await db.queryOneAsync<{ left_reason: string | null }>(
+          'SELECT left_reason FROM shuffle_tournament_players WHERE tournament_id = ? AND player_id = ? AND left_at IS NOT NULL',
+          [tournamentId, steamId]
+        )
+      )?.left_reason === 'no_show';
+    if (!noShow) {
+      if (!win.registrationOpen) throw new SignupError(409, 'Sign-up is not open.', 'closed');
+      if (isPast(win.registrationClosesAt))
+        throw new SignupError(409, 'Sign-up has closed.', 'closed');
+    }
     const blocked = await db
       .queryOneAsync<{ id: string }>(
         'SELECT id FROM players WHERE id = ? AND (banned_at IS NOT NULL OR deleted_at IS NOT NULL)',
@@ -564,7 +581,7 @@ export const tournamentSignupService = {
       )
       .catch(() => null);
     if (blocked) throw new SignupError(403, 'This account cannot join tournaments.', 'blocked');
-    if (win.maxTeams !== null) {
+    if (win.maxTeams !== null && !noShow) {
       const cap = win.maxTeams * (tournament.team_size ?? 5);
       const row = await db.queryOneAsync<{ n: number | string }>(
         'SELECT COUNT(*) AS n FROM shuffle_tournament_players WHERE tournament_id = ? AND player_id <> ?',
@@ -574,7 +591,7 @@ export const tournamentSignupService = {
     }
     await db.runAsync(
       `INSERT INTO shuffle_tournament_players (tournament_id, player_id, registered_at) VALUES (?, ?, ?)
-       ON CONFLICT (tournament_id, player_id) DO UPDATE SET left_at = NULL`,
+       ON CONFLICT (tournament_id, player_id) DO UPDATE SET left_at = NULL, left_reason = NULL`,
       [tournamentId, steamId, Math.floor(Date.now() / 1000)]
     );
     emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
@@ -597,8 +614,8 @@ export const tournamentSignupService = {
     // Leaving a running shuffle keeps your results; the next rounds do not draw you.
     if (tournament.status === 'in_progress') {
       await db.runAsync(
-        'UPDATE shuffle_tournament_players SET left_at = ? WHERE tournament_id = ? AND player_id = ?',
-        [Math.floor(Date.now() / 1000), tournamentId, steamId]
+        'UPDATE shuffle_tournament_players SET left_at = ?, left_reason = ? WHERE tournament_id = ? AND player_id = ?',
+        [Math.floor(Date.now() / 1000), 'left', tournamentId, steamId]
       );
       emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
       return;

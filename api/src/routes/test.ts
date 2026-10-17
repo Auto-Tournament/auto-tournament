@@ -301,6 +301,57 @@ router.post('/match-state', requireAuth, async (req: Request, res: Response): Pr
 });
 
 /**
+ * @openapi
+ * /api/test/shuffle-no-shows:
+ *   post:
+ *     tags: [Test]
+ *     summary: Run a shuffle match's no-show check (tests only)
+ *     description: >
+ *       The check a shuffle match runs when it goes live (dropShuffleNoShows), with
+ *       `seen` as the players who were on the server. Answers with the players marked
+ *       out. Only available in non-production environments.
+ *     security: [{ BearerAuth: [] }]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               slug: { type: string }
+ *               seen: { type: array, items: { type: string } }
+ *     responses:
+ *       200: { description: The players marked out }
+ *       404: { description: No such match }
+ */
+router.post(
+  '/shuffle-no-shows',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+      res.status(403).json({ success: false, error: 'Disabled in production' });
+      return;
+    }
+    const { slug, seen } = (req.body || {}) as { slug?: string; seen?: string[] };
+    const match = slug
+      ? await db.queryOneAsync<{
+          slug: string;
+          tournament_id: number | null;
+          config: string | null;
+          loaded_at: number | null;
+        }>('SELECT slug, tournament_id, config, loaded_at FROM matches WHERE slug = ?', [slug])
+      : null;
+    if (!match) {
+      res.status(404).json({ success: false, error: 'No such match' });
+      return;
+    }
+    const { dropShuffleNoShows } = await import('../services/shuffleTournamentService');
+    const on = new Set(Array.isArray(seen) ? seen : []);
+    const dropped = await dropShuffleNoShows(match, (id) => on.has(id), { force: true });
+    res.json({ success: true, dropped });
+  }
+);
+
+/**
  * Test-only helper: apply a series result through the core's result path.
  *
  * POST /api/test/series-result  { slug, result, meta }

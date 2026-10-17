@@ -128,7 +128,8 @@
       "beta_available": "En ny plattformutgivelse",
       "license_problem": "Lisensproblemer",
       "demos_failing": "Demoanalyser feiler gjentatte ganger",
-      "tournament_autostart_failed": "En turnering starter ikke i tide"
+      "tournament_autostart_failed": "En turnering starter ikke i tide",
+      "shuffle_no_show": "En shuffle-spiller kobler aldri til kampen"
     },
     "kind": {
       "match_no_server": "{{matchSlug}} har ventet i {{minutes}} min på en server",
@@ -151,7 +152,8 @@
       "beta_available": "Auto Tournament {{version}} er ute (du kjører {{running}})",
       "license_problem": "Lisensen trenger oppmerksomhet: {{problem}}",
       "demos_failing": "{{count}} demoanalyser feilet den siste timen",
-      "tournament_autostart_failed": "{{name}} startet ikke på starttidspunktet: {{reason}}"
+      "tournament_autostart_failed": "{{name}} startet ikke på starttidspunktet: {{reason}}",
+      "shuffle_no_show": "{{players}} koblet aldri til {{matchSlug}}: ute av de neste trekningene til de sier fra at de er tilbake"
     }
   },
   "matchNow": {

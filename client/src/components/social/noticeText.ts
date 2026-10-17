@@ -112,6 +112,13 @@ export function describeNotice(notice: Notice, t: TFunction, viewerId: string | 
         out.to = `/match/${encodeURIComponent(str(d.matchSlug))}`;
         break;
       }
+      // A shuffle no-show: out of the next draws until they say they are back
+      // (the tournament page).
+      if (d.event === 'no_show') {
+        out.text = t('social.notice.noShow');
+        out.to = d.tournamentId ? `/tournament/${Number(d.tournamentId)}` : null;
+        break;
+      }
       out.text =
         d.event === 'started'
           ? t('social.notice.tournamentStarted')
