@@ -14,12 +14,7 @@
  */
 import { db } from '../config/database';
 import { log } from '../utils/logger';
-import {
-  MATCH_NAMED_EVENTS,
-  configTeamName,
-  hasTbdSide,
-  matchNoticeName,
-} from './matchNoticeName';
+import { MATCH_NAMED_EVENTS, configTeamName, hasTbdSide, matchNoticeName } from './matchNoticeName';
 import { emitNotification } from './socketService';
 
 export type NotificationKind =
