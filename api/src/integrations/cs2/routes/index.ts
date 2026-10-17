@@ -32,6 +32,7 @@ import radarRoutes from './radars';
 import imageRoutes from './images';
 import highlightRoutes from './highlights';
 import teamProfileRoutes from './teamProfile';
+import partyMapsRoutes from './partyMaps';
 import roundBackupRoutes from './roundBackups';
 import manageMatchRoutes from './manageMatch';
 import liveOverviewRoutes from './liveOverview';
@@ -227,6 +228,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: teamProfileRoutes,
     title: 'Team profile',
     description: "A team's CS2 results per map, and the maps it bans and picks most in the veto.",
+  },
+  {
+    // Public, like the player profiles it adds up.
+    prefix: '/api/game/cs2',
+    router: partyMapsRoutes,
+    title: 'Party maps',
+    description:
+      "A matchmaking party's CS2 results per map (its members' results added up), and the Active Duty maps.",
   },
   {
     // Admin only, per route: the admin match page's read and its Ready Up commands.
