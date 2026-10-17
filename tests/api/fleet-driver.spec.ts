@@ -1,7 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { test, expect, type APIRequestContext } from '@playwright/test';
-import { getAuthHeader, signInViaRequest } from '../helpers/auth';
+import {
+  test,
+  expect,
+  request as playwrightRequest,
+  type APIRequestContext,
+} from '@playwright/test';
+import { getAuthHeader, signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 import { createTestServer, deleteServer } from '../helpers/servers';
 import { configureWebhook } from '../helpers/setup';
 import {
@@ -18,6 +23,8 @@ import {
   type Envelope,
   type HelloPayload,
 } from '../../api/src/integrations/cs2/fleet/protocol/v1';
+
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069';
 
 /**
  * The fleet driver (api/src/integrations/cs2/driver.ts, fleet/driver.ts):
@@ -683,10 +690,25 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
       senderKind: 'player',
       senderName: 'alice',
       senderId: STEAM(1),
-      onlyTeam: null,
+      onlyTeam: '',
     });
-    // Team chat: alice's team (and the admins) only.
-    expect(team.onlyTeam).toBeTruthy();
+    // Game chat is for the admins only (the players have it in game).
+    expect(team.onlyTeam).toBe('');
+    const alice = await playwrightRequest.newContext({ baseURL: BASE_URL });
+    expect(await signInAsPlayerViaRequest(alice, STEAM(1), 'alice')).toBe(true);
+    const aliceLines = (
+      (await (await alice.get(`/api/chat/${channel}/messages`)).json()) as {
+        messages: Line[];
+      }
+    ).messages;
+    expect(aliceLines.filter((l) => l.fromGame)).toEqual([]);
+    const aliceChannels = (
+      (await (await alice.get('/api/chat/channels')).json()) as {
+        channels: Array<{ channel: string; unread: number }>;
+      }
+    ).channels;
+    expect(aliceChannels.find((c) => c.channel === `match:${slug}`)?.unread ?? 0).toBe(0);
+    await alice.dispose();
     // No loop: nothing from the game went back to the server.
     expect(
       fake.client.received.filter(
