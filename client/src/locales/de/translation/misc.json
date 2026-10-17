@@ -758,12 +758,17 @@
       "equipFailed": "Konnte nicht ausgerüstet werden",
       "rematch": {
         "title": "Revanche?",
-        "body": "Gleiche Teams, neue Karte. Ein Ja gilt für deine ganze Gruppe. Sie startet, wenn alle dabei sind ({{yes}} von {{total}} bisher), innerhalb von 2 Minuten.",
+        "ask": "Gleiche Teams, ein neues Match. Deine Antwort gilt für deine ganze Party. Sagt die Mehrheit deines Teams ja, hat das andere Team 30 Sekunden zum Annehmen.",
         "yes": "Ja, Revanche",
         "no": "Nein danke",
         "button": "Revanche",
-        "waiting": "Warte auf die anderen: {{yes}} von {{total}} haben zugestimmt.",
-        "declined": "Keine Revanche: jemand hat abgelehnt."
+        "offerTitle": "Das andere Team will eine Revanche",
+        "teamTitle": "Dein Team will eine Revanche",
+        "offerBody": "Gleiche Teams, ein neues Match. Die Mehrheit deines Teams muss ja sagen. Deine Antwort gilt für deine ganze Party.",
+        "waitingOther": "Warte auf das andere Team … {{s}} s",
+        "waitingTeam": "Warte auf dein Team … {{s}} s",
+        "accepted": "Revanche angenommen. Das neue Match wird geöffnet …",
+        "refused": "Revanche abgelehnt."
       },
       "pickedByVeto": "{{mode}} · picked in the veto"
     },

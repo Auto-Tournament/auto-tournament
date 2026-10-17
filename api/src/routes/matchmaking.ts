@@ -533,9 +533,11 @@ router.post(
  *     tags: [Matchmaking]
  *     summary: Answer "rematch?" after the match ended
  *     description: |
- *       Same-site JSON `{ accept: boolean }`, within 2 minutes of the match's end. When every
- *       player said yes, the same teams get a new match at once (`status: ready`, `lobbyId` of
- *       the new room). One "no" ends it (`declined`).
+ *       Same-site JSON `{ accept: boolean }`; counts for the caller's whole party. The first yes
+ *       (within 2 minutes of the match's end) asks the other team, who have 30 s to answer. Each
+ *       team decides by majority (a tie is a no; when time runs out the votes cast decide). Both
+ *       teams yes: the same teams get a new match at once (`status: ready`, `lobbyId` of the new
+ *       room; 5v5 vetoes its map). Either team no: `declined`.
  *     parameters:
  *       - in: path
  *         name: id

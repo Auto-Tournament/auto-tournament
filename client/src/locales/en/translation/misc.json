@@ -759,12 +759,17 @@
       "equipFailed": "Could not equip it",
       "rematch": {
         "title": "Rematch?",
-        "body": "Same teams, a new map. One yes counts for your whole party. It starts when everyone is in ({{yes}} of {{total}} so far), within 2 minutes.",
+        "ask": "Same teams, a new match. Your answer counts for your whole party. If most of your team says yes, the other team gets 30 seconds to accept.",
         "yes": "Yes, rematch",
         "no": "No thanks",
         "button": "Rematch",
-        "waiting": "Waiting for the others: {{yes}} of {{total}} said yes.",
-        "declined": "No rematch: someone said no."
+        "offerTitle": "The other team wants a rematch",
+        "teamTitle": "Your team wants a rematch",
+        "offerBody": "Same teams, a new match. Most of your team has to say yes. Your answer counts for your whole party.",
+        "waitingOther": "Waiting for the other team… {{s}} s",
+        "waitingTeam": "Waiting for your team… {{s}} s",
+        "accepted": "Rematch accepted. Opening the new match…",
+        "refused": "Rematch declined."
       }
     },
     "result": {

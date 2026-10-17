@@ -127,6 +127,46 @@ export function rematchOpen(
   return now - Number(match.completed_at) < REMATCH_SECONDS;
 }
 
+/** Seconds the other team has to answer once a player asked for a rematch. */
+export const REMATCH_ANSWER_SECONDS = 30;
+
+/**
+ * One team's answer to a rematch, from its players' votes (true = yes, false = no, null = not
+ * answered; a party's vote is already on every member). Before the time is up a team has decided
+ * once a majority of its players said yes, or once a yes majority can no longer be reached (a tie
+ * is a no). When time is up the votes cast decide: more yes than no, or no (no votes = no). A team
+ * with no players (the bots' side of a bot-filled game) always says yes.
+ */
+export function teamRematchAnswer(
+  votes: Array<boolean | null>,
+  expired: boolean
+): 'yes' | 'no' | 'open' {
+  const n = votes.length;
+  if (n === 0) return 'yes';
+  const yes = votes.filter((v) => v === true).length;
+  const no = votes.filter((v) => v === false).length;
+  if (yes * 2 > n) return 'yes';
+  if ((n - no) * 2 <= n) return 'no';
+  if (!expired) return 'open';
+  return yes > no ? 'yes' : 'no';
+}
+
+/** The rematch from both teams' answers: both yes = ready, either no = declined. */
+export function rematchOutcome(
+  players: Array<{ team: number; vote: boolean | null }>,
+  expired: boolean
+): 'ready' | 'declined' | 'voting' {
+  const answers = [1, 2].map((team) =>
+    teamRematchAnswer(
+      players.filter((p) => p.team === team).map((p) => p.vote),
+      expired
+    )
+  );
+  if (answers.includes('no')) return 'declined';
+  if (answers.every((a) => a === 'yes')) return 'ready';
+  return 'voting';
+}
+
 /** A party waiting in the queue. */
 export interface QueuedParty {
   entryId: string;

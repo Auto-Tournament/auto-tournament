@@ -34,7 +34,13 @@ import { paths } from '../paths';
 import { fontDisplay, radii, textSize, tokens } from '../theme/tokens';
 import { useTopic } from '../hooks/useTopic';
 import { PlayerChip } from '../components/player/PlayerChip';
-import { matchmakingAction } from '../components/matchmaking/matchmakingStore';
+import {
+  matchmakingAction,
+  secondsUntil,
+  useMatchmaking,
+  type RematchView,
+} from '../components/matchmaking/matchmakingStore';
+import { rematchStatus } from '../components/matchmaking/RematchOffer';
 
 const { color } = tokens;
 
@@ -63,16 +69,8 @@ interface LobbyView {
   inServer?: number;
   total?: number;
   autostartMinutes?: number;
-  /** "Rematch?" after the match: open while it can be agreed; the new room once all said yes. */
-  rematch?: {
-    open: boolean;
-    deadline: number | null;
-    yes: number;
-    total: number;
-    you: 'yes' | 'no' | null;
-    declined: boolean;
-    lobbyId: string | null;
-  };
+  /** "Rematch?" after the match: open while it can be agreed; the new room once both teams said yes. */
+  rematch?: RematchView;
 }
 
 export default function PlayLobby() {
@@ -133,6 +131,15 @@ export default function PlayLobby() {
     if (nextRoom && nextRoom !== lobbyId) navigate(paths.playLobby.replace(':lobbyId', nextRoom));
   }, [nextRoom, lobbyId, navigate]);
   const [rematchHidden, setRematchHidden] = useState(false);
+  const { skew } = useMatchmaking();
+  const [, setRematchTick] = useState(0);
+  const rematchOpenNow = Boolean(rematch?.open);
+  useEffect(() => {
+    if (!rematchOpenNow) return undefined;
+    const id = window.setInterval(() => setRematchTick(Date.now()), 500);
+    return () => window.clearInterval(id);
+  }, [rematchOpenNow]);
+  const rematchLeft = rematch?.deadline ? secondsUntil(rematch.deadline, skew) : 0;
   const [rematchBusy, setRematchBusy] = useState(false);
   const [rematchError, setRematchError] = useState<string | null>(null);
   const answerRematch = useCallback(
@@ -479,32 +486,29 @@ export default function PlayLobby() {
           ))}
         </Box>
 
-        {completed && rematch && (rematch.open || rematch.declined) && (
+        {completed && rematch && rematchStatus(t, rematch, rematchLeft) && (
           <Typography
             data-testid="mm-rematch-status"
             sx={{ fontSize: textSize.md, color: color.ink2 }}
           >
-            {rematch.declined
-              ? t('matchmaking.room.rematch.declined')
-              : rematch.you === 'yes'
-                ? t('matchmaking.room.rematch.waiting', { yes: rematch.yes, total: rematch.total })
-                : null}
+            {rematchStatus(t, rematch, rematchLeft)}
           </Typography>
         )}
         <Dialog
-          open={Boolean(completed && rematch?.open && rematch.you === null && !rematchHidden)}
+          open={Boolean(
+            completed &&
+            rematch?.open &&
+            rematch.you === null &&
+            rematch.offerTeam === null &&
+            !rematchHidden
+          )}
           onClose={() => setRematchHidden(true)}
           aria-labelledby="mm-rematch-title"
           data-testid="mm-rematch-dialog"
         >
           <DialogTitle id="mm-rematch-title">{t('matchmaking.room.rematch.title')}</DialogTitle>
           <DialogContent>
-            <Typography sx={{ color: color.ink2 }}>
-              {t('matchmaking.room.rematch.body', {
-                yes: rematch?.yes ?? 0,
-                total: rematch?.total ?? 0,
-              })}
-            </Typography>
+            <Typography sx={{ color: color.ink2 }}>{t('matchmaking.room.rematch.ask')}</Typography>
             {rematchError && (
               <Typography sx={{ mt: 1.5, color: color.warning }} role="alert">
                 {rematchError}
@@ -531,16 +535,20 @@ export default function PlayLobby() {
         </Dialog>
 
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
-          {completed && rematch?.open && rematch.you === null && rematchHidden && (
-            <Button
-              variant="outlined"
-              onClick={() => setRematchHidden(false)}
-              sx={{ borderRadius: radii.pill }}
-              data-testid="mm-rematch-open"
-            >
-              {t('matchmaking.room.rematch.button')}
-            </Button>
-          )}
+          {completed &&
+            rematch?.open &&
+            rematch.you === null &&
+            rematch.offerTeam === null &&
+            rematchHidden && (
+              <Button
+                variant="outlined"
+                onClick={() => setRematchHidden(false)}
+                sx={{ borderRadius: radii.pill }}
+                data-testid="mm-rematch-open"
+              >
+                {t('matchmaking.room.rematch.button')}
+              </Button>
+            )}
           {completed && (
             <Button
               component={RouterLink}

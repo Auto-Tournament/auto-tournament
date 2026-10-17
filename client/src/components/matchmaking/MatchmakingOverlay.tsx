@@ -21,6 +21,7 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { matchmakingAction, secondsUntil, useMatchmaking, playersFor } from './matchmakingStore';
 import { playLobbyPath } from '../../paths';
+import { RematchOffer } from './RematchOffer';
 
 const ACCEPT_SECONDS = 20;
 /** The countdown ring's circumference (r = 52). */
@@ -117,6 +118,7 @@ export function MatchmakingOverlay() {
 
   return (
     <>
+      {me.rematch && !searching && <RematchOffer rematch={me.rematch} skew={skew} />}
       {searching && (
         <Box
           role="status"
