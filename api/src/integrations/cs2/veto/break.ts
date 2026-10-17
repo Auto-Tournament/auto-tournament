@@ -32,12 +32,21 @@ export async function holdForMatchBreak(slug: string): Promise<number | null> {
   if (!ended) return null; // a team's first match: nothing to rest from
   const until = ended + minutes * 60;
   if (until <= Math.floor(Date.now() / 1000) + 5) return null;
+  announcedAt.delete(slug); // a new hold: its end gets announced again
   await holdForBreak(slug, until, `Break between matches (${minutes} min)`);
   log.info(`[VETO] ${slug}: break until ${new Date(until * 1000).toISOString()}`);
   return until;
 }
 
-/** The match's hold ended before its veto started: announce the open veto (the second ping). */
+/** When each match's open veto was last announced here (epoch ms): never twice for one release. */
+const announcedAt = new Map<string, number>();
+const ANNOUNCE_ONCE_MS = 5 * 60_000;
+
+/**
+ * The match's hold ended before its veto started (the timer ran out, or an
+ * admin let it go early): announce the open veto (the second ping: bell,
+ * Discord/email/push, the match chat, in game). Once per release.
+ */
 export async function vetoOpenedAfterHold(slug: string): Promise<void> {
   try {
     const row = await db.queryOneAsync<{
@@ -45,6 +54,7 @@ export async function vetoOpenedAfterHold(slug: string): Promise<void> {
       veto_state: string | null;
       status: string;
     }>('SELECT held_until, veto_state, status FROM matches WHERE slug = ?', [slug]);
+    if (row?.held_until) announcedAt.delete(slug); // held again: its end is announced afresh
     if (
       !row ||
       row.held_until !== null ||
@@ -52,6 +62,9 @@ export async function vetoOpenedAfterHold(slug: string): Promise<void> {
       !['pending', 'ready'].includes(row.status)
     )
       return;
+    const last = announcedAt.get(slug);
+    if (last !== undefined && Date.now() - last < ANNOUNCE_ONCE_MS) return;
+    announcedAt.set(slug, Date.now());
     const { announceVetoOpen } = await import('./announce');
     await announceVetoOpen(slug);
   } catch (error) {

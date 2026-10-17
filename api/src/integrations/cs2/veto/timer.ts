@@ -8,8 +8,9 @@
  * A turn starts at the previous action (its timestamp), or, for the first
  * step, when this process first saw the match waiting on its veto. That first
  * time is kept in memory: a restart gives the first team a fresh clock, which
- * is the fair side to err on. The first step gets `at_veto_first_turn_seconds`
- * (default 2 min: the players are coming from their last match).
+ * is the fair side to err on. The first step gets the turn plus a grace
+ * (VETO_OPEN_GRACE_SECONDS), or `at_veto_first_turn_seconds` (default 2 min)
+ * when that is longer: the players are coming from their last match.
  *
  * A held match (an admin's hold, or the break between a team's matches) has
  * no clock: its veto opens when the hold ends (`opensAt` until then).
@@ -22,6 +23,14 @@ import { cs2Settings } from '../settingsReaders';
 import { autoCompleteVetoForMatch } from './simulation';
 
 const TICK_MS = 2_000;
+
+/**
+ * Extra seconds on a match's first veto turn, on top of the turn length: the
+ * players have just been told the veto is open (a break ending, an admin
+ * letting the hold go early) and need time to open the page. Presence on the
+ * veto page is not tracked, so every first turn gets it.
+ */
+export const VETO_OPEN_GRACE_SECONDS = 60;
 
 /** First seen waiting on step 1 (no veto action yet), by match slug. */
 const firstSeen = new Map<string, number>();
@@ -73,12 +82,12 @@ export function turnStartedAt(
 }
 
 /** Seconds for the turn after `actions` steps: the first one may be longer. */
-async function secondsForTurn(rawVeto: string | null | undefined): Promise<number> {
+export async function secondsForTurn(rawVeto: string | null | undefined): Promise<number> {
   const seconds = await cs2Settings.getVetoTurnSeconds();
   if (seconds <= 0) return 0;
   if ((parseVeto(rawVeto)?.actions?.length ?? 0) > 0) return seconds;
   const first = await cs2Settings.getVetoFirstTurnSeconds();
-  return first > 0 ? Math.max(seconds, first) : seconds;
+  return Math.max(seconds + VETO_OPEN_GRACE_SECONDS, first);
 }
 
 /** The match's hold end (unix s) while it is held, else null. */
