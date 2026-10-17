@@ -1404,6 +1404,11 @@
       "adr": "ADR",
       "winRate": "Win rate",
       "none": "No players match."
+    },
+    "eta": {
+      "nextRoundAbout": "Next round about {{time}}",
+      "nextRoundAt": "Next round at {{time}}",
+      "finalEnds": "Final round: ends about {{time}}"
     }
   },
   "matchesCards": {

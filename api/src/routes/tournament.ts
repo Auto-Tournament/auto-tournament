@@ -6,9 +6,14 @@ import { scheduler } from '../core/scheduler';
 import { db } from '../config/database';
 import { bannerUrl, logoUrl } from '../services/teamSelfService';
 import { requestActorId, requireAuth } from '../middleware/auth';
-import { pauseTournament, resumeTournament } from '../services/matchHolds';
+import { HOLD_FOREVER, pauseTournament, resumeTournament } from '../services/matchHolds';
+import { breakMinutesOf, computeNextRoundEta } from '../utils/nextRoundEta';
 import { log } from '../utils/logger';
-import type { CreateTournamentInput, UpdateTournamentInput } from '../types/tournament.types';
+import type {
+  BracketResponse,
+  CreateTournamentInput,
+  UpdateTournamentInput,
+} from '../types/tournament.types';
 import type { DbMatchRow } from '../types/database.types';
 import type { MatchConfig } from '../types/match.types';
 import { emitTournamentUpdate, emitBracketUpdate } from '../services/socketService';
@@ -332,6 +337,30 @@ router.get('/game', async (req: Request, res: Response) => {
   }
 });
 
+/** When the next round is expected to open, while the tournament runs (null: nothing to say). */
+async function nextRoundEtaFor(tournamentId: number, bracket: BracketResponse) {
+  if (bracket.tournament.status !== 'in_progress') return null;
+  try {
+    const held = await db.queryAsync<{ slug: string; held_until: number }>(
+      `SELECT slug, held_until FROM matches
+        WHERE tournament_id = ? AND status IN ('pending', 'ready')
+          AND held_until > EXTRACT(EPOCH FROM NOW())::INTEGER AND held_until < ?`,
+      [tournamentId, HOLD_FOREVER]
+    );
+    return computeNextRoundEta({
+      matches: bracket.matches,
+      totalRounds: bracket.totalRounds,
+      maxRounds: bracket.tournament.maxRounds,
+      breakMinutes: breakMinutesOf(await settingsService.getSetting('at_match_break_minutes')),
+      heldUntil: Object.fromEntries(held.map((row) => [row.slug, Number(row.held_until)])),
+      nowMs: Date.now(),
+    });
+  } catch (error) {
+    log.warn('Could not estimate the next round', { error });
+    return null;
+  }
+}
+
 /**
  * @openapi
  * /api/tournament/{id}/bracket:
@@ -418,7 +447,12 @@ router.get('/:id/bracket', async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: 'No tournament bracket exists' });
     }
 
-    return res.json({ success: true, ...toPublicBracket(bracket) });
+    const nextRoundEta = await nextRoundEtaFor(tournamentId, bracket);
+    return res.json({
+      success: true,
+      ...toPublicBracket(bracket),
+      ...(nextRoundEta ? { nextRoundEta } : {}),
+    });
   } catch (error) {
     log.error('Error fetching the public bracket', error);
     return res.status(500).json({ success: false, error: 'Failed to fetch bracket' });

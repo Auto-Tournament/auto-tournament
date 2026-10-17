@@ -1318,6 +1318,11 @@
   "liveOverview": {
     "roundOf": "Runde {{round}} av {{total}}",
     "liveCount": "{{count}} live nå",
+    "eta": {
+      "nextRoundAbout": "Neste runde ca. {{time}}",
+      "nextRoundAt": "Neste runde kl. {{time}}",
+      "finalEnds": "Siste runde: ferdig ca. {{time}}"
+    },
     "hero": {
       "playingTitle": "Du spiller nå",
       "playingBody": "{{us}} mot {{them}}{{map}}. Bli med fra kamprommet.",
