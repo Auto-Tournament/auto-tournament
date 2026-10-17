@@ -172,6 +172,8 @@ export interface MatchMapResult {
 export interface MatchListItem {
   id: number;
   slug: string;
+  /** `matches.tournament_id`; null outside a tournament. */
+  tournamentId: number | null;
   /** Game integration that owns the match (`matches.game`, default 'cs2'). */
   game: string;
   round: number;

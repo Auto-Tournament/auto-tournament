@@ -211,6 +211,7 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
   const match: MatchListItem = {
     id: row.id,
     slug: row.slug,
+    tournamentId: row.tournament_id ?? null,
     game: row.game || DEFAULT_GAME,
     round: row.round,
     matchNumber: row.match_number,
@@ -747,6 +748,9 @@ router.get('/', async (req: Request, res: Response) => {
         const match: MatchListItem = {
           id: row.id,
           slug: row.slug,
+          // The tournament it belongs to; null for a manual, matchmaking or
+          // imported match, or one kept from a deleted tournament.
+          tournamentId: row.tournament_id ?? null,
           game: row.game || DEFAULT_GAME,
           round: row.round,
           matchNumber: row.match_number,

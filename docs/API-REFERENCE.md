@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 743 of them, 423 behind auth —
+Every endpoint this API serves — 746 of them, 426 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -56,6 +56,14 @@ Notable moments from the demos (knife and Zeus kills, aces, 1vN clutches, no-sco
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/integrations/highlights` | integrator token or admin |
+
+### Integrations: player stats
+
+Each player's numbers summed over tournaments, matches or an import's event, for an event website's stat trophies; null for a number not measured, never 0. Integrator token (API_TOKENS_INTEGRATOR), read-only or admin token, or admin session.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/integrations/player-stats` | integrator token or admin |
 
 ### Highlights backfill
 
@@ -548,6 +556,8 @@ E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE
 | `GET` | `/api/test/fleet/events/:serverId` | admin |
 | `POST` | `/api/test/fleet/failover/scan` | admin |
 | `GET` | `/api/test/fleet/commands/:id` | admin |
+| `POST` | `/api/test/stats-fixture` | admin |
+| `POST` | `/api/test/stats-fixture/cleanup` | admin |
 
 ### Manual reporting — captains
 
