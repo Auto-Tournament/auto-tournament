@@ -8,9 +8,19 @@
 import { Router, type Request, type Response } from 'express';
 import { requireAuth, requireIntegratorAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
-import { platformOrigin } from '../../../services/webhooks/links';
+import { settingsService } from '../../../services/settingsService';
 import { backfillMoments, LIST_MAX, listMoments } from '../demos/momentStore';
 import { MOMENT_KINDS } from '../demos/moments';
+
+/** The platform's address (Settings → webhook URL), for absolute links; null without it. */
+async function platformOrigin(): Promise<string | null> {
+  const base = await settingsService.getWebhookUrl().catch(() => null);
+  try {
+    return base ? new URL(base).origin : null;
+  } catch {
+    return null;
+  }
+}
 
 export const integrationHighlightsRouter = Router();
 
