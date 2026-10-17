@@ -749,6 +749,9 @@ export const cs2Integration: GameIntegration = {
     ]) {
       await db.runAsync(`DELETE FROM ${table} WHERE match_slug IN (${list})`, slugs);
     }
+    // Their notable moments stay, revoked: an integrator takes back what it gave for them.
+    const { revokeMomentsOfSlugs } = await import('./demos/momentStore');
+    await revokeMomentsOfSlugs(slugs);
   },
 
   /** The top three of a finished tournament get its skin rewards, unless the tournament turned them off. */
