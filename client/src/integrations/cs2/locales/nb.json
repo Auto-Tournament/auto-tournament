@@ -2332,7 +2332,8 @@
       "siteDefault": "Standard for nettstedet",
       "noDelayWarning": "Ingen forsinkelse: spillere som ser strømmen, kan ghoste.",
       "insecureObservers": "Tillat usikre observatører (HUD-verktøy som LHM)",
-      "insecureObserversHelp": "Lar observatør-HUD-er som leser GOTV, koble til. Gjelder fra kampen lastes."
+      "insecureObserversHelp": "Lar observatør-HUD-er som leser GOTV, koble til. Gjelder fra kampen lastes.",
+      "manyViewersHint": "Mange seere på kampserveren koster båndbredde og CPU; bruk et GOTV-relé for store publikum."
     }
   },
   "library": {

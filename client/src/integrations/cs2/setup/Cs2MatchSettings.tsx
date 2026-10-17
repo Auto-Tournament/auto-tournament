@@ -21,7 +21,7 @@ import {
 const PRIZE_PLACES = [1, 2, 3, 4, 0];
 /** The GOTV choices the site's Spectators settings offer too; '' is the site's own. */
 const DELAY_OPTIONS = [0, 30, 105, 120];
-const SEAT_OPTIONS = [8, 16, 32];
+const SEAT_OPTIONS = [8, 16, 32, 50, 100];
 
 const PRIZE_RARITIES = ['ancient', 'legendary', 'mythical', 'rare', 'uncommon', 'common'];
 /** A custom list starts from the best: 1st the rarest grade with skins, one lower each place. */
@@ -253,6 +253,11 @@ export function Cs2MatchSettings({
             ))}
           </TextField>
         </Box>
+        {(broadcast.seats ?? 0) > 30 && (
+          <Typography variant="body2" color="text.secondary">
+            {t('tournament.broadcast.manyViewersHint')}
+          </Typography>
+        )}
         {broadcast.delay === 0 && (
           <Typography variant="body2" color="warning.main">
             {t('tournament.broadcast.noDelayWarning')}

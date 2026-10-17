@@ -148,7 +148,7 @@ export interface Cs2TournamentSettings {
 export interface Cs2BroadcastSettings {
   /** tv_delay, 0–120 s (0: live). */
   delay?: number;
-  /** tv_maxclients, 1–128. */
+  /** tv_maxclients, 1–100. */
   seats?: number;
   /** HUD tools like LHM may connect (tv_secure_bypass 1, sv_deltaticks_enforce 0). */
   insecureObservers?: boolean;
@@ -162,7 +162,7 @@ export function broadcastSetting(value: unknown): Cs2BroadcastSettings | null {
   if (typeof delay === 'number' && Number.isInteger(delay) && delay >= 0 && delay <= 120)
     out.delay = delay;
   const seats = value.seats;
-  if (typeof seats === 'number' && Number.isInteger(seats) && seats >= 1 && seats <= 128)
+  if (typeof seats === 'number' && Number.isInteger(seats) && seats >= 1 && seats <= 100)
     out.seats = seats;
   if (typeof value.insecureObservers === 'boolean') out.insecureObservers = value.insecureObservers;
   return out;
@@ -344,8 +344,8 @@ function broadcastFieldErrors(value: unknown): string[] {
     typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
   if (value.delay !== undefined && value.delay !== null && !int(value.delay, 0, 120))
     errors.push('broadcast.delay must be 0-120 seconds');
-  if (value.seats !== undefined && value.seats !== null && !int(value.seats, 1, 128))
-    errors.push('broadcast.seats must be 1-128');
+  if (value.seats !== undefined && value.seats !== null && !int(value.seats, 1, 100))
+    errors.push('broadcast.seats must be 1-100');
   if (value.insecureObservers !== undefined && typeof value.insecureObservers !== 'boolean')
     errors.push('broadcast.insecureObservers must be a boolean');
   return errors;

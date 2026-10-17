@@ -915,7 +915,7 @@ router.get('/', async (req: Request, res: Response) => {
       [tournamentId]
     );
 
-    // The GOTV password is for admins (and the servers' own config route).
+    // No GOTV password for non-admins when the match broadcasts with no delay.
     if (!(await checkAdminAccess(req)).ok) {
       for (const match of matches) match.config = withoutConfigSecrets(match.config);
     }
@@ -1141,7 +1141,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
       success: true,
       match: {
         ...match,
-        // The GOTV password is for admins (and the servers' own config route).
+        // No GOTV password for non-admins when the match broadcasts with no delay.
         config: admin ? match.config : withoutConfigSecrets(match.config),
         // Kept as they are where the match already has them (tournament matches).
         team1: (match as { team1?: unknown }).team1 ?? teamOf('team1'),

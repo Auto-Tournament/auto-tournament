@@ -906,7 +906,7 @@ class TournamentService {
 
       // Integration-owned config, forwarded as-is (client slots: PR 12).
       if (row.config) {
-        // The public bracket: never the GOTV password (utils/matchConfigSecrets).
+        // The public bracket: no GOTV password with no delay (utils/matchConfigSecrets).
         match.config = withoutConfigSecrets(
           parseStoredMatchConfig(row.config)
         ) as BracketMatch['config'];

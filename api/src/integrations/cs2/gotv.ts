@@ -72,7 +72,7 @@ export function withBroadcast(
   return {
     ...site,
     delay: Number.isInteger(delay) && delay! >= 0 && delay! <= 120 ? delay! : site.delay,
-    seats: Number.isInteger(seats) && seats! >= 1 && seats! <= 128 ? seats! : site.seats,
+    seats: Number.isInteger(seats) && seats! >= 1 && seats! <= 100 ? seats! : site.seats,
     insecureObservers: broadcast.insecureObservers === true,
   };
 }

@@ -148,6 +148,9 @@ router.get('/watch/:matchSlug', async (req: Request, res: Response) => {
       (settings.access === 'signed_in' && Boolean(identity.effectiveSteamId)) ||
       identity.isRealAdmin;
     if (!allowed) return res.json({ ...base, state: 'off', reason: settings.access });
+    // No delay: watching live could ghost for a team, so only admins get in.
+    if (settings.delay === 0 && !identity.isRealAdmin)
+      return res.json({ ...base, state: 'off', reason: 'no_delay' });
     if (!match.server_id || !['loaded', 'live'].includes(match.status))
       return res.json({ ...base, state: 'none' });
     const live = matchLiveStatsService.getStats(matchSlug);
