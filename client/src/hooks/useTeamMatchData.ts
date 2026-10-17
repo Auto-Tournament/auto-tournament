@@ -41,7 +41,14 @@ interface UseTeamMatchDataReturn {
   loadTeamStats: () => Promise<void>;
 }
 
-export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataReturn {
+/**
+ * A team's current match. With `matchSlug` (the match room), that match while the
+ * team plays in it and it is open: a team in two tournaments at once has two.
+ */
+export function useTeamMatchData(
+  teamId: string | undefined,
+  matchSlug?: string
+): UseTeamMatchDataReturn {
   const [team, setTeam] = useState<Team | null>(null);
   const [match, setMatch] = useState<TeamMatchInfo | null>(null);
   const [hasMatch, setHasMatch] = useState(false);
@@ -52,7 +59,7 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
   const [stats, setStats] = useState<TeamStats | null>(null);
   const [standing, setStanding] = useState<TeamStanding | null>(null);
   const [tournamentStatus, setTournamentStatus] = useState<string>('setup');
-  
+
   // Use ref to track current match slug to avoid infinite loops
   const currentMatchSlugRef = useRef<string | null>(null);
   const currentMatchStatusRef = useRef<TeamMatchInfo['status'] | null>(null);
@@ -82,28 +89,31 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
     };
   }, []);
 
-  const mergeLiveStats = useCallback((slug: string, stats: MatchLiveStats) => {
-    setMatch((prev) => {
-      if (!prev || prev.slug !== slug) return prev;
-      const normalizedStats = prev.isTeam1
-        ? stats
-        : {
-            ...stats,
-            team1Score: stats.team2Score,
-            team2Score: stats.team1Score,
-            team1SeriesScore: stats.team2SeriesScore,
-            team2SeriesScore: stats.team1SeriesScore,
-            playerStats: swapPlayerStats(stats.playerStats),
-          };
-      if (prev.liveStats && prev.liveStats.lastEventAt >= normalizedStats.lastEventAt) {
-        return prev;
-      }
-      return {
-        ...prev,
-        liveStats: normalizedStats,
-      };
-    });
-  }, [swapPlayerStats]);
+  const mergeLiveStats = useCallback(
+    (slug: string, stats: MatchLiveStats) => {
+      setMatch((prev) => {
+        if (!prev || prev.slug !== slug) return prev;
+        const normalizedStats = prev.isTeam1
+          ? stats
+          : {
+              ...stats,
+              team1Score: stats.team2Score,
+              team2Score: stats.team1Score,
+              team1SeriesScore: stats.team2SeriesScore,
+              team2SeriesScore: stats.team1SeriesScore,
+              playerStats: swapPlayerStats(stats.playerStats),
+            };
+        if (prev.liveStats && prev.liveStats.lastEventAt >= normalizedStats.lastEventAt) {
+          return prev;
+        }
+        return {
+          ...prev,
+          liveStats: normalizedStats,
+        };
+      });
+    },
+    [swapPlayerStats]
+  );
 
   const fetchConnectionStatus = useCallback(
     async (slug: string) => {
@@ -174,7 +184,8 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
       setError('');
 
       try {
-        const response = await fetch(`/api/team/${teamId}/match`);
+        const query = matchSlug ? `?match=${encodeURIComponent(matchSlug)}` : '';
+        const response = await fetch(`/api/team/${teamId}/match${query}`);
 
         // Handle 404 gracefully (team or no matches)
         if (response.status === 404) {
@@ -219,7 +230,7 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
         setUpdating(false);
       }
     },
-    [teamId]
+    [teamId, matchSlug]
   );
 
   const loadMatchHistory = useCallback(
@@ -369,7 +380,10 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
             changed = true;
           }
 
-          if (Object.prototype.hasOwnProperty.call(data, 'currentMap') || Object.prototype.hasOwnProperty.call(data, 'current_map')) {
+          if (
+            Object.prototype.hasOwnProperty.call(data, 'currentMap') ||
+            Object.prototype.hasOwnProperty.call(data, 'current_map')
+          ) {
             const nextMap =
               (data as Record<string, unknown>).currentMap ??
               (data as Record<string, unknown>).current_map ??
@@ -378,7 +392,10 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
             changed = true;
           }
 
-          if (Object.prototype.hasOwnProperty.call(data, 'mapNumber') || Object.prototype.hasOwnProperty.call(data, 'map_number')) {
+          if (
+            Object.prototype.hasOwnProperty.call(data, 'mapNumber') ||
+            Object.prototype.hasOwnProperty.call(data, 'map_number')
+          ) {
             const nextMapNumber =
               (data as Record<string, unknown>).mapNumber ??
               (data as Record<string, unknown>).map_number ??
@@ -386,7 +403,7 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
             updated.mapNumber =
               typeof nextMapNumber === 'number' && Number.isFinite(nextMapNumber)
                 ? Number(nextMapNumber)
-                : updated.mapNumber ?? null;
+                : (updated.mapNumber ?? null);
             changed = true;
           }
 
@@ -423,9 +440,7 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
       resync();
     };
 
-    const handleTournamentUpdate = (
-      data?: TournamentSocketEvent
-    ) => {
+    const handleTournamentUpdate = (data?: TournamentSocketEvent) => {
       if (!data) return;
 
       if (data.deleted || data.action === 'tournament_deleted') {
@@ -481,9 +496,9 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
       socket.off('tournament:update', handleTournamentUpdate);
       socket.close();
     };
-    // Only re-run if teamId changes, not on every state update
+    // Only re-run if the team (or the match asked for) changes, not on every state update
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamId]);
+  }, [teamId, matchSlug]);
 
   return {
     team,

@@ -21,6 +21,31 @@ import { CURRENT_MATCH_ORDER, CURRENT_MATCH_TOURNAMENT_JOIN } from '../utils/cur
 
 const router = Router();
 
+type TeamMatchRow = DbMatchRow & {
+  team1_name?: string;
+  team1_tag?: string;
+  team2_name?: string;
+  team2_tag?: string;
+  team1_logo?: number | null;
+  team2_logo?: number | null;
+  server_name?: string;
+  server_host?: string;
+  server_port?: number;
+};
+
+/** A match with both teams' names and logos and its server, for the team's match. */
+const TEAM_MATCH_SELECT = `SELECT
+        m.*,
+        t1.name as team1_name, t1.tag as team1_tag,
+        t2.name as team2_name, t2.tag as team2_tag,
+        t1.logo_updated_at as team1_logo, t2.logo_updated_at as team2_logo,
+        s.name as server_name, s.host as server_host, s.port as server_port
+      FROM matches m
+      LEFT JOIN teams t1 ON m.team1_id = t1.id
+      LEFT JOIN teams t2 ON m.team2_id = t2.id
+      LEFT JOIN cs2_servers s ON m.server_id = s.id
+      ${CURRENT_MATCH_TOURNAMENT_JOIN}`;
+
 /**
  * Steam ID this request should be treated as (admin impersonation applied).
  */
@@ -121,6 +146,23 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       }));
     }
 
+    // The match room asks for its own match (`?match=<slug>`). A team (or a
+    // player's two teams) can play in two tournaments at once, a 2v2 and a
+    // 5v5 at a LAN: "the team's current match" is then one of the two, and
+    // the room of the other showed no veto at all (Vikunja 2180). The match
+    // named here wins while the team plays in it and it is still open.
+    const requestedSlug = typeof req.query.match === 'string' ? req.query.match.trim() : '';
+    let match: TeamMatchRow | undefined;
+    if (requestedSlug) {
+      match = await db.queryOneAsync<TeamMatchRow>(
+        `${TEAM_MATCH_SELECT}
+        WHERE m.slug = ? AND (m.team1_id = ? OR m.team2_id = ?)
+          AND m.status IN ('loaded', 'live', ?, 'pending', 'ready')
+        LIMIT 1`,
+        [requestedSlug, teamId, teamId, NEEDS_DECISION_STATUS]
+      );
+    }
+
     // Find active match (loaded, live, or played but not yet settled).
     //
     // `needs_decision` belongs here (3.0 phase D, PR D8). It is a match that
@@ -135,62 +177,21 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     // started. A live or loaded match still wins over it, which the `ORDER BY`
     // says outright rather than leaving to `loaded_at` — both statuses carry
     // one.
-    let match = await db.queryOneAsync<
-      DbMatchRow & {
-        team1_name?: string;
-        team1_tag?: string;
-        team2_name?: string;
-        team2_tag?: string;
-        team1_logo?: number | null;
-        team2_logo?: number | null;
-        server_name?: string;
-        server_host?: string;
-        server_port?: number;
-      }
-    >(
-      `SELECT 
-        m.*,
-        t1.name as team1_name, t1.tag as team1_tag,
-        t2.name as team2_name, t2.tag as team2_tag,
-        t1.logo_updated_at as team1_logo, t2.logo_updated_at as team2_logo,
-        s.name as server_name, s.host as server_host, s.port as server_port
-      FROM matches m
-      LEFT JOIN teams t1 ON m.team1_id = t1.id
-      LEFT JOIN teams t2 ON m.team2_id = t2.id
-      LEFT JOIN cs2_servers s ON m.server_id = s.id
-      WHERE (m.team1_id = ? OR m.team2_id = ?)
-        AND m.status IN ('loaded', 'live', ?)
-      ORDER BY (m.status = ?) ASC, m.loaded_at DESC
-      LIMIT 1`,
-      [teamId, teamId, NEEDS_DECISION_STATUS, NEEDS_DECISION_STATUS]
-    );
+    if (!match) {
+      match = await db.queryOneAsync<TeamMatchRow>(
+        `${TEAM_MATCH_SELECT}
+        WHERE (m.team1_id = ? OR m.team2_id = ?)
+          AND m.status IN ('loaded', 'live', ?)
+        ORDER BY (m.status = ?) ASC, m.loaded_at DESC
+        LIMIT 1`,
+        [teamId, teamId, NEEDS_DECISION_STATUS, NEEDS_DECISION_STATUS]
+      );
+    }
 
     // If no active match, find next pending/ready match
     if (!match) {
-      match = await db.queryOneAsync<
-        DbMatchRow & {
-          team1_name?: string;
-          team1_tag?: string;
-          team2_name?: string;
-          team2_tag?: string;
-          team1_logo?: number | null;
-          team2_logo?: number | null;
-          server_name?: string;
-          server_host?: string;
-          server_port?: number;
-        }
-      >(
-        `SELECT 
-          m.*,
-          t1.name as team1_name, t1.tag as team1_tag,
-          t2.name as team2_name, t2.tag as team2_tag,
-        t1.logo_updated_at as team1_logo, t2.logo_updated_at as team2_logo,
-          s.name as server_name, s.host as server_host, s.port as server_port
-        FROM matches m
-        LEFT JOIN teams t1 ON m.team1_id = t1.id
-        LEFT JOIN teams t2 ON m.team2_id = t2.id
-        LEFT JOIN cs2_servers s ON m.server_id = s.id
-        ${CURRENT_MATCH_TOURNAMENT_JOIN}
+      match = await db.queryOneAsync<TeamMatchRow>(
+        `${TEAM_MATCH_SELECT}
         WHERE (m.team1_id = ? OR m.team2_id = ?)
           AND m.status IN ('pending', 'ready')
         ORDER BY ${CURRENT_MATCH_ORDER}
