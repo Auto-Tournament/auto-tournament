@@ -17,6 +17,7 @@ import {
   freeForTournament,
   parseReservedServers,
   partyRating,
+  pickCaptain,
   parseSearchWindow,
   searchWindow,
   validateSearchWindow,
@@ -1060,5 +1061,57 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
         await p.ctx.post('/api/matchmaking/party/leave', { data: {} });
       await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5'] } });
     }
+  });
+});
+
+test.describe('team captain (pure)', () => {
+  const solo = (id: string, at = 1) => ({ playerId: id, partyId: `p-${id}`, queuedAt: at });
+  const inParty = (id: string, party: string, at = 1) => ({
+    playerId: id,
+    partyId: party,
+    queuedAt: at,
+  });
+
+  test('a full party is named after its leader, not the first id', TAGS, () => {
+    const members = ['b', 'a', 'c', 'd', 'e'].map((id) => inParty(id, 'P'));
+    expect(pickCaptain(members, new Map([['P', 'e']]), new Map())).toBe('e');
+  });
+
+  test('a mixed team takes the largest party leader', TAGS, () => {
+    const members = [
+      inParty('a', 'big'),
+      inParty('b', 'big'),
+      inParty('c', 'big'),
+      solo('x'),
+      solo('y'),
+    ];
+    const leaders = new Map([['big', 'c']]);
+    expect(pickCaptain(members, leaders, new Map([['x', 99]]))).toBe('c');
+  });
+
+  test('equal parties: the one that queued first', TAGS, () => {
+    const members = [
+      inParty('a', 'late', 20),
+      inParty('b', 'late', 20),
+      inParty('c', 'early', 10),
+      inParty('d', 'early', 10),
+      solo('e', 5),
+    ];
+    const leaders = new Map([
+      ['late', 'b'],
+      ['early', 'd'],
+    ]);
+    expect(pickCaptain(members, leaders, new Map())).toBe('d');
+  });
+
+  test('solos: the highest rated', TAGS, () => {
+    const members = [solo('a'), solo('b'), solo('c')];
+    const mus = new Map([
+      ['a', 20],
+      ['b', 31],
+      ['c', 25],
+    ]);
+    expect(pickCaptain(members, new Map(), mus)).toBe('b');
+    expect(pickCaptain([], new Map(), mus)).toBeNull();
   });
 });

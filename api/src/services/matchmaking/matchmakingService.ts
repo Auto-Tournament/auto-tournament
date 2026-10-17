@@ -45,6 +45,7 @@ import {
   parseModePools,
   OFFENCE_WINDOW_SECONDS,
   partyRating,
+  pickCaptain,
   parseReservedServers,
   parseSearchWindow,
   searchWindow,
@@ -100,6 +101,7 @@ interface LobbyPlayerRow {
   player_id: string;
   party_id: string;
   team: number;
+  queued_at?: number | null;
   accepted_at: number | null;
   declined_at: number | null;
   rematch_at?: number | null;
@@ -963,6 +965,19 @@ export class MatchmakingService {
         )
       ).map((r) => [r.id, r.name || r.id])
     );
+    const partyLeaders = new Map(
+      (
+        await db.queryAsync<{ id: string; leader_player_id: string }>(
+          `SELECT id, leader_player_id FROM mm_parties WHERE id IN (${players.map(() => '?').join(', ')})`,
+          players.map((p) => p.party_id)
+        )
+      ).map((r) => [r.id, r.leader_player_id])
+    );
+    const ratings = await this.ratingsFor(
+      players.map((p) => p.player_id),
+      lobby.mode
+    );
+    const mus = new Map([...ratings].map(([id, r]) => [id, r.mu]));
     const team = (n: number) => {
       const roster = players
         .filter((p) => p.team === n)
@@ -970,8 +985,20 @@ export class MatchmakingService {
         .sort();
       // A bot-filled game can leave one side without a human.
       if (roster.length === 0) return { name: 'Bots', players: {} };
+      const captain = pickCaptain(
+        players
+          .filter((p) => p.team === n)
+          .map((p) => ({
+            playerId: p.player_id,
+            partyId: p.party_id,
+            queuedAt: p.queued_at ?? null,
+          })),
+        partyLeaders,
+        mus
+      );
       return {
-        name: `Team ${names.get(roster[0]) ?? n}`,
+        name: `Team ${names.get(captain!) ?? n}`,
+        captainSteamId: captain,
         players: Object.fromEntries(roster.map((id) => [id, names.get(id) ?? id])),
       };
     };
