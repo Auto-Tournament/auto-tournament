@@ -305,8 +305,14 @@ export const generateMatchConfig = async (
     ...atEnhancedCvars,
     // Simulated matches: short SourceTV delay so the demo stops and uploads quickly.
     ...simulationTvCvars(simulation),
-    // Spectators in GOTV: the delay, the seats and this match's password (gotv.ts).
-    ...(slug ? await gotvCvars(slug, { simulation, onStage: await onStage(slug) }) : {}),
+    // GOTV: the delay, the seats, this match's password, insecure observers (gotv.ts).
+    ...(slug
+      ? await gotvCvars(slug, {
+          simulation,
+          onStage: await onStage(slug),
+          broadcast: storedCs2Settings(tournament.settings)?.broadcast,
+        })
+      : {}),
   };
 
   const config: MatchConfig = {
@@ -503,8 +509,14 @@ async function generateShuffleMatchConfig(
     ...atEnhancedCvars,
     // Simulated matches: short SourceTV delay so the demo stops and uploads quickly.
     ...simulationTvCvars(simulation),
-    // Spectators in GOTV: the delay, the seats and this match's password (gotv.ts).
-    ...(slug ? await gotvCvars(slug, { simulation, onStage: await onStage(slug) }) : {}),
+    // GOTV: the delay, the seats, this match's password, insecure observers (gotv.ts).
+    ...(slug
+      ? await gotvCvars(slug, {
+          simulation,
+          onStage: await onStage(slug),
+          broadcast: storedCs2Settings(tournament.settings)?.broadcast,
+        })
+      : {}),
   };
 
   // For shuffle we want players_per_team to reflect the configured teamSize

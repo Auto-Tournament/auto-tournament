@@ -5839,7 +5839,7 @@
         ],
         "responses": {
           "200": {
-            "description": "{ match, server, live, log }"
+            "description": "{ match, server, broadcast, live, log }"
           },
           "401": {
             "description": "Not an admin"

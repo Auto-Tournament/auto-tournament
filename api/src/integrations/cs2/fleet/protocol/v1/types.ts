@@ -80,6 +80,8 @@ export interface HelloPayload {
   state?: Record<string, unknown> | null;
   availability: Availability;
   selftest?: SelftestSummary;
+  /** GOTV state from the tv plugin; absent without tv.so. */
+  tv?: TvState;
   /** Rev of the admins.set list the server has cached (D13); absent = none. */
   admins_rev?: number;
   /** Plugins the core did not load on this CS2 build (informational). */
@@ -207,6 +209,14 @@ export interface MatchRules {
     gg_vote?: { enabled?: boolean; threshold?: number; min_score_diff?: number };
   };
   demo?: { record?: boolean; upload?: boolean };
+  /** GOTV, for Ready Up's `tv` plugin. Older Ready Ups ignore it (the tv_* cvars still go). */
+  broadcast?: {
+    delay_seconds?: number;
+    allow_insecure_observers?: boolean;
+    max_clients?: number;
+    relay_text_chat?: boolean;
+    relay_voice?: boolean;
+  };
   wingman?: boolean;
   simulation?: { timescale?: number };
   bot_fill?: { players_per_team: number };
@@ -508,7 +518,8 @@ export type CmdName =
   | 'plugins.set'
   | 'whitelist.set'
   | 'practice.set'
-  | 'settings.set';
+  | 'settings.set'
+  | 'tv.set';
 
 export interface CmdPayload {
   match_id?: string;
@@ -576,6 +587,31 @@ export interface StateSnapshotPayload {
   config_rev: number;
   admins_rev: number;
   map_stats?: MapStats;
+  /** GOTV state (tv.so); absent without it. */
+  tv?: TvState;
+}
+
+/**
+ * GOTV state of a server from Ready Up's tv plugin (tv.defs.json#/$defs/tvState):
+ * hello.tv, state.snapshot.tv, server.tv. Engine values are null when unread.
+ * Never the password.
+ */
+export interface TvState {
+  available: boolean;
+  port: number | null;
+  enabled: boolean | null;
+  delay_seconds: number | null;
+  max_clients: number | null;
+  clients: number | null;
+  secure_bypass: boolean | null;
+  deltaticks_enforce: boolean | null;
+  relay_text_chat: boolean | null;
+  relay_voice: boolean | null;
+  password_set: boolean | null;
+  profile: { source: 'server' | 'match'; match_id?: string; settings: Record<string, unknown> };
+  delay_floor: number;
+  casters: number;
+  server_insecure: boolean;
 }
 
 export interface StatePatchPayload {
@@ -899,6 +935,7 @@ export interface FleetMessages {
   'server.availability': ServerAvailabilityPayload;
   'server.cs2_update_required': ServerCs2UpdateRequiredPayload;
   'server.selftest': ServerSelftestPayload;
+  'server.tv': TvState;
   'server.drain': ServerDrainPayload;
   'server.undrain': ServerUndrainPayload;
   'admins.set': AdminsSetPayload;
@@ -968,6 +1005,7 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
     'server.availability': S2P_RELIABLE,
     'server.cs2_update_required': S2P_RELIABLE,
     'server.selftest': S2P_RELIABLE,
+    'server.tv': S2P_RELIABLE,
     'server.drain': P2S_RELIABLE,
     'server.undrain': P2S_RELIABLE,
     'skins.stattrak': S2P_RELIABLE,

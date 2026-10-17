@@ -19,6 +19,10 @@ import {
  */
 /** Places with a prize: 1st–4th, and 0 for everyone else who played. */
 const PRIZE_PLACES = [1, 2, 3, 4, 0];
+/** The GOTV choices the site's Spectators settings offer too; '' is the site's own. */
+const DELAY_OPTIONS = [0, 30, 105, 120];
+const SEAT_OPTIONS = [8, 16, 32, 50, 100];
+
 const PRIZE_RARITIES = ['ancient', 'legendary', 'mythical', 'rare', 'uncommon', 'common'];
 /** A custom list starts from the best: 1st the rarest grade with skins, one lower each place. */
 const DEFAULT_PRIZES: NonNullable<Cs2TournamentSettings['rewards']> = [
@@ -44,6 +48,19 @@ export function Cs2MatchSettings({
     type === 'shuffle' ? 'shuffle-max-rounds-field' : 'tournament-max-rounds-field';
   const update = (patch: Partial<Cs2TournamentSettings>) =>
     onChange(cs2Patch({ ...value, ...patch }));
+  const broadcast = value.broadcast ?? {};
+  const updateBroadcast = (patch: Partial<NonNullable<Cs2TournamentSettings['broadcast']>>) => {
+    const next = { ...broadcast, ...patch };
+    for (const key of Object.keys(next) as Array<keyof typeof next>) {
+      if (next[key] === undefined) delete next[key];
+    }
+    update({ broadcast: next });
+  };
+  // A value set through the API that the list does not offer is listed too.
+  const withCurrent = (options: number[], current: number | undefined) =>
+    current === undefined || options.includes(current)
+      ? options
+      : [...options, current].sort((a, b) => a - b);
 
   const handleOvertimeOption = (option: OvertimeOption) => {
     if (option === 'enabled') {
@@ -184,6 +201,81 @@ export function Cs2MatchSettings({
           sx={{ maxWidth: 360 }}
         />
       )}
+      <Box sx={{ display: 'grid', gap: 1.5 }} data-testid="tournament-broadcast">
+        <Typography component="span" variant="body2" fontWeight={600}>
+          {t('tournament.broadcast.title')}
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <TextField
+            select
+            size="small"
+            label={t('tournament.broadcast.delay')}
+            value={broadcast.delay ?? ''}
+            disabled={disabled}
+            onChange={(e) =>
+              updateBroadcast({
+                delay: e.target.value === '' ? undefined : Number(e.target.value),
+              })
+            }
+            slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+            sx={{ minWidth: 200 }}
+            data-testid="tournament-broadcast-delay"
+          >
+            <MenuItem value="">{t('tournament.broadcast.siteDefault')}</MenuItem>
+            {withCurrent(DELAY_OPTIONS, broadcast.delay).map((o) => (
+              <MenuItem key={o} value={o}>
+                {DELAY_OPTIONS.includes(o)
+                  ? t('settings.gotv.gotvDelay.option', { context: String(o) })
+                  : `${o} s`}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            select
+            size="small"
+            label={t('tournament.broadcast.seats')}
+            value={broadcast.seats ?? ''}
+            disabled={disabled}
+            onChange={(e) =>
+              updateBroadcast({
+                seats: e.target.value === '' ? undefined : Number(e.target.value),
+              })
+            }
+            slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+            sx={{ minWidth: 200 }}
+            data-testid="tournament-broadcast-seats"
+          >
+            <MenuItem value="">{t('tournament.broadcast.siteDefault')}</MenuItem>
+            {withCurrent(SEAT_OPTIONS, broadcast.seats).map((o) => (
+              <MenuItem key={o} value={o}>
+                {t('settings.gotv.gotvSeats.option', { count: o })}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
+        {(broadcast.seats ?? 0) > 30 && (
+          <Typography variant="body2" color="text.secondary">
+            {t('tournament.broadcast.manyViewersHint')}
+          </Typography>
+        )}
+        {broadcast.delay === 0 && (
+          <Typography variant="body2" color="warning.main">
+            {t('tournament.broadcast.noDelayWarning')}
+          </Typography>
+        )}
+        <SwitchRow
+          label={t('tournament.broadcast.insecureObservers')}
+          help={t('tournament.broadcast.insecureObserversHelp')}
+          checked={broadcast.insecureObservers === true}
+          disabled={disabled}
+          onChange={(_e, checked) => updateBroadcast({ insecureObservers: checked || undefined })}
+          slotProps={{
+            input: {
+              'data-testid': 'tournament-broadcast-insecure',
+            } as InputHTMLAttributes<HTMLInputElement>,
+          }}
+        />
+      </Box>
       <SwitchRow
         label={t('skins.tournamentRewardsSwitch')}
         checked={value.skinRewards !== false}

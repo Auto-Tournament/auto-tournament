@@ -17,6 +17,9 @@
  * - `rules` replaces what the plugin took as `maxRounds`, `overtimeMode` /
  *   `overtimeSegments` and the `at_*` cvars (ready, knife side pick, pauses,
  *   .gg, forfeit, demo recording).
+ * - `rules.broadcast`: GOTV (delay, seats, insecure observers) for Ready Up's
+ *   `tv` plugin, read from the same `tv_*` cvars, which still go too: a server
+ *   without the plugin ignores the field and runs on the cvars as before.
  * - `cvars`: engine cvars only (`mp_*`, `sv_*`, `tv_*`, `bot_*`); Ready Up
  *   drops anything else, and `sv_password` / `sv_cheats` never go.
  * - `password`: generated per assignment by the driver.
@@ -237,6 +240,9 @@ export function rulesFromMatchConfig(
   const record = flag(cvars.at_demo_recording_enabled) !== false;
   rules.demo = { record, upload: record && defaults.demoUpload === true };
 
+  const broadcast = broadcastRules(cvars);
+  if (broadcast) rules.broadcast = broadcast;
+
   if (config.wingman === true) rules.wingman = true;
   // Esports mode (the tournament's setting): Valve's rules, skins plugin inert.
   if (config.esports === true) rules.ruleset = 'valve';
@@ -251,6 +257,20 @@ export function rulesFromMatchConfig(
     rules.simulation = { timescale: timescale !== undefined && timescale > 0 ? timescale : 1 };
   }
   return rules;
+}
+
+/** `rules.broadcast` from the GOTV cvars (gotv.ts gotvCvars); undefined when the config sets none. */
+export function broadcastRules(
+  cvars: MatchConfig['cvars'] | undefined
+): MatchRules['broadcast'] | undefined {
+  const out: NonNullable<MatchRules['broadcast']> = {};
+  const delay = num(cvars?.tv_delay);
+  if (delay !== undefined && delay >= 0) out.delay_seconds = Math.min(120, Math.floor(delay));
+  const seats = num(cvars?.tv_maxclients);
+  if (seats !== undefined && seats >= 0) out.max_clients = Math.min(128, Math.floor(seats));
+  const insecure = flag(cvars?.tv_secure_bypass);
+  if (insecure !== undefined) out.allow_insecure_observers = insecure;
+  return Object.keys(out).length ? out : undefined;
 }
 
 /** Engine cvars only (see the top of this file). */
