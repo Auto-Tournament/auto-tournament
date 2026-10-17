@@ -20,6 +20,7 @@ import { describeMatch } from '../utils/matchIntegration';
 import { emitChatMessage, emitChatTyping, matchChatPosted } from './socketService';
 import { recordAdminCall } from './adminCallService';
 import { chatLineBody } from './matchChatLines';
+import { CURRENT_MATCH_TOURNAMENT_JOIN } from '../utils/currentMatchOrder';
 
 export type ChatKind = 'match' | 'team' | 'party';
 
@@ -364,9 +365,11 @@ export const chatService = {
     }>(
       `SELECT m.slug, m.status, m.team1_id, m.team2_id, t1.name AS n1, t2.name AS n2
          FROM matches m LEFT JOIN teams t1 ON t1.id = m.team1_id LEFT JOIN teams t2 ON t2.id = m.team2_id
+         ${CURRENT_MATCH_TOURNAMENT_JOIN}
         WHERE m.status IN ('pending', 'ready', 'loaded', 'live')
           AND (t1.players LIKE ? OR t2.players LIKE ? OR m.config LIKE ('%"' || TRIM(BOTH '%' FROM ?) || '":%'))
-        ORDER BY (m.status IN ('loaded', 'live')) DESC, m.id DESC LIMIT 1`,
+        ORDER BY (m.status IN ('loaded', 'live')) DESC, (cmt.status IS NOT DISTINCT FROM 'setup') ASC,
+                 m.id DESC LIMIT 1`,
       [like, like, like]
     );
     if (match) {

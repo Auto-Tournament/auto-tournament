@@ -17,6 +17,7 @@ import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { log } from '../utils/logger';
 import { resolveTournamentId } from '../utils/tournamentRow';
 import { NEEDS_DECISION_STATUS } from '../utils/matchStatusHelpers';
+import { CURRENT_MATCH_ORDER, CURRENT_MATCH_TOURNAMENT_JOIN } from '../utils/currentMatchOrder';
 
 const router = Router();
 
@@ -189,9 +190,10 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         LEFT JOIN teams t1 ON m.team1_id = t1.id
         LEFT JOIN teams t2 ON m.team2_id = t2.id
         LEFT JOIN cs2_servers s ON m.server_id = s.id
+        ${CURRENT_MATCH_TOURNAMENT_JOIN}
         WHERE (m.team1_id = ? OR m.team2_id = ?)
           AND m.status IN ('pending', 'ready')
-        ORDER BY m.round ASC, m.match_number ASC
+        ORDER BY ${CURRENT_MATCH_ORDER}
         LIMIT 1`,
         [teamId, teamId]
       );

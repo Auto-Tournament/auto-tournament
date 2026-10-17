@@ -42,6 +42,7 @@ import {
 } from '../services/playerModeration';
 import type { Actor } from '../services/matchHolds';
 import { PresetAccountError, presetAccounts } from '../services/gameAccounts';
+import { CURRENT_MATCH_ORDER, CURRENT_MATCH_TOURNAMENT_JOIN } from '../utils/currentMatchOrder';
 
 function actorOf(req: Request): Actor {
   const id = requestActorId(req) ?? 'admin';
@@ -505,9 +506,10 @@ export async function matchNowPath(steamId: string): Promise<string | null> {
        FROM matches m
        LEFT JOIN teams t1 ON m.team1_id = t1.id
        LEFT JOIN teams t2 ON m.team2_id = t2.id
+       ${CURRENT_MATCH_TOURNAMENT_JOIN}
       WHERE m.status IN ('pending', 'ready', 'loaded', 'live')
         AND ((t1.players LIKE ? ESCAPE '\\') OR (t2.players LIKE ? ESCAPE '\\') OR (m.config LIKE ('%"' || TRIM(BOTH '%' FROM ?) || '":%')))
-      ORDER BY CASE WHEN m.status IN ('loaded', 'live') THEN 0 ELSE 1 END, m.round ASC, m.match_number ASC
+      ORDER BY ${CURRENT_MATCH_ORDER}
       LIMIT 1`,
     [like, like, like, like]
   );
@@ -611,13 +613,14 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
          FROM matches m
          LEFT JOIN teams t1 ON m.team1_id = t1.id
          LEFT JOIN teams t2 ON m.team2_id = t2.id
+         ${CURRENT_MATCH_TOURNAMENT_JOIN}
          WHERE m.status IN ('pending', 'ready')
            AND (
              (t1.players LIKE ? ESCAPE '\\')
              OR (t2.players LIKE ? ESCAPE '\\')
              OR (m.config LIKE ('%"' || TRIM(BOTH '%' FROM ?) || '":%'))
            )
-         ORDER BY m.round ASC, m.match_number ASC
+         ORDER BY ${CURRENT_MATCH_ORDER}
          LIMIT 1`,
         [likeParam, likeParam, likeParam]
       );
@@ -1024,13 +1027,14 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
         LEFT JOIN teams t1 ON m.team1_id = t1.id
         LEFT JOIN teams t2 ON m.team2_id = t2.id
         LEFT JOIN cs2_servers s ON m.server_id = s.id
+        ${CURRENT_MATCH_TOURNAMENT_JOIN}
         WHERE m.status IN ('pending', 'ready')
           AND (
             (t1.players LIKE ? ESCAPE '\\')
             OR (t2.players LIKE ? ESCAPE '\\')
             OR (m.config LIKE ('%"' || TRIM(BOTH '%' FROM ?) || '":%'))
           )
-        ORDER BY m.round ASC, m.match_number ASC
+        ORDER BY ${CURRENT_MATCH_ORDER}
         LIMIT 1`,
         [likeParam, likeParam, likeParam]
       );
