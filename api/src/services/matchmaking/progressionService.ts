@@ -3,6 +3,7 @@
  * (docs/design/matchmaking.md, "After the match"). XP is a ledger
  * (`xp_events`); `player_progress` caches each player's total.
  */
+import { playedMapOf } from './playedMap';
 import { rating as osRating } from 'openskill';
 import { db } from '../../config/database';
 import { openSkillToDisplayElo } from '../../utils/ratingMath';
@@ -454,7 +455,7 @@ export const progressionService = {
       out.push({
         matchSlug: r.match_slug,
         at: Number(r.created_at),
-        map: r.map,
+        map: r.map ?? (await playedMapOf(r.match_slug)),
         own,
         other,
         result,
