@@ -675,7 +675,8 @@
         "title": "Gotowość / Start meczu",
         "minimumReadyLabel": "Minimalna wymagana liczba gotowych graczy",
         "minimumReadyHelper": "0 = wszyscy podłączeni gracze muszą być gotowi. Domyślnie: 0.",
-        "allowForceReady": "Pozwól adminom wymusić gotowość podczas konfiguracji (!forceready)"
+        "allowForceReady": "Pozwól adminom wymusić gotowość podczas konfiguracji (!forceready)",
+        "teamReady": "Tournament matches: one player's .ready readies the whole team"
       },
       "adminTools": {
         "title": "Narzędzia admina",

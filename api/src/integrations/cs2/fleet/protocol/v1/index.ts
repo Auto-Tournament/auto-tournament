@@ -58,6 +58,7 @@ import eventMatchRestored from './messages/event.match_restored.json';
 import eventForfeit from './messages/event.forfeit.json';
 import eventGg from './messages/event.gg.json';
 import eventAdminCalled from './messages/event.admin_called.json';
+import eventChat from './messages/event.chat.json';
 import eventError from './messages/event.error.json';
 import demoBegin from './messages/demo.begin.json';
 import demoChunk from './messages/demo.chunk.json';
@@ -123,6 +124,8 @@ export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, Record<string, unkn
   'event.forfeit': eventForfeit,
   'event.gg': eventGg,
   'event.admin_called': eventAdminCalled,
+  // In-game chat to the match's web chat: proposed by the platform (admin chat bridge).
+  'event.chat': eventChat,
   'event.error': eventError,
   // Demo streaming (FLEET.md §12.2): proposed by Ready Up, received by ../../demoStream.ts.
   'demo.begin': demoBegin,

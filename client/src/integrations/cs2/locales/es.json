@@ -667,7 +667,8 @@
         "title": "Ready / Inicio del partido",
         "minimumReadyLabel": "Mínimo de jugadores listos requerido",
         "minimumReadyHelper": "0 = todos los jugadores conectados deben estar listos. Predeterminado: 0.",
-        "allowForceReady": "Permitir a los admins forzar el ready durante la configuración (!forceready)"
+        "allowForceReady": "Permitir a los admins forzar el ready durante la configuración (!forceready)",
+        "teamReady": "Tournament matches: one player's .ready readies the whole team"
       },
       "adminTools": {
         "title": "Herramientas de admin",

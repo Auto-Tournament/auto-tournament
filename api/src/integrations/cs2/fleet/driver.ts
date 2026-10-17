@@ -373,7 +373,7 @@ export async function assignConfigPreview(
   if (!match) return null;
   const served = await servedMatchConfig(match);
   try {
-    return { config: buildAssignConfig(served, '', await assignDefaults()) };
+    return { config: buildAssignConfig(served, '', await assignDefaults(match)) };
   } catch (error) {
     // Not assignable yet (a series before its veto): the platform's own config instead.
     return { notAssignable: (error as Error).message, served };
@@ -403,14 +403,38 @@ async function joinPasswordEnabled(): Promise<boolean> {
   }
 }
 
-async function assignDefaults(): Promise<{
+/**
+ * A tournament match (bracket, swiss, round robin, groups) where one player's `.ready`
+ * readies the team: not a shuffle (players who just met), not matchmaking, not a
+ * standalone match.
+ */
+export async function isTeamReadyMatch(
+  match: Pick<DbMatchRow, 'tournament_id'> & { source?: string | null }
+): Promise<boolean> {
+  if (!match.tournament_id || match.source === 'matchmaking') return false;
+  const row = await db.queryOneAsync<{ type: string }>('SELECT type FROM tournament WHERE id = ?', [
+    match.tournament_id,
+  ]);
+  return Boolean(row) && row!.type !== 'shuffle';
+}
+
+async function assignDefaults(
+  match?: Pick<DbMatchRow, 'tournament_id'> & { source?: string | null }
+): Promise<{
   allowForceReady?: boolean;
   pauseAfterRestore?: boolean;
+  teamReady?: boolean;
 }> {
   try {
     const { cs2Settings } = await import('../settingsReaders');
     const core = await cs2Settings.getAtCoreDefaults();
-    return { allowForceReady: core.allowForceReady, pauseAfterRestore: core.pauseAfterRestore };
+    const teamReady =
+      match && (await isTeamReadyMatch(match)) ? await cs2Settings.isAtTeamReadyEnabled() : false;
+    return {
+      allowForceReady: core.allowForceReady,
+      pauseAfterRestore: core.pauseAfterRestore,
+      ...(teamReady ? { teamReady } : {}),
+    };
   } catch {
     return {};
   }
@@ -459,7 +483,7 @@ export async function assignMatch(
     config = await withHold(
       matchSlug,
       buildAssignConfig(served, password, {
-        ...(await assignDefaults()),
+        ...(await assignDefaults(match)),
         demoUpload: await streamsDemos(fleetServerId),
       })
     );
@@ -727,7 +751,11 @@ export async function syncMatch(matchSlug: string): Promise<FleetUpdateOutcome> 
   try {
     next = await withHold(
       matchSlug,
-      buildAssignConfig(await servedMatchConfig(match), assignment.password, await assignDefaults())
+      buildAssignConfig(
+        await servedMatchConfig(match),
+        assignment.password,
+        await assignDefaults(match)
+      )
     );
   } catch (error) {
     return { ok: false, status: 409, error: (error as Error).message };

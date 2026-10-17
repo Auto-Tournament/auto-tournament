@@ -8,11 +8,16 @@
  *
  * Messages go out live over Socket.IO (`chat:message`) to the members' own
  * rooms (`player:<id>`) and, for a match, the admins' room.
+ *
+ * A match's chat is bridged to its game server: what players type in game
+ * comes in through `fromGame` (CS2: Ready Up's `event.chat`), and what is
+ * written here goes out to the game (`matchChatPosted`, CS2: fleet/chatBridge.ts).
+ * A line from the game is never sent back to it.
  */
 
 import { db } from '../config/database';
 import { describeMatch } from '../utils/matchIntegration';
-import { emitChatMessage, emitChatTyping } from './socketService';
+import { emitChatMessage, emitChatTyping, matchChatPosted } from './socketService';
 import { recordAdminCall } from './adminCallService';
 import { chatLineBody } from './matchChatLines';
 
@@ -30,6 +35,10 @@ export interface ChatMessage {
   createdAt: number;
   /** The sender's picture (players.avatar_url), when they have one. */
   senderAvatar: string | null;
+  /** Typed on the match's game server, not on the site. */
+  fromGame: boolean;
+  /** Team chat from the game: only this team (and the admins) reads it. */
+  onlyTeam: string | null;
 }
 
 export interface ChatChannel {
@@ -48,6 +57,21 @@ export interface ChatChannel {
    */
   admin?: boolean;
   call?: { id: number; claimedBy: string | null; claimedByName: string | null } | null;
+  /**
+   * An admin's match chat listed only because its players talk in game (no open call, not
+   * opened by this admin yet): it shows in the dock, but its messages do not ping.
+   */
+  quiet?: boolean;
+}
+
+/** A player's chat line from the match's game server, for `chatService.fromGame`. */
+export interface GameChatInput {
+  steamId: string;
+  /** Their in-game name, used when the platform has no player record for them. */
+  name: string;
+  team: 'team1' | 'team2' | null;
+  teamOnly: boolean;
+  body: string;
 }
 
 export interface ChatViewer {
@@ -80,6 +104,8 @@ interface MessageRow {
   sender_team: string | null;
   body: string;
   created_at: number;
+  from_game?: boolean | null;
+  only_team?: string | null;
   sender_avatar?: string | null;
 }
 
@@ -93,6 +119,8 @@ const toMessage = (r: MessageRow): ChatMessage => ({
   body: r.body,
   createdAt: r.created_at,
   senderAvatar: r.sender_avatar ?? null,
+  fromGame: Boolean(r.from_game),
+  onlyTeam: r.only_team ?? null,
 });
 
 export function parseChannel(channel: string): { kind: ChatKind; ref: string } | null {
@@ -214,20 +242,38 @@ async function access(viewer: ChatViewer, channel: string) {
   return { parsed, members: m, isMember };
 }
 
-async function unreadFor(steamId: string | null, channel: string, since = 0): Promise<number> {
+/**
+ * Unread messages for a reader. `myTeam`: a match player's team, so the other team's in-game
+ * team chat (which they cannot read) is not counted; null reads every team's (an admin).
+ */
+async function unreadFor(
+  steamId: string | null,
+  channel: string,
+  since = 0,
+  myTeam: string | null = null
+): Promise<number> {
   if (!steamId) return 0;
   const row = await db.queryOneAsync<{ n: number }>(
     `SELECT COUNT(*)::int AS n FROM chat_messages c
       WHERE c.channel = ? AND c.created_at >= ? AND (c.sender_id IS NULL OR c.sender_id <> ?)
+        AND (c.only_team IS NULL OR ?::text IS NULL OR c.only_team = ?)
         AND c.id > COALESCE((SELECT last_id FROM chat_reads WHERE player_id = ? AND channel = ?), 0)`,
-    [channel, since, steamId, steamId, channel]
+    [channel, since, steamId, myTeam, myTeam, steamId, channel]
   );
   return row?.n ?? 0;
 }
 
+/** Who gets a message live: the channel's players (team chat: that team's only). */
+function recipients(m: Members, onlyTeam: string | null): string[] {
+  if (!onlyTeam) return [...m.players];
+  return [...m.players].filter((id) => m.teamOf.get(id) === onlyTeam);
+}
+
 /**
  * An admin's match chats: every match with an open admin call (the call puts it in every
- * admin's dock), and the ones the admin opened (a chat_reads row). Open calls first.
+ * admin's dock), the ones the admin opened (a chat_reads row), and the live ones whose
+ * players talk in game (those are `quiet` until the admin opens them: twenty matches of
+ * player chatter must not ping). Open calls first.
  */
 async function adminChannels(steamId: string | null): Promise<ChatChannel[]> {
   const rows = await db.queryAsync<{
@@ -238,9 +284,12 @@ async function adminChannels(steamId: string | null): Promise<ChatChannel[]> {
     call_id: number | null;
     claimed_by: string | null;
     claimed_by_name: string | null;
+    joined: boolean;
   }>(
     `SELECT m.slug, m.status, t1.name AS n1, t2.name AS n2,
-            ac.id AS call_id, ac.claimed_by, cp.name AS claimed_by_name
+            ac.id AS call_id, ac.claimed_by, cp.name AS claimed_by_name,
+            EXISTS (SELECT 1 FROM chat_reads r
+                     WHERE r.player_id = ? AND r.channel = 'match:' || m.slug) AS joined
        FROM matches m
        LEFT JOIN teams t1 ON t1.id = m.team1_id
        LEFT JOIN teams t2 ON t2.id = m.team2_id
@@ -253,23 +302,29 @@ async function adminChannels(steamId: string | null): Promise<ChatChannel[]> {
       WHERE m.status IN ('pending', 'ready', 'loaded', 'live', 'needs_decision')
         AND (ac.id IS NOT NULL
              OR EXISTS (SELECT 1 FROM chat_reads r
-                         WHERE r.player_id = ? AND r.channel = 'match:' || m.slug))
+                         WHERE r.player_id = ? AND r.channel = 'match:' || m.slug)
+             OR (m.status IN ('loaded', 'live')
+                 AND EXISTS (SELECT 1 FROM chat_messages c
+                              WHERE c.channel = 'match:' || m.slug AND c.from_game
+                                AND c.created_at >= m.created_at)))
       ORDER BY (ac.id IS NOT NULL) DESC, m.id DESC
-      LIMIT 10`,
-    [steamId ?? '']
+      LIMIT 20`,
+    [steamId ?? '', steamId ?? '']
   );
   const out: ChatChannel[] = [];
   for (const r of rows) {
     const channel = `match:${r.slug}`;
     const found = await matchTeams(r.slug);
+    const quiet = r.call_id === null && !r.joined;
     out.push({
       channel,
       kind: 'match',
       title: r.n1 && r.n2 ? `${r.n1} vs ${r.n2}` : r.slug,
       myTeam: null,
-      unread: await unreadFor(steamId, channel, found?.since ?? 0),
+      unread: quiet ? 0 : await unreadFor(steamId, channel, found?.since ?? 0),
       live: r.status === 'loaded' || r.status === 'live',
       admin: true,
+      ...(quiet ? { quiet } : {}),
       call:
         r.call_id === null
           ? null
@@ -326,7 +381,7 @@ export const chatService = {
           kind: 'match',
           title: enemy ? `vs ${enemy}` : match.slug,
           myTeam,
-          unread: await unreadFor(id, channel, found?.since ?? 0),
+          unread: await unreadFor(id, channel, found?.since ?? 0, myTeam),
           live: match.status === 'loaded' || match.status === 'live',
         });
       }
@@ -369,16 +424,21 @@ export const chatService = {
     channel: string,
     before?: number
   ): Promise<{ messages: ChatMessage[]; myTeam: string | null }> {
-    const { members: m } = await access(viewer, channel);
+    const { members: m, isMember } = await access(viewer, channel);
+    const myTeam = viewer.steamId ? (m.teamOf.get(viewer.steamId) ?? null) : null;
+    // In-game team chat: its own team and the admins (an admin playing reads as a player).
+    const seesEveryTeam = viewer.isAdmin && !isMember;
+    const params: unknown[] = [channel, m.since];
+    if (!seesEveryTeam) params.push(myTeam);
+    if (before) params.push(before);
     const rows = await db.queryAsync<MessageRow>(
       `SELECT c.*, p.avatar_url AS sender_avatar FROM chat_messages c LEFT JOIN players p ON p.id = c.sender_id
-        WHERE c.channel = ? AND c.created_at >= ? ${before ? 'AND c.id < ?' : ''} ORDER BY c.id DESC LIMIT ${PAGE}`,
-      before ? [channel, m.since, before] : [channel, m.since]
+        WHERE c.channel = ? AND c.created_at >= ?
+          ${seesEveryTeam ? '' : 'AND (c.only_team IS NULL OR c.only_team = ?)'}
+          ${before ? 'AND c.id < ?' : ''} ORDER BY c.id DESC LIMIT ${PAGE}`,
+      params
     );
-    return {
-      messages: rows.reverse().map(toMessage),
-      myTeam: viewer.steamId ? (m.teamOf.get(viewer.steamId) ?? null) : null,
-    };
+    return { messages: rows.reverse().map(toMessage), myTeam };
   },
 
   async send(viewer: ChatViewer, channel: string, body: string): Promise<ChatMessage> {
@@ -421,6 +481,63 @@ export const chatService = {
     const message = toMessage({ ...(row as MessageRow), sender_avatar: avatar });
     if (viewer.steamId) await this.markRead(viewer, channel, message.id);
     emitChatMessage(m.players, parsed.kind === 'match', message);
+    if (parsed.kind === 'match') {
+      // To the game server, when the match is on one (CS2: fleet/chatBridge.ts).
+      matchChatPosted({
+        slug: parsed.ref,
+        senderKind: asAdmin ? 'admin' : 'player',
+        senderName: message.senderName,
+        body: message.body,
+      });
+    }
+    return message;
+  },
+
+  /**
+   * A player's chat line from the match's game server, into `match:<slug>`: as them (their
+   * platform name when they have a player record, else the in-game one), with `(team) ` in
+   * front of team chat, which only their team and the admins read. Never sent back to the
+   * game. Null when there is no such match or nothing to say.
+   */
+  async fromGame(slug: string, input: GameChatInput): Promise<ChatMessage | null> {
+    const channel = `match:${slug}`;
+    const m = await members(channel);
+    if (!m) return null;
+    const text = input.body.replace(/\s+/g, ' ').trim();
+    if (!text) return null;
+    const match = await db.queryOneAsync<{ team1_id: string | null; team2_id: string | null }>(
+      'SELECT team1_id, team2_id FROM matches WHERE slug = ?',
+      [slug]
+    );
+    const team =
+      m.teamOf.get(input.steamId) ??
+      (input.team === 'team1'
+        ? (match?.team1_id ?? 'team1')
+        : input.team === 'team2'
+          ? (match?.team2_id ?? 'team2')
+          : null);
+    const me = await db.queryOneAsync<{ name: string; avatar_url: string | null }>(
+      'SELECT name, avatar_url FROM players WHERE id = ?',
+      [input.steamId]
+    );
+    const onlyTeam = input.teamOnly ? team : null;
+    // Team chat from a player on no team (a spectator): the admins only.
+    const adminsOnly = input.teamOnly && !team;
+    const body = `${input.teamOnly ? '(team) ' : ''}${text}`.slice(0, MAX_BODY);
+    const row = await db.queryOneAsync<MessageRow>(
+      `INSERT INTO chat_messages (channel, sender_id, sender_name, sender_kind, sender_team, body, from_game, only_team)
+       VALUES (?, ?, ?, 'player', ?, ?, TRUE, ?) RETURNING *`,
+      [
+        channel,
+        input.steamId,
+        (me?.name || input.name || input.steamId).slice(0, 128),
+        team,
+        body,
+        adminsOnly ? '' : onlyTeam,
+      ]
+    );
+    const message = toMessage({ ...(row as MessageRow), sender_avatar: me?.avatar_url ?? null });
+    emitChatMessage(adminsOnly ? [] : recipients(m, onlyTeam), true, message);
     return message;
   },
 

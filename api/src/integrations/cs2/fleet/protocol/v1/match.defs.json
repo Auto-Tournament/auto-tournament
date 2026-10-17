@@ -120,6 +120,10 @@
             },
             "autoready": {
               "type": "boolean"
+            },
+            "team_ready": {
+              "type": "boolean",
+              "description": "one player's .ready readies their whole team (tournament matches; default false)"
             }
           }
         },

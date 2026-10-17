@@ -667,7 +667,8 @@
         "title": "Ready / Matchstart",
         "minimumReadyLabel": "Mindestanzahl bereit gemeldeter Spieler",
         "minimumReadyHelper": "0 = alle verbundenen Spieler müssen ready sein. Standard: 0.",
-        "allowForceReady": "Admins dürfen Spieler während des Setups force-ready setzen (!forceready)"
+        "allowForceReady": "Admins dürfen Spieler während des Setups force-ready setzen (!forceready)",
+        "teamReady": "Tournament matches: one player's .ready readies the whole team"
       },
       "adminTools": {
         "title": "Admin-Tools",

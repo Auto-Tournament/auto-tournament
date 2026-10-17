@@ -667,7 +667,8 @@
         "title": "准备 / 比赛开始",
         "minimumReadyLabel": "最少准备人数要求",
         "minimumReadyHelper": "0 = 所有已连接玩家都必须准备。默认：0。",
-        "allowForceReady": "允许管理员在设置阶段强制准备玩家（!forceready）"
+        "allowForceReady": "允许管理员在设置阶段强制准备玩家（!forceready）",
+        "teamReady": "Tournament matches: one player's .ready readies the whole team"
       },
       "adminTools": {
         "title": "管理员工具",

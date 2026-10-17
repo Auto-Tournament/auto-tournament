@@ -101,6 +101,24 @@ test.describe('Fleet match.assign config', () => {
     expect(validatePayload('match.assign', payload)).toEqual({ ok: true, errors: [] });
   });
 
+  test('team ready: rules.ready.team_ready only when the driver asks (tournament matches)', () => {
+    // The driver passes teamReady for a bracket, swiss, round robin or groups match with
+    // at_team_ready on (fleet/driver.ts isTeamReadyMatch); shuffle, matchmaking and
+    // standalone matches never get it.
+    const on = rulesFromMatchConfig(tournamentConfig(), { teamReady: true });
+    expect(on.ready).toMatchObject({ team_ready: true });
+    expect(rulesFromMatchConfig(tournamentConfig()).ready?.team_ready).toBeUndefined();
+    expect(
+      rulesFromMatchConfig(tournamentConfig(), { teamReady: false }).ready?.team_ready
+    ).toBeUndefined();
+    // The schema takes it (older Ready Ups read known rule fields one by one and skip it).
+    const config = buildAssignConfig(tournamentConfig(), 'pw', { teamReady: true });
+    expect(config.rules?.ready?.team_ready).toBe(true);
+    expect(
+      validatePayload('match.assign', { match_id: 'r1m1', epoch: 1, config_rev: 1, config })
+    ).toEqual({ ok: true, errors: [] });
+  });
+
   test('rules replace maxRounds, overtime and the at_* cvars', () => {
     expect(
       rulesFromMatchConfig(tournamentConfig(), { allowForceReady: false, pauseAfterRestore: true })

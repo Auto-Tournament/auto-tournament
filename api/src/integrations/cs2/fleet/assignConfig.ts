@@ -39,6 +39,11 @@ export interface AssignDefaults {
   allowForceReady?: boolean;
   pauseAfterRestore?: boolean;
   /**
+   * One player's `.ready` readies their whole team (`rules.ready.team_ready`): a
+   * tournament match with the admin's `at_team_ready` on. Not shuffle, not matchmaking.
+   */
+  teamReady?: boolean;
+  /**
    * The server streams its demos over the link (`demo.stream.v1`, received by
    * ./demoStream.ts): `rules.demo.upload` follows `record`. Otherwise false.
    */
@@ -181,6 +186,7 @@ export function rulesFromMatchConfig(
   const minReady = num(config.min_players_to_ready);
   if (minReady !== undefined && minReady >= 0) ready.min_per_team = Math.floor(minReady);
   if (defaults.allowForceReady !== undefined) ready.allow_force_ready = defaults.allowForceReady;
+  if (defaults.teamReady) ready.team_ready = true;
   const autoready = flag(cvars.at_autoready_enabled);
   if (autoready !== undefined) ready.autoready = autoready;
   if (Object.keys(ready).length) rules.ready = ready;
