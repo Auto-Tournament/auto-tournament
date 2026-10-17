@@ -61,6 +61,18 @@ function MatchCard({
   const score = cardScore(match);
   const map = mapOf(match);
   const image = map ? getMapData(map)?.thumbnail : undefined;
+  // No map yet: the same area gets a striped placeholder saying why.
+  const placeholderLabel = done
+    ? t('matchesCards.done')
+    : live
+      ? t('liveOverview.state.live')
+      : !match.team1 || !match.team2
+        ? t('matchesCards.placeholderTbd')
+        : match.vetoOpensAt
+          ? t('matchesCards.placeholderVetoAt', { time: fmtTime(match.vetoOpensAt) })
+          : match.vetoing
+            ? t('matchesCards.placeholderVeto')
+            : t('liveOverview.state.upcoming');
   const mine =
     !!viewerTeamId && (match.team1?.id === viewerTeamId || match.team2?.id === viewerTeamId);
   const winner = match.winner?.id;
@@ -109,6 +121,28 @@ function MatchCard({
         '&:hover': { filter: 'brightness(1.12)' },
       }}
     >
+      {!image && (
+        <Box
+          aria-hidden
+          data-testid={`public-match-placeholder-${match.slug}`}
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            pt: 3,
+            backgroundImage: `repeating-linear-gradient(135deg, ${color.paper2} 0 12px, ${color.paper3} 12px 24px)`,
+            color: color.muted,
+            ...mono,
+            fontSize: textSize.sm,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {placeholderLabel}
+        </Box>
+      )}
       {image && (
         <Box
           component="img"

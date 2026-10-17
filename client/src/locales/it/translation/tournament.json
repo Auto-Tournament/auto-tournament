@@ -1414,7 +1414,10 @@
     "done": "Done",
     "afterOvertime": "after overtime",
     "startsAt": "starts {{time}} · veto opens {{veto}}",
-    "yourMatch": "Your match"
+    "yourMatch": "Your match",
+    "placeholderTbd": "TBD",
+    "placeholderVeto": "Map veto",
+    "placeholderVetoAt": "Veto {{time}}"
   },
   "standingsTab": {
     "champions": "Champions",
