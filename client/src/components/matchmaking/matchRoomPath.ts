@@ -16,9 +16,7 @@ export function matchRoomPath(slug: string, lobby: OwnLobby): string {
 }
 
 /** `matchRoomPath` with the signed-in player's lobby. */
-export function useMatchRoomPath(slug: string): string;
-export function useMatchRoomPath(slug: string | null | undefined): string | null;
-export function useMatchRoomPath(slug: string | null | undefined): string | null {
+export function useMatchRoomPath(slug: string): string {
   const { me } = useMatchmaking();
-  return slug ? matchRoomPath(slug, me?.lobby) : null;
+  return matchRoomPath(slug, me?.lobby);
 }
