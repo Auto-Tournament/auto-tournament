@@ -666,18 +666,22 @@ export interface LoadoutRow {
   team: number;
 }
 
+const NO_FALLBACK = new Set(['knife', 'gloves']);
+
 /**
- * A slot with nothing equipped on the platform (any weapon, the knife, the gloves): the newest
- * skin the player owns for it, on both sides, rather than the stock look. A knife that dropped
- * tonight (drops no longer equip themselves) left its owner with the stock knife (NTLAN,
- * 2026-10-16). An equipped skin, on any side, is never replaced. `owned` newest first.
+ * A weapon slot with nothing equipped on the platform: the newest skin the player owns for it,
+ * on both sides, rather than the stock look. An equipped skin, on any side, is never replaced.
+ * `owned` newest first. Knives and gloves are left out: they come only when equipped, so a player
+ * who owns one but wants their Steam knife keeps it, and nobody gets a knife or glove swap they
+ * did not ask for (players who own unequipped knives kept crashing, NTLAN 2026-10-17).
  */
+
 export function withInventoryFallback(rows: LoadoutRow[], owned: LoadoutRow[]): LoadoutRow[] {
   const out = [...rows];
   const filled = new Set(rows.map((r) => r.slot));
   for (const o of owned) {
     const slot = slotOf(o.weapon);
-    if (filled.has(slot)) continue;
+    if (NO_FALLBACK.has(slot) || filled.has(slot)) continue;
     filled.add(slot);
     out.push({ ...o, slot, team: 0 });
   }
