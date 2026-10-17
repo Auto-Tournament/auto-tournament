@@ -136,6 +136,11 @@ func (r *recorder) benchmarkTries(ctx context.Context, mj *mapJob, source *strin
 		}
 	}
 	defer applySettings(mj.Settings)
+	if r.backend == "native" && len(rates) > 1 {
+		// Native capture is independent of the compositor's refresh rate.
+		// Keep the existing benchmark report shape, but render only once.
+		rates = rates[:1]
+	}
 	var out []benchmarkTry
 	for i, hz := range rates {
 		t := benchmarkTry{GamescopeHz: hz}

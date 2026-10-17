@@ -21,6 +21,11 @@ package main
 //	AT_RECORD_DIR    scratch space for raw frames (default: the system temp dir; ~6 GB a moment)
 //	AT_RESOLUTION    WIDTHxHEIGHT CS2 renders at (default: the output size)
 //	AT_ENCODER       ffmpeg video encoder (default: h264_nvenc on the GPU if it opens, else h264_vaapi, else libx264; H.264 in MP4)
+//	AT_CAPTURE_BACKEND stream (default) or native (CS:DM frame export; no PipeWire video)
+//	AT_CSDM_PLUGIN   optional replacement Linux libserver.so for the native backend
+//	AT_NATIVE_TIMEOUT_SECONDS maximum native export time per window (default 3600)
+//	AT_RECORDER_JOB_SECONDS platform attempt timeout (default 2700; match the API's CS2_RECORDER_JOB_SECONDS)
+//	AT_ENCODE_TIMEOUT_SECONDS maximum encode time (default 900)
 //	AT_VIDEO         CS2's video settings while it records: max (default), low or keep
 //	AT_GAMESCOPE_HZ  the capture stream's rate (default 120; a fast GPU records smoothly up to 240)
 //	AT_CAPTURE_FPS   the stream rate the first pass assumes (default 30; it follows what each pass gets)
@@ -106,6 +111,7 @@ type recorder struct {
 	width   int
 	height  int
 	encoder string
+	backend string // stream (PipeWire) or native (CS:DM startmovie)
 	sink    string
 	logo    string // the watermark PNG on disk
 	// icons are the game's kill feed icons (export-hud, from this CS2): with
@@ -289,16 +295,21 @@ func demoName(path, steamID string) (string, error) {
 		return "", err
 	}
 	defer f.Close()
-	want, err := strconv.ParseUint(steamID, 10, 64)
-	if err != nil {
-		return "", fmt.Errorf("not a SteamID64: %q", steamID)
+	byName := strings.HasPrefix(steamID, "name:")
+	var want uint64
+	if !byName {
+		want, err = strconv.ParseUint(steamID, 10, 64)
+		if err != nil {
+			return "", fmt.Errorf("not a SteamID64: %q", steamID)
+		}
 	}
 	p := dem.NewParser(f)
 	defer p.Close()
 	for i := 0; i < 200000; i++ {
 		more, err := p.ParseNextFrame()
 		for _, pl := range p.GameState().Participants().All() {
-			if pl != nil && pl.SteamID64 == want && pl.Name != "" {
+			if pl != nil && pl.Name != "" && ((!byName && pl.SteamID64 == want) || (byName && pl.Name == strings.TrimPrefix(steamID, "name:"))) {
+				rememberAccount(pl.Name, strconv.FormatUint(pl.SteamID64, 10))
 				return pl.Name, nil
 			}
 		}
@@ -440,6 +451,7 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 			return err
 		}
 		g = next
+		g.demoPath = inGame
 		if r.live != nil {
 			r.live.g, r.live.pos = g, 0
 		}
@@ -651,6 +663,8 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 			return clipMarkers{}, nil, err
 		}
 		defer func() { _ = g.con.send(r.lookPredict()) }()
+		g.nativePredict = "cl_demo_predict 0"
+		defer func() { g.nativePredict = "" }()
 	}
 	dir, err := os.MkdirTemp(r.scratch, "moment-")
 	if err != nil {
@@ -701,7 +715,16 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 			cleanup()
 			return clipMarkers{}, nil, err
 		}
-		encodes = append(encodes, encode)
+		if r.backend == "native" {
+			// Finish and discard this window's raw frames before recording the
+			// next. Native TGA exports must not accumulate across a whole reel.
+			if err := encode(); err != nil {
+				cleanup()
+				return clipMarkers{}, nil, err
+			}
+		} else {
+			encodes = append(encodes, encode)
+		}
 		prior = cut.kept
 		pieces = append(pieces, piece)
 		edits = append(edits, cut.segs)
@@ -795,7 +818,23 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 		g.follow = func(tick int) ([3]float64, bool) { return rp.PositionAt(id, tick) }
 		defer func() { g.follow = nil }()
 	}
-	mainTicks, err := r.capturePicture(g, name, w.from-lead, picturePhases(w, introEnd, slowFrom, speedsFor(r.rate.fps)), main)
+	length := float64(w.to-w.from) / tickrate
+	kill := -1.0
+	if w.slowmo >= 0 {
+		kill = float64(w.slowmo-w.from) / tickrate
+	}
+	segs := editPlan(length, card != nil && !card.settled, kill)
+	wav := prefix + "-audio.wav"
+	var mainTicks []float64
+	var audioAt float64
+	var err error
+	if r.backend == "native" {
+		var firstTick float64
+		mainTicks, firstTick, err = r.captureNative(g, name, w.from-lead, w.to, nativeFPS(segs), main, wav)
+		audioAt = (float64(w.from) - firstTick) / tickrate
+	} else {
+		mainTicks, err = r.capturePicture(g, name, w.from-lead, picturePhases(w, introEnd, slowFrom, speedsFor(r.rate.fps)), main)
+	}
 	if err != nil {
 		return nil, nil, fmt.Errorf("picture: %w", err)
 	}
@@ -803,28 +842,22 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 	raws := []string{main}
 
 	// The sound, at real speed.
-	wav := prefix + "-audio.wav"
-	var ac *audioCapture
-	as, err := g.play(w.from-lead, w.to, 1, name, func() (err error) {
-		ac, err = startAudioCapture(r.sink, wav)
-		return err
-	})
-	if ac != nil {
-		ac.stop()
+	if r.backend != "native" {
+		var ac *audioCapture
+		as, err := g.play(w.from-lead, w.to, 1, name, func() (err error) {
+			ac, err = startAudioCapture(r.sink, wav)
+			return err
+		})
+		if ac != nil {
+			ac.stop()
+		}
+		if err != nil {
+			return nil, nil, fmt.Errorf("sound: %w", err)
+		}
+		// What CS2 plays reaches the recording audioLatency later: start that much
+		// further in, or every shot is heard after the kill it made.
+		audioAt = as.resumed.Sub(ac.fileStart()).Seconds() + float64(w.from-as.fromTick)/tickrate + audioLatency()
 	}
-	if err != nil {
-		return nil, nil, fmt.Errorf("sound: %w", err)
-	}
-	// What CS2 plays reaches the recording audioLatency later: start that much
-	// further in, or every shot is heard after the kill it made.
-	audioAt := as.resumed.Sub(ac.fileStart()).Seconds() + float64(w.from-as.fromTick)/tickrate + audioLatency()
-
-	length := float64(w.to-w.from) / tickrate
-	kill := -1.0
-	if w.slowmo >= 0 {
-		kill = float64(w.slowmo-w.from) / tickrate
-	}
-	segs := editPlan(length, card != nil && !card.settled, kill)
 	frames, err := timeline(sources, segs, w.from)
 	if err != nil {
 		return nil, nil, err
@@ -853,6 +886,10 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 	}
 	width, height := g.width, g.height
 	return &windowCut{segs: segs, kept: kept, rows: rows}, func() error {
+		if r.backend == "native" && env("AT_KEEP_SCRATCH", "") == "" {
+			defer os.Remove(main)
+			defer os.Remove(wav)
+		}
 		return r.encodeMoment(raws, frames, width, height, wav, audioAt, length, segs, look.watermark, card, feed, out, cleanPathOf(out))
 	}, nil
 }
@@ -1440,7 +1477,15 @@ func newRecorder(c *client) (*recorder, error) {
 	if gameDir == "" {
 		return nil, errors.New("CS2 was not found in the Steam libraries: set AT_CS2_GAME to its game folder (it has cs2.sh)")
 	}
-	for _, tool := range []string{"gamescope", "gst-launch-1.0", "pw-link", "pw-record", "ffmpeg"} {
+	backend := env("AT_CAPTURE_BACKEND", "stream")
+	if backend != "stream" && backend != "native" {
+		return nil, fmt.Errorf("AT_CAPTURE_BACKEND must be stream or native, got %q", backend)
+	}
+	tools := []string{"ffmpeg", "ffprobe"}
+	if backend == "stream" {
+		tools = append(tools, "gamescope", "gst-launch-1.0", "pw-link", "pw-record")
+	}
+	for _, tool := range tools {
 		if _, err := exec.LookPath(tool); err != nil {
 			return nil, fmt.Errorf("%s is not on PATH", tool)
 		}
@@ -1453,9 +1498,13 @@ func newRecorder(c *client) (*recorder, error) {
 			return nil, fmt.Errorf("AT_RESOLUTION: %w", err)
 		}
 	}
+	encoder := strings.TrimSpace(os.Getenv("AT_ENCODER"))
+	if encoder == "" {
+		encoder = pickEncoder()
+	}
 	r := &recorder{client: c, gameDir: gameDir, sniper: env("AT_SNIPER_RUN", sniperRun(home)),
 		scratch: env("AT_RECORD_DIR", os.TempDir()), width: w, height: h,
-		encoder: env("AT_ENCODER", pickEncoder()), sink: defaultSink()}
+		encoder: encoder, sink: defaultSink(), backend: backend}
 	// Until the first pass measures it: what gamescope streamed on the recorder VM (2026-10-08).
 	r.rate.fps = float64(envPositive("AT_CAPTURE_FPS", 30))
 	r.base.width, r.base.height, r.base.outputHeight, r.base.outputFPS = w, h, outputHeight, outputFPS
@@ -1580,7 +1629,7 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 			r.endLive()
 		}
 		started := time.Now()
-		jobCtx, cancelJob := context.WithTimeout(ctx, 45*time.Minute)
+		jobCtx, cancelJob := context.WithTimeout(ctx, time.Duration(envPositive("AT_RECORDER_JOB_SECONDS", 45*60))*time.Second)
 		r.jobContext = jobCtx
 		r.link.Job(cancelJob)
 		r.job = jobProgress{started: started}
@@ -1782,11 +1831,9 @@ func recordFile(args []string) error {
 	if err != nil {
 		return err
 	}
-	name := strings.TrimPrefix(args[1], "name:")
-	if !strings.HasPrefix(args[1], "name:") {
-		if name, err = demoName(args[0], args[1]); err != nil {
-			return err
-		}
+	name, err := demoName(args[0], args[1])
+	if err != nil {
+		return err
 	}
 	b, err := os.ReadFile(args[2])
 	if err != nil {
@@ -1849,7 +1896,7 @@ func recordFile(args []string) error {
 }
 
 // encodeTimeout is the longest one moment's encode may take.
-const encodeTimeout = 15 * time.Minute
+var encodeTimeout = time.Duration(envPositive("AT_ENCODE_TIMEOUT_SECONDS", 15*60)) * time.Second
 
 // pickEncoder is the GPU's H.264 encoder when it opens (a second of test
 // video), else x264 on the CPU: same codec and container either way.

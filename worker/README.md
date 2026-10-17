@@ -130,6 +130,70 @@ at-worker redress clip.clean.mp4 clip.overlay.json clip.mp4
 The platform does the same for every video at once (Highlights settings,
 "Redraw overlays"): an idle recorder takes them in batches.
 
+## Native frame export (Intel/AMD or slower hardware)
+
+`AT_CAPTURE_BACKEND=native` uses CS Demo Manager's Linux CS2 plugin to expose
+`startmovie` and export every rendered frame as TGA plus engine-generated WAV
+audio. Game time advances at a fixed frame rate even when rendering is slower
+than playback. The editor still produces the same clean clips, overlays,
+slow motion and reels. NVIDIA, NVENC, gamescope and PipeWire capture tools are
+not required by this backend; a working CS2 graphics driver, display, Steam
+session and FFmpeg are required.
+
+For an i7-6700 with Intel integrated graphics, start with:
+
+```sh
+AT_CAPTURE_BACKEND=native AT_VIDEO=low AT_ENCODER=libx264 AT_GPU_BLUR=0 \
+AT_OUTPUT_HEIGHT=1080 AT_OUTPUT_FPS=60 AT_ENCODE_TIMEOUT_SECONDS=3600 \
+at-worker record-file demo.dem 'name:Player' moments.json ./native-test
+```
+
+`moments.json` uses the same format as the existing `record-file` command.
+For a smoke test without hand-written tick ranges, use
+`at-worker record-benchmark demo.dem ./native-test` with the same environment;
+it selects the first kill by a human player and renders a short highlight.
+Resolution/FPS settings from the platform take precedence for claimed jobs.
+Native export captures additional frames for slow motion, converts each
+window to the editor's I420 format, and deletes its TGA/WAV files after
+conversion. It encodes each window before capturing the next. Allow several
+GiB of free space on **both the CS2 installation filesystem and scratch**;
+the game writes images into its own `csgo/at-native/movie` directory and
+audio into `csgo/movie`. `AT_KEEP_SCRATCH=1` retains diagnostics there too.
+
+`native.compose.yml` and `native.Dockerfile` provide a separate Intel/AMD
+Steam desktop without a host cgroup mount or a systemd container. They expose
+the login desktop on loopback port 8484 only, start Steam, and leave the
+worker stopped until explicitly
+invoked. Forward the port with `ssh -L 8484:127.0.0.1:8484 USER@HOST`, sign
+in at `http://localhost:8484`, install CS2 in `/mnt/games`, then run local
+capture as the `abc` user with the desktop's environment (normally
+`DISPLAY=:0`, `XDG_RUNTIME_DIR=/config/.XDG` and `HOME=/config`). Ensure the
+scratch and output directories are writable by that user.
+The compose file opts into `AT_NATIVE_DISPLAY_SETUP=1`, which sets its
+dedicated Wayland output to the capture size at scale 1 before starting CS2.
+This avoids a 1080p display with fractional scaling yielding only 720p frames.
+The container permits Valve's nested runtime namespaces through container-only
+seccomp/AppArmor exceptions, without privileged mode or host cgroup access.
+Use this compose file instead of the NVIDIA-only `at-recorder setup` scripts.
+
+For longer platform jobs, set `CS2_RECORDER_JOB_SECONDS=21600` on the API and
+`AT_RECORDER_JOB_SECONDS=21600` on the recorder. Both default to 45 minutes
+for compatibility. Heartbeats still expire abandoned jobs after 12 minutes.
+`AT_NATIVE_TIMEOUT_SECONDS` bounds each window's export (default one hour),
+`AT_NATIVE_LOAD_SECONDS` allows initial map/shader loading (default ten minutes),
+`AT_NATIVE_STALL_SECONDS` detects an export with no new frames (default three
+minutes), and `AT_ENCODE_TIMEOUT_SECONDS` controls encoding (default 15 minutes).
+The plugin needs one local game connection before demo playback; the worker
+loads `de_dust2` to initialize that hook. Set `AT_NATIVE_BOOTSTRAP_MAP=de_nuke`
+to reuse a different installed map's shader cache.
+
+The plugin is bundled with its MIT license and pinned provenance in
+`assets/native/`. CS2 updates may require a newer plugin; select a replacement
+with `AT_CSDM_PLUGIN=/absolute/path/libserver.so`. Installation backs up
+`gameinfo.gi`, adds a private plugin search path, and restores the original
+after loading or a failed launch. Use a dedicated CS2 installation for the
+recorder, and do not share a running installation with another recorder.
+
 ## Develop
 
 ```bash

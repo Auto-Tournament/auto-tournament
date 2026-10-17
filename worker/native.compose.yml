@@ -1,0 +1,44 @@
+# Build from worker/: docker compose -f native.compose.yml up -d --build
+# Forward localhost:8484 over SSH to sign in to Steam and install CS2.
+# The desktop starts independently; no platform jobs are claimed automatically.
+name: at-native-recorder
+services:
+  desktop:
+    build:
+      context: .
+      dockerfile: native.Dockerfile
+    image: auto-tournament-recorder:native-local
+    container_name: at-native-recorder
+    shm_size: 2g
+    # Valve's pressure-vessel runtime creates nested mount/user namespaces.
+    # These exceptions apply to this container; no host cgroups are mounted.
+    security_opt: ["seccomp:unconfined", "apparmor:unconfined"]
+    devices: ["/dev/dri:/dev/dri"]
+    ports: ["127.0.0.1:8484:3000"]
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: ${TZ:-Europe/Prague}
+      HOME: /config
+      DISPLAY: ":0"
+      WAYLAND_DISPLAY: wayland-0
+      XDG_RUNTIME_DIR: /config/.XDG
+      DRINODE: /dev/dri/renderD128
+      AT_CAPTURE_BACKEND: native
+      AT_NATIVE_DISPLAY_SETUP: "1"
+      AT_VIDEO: low
+      AT_ENCODER: libx264
+      AT_GPU_BLUR: "0"
+      AT_OUTPUT_HEIGHT: "1080"
+      AT_OUTPUT_FPS: "60"
+      AT_RECORD_DIR: /mnt/clips/scratch
+      AT_ENCODE_TIMEOUT_SECONDS: "3600"
+      AT_RECORDER_JOB_SECONDS: "21600"
+    volumes:
+      - native-home:/config
+      - native-games:/mnt/games
+      - native-clips:/mnt/clips
+volumes:
+  native-home:
+  native-games:
+  native-clips:
