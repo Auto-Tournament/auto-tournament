@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Button, Link, Typography } from '@mui/material';
+import { Box, Button, Link, TableSortLabel, Typography } from '@mui/material';
 import {
   ChartLineUpIcon,
   CoinsIcon,
@@ -30,6 +30,70 @@ import { fmtNum } from '../../../utils/number';
 
 const { color } = tokens;
 const SHOWN_PLAYERS = 10;
+
+type PlayerSortKey = 'player' | 'team' | 'kd' | 'adr' | 'hs' | 'rating' | 'elo';
+type SortDir = 'asc' | 'desc';
+const TEXT_SORT_KEYS: PlayerSortKey[] = ['player', 'team'];
+
+const kdRatio = (p: OverviewPlayer) => (p.kills ?? 0) / Math.max(p.deaths ?? 0, 1);
+const hsRate = (p: OverviewPlayer) =>
+  (p.kills ?? 0) > 0 ? (p.headshots ?? 0) / (p.kills ?? 1) : 0;
+
+/** Numeric value a column sorts on; null sorts last in either direction. */
+function sortValue(p: OverviewPlayer, key: PlayerSortKey): number | null {
+  switch (key) {
+    case 'kd':
+      return kdRatio(p);
+    case 'adr':
+      return p.averageAdr || null;
+    case 'hs':
+      return hsRate(p);
+    case 'rating':
+      return typeof p.rating === 'number' ? p.rating : null;
+    case 'elo':
+      return p.eloChange;
+    default:
+      return null;
+  }
+}
+
+/**
+ * Players ordered for the table. Default (dir null): this tournament's
+ * performance rating, then K/D, then kills (not the pre-tournament Elo the
+ * API sends them in). A column sort ties back to that same order.
+ */
+export function sortResultsPlayers(
+  players: OverviewPlayer[],
+  key: PlayerSortKey | null,
+  dir: SortDir
+): OverviewPlayer[] {
+  const byPerformance = (a: OverviewPlayer, b: OverviewPlayer) =>
+    (b.rating ?? -Infinity) - (a.rating ?? -Infinity) ||
+    kdRatio(b) - kdRatio(a) ||
+    (b.kills ?? 0) - (a.kills ?? 0);
+  const sign = dir === 'asc' ? 1 : -1;
+  return [...players].sort((a, b) => {
+    if (key === 'player' || key === 'team') {
+      const av = key === 'player' ? a.name : (a.team?.name ?? '');
+      const bv = key === 'player' ? b.name : (b.team?.name ?? '');
+      // Players without a team stay at the bottom.
+      if (key === 'team' && !av !== !bv) return av ? -1 : 1;
+      return sign * av.localeCompare(bv) || byPerformance(a, b);
+    }
+    if (key) {
+      const av = sortValue(a, key);
+      const bv = sortValue(b, key);
+      if (av === null || bv === null) {
+        if (av !== bv) return av === null ? 1 : -1;
+      } else if (av !== bv) {
+        return sign * (av - bv);
+      }
+      if (key === 'kd' && (a.kills ?? 0) !== (b.kills ?? 0))
+        return sign * ((a.kills ?? 0) - (b.kills ?? 0));
+    }
+    return byPerformance(a, b);
+  });
+}
 
 const AWARD_ICON: Record<AwardKey, { icon: ReactNode; tone: string }> = {
   bestPlayer: { icon: <StarIcon size={22} />, tone: color.medalGold },
@@ -90,7 +154,40 @@ export function TournamentResults({
   const standings = finalStandings(teams, tournament.winner?.id);
   const awards = tournamentAwards(players);
   const hasRating = players.some((p) => typeof p.rating === 'number');
-  const shown = showAll ? players : players.slice(0, SHOWN_PLAYERS);
+  // A shuffle keeps the server's wins-first order until a column is clicked.
+  const [sort, setSort] = useState<{ key: PlayerSortKey; dir: SortDir } | null>(null);
+  const ordered =
+    sort || tournament.type !== 'shuffle'
+      ? sortResultsPlayers(players, sort?.key ?? null, sort?.dir ?? 'desc')
+      : players;
+  const shown = showAll ? ordered : ordered.slice(0, SHOWN_PLAYERS);
+  const toggleSort = (key: PlayerSortKey) =>
+    setSort((cur) =>
+      cur?.key === key
+        ? { key, dir: cur.dir === 'asc' ? 'desc' : 'asc' }
+        : { key, dir: TEXT_SORT_KEYS.includes(key) ? 'asc' : 'desc' }
+    );
+  const sortableTh = (key: PlayerSortKey, label: ReactNode, sx: object) => (
+    <Box
+      component="th"
+      sx={sx}
+      aria-sort={sort?.key === key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
+    >
+      <TableSortLabel
+        active={sort?.key === key}
+        direction={sort?.key === key ? sort.dir : TEXT_SORT_KEYS.includes(key) ? 'asc' : 'desc'}
+        onClick={() => toggleSort(key)}
+        data-testid={`results-sort-${key}`}
+        sx={{
+          color: 'inherit',
+          '&.Mui-active': { color: color.ink },
+          '& .MuiTableSortLabel-icon': { color: 'inherit !important' },
+        }}
+      >
+        {label}
+      </TableSortLabel>
+    </Box>
+  );
 
   const th = {
     ...mono,
@@ -300,32 +397,21 @@ export function TournamentResults({
                   <Box component="th" sx={{ ...th, textAlign: 'left' }}>
                     #
                   </Box>
-                  <Box component="th" sx={{ ...th, textAlign: 'left' }}>
-                    {t('results.col.player')}
-                  </Box>
-                  <Box
-                    component="th"
-                    sx={{ ...th, textAlign: 'left', display: { xs: 'none', sm: 'table-cell' } }}
-                  >
-                    {t('results.col.team')}
-                  </Box>
-                  <Box component="th" sx={th}>
-                    K / D
-                  </Box>
-                  <Box component="th" sx={th}>
-                    ADR
-                  </Box>
-                  <Box component="th" sx={{ ...th, display: { xs: 'none', sm: 'table-cell' } }}>
-                    HS
-                  </Box>
-                  {hasRating && (
-                    <Box component="th" sx={{ ...th, display: { xs: 'none', sm: 'table-cell' } }}>
-                      {t('results.col.hltv')}
-                    </Box>
-                  )}
-                  <Box component="th" sx={th}>
-                    {t('results.col.rating')}
-                  </Box>
+                  {sortableTh('player', t('results.col.player'), { ...th, textAlign: 'left' })}
+                  {sortableTh('team', t('results.col.team'), {
+                    ...th,
+                    textAlign: 'left',
+                    display: { xs: 'none', sm: 'table-cell' },
+                  })}
+                  {sortableTh('kd', 'K / D', th)}
+                  {sortableTh('adr', 'ADR', th)}
+                  {sortableTh('hs', 'HS', { ...th, display: { xs: 'none', sm: 'table-cell' } })}
+                  {hasRating &&
+                    sortableTh('rating', t('results.col.hltv'), {
+                      ...th,
+                      display: { xs: 'none', sm: 'table-cell' },
+                    })}
+                  {sortableTh('elo', t('results.col.rating'), th)}
                 </tr>
               </thead>
               <tbody>
