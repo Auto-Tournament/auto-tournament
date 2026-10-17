@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "显示名称",
+      "description": "显示在网站和游戏中。每天可以更改一次。",
+      "lockedUntil": "显示在网站和游戏中。你最近已更改过，可在 {{date}} 之后再次更改。",
+      "label": "名称",
+      "lengthHint": "{{min}}–{{max}} 个字符",
+      "badChars": "不能包含引号、< 或 > 以及控制字符",
+      "promptTitle": "你叫什么名字？",
+      "promptBody": "它会显示在游戏和网站上。",
+      "notNow": "以后再说",
+      "save": "保存",
+      "saved": "名称已保存。游戏服务器将从你的下一场比赛开始使用它。",
+      "saveFailed": "无法保存名称"
     }
   },
   "home": {

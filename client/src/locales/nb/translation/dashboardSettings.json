@@ -301,7 +301,11 @@
         "short": "Ny innlogging gjør hvem som helst til spiller. Av: bare spillere du legger til."
       },
       "title": "Spillere",
-      "short": "Hvem som blir med, og hvordan rating endres."
+      "short": "Hvem som blir med, og hvordan rating endres.",
+      "chooseName": {
+        "toggleLabel": "Spillerne velger visningsnavnet sitt",
+        "short": "Spillerne blir spurt om navnet sitt og kan endre det én gang per døgn. Av: navnene kommer fra import og administratorer."
+      }
     },
     "developer": {
       "resetApiTitle": "Tilbakestill API og database",

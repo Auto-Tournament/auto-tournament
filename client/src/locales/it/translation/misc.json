@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "Nome visualizzato",
+      "description": "Mostrato sul sito e in gioco. Puoi cambiarlo una volta al giorno.",
+      "lockedUntil": "Mostrato sul sito e in gioco. L'hai cambiato di recente; potrai cambiarlo di nuovo dal {{date}}.",
+      "label": "Nome",
+      "lengthHint": "{{min}}–{{max}} caratteri",
+      "badChars": "Niente virgolette, < o >, né caratteri di controllo",
+      "promptTitle": "Come ti chiami?",
+      "promptBody": "Viene mostrato in gioco e sul sito.",
+      "notNow": "Non ora",
+      "save": "Salva",
+      "saved": "Nome salvato. I server lo useranno dalla tua prossima partita.",
+      "saveFailed": "Impossibile salvare il nome"
     }
   },
   "home": {

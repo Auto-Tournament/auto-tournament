@@ -151,7 +151,11 @@
         "short": "Anmelden macht jeden Neuen zum Spieler. Aus: nur Spieler, die du hinzufügst."
       },
       "title": "Spieler",
-      "short": "Wer mitmacht und wie sich Ratings ändern."
+      "short": "Wer mitmacht und wie sich Ratings ändern.",
+      "chooseName": {
+        "toggleLabel": "Spieler wählen ihren Anzeigenamen",
+        "short": "Spieler werden nach ihrem Namen gefragt und können ihn einmal am Tag ändern. Aus: Namen kommen aus Importen und von Admins."
+      }
     },
     "developer": {
       "resetApiTitle": "API & Datenbank zurücksetzen",

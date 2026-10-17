@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "Nome visível",
+      "description": "Aparece no site e no jogo. Podes alterá-lo uma vez por dia.",
+      "lockedUntil": "Aparece no site e no jogo. Alteraste-o há pouco; podes voltar a alterá-lo a partir de {{date}}.",
+      "label": "Nome",
+      "lengthHint": "{{min}}–{{max}} caracteres",
+      "badChars": "Sem aspas, < ou >, nem caracteres de controlo",
+      "promptTitle": "Como te chamas?",
+      "promptBody": "Aparece no jogo e no site.",
+      "notNow": "Agora não",
+      "save": "Guardar",
+      "saved": "Nome guardado. Os servidores usam-no a partir do teu próximo jogo.",
+      "saveFailed": "Não foi possível guardar o nome"
     }
   },
   "home": {

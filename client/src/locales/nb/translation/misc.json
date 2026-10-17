@@ -204,6 +204,20 @@
       "lastUsed": "Sist brukt {{date}}",
       "addedOn": "Lagt til {{date}}, ikke brukt ennå",
       "needsHttps": "Passnøkler krever at siden kjører på https (eller localhost). Be den som drifter den om å sette den bak https."
+    },
+    "name": {
+      "title": "Visningsnavn",
+      "description": "Vises på nettstedet og i spillet. Du kan endre det én gang per døgn.",
+      "lockedUntil": "Vises på nettstedet og i spillet. Du endret det nylig, så du kan endre det igjen fra {{date}}.",
+      "label": "Navn",
+      "lengthHint": "{{min}}–{{max}} tegn",
+      "badChars": "Ikke anførselstegn, < eller > eller kontrolltegn",
+      "promptTitle": "Hva heter du?",
+      "promptBody": "Navnet vises i spillet og på nettstedet.",
+      "notNow": "Ikke nå",
+      "save": "Lagre",
+      "saved": "Navnet er lagret. Spillserverne bruker det fra neste kamp.",
+      "saveFailed": "Kunne ikke lagre navnet"
     }
   },
   "home": {

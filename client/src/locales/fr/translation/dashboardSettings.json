@@ -151,7 +151,11 @@
         "short": "La connexion crée un joueur pour tout nouveau venu. Désactivé : seulement les joueurs que vous ajoutez."
       },
       "title": "Joueurs",
-      "short": "Qui participe, et comment les classements évoluent."
+      "short": "Qui participe, et comment les classements évoluent.",
+      "chooseName": {
+        "toggleLabel": "Les joueurs choisissent leur nom affiché",
+        "short": "On demande leur nom aux joueurs, qui peuvent le changer une fois par jour. Désactivé : les noms viennent des imports et des admins."
+      }
     },
     "developer": {
       "resetApiTitle": "Réinitialiser l’API & la base de données",

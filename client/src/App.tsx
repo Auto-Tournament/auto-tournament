@@ -88,6 +88,7 @@ import NotFound from './pages/NotFound';
 import MatchNow from './pages/MatchNow';
 import { theme } from './theme';
 import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedirect';
+import { DisplayNamePrompt } from './components/account/DisplayName';
 import WelcomeGames from './pages/WelcomeGames';
 import LicenseConsent from './pages/LicenseConsent';
 import { LicenseConsentGate } from './components/license/LicenseConsentGate';
@@ -750,6 +751,9 @@ export default function App() {
                   account, from whatever page the player lands on. The API
                   decides whether it is due. */}
               <GamesOnboardingRedirect />
+              {/* "What's your name?" while players choose their names and
+                  this one has not confirmed theirs. The API decides. */}
+              <DisplayNamePrompt />
               {/* Renders at once. Code modules load alongside (main.tsx
                   starts them); a module's routes and slots show a pending
                   state until it arrives, and re-render when it does. */}
