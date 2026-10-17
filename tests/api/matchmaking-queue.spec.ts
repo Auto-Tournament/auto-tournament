@@ -1135,7 +1135,8 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
       data: { accept },
     });
     expect(res.ok(), await res.text()).toBe(true);
-    return (await res.json()) as { status: string; lobbyId?: string };
+    const { status, lobbyId: next } = (await res.json()) as { status: string; lobbyId?: string };
+    return next ? { status, lobbyId: next } : { status };
   };
 
   interface RematchMe {
