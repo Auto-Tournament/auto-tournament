@@ -155,8 +155,10 @@ export function YourMatchCard({
   mapsView?: ReactNode;
 }) {
   const { t } = useTranslation();
-  const { team, match, hasMatch, loading, tournamentStatus, loadTeamMatch } =
-    useTeamMatchData(teamId);
+  const { team, match, hasMatch, loading, tournamentStatus, loadTeamMatch } = useTeamMatchData(
+    teamId,
+    matchSlug
+  );
   const getRoundLabel = useRoundLabel();
   const integration = useIntegrationFor(match);
   const PreMatchView = integration.preMatchView;
