@@ -666,28 +666,6 @@ export interface LoadoutRow {
   team: number;
 }
 
-const NO_FALLBACK = new Set(['knife', 'gloves']);
-
-/**
- * A weapon slot with nothing equipped on the platform: the newest skin the player owns for it,
- * on both sides, rather than the stock look. An equipped skin, on any side, is never replaced.
- * `owned` newest first. Knives and gloves are left out: they come only when equipped, so a player
- * who owns one but wants their Steam knife keeps it, and nobody gets a knife or glove swap they
- * did not ask for (players who own unequipped knives kept crashing, NTLAN 2026-10-17).
- */
-
-export function withInventoryFallback(rows: LoadoutRow[], owned: LoadoutRow[]): LoadoutRow[] {
-  const out = [...rows];
-  const filled = new Set(rows.map((r) => r.slot));
-  for (const o of owned) {
-    const slot = slotOf(o.weapon);
-    if (NO_FALLBACK.has(slot) || filled.has(slot)) continue;
-    filled.add(slot);
-    out.push({ ...o, slot, team: 0 });
-  }
-  return out;
-}
-
 export interface LoadoutPayload {
   paints: Array<{
     team: LoadoutTeam;
@@ -1751,13 +1729,7 @@ export const skinService = {
         WHERE l.player_uid = ?`,
       [uid]
     );
-    const owned = await db.queryAsync<LoadoutRow>(
-      `SELECT weapon, paint_kit, float_value, pattern, stattrak, '' AS slot, 0 AS team
-         FROM cs2_player_skins WHERE player_uid = ?
-        ORDER BY created_at DESC, id DESC`,
-      [uid]
-    );
-    return loadoutPayload(withInventoryFallback(rows, owned));
+    return loadoutPayload(rows);
   },
 
   /** Admin: the numbers at the top of the Skins page. */
