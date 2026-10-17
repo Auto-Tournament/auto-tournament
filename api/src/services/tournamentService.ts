@@ -246,6 +246,8 @@ class TournamentService {
     const teamSize = validTeamSize(
       input.teamSize ?? (settings as { teamSize?: unknown } | undefined)?.teamSize
     );
+    if (type === 'shuffle' && teamSize !== null && teamSize < 2)
+      throw new Error('Team size must be between 2 and 10 players');
     // A draft with no teams yet: no count check and no bracket until it has some.
     const emptyDraft = options.draft === true && (teamIds?.length ?? 0) === 0;
 
@@ -305,7 +307,8 @@ class TournamentService {
       status: 'setup',
       ...(options.game ? { game: options.game } : {}),
       team_ids: JSON.stringify(teamIds || []), // Shuffle tournaments have no fixed teams
-      ...(teamSize !== null && type !== 'shuffle' ? { team_size: teamSize } : {}),
+      // A shuffle too: it draws teams of this size (it stayed 5 for a wingman shuffle made here).
+      ...(teamSize !== null ? { team_size: teamSize } : {}),
       settings: JSON.stringify(tournamentSettings),
       created_at: now,
       updated_at: now,
@@ -391,7 +394,10 @@ class TournamentService {
     const teamSize = validTeamSize(
       input.teamSize ?? (input.settings as { teamSize?: unknown } | undefined)?.teamSize
     );
-    if (teamSize !== null && (type ?? existing.type) !== 'shuffle') updates.team_size = teamSize;
+    if (teamSize !== null && (type ?? existing.type) === 'shuffle' && teamSize < 2)
+      throw new Error('Team size must be between 2 and 10 players');
+    // A shuffle's team size is the size of the teams each round draws.
+    if (teamSize !== null) updates.team_size = teamSize;
     // settings.matchFormat mirrors `format`, so settings are rewritten when
     // either changes (or an edited format leaves the old value behind in
     // settings), and whenever the game module's object changes: the module

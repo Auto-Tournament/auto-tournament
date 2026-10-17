@@ -1007,7 +1007,8 @@
     "waitingForServer": "Venter på en server",
     "vetoDoneChip": "Veto ferdig · {{map}}",
     "waitingForServerBody": "En server tildeles så snart en er ledig. Du får et varsel, og denne siden oppdaterer seg selv.",
-    "mapDrawnChip": "Kart trukket · {{map}}"
+    "mapDrawnChip": "Kart trukket · {{map}}",
+    "notYet": "Ikke ennå"
   },
   "results": {
     "finalStandings": "Sluttstilling",
@@ -1313,7 +1314,11 @@
     "playedBodyLeft_one": "Venter på {{count}} kamp til. Runde {{next}} trekkes når den er ferdig. Kampen din dukker opp her, og du får et varsel.",
     "playedBodyLeft_other": "Venter på {{count}} kamper til. Runde {{next}} trekkes når de er ferdige. Kampen din dukker opp her, og du får et varsel.",
     "joinedByMistake": "Meldte du deg på ved en feil?",
-    "breakTitle": "Pause · runde {{round}} starter kl. {{time}}"
+    "breakTitle": "Pause · runde {{round}} starter kl. {{time}}",
+    "noShowTitle": "Du er ute av de neste trekningene",
+    "noShowBody": "Du koblet aldri til kampen din, så de neste rundene trekkes uten deg. Tilbake ved PC-en? Si fra, så er du med i neste trekning.",
+    "backIn": "Jeg er tilbake",
+    "tagNoShow": "Møtte ikke"
   },
   "liveOverview": {
     "roundOf": "Runde {{round}} av {{total}}",

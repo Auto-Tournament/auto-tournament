@@ -232,6 +232,7 @@ const URGENT_TOURNAMENT_EVENTS = new Set([
   'match_soon',
   'started',
   'check_in',
+  'no_show',
 ]);
 
 /** Whether a notice is worth a system notification (see the effect above). */

@@ -39,11 +39,14 @@ function InServerList({
   players,
   connected,
   ready,
+  noServer = false,
 }: {
   players: Array<{ steamid: string; name: string; avatar?: string }>;
   connected: Set<string>;
   /** Players in the server who typed .r (the draft's Ready chip). */
   ready: Set<string>;
+  /** No server yet: nobody can be in it, so each player reads "Not yet", not "Not joined". */
+  noServer?: boolean;
 }) {
   const { t } = useTranslation();
   return (
@@ -56,7 +59,7 @@ function InServerList({
             key={player.steamid}
             component="li"
             data-testid="your-match-player"
-            data-in-server={isIn ? 'true' : 'false'}
+            data-in-server={noServer ? 'unknown' : isIn ? 'true' : 'false'}
             sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}
           >
             <Box
@@ -116,11 +119,13 @@ function InServerList({
                 aria-hidden
                 sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: 'currentColor' }}
               />
-              {isReady
-                ? t('yourMatch.ready')
-                : isIn
-                  ? t('yourMatch.inServer')
-                  : t('yourMatch.notJoined')}
+              {noServer
+                ? t('yourMatch.notYet')
+                : isReady
+                  ? t('yourMatch.ready')
+                  : isIn
+                    ? t('yourMatch.inServer')
+                    : t('yourMatch.notJoined')}
             </Box>
           </Box>
         );
@@ -382,6 +387,7 @@ export function YourMatchCard({
         players={match.config?.[side]?.players ?? []}
         connected={connected}
         ready={ready}
+        noServer={!match.server}
       />
     </Box>
   );
@@ -507,7 +513,12 @@ export function YourMatchCard({
           <SectionTitle
             id="your-match-players"
             title={t('liveMatch.players')}
-            note={t('yourMatch.inServerCount', { count: inServer, expected })}
+            note={
+              // No server yet (a later round waits for one): no "0 of N in the server".
+              match.server
+                ? t('yourMatch.inServerCount', { count: inServer, expected })
+                : t('yourMatch.waitingForServer')
+            }
           />
           <Box
             sx={{
