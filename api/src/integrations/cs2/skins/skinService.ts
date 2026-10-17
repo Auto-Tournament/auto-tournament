@@ -1442,7 +1442,13 @@ export const skinService = {
         'SELECT id FROM cs2_player_skins WHERE source_ref = ? LIMIT 1',
         [ref]
       );
-      if (already) return;
+      // A 3-skin choice nobody has picked from yet has no player skin: check it too.
+      const offered =
+        already ??
+        (await db.queryOneAsync('SELECT id FROM cs2_skin_choices WHERE source_ref = ? LIMIT 1', [
+          ref,
+        ]));
+      if (offered) return;
       // Only the people who played: a roster's placeholder players and bots never join a
       // server, so they have no rounds in the tournament's matches.
       // Everyone who played a round in it (Steam accounts: bots and placeholders never do).
