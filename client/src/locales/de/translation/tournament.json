@@ -1570,6 +1570,23 @@
       "member": "Member"
     }
   },
+  "lineupPanel": {
+    "title": "Aufstellung",
+    "note_one": "Wähle {{count}} Spieler für dieses Match. Die anderen sitzen auf der Bank.",
+    "note_other": "Wähle {{count}} Spieler für dieses Match. Die anderen sitzen auf der Bank.",
+    "picked": "{{picked}} von {{count}} gewählt",
+    "plays": "Spielt",
+    "bench": "Bank",
+    "save": "Aufstellung speichern",
+    "saved": "Aufstellung gespeichert",
+    "notOnServer": "Aufstellung gespeichert, aber der Server hat sie nicht übernommen: {{error}}",
+    "locked": "Die Aufstellung ist gesperrt, solange eine Map läuft. Zwischen den Maps kann sie geändert werden.",
+    "captainOnly": "Nur der Teambesitzer oder ein Kapitän kann die Aufstellung ändern.",
+    "source": {
+      "previous": "Wie im letzten Match des Teams.",
+      "roster": "Die ersten Spieler im Kader."
+    }
+  },
   "prizesPage": {
     "title": "Prizes",
     "intro": "Skins for a placing, given to every player on the team when the tournament ends, and a prize for the MVP. Site skins only: no Steam items, no money value.",

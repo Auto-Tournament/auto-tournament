@@ -1570,6 +1570,23 @@
       "member": "Member"
     }
   },
+  "lineupPanel": {
+    "title": "Composition",
+    "note_one": "Choisis {{count}} joueur pour ce match. Les autres restent sur le banc.",
+    "note_other": "Choisis {{count}} joueurs pour ce match. Les autres restent sur le banc.",
+    "picked": "{{picked}} sur {{count}} choisis",
+    "plays": "Joue",
+    "bench": "Banc",
+    "save": "Enregistrer la composition",
+    "saved": "Composition enregistrée",
+    "notOnServer": "Composition enregistrée, mais le serveur ne l'a pas prise : {{error}}",
+    "locked": "La composition est verrouillée pendant qu'une map se joue. Elle peut changer entre les maps.",
+    "captainOnly": "Seul le propriétaire de l'équipe ou un capitaine peut changer la composition.",
+    "source": {
+      "previous": "La même qu'au dernier match de l'équipe.",
+      "roster": "Les premiers joueurs de l'effectif."
+    }
+  },
   "prizesPage": {
     "title": "Prizes",
     "intro": "Skins for a placing, given to every player on the team when the tournament ends, and a prize for the MVP. Site skins only: no Steam items, no money value.",

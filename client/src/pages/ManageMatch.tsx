@@ -33,6 +33,7 @@ import { MatchStateBanner } from '../components/manage/match/MatchStateBanner';
 import { manageTournamentPath } from '../paths';
 import { MatchHoldPanel } from '../components/admin/MatchHoldPanel';
 import { FleetRosterEditor } from '../components/admin/FleetRosterEditor';
+import { LineupPanel } from '../components/match/LineupPanel';
 import { useIntegrationFor } from '../integrations/registry';
 import { fontDisplay, fontMono, radii, textSize, tokens } from '../theme/tokens';
 import { SegmentedControl } from '../components/common/SegmentedControl';
@@ -1544,6 +1545,10 @@ export default function ManageMatch() {
             onError={showError}
           />
         </Section>
+      )}
+
+      {['pending', 'ready', 'loaded', 'live'].includes(view.match.status) && (
+        <LineupPanel matchSlug={slug} admin />
       )}
 
       {onReadyUp && (

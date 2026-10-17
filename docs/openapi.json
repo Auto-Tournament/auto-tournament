@@ -680,6 +680,10 @@
       "description": "Import a match played elsewhere from its demos: teams, players and score come from the demos."
     },
     {
+      "name": "Match lineups",
+      "description": "Who plays a match for a team bigger than the team size: its captain or an admin picks."
+    },
+    {
       "name": "Match page",
       "description": "A finished match's scoreboard over its maps, and its highlight clips."
     },
@@ -10421,6 +10425,101 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/match-lineups/{slug}": {
+      "get": {
+        "tags": [
+          "Match lineups"
+        ],
+        "summary": "Who plays the match for each team bigger than the team size",
+        "description": "Public. Only teams whose roster (or signed-up lineup) has more players\nthan the team size are listed, each with its pool, the `size` players\nwho play (`players`), where that came from (`set`, `previous` match,\n`roster` order) and whether the viewer may change it (`canEdit`).\n`open`: lineups can change now (before go-live, or between maps).\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The lineups"
+          },
+          "404": {
+            "description": "No such match"
+          }
+        }
+      }
+    },
+    "/api/match-lineups/{slug}/{side}": {
+      "put": {
+        "tags": [
+          "Match lineups"
+        ],
+        "summary": "Pick who plays the match for a team",
+        "description": "The team's owner or a captain (any member of a team with neither);\nan admin with `asAdmin: true` for either team. Before the match goes\nlive, or between maps. `players` are exactly `size` Steam IDs from the\npool. A match on a Ready Up server gets the new roster at once;\n`serverSync` says whether it took it (the lineup is saved either way).\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "side",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "team1",
+                "team2"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "players": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "asAdmin": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "400": {
+            "description": "Not `size` players from the pool"
+          },
+          "403": {
+            "description": "Not the team's captain",
+            "or not an admin": null
+          },
+          "409": {
+            "description": "Locked (live)",
+            "or the team has no lineup to pick": null
+          }
+        }
       }
     },
     "/api/matches": {

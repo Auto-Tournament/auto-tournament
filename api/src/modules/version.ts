@@ -13,7 +13,7 @@
  */
 
 /** The server API version: the `GameIntegration` contract. */
-export const SERVER_API_VERSION = '0.1.3';
+export const SERVER_API_VERSION = '0.1.4';
 
 /**
  * The client API version the web client provides. The client owns it
