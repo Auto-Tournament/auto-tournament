@@ -164,16 +164,16 @@ export const generateMatchConfig = async (
     ? await tournamentSignupService.lineupRoster(tournament.id, team2.id, team2.players)
     : null;
   // A team bigger than the team size plays the lineup picked for this match
-  // (services/matchLineups); the bench is whitelisted as spectators.
+  // (services/matchLineups). The bench is not on the server at all, not even
+  // as spectators: they watch through the delayed GOTV like everyone else
+  // (no ghosting).
   const { lineupFor } = await import('../../services/matchLineups');
-  const bench: MatchPlayer = {};
   const playing = async (teamId: string, players: Record<string, string>) => {
     const lineup = slug ? await lineupFor(slug, tournament.id, teamId, 'cs2') : null;
     if (!lineup) return players;
     const out: Record<string, string> = {};
     for (const [id, name] of Object.entries(players)) {
       if (lineup.has(id)) out[id] = name;
-      else bench[id] = name;
     }
     return out;
   };
@@ -349,7 +349,7 @@ export const generateMatchConfig = async (
     // Your allocator / match loader should read this and configure the server accordingly.
     // veto_per_map_sides: per_map_sides, // ['team1_ct' | 'team2_ct' | 'knife'] per map index
 
-    spectators: { players: bench },
+    spectators: { players: {} },
 
     // Round limit configuration
     cvars,

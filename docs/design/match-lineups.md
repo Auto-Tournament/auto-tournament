@@ -36,8 +36,9 @@ too, with the same effect.
 `match.update` (FLEET.md §7.3) already carries roster changes to a match a
 server is running: `add_player` / `remove_player`, applied all or none, and
 Ready Up rebuilds its match context from them (`fleet_bridge.cpp OnUpdate`),
-ready count included. Its team lock moves anyone listed as a spectator to the
-spectators, and a roster player to their side. `syncMatch` (fleet driver)
+ready count included. Its team lock puts a roster player on their side, and
+anyone not on the roster goes to the spectators until the whitelist removes
+them. `syncMatch` (fleet driver)
 rebuilds the assign config, diffs it against the acked one and sends the
 difference. **Ready Up needs no change.**
 
@@ -59,11 +60,15 @@ wingman), the match uses `N` of them: the lineup. The rest are on the bench.
   `map_end`, `warmup` or `loading`). A change then applies from the next map.
   Admins have the same window: changing who is on a team mid-map would swap a
   player out of a live round.
-- **Server side**: the config's `team.players` is the lineup; the bench goes in
-  `spectators` (whitelisted, held in the spectator team by the team lock). A
-  change while the match is on a Ready Up server goes out at once
-  (`onLineupChanged` → `syncMatch` → `match.update`: the bench player is
-  removed and added as a spectator, the new player added to the team).
+- **Server side**: the config's `team.players` is the lineup. The bench is
+  **not on the server at all**: not on a team, not in `spectators`, so the
+  whitelist keeps them out. They watch through the delayed GOTV like everyone
+  else, so a benched player cannot ghost for their team (owner's decision,
+  2026-10-17). A change while the match is on a Ready Up server goes out at
+  once (`onLineupChanged` → `syncMatch` → `match.update`: `remove_player` for
+  the benched player, `add_player` for the new one). A benched player who is
+  still connected goes to the spectators and is then removed by the
+  whitelist.
 - **Ready and "everyone connected"**: they read the roster, which is now the
   lineup, so a 2v2 waits for two a side, and team ready counts the lineup.
   Nothing else changes for teams whose pool fits the team size.
@@ -74,10 +79,6 @@ matches (their stored roster is what the admin typed), and the RCON transport
 
 ## Open questions
 
-- Bench players can join as spectators on the match server. That lets a
-  benched player watch the live match without the GOTV delay (ghosting). An
-  event that cares can kick them; if this is a problem, leave the bench out of
-  `spectators` instead (one line in `matchConfig.ts`).
 - A team whose pool is bigger than `N` and whose signed-up lineup lists subs:
   the subs are in the pool, so they can be picked. The sign-up's starter/sub
   split only orders the default.

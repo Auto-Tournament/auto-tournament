@@ -6,7 +6,8 @@ import { getAuthHeader, signInAsPlayerViaRequest, signInViaRequest } from '../he
  * team bigger than the team size (five players in a 2v2) picks who plays each
  * match. The owner or a captain picks; a team with neither lets any member;
  * an admin sets either team's. The match config and the Ready Up assign
- * config carry the lineup as the team, the bench as spectators.
+ * config carry the lineup as the team; the bench is not on the server at all
+ * (not even as spectators: they watch GOTV, no ghosting).
  *
  * @tag api
  * @tag tournament
@@ -143,12 +144,11 @@ test.describe('Match lineups', () => {
       expect(aNow.players).toEqual([mates[2], mates[3]]);
       expect(aNow.source).toBe('set');
 
-      // The served config: the lineup is the team, the bench are spectators.
+      // The served config: the lineup is the team; the bench is nowhere on it.
       const config = await (await request.get(`/api/matches/${slug}.json`, { headers })).json();
       expect(Object.keys(config[a.side].players).sort()).toEqual([mates[2], mates[3]].sort());
-      expect(Object.keys(config.spectators.players).sort()).toEqual(
-        [ownerId, mates[0], mates[1], bIds[2]].sort()
-      );
+      expect(Object.keys(config.spectators?.players ?? {})).toEqual([]);
+      expect(Object.keys(config[b.side].players)).toHaveLength(2);
       expect(config.players_per_team).toBe(2);
 
       // What Ready Up would be assigned: the same.
@@ -163,7 +163,15 @@ test.describe('Match lineups', () => {
         [mates[2], mates[3]].sort()
       );
       expect(sent[a.side].players.every((p) => (p.role ?? 'player') === 'player')).toBe(true);
-      expect(sent.spectators).toEqual(expect.arrayContaining([ownerId, mates[0], mates[1]]));
+      // Not whitelisted anywhere: no team, no spectator seat.
+      const onServer = new Set([
+        ...sent.team1.players.map((p) => p.steamid64),
+        ...sent.team2.players.map((p) => p.steamid64),
+        ...(sent.spectators ?? []),
+      ]);
+      for (const benched of [ownerId, mates[0], mates[1], bIds[2]]) {
+        expect(onServer.has(benched)).toBe(false);
+      }
 
       // Team B has no owner or captain: any member picks.
       const bMember = await playwright.request.newContext({ baseURL });
