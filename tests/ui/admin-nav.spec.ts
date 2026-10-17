@@ -23,6 +23,7 @@ const TOURNAMENT_BAR_ITEMS: [string, RegExp][] = [
 
 /** Every platform admin page, by its rail item's test id, and the URL it opens. */
 const CORE_RAIL_ITEMS: [string, RegExp][] = [
+  ['liveMatches', /\/manage\/live$/],
   ['tournaments', /\/tournaments$/],
   ['teams', /\/teams$/],
   ['players', /\/players$/],

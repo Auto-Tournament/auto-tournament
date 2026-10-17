@@ -169,6 +169,13 @@ export const SITE_SEARCH_INDEX: SiteSearchEntry[] = [
     audience: 'admin',
   },
   {
+    key: 'liveMatches',
+    title: page('liveMatches'),
+    to: paths.liveMatches,
+    keywords: 'live running now servers pause admin call players connected',
+    audience: 'admin',
+  },
+  {
     key: 'playedMatches',
     title: page('playedMatches'),
     to: paths.playedMatches,

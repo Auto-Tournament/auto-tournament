@@ -998,7 +998,8 @@
       "settingsWebhooks": "Innstillinger: webhooks",
       "settingsLicense": "Lisens",
       "settingsMatchmaking": "Innstillinger: matchmaking",
-      "settingsAdvanced": "Innstillinger: avansert"
+      "settingsAdvanced": "Innstillinger: avansert",
+      "liveMatches": "Direktekamper"
     },
     "clips_one": "{{count}} klipp",
     "clips_other": "{{count}} klipp",
