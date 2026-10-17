@@ -169,6 +169,17 @@ export async function holdForBreak(slug: string, until: number, reason: string):
 
 /** Let a held match go ahead now; its countdowns start afresh. */
 export async function releaseMatch(slug: string, by: Actor | null): Promise<void> {
+  if (by) {
+    // An admin letting a hold go before it ran out: the veto's first turn gets a grace.
+    const row = await db.queryOneAsync<{ held_until: number | null }>(
+      'SELECT held_until FROM matches WHERE slug = ?',
+      [slug]
+    );
+    if (row?.held_until && Number(row.held_until) > now()) {
+      const { markEarlyRelease } = await import('../integrations/cs2/veto/timer');
+      markEarlyRelease(slug);
+    }
+  }
   await db.runAsync(
     'UPDATE matches SET held_until = NULL, hold_reason = NULL, countdown_from = ? WHERE slug = ?',
     [now(), slug]

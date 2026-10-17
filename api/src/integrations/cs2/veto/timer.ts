@@ -8,9 +8,9 @@
  * A turn starts at the previous action (its timestamp), or, for the first
  * step, when this process first saw the match waiting on its veto. That first
  * time is kept in memory: a restart gives the first team a fresh clock, which
- * is the fair side to err on. The first step gets the turn plus a grace
- * (VETO_OPEN_GRACE_SECONDS), or `at_veto_first_turn_seconds` (default 2 min)
- * when that is longer: the players are coming from their last match.
+ * is the fair side to err on. The first step gets `at_veto_first_turn_seconds`
+ * (default 2 min: the players are coming from their last match), plus a
+ * grace when an admin released the hold early.
  *
  * A held match (an admin's hold, or the break between a team's matches) has
  * no clock: its veto opens when the hold ends (`opensAt` until then).
@@ -25,12 +25,18 @@ import { autoCompleteVetoForMatch } from './simulation';
 const TICK_MS = 2_000;
 
 /**
- * Extra seconds on a match's first veto turn, on top of the turn length: the
- * players have just been told the veto is open (a break ending, an admin
- * letting the hold go early) and need time to open the page. Presence on the
- * veto page is not tracked, so every first turn gets it.
+ * Extra seconds on a match's first veto turn when an admin let its hold go
+ * early: the players were told only just now and need time to open the page.
+ * Only that case; presence on the veto page is not tracked.
  */
 export const VETO_OPEN_GRACE_SECONDS = 60;
+/** Matches whose hold an admin released early, until their veto's first action. */
+const earlyReleased = new Set<string>();
+
+/** An admin released `slug`'s hold before it ran out: its first turn gets the grace. */
+export function markEarlyRelease(slug: string): void {
+  earlyReleased.add(slug);
+}
 
 /** First seen waiting on step 1 (no veto action yet), by match slug. */
 const firstSeen = new Map<string, number>();
@@ -65,12 +71,14 @@ export function turnStartedAt(
   const veto = parseVeto(rawVeto);
   if (veto?.status === 'completed') {
     firstSeen.delete(slug);
+    earlyReleased.delete(slug);
     return null;
   }
   const last = veto?.actions?.[veto.actions.length - 1]?.timestamp;
   const lastMs = last ? Date.parse(last) : NaN;
   if (Number.isFinite(lastMs)) {
     firstSeen.delete(slug);
+    earlyReleased.delete(slug);
     return lastMs;
   }
   let seen = firstSeen.get(slug);
@@ -82,12 +90,16 @@ export function turnStartedAt(
 }
 
 /** Seconds for the turn after `actions` steps: the first one may be longer. */
-export async function secondsForTurn(rawVeto: string | null | undefined): Promise<number> {
+export async function secondsForTurn(
+  rawVeto: string | null | undefined,
+  slug?: string
+): Promise<number> {
   const seconds = await cs2Settings.getVetoTurnSeconds();
   if (seconds <= 0) return 0;
   if ((parseVeto(rawVeto)?.actions?.length ?? 0) > 0) return seconds;
   const first = await cs2Settings.getVetoFirstTurnSeconds();
-  return Math.max(seconds + VETO_OPEN_GRACE_SECONDS, first);
+  const usual = first > 0 ? Math.max(seconds, first) : seconds;
+  return slug && earlyReleased.has(slug) ? usual + VETO_OPEN_GRACE_SECONDS : usual;
 }
 
 /** The match's hold end (unix s) while it is held, else null. */
@@ -136,7 +148,7 @@ export async function vetoTurnDeadline(
       ...(forStart ? { startsAt: new Date(times!.startsAt! * 1000).toISOString() } : {}),
     };
   }
-  const seconds = await secondsForTurn(rawVeto);
+  const seconds = await secondsForTurn(rawVeto, slug);
   if (seconds <= 0) return null;
   const started = turnStartedAt(slug, rawVeto);
   if (started === null) return null;
@@ -178,7 +190,7 @@ async function tick(): Promise<void> {
   for (const slug of firstSeen.keys()) if (!openSlugs.has(slug)) firstSeen.delete(slug);
 
   for (const match of open) {
-    const seconds = await secondsForTurn(match.veto_state);
+    const seconds = await secondsForTurn(match.veto_state, match.slug);
     const started = turnStartedAt(match.slug, match.veto_state, now);
     if (started === null || now < started + seconds * 1000 || acting.has(match.slug)) continue;
     acting.add(match.slug);
