@@ -127,7 +127,7 @@ test.describe('loadout sides (rules)', () => {
     expect(loadoutPayload([])).toBeNull();
   });
 
-  test('nothing equipped in a slot: the newest owned skin for it, on both sides', () => {
+  test('nothing equipped in a weapon slot: the newest owned skin for it, on both sides', () => {
     const row = (weapon: string, paint: number, slot = '', team = 0) => ({
       weapon,
       paint_kit: paint,
@@ -141,11 +141,8 @@ test.describe('loadout sides (rules)', () => {
       row('sporty_gloves', 10018),
       row('weapon_knife_tactical', 415),
     ];
-    // Nothing equipped: the newest knife and gloves.
-    expect(withInventoryFallback([], owned).map((r) => [r.weapon, r.slot, r.team])).toEqual([
-      ['weapon_knife_m9_bayonet', 'knife', 0],
-      ['sporty_gloves', 'gloves', 0],
-    ]);
+    // Knives and gloves only when equipped: owning them adds nothing (the Steam knife stays).
+    expect(withInventoryFallback([], owned)).toEqual([]);
     // Weapons too: the newest AK skin owned, unless one is equipped.
     const guns = [row('weapon_ak47', 180), row('weapon_ak47', 44), row('weapon_awp', 344)];
     expect(withInventoryFallback([], guns).map((r) => [r.weapon, r.paint_kit])).toEqual([
