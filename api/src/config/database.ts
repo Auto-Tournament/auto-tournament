@@ -66,6 +66,19 @@ class DatabaseManager {
       throw new Error('Database access is disabled (AT_NO_DB=1)');
     }
     if (!this.pool) {
+      // Local test tooling sets AT_REQUIRE_EXPLICIT_DB=1 so a missing config
+      // fails loudly instead of silently connecting to whatever listens on
+      // 127.0.0.1:5432. Production defaults are unchanged.
+      if (
+        process.env.AT_REQUIRE_EXPLICIT_DB === '1' &&
+        !process.env.DATABASE_URL &&
+        !process.env.DB_HOST
+      ) {
+        throw new Error(
+          'No database configured: set DATABASE_URL (or DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME) explicitly. ' +
+            'Tests and scripts do not default to 127.0.0.1:5432.'
+        );
+      }
       this.pool = new Pool({
         connectionString: this.connectionString,
         max: 20,
