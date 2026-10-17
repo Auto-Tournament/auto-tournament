@@ -7,6 +7,7 @@ import { getVetoOrder } from './config';
 import { postVetoProgress } from './chatLines';
 import { getVetoContext } from './context';
 import { storeStandaloneVetoConfig } from './standaloneConfig';
+import { tallyVotes } from './vote';
 import { emitVetoUpdate } from '../../../services/socketService';
 import { settingsService } from '../../../services/settingsService';
 import { buildMatchConfigFor, serializeMatchConfig } from '../../../utils/matchIntegration';
@@ -50,7 +51,11 @@ interface VetoState {
     timestamp: string;
     /** Taken by the platform because the team ran out of time. */
     timedOut?: boolean;
+    /** A matchmaking vote: the votes the choice had. */
+    votes?: number;
   }>;
+  /** A matchmaking vote's votes for the current step: steam id → map or side. */
+  votes?: Record<string, string>;
   currentTurn: VetoTeam;
   currentAction: VetoActionType;
   team1Id?: string;
@@ -71,6 +76,13 @@ interface AutoVetoOptions {
    */
   timedOut?: boolean;
   maxSteps?: number;
+  /**
+   * A matchmaking vote (./vote.ts): take the choice the side's votes decide instead of a
+   * random one, and say how many votes it had.
+   */
+  byVote?: boolean;
+  /** Act only while the veto is on this step (the timer's or a vote's step, read before the lock). */
+  onlyStep?: number;
 }
 
 function getRandomElement<T>(items: T[]): T {
@@ -300,6 +312,10 @@ async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promis
     log.debug(`[VETO-SIM] Veto already completed for ${matchSlug}; nothing to do`);
     return;
   }
+  if (options?.onlyStep !== undefined && (vetoState?.currentStep ?? 1) !== options.onlyStep) {
+    log.debug(`[VETO-SIM] ${matchSlug} moved past step ${options.onlyStep}; nothing to do`);
+    return;
+  }
 
   if (vetoState) {
     log.info(
@@ -337,8 +353,20 @@ async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promis
 
     let selectedMap: string | undefined;
     let selectedSide: 'CT' | 'T' | undefined;
+    // A vote's step: the votes decide (no votes: drawn, and out of time).
+    let mark: { timedOut?: true; votes?: number } = timedOut ? { timedOut: true } : {};
 
-    if (currentAction === 'ban' || currentAction === 'pick') {
+    if (options?.byVote) {
+      const sideStep = currentAction === 'side_pick';
+      const { choice, count } = tallyVotes(
+        vetoState.votes,
+        sideStep ? ['CT', 'T'] : vetoState.availableMaps
+      );
+      if (sideStep) selectedSide = choice as 'CT' | 'T';
+      else selectedMap = choice;
+      mark = count > 0 ? { votes: count } : { timedOut: true };
+      if (!sideStep && !selectedMap) break;
+    } else if (currentAction === 'ban' || currentAction === 'pick') {
       if (!vetoState.availableMaps.length) {
         log.warn(
           `[VETO-SIM] No available maps left for ${currentAction} on match ${matchSlug}; breaking`
@@ -360,7 +388,7 @@ async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promis
         action: 'ban',
         mapName: selectedMap,
         timestamp: new Date().toISOString(),
-        ...(timedOut ? { timedOut: true } : {}),
+        ...mark,
       });
     } else if (currentAction === 'pick' && selectedMap) {
       const mapNumber = vetoState.pickedMaps.length + 1;
@@ -377,7 +405,7 @@ async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promis
         action: 'pick',
         mapName: selectedMap,
         timestamp: new Date().toISOString(),
-        ...(timedOut ? { timedOut: true } : {}),
+        ...mark,
       });
     } else if (currentAction === 'side_pick' && selectedSide) {
       // For BO1/BO3 last step, ensure decider map is added if only one remains
@@ -414,11 +442,12 @@ async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promis
         mapName: lastPick?.mapName || 'unknown',
         side: selectedSide,
         timestamp: new Date().toISOString(),
-        ...(timedOut ? { timedOut: true } : {}),
+        ...mark,
       });
     }
 
     vetoState.currentStep += 1;
+    delete vetoState.votes;
 
     // Persist and emit after each step so UI updates live
     await db.updateAsync('matches', { veto_state: JSON.stringify(vetoState) }, 'slug = ?', [

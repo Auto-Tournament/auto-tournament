@@ -369,7 +369,13 @@ interface VetoView {
   currentTurn: 'team1' | 'team2';
   currentAction: 'ban' | 'pick' | 'side_pick';
   availableMaps: string[];
-  actions: Array<{ team: string; action: string; timedOut?: boolean }>;
+  actions: Array<{
+    team: string;
+    action: string;
+    mapName?: string;
+    timedOut?: boolean;
+    votes?: number;
+  }>;
   turnDeadline?: string;
 }
 
@@ -380,31 +386,39 @@ async function vetoOf(ctx: APIRequestContext, slug: string): Promise<VetoView> {
 }
 
 /**
- * Walk a matchmaking 5v5's veto with one player of each team (anyone on the team may act):
- * bans in turn until one map is left, then the side. Returns the map; checks it is the
- * match config's only map and the match waits for a server.
+ * Walk a matchmaking 5v5's veto vote: on each step every player of the side whose turn it
+ * is votes for the same map (or side), which ends the turn at once. Returns the map;
+ * checks it is the match config's only map and the match waits for a server.
  */
 async function runVeto(
   slug: string,
-  team1: APIRequestContext,
-  team2: APIRequestContext,
+  team1: APIRequestContext[],
+  team2: APIRequestContext[],
   admin: APIRequestContext
 ): Promise<string> {
   for (let i = 0; i < 30; i++) {
-    const veto = await vetoOf(team1, slug);
+    const veto = await vetoOf(team1[0], slug);
     if (veto.status === 'completed') break;
-    const ctx = veto.currentTurn === 'team1' ? team1 : team2;
+    const side = veto.currentTurn === 'team1' ? team1 : team2;
     const other = veto.currentTurn === 'team1' ? team2 : team1;
     const data =
       veto.currentAction === 'side_pick' ? { side: 'CT' } : { mapName: veto.availableMaps[0] };
-    // The other team cannot act out of turn.
-    expect((await other.post(`/api/veto/${slug}/action`, { data })).status()).toBe(403);
-    const res = await ctx.post(`/api/veto/${slug}/action`, { data });
-    expect(res.ok(), await res.text()).toBe(true);
+    // The other team cannot vote out of turn.
+    expect((await other[0].post(`/api/veto/${slug}/action`, { data })).status()).toBe(403);
+    for (const ctx of side) {
+      const res = await ctx.post(`/api/veto/${slug}/action`, { data });
+      expect(res.ok(), await res.text()).toBe(true);
+    }
+    // The whole side voted: the step is taken now, not when the 10 s run out.
+    await expect
+      .poll(async () => (await vetoOf(team1[0], slug)).actions.length, { timeout: 5_000 })
+      .toBe(veto.actions.length + 1);
+    const after = await vetoOf(team1[0], slug);
+    expect(after.actions[after.actions.length - 1]).toMatchObject({ votes: side.length });
   }
-  const done = (await (await team1.get(`/api/veto/${slug}`)).json()).veto as {
+  const done = (await (await team1[0].get(`/api/veto/${slug}`)).json()).veto as {
     status: string;
-    pickedMaps: Array<{ mapName: string }>;
+    pickedMaps: Array<{ mapName: string; sideTeam1?: string; sideTeam2?: string }>;
   };
   expect(done.status).toBe('completed');
   const map = done.pickedMaps[0].mapName;
@@ -567,7 +581,9 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     expect(view.matchSlug).toMatch(/^mm-/);
     expect(view).toMatchObject({ veto: true, map: null, matchStatus: 'pending' });
     const ctxOfTeam = (team: number) =>
-      players.find((p) => p.id === view.teams.find((t) => t.team === team)!.players[0].id)!.ctx;
+      view.teams
+        .find((t) => t.team === team)!
+        .players.map((member) => players.find((p) => p.id === member.id)!.ctx);
     const vetoed = await runVeto(view.matchSlug, ctxOfTeam(1), ctxOfTeam(2), admin);
     await expect
       .poll(
@@ -680,46 +696,61 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     expect((await outsider.ctx.get(`/api/matchmaking/lobbies/${lobbyId}`)).status()).toBe(404);
   });
 
-  test('5v5 veto: a side that does not act gets a ban taken for it', TAGS, async () => {
-    const set = await admin.put('/api/settings', {
-      data: { vetoTurnSeconds: 2, vetoFirstTurnSeconds: 2 },
-    });
-    expect(set.ok(), await set.text()).toBe(true);
+  test('5v5 veto vote: when the 10 s run out the most-voted map is banned', TAGS, async () => {
     const players = await Promise.all(Array.from({ length: 10 }, () => player()));
     contexts.push(...players.map((p) => p.ctx));
-    try {
-      for (const p of players) {
-        const res = await p.ctx.post('/api/matchmaking/queue', { data: { mode: '5v5' } });
-        expect(res.ok(), await res.text()).toBe(true);
-      }
-      const lobby = await lobbyOf(players[0].ctx);
-      for (const p of players)
-        expect(
-          (await p.ctx.post(`/api/matchmaking/lobbies/${lobby.id}/accept`, { data: {} })).ok()
-        ).toBe(true);
-      const room = (await (await players[0].ctx.get(`/api/matchmaking/lobbies/${lobby.id}`)).json())
-        .lobby as { matchSlug: string; veto: boolean };
-      expect(room.veto).toBe(true);
-      // Nobody acts: the platform bans for the side whose turn it is, marked as out of time.
-      await expect
-        .poll(async () => (await vetoOf(players[0].ctx, room.matchSlug)).actions.length, {
-          timeout: 20_000,
-        })
-        .toBeGreaterThan(0);
-      const veto = await vetoOf(players[0].ctx, room.matchSlug);
-      expect(veto.actions[0]).toMatchObject({ action: 'ban', timedOut: true });
-      expect(veto.turnDeadline).toBeTruthy();
-      await admin.post('/api/test/series-result', {
-        data: {
-          slug: room.matchSlug,
-          result: { winner: 'team1', team1Score: 1, team2Score: 0, games: [] },
-        },
-      });
-    } finally {
-      await admin.put('/api/settings', {
-        data: { vetoTurnSeconds: null, vetoFirstTurnSeconds: null },
-      });
+    for (const p of players) {
+      const res = await p.ctx.post('/api/matchmaking/queue', { data: { mode: '5v5' } });
+      expect(res.ok(), await res.text()).toBe(true);
     }
+    const lobby = await lobbyOf(players[0].ctx);
+    for (const p of players)
+      expect(
+        (await p.ctx.post(`/api/matchmaking/lobbies/${lobby.id}/accept`, { data: {} })).ok()
+      ).toBe(true);
+    const room = (await (await players[0].ctx.get(`/api/matchmaking/lobbies/${lobby.id}`)).json())
+      .lobby as {
+      matchSlug: string;
+      veto: boolean;
+      teams: Array<{ team: number; players: Array<{ id: string }> }>;
+    };
+    expect(room.veto).toBe(true);
+    const opening = await vetoOf(players[0].ctx, room.matchSlug);
+    expect(opening.turnDeadline).toBeTruthy();
+    // One player of the side to act votes, the rest do not: their map goes when time is up.
+    const voterId = room.teams.find((t) => t.team === (opening.currentTurn === 'team1' ? 1 : 2))!
+      .players[0].id;
+    const voter = players.find((p) => p.id === voterId)!.ctx;
+    const target = opening.availableMaps[opening.availableMaps.length - 1];
+    expect(
+      (await voter.post(`/api/veto/${room.matchSlug}/action`, { data: { mapName: target } })).ok()
+    ).toBe(true);
+    expect((await vetoOf(players[0].ctx, room.matchSlug)) as unknown).toMatchObject({
+      votes: { [voterId]: target },
+    });
+    await expect
+      .poll(async () => (await vetoOf(players[0].ctx, room.matchSlug)).actions.length, {
+        timeout: 20_000,
+      })
+      .toBeGreaterThan(0);
+    const veto = await vetoOf(players[0].ctx, room.matchSlug);
+    expect(veto.actions[0]).toMatchObject({ action: 'ban', mapName: target, votes: 1 });
+    // Nobody votes on the next turn: a map is drawn, marked as out of time.
+    await expect
+      .poll(async () => (await vetoOf(players[0].ctx, room.matchSlug)).actions.length, {
+        timeout: 20_000,
+      })
+      .toBeGreaterThan(1);
+    expect((await vetoOf(players[0].ctx, room.matchSlug)).actions[1]).toMatchObject({
+      action: 'ban',
+      timedOut: true,
+    });
+    await admin.post('/api/test/series-result', {
+      data: {
+        slug: room.matchSlug,
+        result: { winner: 'team1', team1Score: 1, team2Score: 0, games: [] },
+      },
+    });
   });
 
   test('a decline: cooldown for the decliner, everyone else back at the front', TAGS, async () => {

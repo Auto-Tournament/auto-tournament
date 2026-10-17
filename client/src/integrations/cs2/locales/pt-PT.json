@@ -431,7 +431,10 @@
     "startsAtEyebrow": "Starts at {{time}} · veto opens {{opens}}",
     "opensBeforeStart_one": "The veto opens by itself {{count}} minute before the match. Stay on this page: you hear a sound when it opens. If your team misses a turn, a map is picked for you.",
     "opensBeforeStart_other": "The veto opens by itself {{count}} minutes before the match. Stay on this page: you hear a sound when it opens. If your team misses a turn, a map is picked for you.",
-    "yourTurn": "Your turn"
+    "yourTurn": "Your turn",
+    "vote": {
+      "hint": "Vote: when the {{seconds}} seconds run out, the most votes win (a tie is drawn). You can change your vote; the turn ends early once your whole team has voted."
+    }
   },
   "matchInfo": {
     "server": {

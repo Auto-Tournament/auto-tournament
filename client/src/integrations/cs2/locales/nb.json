@@ -431,7 +431,10 @@
     "startsAtEyebrow": "Starter {{time}} · vetoen åpner {{opens}}",
     "opensBeforeStart_one": "Vetoen åpner av seg selv {{count}} minutt før kampen. Bli på denne siden: du hører en lyd når den åpner. Går laget ditt glipp av turen sin, velges et kart for dere.",
     "opensBeforeStart_other": "Vetoen åpner av seg selv {{count}} minutter før kampen. Bli på denne siden: du hører en lyd når den åpner. Går laget ditt glipp av turen sin, velges et kart for dere.",
-    "yourTurn": "Din tur"
+    "yourTurn": "Din tur",
+    "vote": {
+      "hint": "Stem: når de {{seconds}} sekundene er ute, vinner flest stemmer (ved likt trekkes det). Du kan endre stemmen din, og turen slutter med en gang hele laget har stemt."
+    }
   },
   "matchInfo": {
     "server": {
