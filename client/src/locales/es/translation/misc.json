@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "Nombre visible",
+      "description": "Se muestra en el sitio y en el juego. Puedes cambiarlo una vez al día.",
+      "lockedUntil": "Se muestra en el sitio y en el juego. Lo cambiaste hace poco; podrás cambiarlo de nuevo a partir del {{date}}.",
+      "label": "Nombre",
+      "lengthHint": "{{min}}–{{max}} caracteres",
+      "badChars": "Sin comillas, < o >, ni caracteres de control",
+      "promptTitle": "¿Cómo te llamas?",
+      "promptBody": "Se muestra en el juego y en el sitio.",
+      "notNow": "Ahora no",
+      "save": "Guardar",
+      "saved": "Nombre guardado. Los servidores lo usarán desde tu próxima partida.",
+      "saveFailed": "No se pudo guardar tu nombre"
     }
   },
   "home": {
@@ -729,7 +743,8 @@
         "loaded": "The server is ready. Join it.",
         "live": "The match is live.",
         "completed": "The match is over.",
-        "other": "Match: {{status}}"
+        "other": "Match: {{status}}",
+        "pending": "Map veto: ban maps in turn until one is left. Anyone on your team can click; the first click counts."
       },
       "pickedBy": "{{mode}} · the map roulette picked",
       "vs": "vs",
@@ -757,13 +772,19 @@
       "equipFailed": "No se pudo equipar",
       "rematch": {
         "title": "¿Revancha?",
-        "body": "Mismos equipos, mapa nuevo. Un sí vale por todo tu grupo. Empieza cuando estén todos ({{yes}} de {{total}} hasta ahora), en 2 minutos.",
+        "ask": "Mismos equipos, una nueva partida. Tu respuesta cuenta para todo tu grupo. Si la mayoría de tu equipo dice que sí, el otro equipo tiene 30 segundos para aceptar.",
         "yes": "Sí, revancha",
         "no": "No, gracias",
         "button": "Revancha",
-        "waiting": "Esperando a los demás: {{yes}} de {{total}} han dicho que sí.",
-        "declined": "Sin revancha: alguien dijo que no."
-      }
+        "offerTitle": "El otro equipo quiere la revancha",
+        "teamTitle": "Tu equipo quiere la revancha",
+        "offerBody": "Mismos equipos, una nueva partida. La mayoría de tu equipo tiene que decir que sí. Tu respuesta cuenta para todo tu grupo.",
+        "waitingOther": "Esperando al otro equipo… {{s}} s",
+        "waitingTeam": "Esperando a tu equipo… {{s}} s",
+        "accepted": "Revancha aceptada. Abriendo la nueva partida…",
+        "refused": "Revancha rechazada."
+      },
+      "pickedByVeto": "{{mode}} · picked in the veto"
     },
     "result": {
       "title": "Result",

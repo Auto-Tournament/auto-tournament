@@ -32,6 +32,7 @@ import radarRoutes from './radars';
 import imageRoutes from './images';
 import highlightRoutes from './highlights';
 import teamProfileRoutes from './teamProfile';
+import partyMapsRoutes from './partyMaps';
 import roundBackupRoutes from './roundBackups';
 import manageMatchRoutes from './manageMatch';
 import liveOverviewRoutes from './liveOverview';
@@ -43,6 +44,7 @@ import { fleetPushRouter } from '../fleet/push/routes';
 import { fleetAutoscaleRouter } from '../fleet/autoscale/routes';
 import skinsRoutes from '../skins/routes';
 import { integrationHighlightsRouter, momentAdminRouter } from './integrationHighlights';
+import { integrationPlayerStatsRouter } from './integrationPlayerStats';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
   {
@@ -54,6 +56,15 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Integrations: highlights',
     description:
       'Notable moments from the demos (knife and Zeus kills, aces, 1vN clutches, no-scopes, grenade kills, last-second defuses) for integrators, oldest change first with a cursor; stable ids, revoked rows. Integrator token (API_TOKENS_INTEGRATOR), read-only or admin token, or admin session.',
+  },
+  {
+    // The integrations API too: summed from CS2's map and series stats and
+    // its demos' kill feeds (../statTotals.ts).
+    prefix: '/api/integrations/player-stats',
+    router: integrationPlayerStatsRouter,
+    title: 'Integrations: player stats',
+    description:
+      "Each player's numbers summed over tournaments, matches or an import's event, for an event website's stat trophies; null for a number not measured, never 0. Integrator token (API_TOKENS_INTEGRATOR), read-only or admin token, or admin session.",
   },
   {
     // Admin only (requireAuth).
@@ -217,6 +228,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: teamProfileRoutes,
     title: 'Team profile',
     description: "A team's CS2 results per map, and the maps it bans and picks most in the veto.",
+  },
+  {
+    // Public, like the player profiles it adds up.
+    prefix: '/api/game/cs2',
+    router: partyMapsRoutes,
+    title: 'Party maps',
+    description:
+      "A matchmaking party's CS2 results per map (its members' results added up), and the Active Duty maps.",
   },
   {
     // Admin only, per route: the admin match page's read and its Ready Up commands.

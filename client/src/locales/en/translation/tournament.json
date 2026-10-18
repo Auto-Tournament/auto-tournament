@@ -1006,7 +1006,8 @@
     "waitingForServer": "Waiting for a server",
     "vetoDoneChip": "Veto done · {{map}}",
     "waitingForServerBody": "A server is assigned as soon as one is free. You get a notification and this page updates by itself.",
-    "mapDrawnChip": "Map drawn · {{map}}"
+    "mapDrawnChip": "Map drawn · {{map}}",
+    "notYet": "Not yet"
   },
   "results": {
     "finalStandings": "Final standings",
@@ -1312,7 +1313,11 @@
     "playedBodyLeft_one": "Waiting for {{count}} more match. Round {{next}} is drawn when it ends; your next match shows up here and you get a notification.",
     "playedBodyLeft_other": "Waiting for {{count}} more matches. Round {{next}} is drawn when they end; your next match shows up here and you get a notification.",
     "joinedByMistake": "Joined by mistake?",
-    "breakTitle": "Break · round {{round}} starts at {{time}}"
+    "breakTitle": "Break · round {{round}} starts at {{time}}",
+    "noShowTitle": "You're out of the next draws",
+    "noShowBody": "You never joined your match, so the next rounds are drawn without you. Back at your PC? Say so and you're in the next draw.",
+    "backIn": "I'm back",
+    "tagNoShow": "No-show"
   },
   "liveOverview": {
     "roundOf": "Round {{round}} of {{total}}",
@@ -1562,6 +1567,23 @@
       "owner": "Owner",
       "captain": "Captain",
       "member": "Member"
+    }
+  },
+  "lineupPanel": {
+    "title": "Lineup",
+    "note_one": "Pick {{count}} player for this match. The rest sit on the bench.",
+    "note_other": "Pick {{count}} players for this match. The rest sit on the bench.",
+    "picked": "{{picked}} of {{count}} picked",
+    "plays": "Plays",
+    "bench": "Bench",
+    "save": "Save lineup",
+    "saved": "Lineup saved",
+    "notOnServer": "Lineup saved, but the server did not take it: {{error}}",
+    "locked": "The lineup is locked while a map is live. It can change between maps.",
+    "captainOnly": "Only the team owner or a captain can change the lineup.",
+    "source": {
+      "previous": "Same as the team's last match.",
+      "roster": "The first players on the roster."
     }
   },
   "prizesPage": {

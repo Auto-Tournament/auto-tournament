@@ -151,7 +151,11 @@
         "short": "Inloggen maakt van iedereen die nieuw is een speler. Uit: alleen spelers die jij toevoegt."
       },
       "title": "Spelers",
-      "short": "Wie meedoet, en hoe ratings veranderen."
+      "short": "Wie meedoet, en hoe ratings veranderen.",
+      "chooseName": {
+        "toggleLabel": "Spelers kiezen hun weergavenaam",
+        "short": "Spelers wordt om hun naam gevraagd en ze kunnen hem één keer per dag wijzigen. Uit: namen komen uit imports en van admins."
+      }
     },
     "developer": {
       "resetApiTitle": "API & database resetten",

@@ -217,6 +217,7 @@ export const COMPONENT_SLOTS = [
   'leaderboardView',
   'playerProfileView',
   'teamProfileView',
+  'partyView',
   'preMatchView',
   'preMatchHistory',
   'tournamentSetupSteps.rules',

@@ -15,11 +15,15 @@
  * this repo: generate a typed client from it, in any language, without needing
  * a MAT instance to point at.
  *
+ * Needs no database: it sets AT_NO_DB=1, which makes api/src/config/database
+ * refuse to create a pool or run queries.
+ *
  * Usage:
  *   yarn docs:api           # write both files
  *   yarn docs:api --check   # exit 1 if either is stale (used by CI)
  */
 
+import './no-db-env';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -128,9 +132,7 @@ row claims different auth from the row above it, the row above is what answers.
 ${
   shadowed.length === 0
     ? ''
-    : `\nCurrently shadowed:\n\n${shadowed
-        .map((e) => `- \`${e.method} ${e.path}\``)
-        .join('\n')}\n`
+    : `\nCurrently shadowed:\n\n${shadowed.map((e) => `- \`${e.method} ${e.path}\``).join('\n')}\n`
 }
 ## Endpoints
 
@@ -177,16 +179,16 @@ function assertSpecIsSound(spec: Record<string, unknown>): void {
       );
       for (const name of templated) {
         if (!declared.has(name)) {
-          problems.push(`${method.toUpperCase()} ${routePath}: path parameter "${name}" is not declared`);
+          problems.push(
+            `${method.toUpperCase()} ${routePath}: path parameter "${name}" is not declared`
+          );
         }
       }
     }
   }
 
   if (problems.length > 0) {
-    throw new Error(
-      `Refusing to write a malformed OpenAPI spec:\n  - ${problems.join('\n  - ')}`
-    );
+    throw new Error(`Refusing to write a malformed OpenAPI spec:\n  - ${problems.join('\n  - ')}`);
   }
 }
 

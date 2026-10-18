@@ -37,9 +37,19 @@ const pts = (list: Array<[number, number]>) =>
 
 /**
  * The map strength radar: one spoke per map the player played (three or
- * more), like CS2's own map ratings. Name labels at the rim.
+ * more), like CS2's own map ratings. Name labels at the rim; with
+ * `highlight`, those maps' names are in the accent colour and the rest muted
+ * (the party radar marks the Active Duty pool).
  */
-export function MapRadar({ maps, label }: { maps: MapResult[]; label: string }) {
+export function MapRadar({
+  maps,
+  label,
+  highlight,
+}: {
+  maps: MapResult[];
+  label: string;
+  highlight?: ReadonlySet<string>;
+}) {
   const played = maps.filter((m) => m.played > 0);
   const n = played.length;
   const rings = [0.25, 0.5, 0.75, 1].map((k) => pts(played.map((_, i) => point(i, n, k))));
@@ -88,9 +98,15 @@ export function MapRadar({ maps, label }: { maps: MapResult[]; label: string }) 
             x={x}
             y={y + 5}
             textAnchor={anchor}
-            fill={tokens.color.ink2}
+            fill={
+              !highlight
+                ? tokens.color.ink2
+                : highlight.has(m.map)
+                  ? tokens.color.accent
+                  : tokens.color.muted
+            }
             fontSize="14"
-            fontWeight="600"
+            fontWeight={highlight && !highlight.has(m.map) ? '400' : '600'}
           >
             {getMapDisplayName(m.map)}
           </text>

@@ -151,7 +151,11 @@
         "short": "Logowanie tworzy gracza dla każdej nowej osoby. Wyłączone: tylko gracze dodani przez ciebie."
       },
       "title": "Gracze",
-      "short": "Kto dołącza i jak zmieniają się rankingi."
+      "short": "Kto dołącza i jak zmieniają się rankingi.",
+      "chooseName": {
+        "toggleLabel": "Gracze wybierają swoją wyświetlaną nazwę",
+        "short": "Gracze są pytani o nazwę i mogą ją zmienić raz dziennie. Wyłączone: nazwy pochodzą z importu i od adminów."
+      }
     },
     "developer": {
       "resetApiTitle": "Reset API i bazy danych",

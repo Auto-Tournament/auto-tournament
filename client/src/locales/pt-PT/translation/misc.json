@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "Nome visível",
+      "description": "Aparece no site e no jogo. Podes alterá-lo uma vez por dia.",
+      "lockedUntil": "Aparece no site e no jogo. Alteraste-o há pouco; podes voltar a alterá-lo a partir de {{date}}.",
+      "label": "Nome",
+      "lengthHint": "{{min}}–{{max}} caracteres",
+      "badChars": "Sem aspas, < ou >, nem caracteres de controlo",
+      "promptTitle": "Como te chamas?",
+      "promptBody": "Aparece no jogo e no site.",
+      "notNow": "Agora não",
+      "save": "Guardar",
+      "saved": "Nome guardado. Os servidores usam-no a partir do teu próximo jogo.",
+      "saveFailed": "Não foi possível guardar o nome"
     }
   },
   "home": {
@@ -729,7 +743,8 @@
         "loaded": "The server is ready. Join it.",
         "live": "The match is live.",
         "completed": "The match is over.",
-        "other": "Match: {{status}}"
+        "other": "Match: {{status}}",
+        "pending": "Map veto: ban maps in turn until one is left. Anyone on your team can click; the first click counts."
       },
       "pickedBy": "{{mode}} · the map roulette picked",
       "vs": "vs",
@@ -757,13 +772,19 @@
       "equipFailed": "Não foi possível equipar",
       "rematch": {
         "title": "Desforra?",
-        "body": "As mesmas equipas, um mapa novo. Um sim conta para todo o teu grupo. Começa quando estiverem todos ({{yes}} de {{total}} até agora), em 2 minutos.",
+        "ask": "As mesmas equipas, um novo jogo. A tua resposta conta para todo o teu grupo. Se a maioria da tua equipa disser sim, a outra equipa tem 30 segundos para aceitar.",
         "yes": "Sim, desforra",
         "no": "Não, obrigado",
         "button": "Desforra",
-        "waiting": "À espera dos outros: {{yes}} de {{total}} disseram que sim.",
-        "declined": "Sem desforra: alguém disse que não."
-      }
+        "offerTitle": "A outra equipa quer a desforra",
+        "teamTitle": "A tua equipa quer a desforra",
+        "offerBody": "As mesmas equipas, um novo jogo. A maioria da tua equipa tem de dizer sim. A tua resposta conta para todo o teu grupo.",
+        "waitingOther": "À espera da outra equipa… {{s}} s",
+        "waitingTeam": "À espera da tua equipa… {{s}} s",
+        "accepted": "Desforra aceite. A abrir o novo jogo…",
+        "refused": "Desforra recusada."
+      },
+      "pickedByVeto": "{{mode}} · picked in the veto"
     },
     "result": {
       "title": "Result",

@@ -97,7 +97,9 @@ export function describeNotice(notice: Notice, t: TFunction, viewerId: string | 
           : null);
       break;
     case 'tournament':
-      out.lead = str(d.name);
+      // Older match notices were stored with "TBD" for a team that was not known
+      // yet (the server fills them in on read); a leftover shows no placeholder.
+      out.lead = /(^|\s)TBD(\s|$)/i.test(str(d.name)) ? '' : str(d.name);
       // Your own match: it is ready, or it is your team's turn in its veto.
       if (
         (d.event === 'match_ready' || d.event === 'veto_turn' || d.event === 'match_soon') &&
@@ -110,6 +112,13 @@ export function describeNotice(notice: Notice, t: TFunction, viewerId: string | 
               ? t('social.notice.matchReady')
               : t('social.notice.vetoTurn');
         out.to = `/match/${encodeURIComponent(str(d.matchSlug))}`;
+        break;
+      }
+      // A shuffle no-show: out of the next draws until they say they are back
+      // (the tournament page).
+      if (d.event === 'no_show') {
+        out.text = t('social.notice.noShow');
+        out.to = d.tournamentId ? `/tournament/${Number(d.tournamentId)}` : null;
         break;
       }
       out.text =

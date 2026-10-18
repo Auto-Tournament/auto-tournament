@@ -54,6 +54,7 @@ import {
 import { ChangePasswordDialog } from '../components/account/ChangePasswordDialog';
 import { TwoStepDialog } from '../components/account/TwoStepDialog';
 import { AccountEmailSection } from '../components/account/AccountEmailSection';
+import { AccountNameSection } from '../components/account/DisplayName';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { api, apiErrorMessage } from '../utils/api';
 import { fontDisplay, tokens } from '../theme/tokens';
@@ -754,6 +755,14 @@ export default function AccountConnections() {
                 <Alert severity="info" sx={{ mb: 4 }}>
                   {t('account.impersonating')}
                 </Alert>
+              )}
+
+              {!readOnly && (
+                <AccountNameSection
+                  onSaved={(name) =>
+                    setData((d) => (d ? { ...d, account: { ...d.account, name } } : d))
+                  }
+                />
               )}
 
               {/* No games picked yet: the games section comes first, instead of

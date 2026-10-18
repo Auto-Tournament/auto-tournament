@@ -25,6 +25,7 @@ export const ADMIN_NOTICE_KINDS = {
   failover: { group: 'matches', severity: 'error' },
   match_silent: { group: 'matches', severity: 'warn' },
   tournament_autostart_failed: { group: 'matches', severity: 'error' },
+  shuffle_no_show: { group: 'matches', severity: 'info' },
   // Servers
   server_crashed: { group: 'servers', severity: 'error' },
   plugin_update_available: { group: 'servers', severity: 'info' },

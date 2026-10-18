@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "Weergavenaam",
+      "description": "Zichtbaar op de site en in het spel. Je kunt hem één keer per dag wijzigen.",
+      "lockedUntil": "Zichtbaar op de site en in het spel. Je hebt hem onlangs gewijzigd; vanaf {{date}} kan het weer.",
+      "label": "Naam",
+      "lengthHint": "{{min}}–{{max}} tekens",
+      "badChars": "Geen aanhalingstekens, < of > of besturingstekens",
+      "promptTitle": "Hoe heet je?",
+      "promptBody": "Je naam is zichtbaar in het spel en op de site.",
+      "notNow": "Niet nu",
+      "save": "Opslaan",
+      "saved": "Naam opgeslagen. Gameservers gebruiken hem vanaf je volgende match.",
+      "saveFailed": "Kon je naam niet opslaan"
     }
   },
   "home": {
@@ -729,7 +743,8 @@
         "loaded": "The server is ready. Join it.",
         "live": "The match is live.",
         "completed": "The match is over.",
-        "other": "Match: {{status}}"
+        "other": "Match: {{status}}",
+        "pending": "Map veto: ban maps in turn until one is left. Anyone on your team can click; the first click counts."
       },
       "pickedBy": "{{mode}} · the map roulette picked",
       "vs": "vs",
@@ -757,13 +772,19 @@
       "equipFailed": "Kon niet uitrusten",
       "rematch": {
         "title": "Revanche?",
-        "body": "Dezelfde teams, een nieuwe map. Eén ja geldt voor je hele groep. Hij start als iedereen meedoet ({{yes}} van {{total}} tot nu toe), binnen 2 minuten.",
+        "ask": "Dezelfde teams, een nieuwe match. Je antwoord geldt voor je hele party. Zegt de meerderheid van je team ja, dan heeft het andere team 30 seconden om te accepteren.",
         "yes": "Ja, revanche",
         "no": "Nee, bedankt",
         "button": "Revanche",
-        "waiting": "Wachten op de anderen: {{yes}} van {{total}} zeiden ja.",
-        "declined": "Geen revanche: iemand zei nee."
-      }
+        "offerTitle": "Het andere team wil een rematch",
+        "teamTitle": "Je team wil een rematch",
+        "offerBody": "Dezelfde teams, een nieuwe match. De meerderheid van je team moet ja zeggen. Je antwoord geldt voor je hele party.",
+        "waitingOther": "Wachten op het andere team… {{s}} s",
+        "waitingTeam": "Wachten op je team… {{s}} s",
+        "accepted": "Rematch geaccepteerd. De nieuwe match wordt geopend…",
+        "refused": "Rematch geweigerd."
+      },
+      "pickedByVeto": "{{mode}} · picked in the veto"
     },
     "result": {
       "title": "Result",

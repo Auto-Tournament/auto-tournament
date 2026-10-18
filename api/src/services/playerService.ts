@@ -5,6 +5,7 @@
 
 import { db } from '../config/database';
 import { log } from '../utils/logger';
+import { settingsService } from './settingsService';
 import { MAIN_RATING_SQL, getGameRating, getPlayerGameRatings, setGameRating } from './gameRatings';
 import { eloToOpenSkill } from './ratingService';
 import { playerIdentity } from './playerIdentity';
@@ -492,10 +493,21 @@ class PlayerService {
   async refreshImportedPlayer(steamId: string, name: string, avatar?: string): Promise<void> {
     const trimmed = typeof name === 'string' ? name.trim().slice(0, 100) : '';
     if (!trimmed) return;
+    // A name the player chose themselves stays while players choose their names.
+    const keepChosen = await settingsService.canPlayersChooseName();
     await db.runAsync(
-      `UPDATE players SET name = ?, avatar_url = COALESCE(avatar_url, ?::text), updated_at = ?
+      `UPDATE players SET name = CASE WHEN ? AND name_confirmed_at IS NOT NULL THEN name ELSE ?::text END,
+          avatar_url = COALESCE(avatar_url, ?::text), updated_at = ?
         WHERE id = ? AND deleted_at IS NULL AND (name IS DISTINCT FROM ?::text OR (avatar_url IS NULL AND ?::text IS NOT NULL))`,
-      [trimmed, avatar ?? null, Math.floor(Date.now() / 1000), steamId, trimmed, avatar ?? null]
+      [
+        keepChosen,
+        trimmed,
+        avatar ?? null,
+        Math.floor(Date.now() / 1000),
+        steamId,
+        trimmed,
+        avatar ?? null,
+      ]
     );
   }
 

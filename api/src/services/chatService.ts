@@ -38,7 +38,7 @@ export interface ChatMessage {
   senderAvatar: string | null;
   /** Typed on the match's game server, not on the site. */
   fromGame: boolean;
-  /** Team chat from the game: only this team (and the admins) reads it. */
+  /** Lines from the game: '' = the admins only (no player reads or is pinged for it). */
   onlyTeam: string | null;
 }
 
@@ -262,12 +262,6 @@ async function unreadFor(
     [channel, since, steamId, myTeam, myTeam, steamId, channel]
   );
   return row?.n ?? 0;
-}
-
-/** Who gets a message live: the channel's players (team chat: that team's only). */
-function recipients(m: Members, onlyTeam: string | null): string[] {
-  if (!onlyTeam) return [...m.players];
-  return [...m.players].filter((id) => m.teamOf.get(id) === onlyTeam);
 }
 
 /**
@@ -499,7 +493,7 @@ export const chatService = {
   /**
    * A player's chat line from the match's game server, into `match:<slug>`: as them (their
    * platform name when they have a player record, else the in-game one), with `(team) ` in
-   * front of team chat, which only their team and the admins read. Never sent back to the
+   * front of team chat. Only the admins see it (players have it in game). Never sent back to the
    * game. Null when there is no such match or nothing to say.
    */
   async fromGame(slug: string, input: GameChatInput): Promise<ChatMessage | null> {
@@ -523,9 +517,8 @@ export const chatService = {
       'SELECT name, avatar_url FROM players WHERE id = ?',
       [input.steamId]
     );
-    const onlyTeam = input.teamOnly ? team : null;
-    // Team chat from a player on no team (a spectator): the admins only.
-    const adminsOnly = input.teamOnly && !team;
+    // Players already see in-game chat in the game: on the site it is for the admins only
+    // (only_team '' matches no team, so it is not listed, counted or sent to a player).
     const body = `${input.teamOnly ? '(team) ' : ''}${text}`.slice(0, MAX_BODY);
     const row = await db.queryOneAsync<MessageRow>(
       `INSERT INTO chat_messages (channel, sender_id, sender_name, sender_kind, sender_team, body, from_game, only_team)
@@ -536,11 +529,11 @@ export const chatService = {
         (me?.name || input.name || input.steamId).slice(0, 128),
         team,
         body,
-        adminsOnly ? '' : onlyTeam,
+        '',
       ]
     );
     const message = toMessage({ ...(row as MessageRow), sender_avatar: me?.avatar_url ?? null });
-    emitChatMessage(adminsOnly ? [] : recipients(m, onlyTeam), true, message);
+    emitChatMessage([], true, message);
     return message;
   },
 

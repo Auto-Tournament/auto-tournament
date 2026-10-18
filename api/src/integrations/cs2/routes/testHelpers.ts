@@ -426,4 +426,152 @@ router.get(
   }
 );
 
+/**
+ * Test-only helper: tournaments and finished matches with their stats, as the
+ * game servers, the series end and the demo analysis would have left them,
+ * for GET /api/integrations/player-stats (tests/api/integration-player-stats.spec.ts).
+ *
+ * POST /api/test/stats-fixture
+ *   { tournaments: [name], players: [{ id, name }], teams: [{ id, name, players: [id] }],
+ *     matches: [{ slug, tournament?: <index>, playedIn?, source?, completed?, team1, team2,
+ *       winner?: 'team1' | 'team2', config?, series?: [player_match_stats row],
+ *       maps: [{ winner: 'team1' | 'team2' | null, lines?: [cs2_player_map_stats row], kills?: [kill] }] }] }
+ * → { tournamentIds }
+ */
+router.post('/stats-fixture', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    res.status(403).json({ success: false, error: 'Disabled in production' });
+    return;
+  }
+  type Row = Record<string, unknown>;
+  const body = (req.body || {}) as {
+    tournaments?: string[];
+    players?: Array<{ id: string; name: string }>;
+    teams?: Array<{ id: string; name: string; players: string[] }>;
+    matches?: Array<{
+      slug: string;
+      tournament?: number;
+      playedIn?: string;
+      source?: string;
+      completed?: boolean;
+      team1: string;
+      team2: string;
+      winner?: 'team1' | 'team2' | null;
+      config?: Row;
+      series?: Row[];
+      maps: Array<{ winner: 'team1' | 'team2' | null; lines?: Row[]; kills?: Row[] }>;
+    }>;
+  };
+  const insert = async (table: string, row: Row) => {
+    const cols = Object.keys(row);
+    if (!cols.every((c) => /^[a-z0-9_]+$/.test(c))) throw new Error(`Bad column in ${table}`);
+    await db.runAsync(
+      `INSERT INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`,
+      Object.values(row)
+    );
+  };
+  try {
+    const tournamentIds: number[] = [];
+    for (const name of body.tournaments ?? []) {
+      const row = await db.queryOneAsync<{ id: number }>(
+        `INSERT INTO tournament (name, type, format, status, team_ids)
+         VALUES (?, 'swiss', 'bo3', 'completed', '[]') RETURNING id`,
+        [name]
+      );
+      tournamentIds.push(Number(row!.id));
+    }
+    for (const p of body.players ?? []) {
+      await db.runAsync(
+        'INSERT INTO players (id, name) VALUES (?, ?) ON CONFLICT (id) DO NOTHING',
+        [p.id, p.name]
+      );
+    }
+    for (const t of body.teams ?? []) {
+      await db.runAsync(
+        "INSERT INTO teams (id, name, players, game) VALUES (?, ?, ?, 'cs2') ON CONFLICT (id) DO NOTHING",
+        [t.id, t.name, JSON.stringify(t.players.map((steamId) => ({ steamId, name: steamId })))]
+      );
+    }
+    const now = Math.floor(Date.now() / 1000);
+    for (const m of body.matches ?? []) {
+      const tournamentId = m.tournament === undefined ? null : tournamentIds[m.tournament];
+      const completed = m.completed !== false;
+      await insert('matches', {
+        slug: m.slug,
+        tournament_id: tournamentId,
+        played_in: m.playedIn ?? null,
+        round: tournamentId === null ? 0 : 1,
+        match_number: 1,
+        team1_id: m.team1,
+        team2_id: m.team2,
+        winner_id: m.winner ? (m.winner === 'team1' ? m.team1 : m.team2) : null,
+        config: JSON.stringify(m.config ?? { num_maps: m.maps.length }),
+        game: 'cs2',
+        source: m.source ?? null,
+        status: m.source === 'import' || completed ? 'completed' : 'live',
+        completed_at: completed ? now : null,
+      });
+      for (const [i, map] of m.maps.entries()) {
+        await insert('match_map_results', {
+          match_slug: m.slug,
+          map_number: i,
+          map_name: 'de_mirage',
+          team1_score: map.winner === 'team1' ? 13 : 7,
+          team2_score: map.winner === 'team2' ? 13 : 7,
+          winner_team: map.winner,
+        });
+        for (const line of map.lines ?? []) {
+          await insert('cs2_player_map_stats', { match_slug: m.slug, map_number: i, ...line });
+        }
+        if (map.kills) {
+          await insert('cs2_demo_jobs', {
+            match_slug: m.slug,
+            map_number: i,
+            demo_path: `${m.slug}/map${i + 1}.dem`,
+            status: 'done',
+            finished_at: now,
+            rounds: '[]',
+            kills: JSON.stringify(map.kills),
+          });
+        }
+      }
+      for (const line of m.series ?? []) {
+        await insert('player_match_stats', { match_slug: m.slug, ...line });
+      }
+    }
+    res.json({ success: true, tournamentIds });
+  } catch (error) {
+    res.status(400).json({ success: false, error: (error as Error).message });
+  }
+});
+
+/** Test-only: remove what POST /api/test/stats-fixture wrote. { tournamentIds, slugs, teams, players } */
+router.post(
+  '/stats-fixture/cleanup',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+      res.status(403).json({ success: false, error: 'Disabled in production' });
+      return;
+    }
+    const body = (req.body || {}) as {
+      tournamentIds?: number[];
+      slugs?: string[];
+      teams?: string[];
+      players?: string[];
+    };
+    const slugs = body.slugs ?? [];
+    for (const table of ['cs2_demo_jobs', 'cs2_player_map_stats', 'match_map_results']) {
+      await db.runAsync(`DELETE FROM ${table} WHERE match_slug = ANY(?::text[])`, [slugs]);
+    }
+    await db.runAsync('DELETE FROM matches WHERE slug = ANY(?::text[])', [slugs]);
+    await db.runAsync('DELETE FROM tournament WHERE id = ANY(?::int[])', [
+      body.tournamentIds ?? [],
+    ]);
+    await db.runAsync('DELETE FROM teams WHERE id = ANY(?::text[])', [body.teams ?? []]);
+    await db.runAsync('DELETE FROM players WHERE id = ANY(?::text[])', [body.players ?? []]);
+    res.json({ success: true });
+  }
+);
+
 export default router;

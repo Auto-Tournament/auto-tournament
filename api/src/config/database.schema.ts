@@ -236,6 +236,20 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_matches_team_from_match1 ON matches(team1_from_match_id);
     CREATE INDEX IF NOT EXISTS idx_matches_team_from_match2 ON matches(team2_from_match_id);
 
+    -- Who plays a match for a team whose roster is bigger than the team size
+    -- (services/matchLineups.ts). No row: the team's last lineup in the
+    -- tournament, else the first players of its roster.
+    CREATE TABLE IF NOT EXISTS match_lineups (
+      match_slug TEXT NOT NULL REFERENCES matches(slug) ON DELETE CASCADE,
+      team_id TEXT NOT NULL,
+      players TEXT NOT NULL, -- JSON array of Steam IDs (players.id), in order
+      set_by TEXT, -- players.id of whoever set it; NULL = an admin token
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (match_slug, team_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_match_lineups_team ON match_lineups(team_id, updated_at);
+
     -- Match events table
     CREATE TABLE IF NOT EXISTS match_events (
       id SERIAL PRIMARY KEY,
@@ -327,6 +341,8 @@ export function getSchemaSQL(): string {
       discord_id_edited_at INTEGER, -- Epoch of the last explicit edit (admin or the player) that set OR cleared discord_id; NULL = only ever filled by an import. Imports never touch a row where this is set. Internal, never in a response
       oidc_subject TEXT, -- An integrator's OpenID Connect login (its sub, e.g. NTLAN's Keycloak) for this player, from a team or player import: an OpenID Connect sign-in with it lands on this player. Only ever filled by an import, never overwritten. Admin-only
       uid UUID NOT NULL DEFAULT gen_random_uuid(), -- Stable account id, never regenerated. Player-owned data (player_games, ...) keys on this rather than the Steam ID, so 3.1 can have accounts without Steam
+      name_confirmed_at INTEGER, -- Epoch the player last saved their own display name (/api/me/name); NULL = never, so they are asked while players_choose_name is on. Imports leave a confirmed name alone while it is on
+      name_changed_at INTEGER, -- Epoch the player last changed their own display name; one change a day
       games_prompt_dismissed_at INTEGER, -- Epoch when the player skipped or answered the "What do you play?" dialog; NULL = show it while they have no games
       last_sign_in_at INTEGER, -- Epoch of the player's last sign-in (Steam or SSO); NULL = never since this column exists. Admin-only, never in a public response
       last_seen_at INTEGER, -- Epoch the player last closed the site (their last socket left); shown to their friends only
@@ -723,6 +739,7 @@ export function getSchemaSQL(): string {
       player_id TEXT NOT NULL,
       registered_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       left_at INTEGER,
+      left_reason TEXT,
       PRIMARY KEY (tournament_id, player_id),
       FOREIGN KEY (tournament_id) REFERENCES tournament(id) ON DELETE CASCADE,
       FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
@@ -1148,7 +1165,7 @@ export function getSchemaSQL(): string {
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       -- Typed on the match's game server (CS2: Ready Up's event.chat), not on the site.
       from_game BOOLEAN NOT NULL DEFAULT FALSE,
-      -- Team chat from the game: only this team id (and the admins) may read it.
+      -- Chat from the game: '' = the admins only. (Older rows: a team id = that team and the admins.)
       only_team TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_chat_messages_channel ON chat_messages(channel, id);
@@ -1186,7 +1203,10 @@ export function getSchemaSQL(): string {
       match_slug TEXT,
       bot_fill BOOLEAN NOT NULL DEFAULT FALSE, -- a bot-filled game: unrated, no XP or drops
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      rematch_lobby_id TEXT -- the rematch's lobby, once every player said yes
+      rematch_lobby_id TEXT, -- the rematch's lobby, once both teams said yes
+      rematch_offer_at INTEGER, -- the first yes to a rematch: the other team has REMATCH_ANSWER_SECONDS
+      rematch_offer_team INTEGER, -- the team of that first yes
+      rematch_outcome TEXT -- 'declined' once the rematch is off
     );
 
     CREATE TABLE IF NOT EXISTS mm_lobby_players (

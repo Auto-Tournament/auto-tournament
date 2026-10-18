@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "Nome visualizzato",
+      "description": "Mostrato sul sito e in gioco. Puoi cambiarlo una volta al giorno.",
+      "lockedUntil": "Mostrato sul sito e in gioco. L'hai cambiato di recente; potrai cambiarlo di nuovo dal {{date}}.",
+      "label": "Nome",
+      "lengthHint": "{{min}}–{{max}} caratteri",
+      "badChars": "Niente virgolette, < o >, né caratteri di controllo",
+      "promptTitle": "Come ti chiami?",
+      "promptBody": "Viene mostrato in gioco e sul sito.",
+      "notNow": "Non ora",
+      "save": "Salva",
+      "saved": "Nome salvato. I server lo useranno dalla tua prossima partita.",
+      "saveFailed": "Impossibile salvare il nome"
     }
   },
   "home": {
@@ -729,7 +743,8 @@
         "loaded": "The server is ready. Join it.",
         "live": "The match is live.",
         "completed": "The match is over.",
-        "other": "Match: {{status}}"
+        "other": "Match: {{status}}",
+        "pending": "Map veto: ban maps in turn until one is left. Anyone on your team can click; the first click counts."
       },
       "pickedBy": "{{mode}} · the map roulette picked",
       "vs": "vs",
@@ -757,13 +772,19 @@
       "equipFailed": "Impossibile equipaggiarla",
       "rematch": {
         "title": "Rivincita?",
-        "body": "Stesse squadre, nuova mappa. Un sì vale per tutto il tuo gruppo. Parte quando ci sono tutti ({{yes}} su {{total}} finora), entro 2 minuti.",
+        "ask": "Stesse squadre, una nuova partita. La tua risposta vale per tutto il tuo gruppo. Se la maggioranza della tua squadra dice sì, l'altra squadra ha 30 secondi per accettare.",
         "yes": "Sì, rivincita",
         "no": "No, grazie",
         "button": "Rivincita",
-        "waiting": "In attesa degli altri: {{yes}} su {{total}} hanno detto sì.",
-        "declined": "Niente rivincita: qualcuno ha detto no."
-      }
+        "offerTitle": "L'altra squadra vuole la rivincita",
+        "teamTitle": "La tua squadra vuole la rivincita",
+        "offerBody": "Stesse squadre, una nuova partita. La maggioranza della tua squadra deve dire sì. La tua risposta vale per tutto il tuo gruppo.",
+        "waitingOther": "In attesa dell'altra squadra… {{s}} s",
+        "waitingTeam": "In attesa della tua squadra… {{s}} s",
+        "accepted": "Rivincita accettata. Apertura della nuova partita…",
+        "refused": "Rivincita rifiutata."
+      },
+      "pickedByVeto": "{{mode}} · picked in the veto"
     },
     "result": {
       "title": "Result",

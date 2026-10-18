@@ -3,7 +3,12 @@ import { db } from '../config/database';
 import { effectiveProviderSettings } from '../config/signInProviders';
 import { log } from '../utils/logger';
 import { clampSimulationTimescale } from '../utils/simulationTimescale';
-import { booleanRequest, normalizeFlag, stringRequest } from '../utils/settingFields';
+import {
+  booleanRequest,
+  isTruthySetting,
+  normalizeFlag,
+  stringRequest,
+} from '../utils/settingFields';
 import type { SettingDefinition, SettingWriteContext } from '../integrations/types';
 
 /**
@@ -18,6 +23,8 @@ export type CoreSettingKey =
   | 'webhook_url'
   | 'ratings_enabled'
   | 'allow_self_register'
+  // Players choose their own display name (/api/me/name). Off: admins and imports name them.
+  | 'players_choose_name'
   // The site's own name (the admin home's H1). Unset = DEFAULT_SITE_NAME.
   | 'site_name'
   // The Auto Tournament license key (services/license). Set through
@@ -119,6 +126,13 @@ export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSetting
     order: 90,
     normalize: normalizeFlag('Player self‑registration'),
     applyRequest: booleanRequest('allowSelfRegister'),
+  },
+  {
+    key: 'players_choose_name',
+    field: 'playersChooseName',
+    order: 92,
+    normalize: normalizeFlag('Players choosing their display name'),
+    applyRequest: booleanRequest('playersChooseName'),
   },
   {
     key: 'webhooks_allow_private_targets',
@@ -319,6 +333,15 @@ class SettingsService {
     if (!value) return false;
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  /**
+   * Whether players set their own display name (the in-game name too). Off
+   * (default): admins and imports name players, and players cannot change it.
+   */
+  async canPlayersChooseName(): Promise<boolean> {
+    const value = await this.getSetting('players_choose_name');
+    return value ? isTruthySetting(value) : false;
   }
 
   async isSelfRegistrationAllowed(): Promise<boolean> {

@@ -1007,7 +1007,8 @@
     "waitingForServer": "Venter på en server",
     "vetoDoneChip": "Veto ferdig · {{map}}",
     "waitingForServerBody": "En server tildeles så snart en er ledig. Du får et varsel, og denne siden oppdaterer seg selv.",
-    "mapDrawnChip": "Kart trukket · {{map}}"
+    "mapDrawnChip": "Kart trukket · {{map}}",
+    "notYet": "Ikke ennå"
   },
   "results": {
     "finalStandings": "Sluttstilling",
@@ -1313,7 +1314,11 @@
     "playedBodyLeft_one": "Venter på {{count}} kamp til. Runde {{next}} trekkes når den er ferdig. Kampen din dukker opp her, og du får et varsel.",
     "playedBodyLeft_other": "Venter på {{count}} kamper til. Runde {{next}} trekkes når de er ferdige. Kampen din dukker opp her, og du får et varsel.",
     "joinedByMistake": "Meldte du deg på ved en feil?",
-    "breakTitle": "Pause · runde {{round}} starter kl. {{time}}"
+    "breakTitle": "Pause · runde {{round}} starter kl. {{time}}",
+    "noShowTitle": "Du er ute av de neste trekningene",
+    "noShowBody": "Du koblet aldri til kampen din, så de neste rundene trekkes uten deg. Tilbake ved PC-en? Si fra, så er du med i neste trekning.",
+    "backIn": "Jeg er tilbake",
+    "tagNoShow": "Møtte ikke"
   },
   "liveOverview": {
     "roundOf": "Runde {{round}} av {{total}}",
@@ -1563,6 +1568,23 @@
       "owner": "Eier",
       "captain": "Kaptein",
       "member": "Medlem"
+    }
+  },
+  "lineupPanel": {
+    "title": "Laguppstilling",
+    "note_one": "Velg {{count}} spiller til denne kampen. De andre sitter på benken.",
+    "note_other": "Velg {{count}} spillere til denne kampen. De andre sitter på benken.",
+    "picked": "{{picked}} av {{count}} valgt",
+    "plays": "Spiller",
+    "bench": "Benk",
+    "save": "Lagre laguppstillingen",
+    "saved": "Laguppstillingen er lagret",
+    "notOnServer": "Laguppstillingen er lagret, men serveren tok den ikke imot: {{error}}",
+    "locked": "Laguppstillingen er låst mens et kart spilles. Den kan endres mellom kartene.",
+    "captainOnly": "Bare lageieren eller en kaptein kan endre laguppstillingen.",
+    "source": {
+      "previous": "Samme som i lagets forrige kamp.",
+      "roster": "De første spillerne på laglisten."
     }
   },
   "prizesPage": {

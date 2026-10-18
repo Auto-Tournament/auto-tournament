@@ -875,6 +875,16 @@ export interface TeamProfileViewProps {
 }
 
 /**
+ * The party on the Play page (client API 0.2.29): this game's view of the
+ * players in a matchmaking party (CS2: the party's map strength). Shown
+ * while the party has two or more members; it fetches its own numbers.
+ */
+export interface PartyViewProps {
+  /** The members' ids (CS2: Steam IDs). */
+  members: string[];
+}
+
+/**
  * The Admin tools page: this module's own section (client API 0.2.2).
  *
  * Admin tools is core's page for what every instance has: the application
@@ -1287,6 +1297,8 @@ export interface ClientGameIntegration {
 
   /** The team page: this game's own statistics for the team. */
   teamProfileView?: ComponentType<TeamProfileViewProps>;
+  /** The party on the Play page: this game's view of its members. */
+  partyView?: ComponentType<PartyViewProps>;
 
   /** Shown to the teams before the match can be allocated (CS2: map veto). */
   preMatchView?: ComponentType<PreMatchViewProps>;

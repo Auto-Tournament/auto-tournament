@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "Anzeigename",
+      "description": "Wird auf der Website und im Spiel angezeigt. Du kannst ihn einmal am Tag ändern.",
+      "lockedUntil": "Wird auf der Website und im Spiel angezeigt. Du hast ihn kürzlich geändert und kannst ihn ab {{date}} wieder ändern.",
+      "label": "Name",
+      "lengthHint": "{{min}}–{{max}} Zeichen",
+      "badChars": "Keine Anführungszeichen, < oder > und keine Steuerzeichen",
+      "promptTitle": "Wie heißt du?",
+      "promptBody": "Der Name wird im Spiel und auf der Website angezeigt.",
+      "notNow": "Nicht jetzt",
+      "save": "Speichern",
+      "saved": "Name gespeichert. Gameserver verwenden ihn ab deinem nächsten Match.",
+      "saveFailed": "Name konnte nicht gespeichert werden"
     }
   },
   "home": {
@@ -729,7 +743,8 @@
         "loaded": "The server is ready. Join it.",
         "live": "The match is live.",
         "completed": "The match is over.",
-        "other": "Match: {{status}}"
+        "other": "Match: {{status}}",
+        "pending": "Map veto: ban maps in turn until one is left. Anyone on your team can click; the first click counts."
       },
       "pickedBy": "{{mode}} · the map roulette picked",
       "vs": "vs",
@@ -757,13 +772,19 @@
       "equipFailed": "Konnte nicht ausgerüstet werden",
       "rematch": {
         "title": "Revanche?",
-        "body": "Gleiche Teams, neue Karte. Ein Ja gilt für deine ganze Gruppe. Sie startet, wenn alle dabei sind ({{yes}} von {{total}} bisher), innerhalb von 2 Minuten.",
+        "ask": "Gleiche Teams, ein neues Match. Deine Antwort gilt für deine ganze Party. Sagt die Mehrheit deines Teams ja, hat das andere Team 30 Sekunden zum Annehmen.",
         "yes": "Ja, Revanche",
         "no": "Nein danke",
         "button": "Revanche",
-        "waiting": "Warte auf die anderen: {{yes}} von {{total}} haben zugestimmt.",
-        "declined": "Keine Revanche: jemand hat abgelehnt."
-      }
+        "offerTitle": "Das andere Team will eine Revanche",
+        "teamTitle": "Dein Team will eine Revanche",
+        "offerBody": "Gleiche Teams, ein neues Match. Die Mehrheit deines Teams muss ja sagen. Deine Antwort gilt für deine ganze Party.",
+        "waitingOther": "Warte auf das andere Team … {{s}} s",
+        "waitingTeam": "Warte auf dein Team … {{s}} s",
+        "accepted": "Revanche angenommen. Das neue Match wird geöffnet …",
+        "refused": "Revanche abgelehnt."
+      },
+      "pickedByVeto": "{{mode}} · picked in the veto"
     },
     "result": {
       "title": "Result",

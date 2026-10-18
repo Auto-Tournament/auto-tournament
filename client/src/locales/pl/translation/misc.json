@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "Wyświetlana nazwa",
+      "description": "Widoczna na stronie i w grze. Możesz ją zmienić raz dziennie.",
+      "lockedUntil": "Widoczna na stronie i w grze. Zmieniłeś ją niedawno; ponownie możesz ją zmienić od {{date}}.",
+      "label": "Nazwa",
+      "lengthHint": "{{min}}–{{max}} znaków",
+      "badChars": "Bez cudzysłowów, < i > oraz znaków sterujących",
+      "promptTitle": "Jak się nazywasz?",
+      "promptBody": "Nazwa jest widoczna w grze i na stronie.",
+      "notNow": "Nie teraz",
+      "save": "Zapisz",
+      "saved": "Nazwa zapisana. Serwery użyją jej od Twojego następnego meczu.",
+      "saveFailed": "Nie udało się zapisać nazwy"
     }
   },
   "home": {
@@ -731,7 +745,8 @@
         "loaded": "The server is ready. Join it.",
         "live": "The match is live.",
         "completed": "The match is over.",
-        "other": "Match: {{status}}"
+        "other": "Match: {{status}}",
+        "pending": "Map veto: ban maps in turn until one is left. Anyone on your team can click; the first click counts."
       },
       "pickedBy": "{{mode}} · the map roulette picked",
       "vs": "vs",
@@ -759,13 +774,19 @@
       "equipFailed": "Nie udało się założyć",
       "rematch": {
         "title": "Rewanż?",
-        "body": "Te same drużyny, nowa mapa. Jedno „tak” liczy się dla całej twojej grupy. Startuje, gdy wszyscy są gotowi ({{yes}} z {{total}} do tej pory), w ciągu 2 minut.",
+        "ask": "Te same drużyny, nowy mecz. Twoja odpowiedź liczy się dla całej drużyny znajomych. Jeśli większość twojej drużyny powie tak, druga drużyna ma 30 sekund na akceptację.",
         "yes": "Tak, rewanż",
         "no": "Nie, dzięki",
         "button": "Rewanż",
-        "waiting": "Czekamy na pozostałych: {{yes}} z {{total}} się zgodziło.",
-        "declined": "Bez rewanżu: ktoś odmówił."
-      }
+        "offerTitle": "Druga drużyna chce rewanżu",
+        "teamTitle": "Twoja drużyna chce rewanżu",
+        "offerBody": "Te same drużyny, nowy mecz. Większość twojej drużyny musi powiedzieć tak. Twoja odpowiedź liczy się dla całej drużyny znajomych.",
+        "waitingOther": "Czekamy na drugą drużynę… {{s}} s",
+        "waitingTeam": "Czekamy na twoją drużynę… {{s}} s",
+        "accepted": "Rewanż przyjęty. Otwieramy nowy mecz…",
+        "refused": "Rewanż odrzucony."
+      },
+      "pickedByVeto": "{{mode}} · picked in the veto"
     },
     "result": {
       "title": "Result",

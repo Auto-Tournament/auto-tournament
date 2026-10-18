@@ -204,6 +204,20 @@
       "lastUsed": "Last used {{date}}",
       "addedOn": "Added {{date}}, not used yet",
       "needsHttps": "Passkeys need the site on https (or localhost). Ask whoever runs it to put it behind https."
+    },
+    "name": {
+      "title": "显示名称",
+      "description": "显示在网站和游戏中。每天可以更改一次。",
+      "lockedUntil": "显示在网站和游戏中。你最近已更改过，可在 {{date}} 之后再次更改。",
+      "label": "名称",
+      "lengthHint": "{{min}}–{{max}} 个字符",
+      "badChars": "不能包含引号、< 或 > 以及控制字符",
+      "promptTitle": "你叫什么名字？",
+      "promptBody": "它会显示在游戏和网站上。",
+      "notNow": "以后再说",
+      "save": "保存",
+      "saved": "名称已保存。游戏服务器将从你的下一场比赛开始使用它。",
+      "saveFailed": "无法保存名称"
     }
   },
   "home": {
@@ -729,7 +743,8 @@
         "loaded": "The server is ready. Join it.",
         "live": "The match is live.",
         "completed": "The match is over.",
-        "other": "Match: {{status}}"
+        "other": "Match: {{status}}",
+        "pending": "Map veto: ban maps in turn until one is left. Anyone on your team can click; the first click counts."
       },
       "pickedBy": "{{mode}} · the map roulette picked",
       "vs": "vs",
@@ -757,13 +772,19 @@
       "equipFailed": "无法装备",
       "rematch": {
         "title": "再来一局？",
-        "body": "同样的队伍，新的地图。一人同意即代表整个小队。所有人都同意后开始（目前 {{total}} 人中 {{yes}} 人），限时 2 分钟。",
+        "ask": "相同的队伍，一场新比赛。你的回答代表你的整个小队。如果你队伍的多数人同意，另一队有 30 秒时间接受。",
         "yes": "好，再来一局",
         "no": "不了，谢谢",
         "button": "再来一局",
-        "waiting": "等待其他人：{{total}} 人中已有 {{yes}} 人同意。",
-        "declined": "不再来一局：有人拒绝了。"
-      }
+        "offerTitle": "对方队伍想要再来一局",
+        "teamTitle": "你的队伍想要再来一局",
+        "offerBody": "相同的队伍，一场新比赛。你队伍的多数人需要同意。你的回答代表你的整个小队。",
+        "waitingOther": "正在等待对方队伍… {{s}} 秒",
+        "waitingTeam": "正在等待你的队伍… {{s}} 秒",
+        "accepted": "已同意再来一局。正在打开新比赛…",
+        "refused": "已拒绝再来一局。"
+      },
+      "pickedByVeto": "{{mode}} · picked in the veto"
     },
     "result": {
       "title": "Result",

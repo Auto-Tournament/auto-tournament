@@ -282,6 +282,7 @@ export interface SettingsResponse extends ApiResponse {
     simulationTimescale?: number;
     ratingsEnabled?: boolean;
     allowSelfRegister?: boolean;
+    playersChooseName?: boolean;
     // Ready Up's ready / restore defaults
     atMinimumReadyRequired?: number;
     atAllowForceReady?: boolean;

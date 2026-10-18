@@ -128,7 +128,8 @@
       "beta_available": "A new platform release",
       "license_problem": "License problems",
       "demos_failing": "Demo analyses keep failing",
-      "tournament_autostart_failed": "A tournament does not start on time"
+      "tournament_autostart_failed": "A tournament does not start on time",
+      "shuffle_no_show": "A shuffle player never joins their match"
     },
     "kind": {
       "match_no_server": "{{matchSlug}} has waited {{minutes}} min for a server",
@@ -151,7 +152,8 @@
       "beta_available": "Auto Tournament {{version}} is out (this runs {{running}})",
       "license_problem": "The license needs attention: {{problem}}",
       "demos_failing": "{{count}} demo analyses failed in the last hour",
-      "tournament_autostart_failed": "{{name}} did not start at its start time: {{reason}}"
+      "tournament_autostart_failed": "{{name}} did not start at its start time: {{reason}}",
+      "shuffle_no_show": "{{players}} never joined {{matchSlug}}: out of the next draws until they say they're back"
     }
   },
   "matchNow": {

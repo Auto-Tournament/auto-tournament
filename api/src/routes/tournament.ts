@@ -1115,7 +1115,8 @@ router.post('/', async (req: Request, res: Response) => {
     const draft =
       (req as Request & { atDraft?: boolean }).atDraft === true &&
       (input.teamIds?.length ?? 0) === 0;
-    if (input.teamIds.length < 2 && !signupOpen && !draft) {
+    // A shuffle has no teams: its players are drawn into teams each round.
+    if (input.teamIds.length < 2 && !signupOpen && !draft && input.type !== 'shuffle') {
       return res.status(400).json({
         success: false,
         error: 'At least 2 teams are required',

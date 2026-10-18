@@ -151,7 +151,11 @@
         "short": "Iniciar sesión crea un jugador para cualquiera nuevo. Desactivado: solo los jugadores que añadas."
       },
       "title": "Jugadores",
-      "short": "Quién entra y cómo cambian las puntuaciones."
+      "short": "Quién entra y cómo cambian las puntuaciones.",
+      "chooseName": {
+        "toggleLabel": "Los jugadores eligen su nombre visible",
+        "short": "A los jugadores se les pide su nombre y pueden cambiarlo una vez al día. Desactivado: los nombres vienen de importaciones y administradores."
+      }
     },
     "developer": {
       "resetApiTitle": "Restablecer API y base de datos",

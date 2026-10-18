@@ -40,6 +40,7 @@ import { getMapData } from '../constants/maps';
 import { leaderboardsPath, paths, playLobbyPath } from '../paths';
 import { fontDisplay, fontMono, radii, textSize, tokens, withAlpha } from '../theme/tokens';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
+import { useInstalledIntegrations } from '../integrations/registry';
 
 const { color } = tokens;
 const MAX_PARTY = 5;
@@ -282,6 +283,11 @@ export default function Play() {
       setBusy(false);
     }
   };
+
+  // Each game's view of the party (CS2: its map strength).
+  const partyViews = useInstalledIntegrations()
+    .map((integration) => integration.partyView)
+    .filter((view): view is NonNullable<typeof view> => Boolean(view));
 
   // An invite link: join once, then drop the code from the address.
   const joined = useRef(false);
@@ -975,6 +981,9 @@ export default function Play() {
             </Box>
             {playerSteamId && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                {party &&
+                  party.members.length >= 2 &&
+                  partyViews.map((View, i) => <View key={i} members={party.members} />)}
                 <YouColumn playerId={playerSteamId} rating={me?.rating ?? null} />
                 <FriendsCard
                   members={party?.members ?? [playerSteamId]}

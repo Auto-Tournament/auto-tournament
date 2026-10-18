@@ -23,6 +23,10 @@ interface VetoMapCardProps {
   currentAction?: VetoActionType;
   /** The last map, left over after the bans rather than picked by a team. */
   isDecider?: boolean;
+  /** A matchmaking vote: the avatars of who voted for this map (top right). */
+  voters?: React.ReactNode;
+  /** A matchmaking vote: the viewer's own vote is on this map (outlined). */
+  chosen?: boolean;
 }
 
 /**
@@ -49,6 +53,8 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
   isCurrentTurn,
   currentAction,
   isDecider,
+  voters,
+  chosen = false,
 }) => {
   const { t } = useModuleTranslation('cs2');
   const isClickable = !disabled && state === 'available' && !!onClick;
@@ -116,6 +122,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
           ) : (
             <span />
           )}
+          {voters}
           {state === 'picked' && side && (
             <Box
               component="span"
@@ -224,7 +231,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
         aspectRatio: '16 / 9',
         maxWidth: '100%',
         borderRadius: `${radius.md}px`,
-        border: `2px solid ${state === 'picked' ? color.pick : 'transparent'}`,
+        border: `2px solid ${state === 'picked' ? color.pick : chosen ? actionColor : 'transparent'}`,
         bgcolor: color.paper3,
         transition: `transform ${duration.base}ms ${ease.out}, border-color ${duration.fast}ms ${ease.out}`,
         ...(isClickable

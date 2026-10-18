@@ -7,6 +7,7 @@ import { logoUrl } from './teamSelfService';
 import { RATING_ELO, getGameRatings, ratingGame, ratingJoin } from './gameRatings';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
+import { emitTournamentUpdate } from './socketService';
 import { settingsService } from './settingsService';
 import { balanceTeams, type BalancedTeam } from './teamBalancingService';
 import { playerService, type PlayerRecord } from './playerService';
@@ -224,7 +225,7 @@ export async function registerPlayers(
       // Register player (upsert - ignore if already registered)
       try {
         const back = await db.runAsync(
-          'UPDATE shuffle_tournament_players SET left_at = NULL WHERE tournament_id = ? AND player_id = ? AND left_at IS NOT NULL',
+          'UPDATE shuffle_tournament_players SET left_at = NULL, left_reason = NULL WHERE tournament_id = ? AND player_id = ? AND left_at IS NOT NULL',
           [tournamentId, playerId]
         );
         if (back.changes > 0) {
@@ -345,8 +346,8 @@ export async function setRegisteredPlayers(
     try {
       if (running) {
         await db.runAsync(
-          'UPDATE shuffle_tournament_players SET left_at = ? WHERE tournament_id = ? AND player_id = ?',
-          [Math.floor(Date.now() / 1000), tournamentId, playerId]
+          'UPDATE shuffle_tournament_players SET left_at = ?, left_reason = ? WHERE tournament_id = ? AND player_id = ?',
+          [Math.floor(Date.now() / 1000), 'removed', tournamentId, playerId]
         );
         unregistered++;
         continue;
@@ -376,7 +377,7 @@ export async function setRegisteredPlayers(
       // Register player (or bring back one who left a running shuffle)
       await db.runAsync(
         `INSERT INTO shuffle_tournament_players (tournament_id, player_id, registered_at) VALUES (?, ?, ?)
-         ON CONFLICT (tournament_id, player_id) DO UPDATE SET left_at = NULL`,
+         ON CONFLICT (tournament_id, player_id) DO UPDATE SET left_at = NULL, left_reason = NULL`,
         [tournamentId, playerId, now]
       );
       registered++;
@@ -1448,8 +1449,8 @@ export async function dropShuffleNoShows(
   const now = Math.floor(Date.now() / 1000);
   for (const id of missing) {
     await db.runAsync(
-      'UPDATE shuffle_tournament_players SET left_at = ? WHERE tournament_id = ? AND player_id = ? AND left_at IS NULL',
-      [now, match.tournament_id, id]
+      'UPDATE shuffle_tournament_players SET left_at = ?, left_reason = ? WHERE tournament_id = ? AND player_id = ? AND left_at IS NULL',
+      [now, 'no_show', match.tournament_id, id]
     );
   }
   if (missing.length > 0) {
@@ -1459,8 +1460,42 @@ export async function dropShuffleNoShows(
         players: missing,
       }
     );
+    emitTournamentUpdate({ id: match.tournament_id, action: 'tournament_updated' });
+    await noticeNoShows(match.tournament_id, match.slug, missing).catch((error: unknown) =>
+      log.warn(`Shuffle ${match.tournament_id}: no-show notices failed`, { error: String(error) })
+    );
   }
   return missing;
+}
+
+/**
+ * Tells each no-show they are out of the next draws (and how to get back in:
+ * "I'm back" on the tournament page), and the admins (their bell) who was
+ * marked out.
+ * Once per match (a second check sends nothing new).
+ */
+async function noticeNoShows(tournamentId: number, slug: string, missing: string[]) {
+  const { notificationService } = await import('./notificationService');
+  const t = await db.queryOneAsync<{ name: string }>('SELECT name FROM tournament WHERE id = ?', [
+    tournamentId,
+  ]);
+  const name = t?.name ?? '';
+  for (const id of missing) {
+    await notificationService.notifyOnce(
+      [id],
+      'tournament',
+      { tournamentId, name, event: 'no_show', matchSlug: slug },
+      `tournament:${tournamentId}:no_show:${slug}`
+    );
+  }
+  const players = await playerService.getPlayersByIds(missing);
+  const names = missing.map((id) => players.find((p) => p.id === id)?.name || id);
+  const { adminNoticeService } = await import('./adminNoticeService');
+  await adminNoticeService.raise(
+    'shuffle_no_show',
+    { matchSlug: slug, tournamentId, players: names.join(', ') },
+    `shuffle_no_show:${slug}`
+  );
 }
 
 /**
@@ -1508,7 +1543,7 @@ export async function bringBackLateJoiner(
   );
   if (!left?.left_at) return false;
   await db.runAsync(
-    'UPDATE shuffle_tournament_players SET left_at = NULL WHERE tournament_id = ? AND player_id = ?',
+    'UPDATE shuffle_tournament_players SET left_at = NULL, left_reason = NULL WHERE tournament_id = ? AND player_id = ?',
     [match.tournament_id, steamId]
   );
   log.info(`Shuffle ${match.tournament_id}: ${steamId} joined ${match.slug} late and is back in`);

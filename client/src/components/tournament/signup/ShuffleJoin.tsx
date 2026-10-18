@@ -131,6 +131,12 @@ export function ShuffleJoin({
   const { showError } = useSnackbar();
   const [busy, setBusy] = useState(false);
   const joined = !!steamId && players.some((p) => p.steamId === steamId && !p.left);
+  // Marked out for not joining their match: the next draws go on without them until
+  // they say they are back (sign-up closing does not keep them out).
+  const noShow =
+    !!steamId &&
+    started &&
+    players.some((p) => p.steamId === steamId && p.left && p.leftReason === 'no_show');
   const round = useShuffleRound(tournamentId, started);
   // An admin marks players out (gone home) or back in while it runs: the next draw follows.
   const { isAuthenticated: isAdmin } = useAuth();
@@ -177,31 +183,35 @@ export function ShuffleJoin({
     round?.matches.filter((m) => m.status !== 'completed' && m.status !== 'cancelled').length ?? 0;
   const title = finished
     ? t('shuffleJoin.finishedTitle')
-    : joined && roundNo !== null && myMatch && myMatchDone
-      ? t('shuffleJoin.playedTitle', { round: roundNo })
-      : joined && roundNo !== null && myMatch
-        ? t('shuffleJoin.playingTitle', { round: roundNo })
-        : iSitOut
-          ? t('shuffleJoin.sittingOutTitle', { round: roundNo })
-          : joined
-            ? t('shuffleJoin.youreIn')
-            : t('shuffleJoin.title');
+    : noShow
+      ? t('shuffleJoin.noShowTitle')
+      : joined && roundNo !== null && myMatch && myMatchDone
+        ? t('shuffleJoin.playedTitle', { round: roundNo })
+        : joined && roundNo !== null && myMatch
+          ? t('shuffleJoin.playingTitle', { round: roundNo })
+          : iSitOut
+            ? t('shuffleJoin.sittingOutTitle', { round: roundNo })
+            : joined
+              ? t('shuffleJoin.youreIn')
+              : t('shuffleJoin.title');
   const body = finished
     ? t('shuffleJoin.finishedBody', { count: round?.maps?.length ?? roundNo ?? 0 })
-    : joined && myMatch && myMatchDone
-      ? t('shuffleJoin.playedBodyLeft', { count: stillPlaying, next: (roundNo ?? 0) + 1 })
-      : joined && myMatch
-        ? t('shuffleJoin.playingBody', { team: myTeam?.name ?? '' })
-        : iSitOut
-          ? t('shuffleJoin.sittingOutBodyCounts', {
-              players: inDraw,
-              size: teamSize,
-              size2: teamSize,
-              count: sittingOut.size,
-            })
-          : joined
-            ? t('shuffleJoin.inBody')
-            : t('shuffleJoin.body');
+    : noShow
+      ? t('shuffleJoin.noShowBody')
+      : joined && myMatch && myMatchDone
+        ? t('shuffleJoin.playedBodyLeft', { count: stillPlaying, next: (roundNo ?? 0) + 1 })
+        : joined && myMatch
+          ? t('shuffleJoin.playingBody', { team: myTeam?.name ?? '' })
+          : iSitOut
+            ? t('shuffleJoin.sittingOutBodyCounts', {
+                players: inDraw,
+                size: teamSize,
+                size2: teamSize,
+                count: sittingOut.size,
+              })
+            : joined
+              ? t('shuffleJoin.inBody')
+              : t('shuffleJoin.body');
   const full = spots !== null && players.length >= spots && !joined;
 
   const act = async (join: boolean) => {
@@ -289,6 +299,22 @@ export function ShuffleJoin({
               note={t('shuffleOverview.whenRoundEnds')}
             />
           )}
+          {noShow && !finished && (
+            <Button
+              variant="contained"
+              disabled={busy}
+              onClick={() => void act(true)}
+              data-testid="shuffle-back-in"
+              sx={{
+                minHeight: 56,
+                borderRadius: radii.pill,
+                fontWeight: 700,
+                fontSize: '1.0625rem',
+              }}
+            >
+              {t('shuffleJoin.backIn')}
+            </Button>
+          )}
           {!steamId
             ? open && (
                 <Button
@@ -319,7 +345,8 @@ export function ShuffleJoin({
                     </Link>
                   </Typography>
                 )
-              : open && (
+              : open &&
+                !noShow && (
                   <Button
                     variant="contained"
                     disabled={busy || full}
@@ -672,7 +699,9 @@ export function ShuffleJoin({
                 }}
               >
                 {p.left
-                  ? t('shuffleJoin.tagLeft')
+                  ? p.leftReason === 'no_show'
+                    ? t('shuffleJoin.tagNoShow')
+                    : t('shuffleJoin.tagLeft')
                   : sittingOut.has(p.steamId)
                     ? t('shuffleJoin.tagSittingOut')
                     : t('shuffleJoin.tagPlaying')}

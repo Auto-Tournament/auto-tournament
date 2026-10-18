@@ -170,5 +170,7 @@
  *   `spectatorWatch` (Watch match for spectators) and `tournamentResultsFooter`.
  * 0.2.28 (additive): `pinnedNotices` (rows pinned to the top of the bell) with
  *   `setPinnedNotices`, and `prizePickRow` (pick a prize where it was earned).
+ * 0.2.29 (additive): `partyView` with `PartyViewProps` (the game's view of a
+ *   matchmaking party on the Play page).
  */
-export const CLIENT_API_VERSION = '0.2.28';
+export const CLIENT_API_VERSION = '0.2.29';

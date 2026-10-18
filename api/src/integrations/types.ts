@@ -1182,6 +1182,27 @@ export interface GameIntegration {
    * no resource needs nothing.
    */
   onHoldChanged?(ctx: MatchContext, change?: { earlyRelease?: boolean }): Promise<void>;
+
+  // --- lineups (services/matchLineups.ts) -----------------------------------
+
+  /**
+   * Players per side in a tournament's matches, when the game fixes it
+   * whatever the team size says (CS2 wingman: 2). Absent or null: the
+   * tournament's team size.
+   */
+  lineupSize?(tournament: IntegrationTournament, teamSize: number): number | null;
+  /**
+   * A running series is between maps: the last map is over and the next one
+   * is not live yet, so a team may change its lineup. Absent: never (a live
+   * match keeps its lineup).
+   */
+  betweenMaps?(ctx: MatchContext): Promise<boolean>;
+  /**
+   * A team's lineup for the match changed: bring the resource running it in
+   * line (CS2: `match.update` to the Ready Up server). Rejects when the
+   * resource did not take it; the lineup stays saved.
+   */
+  onLineupChanged?(ctx: MatchContext): Promise<void>;
 }
 
 /** A router mounted at a fixed prefix, plus its heading in the API reference. */

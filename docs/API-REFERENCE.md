@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 742 of them, 422 behind auth —
+Every endpoint this API serves — 751 of them, 426 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -56,6 +56,14 @@ Notable moments from the demos (knife and Zeus kills, aces, 1vN clutches, no-sco
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/integrations/highlights` | integrator token or admin |
+
+### Integrations: player stats
+
+Each player's numbers summed over tournaments, matches or an import's event, for an event website's stat trophies; null for a number not measured, never 0. Integrator token (API_TOKENS_INTEGRATOR), read-only or admin token, or admin session.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/integrations/player-stats` | integrator token or admin |
 
 ### Highlights backfill
 
@@ -397,6 +405,14 @@ A team's CS2 results per map, and the maps it bans and picks most in the veto.
 | --- | --- | --- |
 | `GET` | `/api/game/cs2/teams/:teamId/profile` | public |
 
+### Party maps
+
+A matchmaking party's CS2 results per map (its members' results added up), and the Active Duty maps.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/party-maps` | public |
+
 ### Manage a match
 
 The admin match page: a match's live state, server and event log, and the Ready Up commands it sends (logged with who sent them).
@@ -548,6 +564,8 @@ E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE
 | `GET` | `/api/test/fleet/events/:serverId` | admin |
 | `POST` | `/api/test/fleet/failover/scan` | admin |
 | `GET` | `/api/test/fleet/commands/:id` | admin |
+| `POST` | `/api/test/stats-fixture` | admin |
+| `POST` | `/api/test/stats-fixture/cleanup` | admin |
 
 ### Manual reporting — captains
 
@@ -715,6 +733,15 @@ Teams signing themselves up with a lineup, and check-in on the day.
 | `PUT` | `/api/tournament-signup/:id/lineup` | public |
 | `DELETE` | `/api/tournament-signup/:id/registration/:teamId` | public |
 | `POST` | `/api/tournament-signup/:id/check-in` | public |
+
+### Match lineups
+
+Who plays a match for a team bigger than the team size: its captain or an admin picks.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/match-lineups/:slug` | public |
+| `PUT` | `/api/match-lineups/:slug/:side` | public |
 
 ### Logs
 
@@ -1072,6 +1099,8 @@ The signed-in player's own data, e.g. the games they play.
 | `GET` | `/api/me/games` | public |
 | `PUT` | `/api/me/games` | public |
 | `POST` | `/api/me/games/prompt/dismiss` | public |
+| `GET` | `/api/me/name` | public |
+| `PUT` | `/api/me/name` | public |
 | `GET` | `/api/me/connections` | public |
 | `POST` | `/api/me/connections/:provider/remove` | public |
 | `POST` | `/api/me/connections/steam/merge` | public |
@@ -1209,6 +1238,7 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `POST` | `/api/test/marker` | admin |
 | `POST` | `/api/test/reset-database` | admin |
 | `POST` | `/api/test/match-state` | admin |
+| `POST` | `/api/test/shuffle-no-shows` | admin |
 | `POST` | `/api/test/series-result` | admin |
 | `POST` | `/api/test/passkey-verifier` | admin |
 | `POST` | `/api/test/login-admin` | public |

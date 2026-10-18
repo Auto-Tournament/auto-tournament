@@ -30,6 +30,7 @@ import { YourMatchCard } from '../components/tournament/match/YourMatchCard';
 import { SpectatorRoom, type SpectatorRoomMatch } from '../components/match/SpectatorRoom';
 import { WhatsNextCard } from '../components/tournament/WhatsNextCard';
 import { CaptainsPanel } from '../components/match/CaptainsPanel';
+import { LineupPanel } from '../components/match/LineupPanel';
 import { MatchChatPanel } from '../components/match/MatchChatPanel';
 import { CommendPanel } from '../components/match/CommendPanel';
 import { MapTile, TeamLogo, panel } from '../components/tournament/ui/draftUi';
@@ -431,6 +432,7 @@ export default function MatchPage() {
                   mapsView={seriesMaps}
                 />
               )}
+              {matchIsOn && <LineupPanel matchSlug={match.slug} teamId={viewerTeamId} />}
               {ReportPanel && <ReportPanel matchSlug={match.slug} matchStatus={match.status} />}
               {ReportPanel && matchIsOn && <CaptainsPanel teamId={viewerTeamId} />}
             </Box>

@@ -23,6 +23,9 @@ import { tournamentRowToResponse } from '../../../utils/tournamentRow';
 import { mapService } from '../maps/mapService';
 import { vetoTurnDeadline, vetoWaitingOnHold } from './timer';
 import { postVetoProgress } from './chatLines';
+import { storeStandaloneVetoConfig } from './standaloneConfig';
+import { isVoteVeto, MM_VOTE_SECONDS, sidesOf, votersOf } from './vote';
+import { autoCompleteVetoForMatch } from './simulation';
 
 const router = Router();
 
@@ -313,8 +316,13 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
     // A player on both teams cannot represent either side, so they see the same
     // redacted view as a spectator. The /action endpoint explains why.
     // The current turn's time limit (./timer.ts), for both views.
+    const voting = isVoteVeto(match);
     const turnClock =
-      vetoState.status === 'completed' ? null : await vetoTurnDeadline(matchSlug, match.veto_state);
+      vetoState.status === 'completed'
+        ? null
+        : await vetoTurnDeadline(matchSlug, match.veto_state, voting ? MM_VOTE_SECONDS : undefined);
+    // Matchmaking votes (./vote.ts): who may vote, for the avatars on the board.
+    const vote = voting ? { seconds: MM_VOTE_SECONDS, voters: await votersOf(match) } : undefined;
     if (turnClock) {
       vetoState.turnDeadline = turnClock.deadline;
       vetoState.turnSeconds = turnClock.seconds;
@@ -333,6 +341,7 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
         veto: { ...vetoState, viewer: 'spectator' },
         maps: await vetoMapInfo(vetoState.allMaps ?? tournamentMaps),
         order: orderInfo,
+        vote,
       });
     }
 
@@ -341,6 +350,7 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
       veto: vetoState,
       maps: await vetoMapInfo(vetoState.allMaps ?? tournamentMaps),
       order: orderInfo,
+      vote,
     });
   } catch (error) {
     log.error('Error getting veto state', error);
@@ -533,6 +543,47 @@ async function vetoAction(req: Request, res: Response) {
       });
     }
 
+    // Matchmaking (./vote.ts): the click is the player's vote; the step is taken when the
+    // turn runs out (the timer) or the whole side has voted.
+    if (isVoteVeto(match) && !actingAdmin && viewerSteamId) {
+      const choice =
+        currentAction === 'side_pick'
+          ? side === 'CT' || side === 'T'
+            ? side
+            : null
+          : mapName && vetoState.availableMaps.includes(mapName)
+            ? mapName
+            : null;
+      if (!choice) {
+        return res.status(400).json({
+          success: false,
+          error: currentAction === 'side_pick' ? 'Invalid side selection' : 'Invalid map selection',
+        });
+      }
+      vetoState.status = 'in_progress';
+      vetoState.votes = { ...(vetoState.votes ?? {}), [viewerSteamId]: choice };
+      await db.updateAsync('matches', { veto_state: JSON.stringify(vetoState) }, 'slug = ?', [
+        matchSlug,
+      ]);
+      emitVetoUpdate(matchSlug, vetoState);
+      const voters = sidesOf(match)[expectedTeam];
+      if (voters.length > 0 && voters.every((id) => vetoState.votes[id])) {
+        const step = vetoState.currentStep;
+        // Everyone voted: take the step now (after this lock is let go; the run takes it too).
+        setImmediate(() => {
+          void autoCompleteVetoForMatch(matchSlug, {
+            timedOut: true,
+            byVote: true,
+            onlyStep: step,
+            maxSteps: 1,
+            stepDelayMs: 0,
+          });
+        });
+      }
+      return res.json({ success: true, veto: vetoState });
+    }
+    delete vetoState.votes;
+
     // Validate action
     if (currentAction === 'ban') {
       if (!mapName || !vetoState.availableMaps.includes(mapName)) {
@@ -711,40 +762,8 @@ async function vetoAction(req: Request, res: Response) {
             log.error(`Failed to generate/store config after veto for ${matchSlug}`, e as Error);
           }
         } else if (match.round === 0) {
-          // Manual match (round === 0, tournament_id === null): update config's maplist from veto picks.
-          try {
-            const existingConfig = match.config ? JSON.parse(match.config) : {};
-            const orderedPickedMaps = [...vetoState.pickedMaps].sort(
-              (a: { mapNumber?: number }, b: { mapNumber?: number }) =>
-                (a.mapNumber || 0) - (b.mapNumber || 0)
-            );
-            const pickedMapNames = orderedPickedMaps
-              .map((m: { mapName: string }) => m.mapName)
-              .filter((name): name is string => Boolean(name));
-            const numMaps = format === 'bo1' ? 1 : format === 'bo3' ? 3 : 5;
-
-            const updatedConfig = {
-              ...existingConfig,
-              maplist: pickedMapNames.slice(0, numMaps),
-              map_sides: orderedPickedMaps.slice(0, numMaps).map((p: { sideTeam1?: string }) => {
-                if (p.sideTeam1 === 'CT') return 'team1_ct';
-                if (p.sideTeam1 === 'T') return 'team2_ct';
-                return 'knife';
-              }),
-            };
-
-            await db.updateAsync('matches', { config: JSON.stringify(updatedConfig) }, 'slug = ?', [
-              matchSlug,
-            ]);
-            log.success(
-              `Updated config maplist for manual match ${matchSlug} after veto completion`
-            );
-          } catch (e) {
-            log.error(
-              `Failed to update config for manual match ${matchSlug} after veto`,
-              e as Error
-            );
-          }
+          // Standalone match (manual, matchmaking): the veto's picks go into its own config.
+          await storeStandaloneVetoConfig(matchSlug, match.config, vetoState.pickedMaps, format);
         }
 
         // Automatically allocate server and load match after veto completion (async)

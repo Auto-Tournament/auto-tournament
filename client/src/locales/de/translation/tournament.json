@@ -1007,7 +1007,8 @@
     "waitingForServer": "Waiting for a server",
     "vetoDoneChip": "Veto done · {{map}}",
     "waitingForServerBody": "A server is assigned as soon as one is free. You get a notification and this page updates by itself.",
-    "mapDrawnChip": "Map drawn · {{map}}"
+    "mapDrawnChip": "Map drawn · {{map}}",
+    "notYet": "Not yet"
   },
   "results": {
     "finalStandings": "Final standings",
@@ -1313,7 +1314,11 @@
     "playedBodyLeft_one": "Waiting for {{count}} more match. Round {{next}} is drawn when it ends; your next match shows up here and you get a notification.",
     "playedBodyLeft_other": "Waiting for {{count}} more matches. Round {{next}} is drawn when they end; your next match shows up here and you get a notification.",
     "joinedByMistake": "Joined by mistake?",
-    "breakTitle": "Break · round {{round}} starts at {{time}}"
+    "breakTitle": "Break · round {{round}} starts at {{time}}",
+    "noShowTitle": "You're out of the next draws",
+    "noShowBody": "You never joined your match, so the next rounds are drawn without you. Back at your PC? Say so and you're in the next draw.",
+    "backIn": "I'm back",
+    "tagNoShow": "No-show"
   },
   "liveOverview": {
     "roundOf": "Round {{round}} of {{total}}",
@@ -1563,6 +1568,23 @@
       "owner": "Owner",
       "captain": "Captain",
       "member": "Member"
+    }
+  },
+  "lineupPanel": {
+    "title": "Aufstellung",
+    "note_one": "Wähle {{count}} Spieler für dieses Match. Die anderen sitzen auf der Bank.",
+    "note_other": "Wähle {{count}} Spieler für dieses Match. Die anderen sitzen auf der Bank.",
+    "picked": "{{picked}} von {{count}} gewählt",
+    "plays": "Spielt",
+    "bench": "Bank",
+    "save": "Aufstellung speichern",
+    "saved": "Aufstellung gespeichert",
+    "notOnServer": "Aufstellung gespeichert, aber der Server hat sie nicht übernommen: {{error}}",
+    "locked": "Die Aufstellung ist gesperrt, solange eine Map läuft. Zwischen den Maps kann sie geändert werden.",
+    "captainOnly": "Nur der Teambesitzer oder ein Kapitän kann die Aufstellung ändern.",
+    "source": {
+      "previous": "Wie im letzten Match des Teams.",
+      "roster": "Die ersten Spieler im Kader."
     }
   },
   "prizesPage": {

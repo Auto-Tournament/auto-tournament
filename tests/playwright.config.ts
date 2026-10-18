@@ -9,6 +9,11 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+// Specs that import the DB layer directly (e.g. tests/api/settings.spec.ts) must
+// be pointed at a database explicitly: never fall back to 127.0.0.1:5432 on a
+// developer machine. CI sets its own env and is left alone.
+if (!process.env.CI) process.env.AT_REQUIRE_EXPLICIT_DB = '1';
+
 export default defineConfig({
   // When the config file is inside tests/, point at the current dir
   testDir: './',
@@ -65,11 +70,12 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   /* Disabled when using Docker Compose (test script handles server startup) */
-  webServer: process.env.SKIP_WEBSERVER ? undefined : {
-    command: 'yarn start',
-    url: 'http://localhost:3069',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  webServer: process.env.SKIP_WEBSERVER
+    ? undefined
+    : {
+        command: 'yarn start',
+        url: 'http://localhost:3069',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120 * 1000,
+      },
 });
-

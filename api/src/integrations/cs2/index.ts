@@ -863,6 +863,27 @@ export const cs2Integration: GameIntegration = {
     if (!outcome.ok) throw new Error(outcome.error);
   },
 
+  // Lineups (services/matchLineups.ts): wingman is two a side whatever the team size.
+  lineupSize(tournament) {
+    return storedCs2Settings(tournament.settings)?.mapMode === 'wingman' ? 2 : null;
+  },
+
+  /** Ready Up's phase: the map before is over (or none went live yet) and the next is not live. */
+  async betweenMaps(ctx) {
+    const { liveStateStore } = await import('./fleet/state');
+    const phase = (await liveStateStore.getLiveState(ctx.slug))?.state?.phase;
+    return phase === 'map_end' || phase === 'warmup' || phase === 'loading';
+  },
+
+  /** A match on a Ready Up server gets the new roster at once (`match.update`). */
+  async onLineupChanged(ctx) {
+    const { getAssignment, syncMatch } = await import('./fleet/driver');
+    const assignment = await getAssignment(ctx.slug);
+    if (!assignment || assignment.endedAt !== null) return;
+    const outcome = await syncMatch(ctx.slug);
+    if (!outcome.ok) throw new Error(outcome.error);
+  },
+
   clientSlots: ['MatchPanel', 'SetupStep', 'StatsPanel'],
 
   // Link previews for clips and reels (services/shareCards).

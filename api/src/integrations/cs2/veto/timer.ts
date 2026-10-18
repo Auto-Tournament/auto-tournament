@@ -21,8 +21,10 @@ import { log } from '../../../utils/logger';
 import type { DbMatchRow } from '../../../types/database.types';
 import { cs2Settings } from '../settingsReaders';
 import { autoCompleteVetoForMatch } from './simulation';
+import { isVoteVeto, MM_VOTE_SECONDS } from './vote';
 
-const TICK_MS = 2_000;
+// Each second: a matchmaking vote's turn is only 10 s (./vote.ts).
+const TICK_MS = 1_000;
 
 /**
  * Extra seconds on a match's first veto turn when an admin let its hold go
@@ -119,7 +121,9 @@ async function heldUntil(slug: string): Promise<number | null> {
  */
 export async function vetoTurnDeadline(
   slug: string,
-  rawVeto: string | null | undefined
+  rawVeto: string | null | undefined,
+  /** A matchmaking vote's turn length (./vote.ts), in place of the Match rules'. */
+  fixedSeconds?: number
 ): Promise<{ deadline?: string; seconds?: number; opensAt?: string; startsAt?: string } | null> {
   const held = await heldUntil(slug);
   if (held !== null) {
@@ -148,7 +152,7 @@ export async function vetoTurnDeadline(
       ...(forStart ? { startsAt: new Date(times!.startsAt! * 1000).toISOString() } : {}),
     };
   }
-  const seconds = await secondsForTurn(rawVeto, slug);
+  const seconds = fixedSeconds ?? (await secondsForTurn(rawVeto, slug));
   if (seconds <= 0) return null;
   const started = turnStartedAt(slug, rawVeto);
   if (started === null) return null;
@@ -161,8 +165,26 @@ export async function vetoWaitingOnHold(slug: string): Promise<string | null> {
   return held === null ? null : new Date(held * 1000).toISOString();
 }
 
-/** Tournament matches whose veto is open: both teams in, no server yet, veto not done. */
+/**
+ * Matches whose veto is open: tournament matches with both teams in, and matchmaking 5v5s
+ * (standalone, their teams in the config); no server yet, veto not done.
+ */
 async function openVetoMatches(): Promise<DbMatchRow[]> {
+  const matchmaking = await db.queryAsync<DbMatchRow>(
+    `SELECT m.* FROM matches m
+      WHERE m.source = 'matchmaking'
+        AND m.tournament_id IS NULL
+        AND m.status = 'pending'
+        AND m.config LIKE '%"vetoDisabled":false%'
+        AND (m.server_id IS NULL OR m.server_id = '')
+        AND (m.held_until IS NULL OR m.held_until <= EXTRACT(EPOCH FROM NOW())::int)
+        AND (m.veto_state IS NULL OR m.veto_state NOT LIKE '%"status":"completed"%')`
+  );
+  const turnSeconds = await cs2Settings.getVetoTurnSeconds();
+  return [...(turnSeconds > 0 ? await tournamentVetoMatches() : []), ...matchmaking];
+}
+
+async function tournamentVetoMatches(): Promise<DbMatchRow[]> {
   return db.queryAsync<DbMatchRow>(
     `SELECT m.* FROM matches m
        JOIN tournament t ON t.id = m.tournament_id
@@ -182,22 +204,33 @@ async function openVetoMatches(): Promise<DbMatchRow[]> {
   );
 }
 
+function stepOf(rawVeto: string | null | undefined): number {
+  const step = (parseVeto(rawVeto) as { currentStep?: unknown } | null)?.currentStep;
+  return typeof step === 'number' ? step : 1;
+}
+
 async function tick(): Promise<void> {
-  if ((await cs2Settings.getVetoTurnSeconds()) <= 0) return;
   const now = Date.now();
   const open = await openVetoMatches();
   const openSlugs = new Set(open.map((m) => m.slug));
   for (const slug of firstSeen.keys()) if (!openSlugs.has(slug)) firstSeen.delete(slug);
 
   for (const match of open) {
-    const seconds = await secondsForTurn(match.veto_state, match.slug);
+    const vote = isVoteVeto(match);
+    const seconds = vote ? MM_VOTE_SECONDS : await secondsForTurn(match.veto_state, match.slug);
     const started = turnStartedAt(match.slug, match.veto_state, now);
     if (started === null || now < started + seconds * 1000 || acting.has(match.slug)) continue;
     acting.add(match.slug);
     log.info(
-      `[VETO-TIMER] ${match.slug}: the team ran out of time (${seconds}s); taking the step for them`
+      `[VETO-TIMER] ${match.slug}: the turn ran out (${seconds}s); taking the step${vote ? ' the votes decide' : ' for the team'}`
     );
-    autoCompleteVetoForMatch(match.slug, { timedOut: true, maxSteps: 1, stepDelayMs: 0 })
+    autoCompleteVetoForMatch(match.slug, {
+      timedOut: true,
+      maxSteps: 1,
+      stepDelayMs: 0,
+      byVote: vote,
+      onlyStep: stepOf(match.veto_state),
+    })
       .catch((error: unknown) =>
         log.warn(`[VETO-TIMER] ${match.slug}: could not take the step`, { error: String(error) })
       )

@@ -1007,7 +1007,8 @@
     "waitingForServer": "Waiting for a server",
     "vetoDoneChip": "Veto done · {{map}}",
     "waitingForServerBody": "A server is assigned as soon as one is free. You get a notification and this page updates by itself.",
-    "mapDrawnChip": "Map drawn · {{map}}"
+    "mapDrawnChip": "Map drawn · {{map}}",
+    "notYet": "Not yet"
   },
   "results": {
     "finalStandings": "Final standings",
@@ -1313,7 +1314,11 @@
     "playedBodyLeft_one": "Waiting for {{count}} more match. Round {{next}} is drawn when it ends; your next match shows up here and you get a notification.",
     "playedBodyLeft_other": "Waiting for {{count}} more matches. Round {{next}} is drawn when they end; your next match shows up here and you get a notification.",
     "joinedByMistake": "Joined by mistake?",
-    "breakTitle": "Break · round {{round}} starts at {{time}}"
+    "breakTitle": "Break · round {{round}} starts at {{time}}",
+    "noShowTitle": "You're out of the next draws",
+    "noShowBody": "You never joined your match, so the next rounds are drawn without you. Back at your PC? Say so and you're in the next draw.",
+    "backIn": "I'm back",
+    "tagNoShow": "No-show"
   },
   "liveOverview": {
     "roundOf": "Round {{round}} of {{total}}",
@@ -1563,6 +1568,23 @@
       "owner": "Owner",
       "captain": "Captain",
       "member": "Member"
+    }
+  },
+  "lineupPanel": {
+    "title": "Alinhamento",
+    "note_one": "Escolhe {{count}} jogador para este jogo. Os restantes ficam no banco.",
+    "note_other": "Escolhe {{count}} jogadores para este jogo. Os restantes ficam no banco.",
+    "picked": "{{picked}} de {{count}} escolhidos",
+    "plays": "Joga",
+    "bench": "Banco",
+    "save": "Guardar alinhamento",
+    "saved": "Alinhamento guardado",
+    "notOnServer": "Alinhamento guardado, mas o servidor não o aceitou: {{error}}",
+    "locked": "O alinhamento fica bloqueado enquanto se joga um mapa. Pode mudar entre mapas.",
+    "captainOnly": "Só o dono da equipa ou um capitão pode mudar o alinhamento.",
+    "source": {
+      "previous": "O mesmo do último jogo da equipa.",
+      "roster": "Os primeiros jogadores do plantel."
     }
   },
   "prizesPage": {
