@@ -157,6 +157,16 @@ AT_OUTPUT_HEIGHT=1080 AT_OUTPUT_FPS=60 AT_ENCODE_TIMEOUT_SECONDS=3600 \
 at-worker record-file demo.dem 'name:Player' moments.json ./native-test
 ```
 
+Intel hardware H.264 encoding is available through `AT_ENCODER=h264_vaapi`
+with `AT_VAAPI_DEVICE=/dev/dri/renderD128` (adjust the render node for your
+host). This uses Intel's video encoding hardware through VAAPI; it is separate
+from CS2's Vulkan rendering. The HD 530 has been tested with the worker's
+overlay pipeline using this setting. The explicit FFmpeg `h264_qsv` path did
+not initialize an MFX session in the tested container, so use `h264_vaapi`
+there. Keep `AT_GPU_BLUR=0` initially. Test before changing a production
+recorder, then drain its current job and restart the worker with the new
+environment. The compose file defaults to CPU encoding for compatibility.
+
 `moments.json` uses the same format as the existing `record-file` command.
 For a smoke test without hand-written tick ranges, use
 `at-worker record-benchmark demo.dem ./native-test` with the same environment;
