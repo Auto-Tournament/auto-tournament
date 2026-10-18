@@ -637,76 +637,81 @@ function RecordersTab() {
                         }
                       />
                     </Box>
-                    {r.benchmark?.error && (
-                      <Alert severity="error">
-                        {r.benchmark.error.split('--- gamescope log')[0].trim()}
-                      </Alert>
-                    )}
+                    {r.benchmark?.error &&
+                      !r.benchmarkWanted &&
+                      r.progress?.step !== 'benchmark' && (
+                        <Alert severity="error">
+                          {r.benchmark.error.split('--- gamescope log')[0].trim()}
+                        </Alert>
+                      )}
                     {r.benchmark?.backend === 'native' && (
                       <Typography variant="caption" color="text.secondary">
                         {t('highlightsAdmin.benchmarkNativeHint')}
                       </Typography>
                     )}
-                    {r.benchmark && r.benchmark.tries.length > 0 && (
-                      <Box sx={{ overflowX: 'auto' }}>
-                        <Box
-                          component="table"
-                          sx={{
-                            borderCollapse: 'collapse',
-                            fontSize: 13,
-                            '& td, & th': {
-                              px: 1,
-                              py: 0.25,
-                              textAlign: 'left',
-                              whiteSpace: 'nowrap',
-                            },
-                            fontVariantNumeric: 'tabular-nums',
-                          }}
-                        >
-                          <thead>
-                            <tr>
-                              <th>
-                                {t(
-                                  r.benchmark.backend === 'native'
-                                    ? 'highlightsAdmin.bench.mode'
-                                    : 'highlightsAdmin.bench.hz'
-                                )}
-                              </th>
-                              <th>{t('highlightsAdmin.bench.time')}</th>
-                              <th>
-                                {t(
-                                  r.benchmark.backend === 'native'
-                                    ? 'highlightsAdmin.bench.exportFps'
-                                    : 'highlightsAdmin.bench.fps'
-                                )}
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {r.benchmark.tries.map((b) => (
-                              <tr key={b.gamescopeHz}>
-                                <td>
-                                  {r.benchmark?.backend === 'native'
-                                    ? t('highlightsAdmin.bench.native')
-                                    : `${b.gamescopeHz} Hz`}
-                                  {b.ok &&
-                                  (r.benchmark?.backend === 'native' ||
-                                    b.gamescopeHz === r.benchmark?.pick)
-                                    ? ' ✓'
-                                    : ''}
-                                </td>
-                                <td title={b.error}>
-                                  {b.ok ? duration(b.seconds) : t('highlightsAdmin.failed')}
-                                </td>
-                                <td>
-                                  {b.captureFps != null ? Number(b.captureFps.toFixed(1)) : '—'}
-                                </td>
+                    {r.benchmark &&
+                      !r.benchmarkWanted &&
+                      r.progress?.step !== 'benchmark' &&
+                      r.benchmark.tries.length > 0 && (
+                        <Box sx={{ overflowX: 'auto' }}>
+                          <Box
+                            component="table"
+                            sx={{
+                              borderCollapse: 'collapse',
+                              fontSize: 13,
+                              '& td, & th': {
+                                px: 1,
+                                py: 0.25,
+                                textAlign: 'left',
+                                whiteSpace: 'nowrap',
+                              },
+                              fontVariantNumeric: 'tabular-nums',
+                            }}
+                          >
+                            <thead>
+                              <tr>
+                                <th>
+                                  {t(
+                                    r.benchmark.backend === 'native'
+                                      ? 'highlightsAdmin.bench.mode'
+                                      : 'highlightsAdmin.bench.hz'
+                                  )}
+                                </th>
+                                <th>{t('highlightsAdmin.bench.time')}</th>
+                                <th>
+                                  {t(
+                                    r.benchmark.backend === 'native'
+                                      ? 'highlightsAdmin.bench.exportFps'
+                                      : 'highlightsAdmin.bench.fps'
+                                  )}
+                                </th>
                               </tr>
-                            ))}
-                          </tbody>
+                            </thead>
+                            <tbody>
+                              {r.benchmark.tries.map((b) => (
+                                <tr key={b.gamescopeHz}>
+                                  <td>
+                                    {r.benchmark?.backend === 'native'
+                                      ? t('highlightsAdmin.bench.native')
+                                      : `${b.gamescopeHz} Hz`}
+                                    {b.ok &&
+                                    (r.benchmark?.backend === 'native' ||
+                                      b.gamescopeHz === r.benchmark?.pick)
+                                      ? ' ✓'
+                                      : ''}
+                                  </td>
+                                  <td title={b.error}>
+                                    {b.ok ? duration(b.seconds) : t('highlightsAdmin.failed')}
+                                  </td>
+                                  <td>
+                                    {b.captureFps != null ? Number(b.captureFps.toFixed(1)) : '—'}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Box>
                         </Box>
-                      </Box>
-                    )}
+                      )}
                     {r.lastError &&
                       !(r.benchmark?.error && r.lastError.startsWith(r.benchmark.error)) && (
                         <Typography
