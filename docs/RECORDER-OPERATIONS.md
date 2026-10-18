@@ -18,10 +18,10 @@ Recorders → Add a recorder**. Keep that key out of Git and public logs.
 
 ## Choose a capture backend
 
-| Backend | How it captures | Suitable hosts |
-| --- | --- | --- |
-| Default gamescope capture | Captures demo playback in real time | A GPU fast enough to keep up with the requested frame rate |
-| Native frame export (`AT_CAPTURE_BACKEND=native`) | Exports each frame and game audio, then encodes the result | Intel/AMD graphics and slower hosts; NVIDIA is optional |
+| Backend                                           | How it captures                                            | Suitable hosts                                             |
+| ------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
+| Default gamescope capture                         | Captures demo playback in real time                        | A GPU fast enough to keep up with the requested frame rate |
+| Native frame export (`AT_CAPTURE_BACKEND=native`) | Exports each frame and game audio, then encodes the result | Intel/AMD graphics and slower hosts; NVIDIA is optional    |
 
 Native export uses the CS Demo Manager plugin bundled with the worker. It can
 render more slowly than playback while preserving the requested video timing,
@@ -114,6 +114,61 @@ A local smoke test is also available with `at-worker record-benchmark
 demo.dem ./native-test`; it needs the same native environment, a readable demo
 and a writable output directory, but no platform token. It selects the first
 human-player kill. See the worker guide for an example environment.
+
+## Before setting up your own native recorder
+
+The native container is a manual setup for **Linux amd64 with Intel/AMD
+graphics**. It is not installed or updated by the NVIDIA headless host scripts.
+The Add a recorder command builds from upstream source; while testing this PR
+before merge, use its branch checkout instead of cloning upstream main. There
+is no published native image or managed native host updater in this change.
+
+- **GPU access and drivers:** expose the correct `/dev/dri` render node and
+  ensure the container user can access it. CS2 needs a working Vulkan driver;
+  merely displaying a GPU name in AT does not prove hardware rendering. Check
+  CS2's console log for its selected Vulkan physical device and use the host's
+  GPU monitor during capture. Software drivers such as llvmpipe can be very
+  slow. NVIDIA needs additional container runtime/driver configuration beyond
+  this Intel/AMD compose example. ARM is not supported by the bundled plugin.
+- **Persistent, writable game files:** keep Steam's `/config` and CS2's
+  `/mnt/games` volumes. The worker temporarily modifies `gameinfo.gi` and
+  writes movie frames beside CS2, so a read-only installation will fail. Use a
+  dedicated installation; do not share it with another running recorder. If a
+  crash leaves `gameinfo.gi.backup`, restore it before retrying rather than
+  deleting a backup without inspecting it.
+- **Temporary storage:** encoded MP4 size is not the scratch-space requirement.
+  At 1920×1080, 1,000 uncompressed 32-bit TGA frames plus their YUV420 copy
+  occupy about **11.4 GB** before cleanup. Slow motion increases the number of
+  exported frames. Leave space on both the game and scratch filesystems;
+  `AT_KEEP_SCRATCH=1` retains large diagnostics. Direct-to-encoded streaming
+  is not implemented.
+- **RAM and swap:** CS2, the desktop, FFmpeg and other host services share
+  memory. A busy 16 GiB host can run out during map loading even at low
+  graphics. Swap helps handle peaks but does not guarantee fast rendering.
+- **Encoding:** the compose example deliberately uses `libx264` on the CPU.
+  For Intel hardware encoding, test `AT_ENCODER=h264_vaapi` with the correct
+  `AT_VAAPI_DEVICE` before enabling it. FFmpeg listing an encoder does not
+  prove the installed driver supports it. The tested HD 530 container could
+  use VAAPI, while `h264_qsv` failed to initialize an MFX session. CPU work
+  remains for conversion and overlays even with hardware encoding.
+- **Steam and worker startup:** initial Steam sign-in and CS2 installation
+  require the desktop. Offline Steam is supported after setup. The desktop
+  container does not automatically start the worker, restart it after failure,
+  or prevent the host from sleeping. Configure supervision and host power
+  settings for unattended use. Check that both the recorder and its group are
+  enabled in AT after connecting.
+- **Job limits and updates:** set the API's and worker's job allowances
+  together; increasing only one still allows the other to expire the job.
+  CS2 updates can invalidate the pinned plugin, and first-run shaders or a
+  missing workshop map can delay startup. The example Steam desktop image
+  uses a moving `latest` tag: pin a tested digest for a reproducible install.
+  Drain the recorder before rebuilding or replacing its image/binary.
+
+The native option creates a dedicated desktop and uses container-scoped
+seccomp/AppArmor exceptions for Steam's nested runtime. Its web desktop is
+bound to loopback; keep that binding and access it through SSH instead of
+exposing an unauthenticated desktop to the network. Keep the recorder token
+in a private environment file outside the checkout.
 
 ## Recorder controls
 

@@ -25,6 +25,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -235,6 +236,9 @@ func writeNativeFile(path string, data []byte, mode fs.FileMode) error {
 }
 
 func installNativePlugin(gameDir string) (func(), error) {
+	if runtime.GOARCH != "amd64" && os.Getenv("AT_CSDM_PLUGIN") == "" {
+		return nil, errors.New("the bundled native plugin requires Linux amd64; AT_CSDM_PLUGIN must point to a plugin built for this architecture")
+	}
 	info := filepath.Join(gameDir, "csgo", "gameinfo.gi")
 	backup := info + ".backup"
 	if _, err := os.Stat(backup); err == nil {

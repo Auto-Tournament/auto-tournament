@@ -1,3 +1,4 @@
+import { nativeServerCommands, nativeStartCommand } from './nativeRecorderSetup';
 import {
   RecorderGroups,
   RecorderGroupToggle,
@@ -1027,25 +1028,6 @@ export function serverCommands(origin: string, token: string): string {
     `curl -fsSL ${origin}/recorder/start-recorder.sh | AT_URL=${origin} AT_WORKER_TOKEN=${token} bash`,
   ].join('\n');
 }
-
-/** Native preview builds from this contribution branch until an image is published. */
-export function nativeServerCommands(origin: string, token: string): string {
-  return [
-    'git clone --depth 1 --branch codex/native-frame-capture https://github.com/DaalbuCZ/matchzy-auto-tournament.git at-native-recorder',
-    'cd at-native-recorder/worker',
-    'mkdir -p "$HOME/.config/auto-tournament"',
-    '(umask 077; cat > "$HOME/.config/auto-tournament/native-recorder.env" <<\'AT_RECORDER_ENV\'',
-    `AT_URL=${origin}`,
-    `AT_WORKER_TOKEN=${token}`,
-    'AT_RECORDER_ENV',
-    ')',
-    'chmod 600 "$HOME/.config/auto-tournament/native-recorder.env"',
-    'docker compose -f native.compose.yml up -d --build',
-  ].join('\n');
-}
-
-const nativeStartCommand =
-  'docker exec --user abc --env-file "$HOME/.config/auto-tournament/native-recorder.env" at-native-recorder /usr/local/bin/at-worker record';
 
 type RecorderKind = 'pc' | 'server' | 'native';
 

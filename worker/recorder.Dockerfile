@@ -17,7 +17,7 @@ ARG VCS_REF=unknown
 LABEL org.opencontainers.image.revision=$VCS_REF
 COPY --from=build /at-worker /usr/local/bin/at-worker
 COPY LICENSE THIRD_PARTY_NOTICES.md /licenses/at-worker/
-COPY assets/native/LICENSE assets/native/README.md /licenses/at-worker/csdm/
+COPY assets/native/LICENSE assets/native/README.md assets/native/THIRD_PARTY_NOTICES.md /licenses/at-worker/csdm/
 COPY assets/fonts/OFL-Geist.txt assets/fonts/OFL-Sora.txt /licenses/at-worker/fonts/
 # Not steam-headless's own desktop and Steam: the recorder, as the PC's user.
 ENTRYPOINT ["/usr/local/bin/at-worker", "record"]

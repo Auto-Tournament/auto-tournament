@@ -15,5 +15,6 @@ COPY --from=build /at-worker /at-worker
 # The worker's license and its third-party notices (Go modules, the Go
 # runtime, the fonts' Open Font License) go with every image.
 COPY LICENSE THIRD_PARTY_NOTICES.md /licenses/
+COPY assets/native/LICENSE assets/native/README.md assets/native/THIRD_PARTY_NOTICES.md /licenses/csdm/
 COPY assets/fonts/OFL-Geist.txt assets/fonts/OFL-Sora.txt /licenses/fonts/
 ENTRYPOINT ["/at-worker"]

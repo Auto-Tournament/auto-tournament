@@ -7,6 +7,7 @@ CS2's kill feed icons are not part of this repository or of the binary: `at-work
 The native capture backend embeds CS Demo Manager's Linux CS2 plugin,
 Copyright (c) 2014-present AkiVer, under the MIT License. Its full license and
 binary provenance are in `assets/native/LICENSE` and `assets/native/README.md`.
+Its dependency notices are in `assets/native/THIRD_PARTY_NOTICES.md`.
 
 ## github.com/golang/geo v0.0.0-20230421003525-6adc56603217
 
