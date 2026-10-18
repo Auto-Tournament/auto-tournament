@@ -2,9 +2,11 @@
 
 ## Which login is required?
 
-Steam must be signed in on the recorder so it can install and run CS2. Sign in
-initially through its desktop and keep the Steam configuration on persistent
-storage. Closing the browser used to view that desktop does not stop recording;
+The supported setup needs an initial Steam account sign-in to install and
+initialize CS2, just like the original headless recorder. After installation,
+Steam can run in offline mode: demo recording does not require an ongoing
+online Steam session. Keep the Steam configuration on persistent storage.
+Closing the browser used to view that desktop does not stop recording;
 the Steam client and graphics session must remain running. Steam may ask you to
 sign in again if its saved session expires or its configuration is removed.
 

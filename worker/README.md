@@ -54,7 +54,8 @@ container below brings those). For Intel/AMD graphics and slower hardware,
 use [native frame export](#native-frame-export-intelamd-or-slower-hardware).
 Highlight recording is not supported on Windows.
 
-Steam's saved login and desktop session must remain available, but the browser
+Steam's saved account state and desktop session must remain available; offline
+mode is supported after initial setup. The browser
 used to access the desktop can be closed. A signed-in Auto Tournament website
 session is only needed for management: the recorder authenticates with its
 own token. See the [setup and operations guide](../docs/RECORDER-OPERATIONS.md)
