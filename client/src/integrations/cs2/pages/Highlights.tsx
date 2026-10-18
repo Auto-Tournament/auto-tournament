@@ -1028,7 +1028,26 @@ export function serverCommands(origin: string, token: string): string {
   ].join('\n');
 }
 
-type RecorderKind = 'pc' | 'server';
+/** Native preview builds from this contribution branch until an image is published. */
+export function nativeServerCommands(origin: string, token: string): string {
+  return [
+    'git clone --depth 1 --branch codex/native-frame-capture https://github.com/DaalbuCZ/matchzy-auto-tournament.git at-native-recorder',
+    'cd at-native-recorder/worker',
+    'mkdir -p "$HOME/.config/auto-tournament"',
+    '(umask 077; cat > "$HOME/.config/auto-tournament/native-recorder.env" <<\'AT_RECORDER_ENV\'',
+    `AT_URL=${origin}`,
+    `AT_WORKER_TOKEN=${token}`,
+    'AT_RECORDER_ENV',
+    ')',
+    'chmod 600 "$HOME/.config/auto-tournament/native-recorder.env"',
+    'docker compose -f native.compose.yml up -d --build',
+  ].join('\n');
+}
+
+const nativeStartCommand =
+  'docker exec --user abc --env-file "$HOME/.config/auto-tournament/native-recorder.env" at-native-recorder /usr/local/bin/at-worker record';
+
+type RecorderKind = 'pc' | 'server' | 'native';
 
 /**
  * "Add a recorder": a key made for it, and what to paste, for a gaming PC
@@ -1088,7 +1107,9 @@ function AddRecorder({ onKeys }: { onKeys: () => void }) {
   const command = token
     ? kind === 'pc'
       ? recorderCommand(origin, token)
-      : serverCommands(origin, token)
+      : kind === 'native'
+        ? nativeServerCommands(origin, token)
+        : serverCommands(origin, token)
     : '';
   const close = () => {
     setOpen(false);
@@ -1141,19 +1162,32 @@ function AddRecorder({ onKeys }: { onKeys: () => void }) {
       <Dialog open={open} onClose={close} maxWidth="md" fullWidth>
         <DialogTitle>{t('highlightsAdmin.add.title')}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Tabs value={kind} onChange={(_, v: RecorderKind) => setKind(v)}>
+          <Tabs
+            value={kind}
+            onChange={(_, v: RecorderKind) => setKind(v)}
+            variant="scrollable"
+            scrollButtons="auto"
+          >
             <Tab value="pc" label={t('highlightsAdmin.add.pc')} data-testid="recorder-add-pc" />
             <Tab
               value="server"
               label={t('highlightsAdmin.add.server')}
               data-testid="recorder-add-server"
             />
+            <Tab
+              value="native"
+              label={t('highlightsAdmin.add.native')}
+              data-testid="recorder-add-native"
+            />
           </Tabs>
           <Typography variant="body2">
             {kind === 'pc'
               ? t('highlightsAdmin.add.pcNeeds')
-              : t('highlightsAdmin.add.serverNeeds')}
+              : kind === 'native'
+                ? t('highlightsAdmin.add.nativeNeeds')
+                : t('highlightsAdmin.add.serverNeeds')}
           </Typography>
+          <Alert severity="info">{t('highlightsAdmin.add.steamOffline')}</Alert>
           {!token ? (
             <Stack direction="row" spacing={1.5} alignItems="flex-start" flexWrap="wrap" useFlexGap>
               <TextField
@@ -1194,8 +1228,40 @@ function AddRecorder({ onKeys }: { onKeys: () => void }) {
               <Typography variant="body2" color="text.secondary">
                 {kind === 'pc'
                   ? t('highlightsAdmin.add.pcAfter')
-                  : t('highlightsAdmin.add.serverAfter')}
+                  : kind === 'native'
+                    ? t('highlightsAdmin.add.nativeAfter')
+                    : t('highlightsAdmin.add.serverAfter')}
               </Typography>
+              {kind === 'native' && (
+                <>
+                  <Box
+                    component="pre"
+                    data-testid="recorder-native-start"
+                    sx={{
+                      m: 0,
+                      p: 1.5,
+                      bgcolor: 'action.hover',
+                      borderRadius: 1,
+                      overflowX: 'auto',
+                      fontSize: 12.5,
+                    }}
+                  >
+                    {nativeStartCommand}
+                  </Box>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(nativeStartCommand);
+                        showSuccess(t('highlightsAdmin.add.copied'));
+                      } catch {
+                        showError(t('highlightsAdmin.add.copyFailed'));
+                      }
+                    }}
+                  >
+                    {t('highlightsAdmin.add.nativeCopyStart')}
+                  </Button>
+                </>
+              )}
               <Alert severity="info">{t('highlightsAdmin.add.once')}</Alert>
             </>
           )}
