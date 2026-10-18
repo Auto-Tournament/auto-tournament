@@ -49,8 +49,16 @@ environment:
 
 `at-worker record` turns each player's best moments into clips and reels. It
 runs on a **Linux** PC with a GPU, CS2 and Steam signed in (any account; CS2 is
-free), and needs gamescope, ffmpeg and PipeWire (the recorder container below
-brings those). Windows is not supported: the capture goes through gamescope.
+free). The default backend needs gamescope, ffmpeg and PipeWire (the recorder
+container below brings those). For Intel/AMD graphics and slower hardware,
+use [native frame export](#native-frame-export-intelamd-or-slower-hardware).
+Highlight recording is not supported on Windows.
+
+Steam's saved login and desktop session must remain available, but the browser
+used to access the desktop can be closed. A signed-in Auto Tournament website
+session is only needed for management: the recorder authenticates with its
+own token. See the [setup and operations guide](../docs/RECORDER-OPERATIONS.md)
+for headless setup, persistent Steam state and benchmark troubleshooting.
 
 ```sh
 AT_URL=https://your-platform AT_WORKER_TOKEN=... AT_WORKER_NAME=lan-seat-12 \
@@ -75,7 +83,7 @@ What the platform does with it:
   while it records (see below).
 - **CS2 that will not start.** The job goes back without using up its moments'
   tries; two such jobs in a row pause the recorder for 15 minutes.
-- **Benchmark.** On its first job the recorder records one moment at 240 and
+- **Benchmark.** With gamescope, on its first job the recorder records one moment at 240 and
   120 Hz and keeps the faster one (`AT_GAMESCOPE_HZ`, set by hand,
   wins).
 - **Run log.** Each job's timings and log show on the Highlights page.
@@ -152,7 +160,8 @@ at-worker record-file demo.dem 'name:Player' moments.json ./native-test
 For a smoke test without hand-written tick ranges, use
 `at-worker record-benchmark demo.dem ./native-test` with the same environment;
 it selects the first kill by a human player and renders a short highlight.
-Resolution/FPS settings from the platform take precedence for claimed jobs.
+Claimed jobs use the platform's resolution/FPS settings unless overridden by
+`AT_RESOLUTION`, `AT_OUTPUT_HEIGHT` or `AT_OUTPUT_FPS` on the recorder.
 Native export captures additional frames for slow motion, converts each
 window to the editor's I420 format, and deletes its TGA/WAV files after
 conversion. It encodes each window before capturing the next. Allow several
