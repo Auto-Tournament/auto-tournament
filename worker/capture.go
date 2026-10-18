@@ -213,8 +213,12 @@ type game struct {
 
 // launchGame starts gamescope with CS2 and waits for its console and stream.
 func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error) {
+	oomBefore := nativeOOMKills()
 	g, err := r.launchGameOnce(ctx, logPath)
 	if err != nil {
+		if nativeOOMKills() > oomBefore {
+			err = fmt.Errorf("CS2 was killed because the recorder ran out of memory; lower graphics settings or capture resolution: %w", err)
+		}
 		// The log is in the job's folder, which goes when the job ends: its
 		// last lines go with the error (into the run report and the job log).
 		if tail := logTail(logPath, 40, 3000); tail != "" {
@@ -357,7 +361,10 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 		// The plugin hooks FrameStageNotify from ClientFullyConnect, which
 		// demo playback alone does not trigger. Connect to a local server once
 		// before sending its first playdemo message.
-		bootstrap := env("AT_NATIVE_BOOTSTRAP_MAP", "de_dust2")
+		bootstrap := r.nativeMap
+		if bootstrap == "" {
+			bootstrap = env("AT_NATIVE_BOOTSTRAP_MAP", "de_dust2")
+		}
 		if !regexp.MustCompile(`^[a-zA-Z0-9_/-]+$`).MatchString(bootstrap) {
 			g.stop()
 			return nil, errors.New("invalid AT_NATIVE_BOOTSTRAP_MAP")

@@ -10,10 +10,12 @@ import (
 	"context"
 	"crypto/rand"
 	_ "embed"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"log"
 	"math"
@@ -35,6 +37,18 @@ import (
 
 //go:embed assets/native/libserver.so
 var nativePlugin []byte
+
+func nativeOOMKills() uint64 {
+	data, _ := os.ReadFile("/sys/fs/cgroup/memory.events")
+	fields := strings.Fields(string(data))
+	for i := 0; i+1 < len(fields); i += 2 {
+		if fields[i] == "oom_kill" {
+			n, _ := strconv.ParseUint(fields[i+1], 10, 64)
+			return n
+		}
+	}
+	return 0
+}
 
 type nativeAction struct {
 	Tick int    `json:"tick"`
@@ -110,6 +124,11 @@ func prepareNativeDisplay(ctx context.Context, width, height int) error {
 	var outputs []struct {
 		Name    string `json:"name"`
 		Enabled bool   `json:"enabled"`
+		Modes   []struct {
+			Width   int  `json:"width"`
+			Height  int  `json:"height"`
+			Current bool `json:"current"`
+		} `json:"modes"`
 	}
 	if err := json.Unmarshal(data, &outputs); err != nil {
 		return err
@@ -118,13 +137,77 @@ func prepareNativeDisplay(ctx context.Context, width, height int) error {
 		if !output.Enabled {
 			continue
 		}
-		mode := fmt.Sprintf("%dx%d", width, height)
-		if b, err := exec.CommandContext(ctx, "wlr-randr", "--output", output.Name, "--scale", "1", "--mode", mode).CombinedOutput(); err != nil {
+		args := []string{"--output", output.Name, "--scale", "1"}
+		fits, exact := false, false
+		for _, mode := range output.Modes {
+			if mode.Current && mode.Width >= width && mode.Height >= height {
+				fits = true
+			}
+			if mode.Width == width && mode.Height == height {
+				exact = true
+			}
+		}
+		if exact {
+			args = append(args, "--mode", fmt.Sprintf("%dx%d", width, height))
+		} else if !fits {
+			return fmt.Errorf("native desktop is smaller than %dx%d; set the Steam desktop's manual resolution before recording", width, height)
+		}
+		// A browser-sized Wayland output often has only one advertised mode.
+		// A larger output can host the requested CS2 window without switching.
+		if b, err := exec.CommandContext(ctx, "wlr-randr", args...).CombinedOutput(); err != nil {
 			return fmt.Errorf("native display mode: %w: %s", err, b)
 		}
-		return nil
+		home, _ := os.UserHomeDir()
+		return prepareNativeWindowRules(ctx, filepath.Join(home, ".config", "labwc", "rc.xml"))
 	}
 	return errors.New("native display setup found no enabled Wayland output")
+}
+
+// LinuxServer's Steam desktop maximizes all windows by default. On a
+// dedicated recorder that changes CS2's movie size to the browser's size.
+func prepareNativeWindowRules(ctx context.Context, path string) error {
+	data, err := os.ReadFile(path)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	rule := regexp.MustCompile(`<windowRule\s+identifier="\*"\s*>\s*<action\s+name="Maximize"\s*/>\s*</windowRule>`)
+	updated := rule.ReplaceAll(data, nil)
+	if bytes.Equal(data, updated) {
+		return nil
+	}
+	backup, err := os.OpenFile(path+".at-native-original", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err == nil {
+		_, err = backup.Write(data)
+		closeErr := backup.Close()
+		if err != nil {
+			return err
+		}
+		if closeErr != nil {
+			return closeErr
+		}
+	} else if !os.IsExist(err) {
+		return err
+	}
+	if err := writeNativeFile(path, updated, 0644); err != nil {
+		return err
+	}
+	command := exec.CommandContext(ctx, "labwc", "--reconfigure")
+	pid := os.Getenv("LABWC_PID")
+	if pid == "" {
+		data, err := exec.CommandContext(ctx, "pgrep", "-u", strconv.Itoa(os.Getuid()), "-x", "labwc").Output()
+		if err != nil || len(strings.Fields(string(data))) != 1 {
+			return errors.New("native window rules: could not identify the desktop's labwc process")
+		}
+		pid = strings.TrimSpace(string(data))
+	}
+	command.Env = append(os.Environ(), "LABWC_PID="+pid)
+	if output, err := command.CombinedOutput(); err != nil {
+		return fmt.Errorf("native window rules: %w: %s", err, output)
+	}
+	return nil
 }
 
 // Patch only the search path, using a private plugin directory. The plugin
@@ -216,12 +299,13 @@ func installNativePlugin(gameDir string) (func(), error) {
 // lets the worker reload its JSON action file without the CSDM application,
 // database, or a publicly exposed control port.
 type nativeBridge struct {
-	server *http.Server
-	port   string
-	mu     sync.Mutex
-	conn   *websocket.Conn
-	ready  chan struct{}
-	once   sync.Once
+	server  *http.Server
+	port    string
+	mu      sync.Mutex
+	conn    *websocket.Conn
+	ready   chan struct{}
+	once    sync.Once
+	changed chan struct{}
 }
 
 func newNativeBridge() (*nativeBridge, error) {
@@ -229,7 +313,7 @@ func newNativeBridge() (*nativeBridge, error) {
 	if err != nil {
 		return nil, err
 	}
-	b := &nativeBridge{port: strconv.Itoa(listener.Addr().(*net.TCPAddr).Port), ready: make(chan struct{})}
+	b := &nativeBridge{port: strconv.Itoa(listener.Addr().(*net.TCPAddr).Port), ready: make(chan struct{}), changed: make(chan struct{})}
 	b.server = &http.Server{ReadHeaderTimeout: 5 * time.Second, Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// The plugin's easywsclient build can omit the query when its URL
 		// has no slash before '?'. Both root handshakes are game clients on
@@ -251,9 +335,20 @@ func newNativeBridge() (*nativeBridge, error) {
 			return
 		}
 		b.conn = c
+		close(b.changed)
+		b.changed = make(chan struct{})
 		b.mu.Unlock()
 		b.once.Do(func() { close(b.ready) })
 		defer c.CloseNow()
+		defer func() {
+			b.mu.Lock()
+			defer b.mu.Unlock()
+			if b.conn == c {
+				b.conn = nil
+				close(b.changed)
+				b.changed = make(chan struct{})
+			}
+		}()
 		for {
 			if _, _, err := c.Read(context.Background()); err != nil {
 				return
@@ -276,21 +371,47 @@ func (b *nativeBridge) close() {
 func (b *nativeBridge) play(ctx context.Context, demo string) error {
 	wait, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	select {
-	case <-b.ready:
-	case <-wait.Done():
-		return fmt.Errorf("CS:DM native plugin did not connect: %w", wait.Err())
-	}
 	message, _ := json.Marshal(map[string]string{"name": "playdemo", "payload": demo})
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	return b.conn.Write(wait, websocket.MessageText, message)
+	for {
+		b.mu.Lock()
+		conn, changed := b.conn, b.changed
+		b.mu.Unlock()
+		if conn != nil {
+			if err := conn.Write(wait, websocket.MessageText, message); err == nil {
+				return nil
+			}
+			// A map change may reconnect the plugin. Never keep writing to the
+			// first connection after its read loop has closed it.
+		}
+		select {
+		case <-changed:
+		case <-wait.Done():
+			return fmt.Errorf("CS:DM native plugin did not connect: %w", wait.Err())
+		}
+	}
 }
 
 type nativeFiles struct {
 	frames []string
 	wav    string
 	first  int
+}
+
+func checkNativeDimensions(path string, width, height int) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	var header [18]byte
+	if _, err := io.ReadFull(f, header[:]); err != nil {
+		return err
+	}
+	w, h := int(binary.LittleEndian.Uint16(header[12:14])), int(binary.LittleEndian.Uint16(header[14:16]))
+	if w != width || h != height {
+		return fmt.Errorf("native movie is %dx%d; requested %dx%d (check CS2 window and desktop settings)", w, h, width, height)
+	}
+	return nil
 }
 
 // CS2 writes images to the plugin search path but WAVs to csgo/movie.
@@ -415,6 +536,12 @@ func (r *recorder) captureNative(g *game, name string, from, to, fps int, raw, w
 		case <-progress.C:
 			files, _ := findNativeFiles(r.gameDir, prefix)
 			count := len(files.frames)
+			if count > 0 {
+				if err := checkNativeDimensions(files.frames[0], g.width, g.height); err != nil {
+					_ = g.con.send("endmovie", "demo_pause", "host_framerate 0")
+					return nil, 0, err
+				}
+			}
 			if count > lastCount {
 				lastProgress, lastCount = time.Now(), count
 			}
@@ -438,6 +565,9 @@ func (r *recorder) captureNative(g *game, name string, from, to, fps int, raw, w
 			}
 			files, err := findNativeFiles(r.gameDir, prefix)
 			if err != nil {
+				return nil, 0, err
+			}
+			if err := checkNativeDimensions(files.frames[0], g.width, g.height); err != nil {
 				return nil, 0, err
 			}
 			// Reject truncated exports, rather than stretching them to fit.

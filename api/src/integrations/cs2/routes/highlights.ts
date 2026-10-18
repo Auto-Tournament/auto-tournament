@@ -1339,13 +1339,24 @@ router.post('/recorder/runs', requireRecorder, async (req: Request, res: Respons
  *       `recorder` and `tries`: per refresh rate (`gamescopeHz`) the seconds
  *       the moment took, the capture frame rate and `ok`. The fastest finished
  *       try's rate is kept and sent with every job after (`settings.gamescopeHz`).
+ *       Native workers send `backend: native` and one attempt without a refresh
+ *       rate. A complete frame export succeeds even below playback speed.
+ *       `error` describes failures before an attempt could start.
  *     responses:
  *       200:
- *         description: "`gamescopeHz`: the pick, or null when no try finished"
+ *         description: "`ok`: whether an attempt finished; `gamescopeHz`: the stream pick, null for native export"
  */
 router.post('/recorder/benchmark', requireRecorder, async (req: Request, res: Response) => {
   try {
-    const picked = await saveBenchmark(recorderName(req), (req.body ?? {}) as { tries?: unknown });
+    const picked = await saveBenchmark(
+      recorderName(req),
+      (req.body ?? {}) as {
+        tries?: unknown;
+        backend?: unknown;
+        source?: unknown;
+        error?: unknown;
+      }
+    );
     return res.json({ success: true, ...picked });
   } catch (error) {
     return recorderFail(res, error, 'store the benchmark');

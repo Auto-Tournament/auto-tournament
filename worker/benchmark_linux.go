@@ -14,7 +14,7 @@ import (
 
 // benchmarkTry is one refresh rate of a benchmark, and how it went.
 type benchmarkTry struct {
-	GamescopeHz int      `json:"gamescopeHz"`
+	GamescopeHz int      `json:"gamescopeHz,omitempty"`
 	Seconds     *float64 `json:"seconds,omitempty"`
 	CaptureFps  *float64 `json:"captureFps,omitempty"`
 	OK          bool     `json:"ok"`
@@ -63,19 +63,39 @@ func (r *recorder) runBenchmark(ctx context.Context, mj *mapJob) {
 		run.Error = err.Error()
 		log.Printf("benchmark: %v", err)
 	}
-	res, perr := r.postJSON(ctx, "/api/game/cs2/recorder/benchmark", map[string]any{"recorder": r.worker, "tries": tries, "source": source})
+	if run.Error == "" {
+		finished := false
+		for _, t := range tries {
+			if t.OK {
+				finished = true
+			}
+			if t.Error != "" {
+				run.Error = t.Error
+			}
+		}
+		if finished {
+			run.Error = ""
+		} else if run.Error == "" {
+			run.Error = "no benchmark attempt finished"
+		}
+	}
+	res, perr := r.postJSON(ctx, "/api/game/cs2/recorder/benchmark", map[string]any{"recorder": r.worker, "tries": tries, "source": source, "backend": r.backend, "error": run.Error})
 	if perr == nil {
 		var body struct {
 			GamescopeHz *int `json:"gamescopeHz"`
 		}
 		if ok(res, "benchmark") == nil {
 			_ = json.NewDecoder(res.Body).Decode(&body)
-			if body.GamescopeHz != nil {
+			if r.backend == "native" && run.Error == "" {
+				log.Printf("benchmark: native frame export completed")
+			} else if body.GamescopeHz != nil {
 				applySettings(&recorderSettings{GamescopeHz: *body.GamescopeHz})
 				log.Printf("benchmark: the platform picked %d Hz", *body.GamescopeHz)
 			} else {
-				log.Printf("benchmark: no smooth setting found")
+				log.Printf("benchmark: no attempt finished")
 			}
+		} else if run.Error == "" {
+			run.Error = "platform did not accept the benchmark result"
 		}
 		res.Body.Close()
 	} else if run.Error == "" {
@@ -136,15 +156,15 @@ func (r *recorder) benchmarkTries(ctx context.Context, mj *mapJob, source *strin
 		}
 	}
 	defer applySettings(mj.Settings)
-	if r.backend == "native" && len(rates) > 1 {
+	if r.backend == "native" {
 		// Native capture is independent of the compositor's refresh rate.
 		// Keep the existing benchmark report shape, but render only once.
-		rates = rates[:1]
+		rates = []int{0}
 	}
 	var out []benchmarkTry
 	for i, hz := range rates {
 		t := benchmarkTry{GamescopeHz: hz}
-		if pinnedHz == "" {
+		if pinnedHz == "" && r.backend != "native" {
 			os.Setenv("AT_GAMESCOPE_HZ", strconv.Itoa(hz))
 		}
 		take := filepath.Join(dir, fmt.Sprintf("take-%d", i))
@@ -167,7 +187,13 @@ func (r *recorder) benchmarkTries(ctx context.Context, mj *mapJob, source *strin
 			t.CaptureFps = &fps
 			t.OK = true
 		}
-		if t.OK {
+		if r.backend == "native" {
+			if t.OK {
+				log.Printf("benchmark native: %.0fs, %.1f fps export", secs, *t.CaptureFps)
+			} else {
+				log.Printf("benchmark native: %s", t.Error)
+			}
+		} else if t.OK {
 			log.Printf("benchmark %d Hz: %.0fs, %.0f fps capture", hz, secs, *t.CaptureFps)
 		} else {
 			log.Printf("benchmark %d Hz: %s", hz, t.Error)

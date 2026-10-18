@@ -2143,8 +2143,15 @@
     },
     "benchmarkPending": "Kjører ved neste jobb",
     "benchmarkPick": "{{hz}} Hz",
+    "benchmarkRunning": "Running",
+    "benchmarkNativeReady": "Frame export ready",
+    "benchmarkFailed": "Benchmark failed",
+    "benchmarkNativeHint": "Frame-by-frame export saves every frame even when render speed is below playback speed.",
     "benchmarkNone": "Ingen jevn innstilling",
     "bench": {
+      "mode": "Capture mode",
+      "native": "Frame by frame",
+      "exportFps": "Render fps",
       "hz": "Oppdateringsfrekvens",
       "time": "Tid",
       "fps": "Opptaks-fps"

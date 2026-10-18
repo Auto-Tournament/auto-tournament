@@ -172,6 +172,12 @@ scratch and output directories are writable by that user.
 The compose file opts into `AT_NATIVE_DISPLAY_SETUP=1`, which sets its
 dedicated Wayland output to the capture size at scale 1 before starting CS2.
 This avoids a 1080p display with fractional scaling yielding only 720p frames.
+An already larger desktop is used at scale 1 without requiring an exact mode.
+The compose file pins Selkies to 1920×1080 so opening a smaller browser does
+not shrink the recorder's desktop.
+Dedicated display setup also removes LinuxServer's default labwc rule that
+maximizes every new window, keeping a backup in `rc.xml.at-native-original`.
+Native CS2 uses a window so its frame size stays independent of the browser.
 The container permits Valve's nested runtime namespaces through container-only
 seccomp/AppArmor exceptions, without privileged mode or host cgroup access.
 Use this compose file instead of the NVIDIA-only `at-recorder setup` scripts.
@@ -184,8 +190,13 @@ for compatibility. Heartbeats still expire abandoned jobs after 12 minutes.
 `AT_NATIVE_STALL_SECONDS` detects an export with no new frames (default three
 minutes), and `AT_ENCODE_TIMEOUT_SECONDS` controls encoding (default 15 minutes).
 The plugin needs one local game connection before demo playback; the worker
-loads `de_dust2` to initialize that hook. Set `AT_NATIVE_BOOTSTRAP_MAP=de_nuke`
-to reuse a different installed map's shader cache.
+reads the demo header and loads that same map to initialize its hook. Matching
+the map prevents the server plugin from unloading during the switch to a demo.
+Native benchmarks time one complete export and report render throughput;
+they do not tune gamescope refresh rates or require rendering in real time.
+CS2 still needs memory for map loading: a busy 16 GiB host can exhaust a
+4 GiB swap allocation even with low graphics. Allow NVMe swap for the peak;
+the worker reports a detected out-of-memory kill as a memory error.
 
 The plugin is bundled with its MIT license and pinned provenance in
 `assets/native/`. CS2 updates may require a newer plugin; select a replacement

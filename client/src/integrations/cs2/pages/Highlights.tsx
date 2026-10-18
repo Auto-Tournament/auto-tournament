@@ -90,7 +90,13 @@ interface Recorder {
   pausedUntil: number | null;
   pauseReason: string | null;
   clipsOk: number;
-  benchmark: { tries: BenchmarkTry[]; pick: number | null } | null;
+  benchmark: {
+    tries: BenchmarkTry[];
+    pick: number | null;
+    backend?: 'native' | 'stream';
+    ok?: boolean;
+    error?: string | null;
+  } | null;
   benchmarkAt: number | null;
   benchmarkWanted: boolean;
   gamescopeHz: number | null;
@@ -484,7 +490,7 @@ function RecordersTab() {
                         <Chip size="small" color="warning" label={t('highlightsAdmin.paused')} />
                       ) : r.working ? (
                         <Chip size="small" color="success" label={t('highlightsAdmin.recording')} />
-                      ) : r.online ? (
+                      ) : r.online && !r.progress ? (
                         <Chip
                           size="small"
                           color="success"
@@ -613,16 +619,34 @@ function RecordersTab() {
                       <Stat
                         label={t('highlightsAdmin.stat.benchmark')}
                         value={
-                          r.benchmarkWanted
-                            ? t('highlightsAdmin.benchmarkPending')
-                            : r.gamescopeHz
-                              ? t('highlightsAdmin.benchmarkPick', { hz: r.gamescopeHz })
-                              : r.benchmarkAt
-                                ? t('highlightsAdmin.benchmarkNone')
-                                : '—'
+                          r.progress?.step === 'benchmark'
+                            ? t('highlightsAdmin.benchmarkRunning')
+                            : r.benchmarkWanted
+                              ? t('highlightsAdmin.benchmarkPending')
+                              : r.benchmark?.backend === 'native'
+                                ? t(
+                                    r.benchmark.ok
+                                      ? 'highlightsAdmin.benchmarkNativeReady'
+                                      : 'highlightsAdmin.benchmarkFailed'
+                                  )
+                                : r.gamescopeHz
+                                  ? t('highlightsAdmin.benchmarkPick', { hz: r.gamescopeHz })
+                                  : r.benchmarkAt
+                                    ? t('highlightsAdmin.benchmarkNone')
+                                    : '—'
                         }
                       />
                     </Box>
+                    {r.benchmark?.error && (
+                      <Alert severity="error">
+                        {r.benchmark.error.split('--- gamescope log')[0].trim()}
+                      </Alert>
+                    )}
+                    {r.benchmark?.backend === 'native' && (
+                      <Typography variant="caption" color="text.secondary">
+                        {t('highlightsAdmin.benchmarkNativeHint')}
+                      </Typography>
+                    )}
                     {r.benchmark && r.benchmark.tries.length > 0 && (
                       <Box sx={{ overflowX: 'auto' }}>
                         <Box
@@ -641,31 +665,58 @@ function RecordersTab() {
                         >
                           <thead>
                             <tr>
-                              <th>{t('highlightsAdmin.bench.hz')}</th>
+                              <th>
+                                {t(
+                                  r.benchmark.backend === 'native'
+                                    ? 'highlightsAdmin.bench.mode'
+                                    : 'highlightsAdmin.bench.hz'
+                                )}
+                              </th>
                               <th>{t('highlightsAdmin.bench.time')}</th>
-                              <th>{t('highlightsAdmin.bench.fps')}</th>
+                              <th>
+                                {t(
+                                  r.benchmark.backend === 'native'
+                                    ? 'highlightsAdmin.bench.exportFps'
+                                    : 'highlightsAdmin.bench.fps'
+                                )}
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
                             {r.benchmark.tries.map((b) => (
                               <tr key={b.gamescopeHz}>
                                 <td>
-                                  {b.gamescopeHz} Hz
-                                  {b.gamescopeHz === r.benchmark?.pick ? ' ✓' : ''}
+                                  {r.benchmark?.backend === 'native'
+                                    ? t('highlightsAdmin.bench.native')
+                                    : `${b.gamescopeHz} Hz`}
+                                  {b.ok &&
+                                  (r.benchmark?.backend === 'native' ||
+                                    b.gamescopeHz === r.benchmark?.pick)
+                                    ? ' ✓'
+                                    : ''}
                                 </td>
-                                <td>{b.ok ? duration(b.seconds) : (b.error ?? '—')}</td>
-                                <td>{b.captureFps != null ? Math.round(b.captureFps) : '—'}</td>
+                                <td title={b.error}>
+                                  {b.ok ? duration(b.seconds) : t('highlightsAdmin.failed')}
+                                </td>
+                                <td>
+                                  {b.captureFps != null ? Number(b.captureFps.toFixed(1)) : '—'}
+                                </td>
                               </tr>
                             ))}
                           </tbody>
                         </Box>
                       </Box>
                     )}
-                    {r.lastError && (
-                      <Typography variant="caption" color="error" sx={{ overflowWrap: 'anywhere' }}>
-                        {t('highlightsAdmin.lastError', { error: r.lastError })}
-                      </Typography>
-                    )}
+                    {r.lastError &&
+                      !(r.benchmark?.error && r.lastError.startsWith(r.benchmark.error)) && (
+                        <Typography
+                          variant="caption"
+                          color="error"
+                          sx={{ overflowWrap: 'anywhere' }}
+                        >
+                          {t('highlightsAdmin.lastError', { error: r.lastError })}
+                        </Typography>
+                      )}
                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                       <Button size="small" variant="outlined" onClick={() => setOpen(r.name)}>
                         {t('highlightsAdmin.runs', { count: r.runs })}

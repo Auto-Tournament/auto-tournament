@@ -17,6 +17,8 @@ import (
 	"time"
 
 	"github.com/coder/websocket"
+	"github.com/markus-wa/demoinfocs-golang/v5/pkg/demoinfocs/msg"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestConsoleDrainReturnsAfterGameExit(t *testing.T) {
@@ -298,5 +300,132 @@ func TestNativeCaptureConvertsEngineExport(t *testing.T) {
 	entries, _ := os.ReadDir(images)
 	if len(entries) != 0 {
 		t.Fatal("raw TGA files left behind after conversion")
+	}
+}
+
+func TestNativeDisplayAcceptsLargerBrowserOutput(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("HOME", dir)
+	t.Setenv("USERPROFILE", dir)
+	logPath := filepath.Join(dir, "args")
+	script := "#!/bin/sh\nif [ \"$1\" = --json ]; then\n echo '[{\"name\":\"WL-1\",\"enabled\":true,\"modes\":[{\"width\":2360,\"height\":1424,\"current\":true}]}]'\nelse\n printf '%s ' \"$@\" > \"" + logPath + "\"\nfi\n"
+	if err := os.WriteFile(filepath.Join(dir, "wlr-randr"), []byte(script), 0755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", dir)
+	t.Setenv("AT_NATIVE_DISPLAY_SETUP", "1")
+	if err := prepareNativeDisplay(context.Background(), 1920, 1080); err != nil {
+		t.Fatal(err)
+	}
+	args, _ := os.ReadFile(logPath)
+	if strings.Contains(string(args), "--mode") || !strings.Contains(string(args), "--scale 1") {
+		t.Fatalf("unexpected display request: %s", args)
+	}
+	if err := prepareNativeDisplay(context.Background(), 3840, 2160); err == nil {
+		t.Fatal("accepted undersized display")
+	}
+}
+
+func TestNativeBridgeReconnectsAfterMapChange(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	b, err := newNativeBridge()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer b.close()
+	first, _, err := websocket.Dial(ctx, "ws://127.0.0.1:"+b.port+"/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	<-b.ready
+	first.CloseNow()
+	for {
+		b.mu.Lock()
+		gone := b.conn == nil
+		changed := b.changed
+		b.mu.Unlock()
+		if gone {
+			break
+		}
+		select {
+		case <-changed:
+		case <-ctx.Done():
+			t.Fatal(ctx.Err())
+		}
+	}
+	second, _, err := websocket.Dial(ctx, "ws://127.0.0.1:"+b.port+"/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer second.CloseNow()
+	if err := b.play(ctx, "test.dem"); err != nil {
+		t.Fatal(err)
+	}
+	_, message, err := second.Read(ctx)
+	if err != nil || !strings.Contains(string(message), "test.dem") {
+		t.Fatalf("reconnected message: %s, %v", message, err)
+	}
+}
+
+func TestNativeBootstrapReadsDemoMap(t *testing.T) {
+	header, err := proto.Marshal(&msg.CDemoFileHeader{DemoFileStamp: proto.String("PBDEMS2"), MapName: proto.String("de_mirage"), PatchVersion: proto.Int32(14191)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	data := append([]byte("PBDEMS2\x00"), make([]byte, 8)...)
+	data = append(data, 1, 0) // DEM_FileHeader, tick 0
+	var size [10]byte
+	n := binary.PutUvarint(size[:], uint64(len(header)))
+	data = append(data, size[:n]...)
+	data = append(data, header...)
+	path := filepath.Join(t.TempDir(), "match.dem")
+	if err := os.WriteFile(path, data, 0600); err != nil {
+		t.Fatal(err)
+	}
+	got, err := nativeDemoMap(path)
+	if err != nil || got != "de_mirage" {
+		t.Fatalf("map=%q, error=%v", got, err)
+	}
+}
+
+func TestNativeFrameDimensionsRejectDesktopSize(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "frame.tga")
+	header := make([]byte, 18)
+	binary.LittleEndian.PutUint16(header[12:14], 2360)
+	binary.LittleEndian.PutUint16(header[14:16], 1424)
+	if err := os.WriteFile(path, header, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := checkNativeDimensions(path, 1920, 1080); err == nil || !strings.Contains(err.Error(), "2360x1424") {
+		t.Fatalf("wrong-size export accepted: %v", err)
+	}
+	if err := checkNativeDimensions(path, 2360, 1424); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestNativeWindowRulesKeepRequestedSize(t *testing.T) {
+	t.Setenv("LABWC_PID", "123")
+	dir := t.TempDir()
+	path := filepath.Join(dir, "rc.xml")
+	original := `<labwc_config><windowRules><windowRule identifier="*"><action name="Maximize" /></windowRule><windowRule identifier="steam" serverDecoration="no" /></windowRules></labwc_config>`
+	if err := os.WriteFile(path, []byte(original), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "labwc"), []byte("#!/bin/sh\nexit 0\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", dir)
+	if err := prepareNativeWindowRules(context.Background(), path); err != nil {
+		t.Fatal(err)
+	}
+	data, _ := os.ReadFile(path)
+	backup, _ := os.ReadFile(path + ".at-native-original")
+	if strings.Contains(string(data), "Maximize") || !strings.Contains(string(data), `identifier="steam"`) || string(backup) != original {
+		t.Fatalf("unexpected window rules or backup: %s", data)
+	}
+	if err := prepareNativeWindowRules(context.Background(), path); err != nil {
+		t.Fatal(err)
 	}
 }

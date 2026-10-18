@@ -59,6 +59,7 @@ import (
 	"time"
 
 	dem "github.com/markus-wa/demoinfocs-golang/v5/pkg/demoinfocs"
+	"github.com/markus-wa/demoinfocs-golang/v5/pkg/demoinfocs/msg"
 )
 
 type recordJob struct {
@@ -105,15 +106,16 @@ type recorder struct {
 	// job: what the current platform job is, for its progress reports.
 	job jobProgress
 	*client
-	gameDir string
-	sniper  string
-	scratch string
-	width   int
-	height  int
-	encoder string
-	backend string // stream (PipeWire) or native (CS:DM startmovie)
-	sink    string
-	logo    string // the watermark PNG on disk
+	gameDir   string
+	sniper    string
+	scratch   string
+	width     int
+	height    int
+	encoder   string
+	backend   string // stream (PipeWire) or native (CS:DM startmovie)
+	nativeMap string // bootstrap the plugin on the demo's own map
+	sink      string
+	logo      string // the watermark PNG on disk
 	// icons are the game's kill feed icons (export-hud, from this CS2): with
 	// them the recorder draws its own kill feed and turns CS2's off; without
 	// (an export that failed), CS2's kill feed stays.
@@ -320,6 +322,31 @@ func demoName(path, steamID string) (string, error) {
 	return "", fmt.Errorf("%s is not in the demo", steamID)
 }
 
+func nativeDemoMap(path string) (string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	p := dem.NewParser(f)
+	defer p.Close()
+	var mapName string
+	p.RegisterNetMessageHandler(func(h *msg.CDemoFileHeader) { mapName = h.GetMapName() })
+	for i := 0; i < 32; i++ {
+		more, err := p.ParseNextFrame()
+		if mapName != "" {
+			return mapName, nil
+		}
+		if err != nil {
+			return "", err
+		}
+		if !more {
+			break
+		}
+	}
+	return "", errors.New("the demo does not contain a map name")
+}
+
 // clipResult is one recorded moment, edited.
 type clipResult struct {
 	moment  moment
@@ -445,6 +472,13 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 		if g != nil {
 			g.stop()
 			g = nil
+		}
+		if r.backend == "native" {
+			var err error
+			r.nativeMap, err = nativeDemoMap(demoPath)
+			if err != nil {
+				return fmt.Errorf("native bootstrap map: %w", err)
+			}
 		}
 		next, err := r.launchGame(ctx, filepath.Join(outDir, "gamescope.log"))
 		if err != nil {

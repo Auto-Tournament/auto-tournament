@@ -26,6 +26,9 @@ services:
       DRINODE: /dev/dri/renderD128
       AT_CAPTURE_BACKEND: native
       AT_NATIVE_DISPLAY_SETUP: "1"
+      SELKIES_MANUAL_RESOLUTION: "true"
+      SELKIES_MANUAL_WIDTH: "1920"
+      SELKIES_MANUAL_HEIGHT: "1080"
       AT_VIDEO: low
       AT_ENCODER: libx264
       AT_GPU_BLUR: "0"
