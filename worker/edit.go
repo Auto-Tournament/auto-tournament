@@ -423,6 +423,24 @@ func hwEncode(args []string, encoder string) []string {
 	}
 	if fc >= 0 && len(up) > 0 {
 		out[fc] += ";" + strings.Join(up, ";")
+	} else if fc < 0 {
+		// Simple transcodes (notably reel trimming) have no labelled graph
+		// output to rewrite. They still need hardware frames for VAAPI.
+		upload := fmt.Sprintf("scale=%d:%d:flags=lanczos,format=nv12,hwupload", outputHeight*16/9, outputHeight)
+		for i, arg := range out {
+			if arg == "-vf" && i+1 < len(out) {
+				out[i+1] += "," + upload
+				return out
+			}
+		}
+		for i, arg := range out {
+			if arg == "-c:v" {
+				tail := append([]string(nil), out[i:]...)
+				out = append(out[:i], "-vf", upload)
+				out = append(out, tail...)
+				break
+			}
+		}
 	}
 	return out
 }
