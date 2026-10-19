@@ -51,6 +51,7 @@ import {
 import { forgetDiskModule, loadModuleNow, modulesDir, storeEnabled } from '../modules/loader';
 import { isValidModuleId } from '../modules/manifest';
 import { db } from '../config/database';
+import type { Untrusted } from '../utils/untrusted';
 
 type FixtureFiles = (id: string, kind: 'valid' | 'bad-migration') => Record<string, string>;
 
@@ -137,7 +138,7 @@ function rawArchive(
 }
 
 function withVersion(files: Record<string, string>, version: string): Record<string, string> {
-  const manifest = JSON.parse(files['module.json']) as Record<string, unknown>;
+  const manifest = JSON.parse(files['module.json']) as Record<string, Untrusted>;
   return { ...files, 'module.json': JSON.stringify({ ...manifest, version }, null, 2) };
 }
 
@@ -322,16 +323,16 @@ export function registerCatalogTestRoutes(
   router: Router,
   helpersEnabled: (res: Response) => boolean,
   fixtureFiles: FixtureFiles,
-  fakePack: { pack: (slug: string) => unknown; tile: string }
+  fakePack: { pack: (slug: string) => Untrusted; tile: string }
 ): void {
   router.post('/catalog', requireAuth, async (req: Request, res: Response): Promise<void> => {
     if (!helpersEnabled(res)) return;
     const body = (req.body ?? {}) as {
-      fake?: unknown;
-      run?: unknown;
-      goodVersions?: unknown;
-      feed?: unknown;
-      resetCache?: unknown;
+      fake?: Untrusted;
+      run?: Untrusted;
+      goodVersions?: Untrusted;
+      feed?: Untrusted;
+      resetCache?: Untrusted;
     };
     if (body.fake === false) {
       state = null;
@@ -397,7 +398,7 @@ export function registerCatalogTestRoutes(
     requireAuth,
     async (req: Request, res: Response): Promise<void> => {
       if (!helpersEnabled(res)) return;
-      const migrationId = (req.body as { migrationId?: unknown } | undefined)?.migrationId;
+      const migrationId = (req.body as { migrationId?: Untrusted } | undefined)?.migrationId;
       if (
         !isValidModuleId(req.params.id) ||
         !req.params.id.startsWith('fixture-') ||
@@ -443,7 +444,7 @@ export function registerCatalogTestRoutes(
     requireAuth,
     async (req: Request, res: Response): Promise<void> => {
       if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
-      const version = (req.body as { version?: unknown } | undefined)?.version;
+      const version = (req.body as { version?: Untrusted } | undefined)?.version;
       if (typeof version !== 'string' || !/^\d+\.\d+\.\d+$/.test(version)) {
         res.status(400).json({ success: false, error: 'version must be x.y.z' });
         return;
@@ -487,7 +488,7 @@ export function registerCatalogTestRoutes(
     requireAuth,
     async (req: Request, res: Response): Promise<void> => {
       if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
-      const { enabled, manual } = (req.body ?? {}) as { enabled?: unknown; manual?: unknown };
+      const { enabled, manual } = (req.body ?? {}) as { enabled?: Untrusted; manual?: Untrusted };
       const id = req.params.id;
       const dir = path.join(modulesDir(), id);
       await fs.promises.rm(dir, { recursive: true, force: true });
@@ -521,7 +522,7 @@ export function registerCatalogTestRoutes(
     requireAuth,
     async (req: Request, res: Response): Promise<void> => {
       if (!helpersEnabled(res)) return;
-      const ids = (req.body as { ids?: unknown } | undefined)?.ids;
+      const ids = (req.body as { ids?: Untrusted } | undefined)?.ids;
       if (
         !Array.isArray(ids) ||
         ids.some(
@@ -534,7 +535,7 @@ export function registerCatalogTestRoutes(
         return;
       }
       const outcomes = await autoUpdateModulesFromSnapshot(ids as string[]);
-      const states: Record<string, unknown> = {};
+      const states: Record<string, Awaited<ReturnType<typeof loadModuleNow>>> = {};
       for (const id of ids as string[]) states[id] = await loadModuleNow(id);
       res.json({ success: true, outcomes, states });
     }

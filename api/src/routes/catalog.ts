@@ -31,6 +31,7 @@ import {
   uninstallCatalogPack,
   updateAllCatalog,
 } from '../modules/catalogService';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -524,7 +525,7 @@ router.delete('/modules/:id', sameSiteJson, async (req: Request, res: Response) 
  */
 router.post('/modules/:id/purge', sameSiteJson, async (req: Request, res: Response) => {
   try {
-    const confirm = (req.body as { confirm?: unknown } | undefined)?.confirm;
+    const confirm = (req.body as { confirm?: Untrusted } | undefined)?.confirm;
     res.json({
       success: true,
       ...(await purgeCatalogModule(req.params.id, confirm, requestActorId(req))),

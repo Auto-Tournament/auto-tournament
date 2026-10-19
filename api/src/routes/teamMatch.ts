@@ -18,6 +18,7 @@ import { log } from '../utils/logger';
 import { resolveTournamentId } from '../utils/tournamentRow';
 import { NEEDS_DECISION_STATUS } from '../utils/matchStatusHelpers';
 import { CURRENT_MATCH_ORDER, CURRENT_MATCH_TOURNAMENT_JOIN } from '../utils/currentMatchOrder';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -92,7 +93,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       try {
         const playersObj = JSON.parse(team.players);
         // Convert {index: {name, steamId, avatar}} to [{steamId, name, avatar}]
-        parsedPlayers = Object.values(playersObj).map((playerData: unknown) => {
+        parsedPlayers = Object.values(playersObj).map((playerData: Untrusted) => {
           if (typeof playerData === 'string') {
             // Old format: {steamId: name}
             return { steamId: 'unknown', name: playerData };
@@ -296,7 +297,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     const tournament = await db.queryOneAsync<{
       status: string;
       format: string;
-      settings: string | Record<string, unknown> | null;
+      settings: string | Record<string, Untrusted> | null;
       team_size: number | null;
     }>('SELECT status, format, settings, team_size FROM tournament WHERE id = ?', [
       match.tournament_id,

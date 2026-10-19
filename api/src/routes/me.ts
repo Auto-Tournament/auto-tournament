@@ -42,6 +42,7 @@ import {
 import { isLocalReauthFresh } from '../utils/localReauth';
 import { NameChangeError, getOwnNameState, setOwnName } from '../services/playerName';
 import { clearPendingSteamMerge, readPendingSteamMerge, switchSessionAccount } from './auth';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -149,7 +150,7 @@ router.put('/games', async (req: Request, res: Response) => {
     const account = await resolveAccount(req, res, { write: true });
     if (!account) return;
 
-    const body: unknown = req.body;
+    const body: Untrusted = req.body;
     if (
       !Array.isArray(body) ||
       !body.every((id) => typeof id === 'number' && Number.isInteger(id) && id > 0)
@@ -258,7 +259,7 @@ router.put('/name', async (req: Request, res: Response) => {
   try {
     const account = await resolveAccount(req, res, { write: true, what: 'account' });
     if (!account) return;
-    const state = await setOwnName(account.steamId, (req.body as { name?: unknown })?.name);
+    const state = await setOwnName(account.steamId, (req.body as { name?: Untrusted })?.name);
     log.info('Player set their display name', { steamId: account.steamId });
     return res.json({ success: true, ...state });
   } catch (error) {
