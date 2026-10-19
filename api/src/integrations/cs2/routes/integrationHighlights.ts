@@ -8,20 +8,10 @@
 import { Router, type Request, type Response } from 'express';
 import { requireAuth, requireIntegratorAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
-import { settingsService } from '../../../services/settingsService';
+import { publicOrigin } from '../../../utils/publicOrigin';
 import { backfillMoments, LIST_MAX, listMoments } from '../demos/momentStore';
 import { MOMENT_KINDS } from '../demos/moments';
 import type { Untrusted } from '../../../utils/untrusted';
-
-/** The platform's address (Settings → webhook URL), for absolute links; null without it. */
-async function platformOrigin(): Promise<string | null> {
-  const base = await settingsService.getWebhookUrl().catch(() => null);
-  try {
-    return base ? new URL(base).origin : null;
-  } catch {
-    return null;
-  }
-}
 
 export const integrationHighlightsRouter = Router();
 
@@ -151,7 +141,7 @@ integrationHighlightsRouter.get('/', async (req: Request, res: Response) => {
   try {
     const page = await listMoments(
       { since, limit, tournament, match: str(q.match), kinds },
-      await platformOrigin()
+      publicOrigin(req)
     );
     return res.json({ success: true, ...page });
   } catch (error) {

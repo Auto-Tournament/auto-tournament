@@ -3271,38 +3271,6 @@
         ]
       }
     },
-    "/api/demos/{matchSlug}/status": {
-      "get": {
-        "tags": [
-          "Demos"
-        ],
-        "summary": "GET /api/demos/:matchSlug/status",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "parameters": [
-          {
-            "name": "matchSlug",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
-        ]
-      }
-    },
     "/api/demos/{matchSlug}/upload": {
       "post": {
         "tags": [

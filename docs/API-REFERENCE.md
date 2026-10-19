@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 751 of them, 426 behind auth —
+Every endpoint this API serves — 750 of them, 425 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -176,7 +176,6 @@ Demo upload from the game server, and download.
 | --- | --- | --- |
 | `POST` | `/api/demos/:matchSlug/upload` | public |
 | `GET` | `/api/demos/:matchSlug/download/:mapNumber?` | public |
-| `GET` | `/api/demos/:matchSlug/status` | admin |
 | `GET` | `/api/demos/:matchSlug/info` | admin |
 | `GET` | `/api/demos/archive.tar` | admin |
 

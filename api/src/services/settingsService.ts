@@ -21,7 +21,6 @@ export type AppSettingKey = CoreSettingKey | (string & {});
 
 /** The keys the core owns. */
 export type CoreSettingKey =
-  | 'webhook_url'
   | 'ratings_enabled'
   | 'allow_self_register'
   // Players choose their own display name (/api/me/name). Off: admins and imports name them.
@@ -71,21 +70,6 @@ export const DEFAULT_SITE_NAME = 'Auto Tournament';
 /** Longest site name the store accepts. */
 export const SITE_NAME_MAX_LENGTH = 80;
 
-function normalizeUrl(url: string): string {
-  const normalized = url.replace(/\/+$/, '');
-  return normalized || url;
-}
-
-function validateWebhookUrl(url: string): void {
-  try {
-    new URL(url);
-  } catch {
-    throw new Error(
-      'Invalid webhook URL. Please provide a full URL including protocol (e.g., https://example.com)'
-    );
-  }
-}
-
 /**
  * The core's settings. `order` places the `PUT /api/settings` fields among
  * the integrations' ones (see `SettingDefinition.order`).
@@ -102,17 +86,6 @@ export const CORE_SETTINGS: ReadonlyArray<SettingDefinition & { key: CoreSetting
       return { value: trimmed, message: `Site name updated to ${trimmed}` };
     },
     applyRequest: stringRequest('siteName'),
-  },
-  {
-    key: 'webhook_url',
-    field: 'webhookUrl',
-    order: 10,
-    normalize(trimmed) {
-      validateWebhookUrl(trimmed);
-      const normalized = normalizeUrl(trimmed);
-      return { value: normalized, message: `Webhook URL updated to ${normalized}` };
-    },
-    applyRequest: stringRequest('webhookUrl'),
   },
   {
     key: 'ratings_enabled',
@@ -287,15 +260,6 @@ class SettingsService {
   async getSiteName(): Promise<string> {
     const value = await this.getSetting('site_name');
     return value?.trim() || DEFAULT_SITE_NAME;
-  }
-
-  async getWebhookUrl(): Promise<string | null> {
-    const value = await this.getSetting('webhook_url');
-    if (value) {
-      return normalizeUrl(value);
-    }
-
-    return null;
   }
 
   /** The Steam Web API key: STEAM_API_KEY, else the one saved on Settings -> Sign-in. */
