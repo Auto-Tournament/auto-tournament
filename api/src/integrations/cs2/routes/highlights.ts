@@ -197,6 +197,8 @@ import {
 } from '../demos/recorders';
 
 import { dropOrphanJobs } from '../demos/jobs';
+import type { Untrusted } from '../../../utils/untrusted';
+import type { SqlValue } from '../../../config/database';
 
 const router = Router();
 // The Recorders page follows changes live instead of polling: any change to
@@ -237,7 +239,7 @@ router.use('/recorder', requireRecorder, async (req, res, next) => {
   const reel = /^\/(match-reels|team-reels)\/([^/]+)\/([^/]+)/.exec(req.path);
   const tournament = /^\/tournament-reels\/(\d+)/.exec(req.path);
   let sql = '';
-  let params: unknown[] = [];
+  let params: SqlValue[] = [];
   if (clip) {
     sql = 'SELECT 1 FROM cs2_highlights WHERE id = ? AND recorder = ?';
     params = [Number(clip[1]), recorder];
@@ -282,7 +284,7 @@ const startsOf = (req: Request, ids: number[] | null) =>
 
 /** A public read that answers 500 when the database fails, instead of hanging. */
 const read =
-  (what: string, handler: (req: Request, res: Response) => Promise<unknown>) =>
+  (what: string, handler: (req: Request, res: Response) => Promise<Response | void>) =>
   async (req: Request, res: Response) => {
     try {
       await handler(req, res);
@@ -559,7 +561,7 @@ router.post('/recorder/claim', requireRecorder, claimLock, async (req: Request, 
     await dropOrphanJobs();
     idleRecorderCount(recorder);
     const settings = recorderSettings(me);
-    const give = async (job: unknown) => {
+    const give = async (job: object) => {
       recorderBusy(recorder);
       return res.json({
         success: true,
@@ -902,7 +904,7 @@ router.get('/redress', requireAuth, async (_req: Request, res: Response) => {
 
 router.post('/redress', requireAuth, async (req: Request, res: Response) => {
   const files = Array.isArray(req.body?.files)
-    ? (req.body.files as unknown[]).filter((f): f is string => typeof f === 'string')
+    ? (req.body.files as Untrusted[]).filter((f): f is string => typeof f === 'string')
     : undefined;
   try {
     return res.json({ success: true, queued: await queueRedress(files) });
@@ -914,7 +916,7 @@ router.post('/redress', requireAuth, async (req: Request, res: Response) => {
 
 router.post('/recorder/fail', requireRecorder, async (req: Request, res: Response) => {
   const ids = Array.isArray(req.body?.ids)
-    ? (req.body.ids as unknown[]).map(Number).filter((n) => Number.isInteger(n) && n > 0)
+    ? (req.body.ids as Untrusted[]).map(Number).filter((n) => Number.isInteger(n) && n > 0)
     : [];
   if (ids.length === 0) return res.status(400).json({ success: false, error: 'Highlight ids' });
   const error = typeof req.body?.error === 'string' ? req.body.error : 'unknown';
@@ -1061,7 +1063,7 @@ router.get(
   '/library',
   read('library', async (req: Request, res: Response) => {
     const q = req.query;
-    const str = (v: unknown) =>
+    const str = (v: Untrusted) =>
       typeof v === 'string' && v.trim() && v.length <= 200 ? v : undefined;
     const sort = q.sort === 'views' || q.sort === 'likes' ? q.sort : 'new';
     const kind = q.kind === 'clips' || q.kind === 'reels' ? q.kind : 'all';
@@ -1322,7 +1324,7 @@ router.post('/recorder/heartbeat', requireRecorder, async (req: Request, res: Re
 
 router.post('/recorder/runs', requireRecorder, async (req: Request, res: Response) => {
   try {
-    await saveRun(recorderName(req), (req.body ?? {}) as Record<string, unknown>);
+    await saveRun(recorderName(req), (req.body ?? {}) as Record<string, Untrusted>);
     return res.json({ success: true });
   } catch (error) {
     return recorderFail(res, error, 'store the run');
@@ -1345,7 +1347,10 @@ router.post('/recorder/runs', requireRecorder, async (req: Request, res: Respons
  */
 router.post('/recorder/benchmark', requireRecorder, async (req: Request, res: Response) => {
   try {
-    const picked = await saveBenchmark(recorderName(req), (req.body ?? {}) as { tries?: unknown });
+    const picked = await saveBenchmark(
+      recorderName(req),
+      (req.body ?? {}) as { tries?: Untrusted }
+    );
     return res.json({ success: true, ...picked });
   } catch (error) {
     return recorderFail(res, error, 'store the benchmark');
