@@ -5,6 +5,7 @@ import { steamService } from './steamService';
 import { playerService } from './playerService';
 import { teamMembers } from './teamMembers';
 import { normalisePlayerDiscordIds } from '../utils/discordId';
+import type { SqlValue } from '../config/database';
 
 /** A roster player as an admin sees it: enriched from the players table. */
 export type AdminTeamPlayer = Player & { discordId: string | null };
@@ -277,7 +278,7 @@ class TeamService {
       this.validateNoDuplicatePlayers(input.players);
     }
 
-    const updateData: Record<string, unknown> = {
+    const updateData: Record<string, SqlValue> = {
       updated_at: Math.floor(Date.now() / 1000),
     };
 

@@ -9,6 +9,7 @@ import fetch from 'node-fetch';
 import semver from 'semver';
 import packageJson from '../../../package.json';
 import { log } from '../../utils/logger';
+import type { Untrusted } from '../../utils/untrusted';
 
 export const PLATFORM_RELEASES_URL =
   'https://api.github.com/repos/Auto-Tournament/auto-tournament/releases?per_page=30';
@@ -31,7 +32,7 @@ interface GitHubRelease {
 type ReleaseFetch = (
   url: string,
   init: { headers: Record<string, string> }
-) => Promise<{ ok: boolean; status: number; json: () => Promise<unknown> }>;
+) => Promise<{ ok: boolean; status: number; json: () => Promise<Untrusted> }>;
 
 let cache: { at: number; latest: { version: string; url: string } | null; channel: string } | null =
   null;
@@ -73,7 +74,7 @@ export async function checkPlatformUpdate(options?: {
   if (!options?.forceRefresh && cache && cache.channel === channel && now - cache.at < CACHE_MS) {
     return result(running, cache.latest);
   }
-  const doFetch: ReleaseFetch = options?.fetchImpl ?? (fetch as unknown as ReleaseFetch);
+  const doFetch: ReleaseFetch = options?.fetchImpl ?? fetch;
   try {
     const res = await doFetch(PLATFORM_RELEASES_URL, {
       headers: { Accept: 'application/vnd.github.v3+json', 'User-Agent': 'Auto-Tournament' },

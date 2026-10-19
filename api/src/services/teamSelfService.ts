@@ -23,6 +23,7 @@ import { emitSocialChanged } from './socketService';
 import { teamService } from './teamService';
 import { teamMembers, type TeamLineup, type TeamMemberRole } from './teamMembers';
 import type { Player } from '../types/team.types';
+import type { Untrusted } from '../utils/untrusted';
 
 export class TeamActionError extends Error {
   constructor(
@@ -127,7 +128,7 @@ export function logoUrl(teamId: string, updatedAt: number | null | undefined): s
 
 function parseRoster(players: string): Player[] {
   try {
-    const list = JSON.parse(players) as unknown;
+    const list = JSON.parse(players) as Untrusted;
     return Array.isArray(list) ? (list as Player[]) : [];
   } catch {
     return [];
@@ -169,7 +170,7 @@ export async function activeTournamentOf(teamId: string): Promise<string | null>
   );
   for (const row of rows) {
     try {
-      const ids = JSON.parse(row.team_ids) as unknown;
+      const ids = JSON.parse(row.team_ids) as Untrusted;
       if (Array.isArray(ids) && ids.includes(teamId)) return row.name;
     } catch {
       // A malformed list holds no team.

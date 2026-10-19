@@ -24,6 +24,7 @@ import { adminNoticeService } from './adminNoticeService';
 import { notificationService } from './notificationService';
 import { notifyChannels } from './notifyChannels';
 import { tournamentPlayers } from './tournamentNotices';
+import type { Untrusted } from '../utils/untrusted';
 
 export const DEFAULT_START_REMINDERS = [60, 30, 5];
 /** A reminder this late is not sent at all. */
@@ -38,8 +39,8 @@ export interface StartSchedule {
 }
 
 /** The schedule in a tournament's settings (pure: tested on its own). */
-export function startScheduleOf(settings: unknown): StartSchedule {
-  const s = settings && typeof settings === 'object' ? (settings as Record<string, unknown>) : {};
+export function startScheduleOf(settings: Untrusted): StartSchedule {
+  const s = settings && typeof settings === 'object' ? (settings as Record<string, Untrusted>) : {};
   const at = typeof s.startsAt === 'string' ? Date.parse(s.startsAt) : NaN;
   const raw = Array.isArray(s.startReminders) ? s.startReminders : DEFAULT_START_REMINDERS;
   const reminders = [

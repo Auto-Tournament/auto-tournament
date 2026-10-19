@@ -34,6 +34,7 @@ import { emitBracketUpdate } from './socketService';
 import type { BracketGeneratorResult, IBracketGenerator } from './bracketGenerators/types';
 import type { TournamentResponse } from '../types/tournament.types';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
+import type { Untrusted } from '../utils/untrusted';
 
 export const GROUP_LETTERS = ['A', 'B', 'C', 'D'] as const;
 
@@ -46,12 +47,12 @@ export interface GroupsSettings {
 }
 
 export function groupsSettingsOf(tournament: {
-  settings?: unknown;
+  settings?: Untrusted;
   format?: string;
 }): GroupsSettings {
-  const s = (tournament.settings ?? {}) as Record<string, unknown>;
+  const s = (tournament.settings ?? {}) as Record<string, Untrusted>;
   const n = Number(s.groupCount);
-  const fmt = (v: unknown) => (v === 'bo1' || v === 'bo3' || v === 'bo5' ? v : null);
+  const fmt = (v: Untrusted) => (v === 'bo1' || v === 'bo3' || v === 'bo5' ? v : null);
   return {
     groupCount: Number.isInteger(n) && n >= 2 && n <= 4 ? n : 2,
     advancePerGroup: Number(s.advancePerGroup) === 2 ? 2 : 1,
@@ -63,8 +64,8 @@ export function groupsSettingsOf(tournament: {
 }
 
 /** Checks a groups tournament's settings and team count; an error message, or null. */
-export function groupsError(settings: unknown, teamCount: number): string | null {
-  const s = (settings ?? {}) as Record<string, unknown>;
+export function groupsError(settings: Untrusted, teamCount: number): string | null {
+  const s = (settings ?? {}) as Record<string, Untrusted>;
   if (s.groupCount !== undefined && ![2, 3, 4].includes(Number(s.groupCount)))
     return 'settings.groupCount must be 2, 3 or 4';
   if (s.advancePerGroup !== undefined && ![1, 2].includes(Number(s.advancePerGroup)))

@@ -27,6 +27,7 @@ import { emitMatchUpdate } from './socketService';
 import { teamMembers } from './teamMembers';
 import { tournamentSignupService } from './tournamentSignupService';
 import type { TournamentSettings } from '../types/tournament.types';
+import type { Untrusted } from '../utils/untrusted';
 
 export type Side = 'team1' | 'team2';
 
@@ -102,7 +103,7 @@ function parseJson<T>(value: string | null | undefined, fallback: T): T {
 
 /** Roster JSON (array, or the `{0: {...}}` shape) → players with a Steam ID, in order. */
 export function poolFromRoster(rosterJson: string | null | undefined): PoolPlayer[] {
-  const parsed = parseJson<unknown>(rosterJson, []);
+  const parsed = parseJson<Untrusted>(rosterJson, []);
   const entries = Array.isArray(parsed)
     ? parsed
     : parsed && typeof parsed === 'object'
@@ -111,7 +112,12 @@ export function poolFromRoster(rosterJson: string | null | undefined): PoolPlaye
   const seen = new Set<string>();
   const out: PoolPlayer[] = [];
   for (const raw of entries) {
-    const p = raw as { steamId?: unknown; steamid?: unknown; name?: unknown; avatar?: unknown };
+    const p = raw as {
+      steamId?: Untrusted;
+      steamid?: Untrusted;
+      name?: Untrusted;
+      avatar?: Untrusted;
+    };
     const steamId = typeof p?.steamId === 'string' ? p.steamId : p?.steamid;
     if (typeof steamId !== 'string' || !steamId || seen.has(steamId)) continue;
     seen.add(steamId);
@@ -323,7 +329,7 @@ export interface SetLineupResult {
 export async function setMatchLineup(
   slug: string,
   side: Side,
-  players: unknown,
+  players: Untrusted,
   viewer: LineupViewer
 ): Promise<SetLineupResult> {
   const match = await matchRow(slug);

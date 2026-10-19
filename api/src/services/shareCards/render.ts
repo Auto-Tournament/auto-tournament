@@ -15,7 +15,7 @@ import fs from 'fs';
 import path from 'path';
 import satori from 'satori';
 import { Resvg, initWasm } from '@resvg/resvg-wasm';
-import type { CardData, CardImage, CardStat, CardTeam } from './types';
+import type { CardData, CardImage, CardStat, CardTeam, CardValue } from './types';
 
 export const CARD_WIDTH = 1200;
 export const CARD_HEIGHT = 630;
@@ -117,8 +117,8 @@ type Style = Record<string, string | number>;
 type Child = El | string | null | false | undefined;
 interface El {
   type: string;
-  props: Record<string, unknown> & { children?: unknown };
-  key?: null;
+  props: { style: Style; src?: string; children?: El | string | (El | string)[] };
+  key: null;
 }
 
 function h(type: string, style: Style, ...children: Child[]): El {
@@ -131,6 +131,7 @@ function h(type: string, style: Style, ...children: Child[]): El {
       style: type === 'img' ? style : { display: 'flex', ...style },
       children: kids.length === 1 ? kids[0] : kids,
     },
+    key: null,
   };
 }
 
@@ -141,6 +142,7 @@ function img(src: CardImage, style: Style): El {
       src: `data:${src.type};base64,${src.data.toString('base64')}`,
       style: { objectFit: 'cover', ...style },
     },
+    key: null,
   };
 }
 
@@ -758,8 +760,8 @@ export function cardElement(card: CardData, site = 'Auto Tournament'): El {
 /** Drop every picture from a card (the fallback when one can't be decoded). */
 function withoutImages(card: CardData): CardData {
   const clean = JSON.parse(
-    JSON.stringify(card, (_k, v: unknown) =>
-      v && typeof v === 'object' && 'data' in (v as object) && 'type' in (v as object) ? null : v
+    JSON.stringify(card, (_k, v: CardValue) =>
+      v && typeof v === 'object' && 'data' in v && 'type' in v ? null : v
     )
   ) as CardData;
   if (clean.kind === 'reel') clean.thumbnails = [];
@@ -771,7 +773,7 @@ export async function renderCard(card: CardData, opts: { site?: string } = {}): 
   const site = opts.site?.trim() || 'Auto Tournament';
   const { fonts } = await setup();
   const draw = async (c: CardData) => {
-    const svg = await satori(cardElement(c, site) as unknown as Parameters<typeof satori>[0], {
+    const svg = await satori(cardElement(c, site), {
       width: CARD_WIDTH,
       height: CARD_HEIGHT,
       fonts,
