@@ -293,8 +293,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     const statusCode = message.includes('not found')
       ? 404
       : message.includes('Cannot delete')
-      ? 400
-      : 500;
+        ? 400
+        : 500;
 
     console.error('Error deleting map pool:', error);
     return res.status(statusCode).json({
