@@ -1,3 +1,4 @@
+import { isOneOf, type Untrusted } from '../../utils/untrusted';
 /**
  * XP, levels and commends (docs/design/matchmaking.md, "After the match"),
  * the parts with no database. XP measures how experienced a player is on the
@@ -85,18 +86,18 @@ export const COMMEND_WINDOW_SECONDS = 24 * 60 * 60;
 
 /** Validate a commend body: thumbs up with an optional tag, thumbs down with a reason. */
 export function parseCommend(
-  body: unknown
+  body: Untrusted
 ): { ok: true; value: 1 | -1; tag: CommendTag | null } | { ok: false; error: string } {
-  const b = (body ?? {}) as { value?: unknown; tag?: unknown };
+  const b = (body ?? {}) as { value?: Untrusted; tag?: Untrusted };
   if (b.value !== 1 && b.value !== -1) return { ok: false, error: 'value must be 1 or -1' };
   const tag = b.tag === undefined || b.tag === null || b.tag === '' ? null : b.tag;
   if (b.value === 1) {
-    if (tag !== null && !(COMMEND_UP_TAGS as readonly unknown[]).includes(tag)) {
+    if (tag !== null && !isOneOf(COMMEND_UP_TAGS, tag)) {
       return { ok: false, error: `tag must be one of ${COMMEND_UP_TAGS.join(', ')}` };
     }
     return { ok: true, value: 1, tag: tag as CommendTag | null };
   }
-  if (!(COMMEND_DOWN_TAGS as readonly unknown[]).includes(tag)) {
+  if (!isOneOf(COMMEND_DOWN_TAGS, tag)) {
     return { ok: false, error: `A thumbs down needs a reason: ${COMMEND_DOWN_TAGS.join(', ')}` };
   }
   return { ok: true, value: -1, tag: tag as CommendTag };

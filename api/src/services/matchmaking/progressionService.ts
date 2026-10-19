@@ -17,6 +17,7 @@ import {
   xpForMatch,
   type XpReason,
 } from './progression';
+import type { Untrusted } from '../../utils/untrusted';
 
 export class ProgressionError extends Error {
   constructor(
@@ -207,7 +208,7 @@ export const progressionService = {
     fromId: string,
     matchSlug: string,
     toId: string,
-    body: unknown
+    body: Untrusted
   ): Promise<{ value: 1 | -1; tag: string | null }> {
     const parsed = parseCommend(body);
     if (!parsed.ok) throw new ProgressionError(400, parsed.error);

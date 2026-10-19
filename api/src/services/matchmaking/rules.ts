@@ -4,6 +4,7 @@
  * phase 1). Kept pure so it is tested on its own.
  */
 import { randomInt } from 'crypto';
+import type { Untrusted } from '../../utils/untrusted';
 
 export type MatchmakingMode = '5v5' | '2v2' | '1v1';
 
@@ -16,8 +17,8 @@ export type MatchmakingMode = '5v5' | '2v2' | '1v1';
 export const TEAM_SIZE: Record<MatchmakingMode, number> = { '5v5': 5, '2v2': 2, '1v1': 1 };
 
 /** The admin's map pool per mode (`mm_mode_pools`, JSON `{ mode: poolId }`); unknown modes and bad ids dropped. */
-export function parseModePools(raw: unknown): Partial<Record<MatchmakingMode, number>> {
-  let v: unknown = raw;
+export function parseModePools(raw: Untrusted): Partial<Record<MatchmakingMode, number>> {
+  let v: Untrusted = raw;
   try {
     if (typeof raw === 'string') v = JSON.parse(raw);
   } catch {
@@ -25,7 +26,7 @@ export function parseModePools(raw: unknown): Partial<Record<MatchmakingMode, nu
   }
   const out: Partial<Record<MatchmakingMode, number>> = {};
   if (!v || typeof v !== 'object' || Array.isArray(v)) return out;
-  for (const [mode, id] of Object.entries(v as Record<string, unknown>)) {
+  for (const [mode, id] of Object.entries(v as Record<string, Untrusted>)) {
     if (isMode(mode) && typeof id === 'number' && Number.isInteger(id) && id > 0) out[mode] = id;
   }
   return out;
@@ -35,8 +36,8 @@ export function parseModePools(raw: unknown): Partial<Record<MatchmakingMode, nu
 export const DEFAULT_MODES: MatchmakingMode[] = Object.keys(TEAM_SIZE) as MatchmakingMode[];
 
 /** The admin's modes (`mm_modes`, a JSON array); anything unknown is dropped, nothing left = the default. */
-export function parseEnabledModes(raw: unknown): MatchmakingMode[] {
-  let v: unknown = raw;
+export function parseEnabledModes(raw: Untrusted): MatchmakingMode[] {
+  let v: Untrusted = raw;
   try {
     if (typeof raw === 'string') v = JSON.parse(raw);
   } catch {
@@ -50,7 +51,7 @@ export function parseEnabledModes(raw: unknown): MatchmakingMode[] {
 
 export const MODES = Object.keys(TEAM_SIZE) as MatchmakingMode[];
 
-export function isMode(value: unknown): value is MatchmakingMode {
+export function isMode(value: Untrusted): value is MatchmakingMode {
   return typeof value === 'string' && (MODES as string[]).includes(value);
 }
 
@@ -262,15 +263,15 @@ export const DEFAULT_SEARCH_WINDOW: SearchWindowSettings = {
  * `mm_search_window`: display Elo, and minutes until any rating is accepted
  * (null = never). Anything missing or out of range falls back to the default.
  */
-export function parseSearchWindow(raw: unknown): SearchWindowSettings {
-  let v: Record<string, unknown> = {};
+export function parseSearchWindow(raw: Untrusted): SearchWindowSettings {
+  let v: Record<string, Untrusted> = {};
   try {
-    v = (typeof raw === 'string' ? JSON.parse(raw) : raw) as Record<string, unknown>;
+    v = (typeof raw === 'string' ? JSON.parse(raw) : raw) as Record<string, Untrusted>;
   } catch {
     v = {};
   }
   if (!v || typeof v !== 'object') v = {};
-  const num = (x: unknown, min: number, max: number, fallback: number) =>
+  const num = (x: Untrusted, min: number, max: number, fallback: number) =>
     typeof x === 'number' && Number.isFinite(x) && x >= min && x <= max ? Math.round(x) : fallback;
   const d = DEFAULT_SEARCH_WINDOW;
   const start = num(v.start, 0, 2000, d.start);
@@ -291,10 +292,10 @@ export function parseSearchWindow(raw: unknown): SearchWindowSettings {
 
 /** Validate an admin's new search window; null when it is not valid. */
 export function validateSearchWindow(
-  input: unknown
+  input: Untrusted
 ): { start: number; step: number; cap: number; uncappedAfterMinutes: number | null } | null {
-  const v = (input ?? {}) as Record<string, unknown>;
-  const int = (x: unknown, min: number, max: number) =>
+  const v = (input ?? {}) as Record<string, Untrusted>;
+  const int = (x: Untrusted, min: number, max: number) =>
     typeof x === 'number' && Number.isInteger(x) && x >= min && x <= max;
   if (!int(v.start, 0, 2000) || !int(v.step, 0, 1000) || !int(v.cap, 0, 5000)) return null;
   if ((v.cap as number) < (v.start as number)) return null;
@@ -478,7 +479,7 @@ export function freeForTournament(
 }
 
 /** The admin's "servers kept free for matchmaking": a whole number 0-50, else 0. */
-export function parseReservedServers(raw: unknown): number {
+export function parseReservedServers(raw: Untrusted): number {
   const n = typeof raw === 'string' ? Number(raw) : raw;
   return typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= 50 ? n : 0;
 }

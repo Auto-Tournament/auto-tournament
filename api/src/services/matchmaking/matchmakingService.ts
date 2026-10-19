@@ -62,6 +62,7 @@ import {
   REMATCH_ANSWER_SECONDS,
   REMATCH_SECONDS,
 } from './rules';
+import type { Untrusted } from '../../utils/untrusted';
 
 export class MatchmakingError extends Error {
   constructor(
@@ -255,7 +256,7 @@ interface RatingRow {
 }
 
 export class MatchmakingService {
-  private chain: Promise<unknown> = Promise.resolve();
+  private chain: Promise<void> = Promise.resolve();
   /** Presence of each live matchmaking match: since when it is watched, and who was last seen when. */
   private presence = new Map<string, { since: number; lastSeen: Map<string, number> }>();
   private timer: NodeJS.Timeout | null = null;
@@ -284,7 +285,10 @@ export class MatchmakingService {
       }
     };
     const run = this.chain.then(wrapped, wrapped);
-    this.chain = run.catch(() => undefined);
+    this.chain = run.then(
+      () => undefined,
+      () => undefined
+    );
     return run;
   }
 
@@ -346,14 +350,14 @@ export class MatchmakingService {
   }
 
   /** The caller's party, created (as its leader) when they have none. */
-  createParty(playerId: string, mode: unknown = '5v5'): Promise<PartyRow> {
+  createParty(playerId: string, mode: Untrusted = '5v5'): Promise<PartyRow> {
     return this.locked(async () => {
       if (!isMode(mode)) throw new MatchmakingError(400, 'invalid_mode', 'Unknown mode');
       return (await this.partyOf(playerId)) ?? this.newParty(playerId, mode);
     });
   }
 
-  joinParty(playerId: string, code: unknown): Promise<PartyRow> {
+  joinParty(playerId: string, code: Untrusted): Promise<PartyRow> {
     return this.locked(async () => {
       if (typeof code !== 'string' || !/^[A-Z0-9]{6,16}$/.test(code.trim().toUpperCase())) {
         throw new MatchmakingError(400, 'invalid_code', 'That invite code is not valid');
@@ -425,7 +429,7 @@ export class MatchmakingService {
    * when they have none). Any member may invite; the party can grow to the
    * biggest mode on the site, counting invites still open.
    */
-  invite(playerId: string, targetId: unknown): Promise<void> {
+  invite(playerId: string, targetId: Untrusted): Promise<void> {
     return this.locked(async () => {
       if (typeof targetId !== 'string' || !/^\d{1,20}$/.test(targetId)) {
         throw new MatchmakingError(400, 'invalid_player', 'That is not a player');
@@ -494,7 +498,7 @@ export class MatchmakingService {
   }
 
   /** Take back an invite (any member of the party). */
-  cancelInvite(playerId: string, targetId: unknown): Promise<void> {
+  cancelInvite(playerId: string, targetId: Untrusted): Promise<void> {
     return this.locked(async () => {
       const party = await this.partyOf(playerId);
       if (!party || typeof targetId !== 'string') return;
@@ -510,7 +514,7 @@ export class MatchmakingService {
   }
 
   /** Answer an invite: join that party (leaving your own), or decline it. */
-  answerInvite(playerId: string, partyId: unknown, accept: boolean): Promise<void> {
+  answerInvite(playerId: string, partyId: Untrusted, accept: boolean): Promise<void> {
     return this.locked(async () => {
       if (typeof partyId !== 'string')
         throw new MatchmakingError(400, 'invalid_party', 'That is not a party');
@@ -612,7 +616,7 @@ export class MatchmakingService {
   }
 
   /** The leader picks the party's mode. Not while searching, and only a mode the party fits. */
-  setPartyMode(playerId: string, mode: unknown): Promise<PartyRow> {
+  setPartyMode(playerId: string, mode: Untrusted): Promise<PartyRow> {
     return this.locked(async () => {
       if (!isMode(mode)) throw new MatchmakingError(400, 'invalid_mode', 'Unknown mode');
       if (!(await this.enabledModes()).includes(mode)) {
@@ -690,8 +694,8 @@ export class MatchmakingService {
   /** `botFill`: bots take the seats nobody fills (2v2 / 5v5), and the game is unrated. */
   startSearch(
     playerId: string,
-    mode: unknown = '5v5',
-    options: { botFill?: unknown } = {}
+    mode: Untrusted = '5v5',
+    options: { botFill?: Untrusted } = {}
   ): Promise<EntryRow> {
     return this.locked(async () => {
       if (!isMode(mode)) throw new MatchmakingError(400, 'invalid_mode', 'Unknown mode');
