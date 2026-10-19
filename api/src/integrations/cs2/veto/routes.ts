@@ -1,6 +1,7 @@
 import { announceVetoTurn } from '../../../services/matchNotices';
 import { withVetoLock } from './lock';
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { emitVetoUpdate, postMatchChatLine } from '../../../services/socketService';

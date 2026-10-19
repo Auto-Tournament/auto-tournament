@@ -6,7 +6,8 @@
  * and picks most in the veto. Public, like the rest of the team page.
  */
 
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 

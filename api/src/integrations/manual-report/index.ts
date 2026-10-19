@@ -59,6 +59,9 @@ import {
 } from './setup';
 import type { TournamentSettings } from '../../types/tournament.types';
 import type { Untrusted } from '../../utils/untrusted';
+import type * as TestRoutes from './routes';
+import type * as ReportRoutes from './reportRoutes';
+import type * as AdminRoutes from './adminRoutes';
 
 export { MANUAL_REPORT_GAME_ID } from './catalog';
 
@@ -269,11 +272,11 @@ export const manualReportIntegration: GameIntegration<ManualReportData> = {
   legacyRoutes() {
     // Required here, not at the top: loading the registry must not load routers.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { manualReportTestRoutes } = require('./routes') as typeof import('./routes');
+    const { manualReportTestRoutes } = require('./routes') as typeof TestRoutes;
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { manualReportRoutes } = require('./reportRoutes') as typeof import('./reportRoutes');
+    const { manualReportRoutes } = require('./reportRoutes') as typeof ReportRoutes;
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { manualReportAdminRoutes } = require('./adminRoutes') as typeof import('./adminRoutes');
+    const { manualReportAdminRoutes } = require('./adminRoutes') as typeof AdminRoutes;
     return [
       {
         prefix: '/api/game/manual',

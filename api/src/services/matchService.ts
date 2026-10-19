@@ -1,5 +1,5 @@
 import { db } from '../config/database';
-import { Match, CreateMatchInput, MatchResponse } from '../types/match.types';
+import type { Match, CreateMatchInput, MatchResponse } from '../types/match.types';
 import { log } from '../utils/logger';
 import { emitMatchUpdate } from './socketService';
 import { integrationForMatch } from '../integrations/registry';

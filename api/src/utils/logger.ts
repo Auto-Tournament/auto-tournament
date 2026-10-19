@@ -4,6 +4,8 @@
 // This ensures LOG_LEVEL=debug from .env is respected
 import type { LoggerOptions } from 'pino';
 import type { Untrusted } from './untrusted';
+import type * as NodePath from 'node:path';
+import type * as DiscordIdModule from './discordId';
 try {
   require('dotenv').config();
 } catch {
@@ -25,7 +27,7 @@ const isLogLevelDebug = _logLevel === 'debug';
  */
 const isBundledDist = (() => {
   try {
-    const path = require('node:path') as typeof import('node:path');
+    const path = require('node:path') as typeof NodePath;
     return typeof __dirname === 'string' && __dirname.split(path.sep).includes('dist');
   } catch {
     return false;
@@ -305,7 +307,7 @@ export const log = {
   authFailed: (rawEndpoint: string, reason: string) => {
     // Endpoint paths can carry a Discord ID (`/by-discord-id/:id`), which is
     // private. Required lazily, matching this file's other requires.
-    const { redactDiscordIdsInPath } = require('./discordId') as typeof import('./discordId');
+    const { redactDiscordIdsInPath } = require('./discordId') as typeof DiscordIdModule;
     const endpoint = redactDiscordIdsInPath(rawEndpoint);
     const msg = `[AUTH] Auth failed: ${endpoint} - ${reason}`;
     const meta = { endpoint, reason };

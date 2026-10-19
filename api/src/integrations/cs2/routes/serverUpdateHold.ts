@@ -1,4 +1,5 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { validateServerToken } from '../../../middleware/serverAuth';
 import {
   getUpdateHoldStatus,

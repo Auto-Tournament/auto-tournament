@@ -10,7 +10,8 @@
  * Public, like the player profiles it sums. Kept for a minute per party.
  */
 
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { ACTIVE_DUTY_POOL } from '../maps/mapSync';

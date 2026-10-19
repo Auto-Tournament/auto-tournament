@@ -1,6 +1,7 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { mapPoolService } from './mapPoolService';
-import { CreateMapPoolInput, UpdateMapPoolInput } from '../../../types/mapPool.types';
+import type { CreateMapPoolInput, UpdateMapPoolInput } from '../../../types/mapPool.types';
 import { requireAuth } from '../../../middleware/auth';
 
 const router = Router();
@@ -293,8 +294,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     const statusCode = message.includes('not found')
       ? 404
       : message.includes('Cannot delete')
-      ? 400
-      : 500;
+        ? 400
+        : 500;
 
     console.error('Error deleting map pool:', error);
     return res.status(statusCode).json({

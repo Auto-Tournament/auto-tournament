@@ -9,7 +9,8 @@
  */
 
 import { gameAccountProviders } from '../services/gameAccounts';
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import {
   MAX_PLAYER_GAMES,
   UnknownGameIdsError,

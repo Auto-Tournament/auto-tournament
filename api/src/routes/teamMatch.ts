@@ -1,5 +1,6 @@
 import { logoUrl } from '../services/teamSelfService';
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { RATING_ELO, ratingGame, ratingJoin } from '../services/gameRatings';
 import { db } from '../config/database';
 import { matchTimeFields } from '../services/matchTimes';

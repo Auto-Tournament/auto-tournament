@@ -1,7 +1,7 @@
 import { Box, Typography, Chip, Alert, Button, Autocomplete, TextField } from '@mui/material';
 import { PlusIcon, WarningIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
-import { Team } from '../../types';
+import type { Team } from '../../types';
 import { validateTeamCountForType } from '../../utils/tournamentValidation';
 import { paths } from '../../paths';
 
@@ -148,7 +148,12 @@ export function TeamSelectionStep({
           onChange={(_, newValue) => onTeamsChange(newValue.map((t) => t.id))}
           disabled={!canEdit || saving}
           sx={{ flex: 1 }}
-          renderInput={(params) => <TextField {...params} placeholder={t('tournament.teamSelection.chooseTeamsPlaceholder')} />}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              placeholder={t('tournament.teamSelection.chooseTeamsPlaceholder')}
+            />
+          )}
           renderTags={(value, getTagProps) =>
             value.map((option, index) => (
               <Chip label={option.name} {...getTagProps({ index })} key={option.id} />

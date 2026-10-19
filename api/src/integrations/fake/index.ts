@@ -27,6 +27,7 @@ import type {
   StatsSchema,
 } from '../types';
 import type { Untrusted } from '../../utils/untrusted';
+import type * as FakeRoutes from './routes';
 
 export const FAKE_GAME_ID = 'fake';
 
@@ -208,7 +209,7 @@ export const fakeIntegration: GameIntegration<FakeData> = {
   legacyRoutes() {
     // Required here, not at the top: loading the registry must not load routers.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { fakeEventRoutes } = require('./routes') as typeof import('./routes');
+    const { fakeEventRoutes } = require('./routes') as typeof FakeRoutes;
     return [
       {
         prefix: '/api/test/integration/fake',

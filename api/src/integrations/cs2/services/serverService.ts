@@ -1,6 +1,6 @@
 import { db } from '../../../config/database';
 import { licenseService } from '../../../services/license/licenseService';
-import {
+import type {
   Server,
   CreateServerInput,
   UpdateServerInput,

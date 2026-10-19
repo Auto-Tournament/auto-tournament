@@ -1,6 +1,7 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { teamService } from '../services/teamService';
-import { CreateTeamInput, UpdateTeamInput } from '../types/team.types';
+import type { CreateTeamInput, UpdateTeamInput } from '../types/team.types';
 import { requireAuth } from '../middleware/auth';
 import {
   findDuplicateTournamentMemberships,

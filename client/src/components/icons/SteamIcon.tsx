@@ -1,4 +1,5 @@
-import { SvgIcon, SvgIconProps } from '@mui/material';
+import type { SvgIconProps } from '@mui/material';
+import { SvgIcon } from '@mui/material';
 
 export const SteamIcon = (props: SvgIconProps) => {
   return (
@@ -7,4 +8,3 @@ export const SteamIcon = (props: SvgIconProps) => {
     </SvgIcon>
   );
 };
-

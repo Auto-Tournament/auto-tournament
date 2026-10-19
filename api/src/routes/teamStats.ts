@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { db } from '../config/database';
 import { mapWinnerOf } from '../utils/matchEnrichment';
 import type { DbMatchRow } from '../types/database.types';
