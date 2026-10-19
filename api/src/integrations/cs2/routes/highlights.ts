@@ -176,8 +176,6 @@ import {
 } from '../demos/teamReels';
 
 import {
-  benchmarkJob,
-  wantsBenchmark,
   forgetRecorder,
   setRecorderLabel,
   isPaused,
@@ -191,10 +189,10 @@ import {
   requestBenchmark,
   resumeRecorder,
   runLog,
-  saveBenchmark,
   saveRun,
   seenRecorder,
 } from '../demos/recorders';
+import { benchmarkJob, saveBenchmark, wantsBenchmark } from '../demos/recorderBenchmark';
 
 import { dropOrphanJobs } from '../demos/jobs';
 import type { Untrusted } from '../../../utils/untrusted';
