@@ -17,7 +17,6 @@ export const MAX_LINES_TODO = [
   'api/src/integrations/cs2/demos/highlights.ts',
   'api/src/integrations/cs2/demos/jobs.ts',
   'api/src/integrations/cs2/demos/momentStore.ts',
-  'api/src/integrations/cs2/demos/recorders.ts',
   'api/src/integrations/cs2/events/matchEvents.ts',
   'api/src/integrations/cs2/fleet/autoscale/scaler.ts',
   'api/src/integrations/cs2/fleet/backups.ts',

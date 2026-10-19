@@ -316,6 +316,7 @@ export const NON_NULL_ASSERTION = [
   'api/src/integrations/cs2/demos/highlights.ts',
   'api/src/integrations/cs2/demos/momentStore.ts',
   'api/src/integrations/cs2/demos/moments.ts',
+  'api/src/integrations/cs2/demos/recorderBenchmark.ts',
   'api/src/integrations/cs2/demos/recorderLink.ts',
   'api/src/integrations/cs2/demos/recorderUpdates.ts',
   'api/src/integrations/cs2/demos/recorders.ts',
