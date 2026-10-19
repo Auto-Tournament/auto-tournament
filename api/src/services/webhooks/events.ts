@@ -8,6 +8,8 @@
  * Pure: no database, no Express. docs/WEBHOOKS.md documents the same list.
  */
 
+import type { Untrusted } from '../../utils/untrusted';
+
 /** Payload contract version, sent as `api_version` in every delivery. */
 export const WEBHOOK_API_VERSION = '1';
 
@@ -92,7 +94,7 @@ export const WEBHOOK_EVENT_CATALOG: ReadonlyArray<WebhookEventTypeInfo> = [
   },
 ];
 
-export function isWebhookEventType(value: unknown): value is WebhookEventType {
+export function isWebhookEventType(value: Untrusted): value is WebhookEventType {
   return typeof value === 'string' && (WEBHOOK_EVENT_TYPES as readonly string[]).includes(value);
 }
 

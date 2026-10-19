@@ -24,6 +24,7 @@
 
 import dns from 'dns';
 import net from 'net';
+import type { Untrusted } from '../../utils/untrusted';
 
 export type AddressClass = 'public' | 'private' | 'loopback' | 'link_local' | 'reserved';
 
@@ -137,7 +138,7 @@ const PRIVATE_HINT =
  * Syntax and literal-address checks, no DNS. Throws WebhookTargetError.
  * Returns the parsed URL.
  */
-export function checkWebhookUrlSyntax(raw: unknown, allowPrivate: boolean): URL {
+export function checkWebhookUrlSyntax(raw: Untrusted, allowPrivate: boolean): URL {
   if (typeof raw !== 'string' || raw.trim().length === 0) {
     throw new WebhookTargetError('url is required', 'invalid_url');
   }

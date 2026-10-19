@@ -36,6 +36,7 @@ import { startWorker, stopWorker, wakeWorker } from './worker';
 import { SOURCE_PATTERN } from '../teamExternalIds';
 import { isDiscordWebhookUrl } from './discord';
 import { matchPageUrl, platformOrigin } from './links';
+import type { Untrusted } from '../../utils/untrusted';
 
 export { reconcileMatch };
 
@@ -144,7 +145,7 @@ export class WebhookInputError extends Error {
 export const MAX_ROTATION_GRACE_HOURS = 168;
 export const DEFAULT_ROTATION_GRACE_HOURS = 24;
 
-async function checkUrl(raw: unknown): Promise<string> {
+async function checkUrl(raw: Untrusted): Promise<string> {
   const allowPrivate = await settingsService.areWebhookPrivateTargetsAllowed();
   try {
     const url = checkWebhookUrlSyntax(raw, allowPrivate);
@@ -162,7 +163,7 @@ async function checkUrl(raw: unknown): Promise<string> {
   }
 }
 
-function cleanDescription(raw: unknown): string {
+function cleanDescription(raw: Untrusted): string {
   if (raw === undefined || raw === null) return '';
   if (typeof raw !== 'string') throw new WebhookInputError('description must be a string');
   const trimmed = raw.trim();
@@ -171,7 +172,7 @@ function cleanDescription(raw: unknown): string {
   return trimmed;
 }
 
-function cleanSource(raw: unknown): string | null {
+function cleanSource(raw: Untrusted): string | null {
   if (raw === undefined || raw === null || raw === '') return null;
   if (typeof raw !== 'string' || !SOURCE_PATTERN.test(raw.trim())) {
     throw new WebhookInputError('source must be an API token label: 1-32 letters, digits, _ or -');
@@ -179,14 +180,14 @@ function cleanSource(raw: unknown): string | null {
   return raw.trim();
 }
 
-function cleanEventTypes(raw: unknown): string[] {
+function cleanEventTypes(raw: Untrusted): string[] {
   const result = store.normalizeEventTypes(raw);
   if (!result.ok) throw new WebhookInputError(result.error);
   return result.types;
 }
 
 /** 'signed' (default) or 'discord'. */
-function cleanFormat(raw: unknown): store.WebhookFormat {
+function cleanFormat(raw: Untrusted): store.WebhookFormat {
   if (raw === undefined || raw === null || raw === '') return 'signed';
   if (typeof raw !== 'string' || !(store.WEBHOOK_FORMATS as readonly string[]).includes(raw)) {
     throw new WebhookInputError(`format must be one of: ${store.WEBHOOK_FORMATS.join(', ')}`);
@@ -204,7 +205,7 @@ function checkFormatUrl(format: store.WebhookFormat, url: string): void {
 }
 
 export async function createEndpoint(
-  body: Record<string, unknown>
+  body: Record<string, Untrusted>
 ): Promise<{ endpoint: store.WebhookEndpoint; secret: string }> {
   const url = await checkUrl(body.url);
   const format = cleanFormat(body.format);
@@ -228,7 +229,7 @@ export async function createEndpoint(
 
 export async function updateEndpoint(
   id: string,
-  body: Record<string, unknown>
+  body: Record<string, Untrusted>
 ): Promise<store.WebhookEndpoint> {
   const existing = await store.getEndpoint(id);
   if (!existing) throw new WebhookInputError(`Webhook endpoint '${id}' not found`, 404);
@@ -261,7 +262,7 @@ export async function deleteEndpoint(id: string): Promise<boolean> {
 
 export async function rotateEndpointSecret(
   id: string,
-  graceHoursRaw: unknown
+  graceHoursRaw: Untrusted
 ): Promise<{ endpoint: store.WebhookEndpoint; secret: string }> {
   let graceHours = DEFAULT_ROTATION_GRACE_HOURS;
   if (graceHoursRaw !== undefined) {
@@ -295,7 +296,7 @@ export async function rotateEndpointSecret(
  */
 export async function sendTestEvent(
   id: string,
-  body: Record<string, unknown>
+  body: Record<string, Untrusted>
 ): Promise<store.Delivery> {
   const endpoint = await store.getEndpoint(id);
   if (!endpoint) throw new WebhookInputError(`Webhook endpoint '${id}' not found`, 404);
@@ -354,14 +355,12 @@ export async function resendDelivery(deliveryId: string): Promise<store.Delivery
 }
 
 /** A delivery as the admin API shows it: the body with connect details redacted. */
-export function deliveryView(d: store.Delivery): Record<string, unknown> {
+export function deliveryView(d: store.Delivery): object {
   const { body, ...rest } = d;
   return { ...rest, payload: redactDeliveryBody(body) };
 }
 
-export async function endpointView(
-  e: store.WebhookEndpointWithSecrets
-): Promise<Record<string, unknown>> {
+export async function endpointView(e: store.WebhookEndpointWithSecrets): Promise<object> {
   return { ...store.publicEndpoint(e), deliveries: await store.deliveryCounts(e.id) };
 }
 

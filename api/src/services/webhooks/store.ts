@@ -11,10 +11,12 @@ import crypto from 'crypto';
 import type { QueryResultRow } from 'pg';
 import { db } from '../../config/database';
 import { isWebhookEventType, type WebhookEventType } from './events';
+import type { SqlValue } from '../../config/database';
+import type { Untrusted } from '../../utils/untrusted';
 
 export async function sql<T extends QueryResultRow = QueryResultRow>(
   text: string,
-  params: unknown[] = []
+  params: SqlValue[] = []
 ): Promise<T[]> {
   return db.withClient(async (client) => (await client.query<T>(text, params)).rows);
 }
@@ -26,7 +28,8 @@ export function newId(prefix: 'whk' | 'dlv' | 'evt'): string {
   return `${prefix}_${time}${rand}`;
 }
 
-const num = (v: unknown): number | null => (v === null || v === undefined ? null : Number(v));
+const num = (v: number | string | null | undefined): number | null =>
+  v === null || v === undefined ? null : Number(v);
 
 // ---------------------------------------------------------------------------
 // Endpoints
@@ -83,7 +86,8 @@ export interface WebhookEndpointWithSecrets extends WebhookEndpoint {
 
 function parseEventTypes(raw: string): string[] {
   try {
-    const parsed: unknown = JSON.parse(raw);
+    // Subscriptions of every age: read leniently.
+    const parsed: Untrusted = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.filter((t): t is string => typeof t === 'string') : ['*'];
   } catch {
     return ['*'];
@@ -143,7 +147,7 @@ export function subscribes(
 
 /** Validate a subscription list: `['*']` or known type ids. */
 export function normalizeEventTypes(
-  input: unknown
+  input: Untrusted
 ): { ok: true; types: string[] } | { ok: false; error: string } {
   if (input === undefined) return { ok: true, types: ['*'] };
   if (!Array.isArray(input) || input.length === 0) {
@@ -217,8 +221,8 @@ export async function updateEndpoint(
   }>
 ): Promise<WebhookEndpointWithSecrets | null> {
   const sets: string[] = [];
-  const params: unknown[] = [];
-  const add = (column: string, value: unknown) => {
+  const params: SqlValue[] = [];
+  const add = (column: string, value: SqlValue) => {
     params.push(value);
     sets.push(`${column} = $${params.length}`);
   };
@@ -411,7 +415,7 @@ export async function listDeliveries(opts: {
   limit: number;
   before?: number;
 }): Promise<Delivery[]> {
-  const params: unknown[] = [opts.endpointId];
+  const params: SqlValue[] = [opts.endpointId];
   let where = 'endpoint_id = $1';
   if (opts.status) {
     params.push(opts.status);

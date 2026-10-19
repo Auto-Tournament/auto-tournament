@@ -26,6 +26,7 @@ import {
   type WebhookPlayer,
   type WebhookTeam,
 } from './events';
+import type { Untrusted } from '../../utils/untrusted';
 
 /** Statuses in which players can join (the match is on a server). */
 export const CONNECTABLE_STATUSES: ReadonlySet<string> = new Set(['loaded', 'live']);
@@ -120,12 +121,13 @@ function rosterOf(
 ): WebhookPlayer[] {
   if (teamRow) {
     try {
-      const parsed: unknown = JSON.parse(teamRow.players);
+      // Rosters of every age: read leniently.
+      const parsed: Untrusted = JSON.parse(teamRow.players);
       if (Array.isArray(parsed)) {
         return parsed
           .filter(
             (p): p is { steamId: string; name?: string } =>
-              !!p && typeof (p as { steamId?: unknown }).steamId === 'string'
+              !!p && typeof (p as { steamId?: Untrusted }).steamId === 'string'
           )
           .map((p) => ({
             steam_id64: p.steamId,

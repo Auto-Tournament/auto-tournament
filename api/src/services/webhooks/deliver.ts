@@ -74,12 +74,7 @@ export async function attemptDelivery(input: AttemptInput): Promise<AttemptResul
 
   const pinned: LookupFunction = (_hostname, options, callback) => {
     if ((options as { all?: boolean })?.all) {
-      (
-        callback as unknown as (
-          err: null,
-          addresses: Array<{ address: string; family: number }>
-        ) => void
-      )(null, [{ address: target.address, family: target.family }]);
+      callback(null, [{ address: target.address, family: target.family }]);
     } else {
       callback(null, target.address, target.family);
     }

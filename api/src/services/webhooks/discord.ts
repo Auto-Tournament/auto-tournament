@@ -72,10 +72,7 @@ const TITLES: Partial<Record<WebhookEnvelope['type'], string>> = {
  * when the platform knows its own address (the envelope carries it for admin
  * calls; for other events the caller passes it).
  */
-export function discordMessage(
-  envelope: WebhookEnvelope,
-  matchUrl: string | null
-): Record<string, unknown> {
+export function discordMessage(envelope: WebhookEnvelope, matchUrl: string | null): object {
   const { match } = envelope.data;
   const call = envelope.data.admin_call;
   const url = call?.match_url ?? matchUrl ?? undefined;
