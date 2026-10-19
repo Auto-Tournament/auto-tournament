@@ -19,12 +19,14 @@ import type {
   AllocateResult,
   BuildMatchConfigContext,
   GameIntegration,
+  IntegrationData,
   MatchContext,
   MatchDescription,
   MatchDescriptionTeam,
   ResourceActionResult,
   StatsSchema,
 } from '../types';
+import type { Untrusted } from '../../utils/untrusted';
 
 export const FAKE_GAME_ID = 'fake';
 
@@ -81,10 +83,11 @@ async function readTeam(teamId: string | undefined): Promise<FakeTeam> {
   if (!row) return { id: teamId, name: '', players: [] };
   const players: FakeTeam['players'] = [];
   try {
-    const parsed: unknown = JSON.parse(row.players || '[]');
+    // Rosters of every age: read leniently.
+    const parsed: Untrusted = JSON.parse(row.players || '[]');
     const list = parsed && typeof parsed === 'object' ? Object.values(parsed) : [];
     for (const p of list) {
-      const player = p as { steamId?: unknown; id?: unknown; name?: unknown };
+      const player = p as { steamId?: Untrusted; id?: Untrusted; name?: Untrusted };
       const id = typeof player.steamId === 'string' ? player.steamId : player.id;
       if (typeof id === 'string' && id) {
         players.push({ id, name: typeof player.name === 'string' ? player.name : '' });
@@ -94,20 +97,6 @@ async function readTeam(teamId: string | undefined): Promise<FakeTeam> {
     // An unreadable roster describes as empty.
   }
   return { id: row.id, name: row.name, players };
-}
-
-function parseConfig(config: unknown): Partial<FakeMatchConfig> {
-  let value = config;
-  if (typeof value === 'string') {
-    try {
-      value = JSON.parse(value);
-    } catch {
-      return {};
-    }
-  }
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Partial<FakeMatchConfig>)
-    : {};
 }
 
 function describeTeam(team: Partial<FakeTeam> | undefined): MatchDescriptionTeam {
@@ -133,7 +122,13 @@ async function markLoaded(ctx: MatchContext): Promise<AllocateResult> {
   return { status: 'assigned' };
 }
 
-export const fakeIntegration: GameIntegration = {
+/** The fake game's own data the core stores and hands back. */
+interface FakeData extends IntegrationData {
+  config: Partial<FakeMatchConfig>;
+  matchSettings: Partial<FakeMatchConfig>;
+}
+
+export const fakeIntegration: GameIntegration<FakeData> = {
   id: FAKE_GAME_ID,
   displayName: 'Fake game (tests)',
   catalog: null,
@@ -163,8 +158,8 @@ export const fakeIntegration: GameIntegration = {
     },
   ],
 
-  async buildMatchConfig(ctx: BuildMatchConfigContext): Promise<FakeMatchConfig> {
-    const standalone = parseConfig(ctx.settings);
+  async buildMatchConfig(ctx: BuildMatchConfigContext<FakeData>): Promise<FakeMatchConfig> {
+    const standalone = ctx.settings ?? {};
     const seriesLength = ctx.tournament
       ? seriesLengthOf(ctx.tournament.format)
       : typeof standalone.seriesLength === 'number' && standalone.seriesLength > 0
@@ -174,8 +169,7 @@ export const fakeIntegration: GameIntegration = {
     return { game: FAKE_GAME_ID, slug: ctx.slug, seriesLength, team1, team2 };
   },
 
-  describeMatch(config: unknown): MatchDescription {
-    const cfg = parseConfig(config);
+  describeMatch(cfg): MatchDescription {
     const seriesLength =
       typeof cfg.seriesLength === 'number' && cfg.seriesLength > 0 ? cfg.seriesLength : 1;
     return {
